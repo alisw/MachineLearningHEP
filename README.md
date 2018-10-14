@@ -1,10 +1,8 @@
 # MachineLearningHF
 
 
-## Prerequisites
+## Prerequisites (fully validated only for MacOs Sierra 10.13.16)
 
-Unless you have complicated existing configurations, this should work out of the box for a Mac Sierra. 
-With tiny modifications for UBUNTU. 
 ```
 sudo apt-get update
 sudo apt-get install build-essential
