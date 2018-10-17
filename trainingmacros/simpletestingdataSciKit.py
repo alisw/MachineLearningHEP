@@ -26,7 +26,7 @@ mylistvariablesothers=getvariablesothers()
 bigntupla="/Users/gianmicheleinnocenti/MLDsproductions/Data/2018Sep21_LHC15o_pass1_pidfix/AnalysisResults_000_root6.root"
 
 neventspersample=10000
-suffix="SignalN%dBkgN%dPreMassCut.pkl" % (neventspersample,neventspersample)
+suffix="SignalN%dBkgN%dPreMassCut" % (neventspersample,neventspersample)
 bigntuplaML="output/AnalysisResults_000_%s_MLdecision.root" % (suffix)
 
 filedata = uproot.open(bigntupla)
