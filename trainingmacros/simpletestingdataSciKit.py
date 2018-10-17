@@ -24,7 +24,10 @@ mylistvariables=getvariablestraining()
 mylistvariablesothers=getvariablesothers()
 
 bigntupla="/Users/gianmicheleinnocenti/MLDsproductions/Data/2018Sep21_LHC15o_pass1_pidfix/AnalysisResults_000_root6.root"
-bigntuplaML="output/AnalysisResults_000_MLdecision.root"
+
+neventspersample=10000
+suffix="SignalN%dBkgN%dPreMassCut.pkl" % (neventspersample,neventspersample)
+bigntuplaML="output/AnalysisResults_000_%s_MLdecision.root" % (suffix)
 
 filedata = uproot.open(bigntupla)
 treedata = filedata["fTreeDsData"]
@@ -35,12 +38,12 @@ frame_X_test_others=treedata.pandas.df(preparestringforuproot(mylistvariablesoth
 X_test= frame_X_test[mylistvariables]
 X_test_others=frame_X_test_others[mylistvariablesothers]
 
+trainedmodels=readmodels(names,"output",suffix)
+
 X_test_all=X_test
-for name, clf in zip(names, classifiers):
+for name, model in zip(names, trainedmodels):
   y_test_prediction=[]
   y_test_prob=[]
-  fileoutmodel = "models/"+name+".sav"
-  model = pickle.load(open(fileoutmodel, 'rb'))
   y_test_prediction=model.predict(X_test)
   y_test_prob=model.predict_proba(X_test)[:,1]
   X_test_all = np.c_[X_test_all,y_test_prediction]

@@ -27,9 +27,10 @@ mylistvariables=getvariablestraining()
 mylistvariablesothers=getvariablesothers()
 myvariablesy=getvariableissignal()
 
-train_set = pd.read_pickle("../dataframes/trainsamplelSignalN%dBkgN%dPreMassCut.pkl" % (neventspersample,neventspersample))
-test_set = pd.read_pickle("../dataframes/testsamplelSignalN%dBkgN%dPreMassCut.pkl" % (neventspersample,neventspersample))
-filenametest_set_ML="dataframeoutput/testsamplelSignalN%dBkgN%dPreMassCutMLdecision.pkl" % (neventspersample,neventspersample)
+suffix="SignalN%dBkgN%dPreMassCut" % (neventspersample,neventspersample)
+train_set = pd.read_pickle("../buildsample/trainsample%s.pkl" % (suffix))
+test_set = pd.read_pickle("../buildsample/testsample%s.pkl" % (suffix))
+filenametest_set_ML="output/testsample%sMLdecision.pkl" % (suffix)
 ntuplename="fTreeDsFlagged"
 
 X_train= train_set[mylistvariables]
@@ -41,13 +42,18 @@ X_test_others=test_set[mylistvariablesothers]
 y_test=test_set[myvariablesy]
 
 ###################### training sequence ######################
-fit(names, classifiers,X_train,y_train)
+trainedmodels=fit(names, classifiers,X_train,y_train)
 print ('Training time')
 print (datetime.now() - time0)
 
+###################### importance study ######################
+importanceplotall(mylistvariables,names,trainedmodels,suffix)
+
+###################### saving model ######################
+savemodels(names,trainedmodels,"output",suffix)
 ###################### testing sequence ######################
 time1 = datetime.now()
-test_setML=test(names, classifiers,X_test,test_set)
+test_setML=test(names,trainedmodels,X_test,test_set)
 test_set.to_pickle(filenametest_set_ML)
 
 print ('Testing time')
