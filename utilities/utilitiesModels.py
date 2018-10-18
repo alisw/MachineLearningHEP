@@ -136,7 +136,7 @@ def decisionboundaries(names_,trainedmodels_,suffix_,X_train_,y_train_):
     ax.set_xlim(xx.min(), xx.max())
     ax.set_ylim(yy.min(), yy.max())
     score = model.score(X_train_, y_train_)
-    ax.text(xx.max() - .3, yy.min() + .3, ('%.2f' % score).lstrip('0'), size=15, horizontalalignment='right')
+    ax.text(xx.max() - .3, yy.min() + .3, ('accuracy=%.2f' % score).lstrip('0'), size=15,horizontalalignment='right',verticalalignment='center')
     ax.set_title(name,fontsize=17)
     ax.set_ylabel(mylistvariables_[1],fontsize=17)
     ax.set_xlabel(mylistvariables_[0],fontsize=17)
