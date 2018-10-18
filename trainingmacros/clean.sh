@@ -5,3 +5,4 @@ rm -rf *exe.dSYM
 rm plots/.DS_Store
 rm .DS_Store
 rm ../.DS_Store
+rm -rf ../utilities/__pycache__/
