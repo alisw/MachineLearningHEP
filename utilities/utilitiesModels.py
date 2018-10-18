@@ -132,7 +132,7 @@ def decisionboundaries(names_,trainedmodels_,suffix_,X_train_,y_train_):
     Z = Z.reshape(xx.shape)
     ax.contourf(xx, yy, Z, cmap=cm, alpha=.8)
     # Plot also the training points
-    ax.scatter(X_train_array_[:, 0], X_train_array_[:, 1], c=y_train_, cmap=cm_bright, edgecolors='k')
+    ax.scatter(X_train_array_[:, 0], X_train_array_[:, 1], c=y_train_, cmap=cm_bright, edgecolors='k',alpha=0.3)
     ax.set_xlim(xx.min(), xx.max())
     ax.set_ylim(yy.min(), yy.max())
     score = model.score(X_train_, y_train_)
