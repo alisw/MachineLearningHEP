@@ -13,6 +13,8 @@ from sklearn.model_selection import GridSearchCV
 from sklearn.datasets import make_classification
 from sklearn.ensemble import ExtraTreesClassifier
 from sklearn_evaluation import plot
+from sklearn.feature_extraction import DictVectorizer
+from matplotlib.colors import ListedColormap
 
 
 def getclassifiers():
@@ -100,3 +102,46 @@ def importanceplotall(mylistvariables_,names_,trainedmodels_,suffix_):
     i += 1
   plotname='plots/importanceplotall%s.png' % (suffix_)
   plt.savefig(plotname)
+
+
+def decisionboundaries(names_,trainedmodels_,suffix_,X_train_,y_train_):
+  mylistvariables_=X_train_.columns.tolist()
+  dictionary_train = X_train_.to_dict(orient='records')
+  vec = DictVectorizer()
+  X_train_array_ = vec.fit_transform(dictionary_train).toarray()
+
+  figure = plt.figure(figsize=(15,15))
+  plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.4, hspace=0.2)
+  h = .10
+  cm = plt.cm.RdBu
+  cm_bright = ListedColormap(['#FF0000', '#0000FF'])
+
+  x_min, x_max = X_train_array_[:, 0].min() - .5, X_train_array_[:, 0].max() + .5
+  y_min, y_max = X_train_array_[:, 1].min() - .5, X_train_array_[:, 1].max() + .5
+  xx, yy = np.meshgrid(np.arange(x_min, x_max, h),np.arange(y_min, y_max, h))
+
+  i=1
+  for name, model in zip(names_, trainedmodels_):
+    if hasattr(model, "decision_function"):
+      Z = model.decision_function(np.c_[xx.ravel(), yy.ravel()])
+    else:
+      Z = model.predict_proba(np.c_[xx.ravel(), yy.ravel()])[:, 1]
+      
+    ax = plt.subplot(2, len(names_)/2, i)  
+
+    Z = Z.reshape(xx.shape)
+    ax.contourf(xx, yy, Z, cmap=cm, alpha=.8)
+    # Plot also the training points
+    ax.scatter(X_train_array_[:, 0], X_train_array_[:, 1], c=y_train_, cmap=cm_bright, edgecolors='k')
+    ax.set_xlim(xx.min(), xx.max())
+    ax.set_ylim(yy.min(), yy.max())
+    score = model.score(X_train_, y_train_)
+    ax.text(xx.max() - .3, yy.min() + .3, ('%.2f' % score).lstrip('0'), size=15, horizontalalignment='right')
+    ax.set_title(name,fontsize=17)
+    ax.set_ylabel(mylistvariables_[1],fontsize=17)
+    ax.set_xlabel(mylistvariables_[0],fontsize=17)
+    figure.subplots_adjust(hspace=.5)
+    i += 1
+  plotname='plots/decisionboundaries%s.png' % (suffix_)
+  plt.savefig(plotname)
+
