@@ -49,6 +49,8 @@ n_pca=9
 X_train_std=GetDataFrameStandardised(X_train)
 X_train_std_PCA,pca=GetPCADataFrameAndPC(X_train_std,n_pca)
 
+plotvariancePCA(pca,path)
+
 time1 = datetime.now()
 howmuchtime = time1-time0
 print("\n===\n===\tExecution END. Start time: %s\tEnd time: %s\t(%s)\n===\n\n\n"%(time0.strftime('%d/%m/%Y, %H:%M:%S'),time1.strftime('%d/%m/%Y, %H:%M:%S'),howmuchtime))

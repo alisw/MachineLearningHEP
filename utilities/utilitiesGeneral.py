@@ -9,7 +9,6 @@ import sys, os
 from timeit import default_timer as timer
 from datetime import datetime
 
-
 def filterdataframe_pt(dataframe_,pt_var_,ptmin_,ptmax_):
   dataframe_ptsel_=dataframe_.loc[(dataframe_[pt_var_] > ptmin_ ) & (dataframe_[pt_var_] < ptmax_ )]
   return dataframe_ptsel_
@@ -34,4 +33,3 @@ def progressbar(part,tot):
   for i in range(0,length-num_dashes-1):
     print("-",end='')
   print("] {0:.0%}".format(perc),end='')
-
