@@ -33,8 +33,10 @@ checkdir(path)
 
 classifiers, names=getclassifiers()
 mylistvariables=getvariablestraining()
+mylistvariablesall=getvariablesall()
 mylistvariablesothers=getvariablesothers()
 myvariablesy=getvariableissignal()
+mylistvariablescorrx,mylistvariablescorry=getvariablecorrelation()
 
 suffix="SignalN%dBkgN%dPreMassCut" % (neventspersample,neventspersample)
 train_set = pd.read_pickle("../buildsample/trainsample%s.pkl" % (suffix))
@@ -43,13 +45,20 @@ print (train_set.pt_cand_ML)
 X_train= train_set[mylistvariables]
 y_train=train_set[myvariablesy]
 
-################ training set ##################
+################ creating signal and bkg dataset ##################
 train_set_ptsel=filterdataframe_pt(train_set,var_pt,ptmin,ptmax)
 train_set_ptsel_sig,train_set_ptsel_bkg=splitdataframe_sigbkg(train_set_ptsel,var_signal)
-######## variable distribution plots ###########
-vardistplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariables,path)
+
+######## single variable distribution plots ###########
+vardistplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariablesall,path)
+
 ######## variable scatter plots ###########
-# mylistvariablesx = ['pt_cand_ML','d_len_xy_ML','sig_vert_ML',"pt_cand_ML","pt_cand_ML","norm_dl_xy_ML","cos_PiDs_ML","cos_p_xy_ML","cos_p_xy_ML"]
-# mylistvariablesy = ['d_len_xy_ML','sig_vert_ML','delta_mass_KK_ML',"delta_mass_KK_ML","sig_vert_ML","d_len_xy_ML","cos_PiKPhi_3_ML","sig_vert_ML","pt_cand_ML"]
-# n,bins, patches = plt.hist(train_set_ptsel.pt_cand_ML,50)
-# plt.show()
+mylistvariablesx,mylistvariablesy=getvariablecorrelation()
+scatterplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariablesx,mylistvariablesy,path)
+
+######## correlation matrix #################
+# correlationmatrix(train_set_sig,train_set_bkg,path)
+
+time1 = datetime.now()
+howmuchtime = time1-time0
+print("\n===\n===\tExecution END. Start time: %s\tEnd time: %s\t(%s)\n===\n\n\n"%(time0.strftime('%d/%m/%Y, %H:%M:%S'),time1.strftime('%d/%m/%Y, %H:%M:%S'),howmuchtime))
