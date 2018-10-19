@@ -43,8 +43,8 @@ y_train=train_set[myvariablesy]
 #perform score cross validation  
 # df_scores=cross_validation_mse(names,classifiers,X_train,y_train,10,ncores)
 # confusion(mylistvariables,names,classifiers,suffix,X_train,y_train,5)
-#precision_recall(mylistvariables,names,classifiers,suffix,X_train,y_train,5)
+precision_recall(mylistvariables,names,classifiers,suffix,X_train,y_train,5)
 
-do_gridsearch(mylistvariables,X_train,y_train,5,ncores)
-plot_gridsearch()
+# do_gridsearch(mylistvariables,X_train,y_train,5,ncores)
+# plot_gridsearch()
 

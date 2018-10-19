@@ -61,10 +61,10 @@ def confusion(mylistvariables_,names_,classifiers_,suffix_,X_train,y_train,cv):
     df_cm = pd.DataFrame(norm_conf_mx,range(2),range(2))
     sn.set(font_scale=1.4)#for label size
     ax.set_title(name+"tot diag=0")
-    plt.ylabel("True values",fontsize=16)
-    plt.ylabel("Predicted values",fontsize=16)
-
     sn.heatmap(df_cm, annot=True,annot_kws={"size": 16})# font size
+    ax.set_xlabel('Predicted labels');ax.set_ylabel('True labels'); 
+    ax.xaxis.set_ticklabels(['signal', 'background']); ax.yaxis.set_ticklabels(['signal', 'background']);
+
     i += 1
   plotname='plots/confusion_matrix%s_Diag0.png' % (suffix_)
   plt.savefig(plotname)
@@ -81,11 +81,11 @@ def confusion(mylistvariables_,names_,classifiers_,suffix_,X_train,y_train,cv):
     norm_conf_mx = conf_mx / row_sums
     df_cm = pd.DataFrame(norm_conf_mx,range(2),range(2))
     sn.set(font_scale=1.4)#for label size
-    ax.set_title(name+"tot diag=0")
-    plt.ylabel("True values",fontsize=16)
-    plt.ylabel("Predicted values",fontsize=16)
-
+    ax.set_title(name)
     sn.heatmap(df_cm, annot=True,annot_kws={"size": 16})# font size
+    ax.set_xlabel('Predicted labels');ax.set_ylabel('True labels'); 
+    ax.xaxis.set_ticklabels(['signal', 'background']); ax.yaxis.set_ticklabels(['signal', 'background']);
+
     i += 1
   plotname='plots/confusion_matrix%s.png' % (suffix_)
   plt.savefig(plotname)
@@ -100,8 +100,8 @@ def precision_recall(mylistvariables_,names_,classifiers_,suffix_,X_train,y_trai
     y_proba = cross_val_predict(clf, X_train, y_train, cv=cv,method="predict_proba")
     y_scores = y_proba[:, 1]
     precisions, recalls, thresholds = precision_recall_curve(y_train, y_scores)
-    plt.plot(thresholds, precisions[:-1], "b--", label="Precision")
-    plt.plot(thresholds, recalls[:-1], "g-", label="Recall")
+    plt.plot(thresholds, precisions[:-1], "b--", label="Precision=TP/(TP+FP)")
+    plt.plot(thresholds, recalls[:-1], "g-", label="Recall=TP/(TP+FN)")
     plt.xlabel("probability",fontsize=16)
     ax.set_title(name,fontsize=16)
     plt.legend(loc="center left")
