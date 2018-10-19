@@ -57,7 +57,8 @@ mylistvariablesx,mylistvariablesy=getvariablecorrelation()
 scatterplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariablesx,mylistvariablesy,path)
 
 ######## correlation matrix #################
-# correlationmatrix(train_set_sig,train_set_bkg,path)
+correlationmatrix(train_set_ptsel_sig,path,"signal")
+correlationmatrix(train_set_ptsel_bkg,path,"background")
 
 time1 = datetime.now()
 howmuchtime = time1-time0

@@ -2,8 +2,8 @@ import pandas as pd
 import pickle
 import numpy as np
 import matplotlib.pyplot as plt
-
-
+import sys, os
+import seaborn as sns
 
 def vardistplot(dataframe_sig_,dataframe_bkg_,mylistvariables_,output_):
   figure = plt.figure(figsize=(20,15))
@@ -36,3 +36,12 @@ def scatterplot(dataframe_sig_,dataframe_bkg_,mylistvariablesx_,mylistvariablesy
     i=i+1
   plotname=output_+'/variablesScatterPlot.png'
   plt.savefig(plotname,bbox_inches='tight')
+   
+def correlationmatrix(dataframe,output_,label):
+  corr = dataframe.corr()
+  f, ax = plt.subplots(figsize=(10, 8))
+  plt.title(label,fontsize=11)
+  sns.heatmap(corr, mask=np.zeros_like(corr, dtype=np.bool), cmap=sns.diverging_palette(220, 10, as_cmap=True),square=True, ax=ax)
+  plotname=output_+'/correlationmatrix'+label+'.png'
+  plt.savefig(plotname,bbox_inches='tight')
+
