@@ -13,14 +13,20 @@ from datetime import datetime
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
-def GetPCADataFrame(dataframe,varlist,n_pca):
-  data=dataframe.loc[:,varlist]
-  data_values = data.values
-  data_values = StandardScaler().fit_transform(data_values)
+def GetPCADataFrameAndPC(dataframe,n_pca):
+  data_values = dataframe.values
   pca = PCA(n_pca)
   principalComponent = pca.fit_transform(data_values)
   pca_name_list = []
-  for i_pca in range(1,n_pca+1):
-    pca_name_list.append("princ_comp_%d"%i_pca)
+  for i_pca in range(n_pca):
+    pca_name_list.append("princ_comp_%d"%(i_pca+1))
   pca_dataframe = pd.DataFrame(data=principalComponent,columns=pca_name_list)
   return pca_dataframe, pca
+
+
+def GetDataFrameStandardised(dataframe):
+  listheaders=list(dataframe.columns.values)
+  data_values = dataframe.values
+  data_values_std = StandardScaler().fit_transform(data_values)
+  dataframe_std = pd.DataFrame(data=data_values_std,columns=listheaders)
+  return dataframe_std
