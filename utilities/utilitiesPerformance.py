@@ -16,6 +16,9 @@ from sklearn_evaluation import plot
 from sklearn.model_selection import cross_val_predict
 from sklearn.metrics import confusion_matrix
 from sklearn.metrics import precision_recall_curve
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import mean_squared_error
+
 
 def cross_validation_mse(names_,classifiers_,X_train_,y_train_,cv_,ncores):
   df_scores = pd.DataFrame()
@@ -127,4 +130,33 @@ def precision_recall(mylistvariables_,names_,classifiers_,suffix_,X_train,y_trai
     plt.legend(loc="lower center",  prop={'size':18})
     i += 1
   plotname='plots/ROCcurve%s.png' % (suffix_)
+  plt.savefig(plotname)
+  
+
+def plot_learning_curves(names_, classifiers_,suffix_,X,y,min=1,max=-1,step_=1):
+  figure1 = plt.figure(figsize=(15,10))
+  i=1
+  X_train, X_val, y_train, y_val = train_test_split(X,y,test_size=0.2)
+  for name, clf in zip(names_, classifiers_):
+    ax = plt.subplot(2, len(names_)/2, i)  
+    ax.set_ylim([0,0.6])
+    train_errors, val_errors = [],[]
+    if (max==-1):
+      max=len(X_train)
+    arrayvalues=np.arange(start=min,stop=max,step=step_)
+    for m in arrayvalues:
+      clf.fit(X_train[:m],y_train[:m])
+      y_train_predict = clf.predict(X_train[:m])
+      y_val_predict = clf.predict(X_val)
+      train_errors.append(mean_squared_error(y_train_predict,y_train[:m]))
+      val_errors.append(mean_squared_error(y_val_predict,y_val))        
+    plt.plot(np.sqrt(train_errors),"r-+",linewidth=3,label="training, scale factor %d" % (step_))
+    plt.plot(np.sqrt(val_errors),"b-",linewidth=3,label="validation, scale factor %d" % (step_))
+    plt.title(name, fontsize=16)   
+    plt.xlabel("Training set size",fontsize=16) 
+    plt.ylabel("RMSE",fontsize=16)
+    figure1.subplots_adjust(hspace=.5)
+    plt.legend(loc="lower center",  prop={'size':18})
+    i += 1
+  plotname='plots/learning_curve%s.png' % (suffix_)
   plt.savefig(plotname)
