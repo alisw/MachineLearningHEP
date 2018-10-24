@@ -39,8 +39,11 @@ df= pd.read_csv('../../fonll/fo_pp_d0meson_5TeV_y0p5.csv')
 plotfonll(df.pt,df.central,"D0")
 signalfonll=getfonll(df,ptmin,ptmax)
 
-sig=100
-bkg=10000
+sig=100    #### here we will have to include the proper calculation for the n. signal based on the fonll 
+           #### and the luminosity of the background sample within 3 sigma from the peak
+bkg=10000  #### here we will have to count the number of events in the background sample in the 3 sigma region 
+           #### after doing size band correction
+
 
 efficiencySig_array,xaxisSig,num_arraySig,den_arraySig=get_efficiency_effnum_effden(test_set_ML,names,"signal_ML",1,0.01)
 efficiencyBkg_array,xaxisBkg,num_arrayBkg,den_arrayBkg=get_efficiency_effnum_effden(test_set_ML,names,"signal_ML",0,0.01)
