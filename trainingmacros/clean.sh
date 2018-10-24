@@ -1,5 +1,6 @@
 rm output/*.root
 rm output/*.pkl
+rm output/*.sav
 rm plots/*.png
 rm -rf *exe.dSYM
 rm plots/.DS_Store
