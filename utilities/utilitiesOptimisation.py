@@ -12,7 +12,7 @@ def getfonll(df_,ptmin_,ptmax_):
 
 
 def get_efficiency_effnum_effden(df_,names_,selvar_,flag_label,stepsize):
-  xaxis_=np.arange(start=0,stop=1.01,step=stepsize)
+  xaxis_=np.arange(start=0,stop=1.00,step=stepsize)
   df_sel=df_.loc[df_[selvar_] == flag_label]
   efficiency_array=[]
   num_array=[]
@@ -48,16 +48,14 @@ def plot_efficiency(names_,efficiency_array,xaxis_,label,suffix_):
   plotname='plots/efficiency%s%s.png' % (label,suffix_)
   plt.savefig(plotname)
   
-def calculatesignificance(efficiencySig_array,sig, efficiencyBkg_array, bkg,x_array):
+def calculatesignificance(efficiencySig_array,sig, efficiencyBkg_array, bkg):
   significance_array=[]
   for i,name in enumerate(efficiencySig_array):
     signal=efficiencySig_array[i]*sig;
     bkg=efficiencyBkg_array[i]*bkg;
-    print (signal.shape)
-    print (bkg.shape)
     significance=signal/np.sqrt(signal+bkg)
     significance_array.append(significance)
-  return significance_array,x_array
+  return significance_array
     
 def plot_significance(names_,significance_array,xaxis_,suffix_):
 
@@ -66,7 +64,7 @@ def plot_significance(names_,significance_array,xaxis_,suffix_):
   for name in names_:
     plt.xlabel('Probability',fontsize=20)
     plt.ylabel('Significance',fontsize=20)
-    plt.title("Significance ",fontsize=20)
+    plt.title("Significance vs probability ",fontsize=20)
     plt.plot(xaxis_[i-1], significance_array[i-1], lw=1, alpha=0.3, label='%s' % (names_[i-1]), linewidth=4.0)
     plt.legend(loc="lower center",  prop={'size':18})
     i += 1
@@ -83,7 +81,3 @@ def plotfonll(pt_array,cross_array,particlelabel):
   plt.semilogy()
   plotname='plots/fonll%s.png' % (particlelabel)
   plt.savefig(plotname)
-
-    
-
-  
