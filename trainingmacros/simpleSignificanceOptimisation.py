@@ -51,7 +51,7 @@ efficiencyBkg_array,xaxisBkg,num_arrayBkg,den_arrayBkg=get_efficiency_effnum_eff
 plot_efficiency(names,efficiencySig_array,xaxisSig,"signal",suffix)
 plot_efficiency(names,efficiencyBkg_array,xaxisBkg,"background",suffix)
 
-significance_array, xaxis= calculatesignificance(efficiencySig_array,sig,efficiencyBkg_array,bkg,xaxisSig)
-plot_significance(names,significance_array,xaxis,suffix)
+significance_array= calculatesignificance(efficiencySig_array,sig,efficiencyBkg_array,bkg)
+plot_significance(names,significance_array,xaxisSig,suffix)
 
 

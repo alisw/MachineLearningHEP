@@ -48,14 +48,14 @@ def plot_efficiency(names_,efficiency_array,xaxis_,label,suffix_):
   plotname='plots/efficiency%s%s.png' % (label,suffix_)
   plt.savefig(plotname)
   
-def calculatesignificance(efficiencySig_array,sig, efficiencyBkg_array, bkg,x_array):
+def calculatesignificance(efficiencySig_array,sig, efficiencyBkg_array, bkg):
   significance_array=[]
   for i,name in enumerate(efficiencySig_array):
     signal=efficiencySig_array[i]*sig;
     bkg=efficiencyBkg_array[i]*bkg;
     significance=signal/np.sqrt(signal+bkg)
     significance_array.append(significance)
-  return significance_array,x_array
+  return significance_array
     
 def plot_significance(names_,significance_array,xaxis_,suffix_):
 
@@ -64,7 +64,7 @@ def plot_significance(names_,significance_array,xaxis_,suffix_):
   for name in names_:
     plt.xlabel('Probability',fontsize=20)
     plt.ylabel('Significance',fontsize=20)
-    plt.title("Significance ",fontsize=20)
+    plt.title("Significance vs probability ",fontsize=20)
     plt.plot(xaxis_[i-1], significance_array[i-1], lw=1, alpha=0.3, label='%s' % (names_[i-1]), linewidth=4.0)
     plt.legend(loc="lower center",  prop={'size':18})
     i += 1
