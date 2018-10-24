@@ -12,7 +12,7 @@ def getfonll(df_,ptmin_,ptmax_):
 
 
 def get_efficiency_effnum_effden(df_,names_,selvar_,flag_label,stepsize):
-  xaxis_=np.arange(start=0,stop=stepsize,step=stepsize)
+  xaxis_=np.arange(start=0,stop=1.00,step=stepsize)
   df_sel=df_.loc[df_[selvar_] == flag_label]
   efficiency_array=[]
   num_array=[]
