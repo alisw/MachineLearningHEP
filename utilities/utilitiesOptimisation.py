@@ -53,8 +53,6 @@ def calculatesignificance(efficiencySig_array,sig, efficiencyBkg_array, bkg,x_ar
   for i,name in enumerate(efficiencySig_array):
     signal=efficiencySig_array[i]*sig;
     bkg=efficiencyBkg_array[i]*bkg;
-    print (signal.shape)
-    print (bkg.shape)
     significance=signal/np.sqrt(signal+bkg)
     significance_array.append(significance)
   return significance_array,x_array
@@ -83,7 +81,3 @@ def plotfonll(pt_array,cross_array,particlelabel):
   plt.semilogy()
   plotname='plots/fonll%s.png' % (particlelabel)
   plt.savefig(plotname)
-
-    
-
-  

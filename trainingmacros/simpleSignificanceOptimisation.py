@@ -22,7 +22,7 @@ from utilitiesOptimisation import *
 
 time0 = datetime.now()
 
-neventspersample=10000
+neventspersample=100000
 ptmin=5
 ptmax=7
 
