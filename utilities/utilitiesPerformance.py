@@ -50,7 +50,7 @@ def plot_cross_validation_mse(names_,df_scores_,suffix_):
   
 
 def confusion(mylistvariables_,names_,classifiers_,suffix_,X_train,y_train,cv):
-  figure1 = plt.figure(figsize=(20,15))
+  figure1 = plt.figure(figsize=(25,15))
   plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.4, hspace=0.2)
 
   i=1
@@ -94,7 +94,7 @@ def confusion(mylistvariables_,names_,classifiers_,suffix_,X_train,y_train,cv):
   plt.savefig(plotname)
 
 def precision_recall(mylistvariables_,names_,classifiers_,suffix_,X_train,y_train,cv):
-  figure1 = plt.figure(figsize=(20,15))
+  figure1 = plt.figure(figsize=(25,15))
   plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.4, hspace=0.2)
 
   i=1
