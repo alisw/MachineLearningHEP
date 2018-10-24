@@ -1,5 +1,6 @@
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.svm import SVC
 import pandas as pd
 import pickle
 from sklearn.model_selection import cross_val_score
@@ -20,9 +21,10 @@ from matplotlib.colors import ListedColormap
 def getclassifiers():
   classifiers = [GradientBoostingClassifier(learning_rate=0.01, n_estimators=2500, max_depth=1),
                     RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
-                    AdaBoostClassifier(),DecisionTreeClassifier(max_depth=5)]
+                    AdaBoostClassifier(),DecisionTreeClassifier(max_depth=5),SVC(kernel="linear", C=0.025, probability=True),SVC(gamma=2, C=1,probability=True)]
+                                        
                   
-  names = ["GradientBoostingClassifier","Random_Forest","AdaBoost","Decision_Tree"]
+  names = ["GradientBoostingClassifier","Random_Forest","AdaBoost","Decision_Tree","Linear_SVM", "RBF_SVM"]
   return classifiers, names
 
 def getvariablestraining():
@@ -90,6 +92,8 @@ def importanceplotall(mylistvariables_,names_,trainedmodels_,suffix_):
 
   i=1
   for name, model in zip(names_, trainedmodels_):
+    if "SVC" in name: 
+      continue
     ax = plt.subplot(2, len(names_)/2, i)  
     #plt.subplots_adjust(left=0.3, right=0.9)
     feature_importances_ = model.feature_importances_
@@ -113,7 +117,7 @@ def decisionboundaries(names_,trainedmodels_,suffix_,X_train_,y_train_):
   vec = DictVectorizer()
   X_train_array_ = vec.fit_transform(dictionary_train).toarray()
 
-  figure = plt.figure(figsize=(15,15))
+  figure = plt.figure(figsize=(20,15))
   plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.4, hspace=0.2)
   h = .10
   cm = plt.cm.RdBu

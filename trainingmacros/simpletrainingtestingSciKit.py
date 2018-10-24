@@ -21,7 +21,7 @@ from utilitiesModels import *
 
 time0 = datetime.now()
 
-neventspersample=100000
+neventspersample=10000
 classifiers, names=getclassifiers()
 mylistvariables=getvariablestraining()
 mylistvariablesothers=getvariablesothers()

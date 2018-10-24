@@ -23,7 +23,7 @@ from utilitiesPCA import *
 
 time0 = datetime.now()
 
-neventspersample=10000
+neventspersample=1000
 classifiers, names=getclassifiers()
 mylistvariables=getvariablestraining()
 mylistvariablesothers=getvariablesothers()
@@ -44,6 +44,6 @@ trainedmodels=fit(names, classifiers,X_train,y_train)
 mydecisionboundaries=decisionboundaries(names,trainedmodels,suffix,X_train,y_train)
 
 ###################### decision boundaries with 2 first principal components ######################
-X_train_2PC,pca=GetPCADataFrame(X_train,myshortlistvariable,2)
+X_train_2PC,pca=GetPCADataFrameAndPC(X_train,2)
 trainedmodels=fit(names, classifiers,X_train_2PC,y_train)
 mydecisionboundaries=decisionboundaries(names,trainedmodels,suffix+"PCAdecomposition",X_train_2PC,y_train)

@@ -30,7 +30,7 @@ def cross_validation_mse(names_,classifiers_,X_train_,y_train_,cv_,ncores):
 
 
 def plot_cross_validation_mse(names_,df_scores_,suffix_):
-  figure1 = plt.figure(figsize=(15,10))
+  figure1 = plt.figure(figsize=(20,15))
   i=1
   for name in names_:
     ax = plt.subplot(2, len(names_)/2, i)  
@@ -134,7 +134,7 @@ def precision_recall(mylistvariables_,names_,classifiers_,suffix_,X_train,y_trai
   
 
 def plot_learning_curves(names_, classifiers_,suffix_,X,y,min=1,max=-1,step_=1):
-  figure1 = plt.figure(figsize=(15,15))
+  figure1 = plt.figure(figsize=(20,15))
   i=1
   X_train, X_val, y_train, y_val = train_test_split(X,y,test_size=0.2)
   for name, clf in zip(names_, classifiers_):
