@@ -134,7 +134,7 @@ def precision_recall(mylistvariables_,names_,classifiers_,suffix_,X_train,y_trai
   
 
 def plot_learning_curves(names_, classifiers_,suffix_,X,y,min=1,max=-1,step_=1):
-  figure1 = plt.figure(figsize=(15,10))
+  figure1 = plt.figure(figsize=(15,15))
   i=1
   X_train, X_val, y_train, y_val = train_test_split(X,y,test_size=0.2)
   for name, clf in zip(names_, classifiers_):
