@@ -33,7 +33,7 @@ def plot_cross_validation_mse(names_,df_scores_,suffix_):
   figure1 = plt.figure(figsize=(20,15))
   i=1
   for name in names_:
-    ax = plt.subplot(2, len(names_)/2, i)  
+    ax = plt.subplot(2, (len(names_)+1)/2, i)  
     bin_values = np.arange(start=0.2, stop=0.4, step=0.005)  
     l=plt.hist(df_scores_[name], color="blue",bins=bin_values)
     #mystring='$\mu$=%8.2f, \sigma$=%8.2f' % (df_scores_[name].mean(),df_scores_[name].std())
@@ -42,6 +42,7 @@ def plot_cross_validation_mse(names_,df_scores_,suffix_):
     plt.title(name, fontsize=16)   
     plt.xlabel("scores RMSE",fontsize=16) 
     plt.ylim(0, 5)
+    plt.xlim(0, 0.7)
     plt.ylabel("Entries",fontsize=16)
     figure1.subplots_adjust(hspace=.5)
     i += 1
@@ -55,7 +56,7 @@ def confusion(mylistvariables_,names_,classifiers_,suffix_,X_train,y_train,cv):
 
   i=1
   for name, clf in zip(names_, classifiers_):
-    ax = plt.subplot(2, len(names_)/2, i)  
+    ax = plt.subplot(2, (len(names_)+1)/2, i)  
     y_train_pred = cross_val_predict(clf, X_train, y_train, cv=cv)
     conf_mx = confusion_matrix(y_train, y_train_pred)
     row_sums = conf_mx.sum(axis=1, keepdims=True)
@@ -77,7 +78,7 @@ def confusion(mylistvariables_,names_,classifiers_,suffix_,X_train,y_train,cv):
 
   i=1
   for name, clf in zip(names_, classifiers_):
-    ax = plt.subplot(2, len(names_)/2, i)  
+    ax = plt.subplot(2, (len(names_)+1)/2, i)  
     y_train_pred = cross_val_predict(clf, X_train, y_train, cv=cv)
     conf_mx = confusion_matrix(y_train, y_train_pred)
     row_sums = conf_mx.sum(axis=1, keepdims=True)
@@ -99,7 +100,7 @@ def precision_recall(mylistvariables_,names_,classifiers_,suffix_,X_train,y_trai
 
   i=1
   for name, clf in zip(names_, classifiers_):
-    ax = plt.subplot(2, len(names_)/2, i)  
+    ax = plt.subplot(2, (len(names_)+1)/2, i)  
     y_proba = cross_val_predict(clf, X_train, y_train, cv=cv,method="predict_proba")
     y_scores = y_proba[:, 1]
     precisions, recalls, thresholds = precision_recall_curve(y_train, y_scores)
@@ -138,7 +139,7 @@ def plot_learning_curves(names_, classifiers_,suffix_,X,y,min=1,max=-1,step_=1):
   i=1
   X_train, X_val, y_train, y_val = train_test_split(X,y,test_size=0.2)
   for name, clf in zip(names_, classifiers_):
-    ax = plt.subplot(2, len(names_)/2, i)  
+    ax = plt.subplot(2, (len(names_)+1)/2, i)  
     ax.set_ylim([0,0.6])
     train_errors, val_errors = [],[]
     if (max==-1):

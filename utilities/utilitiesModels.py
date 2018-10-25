@@ -1,6 +1,7 @@
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
+from sklearn.linear_model import LogisticRegression
 import pandas as pd
 import pickle
 from sklearn.model_selection import cross_val_score
@@ -17,14 +18,15 @@ from sklearn_evaluation import plot
 from sklearn.feature_extraction import DictVectorizer
 from matplotlib.colors import ListedColormap
 
+log_reg = LogisticRegression()
 
 def getclassifiers():
   classifiers = [GradientBoostingClassifier(learning_rate=0.01, n_estimators=2500, max_depth=1),
                     RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
-                    AdaBoostClassifier(),DecisionTreeClassifier(max_depth=5),SVC(kernel="linear", C=0.025, probability=True),SVC(gamma=2, C=1,probability=True)]
+                    AdaBoostClassifier(),DecisionTreeClassifier(max_depth=5),SVC(kernel="linear", C=0.025, probability=True),SVC(gamma=2, C=1,probability=True),LogisticRegression()]
                                         
                   
-  names = ["GradientBoostingClassifier","Random_Forest","AdaBoost","Decision_Tree","Linear_SVM", "RBF_SVM"]
+  names = ["GradientBoostingClassifier","Random_Forest","AdaBoost","Decision_Tree","Linear_SVM_SVC", "RBF_SVM_SVC","LogisticRegression"]
   return classifiers, names
 
 def getvariablestraining():
@@ -94,7 +96,9 @@ def importanceplotall(mylistvariables_,names_,trainedmodels_,suffix_):
   for name, model in zip(names_, trainedmodels_):
     if "SVC" in name: 
       continue
-    ax = plt.subplot(2, len(names_)/2, i)  
+    if "Logistic" in name: 
+      continue
+    ax = plt.subplot(2, (len(names_)+1)/2, i)  
     #plt.subplots_adjust(left=0.3, right=0.9)
     feature_importances_ = model.feature_importances_
     y_pos = np.arange(len(mylistvariables_))
@@ -134,7 +138,7 @@ def decisionboundaries(names_,trainedmodels_,suffix_,X_train_,y_train_):
     else:
       Z = model.predict_proba(np.c_[xx.ravel(), yy.ravel()])[:, 1]
       
-    ax = plt.subplot(2, len(names_)/2, i)  
+    ax = plt.subplot(2, (len(names_)+1)/2, i)  
 
     Z = Z.reshape(xx.shape)
     ax.contourf(xx, yy, Z, cmap=cm, alpha=.8)
