@@ -30,15 +30,17 @@ print (type(sys.argv[1]))
 nevents=int(sys.argv[1])
 sys.path.insert(0, '../utilities')
 
-from utilitiesModels import *
+from BinaryMultiFeaturesClassification import getvariablestraining,getvariablesothers,getvariableissignal,getvariablesall,getvariablecorrelation
+from utilitiesGeneral import preparestringforuproot
 print (type(nevents))
 
 time0 = datetime.now()
+case="Ds"
 
 
-mylistvariables=getvariablestraining()
-mylistvariablesothers=getvariablesothers()
-myvariablesy=getvariableissignal()
+mylistvariables=getvariablestraining(case)
+mylistvariablesothers=getvariablesothers(case)
+myvariablesy=getvariableissignal(case)
 
 input_file=("treeTotalSignalN%dBkgN%dPreMassCut.root" % (nevents,nevents))
 ntuplename="fTreeDsFlagged"
@@ -54,5 +56,5 @@ print("total sample=",len(dataframeDs))
 print("train sample=",len(train_set))
 print("test sample=",len(test_set))
 
-train_set.to_pickle("trainsampleSignalN%dBkgN%dPreMassCut.pkl" % (nevents,nevents))
-test_set.to_pickle("testsampleSignalN%dBkgN%dPreMassCut.pkl" % (nevents,nevents))
+train_set.to_pickle("trainsampleSignalN%dBkgN%dPreMassCut%s.pkl" % (nevents,nevents,case))
+test_set.to_pickle("testsampleSignalN%dBkgN%dPreMassCut%s.pkl" % (nevents,nevents,case))
