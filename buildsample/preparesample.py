@@ -28,7 +28,7 @@ import seaborn as sns
 import sys
 print (type(sys.argv[1]))
 nevents=int(sys.argv[1])
-sys.path.insert(0, '../utilities')
+sys.path.insert(0, '../code/utilities')
 
 from BinaryMultiFeaturesClassification import getvariablestraining,getvariablesothers,getvariableissignal,getvariablesall,getvariablecorrelation
 from utilitiesGeneral import preparestringforuproot

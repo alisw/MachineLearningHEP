@@ -1,9 +1,9 @@
 #!/bin/bash
 #source clean.sh
 
-MCSAMPLE="$HOME/MLDsproductions/MC/2018Sep21_LHC18a4a2_cent_fast/AnalysisResults_001.root"
-DATASAMPLE="$HOME/MLDsproductions/Data/2018Sep21_LHC15o_pass1_pidfix/AnalysisResults_000.root"  
-DATASAMPLE_ROOT6="$HOME/MLDsproductions/Data/2018Sep21_LHC15o_pass1_pidfix/AnalysisResults_000_root6.root"  
+MCSAMPLE="$HOME/MLproductions/MLDsproductionsCandBased/MC/2018Sep21_LHC18a4a2_cent_fast/AnalysisResults_001.root"
+DATASAMPLE="$HOME/MLproductions/MLDsproductionsCandBased/Data/2018Sep21_LHC15o_pass1_pidfix/AnalysisResults_000.root"  
+DATASAMPLE_ROOT6="$HOME/MLproductions/MLDsproductionsCandBased/Data/2018Sep21_LHC15o_pass1_pidfix/AnalysisResults_000_root6.root"  
 toteventsdata=1000000
 
 if [ ! -f $MCSAMPLE ] || [ ! -f $DATASAMPLE ]; then
