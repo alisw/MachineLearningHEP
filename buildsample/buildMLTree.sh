@@ -21,7 +21,7 @@ MCTree="PWG3_D2H_InvMassDs_MB_Loose_consPID_MVA_kINT7/fTreeDs"
 DataTree="PWG3_D2H_InvMassDs_010_PbPb_Loose_consPID_MVA_kINT7/fTreeDs"
 
 source clean.sh
-for neventspersample in 1000 5000 10000 50000 100000
+for neventspersample in 1000 10000
 do
 g++ buildMLTree.C $(root-config --cflags --libs) -g -o buildMLTree.exe 
 ./buildMLTree.exe "$MCSAMPLE"  "$MCTree" "$neventspersample" "$DATASAMPLE"  "$DataTree" "$neventspersample"
