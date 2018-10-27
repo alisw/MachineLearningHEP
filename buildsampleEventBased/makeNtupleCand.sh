@@ -2,9 +2,9 @@
 #source clean.sh
 
 MCSAMPLE="$HOME/MLproductions/MLDmesonsproductionsEventBased/LHC18a4a2_fast_run282343/AnalysisResultsDmesonsMC.root"
-MCSAMPLEOUT="$HOME/MLproductions/MLDmesonsproductionsEventBased/LHC18a4a2_fast_run282343/AnalysisResultsDmesonsMC_CandBased.root"
+MCSAMPLEOUT="rootfiles/LHC18a4a2_fast_run282343_AnalysisResultsDmesonsMC_CandBased.root"
 DATASAMPLE="$HOME/MLproductions/MLDmesonsproductionsEventBased/LHC17p_FAST_run282343/AnalysisResultsData.root"  
-DATASAMPLEOUT="$HOME/MLproductions/MLDmesonsproductionsEventBased/LHC17p_FAST_run282343/AnalysisResultsData_CandBased.root"  
+DATASAMPLEOUT="rootfiles/LHC17p_FAST_run282343_AnalysisResultsData_CandBased.root"  
 
 rm $MCSAMPLEOUT
 rm $DATASAMPLEOUT

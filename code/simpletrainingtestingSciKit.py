@@ -6,27 +6,35 @@
 ###############################################################
 from myimports import *
 from utilitiesModels import getclassifiers,fit,test,savemodels,importanceplotall,decisionboundaries
-from BinaryMultiFeaturesClassification import getvariablestraining,getvariablesothers,getvariableissignal,getvariablesall,getvariablecorrelation,getgridsearchparameters
+from BinaryMultiFeaturesClassification import getvariablestraining,getvariablesothers,getvariableissignal,getvariablesall,getvariablecorrelation,getgridsearchparameters,getDataMCfiles,getTreeName,getdataframe,prepareMLsample
 from utilitiesPerformance import precision_recall,plot_learning_curves,confusion,precision_recall,plot_learning_curves,cross_validation_mse,plot_cross_validation_mse
 from utilitiesPCA import GetPCADataFrameAndPC,GetDataFrameStandardised,plotvariancePCA
 from utilitiesCorrelations import scatterplot,correlationmatrix,vardistplot
 from utilitiesGeneral import filterdataframe_pt,splitdataframe_sigbkg,checkdir
 from utilitiesGridSearch import do_gridsearch,plot_gridsearch
+from sklearn.model_selection import train_test_split
 
 ############### this is the only place where you should change parameters ################
 optionClassification="Ds"
-neventspersample=1000
-suffix="SignalN%dBkgN%dPreMassCut%s" % (10000,10000,optionClassification)
-docorrelation=0
+nevents=10000
+suffix="Nevents%d_BinaryClassification%s" % (nevents,optionClassification)
+ptmin=0
+ptmax=100
+var_pt="pt_cand_ML"
+var_signal="signal_ML"
+
+############### activate the different channels ################
+dosampleprep=1
+docorrelation=1
 doStandard=0
 doPCA=0
-dotraining=0
+dotraining=1
 doimportance=0
 dotesting=0
 docrossvalidation=0
 doRoCLearning=0
 doBoundary=0
-doBinarySearch=1
+doBinarySearch=0
 ncores=-1
 
 ##########################################################################################
@@ -42,25 +50,33 @@ myvariablesy=getvariableissignal(optionClassification)
 mylistvariablesx,mylistvariablesy=getvariablecorrelation(optionClassification)
 mylistvariablesall=getvariablesall(optionClassification)
 
-train_set = pd.read_pickle("../buildsample/trainsample%s.pkl" % (suffix))
-test_set = pd.read_pickle("../buildsample/testsample%s.pkl" % (suffix))
 
+if(dosampleprep==1): 
+  fileData,fileMC=getDataMCfiles(optionClassification)
+  trename=getTreeName(optionClassification)
+  dataframeData=getdataframe(fileData,trename,mylistvariablesall)
+  dataframeMC=getdataframe(fileMC,trename,mylistvariablesall)
+  dataframeML=prepareMLsample(optionClassification,dataframeData,dataframeMC,nevents)
+  train_set, test_set = train_test_split(dataframeML, test_size=0.2, random_state=42)
+  train_set.to_pickle("dataframes/trainsampleSignalN%s.pkl" % (suffix))
+  test_set.to_pickle("dataframes/testsampleSignalN%s.pkl" % (suffix))
+
+train_set = pd.read_pickle("dataframes/trainsampleSignalN%s.pkl" % (suffix))
+test_set = pd.read_pickle("dataframes/testsampleSignalN%s.pkl" % (suffix))
+
+# train_set = pd.read_pickle("../buildsampleCandBased/trainsampleSignalN10000BkgN10000PreMassCutDs.pkl")
+# test_set = pd.read_pickle("../buildsampleCandBased/testsampleSignalN10000BkgN10000PreMassCutDs.pkl")
 X_train= train_set[mylistvariables]
 y_train=train_set[myvariablesy]
-
 X_test= test_set[mylistvariables]
 y_test=test_set[myvariablesy]
 
 trainedmodels=[]
 
 if(docorrelation==1):
-  ptmin=5
-  ptmax=7
-  var_pt="pt_cand_ML"
-  var_signal="signal_ML"
   train_set_ptsel=filterdataframe_pt(train_set,var_pt,ptmin,ptmax)
   train_set_ptsel_sig,train_set_ptsel_bkg=splitdataframe_sigbkg(train_set_ptsel,var_signal)
-  vardistplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariablesall,"plots")
+  vardistplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariables,"plots")
   scatterplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariablesx,mylistvariablesy,"plots")
   correlationmatrix(train_set_ptsel_sig,"plots","signal")
   correlationmatrix(train_set_ptsel_bkg,"plots","background")
