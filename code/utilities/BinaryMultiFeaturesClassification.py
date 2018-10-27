@@ -2,7 +2,9 @@ from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier,
 from sklearn.tree import DecisionTreeClassifier
 from utilitiesGeneral import filterdataframe_pt,splitdataframe_sigbkg,checkdir,preparestringforuproot
 import pandas as pd
+import numpy as np
 import uproot
+
 
 def getvariablestraining(case):
   if (case=="Ds"):
@@ -60,20 +62,25 @@ def prepareMLsample(case,dataframe_data,dataframe_MC,nevents):
   if (case=="Ds"):
     fmassmin=1.80
     fmassmax=2.04
-  
     signal_var=dataframe_MC["cand_type_ML"]
+    print (("Initial n. events MC before cuts on signal: %d" % (len(dataframe_MC))))
     cand_type_ML_int=signal_var.astype(int).values
-    signal_ML_array=((cand_type_ML_int>>3)&0b1) & ((cand_type_ML_int>>1)&0b1)
+    signal_ML_array=((cand_type_ML_int>>3)&0b1) & ((cand_type_ML_int>>1)&0b1) | ((cand_type_ML_int>>4)&0b1) & ((cand_type_ML_int>>1)&0b1)
     signal_ML = pd.Series(signal_ML_array)
     dataframe_MC["signal_ML"]=signal_ML
     dataframe_MC=dataframe_MC.loc[dataframe_MC["signal_ML"] == 1]
-    dataframe_data=dataframe_data.loc[(dataframe_data["inv_mass_ML"]<fmassmin) | (dataframe_data["inv_mass_ML"]>fmassmax)]
+    print (("Initial n. events after the cuts on signal: %d" % (len(dataframe_MC))))
     dataframe_data["signal_ML"]=0
-    
+  
   dataframe_MC=dataframe_MC[:nevents]
   dataframe_data=dataframe_data[:nevents]
   dataframe_ML_joined = pd.concat([dataframe_MC, dataframe_data])
-    
+
+  print (("Events MC selected: %d" % (len(dataframe_MC))))
+  print (("Events data selected: %d" % (len(dataframe_data))))
+  
+  if ((nevents>len(dataframe_MC)) or (nevents>len(dataframe_data))):
+    print ("------------------------- ERROR: there are not so many events!!!!!! ------------------------- ")
   return dataframe_ML_joined
 
 

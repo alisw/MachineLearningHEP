@@ -13,10 +13,11 @@ from utilitiesCorrelations import scatterplot,correlationmatrix,vardistplot
 from utilitiesGeneral import filterdataframe_pt,splitdataframe_sigbkg,checkdir
 from utilitiesGridSearch import do_gridsearch,plot_gridsearch
 from sklearn.model_selection import train_test_split
+from sklearn.utils import shuffle
 
 ############### this is the only place where you should change parameters ################
 optionClassification="Ds"
-nevents=10000
+nevents=4000
 suffix="Nevents%d_BinaryClassification%s" % (nevents,optionClassification)
 ptmin=0
 ptmax=100
@@ -25,7 +26,7 @@ var_signal="signal_ML"
 
 ############### activate the different channels ################
 dosampleprep=1
-docorrelation=1
+docorrelation=0
 doStandard=0
 doPCA=0
 dotraining=1
@@ -57,12 +58,15 @@ if(dosampleprep==1):
   dataframeData=getdataframe(fileData,trename,mylistvariablesall)
   dataframeMC=getdataframe(fileMC,trename,mylistvariablesall)
   dataframeML=prepareMLsample(optionClassification,dataframeData,dataframeMC,nevents)
+  dataframeML.to_pickle("dataframes/dataframeML%s.pkl" % (suffix))
+  dataframeML.to_csv("dataframes/dataframeML%s.csv" % (suffix))
+  dataframeML=shuffle(dataframeML)
   train_set, test_set = train_test_split(dataframeML, test_size=0.2, random_state=42)
-  train_set.to_pickle("dataframes/trainsampleSignalN%s.pkl" % (suffix))
-  test_set.to_pickle("dataframes/testsampleSignalN%s.pkl" % (suffix))
+  train_set.to_pickle("dataframes/trainsampleN%s.pkl" % (suffix))
+  test_set.to_pickle("dataframes/testsampleN%s.pkl" % (suffix))
 
-train_set = pd.read_pickle("dataframes/trainsampleSignalN%s.pkl" % (suffix))
-test_set = pd.read_pickle("dataframes/testsampleSignalN%s.pkl" % (suffix))
+train_set = pd.read_pickle("dataframes/trainsampleN%s.pkl" % (suffix))
+test_set = pd.read_pickle("dataframes/testsampleN%s.pkl" % (suffix))
 
 # train_set = pd.read_pickle("../buildsampleCandBased/trainsampleSignalN10000BkgN10000PreMassCutDs.pkl")
 # test_set = pd.read_pickle("../buildsampleCandBased/testsampleSignalN10000BkgN10000PreMassCutDs.pkl")
