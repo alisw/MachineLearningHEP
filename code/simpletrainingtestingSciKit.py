@@ -17,24 +17,24 @@ from sklearn.utils import shuffle
 
 ############### this is the only place where you should change parameters ################
 optionClassification="Ds"
-nevents=4000
+nevents=1000
 ptmin=0
 ptmax=100
 suffix="Nevents%d_BinaryClassification%s_ptmin%d_ptmax%d" % (nevents,optionClassification,ptmin,ptmax)
 var_pt="pt_cand_ML"
 var_signal="signal_ML"
 
-############### activate the different channels ################
-dosampleprep=1
-docorrelation=1
+############### activate your channel ################
+dosampleprep=0
+docorrelation=0
 doStandard=0
 doPCA=0
-dotraining=1
+dotraining=0
 doimportance=0
 dotesting=0
 docrossvalidation=0
-doRoCLearning=1
-doBoundary=0
+doRoCLearning=0
+doBoundary=1
 doBinarySearch=0
 ncores=-1
 
