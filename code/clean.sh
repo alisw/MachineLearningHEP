@@ -2,6 +2,10 @@ rm output/*.root
 rm output/*.pkl
 rm output/*.sav
 rm output/*.csv
+rm dataframes/*.root
+rm dataframes/*.pkl
+rm dataframes/*.sav
+rm dataframes/*.csv
 rm plots/*.png
 rm -rf *exe.dSYM
 rm plots/.DS_Store

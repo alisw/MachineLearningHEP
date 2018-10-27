@@ -18,22 +18,22 @@ from sklearn.utils import shuffle
 ############### this is the only place where you should change parameters ################
 optionClassification="Ds"
 nevents=4000
-suffix="Nevents%d_BinaryClassification%s" % (nevents,optionClassification)
 ptmin=0
 ptmax=100
+suffix="Nevents%d_BinaryClassification%s_ptmin%d_ptmax%d" % (nevents,optionClassification,ptmin,ptmax)
 var_pt="pt_cand_ML"
 var_signal="signal_ML"
 
 ############### activate the different channels ################
 dosampleprep=1
-docorrelation=0
+docorrelation=1
 doStandard=0
 doPCA=0
 dotraining=1
 doimportance=0
 dotesting=0
 docrossvalidation=0
-doRoCLearning=0
+doRoCLearning=1
 doBoundary=0
 doBinarySearch=0
 ncores=-1
@@ -53,15 +53,22 @@ mylistvariablesall=getvariablesall(optionClassification)
 
 
 if(dosampleprep==1): 
+  ### get the dataframes
   fileData,fileMC=getDataMCfiles(optionClassification)
   trename=getTreeName(optionClassification)
   dataframeData=getdataframe(fileData,trename,mylistvariablesall)
   dataframeMC=getdataframe(fileMC,trename,mylistvariablesall)
+  ### select in pt
+  dataframeData=filterdataframe_pt(dataframeData,var_pt,ptmin,ptmax)
+  dataframeMC=filterdataframe_pt(dataframeMC,var_pt,ptmin,ptmax)
+  ### prepare ML sample
   dataframeML=prepareMLsample(optionClassification,dataframeData,dataframeMC,nevents)
+  dataframeML=shuffle(dataframeML)
+  ### split in training/testing sample
+  train_set, test_set = train_test_split(dataframeML, test_size=0.2, random_state=42)
+  ### save the dataframes
   dataframeML.to_pickle("dataframes/dataframeML%s.pkl" % (suffix))
   dataframeML.to_csv("dataframes/dataframeML%s.csv" % (suffix))
-  dataframeML=shuffle(dataframeML)
-  train_set, test_set = train_test_split(dataframeML, test_size=0.2, random_state=42)
   train_set.to_pickle("dataframes/trainsampleN%s.pkl" % (suffix))
   test_set.to_pickle("dataframes/testsampleN%s.pkl" % (suffix))
 
@@ -78,8 +85,7 @@ y_test=test_set[myvariablesy]
 trainedmodels=[]
 
 if(docorrelation==1):
-  train_set_ptsel=filterdataframe_pt(train_set,var_pt,ptmin,ptmax)
-  train_set_ptsel_sig,train_set_ptsel_bkg=splitdataframe_sigbkg(train_set_ptsel,var_signal)
+  train_set_ptsel_sig,train_set_ptsel_bkg=splitdataframe_sigbkg(train_set,var_signal)
   vardistplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariables,"plots")
   scatterplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariablesx,mylistvariablesy,"plots")
   correlationmatrix(train_set_ptsel_sig,"plots","signal")
