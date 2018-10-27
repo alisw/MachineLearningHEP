@@ -16,6 +16,8 @@
 #include "vector"
 #include "vector"
 
+using namespace std;
+
 class tree_Ds {
 public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain

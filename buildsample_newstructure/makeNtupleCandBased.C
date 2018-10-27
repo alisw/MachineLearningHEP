@@ -68,7 +68,6 @@ void makeNtupleCandBased(TString input="AnalysisResults-8.root",TString output="
       cos_PiDs_ML=t.cos_PiDs -> at(icand);
       cos_PiKPhi_3_ML=t.cos_PiKPhi_3 -> at(icand);
       cand_type_ML=t.cand_type -> at(icand);
-      
       pTPC_prong0_ML=t.pTPC_prong0 -> at(icand);
       pTPC_prong1_ML=t.pTPC_prong0 -> at(icand);
       pTPC_prong2_ML=t.pTPC_prong0 -> at(icand);
@@ -84,5 +83,18 @@ void makeNtupleCandBased(TString input="AnalysisResults-8.root",TString output="
   }
   fout->Write();
   fout->Close();
-  return true; 
+}
+
+
+int main(int argc, char *argv[])
+{
+  if((argc != 4))
+  {
+    std::cout << "Wrong number of inputs" << std::endl;
+    return 1;
+  }
+  
+  if(argc == 4)
+    makeNtupleCandBased(argv[1],argv[2],argv[3]);
+  return 0;
 }
