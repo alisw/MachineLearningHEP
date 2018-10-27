@@ -21,4 +21,5 @@ TreeName="tree_Ds"
 g++ makeNtupleCandBased.C $(root-config --cflags --libs) -g -o makeNtupleCandBased.exe 
 ./makeNtupleCandBased.exe "$MCSAMPLE" "$MCSAMPLEOUT" "$TreeName" 
 ./makeNtupleCandBased.exe "$DATASAMPLE" "$DATASAMPLEOUT" "$TreeName" 
+rm -rf makeNtupleCandBased.exe makeNtupleCandBased.exe.dSYM
 
