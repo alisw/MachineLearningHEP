@@ -1,6 +1,5 @@
 import sys
-sys.path.insert(0, '../utilities')
-sys.path.insert(0, '../utilities/Dmesons')
+sys.path.insert(0, 'utilities')
 
 import array
 import numpy as np
