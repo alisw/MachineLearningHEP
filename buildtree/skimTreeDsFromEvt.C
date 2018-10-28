@@ -14,7 +14,7 @@ void skimTreeDsFromEvt(TString input="AnalysisResults-8.root",TString output="te
 
   tree_Ds t(tree);
   int nevt = t.GetEntriesFast();
-  cout << nevt << endl;
+  cout << "RUNNING " << endl;
   TFile *fout = new TFile(output.Data(),"recreate"); 
   TTree* fTreeDsML = new TTree("fTreeDsFlagged","fTreeDsFlagged");
   
@@ -48,9 +48,10 @@ void skimTreeDsFromEvt(TString input="AnalysisResults-8.root",TString output="te
   fTreeDsML->Branch("dEdxTPC_1_ML",&dEdxTPC_0_ML,"dEdxTPC_1_ML/F");
   fTreeDsML->Branch("dEdxTPC_2_ML",&dEdxTPC_0_ML,"dEdxTPC_2_ML/F");
 
-
+  std::cout<<"nevents"<<nevt<<std::endl;
   for(Long64_t jentry=0; jentry<nevt;jentry++){
     t.GetEntry(jentry);   
+    if(jentry%1000==0) cout<<jentry<<endl;
     for(int icand = 0; icand < t.n_cand; icand++){ 
       inv_mass_ML=t.inv_mass -> at(icand);
       pt_cand_ML=t.pt_cand -> at(icand);
