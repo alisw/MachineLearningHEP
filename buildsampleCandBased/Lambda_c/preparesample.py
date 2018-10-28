@@ -28,24 +28,25 @@ import seaborn as sns
 import sys
 print (type(sys.argv[1]))
 nevents=int(sys.argv[1])
-sys.path.insert(0, '../../code/utilities')
+sys.path.insert(0, '../code/utilities')
 
 from BinaryMultiFeaturesClassification import getvariablestraining,getvariablesothers,getvariableissignal,getvariablesall,getvariablecorrelation
 from utilitiesGeneral import preparestringforuproot
 print (type(nevents))
 
 time0 = datetime.now()
-case="Ds"
+case="Lc"
+
 
 mylistvariables=getvariablestraining(case)
 mylistvariablesothers=getvariablesothers(case)
 myvariablesy=getvariableissignal(case)
 
 input_file=("treeTotalSignalN%dBkgN%dPreMassCut.root" % (nevents,nevents))
-ntuplename="fTreeDsFlagged"
+ntuplename="fTreeLcFlagged"
 
 file = uproot.open(input_file)
-tree = file["fTreeDsFlagged"]
+tree = file["fTreeLcFlagged"]
 totarrayvariables=mylistvariables+mylistvariablesothers+[myvariablesy]
 print (totarrayvariables)
 dataframeDs=tree.pandas.df(preparestringforuproot(totarrayvariables))
