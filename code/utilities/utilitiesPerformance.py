@@ -140,7 +140,7 @@ def plot_learning_curves(names_, classifiers_,suffix_,folder,X,y,min=1,max=-1,st
   X_train, X_val, y_train, y_val = train_test_split(X,y,test_size=0.2)
   for name, clf in zip(names_, classifiers_):
     ax = plt.subplot(2, (len(names_)+1)/2, i)  
-    ax.set_ylim([0,0.6])
+    ax.set_ylim([0,1.])
     train_errors, val_errors = [],[]
     if (max==-1):
       max=len(X_train)

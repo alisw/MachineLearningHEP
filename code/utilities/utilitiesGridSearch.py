@@ -36,7 +36,7 @@ def plot_gridsearch(namesCV_,change_,grid_search_models_,output_,suffix_):
     figure = plt.figure(figsize=(10,10))
     plot.grid_search(gridCV.grid_scores_, change=change,kind='bar')
     plt.title('Grid search results '+ nameCV, fontsize=17)
-    plt.ylim(-0.3,0)
+    plt.ylim(-0.8,0)
     plt.ylabel('negative mean squared error',fontsize=17)
     plt.xlabel(change,fontsize=17)
     plotname=output_+"/GridSearchResults"+nameCV+suffix_+".png"
