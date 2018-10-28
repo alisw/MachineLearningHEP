@@ -17,7 +17,7 @@ from sklearn.utils import shuffle
 
 ############### this is the only place where you should change parameters ################
 optionClassification="Ds"
-nevents=1000
+nevents=500
 ptmin=0
 ptmax=100
 suffix="Nevents%d_BinaryClassification%s_ptmin%d_ptmax%d" % (nevents,optionClassification,ptmin,ptmax)
@@ -29,25 +29,27 @@ dosampleprep=1
 docorrelation=1
 doStandard=0
 doPCA=0
-dotraining=0
-doimportance=0
-dotesting=0
-docrossvalidation=0
-doRoCLearning=0
+dotraining=1
+doimportance=1
+dotesting=1
+docrossvalidation=1
+doRoCLearning=1
 doBoundary=0
-doBinarySearch=0
+doBinarySearch=1
 ncores=-1
 
 ##########################################################################################
 # var_pt="pt_cand_ML"
 # var_signal="signal_ML"
-# path = "./plots/%.1f_%.1f_GeV"%(ptmin,ptmax)
+# path = "./plotdir/%.1f_%.1f_GeV"%(ptmin,ptmax)
 # checkdir(path)
 
-dataframe="dataframe"
-plots="plots"
+dataframe="dataframes_%s" % (suffix)
+plotdir="plots_%s" % (suffix)
+output="output_%s" % (suffix)
 checkdir(dataframe)
-checkdir(plots)
+checkdir(plotdir)
+checkdir(output)
 
 
 classifiers, names=getclassifiers()
@@ -74,12 +76,12 @@ if(dosampleprep==1):
   train_set, test_set = train_test_split(dataframeML, test_size=0.2, random_state=42)
   ### save the dataframes
   dataframeML.to_pickle(dataframe+"/dataframeML%s.pkl" % (suffix))
-  dataframeML.to_csv(dataframe+"dataframeML%s.csv" % (suffix))
-  train_set.to_pickle(dataframe+"dataframetrainsampleN%s.pkl" % (suffix))
-  test_set.to_pickle(dataframe+"dataframetestsampleN%s.pkl" % (suffix))
+  dataframeML.to_csv(dataframe+"/dataframeML%s.csv" % (suffix))
+  train_set.to_pickle(dataframe+"/dataframetrainsampleN%s.pkl" % (suffix))
+  test_set.to_pickle(dataframe+"/dataframetestsampleN%s.pkl" % (suffix))
 
-train_set = pd.read_pickle(dataframe+"dataframetrainsampleN%s.pkl" % (suffix))
-test_set = pd.read_pickle(dataframe+"dataframetestsampleN%s.pkl" % (suffix))
+train_set = pd.read_pickle(dataframe+"/dataframetrainsampleN%s.pkl" % (suffix))
+test_set = pd.read_pickle(dataframe+"/dataframetestsampleN%s.pkl" % (suffix))
 
 X_train= train_set[mylistvariables]
 y_train=train_set[myvariablesy]
@@ -90,10 +92,10 @@ trainedmodels=[]
 
 if(docorrelation==1):
   train_set_ptsel_sig,train_set_ptsel_bkg=splitdataframe_sigbkg(train_set,var_signal)
-  vardistplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariables,"plots")
-  scatterplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariablesx,mylistvariablesy,"plots")
-  correlationmatrix(train_set_ptsel_sig,"plots","signal")
-  correlationmatrix(train_set_ptsel_bkg,"plots","background")
+  vardistplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariables,plotdir)
+  scatterplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariablesx,mylistvariablesy,plotdir)
+  correlationmatrix(train_set_ptsel_sig,plotdir,"signal")
+  correlationmatrix(train_set_ptsel_bkg,plotdir,"background")
 
 if (doStandard==1):
   X_train=GetDataFrameStandardised(X_train)
@@ -101,40 +103,40 @@ if (doStandard==1):
 if (doPCA==1):
   n_pca=9
   X_train,pca=GetPCADataFrameAndPC(X_train,n_pca)
-  plotvariancePCA(pca,"plots")
+  plotvariancePCA(pca,plotdir)
 
 if (dotraining==1):
   trainedmodels=fit(names, classifiers,X_train,y_train)
-  savemodels(names,trainedmodels,"output",suffix)
+  savemodels(names,trainedmodels,output,suffix)
   
 if (doimportance==1):
-  importanceplotall(mylistvariables,names,trainedmodels,suffix)
+  importanceplotall(mylistvariables,names,trainedmodels,suffix,plotdir)
   
 if (docrossvalidation==1): 
   df_scores=cross_validation_mse(names,classifiers,X_train,y_train,10,ncores)
-  plot_cross_validation_mse(names,df_scores,suffix)
+  plot_cross_validation_mse(names,df_scores,suffix,plotdir)
 
 if (doRoCLearning==1):
 #   confusion(mylistvariables,names,classifiers,suffix,X_train,y_train,5)
-  precision_recall(mylistvariables,names,classifiers,suffix,X_train,y_train,5)
-  plot_learning_curves(names,classifiers,suffix,X_train,y_train,100,3000,300)
+  precision_recall(mylistvariables,names,classifiers,suffix,X_train,y_train,5,plotdir)
+  plot_learning_curves(names,classifiers,suffix,plotdir,X_train,y_train,100,3000,300)
   
 if (dotesting==1):
-  filenametest_set_ML="output/testsample%sMLdecision.pkl" % (suffix)
+  filenametest_set_ML=output+"/testsample%sMLdecision.pkl" % (suffix)
   ntuplename="fTreeFlagged%s" % (optionClassification)
   test_setML=test(names,trainedmodels,X_test,test_set)
   test_set.to_pickle(filenametest_set_ML)
 
 if (doBoundary==1):
-  mydecisionboundaries=decisionboundaries(names,trainedmodels,suffix,X_train,y_train)
+  mydecisionboundaries=decisionboundaries(names,trainedmodels,suffix,X_train,y_train,plotdir)
   X_train_2PC,pca=GetPCADataFrameAndPC(X_train,2)
   trainedmodels=fit(names, classifiers,X_train_2PC,y_train)
-  mydecisionboundaries=decisionboundaries(names,trainedmodels,suffix+"PCAdecomposition",X_train_2PC,y_train)
+  mydecisionboundaries=decisionboundaries(names,trainedmodels,suffix+"PCAdecomposition",X_train_2PC,y_train,plotdir)
 
 if (doBinarySearch==1):
   namesCV,classifiersCV,param_gridCV,changeparameter=getgridsearchparameters(optionClassification)
   grid_search_models,grid_search_bests=do_gridsearch(namesCV,classifiersCV,mylistvariables,param_gridCV,X_train,y_train,3,ncores)
-  savemodels(names,grid_search_models,"output","GridSearchCV"+suffix)
-  plot_gridsearch(namesCV,changeparameter,grid_search_models,"plots",suffix)
+  savemodels(names,grid_search_models,output,"GridSearchCV"+suffix)
+  plot_gridsearch(namesCV,changeparameter,grid_search_models,plotdir,suffix)
 
 
