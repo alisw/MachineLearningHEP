@@ -1,0 +1,2 @@
+rm *.root
+rm *.pkl
