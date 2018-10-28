@@ -2,8 +2,8 @@
 #source clean.sh
 
 doDsFromCand=1
-doLcFromCand=1
-doDsFromEvt=1
+doLcFromCand=0
+doDsFromEvt=0
 
 MCSAMPLE="$HOME/MLproductions/AnalysisResults_Ds_MC_2018Sep21_LHC18a4a2_cent_fast_CandBased.root"
 DATASAMPLE="$HOME/MLproductions/AnalysisResults_Ds_Data_2018Sep21_LHC15o_pass1_pidfix_CandBased.root"  

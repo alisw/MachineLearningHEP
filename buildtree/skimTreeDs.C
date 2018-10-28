@@ -33,7 +33,7 @@ bool skimTreeDs(TString finput,TString foutput,TString treename, int maxevents=-
   TTree* fTreeDsML = new TTree("fTreeDsFlagged","fTreeDsFlagged");
   
   float inv_mass_ML,pt_cand_ML,d_len_ML,d_len_xy_ML,norm_dl_xy_ML,cos_p_ML,cos_p_xy_ML,imp_par_ML,imp_par_xy_ML,pt_prong0_ML,pt_prong1_ML,pt_prong2_ML,sig_vert_ML,delta_mass_KK_ML,cos_PiDs_ML,cos_PiKPhi_3_ML;
-  char cand_type_ML;
+  float cand_type_ML;
   
   fTreeDsML->Branch("inv_mass_ML",&inv_mass_ML,"inv_mass_ML/F");
   fTreeDsML->Branch("pt_cand_ML",&pt_cand_ML,"pt_cand_ML/F");
@@ -51,6 +51,7 @@ bool skimTreeDs(TString finput,TString foutput,TString treename, int maxevents=-
   fTreeDsML->Branch("delta_mass_KK_ML",&delta_mass_KK_ML,"delta_mass_KK_ML/F");
   fTreeDsML->Branch("cos_PiDs_ML",&cos_PiDs_ML,"cos_PiDs_ML/F");
   fTreeDsML->Branch("cos_PiKPhi_3_ML",&cos_PiKPhi_3_ML,"cos_PiKPhi_3_ML/F");
+  fTreeDsML->Branch("cand_type_ML",&cand_type_ML,"cand_type_ML/F");
    
   Long64_t nentries = fTreeDs->GetEntries();
   std::cout<<nentries<<std::endl;
@@ -81,6 +82,7 @@ bool skimTreeDs(TString finput,TString foutput,TString treename, int maxevents=-
     delta_mass_KK_ML=delta_mass_KK;
     cos_PiDs_ML=cos_PiDs;
     cos_PiKPhi_3_ML=cos_PiKPhi_3;
+    cand_type_ML=(float)cand_type;
     fTreeDsML->Fill();
     } 
   fout->Write();

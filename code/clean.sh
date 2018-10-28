@@ -16,4 +16,8 @@ rm -rf ../../.DS_Store
 rm -rf plots/*_*
 rm -rf __pycache__/
 rm -rf utilities/__pycache__/
+rm -rf utilities/__pycache__/
+rm -rf __pycache__
+rm -rf dataframe
+rm -rf plots
 

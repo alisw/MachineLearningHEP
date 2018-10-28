@@ -25,8 +25,8 @@ var_pt="pt_cand_ML"
 var_signal="signal_ML"
 
 ############### activate your channel ################
-dosampleprep=0
-docorrelation=0
+dosampleprep=1
+docorrelation=1
 doStandard=0
 doPCA=0
 dotraining=0
@@ -34,7 +34,7 @@ doimportance=0
 dotesting=0
 docrossvalidation=0
 doRoCLearning=0
-doBoundary=1
+doBoundary=0
 doBinarySearch=0
 ncores=-1
 
@@ -43,6 +43,12 @@ ncores=-1
 # var_signal="signal_ML"
 # path = "./plots/%.1f_%.1f_GeV"%(ptmin,ptmax)
 # checkdir(path)
+
+dataframe="dataframe"
+plots="plots"
+checkdir(dataframe)
+checkdir(plots)
+
 
 classifiers, names=getclassifiers()
 mylistvariables=getvariablestraining(optionClassification)
@@ -62,21 +68,19 @@ if(dosampleprep==1):
   dataframeData=filterdataframe_pt(dataframeData,var_pt,ptmin,ptmax)
   dataframeMC=filterdataframe_pt(dataframeMC,var_pt,ptmin,ptmax)
   ### prepare ML sample
-  dataframeML=prepareMLsample(optionClassification,dataframeData,dataframeMC,nevents)
+  dataframeML=prepareMLsample(optionClassification,dataframeData,dataframeMC,nevents,"old")
   dataframeML=shuffle(dataframeML)
   ### split in training/testing sample
   train_set, test_set = train_test_split(dataframeML, test_size=0.2, random_state=42)
   ### save the dataframes
-  dataframeML.to_pickle("dataframes/dataframeML%s.pkl" % (suffix))
-  dataframeML.to_csv("dataframes/dataframeML%s.csv" % (suffix))
-  train_set.to_pickle("dataframes/trainsampleN%s.pkl" % (suffix))
-  test_set.to_pickle("dataframes/testsampleN%s.pkl" % (suffix))
+  dataframeML.to_pickle(dataframe+"/dataframeML%s.pkl" % (suffix))
+  dataframeML.to_csv(dataframe+"dataframeML%s.csv" % (suffix))
+  train_set.to_pickle(dataframe+"dataframetrainsampleN%s.pkl" % (suffix))
+  test_set.to_pickle(dataframe+"dataframetestsampleN%s.pkl" % (suffix))
 
-train_set = pd.read_pickle("dataframes/trainsampleN%s.pkl" % (suffix))
-test_set = pd.read_pickle("dataframes/testsampleN%s.pkl" % (suffix))
+train_set = pd.read_pickle(dataframe+"dataframetrainsampleN%s.pkl" % (suffix))
+test_set = pd.read_pickle(dataframe+"dataframetestsampleN%s.pkl" % (suffix))
 
-# train_set = pd.read_pickle("../buildsampleCandBased/trainsampleSignalN10000BkgN10000PreMassCutDs.pkl")
-# test_set = pd.read_pickle("../buildsampleCandBased/testsampleSignalN10000BkgN10000PreMassCutDs.pkl")
 X_train= train_set[mylistvariables]
 y_train=train_set[myvariablesy]
 X_test= test_set[mylistvariables]

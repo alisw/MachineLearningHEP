@@ -43,8 +43,8 @@ def getgridsearchparameters(case):
 
 def getDataMCfiles(case):
   if (case=="Ds"):
-    fileData="../buildsampleEventBased/rootfiles/LHC17p_FAST_run282343_AnalysisResultsData_CandBased.root"
-    fileMC="../buildsampleEventBased/rootfiles/LHC18a4a2_fast_run282343_AnalysisResultsDmesonsMC_CandBased.root"
+    fileData="/Users/gianmicheleinnocenti/MLproductions/AnalysisResults_Ds_Data_2018Sep21_LHC15o_pass1_pidfix_CandBased_skimmed.root"
+    fileMC="/Users/gianmicheleinnocenti/MLproductions/AnalysisResults_Ds_MC_2018Sep21_LHC18a4a2_cent_fast_CandBased_skimmed.root"
   return fileData,fileMC
 
 def getTreeName(case):
@@ -58,14 +58,19 @@ def getdataframe(filename,treename,variables):
   dataframe=tree.pandas.df(preparestringforuproot(variables))
   return dataframe
 
-def prepareMLsample(case,dataframe_data,dataframe_MC,nevents):
+def prepareMLsample(case,dataframe_data,dataframe_MC,nevents,option="old"):
   if (case=="Ds"):
     fmassmin=1.80
     fmassmax=2.04
     signal_var=dataframe_MC["cand_type_ML"]
     print (("Initial n. events MC before cuts on signal: %d" % (len(dataframe_MC))))
     cand_type_ML_int=signal_var.astype(int).values
-    signal_ML_array=((cand_type_ML_int>>3)&0b1) & ((cand_type_ML_int>>1)&0b1) | ((cand_type_ML_int>>4)&0b1) & ((cand_type_ML_int>>1)&0b1)
+    signal_ML_array=[]
+    if (option=="new"):
+      signal_ML_array=((cand_type_ML_int>>3)&0b1) & ((cand_type_ML_int>>1)&0b1) | ((cand_type_ML_int>>4)&0b1) & ((cand_type_ML_int>>1)&0b1)
+    if (option=="old"):
+      signal_ML_array=((cand_type_ML_int==3) | (cand_type_ML_int==3))
+    
     signal_ML = pd.Series(signal_ML_array)
     dataframe_MC["signal_ML"]=signal_ML
     dataframe_MC=dataframe_MC.loc[dataframe_MC["signal_ML"] == 1]
@@ -82,11 +87,6 @@ def prepareMLsample(case,dataframe_data,dataframe_MC,nevents):
   if ((nevents>len(dataframe_MC)) or (nevents>len(dataframe_data))):
     print ("------------------------- ERROR: there are not so many events!!!!!! ------------------------- ")
   return dataframe_ML_joined
-
-
-
-
-
 
 
 
