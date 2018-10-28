@@ -1,7 +1,7 @@
 #!/bin/bash
 #source clean.sh
 
-MCSAMPLE="$HOME/MLproductions/MLLambdacproductionsCandBased/InvMassLambdac_nt2_Data.root"
+MCSAMPLE="$HOME/MLproductions/MLLambdacproductionsCandBased/InvMassLambdac_nt2_MC.root"
 DATASAMPLE="$HOME/MLproductions/MLLambdacproductionsCandBased/InvMassLambdac_nt2_Data.root"  
 #MCSAMPLE="$HOME/MLproductions/MLDsproductionsCandBased/MC/2018Sep21_LHC18a4a2_cent_fast/AnalysisResults_001.root"
 #DATASAMPLE="$HOME/MLproductions/MLDsproductionsCandBased/Data/2018Sep21_LHC15o_pass1_pidfix/AnalysisResults_000.root"  
@@ -26,7 +26,6 @@ for neventspersample in 1000 10000
 do
 g++ buildMLTree.C $(root-config --cflags --libs) -g -o buildMLTree.exe 
 ./buildMLTree.exe "$MCSAMPLE"  "$MCTree" "$neventspersample" "$DATASAMPLE"  "$DataTree" "$neventspersample"
- python preparesample.py "$neventspersample"
 done
 
 rm buildMLTree.exe
