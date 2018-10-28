@@ -30,7 +30,7 @@ bool skimTreeLambdac(TString finput,TString foutput,TString treename, int maxeve
   TTree* fTreeLcML = new TTree("fTreeLcFlagged","fTreeLcFlagged");
   
   float inv_mass_ML,pt_cand_ML,d_len_ML,d_len_xy_ML,norm_dl_xy_ML,cos_p_ML,pt_p_ML,pt_K_ML,pt_pi_ML,sig_vert_ML,dca_ML,dist_12_ML;
-  float signal_ML;
+  float cand_type_ML;
   
   fTreeLcML->Branch("inv_mass_ML",&inv_mass_ML,"inv_mass_ML/F");
   fTreeLcML->Branch("pt_cand_ML",&pt_cand_ML,"pt_cand_ML/F");
@@ -44,7 +44,7 @@ bool skimTreeLambdac(TString finput,TString foutput,TString treename, int maxeve
   fTreeLcML->Branch("pt_pi_ML",&pt_pi_ML,"pt_pi_ML/F");
   fTreeLcML->Branch("sig_vert_ML",&sig_vert_ML,"sig_vert_ML/F");
   fTreeLcML->Branch("dca_ML",&dca_ML,"dca_vert_ML/F");
-  fTreeLcML->Branch("signal_ML",&signal_ML,"signal_ML/F");
+  fTreeLcML->Branch("cand_type_ML",&cand_type_ML,"cand_type_ML/F");
    
   Long64_t nentries = fTreeLc->GetEntries();
   std::cout<<nentries<<std::endl;
@@ -70,6 +70,7 @@ bool skimTreeLambdac(TString finput,TString foutput,TString treename, int maxeve
     pt_pi_ML=pt_pi;
     sig_vert_ML=sig_vert;
     dca_ML=dca;
+    cand_type_ML=cand_type;
     fTreeLcML->Fill();
     } 
   fout->Write();

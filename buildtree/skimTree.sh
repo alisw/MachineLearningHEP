@@ -1,8 +1,8 @@
 #!/bin/bash
 #source clean.sh
 
-doDsFromCand=0
-doLcFromCand=0
+doDsFromCand=1
+doLcFromCand=1
 doDsFromEvt=1
 
 MCSAMPLE="$HOME/MLproductions/AnalysisResults_Ds_MC_2018Sep21_LHC18a4a2_cent_fast_CandBased.root"
