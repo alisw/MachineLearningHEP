@@ -1,1 +1,0 @@
-rm rootfiles/*.root
