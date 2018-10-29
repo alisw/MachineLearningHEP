@@ -16,6 +16,8 @@
 #include "vector"
 #include "vector"
 
+using namespace std;
+
 class tree_Ds {
 public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
@@ -167,11 +169,6 @@ tree_Ds::tree_Ds(TTree *tree) : fChain(0)
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
 //   if (tree == 0) {
-      TFile *f = TFile::Open("AnalysisResults-8.root");
-      TDirectory * dir = (TDirectory*)f->Get("PWGHF_TreeCreator");
-      TList *list2= (TList*)dir->Get("coutputTreeHFTreeCreator");
-      tree = (TTree*)list2->At(1);
-
       //      if (!f || !f->IsOpen()) {
       //   f = new TFile("Memory Directory");
       // }

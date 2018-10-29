@@ -63,7 +63,7 @@ def readmodels(names_,folder_,suffix_):
 
 
 
-def importanceplotall(mylistvariables_,names_,trainedmodels_,suffix_):
+def importanceplotall(mylistvariables_,names_,trainedmodels_,suffix_,folder):
   figure1 = plt.figure(figsize=(20,15))
   plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.4, hspace=0.2)
 
@@ -86,11 +86,11 @@ def importanceplotall(mylistvariables_,names_,trainedmodels_,suffix_):
     ax.xaxis.set_tick_params(labelsize=17)
     plt.xlim(0, 0.7)
     i += 1
-  plotname='plots/importanceplotall%s.png' % (suffix_)
+  plotname=folder+'/importanceplotall%s.png' % (suffix_)
   plt.savefig(plotname)
 
 
-def decisionboundaries(names_,trainedmodels_,suffix_,X_train_,y_train_):
+def decisionboundaries(names_,trainedmodels_,suffix_,X_train_,y_train_,folder):
   mylistvariables_=X_train_.columns.tolist()
   dictionary_train = X_train_.to_dict(orient='records')
   vec = DictVectorizer()
@@ -128,6 +128,6 @@ def decisionboundaries(names_,trainedmodels_,suffix_,X_train_,y_train_):
     ax.set_xlabel(mylistvariables_[0],fontsize=17)
     figure.subplots_adjust(hspace=.5)
     i += 1
-  plotname='plots/decisionboundaries%s.png' % (suffix_)
+  plotname=folder+'/decisionboundaries%s.png' % (suffix_)
   plt.savefig(plotname)
 

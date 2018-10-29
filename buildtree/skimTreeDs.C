@@ -2,11 +2,9 @@
 #include "TFile.h"
 #include "TChain.h"
 using namespace std;
-double fMassDs=1.967;
-double fMassDsRange=0.05;
 #include <iostream>
 
-bool convertTreeROOT6Loop(TString finput,TString treename,TString foutput,int maxevents){
+bool skimTreeDs(TString finput,TString foutput,TString treename, int maxevents=-1){
 
   // build the signalsample ntuple
   TFile *fin = new TFile(finput.Data()); 
@@ -32,35 +30,42 @@ bool convertTreeROOT6Loop(TString finput,TString treename,TString foutput,int ma
   fTreeDs->SetBranchAddress("cand_type",&cand_type);
 
   TFile *fout = new TFile(foutput.Data(),"recreate"); 
-  TTree* fTreeDsData = new TTree("fTreeDsData","fTreeDsData");
+  TTree* fTreeDsML = new TTree("fTreeDsFlagged","fTreeDsFlagged");
   
   float inv_mass_ML,pt_cand_ML,d_len_ML,d_len_xy_ML,norm_dl_xy_ML,cos_p_ML,cos_p_xy_ML,imp_par_ML,imp_par_xy_ML,pt_prong0_ML,pt_prong1_ML,pt_prong2_ML,sig_vert_ML,delta_mass_KK_ML,cos_PiDs_ML,cos_PiKPhi_3_ML;
-  float signal_ML;
+  float cand_type_ML;
   
-  fTreeDsData->Branch("inv_mass_ML",&inv_mass_ML,"inv_mass_ML/F");
-  fTreeDsData->Branch("pt_cand_ML",&pt_cand_ML,"pt_cand_ML/F");
-  fTreeDsData->Branch("d_len_ML",&d_len_ML,"d_len_ML/F");
-  fTreeDsData->Branch("d_len_xy_ML",&d_len_xy_ML,"d_len_xy_ML/F");
-  fTreeDsData->Branch("norm_dl_xy_ML",&norm_dl_xy_ML,"norm_dl_xy_ML/F");
-  fTreeDsData->Branch("cos_p_ML",&cos_p_ML,"cos_p_ML/F");
-  fTreeDsData->Branch("cos_p_xy_ML",&cos_p_xy_ML,"cos_p_xy_ML/F");
-  fTreeDsData->Branch("imp_par_ML",&imp_par_ML,"imp_par_ML/F");
-  fTreeDsData->Branch("imp_par_xy_ML",&imp_par_xy_ML,"imp_par_xy_ML/F");
-  fTreeDsData->Branch("pt_prong0_ML",&pt_prong0_ML,"pt_prong0_ML/F");
-  fTreeDsData->Branch("pt_prong1_ML",&pt_prong1_ML,"pt_prong1_ML/F");
-  fTreeDsData->Branch("pt_prong2_ML",&pt_prong2_ML,"pt_prong2_ML/F");
-  fTreeDsData->Branch("sig_vert_ML",&sig_vert_ML,"sig_vert_ML/F");
-  fTreeDsData->Branch("delta_mass_KK_ML",&delta_mass_KK_ML,"delta_mass_KK_ML/F");
-  fTreeDsData->Branch("cos_PiDs_ML",&cos_PiDs_ML,"cos_PiDs_ML/F");
-  fTreeDsData->Branch("cos_PiKPhi_3_ML",&cos_PiKPhi_3_ML,"cos_PiKPhi_3_ML/F");
+  fTreeDsML->Branch("inv_mass_ML",&inv_mass_ML,"inv_mass_ML/F");
+  fTreeDsML->Branch("pt_cand_ML",&pt_cand_ML,"pt_cand_ML/F");
+  fTreeDsML->Branch("d_len_ML",&d_len_ML,"d_len_ML/F");
+  fTreeDsML->Branch("d_len_xy_ML",&d_len_xy_ML,"d_len_xy_ML/F");
+  fTreeDsML->Branch("norm_dl_xy_ML",&norm_dl_xy_ML,"norm_dl_xy_ML/F");
+  fTreeDsML->Branch("cos_p_ML",&cos_p_ML,"cos_p_ML/F");
+  fTreeDsML->Branch("cos_p_xy_ML",&cos_p_xy_ML,"cos_p_xy_ML/F");
+  fTreeDsML->Branch("imp_par_ML",&imp_par_ML,"imp_par_ML/F");
+  fTreeDsML->Branch("imp_par_xy_ML",&imp_par_xy_ML,"imp_par_xy_ML/F");
+  fTreeDsML->Branch("pt_prong0_ML",&pt_prong0_ML,"pt_prong0_ML/F");
+  fTreeDsML->Branch("pt_prong1_ML",&pt_prong1_ML,"pt_prong1_ML/F");
+  fTreeDsML->Branch("pt_prong2_ML",&pt_prong2_ML,"pt_prong2_ML/F");
+  fTreeDsML->Branch("sig_vert_ML",&sig_vert_ML,"sig_vert_ML/F");
+  fTreeDsML->Branch("delta_mass_KK_ML",&delta_mass_KK_ML,"delta_mass_KK_ML/F");
+  fTreeDsML->Branch("cos_PiDs_ML",&cos_PiDs_ML,"cos_PiDs_ML/F");
+  fTreeDsML->Branch("cos_PiKPhi_3_ML",&cos_PiKPhi_3_ML,"cos_PiKPhi_3_ML/F");
+  fTreeDsML->Branch("cand_type_ML",&cand_type_ML,"cand_type_ML/F");
    
   Long64_t nentries = fTreeDs->GetEntries();
-  if (maxevents>nentries || maxevents==-1) maxevents=nentries;
+  std::cout<<nentries<<std::endl;
+  if (maxevents>nentries) {
+    std::cout<<"the number of events in the ntupla is smaller than the n. events you want to run on"<<std::endl;
+    std::cout<<"we will run on what you have"<<std::endl;
+    maxevents=nentries;
+  }
+  if (maxevents==-1) maxevents=nentries;
+
   cout<<" -- Event reading"<<endl;
   for(Long64_t i=0;i<maxevents;i++){ 
     fTreeDs->GetEntry(i);
     if(i%1000==0) cout<<i<<endl;
-
     inv_mass_ML=inv_mass;
     pt_cand_ML=pt_cand;
     d_len_ML=d_len;
@@ -77,7 +82,8 @@ bool convertTreeROOT6Loop(TString finput,TString treename,TString foutput,int ma
     delta_mass_KK_ML=delta_mass_KK;
     cos_PiDs_ML=cos_PiDs;
     cos_PiKPhi_3_ML=cos_PiKPhi_3;
-    fTreeDsData->Fill();
+    cand_type_ML=(float)cand_type;
+    fTreeDsML->Fill();
     } 
   fout->Write();
   fout->Close();
@@ -95,6 +101,6 @@ int main(int argc, char *argv[])
   }
   
   if(argc == 5)
-    convertTreeROOT6Loop(argv[1],argv[2],argv[3],atoi(argv[4]));
+    skimTreeDs(argv[1],argv[2],argv[3],atoi(argv[4]));
   return 0;
 }

@@ -29,7 +29,7 @@ def cross_validation_mse(names_,classifiers_,X_train_,y_train_,cv_,ncores):
   return df_scores
 
 
-def plot_cross_validation_mse(names_,df_scores_,suffix_):
+def plot_cross_validation_mse(names_,df_scores_,suffix_,folder):
   figure1 = plt.figure(figsize=(20,15))
   i=1
   for name in names_:
@@ -46,11 +46,11 @@ def plot_cross_validation_mse(names_,df_scores_,suffix_):
     plt.ylabel("Entries",fontsize=16)
     figure1.subplots_adjust(hspace=.5)
     i += 1
-  plotname='plots/scoresRME%s.png' % (suffix_)
+  plotname=folder+'/scoresRME%s.png' % (suffix_)
   plt.savefig(plotname)
   
 
-def confusion(mylistvariables_,names_,classifiers_,suffix_,X_train,y_train,cv):
+def confusion(mylistvariables_,names_,classifiers_,suffix_,X_train,y_train,cv,folder):
   figure1 = plt.figure(figsize=(25,15))
   plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.4, hspace=0.2)
 
@@ -70,7 +70,7 @@ def confusion(mylistvariables_,names_,classifiers_,suffix_,X_train,y_train,cv):
     ax.xaxis.set_ticklabels(['signal', 'background']); ax.yaxis.set_ticklabels(['signal', 'background']);
 
     i += 1
-  plotname='plots/confusion_matrix%s_Diag0.png' % (suffix_)
+  plotname=folder+'/confusion_matrix%s_Diag0.png' % (suffix_)
   plt.savefig(plotname)
   
   figure2 = plt.figure(figsize=(20,15))
@@ -91,10 +91,10 @@ def confusion(mylistvariables_,names_,classifiers_,suffix_,X_train,y_train,cv):
     ax.xaxis.set_ticklabels(['signal', 'background']); ax.yaxis.set_ticklabels(['signal', 'background']);
 
     i += 1
-  plotname='plots/confusion_matrix%s.png' % (suffix_)
+  plotname=folder+'/confusion_matrix%s.png' % (suffix_)
   plt.savefig(plotname)
 
-def precision_recall(mylistvariables_,names_,classifiers_,suffix_,X_train,y_train,cv):
+def precision_recall(mylistvariables_,names_,classifiers_,suffix_,X_train,y_train,cv,folder):
   figure1 = plt.figure(figsize=(25,15))
   plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.4, hspace=0.2)
 
@@ -111,7 +111,7 @@ def precision_recall(mylistvariables_,names_,classifiers_,suffix_,X_train,y_trai
     plt.legend(loc="center left")
     plt.ylim([0, 1])
     i += 1
-  plotname='plots/precision_recall%s.png' % (suffix_)
+  plotname=folder+'/precision_recall%s.png' % (suffix_)
   plt.savefig(plotname)
   
   figure2 = plt.figure(figsize=(20,15))
@@ -130,17 +130,17 @@ def precision_recall(mylistvariables_,names_,classifiers_,suffix_,X_train,y_trai
     plt.plot(fpr, tpr, lw=1, alpha=0.3, label='ROC %s (AUC = %0.2f)' % (names_[i-1], roc_auc), linewidth=4.0)
     plt.legend(loc="lower center",  prop={'size':18})
     i += 1
-  plotname='plots/ROCcurve%s.png' % (suffix_)
+  plotname=folder+'/ROCcurve%s.png' % (suffix_)
   plt.savefig(plotname)
   
 
-def plot_learning_curves(names_, classifiers_,suffix_,X,y,min=1,max=-1,step_=1):
+def plot_learning_curves(names_, classifiers_,suffix_,folder,X,y,min=1,max=-1,step_=1):
   figure1 = plt.figure(figsize=(20,15))
   i=1
   X_train, X_val, y_train, y_val = train_test_split(X,y,test_size=0.2)
   for name, clf in zip(names_, classifiers_):
     ax = plt.subplot(2, (len(names_)+1)/2, i)  
-    ax.set_ylim([0,0.6])
+    ax.set_ylim([0,1.])
     train_errors, val_errors = [],[]
     if (max==-1):
       max=len(X_train)
@@ -159,5 +159,5 @@ def plot_learning_curves(names_, classifiers_,suffix_,X,y,min=1,max=-1,step_=1):
     figure1.subplots_adjust(hspace=.5)
     plt.legend(loc="lower center",  prop={'size':18})
     i += 1
-  plotname='plots/learning_curve%s.png' % (suffix_)
+  plotname=folder+'/learning_curve%s.png' % (suffix_)
   plt.savefig(plotname)
