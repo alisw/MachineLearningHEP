@@ -16,14 +16,15 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
 ############### this is the only place where you should change parameters ################
-classtype="HFmeson"
-optionClassification="Ds"
-nevents=2000
-ptmin=1
-ptmax=100
-varmin=[4]
-varmax=[100]
-var_skimming=["pt_cand_ML"]
+# classtype="HFmeson"
+# optionClassification="Lc"
+# var_skimming=["pt_cand_ML"]
+classtype="PID"
+optionClassification="PIDPion"
+var_skimming=["pdau0_ML"]
+nevents=5000
+varmin=[0]
+varmax=[20]
 string_selection=createstringselection(var_skimming,varmin,varmax)
 suffix="Nevents%d_BinaryClassification%s_%s" % (nevents,optionClassification,string_selection)
 
@@ -40,12 +41,6 @@ doRoCLearning=1
 doBoundary=0
 doBinarySearch=0
 ncores=-1
-
-##########################################################################################
-# var_pt="pt_cand_ML"
-# var_signal="signal_ML"
-# path = "./plotdir/%.1f_%.1f_GeV"%(ptmin,ptmax)
-# checkdir(path)
 
 dataframe="dataframes_%s" % (suffix)
 plotdir="plots_%s" % (suffix)
@@ -79,6 +74,8 @@ if(dosampleprep==1):
 
 train_set = pd.read_pickle(dataframe+"/dataframetrainsampleN%s.pkl" % (suffix))
 test_set = pd.read_pickle(dataframe+"/dataframetestsampleN%s.pkl" % (suffix))
+
+print ("dimension of the dataset",len(train_set))
 
 X_train= train_set[mylistvariables]
 y_train=train_set[myvariablesy]

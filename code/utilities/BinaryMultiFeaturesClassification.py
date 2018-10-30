@@ -8,37 +8,53 @@ from sklearn.utils import shuffle
 
 
 def getvariablestraining(case):
+  mylistvariables=[]
   if (case=="Ds"):
     mylistvariables=['d_len_xy_ML','norm_dl_xy_ML','cos_p_ML','cos_p_xy_ML','imp_par_xy_ML','sig_vert_ML',"delta_mass_KK_ML",'cos_PiDs_ML',"cos_PiKPhi_3_ML"]
   if (case=="Lc"):
     mylistvariables=['d_len_ML','d_len_xy_ML','norm_dl_xy_ML','dist_12_ML','cos_p_ML','pt_p_ML','pt_K_ML','pt_pi_ML','sig_vert_ML','dca_ML']
+  if (case=="PIDPion"):
+    mylistvariables=['dedx0_ML','tof0_ML','dca0_ML','sigdca0_ML','chisq0_ML','itscl0_ML','tpccl0_ML']
   return mylistvariables
 
 def getvariablesothers(case):
+  mylistvariablesothers=[]
   if (case=="Ds" or case=="Lc"):
     mylistvariablesothers=['inv_mass_ML','pt_cand_ML']
+  if (case=="PIDPion"):
+    mylistvariablesothers=['pdau0_ML','pdg0_ML']
   return mylistvariablesothers
 
 def getvariableissignal(case):
+  myvariablesy=0
   if (case=="Ds" or case=="Lc"):
+    myvariablesy='signal_ML'
+  if (case=="PIDPion"):
     myvariablesy='signal_ML'
   return myvariablesy
 
 def getvariablesall(case):
+  mylistvariablesall=[]
   if (case=="Ds"):
     mylistvariablesall=['d_len_xy_ML','norm_dl_xy_ML','cos_p_ML','cos_p_xy_ML','imp_par_xy_ML','sig_vert_ML',"delta_mass_KK_ML",'cos_PiDs_ML',"cos_PiKPhi_3_ML",'inv_mass_ML','pt_cand_ML','signal_ML',"cand_type_ML"]
   if (case=="Lc"):
     mylistvariablesall=['inv_mass_ML','pt_cand_ML','d_len_ML','d_len_xy_ML','norm_dl_xy_ML','dist_12_ML','cos_p_ML','pt_p_ML','pt_K_ML','pt_pi_ML','sig_vert_ML','dca_ML','cand_type_ML']
+  if (case=="PIDPion"):
+    mylistvariablesall=['dedx0_ML','tof0_ML','dca0_ML','sigdca0_ML','chisq0_ML','itscl0_ML','tpccl0_ML','pdau0_ML','pdg0_ML']
   return mylistvariablesall
 
 def getvariablecorrelation(case):
+  mylistvariablesx=[]
+  mylistvariablesy=[]
   if (case=="Ds"):
     mylistvariablesx = ['pt_cand_ML','d_len_xy_ML','sig_vert_ML',"pt_cand_ML","pt_cand_ML","norm_dl_xy_ML","cos_PiDs_ML","cos_p_xy_ML","cos_p_xy_ML"]
     mylistvariablesy = ['d_len_xy_ML','sig_vert_ML','delta_mass_KK_ML',"delta_mass_KK_ML","sig_vert_ML","d_len_xy_ML","cos_PiKPhi_3_ML","sig_vert_ML","pt_cand_ML"]
   if (case=="Lc"):
     mylistvariablesx = ['pt_cand_ML','d_len_xy_ML']
     mylistvariablesy = ['d_len_xy_ML','sig_vert_ML']
-
+  if (case=="PIDPion"):
+    mylistvariablesx = ['dedx0_ML','tof0_ML','chisq0_ML']
+    mylistvariablesy = ['pdau0_ML','pdau0_ML','itscl0_ML']
   return mylistvariablesx,mylistvariablesy
 
 def getgridsearchparameters(case):
@@ -51,19 +67,27 @@ def getgridsearchparameters(case):
   
 
 def getDataMCfiles(case):
+  fileData=""
+  fileMC=""
   if (case=="Ds"):
     fileData="/Users/gianmicheleinnocenti/MLproductions/AnalysisResults_Ds_Data_2018Sep21_LHC15o_pass1_pidfix_CandBased_skimmed.root"
     fileMC="/Users/gianmicheleinnocenti/MLproductions/AnalysisResults_Ds_MC_2018Sep21_LHC18a4a2_cent_fast_CandBased_skimmed.root"
   if (case=="Lc"):
     fileData="/Users/gianmicheleinnocenti/MLproductions/AnalysisResults_Lambdac_Data_CandBased_skimmed.root"
     fileMC="/Users/gianmicheleinnocenti/MLproductions/AnalysisResults_Lambdac_MC_CandBased_skimmed.root"
+  if (case=="PIDPion"):
+    fileData="/Users/gianmicheleinnocenti/MLproductions/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root"
+    fileMC="/Users/gianmicheleinnocenti/MLproductions/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root"
   return fileData,fileMC
 
 def getTreeName(case):
+  treename=""
   if (case=="Ds"):
     treename="fTreeDsFlagged"
   if (case=="Lc"):
     treename="fTreeLcFlagged"
+  if (case=="PIDPion"):
+    treename="fTreePIDFlagged"
   return treename
 
 def getdataframe(filename,treename,variables):
@@ -74,6 +98,8 @@ def getdataframe(filename,treename,variables):
 
 
 def getmasscut(case):
+  fmassmin=-1
+  fmassmax=-1  
   if (case=="Ds"):
     fmassmin=1.92
     fmassmax=2.00
@@ -84,10 +110,10 @@ def getmasscut(case):
   return fmassmin,fmassmax
 
 def getPDGcode(case):
-  if (case=="Pion"):
+  if (case=="PIDPion"):
     PDGcode=211
     
-  if (case=="Kaon"):
+  if (case=="PIDKaon"):
     PDGcode=321
   return PDGcode
 
@@ -124,12 +150,14 @@ def prepareMLsample(classtype,case,dataframe_data,dataframe_MC,nevents):
     signal_ML_array=[]
     signal_ML_array=(pdg0_ML==getPDGcode(case))
     signal_ML_array=signal_ML_array.astype(int)
+    print (signal_ML_array)
     signal_ML = pd.Series(signal_ML_array)
     dataframe_MC["signal_ML"]=signal_ML
-    dataframe_ML_joined = dataframe_MC
+    dataframe_ML_joined = dataframe_MC[:nevents]
 
     if ((nevents>len(dataframe_MC))):
       print ("------------------------- ERROR: there are not so many events!!!!!! ------------------------- ")
+      
   return dataframe_ML_joined
 
 
