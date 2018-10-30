@@ -17,6 +17,17 @@ def getvariablestraining(case):
     mylistvariables=['dedx0_ML','tof0_ML','dca0_ML','sigdca0_ML','chisq0_ML','itscl0_ML','tpccl0_ML']
   return mylistvariables
 
+def getvariablesBoundaries(case):
+  mylistvariablesboundaries=[]
+  if (case=="Ds"):
+    mylistvariablesboundaries=['d_len_xy_ML','delta_mass_KK_ML']
+  if (case=="Lc"):
+    mylistvariablesboundaries=['d_len_xy_ML','dca_ML']
+  if (case=="PIDPion"):
+    mylistvariablesboundaries=['pdau0_ML','dedx0_ML']
+  return mylistvariablesboundaries
+
+
 def getvariablesothers(case):
   mylistvariablesothers=[]
   if (case=="Ds" or case=="Lc"):
@@ -101,8 +112,8 @@ def getmasscut(case):
   fmassmin=-1
   fmassmax=-1  
   if (case=="Ds"):
-    fmassmin=1.92
-    fmassmax=2.00
+    fmassmin=1.85
+    fmassmax=2.04
     
   if (case=="Lc"):
     fmassmin=1.80

@@ -6,7 +6,7 @@
 ###############################################################
 from myimports import *
 from utilitiesModels import getclassifiers,fit,test,savemodels,importanceplotall,decisionboundaries
-from BinaryMultiFeaturesClassification import getvariablestraining,getvariablesothers,getvariableissignal,getvariablesall,getvariablecorrelation,getgridsearchparameters,getDataMCfiles,getTreeName,prepareMLsample
+from BinaryMultiFeaturesClassification import getvariablestraining,getvariablesothers,getvariableissignal,getvariablesall,getvariablecorrelation,getgridsearchparameters,getDataMCfiles,getTreeName,prepareMLsample,getvariablesBoundaries
 from utilitiesPerformance import precision_recall,plot_learning_curves,confusion,precision_recall,plot_learning_curves,cross_validation_mse,plot_cross_validation_mse
 from utilitiesPCA import GetPCADataFrameAndPC,GetDataFrameStandardised,plotvariancePCA
 from utilitiesCorrelations import scatterplot,correlationmatrix,vardistplot
@@ -16,14 +16,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
 ############### this is the only place where you should change parameters ################
-# classtype="HFmeson"
-# optionClassification="Lc"
-# var_skimming=["pt_cand_ML"]
-classtype="PID"
-optionClassification="PIDPion"
-var_skimming=["pdau0_ML"]
+classtype="HFmeson"
+optionClassification="Ds"
+var_skimming=["pt_cand_ML"]
+# classtype="PID"
+# optionClassification="PIDPion"
+# var_skimming=["pdau0_ML"]
 nevents=5000
-varmin=[0]
+varmin=[4]
 varmax=[20]
 string_selection=createstringselection(var_skimming,varmin,varmax)
 suffix="Nevents%d_BinaryClassification%s_%s" % (nevents,optionClassification,string_selection)
@@ -33,12 +33,12 @@ dosampleprep=1
 docorrelation=1
 doStandard=0
 doPCA=0
-dotraining=1
+dotraining=0
 doimportance=0
 dotesting=0
-docrossvalidation=1
-doRoCLearning=1
-doBoundary=0
+docrossvalidation=0
+doRoCLearning=0
+doBoundary=1
 doBinarySearch=0
 ncores=-1
 
@@ -122,10 +122,13 @@ if (dotesting==1):
   test_set.to_pickle(filenametest_set_ML)
 
 if (doBoundary==1):
-  mydecisionboundaries=decisionboundaries(names,trainedmodels,suffix,X_train,y_train,plotdir)
-  X_train_2PC,pca=GetPCADataFrameAndPC(X_train,2)
-  trainedmodels=fit(names, classifiers,X_train_2PC,y_train)
-  mydecisionboundaries=decisionboundaries(names,trainedmodels,suffix+"PCAdecomposition",X_train_2PC,y_train,plotdir)
+  X_train_boundary=train_set[getvariablesBoundaries(optionClassification)]
+  trainedmodels2var=fit(names, classifiers,X_train_boundary,y_train)
+  print (X_train_boundary)
+  mydecisionboundaries=decisionboundaries(names,trainedmodels2var,suffix+"2var",X_train_boundary,y_train,plotdir)
+#   X_train_2PC,pca=GetPCADataFrameAndPC(X_train,2)
+#   trainedmodelsPCA=fit(names, classifiers,X_train_2PC,y_train)
+#   mydecisionboundaries=decisionboundaries(names,trainedmodelsPCA,suffix+"2PCA",X_train_2PC,y_train,plotdir)
 
 if (doBinarySearch==1):
   namesCV,classifiersCV,param_gridCV,changeparameter=getgridsearchparameters(optionClassification)
