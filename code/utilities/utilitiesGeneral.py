@@ -62,6 +62,10 @@ def filterdataframeDataMC(dfData,dfMC,var_skimming,varmin,varmax):
   dfData_sel = filterdataframe(dfData,var_skimming,varmin,varmax)
   dfMC_sel = filterdataframe(dfMC,var_skimming,varmin,varmax)
   return dfData_sel,dfMC_sel
-
-
+  
+def createstringselection(var_skimming_,minlist_,maxlist_):
+  string_selection="dfselection_"
+  for var, min, max in zip(var_skimming_, minlist_,maxlist_):
+   string_selection=string_selection+(("%s_%.1f_%.1f") % (var,min,max))
+  return string_selection
 

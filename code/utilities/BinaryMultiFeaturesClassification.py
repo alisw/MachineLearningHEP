@@ -71,18 +71,19 @@ def getdataframe(filename,treename,variables):
   dataframe=tree.pandas.df(preparestringforuproot(variables))
   return dataframe
 
-def prepareMLsample(case,dataframe_data,dataframe_MC,nevents,option="old"):
+
+def getmasscut(case):
   if (case=="Ds"):
     fmassmin=1.80
     fmassmax=2.04
-    
   if (case=="Lc"):
     fmassmin=1.80
-    fmassmax=2.04
-  
-  print  (list(dataframe_MC))
+    fmassmax=2.04  
+  return fmassmin,fmassmax
+
+def prepareMLsample(case,dataframe_data,dataframe_MC,nevents,option="old"):
+  fmassmin,fmassmax=getmasscut(case)
   signal_var=dataframe_MC["cand_type_ML"]
-  print (("Initial n. events MC before cuts on signal: %d" % (len(dataframe_MC))))
   cand_type_ML_int=signal_var.astype(int).values
   signal_ML_array=[]
   if (option=="new"):
@@ -94,16 +95,12 @@ def prepareMLsample(case,dataframe_data,dataframe_MC,nevents,option="old"):
   signal_ML = pd.Series(signal_ML_array)
   dataframe_MC["signal_ML"]=signal_ML
   dataframe_MC=dataframe_MC.loc[dataframe_MC["signal_ML"] == 1]
-  print (("Initial n. events after the cuts on signal: %d" % (len(dataframe_MC))))
   dataframe_data["signal_ML"]=0
   
   dataframe_MC=dataframe_MC[:nevents]
   dataframe_data=dataframe_data[:nevents]
   dataframe_ML_joined = pd.concat([dataframe_MC, dataframe_data])
 
-  print (("Events MC selected: %d" % (len(dataframe_MC))))
-  print (("Events data selected: %d" % (len(dataframe_data))))
-  
   if ((nevents>len(dataframe_MC)) or (nevents>len(dataframe_data))):
     print ("------------------------- ERROR: there are not so many events!!!!!! ------------------------- ")
   return dataframe_ML_joined

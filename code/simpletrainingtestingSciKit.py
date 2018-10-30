@@ -10,7 +10,7 @@ from BinaryMultiFeaturesClassification import getvariablestraining,getvariableso
 from utilitiesPerformance import precision_recall,plot_learning_curves,confusion,precision_recall,plot_learning_curves,cross_validation_mse,plot_cross_validation_mse
 from utilitiesPCA import GetPCADataFrameAndPC,GetDataFrameStandardised,plotvariancePCA
 from utilitiesCorrelations import scatterplot,correlationmatrix,vardistplot
-from utilitiesGeneral import filterdataframe_pt,splitdataframe_sigbkg,checkdir,getdataframe,getdataframeDataMC,filterdataframe,filterdataframeDataMC
+from utilitiesGeneral import filterdataframe_pt,splitdataframe_sigbkg,checkdir,getdataframe,getdataframeDataMC,filterdataframe,filterdataframeDataMC,createstringselection
 from utilitiesGridSearch import do_gridsearch,plot_gridsearch
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
@@ -20,11 +20,12 @@ optionClassification="Ds"
 nevents=500
 ptmin=1
 ptmax=100
-suffix="Nevents%d_BinaryClassification%s_ptmin%d_ptmax%d" % (nevents,optionClassification,ptmin,ptmax)
 var_pt="pt_cand_ML"
 varmin=[4,4]
 varmax=[100,100]
 var_skimming=["pt_cand_ML","pt_cand_ML"]
+string_selection=createstringselection(var_skimming,varmin,varmax)
+suffix="Nevents%d_BinaryClassification%s_%s" % (nevents,optionClassification,string_selection)
 
 ############### activate your channel ################
 dosampleprep=1
@@ -35,7 +36,7 @@ dotraining=1
 doimportance=0
 dotesting=0
 docrossvalidation=1
-doRoCLearning=0
+doRoCLearning=1
 doBoundary=0
 doBinarySearch=0
 ncores=-1
@@ -73,8 +74,6 @@ if(dosampleprep==1):
   ### split in training/testing sample
   train_set, test_set = train_test_split(dataframeML, test_size=0.2, random_state=42)
   ### save the dataframes
-  dataframeML.to_pickle(dataframe+"/dataframeML%s.pkl" % (suffix))
-  dataframeML.to_csv(dataframe+"/dataframeML%s.csv" % (suffix))
   train_set.to_pickle(dataframe+"/dataframetrainsampleN%s.pkl" % (suffix))
   test_set.to_pickle(dataframe+"/dataframetestsampleN%s.pkl" % (suffix))
 
