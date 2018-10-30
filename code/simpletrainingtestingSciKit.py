@@ -22,7 +22,6 @@ ptmin=0
 ptmax=100
 suffix="Nevents%d_BinaryClassification%s_ptmin%d_ptmax%d" % (nevents,optionClassification,ptmin,ptmax)
 var_pt="pt_cand_ML"
-var_signal="signal_ML"
 
 ############### activate your channel ################
 dosampleprep=1
@@ -91,7 +90,7 @@ y_test=test_set[myvariablesy]
 trainedmodels=[]
 
 if(docorrelation==1):
-  train_set_ptsel_sig,train_set_ptsel_bkg=splitdataframe_sigbkg(train_set,var_signal)
+  train_set_ptsel_sig,train_set_ptsel_bkg=splitdataframe_sigbkg(train_set,myvariablesy)
   vardistplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariables,plotdir)
   scatterplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariablesx,mylistvariablesy,plotdir)
   correlationmatrix(train_set_ptsel_sig,plotdir,"signal")
