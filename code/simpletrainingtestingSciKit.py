@@ -6,11 +6,11 @@
 ###############################################################
 from myimports import *
 from utilitiesModels import getclassifiers,fit,test,savemodels,importanceplotall,decisionboundaries
-from BinaryMultiFeaturesClassification import getvariablestraining,getvariablesothers,getvariableissignal,getvariablesall,getvariablecorrelation,getgridsearchparameters,getDataMCfiles,getTreeName,getdataframe,prepareMLsample
+from BinaryMultiFeaturesClassification import getvariablestraining,getvariablesothers,getvariableissignal,getvariablesall,getvariablecorrelation,getgridsearchparameters,getDataMCfiles,getTreeName,prepareMLsample
 from utilitiesPerformance import precision_recall,plot_learning_curves,confusion,precision_recall,plot_learning_curves,cross_validation_mse,plot_cross_validation_mse
 from utilitiesPCA import GetPCADataFrameAndPC,GetDataFrameStandardised,plotvariancePCA
 from utilitiesCorrelations import scatterplot,correlationmatrix,vardistplot
-from utilitiesGeneral import filterdataframe_pt,splitdataframe_sigbkg,checkdir
+from utilitiesGeneral import filterdataframe_pt,splitdataframe_sigbkg,checkdir,getdataframe,getdataframeDataMC
 from utilitiesGridSearch import do_gridsearch,plot_gridsearch
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
@@ -63,8 +63,7 @@ if(dosampleprep==1):
   ### get the dataframes
   fileData,fileMC=getDataMCfiles(optionClassification)
   trename=getTreeName(optionClassification)
-  dataframeData=getdataframe(fileData,trename,mylistvariablesall)
-  dataframeMC=getdataframe(fileMC,trename,mylistvariablesall)
+  dataframeData,dataframeMC=getdataframeDataMC(fileData,fileMC,trename,mylistvariablesall)
   ### select in pt
   dataframeData=filterdataframe_pt(dataframeData,var_pt,ptmin,ptmax)
   dataframeMC=filterdataframe_pt(dataframeMC,var_pt,ptmin,ptmax)

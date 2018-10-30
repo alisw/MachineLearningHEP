@@ -8,6 +8,7 @@ import pickle
 import sys, os
 from timeit import default_timer as timer
 from datetime import datetime
+import uproot
 
 def filterdataframe_pt(dataframe_,pt_var_,ptmin_,ptmax_):
   dataframe_ptsel_=dataframe_.loc[(dataframe_[pt_var_] > ptmin_ ) & (dataframe_[pt_var_] < ptmax_ )]
@@ -39,3 +40,15 @@ def preparestringforuproot(myarray):
   for str in myarray:
     arrayfinal.append(str+"*")
   return arrayfinal
+
+def getdataframe(filename,treename,variables):
+  file = uproot.open(filename)
+  tree = file[treename]
+  dataframe=tree.pandas.df(preparestringforuproot(variables))
+  return dataframe
+  
+def getdataframeDataMC(filenameData,filenameMC,treename,variables):
+  dfData = getdataframe(filenameData,treename,variables)
+  dfMC = getdataframe(filenameMC,treename,variables)
+  return dfData,dfMC
+
