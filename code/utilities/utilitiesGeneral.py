@@ -52,3 +52,16 @@ def getdataframeDataMC(filenameData,filenameMC,treename,variables):
   dfMC = getdataframe(filenameMC,treename,variables)
   return dfData,dfMC
 
+def filterdataframe(dataframe_,var_list,minlist_,maxlist_):
+  dataframe_sel=dataframe_
+  for var, min, max in zip(var_list, minlist_,maxlist_):
+    dataframe_sel=dataframe_sel.loc[(dataframe_sel[var] > min ) & (dataframe_sel[var] < max)]
+  return dataframe_sel
+
+def filterdataframeDataMC(dfData,dfMC,var_skimming,varmin,varmax):
+  dfData_sel = filterdataframe(dfData,var_skimming,varmin,varmax)
+  dfMC_sel = filterdataframe(dfMC,var_skimming,varmin,varmax)
+  return dfData_sel,dfMC_sel
+
+
+

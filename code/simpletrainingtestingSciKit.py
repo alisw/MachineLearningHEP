@@ -10,7 +10,7 @@ from BinaryMultiFeaturesClassification import getvariablestraining,getvariableso
 from utilitiesPerformance import precision_recall,plot_learning_curves,confusion,precision_recall,plot_learning_curves,cross_validation_mse,plot_cross_validation_mse
 from utilitiesPCA import GetPCADataFrameAndPC,GetDataFrameStandardised,plotvariancePCA
 from utilitiesCorrelations import scatterplot,correlationmatrix,vardistplot
-from utilitiesGeneral import filterdataframe_pt,splitdataframe_sigbkg,checkdir,getdataframe,getdataframeDataMC
+from utilitiesGeneral import filterdataframe_pt,splitdataframe_sigbkg,checkdir,getdataframe,getdataframeDataMC,filterdataframe,filterdataframeDataMC
 from utilitiesGridSearch import do_gridsearch,plot_gridsearch
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
@@ -18,10 +18,13 @@ from sklearn.utils import shuffle
 ############### this is the only place where you should change parameters ################
 optionClassification="Ds"
 nevents=500
-ptmin=0
+ptmin=1
 ptmax=100
 suffix="Nevents%d_BinaryClassification%s_ptmin%d_ptmax%d" % (nevents,optionClassification,ptmin,ptmax)
 var_pt="pt_cand_ML"
+varmin=[4,4]
+varmax=[100,100]
+var_skimming=["pt_cand_ML","pt_cand_ML"]
 
 ############### activate your channel ################
 dosampleprep=1
@@ -29,12 +32,12 @@ docorrelation=1
 doStandard=0
 doPCA=0
 dotraining=1
-doimportance=1
-dotesting=1
+doimportance=0
+dotesting=0
 docrossvalidation=1
-doRoCLearning=1
+doRoCLearning=0
 doBoundary=0
-doBinarySearch=1
+doBinarySearch=0
 ncores=-1
 
 ##########################################################################################
@@ -60,13 +63,10 @@ mylistvariablesall=getvariablesall(optionClassification)
 
 
 if(dosampleprep==1): 
-  ### get the dataframes
   fileData,fileMC=getDataMCfiles(optionClassification)
   trename=getTreeName(optionClassification)
   dataframeData,dataframeMC=getdataframeDataMC(fileData,fileMC,trename,mylistvariablesall)
-  ### select in pt
-  dataframeData=filterdataframe_pt(dataframeData,var_pt,ptmin,ptmax)
-  dataframeMC=filterdataframe_pt(dataframeMC,var_pt,ptmin,ptmax)
+  dataframeData,dataframeMC=filterdataframeDataMC(dataframeData,dataframeMC,var_skimming,varmin,varmax)  
   ### prepare ML sample
   dataframeML=prepareMLsample(optionClassification,dataframeData,dataframeMC,nevents,"old")
   dataframeML=shuffle(dataframeML)

@@ -89,6 +89,7 @@ def prepareMLsample(case,dataframe_data,dataframe_MC,nevents,option="old"):
     signal_ML_array=((cand_type_ML_int>>3)&0b1) & ((cand_type_ML_int>>1)&0b1) | ((cand_type_ML_int>>4)&0b1) & ((cand_type_ML_int>>1)&0b1)
   if (option=="old"):
     signal_ML_array=((cand_type_ML_int==3) | (cand_type_ML_int==3))
+  signal_ML_array=signal_ML_array.astype(int)
     
   signal_ML = pd.Series(signal_ML_array)
   dataframe_MC["signal_ML"]=signal_ML
