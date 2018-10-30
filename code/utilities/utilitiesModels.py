@@ -2,6 +2,7 @@ from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier,
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
+from sklearn.svm import LinearSVC
 import pandas as pd
 import pickle
 from sklearn.model_selection import cross_val_score
@@ -19,16 +20,15 @@ from sklearn.feature_extraction import DictVectorizer
 from matplotlib.colors import ListedColormap
 
 def getclassifiers():
-  classifiers = [GradientBoostingClassifier(learning_rate=0.01, n_estimators=2500, max_depth=1),
-                    RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
-                    AdaBoostClassifier(),DecisionTreeClassifier(max_depth=5)
-                    #,SVC(kernel="linear", C=0.025, probability=True),SVC(gamma=2, C=1,probability=True),LogisticRegression()
-                    ]
+  classifiers = [
+    GradientBoostingClassifier(learning_rate=0.01, n_estimators=2500, max_depth=1),RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1), AdaBoostClassifier(),DecisionTreeClassifier(max_depth=5)
+#     LinearSVC(C=1, loss="hinge"),SVC(kernel="rbf", gamma=5, C=0.001), LogisticRegression()
+  ]
                                         
-                  
-  names = ["GradientBoostingClassifier","Random_Forest","AdaBoost","Decision_Tree"
-#             ,"Linear_SVM_SVC", "RBF_SVM_SVC","LogisticRegression"
-           ]
+  names = [
+    "GradientBoostingClassifier","Random_Forest","AdaBoost","Decision_Tree"
+#     "LinearSVC", "SVC_rbf","LogisticRegression"
+  ]
   return classifiers, names
     
 def fit(names_, classifiers_,X_train_,y_train_):

@@ -16,15 +16,15 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
 ############### this is the only place where you should change parameters ################
-classtype="HFmeson"
-optionClassification="Ds"
-var_skimming=["pt_cand_ML"]
-# classtype="PID"
-# optionClassification="PIDPion"
-# var_skimming=["pdau0_ML"]
-nevents=5000
-varmin=[4]
-varmax=[20]
+# classtype="HFmeson"
+# optionClassification="Ds"
+# var_skimming=["pt_cand_ML"]
+classtype="PID"
+optionClassification="PIDKaon"
+var_skimming=["pdau0_ML"]
+nevents=50000
+varmin=[2]
+varmax=[5]
 string_selection=createstringselection(var_skimming,varmin,varmax)
 suffix="Nevents%d_BinaryClassification%s_%s" % (nevents,optionClassification,string_selection)
 
@@ -63,7 +63,7 @@ if(dosampleprep==1):
   trename=getTreeName(optionClassification)
   dataframeData,dataframeMC=getdataframeDataMC(fileData,fileMC,trename,mylistvariablesall)
   dataframeData,dataframeMC=filterdataframeDataMC(dataframeData,dataframeMC,var_skimming,varmin,varmax)  
-  ### prepare ML sample
+  ## prepare ML sample
   dataframeML=prepareMLsample(classtype,optionClassification,dataframeData,dataframeMC,nevents)
   dataframeML=shuffle(dataframeML)
   ### split in training/testing sample
@@ -124,7 +124,6 @@ if (dotesting==1):
 if (doBoundary==1):
   X_train_boundary=train_set[getvariablesBoundaries(optionClassification)]
   trainedmodels2var=fit(names, classifiers,X_train_boundary,y_train)
-  print (X_train_boundary)
   mydecisionboundaries=decisionboundaries(names,trainedmodels2var,suffix+"2var",X_train_boundary,y_train,plotdir)
 #   X_train_2PC,pca=GetPCADataFrameAndPC(X_train,2)
 #   trainedmodelsPCA=fit(names, classifiers,X_train_2PC,y_train)
