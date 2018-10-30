@@ -16,14 +16,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
 ############### this is the only place where you should change parameters ################
+classtype="HFmeson"
 optionClassification="Ds"
-nevents=500
+nevents=2000
 ptmin=1
 ptmax=100
-var_pt="pt_cand_ML"
-varmin=[4,4]
-varmax=[100,100]
-var_skimming=["pt_cand_ML","pt_cand_ML"]
+varmin=[4]
+varmax=[100]
+var_skimming=["pt_cand_ML"]
 string_selection=createstringselection(var_skimming,varmin,varmax)
 suffix="Nevents%d_BinaryClassification%s_%s" % (nevents,optionClassification,string_selection)
 
@@ -69,7 +69,7 @@ if(dosampleprep==1):
   dataframeData,dataframeMC=getdataframeDataMC(fileData,fileMC,trename,mylistvariablesall)
   dataframeData,dataframeMC=filterdataframeDataMC(dataframeData,dataframeMC,var_skimming,varmin,varmax)  
   ### prepare ML sample
-  dataframeML=prepareMLsample(optionClassification,dataframeData,dataframeMC,nevents,"old")
+  dataframeML=prepareMLsample(classtype,optionClassification,dataframeData,dataframeMC,nevents)
   dataframeML=shuffle(dataframeML)
   ### split in training/testing sample
   train_set, test_set = train_test_split(dataframeML, test_size=0.2, random_state=42)
@@ -89,7 +89,7 @@ trainedmodels=[]
 
 if(docorrelation==1):
   train_set_ptsel_sig,train_set_ptsel_bkg=splitdataframe_sigbkg(train_set,myvariablesy)
-  vardistplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariables,plotdir)
+  vardistplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariablesall,plotdir)
   scatterplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariablesx,mylistvariablesy,plotdir)
   correlationmatrix(train_set_ptsel_sig,plotdir,"signal")
   correlationmatrix(train_set_ptsel_bkg,plotdir,"background")

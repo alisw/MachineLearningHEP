@@ -4,6 +4,7 @@ from utilitiesGeneral import filterdataframe_pt,splitdataframe_sigbkg,checkdir,p
 import pandas as pd
 import numpy as np
 import uproot
+from sklearn.utils import shuffle
 
 
 def getvariablestraining(case):
@@ -74,35 +75,61 @@ def getdataframe(filename,treename,variables):
 
 def getmasscut(case):
   if (case=="Ds"):
-    fmassmin=1.80
-    fmassmax=2.04
+    fmassmin=1.92
+    fmassmax=2.00
+    
   if (case=="Lc"):
     fmassmin=1.80
     fmassmax=2.04  
   return fmassmin,fmassmax
 
-def prepareMLsample(case,dataframe_data,dataframe_MC,nevents,option="old"):
-  fmassmin,fmassmax=getmasscut(case)
-  signal_var=dataframe_MC["cand_type_ML"]
-  cand_type_ML_int=signal_var.astype(int).values
-  signal_ML_array=[]
-  if (option=="new"):
-    signal_ML_array=((cand_type_ML_int>>3)&0b1) & ((cand_type_ML_int>>1)&0b1) | ((cand_type_ML_int>>4)&0b1) & ((cand_type_ML_int>>1)&0b1)
-  if (option=="old"):
-    signal_ML_array=((cand_type_ML_int==3) | (cand_type_ML_int==3))
-  signal_ML_array=signal_ML_array.astype(int)
+def getPDGcode(case):
+  if (case=="Pion"):
+    PDGcode=211
     
-  signal_ML = pd.Series(signal_ML_array)
-  dataframe_MC["signal_ML"]=signal_ML
-  dataframe_MC=dataframe_MC.loc[dataframe_MC["signal_ML"] == 1]
-  dataframe_data["signal_ML"]=0
-  
-  dataframe_MC=dataframe_MC[:nevents]
-  dataframe_data=dataframe_data[:nevents]
-  dataframe_ML_joined = pd.concat([dataframe_MC, dataframe_data])
+  if (case=="Kaon"):
+    PDGcode=321
+  return PDGcode
 
-  if ((nevents>len(dataframe_MC)) or (nevents>len(dataframe_data))):
-    print ("------------------------- ERROR: there are not so many events!!!!!! ------------------------- ")
+
+def prepareMLsample(classtype,case,dataframe_data,dataframe_MC,nevents):
+  dataframe_ML_joined = pd.DataFrame()
+  if(classtype=="HFmeson"):
+  
+    dataframe_bkg=dataframe_data
+    dataframe_sig=dataframe_MC
+    
+    fmassmin,fmassmax=getmasscut(case)
+    signal_var=dataframe_sig["cand_type_ML"]
+    cand_type_ML_int=signal_var.astype(int).values
+    signal_ML_array=[]
+    #signal_ML_array=((cand_type_ML_int>>3)&0b1) & ((cand_type_ML_int>>1)&0b1) | ((cand_type_ML_int>>4)&0b1) & ((cand_type_ML_int>>1)&0b1)
+    signal_ML_array=((cand_type_ML_int==3) | (cand_type_ML_int==3))
+    signal_ML_array=signal_ML_array.astype(int)
+    
+    signal_ML = pd.Series(signal_ML_array)
+    dataframe_sig["signal_ML"]=signal_ML
+    dataframe_sig=dataframe_sig.loc[dataframe_sig["signal_ML"] == 1]
+    dataframe_bkg["signal_ML"]=0
+    dataframe_bkg=dataframe_bkg.loc[(dataframe_bkg["inv_mass_ML"] < fmassmin) | (dataframe_bkg["inv_mass_ML"] > fmassmax)]
+    dataframe_sig=dataframe_sig[:nevents]
+    dataframe_bkg=dataframe_bkg[:nevents]
+    dataframe_ML_joined = pd.concat([dataframe_sig, dataframe_bkg])
+    if ((nevents>len(dataframe_sig)) or (nevents>len(dataframe_bkg))):
+      print ("------------------------- ERROR: there are not so many events!!!!!! ------------------------- ")
+    
+  if(classtype=="PID"):
+    signal_var=dataframe_MC["pdg0_ML"]
+    pdg0_ML=signal_var.astype(int).values
+    signal_ML_array=[]
+    signal_ML_array=(pdg0_ML==getPDGcode(case))
+    signal_ML_array=signal_ML_array.astype(int)
+    signal_ML = pd.Series(signal_ML_array)
+    dataframe_MC["signal_ML"]=signal_ML
+    dataframe_ML_joined = dataframe_MC
+
+    if ((nevents>len(dataframe_MC))):
+      print ("------------------------- ERROR: there are not so many events!!!!!! ------------------------- ")
   return dataframe_ML_joined
 
 
