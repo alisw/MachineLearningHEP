@@ -18,15 +18,33 @@ from sklearn.ensemble import ExtraTreesClassifier
 from sklearn_evaluation import plot
 from sklearn.feature_extraction import DictVectorizer
 from matplotlib.colors import ListedColormap
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.wrappers.scikit_learn import KerasClassifier
+
+
+def create_model(dim=7):
+  # create model
+  model = Sequential()
+  model.add(Dense(12, input_dim=dim, activation='relu'))
+  model.add(Dense(8, activation='relu'))
+  model.add(Dense(1, activation='sigmoid'))
+  # Compile model
+  model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+  return model
+
+
 
 def getclassifiers():
   classifiers = [
-    GradientBoostingClassifier(learning_rate=0.01, n_estimators=2500, max_depth=1),RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1), AdaBoostClassifier(),DecisionTreeClassifier(max_depth=5)
+      KerasClassifier(build_fn=create_model, epochs=150, batch_size=10, verbose=0)
+#     GradientBoostingClassifier(learning_rate=0.01, n_estimators=2500, max_depth=1),RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1), AdaBoostClassifier(),DecisionTreeClassifier(max_depth=5)
 #     LinearSVC(C=1, loss="hinge"),SVC(kernel="rbf", gamma=5, C=0.001), LogisticRegression()
   ]
                                         
   names = [
-    "GradientBoostingClassifier","Random_Forest","AdaBoost","Decision_Tree"
+      "Keras"
+#     "GradientBoostingClassifier","Random_Forest","AdaBoost","Decision_Tree"
 #     "LinearSVC", "SVC_rbf","LogisticRegression"
   ]
   return classifiers, names
@@ -43,6 +61,7 @@ def test(names_,trainedmodels_,X_test_,test_set_):
     y_test_prediction=[]
     y_test_prob=[]
     y_test_prediction=model.predict(X_test_)
+    y_test_prediction.reshape(len(y_test_prediction),)
     y_test_prob=model.predict_proba(X_test_)[:,1]
     test_set_['y_test_prediction'+name] = pd.Series(y_test_prediction, index=test_set_.index)
     test_set_['y_test_prob'+name] = pd.Series(y_test_prob, index=test_set_.index)

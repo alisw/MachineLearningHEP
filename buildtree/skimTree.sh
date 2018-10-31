@@ -1,9 +1,10 @@
 #!/bin/bash
 #source clean.sh
 
-doDsFromCand=1
-doLcFromCand=1
-doDsFromEvt=1
+doDsFromCand=0
+doLcFromCand=0
+doDsFromEvt=0
+doPID=1
 
 MCSAMPLE="$HOME/MLproductions/AnalysisResults_Ds_MC_2018Sep21_LHC18a4a2_cent_fast_CandBased.root"
 DATASAMPLE="$HOME/MLproductions/AnalysisResults_Ds_Data_2018Sep21_LHC15o_pass1_pidfix_CandBased.root"  
@@ -71,4 +72,21 @@ g++ skimTreeDsFromEvt.C $(root-config --cflags --libs) -g -o skimTreeDsFromEvt.e
 ./skimTreeDsFromEvt.exe "$MCSAMPLE" "$MCSAMPLEOUT" "$MCTree" 
 ./skimTreeDsFromEvt.exe "$DATASAMPLE" "$DATASAMPLEOUT" "$DataTree" 
 rm -rf skimTreeDsFromEvt.exe skimTreeDsFromEvt.exe.dSYM
+fi
+
+
+MCSAMPLE="$HOME/MLproductions/AnalysisResults_TreeForPIDwithML_Dplus_CandBased.root"
+MCSAMPLEOUT="$HOME/MLproductions/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root"
+MCTree="DplusPID/candTree"
+totevents=500000
+
+if [ $doPID -eq 1 ]
+then
+
+rm $MCSAMPLEOUT
+rm $DATASAMPLEOUT
+
+g++ skimTreePID.C $(root-config --cflags --libs) -g -o skimTreePID.exe 
+./skimTreePID.exe "$MCSAMPLE" "$MCSAMPLEOUT" "$MCTree" "$totevents"
+rm -rf skimTreePID.exe skimTreePID.exe.dSYM
 fi

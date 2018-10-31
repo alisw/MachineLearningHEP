@@ -6,42 +6,41 @@
 ###############################################################
 from myimports import *
 from utilitiesModels import getclassifiers,fit,test,savemodels,importanceplotall,decisionboundaries
-from BinaryMultiFeaturesClassification import getvariablestraining,getvariablesothers,getvariableissignal,getvariablesall,getvariablecorrelation,getgridsearchparameters,getDataMCfiles,getTreeName,getdataframe,prepareMLsample
+from BinaryMultiFeaturesClassification import getvariablestraining,getvariablesothers,getvariableissignal,getvariablesall,getvariablecorrelation,getgridsearchparameters,getDataMCfiles,getTreeName,prepareMLsample,getvariablesBoundaries
 from utilitiesPerformance import precision_recall,plot_learning_curves,confusion,precision_recall,plot_learning_curves,cross_validation_mse,plot_cross_validation_mse
 from utilitiesPCA import GetPCADataFrameAndPC,GetDataFrameStandardised,plotvariancePCA
 from utilitiesCorrelations import scatterplot,correlationmatrix,vardistplot
-from utilitiesGeneral import filterdataframe_pt,splitdataframe_sigbkg,checkdir
+from utilitiesGeneral import filterdataframe_pt,splitdataframe_sigbkg,checkdir,getdataframe,getdataframeDataMC,filterdataframe,filterdataframeDataMC,createstringselection
 from utilitiesGridSearch import do_gridsearch,plot_gridsearch
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
 ############### this is the only place where you should change parameters ################
-optionClassification="PIDpion"
-nevents=500
-ptmin=1
-ptmax=2
-suffix="Nevents%d_BinaryClassification%s_ptmin%d_ptmax%d" % (nevents,optionClassification,ptmin,ptmax)
-# var_pt="pt_cand_ML"
-var_pt="pdau0_ML"
+# classtype="HFmeson"
+# optionClassification="Ds"
+# var_skimming=["pt_cand_ML"]
+classtype="PID"
+optionClassification="PIDKaon"
+var_skimming=["pdau0_ML"]
+nevents=200
+varmin=[2]
+varmax=[5]
+string_selection=createstringselection(var_skimming,varmin,varmax)
+suffix="Nevents%d_BinaryClassification%s_%s" % (nevents,optionClassification,string_selection)
+
 ############### activate your channel ################
 dosampleprep=1
-docorrelation=1
+docorrelation=0
 doStandard=0
 doPCA=0
 dotraining=1
-doimportance=1
-dotesting=1
-docrossvalidation=1
+doimportance=0
+dotesting=0
+docrossvalidation=0
 doRoCLearning=1
 doBoundary=0
-doBinarySearch=1
+doBinarySearch=0
 ncores=-1
-
-##########################################################################################
-# var_pt="pt_cand_ML"
-# var_signal="signal_ML"
-# path = "./plotdir/%.1f_%.1f_GeV"%(ptmin,ptmax)
-# checkdir(path)
 
 dataframe="dataframes_%s" % (suffix)
 plotdir="plots_%s" % (suffix)
@@ -60,27 +59,23 @@ mylistvariablesall=getvariablesall(optionClassification)
 
 
 if(dosampleprep==1): 
-  ### get the dataframes
   fileData,fileMC=getDataMCfiles(optionClassification)
   trename=getTreeName(optionClassification)
-  dataframeData=getdataframe(fileData,trename,mylistvariablesall)
-  dataframeMC=getdataframe(fileMC,trename,mylistvariablesall)
-  ### select in pt
-  dataframeData=filterdataframe_pt(dataframeData,var_pt,ptmin,ptmax)
-  dataframeMC=filterdataframe_pt(dataframeMC,var_pt,ptmin,ptmax)
-  ### prepare ML sample
-  dataframeML=prepareMLsample(optionClassification,dataframeData,dataframeMC,nevents,"old")
+  dataframeData,dataframeMC=getdataframeDataMC(fileData,fileMC,trename,mylistvariablesall)
+  dataframeData,dataframeMC=filterdataframeDataMC(dataframeData,dataframeMC,var_skimming,varmin,varmax)  
+  ## prepare ML sample
+  dataframeML=prepareMLsample(classtype,optionClassification,dataframeData,dataframeMC,nevents)
   dataframeML=shuffle(dataframeML)
   ### split in training/testing sample
   train_set, test_set = train_test_split(dataframeML, test_size=0.2, random_state=42)
   ### save the dataframes
-  dataframeML.to_pickle(dataframe+"/dataframeML%s.pkl" % (suffix))
-  dataframeML.to_csv(dataframe+"/dataframeML%s.csv" % (suffix))
   train_set.to_pickle(dataframe+"/dataframetrainsampleN%s.pkl" % (suffix))
   test_set.to_pickle(dataframe+"/dataframetestsampleN%s.pkl" % (suffix))
 
 train_set = pd.read_pickle(dataframe+"/dataframetrainsampleN%s.pkl" % (suffix))
 test_set = pd.read_pickle(dataframe+"/dataframetestsampleN%s.pkl" % (suffix))
+
+print ("dimension of the dataset",len(train_set))
 
 X_train= train_set[mylistvariables]
 y_train=train_set[myvariablesy]
@@ -91,7 +86,7 @@ trainedmodels=[]
 
 if(docorrelation==1):
   train_set_ptsel_sig,train_set_ptsel_bkg=splitdataframe_sigbkg(train_set,myvariablesy)
-  vardistplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariables,plotdir)
+  vardistplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariablesall,plotdir)
   scatterplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariablesx,mylistvariablesy,plotdir)
   correlationmatrix(train_set_ptsel_sig,plotdir,"signal")
   correlationmatrix(train_set_ptsel_bkg,plotdir,"background")
@@ -118,7 +113,7 @@ if (docrossvalidation==1):
 if (doRoCLearning==1):
 #   confusion(mylistvariables,names,classifiers,suffix,X_train,y_train,5)
   precision_recall(mylistvariables,names,classifiers,suffix,X_train,y_train,5,plotdir)
-  plot_learning_curves(names,classifiers,suffix,plotdir,X_train,y_train,100,3000,300)
+#   plot_learning_curves(names,classifiers,suffix,plotdir,X_train,y_train,100,3000,300)
   
 if (dotesting==1):
   filenametest_set_ML=output+"/testsample%sMLdecision.pkl" % (suffix)
@@ -127,10 +122,12 @@ if (dotesting==1):
   test_set.to_pickle(filenametest_set_ML)
 
 if (doBoundary==1):
-  mydecisionboundaries=decisionboundaries(names,trainedmodels,suffix,X_train,y_train,plotdir)
-  X_train_2PC,pca=GetPCADataFrameAndPC(X_train,2)
-  trainedmodels=fit(names, classifiers,X_train_2PC,y_train)
-  mydecisionboundaries=decisionboundaries(names,trainedmodels,suffix+"PCAdecomposition",X_train_2PC,y_train,plotdir)
+  X_train_boundary=train_set[getvariablesBoundaries(optionClassification)]
+  trainedmodels2var=fit(names, classifiers,X_train_boundary,y_train)
+  mydecisionboundaries=decisionboundaries(names,trainedmodels2var,suffix+"2var",X_train_boundary,y_train,plotdir)
+#   X_train_2PC,pca=GetPCADataFrameAndPC(X_train,2)
+#   trainedmodelsPCA=fit(names, classifiers,X_train_2PC,y_train)
+#   mydecisionboundaries=decisionboundaries(names,trainedmodelsPCA,suffix+"2PCA",X_train_2PC,y_train,plotdir)
 
 if (doBinarySearch==1):
   namesCV,classifiersCV,param_gridCV,changeparameter=getgridsearchparameters(optionClassification)

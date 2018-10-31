@@ -14,6 +14,7 @@ from utilitiesGeneral import filterdataframe_pt,splitdataframe_sigbkg,checkdir,g
 from utilitiesGridSearch import do_gridsearch,plot_gridsearch
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
+import tensorflow as tf
 
 ############### this is the only place where you should change parameters ################
 # classtype="HFmeson"
@@ -22,7 +23,7 @@ from sklearn.utils import shuffle
 classtype="PID"
 optionClassification="PIDKaon"
 var_skimming=["pdau0_ML"]
-nevents=50000
+nevents=1000
 varmin=[2]
 varmax=[5]
 string_selection=createstringselection(var_skimming,varmin,varmax)
@@ -30,7 +31,7 @@ suffix="Nevents%d_BinaryClassification%s_%s" % (nevents,optionClassification,str
 
 ############### activate your channel ################
 dosampleprep=1
-docorrelation=1
+docorrelation=0
 doStandard=0
 doPCA=0
 dotraining=0
@@ -38,8 +39,10 @@ doimportance=0
 dotesting=0
 docrossvalidation=0
 doRoCLearning=0
-doBoundary=1
+doBoundary=0
 doBinarySearch=0
+doDNN=1
+
 ncores=-1
 
 dataframe="dataframes_%s" % (suffix)
@@ -135,4 +138,73 @@ if (doBinarySearch==1):
   savemodels(names,grid_search_models,output,"GridSearchCV"+suffix)
   plot_gridsearch(namesCV,changeparameter,grid_search_models,plotdir,suffix)
 
+if (doDNN==1):
+  from sklearn.metrics import roc_curve, auc
+  from keras.models import Sequential
+  from keras.layers import Dense
+  from keras.wrappers.scikit_learn import KerasClassifier
+  from sklearn.model_selection import StratifiedKFold
+  from sklearn.model_selection import cross_val_score
+  import keras
 
+#   feature_cols = tf.contrib.learn.infer_real_valued_columns_from_input(X_train)
+#   dnn_clf = tf.contrib.learn.DNNClassifier(hidden_units=[300,100], n_classes=2, feature_columns=feature_cols)
+#   dnn_clf = tf.contrib.learn.SKCompat(dnn_clf)  # if TensorFlow >= 1.1
+#   dnn_clf.fit(np.array(X_train, dtype = 'float32'),np.array(y_train, dtype = 'int64'), batch_size=50, steps=50000)
+# 
+#   y_pred = dnn_clf.predict(np.array(X_test, dtype = 'float32'))
+#   y_test_prediction=y_pred['classes']
+#   y_test_prob=y_pred['probabilities'][:,1]
+#   
+#   print (X_test.shape)
+#   print (y_test_prob.shape)
+#   
+#   aucs=[]
+#   fpr, tpr, thresholds_forest = roc_curve(y_test,y_test_prob)
+#   roc_auc = auc(fpr, tpr)
+#   aucs.append(roc_auc)
+#   plt.xlabel('False Positive Rate or (1 - Specifity)',fontsize=20)
+#   plt.ylabel('True Positive Rate or (Sensitivity)',fontsize=20)
+#   plt.title('Receiver Operating Characteristic',fontsize=20)
+#   plt.plot(fpr, tpr, lw=1, alpha=0.3, label='ROC %s (AUC = %0.2f)' % ("DNN", roc_auc), linewidth=4.0)
+#   plt.legend(loc="lower center",  prop={'size':18})
+#     
+    
+#   model = Sequential()
+#   model.add(Dense(12, input_dim=7, activation='relu'))
+#   model.add(Dense(8, activation='relu'))
+#   model.add(Dense(1, activation='sigmoid'))
+#   model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+#   model.fit(X_train,y_train, epochs=10, batch_size=32)
+  
+  
+  def create_model():
+    model = Sequential()
+    model.add(Dense(12, input_dim=7, activation='relu'))
+    model.add(Dense(8, activation='relu'))
+    model.add(Dense(1, activation='sigmoid'))
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+    return model
+
+  model = KerasClassifier(build_fn=create_model, epochs=3000, batch_size=50, verbose=0)
+  model.fit(X_train,y_train)
+
+
+  y_test_prediction=model.predict(X_test)
+  y_test_prob=model.predict_proba(X_test)[:,1]
+  y_test_prediction.reshape(len(y_test_prediction),)
+  print (y_test_prob.shape)
+  
+  aucs=[]
+  fpr, tpr, thresholds_forest = roc_curve(y_test,y_test_prob)
+  roc_auc = auc(fpr, tpr)
+  aucs.append(roc_auc)
+  plt.xlabel('False Positive Rate or (1 - Specifity)',fontsize=20)
+  plt.ylabel('True Positive Rate or (Sensitivity)',fontsize=20)
+  plt.title('Receiver Operating Characteristic',fontsize=20)
+  plt.plot(fpr, tpr, lw=1, alpha=0.3, label='ROC %s (AUC = %0.2f)' % ("DNN", roc_auc), linewidth=4.0)
+  plt.legend(loc="lower center",  prop={'size':18})
+  plt.show()
+
+  test_set['y_test_predictionDNN_TensorFlow'] = pd.Series(y_test_prediction, index=test_set.index)
+  test_set['y_test_probDNN_TensorFlow'] = pd.Series(y_test_prob, index=test_set.index)
