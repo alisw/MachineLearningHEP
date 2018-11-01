@@ -93,7 +93,8 @@ rm $DATASAMPLEOUT
 g++ skimTreeBplusFromEvt.C $(root-config --cflags --libs) -g -o skimTreeBplusFromEvt.exe 
 ./skimTreeBplusFromEvt.exe "$MCSAMPLE" "$MCSAMPLEOUT" "$MCTree" 
 ./skimTreeBplusFromEvt.exe "$DATASAMPLE" "$DATASAMPLEOUT" "$DataTree" 
-rm -rf skimTreeBplusFromEvt.exe skimTreeBplusFromEvt.exe.dSYM
+rm -rf skimTreeBplusFromEvt.exe 
+rm -rf skimTreeBplusFromEvt.exe.dSYM
 fi
 
 # -----------
