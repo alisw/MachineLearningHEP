@@ -13,6 +13,8 @@ def getvariablestraining(case):
     mylistvariables=['d_len_xy_ML','norm_dl_xy_ML','cos_p_ML','cos_p_xy_ML','imp_par_xy_ML','sig_vert_ML',"delta_mass_KK_ML",'cos_PiDs_ML',"cos_PiKPhi_3_ML"]
   if (case=="Lc"):
     mylistvariables=['d_len_ML','d_len_xy_ML','norm_dl_xy_ML','dist_12_ML','cos_p_ML','pt_p_ML','pt_K_ML','pt_pi_ML','sig_vert_ML','dca_ML']
+  if (case=="Bplus"):
+    mylistvariables=['d_len_xy_ML','norm_dl_xy_ML','cos_p_ML','cos_p_xy_ML','imp_par_xy_ML']
   if ((case=="PIDPion") | (case=="PIDKaon")):
     mylistvariables=['dedx0_ML','tof0_ML','dca0_ML','sigdca0_ML','chisq0_ML','itscl0_ML','tpccl0_ML']
   return mylistvariables
@@ -23,6 +25,8 @@ def getvariablesBoundaries(case):
     mylistvariablesboundaries=['d_len_xy_ML','delta_mass_KK_ML']
   if (case=="Lc"):
     mylistvariablesboundaries=['d_len_xy_ML','dca_ML']
+  if (case=="Bplus"):
+    mylistvariablesboundaries=['d_len_xy_ML','cos_p_ML']
   if ((case=="PIDPion") | (case=="PIDKaon")):
     mylistvariablesboundaries=['dedx0_ML','pdau0_ML']
   return mylistvariablesboundaries
@@ -30,7 +34,7 @@ def getvariablesBoundaries(case):
 
 def getvariablesothers(case):
   mylistvariablesothers=[]
-  if (case=="Ds" or case=="Lc"):
+  if (case=="Ds" or case=="Lc" or case=="Bplus"):
     mylistvariablesothers=['inv_mass_ML','pt_cand_ML']
   if ((case=="PIDPion") | (case=="PIDKaon")):
     mylistvariablesothers=['pdau0_ML','pdg0_ML']
@@ -38,7 +42,7 @@ def getvariablesothers(case):
 
 def getvariableissignal(case):
   myvariablesy=0
-  if (case=="Ds" or case=="Lc"):
+  if (case=="Ds" or case=="Lc" or case=="Bplus"):
     myvariablesy='signal_ML'
   if ((case=="PIDPion") | (case=="PIDKaon")):
     myvariablesy='signal_ML'
@@ -50,6 +54,8 @@ def getvariablesall(case):
     mylistvariablesall=['d_len_xy_ML','norm_dl_xy_ML','cos_p_ML','cos_p_xy_ML','imp_par_xy_ML','sig_vert_ML',"delta_mass_KK_ML",'cos_PiDs_ML',"cos_PiKPhi_3_ML",'inv_mass_ML','pt_cand_ML','signal_ML',"cand_type_ML"]
   if (case=="Lc"):
     mylistvariablesall=['inv_mass_ML','pt_cand_ML','d_len_ML','d_len_xy_ML','norm_dl_xy_ML','dist_12_ML','cos_p_ML','pt_p_ML','pt_K_ML','pt_pi_ML','sig_vert_ML','dca_ML','cand_type_ML']
+  if (case=="Bplus"):
+    mylistvariablesall=['d_len_xy_ML','norm_dl_xy_ML','cos_p_ML','cos_p_xy_ML','imp_par_xy_ML','inv_mass_ML','pt_cand_ML','signal_ML',"cand_type_ML"]
   if ((case=="PIDPion") | (case=="PIDKaon")):
     mylistvariablesall=['dedx0_ML','tof0_ML','dca0_ML','sigdca0_ML','chisq0_ML','itscl0_ML','tpccl0_ML','pdau0_ML','pdg0_ML']
   return mylistvariablesall
@@ -63,6 +69,9 @@ def getvariablecorrelation(case):
   if (case=="Lc"):
     mylistvariablesx = ['pt_cand_ML','d_len_xy_ML']
     mylistvariablesy = ['d_len_xy_ML','sig_vert_ML']
+  if (case=="Bplus"):
+    mylistvariablesx = ['pt_cand_ML','d_len_xy_ML']
+    mylistvariablesy = ['d_len_xy_ML','cos_p_ML']
   if ((case=="PIDPion") | (case=="PIDKaon")):
     mylistvariablesx = ['pdau0_ML','pdau0_ML','itscl0_ML']
     mylistvariablesy = ['dedx0_ML','tof0_ML','chisq0_ML']
@@ -86,6 +95,9 @@ def getDataMCfiles(case):
   if (case=="Lc"):
     fileData="/Users/gianmicheleinnocenti/MLproductions/AnalysisResults_Lambdac_Data_CandBased_skimmed.root"
     fileMC="/Users/gianmicheleinnocenti/MLproductions/AnalysisResults_Lambdac_MC_CandBased_skimmed.root"
+  if (case=="Bplus"):
+    fileData="/Users/gianmicheleinnocenti/MLproductions/AnalysisResults_TreeForBplus_MC_EventBased_skimmed.root"
+    fileMC="/Users/gianmicheleinnocenti/MLproductions/AnalysisResults_TreeForBplus_MC_EventBased_skimmed.root"
   if ((case=="PIDPion") | (case=="PIDKaon")):
     fileData="/Users/gianmicheleinnocenti/MLproductions/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root"
     fileMC="/Users/gianmicheleinnocenti/MLproductions/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root"
@@ -97,6 +109,8 @@ def getTreeName(case):
     treename="fTreeDsFlagged"
   if (case=="Lc"):
     treename="fTreeLcFlagged"
+  if (case=="Bplus"):
+    treename="fTreeBplusFlagged"
   if ((case=="PIDPion") | (case=="PIDKaon")):
     treename="fTreePIDFlagged"
   return treename
@@ -116,8 +130,13 @@ def getmasscut(case):
     fmassmax=2.04
     
   if (case=="Lc"):
-    fmassmin=1.80
-    fmassmax=2.04  
+    fmassmin=2.2864-0.1
+    fmassmax=2.2864+0.1
+    
+  if (case=="Bplus"):
+    fmassmin=5.279-0.100
+    fmassmax=5.279+0.100
+    
   return fmassmin,fmassmax
 
 def getPDGcode(case):

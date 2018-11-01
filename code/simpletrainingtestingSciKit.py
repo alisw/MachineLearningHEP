@@ -16,15 +16,15 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
 ############### this is the only place where you should change parameters ################
-# classtype="HFmeson"
-# optionClassification="Ds"
-# var_skimming=["pt_cand_ML"]
-classtype="PID"
-optionClassification="PIDKaon"
-var_skimming=["pdau0_ML"]
-nevents=50000
-varmin=[2]
-varmax=[5]
+classtype="HFmeson"
+optionClassification="Bplus"
+var_skimming=["pt_cand_ML"]
+# classtype="PID"
+# optionClassification="PIDKaon"
+# var_skimming=["pdau0_ML"]
+nevents=1000
+varmin=[0]
+varmax=[100]
 string_selection=createstringselection(var_skimming,varmin,varmax)
 suffix="Nevents%d_BinaryClassification%s_%s" % (nevents,optionClassification,string_selection)
 
@@ -37,8 +37,8 @@ dotraining=0
 doimportance=0
 dotesting=0
 docrossvalidation=0
-doRoCLearning=0
-doBoundary=1
+doRoCLearning=1
+doBoundary=0
 doBinarySearch=0
 ncores=-1
 
