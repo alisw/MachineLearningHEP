@@ -17,12 +17,12 @@ from sklearn.utils import shuffle
 import tensorflow as tf
 
 ############### this is the only place where you should change parameters ################
-# classtype="HFmeson"
-# optionClassification="Ds"
-# var_skimming=["pt_cand_ML"]
-classtype="PID"
-optionClassification="PIDKaon"
-var_skimming=["pdau0_ML"]
+classtype="HFmeson"
+optionClassification="Ds"
+var_skimming=["pt_cand_ML"]
+# classtype="PID"
+# optionClassification="PIDKaon"
+# var_skimming=["pdau0_ML"]
 nevents=1000
 varmin=[2]
 varmax=[5]
@@ -180,14 +180,22 @@ if (doDNN==1):
   
   def create_model():
     model = Sequential()
-    model.add(Dense(12, input_dim=7, activation='relu'))
+    model.add(Dense(12, input_dim=9, activation='relu'))
     model.add(Dense(8, activation='relu'))
     model.add(Dense(1, activation='sigmoid'))
     model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
     return model
 
-  model = KerasClassifier(build_fn=create_model, epochs=3000, batch_size=50, verbose=0)
+  model = KerasClassifier(build_fn=create_model, epochs=1000, batch_size=50, verbose=0)
   model.fit(X_train,y_train)
+
+  architecture_file="SequentialPIDkaon.json"
+  weights_file="weightSequentialPIDkaon.h5"
+  arch_json = model.model.to_json()
+  with open(architecture_file, 'w') as json_file:
+    json_file.write(arch_json)
+  # Save weights only.
+  model.model.save_weights(weights_file)
 
 
   y_test_prediction=model.predict(X_test)
