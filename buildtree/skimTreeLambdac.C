@@ -10,7 +10,7 @@ bool skimTreeLambdac(TString finput,TString foutput,TString treename, int maxeve
   TFile *fin = new TFile(finput.Data()); 
   TTree *fTreeLc = (TTree*)fin->Get(treename.Data()); 
   float inv_mass,pt_cand,d_len,d_len_xy,norm_dl_xy,cos_p,imp_par,imp_par_xy,sig_vert,dca,dist_12,pt_p,pt_K,pt_pi;
-  float cand_type;
+  float isLcBkg;
 
   fTreeLc->SetBranchAddress("InvMass",&inv_mass);
   fTreeLc->SetBranchAddress("PtLc",&pt_cand);
@@ -24,7 +24,8 @@ bool skimTreeLambdac(TString finput,TString foutput,TString treename, int maxeve
   fTreeLc->SetBranchAddress("Ptpi",&pt_pi);
   fTreeLc->SetBranchAddress("SigVert",&sig_vert);
   fTreeLc->SetBranchAddress("DCA",&dca);
-  fTreeLc->SetBranchAddress("isLcBkg",&cand_type);
+  fTreeLc->SetBranchAddress("isLcBkg",&isLcBkg);
+  // select isLcBkg==1 
 
   TFile *fout = new TFile(foutput.Data(),"recreate"); 
   TTree* fTreeLcML = new TTree("fTreeLcFlagged","fTreeLcFlagged");
@@ -70,7 +71,8 @@ bool skimTreeLambdac(TString finput,TString foutput,TString treename, int maxeve
     pt_pi_ML=pt_pi;
     sig_vert_ML=sig_vert;
     dca_ML=dca;
-    cand_type_ML=cand_type;
+    cand_type_ML=0;
+    if (isLcBkg==1) cand_type_ML=2;
     fTreeLcML->Fill();
     } 
   fout->Write();
