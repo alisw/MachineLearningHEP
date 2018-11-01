@@ -45,8 +45,8 @@ void skimTreeDsFromEvt(TString input="AnalysisResults-8.root",TString output="te
   fTreeDsML->Branch("nTPCclspid_prong1_ML",&nTPCclspid_prong1_ML,"nTPCclspid_prong1_ML/F");
   fTreeDsML->Branch("nTPCclspid_prong2_ML",&nTPCclspid_prong2_ML,"nTPCclspid_prong2_ML/F");
   fTreeDsML->Branch("dEdxTPC_0_ML",&dEdxTPC_0_ML,"dEdxTPC_0_ML/F");
-  fTreeDsML->Branch("dEdxTPC_1_ML",&dEdxTPC_0_ML,"dEdxTPC_1_ML/F");
-  fTreeDsML->Branch("dEdxTPC_2_ML",&dEdxTPC_0_ML,"dEdxTPC_2_ML/F");
+  fTreeDsML->Branch("dEdxTPC_1_ML",&dEdxTPC_1_ML,"dEdxTPC_1_ML/F");
+  fTreeDsML->Branch("dEdxTPC_2_ML",&dEdxTPC_2_ML,"dEdxTPC_2_ML/F");
 
   std::cout<<"nevents"<<nevt<<std::endl;
   for(Long64_t jentry=0; jentry<nevt;jentry++){

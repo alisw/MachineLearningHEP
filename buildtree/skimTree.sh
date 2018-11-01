@@ -2,8 +2,9 @@
 #source clean.sh
 
 doDsFromCand=0
-doLcFromCand=1
+doLcFromCand=0
 doDsFromEvt=0
+doBplusFromEvt=1
 doPID=0
 
 MCSAMPLE="$HOME/MLproductions/AnalysisResults_Ds_MC_2018Sep21_LHC18a4a2_cent_fast_CandBased.root"
@@ -74,6 +75,28 @@ g++ skimTreeDsFromEvt.C $(root-config --cflags --libs) -g -o skimTreeDsFromEvt.e
 rm -rf skimTreeDsFromEvt.exe skimTreeDsFromEvt.exe.dSYM
 fi
 
+#-------
+
+MCSAMPLE="$HOME/MLproductions/AnalysisResults_TreeForBplus_MC_EventBased.root"
+DATASAMPLE="$HOME/MLproductions/AnalysisResults_TreeForBplus_MC_EventBased.root"
+MCSAMPLEOUT="$HOME/MLproductions/AnalysisResults_TreeForBplus_MC_EventBased_skimmed.root"
+DATASAMPLEOUT="$HOME/MLproductions/AnalysisResults_TreeForBplus_Data_EventBased_skimmed.root"
+MCTree="tree_Bplus"
+DataTree="tree_Bplus"
+
+if [ $doBplusFromEvt -eq 1 ]
+then
+
+rm $MCSAMPLEOUT
+rm $DATASAMPLEOUT
+
+g++ skimTreeBplusFromEvt.C $(root-config --cflags --libs) -g -o skimTreeBplusFromEvt.exe 
+./skimTreeBplusFromEvt.exe "$MCSAMPLE" "$MCSAMPLEOUT" "$MCTree" 
+./skimTreeBplusFromEvt.exe "$DATASAMPLE" "$DATASAMPLEOUT" "$DataTree" 
+rm -rf skimTreeBplusFromEvt.exe skimTreeBplusFromEvt.exe.dSYM
+fi
+
+# -----------
 
 MCSAMPLE="$HOME/MLproductions/AnalysisResults_TreeForPIDwithML_Dplus_CandBased.root"
 MCSAMPLEOUT="$HOME/MLproductions/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root"
