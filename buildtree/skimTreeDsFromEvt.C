@@ -70,8 +70,8 @@ void skimTreeDsFromEvt(TString input="AnalysisResults-8.root",TString output="te
       cos_PiKPhi_3_ML=t.cos_PiKPhi_3 -> at(icand);
       cand_type_ML=t.cand_type -> at(icand);
       pTPC_prong0_ML=t.pTPC_prong0 -> at(icand);
-      pTPC_prong1_ML=t.pTPC_prong0 -> at(icand);
-      pTPC_prong2_ML=t.pTPC_prong0 -> at(icand);
+      pTPC_prong1_ML=t.pTPC_prong1 -> at(icand);
+      pTPC_prong2_ML=t.pTPC_prong2 -> at(icand);
       nTPCclspid_prong0_ML=t.nTPCclspid_prong0 -> at(icand);
       nTPCclspid_prong1_ML=t.nTPCclspid_prong1 -> at(icand);
       nTPCclspid_prong2_ML=t.nTPCclspid_prong2 -> at(icand);
