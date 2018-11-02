@@ -148,6 +148,32 @@ def getPDGcode(case):
   return PDGcode
 
 
+def getbackgroudev_testingsample(case):
+  background=-1  
+  if (case=="Ds"):
+    background=1000
+  if (case=="Lc"):
+    background=1000
+  if (case=="Bplus"):
+    background=1000
+  return background
+
+def getFONLLdataframe_FF(case):
+  filename=""
+  FF=-1.
+  if (case=="Ds"):
+    filename='/Users/gianmicheleinnocenti/Desktop/MachineLearning/MachineLearningHF/fonll/fo_pp_d0meson_5TeV_y0p5.csv'
+    FF=0.21
+  if (case=="Lc"):
+    filename=''
+    FF=0.
+  if (case=="Bplus"):
+    filename==""
+    FF=0.
+  df= pd.read_csv(filename)
+  
+  return df,FF
+
 def prepareMLsample(classtype,case,dataframe_data,dataframe_MC,nevents):
   dataframe_ML_joined = pd.DataFrame()
   if(classtype=="HFmeson"):

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 
-def getfonll(df_,ptmin_,ptmax_):
+def getfonllintegrated(df_,ptmin_,ptmax_):
   sumcross=0
   for i in df_.pt:
     if (i>=ptmin_ and i<ptmax_):
@@ -57,27 +57,27 @@ def calculatesignificance(efficiencySig_array,sig, efficiencyBkg_array, bkg):
     significance_array.append(significance)
   return significance_array
     
-def plot_significance(names_,significance_array,xaxis_,suffix_):
+def plot_significance(names_,significance_array,xaxis_,suffix,plotdir):
 
   figure = plt.figure(figsize=(20,15))
   i=1
   for name in names_:
     plt.xlabel('Probability',fontsize=20)
-    plt.ylabel('Significance',fontsize=20)
+    plt.ylabel('Significance (A.U.)',fontsize=20)
     plt.title("Significance vs probability ",fontsize=20)
     plt.plot(xaxis_[i-1], significance_array[i-1], lw=1, alpha=0.3, label='%s' % (names_[i-1]), linewidth=4.0)
     plt.legend(loc="lower center",  prop={'size':18})
     i += 1
-  plotname='plots/significance%s.png' % (suffix_)
+  plotname=plotdir+'/Significance%s.png' % (suffix)
   plt.savefig(plotname)
 
-def plotfonll(pt_array,cross_array,particlelabel):
+def plotfonll(pt_array,cross_array,particlelabel,suffix,plotdir):
   figure = plt.figure(figsize=(20,15))
   ax=plt.subplot(111)
   plt.xlabel('pt',fontsize=20)
   plt.ylabel('cross section',fontsize=20)
-  plt.title("FONLL Dzero cross section "+particlelabel,fontsize=20)
+  plt.title("FONLL cross section "+particlelabel,fontsize=20)
   plt.plot(pt_array,cross_array,linewidth=4.0)
   plt.semilogy()
-  plotname='plots/fonll%s.png' % (particlelabel)
+  plotname=plotdir+'/FONLL curve %s.png' % (suffix)
   plt.savefig(plotname)
