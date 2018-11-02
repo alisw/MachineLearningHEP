@@ -18,6 +18,12 @@ sudo apt-get install python3-tk
 pip3 install sklearn-evaluation
 ```
 
+## Prerequisites for Ubuntu (validated for Ubuntu 18.04 by Fabio Catalano)
+sudo apt-get update
+sudo apt-get install build-essential python3-pip python3.6 python3-tk git
+pip3 install jupyter matplotlib numpy pandas scipy scikit-learn seaborn sklearn-evaluation
+pip3 install uproot
+
 ## Produce the ML ntuples and convert it to dataframes
 
 Copy the folder MLDsproductions and put it in your HOME directory. The folder is in the public folder in lxplus below:

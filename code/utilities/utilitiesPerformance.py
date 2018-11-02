@@ -134,7 +134,7 @@ def precision_recall(mylistvariables_,names_,classifiers_,suffix_,X_train,y_trai
     plt.xlabel('False Positive Rate or (1 - Specifity)',fontsize=20)
     plt.ylabel('True Positive Rate or (Sensitivity)',fontsize=20)
     plt.title('Receiver Operating Characteristic',fontsize=20)
-    plt.plot(fpr, tpr, lw=1, alpha=0.3, label='ROC %s (AUC = %0.2f)' % (names_[i-1], roc_auc), linewidth=4.0)
+    plt.plot(fpr, tpr, alpha=0.3, label='ROC %s (AUC = %0.2f)' % (names_[i-1], roc_auc), linewidth=4.0)
     plt.legend(loc="lower center",  prop={'size':18})
     i += 1
   plotname=folder+'/ROCcurve%s.png' % (suffix_)

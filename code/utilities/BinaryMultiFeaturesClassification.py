@@ -169,7 +169,7 @@ def getFONLLdataframe_FF(case):
   filename=""
   FF=-1.
   if (case=="Ds"):
-    filename='/Users/gianmicheleinnocenti/Desktop/MachineLearning/MachineLearningHF/fonll/fo_pp_d0meson_5TeV_y0p5.csv'
+    filename='../../fonll/fo_pp_d0meson_5TeV_y0p5.csv'
     FF=0.21
   if (case=="Lc"):
     filename=''
@@ -188,7 +188,7 @@ def prepareMLsample(classtype,case,dataframe_data,dataframe_MC,nevents):
     dataframe_bkg=dataframe_data
     dataframe_sig=dataframe_MC
     fmassmin,fmassmax=getmasscut(case)
-    dataframe_sig=dataframe_sig.loc[(dataframe_sig["cand_type_ML"] == 2) | (dataframe_sig["cand_type_ML"] == 3)]
+    dataframe_sig=dataframe_sig.loc[(dataframe_sig["cand_type_ML"] == 10) | (dataframe_sig["cand_type_ML"] == 11) |(dataframe_sig["cand_type_ML"] == 18) | (dataframe_sig["cand_type_ML"] == 19)]
     dataframe_sig['signal_ML'] = 1
     print (dataframe_sig)
     dataframe_bkg=dataframe_bkg.loc[(dataframe_bkg["inv_mass_ML"] < fmassmin) | (dataframe_bkg["inv_mass_ML"] > fmassmax)]
