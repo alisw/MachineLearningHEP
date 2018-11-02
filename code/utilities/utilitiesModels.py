@@ -3,6 +3,13 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC
+###############################################################
+##                                                           ##
+##     Software for single-label classification with Scikit  ##
+##      Origin: G.M. Innocenti (CERN)(ginnocen@cern.ch)       ##
+##                                                           ##
+###############################################################
+
 import pandas as pd
 import pickle
 from sklearn.model_selection import cross_val_score

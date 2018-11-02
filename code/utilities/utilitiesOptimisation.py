@@ -1,3 +1,10 @@
+###############################################################
+##                                                           ##
+##     Software for single-label classification with Scikit  ##
+##      Origin: G.M. Innocenti (CERN)(ginnocen@cern.ch)       ##
+##                                                           ##
+###############################################################
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
