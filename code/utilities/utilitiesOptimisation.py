@@ -49,7 +49,7 @@ def plot_efficiency(names_,efficiency_array,xaxis_,label,suffix_,plotdir):
     plt.xlabel('Probability',fontsize=20)
     plt.ylabel('Efficiency',fontsize=20)
     plt.title("Efficiency "+label,fontsize=20)
-    plt.plot(xaxis_[i-1], efficiency_array[i-1], lw=1, alpha=0.3, label='%s' % (names_[i-1]), linewidth=4.0)
+    plt.plot(xaxis_[i-1], efficiency_array[i-1], alpha=0.3, label='%s' % (names_[i-1]), linewidth=4.0)
     plt.legend(loc="lower center",  prop={'size':18})
     i += 1
   plotname=plotdir+'/Efficiency%s%s.png' % (suffix_,label)
@@ -72,7 +72,7 @@ def plot_significance(names_,significance_array,xaxis_,suffix,plotdir):
     plt.xlabel('Probability',fontsize=20)
     plt.ylabel('Significance (A.U.)',fontsize=20)
     plt.title("Significance vs probability ",fontsize=20)
-    plt.plot(xaxis_[i-1], significance_array[i-1], lw=1, alpha=0.3, label='%s' % (names_[i-1]), linewidth=4.0)
+    plt.plot(xaxis_[i-1], significance_array[i-1], alpha=0.3, label='%s' % (names_[i-1]), linewidth=4.0)
     plt.legend(loc="lower center",  prop={'size':18})
     i += 1
   plotname=plotdir+'/Significance%s.png' % (suffix)
