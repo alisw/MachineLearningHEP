@@ -11,4 +11,6 @@ rm -rf __pycache__
 rm -rf dataframes_*
 rm -rf plots_*
 rm -rf output_*
+rm *.json 
+rm *.h5
 
