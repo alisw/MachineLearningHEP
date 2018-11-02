@@ -43,6 +43,7 @@ def test(names_,trainedmodels_,X_test_,test_set_):
     y_test_prediction=[]
     y_test_prob=[]
     y_test_prediction=model.predict(X_test_)
+#     y_test_prediction=y_test_prediction.reshape(len(y_test_prediction),)
     y_test_prob=model.predict_proba(X_test_)[:,1]
     test_set_['y_test_prediction'+name] = pd.Series(y_test_prediction, index=test_set_.index)
     test_set_['y_test_prob'+name] = pd.Series(y_test_prob, index=test_set_.index)
