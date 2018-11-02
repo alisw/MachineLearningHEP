@@ -169,7 +169,7 @@ def getFONLLdataframe_FF(case):
   filename=""
   FF=-1.
   if (case=="Ds"):
-    filename='../../fonll/fo_pp_d0meson_5TeV_y0p5.csv'
+    filename='../fonll/fo_pp_d0meson_5TeV_y0p5.csv'
     FF=0.21
   if (case=="Lc"):
     filename=''
