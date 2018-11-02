@@ -1,3 +1,10 @@
+###############################################################
+##                                                           ##
+##     Software for single-label classification with Scikit  ##
+##      Origin: G.M. Innocenti (CERN)(ginnocen@cern.ch)       ##
+##                                                           ##
+###############################################################
+
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -34,7 +41,7 @@ def get_efficiency_effnum_effden(df_,names_,selvar_,flag_label,stepsize):
   return efficiency_array,x_array,num_array,den_array
     
 
-def plot_efficiency(names_,efficiency_array,xaxis_,label,suffix_):
+def plot_efficiency(names_,efficiency_array,xaxis_,label,suffix_,plotdir):
 
   figure = plt.figure(figsize=(20,15))
   i=1
@@ -45,7 +52,7 @@ def plot_efficiency(names_,efficiency_array,xaxis_,label,suffix_):
     plt.plot(xaxis_[i-1], efficiency_array[i-1], lw=1, alpha=0.3, label='%s' % (names_[i-1]), linewidth=4.0)
     plt.legend(loc="lower center",  prop={'size':18})
     i += 1
-  plotname='plots/efficiency%s%s.png' % (label,suffix_)
+  plotname=plotdir+'/Efficiency%s%s.png' % (suffix_,label)
   plt.savefig(plotname)
   
 def calculatesignificance(efficiencySig_array,sig, efficiencyBkg_array, bkg):

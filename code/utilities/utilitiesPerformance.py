@@ -1,3 +1,10 @@
+###############################################################
+##                                                           ##
+##     Software for single-label classification with Scikit  ##
+##      Origin: G.M. Innocenti (CERN)(ginnocen@cern.ch)       ##
+##                                                           ##
+###############################################################
+
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 import pandas as pd

@@ -3,6 +3,13 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC
+###############################################################
+##                                                           ##
+##     Software for single-label classification with Scikit  ##
+##      Origin: G.M. Innocenti (CERN)(ginnocen@cern.ch)       ##
+##                                                           ##
+###############################################################
+
 import pandas as pd
 import pickle
 from sklearn.model_selection import cross_val_score
@@ -43,6 +50,7 @@ def test(names_,trainedmodels_,X_test_,test_set_):
     y_test_prediction=[]
     y_test_prob=[]
     y_test_prediction=model.predict(X_test_)
+#     y_test_prediction=y_test_prediction.reshape(len(y_test_prediction),)
     y_test_prob=model.predict_proba(X_test_)[:,1]
     test_set_['y_test_prediction'+name] = pd.Series(y_test_prediction, index=test_set_.index)
     test_set_['y_test_prob'+name] = pd.Series(y_test_prob, index=test_set_.index)

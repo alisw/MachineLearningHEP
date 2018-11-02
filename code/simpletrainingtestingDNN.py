@@ -4,7 +4,10 @@
 ##      Origin: G.M.Innocenti (CERN)(ginnocen@cern.ch)       ##
 ##                                                           ##
 ###############################################################
+from ROOT import TNtuple
+from ROOT import TH1F, TH2F, TCanvas, TFile, gStyle, gROOT
 from myimports import *
+from utilitiesRoot import FillNTuple, ReadNTuple, ReadNTupleML
 from utilitiesModels import getclassifiers,fit,test,savemodels,importanceplotall,decisionboundaries
 from BinaryMultiFeaturesClassification import getvariablestraining,getvariablesothers,getvariableissignal,getvariablesall,getvariablecorrelation,getgridsearchparameters,getDataMCfiles,getTreeName,prepareMLsample,getvariablesBoundaries
 from utilitiesPerformance import precision_recall,plot_learning_curves,confusion,precision_recall,plot_learning_curves,cross_validation_mse,plot_cross_validation_mse
@@ -23,7 +26,7 @@ var_skimming=["pt_cand_ML"]
 # classtype="PID"
 # optionClassification="PIDKaon"
 # var_skimming=["pdau0_ML"]
-nevents=1000
+nevents=5000
 varmin=[2]
 varmax=[5]
 string_selection=createstringselection(var_skimming,varmin,varmax)
@@ -34,9 +37,9 @@ dosampleprep=1
 docorrelation=0
 doStandard=0
 doPCA=0
-dotraining=0
+dotraining=1
 doimportance=0
-dotesting=0
+dotesting=1
 docrossvalidation=0
 doRoCLearning=0
 doBoundary=0
@@ -122,7 +125,7 @@ if (dotesting==1):
   filenametest_set_ML=output+"/testsample%sMLdecision.pkl" % (suffix)
   ntuplename="fTreeFlagged%s" % (optionClassification)
   test_setML=test(names,trainedmodels,X_test,test_set)
-  test_set.to_pickle(filenametest_set_ML)
+  test_setML.to_pickle(filenametest_set_ML)
 
 if (doBoundary==1):
   X_train_boundary=train_set[getvariablesBoundaries(optionClassification)]
@@ -200,8 +203,6 @@ if (doDNN==1):
 
   y_test_prediction=model.predict(X_test)
   y_test_prob=model.predict_proba(X_test)[:,1]
-  y_test_prediction.reshape(len(y_test_prediction),)
-  print (y_test_prob.shape)
   
   aucs=[]
   fpr, tpr, thresholds_forest = roc_curve(y_test,y_test_prob)
@@ -212,7 +213,14 @@ if (doDNN==1):
   plt.title('Receiver Operating Characteristic',fontsize=20)
   plt.plot(fpr, tpr, lw=1, alpha=0.3, label='ROC %s (AUC = %0.2f)' % ("DNN", roc_auc), linewidth=4.0)
   plt.legend(loc="lower center",  prop={'size':18})
-  plt.show()
-
+  y_test_prediction=y_test_prediction.reshape(len(y_test_prediction),)
+  print (y_test_prediction.shape)
   test_set['y_test_predictionDNN_TensorFlow'] = pd.Series(y_test_prediction, index=test_set.index)
   test_set['y_test_probDNN_TensorFlow'] = pd.Series(y_test_prob, index=test_set.index)
+  
+  listvar=list(test_set)
+  values=test_set.values
+  print (values)
+  fout = TFile.Open("testDNN.root","recreate")
+  FillNTuple("treeDNN",values,listvar)
+

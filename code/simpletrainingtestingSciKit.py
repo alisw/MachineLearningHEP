@@ -4,7 +4,10 @@
 ##      Origin: G.M. Innocenti (CERN)(ginnocen@cern.ch)       ##
 ##                                                           ##
 ###############################################################
+from ROOT import TNtuple
+from ROOT import TH1F, TH2F, TCanvas, TFile, gStyle, gROOT
 from myimports import *
+from utilitiesRoot import FillNTuple, ReadNTuple, ReadNTupleML
 from utilitiesModels import getclassifiers,fit,test,savemodels,importanceplotall,decisionboundaries
 from BinaryMultiFeaturesClassification import getvariablestraining,getvariablesothers,getvariableissignal,getvariablesall,getvariablecorrelation,getgridsearchparameters,getDataMCfiles,getTreeName,prepareMLsample,getvariablesBoundaries,getbackgroudev_testingsample,getFONLLdataframe_FF
 from utilitiesPerformance import precision_recall,plot_learning_curves,confusion,precision_recall,plot_learning_curves,cross_validation_mse,plot_cross_validation_mse
@@ -15,7 +18,6 @@ from utilitiesGridSearch import do_gridsearch,plot_gridsearch
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 from utilitiesOptimisation import getfonllintegrated,plotfonll,get_efficiency_effnum_effden,plot_efficiency,calculatesignificance,plot_significance
-
 ############### this is the only place where you should change parameters ################
 classtype="HFmeson"
 optionClassification="Ds"
@@ -38,10 +40,10 @@ dotraining=1
 doimportance=0
 dotesting=1
 docrossvalidation=0
-doRoCLearning=1
+doRoCLearning=0
 doBoundary=0
 doBinarySearch=0
-doOptimisation=1
+doOptimisation=0
 ncores=-1
 
 dataframe="dataframes_%s" % (suffix)
@@ -119,9 +121,16 @@ if (doRoCLearning==1):
   
 if (dotesting==1):
   filenametest_set_ML=output+"/testsample%sMLdecision.pkl" % (suffix)
-  ntuplename="fTreeFlagged%s" % (optionClassification)
+  filenametest_set_ML_root=output+"/testsample%sMLdecision.root" % (suffix)
+  ntuplename="fTreeMLdecision%s" % (optionClassification)
   test_setML=test(names,trainedmodels,X_test,test_set)
-  test_set.to_pickle(filenametest_set_ML)
+  test_setML['signal_ML'] = pd.Series(y_test, index=test_set.index)
+  test_setML.to_pickle(filenametest_set_ML)
+  listvar=list(test_setML)
+  values=test_setML.values
+  fout = TFile.Open(filenametest_set_ML_root,"recreate")
+  FillNTuple(ntuplename,values,listvar)
+
 
 if (doBoundary==1):
   X_train_boundary=train_set[getvariablesBoundaries(optionClassification)]
@@ -145,8 +154,8 @@ if(doOptimisation==1):
      bkg=getbackgroudev_testingsample(optionClassification)
      efficiencySig_array,xaxisSig,num_arraySig,den_arraySig=get_efficiency_effnum_effden(test_set,names,myvariablesy,1,0.01)
      efficiencyBkg_array,xaxisBkg,num_arrayBkg,den_arrayBkg=get_efficiency_effnum_effden(test_set,names,myvariablesy,0,0.01)
-     plot_efficiency(names,efficiencySig_array,xaxisSig,"signal",suffix)
-     plot_efficiency(names,efficiencyBkg_array,xaxisBkg,"background",suffix)
+     plot_efficiency(names,efficiencySig_array,xaxisSig,"signal",suffix,plotdir)
+     plot_efficiency(names,efficiencyBkg_array,xaxisBkg,"background",suffix,plotdir)
      significance_array= calculatesignificance(efficiencySig_array,sig,efficiencyBkg_array,bkg)
      plot_significance(names,significance_array,xaxisSig,suffix,plotdir)
   
