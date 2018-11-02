@@ -23,7 +23,7 @@ var_skimming=["pt_cand_ML"]
 # classtype="PID"
 # optionClassification="PIDKaon"
 # var_skimming=["pdau0_ML"]
-nevents=1000
+nevents=5000
 varmin=[0]
 varmax=[100]
 string_selection=createstringselection(var_skimming,varmin,varmax)
@@ -145,8 +145,8 @@ if(doOptimisation==1):
      bkg=getbackgroudev_testingsample(optionClassification)
      efficiencySig_array,xaxisSig,num_arraySig,den_arraySig=get_efficiency_effnum_effden(test_set,names,myvariablesy,1,0.01)
      efficiencyBkg_array,xaxisBkg,num_arrayBkg,den_arrayBkg=get_efficiency_effnum_effden(test_set,names,myvariablesy,0,0.01)
-     plot_efficiency(names,efficiencySig_array,xaxisSig,"signal",suffix)
-     plot_efficiency(names,efficiencyBkg_array,xaxisBkg,"background",suffix)
+     plot_efficiency(names,efficiencySig_array,xaxisSig,"signal",suffix,plotdir)
+     plot_efficiency(names,efficiencyBkg_array,xaxisBkg,"background",suffix,plotdir)
      significance_array= calculatesignificance(efficiencySig_array,sig,efficiencyBkg_array,bkg)
      plot_significance(names,significance_array,xaxisSig,suffix,plotdir)
   
