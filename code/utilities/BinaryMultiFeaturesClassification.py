@@ -97,17 +97,17 @@ def getDataMCfiles(case):
   fileData=""
   fileMC=""
   if (case=="Ds"):
-    fileData="/Users/gianmicheleinnocenti/MLproductions/AnalysisResults_Ds_Data_2018Sep21_LHC15o_pass1_pidfix_CandBased_skimmed.root"
-    fileMC="/Users/gianmicheleinnocenti/MLproductions/AnalysisResults_Ds_MC_2018Sep21_LHC18a4a2_cent_fast_CandBased_skimmed.root"
+    fileData="../MLproductions/AnalysisResults_Ds_Data_2018Sep21_LHC15o_pass1_pidfix_CandBased_skimmed.root"
+    fileMC="../MLproductions/AnalysisResults_Ds_MC_2018Sep21_LHC18a4a2_cent_fast_CandBased_skimmed.root"
   if (case=="Lc"):
-    fileData="/Users/gianmicheleinnocenti/MLproductions/AnalysisResults_Lambdac_Data_CandBased_skimmed.root"
-    fileMC="/Users/gianmicheleinnocenti/MLproductions/AnalysisResults_Lambdac_MC_CandBased_skimmed.root"
+    fileData="../MLproductions/AnalysisResults_Lambdac_Data_CandBased_skimmed.root"
+    fileMC="../MLproductions/AnalysisResults_Lambdac_MC_CandBased_skimmed.root"
   if (case=="Bplus"):
-    fileData="/Users/gianmicheleinnocenti/MLproductions/AnalysisResults_TreeForBplus_MC_EventBased_skimmed.root"
-    fileMC="/Users/gianmicheleinnocenti/MLproductions/AnalysisResults_TreeForBplus_MC_EventBased_skimmed.root"
+    fileData="../MLproductions/AnalysisResults_TreeForBplus_MC_EventBased_skimmed.root"
+    fileMC="../MLproductions/AnalysisResults_TreeForBplus_MC_EventBased_skimmed.root"
   if ((case=="PIDPion") | (case=="PIDKaon")):
-    fileData="/Users/gianmicheleinnocenti/MLproductions/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root"
-    fileMC="/Users/gianmicheleinnocenti/MLproductions/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root"
+    fileData="../MLproductions/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root"
+    fileMC="../MLproductions/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root"
   return fileData,fileMC
 
 def getTreeName(case):
