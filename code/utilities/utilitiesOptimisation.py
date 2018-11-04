@@ -88,3 +88,43 @@ def plotfonll(pt_array,cross_array,particlelabel,suffix,plotdir):
   plt.semilogy()
   plotname=plotdir+'/FONLL curve %s.png' % (suffix)
   plt.savefig(plotname)
+
+def getbackgroudev_testingsample(case):
+  background=-1  
+  if (case=="Ds"):
+    background=1000
+  if (case=="Lc"):
+    background=1000
+  if (case=="Bplus"):
+    background=1000
+  return background
+
+def getFONLLdataframe_FF(case):
+  filename=""
+  FF=-1.
+  if (case=="Ds"):
+    filename='../fonll/fo_pp_d0meson_5TeV_y0p5.csv'
+    FF=0.21
+  if (case=="Lc"):
+    filename=''
+    FF=0.
+  if (case=="Bplus"):
+    filename==""
+    FF=0.
+  df= pd.read_csv(filename)
+  
+  return df,FF
+
+def studysignificance(optionClassification,ptmin,ptmax,test_set,names,myvariablesy,suffix,plotdir):
+
+  df,FF= getFONLLdataframe_FF(optionClassification)
+  plotfonll(df.pt,df.central*FF,optionClassification,suffix,plotdir)
+  sig=getfonllintegrated(df,ptmin,ptmax)*FF
+  bkg=getbackgroudev_testingsample(optionClassification)
+  efficiencySig_array,xaxisSig,num_arraySig,den_arraySig=get_efficiency_effnum_effden(test_set,names,myvariablesy,1,0.01)
+  efficiencyBkg_array,xaxisBkg,num_arrayBkg,den_arrayBkg=get_efficiency_effnum_effden(test_set,names,myvariablesy,0,0.01)
+  plot_efficiency(names,efficiencySig_array,xaxisSig,"signal",suffix,plotdir)
+  plot_efficiency(names,efficiencyBkg_array,xaxisBkg,"background",suffix,plotdir)
+  significance_array= calculatesignificance(efficiencySig_array,sig,efficiencyBkg_array,bkg)
+  plot_significance(names,significance_array,xaxisSig,suffix,plotdir)
+
