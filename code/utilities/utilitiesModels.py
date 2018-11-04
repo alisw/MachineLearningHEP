@@ -45,7 +45,12 @@ def fit(names_, classifiers_,X_train_,y_train_):
     trainedmodels_.append(clf)
   return trainedmodels_
 
-def test(names_,trainedmodels_,X_test_,test_set_):
+def test(names_,trainedmodels_,test_set_,mylistvariables_,myvariablesy_):
+  
+  X_test_=test_set_[mylistvariables_]
+  y_test_=test_set_[myvariablesy_]
+  test_set_[myvariablesy_] = pd.Series(y_test_, index=test_set_.index)
+  
   for name, model in zip(names_, trainedmodels_):
     y_test_prediction=[]
     y_test_prob=[]
