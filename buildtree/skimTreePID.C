@@ -34,10 +34,10 @@ bool skimTreePID(TString finput,TString foutput,TString treename, int maxevents=
   fTreeML->Branch("dca0_ML",&dca0_ML,"dca0_ML/F");
   fTreeML->Branch("sigdca0_ML",&sigdca0_ML,"sigdca0_ML/F");
   fTreeML->Branch("chisq0_ML",&chisq0_ML,"chisq0_ML/F");
-  fTreeML->Branch("itscl0_ML",&itscl0_ML,"itscl0_ML/F");
-  fTreeML->Branch("tpccl0_ML",&tpccl0_ML,"tpccl0_ML/F");
+  fTreeML->Branch("itscl0_ML",&itscl0_ML,"itscl0_ML/I");
+  fTreeML->Branch("tpccl0_ML",&tpccl0_ML,"tpccl0_ML/I");
   fTreeML->Branch("pdau0_ML",&pdau0_ML,"pdau0_ML/F");
-  fTreeML->Branch("pdg0_ML",&pdg0_ML,"pdg0_ML/F");
+  fTreeML->Branch("pdg0_ML",&pdg0_ML,"pdg0_ML/I");
    
   Long64_t nentries = fTree->GetEntries();
   std::cout<<nentries<<std::endl;
