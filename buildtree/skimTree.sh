@@ -4,13 +4,13 @@
 doDsFromCand=0
 doLcFromCand=0
 doDsFromEvt=0
-doBplusFromEvt=1
-doPID=0
+doBplusFromEvt=0
+doPID=1
 
-MCSAMPLE="$HOME/MLproductions/AnalysisResults_Ds_MC_2018Sep21_LHC18a4a2_cent_fast_CandBased.root"
-DATASAMPLE="$HOME/MLproductions/AnalysisResults_Ds_Data_2018Sep21_LHC15o_pass1_pidfix_CandBased.root"  
-MCSAMPLEOUT="$HOME/MLproductions/AnalysisResults_Ds_MC_2018Sep21_LHC18a4a2_cent_fast_CandBased_skimmed.root"
-DATASAMPLEOUT="$HOME/MLproductions/AnalysisResults_Ds_Data_2018Sep21_LHC15o_pass1_pidfix_CandBased_skimmed.root"  
+MCSAMPLE="../MLproductions/AnalysisResults_Ds_MC_2018Sep21_LHC18a4a2_cent_fast_CandBased.root"
+DATASAMPLE="../MLproductions/AnalysisResults_Ds_Data_2018Sep21_LHC15o_pass1_pidfix_CandBased.root"  
+MCSAMPLEOUT="../MLproductions/AnalysisResults_Ds_MC_2018Sep21_LHC18a4a2_cent_fast_CandBased_skimmed.root"
+DATASAMPLEOUT="../MLproductions/AnalysisResults_Ds_Data_2018Sep21_LHC15o_pass1_pidfix_CandBased_skimmed.root"  
 totevents=500000
 MCTree="PWG3_D2H_InvMassDs_MB_Loose_consPID_MVA_kINT7/fTreeDs"
 DataTree="PWG3_D2H_InvMassDs_010_PbPb_Loose_consPID_MVA_kINT7/fTreeDs"
@@ -32,10 +32,10 @@ fi
 
 
 
-MCSAMPLE="$HOME/MLproductions/AnalysisResults_Lambdac_MC_CandBased.root"
-DATASAMPLE="$HOME/MLproductions/AnalysisResults_Lambdac_Data_CandBased.root"
-MCSAMPLEOUT="$HOME/MLproductions/AnalysisResults_Lambdac_MC_CandBased_skimmed.root"
-DATASAMPLEOUT="$HOME/MLproductions/AnalysisResults_Lambdac_Data_CandBased_skimmed.root"
+MCSAMPLE="../MLproductions/AnalysisResults_Lambdac_MC_CandBased.root"
+DATASAMPLE="../MLproductions/AnalysisResults_Lambdac_Data_CandBased.root"
+MCSAMPLEOUT="../MLproductions/AnalysisResults_Lambdac_MC_CandBased_skimmed.root"
+DATASAMPLEOUT="../MLproductions/AnalysisResults_Lambdac_Data_CandBased_skimmed.root"
 
 totevents=500000
 MCTree="fNtupleLambdac5TeVprod_Proc"
@@ -55,10 +55,10 @@ rm -rf skimTreeLambdac.exe.dSYM
 fi
 
 
-MCSAMPLE="$HOME/MLproductions/AnalysisResults_D0DplusDs_MC_EvtBased.root"
-DATASAMPLE="$HOME/MLproductions/AnalysisResults_D0DplusDs_Data_LHC17p_FAST_run282343_EvtBased.root"
-MCSAMPLEOUT="$HOME/MLproductions/AnalysisResults_D0DplusDs_MC_EvtBased_skimmed.root"
-DATASAMPLEOUT="$HOME/MLproductions/AnalysisResults_D0DplusDs_Data_LHC17p_FAST_run282343_EvtBased_skimmed.root"
+MCSAMPLE="../MLproductions/AnalysisResults_D0DplusDs_MC_EvtBased.root"
+DATASAMPLE="../MLproductions/AnalysisResults_D0DplusDs_Data_LHC17p_FAST_run282343_EvtBased.root"
+MCSAMPLEOUT="../MLproductions/AnalysisResults_D0DplusDs_MC_EvtBased_skimmed.root"
+DATASAMPLEOUT="../MLproductions/AnalysisResults_D0DplusDs_Data_LHC17p_FAST_run282343_EvtBased_skimmed.root"
 MCTree="tree_Ds"
 DataTree="tree_Ds"
 
@@ -77,10 +77,10 @@ fi
 
 #-------
 
-MCSAMPLE="$HOME/MLproductions/AnalysisResults_TreeForBplus_MC_EventBased.root"
-DATASAMPLE="$HOME/MLproductions/AnalysisResults_TreeForBplus_MC_EventBased.root"
-MCSAMPLEOUT="$HOME/MLproductions/AnalysisResults_TreeForBplus_MC_EventBased_skimmed.root"
-DATASAMPLEOUT="$HOME/MLproductions/AnalysisResults_TreeForBplus_Data_EventBased_skimmed.root"
+MCSAMPLE="../MLproductions/AnalysisResults_TreeForBplus_MC_EventBased.root"
+DATASAMPLE="../MLproductions/AnalysisResults_TreeForBplus_MC_EventBased.root"
+MCSAMPLEOUT="../MLproductions/AnalysisResults_TreeForBplus_MC_EventBased_skimmed.root"
+DATASAMPLEOUT="../MLproductions/AnalysisResults_TreeForBplus_Data_EventBased_skimmed.root"
 MCTree="tree_Bplus"
 DataTree="tree_Bplus"
 
@@ -99,8 +99,8 @@ fi
 
 # -----------
 
-MCSAMPLE="$HOME/MLproductions/AnalysisResults_TreeForPIDwithML_Dplus_CandBased.root"
-MCSAMPLEOUT="$HOME/MLproductions/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root"
+MCSAMPLE="../MLproductions/AnalysisResults_TreeForPIDwithML_Dplus_CandBased.root"
+MCSAMPLEOUT="../MLproductions/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root"
 MCTree="DplusPID/candTree"
 totevents=500000
 

@@ -5,6 +5,10 @@
 ##                                                           ##
 ###############################################################
 
+from ROOT import TNtuple
+from ROOT import TH1F, TH2F, TCanvas, TFile, gStyle, gROOT
+from myimports import *
+from utilitiesRoot import FillNTuple, ReadNTuple, ReadNTupleML
 import array
 import numpy as np
 import pandas as pd
@@ -76,3 +80,8 @@ def createstringselection(var_skimming_,minlist_,maxlist_):
    string_selection=string_selection+(("%s_%.1f_%.1f") % (var,min,max))
   return string_selection
 
+def writeTree(filename,treename,dataframe):
+  listvar=list(dataframe)
+  values=dataframe.values
+  fout = TFile.Open(filename,"recreate")
+  FillNTuple(treename,values,listvar)

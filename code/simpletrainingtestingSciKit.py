@@ -9,15 +9,15 @@ from ROOT import TH1F, TH2F, TCanvas, TFile, gStyle, gROOT
 from myimports import *
 from utilitiesRoot import FillNTuple, ReadNTuple, ReadNTupleML
 from utilitiesModels import getclassifiers,fit,test,savemodels,importanceplotall,decisionboundaries
-from BinaryMultiFeaturesClassification import getvariablestraining,getvariablesothers,getvariableissignal,getvariablesall,getvariablecorrelation,getgridsearchparameters,getDataMCfiles,getTreeName,prepareMLsample,getvariablesBoundaries,getbackgroudev_testingsample,getFONLLdataframe_FF
+from BinaryMultiFeaturesClassification import getvariablestraining,getvariablesothers,getvariableissignal,getvariablesall,getvariablecorrelation,getgridsearchparameters,getDataMCfiles,getTreeName,prepareMLsample,getvariablesBoundaries
 from utilitiesPerformance import precision_recall,plot_learning_curves,confusion,precision_recall,plot_learning_curves,cross_validation_mse,plot_cross_validation_mse
 from utilitiesPCA import GetPCADataFrameAndPC,GetDataFrameStandardised,plotvariancePCA
 from utilitiesCorrelations import scatterplot,correlationmatrix,vardistplot
-from utilitiesGeneral import filterdataframe_pt,splitdataframe_sigbkg,checkdir,getdataframe,getdataframeDataMC,filterdataframe,filterdataframeDataMC,createstringselection
+from utilitiesGeneral import filterdataframe_pt,splitdataframe_sigbkg,checkdir,getdataframe,getdataframeDataMC,filterdataframe,filterdataframeDataMC,createstringselection,writeTree
 from utilitiesGridSearch import do_gridsearch,plot_gridsearch
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
-from utilitiesOptimisation import getfonllintegrated,plotfonll,get_efficiency_effnum_effden,plot_efficiency,calculatesignificance,plot_significance
+from utilitiesOptimisation import studysignificance
 ############### this is the only place where you should change parameters ################
 classtype="HFmeson"
 optionClassification="Ds"
@@ -33,7 +33,7 @@ suffix="Nevents%d_BinaryClassification%s_%s" % (nevents,optionClassification,str
 
 ############### activate your channel ################
 dosampleprep=1
-docorrelation=0
+docorrelation=1
 doStandard=0
 doPCA=0
 dotraining=1
@@ -43,7 +43,7 @@ docrossvalidation=0
 doRoCLearning=0
 doBoundary=0
 doBinarySearch=0
-doOptimisation=0
+doOptimisation=1
 ncores=-1
 
 dataframe="dataframes_%s" % (suffix)
@@ -83,8 +83,6 @@ print ("dimension of the dataset",len(train_set))
 
 X_train= train_set[mylistvariables]
 y_train=train_set[myvariablesy]
-X_test= test_set[mylistvariables]
-y_test=test_set[myvariablesy]
 
 trainedmodels=[]
 
@@ -122,15 +120,10 @@ if (doRoCLearning==1):
 if (dotesting==1):
   filenametest_set_ML=output+"/testsample%sMLdecision.pkl" % (suffix)
   filenametest_set_ML_root=output+"/testsample%sMLdecision.root" % (suffix)
-  ntuplename="fTreeMLdecision%s" % (optionClassification)
-  test_setML=test(names,trainedmodels,X_test,test_set)
-  test_setML['signal_ML'] = pd.Series(y_test, index=test_set.index)
+  ntuplename=getTreeName(optionClassification)+"Tested"
+  test_setML=test(names,trainedmodels,test_set,mylistvariables,myvariablesy)
   test_setML.to_pickle(filenametest_set_ML)
-  listvar=list(test_setML)
-  values=test_setML.values
-  fout = TFile.Open(filenametest_set_ML_root,"recreate")
-  FillNTuple(ntuplename,values,listvar)
-
+  writeTree(filenametest_set_ML_root,ntuplename,test_setML)
 
 if (doBoundary==1):
   X_train_boundary=train_set[getvariablesBoundaries(optionClassification)]
@@ -147,16 +140,10 @@ if (doBinarySearch==1):
   plot_gridsearch(namesCV,changeparameter,grid_search_models,plotdir,suffix)
   
 if(doOptimisation==1):
-   if((classtype=="HFmeson") & (optionClassification=="Ds")):
-     df,FF= getFONLLdataframe_FF(optionClassification)
-     plotfonll(df.pt,df.central*FF,optionClassification,suffix,plotdir)
-     sig=getfonllintegrated(df,varmin[0],varmax[0])*FF
-     bkg=getbackgroudev_testingsample(optionClassification)
-     efficiencySig_array,xaxisSig,num_arraySig,den_arraySig=get_efficiency_effnum_effden(test_set,names,myvariablesy,1,0.01)
-     efficiencyBkg_array,xaxisBkg,num_arrayBkg,den_arrayBkg=get_efficiency_effnum_effden(test_set,names,myvariablesy,0,0.01)
-     plot_efficiency(names,efficiencySig_array,xaxisSig,"signal",suffix,plotdir)
-     plot_efficiency(names,efficiencyBkg_array,xaxisBkg,"background",suffix,plotdir)
-     significance_array= calculatesignificance(efficiencySig_array,sig,efficiencyBkg_array,bkg)
-     plot_significance(names,significance_array,xaxisSig,suffix,plotdir)
-  
+  if not ((classtype=="HFmeson") & (optionClassification=="Ds")):
+    print ("==================ERROR==================")
+    print ("Optimisation is not implemented for this classification problem. The code is going to fail")
+    sys.exit()   
+  studysignificance(optionClassification,varmin[0],varmax[0],test_set,names,myvariablesy,suffix,plotdir) 
+      
 
