@@ -25,6 +25,9 @@ from sklearn.ensemble import ExtraTreesClassifier
 from sklearn_evaluation import plot
 from sklearn.feature_extraction import DictVectorizer
 from matplotlib.colors import ListedColormap
+from keras.models import Sequential
+from keras.layers import Dense
+from keras.wrappers.scikit_learn import KerasClassifier
 
 def getclassifiers():
   classifiers = [
@@ -37,7 +40,21 @@ def getclassifiers():
 #     "LinearSVC", "SVC_rbf","LogisticRegression"
   ]
   return classifiers, names
-    
+
+def getclassifiersDNN(lengthInput):
+
+  def create_model_Sequential():
+    model = Sequential()
+    model.add(Dense(12, input_dim=lengthInput, activation='relu'))
+    model.add(Dense(8, activation='relu'))
+    model.add(Dense(1, activation='sigmoid'))
+    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+    return model
+  
+  classifiers = [KerasClassifier(build_fn=create_model_Sequential, epochs=1000, batch_size=50, verbose=0)]
+  names = ["KerasSequential"]
+  return classifiers,names 
+
 def fit(names_, classifiers_,X_train_,y_train_):
   trainedmodels_=[]
   for name, clf in zip(names_, classifiers_):
@@ -55,17 +72,25 @@ def test(names_,trainedmodels_,test_set_,mylistvariables_,myvariablesy_):
     y_test_prediction=[]
     y_test_prob=[]
     y_test_prediction=model.predict(X_test_)
-#     y_test_prediction=y_test_prediction.reshape(len(y_test_prediction),)
+    y_test_prediction=y_test_prediction.reshape(len(y_test_prediction),)
     y_test_prob=model.predict_proba(X_test_)[:,1]
     test_set_['y_test_prediction'+name] = pd.Series(y_test_prediction, index=test_set_.index)
     test_set_['y_test_prob'+name] = pd.Series(y_test_prob, index=test_set_.index)
   return test_set_
 
 def savemodels(names_,trainedmodels_,folder_,suffix_):
-  for name, model in zip(names_, trainedmodels_):
-    fileoutmodel = folder_+"/"+name+suffix_+".sav"
-    pickle.dump(model, open(fileoutmodel, 'wb'))
-
+    for name, model in zip(names_, trainedmodels_):
+      if "Keras" in name: 
+        architecture_file= folder_+"/"+name+suffix_+"_architecture.json"
+        weights_file= folder_+"/"+name+suffix_+"_weights.h5"
+        arch_json = model.model.to_json()
+        with open(architecture_file, 'w') as json_file:
+          json_file.write(arch_json)
+        model.model.save_weights(weights_file)
+      else: 
+        fileoutmodel = folder_+"/"+name+suffix_+".sav"
+        pickle.dump(model, open(fileoutmodel, 'wb'))
+        
 def readmodels(names_,folder_,suffix_):
   trainedmodels_=[]
   for name in names_:
