@@ -20,7 +20,7 @@ from sklearn.utils import shuffle
 from utilitiesOptimisation import studysignificance
 
 ############### this is the only place where you should change parameters ################
-nevents=300
+nevents=1500
 classtype="HFmeson" #other options are "PID"
 optionClassification="Ds" #other options are "Bplus,Lc,PIDKaon,PIDPion
 var_skimming=["pt_cand_ML"] #other options are "pdau0_ML" in case of PID
@@ -28,7 +28,7 @@ varmin=[0]
 varmax=[100]
 
 ############### choose if you want scikit or keras models or both ################
-activateScikitModels=0
+activateScikitModels=1
 activateKerasModels=1
 
 ############### choose which step you want to do ################
@@ -36,16 +36,16 @@ dosampleprep=1
 docorrelation=0
 doStandard=0
 doPCA=0
-dotraining=1
-dotesting=1
-doRoCLearning=1
-doOptimisation=1
+dotraining=0
+dotesting=0
+doRoCLearning=0
+doOptimisation=0
 doBinarySearch=0
 
 ############### this below is currently available only for SciKit models ################
-doimportance=1
+doimportance=0
 docrossvalidation=1
-doBoundary=1
+doBoundary=0
 ncores=-1
 
 ################################################################
@@ -158,7 +158,11 @@ if (doBinarySearch==1):
   grid_search_models,grid_search_bests=do_gridsearch(namesCV,classifiersCV,mylistvariables,param_gridCV,X_train,y_train,3,ncores)
   savemodels(namesCV,grid_search_models,output,"GridSearchCV"+suffix)
   plot_gridsearch(namesCV,changeparameter,grid_search_models,plotdir,suffix)
-  
+
+if (docrossvalidation==1): 
+  df_scores=cross_validation_mse(names,classifiers,X_train,y_train,5,ncores)
+  plot_cross_validation_mse(names,df_scores,suffix,plotdir)
+
 ################################################################################################################
 ######## this is just a temporary fix since the validation studies below are still not compatible with NN models
 ################################################################################################################
@@ -169,9 +173,6 @@ classifiers=classifiersScikit
 if (doimportance==1):
   importanceplotall(mylistvariables,names,classifiers,suffix,plotdir)
   
-if (docrossvalidation==1): 
-  df_scores=cross_validation_mse(names,classifiers,X_train,y_train,10,ncores)
-  plot_cross_validation_mse(names,df_scores,suffix,plotdir)
 
 
 if (doBoundary==1):

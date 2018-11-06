@@ -36,8 +36,8 @@ def getclassifiers():
   ]
                                         
   names = [
-    "GradientBoostingClassifier","Random_Forest","AdaBoost","Decision_Tree"
-#     "LinearSVC", "SVC_rbf","LogisticRegression"
+    "ScikitGradientBoostingClassifier","ScikitRandom_Forest","ScikitAdaBoost","ScikitDecision_Tree"
+#     "ScikitLinearSVC", "ScikitSVC_rbf","ScikitLogisticRegression"
   ]
   return classifiers, names
 
