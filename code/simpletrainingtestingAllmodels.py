@@ -20,7 +20,7 @@ from sklearn.utils import shuffle
 from utilitiesOptimisation import studysignificance
 
 ############### this is the only place where you should change parameters ################
-nevents=1500
+nevents=5000
 classtype="HFmeson" #other options are "PID"
 optionClassification="Ds" #other options are "Bplus,Lc,PIDKaon,PIDPion
 var_skimming=["pt_cand_ML"] #other options are "pdau0_ML" in case of PID
@@ -41,11 +41,11 @@ dotesting=0
 doRoCLearning=0
 doOptimisation=0
 doBinarySearch=0
+docrossvalidation=0
+doBoundary=1
 
 ############### this below is currently available only for SciKit models ################
 doimportance=0
-docrossvalidation=1
-doBoundary=0
 ncores=-1
 
 ################################################################
@@ -163,6 +163,18 @@ if (docrossvalidation==1):
   df_scores=cross_validation_mse(names,classifiers,X_train,y_train,5,ncores)
   plot_cross_validation_mse(names,df_scores,suffix,plotdir)
 
+if (doBoundary==1):
+  classifiersScikit2var,names2var=getclassifiers()
+  classifiersDNN2var,namesDNN2var=getclassifiersDNN(2)
+  classifiers2var=classifiersScikit2var+classifiersDNN2var
+  X_train_boundary=train_set[getvariablesBoundaries(optionClassification)]
+  trainedmodels2var=fit(names,classifiers2var,X_train_boundary,y_train)
+  mydecisionboundaries=decisionboundaries(names,trainedmodels2var,suffix+"2var",X_train_boundary,y_train,plotdir)
+  X_train_2PC,pca=GetPCADataFrameAndPC(X_train,2)
+  trainedmodelsPCA=fit(names, classifiers2var,X_train_2PC,y_train)
+  mydecisionboundaries=decisionboundaries(names,trainedmodelsPCA,suffix+"2PCA",X_train_2PC,y_train,plotdir)
+
+
 ################################################################################################################
 ######## this is just a temporary fix since the validation studies below are still not compatible with NN models
 ################################################################################################################
@@ -174,14 +186,6 @@ if (doimportance==1):
   importanceplotall(mylistvariables,names,classifiers,suffix,plotdir)
   
 
-
-if (doBoundary==1):
-  X_train_boundary=train_set[getvariablesBoundaries(optionClassification)]
-  trainedmodels2var=fit(names,classifiers,X_train_boundary,y_train)
-  mydecisionboundaries=decisionboundaries(names,trainedmodels2var,suffix+"2var",X_train_boundary,y_train,plotdir)
-#   X_train_2PC,pca=GetPCADataFrameAndPC(X_train,2)
-#   trainedmodelsPCA=fit(names, classifiers,X_train_2PC,y_train)
-#   mydecisionboundaries=decisionboundaries(names,trainedmodelsPCA,suffix+"2PCA",X_train_2PC,y_train,plotdir)
   
       
 
