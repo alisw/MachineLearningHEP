@@ -20,23 +20,18 @@ from sklearn.utils import shuffle
 from utilitiesOptimisation import studysignificance
 
 ############### this is the only place where you should change parameters ################
-classtype="HFmeson"
-optionClassification="Ds"
-var_skimming=["pt_cand_ML"]
-# classtype="PID"
-# optionClassification="PIDKaon"
-# var_skimming=["pdau0_ML"]
 nevents=300
+classtype="HFmeson" #other options are "PID"
+optionClassification="Ds" #other options are "Bplus,Lc,PIDKaon,PIDPion
+var_skimming=["pt_cand_ML"] #other options are "pdau0_ML" in case of PID
 varmin=[0]
 varmax=[100]
-string_selection=createstringselection(var_skimming,varmin,varmax)
-suffix="Nevents%d_BinaryClassification%s_%s" % (nevents,optionClassification,string_selection)
 
-############### activate your channel ################
-
+############### choose if you want scikit or keras models or both ################
 activateScikitModels=0
 activateKerasModels=1
 
+############### choose which step you want to do ################
 dosampleprep=1
 docorrelation=0
 doStandard=0
@@ -47,10 +42,20 @@ doRoCLearning=1
 doOptimisation=1
 doBinarySearch=0
 
+############### this below is currently available only for SciKit models ################
 doimportance=1
 docrossvalidation=1
 doBoundary=1
 ncores=-1
+
+################################################################
+################################################################
+############### dont change anything below here ################
+################################################################
+################################################################
+
+string_selection=createstringselection(var_skimming,varmin,varmax)
+suffix="Nevents%d_BinaryClassification%s_%s" % (nevents,optionClassification,string_selection)
 
 dataframe="dataframes_%s" % (suffix)
 plotdir="plots_%s" % (suffix)
