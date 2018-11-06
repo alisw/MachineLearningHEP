@@ -25,12 +25,15 @@ from sklearn.metrics import confusion_matrix
 from sklearn.metrics import precision_recall_curve
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import mean_squared_error
-
+from sklearn.model_selection import StratifiedKFold
 
 def cross_validation_mse(names_,classifiers_,X_train_,y_train_,cv_,ncores):
   df_scores = pd.DataFrame()
-  for name, clf in zip(names_, classifiers_):
-    scores = cross_val_score(clf, X_train_, y_train_, scoring="neg_mean_squared_error", cv=cv_, n_jobs=ncores)
+  for name, clf in zip(names_, classifiers_): 
+    if "Keras" in name:
+      ncores=1
+    kfold = StratifiedKFold(n_splits=cv_, shuffle=True, random_state=1)
+    scores = cross_val_score(clf, X_train_, y_train_, cv=kfold, scoring="neg_mean_squared_error",n_jobs=ncores)
     tree_rmse_scores = np.sqrt(-scores)
     df_scores[name] =  tree_rmse_scores
   return df_scores
@@ -39,17 +42,20 @@ def cross_validation_mse(names_,classifiers_,X_train_,y_train_,cv_,ncores):
 def plot_cross_validation_mse(names_,df_scores_,suffix_,folder):
   figure1 = plt.figure(figsize=(20,15))
   i=1
+  minx=0.1
+  maxx=0.6
+  stepsize=(maxx-minx)/50
   for name in names_:
     ax = plt.subplot(2, (len(names_)+1)/2, i)  
-    bin_values = np.arange(start=0.2, stop=0.4, step=0.005)  
-    l=plt.hist(df_scores_[name], color="blue",bins=bin_values)
+    bin_values = np.arange(start=minx, stop=maxx, step=stepsize)  
+    l=plt.hist(df_scores_[name].values, color="blue",bins=bin_values)
     #mystring='$\mu$=%8.2f, \sigma$=%8.2f' % (df_scores_[name].mean(),df_scores_[name].std())
     mystring='$\mu=%8.2f, \sigma=%8.2f$' % (df_scores_[name].mean(),df_scores_[name].std())
     plt.text(0.2, 4., mystring,fontsize=16)
     plt.title(name, fontsize=16)   
     plt.xlabel("scores RMSE",fontsize=16) 
     plt.ylim(0, 5)
-    plt.xlim(0, 0.7)
+    plt.xlim(minx,maxx)
     plt.ylabel("Entries",fontsize=16)
     figure1.subplots_adjust(hspace=.5)
     i += 1
