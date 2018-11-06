@@ -34,7 +34,7 @@ suffix="Nevents%d_BinaryClassification%s_%s" % (nevents,optionClassification,str
 
 ############### activate your channel ################
 
-activateScikitModels=1
+activateScikitModels=0
 activateKerasModels=1
 
 dosampleprep=1
@@ -42,13 +42,14 @@ docorrelation=0
 doStandard=0
 doPCA=0
 dotraining=1
-doimportance=1
 dotesting=1
-docrossvalidation=1
 doRoCLearning=1
-doBoundary=1
-doBinarySearch=0
 doOptimisation=1
+doBinarySearch=0
+
+doimportance=1
+docrossvalidation=1
+doBoundary=1
 ncores=-1
 
 dataframe="dataframes_%s" % (suffix)
