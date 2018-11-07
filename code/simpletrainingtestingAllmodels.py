@@ -20,7 +20,7 @@ from sklearn.utils import shuffle
 from utilitiesOptimisation import studysignificance
 
 ############### this is the only place where you should change parameters ################
-nevents=5000
+nevents=50000
 classtype="HFmeson" #other options are "PID"
 optionClassification="Ds" #other options are "Bplus,Lc,PIDKaon,PIDPion
 var_skimming=["pt_cand_ML"] #other options are "pdau0_ML" in case of PID
@@ -42,7 +42,7 @@ doRoCLearning=0
 doOptimisation=0
 doBinarySearch=0
 docrossvalidation=0
-doBoundary=1
+doBoundary=0
 
 ############### this below is currently available only for SciKit models ################
 doimportance=0
