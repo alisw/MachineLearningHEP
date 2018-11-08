@@ -21,9 +21,9 @@ from utilitiesOptimisation import studysignificance
 
 ############### this is the only place where you should change parameters ################
 nevents=10000
-MLtype="Regression" #other options are "Regression"
-MLsubtype="test" #other options are "PID"
-optionanalysis="testregression" #other options are "Bplus,Lc,PIDKaon,PIDPion
+MLtype="BinaryClassification" #other options are "Regression", "BinaryClassification"
+MLsubtype="HFmeson" #other options are "PID","HFmeson"
+optionanalysis="Ds" #other options are "Bplus,Lc,PIDKaon,PIDPion
 var_skimming=["pt_cand_ML"] #other options are "pdau0_ML" in case of PID
 varmin=[0]
 varmax=[100]
