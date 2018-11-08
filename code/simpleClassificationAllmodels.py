@@ -176,7 +176,6 @@ if (docrossvalidation==1):
 
 if (doLearningCurve==1):
 #   confusion(mylistvariables,names,classifiers,suffix,X_train,y_train,5)
-  precision_recall(mylistvariables,names,classifiers,suffix,X_train,y_train,5,plotdir)
   plot_learning_curves(names,classifiers,suffix,plotdir,X_train,y_train,100,3000,300)
   
 if (doROCcurve==1):
