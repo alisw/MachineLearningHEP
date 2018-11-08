@@ -20,29 +20,31 @@ from sklearn.utils import shuffle
 from utilitiesOptimisation import studysignificance
 
 ############### this is the only place where you should change parameters ################
-nevents=50000
-classtype="HFmeson" #other options are "PID"
-optionClassification="Ds" #other options are "Bplus,Lc,PIDKaon,PIDPion
+nevents=400
+MLtype="BinaryClassification"
+MLsubtype="HFmeson" #other options are "PID"
+optionanalysis="Ds" #other options are "Bplus,Lc,PIDKaon,PIDPion
 var_skimming=["pt_cand_ML"] #other options are "pdau0_ML" in case of PID
 varmin=[0]
 varmax=[100]
 
 ############### choose if you want scikit or keras models or both ################
 activateScikitModels=1
-activateKerasModels=1
+activateKerasModels=0
 
 ############### choose which step you want to do ################
 dosampleprep=1
-docorrelation=0
+docorrelation=1
 doStandard=0
 doPCA=0
-dotraining=0
-dotesting=0
-doRoCLearning=0
-doOptimisation=0
+dotraining=1
+dotesting=1
+doLearningCurve=1
+doROCcurve=1
+doOptimisation=1
 doBinarySearch=0
-docrossvalidation=0
-doBoundary=0
+docrossvalidation=1
+doBoundary=1
 
 ############### this below is currently available only for SciKit models ################
 doimportance=0
@@ -54,8 +56,13 @@ ncores=-1
 ################################################################
 ################################################################
 
+
+################################################################
+########### sample preparation and preprocessing ###############
+################################################################
+
 string_selection=createstringselection(var_skimming,varmin,varmax)
-suffix="Nevents%d_BinaryClassification%s_%s" % (nevents,optionClassification,string_selection)
+suffix="Nevents%d_%s%s_%s" % (nevents,MLtype,optionanalysis,string_selection)
 
 dataframe="dataframes_%s" % (suffix)
 plotdir="plots_%s" % (suffix)
@@ -71,21 +78,32 @@ classifiersDNN=[]
 names=[]
 namesScikit=[]
 namesDNN=[]
+
+
+if (activateScikitModels==1):
+  classifiersScikit,namesScikit=getclassifiers()
+  classifiers=classifiers+classifiersScikit
+  names=names+namesScikit
+
+if (activateKerasModels==1):
+  classifiersDNN,namesDNN=getclassifiersDNN(len(X_train.columns))
+  classifiers=classifiers+classifiersDNN
+  names=names+namesDNN
   
-mylistvariables=getvariablestraining(optionClassification)
-mylistvariablesothers=getvariablesothers(optionClassification)
-myvariablesy=getvariableissignal(optionClassification)
-mylistvariablesx,mylistvariablesy=getvariablecorrelation(optionClassification)
-mylistvariablesall=getvariablesall(optionClassification)
+mylistvariables=getvariablestraining(optionanalysis)
+mylistvariablesothers=getvariablesothers(optionanalysis)
+myvariablesy=getvariableissignal(optionanalysis)
+mylistvariablesx,mylistvariablesy=getvariablecorrelation(optionanalysis)
+mylistvariablesall=getvariablesall(optionanalysis)
 
 
 if(dosampleprep==1): 
-  fileData,fileMC=getDataMCfiles(optionClassification)
-  trename=getTreeName(optionClassification)
+  fileData,fileMC=getDataMCfiles(optionanalysis)
+  trename=getTreeName(optionanalysis)
   dataframeData,dataframeMC=getdataframeDataMC(fileData,fileMC,trename,mylistvariablesall)
   dataframeData,dataframeMC=filterdataframeDataMC(dataframeData,dataframeMC,var_skimming,varmin,varmax)  
   ## prepare ML sample
-  dataframeML=prepareMLsample(classtype,optionClassification,dataframeData,dataframeMC,nevents)
+  dataframeML=prepareMLsample(MLsubtype,optionanalysis,dataframeData,dataframeMC,nevents)
   dataframeML=shuffle(dataframeML)
   ### split in training/testing sample
   train_set, test_set = train_test_split(dataframeML, test_size=0.2, random_state=42)
@@ -118,15 +136,10 @@ if (doPCA==1):
   X_train,pca=GetPCADataFrameAndPC(X_train,n_pca)
   plotvariancePCA(pca,plotdir)
 
-if (activateScikitModels==1):
-  classifiersScikit,namesScikit=getclassifiers()
-  classifiers=classifiers+classifiersScikit
-  names=names+namesScikit
 
-if (activateKerasModels==1):
-  classifiersDNN,namesDNN=getclassifiersDNN(len(X_train.columns))
-  classifiers=classifiers+classifiersDNN
-  names=names+namesDNN
+################################################################
+################## training and testing ########################
+################################################################
 
 if (dotraining==1):
   trainedmodels=fit(names, classifiers,X_train,y_train)
@@ -135,39 +148,44 @@ if (dotraining==1):
 if (dotesting==1):
   filenametest_set_ML=output+"/testsample%sMLdecision.pkl" % (suffix)
   filenametest_set_ML_root=output+"/testsample%sMLdecision.root" % (suffix)
-  ntuplename=getTreeName(optionClassification)+"Tested"
+  ntuplename=getTreeName(optionanalysis)+"Tested"
   test_setML=test(names,trainedmodels,test_set,mylistvariables,myvariablesy)
   test_setML.to_pickle(filenametest_set_ML)
   writeTree(filenametest_set_ML_root,ntuplename,test_setML)
-  
-if (doRoCLearning==1):
-#   confusion(mylistvariables,names,classifiers,suffix,X_train,y_train,5)
-  precision_recall(mylistvariables,names,classifiers,suffix,X_train,y_train,5,plotdir)
-  plot_learning_curves(names,classifiers,suffix,plotdir,X_train,y_train,100,3000,300)
-  
-if(doOptimisation==1):
-  if not ((classtype=="HFmeson") & (optionClassification=="Ds")):
-    print ("==================ERROR==================")
-    print ("Optimisation is not implemented for this classification problem. The code is going to fail")
-    sys.exit()   
-  studysignificance(optionClassification,varmin[0],varmax[0],test_set,names,myvariablesy,suffix,plotdir) 
-
-
-if (doBinarySearch==1):
-  namesCV,classifiersCV,param_gridCV,changeparameter=getgridsearchparameters(optionClassification)
-  grid_search_models,grid_search_bests=do_gridsearch(namesCV,classifiersCV,mylistvariables,param_gridCV,X_train,y_train,3,ncores)
-  savemodels(namesCV,grid_search_models,output,"GridSearchCV"+suffix)
-  plot_gridsearch(namesCV,changeparameter,grid_search_models,plotdir,suffix)
+    
+################################################################
+################# common validation tools ######################
+################################################################
 
 if (docrossvalidation==1): 
   df_scores=cross_validation_mse(names,classifiers,X_train,y_train,5,ncores)
   plot_cross_validation_mse(names,df_scores,suffix,plotdir)
 
+
+if (doLearningCurve==1):
+#   confusion(mylistvariables,names,classifiers,suffix,X_train,y_train,5)
+  precision_recall(mylistvariables,names,classifiers,suffix,X_train,y_train,5,plotdir)
+  plot_learning_curves(names,classifiers,suffix,plotdir,X_train,y_train,100,3000,300)
+  
+if (doROCcurve==1):
+  plot_learning_curves(names,classifiers,suffix,plotdir,X_train,y_train,100,3000,300)
+
+################################################################
+################ Classification specifics ######################
+################################################################
+
+if(doOptimisation==1):
+  if not ((MLsubtype=="HFmeson") & (optionanalysis=="Ds")):
+    print ("==================ERROR==================")
+    print ("Optimisation is not implemented for this classification problem. The code is going to fail")
+    sys.exit()   
+  studysignificance(optionanalysis,varmin[0],varmax[0],test_set,names,myvariablesy,suffix,plotdir) 
+
 if (doBoundary==1):
   classifiersScikit2var,names2var=getclassifiers()
   classifiersDNN2var,namesDNN2var=getclassifiersDNN(2)
   classifiers2var=classifiersScikit2var+classifiersDNN2var
-  X_train_boundary=train_set[getvariablesBoundaries(optionClassification)]
+  X_train_boundary=train_set[getvariablesBoundaries(optionanalysis)]
   trainedmodels2var=fit(names,classifiers2var,X_train_boundary,y_train)
   mydecisionboundaries=decisionboundaries(names,trainedmodels2var,suffix+"2var",X_train_boundary,y_train,plotdir)
   X_train_2PC,pca=GetPCADataFrameAndPC(X_train,2)
@@ -175,17 +193,16 @@ if (doBoundary==1):
   mydecisionboundaries=decisionboundaries(names,trainedmodelsPCA,suffix+"2PCA",X_train_2PC,y_train,plotdir)
 
 
-################################################################################################################
-######## this is just a temporary fix since the validation studies below are still not compatible with NN models
-################################################################################################################
+if (doBinarySearch==1):
+  namesCV,classifiersCV,param_gridCV,changeparameter=getgridsearchparameters(optionanalysis)
+  grid_search_models,grid_search_bests=do_gridsearch(namesCV,classifiersCV,mylistvariables,param_gridCV,X_train,y_train,3,ncores)
+  savemodels(namesCV,grid_search_models,output,"GridSearchCV"+suffix)
+  plot_gridsearch(namesCV,changeparameter,grid_search_models,plotdir,suffix)
 
-names=namesScikit
-classifiers=classifiersScikit
 
 if (doimportance==1):
-  importanceplotall(mylistvariables,names,classifiers,suffix,plotdir)
+  importanceplotall(mylistvariables,namesScikit,classifiersScikit,suffix,plotdir)
   
-
   
       
 
