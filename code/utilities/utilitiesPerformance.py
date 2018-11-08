@@ -147,7 +147,7 @@ def precision_recall(mylistvariables_,names_,classifiers_,suffix_,X_train,y_trai
   plt.savefig(plotname)
   
 
-def plot_learning_curves(names_, classifiers_,suffix_,folder,X,y,min=1,max=-1,step_=1):
+def plot_learning_curves(names_, classifiers_,suffix_,folder,X,y,npoints):
   figure1 = plt.figure(figsize=(20,15))
   i=1
   X_train, X_val, y_train, y_val = train_test_split(X,y,test_size=0.2)
@@ -155,8 +155,9 @@ def plot_learning_curves(names_, classifiers_,suffix_,folder,X,y,min=1,max=-1,st
     ax = plt.subplot(2, (len(names_)+1)/2, i)  
     ax.set_ylim([0,1.])
     train_errors, val_errors = [],[]
-    if (max==-1):
-      max=len(X_train)
+    max=len(X_train)
+    min=100
+    step_=int((max-min)/npoints)
     arrayvalues=np.arange(start=min,stop=max,step=step_)
     for m in arrayvalues:
       clf.fit(X_train[:m],y_train[:m])

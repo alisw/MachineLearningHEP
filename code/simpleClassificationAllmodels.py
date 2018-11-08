@@ -9,7 +9,7 @@ from ROOT import TH1F, TH2F, TCanvas, TFile, gStyle, gROOT
 from myimports import *
 from utilitiesRoot import FillNTuple, ReadNTuple, ReadNTupleML
 from utilitiesModels import getclassifiers,fit,test,savemodels,importanceplotall,decisionboundaries,getclassifiersDNN
-from BinaryMultiFeaturesClassification import getvariablestraining,getvariablesothers,getvariableissignal,getvariablesall,getvariablecorrelation,getgridsearchparameters,getDataMCfiles,getTreeName,prepareMLsample,getvariablesBoundaries
+from BinaryMultiFeaturesClassification import getvariablestraining,getvariablesothers,getvariableissignal,getvariabletarget,getvariablesall,getvariablecorrelation,getgridsearchparameters,getDataMCfiles,getTreeName,prepareMLsample,getvariablesBoundaries
 from utilitiesPerformance import precision_recall,plot_learning_curves,confusion,precision_recall,plot_learning_curves,cross_validation_mse,plot_cross_validation_mse
 from utilitiesPCA import GetPCADataFrameAndPC,GetDataFrameStandardised,plotvariancePCA
 from utilitiesCorrelations import scatterplot,correlationmatrix,vardistplot
@@ -20,10 +20,10 @@ from sklearn.utils import shuffle
 from utilitiesOptimisation import studysignificance
 
 ############### this is the only place where you should change parameters ################
-nevents=200
-MLtype="BinaryClassification" #other options are "Regression"
-MLsubtype="HFmeson" #other options are "PID"
-optionanalysis="Ds" #other options are "Bplus,Lc,PIDKaon,PIDPion
+nevents=2000
+MLtype="Regression" #other options are "Regression"
+MLsubtype="test" #other options are "PID"
+optionanalysis="testregression" #other options are "Bplus,Lc,PIDKaon,PIDPion
 var_skimming=["pt_cand_ML"] #other options are "pdau0_ML" in case of PID
 varmin=[0]
 varmax=[100]
@@ -40,10 +40,12 @@ doPCA=0
 dotraining=1
 dotesting=1
 doLearningCurve=1
-doROCcurve=1
-doOptimisation=1
+docrossvalidation=0
+
+
+doROCcurve=0
+doOptimisation=0
 doBinarySearch=0
-docrossvalidation=1
 doBoundary=1
 
 ############### this below is currently available only for SciKit models ################
@@ -104,7 +106,8 @@ if (activateKerasModels==1):
   
 mylistvariables=getvariablestraining(optionanalysis)
 mylistvariablesothers=getvariablesothers(optionanalysis)
-myvariablesy=getvariableissignal(optionanalysis)
+myvariablessignal=getvariableissignal(optionanalysis)
+myvariablesy=getvariabletarget(optionanalysis)
 mylistvariablesx,mylistvariablesy=getvariablecorrelation(optionanalysis)
 mylistvariablesall=getvariablesall(optionanalysis)
 
@@ -115,7 +118,7 @@ if(dosampleprep==1):
   dataframeData,dataframeMC=getdataframeDataMC(fileData,fileMC,trename,mylistvariablesall)
   dataframeData,dataframeMC=filterdataframeDataMC(dataframeData,dataframeMC,var_skimming,varmin,varmax)  
   ## prepare ML sample
-  dataframeML,dataframe_sig,dataframe_bkg=prepareMLsample(MLsubtype,optionanalysis,dataframeData,dataframeMC,nevents)
+  dataframeML,dataframe_sig,dataframe_bkg=prepareMLsample(MLtype,MLsubtype,optionanalysis,dataframeData,dataframeMC,nevents)
   dataframeML=shuffle(dataframeML)
   ### split in training/testing sample
   train_set, test_set = train_test_split(dataframeML, test_size=0.2, random_state=42)
@@ -134,7 +137,7 @@ y_train=train_set[myvariablesy]
 trainedmodels=[]
 
 if(docorrelation==1):
-  train_set_ptsel_sig,train_set_ptsel_bkg=splitdataframe_sigbkg(train_set,myvariablesy)
+  train_set_ptsel_sig,train_set_ptsel_bkg=splitdataframe_sigbkg(train_set,myvariablessignal)
   vardistplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariablesall,plotdir)
   scatterplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariablesx,mylistvariablesy,plotdir)
   correlationmatrix(train_set_ptsel_sig,plotdir,"signal")
@@ -154,6 +157,7 @@ if (doPCA==1):
 ################################################################
 
 if (dotraining==1):
+  print (names)
   trainedmodels=fit(names, classifiers,X_train,y_train)
   savemodels(names,trainedmodels,output,suffix)
   
@@ -176,10 +180,10 @@ if (docrossvalidation==1):
 
 if (doLearningCurve==1):
 #   confusion(mylistvariables,names,classifiers,suffix,X_train,y_train,5)
-  plot_learning_curves(names,classifiers,suffix,plotdir,X_train,y_train,100,3000,300)
+  plot_learning_curves(names,classifiers,suffix,plotdir,X_train,y_train,10)
   
 if (doROCcurve==1):
-  plot_learning_curves(names,classifiers,suffix,plotdir,X_train,y_train,100,3000,300)
+  precision_recall(mylistvariables,names,classifiers,suffix,X_train,y_train,5,plotdir)
 
 ################################################################
 ################ Classification specifics ######################

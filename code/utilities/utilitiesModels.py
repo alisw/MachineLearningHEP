@@ -3,6 +3,8 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC
+from sklearn.linear_model import LinearRegression
+
 ###############################################################
 ##                                                           ##
 ##     Software for single-label classification with Scikit  ##
@@ -42,7 +44,15 @@ def getclassifiers(MLtype):
       "ScikitGradientBoostingClassifier","ScikitRandom_Forest","ScikitAdaBoost","ScikitDecision_Tree"
 #       "ScikitLinearSVC", "ScikitSVC_rbf","ScikitLogisticRegression"
     ]
-  
+
+  if (MLtype=="Regression"):
+    classifiers = [
+      LinearRegression()
+    ]
+                                        
+    names = [
+      "Scikit_linear_regression"
+    ]
   return classifiers, names
 
 def getclassifiersDNN(MLtype,lengthInput):
@@ -60,7 +70,9 @@ def getclassifiersDNN(MLtype,lengthInput):
   
     classifiers = [KerasClassifier(build_fn=create_model_Sequential, epochs=1000, batch_size=50, verbose=0)]
     names = ["KerasSequential"]
-  
+    
+  if (MLtype=="Regression"):
+    print ("No Keras models implemented for Regression")
   return classifiers,names 
 
 def fit(names_, classifiers_,X_train_,y_train_):
@@ -71,17 +83,16 @@ def fit(names_, classifiers_,X_train_,y_train_):
   return trainedmodels_
 
 def test(MLtype,names_,trainedmodels_,test_set_,mylistvariables_,myvariablesy_):
-  
   X_test_=test_set_[mylistvariables_]
-  y_test_=test_set_[myvariablesy_]
+  y_test_=test_set_[myvariablesy_].values.reshape(len(X_test_),)
   test_set_[myvariablesy_] = pd.Series(y_test_, index=test_set_.index)
-  
   for name, model in zip(names_, trainedmodels_):
     y_test_prediction=[]
     y_test_prob=[]
     y_test_prediction=model.predict(X_test_)
     y_test_prediction=y_test_prediction.reshape(len(y_test_prediction),)
     test_set_['y_test_prediction'+name] = pd.Series(y_test_prediction, index=test_set_.index)
+
     if (MLtype=="BinaryClassification"):
       y_test_prob=model.predict_proba(X_test_)[:,1]
       test_set_['y_test_prob'+name] = pd.Series(y_test_prob, index=test_set_.index)
