@@ -21,7 +21,7 @@ from utilitiesOptimisation import studysignificance
 
 ############### this is the only place where you should change parameters ################
 nevents=200
-MLtype="BinaryClassification"
+MLtype="BinaryClassification" #other options are "Regression"
 MLsubtype="HFmeson" #other options are "PID"
 optionanalysis="Ds" #other options are "Bplus,Lc,PIDKaon,PIDPion
 var_skimming=["pt_cand_ML"] #other options are "pdau0_ML" in case of PID
@@ -49,6 +49,18 @@ doBoundary=1
 ############### this below is currently available only for SciKit models ################
 doimportance=0
 ncores=-1
+
+if (MLtype=="Regression"):
+  print ("the following tests cannot be performed since meaningless for regression analysis or not yet implemented:")
+  print ("- doROCcurve")
+  print ("- doOptimisation")
+  print ("- doBinarySearch")
+  print ("- doBoundary")
+  doROCcurve=0
+  doOptimisation=0
+  doBinarySearch=0
+  doBoundary=0
+  activateKerasModels=0
 
 ################################################################
 ################################################################
@@ -103,7 +115,7 @@ if(dosampleprep==1):
   dataframeData,dataframeMC=getdataframeDataMC(fileData,fileMC,trename,mylistvariablesall)
   dataframeData,dataframeMC=filterdataframeDataMC(dataframeData,dataframeMC,var_skimming,varmin,varmax)  
   ## prepare ML sample
-  dataframeML=prepareMLsample(MLsubtype,optionanalysis,dataframeData,dataframeMC,nevents)
+  dataframeML,dataframe_sig,dataframe_bkg=prepareMLsample(MLsubtype,optionanalysis,dataframeData,dataframeMC,nevents)
   dataframeML=shuffle(dataframeML)
   ### split in training/testing sample
   train_set, test_set = train_test_split(dataframeML, test_size=0.2, random_state=42)
@@ -149,7 +161,7 @@ if (dotesting==1):
   filenametest_set_ML=output+"/testsample%sMLdecision.pkl" % (suffix)
   filenametest_set_ML_root=output+"/testsample%sMLdecision.root" % (suffix)
   ntuplename=getTreeName(optionanalysis)+"Tested"
-  test_setML=test(names,trainedmodels,test_set,mylistvariables,myvariablesy)
+  test_setML=test(MLtype,names,trainedmodels,test_set,mylistvariables,myvariablesy)
   test_setML.to_pickle(filenametest_set_ML)
   writeTree(filenametest_set_ML_root,ntuplename,test_setML)
     

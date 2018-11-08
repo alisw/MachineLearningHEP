@@ -182,7 +182,7 @@ def prepareMLsample(classtype,case,dataframe_data,dataframe_MC,nevents):
   if ((nevents>len(dataframe_sig)) or (nevents>len(dataframe_bkg))):
     print ("------------------------- ERROR: there are not so many events!!!!!! ------------------------- ")
       
-  return dataframe_ML_joined
+  return dataframe_ML_joined,dataframe_sig,dataframe_bkg
 
 
 

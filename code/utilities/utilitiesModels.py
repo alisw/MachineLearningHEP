@@ -70,7 +70,7 @@ def fit(names_, classifiers_,X_train_,y_train_):
     trainedmodels_.append(clf)
   return trainedmodels_
 
-def test(names_,trainedmodels_,test_set_,mylistvariables_,myvariablesy_):
+def test(MLtype,names_,trainedmodels_,test_set_,mylistvariables_,myvariablesy_):
   
   X_test_=test_set_[mylistvariables_]
   y_test_=test_set_[myvariablesy_]
@@ -81,9 +81,10 @@ def test(names_,trainedmodels_,test_set_,mylistvariables_,myvariablesy_):
     y_test_prob=[]
     y_test_prediction=model.predict(X_test_)
     y_test_prediction=y_test_prediction.reshape(len(y_test_prediction),)
-    y_test_prob=model.predict_proba(X_test_)[:,1]
     test_set_['y_test_prediction'+name] = pd.Series(y_test_prediction, index=test_set_.index)
-    test_set_['y_test_prob'+name] = pd.Series(y_test_prob, index=test_set_.index)
+    if (MLtype=="BinaryClassification"):
+      y_test_prob=model.predict_proba(X_test_)[:,1]
+      test_set_['y_test_prob'+name] = pd.Series(y_test_prob, index=test_set_.index)
   return test_set_
 
 def savemodels(names_,trainedmodels_,folder_,suffix_):
