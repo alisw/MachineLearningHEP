@@ -3,6 +3,8 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.svm import SVC
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import LinearSVC
+from sklearn.linear_model import LinearRegression
+
 ###############################################################
 ##                                                           ##
 ##     Software for single-label classification with Scikit  ##
@@ -28,31 +30,52 @@ from matplotlib.colors import ListedColormap
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.wrappers.scikit_learn import KerasClassifier
+from sklearn.linear_model import Ridge
+from sklearn.linear_model import Lasso
 
-def getclassifiers():
-  classifiers = [
-    GradientBoostingClassifier(learning_rate=0.01, n_estimators=2500, max_depth=1),RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1), AdaBoostClassifier(),DecisionTreeClassifier(max_depth=5)
-#     LinearSVC(C=1, loss="hinge"),SVC(kernel="rbf", gamma=5, C=0.001), LogisticRegression()
-  ]
+def getclassifiers(MLtype):
+  classifiers=[]
+  names =[]
+  if (MLtype=="BinaryClassification"):
+    classifiers = [
+      GradientBoostingClassifier(learning_rate=0.01, n_estimators=2500, max_depth=1),RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1), AdaBoostClassifier(),DecisionTreeClassifier(max_depth=5)
+#       LinearSVC(C=1, loss="hinge"),SVC(kernel="rbf", gamma=5, C=0.001), LogisticRegression()
+    ]
                                         
-  names = [
-    "ScikitGradientBoostingClassifier","ScikitRandom_Forest","ScikitAdaBoost","ScikitDecision_Tree"
-#     "ScikitLinearSVC", "ScikitSVC_rbf","ScikitLogisticRegression"
-  ]
+    names = [
+      "ScikitGradientBoostingClassifier","ScikitRandom_Forest","ScikitAdaBoost","ScikitDecision_Tree"
+#       "ScikitLinearSVC", "ScikitSVC_rbf","ScikitLogisticRegression"
+    ]
+
+  if (MLtype=="Regression"):
+    classifiers = [
+      LinearRegression(),Ridge(alpha=1, solver="cholesky"),Lasso(alpha=0.1)
+    ]
+                                        
+    names = [
+      "Scikit_linear_regression","Scikit_Ridge_regression","Scikit_Lasso_regression"
+
+    ]
   return classifiers, names
 
-def getclassifiersDNN(lengthInput):
-
-  def create_model_Sequential():
-    model = Sequential()
-    model.add(Dense(12, input_dim=lengthInput, activation='relu'))
-    model.add(Dense(8, activation='relu'))
-    model.add(Dense(1, activation='sigmoid'))
-    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-    return model
+def getclassifiersDNN(MLtype,lengthInput):
+  classifiers=[]
+  names =[]
   
-  classifiers = [KerasClassifier(build_fn=create_model_Sequential, epochs=1000, batch_size=50, verbose=0)]
-  names = ["KerasSequential"]
+  if (MLtype=="BinaryClassification"):
+    def create_model_Sequential():
+      model = Sequential()
+      model.add(Dense(12, input_dim=lengthInput, activation='relu'))
+      model.add(Dense(8, activation='relu'))
+      model.add(Dense(1, activation='sigmoid'))
+      model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+      return model
+  
+    classifiers = [KerasClassifier(build_fn=create_model_Sequential, epochs=1000, batch_size=50, verbose=0)]
+    names = ["KerasSequential"]
+    
+  if (MLtype=="Regression"):
+    print ("No Keras models implemented for Regression")
   return classifiers,names 
 
 def fit(names_, classifiers_,X_train_,y_train_):
@@ -62,20 +85,20 @@ def fit(names_, classifiers_,X_train_,y_train_):
     trainedmodels_.append(clf)
   return trainedmodels_
 
-def test(names_,trainedmodels_,test_set_,mylistvariables_,myvariablesy_):
-  
+def test(MLtype,names_,trainedmodels_,test_set_,mylistvariables_,myvariablesy_):
   X_test_=test_set_[mylistvariables_]
-  y_test_=test_set_[myvariablesy_]
+  y_test_=test_set_[myvariablesy_].values.reshape(len(X_test_),)
   test_set_[myvariablesy_] = pd.Series(y_test_, index=test_set_.index)
-  
   for name, model in zip(names_, trainedmodels_):
     y_test_prediction=[]
     y_test_prob=[]
     y_test_prediction=model.predict(X_test_)
     y_test_prediction=y_test_prediction.reshape(len(y_test_prediction),)
-    y_test_prob=model.predict_proba(X_test_)[:,1]
     test_set_['y_test_prediction'+name] = pd.Series(y_test_prediction, index=test_set_.index)
-    test_set_['y_test_prob'+name] = pd.Series(y_test_prob, index=test_set_.index)
+
+    if (MLtype=="BinaryClassification"):
+      y_test_prob=model.predict_proba(X_test_)[:,1]
+      test_set_['y_test_prob'+name] = pd.Series(y_test_prob, index=test_set_.index)
   return test_set_
 
 def savemodels(names_,trainedmodels_,folder_,suffix_):

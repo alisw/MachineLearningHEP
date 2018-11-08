@@ -24,6 +24,9 @@ def getvariablestraining(case):
     mylistvariables=['d_len_xy_ML','norm_dl_xy_ML','cos_p_ML','cos_p_xy_ML','imp_par_xy_ML']
   if ((case=="PIDPion") | (case=="PIDKaon")):
     mylistvariables=['dedx0_ML','tof0_ML','dca0_ML','sigdca0_ML','chisq0_ML','itscl0_ML','tpccl0_ML']
+  if (case=="testregression"):
+    print("iam here")
+    mylistvariables=['d_len_xy_ML','cos_p_xy_ML']
   return mylistvariables
 
 def getvariablesBoundaries(case):
@@ -36,6 +39,8 @@ def getvariablesBoundaries(case):
     mylistvariablesboundaries=['d_len_xy_ML','cos_p_ML']
   if ((case=="PIDPion") | (case=="PIDKaon")):
     mylistvariablesboundaries=['dedx0_ML','pdau0_ML']
+  if (case=="testregression"):
+    mylistvariablesboundaries=['delta_mass_KK_ML',"cos_p_xy_ML"]
   return mylistvariablesboundaries
 
 
@@ -45,6 +50,8 @@ def getvariablesothers(case):
     mylistvariablesothers=['inv_mass_ML','pt_cand_ML']
   if ((case=="PIDPion") | (case=="PIDKaon")):
     mylistvariablesothers=['pdau0_ML','pdg0_ML']
+  if (case=="testregression"):
+    mylistvariablesothers=['inv_mass_ML','pt_cand_ML']
   return mylistvariablesothers
 
 def getvariableissignal(case):
@@ -53,7 +60,20 @@ def getvariableissignal(case):
     myvariablesy='signal_ML'
   if ((case=="PIDPion") | (case=="PIDKaon")):
     myvariablesy='signal_ML'
+  if (case=="testregression"):
+    myvariablesy='signal_ML'
   return myvariablesy
+
+def getvariabletarget(case):
+  myvariablestarget=0
+  if (case=="Ds" or case=="Lc" or case=="Bplus"):
+    myvariablestarget='signal_ML'
+  if ((case=="PIDPion") | (case=="PIDKaon")):
+    myvariablestarget='signal_ML'
+  if (case=="testregression"):
+    myvariablestarget='norm_dl_xy_ML'
+  return myvariablestarget
+
 
 def getvariablesall(case):
   mylistvariablesall=[]
@@ -65,6 +85,8 @@ def getvariablesall(case):
     mylistvariablesall=['d_len_xy_ML','norm_dl_xy_ML','cos_p_ML','cos_p_xy_ML','imp_par_xy_ML','inv_mass_ML','pt_cand_ML','signal_ML',"cand_type_ML"]
   if ((case=="PIDPion") | (case=="PIDKaon")):
     mylistvariablesall=['dedx0_ML','tof0_ML','dca0_ML','sigdca0_ML','chisq0_ML','itscl0_ML','tpccl0_ML','pdau0_ML','pdg0_ML']
+  if (case=="testregression"):
+    mylistvariablesall=['d_len_xy_ML','norm_dl_xy_ML','cos_p_ML','cos_p_xy_ML','imp_par_xy_ML','sig_vert_ML',"delta_mass_KK_ML",'cos_PiDs_ML',"cos_PiKPhi_3_ML",'inv_mass_ML','pt_cand_ML','signal_ML',"cand_type_ML"]
   return mylistvariablesall
 
 def getvariablecorrelation(case):
@@ -82,6 +104,9 @@ def getvariablecorrelation(case):
   if ((case=="PIDPion") | (case=="PIDKaon")):
     mylistvariablesx = ['pdau0_ML','pdau0_ML','itscl0_ML']
     mylistvariablesy = ['dedx0_ML','tof0_ML','chisq0_ML']
+  if (case=="testregression"):
+    mylistvariablesx = ['pt_cand_ML','d_len_xy_ML','sig_vert_ML',"pt_cand_ML","pt_cand_ML","norm_dl_xy_ML","cos_PiDs_ML","cos_p_xy_ML","cos_p_xy_ML"]
+    mylistvariablesy = ['d_len_xy_ML','sig_vert_ML','delta_mass_KK_ML',"delta_mass_KK_ML","sig_vert_ML","d_len_xy_ML","cos_PiKPhi_3_ML","sig_vert_ML","pt_cand_ML"]
   return mylistvariablesx,mylistvariablesy
 
 def getgridsearchparameters(case):
@@ -108,6 +133,9 @@ def getDataMCfiles(case):
   if ((case=="PIDPion") | (case=="PIDKaon")):
     fileData="../MLproductions/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root"
     fileMC="../MLproductions/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root"
+  if (case=="testregression"):
+    fileData="../MLproductions/AnalysisResults_Ds_Data_2018Sep21_LHC15o_pass1_pidfix_CandBased_skimmed.root"
+    fileMC="../MLproductions/AnalysisResults_Ds_MC_2018Sep21_LHC18a4a2_cent_fast_CandBased_skimmed.root"
   return fileData,fileMC
 
 def getTreeName(case):
@@ -120,6 +148,9 @@ def getTreeName(case):
     treename="fTreeBplusFlagged"
   if ((case=="PIDPion") | (case=="PIDKaon")):
     treename="fTreePIDFlagged"
+  if (case=="testregression"):
+    treename="fTreeDsFlagged"
+
   return treename
 
 def getdataframe(filename,treename,variables):
@@ -154,27 +185,36 @@ def getPDGcode(case):
     PDGcode=321
   return PDGcode
 
-def prepareMLsample(classtype,case,dataframe_data,dataframe_MC,nevents):
+def prepareMLsample(MLtype,MLsubtype,case,dataframe_data,dataframe_MC,nevents):
   dataframe_ML_joined = pd.DataFrame()
-  if(classtype=="HFmeson"):
   
-    dataframe_bkg=dataframe_data
-    dataframe_sig=dataframe_MC
-    fmassmin,fmassmax=getmasscut(case)
-    dataframe_sig=dataframe_sig.loc[(dataframe_sig["cand_type_ML"] == 2) | (dataframe_sig["cand_type_ML"] == 3)]
-    #dataframe_sig=dataframe_sig.loc[(dataframe_sig["cand_type_ML"] == 10) | (dataframe_sig["cand_type_ML"] == 11) |(dataframe_sig["cand_type_ML"] == 18) | (dataframe_sig["cand_type_ML"] == 19)]
-    dataframe_sig['signal_ML'] = 1
-    print (dataframe_sig)
-    dataframe_bkg=dataframe_bkg.loc[(dataframe_bkg["inv_mass_ML"] < fmassmin) | (dataframe_bkg["inv_mass_ML"] > fmassmax)]
-    dataframe_bkg['signal_ML'] = 0
+  if(MLtype=="BinaryClassification" ):
+    if(MLsubtype=="HFmeson"):
+      dataframe_bkg=dataframe_data
+      dataframe_sig=dataframe_MC
+      fmassmin,fmassmax=getmasscut(case)
+      dataframe_sig=dataframe_sig.loc[(dataframe_sig["cand_type_ML"] == 2) | (dataframe_sig["cand_type_ML"] == 3)]
+      #dataframe_sig=dataframe_sig.loc[(dataframe_sig["cand_type_ML"] == 10) | (dataframe_sig["cand_type_ML"] == 11) |(dataframe_sig["cand_type_ML"] == 18) | (dataframe_sig["cand_type_ML"] == 19)]
+      dataframe_sig['signal_ML'] = 1
+      dataframe_bkg=dataframe_bkg.loc[(dataframe_bkg["inv_mass_ML"] < fmassmin) | (dataframe_bkg["inv_mass_ML"] > fmassmax)]
+      dataframe_bkg['signal_ML'] = 0
     
-  if(classtype=="PID"):
-    dataframe_MC["pdg0_ML"]=dataframe_MC["pdg0_ML"].abs()
-    dataframe_sig=dataframe_MC.loc[(dataframe_MC["pdg0_ML"] == getPDGcode(case))]
-    dataframe_sig['signal_ML'] = 1
-    dataframe_bkg=dataframe_MC.loc[(dataframe_MC["pdg0_ML"] != getPDGcode(case))]
-    dataframe_bkg['signal_ML'] = 0
+    if(MLsubtype=="PID"):
+      dataframe_MC["pdg0_ML"]=dataframe_MC["pdg0_ML"].abs()
+      dataframe_sig=dataframe_MC.loc[(dataframe_MC["pdg0_ML"] == getPDGcode(case))]
+      dataframe_sig['signal_ML'] = 1
+      dataframe_bkg=dataframe_MC.loc[(dataframe_MC["pdg0_ML"] != getPDGcode(case))]
+      dataframe_bkg['signal_ML'] = 0
 
+  if(MLtype=="Regression" ):
+    if(MLsubtype=="test"):
+      dataframe_bkg=dataframe_data
+      dataframe_sig=dataframe_MC
+      fmassmin,fmassmax=getmasscut("Ds")
+      dataframe_sig=dataframe_sig.loc[(dataframe_sig["cand_type_ML"] == 2) | (dataframe_sig["cand_type_ML"] == 3)]
+      dataframe_sig['signal_ML'] = 1
+      dataframe_bkg=dataframe_bkg.loc[(dataframe_bkg["inv_mass_ML"] < fmassmin) | (dataframe_bkg["inv_mass_ML"] > fmassmax)]
+      dataframe_bkg['signal_ML'] = 0
 
   dataframe_sig=dataframe_sig[:nevents]
   dataframe_bkg=dataframe_bkg[:nevents]
@@ -182,7 +222,7 @@ def prepareMLsample(classtype,case,dataframe_data,dataframe_MC,nevents):
   if ((nevents>len(dataframe_sig)) or (nevents>len(dataframe_bkg))):
     print ("------------------------- ERROR: there are not so many events!!!!!! ------------------------- ")
       
-  return dataframe_ML_joined
+  return dataframe_ML_joined,dataframe_sig,dataframe_bkg
 
 
 

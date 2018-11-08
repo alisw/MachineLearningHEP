@@ -38,30 +38,67 @@ def cross_validation_mse(names_,classifiers_,X_train_,y_train_,cv_,ncores):
     df_scores[name] =  tree_rmse_scores
   return df_scores
 
+def cross_validation_mse_continuous(names_,classifiers_,X_train_,y_train_,cv_,ncores):
+  df_scores = pd.DataFrame()
+  for name, clf in zip(names_, classifiers_): 
+    if "Keras" in name:
+      ncores=1
+    scores = cross_val_score(clf, X_train_, y_train_, cv=cv_, scoring="neg_mean_squared_error",n_jobs=ncores)
+    tree_rmse_scores = np.sqrt(-scores)
+    df_scores[name] =  tree_rmse_scores
+  return df_scores
 
 def plot_cross_validation_mse(names_,df_scores_,suffix_,folder):
   figure1 = plt.figure(figsize=(20,15))
   i=1
-  minx=0.1
-  maxx=0.6
-  stepsize=(maxx-minx)/50
   for name in names_:
     ax = plt.subplot(2, (len(names_)+1)/2, i)  
-    bin_values = np.arange(start=minx, stop=maxx, step=stepsize)  
-    l=plt.hist(df_scores_[name].values, color="blue",bins=bin_values)
+    ax.set_xlim([0,(df_scores_[name].mean()*2)])    
+#     bin_values = np.arange(start=0, stop=maxx, step=stepsize)  
+    l=plt.hist(df_scores_[name].values, color="blue")
     #mystring='$\mu$=%8.2f, \sigma$=%8.2f' % (df_scores_[name].mean(),df_scores_[name].std())
     mystring='$\mu=%8.2f, \sigma=%8.2f$' % (df_scores_[name].mean(),df_scores_[name].std())
     plt.text(0.2, 4., mystring,fontsize=16)
     plt.title(name, fontsize=16)   
     plt.xlabel("scores RMSE",fontsize=16) 
     plt.ylim(0, 5)
-    plt.xlim(minx,maxx)
+#     plt.xlim(minx,maxx)
     plt.ylabel("Entries",fontsize=16)
     figure1.subplots_adjust(hspace=.5)
     i += 1
   plotname=folder+'/scoresRME%s.png' % (suffix_)
   plt.savefig(plotname)
-  
+
+def plotdistributiontarget(names_,testset,myvariablesy,suffix_,folder):
+  figure1 = plt.figure(figsize=(20,15))
+  i=1
+  for name in names_:
+    ax = plt.subplot(2, (len(names_)+1)/2, i)  
+    l=plt.hist(testset[myvariablesy].values, color="blue",bins=100,label="true value")
+    l=plt.hist(testset['y_test_prediction'+name].values, color="red",bins=100,label="predicted value")
+    plt.title(name, fontsize=16)   
+    plt.xlabel(myvariablesy,fontsize=16) 
+    plt.ylabel("Entries",fontsize=16)
+    figure1.subplots_adjust(hspace=.5)
+    i += 1
+  plt.legend(loc="center right")
+  plotname=folder+'/distributionregression%s.png' % (suffix_)
+  plt.savefig(plotname)
+
+def plotscattertarget(names_,testset,myvariablesy,suffix_,folder):
+  figure1 = plt.figure(figsize=(20,15))
+  i=1
+  for name in names_:
+    ax = plt.subplot(2, (len(names_)+1)/2, i)  
+    l=plt.scatter(testset[myvariablesy].values,testset['y_test_prediction'+name].values, color="blue")
+    plt.title(name, fontsize=16)   
+    plt.xlabel(myvariablesy + "true",fontsize=16) 
+    plt.ylabel(myvariablesy + "predicted",fontsize=16) 
+    figure1.subplots_adjust(hspace=.5)
+    i += 1
+  plotname=folder+'/scatterplotregression%s.png' % (suffix_)
+  plt.savefig(plotname)
+
 
 def confusion(mylistvariables_,names_,classifiers_,suffix_,X_train,y_train,cv,folder):
   figure1 = plt.figure(figsize=(25,15))
@@ -147,26 +184,27 @@ def precision_recall(mylistvariables_,names_,classifiers_,suffix_,X_train,y_trai
   plt.savefig(plotname)
   
 
-def plot_learning_curves(names_, classifiers_,suffix_,folder,X,y,min=1,max=-1,step_=1):
+def plot_learning_curves(names_, classifiers_,suffix_,folder,X,y,npoints):
   figure1 = plt.figure(figsize=(20,15))
   i=1
   X_train, X_val, y_train, y_val = train_test_split(X,y,test_size=0.2)
   for name, clf in zip(names_, classifiers_):
     ax = plt.subplot(2, (len(names_)+1)/2, i)  
-    ax.set_ylim([0,1.])
     train_errors, val_errors = [],[]
-    if (max==-1):
-      max=len(X_train)
+    max=len(X_train)
+    min=100
+    step_=int((max-min)/npoints)
     arrayvalues=np.arange(start=min,stop=max,step=step_)
     for m in arrayvalues:
       clf.fit(X_train[:m],y_train[:m])
       y_train_predict = clf.predict(X_train[:m])
       y_val_predict = clf.predict(X_val)
       train_errors.append(mean_squared_error(y_train_predict,y_train[:m]))
-      val_errors.append(mean_squared_error(y_val_predict,y_val))        
+      val_errors.append(mean_squared_error(y_val_predict,y_val))
+    ax.set_ylim([0,np.amax(np.sqrt(val_errors))*2])    
     plt.plot(arrayvalues,np.sqrt(train_errors),"r-+",linewidth=3,label="training")
     plt.plot(arrayvalues,np.sqrt(val_errors),"b-",linewidth=3,label="testing")
-    plt.title(name, fontsize=16)   
+    plt.title(name, fontsize=16)
     plt.xlabel("Training set size",fontsize=16) 
     plt.ylabel("RMSE",fontsize=16)
     figure1.subplots_adjust(hspace=.5)
