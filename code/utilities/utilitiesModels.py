@@ -29,30 +29,38 @@ from keras.models import Sequential
 from keras.layers import Dense
 from keras.wrappers.scikit_learn import KerasClassifier
 
-def getclassifiers():
-  classifiers = [
-    GradientBoostingClassifier(learning_rate=0.01, n_estimators=2500, max_depth=1),RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1), AdaBoostClassifier(),DecisionTreeClassifier(max_depth=5)
-#     LinearSVC(C=1, loss="hinge"),SVC(kernel="rbf", gamma=5, C=0.001), LogisticRegression()
-  ]
+def getclassifiers(MLtype):
+  classifiers=[]
+  names =[]
+  if (MLtype=="BinaryClassification"):
+    classifiers = [
+      GradientBoostingClassifier(learning_rate=0.01, n_estimators=2500, max_depth=1),RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1), AdaBoostClassifier(),DecisionTreeClassifier(max_depth=5)
+#       LinearSVC(C=1, loss="hinge"),SVC(kernel="rbf", gamma=5, C=0.001), LogisticRegression()
+    ]
                                         
-  names = [
-    "ScikitGradientBoostingClassifier","ScikitRandom_Forest","ScikitAdaBoost","ScikitDecision_Tree"
-#     "ScikitLinearSVC", "ScikitSVC_rbf","ScikitLogisticRegression"
-  ]
+    names = [
+      "ScikitGradientBoostingClassifier","ScikitRandom_Forest","ScikitAdaBoost","ScikitDecision_Tree"
+#       "ScikitLinearSVC", "ScikitSVC_rbf","ScikitLogisticRegression"
+    ]
+  
   return classifiers, names
 
-def getclassifiersDNN(lengthInput):
-
-  def create_model_Sequential():
-    model = Sequential()
-    model.add(Dense(12, input_dim=lengthInput, activation='relu'))
-    model.add(Dense(8, activation='relu'))
-    model.add(Dense(1, activation='sigmoid'))
-    model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-    return model
+def getclassifiersDNN(MLtype,lengthInput):
+  classifiers=[]
+  names =[]
   
-  classifiers = [KerasClassifier(build_fn=create_model_Sequential, epochs=1000, batch_size=50, verbose=0)]
-  names = ["KerasSequential"]
+  if (MLtype=="BinaryClassification"):
+    def create_model_Sequential():
+      model = Sequential()
+      model.add(Dense(12, input_dim=lengthInput, activation='relu'))
+      model.add(Dense(8, activation='relu'))
+      model.add(Dense(1, activation='sigmoid'))
+      model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
+      return model
+  
+    classifiers = [KerasClassifier(build_fn=create_model_Sequential, epochs=1000, batch_size=50, verbose=0)]
+    names = ["KerasSequential"]
+  
   return classifiers,names 
 
 def fit(names_, classifiers_,X_train_,y_train_):

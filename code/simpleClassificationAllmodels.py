@@ -20,7 +20,7 @@ from sklearn.utils import shuffle
 from utilitiesOptimisation import studysignificance
 
 ############### this is the only place where you should change parameters ################
-nevents=400
+nevents=200
 MLtype="BinaryClassification"
 MLsubtype="HFmeson" #other options are "PID"
 optionanalysis="Ds" #other options are "Bplus,Lc,PIDKaon,PIDPion
@@ -81,12 +81,12 @@ namesDNN=[]
 
 
 if (activateScikitModels==1):
-  classifiersScikit,namesScikit=getclassifiers()
+  classifiersScikit,namesScikit=getclassifiers(MLtype)
   classifiers=classifiers+classifiersScikit
   names=names+namesScikit
 
 if (activateKerasModels==1):
-  classifiersDNN,namesDNN=getclassifiersDNN(len(X_train.columns))
+  classifiersDNN,namesDNN=getclassifiersDNN(MLtype,len(X_train.columns))
   classifiers=classifiers+classifiersDNN
   names=names+namesDNN
   
@@ -182,8 +182,8 @@ if(doOptimisation==1):
   studysignificance(optionanalysis,varmin[0],varmax[0],test_set,names,myvariablesy,suffix,plotdir) 
 
 if (doBoundary==1):
-  classifiersScikit2var,names2var=getclassifiers()
-  classifiersDNN2var,namesDNN2var=getclassifiersDNN(2)
+  classifiersScikit2var,names2var=getclassifiers(MLtype)
+  classifiersDNN2var,namesDNN2var=getclassifiersDNN(MLtype,2)
   classifiers2var=classifiersScikit2var+classifiersDNN2var
   X_train_boundary=train_set[getvariablesBoundaries(optionanalysis)]
   trainedmodels2var=fit(names,classifiers2var,X_train_boundary,y_train)
