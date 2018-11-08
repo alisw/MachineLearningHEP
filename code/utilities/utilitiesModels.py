@@ -30,6 +30,8 @@ from matplotlib.colors import ListedColormap
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.wrappers.scikit_learn import KerasClassifier
+from sklearn.linear_model import Ridge
+from sklearn.linear_model import Lasso
 
 def getclassifiers(MLtype):
   classifiers=[]
@@ -47,11 +49,12 @@ def getclassifiers(MLtype):
 
   if (MLtype=="Regression"):
     classifiers = [
-      LinearRegression()
+      LinearRegression(),Ridge(alpha=1, solver="cholesky"),Lasso(alpha=0.1)
     ]
                                         
     names = [
-      "Scikit_linear_regression"
+      "Scikit_linear_regression","Scikit_Ridge_regression","Scikit_Lasso_regression"
+
     ]
   return classifiers, names
 

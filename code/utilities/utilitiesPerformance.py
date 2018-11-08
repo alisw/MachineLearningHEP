@@ -68,7 +68,23 @@ def plot_cross_validation_mse(names_,df_scores_,suffix_,folder):
     i += 1
   plotname=folder+'/scoresRME%s.png' % (suffix_)
   plt.savefig(plotname)
-  
+
+def plotdistributiontarget(names_,testset,myvariablesy,suffix_,folder):
+  figure1 = plt.figure(figsize=(20,15))
+  i=1
+  for name in names_:
+    ax = plt.subplot(2, (len(names_)+1)/2, i)  
+    l=plt.hist(testset[myvariablesy].values, color="blue",bins=100,label="true value")
+    l=plt.hist(testset['y_test_prediction'+name].values, color="red",bins=100,label="predicted value")
+    plt.title(name, fontsize=16)   
+    plt.xlabel(myvariablesy,fontsize=16) 
+    plt.ylabel("Entries",fontsize=16)
+    figure1.subplots_adjust(hspace=.5)
+    i += 1
+  plt.legend(loc="center right")
+  plotname=folder+'/distributionregression%s.png' % (suffix_)
+  plt.savefig(plotname)
+
 
 def confusion(mylistvariables_,names_,classifiers_,suffix_,X_train,y_train,cv,folder):
   figure1 = plt.figure(figsize=(25,15))
@@ -171,7 +187,6 @@ def plot_learning_curves(names_, classifiers_,suffix_,folder,X,y,npoints):
       y_val_predict = clf.predict(X_val)
       train_errors.append(mean_squared_error(y_train_predict,y_train[:m]))
       val_errors.append(mean_squared_error(y_val_predict,y_val))
-    print (val_errors)   
     ax.set_ylim([0,np.amax(np.sqrt(val_errors))*2])    
     plt.plot(arrayvalues,np.sqrt(train_errors),"r-+",linewidth=3,label="training")
     plt.plot(arrayvalues,np.sqrt(val_errors),"b-",linewidth=3,label="testing")

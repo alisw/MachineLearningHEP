@@ -10,7 +10,7 @@ from myimports import *
 from utilitiesRoot import FillNTuple, ReadNTuple, ReadNTupleML
 from utilitiesModels import getclassifiers,fit,test,savemodels,importanceplotall,decisionboundaries,getclassifiersDNN
 from BinaryMultiFeaturesClassification import getvariablestraining,getvariablesothers,getvariableissignal,getvariabletarget,getvariablesall,getvariablecorrelation,getgridsearchparameters,getDataMCfiles,getTreeName,prepareMLsample,getvariablesBoundaries
-from utilitiesPerformance import precision_recall,plot_learning_curves,confusion,precision_recall,plot_learning_curves,cross_validation_mse,cross_validation_mse_continuous,plot_cross_validation_mse
+from utilitiesPerformance import precision_recall,plot_learning_curves,confusion,precision_recall,plot_learning_curves,cross_validation_mse,cross_validation_mse_continuous,plot_cross_validation_mse,plotdistributiontarget
 from utilitiesPCA import GetPCADataFrameAndPC,GetDataFrameStandardised,plotvariancePCA
 from utilitiesCorrelations import scatterplot,correlationmatrix,vardistplot
 from utilitiesGeneral import filterdataframe_pt,splitdataframe_sigbkg,checkdir,getdataframe,getdataframeDataMC,filterdataframe,filterdataframeDataMC,createstringselection,writeTree
@@ -20,7 +20,7 @@ from sklearn.utils import shuffle
 from utilitiesOptimisation import studysignificance
 
 ############### this is the only place where you should change parameters ################
-nevents=2000
+nevents=10000
 MLtype="Regression" #other options are "Regression"
 MLsubtype="test" #other options are "PID"
 optionanalysis="testregression" #other options are "Bplus,Lc,PIDKaon,PIDPion
@@ -32,24 +32,29 @@ varmax=[100]
 activateScikitModels=1
 activateKerasModels=0
 
-############### choose which step you want to do ################
+############### preparation steps ################
 dosampleprep=1
 docorrelation=0
 doStandard=0
 doPCA=0
+
+############### training testing ################
 dotraining=1
 dotesting=1
-doLearningCurve=0
+
+############### common validation ################
+doLearningCurve=1
 docrossvalidation=1
 
-
+############### classification specifics ################
 doROCcurve=0
 doOptimisation=0
 doBinarySearch=0
 doBoundary=1
-
-############### this below is currently available only for SciKit models ################
 doimportance=0
+
+############### regression specifics ################
+doplotdistributiontargetregression=1
 ncores=-1
 
 if (MLtype=="Regression"):
@@ -63,7 +68,12 @@ if (MLtype=="Regression"):
   doBinarySearch=0
   doBoundary=0
   activateKerasModels=0
-
+  
+if (MLtype=="BinaryClassification"):
+  print ("the following tests cannot be performed since meaningless for classification analysis or not yet implemented:")
+  print ("- plotdistributiontargetregression")
+  doplotdistributiontargetregression=0
+  
 ################################################################
 ################################################################
 ############### dont change anything below here ################
@@ -179,7 +189,6 @@ if (docrossvalidation==1):
     df_scores=cross_validation_mse_continuous(names,classifiers,X_train,y_train,5,ncores)
   if (MLtype=="BinaryClassification" ):
     df_scores=cross_validation_mse(names,classifiers,X_train,y_train,5,ncores)
-  print(df_scores)
   plot_cross_validation_mse(names,df_scores,suffix,plotdir)
 
 
@@ -224,5 +233,10 @@ if (doimportance==1):
   importanceplotall(mylistvariables,namesScikit,classifiersScikit,suffix,plotdir)
   
   
-      
+################################################################
+################ Regression specifics ######################
+################################################################
+
+if (doplotdistributiontargetregression==1):
+  plotdistributiontarget(names,test_setML,myvariablesy,suffix,plotdir)
 
