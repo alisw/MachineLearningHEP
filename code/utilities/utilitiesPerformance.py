@@ -153,7 +153,6 @@ def plot_learning_curves(names_, classifiers_,suffix_,folder,X,y,npoints):
   X_train, X_val, y_train, y_val = train_test_split(X,y,test_size=0.2)
   for name, clf in zip(names_, classifiers_):
     ax = plt.subplot(2, (len(names_)+1)/2, i)  
-    ax.set_ylim([0,1.])
     train_errors, val_errors = [],[]
     max=len(X_train)
     min=100
@@ -164,10 +163,12 @@ def plot_learning_curves(names_, classifiers_,suffix_,folder,X,y,npoints):
       y_train_predict = clf.predict(X_train[:m])
       y_val_predict = clf.predict(X_val)
       train_errors.append(mean_squared_error(y_train_predict,y_train[:m]))
-      val_errors.append(mean_squared_error(y_val_predict,y_val))        
+      val_errors.append(mean_squared_error(y_val_predict,y_val))
+    print (val_errors)   
+    ax.set_ylim([0,np.amax(np.sqrt(val_errors))*2])    
     plt.plot(arrayvalues,np.sqrt(train_errors),"r-+",linewidth=3,label="training")
     plt.plot(arrayvalues,np.sqrt(val_errors),"b-",linewidth=3,label="testing")
-    plt.title(name, fontsize=16)   
+    plt.title(name, fontsize=16)
     plt.xlabel("Training set size",fontsize=16) 
     plt.ylabel("RMSE",fontsize=16)
     figure1.subplots_adjust(hspace=.5)
