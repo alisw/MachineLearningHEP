@@ -85,6 +85,20 @@ def plotdistributiontarget(names_,testset,myvariablesy,suffix_,folder):
   plotname=folder+'/distributionregression%s.png' % (suffix_)
   plt.savefig(plotname)
 
+def plotscattertarget(names_,testset,myvariablesy,suffix_,folder):
+  figure1 = plt.figure(figsize=(20,15))
+  i=1
+  for name in names_:
+    ax = plt.subplot(2, (len(names_)+1)/2, i)  
+    l=plt.scatter(testset[myvariablesy].values,testset['y_test_prediction'+name].values, color="blue")
+    plt.title(name, fontsize=16)   
+    plt.xlabel(myvariablesy + "true",fontsize=16) 
+    plt.ylabel(myvariablesy + "predicted",fontsize=16) 
+    figure1.subplots_adjust(hspace=.5)
+    i += 1
+  plotname=folder+'/scatterplotregression%s.png' % (suffix_)
+  plt.savefig(plotname)
+
 
 def confusion(mylistvariables_,names_,classifiers_,suffix_,X_train,y_train,cv,folder):
   figure1 = plt.figure(figsize=(25,15))
