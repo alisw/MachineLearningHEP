@@ -10,7 +10,7 @@ from myimports import *
 from utilitiesRoot import FillNTuple, ReadNTuple, ReadNTupleML
 from utilitiesModels import getclassifiers,fit,test,savemodels,importanceplotall,decisionboundaries,getclassifiersDNN
 from BinaryMultiFeaturesClassification import getvariablestraining,getvariablesothers,getvariableissignal,getvariabletarget,getvariablesall,getvariablecorrelation,getgridsearchparameters,getDataMCfiles,getTreeName,prepareMLsample,getvariablesBoundaries
-from utilitiesPerformance import precision_recall,plot_learning_curves,confusion,precision_recall,plot_learning_curves,cross_validation_mse,plot_cross_validation_mse
+from utilitiesPerformance import precision_recall,plot_learning_curves,confusion,precision_recall,plot_learning_curves,cross_validation_mse,cross_validation_mse_continuous,plot_cross_validation_mse
 from utilitiesPCA import GetPCADataFrameAndPC,GetDataFrameStandardised,plotvariancePCA
 from utilitiesCorrelations import scatterplot,correlationmatrix,vardistplot
 from utilitiesGeneral import filterdataframe_pt,splitdataframe_sigbkg,checkdir,getdataframe,getdataframeDataMC,filterdataframe,filterdataframeDataMC,createstringselection,writeTree
@@ -34,13 +34,13 @@ activateKerasModels=0
 
 ############### choose which step you want to do ################
 dosampleprep=1
-docorrelation=1
+docorrelation=0
 doStandard=0
 doPCA=0
 dotraining=1
 dotesting=1
-doLearningCurve=1
-docrossvalidation=0
+doLearningCurve=0
+docrossvalidation=1
 
 
 doROCcurve=0
@@ -174,7 +174,12 @@ if (dotesting==1):
 ################################################################
 
 if (docrossvalidation==1): 
-  df_scores=cross_validation_mse(names,classifiers,X_train,y_train,5,ncores)
+  df_scores=[]
+  if (MLtype=="Regression" ):
+    df_scores=cross_validation_mse_continuous(names,classifiers,X_train,y_train,5,ncores)
+  if (MLtype=="BinaryClassification" ):
+    df_scores=cross_validation_mse(names,classifiers,X_train,y_train,5,ncores)
+  print(df_scores)
   plot_cross_validation_mse(names,df_scores,suffix,plotdir)
 
 
