@@ -20,22 +20,22 @@ from sklearn.utils import shuffle
 from utilitiesOptimisation import studysignificance
 
 ############### this is the only place where you should change parameters ################
-nevents=10000
-MLtype="Regression" #other options are "Regression"
-MLsubtype="test" #other options are "PID"
-optionanalysis="testregression" #other options are "Bplus,Lc,PIDKaon,PIDPion
+nevents=20
+MLtype="BinaryClassification" #other options are "Regression"
+MLsubtype="HFmeson" #other options are "PID"
+optionanalysis="Ds" #other options are "Ds,Bplus,Lc,PIDKaon,PIDPion
 var_skimming=["pt_cand_ML"] #other options are "pdau0_ML" in case of PID
 varmin=[0]
 varmax=[100]
 
 ############### choose if you want scikit or keras models or both ################
 activateScikitModels=1
-activateKerasModels=0
+activateKerasModels=1
 
 ############### preparation steps ################
 dosampleprep=1
-docorrelation=0
-doStandard=0
+docorrelation=1
+doStandard=1
 doPCA=0
 
 ############### training testing ################
@@ -47,11 +47,11 @@ doLearningCurve=1
 docrossvalidation=1
 
 ############### classification specifics ################
-doROCcurve=0
+doROCcurve=1
 doOptimisation=0
 doBinarySearch=0
-doBoundary=1
-doimportance=0
+doBoundary=0
+doimportance=1
 
 ############### regression specifics ################
 doplotdistributiontargetregression=1
@@ -102,17 +102,6 @@ classifiersDNN=[]
 names=[]
 namesScikit=[]
 namesDNN=[]
-
-
-if (activateScikitModels==1):
-  classifiersScikit,namesScikit=getclassifiers(MLtype)
-  classifiers=classifiers+classifiersScikit
-  names=names+namesScikit
-
-if (activateKerasModels==1):
-  classifiersDNN,namesDNN=getclassifiersDNN(MLtype,len(X_train.columns))
-  classifiers=classifiers+classifiersDNN
-  names=names+namesDNN
   
 mylistvariables=getvariablestraining(optionanalysis)
 mylistvariablesothers=getvariablesothers(optionanalysis)
@@ -143,6 +132,16 @@ print ("dimension of the dataset",len(train_set))
 
 X_train= train_set[mylistvariables]
 y_train=train_set[myvariablesy]
+
+if (activateScikitModels==1):
+  classifiersScikit,namesScikit=getclassifiers(MLtype)
+  classifiers=classifiers+classifiersScikit
+  names=names+namesScikit
+
+if (activateKerasModels==1):
+  classifiersDNN,namesDNN=getclassifiersDNN(MLtype,len(X_train.columns))
+  classifiers=classifiers+classifiersDNN
+  names=names+namesDNN
 
 trainedmodels=[]
 
