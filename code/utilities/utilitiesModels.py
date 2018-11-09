@@ -101,6 +101,20 @@ def test(MLtype,names_,trainedmodels_,test_set_,mylistvariables_,myvariablesy_):
       test_set_['y_test_prob'+name] = pd.Series(y_test_prob, index=test_set_.index)
   return test_set_
 
+def apply(MLtype,names_,trainedmodels_,test_set_,mylistvariablestraining_):
+  X_values=test_set_[mylistvariablestraining_]
+  for name, model in zip(names_, trainedmodels_):
+    y_test_prediction=[]
+    y_test_prob=[]
+    y_test_prediction=model.predict(X_values)
+    y_test_prediction=y_test_prediction.reshape(len(y_test_prediction),)
+    test_set_['y_test_prediction'+name] = pd.Series(y_test_prediction, index=test_set_.index)
+
+    if (MLtype=="BinaryClassification"):
+      y_test_prob=model.predict_proba(X_values)[:,1]
+      test_set_['y_test_prob'+name] = pd.Series(y_test_prob, index=test_set_.index)
+  return test_set_
+
 def savemodels(names_,trainedmodels_,folder_,suffix_):
     for name, model in zip(names_, trainedmodels_):
       if "Keras" in name: 

@@ -8,7 +8,7 @@ from ROOT import TNtuple
 from ROOT import TH1F, TH2F, TCanvas, TFile, gStyle, gROOT
 from myimports import *
 from utilitiesRoot import FillNTuple, ReadNTuple, ReadNTupleML
-from utilitiesModels import getclassifiers,fit,test,savemodels,importanceplotall,decisionboundaries,getclassifiersDNN
+from utilitiesModels import getclassifiers,fit,test,savemodels,importanceplotall,decisionboundaries,getclassifiersDNN,apply
 from DataBaseMLparameters import getvariablestraining,getvariablesothers,getvariableissignal,getvariabletarget,getvariablesall,getvariablecorrelation,getgridsearchparameters,getDataMCfiles,getTreeName,prepareMLsample,getvariablesBoundaries
 from utilitiesPerformance import precision_recall,plot_learning_curves,confusion,precision_recall,plot_learning_curves,cross_validation_mse,cross_validation_mse_continuous,plot_cross_validation_mse,plotdistributiontarget,plotscattertarget
 from utilitiesPCA import GetPCADataFrameAndPC,GetDataFrameStandardised,plotvariancePCA
@@ -20,24 +20,24 @@ from sklearn.utils import shuffle
 from utilitiesOptimisation import studysignificance
 
 ############### choose your ML method ################
-nevents=1000
+nevents=5000
 MLtype="BinaryClassification" #other options are "Regression", "BinaryClassification"
 MLsubtype="HFmeson" #other options are "PID","HFmeson","test"
-optionanalysis="Ds" #other options are "Ds, Bplus,Lc,PIDKaon,PIDPion,testregression
+optionanalysis="Lc" #other options are "Ds, Bplus,Lc,PIDKaon,PIDPion,testregression
 
 ############### choose the skimming parameters for your dataset ################
 var_skimming=["pt_cand_ML"] #other options are "pdau0_ML" in case of PID
-varmin=[0]
-varmax=[100]
+varmin=[2]
+varmax=[4]
 
 ############### choose if you want scikit or keras models or both ################
 activateScikitModels=1; activateKerasModels=0
 loadsampleOption=0 #0=loadfromTree,1=loadfromDF,2=loadyourownDFfortesting
 docorrelation=0; doStandard=0; doPCA=0
-dotraining=1; dotesting=1
-doLearningCurve=1; docrossvalidation=1
+dotraining=1; dotesting=1; doapplytodata=1
+doLearningCurve=0; docrossvalidation=0
 doROCcurve=0; doOptimisation=0; doBinarySearch=0; doBoundary=0; doimportance=0 #classification specifics
-doplotdistributiontargetregression=1 #regression specifics
+doplotdistributiontargetregression=0 #regression specifics
 
 ncores=-1
 
@@ -94,6 +94,8 @@ if(loadsampleOption==0):
   trename=getTreeName(optionanalysis)
   dataframeData,dataframeMC=getdataframeDataMC(fileData,fileMC,trename,mylistvariablesall)
   dataframeData,dataframeMC=filterdataframeDataMC(dataframeData,dataframeMC,var_skimming,varmin,varmax)  
+  print (len(dataframeData))
+  print (len(dataframeMC))
   ## prepare ML sample
   dataframeML,dataframe_sig,dataframe_bkg=prepareMLsample(MLtype,MLsubtype,optionanalysis,dataframeData,dataframeMC,nevents)
   dataframeML=shuffle(dataframeML)
@@ -176,6 +178,18 @@ if (dotesting==1):
   test_setML=test(MLtype,names,trainedmodels,test_set,mylistvariables,myvariablesy)
   test_setML.to_pickle(filenametest_set_ML)
   writeTree(filenametest_set_ML_root,ntuplename,test_setML)
+
+if (doapplytodata==1):
+  fileData,fileMC=getDataMCfiles(optionanalysis)
+  trename=getTreeName(optionanalysis)
+  dataframeData,dataframeMC=getdataframeDataMC(fileData,fileMC,trename,mylistvariablesall)
+  dataframeDataML=apply(MLtype,names,trainedmodels,dataframeData,mylistvariables)
+  dataframeMCML=apply(MLtype,names,trainedmodels,dataframeMC,mylistvariables)
+  filenameData_ML_root=output+"/AnalysisRoot%sDataMLdecision.root" % (suffix)
+  filenameMC_ML_root=output+"/AnalysisRoot%sMCMLdecision.root" % (suffix)
+  ntuplename=getTreeName(optionanalysis)+"Tested"
+  writeTree(filenameData_ML_root,ntuplename,dataframeDataML)
+  writeTree(filenameMC_ML_root,ntuplename,dataframeMCML)
 
 if (docrossvalidation==1): 
   df_scores=[]
