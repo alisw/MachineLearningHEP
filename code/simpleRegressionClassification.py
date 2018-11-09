@@ -20,10 +20,10 @@ from sklearn.utils import shuffle
 from utilitiesOptimisation import studysignificance
 
 ############### this is the only place where you should change parameters ################
-nevents=10000
-MLtype="BinaryClassification" #other options are "Regression", "BinaryClassification"
-MLsubtype="HFmeson" #other options are "PID","HFmeson"
-optionanalysis="Ds" #other options are "Bplus,Lc,PIDKaon,PIDPion
+nevents=1000
+MLtype="Regression" #other options are "Regression", "BinaryClassification"
+MLsubtype="test" #other options are "PID","HFmeson","test"
+optionanalysis="testregression" #other options are "Bplus,Lc,PIDKaon,PIDPion,testregression
 var_skimming=["pt_cand_ML"] #other options are "pdau0_ML" in case of PID
 varmin=[0]
 varmax=[100]
@@ -33,7 +33,7 @@ activateScikitModels=1
 activateKerasModels=0
 
 ############### preparation steps ################
-dosampleprep=1
+loadsampleOption=2 #0=loadfromTree,1=loadfromDF,2=loadyourownDFfortesting
 docorrelation=0
 doStandard=0
 doPCA=0
@@ -50,11 +50,12 @@ docrossvalidation=1
 doROCcurve=0
 doOptimisation=0
 doBinarySearch=0
-doBoundary=1
+doBoundary=0
 doimportance=0
 
 ############### regression specifics ################
 doplotdistributiontargetregression=1
+
 ncores=-1
 
 if (MLtype=="Regression"):
@@ -74,13 +75,6 @@ if (MLtype=="BinaryClassification"):
   print ("- plotdistributiontargetregression")
   doplotdistributiontargetregression=0
   
-################################################################
-################################################################
-############### dont change anything below here ################
-################################################################
-################################################################
-
-
 ################################################################
 ########### sample preparation and preprocessing ###############
 ################################################################
@@ -103,6 +97,9 @@ names=[]
 namesScikit=[]
 namesDNN=[]
 
+trainedmodels=[]
+X_train=[]
+y_train=[]
 
 if (activateScikitModels==1):
   classifiersScikit,namesScikit=getclassifiers(MLtype)
@@ -122,7 +119,7 @@ mylistvariablesx,mylistvariablesy=getvariablecorrelation(optionanalysis)
 mylistvariablesall=getvariablesall(optionanalysis)
 
 
-if(dosampleprep==1): 
+if(loadsampleOption==0): 
   fileData,fileMC=getDataMCfiles(optionanalysis)
   trename=getTreeName(optionanalysis)
   dataframeData,dataframeMC=getdataframeDataMC(fileData,fileMC,trename,mylistvariablesall)
@@ -135,17 +132,42 @@ if(dosampleprep==1):
   ### save the dataframes
   train_set.to_pickle(dataframe+"/dataframetrainsampleN%s.pkl" % (suffix))
   test_set.to_pickle(dataframe+"/dataframetestsampleN%s.pkl" % (suffix))
+  X_train= train_set[mylistvariables]
+  y_train=train_set[myvariablesy]
 
-train_set = pd.read_pickle(dataframe+"/dataframetrainsampleN%s.pkl" % (suffix))
-test_set = pd.read_pickle(dataframe+"/dataframetestsampleN%s.pkl" % (suffix))
+if(loadsampleOption==1): 
+  train_set = pd.read_pickle(dataframe+"/dataframetrainsampleN%s.pkl" % (suffix))
+  test_set = pd.read_pickle(dataframe+"/dataframetestsampleN%s.pkl" % (suffix))
+  print ("dimension of the dataset",len(train_set))
+  X_train= train_set[mylistvariables]
+  y_train=train_set[myvariablesy]
 
-print ("dimension of the dataset",len(train_set))
+if(loadsampleOption==2): 
+  mylistvariables=["volume"]
+  mylistvariablesothers=[]
+  myvariablessignal="signal"
+  myvariablesy='mass'
+  mylistvariablesx=["mass"]
+  mylistvariablesy=["volume"]
+  mylistvariablesall=["volume","mass","signal"]
+  
+  ntrials=10000
+  X=2*np.random.rand(ntrials,1)
+  print (X)
+  signal=np.ones(shape=(ntrials,1))
+  density=20;
+  y=density*X+np.random.randn(ntrials,1)
+  X=np.c_[X,y]
+  X=np.c_[X,signal]
+  print ("finish df creation")
+  dataframeML = pd.DataFrame(X,columns=mylistvariablesall)
+  print (dataframeML)
 
-X_train= train_set[mylistvariables]
-y_train=train_set[myvariablesy]
+  train_set, test_set = train_test_split(dataframeML, test_size=0.2, random_state=42)
+  X_train= train_set[mylistvariables]
+  y_train=train_set[myvariablesy]
 
-trainedmodels=[]
-
+  
 if(docorrelation==1):
   train_set_ptsel_sig,train_set_ptsel_bkg=splitdataframe_sigbkg(train_set,myvariablessignal)
   vardistplot(train_set_ptsel_sig, train_set_ptsel_bkg,mylistvariablesall,plotdir)
