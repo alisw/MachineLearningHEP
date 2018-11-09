@@ -1,6 +1,5 @@
 # MachineLearningHF
 
-
 ## Prerequisites (fully validated only for MacOs Sierra 10.13.16)
 
 ```
@@ -17,7 +16,6 @@ pip3 install seaborn
 sudo apt-get install python3-tk
 pip3 install sklearn-evaluation
 ```
-***
 
 ## Prerequisites for Ubuntu (validated for Ubuntu 18.04 at 9/11/18)
 ### Python 3
@@ -53,7 +51,6 @@ To install tensorflow with GPU support please refer to https://www.tensorflow.or
 
 For problems or improvements about Ubuntu prerequisites contact fabio.catalano@cern.ch  
 
-***
 ## Produce the ML ntuples and convert it to dataframes
 
 Copy the folder MLDsproductions and put it in your HOME directory. The folder is in the public folder in lxplus below:
@@ -65,7 +62,7 @@ Simpy run the following code to perform the ML training creating and convertion:
 cd ALICEanalysis/buildsample
 source buildMLTree.sh
 ```
-***
+
 ## In case of problems:
 
 For problems ginnocen@cern.ch
