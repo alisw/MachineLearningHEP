@@ -32,7 +32,7 @@ varmax=[100]
 
 ############### choose if you want scikit or keras models or both ################
 activateScikitModels=1; activateKerasModels=0
-loadsampleOption=2 #0=loadfromTree,1=loadfromDF,2=loadyourownDFfortesting
+loadsampleOption=0 #0=loadfromTree,1=loadfromDF,2=loadyourownDFfortesting
 docorrelation=0; doStandard=0; doPCA=0
 dotraining=1; dotesting=1
 doLearningCurve=1; docrossvalidation=1
