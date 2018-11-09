@@ -25,7 +25,6 @@ def getvariablestraining(case):
   if ((case=="PIDPion") | (case=="PIDKaon")):
     mylistvariables=['dedx0_ML','tof0_ML','dca0_ML','sigdca0_ML','chisq0_ML','itscl0_ML','tpccl0_ML']
   if (case=="testregression"):
-    print("iam here")
     mylistvariables=['d_len_xy_ML','cos_p_xy_ML']
   return mylistvariables
 
