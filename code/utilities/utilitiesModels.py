@@ -32,6 +32,9 @@ from keras.layers import Dense
 from keras.wrappers.scikit_learn import KerasClassifier
 from sklearn.linear_model import Ridge
 from sklearn.linear_model import Lasso
+from xgboost import XGBClassifier
+from xgboost import plot_tree
+
 
 def getclassifiers(MLtype):
   classifiers=[]
@@ -57,6 +60,18 @@ def getclassifiers(MLtype):
 
     ]
   return classifiers, names
+
+def getclassifiersXGBoost(MLtype):
+  classifiers=[]
+  names =[]
+  
+  if (MLtype=="BinaryClassification"):
+    classifiers = [XGBClassifier()]
+    names = ["XGBoostXGBClassifier"]
+    
+  if (MLtype=="Regression"):
+    print ("No XGBoost models implemented for Regression")
+  return classifiers,names 
 
 def getclassifiersDNN(MLtype,lengthInput):
   classifiers=[]
@@ -139,7 +154,7 @@ def readmodels(names_,folder_,suffix_):
 
 
 def importanceplotall(mylistvariables_,names_,trainedmodels_,suffix_,folder):
-  figure1 = plt.figure(figsize=(20,15))
+  figure1 = plt.figure(figsize=(25,15))
   plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.4, hspace=0.2)
 
   i=1
@@ -161,6 +176,7 @@ def importanceplotall(mylistvariables_,names_,trainedmodels_,suffix_,folder):
     ax.xaxis.set_tick_params(labelsize=17)
     plt.xlim(0, 0.7)
     i += 1
+  plt.subplots_adjust(wspace=0.5)
   plotname=folder+'/importanceplotall%s.png' % (suffix_)
   plt.savefig(plotname)
 
