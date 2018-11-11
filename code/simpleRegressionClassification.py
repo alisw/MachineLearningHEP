@@ -8,7 +8,7 @@ from ROOT import TNtuple
 from ROOT import TH1F, TH2F, TCanvas, TFile, gStyle, gROOT
 from myimports import *
 from utilitiesRoot import FillNTuple, ReadNTuple, ReadNTupleML
-from utilitiesModels import getclassifiers,fit,test,savemodels,importanceplotall,decisionboundaries,getclassifiersDNN,apply
+from utilitiesModels import getclassifiers,fit,test,savemodels,importanceplotall,decisionboundaries,getclassifiersDNN,getclassifiersXGBoost,apply
 from DataBaseMLparameters import getvariablestraining,getvariablesothers,getvariableissignal,getvariabletarget,getvariablesall,getvariablecorrelation,getgridsearchparameters,getDataMCfiles,getTreeName,prepareMLsample,getvariablesBoundaries
 from utilitiesPerformance import precision_recall,plot_learning_curves,confusion,precision_recall,plot_learning_curves,cross_validation_mse,cross_validation_mse_continuous,plot_cross_validation_mse,plotdistributiontarget,plotscattertarget
 from utilitiesPCA import GetPCADataFrameAndPC,GetDataFrameStandardised,plotvariancePCA
@@ -23,7 +23,7 @@ from utilitiesOptimisation import studysignificance
 nevents=5000
 MLtype="BinaryClassification" #other options are "Regression", "BinaryClassification"
 MLsubtype="HFmeson" #other options are "PID","HFmeson","test"
-optionanalysis="Lc" #other options are "Ds, Bplus,Lc,PIDKaon,PIDPion,testregression
+optionanalysis="Ds" #other options are "Ds, Bplus,Lc,PIDKaon,PIDPion,testregression
 
 ############### choose the skimming parameters for your dataset ################
 var_skimming=["pt_cand_ML"] #other options are "pdau0_ML" in case of PID
@@ -31,12 +31,12 @@ varmin=[2]
 varmax=[4]
 
 ############### choose if you want scikit or keras models or both ################
-activateScikitModels=1; activateKerasModels=0
+activateScikitModels=1; activateXGBoostModels=1; activateKerasModels=0
 loadsampleOption=0 #0=loadfromTree,1=loadfromDF,2=loadyourownDFfortesting
 docorrelation=0; doStandard=0; doPCA=0
 dotraining=1; dotesting=1; doapplytodata=1
-doLearningCurve=0; docrossvalidation=0
-doROCcurve=0; doOptimisation=0; doBinarySearch=0; doBoundary=0; doimportance=0 #classification specifics
+doLearningCurve=1; docrossvalidation=1
+doROCcurve=1; doOptimisation=0; doBinarySearch=0; doBoundary=0; doimportance=1 #classification specifics
 doplotdistributiontargetregression=0 #regression specifics
 
 ncores=-1
@@ -161,6 +161,11 @@ if (activateScikitModels==1):
   classifiers=classifiers+classifiersScikit
   names=names+namesScikit
 
+if (activateXGBoostModels==1):
+  classifiersXGBoost,namesXGBoost=getclassifiersXGBoost(MLtype)
+  classifiers=classifiers+classifiersXGBoost
+  names=names+namesXGBoost
+
 if (activateKerasModels==1):
   classifiersDNN,namesDNN=getclassifiersDNN(MLtype,len(X_train.columns))
   classifiers=classifiers+classifiersDNN
@@ -232,7 +237,7 @@ if (doBinarySearch==1):
   plot_gridsearch(namesCV,changeparameter,grid_search_models,plotdir,suffix)
 
 if (doimportance==1):
-  importanceplotall(mylistvariables,namesScikit,classifiersScikit,suffix,plotdir)
+  importanceplotall(mylistvariables,namesScikit+namesXGBoost,classifiersScikit+classifiersXGBoost,suffix,plotdir)
   
 if (doplotdistributiontargetregression==1):
   plotdistributiontarget(names,test_setML,myvariablesy,suffix,plotdir)
