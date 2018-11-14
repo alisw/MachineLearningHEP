@@ -34,7 +34,7 @@ def scatterplot(dataframe_sig_,dataframe_bkg_,mylistvariablesx_,mylistvariablesy
   figurecorr = plt.figure(figsize=(30,20))
   i=1
   for j in range(len(mylistvariablesx_)):
-    print (int(len(mylistvariablesx_)/3+1))
+    #print (int(len(mylistvariablesx_)/3+1))
     axcorr = plt.subplot(3, int(len(mylistvariablesx_)/3+1), i)  
     plt.xlabel(mylistvariablesx_[j],fontsize=11)
     plt.ylabel(mylistvariablesy_[j],fontsize=11)
