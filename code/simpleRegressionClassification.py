@@ -44,11 +44,13 @@ if (MLtype=="Regression"):
   print ("- doOptimisation")
   print ("- doBinarySearch")
   print ("- doBoundary")
+  print ("- doImportance")
   doROCcurve=0
   doOptimisation=0
   doBinarySearch=0
   doBoundary=0
   activateKerasModels=0
+  doimportance=0
   
 if (MLtype=="BinaryClassification"):
   print ("the following tests cannot be performed since meaningless for classification analysis or not yet implemented:")
