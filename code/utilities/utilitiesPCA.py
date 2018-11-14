@@ -5,21 +5,16 @@
 ##                                                           ##
 ###############################################################
 
+"""
+Methods to: apply Principal Component Analysis (PCA) and to standardize features
+"""
+
 import array
 import numpy as np
 import pandas as pd
-import math
-import matplotlib
 import matplotlib.pyplot as plt
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier
-from sklearn.tree import DecisionTreeClassifier
-import pickle
-import sys, os
-from timeit import default_timer as timer
-from datetime import datetime
 from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
-from utilitiesGeneral import *
 
 def GetPCADataFrameAndPC(dataframe,n_pca):
   data_values = dataframe.values

@@ -5,11 +5,12 @@
 ##                                                           ##
 ###############################################################
 
-import pandas as pd
-import pickle
+"""
+Methods for correlation and variable plots
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
-import sys, os
 import seaborn as sns
 
 def vardistplot(dataframe_sig_,dataframe_bkg_,mylistvariables_,output_):
