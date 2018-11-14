@@ -11,7 +11,6 @@ Methods to load and prepare data for training
 """
 
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier 
-from utilitiesGeneral import preparestringforuproot
 import pandas as pd
 import uproot
 
@@ -152,13 +151,6 @@ def getTreeName(case):
     treename="fTreeDsFlagged"
 
   return treename
-
-def getdataframe(filename,treename,variables):
-  file = uproot.open(filename)
-  tree = file[treename]
-  dataframe=tree.pandas.df(preparestringforuproot(variables))
-  return dataframe
-
 
 def getmasscut(case):
   fmassmin=-1
