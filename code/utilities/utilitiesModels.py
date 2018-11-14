@@ -1,10 +1,3 @@
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.svm import SVC
-from sklearn.linear_model import LogisticRegression
-from sklearn.svm import LinearSVC
-from sklearn.linear_model import LinearRegression
-
 ###############################################################
 ##                                                           ##
 ##     Software for single-label classification with Scikit  ##
@@ -12,29 +5,26 @@ from sklearn.linear_model import LinearRegression
 ##                                                           ##
 ###############################################################
 
+"""
+Methods to: choose, train and apply ML models
+            load and save ML models
+            obtain control plots
+"""
+
 import pandas as pd
 import pickle
-from sklearn.model_selection import cross_val_score
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.metrics import roc_curve, auc
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import log_loss, confusion_matrix
-import seaborn as sn
-from sklearn.model_selection import GridSearchCV
-from sklearn.datasets import make_classification
-from sklearn.ensemble import ExtraTreesClassifier
-from sklearn_evaluation import plot
-from sklearn.feature_extraction import DictVectorizer
 from matplotlib.colors import ListedColormap
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.linear_model import LogisticRegression, LinearRegression, Ridge, Lasso
+from sklearn.svm import LinearSVC
+from sklearn.feature_extraction import DictVectorizer
 from keras.models import Sequential
 from keras.layers import Dense
 from keras.wrappers.scikit_learn import KerasClassifier
-from sklearn.linear_model import Ridge
-from sklearn.linear_model import Lasso
 from xgboost import XGBClassifier
-from xgboost import plot_tree
-
 
 def getclassifiers(MLtype):
   classifiers=[]
@@ -86,7 +76,7 @@ def getclassifiersDNN(MLtype,lengthInput):
       model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
       return model
   
-    classifiers = [KerasClassifier(build_fn=create_model_Sequential, epochs=1000, batch_size=50, verbose=0)]
+    classifiers = [KerasClassifier(build_fn=create_model_Sequential, epochs=1000, batch_size=50, verbose=0)] 
     names = ["KerasSequential"]
     
   if (MLtype=="Regression"):

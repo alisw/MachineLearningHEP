@@ -5,14 +5,15 @@
 ##                                                           ##
 ###############################################################
 
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier
-from sklearn.tree import DecisionTreeClassifier
-from utilitiesGeneral import filterdataframe_pt,splitdataframe_sigbkg,checkdir,preparestringforuproot
-import pandas as pd
-import numpy as np
-import uproot
-from sklearn.utils import shuffle
+"""
+Methods to define: analysis type, data used, variables for training and other applications
+Methods to load and prepare data for training
+"""
 
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier 
+from utilitiesGeneral import preparestringforuproot
+import pandas as pd
+import uproot
 
 def getvariablestraining(case):
   mylistvariables=[]
