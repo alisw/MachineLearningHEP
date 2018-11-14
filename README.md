@@ -17,7 +17,7 @@ sudo apt-get install python3-tk
 pip3 install sklearn-evaluation
 ```
 
-## Prerequisites for Ubuntu (validated for Ubuntu 18.04 at 9/11/18)
+## Prerequisites for Ubuntu (validated for Ubuntu 18.04 at 14/11/18)
 ### Python 3
 This code is based on python3, to install it
 ```
@@ -44,7 +44,7 @@ Before running the code the alienv envirovment must be loaded.
 ```
 pip3 install numpy pandas scipy matplotlib seaborn
 pip3 install uproot
-pip3 install scikit-learn sklearn-evaluation 
+pip3 install scikit-learn sklearn-evaluation xgboost
 pip3 install tensorflow keras
 ```
 To install tensorflow with GPU support please refer to https://www.tensorflow.org/install/gpu
