@@ -5,20 +5,14 @@
 ##                                                           ##
 ###############################################################
 
-from ROOT import TNtuple
-from ROOT import TH1F, TH2F, TCanvas, TFile, gStyle, gROOT
-from myimports import *
-from utilitiesRoot import FillNTuple, ReadNTuple, ReadNTupleML
-import array
-import numpy as np
-import pandas as pd
-import math
-import matplotlib
-import matplotlib.pyplot as plt
-import pickle
+"""
+Methods to: load and write data to ROOT files
+            filter and manipulate pandas DataFrames
+"""
+
+from ROOT import TFile
+from utilitiesRoot import FillNTuple
 import sys, os
-from timeit import default_timer as timer
-from datetime import datetime
 import uproot
 
 def filterdataframe_pt(dataframe_,pt_var_,ptmin_,ptmax_):

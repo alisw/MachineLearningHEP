@@ -5,27 +5,17 @@
 ##                                                           ##
 ###############################################################
 
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier
-from sklearn.tree import DecisionTreeClassifier
+"""
+Methods to: model performance evaluation
+"""
+
 import pandas as pd
-import pickle
-from sklearn.model_selection import cross_val_score
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.metrics import roc_curve, auc
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import log_loss, confusion_matrix
 import seaborn as sn
-from sklearn.model_selection import GridSearchCV
-from sklearn.datasets import make_classification
-from sklearn.ensemble import ExtraTreesClassifier
+from sklearn.model_selection import cross_val_score, cross_val_predict, train_test_split, StratifiedKFold
+from sklearn.metrics import roc_curve, auc, confusion_matrix, precision_recall_curve, mean_squared_error
 from sklearn_evaluation import plot
-from sklearn.model_selection import cross_val_predict
-from sklearn.metrics import confusion_matrix
-from sklearn.metrics import precision_recall_curve
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import mean_squared_error
-from sklearn.model_selection import StratifiedKFold
 
 def cross_validation_mse(names_,classifiers_,X_train_,y_train_,cv_,ncores):
   df_scores = pd.DataFrame()

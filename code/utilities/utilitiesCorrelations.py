@@ -5,11 +5,12 @@
 ##                                                           ##
 ###############################################################
 
-import pandas as pd
-import pickle
+"""
+Methods for correlation and variable plots
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
-import sys, os
 import seaborn as sns
 
 def vardistplot(dataframe_sig_,dataframe_bkg_,mylistvariables_,output_):
@@ -33,7 +34,7 @@ def scatterplot(dataframe_sig_,dataframe_bkg_,mylistvariablesx_,mylistvariablesy
   figurecorr = plt.figure(figsize=(30,20))
   i=1
   for j in range(len(mylistvariablesx_)):
-    print (int(len(mylistvariablesx_)/3+1))
+    #print (int(len(mylistvariablesx_)/3+1))
     axcorr = plt.subplot(3, int(len(mylistvariablesx_)/3+1), i)  
     plt.xlabel(mylistvariablesx_[j],fontsize=11)
     plt.ylabel(mylistvariablesy_[j],fontsize=11)

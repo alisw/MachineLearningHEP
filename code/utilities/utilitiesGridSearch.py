@@ -5,20 +5,13 @@
 ##                                                           ##
 ###############################################################
 
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier
-from sklearn.tree import DecisionTreeClassifier
-import pandas as pd
-import pickle
-from sklearn.model_selection import cross_val_score
+"""
+Methods to do hyper-parameters optimization
+"""
+
 import numpy as np
 import matplotlib.pyplot as plt
-from sklearn.metrics import roc_curve, auc
-from sklearn.metrics import accuracy_score
-from sklearn.metrics import log_loss, confusion_matrix
-import seaborn as sn
 from sklearn.model_selection import GridSearchCV
-from sklearn.datasets import make_classification
-from sklearn.ensemble import ExtraTreesClassifier
 from sklearn_evaluation import plot
 
 

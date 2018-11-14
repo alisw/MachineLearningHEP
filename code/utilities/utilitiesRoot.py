@@ -5,14 +5,13 @@
 ##                                                           ##
 ###############################################################
 
+"""
+Methods to: read and write ROOT TNtuple
+"""
+
 import array
 import numpy as np
-import pandas as pd
-import math
-import matplotlib
-import matplotlib.pyplot as plt
 from ROOT import TNtuple
-from ROOT import TH1F, TH2F, TCanvas, TFile, gStyle, gROOT
 
 def ReadNTuple(ntuple, variables) : 
   """

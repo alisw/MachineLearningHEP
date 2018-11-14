@@ -4,16 +4,13 @@
 ##      Origin: G.M. Innocenti (CERN)(ginnocen@cern.ch)       ##
 ##                                                           ##
 ###############################################################
-from ROOT import TNtuple
-from ROOT import TH1F, TH2F, TCanvas, TFile, gStyle, gROOT
 from myimports import *
-from utilitiesRoot import FillNTuple, ReadNTuple, ReadNTupleML
 from utilitiesModels import getclassifiers,fit,test,savemodels,importanceplotall,decisionboundaries,getclassifiersDNN,getclassifiersXGBoost,apply
 from DataBaseMLparameters import getvariablestraining,getvariablesothers,getvariableissignal,getvariabletarget,getvariablesall,getvariablecorrelation,getgridsearchparameters,getDataMCfiles,getTreeName,prepareMLsample,getvariablesBoundaries
-from utilitiesPerformance import precision_recall,plot_learning_curves,confusion,precision_recall,plot_learning_curves,cross_validation_mse,cross_validation_mse_continuous,plot_cross_validation_mse,plotdistributiontarget,plotscattertarget
+from utilitiesPerformance import precision_recall,plot_learning_curves,confusion,cross_validation_mse,cross_validation_mse_continuous,plot_cross_validation_mse,plotdistributiontarget,plotscattertarget
 from utilitiesPCA import GetPCADataFrameAndPC,GetDataFrameStandardised,plotvariancePCA
 from utilitiesCorrelations import scatterplot,correlationmatrix,vardistplot
-from utilitiesGeneral import filterdataframe_pt,splitdataframe_sigbkg,checkdir,getdataframe,getdataframeDataMC,filterdataframe,filterdataframeDataMC,createstringselection,writeTree
+from utilitiesGeneral import splitdataframe_sigbkg,checkdir,getdataframeDataMC,filterdataframeDataMC,createstringselection,writeTree
 from utilitiesGridSearch import do_gridsearch,plot_gridsearch
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
@@ -47,11 +44,13 @@ if (MLtype=="Regression"):
   print ("- doOptimisation")
   print ("- doBinarySearch")
   print ("- doBoundary")
+  print ("- doImportance")
   doROCcurve=0
   doOptimisation=0
   doBinarySearch=0
   doBoundary=0
   activateKerasModels=0
+  doimportance=0
   
 if (MLtype=="BinaryClassification"):
   print ("the following tests cannot be performed since meaningless for classification analysis or not yet implemented:")
@@ -223,12 +222,13 @@ if (doBoundary==1):
   classifiersScikit2var,names2var=getclassifiers(MLtype)
   classifiersDNN2var,namesDNN2var=getclassifiersDNN(MLtype,2)
   classifiers2var=classifiersScikit2var+classifiersDNN2var
+  names2var=names2var+namesDNN2var
   X_train_boundary=train_set[getvariablesBoundaries(optionanalysis)]
-  trainedmodels2var=fit(names,classifiers2var,X_train_boundary,y_train)
-  mydecisionboundaries=decisionboundaries(names,trainedmodels2var,suffix+"2var",X_train_boundary,y_train,plotdir)
+  trainedmodels2var=fit(names2var,classifiers2var,X_train_boundary,y_train)
+  mydecisionboundaries=decisionboundaries(names2var,trainedmodels2var,suffix+"2var",X_train_boundary,y_train,plotdir)
   X_train_2PC,pca=GetPCADataFrameAndPC(X_train,2)
-  trainedmodelsPCA=fit(names, classifiers2var,X_train_2PC,y_train)
-  mydecisionboundaries=decisionboundaries(names,trainedmodelsPCA,suffix+"2PCA",X_train_2PC,y_train,plotdir)
+  trainedmodelsPCA=fit(names2var, classifiers2var,X_train_2PC,y_train)
+  mydecisionboundaries=decisionboundaries(names2var,trainedmodelsPCA,suffix+"2PCA",X_train_2PC,y_train,plotdir)
 
 if (doBinarySearch==1):
   namesCV,classifiersCV,param_gridCV,changeparameter=getgridsearchparameters(optionanalysis)
