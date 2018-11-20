@@ -179,7 +179,7 @@ if (activateKerasModels==1):
 if (dotraining==1):
   print (names)
   trainedmodels=fit(names, classifiers,X_train,y_train)
-  savemodels(names,trainedmodels,output,suffix)
+  savemodels(names,trainedmodels,mylistvariables,myvariablesy,output,suffix)
   
 if (dotesting==1):
   filenametest_set_ML=output+"/testsample%sMLdecision.pkl" % (suffix)
