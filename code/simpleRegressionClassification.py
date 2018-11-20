@@ -4,6 +4,12 @@
 ##      Origin: G.M. Innocenti (CERN)(ginnocen@cern.ch)       ##
 ##                                                           ##
 ###############################################################
+
+from ROOT import TNtuple
+from ROOT import TH1F, TH2F, TCanvas, TFile, gStyle, gROOT
+from myimports import *
+from utilitiesRoot import FillNTuple, ReadNTuple, ReadNTupleML
+
 from myimports import *
 from utilitiesModels import getclassifiers,fit,test,savemodels,importanceplotall,decisionboundaries,getclassifiersDNN,getclassifiersXGBoost,apply
 from DataBaseMLparameters import getvariablestraining,getvariablesothers,getvariableissignal,getvariabletarget,getvariablesall,getvariablecorrelation,getgridsearchparameters,getDataMCfiles,getTreeName,prepareMLsample,getvariablesBoundaries
