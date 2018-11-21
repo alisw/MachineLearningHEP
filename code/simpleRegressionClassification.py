@@ -23,23 +23,23 @@ from sklearn.utils import shuffle
 from utilitiesOptimisation import studysignificance
 
 ############### choose your ML method ################
-nevents=5000
+nevents=1000
 MLtype="BinaryClassification" #other options are "Regression", "BinaryClassification"
-MLsubtype="HFmeson" #other options are "PID","HFmeson","test"
-optionanalysis="Ds" #other options are "Ds, Bplus,Lc,PIDKaon,PIDPion,testregression
+MLsubtype="jettagging" #other options are "PID","HFmeson","test"
+optionanalysis="lightquarkjet" #other options are "Ds, Bplus,Lc,PIDKaon,PIDPion,testregression
 
 ############### choose the skimming parameters for your dataset ################
-var_skimming=["pt_cand_ML"] #other options are "pdau0_ML" in case of PID
+var_skimming=["Pt_Rec_ML"] #other options are "pdau0_ML" in case of PID, "Pt_Rec_ML" in case of jet tagging, "pt_cand_ML" for HF tagging
 varmin=[2]
 varmax=[4]
 
 ############### choose if you want scikit or keras models or both ################
-activateScikitModels=1; activateXGBoostModels=1; activateKerasModels=0
+activateScikitModels=0; activateXGBoostModels=1; activateKerasModels=0
 loadsampleOption=0 #0=loadfromTree,1=loadfromDF,2=loadyourownDFfortesting
-docorrelation=0; doStandard=0; doPCA=0
-dotraining=1; dotesting=1; doapplytodata=1
+docorrelation=1; doStandard=0; doPCA=0
+dotraining=1; dotesting=1; doapplytodata=0
 doLearningCurve=1; docrossvalidation=1
-doROCcurve=1; doOptimisation=0; doBinarySearch=0; doBoundary=0; doimportance=1 #classification specifics
+doROCcurve=1; doOptimisation=0; doBinarySearch=0; doBoundary=0; doimportance=0 #classification specifics
 doplotdistributiontargetregression=0 #regression specifics
 
 ncores=-1
