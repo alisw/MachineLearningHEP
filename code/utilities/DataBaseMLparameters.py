@@ -165,7 +165,7 @@ def getTreeName(case):
     treename="fTreeBplusFlagged"
   if ((case=="PIDPion") | (case=="PIDKaon")):
     treename="fTreePIDFlagged"
-  if ((case=="lightquarkjet")):
+  if (case=="lightquarkjet"):
     treename="fTreeDsFlagged"
   if (case=="testregression"):
     treename="fTreeDsFlagged"
