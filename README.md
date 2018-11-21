@@ -16,6 +16,19 @@ pip3 install seaborn
 sudo apt-get install python3-tk
 pip3 install sklearn-evaluation
 ```
+### ROOT with Python 3
+It is necessary to build ROOT with python 3.6. It is easier to make a new build (independent of aliBuild), using
+```
+git clone http://github.com/root-project/root.git
+cd root
+git tag -l
+git checkout -b v6-10-08 v6-10-08
+mkdir <builddir>
+cd <builddir> 
+cmake -DPYTHON_EXECUTABLE=/path-to-python/3.6/bin/python3 -Dpython3=ON -DPYTHON_INCLUDE_DIR=/path-to-python/3.6/Headers -DPYTHON_LIBRARY=/path-to-python/3.6/lib/libpython3.6.dylib ../root/
+cmake --build .
+source /path/to/builddir/dir/bin/thisroot.sh
+```
 
 ## Prerequisites for Ubuntu (validated for Ubuntu 18.04 at 14/11/18)
 ### Python 3
