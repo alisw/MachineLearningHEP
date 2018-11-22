@@ -33,12 +33,14 @@ def getclassifiers(MLtype):
   names =[]
   if (MLtype=="BinaryClassification"):
     classifiers = [
-      GradientBoostingClassifier(learning_rate=0.01, n_estimators=2500, max_depth=1),RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1), AdaBoostClassifier(),DecisionTreeClassifier(max_depth=5)
+      #GradientBoostingClassifier(learning_rate=0.01, n_estimators=2500, max_depth=1),
+      RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1), AdaBoostClassifier(),DecisionTreeClassifier(max_depth=5)
 #       LinearSVC(C=1, loss="hinge"),SVC(kernel="rbf", gamma=5, C=0.001), LogisticRegression()
     ]
                                         
     names = [
-      "ScikitTreeGradientBoostingClassifier","ScikitTreeRandom_Forest","ScikitTreeAdaBoost","ScikitTreeDecision_Tree"
+      #"ScikitTreeGradientBoostingClassifier",
+      "ScikitTreeRandom_Forest","ScikitTreeAdaBoost","ScikitTreeDecision_Tree"
 #       "ScikitLinearSVC", "ScikitSVC_rbf","ScikitLogisticRegression"
     ]
 
