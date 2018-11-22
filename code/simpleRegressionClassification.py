@@ -25,8 +25,8 @@ from utilitiesOptimisation import studysignificance
 ############### choose your ML method ################
 nevents=1000
 MLtype="BinaryClassification" #other options are "Regression", "BinaryClassification"
-MLsubtype="HFmeson" #other options are "PID","HFmeson","test","jettagging"
-optionanalysis="Ds" #other options are "Ds, Bplus,Lc,PIDKaon,PIDPion,testregression,lightquarkjet
+MLsubtype="HFmeson" #other options are "PID","HFmeson","test","jettagging","nuclei"
+optionanalysis="Ds" #other options are "Ds, Bplus,Lc,PIDKaon,PIDPion,testregression,lightquarkjet,hypertritium
 
 ############### choose the skimming parameters for your dataset ################
 var_skimming=["pt_cand_ML"] #other options are "pdau0_ML" in case of PID, "Pt_Rec_ML" in case of jet tagging, "pt_cand_ML" for HF tagging
