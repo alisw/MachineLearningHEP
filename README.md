@@ -1,7 +1,6 @@
 # MachineLearningHF
 
 ## Prerequisites (fully validated only for MacOs Sierra 10.13.16)
-
 ```
 sudo apt-get update
 sudo apt-get install build-essential
@@ -16,6 +15,22 @@ pip3 install seaborn
 sudo apt-get install python3-tk
 pip3 install sklearn-evaluation
 ```
+
+### 22/11/2018: 
+Above instructions need te be updated for MacOs. One now also need to install:
+```
+pip3 install keras xgboost
+```
+If you followed above instructions (with some modifications for apt-get), and are now running into problems with aliBuild, please have a look at the following suggestions that solved it for me:
+* Python-modules is build again (and crashes): Probably one of the required Python packages was updated. Following the aliBuild prerequisites for macOS solves it:
+```
+sudo pip install --upgrade --force-reinstall matplotlib numpy certifi ipython==5.1.0 ipywidgets ipykernel notebook metakernel pyyaml
+```
+* AliPhysics builds but some of the final tests fail: Probably gcc was updated in the process. Switch back to gcc version used for the earlier aliBuild:
+```
+brew switch gcc 7.3.0_1
+```
+
 ### ROOT with Python 3
 It is necessary to build ROOT with python 3.6. It is easier to make a new build (independent of aliBuild), using
 ```
