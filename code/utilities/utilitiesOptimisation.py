@@ -109,6 +109,9 @@ def getFONLLdataframe_FF(case):
   if (case=="Ds"):
     filename='../fonll/fo_pp_d0meson_5TeV_y0p5.csv'
     FF=0.21
+  if (case=="Dplus"):
+    filename=''
+    FF=0.
   if (case=="Lc"):
     filename=''
     FF=0.
