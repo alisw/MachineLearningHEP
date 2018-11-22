@@ -105,7 +105,7 @@ def getvariablesall(case):
   if ((case=="PIDPion") | (case=="PIDKaon")):
     mylistvariablesall=['dedx0_ML','tof0_ML','dca0_ML','sigdca0_ML','chisq0_ML','itscl0_ML','tpccl0_ML','pdau0_ML','pdg0_ML']
   if (case=="lightquarkjet"):
-    mylistvariablesall=['Pt_Rec_ML','Eta_Rec_ML','Phi_Rec_ML','Mass_Rec_ML','JetMultiplicity_Rec_ML','Parton_1_Flag_ML','Parton_1_Eta_ML','Parton_1_Phi_ML','Parton_2_Flag_ML','Parton_2_Eta_ML','Parton_2_Phi_ML','Angularity_ML','PTD_ML']
+    mylistvariablesall=['Pt_Rec_ML','Eta_Rec_ML','Phi_Rec_ML','Mass_Rec_ML','JetMultiplicity_Rec_ML','Parton_Flag_ML','Parton_1_Flag_ML','Parton_1_Eta_ML','Parton_1_Phi_ML','Parton_2_Flag_ML','Parton_2_Eta_ML','Parton_2_Phi_ML','Angularity_ML','PTD_ML']
   if (case=="hypertritium"):
     mylistvariablesall=['dca', 'dl', 'cos_alpha','pt', 'invmass','signal']
   if (case=="testregression"):
@@ -163,8 +163,8 @@ def getDataMCfiles(case):
     fileData="../MLproductions/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root"
     fileMC="../MLproductions/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root"
   if ((case=="lightquarkjet")):
-    fileData="../MLproductions/AnalysisResults_TreeforJetsPythiaPP_MC_skimmed.root"
-    fileMC="../MLproductions/AnalysisResults_TreeforJetsPythiaPP_MC_skimmed.root"
+    fileData="../MLproductions/AnalysisResults_TreeforJetsPythiaPP_MC_skimmed_GenMatched.root"
+    fileMC="../MLproductions/AnalysisResults_TreeforJetsPythiaPP_MC_skimmed_GenMatched.root"
   if ((case=="hypertritium")):
     fileData="../MLproductions/AnalysisResultsHyper_MC.root"
     fileMC="../MLproductions/AnalysisResultsHyper_MC.root"
@@ -243,8 +243,8 @@ def prepareMLsample(MLtype,MLsubtype,case,dataframe_data,dataframe_MC,nevents):
       dataframe_bkg=dataframe_MC
       dataframe_sig=dataframe_MC
       if (case=="lightquarkjet"):
-        dataframe_sig=dataframe_sig.loc[(dataframe_sig["Parton_1_Flag_ML"] == 1) | (dataframe_sig["Parton_1_Flag_ML"] == 2)| (dataframe_sig["Parton_1_Flag_ML"] == 3)]
-        dataframe_bkg=dataframe_bkg.loc[(dataframe_bkg["Parton_1_Flag_ML"] > 3)] 
+        dataframe_sig=dataframe_sig.loc[(dataframe_sig["Parton_Flag_ML"] == 1) | (dataframe_sig["Parton_Flag_ML"] == 2)| (dataframe_sig["Parton_Flag_ML"] == 3) | (dataframe_sig["Parton_Flag_ML"] == 4) | (dataframe_sig["Parton_Flag_ML"] == 5)]
+        dataframe_bkg=dataframe_bkg.loc[(dataframe_bkg["Parton_Flag_ML"] > 5)] 
       dataframe_sig['signal_ML'] = 1
       dataframe_bkg['signal_ML'] = 0
 
