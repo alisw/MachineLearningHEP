@@ -18,7 +18,7 @@ pip3 install seaborn
 sudo apt-get install python3-tk
 pip3 install sklearn-evaluation
 ```
-
+<!-- 
 ### 22/11/2018: 
 Above instructions need te be updated for MacOs. One now also need to install:
 ```
@@ -97,3 +97,5 @@ source buildMLTree.sh
 ## In case of problems:
 
 For problems ginnocen@cern.ch
+
+-->
