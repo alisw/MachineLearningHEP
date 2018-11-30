@@ -3,7 +3,26 @@
 The current recommended instructions require the installation of a independent ROOT6 framework with Pyhon 3.6. 
 Use of the package inside AliPhysics is possible but not recommended for the moment.
 
-## Prerequisites (fully validated only for MacOs Sierra 10.13.16)
+## Prerequisites for MacOs Sierra (10.13.16)
+
+### Install python 3.6.6 
+Get from the official website https://www.python.org/downloads/mac-osx/ the version Python 3.6.6.
+Follow the instructions and install it
+
+### ROOT with Python 3
+REMEMBER to replace "path-to-python" with the path where you have the bin of your python installation
+```
+git clone http://github.com/root-project/root.git
+cd root
+git tag -l
+git checkout -b v6-10-08 v6-10-08
+mkdir <builddir>
+cd <builddir> 
+cmake -DPYTHON_EXECUTABLE=/path-to-python/3.6/bin/python3 -Dpython3=ON -DPYTHON_INCLUDE_DIR=/path-to-python/3.6/Headers -DPYTHON_LIBRARY=/path-to-python/3.6/lib/libpython3.6.dylib ../root/
+cmake --build .
+source /path/to/builddir/dir/bin/thisroot.sh
+```
+<!-- 
 ```
 sudo apt-get update
 sudo apt-get install build-essential
@@ -18,7 +37,6 @@ pip3 install seaborn
 sudo apt-get install python3-tk
 pip3 install sklearn-evaluation
 ```
-<!-- 
 ### 22/11/2018: 
 Above instructions need te be updated for MacOs. One now also need to install:
 ```
