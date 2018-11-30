@@ -16,8 +16,8 @@ git clone http://github.com/root-project/root.git
 cd root
 git tag -l
 git checkout -b v6-10-08 v6-10-08
-mkdir <builddir>
-cd <builddir> 
+mkdir ../<builddir>
+cd ../<builddir> 
 cmake -DPYTHON_EXECUTABLE=/path-to-python/3.6/bin/python3 -Dpython3=ON -DPYTHON_INCLUDE_DIR=/path-to-python/3.6/Headers -DPYTHON_LIBRARY=/path-to-python/3.6/lib/libpython3.6.dylib ../root/
 cmake --build .
 source /path/to/builddir/dir/bin/thisroot.sh
