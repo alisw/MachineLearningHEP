@@ -18,7 +18,7 @@ git tag -l
 git checkout -b v6-10-08 v6-10-08
 mkdir ../<builddir>
 cd ../<builddir> 
-cmake -DPYTHON_EXECUTABLE=/path-to-python/3.6/bin/python3 -Dpython3=ON -DPYTHON_INCLUDE_DIR=/path-to-python/3.6/Headers -DPYTHON_LIBRARY=/path-to-python/3.6/lib/libpython3.6.dylib ../root/
+cmake -DPYTHON_EXECUTABLE=/path-to-python/3.6/bin/python3 -Dpython3=ON -DPYTHON_INCLUDE_DIR=/path-to-python/3.6/Headers -DPYTHON_LIBRARY=/path-to-python/3.6/lib/libpython3.6.dylib ../
 cmake --build .
 source /path/to/builddir/dir/bin/thisroot.sh
 ```
@@ -28,8 +28,10 @@ pip3 install numpy pandas scipy matplotlib seaborn
 pip3 install uproot
 pip3 install scikit-learn sklearn-evaluation xgboost
 pip3 install tensorflow keras
-pip3 install seaborn
 ```
+
+If the following error message appear, you have to add sudo in front of the command:
+'Command "python setup.py egg_info" failed with error code 1'
 
 ## Prerequisites for 18.04
 
@@ -46,7 +48,7 @@ git tag -l
 git checkout -b v6-10-08 v6-10-08
 mkdir <builddir>
 cd <builddir> 
-cmake -DPYTHON_EXECUTABLE=/path-to-python/3.6/bin/python3 -Dpython3=ON -DPYTHON_INCLUDE_DIR=/path-to-python/3.6/Headers -DPYTHON_LIBRARY=/path-to-python/3.6/lib/libpython3.6.dylib ../root/
+cmake -DPYTHON_EXECUTABLE=/path-to-python/3.6/bin/python3 -Dpython3=ON -DPYTHON_INCLUDE_DIR=/path-to-python/3.6/Headers -DPYTHON_LIBRARY=/path-to-python/3.6/lib/libpython3.6.dylib ../
 cmake --build .
 source /path/to/builddir/dir/bin/thisroot.sh
 ```
