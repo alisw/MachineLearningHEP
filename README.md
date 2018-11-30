@@ -34,8 +34,10 @@ pip3 install seaborn
 ## Prerequisites for 18.04
 
 ### Install python 3.6.6 
+```
 sudo apt-get update
 sudo apt-get install python3.6 python3-tk python3-pip
+```
 
 ### ROOT with Python 3
 REMEMBER to replace "path-to-python" with the path where you have the bin of your python installation
