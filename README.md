@@ -1,5 +1,8 @@
 # MachineLearningHF
 
+// The current recommended instructions require the installation of a independent ROOT6 framework with Pyhon 3.6. 
+// Use of the package inside AliPhysics is possible but not recommended for the moment.
+
 ## Prerequisites (fully validated only for MacOs Sierra 10.13.16)
 ```
 sudo apt-get update
