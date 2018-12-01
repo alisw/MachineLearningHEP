@@ -3,7 +3,7 @@
 The current recommended instructions require the installation of a independent ROOT6 framework with Pyhon 3.6. 
 Using the package inside AliPhysics is possible but not described in this README.
 
-## Installation for MacOs Sierra 10.13.16 (Validated 1 december 2018)
+## 1a) Prerequisites for MacOs Sierra 10.13.16 (Validated 1 december 2018)
 
 ### Install python 3.6.6 
 Get from the official website https://www.python.org/downloads/mac-osx/ the version Python 3.6.6.
@@ -47,7 +47,7 @@ pip3 install --upgrade tensorflow-gpu
 ```
 
 
-## Installation for Ubuntu 18.04 (Validated 1 december 2018)
+## 1b) Prerequisites for Ubuntu 18.04 (Validated 1 december 2018)
 
 The instruction below requires you to start the installation from your home directory! 
 
@@ -98,6 +98,8 @@ sudo pip3 install -U virtualenv
 pip3 install --upgrade tensorflow
 pip3 install --upgrade tensorflow-gpu
 ```
+
+## 2) Install the ALICE Machine learning tool
 
 ### Configure your github environment 
 Please use your own name and mail address :D
