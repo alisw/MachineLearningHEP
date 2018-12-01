@@ -29,7 +29,7 @@ cmake -DPYTHON_EXECUTABLE=/Library/Frameworks/Python.framework/Versions/3.6/bin/
 make -j20
 source bin/thisroot.sh
 ```
-### Add in your bashrc 
+### Add in your bash_profile (if you use Terminal) 
 This assumes you have the build in your home folder. If another choice was made change it accordingly
 ```
 source build/bin/thisroot.sh
