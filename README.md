@@ -3,7 +3,7 @@
 The current recommended instructions require the installation of a independent ROOT6 framework with Pyhon 3.6. 
 Use of the package inside AliPhysics is possible but not recommended for the moment.
 
-## Prerequisites for MacOs Sierra (10.13.16)
+## ****** Prerequisites for MacOs Sierra (10.13.16) *****
 
 ### Install python 3.6.6 
 Get from the official website https://www.python.org/downloads/mac-osx/ the version Python 3.6.6.
@@ -31,7 +31,7 @@ pip3 install tensorflow keras
 pip3 install seaborn
 ```
 
-## Prerequisites for 18.04
+## ****** Prerequisites for Ubuntu 18.04 *****
 
 ### Install python 3.6.6 
 ```
