@@ -7,7 +7,8 @@ Using the package inside AliPhysics is possible but not described in this README
 
 ### Install python 3.6.6 
 Get from the official website https://www.python.org/downloads/mac-osx/ the version Python 3.6.6.
-Follow the instructions and install it. 
+Follow the instructions and install it. The predefined folder should be 
+/Library/Frameworks/Python.framework/Versions/3.6/bin/python3.
 
 ### Install ROOT with Python 3
 This assumes that you are using the python version you just installed placed in /Library/Frameworks/Python.framework/Versions/3.6/bin/python3.
@@ -32,10 +33,7 @@ source build/bin/thisroot.sh
 
 ### Install all the Machine Learning softwares 
 ```
-sudo apt-get update
-sudo apt-get install build-essential
 pip3 install jupyter matplotlib numpy pandas scipy scikit-learn
-sudo apt-get install git
 pip3 install seaborn
 pip3 install sklearn-evaluation
 pip3 install keras xgboost
@@ -45,7 +43,6 @@ sudo pip3 install -U virtualenv
 pip3 install --upgrade tensorflow
 pip3 install --upgrade tensorflow-gpu
 ```
-
 
 ## 1b) Prerequisites for Ubuntu 18.04 (Validated 1 december 2018)
 
