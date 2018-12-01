@@ -3,9 +3,9 @@
 The current recommended instructions require the installation of a independent ROOT6 framework with Pyhon 3.6. 
 Using the package inside AliPhysics is possible but not described in this README.
 
-Follow step 1a) and 2) if you are using MacOs Sierra 
-Follow step 1b) and 2) if you are using Ubuntu 18.04 
-
+Follow:
+- step 1a) and 2) if you are using MacOs Sierra 
+-  step 1b) and 2) if you are using Ubuntu 18.04 
 
 ## 1a) Prerequisites for MacOs Sierra 10.13.16 (Validated 1 december 2018)
 
