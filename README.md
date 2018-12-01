@@ -48,6 +48,8 @@ sudo apt-get install python3.6 python3-tk python3-pip python3-dev
 ```
 
 ### Install ROOT with Python 3
+This assumes that you are using the python version you just installed placed in /usr/bin/python3.
+If you want to use another version change the path accordingly. 
 ```
 git clone http://github.com/root-project/root.git
 cd root
