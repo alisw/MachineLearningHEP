@@ -113,7 +113,7 @@ git config --global user.email mymail@mail.com
 ```
 git clone https://github.com/ginnocen/MachineLearningHF.git
 cd MachineLearningHF/ALICEanalysis/MLproductions
-scp ginnocen@lxplus.cern.ch:/afs/cern.ch/work/g/ginnocen/public/exampleInputML/*.root .
+scp <my_cern_user>@lxplus.cern.ch:/afs/cern.ch/work/g/ginnocen/public/exampleInputML/*.root .
 ```
 
 ## In case of problems:
