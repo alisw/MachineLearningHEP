@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include "includeEvtToCand/tree_Ds.C"
+#include "tree_Ds.C"
 
 using namespace std;
 
@@ -13,11 +13,11 @@ void skimTreeDsFromEvt(TString input="AnalysisResults.root",TString output="test
 
   tree_Ds t(tree);
   int nevt = t.GetEntriesFast();
-  cout << "RUNNING " << endl;
+  cout << "\n\nRUNNING Ds: " << input.Data() << endl;
   TFile *fout = new TFile(output.Data(),"recreate"); 
   TTree* fTreeDsML = new TTree("fTreeDsFlagged","fTreeDsFlagged");
 
-  float inv_mass_ML, pt_cand_ML, d_len_ML, d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, sig_vert_ML, mass_KK_ML, cosPiDs_ML, cos_PiKPhi_3_ML, max_norm_d0d0exp_ML;
+  float inv_mass_ML, pt_cand_ML, d_len_ML, d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, sig_vert_ML, mass_KK_ML, cos_PiDs_ML, cos_PiKPhi_3_ML, max_norm_d0d0exp_ML;
   float cand_type_ML, y_cand_ML, eta_cand_ML, phi_cand_ML;
   float imp_par_prong0_ML, imp_par_prong1_ML, imp_par_prong2_ML, p_prong0_ML, p_prong1_ML, p_prong2_ML, pt_prong0_ML, pt_prong1_ML, pt_prong2_ML, eta_prong0_ML, eta_prong1_ML, eta_prong2_ML, phi_prong0_ML, phi_prong1_ML, phi_prong2_ML;
   float nTPCcls_prong0_ML, nTPCclspid_prong0_ML, nTPCcrossrow_prong0_ML, chi2perndf_prong0_ML, nITScls_prong0_ML, ITSclsmap_prong0_ML, nTPCcls_prong1_ML, nTPCclspid_prong1_ML, nTPCcrossrow_prong1_ML, chi2perndf_prong1_ML, nITScls_prong1_ML, ITSclsmap_prong1_ML, nTPCcls_prong2_ML, nTPCclspid_prong2_ML, nTPCcrossrow_prong2_ML, chi2perndf_prong2_ML, nITScls_prong2_ML, ITSclsmap_prong2_ML;
@@ -111,10 +111,10 @@ void skimTreeDsFromEvt(TString input="AnalysisResults.root",TString output="test
   fTreeDsML->Branch("trlen_prong2_ML",&trlen_prong2_ML,"trlen_prong2_ML/F");
   fTreeDsML->Branch("start_time_res_prong2_ML",&start_time_res_prong2_ML,"start_time_res_prong2_ML/F");
 
-  std::cout<<"nevents"<<nevt<<std::endl;
+  std::cout<<"nevents (Ds) "<<nevt<<std::endl;
   for(Long64_t jentry=0; jentry<nevt;jentry++){
     t.GetEntry(jentry);   
-    if(jentry%1000==0) cout<<jentry<<endl;
+    if(jentry%25000==0) cout<<jentry<<endl;
     for(int icand = 0; icand < t.n_cand; icand++){ 
       inv_mass_ML=t.inv_mass -> at(icand);
       pt_cand_ML=t.pt_cand -> at(icand);

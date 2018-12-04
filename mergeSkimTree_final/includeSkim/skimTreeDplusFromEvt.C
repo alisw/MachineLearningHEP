@@ -1,7 +1,7 @@
 #include <iostream>
 #include <vector>
 #include <algorithm>
-#include "includeEvtToCand/tree_Dplus.C"
+#include "tree_Dplus.C"
 
 using namespace std;
 
@@ -13,7 +13,7 @@ void skimTreeDplusFromEvt(TString input="AnalysisResults.root",TString output="t
     
   tree_Dplus t(tree);
   int nevt = t.GetEntriesFast();
-  cout << "RUNNING " << endl;
+    cout << "\n\nRUNNING Dplus: " << input.Data() << endl;
   TFile *fout = new TFile(output.Data(),"recreate"); 
   TTree* fTreeDplusML = new TTree("fTreeDplusFlagged","fTreeDplusFlagged");
   
@@ -105,10 +105,10 @@ void skimTreeDplusFromEvt(TString input="AnalysisResults.root",TString output="t
   fTreeDplusML->Branch("trlen_prong2_ML",&trlen_prong2_ML,"trlen_prong2_ML/F");
   fTreeDplusML->Branch("start_time_res_prong2_ML",&start_time_res_prong2_ML,"start_time_res_prong2_ML/F");
     
-  std::cout<<"nevents"<<nevt<<std::endl;
+  std::cout<<"nevents (Dplus) "<<nevt<<std::endl;
   for(Long64_t jentry=0; jentry<nevt;jentry++){
     t.GetEntry(jentry);   
-    if(jentry%1000==0) cout<<jentry<<endl;
+    if(jentry%25000==0) cout<<jentry<<endl;
     for(int icand = 0; icand < t.n_cand; icand++){ 
       inv_mass_ML=t.inv_mass -> at(icand);
       pt_cand_ML=t.pt_cand -> at(icand);

@@ -4,9 +4,3 @@
 ../MLproductions/test3AnalysisResults
 ../MLproductions/test4AnalysisResults
 ../MLproductions/test5AnalysisResults
-../MLproductions/test0AnalysisResults
-../MLproductions/test1AnalysisResults
-../MLproductions/test2AnalysisResults
-../MLproductions/test3AnalysisResults
-../MLproductions/test4AnalysisResults
-../MLproductions/test5AnalysisResults

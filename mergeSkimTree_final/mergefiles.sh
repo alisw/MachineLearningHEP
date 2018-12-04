@@ -4,7 +4,7 @@
 #Set variables below as arguments of the script? TODO
 nfilesformerging=4
 inputfile=listfilesMerging.txt
-nameoutput="mergingOutputDir"
+nameoutput="../MLproductions/mergeSkimOutputDir_test"
 nameoutputlist="lsoutputmergedlist.txt"
 
 rm -rf $nameoutput
@@ -20,3 +20,4 @@ mv "${line}_rootflag" "${line}"
 hadd "${line}.root" @"$line"
 done < "$nameoutputlist"
 
+cp $nameoutputlist $nameoutput/
