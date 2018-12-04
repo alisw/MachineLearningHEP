@@ -44,7 +44,7 @@ pip3 install keras xgboost
 pip3 install --upgrade setuptools
 sudo pip3 install uproot
 sudo pip3 install -U virtualenv
-pip3 install --upgrade https://storage.googleapis.com/tensorflow/mac/cpu/tensorflow-1.9.0-py3-none-any.whl
+pip3 install -Iv tensorflow==1.5
 ```
 
 ## 1b) Prerequisites for Ubuntu 18.04 (Validated 1 december 2018)
