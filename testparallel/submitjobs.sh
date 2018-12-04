@@ -9,8 +9,7 @@ totevents=50000000
 
 START=$(date +%s)
 
-#!/bin/bash
-myfile=listfiles.txt
+myfile=lsoutputmergedlist.txt
 while IFS='' read -r line || [[ -n "$line" ]]; do
 g++ ../buildtree/skimTreeDs.C $(root-config --cflags --libs) -g -o skimTreeDs.exe 
 ./skimTreeDs.exe "${line}.root" "${line}_skimmed.root" "$DataTree" "$totevents"
