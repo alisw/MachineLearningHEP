@@ -4,8 +4,9 @@
 doDsFromCand=0
 doLcFromCand=0
 doDsFromEvt=0
+doDplusFromEvt=1
 doBplusFromEvt=0
-doPID=1
+doPID=0
 
 MCSAMPLE="../MLproductions/AnalysisResults_Ds_MC_2018Sep21_LHC18a4a2_cent_fast_CandBased.root"
 DATASAMPLE="../MLproductions/AnalysisResults_Ds_Data_2018Sep21_LHC15o_pass1_pidfix_CandBased.root"  
@@ -73,6 +74,28 @@ g++ skimTreeDsFromEvt.C $(root-config --cflags --libs) -g -o skimTreeDsFromEvt.e
 ./skimTreeDsFromEvt.exe "$MCSAMPLE" "$MCSAMPLEOUT" "$MCTree" 
 ./skimTreeDsFromEvt.exe "$DATASAMPLE" "$DATASAMPLEOUT" "$DataTree" 
 rm -rf skimTreeDsFromEvt.exe skimTreeDsFromEvt.exe.dSYM
+fi
+
+#-------
+
+MCSAMPLE="../MLproductions/AnalysisResults_MC_testTrainFullStat1Run_D0DplusDs.root"
+DATASAMPLE="../MLproductions/AnalysisResults_Data_fullTrainOne7thStat1Run_D0DplusDs.root"
+MCSAMPLEOUT="../MLproductions/AnalysisResults_MC_testTrainFullStat1Run_Dplus_skimmed.root"
+DATASAMPLEOUT="../MLproductions/AnalysisResults_Data_fullTrainOne7thStat1Run_Dplus_skimmed.root"
+MCTree="tree_Dplus"
+DataTree="tree_Dplus"
+
+
+if [ $doDplusFromEvt -eq 1 ]
+then
+
+rm $MCSAMPLEOUT
+rm $DATASAMPLEOUT
+
+g++ skimTreeDplusFromEvt.C $(root-config --cflags --libs) -g -o skimTreeDplusFromEvt.exe
+./skimTreeDplusFromEvt.exe "$MCSAMPLE" "$MCSAMPLEOUT" "$MCTree"
+./skimTreeDplusFromEvt.exe "$DATASAMPLE" "$DATASAMPLEOUT" "$DataTree"
+rm -rf skimTreeDplusFromEvt.exe skimTreeDplusFromEvt.exe.dSYM
 fi
 
 #-------
