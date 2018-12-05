@@ -210,13 +210,13 @@ def getmasscut(case):
   fmassmin=-1
   fmassmax=-1  
   if (case=="Ds"):
-    fmassmin=1.85
-    fmassmax=2.04
+    fmassmin=1.83
+    fmassmax=2.012
   
   if (case=="Dplus"):
     fmassmin=1.87-0.1
     fmassmax=1.87+0.1
-
+    
   if (case=="Lc"):
     fmassmin=2.2864-0.1
     fmassmax=2.2864+0.1
