@@ -45,6 +45,7 @@ pip3 install --upgrade setuptools
 sudo pip3 install uproot
 sudo pip3 install -U virtualenv
 pip3 install -Iv tensorflow==1.5
+brew install graphviz
 ```
 
 ## 1b) Prerequisites for Ubuntu 18.04 (Validated 1 december 2018)
