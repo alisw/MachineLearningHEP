@@ -1,7 +1,7 @@
 ###############################################################
 ##                                                           ##
 ##     Software for single-label classification with Scikit  ##
-##      Origin: G.M. Innocenti (CERN)(ginnocen@cern.ch)       ##
+##     Origin: G.M. Innocenti (CERN)(ginnocen@cern.ch)       ##
 ##                                                           ##
 ###############################################################
 
@@ -11,8 +11,8 @@ Methods to: study selection efficiency and expected significance
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from DataBaseMLparameters import getmasscut, getOptimizationParameters
 from ROOT import TH1F, gROOT
+from DataBaseMLparameters import getmasscut, getOptimizationParameters
 
 def calc_efficiency(df_to_sel, name, num_step):
   x_axis = np.linspace(0, 1.00, num_step)
@@ -28,20 +28,22 @@ def calc_efficiency(df_to_sel, name, num_step):
 def calc_bkg(df_bkg, name, num_step, mass_cuts, fit_region, bin_width, sig_region):
   x_axis = np.linspace(0, 1.00, num_step)
   bkg_array = []
-
   num_bins = (fit_region[1] - fit_region[0]) / bin_width
   num_bins = int(round(num_bins))
   bin_width = (fit_region[1] - fit_region[0]) / num_bins
+  bkg_mass_mask = (df_bkg['inv_mass_ML'].values <= mass_cuts[0]) | (df_bkg['inv_mass_ML'].values >= mass_cuts[1])
+  df_mass = df_bkg[bkg_mass_mask]
   
   for thr in x_axis:
     bkg = 0.
     hmass = TH1F('hmass', '', num_bins, fit_region[0], fit_region[1])
+    bkg_sel_mask = df_mass['y_test_prob' + name].values >= thr
+    sel_mass_array = df_mass[bkg_sel_mask]['inv_mass_ML'].values
 
-    for index, row in df_bkg.iterrows():
-      if ( (row['inv_mass_ML'] <= mass_cuts[0] or row['inv_mass_ML'] >= mass_cuts[1]) and row['y_test_prob' + name] >= thr ):
-        hmass.Fill(row['inv_mass_ML'])
+    if len(sel_mass_array) > 5 : 
+      for mass_value in np.nditer(sel_mass_array):
+        hmass.Fill(mass_value)
 
-    if(hmass.GetEntries() > 10):
       fit = hmass.Fit('expo', 'Q', '',  fit_region[0], fit_region[1])  
       if(int(fit) == 0):
         fit_func = hmass.GetFunction('expo')
@@ -87,7 +89,7 @@ def calc_sig_Dmeson(common_dict, pt_specific_dict, pt_min, pt_max):
 
   return sig_before_sel 
 
-def studysignificance(part_label, pt_min, pt_max, test_set, names, target_var, suffix, plot_dir):
+def studysignificance(part_label, pt_min, pt_max, sig_set, bkg_set, names, target_var, suffix, plot_dir):
   gROOT.SetBatch(True)
   gROOT.ProcessLine("gErrorIgnoreLevel = 2000;")
 
@@ -113,16 +115,15 @@ def studysignificance(part_label, pt_min, pt_max, test_set, names, target_var, s
   num_steps = 101
   
   for name in names:
-    mask_sig = test_set[target_var].values == 1
-    eff_array, x_axis = calc_efficiency(test_set[mask_sig], name, num_steps)
+    mask_sig = sig_set[target_var].values == 1
+    eff_array, x_axis = calc_efficiency(sig_set[mask_sig], name, num_steps)
     plt.figure(fig_eff.number)
     plt.plot(x_axis, eff_array, alpha = 0.3, label = '%s' % name, linewidth = 4.0)
 
     sig_array = [ eff * sig_before_sel for eff in eff_array]
-    mask_bkg = test_set[target_var].values == 0
-    bkg_array, x_axis_bkg = calc_bkg(test_set[mask_bkg], name, num_steps, mass_cuts, common_dict['mass_fit_lim'], pt_specific_dict['bin_width'], sig_region)
-    bkg_array = [ bkg * 400 for bkg in bkg_array]
-
+    mask_bkg = bkg_set['cand_type_ML'].values == 0
+    bkg_array, x_axis_bkg = calc_bkg(bkg_set[mask_bkg], name, num_steps, mass_cuts, common_dict['mass_fit_lim'], pt_specific_dict['bin_width'], sig_region)
+    
     signif_array = calc_signif(sig_array, bkg_array)
     plt.figure(fig_signif.number)
     plt.plot(x_axis, signif_array, alpha = 0.3, label = '%s' % name, linewidth = 4.0)

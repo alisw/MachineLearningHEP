@@ -222,17 +222,17 @@ if (doLearningCurve==1):
 if (doROCcurve==1):
   precision_recall(mylistvariables,names,classifiers,suffix,X_train,y_train,5,plotdir)
 
-if(doOptimisation==1):
-  print ("Doing significance optimization")
-  if (dotraining and dotesting):
+if(doOptimisation == 1):
+  print ("Doing significance optimization\n")
+  if (dotraining and dotesting and doapplytodata):
     if ((MLsubtype=="HFmeson") and (optionanalysis=="Ds")):
-      studysignificance(optionanalysis,varmin[0],varmax[0],test_set,names,myvariablesy,suffix,plotdir) 
+      studysignificance(optionanalysis, varmin[0], varmax[0], test_set, dataframeDataML, names, myvariablesy, suffix, plotdir)
     else:
       print ("==================ERROR==================")
       print ("Optimisation is not implemented for this classification problem. The code is going to fail")
       sys.exit()   
   else:
-    print ("Training and testing flags must be set to 1")
+    print ("Training, testing and applytodata flags must be set to 1")
     sys.exit()
 
 if (doBoundary==1):
