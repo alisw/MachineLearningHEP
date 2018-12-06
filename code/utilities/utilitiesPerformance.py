@@ -14,7 +14,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sn
 from sklearn.model_selection import cross_val_score, cross_val_predict, train_test_split, StratifiedKFold
-from sklearn.metrics import roc_curve, auc, confusion_matrix, precision_recall_curve, mean_squared_error
+from sklearn.metrics import roc_curve, auc, confusion_matrix, precision_recall_curve, mean_squared_error, f1_score, precision_score
 from sklearn_evaluation import plot
 
 def cross_validation_mse(names_,classifiers_,X_train_,y_train_,cv_,ncores):
@@ -174,7 +174,7 @@ def precision_recall(mylistvariables_,names_,classifiers_,suffix_,X_train,y_trai
   plt.savefig(plotname)
   
 
-def plot_learning_curves(names_, classifiers_,suffix_,folder,X,y,npoints):
+def plot_learning_curves(names_, classifiers_,suffix_,folder,X,y,npoints,ytype=0, threshold=0.5):
   figure1 = plt.figure(figsize=(20,15))
   i=1
   X_train, X_val, y_train, y_val = train_test_split(X,y,test_size=0.2)
@@ -187,18 +187,52 @@ def plot_learning_curves(names_, classifiers_,suffix_,folder,X,y,npoints):
     arrayvalues=np.arange(start=min,stop=max,step=step_)
     for m in arrayvalues:
       clf.fit(X_train[:m],y_train[:m])
-      y_train_predict = clf.predict(X_train[:m])
-      y_val_predict = clf.predict(X_val)
-      train_errors.append(mean_squared_error(y_train_predict,y_train[:m]))
-      val_errors.append(mean_squared_error(y_val_predict,y_val))
+      y_train_predict = (clf.predict_proba(X_train[:m]) >= threshold).astype(bool)
+      y_val_predict = (clf.predict_proba(X_val) >= threshold).astype(bool)
+      if (ytype==1):
+        train_errors.append(f1_score(y_train_predict,y_train[:m]))
+        val_errors.append(f1_score(y_val_predict,y_val))
+      elif (ytype==2):
+        train_errors.append(precision_score(y_train_predict,y_train[:m]))
+        val_errors.append(precision_score(y_val_predict,y_val))
+      elif (ytype==3):
+        tn, fp, fn, tp = confusion_matrix(y_train_predict,y_train[:m]).ravel()
+        bkgEff_train = tn / (tn+fn)
+        tn, fp, fn, tp = confusion_matrix(y_val_predict,y_val).ravel()
+        bkgEff_val = tn / (tn+fn)
+        train_errors.append(bkgEff_train)
+        val_errors.append(bkgEff_val)       
+      else:
+        train_errors.append(mean_squared_error(y_train_predict,y_train[:m]))
+        val_errors.append(mean_squared_error(y_val_predict,y_val))
     ax.set_ylim([0,np.amax(np.sqrt(val_errors))*2])    
     plt.plot(arrayvalues,np.sqrt(train_errors),"r-+",linewidth=3,label="training")
     plt.plot(arrayvalues,np.sqrt(val_errors),"b-",linewidth=3,label="testing")
     plt.title(name, fontsize=16)
-    plt.xlabel("Training set size",fontsize=16) 
-    plt.ylabel("RMSE",fontsize=16)
+    plt.xlabel("Training set size",fontsize=16)
+    if (ytype==1):
+      plt.ylabel("f1 score",fontsize=16)
+      suffix_= suffix_+"f1score"
+    elif (ytype==2):
+      plt.ylabel("signal efficiency",fontsize=16)
+      suffix_= suffix_+"sig"
+    elif (ytype==3):
+      plt.ylabel("background efficieny",fontsize=16)
+      suffix_= suffix_+"bkg"
+    else:
+      plt.ylabel("RMSE",fontsize=16)
+      suffix_= suffix_+"RMSE"
     figure1.subplots_adjust(hspace=.5)
     plt.legend(loc="lower center",  prop={'size':18})
     i += 1
+  suffix_=suffix_+str(threshold)
+  if (ytype==1):
+    suffix_= suffix_+"f1score"
+  elif (ytype==2):
+    suffix_= suffix_+"sig"
+  elif (ytype==3):
+    suffix_= suffix_+"bkg"
+  else:
+    suffix_= suffix_+"RMSE"
   plotname=folder+'/learning_curve%s.png' % (suffix_)
   plt.savefig(plotname)
