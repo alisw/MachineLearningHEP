@@ -187,8 +187,8 @@ def plot_learning_curves(names_, classifiers_,suffix_,folder,X,y,npoints,ytype=0
     arrayvalues=np.arange(start=min,stop=max,step=step_)
     for m in arrayvalues:
       clf.fit(X_train[:m],y_train[:m])
-      y_train_predict = (clf.predict_proba(X_train[:m]) >= threshold).astype(bool)
-      y_val_predict = (clf.predict_proba(X_val) >= threshold).astype(bool)
+      y_train_predict = np.transpose((clf.predict_proba(X_train[:m]) >= threshold).astype(int))[1]
+      y_val_predict = np.transpose((clf.predict_proba(X_val) >= threshold).astype(int))[1]
       if (ytype==1):
         train_errors.append(f1_score(y_train_predict,y_train[:m]))
         val_errors.append(f1_score(y_val_predict,y_val))
@@ -212,27 +212,23 @@ def plot_learning_curves(names_, classifiers_,suffix_,folder,X,y,npoints,ytype=0
     plt.xlabel("Training set size",fontsize=16)
     if (ytype==1):
       plt.ylabel("f1 score",fontsize=16)
-      suffix_= suffix_+"f1score"
     elif (ytype==2):
       plt.ylabel("signal efficiency",fontsize=16)
-      suffix_= suffix_+"sig"
     elif (ytype==3):
       plt.ylabel("background efficieny",fontsize=16)
-      suffix_= suffix_+"bkg"
     else:
       plt.ylabel("RMSE",fontsize=16)
-      suffix_= suffix_+"RMSE"
     figure1.subplots_adjust(hspace=.5)
     plt.legend(loc="lower center",  prop={'size':18})
     i += 1
-  suffix_=suffix_+str(threshold)
+  suffix_=suffix_+'_'+str(threshold)
   if (ytype==1):
-    suffix_= suffix_+"f1score"
+    suffix_= suffix_+"_f1score"
   elif (ytype==2):
-    suffix_= suffix_+"sig"
+    suffix_= suffix_+"_sig"
   elif (ytype==3):
-    suffix_= suffix_+"bkg"
+    suffix_= suffix_+"_bkg"
   else:
-    suffix_= suffix_+"RMSE"
+    suffix_= suffix_+"_RMSE"
   plotname=folder+'/learning_curve%s.png' % (suffix_)
   plt.savefig(plotname)
