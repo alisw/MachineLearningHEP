@@ -48,24 +48,27 @@ pip3 install -Iv tensorflow==1.5
 brew install graphviz
 ```
 
-## 1b) Prerequisites for Ubuntu 18.04 (Validated 1 december 2018)
+## 1b) Prerequisites for Ubuntu 18.04 (Validated 7 december 2018)
 
-The instruction below requires you to start the installation from your home directory! 
+The instruction below requires you to start the installation from your home directory!
 
-### Install cmake and other utilities 
+### Install cmake and other utilities
+
 ```
+sudo apt-get update
 sudo apt-get install git dpkg-dev cmake g++ gcc binutils libx11-dev libxpm-dev libxft-dev libxext-dev
 ```
-### Install python 3.6.6 
+
+### Install python 3.6.6
+
 ```
-sudo add-apt-repository universe
-sudo apt-get update
-sudo apt-get install python3.6 python3-tk python3-pip python3-dev
+sudo apt-get install python3.6 python3-tk python3-pip
 ```
 
 ### Install ROOT with Python 3
+
 This assumes that you are using the python version you just installed placed in /usr/bin/python3.
-If you want to use another version change the path accordingly. 
+If you want to use another version change the path accordingly.
 ```
 git clone http://github.com/root-project/root.git
 cd root
@@ -75,30 +78,28 @@ mkdir build
 sudo chown -R $(whoami):$(id -g -n $(whoami)) build
 cd build
 cmake -DPYTHON_EXECUTABLE=/usr/bin/python3 ../root/
-make -j20
-source bin/thisroot.sh
+make -j<num_core_to_use>
 ```
-### Add in your bashrc 
-This assumes you have the build in your home folder. If another choice was made change it accordingly
+
+Add in your .bashrc
+
 ```
 source build/bin/thisroot.sh
 ```
 
-### Install all the Machine Learning softwares 
+This assumes you have the build in your home folder. If another choice was made change it accordingly
+
+### Install all the Machine Learning softwares
+
 ```
-sudo apt-get update
-sudo apt-get install build-essential
-pip3 install jupyter matplotlib numpy pandas scipy scikit-learn
-sudo apt-get install git
-pip3 install seaborn
-pip3 install sklearn-evaluation
-pip3 install keras xgboost
-pip3 install --upgrade setuptools
-sudo pip3 install uproot
-sudo pip3 install -U virtualenv
-pip3 install --upgrade tensorflow
-pip3 install --upgrade tensorflow-gpu
+sudo apt-get install graphviz
+pip3 install numpy pandas scipy matplotlib seaborn
+pip3 install pkgconfig uproot
+pip3 install scikit-learn sklearn-evaluation xgboost
+pip3 install tensorflow keras
 ```
+
+To install tensorflow with GPU support please refer to https://www.tensorflow.org/install/gpu
 
 ## 2) Install the ALICE Machine learning tool
 
@@ -118,7 +119,7 @@ scp ginnocen@lxplus.cern.ch:/afs/cern.ch/work/g/ginnocen/public/exampleInputML/*
 
 ## In case of problems:
 
-For problems ginnocen@cern.ch,fabio.catalano@cern.ch
+For problems ginnocen@cern.ch, fabio.catalano@cern.ch
 
 
 
