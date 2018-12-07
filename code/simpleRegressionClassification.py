@@ -22,11 +22,14 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 from utilitiesOptimisation import studysignificance
 
+##Turn off "Try using .loc[row_indexer,col_indexer] = value instead" warnings
+pd.options.mode.chained_assignment = None  # default='warn'
+
 ############### choose your ML method ################
 nevents=10000
 MLtype="BinaryClassification" #other options are "Regression", "BinaryClassification"
 MLsubtype="HFmeson" #other options are "PID","HFmeson","test","jettagging","nuclei"
-optionanalysis="Lc" #other options are "Ds, Bplus,Lc,PIDKaon,PIDPion,testregression,lightquarkjet,hypertritium
+optionanalysis="Lc" #other options are "Ds,Dplus, Bplus,Lc,PIDKaon,PIDPion,testregression,lightquarkjet,hypertritium
 
 ############### choose the skimming parameters for your dataset ################
 var_skimming=["pt_cand_ML"] #other options are "pdau0_ML" in case of PID, "Pt_Rec_ML" in case of jet tagging, "pt_cand_ML" for HF tagging
@@ -120,7 +123,6 @@ if(loadsampleOption==1):
   print ("dimension of the dataset",len(train_set))
   X_train= train_set[mylistvariables]
   y_train=train_set[myvariablesy]
-
 
 if(loadsampleOption==2): 
   mylistvariables=["volume"]
@@ -244,7 +246,7 @@ if (doBoundary==1):
 if (doBinarySearch==1):
   namesCV,classifiersCV,param_gridCV,changeparameter=getgridsearchparameters(optionanalysis)
   grid_search_models,grid_search_bests=do_gridsearch(namesCV,classifiersCV,mylistvariables,param_gridCV,X_train,y_train,3,ncores)
-  savemodels(namesCV,grid_search_models,output,"GridSearchCV"+suffix)
+  savemodels(namesCV,grid_search_models,mylistvariables,myvariablesy,output,"GridSearchCV"+suffix)
   plot_gridsearch(namesCV,changeparameter,grid_search_models,plotdir,suffix)
 
 if (doimportance==1):
