@@ -210,25 +210,13 @@ def plot_learning_curves(names_, classifiers_,suffix_,folder,X,y,npoints,ytype=0
     plt.plot(arrayvalues,np.sqrt(val_errors),"b-",linewidth=3,label="testing")
     plt.title(name, fontsize=16)
     plt.xlabel("Training set size",fontsize=16)
-    if (ytype==1):
-      plt.ylabel("f1 score",fontsize=16)
-    elif (ytype==2):
-      plt.ylabel("signal efficiency",fontsize=16)
-    elif (ytype==3):
-      plt.ylabel("background efficieny",fontsize=16)
-    else:
-      plt.ylabel("RMSE",fontsize=16)
+    yAxisLabel = ("RMSE", "f1 score", "signal efficiency","background efficieny")
+    plt.ylabel(yAxisLabel[ytype],fontsize=16)
     figure1.subplots_adjust(hspace=.5)
     plt.legend(loc="lower center",  prop={'size':18})
     i += 1
   suffix_=suffix_+'_'+str(threshold)
-  if (ytype==1):
-    suffix_= suffix_+"_f1score"
-  elif (ytype==2):
-    suffix_= suffix_+"_sig"
-  elif (ytype==3):
-    suffix_= suffix_+"_bkg"
-  else:
-    suffix_= suffix_+"_RMSE"
+  typesuffix = ("RMSE", "f1score", "sig","bkg")
+  suffix_= suffix_+"_"+typesuffix[ytype]
   plotname=folder+'/learning_curve%s.png' % (suffix_)
   plt.savefig(plotname)
