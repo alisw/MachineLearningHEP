@@ -190,21 +190,21 @@ def plot_learning_curves(names_, classifiers_,suffix_,folder,X,y,npoints,ytype=0
       y_train_predict = np.transpose((clf.predict_proba(X_train[:m]) >= threshold).astype(int))[1]
       y_val_predict = np.transpose((clf.predict_proba(X_val) >= threshold).astype(int))[1]
       if (ytype==1):
-        train_errors.append(f1_score(y_train_predict,y_train[:m]))
-        val_errors.append(f1_score(y_val_predict,y_val))
+        yMetric_train = f1_score(y_train_predict,y_train[:m])
+        yMetric_val = f1_score(y_val_predict,y_val)
       elif (ytype==2):
-        train_errors.append(precision_score(y_train_predict,y_train[:m]))
-        val_errors.append(precision_score(y_val_predict,y_val))
+        yMetric_train =  precision_score(y_train_predict,y_train[:m])
+        yMetric_val = precision_score(y_val_predict,y_val)
       elif (ytype==3):
         tn, fp, fn, tp = confusion_matrix(y_train_predict,y_train[:m]).ravel()
-        bkgEff_train = tn / (tn+fn)
+        yMetric_train = tn / (tn+fn)
         tn, fp, fn, tp = confusion_matrix(y_val_predict,y_val).ravel()
-        bkgEff_val = tn / (tn+fn)
-        train_errors.append(bkgEff_train)
-        val_errors.append(bkgEff_val)       
+        yMetric_val = tn / (tn+fn)
       else:
-        train_errors.append(mean_squared_error(y_train_predict,y_train[:m]))
-        val_errors.append(mean_squared_error(y_val_predict,y_val))
+        yMetric_train = mean_squared_error(y_train_predict,y_train[:m])
+        yMetric_val = mean_squared_error(y_val_predict,y_val)  
+      train_errors.append(yMetric_train)
+      val_errors.append(yMetric_val)
     ax.set_ylim([0,np.amax(np.sqrt(val_errors))*2])    
     plt.plot(arrayvalues,np.sqrt(train_errors),"r-+",linewidth=3,label="training")
     plt.plot(arrayvalues,np.sqrt(val_errors),"b-",linewidth=3,label="testing")
