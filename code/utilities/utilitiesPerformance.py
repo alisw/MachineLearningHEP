@@ -189,13 +189,13 @@ def plot_learning_curves(names_, classifiers_,suffix_,folder,X,y,npoints,ystring
       clf.fit(X_train[:m],y_train[:m])
       y_train_predict = np.transpose((clf.predict_proba(X_train[:m]) >= threshold).astype(int))[1]
       y_val_predict = np.transpose((clf.predict_proba(X_val) >= threshold).astype(int))[1]
-      if (ytype[ystring]==1):
+      if (ytype.get(ystring,-1)==1):
         yMetric_train = f1_score(y_train_predict,y_train[:m])
         yMetric_val = f1_score(y_val_predict,y_val)
-      elif (ytype[ystring]==2):
+      elif (ytype.get(ystring,-1)==2):
         yMetric_train =  precision_score(y_train_predict,y_train[:m])
         yMetric_val = precision_score(y_val_predict,y_val)
-      elif (ytype[ystring]==3):
+      elif (ytype.get(ystring,-1)==3):
         tn, fp, fn, tp = confusion_matrix(y_train_predict,y_train[:m]).ravel()
         yMetric_train = tn / (tn+fn)
         tn, fp, fn, tp = confusion_matrix(y_val_predict,y_val).ravel()
@@ -211,12 +211,12 @@ def plot_learning_curves(names_, classifiers_,suffix_,folder,X,y,npoints,ystring
     plt.title(name, fontsize=16)
     plt.xlabel("Training set size",fontsize=16)
     yAxisLabel = ("RMSE", "f1 score", "signal efficiency","background efficieny")
-    plt.ylabel(yAxisLabel[ytype[ystring]],fontsize=16)
+    plt.ylabel(yAxisLabel[ytype.get(ystring,0)],fontsize=16)
     figure1.subplots_adjust(hspace=.5)
     plt.legend(loc="lower center",  prop={'size':18})
     i += 1
   suffix_=suffix_+'_'+str(threshold)
   typesuffix = ("RMSE", "f1score", "sig","bkg")
-  suffix_= suffix_+"_"+typesuffix[ytype[ystring]]
+  suffix_= suffix_+"_"+typesuffix[ytype.get(ystring,0)]
   plotname=folder+'/learning_curve%s.png' % (suffix_)
   plt.savefig(plotname)
