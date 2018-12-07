@@ -173,8 +173,7 @@ def precision_recall(mylistvariables_,names_,classifiers_,suffix_,X_train,y_trai
   plotname=folder+'/ROCcurve%s.png' % (suffix_)
   plt.savefig(plotname)
   
-
-def plot_learning_curves(names_, classifiers_,suffix_,folder,X,y,npoints,ytype=0, threshold=0.5):
+def plot_learning_curves(names_, classifiers_,suffix_,folder,X,y,npoints,ystring='RMSE', threshold=0.5):
   figure1 = plt.figure(figsize=(20,15))
   i=1
   X_train, X_val, y_train, y_val = train_test_split(X,y,test_size=0.2)
@@ -185,17 +184,18 @@ def plot_learning_curves(names_, classifiers_,suffix_,folder,X,y,npoints,ytype=0
     min=100
     step_=int((max-min)/npoints)
     arrayvalues=np.arange(start=min,stop=max,step=step_)
+    ytype = {'RMSE':0, 'f1score':1, 'sig':2, 'bkg':3}
     for m in arrayvalues:
       clf.fit(X_train[:m],y_train[:m])
       y_train_predict = np.transpose((clf.predict_proba(X_train[:m]) >= threshold).astype(int))[1]
       y_val_predict = np.transpose((clf.predict_proba(X_val) >= threshold).astype(int))[1]
-      if (ytype==1):
+      if (ytype[ystring]==1):
         yMetric_train = f1_score(y_train_predict,y_train[:m])
         yMetric_val = f1_score(y_val_predict,y_val)
-      elif (ytype==2):
+      elif (ytype[ystring]==2):
         yMetric_train =  precision_score(y_train_predict,y_train[:m])
         yMetric_val = precision_score(y_val_predict,y_val)
-      elif (ytype==3):
+      elif (ytype[ystring]==3):
         tn, fp, fn, tp = confusion_matrix(y_train_predict,y_train[:m]).ravel()
         yMetric_train = tn / (tn+fn)
         tn, fp, fn, tp = confusion_matrix(y_val_predict,y_val).ravel()
@@ -211,12 +211,12 @@ def plot_learning_curves(names_, classifiers_,suffix_,folder,X,y,npoints,ytype=0
     plt.title(name, fontsize=16)
     plt.xlabel("Training set size",fontsize=16)
     yAxisLabel = ("RMSE", "f1 score", "signal efficiency","background efficieny")
-    plt.ylabel(yAxisLabel[ytype],fontsize=16)
+    plt.ylabel(yAxisLabel[ytype[ystring]],fontsize=16)
     figure1.subplots_adjust(hspace=.5)
     plt.legend(loc="lower center",  prop={'size':18})
     i += 1
   suffix_=suffix_+'_'+str(threshold)
   typesuffix = ("RMSE", "f1score", "sig","bkg")
-  suffix_= suffix_+"_"+typesuffix[ytype]
+  suffix_= suffix_+"_"+typesuffix[ytype[ystring]]
   plotname=folder+'/learning_curve%s.png' % (suffix_)
   plt.savefig(plotname)

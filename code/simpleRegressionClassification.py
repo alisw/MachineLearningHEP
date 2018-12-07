@@ -26,7 +26,7 @@ from utilitiesOptimisation import studysignificance
 pd.options.mode.chained_assignment = None  # default='warn'
 
 ############### choose your ML method ################
-nevents=10000
+nevents=1000
 MLtype="BinaryClassification" #other options are "Regression", "BinaryClassification"
 MLsubtype="HFmeson" #other options are "PID","HFmeson","test","jettagging","nuclei"
 optionanalysis="Lc" #other options are "Ds,Dplus, Bplus,Lc,PIDKaon,PIDPion,testregression,lightquarkjet,hypertritium
@@ -41,7 +41,7 @@ activateScikitModels=0; activateXGBoostModels=1; activateKerasModels=0
 loadsampleOption=0 #0=loadfromTree,1=loadfromDF,2=loadyourownDFfortesting
 docorrelation=1; doStandard=0; doPCA=0
 dotraining=1; dotesting=1; doapplytodata=0
-doLearningCurve=1; usef1_score=1 # 0=RMSE 1=f1_score # f1_score is not biased by the sample composition
+doLearningCurve=1; yAxis='f1score' # 'RMSE' 'f1score' # f1 score is not biased by the sample composition
 threshold= 0.5 # adjust decision threshold for learning curve
 docrossvalidation=1
 doROCcurve=1; doOptimisation=0; doBinarySearch=0; doBoundary=0; doimportance=0 #classification specifics
@@ -217,9 +217,9 @@ if (docrossvalidation==1):
 
 if (doLearningCurve==1):
 #   confusion(mylistvariables,names,classifiers,suffix,X_train,y_train,5)
-  plot_learning_curves(names,classifiers,suffix,plotdir,X_train,y_train,10,usef1_score,threshold)
-  plot_learning_curves(names,classifiers,suffix,plotdir,X_train,y_train,10,2,threshold)
-  plot_learning_curves(names,classifiers,suffix,plotdir,X_train,y_train,10,3,threshold)
+  plot_learning_curves(names,classifiers,suffix,plotdir,X_train,y_train,10,yAxis,threshold)
+  plot_learning_curves(names,classifiers,suffix,plotdir,X_train,y_train,10,'sig',threshold)
+  plot_learning_curves(names,classifiers,suffix,plotdir,X_train,y_train,10,'bkg',threshold)
   
 if (doROCcurve==1):
   precision_recall(mylistvariables,names,classifiers,suffix,X_train,y_train,5,plotdir)
