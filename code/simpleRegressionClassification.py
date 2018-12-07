@@ -39,7 +39,7 @@ loadsampleOption=0 #0=loadfromTree,1=loadfromDF,2=loadyourownDFfortesting
 docorrelation=1; doStandard=0; doPCA=0
 dotraining=1; dotesting=1; doapplytodata=0
 doLearningCurve=1; usef1_score=1 # 0=RMSE 1=f1_score # f1_score is not biased by the sample composition
-threshold= 0.35 # adjust decision threshold for learning curve
+threshold= 0.5 # adjust decision threshold for learning curve
 docrossvalidation=1
 doROCcurve=1; doOptimisation=0; doBinarySearch=0; doBoundary=0; doimportance=0 #classification specifics
 doplotdistributiontargetregression=0 #regression specifics
