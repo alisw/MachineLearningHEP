@@ -2,6 +2,7 @@
 ##                                                           ##
 ##     Software for single-label classification with Scikit  ##
 ##     Origin: G.M. Innocenti (CERN)(ginnocen@cern.ch)       ##
+##             F. Catalano (Torino)(fabio.catalano@cern.ch)  ##
 ##                                                           ##
 ###############################################################
 
