@@ -23,7 +23,8 @@ void skimTreeBplusFromEvt(TString input="AnalysisResults-8.root",TString output=
   float inv_mass_ML,pt_cand_ML,d_len_ML,d_len_xy_ML,norm_dl_xy_ML,cos_p_ML,cos_p_xy_ML,imp_par_ML,imp_par_xy_ML,pt_prong0_ML,pt_prong1_ML,pt_prong2_ML;
   float cand_type_ML;
   float pTPC_prong0_ML,pTPC_prong1_ML,pTPC_prong2_ML,nTPCclspid_prong0_ML,nTPCclspid_prong1_ML,nTPCclspid_prong2_ML,dEdxTPC_0_ML,dEdxTPC_1_ML,dEdxTPC_2_ML;
-  
+  int event_ID_ML;
+
   fTreeBplus->Branch("inv_mass_ML",&inv_mass_ML,"inv_mass_ML/F");
   fTreeBplus->Branch("pt_cand_ML",&pt_cand_ML,"pt_cand_ML/F");
   fTreeBplus->Branch("d_len_ML",&d_len_ML,"d_len_ML/F");
@@ -45,6 +46,8 @@ void skimTreeBplusFromEvt(TString input="AnalysisResults-8.root",TString output=
   fTreeBplus->Branch("dEdxTPC_0_ML",&dEdxTPC_0_ML,"dEdxTPC_0_ML/F");
   fTreeBplus->Branch("dEdxTPC_1_ML",&dEdxTPC_1_ML,"dEdxTPC_1_ML/F");
   fTreeBplus->Branch("dEdxTPC_2_ML",&dEdxTPC_2_ML,"dEdxTPC_2_ML/F");
+    
+  fTreeDzeroML->Branch("event_ID_ML",&event_ID_ML,"event_ID_ML/I");
 
   std::cout<<"nevents"<<nevt<<std::endl;
   for(Long64_t jentry=0; jentry<nevt;jentry++){
@@ -74,6 +77,8 @@ void skimTreeBplusFromEvt(TString input="AnalysisResults-8.root",TString output=
       dEdxTPC_0_ML=t.dEdxTPC_0 -> at(icand);
       dEdxTPC_1_ML=t.dEdxTPC_1 -> at(icand);
       dEdxTPC_2_ML=t.dEdxTPC_2 -> at(icand);
+
+      event_ID_ML=jentry;
 
       fTreeBplus->Fill();
     }

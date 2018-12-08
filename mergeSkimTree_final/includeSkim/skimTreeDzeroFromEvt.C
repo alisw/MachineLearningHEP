@@ -20,8 +20,9 @@ void skimTreeDzeroFromEvt(TString input="AnalysisResults.root",TString output="t
   float inv_mass_ML, pt_cand_ML, d_len_ML, d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, max_norm_d0d0exp_ML;
   float cand_type_ML, y_cand_ML, eta_cand_ML, phi_cand_ML;
   float imp_par_prong0_ML, imp_par_prong1_ML, p_prong0_ML, p_prong1_ML, pt_prong0_ML, pt_prong1_ML, eta_prong0_ML, eta_prong1_ML, phi_prong0_ML, phi_prong1_ML;
-    float nTPCcls_prong0_ML, nTPCclspid_prong0_ML, nTPCcrossrow_prong0_ML, chi2perndf_prong0_ML, nITScls_prong0_ML, ITSclsmap_prong0_ML, nTPCcls_prong1_ML, nTPCclspid_prong1_ML, nTPCcrossrow_prong1_ML, chi2perndf_prong1_ML, nITScls_prong1_ML, ITSclsmap_prong1_ML;
-    float nsigTPC_Pi_0_ML, nsigTPC_K_0_ML, nsigTOF_Pi_0_ML, nsigTOF_K_0_ML, dEdxTPC_0_ML, ToF_0_ML, pTPC_prong0_ML, pTOF_prong0_ML, trlen_prong0_ML, start_time_res_prong0_ML, nsigTPC_Pi_1_ML, nsigTPC_K_1_ML, nsigTOF_Pi_1_ML, nsigTOF_K_1_ML, dEdxTPC_1_ML, ToF_1_ML, pTPC_prong1_ML, pTOF_prong1_ML, trlen_prong1_ML, start_time_res_prong1_ML;
+  float nTPCcls_prong0_ML, nTPCclspid_prong0_ML, nTPCcrossrow_prong0_ML, chi2perndf_prong0_ML, nITScls_prong0_ML, ITSclsmap_prong0_ML, nTPCcls_prong1_ML, nTPCclspid_prong1_ML, nTPCcrossrow_prong1_ML, chi2perndf_prong1_ML, nITScls_prong1_ML, ITSclsmap_prong1_ML;
+  float nsigTPC_Pi_0_ML, nsigTPC_K_0_ML, nsigTOF_Pi_0_ML, nsigTOF_K_0_ML, dEdxTPC_0_ML, ToF_0_ML, pTPC_prong0_ML, pTOF_prong0_ML, trlen_prong0_ML, start_time_res_prong0_ML, nsigTPC_Pi_1_ML, nsigTPC_K_1_ML, nsigTOF_Pi_1_ML, nsigTOF_K_1_ML, dEdxTPC_1_ML, ToF_1_ML, pTPC_prong1_ML, pTOF_prong1_ML, trlen_prong1_ML, start_time_res_prong1_ML;
+  int event_ID_ML;
   
   fTreeDzeroML->Branch("inv_mass_ML",&inv_mass_ML,"inv_mass_ML/F");
   fTreeDzeroML->Branch("pt_cand_ML",&pt_cand_ML,"pt_cand_ML/F");
@@ -83,6 +84,7 @@ void skimTreeDzeroFromEvt(TString input="AnalysisResults.root",TString output="t
    fTreeDzeroML->Branch("trlen_prong1_ML",&trlen_prong1_ML,"trlen_prong1_ML/F");
    fTreeDzeroML->Branch("start_time_res_prong1_ML",&start_time_res_prong1_ML,"start_time_res_prong1_ML/F");
 
+   fTreeDzeroML->Branch("event_ID_ML",&event_ID_ML,"event_ID_ML/I");
     
   std::cout<<"nevents (Dzero) "<<nevt<<std::endl;
   for(Long64_t jentry=0; jentry<nevt;jentry++){
@@ -148,6 +150,8 @@ void skimTreeDzeroFromEvt(TString input="AnalysisResults.root",TString output="t
       pTOF_prong1_ML=t.pTOF_prong1 -> at(icand);
       trlen_prong1_ML=t.trlen_prong1 -> at(icand);
       start_time_res_prong1_ML=t.start_time_res_prong1 -> at(icand);
+
+      event_ID_ML=jentry;
 
       fTreeDzeroML->Fill();
     }
