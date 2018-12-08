@@ -241,7 +241,7 @@ For problems or improvements about Ubuntu prerequisites contact fabio.catalano@c
 
 Copy the folder MLDsproductions and put it in your HOME directory. The folder is in the public folder in lxplus below:
 ```
-ginnocen@lxplus.cern.ch:/afs/cern.ch/work/g/ginnocen/public/MLDsproductions
+<my_cern_user>@lxplus.cern.ch:/afs/cern.ch/work/g/ginnocen/public/MLDsproductions
 ```
 Simpy run the following code to perform the ML training creating and convertion:
 ```
