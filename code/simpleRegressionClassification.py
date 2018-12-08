@@ -5,12 +5,11 @@
 ##                                                           ##
 ###############################################################
 
-from ROOT import TNtuple
-from ROOT import TH1F, TH2F, TCanvas, TFile, gStyle, gROOT
 from myimports import *
+from ROOT import TNtuple, TH1F, TH2F, TCanvas, TFile, gStyle, gROOT
+from sklearn.model_selection import train_test_split
+from sklearn.utils import shuffle
 from utilitiesRoot import FillNTuple, ReadNTuple, ReadNTupleML
-
-from myimports import *
 from utilitiesModels import getclassifiers,fit,test,savemodels,importanceplotall,decisionboundaries,getclassifiersDNN,getclassifiersXGBoost,apply
 from DataBaseMLparameters import getvariablestraining,getvariablesothers,getvariableissignal,getvariabletarget,getvariablesall,getvariablecorrelation,getgridsearchparameters,getDataMCfiles,getTreeName,prepareMLsample,getvariablesBoundaries
 from utilitiesPerformance import precision_recall,plot_learning_curves,confusion,cross_validation_mse,cross_validation_mse_continuous,plot_cross_validation_mse,plotdistributiontarget,plotscattertarget
@@ -18,8 +17,6 @@ from utilitiesPCA import GetPCADataFrameAndPC,GetDataFrameStandardised,plotvaria
 from utilitiesCorrelations import scatterplot,correlationmatrix,vardistplot
 from utilitiesGeneral import splitdataframe_sigbkg,checkdir,getdataframeDataMC,filterdataframeDataMC,createstringselection,writeTree
 from utilitiesGridSearch import do_gridsearch,plot_gridsearch
-from sklearn.model_selection import train_test_split
-from sklearn.utils import shuffle
 from utilitiesOptimisation import studysignificance
 
 ##Turn off "Try using .loc[row_indexer,col_indexer] = value instead" warnings
@@ -104,8 +101,8 @@ if(loadsampleOption==0):
   trename=getTreeName(optionanalysis)
   dataframeData,dataframeMC=getdataframeDataMC(fileData,fileMC,trename,mylistvariablesall)
   dataframeData,dataframeMC=filterdataframeDataMC(dataframeData,dataframeMC,var_skimming,varmin,varmax)  
-  print (len(dataframeData))
-  print (len(dataframeMC))
+  #print (len(dataframeData))
+  #print (len(dataframeMC))
   ## prepare ML sample
   dataframeML,dataframe_sig,dataframe_bkg=prepareMLsample(MLtype,MLsubtype,optionanalysis,dataframeData,dataframeMC,nevents)
   dataframeML=shuffle(dataframeML)
@@ -182,6 +179,7 @@ if (activateKerasModels==1):
   names=names+namesDNN
 
 if (dotraining==1):
+  print ('Training models:')
   print (names)
   trainedmodels=fit(names, classifiers,X_train,y_train)
   savemodels(names,trainedmodels,mylistvariables,myvariablesy,output,suffix)
@@ -224,12 +222,18 @@ if (doLearningCurve==1):
 if (doROCcurve==1):
   precision_recall(mylistvariables,names,classifiers,suffix,X_train,y_train,5,plotdir)
 
-if(doOptimisation==1):
-  if not ((MLsubtype=="HFmeson") & (optionanalysis=="Ds")):
-    print ("==================ERROR==================")
-    print ("Optimisation is not implemented for this classification problem. The code is going to fail")
-    sys.exit()   
-  studysignificance(optionanalysis,varmin[0],varmax[0],test_set,names,myvariablesy,suffix,plotdir) 
+if(doOptimisation == 1):
+  print ("\nDoing significance optimization")
+  if (dotraining and dotesting and doapplytodata):
+    if ((MLsubtype=="HFmeson") and (optionanalysis=="Ds")):
+      studysignificance(optionanalysis, varmin[0], varmax[0], test_set, dataframeDataML, names, myvariablesy, suffix, plotdir)
+    else:
+      print ("==================ERROR==================")
+      print ("Optimisation is not implemented for this classification problem. The code is going to fail")
+      sys.exit()   
+  else:
+    print ("Training, testing and applytodata flags must be set to 1")
+    sys.exit()
 
 if (doBoundary==1):
   classifiersScikit2var,names2var=getclassifiers(MLtype)
@@ -255,5 +259,3 @@ if (doimportance==1):
 if (doplotdistributiontargetregression==1):
   plotdistributiontarget(names,test_setML,myvariablesy,suffix,plotdir)
   plotscattertarget(names,test_setML,myvariablesy,suffix,plotdir)
-  
-

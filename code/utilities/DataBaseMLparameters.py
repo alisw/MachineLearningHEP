@@ -210,13 +210,13 @@ def getmasscut(case):
   fmassmin=-1
   fmassmax=-1  
   if (case=="Ds"):
-    fmassmin=1.85
-    fmassmax=2.04
+    fmassmin=1.83
+    fmassmax=2.012
   
   if (case=="Dplus"):
     fmassmin=1.87-0.1
     fmassmax=1.87+0.1
-
+    
   if (case=="Lc"):
     fmassmin=2.2864-0.1
     fmassmax=2.2864+0.1
@@ -235,6 +235,22 @@ def getPDGcode(case):
     PDGcode=321
     
   return PDGcode
+
+def getOptimizationParameters(case, varmin, varmax):
+  commom_dict = {}
+  pt_specific_dict = {}
+  tag = ""
+
+  if (case == "Ds"):
+    common_dict = {'filename': '../fonll/fo_pp_d0meson_5TeV_y0p5.csv', 'FF': 0.1281, 'sigma_MB': 51.2e-3,
+                   'BR': 2.27e-2, 'mass': 1.972, 'n_events': 9.9586758e+08, 'mass_fit_lim': [1.75, 2.15]}
+    pt_specific_dict["6_8"] = {'f_prompt': 0.9, 'acc_times_pre_sel': 0.39, 'sigma': 0.009, 'bin_width': 0.008}
+    tag = "%d_%d" % (varmin, varmax)
+
+  else:
+    print("---- ERROR: Optimization parameters currently implemented only for Ds ----")
+
+  return common_dict, pt_specific_dict[tag]  
 
 def prepareMLsample(MLtype,MLsubtype,case,dataframe_data,dataframe_MC,nevents):
   dataframe_ML_joined = pd.DataFrame()
