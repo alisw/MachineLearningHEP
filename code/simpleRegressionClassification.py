@@ -29,8 +29,7 @@ pd.options.mode.chained_assignment = None  # default='warn'
 nevents=1000
 MLtype="BinaryClassification" #other options are "Regression", "BinaryClassification"
 MLsubtype="HFmeson" #other options are "PID","HFmeson","test","jettagging","nuclei"
-optionanalysis="Dplus" #other options are "Ds,Dplus, Bplus,Lc,PIDKaon,PIDPion,testregression,lightquarkjet,hypertritium
-
+optionanalysis="Lc" #other options are "Ds,Dplus, Bplus,Lc,PIDKaon,PIDPion,testregression,lightquarkjet,hypertritium
 
 ############### choose the skimming parameters for your dataset ################
 var_skimming=["pt_cand_ML"] #other options are "pdau0_ML" in case of PID, "Pt_Rec_ML" in case of jet tagging, "pt_cand_ML" for HF tagging
@@ -38,12 +37,14 @@ varmin=[2]
 varmax=[4]
 
 ############### choose if you want scikit or keras models or both ################
-activateScikitModels=1; activateXGBoostModels=0; activateKerasModels=0
+activateScikitModels=0; activateXGBoostModels=1; activateKerasModels=0
 loadsampleOption=0 #0=loadfromTree,1=loadfromDF,2=loadyourownDFfortesting
 docorrelation=1; doStandard=0; doPCA=0
-dotraining=1; dotesting=1; doapplytodata=1
-doLearningCurve=1; docrossvalidation=1
-doROCcurve=1; doOptimisation=1; doBinarySearch=1; doBoundary=1; doimportance=1 #classification specifics
+dotraining=1; dotesting=1; doapplytodata=0
+doLearningCurve=1; yAxis='f1score' # 'RMSE' 'f1score' # f1 score is not biased by the sample composition
+threshold= 0.5 # adjust decision threshold for learning curve
+docrossvalidation=1
+doROCcurve=1; doOptimisation=0; doBinarySearch=0; doBoundary=0; doimportance=0 #classification specifics
 doplotdistributiontargetregression=0 #regression specifics
 
 ncores=-1
@@ -122,7 +123,6 @@ if(loadsampleOption==1):
   print ("dimension of the dataset",len(train_set))
   X_train= train_set[mylistvariables]
   y_train=train_set[myvariablesy]
-
 
 if(loadsampleOption==2): 
   mylistvariables=["volume"]
@@ -217,7 +217,9 @@ if (docrossvalidation==1):
 
 if (doLearningCurve==1):
 #   confusion(mylistvariables,names,classifiers,suffix,X_train,y_train,5)
-  plot_learning_curves(names,classifiers,suffix,plotdir,X_train,y_train,10)
+  plot_learning_curves(names,classifiers,suffix,plotdir,X_train,y_train,10,yAxis,threshold)
+  plot_learning_curves(names,classifiers,suffix,plotdir,X_train,y_train,10,'sig',threshold)
+  plot_learning_curves(names,classifiers,suffix,plotdir,X_train,y_train,10,'bkg',threshold)
   
 if (doROCcurve==1):
   precision_recall(mylistvariables,names,classifiers,suffix,X_train,y_train,5,plotdir)
@@ -245,7 +247,6 @@ if (doBinarySearch==1):
   namesCV,classifiersCV,param_gridCV,changeparameter=getgridsearchparameters(optionanalysis)
   grid_search_models,grid_search_bests=do_gridsearch(namesCV,classifiersCV,mylistvariables,param_gridCV,X_train,y_train,3,ncores)
   savemodels(namesCV,grid_search_models,mylistvariables,myvariablesy,output,"GridSearchCV"+suffix)
-
   plot_gridsearch(namesCV,changeparameter,grid_search_models,plotdir,suffix)
 
 if (doimportance==1):
