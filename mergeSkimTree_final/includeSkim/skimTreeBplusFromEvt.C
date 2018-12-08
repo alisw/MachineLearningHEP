@@ -6,7 +6,7 @@ using namespace std;
 
 void skimTreeBplusFromEvt(TString input="AnalysisResults-8.root",TString output="test.root",TString ttreeout="tree_Bplus"){
 
-  cout << "NOT YET READY. NEED TO ADD ALL VARIABLES FOR Lc!!" << endl;
+  cout << "NOT YET READY. NEED TO ADD ALL VARIABLES FOR Bplus!!" << endl;
   return;
 
   TFile *f = TFile::Open(input.Data());
@@ -47,7 +47,7 @@ void skimTreeBplusFromEvt(TString input="AnalysisResults-8.root",TString output=
   fTreeBplus->Branch("dEdxTPC_1_ML",&dEdxTPC_1_ML,"dEdxTPC_1_ML/F");
   fTreeBplus->Branch("dEdxTPC_2_ML",&dEdxTPC_2_ML,"dEdxTPC_2_ML/F");
     
-  fTreeDzeroML->Branch("event_ID_ML",&event_ID_ML,"event_ID_ML/I");
+  fTreeBplus->Branch("event_ID_ML",&event_ID_ML,"event_ID_ML/I");
 
   std::cout<<"nevents"<<nevt<<std::endl;
   for(Long64_t jentry=0; jentry<nevt;jentry++){
