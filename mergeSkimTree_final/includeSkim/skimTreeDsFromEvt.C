@@ -112,7 +112,7 @@ void skimTreeDsFromEvt(TString input="AnalysisResults.root",TString output="test
   fTreeDsML->Branch("trlen_prong2_ML",&trlen_prong2_ML,"trlen_prong2_ML/F");
   fTreeDsML->Branch("start_time_res_prong2_ML",&start_time_res_prong2_ML,"start_time_res_prong2_ML/F");
 
-  fTreeDzeroML->Branch("event_ID_ML",&event_ID_ML,"event_ID_ML/I");
+  fTreeDsML->Branch("event_ID_ML",&event_ID_ML,"event_ID_ML/I");
 
   std::cout<<"nevents (Ds) "<<nevt<<std::endl;
   for(Long64_t jentry=0; jentry<nevt;jentry++){
