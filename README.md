@@ -58,6 +58,11 @@ The instruction below requires you to start the installation from your home dire
 sudo apt-get update
 sudo apt-get install git dpkg-dev cmake g++ gcc binutils libx11-dev libxpm-dev libxft-dev libxext-dev
 ```
+You might need also:
+```
+sudo add-apt-repository universe
+sudo apt-get install build-essential
+```
 
 ### Install python 3.6.6
 
@@ -97,6 +102,10 @@ pip3 install numpy pandas scipy matplotlib seaborn
 pip3 install pkgconfig uproot
 pip3 install scikit-learn sklearn-evaluation xgboost
 pip3 install tensorflow keras
+```
+You might need also this in case you get errors:
+```
+pip3 install --upgrade setuptools
 ```
 
 To install tensorflow with GPU support please refer to https://www.tensorflow.org/install/gpu
