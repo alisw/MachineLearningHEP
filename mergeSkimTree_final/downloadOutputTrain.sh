@@ -9,6 +9,7 @@
 #Arguments to this bash:
 #   $1 is trainname (e.g. 297_20181120-2315_child_1)
 #   $2 is path to place to save output
+#   $3 is GRID merging Stage_X (e.g. "" or Stage_1)
 #To set in script:
 #   OUTPUTPATH (output of train)
 #   STAGE      ("" if all Lego train merging failed, otherwise /Stage_#/
@@ -17,20 +18,19 @@
 
 #set -x #echo on
 
-OUTPUTPATH=/alice/data/2017/LHC17p/000282341/pass1_FAST/PWGZZ/Devel_2
-STAGE="" #Stage_1
-NFILES="000*" #"*" "0* "00*"
-OUTPUTFILE=AnalysisResults
-
 TRAINNAME=$1
-OUTPUTPATH=$OUTPUTPATH/$TRAINNAME/$STAGE
-mkdir $TRAINNAME
-mkdir $TRAINNAME$STAGE
-printf "cd %s\n" $TRAINNAME$STAGE
 BASEDIR=$2
 if [ -z "$BASEDIR" ]; then
-  BASEDIR=$(pwd)
+BASEDIR=$(pwd)
 fi
+STAGE=$3
+
+OUTPUTPATH=/alice/data/2017/LHC17p/000282341/pass1_FAST/PWGZZ/Devel_2
+NFILES="000*" #"*" "0* "00*" #Assumed 1000 < jobs < 9999, if different, change number of zeros
+OUTPUTFILE=AnalysisResults
+
+OUTPUTPATH=$OUTPUTPATH/$TRAINNAME/$STAGE
+echo "Downloading LEGO train files from: $OUTPUTPATH\n"
 
 cmd=$(printf "cp -T 32 %s/%s/%s.root file:%s/%s/%s/\n" $OUTPUTPATH "$NFILES" $OUTPUTFILE $BASEDIR $TRAINNAME $STAGE)
 
@@ -39,9 +39,8 @@ $cmd
 exit
 EOF
 
-#nameoutputlist=$(printf "listfilesMerging_%s%s.txt" $TRAINNAME $STAGE)
-nameoutputlist=$(printf "listfilesMerging_%s.txt" $TRAINNAME)
+nameoutputlist=$(printf "listfilesMerging_%s%s.txt" $TRAINNAME $STAGE)
 find $BASEDIR/$TRAINNAME/$STAGE/*/ -maxdepth 1 -not -type d> $nameoutputlist
 
-cp $nameoutputlist $BASEDIR/$TRAINNAME/$STAGE/
+mv $nameoutputlist $BASEDIR/$TRAINNAME/$STAGE/
 

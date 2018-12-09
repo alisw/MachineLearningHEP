@@ -1,6 +1,6 @@
 #!/bin/bash
 #Arguments to this bash:
-#   $1 is trainname (e.g. 297_20181120-2315_child_1)
+#   $1 is path to lsOutputMergedList_$TRAINNAME$STAGE.txt
 
 START=$(date +%s)
 
@@ -11,8 +11,7 @@ doBplusFromEvt=0 #Classes not yet ready + not tested
 doLcFromEvt=0 #Classes not yet ready + not tested
 #doPID=0 #to be added
 
-myfile=$(printf "lsOutputMergedList_%s.txt" $1)
-#myfile=lsoutputmergedlist.txt
+myfile=$1
 
 if [ $doDplusFromEvt -eq 1 ]
 then
