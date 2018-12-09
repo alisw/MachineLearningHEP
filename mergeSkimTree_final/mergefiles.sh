@@ -13,6 +13,9 @@ TRAINNAME=$1
 STAGE=$3
 
 inputfile=$(printf "%s/%s/%s/listfilesMerging_%s%s.txt" $BASEDIR $TRAINNAME $STAGE $TRAINNAME $STAGE)
+if [ -z "$BASEDIR" ]; then
+inputfile=$(printf "%s/%s/listfilesMerging_%s.txt" $BASEDIR $TRAINNAME $TRAINNAME)
+fi
 echo "Reading $inputfile for files to merge\n"
 
 nfilesformerging=$4
