@@ -1,36 +1,38 @@
 #!/bin/bash
 #Arguments to this bash:
 #   $1 is trainname (e.g. 297_20181120-2315_child_1)
-#   $2 is path to place to save output
-#   $3 is how many files to merge into one
-#To set in script:
-#   STAGE      ("" if all Lego train merging failed, otherwise /Stage_#/
-
-#inputfile=listfilesMerging.txt
-inputfile=$(printf "listfilesMerging_%s.txt" $1)
+#   $2 is path to place to save output (e.g. "" or ../MLproductions/)
+#   $3 is GRID merging Stage_X (e.g. "" or Stage_1)
+#   $4 is how many files to merge into one
 
 BASEDIR=$2
 if [ -z "$BASEDIR" ]; then
-BASEDIR=$(pwd)
+  BASEDIR=$(pwd)
 fi
 TRAINNAME=$1
-STAGE="" #Stage_1
+STAGE=$3
 
-#nameoutput="../MLproductions/mergeSkimOutputDir_test"
-nameoutput=$BASEDIR/$TRAINNAME/$STAGE/mergeSkimOutputDir
-#nameoutputlist="lsoutputmergedlist.txt"
-nameoutputlist=$(printf "lsOutputMergedList_%s.txt" $1)
+inputfile=$(printf "%s/%s/%s/listfilesMerging_%s%s.txt" $BASEDIR $TRAINNAME $STAGE $TRAINNAME $STAGE)
+if [ -z "$STAGE" ]; then
+  inputfile=$(printf "%s/%s/listfilesMerging_%s.txt" $BASEDIR $TRAINNAME $TRAINNAME)
+fi
+echo "Reading $inputfile for files to merge\n"
 
-nfilesformerging=$3
+nfilesformerging=$4
 if [ -z "$nfilesformerging" ]; then
   nfilesformerging=4
 fi
+echo "Merging with $nfilesformerging inputfiles\n"
+
+nameoutput=$BASEDIR/$TRAINNAME/$STAGE/mergeSkimOutputDir_$nfilesformerging
+echo "Saving merged output in directory: $nameoutput\n"
+nameoutputlist=$(printf "lsOutputMergedList_%s%s.txt" $TRAINNAME $STAGE)
+echo "Writing merged output in: $nameoutputlist\n"
 
 rm -rf $nameoutput
 mkdir $nameoutput
 split -l $nfilesformerging $inputfile $nameoutput/split-file
 ls $nameoutput/split-file*> $nameoutputlist
-
 
 while IFS='' read -r line || [[ -n "$line" ]]; do
 echo $line
@@ -39,4 +41,4 @@ echo $line
 hadd "${line}.root" @"$line"
 done < "$nameoutputlist"
 
-cp $nameoutputlist $nameoutput/
+mv $nameoutputlist $nameoutput/
