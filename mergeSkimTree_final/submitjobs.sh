@@ -1,7 +1,9 @@
 #!/bin/bash
+#Arguments to this bash:
+#   $1 is trainname (e.g. 297_20181120-2315_child_1)
+
 START=$(date +%s)
 
-#TODO: add if-statement to switch between different mesons
 doDplusFromEvt=1
 doDsFromEvt=1
 doDzeroFromEvt=1
@@ -9,13 +11,14 @@ doBplusFromEvt=0 #Classes not yet ready + not tested
 doLcFromEvt=0 #Classes not yet ready + not tested
 #doPID=0 #to be added
 
+myfile=$(printf "lsOutputMergedList_%s.txt" $1)
+#myfile=lsoutputmergedlist.txt
 
 if [ $doDplusFromEvt -eq 1 ]
 then
 
 DataTree="tree_Dplus"
 
-myfile=lsoutputmergedlist.txt
 while IFS='' read -r line || [[ -n "$line" ]]; do
 g++ includeSkim/skimTreeDplusFromEvt.C $(root-config --cflags --libs) -g -o skimTreeDplusFromEvt.exe
 ./skimTreeDplusFromEvt.exe "${line}.root" "${line}_Dplus_skimmed.root" "$DataTree"
@@ -36,7 +39,6 @@ then
 
 DataTree="tree_Ds"
 
-myfile=lsoutputmergedlist.txt
 while IFS='' read -r line || [[ -n "$line" ]]; do
 g++ includeSkim/skimTreeDsFromEvt.C $(root-config --cflags --libs) -g -o skimTreeDsFromEvt.exe
 ./skimTreeDsFromEvt.exe "${line}.root" "${line}_Ds_skimmed.root" "$DataTree"
@@ -57,7 +59,6 @@ then
 
 DataTree="tree_D0"
 
-myfile=lsoutputmergedlist.txt
 while IFS='' read -r line || [[ -n "$line" ]]; do
 g++ includeSkim/skimTreeDzeroFromEvt.C $(root-config --cflags --libs) -g -o skimTreeDzeroFromEvt.exe
 ./skimTreeDzeroFromEvt.exe "${line}.root" "${line}_Dzero_skimmed.root" "$DataTree"
@@ -78,7 +79,6 @@ then
 
 DataTree="tree_Bplus"
 
-myfile=lsoutputmergedlist.txt
 while IFS='' read -r line || [[ -n "$line" ]]; do
 g++ includeSkim/skimTreeBplusFromEvt.C $(root-config --cflags --libs) -g -o skimTreeBplusFromEvt.exe
 ./skimTreeBplusFromEvt.exe "${line}.root" "${line}_Bplus_skimmed.root" "$DataTree"
@@ -99,7 +99,6 @@ then
 
 DataTree="tree_Lc"
 
-myfile=lsoutputmergedlist.txt
 while IFS='' read -r line || [[ -n "$line" ]]; do
 g++ includeSkim/skimTreeLcFromEvt.C $(root-config --cflags --libs) -g -o skimTreeLcFromEvt.exe
 ./skimTreeLcFromEvt.exe "${line}.root" "${line}_Lc_skimmed.root" "$DataTree"

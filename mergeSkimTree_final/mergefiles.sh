@@ -1,11 +1,30 @@
 #!/bin/bash
+#Arguments to this bash:
+#   $1 is trainname (e.g. 297_20181120-2315_child_1)
+#   $2 is path to place to save output
+#   $3 is how many files to merge into one
+#To set in script:
+#   STAGE      ("" if all Lego train merging failed, otherwise /Stage_#/
 
-#Needs as input "listfilesMerging.txt", where the paths of all files to be merged should be stated. TODO: Create a script that creates this file.
-#Set variables below as arguments of the script? TODO
-nfilesformerging=4
-inputfile=listfilesMerging.txt
-nameoutput="../MLproductions/mergeSkimOutputDir_test"
-nameoutputlist="lsoutputmergedlist.txt"
+#inputfile=listfilesMerging.txt
+inputfile=$(printf "listfilesMerging_%s.txt" $1)
+
+BASEDIR=$2
+if [ -z "$BASEDIR" ]; then
+BASEDIR=$(pwd)
+fi
+TRAINNAME=$1
+STAGE="" #Stage_1
+
+#nameoutput="../MLproductions/mergeSkimOutputDir_test"
+nameoutput=$BASEDIR/$TRAINNAME/$STAGE/mergeSkimOutputDir
+#nameoutputlist="lsoutputmergedlist.txt"
+nameoutputlist=$(printf "lsOutputMergedList_%s.txt" $1)
+
+nfilesformerging=$3
+if [ -z "$nfilesformerging" ]; then
+  nfilesformerging=4
+fi
 
 rm -rf $nameoutput
 mkdir $nameoutput
@@ -15,8 +34,8 @@ ls $nameoutput/split-file*> $nameoutputlist
 
 while IFS='' read -r line || [[ -n "$line" ]]; do
 echo $line
-sed 's/$/.root /g' "${line}" > "${line}_rootflag"
-mv "${line}_rootflag" "${line}"
+#sed 's/$/.root /g' "${line}" > "${line}_rootflag"
+#mv "${line}_rootflag" "${line}"
 hadd "${line}.root" @"$line"
 done < "$nameoutputlist"
 
