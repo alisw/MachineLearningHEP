@@ -23,7 +23,7 @@ and follow the same instructions as above (entering the alienv in the correct wa
 Four train-specific variables have to be set in the script:
 * OUTPUTPATH       (output of train)
 * STAGE       ("" for no GRID merging, otherwise /Stage_#/)
-* NFILES       (/*/ = download all files, /000*/ is 10 files, /00*/ is 100 files, etc)
+* NFILES       (/&#42;/ = download all files, /000&#42;/ is 10 files, /00&#42;/ is 100 files, etc)
 * OUTPUTFILE       (name of file to download)
 
 ## 2) Merging
