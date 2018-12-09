@@ -11,8 +11,7 @@
 #   $2 is path to place to save output
 #   $3 is GRID merging Stage_X (e.g. "" or Stage_1)
 #To set in script:
-#   OUTPUTPATH (output of train)
-#   STAGE      ("" if all Lego train merging failed, otherwise /Stage_#/
+#   OUTPUTPATH (output directory of train)
 #   NFILES     (/*/ = download all files, /000*/ is 10 files, /00*/ is 100 files, etc)
 #   OUTPUTFILE (name of file to download)
 
@@ -21,9 +20,11 @@
 TRAINNAME=$1
 BASEDIR=$2
 if [ -z "$BASEDIR" ]; then
-BASEDIR=$(pwd)
+  BASEDIR=$(pwd)
 fi
 STAGE=$3
+mkdir $BASEDIR/$TRAINNAME
+mkdir $BASEDIR/$TRAINNAME/$STAGE
 
 OUTPUTPATH=/alice/data/2017/LHC17p/000282341/pass1_FAST/PWGZZ/Devel_2
 NFILES="000*" #"*" "0* "00*" #Assumed 1000 < jobs < 9999, if different, change number of zeros
