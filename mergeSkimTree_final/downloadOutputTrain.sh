@@ -21,6 +21,8 @@ TRAINNAME=$1
 BASEDIR=$2
 if [ -z "$BASEDIR" ]; then
   BASEDIR=$(pwd)
+else
+  BASEDIR=$(pwd)/$BASEDIR
 fi
 STAGE=$3
 mkdir $BASEDIR/$TRAINNAME
