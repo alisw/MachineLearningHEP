@@ -8,6 +8,8 @@
 BASEDIR=$2
 if [ -z "$BASEDIR" ]; then
   BASEDIR=$(pwd)
+else
+  BASEDIR=$(pwd)/$BASEDIR
 fi
 TRAINNAME=$1
 STAGE=$3

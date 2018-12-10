@@ -21,12 +21,15 @@ TRAINNAME=$1
 BASEDIR=$2
 if [ -z "$BASEDIR" ]; then
   BASEDIR=$(pwd)
+else
+  BASEDIR=$(pwd)/$BASEDIR
 fi
 STAGE=$3
 mkdir $BASEDIR/$TRAINNAME
 mkdir $BASEDIR/$TRAINNAME/$STAGE
 
 OUTPUTPATH=/alice/data/2017/LHC17p/000282341/pass1_FAST/PWGZZ/Devel_2
+#OUTPUTPATH=/alice/sim/2018/LHC18a4a2_cent/282341/PWGZZ/Devel_2
 NFILES="000*" #"*" "0* "00*" #Assumed 1000 < jobs < 9999, if different, change number of zeros
 OUTPUTFILE=AnalysisResults
 
