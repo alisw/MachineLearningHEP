@@ -4,6 +4,7 @@
 
 START=$(date +%s)
 
+isMC=1
 doDplusFromEvt=1
 doDsFromEvt=1
 doDzeroFromEvt=1
@@ -20,7 +21,7 @@ DataTree="tree_Dplus"
 
 while IFS='' read -r line || [[ -n "$line" ]]; do
 g++ includeSkim/skimTreeDplusFromEvt.C $(root-config --cflags --libs) -g -o skimTreeDplusFromEvt.exe
-./skimTreeDplusFromEvt.exe "${line}.root" "${line}_Dplus_skimmed.root" "$DataTree"
+./skimTreeDplusFromEvt.exe "${line}.root" "${line}_Dplus_skimmed.root" "$DataTree" "$isMC"
 done < "$myfile"
 
 ## would wait until those are completed
@@ -40,7 +41,7 @@ DataTree="tree_Ds"
 
 while IFS='' read -r line || [[ -n "$line" ]]; do
 g++ includeSkim/skimTreeDsFromEvt.C $(root-config --cflags --libs) -g -o skimTreeDsFromEvt.exe
-./skimTreeDsFromEvt.exe "${line}.root" "${line}_Ds_skimmed.root" "$DataTree"
+./skimTreeDsFromEvt.exe "${line}.root" "${line}_Ds_skimmed.root" "$DataTree" "$isMC"
 done < "$myfile"
 
 ## would wait until those are completed
@@ -60,7 +61,7 @@ DataTree="tree_D0"
 
 while IFS='' read -r line || [[ -n "$line" ]]; do
 g++ includeSkim/skimTreeDzeroFromEvt.C $(root-config --cflags --libs) -g -o skimTreeDzeroFromEvt.exe
-./skimTreeDzeroFromEvt.exe "${line}.root" "${line}_Dzero_skimmed.root" "$DataTree"
+./skimTreeDzeroFromEvt.exe "${line}.root" "${line}_Dzero_skimmed.root" "$DataTree" "$isMC"
 done < "$myfile"
 
 ## would wait until those are completed
