@@ -1,0 +1,17 @@
+dist: trusty
+language: python
+python:
+  - "3.6"
+install: |
+  set -e
+  set -o pipefail
+  pip install -e .
+  pip list
+script: |
+  set -e
+  set -o pipefail
+  ci/run-tests.sh
+branches:
+  only:
+    - master
+    - /^v\d+\.\d+(\.\d+)?(-rc\d+)?$/
