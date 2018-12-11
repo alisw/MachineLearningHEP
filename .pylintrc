@@ -1,0 +1,16 @@
+[FORMAT]
+indent-string='    '
+max-line-length=100
+
+[BASIC]
+variable-rgx=(?:(?P<snake>[a-z_]+))
+
+[TYPECHECK]
+generated-members=RdBu
+
+[DESIGN]
+max-args=10
+max-locals=40
+
+[MESSAGES CONTROL]
+disable=missing-docstring
