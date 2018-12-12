@@ -14,7 +14,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-def vardistplot(dataframe_sig_, dataframe_bkg_, mylistvariables_, output_):
+def vardistplot(dataframe_sig_, dataframe_bkg_, mylistvariables_, output_, VariableUnusedAndBad):
     figure = plt.figure(figsize=(20, 15)) # pylint: disable=unused-variable
     i = 1
     for var in mylistvariables_:
