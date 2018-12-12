@@ -1,7 +1,7 @@
 MachineLearningHEP
 ==================
 
-[![Build Status](https://travis-ci.com/ginnocen/MachineLearningHEP.svg?branch=master)](https://travis-ci.com/ginnocen/MachineLearningHEP)
+[![Build Status](https://travis-ci.com/ginnocen/MachineLearningHEP.svg?token=zw7sAfqqqLUyP1qxdKkp&branch=master)](https://travis-ci.com/ginnocen/MachineLearningHEP)
 
 The current recommended instructions require the installation of a independent ROOT6 framework with
 Pyhon 3.6. Using the package inside AliPhysics is possible but not described in this README.
