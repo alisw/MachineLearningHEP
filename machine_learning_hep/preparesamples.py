@@ -9,58 +9,29 @@
 Methods to load and prepare data for training
 """
 import pandas as pd
-from machine_learning_hep.general import get_database_ml_parameters
+from sklearn.model_selection import train_test_split
 
-def preparemlsample(mltype, mlsubtype, case, dataframe_data, dataframe_mc, nevents):
-    dataframe_ml_joined = pd.DataFrame()
-    data = get_database_ml_parameters()
-    if mltype == "BinaryClassification":
 
-        if mlsubtype == "HFmeson":
-            dataframe_bkg = dataframe_data
-            dataframe_sig = dataframe_mc
-            fmassmin, fmassmax = data[case]["mass_cut"]
-            dataframe_sig = dataframe_sig.loc[
-                (dataframe_sig["cand_type_ML"] == 2) | (dataframe_sig["cand_type_ML"] == 3)]
-            dataframe_sig['signal_ML'] = 1
-            dataframe_bkg = dataframe_bkg.loc[(dataframe_bkg["inv_mass_ML"] < fmassmin) | (
-                dataframe_bkg["inv_mass_ML"] > fmassmax)]
-            dataframe_bkg['signal_ML'] = 0
+def prep_mlsamples(df_sig, df_bkg, namesig, nevt_sig, nevt_bkg, test_frac, rnd_splt):
 
-        if mlsubtype == "PID":
-            dataframe_mc["pdg0_ML"] = dataframe_mc["pdg0_ML"].abs()
-            dataframe_sig = dataframe_mc.loc[(dataframe_mc["pdg0_ML"] == data[case]["pdg_code"])]
-            dataframe_sig['signal_ML'] = 1
-            dataframe_bkg = dataframe_mc.loc[(dataframe_mc["pdg0_ML"] != data[case]["pdg_code"])]
-            dataframe_bkg['signal_ML'] = 0
+    if nevt_sig > len(df_sig):
+        print("there are not enough signal events ")
+    if nevt_bkg > len(df_bkg):
+        print("there are not enough background events ")
 
-        if mlsubtype == "jettagging":
-            dataframe_bkg = dataframe_mc
-            dataframe_sig = dataframe_mc
-            if case == "lightquarkjet":
-                dataframe_sig = dataframe_sig.loc[
-                    (dataframe_sig["Parton_Flag_ML"] == 1) |
-                    (dataframe_sig["Parton_Flag_ML"] == 2) |
-                    (dataframe_sig["Parton_Flag_ML"] == 3) |
-                    (dataframe_sig["Parton_Flag_ML"] == 4) |
-                    (dataframe_sig["Parton_Flag_ML"] == 5)]
-                dataframe_bkg = dataframe_bkg.loc[(dataframe_bkg["Parton_Flag_ML"] > 5)]
-            dataframe_sig['signal_ML'] = 1
-            dataframe_bkg['signal_ML'] = 0
+    nevt_sig = min(len(df_sig), nevt_sig)
+    nevt_bkg = min(len(df_bkg), nevt_bkg)
 
-        if mlsubtype == "nuclei":
-            dataframe_bkg = dataframe_mc
-            dataframe_sig = dataframe_mc
-            if case == "hypertritium":
-                dataframe_sig = dataframe_sig.loc[(dataframe_sig["signal"] == 1)]
-                dataframe_bkg = dataframe_bkg.loc[(dataframe_bkg["signal"] == -1)]
-            dataframe_sig['signal_ML'] = 1
-            dataframe_bkg['signal_ML'] = 0
+    print("used number of signal events are %d" % (nevt_sig))
+    print("used number of signal events are %d" % (nevt_bkg))
 
-    dataframe_sig = dataframe_sig[:nevents]
-    dataframe_bkg = dataframe_bkg[:nevents]
-    dataframe_ml_joined = pd.concat([dataframe_sig, dataframe_bkg])
-    if ((nevents > len(dataframe_sig)) or (nevents > len(dataframe_bkg))):
-        print("------- ERROR: there are not so many events!!!!!! -------")
+    df_sig = df_sig[:nevt_sig]
+    df_bkg = df_bkg[:nevt_bkg]
+    df_sig[namesig] = 1
+    df_bkg[namesig] = 0
+    df_ml = pd.DataFrame()
+    df_ml = pd.concat([df_sig, df_bkg])
+    df_ml_train, df_ml_test = train_test_split(df_ml, test_size=test_frac, random_state=rnd_splt)
 
-    return dataframe_ml_joined, dataframe_sig, dataframe_bkg
+    print("%d events for training and %d for testing" % (len(df_ml_train), len(df_ml_test)))
+    return df_ml_train, df_ml_test
