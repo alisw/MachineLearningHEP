@@ -30,7 +30,7 @@ from keras.wrappers.scikit_learn import KerasClassifier
 from xgboost import XGBClassifier
 
 
-def getclassifiers(ml_type):
+def getclf_scikit(ml_type):
     classifiers = []
     names = []
     if ml_type == "BinaryClassification":
@@ -61,7 +61,7 @@ def getclassifiers(ml_type):
     return classifiers, names
 
 
-def getclassifiers_xgboost(ml_type):
+def getclf_xgboost(ml_type):
     classifiers = []
     names = []
 
@@ -74,7 +74,7 @@ def getclassifiers_xgboost(ml_type):
     return classifiers, names
 
 
-def getclassifiers_dnn(ml_type, length_input):
+def getclf_keras(ml_type, length_input):
     classifiers = []
     names = []
 

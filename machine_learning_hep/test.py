@@ -16,6 +16,8 @@ from machine_learning_hep.preparesamples import prep_mlsamples
 from machine_learning_hep.correlations import vardistplot, scatterplot, correlationmatrix
 from machine_learning_hep.pca import getdataframe_standardised, get_pcadataframe_pca
 from machine_learning_hep.pca import plotvariance_pca
+from machine_learning_hep.models import getclf_scikit, getclf_xgboost, getclf_keras
+from machine_learning_hep.models import fit
 
 
 def test():  # pylint: disable=too-many-locals, too-many-statements
@@ -45,6 +47,10 @@ def test():  # pylint: disable=too-many-locals, too-many-statements
     docorrelation = 1
     dostandard = 1
     dopca = 1
+    activate_scikit = 1
+    activate_xgboost = 1
+    activate_keras = 0
+    dotraining = 1
 
     string_selection = createstringselection(var_skimming, varmin, varmax)
     suffix = "nevt_sig%d_nevt_sig%d_%s%s_%s" % \
@@ -57,8 +63,13 @@ def test():  # pylint: disable=too-many-locals, too-many-statements
     checkdir(plotdir)
     checkdir(output)
 
+    classifiers = []
+    names = []
+
+    trainedmodels = []
+
     x_train = []
-#     y_train = []
+    y_train = []
 
     if loadsampleoption == 1:
         filesig, filebkg = data[case]["sig_bkg_files"]
@@ -79,8 +90,7 @@ def test():  # pylint: disable=too-many-locals, too-many-statements
         print("events for signal train %d and test %d" % (len(df_sig_train), len(df_sig_test)))
         print("events for bkg train %d and test %d" % (len(df_bkg_train), len(df_bkg_test)))
         x_train = df_ml_train[var_training]
-#         y_train = df_ml_train[var_signal]
-
+        y_train = df_ml_train[var_signal]
 
     if docorrelation == 1:
         vardistplot(df_sig_train, df_bkg_train, var_all, plotdir)
@@ -95,6 +105,26 @@ def test():  # pylint: disable=too-many-locals, too-many-statements
         n_pca = 9
         x_train, pca = get_pcadataframe_pca(x_train, n_pca)
         plotvariance_pca(pca, plotdir)
+
+    if activate_scikit == 1:
+        classifiers_scikit, names_scikit = getclf_scikit(mltype)
+        classifiers = classifiers+classifiers_scikit
+        names = names+names_scikit
+
+    if activate_xgboost == 1:
+        classifiers_xgboost, names_xgboost = getclf_xgboost(mltype)
+        classifiers = classifiers+classifiers_xgboost
+        names = names+names_xgboost
+
+    if activate_keras == 1:
+        classifiers_keras, names_keras = getclf_keras(mltype, len(x_train.columns))
+        classifiers = classifiers+classifiers_keras
+        names = names+names_keras
+
+    if dotraining == 1:
+        trainedmodels = fit(names, classifiers, x_train, y_train)
+        print(trainedmodels)
+#         savemodels(names, trainedmodels, var_training, var_signal, output, suffix)
 
 
 test()
