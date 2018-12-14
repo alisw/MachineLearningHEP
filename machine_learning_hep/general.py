@@ -61,5 +61,6 @@ def createstringselection(var_skimming_, minlist_, maxlist_):
 def write_tree(filename, treename, dataframe):
     listvar = list(dataframe)
     values = dataframe.values
-    TFile.Open(filename, "recreate")
+    fout = TFile.Open(filename, "recreate")
+    fout.cd()
     fill_ntuple(treename, values, listvar)
