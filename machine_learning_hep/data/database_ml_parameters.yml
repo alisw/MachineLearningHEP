@@ -99,7 +99,6 @@ PIDPion:
   sel_bkg: pdg0_ML!=211
 hypertritium:
   sig_bkg_files: [data/inputroot/AnalysisResultsHyper_MC.root, data/inputroot/AnalysisResultsHyper_MC.root]
-  data_mc_files: [data/inputroot/AnalysisResultsHyper_MC.root, data/inputroot/AnalysisResultsHyper_MC.root]
   data_mc_files: null
   mass_cut: null
   pdg_code: null
