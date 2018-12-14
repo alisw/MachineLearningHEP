@@ -16,7 +16,7 @@ import seaborn as sn
 from sklearn.model_selection import cross_val_score, cross_val_predict, \
     train_test_split, StratifiedKFold
 from sklearn.metrics import roc_curve, auc, confusion_matrix, precision_recall_curve, \
-    mean_squared_error, f1_score, precision_score
+    mean_squared_error
 
 
 def cross_validation_mse(names_, classifiers_, x_train, y_train, cv_, ncores):
@@ -100,7 +100,7 @@ def plotscattertarget(names_, testset, myvariablesy, suffix_, folder):
 
 
 def confusion(names_, classifiers_, suffix_, x_train, y_train, cvgen, folder):
-    figure1 = plt.figure(figsize=(25, 15)) # pylint: disable=unused-variable
+    figure1 = plt.figure(figsize=(25, 15))  # pylint: disable=unused-variable
     plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.4, hspace=0.2)
 
     i = 1
@@ -124,7 +124,7 @@ def confusion(names_, classifiers_, suffix_, x_train, y_train, cvgen, folder):
     plotname = folder+'/confusion_matrix%s_Diag0.png' % (suffix_)
     plt.savefig(plotname)
 
-    figure2 = plt.figure(figsize=(20, 15)) # pylint: disable=unused-variable
+    figure2 = plt.figure(figsize=(20, 15))  # pylint: disable=unused-variable
     plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.4, hspace=0.2)
 
     i = 1
@@ -149,7 +149,7 @@ def confusion(names_, classifiers_, suffix_, x_train, y_train, cvgen, folder):
 
 
 def precision_recall(names_, classifiers_, suffix_, x_train, y_train, cvgen, folder):
-    figure1 = plt.figure(figsize=(25, 15)) # pylint: disable=unused-variable
+    figure1 = plt.figure(figsize=(25, 15))  # pylint: disable=unused-variable
     plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.4, hspace=0.2)
 
     i = 1
@@ -168,7 +168,7 @@ def precision_recall(names_, classifiers_, suffix_, x_train, y_train, cvgen, fol
     plotname = folder+'/precision_recall%s.png' % (suffix_)
     plt.savefig(plotname)
 
-    figure2 = plt.figure(figsize=(20, 15)) # pylint: disable=unused-variable
+    figure2 = plt.figure(figsize=(20, 15))  # pylint: disable=unused-variable
     i = 1
     aucs = []
 
@@ -189,8 +189,7 @@ def precision_recall(names_, classifiers_, suffix_, x_train, y_train, cvgen, fol
     plt.savefig(plotname)
 
 
-def plot_learning_curves(names_, classifiers_, suffix_, folder, x_data, y_data, npoints,
-                         ystring='RMSE', threshold=0.5):
+def plot_learning_curves(names_, classifiers_, suffix_, folder, x_data, y_data, npoints):
 
     figure1 = plt.figure(figsize=(20, 15))
     i = 1
@@ -198,44 +197,24 @@ def plot_learning_curves(names_, classifiers_, suffix_, folder, x_data, y_data, 
     for name, clf in zip(names_, classifiers_):
         ax = plt.subplot(2, (len(names_)+1)/2, i)
         train_errors, val_errors = [], []
-        maxnentries = len(x_train)
-        minnentries = 100
-        step_ = int((maxnentries-minnentries)/npoints)
-        arrayvalues = np.arange(start=minnentries, stop=maxnentries, step=step_)
-        ytype = {'RMSE': 0, 'f1score': 1, 'sig': 2, 'bkg': 3}
+        high = len(x_train)
+        low = 100
+        step_ = int((high-low)/npoints)
+        arrayvalues = np.arange(start=low, stop=high, step=step_)
         for m in arrayvalues:
             clf.fit(x_train[:m], y_train[:m])
-            y_train_predict = np.transpose(
-                (clf.predict_proba(x_train[:m]) >= threshold).astype(int))[1]
-            y_val_predict = np.transpose((clf.predict_proba(x_val) >= threshold).astype(int))[1]
-            if ytype.get(ystring, -1) == 1:
-                yMetric_train = f1_score(y_train_predict, y_train[:m])
-                yMetric_val = f1_score(y_val_predict, y_val)
-            elif ytype.get(ystring, -1) == 2:
-                yMetric_train = precision_score(y_train_predict, y_train[:m])
-                yMetric_val = precision_score(y_val_predict, y_val)
-            elif ytype.get(ystring, -1) == 3:
-                tn, _, fn, _ = confusion_matrix(y_train_predict, y_train[:m]).ravel()
-                yMetric_train = tn / (tn+fn)
-                tn, _, fn, _ = confusion_matrix(y_val_predict, y_val).ravel()
-                yMetric_val = tn / (tn+fn)
-            else:
-                yMetric_train = mean_squared_error(y_train_predict, y_train[:m])
-                yMetric_val = mean_squared_error(y_val_predict, y_val)
-            train_errors.append(yMetric_train)
-            val_errors.append(yMetric_val)
+            y_train_predict = clf.predict(x_train[:m])
+            y_val_predict = clf.predict(x_val)
+            train_errors.append(mean_squared_error(y_train_predict, y_train[:m]))
+            val_errors.append(mean_squared_error(y_val_predict, y_val))
         ax.set_ylim([0, np.amax(np.sqrt(val_errors))*2])
         plt.plot(arrayvalues, np.sqrt(train_errors), "r-+", linewidth=3, label="training")
         plt.plot(arrayvalues, np.sqrt(val_errors), "b-", linewidth=3, label="testing")
         plt.title(name, fontsize=16)
         plt.xlabel("Training set size", fontsize=16)
-        yAxisLabel = ("RMSE", "f1 score", "signal efficiency", "background efficieny")
-        plt.ylabel(yAxisLabel[ytype.get(ystring, 0)], fontsize=16)
+        plt.ylabel("RMSE", fontsize=16)
         figure1.subplots_adjust(hspace=.5)
         plt.legend(loc="lower center", prop={'size': 18})
         i += 1
-    suffix_ = suffix_+'_'+str(threshold)
-    typesuffix = ("RMSE", "f1score", "sig", "bkg")
-    suffix_ = suffix_+"_"+typesuffix[ytype.get(ystring, 0)]
     plotname = folder+'/learning_curve%s.png' % (suffix_)
     plt.savefig(plotname)
