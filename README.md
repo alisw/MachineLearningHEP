@@ -10,4 +10,4 @@ The packages (v0) provides tools to:
 - perform Principal-Component-Analysis
 - training and testing using Scikit, XGBoost and Keras algorithms
 - large set of validation tools with a user friendly interface
-- conversion of Pandas Dataframe to ROOT objects which include algorithm decisions and probabilities for each algorithm 
+- conversion of Pandas Dataframe to ROOT objects including algorithm decisions and probabilities 
