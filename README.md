@@ -13,8 +13,12 @@ This software provides a flexible, modular and easy-to-use package to perform cl
 - large set of validation tools with a user friendly interface
 - conversion of Pandas Dataframe to ROOT objects including algorithm decisions and probabilities 
 
-## Instructions 
+## Instructions and tutorials
 Instructions for installing and running the package are provided in the Wiki section of this repository. 
+
+## The ALICE Collaboration at CERN
+Visit the collaboration website for more information about studies of hot nuclear matter at the Large Hadron Collider at CERN
+http://alice-collaboration.web.cern.ch
 
 ## Contacts 
 For any questions please contact ginnocen@cern.ch
