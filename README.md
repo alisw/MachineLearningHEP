@@ -14,7 +14,7 @@ This software provides a flexible, modular and easy-to-use package to perform cl
 - conversion of Pandas Dataframe to ROOT objects including algorithm decisions and probabilities 
 
 ## Instructions and tutorials
-Instructions for installing and running the package are provided in the Wiki section of this repository [wiki ] (https://github.com/ginnocen/MachineLearningHEP/wiki).
+Instructions for installing and running the package are provided in the Wiki section of this repository [wiki](https://github.com/ginnocen/MachineLearningHEP/wiki).
 
 ## The ALICE Collaboration at CERN
 Visit the collaboration website for more information about studies of hot nuclear matter at the Large Hadron Collider at CERN
