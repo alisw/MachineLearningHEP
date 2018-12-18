@@ -1,0 +1,14 @@
+BinaryClassification:
+  ScikitTreeRandom_Forest:
+    name: "ScikitTreeRandom_Forest"
+    clf: RandomForestClassifier(random_state=42)
+    param_grid: {'n_estimators': [3, 10, 50, 100], 'max_features': [2,4,6,8],'max_depth': [1,4]}
+    refit_grid: AUC
+    var_param: n_estimators
+  ScikitGradientBoostingClassifier:
+    name: "ScikitGradientBoostingClassifier"
+    clf: GradientBoostingClassifier(random_state=42)
+    param_grid: {'learning_rate': [0.01,0.05, 0.1],'max_depth' : [1, 2, 4]}
+    refit_grid: AUC
+    var_param: learning_rate
+
