@@ -1,3 +1,34 @@
+# If python build in source tree
+build/*
+dist/*
+
+# Python compiled
 *.pyc
-*.egg-info
-.DS_Store
+*.pyd
+*.pyo
+
+# object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# executables
+*.exe
+*.out
+*.app
+
+# editor backups/cached
+*.swp
+*~
