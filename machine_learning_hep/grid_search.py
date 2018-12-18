@@ -19,14 +19,15 @@ Methods to do hyper-parameters optimization
 import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import GridSearchCV
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier  # pylint: disable=unused-import
 from sklearn_evaluation import plot
 
 
-def do_gridsearch(names, classifiers, param_grid, x_train, y_train_, cv_, ncores):
+def do_gridsearch(names, classifiers, param_grid, refit_arr, x_train, y_train_, cv_, ncores):
     grid_search_models_ = []
     grid_search_bests_ = []
-    for _, clf, param_cv in zip(names, classifiers, param_grid):
-        grid_search = GridSearchCV(clf, param_cv, cv=cv_,
+    for _, clf, param_cv, refit in zip(names, classifiers, param_grid, refit_arr):
+        grid_search = GridSearchCV(clf, param_cv, cv=cv_, refit=refit,
                                    scoring='neg_mean_squared_error', n_jobs=ncores)
         grid_search_model = grid_search.fit(x_train, y_train_)
         cvres = grid_search.cv_results_
@@ -41,7 +42,7 @@ def do_gridsearch(names, classifiers, param_grid, x_train, y_train_, cv_, ncores
 def plot_gridsearch(names, change_, grid_search_models_, output_, suffix_):
 
     for nameCV, change, gs_clf in zip(names, change_, grid_search_models_):
-        figure = plt.figure(figsize=(10, 10)) # pylint: disable=unused-variable
+        figure = plt.figure(figsize=(10, 10))  # pylint: disable=unused-variable
         plot.grid_search(gs_clf.grid_scores_, change=change, kind='bar')
         plt.title('Grid search results ' + nameCV, fontsize=17)
         plt.ylim(-0.8, 0)
@@ -49,3 +50,19 @@ def plot_gridsearch(names, change_, grid_search_models_, output_, suffix_):
         plt.xlabel(change, fontsize=17)
         plotname = output_+"/GridSearchResults"+nameCV+suffix_+".png"
         plt.savefig(plotname)
+
+
+def read_grid_dict(grid_dict):
+    names_cv = []
+    clf_cv = []
+    par_grid_cv = []
+    refit_cv = []
+    var_param_cv = []
+
+    for keymodels, _ in grid_dict.items():
+        names_cv.append(grid_dict[keymodels]["name"])
+        clf_cv.append(eval(grid_dict[keymodels]["clf"]))  # pylint: disable=eval-used
+        par_grid_cv.append([grid_dict[keymodels]["param_grid"]])
+        refit_cv.append(grid_dict[keymodels]["refit_grid"])
+        var_param_cv.append(grid_dict[keymodels]["var_param"])
+    return names_cv, clf_cv, par_grid_cv, refit_cv, var_param_cv

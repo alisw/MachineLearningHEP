@@ -16,7 +16,9 @@
 main macro for running the study
 """
 from sklearn.utils import shuffle
+# from sklearn.metrics import make_scorer, accuracy_score
 from machine_learning_hep.general import get_database_ml_parameters, getdataframe
+from machine_learning_hep.general import get_database_ml_gridsearch
 from machine_learning_hep.general import checkdir, write_tree
 from machine_learning_hep.general import filterdataframe, split_df_sigbkg, createstringselection
 from machine_learning_hep.preparesamples import prep_mlsamples
@@ -31,6 +33,7 @@ from machine_learning_hep.mlperformance import plot_cross_validation_mse, plot_l
 from machine_learning_hep.mlperformance import plotdistributiontarget, plotscattertarget
 # from machine_learning_hep.mlperformance import confusion
 from machine_learning_hep.mlperformance import precision_recall
+from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, plot_gridsearch
 
 
 def doclassification_regression():  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
@@ -63,17 +66,18 @@ def doclassification_regression():  # pylint: disable=too-many-locals, too-many-
     dostandard = 0
     dopca = 0
     activate_scikit = 0
-    activate_xgboost = 1
+    activate_xgboost = 0
     activate_keras = 0
-    dotraining = 1
-    dotesting = 1
-    applytodatamc = 1
-    docrossvalidation = 1
-    dolearningcurve = 1
-    doROC = 1
-    doboundary = 1
-    doimportance = 1
+    dotraining = 0
+    dotesting = 0
+    applytodatamc = 0
+    docrossvalidation = 0
+    dolearningcurve = 0
+    doROC = 0
+    doboundary = 0
+    doimportance = 0
     dopltregressionxy = 0
+    dogridsearch = 1
 
     if mltype == "Regression":
         print("these tests cannot be performed for regression:")
@@ -230,6 +234,15 @@ def doclassification_regression():  # pylint: disable=too-many-locals, too-many-
     if dopltregressionxy == 1:
         plotdistributiontarget(names, df_ml_test, var_target, suffix, plotdir)
         plotscattertarget(names, df_ml_test, var_target, suffix, plotdir)
+
+    if dogridsearch == 1:
+        datasearch = get_database_ml_gridsearch()
+        analysisdb = datasearch[mltype]
+        names_cv, clf_cv, par_grid_cv, refit_cv, var_param = read_grid_dict(analysisdb)
+#         scoring = {'AUC': 'roc_auc', 'Accuracy': make_scorer(accuracy_score)}
+        grid_search_models, _ = do_gridsearch(
+            names_cv, clf_cv, par_grid_cv, refit_cv, x_train, y_train, nkfolds, ncores)
+        plot_gridsearch(names_cv, var_param, grid_search_models, plotdir, suffix)
 
 
 doclassification_regression()
