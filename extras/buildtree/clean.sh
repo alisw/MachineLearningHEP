@@ -1,2 +1,0 @@
-rm *.root
-rm *.pkl
