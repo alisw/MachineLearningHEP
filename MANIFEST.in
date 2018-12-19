@@ -1,1 +1,3 @@
 include machine_learning_hep/data/database_ml_parameters.yml
+include machine_learning_hep/data/database_ml_gridsearch.yml
+include machine_learning_hep/data/config_ml_parameters.yml

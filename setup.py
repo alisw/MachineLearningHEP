@@ -85,7 +85,9 @@ setup(
   # installed, specify them here. Note that you need to specify those files in
   # MANIFEST.in as well, since Python tools behave inconsistently
   include_package_data=True,
-  package_data={ "machine_learning_hep.data": [ "database_ml_parameters.yml" ], "machine_learning_hep.data": [ "database_ml_gridsearch.yml" ] },
+  package_data={ "machine_learning_hep.data": [ "database_ml_parameters.yml",
+                                                "database_ml_gridsearch.yml",
+                                                "config_ml_parameters.yml"] },
 
   # Although 'package_data' is the preferred approach, in some case you may
   # need to place data files outside of your packages. See:
@@ -98,6 +100,8 @@ setup(
   # pip to create the appropriate form of executable for the target platform.
   # See: https://chriswarrick.com/blog/2014/09/15/python-apps-the-right-way-entry_points-and-scripts/
   entry_points={
-      "console_scripts": [ "ml-get-data = machine_learning_hep.ml_get_data:main" ]
+      "console_scripts": [ "ml-get-data = machine_learning_hep.ml_get_data:main",
+                           "ml-doclassification-regression = " \
+                           "machine_learning_hep.doclassification_regression:main"]
   }
 )
