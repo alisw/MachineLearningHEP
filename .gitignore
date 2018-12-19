@@ -1,6 +1,7 @@
 # If python build in source tree
 build/*
 dist/*
+*.egg-info
 
 # Python compiled
 *.pyc
@@ -32,3 +33,7 @@ dist/*
 # editor backups/cached
 *.swp
 *~
+*.vscode
+
+#data files
+machine_learning_hep/data/**/*.root
