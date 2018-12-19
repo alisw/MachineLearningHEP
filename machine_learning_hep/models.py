@@ -165,7 +165,7 @@ def readmodels(names_, folder_, suffix_):
 
 
 def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder):
-    figure1 = plt.figure(figsize=(25, 15))  # pylint: disable=unused-variable
+    plt.figure(figsize=(25, 15))
     plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.4, hspace=0.2)
 
     i = 1
