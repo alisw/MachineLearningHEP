@@ -72,7 +72,7 @@ setup(
   install_requires=[ "numpy", "pandas", "scipy", "matplotlib", "seaborn", "uproot", "scikit-learn",
                      "sklearn-evaluation", "xgboost", "keras", "tensorflow", "PyYaml", "pylint" ],
 
-  python_requires='>=3.6',
+  python_requires='>=3.6, <3.7',
 
   # List additional groups of dependencies here (e.g. development
   # dependencies). You can install these using the following syntax,
