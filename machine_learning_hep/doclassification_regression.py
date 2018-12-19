@@ -66,18 +66,18 @@ def doclassification_regression():  # pylint: disable=too-many-locals, too-many-
     dostandard = 0
     dopca = 0
     activate_scikit = 0
-    activate_xgboost = 0
+    activate_xgboost = 1
     activate_keras = 0
-    dotraining = 0
-    dotesting = 0
-    applytodatamc = 0
-    docrossvalidation = 0
-    dolearningcurve = 0
-    doROC = 0
-    doboundary = 0
-    doimportance = 0
+    dotraining = 1
+    dotesting = 1
+    applytodatamc = 1
+    docrossvalidation = 1
+    dolearningcurve = 1
+    doROC = 1
+    doboundary = 1
+    doimportance = 1
     dopltregressionxy = 0
-    dogridsearch = 1
+    dogridsearch = 0
 
     if mltype == "Regression":
         print("these tests cannot be performed for regression:")
