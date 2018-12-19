@@ -95,7 +95,7 @@ def getclf_keras(ml_type, length_input):
             return model
 
         classifiers = [KerasClassifier(build_fn=create_model_sequential,
-                                       epochs=1000, batch_size=50, verbose=0)]
+                                       epochs=30, batch_size=50, verbose=0)]
         names = ["KerasSequential"]
 
     if ml_type == "Regression":
