@@ -1,0 +1,111 @@
+nevt_sig:
+    default: 1000
+nevt_bkg:
+  default: 1000
+
+mltype:
+  choices: ["BinaryClassification", "Regression"]
+  default: "BinaryClassification"
+
+mlsubtype:
+  default: "HFmeson"
+
+case:
+  choices: ["Bplus", "Dplus", "Ds", "Lc", "PIDKaon", "PIDPion", "hypertritium", "lightquarkjet" ]
+  default: "Lc"
+
+var_skimming:
+  choices: [["pt_cand_ML"]]
+  default: ["pt_cand_ML"]
+
+varmin:
+  default: [2]
+
+varmax:
+  default: [4]
+
+test_frac:
+  default: 0.2
+
+rnd_splt:
+  default: 12
+
+rnd_shuffle:
+ default: 12
+
+nkfolds:
+  default: 5
+
+ncores:
+  default: -1
+
+loadsampleoption:
+  default: 1
+
+docorrelation:
+  default: 0
+
+dostandard:
+  default: 0
+
+dopca:
+  default: 0
+
+activate_scikit:
+  default: 0
+
+activate_xgboost:
+  default: 1
+
+activate_keras:
+  default: 0
+  depends:
+    parameter: "mltype"
+    value: "Regression"
+    set: 0
+
+dotraining:
+  default: 1
+
+dotesting:
+  default: 1
+
+applytodatamc:
+  default: 1
+
+docrossvalidation:
+  default: 1
+
+dolearningcurve:
+  default: 1
+
+doROC:
+  default: 1
+  depends:
+    parameter: "mltype"
+    value: "Regression"
+    set: 0
+
+doboundary:
+  default: 1
+  depends:
+    parameter: "mltype"
+    value: "Regression"
+    set: 0
+
+doimportance:
+  default: 1
+  depends:
+    parameter: "mltype"
+    value: "Regression"
+    set: 0
+
+dopltregressionxy:
+  default: 0
+  depends:
+    parameter: "mltype"
+    value: "BinaryClassification"
+    set: 0
+
+dogridsearch:
+  default: 0
