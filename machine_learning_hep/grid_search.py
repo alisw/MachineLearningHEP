@@ -22,7 +22,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier  # pylint: disable=unused-import
-from sklearn_evaluation import plot
 
 
 def do_gridsearch(names, classifiers, param_grid, refit_arr, x_train, y_train_, cv_, ncores):
@@ -41,19 +40,6 @@ def do_gridsearch(names, classifiers, param_grid, refit_arr, x_train, y_train_, 
         grid_search_models_.append(grid_search_model)
         grid_search_bests_.append(grid_search_best)
     return grid_search_models_, grid_search_bests_, list_scores_
-
-
-def plot_gridsearch(names, change_, grid_search_models_, output_, suffix_):
-
-    for nameCV, change, gs_clf in zip(names, change_, grid_search_models_):
-        figure = plt.figure(figsize=(10, 10))  # pylint: disable=unused-variable
-        plot.grid_search(gs_clf.grid_scores_, change=change, kind='bar')
-        plt.title('Grid search results ' + nameCV, fontsize=17)
-        plt.ylim(-0.8, 0)
-        plt.ylabel('negative mean squared error', fontsize=17)
-        plt.xlabel(change, fontsize=17)
-        plotname = output_+"/GridSearchResults"+nameCV+suffix_+".png"
-        plt.savefig(plotname)
 
 
 def read_grid_dict(grid_dict):
@@ -123,5 +109,4 @@ def perform_plot_gridsearch(names, scores, par_grid, keys, changeparameter, outp
             plt.fill_between(sample_x, lst_down, lst_up, alpha=alpha)
         pad.legend(fontsize=10)
     plotname = output_ + "/GridSearchResults" + suffix_ + ".png"
-    # plt.show()
     plt.savefig(plotname)
