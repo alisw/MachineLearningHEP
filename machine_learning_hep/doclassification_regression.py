@@ -176,7 +176,7 @@ def doclassification_regression():  # pylint: disable=too-many-locals, too-many-
 
     if dotraining == 1:
         trainedmodels = fit(names, classifiers, x_train, y_train)
-        savemodels(names, trainedmodels, var_training, var_signal, output, suffix)
+        savemodels(names, trainedmodels, output, suffix)
 
     if dotesting == 1:
         df_ml_test_dec = test(mltype, names, trainedmodels, df_ml_test, var_training, var_signal)

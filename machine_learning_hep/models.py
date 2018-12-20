@@ -19,7 +19,6 @@ Methods to: choose, train and apply ML models
 """
 
 import pickle
-from subprocess import check_call
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -29,7 +28,6 @@ from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LinearRegression, Ridge, Lasso
 from sklearn.feature_extraction import DictVectorizer
-from sklearn.tree import export_graphviz
 
 from keras.models import Sequential
 from keras.layers import Dense
@@ -143,7 +141,7 @@ def apply(ml_type, names_, trainedmodels_, test_set_, mylistvariablestraining_):
     return test_set_
 
 
-def savemodels(names_, trainedmodels_, mylistvariablestraining_, myvariablesy_, folder_, suffix_):
+def savemodels(names_, trainedmodels_, folder_, suffix_):
     for name, model in zip(names_, trainedmodels_):
         if "Keras" in name:
             architecture_file = folder_+"/"+name+suffix_+"_architecture.json"
@@ -155,17 +153,6 @@ def savemodels(names_, trainedmodels_, mylistvariablestraining_, myvariablesy_, 
         if "Scikit" in name:
             fileoutmodel = folder_+"/"+name+suffix_+".sav"
             pickle.dump(model, open(fileoutmodel, 'wb'))
-            if "ScikitTreeDecision_Tree" in name:
-                export_graphviz(
-                    model,
-                    out_file=folder_+"/graph"+name+suffix_+".dot",
-                    feature_names=mylistvariablestraining_,
-                    class_names=myvariablesy_,
-                    rounded=True,
-                    filled=True
-                )
-                check_call(['dot', '-Tpng', folder_+"/graph"+name+suffix_ +
-                            ".dot", '-o', folder_+"/graph"+name+suffix_+".png"])
 
 
 def readmodels(names_, folder_, suffix_):
@@ -178,7 +165,7 @@ def readmodels(names_, folder_, suffix_):
 
 
 def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder):
-    figure1 = plt.figure(figsize=(25, 15))  # pylint: disable=unused-variable
+    plt.figure(figsize=(25, 15))
     plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.4, hspace=0.2)
 
     i = 1
