@@ -1,6 +1,17 @@
 # If python build in source tree
 build/*
 dist/*
+dataframes_*
+plots_*
+output_*
+*.egg-info
+.DS_Store
+*.json
+*.h5
+**/__pycache__
+*.vscode
+machine_learning_hep/data/**/*.root
+
 
 # Python compiled
 *.pyc
