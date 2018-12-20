@@ -7,6 +7,10 @@ dist/*
 *.pyd
 *.pyo
 
+# Other Python stuff
+**/.mypy_cache
+*.egg-info
+
 # object files
 *.slo
 *.lo
@@ -32,3 +36,6 @@ dist/*
 # editor backups/cached
 *.swp
 *~
+
+# macOS
+.DS_Store
