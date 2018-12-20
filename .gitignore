@@ -18,6 +18,10 @@ machine_learning_hep/data/**/*.root
 *.pyd
 *.pyo
 
+# Other Python stuff
+**/.mypy_cache
+*.egg-info
+
 # object files
 *.slo
 *.lo
@@ -43,3 +47,6 @@ machine_learning_hep/data/**/*.root
 # editor backups/cached
 *.swp
 *~
+
+# macOS
+.DS_Store
