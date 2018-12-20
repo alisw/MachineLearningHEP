@@ -33,7 +33,7 @@ from machine_learning_hep.mlperformance import plot_cross_validation_mse, plot_l
 from machine_learning_hep.mlperformance import plotdistributiontarget, plotscattertarget
 # from machine_learning_hep.mlperformance import confusion
 from machine_learning_hep.mlperformance import precision_recall
-from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, plot_gridsearch
+from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perform_plot_gridsearch
 
 
 def doclassification_regression():  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
@@ -238,11 +238,20 @@ def doclassification_regression():  # pylint: disable=too-many-locals, too-many-
     if dogridsearch == 1:
         datasearch = get_database_ml_gridsearch()
         analysisdb = datasearch[mltype]
-        names_cv, clf_cv, par_grid_cv, refit_cv, var_param = read_grid_dict(analysisdb)
+
+        #names_cv, clf_cv, par_grid_cv, refit_cv, var_param = read_grid_dict(analysisdb)
 #         scoring = {'AUC': 'roc_auc', 'Accuracy': make_scorer(accuracy_score)}
-        grid_search_models, _ = do_gridsearch(
+        #grid_search_models, _ = do_gridsearch(
+        #    names_cv, clf_cv, par_grid_cv, refit_cv, x_train, y_train, nkfolds, ncores)
+        #plot_gridsearch(names_cv, var_param, grid_search_models, plotdir, suffix)
+
+        # new custom functionality for GridSearch plotting
+        names_cv, clf_cv, par_grid_cv, refit_cv, var_param, \
+            par_grid_cv_keys = read_grid_dict(analysisdb)
+        _, _, dfscore = do_gridsearch(
             names_cv, clf_cv, par_grid_cv, refit_cv, x_train, y_train, nkfolds, ncores)
-        plot_gridsearch(names_cv, var_param, grid_search_models, plotdir, suffix)
+        perform_plot_gridsearch(
+            names_cv, dfscore, par_grid_cv, par_grid_cv_keys, var_param, plotdir, suffix, 0.1)
 
 
 doclassification_regression()
