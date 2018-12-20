@@ -209,14 +209,6 @@ def doclassification_regression(config): # pylint: disable=too-many-locals, too-
     if config['dogridsearch'] == 1:
         datasearch = get_database_ml_gridsearch()
         analysisdb = datasearch[config['mltype']]
-
-        #names_cv, clf_cv, par_grid_cv, refit_cv, var_param = read_grid_dict(analysisdb)
-#         scoring = {'AUC': 'roc_auc', 'Accuracy': make_scorer(accuracy_score)}
-        #grid_search_models, _ = do_gridsearch(
-        #    names_cv, clf_cv, par_grid_cv, refit_cv, x_train, y_train, nkfolds, ncores)
-        #plot_gridsearch(names_cv, var_param, grid_search_models, plotdir, suffix)
-
-        # new custom functionality for GridSearch plotting
         names_cv, clf_cv, par_grid_cv, refit_cv, var_param, \
             par_grid_cv_keys = read_grid_dict(analysisdb)
         _, _, dfscore = do_gridsearch(
