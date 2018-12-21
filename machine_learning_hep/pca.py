@@ -23,7 +23,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.decomposition import PCA
 
 
-def get_pcadataframe_pca(dataframe, n_pca):
+def get_dataframe_pca(dataframe, n_pca):
     data_values = dataframe.values
     pca = PCA(n_pca)
     principal_comp = pca.fit_transform(data_values)
@@ -42,13 +42,21 @@ def apply_pca(dataframe, pca, var_names):
     return pca_dataframe
 
 
-def getdataframe_standardised(dataframe):
-    listheaders = list(dataframe.columns.values)
+def get_dataframe_std(dataframe):
     data_values = dataframe.values
-    data_values_std = StandardScaler().fit_transform(data_values)
-    dataframe_std = pd.DataFrame(data=data_values_std, columns=listheaders)
+    std_scal = StandardScaler()
+    data_values_std = std_scal.fit_transform(data_values)
+    std_dataframe = pd.DataFrame(data=data_values_std, columns=list(dataframe.columns.values))
 
-    return dataframe_std
+    return std_dataframe, std_scal
+
+
+def apply_std(dataframe, std_scal):
+    data_values = dataframe.values
+    data_values_std = std_scal.transform(data_values)
+    std_dataframe = pd.DataFrame(data=data_values_std, columns=list(dataframe.columns.values))
+
+    return std_dataframe
 
 
 def plotvariance_pca(pca_object, output_):

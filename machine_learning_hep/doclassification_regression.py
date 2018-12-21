@@ -27,7 +27,7 @@ from machine_learning_hep.io import parse_yaml
 from machine_learning_hep.config import assert_config, dump_default_config
 from machine_learning_hep.preparesamples import prep_mlsamples
 from machine_learning_hep.correlations import vardistplot, scatterplot, correlationmatrix
-from machine_learning_hep.pca import getdataframe_standardised, get_pcadataframe_pca, apply_pca
+from machine_learning_hep.pca import get_dataframe_std, get_dataframe_pca, apply_std, apply_pca
 from machine_learning_hep.pca import plotvariance_pca
 from machine_learning_hep.models import getclf_scikit, getclf_xgboost, getclf_keras
 from machine_learning_hep.models import fit, savemodels, apply, decisionboundaries
@@ -116,11 +116,12 @@ def doclassification_regression(config): # pylint: disable=too-many-locals, too-
         correlationmatrix(df_bkg_train, plotdir, "background")
 
     if config['dostandard'] == 1:
-        x_train = getdataframe_standardised(x_train)
+        x_train, std_scal = get_dataframe_std(x_train)
+        x_test = apply_std(x_test, std_scal)
 
     if config['dopca'] == 1:
         n_pca = 9
-        x_train, pca, var_training = get_pcadataframe_pca(x_train, n_pca)
+        x_train, pca, var_training = get_dataframe_pca(x_train, n_pca)
         x_test = apply_pca(x_test, pca, var_training)
         plotvariance_pca(pca, plotdir)
 
@@ -162,11 +163,14 @@ def doclassification_regression(config): # pylint: disable=too-many-locals, too-
 
         x_data = df_data[data[case]["var_training"]]
         x_mc = df_mc[data[case]["var_training"]]
+        if config['dostandard'] == 1:
+            x_data = apply_std(x_data, std_scal)
+            x_mc = apply_std(x_mc, std_scal)
         if config['dopca'] == 1:
             x_data = apply_pca(x_data, pca, var_training)
             x_mc = apply_pca(x_mc, pca, var_training)
 
-        df_data_dec = apply(config['mltype'], names, trainedmodels, df_data, x_data)      
+        df_data_dec = apply(config['mltype'], names, trainedmodels, df_data, x_data)
         df_mc_dec = apply(config['mltype'], names, trainedmodels, df_mc, x_mc)
         df_data_dec_to_root = output+"/data_%s_mldecision.root" % (suffix)
         df_mc_dec_to_root = output+"/mc_%s_mldecision.root" % (suffix)
