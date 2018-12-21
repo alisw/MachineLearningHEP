@@ -21,9 +21,9 @@ from sklearn.utils import shuffle
 # from sklearn.metrics import make_scorer, accuracy_score
 from machine_learning_hep.general import get_database_ml_parameters, getdataframe
 from machine_learning_hep.general import get_database_ml_gridsearch
-from machine_learning_hep.general import checkdir, write_tree
+from machine_learning_hep.root import write_tree
 from machine_learning_hep.general import filterdataframe, split_df_sigbkg, createstringselection
-from machine_learning_hep.io import parse_yaml
+from machine_learning_hep.io import parse_yaml, checkdir
 from machine_learning_hep.config import assert_config, dump_default_config
 from machine_learning_hep.preparesamples import prep_mlsamples
 from machine_learning_hep.correlations import vardistplot, scatterplot, correlationmatrix

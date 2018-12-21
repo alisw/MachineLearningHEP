@@ -30,3 +30,11 @@ def parse_yaml(filepath):
         exit(1)
     with open(filepath) as f:
         return yaml.safe_load(f)
+
+
+def checkdir(path):
+    """
+    Check for existence of directory and create if not existing
+    """
+    if not os.path.exists(path):
+        os.makedirs(path)

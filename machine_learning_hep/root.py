@@ -19,7 +19,7 @@ Methods to: read and write ROOT TNtuple
 import array
 import ast
 import numpy as np
-from ROOT import TNtuple # pylint: disable=import-error,no-name-in-module
+from ROOT import TNtuple, TFile # pylint: disable=import-error,no-name-in-module
 
 
 def read_ntuple(ntuple, variables):
@@ -91,3 +91,11 @@ def fill_ntuple(tupname, data, names):
             avalues[i] = d[i]
         nt.Fill(avalues)
     nt.Write()
+
+
+def write_tree(filename, treename, dataframe):
+    listvar = list(dataframe)
+    values = dataframe.values
+    fout = TFile.Open(filename, "recreate")
+    fout.cd()
+    fill_ntuple(treename, values, listvar)
