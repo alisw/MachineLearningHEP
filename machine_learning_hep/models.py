@@ -111,34 +111,16 @@ def fit(names_, classifiers_, x_train_, y_train_):
     return trainedmodels_
 
 
-def test(ml_type, names_, trainedmodels_, test_set_, mylistvariables_, myvariablesy_):
-    x_test_ = test_set_[mylistvariables_]
-    y_test_ = test_set_[myvariablesy_].values.reshape(len(x_test_),)
-    test_set_[myvariablesy_] = pd.Series(y_test_, index=test_set_.index)
+def apply(ml_type, names_, trainedmodels_, test_set_, x_values_):
     for name, model in zip(names_, trainedmodels_):
         y_test_prediction = []
         y_test_prob = []
-        y_test_prediction = model.predict(x_test_)
+        y_test_prediction = model.predict(x_values_)
         y_test_prediction = y_test_prediction.reshape(len(y_test_prediction),)
         test_set_['y_test_prediction'+name] = pd.Series(y_test_prediction, index=test_set_.index)
 
         if ml_type == "BinaryClassification":
-            y_test_prob = model.predict_proba(x_test_)[:, 1]
-            test_set_['y_test_prob'+name] = pd.Series(y_test_prob, index=test_set_.index)
-    return test_set_
-
-
-def apply(ml_type, names_, trainedmodels_, test_set_, mylistvariablestraining_):
-    x_values = test_set_[mylistvariablestraining_]
-    for name, model in zip(names_, trainedmodels_):
-        y_test_prediction = []
-        y_test_prob = []
-        y_test_prediction = model.predict(x_values)
-        y_test_prediction = y_test_prediction.reshape(len(y_test_prediction),)
-        test_set_['y_test_prediction'+name] = pd.Series(y_test_prediction, index=test_set_.index)
-
-        if ml_type == "BinaryClassification":
-            y_test_prob = model.predict_proba(x_values)[:, 1]
+            y_test_prob = model.predict_proba(x_values_)[:, 1]
             test_set_['y_test_prob'+name] = pd.Series(y_test_prob, index=test_set_.index)
     return test_set_
 

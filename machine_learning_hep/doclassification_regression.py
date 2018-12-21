@@ -27,10 +27,10 @@ from machine_learning_hep.io import parse_yaml
 from machine_learning_hep.config import assert_config, dump_default_config
 from machine_learning_hep.preparesamples import prep_mlsamples
 from machine_learning_hep.correlations import vardistplot, scatterplot, correlationmatrix
-from machine_learning_hep.pca import getdataframe_standardised, get_pcadataframe_pca
+from machine_learning_hep.pca import getdataframe_standardised, get_pcadataframe_pca, apply_pca
 from machine_learning_hep.pca import plotvariance_pca
 from machine_learning_hep.models import getclf_scikit, getclf_xgboost, getclf_keras
-from machine_learning_hep.models import fit, savemodels, test, apply, decisionboundaries
+from machine_learning_hep.models import fit, savemodels, apply, decisionboundaries
 from machine_learning_hep.models import importanceplotall
 from machine_learning_hep.mlperformance import cross_validation_mse, cross_validation_mse_continuous
 from machine_learning_hep.mlperformance import plot_cross_validation_mse, plot_learning_curves
@@ -120,7 +120,8 @@ def doclassification_regression(config): # pylint: disable=too-many-locals, too-
 
     if config['dopca'] == 1:
         n_pca = 9
-        x_train, pca = get_pcadataframe_pca(x_train, n_pca)
+        x_train, pca, var_training = get_pcadataframe_pca(x_train, n_pca)
+        x_test = apply_pca(x_test, pca, var_training)
         plotvariance_pca(pca, plotdir)
 
     if config['activate_scikit'] == 1:
@@ -143,8 +144,8 @@ def doclassification_regression(config): # pylint: disable=too-many-locals, too-
         savemodels(names, trainedmodels, output, suffix)
 
     if config['dotesting'] == 1:
-        df_ml_test_dec = test(config['mltype'], names, trainedmodels, df_ml_test,
-                              var_training, var_signal)
+        df_ml_test_dec = apply(config['mltype'], names, trainedmodels, df_ml_test,
+                               x_test)
         df_ml_test_dec_to_df = output+"/testsample_%s_mldecision.pkl" % (suffix)
         df_ml_test_dec_to_root = output+"/testsample_%s_mldecision.root" % (suffix)
         df_ml_test_dec.to_pickle(df_ml_test_dec_to_df)
@@ -157,10 +158,16 @@ def doclassification_regression(config): # pylint: disable=too-many-locals, too-
         df_mc = getdataframe(filemc, trename, var_all)
         df_data = filterdataframe(df_data, config['var_skimming'], config['varmin'],
                                   config['varmax'])
-        df_mc = filterdataframe(df_mc, config['var_skimming'], config['varmin'],
-                                config['varmax'])
-        df_data_dec = apply(config['mltype'], names, trainedmodels, df_data, var_training)
-        df_mc_dec = apply(config['mltype'], names, trainedmodels, df_mc, var_training)
+        df_mc = filterdataframe(df_mc, config['var_skimming'], config['varmin'], config['varmax'])
+
+        x_data = df_data[data[case]["var_training"]]
+        x_mc = df_mc[data[case]["var_training"]]
+        if config['dopca'] == 1:
+            x_data = apply_pca(x_data, pca, var_training)
+            x_mc = apply_pca(x_mc, pca, var_training)
+
+        df_data_dec = apply(config['mltype'], names, trainedmodels, df_data, x_data)      
+        df_mc_dec = apply(config['mltype'], names, trainedmodels, df_mc, x_mc)
         df_data_dec_to_root = output+"/data_%s_mldecision.root" % (suffix)
         df_mc_dec_to_root = output+"/mc_%s_mldecision.root" % (suffix)
         write_tree(df_data_dec_to_root, trename, df_data_dec)
@@ -193,7 +200,7 @@ def doclassification_regression(config): # pylint: disable=too-many-locals, too-
         classifiers_keras_2var, names_keras_2var = getclf_keras(config['mltype'], 2)
         classifiers_2var = classifiers_scikit_2var+classifiers_keras_2var
         names_2var = names_2var+names_keras_2var
-        x_test_boundary = x_test[data[case]["var_boundaries"]]
+        x_test_boundary = df_ml_test[data[case]["var_boundaries"]]
         trainedmodels_2var = fit(names_2var, classifiers_2var, x_test_boundary, y_test)
         decisionboundaries(
             names_2var, trainedmodels_2var, suffix+"2var", x_test_boundary, y_test, plotdir)

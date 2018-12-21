@@ -26,12 +26,20 @@ from sklearn.decomposition import PCA
 def get_pcadataframe_pca(dataframe, n_pca):
     data_values = dataframe.values
     pca = PCA(n_pca)
-    principalComponent = pca.fit_transform(data_values)
+    principal_comp = pca.fit_transform(data_values)
     pca_name_list = []
     for i_pca in range(n_pca):
         pca_name_list.append("princ_comp_%d" % (i_pca+1))
-    pca_dataframe = pd.DataFrame(data=principalComponent, columns=pca_name_list)
-    return pca_dataframe, pca
+    pca_dataframe = pd.DataFrame(data=principal_comp, columns=pca_name_list)
+
+    return pca_dataframe, pca, pca_name_list
+
+def apply_pca(dataframe, pca, var_names):
+    data_values = dataframe.values
+    principal_comp = pca.transform(data_values)
+    pca_dataframe = pd.DataFrame(data=principal_comp, columns=var_names)
+
+    return pca_dataframe
 
 
 def getdataframe_standardised(dataframe):
@@ -39,6 +47,7 @@ def getdataframe_standardised(dataframe):
     data_values = dataframe.values
     data_values_std = StandardScaler().fit_transform(data_values)
     dataframe_std = pd.DataFrame(data=data_values_std, columns=listheaders)
+
     return dataframe_std
 
 
