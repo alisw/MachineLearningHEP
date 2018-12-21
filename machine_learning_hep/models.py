@@ -29,8 +29,8 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LinearRegression, Ridge, Lasso
 from sklearn.feature_extraction import DictVectorizer
 
-from keras.models import Sequential
-from keras.layers import Dense
+from keras.layers import Input, Dense
+from keras.models import Model
 from keras.wrappers.scikit_learn import KerasClassifier
 from xgboost import XGBClassifier
 
@@ -84,22 +84,24 @@ def getclf_keras(ml_type, length_input):
     names = []
 
     if ml_type == "BinaryClassification":
-        def create_model_sequential():
-            model = Sequential()
-            model.add(Dense(12, input_dim=length_input, activation='relu'))
-            model.add(Dense(8, activation='relu'))
-            model.add(Dense(1, activation='sigmoid'))
+        def create_model_functional():
+            # Create layers
+            inputs = Input(shape=(length_input,))
+            layer = Dense(12, activation='relu')(inputs)
+            layer = Dense(8, activation='relu')(layer)
+            predictions = Dense(1, activation='sigmoid')(layer)
+            # Build model from layers
+            model = Model(inputs=inputs, outputs=predictions)
             model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
             return model
 
-        classifiers = [KerasClassifier(build_fn=create_model_sequential,
+        classifiers = [KerasClassifier(build_fn=create_model_functional,
                                        epochs=30, batch_size=50, verbose=0)]
         names = ["KerasSequential"]
 
     if ml_type == "Regression":
         print("No Keras models implemented for Regression")
     return classifiers, names
-
 
 def fit(names_, classifiers_, x_train_, y_train_):
     trainedmodels_ = []
