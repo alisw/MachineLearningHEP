@@ -42,11 +42,41 @@ from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perf
 
 def doclassification_regression(config): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 
+    mltype = config['mltype']
+    mlsubtype = config['mlsubtype']
     case = config['case']
-    print(config['nevt_sig'], config['nevt_bkg'], config['mltype'],
-          config['mlsubtype'], case)
+    loadsampleoption = config['loadsampleoption']
+    var_skimming = config['var_skimming']
+    varmin = config['varmin']
+    varmax = config['varmax']
+    rnd_shuffle = config['rnd_shuffle']
+    nevt_sig = config['nevt_sig']
+    nevt_bkg = config['nevt_bkg']
+    test_frac = config['test_frac']
+    rnd_splt = config['rnd_splt']
+    docorrelation = config['docorrelation']
+    dostandard = config['dostandard']
+    dopca = config['dopca']
+    activate_scikit = config['activate_scikit']
+    activate_xgboost = config['activate_xgboost']
+    activate_keras = config['activate_keras']
+    dotraining = config['dotraining']
+    dotesting = config['dotesting']
+    applytodatamc = config['applytodatamc']
+    docrossvalidation = config['docrossvalidation']
+    dolearningcurve = config['dolearningcurve']
+    doROC = config['doROC']
+    doboundary = config['doboundary']
+    doimportance = config['doimportance']
+    dopltregressionxy = config['dopltregressionxy']
+    dogridsearch = config['dogridsearch']
+    nkfolds = config['nkfolds']
+    ncores = config['ncores']
 
     data = get_database_ml_parameters()
+    filesig, filebkg = data[case]["sig_bkg_files"]
+    filedata, filemc = data[case]["data_mc_files"]
+    trename = data[case]["tree_name"]
     var_all = data[case]["var_all"]
     var_signal = data[case]["var_signal"]
     sel_signal = data[case]["sel_signal"]
@@ -54,11 +84,12 @@ def doclassification_regression(config): # pylint: disable=too-many-locals, too-
     var_training = data[case]["var_training"]
     var_target = data[case]["var_target"]
     var_corr_x, var_corr_y = data[case]["var_correlation"]
+    var_boundaries = data[case]["var_boundaries"]
 
-    string_selection = createstringselection(config['var_skimming'], config['varmin'],
-                                             config['varmax'])
-    suffix = f"nevt_sig{config['nevt_sig']}_nevt_bkg{config['nevt_bkg']}_" \
-             f"{config['mltype']}{case}_{string_selection}"
+    print(nevt_sig, nevt_bkg, mltype, mlsubtype, case)
+    string_selection = createstringselection(var_skimming, varmin, varmax)
+    suffix = f"nevt_sig{nevt_sig}_nevt_bkg{nevt_bkg}_" \
+             f"{mltype}{case}_{string_selection}"
 
     dataframe = f"dataframes_{suffix}"
     plotdir = f"plots_{suffix}"
@@ -82,23 +113,17 @@ def doclassification_regression(config): # pylint: disable=too-many-locals, too-
     x_train = []
     y_train = []
 
-    if config['loadsampleoption'] == 1:
-        filesig, filebkg = data[case]["sig_bkg_files"]
-        trename = data[case]["tree_name"]
+    if loadsampleoption == 1:
         df_sig = getdataframe(filesig, trename, var_all)
         df_bkg = getdataframe(filebkg, trename, var_all)
-        df_sig = filterdataframe(df_sig, config['var_skimming'], config['varmin'],
-                                 config['varmax'])
-        df_bkg = filterdataframe(df_bkg, config['var_skimming'], config['varmin'],
-                                 config['varmax'])
+        df_sig = filterdataframe(df_sig, var_skimming, varmin, varmax)
+        df_bkg = filterdataframe(df_bkg, var_skimming, varmin, varmax)
         df_sig = df_sig.query(sel_signal)
         df_bkg = df_bkg.query(sel_bkg)
-        df_sig = shuffle(df_sig, random_state=config['rnd_shuffle'])
-        df_bkg = shuffle(df_bkg, random_state=config['rnd_shuffle'])
-        df_ml_train, df_ml_test = \
-            prep_mlsamples(df_sig, df_bkg, var_signal, config['nevt_sig'],
-                           config['nevt_bkg'], config['test_frac'],
-                           config['rnd_splt'])
+        df_sig = shuffle(df_sig, random_state=rnd_shuffle)
+        df_bkg = shuffle(df_bkg, random_state=rnd_shuffle)
+        df_ml_train, df_ml_test = prep_mlsamples(df_sig, df_bkg, var_signal, nevt_sig,
+                                                 nevt_bkg, test_frac, rnd_splt)
         df_sig_train, df_bkg_train = split_df_sigbkg(df_ml_train, var_signal)
         df_sig_test, df_bkg_test = split_df_sigbkg(df_ml_test, var_signal)
         print("events for ml train %d and test %d" % (len(df_ml_train), len(df_ml_test)))
@@ -109,111 +134,103 @@ def doclassification_regression(config): # pylint: disable=too-many-locals, too-
         x_test = df_ml_test[var_training]
         y_test = df_ml_test[var_signal]
 
-    if config['docorrelation'] == 1:
+    if docorrelation == 1:
         vardistplot(df_sig_train, df_bkg_train, var_all, plotdir)
         scatterplot(df_sig_train, df_bkg_train, var_corr_x, var_corr_y, plotdir)
         correlationmatrix(df_sig_train, plotdir, "signal")
         correlationmatrix(df_bkg_train, plotdir, "background")
 
-    if config['dostandard'] == 1:
+    if dostandard == 1:
         x_train = getdataframe_standardised(x_train)
 
-    if config['dopca'] == 1:
+    if dopca == 1:
         n_pca = 9
         x_train, pca = get_pcadataframe_pca(x_train, n_pca)
         plotvariance_pca(pca, plotdir)
 
-    if config['activate_scikit'] == 1:
-        classifiers_scikit, names_scikit = getclf_scikit(config['mltype'])
+    if activate_scikit == 1:
+        classifiers_scikit, names_scikit = getclf_scikit(mltype)
         classifiers = classifiers+classifiers_scikit
         names = names+names_scikit
 
-    if config['activate_xgboost'] == 1:
-        classifiers_xgboost, names_xgboost = getclf_xgboost(config['mltype'])
+    if activate_xgboost == 1:
+        classifiers_xgboost, names_xgboost = getclf_xgboost(mltype)
         classifiers = classifiers+classifiers_xgboost
         names = names+names_xgboost
 
-    if config['activate_keras'] == 1:
-        classifiers_keras, names_keras = getclf_keras(config['mltype'], len(x_train.columns))
+    if activate_keras == 1:
+        classifiers_keras, names_keras = getclf_keras(mltype, len(x_train.columns))
         classifiers = classifiers+classifiers_keras
         names = names+names_keras
 
-    if config['dotraining'] == 1:
+    if dotraining == 1:
         trainedmodels = fit(names, classifiers, x_train, y_train)
         savemodels(names, trainedmodels, output, suffix)
 
-    if config['dotesting'] == 1:
-        df_ml_test_dec = test(config['mltype'], names, trainedmodels, df_ml_test,
+    if dotesting == 1:
+        df_ml_test_dec = test(mltype, names, trainedmodels, df_ml_test,
                               var_training, var_signal)
         df_ml_test_dec_to_df = output+"/testsample_%s_mldecision.pkl" % (suffix)
         df_ml_test_dec_to_root = output+"/testsample_%s_mldecision.root" % (suffix)
         df_ml_test_dec.to_pickle(df_ml_test_dec_to_df)
         write_tree(df_ml_test_dec_to_root, trename, df_ml_test_dec)
 
-    if config['applytodatamc'] == 1:
-        filedata, filemc = data[case]["data_mc_files"]
-        trename = data[case]["tree_name"]
+    if applytodatamc == 1:
         df_data = getdataframe(filedata, trename, var_all)
         df_mc = getdataframe(filemc, trename, var_all)
-        df_data = filterdataframe(df_data, config['var_skimming'], config['varmin'],
-                                  config['varmax'])
-        df_mc = filterdataframe(df_mc, config['var_skimming'], config['varmin'],
-                                config['varmax'])
-        df_data_dec = apply(config['mltype'], names, trainedmodels, df_data, var_training)
-        df_mc_dec = apply(config['mltype'], names, trainedmodels, df_mc, var_training)
+        df_data = filterdataframe(df_data, var_skimming, varmin, varmax)
+        df_mc = filterdataframe(df_mc, var_skimming, varmin, varmax)
+        df_data_dec = apply(mltype, names, trainedmodels, df_data, var_training)
+        df_mc_dec = apply(mltype, names, trainedmodels, df_mc, var_training)
         df_data_dec_to_root = output+"/data_%s_mldecision.root" % (suffix)
         df_mc_dec_to_root = output+"/mc_%s_mldecision.root" % (suffix)
         write_tree(df_data_dec_to_root, trename, df_data_dec)
         write_tree(df_mc_dec_to_root, trename, df_mc_dec)
 
-    if config['docrossvalidation'] == 1:
+    if docrossvalidation == 1:
         df_scores = []
-        if config['mltype'] == "Regression":
+        if mltype == "Regression":
             df_scores = cross_validation_mse_continuous(
-                names, classifiers, x_train, y_train, config['nkfolds'],
-                config['ncores'])
-        if config['mltype'] == "BinaryClassification":
-            df_scores = cross_validation_mse(
-                names, classifiers, x_train, y_train, config['nkfolds'],
-                config['ncores'])
+                names, classifiers, x_train, y_train, nkfolds, ncores)
+        if mltype == "BinaryClassification":
+            df_scores = cross_validation_mse(names, classifiers, x_train, y_train,
+                                             nkfolds, ncores)
         plot_cross_validation_mse(names, df_scores, suffix, plotdir)
 
-    if config['dolearningcurve'] == 1:
-        #         confusion(names, classifiers, suffix, x_train, y_train, config['nkfolds'],
-        #                   plotdir)
+    if dolearningcurve == 1:
+        #         confusion(names, classifiers, suffix, x_train, y_train, nkfolds, plotdir)
         npoints = 10
         plot_learning_curves(names, classifiers, suffix, plotdir, x_train, y_train, npoints)
 
-    if config['doROC'] == 1:
-        precision_recall(names, classifiers, suffix, x_train, y_train, config['nkfolds'],
-                         plotdir)
+    if doROC == 1:
+        precision_recall(names, classifiers, suffix, x_train, y_train, nkfolds, plotdir)
 
-    if config['doboundary'] == 1:
-        classifiers_scikit_2var, names_2var = getclf_scikit(config['mltype'])
-        classifiers_keras_2var, names_keras_2var = getclf_keras(config['mltype'], 2)
+    if doboundary == 1:
+        classifiers_scikit_2var, names_2var = getclf_scikit(mltype)
+        classifiers_keras_2var, names_keras_2var = getclf_keras(mltype, 2)
         classifiers_2var = classifiers_scikit_2var+classifiers_keras_2var
         names_2var = names_2var+names_keras_2var
-        x_test_boundary = x_test[data[case]["var_boundaries"]]
+        x_test_boundary = x_test[var_boundaries]
         trainedmodels_2var = fit(names_2var, classifiers_2var, x_test_boundary, y_test)
         decisionboundaries(
             names_2var, trainedmodels_2var, suffix+"2var", x_test_boundary, y_test, plotdir)
 
-    if config['doimportance'] == 1:
+    if doimportance == 1:
         importanceplotall(var_training, names_scikit+names_xgboost,
                           classifiers_scikit+classifiers_xgboost, suffix, plotdir)
 
-    if config['dopltregressionxy'] == 1:
+    if dopltregressionxy == 1:
         plotdistributiontarget(names, df_ml_test, var_target, suffix, plotdir)
         plotscattertarget(names, df_ml_test, var_target, suffix, plotdir)
 
-    if config['dogridsearch'] == 1:
+    if dogridsearch == 1:
         datasearch = get_database_ml_gridsearch()
-        analysisdb = datasearch[config['mltype']]
+        analysisdb = datasearch[mltype]
         names_cv, clf_cv, par_grid_cv, refit_cv, var_param, \
             par_grid_cv_keys = read_grid_dict(analysisdb)
         _, _, dfscore = do_gridsearch(
-            names_cv, clf_cv, par_grid_cv, refit_cv, x_train, y_train, config['nkfolds'],
-            config['ncores'])
+            names_cv, clf_cv, par_grid_cv, refit_cv, x_train, y_train, nkfolds,
+            ncores)
         perform_plot_gridsearch(
             names_cv, dfscore, par_grid_cv, par_grid_cv_keys, var_param, plotdir, suffix, 0.1)
 
