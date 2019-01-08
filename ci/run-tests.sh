@@ -58,7 +58,7 @@ EOF
 
 if [[ $TRAVIS_PULL_REQUEST != "false" && $TRAVIS_COMMIT_RANGE ]]; then
   # Only check changed Python files (snappier)
-  CHANGED_FILES=($(git diff --name-only $TRAVIS_COMMIT_RANGE | grep -E '\.py$' || true))
+  CHANGED_FILES=($(git diff --name-only $TRAVIS_COMMIT_RANGE | grep -E '\.py$' | grep -vE '^setup\.py$' || true))
 else
   # Check all Python files
   CHANGED_FILES=($(find . -name '*.py' -a -not -name setup.py))
@@ -66,6 +66,7 @@ fi
 
 ERRCHECK=
 for PY in "${CHANGED_FILES[@]}"; do
+  [[ -e "$PY" ]] || continue
   ERR=
   swallow "$PY: linting" pylint "$PY" || ERR=1
   swallow "$PY: checking copyright notice" check_copyright "$PY" || ERR=1
