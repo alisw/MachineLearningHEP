@@ -1,26 +1,13 @@
 # If python build in source tree
 build/*
 dist/*
-dataframes_*
-plots_*
-output_*
 *.egg-info
-.DS_Store
-*.json
-*.h5
 **/__pycache__
-*.vscode
-machine_learning_hep/data/**/*.root
-
 
 # Python compiled
 *.pyc
 *.pyd
 *.pyo
-
-# Other Python stuff
-**/.mypy_cache
-*.egg-info
 
 # object files
 *.slo
@@ -44,9 +31,20 @@ machine_learning_hep/data/**/*.root
 *.out
 *.app
 
+#input and output data
+machine_learning_hep/data/**/*.root
+dataframes_*
+plots_*
+output_*
+*.json
+*.h5
+
 # editor backups/cached
 *.swp
 *~
+*.vscode
+**/.mypy_cache
+setup.cfg
 
 # macOS
 .DS_Store
