@@ -17,15 +17,19 @@ import datetime
 import sys
 import base64
 import binascii
+
+
+
 from io import BytesIO, StringIO
+import uproot
 from flask import Flask, render_template, request
 from flask import send_file
 
 import matplotlib
 matplotlib.use('TkAgg')
-import matplotlib.pyplot as plt
-import numpy as np
-import uproot
+import matplotlib.pyplot as plt # pylint: disable=wrong-import-position
+from machine_learning_hep.functions import vardistplot # pylint: disable=wrong-import-position
+
 
 APP = Flask(__name__)
 
@@ -47,14 +51,15 @@ def post_form():
                        "machine_learning_hep/data/inputroot/"
                        "AnalysisResults_Lambdac_Data_CandBased_skimmed.root")
     tree = file["fTreeLcFlagged"]
-    df = tree.pandas.df(["inv_mass_ML", "pt_cand_ML", "d_len_ML", "d_len_xy_ML"])
+    mylistvariables = ["inv_mass_ML", "pt_cand_ML", "d_len_ML", "d_len_xy_ML"]
+    df = tree.pandas.df(mylistvariables)
     data = df.inv_mass_ML
     plt.figure(figsize=(15, 15))
     plt.hist(data)
-    my_stringIObytes = BytesIO()
-    plt.savefig(my_stringIObytes, format='png')
-    my_stringIObytes.seek(0)
-    pngData = binascii.b2a_base64(my_stringIObytes.read())
+#     imageIO_vardist, imageIO_scatterplot, imageIO_scatterplot, imageIO_scatterplot \
+    imageIO_vardist = vardistplot(df, df, mylistvariables, "./")
+
+    pngData = binascii.b2a_base64(imageIO_vardist.read())
     print(pngData.decode("utf-8"))
     return render_template('display.html', responseString=responseString,
                            plotBase64=pngData.decode("utf-8"))

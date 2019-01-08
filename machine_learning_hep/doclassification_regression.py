@@ -17,7 +17,7 @@ main macro for running the study
 """
 import argparse
 import sys
-from sklearn.utils import shuffle
+# from sklearn.utils import shuffle
 # from sklearn.metrics import make_scorer, accuracy_score
 from machine_learning_hep.general import get_database_ml_parameters, getdataframe
 from machine_learning_hep.general import createstringselection, filterdataframe
@@ -112,7 +112,7 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
     if loadsampleoption == 1:
         df_sig = getdataframe(filesig, trename, var_all)
         df_bkg = getdataframe(filebkg, trename, var_all)
-        df_ml_train, df_ml_test, df_sig_train, df_bkg_train, df_sig_test, df_bkg_test, \
+        _, df_ml_test, df_sig_train, df_bkg_train, _, _, \
         x_train, y_train, x_test, y_test = \
             create_mlsamples(df_sig, df_bkg, sel_signal, sel_bkg, rnd_shuffle,
                              var_skimming, varmin, varmax, var_signal, var_training,

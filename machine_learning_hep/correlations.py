@@ -15,7 +15,7 @@
 """
 Methods for correlation and variable plots
 """
-
+from io import BytesIO
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -36,6 +36,10 @@ def vardistplot(dataframe_sig_, dataframe_bkg_, mylistvariables_, output_):
         i = i+1
     plotname = output_+'/variablesDistribution.png'
     plt.savefig(plotname, bbox_inches='tight')
+    imagebytesIO = BytesIO()
+    plt.savefig(imagebytesIO, format='png')
+    imagebytesIO.seek(0)
+    return imagebytesIO
 
 
 def scatterplot(dataframe_sig_, dataframe_bkg_, mylistvariablesx_, mylistvariablesy_, output_):
@@ -60,6 +64,10 @@ def scatterplot(dataframe_sig_, dataframe_bkg_, mylistvariablesx_, mylistvariabl
         i = i+1
     plotname = output_+'/variablesScatterPlot.png'
     plt.savefig(plotname, bbox_inches='tight')
+    imagebytesIO = BytesIO()
+    plt.savefig(imagebytesIO, format='png')
+    imagebytesIO.seek(0)
+    return imagebytesIO
 
 
 def correlationmatrix(dataframe, output_, label):
@@ -71,3 +79,7 @@ def correlationmatrix(dataframe, output_, label):
         cmap=sns.diverging_palette(220, 10, as_cmap=True), square=True, ax=ax)
     plotname = output_+'/correlationmatrix'+label+'.png'
     plt.savefig(plotname, bbox_inches='tight')
+    imagebytesIO = BytesIO()
+    plt.savefig(imagebytesIO, format='png')
+    imagebytesIO.seek(0)
+    return imagebytesIO

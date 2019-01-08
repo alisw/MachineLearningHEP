@@ -48,7 +48,8 @@ def create_mlsamples(df_sig, df_bkg, sel_signal, sel_bkg, rnd_shuffle,  # pylint
 
 
 def do_correlation(df_sig_train, df_bkg_train, var_all, var_corr_x, var_corr_y, plotdir):
-    vardistplot(df_sig_train, df_bkg_train, var_all, plotdir)
-    scatterplot(df_sig_train, df_bkg_train, var_corr_x, var_corr_y, plotdir)
-    correlationmatrix(df_sig_train, plotdir, "signal")
-    correlationmatrix(df_bkg_train, plotdir, "background")
+    imageIO_vardist = vardistplot(df_sig_train, df_bkg_train, var_all, plotdir)
+    imageIO_scatterplot = scatterplot(df_sig_train, df_bkg_train, var_corr_x, var_corr_y, plotdir)
+    imageIO_corr_sig = correlationmatrix(df_sig_train, plotdir, "signal")
+    imageIO_corr_bkg = correlationmatrix(df_bkg_train, plotdir, "background")
+    return imageIO_vardist, imageIO_scatterplot, imageIO_corr_sig, imageIO_corr_bkg
