@@ -32,6 +32,11 @@ def get_database_ml_gridsearch():
     return yaml.safe_load(stream)
 
 
+def get_database_signifopt():
+    stream = resource_stream("machine_learning_hep.data", "database_signifopt.yml")
+    return yaml.safe_load(stream)
+
+
 def split_df_sigbkg(dataframe_, var_signal_):
     dataframe_sig_ = dataframe_.loc[dataframe_[var_signal_] == 1]
     dataframe_bkg_ = dataframe_.loc[dataframe_[var_signal_] == 0]

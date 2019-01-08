@@ -1,0 +1,14 @@
+Ds:
+  common:
+    filename: '../fonll/fo_pp_d0meson_5TeV_y0p5.csv'
+    FF: 0.1281
+    sigma_MB: 51.2e-3
+    BR: 2.27e-2
+    mass: 1.972
+    n_events: 9.9586758e+08
+    mass_fit_lim: [1.75, 2.15]
+  pt6_8:
+    f_prompt: 0.9
+    acc_times_pre_sel: 0.39
+    sigma: 0.009
+    bin_width: 0.008
