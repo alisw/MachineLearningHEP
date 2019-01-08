@@ -109,3 +109,6 @@ dopltregressionxy:
 
 dogridsearch:
   default: 0
+
+dosignifopt:
+  default: 0
