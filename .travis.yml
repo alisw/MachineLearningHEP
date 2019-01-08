@@ -1,4 +1,3 @@
-enabled: false
 dist: trusty
 language: python
 python:
