@@ -13,7 +13,7 @@
 #############################################################################
 
 """
-Methods to: read and write ROOT TNtuple
+Methods to: read and write a ROOT TNtuple
 """
 
 import array

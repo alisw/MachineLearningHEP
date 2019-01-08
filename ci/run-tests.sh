@@ -56,11 +56,19 @@ EOF
   return 0
 }
 
+if [[ $TRAVIS_PULL_REQUEST != "false" && $TRAVIS_COMMIT_RANGE ]]; then
+  # Only check changed Python files (snappier)
+  CHANGED_FILES=($(git diff --name-only $TRAVIS_COMMIT_RANGE | grep -E '\.py$' || true))
+else
+  # Check all Python files
+  CHANGED_FILES=($(find . -name '*.py' -a -not -name setup.py))
+fi
+
 ERRCHECK=
-while read PY; do
+for PY in "${CHANGED_FILES[@]}"; do
   ERR=
   swallow "$PY: linting" pylint "$PY" || ERR=1
   swallow "$PY: checking copyright notice" check_copyright "$PY" || ERR=1
   [[ ! $ERR ]] || ERRCHECK="$ERRCHECK $PY"
-done < <(find . -name '*.py' -a -not -name setup.py)
+done
 [[ ! $ERRCHECK ]] || { printf "\n\nErrors found in:$ERRCHECK\n" >&2; exit 1; }
