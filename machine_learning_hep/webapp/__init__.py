@@ -27,7 +27,7 @@ from machine_learning_hep.functions import create_mlsamples, do_correlation
 APP = Flask(__name__)
 
 
-@APP.route('/') 
+@APP.route('/')
 # https://test-app-227515.appspot.com
 def root():
     # For the sake of example, use static information to inflate the template.
