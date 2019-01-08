@@ -15,7 +15,7 @@
 """
 Methods to: model performance evaluation
 """
-
+from io import BytesIO
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -68,6 +68,10 @@ def plot_cross_validation_mse(names_, df_scores_, suffix_, folder):
         i += 1
     plotname = folder+'/scoresRME%s.png' % (suffix_)
     plt.savefig(plotname)
+    img_scoresRME = BytesIO()
+    plt.savefig(img_scoresRME, format='png')
+    img_scoresRME.seek(0)
+    return img_scoresRME
 
 
 def plotdistributiontarget(names_, testset, myvariablesy, suffix_, folder):
@@ -87,6 +91,10 @@ def plotdistributiontarget(names_, testset, myvariablesy, suffix_, folder):
     plt.legend(loc="center right")
     plotname = folder+'/distributionregression%s.png' % (suffix_)
     plt.savefig(plotname)
+    img_dist_reg = BytesIO()
+    plt.savefig(img_dist_reg, format='png')
+    img_dist_reg.seek(0)
+    return img_dist_reg
 
 
 def plotscattertarget(names_, testset, myvariablesy, suffix_, folder):
@@ -104,6 +112,10 @@ def plotscattertarget(names_, testset, myvariablesy, suffix_, folder):
         i += 1
     plotname = folder+'/scatterplotregression%s.png' % (suffix_)
     plt.savefig(plotname)
+    img_scatt_reg = BytesIO()
+    plt.savefig(img_scatt_reg, format='png')
+    img_scatt_reg.seek(0)
+    return img_scatt_reg
 
 
 def confusion(names_, classifiers_, suffix_, x_train, y_train, cvgen, folder):
@@ -130,6 +142,9 @@ def confusion(names_, classifiers_, suffix_, x_train, y_train, cvgen, folder):
         i += 1
     plotname = folder+'/confusion_matrix%s_Diag0.png' % (suffix_)
     plt.savefig(plotname)
+    img_confmatrix_dg0 = BytesIO()
+    plt.savefig(img_confmatrix_dg0, format='png')
+    img_confmatrix_dg0.seek(0)
 
     figure2 = plt.figure(figsize=(20, 15))  # pylint: disable=unused-variable
     plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.4, hspace=0.2)
@@ -153,6 +168,10 @@ def confusion(names_, classifiers_, suffix_, x_train, y_train, cvgen, folder):
         i += 1
     plotname = folder+'/confusion_matrix%s.png' % (suffix_)
     plt.savefig(plotname)
+    img_confmatrix = BytesIO()
+    plt.savefig(img_confmatrix, format='png')
+    img_confmatrix.seek(0)
+    return img_confmatrix_dg0, img_confmatrix
 
 
 def precision_recall(names_, classifiers_, suffix_, x_train, y_train, cvgen, folder):
@@ -174,6 +193,9 @@ def precision_recall(names_, classifiers_, suffix_, x_train, y_train, cvgen, fol
         i += 1
     plotname = folder+'/precision_recall%s.png' % (suffix_)
     plt.savefig(plotname)
+    img_precision_recall = BytesIO()
+    plt.savefig(img_precision_recall, format='png')
+    img_precision_recall.seek(0)
 
     figure2 = plt.figure(figsize=(20, 15))  # pylint: disable=unused-variable
     i = 1
@@ -194,6 +216,11 @@ def precision_recall(names_, classifiers_, suffix_, x_train, y_train, cvgen, fol
         i += 1
     plotname = folder+'/ROCcurve%s.png' % (suffix_)
     plt.savefig(plotname)
+    img_ROC = BytesIO()
+    plt.savefig(img_ROC, format='png')
+    img_ROC.seek(0)
+
+    return img_precision_recall, img_ROC
 
 
 def plot_learning_curves(names_, classifiers_, suffix_, folder, x_data, y_data, npoints):
@@ -225,3 +252,7 @@ def plot_learning_curves(names_, classifiers_, suffix_, folder, x_data, y_data, 
         i += 1
     plotname = folder+'/learning_curve%s.png' % (suffix_)
     plt.savefig(plotname)
+    imagebytesIO = BytesIO()
+    plt.savefig(imagebytesIO, format='png')
+    imagebytesIO.seek(0)
+    return imagebytesIO
