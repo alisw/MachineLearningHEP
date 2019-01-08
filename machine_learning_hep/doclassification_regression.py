@@ -219,7 +219,7 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
 def main():
     parser = argparse.ArgumentParser()
     # Require a config file with some plotting info
-    parser.add_argument("-c", "--config", help="config YAML file, do -d <path> to get "
+    parser.add_argument("-c", "--config", help="config YAML file, do -d <path> to get " \
                                                "YAML file with defaults at <path>")
     parser.add_argument("--dump-default-config", help="get default YAML config file")
 

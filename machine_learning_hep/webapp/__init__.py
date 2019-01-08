@@ -130,14 +130,13 @@ def post_form():  # pylint: disable=too-many-locals, too-many-statements
     imageIO_plot_learning_curves = binascii.b2a_base64(imageIO_plot_learning_curves.read())
 
     return render_template('display.html',
-                           imageIO_vardist=imageIO_vardist.decode("utf-8"),
-                           imageIO_scatterplot=imageIO_scatterplot.decode("utf-8"),
-                           imageIO_corr_sig=imageIO_corr_sig.decode("utf-8"),
-                           imageIO_corr_bkg=imageIO_corr_bkg.decode("utf-8"),
-                           imageIO_precision_recall=imageIO_precision_recall.decode("utf-8"),
-                           imageIO_ROC=imageIO_ROC.decode("utf-8"),
-                           imageIO_plot_learning_curves=imageIO_plot_learning_curves.decode("utf-8")
-                           )
+                           imageIO_vardist=imageIO_vardist.decode("utf-8"), \
+                           imageIO_scatterplot=imageIO_scatterplot.decode("utf-8"), \
+                           imageIO_corr_sig=imageIO_corr_sig.decode("utf-8"), \
+                           imageIO_corr_bkg=imageIO_corr_bkg.decode("utf-8"), \
+                           imageIO_precision_recall=imageIO_precision_recall.decode("utf-8"), \
+                           imageIO_ROC=imageIO_ROC.decode("utf-8"), \
+                           imageIO_plot_learning_curves=imageIO_plot_learning_curves.decode("utf-8"))
 
 #     print (names)
 
