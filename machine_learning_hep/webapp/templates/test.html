@@ -1,0 +1,87 @@
+<!-- this html file is the main file needed to run the app. 
+It represents the main file that is run in the web.
+Some basic information about the document
+
+<!doctype html> is what define the version of HTML to be used
+<head> indicate the title and options that are not shown in the browser
+<body> is what will be shown
+<h1-6> different sizes of text
+<p> a new paragraph or line
+ --> 
+<!doctype html>
+<html>
+<head>
+  <title>ALICE Machine learning interface</title>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+  <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+<script> 
+  // this is a java script that can be put in the head and used in the body.
+  // s1, s2 are strings with the name of the html element 
+  function populate(s1,s2){
+    // this is the way in which I define variables with the element of the html file
+    var s1 = document.getElementById(s1);  
+    var s2 = document.getElementById(s2);
+    // innerHTML can access the value of an existing element. 
+    // Below I am setting the second option list to zero
+    s2.innerHTML = "";
+    if(s1.value == "JetTagging"){
+      var optionArray = ["gluonQuark"];
+    } else if(s1.value == "HeavyFlavour"){
+      var optionArray = ["Ds","Lc"];
+    }
+    for (var i = 0; i < optionArray.length; i++) {
+      var newOption = document.createElement("option");
+      newOption.value = optionArray[i];
+      newOption.innerHTML = optionArray[i];
+      s2.appendChild(newOption);
+    }
+  }
+</script>
+</head>
+<body>
+  <h1> Classification package for HEP</h1>
+  <hr />
+  Choose classification subtype:
+  <form action="/formSubmit" method="post">
+    <select id="slct1" name="slct1" onchange="populate(this.id,'slct2')">
+      <option value=""></option>
+      <option value="JetTagging">JetTagging</option>
+      <option value="HeavyFlavour">HeavyFlavour</option>
+      <option value="Nuclei">Nuclei</option>
+    </select>
+    <hr />
+    Choose analysis:
+    <select id="slct2" name="slct2"></select>
+    <hr />
+    <button type="submit" class="btn btn-default" style="background:lightgreen">Submit</button>
+  </form>
+
+
+</body>
+</html>
+
+
+<!-- 
+<script type="text/javascript">
+  (function() {
+    var ga = document.createElement('script'); 
+    ga.type = 'text/javascript'; ga.async = true;
+    var s = document.getElementsByTagName('script')[0]; 
+//     s.parentNode.insertBefore(ga, s);
+  })();
+</script>
+ -->
+<!-- 
+<script>
+function myFunction() {
+  var mlsubtype=document.getElementById("slct1").value;
+  var analysis=document.getElementById("slct2").value;
+  document.write(mlsubtype)
+  document.write("<br>"); // 3 new lines!  My oh my!
+  document.write(analysis)
+}
+</script>
+ -->
+
+</body>
+</html>

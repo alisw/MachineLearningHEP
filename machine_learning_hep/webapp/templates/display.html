@@ -1,0 +1,27 @@
+<!-- this html file is the main file needed to run the app. 
+It represents the main file that is run in the web.
+Some basic information about the document
+
+<!doctype html> is what define the version of HTML to be used
+<head> indicate the title and options that are not shown in the browser
+<body> is what will be shown
+<h1-6> different sizes of text
+<p> a new paragraph or line
+
+ --> 
+<!doctype html>
+<html>
+<head>
+  <title>ALICE Machine learning interface</title>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+  <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  <title>{{ title }} - image</title>
+</head>
+<body>
+  <h1>ALICE Machine learning web interface</h1>
+  <p>{{ responseString }}</p>
+  <p>{{ data }}</p>
+  <img src="data:image/png;base64, {{ plotBase64 }}" alt="Image Placeholder" height="500">
+
+</body>
+</html>
