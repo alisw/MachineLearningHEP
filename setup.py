@@ -70,7 +70,7 @@ setup(
   # requirements files see:
   # https://packaging.python.org/en/latest/requirements.html
   install_requires=[ "numpy", "pandas", "scipy", "matplotlib", "seaborn", "uproot", "scikit-learn",
-                     "xgboost", "keras", "tensorflow", "PyYaml", "pylint" ],
+                     "xgboost", "keras", "tensorflow", "PyYaml", "pylint", "Flask", "Jinja2" ],
 
   python_requires='>=3.6, <3.7',
 
@@ -102,6 +102,7 @@ setup(
   entry_points={
       "console_scripts": [ "ml-get-data = machine_learning_hep.ml_get_data:main",
                            "ml-doclassification-regression = " \
-                           "machine_learning_hep.doclassification_regression:main"]
+                           "machine_learning_hep.doclassification_regression:main",
+                           "ml-webapp = machine_learning_hep.webapp:main" ]
   }
 )

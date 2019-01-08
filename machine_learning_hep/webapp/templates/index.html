@@ -1,0 +1,61 @@
+<!-- this html file is the main file needed to run the app. 
+It represents the main file that is run in the web.
+Some basic information about the document
+
+<!doctype html> is what define the version of HTML to be used
+<head> indicate the title and options that are not shown in the browser
+<body> is what will be shown
+<h1-6> different sizes of text
+<p> a new paragraph or line
+
+ --> 
+<!doctype html>
+<html>
+<head>
+<script>
+
+</script>
+  <title>ALICE Machine learning interface</title>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+  <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+  <h1>ALICE Machine learning web interface</h1>
+  
+  <form>
+  Select your ML algorithm type:
+  <select input="MLtype">
+    <option value="Classification">Classification</option>
+    <option value="Regression">Regression</option>
+  </select>
+  <br><br>
+  <form>
+  Select your classification class:
+  <select input="MLtype">
+    <option value="Nuclei">Nuclei</option>
+    <option value="JetTagging">Jet Tagging</option>
+    <option value="HeavyFlavour">Heavy Flavour</option>
+  </select>
+  <br><br>
+  <form>
+  Select your analysis option:
+  <select input="case">
+    <option value="Ds">Ds</option>
+    <option value="Lc">Lc</option>
+    <option value="D0">D0</option>
+  </select>
+  </form>
+
+<p id="demo"></p>
+
+
+<!-- 
+  <h2>Last 10 visits</h2>
+  {% for time in times %}
+    <p>{{ time }}</p>
+  {% endfor %}
+ -->
+
+</body>
+</html>
