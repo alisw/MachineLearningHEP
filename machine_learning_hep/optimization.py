@@ -114,14 +114,8 @@ def study_signif(part_label, pt_min, pt_max, sig_set, bkg_set, names, target_var
     data_ml = get_database_ml_parameters()[part_label]
     data_signifopt = get_database_signifopt()[part_label]
     common_dict = data_signifopt['common']
-    if not common_dict:
-        print("Necessary parameters not implemented in the configuration file")
-        return
     pt_tag = f'pt{pt_min}_{pt_max}'
     pt_specific_dict = data_signifopt[pt_tag]
-    if not pt_specific_dict:
-        print("Parameters for this pt interval not implemented in the configuration file")
-        return
 
     plot_fonll(common_dict, part_label, suffix, plot_dir)
     sig_before_sel = calc_sig_dmeson(common_dict, pt_specific_dict, pt_min, pt_max)
