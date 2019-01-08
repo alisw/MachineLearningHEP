@@ -22,10 +22,10 @@ from flask import Flask, render_template, request
 from flask import send_file
 
 import matplotlib
+matplotlib.use('TkAgg')
 import matplotlib.pyplot as plt
 import numpy as np
 import uproot
-matplotlib.use('TkAgg')
 
 APP = Flask(__name__)
 
