@@ -19,6 +19,7 @@ from sklearn.utils import shuffle
 # from sklearn.metrics import make_scorer, accuracy_score
 from machine_learning_hep.general import filterdataframe, split_df_sigbkg
 from machine_learning_hep.preparesamples import prep_mlsamples
+from machine_learning_hep.correlations import vardistplot, scatterplot, correlationmatrix
 
 
 def create_mlsamples(df_sig, df_bkg, sel_signal, sel_bkg, rnd_shuffle,  # pylint: disable=too-many-arguments
@@ -46,3 +47,8 @@ def create_mlsamples(df_sig, df_bkg, sel_signal, sel_bkg, rnd_shuffle,  # pylint
         x_train, y_train, x_test, y_test
 
 
+def do_correlation(df_sig_train, df_bkg_train, var_all, var_corr_x, var_corr_y, plotdir):
+    vardistplot(df_sig_train, df_bkg_train, var_all, plotdir)
+    scatterplot(df_sig_train, df_bkg_train, var_corr_x, var_corr_y, plotdir)
+    correlationmatrix(df_sig_train, plotdir, "signal")
+    correlationmatrix(df_bkg_train, plotdir, "background")
