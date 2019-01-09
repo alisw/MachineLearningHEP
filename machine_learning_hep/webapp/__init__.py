@@ -35,6 +35,7 @@ from machine_learning_hep.mlperformance import plot_cross_validation_mse, plot_l
 from machine_learning_hep.mlperformance import precision_recall
 from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perform_plot_gridsearch
 
+
 APP = Klein()
 DATA_PREFIX = os.path.expanduser("~/.machine_learning_hep")
 
@@ -44,6 +45,7 @@ JENV.filters["render_image"] = lambda x: \
     (f'<img src="data:image/png;base64, {binascii.b2a_base64(x.read()).decode("utf-8")}"' +
      'alt="ML plot" height="500">') if x else "<!-- no such image -->"
 
+
 def jfilter_tab_header(img, title, label, active=False):  # pylint: disable=unused-argument
     disabled = "" if img else "disabled"
     active = "active" if active else ""
@@ -52,10 +54,11 @@ def jfilter_tab_header(img, title, label, active=False):  # pylint: disable=unus
             <a class="nav-link {disabled} {active}" id="{label}-tab" data-toggle="tab" href="#{label}" role="tab" aria-controls="{label}" aria-selected="false">{title}</a>
         </li>"""
 
+
 def jfilter_tab_content(img, title, label, active=False):
     image = '<img src="data:image/png;base64, ' + \
             f'{binascii.b2a_base64(img.read()).decode("utf-8")}"' + \
-            ' alt="ML plot" height="500">' if img else "<!-- no such image -->"
+            ' alt="ML plot" height="1000">' if img else "<!-- no such image -->"
     active = "show active" if active else ""
     return f"""
         <div class="tab-pane fade {active}" id="{label}" role="tabpanel" aria-labelledby="{label}-tab">
@@ -63,8 +66,10 @@ def jfilter_tab_content(img, title, label, active=False):
             <div style="text-align: center;">{title}</div>
         </div>"""
 
+
 JENV.globals["tab_header"] = jfilter_tab_header
 JENV.globals["tab_content"] = jfilter_tab_content
+
 
 @APP.route("/static/", branch=True)
 def static(req):  # pylint: disable=unused-argument
@@ -73,10 +78,12 @@ def static(req):  # pylint: disable=unused-argument
     staticPrefix = resource_filename(__name__, "static")
     return File(staticPrefix)
 
+
 @APP.route("/")
 def root(req):  # pylint: disable=unused-argument
     """Serve the home page."""
     return JENV.get_template("test.html").render()
+
 
 def get_form(req, label, var_type=str, get_list=False):  # pylint: disable=unused-argument
     """Get elements from a form in an intuitive way. `label` is a string. If `type` is not specified
@@ -93,6 +100,7 @@ def get_form(req, label, var_type=str, get_list=False):  # pylint: disable=unuse
         val.append(i)
     return val if get_list else val[0]
 
+
 @APP.route('/formSubmit', methods=["POST"])
 def post_form(req):  # pylint: disable=too-many-locals, too-many-statements
 
@@ -107,6 +115,7 @@ def post_form(req):  # pylint: disable=too-many-locals, too-many-statements
     sel_bkg = data[case]["sel_bkg"]
     var_training = data[case]["var_training"]
     var_corr_x, var_corr_y = data[case]["var_correlation"]
+    var_skimming = [data[case]["var_mom"]]
 
 #     filedata, filemc = data[case]["data_mc_files"]
 #     var_target = data[case]["var_target"]
@@ -114,17 +123,6 @@ def post_form(req):  # pylint: disable=too-many-locals, too-many-statements
 
     filesig = os.path.join(DATA_PREFIX, filesig)
     filebkg = os.path.join(DATA_PREFIX, filebkg)
-    var_skimming = ["pt_cand_ML"]
-    varmin = [0]
-    varmax = [10]
-    rnd_shuffle = 12
-    nevt_sig = 30
-    nevt_bkg = 30
-    test_frac = 0.2
-    rnd_splt = 12
-    plotdir = "./"
-    nkfolds = 10
-    ncores = 1
 
     activate_scikit = get_form(req, 'activate_scikit', var_type=bool)
     activate_xgboost = get_form(req, 'activate_xgboost', var_type=bool)
@@ -137,6 +135,16 @@ def post_form(req):  # pylint: disable=too-many-locals, too-many-statements
     docrossvalidation = get_form(req, 'docrossvalidation', var_type=bool)
     doimportance = get_form(req, 'doimportance', var_type=bool)
     dogridsearch = get_form(req, 'dogridsearch', var_type=bool)
+
+    rnd_shuffle = int(get_form(req, 'rnd_shuffle', var_type=int))
+    nevt_sig = int(get_form(req, 'nevt_sig', var_type=int))
+    nevt_bkg = int(get_form(req, 'nevt_bkg', var_type=int))
+    test_frac = float(get_form(req, 'test_frac', var_type=float))
+    rnd_splt = int(get_form(req, 'rnd_splt', var_type=int))
+    nkfolds = int(get_form(req, 'nkfolds', var_type=int))
+    ncores = int(get_form(req, 'ncores', var_type=int))
+    varmin = [int(get_form(req, 'min_var_skimming', var_type=int))]
+    varmax = [int(get_form(req, 'max_var_skimming', var_type=int))]
 
     string_selection = createstringselection(var_skimming, varmin, varmax)
     suffix = f"nevt_sig{nevt_sig}_nevt_bkg{nevt_bkg}_" \
@@ -184,7 +192,7 @@ def post_form(req):  # pylint: disable=too-many-locals, too-many-statements
 
     if docorrelation:
         imageIO_vardist, imageIO_scatterplot, imageIO_corr_sig, imageIO_corr_bkg = \
-        do_correlation(df_sig_train, df_bkg_train, var_all, var_corr_x, var_corr_y, plotdir)
+            do_correlation(df_sig_train, df_bkg_train, var_all, var_corr_x, var_corr_y, plotdir)
 
     if activate_scikit:
         classifiers_scikit, names_scikit = getclf_scikit(mltype)
@@ -219,7 +227,6 @@ def post_form(req):  # pylint: disable=too-many-locals, too-many-statements
                                              nkfolds, ncores)
         img_scoresRME = plot_cross_validation_mse(names, df_scores, suffix, plotdir)
 
-
     if doimportance:
         img_import = importanceplotall(var_training, names_scikit+names_xgboost,
                                        classifiers_scikit+classifiers_xgboost, suffix, plotdir)
@@ -240,18 +247,6 @@ def post_form(req):  # pylint: disable=too-many-locals, too-many-statements
         img_gridsearch = perform_plot_gridsearch(
             names_cv, dfscore, par_grid_cv, par_grid_cv_keys, var_param, plotdir, suffix, 0.1)
 
-    #imageIO_vardist = binascii.b2a_base64(imageIO_vardist.read())
-    #imageIO_scatterplot = binascii.b2a_base64(imageIO_scatterplot.read())
-    #imageIO_corr_sig = binascii.b2a_base64(imageIO_corr_sig.read())
-    #imageIO_corr_bkg = binascii.b2a_base64(imageIO_corr_bkg.read())
-
-    # imageIO_precision_recall = binascii.b2a_base64(imageIO_precision_recall.read())
-    # imageIO_ROC = binascii.b2a_base64(imageIO_ROC.read())
-    # imageIO_plot_learning_curves = binascii.b2a_base64(imageIO_plot_learning_curves.read())
-    # img_scoresRME = binascii.b2a_base64(img_scoresRME.read())
-    # img_import = binascii.b2a_base64(img_import.read())
-    # img_gridsearch = binascii.b2a_base64(img_gridsearch.read())
-
     return JENV.get_template("display.html").render(
         imageIO_vardist=imageIO_vardist,
         imageIO_scatterplot=imageIO_scatterplot,
@@ -263,6 +258,7 @@ def post_form(req):  # pylint: disable=too-many-locals, too-many-statements
         img_scoresRME=img_scoresRME,
         img_import=img_import,
         img_gridsearch=img_gridsearch)
+
 
 def main():
     APP.run(host="127.0.0.1", port=8080)
