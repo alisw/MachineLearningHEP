@@ -17,6 +17,8 @@ main macro for running the study
 """
 import argparse
 import sys
+import os.path
+
 # from sklearn.utils import shuffle
 # from sklearn.metrics import make_scorer, accuracy_score
 from machine_learning_hep.general import get_database_ml_parameters, getdataframe
@@ -38,6 +40,8 @@ from machine_learning_hep.mlperformance import plotdistributiontarget, plotscatt
 from machine_learning_hep.mlperformance import precision_recall
 from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perform_plot_gridsearch
 
+
+DATA_PREFIX = os.path.expanduser("~/.machine_learning_hep")
 
 def doclassification_regression(config):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 
@@ -108,6 +112,9 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
     names_scikit = []
     names_xgboost = []
     names_keras = []
+
+    filesig = os.path.join(DATA_PREFIX, filesig)
+    filebkg = os.path.join(DATA_PREFIX, filebkg)
 
     trainedmodels = []
 
