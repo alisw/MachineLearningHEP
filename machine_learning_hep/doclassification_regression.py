@@ -17,16 +17,15 @@ main macro for running the study
 """
 import argparse
 import sys
-from sklearn.utils import shuffle
+# from sklearn.utils import shuffle
 # from sklearn.metrics import make_scorer, accuracy_score
 from machine_learning_hep.general import get_database_ml_parameters, getdataframe
+from machine_learning_hep.general import createstringselection, filterdataframe
 from machine_learning_hep.general import get_database_ml_gridsearch
 from machine_learning_hep.root import write_tree
-from machine_learning_hep.general import filterdataframe, split_df_sigbkg, createstringselection
+from machine_learning_hep.functions import create_mlsamples, do_correlation
 from machine_learning_hep.io import parse_yaml, checkdir
 from machine_learning_hep.config import assert_config, dump_default_config
-from machine_learning_hep.preparesamples import prep_mlsamples
-from machine_learning_hep.correlations import vardistplot, scatterplot, correlationmatrix
 from machine_learning_hep.pca import getdataframe_standardised, get_pcadataframe_pca
 from machine_learning_hep.pca import plotvariance_pca
 from machine_learning_hep.models import getclf_scikit, getclf_xgboost, getclf_keras
@@ -40,7 +39,7 @@ from machine_learning_hep.mlperformance import precision_recall
 from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perform_plot_gridsearch
 
 
-def doclassification_regression(config): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+def doclassification_regression(config):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 
     mltype = config['mltype']
     mlsubtype = config['mlsubtype']
@@ -110,35 +109,17 @@ def doclassification_regression(config): # pylint: disable=too-many-locals, too-
 
     trainedmodels = []
 
-    x_train = []
-    y_train = []
-
     if loadsampleoption == 1:
         df_sig = getdataframe(filesig, trename, var_all)
         df_bkg = getdataframe(filebkg, trename, var_all)
-        df_sig = filterdataframe(df_sig, var_skimming, varmin, varmax)
-        df_bkg = filterdataframe(df_bkg, var_skimming, varmin, varmax)
-        df_sig = df_sig.query(sel_signal)
-        df_bkg = df_bkg.query(sel_bkg)
-        df_sig = shuffle(df_sig, random_state=rnd_shuffle)
-        df_bkg = shuffle(df_bkg, random_state=rnd_shuffle)
-        df_ml_train, df_ml_test = prep_mlsamples(df_sig, df_bkg, var_signal, nevt_sig,
-                                                 nevt_bkg, test_frac, rnd_splt)
-        df_sig_train, df_bkg_train = split_df_sigbkg(df_ml_train, var_signal)
-        df_sig_test, df_bkg_test = split_df_sigbkg(df_ml_test, var_signal)
-        print("events for ml train %d and test %d" % (len(df_ml_train), len(df_ml_test)))
-        print("events for signal train %d and test %d" % (len(df_sig_train), len(df_sig_test)))
-        print("events for bkg train %d and test %d" % (len(df_bkg_train), len(df_bkg_test)))
-        x_train = df_ml_train[var_training]
-        y_train = df_ml_train[var_signal]
-        x_test = df_ml_test[var_training]
-        y_test = df_ml_test[var_signal]
+        _, df_ml_test, df_sig_train, df_bkg_train, _, _, \
+        x_train, y_train, x_test, y_test = \
+            create_mlsamples(df_sig, df_bkg, sel_signal, sel_bkg, rnd_shuffle,
+                             var_skimming, varmin, varmax, var_signal, var_training,
+                             nevt_sig, nevt_bkg, test_frac, rnd_splt)
 
     if docorrelation == 1:
-        vardistplot(df_sig_train, df_bkg_train, var_all, plotdir)
-        scatterplot(df_sig_train, df_bkg_train, var_corr_x, var_corr_y, plotdir)
-        correlationmatrix(df_sig_train, plotdir, "signal")
-        correlationmatrix(df_bkg_train, plotdir, "background")
+        do_correlation(df_sig_train, df_bkg_train, var_all, var_corr_x, var_corr_y, plotdir)
 
     if dostandard == 1:
         x_train = getdataframe_standardised(x_train)
@@ -233,6 +214,7 @@ def doclassification_regression(config): # pylint: disable=too-many-locals, too-
             ncores)
         perform_plot_gridsearch(
             names_cv, dfscore, par_grid_cv, par_grid_cv_keys, var_param, plotdir, suffix, 0.1)
+
 
 def main():
     parser = argparse.ArgumentParser()

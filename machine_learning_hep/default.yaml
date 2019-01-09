@@ -1,0 +1,33 @@
+activate_keras: 0
+activate_scikit: 0
+activate_xgboost: 1
+applytodatamc: 1
+case: Lc
+doROC: 1
+doboundary: 1
+docorrelation: 0
+docrossvalidation: 1
+dogridsearch: 0
+doimportance: 1
+dolearningcurve: 1
+dopca: 0
+dopltregressionxy: 0
+dostandard: 0
+dotesting: 1
+dotraining: 1
+loadsampleoption: 1
+mlsubtype: HFmeson
+mltype: BinaryClassification
+ncores: -1
+nevt_bkg: 1000
+nevt_sig: 1000
+nkfolds: 5
+rnd_shuffle: 12
+rnd_splt: 12
+test_frac: 0.2
+var_skimming:
+- pt_cand_ML
+varmax:
+- 4
+varmin:
+- 2

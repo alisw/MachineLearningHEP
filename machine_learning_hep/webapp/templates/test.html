@@ -27,7 +27,7 @@ Some basic information about the document
     if(s1.value == "JetTagging"){
       var optionArray = ["gluonQuark"];
     } else if(s1.value == "HeavyFlavour"){
-      var optionArray = ["Ds","Lc"];
+      var optionArray = ["Lc"];
     }
     for (var i = 0; i < optionArray.length; i++) {
       var newOption = document.createElement("option");
@@ -45,14 +45,27 @@ Some basic information about the document
   <form action="/formSubmit" method="post">
     <select id="slct1" name="slct1" onchange="populate(this.id,'slct2')">
       <option value=""></option>
+<!-- 
       <option value="JetTagging">JetTagging</option>
+ -->
       <option value="HeavyFlavour">HeavyFlavour</option>
+<!-- 
       <option value="Nuclei">Nuclei</option>
+ -->
     </select>
-    <hr />
-    Choose analysis:
+    <p>Choose analysis: </p>
     <select id="slct2" name="slct2"></select>
     <hr />
+    <p>Choose algorithm: </p>
+    <input type="checkbox" name="activate_scikit" checked> SciKit
+    <input type="checkbox" name="activate_xgboost" checked> XGBoost
+    <input type="checkbox" name="activate_keras"> Keras
+    <hr />
+    <p>Choose your action: </p>
+    <input type="checkbox" name="doROC" checked> Produce ROC Curve
+    <input type="checkbox" name="dolearningcurve" checked> Produce Learning Curve
+    <hr />
+
     <button type="submit" class="btn btn-default" style="background:lightgreen">Submit</button>
   </form>
 
