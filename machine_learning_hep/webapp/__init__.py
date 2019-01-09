@@ -40,21 +40,45 @@ DATA_PREFIX = os.path.expanduser("~/.machine_learning_hep")
 
 # Initialize the Jinja2 template engine
 JENV = Environment(loader=PackageLoader("machine_learning_hep.webapp", "templates"))
-JENV.filters["b64"] = lambda x: binascii.b2a_base64(x.read()).decode("utf-8")
+JENV.filters["render_image"] = lambda x: \
+    (f'<img src="data:image/png;base64, {binascii.b2a_base64(x.read()).decode("utf-8")}"' +
+     'alt="ML plot" height="500">') if x else "<!-- no such image -->"
+
+def jfilter_tab_header(img, title, label, active=False):  # pylint: disable=unused-argument
+    disabled = "" if img else "disabled"
+    active = "active" if active else ""
+    return f"""
+        <li class="nav-item">
+            <a class="nav-link {disabled} {active}" id="{label}-tab" data-toggle="tab" href="#{label}" role="tab" aria-controls="{label}" aria-selected="false">{title}</a>
+        </li>"""
+
+def jfilter_tab_content(img, title, label, active=False):
+    image = '<img src="data:image/png;base64, ' + \
+            f'{binascii.b2a_base64(img.read()).decode("utf-8")}"' + \
+            ' alt="ML plot" height="500">' if img else "<!-- no such image -->"
+    active = "show active" if active else ""
+    return f"""
+        <div class="tab-pane fade {active}" id="{label}" role="tabpanel" aria-labelledby="{label}-tab">
+            <div style="text-align: center;">{image}</div>
+            <div style="text-align: center;">{title}</div>
+        </div>"""
+
+JENV.globals["tab_header"] = jfilter_tab_header
+JENV.globals["tab_content"] = jfilter_tab_content
 
 @APP.route("/static/", branch=True)
-def static(req):
+def static(req):  # pylint: disable=unused-argument
     """Serve all static files. Works for pip-installed packages too. See:
        https://klein.readthedocs.io/en/latest/introduction/1-gettingstarted.html#static-files"""
     staticPrefix = resource_filename(__name__, "static")
     return File(staticPrefix)
 
 @APP.route("/")
-def root(req):
+def root(req):  # pylint: disable=unused-argument
     """Serve the home page."""
     return JENV.get_template("test.html").render()
 
-def get_form(req, label, type=str, getList=False):
+def get_form(req, label, var_type=str, get_list=False):  # pylint: disable=unused-argument
     """Get elements from a form in an intuitive way. `label` is a string. If `type` is not specified
        the value of the first element from the form list is returned (use `type=list` to return the
        whole list). If `type` is `bool` then some smart comparison on strings meaning `True` is
@@ -62,12 +86,12 @@ def get_form(req, label, type=str, getList=False):
     if isinstance(label, str):
         label = label.encode()  # to bytes
     val = []
-    for i in req.args.get(label, [b"off"]) if type == bool else req.args[label]:
+    for i in req.args.get(label, [b"off"]) if var_type == bool else req.args[label]:
         i = i.decode("utf-8")  # to string
-        if type == bool:
-            i = i.lower() in [ "on", "true", "yes", "1" ]
+        if var_type == bool:
+            i = i.lower() in ["on", "true", "yes", "1"]
         val.append(i)
-    return val if getList else val[0]
+    return val if get_list else val[0]
 
 @APP.route('/formSubmit', methods=["POST"])
 def post_form(req):  # pylint: disable=too-many-locals, too-many-statements
@@ -102,17 +126,17 @@ def post_form(req):  # pylint: disable=too-many-locals, too-many-statements
     nkfolds = 10
     ncores = 1
 
-    activate_scikit = get_form(req, 'activate_scikit', type=bool)
-    activate_xgboost = get_form(req, 'activate_xgboost', type=bool)
-    activate_keras = get_form(req, 'activate_keras', type=bool)
+    activate_scikit = get_form(req, 'activate_scikit', var_type=bool)
+    activate_xgboost = get_form(req, 'activate_xgboost', var_type=bool)
+    activate_keras = get_form(req, 'activate_keras', var_type=bool)
 
-    docorrelation = get_form(req, 'docorrelation', type=bool)
-    dotraining = get_form(req, 'dotraining', type=bool)
-    doROC = get_form(req, 'doROC', type=bool)
-    dolearningcurve = get_form(req, 'dolearningcurve', type=bool)
-    docrossvalidation = get_form(req, 'docrossvalidation', type=bool)
-    doimportance = get_form(req, 'doimportance', type=bool)
-    dogridsearch = get_form(req, 'dogridsearch', type=bool)
+    docorrelation = get_form(req, 'docorrelation', var_type=bool)
+    dotraining = get_form(req, 'dotraining', var_type=bool)
+    doROC = get_form(req, 'doROC', var_type=bool)
+    dolearningcurve = get_form(req, 'dolearningcurve', var_type=bool)
+    docrossvalidation = get_form(req, 'docrossvalidation', var_type=bool)
+    doimportance = get_form(req, 'doimportance', var_type=bool)
+    dogridsearch = get_form(req, 'dogridsearch', var_type=bool)
 
     string_selection = createstringselection(var_skimming, varmin, varmax)
     suffix = f"nevt_sig{nevt_sig}_nevt_bkg{nevt_bkg}_" \
@@ -139,6 +163,19 @@ def post_form(req):  # pylint: disable=too-many-locals, too-many-statements
 
     df_sig = getdataframe(filesig, trename, var_all)
     df_bkg = getdataframe(filebkg, trename, var_all)
+
+    # Output images
+    imageIO_vardist: BytesIO = None
+    imageIO_scatterplot: BytesIO = None
+    imageIO_corr_sig: BytesIO = None
+    imageIO_corr_bkg: BytesIO = None
+    imageIO_precision_recall: BytesIO = None
+    imageIO_ROC: BytesIO = None
+    imageIO_plot_learning_curves: BytesIO = None
+    img_scoresRME: BytesIO = None
+    img_import: BytesIO = None
+    img_gridsearch: BytesIO = None
+
     # pylint: disable=unused-variable
     _, _, df_sig_train, df_bkg_train, _, _, x_train, y_train, x_test, y_test = \
         create_mlsamples(df_sig, df_bkg, sel_signal, sel_bkg, rnd_shuffle,
@@ -216,18 +253,16 @@ def post_form(req):  # pylint: disable=too-many-locals, too-many-statements
     # img_gridsearch = binascii.b2a_base64(img_gridsearch.read())
 
     return JENV.get_template("display.html").render(
-      imageIO_vardist=imageIO_vardist,
-      imageIO_scatterplot=imageIO_scatterplot,
-      imageIO_corr_sig=imageIO_corr_sig,
-      imageIO_corr_bkg=imageIO_corr_bkg)
-
-            #  imageIO_precision_recall=imageIO_precision_recall.decode("utf-8"), \
-            #  imageIO_ROC=imageIO_ROC.decode("utf-8"), \
-            #  imageIO_plot_learning_curves=imageIO_plot_learning_curves.decode("utf-8"), \
-            #  img_scoresRME=img_scoresRME.decode("utf-8"), \
-            #  img_import=img_import.decode("utf-8"), \
-            #  img_gridsearch=img_gridsearch.decode("utf-8") \
-            #  )
+        imageIO_vardist=imageIO_vardist,
+        imageIO_scatterplot=imageIO_scatterplot,
+        imageIO_corr_sig=imageIO_corr_sig,
+        imageIO_corr_bkg=imageIO_corr_bkg,
+        imageIO_precision_recall=imageIO_precision_recall,
+        imageIO_ROC=imageIO_ROC,
+        imageIO_plot_learning_curves=imageIO_plot_learning_curves,
+        img_scoresRME=img_scoresRME,
+        img_import=img_import,
+        img_gridsearch=img_gridsearch)
 
 def main():
     APP.run(host="127.0.0.1", port=8080)

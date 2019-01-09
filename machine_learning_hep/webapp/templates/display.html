@@ -1,34 +1,58 @@
-<!-- this html file is the main file needed to run the app. 
-It represents the main file that is run in the web.
-Some basic information about the document
-
-<!doctype html> is what define the version of HTML to be used
-<head> indicate the title and options that are not shown in the browser
-<body> is what will be shown
-<h1-6> different sizes of text
-<p> a new paragraph or line
-
- --> 
 <!doctype html>
-<html>
-<head>
-  <title>ALICE Machine learning interface</title>
-  <script src="/static/script.js"></script>
-  <link type="text/css" rel="stylesheet" href="/static/style.css">
-  <title>Machine Learning HEP - image</title>
-</head>
+<html lang="en">
+
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <!-- My style -->
+    <link rel="stylesheet" href="/static/style.css">
+
+    <title>Machine Learning Interface</title>
+  </head>
+
 <body>
-  <h1>ALICE Machine learning web interface</h1>
-  <img src="data:image/png;base64, {{ imageIO_vardist|b64 }}" alt="Image Placeholder" height="500">
-  <img src="data:image/png;base64, {{ imageIO_scatterplot|b64 }}" alt="Image Placeholder" height="500">
-  <img src="data:image/png;base64, {{ imageIO_corr_sig|b64 }}" alt="Image Placeholder" height="500">
-  <img src="data:image/png;base64, {{ imageIO_corr_bkg|b64 }}" alt="Image Placeholder" height="500">
-  <!-- <img src="data:image/png;base64, {{ imageIO_precision_recall }}" alt="Image Placeholder" height="500">
-  <img src="data:image/png;base64, {{ imageIO_ROC }}" alt="Image Placeholder" height="500">
-  <img src="data:image/png;base64, {{ imageIO_plot_learning_curves }}" alt="Image Placeholder" height="500">
-  <img src="data:image/png;base64, {{ img_scoresRME }}" alt="Image Placeholder" height="500">
-  <img src="data:image/png;base64, {{ img_import }}" alt="Image Placeholder" height="500">
-  <img src="data:image/png;base64, {{ img_gridsearch }}" alt="Image Placeholder" height="500"> -->
+<h1>Machine Learning Interface</h1>
+
+<!-- Optional JavaScript -->
+<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+<ul class="nav nav-pills" id="myTab" role="tablist">
+  {{ tab_header(imageIO_vardist, "Distributions", "distr", active=True) }}
+  {{ tab_header(imageIO_scatterplot, "Scatter plot", "scatter") }}
+</ul>
+<div class="tab-content" id="myTabContent">
+  {{ tab_content(imageIO_vardist, "Distributions", "distr", active=True) }}
+  {{ tab_content(imageIO_scatterplot, "Scatter plot", "scatter") }}
+
+
+  <!-- <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">asd</div>
+  <div class="tab-pane fade" id="profile" role="tabpanel" aria-labelledby="profile-tab">qwertyu</div>
+  <div class="tab-pane fade" id="contact" role="tabpanel" aria-labelledby="contact-tab">...</div> -->
+</div>
+
+
+
+{% if False %}
+{{ imageIO_vardist|render_image }}
+{{ imageIO_scatterplot|render_image }}
+{{ imageIO_corr_sig|render_image }}
+{{ imageIO_corr_bkg|render_image }}
+{{ imageIO_precision_recall|render_image }}
+{{ imageIO_ROC|render_image }}
+{{ imageIO_plot_learning_curves|render_image }}
+{{ img_scoresRME|render_image }}
+{{ img_import|render_image }}
+{{ img_gridsearch|render_image }}
+{% endif %}
 
 </body>
+
 </html>
