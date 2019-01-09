@@ -19,6 +19,7 @@ from sklearn.utils import shuffle
 from machine_learning_hep.general import get_database_ml_parameters, getdataframe
 from machine_learning_hep.general import filterdataframe, split_df_sigbkg
 from machine_learning_hep.preparesamples import prep_mlsamples
+from machine_learning_hep.logger import get_logger
 
 def test():
     data = get_database_ml_parameters()
@@ -34,7 +35,11 @@ def test():
     rnd_splt = 12
     rnd_shuffle = 12
 
-    print(nevt_sig, nevt_bkg, mltype, mlsubtype, case)
+    logger = get_logger()
+    summary_string = f"#sg events: {nevt_sig}\n#bkg events: {nevt_bkg}\nmltype: {mltype}\n" \
+                     f"mlsubtype: {mlsubtype}\ncase: {case}"
+    logger.debug(summary_string)
+
     var_all = data[case]["var_all"]
     var_signal = data[case]["var_signal"]
     sel_signal = data[case]["sel_signal"]
@@ -61,8 +66,8 @@ def test():
             prep_mlsamples(df_sig, df_bkg, var_signal, nevt_sig, nevt_bkg, test_frac, rnd_splt)
         df_sig_train, df_bkg_train = split_df_sigbkg(df_ml_train, var_signal)
         df_sig_test, df_bkg_test = split_df_sigbkg(df_ml_test, var_signal)
-        print("events for ml train %d and test %d" % (len(df_ml_train), len(df_ml_test)))
-        print("events for signal train %d and test %d" % (len(df_sig_train), len(df_sig_test)))
-        print("events for bkg train %d and test %d" % (len(df_bkg_train), len(df_bkg_test)))
+        logger.info("events for ml train %d and test %d", len(df_ml_train), len(df_ml_test))
+        logger.info("events for signal train %d and test %d", len(df_sig_train), len(df_sig_test))
+        logger.info("events for bkg train %d and test %d", len(df_bkg_train), len(df_bkg_test))
 
 test()

@@ -18,6 +18,7 @@ Methods to: manage input/output
 
 import os
 import yaml
+from machine_learning_hep.logger import get_logger
 
 def parse_yaml(filepath):
     """
@@ -26,8 +27,7 @@ def parse_yaml(filepath):
         filepath: Path to the YAML file to be parsed.
     """
     if not os.path.isfile(filepath):
-        print("YAML file %s does not exist." % filepath)
-        exit(1)
+        get_logger().critical("YAML file %s does not exist.", filepath)
     with open(filepath) as f:
         return yaml.safe_load(f)
 

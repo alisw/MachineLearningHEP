@@ -16,10 +16,10 @@
 Methods to: configure parameters
 """
 
-import sys
 import os.path
 from pkg_resources import resource_stream
 import yaml
+from machine_learning_hep.logger import get_logger
 
 def get_default_config():
     """
@@ -37,16 +37,15 @@ def assert_config(config: dict):
     # Get defaults
     parameters = get_default_config()
 
+    logger = get_logger()
     # Check for unknown parameters and abort since running entire machinery with wrong
     # setting (e.g. 'dotaining' instead of 'dotraining' might happen just by accident)
     # could be just overhead.
     for k in config:
         if k not in parameters:
-            print(f"ERROR: Unkown parameter {k} in config")
-            sys.exit(1)
+            logger.critical("Unkown parameter %s in config", k)
         elif config[k] is None:
-            print(f"ERROR: Missing value for parameter {k} in config")
-            sys.exit(1)
+            logger.critical("Missing value for parameter %s in config", k)
 
     # Merge with defaults
     # NOTE Could be done via #config = {**configDefeaults, **config}
@@ -54,12 +53,12 @@ def assert_config(config: dict):
     for k in parameters:
         if k not in config:
             config[k] = parameters[k]["default"]
-            print(f"Use default value {parameters[k]['default']} for parameter {k}")
+            logger.debug("Use default value %s for parameter %s",
+                         str(parameters[k]['default']), k)
         # If parameter is already set, check if consistent
         elif "choices" in parameters[k]:
             if config[k] not in parameters[k]["choices"]:
-                print(f"ERROR: Invalid value {config[k]} for parameter {k}")
-                sys.exit(1)
+                logger.critical("Invalid value %s for parameter %s", str(config[k]), k)
 
     # Can so far only depend on one parameter, change to combination
     # of parameters. Do we need to check for circular dependencies?
@@ -73,10 +72,10 @@ def assert_config(config: dict):
                     == parameters[k]["depends"]["value"]
                     and config[k] != parameters[k]["depends"]["set"]):
                 config[k] = parameters[k]["depends"]["set"]
-                print("INFO: Parameter %s = %s enforced since it is required for %s == %s"
-                      % (k, parameters[k]["depends"]["set"],
-                         parameters[k]["depends"]["parameter"],
-                         parameters[k]["depends"]["value"]))
+                logger.info("Parameter %s = %s enforced since it is required for %s == %s",
+                            k, str(parameters[k]["depends"]["set"]),
+                            str(parameters[k]["depends"]["parameter"]),
+                            str(parameters[k]["depends"]["value"]))
 
     return config
 

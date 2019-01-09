@@ -37,9 +37,13 @@ from machine_learning_hep.mlperformance import plotdistributiontarget, plotscatt
 # from machine_learning_hep.mlperformance import confusion
 from machine_learning_hep.mlperformance import precision_recall
 from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perform_plot_gridsearch
+from machine_learning_hep.logger import configure_logger, get_logger
 
 
 def doclassification_regression(config):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+
+    logger = get_logger()
+    logger.info(f"Start classification_regression run")
 
     mltype = config['mltype']
     mlsubtype = config['mlsubtype']
@@ -85,11 +89,13 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
     var_corr_x, var_corr_y = data[case]["var_correlation"]
     var_boundaries = data[case]["var_boundaries"]
 
-    print(nevt_sig, nevt_bkg, mltype, mlsubtype, case)
+    summary_string = f"#sg events: {nevt_sig}\n#bkg events: {nevt_bkg}\nmltype: {mltype}\n" \
+                     f"mlsubtype: {mlsubtype}\ncase: {case}"
+    logger.debug(summary_string)
+
     string_selection = createstringselection(var_skimming, varmin, varmax)
     suffix = f"nevt_sig{nevt_sig}_nevt_bkg{nevt_bkg}_" \
              f"{mltype}{case}_{string_selection}"
-
     dataframe = f"dataframes_{suffix}"
     plotdir = f"plots_{suffix}"
     output = f"output_{suffix}"
@@ -222,8 +228,12 @@ def main():
     parser.add_argument("-c", "--config", help="config YAML file, do -d <path> to get " \
                                                "YAML file with defaults at <path>")
     parser.add_argument("--dump-default-config", help="get default YAML config file")
+    parser.add_argument("--debug", action="store_true", help="turn in debug information")
+    parser.add_argument("--logfile", help="specify path to log file")
 
     args = parser.parse_args()
+
+    configure_logger(args.debug, args.logfile)
 
     if args.dump_default_config is not None:
         dump_default_config(args.dump_default_config)

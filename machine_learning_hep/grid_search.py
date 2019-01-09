@@ -22,9 +22,11 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier  # pylint: disable=unused-import
+from machine_learning_hep.logger import get_logger
 
 
 def do_gridsearch(names, classifiers, param_grid, refit_arr, x_train, y_train_, cv_, ncores):
+    logger = get_logger()
     grid_search_models_ = []
     grid_search_bests_ = []
     list_scores_ = []
@@ -34,7 +36,7 @@ def do_gridsearch(names, classifiers, param_grid, refit_arr, x_train, y_train_, 
         grid_search_model = grid_search.fit(x_train, y_train_)
         cvres = grid_search.cv_results_
         for mean_score, params in zip(cvres["mean_test_score"], cvres["params"]):
-            print(np.sqrt(-mean_score), params)
+            logger.info(np.sqrt(-mean_score), params)
         list_scores_.append(pd.DataFrame(cvres))
         grid_search_best = grid_search.best_estimator_.fit(x_train, y_train_)
         grid_search_models_.append(grid_search_model)
@@ -66,12 +68,13 @@ def perform_plot_gridsearch(names, scores, par_grid, keys, changeparameter, outp
     '''
     Function for grid scores plotting (working with scikit 0.20)
     '''
+    logger = get_logger()
     fig = plt.figure(figsize=(35, 15))
     for name, score_obj, pars, key, change in zip(names, scores, par_grid,
                                                   keys, changeparameter):
         change_par = "param_" + change
         if len(key) == 1:
-            print("### ADD AT LEAST 1 PARAMETER (even just 1 value) ###")
+            logger.warning("Add at least 1 parameter (even just 1 value)")
             continue
 
         dict_par = pars[0].copy()
