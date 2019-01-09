@@ -1,3 +1,8 @@
 include machine_learning_hep/data/database_ml_parameters.yml
 include machine_learning_hep/data/database_ml_gridsearch.yml
 include machine_learning_hep/data/config_ml_parameters.yml
+include machine_learning_hep/webapp/templates/display.html
+include machine_learning_hep/webapp/templates/index.html
+include machine_learning_hep/webapp/templates/test.html
+include machine_learning_hep/webapp/static/script.js
+include machine_learning_hep/webapp/static/style.css
