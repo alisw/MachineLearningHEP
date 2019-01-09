@@ -1,9 +1,19 @@
 <!doctype html>
-<html>
-<head>
-  <title>ALICE Machine learning interface</title>
-  <script src="/static/script.js"></script>
-  <link type="text/css" rel="stylesheet" href="/static/style.css">
+<html lang="en">
+
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <!-- My style -->
+    <link rel="stylesheet" href="/static/style.css">
+
+    <title>Machine Learning Interface</title>
+
 <script>
   // this is a java script that can be put in the head and used in the body.
   // s1, s2 are strings with the name of the html element
@@ -31,37 +41,46 @@
 <body>
   <h1> Classification package for HEP</h1>
   <hr />
-  Choose classification subtype:
+  <h3> Choose classification subtype:</h3>
   <form action="/formSubmit" method="post">
     <select id="slct1" name="slct1" onchange="populate(this.id,'slct2')">
       <option value=""></option>
-<!--
-      <option value="JetTagging">JetTagging</option>
- -->
       <option value="HeavyFlavour">HeavyFlavour</option>
-<!--
-      <option value="Nuclei">Nuclei</option>
- -->
     </select>
-    <p>Choose analysis: </p>
+    <h3> Choose analysis:</h3>
     <select id="slct2" name="slct2"></select>
     <hr />
-    <p>Choose algorithm: </p>
+    <h3> Choose algorithm:</h3>
     <input type="checkbox" name="activate_scikit" checked> SciKit
     <input type="checkbox" name="activate_xgboost" checked> XGBoost
     <input type="checkbox" name="activate_keras"> Keras
 
     <hr />
-    <p>Choose your action (Temporarily all of them have to be activated): </p>
+    <h3> Choose your action:</h3>
     <input type="checkbox" name="docorrelation" checked> Distribution
-    <input type="checkbox" name="dotraining" checked> Training
+    <input type="checkbox" name="dotraining"> Training
     <input type="checkbox" name="doROC" checked> ROC curves
-    <input type="checkbox" name="dolearningcurve" checked> Learning curves
-    <input type="checkbox" name="docrossvalidation" checked> Cross Validation
-    <input type="checkbox" name="doimportance" checked> Importance
-    <input type="checkbox" name="dogridsearch" checked> Grid Search
-    <hr />
+    <input type="checkbox" name="dolearningcurve"> Learning curves
+    <input type="checkbox" name="docrossvalidation"> Cross Validation
+    <input type="checkbox" name="doimportance"> Importance
+    <input type="checkbox" name="dogridsearch"> Grid Search
 
+    <hr />
+    <h3> Configuration values:</h3>
+    <p>
+    Min pT: <input type="number" name="min_var_skimming" value=2 style="width: 50px;">
+    Max pT <input type="number" name="max_var_skimming" value=4 style="width: 50px;">
+    Signal: <input type="number" name="nevt_sig" value=30 style="width: 100px;">
+    Background: <input type="number" name="nevt_bkg" value=30 style="width: 100px;">
+    </p>
+    <p>
+    Test fraction: <input type="number" name="test_frac" step=0.01 value=0.2 style="width: 50px;">
+    Random split: <input type="number" name="rnd_splt" value=12 style="width: 50px;">
+    Random shuffle: <input type="number" name="rnd_shuffle" value=12 style="width: 50px;">
+    Number of k folds: <input type="number" name="nkfolds" value=10 style="width: 50px;">
+    Number of cores: <input type="number" name="ncores" value=1 style="width: 50px;">
+    </p>
+    <hr />
     <button type="submit" class="btn btn-default" style="background:lightgreen">Submit</button>
   </form>
 

@@ -84,6 +84,8 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
     var_target = data[case]["var_target"]
     var_corr_x, var_corr_y = data[case]["var_correlation"]
     var_boundaries = data[case]["var_boundaries"]
+    _ = data[case]["var_mom"]
+
 
     print(nevt_sig, nevt_bkg, mltype, mlsubtype, case)
     string_selection = createstringselection(var_skimming, varmin, varmax)

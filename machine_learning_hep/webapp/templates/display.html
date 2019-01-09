@@ -11,6 +11,21 @@
 
     <!-- My style -->
     <link rel="stylesheet" href="/static/style.css">
+        
+<!--    <style>-->
+<!--        * {-->
+<!--            box-sizing: border-box;-->
+<!--        }-->
+<!--        .zoom {-->
+<!--            transition: transform .2s;-->
+<!--        }-->
+<!--        -->
+<!--        .zoom:hover {-->
+<!--            -ms-transform: scale(2); /* IE 9 */-->
+<!--            -webkit-transform: scale(2); /* Safari 3-8 */-->
+<!--            transform: scale(2);-->
+<!--        }-->
+<!--    </style>-->
 
     <title>Machine Learning Interface</title>
   </head>
@@ -27,10 +42,26 @@
 <ul class="nav nav-pills" id="myTab" role="tablist">
   {{ tab_header(imageIO_vardist, "Distributions", "distr", active=True) }}
   {{ tab_header(imageIO_scatterplot, "Scatter plot", "scatter") }}
+  {{ tab_header(imageIO_corr_sig, "Correlation matrix signal", "corr_sig") }}
+  {{ tab_header(imageIO_corr_bkg, "Correlation matrix background", "corr_bkg") }}
+  {{ tab_header(imageIO_precision_recall, "Precision/Recall", "prec_recall") }}
+  {{ tab_header(imageIO_ROC, "ROC curve", "roc_curve") }}
+  {{ tab_header(imageIO_plot_learning_curves, "Learning curve", "learning_curve") }}
+  {{ tab_header(img_scoresRME, "Scores", "scores") }}
+  {{ tab_header(img_import, "Importance", "importance") }}
+  {{ tab_header(img_gridsearch, "Grid search", "grid_search") }}
 </ul>
 <div class="tab-content" id="myTabContent">
-  {{ tab_content(imageIO_vardist, "Distributions", "distr", active=True) }}
-  {{ tab_content(imageIO_scatterplot, "Scatter plot", "scatter") }}
+  {{ tab_content(imageIO_vardist, "", "distr", active=True) }}
+  {{ tab_content(imageIO_scatterplot, "", "scatter") }}
+  {{ tab_content(imageIO_corr_sig, "", "corr_sig") }}
+  {{ tab_content(imageIO_corr_bkg, "", "corr_bkg") }}
+  {{ tab_content(imageIO_precision_recall, "", "prec_recall") }}
+  {{ tab_content(imageIO_ROC, "", "roc_curve") }}
+  {{ tab_content(imageIO_plot_learning_curves, "", "learning_curve") }}
+  {{ tab_content(img_scoresRME, "", "scores") }}
+  {{ tab_content(img_import, "", "importance") }}
+  {{ tab_content(img_gridsearch, "", "grid_search") }}
 
 
   <!-- <div class="tab-pane fade show active" id="home" role="tabpanel" aria-labelledby="home-tab">asd</div>
