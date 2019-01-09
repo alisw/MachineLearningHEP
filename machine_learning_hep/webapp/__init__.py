@@ -13,8 +13,11 @@
 #############################################################################
 
 import binascii
+import os.path
 from io import BytesIO
 from flask import Flask, render_template, request
+
+import matplotlib; matplotlib.use("Agg")  # pylint: disable=multiple-statements,wrong-import-position
 
 from machine_learning_hep.general import get_database_ml_parameters, getdataframe
 from machine_learning_hep.general import createstringselection
@@ -31,17 +34,16 @@ from machine_learning_hep.mlperformance import precision_recall
 from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perform_plot_gridsearch
 
 APP = Flask(__name__)
-
+DATA_PREFIX = os.path.expanduser("~/.machine_learning_hep")
 
 @APP.route('/')
-# https://test-app-227515.appspot.com
 def root():
     # For the sake of example, use static information to inflate the template.
     # This will be replaced with real information in later steps.
     return render_template('test.html')
 
 
-@APP.route('/formSubmit', methods=['POST'])  # https://test-app-227515.appspot.com/
+@APP.route('/formSubmit', methods=['POST'])
 def post_form():  # pylint: disable=too-many-locals, too-many-statements
 
     mltype = "BinaryClassification"
@@ -60,8 +62,8 @@ def post_form():  # pylint: disable=too-many-locals, too-many-statements
 #     var_target = data[case]["var_target"]
 #     var_boundaries = data[case]["var_boundaries"]
 
-    filesig = "../"+filesig
-    filebkg = "../"+filebkg
+    filesig = os.path.join(DATA_PREFIX, filesig)
+    filebkg = os.path.join(DATA_PREFIX, filebkg)
     var_skimming = ["pt_cand_ML"]
     varmin = [0]
     varmax = [10]
