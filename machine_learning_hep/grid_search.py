@@ -113,3 +113,4 @@ def perform_plot_gridsearch(names, scores, par_grid, keys, changeparameter, outp
     img_gridsearch = BytesIO()
     plt.savefig(img_gridsearch, format='png')
     img_gridsearch.seek(0)
+    return img_gridsearch

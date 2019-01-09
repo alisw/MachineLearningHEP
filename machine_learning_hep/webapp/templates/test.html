@@ -60,10 +60,16 @@ Some basic information about the document
     <input type="checkbox" name="activate_scikit" checked> SciKit
     <input type="checkbox" name="activate_xgboost" checked> XGBoost
     <input type="checkbox" name="activate_keras"> Keras
+
     <hr />
-    <p>Choose your action: </p>
-    <input type="checkbox" name="doROC" checked> Produce ROC Curve
-    <input type="checkbox" name="dolearningcurve" checked> Produce Learning Curve
+    <p>Choose your action (Temporarily all of them have to be activated): </p>
+    <input type="checkbox" name="docorrelation" checked> Distribution
+    <input type="checkbox" name="dotraining" checked> Training
+    <input type="checkbox" name="doROC" checked> ROC curves
+    <input type="checkbox" name="dolearningcurve" checked> Learning curves
+    <input type="checkbox" name="docrossvalidation" checked> Cross Validation
+    <input type="checkbox" name="doimportance" checked> Importance
+    <input type="checkbox" name="dogridsearch" checked> Grid Search
     <hr />
 
     <button type="submit" class="btn btn-default" style="background:lightgreen">Submit</button>
