@@ -15,7 +15,7 @@
 """
 Methods to: apply Principal Component Analysis (PCA) and to standardize features
 """
-
+from io import BytesIO
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -52,3 +52,6 @@ def plotvariance_pca(pca_object, output_):
     plt.ylim([0, 1])
     plotname = output_+'/PCAvariance.png'
     plt.savefig(plotname, bbox_inches='tight')
+    img_pca = BytesIO()
+    plt.savefig(img_pca, format='png')
+    img_pca.seek(0)

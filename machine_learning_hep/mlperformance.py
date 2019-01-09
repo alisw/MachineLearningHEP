@@ -216,11 +216,11 @@ def precision_recall(names_, classifiers_, suffix_, x_train, y_train, cvgen, fol
         i += 1
     plotname = folder+'/ROCcurve%s.png' % (suffix_)
     plt.savefig(plotname)
-    img_ROC = BytesIO()
-    plt.savefig(img_ROC, format='png')
-    img_ROC.seek(0)
+    img_roc = BytesIO()
+    plt.savefig(img_roc, format='png')
+    img_roc.seek(0)
 
-    return img_precision_recall, img_ROC
+    return img_precision_recall, img_roc
 
 
 def plot_learning_curves(names_, classifiers_, suffix_, folder, x_data, y_data, npoints):
@@ -252,7 +252,7 @@ def plot_learning_curves(names_, classifiers_, suffix_, folder, x_data, y_data, 
         i += 1
     plotname = folder+'/learning_curve%s.png' % (suffix_)
     plt.savefig(plotname)
-    imagebytesIO = BytesIO()
-    plt.savefig(imagebytesIO, format='png')
-    imagebytesIO.seek(0)
-    return imagebytesIO
+    img_learn = BytesIO()
+    plt.savefig(img_learn, format='png')
+    img_learn.seek(0)
+    return img_learn

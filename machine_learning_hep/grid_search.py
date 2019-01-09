@@ -15,7 +15,7 @@
 """
 Methods to do hyper-parameters optimization
 """
-
+from io import BytesIO
 import itertools
 import numpy as np
 import pandas as pd
@@ -110,3 +110,6 @@ def perform_plot_gridsearch(names, scores, par_grid, keys, changeparameter, outp
         pad.legend(fontsize=10)
     plotname = output_ + "/GridSearchResults" + suffix_ + ".png"
     plt.savefig(plotname)
+    img_gridsearch = BytesIO()
+    plt.savefig(img_gridsearch, format='png')
+    img_gridsearch.seek(0)

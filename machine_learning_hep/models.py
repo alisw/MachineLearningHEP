@@ -17,7 +17,7 @@ Methods to: choose, train and apply ML models
             load and save ML models
             obtain control plots
 """
-
+from io import BytesIO
 import pickle
 import pandas as pd
 import numpy as np
@@ -192,6 +192,10 @@ def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder)
     plt.subplots_adjust(wspace=0.5)
     plotname = folder+'/importanceplotall%s.png' % (suffix_)
     plt.savefig(plotname)
+    img_import = BytesIO()
+    plt.savefig(img_import, format='png')
+    img_import.seek(0)
+    return img_import
 
 
 def decisionboundaries(names_, trainedmodels_, suffix_, x_train_, y_train_, folder):
@@ -236,3 +240,7 @@ def decisionboundaries(names_, trainedmodels_, suffix_, x_train_, y_train_, fold
         i += 1
     plotname = folder+'/decisionboundaries%s.png' % (suffix_)
     plt.savefig(plotname)
+    img_boundary = BytesIO()
+    plt.savefig(img_boundary, format='png')
+    img_boundary.seek(0)
+    return img_boundary
