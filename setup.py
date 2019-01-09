@@ -70,7 +70,8 @@ setup(
   # requirements files see:
   # https://packaging.python.org/en/latest/requirements.html
   install_requires=[ "numpy", "pandas", "scipy", "matplotlib", "seaborn", "uproot", "scikit-learn",
-                     "xgboost", "keras", "tensorflow", "PyYaml", "pylint", "Flask", "Jinja2" ],
+                     "xgboost", "keras", "tensorflow", "PyYaml", "pylint", "twisted", "klein",
+                     "Jinja2" ],
 
   python_requires='>=3.6, <3.7',
 
@@ -87,7 +88,12 @@ setup(
   include_package_data=True,
   package_data={ "machine_learning_hep.data": [ "database_ml_parameters.yml",
                                                 "database_ml_gridsearch.yml",
-                                                "config_ml_parameters.yml"] },
+                                                "config_ml_parameters.yml"],
+                 "machine_learning_hep.webapp.templates": [ "display.html",
+                                                            "index.html",
+                                                            "test.html" ],
+                 "machine_learning_hep.webapp.static": [ "script.js",
+                                                         "style.css" ] },
 
   # Although 'package_data' is the preferred approach, in some case you may
   # need to place data files outside of your packages. See:

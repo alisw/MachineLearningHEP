@@ -13,22 +13,22 @@ Some basic information about the document
 <html>
 <head>
   <title>ALICE Machine learning interface</title>
-  <script src="{{ url_for('static', filename='script.js') }}"></script>
-  <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <title>{{ title }} - image</title>
+  <script src="/static/script.js"></script>
+  <link type="text/css" rel="stylesheet" href="/static/style.css">
+  <title>Machine Learning HEP - image</title>
 </head>
 <body>
   <h1>ALICE Machine learning web interface</h1>
-  <img src="data:image/png;base64, {{ imageIO_vardist }}" alt="Image Placeholder" height="500">
-  <img src="data:image/png;base64, {{ imageIO_scatterplot }}" alt="Image Placeholder" height="500">
-  <img src="data:image/png;base64, {{ imageIO_corr_sig }}" alt="Image Placeholder" height="500">
-  <img src="data:image/png;base64, {{ imageIO_corr_bkg }}" alt="Image Placeholder" height="500">
-  <img src="data:image/png;base64, {{ imageIO_precision_recall }}" alt="Image Placeholder" height="500">
+  <img src="data:image/png;base64, {{ imageIO_vardist|b64 }}" alt="Image Placeholder" height="500">
+  <img src="data:image/png;base64, {{ imageIO_scatterplot|b64 }}" alt="Image Placeholder" height="500">
+  <img src="data:image/png;base64, {{ imageIO_corr_sig|b64 }}" alt="Image Placeholder" height="500">
+  <img src="data:image/png;base64, {{ imageIO_corr_bkg|b64 }}" alt="Image Placeholder" height="500">
+  <!-- <img src="data:image/png;base64, {{ imageIO_precision_recall }}" alt="Image Placeholder" height="500">
   <img src="data:image/png;base64, {{ imageIO_ROC }}" alt="Image Placeholder" height="500">
   <img src="data:image/png;base64, {{ imageIO_plot_learning_curves }}" alt="Image Placeholder" height="500">
   <img src="data:image/png;base64, {{ img_scoresRME }}" alt="Image Placeholder" height="500">
   <img src="data:image/png;base64, {{ img_import }}" alt="Image Placeholder" height="500">
-  <img src="data:image/png;base64, {{ img_gridsearch }}" alt="Image Placeholder" height="500">
+  <img src="data:image/png;base64, {{ img_gridsearch }}" alt="Image Placeholder" height="500"> -->
 
 </body>
 </html>
