@@ -122,6 +122,9 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
     filesig = os.path.join(DATA_PREFIX, filesig)
     filebkg = os.path.join(DATA_PREFIX, filebkg)
 
+    filedata = os.path.join(DATA_PREFIX, filedata)
+    filemc = os.path.join(DATA_PREFIX, filemc)
+
     trainedmodels = []
 
     if loadsampleoption == 1:
