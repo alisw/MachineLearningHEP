@@ -64,8 +64,26 @@ Dzero:
   var_training: [d_len_ML, d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, max_norm_d0d0exp_ML]
   sel_signal: cand_type_ML==10 or cand_type_ML==11 or cand_type_ML==18 or cand_type_ML==19
   sel_bkg: inv_mass_ML<1.77 or inv_mass_ML>1.97
-  var_mom: pt_cand_ML 
+  var_mom: pt_cand_ML
 Ds:
+  sig_bkg_files: [data/inputroot/AnalysisResults_Ds_MC_2018Sep21_LHC18a4a2_cent_fast_CandBased_skimmed.root, data/inputroot/AnalysisResults_Ds_Data_2018Sep21_LHC15o_pass1_pidfix_CandBased_skimmed.root]
+  data_mc_files: [data/inputroot/AnalysisResults_Ds_Data_2018Sep21_LHC15o_pass1_pidfix_CandBased_skimmed.root, data/inputroot/AnalysisResults_Ds_MC_2018Sep21_LHC18a4a2_cent_fast_CandBased_skimmed.root]
+  mass_cut: [1.83, 2.012]
+  pdg_code: null
+  tree_name: fTreeDsFlagged
+  var_all: [d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, sig_vert_ML, delta_mass_KK_ML, cos_PiDs_ML, cos_PiKPhi_3_ML, inv_mass_ML, pt_cand_ML, signal_ML, cand_type_ML]
+  var_boundaries: [d_len_xy_ML, delta_mass_KK_ML]
+  var_correlation:
+  - [pt_cand_ML, d_len_xy_ML, sig_vert_ML, pt_cand_ML, pt_cand_ML, norm_dl_xy_ML, cos_PiDs_ML, cos_p_xy_ML, cos_p_xy_ML]
+  - [d_len_xy_ML, sig_vert_ML, delta_mass_KK_ML, delta_mass_KK_ML, sig_vert_ML, d_len_xy_ML, cos_PiKPhi_3_ML, sig_vert_ML, pt_cand_ML]
+  var_others: [inv_mass_ML, pt_cand_ML]
+  var_signal: signal_ML
+  var_target: signal_ML
+  var_training: [d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, sig_vert_ML, delta_mass_KK_ML, cos_PiDs_ML, cos_PiKPhi_3_ML]
+  sel_signal: cand_type_ML==3 or cand_type_ML==2
+  sel_bkg: inv_mass_ML<1.83 or inv_mass_ML>2.012
+  var_mom: pt_cand_ML
+Dsnew:
   sig_bkg_files: [data/inputroot/SmallSkimmed_Ds_pp5TeV_MC_train307.root, data/inputroot/SmallSkimmed_Ds_pp5TeV_train308.root]
   data_mc_files: [data/inputroot/SmallSkimmed_Ds_pp5TeV_train308.root, data/inputroot/SmallSkimmed_Ds_pp5TeV_MC_train307.root]
   mass_cut: [1.83, 2.012]
@@ -79,7 +97,7 @@ Ds:
   var_others: [inv_mass_ML, pt_cand_ML]
   var_signal: signal_ML
   var_target: signal_ML
-  var_training: [d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, sig_vert_ML, mass_KK_ML, cos_PiDs_ML, cos_PiKPhi_3_ML]
+  var_training: [d_len_ML, d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, sig_vert_ML, mass_KK_ML, cos_PiDs_ML, cos_PiKPhi_3_ML, max_norm_d0d0exp_ML]
   sel_signal: cand_type_ML==10 or cand_type_ML==11 or cand_type_ML==18 or cand_type_ML==19
   sel_bkg: inv_mass_ML<1.83 or inv_mass_ML>2.012
   var_mom: pt_cand_ML
@@ -112,6 +130,7 @@ Lc:
   var_correlation:
   - [pt_cand_ML, d_len_xy_ML]
   - [d_len_xy_ML, sig_vert_ML]
+  var_others: [inv_mass_ML, pt_cand_ML]
   var_signal: signal_ML
   var_target: signal_ML
   var_training: [d_len_ML, d_len_xy_ML, norm_dl_xy_ML, dist_12_ML, cos_p_ML, pt_p_ML, pt_K_ML, pt_pi_ML, sig_vert_ML, dca_ML]
@@ -129,9 +148,10 @@ Lcnew:
   var_correlation:
   - [pt_cand_ML, d_len_xy_ML]
   - [d_len_xy_ML, sig_vert_ML]
+  var_others: [inv_mass_ML, pt_cand_ML]
   var_signal: signal_ML
   var_target: signal_ML
-  var_training: [d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, sig_vert_ML, pt_prong0_ML, pt_prong1_ML, pt_prong2_ML]
+  var_training: [d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, sig_vert_ML, pt_prong0_ML, pt_prong1_ML, pt_prong2_ML, max_norm_d0d0exp_ML]
   sel_signal: cand_type_ML==10 or cand_type_ML==11 or cand_type_ML==18 or cand_type_ML==19
   sel_bkg: inv_mass_ML<2.1864 or inv_mass_ML>2.3864
   var_mom: pt_cand_ML
