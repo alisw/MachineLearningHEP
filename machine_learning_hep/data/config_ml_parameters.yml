@@ -11,7 +11,7 @@ mlsubtype:
   default: "HFmeson"
 
 case:
-  choices: ["Bplus", "Dplus", "Ds", "Lc", "PIDKaon", "PIDPion", "hypertritium", "lightquarkjet" ]
+  choices: ["Bplus", "Dplus", "Ds", "Dsnew", "Dzero", "Dstar", "Lc", "Lcnew", "PIDKaon", "PIDPion", "hypertritium", "lightquarkjet" ]
   default: "Lc"
 
 var_skimming:
