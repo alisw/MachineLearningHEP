@@ -25,9 +25,16 @@
     // Below I am setting the second option list to zero
     s2.innerHTML = "";
     if(s1.value == "JetTagging"){
-      var optionArray = ["gluonQuark"];
-    } else if(s1.value == "HeavyFlavour"){
+      var optionArray = ["lightquarkjet"];
+    } 
+    else if(s1.value == "HeavyFlavour"){
       var optionArray = ["Lc"];
+    }
+    else if(s1.value == "Nuclei"){
+      var optionArray = ["hypertritium"];
+    }
+    else if(s1.value == "PID"){
+      var optionArray = ["PIDKaon", "PIDPion"];
     }
     for (var i = 0; i < optionArray.length; i++) {
       var newOption = document.createElement("option");
@@ -46,6 +53,8 @@
     <select id="slct1" name="slct1" onchange="populate(this.id,'slct2')">
       <option value=""></option>
       <option value="HeavyFlavour">HeavyFlavour</option>
+      <option value="JetTagging">JetTagging</option>
+      <option value="Nuclei">Nuclei</option>
     </select>
     <h3> Choose analysis:</h3>
     <select id="slct2" name="slct2"></select>
@@ -68,8 +77,8 @@
     <hr />
     <h3> Configuration values:</h3>
     <p>
-    Min pT: <input type="number" name="min_var_skimming" value=2 style="width: 50px;">
-    Max pT <input type="number" name="max_var_skimming" value=4 style="width: 50px;">
+    Min pT: <input type="number" name="min_var_skimming" value=0 style="width: 50px;">
+    Max pT <input type="number" name="max_var_skimming" value=100 style="width: 50px;">
     Signal: <input type="number" name="nevt_sig" value=30 style="width: 100px;">
     Background: <input type="number" name="nevt_bkg" value=30 style="width: 100px;">
     </p>
