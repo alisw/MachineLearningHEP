@@ -20,6 +20,7 @@ from sklearn.utils import shuffle
 from machine_learning_hep.general import filterdataframe, split_df_sigbkg
 from machine_learning_hep.preparesamples import prep_mlsamples
 from machine_learning_hep.correlations import vardistplot, scatterplot, correlationmatrix
+from machine_learning_hep.logger import get_logger
 
 
 def create_mlsamples(df_sig, df_bkg, sel_signal, sel_bkg, rnd_shuffle,  # pylint: disable=too-many-arguments
@@ -35,9 +36,10 @@ def create_mlsamples(df_sig, df_bkg, sel_signal, sel_bkg, rnd_shuffle,  # pylint
                                              nevt_bkg, test_frac, rnd_splt)
     df_sig_train, df_bkg_train = split_df_sigbkg(df_ml_train, var_signal)
     df_sig_test, df_bkg_test = split_df_sigbkg(df_ml_test, var_signal)
-    print("events for ml train %d and test %d" % (len(df_ml_train), len(df_ml_test)))
-    print("events for signal train %d and test %d" % (len(df_sig_train), len(df_sig_test)))
-    print("events for bkg train %d and test %d" % (len(df_bkg_train), len(df_bkg_test)))
+    logger = get_logger()
+    logger.info("Events for ml train %d and test %d", len(df_ml_train), len(df_ml_test))
+    logger.info("Events for signal train %d and test %d", len(df_sig_train), len(df_sig_test))
+    logger.info("Events for bkg train %d and test %d", len(df_bkg_train), len(df_bkg_test))
     x_train = df_ml_train[var_training]
     y_train = df_ml_train[var_signal]
     x_test = df_ml_test[var_training]

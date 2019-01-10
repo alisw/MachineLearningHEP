@@ -33,6 +33,7 @@ from keras.layers import Input, Dense
 from keras.models import Model
 from keras.wrappers.scikit_learn import KerasClassifier
 from xgboost import XGBClassifier
+from machine_learning_hep.logger import get_logger
 
 
 def getclf_scikit(ml_type):
@@ -70,18 +71,22 @@ def getclf_xgboost(ml_type):
     classifiers = []
     names = []
 
+    logger = get_logger()
+
     if ml_type == "BinaryClassification":
         classifiers = [XGBClassifier()]
         names = ["XGBoostXGBClassifier"]
 
     if ml_type == "Regression":
-        print("No XGBoost models implemented for Regression")
+        logger.info("No XGBoost models implemented for Regression")
     return classifiers, names
 
 
 def getclf_keras(ml_type, length_input):
     classifiers = []
     names = []
+
+    logger = get_logger()
 
     if ml_type == "BinaryClassification":
         def create_model_functional():
@@ -100,7 +105,7 @@ def getclf_keras(ml_type, length_input):
         names = ["KerasSequential"]
 
     if ml_type == "Regression":
-        print("No Keras models implemented for Regression")
+        logger.info("No Keras models implemented for Regression")
     return classifiers, names
 
 def fit(names_, classifiers_, x_train_, y_train_):

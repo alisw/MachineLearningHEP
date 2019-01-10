@@ -17,20 +17,22 @@ Methods to load and prepare data for training
 """
 import pandas as pd
 from sklearn.model_selection import train_test_split
+from machine_learning_hep.logger import get_logger
 
 
 def prep_mlsamples(df_sig, df_bkg, namesig, nevt_sig, nevt_bkg, test_frac, rnd_splt):
 
+    logger = get_logger()
     if nevt_sig > len(df_sig):
-        print("there are not enough signal events ")
+        logger.warning("There are not enough signal events")
     if nevt_bkg > len(df_bkg):
-        print("there are not enough background events ")
+        logger.warning("There are not enough background events")
 
     nevt_sig = min(len(df_sig), nevt_sig)
     nevt_bkg = min(len(df_bkg), nevt_bkg)
 
-    print("used number of signal events are %d" % (nevt_sig))
-    print("used number of signal events are %d" % (nevt_bkg))
+    logger.info("Used number of signal events is %d", nevt_sig)
+    logger.info("Used number of background events is %d", nevt_bkg)
 
     df_sig = df_sig[:nevt_sig]
     df_bkg = df_bkg[:nevt_bkg]
@@ -40,5 +42,5 @@ def prep_mlsamples(df_sig, df_bkg, namesig, nevt_sig, nevt_bkg, test_frac, rnd_s
     df_ml = pd.concat([df_sig, df_bkg])
     df_ml_train, df_ml_test = train_test_split(df_ml, test_size=test_frac, random_state=rnd_splt)
 
-    print("%d events for training and %d for testing" % (len(df_ml_train), len(df_ml_test)))
+    logger.info("%d events for training and %d for testing", len(df_ml_train), len(df_ml_test))
     return df_ml_train, df_ml_test

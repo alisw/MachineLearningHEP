@@ -20,6 +20,7 @@ import array
 import ast
 import numpy as np
 from ROOT import TNtuple, TFile # pylint: disable=import-error,no-name-in-module
+from machine_learning_hep.logger import get_logger
 
 
 def read_ntuple(ntuple, variables):
@@ -28,6 +29,7 @@ def read_ntuple(ntuple, variables):
         ntuple : input TNtuple
         variables : list of ntuple variables to read
     """
+    logger = get_logger()
     code_list = []
     for v in variables:
         code_list += [compile("i.%s" % v, '<string>', 'eval')]
@@ -38,7 +40,7 @@ def read_ntuple(ntuple, variables):
         for m, v in enumerate(code_list):
             myarray[n][m] = ast.literal_eval(v)
         if n % 100000 == 0:
-            print(n, "/", nentries)
+            logger.info("%d/%d", n, nentries)
     return myarray
 
 
@@ -48,6 +50,7 @@ def read_ntuple_ml(ntuple, variablesfeatures, variablesothers, variabley):
         ntuple : input TNtuple
         variables : list of ntuple variables to read
     """
+    logger = get_logger()
     code_listfeatures = []
     code_listothers = []
     for v in variablesfeatures:
@@ -68,7 +71,7 @@ def read_ntuple_ml(ntuple, variablesfeatures, variablesothers, variabley):
             arrayothers[n][m] = ast.literal_eval(v)
         arrayy[n] = ast.literal_eval(codevariabley)
         if n % 100000 == 0:
-            print(n, "/", nentries)
+            logger.info("%d/%d", n, nentries)
     return arrayfeatures, arrayothers, arrayy
 
 
