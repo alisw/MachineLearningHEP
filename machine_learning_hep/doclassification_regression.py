@@ -238,16 +238,15 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
             names_cv, dfscore, par_grid_cv, par_grid_cv_keys, var_param, plotdir, suffix, 0.1)
 
     if dosignifopt == 1:
-        print("\nDoing significance optimization")
+        logger.info("Doing significance optimization")
         if dotraining and dotesting and applytodatamc:
             if (mlsubtype == "HFmeson") and (case == "Ds"):
                 study_signif(case, varmin[0], varmax[0], df_ml_test_dec, df_data_dec, names,
                              var_signal, suffix, plotdir)
             else:
-                print("==================ERROR==================")
-                print("Optimisation is not implemented for this classification problem.")
+                logger.error("Optimisation is not implemented for this classification problem.")
     else:
-        print("Training, testing and applytodata flags must be set to 1")
+        logger.error("Training, testing and applytodata flags must be set to 1")
 
 def main():
     parser = argparse.ArgumentParser()
