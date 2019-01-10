@@ -1,33 +1,40 @@
-<!-- this html file is the main file needed to run the app. 
-It represents the main file that is run in the web.
-Some basic information about the document
-
-<!doctype html> is what define the version of HTML to be used
-<head> indicate the title and options that are not shown in the browser
-<body> is what will be shown
-<h1-6> different sizes of text
-<p> a new paragraph or line
- --> 
 <!doctype html>
-<html>
-<head>
-  <title>ALICE Machine learning interface</title>
-  <script src="{{ url_for('static', filename='script.js') }}"></script>
-  <link type="text/css" rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-<script> 
+<html lang="en">
+
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+
+    <!-- My style -->
+    <link rel="stylesheet" href="/static/style.css">
+
+    <title>Machine Learning Interface</title>
+
+<script>
   // this is a java script that can be put in the head and used in the body.
-  // s1, s2 are strings with the name of the html element 
+  // s1, s2 are strings with the name of the html element
   function populate(s1,s2){
     // this is the way in which I define variables with the element of the html file
-    var s1 = document.getElementById(s1);  
+    var s1 = document.getElementById(s1);
     var s2 = document.getElementById(s2);
-    // innerHTML can access the value of an existing element. 
+    // innerHTML can access the value of an existing element.
     // Below I am setting the second option list to zero
     s2.innerHTML = "";
     if(s1.value == "JetTagging"){
-      var optionArray = ["gluonQuark"];
-    } else if(s1.value == "HeavyFlavour"){
+      var optionArray = ["lightquarkjet"];
+    } 
+    else if(s1.value == "HeavyFlavour"){
       var optionArray = ["Lc"];
+    }
+    else if(s1.value == "Nuclei"){
+      var optionArray = ["hypertritium"];
+    }
+    else if(s1.value == "PID"){
+      var optionArray = ["PIDKaon", "PIDPion"];
     }
     for (var i = 0; i < optionArray.length; i++) {
       var newOption = document.createElement("option");
@@ -41,37 +48,48 @@ Some basic information about the document
 <body>
   <h1> Classification package for HEP</h1>
   <hr />
-  Choose classification subtype:
+  <h3> Choose classification subtype:</h3>
   <form action="/formSubmit" method="post">
     <select id="slct1" name="slct1" onchange="populate(this.id,'slct2')">
       <option value=""></option>
-<!-- 
-      <option value="JetTagging">JetTagging</option>
- -->
       <option value="HeavyFlavour">HeavyFlavour</option>
-<!-- 
+      <option value="JetTagging">JetTagging</option>
       <option value="Nuclei">Nuclei</option>
- -->
     </select>
-    <p>Choose analysis: </p>
+    <h3> Choose analysis:</h3>
     <select id="slct2" name="slct2"></select>
     <hr />
-    <p>Choose algorithm: </p>
+    <h3> Choose algorithm:</h3>
     <input type="checkbox" name="activate_scikit" checked> SciKit
     <input type="checkbox" name="activate_xgboost" checked> XGBoost
     <input type="checkbox" name="activate_keras"> Keras
 
     <hr />
-    <p>Choose your action (Temporarily all of them have to be activated): </p>
+    <h3> Choose your action:</h3>
     <input type="checkbox" name="docorrelation" checked> Distribution
-    <input type="checkbox" name="dotraining" checked> Training
+    <input type="checkbox" name="dotraining"> Training
     <input type="checkbox" name="doROC" checked> ROC curves
-    <input type="checkbox" name="dolearningcurve" checked> Learning curves
-    <input type="checkbox" name="docrossvalidation" checked> Cross Validation
-    <input type="checkbox" name="doimportance" checked> Importance
-    <input type="checkbox" name="dogridsearch" checked> Grid Search
-    <hr />
+    <input type="checkbox" name="dolearningcurve"> Learning curves
+    <input type="checkbox" name="docrossvalidation"> Cross Validation
+    <input type="checkbox" name="doimportance"> Importance
+    <input type="checkbox" name="dogridsearch"> Grid Search
 
+    <hr />
+    <h3> Configuration values:</h3>
+    <p>
+    Min pT: <input type="number" name="min_var_skimming" value=0 style="width: 50px;">
+    Max pT <input type="number" name="max_var_skimming" value=100 style="width: 50px;">
+    Signal: <input type="number" name="nevt_sig" value=30 style="width: 100px;">
+    Background: <input type="number" name="nevt_bkg" value=30 style="width: 100px;">
+    </p>
+    <p>
+    Test fraction: <input type="number" name="test_frac" step=0.01 value=0.2 style="width: 50px;">
+    Random split: <input type="number" name="rnd_splt" value=12 style="width: 50px;">
+    Random shuffle: <input type="number" name="rnd_shuffle" value=12 style="width: 50px;">
+    Number of k folds: <input type="number" name="nkfolds" value=10 style="width: 50px;">
+    Number of cores: <input type="number" name="ncores" value=1 style="width: 50px;">
+    </p>
+    <hr />
     <button type="submit" class="btn btn-default" style="background:lightgreen">Submit</button>
   </form>
 
@@ -80,17 +98,17 @@ Some basic information about the document
 </html>
 
 
-<!-- 
+<!--
 <script type="text/javascript">
   (function() {
-    var ga = document.createElement('script'); 
+    var ga = document.createElement('script');
     ga.type = 'text/javascript'; ga.async = true;
-    var s = document.getElementsByTagName('script')[0]; 
+    var s = document.getElementsByTagName('script')[0];
 //     s.parentNode.insertBefore(ga, s);
   })();
 </script>
  -->
-<!-- 
+<!--
 <script>
 function myFunction() {
   var mlsubtype=document.getElementById("slct1").value;
