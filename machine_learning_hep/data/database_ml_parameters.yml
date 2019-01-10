@@ -26,12 +26,12 @@ Bplus:
   var_signal: signal_ML
   var_target: signal_ML
   var_training: [d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML]
-  sel_signal: cand_type_ML==3 or cand_type_ML==2
+  sel_signal: cand_type_ML==10 or cand_type_ML==11 or cand_type_ML==18 or cand_type_ML==19
   sel_bkg: inv_mass_ML<5.179 or inv_mass_ML>5.379
   var_mom: pt_cand_ML
 Dplus:
-  sig_bkg_files: [data/inputroot/AnalysisResults_MC_testTrainFullStat1Run_Dplus_skimmed.root, data/inputroot/AnalysisResults_Data_fullTrainOne7thStat1Run_Dplus_skimmed.root]
-  data_mc_files: [data/inputroot/AnalysisResults_Data_fullTrainOne7thStat1Run_Dplus_skimmed.root, data/inputroot/AnalysisResults_MC_testTrainFullStat1Run_Dplus_skimmed.root]
+  sig_bkg_files: [data/inputroot/SmallSkimmed_Dplus_pp5TeV_MC_train307.root, data/inputroot/SmallSkimmed_Dplus_pp5TeV_train308.root]
+  data_mc_files: [data/inputroot/SmallSkimmed_Dplus_pp5TeV_train308.root, data/inputroot/SmallSkimmed_Dplus_pp5TeV_MC_train307.root]
   mass_cut: [1.77, 1.97]
   pdg_code: null
   tree_name: fTreeDplusFlagged
@@ -44,24 +44,62 @@ Dplus:
   var_signal: signal_ML
   var_target: signal_ML
   var_training: [d_len_ML, d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, sig_vert_ML, max_norm_d0d0exp_ML]
+  sel_signal: cand_type_ML==10 or cand_type_ML==11 or cand_type_ML==18 or cand_type_ML==19
+  sel_bkg: inv_mass_ML<1.77 or inv_mass_ML>1.97
   var_mom: pt_cand_ML
-Ds:
-  sig_bkg_files: [data/inputroot/AnalysisResults_Ds_MC_2018Sep21_LHC18a4a2_cent_fast_CandBased_skimmed.root, data/inputroot/AnalysisResults_Ds_Data_2018Sep21_LHC15o_pass1_pidfix_CandBased_skimmed.root]
-  data_mc_files: [data/inputroot/AnalysisResults_Ds_Data_2018Sep21_LHC15o_pass1_pidfix_CandBased_skimmed.root, data/inputroot/AnalysisResults_Ds_MC_2018Sep21_LHC18a4a2_cent_fast_CandBased_skimmed.root]
-  mass_cut: [1.83, 2.012]
+Dzero:
+  sig_bkg_files: [data/inputroot/SmallSkimmed_Dzero_pp5TeV_MC_train307.root, data/inputroot/SmallSkimmed_Dzero_pp5TeV_train308.root]
+  data_mc_files: [data/inputroot/SmallSkimmed_Dzero_pp5TeV_train308.root, data/inputroot/SmallSkimmed_Dzero_pp5TeV_MC_train307.root]
+  mass_cut: [1.77, 1.97]
   pdg_code: null
-  tree_name: fTreeDsFlagged
-  var_all: [d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, sig_vert_ML, delta_mass_KK_ML, cos_PiDs_ML, cos_PiKPhi_3_ML, inv_mass_ML, pt_cand_ML, signal_ML, cand_type_ML]
-  var_boundaries: [d_len_xy_ML, delta_mass_KK_ML]
+  tree_name: fTreeDzeroFlagged
+  var_all: [d_len_ML, d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, max_norm_d0d0exp_ML, inv_mass_ML, pt_cand_ML, signal_ML, cand_type_ML]
+  var_boundaries: [d_len_ML, max_norm_d0d0exp_ML]
   var_correlation:
-  - [pt_cand_ML, d_len_xy_ML, sig_vert_ML, pt_cand_ML, pt_cand_ML, norm_dl_xy_ML, cos_PiDs_ML, cos_p_xy_ML, cos_p_xy_ML]
-  - [d_len_xy_ML, sig_vert_ML, delta_mass_KK_ML, delta_mass_KK_ML, sig_vert_ML, d_len_xy_ML, cos_PiKPhi_3_ML, sig_vert_ML, pt_cand_ML]
+  - [pt_cand_ML, d_len_xy_ML, d_len_ML, pt_cand_ML, pt_cand_ML, norm_dl_xy_ML, max_norm_d0d0exp_ML, cos_p_xy_ML, cos_p_xy_ML]
+  - [d_len_xy_ML, imp_par_xy_ML, max_norm_d0d0exp_ML, imp_par_xy_ML, cos_p_ML, d_len_xy_ML, imp_par_xy_ML, cos_p_ML, pt_cand_ML]
   var_others: [inv_mass_ML, pt_cand_ML]
   var_signal: signal_ML
   var_target: signal_ML
-  var_training: [d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, sig_vert_ML, delta_mass_KK_ML, cos_PiDs_ML, cos_PiKPhi_3_ML]
-  sel_signal: cand_type_ML==3 or cand_type_ML==2
+  var_training: [d_len_ML, d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, max_norm_d0d0exp_ML]
+  sel_signal: cand_type_ML==10 or cand_type_ML==11 or cand_type_ML==18 or cand_type_ML==19
+  sel_bkg: inv_mass_ML<1.77 or inv_mass_ML>1.97
+  var_mom: pt_cand_ML 
+Ds:
+  sig_bkg_files: [data/inputroot/SmallSkimmed_Ds_pp5TeV_MC_train307.root, data/inputroot/SmallSkimmed_Ds_pp5TeV_train308.root]
+  data_mc_files: [data/inputroot/SmallSkimmed_Ds_pp5TeV_train308.root, data/inputroot/SmallSkimmed_Ds_pp5TeV_MC_train307.root]
+  mass_cut: [1.83, 2.012]
+  pdg_code: null
+  tree_name: fTreeDsFlagged
+  var_all: [d_len_ML, d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, sig_vert_ML, mass_KK_ML, cos_PiDs_ML, cos_PiKPhi_3_ML, max_norm_d0d0exp_ML, inv_mass_ML, pt_cand_ML, signal_ML, cand_type_ML]
+  var_boundaries: [d_len_ML, max_norm_d0d0exp_ML]
+  var_correlation:
+  - [pt_cand_ML, d_len_xy_ML, sig_vert_ML, pt_cand_ML, pt_cand_ML, norm_dl_xy_ML, cos_PiDs_ML, cos_p_xy_ML, cos_p_xy_ML]
+  - [d_len_xy_ML, sig_vert_ML, mass_KK_ML, mass_KK_ML, sig_vert_ML, d_len_xy_ML, cos_PiKPhi_3_ML, sig_vert_ML, pt_cand_ML]
+  var_others: [inv_mass_ML, pt_cand_ML]
+  var_signal: signal_ML
+  var_target: signal_ML
+  var_training: [d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, sig_vert_ML, mass_KK_ML, cos_PiDs_ML, cos_PiKPhi_3_ML]
+  sel_signal: cand_type_ML==10 or cand_type_ML==11 or cand_type_ML==18 or cand_type_ML==19
   sel_bkg: inv_mass_ML<1.83 or inv_mass_ML>2.012
+  var_mom: pt_cand_ML
+Dstar:
+  sig_bkg_files: [data/inputroot/SmallSkimmed_Dstar_pp5TeV_MC_train307.root, data/inputroot/SmallSkimmed_Dstar_pp5TeV_train308.root]
+  data_mc_files: [data/inputroot/SmallSkimmed_Dstar_pp5TeV_train308.root, data/inputroot/SmallSkimmed_Dstar_pp5TeV_MC_train307.root]
+  mass_cut: [0.14, 0.149]
+  pdg_code: null
+  tree_name: fTreeDstarFlagged
+  var_all: [d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, cos_t_star_ML, imp_par_prod_ML, pt_prong0_ML, max_norm_d0d0exp_ML, inv_mass_ML, pt_cand_ML, signal_ML, cand_type_ML]
+  var_boundaries: [d_len_xy_ML, max_norm_d0d0exp_ML]
+  var_correlation:
+  - [pt_cand_ML, d_len_xy_ML, pt_prong0_ML, pt_cand_ML, pt_cand_ML, norm_dl_xy_ML, cos_t_star_ML, cos_p_xy_ML, cos_p_xy_ML]
+  - [d_len_xy_ML, cos_t_star_ML, imp_par_prod_ML, imp_par_prod_ML, cos_t_star_ML, d_len_xy_ML, pt_prong0_ML, cos_t_star_ML, pt_cand_ML]
+  var_others: [inv_mass_ML, pt_cand_ML]
+  var_signal: signal_ML
+  var_target: signal_ML
+  var_training: [d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, cos_t_star_ML, imp_par_prod_ML, pt_prong0_ML, max_norm_d0d0exp_ML]
+  sel_signal: cand_type_ML==10 or cand_type_ML==11 or cand_type_ML==18 or cand_type_ML==19
+  sel_bkg: inv_mass_ML>0.149
   var_mom: pt_cand_ML
 Lc:
   sig_bkg_files: [data/inputroot/AnalysisResults_Lambdac_MC_CandBased_skimmed.root, data/inputroot/AnalysisResults_Lambdac_Data_CandBased_skimmed.root]
@@ -78,6 +116,23 @@ Lc:
   var_target: signal_ML
   var_training: [d_len_ML, d_len_xy_ML, norm_dl_xy_ML, dist_12_ML, cos_p_ML, pt_p_ML, pt_K_ML, pt_pi_ML, sig_vert_ML, dca_ML]
   sel_signal: cand_type_ML==3 or cand_type_ML==2
+  sel_bkg: inv_mass_ML<2.1864 or inv_mass_ML>2.3864
+  var_mom: pt_cand_ML
+Lcnew:
+  sig_bkg_files: [data/inputroot/SmallSkimmed_Lc_pp5TeV_MC_train307.root, data/inputroot/SmallSkimmed_Lc_pp5TeV_train308.root]
+  data_mc_files: [data/inputroot/SmallSkimmed_Lc_pp5TeV_train308.root, data/inputroot/SmallSkimmed_Lc_pp5TeV_MC_train307.root]
+  mass_cut: [2.1864, 2.3864]
+  pdg_code: null
+  tree_name: fTreeLcFlagged
+  var_all: [d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, sig_vert_ML, pt_prong0_ML, pt_prong1_ML, pt_prong2_ML, max_norm_d0d0exp_ML, inv_mass_ML, pt_cand_ML, signal_ML, cand_type_ML]
+  var_boundaries: [d_len_xy_ML, max_norm_d0d0exp_ML]
+  var_correlation:
+  - [pt_cand_ML, d_len_xy_ML]
+  - [d_len_xy_ML, sig_vert_ML]
+  var_signal: signal_ML
+  var_target: signal_ML
+  var_training: [d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, sig_vert_ML, pt_prong0_ML, pt_prong1_ML, pt_prong2_ML]
+  sel_signal: cand_type_ML==10 or cand_type_ML==11 or cand_type_ML==18 or cand_type_ML==19
   sel_bkg: inv_mass_ML<2.1864 or inv_mass_ML>2.3864
   var_mom: pt_cand_ML
 PIDKaon:
