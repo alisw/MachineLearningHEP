@@ -12,6 +12,10 @@ output_*
 *.vscode
 machine_learning_hep/data/**/*.root
 
+# Configuration files produced by the user
+./*.yml
+./*.yaml
+
 
 # Python compiled
 *.pyc

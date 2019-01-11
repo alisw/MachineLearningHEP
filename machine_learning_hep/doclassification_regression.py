@@ -27,7 +27,7 @@ from machine_learning_hep.general import get_database_ml_gridsearch
 from machine_learning_hep.root import write_tree
 from machine_learning_hep.functions import create_mlsamples, do_correlation
 from machine_learning_hep.io import parse_yaml, checkdir
-from machine_learning_hep.config import assert_config, dump_default_config
+from machine_learning_hep.config import Configuration
 from machine_learning_hep.pca import getdataframe_standardised, get_pcadataframe_pca
 from machine_learning_hep.pca import plotvariance_pca
 from machine_learning_hep.models import getclf_scikit, getclf_xgboost, getclf_keras
@@ -44,41 +44,41 @@ from machine_learning_hep.logger import configure_logger, get_logger
 
 DATA_PREFIX = os.path.expanduser("~/.machine_learning_hep")
 
-def doclassification_regression(config):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 
     logger = get_logger()
     logger.info(f"Start classification_regression run")
 
-    mltype = config['mltype']
-    mlsubtype = config['mlsubtype']
-    case = config['case']
-    loadsampleoption = config['loadsampleoption']
-    var_skimming = config['var_skimming']
-    varmin = config['varmin']
-    varmax = config['varmax']
-    rnd_shuffle = config['rnd_shuffle']
-    nevt_sig = config['nevt_sig']
-    nevt_bkg = config['nevt_bkg']
-    test_frac = config['test_frac']
-    rnd_splt = config['rnd_splt']
-    docorrelation = config['docorrelation']
-    dostandard = config['dostandard']
-    dopca = config['dopca']
-    activate_scikit = config['activate_scikit']
-    activate_xgboost = config['activate_xgboost']
-    activate_keras = config['activate_keras']
-    dotraining = config['dotraining']
-    dotesting = config['dotesting']
-    applytodatamc = config['applytodatamc']
-    docrossvalidation = config['docrossvalidation']
-    dolearningcurve = config['dolearningcurve']
-    doROC = config['doROC']
-    doboundary = config['doboundary']
-    doimportance = config['doimportance']
-    dopltregressionxy = config['dopltregressionxy']
-    dogridsearch = config['dogridsearch']
-    nkfolds = config['nkfolds']
-    ncores = config['ncores']
+    run_config = conf.get_run_config()
+    model_config = conf.get_model_config()
+
+    mltype = run_config['mltype']
+    mlsubtype = run_config['mlsubtype']
+    case = run_config['case']
+    loadsampleoption = run_config['loadsampleoption']
+    var_skimming = run_config['var_skimming']
+    varmin = run_config['varmin']
+    varmax = run_config['varmax']
+    rnd_shuffle = run_config['rnd_shuffle']
+    nevt_sig = run_config['nevt_sig']
+    nevt_bkg = run_config['nevt_bkg']
+    test_frac = run_config['test_frac']
+    rnd_splt = run_config['rnd_splt']
+    docorrelation = run_config['docorrelation']
+    dostandard = run_config['dostandard']
+    dopca = run_config['dopca']
+    dotraining = run_config['dotraining']
+    dotesting = run_config['dotesting']
+    applytodatamc = run_config['applytodatamc']
+    docrossvalidation = run_config['docrossvalidation']
+    dolearningcurve = run_config['dolearningcurve']
+    doROC = run_config['doROC']
+    doboundary = run_config['doboundary']
+    doimportance = run_config['doimportance']
+    dopltregressionxy = run_config['dopltregressionxy']
+    dogridsearch = run_config['dogridsearch']
+    nkfolds = run_config['nkfolds']
+    ncores = run_config['ncores']
 
     data = get_database_ml_parameters()
     filesig, filebkg = data[case]["sig_bkg_files"]
@@ -149,20 +149,17 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
         x_train, pca = get_pcadataframe_pca(x_train, n_pca)
         plotvariance_pca(pca, plotdir)
 
-    if activate_scikit == 1:
-        classifiers_scikit, names_scikit = getclf_scikit(mltype)
-        classifiers = classifiers+classifiers_scikit
-        names = names+names_scikit
 
-    if activate_xgboost == 1:
-        classifiers_xgboost, names_xgboost = getclf_xgboost(mltype)
-        classifiers = classifiers+classifiers_xgboost
-        names = names+names_xgboost
 
-    if activate_keras == 1:
-        classifiers_keras, names_keras = getclf_keras(mltype, len(x_train.columns))
-        classifiers = classifiers+classifiers_keras
-        names = names+names_keras
+    classifiers_scikit, names_scikit = getclf_scikit(model_config)
+
+    classifiers_xgboost, names_xgboost = getclf_xgboost(model_config)
+
+    classifiers_keras, names_keras = getclf_keras(model_config, len(x_train.columns))
+
+    classifiers = classifiers_scikit+classifiers_xgboost+classifiers_keras
+    names = names_scikit+names_xgboost+names_keras
+
 
     if dotraining == 1:
         trainedmodels = fit(names, classifiers, x_train, y_train)
@@ -208,7 +205,7 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
 
     if doboundary == 1:
         classifiers_scikit_2var, names_2var = getclf_scikit(mltype)
-        classifiers_keras_2var, names_keras_2var = getclf_keras(mltype, 2)
+        classifiers_keras_2var, names_keras_2var = getclf_keras(model_config, 2)
         classifiers_2var = classifiers_scikit_2var+classifiers_keras_2var
         names_2var = names_2var+names_keras_2var
         x_test_boundary = x_test[var_boundaries]
@@ -237,11 +234,24 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
 
 
 def main():
+    """
+    Parse and handle arguments and dispatch to central function doclassification_regression.
+    This includes following steps:
+        1) Configure the logger
+        2) Dump default configuration YAMLs if requested (exit afterwards assuming the user wants
+                                                         to edit and use them later)
+        3) Steer doclassification_regression with extracted configuration
+    """
     parser = argparse.ArgumentParser()
     # Require a config file with some plotting info
-    parser.add_argument("-c", "--config", help="config YAML file, do -d <path> to get " \
-                                               "YAML file with defaults at <path>")
-    parser.add_argument("--dump-default-config", help="get default YAML config file")
+    parser.add_argument("--dump-default-config", dest="dump_default_config",
+                        help="get default run parameters as YAML config file")
+    parser.add_argument("--dump-default-models", dest="dump_default_models",
+                        help="get default model parameters as YAML config file")
+    parser.add_argument("-c", "--load-run-config",
+                        help="specify YAML file with run configuration to be loaded")
+    parser.add_argument("-m", "--load-model-config",
+                        help="specify YAML file with model configuration to be loaded")
     parser.add_argument("--debug", action="store_true", help="turn in debug information")
     parser.add_argument("--logfile", help="specify path to log file")
 
@@ -249,13 +259,21 @@ def main():
 
     configure_logger(args.debug, args.logfile)
 
-    if args.dump_default_config is not None:
-        dump_default_config(args.dump_default_config)
+    immediate_exit = False
+    for k, v in {"run": args.dump_default_config, "models": args.dump_default_models}.items():
+        if v is not None:
+            Configuration.dump_default_config(k, v)
+            immediate_exit = True
+    if immediate_exit:
         sys.exit(0)
 
-    user_config = {}
-    if args.config is not None:
-        user_config = parse_yaml(args.config)
+    #model_config = assert_model_config(args.load_model_config, run_config)
+
+    conf = Configuration(args.load_run_config, args.load_model_config)
+    conf.configure()
+
+    conf.print_configuration()
+
 
     # Pass config dictionary
-    doclassification_regression(assert_config(user_config))
+    doclassification_regression(conf)

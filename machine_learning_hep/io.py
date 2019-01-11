@@ -32,9 +32,23 @@ def parse_yaml(filepath):
         return yaml.safe_load(f)
 
 
+def dump_yaml_from_dict(to_yaml, path):
+    path = os.path.expanduser(path)
+    with open(path, "w") as stream:
+        yaml.safe_dump(to_yaml, stream, default_flow_style=False, allow_unicode=False)
+
+
 def checkdir(path):
     """
     Check for existence of directory and create if not existing
     """
     if not os.path.exists(path):
         os.makedirs(path)
+
+def print_dict(d, indent=0):
+   for key, value in d.items():
+      print('\t' * indent + str(key))
+      if isinstance(value, dict):
+         print_dict(value, indent+1)
+      else:
+         print('\t' * (indent+1) + str(value))

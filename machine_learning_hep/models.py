@@ -23,6 +23,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
+from pkg_resources import resource_stream
 
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.tree import DecisionTreeClassifier
@@ -34,79 +35,89 @@ from keras.models import Model
 from keras.wrappers.scikit_learn import KerasClassifier
 from xgboost import XGBClassifier
 from machine_learning_hep.logger import get_logger
+from machine_learning_hep.io import parse_yaml
+import machine_learning_hep.templates_keras as templates_keras
+import machine_learning_hep.templates_xgboost as templates_xgboost
+import machine_learning_hep.templates_scikit as templates_scikit
 
 
-def getclf_scikit(ml_type):
-    classifiers = []
-    names = []
-    if ml_type == "BinaryClassification":
-        classifiers = [
-            #GradientBoostingClassifier(learning_rate=0.01, n_estimators=2500, max_depth=1),
-            RandomForestClassifier(max_depth=5, n_estimators=10, max_features=1),
-            AdaBoostClassifier(),
-            DecisionTreeClassifier(max_depth=5)
-            # LinearSVC(C=1, loss="hinge"),
-            # SVC(kernel="rbf", gamma=5, C=0.001), LogisticRegression()
-        ]
-
-        names = [
-            # "ScikitTreeGradientBoostingClassifier",
-            "ScikitTreeRandom_Forest", "ScikitTreeAdaBoost", "ScikitTreeDecision_Tree"
-            #       "ScikitLinearSVC", "ScikitSVC_rbf","ScikitLogisticRegression"
-        ]
-
-    if ml_type == "Regression":
-        classifiers = [
-            LinearRegression(), Ridge(alpha=1, solver="cholesky"), Lasso(alpha=0.1)
-        ]
-
-        names = [
-            "Scikit_linear_regression", "Scikit_Ridge_regression", "Scikit_Lasso_regression"
-
-        ]
-    return classifiers, names
-
-
-def getclf_xgboost(ml_type):
-    classifiers = []
-    names = []
+def getclf_scikit(model_config):
 
     logger = get_logger()
+    logger.debug("Load scikit models")
 
-    if ml_type == "BinaryClassification":
-        classifiers = [XGBClassifier()]
-        names = ["XGBoostXGBClassifier"]
+    if "scikit" not in model_config:
+        logger.debug("No scikit models found")
+        return [], []
 
-    if ml_type == "Regression":
-        logger.info("No XGBoost models implemented for Regression")
-    return classifiers, names
-
-
-def getclf_keras(ml_type, length_input):
     classifiers = []
     names = []
 
-    logger = get_logger()
+    for c in model_config["scikit"]:
+        try:
+            model = getattr(templates_scikit, c)(model_config["scikit"][c])
+            classifiers.append(model)
+            names.append(c)
+            logger.info("Added scikit model %s", c)
+        except AttributeError:
+            logger.critical("Could not load scikit model %s", c)
 
-    if ml_type == "BinaryClassification":
-        def create_model_functional():
-            # Create layers
-            inputs = Input(shape=(length_input,))
-            layer = Dense(12, activation='relu')(inputs)
-            layer = Dense(8, activation='relu')(layer)
-            predictions = Dense(1, activation='sigmoid')(layer)
-            # Build model from layers
-            model = Model(inputs=inputs, outputs=predictions)
-            model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
-            return model
-
-        classifiers = [KerasClassifier(build_fn=create_model_functional,
-                                       epochs=30, batch_size=50, verbose=0)]
-        names = ["KerasSequential"]
-
-    if ml_type == "Regression":
-        logger.info("No Keras models implemented for Regression")
     return classifiers, names
+
+
+def getclf_xgboost(model_config):
+
+    logger = get_logger()
+    logger.debug("Load xgboost models")
+
+    if "xgboost" not in model_config:
+        logger.debug("No xgboost models found")
+        return [], []
+
+    classifiers = []
+    names = []
+
+    for c in model_config["xgboost"]:
+        try:
+            model = getattr(templates_xgboost, c)(model_config["xgboost"][c])
+            classifiers.append(model)
+            names.append(c)
+            logger.info("Added xgboost model %s", c)
+        except AttributeError:
+            logger.critical("Could not load xgboost model %s", c)
+
+    return classifiers, names
+
+
+def getclf_keras(model_config, length_input):
+
+    logger = get_logger()
+    logger.debug("Load keras models")
+
+    if "keras" not in model_config:
+        logger.debug("No keras models found")
+        return [], []
+
+    classifiers = []
+    names = []
+
+    for c in model_config["keras"]:
+        try:
+            def get_model():
+                return getattr(templates_keras, c)(model_config["keras"][c], length_input)
+            classifiers.append(KerasClassifier(build_fn=get_model,
+                                               epochs=model_config["keras"][c]["epochs"],
+                                               batch_size=model_config["keras"][c]["batch_size"],
+                                               verbose=0))
+            names.append(c)
+            logger.info("Added keras model %s", c)
+        except AttributeError:
+            logger.critical("Could not load keras model %s", c)
+
+    #logger.critical("Some reason")
+    return classifiers, names
+
+
 
 def fit(names_, classifiers_, x_train_, y_train_):
     trainedmodels_ = []

@@ -51,19 +51,6 @@ dostandard:
 dopca:
   default: 0
 
-activate_scikit:
-  default: 0
-
-activate_xgboost:
-  default: 1
-
-activate_keras:
-  default: 0
-  depends:
-    parameter: "mltype"
-    value: "Regression"
-    set: 0
-
 dotraining:
   default: 1
 
@@ -109,3 +96,8 @@ dopltregressionxy:
 
 dogridsearch:
   default: 0
+
+# This configuration defaults are filled on the dly from the models database
+# config_model_parameters.yml
+activate_models:
+  default: {}
