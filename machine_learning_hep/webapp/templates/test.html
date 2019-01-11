@@ -44,56 +44,162 @@
     }
   }
 </script>
+<script>
+    function fillvarfields(){
+    }
+</script>
 </head>
 <body>
+  <center>
   <h1> Classification package for HEP</h1>
   <hr />
-  <h3> Choose classification subtype:</h3>
-  <form action="/formSubmit" method="post">
-    <select id="slct1" name="slct1" onchange="populate(this.id,'slct2')">
-      <option value=""></option>
-      <option value="HeavyFlavour">HeavyFlavour</option>
-      <option value="JetTagging">JetTagging</option>
-      <option value="Nuclei">Nuclei</option>
-    </select>
-    <h3> Choose analysis:</h3>
-    <select id="slct2" name="slct2"></select>
+<form action="/formContinue/formSubmit" method="post">
+    <div>
+    <h3> Classification subtype:</h3>
+        <input class="form-control" type="text" name="subtype" id="subtype" maxlength="50" style="width: 200px;" value={{ displaytext(subtype) }}></input><br>
+    </div>
+    <hr />
+    <div>
+    <h3> Analysis:</h3>
+        <input class="form-control" type="text" name="case" id="case" maxlength="50" style="width: 100px;" value={{ displaytext(case) }}></input><br>
+    </div>
+    <hr />
+    <div class="container-fluid">
+    <h3> Configuration:</h3>
+    
+    <div class="form-group row">
+        <label for="Signal" class="col-sm-2 col-form-label">File Signal</label>
+        <div class="col-sm-10">
+            <input class="form-control" type="text" name="filesig" id="filesig" maxlength="5000" value={{ displaytext(filesig) }}></input>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="Background" class="col-sm-2 col-form-label">File Background</label>
+        <div class="col-sm-10">
+            <input class="form-control" type="text" name="filebkg" id="filebkg" maxlength="5000" value={{ displaytext(filebkg) }}></input>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="treeName" class="col-sm-2 col-form-label">Tree name</label>
+        <div class="col-sm-10">
+            <input class="form-control" type="text" name="tree_name" id="tree_name" maxlength="5000" value={{ displaytext(trename) }}></input>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="listVars" class="col-sm-2 col-form-label">List of all variables</label>
+        <div class="col-sm-10">
+            <input class="form-control" type="text" name="var_all" id="var_all" maxlength="5000" value={{ displaytext(var_all_str) }}></input><br>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="signalVar" class="col-sm-2 col-form-label">Signal variable</label>
+        <div class="col-sm-10">
+            <input class="form-control" type="text" name="var_signal" id="var_signal" maxlength="5000" value={{ displaytext(var_signal) }}></input>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="signalSel" class="col-sm-2 col-form-label">Signal selection</label>
+        <div class="col-sm-10">
+            <input class="form-control" type="text" name="sel_signal" id="sel_signal" maxlength="5000" value={{ displaytext(sel_signal) }}></input>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="bkgSel" class="col-sm-2 col-form-label">Background selection</label>
+        <div class="col-sm-10">
+            <input class="form-control" type="text" name="sel_bkg" id="sel_bkg" maxlength="5000" value={{ displaytext(sel_bkg_str) }}></input>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="trainVars" class="col-sm-2 col-form-label">Training variables</label>
+        <div class="col-sm-10">
+            <input class="form-control" type="text" name="var_training" id="var_training" maxlength="5000" value={{ displaytext(var_training_str) }}></input><br>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="corrVarsx" class="col-sm-2 col-form-label">Correlation variables, x</label>
+        <div class="col-sm-10">
+            <input class="form-control" type="text" name="var_correlation_x" id="var_correlation_x" maxlength="5000" value={{ displaytext(var_corr_x_str) }}></input>
+        </div>
+    </div>
+    <div class="form-group row">
+         <label for="corrVarsy" class="col-sm-2 col-form-label">Correlation variables, y</label>
+        <div class="col-sm-10">
+            <input class="form-control" type="text" name="var_correlation_y" id="var_correlation_y" maxlength="5000" value={{ displaytext(var_corr_y_str) }}></input><br>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="skimVars" class="col-sm-2 col-form-label">Skimming variables</label>
+        <div class="col-sm-10">
+            <input class="form-control" type="text" name="var_skimming" id="var_skimming" maxlength="5000" value={{ displaytext(var_skimming_str) }}></input>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="skimVarsMin" class="col-sm-2 col-form-label">Min values</label>
+        <div class="col-sm-10">
+            <input class="form-control" type="text" name="var_skimming_min_str" id="var_skimming_min_str" maxlength="5000" value={{ displaytext(var_skimming_min_str) }}></input>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="skimVarsMax" class="col-sm-2 col-form-label">Max values</label>
+        <div class="col-sm-10">
+            <input class="form-control" type="text" name="var_skimming_max_str" id="var_skimming_max_str" maxlength="5000" value={{ displaytext(var_skimming_max_str) }}></input><br>
+        </div>
+    </div>
+    <div class="form-row">
+        <div class="form-group col-md-4">
+        <label for="nEvtSig">N evt. signal</label>
+            <input class="form-control" type="number" name="nevt_sig" value=30></input>
+        </div>
+        <div class="form-group col-md-4">
+        <label for="nEvtsBkg">N evt. background</label>
+            <input class="form-control" type="number" name="nevt_bkg" value=30></input>
+        </div>
+        <div class="form-group col-md-4">
+            <label for="testFrac">Test fraction</label>
+            <input class="form-control" type="number" name="test_frac" step=0.01 value=0.2></input>
+        </div>
+    </div>
+    
+    <div class="form-row">
+        <div class="form-group col-md-3">
+            <label for="rdnSplit">Random split</label>
+            <input class="form-control" type="number" name="rnd_splt" value=12></input>
+        </div>
+        <div class="form-group col-md-3">
+            <label for="rdnShuffle">Random shuffle</label>
+            <input class="form-control" type="number" name="rnd_shuffle" value=12></input>
+        </div>
+        <div class="form-group col-md-3">
+            <label for="testFrac">Number of k folds</label>
+            <input class="form-control" type="number" name="nkfolds" value=10></input>
+        </div>
+        <div class="form-group col-md-3">
+            <label for="rdnSplit">Number of cores:</label>
+            <input class="form-control" type="number" name="ncores" value=1></input>
+        </div>
+    </div>
+    
+
     <hr />
     <h3> Choose algorithm:</h3>
-    <input type="checkbox" name="activate_scikit" checked> SciKit
-    <input type="checkbox" name="activate_xgboost" checked> XGBoost
-    <input type="checkbox" name="activate_keras"> Keras
+    <input type="checkbox" name="activate_scikit" checked></input> SciKit
+    <input type="checkbox" name="activate_xgboost" checked></input> XGBoost
+    <input type="checkbox" name="activate_keras"></input> Keras
 
     <hr />
     <h3> Choose your action:</h3>
-    <input type="checkbox" name="docorrelation" checked> Distribution
-    <input type="checkbox" name="dotraining"> Training
-    <input type="checkbox" name="doROC" checked> ROC curves
-    <input type="checkbox" name="dolearningcurve"> Learning curves
-    <input type="checkbox" name="docrossvalidation"> Cross Validation
-    <input type="checkbox" name="doimportance"> Importance
-    <input type="checkbox" name="dogridsearch"> Grid Search
+    <input type="checkbox" name="docorrelation" checked></input> Distribution
+    <input type="checkbox" name="dotraining"></input> Training
+    <input type="checkbox" name="doROC" checked></input> ROC curves
+    <input type="checkbox" name="dolearningcurve"></input> Learning curves
+    <input type="checkbox" name="docrossvalidation"></input> Cross Validation
+    <input type="checkbox" name="doimportance"></input> Importance
+    <input type="checkbox" name="dogridsearch"></input> Grid Search
 
-    <hr />
-    <h3> Configuration values:</h3>
-    <p>
-    Min pT: <input type="number" name="min_var_skimming" value=0 style="width: 50px;">
-    Max pT <input type="number" name="max_var_skimming" value=100 style="width: 50px;">
-    Signal: <input type="number" name="nevt_sig" value=30 style="width: 100px;">
-    Background: <input type="number" name="nevt_bkg" value=30 style="width: 100px;">
-    </p>
-    <p>
-    Test fraction: <input type="number" name="test_frac" step=0.01 value=0.2 style="width: 50px;">
-    Random split: <input type="number" name="rnd_splt" value=12 style="width: 50px;">
-    Random shuffle: <input type="number" name="rnd_shuffle" value=12 style="width: 50px;">
-    Number of k folds: <input type="number" name="nkfolds" value=10 style="width: 50px;">
-    Number of cores: <input type="number" name="ncores" value=1 style="width: 50px;">
-    </p>
     <hr />
     <button type="submit" class="btn btn-default" style="background:lightgreen">Submit</button>
   </form>
-
-
+</center>
 </body>
 </html>
 

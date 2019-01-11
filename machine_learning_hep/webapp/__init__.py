@@ -66,9 +66,12 @@ def jfilter_tab_content(img, title, label, active=False):
             <div style="text-align: center;">{title}</div>
         </div>"""
 
+def jdisplaytext(txt):
+    return f"{txt}"
 
 JENV.globals["tab_header"] = jfilter_tab_header
 JENV.globals["tab_content"] = jfilter_tab_content
+JENV.globals["displaytext"] = jdisplaytext
 
 
 @APP.route("/static/", branch=True)
@@ -82,7 +85,7 @@ def static(req):  # pylint: disable=unused-argument
 @APP.route("/")
 def root(req):  # pylint: disable=unused-argument
     """Serve the home page."""
-    return JENV.get_template("test.html").render()
+    return JENV.get_template("display0.html").render()
 
 
 def get_form(req, label, var_type=str, get_list=False):  # pylint: disable=unused-argument
@@ -101,28 +104,95 @@ def get_form(req, label, var_type=str, get_list=False):  # pylint: disable=unuse
     return val if get_list else val[0]
 
 
-@APP.route('/formSubmit', methods=["POST"])
-def post_form(req):  # pylint: disable=too-many-locals, too-many-statements
-
-    mltype = "BinaryClassification"
+@APP.route('/formContinue', methods=["POST"])
+def post_continue(req):  # pylint: disable=unused-argument
+    """Serve the configuration page."""
+    subtype = get_form(req, "slct1")
     case = get_form(req, "slct2")
     data = get_database_ml_parameters()
     filesig, filebkg = data[case]["sig_bkg_files"]
-    trename = data[case]["tree_name"]
-    var_all = data[case]["var_all"]
-    var_signal = data[case]["var_signal"]
-    sel_signal = data[case]["sel_signal"]
-    sel_bkg = data[case]["sel_bkg"]
-    var_training = data[case]["var_training"]
-    var_corr_x, var_corr_y = data[case]["var_correlation"]
-    var_skimming = [data[case]["var_mom"]]
-
-#     filedata, filemc = data[case]["data_mc_files"]
-#     var_target = data[case]["var_target"]
-#     var_boundaries = data[case]["var_boundaries"]
-
     filesig = os.path.join(DATA_PREFIX, filesig)
     filebkg = os.path.join(DATA_PREFIX, filebkg)
+    trename = data[case]["tree_name"]
+    var_all = data[case]["var_all"]
+    var_all_str = ','.join(var_all)
+    var_signal = data[case]["var_signal"]
+    sel_signal = data[case]["sel_signal"]
+    sel_signal = sel_signal.replace(' ', ',')
+    sel_bkg = data[case]["sel_bkg"]
+    sel_bkg_str = ''
+    for i in sel_bkg:
+        if i == '<':
+            sel_bkg_str += '&lt;'
+        elif i == '>':
+            sel_bkg_str += '&gt;'
+        elif i == ' ':
+            sel_bkg_str += ','
+        else:
+            sel_bkg_str += i
+    var_training = data[case]["var_training"]
+    var_training_str = ','.join(var_training)
+    var_corr_x, var_corr_y = data[case]["var_correlation"]
+    var_corr_x_str = ','.join(var_corr_x)
+    var_corr_y_str = ','.join(var_corr_y)
+    var_skimming = [data[case]["var_mom"]]
+    var_skimming_str = ','.join(var_skimming)
+    varmin = ['0']
+    var_skimming_min_str = ','.join(varmin)
+    varmax = ['100']
+    var_skimming_max_str = ','.join(varmax)
+
+    return JENV.get_template("test.html").render(
+        subtype=subtype, case=case,
+        filesig=filesig, filebkg=filebkg,
+        trename=trename, var_all_str=var_all_str,
+        var_signal=var_signal,
+        sel_signal=sel_signal,
+        sel_bkg_str=sel_bkg_str,
+        var_training_str=var_training_str,
+        var_corr_x_str=var_corr_x_str,
+        var_corr_y_str=var_corr_y_str,
+        var_skimming_str=var_skimming_str,
+        var_skimming_min_str=var_skimming_min_str,
+        var_skimming_max_str=var_skimming_max_str)
+
+@APP.route('/formContinue/formSubmit', methods=["POST"])
+def post_form(req):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+
+    mltype = "BinaryClassification"
+    case = get_form(req, "case")
+    filesig = get_form(req, "filesig")
+    filebkg = get_form(req, "filebkg")
+    trename = get_form(req, "tree_name")
+    var_all_str = get_form(req, "var_all")
+    var_all = var_all_str.split(',')
+    var_signal = get_form(req, "var_signal")
+    sel_signal = get_form(req, "sel_signal")
+    sel_signal = sel_signal.replace(',', ' ')
+    sel_bkg_str = get_form(req, "sel_bkg")
+    sel_bkg = ''
+    for i in sel_bkg_str:
+        if i == ',':
+            sel_bkg += ' '
+        elif i == '&lt;':
+            sel_bkg += '<'
+        elif i == '&gt;':
+            sel_bkg += '>'
+        else:
+            sel_bkg += i
+
+    var_training_str = get_form(req, "var_training")
+    var_training = var_training_str.split(',')
+    var_corr_x_str = get_form(req, "var_correlation_x")
+    var_corr_y_str = get_form(req, "var_correlation_y")
+    var_corr_x = var_corr_x_str.split(',')
+    var_corr_y = var_corr_y_str.split(',')
+    var_skimming_str = get_form(req, "var_skimming")
+    var_skimming = var_skimming_str.split(',')
+    var_skimming_min_str = get_form(req, "var_skimming_min_str")
+    varmin = [int(i) for i in var_skimming_min_str.split(',')]
+    var_skimming_max_str = get_form(req, "var_skimming_max_str")
+    varmax = [int(i) for i in var_skimming_max_str.split(',')]
 
     activate_scikit = get_form(req, 'activate_scikit', var_type=bool)
     activate_xgboost = get_form(req, 'activate_xgboost', var_type=bool)
@@ -143,8 +213,6 @@ def post_form(req):  # pylint: disable=too-many-locals, too-many-statements
     rnd_splt = int(get_form(req, 'rnd_splt', var_type=int))
     nkfolds = int(get_form(req, 'nkfolds', var_type=int))
     ncores = int(get_form(req, 'ncores', var_type=int))
-    varmin = [int(get_form(req, 'min_var_skimming', var_type=int))]
-    varmax = [int(get_form(req, 'max_var_skimming', var_type=int))]
 
     string_selection = createstringselection(var_skimming, varmin, varmax)
     suffix = f"nevt_sig{nevt_sig}_nevt_bkg{nevt_bkg}_" \
@@ -189,7 +257,6 @@ def post_form(req):  # pylint: disable=too-many-locals, too-many-statements
         create_mlsamples(df_sig, df_bkg, sel_signal, sel_bkg, rnd_shuffle,
                          var_skimming, varmin, varmax, var_signal, var_training,
                          nevt_sig, nevt_bkg, test_frac, rnd_splt)
-
     if docorrelation:
         imageIO_vardist, imageIO_scatterplot, imageIO_corr_sig, imageIO_corr_bkg = \
             do_correlation(df_sig_train, df_bkg_train, var_all, var_corr_x, var_corr_y, plotdir)
