@@ -61,6 +61,10 @@ def getdataframe(filename, treename, variables):
     dataframe = tree.pandas.df(preparestringforuproot(variables))
     return dataframe
 
+def filterdataframe_singlevar(dataframe, var, min, max):
+    dataframe = dataframe.loc[(dataframe[var] > min) & (dataframe[var] < max)]
+    return dataframe
+
 
 def filterdataframe(dataframe_, var_list, minlist_, maxlist_):
     dataframe_sel = dataframe_
@@ -69,8 +73,6 @@ def filterdataframe(dataframe_, var_list, minlist_, maxlist_):
     return dataframe_sel
 
 
-def createstringselection(var_skimming_, minlist_, maxlist_):
-    string_selection = "dfselection_"
-    for var, low, high in zip(var_skimming_, minlist_, maxlist_):
-        string_selection = string_selection+(("%s_%.1f_%.1f") % (var, low, high))
+def createstringselection(var, low, high):
+    string_selection = "dfselection_"+(("%s_%.1f_%.1f") % (var, low, high))
     return string_selection

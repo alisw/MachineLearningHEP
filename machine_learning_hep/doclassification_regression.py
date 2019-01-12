@@ -22,7 +22,7 @@ import os.path
 # from sklearn.utils import shuffle
 # from sklearn.metrics import make_scorer, accuracy_score
 from machine_learning_hep.general import get_database_ml_parameters, getdataframe
-from machine_learning_hep.general import createstringselection, filterdataframe
+from machine_learning_hep.general import createstringselection, filterdataframe_singlevar
 from machine_learning_hep.general import get_database_ml_gridsearch
 from machine_learning_hep.root import write_tree
 from machine_learning_hep.functions import create_mlsamples, do_correlation
@@ -54,9 +54,8 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
     mlsubtype = config['mlsubtype']
     case = config['case']
     loadsampleoption = config['loadsampleoption']
-    var_skimming = config['var_skimming']
-    varmin = config['varmin']
-    varmax = config['varmax']
+    binmin = config['binmin']
+    binmax = config['binmax']
     rnd_shuffle = config['rnd_shuffle']
     nevt_sig = config['nevt_sig']
     nevt_bkg = config['nevt_bkg']
@@ -94,14 +93,15 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
     var_target = data[case]["var_target"]
     var_corr_x, var_corr_y = data[case]["var_correlation"]
     var_boundaries = data[case]["var_boundaries"]
-    _ = data[case]["var_mom"]
-
+    var_binning = data[case]['var_binning']
+    presel_gen = data[case]['presel_gen']
+    presel_reco = data[case]['presel_reco']
 
     summary_string = f"#sg events: {nevt_sig}\n#bkg events: {nevt_bkg}\nmltype: {mltype}\n" \
                      f"mlsubtype: {mlsubtype}\ncase: {case}"
     logger.debug(summary_string)
 
-    string_selection = createstringselection(var_skimming, varmin, varmax)
+    string_selection = createstringselection(var_binning, binmin, binmax)
     suffix = f"nevt_sig{nevt_sig}_nevt_bkg{nevt_bkg}_" \
              f"{mltype}{case}_{string_selection}"
     dataframe = f"dataframes_{suffix}"
@@ -134,10 +134,15 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
     if loadsampleoption == 1:
         df_sig = getdataframe(filesig, trename, var_all)
         df_bkg = getdataframe(filebkg, trename, var_all)
+        if presel_reco != None:
+            df_sig = df_sig.query(presel_reco)
+            df_bkg = df_bkg.query(presel_reco)
+        df_sig = filterdataframe_singlevar(df_sig, var_binning, binmin, binmax)
+        df_bkg = filterdataframe_singlevar(df_bkg, var_binning, binmin, binmax)
         _, df_ml_test, df_sig_train, df_bkg_train, _, _, \
         x_train, y_train, x_test, y_test = \
-            create_mlsamples(df_sig, df_bkg, sel_signal, sel_bkg, rnd_shuffle,
-                             var_skimming, varmin, varmax, var_signal, var_training,
+            create_mlsamples(df_sig, df_bkg, sel_signal, sel_bkg, rnd_shuffle, 
+                             var_signal, var_training,
                              nevt_sig, nevt_bkg, test_frac, rnd_splt)
 
     if docorrelation == 1:
@@ -181,8 +186,11 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
     if applytodatamc == 1:
         df_data = getdataframe(filedata, trename, var_all)
         df_mc = getdataframe(filemc, trename, var_all)
-        df_data = filterdataframe(df_data, var_skimming, varmin, varmax)
-        df_mc = filterdataframe(df_mc, var_skimming, varmin, varmax)
+        if presel_reco != None:
+            df_mc = df_mc.query(presel_reco)
+            df_data = df_data.query(presel_reco)
+        df_data = filterdataframe_singlevar(df_data, var_binning, binmin, binmax)
+        df_mc = filterdataframe_singlevar(df_mc, var_binning, binmin, binmax)
         df_data_dec = apply(mltype, names, trainedmodels, df_data, var_training)
         df_mc_dec = apply(mltype, names, trainedmodels, df_mc, var_training)
         df_data_dec_to_root = output+"/data_%s_mldecision.root" % (suffix)
@@ -241,7 +249,7 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
         logger.info("Doing significance optimization")
         if dotraining and dotesting and applytodatamc:
             if (mlsubtype == "HFmeson") and (case == "Ds"):
-                study_signif(case, varmin[0], varmax[0], df_ml_test_dec, df_data_dec, names,
+                study_signif(case, binmin, binmax, df_ml_test_dec, df_data_dec, names,
                              var_signal, suffix, plotdir)
             else:
                 logger.error("Optimisation is not implemented for this classification problem.")
