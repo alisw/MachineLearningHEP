@@ -253,7 +253,7 @@ def main():
     # Require a config file with some plotting info
     parser.add_argument("-c", "--config", help="config YAML file, do -d <path> to get " \
                                                "YAML file with defaults at <path>")
-    parser.add_argument("--dump", help="get default YAML config file")
+    parser.add_argument("--dump-default-config", help="get default YAML config file")
     parser.add_argument("--debug", action="store_true", help="turn in debug information")
     parser.add_argument("--logfile", help="specify path to log file")
 
