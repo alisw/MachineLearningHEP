@@ -255,8 +255,7 @@ def post_form(req):  # pylint: disable=too-many-locals, too-many-statements, too
     # pylint: disable=unused-variable
     _, _, df_sig_train, df_bkg_train, _, _, x_train, y_train, x_test, y_test = \
         create_mlsamples(df_sig, df_bkg, sel_signal, sel_bkg, rnd_shuffle,
-                         var_skimming, varmin, varmax, var_signal, var_training,
-                         nevt_sig, nevt_bkg, test_frac, rnd_splt)
+                         var_signal, var_training, nevt_sig, nevt_bkg, test_frac, rnd_splt)
     if docorrelation:
         imageIO_vardist, imageIO_scatterplot, imageIO_corr_sig, imageIO_corr_bkg = \
             do_correlation(df_sig_train, df_bkg_train, var_all, var_corr_x, var_corr_y, plotdir)

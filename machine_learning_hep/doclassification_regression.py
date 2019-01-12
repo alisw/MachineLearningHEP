@@ -94,7 +94,7 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
     var_corr_x, var_corr_y = data[case]["var_correlation"]
     var_boundaries = data[case]["var_boundaries"]
     var_binning = data[case]['var_binning']
-    presel_gen = data[case]['presel_gen']
+    _ = data[case]['presel_gen']
     presel_reco = data[case]['presel_reco']
 
     summary_string = f"#sg events: {nevt_sig}\n#bkg events: {nevt_bkg}\nmltype: {mltype}\n" \
@@ -134,14 +134,14 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
     if loadsampleoption == 1:
         df_sig = getdataframe(filesig, trename, var_all)
         df_bkg = getdataframe(filebkg, trename, var_all)
-        if presel_reco != None:
+        if presel_reco is not None:
             df_sig = df_sig.query(presel_reco)
             df_bkg = df_bkg.query(presel_reco)
         df_sig = filterdataframe_singlevar(df_sig, var_binning, binmin, binmax)
         df_bkg = filterdataframe_singlevar(df_bkg, var_binning, binmin, binmax)
         _, df_ml_test, df_sig_train, df_bkg_train, _, _, \
         x_train, y_train, x_test, y_test = \
-            create_mlsamples(df_sig, df_bkg, sel_signal, sel_bkg, rnd_shuffle, 
+            create_mlsamples(df_sig, df_bkg, sel_signal, sel_bkg, rnd_shuffle,
                              var_signal, var_training,
                              nevt_sig, nevt_bkg, test_frac, rnd_splt)
 
@@ -186,7 +186,7 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
     if applytodatamc == 1:
         df_data = getdataframe(filedata, trename, var_all)
         df_mc = getdataframe(filemc, trename, var_all)
-        if presel_reco != None:
+        if presel_reco is not None:
             df_mc = df_mc.query(presel_reco)
             df_data = df_data.query(presel_reco)
         df_data = filterdataframe_singlevar(df_data, var_binning, binmin, binmax)
