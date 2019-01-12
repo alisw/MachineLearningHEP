@@ -14,15 +14,11 @@ case:
   choices: ["Bplus", "Dplus", "Ds", "Dsnew", "Dzero", "Dstar", "Lc", "Lcnew", "PIDKaon", "PIDPion", "hypertritium", "lightquarkjet" ]
   default: "Lc"
 
-var_skimming:
-  choices: [["pt_cand_ML"]]
-  default: ["pt_cand_ML"]
+binmin:
+  default: 2
 
-varmin:
-  default: [2]
-
-varmax:
-  default: [4]
+binmax:
+  default: 4
 
 test_frac:
   default: 0.2
