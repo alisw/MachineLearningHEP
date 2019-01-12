@@ -61,8 +61,8 @@ def getdataframe(filename, treename, variables):
     dataframe = tree.pandas.df(preparestringforuproot(variables))
     return dataframe
 
-def filterdataframe_singlevar(dataframe, var, min, max):
-    dataframe = dataframe.loc[(dataframe[var] > min) & (dataframe[var] < max)]
+def filterdataframe_singlevar(dataframe, var, minval, maxval):
+    dataframe = dataframe.loc[(dataframe[var] > minval) & (dataframe[var] < maxval)]
     return dataframe
 
 
