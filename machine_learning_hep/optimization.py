@@ -18,11 +18,11 @@ Methods to: study selection efficiency and expected significance
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from ROOT import TH1F, gROOT # pylint: disable=import-error,no-name-in-module
-from machine_learning_hep.general import get_database_ml_parameters, get_database_signifopt
+from ROOT import TH1F, gROOT  # pylint: disable=import-error,no-name-in-module
+from machine_learning_hep.general import get_database_signifopt
 
-
-def calc_efficiency(df_to_sel, name, num_step):
+def calc_efficiency(df_to_sel, sel_signal, name, num_step):
+    df_to_sel = df_to_sel.query(sel_signal)
     x_axis = np.linspace(0, 1.00, num_step)
     num_tot_cand = len(df_to_sel)
     eff_array = []
@@ -84,7 +84,7 @@ def plot_fonll(common_dict, part_label, suffix, plot_dir):
     df = pd.read_csv(common_dict['filename'])
     plt.figure(figsize=(20, 15))
     plt.subplot(111)
-    plt.plot(df['pt'], df['max'] * common_dict['FF'], linewidth=4.0)
+    plt.plot(df['pt'], df['central'] * common_dict['FF'], linewidth=4.0)
     plt.xlabel('P_t [GeV/c]', fontsize=20)
     plt.ylabel('Cross Section [pb/GeV]', fontsize=20)
     plt.title("FONLL cross section " + part_label, fontsize=20)
@@ -93,36 +93,45 @@ def plot_fonll(common_dict, part_label, suffix, plot_dir):
     plt.savefig(plot_name)
 
 
-def calc_sig_dmeson(common_dict, pt_specific_dict, pt_min, pt_max):
+def countevents(df_evt, sel_evt_counter):
+    df_evt = df_evt.query(sel_evt_counter)
+    nevents = len(df_evt)
+    return nevents
+
+
+def calculateacc_eff(df_mc_gen, df_mc_reco, sel_signal, sel_signal_gen):
+    df_mc_gen = df_mc_gen.query(sel_signal_gen)
+    df_mc_reco = df_mc_reco.query(sel_signal)
+    if df_mc_gen.empty:
+        print("error: denominator is empty")
+    eff = len(df_mc_reco)/len(df_mc_gen)
+    return eff
+
+def calc_sig_dmeson(common_dict, ptmin, ptmax, myacc, nevents_bkg):
     df = pd.read_csv(common_dict['filename'])
-    df_in_pt = df.query('(pt >= @pt_min) and (pt < @pt_max)')['max']
+    df_in_pt = df.query('(pt >= @ptmin) and (pt < @ptmax)')['central']
     prod_cross = df_in_pt.sum() * common_dict['FF'] * 1e-12 / len(df_in_pt)
-    delta_pt = pt_max - pt_min
-    sig_before_sel = 2. * prod_cross * delta_pt * \
-        common_dict['BR'] * pt_specific_dict['acc_times_pre_sel'] * \
-        common_dict['n_events'] / \
-        (common_dict['sigma_MB'] * pt_specific_dict['f_prompt'])
+    delta_pt = ptmax - ptmin
+    signal_yield = (2. * prod_cross * delta_pt * common_dict['BR'] * myacc * nevents_bkg \
+                   * common_dict['sigma_MB'] * common_dict['f_prompt'])
+    return signal_yield
 
-    return sig_before_sel
-
-
-def study_signif(part_label, pt_min, pt_max, sig_set, bkg_set, names, target_var, suffix,
-                 plot_dir):
+# pylint: disable=too-many-arguments
+def study_signif(case, names, binmin, binmax, df_mc_gen, df_mc_reco, df_data_dec,
+                 nevents_bkg, sel_signal, sel_signal_gen, mass_cut, suffix, plotdir):
     gROOT.SetBatch(True)
     gROOT.ProcessLine("gErrorIgnoreLevel = 2000;")
 
-    data_ml = get_database_ml_parameters()[part_label]
-    data_signifopt = get_database_signifopt()[part_label]
+    data_signifopt = get_database_signifopt()[case]
     common_dict = data_signifopt['common']
-    pt_tag = f'pt{pt_min}_{pt_max}'
-    pt_specific_dict = data_signifopt[pt_tag]
+    mass_fit_lim = common_dict['mass_fit_lim']
+    bin_width = common_dict['bin_width']
+    sigma = common_dict['sigma']
+    mass = common_dict["mass"]
 
-    plot_fonll(common_dict, part_label, suffix, plot_dir)
-    sig_before_sel = calc_sig_dmeson(common_dict, pt_specific_dict, pt_min, pt_max)
-    mass = common_dict['mass']
-    sigma = pt_specific_dict['sigma']
-    sig_region = [mass - 3 * sigma, mass + 3 * sigma]
-    mass_cuts = data_ml['mass_cut']
+    plot_fonll(common_dict, case, suffix, plotdir)
+
+    myacc = calculateacc_eff(df_mc_gen, df_mc_reco, sel_signal, sel_signal_gen)
 
     fig_eff = plt.figure(figsize=(20, 15))
     plt.xlabel('Probability', fontsize=20)
@@ -137,27 +146,25 @@ def study_signif(part_label, pt_min, pt_max, sig_set, bkg_set, names, target_var
     num_steps = 101
 
     for name in names:
-        mask_sig = sig_set[target_var].values == 1
-        eff_array, x_axis = calc_efficiency(sig_set[mask_sig], name, num_steps)
+
+        eff_array, x_axis = calc_efficiency(df_mc_reco, sel_signal, name, num_steps)
         plt.figure(fig_eff.number)
-        plt.plot(x_axis, eff_array, alpha=0.3, label='%s' %
-                 name, linewidth=4.0)
+        plt.plot(x_axis, eff_array, alpha=0.3, label='%s' % name, linewidth=4.0)
 
-        sig_array = [eff * sig_before_sel for eff in eff_array]
-        mask_bkg = bkg_set['cand_type_ML'].values == 0
-        bkg_array, _ = calc_bkg(bkg_set[mask_bkg], name, num_steps, mass_cuts,
-                                common_dict['mass_fit_lim'], pt_specific_dict['bin_width'],
-                                sig_region)
+        sig_region = [mass - 3 * sigma, mass + 3 * sigma]
 
+        exp_signal = calc_sig_dmeson(common_dict, binmin, binmax, myacc, nevents_bkg)
+        sig_array = [eff * exp_signal for eff in eff_array]
+        bkg_array, _ = calc_bkg(df_data_dec, name, num_steps, mass_cut,
+                                mass_fit_lim, bin_width, sig_region)
         signif_array = calc_signif(sig_array, bkg_array)
         plt.figure(fig_signif.number)
-        plt.plot(x_axis, signif_array, alpha=0.3,
-                 label='%s' % name, linewidth=4.0)
+        plt.plot(x_axis, signif_array, alpha=0.3, label='%s' % name, linewidth=4.0)
 
-    plt.figure(fig_eff.number)
-    plt.legend(loc="lower left", prop={'size': 18})
-    plt.savefig(plot_dir + '/Efficiency%sSignal.png' % suffix)
+        plt.figure(fig_eff.number)
+        plt.legend(loc="lower left", prop={'size': 18})
+        plt.savefig(plotdir + '/Efficiency%sSignal.png' % suffix)
 
-    plt.figure(fig_signif.number)
-    plt.legend(loc="lower left", prop={'size': 18})
-    plt.savefig(plot_dir + '/Significance%s.png' % suffix)
+        plt.figure(fig_signif.number)
+        plt.legend(loc="lower left", prop={'size': 18})
+        plt.savefig(plotdir + '/Significance%s.png' % suffix)

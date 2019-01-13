@@ -39,9 +39,8 @@ from machine_learning_hep.mlperformance import plotdistributiontarget, plotscatt
 # from machine_learning_hep.mlperformance import confusion
 from machine_learning_hep.mlperformance import precision_recall
 from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perform_plot_gridsearch
-from machine_learning_hep.optimization import study_signif
 from machine_learning_hep.logger import configure_logger, get_logger
-
+from machine_learning_hep.optimization import countevents, study_signif
 
 DATA_PREFIX = os.path.expanduser("~/.machine_learning_hep")
 
@@ -94,8 +93,16 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
     var_corr_x, var_corr_y = data[case]["var_correlation"]
     var_boundaries = data[case]["var_boundaries"]
     var_binning = data[case]['var_binning']
-    _ = data[case]['presel_gen']
-    presel_reco = data[case]['presel_reco']
+    presel_gen = data[case]['presel_gen']
+    presel_reco = data[case]["presel_reco"]
+    mass_cut = data[case]["mass_cut"]
+    var_gen = data[case]["var_gen"]
+    ptgen = data[case]["ptgen"]
+    treename_evt = data[case]["treename_evt"]
+    treename_gen = data[case]["treename_gen"]
+    var_evt = data[case]["var_evt"]
+    sel_evt_counter = data[case]["sel_evt_counter"]
+    sel_signal_gen = data[case]["sel_signal_gen"]
 
     summary_string = f"#sg events: {nevt_sig}\n#bkg events: {nevt_bkg}\nmltype: {mltype}\n" \
                      f"mlsubtype: {mlsubtype}\ncase: {case}"
@@ -248,9 +255,14 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
     if dosignifopt == 1:
         logger.info("Doing significance optimization")
         if dotraining and dotesting and applytodatamc:
-            if (mlsubtype == "HFmeson") and (case == "Ds"):
-                study_signif(case, binmin, binmax, df_ml_test_dec, df_data_dec, names,
-                             var_signal, suffix, plotdir)
+            if (mlsubtype == "HFmeson") and (case == "Dsnew"):
+                df_mc_gen = getdataframe(filemc, treename_gen, var_gen)
+                df_mc_gen = df_mc_gen. query(presel_gen)
+                df_mc_gen = filterdataframe_singlevar(df_mc_gen, ptgen, binmin, binmax)
+                df_data_evt = getdataframe(filedata, treename_evt, var_evt)
+                nevents_bkg = countevents(df_data_evt, sel_evt_counter)
+                study_signif(case, names, binmin, binmax, df_mc_gen, df_mc, df_data_dec, \
+                        nevents_bkg, sel_signal, sel_signal_gen, mass_cut, suffix, plotdir)
             else:
                 logger.error("Optimisation is not implemented for this classification problem.")
     else:
