@@ -30,8 +30,14 @@ Bplus:
   sel_bkg: inv_mass_ML<5.179 or inv_mass_ML>5.379
   var_binning: pt_cand_ML
   presel_reco: null
+  treename_gen: null
   var_gen: null
   presel_gen: null
+  ptgen: null
+  sel_signal_gen: null
+  treename_evt: null
+  var_evt: null
+  sel_evt_counter: null
 Dplus:
   sig_bkg_files: [data/inputroot/SmallSkimmed_Dplus_pp5TeV_MC_train307.root, data/inputroot/SmallSkimmed_Dplus_pp5TeV_train308.root]
   data_mc_files: [data/inputroot/SmallSkimmed_Dplus_pp5TeV_train308.root, data/inputroot/SmallSkimmed_Dplus_pp5TeV_MC_train307.root]
@@ -51,8 +57,14 @@ Dplus:
   sel_bkg: inv_mass_ML<1.77 or inv_mass_ML>1.97
   var_binning: pt_cand_ML
   presel_reco: null
+  treename_gen: null
   var_gen: null
   presel_gen: null
+  ptgen: null
+  sel_signal_gen: null
+  treename_evt: null
+  var_evt: null
+  sel_evt_counter: null
 Dzero:
   sig_bkg_files: [data/inputroot/SmallSkimmed_Dzero_pp5TeV_MC_train307.root, data/inputroot/SmallSkimmed_Dzero_pp5TeV_train308.root]
   data_mc_files: [data/inputroot/SmallSkimmed_Dzero_pp5TeV_train308.root, data/inputroot/SmallSkimmed_Dzero_pp5TeV_MC_train307.root]
@@ -72,8 +84,14 @@ Dzero:
   sel_bkg: inv_mass_ML<1.77 or inv_mass_ML>1.97
   var_binning: pt_cand_ML
   presel_reco: null
+  treename_gen: null
   var_gen: null
   presel_gen: null
+  ptgen: null
+  sel_signal_gen: null
+  treename_evt: null
+  var_evt: null
+  sel_evt_counter: null
 Ds:
   sig_bkg_files: [data/inputroot/AnalysisResults_Ds_MC_2018Sep21_LHC18a4a2_cent_fast_CandBased_skimmed.root, data/inputroot/AnalysisResults_Ds_Data_2018Sep21_LHC15o_pass1_pidfix_CandBased_skimmed.root]
   data_mc_files: [data/inputroot/AnalysisResults_Ds_Data_2018Sep21_LHC15o_pass1_pidfix_CandBased_skimmed.root, data/inputroot/AnalysisResults_Ds_MC_2018Sep21_LHC18a4a2_cent_fast_CandBased_skimmed.root]
@@ -93,8 +111,14 @@ Ds:
   sel_bkg: inv_mass_ML<1.83 or inv_mass_ML>2.012
   var_binning: pt_cand_ML
   presel_reco: null
+  treename_gen: null
   var_gen: null
   presel_gen: null
+  ptgen: null
+  sel_signal_gen: null
+  treename_evt: null
+  var_evt: null
+  sel_evt_counter: null
 Dsnew:
   sig_bkg_files: [data/inputroot/SmallSkimmed_Ds_pp5TeV_MC_train307.root, data/inputroot/SmallSkimmed_Ds_pp5TeV_train308.root]
   data_mc_files: [data/inputroot/SmallSkimmed_Ds_pp5TeV_train308.root, data/inputroot/SmallSkimmed_Ds_pp5TeV_MC_train307.root]
@@ -114,8 +138,14 @@ Dsnew:
   sel_bkg: inv_mass_ML<1.83 or inv_mass_ML>2.012
   var_binning: pt_cand_ML
   presel_reco: abs(eta_prong0_ML)<0.8 and abs(eta_prong1_ML)<0.8 and abs(eta_prong2_ML)<0.8
-  var_gen: [y_cand_gen_ML, pt_cand_gen_ML]
+  treename_gen: fTreeDsGenFlagged 
+  var_gen: [y_cand_gen_ML, pt_cand_gen_ML, cand_type_gen_ML]
   presel_gen: abs(y_cand_gen_ML)<0.5
+  ptgen: pt_cand_gen_ML
+  sel_signal_gen: cand_type_gen_ML==10 or cand_type_gen_ML==11 or cand_type_gen_ML==18 or cand_type_gen_ML==19
+  treename_evt: fTreeEventChar
+  var_evt: [is_ev_rej_ML]
+  sel_evt_counter: is_ev_rej_ML==0
 Dstar:
   sig_bkg_files: [data/inputroot/SmallSkimmed_Dstar_pp5TeV_MC_train307.root, data/inputroot/SmallSkimmed_Dstar_pp5TeV_train308.root]
   data_mc_files: [data/inputroot/SmallSkimmed_Dstar_pp5TeV_train308.root, data/inputroot/SmallSkimmed_Dstar_pp5TeV_MC_train307.root]
@@ -135,8 +165,14 @@ Dstar:
   sel_bkg: inv_mass_ML>0.149
   var_binning: pt_cand_ML
   presel_reco: null
+  treename_gen: null
   var_gen: null
   presel_gen: null
+  ptgen: null
+  sel_signal_gen: null
+  treename_evt: null
+  var_evt: null
+  sel_evt_counter: null
 Lc:
   sig_bkg_files: [data/inputroot/AnalysisResults_Lambdac_MC_CandBased_skimmed.root, data/inputroot/AnalysisResults_Lambdac_Data_CandBased_skimmed.root]
   data_mc_files: [data/inputroot/AnalysisResults_Lambdac_Data_CandBased_skimmed.root, data/inputroot/AnalysisResults_Lambdac_MC_CandBased_skimmed.root]
@@ -156,8 +192,14 @@ Lc:
   sel_bkg: inv_mass_ML<2.1864 or inv_mass_ML>2.3864
   var_binning: pt_cand_ML
   presel_reco: null
+  treename_gen: null
   var_gen: null
   presel_gen: null
+  ptgen: null
+  sel_signal_gen: null
+  treename_evt: null
+  var_evt: null
+  sel_evt_counter: null
 Lcnew:
   sig_bkg_files: [data/inputroot/SmallSkimmed_Lc_pp5TeV_MC_train307.root, data/inputroot/SmallSkimmed_Lc_pp5TeV_train308.root]
   data_mc_files: [data/inputroot/SmallSkimmed_Lc_pp5TeV_train308.root, data/inputroot/SmallSkimmed_Lc_pp5TeV_MC_train307.root]
@@ -177,8 +219,14 @@ Lcnew:
   sel_bkg: inv_mass_ML<2.1864 or inv_mass_ML>2.3864
   var_binning: pt_cand_ML
   presel_reco: null
+  treename_gen: null
   var_gen: null
   presel_gen: null
+  ptgen: null
+  sel_signal_gen: null
+  treename_evt: null
+  var_evt: null
+  sel_evt_counter: null
 PIDKaon:
   sig_bkg_files: [data/inputroot/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root, data/inputroot/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root]
   data_mc_files: null
@@ -198,8 +246,14 @@ PIDKaon:
   sel_bkg: pdg0_ML!=321
   var_binning: pdau0_ML
   presel_reco: null
+  treename_gen: null
   var_gen: null
   presel_gen: null
+  ptgen: null
+  sel_signal_gen: null
+  treename_evt: null
+  var_evt: null
+  sel_evt_counter: null
 PIDPion:
   sig_bkg_files: [data/inputroot/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root, data/inputroot/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root]
   data_mc_files: null
@@ -219,8 +273,14 @@ PIDPion:
   sel_bkg: pdg0_ML!=211
   var_binning: pdau0_ML
   presel_reco: null
+  treename_gen: null
   var_gen: null
   presel_gen: null
+  ptgen: null
+  sel_signal_gen: null
+  treename_evt: null
+  var_evt: null
+  sel_evt_counter: null
 hypertritium:
   sig_bkg_files: [data/inputroot/AnalysisResultsHyper_MC.root, data/inputroot/AnalysisResultsHyper_MC.root]
   data_mc_files: null
@@ -240,8 +300,14 @@ hypertritium:
   sel_bkg: signal!=1
   var_binning: pt
   presel_reco: null
+  treename_gen: null
   var_gen: null
   presel_gen: null
+  ptgen: null
+  sel_signal_gen: null
+  treename_evt: null
+  var_evt: null
+  sel_evt_counter: null
 lightquarkjet:
   sig_bkg_files: [data/inputroot/AnalysisResults_TreeforJetsPythiaPP_MC_skimmed_GenMatched.root, data/inputroot/AnalysisResults_TreeforJetsPythiaPP_MC_skimmed_GenMatched.root]
   data_mc_files: null
@@ -261,5 +327,12 @@ lightquarkjet:
   sel_bkg: Parton_Flag_ML>5
   var_binning: Pt_Rec_ML
   presel_reco: null
+  treename_gen: null
   var_gen: null
   presel_gen: null
+  ptgen: null
+  sel_signal_gen: null
+  treename_evt: null
+  var_evt: null
+  sel_evt_counter: null
+
