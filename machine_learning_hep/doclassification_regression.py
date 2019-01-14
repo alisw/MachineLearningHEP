@@ -183,12 +183,12 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
         savemodels(names, trainedmodels, output, suffix)
 
     if dotesting == 1:
-        df_ml_test_dec = test(mltype, names, trainedmodels, df_ml_test,
-                              var_training, var_signal)
-        df_ml_test_dec_to_df = output+"/testsample_%s_mldecision.pkl" % (suffix)
-        df_ml_test_dec_to_root = output+"/testsample_%s_mldecision.root" % (suffix)
-        df_ml_test_dec.to_pickle(df_ml_test_dec_to_df)
-        write_tree(df_ml_test_dec_to_root, trename, df_ml_test_dec)
+        # The model predictions are added to the test dataframe
+        df_ml_test = test(mltype, names, trainedmodels, df_ml_test, var_training, var_signal)
+        df_ml_test_to_df = output+"/testsample_%s_mldecision.pkl" % (suffix)
+        df_ml_test_to_root = output+"/testsample_%s_mldecision.root" % (suffix)
+        df_ml_test.to_pickle(df_ml_test_to_df)
+        write_tree(df_ml_test_to_root, trename, df_ml_test)
 
     if applytodatamc == 1:
         df_data = getdataframe(filedata, trename, var_all)
@@ -198,12 +198,13 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
             df_data = df_data.query(presel_reco)
         df_data = filterdataframe_singlevar(df_data, var_binning, binmin, binmax)
         df_mc = filterdataframe_singlevar(df_mc, var_binning, binmin, binmax)
-        df_data_dec = apply(mltype, names, trainedmodels, df_data, var_training)
-        df_mc_dec = apply(mltype, names, trainedmodels, df_mc, var_training)
-        df_data_dec_to_root = output+"/data_%s_mldecision.root" % (suffix)
-        df_mc_dec_to_root = output+"/mc_%s_mldecision.root" % (suffix)
-        write_tree(df_data_dec_to_root, trename, df_data_dec)
-        write_tree(df_mc_dec_to_root, trename, df_mc_dec)
+        # The model predictions are added to the dataframes of data and MC
+        df_data = apply(mltype, names, trainedmodels, df_data, var_training)
+        df_mc = apply(mltype, names, trainedmodels, df_mc, var_training)
+        df_data_to_root = output+"/data_%s_mldecision.root" % (suffix)
+        df_mc_to_root = output+"/mc_%s_mldecision.root" % (suffix)
+        write_tree(df_data_to_root, trename, df_data)
+        write_tree(df_mc_to_root, trename, df_mc)
 
     if docrossvalidation == 1:
         df_scores = []
@@ -261,8 +262,8 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
                 df_mc_gen = filterdataframe_singlevar(df_mc_gen, ptgen, binmin, binmax)
                 df_data_evt = getdataframe(filedata, treename_evt, var_evt)
                 nevents_bkg = countevents(df_data_evt, sel_evt_counter)
-                study_signif(case, names, binmin, binmax, df_mc_gen, df_mc, df_data_dec, \
-                        nevents_bkg, sel_signal, sel_signal_gen, mass_cut, suffix, plotdir)
+                study_signif(case, names, binmin, binmax, df_mc_gen, df_mc, df_data, nevents_bkg, \
+                             sel_signal, sel_signal_gen, mass_cut, suffix, plotdir)
             else:
                 logger.error("Optimisation is not implemented for this classification problem.")
     else:
