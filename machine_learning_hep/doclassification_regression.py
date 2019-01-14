@@ -266,8 +266,8 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
                              sel_signal, sel_signal_gen, mass_cut, suffix, plotdir)
             else:
                 logger.error("Optimisation is not implemented for this classification problem.")
-    else:
-        logger.error("Training, testing and applytodata flags must be set to 1")
+        else:
+            logger.error("Training, testing and applytodata flags must be set to 1")
 
 def main():
     parser = argparse.ArgumentParser()
