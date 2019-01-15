@@ -14,40 +14,6 @@
 
     <title>Machine Learning Interface</title>
 
-<script>
-  // this is a java script that can be put in the head and used in the body.
-  // s1, s2 are strings with the name of the html element
-  function populate(s1,s2){
-    // this is the way in which I define variables with the element of the html file
-    var s1 = document.getElementById(s1);
-    var s2 = document.getElementById(s2);
-    // innerHTML can access the value of an existing element.
-    // Below I am setting the second option list to zero
-    s2.innerHTML = "";
-    if(s1.value == "JetTagging"){
-      var optionArray = ["lightquarkjet"];
-    } 
-    else if(s1.value == "HeavyFlavour"){
-      var optionArray = ["Lc","Lcnew","Dplus","Dzero","Dstar","Ds","Dsnew"];
-    }
-    else if(s1.value == "Nuclei"){
-      var optionArray = ["hypertritium"];
-    }
-    else if(s1.value == "PID"){
-      var optionArray = ["PIDKaon", "PIDPion"];
-    }
-    for (var i = 0; i < optionArray.length; i++) {
-      var newOption = document.createElement("option");
-      newOption.value = optionArray[i];
-      newOption.innerHTML = optionArray[i];
-      s2.appendChild(newOption);
-    }
-  }
-</script>
-<script>
-    function fillvarfields(){
-    }
-</script>
 </head>
 <body>
   <center>
@@ -128,21 +94,29 @@
         </div>
     </div>
     <div class="form-group row">
-        <label for="skimVars" class="col-sm-2 col-form-label">Skimming variables</label>
+        <label for="skimVars" class="col-sm-2 col-form-label">Binning variable</label>
         <div class="col-sm-10">
-            <input class="form-control" type="text" name="var_skimming" id="var_skimming" maxlength="5000" value={{ displaytext(var_skimming_str) }}></input>
+            <input class="form-control" type="text" name="var_binning" id="var_binning" maxlength="5000" value={{ displaytext(var_binning) }}></input>
         </div>
     </div>
     <div class="form-group row">
-        <label for="skimVarsMin" class="col-sm-2 col-form-label">Min values</label>
+        <label for="skimVarsMin" class="col-sm-2 col-form-label">Min value</label>
         <div class="col-sm-10">
-            <input class="form-control" type="text" name="var_skimming_min_str" id="var_skimming_min_str" maxlength="5000" value={{ displaytext(var_skimming_min_str) }}></input>
+            <input class="form-control" type="number" name="var_binning_min" step=0.01 value={{ var_binning_min }}></input>
+<!--            <input class="form-control" type="text" name="var_binning_min" id="var_binning_min" maxlength="5000" value={{ displaytext(var_binning_min) }}></input>-->
         </div>
     </div>
     <div class="form-group row">
-        <label for="skimVarsMax" class="col-sm-2 col-form-label">Max values</label>
+        <label for="skimVarsMax" class="col-sm-2 col-form-label">Max value</label>
         <div class="col-sm-10">
-            <input class="form-control" type="text" name="var_skimming_max_str" id="var_skimming_max_str" maxlength="5000" value={{ displaytext(var_skimming_max_str) }}></input><br>
+            <input class="form-control" type="number" name="var_binning_max" step=0.01 value={{ var_binning_max }}></input>
+<!--            <input class="form-control" type="text" name="var_binning_max" id="var_binning_max" maxlength="5000" value={{ displaytext(var_binning_max) }}></input><br>-->
+        </div>
+    </div>
+    <div class="form-group row">
+        <label for="preselReco" class="col-sm-2 col-form-label">Preselection (reco)</label>
+        <div class="col-sm-10">
+            <input class="form-control" type="text" name="presel_reco" id="presel_reco" maxlength="5000" value={{ displaytext(presel_reco_str) }}></input>
         </div>
     </div>
     <div class="form-row">
@@ -170,11 +144,11 @@
             <input class="form-control" type="number" name="rnd_shuffle" value=12></input>
         </div>
         <div class="form-group col-md-3">
-            <label for="testFrac">Number of k folds</label>
+            <label for="nkfolds">Number of k folds</label>
             <input class="form-control" type="number" name="nkfolds" value=10></input>
         </div>
         <div class="form-group col-md-3">
-            <label for="rdnSplit">Number of cores:</label>
+            <label for="ncores">Number of cores:</label>
             <input class="form-control" type="number" name="ncores" value=1></input>
         </div>
     </div>

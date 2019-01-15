@@ -23,7 +23,7 @@ from twisted.web.static import File
 import matplotlib; matplotlib.use("Agg")  # pylint: disable=multiple-statements,wrong-import-position
 
 from machine_learning_hep.general import get_database_ml_parameters, getdataframe
-from machine_learning_hep.general import createstringselection
+from machine_learning_hep.general import createstringselection, filterdataframe_singlevar
 from machine_learning_hep.general import get_database_ml_gridsearch
 from machine_learning_hep.functions import create_mlsamples, do_correlation
 from machine_learning_hep.io import parse_yaml, checkdir
@@ -135,12 +135,28 @@ def post_continue(req):  # pylint: disable=unused-argument
     var_corr_x, var_corr_y = data[case]["var_correlation"]
     var_corr_x_str = ','.join(var_corr_x)
     var_corr_y_str = ','.join(var_corr_y)
-    var_skimming = [data[case]["var_mom"]]
-    var_skimming_str = ','.join(var_skimming)
-    varmin = ['0']
-    var_skimming_min_str = ','.join(varmin)
-    varmax = ['100']
-    var_skimming_max_str = ','.join(varmax)
+#    var_binning = [data[case]["var_binning"]]
+#    var_binning_str = ','.join(var_binning)
+#    varmin = ['0']
+#    var_binning_min_str = ','.join(varmin)
+#    varmax = ['100']
+#    var_binning_max_str = ','.join(varmax)
+    var_binning = data[case]["var_binning"]
+    var_binning_min = 2
+    var_binning_max = 3
+    presel_reco = data[case]["presel_reco"]
+    presel_reco_str = None
+    if presel_reco is not None:
+        presel_reco_str = ''
+        for i in presel_reco:
+            if i == '<':
+                presel_reco_str += '&lt;'
+            elif i == '>':
+                presel_reco_str += '&gt;'
+            elif i == ' ':
+                presel_reco_str += ','
+            else:
+                presel_reco_str += i
 
     return JENV.get_template("test.html").render(
         subtype=subtype, case=case,
@@ -152,9 +168,9 @@ def post_continue(req):  # pylint: disable=unused-argument
         var_training_str=var_training_str,
         var_corr_x_str=var_corr_x_str,
         var_corr_y_str=var_corr_y_str,
-        var_skimming_str=var_skimming_str,
-        var_skimming_min_str=var_skimming_min_str,
-        var_skimming_max_str=var_skimming_max_str)
+        var_binning=var_binning,
+        var_binning_min=var_binning_min,
+        var_binning_max=var_binning_max, presel_reco_str=presel_reco_str)
 
 @APP.route('/formContinue/formSubmit', methods=["POST"])
 def post_form(req):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
@@ -187,12 +203,30 @@ def post_form(req):  # pylint: disable=too-many-locals, too-many-statements, too
     var_corr_y_str = get_form(req, "var_correlation_y")
     var_corr_x = var_corr_x_str.split(',')
     var_corr_y = var_corr_y_str.split(',')
-    var_skimming_str = get_form(req, "var_skimming")
-    var_skimming = var_skimming_str.split(',')
-    var_skimming_min_str = get_form(req, "var_skimming_min_str")
-    varmin = [int(i) for i in var_skimming_min_str.split(',')]
-    var_skimming_max_str = get_form(req, "var_skimming_max_str")
-    varmax = [int(i) for i in var_skimming_max_str.split(',')]
+#    var_binning_str = get_form(req, "var_binning")
+#    var_binning = var_binning_str.split(',')
+#    var_binning_min_str = get_form(req, "var_binning_min_str")
+#    varmin = [int(i) for i in var_binning_min_str.split(',')]
+#    var_binning_max_str = get_form(req, "var_binning_max_str")
+#    varmax = [int(i) for i in var_binning_max_str.split(',')]
+    var_binning = get_form(req, "var_binning")
+    var_binning_min = float(get_form(req, 'var_binning_min', var_type=float))
+    var_binning_max = float(get_form(req, 'var_binning_max', var_type=float))
+    presel_reco_str = get_form(req, "presel_reco")
+
+    presel_reco = ''
+    if presel_reco_str == 'None':
+        presel_reco = None
+    else:
+        for i in presel_reco_str:
+            if i == ',':
+                presel_reco += ' '
+            elif i == '&lt;':
+                presel_reco += '<'
+            elif i == '&gt;':
+                presel_reco += '>'
+            else:
+                presel_reco += i
 
     activate_scikit = get_form(req, 'activate_scikit', var_type=bool)
     activate_xgboost = get_form(req, 'activate_xgboost', var_type=bool)
@@ -214,7 +248,7 @@ def post_form(req):  # pylint: disable=too-many-locals, too-many-statements, too
     nkfolds = int(get_form(req, 'nkfolds', var_type=int))
     ncores = int(get_form(req, 'ncores', var_type=int))
 
-    string_selection = createstringselection(var_skimming, varmin, varmax)
+    string_selection = createstringselection(var_binning, var_binning_min, var_binning_max)
     suffix = f"nevt_sig{nevt_sig}_nevt_bkg{nevt_bkg}_" \
              f"{mltype}{case}_{string_selection}"
 
@@ -239,6 +273,11 @@ def post_form(req):  # pylint: disable=too-many-locals, too-many-statements, too
 
     df_sig = getdataframe(filesig, trename, var_all)
     df_bkg = getdataframe(filebkg, trename, var_all)
+    if presel_reco is not None:
+        df_sig = df_sig.query(presel_reco)
+        df_bkg = df_bkg.query(presel_reco)
+    df_sig = filterdataframe_singlevar(df_sig, var_binning, var_binning_min, var_binning_max)
+    df_bkg = filterdataframe_singlevar(df_bkg, var_binning, var_binning_min, var_binning_max)
 
     # Output images
     imageIO_vardist: BytesIO = None
