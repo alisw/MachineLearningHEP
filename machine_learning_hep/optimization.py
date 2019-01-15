@@ -18,7 +18,7 @@ Methods to: study selection efficiency and expected significance
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from ROOT import TH1F, gROOT  # pylint: disable=import-error,no-name-in-module
+from ROOT import TH1F, TF1, gROOT  # pylint: disable=import-error,no-name-in-module
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.general import get_database_signifopt
 
@@ -58,14 +58,41 @@ def calc_bkg(df_bkg, name, num_step, mass_cuts, fit_region, bin_width, sig_regio
             fit = hmass.Fit('expo', 'Q', '', fit_region[0], fit_region[1])
             if int(fit) == 0:
                 fit_func = hmass.GetFunction('expo')
-                bkg = fit_func.Integral(
-                    sig_region[0], sig_region[1]) / bin_width
+                bkg = fit_func.Integral(sig_region[0], sig_region[1]) / bin_width
                 del fit_func
 
         bkg_array.append(bkg)
         del hmass
 
     return bkg_array, x_axis
+
+def calc_peak_sigma(df_mc_reco, sel_signal, mass, fit_region, bin_width):
+    logger = get_logger()
+    df_signal = df_mc_reco.query(sel_signal)
+    num_bins = (fit_region[1] - fit_region[0]) / bin_width
+    num_bins = int(round(num_bins))
+
+    hmass = TH1F('hmass', '', num_bins, fit_region[0], fit_region[1])
+    mass_array = df_signal['inv_mass_ML'].values
+    for mass_value in np.nditer(mass_array):
+        hmass.Fill(mass_value)
+
+    gaus_fit = TF1("gaus_fit", "gaus", fit_region[0], fit_region[1])
+    gaus_fit.SetParameters(0, hmass.Integral())
+    gaus_fit.SetParameters(1, mass)
+    gaus_fit.SetParameters(2, 0.02)
+    fit = hmass.Fit("gaus_fit", "RQ")
+
+    if int(fit) != 0:
+        logger.error("Problem in signal peak fit")
+        sigma = 0.
+        return sigma
+
+    sigma = gaus_fit.GetParameter(2)
+    del hmass
+    del gaus_fit
+
+    return sigma
 
 
 def calc_signif(sig_array, bkg_array):
@@ -129,8 +156,8 @@ def study_signif(case, names, binmin, binmax, df_mc_gen, df_mc_reco, df_ml_test,
     common_dict = data_signifopt['common']
     mass_fit_lim = common_dict['mass_fit_lim']
     bin_width = common_dict['bin_width']
-    sigma = common_dict['sigma']
     mass = common_dict["mass"]
+    sigma = calc_peak_sigma(df_mc_reco, sel_signal, mass, mass_fit_lim, bin_width)
     sig_region = [mass - 3 * sigma, mass + 3 * sigma]
 
     plot_fonll(common_dict, case, suffix, plotdir)
