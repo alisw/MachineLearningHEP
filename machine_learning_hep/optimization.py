@@ -84,7 +84,7 @@ def plot_fonll(common_dict, part_label, suffix, plot_dir):
     df = pd.read_csv(common_dict['filename'])
     plt.figure(figsize=(20, 15))
     plt.subplot(111)
-    plt.plot(df['pt'], df['central'] * common_dict['FF'], linewidth=4.0)
+    plt.plot(df['pt'], df['max'] * common_dict['FF'], linewidth=4.0)
     plt.xlabel('P_t [GeV/c]', fontsize=20)
     plt.ylabel('Cross Section [pb/GeV]', fontsize=20)
     plt.title("FONLL cross section " + part_label, fontsize=20)
@@ -112,7 +112,7 @@ def calculate_eff_acc(df_mc_gen, df_mc_reco, sel_signal_gen):
 
 def calc_sig_dmeson(common_dict, ptmin, ptmax, eff_acc, n_events):
     df = pd.read_csv(common_dict['filename'])
-    df_in_pt = df.query('(pt >= @ptmin) and (pt < @ptmax)')['central']
+    df_in_pt = df.query('(pt >= @ptmin) and (pt < @ptmax)')['max']
     prod_cross = df_in_pt.sum() * common_dict['FF'] * 1e-12 / len(df_in_pt)
     delta_pt = ptmax - ptmin
     signal_yield = 2. * prod_cross * delta_pt * common_dict['BR'] * eff_acc * n_events \
