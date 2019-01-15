@@ -19,6 +19,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 from ROOT import TH1F, gROOT  # pylint: disable=import-error,no-name-in-module
+from machine_learning_hep.logger import get_logger
 from machine_learning_hep.general import get_database_signifopt
 
 def calc_efficiency(df_to_sel, sel_signal, name, num_step):
@@ -28,8 +29,7 @@ def calc_efficiency(df_to_sel, sel_signal, name, num_step):
     eff_array = []
 
     for thr in x_axis:
-        num_sel_cand = len(
-            df_to_sel[df_to_sel['y_test_prob' + name].values >= thr])
+        num_sel_cand = len(df_to_sel[df_to_sel['y_test_prob' + name].values >= thr])
         eff_array.append(num_sel_cand/num_tot_cand)
 
     return eff_array, x_axis
@@ -96,29 +96,32 @@ def plot_fonll(common_dict, part_label, suffix, plot_dir):
 def countevents(df_evt, sel_evt_counter):
     df_evt = df_evt.query(sel_evt_counter)
     nevents = len(df_evt)
+
     return nevents
 
 
-def calculateacc_eff(df_mc_gen, df_mc_reco, sel_signal, sel_signal_gen):
+def calculate_eff_acc(df_mc_gen, df_mc_reco, sel_signal_gen):
+    logger = get_logger()
     df_mc_gen = df_mc_gen.query(sel_signal_gen)
-    df_mc_reco = df_mc_reco.query(sel_signal)
+    df_mc_reco = df_mc_reco.query(sel_signal_gen)
     if df_mc_gen.empty:
-        print("error: denominator is empty")
-    eff = len(df_mc_reco)/len(df_mc_gen)
-    return eff
+        logger.error("In division denominator is empty")
+    eff_acc = len(df_mc_reco)/len(df_mc_gen)
 
-def calc_sig_dmeson(common_dict, ptmin, ptmax, myacc, nevents_bkg):
+    return eff_acc
+
+def calc_sig_dmeson(common_dict, ptmin, ptmax, eff_acc, n_events):
     df = pd.read_csv(common_dict['filename'])
     df_in_pt = df.query('(pt >= @ptmin) and (pt < @ptmax)')['central']
     prod_cross = df_in_pt.sum() * common_dict['FF'] * 1e-12 / len(df_in_pt)
     delta_pt = ptmax - ptmin
-    signal_yield = (2. * prod_cross * delta_pt * common_dict['BR'] * myacc * nevents_bkg \
-                   * common_dict['sigma_MB'] * common_dict['f_prompt'])
+    signal_yield = 2. * prod_cross * delta_pt * common_dict['BR'] * eff_acc * n_events \
+                   / (common_dict['sigma_MB'] * common_dict['f_prompt'])
     return signal_yield
 
 # pylint: disable=too-many-arguments
-def study_signif(case, names, binmin, binmax, df_mc_gen, df_mc_reco, df_data_dec,
-                 nevents_bkg, sel_signal, sel_signal_gen, mass_cut, suffix, plotdir):
+def study_signif(case, names, binmin, binmax, df_mc_gen, df_mc_reco, df_ml_test, df_data_dec,
+                 n_events, sel_signal_gen, mass_cut, suffix, plotdir):
     gROOT.SetBatch(True)
     gROOT.ProcessLine("gErrorIgnoreLevel = 2000;")
 
@@ -128,10 +131,11 @@ def study_signif(case, names, binmin, binmax, df_mc_gen, df_mc_reco, df_data_dec
     bin_width = common_dict['bin_width']
     sigma = common_dict['sigma']
     mass = common_dict["mass"]
+    sig_region = [mass - 3 * sigma, mass + 3 * sigma]
 
     plot_fonll(common_dict, case, suffix, plotdir)
-
-    myacc = calculateacc_eff(df_mc_gen, df_mc_reco, sel_signal, sel_signal_gen)
+    eff_acc = calculate_eff_acc(df_mc_gen, df_mc_reco, sel_signal_gen)
+    exp_signal = calc_sig_dmeson(common_dict, binmin, binmax, eff_acc, n_events)
 
     fig_eff = plt.figure(figsize=(20, 15))
     plt.xlabel('Probability', fontsize=20)
@@ -147,13 +151,10 @@ def study_signif(case, names, binmin, binmax, df_mc_gen, df_mc_reco, df_data_dec
 
     for name in names:
 
-        eff_array, x_axis = calc_efficiency(df_mc_reco, sel_signal, name, num_steps)
+        eff_array, x_axis = calc_efficiency(df_ml_test, sel_signal_gen, name, num_steps)
         plt.figure(fig_eff.number)
         plt.plot(x_axis, eff_array, alpha=0.3, label='%s' % name, linewidth=4.0)
 
-        sig_region = [mass - 3 * sigma, mass + 3 * sigma]
-
-        exp_signal = calc_sig_dmeson(common_dict, binmin, binmax, myacc, nevents_bkg)
         sig_array = [eff * exp_signal for eff in eff_array]
         bkg_array, _ = calc_bkg(df_data_dec, name, num_steps, mass_cut,
                                 mass_fit_lim, bin_width, sig_region)

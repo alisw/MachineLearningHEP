@@ -104,7 +104,7 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
     sel_evt_counter = data[case]["sel_evt_counter"]
     sel_signal_gen = data[case]["sel_signal_gen"]
 
-    summary_string = f"#sg events: {nevt_sig}\n#bkg events: {nevt_bkg}\nmltype: {mltype}\n" \
+    summary_string = f"#sig events: {nevt_sig}\n#bkg events: {nevt_bkg}\nmltype: {mltype}\n" \
                      f"mlsubtype: {mlsubtype}\ncase: {case}"
     logger.debug(summary_string)
 
@@ -258,12 +258,12 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
         if dotraining and dotesting and applytodatamc:
             if (mlsubtype == "HFmeson") and (case == "Dsnew"):
                 df_mc_gen = getdataframe(filemc, treename_gen, var_gen)
-                df_mc_gen = df_mc_gen. query(presel_gen)
+                df_mc_gen = df_mc_gen.query(presel_gen)
                 df_mc_gen = filterdataframe_singlevar(df_mc_gen, ptgen, binmin, binmax)
                 df_data_evt = getdataframe(filedata, treename_evt, var_evt)
-                nevents_bkg = countevents(df_data_evt, sel_evt_counter)
-                study_signif(case, names, binmin, binmax, df_mc_gen, df_mc, df_data, nevents_bkg, \
-                             sel_signal, sel_signal_gen, mass_cut, suffix, plotdir)
+                n_events = countevents(df_data_evt, sel_evt_counter)
+                study_signif(case, names, binmin, binmax, df_mc_gen, df_mc, df_ml_test, df_data, \
+                             n_events, sel_signal_gen, mass_cut, suffix, plotdir)
             else:
                 logger.error("Optimisation is not implemented for this classification problem.")
         else:
