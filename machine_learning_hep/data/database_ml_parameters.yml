@@ -142,7 +142,8 @@ Dsnew:
   var_gen: [y_cand_gen_ML, pt_cand_gen_ML, cand_type_gen_ML, z_vtx_gen_ML]
   presel_gen: abs(y_cand_gen_ML) < 0.5 and abs(z_vtx_gen_ML) < 10 # check name
   ptgen: pt_cand_gen_ML
-  sel_signal_gen: cand_type_gen_ML==10 or cand_type_gen_ML==11 # check name
+  sel_signal_signifopt: cand_type_ML==10 or cand_type_ML==11
+  sel_signal_signifopt_gen: cand_type_gen_ML==10 or cand_type_gen_ML==11 # check name
   treename_evt: fTreeEventChar
   var_evt: [is_ev_rej_ML]
   sel_evt_counter: is_ev_rej_ML==0

@@ -100,10 +100,10 @@ def countevents(df_evt, sel_evt_counter):
     return nevents
 
 
-def calculate_eff_acc(df_mc_gen, df_mc_reco, sel_signal_gen):
+def calculate_eff_acc(df_mc_gen, df_mc_reco, sel_signal, sel_signal_gen):
     logger = get_logger()
     df_mc_gen = df_mc_gen.query(sel_signal_gen)
-    df_mc_reco = df_mc_reco.query(sel_signal_gen)
+    df_mc_reco = df_mc_reco.query(sel_signal)
     if df_mc_gen.empty:
         logger.error("In division denominator is empty")
     eff_acc = len(df_mc_reco)/len(df_mc_gen)
@@ -121,7 +121,7 @@ def calc_sig_dmeson(common_dict, ptmin, ptmax, eff_acc, n_events):
 
 # pylint: disable=too-many-arguments
 def study_signif(case, names, binmin, binmax, df_mc_gen, df_mc_reco, df_ml_test, df_data_dec,
-                 n_events, sel_signal_gen, mass_cut, suffix, plotdir):
+                 n_events, sel_signal, sel_signal_gen, mass_cut, suffix, plotdir):
     gROOT.SetBatch(True)
     gROOT.ProcessLine("gErrorIgnoreLevel = 2000;")
 
@@ -134,7 +134,7 @@ def study_signif(case, names, binmin, binmax, df_mc_gen, df_mc_reco, df_ml_test,
     sig_region = [mass - 3 * sigma, mass + 3 * sigma]
 
     plot_fonll(common_dict, case, suffix, plotdir)
-    eff_acc = calculate_eff_acc(df_mc_gen, df_mc_reco, sel_signal_gen)
+    eff_acc = calculate_eff_acc(df_mc_gen, df_mc_reco, sel_signal, sel_signal_gen)
     exp_signal = calc_sig_dmeson(common_dict, binmin, binmax, eff_acc, n_events)
 
     fig_eff = plt.figure(figsize=(20, 15))
@@ -151,7 +151,7 @@ def study_signif(case, names, binmin, binmax, df_mc_gen, df_mc_reco, df_ml_test,
 
     for name in names:
 
-        eff_array, x_axis = calc_efficiency(df_ml_test, sel_signal_gen, name, num_steps)
+        eff_array, x_axis = calc_efficiency(df_ml_test, sel_signal, name, num_steps)
         plt.figure(fig_eff.number)
         plt.plot(x_axis, eff_array, alpha=0.3, label='%s' % name, linewidth=4.0)
 

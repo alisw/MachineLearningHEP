@@ -102,7 +102,8 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
     treename_gen = data[case]["treename_gen"]
     var_evt = data[case]["var_evt"]
     sel_evt_counter = data[case]["sel_evt_counter"]
-    sel_signal_gen = data[case]["sel_signal_gen"]
+    sel_signal_signifopt = data[case]["sel_signal_signifopt"]
+    sel_signal_signifopt_gen = data[case]["sel_signal_signifopt_gen"]
 
     summary_string = f"#sig events: {nevt_sig}\n#bkg events: {nevt_bkg}\nmltype: {mltype}\n" \
                      f"mlsubtype: {mlsubtype}\ncase: {case}"
@@ -263,7 +264,8 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
                 df_data_evt = getdataframe(filedata, treename_evt, var_evt)
                 n_events = countevents(df_data_evt, sel_evt_counter)
                 study_signif(case, names, binmin, binmax, df_mc_gen, df_mc, df_ml_test, df_data, \
-                             n_events, sel_signal_gen, mass_cut, suffix, plotdir)
+                             n_events, sel_signal_signifopt, sel_signal_signifopt_gen, mass_cut, \
+                             suffix, plotdir)
             else:
                 logger.error("Optimisation is not implemented for this classification problem.")
         else:
