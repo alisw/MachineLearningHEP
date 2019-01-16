@@ -7,6 +7,5 @@ Dsnew:
     mass: 1.972
     mass_fit_lim: [1.75, 2.15]
     f_prompt: 0.9
-    sigma: 0.009
     bin_width: 0.008
-
+    bkg_data_fraction: 0.1

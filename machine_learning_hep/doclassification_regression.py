@@ -19,7 +19,7 @@ import argparse
 import sys
 import os.path
 
-# from sklearn.utils import shuffle
+from sklearn.utils import shuffle
 # from sklearn.metrics import make_scorer, accuracy_score
 from machine_learning_hep.general import get_database_ml_parameters, getdataframe
 from machine_learning_hep.general import createstringselection, filterdataframe_singlevar
@@ -95,16 +95,16 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
     var_binning = data[case]['var_binning']
     presel_gen = data[case]['presel_gen']
     presel_reco = data[case]["presel_reco"]
-    mass_cut = data[case]["mass_cut"]
     var_gen = data[case]["var_gen"]
     ptgen = data[case]["ptgen"]
     treename_evt = data[case]["treename_evt"]
     treename_gen = data[case]["treename_gen"]
     var_evt = data[case]["var_evt"]
     sel_evt_counter = data[case]["sel_evt_counter"]
-    sel_signal_gen = data[case]["sel_signal_gen"]
+    sel_signal_signifopt = data[case]["sel_signal_signifopt"]
+    sel_signal_signifopt_gen = data[case]["sel_signal_signifopt_gen"]
 
-    summary_string = f"#sg events: {nevt_sig}\n#bkg events: {nevt_bkg}\nmltype: {mltype}\n" \
+    summary_string = f"#sig events: {nevt_sig}\n#bkg events: {nevt_bkg}\nmltype: {mltype}\n" \
                      f"mlsubtype: {mlsubtype}\ncase: {case}"
     logger.debug(summary_string)
 
@@ -130,9 +130,6 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
 
     filesig = os.path.join(DATA_PREFIX, filesig)
     filebkg = os.path.join(DATA_PREFIX, filebkg)
-    filedata = os.path.join(DATA_PREFIX, filedata)
-    filemc = os.path.join(DATA_PREFIX, filemc)
-
     filedata = os.path.join(DATA_PREFIX, filedata)
     filemc = os.path.join(DATA_PREFIX, filemc)
 
@@ -258,12 +255,15 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
         if dotraining and dotesting and applytodatamc:
             if (mlsubtype == "HFmeson") and (case == "Dsnew"):
                 df_mc_gen = getdataframe(filemc, treename_gen, var_gen)
-                df_mc_gen = df_mc_gen. query(presel_gen)
+                df_mc_gen = df_mc_gen.query(presel_gen)
                 df_mc_gen = filterdataframe_singlevar(df_mc_gen, ptgen, binmin, binmax)
-                df_data_evt = getdataframe(filedata, treename_evt, var_evt)
-                nevents_bkg = countevents(df_data_evt, sel_evt_counter)
-                study_signif(case, names, binmin, binmax, df_mc_gen, df_mc, df_data, nevents_bkg, \
-                             sel_signal, sel_signal_gen, mass_cut, suffix, plotdir)
+                df_data_opt = df_data.query(sel_bkg)
+                df_data_opt = shuffle(df_data_opt, random_state=rnd_shuffle)
+                df_evt = getdataframe(filedata, treename_evt, var_evt)
+                n_events = countevents(df_evt, sel_evt_counter)
+                study_signif(case, names, binmin, binmax, df_mc_gen, df_mc, df_ml_test,
+                             df_data_opt, n_events, sel_signal_signifopt, \
+                             sel_signal_signifopt_gen, suffix, plotdir)
             else:
                 logger.error("Optimisation is not implemented for this classification problem.")
         else:

@@ -18,7 +18,8 @@ Methods to: study selection efficiency and expected significance
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from ROOT import TH1F, gROOT  # pylint: disable=import-error,no-name-in-module
+from ROOT import TH1F, TF1, gROOT  # pylint: disable=import-error,no-name-in-module
+from machine_learning_hep.logger import get_logger
 from machine_learning_hep.general import get_database_signifopt
 
 def calc_efficiency(df_to_sel, sel_signal, name, num_step):
@@ -28,28 +29,24 @@ def calc_efficiency(df_to_sel, sel_signal, name, num_step):
     eff_array = []
 
     for thr in x_axis:
-        num_sel_cand = len(
-            df_to_sel[df_to_sel['y_test_prob' + name].values >= thr])
+        num_sel_cand = len(df_to_sel[df_to_sel['y_test_prob' + name].values >= thr])
         eff_array.append(num_sel_cand/num_tot_cand)
 
     return eff_array, x_axis
 
 
-def calc_bkg(df_bkg, name, num_step, mass_cuts, fit_region, bin_width, sig_region):
+def calc_bkg(df_bkg, name, num_step, fit_region, bin_width, sig_region):
     x_axis = np.linspace(0, 1.00, num_step)
     bkg_array = []
     num_bins = (fit_region[1] - fit_region[0]) / bin_width
     num_bins = int(round(num_bins))
     bin_width = (fit_region[1] - fit_region[0]) / num_bins
-    bkg_mass_mask = (df_bkg['inv_mass_ML'].values <= mass_cuts[0]) | (
-        df_bkg['inv_mass_ML'].values >= mass_cuts[1])
-    df_mass = df_bkg[bkg_mass_mask]
 
     for thr in x_axis:
         bkg = 0.
         hmass = TH1F('hmass', '', num_bins, fit_region[0], fit_region[1])
-        bkg_sel_mask = df_mass['y_test_prob' + name].values >= thr
-        sel_mass_array = df_mass[bkg_sel_mask]['inv_mass_ML'].values
+        bkg_sel_mask = df_bkg['y_test_prob' + name].values >= thr
+        sel_mass_array = df_bkg[bkg_sel_mask]['inv_mass_ML'].values
 
         if len(sel_mass_array) > 5:
             for mass_value in np.nditer(sel_mass_array):
@@ -58,14 +55,41 @@ def calc_bkg(df_bkg, name, num_step, mass_cuts, fit_region, bin_width, sig_regio
             fit = hmass.Fit('expo', 'Q', '', fit_region[0], fit_region[1])
             if int(fit) == 0:
                 fit_func = hmass.GetFunction('expo')
-                bkg = fit_func.Integral(
-                    sig_region[0], sig_region[1]) / bin_width
+                bkg = fit_func.Integral(sig_region[0], sig_region[1]) / bin_width
                 del fit_func
 
         bkg_array.append(bkg)
         del hmass
 
     return bkg_array, x_axis
+
+def calc_peak_sigma(df_mc_reco, sel_signal, mass, fit_region, bin_width):
+    logger = get_logger()
+    df_signal = df_mc_reco.query(sel_signal)
+    num_bins = (fit_region[1] - fit_region[0]) / bin_width
+    num_bins = int(round(num_bins))
+
+    hmass = TH1F('hmass', '', num_bins, fit_region[0], fit_region[1])
+    mass_array = df_signal['inv_mass_ML'].values
+    for mass_value in np.nditer(mass_array):
+        hmass.Fill(mass_value)
+
+    gaus_fit = TF1("gaus_fit", "gaus", fit_region[0], fit_region[1])
+    gaus_fit.SetParameters(0, hmass.Integral())
+    gaus_fit.SetParameters(1, mass)
+    gaus_fit.SetParameters(2, 0.02)
+    fit = hmass.Fit("gaus_fit", "RQ")
+
+    if int(fit) != 0:
+        logger.error("Problem in signal peak fit")
+        sigma = 0.
+        return sigma
+
+    sigma = gaus_fit.GetParameter(2)
+    del hmass
+    del gaus_fit
+
+    return sigma
 
 
 def calc_signif(sig_array, bkg_array):
@@ -84,7 +108,7 @@ def plot_fonll(common_dict, part_label, suffix, plot_dir):
     df = pd.read_csv(common_dict['filename'])
     plt.figure(figsize=(20, 15))
     plt.subplot(111)
-    plt.plot(df['pt'], df['central'] * common_dict['FF'], linewidth=4.0)
+    plt.plot(df['pt'], df['max'] * common_dict['FF'], linewidth=4.0)
     plt.xlabel('P_t [GeV/c]', fontsize=20)
     plt.ylabel('Cross Section [pb/GeV]', fontsize=20)
     plt.title("FONLL cross section " + part_label, fontsize=20)
@@ -96,29 +120,32 @@ def plot_fonll(common_dict, part_label, suffix, plot_dir):
 def countevents(df_evt, sel_evt_counter):
     df_evt = df_evt.query(sel_evt_counter)
     nevents = len(df_evt)
+
     return nevents
 
 
-def calculateacc_eff(df_mc_gen, df_mc_reco, sel_signal, sel_signal_gen):
+def calculate_eff_acc(df_mc_gen, df_mc_reco, sel_signal, sel_signal_gen):
+    logger = get_logger()
     df_mc_gen = df_mc_gen.query(sel_signal_gen)
     df_mc_reco = df_mc_reco.query(sel_signal)
     if df_mc_gen.empty:
-        print("error: denominator is empty")
-    eff = len(df_mc_reco)/len(df_mc_gen)
-    return eff
+        logger.error("In division denominator is empty")
+    eff_acc = len(df_mc_reco)/len(df_mc_gen)
 
-def calc_sig_dmeson(common_dict, ptmin, ptmax, myacc, nevents_bkg):
+    return eff_acc
+
+def calc_sig_dmeson(common_dict, ptmin, ptmax, eff_acc, n_events):
     df = pd.read_csv(common_dict['filename'])
-    df_in_pt = df.query('(pt >= @ptmin) and (pt < @ptmax)')['central']
+    df_in_pt = df.query('(pt >= @ptmin) and (pt < @ptmax)')['max']
     prod_cross = df_in_pt.sum() * common_dict['FF'] * 1e-12 / len(df_in_pt)
     delta_pt = ptmax - ptmin
-    signal_yield = (2. * prod_cross * delta_pt * common_dict['BR'] * myacc * nevents_bkg \
-                   * common_dict['sigma_MB'] * common_dict['f_prompt'])
+    signal_yield = 2. * prod_cross * delta_pt * common_dict['BR'] * eff_acc * n_events \
+                   / (common_dict['sigma_MB'] * common_dict['f_prompt'])
     return signal_yield
 
 # pylint: disable=too-many-arguments
-def study_signif(case, names, binmin, binmax, df_mc_gen, df_mc_reco, df_data_dec,
-                 nevents_bkg, sel_signal, sel_signal_gen, mass_cut, suffix, plotdir):
+def study_signif(case, names, binmin, binmax, df_mc_gen, df_mc_reco, df_ml_test, df_data_dec,
+                 n_events, sel_signal, sel_signal_gen, suffix, plotdir):
     gROOT.SetBatch(True)
     gROOT.ProcessLine("gErrorIgnoreLevel = 2000;")
 
@@ -126,12 +153,15 @@ def study_signif(case, names, binmin, binmax, df_mc_gen, df_mc_reco, df_data_dec
     common_dict = data_signifopt['common']
     mass_fit_lim = common_dict['mass_fit_lim']
     bin_width = common_dict['bin_width']
-    sigma = common_dict['sigma']
     mass = common_dict["mass"]
+    bkg_fract = common_dict['bkg_data_fraction']
+    sigma = calc_peak_sigma(df_mc_reco, sel_signal, mass, mass_fit_lim, bin_width)
+    sig_region = [mass - 3 * sigma, mass + 3 * sigma]
+    df_data_dec = df_data_dec.tail(round(len(df_data_dec) * bkg_fract))
 
     plot_fonll(common_dict, case, suffix, plotdir)
-
-    myacc = calculateacc_eff(df_mc_gen, df_mc_reco, sel_signal, sel_signal_gen)
+    eff_acc = calculate_eff_acc(df_mc_gen, df_mc_reco, sel_signal, sel_signal_gen)
+    exp_signal = calc_sig_dmeson(common_dict, binmin, binmax, eff_acc, n_events)
 
     fig_eff = plt.figure(figsize=(20, 15))
     plt.xlabel('Probability', fontsize=20)
@@ -147,16 +177,14 @@ def study_signif(case, names, binmin, binmax, df_mc_gen, df_mc_reco, df_data_dec
 
     for name in names:
 
-        eff_array, x_axis = calc_efficiency(df_mc_reco, sel_signal, name, num_steps)
+        eff_array, x_axis = calc_efficiency(df_ml_test, sel_signal, name, num_steps)
         plt.figure(fig_eff.number)
         plt.plot(x_axis, eff_array, alpha=0.3, label='%s' % name, linewidth=4.0)
 
-        sig_region = [mass - 3 * sigma, mass + 3 * sigma]
-
-        exp_signal = calc_sig_dmeson(common_dict, binmin, binmax, myacc, nevents_bkg)
         sig_array = [eff * exp_signal for eff in eff_array]
-        bkg_array, _ = calc_bkg(df_data_dec, name, num_steps, mass_cut,
+        bkg_array, _ = calc_bkg(df_data_dec, name, num_steps,
                                 mass_fit_lim, bin_width, sig_region)
+        bkg_array = [bkg / bkg_fract for bkg in bkg_array]
         signif_array = calc_signif(sig_array, bkg_array)
         plt.figure(fig_signif.number)
         plt.plot(x_axis, signif_array, alpha=0.3, label='%s' % name, linewidth=4.0)
