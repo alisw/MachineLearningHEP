@@ -35,21 +35,18 @@ def calc_efficiency(df_to_sel, sel_signal, name, num_step):
     return eff_array, x_axis
 
 
-def calc_bkg(df_bkg, name, num_step, mass_cuts, fit_region, bin_width, sig_region):
+def calc_bkg(df_bkg, name, num_step, fit_region, bin_width, sig_region):
     x_axis = np.linspace(0, 1.00, num_step)
     bkg_array = []
     num_bins = (fit_region[1] - fit_region[0]) / bin_width
     num_bins = int(round(num_bins))
     bin_width = (fit_region[1] - fit_region[0]) / num_bins
-    bkg_mass_mask = (df_bkg['inv_mass_ML'].values <= mass_cuts[0]) | (
-        df_bkg['inv_mass_ML'].values >= mass_cuts[1])
-    df_mass = df_bkg[bkg_mass_mask]
 
     for thr in x_axis:
         bkg = 0.
         hmass = TH1F('hmass', '', num_bins, fit_region[0], fit_region[1])
-        bkg_sel_mask = df_mass['y_test_prob' + name].values >= thr
-        sel_mass_array = df_mass[bkg_sel_mask]['inv_mass_ML'].values
+        bkg_sel_mask = df_bkg['y_test_prob' + name].values >= thr
+        sel_mass_array = df_bkg[bkg_sel_mask]['inv_mass_ML'].values
 
         if len(sel_mass_array) > 5:
             for mass_value in np.nditer(sel_mass_array):
@@ -148,7 +145,7 @@ def calc_sig_dmeson(common_dict, ptmin, ptmax, eff_acc, n_events):
 
 # pylint: disable=too-many-arguments
 def study_signif(case, names, binmin, binmax, df_mc_gen, df_mc_reco, df_ml_test, df_data_dec,
-                 n_events, sel_signal, sel_signal_gen, mass_cut, suffix, plotdir):
+                 n_events, sel_signal, sel_signal_gen, suffix, plotdir):
     gROOT.SetBatch(True)
     gROOT.ProcessLine("gErrorIgnoreLevel = 2000;")
 
@@ -157,8 +154,10 @@ def study_signif(case, names, binmin, binmax, df_mc_gen, df_mc_reco, df_ml_test,
     mass_fit_lim = common_dict['mass_fit_lim']
     bin_width = common_dict['bin_width']
     mass = common_dict["mass"]
+    bkg_fract = common_dict['bkg_data_fraction']
     sigma = calc_peak_sigma(df_mc_reco, sel_signal, mass, mass_fit_lim, bin_width)
     sig_region = [mass - 3 * sigma, mass + 3 * sigma]
+    df_data_dec = df_data_dec.tail(round(len(df_data_dec) * bkg_fract))
 
     plot_fonll(common_dict, case, suffix, plotdir)
     eff_acc = calculate_eff_acc(df_mc_gen, df_mc_reco, sel_signal, sel_signal_gen)
@@ -183,8 +182,9 @@ def study_signif(case, names, binmin, binmax, df_mc_gen, df_mc_reco, df_ml_test,
         plt.plot(x_axis, eff_array, alpha=0.3, label='%s' % name, linewidth=4.0)
 
         sig_array = [eff * exp_signal for eff in eff_array]
-        bkg_array, _ = calc_bkg(df_data_dec, name, num_steps, mass_cut,
+        bkg_array, _ = calc_bkg(df_data_dec, name, num_steps,
                                 mass_fit_lim, bin_width, sig_region)
+        bkg_array = [bkg / bkg_fract for bkg in bkg_array]
         signif_array = calc_signif(sig_array, bkg_array)
         plt.figure(fig_signif.number)
         plt.plot(x_axis, signif_array, alpha=0.3, label='%s' % name, linewidth=4.0)
