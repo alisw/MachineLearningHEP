@@ -40,7 +40,7 @@ from machine_learning_hep.mlperformance import plotdistributiontarget, plotscatt
 from machine_learning_hep.mlperformance import precision_recall
 from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perform_plot_gridsearch
 from machine_learning_hep.logger import configure_logger, get_logger
-from machine_learning_hep.optimization import countevents, study_signif
+from machine_learning_hep.optimization import study_signif
 
 DATA_PREFIX = os.path.expanduser("~/.machine_learning_hep")
 
@@ -93,16 +93,7 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
     var_corr_x, var_corr_y = data[case]["var_correlation"]
     var_boundaries = data[case]["var_boundaries"]
     var_binning = data[case]['var_binning']
-    presel_gen = data[case]['presel_gen']
     presel_reco = data[case]["presel_reco"]
-    var_gen = data[case]["var_gen"]
-    ptgen = data[case]["ptgen"]
-    treename_evt = data[case]["treename_evt"]
-    treename_gen = data[case]["treename_gen"]
-    var_evt = data[case]["var_evt"]
-    sel_evt_counter = data[case]["sel_evt_counter"]
-    sel_signal_signifopt = data[case]["sel_signal_signifopt"]
-    sel_signal_signifopt_gen = data[case]["sel_signal_signifopt_gen"]
 
     summary_string = f"#sig events: {nevt_sig}\n#bkg events: {nevt_bkg}\nmltype: {mltype}\n" \
                      f"mlsubtype: {mlsubtype}\ncase: {case}"
@@ -254,16 +245,10 @@ def doclassification_regression(config):  # pylint: disable=too-many-locals, too
         logger.info("Doing significance optimization")
         if dotraining and dotesting and applytodatamc:
             if (mlsubtype == "HFmeson") and (case == "Dsnew"):
-                df_mc_gen = getdataframe(filemc, treename_gen, var_gen)
-                df_mc_gen = df_mc_gen.query(presel_gen)
-                df_mc_gen = filterdataframe_singlevar(df_mc_gen, ptgen, binmin, binmax)
                 df_data_opt = df_data.query(sel_bkg)
                 df_data_opt = shuffle(df_data_opt, random_state=rnd_shuffle)
-                df_evt = getdataframe(filedata, treename_evt, var_evt)
-                n_events = countevents(df_evt, sel_evt_counter)
-                study_signif(case, names, binmin, binmax, df_mc_gen, df_mc, df_ml_test,
-                             df_data_opt, n_events, sel_signal_signifopt, \
-                             sel_signal_signifopt_gen, suffix, plotdir)
+                study_signif(case, names, [binmin, binmax], filemc, filedata, df_mc, df_ml_test,
+                             df_data_opt, suffix, plotdir)
             else:
                 logger.error("Optimisation is not implemented for this classification problem.")
         else:
