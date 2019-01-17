@@ -123,6 +123,7 @@ Dsnew:
   sig_bkg_files: [data/inputroot/SmallSkimmed_Ds_pp5TeV_MC_train307.root, data/inputroot/SmallSkimmed_Ds_pp5TeV_train308.root]
   data_mc_files: [data/inputroot/SmallSkimmed_Ds_pp5TeV_train308.root, data/inputroot/SmallSkimmed_Ds_pp5TeV_MC_train307.root]
   mass_cut: [1.83, 2.012]
+  mass: 1.972
   pdg_code: null
   tree_name: fTreeDsFlagged
   var_all: [d_len_ML, d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, sig_vert_ML, mass_KK_ML, cos_PiDs_ML, cos_PiKPhi_3_ML, max_norm_d0d0exp_ML, inv_mass_ML, pt_cand_ML, signal_ML, cand_type_ML, y_cand_ML, eta_prong0_ML, eta_prong1_ML, eta_prong2_ML]
@@ -143,11 +144,21 @@ Dsnew:
   presel_gen: abs(y_cand_gen_ML) < 0.5 and abs(z_vtx_gen_ML) < 10
   ptgen: pt_cand_gen_ML
   sel_signal_gen: cand_type_gen_ML==10 or cand_type_gen_ML==11 or cand_type_gen_ML==18 or cand_type_gen_ML==19
-  sel_signal_signifopt: cand_type_ML==10 or cand_type_ML==11
-  sel_signal_signifopt_gen: cand_type_gen_ML==10 or cand_type_gen_ML==11 # check name
-  treename_evt: fTreeEventChar
-  var_evt: [is_ev_rej_ML]
-  sel_evt_counter: is_ev_rej_ML==0
+  signif_opt:
+    sel_signal_reco_sopt: cand_type_ML==10 or cand_type_ML==11
+    sel_signal_gen_sopt: cand_type_gen_ML==10 or cand_type_gen_ML==11
+    treename_event: fTreeEventChar
+    var_event: [is_ev_rej_ML]
+    sel_event: is_ev_rej_ML==0
+    filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv'
+    fonll_pred: 'max'
+    FF: 0.1281
+    sigma_MB: 51.2e-3
+    BR: 2.27e-2
+    f_prompt: 0.9
+    mass_fit_lim: [1.75, 2.15]
+    bin_width: 0.008
+    bkg_data_fraction: 0.1
 Dstar:
   sig_bkg_files: [data/inputroot/SmallSkimmed_Dstar_pp5TeV_MC_train307.root, data/inputroot/SmallSkimmed_Dstar_pp5TeV_train308.root]
   data_mc_files: [data/inputroot/SmallSkimmed_Dstar_pp5TeV_train308.root, data/inputroot/SmallSkimmed_Dstar_pp5TeV_MC_train307.root]
