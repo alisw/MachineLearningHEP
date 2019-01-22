@@ -15,7 +15,7 @@
 from keras.layers import Input, Dense
 from keras.models import Model
 
-def simple_one_layer_binary_class(model_config, length_input):
+def keras_simple_one_layer_binary_classifier(model_config, length_input):
     """
     NN for binary classification with 1 hidden layers
     """
@@ -30,7 +30,7 @@ def simple_one_layer_binary_class(model_config, length_input):
                   metrics=['accuracy'])
     return model
 
-def simple_two_layer_binary_class(model_config, length_input):
+def keras_simple_two_layer_binary_classifier(model_config, length_input):
     """
     NN for binary classification with 2 hidden layers
     """
