@@ -154,17 +154,19 @@ def apply(ml_type, names_, trainedmodels_, test_set_, mylistvariablestraining_):
 
 def savemodels(names_, trainedmodels_, folder_, suffix_):
     for name, model in zip(names_, trainedmodels_):
-        if "Keras" in name:
+        if "keras" in name:
             architecture_file = folder_+"/"+name+suffix_+"_architecture.json"
             weights_file = folder_+"/"+name+suffix_+"_weights.h5"
             arch_json = model.model.to_json()
             with open(architecture_file, 'w') as json_file:
                 json_file.write(arch_json)
             model.model.save_weights(weights_file)
-        if "Scikit" in name:
+        if "scikit" in name:
             fileoutmodel = folder_+"/"+name+suffix_+".sav"
             pickle.dump(model, open(fileoutmodel, 'wb'))
-
+        if "xgboost" in name:
+            fileoutmodel = folder_+"/"+name+suffix_+".sav"
+            pickle.dump(model, open(fileoutmodel, 'wb'))
 
 def readmodels(names_, folder_, suffix_):
     trainedmodels_ = []

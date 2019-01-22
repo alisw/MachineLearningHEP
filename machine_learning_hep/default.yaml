@@ -1,19 +1,19 @@
 activate_models:
   BinaryClassification:
     keras:
-      simple_one_layer_binary_class: false
-      simple_two_layer_binary_class: true
+      keras_simple_one_layer_binary_classifier: false
+      keras_simple_two_layer_binary_classifier: true
     scikit:
-      adaboost_classifier: true
-      decision_tree_classifier: true
-      random_forest_classifier: true
+      scikit_adaboost_classifier: true
+      scikit_decision_tree_classifier: true
+      scikit_random_forest_classifier: true
     xgboost:
       xgboost_classifier: true
   Regression:
     scikit:
-      lasso: true
-      linear_regression: true
-      ridge: true
+      scikit_lasso_regression: true
+      scikit_linear_regression: true
+      scikit_ridge_regression: true
 applytodatamc: true
 binmax: 4
 binmin: 2

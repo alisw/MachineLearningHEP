@@ -17,27 +17,27 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import LinearRegression, Ridge, Lasso
 
 
-def random_forest_classifier(model_config):
+def scikit_random_forest_classifier(model_config):
     return RandomForestClassifier(max_depth=model_config["max_depth"],
                                   n_estimators=model_config["n_estimators"],
                                   max_features=model_config["max_features"])
 
 
-def adaboost_classifier(model_config): # pylint: disable=W0613
+def scikit_adaboost_classifier(model_config): # pylint: disable=W0613
     return AdaBoostClassifier()
 
 
-def decision_tree_classifier(model_config):
+def scikit_decision_tree_classifier(model_config):
     return DecisionTreeClassifier(max_depth=model_config["max_depth"])
 
 
-def linear_regression(model_config): # pylint: disable=W0613
+def scikit_linear_regression(model_config): # pylint: disable=W0613
     return LinearRegression()
 
 
-def ridge(model_config):
+def scikit_ridge_regression(model_config):
     return Ridge(alpha=model_config["alpha"], solver=model_config["solver"])
 
 
-def lasso(model_config):
+def scikit_lasso_regression(model_config):
     return Lasso(alpha=model_config["alpha"])
