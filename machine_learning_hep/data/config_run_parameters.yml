@@ -1,7 +1,9 @@
 nevt_sig:
-    default: 1000
+  default: 1000
+  type_as: [42]
 nevt_bkg:
   default: 1000
+  type_as: [42]
 
 mltype:
   choices: ["BinaryClassification", "Regression"]
@@ -16,95 +18,110 @@ case:
 
 binmin:
   default: 2
+  type_as: [42., 42]
 
 binmax:
   default: 4
+  type_as: [42., 42]
 
 test_frac:
   default: 0.2
+  type_as: [42., 42]
 
 rnd_splt:
   default: 12
+  type_as: [42]
 
 rnd_shuffle:
  default: 12
+ type_as: [42]
 
 nkfolds:
   default: 5
+  type_as: [42]
 
 ncores:
   default: -1
+  type_as: [42]
 
 loadsampleoption:
-  default: 1
+  default: True
+  type_as: [True]
 
 docorrelation:
-  default: 0
+  default: False
+  type_as: [True]
 
 dostandard:
-  default: 0
+  default: False
+  type_as: [True]
 
 dopca:
-  default: 0
-
-activate_scikit:
-  default: 0
-
-activate_xgboost:
-  default: 1
-
-activate_keras:
-  default: 0
-  depends:
-    parameter: "mltype"
-    value: "Regression"
-    set: 0
+  default: False
+  type_as: [True]
 
 dotraining:
-  default: 1
+  default: True
+  type_as: [True]
 
 dotesting:
-  default: 1
+  default: True
+  type_as: [True]
 
 applytodatamc:
-  default: 1
+  default: True
+  type_as: [True]
 
 docrossvalidation:
-  default: 1
+  default: True
+  type_as: [True]
 
 dolearningcurve:
-  default: 1
+  default: True
+  type_as: [True]
 
 doROC:
-  default: 1
+  default: True
+  type_as: [True]
   depends:
     parameter: "mltype"
     value: "Regression"
-    set: 0
+    set: False
 
 doboundary:
-  default: 1
+  default: True
+  type_as: [True]
   depends:
     parameter: "mltype"
     value: "Regression"
-    set: 0
+    set: False
 
 doimportance:
-  default: 1
+  default: True
+  type_as: [True]
   depends:
     parameter: "mltype"
     value: "Regression"
-    set: 0
+    set: False
 
 dopltregressionxy:
-  default: 0
+  default: False
+  type_as: [True]
   depends:
     parameter: "mltype"
     value: "BinaryClassification"
-    set: 0
+    set: False
 
 dogridsearch:
-  default: 0
+  default: False
+  type_as: [True]
 
 dosignifopt:
-  default: 0
+  default: False
+  type_as: [True]
+
+# This configuration defaults are filled on the dly from the models database
+# config_model_parameters.yml
+activate_models:
+  default: {}
+  type_as: [{}]
