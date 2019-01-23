@@ -66,8 +66,10 @@ Dplus:
   var_evt: null
   sel_evt_counter: null
 Dzero:
-  sig_bkg_files: [data/inputroot/SmallSkimmed_Dzero_pp5TeV_MC_train307.root, data/inputroot/SmallSkimmed_Dzero_pp5TeV_train308.root]
-  data_mc_files: [data/inputroot/SmallSkimmed_Dzero_pp5TeV_train308.root, data/inputroot/SmallSkimmed_Dzero_pp5TeV_MC_train307.root]
+  sig_bkg_files: [../../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/MC_LHC18a4a2/16-01-2019/307_20181220-1321/merged/full_AnalysisResults_Dzero_skimmed.root, ../../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/16-01-2019/308_20181220-1321/merged/child_1/0001/AnalysisResults_Dzero_skimmed_Merged100.root]
+  data_mc_files: [../../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/16-01-2019/308_20181220-1321/merged/child_1/0001/AnalysisResults_Dzero_skimmed_Merged100.root, ../../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/MC_LHC18a4a2/16-01-2019/307_20181220-1321/merged/full_AnalysisResults_Dzero_skimmed.root]
+  sig_bkg_files_test: [data/inputroot/SmallSkimmed_Dzero_pp5TeV_MC_train307.root, data/inputroot/SmallSkimmed_Dzero_pp5TeV_train308.root]
+  data_mc_files_test: [data/inputroot/SmallSkimmed_Dzero_pp5TeV_train308.root, data/inputroot/SmallSkimmed_Dzero_pp5TeV_MC_train307.root]
   mass_cut: [1.77, 1.97]
   mass: 1.864
   pdg_code: null
@@ -231,6 +233,8 @@ Lc:
 Lcnew:
   sig_bkg_files: [../../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/MC_LHC18a4a2/16-01-2019/307_20181220-1321/merged/full_AnalysisResults_Lc_skimmed.root, ../../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/16-01-2019/308_20181220-1321/merged/child_1/0001/AnalysisResults_Lc_skimmed_Merged100.root]
   data_mc_files: [../../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/16-01-2019/308_20181220-1321/merged/child_1/0001/AnalysisResults_Lc_skimmed_Merged100.root, ../../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/MC_LHC18a4a2/16-01-2019/307_20181220-1321/merged/full_AnalysisResults_Lc_skimmed.root]
+  sig_bkg_files_test: [data/inputroot/SmallSkimmed_Lc_pp5TeV_MC_train307.root, data/inputroot/SmallSkimmed_Lc_pp5TeV_train308.root]
+  data_mc_files_test: [data/inputroot/SmallSkimmed_Lc_pp5TeV_train308.root, data/inputroot/SmallSkimmed_Lc_pp5TeV_MC_train307.root]
   mass_cut: [2.2064, 2.3664]
   mass: 2.2864
   pdg_code: null

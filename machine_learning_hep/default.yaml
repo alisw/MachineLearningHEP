@@ -1,10 +1,10 @@
-activate_keras: 1
-activate_scikit: 1
+activate_keras: 0
+activate_scikit: 0
 activate_xgboost: 1
 applytodatamc: 1
 binmax: 8
 binmin: 4
-case: Lcnew
+case: Dzero
 doROC: 1
 doboundary: 1
 docorrelation: 1
@@ -22,8 +22,8 @@ loadsampleoption: 1
 mlsubtype: HFmeson
 mltype: BinaryClassification
 ncores: -1
-nevt_bkg: 200000
-nevt_sig: 50000
+nevt_bkg: 400000
+nevt_sig: 400000
 nkfolds: 5
 rnd_shuffle: 12
 rnd_splt: 12
