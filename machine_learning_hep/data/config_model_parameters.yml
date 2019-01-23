@@ -1,0 +1,65 @@
+BinaryClassification:
+
+  keras:
+    keras_simple_one_layer_binary_classifier:
+      activate: False
+      default:
+        layers:
+          - {"n_nodes": 12, "activation": "relu"}
+        optimizer: "adam"
+        loss: "binary_crossentropy"
+        epochs: 30
+        batch_size: 50
+
+    keras_simple_two_layer_binary_classifier:
+      activate: True
+      default:
+        layers:
+          - {"n_nodes": 12, "activation": "relu"}
+          - {"n_nodes": 8, "activation": "relu"}
+        optimizer: "adam"
+        loss: "binary_crossentropy"
+        epochs: 30
+        batch_size: 50
+
+  scikit:
+    scikit_random_forest_classifier:
+      activate: True
+      default:
+        max_depth: 5
+        n_estimators: 10
+        max_features: 1
+
+    scikit_adaboost_classifier:
+      activate: True
+      default: {}
+
+    scikit_decision_tree_classifier:
+      activate: True
+      default:
+        max_depth: 5
+
+  xgboost:
+    xgboost_classifier:
+      activate: True
+      default: {}
+
+
+Regression:
+
+  scikit:
+
+    scikit_linear_regression:
+      activate: True
+      default: {}
+
+    scikit_ridge_regression:
+      activate: True
+      default:
+        alpha: 1
+        solver: "cholesky"
+
+    scikit_lasso_regression:
+      activate: True
+      default:
+        alpha: 0.1

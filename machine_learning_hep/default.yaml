@@ -1,24 +1,37 @@
-activate_keras: 0
-activate_scikit: 0
-activate_xgboost: 1
-applytodatamc: 1
-binmax: 8
-binmin: 4
-case: Dzero
-doROC: 1
-doboundary: 1
-docorrelation: 1
-docrossvalidation: 1
-dogridsearch: 1
-doimportance: 1
-dolearningcurve: 1
-dopca: 0
-dopltregressionxy: 1
-dosignifopt: 1
-dostandard: 0
-dotesting: 1
-dotraining: 1
-loadsampleoption: 1
+activate_models:
+  BinaryClassification:
+    keras:
+      keras_simple_one_layer_binary_classifier: false
+      keras_simple_two_layer_binary_classifier: true
+    scikit:
+      scikit_adaboost_classifier: true
+      scikit_decision_tree_classifier: true
+      scikit_random_forest_classifier: true
+    xgboost:
+      xgboost_classifier: true
+  Regression:
+    scikit:
+      scikit_lasso_regression: true
+      scikit_linear_regression: true
+      scikit_ridge_regression: true
+applytodatamc: true
+binmax: 4
+binmin: 2
+case: Lc
+doROC: true
+doboundary: true
+docorrelation: false
+docrossvalidation: true
+dogridsearch: false
+doimportance: true
+dolearningcurve: true
+dopca: false
+dopltregressionxy: false
+dosignifopt: false
+dostandard: false
+dotesting: true
+dotraining: true
+loadsampleoption: true
 mlsubtype: HFmeson
 mltype: BinaryClassification
 ncores: -1

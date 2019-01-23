@@ -34,6 +34,7 @@ from machine_learning_hep.mlperformance import cross_validation_mse, cross_valid
 from machine_learning_hep.mlperformance import plot_cross_validation_mse, plot_learning_curves
 from machine_learning_hep.mlperformance import precision_recall
 from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perform_plot_gridsearch
+from machine_learning_hep.config import Configuration
 
 
 APP = Klein()
@@ -175,8 +176,13 @@ def post_continue(req):  # pylint: disable=unused-argument
 @APP.route('/formContinue/formSubmit', methods=["POST"])
 def post_form(req):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 
+    # Collect configuration in a dictionary for further processing
+    run_config = {}
+
     mltype = "BinaryClassification"
+    run_config["mltype"] = mltype
     case = get_form(req, "case")
+    run_config["case"] = case
     filesig = get_form(req, "filesig")
     filebkg = get_form(req, "filebkg")
     trename = get_form(req, "tree_name")
@@ -212,6 +218,8 @@ def post_form(req):  # pylint: disable=too-many-locals, too-many-statements, too
     var_binning = get_form(req, "var_binning")
     var_binning_min = float(get_form(req, 'var_binning_min', var_type=float))
     var_binning_max = float(get_form(req, 'var_binning_max', var_type=float))
+    run_config["binmin"] = var_binning_min
+    run_config["binmax"] = var_binning_max
     presel_reco_str = get_form(req, "presel_reco")
 
     presel_reco = ''
@@ -233,20 +241,40 @@ def post_form(req):  # pylint: disable=too-many-locals, too-many-statements, too
     activate_keras = get_form(req, 'activate_keras', var_type=bool)
 
     docorrelation = get_form(req, 'docorrelation', var_type=bool)
+    run_config["docorrelation"] = docorrelation
     dotraining = get_form(req, 'dotraining', var_type=bool)
+    run_config["dotraining"] = dotraining
     doROC = get_form(req, 'doROC', var_type=bool)
+    run_config["doROC"] = doROC
     dolearningcurve = get_form(req, 'dolearningcurve', var_type=bool)
+    run_config["dolearningcurve"] = dolearningcurve
     docrossvalidation = get_form(req, 'docrossvalidation', var_type=bool)
+    run_config["docrossvalidation"] = docrossvalidation
     doimportance = get_form(req, 'doimportance', var_type=bool)
+    run_config["doimportance"] = doimportance
     dogridsearch = get_form(req, 'dogridsearch', var_type=bool)
+    run_config["dogridsearch"] = dogridsearch
 
     rnd_shuffle = int(get_form(req, 'rnd_shuffle', var_type=int))
+    run_config["rnd_shuffle"] = rnd_shuffle
     nevt_sig = int(get_form(req, 'nevt_sig', var_type=int))
+    run_config["nevt_sig"] = nevt_sig
     nevt_bkg = int(get_form(req, 'nevt_bkg', var_type=int))
+    run_config["nevt_bkg"] = nevt_bkg
     test_frac = float(get_form(req, 'test_frac', var_type=float))
+    run_config["test_frac"] = test_frac
     rnd_splt = int(get_form(req, 'rnd_splt', var_type=int))
+    run_config["rnd_splt"] = rnd_splt
     nkfolds = int(get_form(req, 'nkfolds', var_type=int))
+    run_config["nkfolds"] = nkfolds
     ncores = int(get_form(req, 'ncores', var_type=int))
+    run_config["ncores"] = ncores
+
+    # Construct Configuration object from run_config
+    conf = Configuration(run_config_input=run_config)
+    conf.configure()
+
+    model_config = conf.get_model_config()
 
     string_selection = createstringselection(var_binning, var_binning_min, var_binning_max)
     suffix = f"nevt_sig{nevt_sig}_nevt_bkg{nevt_bkg}_" \
@@ -299,18 +327,20 @@ def post_form(req):  # pylint: disable=too-many-locals, too-many-statements, too
         imageIO_vardist, imageIO_scatterplot, imageIO_corr_sig, imageIO_corr_bkg = \
             do_correlation(df_sig_train, df_bkg_train, var_all, var_corr_x, var_corr_y, plotdir)
 
+
+    # Using the activate_* flags is for now a work-around
     if activate_scikit:
-        classifiers_scikit, names_scikit = getclf_scikit(mltype)
+        classifiers_scikit, names_scikit = getclf_scikit(model_config)
         classifiers = classifiers+classifiers_scikit
         names = names+names_scikit
 
     if activate_xgboost:
-        classifiers_xgboost, names_xgboost = getclf_xgboost(mltype)
+        classifiers_xgboost, names_xgboost = getclf_xgboost(model_config)
         classifiers = classifiers+classifiers_xgboost
         names = names+names_xgboost
 
     if activate_keras:
-        classifiers_keras, names_keras = getclf_keras(mltype, len(x_train.columns))
+        classifiers_keras, names_keras = getclf_keras(model_config, len(x_train.columns))
         classifiers = classifiers+classifiers_keras
         names = names+names_keras
 
