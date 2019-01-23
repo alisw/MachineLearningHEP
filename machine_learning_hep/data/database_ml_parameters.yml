@@ -122,6 +122,8 @@ Ds:
 Dsnew:
   sig_bkg_files: [data/inputroot/SmallSkimmed_Ds_pp5TeV_MC_train307.root, data/inputroot/SmallSkimmed_Ds_pp5TeV_train308.root]
   data_mc_files: [data/inputroot/SmallSkimmed_Ds_pp5TeV_train308.root, data/inputroot/SmallSkimmed_Ds_pp5TeV_MC_train307.root]
+  sig_bkg_files: [../../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/MC_LHC18a4a2/16-01-2019/307_20181220-1321/merged/child_1/0001/AnalysisResults_Ds_skimmed_Merged200.root, ../../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/16-01-2019/308_20181220-1321/merged/child_1/0001/AnalysisResults_Ds_skimmed_Merged100.root]
+  data_mc_files: [../../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/16-01-2019/308_20181220-1321/merged/child_1/0001/AnalysisResults_Ds_skimmed_Merged100.root, ../../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/MC_LHC18a4a2/16-01-2019/307_20181220-1321/merged/child_1/0001/AnalysisResults_Ds_skimmed_Merged200.root]
   mass_cut: [1.83, 2.012]
   mass: 1.972
   pdg_code: null
@@ -153,7 +155,7 @@ Dsnew:
     filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv'
     fonll_pred: 'max'
     FF: 0.1281
-    sigma_MB: 51.2e-3
+    sigma_MB: 50.87e-3
     BR: 2.27e-2
     f_prompt: 0.9
     mass_fit_lim: [1.75, 2.15]
@@ -214,32 +216,45 @@ Lc:
   var_evt: null
   sel_evt_counter: null
 Lcnew:
-  sig_bkg_files: [data/inputroot/SmallSkimmed_Lc_pp5TeV_MC_train307.root, data/inputroot/SmallSkimmed_Lc_pp5TeV_train308.root]
-  data_mc_files: [data/inputroot/SmallSkimmed_Lc_pp5TeV_train308.root, data/inputroot/SmallSkimmed_Lc_pp5TeV_MC_train307.root]
-  mass_cut: [2.1864, 2.3864]
+  sig_bkg_files: [../../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/MC_LHC18a4a2/16-01-2019/307_20181220-1321/merged/full_AnalysisResults_Lc_skimmed.root, ../../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/16-01-2019/308_20181220-1321/merged/child_1/0001/AnalysisResults_Lc_skimmed_Merged100.root]
+  data_mc_files: [../../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/16-01-2019/308_20181220-1321/merged/child_1/0001/AnalysisResults_Lc_skimmed_Merged100.root, ../../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/MC_LHC18a4a2/16-01-2019/307_20181220-1321/merged/full_AnalysisResults_Lc_skimmed.root]
+  mass_cut: [2.2064, 2.3664]
+  mass: 2.2864
   pdg_code: null
   tree_name: fTreeLcFlagged
-  var_all: [d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, sig_vert_ML, pt_prong0_ML, pt_prong1_ML, pt_prong2_ML, max_norm_d0d0exp_ML, inv_mass_ML, pt_cand_ML, signal_ML, cand_type_ML]
+  var_all: [d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, sig_vert_ML, pt_prong0_ML, pt_prong1_ML, pt_prong2_ML, max_norm_d0d0exp_ML, inv_mass_ML, pt_cand_ML, signal_ML, cand_type_ML, y_cand_ML, eta_prong0_ML, eta_prong1_ML, eta_prong2_ML]
   var_boundaries: [d_len_xy_ML, max_norm_d0d0exp_ML]
   var_correlation:
-  - [pt_cand_ML, d_len_xy_ML]
-  - [d_len_xy_ML, sig_vert_ML]
+  - [pt_cand_ML, d_len_xy_ML, sig_vert_ML, norm_dl_xy_ML, pt_cand_ML, norm_dl_xy_ML, pt_prong0_ML, pt_prong1_ML, cos_p_xy_ML]
+  - [d_len_xy_ML, sig_vert_ML, cos_p_xy_ML, cos_p_ML, sig_vert_ML, d_len_xy_ML, pt_prong2_ML, sig_vert_ML, pt_cand_ML]
   var_others: [inv_mass_ML, pt_cand_ML]
   var_signal: signal_ML
   var_target: signal_ML
   var_training: [d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, sig_vert_ML, pt_prong0_ML, pt_prong1_ML, pt_prong2_ML, max_norm_d0d0exp_ML]
-  sel_signal: cand_type_ML==10 or cand_type_ML==11 or cand_type_ML==18 or cand_type_ML==19
+  sel_signal: cand_type_ML==2 or cand_type_ML==3 or cand_type_ML==10 or cand_type_ML==11 or cand_type_ML==18 or cand_type_ML==19 or cand_type_ML==34 or cand_type_ML==35 or cand_type_ML==42 or cand_type_ML==43 or cand_type_ML==50 or cand_type_ML==51
   sel_bkg: inv_mass_ML<2.1864 or inv_mass_ML>2.3864
   var_binning: pt_cand_ML
-  presel_reco: null
-  treename_gen: null
-  var_gen: null
-  presel_gen: null
-  ptgen: null
-  sel_signal_gen: null
-  treename_evt: null
-  var_evt: null
-  sel_evt_counter: null
+  presel_reco: abs(eta_prong0_ML)<0.8 and abs(eta_prong1_ML)<0.8 and abs(eta_prong2_ML)<0.8
+  treename_gen: fTreeLcGenFlagged
+  var_gen: [y_cand_gen_ML, pt_cand_gen_ML, cand_type_gen_ML, z_vtx_gen_ML]
+  presel_gen: abs(y_cand_gen_ML) < 0.5 and abs(z_vtx_gen_ML) < 10
+  ptgen: pt_cand_gen_ML
+  sel_signal_gen: cand_type_gen_ML==2 or cand_type_gen_ML==3 or cand_type_gen_ML==10 or cand_type_gen_ML==11 or cand_type_gen_ML==18 or cand_type_gen_ML==19 or cand_type_gen_ML==34 or cand_type_gen_ML==35 or cand_type_gen_ML==42 or cand_type_gen_ML==43 or cand_type_gen_ML==50 or cand_type_gen_ML==51
+  signif_opt:
+    sel_signal_reco_sopt: cand_type_ML==2 or cand_type_ML==3 or cand_type_ML==10 or cand_type_ML==11 or cand_type_ML==18 or cand_type_ML==19 or cand_type_ML==34 or cand_type_ML==35 or cand_type_ML==42 or cand_type_ML==43 or cand_type_ML==50 or cand_type_ML==51
+    sel_signal_gen_sopt: cand_type_gen_ML==2 or cand_type_gen_ML==3 or cand_type_gen_ML==10 or cand_type_gen_ML==11 or cand_type_gen_ML==18 or cand_type_gen_ML==19 or cand_type_gen_ML==34 or cand_type_gen_ML==35 or cand_type_gen_ML==42 or cand_type_gen_ML==43 or cand_type_gen_ML==50 or cand_type_gen_ML==51
+    treename_event: fTreeEventChar
+    var_event: [is_ev_rej_ML]
+    sel_event: is_ev_rej_ML==0
+    filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv'
+    fonll_pred: 'max'
+    FF: 0.1281
+    sigma_MB: 50.87e-3
+    BR: 6.23e-2
+    f_prompt: 0.9
+    mass_fit_lim: [2.12, 2.45]
+    bin_width: 0.008
+    bkg_data_fraction: 0.1
 PIDKaon:
   sig_bkg_files: [data/inputroot/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root, data/inputroot/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root]
   data_mc_files: null
