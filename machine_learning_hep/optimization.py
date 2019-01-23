@@ -39,6 +39,22 @@ def calc_efficiency(df_to_sel, sel_signal, name, num_step):
 
     return eff_array, eff_err_array, x_axis
 
+def calc_efficiency_std(df_to_sel, sel_signal, sel_signal_std, name, num_step):
+    df_to_sel = df_to_sel.query(sel_signal)
+    x_axis = np.linspace(0, 1.00, num_step)
+    num_tot_cand = len(df_to_sel)
+    eff_array = []
+    eff_err_array = []
+
+    num_sel_cand = len(df_to_sel.query(sel_signal_std))
+    eff = num_sel_cand / num_tot_cand
+    eff_err = np.sqrt(eff * (1 - eff) / num_tot_cand)
+    
+    for thr in x_axis:
+        eff_array.append(eff)
+        eff_err_array.append(eff_err)
+    
+    return eff_array, eff_err_array, x_axis
 
 def calc_bkg(df_bkg, name, num_step, fit_region, bin_width, sig_region):
     x_axis = np.linspace(0, 1.00, num_step)
@@ -220,10 +236,18 @@ def study_signif(case, names, bin_lim, file_mc, file_data, df_mc_reco, df_ml_tes
         plt.errorbar(x_axis, signif_array, yerr=signif_err_array, alpha=0.3, label=f'{name}',
                      elinewidth=2.5, linewidth=4.0)
 
-        plt.figure(fig_eff.number)
-        plt.legend(loc="lower left", prop={'size': 18})
-        plt.savefig(plotdir + '/Efficiency%sSignal.png' % suffix)
-
-        plt.figure(fig_signif.number)
-        plt.legend(loc="lower left", prop={'size': 18})
-        plt.savefig(plotdir + '/Significance%s.png' % suffix)
+    eff_array_std, eff_err_array_std, x_axis_std = calc_efficiency_std(df_ml_test,
+                                                                       sopt_dict['sel_signal_reco_sopt'],
+                                                                       sopt_dict['sel_signal_reco_std'],
+                                                                       name, num_steps)
+    plt.figure(fig_eff.number)
+    plt.errorbar(x_axis_std, eff_array_std, yerr=eff_err_array_std, alpha=0.3, label=f'ALICE Standard',
+                 elinewidth=2.5, linewidth=4.0)
+                     
+    plt.figure(fig_eff.number)
+    plt.legend(loc="lower left", prop={'size': 18})
+    plt.savefig(plotdir + '/Efficiency%sSignal.png' % suffix)
+        
+    plt.figure(fig_signif.number)
+    plt.legend(loc="lower left", prop={'size': 18})
+    plt.savefig(plotdir + '/Significance%s.png' % suffix)
