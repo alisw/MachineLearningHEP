@@ -24,6 +24,10 @@ from machine_learning_hep.general import getdataframe, filterdataframe_singlevar
 from machine_learning_hep.general import get_database_ml_parameters
 
 def calc_efficiency(df_to_sel, sel_signal, name, num_step):
+    """
+    Calculate the ML selection efficiency as a function of the treshold on the
+    ML model output.
+    """
     df_to_sel = df_to_sel.query(sel_signal)
     x_axis = np.linspace(0, 1.00, num_step)
     num_tot_cand = len(df_to_sel)
@@ -41,6 +45,10 @@ def calc_efficiency(df_to_sel, sel_signal, name, num_step):
 
 
 def calc_bkg(df_bkg, name, num_step, fit_region, bin_width, sig_region):
+    """
+    Estimate the number of background candidates under the signal peak. This is obtained
+    from real data with a fit of the sidebands of the invariant mass distribution.
+    """
     logger = get_logger()
     x_axis = np.linspace(0, 1.00, num_step)
     bkg_array = []
@@ -76,6 +84,9 @@ def calc_bkg(df_bkg, name, num_step, fit_region, bin_width, sig_region):
 
 
 def calc_peak_sigma(df_mc_reco, sel_signal, mass, fit_region, bin_width):
+    """
+    Estimate the width of the signal peak from MC.
+    """
     logger = get_logger()
     df_signal = df_mc_reco.query(sel_signal)
     num_bins = (fit_region[1] - fit_region[0]) / bin_width
@@ -108,6 +119,10 @@ def calc_peak_sigma(df_mc_reco, sel_signal, mass, fit_region, bin_width):
 
 
 def calc_signif(sig_array, sig_err_array, bkg_array, bkg_err_array):
+    """
+    Calculate the expected signal significance as a function of the treshold on the
+    ML model output.
+    """
     signif_array = []
     signif_err_array = []
 
@@ -127,6 +142,9 @@ def calc_signif(sig_array, sig_err_array, bkg_array, bkg_err_array):
 
 
 def plot_fonll(filename, fonll_pred, frag_frac, part_label, suffix, plot_dir):
+    """
+    Plot the FONLL prediction for the current particle.
+    """
     df = pd.read_csv(filename)
     plt.figure(figsize=(20, 15))
     plt.subplot(111)
@@ -140,6 +158,9 @@ def plot_fonll(filename, fonll_pred, frag_frac, part_label, suffix, plot_dir):
 
 
 def calc_eff_acc(df_mc_gen, df_mc_reco, sel_signal_reco, sel_signal_gen):
+    """
+    Calculate the efficiency times acceptance before the ML model selections.
+    """
     logger = get_logger()
     df_mc_gen = df_mc_gen.query(sel_signal_gen)
     df_mc_reco = df_mc_reco.query(sel_signal_reco)
@@ -154,6 +175,10 @@ def calc_eff_acc(df_mc_gen, df_mc_reco, sel_signal_reco, sel_signal_gen):
 
 def calc_sig_dmeson(filename, fonll_pred, frag_frac, branch_ratio, sigma_mb, f_prompt,
                     ptmin, ptmax, eff_acc, n_events):
+    """
+    Estimate the expected signal yield before the ML model selections,
+    this approach is valid for all D-meson with the proper parameter configuration.
+    """
     logger = get_logger()
     df = pd.read_csv(filename)
     df_in_pt = df.query('(pt >= @ptmin) and (pt < @ptmax)')[fonll_pred]
@@ -168,6 +193,10 @@ def calc_sig_dmeson(filename, fonll_pred, frag_frac, branch_ratio, sigma_mb, f_p
 
 def study_signif(case, names, bin_lim, file_mc, file_data, df_mc_reco, df_ml_test,
                  df_data_dec, suffix, plotdir):
+    """
+    Study the efficiency and the expected signal significance as a function of
+    the threshold value on a ML model output.
+    """
     logger = get_logger()
     gROOT.SetBatch(True)
     gROOT.ProcessLine("gErrorIgnoreLevel = kWarning;")
