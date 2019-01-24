@@ -35,8 +35,8 @@ loadsampleoption: true
 mlsubtype: HFmeson
 mltype: BinaryClassification
 ncores: -1
-nevt_bkg: 400000
-nevt_sig: 400000
+nevt_bkg: 1000
+nevt_sig: 1000
 nkfolds: 5
 rnd_shuffle: 12
 rnd_splt: 12
