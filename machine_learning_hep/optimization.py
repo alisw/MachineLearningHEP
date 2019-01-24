@@ -197,20 +197,19 @@ def study_signif(case, names, bin_lim, file_mc, file_data, df_mc_reco, df_ml_tes
     sigma = calc_peak_sigma(df_mc_reco, sopt_dict['sel_signal_reco_sopt'], mass,
                             mass_fit_lim, bin_width)
     sig_region = [mass - 3 * sigma, mass + 3 * sigma]
-    num_steps = 101
 
     for name in names:
 
         eff_array, eff_err_array, x_axis = calc_efficiency(df_ml_test,
                                                            sopt_dict['sel_signal_reco_sopt'],
-                                                           name, num_steps)
+                                                           name, sopt_dict['num_steps'])
         plt.figure(fig_eff.number)
         plt.errorbar(x_axis, eff_array, yerr=eff_err_array, alpha=0.3, label=f'{name}',
                      elinewidth=2.5, linewidth=4.0)
 
         sig_array = [eff * exp_signal for eff in eff_array]
         sig_err_array = [eff_err * exp_signal for eff_err in eff_err_array]
-        bkg_array, bkg_err_array, _ = calc_bkg(df_data_dec, name, num_steps,
+        bkg_array, bkg_err_array, _ = calc_bkg(df_data_dec, name, sopt_dict['num_steps'],
                                                mass_fit_lim, bin_width, sig_region)
         bkg_array = [bkg / bkg_fract for bkg in bkg_array]
         bkg_err_array = [bkg_err / bkg_fract for bkg_err in bkg_err_array]
