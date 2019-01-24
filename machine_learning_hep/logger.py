@@ -91,7 +91,7 @@ def configure_logger(debug, logfile=None):
     Basic configuration adding a custom formatted StreamHandler and turning on
     debug info if requested.
     """
-    logger = logging.getLogger()
+    logger = logging.getLogger("MachinelearningHEP")
     if logger.hasHandlers():
         return
 
@@ -124,4 +124,4 @@ def get_logger():
     Get the global logger for this package and set handler together with formatters.
     """
     configure_logger(False, None)
-    return logging.getLogger()
+    return logging.getLogger("MachinelearningHEP")
