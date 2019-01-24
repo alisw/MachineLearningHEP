@@ -260,6 +260,8 @@ Lcnew:
   signif_opt:
     sel_signal_reco_sopt: cand_type_ML==2 or cand_type_ML==3 or cand_type_ML==10 or cand_type_ML==11 or cand_type_ML==18 or cand_type_ML==19 or cand_type_ML==34 or cand_type_ML==35 or cand_type_ML==42 or cand_type_ML==43 or cand_type_ML==50 or cand_type_ML==51
     sel_signal_gen_sopt: cand_type_gen_ML==2 or cand_type_gen_ML==3 or cand_type_gen_ML==10 or cand_type_gen_ML==11 or cand_type_gen_ML==18 or cand_type_gen_ML==19 or cand_type_gen_ML==34 or cand_type_gen_ML==35 or cand_type_gen_ML==42 or cand_type_gen_ML==43 or cand_type_gen_ML==50 or cand_type_gen_ML==51
+    sel_signal_reco_std: cand_type_ML==3 or cand_type_ML==11 or cand_type_ML==19
+    sel_signal_gen_std: cand_type_gen_ML==3 or cand_type_gen_ML==11 or cand_type_gen_ML==19
     treename_event: fTreeEventChar
     var_event: [is_ev_rej_ML]
     sel_event: is_ev_rej_ML==0
