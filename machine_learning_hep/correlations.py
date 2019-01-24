@@ -76,7 +76,8 @@ def correlationmatrix(dataframe, output_, label):
     plt.title(label, fontsize=11)
     sns.heatmap(
         corr, mask=np.zeros_like(corr, dtype=np.bool),
-        cmap=sns.diverging_palette(220, 10, as_cmap=True), square=True, ax=ax)
+        cmap=sns.diverging_palette(220, 10, as_cmap=True), vmin=-1, vmax=1,
+        square=True, ax=ax, annot=True, fmt=".2f")
     plotname = output_+'/correlationmatrix'+label+'.png'
     plt.savefig(plotname, bbox_inches='tight')
     imagebytesIO = BytesIO()
