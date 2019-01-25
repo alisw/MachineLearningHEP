@@ -87,28 +87,29 @@ Dzero:
   sel_bkg: inv_mass_ML<1.77 or inv_mass_ML>1.97
   var_binning: pt_cand_ML
   presel_reco: abs(eta_prong0_ML)<0.8 and abs(eta_prong1_ML)<0.8
-  treename_gen: fTreeDzeroGenFlagged
+  treename_gen: fTreeDzeroGenFlagged # variables related to the tree of generated candidates
   var_gen: [y_cand_gen_ML, pt_cand_gen_ML, cand_type_gen_ML, z_vtx_gen_ML]
-  presel_gen: abs(y_cand_gen_ML) < 0.5 and abs(z_vtx_gen_ML) < 10
+  presel_gen: abs(y_cand_gen_ML) < 0.5 and abs(z_vtx_gen_ML) < 10 # pre-selections on generated candidates
   ptgen: pt_cand_gen_ML
   sel_signal_gen: cand_type_gen_ML==10 or cand_type_gen_ML==11 or cand_type_gen_ML==18 or cand_type_gen_ML==19
   signif_opt:
-    sel_signal_reco_sopt: cand_type_ML==10 or cand_type_ML==11 or cand_type_ML==18 or cand_type_ML==19
+    sel_signal_reco_sopt: cand_type_ML==10 or cand_type_ML==11 or cand_type_ML==18 or cand_type_ML==19 # define signal candidates
     sel_signal_gen_sopt: cand_type_gen_ML==10 or cand_type_gen_ML==11 or cand_type_gen_ML==18 or cand_type_gen_ML==19
-    sel_signal_reco_std: cand_type_ML==11 or cand_type_ML==19
+    sel_signal_reco_std: cand_type_ML==11 or cand_type_ML==19 # define signal candidates + selected std
     sel_signal_gen_std: cand_type_gen_ML==11 or cand_type_gen_ML==19
-    treename_event: fTreeEventChar
+    treename_event: fTreeEventChar # variables related to the event tree
     var_event: [is_ev_rej_ML]
     sel_event: is_ev_rej_ML==0
-    filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv'
-    fonll_pred: 'max'
-    FF: 0.6086
-    sigma_MB: 50.87e-3
-    BR: 3.89e-2
-    f_prompt: 0.9
-    mass_fit_lim: [1.64, 2.1]
-    bin_width: 0.008
-    bkg_data_fraction: 0.1
+    filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
+    fonll_pred: 'max' # edge of the FONLL prediction
+    FF: 0.6086 # fragmentation fraction
+    sigma_MB: 50.87e-3 # Minimum Bias cross section (pp) [b]
+    BR: 3.89e-2 # branching ratio of the decay
+    f_prompt: 0.9 # estimated fraction of prompt candidates
+    mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
+    bin_width: 0.008 # bin width of the invariant mass histogram
+    bkg_data_fraction: 0.1 # fraction of real data used in the estimation
+    num_steps: 101 # number of steps used in efficiency and signif. estimation
 Ds:
   sig_bkg_files: [data/inputroot/AnalysisResults_Ds_MC_2018Sep21_LHC18a4a2_cent_fast_CandBased_skimmed.root, data/inputroot/AnalysisResults_Ds_Data_2018Sep21_LHC15o_pass1_pidfix_CandBased_skimmed.root]
   data_mc_files: [data/inputroot/AnalysisResults_Ds_Data_2018Sep21_LHC15o_pass1_pidfix_CandBased_skimmed.root, data/inputroot/AnalysisResults_Ds_MC_2018Sep21_LHC18a4a2_cent_fast_CandBased_skimmed.root]
@@ -257,28 +258,29 @@ Lcnew:
   sel_bkg: inv_mass_ML<2.1864 or inv_mass_ML>2.3864
   var_binning: pt_cand_ML
   presel_reco: abs(eta_prong0_ML)<0.8 and abs(eta_prong1_ML)<0.8 and abs(eta_prong2_ML)<0.8
-  treename_gen: fTreeLcGenFlagged
+  treename_gen: fTreeLcGenFlagged # variables related to the tree of generated candidates
   var_gen: [y_cand_gen_ML, pt_cand_gen_ML, cand_type_gen_ML, z_vtx_gen_ML]
-  presel_gen: abs(y_cand_gen_ML) < 0.5 and abs(z_vtx_gen_ML) < 10
+  presel_gen: abs(y_cand_gen_ML) < 0.5 and abs(z_vtx_gen_ML) < 10 # pre-selections on generated candidates
   ptgen: pt_cand_gen_ML
   sel_signal_gen: cand_type_gen_ML==10 or cand_type_gen_ML==11 or cand_type_gen_ML==18 or cand_type_gen_ML==19
   signif_opt:
-    sel_signal_reco_sopt: cand_type_ML==10 or cand_type_ML==11 or cand_type_ML==18 or cand_type_ML==19
+    sel_signal_reco_sopt: cand_type_ML==10 or cand_type_ML==11 or cand_type_ML==18 or cand_type_ML==19 # define signal candidates
     sel_signal_gen_sopt: cand_type_gen_ML==10 or cand_type_gen_ML==11 or cand_type_gen_ML==18 or cand_type_gen_ML==19
-    sel_signal_reco_std: cand_type_ML==11 or cand_type_ML==19
+    sel_signal_reco_std: cand_type_ML==11 or cand_type_ML==19 # define signal candidates + selected std
     sel_signal_gen_std: cand_type_gen_ML==11 or cand_type_gen_ML==19
-    treename_event: fTreeEventChar
+    treename_event: fTreeEventChar # variables related to the event tree
     var_event: [is_ev_rej_ML]
     sel_event: is_ev_rej_ML==0
-    filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv'
-    fonll_pred: 'max'
-    FF: 0.1281
-    sigma_MB: 50.87e-3
-    BR: 6.23e-2
-    f_prompt: 0.9
-    mass_fit_lim: [2.12, 2.45]
-    bin_width: 0.008
-    bkg_data_fraction: 0.1
+    filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
+    fonll_pred: 'max' # edge of the FONLL prediction
+    FF: 0.1281 # fragmentation fraction
+    sigma_MB: 50.87e-3 # Minimum Bias cross section (pp) [b]
+    BR: 6.23e-2 # branching ratio of the decay
+    f_prompt: 0.9 # estimated fraction of prompt candidates
+    mass_fit_lim: [2.12, 2.45] # region for the fit of the invariant mass distribution [GeV/c^2]
+    bin_width: 0.008 # bin width of the invariant mass histogram
+    bkg_data_fraction: 0.1 # fraction of real data used in the estimation
+    num_steps: 101 # number of steps used in efficiency and signif. estimation
 PIDKaon:
   sig_bkg_files: [data/inputroot/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root, data/inputroot/AnalysisResults_TreeForPIDwithML_Dplus_CandBased_skimmed.root]
   data_mc_files: null
