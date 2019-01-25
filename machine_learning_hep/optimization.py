@@ -270,7 +270,7 @@ def study_signif(case, names, bin_lim, file_mc, file_data, df_mc_reco, df_ml_tes
 
     eff_arr_std, eff_er_arr_std, x_axis_std = calc_efficiency(df_ml_test,
                                                               sopt_dict['sel_signal_reco_sopt'],
-                                                              'Standard ALICE', 
+                                                              'Standard ALICE',
                                                               sopt_dict['num_steps'],
                                                               sopt_dict['sel_signal_reco_std'])
     plt.figure(fig_eff.number)
