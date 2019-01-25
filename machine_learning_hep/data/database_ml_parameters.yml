@@ -139,26 +139,27 @@ Dsnew:
   sel_bkg: inv_mass_ML<1.83 or inv_mass_ML>2.012
   var_binning: pt_cand_ML
   presel_reco: abs(eta_prong0_ML)<0.8 and abs(eta_prong1_ML)<0.8 and abs(eta_prong2_ML)<0.8
-  treename_gen: fTreeDsGenFlagged 
+  treename_gen: fTreeDsGenFlagged # variables related to the tree of generated candidates
   var_gen: [y_cand_gen_ML, pt_cand_gen_ML, cand_type_gen_ML, z_vtx_gen_ML]
-  presel_gen: abs(y_cand_gen_ML) < 0.5 and abs(z_vtx_gen_ML) < 10
+  presel_gen: abs(y_cand_gen_ML) < 0.5 and abs(z_vtx_gen_ML) < 10 # pre-selections on generated candidates
   ptgen: pt_cand_gen_ML
   sel_signal_gen: cand_type_gen_ML==10 or cand_type_gen_ML==11 or cand_type_gen_ML==18 or cand_type_gen_ML==19
   signif_opt:
-    sel_signal_reco_sopt: cand_type_ML==10 or cand_type_ML==11
+    sel_signal_reco_sopt: cand_type_ML==10 or cand_type_ML==11 # define signal candidates
     sel_signal_gen_sopt: cand_type_gen_ML==10 or cand_type_gen_ML==11
-    treename_event: fTreeEventChar
+    treename_event: fTreeEventChar # variables related to the event tree
     var_event: [is_ev_rej_ML]
     sel_event: is_ev_rej_ML==0
-    filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv'
-    fonll_pred: 'max'
-    FF: 0.1281
-    sigma_MB: 51.2e-3
-    BR: 2.27e-2
-    f_prompt: 0.9
-    mass_fit_lim: [1.75, 2.15]
-    bin_width: 0.008
-    bkg_data_fraction: 0.1
+    filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
+    fonll_pred: 'max' # edge of the FONLL prediction
+    FF: 0.1281 # fragmentation fraction
+    sigma_MB: 51.2e-3 # Minimum Bias cross section (pp) [b]
+    BR: 2.27e-2 # branching ratio of the decay
+    f_prompt: 0.9 # estimated fraction of prompt candidates
+    mass_fit_lim: [1.75, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
+    bin_width: 0.008 # bin width of the invariant mass histogram 
+    bkg_data_fraction: 0.1 # fraction of real data used in the estimation
+    num_steps: 101 # number of steps used in efficiency and signif. estimation
 Dstar:
   sig_bkg_files: [data/inputroot/SmallSkimmed_Dstar_pp5TeV_MC_train307.root, data/inputroot/SmallSkimmed_Dstar_pp5TeV_train308.root]
   data_mc_files: [data/inputroot/SmallSkimmed_Dstar_pp5TeV_train308.root, data/inputroot/SmallSkimmed_Dstar_pp5TeV_MC_train307.root]
@@ -348,4 +349,3 @@ lightquarkjet:
   treename_evt: null
   var_evt: null
   sel_evt_counter: null
-

@@ -24,6 +24,10 @@ from machine_learning_hep.general import getdataframe, filterdataframe_singlevar
 from machine_learning_hep.general import get_database_ml_parameters
 
 def calc_efficiency(df_to_sel, sel_signal, name, num_step):
+    """
+    Calculate the ML selection efficiency as a function of the treshold on the
+    ML model output.
+    """
     df_to_sel = df_to_sel.query(sel_signal)
     x_axis = np.linspace(0, 1.00, num_step)
     num_tot_cand = len(df_to_sel)
@@ -41,6 +45,11 @@ def calc_efficiency(df_to_sel, sel_signal, name, num_step):
 
 
 def calc_bkg(df_bkg, name, num_step, fit_region, bin_width, sig_region):
+    """
+    Estimate the number of background candidates under the signal peak. This is obtained
+    from real data with a fit of the sidebands of the invariant mass distribution.
+    """
+    logger = get_logger()
     x_axis = np.linspace(0, 1.00, num_step)
     bkg_array = []
     bkg_err_array = []
@@ -48,6 +57,7 @@ def calc_bkg(df_bkg, name, num_step, fit_region, bin_width, sig_region):
     num_bins = int(round(num_bins))
     bin_width = (fit_region[1] - fit_region[0]) / num_bins
 
+    logger.debug("To fit the bkg an exponential function is used")
     for thr in x_axis:
         bkg = 0.
         bkg_err = 0.
@@ -72,7 +82,11 @@ def calc_bkg(df_bkg, name, num_step, fit_region, bin_width, sig_region):
 
     return bkg_array, bkg_err_array, x_axis
 
+
 def calc_peak_sigma(df_mc_reco, sel_signal, mass, fit_region, bin_width):
+    """
+    Estimate the width of the signal peak from MC.
+    """
     logger = get_logger()
     df_signal = df_mc_reco.query(sel_signal)
     num_bins = (fit_region[1] - fit_region[0]) / bin_width
@@ -87,6 +101,7 @@ def calc_peak_sigma(df_mc_reco, sel_signal, mass, fit_region, bin_width):
     gaus_fit.SetParameters(0, hmass.Integral())
     gaus_fit.SetParameters(1, mass)
     gaus_fit.SetParameters(2, 0.02)
+    logger.debug("To fit the signal a gaussian function is used")
     fit = hmass.Fit("gaus_fit", "RQ")
 
     if int(fit) != 0:
@@ -95,6 +110,8 @@ def calc_peak_sigma(df_mc_reco, sel_signal, mass, fit_region, bin_width):
         return sigma
 
     sigma = gaus_fit.GetParameter(2)
+    logger.debug("Mean of the gaussian: %f", gaus_fit.GetParameter(1))
+    logger.debug("Sigma of the gaussian: %f", sigma)
     del hmass
     del gaus_fit
 
@@ -102,6 +119,10 @@ def calc_peak_sigma(df_mc_reco, sel_signal, mass, fit_region, bin_width):
 
 
 def calc_signif(sig_array, sig_err_array, bkg_array, bkg_err_array):
+    """
+    Calculate the expected signal significance as a function of the treshold on the
+    ML model output.
+    """
     signif_array = []
     signif_err_array = []
 
@@ -121,6 +142,9 @@ def calc_signif(sig_array, sig_err_array, bkg_array, bkg_err_array):
 
 
 def plot_fonll(filename, fonll_pred, frag_frac, part_label, suffix, plot_dir):
+    """
+    Plot the FONLL prediction for the current particle.
+    """
     df = pd.read_csv(filename)
     plt.figure(figsize=(20, 15))
     plt.subplot(111)
@@ -134,28 +158,46 @@ def plot_fonll(filename, fonll_pred, frag_frac, part_label, suffix, plot_dir):
 
 
 def calc_eff_acc(df_mc_gen, df_mc_reco, sel_signal_reco, sel_signal_gen):
+    """
+    Calculate the efficiency times acceptance before the ML model selections.
+    """
     logger = get_logger()
     df_mc_gen = df_mc_gen.query(sel_signal_gen)
     df_mc_reco = df_mc_reco.query(sel_signal_reco)
     if df_mc_gen.empty:
         logger.error("In division denominator is empty")
+        return 0.
     eff_acc = len(df_mc_reco) / len(df_mc_gen)
+    logger.debug("Pre-selection efficiency times acceptance: %f", eff_acc)
 
     return eff_acc
 
+
 def calc_sig_dmeson(filename, fonll_pred, frag_frac, branch_ratio, sigma_mb, f_prompt,
                     ptmin, ptmax, eff_acc, n_events):
+    """
+    Estimate the expected signal yield before the ML model selections,
+    this approach is valid for all D-meson with the proper parameter configuration.
+    """
+    logger = get_logger()
     df = pd.read_csv(filename)
     df_in_pt = df.query('(pt >= @ptmin) and (pt < @ptmax)')[fonll_pred]
     prod_cross = df_in_pt.sum() * frag_frac * 1e-12 / len(df_in_pt)
     delta_pt = ptmax - ptmin
     signal_yield = 2. * prod_cross * delta_pt * branch_ratio * eff_acc * n_events \
                    / (sigma_mb * f_prompt)
+    logger.debug("Expected signal yield: %f", signal_yield)
 
     return signal_yield
 
+
 def study_signif(case, names, bin_lim, file_mc, file_data, df_mc_reco, df_ml_test,
                  df_data_dec, suffix, plotdir):
+    """
+    Study the efficiency and the expected signal significance as a function of
+    the threshold value on a ML model output.
+    """
+    logger = get_logger()
     gROOT.SetBatch(True)
     gROOT.ProcessLine("gErrorIgnoreLevel = kWarning;")
 
@@ -172,6 +214,7 @@ def study_signif(case, names, bin_lim, file_mc, file_data, df_mc_reco, df_ml_tes
     df_mc_gen = filterdataframe_singlevar(df_mc_gen, gen_dict['ptgen'], bin_lim[0], bin_lim[1])
     df_evt = getdataframe(file_data, sopt_dict['treename_event'], sopt_dict['var_event'])
     n_events = len(df_evt.query(sopt_dict['sel_event']))
+    logger.debug("Number of events: %d", n_events)
 
     # The uncertainty on the pre-selection efficiency times acceptance is neglected as
     # that on the expected signal yield
@@ -197,20 +240,19 @@ def study_signif(case, names, bin_lim, file_mc, file_data, df_mc_reco, df_ml_tes
     sigma = calc_peak_sigma(df_mc_reco, sopt_dict['sel_signal_reco_sopt'], mass,
                             mass_fit_lim, bin_width)
     sig_region = [mass - 3 * sigma, mass + 3 * sigma]
-    num_steps = 101
 
     for name in names:
 
         eff_array, eff_err_array, x_axis = calc_efficiency(df_ml_test,
                                                            sopt_dict['sel_signal_reco_sopt'],
-                                                           name, num_steps)
+                                                           name, sopt_dict['num_steps'])
         plt.figure(fig_eff.number)
         plt.errorbar(x_axis, eff_array, yerr=eff_err_array, alpha=0.3, label=f'{name}',
                      elinewidth=2.5, linewidth=4.0)
 
         sig_array = [eff * exp_signal for eff in eff_array]
         sig_err_array = [eff_err * exp_signal for eff_err in eff_err_array]
-        bkg_array, bkg_err_array, _ = calc_bkg(df_data_dec, name, num_steps,
+        bkg_array, bkg_err_array, _ = calc_bkg(df_data_dec, name, sopt_dict['num_steps'],
                                                mass_fit_lim, bin_width, sig_region)
         bkg_array = [bkg / bkg_fract for bkg in bkg_array]
         bkg_err_array = [bkg_err / bkg_fract for bkg_err in bkg_err_array]
