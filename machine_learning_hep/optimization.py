@@ -34,15 +34,19 @@ def calc_efficiency(df_to_sel, sel_signal, name, num_step, sel_signal_std=None):
     eff_array = []
     eff_err_array = []
 
-    for thr in x_axis:
-        if sel_signal_std is None:
+    if sel_signal_std is None:
+        for thr in x_axis:
             num_sel_cand = len(df_to_sel[df_to_sel['y_test_prob' + name].values >= thr])
-        else:
-            num_sel_cand = len(df_to_sel.query(sel_signal_std))
+            eff = num_sel_cand / num_tot_cand
+            eff_err = np.sqrt(eff * (1 - eff) / num_tot_cand)
+            eff_array.append(eff)
+            eff_err_array.append(eff_err)
+    else:
+        num_sel_cand = len(df_to_sel.query(sel_signal_std))
         eff = num_sel_cand / num_tot_cand
         eff_err = np.sqrt(eff * (1 - eff) / num_tot_cand)
-        eff_array.append(eff)
-        eff_err_array.append(eff_err)
+        eff_array = [eff] * num_step
+        eff_err_array = [eff_err] * num_step
 
     return eff_array, eff_err_array, x_axis
 
