@@ -23,7 +23,7 @@ from machine_learning_hep.logger import get_logger
 from machine_learning_hep.general import getdataframe, filterdataframe_singlevar
 from machine_learning_hep.general import get_database_ml_parameters
 
-def calc_efficiency(df_to_sel, sel_signal, name, num_step):
+def calc_efficiency(df_to_sel, sel_signal, name, num_step, sel_signal_std=None):
     """
     Calculate the ML selection efficiency as a function of the treshold on the
     ML model output.
@@ -34,12 +34,19 @@ def calc_efficiency(df_to_sel, sel_signal, name, num_step):
     eff_array = []
     eff_err_array = []
 
-    for thr in x_axis:
-        num_sel_cand = len(df_to_sel[df_to_sel['y_test_prob' + name].values >= thr])
+    if sel_signal_std is None:
+        for thr in x_axis:
+            num_sel_cand = len(df_to_sel[df_to_sel['y_test_prob' + name].values >= thr])
+            eff = num_sel_cand / num_tot_cand
+            eff_err = np.sqrt(eff * (1 - eff) / num_tot_cand)
+            eff_array.append(eff)
+            eff_err_array.append(eff_err)
+    else:
+        num_sel_cand = len(df_to_sel.query(sel_signal_std))
         eff = num_sel_cand / num_tot_cand
         eff_err = np.sqrt(eff * (1 - eff) / num_tot_cand)
-        eff_array.append(eff)
-        eff_err_array.append(eff_err)
+        eff_array = [eff] * num_step
+        eff_err_array = [eff_err] * num_step
 
     return eff_array, eff_err_array, x_axis
 
@@ -262,10 +269,19 @@ def study_signif(case, names, bin_lim, file_mc, file_data, df_mc_reco, df_ml_tes
         plt.errorbar(x_axis, signif_array, yerr=signif_err_array, alpha=0.3, label=f'{name}',
                      elinewidth=2.5, linewidth=4.0)
 
-        plt.figure(fig_eff.number)
-        plt.legend(loc="lower left", prop={'size': 18})
-        plt.savefig(plotdir + '/Efficiency%sSignal.png' % suffix)
+    eff_arr_std, eff_er_arr_std, x_axis_std = calc_efficiency(df_ml_test,
+                                                              sopt_dict['sel_signal_reco_sopt'],
+                                                              'ALICE Standard',
+                                                              sopt_dict['num_steps'],
+                                                              sopt_dict['sel_signal_reco_std'])
+    plt.figure(fig_eff.number)
+    plt.errorbar(x_axis_std, eff_arr_std, yerr=eff_er_arr_std, alpha=0.3, label=f'ALICE Standard',
+                 elinewidth=2.5, linewidth=4.0)
 
-        plt.figure(fig_signif.number)
-        plt.legend(loc="lower left", prop={'size': 18})
-        plt.savefig(plotdir + '/Significance%s.png' % suffix)
+    plt.figure(fig_eff.number)
+    plt.legend(loc="lower left", prop={'size': 18})
+    plt.savefig(plotdir + '/Efficiency%sSignal.png' % suffix)
+
+    plt.figure(fig_signif.number)
+    plt.legend(loc="lower left", prop={'size': 18})
+    plt.savefig(plotdir + '/Significance%s.png' % suffix)
