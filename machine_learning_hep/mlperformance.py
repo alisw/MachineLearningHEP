@@ -256,3 +256,58 @@ def plot_learning_curves(names_, classifiers_, suffix_, folder, x_data, y_data, 
     plt.savefig(img_learn, format='png')
     img_learn.seek(0)
     return img_learn
+
+def plot_overtraining(names_, classifiers_, suffix_, folder, x_train, y_train, x_val, y_val, bins=30):
+    for name, clf in zip(names_, classifiers_):
+        figure1 = plt.figure()
+
+        decisions = []
+        for X,y in ((x_train, y_train), (x_val, y_val)):
+            if "adaboost" in name: 
+                d1 = clf.decision_function(X[y>0.5]).ravel()
+                d2 = clf.decision_function(X[y<0.5]).ravel()
+            else: 
+                d1 = clf.predict_proba(X[y>0.5]).ravel()
+                d2 = clf.predict_proba(X[y<0.5]).ravel()
+            decisions += [d1, d2]
+            
+        low = min(np.min(d) for d in decisions)
+        high = max(np.max(d) for d in decisions)
+        low_high = (low,high)
+        
+        plt.hist(decisions[0],
+                 color='r', alpha=0.5, range=low_high, bins=bins,
+                 histtype='stepfilled', density=True,
+                 label='S (train)')
+        plt.hist(decisions[1],
+                 color='b', alpha=0.5, range=low_high, bins=bins,
+                 histtype='stepfilled', density=True,
+                 label='B (train)')
+
+        hist, bins = np.histogram(decisions[2],
+                                  bins=bins, range=low_high, density=True)
+        scale = len(decisions[2]) / sum(hist)
+        err = np.sqrt(hist * scale) / scale
+        
+        width = (bins[1] - bins[0])
+        center = (bins[:-1] + bins[1:]) / 2
+        plt.errorbar(center, hist, yerr=err, fmt='o', c='r', label='S (test)')
+        
+        hist, bins = np.histogram(decisions[3],
+                                  bins=bins, range=low_high, density=True)
+        scale = len(decisions[3]) / sum(hist)
+        err = np.sqrt(hist * scale) / scale
+
+        plt.errorbar(center, hist, yerr=err, fmt='o', c='b', label='B (test)')
+
+        plt.xlabel("BDT output")
+        plt.ylabel("Arbitrary units")
+        plt.legend(loc='best')
+
+        plotname = folder+'/overtraining_%s%s.png' % (name, suffix_)
+        plt.savefig(plotname)
+        img_overtrain = BytesIO()
+        plt.savefig(img_overtrain, format='png')
+        img_overtrain.seek(0)
+    return img_overtrain
+

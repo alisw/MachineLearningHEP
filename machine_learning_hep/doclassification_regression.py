@@ -38,6 +38,7 @@ from machine_learning_hep.mlperformance import plot_cross_validation_mse, plot_l
 from machine_learning_hep.mlperformance import plotdistributiontarget, plotscattertarget
 # from machine_learning_hep.mlperformance import confusion
 from machine_learning_hep.mlperformance import precision_recall
+from machine_learning_hep.mlperformance import plot_overtraining
 from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perform_plot_gridsearch
 from machine_learning_hep.logger import configure_logger, get_logger
 from machine_learning_hep.optimization import study_signif
@@ -185,6 +186,7 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
         df_ml_test_to_root = output+"/testsample_%s_mldecision.root" % (suffix)
         df_ml_test.to_pickle(df_ml_test_to_df)
         write_tree(df_ml_test_to_root, trename, df_ml_test)
+        plot_overtraining(names, classifiers, suffix, plotdir, x_train, y_train, x_test, y_test)
 
     if applytodatamc == 1:
         df_data = getdataframe(filedata, trename, var_all)
