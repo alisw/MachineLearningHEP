@@ -94,6 +94,8 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
     var_boundaries = data[case]["var_boundaries"]
     var_binning = data[case]['var_binning']
     presel_reco = data[case]["presel_reco"]
+    #mcpreseltrack_pid_on_off = data[case]["bitmapsel"]["mcpreseltrack_pid_on_off"]
+    #datapreseltrack_pid_on_off = data[case]["bitmapsel"]["datapreseltrack_pid_on_off"]
 
     summary_string = f"#sig events: {nevt_sig}\n#bkg events: {nevt_bkg}\nmltype: {mltype}\n" \
                      f"mlsubtype: {mlsubtype}\ncase: {case}"
