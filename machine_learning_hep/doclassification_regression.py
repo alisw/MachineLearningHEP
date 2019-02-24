@@ -47,7 +47,7 @@ DATA_PREFIX = os.path.expanduser("~/.machine_learning_hep")
 def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 
     logger = get_logger()
-    logger.info(f"Start classification_regression run")
+    #logger.info(f"Start classification_regression run")
 
     run_config = conf.get_run_config()
     model_config = conf.get_model_config()
