@@ -97,6 +97,8 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
     presel_reco = data[case]["presel_reco"]
     signalpreseltrack_pid_on_off = data[case]["bitmapsel"]["signalpreseltrack_pid_on_off"]
     bkgpreseltrack_pid_on_off = data[case]["bitmapsel"]["bkgpreseltrack_pid_on_off"]
+    mcpreseltrack_pid_on_off = data[case]["bitmapsel"]["mcpreseltrack_pid_on_off"]
+    datapreseltrack_pid_on_off = data[case]["bitmapsel"]["datapreseltrack_pid_on_off"]
     bitselvariable = data[case]["bitselvariable"]
     summary_string = f"#sig events: {nevt_sig}\n#bkg events: {nevt_bkg}\nmltype: {mltype}\n" \
                      f"mlsubtype: {mlsubtype}\ncase: {case}"
@@ -187,11 +189,15 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
     if applytodatamc == 1:
         df_data = getdataframe(filedata, trename, var_all)
         df_mc = getdataframe(filemc, trename, var_all)
+        df_data = filterdataframe_singlevar(df_data, var_binning, binmin, binmax)
+        df_mc = filterdataframe_singlevar(df_mc, var_binning, binmin, binmax)
         if presel_reco is not None:
             df_mc = df_mc.query(presel_reco)
             df_data = df_data.query(presel_reco)
-        df_data = filterdataframe_singlevar(df_data, var_binning, binmin, binmax)
-        df_mc = filterdataframe_singlevar(df_mc, var_binning, binmin, binmax)
+        if mcpreseltrack_pid_on_off:
+            df_mc = filter_bit_df(df_mc, bitselvariable, mcpreseltrack_pid_on_off)
+        if datapreseltrack_pid_on_off:
+            df_data = filter_bit_df(df_data, bitselvariable, datapreseltrack_pid_on_off)
         # The model predictions are added to the dataframes of data and MC
         df_data = apply(mltype, names, trainedmodels, df_data, var_training)
         df_mc = apply(mltype, names, trainedmodels, df_mc, var_training)
