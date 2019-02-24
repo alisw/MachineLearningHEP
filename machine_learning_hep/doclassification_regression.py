@@ -41,7 +41,7 @@ from machine_learning_hep.mlperformance import precision_recall
 from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perform_plot_gridsearch
 from machine_learning_hep.logger import configure_logger, get_logger
 from machine_learning_hep.optimization import study_signif
-
+from machine_learning_hep.bitwise import filter_bit_df
 DATA_PREFIX = os.path.expanduser("~/.machine_learning_hep")
 
 def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
@@ -94,9 +94,9 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
     var_boundaries = data[case]["var_boundaries"]
     var_binning = data[case]['var_binning']
     presel_reco = data[case]["presel_reco"]
-    #mcpreseltrack_pid_on_off = data[case]["bitmapsel"]["mcpreseltrack_pid_on_off"]
-    #datapreseltrack_pid_on_off = data[case]["bitmapsel"]["datapreseltrack_pid_on_off"]
-
+    signalpreseltrack_pid_on_off = data[case]["bitmapsel"]["signalpreseltrack_pid_on_off"]
+    bkgpreseltrack_pid_on_off = data[case]["bitmapsel"]["bkgpreseltrack_pid_on_off"]
+    bitselvariable = data[case]["bitselvariable"]
     summary_string = f"#sig events: {nevt_sig}\n#bkg events: {nevt_bkg}\nmltype: {mltype}\n" \
                      f"mlsubtype: {mlsubtype}\ncase: {case}"
     logger.debug(summary_string)
@@ -131,11 +131,12 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
     if loadsampleoption == 1:
         df_sig = getdataframe(filesig, trename, var_all)
         df_bkg = getdataframe(filebkg, trename, var_all)
-        if presel_reco is not None:
-            df_sig = df_sig.query(presel_reco)
-            df_bkg = df_bkg.query(presel_reco)
         df_sig = filterdataframe_singlevar(df_sig, var_binning, binmin, binmax)
         df_bkg = filterdataframe_singlevar(df_bkg, var_binning, binmin, binmax)
+        if signalpreseltrack_pid_on_off:
+            df_sig = filter_bit_df(df_sig, bitselvariable, signalpreseltrack_pid_on_off)
+        if bkgpreseltrack_pid_on_off:
+            df_bkg = filter_bit_df(df_bkg, bitselvariable, bkgpreseltrack_pid_on_off)
         _, df_ml_test, df_sig_train, df_bkg_train, _, _, \
         x_train, y_train, x_test, y_test = \
             create_mlsamples(df_sig, df_bkg, sel_signal, sel_bkg, rnd_shuffle,

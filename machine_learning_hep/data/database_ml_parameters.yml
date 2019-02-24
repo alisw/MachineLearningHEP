@@ -11,6 +11,60 @@
 ##    You should have received a copy of the GNU General Public License    ##
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
+Dzero:
+  sig_bkg_files: [data/inputroot/SmallSkimmed_Dzero_pp5TeV_MC_train341.root, data/inputroot/SmallSkimmed_Dzero_pp5TeV_train340.root]
+  data_mc_files: [data/inputroot/SmallSkimmed_Dzero_pp5TeV_train340.root, data/inputroot/SmallSkimmed_Dzero_pp5TeV_MC_train341.root]
+  mass_cut: [1.77, 1.97]
+  mass: 1.864
+  pdg_code: null
+  tree_name: fTreeDzeroFlagged
+  var_all: [d_len_ML, d_len_xy_ML, norm_dl_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, dca_ML, cos_t_star_ML, imp_par_prod_ML, pt_prong0_ML, pt_prong1_ML, imp_par_prong0_ML, imp_par_prong1_ML, imp_par_err_prong0_ML, imp_par_err_prong1_ML, max_norm_d0d0exp_ML, inv_mass_ML, pt_cand_ML, signal_ML, cand_type_ML, y_cand_ML, cand_fileID_ML, cand_evtID_ML, eta_prong0_ML, eta_prong1_ML]
+  var_boundaries: [d_len_ML, max_norm_d0d0exp_ML]
+  var_correlation:
+  - [pt_cand_ML, d_len_xy_ML, d_len_ML, pt_cand_ML, pt_cand_ML, norm_dl_xy_ML, max_norm_d0d0exp_ML, cos_p_xy_ML, cos_p_xy_ML]
+  - [d_len_xy_ML, imp_par_xy_ML, max_norm_d0d0exp_ML, imp_par_xy_ML, cos_p_ML, d_len_xy_ML, imp_par_xy_ML, cos_p_ML, pt_cand_ML]
+  var_others: [inv_mass_ML, pt_cand_ML]
+  var_signal: signal_ML
+  bitselvariable : cand_type_ML
+  var_target: signal_ML
+  var_training: [d_len_ML, d_len_xy_ML, norm_dl_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, dca_ML, cos_t_star_ML, imp_par_prod_ML, pt_prong0_ML, pt_prong1_ML, imp_par_prong0_ML, imp_par_prong1_ML, imp_par_err_prong0_ML, imp_par_err_prong1_ML, max_norm_d0d0exp_ML]
+  sel_signal: cand_type_ML==[10, 11, 18, 19]
+  sel_bkg: inv_mass_ML<1.77 or inv_mass_ML>1.97
+  var_binning: pt_cand_ML
+  presel_reco: abs(eta_prong0_ML)<0.8 and abs(eta_prong1_ML)<0.8
+  treename_gen: fTreeDzeroGenFlagged # variables related to the tree of generated candidates
+  var_gen: [y_cand_gen_ML, pt_cand_gen_ML, cand_type_gen_ML, z_vtx_gen_ML]
+  presel_gen: abs(y_cand_gen_ML) < 0.5 and abs(z_vtx_gen_ML) < 10 # pre-selections on generated candidates
+  ptgen: pt_cand_gen_ML
+  sel_signal_gen: cand_type_gen_ML==[10, 11, 18, 19]
+  bitmapsel:
+    mcsignal_on_off: [[1],[5]]
+    mcsignal_prompt_on_off: [[1,3],[5]]
+    mcsignal_feed_on_off: [[1,4],[5]]
+    mcbkg_on_off: [[2],[]]
+    std_analysis_on_off : [[0],[]]
+    mcpreseltrack_pid_on_off : [[1,7,8],[5]]
+    datapreseltrack_pid_on_off: [[7,8],[]]
+    signalpreseltrack_pid_on_off : [[1,7,8],[5]]
+    bkgpreseltrack_pid_on_off: [[7,8],[]]
+  signif_opt:
+    sel_signal_reco_sopt: cand_type_ML==[10, 11, 18, 19] # define signal candidates
+    sel_signal_gen_sopt: cand_type_gen_ML==[10, 11, 18, 19]
+    sel_signal_reco_std: cand_type_ML==[11, 19] # define signal candidates + selected std
+    sel_signal_gen_std: cand_type_gen_ML==[11, 19]
+    treename_event: fTreeEventChar # variables related to the event tree
+    var_event: [is_ev_rej_ML]
+    sel_event: is_ev_rej_ML==0
+    filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
+    fonll_pred: 'max' # edge of the FONLL prediction
+    FF: 0.6086 # fragmentation fraction (1509.01061)
+    sigma_MB: 50.87e-3 # Minimum Bias cross section (pp) [b]
+    BR: 3.89e-2 # branching ratio of the decay
+    f_prompt: 0.9 # estimated fraction of prompt candidates
+    mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
+    bin_width: 0.008 # bin width of the invariant mass histogram
+    bkg_data_fraction: 0.1 # fraction of real data used in the estimation
+    num_steps: 101 # number of steps used in efficiency and signif. estimation
 LctopK0s:
   sig_bkg_files: [data/inputroot/SmallSkimmed_LctopK0s_pp5TeV_MC_train341.root, data/inputroot/SmallSkimmed_LctopK0s_pp5TeV_train340.root]
   data_mc_files: [data/inputroot/SmallSkimmed_LctopK0s_pp5TeV_train340.root, data/inputroot/SmallSkimmed_LctopK0s_pp5TeV_MC_train341.root]
@@ -27,12 +81,13 @@ LctopK0s:
   var_signal: signal_ML
   var_target: signal_ML
   sel_signal: cand_type_ML==[10, 11, 18, 19]
+  bitselvariable : cand_type_ML
   var_training: [cos_t_star_ML, signd0_ML, dca_K0s_ML, imp_par_K0s_ML, d_len_K0s_ML, armenteros_K0s_ML, ctau_K0s_ML, cos_p_K0s_ML, pt_prong0_ML, pt_prong1_ML, pt_prong2_ML, imp_par_prong0_ML, imp_par_prong1_ML, imp_par_prong2_ML]
   sel_bkg: inv_mass_ML<2.1864 or inv_mass_ML>2.3864
   var_binning: pt_cand_ML
   presel_reco: abs(eta_prong0_ML)<0.8 and abs(eta_prong1_ML)<0.8 and abs(eta_prong2_ML)<0.8
   treename_gen: fTreeLctopK0sGenFlagged # variables related to the tree of generated candidates
-  var_gen: [y_cand_gen_ML, pt_cand_gen_ML, cand_type_gen_ML, z_vtx_gen_ML]
+  var_gen: [y_c and_gen_ML, pt_cand_gen_ML, cand_type_gen_ML, z_vtx_gen_ML]
   presel_gen: abs(y_cand_gen_ML) < 0.5 and abs(z_vtx_gen_ML) < 10 # pre-selections on generated candidates
   ptgen: pt_cand_gen_ML
   bitmapsel:
@@ -43,6 +98,8 @@ LctopK0s:
     std_analysis_on_off : [[0],[]]
     mcpreseltrack_pid_on_off : [[1,7,8],[5]]
     datapreseltrack_pid_on_off: [[7,8],[]]
+    signalpreseltrack_pid_on_off : [[1,7,8],[5]]
+    bkgpreseltrack_pid_on_off: [[7,8],[]]
   signif_opt:
     treename_event: fTreeEventChar # variables related to the event tree
     var_event: [is_ev_rej_ML]

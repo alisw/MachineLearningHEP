@@ -63,5 +63,5 @@ def filter_bit_df(dfin, namebitmap, activatedbit):
         bitmapoff = selectbitoff(array_cand_type, bitsoff)
         res_off = pd.Series(bitmapoff)
     res = res_on & res_off
-    df_sel = dfin[res]
+    df_sel = dfin[res.values]
     return df_sel
