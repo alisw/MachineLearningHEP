@@ -18,13 +18,13 @@ applytodatamc: false
 binmax: 10000
 binmin: 0
 case: Dzero
-doROC: false
+doROC: true
 doboundary: false
 docorrelation: true
 docrossvalidation: true
 dogridsearch: false
 doimportance: true
-dolearningcurve: false
+dolearningcurve: true
 dopca: false
 dopltregressionxy: false
 dosignifopt: false

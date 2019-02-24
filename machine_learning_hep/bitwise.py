@@ -15,8 +15,8 @@
 """
 Methods to: perform bitwise operations on dataframes
 """
-import numba
 import pandas as pd
+import numba
 
 @numba.njit
 def selectbiton(array_cand_type, bits):
