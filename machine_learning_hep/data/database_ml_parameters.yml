@@ -28,7 +28,7 @@ Dzero:
   bitselvariable : cand_type_ML
   var_target: signal_ML
   var_training: [d_len_ML, d_len_xy_ML, norm_dl_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, dca_ML, cos_t_star_ML, imp_par_prod_ML, pt_prong0_ML, pt_prong1_ML, imp_par_prong0_ML, imp_par_prong1_ML, imp_par_err_prong0_ML, imp_par_err_prong1_ML, max_norm_d0d0exp_ML]
-  sel_signal: cand_type_ML==[10, 11, 18, 19]
+  sel_signal: "cand_type_ML>0"
   sel_bkg: inv_mass_ML<1.77 or inv_mass_ML>1.97
   var_binning: pt_cand_ML
   presel_reco: abs(eta_prong0_ML)<0.8 and abs(eta_prong1_ML)<0.8
