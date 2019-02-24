@@ -13,7 +13,7 @@ mlsubtype:
   default: "HFmeson"
 
 case:
-  choices: ["Bplus", "Dplus", "Ds", "Dsnew", "Dzero", "Dstar", "Lc", "Lcnew", "PIDKaon", "PIDPion", "hypertritium", "lightquarkjet" ]
+  choices: ["Bplus", "Dplus", "Ds", "Dsnew", "Dzero", "Dstar", "Lc", "LctopKpi", "LctopK0s", "PIDKaon", "PIDPion", "hypertritium", "lightquarkjet" ]
   default: "Lc"
 
 binmin:

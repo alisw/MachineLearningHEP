@@ -241,7 +241,8 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
     if dosignifopt == 1:
         logger.info("Doing significance optimization")
         if dotraining and dotesting and applytodatamc:
-            if (mlsubtype == "HFmeson") and case in ("Dsnew", "Lcnew", "Dzero", "Dplus", "Dstar"):
+            if (mlsubtype == "HFmeson") and case in ("Dsnew", "LctopKpi", "LctopK0s", "Dzero", \
+                                                     "Dplus", "Dstar"):
                 df_data_opt = df_data.query(sel_bkg)
                 df_data_opt = shuffle(df_data_opt, random_state=rnd_shuffle)
                 study_signif(case, names, [binmin, binmax], filemc, filedata, df_mc, df_ml_test,
