@@ -22,8 +22,9 @@ from ROOT import TH1F, TF1, gROOT  # pylint: disable=import-error,no-name-in-mod
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.general import getdataframe, filterdataframe_singlevar
 from machine_learning_hep.general import get_database_ml_parameters
+from machine_learning_hep.bitwise import filter_bit_df
 
-def calc_efficiency(df_to_sel, sel_signal, name, num_step, sel_signal_std=None):
+def calc_efficiency(df_to_sel, sel_signal, name, num_step, calc_for_std=None):
     """
     Calculate the ML selection efficiency as a function of the treshold on the
     ML model output.
@@ -34,7 +35,7 @@ def calc_efficiency(df_to_sel, sel_signal, name, num_step, sel_signal_std=None):
     eff_array = []
     eff_err_array = []
 
-    if sel_signal_std is None:
+    if calc_for_std is None:
         for thr in x_axis:
             num_sel_cand = len(df_to_sel[df_to_sel['y_test_prob' + name].values >= thr])
             eff = num_sel_cand / num_tot_cand
@@ -42,7 +43,7 @@ def calc_efficiency(df_to_sel, sel_signal, name, num_step, sel_signal_std=None):
             eff_array.append(eff)
             eff_err_array.append(eff_err)
     else:
-        num_sel_cand = len(df_to_sel.query(sel_signal_std))
+        num_sel_cand = len(df_to_sel)
         eff = num_sel_cand / num_tot_cand
         eff_err = np.sqrt(eff * (1 - eff) / num_tot_cand)
         eff_array = [eff] * num_step
@@ -197,7 +198,7 @@ def calc_sig_dmeson(filename, fonll_pred, frag_frac, branch_ratio, sigma_mb, f_p
 
     return signal_yield
 
-
+# pylint: disable=too-many-locals, too-many-statements, too-many-branches
 def study_signif(case, names, bin_lim, file_mc, file_data, df_mc_reco, df_ml_test,
                  df_data_dec, suffix, plotdir):
     """
@@ -212,6 +213,7 @@ def study_signif(case, names, bin_lim, file_mc, file_data, df_mc_reco, df_ml_tes
     mass = gen_dict["mass"]
 
     sopt_dict = gen_dict['signif_opt']
+    bitmap_dict = gen_dict['bitmapsel']
     mass_fit_lim = sopt_dict['mass_fit_lim']
     bin_width = sopt_dict['bin_width']
     bkg_fract = sopt_dict['bkg_data_fraction']
@@ -223,10 +225,18 @@ def study_signif(case, names, bin_lim, file_mc, file_data, df_mc_reco, df_ml_tes
     n_events = len(df_evt.query(sopt_dict['sel_event']))
     logger.debug("Number of events: %d", n_events)
 
+    if bitmap_dict["mcsignal_on_off"]:
+        df_mc_reco = filter_bit_df(df_mc_reco, gen_dict["bitselvariable"],
+                                   bitmap_dict["mcsignal_on_off"])
+        df_ml_test = filter_bit_df(df_ml_test, gen_dict["bitselvariable"],
+                                   bitmap_dict["mcsignal_on_off"])
+        df_mc_gen = filter_bit_df(df_mc_gen, gen_dict["bitselvariable_gen"],
+                                  bitmap_dict["mcsignal_on_off"])
+
     # The uncertainty on the pre-selection efficiency times acceptance is neglected as
     # that on the expected signal yield
-    eff_acc = calc_eff_acc(df_mc_gen, df_mc_reco, sopt_dict['sel_signal_reco_sopt'],
-                           sopt_dict['sel_signal_gen_sopt'])
+    eff_acc = calc_eff_acc(df_mc_gen, df_mc_reco, gen_dict['sel_signal'],
+                           gen_dict['sel_signal_gen'])
     exp_signal = calc_sig_dmeson(sopt_dict['filename_fonll'], sopt_dict['fonll_pred'],
                                  sopt_dict['FF'], sopt_dict['BR'], sopt_dict['sigma_MB'],
                                  sopt_dict['f_prompt'], bin_lim[0], bin_lim[1], eff_acc, n_events)
@@ -244,14 +254,14 @@ def study_signif(case, names, bin_lim, file_mc, file_data, df_mc_reco, df_ml_tes
     plt.title("Significance vs probability ", fontsize=20)
 
     df_data_dec = df_data_dec.tail(round(len(df_data_dec) * bkg_fract))
-    sigma = calc_peak_sigma(df_mc_reco, sopt_dict['sel_signal_reco_sopt'], mass,
+    sigma = calc_peak_sigma(df_mc_reco, gen_dict['sel_signal'], mass,
                             mass_fit_lim, bin_width)
     sig_region = [mass - 3 * sigma, mass + 3 * sigma]
 
     for name in names:
 
         eff_array, eff_err_array, x_axis = calc_efficiency(df_ml_test,
-                                                           sopt_dict['sel_signal_reco_sopt'],
+                                                           gen_dict['sel_signal'],
                                                            name, sopt_dict['num_steps'])
         plt.figure(fig_eff.number)
         plt.errorbar(x_axis, eff_array, yerr=eff_err_array, alpha=0.3, label=f'{name}',
@@ -269,11 +279,14 @@ def study_signif(case, names, bin_lim, file_mc, file_data, df_mc_reco, df_ml_tes
         plt.errorbar(x_axis, signif_array, yerr=signif_err_array, alpha=0.3, label=f'{name}',
                      elinewidth=2.5, linewidth=4.0)
 
+    if bitmap_dict["std_analysis_on_off"]:
+        df_ml_test = filter_bit_df(df_ml_test, gen_dict["bitselvariable"],
+                                   bitmap_dict["std_analysis_on_off"])
     eff_arr_std, eff_er_arr_std, x_axis_std = calc_efficiency(df_ml_test,
-                                                              sopt_dict['sel_signal_reco_sopt'],
+                                                              gen_dict['sel_signal'],
                                                               'ALICE Standard',
                                                               sopt_dict['num_steps'],
-                                                              sopt_dict['sel_signal_reco_std'])
+                                                              gen_dict['sel_signal'])
     plt.figure(fig_eff.number)
     plt.errorbar(x_axis_std, eff_arr_std, yerr=eff_er_arr_std, alpha=0.3, label=f'ALICE Standard',
                  elinewidth=2.5, linewidth=4.0)
