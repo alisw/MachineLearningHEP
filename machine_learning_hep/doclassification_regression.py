@@ -96,10 +96,7 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
     var_binning = data[case]['var_binning']
     presel_reco = data[case]["presel_reco"]
     mcsignal_on_off = data[case]["bitmapsel"]["mcsignal_on_off"]
-    signalpreseltrack_pid_on_off = data[case]["bitmapsel"]["signalpreseltrack_pid_on_off"]
-    bkgpreseltrack_pid_on_off = data[case]["bitmapsel"]["bkgpreseltrack_pid_on_off"]
-    mcpreseltrack_pid_on_off = data[case]["bitmapsel"]["mcpreseltrack_pid_on_off"]
-    datapreseltrack_pid_on_off = data[case]["bitmapsel"]["datapreseltrack_pid_on_off"]
+    preseltrack_pid_on_off = data[case]["bitmapsel"]["preseltrack_pid_on_off"]
     bitselvariable = data[case]["bitselvariable"]
     summary_string = f"#sig events: {nevt_sig}\n#bkg events: {nevt_bkg}\nmltype: {mltype}\n" \
                      f"mlsubtype: {mlsubtype}\ncase: {case}"
@@ -141,14 +138,12 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
         if presel_reco is not None:
             df_sig = df_sig.query(presel_reco)
             df_bkg = df_bkg.query(presel_reco)
-
-        if signalpreseltrack_pid_on_off:
-            df_sig = filter_bit_df(df_sig, bitselvariable, signalpreseltrack_pid_on_off)
-        if bkgpreseltrack_pid_on_off:
-            df_bkg = filter_bit_df(df_bkg, bitselvariable, bkgpreseltrack_pid_on_off)
-
-        if mcsignal_on_off and not signalpreseltrack_pid_on_off:
+        if preseltrack_pid_on_off:
+            df_sig = filter_bit_df(df_sig, bitselvariable, preseltrack_pid_on_off)
+            df_bkg = filter_bit_df(df_bkg, bitselvariable, preseltrack_pid_on_off)
+        if mcsignal_on_off:
             df_sig = filter_bit_df(df_sig, bitselvariable, mcsignal_on_off)
+
         _, df_ml_test, df_sig_train, df_bkg_train, _, _, \
         x_train, y_train, x_test, y_test = \
             create_mlsamples(df_sig, df_bkg, sel_signal, sel_bkg, rnd_shuffle,
@@ -198,10 +193,9 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
         if presel_reco is not None:
             df_mc = df_mc.query(presel_reco)
             df_data = df_data.query(presel_reco)
-        if mcpreseltrack_pid_on_off:
-            df_mc = filter_bit_df(df_mc, bitselvariable, mcpreseltrack_pid_on_off)
-        if datapreseltrack_pid_on_off:
-            df_data = filter_bit_df(df_data, bitselvariable, datapreseltrack_pid_on_off)
+        if preseltrack_pid_on_off:
+            df_mc = filter_bit_df(df_mc, bitselvariable, preseltrack_pid_on_off)
+            df_data = filter_bit_df(df_data, bitselvariable, preseltrack_pid_on_off)
         # The model predictions are added to the dataframes of data and MC
         df_data = apply(mltype, names, trainedmodels, df_data, var_training)
         df_mc = apply(mltype, names, trainedmodels, df_mc, var_training)

@@ -25,10 +25,12 @@ Dzero:
   - [d_len_xy_ML, imp_par_xy_ML, max_norm_d0d0exp_ML, imp_par_xy_ML, cos_p_ML, d_len_xy_ML, imp_par_xy_ML, cos_p_ML, pt_cand_ML]
   var_others: [inv_mass_ML, pt_cand_ML]
   var_signal: signal_ML
-  bitselvariable : cand_type_ML
+  bitselvariable: cand_type_ML
+  bitselvariable_gen: cand_type_gen_ML
   var_target: signal_ML
   var_training: [d_len_ML, d_len_xy_ML, norm_dl_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, dca_ML, cos_t_star_ML, imp_par_prod_ML, pt_prong0_ML, pt_prong1_ML, imp_par_prong0_ML, imp_par_prong1_ML, imp_par_err_prong0_ML, imp_par_err_prong1_ML, max_norm_d0d0exp_ML]
   sel_signal: "cand_type_ML>0"
+  sel_signal_gen: "cand_type_gen_ML>0"
   sel_bkg: inv_mass_ML<1.77 or inv_mass_ML>1.97
   var_binning: pt_cand_ML
   presel_reco: abs(eta_prong0_ML)<0.8 and abs(eta_prong1_ML)<0.8
@@ -36,22 +38,14 @@ Dzero:
   var_gen: [y_cand_gen_ML, pt_cand_gen_ML, cand_type_gen_ML, z_vtx_gen_ML]
   presel_gen: abs(y_cand_gen_ML) < 0.5 and abs(z_vtx_gen_ML) < 10 # pre-selections on generated candidates
   ptgen: pt_cand_gen_ML
-  sel_signal_gen: cand_type_gen_ML==[10, 11, 18, 19]
   bitmapsel:
     mcsignal_on_off: [[1],[5]]
     mcsignal_prompt_on_off: [[1,3],[5]]
     mcsignal_feed_on_off: [[1,4],[5]]
     mcbkg_on_off: [[2],[]]
     std_analysis_on_off : [[0],[]]
-    mcpreseltrack_pid_on_off : [[1,7,8],[5]]
-    datapreseltrack_pid_on_off: [[7,8],[]]
-    signalpreseltrack_pid_on_off : [[1,7,8],[5]]
-    bkgpreseltrack_pid_on_off: [[7,8],[]]
+    preseltrack_pid_on_off : [[7,8],[]]
   signif_opt:
-    sel_signal_reco_sopt: cand_type_ML==[10, 11, 18, 19] # define signal candidates
-    sel_signal_gen_sopt: cand_type_gen_ML==[10, 11, 18, 19]
-    sel_signal_reco_std: cand_type_ML==[11, 19] # define signal candidates + selected std
-    sel_signal_gen_std: cand_type_gen_ML==[11, 19]
     treename_event: fTreeEventChar # variables related to the event tree
     var_event: [is_ev_rej_ML]
     sel_event: is_ev_rej_ML==0
@@ -79,10 +73,12 @@ LctopK0s:
   - [imp_par_K0s_ML]
   var_others: [inv_mass_ML, pt_cand_ML]
   var_signal: signal_ML
+  bitselvariable: cand_type_ML
+  bitselvariable_gen: cand_type_gen_ML
   var_target: signal_ML
-  sel_signal: cand_type_ML==[10, 11, 18, 19]
-  bitselvariable : cand_type_ML
   var_training: [cos_t_star_ML, signd0_ML, dca_K0s_ML, imp_par_K0s_ML, d_len_K0s_ML, armenteros_K0s_ML, ctau_K0s_ML, cos_p_K0s_ML, pt_prong0_ML, pt_prong1_ML, pt_prong2_ML, imp_par_prong0_ML, imp_par_prong1_ML, imp_par_prong2_ML]
+  sel_signal: cand_type_ML>0
+  sel_signal_gen: cand_type_gen_ML>0
   sel_bkg: inv_mass_ML<2.1864 or inv_mass_ML>2.3864
   var_binning: pt_cand_ML
   presel_reco: abs(eta_prong0_ML)<0.8 and abs(eta_prong1_ML)<0.8 and abs(eta_prong2_ML)<0.8
@@ -96,10 +92,7 @@ LctopK0s:
     mcsignal_feed_on_off: [[1,4],[5]]
     mcbkg_on_off: [[2],[]]
     std_analysis_on_off : [[0],[]]
-    mcpreseltrack_pid_on_off : [[1,7,8],[5]]
-    datapreseltrack_pid_on_off: [[7,8],[]]
-    signalpreseltrack_pid_on_off : [[1,7,8],[5]]
-    bkgpreseltrack_pid_on_off: [[7,8],[]]
+    preseltrack_pid_on_off : [[7,8],[]]
   signif_opt:
     treename_event: fTreeEventChar # variables related to the event tree
     var_event: [is_ev_rej_ML]
