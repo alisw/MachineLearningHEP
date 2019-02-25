@@ -166,7 +166,7 @@ Ds:
   var_boundaries: [d_len_ML, max_norm_d0d0exp_ML]
   var_correlation:
   - [pt_cand_ML, d_len_xy_ML, sig_vert_ML, pt_cand_ML, pt_cand_ML, norm_dl_xy_ML, cos_PiDs_ML, cos_p_xy_ML, cos_p_xy_ML]
-  - [d_len_xy_ML, sig_vert_ML, mass_KK_ML, mass_KK_ML, sig_vert_ML, d_len_xy_ML, cos_PiKPhi_3_ML, sig_vert_ML, pt_cand_ML]
+  - [d_len_xy_ML, sig_vert_ML, delta_mass_KK_ML, delta_mass_KK_ML, sig_vert_ML, d_len_xy_ML, cos_PiKPhi_3_ML, sig_vert_ML, pt_cand_ML]
   var_others: [inv_mass_ML, pt_cand_ML]
   var_signal: signal_ML
   bitselvariable: cand_type_ML
@@ -188,7 +188,7 @@ Ds:
     mcsignal_feed_on_off: [[1,4],[5,11]]
     mcbkg_on_off: [[2],[11]]
     std_analysis_on_off : [[0],[]]
-    preseltrack_pid_on_off : [[7,8],[]]
+    preseltrack_pid_on_off : null #[[7,8],[]] #pid+track rejects everything for Ds (in data and MC), to check... For now turned off
   signif_opt:
     treename_event: fTreeEventChar # variables related to the event tree
     var_event: [is_ev_rej_ML]
