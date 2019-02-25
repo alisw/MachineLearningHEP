@@ -198,7 +198,7 @@ def calc_sig_dmeson(filename, fonll_pred, frag_frac, branch_ratio, sigma_mb, f_p
 
     return signal_yield
 
-
+# pylint: disable=too-many-locals, too-many-statements, too-many-branches
 def study_signif(case, names, bin_lim, file_mc, file_data, df_mc_reco, df_ml_test,
                  df_data_dec, suffix, plotdir):
     """
