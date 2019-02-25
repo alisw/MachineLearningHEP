@@ -95,6 +95,7 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
     var_boundaries = data[case]["var_boundaries"]
     var_binning = data[case]['var_binning']
     presel_reco = data[case]["presel_reco"]
+    mcsignal_on_off = data[case]["bitmapsel"]["mcsignal_on_off"]
     signalpreseltrack_pid_on_off = data[case]["bitmapsel"]["signalpreseltrack_pid_on_off"]
     bkgpreseltrack_pid_on_off = data[case]["bitmapsel"]["bkgpreseltrack_pid_on_off"]
     mcpreseltrack_pid_on_off = data[case]["bitmapsel"]["mcpreseltrack_pid_on_off"]
@@ -145,6 +146,9 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
             df_sig = filter_bit_df(df_sig, bitselvariable, signalpreseltrack_pid_on_off)
         if bkgpreseltrack_pid_on_off:
             df_bkg = filter_bit_df(df_bkg, bitselvariable, bkgpreseltrack_pid_on_off)
+
+        if mcsignal_on_off and not signalpreseltrack_pid_on_off:
+            df_sig = filter_bit_df(df_sig, bitselvariable, mcsignal_on_off)
         _, df_ml_test, df_sig_train, df_bkg_train, _, _, \
         x_train, y_train, x_test, y_test = \
             create_mlsamples(df_sig, df_bkg, sel_signal, sel_bkg, rnd_shuffle,
