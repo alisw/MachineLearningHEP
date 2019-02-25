@@ -16,6 +16,9 @@ case:
   choices: ["Dplus", "Ds", "Dzero", "Dstar", "LctopKpi", "LctopK0s", "PIDKaon", "PIDPion", "hypertritium", "lightquarkjet" ]
   default: "Dzero"
 
+usefileserver:
+  default: False
+
 binmin:
   default: 2
   type_as: [42., 42]

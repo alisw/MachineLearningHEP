@@ -80,10 +80,15 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
     dosignifopt = run_config['dosignifopt']
     nkfolds = run_config['nkfolds']
     ncores = run_config['ncores']
+    usefileserver = run_config['usefileserver']
 
     data = get_database_ml_parameters()
+
     filesig, filebkg = data[case]["sig_bkg_files"]
     filedata, filemc = data[case]["data_mc_files"]
+    if usefileserver is True:
+        filesig, filebkg = data[case]["sig_bkg_files_server"]
+        filedata, filemc = data[case]["data_mc_files_server"]
     trename = data[case]["tree_name"]
     var_all = data[case]["var_all"]
     var_signal = data[case]["var_signal"]
