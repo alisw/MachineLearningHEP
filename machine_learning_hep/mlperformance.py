@@ -267,8 +267,8 @@ def plot_overtraining(names_, classifiers_, suffix_, folder, x_train, y_train, x
                 d1 = clf.decision_function(X[y>0.5]).ravel()
                 d2 = clf.decision_function(X[y<0.5]).ravel()
             else: 
-                d1 = clf.predict_proba(X[y>0.5]).ravel()
-                d2 = clf.predict_proba(X[y<0.5]).ravel()
+                d1 = clf.predict_proba(X[y>0.5])[:,1]
+                d2 = clf.predict_proba(X[y<0.5])[:,1]
             decisions += [d1, d2]
             
         low = min(np.min(d) for d in decisions)
