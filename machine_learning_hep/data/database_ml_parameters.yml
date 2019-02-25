@@ -14,6 +14,8 @@
 Dzero:
   sig_bkg_files: [data/inputroot/SmallSkimmed_Dzero_pp5TeV_MC_train341.root, data/inputroot/SmallSkimmed_Dzero_pp5TeV_train340.root]
   data_mc_files: [data/inputroot/SmallSkimmed_Dzero_pp5TeV_train340.root, data/inputroot/SmallSkimmed_Dzero_pp5TeV_MC_train341.root]
+  sig_bkg_files_server: [../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/MC_LHC18a4a2/13-02-2019/341_20190211-2134/merged/merged_ch1234_all_AnalysisResults_Dzero_skimmed_Merged200.root, ../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/merged/merged_ch1_1-10-20-28_ch2_1-10-18_ch3_1_ch4_1_AnalysisResults_Dzero_skimmed_Merged100.root]
+  data_mc_files_server: [../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/merged/merged_ch1_1-10-20-28_ch2_1-10-18_ch3_1_ch4_1_AnalysisResults_Dzero_skimmed_Merged100.root, ../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/MC_LHC18a4a2/13-02-2019/341_20190211-2134/merged/merged_ch1234_all_AnalysisResults_Dzero_skimmed_Merged200.root]
   mass_cut: [1.77, 1.97]
   mass: 1.864
   pdg_code: null
@@ -62,6 +64,8 @@ Dzero:
 LctopK0s:
   sig_bkg_files: [data/inputroot/SmallSkimmed_LctopK0s_pp5TeV_MC_train341.root, data/inputroot/SmallSkimmed_LctopK0s_pp5TeV_train340.root]
   data_mc_files: [data/inputroot/SmallSkimmed_LctopK0s_pp5TeV_train340.root, data/inputroot/SmallSkimmed_LctopK0s_pp5TeV_MC_train341.root]
+  sig_bkg_files_server: [../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/MC_LHC18a4a2/13-02-2019/341_20190211-2134/merged/merged_ch1234_all_AnalysisResults_Lc_skimmed_Merged200.root, ../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/merged/merged_ch1_1-10-20-28_ch2_1-10-18_ch3_1_ch4_1_AnalysisResults_Lc_skimmed_Merged100.root]
+  data_mc_files_server: [../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/merged/merged_ch1_1-10-20-28_ch2_1-10-18_ch3_1_ch4_1_AnalysisResults_Lc_skimmed_Merged100.root, ../../../data/HeavyFlavour/DmesonsLc_pp_5TeV/MC_LHC18a4a2/13-02-2019/341_20190211-2134/merged/merged_ch1234_all_AnalysisResults_Lc_skimmed_Merged200.root]
   mass_cut: [2.2064, 2.3664]
   mass: 2.2864
   pdg_code: null
@@ -110,6 +114,8 @@ LctopK0s:
 Dplus:
   sig_bkg_files: [data/inputroot/SmallSkimmed_Dplus_pp5TeV_MC_train341.root, data/inputroot/SmallSkimmed_Dplus_pp5TeV_train340.root]
   data_mc_files: [data/inputroot/SmallSkimmed_Dplus_pp5TeV_train340.root, data/inputroot/SmallSkimmed_Dplus_pp5TeV_MC_train341.root]
+  sig_bkg_files_server: null
+  data_mc_files_server: null
   mass_cut: [1.77, 1.97]
   mass: 1.869
   pdg_code: null
@@ -158,6 +164,8 @@ Dplus:
 Ds:
   sig_bkg_files: [data/inputroot/SmallSkimmed_Ds_pp5TeV_MC_train341.root, data/inputroot/SmallSkimmed_Ds_pp5TeV_train340.root]
   data_mc_files: [data/inputroot/SmallSkimmed_Ds_pp5TeV_train340.root, data/inputroot/SmallSkimmed_Ds_pp5TeV_MC_train341.root]
+  sig_bkg_files_server: null
+  data_mc_files_server: null
   mass_cut: [1.83, 2.012]
   mass: 1.972
   pdg_code: null
@@ -206,6 +214,8 @@ Ds:
 Dstar:
   sig_bkg_files: [data/inputroot/SmallSkimmed_Dstar_pp5TeV_MC_train341.root, data/inputroot/SmallSkimmed_Dstar_pp5TeV_train340.root]
   data_mc_files: [data/inputroot/SmallSkimmed_Dstar_pp5TeV_train340.root, data/inputroot/SmallSkimmed_Dstar_pp5TeV_MC_train341.root]
+  sig_bkg_files_server: null
+  data_mc_files_server: null
   mass_cut: [0.14, 0.149]
   mass: 0.1454 #mDstar - mD0
   pdg_code: null
@@ -254,6 +264,8 @@ Dstar:
 LctopKpi:
   sig_bkg_files: [data/inputroot/SmallSkimmed_LctopKpi_pp5TeV_MC_train341.root, data/inputroot/SmallSkimmed_LctopKpi_pp5TeV_train340.root]
   data_mc_files: [data/inputroot/SmallSkimmed_LctopKpi_pp5TeV_train340.root, data/inputroot/SmallSkimmed_LctopKpi_pp5TeV_MC_train341.root]
+  sig_bkg_files_server: null
+  data_mc_files_server: null
   mass_cut: [2.2064, 2.3664]
   mass: 2.2864
   pdg_code: null
