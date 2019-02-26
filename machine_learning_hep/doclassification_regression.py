@@ -19,6 +19,7 @@ import argparse
 import sys
 import os.path
 
+import pickle
 from sklearn.utils import shuffle
 # from sklearn.metrics import make_scorer, accuracy_score
 from machine_learning_hep.general import get_database_ml_parameters, getdataframe
@@ -57,6 +58,7 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
     mlsubtype = run_config['mlsubtype']
     case = run_config['case']
     loadsampleoption = run_config['loadsampleoption']
+    usesampleoption = run_config['usesampleoption']
     binmin = run_config['binmin']
     binmax = run_config['binmax']
     rnd_shuffle = run_config['rnd_shuffle']
@@ -110,9 +112,15 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
     string_selection = createstringselection(var_binning, binmin, binmax)
     suffix = f"nevt_sig{nevt_sig}_nevt_bkg{nevt_bkg}_" \
              f"{mltype}{case}_{string_selection}"
-    dataframe = f"dataframes_{suffix}"
+    dataframe = f"dataframepkl"
     plotdir = f"plots_{suffix}"
     output = f"output_{suffix}"
+
+    dataframesig = f"{dataframe}/dfsignal.pkl"
+    dataframebkg = f"{dataframe}/dfbackground.pkl"
+    dataframedata = f"{dataframe}/dfdata.pkl"
+    dataframemc = f"{dataframe}/dfmc.pkl"
+
     checkdir(dataframe)
     checkdir(plotdir)
     checkdir(output)
@@ -149,6 +157,28 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
         if mcsignal_on_off:
             df_sig = filter_bit_df(df_sig, bitselvariable, mcsignal_on_off)
 
+        df_data = getdataframe(filedata, trename, var_all)
+        df_mc = getdataframe(filemc, trename, var_all)
+        df_data = filterdataframe_singlevar(df_data, var_binning, binmin, binmax)
+        df_mc = filterdataframe_singlevar(df_mc, var_binning, binmin, binmax)
+
+        if presel_reco is not None:
+            df_mc = df_mc.query(presel_reco)
+            df_data = df_data.query(presel_reco)
+        if preseltrack_pid_on_off:
+            df_mc = filter_bit_df(df_mc, bitselvariable, preseltrack_pid_on_off)
+            df_data = filter_bit_df(df_data, bitselvariable, preseltrack_pid_on_off)
+
+        df_sig.to_pickle(dataframesig)
+        df_bkg.to_pickle(dataframebkg)
+        df_mc.to_pickle(dataframemc)
+        df_data.to_pickle(dataframedata)
+
+    if usesampleoption == 1:
+        filesaved_sig = open(dataframesig, "rb")
+        filesaved_bkg = open(dataframebkg, "rb")
+        df_sig = pickle.load(filesaved_sig)
+        df_bkg = pickle.load(filesaved_bkg)
         _, df_ml_test, df_sig_train, df_bkg_train, _, _, \
         x_train, y_train, x_test, y_test = \
             create_mlsamples(df_sig, df_bkg, sel_signal, sel_bkg, rnd_shuffle,
@@ -191,17 +221,11 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
         write_tree(df_ml_test_to_root, trename, df_ml_test)
 
     if applytodatamc == 1:
-        df_data = getdataframe(filedata, trename, var_all)
-        df_mc = getdataframe(filemc, trename, var_all)
-        df_data = filterdataframe_singlevar(df_data, var_binning, binmin, binmax)
-        df_mc = filterdataframe_singlevar(df_mc, var_binning, binmin, binmax)
-        if presel_reco is not None:
-            df_mc = df_mc.query(presel_reco)
-            df_data = df_data.query(presel_reco)
-        if preseltrack_pid_on_off:
-            df_mc = filter_bit_df(df_mc, bitselvariable, preseltrack_pid_on_off)
-            df_data = filter_bit_df(df_data, bitselvariable, preseltrack_pid_on_off)
         # The model predictions are added to the dataframes of data and MC
+        filesaved_mc = open(dataframemc, "rb")
+        filesaved_data = open(dataframedata, "rb")
+        df_data = pickle.load(filesaved_data)
+        df_mc = pickle.load(filesaved_mc)
         df_data = apply(mltype, names, trainedmodels, df_data, var_training)
         df_mc = apply(mltype, names, trainedmodels, df_mc, var_training)
         df_data_to_root = output+"/data_%s_mldecision.root" % (suffix)
