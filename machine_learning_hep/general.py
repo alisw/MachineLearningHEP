@@ -22,6 +22,10 @@ import yaml
 from pkg_resources import resource_stream
 
 
+def get_database_ml_analysis():
+    stream = resource_stream("machine_learning_hep.data", "database_ml_analysis.yml")
+    return yaml.safe_load(stream)
+
 def get_database_ml_parameters():
     stream = resource_stream("machine_learning_hep.data", "database_ml_parameters.yml")
     return yaml.safe_load(stream)

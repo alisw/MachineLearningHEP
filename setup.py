@@ -71,7 +71,7 @@ setup(
   # https://packaging.python.org/en/latest/requirements.html
   install_requires=[ "numpy", "pandas", "scipy", "matplotlib", "seaborn", "uproot", "scikit-learn",
                      "xgboost", "keras", "tensorflow", "PyYaml", "pylint", "twisted", "klein",
-                    "Jinja2", "numba"],
+                    "Jinja2", "numba", "pyarrow"],
 
   python_requires='>=3.6, <3.7',
 
@@ -88,6 +88,7 @@ setup(
   include_package_data=True,
   package_data={ "machine_learning_hep.data": [ "database_ml_parameters.yml",
                                                 "database_ml_gridsearch.yml",
+                                                "database_ml_analysis.yml",
                                                 "config_run_parameters.yml",
                                                 "config_model_parameters.yml"],
                  "machine_learning_hep.webapp.templates": [ "display.html",

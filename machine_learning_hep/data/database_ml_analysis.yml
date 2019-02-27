@@ -1,0 +1,46 @@
+#############################################################################
+##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
+## This program is free software: you can redistribute it and/or modify it ##
+##  under the terms of the GNU General Public License as published by the  ##
+## Free Software Foundation, either version 3 of the License, or (at your  ##
+## option) any later version. This program is distributed in the hope that ##
+##  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  ##
+##     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    ##
+##           See the GNU General Public License for more details.          ##
+##    You should have received a copy of the GNU General Public License    ##
+##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
+#############################################################################
+Dzero:
+  inputdirdata: /data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/merged/
+  outputdir: output
+  outputdirhisto: outputhisto/
+  namefile_in_root: AnalysisResults_Dzero_skimmed_Merged100.root 
+  namefile_in_pkl: AnalysisResults_Dzero_skimmed_Merged100.pkl
+  namefile_in_parquet: AnalysisResults_Dzero_skimmed_Merged100.ZSTD
+  binmin: [3]
+  binmax: [4]
+  probcut: [0.80]
+  invmassbins: 126
+  invmasslow: 1.72
+  invmasshigh: 2.05
+  modname: "BoostXG"
+  models: [output_nevt_sig100000_nevt_bkg100000_BinaryClassificationDzero_dfselection_pt_cand_ML_1.0_2.0/xgboost_classifiernevt_sig100000_nevt_bkg100000_BinaryClassificationDzero_dfselection_pt_cand_ML_1.0_2.0.sav]
+  var_inv_mass: inv_mass_ML
+  var_cand_type: cand_type_ML
+Lcnew:
+  inputdirdata: /data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/merged/
+  outputdir: output
+  outputdirhisto: outputhisto
+  namefile_in_root: AnalysisResults_Lc_skimmed_Merged100.root
+  namefile_in_pkl: AnalysisResults_Lc_skimmed_Merged100.pkl
+  binmin: [6]
+  binmax: [8]
+  probcut: [0.8]
+  invmassbins: [120]
+  invmasslow: [2.15]
+  invmasshigh: [2.4]
+  modname: "BoostXG"
+  models: [/data/trained_models/pp/Lcnew/xgboost_classifiernevt_sig1001802_nevt_bkg1001802_BinaryClassificationLcnew_dfselection_pt_cand_ML_6.0_8.0.sav]
+  var_inv_mass: inv_mass_ML
+  var_cand_type: cand_type_ML
