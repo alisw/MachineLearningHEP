@@ -24,7 +24,7 @@ from machine_learning_hep.general import getdataframe, filterdataframe_singlevar
 from machine_learning_hep.general import get_database_ml_parameters
 from machine_learning_hep.bitwise import filter_bit_df
 
-def calc_efficiency(df_to_sel, sel_signal, name, num_step, calc_for_std=None):
+def calc_efficiency(df_to_sel, sel_signal, name, num_step, bit_sel_std=None, bit_sel_var=None):
     """
     Calculate the ML selection efficiency as a function of the treshold on the
     ML model output.
@@ -35,7 +35,7 @@ def calc_efficiency(df_to_sel, sel_signal, name, num_step, calc_for_std=None):
     eff_array = []
     eff_err_array = []
 
-    if calc_for_std is None:
+    if bit_sel_std is None:
         for thr in x_axis:
             num_sel_cand = len(df_to_sel[df_to_sel['y_test_prob' + name].values >= thr])
             eff = num_sel_cand / num_tot_cand
@@ -43,6 +43,7 @@ def calc_efficiency(df_to_sel, sel_signal, name, num_step, calc_for_std=None):
             eff_array.append(eff)
             eff_err_array.append(eff_err)
     else:
+        df_to_sel = filter_bit_df(df_to_sel, bit_sel_var, bit_sel_std)
         num_sel_cand = len(df_to_sel)
         eff = num_sel_cand / num_tot_cand
         eff_err = np.sqrt(eff * (1 - eff) / num_tot_cand)
@@ -259,7 +260,6 @@ def study_signif(case, names, bin_lim, file_mc, file_data, df_mc_reco, df_ml_tes
     sig_region = [mass - 3 * sigma, mass + 3 * sigma]
 
     for name in names:
-
         eff_array, eff_err_array, x_axis = calc_efficiency(df_ml_test,
                                                            gen_dict['sel_signal'],
                                                            name, sopt_dict['num_steps'])
@@ -279,14 +279,12 @@ def study_signif(case, names, bin_lim, file_mc, file_data, df_mc_reco, df_ml_tes
         plt.errorbar(x_axis, signif_array, yerr=signif_err_array, alpha=0.3, label=f'{name}',
                      elinewidth=2.5, linewidth=4.0)
 
-    if bitmap_dict["std_analysis_on_off"]:
-        df_ml_test = filter_bit_df(df_ml_test, gen_dict["bitselvariable"],
-                                   bitmap_dict["std_analysis_on_off"])
     eff_arr_std, eff_er_arr_std, x_axis_std = calc_efficiency(df_ml_test,
                                                               gen_dict['sel_signal'],
                                                               'ALICE Standard',
                                                               sopt_dict['num_steps'],
-                                                              gen_dict['sel_signal'])
+                                                              bitmap_dict["std_analysis_on_off"],
+                                                              gen_dict["bitselvariable"])
     plt.figure(fig_eff.number)
     plt.errorbar(x_axis_std, eff_arr_std, yerr=eff_er_arr_std, alpha=0.3, label=f'ALICE Standard',
                  elinewidth=2.5, linewidth=4.0)
