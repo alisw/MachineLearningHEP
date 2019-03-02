@@ -76,12 +76,12 @@ def doskimming():
     data = get_database_ml_parameters()
     var_all_unflat = data[case]["var_all_unflat"]
     skimming_sel = "n_cand> 0 & pt_cand>3"
-    nmaxfile = 2
-    nmaxfilestoprocess = 6
+    nmaxfile = 5
+    nmaxfilestoprocess = 100
     writeflat = True
 
-    inputdir = "/home/ginnocen/LearningPythonML/inputs"
-#    inputdir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/unmerged"
+#    inputdir = "/home/ginnocen/LearningPythonML/inputs"
+    inputdir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/unmerged"
     mergeddir = "/home/ginnocen/LearningPythonML/inputsmerged"
 
     listfilespath, _ = list_files(inputdir, outdir="", \
