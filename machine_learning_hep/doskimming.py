@@ -35,7 +35,7 @@ def flattenroot_to_pandas(namefileinput, namefileoutput, treenamein, \
     df = tree.pandas.df(branches=var_all, flatten=True)
     df = df.query(skimming_sel)
     df.to_pickle(namefileoutput)
-    namefileoutputrootflat = namefileoutput.replace(".pkl", ".root")
+    namefileoutputrootflat = namefileoutput.replace(".pkl", "Flat.root")
     if writeflat is True:
         write_tree(namefileoutputrootflat, treenameout, df)
 
@@ -76,8 +76,9 @@ def doskimming():
     data = get_database_ml_parameters()
     var_all_unflat = data[case]["var_all_unflat"]
     skimming_sel = "n_cand> 0 & pt_cand>3"
-    nmaxfile = 3
-    writeflat = False
+    nmaxfile = 2
+    nmaxfilestoprocess = 6
+    writeflat = True
 
     inputdir = "/home/ginnocen/LearningPythonML/inputs"
 #    inputdir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/unmerged"
@@ -85,6 +86,7 @@ def doskimming():
 
     listfilespath, _ = list_files(inputdir, outdir="", \
                                   filenameinput=namefileinput, filenameoutput="")
+    listfilespath = listfilespath[:nmaxfilestoprocess]
     chunks = [listfilespath[x:x+nmaxfile] for x in range(0, len(listfilespath), nmaxfile)]
     mergefiles(chunks, mergeddir, case, treenamein, treenameout,
                var_all_unflat, skimming_sel, writeflat, nmaxfile)
