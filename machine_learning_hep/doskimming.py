@@ -45,7 +45,8 @@ def writelist_tofile(fileout, mylist):
             f.write("%s\n" % item)
 
 def merger_skimmer(listfiles, index, directory, case, treenamein, \
-                   treenameout, var_all_unflat, skimming_sel, writeflat, nmaxfile):
+                   treenameout, var_all_unflat, skimming_sel, writeflat, \
+                   writenasted, nmaxfile):
     filemerged = "%s/AnalysisResultsMergedIndex%d_Nfiles%d.root" % (directory, index, nmaxfile)
     if not os.path.isfile(filemerged):
         filelist = "%s/mergedfilesMergedIndex%d_Nfiles%d.txt" % (directory, index, nmaxfile)
@@ -54,12 +55,15 @@ def merger_skimmer(listfiles, index, directory, case, treenamein, \
     filepandas = filemerged.replace('.root', '%s.pkl' % (case))
     flattenroot_to_pandas(filemerged, filepandas, treenamein, treenameout, \
                           var_all_unflat, skimming_sel, writeflat)
+    if writenasted is False:
+        os.remove(filemerged)
 
 def mergefiles(chunks, mergeddir, case, treenamein, treenameout, \
-               var_all_unflat, skimming_sel, writeflat, nmaxfile):
+               var_all_unflat, skimming_sel, writeflat, writenasted, nmaxfile):
     processes = [mp.Process(target=merger_skimmer, args=(mylist, index, mergeddir, case, \
                                                          treenamein, treenameout, var_all_unflat, \
-                                                         skimming_sel, writeflat, nmaxfile))
+                                                         skimming_sel, \
+                                                         writeflat, writenasted, nmaxfile))
                  for index, mylist in enumerate(chunks)]
     for p in processes:
         p.start()
@@ -79,16 +83,17 @@ def doskimming():
     nmaxfile = 5
     nmaxfilestoprocess = 100
     writeflat = True
+    writenasted = False
 
 #    inputdir = "/home/ginnocen/LearningPythonML/inputs"
     inputdir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/unmerged" # pylint: disable=line-too-long
-    mergeddir = "/home/ginnocen/LearningPythonML/inputsmerged"
+    mergeddir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/mergedPython" # pylint: disable=line-too-long
 
     listfilespath, _ = list_files(inputdir, outdir="", \
                                   filenameinput=namefileinput, filenameoutput="")
     listfilespath = listfilespath[:nmaxfilestoprocess]
     chunks = [listfilespath[x:x+nmaxfile] for x in range(0, len(listfilespath), nmaxfile)]
     mergefiles(chunks, mergeddir, case, treenamein, treenameout,
-               var_all_unflat, skimming_sel, writeflat, nmaxfile)
+               var_all_unflat, skimming_sel, writeflat, writenasted, nmaxfile)
 
 doskimming()
