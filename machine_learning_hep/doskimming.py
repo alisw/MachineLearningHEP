@@ -81,7 +81,7 @@ def doskimming():
     writeflat = True
 
 #    inputdir = "/home/ginnocen/LearningPythonML/inputs"
-    inputdir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/unmerged"
+    inputdir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/unmerged" # pylint: disable=line-too-long
     mergeddir = "/home/ginnocen/LearningPythonML/inputsmerged"
 
     listfilespath, _ = list_files(inputdir, outdir="", \
