@@ -22,6 +22,7 @@ main macro for charm analysis with python
 # pylint: disable=import-error
 
 import multiprocessing as mp
+import time
 import pickle
 import uproot
 import pandas as pd
@@ -75,9 +76,9 @@ def doskimming(case):
     var_all_unflat = data[case]["var_all_unflat"]
     treenameevtbased = data[case]["treenameevtbased"]
     skimming_sel = data[case]["skimming_sel"]
-    nmaxchunks = 100
-    nmaxfiles = 100
-    nmaxmerge = 30
+    nmaxchunks = 200
+    nmaxfiles = 5000
+    nmaxmerge = 130
 
     doconversion = 1
     domerge = 1
@@ -91,6 +92,7 @@ def doskimming(case):
     listfilespath = listfilespath[:nmaxfiles]
     listfilespathout = listfilespathout[:nmaxfiles]
 
+    tstart = time.time()
     if doconversion == 1:
         print("I am extracting flat trees")
         chunks = [listfilespath[x:x+nmaxchunks] for x in range(0, len(listfilespath), nmaxchunks)]
@@ -101,11 +103,17 @@ def doskimming(case):
             print("Processing chunk number=", i, "with n=", len(chunk))
             flattenallpickle(chunk, chunkout, treenameevtbased, var_all_unflat, skimming_sel)
             i = i+1
+            print("elapsed time=", time.time()-tstart)
+        tstopconv = time.time()
+        print("total coversion time", tstopconv - tstart)
+
     if domerge == 1:
         print("I am merging")
         chunksmerge = [listfilespathout[x:x+nmaxmerge] \
                    for x in range(0, len(listfilespathout), nmaxmerge)]
         mergeall(chunksmerge, mergeddir, case)
-
+        timemerge = time.time() - tstopconv
+        print("total merging time", timemerge)
+    print("Total time elapsed", time.time()-tstart)
 runcase = "Dzero" # pylint: disable=invalid-name
 doskimming(runcase)
