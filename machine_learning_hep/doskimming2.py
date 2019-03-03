@@ -23,6 +23,8 @@ main macro for charm analysis with python
 
 import multiprocessing as mp
 import uproot
+import pickle
+import pandas as pd
 from machine_learning_hep.general import get_database_ml_parameters
 from machine_learning_hep.listfiles import list_files_dir
 
@@ -38,10 +40,28 @@ def flattenroot_to_pandas(filein, fileout, treenamein, var_all, skimming_sel):
     df = df.query(skimming_sel)
     df.to_pickle(fileout)
 
-def flattenallpickle(chunck, chunckout, treenamein, var_all, skimming_sel):
-    processes = [mp.Process(target=flattenroot_to_pandas, args=(filein, chunckout[index], \
+def flattenallpickle(chunk, chunkout, treenamein, var_all, skimming_sel):
+    processes = [mp.Process(target=flattenroot_to_pandas, args=(filein, chunkout[index], \
                                                          treenamein, var_all, skimming_sel))
-                 for index, filein in enumerate(chunck)]
+                 for index, filein in enumerate(chunk)]
+    for p in processes:
+        p.start()
+    for p in processes:
+        p.join()
+
+def merge(chunk, mergeddir, index, case):
+    dfList = []
+    for myfilename in chunk:
+        myfile = open (myfilename, "rb")
+        df = pickle.load(myfile)
+        dfList.append(df)
+    dftot = pd.concat(dfList)
+    namemerged = "%s/AnalysisResults%sMergedIndex%d.pkl" % (mergeddir, case, index)
+    dftot.to_pickle(namemerged)
+
+def mergeall(chunksmerge, mergeddir, case):
+    processes = [mp.Process(target=merge, args=(chunk, mergeddir, index, case))
+                 for index, chunk in enumerate(chunksmerge)]
     for p in processes:
         p.start()
     for p in processes:
@@ -59,6 +79,10 @@ def doskimming2():
     skimming_sel = "n_cand> 0 & pt_cand>3"
     nmaxchunks = 50
     nmaxfiles = 50
+    nmaxmerge = 10
+
+    doconversion = 0
+    domerge = 1
 
     #inputdir = "/home/ginnocen/LearningPythonML/inputs"
     inputdir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/unmerged" # pylint: disable=line-too-long
@@ -71,9 +95,14 @@ def doskimming2():
     listfilespathout = listfilespathout[:nmaxfiles]
     print(len(listfilespath))
     print(len(listfilespathout))
-    chunks = [listfilespath[x:x+nmaxchunks] for x in range(0, len(listfilespath), nmaxchunks)]
-    chunksout = [listfilespathout[x:x+nmaxchunks] for x in range(0, len(listfilespathout), nmaxchunks)]
-    for chunck, chunckout in zip(chunks, chunksout):
-        flattenallpickle(chunck, chunckout, treenamein, var_all_unflat, skimming_sel)
+    if doconversion == 1:
+        chunks = [listfilespath[x:x+nmaxchunks] for x in range(0, len(listfilespath), nmaxchunks)]
+        chunksout = [listfilespathout[x:x+nmaxchunks] for x in range(0, len(listfilespathout), nmaxchunks)]
+        for chunk, chunkout in zip(chunks, chunksout):
+            flattenallpickle(chunk, chunkout, treenamein, var_all_unflat, skimming_sel)
+    if domerge == 1:
+        chunksmerge = [listfilespathout[x:x+nmaxmerge] \
+                   for x in range(0, len(listfilespathout), nmaxmerge)]
+        mergeall(chunksmerge, mergeddir,  case)
 
 doskimming2()
