@@ -22,8 +22,8 @@ main macro for charm analysis with python
 # pylint: disable=import-error
 
 import multiprocessing as mp
-import uproot
 import pickle
+import uproot
 import pandas as pd
 from machine_learning_hep.general import get_database_ml_parameters
 from machine_learning_hep.listfiles import list_files_dir
@@ -52,7 +52,7 @@ def flattenallpickle(chunk, chunkout, treenamein, var_all, skimming_sel):
 def merge(chunk, mergeddir, index, case):
     dfList = []
     for myfilename in chunk:
-        myfile = open (myfilename, "rb")
+        myfile = open(myfilename, "rb")
         df = pickle.load(myfile)
         dfList.append(df)
     dftot = pd.concat(dfList)
@@ -68,7 +68,7 @@ def mergeall(chunksmerge, mergeddir, case):
         p.join()
 
 # pylint: disable=too-many-locals, too-many-statements, too-many-branches
-def doskimming2():
+def doskimming():
 
     case = "Dzero"
     namefileinput = 'AnalysisResults.root'
@@ -77,9 +77,9 @@ def doskimming2():
     data = get_database_ml_parameters()
     var_all_unflat = data[case]["var_all_unflat"]
     skimming_sel = "n_cand> 0 & pt_cand>2"
-    nmaxchunks = 50
-    nmaxfiles = 50
-    nmaxmerge = 10
+    nmaxchunks = 200
+    nmaxfiles = 5000
+    nmaxmerge = 130
 
     doconversion = 1
     domerge = 1
@@ -97,12 +97,13 @@ def doskimming2():
     print(len(listfilespathout))
     if doconversion == 1:
         chunks = [listfilespath[x:x+nmaxchunks] for x in range(0, len(listfilespath), nmaxchunks)]
-        chunksout = [listfilespathout[x:x+nmaxchunks] for x in range(0, len(listfilespathout), nmaxchunks)]
+        chunksout = [listfilespathout[x:x+nmaxchunks] \
+                     for x in range(0, len(listfilespathout), nmaxchunks)]
         for chunk, chunkout in zip(chunks, chunksout):
             flattenallpickle(chunk, chunkout, treenamein, var_all_unflat, skimming_sel)
     if domerge == 1:
         chunksmerge = [listfilespathout[x:x+nmaxmerge] \
                    for x in range(0, len(listfilespathout), nmaxmerge)]
-        mergeall(chunksmerge, mergeddir,  case)
+        mergeall(chunksmerge, mergeddir, case)
 
-doskimming2()
+doskimming()
