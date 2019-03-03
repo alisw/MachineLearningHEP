@@ -34,7 +34,6 @@ def writelist_tofile(fileout, mylist):
             f.write("%s\n" % item)
 
 def flattenroot_to_pandas(filein, fileout, treenamein, var_all, skimming_sel):
-    print(filein)
     tree = uproot.open(filein)[treenamein]
     df = tree.pandas.df(branches=var_all, flatten=True)
     df = df.query(skimming_sel)
@@ -68,42 +67,45 @@ def mergeall(chunksmerge, mergeddir, case):
         p.join()
 
 # pylint: disable=too-many-locals, too-many-statements, too-many-branches
-def doskimming():
+def doskimming(case):
 
-    case = "Dzero"
     namefileinput = 'AnalysisResults.root'
     namefileinputpkl = 'AnalysisResults%s.pkl' % case
-    treenamein = 'PWGHF_TreeCreator/tree_D0'
     data = get_database_ml_parameters()
     var_all_unflat = data[case]["var_all_unflat"]
-    skimming_sel = "n_cand> 0 & pt_cand>2"
-    nmaxchunks = 200
-    nmaxfiles = 5000
-    nmaxmerge = 130
+    treenameevtbased = data[case]["treenameevtbased"]
+    skimming_sel = data[case]["skimming_sel"]
+    nmaxchunks = 100
+    nmaxfiles = 100
+    nmaxmerge = 30
 
     doconversion = 1
     domerge = 1
 
     #inputdir = "/home/ginnocen/LearningPythonML/inputs"
     inputdir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/unmerged" # pylint: disable=line-too-long
-    mergeddir = \
-    "/data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/unmergedpkl" # pylint: disable=line-too-long
+    mergeddir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/unmergedpkl" # pylint: disable=line-too-long
 
     listfilespath, listfilespathout = list_files_dir(inputdir, outdir=mergeddir, \
                                   filenameinput=namefileinput, filenameoutput=namefileinputpkl)
     listfilespath = listfilespath[:nmaxfiles]
     listfilespathout = listfilespathout[:nmaxfiles]
-    print(len(listfilespath))
-    print(len(listfilespathout))
+
     if doconversion == 1:
+        print("I am extracting flat trees")
         chunks = [listfilespath[x:x+nmaxchunks] for x in range(0, len(listfilespath), nmaxchunks)]
         chunksout = [listfilespathout[x:x+nmaxchunks] \
                      for x in range(0, len(listfilespathout), nmaxchunks)]
+        i = 0
         for chunk, chunkout in zip(chunks, chunksout):
-            flattenallpickle(chunk, chunkout, treenamein, var_all_unflat, skimming_sel)
+            print("Processing chunk number=", i, "with n=", len(chunk))
+            flattenallpickle(chunk, chunkout, treenameevtbased, var_all_unflat, skimming_sel)
+            i = i+1
     if domerge == 1:
+        print("I am merging")
         chunksmerge = [listfilespathout[x:x+nmaxmerge] \
                    for x in range(0, len(listfilespathout), nmaxmerge)]
         mergeall(chunksmerge, mergeddir, case)
 
-doskimming()
+runcase = "Dzero" # pylint: disable=invalid-name
+doskimming(runcase)

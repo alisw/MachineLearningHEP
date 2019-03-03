@@ -41,6 +41,8 @@ Dzero:
   var_gen: [y_cand_gen_ML, pt_cand_gen_ML, cand_type_gen_ML, z_vtx_gen_ML]
   presel_gen: abs(y_cand_gen_ML) < 0.5 and abs(z_vtx_gen_ML) < 10 # pre-selections on generated candidates
   ptgen: pt_cand_gen_ML
+  treenameevtbased: 'PWGHF_TreeCreator/tree_D0'
+  skimming_sel: "n_cand> 0 & pt_cand>2"
   bitmapsel:
     mcsignal_on_off: [[1],[5]]
     mcsignal_prompt_on_off: [[1,3],[5]]
@@ -92,6 +94,8 @@ LctopK0s:
   var_gen: [y_cand_gen_ML, pt_cand_gen_ML, cand_type_gen_ML, z_vtx_gen_ML]
   presel_gen: abs(y_cand_gen_ML) < 0.5 and abs(z_vtx_gen_ML) < 10 # pre-selections on generated candidates
   ptgen: pt_cand_gen_ML
+  treenameevtbased: null
+  skimming_sel: null
   bitmapsel:
     mcsignal_on_off: [[1],[5]]
     mcsignal_prompt_on_off: [[1,3],[5]]
@@ -143,6 +147,8 @@ Dplus:
   var_gen: [y_cand_gen_ML, pt_cand_gen_ML, cand_type_gen_ML, z_vtx_gen_ML]
   presel_gen: abs(y_cand_gen_ML) < 0.5 and abs(z_vtx_gen_ML) < 10 # pre-selections on generated candidates
   ptgen: pt_cand_gen_ML
+  treenameevtbased: null
+  skimming_sel: null
   bitmapsel:
     mcsignal_on_off: [[1],[5]]
     mcsignal_prompt_on_off: [[1,3],[5]]
@@ -194,6 +200,8 @@ Ds:
   var_gen: [y_cand_gen_ML, pt_cand_gen_ML, cand_type_gen_ML, z_vtx_gen_ML]
   presel_gen: abs(y_cand_gen_ML) < 0.5 and abs(z_vtx_gen_ML) < 10 # pre-selections on generated candidates
   ptgen: pt_cand_gen_ML
+  treenameevtbased: null
+  skimming_sel: null
   bitmapsel:
     mcsignal_on_off: [[1],[5,11]]
     mcsignal_prompt_on_off: [[1,3],[5,11]]
@@ -245,6 +253,8 @@ Dstar:
   var_gen: [y_cand_gen_ML, pt_cand_gen_ML, cand_type_gen_ML, z_vtx_gen_ML]
   presel_gen: abs(y_cand_gen_ML) < 0.5 and abs(z_vtx_gen_ML) < 10 # pre-selections on generated candidates
   ptgen: pt_cand_gen_ML
+  treenameevtbased: null
+  skimming_sel: null
   bitmapsel:
     mcsignal_on_off: [[1],[5]]
     mcsignal_prompt_on_off: [[1,3],[5]]
@@ -296,6 +306,8 @@ LctopKpi:
   var_gen: [y_cand_gen_ML, pt_cand_gen_ML, cand_type_gen_ML, z_vtx_gen_ML]
   presel_gen: abs(y_cand_gen_ML) < 0.5 and abs(z_vtx_gen_ML) < 10 # pre-selections on generated candidates
   ptgen: pt_cand_gen_ML
+  treenameevtbased: null
+  skimming_sel: null
   bitmapsel:
     mcsignal_on_off: [[1],[5]]
     mcsignal_prompt_on_off: [[1,3],[5]]
