@@ -17,7 +17,7 @@ main macro for running the study
 """
 from sklearn.utils import shuffle
 from machine_learning_hep.general import get_database_ml_parameters, getdataframe
-from machine_learning_hep.general import filterdataframe, split_df_sigbkg
+from machine_learning_hep.general import filterdataframe, split_df_sigbkg, filter_df_cand
 from machine_learning_hep.preparesamples import prep_mlsamples
 from machine_learning_hep.logger import get_logger
 
@@ -42,7 +42,6 @@ def test():
 
     var_all = data[case]["var_all"]
     var_signal = data[case]["var_signal"]
-    sel_signal = data[case]["sel_signal"]
     sel_bkg = data[case]["sel_bkg"]
 
 #     var_training = data[case]["var_training"]
@@ -58,10 +57,10 @@ def test():
         df_bkg = getdataframe(filebkg, trename, var_all)
         df_sig = filterdataframe(df_sig, var_skimming, varmin, varmax)
         df_bkg = filterdataframe(df_bkg, var_skimming, varmin, varmax)
-        df_sig = df_sig.query(sel_signal, random_state=rnd_shuffle)
-        df_bkg = df_bkg.query(sel_bkg, random_state=rnd_shuffle)
-        df_sig = shuffle(df_sig)
-        df_bkg = shuffle(df_bkg)
+        df_sig = filter_df_cand(df_sig, data[case], 'mc_signal')
+        df_bkg = df_bkg.query(sel_bkg)
+        df_sig = shuffle(df_sig, random_state=rnd_shuffle)
+        df_bkg = shuffle(df_bkg, random_state=rnd_shuffle)
         df_ml_train, df_ml_test = \
             prep_mlsamples(df_sig, df_bkg, var_signal, nevt_sig, nevt_bkg, test_frac, rnd_splt)
         df_sig_train, df_bkg_train = split_df_sigbkg(df_ml_train, var_signal)
