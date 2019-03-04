@@ -107,7 +107,7 @@ def filter_df_cand(dataframe, main_dict, sel_opt, mc_gen=False):
     '''
     logger = get_logger()
 
-    bitmap_dict = main_dict['bitmapsel'] # var name to change
+    bitmap_dict = main_dict['bitmap_sel']
     old_dict = main_dict['old_sel']
     use_bitmap = bitmap_dict['use']
     use_old = old_dict['use']
@@ -120,9 +120,9 @@ def filter_df_cand(dataframe, main_dict, sel_opt, mc_gen=False):
         logger.debug("Using bitmap selection")
 
         if mc_gen:
-            var_name = main_dict['bitselvariable_gen'] # to change
+            var_name = bitmap_dict['var_sel_gen']
         else:
-            var_name = main_dict['bitselvariable'] # to change
+            var_name = bitmap_dict['var_sel']
 
         if sel_opt == 'mc_signal':
             sel_bits = bitmap_dict['mcsignal_on_off']
