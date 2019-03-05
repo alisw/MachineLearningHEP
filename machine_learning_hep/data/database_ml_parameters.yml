@@ -175,7 +175,6 @@ Ds:
   data_mc_files: [data/inputroot/SmallSkimmed_Ds_pp5TeV_train340.root, data/inputroot/SmallSkimmed_Ds_pp5TeV_MC_train341.root]
   sig_bkg_files_server: null
   data_mc_files_server: null
-  mass_cut: [1.83, 2.012]
   mass: 1.972
   pdg_code: null
   tree_name: fTreeDsFlagged
@@ -185,12 +184,11 @@ Ds:
   var_correlation:
   - [pt_cand_ML, d_len_xy_ML, sig_vert_ML, pt_cand_ML, pt_cand_ML, norm_dl_xy_ML, cos_PiDs_ML, cos_p_xy_ML, cos_p_xy_ML]
   - [d_len_xy_ML, sig_vert_ML, delta_mass_KK_ML, delta_mass_KK_ML, sig_vert_ML, d_len_xy_ML, cos_PiKPhi_3_ML, sig_vert_ML, pt_cand_ML]
-  var_others: [inv_mass_ML, pt_cand_ML]
   var_signal: signal_ML
   var_target: signal_ML
   var_training: [d_len_ML, d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, dca_ML, sig_vert_ML, delta_mass_KK_ML, cos_PiDs_ML, cos_PiKPhi_3_ML, pt_prong0_ML, pt_prong1_ML, pt_prong2_ML, imp_par_prong0_ML, imp_par_prong1_ML, imp_par_prong2_ML, max_norm_d0d0exp_ML]
-  sel_bkg: inv_mass_ML<1.83 or inv_mass_ML>2.012
   var_binning: pt_cand_ML
+  sel_bkg: inv_mass_ML<1.83 or inv_mass_ML>2.012
   presel_reco: abs(eta_prong0_ML)<0.8 and abs(eta_prong1_ML)<0.8 and abs(eta_prong2_ML)<0.8
   treename_gen: fTreeDsGenFlagged # variables related to the tree of generated candidates
   var_gen: [y_cand_gen_ML, pt_cand_gen_ML, cand_type_gen_ML, z_vtx_gen_ML]
