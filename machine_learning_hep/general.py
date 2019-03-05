@@ -139,7 +139,9 @@ def filter_df_cand(dataframe, main_dict, sel_opt, mc_gen=False):
         else:
             logger.critical("Wrong selection option!")
 
+        logger.debug("Candidates before selection: %d", len(dataframe))
         df_selected = filter_bit_df(dataframe, var_name, sel_bits)
+        logger.debug("Candidates after %s selection: %d", sel_opt, len(df_selected))
 
     if use_old:
         logger.debug("Using old selection")
@@ -168,6 +170,8 @@ def filter_df_cand(dataframe, main_dict, sel_opt, mc_gen=False):
         else:
             logger.critical("Wrong selection option!")
 
+        logger.debug("Candidates before selection: %d", len(dataframe))
         df_selected = dataframe.query(sel_string)
+        logger.debug("Candidates after %s selection: %d", sel_opt, len(df_selected))
 
     return df_selected
