@@ -40,8 +40,23 @@ def flattenroot_to_pandas(filein, fileout, treenamein, var_all, skimming_sel):
     df = df.query(skimming_sel)
     df.to_pickle(fileout)
 
+def convert_to_pandas(filein, fileout, treenamein, var_all, skimming_sel):
+    tree = uproot.open(filein)[treenamein]
+    df = tree.pandas.df(branches=var_all)
+    df = df.query(skimming_sel)
+    df.to_pickle(fileout)
+
 def flattenallpickle(chunk, chunkout, treenamein, var_all, skimming_sel):
     processes = [mp.Process(target=flattenroot_to_pandas, args=(filein, chunkout[index], \
+                                                         treenamein, var_all, skimming_sel))
+                 for index, filein in enumerate(chunk)]
+    for p in processes:
+        p.start()
+    for p in processes:
+        p.join()
+
+def convertallpickle(chunk, chunkout, treenamein, var_all, skimming_sel):
+    processes = [mp.Process(target=convert_to_pandas, args=(filein, chunkout[index], \
                                                          treenamein, var_all, skimming_sel))
                  for index, filein in enumerate(chunk)]
     for p in processes:
@@ -71,24 +86,33 @@ def mergeall(chunksmerge, mergeddir, case):
 def doskimming(case):
 
     namefileinput = 'AnalysisResults.root'
-    namefileinputpkl = 'AnalysisResults%s.pkl' % case
+    namefileinputpklreco = 'AnalysisResultsReco%s.pkl' % case
+    namefileinputpklgen = 'AnalysisResultsGen%s.pkl' % case
+    namefileinputpklevt = 'AnalysisResultsEvt%s.pkl' % case
     data = get_database_ml_parameters()
     var_all_unflat = data[case]["var_all_unflat"]
-    treenameevtbased = data[case]["treenameevtbased"]
+    var_gen_unflat = data[case]["var_gen_unflat"]
+    var_evt_unflat = data[case]["var_evt_unflat"]
+    treeoriginreco = data[case]["treeoriginreco"]
+    treeorigingen = data[case]["treeorigingen"]
+    treeoriginevt = data[case]["treeoriginevt"]
     skimming_sel = data[case]["skimming_sel"]
-    nmaxchunks = 200
-    nmaxfiles = 5000
-    nmaxmerge = 130
+    skimming_sel_gen = data[case]["skimming_sel_gen"]
+    skimming_sel_evt = data[case]["skimming_sel_evt"]
+    nmaxchunks = 1
+    nmaxfiles = 10
+    nmaxmerge = 10
 
     doconversion = 1
-    domerge = 1
+    domerge = 0
+    isMC = 0
 
     #inputdir = "/home/ginnocen/LearningPythonML/inputs"
     inputdir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/unmerged" # pylint: disable=line-too-long
     mergeddir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/unmergedpkl" # pylint: disable=line-too-long
 
-    listfilespath, listfilespathout = list_files_dir(inputdir, outdir=mergeddir, \
-                                  filenameinput=namefileinput, filenameoutput=namefileinputpkl)
+    listfilespath, listfilespathout = list_files_dir(inputdir, outdir=mergeddir, filenameinput=namefileinput, filenameoutput=namefileinputpklreco)
+
     listfilespath = listfilespath[:nmaxfiles]
     listfilespathout = listfilespathout[:nmaxfiles]
 
@@ -101,7 +125,14 @@ def doskimming(case):
         i = 0
         for chunk, chunkout in zip(chunks, chunksout):
             print("Processing chunk number=", i, "with n=", len(chunk))
-            flattenallpickle(chunk, chunkout, treenameevtbased, var_all_unflat, skimming_sel)
+            flattenallpickle(chunk, chunkout, treeoriginreco, var_all_unflat, skimming_sel)
+            if isMC == 1:
+                chunkoutgen = [i.replace(namefileinputpklreco, namefileinputpklgen) for i in chunkout]
+                flattenallpickle(chunk, chunkoutgen, treeorigingen,
+                                 var_gen_unflat, skimming_sel_gen)
+            chunkoutevt = [i.replace(namefileinputpklreco, namefileinputpklevt) for i in chunkout]
+            convertallpickle(chunk, chunkoutevt, treeoriginevt, var_evt_unflat,
+                             skimming_sel_evt)
             i = i+1
             print("elapsed time=", time.time()-tstart)
         tstopconv = time.time()
