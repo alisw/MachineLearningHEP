@@ -38,7 +38,7 @@ Dzero:
   var_binning: pt_cand_ML
   presel_reco: abs(eta_prong0_ML)<0.8 and abs(eta_prong1_ML)<0.8
   treename_gen: fTreeDzeroGenFlagged # variables related to the tree of generated candidates
-  var_gen_unflat: [n_cand_gen, y_cand_gen, pt_cand_gen, cand_type_gen, z_vtx_gen]
+  var_gen_unflat: [n_cand, y_cand, pt_cand, cand_type]
   var_evt_unflat: [is_ev_rej]
   var_gen: [y_cand_gen_ML, pt_cand_gen_ML, cand_type_gen_ML, z_vtx_gen_ML]
   presel_gen: abs(y_cand_gen_ML) < 0.5 and abs(z_vtx_gen_ML) < 10 # pre-selections on generated candidates
@@ -47,7 +47,7 @@ Dzero:
   treeorigingen: 'PWGHF_TreeCreator/tree_D0_gen'
   treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
   skimming_sel: "n_cand> 0 & pt_cand>2"
-  skimming_sel_gen: "n_cand_gen> 0 & pt_cand_gen>2"
+  skimming_sel_gen: "n_cand> 0 & pt_cand>2"
   skimming_sel_evt: "is_ev_rej == 0"
   bitmapsel:
     mcsignal_on_off: [[1],[5]]
