@@ -33,16 +33,16 @@ Dzero:
   sel_bkg: inv_mass<1.77 or inv_mass>1.97
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8
   treename_gen: fTreeDzeroGenFlagged # variables related to the tree of generated candidates
-  var_evt: [is_ev_rej, run_number, ev_id]
-  var_gen: [y_cand, pt_cand, cand_type, z_vtx, run_number, ev_id]
-  presel_gen: abs(y_cand) < 0.5 and abs(z_vtx) < 10 # pre-selections on generated candidates
+  var_evt: [is_ev_rej, run_number, ev_id, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen, n_tracks, centrality]
+  var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
+  presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
   ptgen: pt_cand
   treeoriginreco: 'PWGHF_TreeCreator/tree_D0'
   treeorigingen: 'PWGHF_TreeCreator/tree_D0_gen'
   treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
   skimming_sel: "n_cand> 0 & pt_cand>2"
   skimming_sel_gen: "n_cand> 0 & pt_cand>2"
-  skimming_sel_evt: "is_ev_rej == 0"
+skimming_sel_evt: "is_ev_rej >= 0" # dummy selections to keep all events
   bitmapsel:
   old_sel:
     use: False # Obsolete selection method not implemented, see Ds as a reference
@@ -78,8 +78,7 @@ LctopK0s:
   mass: 2.2864
   pdg_code: null
   tree_name: fTreeLctopK0sFlagged
-  var_all: [cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass, pt_cand, inv_mass_K0s, pt_K0s, signal, cand_type, y_cand, eta_prong0, eta_prong1, eta_prong2]
-  var_all_unflat: null
+  var_all: [n_cand, cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass, pt_cand, inv_mass_K0s, pt_K0s, cand_type, y_cand, eta_prong0, eta_prong1, eta_prong2, run_number, ev_id]
   var_boundaries: [cos_t_star, signd0]
   var_correlation:
   - [cos_t_star]
@@ -93,17 +92,22 @@ LctopK0s:
   sel_bkg: inv_mass<2.1864 or inv_mass>2.3864
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
   treename_gen: fTreeLctopK0sGenFlagged # variables related to the tree of generated candidates
-  var_gen: [y_cand_gen, pt_cand_gen, cand_type_gen, z_vtx_gen]
-  presel_gen: abs(y_cand_gen) < 0.5 and abs(z_vtx_gen) < 10 # pre-selections on generated candidates
-  ptgen: pt_cand_gen
-  treenameevtbased: null
-  skimming_sel: null
+  var_evt: [is_ev_rej, run_number, ev_id, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen, n_tracks, centrality]
+  var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
+  presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
+  ptgen: pt_cand
+  treeoriginreco: 'PWGHF_TreeCreator/tree_Lc2V0bachelor'
+  treeorigingen: 'PWGHF_TreeCreator/tree_Lc2V0bachelor_gen'
+  treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
+  skimming_sel: "n_cand> 0 & pt_cand>2"
+  skimming_sel_gen: "n_cand> 0 & pt_cand>2"
+  skimming_sel_evt: "is_ev_rej >= 0"
   old_sel:
     use: False # Obsolete selection method not implemented, see Ds as a reference
   bitmap_sel:
     use: True
     var_sel: cand_type
-    var_sel_gen: cand_type_gen
+    var_sel_gen: cand_type
     mcsignal_on_off: [[1],[5]]
     mcsignal_prompt_on_off: [[1,3],[5]]
     mcsignal_feed_on_off: [[1,4],[5]]
@@ -132,8 +136,7 @@ Dplus:
   mass: 1.869
   pdg_code: null
   tree_name: fTreeDplusFlagged
-  var_all: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, inv_mass, pt_cand, signal, cand_type, y_cand, eta_prong0, eta_prong1, eta_prong2]
-  var_all_unflat: null
+  var_all: [n_cand, d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, inv_mass, pt_cand, cand_type, y_cand, eta_prong0, eta_prong1, eta_prong2, run_number, ev_id]
   var_boundaries: [d_len, max_norm_d0d0exp]
   var_correlation:
   - [pt_cand, d_len_xy, sig_vert, pt_cand, pt_cand, norm_dl_xy, sig_vert, cos_p_xy, cos_p_xy]
@@ -147,17 +150,22 @@ Dplus:
   sel_bkg: inv_mass<1.77 or inv_mass>1.97
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
   treename_gen: fTreeDplusGenFlagged # variables related to the tree of generated candidates
-  var_gen: [y_cand_gen, pt_cand_gen, cand_type_gen, z_vtx_gen]
-  presel_gen: abs(y_cand_gen) < 0.5 and abs(z_vtx_gen) < 10 # pre-selections on generated candidates
-  ptgen: pt_cand_gen
-  treenameevtbased: null
-  skimming_sel: null
+  var_evt: [is_ev_rej, run_number, ev_id, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen, n_tracks, centrality]
+  var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
+  presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
+  ptgen: pt_cand
+  treeoriginreco: 'PWGHF_TreeCreator/tree_Dplus'
+  treeorigingen: 'PWGHF_TreeCreator/tree_Dplus_gen'
+  treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
+  skimming_sel: "n_cand> 0 & pt_cand>2"
+  skimming_sel_gen: "n_cand> 0 & pt_cand>2"
+  skimming_sel_evt: "is_ev_rej >= 0"
   old_sel:
     use: False # Obsolete selection method not implemented, see Ds as a reference
   bitmap_sel:
     use: True
     var_sel: cand_type
-    var_sel_gen: cand_type_gen
+    var_sel_gen: cand_type
     mcsignal_on_off: [[1],[5]]
     mcsignal_prompt_on_off: [[1,3],[5]]
     mcsignal_feed_on_off: [[1,4],[5]]
@@ -186,8 +194,7 @@ Ds:
   mass: 1.972
   pdg_code: null
   tree_name: fTreeDsFlagged
-  var_all: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, delta_mass_KK, cos_PiDs, cos_PiKPhi_3, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, inv_mass, pt_cand, signal, cand_type, y_cand, cand_fileID, cand_evtID, eta_prong0, eta_prong1, eta_prong2]
-  var_all_unflat: [n_cand, d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, delta_mass_KK, cos_PiDs, cos_PiKPhi_3, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, inv_mass, pt_cand, cand_type, y_cand, eta_prong0, eta_prong1, eta_prong2]
+  var_all: [n_cand, d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, delta_mass_KK, cos_PiDs, cos_PiKPhi_3, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, inv_mass, pt_cand, cand_type, y_cand, cand_fileID, cand_evtID, eta_prong0, eta_prong1, eta_prong2, run_number, ev_id]
   var_boundaries: [d_len, max_norm_d0d0exp]
   var_correlation:
   - [pt_cand, d_len_xy, sig_vert, pt_cand, pt_cand, norm_dl_xy, cos_PiDs, cos_p_xy, cos_p_xy]
@@ -201,33 +208,32 @@ Ds:
   sel_bkg: inv_mass<1.83 or inv_mass>2.012
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
   treename_gen: fTreeDsGenFlagged # variables related to the tree of generated candidates
-  var_gen_unflat: [n_cand, y_cand, pt_cand, cand_type]
-  var_evt_unflat: [is_ev_rej]
-  var_gen: [y_cand_gen, pt_cand_gen, cand_type_gen, z_vtx_gen]
-  presel_gen: abs(y_cand_gen) < 0.5 and abs(z_vtx_gen) < 10 # pre-selections on generated candidates
-  ptgen: pt_cand_gen
+  var_evt: [is_ev_rej, run_number, ev_id, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen, n_tracks, centrality]
+  var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
+  presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
+  ptgen: pt_cand
   treeoriginreco: 'PWGHF_TreeCreator/tree_Ds'
   treeorigingen: 'PWGHF_TreeCreator/tree_Ds_gen'
   treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
   skimming_sel: "n_cand> 0 & pt_cand>2"
   skimming_sel_gen: "n_cand> 0 & pt_cand>2"
-  skimming_sel_evt: "is_ev_rej == 0"
+  skimming_sel_evt: "is_ev_rej >= 0"
   old_sel: # Obsolete selection method
     use: False
     mc_signal: cand_type == [10, 11, 74, 75, 138, 139, 202, 203, 266, 267, 330, 331, 394, 395, 458, 459,
                                 18, 19, 82, 83, 146, 147, 210, 211, 274, 275, 338, 339, 402, 403, 466, 467]
-    mc_gen_signal: cand_type_gen == [10, 11, 18, 19]
+    mc_gen_signal: cand_type == [10, 11, 18, 19]
     mc_signal_prompt: cand_type == [10, 11, 74, 75, 138, 139, 202, 203, 266, 267, 330, 331, 394, 395, 458, 459]
-    mc_gen_signal_prompt: cand_type_gen == [10, 11]
+    mc_gen_signal_prompt: cand_type == [10, 11]
     mc_signal_FD: cand_type == [18, 19, 82, 83, 146, 147, 210, 211, 274, 275, 338, 339, 402, 403, 466, 467]
-    mc_gen_signal_FD: cand_type_gen == [18, 19]
+    mc_gen_signal_FD: cand_type == [18, 19]
     mc_bkg: cand_type >= 0 # dummy, not used
     presel_track_pid: cand_type >= 256 # note that all Dplus to KKPi pass this selection, proper condition is more complex
     sel_std_analysis: cand_type == [11, 75, 139, 203, 267, 331, 395, 459, 19, 83, 147, 211, 275, 339, 403, 467]
   bitmap_sel:
     use: True
     var_sel: cand_type
-    var_sel_gen: cand_type_gen
+    var_sel_gen: cand_type
     mcsignal_on_off: [[1],[5,11]] # ATTENTION! This condition accept also signal candidates that aren't prompt or FD, to investigate
                                   # It isn't equivalent to the old_sel
     mcsignal_prompt_on_off: [[1,3],[5,11]]
@@ -257,8 +263,7 @@ Dstar:
   mass: 0.1454 #mDstar - mD0
   pdg_code: null
   tree_name: fTreeDstarFlagged
-  var_all: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, cos_t_star, angle_D0dkpPisoft, imp_par_prod, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, inv_mass, pt_cand, inv_mass_D0, pt_D0, signal, cand_type, y_cand, eta_prong0, eta_prong1, eta_prong2]
-  var_all_unflat: null
+  var_all: [n_cand, d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, cos_t_star, angle_D0dkpPisoft, imp_par_prod, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, inv_mass, pt_cand, inv_mass_D0, pt_D0, cand_type, y_cand, eta_prong0, eta_prong1, eta_prong2, run_number, ev_id]
   var_boundaries: [d_len_xy, max_norm_d0d0exp]
   var_correlation:
   - [pt_cand, d_len_xy, pt_prong0, pt_cand, pt_cand, norm_dl_xy, cos_t_star, cos_p_xy, cos_p_xy]
@@ -272,17 +277,22 @@ Dstar:
   sel_bkg: inv_mass<0.142 or inv_mass>0.149
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
   treename_gen: fTreeDstarGenFlagged # variables related to the tree of generated candidates
-  var_gen: [y_cand_gen, pt_cand_gen, cand_type_gen, z_vtx_gen]
-  presel_gen: abs(y_cand_gen) < 0.5 and abs(z_vtx_gen) < 10 # pre-selections on generated candidates
-  ptgen: pt_cand_gen
-  treenameevtbased: null
-  skimming_sel: null
+  var_evt: [is_ev_rej, run_number, ev_id, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen, n_tracks, centrality]
+  var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
+  presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
+  ptgen: pt_cand
+  treeoriginreco: 'PWGHF_TreeCreator/tree_Dstar'
+  treeorigingen: 'PWGHF_TreeCreator/tree_Dstar_gen'
+  treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
+  skimming_sel: "n_cand> 0 & pt_cand>2"
+  skimming_sel_gen: "n_cand> 0 & pt_cand>2"
+  skimming_sel_evt: "is_ev_rej >= 0"
   old_sel:
     use: False # Obsolete selection method not implemented, see Ds as a reference
   bitmap_sel:
     use: True
     var_sel: cand_type
-    var_sel_gen: cand_type_gen
+    var_sel_gen: cand_type
     mcsignal_on_off: [[1],[5]]
     mcsignal_prompt_on_off: [[1,3],[5]]
     mcsignal_feed_on_off: [[1,4],[5]]
@@ -311,8 +321,7 @@ LctopKpi:
   mass: 2.2864
   pdg_code: null
   tree_name: fTreeLcFlagged
-  var_all: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, dist_12, dist_23, sig_vert, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, inv_mass, pt_cand, signal, cand_type, y_cand, eta_prong0, eta_prong1, eta_prong2]
-  var_all_unflat: null
+  var_all: [n_cand, d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, dist_12, dist_23, sig_vert, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, inv_mass, pt_cand, cand_type, y_cand, eta_prong0, eta_prong1, eta_prong2, run_number, ev_id]
   var_boundaries: [d_len_xy, max_norm_d0d0exp]
   var_correlation:
   - [pt_cand, d_len_xy, sig_vert, norm_dl_xy, pt_cand, norm_dl_xy, pt_prong0, pt_prong1, cos_p_xy]
@@ -326,17 +335,22 @@ LctopKpi:
   sel_bkg: inv_mass<2.1864 or inv_mass>2.3864
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
   treename_gen: fTreeLcGenFlagged # variables related to the tree of generated candidates
-  var_gen: [y_cand_gen, pt_cand_gen, cand_type_gen, z_vtx_gen]
-  presel_gen: abs(y_cand_gen) < 0.5 and abs(z_vtx_gen) < 10 # pre-selections on generated candidates
-  ptgen: pt_cand_gen
-  treenameevtbased: null
-  skimming_sel: null
+  var_evt: [is_ev_rej, run_number, ev_id, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen, n_tracks, centrality]
+  var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
+  presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
+  ptgen: pt_cand
+  treeoriginreco: 'PWGHF_TreeCreator/tree_LctopKpi'
+  treeorigingen: 'PWGHF_TreeCreator/tree_LctopKpi_gen'
+  treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
+  skimming_sel: "n_cand> 0 & pt_cand>2"
+  skimming_sel_gen: "n_cand> 0 & pt_cand>2"
+  skimming_sel_evt: "is_ev_rej >= 0"
   old_sel:
     use: False # Obsolete selection method not implemented, see Ds as a reference
   bitmap_sel:
     use: True
     var_sel: cand_type
-    var_sel_gen: cand_type_gen
+    var_sel_gen: cand_type
     mcsignal_on_off: [[1],[5]]
     mcsignal_prompt_on_off: [[1,3],[5]]
     mcsignal_feed_on_off: [[1,4],[5]]
