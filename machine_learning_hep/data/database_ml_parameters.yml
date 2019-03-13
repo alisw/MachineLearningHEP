@@ -19,7 +19,7 @@ Dzero:
   mass: 1.864
   pdg_code: null
   tree_name: fTreeDzeroFlagged
-  var_all: [n_cand, d_len, d_len_xy, norm_dl, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, cos_t_star, imp_par_prod, pt_prong0, pt_prong1, imp_par_prong0, imp_par_prong1, imp_par_err_prong0, imp_par_err_prong1, max_norm_d0d0exp, inv_mass, pt_cand, signal, cand_type, y_cand, eta_prong0, eta_prong1, run_number, ev_id]
+  var_all: [n_cand, d_len, d_len_xy, norm_dl, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, cos_t_star, imp_par_prod, pt_prong0, pt_prong1, imp_par_prong0, imp_par_prong1, imp_par_err_prong0, imp_par_err_prong1, max_norm_d0d0exp, inv_mass, pt_cand, cand_type, y_cand, eta_prong0, eta_prong1, run_number, ev_id]
   var_boundaries: [d_len, max_norm_d0d0exp]
   var_correlation:
   - [pt_cand, d_len_xy, d_len, pt_cand, pt_cand, norm_dl_xy, max_norm_d0d0exp, cos_p_xy, cos_p_xy]
