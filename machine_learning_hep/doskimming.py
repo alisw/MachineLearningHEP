@@ -98,12 +98,12 @@ def doskimming(case):
     skimming_sel = data[case]["skimming_sel"]
     skimming_sel_gen = data[case]["skimming_sel_gen"]
     skimming_sel_evt = data[case]["skimming_sel_evt"]
-    nmaxchunks = 4
-    nmaxfiles = 10
-    nmaxmerge = 5
+    nmaxchunks = 300
+    nmaxfiles = 5000
+    nmaxmerge = 130
 
     doconversion = 1
-    domerge = 1
+    domerge = 0
     isMC = 0
 
     #inputdir = "/home/ginnocen/LearningPythonML/inputs"
