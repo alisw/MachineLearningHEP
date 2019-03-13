@@ -40,7 +40,7 @@ Dzero:
   treenameevtbased: 'PWGHF_TreeCreator/tree_D0'
   skimming_sel: "n_cand> 0 & pt_cand>2"
   old_sel:
-    use: False # Not implemented, see Ds as a reference
+    use: False # Obsolete selection method not implemented, see Ds as a reference
   bitmap_sel:
     use: True
     var_sel: cand_type_ML
@@ -94,7 +94,7 @@ LctopK0s:
   treenameevtbased: null
   skimming_sel: null
   old_sel:
-    use: False # Not implemented, see Ds as a reference
+    use: False # Obsolete selection method not implemented, see Ds as a reference
   bitmap_sel:
     use: True
     var_sel: cand_type_ML
@@ -148,7 +148,7 @@ Dplus:
   treenameevtbased: null
   skimming_sel: null
   old_sel:
-    use: False # Not implemented, see Ds as a reference
+    use: False # Obsolete selection method not implemented, see Ds as a reference
   bitmap_sel:
     use: True
     var_sel: cand_type_ML
@@ -201,7 +201,7 @@ Ds:
   ptgen: pt_cand_gen_ML
   treenameevtbased: null
   skimming_sel: null
-  old_sel:
+  old_sel: # Obsolete selection method
     use: False
     mc_signal: cand_type_ML == [10, 11, 74, 75, 138, 139, 202, 203, 266, 267, 330, 331, 394, 395, 458, 459,
                                 18, 19, 82, 83, 146, 147, 210, 211, 274, 275, 338, 339, 402, 403, 466, 467]
@@ -267,7 +267,7 @@ Dstar:
   treenameevtbased: null
   skimming_sel: null
   old_sel:
-    use: False # Not implemented, see Ds as a reference
+    use: False # Obsolete selection method not implemented, see Ds as a reference
   bitmap_sel:
     use: True
     var_sel: cand_type_ML
@@ -321,7 +321,7 @@ LctopKpi:
   treenameevtbased: null
   skimming_sel: null
   old_sel:
-    use: False # Not implemented, see Ds as a reference
+    use: False # Obsolete selection method not implemented, see Ds as a reference
   bitmap_sel:
     use: True
     var_sel: cand_type_ML
