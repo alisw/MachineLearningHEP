@@ -22,6 +22,7 @@ main macro for charm analysis with python
 # pylint: disable=import-error
 
 import multiprocessing as mp
+import time
 import pickle
 import uproot
 import pandas as pd
@@ -39,6 +40,12 @@ def flattenroot_to_pandas(filein, fileout, treenamein, var_all, skimming_sel):
     df = df.query(skimming_sel)
     df.to_pickle(fileout)
 
+def convert_to_pandas(filein, fileout, treenamein, var_all, skimming_sel):
+    tree = uproot.open(filein)[treenamein]
+    df = tree.pandas.df(branches=var_all)
+    df = df.query(skimming_sel)
+    df.to_pickle(fileout)
+
 def flattenallpickle(chunk, chunkout, treenamein, var_all, skimming_sel):
     processes = [mp.Process(target=flattenroot_to_pandas, args=(filein, chunkout[index], \
                                                          treenamein, var_all, skimming_sel))
@@ -48,19 +55,27 @@ def flattenallpickle(chunk, chunkout, treenamein, var_all, skimming_sel):
     for p in processes:
         p.join()
 
-def merge(chunk, mergeddir, index, case):
+def convertallpickle(chunk, chunkout, treenamein, var_all, skimming_sel):
+    processes = [mp.Process(target=convert_to_pandas, args=(filein, chunkout[index], \
+                                                         treenamein, var_all, skimming_sel))
+                 for index, filein in enumerate(chunk)]
+    for p in processes:
+        p.start()
+    for p in processes:
+        p.join()
+
+def merge(chunk, namemerged):
     dfList = []
     for myfilename in chunk:
         myfile = open(myfilename, "rb")
         df = pickle.load(myfile)
         dfList.append(df)
     dftot = pd.concat(dfList)
-    namemerged = "%s/AnalysisResults%sMergedIndex%d.pkl" % (mergeddir, case, index)
     dftot.to_pickle(namemerged)
 
-def mergeall(chunksmerge, mergeddir, case):
-    processes = [mp.Process(target=merge, args=(chunk, mergeddir, index, case))
-                 for index, chunk in enumerate(chunksmerge)]
+def mergeall(chunksmerge, listmerged):
+    processes = [mp.Process(target=merge, args=(chunk, merged))
+                 for chunk, merged in zip(chunksmerge, listmerged)]
     for p in processes:
         p.start()
     for p in processes:
@@ -70,27 +85,46 @@ def mergeall(chunksmerge, mergeddir, case):
 def doskimming(case):
 
     namefileinput = 'AnalysisResults.root'
-    namefileinputpkl = 'AnalysisResults%s.pkl' % case
+    namefileinputpklreco = 'AnalysisResultsReco%s.pkl' % case
+    namefileinputpklgen = 'AnalysisResultsGen%s.pkl' % case
+    namefileinputpklevt = 'AnalysisResultsEvt%s.pkl' % case
     data = get_database_ml_parameters()
     var_all_unflat = data[case]["var_all_unflat"]
-    treenameevtbased = data[case]["treenameevtbased"]
+    var_gen_unflat = data[case]["var_gen_unflat"]
+    var_evt_unflat = data[case]["var_evt_unflat"]
+    treeoriginreco = data[case]["treeoriginreco"]
+    treeorigingen = data[case]["treeorigingen"]
+    treeoriginevt = data[case]["treeoriginevt"]
     skimming_sel = data[case]["skimming_sel"]
-    nmaxchunks = 100
-    nmaxfiles = 100
-    nmaxmerge = 30
+    skimming_sel_gen = data[case]["skimming_sel_gen"]
+    skimming_sel_evt = data[case]["skimming_sel_evt"]
+    nmaxchunks = 300
+    nmaxfiles = 5000
+    nmaxmerge = 130
 
     doconversion = 1
-    domerge = 1
+    domerge = 0
+    isMC = 0
 
     #inputdir = "/home/ginnocen/LearningPythonML/inputs"
     inputdir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/unmerged" # pylint: disable=line-too-long
     mergeddir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/unmergedpkl" # pylint: disable=line-too-long
 
-    listfilespath, listfilespathout = list_files_dir(inputdir, outdir=mergeddir, \
-                                  filenameinput=namefileinput, filenameoutput=namefileinputpkl)
+    listfilespath, listfilespathout = list_files_dir(inputdir, mergeddir, \
+                                                     namefileinput, namefileinputpklreco)
+    listfilespathgen, listfilespathoutgen = list_files_dir(inputdir, mergeddir, \
+                                                     namefileinput, namefileinputpklgen)
+    listfilespathevt, listfilespathoutevt = list_files_dir(inputdir, mergeddir, \
+                                                     namefileinput, namefileinputpklevt)
+
     listfilespath = listfilespath[:nmaxfiles]
     listfilespathout = listfilespathout[:nmaxfiles]
+    listfilespathgen = listfilespathgen[:nmaxfiles]
+    listfilespathoutgen = listfilespathoutgen[:nmaxfiles]
+    listfilespathevt = listfilespathevt[:nmaxfiles]
+    listfilespathoutevt = listfilespathoutevt[:nmaxfiles]
 
+    tstart = time.time()
     if doconversion == 1:
         print("I am extracting flat trees")
         chunks = [listfilespath[x:x+nmaxchunks] for x in range(0, len(listfilespath), nmaxchunks)]
@@ -99,13 +133,44 @@ def doskimming(case):
         i = 0
         for chunk, chunkout in zip(chunks, chunksout):
             print("Processing chunk number=", i, "with n=", len(chunk))
-            flattenallpickle(chunk, chunkout, treenameevtbased, var_all_unflat, skimming_sel)
+            flattenallpickle(chunk, chunkout, treeoriginreco, var_all_unflat, skimming_sel)
+            if isMC == 1:
+                chunkoutgen = [i.replace(namefileinputpklreco, namefileinputpklgen) \
+                               for i in chunkout]
+                flattenallpickle(chunk, chunkoutgen, treeorigingen,
+                                 var_gen_unflat, skimming_sel_gen)
+            chunkoutevt = [i.replace(namefileinputpklreco, namefileinputpklevt) for i in chunkout]
+            convertallpickle(chunk, chunkoutevt, treeoriginevt, var_evt_unflat,
+                             skimming_sel_evt)
             i = i+1
+            print("elapsed time=", time.time()-tstart)
+    tstopconv = time.time()
+    print("total coversion time", tstopconv - tstart)
+
     if domerge == 1:
         print("I am merging")
-        chunksmerge = [listfilespathout[x:x+nmaxmerge] \
+        chunksmerged = [listfilespathout[x:x+nmaxmerge] \
                    for x in range(0, len(listfilespathout), nmaxmerge)]
-        mergeall(chunksmerge, mergeddir, case)
+        chunksmergedgen = [listfilespathoutgen[x:x+nmaxmerge] \
+                   for x in range(0, len(listfilespathoutgen), nmaxmerge)]
+        chunksmergedevt = [listfilespathoutevt[x:x+nmaxmerge] \
+                   for x in range(0, len(listfilespathoutevt), nmaxmerge)]
+        listmerged = ["%s/AnalysisResults%sMergedIndex%dReco.pkl" % \
+                      (mergeddir, case, index) for index in range(len(chunksmerged))]
+        listmergedgen = ["%s/AnalysisResults%sMergedIndex%dGen.pkl" % \
+                      (mergeddir, case, index) for index in range(len(chunksmergedgen))]
+        listmergedevt = ["%s/AnalysisResults%sMergedIndex%dEvt.pkl" % \
+                      (mergeddir, case, index) for index in range(len(chunksmergedevt))]
+
+        mergeall(chunksmerged, listmerged)
+        mergeall(chunksmergedevt, listmergedevt)
+        if isMC == 1:
+            mergeall(chunksmergedevt, listmerged)
+        timemerge = time.time() - tstopconv
+        print("total merging time", timemerge)
+        print(len(listmergedgen))
+    print("Total time elapsed", time.time()-tstart)
+
 
 runcase = "Dzero" # pylint: disable=invalid-name
 doskimming(runcase)
