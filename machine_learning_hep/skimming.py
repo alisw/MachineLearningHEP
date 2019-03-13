@@ -20,11 +20,10 @@ import pickle
 import numba
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TH1F, TCanvas # pylint: disable=import-error, no-name-in-module
-from machine_learning_hep.general import getdataframe # pylint: disable=import-error
+from machine_learning_hep.general import getdataframe, filter_df_cand
 from machine_learning_hep.models import apply # pylint: disable=import-error
 from machine_learning_hep.general import get_database_ml_parameters # pylint: disable=import-error
 from machine_learning_hep.general import get_database_ml_analysis # pylint: disable=import-error
-from machine_learning_hep.bitwise import filter_bit_df # pylint: disable=import-error
 
 def convert_root_to_pkl(namefileinput, namefileoutput, treename, var_all):
     df_pd = getdataframe(namefileinput, treename, var_all)
@@ -68,9 +67,6 @@ def fill_mass_array(namefiledf, namefilehisto, var_pt, ptmin, ptmax,
 
     data = get_database_ml_parameters()
     data_analysis = get_database_ml_analysis()
-    preseltrack_pid_on_off = data[case]["bitmapsel"]["preseltrack_pid_on_off"]
-    std_analysis_on_off = data[case]["bitmapsel"]["std_analysis_on_off"]
-    bitselvariable = data[case]["bitselvariable"]
     presel_reco = data[case]["presel_reco"]
     var_training = data[case]["var_training"]
 
@@ -92,12 +88,12 @@ def fill_mass_array(namefiledf, namefilehisto, var_pt, ptmin, ptmax,
         df = df.query(presel_reco)
 
     if useml == 0:
-        df = filter_bit_df(df, bitselvariable, std_analysis_on_off)
+        df = filter_df_cand(df, data[case], 'sel_std_analysis')
         array_inv_mass_sel = df.loc[:, var_mass].values
         #array_pt = df.loc[:, var_pt].values
         #array_inv_mass_sel = selectcandidate(array_inv_mass, array_pt, ptmin, ptmax)
     if useml == 1:
-        df = filter_bit_df(df, bitselvariable, preseltrack_pid_on_off)
+        df = filter_df_cand(df, data[case], 'presel_track_pid')
         #Apply preselection similar as to trained model
         array_inv_mass = df.loc[:, var_mass].values
         mod = pickle.load(open(model, 'rb'))

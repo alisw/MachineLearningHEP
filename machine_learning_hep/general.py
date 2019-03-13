@@ -20,6 +20,8 @@ Methods to: load and write data to ROOT files
 import uproot
 import yaml
 from pkg_resources import resource_stream
+from machine_learning_hep.logger import get_logger
+from machine_learning_hep.bitwise import filter_bit_df
 
 
 def get_database_ml_analysis():
@@ -75,3 +77,101 @@ def filterdataframe(dataframe_, var_list, minlist_, maxlist_):
 def createstringselection(var, low, high):
     string_selection = "dfselection_"+(("%s_%.1f_%.1f") % (var, low, high))
     return string_selection
+
+
+# pylint: disable=too-many-statements, too-many-branches
+def filter_df_cand(dataframe, main_dict, sel_opt, mc_gen=False):
+    '''Filter a dataframe looking at the type of candidate.
+
+    It works both for bitmap and old selection method.
+    In 'database_ml_parameters.yml' only one between old_sel and bitmap_sel must have 'use: True'
+
+    Implemented selection options:
+        - 'mc_signal' -> select MC signal
+        - 'mc_signal_prompt' -> select only prompt MC signal
+        - 'mc_signal_FD' -> select only feed-down MC signal
+        - 'mc_bkg' -> select MC background (reco MC only)
+        - 'presel_track_pid' -> select candidates satisfing PID and track pre-selections
+                                (reco MC only)
+        - 'sel_std_analysis' -> select candidates fulfilling the std analysis selections
+                                (reco MC only)
+
+    Args:
+        dataframe: pandas dataframe to filter
+        main_dict: dictionary of parameters loaded from 'database_ml_parameters.yml'
+        sel_opt: selection option (string)
+        mc_gen: flag to distinguish reconstructed and generated MC
+
+    Return:
+        df_selected: filtered pandas dataframe
+    '''
+    logger = get_logger()
+
+    bitmap_dict = main_dict['bitmap_sel']
+    old_dict = main_dict['old_sel']
+    use_bitmap = bitmap_dict['use']
+    use_old = old_dict['use']
+
+    if use_bitmap == use_old:
+        logger.critical("One and only one of the selection method have to be used, i.e. with "
+                        "'use' flag set to True")
+
+    if use_bitmap:
+        logger.debug("Using bitmap selection")
+
+        if mc_gen:
+            var_name = bitmap_dict['var_sel_gen']
+        else:
+            var_name = bitmap_dict['var_sel']
+
+        if sel_opt == 'mc_signal':
+            sel_bits = bitmap_dict['mcsignal_on_off']
+        elif sel_opt == 'mc_signal_prompt':
+            sel_bits = bitmap_dict['mcsignal_prompt_on_off']
+        elif sel_opt == 'mc_signal_FD':
+            sel_bits = bitmap_dict['mcsignal_feed_on_off']
+        elif sel_opt == 'mc_bkg' and not mc_gen:
+            sel_bits = bitmap_dict['mcbkg_on_off']
+        elif sel_opt == 'presel_track_pid' and not mc_gen:
+            sel_bits = bitmap_dict['preseltrack_pid_on_off']
+        elif sel_opt == 'sel_std_analysis' and not mc_gen:
+            sel_bits = bitmap_dict['std_analysis_on_off']
+        else:
+            logger.critical("Wrong selection option!")
+
+        logger.debug("Candidates before selection: %d", len(dataframe))
+        df_selected = filter_bit_df(dataframe, var_name, sel_bits)
+        logger.debug("Candidates after %s selection: %d", sel_opt, len(df_selected))
+
+    if use_old:
+        logger.debug("Using old selection")
+
+        if sel_opt == 'mc_signal':
+            if mc_gen:
+                sel_string = old_dict['mc_gen_signal']
+            else:
+                sel_string = old_dict['mc_signal']
+        elif sel_opt == 'mc_signal_prompt':
+            if mc_gen:
+                sel_string = old_dict['mc_gen_signal_prompt']
+            else:
+                sel_string = old_dict['mc_signal_prompt']
+        elif sel_opt == 'mc_signal_FD':
+            if mc_gen:
+                sel_string = old_dict['mc_gen_signal_FD']
+            else:
+                sel_string = old_dict['mc_signal_FD']
+        elif sel_opt == 'mc_bkg' and not mc_gen:
+            sel_string = old_dict['mc_bkg']
+        elif sel_opt == 'presel_track_pid'and not mc_gen:
+            sel_string = old_dict['presel_track_pid']
+        elif sel_opt == 'sel_std_analysis' and not mc_gen:
+            sel_string = old_dict['sel_std_analysis']
+        else:
+            logger.critical("Wrong selection option!")
+
+        logger.debug("Candidates before selection: %d", len(dataframe))
+        df_selected = dataframe.query(sel_string)
+        logger.debug("Candidates after %s selection: %d", sel_opt, len(df_selected))
+
+    return df_selected

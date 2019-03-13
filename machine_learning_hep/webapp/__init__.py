@@ -119,7 +119,6 @@ def post_continue(req):  # pylint: disable=unused-argument
     var_all_str = ','.join(var_all)
     var_signal = data[case]["var_signal"]
     sel_signal = data[case]["sel_signal"]
-    sel_signal = sel_signal.replace(' ', ',')
     sel_bkg = data[case]["sel_bkg"]
     sel_bkg_str = ''
     for i in sel_bkg:
@@ -190,7 +189,6 @@ def post_form(req):  # pylint: disable=too-many-locals, too-many-statements, too
     var_all = var_all_str.split(',')
     var_signal = get_form(req, "var_signal")
     sel_signal = get_form(req, "sel_signal")
-    sel_signal = sel_signal.replace(',', ' ')
     sel_bkg_str = get_form(req, "sel_bkg")
     sel_bkg = ''
     for i in sel_bkg_str:
@@ -270,6 +268,8 @@ def post_form(req):  # pylint: disable=too-many-locals, too-many-statements, too
     ncores = int(get_form(req, 'ncores', var_type=int))
     run_config["ncores"] = ncores
 
+    data = get_database_ml_parameters()
+
     # Construct Configuration object from run_config
     conf = Configuration(run_config_input=run_config)
     conf.configure()
@@ -321,7 +321,7 @@ def post_form(req):  # pylint: disable=too-many-locals, too-many-statements, too
 
     # pylint: disable=unused-variable
     _, _, df_sig_train, df_bkg_train, _, _, x_train, y_train, x_test, y_test = \
-        create_mlsamples(df_sig, df_bkg, sel_signal, sel_bkg, rnd_shuffle,
+        create_mlsamples(df_sig, df_bkg, sel_signal, data[case], sel_bkg, rnd_shuffle,
                          var_signal, var_training, nevt_sig, nevt_bkg, test_frac, rnd_splt)
     if docorrelation:
         imageIO_vardist, imageIO_scatterplot, imageIO_corr_sig, imageIO_corr_bkg = \
