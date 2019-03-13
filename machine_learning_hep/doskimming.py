@@ -89,27 +89,27 @@ def doskimming(case):
     namefileinputpklgen = 'AnalysisResultsGen%s.pkl' % case
     namefileinputpklevt = 'AnalysisResultsEvt%s.pkl' % case
     data = get_database_ml_parameters()
-    var_all_unflat = data[case]["var_all_unflat"]
-    var_gen_unflat = data[case]["var_gen_unflat"]
-    var_evt_unflat = data[case]["var_evt_unflat"]
+    var_all = data[case]["var_all"]
+    var_gen = data[case]["var_gen"]
+    var_evt = data[case]["var_evt"]
     treeoriginreco = data[case]["treeoriginreco"]
     treeorigingen = data[case]["treeorigingen"]
     treeoriginevt = data[case]["treeoriginevt"]
     skimming_sel = data[case]["skimming_sel"]
     skimming_sel_gen = data[case]["skimming_sel_gen"]
     skimming_sel_evt = data[case]["skimming_sel_evt"]
-    nmaxchunks = 300
-    nmaxfiles = 5000
-    nmaxmerge = 130
+    nmaxchunks = 50
+    nmaxfiles = 50
+    nmaxmerge = 2
 
     doconversion = 1
-    domerge = 0
+    domerge = 1
     isMC = 0
 
     #inputdir = "/home/ginnocen/LearningPythonML/inputs"
-    inputdir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/unmerged" # pylint: disable=line-too-long
-    mergeddir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/unmergedpkl" # pylint: disable=line-too-long
-
+    inputdir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV_12032019/12-03-2019/366_20190307-2213/unmerged" # pylint: disable=line-too-long
+    #mergeddir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/unmergedpkl" # pylint: disable=line-too-long
+    mergeddir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV_12032019/12-03-2019/366_20190307-2213/picklefiles"
     listfilespath, listfilespathout = list_files_dir(inputdir, mergeddir, \
                                                      namefileinput, namefileinputpklreco)
     listfilespathgen, listfilespathoutgen = list_files_dir(inputdir, mergeddir, \
@@ -133,14 +133,14 @@ def doskimming(case):
         i = 0
         for chunk, chunkout in zip(chunks, chunksout):
             print("Processing chunk number=", i, "with n=", len(chunk))
-            flattenallpickle(chunk, chunkout, treeoriginreco, var_all_unflat, skimming_sel)
+            flattenallpickle(chunk, chunkout, treeoriginreco, var_all, skimming_sel)
             if isMC == 1:
                 chunkoutgen = [i.replace(namefileinputpklreco, namefileinputpklgen) \
                                for i in chunkout]
                 flattenallpickle(chunk, chunkoutgen, treeorigingen,
-                                 var_gen_unflat, skimming_sel_gen)
+                                 var_gen, skimming_sel_gen)
             chunkoutevt = [i.replace(namefileinputpklreco, namefileinputpklevt) for i in chunkout]
-            convertallpickle(chunk, chunkoutevt, treeoriginevt, var_evt_unflat,
+            convertallpickle(chunk, chunkoutevt, treeoriginevt, var_evt,
                              skimming_sel_evt)
             i = i+1
             print("elapsed time=", time.time()-tstart)
