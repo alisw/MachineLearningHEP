@@ -17,15 +17,15 @@ utilities functions for do_classification_regression
 """
 from sklearn.utils import shuffle
 # from sklearn.metrics import make_scorer, accuracy_score
-from machine_learning_hep.general import split_df_sigbkg
+from machine_learning_hep.general import split_df_sigbkg, filter_df_cand
 from machine_learning_hep.preparesamples import prep_mlsamples
 from machine_learning_hep.correlations import vardistplot, scatterplot, correlationmatrix
 from machine_learning_hep.logger import get_logger
 
 
-def create_mlsamples(df_sig, df_bkg, sel_signal, sel_bkg, rnd_shuffle,  # pylint: disable=too-many-arguments
+def create_mlsamples(df_sig, df_bkg, sel_opt_sig, main_dict, sel_bkg, rnd_shuffle,  # pylint: disable=too-many-arguments
                      var_signal, var_training, nevt_sig, nevt_bkg, test_frac, rnd_splt):
-    df_sig = df_sig.query(sel_signal)
+    df_sig = filter_df_cand(df_sig, main_dict, sel_opt_sig)
     df_bkg = df_bkg.query(sel_bkg)
     df_sig = shuffle(df_sig, random_state=rnd_shuffle)
     df_bkg = shuffle(df_bkg, random_state=rnd_shuffle)

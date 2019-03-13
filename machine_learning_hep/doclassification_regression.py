@@ -24,7 +24,7 @@ from sklearn.utils import shuffle
 # from sklearn.metrics import make_scorer, accuracy_score
 from machine_learning_hep.general import get_database_ml_parameters, getdataframe
 from machine_learning_hep.general import createstringselection, filterdataframe_singlevar
-from machine_learning_hep.general import get_database_ml_gridsearch
+from machine_learning_hep.general import get_database_ml_gridsearch, filter_df_cand
 from machine_learning_hep.root import write_tree
 from machine_learning_hep.functions import create_mlsamples, do_correlation
 from machine_learning_hep.io import checkdir
@@ -39,10 +39,10 @@ from machine_learning_hep.mlperformance import plot_cross_validation_mse, plot_l
 from machine_learning_hep.mlperformance import plotdistributiontarget, plotscattertarget
 # from machine_learning_hep.mlperformance import confusion
 from machine_learning_hep.mlperformance import precision_recall
+from machine_learning_hep.mlperformance import plot_overtraining
 from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perform_plot_gridsearch
 from machine_learning_hep.logger import configure_logger, get_logger
 from machine_learning_hep.optimization import study_signif
-from machine_learning_hep.bitwise import filter_bit_df
 DATA_PREFIX = os.path.expanduser("~/.machine_learning_hep")
 
 
@@ -94,7 +94,6 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
     trename = data[case]["tree_name"]
     var_all = data[case]["var_all"]
     var_signal = data[case]["var_signal"]
-    sel_signal = data[case]["sel_signal"]
     sel_bkg = data[case]["sel_bkg"]
     var_training = data[case]["var_training"]
     var_target = data[case]["var_target"]
@@ -102,9 +101,6 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
     var_boundaries = data[case]["var_boundaries"]
     var_binning = data[case]['var_binning']
     presel_reco = data[case]["presel_reco"]
-    mcsignal_on_off = data[case]["bitmapsel"]["mcsignal_on_off"]
-    preseltrack_pid_on_off = data[case]["bitmapsel"]["preseltrack_pid_on_off"]
-    bitselvariable = data[case]["bitselvariable"]
     summary_string = f"#sig events: {nevt_sig}\n#bkg events: {nevt_bkg}\nmltype: {mltype}\n" \
                      f"mlsubtype: {mlsubtype}\ncase: {case}"
     logger.debug(summary_string)
@@ -151,11 +147,9 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
         if presel_reco is not None:
             df_sig = df_sig.query(presel_reco)
             df_bkg = df_bkg.query(presel_reco)
-        if preseltrack_pid_on_off:
-            df_sig = filter_bit_df(df_sig, bitselvariable, preseltrack_pid_on_off)
-            df_bkg = filter_bit_df(df_bkg, bitselvariable, preseltrack_pid_on_off)
-        if mcsignal_on_off:
-            df_sig = filter_bit_df(df_sig, bitselvariable, mcsignal_on_off)
+        df_sig = filter_df_cand(df_sig, data[case], 'presel_track_pid')
+        df_bkg = filter_df_cand(df_bkg, data[case], 'presel_track_pid')
+        df_sig = filter_df_cand(df_sig, data[case], 'mc_signal')
 
         df_data = getdataframe(filedata, trename, var_all)
         df_mc = getdataframe(filemc, trename, var_all)
@@ -165,9 +159,8 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
         if presel_reco is not None:
             df_mc = df_mc.query(presel_reco)
             df_data = df_data.query(presel_reco)
-        if preseltrack_pid_on_off:
-            df_mc = filter_bit_df(df_mc, bitselvariable, preseltrack_pid_on_off)
-            df_data = filter_bit_df(df_data, bitselvariable, preseltrack_pid_on_off)
+        df_mc = filter_df_cand(df_mc, data[case], 'presel_track_pid')
+        df_data = filter_df_cand(df_data, data[case], 'presel_track_pid')
 
         df_sig.to_pickle(dataframesig)
         df_bkg.to_pickle(dataframebkg)
@@ -181,9 +174,8 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
         df_bkg = pickle.load(filesaved_bkg)
         _, df_ml_test, df_sig_train, df_bkg_train, _, _, \
         x_train, y_train, x_test, y_test = \
-            create_mlsamples(df_sig, df_bkg, sel_signal, sel_bkg, rnd_shuffle,
-                             var_signal, var_training,
-                             nevt_sig, nevt_bkg, test_frac, rnd_splt)
+            create_mlsamples(df_sig, df_bkg, 'mc_signal', data[case], sel_bkg, rnd_shuffle,
+                             var_signal, var_training, nevt_sig, nevt_bkg, test_frac, rnd_splt)
 
     if docorrelation == 1:
         do_correlation(df_sig_train, df_bkg_train, var_all, var_corr_x, var_corr_y, plotdir)
@@ -219,6 +211,7 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
         df_ml_test_to_root = output+"/testsample_%s_mldecision.root" % (suffix)
         df_ml_test.to_pickle(df_ml_test_to_df)
         write_tree(df_ml_test_to_root, trename, df_ml_test)
+        plot_overtraining(names, classifiers, suffix, plotdir, x_train, y_train, x_test, y_test)
 
     if applytodatamc == 1:
         # The model predictions are added to the dataframes of data and MC
