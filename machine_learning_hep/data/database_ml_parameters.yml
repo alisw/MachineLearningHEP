@@ -186,7 +186,7 @@ Ds:
   pdg_code: null
   tree_name: fTreeDsFlagged
   var_all: [d_len_ML, d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, dca_ML, sig_vert_ML, delta_mass_KK_ML, cos_PiDs_ML, cos_PiKPhi_3_ML, pt_prong0_ML, pt_prong1_ML, pt_prong2_ML, imp_par_prong0_ML, imp_par_prong1_ML, imp_par_prong2_ML, max_norm_d0d0exp_ML, inv_mass_ML, pt_cand_ML, signal_ML, cand_type_ML, y_cand_ML, cand_fileID_ML, cand_evtID_ML, eta_prong0_ML, eta_prong1_ML, eta_prong2_ML]
-  var_all_unflat: null
+  var_all_unflat: [n_cand, d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, delta_mass_KK, cos_PiDs, cos_PiKPhi_3, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, inv_mass, pt_cand, cand_type, y_cand, eta_prong0, eta_prong1, eta_prong2]
   var_boundaries: [d_len_ML, max_norm_d0d0exp_ML]
   var_correlation:
   - [pt_cand_ML, d_len_xy_ML, sig_vert_ML, pt_cand_ML, pt_cand_ML, norm_dl_xy_ML, cos_PiDs_ML, cos_p_xy_ML, cos_p_xy_ML]
@@ -203,11 +203,17 @@ Ds:
   var_binning: pt_cand_ML
   presel_reco: abs(eta_prong0_ML)<0.8 and abs(eta_prong1_ML)<0.8 and abs(eta_prong2_ML)<0.8
   treename_gen: fTreeDsGenFlagged # variables related to the tree of generated candidates
+  var_gen_unflat: [n_cand, y_cand, pt_cand, cand_type]
+  var_evt_unflat: [is_ev_rej]
   var_gen: [y_cand_gen_ML, pt_cand_gen_ML, cand_type_gen_ML, z_vtx_gen_ML]
   presel_gen: abs(y_cand_gen_ML) < 0.5 and abs(z_vtx_gen_ML) < 10 # pre-selections on generated candidates
   ptgen: pt_cand_gen_ML
-  treenameevtbased: null
-  skimming_sel: null
+  treeoriginreco: 'PWGHF_TreeCreator/tree_Ds'
+  treeorigingen: 'PWGHF_TreeCreator/tree_Ds_gen'
+  treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
+  skimming_sel: "n_cand> 0 & pt_cand>2"
+  skimming_sel_gen: "n_cand> 0 & pt_cand>2"
+  skimming_sel_evt: "is_ev_rej == 0"
   bitmapsel:
     mcsignal_on_off: [[1],[5,11]]
     mcsignal_prompt_on_off: [[1,3],[5,11]]
