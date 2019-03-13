@@ -256,3 +256,52 @@ def plot_learning_curves(names_, classifiers_, suffix_, folder, x_data, y_data, 
     plt.savefig(img_learn, format='png')
     img_learn.seek(0)
     return img_learn
+
+def plot_overtraining(names_, classifiers_, suffix_, folder, \
+        x_train, y_train, x_val, y_val, bins=30):
+    img_overtrain_array = []
+    for name, clf in zip(names_, classifiers_):
+        plt.figure()
+
+        decisions = []
+        for x, y in ((x_train, y_train), (x_val, y_val)):
+            d1 = clf.predict_proba(x[y > 0.5])[:, 1]
+            d2 = clf.predict_proba(x[y < 0.5])[:, 1]
+            decisions += [d1, d2]
+
+        plt.hist(decisions[0],
+                 color='r', alpha=0.5, range=[0, 1], bins=bins,
+                 histtype='stepfilled', density=True,
+                 label='S (train)')
+        plt.hist(decisions[1],
+                 color='b', alpha=0.5, range=[0, 1], bins=bins,
+                 histtype='stepfilled', density=True,
+                 label='B (train)')
+
+        hist, bins = np.histogram(decisions[2],
+                                  bins=bins, range=[0, 1], density=True)
+        scale = len(decisions[2]) / sum(hist)
+        err = np.sqrt(hist * scale) / scale
+
+        center = (bins[:-1] + bins[1:]) / 2
+        plt.errorbar(center, hist, yerr=err, fmt='o', c='r', label='S (test)')
+
+        hist, bins = np.histogram(decisions[3],
+                                  bins=bins, range=[0, 1], density=True)
+        scale = len(decisions[3]) / sum(hist)
+        err = np.sqrt(hist * scale) / scale
+
+        plt.errorbar(center, hist, yerr=err, fmt='o', c='b', label='B (test)')
+
+        plt.xlabel("output response")
+        plt.ylabel("Arbitrary units")
+        plt.legend(loc='best')
+
+        plotname = folder+'/overtraining_%s%s.png' % (name, suffix_)
+        plt.savefig(plotname)
+        img_overtrain = BytesIO()
+        plt.savefig(img_overtrain, format='png')
+        img_overtrain.seek(0)
+        img_overtrain_array += img_overtrain
+        plt.clf()
+    return img_overtrain_array
