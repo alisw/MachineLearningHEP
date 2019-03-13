@@ -25,6 +25,7 @@ Dzero:
   var_correlation:
   - [pt_cand_ML, d_len_xy_ML, d_len_ML, pt_cand_ML, pt_cand_ML, norm_dl_xy_ML, max_norm_d0d0exp_ML, cos_p_xy_ML, cos_p_xy_ML]
   - [d_len_xy_ML, imp_par_xy_ML, max_norm_d0d0exp_ML, imp_par_xy_ML, cos_p_ML, d_len_xy_ML, imp_par_xy_ML, cos_p_ML, pt_cand_ML]
+  var_others: [inv_mass_ML, pt_cand_ML]
   var_signal: signal_ML
   var_target: signal_ML
   var_training: [d_len_ML, d_len_xy_ML, norm_dl_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, dca_ML, cos_t_star_ML, imp_par_prod_ML, pt_prong0_ML, pt_prong1_ML, imp_par_prong0_ML, imp_par_prong1_ML, imp_par_err_prong0_ML, imp_par_err_prong1_ML, max_norm_d0d0exp_ML]
@@ -78,6 +79,7 @@ LctopK0s:
   var_correlation:
   - [cos_t_star_ML]
   - [imp_par_K0s_ML]
+  var_others: [inv_mass_ML, pt_cand_ML]
   var_signal: signal_ML
   var_target: signal_ML
   var_training: [cos_t_star_ML, signd0_ML, dca_K0s_ML, imp_par_K0s_ML, d_len_K0s_ML, armenteros_K0s_ML, ctau_K0s_ML, cos_p_K0s_ML, pt_prong0_ML, pt_prong1_ML, pt_prong2_ML, imp_par_prong0_ML, imp_par_prong1_ML, imp_par_prong2_ML]
@@ -131,6 +133,7 @@ Dplus:
   var_correlation:
   - [pt_cand_ML, d_len_xy_ML, sig_vert_ML, pt_cand_ML, pt_cand_ML, norm_dl_xy_ML, sig_vert_ML, cos_p_xy_ML, cos_p_xy_ML]
   - [d_len_xy_ML, sig_vert_ML, max_norm_d0d0exp_ML, imp_par_xy_ML, sig_vert_ML, d_len_xy_ML, imp_par_xy_ML, sig_vert_ML, pt_cand_ML]
+  var_others: [inv_mass_ML, pt_cand_ML]
   var_signal: signal_ML
   var_target: signal_ML
   var_training: [d_len_ML, d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, dca_ML, sig_vert_ML, pt_prong0_ML, pt_prong1_ML, pt_prong2_ML, imp_par_prong0_ML, imp_par_prong1_ML, imp_par_prong2_ML, max_norm_d0d0exp_ML]
@@ -184,6 +187,7 @@ Ds:
   var_correlation:
   - [pt_cand_ML, d_len_xy_ML, sig_vert_ML, pt_cand_ML, pt_cand_ML, norm_dl_xy_ML, cos_PiDs_ML, cos_p_xy_ML, cos_p_xy_ML]
   - [d_len_xy_ML, sig_vert_ML, delta_mass_KK_ML, delta_mass_KK_ML, sig_vert_ML, d_len_xy_ML, cos_PiKPhi_3_ML, sig_vert_ML, pt_cand_ML]
+  var_others: [inv_mass_ML, pt_cand_ML]
   var_signal: signal_ML
   var_target: signal_ML
   var_training: [d_len_ML, d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, dca_ML, sig_vert_ML, delta_mass_KK_ML, cos_PiDs_ML, cos_PiKPhi_3_ML, pt_prong0_ML, pt_prong1_ML, pt_prong2_ML, imp_par_prong0_ML, imp_par_prong1_ML, imp_par_prong2_ML, max_norm_d0d0exp_ML]
@@ -248,6 +252,7 @@ Dstar:
   var_correlation:
   - [pt_cand_ML, d_len_xy_ML, pt_prong0_ML, pt_cand_ML, pt_cand_ML, norm_dl_xy_ML, cos_t_star_ML, cos_p_xy_ML, cos_p_xy_ML]
   - [d_len_xy_ML, cos_t_star_ML, imp_par_prod_ML, imp_par_prod_ML, cos_t_star_ML, d_len_xy_ML, pt_prong0_ML, cos_t_star_ML, pt_cand_ML]
+  var_others: [inv_mass_ML, pt_cand_ML]
   var_signal: signal_ML
   var_target: signal_ML
   var_training: [d_len_ML, d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, dca_ML, cos_t_star_ML, angle_D0dkpPisoft_ML, imp_par_prod_ML, pt_prong0_ML, pt_prong1_ML, pt_prong2_ML, imp_par_prong0_ML, imp_par_prong1_ML, imp_par_prong2_ML, max_norm_d0d0exp_ML]
@@ -301,6 +306,7 @@ LctopKpi:
   var_correlation:
   - [pt_cand_ML, d_len_xy_ML, sig_vert_ML, norm_dl_xy_ML, pt_cand_ML, norm_dl_xy_ML, pt_prong0_ML, pt_prong1_ML, cos_p_xy_ML]
   - [d_len_xy_ML, sig_vert_ML, cos_p_xy_ML, cos_p_ML, sig_vert_ML, d_len_xy_ML, pt_prong2_ML, sig_vert_ML, pt_cand_ML]
+  var_others: [inv_mass_ML, pt_cand_ML]
   var_signal: signal_ML
   var_target: signal_ML
   var_training: [d_len_ML, d_len_xy_ML, norm_dl_xy_ML, cos_p_ML, cos_p_xy_ML, imp_par_xy_ML, dca_ML, dist_12_ML, dist_23_ML, sig_vert_ML, pt_prong0_ML, pt_prong1_ML, pt_prong2_ML, imp_par_prong0_ML, imp_par_prong1_ML, imp_par_prong2_ML, max_norm_d0d0exp_ML]
