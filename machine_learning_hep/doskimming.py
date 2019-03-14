@@ -183,6 +183,8 @@ def doskimming(case, dataset):
     print("Total time elapsed", time.time()-tstart)
 
 
-RUNCASE = sys.argv[1]
-RUNDATASET = sys.argv[2]
+# RUNCASE = sys.argv[1]
+# RUNDATASET = sys.argv[2]
+RUNCASE = "Dzero"
+RUNDATASET = "LHC17pq"
 doskimming(RUNCASE, RUNDATASET)
