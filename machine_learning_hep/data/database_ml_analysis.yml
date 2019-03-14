@@ -14,8 +14,8 @@
 Dzero:
   LHC17pq:
     #skimming parameters
-    inputdir_unmerged: /data/HeavyFlavour/DmesonsLc_pp_5TeV_12032019/12-03-2019/366_20190307-2213/unmerged
-    outputdir_skimmer: /data/HeavyFlavour/DmesonsLc_pp_5TeV_12032019/12-03-2019/366_20190307-2213/picklefilesnew
+    inputdir_unmerged: null 
+    outputdir_skimmer: null 
     namefile_train: AnalysisResults.root
     data_or_mc: data 
     nmaxchunks: 200
@@ -23,8 +23,21 @@ Dzero:
     nmaxmerge: 100
     doconversion: 1
     domerge: 1
-    inputdirdata: /data/HeavyFlavour/DmesonsLc_pp_5TeV_12032019/12-03-2019/366_20190307-2213/picklefilesnew/merged
-    models: [output_nevt_sig100000_nevt_bkg100000_BinaryClassificationDzero_dfselection_pt_cand_ML_1.0_2.0/xgboost_classifiernevt_sig100000_nevt_bkg100000_BinaryClassificationDzero_dfselection_pt_cand_ML_1.0_2.0.sav]
+    inputdirdata: null 
+    models: [null] 
+  LHC18r:
+    #skimming parameters
+    inputdir_unmerged: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/unmerged
+    outputdir_skimmer: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleDzero
+    namefile_train: AnalysisResults.root
+    data_or_mc: data 
+    nmaxchunks: 200
+    nmaxfiles: 1000
+    nmaxmerge: 100
+    doconversion: 1
+    domerge: 1
+    inputdirdata: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleDzero/merged
+    models: [null]
   #analysis parameters --> for the moment common for all datasets to keep compatibility
   outputdir: output
   outputdirhisto: outputhisto/
@@ -51,7 +64,20 @@ Ds:
     doconversion: 1
     domerge: 1
     inputdirdata: null 
-    models: [placeholder]
+    models: [null]
+  LHC18r:
+    #skimming parameters
+    inputdir_unmerged: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/unmerged
+    outputdir_skimmer: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleDs
+    namefile_train: AnalysisResults.root
+    data_or_mc: data 
+    nmaxchunks: 200
+    nmaxfiles: 1000
+    nmaxmerge: 100
+    doconversion: 1
+    domerge: 1
+    inputdirdata: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleDs/merged
+    models: [null]
   #analysis parameters --> for the moment common for all datasets to keep compatibility
   outputdir: output
   outputdirhisto: outputhisto
@@ -79,13 +105,26 @@ LctopK0s:
     doconversion: 1
     domerge: 1
     inputdirdata: null 
-    models: [placeholder]
+    models: [null]
+  LHC18r:
+    #skimming parameters
+    inputdir_unmerged: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/unmerged
+    outputdir_skimmer: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0s
+    namefile_train: AnalysisResults.root
+    data_or_mc: data 
+    nmaxchunks: 200
+    nmaxfiles: 1000
+    nmaxmerge: 100
+    doconversion: 1
+    domerge: 1
+    inputdirdata: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0s/merged
+    models: [null]
   #analysis parameters --> for the moment common for all datasets to keep compatibility
   outputdir: output
   outputdirhisto: outputhisto/
   namefile_in_pkl: AnalysisResultsLctopK0sMergedReco.pkl
   binmin: [4]
-  binmax: [100  ]
+  binmax: [100]
   probcut: [0.80]
   invmassbins: 170
   invmasslow: 2.14
@@ -93,5 +132,3 @@ LctopK0s:
   modname: "BoostXG"
   var_inv_mass: inv_mass
   var_cand_type: cand_type
-
-

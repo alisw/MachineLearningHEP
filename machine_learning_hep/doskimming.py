@@ -20,7 +20,7 @@ main macro for charm analysis with python
 #import os.path
 
 # pylint: disable=import-error
-import sys
+#import sys
 import os.path
 
 import multiprocessing as mp
@@ -111,14 +111,14 @@ def doskimming(case, dataset):
     skimming_sel = data[case]["skimming_sel"]
     skimming_sel_gen = data[case]["skimming_sel_gen"]
     skimming_sel_evt = data[case]["skimming_sel_evt"]
-    
+
     logger = get_logger()
 
-    if os.path.exists(mergeddir):
+    if not os.path.exists(mergeddir):
+        os.mkdir(mergeddir)
+    else:
         logger.error("Merged dir already exists! Change it to avoid deletion of existing files")
         return
-    else:
-        os.mkdir(mergeddir)
 
     listfilespath, listfilespathout = list_files_dir_lev2(inputdir, mergeddir, \
                                                      namefileinput, namefileinputpklreco)
