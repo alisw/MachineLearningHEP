@@ -20,13 +20,16 @@ main macro for charm analysis with python
 #import os.path
 
 # pylint: disable=import-error
+import sys
+import os.path
 
 import multiprocessing as mp
 import time
 import pickle
 import uproot
 import pandas as pd
-from machine_learning_hep.general import get_database_ml_parameters
+from machine_learning_hep.logger import get_logger
+from machine_learning_hep.general import get_database_ml_parameters, get_database_ml_analysis
 from machine_learning_hep.listfiles import list_files_dir_lev2, create_subdir_list_lev1
 
 def writelist_tofile(fileout, mylist):
@@ -82,34 +85,41 @@ def mergeall(chunksmerge, listmerged):
         p.join()
 
 # pylint: disable=too-many-locals, too-many-statements, too-many-branches
-def doskimming(case):
+def doskimming(case, dataset):
 
-    namefileinput = 'AnalysisResults.root'
+    skimconfig = get_database_ml_analysis()
+    inputdir = skimconfig[case][dataset]["inputdir_unmerged"]
+    mergeddir = skimconfig[case][dataset]["outputdir_skimmer"]
+    namefileinput = skimconfig[case][dataset]["namefile_train"]
+    mcordata = skimconfig[case][dataset]["data_or_mc"]
+    doconversion = skimconfig[case][dataset]["doconversion"]
+    domerge = skimconfig[case][dataset]["domerge"]
+    nmaxchunks = skimconfig[case][dataset]["nmaxchunks"]
+    nmaxfiles = skimconfig[case][dataset]["nmaxfiles"]
+    nmaxmerge = skimconfig[case][dataset]["nmaxmerge"]
+
     namefileinputpklreco = 'AnalysisResultsReco%s.pkl' % case
     namefileinputpklgen = 'AnalysisResultsGen%s.pkl' % case
     namefileinputpklevt = 'AnalysisResultsEvt%s.pkl' % case
     data = get_database_ml_parameters()
     var_all = data[case]["var_all"]
     var_gen = data[case]["var_gen"]
-    var_evt = data[case]["var_evt"]
+    var_evt = data[case]["var_evt"][mcordata]
     treeoriginreco = data[case]["treeoriginreco"]
     treeorigingen = data[case]["treeorigingen"]
     treeoriginevt = data[case]["treeoriginevt"]
     skimming_sel = data[case]["skimming_sel"]
     skimming_sel_gen = data[case]["skimming_sel_gen"]
     skimming_sel_evt = data[case]["skimming_sel_evt"]
-    nmaxchunks = 200
-    nmaxfiles = 1000
-    nmaxmerge = 100
+    
+    logger = get_logger()
 
-    doconversion = 1
-    domerge = 1
-    isMC = 0
+    if os.path.exists(mergeddir):
+        logger.error("Merged dir already exists! Change it to avoid deletion of existing files")
+        return
+    else:
+        os.mkdir(mergeddir)
 
-    #inputdir = "/home/ginnocen/LearningPythonML/inputs"
-    inputdir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV_12032019/12-03-2019/366_20190307-2213/unmerged" # pylint: disable=line-too-long
-    #mergeddir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/unmergedpkl" # pylint: disable=line-too-long
-    mergeddir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV_12032019/12-03-2019/366_20190307-2213/picklefilesnew"
     listfilespath, listfilespathout = list_files_dir_lev2(inputdir, mergeddir, \
                                                      namefileinput, namefileinputpklreco)
     listfilespathgen, listfilespathoutgen = list_files_dir_lev2(inputdir, mergeddir, \
@@ -134,7 +144,7 @@ def doskimming(case):
         for chunk, chunkout in zip(chunks, chunksout):
             print("Processing chunk number=", i, "with n=", len(chunk))
             flattenallpickle(chunk, chunkout, treeoriginreco, var_all, skimming_sel)
-            if isMC == 1:
+            if mcordata == "MC":
                 chunkoutgen = [i.replace(namefileinputpklreco, namefileinputpklgen) \
                                for i in chunkout]
                 flattenallpickle(chunk, chunkoutgen, treeorigingen,
@@ -161,7 +171,7 @@ def doskimming(case):
         print(listmergedevt)
         mergeall(chunksmerged, listmerged)
         mergeall(chunksmergedevt, listmergedevt)
-        if isMC == 1:
+        if mcordata == "MC":
             nameGen = "AnalysisResults%sMergedGen.pkl" % (case)
             listmergedgen = create_subdir_list_lev1(mergeddir, len(chunksmergedgen), nameGen)
             chunksmergedgen = [listfilespathoutgen[x:x+nmaxmerge] \
@@ -173,5 +183,8 @@ def doskimming(case):
     print("Total time elapsed", time.time()-tstart)
 
 
-runcase = "Dzero" # pylint: disable=invalid-name
-doskimming(runcase)
+# RUNCASE = sys.argv[1]
+# RUNDATASET = sys.argv[2]
+RUNCASE = "Dzero"
+RUNDATASET = "LHC17pq"
+doskimming(RUNCASE, RUNDATASET)
