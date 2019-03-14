@@ -33,7 +33,7 @@ Dzero:
   sel_bkg: inv_mass<1.77 or inv_mass>1.97
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8
   treename_gen: fTreeDzeroGenFlagged # variables related to the tree of generated candidates
-  var_evt: [is_ev_rej, run_number, ev_id, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen, n_tracks, centrality]
+  var_evt: [is_ev_rej, run_number, ev_id, n_tracklets, V0Amult, z_vtx_reco, n_tracks, centrality]
   var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
   presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
   ptgen: pt_cand
@@ -42,7 +42,7 @@ Dzero:
   treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
   skimming_sel: "n_cand> 0 & pt_cand>2"
   skimming_sel_gen: "n_cand> 0 & pt_cand>2"
-skimming_sel_evt: "is_ev_rej >= 0" # dummy selections to keep all events
+  skimming_sel_evt: "is_ev_rej >= 0" # dummy selections to keep all events
   bitmapsel:
   old_sel:
     use: False # Obsolete selection method not implemented, see Ds as a reference

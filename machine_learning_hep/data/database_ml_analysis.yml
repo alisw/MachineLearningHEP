@@ -12,12 +12,10 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 Dzero:
-  inputdirdata: /data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/merged/
+  inputdirdata: /data/HeavyFlavour/DmesonsLc_pp_5TeV_12032019/12-03-2019/366_20190307-2213/picklefilesnew/merged
   outputdir: output
   outputdirhisto: outputhisto/
-  namefile_in_root: AnalysisResults_Dzero_skimmed_Merged100.root 
-  namefile_in_pkl: AnalysisResults_Dzero_skimmed_Merged100.pkl
-  namefile_in_parquet: AnalysisResults_Dzero_skimmed_Merged100.ZSTD
+  namefile_in_pkl: AnalysisResultsDzeroMergedReco.pkl
   binmin: [3]
   binmax: [4]
   probcut: [0.80]
@@ -26,8 +24,8 @@ Dzero:
   invmasshigh: 2.05
   modname: "BoostXG"
   models: [output_nevt_sig100000_nevt_bkg100000_BinaryClassificationDzero_dfselection_pt_cand_ML_1.0_2.0/xgboost_classifiernevt_sig100000_nevt_bkg100000_BinaryClassificationDzero_dfselection_pt_cand_ML_1.0_2.0.sav]
-  var_inv_mass: inv_mass_ML
-  var_cand_type: cand_type_ML
+  var_inv_mass: inv_mass
+  var_cand_type: cand_type
 Lcnew:
   inputdirdata: /data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/merged/
   outputdir: output
@@ -42,5 +40,5 @@ Lcnew:
   invmasshigh: [2.4]
   modname: "BoostXG"
   models: [/data/trained_models/pp/Lcnew/xgboost_classifiernevt_sig1001802_nevt_bkg1001802_BinaryClassificationLcnew_dfselection_pt_cand_ML_6.0_8.0.sav]
-  var_inv_mass: inv_mass_ML
-  var_cand_type: cand_type_ML
+  var_inv_mass: inv_mass
+  var_cand_type: cand_type

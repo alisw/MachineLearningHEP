@@ -27,7 +27,7 @@ import pickle
 import uproot
 import pandas as pd
 from machine_learning_hep.general import get_database_ml_parameters
-from machine_learning_hep.listfiles import list_files_dir
+from machine_learning_hep.listfiles import list_files_dir_lev2, create_subdir_list_lev1
 
 def writelist_tofile(fileout, mylist):
     with open(fileout, 'w') as f:
@@ -98,9 +98,9 @@ def doskimming(case):
     skimming_sel = data[case]["skimming_sel"]
     skimming_sel_gen = data[case]["skimming_sel_gen"]
     skimming_sel_evt = data[case]["skimming_sel_evt"]
-    nmaxchunks = 50
-    nmaxfiles = 50
-    nmaxmerge = 2
+    nmaxchunks = 200
+    nmaxfiles = 1000
+    nmaxmerge = 100
 
     doconversion = 1
     domerge = 1
@@ -109,12 +109,12 @@ def doskimming(case):
     #inputdir = "/home/ginnocen/LearningPythonML/inputs"
     inputdir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV_12032019/12-03-2019/366_20190307-2213/unmerged" # pylint: disable=line-too-long
     #mergeddir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV/Data_LHC17pq/12-02-2019/340_20190211-2126/unmergedpkl" # pylint: disable=line-too-long
-    mergeddir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV_12032019/12-03-2019/366_20190307-2213/picklefiles"
-    listfilespath, listfilespathout = list_files_dir(inputdir, mergeddir, \
+    mergeddir = "/data/HeavyFlavour/DmesonsLc_pp_5TeV_12032019/12-03-2019/366_20190307-2213/picklefilesnew"
+    listfilespath, listfilespathout = list_files_dir_lev2(inputdir, mergeddir, \
                                                      namefileinput, namefileinputpklreco)
-    listfilespathgen, listfilespathoutgen = list_files_dir(inputdir, mergeddir, \
+    listfilespathgen, listfilespathoutgen = list_files_dir_lev2(inputdir, mergeddir, \
                                                      namefileinput, namefileinputpklgen)
-    listfilespathevt, listfilespathoutevt = list_files_dir(inputdir, mergeddir, \
+    listfilespathevt, listfilespathoutevt = list_files_dir_lev2(inputdir, mergeddir, \
                                                      namefileinput, namefileinputpklevt)
 
     listfilespath = listfilespath[:nmaxfiles]
@@ -151,24 +151,25 @@ def doskimming(case):
         print("I am merging")
         chunksmerged = [listfilespathout[x:x+nmaxmerge] \
                    for x in range(0, len(listfilespathout), nmaxmerge)]
-        chunksmergedgen = [listfilespathoutgen[x:x+nmaxmerge] \
-                   for x in range(0, len(listfilespathoutgen), nmaxmerge)]
         chunksmergedevt = [listfilespathoutevt[x:x+nmaxmerge] \
                    for x in range(0, len(listfilespathoutevt), nmaxmerge)]
-        listmerged = ["%s/AnalysisResults%sMergedIndex%dReco.pkl" % \
-                      (mergeddir, case, index) for index in range(len(chunksmerged))]
-        listmergedgen = ["%s/AnalysisResults%sMergedIndex%dGen.pkl" % \
-                      (mergeddir, case, index) for index in range(len(chunksmergedgen))]
-        listmergedevt = ["%s/AnalysisResults%sMergedIndex%dEvt.pkl" % \
-                      (mergeddir, case, index) for index in range(len(chunksmergedevt))]
+        nameReco = "AnalysisResults%sMergedReco.pkl" % (case)
+        nameEvt = "AnalysisResults%sMergedEvt.pkl" % (case)
 
+        listmerged = create_subdir_list_lev1(mergeddir, len(chunksmerged), nameReco)
+        listmergedevt = create_subdir_list_lev1(mergeddir, len(chunksmergedevt), nameEvt)
+        print(listmergedevt)
         mergeall(chunksmerged, listmerged)
         mergeall(chunksmergedevt, listmergedevt)
         if isMC == 1:
-            mergeall(chunksmergedevt, listmerged)
+            nameGen = "AnalysisResults%sMergedGen.pkl" % (case)
+            listmergedgen = create_subdir_list_lev1(mergeddir, len(chunksmergedgen), nameGen)
+            chunksmergedgen = [listfilespathoutgen[x:x+nmaxmerge] \
+                for x in range(0, len(listfilespathoutgen), nmaxmerge)]
+            mergeall(chunksmergedgen, listmergedgen)
+
         timemerge = time.time() - tstopconv
         print("total merging time", timemerge)
-        print(len(listmergedgen))
     print("Total time elapsed", time.time()-tstart)
 
 
