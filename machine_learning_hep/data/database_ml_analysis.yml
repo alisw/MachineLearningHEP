@@ -66,6 +66,36 @@ Ds:
   modname: "BoostXG"
   var_inv_mass: inv_mass
   var_cand_type: cand_type
+LctopK0s:
+  inputdirdata: /data/HeavyFlavour/PbPb_data_3050/14-03-2019/377_20190313-2007/picklefiles/merged
+  outputdir: output
+  outputdirhisto: outputhisto/
+  namefile_in_pkl: AnalysisResultsLctopK0sMergedReco.pkl
+  binmin: [4]
+  binmax: [100  ]
+  probcut: [0.80]
+  invmassbins: 170
+  invmasslow: 2.14
+  invmasshigh: 2.48
+  modname: "BoostXG"
+  models: [placeholder ]
+  var_inv_mass: inv_mass
+  var_cand_type: cand_type
+LctopKpi:
+  inputdirdata: /data/HeavyFlavour/PbPb_data_3050/14-03-2019/377_20190313-2007/picklefiles/merged
+  outputdir: output
+  outputdirhisto: outputhisto/
+  namefile_in_pkl: AnalysisResultsLctopKpiMergedReco.pkl
+  binmin: [4]
+  binmax: [100  ]
+  probcut: [0.80]
+  invmassbins: 170
+  invmasslow: 2.14
+  invmasshigh: 2.48
+  modname: "BoostXG"
+  models: [placeholder ]
+  var_inv_mass: inv_mass
+  var_cand_type: cand_type
 Lcnew:
   LHC17pq:
     #skimming parameters
