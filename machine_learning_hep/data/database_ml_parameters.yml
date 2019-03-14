@@ -33,7 +33,9 @@ Dzero:
   sel_bkg: inv_mass<1.77 or inv_mass>1.97
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8
   treename_gen: fTreeDzeroGenFlagged # variables related to the tree of generated candidates
-  var_evt: [is_ev_rej, run_number, ev_id, n_tracklets, V0Amult, z_vtx_reco, n_tracks, centrality]
+  var_evt: 
+    data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
+    MC: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
   var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
   presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
   ptgen: pt_cand
@@ -92,7 +94,9 @@ LctopK0s:
   sel_bkg: inv_mass<2.1864 or inv_mass>2.3864
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
   treename_gen: fTreeLctopK0sGenFlagged # variables related to the tree of generated candidates
-  var_evt: [is_ev_rej, run_number, ev_id, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen, n_tracks, centrality]
+  var_evt: 
+    data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
+    MC: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
   var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
   presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
   ptgen: pt_cand
@@ -150,7 +154,9 @@ Dplus:
   sel_bkg: inv_mass<1.77 or inv_mass>1.97
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
   treename_gen: fTreeDplusGenFlagged # variables related to the tree of generated candidates
-  var_evt: [is_ev_rej, run_number, ev_id, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen, n_tracks, centrality]
+  var_evt: 
+    data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
+    MC: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
   var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
   presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
   ptgen: pt_cand
@@ -208,7 +214,9 @@ Ds:
   sel_bkg: inv_mass<1.83 or inv_mass>2.012
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
   treename_gen: fTreeDsGenFlagged # variables related to the tree of generated candidates
-  var_evt: [is_ev_rej, run_number, ev_id, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen, n_tracks, centrality]
+  var_evt: 
+    data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
+    MC: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
   var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
   presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
   ptgen: pt_cand
@@ -277,7 +285,9 @@ Dstar:
   sel_bkg: inv_mass<0.142 or inv_mass>0.149
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
   treename_gen: fTreeDstarGenFlagged # variables related to the tree of generated candidates
-  var_evt: [is_ev_rej, run_number, ev_id, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen, n_tracks, centrality]
+  var_evt: 
+    data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
+    MC: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
   var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
   presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
   ptgen: pt_cand
@@ -335,7 +345,9 @@ LctopKpi:
   sel_bkg: inv_mass<2.1864 or inv_mass>2.3864
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
   treename_gen: fTreeLcGenFlagged # variables related to the tree of generated candidates
-  var_evt: [is_ev_rej, run_number, ev_id, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen, n_tracks, centrality]
+  var_evt: 
+    data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
+    MC: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
   var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
   presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
   ptgen: pt_cand
