@@ -28,6 +28,7 @@ import time
 import pickle
 import uproot
 import pandas as pd
+from machine_learning_hep.logger import get_logger
 from machine_learning_hep.general import get_database_ml_parameters, get_database_ml_analysis
 from machine_learning_hep.listfiles import list_files_dir_lev2, create_subdir_list_lev1
 
@@ -111,9 +112,11 @@ def doskimming(case, dataset):
     skimming_sel_gen = data[case]["skimming_sel_gen"]
     skimming_sel_evt = data[case]["skimming_sel_evt"]
     
+    logger = get_logger()
+
     if os.path.exists(mergeddir):
-        print("ERROR: merged dir already exists! Change it to avoid deletion of existing files")
-        exit()
+        logger.error("Merged dir already exists! Change it to avoid deletion of existing files")
+        return
     else:
         os.mkdir(mergeddir)
 
