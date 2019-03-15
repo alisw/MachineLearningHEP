@@ -12,14 +12,16 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 Dzero: 
-  sig_bkg_files: [data/inputroot/MCPbPbCen010_Dzero/AnalysisResultsDzeroMergedReco.pkl, data/inputroot/DataPbPbCen010_Dzero//AnalysisResultsDzeroMergedReco.pkl]
-  sig_bkg_files_evt: [data/inputroot/MCPbPbCen010_Dzero/AnalysisResultsDzeroMergedEvt.pkl, data/inputroot/DataPbPbCen010_Dzero//AnalysisResultsDzeroMergedEvt.pkl]
-  data_mc_files: [data/inputroot/DataPbPbCen010_Dzero/AnalysisResultsDzeroMergedReco.pkl, data/inputroot/MCPbPbCen010_Dzero//AnalysisResultsDzeroMergedReco.pkl]
-  data_mc_files_evt: [data/inputroot/DataPbPbCen010_Dzero/AnalysisResultsDzeroMergedEvt.pkl, data/inputroot/MCPbPbCen010_Dzero//AnalysisResultsDzeroMergedEvt.pkl]
+  sig_bkg_files: [data/inputroot/MCPbPbCen010_Dzero/AnalysisResultsDzeroMergedReco.pkl, data/inputroot/DataPbPbCen010_Dzero/AnalysisResultsDzeroMergedReco.pkl]
+  sig_bkg_files_evt: [data/inputroot/MCPbPbCen010_Dzero/AnalysisResultsDzeroMergedEvt.pkl, data/inputroot/DataPbPbCen010_Dzero/AnalysisResultsDzeroMergedEvt.pkl]
+  data_mc_files: [data/inputroot/DataPbPbCen010_Dzero/AnalysisResultsDzeroMergedReco.pkl, data/inputroot/MCPbPbCen010_Dzero/AnalysisResultsDzeroMergedReco.pkl]
+  data_mc_files_evt: [data/inputroot/DataPbPbCen010_Dzero/AnalysisResultsDzeroMergedEvt.pkl, data/inputroot/MCPbPbCen010_Dzero/AnalysisResultsDzeroMergedEvt.pkl]
+  mc_gen_files: null
   sig_bkg_files_server: [null, null]
   sig_bkg_files_evt_server: [null, null]
   data_mc_files_server: [null, null]
   data_mc_files_evt_server: [null, null]
+  mc_gen_files_server: null
   mass: 1.864
   pdg_code: null
   tree_name: fTreeDzeroFlagged
@@ -73,4 +75,68 @@ Dzero:
     mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
     bin_width: 0.008 # bin width of the invariant mass histogram
     bkg_data_fraction: 0.1 # fraction of real data used in the estimation
+LctopK0s:
+  sig_bkg_files: [data/inputroot/MCPbPbCen010_LctopK0s/AnalysisResultsLctopK0sMergedReco.pkl, data/inputroot/DataPbPbCen010_LctopK0s/AnalysisResultsLctopK0sMergedReco.pkl]
+  sig_bkg_files_evt: [data/inputroot/MCPbPbCen010_LctopK0s/AnalysisResultsLctopK0sMergedEvt.pkl, data/inputroot/DataPbPbCen010_LctopK0s/AnalysisResultsLctopK0sMergedEvt.pkl]
+  data_mc_files: [data/inputroot/DataPbPbCen010_LctopK0s/AnalysisResultsLctopK0sMergedReco.pkl, data/inputroot/MCPbPbCen010_LctopK0s/AnalysisResultsLctopK0sMergedReco.pkl]
+  data_mc_files_evt: [data/inputroot/DataPbPbCen010_LctopK0s/AnalysisResultsLctopK0sMergedEvt.pkl, data/inputroot/MCPbPbCen010_LctopK0s/AnalysisResultsLctopK0sMergedEvt.pkl]
+  mc_gen_files: null
+  sig_bkg_files_server: [null, null]
+  sig_bkg_files_evt_server: [null, null]
+  data_mc_files_server: [null, null]
+  data_mc_files_evt_server: [null, null]
+  mc_gen_files_server: null
+  mass: 2.2864
+  pdg_code: null
+  tree_name: fTreeLctopK0sFlagged
+  var_all: [n_cand, cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass, pt_cand, inv_mass_K0s, pt_K0s, cand_type, y_cand, eta_prong0, eta_prong1, eta_prong2, run_number, ev_id]
+  var_boundaries: [cos_t_star, signd0]
+  var_correlation:
+  - [cos_t_star]
+  - [imp_par_K0s]
+  var_others: [inv_mass, pt_cand]
+  var_signal: signal
+  var_target: signal
+  var_training: [cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2]
+  var_binning: pt_cand
+  sel_signal: mc_signal # used for webapp, selection option of filter_df_cand
+  sel_bkg: inv_mass<2.1864 or inv_mass>2.3864
+  presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
+  var_evt: 
+    data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
+    MC: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
+  var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id, n_cand]
+  presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
+  ptgen: pt_cand
+  treeoriginreco: 'PWGHF_TreeCreator/tree_Lc2V0bachelor'
+  treeorigingen: 'PWGHF_TreeCreator/tree_Lc2V0bachelor_gen'
+  treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
+  skimming_sel: "n_cand> 0 & pt_cand>2"
+  skimming_sel_gen: "n_cand> 0 & pt_cand>2"
+  skimming_sel_evt: "is_ev_rej >= 0"
+  old_sel:
+    use: False # Obsolete selection method not implemented, see Ds as a reference
+  bitmap_sel:
+    use: True
+    var_sel: cand_type
+    var_sel_gen: cand_type
+    mcsignal_on_off: [[1],[5]]
+    mcsignal_prompt_on_off: [[1,3],[5]]
+    mcsignal_feed_on_off: [[1,4],[5]]
+    mcbkg_on_off: [[2],[]]
+    preseltrack_pid_on_off : [[7,8],[]]
+    std_analysis_on_off : [[0],[]]
+  signif_opt:
+    var_event: [is_ev_rej]
+    sel_event: is_ev_rej==0
+    filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
+    fonll_pred: 'max' # edge of the FONLL prediction
+    FF: 0.1281 # fragmentation fraction
+    sigma_MB: 50.87e-3 # Minimum Bias cross section (pp) [b]
+    BR: 1.58e-2 # branching ratio of the decay
+    f_prompt: 0.9 # estimated fraction of prompt candidates
+    mass_fit_lim: [2.12, 2.45] # region for the fit of the invariant mass distribution [GeV/c^2]
+    bin_width: 0.008 # bin width of the invariant mass histogram
+    bkg_data_fraction: 0.1 # fraction of real data used in the estimation
+    num_steps: 101 # number of steps used in efficiency and signif. estimation
     num_steps: 101 # number of steps used in efficiency and signif. estimation
