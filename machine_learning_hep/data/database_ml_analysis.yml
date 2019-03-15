@@ -113,7 +113,7 @@ LctopK0s:
     namefile_train: AnalysisResults.root
     data_or_mc: data 
     nmaxchunks: 200
-    nmaxfiles: 1000
+    nmaxfiles: 11000
     nmaxmerge: 100
     doconversion: 1
     domerge: 1
@@ -125,9 +125,9 @@ LctopK0s:
     outputdir_skimmer: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0s
     namefile_train: AnalysisResults.root
     data_or_mc: data 
-    nmaxchunks: 200
-    nmaxfiles: 1000
-    nmaxmerge: 100
+    nmaxchunks: 300
+    nmaxfiles: 11000
+    nmaxmerge: 200
     doconversion: 1
     domerge: 1
     inputdirdata: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0s/merged
@@ -158,3 +158,4 @@ LctopK0s:
   modname: "BoostXG"
   var_inv_mass: inv_mass
   var_cand_type: cand_type
+

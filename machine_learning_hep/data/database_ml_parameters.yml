@@ -81,11 +81,11 @@ LctopK0s:
   data_mc_files: [data/inputroot/DataPbPbCen010_LctopK0s/AnalysisResultsLctopK0sMergedReco.pkl, data/inputroot/MCPbPbCen010_LctopK0s/AnalysisResultsLctopK0sMergedReco.pkl]
   data_mc_files_evt: [data/inputroot/DataPbPbCen010_LctopK0s/AnalysisResultsLctopK0sMergedEvt.pkl, data/inputroot/MCPbPbCen010_LctopK0s/AnalysisResultsLctopK0sMergedEvt.pkl]
   mc_gen_files: null
-  sig_bkg_files_server: [null, null]
-  sig_bkg_files_evt_server: [null, null]
-  data_mc_files_server: [null, null]
-  data_mc_files_evt_server: [null, null]
-  mc_gen_files_server: null
+  sig_bkg_files_server: [../../../data/HeavyFlavour/pPb_MC/14-03-2019/379_20190313-2217/pickleLctopK0s/merged/1/AnalysisResultsLctopK0sMergedReco.pkl, ../../../data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0s/merged/1/AnalysisResultsLctopK0sMergedReco.pkl]
+  sig_bkg_files_evt_server: [../../../data/HeavyFlavour/pPb_MC/14-03-2019/379_20190313-2217/pickleLctopK0s/merged/1/AnalysisResultsLctopK0sMergedEvt.pkl, ../../../data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0s/merged/1/AnalysisResultsLctopK0sMergedEvt.pkl]
+  data_mc_files_server: [../../../data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0s/merged/1/AnalysisResultsLctopK0sMergedReco.pkl, ../../../data/HeavyFlavour/pPb_MC/14-03-2019/379_20190313-2217/pickleLctopK0s/merged/1/AnalysisResultsLctopK0sMergedReco.pkl]
+  data_mc_files_evt_server: [../../../data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0s/merged/1/AnalysisResultsLctopK0sMergedEvt.pkl, ../../../data/HeavyFlavour/pPb_MC/14-03-2019/379_20190313-2217/pickleLctopK0s/merged/1/AnalysisResultsLctopK0sMergedEvt.pkl]
+  mc_gen_files_server: ../../../data/HeavyFlavour/pPb_MC/14-03-2019/379_20190313-2217/pickleLctopK0s/merged/1/AnalysisResultsLctopK0sMergedGen.pkl
   mass: 2.2864
   pdg_code: null
   tree_name: fTreeLctopK0sFlagged
