@@ -186,5 +186,5 @@ def doskimming(case, dataset):
 # RUNCASE = sys.argv[1]
 # RUNDATASET = sys.argv[2]
 RUNCASE = "Dzero"
-RUNDATASET = "LHC18r"
+RUNDATASET = "LHC16i2a"
 doskimming(RUNCASE, RUNDATASET)
