@@ -18,8 +18,8 @@ main macro for running the study
 import argparse
 import sys
 import os.path
+import pandas as pd
 
-import pickle
 from sklearn.utils import shuffle
 from machine_learning_hep.general import get_database_ml_parameters
 from machine_learning_hep.general import createstringselection, filterdataframe_singlevar
@@ -108,11 +108,8 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
     string_selection = createstringselection(var_binning, binmin, binmax)
     suffix = f"nevt_sig{nevt_sig}_nevt_bkg{nevt_bkg}_" \
              f"{mltype}{case}_{string_selection}"
-    dataframe = f"dataframepkl"
     plotdir = f"plots_{suffix}"
     output = f"output_{suffix}"
-
-    checkdir(dataframe)
     checkdir(plotdir)
     checkdir(output)
 
@@ -136,10 +133,8 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
     trainedmodels = []
 
     if loadsampleoption == 1:
-        filesaved_sig = open(filesig, "rb")
-        filesaved_bkg = open(filebkg, "rb")
-        df_sig = pickle.load(filesaved_sig)
-        df_bkg = pickle.load(filesaved_bkg)
+        df_sig = pd.read_pickle(filesig)
+        df_bkg = pd.read_pickle(filebkg)
         df_sig = filterdataframe_singlevar(df_sig, var_binning, binmin, binmax)
         df_bkg = filterdataframe_singlevar(df_bkg, var_binning, binmin, binmax)
         if presel_reco is not None:
@@ -149,10 +144,8 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
         df_bkg = filter_df_cand(df_bkg, data[case], 'presel_track_pid')
         df_sig = filter_df_cand(df_sig, data[case], 'mc_signal')
 
-        filesaved_data = open(filedata, "rb")
-        filesaved_mc = open(filemc, "rb")
-        df_mc = pickle.load(filesaved_mc)
-        df_data = pickle.load(filesaved_data)
+        df_mc = pd.read_pickle(filemc)
+        df_data = pd.read_pickle(filedata)
         df_data = filterdataframe_singlevar(df_data, var_binning, binmin, binmax)
         df_mc = filterdataframe_singlevar(df_mc, var_binning, binmin, binmax)
 

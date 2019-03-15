@@ -56,7 +56,6 @@ Dzero:
   bitmap_sel:
     use: True
     var_sel: cand_type
-    var_sel_gen: cand_type
     mcsignal_on_off: [[1],[5]]
     mcsignal_prompt_on_off: [[1,3],[5]]
     mcsignal_feed_on_off: [[1,4],[5]]
@@ -64,7 +63,6 @@ Dzero:
     preseltrack_pid_on_off : [[7,8],[]]
     std_analysis_on_off : [[0],[]]
   signif_opt:
-    var_event: [is_ev_rej]
     sel_event: is_ev_rej==0
     filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
     fonll_pred: 'max' # edge of the FONLL prediction
@@ -120,7 +118,6 @@ LctopK0s:
   bitmap_sel:
     use: True
     var_sel: cand_type
-    var_sel_gen: cand_type
     mcsignal_on_off: [[1],[5]]
     mcsignal_prompt_on_off: [[1,3],[5]]
     mcsignal_feed_on_off: [[1,4],[5]]
@@ -128,7 +125,6 @@ LctopK0s:
     preseltrack_pid_on_off : [[7,8],[]]
     std_analysis_on_off : [[0],[]]
   signif_opt:
-    var_event: [is_ev_rej]
     sel_event: is_ev_rej==0
     filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
     fonll_pred: 'max' # edge of the FONLL prediction
