@@ -51,10 +51,6 @@ loadsampleoption:
   default: True
   type_as: [True]
 
-usesampleoption:
-  default: True
-  type_as: [True]
-
 docorrelation:
   default: False
   type_as: [True]

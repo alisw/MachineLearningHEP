@@ -173,9 +173,9 @@ def doskimming(case, dataset):
         mergeall(chunksmergedevt, listmergedevt)
         if mcordata == "MC":
             nameGen = "AnalysisResults%sMergedGen.pkl" % (case)
-            listmergedgen = create_subdir_list_lev1(mergeddir, len(chunksmergedgen), nameGen)
             chunksmergedgen = [listfilespathoutgen[x:x+nmaxmerge] \
                 for x in range(0, len(listfilespathoutgen), nmaxmerge)]
+            listmergedgen = create_subdir_list_lev1(mergeddir, len(chunksmergedgen), nameGen)
             mergeall(chunksmergedgen, listmergedgen)
 
         timemerge = time.time() - tstopconv
