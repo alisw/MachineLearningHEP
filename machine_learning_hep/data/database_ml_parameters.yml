@@ -36,7 +36,7 @@ Dzero:
   var_evt: 
     data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
     MC: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
-  var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
+  var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id, n_cand]
   presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
   ptgen: pt_cand
   treeoriginreco: 'PWGHF_TreeCreator/tree_D0'
@@ -97,7 +97,7 @@ LctopK0s:
   var_evt: 
     data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
     MC: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
-  var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
+  var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id, n_cand]
   presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
   ptgen: pt_cand
   treeoriginreco: 'PWGHF_TreeCreator/tree_Lc2V0bachelor'
@@ -157,7 +157,7 @@ Dplus:
   var_evt: 
     data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
     MC: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
-  var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
+  var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id, n_cand]
   presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
   ptgen: pt_cand
   treeoriginreco: 'PWGHF_TreeCreator/tree_Dplus'
@@ -217,7 +217,7 @@ Ds:
   var_evt: 
     data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
     MC: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
-  var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
+  var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id, n_cand]
   presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
   ptgen: pt_cand
   treeoriginreco: 'PWGHF_TreeCreator/tree_Ds'
@@ -288,7 +288,7 @@ Dstar:
   var_evt: 
     data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
     MC: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
-  var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
+  var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id, n_cand]
   presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
   ptgen: pt_cand
   treeoriginreco: 'PWGHF_TreeCreator/tree_Dstar'
@@ -348,7 +348,7 @@ LctopKpi:
   var_evt: 
     data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
     MC: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
-  var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
+  var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id, n_cand]
   presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
   ptgen: pt_cand
   treeoriginreco: 'PWGHF_TreeCreator/tree_LctopKpi'

@@ -40,8 +40,8 @@ Dzero:
     models: [null]
   LHC16i2a:
     #skimming parameters
-    inputdir_unmerged: /data/HeavyFlavour/PbPb_MC_010_test/15-03-2019/368_20190312-2049/unmerged
-    outputdir_skimmer: /data/HeavyFlavour/PbPb_MC_010_test/15-03-2019/368_20190312-2049/pickleDzero
+    inputdir_unmerged: /data/HeavyFlavour/PbPb_MC_010/15-03-2019/368_20190312-2049/unmerged
+    outputdir_skimmer: /data/HeavyFlavour/PbPb_MC_010/15-03-2019/368_20190312-2049/pickleDzero
     namefile_train: AnalysisResults.root
     data_or_mc: MC
     nmaxchunks: 1
@@ -49,7 +49,7 @@ Dzero:
     nmaxmerge: 1
     doconversion: 1
     domerge: 1
-    inputdirdata: /data/HeavyFlavour/PbPb_MC_010_test/15-03-2019/368_20190312-2049/pickleDzero/merged
+    inputdirdata: /data/HeavyFlavour/PbPb_MC_010/15-03-2019/368_20190312-2049/pickleDzero/merged
     models: [null]
   #analysis parameters --> for the moment common for all datasets to keep compatibility
   outputdir: output
