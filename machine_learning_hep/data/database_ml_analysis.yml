@@ -31,12 +31,12 @@ Dzero:
     outputdir_skimmer: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleDzero
     namefile_train: AnalysisResults.root
     data_or_mc: data 
-    nmaxchunks: 200
-    nmaxfiles: 1000
+    nmaxchunks: 100
+    nmaxfiles: 300
     nmaxmerge: 100
     doconversion: 1
     domerge: 1
-    inputdirdata: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleDzero/merged
+    inputdirdata: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleDzero/merged/
     models: [null]
   #analysis parameters --> for the moment common for all datasets to keep compatibility
   outputdir: output

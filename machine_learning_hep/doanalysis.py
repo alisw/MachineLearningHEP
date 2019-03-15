@@ -33,17 +33,20 @@ from machine_learning_hep.io import checkdir
 def doanalysis():
 
     case = "Dzero"
+    dataset = "LHC18r"
+
     data = get_database_ml_parameters()
     data_analysis = get_database_ml_analysis()
 
     var_pt = data[case]["var_binning"]
 
-    fileinputdir = data_analysis[case]["inputdirdata"]
+    fileinputdir = data_analysis[case][dataset]["inputdirdata"]
+    print(fileinputdir)
     namefilereco = data_analysis[case]["namefile_in_pkl"]
     fileoutputdir = data_analysis[case]["outputdir"]
     outputdirhisto = data_analysis[case]["outputdirhisto"]
     probcut = data_analysis[case]["probcut"]
-    models = data_analysis[case]["models"]
+    models = data_analysis[case][dataset]["models"]
     binmin = data_analysis[case]["binmin"]
     binmax = data_analysis[case]["binmax"]
 

@@ -114,11 +114,11 @@ def doskimming(case, dataset):
 
     logger = get_logger()
 
-    if not os.path.exists(mergeddir):
-        os.mkdir(mergeddir)
-    else:
-        logger.error("Merged dir already exists! Change it to avoid deletion of existing files")
-        return
+    #if not os.path.exists(mergeddir):
+    #    os.mkdir(mergeddir)
+    #else:
+    #    logger.error("Merged dir already exists! Change it to avoid deletion of existing files")
+    #    return
 
     listfilespath, listfilespathout = list_files_dir_lev2(inputdir, mergeddir, \
                                                      namefileinput, namefileinputpklreco)
@@ -186,5 +186,5 @@ def doskimming(case, dataset):
 # RUNCASE = sys.argv[1]
 # RUNDATASET = sys.argv[2]
 RUNCASE = "Dzero"
-RUNDATASET = "LHC17pq"
+RUNDATASET = "LHC18r"
 doskimming(RUNCASE, RUNDATASET)
