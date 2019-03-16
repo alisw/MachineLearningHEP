@@ -30,7 +30,7 @@ import uproot
 import pandas as pd
 #from machine_learning_hep.logger import get_logger
 from machine_learning_hep.general import get_database_ml_parameters, get_database_ml_analysis
-from machine_learning_hep.listfiles import list_files_dir_lev2, create_subdir_list_lev1
+from machine_learning_hep.listfiles import list_files_dir_lev2, list_files_lev2, create_subdir_list_lev1
 
 def writelist_tofile(fileout, mylist):
     with open(fileout, 'w') as f:
@@ -77,12 +77,8 @@ def merge(chunk, namemerged):
     dftot.to_pickle(namemerged)
 
 def mergeall(chunksmerge, listmerged):
-    processes = [mp.Process(target=merge, args=(chunk, merged))
-                 for chunk, merged in zip(chunksmerge, listmerged)]
-    for p in processes:
-        p.start()
-    for p in processes:
-        p.join()
+    for chunk, merged in zip(chunksmerge, listmerged):
+        merge(chunk, merged)
 
 # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 def doskimming(case, dataset):
@@ -126,13 +122,13 @@ def doskimming(case, dataset):
                                                      namefileinput, namefileinputpklgen)
     listfilespathevt, listfilespathoutevt = list_files_dir_lev2(inputdir, mergeddir, \
                                                      namefileinput, namefileinputpklevt)
-
-    listfilespath = listfilespath[:nmaxfiles]
-    listfilespathout = listfilespathout[:nmaxfiles]
-    listfilespathgen = listfilespathgen[:nmaxfiles]
-    listfilespathoutgen = listfilespathoutgen[:nmaxfiles]
-    listfilespathevt = listfilespathevt[:nmaxfiles]
-    listfilespathoutevt = listfilespathoutevt[:nmaxfiles]
+    if nmaxfiles is not -1:
+        listfilespath = listfilespath[:nmaxfiles]
+        listfilespathout = listfilespathout[:nmaxfiles]
+        listfilespathgen = listfilespathgen[:nmaxfiles]
+        listfilespathoutgen = listfilespathoutgen[:nmaxfiles]
+        listfilespathevt = listfilespathevt[:nmaxfiles]
+        listfilespathoutevt = listfilespathoutevt[:nmaxfiles]
 
     tstart = time.time()
     if doconversion == 1:
@@ -157,16 +153,16 @@ def doskimming(case, dataset):
     tstopconv = time.time()
     print("total coversion time", tstopconv - tstart)
 
-    listfilespathtomerge, _ = list_files_dir_lev2(mergeddir, "",
+    listfilespathtomerge, _ = list_files_lev2(mergeddir, "",
                                                   namefileinputpklreco, "")
-    listfilespathgentomerge, _ = list_files_dir_lev2(mergeddir, "",
+    listfilespathgentomerge, _ = list_files_lev2(mergeddir, "",
                                                      namefileinputpklgen, "")
-    listfilespathevttomerge, _ = list_files_dir_lev2(mergeddir, "",
+    listfilespathevttomerge, _ = list_files_lev2(mergeddir, "",
                                                      namefileinputpklevt, "")
-
-    listfilespathtomerge = listfilespathtomerge[:nmaxfiles]
-    listfilespathgentomerge = listfilespathgentomerge[:nmaxfiles]
-    listfilespathevttomerge = listfilespathevttomerge[:nmaxfiles]
+    if nmaxfiles is not -1:
+        listfilespathtomerge = listfilespathtomerge[:nmaxfiles]
+        listfilespathgentomerge = listfilespathgentomerge[:nmaxfiles]
+        listfilespathevttomerge = listfilespathevttomerge[:nmaxfiles]
 
 
     if domerge == 1:
