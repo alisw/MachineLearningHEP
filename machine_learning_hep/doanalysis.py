@@ -23,7 +23,7 @@ main macro for charm analysis with python
 import time
 from machine_learning_hep.general import get_database_ml_parameters # pylint: disable=import-error
 from machine_learning_hep.general import get_database_ml_analysis
-from machine_learning_hep.listfiles import list_files_dir_lev1
+from machine_learning_hep.listfiles import list_files_dir_lev2
 from machine_learning_hep.skimming import create_inv_mass
 from machine_learning_hep.skimming import plothisto
 from machine_learning_hep.fit import fitmass, plot_graph_yield
@@ -62,6 +62,7 @@ def doanalysis():
     checkdir(fileoutputdir)
     checkdir(outputdirhisto)
     checkdir("plots")
+    nmaxchunks = 200
 
     tstart = time.time()
     if doinvmassspectra == 1:
@@ -71,10 +72,15 @@ def doanalysis():
                             (case, imin, imax, useml, 1000*probcut[index]))
             namefileplot = ("plots/histotot%s_ptmin%s_%s_useml%d_0%d.pdf" % \
                             (case, imin, imax, useml, 1000*probcut[index]))
-            listdf, listhisto = list_files_dir_lev1(fileinputdir, fileoutputdir,
+            listdf, listhisto = list_files_dir_lev2(fileinputdir, fileoutputdir,
                                                     namefilereco, namefilehist)
-            histomass = create_inv_mass(listdf, listhisto, var_pt, imin, imax,
-                                        useml, models[index], probcut[index], case)
+            print ("length =", len(listdf))
+            chunksdf = [listdf[x:x+nmaxchunks] for x in range(0, len(listdf), nmaxchunks)]
+            chunkshisto = [listhisto[x:x+nmaxchunks] \
+                           for x in range(0, len(listhisto), nmaxchunks)]
+            for chunk, chunkhisto in zip(chunksdf, chunkshisto):
+                histomass = create_inv_mass(chunk, chunkhisto, var_pt, imin, imax,
+                                            useml, models[index], probcut[index], case)
             plothisto(histomass, namefileplot)
             index = index + 1
 

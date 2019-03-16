@@ -131,7 +131,7 @@ LctopK0s:
     doconversion: 0
     domerge: 1
     inputdirdata: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0s
-    models: [null]
+    models: [/data/trained_models/PbPb010/LctopK0s/xgboost_classifiernevt_sig1000000_nevt_bkg1000000_BinaryClassificationLctopK0s_dfselection_pt_cand_6.0_10.0.sav]
   LHC17j4d2 :
     #skimming parameters
     inputdir_unmerged: /data/HeavyFlavour/pPb_MC/14-03-2019/379_20190313-2217/merged
@@ -144,13 +144,13 @@ LctopK0s:
     doconversion: 1
     domerge: 1
     inputdirdata: /data/HeavyFlavour/pPb_MC/14-03-2019/379_20190313-2217/pickleLctopK0s/merged
-    models: [null]
+    models: [/data/trained_models/PbPb010/LctopK0s/xgboost_classifiernevt_sig1000000_nevt_bkg1000000_BinaryClassificationLctopK0s_dfselection_pt_cand_6.0_10.0.sav]
   #analysis parameters --> for the moment common for all datasets to keep compatibility
   outputdir: output
   outputdirhisto: outputhisto/
   namefile_in_pkl: AnalysisResultsRecoLctopK0s.pkl
-  binmin: [4]
-  binmax: [100]
+  binmin: [6]
+  binmax: [10]
   probcut: [0.80]
   invmassbins: 170
   invmasslow: 2.14

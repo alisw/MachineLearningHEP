@@ -80,15 +80,15 @@ LctopK0s:
   data_mc_files: [data/inputroot/DataPbPbCen010_LctopK0s/AnalysisResultsLctopK0sMergedReco.pkl, data/inputroot/MCPbPbCen010_LctopK0s/AnalysisResultsLctopK0sMergedReco.pkl]
   data_mc_files_evt: [data/inputroot/DataPbPbCen010_LctopK0s/AnalysisResultsLctopK0sMergedEvt.pkl, data/inputroot/MCPbPbCen010_LctopK0s/AnalysisResultsLctopK0sMergedEvt.pkl]
   mc_gen_file: null
-  sig_bkg_files_server: [../../../data/HeavyFlavour/pPb_MC/14-03-2019/379_20190313-2217/pickleLctopK0s/merged/1/AnalysisResultsLctopK0sMergedReco.pkl, ../../../data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0s/merged/1/AnalysisResultsLctopK0sMergedReco.pkl]
+  sig_bkg_files_server: [../../../data/HeavyFlavour/pPb_MC/14-03-2019/379_20190313-2217/pickleLctopK0s/merged/1/AnalysisResultsLctopK0sMergedReco.pkl, ../../../data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0s/merged/1/AnalysisResultsLctopK0sMergedReco_10M.pkl]
   sig_bkg_files_evt_server: [../../../data/HeavyFlavour/pPb_MC/14-03-2019/379_20190313-2217/pickleLctopK0s/merged/1/AnalysisResultsLctopK0sMergedEvt.pkl, ../../../data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0s/merged/1/AnalysisResultsLctopK0sMergedEvt.pkl]
-  data_mc_files_server: [../../../data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0s/merged/1/AnalysisResultsLctopK0sMergedReco.pkl, ../../../data/HeavyFlavour/pPb_MC/14-03-2019/379_20190313-2217/pickleLctopK0s/merged/1/AnalysisResultsLctopK0sMergedReco.pkl]
+  data_mc_files_server: [../../../data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0s/merged/1/AnalysisResultsLctopK0sMergedReco_10M.pkl, ../../../data/HeavyFlavour/pPb_MC/14-03-2019/379_20190313-2217/pickleLctopK0s/merged/1/AnalysisResultsLctopK0sMergedReco.pkl]
   data_mc_files_evt_server: [../../../data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0s/merged/1/AnalysisResultsLctopK0sMergedEvt.pkl, ../../../data/HeavyFlavour/pPb_MC/14-03-2019/379_20190313-2217/pickleLctopK0s/merged/1/AnalysisResultsLctopK0sMergedEvt.pkl]
   mc_gen_file_server: ../../../data/HeavyFlavour/pPb_MC/14-03-2019/379_20190313-2217/pickleLctopK0s/merged/1/AnalysisResultsLctopK0sMergedGen.pkl
   mass: 2.2864
   pdg_code: null
   tree_name: fTreeLctopK0sFlagged
-  var_all: [n_cand, cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass, pt_cand, inv_mass_K0s, pt_K0s, cand_type, y_cand, eta_prong0, eta_prong1, eta_prong2, run_number, ev_id, d_len, d_len_xy, cos_p, cos_p_xy, nsigTPC_Pr_0, nsigTOF_Pi_0, nsigTOF_Pr_0, nsigTPC_Pi_1, nsigTPC_Pr_1, nsigTOF_Pi_1, nsigTOF_Pr_1, nsigTPC_Pi_2, nsigTPC_Pr_2, nsigTOF_Pi_2, nsigTOF_Pr_2]
+  var_all: [n_cand, cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass, pt_cand, inv_mass_K0s, pt_K0s, cand_type, y_cand, eta_prong0, eta_prong1, eta_prong2, run_number, ev_id, nsigTPC_Pr_0, nsigTOF_Pi_0, nsigTOF_Pr_0, nsigTPC_Pi_1, nsigTPC_Pr_1, nsigTOF_Pi_1, nsigTOF_Pr_1, nsigTPC_Pi_2, nsigTPC_Pr_2, nsigTOF_Pi_2, nsigTOF_Pr_2]
   var_boundaries: [cos_t_star, signd0]
   var_correlation:
   - [cos_t_star]
@@ -96,7 +96,7 @@ LctopK0s:
   var_others: [inv_mass, pt_cand]
   var_signal: signal
   var_target: signal
-  var_training: [cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2]
+  var_training: [cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s]
   var_binning: pt_cand
   sel_signal: mc_signal # used for webapp, selection option of filter_df_cand
   sel_bkg: inv_mass<2.1864 or inv_mass>2.3864
