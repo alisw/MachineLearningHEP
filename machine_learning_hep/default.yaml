@@ -4,7 +4,7 @@ activate_models:
       keras_simple_one_layer_binary_classifier: false
       keras_simple_two_layer_binary_classifier: false
     scikit:
-      scikit_adaboost_classifier: false
+      scikit_adaboost_classifier: true
       scikit_decision_tree_classifier: false
       scikit_random_forest_classifier: false
     xgboost:
@@ -14,32 +14,31 @@ activate_models:
       scikit_lasso_regression: false
       scikit_linear_regression: false
       scikit_ridge_regression: false
-applytodatamc: true
-binmax: 2
-binmin: 1
+applytodatamc: false
+binmax: 4
+binmin: 2
 case: Dzero
-doROC: false
+doROC: true
 doboundary: false
-docorrelation: false
+docorrelation: true
 docrossvalidation: false
 dogridsearch: false
 doimportance: false
 dolearningcurve: false
 dopca: false
 dopltregressionxy: false
-dosignifopt: true
+dosignifopt: false
 dostandard: false
 dotesting: true
 dotraining: true
-loadsampleoption: false
+loadsampleoption: true
 mlsubtype: HFmeson
 mltype: BinaryClassification
 ncores: -1
-nevt_bkg: 100000
-nevt_sig: 100000
+nevt_bkg: 1000
+nevt_sig: 1000
 nkfolds: 5
 rnd_shuffle: 12
 rnd_splt: 12
 test_frac: 0.2
-usefileserver: true
-usesampleoption: true
+usefileserver: false

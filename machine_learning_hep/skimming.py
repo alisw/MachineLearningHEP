@@ -18,6 +18,7 @@ utilities for skimming ttrees
 import multiprocessing as mp
 import pickle
 import numba
+import numpy as np
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TH1F, TCanvas # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.general import getdataframe, filter_df_cand
@@ -78,12 +79,14 @@ def fill_mass_array(namefiledf, namefilehisto, var_pt, ptmin, ptmax,
 
     fileinput = open(namefiledf, "rb")
     df = pickle.load(fileinput)
+    df = df.astype(np.float)
+    print(df.dtypes)
     #df = pd.read_parquet(namefiledf)
     array_inv_mass_sel = []
     print(var_pt)
     h_invmass = TH1F("h_invmass_" + str(ptmin) + "-" + str(ptmax), "", \
                      invmassbins, invmasslow, invmasshigh)
-    df = df.query("pt_cand_ML>@ptmin and pt_cand_ML<@ptmax")
+    df = df.query("pt_cand>@ptmin and pt_cand<@ptmax")
     if presel_reco is not None:
         df = df.query(presel_reco)
 

@@ -51,7 +51,7 @@ def selectbitoff(array_cand_type, bits):
 def filter_bit_df(dfin, namebitmap, activatedbit):
     bitson = activatedbit[0]
     bitsoff = activatedbit[1]
-    array_cand_type = dfin.loc[:, namebitmap].values
+    array_cand_type = dfin.loc[:, namebitmap].values.astype("int")
     res_on = pd.Series([True]*len(array_cand_type))
     res_off = pd.Series([True]*len(array_cand_type))
     res = pd.Series()

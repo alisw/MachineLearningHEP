@@ -23,8 +23,8 @@ main macro for charm analysis with python
 import time
 from machine_learning_hep.general import get_database_ml_parameters # pylint: disable=import-error
 from machine_learning_hep.general import get_database_ml_analysis
-from machine_learning_hep.listfiles import list_files_dir, list_files
-from machine_learning_hep.skimming import skimming_to_pandas, create_inv_mass
+from machine_learning_hep.listfiles import list_files_lev2, create_subdir_list_lev1
+from machine_learning_hep.skimming import create_inv_mass
 from machine_learning_hep.skimming import plothisto
 from machine_learning_hep.fit import fitmass, plot_graph_yield
 from machine_learning_hep.io import checkdir
@@ -32,43 +32,38 @@ from machine_learning_hep.io import checkdir
 # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 def doanalysis():
 
-    case = "Dzero"
+    case = "LctopK0s"
+    dataset = "LHC18r"
+    #dataset = "LHC17j4d2"
     data = get_database_ml_parameters()
     data_analysis = get_database_ml_analysis()
 
-    treename = data[case]["tree_name"]
-    var_all = data[case]["var_all"]
-    var_all.remove("signal_ML")
     var_pt = data[case]["var_binning"]
 
-    fileinputdir = data_analysis[case]["inputdirdata"]
-    namefile_in = data_analysis[case]["namefile_in_root"]
-    namefile_out = data_analysis[case]["namefile_in_pkl"]
+    fileinputdir = data_analysis[case][dataset]["inputdirdata"]
+    print(fileinputdir)
+    namefilereco = data_analysis[case]["namefile_in_pkl"]
     fileoutputdir = data_analysis[case]["outputdir"]
     outputdirhisto = data_analysis[case]["outputdirhisto"]
     probcut = data_analysis[case]["probcut"]
-    models = data_analysis[case]["models"]
+    models = data_analysis[case][dataset]["models"]
     binmin = data_analysis[case]["binmin"]
     binmax = data_analysis[case]["binmax"]
+    nmaxchunks = data_analysis[case][dataset]["nmaxchunks"]
+    nmaxfiles = data_analysis[case][dataset]["nmaxfiles"]
 
     print("starting my analysis")
 
-    useml = 1
+    useml = 0
     yield_signal = []
     yield_signal_err = []
 
-    doskimming = 0
     doinvmassspectra = 1
     dofit = 0
-    listinput, listoutput = list_files_dir(fileinputdir, fileoutputdir,
-                                           namefile_in, namefile_out)
 
     checkdir(fileoutputdir)
     checkdir(outputdirhisto)
     checkdir("plots")
-
-    if doskimming == 1:
-        skimming_to_pandas(listinput, listoutput, treename, var_all)
 
     tstart = time.time()
     if doinvmassspectra == 1:
@@ -78,10 +73,18 @@ def doanalysis():
                             (case, imin, imax, useml, 1000*probcut[index]))
             namefileplot = ("plots/histotot%s_ptmin%s_%s_useml%d_0%d.pdf" % \
                             (case, imin, imax, useml, 1000*probcut[index]))
-            listdf, listhisto = list_files(fileoutputdir, outputdirhisto,
-                                           namefile_out, namefilehist)
-            histomass = create_inv_mass(listdf, listhisto, var_pt, imin, imax,
-                                        useml, models[index], probcut[index], case)
+            listdf, _ = list_files_lev2(fileinputdir, "", namefilereco, "")
+            if nmaxfiles is not -1:
+                listdf = listdf[:nmaxfiles]
+            listhisto = create_subdir_list_lev1(fileoutputdir, len(listdf), namefilehist)
+            listhisto = listhisto[:nmaxfiles]
+
+            chunksdf = [listdf[x:x+nmaxchunks] for x in range(0, len(listdf), nmaxchunks)]
+            chunkshisto = [listhisto[x:x+nmaxchunks] \
+                           for x in range(0, len(listhisto), nmaxchunks)]
+            for chunk, chunkhisto in zip(chunksdf, chunkshisto):
+                histomass = create_inv_mass(chunk, chunkhisto, var_pt, imin, imax,
+                                            useml, models[index], probcut[index], case)
             plothisto(histomass, namefileplot)
             index = index + 1
 

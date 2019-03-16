@@ -23,7 +23,6 @@ rm -rf __pycache__/
 rm -rf utilities/__pycache__/
 rm -rf utilities/__pycache__/
 rm -rf __pycache__
-rm -rf dataframepkl
 rm -rf plots_*
 rm -rf output_*
 rm *.json 

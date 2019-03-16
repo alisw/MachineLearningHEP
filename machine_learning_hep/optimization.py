@@ -20,7 +20,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from ROOT import TH1F, TF1, gROOT  # pylint: disable=import-error,no-name-in-module
 from machine_learning_hep.logger import get_logger
-from machine_learning_hep.general import get_database_ml_parameters, getdataframe
+from machine_learning_hep.general import get_database_ml_parameters
 from machine_learning_hep.general import filterdataframe_singlevar, filter_df_cand
 
 def calc_efficiency(df_to_sel, sel_opt, main_dict, name, num_step, do_std=False):
@@ -70,7 +70,7 @@ def calc_bkg(df_bkg, name, num_step, fit_region, bin_width, sig_region):
         bkg_err = 0.
         hmass = TH1F('hmass', '', num_bins, fit_region[0], fit_region[1])
         bkg_sel_mask = df_bkg['y_test_prob' + name].values >= thr
-        sel_mass_array = df_bkg[bkg_sel_mask]['inv_mass_ML'].values
+        sel_mass_array = df_bkg[bkg_sel_mask]['inv_mass'].values
 
         if len(sel_mass_array) > 5:
             for mass_value in np.nditer(sel_mass_array):
@@ -100,7 +100,7 @@ def calc_peak_sigma(df_mc_reco, sel_opt, main_dict, mass, fit_region, bin_width)
     num_bins = int(round(num_bins))
 
     hmass = TH1F('hmass', '', num_bins, fit_region[0], fit_region[1])
-    mass_array = df_signal['inv_mass_ML'].values
+    mass_array = df_signal['inv_mass'].values
     for mass_value in np.nditer(mass_array):
         hmass.Fill(mass_value)
 
@@ -198,7 +198,7 @@ def calc_sig_dmeson(filename, fonll_pred, frag_frac, branch_ratio, sigma_mb, f_p
     return signal_yield
 
 
-def study_signif(case, names, bin_lim, file_mc, file_data, df_mc_reco, df_ml_test,
+def study_signif(case, names, bin_lim, file_mc_gen, file_data_evt, df_mc_reco, df_ml_test,
                  df_data_dec, suffix, plotdir):
     """
     Study the efficiency and the expected signal significance as a function of
@@ -216,10 +216,10 @@ def study_signif(case, names, bin_lim, file_mc, file_data, df_mc_reco, df_ml_tes
     bin_width = sopt_dict['bin_width']
     bkg_fract = sopt_dict['bkg_data_fraction']
 
-    df_mc_gen = getdataframe(file_mc, gen_dict['treename_gen'], gen_dict['var_gen'])
+    df_mc_gen = pd.read_pickle(file_mc_gen)
     df_mc_gen = df_mc_gen.query(gen_dict['presel_gen'])
     df_mc_gen = filterdataframe_singlevar(df_mc_gen, gen_dict['ptgen'], bin_lim[0], bin_lim[1])
-    df_evt = getdataframe(file_data, sopt_dict['treename_event'], sopt_dict['var_event'])
+    df_evt = pd.read_pickle(file_data_evt)
     n_events = len(df_evt.query(sopt_dict['sel_event']))
     logger.debug("Number of events: %d", n_events)
 

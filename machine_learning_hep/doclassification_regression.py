@@ -18,11 +18,10 @@ main macro for running the study
 import argparse
 import sys
 import os.path
+import pandas as pd
 
-import pickle
 from sklearn.utils import shuffle
-# from sklearn.metrics import make_scorer, accuracy_score
-from machine_learning_hep.general import get_database_ml_parameters, getdataframe
+from machine_learning_hep.general import get_database_ml_parameters
 from machine_learning_hep.general import createstringselection, filterdataframe_singlevar
 from machine_learning_hep.general import get_database_ml_gridsearch, filter_df_cand
 from machine_learning_hep.root import write_tree
@@ -37,9 +36,8 @@ from machine_learning_hep.models import importanceplotall
 from machine_learning_hep.mlperformance import cross_validation_mse, cross_validation_mse_continuous
 from machine_learning_hep.mlperformance import plot_cross_validation_mse, plot_learning_curves
 from machine_learning_hep.mlperformance import plotdistributiontarget, plotscattertarget
-# from machine_learning_hep.mlperformance import confusion
+# from machine_learning_hep.mlperformance import confusion, plot_overtraining
 from machine_learning_hep.mlperformance import precision_recall
-from machine_learning_hep.mlperformance import plot_overtraining
 from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perform_plot_gridsearch
 from machine_learning_hep.logger import configure_logger, get_logger
 from machine_learning_hep.optimization import study_signif
@@ -47,9 +45,8 @@ DATA_PREFIX = os.path.expanduser("~/.machine_learning_hep")
 
 
 def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
-
     logger = get_logger()
-    #logger.info(f"Start classification_regression run")
+    logger.info(f"Start classification_regression run") # pylint: disable=logging-fstring-interpolation
 
     run_config = conf.get_run_config()
     model_config = conf.get_model_config()
@@ -58,7 +55,6 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
     mlsubtype = run_config['mlsubtype']
     case = run_config['case']
     loadsampleoption = run_config['loadsampleoption']
-    usesampleoption = run_config['usesampleoption']
     binmin = run_config['binmin']
     binmax = run_config['binmax']
     rnd_shuffle = run_config['rnd_shuffle']
@@ -88,11 +84,15 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
 
     filesig, filebkg = data[case]["sig_bkg_files"]
     filedata, filemc = data[case]["data_mc_files"]
+    file_mc_gen = data[case]["mc_gen_file"]
+    file_data_evt = data[case]["data_mc_files_evt"][0]
     if usefileserver is True:
         filesig, filebkg = data[case]["sig_bkg_files_server"]
         filedata, filemc = data[case]["data_mc_files_server"]
-    trename = data[case]["tree_name"]
+        file_mc_gen = data[case]["mc_gen_file_server"]
+        file_data_evt = data[case]["data_mc_files_evt_server"][0]
     var_all = data[case]["var_all"]
+    tree_name = data[case]["tree_name"]
     var_signal = data[case]["var_signal"]
     sel_bkg = data[case]["sel_bkg"]
     var_training = data[case]["var_training"]
@@ -108,16 +108,8 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
     string_selection = createstringselection(var_binning, binmin, binmax)
     suffix = f"nevt_sig{nevt_sig}_nevt_bkg{nevt_bkg}_" \
              f"{mltype}{case}_{string_selection}"
-    dataframe = f"dataframepkl"
     plotdir = f"plots_{suffix}"
     output = f"output_{suffix}"
-
-    dataframesig = f"{dataframe}/dfsignal.pkl"
-    dataframebkg = f"{dataframe}/dfbackground.pkl"
-    dataframedata = f"{dataframe}/dfdata.pkl"
-    dataframemc = f"{dataframe}/dfmc.pkl"
-
-    checkdir(dataframe)
     checkdir(plotdir)
     checkdir(output)
 
@@ -135,15 +127,16 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
     filebkg = os.path.join(DATA_PREFIX, filebkg)
     filedata = os.path.join(DATA_PREFIX, filedata)
     filemc = os.path.join(DATA_PREFIX, filemc)
+    file_mc_gen = os.path.join(DATA_PREFIX, file_mc_gen)
+    file_data_evt = os.path.join(DATA_PREFIX, file_data_evt)
 
     trainedmodels = []
 
     if loadsampleoption == 1:
-        df_sig = getdataframe(filesig, trename, var_all)
-        df_bkg = getdataframe(filebkg, trename, var_all)
+        df_sig = pd.read_pickle(filesig)
+        df_bkg = pd.read_pickle(filebkg)
         df_sig = filterdataframe_singlevar(df_sig, var_binning, binmin, binmax)
         df_bkg = filterdataframe_singlevar(df_bkg, var_binning, binmin, binmax)
-
         if presel_reco is not None:
             df_sig = df_sig.query(presel_reco)
             df_bkg = df_bkg.query(presel_reco)
@@ -151,8 +144,8 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
         df_bkg = filter_df_cand(df_bkg, data[case], 'presel_track_pid')
         df_sig = filter_df_cand(df_sig, data[case], 'mc_signal')
 
-        df_data = getdataframe(filedata, trename, var_all)
-        df_mc = getdataframe(filemc, trename, var_all)
+        df_mc = pd.read_pickle(filemc)
+        df_data = pd.read_pickle(filedata)
         df_data = filterdataframe_singlevar(df_data, var_binning, binmin, binmax)
         df_mc = filterdataframe_singlevar(df_mc, var_binning, binmin, binmax)
 
@@ -162,16 +155,6 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
         df_mc = filter_df_cand(df_mc, data[case], 'presel_track_pid')
         df_data = filter_df_cand(df_data, data[case], 'presel_track_pid')
 
-        df_sig.to_pickle(dataframesig)
-        df_bkg.to_pickle(dataframebkg)
-        df_mc.to_pickle(dataframemc)
-        df_data.to_pickle(dataframedata)
-
-    if usesampleoption == 1:
-        filesaved_sig = open(dataframesig, "rb")
-        filesaved_bkg = open(dataframebkg, "rb")
-        df_sig = pickle.load(filesaved_sig)
-        df_bkg = pickle.load(filesaved_bkg)
         _, df_ml_test, df_sig_train, df_bkg_train, _, _, \
         x_train, y_train, x_test, y_test = \
             create_mlsamples(df_sig, df_bkg, 'mc_signal', data[case], sel_bkg, rnd_shuffle,
@@ -210,21 +193,17 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
         df_ml_test_to_df = output+"/testsample_%s_mldecision.pkl" % (suffix)
         df_ml_test_to_root = output+"/testsample_%s_mldecision.root" % (suffix)
         df_ml_test.to_pickle(df_ml_test_to_df)
-        write_tree(df_ml_test_to_root, trename, df_ml_test)
-        plot_overtraining(names, classifiers, suffix, plotdir, x_train, y_train, x_test, y_test)
+        write_tree(df_ml_test_to_root, tree_name, df_ml_test)
+        #plot_overtraining(names, classifiers, suffix, plotdir, x_train, y_train, x_test, y_test)
 
     if applytodatamc == 1:
         # The model predictions are added to the dataframes of data and MC
-        filesaved_mc = open(dataframemc, "rb")
-        filesaved_data = open(dataframedata, "rb")
-        df_data = pickle.load(filesaved_data)
-        df_mc = pickle.load(filesaved_mc)
         df_data = apply(mltype, names, trainedmodels, df_data, var_training)
         df_mc = apply(mltype, names, trainedmodels, df_mc, var_training)
         df_data_to_root = output+"/data_%s_mldecision.root" % (suffix)
         df_mc_to_root = output+"/mc_%s_mldecision.root" % (suffix)
-        write_tree(df_data_to_root, trename, df_data)
-        write_tree(df_mc_to_root, trename, df_mc)
+        write_tree(df_data_to_root, tree_name, df_data)
+        write_tree(df_mc_to_root, tree_name, df_mc)
 
     if docrossvalidation == 1:
         df_scores = []
@@ -279,8 +258,8 @@ def doclassification_regression(conf):  # pylint: disable=too-many-locals, too-m
             if mlsubtype == "HFmeson":
                 df_data_opt = df_data.query(sel_bkg)
                 df_data_opt = shuffle(df_data_opt, random_state=rnd_shuffle)
-                study_signif(case, names, [binmin, binmax], filemc, filedata, df_mc, df_ml_test,
-                             df_data_opt, suffix, plotdir)
+                study_signif(case, names, [binmin, binmax], file_mc_gen, file_data_evt, df_mc,
+                             df_ml_test, df_data_opt, suffix, plotdir)
             else:
                 logger.error("Optimisation is not implemented for this classification problem.")
         else:
