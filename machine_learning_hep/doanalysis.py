@@ -23,7 +23,7 @@ main macro for charm analysis with python
 import time
 from machine_learning_hep.general import get_database_ml_parameters # pylint: disable=import-error
 from machine_learning_hep.general import get_database_ml_analysis
-from machine_learning_hep.listfiles import list_files_dir_lev2
+from machine_learning_hep.listfiles import list_files_lev2, create_subdir_list_lev1
 from machine_learning_hep.skimming import create_inv_mass
 from machine_learning_hep.skimming import plothisto
 from machine_learning_hep.fit import fitmass, plot_graph_yield
@@ -49,6 +49,8 @@ def doanalysis():
     models = data_analysis[case][dataset]["models"]
     binmin = data_analysis[case]["binmin"]
     binmax = data_analysis[case]["binmax"]
+    nmaxchunks = data_analysis[case][dataset]["nmaxchunks"]
+    nmaxfiles = data_analysis[case][dataset]["nmaxfiles"]
 
     print("starting my analysis")
 
@@ -62,7 +64,6 @@ def doanalysis():
     checkdir(fileoutputdir)
     checkdir(outputdirhisto)
     checkdir("plots")
-    nmaxchunks = 200
 
     tstart = time.time()
     if doinvmassspectra == 1:
@@ -72,8 +73,12 @@ def doanalysis():
                             (case, imin, imax, useml, 1000*probcut[index]))
             namefileplot = ("plots/histotot%s_ptmin%s_%s_useml%d_0%d.pdf" % \
                             (case, imin, imax, useml, 1000*probcut[index]))
-            listdf, listhisto = list_files_dir_lev2(fileinputdir, fileoutputdir,
-                                                    namefilereco, namefilehist)
+            listdf, _ = list_files_lev2(fileinputdir, "", namefilereco, "")
+            if nmaxfiles is not -1:
+                listdf = listdf[:nmaxfiles]
+            listhisto = create_subdir_list_lev1(fileoutputdir, len(listdf), namefilehist)
+            listhisto = listhisto[:nmaxfiles]
+
             print ("length =", len(listdf))
             chunksdf = [listdf[x:x+nmaxchunks] for x in range(0, len(listdf), nmaxchunks)]
             chunkshisto = [listhisto[x:x+nmaxchunks] \

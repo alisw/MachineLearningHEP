@@ -126,7 +126,7 @@ LctopK0s:
     namefile_train: AnalysisResults.root
     data_or_mc: data 
     nmaxchunks: 300
-    nmaxfiles: 200  
+    nmaxfiles: -1
     nmaxmerge: 200
     doconversion: 0
     domerge: 1
@@ -139,7 +139,7 @@ LctopK0s:
     namefile_train: AnalysisResults.root
     data_or_mc: MC
     nmaxchunks: 200
-    nmaxfiles: 1000
+    nmaxfiles: 100
     nmaxmerge: 100
     doconversion: 1
     domerge: 1
@@ -151,7 +151,7 @@ LctopK0s:
   namefile_in_pkl: AnalysisResultsRecoLctopK0s.pkl
   binmin: [6]
   binmax: [10]
-  probcut: [0.80]
+  probcut: [0.90]
   invmassbins: 170
   invmasslow: 2.14
   invmasshigh: 2.48
