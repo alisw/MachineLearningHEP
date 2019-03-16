@@ -157,12 +157,24 @@ def doskimming(case, dataset):
     tstopconv = time.time()
     print("total coversion time", tstopconv - tstart)
 
+    listfilespathtomerge, _ = list_files_dir_lev2(mergeddir, "",
+                                                  namefileinputpklreco, "")
+    listfilespathgentomerge, _ = list_files_dir_lev2(mergeddir, "",
+                                                     namefileinputpklgen, "")
+    listfilespathevttomerge, _ = list_files_dir_lev2(mergeddir, "",
+                                                     namefileinputpklevt, "")
+
+    listfilespathtomerge = listfilespathtomerge[:nmaxfiles]
+    listfilespathgentomerge = listfilespathgentomerge[:nmaxfiles]
+    listfilespathevttomerge = listfilespathevttomerge[:nmaxfiles]
+
+
     if domerge == 1:
         print("I am merging")
-        chunksmerged = [listfilespathout[x:x+nmaxmerge] \
-                   for x in range(0, len(listfilespathout), nmaxmerge)]
-        chunksmergedevt = [listfilespathoutevt[x:x+nmaxmerge] \
-                   for x in range(0, len(listfilespathoutevt), nmaxmerge)]
+        chunksmerged = [listfilespathtomerge[x:x+nmaxmerge] \
+                   for x in range(0, len(listfilespathtomerge), nmaxmerge)]
+        chunksmergedevt = [listfilespathevttomerge[x:x+nmaxmerge] \
+                   for x in range(0, len(listfilespathevttomerge), nmaxmerge)]
         nameReco = "AnalysisResults%sMergedReco.pkl" % (case)
         nameEvt = "AnalysisResults%sMergedEvt.pkl" % (case)
 
@@ -173,8 +185,8 @@ def doskimming(case, dataset):
         mergeall(chunksmergedevt, listmergedevt)
         if mcordata == "MC":
             nameGen = "AnalysisResults%sMergedGen.pkl" % (case)
-            chunksmergedgen = [listfilespathoutgen[x:x+nmaxmerge] \
-                for x in range(0, len(listfilespathoutgen), nmaxmerge)]
+            chunksmergedgen = [listfilespathgentomerge[x:x+nmaxmerge] \
+                for x in range(0, len(listfilespathgentomerge), nmaxmerge)]
             listmergedgen = create_subdir_list_lev1(mergeddir, len(chunksmergedgen), nameGen)
             mergeall(chunksmergedgen, listmergedgen)
 
@@ -185,6 +197,6 @@ def doskimming(case, dataset):
 
 # RUNCASE = sys.argv[1]
 # RUNDATASET = sys.argv[2]
-RUNCASE = "Dzero"
-RUNDATASET = "LHC16i2a"
+RUNCASE = "LctopK0s"
+RUNDATASET = "LHC18r"
 doskimming(RUNCASE, RUNDATASET)

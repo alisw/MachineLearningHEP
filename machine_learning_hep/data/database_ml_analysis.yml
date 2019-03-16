@@ -126,9 +126,9 @@ LctopK0s:
     namefile_train: AnalysisResults.root
     data_or_mc: data 
     nmaxchunks: 300
-    nmaxfiles: 11000
-    nmaxmerge: 200
-    doconversion: 1
+    nmaxfiles: 10000
+    nmaxmerge: 150
+    doconversion: 0
     domerge: 1
     inputdirdata: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0s/merged
     models: [null]

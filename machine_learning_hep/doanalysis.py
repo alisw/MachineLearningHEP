@@ -32,9 +32,9 @@ from machine_learning_hep.io import checkdir
 # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 def doanalysis():
 
-    case = "Dzero"
+    case = "LctopK0s"
     dataset = "LHC18r"
-
+    #dataset = "LHC17j4d2"
     data = get_database_ml_parameters()
     data_analysis = get_database_ml_analysis()
 
