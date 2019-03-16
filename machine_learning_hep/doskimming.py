@@ -30,7 +30,8 @@ import uproot
 import pandas as pd
 #from machine_learning_hep.logger import get_logger
 from machine_learning_hep.general import get_database_ml_parameters, get_database_ml_analysis
-from machine_learning_hep.listfiles import list_files_dir_lev2, list_files_lev2, create_subdir_list_lev1
+from machine_learning_hep.listfiles import list_files_dir_lev2
+from machine_learning_hep.listfiles import list_files_lev2, create_subdir_list_lev1
 
 def writelist_tofile(fileout, mylist):
     with open(fileout, 'w') as f:
@@ -154,11 +155,11 @@ def doskimming(case, dataset):
     print("total coversion time", tstopconv - tstart)
 
     listfilespathtomerge, _ = list_files_lev2(mergeddir, "",
-                                                  namefileinputpklreco, "")
+                                              namefileinputpklreco, "")
     listfilespathgentomerge, _ = list_files_lev2(mergeddir, "",
-                                                     namefileinputpklgen, "")
+                                                 namefileinputpklgen, "")
     listfilespathevttomerge, _ = list_files_lev2(mergeddir, "",
-                                                     namefileinputpklevt, "")
+                                                 namefileinputpklevt, "")
     if nmaxfiles is not -1:
         listfilespathtomerge = listfilespathtomerge[:nmaxfiles]
         listfilespathgentomerge = listfilespathgentomerge[:nmaxfiles]

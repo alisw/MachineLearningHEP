@@ -79,7 +79,6 @@ def doanalysis():
             listhisto = create_subdir_list_lev1(fileoutputdir, len(listdf), namefilehist)
             listhisto = listhisto[:nmaxfiles]
 
-            print ("length =", len(listdf))
             chunksdf = [listdf[x:x+nmaxchunks] for x in range(0, len(listdf), nmaxchunks)]
             chunkshisto = [listhisto[x:x+nmaxchunks] \
                            for x in range(0, len(listhisto), nmaxchunks)]
