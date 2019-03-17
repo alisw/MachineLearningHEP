@@ -63,19 +63,16 @@ def selectcandidateml(array_inv_mass, array_prob, probcut):
     return array_inv_mass_sel
 
  # pylint: disable=too-many-arguments,too-many-statements
-def fill_mass_array(namefiledf, namefilehisto, var_pt, ptmin, ptmax,
+def fill_mass_array(data, namefiledf, namefilehisto, var_pt, ptmin, ptmax,
                     useml, model, probcut, case):
 
-    data = get_database_ml_parameters()
-    data_analysis = get_database_ml_analysis()
     presel_reco = data[case]["presel_reco"]
-    var_training = data[case]["var_training"]
-
-    invmassbins = data_analysis[case]["invmassbins"]
-    invmasslow = data_analysis[case]["invmasslow"]
-    invmasshigh = data_analysis[case]["invmasshigh"]
-    var_mass = data_analysis[case]["var_inv_mass"]
-    modname = data_analysis[case]["modname"]
+    var_training = data[case]["variables"]["var_training"]
+    invmassbins = data[case]["invmassbins"]
+    invmasslow = data[case]["invmasslow"]
+    invmasshigh = data[case]["invmasshigh"]
+    var_mass = data[case]["variables"]["var_inv_mass"]
+    modname = "xgboost"
 
     fileinput = open(namefiledf, "rb")
     df = pickle.load(fileinput)
@@ -110,10 +107,10 @@ def fill_mass_array(namefiledf, namefilehisto, var_pt, ptmin, ptmax,
     f.Close()
 
 # pylint: disable=too-many-arguments
-def create_inv_mass(listinput_df, listoutputhisto, pt_var, ptmin, ptmax,
+def create_inv_mass(data, listinput_df, listoutputhisto, pt_var, ptmin, ptmax,
                     useml, model, probcut, case):
     processes = [mp.Process(target=fill_mass_array, \
-                 args=(namefiledf, namefilehisto, pt_var, ptmin, ptmax, \
+                 args=(data, namefiledf, namefilehisto, pt_var, ptmin, ptmax, \
                        useml, model, probcut, case))
                  for namefiledf, namefilehisto in zip(listinput_df, listoutputhisto)]
     for p in processes:
@@ -123,9 +120,9 @@ def create_inv_mass(listinput_df, listoutputhisto, pt_var, ptmin, ptmax,
 
     data_analysis = get_database_ml_analysis()
 
-    invmassbins = data_analysis[case]["invmassbins"]
-    invmasslow = data_analysis[case]["invmasslow"]
-    invmasshigh = data_analysis[case]["invmasshigh"]
+    invmassbins = data[case]["invmassbins"]
+    invmasslow = data[case]["invmasslow"]
+    invmasshigh = data[case]["invmasshigh"]
 
     h_invmass_tot = TH1F("h_invmass_tot_" + str(ptmin)+ "-" +str(ptmax), \
                          "", invmassbins, invmasslow, invmasshigh)

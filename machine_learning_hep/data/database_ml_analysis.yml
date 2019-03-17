@@ -11,151 +11,19 @@
 ##    You should have received a copy of the GNU General Public License    ##
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
-Dzero:
-  LHC17pq:
-    #skimming parameters
-    inputdir_unmerged: null 
-    outputdir_skimmer: null 
-    namefile_train: AnalysisResults.root
-    data_or_mc: data 
-    nmaxchunks: 200
-    nmaxfiles: 1000
-    nmaxmerge: 100
-    doconversion: 1
-    domerge: 1
-    inputdirdata: null 
-    models: [null] 
-  LHC18r:
-    #skimming parameters
-    inputdir_unmerged: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/unmerged
-    outputdir_skimmer: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleDzero
-    namefile_train: AnalysisResults.root
-    data_or_mc: data 
-    nmaxchunks: 100
-    nmaxfiles: 300
-    nmaxmerge: 100
-    doconversion: 1
-    domerge: 1
-    inputdirdata: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleDzero/merged/
-    models: [null]
-  LHC16i2a:
-    #skimming parameters
-    inputdir_unmerged: /data/HeavyFlavour/PbPb_MC_010/15-03-2019/368_20190312-2049/unmerged
-    outputdir_skimmer: /data/HeavyFlavour/PbPb_MC_010/15-03-2019/368_20190312-2049/pickleDzero
-    namefile_train: AnalysisResults.root
-    data_or_mc: MC
-    nmaxchunks: 1
-    nmaxfiles: 3
-    nmaxmerge: 1
-    doconversion: 1
-    domerge: 1
-    inputdirdata: /data/HeavyFlavour/PbPb_MC_010/15-03-2019/368_20190312-2049/pickleDzero/merged
-    models: [null]
-  #analysis parameters --> for the moment common for all datasets to keep compatibility
-  outputdir: output
-  outputdirhisto: outputhisto/
-  namefile_in_pkl: AnalysisResultsDzeroMergedReco.pkl
-  binmin: [3]
-  binmax: [4]
-  probcut: [0.80]
-  invmassbins: 126
-  invmasslow: 1.72
-  invmasshigh: 2.05
-  modname: "BoostXG"
-  var_inv_mass: inv_mass
-  var_cand_type: cand_type
-Ds:
-  LHC17pq:
-    #skimming parameters
-    inputdir_unmerged: null
-    outputdir_skimmer: null
-    namefile_train: AnalysisResults.root
-    data_or_mc: data 
-    nmaxchunks: 200
-    nmaxfiles: 1000
-    nmaxmerge: 100
-    doconversion: 1
-    domerge: 1
-    inputdirdata: null 
-    models: [null]
-  LHC18r:
-    #skimming parameters
-    inputdir_unmerged: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/unmerged
-    outputdir_skimmer: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleDs
-    namefile_train: AnalysisResults.root
-    data_or_mc: data 
-    nmaxchunks: 200
-    nmaxfiles: 1000
-    nmaxmerge: 100
-    doconversion: 1
-    domerge: 1
-    inputdirdata: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleDs/merged
-    models: [null]
-  #analysis parameters --> for the moment common for all datasets to keep compatibility
-  outputdir: output
-  outputdirhisto: outputhisto
-  namefile_in_root: AnalysisResultsDsMergedReco.root
-  namefile_in_pkl: AnalysisResultsDsMergedReco.pkl
-  binmin: [6]
-  binmax: [8]
-  probcut: [0.8]
-  invmassbins: [120]
-  invmasslow: [2.15]
-  invmasshigh: [2.4]
-  modname: "BoostXG"
-  var_inv_mass: inv_mass
-  var_cand_type: cand_type
 LctopK0s:
-  LHC17pq:
-   #skimming parameters
-    inputdir_unmerged: null
-    outputdir_skimmer: null
-    namefile_train: AnalysisResults.root
-    data_or_mc: data 
-    nmaxchunks: 200
-    nmaxfiles: 11000
-    nmaxmerge: 100
-    doconversion: 1
-    domerge: 1
-    inputdirdata: null 
-    models: [null]
   LHC18r:
-    #skimming parameters
-    inputdir_unmerged: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/unmerged
-    outputdir_skimmer: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0s
-    namefile_train: AnalysisResults.root
-    data_or_mc: data 
     nmaxchunks: 300
     nmaxfiles: -1
     nmaxmerge: 200
     doconversion: 0
     domerge: 1
-    inputdirdata: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0s
-    models: [/data/trained_models/PbPb010/LctopK0s/xgboost_classifiernevt_sig1000000_nevt_bkg1000000_BinaryClassificationLctopK0s_dfselection_pt_cand_6.0_10.0.sav]
-  LHC17j4d2 :
-    #skimming parameters
-    inputdir_unmerged: /data/HeavyFlavour/pPb_MC/14-03-2019/379_20190313-2217/merged
-    outputdir_skimmer: /data/HeavyFlavour/pPb_MC/14-03-2019/379_20190313-2217/pickleLctopK0s
-    namefile_train: AnalysisResults.root
-    data_or_mc: MC
-    nmaxchunks: 200
-    nmaxfiles: 100
-    nmaxmerge: 100
-    doconversion: 1
-    domerge: 1
-    inputdirdata: /data/HeavyFlavour/pPb_MC/14-03-2019/379_20190313-2217/pickleLctopK0s/merged
     models: [/data/trained_models/PbPb010/LctopK0s/xgboost_classifiernevt_sig1000000_nevt_bkg1000000_BinaryClassificationLctopK0s_dfselection_pt_cand_6.0_10.0.sav]
   #analysis parameters --> for the moment common for all datasets to keep compatibility
-  outputdir: output
-  outputdirhisto: outputhisto/
-  namefile_in_pkl: AnalysisResultsRecoLctopK0s.pkl
   binmin: [6]
   binmax: [10]
   probcut: [0.90]
-  invmassbins: 170
-  invmasslow: 2.14
-  invmasshigh: 2.48
   modname: "BoostXG"
-  var_inv_mass: inv_mass
-  var_cand_type: cand_type
+    
+  signif_opt:
 
