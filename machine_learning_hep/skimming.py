@@ -23,8 +23,7 @@ from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-modu
 from ROOT import TFile, TH1F, TCanvas # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.general import getdataframe, filter_df_cand
 from machine_learning_hep.models import apply # pylint: disable=import-error
-from machine_learning_hep.general import get_database_ml_parameters # pylint: disable=import-error
-from machine_learning_hep.general import get_database_ml_analysis # pylint: disable=import-error
+#from machine_learning_hep.general import get_database_ml_parameters # pylint: disable=import-error
 
 def convert_root_to_pkl(namefileinput, namefileoutput, treename, var_all):
     df_pd = getdataframe(namefileinput, treename, var_all)
@@ -117,8 +116,6 @@ def create_inv_mass(data, listinput_df, listoutputhisto, pt_var, ptmin, ptmax,
         p.start()
     for p in processes:
         p.join()
-
-    data_analysis = get_database_ml_analysis()
 
     invmassbins = data[case]["invmassbins"]
     invmasslow = data[case]["invmasslow"]

@@ -22,9 +22,8 @@ import pickle
 import uproot
 import pandas as pd
 #from machine_learning_hep.logger import get_logger
-from machine_learning_hep.general import get_database_ml_parameters, get_database_ml_analysis
-from machine_learning_hep.listfiles import list_files_dir_lev2
-from machine_learning_hep.listfiles import list_files_lev2, create_subdir_list_lev1
+#from machine_learning_hep.general import get_database_ml_parameters, get_database_ml_analysis
+from machine_learning_hep.listfiles import list_files_dir_lev2, list_files_lev2
 
 def writelist_tofile(fileout, mylist):
     with open(fileout, 'w') as f:
@@ -166,4 +165,3 @@ def merging(data_config, data_param, mcordata):
     merge(listfilespathevttomerge, os.path.join(outputdirmerged, namefile_evt_merged))
     if mcordata == "mc":
         merge(listfilespathgentomerge, os.path.join(outputdirmerged, namefile_gen_merged))
-

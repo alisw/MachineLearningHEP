@@ -15,19 +15,19 @@
 """
 main macro for running the study
 """
-import argparse
-import sys
+#import argparse
+#import sys
 import os.path
 import pandas as pd
 
 from sklearn.utils import shuffle
-from machine_learning_hep.general import get_database_ml_parameters
+#from machine_learning_hep.general import get_database_ml_parameters
 from machine_learning_hep.general import createstringselection, filterdataframe_singlevar
 from machine_learning_hep.general import get_database_ml_gridsearch, filter_df_cand
 from machine_learning_hep.root import write_tree
 from machine_learning_hep.functions import create_mlsamples, do_correlation
 from machine_learning_hep.io import checkdir
-from machine_learning_hep.config import Configuration
+#from machine_learning_hep.config import Configuration
 from machine_learning_hep.pca import getdataframe_standardised, get_pcadataframe_pca
 from machine_learning_hep.pca import plotvariance_pca
 from machine_learning_hep.models import getclf_scikit, getclf_xgboost, getclf_keras
@@ -35,11 +35,11 @@ from machine_learning_hep.models import fit, savemodels, test, apply, decisionbo
 from machine_learning_hep.models import importanceplotall
 from machine_learning_hep.mlperformance import cross_validation_mse, cross_validation_mse_continuous
 from machine_learning_hep.mlperformance import plot_cross_validation_mse, plot_learning_curves
-from machine_learning_hep.mlperformance import plotdistributiontarget, plotscattertarget
 # from machine_learning_hep.mlperformance import confusion, plot_overtraining
 from machine_learning_hep.mlperformance import precision_recall
 from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perform_plot_gridsearch
-from machine_learning_hep.logger import configure_logger, get_logger
+#from machine_learning_hep.logger import configure_logger
+from machine_learning_hep.logger import get_logger
 from machine_learning_hep.optimization import study_signif
 DATA_PREFIX = os.path.expanduser("~/.machine_learning_hep")
 
@@ -67,22 +67,21 @@ def doclassification_regression(run_config, data, case, binmin, binmax):  # pyli
     doROC = run_config['doROC']
     doboundary = run_config['doboundary']
     doimportance = run_config['doimportance']
-    dopltregressionxy = run_config['dopltregressionxy']
     dogridsearch = run_config['dogridsearch']
     dosignifopt = run_config['dosignifopt']
     nkfolds = run_config['nkfolds']
     ncores = run_config['ncores']
-    usefileserver = run_config['usefileserver']
+    #usefileserver = run_config['usefileserver']
 
-    filedata =data[case]["ml_study"]["reco_local"]["data"]
-    filemc =data[case]["ml_study"]["reco_local"]["mc"]
-    filedata_evt =data[case]["ml_study"]["evt_local"]["data"]
-    filemc_evt =data[case]["ml_study"]["evt_local"]["mc"]
-    filemc_gen =data[case]["ml_study"]["gen_local"]["mc"]
+    filedata = data[case]["ml_study"]["reco_local"]["data"]
+    filemc = data[case]["ml_study"]["reco_local"]["mc"]
+    filedata_evt = data[case]["ml_study"]["evt_local"]["data"]
+    #filemc_evt = data[case]["ml_study"]["evt_local"]["mc"]
+    filemc_gen = data[case]["ml_study"]["gen_local"]["mc"]
 
     sig_bkg_tag = data[case]["ml_study"]["prepare"]["sig_bkg_tag"]
-    filesig =data[case]["ml_study"]["reco_local"][sig_bkg_tag[0]]
-    filebkg =data[case]["ml_study"]["reco_local"][sig_bkg_tag[1]]
+    filesig = data[case]["ml_study"]["reco_local"][sig_bkg_tag[0]]
+    filebkg = data[case]["ml_study"]["reco_local"][sig_bkg_tag[1]]
     sel_bkg = data[case]["ml_study"]["prepare"]["sel_bkg"]
 
     tree_name = data[case]["files_names"]["treeoutput"]
@@ -258,4 +257,3 @@ def doclassification_regression(run_config, data, case, binmin, binmax):  # pyli
                 logger.error("Optimisation is not implemented for this classification problem.")
         else:
             logger.error("Training, testing and applytodata flags must be set to 1")
-

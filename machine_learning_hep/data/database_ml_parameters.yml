@@ -89,8 +89,6 @@ LctopK0sPbPbCen010:
     var_inv_mass: inv_mass
     var_cand_type: cand_type
   
-
-  
   ml_study:
     reco_local:
       mc: pickleproduction_mc_merged/AnalysisResultsRecoLctopK0sMerged.pkl

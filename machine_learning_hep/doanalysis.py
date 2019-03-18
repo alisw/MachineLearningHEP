@@ -21,13 +21,12 @@ main macro for charm analysis with python
 
 # pylint: disable=import-error
 import time
-from machine_learning_hep.general import get_database_ml_parameters # pylint: disable=import-error
-from machine_learning_hep.general import get_database_ml_analysis
-from machine_learning_hep.listfiles import list_files_lev2, list_files_dir_lev2
+#from machine_learning_hep.general import get_database_ml_parameters # pylint: disable=import-error
+#from machine_learning_hep.general import get_database_ml_analysis
+from machine_learning_hep.listfiles import list_files_dir_lev2
 from machine_learning_hep.skimming import create_inv_mass
-from machine_learning_hep.skimming import plothisto
-from machine_learning_hep.fit import fitmass, plot_graph_yield
-from machine_learning_hep.io import checkdir
+#from machine_learning_hep.skimming import plothisto
+#from machine_learning_hep.fit import fitmass, plot_graph_yield
 
 # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 def doanalysis(data_config, data, case, useml):
@@ -46,8 +45,8 @@ def doanalysis(data_config, data, case, useml):
     probcut = data_config["analysis"]["probcut"]
 
 
-    yield_signal = []
-    yield_signal_err = []
+    #yield_signal = []
+    #yield_signal_err = []
 
     tstart = time.time()
     if doinvmassspectra == 1:
@@ -55,7 +54,8 @@ def doanalysis(data_config, data, case, useml):
         for imin, imax in zip(binmin, binmax):
             namefilehist = ("histo%s_ptmin%s_%s_useml%d_0%d.root" % \
                             (case, imin, imax, useml, 1000*probcut[index]))
-            listdf, listhisto = list_files_dir_lev2(fileinputdir, outputdirhisto, namefilereco, namefilehist)
+            listdf, listhisto = list_files_dir_lev2(fileinputdir, outputdirhisto,
+                                                    namefilereco, namefilehist)
 
             if maxfiles is not -1:
                 listdf = listdf[:maxfiles]
@@ -66,11 +66,12 @@ def doanalysis(data_config, data, case, useml):
                            for x in range(0, len(listhisto), nmaxchunks)]
 
             for chunk, chunkhisto in zip(chunksdf, chunkshisto):
-                histomass = create_inv_mass(data, chunk, chunkhisto, var_pt, imin, imax,
-                                            useml, models[index], probcut[index], case)
+                _ = create_inv_mass(data, chunk, chunkhisto, var_pt, imin, imax,
+                                    useml, models[index], probcut[index], case)
             index = index + 1
 
     timestop = time.time()
+    print("total time of filling histo=", tstart - timestop)
 #    print("TOTAL TIME ALL BINS,", timestop - tstart)
 #    if dofit == 1:
 #        for imin, imax in zip(binmin, binmax):
