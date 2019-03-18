@@ -22,7 +22,7 @@ from machine_learning_hep.doskimming import conversion, merging
 from machine_learning_hep.doclassification_regression import doclassification_regression
 from machine_learning_hep.doanalysis import doanalysis
 
-def do_entire_analysis():
+def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 
     case = "LctopK0sPbPbCen010"
 
@@ -41,9 +41,9 @@ def do_entire_analysis():
     doml = data_config["ml_study"]["activate"]
     doanalyml = data_config["analysis"]["ml"]["activate"]
     doanalystd = data_config["analysis"]["std"]["activate"]
-    binminarrayan = data_config["analysis"]["binmin"]
-    binmaxarrayan = data_config["analysis"]["binmax"]
-    models = data_config["analysis"]["models"]
+    #binminarrayan = data_config["analysis"]["binmin"]
+    #binmaxarrayan = data_config["analysis"]["binmax"]
+    #models = data_config["analysis"]["models"]
 
     if doconversionmc is True:
         pkl_mc = data_param[case]["output_folders"]["pkl_out"]["mc"]
@@ -96,7 +96,7 @@ def do_entire_analysis():
             print("creating ml folder dir")
             os.makedirs(mlout)
             os.makedirs(mlplot)
-            for binmin, binmax in zip(binminarray,binmaxarray):
+            for binmin, binmax in zip(binminarray, binmaxarray):
                 print(binmin, binmax)
                 doclassification_regression(data_config["ml_study"],
                                             data_param, case, binmin, binmax)

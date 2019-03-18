@@ -53,12 +53,12 @@ LctopK0sPbPbCen010:
  
   inputs:
     data:
-      production: LHC18r
-      unmerged_tree_dir: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/unmerged
+      production: LHCpp
+      unmerged_tree_dir: null
 
     mc:
-      production: LHC17j4d2 
-      unmerged_tree_dir: /data/HeavyFlavour/pPb_MC/14-03-2019/379_20190313-2217/merged   
+      production: LHCpp
+      unmerged_tree_dir: /data/HeavyFlavour/pPb_MC/19-03-2019/373_20190312-2107/unmerged
 
   output_folders:
     plotsanalysis: plotsanalysis
@@ -66,19 +66,25 @@ LctopK0sPbPbCen010:
     mlplot: mlplot
     mlout: mlout
     pkl_out: 
-      data: pickleproduction_data
-      mc: pickleproduction_mc
+      data: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0s
+      mc: /data/HeavyFlavour/pPb_MC/14-03-2019/379_20190313-2217/pickleLctopK0s
     pkl_merged: 
-      data: pickleproduction_data_merged
-      mc: pickleproduction_mc_merged
+      data: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0smerged
+      mc: /data/HeavyFlavour/pPb_MC/14-03-2019/379_20190313-2217/pickleLctopK0smerged
 
   variables:
-    var_all: [n_cand, cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass, pt_cand, inv_mass_K0s, pt_K0s, cand_type, y_cand, eta_prong0, eta_prong1, eta_prong2, run_number, ev_id, nsigTPC_Pr_0, nsigTOF_Pi_0, nsigTOF_Pr_0, nsigTPC_Pi_1, nsigTPC_Pr_1, nsigTOF_Pi_1, nsigTOF_Pr_1, nsigTPC_Pi_2, nsigTPC_Pr_2, nsigTOF_Pi_2, nsigTOF_Pr_2]
+    var_all: [n_cand, cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, 
+              cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2, 
+              inv_mass, pt_cand, inv_mass_K0s, pt_K0s, cand_type, y_cand, eta_prong0, eta_prong1, eta_prong2, 
+              run_number, ev_id, nsigTPC_Pr_0, nsigTOF_Pi_0, nsigTOF_Pr_0, nsigTPC_Pi_1, nsigTPC_Pr_1, 
+              nsigTOF_Pi_1, nsigTOF_Pr_1, nsigTPC_Pi_2, nsigTPC_Pr_2, nsigTOF_Pi_2, nsigTOF_Pr_2]
     var_evt: 
       data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
       mc: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
     var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id, n_cand]
-    var_training: [cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s]
+    var_training: [cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, 
+                   cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, 
+                   imp_par_prong2, inv_mass_K0s]
     var_boundaries: [cos_t_star, signd0]
     var_correlation:
       - [cos_t_star]
@@ -89,20 +95,10 @@ LctopK0sPbPbCen010:
     var_inv_mass: inv_mass
     var_cand_type: cand_type
   
-
-  
-  ml_study:
-    reco_local:
-      mc: pickleproduction_mc_merged/AnalysisResultsRecoLctopK0sMerged.pkl
-      data: pickleproduction_data_merged/AnalysisResultsRecoLctopK0sMerged.pkl
-    evt_local: 
-      mc: pickleproduction_mc_merged/AnalysisResultsEvtLctopK0sMerged:.pkl
-      data: pickleproduction_data_merged/AnalysisResultsEvtLctopK0sMerged.pkl
-    gen_local:  
-      mc: pickleproduction_mc_merged/AnalysisResultsGenLctopK0sMerged.pkl
-    
+  ml_study:    
     prepare:
-      sig_bkg_tag: [mc, data]
+      sig_tag: 1 #mc
+      bkg_tag: 0 #data
       sel_signal: mc_signal # used for webapp, selection option of filter_df_cand
       sel_bkg: inv_mass<2.1864 or inv_mass>2.3864
   

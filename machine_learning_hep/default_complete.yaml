@@ -1,24 +1,24 @@
 case: LctopK0sPbPbCen010
 conversion:
   mc: 
-    activate: false
+    activate: true #never change this without thinking!
     nmaxconvers: 4
     maxfiles: 4
   data:
-    activate: false
-    nmaxconvers: 50
-    maxfiles: 50
+    activate: false  #never change this without thinking!
+    nmaxconvers: 100
+    maxfiles: 4
 merging: 
   mc:
-    activate: false
+    activate: true
     maxfilestomerge: 4
   data:
     activate: false
-    maxfilestomerge: 3
+    maxfilestomerge: 20
 
 ml_study:   
   activate: false
-  activate_models:
+  activate_models: 
     BinaryClassification:
       keras:
         keras_simple_one_layer_binary_classifier: false
@@ -28,7 +28,7 @@ ml_study:
         scikit_decision_tree_classifier: false
         scikit_random_forest_classifier: false
       xgboost:
-        xgboost_classifier: true
+        xgboost_classifier: false
     Regression:
       scikit:
         scikit_lasso_regression: false
@@ -65,15 +65,15 @@ ml_study:
 
 analysis:
   std:
-    activate: true
+    activate: false
   ml: 
     activate: false
     model: XGBoost
-  binmin: [6]
-  binmax: [10]
+  binmin: [7]
+  binmax: [20]
   probcut: [0.9]
   models: [null]
-  nmaxchunks: 30
-  maxfiles: 100
+  nmaxchunks: 200
+  maxfiles: -1
   dofit: false
   doinvmassspectra: true

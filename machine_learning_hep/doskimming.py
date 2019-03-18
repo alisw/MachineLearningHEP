@@ -22,14 +22,8 @@ import pickle
 import uproot
 import pandas as pd
 #from machine_learning_hep.logger import get_logger
-from machine_learning_hep.general import get_database_ml_parameters, get_database_ml_analysis
-from machine_learning_hep.listfiles import list_files_dir_lev2
-from machine_learning_hep.listfiles import list_files_lev2, create_subdir_list_lev1
-
-def writelist_tofile(fileout, mylist):
-    with open(fileout, 'w') as f:
-        for item in mylist:
-            f.write("%s\n" % item)
+#from machine_learning_hep.general import get_database_ml_parameters, get_database_ml_analysis
+from machine_learning_hep.listfiles import list_files_dir_lev2, list_files_lev2
 
 def flattenroot_to_pandas(filein, fileout, treenamein, var_all, skimming_sel):
     tree = uproot.open(filein)[treenamein]
@@ -70,6 +64,27 @@ def merge(chunk, namemerged):
     dftot = pd.concat(dfList)
     dftot.to_pickle(namemerged)
 
+
+def list_create_dir(inputdir, outputdir, nameA, nameB, nameC,
+                           nameAout, nameBout, nameCout, maxfiles):
+    listA, listAout = list_files_dir_lev2(inputdir, outputdir, nameA, nameAout)
+    listB, listBout = list_files_dir_lev2(inputdir, outputdir, nameB, nameBout)
+    listC, listCout = list_files_dir_lev2(inputdir, outputdir, nameC, nameCout)
+
+    if maxfiles is not -1:
+        listA = listA[:maxfiles]
+        listB = listB[:maxfiles]
+        listC = listC[:maxfiles]
+        listAout = listAout[:maxfiles]
+        listBout = listBout[:maxfiles]
+        listCout = listCout[:maxfiles]
+    return listA, listB, listC, listAout, listBout, listCout
+
+def createchunks(listin, listout, maxperchunk):
+    chunks = [listin[x:x+maxperchunk]  for x in range(0, len(listin), maxperchunk)]
+    chunksout = [listout[x:x+maxperchunk] for x in range(0, len(listout), maxperchunk)]
+    return chunks, chunksout
+
 # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 def conversion(data_config, data_param, mcordata):
 
@@ -89,50 +104,42 @@ def conversion(data_config, data_param, mcordata):
     var_gen = data_param[case]["variables"]["var_gen"]
     var_evt = data_param[case]["variables"]["var_evt"][mcordata]
 
-    skimming_sel = data_param[case]["selections"]["skim"]["skimming_sel"]
-    skimming_sel_gen = data_param[case]["selections"]["skim"]["skimming_sel_gen"]
-    skimming_sel_evt = data_param[case]["selections"]["skim"]["skimming_sel_evt"]
+    skimming_sel = data_param[case]["skimming_sel"]
+    skimming_sel_gen = data_param[case]["skimming_sel_gen"]
+    skimming_sel_evt = data_param[case]["skimming_sel_evt"]
 
     outputdir = data_param[case]["output_folders"]["pkl_out"][mcordata]
     maxfiles = data_config["conversion"][mcordata]["maxfiles"]
     nmaxconvers = data_config["conversion"][mcordata]["nmaxconvers"]
 
-    listfilespath, listfilespathout = list_files_dir_lev2(inputdir, outputdir, \
-                                                     namefile_unmerged_tree, namefile_reco)
-    listfilespathgen, listfilespathoutgen = list_files_dir_lev2(inputdir, outputdir, \
-                                                     namefile_unmerged_tree, namefile_gen)
-    listfilespathevt, listfilespathoutevt = list_files_dir_lev2(inputdir, outputdir, \
-                                                     namefile_unmerged_tree, namefile_evt)
-    print(listfilespathout)
+    listfilespath, listfilespathevt, listfilespathgen, \
+    listfilespathout, listfilespathoutevt, listfilespathoutgen = \
+        list_create_dir(inputdir, outputdir, \
+                        namefile_unmerged_tree, namefile_unmerged_tree, namefile_unmerged_tree, \
+                        namefile_reco, namefile_evt, namefile_gen, maxfiles)
     print(inputdir)
-    print(namefile_unmerged_tree)
-
-    if maxfiles is not -1:
-        listfilespath = listfilespath[:maxfiles]
-        listfilespathout = listfilespathout[:maxfiles]
-        listfilespathgen = listfilespathgen[:maxfiles]
-        listfilespathoutgen = listfilespathoutgen[:maxfiles]
-        listfilespathevt = listfilespathevt[:maxfiles]
-        listfilespathoutevt = listfilespathoutevt[:maxfiles]
-
     tstart = time.time()
     print("I am extracting flat trees")
-    chunks = [listfilespath[x:x+nmaxconvers] for x in range(0, len(listfilespath), nmaxconvers)]
-    chunksout = [listfilespathout[x:x+nmaxconvers] \
-                 for x in range(0, len(listfilespathout), nmaxconvers)]
-    i = 0
-    for chunk, chunkout in zip(chunks, chunksout):
-        print("Processing chunk number=", i, "with n=", len(chunk))
-        flattenallpickle(chunk, chunkout, treeoriginreco, var_all, skimming_sel)
+
+    chunks, chunksout = createchunks(listfilespath, listfilespathout, nmaxconvers)
+    chunksgen, chunksoutgen = createchunks(listfilespathgen, listfilespathoutgen, nmaxconvers)
+    chunksevt, chunksoutevt = createchunks(listfilespathevt, listfilespathoutevt, nmaxconvers)
+
+    print("reco")
+    print(chunks, chunksout)
+    print(skimming_sel)
+    print("gen")
+    print(chunksgen, chunksoutgen)
+    print(skimming_sel_gen)
+    print("evt")
+    print(chunksevt, chunksoutevt)
+    print(skimming_sel_evt)
+    for index in range(len(chunks)):
+        print("Processing chunk number=", index)
+        flattenallpickle(chunks[index], chunksout[index], treeoriginreco, var_all, skimming_sel)
+        flattenallpickle(chunksevt[index], chunksoutevt[index], treeoriginevt, var_evt, skimming_sel_evt)
         if mcordata == "mc":
-            chunkoutgen = [i.replace(namefile_reco, namefile_gen) \
-                           for i in chunkout]
-            flattenallpickle(chunk, chunkoutgen, treeorigingen,
-                             var_gen, skimming_sel_gen)
-        chunkoutevt = [i.replace(namefile_reco, namefile_evt) for i in chunkout]
-        convertallpickle(chunk, chunkoutevt, treeoriginevt, var_evt,
-                         skimming_sel_evt)
-        i = i+1
+            flattenallpickle(chunksgen[index], chunksoutgen[index], treeorigingen, var_gen, skimming_sel_gen)
     print("Total time elapsed", time.time()-tstart)
 
 def merging(data_config, data_param, mcordata):
@@ -158,12 +165,8 @@ def merging(data_config, data_param, mcordata):
         listfilespathtomerge = listfilespathtomerge[:maxfilestomerge]
         listfilespathgentomerge = listfilespathgentomerge[:maxfilestomerge]
         listfilespathevttomerge = listfilespathevttomerge[:maxfilestomerge]
-    print(listfilespathtomerge)
-    print(listfilespathevttomerge)
-    print(listfilespathgentomerge)
 
     merge(listfilespathtomerge, os.path.join(outputdirmerged, namefile_reco_merged))
     merge(listfilespathevttomerge, os.path.join(outputdirmerged, namefile_evt_merged))
     if mcordata == "mc":
         merge(listfilespathgentomerge, os.path.join(outputdirmerged, namefile_gen_merged))
-
