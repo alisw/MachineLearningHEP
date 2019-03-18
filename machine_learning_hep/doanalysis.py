@@ -66,6 +66,7 @@ def doanalysis(data_config, data, case, useml):
                            for x in range(0, len(listhisto), nmaxchunks)]
 
             for chunk, chunkhisto in zip(chunksdf, chunkshisto):
+                print("new chunck")
                 _ = create_inv_mass(data, chunk, chunkhisto, var_pt, imin, imax,
                                     useml, models[index], probcut[index], case)
             index = index + 1

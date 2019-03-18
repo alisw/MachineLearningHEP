@@ -1,11 +1,11 @@
 case: LctopK0sPbPbCen010
 conversion:
   mc: 
-    activate: false
+    activate: false #never change this without thinking!
     nmaxconvers: 4
     maxfiles: 4
   data:
-    activate: false
+    activate: false #never change this without thinking!
     nmaxconvers: 50
     maxfiles: 50
 merging: 
@@ -28,7 +28,7 @@ ml_study:
         scikit_decision_tree_classifier: false
         scikit_random_forest_classifier: false
       xgboost:
-        xgboost_classifier: true
+        xgboost_classifier: false
     Regression:
       scikit:
         scikit_lasso_regression: false
@@ -73,7 +73,7 @@ analysis:
   binmax: [10]
   probcut: [0.9]
   models: [null]
-  nmaxchunks: 30
-  maxfiles: 100
+  nmaxchunks: 500
+  maxfiles: -1
   dofit: false
   doinvmassspectra: true
