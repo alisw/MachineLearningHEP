@@ -24,8 +24,8 @@ LctopK0sPbPbCen010:
   skimming_sel: "n_cand> 0 & pt_cand>2"
   skimming_sel_gen: "n_cand> 0 & pt_cand>2"
   skimming_sel_evt: "is_ev_rej >= 0"
-  skimming2_sel: "pt_cand>6 & pt_cand<10"
-  skimming2_sel_gen: "pt_cand>6 & pt_cand<10"
+  skimming2_sel: "pt_cand>6 & pt_cand<10 & abs(nsigTPC_Pr_0)<3 & pt_K0s>1. & pt_prong0>1." 
+  skimming2_sel_gen: "pt_cand>6 & pt_cand<10" 
   skimming2_sel_evt: "is_ev_rej >= 0"
   ptgen: pt_cand
   
@@ -72,7 +72,7 @@ LctopK0sPbPbCen010:
     mlplot: mlplot
     mlout: mlout
     pkl_out: 
-      data: null 
+      data: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0s 
       mc: null 
     pkl_merged: 
       data: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0smerged
