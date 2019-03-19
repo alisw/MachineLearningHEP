@@ -10,11 +10,21 @@ conversion:
     maxfiles: 4
 merging: 
   mc:
-    activate: true
+    activate: false
     maxfilestomerge: 4
   data:
     activate: false
     maxfilestomerge: 20
+
+skimming: 
+  mc:
+    activate: true
+    nmaxconvers: 4
+    maxfiles: -1
+  data:
+    activate: false
+    nmaxconvers: 4
+    maxfile: -1
 
 ml_study:   
   activate: false

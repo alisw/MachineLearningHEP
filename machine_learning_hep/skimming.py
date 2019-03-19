@@ -21,7 +21,7 @@ import numba
 import numpy as np
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TH1F, TCanvas # pylint: disable=import-error, no-name-in-module
-from machine_learning_hep.general import getdataframe, filter_df_cand
+from machine_learning_hep.general import filter_df_cand
 from machine_learning_hep.models import apply # pylint: disable=import-error
 #from machine_learning_hep.general import get_database_ml_parameters # pylint: disable=import-error
 

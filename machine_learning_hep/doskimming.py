@@ -149,6 +149,48 @@ def conversion(data_config, data_param, mcordata):
                              var_gen, skimming_sel_gen)
     print("Total time elapsed", time.time()-tstart)
 
+# pylint: disable=too-many-locals, too-many-statements, too-many-branches
+def skim(data_config, data_param, mcordata):
+
+    case = data_config["case"]
+
+    namefile_reco = data_param[case]["files_names"]["namefile_reco"]
+    namefile_evt = data_param[case]["files_names"]["namefile_evt"]
+    namefile_gen = data_param[case]["files_names"]["namefile_gen"]
+    namefile_reco_skim = data_param[case]["files_names"]["namefile_reco_skim"]
+    namefile_evt_skim = data_param[case]["files_names"]["namefile_evt_skim"]
+    namefile_gen_skim = data_param[case]["files_names"]["namefile_gen_skim"]
+
+
+    skimming_sel = data_param[case]["skimming2_sel"]
+    skimming_sel_gen = data_param[case]["skimming2_sel_gen"]
+    skimming_sel_evt = data_param[case]["skimming2_sel_evt"]
+
+    inputdir = data_param[case]["output_folders"]["pkl_out"][mcordata]
+    outputdir = data_param[case]["output_folders"]["pkl_skimmed"][mcordata]
+    maxfiles = data_config["skimming"][mcordata]["maxfiles"]
+    nmaxconvers = data_config["skimming"][mcordata]["nmaxconvers"]
+
+    listfilespath, listfilespathevt, listfilespathgen, \
+    listfilespathout, listfilespathoutevt, listfilespathoutgen = \
+        list_create_dir(inputdir, outputdir, namefile_reco_skim, \
+                        namefile_evt_skim, namefile_gen_skim, \
+                        namefile_reco, namefile_evt, namefile_gen, maxfiles)
+    print(inputdir)
+    tstart = time.time()
+    print("I am skimming")
+
+    chunks, chunksout = createchunks(listfilespath, listfilespathout, nmaxconvers)
+    chunksgen, chunksoutgen = createchunks(listfilespathgen, listfilespathoutgen, nmaxconvers)
+    chunksevt, chunksoutevt = createchunks(listfilespathevt, listfilespathoutevt, nmaxconvers)
+
+    for index, _ in enumerate(chunks):
+        print("Processing chunk number=", index)
+        skimall(chunks[index], chunksout[index], skimming_sel)
+        skimall(chunksevt[index], chunksoutevt[index], skimming_sel_evt)
+        if mcordata == "mc":
+            skimall(chunksgen[index], chunksoutgen[index], skimming_sel_gen)
+    print("Total time elapsed", time.time()-tstart)
 def merging(data_config, data_param, mcordata):
 
     case = data_config["case"]

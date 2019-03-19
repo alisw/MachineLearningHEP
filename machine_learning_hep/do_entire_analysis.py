@@ -18,7 +18,7 @@ main script for doing data processing, machine learning and analysis
 
 import os
 import yaml
-from machine_learning_hep.doskimming import conversion, merging
+from machine_learning_hep.doskimming import conversion, merging, skim
 from machine_learning_hep.doclassification_regression import doclassification_regression
 from machine_learning_hep.doanalysis import doanalysis
 
@@ -38,6 +38,8 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     doconversiondata = data_config["conversion"]["data"]["activate"]
     domergingmc = data_config["merging"]["mc"]["activate"]
     domergingdata = data_config["merging"]["data"]["activate"]
+    doskimmingmc = data_config["skimming"]["mc"]["activate"]
+    doskimmingdata = data_config["skimming"]["data"]["activate"]
     doml = data_config["ml_study"]["activate"]
     doanalyml = data_config["analysis"]["ml"]["activate"]
     doanalystd = data_config["analysis"]["std"]["activate"]
@@ -84,6 +86,27 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
             print("creating dir merged mc pkl")
             os.makedirs(pkl_merged_mc)
             merging(data_config, data_param, "mc")
+
+    if doskimmingdata is True:
+        pkl_skimmed_data = data_param[case]["output_folders"]["pkl_skimmed"]["data"]
+        if os.path.exists(pkl_skimmed_data):
+            print("output data skimmed pkl exists")
+            print("rm -rf ", pkl_skimmed_data)
+        else:
+            print("creating dir data skimmed pkl")
+            os.makedirs(pkl_skimmed_data)
+            skim(data_config, data_param, "data")
+
+    if doskimmingmc is True:
+        pkl_skimmed_mc = data_param[case]["output_folders"]["pkl_skimmed"]["mc"]
+        if os.path.exists(pkl_skimmed_mc):
+            print("output mc skimmed pkl exists")
+            print("rm -rf ", pkl_skimmed_mc)
+        else:
+            print("creating dir mc skimmed pkl")
+            os.makedirs(pkl_skimmed_mc)
+            skim(data_config, data_param, "mc")
+
 
     if doml is True:
         mlout = data_param[case]["output_folders"]["mlout"]
