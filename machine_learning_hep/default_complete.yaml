@@ -22,12 +22,12 @@ skimming:
     nmaxconvers: 300
     maxfiles: -1
   data:
-    activate: true
+    activate: false
     nmaxconvers: 300
     maxfiles: -1
 
 ml_study:   
-  activate: false
+  activate: true
   activate_models: 
     BinaryClassification:
       keras:
@@ -75,7 +75,7 @@ ml_study:
 
 analysis:
   std:
-    activate: true
+    activate: false
   ml: 
     activate: false
     model: XGBoost
