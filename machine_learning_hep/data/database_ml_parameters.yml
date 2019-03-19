@@ -64,7 +64,7 @@ LctopK0sPbPbCen010:
 
     mc:
       production: LHCpp
-      unmerged_tree_dir: /data/HeavyFlavour/pPb_MC/19-03-2019/373_20190312-2107/unmerged
+      unmerged_tree_dir: null
 
   output_folders:
     plotsanalysis: plotsanalysis
@@ -72,14 +72,14 @@ LctopK0sPbPbCen010:
     mlplot: mlplot
     mlout: mlout
     pkl_out: 
-      data: pkl_out_data 
-      mc: pkl_out_mc
+      data: null 
+      mc: null 
     pkl_merged: 
-      data: pkl_merged_data
-      mc: pkl_merged_mc
+      data: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0smerged
+      mc: /data/HeavyFlavour/pPb_MC/14-03-2019/379_20190313-2217/pickleLctopK0smerged
     pkl_skimmed: 
-      data: pkl_skimmed_data
-      mc: pkl_skimmed_mc
+      data: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0sPt6to10
+      mc: null
 
   variables:
     var_all: [n_cand, cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, 

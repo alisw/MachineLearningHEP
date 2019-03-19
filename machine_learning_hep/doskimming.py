@@ -38,7 +38,7 @@ def convert_to_pandas(filein, fileout, treenamein, var_all, skimming_sel):
     df.to_pickle(fileout)
 
 def skimmer(filein, fileout, skimming_sel):
-    df = pickle.load(open(filein), "rb")
+    df = pickle.load(open(filein, "rb"))
     df = df.query(skimming_sel)
     df.to_pickle(fileout)
 
@@ -173,9 +173,9 @@ def skim(data_config, data_param, mcordata):
 
     listfilespath, listfilespathevt, listfilespathgen, \
     listfilespathout, listfilespathoutevt, listfilespathoutgen = \
-        list_create_dir(inputdir, outputdir, namefile_reco_skim, \
-                        namefile_evt_skim, namefile_gen_skim, \
-                        namefile_reco, namefile_evt, namefile_gen, maxfiles)
+        list_create_dir(inputdir, outputdir, namefile_reco, \
+                        namefile_evt, namefile_gen, \
+                        namefile_reco_skim, namefile_evt_skim, namefile_gen_skim, maxfiles)
     print(inputdir)
     tstart = time.time()
     print("I am skimming")

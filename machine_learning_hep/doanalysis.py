@@ -32,8 +32,8 @@ from machine_learning_hep.skimming import create_inv_mass
 def doanalysis(data_config, data, case, useml):
 
     var_pt = data[case]["variables"]["var_binning"]
-    fileinputdir = data[case]["output_folders"]["pkl_out"]["data"]
-    namefilereco = data[case]["files_names"]["namefile_reco"]
+    fileinputdir = data[case]["output_folders"]["pkl_skimmed"]["data"]
+    namefilereco = data[case]["files_names"]["namefile_reco_skim"]
     outputdirhisto = data[case]["output_folders"]["histoanalysis"]
 
     maxfiles = data_config["analysis"]["maxfiles"]

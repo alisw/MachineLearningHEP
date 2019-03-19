@@ -1,7 +1,7 @@
 case: LctopK0sPbPbCen010
 conversion:
   mc: 
-    activate: true #never change this without thinking!
+    activate: false #never change this without thinking!
     nmaxconvers: 4
     maxfiles: 4
   data:
@@ -18,13 +18,13 @@ merging:
 
 skimming: 
   mc:
-    activate: true
-    nmaxconvers: 4
+    activate: false
+    nmaxconvers: 300
     maxfiles: -1
   data:
-    activate: false
-    nmaxconvers: 4
-    maxfile: -1
+    activate: true
+    nmaxconvers: 300
+    maxfiles: -1
 
 ml_study:   
   activate: false
@@ -75,12 +75,12 @@ ml_study:
 
 analysis:
   std:
-    activate: false
+    activate: true
   ml: 
     activate: false
     model: XGBoost
-  binmin: [7]
-  binmax: [20]
+  binmin: [6]
+  binmax: [10]
   probcut: [0.9]
   models: [null]
   nmaxchunks: 200
