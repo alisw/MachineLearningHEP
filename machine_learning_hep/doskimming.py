@@ -37,6 +37,11 @@ def convert_to_pandas(filein, fileout, treenamein, var_all, skimming_sel):
     df = df.query(skimming_sel)
     df.to_pickle(fileout)
 
+def skimmer(filein, fileout, skimming_sel):
+    df = pickle.load(open(filein), "rb")
+    df = df.query(skimming_sel)
+    df.to_pickle(fileout)
+
 def flattenallpickle(chunk, chunkout, treenamein, var_all, skimming_sel):
     processes = [mp.Process(target=flattenroot_to_pandas, args=(filein, chunkout[index], \
                                                          treenamein, var_all, skimming_sel))
@@ -55,6 +60,15 @@ def convertallpickle(chunk, chunkout, treenamein, var_all, skimming_sel):
     for p in processes:
         p.join()
 
+def skimall(chunk, chunkout, skimming_sel):
+    processes = [mp.Process(target=skimmer, args=(filein, chunkout[index], \
+                                                  skimming_sel))
+                 for index, filein in enumerate(chunk)]
+    for p in processes:
+        p.start()
+    for p in processes:
+        p.join()
+
 def merge(chunk, namemerged):
     dfList = []
     for myfilename in chunk:
@@ -65,20 +79,20 @@ def merge(chunk, namemerged):
     dftot.to_pickle(namemerged)
 
 
-def list_create_dir(inputdir, outputdir, nameA, nameB, nameC,
-                           nameAout, nameBout, nameCout, maxfiles):
-    listA, listAout = list_files_dir_lev2(inputdir, outputdir, nameA, nameAout)
-    listB, listBout = list_files_dir_lev2(inputdir, outputdir, nameB, nameBout)
-    listC, listCout = list_files_dir_lev2(inputdir, outputdir, nameC, nameCout)
+def list_create_dir(inputdir, outputdir, namea, nameb, namec,
+                    nameaout, namebout, namecout, maxfiles):
+    lista, listaout = list_files_dir_lev2(inputdir, outputdir, namea, nameaout)
+    listb, listbout = list_files_dir_lev2(inputdir, outputdir, nameb, namebout)
+    listc, listcout = list_files_dir_lev2(inputdir, outputdir, namec, namecout)
 
     if maxfiles is not -1:
-        listA = listA[:maxfiles]
-        listB = listB[:maxfiles]
-        listC = listC[:maxfiles]
-        listAout = listAout[:maxfiles]
-        listBout = listBout[:maxfiles]
-        listCout = listCout[:maxfiles]
-    return listA, listB, listC, listAout, listBout, listCout
+        lista = lista[:maxfiles]
+        listb = listb[:maxfiles]
+        listc = listc[:maxfiles]
+        listaout = listaout[:maxfiles]
+        listbout = listbout[:maxfiles]
+        listcout = listcout[:maxfiles]
+    return lista, listb, listc, listaout, listbout, listcout
 
 def createchunks(listin, listout, maxperchunk):
     chunks = [listin[x:x+maxperchunk]  for x in range(0, len(listin), maxperchunk)]
@@ -125,21 +139,14 @@ def conversion(data_config, data_param, mcordata):
     chunksgen, chunksoutgen = createchunks(listfilespathgen, listfilespathoutgen, nmaxconvers)
     chunksevt, chunksoutevt = createchunks(listfilespathevt, listfilespathoutevt, nmaxconvers)
 
-    print("reco")
-    print(chunks, chunksout)
-    print(skimming_sel)
-    print("gen")
-    print(chunksgen, chunksoutgen)
-    print(skimming_sel_gen)
-    print("evt")
-    print(chunksevt, chunksoutevt)
-    print(skimming_sel_evt)
-    for index in range(len(chunks)):
+    for index, _ in enumerate(chunks):
         print("Processing chunk number=", index)
         flattenallpickle(chunks[index], chunksout[index], treeoriginreco, var_all, skimming_sel)
-        flattenallpickle(chunksevt[index], chunksoutevt[index], treeoriginevt, var_evt, skimming_sel_evt)
+        flattenallpickle(chunksevt[index], chunksoutevt[index], treeoriginevt, \
+                         var_evt, skimming_sel_evt)
         if mcordata == "mc":
-            flattenallpickle(chunksgen[index], chunksoutgen[index], treeorigingen, var_gen, skimming_sel_gen)
+            flattenallpickle(chunksgen[index], chunksoutgen[index], treeorigingen, \
+                             var_gen, skimming_sel_gen)
     print("Total time elapsed", time.time()-tstart)
 
 def merging(data_config, data_param, mcordata):
