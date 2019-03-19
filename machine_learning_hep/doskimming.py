@@ -197,14 +197,14 @@ def merging(data_config, data_param, mcordata):
     maxfilestomerge = data_config["merging"][mcordata]["maxfilestomerge"]
 
     print("I am merging flat trees")
-    namefile_reco = data_param[case]["files_names"]["namefile_reco"]
-    namefile_gen = data_param[case]["files_names"]["namefile_gen"]
-    namefile_evt = data_param[case]["files_names"]["namefile_evt"]
+    namefile_reco = data_param[case]["files_names"]["namefile_reco_skim"]
+    namefile_gen = data_param[case]["files_names"]["namefile_gen_skim"]
+    namefile_evt = data_param[case]["files_names"]["namefile_evt_skim"]
     namefile_reco_merged = data_param[case]["files_names"]["namefile_reco_merged"]
     namefile_evt_merged = data_param[case]["files_names"]["namefile_evt_merged"]
     namefile_gen_merged = data_param[case]["files_names"]["namefile_gen_merged"]
 
-    outputdir = data_param[case]["output_folders"]["pkl_out"][mcordata]
+    outputdir = data_param[case]["output_folders"]["pkl_skimmed"][mcordata]
     outputdirmerged = data_param[case]["output_folders"]["pkl_merged"][mcordata]
 
     listfilespathtomerge, _ = list_files_lev2(outputdir, "", namefile_reco, "")

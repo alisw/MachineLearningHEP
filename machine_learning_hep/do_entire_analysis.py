@@ -67,25 +67,6 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
             os.makedirs(pkl_data)
             conversion(data_config, data_param, "data")
 
-    if domergingdata is True:
-        pkl_merged_data = data_param[case]["output_folders"]["pkl_merged"]["data"]
-        if os.path.exists(pkl_merged_data):
-            print("output data merged pkl exists")
-            print("rm -rf ", pkl_merged_data)
-        else:
-            print("creating dir data merged pkl")
-            os.makedirs(pkl_merged_data)
-            merging(data_config, data_param, "data")
-
-    if domergingmc is True:
-        pkl_merged_mc = data_param[case]["output_folders"]["pkl_merged"]["mc"]
-        if os.path.exists(pkl_merged_mc):
-            print("output mc merged pkl exists")
-            print("rm -rf ", pkl_merged_mc)
-        else:
-            print("creating dir merged mc pkl")
-            os.makedirs(pkl_merged_mc)
-            merging(data_config, data_param, "mc")
 
     if doskimmingdata is True:
         pkl_skimmed_data = data_param[case]["output_folders"]["pkl_skimmed"]["data"]
@@ -107,6 +88,25 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
             os.makedirs(pkl_skimmed_mc)
             skim(data_config, data_param, "mc")
 
+    if domergingdata is True:
+        pkl_merged_data = data_param[case]["output_folders"]["pkl_merged"]["data"]
+        if os.path.exists(pkl_merged_data):
+            print("output data merged pkl exists")
+            print("rm -rf ", pkl_merged_data)
+        else:
+            print("creating dir data merged pkl")
+            os.makedirs(pkl_merged_data)
+            merging(data_config, data_param, "data")
+
+    if domergingmc is True:
+        pkl_merged_mc = data_param[case]["output_folders"]["pkl_merged"]["mc"]
+        if os.path.exists(pkl_merged_mc):
+            print("output mc merged pkl exists")
+            print("rm -rf ", pkl_merged_mc)
+        else:
+            print("creating dir merged mc pkl")
+            os.makedirs(pkl_merged_mc)
+            merging(data_config, data_param, "mc")
 
     if doml is True:
         mlout = data_param[case]["output_folders"]["mlout"]

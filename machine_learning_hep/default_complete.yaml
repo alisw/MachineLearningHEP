@@ -10,24 +10,24 @@ conversion:
     maxfiles: 4
 merging: 
   mc:
-    activate: false
+    activate: true
     maxfilestomerge: 4
   data:
-    activate: false
-    maxfilestomerge: 20
+    activate: true
+    maxfilestomerge: 1000
 
 skimming: 
   mc:
-    activate: false
+    activate: true
     nmaxconvers: 300
     maxfiles: -1
   data:
-    activate: false
-    nmaxconvers: 300
+    activate: true
+    nmaxconvers: 400
     maxfiles: -1
 
 ml_study:   
-  activate: true
+  activate: false
   activate_models: 
     BinaryClassification:
       keras:
