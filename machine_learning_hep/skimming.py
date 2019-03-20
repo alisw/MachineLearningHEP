@@ -21,37 +21,10 @@ import numba
 import numpy as np
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TH1F, TCanvas # pylint: disable=import-error, no-name-in-module
-from machine_learning_hep.general import getdataframe, filter_df_cand
+from machine_learning_hep.general import filter_df_cand
 from machine_learning_hep.models import apply # pylint: disable=import-error
-from machine_learning_hep.general import get_database_ml_parameters # pylint: disable=import-error
-from machine_learning_hep.general import get_database_ml_analysis # pylint: disable=import-error
+#from machine_learning_hep.general import get_database_ml_parameters # pylint: disable=import-error
 
-def convert_root_to_pkl(namefileinput, namefileoutput, treename, var_all):
-    df_pd = getdataframe(namefileinput, treename, var_all)
-    df_pd.to_pickle(namefileoutput)
-
-def convert_root_to_parquet(namefileinput, namefileoutput, treename, var_all):
-    df_pd = getdataframe(namefileinput, treename, var_all)
-    df_pd.to_parquet(namefileoutput, compression="ZSTD")
-
-def skimming_to_pandas(listinput, listoutput, treename, var_all):
-    processes = [mp.Process(target=convert_root_to_pkl, args=(namefileinput,
-                                                              namefileoutput, treename, var_all))
-                 for namefileinput, namefileoutput in zip(listinput, listoutput)]
-    for p in processes:
-        p.start()
-    for p in processes:
-        p.join()
-
-
-#@numba.njit
-#def selectcandidate(array_inv_mass, array_pt, ptmin, ptmax):
-#    array_inv_mass_sel = []
-#    for i, inv_mass  in enumerate(array_inv_mass):
-#        pt = array_pt[i]
-#        if ptmin < pt < ptmax:
-#            array_inv_mass_sel.append(inv_mass)
-#    return array_inv_mass_sel
 
 @numba.njit
 def selectcandidateml(array_inv_mass, array_prob, probcut):
@@ -63,19 +36,16 @@ def selectcandidateml(array_inv_mass, array_prob, probcut):
     return array_inv_mass_sel
 
  # pylint: disable=too-many-arguments,too-many-statements
-def fill_mass_array(namefiledf, namefilehisto, var_pt, ptmin, ptmax,
+def fill_mass_array(data, namefiledf, namefilehisto, var_pt, ptmin, ptmax,
                     useml, model, probcut, case):
 
-    data = get_database_ml_parameters()
-    data_analysis = get_database_ml_analysis()
     presel_reco = data[case]["presel_reco"]
-    var_training = data[case]["var_training"]
-
-    invmassbins = data_analysis[case]["invmassbins"]
-    invmasslow = data_analysis[case]["invmasslow"]
-    invmasshigh = data_analysis[case]["invmasshigh"]
-    var_mass = data_analysis[case]["var_inv_mass"]
-    modname = data_analysis[case]["modname"]
+    var_training = data[case]["variables"]["var_training"]
+    invmassbins = data[case]["invmassbins"]
+    invmasslow = data[case]["invmasslow"]
+    invmasshigh = data[case]["invmasshigh"]
+    var_mass = data[case]["variables"]["var_inv_mass"]
+    modname = "xgboost"
 
     fileinput = open(namefiledf, "rb")
     df = pickle.load(fileinput)
@@ -110,10 +80,10 @@ def fill_mass_array(namefiledf, namefilehisto, var_pt, ptmin, ptmax,
     f.Close()
 
 # pylint: disable=too-many-arguments
-def create_inv_mass(listinput_df, listoutputhisto, pt_var, ptmin, ptmax,
+def create_inv_mass(data, listinput_df, listoutputhisto, pt_var, ptmin, ptmax,
                     useml, model, probcut, case):
     processes = [mp.Process(target=fill_mass_array, \
-                 args=(namefiledf, namefilehisto, pt_var, ptmin, ptmax, \
+                 args=(data, namefiledf, namefilehisto, pt_var, ptmin, ptmax, \
                        useml, model, probcut, case))
                  for namefiledf, namefilehisto in zip(listinput_df, listoutputhisto)]
     for p in processes:
@@ -121,11 +91,9 @@ def create_inv_mass(listinput_df, listoutputhisto, pt_var, ptmin, ptmax,
     for p in processes:
         p.join()
 
-    data_analysis = get_database_ml_analysis()
-
-    invmassbins = data_analysis[case]["invmassbins"]
-    invmasslow = data_analysis[case]["invmasslow"]
-    invmasshigh = data_analysis[case]["invmasshigh"]
+    invmassbins = data[case]["invmassbins"]
+    invmasslow = data[case]["invmasslow"]
+    invmasshigh = data[case]["invmasshigh"]
 
     h_invmass_tot = TH1F("h_invmass_tot_" + str(ptmin)+ "-" +str(ptmax), \
                          "", invmassbins, invmasslow, invmasshigh)

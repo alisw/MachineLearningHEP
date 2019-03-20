@@ -21,49 +21,32 @@ main macro for charm analysis with python
 
 # pylint: disable=import-error
 import time
-from machine_learning_hep.general import get_database_ml_parameters # pylint: disable=import-error
-from machine_learning_hep.general import get_database_ml_analysis
-from machine_learning_hep.listfiles import list_files_lev2, create_subdir_list_lev1
+#from machine_learning_hep.general import get_database_ml_parameters # pylint: disable=import-error
+#from machine_learning_hep.general import get_database_ml_analysis
+from machine_learning_hep.listfiles import list_files_dir_lev2
 from machine_learning_hep.skimming import create_inv_mass
-from machine_learning_hep.skimming import plothisto
-from machine_learning_hep.fit import fitmass, plot_graph_yield
-from machine_learning_hep.io import checkdir
+#from machine_learning_hep.skimming import plothisto
+#from machine_learning_hep.fit import fitmass, plot_graph_yield
 
 # pylint: disable=too-many-locals, too-many-statements, too-many-branches
-def doanalysis():
+def doanalysis(data_config, data, case, useml):
 
-    case = "LctopK0s"
-    dataset = "LHC18r"
-    #dataset = "LHC17j4d2"
-    data = get_database_ml_parameters()
-    data_analysis = get_database_ml_analysis()
+    var_pt = data[case]["variables"]["var_binning"]
+    fileinputdir = data[case]["output_folders"]["pkl_skimmed"]["data"]
+    namefilereco = data[case]["files_names"]["namefile_reco_skim"]
+    outputdirhisto = data[case]["output_folders"]["histoanalysis"]
 
-    var_pt = data[case]["var_binning"]
+    maxfiles = data_config["analysis"]["maxfiles"]
+    nmaxchunks = data_config["analysis"]["nmaxchunks"]
+    doinvmassspectra = data_config["analysis"]["doinvmassspectra"]
+    binmin = data_config["analysis"]["binmin"]
+    binmax = data_config["analysis"]["binmax"]
+    models = data_config["analysis"]["models"]
+    probcut = data_config["analysis"]["probcut"]
 
-    fileinputdir = data_analysis[case][dataset]["inputdirdata"]
-    print(fileinputdir)
-    namefilereco = data_analysis[case]["namefile_in_pkl"]
-    fileoutputdir = data_analysis[case]["outputdir"]
-    outputdirhisto = data_analysis[case]["outputdirhisto"]
-    probcut = data_analysis[case]["probcut"]
-    models = data_analysis[case][dataset]["models"]
-    binmin = data_analysis[case]["binmin"]
-    binmax = data_analysis[case]["binmax"]
-    nmaxchunks = data_analysis[case][dataset]["nmaxchunks"]
-    nmaxfiles = data_analysis[case][dataset]["nmaxfiles"]
 
-    print("starting my analysis")
-
-    useml = 0
-    yield_signal = []
-    yield_signal_err = []
-
-    doinvmassspectra = 1
-    dofit = 0
-
-    checkdir(fileoutputdir)
-    checkdir(outputdirhisto)
-    checkdir("plots")
+    #yield_signal = []
+    #yield_signal_err = []
 
     tstart = time.time()
     if doinvmassspectra == 1:
@@ -71,30 +54,29 @@ def doanalysis():
         for imin, imax in zip(binmin, binmax):
             namefilehist = ("histo%s_ptmin%s_%s_useml%d_0%d.root" % \
                             (case, imin, imax, useml, 1000*probcut[index]))
-            namefileplot = ("plots/histotot%s_ptmin%s_%s_useml%d_0%d.pdf" % \
-                            (case, imin, imax, useml, 1000*probcut[index]))
-            listdf, _ = list_files_lev2(fileinputdir, "", namefilereco, "")
-            if nmaxfiles is not -1:
-                listdf = listdf[:nmaxfiles]
-            listhisto = create_subdir_list_lev1(fileoutputdir, len(listdf), namefilehist)
-            listhisto = listhisto[:nmaxfiles]
+            listdf, listhisto = list_files_dir_lev2(fileinputdir, outputdirhisto,
+                                                    namefilereco, namefilehist)
+
+            if maxfiles is not -1:
+                listdf = listdf[:maxfiles]
+                listhisto = listhisto[:maxfiles]
 
             chunksdf = [listdf[x:x+nmaxchunks] for x in range(0, len(listdf), nmaxchunks)]
             chunkshisto = [listhisto[x:x+nmaxchunks] \
                            for x in range(0, len(listhisto), nmaxchunks)]
+
             for chunk, chunkhisto in zip(chunksdf, chunkshisto):
-                histomass = create_inv_mass(chunk, chunkhisto, var_pt, imin, imax,
-                                            useml, models[index], probcut[index], case)
-            plothisto(histomass, namefileplot)
+                print("new chunck")
+                _ = create_inv_mass(data, chunk, chunkhisto, var_pt, imin, imax,
+                                    useml, models[index], probcut[index], case)
             index = index + 1
 
     timestop = time.time()
-    print("TOTAL TIME ALL BINS,", timestop - tstart)
-    if dofit == 1:
-        for imin, imax in zip(binmin, binmax):
-            signal, err_signal = fitmass(histomass)
-            yield_signal.append(signal)
-            yield_signal_err.append(err_signal)
-            plot_graph_yield(yield_signal, yield_signal_err, binmin, binmax)
-
-doanalysis()
+    print("total time of filling histo=", tstart - timestop)
+#    print("TOTAL TIME ALL BINS,", timestop - tstart)
+#    if dofit == 1:
+#        for imin, imax in zip(binmin, binmax):
+#            signal, err_signal = fitmass(histomass)
+#            yield_signal.append(signal)
+#            yield_signal_err.append(err_signal)
+#            plot_graph_yield(yield_signal, yield_signal_err, binmin, binmax))

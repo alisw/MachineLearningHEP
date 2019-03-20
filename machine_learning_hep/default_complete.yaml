@@ -1,0 +1,87 @@
+case: Dspp5TeV
+conversion:
+  mc: 
+    activate: false #never change this without thinking!
+    nmaxconvers: 4
+    maxfiles: 4
+  data:
+    activate: false  #never change this without thinking!
+    nmaxconvers: 200
+    maxfiles: -1
+skimming: 
+  mc:
+    activate: false
+    nmaxconvers: 300
+    maxfiles: -1
+  data:
+    activate: false
+    nmaxconvers: 400
+    maxfiles: 10
+merging: 
+  mc:
+    activate: false
+    maxfilestomerge: 4
+  data:
+    activate: false
+    maxfilestomerge: 10
+ml_study:   
+  activate: true
+  activate_models: 
+    BinaryClassification:
+      keras:
+        keras_simple_one_layer_binary_classifier: false
+        keras_simple_two_layer_binary_classifier: false
+      scikit:
+        scikit_adaboost_classifier: true
+        scikit_decision_tree_classifier: false
+        scikit_random_forest_classifier: false
+      xgboost:
+        xgboost_classifier: false
+    Regression:
+      scikit:
+        scikit_lasso_regression: false
+        scikit_linear_regression: false
+        scikit_ridge_regression: false
+  
+  applytodatamc: false
+  binmin: [6,8] 
+  binmax: [8,10]
+  doROC: false
+  doboundary: false
+  docorrelation: false
+  docrossvalidation: false
+  dogridsearch: false
+  doimportance: true
+  dolearningcurve: false
+  dopca: false
+  dopltregressionxy: false
+  dosignifopt: false
+  dostandard: false
+  dotesting: false
+  dotraining: false
+  loadsampleoption: true
+  mlsubtype: HFmeson
+  mltype: BinaryClassification
+  ncores: -1
+  nevt_bkg: 1000
+  nevt_sig: 1000
+  nkfolds: 5
+  rnd_shuffle: 12
+  rnd_splt: 12
+  test_frac: 0.2
+  usefileserver: false
+
+analysis:
+  std:
+    activate: true
+  ml: 
+    activate: false
+    model: XGBoost
+  binmin: [2]
+  binmax: [1000]
+  probcut: [0.9]
+  models: [null]
+  nmaxchunks: 200
+  maxfiles: -1
+  dofit: false
+  doinvmassspectra: true
