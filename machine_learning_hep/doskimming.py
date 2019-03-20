@@ -37,8 +37,11 @@ def convert_to_pandas(filein, fileout, treenamein, var_all, skimming_sel):
     df = df.query(skimming_sel)
     df.to_pickle(fileout)
 
-def skimmer(filein, fileout, skimming_sel):
+def skimmer(filein, filevt, fileout, skimming_sel, var_evt_match):
     df = pickle.load(open(filein, "rb"))
+    if "Evt" not in filein:
+        dfevt = pickle.load(open(filevt, "rb"))
+        df = pd.merge(df, dfevt, on=var_evt_match)
     df = df.query(skimming_sel)
     df.to_pickle(fileout)
 
@@ -60,9 +63,10 @@ def convertallpickle(chunk, chunkout, treenamein, var_all, skimming_sel):
     for p in processes:
         p.join()
 
-def skimall(chunk, chunkout, skimming_sel):
-    processes = [mp.Process(target=skimmer, args=(filein, chunkout[index], \
-                                                  skimming_sel))
+def skimall(chunk, chunkevt, chunkout, skimming_sel, var_evt_match):
+    processes = [mp.Process(target=skimmer, args=(filein, chunkevt[index],
+                                                  chunkout[index],
+                                                  skimming_sel, var_evt_match))
                  for index, filein in enumerate(chunk)]
     for p in processes:
         p.start()
@@ -138,7 +142,6 @@ def conversion(data_config, data_param, mcordata):
     chunks, chunksout = createchunks(listfilespath, listfilespathout, nmaxconvers)
     chunksgen, chunksoutgen = createchunks(listfilespathgen, listfilespathoutgen, nmaxconvers)
     chunksevt, chunksoutevt = createchunks(listfilespathevt, listfilespathoutevt, nmaxconvers)
-
     for index, _ in enumerate(chunks):
         print("Processing chunk number=", index)
         flattenallpickle(chunks[index], chunksout[index], treeoriginreco, var_all, skimming_sel)
@@ -161,7 +164,7 @@ def skim(data_config, data_param, mcordata):
     namefile_evt_skim = data_param[case]["files_names"]["namefile_evt_skim"]
     namefile_gen_skim = data_param[case]["files_names"]["namefile_gen_skim"]
 
-
+    var_evt_match = data_param[case]["variables"]["var_evt_match"]
     skimming_sel = data_param[case]["skimming2_sel"]
     skimming_sel_gen = data_param[case]["skimming2_sel_gen"]
     skimming_sel_evt = data_param[case]["skimming2_sel_evt"]
@@ -186,10 +189,12 @@ def skim(data_config, data_param, mcordata):
 
     for index, _ in enumerate(chunks):
         print("Processing chunk number=", index)
-        skimall(chunks[index], chunksout[index], skimming_sel)
-        skimall(chunksevt[index], chunksoutevt[index], skimming_sel_evt)
+        skimall(chunks[index], chunksevt[index], chunksout[index], skimming_sel, var_evt_match)
+        skimall(chunksevt[index], chunksevt[index], chunksoutevt[index], \
+                skimming_sel_evt, var_evt_match)
         if mcordata == "mc":
-            skimall(chunksgen[index], chunksoutgen[index], skimming_sel_gen)
+            skimall(chunksgen[index], chunksevt[index], chunksoutgen[index], \
+                    skimming_sel_gen, var_evt_match)
     print("Total time elapsed", time.time()-tstart)
 def merging(data_config, data_param, mcordata):
 
