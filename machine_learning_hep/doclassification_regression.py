@@ -26,7 +26,6 @@ from machine_learning_hep.general import createstringselection, filterdataframe_
 from machine_learning_hep.general import get_database_ml_gridsearch, filter_df_cand
 from machine_learning_hep.root import write_tree
 from machine_learning_hep.functions import create_mlsamples, do_correlation
-from machine_learning_hep.io import checkdir
 #from machine_learning_hep.config import Configuration
 from machine_learning_hep.pca import getdataframe_standardised, get_pcadataframe_pca
 from machine_learning_hep.pca import plotvariance_pca
