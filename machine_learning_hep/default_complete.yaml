@@ -1,4 +1,4 @@
-case: LctopK0sPbPbCen010
+case: Dspp5TeV
 conversion:
   mc: 
     activate: false #never change this without thinking!
@@ -6,28 +6,26 @@ conversion:
     maxfiles: 4
   data:
     activate: false  #never change this without thinking!
-    nmaxconvers: 100
-    maxfiles: 4
-merging: 
-  mc:
-    activate: true
-    maxfilestomerge: 4
-  data:
-    activate: true
-    maxfilestomerge: 1000
-
+    nmaxconvers: 200
+    maxfiles: -1
 skimming: 
   mc:
-    activate: true
+    activate: false
     nmaxconvers: 300
     maxfiles: -1
   data:
-    activate: true
+    activate: false
     nmaxconvers: 400
-    maxfiles: -1
-
+    maxfiles: 10
+merging: 
+  mc:
+    activate: false
+    maxfilestomerge: 4
+  data:
+    activate: false
+    maxfilestomerge: 10
 ml_study:   
-  activate: false
+  activate: true
   activate_models: 
     BinaryClassification:
       keras:
@@ -75,12 +73,12 @@ ml_study:
 
 analysis:
   std:
-    activate: false
+    activate: true
   ml: 
     activate: false
     model: XGBoost
-  binmin: [6]
-  binmax: [10]
+  binmin: [2]
+  binmax: [1000]
   probcut: [0.9]
   models: [null]
   nmaxchunks: 200

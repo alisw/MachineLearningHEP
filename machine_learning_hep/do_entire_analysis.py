@@ -24,7 +24,7 @@ from machine_learning_hep.doanalysis import doanalysis
 
 def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 
-    case = "LctopK0sPbPbCen010"
+    case = "Dspp5TeV"
 
     with open("default_complete.yaml", 'r') as run_config:
         data_config = yaml.load(run_config)
@@ -32,6 +32,7 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     with open("data/database_ml_parameters.yml", 'r') as param_config:
         data_param = yaml.load(param_config)
 
+    case = data_config["case"]
     binminarray = data_config["ml_study"]["binmin"]
     binmaxarray = data_config["ml_study"]["binmax"]
     doconversionmc = data_config["conversion"]["mc"]["activate"]
