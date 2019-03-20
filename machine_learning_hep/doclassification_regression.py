@@ -115,10 +115,10 @@ def doclassification_regression(run_config, data, case, binmin, binmax):  # pyli
     string_selection = createstringselection(var_binning, binmin, binmax)
     suffix = f"nevt_sig{nevt_sig}_nevt_bkg{nevt_bkg}_" \
              f"{mltype}{case}_{string_selection}"
-    plotdir = f"{mlplot}/plots_{suffix}"
-    output = f"{mlout}/output_{suffix}"
-    checkdir(plotdir)
-    checkdir(output)
+    #plotdir = f"{mlplot}/plots_{suffix}"
+    #output = f"{mlout}/output_{suffix}"
+    #checkdir(plotdir)
+    #checkdir(output)
 
     classifiers = []
     classifiers_scikit = []
@@ -169,7 +169,7 @@ def doclassification_regression(run_config, data, case, binmin, binmax):  # pyli
                              var_signal, var_training, nevt_sig, nevt_bkg, test_frac, rnd_splt)
 
     if docorrelation == 1:
-        do_correlation(df_sig_train, df_bkg_train, var_all, var_corr_x, var_corr_y, plotdir)
+        do_correlation(df_sig_train, df_bkg_train, var_all, var_corr_x, var_corr_y, mlplot)
 
     if dostandard == 1:
         x_train = getdataframe_standardised(x_train)
@@ -177,39 +177,37 @@ def doclassification_regression(run_config, data, case, binmin, binmax):  # pyli
     if dopca == 1:
         n_pca = 9
         x_train, pca = get_pcadataframe_pca(x_train, n_pca)
-        plotvariance_pca(pca, plotdir)
+        plotvariance_pca(pca, mlplot)
 
 
+    classifiers_scikit, names_scikit = getclf_scikit(run_config)
 
-    classifiers_scikit, names_scikit = getclf_scikit(data[case]["ml_study"])
+    classifiers_xgboost, names_xgboost = getclf_xgboost(run_config)
 
-    classifiers_xgboost, names_xgboost = getclf_xgboost(data[case]["ml_study"])
-
-    classifiers_keras, names_keras = getclf_keras(data[case]["ml_study"], len(x_train.columns))
+    classifiers_keras, names_keras = getclf_keras(run_config, len(x_train.columns))
 
     classifiers = classifiers_scikit+classifiers_xgboost+classifiers_keras
     names = names_scikit+names_xgboost+names_keras
 
-
     if dotraining == 1:
         trainedmodels = fit(names, classifiers, x_train, y_train)
-        savemodels(names, trainedmodels, output, suffix)
+        savemodels(names, trainedmodels, mlout, suffix)
 
     if dotesting == 1:
         # The model predictions are added to the test dataframe
         df_ml_test = test(mltype, names, trainedmodels, df_ml_test, var_training, var_signal)
-        df_ml_test_to_df = output+"/testsample_%s_mldecision.pkl" % (suffix)
-        df_ml_test_to_root = output+"/testsample_%s_mldecision.root" % (suffix)
+        df_ml_test_to_df = mlout+"/testsample_%s_mldecision.pkl" % (suffix)
+        df_ml_test_to_root = mlout+"/testsample_%s_mldecision.root" % (suffix)
         df_ml_test.to_pickle(df_ml_test_to_df)
         write_tree(df_ml_test_to_root, tree_name, df_ml_test)
-        #plot_overtraining(names, classifiers, suffix, plotdir, x_train, y_train, x_test, y_test)
+        #plot_overtraining(names, classifiers, suffix, mlplot, x_train, y_train, x_test, y_test)
 
     if applytodatamc == 1:
         # The model predictions are added to the dataframes of data and MC
         df_data = apply(mltype, names, trainedmodels, df_data, var_training)
         df_mc = apply(mltype, names, trainedmodels, df_mc, var_training)
-        df_data_to_root = output+"/data_%s_mldecision.root" % (suffix)
-        df_mc_to_root = output+"/mc_%s_mldecision.root" % (suffix)
+        df_data_to_root = mlout+"/data_%s_mldecision.root" % (suffix)
+        df_mc_to_root = mlout+"/mc_%s_mldecision.root" % (suffix)
         write_tree(df_data_to_root, tree_name, df_data)
         write_tree(df_mc_to_root, tree_name, df_mc)
 
@@ -221,15 +219,15 @@ def doclassification_regression(run_config, data, case, binmin, binmax):  # pyli
         if mltype == "BinaryClassification":
             df_scores = cross_validation_mse(names, classifiers, x_train, y_train,
                                              nkfolds, ncores)
-        plot_cross_validation_mse(names, df_scores, suffix, plotdir)
+        plot_cross_validation_mse(names, df_scores, suffix, mlplot)
 
     if dolearningcurve == 1:
-        #         confusion(names, classifiers, suffix, x_train, y_train, nkfolds, plotdir)
+        #         confusion(names, classifiers, suffix, x_train, y_train, nkfolds, mlplot)
         npoints = 10
-        plot_learning_curves(names, classifiers, suffix, plotdir, x_train, y_train, npoints)
+        plot_learning_curves(names, classifiers, suffix, mlplot, x_train, y_train, npoints)
 
     if doROC == 1:
-        precision_recall(names, classifiers, suffix, x_train, y_train, nkfolds, plotdir)
+        precision_recall(names, classifiers, suffix, x_train, y_train, nkfolds, mlplot)
 
     if doboundary == 1:
         classifiers_scikit_2var, names_2var = getclf_scikit(mltype)
@@ -239,11 +237,11 @@ def doclassification_regression(run_config, data, case, binmin, binmax):  # pyli
         x_test_boundary = x_test[var_boundaries]
         trainedmodels_2var = fit(names_2var, classifiers_2var, x_test_boundary, y_test)
         decisionboundaries(
-            names_2var, trainedmodels_2var, suffix+"2var", x_test_boundary, y_test, plotdir)
+            names_2var, trainedmodels_2var, suffix+"2var", x_test_boundary, y_test, mlplot)
 
     if doimportance == 1:
         importanceplotall(var_training, names_scikit+names_xgboost,
-                          classifiers_scikit+classifiers_xgboost, suffix, plotdir)
+                          classifiers_scikit+classifiers_xgboost, suffix, mlplot)
 
 
     if dogridsearch == 1:
@@ -255,7 +253,7 @@ def doclassification_regression(run_config, data, case, binmin, binmax):  # pyli
             names_cv, clf_cv, par_grid_cv, refit_cv, x_train, y_train, nkfolds,
             ncores)
         perform_plot_gridsearch(
-            names_cv, dfscore, par_grid_cv, par_grid_cv_keys, var_param, plotdir, suffix, 0.1)
+            names_cv, dfscore, par_grid_cv, par_grid_cv_keys, var_param, mlplot, suffix, 0.1)
 
     if dosignifopt == 1:
         logger.info("Doing significance optimization")
@@ -264,7 +262,7 @@ def doclassification_regression(run_config, data, case, binmin, binmax):  # pyli
                 df_data_opt = df_data.query(sel_bkg)
                 df_data_opt = shuffle(df_data_opt, random_state=rnd_shuffle)
                 study_signif(case, names, [binmin, binmax], filemc_gen, filedata_evt, df_mc,
-                             df_ml_test, df_data_opt, suffix, plotdir)
+                             df_ml_test, df_data_opt, suffix, mlplot)
             else:
                 logger.error("Optimisation is not implemented for this classification problem.")
         else:
