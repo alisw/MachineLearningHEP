@@ -1,4 +1,4 @@
-case: Dspp5TeV
+case: LctopK0sPbPbCen010
 conversion:
   mc: 
     activate: false #never change this without thinking!
@@ -73,7 +73,7 @@ ml_study:
 
 analysis:
   std:
-    activate: true
+    activate: false
   ml: 
     activate: false
     model: XGBoost
