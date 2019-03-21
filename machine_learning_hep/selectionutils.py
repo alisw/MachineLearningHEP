@@ -17,6 +17,8 @@ utilities for fiducial acceptance and pid selections
 """
 
 import numba
+import pandas as pd
+from machine_learning_hep.bitwise import filter_bit_df
 
 @numba.njit
 def selectfidacc(array_pt, array_y):
@@ -99,3 +101,20 @@ def selectpid_lctov0bachelor(array_nsigma_tpc, array_nsigma_tof, nsigmacut):
         else:
             array_is_pid_sel.append(False)
     return array_is_pid_sel
+
+def getnormforselevt(df_evt):
+    #accepted events
+    df_acc_ev = df_evt.query('is_ev_rej==0')
+    #rejected events because of trigger / physics selection / centrality
+    df_to_keep = filter_bit_df(df_evt, 'is_ev_rej', [[], [0, 5, 6, 10, 11]]) 
+
+    #events with reco vtx after previous selection
+    df_bit_recovtx = filter_bit_df(df_to_keep, 'is_ev_rej', [[], [1, 2, 7, 12]])
+    #events with reco zvtx > 10 cm after previous selection
+    df_bit_zvtx_gr10 = filter_bit_df(df_to_keep, 'is_ev_rej', [[3], [1, 2, 7, 12]])
+
+    n_no_reco_vtx = len(df_to_keep.index)-len(df_bit_recovtx.index)
+    n_zvtx_gr10 = len(df_bit_zvtx_gr10.index)
+    n_ev_sel = len(df_acc_ev.index)
+
+    return (n_ev_sel+n_no_reco_vtx) - n_no_reco_vtx*n_zvtx_gr10 / (n_ev_sel+n_zvtx_gr10)
