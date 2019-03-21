@@ -17,7 +17,6 @@ utilities for fiducial acceptance and pid selections
 """
 
 import numba
-import pandas as pd
 from machine_learning_hep.bitwise import filter_bit_df
 
 @numba.njit
@@ -106,7 +105,7 @@ def getnormforselevt(df_evt):
     #accepted events
     df_acc_ev = df_evt.query('is_ev_rej==0')
     #rejected events because of trigger / physics selection / centrality
-    df_to_keep = filter_bit_df(df_evt, 'is_ev_rej', [[], [0, 5, 6, 10, 11]]) 
+    df_to_keep = filter_bit_df(df_evt, 'is_ev_rej', [[], [0, 5, 6, 10, 11]])
 
     #events with reco vtx after previous selection
     df_bit_recovtx = filter_bit_df(df_to_keep, 'is_ev_rej', [[], [1, 2, 7, 12]])
