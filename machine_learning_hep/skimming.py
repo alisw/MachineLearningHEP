@@ -15,6 +15,7 @@
 """
 utilities for skimming ttrees
 """
+import os
 import multiprocessing as mp
 import pickle
 import numba
@@ -36,8 +37,8 @@ def selectcandidateml(array_inv_mass, array_prob, probcut):
     return array_inv_mass_sel
 
  # pylint: disable=too-many-arguments,too-many-statements
-def fill_mass_array(data, namefiledf, namefilehisto, var_pt, ptmin, ptmax,
-                    useml, model, probcut, case):
+def fill_mass_array(data, config, namefiledf, namefilehisto, var_pt, ptmin, ptmax,
+                    useml, modelname, model, probcut, case):
 
     presel_reco = data[case]["presel_reco"]
     var_training = data[case]["variables"]["var_training"]
@@ -45,13 +46,14 @@ def fill_mass_array(data, namefiledf, namefilehisto, var_pt, ptmin, ptmax,
     invmasslow = data[case]["invmasslow"]
     invmasshigh = data[case]["invmasshigh"]
     var_mass = data[case]["variables"]["var_inv_mass"]
-    modname = "xgboost"
+    dirmod = data[case]["output_folders"]["mlout"]
+
+    model = os.path.join(dirmod, model)
 
     fileinput = open(namefiledf, "rb")
     df = pickle.load(fileinput)
     df = df.astype(np.float)
-    print(df.dtypes)
-    #df = pd.read_parquet(namefiledf)
+
     array_inv_mass_sel = []
     print(var_pt)
     h_invmass = TH1F("h_invmass_" + str(ptmin) + "-" + str(ptmax), "", \
@@ -70,8 +72,8 @@ def fill_mass_array(data, namefiledf, namefilehisto, var_pt, ptmin, ptmax,
         #Apply preselection similar as to trained model
         array_inv_mass = df.loc[:, var_mass].values
         mod = pickle.load(open(model, 'rb'))
-        df = apply("BinaryClassification", [modname], [mod], df, var_training)
-        array_prob = df.loc[:, "y_test_prob" + modname].values
+        df = apply("BinaryClassification", [modelname], [mod], df, var_training)
+        array_prob = df.loc[:, "y_test_prob" + modelname].values
         array_inv_mass_sel = selectcandidateml(array_inv_mass, array_prob, probcut)
     fill_hist(h_invmass, array_inv_mass_sel)
     f = TFile(namefilehisto, "recreate")
@@ -80,11 +82,11 @@ def fill_mass_array(data, namefiledf, namefilehisto, var_pt, ptmin, ptmax,
     f.Close()
 
 # pylint: disable=too-many-arguments
-def create_inv_mass(data, listinput_df, listoutputhisto, pt_var, ptmin, ptmax,
-                    useml, model, probcut, case):
+def create_inv_mass(data, config, listinput_df, listoutputhisto, pt_var, ptmin, ptmax,
+                    useml, modelname, model, probcut, case):
     processes = [mp.Process(target=fill_mass_array, \
-                 args=(data, namefiledf, namefilehisto, pt_var, ptmin, ptmax, \
-                       useml, model, probcut, case))
+                 args=(data, config, namefiledf, namefilehisto, pt_var, ptmin, ptmax, \
+                       useml, modelname, model, probcut, case))
                  for namefiledf, namefilehisto in zip(listinput_df, listoutputhisto)]
     for p in processes:
         p.start()

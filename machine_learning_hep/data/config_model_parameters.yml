@@ -2,7 +2,7 @@ BinaryClassification:
 
   keras:
     keras_simple_one_layer_binary_classifier:
-      activate: True
+      activate: False
       layers:
         - {"n_nodes": 12, "activation": "relu"}
       optimizer: "adam"
@@ -28,7 +28,7 @@ BinaryClassification:
       max_features: 1
 
     scikit_adaboost_classifier:
-      activate: True
+      activate: False
 
     scikit_decision_tree_classifier:
       activate: False
