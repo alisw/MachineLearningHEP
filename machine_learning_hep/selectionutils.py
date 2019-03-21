@@ -17,20 +17,19 @@ utilities for fiducial acceptance and pid selections
 """
 
 import numba
-import numpy as np
 
 @numba.njit
 def selectfidacc(array_pt, array_y):
     array_is_sel = []
     for icand, pt in enumerate(array_pt):
         if pt > 5:
-            if np.absolute(array_y[icand]) < 0.8:
+            if abs(array_y[icand]) < 0.8:
                 array_is_sel.append(True)
             else:
                 array_is_sel.append(False)
         else:
             yfid = -0.2/15 * pt**2 + 1.9/15 * pt + 0.5
-            if np.absolute(array_y[icand]) < yfid:
+            if abs(array_y[icand]) < yfid:
                 array_is_sel.append(True)
             else:
                 array_is_sel.append(False)
