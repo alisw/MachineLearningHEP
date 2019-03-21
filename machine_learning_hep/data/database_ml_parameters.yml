@@ -93,7 +93,7 @@ LctopK0sPbPbCen010:
     var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id, n_cand]
     var_training: [cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, 
                    cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, 
-                   imp_par_prong2, inv_mass_K0s]
+                   imp_par_prong2, inv_mass_K0s, nsigTPC_Pr_0, nsigTOF_Pr_0]
     var_boundaries: [cos_t_star, signd0]
     var_correlation:
       - [cos_t_star]

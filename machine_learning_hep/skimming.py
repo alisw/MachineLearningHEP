@@ -37,7 +37,7 @@ def selectcandidateml(array_inv_mass, array_prob, probcut):
     return array_inv_mass_sel
 
  # pylint: disable=too-many-arguments,too-many-statements
-def fill_mass_array(data, config, namefiledf, namefilehisto, var_pt, ptmin, ptmax,
+def fill_mass_array(data, namefiledf, namefilehisto, var_pt, ptmin, ptmax,
                     useml, modelname, model, probcut, case):
 
     presel_reco = data[case]["presel_reco"]
@@ -82,10 +82,10 @@ def fill_mass_array(data, config, namefiledf, namefilehisto, var_pt, ptmin, ptma
     f.Close()
 
 # pylint: disable=too-many-arguments
-def create_inv_mass(data, config, listinput_df, listoutputhisto, pt_var, ptmin, ptmax,
+def create_inv_mass(data, listinput_df, listoutputhisto, pt_var, ptmin, ptmax,
                     useml, modelname, model, probcut, case):
     processes = [mp.Process(target=fill_mass_array, \
-                 args=(data, config, namefiledf, namefilehisto, pt_var, ptmin, ptmax, \
+                 args=(data, namefiledf, namefilehisto, pt_var, ptmin, ptmax, \
                        useml, modelname, model, probcut, case))
                  for namefiledf, namefilehisto in zip(listinput_df, listoutputhisto)]
     for p in processes:

@@ -24,8 +24,8 @@ import time
 #from machine_learning_hep.general import get_database_ml_parameters # pylint: disable=import-error
 #from machine_learning_hep.general import get_database_ml_analysis
 from machine_learning_hep.listfiles import list_files_dir_lev2
-from machine_learning_hep.skimming import create_inv_mass, plothisto
-from ROOT import TFile # pylint: disable=import-error, no-name-in-module
+from machine_learning_hep.skimming import create_inv_mass
+#from ROOT import TFile # pylint: disable=import-error, no-name-in-module
 #from machine_learning_hep.skimming import plothisto
 #from machine_learning_hep.fit import fitmass, plot_graph_yield
 
@@ -70,14 +70,10 @@ def doanalysis(data_config, data, case, useml):
 
             for chunk, chunkhisto in zip(chunksdf, chunkshisto):
                 print("new chunck")
-                h_invmass_tot = create_inv_mass(data, data_config, chunk, chunkhisto, var_pt, imin, imax,
+                _ = create_inv_mass(data, chunk, chunkhisto, var_pt, imin, imax,
                                     useml, modelname, models[index],
                                     probcut[index], case)
             index = index + 1
-        f = TFile( 'total_useml%d.root' % (useml), 'recreate')
-        h_invmass_tot.Write()
-        f.Close()
-        plothisto(h_invmass_tot, 'total_histo%d.pdf' % (useml))
 
     timestop = time.time()
     print("total time of filling histo=", tstart - timestop)
