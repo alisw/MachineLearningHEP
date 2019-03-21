@@ -75,10 +75,10 @@ LctopK0sPbPbCen010:
       data: /data/HeavyFlavour/PbPb_data_010/20-03-2019/385_20190319-2141/pickleLctopK0s 
       mc: null
     pkl_merged: 
-      data: /data/HeavyFlavour/PbPb_data_010/20-03-2019/385_20190319-2141/pickleLctopK0sskimmed6upMerged
-      mc: null
+      data: /data/HeavyFlavour/PbPb_data_010/14-03-2019/376_20190313-1032/pickleLctopK0sPt6to10merged  
+      mc: /data/HeavyFlavour/pPb_MC/14-03-2019/379_20190313-2217/pickleLctopK0sPt6to10merged 
     pkl_skimmed: 
-      data: /data/HeavyFlavour/PbPb_data_010/20-03-2019/385_20190319-2141/pickleLctopK0sskimmed6up
+      data: null 
       mc: null
 
   variables:

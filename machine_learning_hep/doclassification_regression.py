@@ -26,7 +26,6 @@ from machine_learning_hep.general import createstringselection, filterdataframe_
 from machine_learning_hep.general import get_database_ml_gridsearch, filter_df_cand
 from machine_learning_hep.root import write_tree
 from machine_learning_hep.functions import create_mlsamples, do_correlation
-from machine_learning_hep.config import Configuration
 from machine_learning_hep.pca import getdataframe_standardised, get_pcadataframe_pca
 from machine_learning_hep.pca import plotvariance_pca
 from machine_learning_hep.models import getclf_scikit, getclf_xgboost, getclf_keras
@@ -43,12 +42,9 @@ from machine_learning_hep.optimization import study_signif
 DATA_PREFIX = os.path.expanduser("~/.machine_learning_hep")
 
 
-def doclassification_regression(run_config, data, case, binmin, binmax):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+def doclassification_regression(run_config, data, model_config, case, binmin, binmax):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
     logger = get_logger()
     logger.info(f"Start classification_regression run") # pylint: disable=logging-fstring-interpolation
-
-    conf = Configuration()
-    model_config = conf.get_model_config()
 
     mltype = run_config['mltype']
     mlsubtype = run_config['mlsubtype']

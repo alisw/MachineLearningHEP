@@ -32,6 +32,9 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     with open("data/database_ml_parameters.yml", 'r') as param_config:
         data_param = yaml.load(param_config)
 
+    with open("data/config_model_parameters.yml", 'r') as mod_config:
+        data_model = yaml.load(mod_config)
+
     case = data_config["case"]
     binminarray = data_config["ml_study"]["binmin"]
     binmaxarray = data_config["ml_study"]["binmax"]
@@ -42,6 +45,7 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     doskimmingmc = data_config["skimming"]["mc"]["activate"]
     doskimmingdata = data_config["skimming"]["data"]["activate"]
     doml = data_config["ml_study"]["activate"]
+    mltype = data_config["ml_study"]["mltype"]
     doanalyml = data_config["analysis"]["ml"]["activate"]
     doanalystd = data_config["analysis"]["std"]["activate"]
     #binminarrayan = data_config["analysis"]["binmin"]
@@ -123,7 +127,7 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
             for binmin, binmax in zip(binminarray, binmaxarray):
                 print(binmin, binmax)
                 doclassification_regression(data_config["ml_study"],
-                                            data_param, case, binmin, binmax)
+                                            data_param, data_model[mltype], case, binmin, binmax)
     if doanalyml is True or doanalystd is True:
         pltanaldir = data_param[case]["output_folders"]["plotsanalysis"]
         histoanaldir = data_param[case]["output_folders"]["histoanalysis"]

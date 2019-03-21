@@ -25,33 +25,16 @@ merging:
     activate: false
     maxfilestomerge: 10
 ml_study:   
-  activate: true
-  activate_models: 
-    BinaryClassification:
-      keras:
-        keras_simple_one_layer_binary_classifier: false
-        keras_simple_two_layer_binary_classifier: false
-      scikit:
-        scikit_adaboost_classifier: true
-        scikit_decision_tree_classifier: false
-        scikit_random_forest_classifier: false
-      xgboost:
-        xgboost_classifier: false
-    Regression:
-      scikit:
-        scikit_lasso_regression: false
-        scikit_linear_regression: false
-        scikit_ridge_regression: false
-  
+  activate: true            
   applytodatamc: false
-  binmin: [6,8] 
-  binmax: [8,10]
+  binmin: [6] 
+  binmax: [8]
   doROC: false
   doboundary: false
   docorrelation: false
   docrossvalidation: false
   dogridsearch: false
-  doimportance: true
+  doimportance: false
   dolearningcurve: false
   dopca: false
   dopltregressionxy: false
