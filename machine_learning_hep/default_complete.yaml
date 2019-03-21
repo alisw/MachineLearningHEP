@@ -3,7 +3,7 @@ conversion:
   mc: 
     activate: false #never change this without thinking!
     nmaxconvers: 4
-    maxfiles: 4
+    maxfiles: -1
   data:
     activate: false  #never change this without thinking!
     nmaxconvers: 200
@@ -11,21 +11,21 @@ conversion:
 skimming: 
   mc:
     activate: false
-    nmaxconvers: 300
+    nmaxconvers: 4
     maxfiles: -1
   data:
     activate: false
-    nmaxconvers: 400
-    maxfiles: 10
+    nmaxconvers: 200
+    maxfiles: -1
 merging: 
   mc:
     activate: false
     maxfilestomerge: 4
   data:
     activate: false
-    maxfilestomerge: 10
+    maxfilestomerge: 400
 ml_study:   
-  activate: false            
+  activate: false          
   applytodatamc: true
   binmin: [6] 
   binmax: [10]
@@ -64,7 +64,7 @@ analysis:
   binmax: [10]
   probcut: [0.9]
   models: [xgboost_classifiernevt_sig10000_nevt_bkg10000_BinaryClassificationLctopK0sPbPbCen010_dfselection_pt_cand_6.0_10.0.sav]
-  nmaxchunks: 200
+  nmaxchunks: 400
   maxfiles: -1
   dofit: false
   doinvmassspectra: true
