@@ -169,7 +169,7 @@ def calc_eff_acc(df_mc_gen, df_mc_reco, sel_opt, main_dict):
     Calculate the efficiency times acceptance before the ML model selections.
     """
     logger = get_logger()
-    df_mc_gen_sel = filter_df_cand(df_mc_gen, main_dict, sel_opt, True)
+    df_mc_gen_sel = filter_df_cand(df_mc_gen, main_dict, sel_opt)
     df_mc_reco_sel = filter_df_cand(df_mc_reco, main_dict, sel_opt)
     if df_mc_gen_sel.empty:
         logger.error("In division denominator is empty")
