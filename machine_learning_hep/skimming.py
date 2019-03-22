@@ -55,7 +55,7 @@ def fill_mass_array(data, namefiledf, namefilehisto, namedfout, var_pt, ptmin, p
     df = df.astype(np.float)
 
     array_inv_mass_sel = []
-    #print(var_pt)
+    print(var_pt)
     h_invmass = TH1F("h_invmass_" + str(ptmin) + "-" + str(ptmax), "", \
                      invmassbins, invmasslow, invmasshigh)
     df = df.query("pt_cand>@ptmin and pt_cand<@ptmax")
