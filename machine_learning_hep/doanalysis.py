@@ -25,6 +25,7 @@ import time
 #from machine_learning_hep.general import get_database_ml_analysis
 from machine_learning_hep.listfiles import list_files_dir_lev2
 from machine_learning_hep.skimming import create_inv_mass
+from machine_learning_hep.doskimming import merge
 #from ROOT import TFile # pylint: disable=import-error, no-name-in-module
 #from machine_learning_hep.skimming import plothisto
 #from machine_learning_hep.fit import fitmass, plot_graph_yield
@@ -46,7 +47,7 @@ def doanalysis(data_config, data, case, useml):
     probcut = data_config["analysis"]["probcut"]
     models = data_config["analysis"]["models"]
     modelname = data_config["analysis"]["modelname"]
-
+    skimmeddf = "skimmedLc.pkl"
 
     #yield_signal = []
     #yield_signal_err = []
@@ -59,6 +60,8 @@ def doanalysis(data_config, data, case, useml):
                             (case, imin, imax, useml, 1000*probcut[index]))
             listdf, listhisto = list_files_dir_lev2(fileinputdir, outputdirhisto,
                                                     namefilereco, namefilehist)
+            listdf, listdfout = list_files_dir_lev2(fileinputdir, outputdirhisto,
+                                                    namefilereco, skimmeddf)
             print(listdf)
             if maxfiles is not -1:
                 listdf = listdf[:maxfiles]
@@ -68,12 +71,16 @@ def doanalysis(data_config, data, case, useml):
             chunkshisto = [listhisto[x:x+nmaxchunks] \
                            for x in range(0, len(listhisto), nmaxchunks)]
 
-            for chunk, chunkhisto in zip(chunksdf, chunkshisto):
-                print("new chunck")
-                _ = create_inv_mass(data, chunk, chunkhisto, var_pt, imin, imax,
+            chunksoutdf = [listdfout[x:x+nmaxchunks] \
+                           for x in range(0, len(listdfout), nmaxchunks)]
+
+            for idf, _ in enumerate(chunksdf):
+                print("chunk number=", idf)
+                _ = create_inv_mass(data, chunksdf[idf], chunkshisto[idf],
+                                    chunksoutdf[idf], var_pt, imin, imax,
                                     useml, modelname, models[index],
                                     probcut[index], case)
             index = index + 1
-
+        merge(listdfout, skimmeddf)
     timestop = time.time()
     print("total time of filling histo=", tstart - timestop)
