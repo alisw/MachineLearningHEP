@@ -15,13 +15,10 @@
 """
 main macro for running the study
 """
-#import argparse
-#import sys
 import os.path
 import pandas as pd
 
 from sklearn.utils import shuffle
-#from machine_learning_hep.general import get_database_ml_parameters
 from machine_learning_hep.general import createstringselection, filterdataframe_singlevar
 from machine_learning_hep.general import get_database_ml_gridsearch, filter_df_cand
 from machine_learning_hep.root import write_tree
@@ -36,15 +33,15 @@ from machine_learning_hep.mlperformance import plot_cross_validation_mse, plot_l
 # from machine_learning_hep.mlperformance import confusion, plot_overtraining
 from machine_learning_hep.mlperformance import precision_recall
 from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perform_plot_gridsearch
-#from machine_learning_hep.logger import configure_logger
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.optimization import study_signif
+from machine_learning_hep.efficiency import study_eff
 DATA_PREFIX = os.path.expanduser("~/.machine_learning_hep")
 
 
 def doclassification_regression(run_config, data, model_config, case, binmin, binmax):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
     logger = get_logger()
-    logger.info(f"Start classification_regression run") # pylint: disable=logging-fstring-interpolation
+    logger.info("Start classification_regression run")
 
     mltype = run_config['mltype']
     mlsubtype = run_config['mlsubtype']
@@ -67,9 +64,9 @@ def doclassification_regression(run_config, data, model_config, case, binmin, bi
     doimportance = run_config['doimportance']
     dogridsearch = run_config['dogridsearch']
     dosignifopt = run_config['dosignifopt']
+    doefficiency = run_config['doefficiency']
     nkfolds = run_config['nkfolds']
     ncores = run_config['ncores']
-    #usefileserver = run_config['usefileserver']
 
     foldermc = data[case]["output_folders"]["pkl_merged"]["mc"]
     folderdata = data[case]["output_folders"]["pkl_merged"]["data"]
@@ -77,13 +74,11 @@ def doclassification_regression(run_config, data, model_config, case, binmin, bi
     filedata = data[case]["files_names"]["namefile_reco_merged"]
     filemc = data[case]["files_names"]["namefile_reco_merged"]
     filedata_evt = data[case]["files_names"]["namefile_evt_merged"]
-    #filemc_evt = data[case]["files_names"]["namefile_evt_merged"]
     filemc_gen = data[case]["files_names"]["namefile_gen_merged"]
 
     filedata = os.path.join(folderdata, filedata)
     filemc = os.path.join(foldermc, filemc)
     filedata_evt = os.path.join(folderdata, filedata_evt)
-    #filemc_evt = os.path.join(foldermc, filemc_evt)
     filemc_gen = os.path.join(foldermc, filemc_gen)
 
     arrayname = [filedata, filemc]
@@ -112,10 +107,6 @@ def doclassification_regression(run_config, data, model_config, case, binmin, bi
     string_selection = createstringselection(var_binning, binmin, binmax)
     suffix = f"nevt_sig{nevt_sig}_nevt_bkg{nevt_bkg}_" \
              f"{mltype}{case}_{string_selection}"
-    #plotdir = f"{mlplot}/plots_{suffix}"
-    #output = f"{mlout}/output_{suffix}"
-    #checkdir(plotdir)
-    #checkdir(output)
 
     classifiers = []
     classifiers_scikit = []
@@ -208,7 +199,7 @@ def doclassification_regression(run_config, data, model_config, case, binmin, bi
         plot_cross_validation_mse(names, df_scores, suffix, mlplot)
 
     if dolearningcurve == 1:
-        #         confusion(names, classifiers, suffix, x_train, y_train, nkfolds, mlplot)
+        #confusion(names, classifiers, suffix, x_train, y_train, nkfolds, mlplot)
         npoints = 10
         plot_learning_curves(names, classifiers, suffix, mlplot, x_train, y_train, npoints)
 
@@ -228,7 +219,6 @@ def doclassification_regression(run_config, data, model_config, case, binmin, bi
     if doimportance == 1:
         importanceplotall(var_training, names_scikit+names_xgboost,
                           classifiers_scikit+classifiers_xgboost, suffix, mlplot)
-
 
     if dogridsearch == 1:
         datasearch = get_database_ml_gridsearch()
@@ -252,4 +242,11 @@ def doclassification_regression(run_config, data, model_config, case, binmin, bi
             else:
                 logger.error("Optimisation is not implemented for this classification problem.")
         else:
-            logger.error("Training, testing and applytodata flags must be set to 1")
+            logger.error("Training, testing and applytodata flags must be set to True")
+
+    if doefficiency == 1:
+        logger.info("Doing selection efficiency of ML models")
+        if dotraining and dotesting:
+            study_eff(case, names, suffix, mlplot, df_ml_test)
+        else:
+            logger.error("Training and testing flags must be set to True")

@@ -39,6 +39,7 @@ ml_study:
   dopca: false
   dopltregressionxy: false
   dosignifopt: true
+  doefficiency: true
   dostandard: false
   dotesting: true
   dotraining: true

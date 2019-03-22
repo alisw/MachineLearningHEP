@@ -76,7 +76,6 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
             os.makedirs(pkl_data)
             conversion(data_config, data_param, "data")
 
-
     if doskimmingdata is True:
         pkl_skimmed_data = data_param[case]["output_folders"]["pkl_skimmed"]["data"]
         if os.path.exists(pkl_skimmed_data):
@@ -172,5 +171,3 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
         extractmasshisto(data_config, data_param, case, useml, "mc")
 
 do_entire_analysis()
-
-#def doskimming(data_config, data_param):
