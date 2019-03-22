@@ -189,11 +189,6 @@ def study_signif(case, names, bin_lim, file_mc_gen, file_data_evt, df_mc_reco, d
     plot_fonll(sopt_dict['filename_fonll'], sopt_dict['fonll_pred'],
                sopt_dict['FF'], case, suffix, plot_dir)
 
-    fig_eff = plt.figure(figsize=(20, 15))
-    plt.xlabel('Threshold', fontsize=20)
-    plt.ylabel('Model Efficiency', fontsize=20)
-    plt.title("Efficiency vs Threshold", fontsize=20)
-
     fig_signif = plt.figure(figsize=(20, 15))
     plt.xlabel('Threshold', fontsize=20)
     plt.ylabel('Significance (A.U.)', fontsize=20)
@@ -207,10 +202,6 @@ def study_signif(case, names, bin_lim, file_mc_gen, file_data_evt, df_mc_reco, d
 
         eff_array, eff_err_array, x_axis = calc_eff(df_ml_test, 'mc_signal_prompt', gen_dict, name,
                                                     sopt_dict['num_steps'])
-        plt.figure(fig_eff.number)
-        plt.errorbar(x_axis, eff_array, yerr=eff_err_array, alpha=0.3, label=f'{name} - Prompt',
-                     elinewidth=2.5, linewidth=4.0)
-
         sig_array = [eff * exp_signal for eff in eff_array]
         sig_err_array = [eff_err * exp_signal for eff_err in eff_err_array]
         bkg_array, bkg_err_array, _ = calc_bkg(df_data_dec, name, sopt_dict['num_steps'],
@@ -222,16 +213,6 @@ def study_signif(case, names, bin_lim, file_mc_gen, file_data_evt, df_mc_reco, d
         plt.figure(fig_signif.number)
         plt.errorbar(x_axis, signif_array, yerr=signif_err_array, alpha=0.3, label=f'{name}',
                      elinewidth=2.5, linewidth=4.0)
-
-    eff_arr_std, eff_er_arr_std, x_axis_std = calc_eff(df_ml_test, 'mc_signal_prompt', gen_dict,
-                                                       '', sopt_dict['num_steps'], True)
-    plt.figure(fig_eff.number)
-    plt.errorbar(x_axis_std, eff_arr_std, yerr=eff_er_arr_std, alpha=0.3,
-                 label='ALICE Standard - Prompt', elinewidth=2.5, linewidth=4.0)
-
-    plt.figure(fig_eff.number)
-    plt.legend(loc="lower left", prop={'size': 18})
-    plt.savefig(plot_dir + '/Efficiency%sSignal.png' % suffix)
 
     plt.figure(fig_signif.number)
     plt.legend(loc="lower left", prop={'size': 18})

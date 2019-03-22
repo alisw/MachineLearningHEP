@@ -135,6 +135,10 @@ LctopK0sPbPbCen010:
     bin_width: 0.008 # bin width of the invariant mass histogram
     bkg_data_fraction: 0.1 # fraction of real data used in the estimation
     num_steps: 101 # number of steps used in efficiency and signif. estimation
+  
+  efficiency:
+    split_prompt_FD: True # True to split prompt and feed-down candidates
+    num_steps: 101 # number of steps used in efficiency estimation
 
 Dspp5TeV:
 
@@ -263,3 +267,7 @@ Dspp5TeV:
     bin_width: 0.008 # bin width of the invariant mass histogram
     bkg_data_fraction: 0.1 # fraction of real data used in the estimation
     num_steps: 101 # number of steps used in efficiency and signif. estimation 
+  
+  efficiency:
+    split_prompt_FD: True # True to split prompt and feed-down candidates
+    num_steps: 101 # number of steps used in efficiency estimation
