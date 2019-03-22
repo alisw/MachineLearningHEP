@@ -37,7 +37,7 @@ def selectcandidateml(array_inv_mass, array_prob, probcut):
     return array_inv_mass_sel
 
  # pylint: disable=too-many-arguments,too-many-statements
-def fill_mass_array(data, namefiledf, namefilehisto, var_pt, ptmin, ptmax,
+def fill_mass_array(data, namefiledf, namefilehisto, namedfout, var_pt, ptmin, ptmax,
                     useml, modelname, model, probcut, case):
 
     presel_reco = data[case]["presel_reco"]
@@ -55,7 +55,7 @@ def fill_mass_array(data, namefiledf, namefilehisto, var_pt, ptmin, ptmax,
     df = df.astype(np.float)
 
     array_inv_mass_sel = []
-    print(var_pt)
+    #print(var_pt)
     h_invmass = TH1F("h_invmass_" + str(ptmin) + "-" + str(ptmax), "", \
                      invmassbins, invmasslow, invmasshigh)
     df = df.query("pt_cand>@ptmin and pt_cand<@ptmax")
@@ -75,6 +75,7 @@ def fill_mass_array(data, namefiledf, namefilehisto, var_pt, ptmin, ptmax,
         df = apply("BinaryClassification", [modelname], [mod], df, var_training)
         array_prob = df.loc[:, "y_test_prob" + modelname].values
         array_inv_mass_sel = selectcandidateml(array_inv_mass, array_prob, probcut)
+        df.to_pickle(namedfout)
     fill_hist(h_invmass, array_inv_mass_sel)
     f = TFile(namefilehisto, "recreate")
     f.cd()
@@ -82,12 +83,13 @@ def fill_mass_array(data, namefiledf, namefilehisto, var_pt, ptmin, ptmax,
     f.Close()
 
 # pylint: disable=too-many-arguments
-def create_inv_mass(data, listinput_df, listoutputhisto, pt_var, ptmin, ptmax,
+def create_inv_mass(data, listinput_df, listoutputhisto, listoutputdf, pt_var, ptmin, ptmax,
                     useml, modelname, model, probcut, case):
     processes = [mp.Process(target=fill_mass_array, \
-                 args=(data, namefiledf, namefilehisto, pt_var, ptmin, ptmax, \
+                 args=(data, listinput_df[index], listoutputhisto[index], \
+                       listoutputdf[index], pt_var, ptmin, ptmax, \
                        useml, modelname, model, probcut, case))
-                 for namefiledf, namefilehisto in zip(listinput_df, listoutputhisto)]
+                 for index, _ in enumerate(listinput_df)]
     for p in processes:
         p.start()
     for p in processes:
