@@ -155,6 +155,13 @@ Dspp5TeV:
   
   old_sel:
     use: False 
+    mc_signal: cand_type == [10, 11, 74, 75, 138, 139, 202, 203, 266, 267, 330, 331, 394, 395, 458, 459,
+                                18, 19, 82, 83, 146, 147, 210, 211, 274, 275, 338, 339, 402, 403, 466, 467]
+    mc_signal_prompt: cand_type == [10, 11, 74, 75, 138, 139, 202, 203, 266, 267, 330, 331, 394, 395, 458, 459]
+    mc_signal_FD: cand_type == [18, 19, 82, 83, 146, 147, 210, 211, 274, 275, 338, 339, 402, 403, 466, 467]
+    mc_bkg: cand_type >= 0 # dummy, not used
+    presel_track_pid: cand_type >= 256 # note that all Dplus to KKPi pass this selection, proper condition is more complex
+    sel_std_analysis: cand_type == [11, 75, 139, 203, 267, 331, 395, 459, 19, 83, 147, 211, 275, 339, 403, 467]
   bitmap_sel:
     use: True
     var_sel: cand_type
