@@ -1,9 +1,9 @@
-case: Dspp5TeV
+case: LctopK0sPbPbCen010
 conversion:
   mc: 
     activate: false #never change this without thinking!
     nmaxconvers: 4
-    maxfiles: 4
+    maxfiles: -1
   data:
     activate: false  #never change this without thinking!
     nmaxconvers: 200
@@ -11,60 +11,43 @@ conversion:
 skimming: 
   mc:
     activate: false
-    nmaxconvers: 300
+    nmaxconvers: 4
     maxfiles: -1
   data:
     activate: false
-    nmaxconvers: 400
-    maxfiles: 10
+    nmaxconvers: 200
+    maxfiles: -1
 merging: 
   mc:
     activate: false
     maxfilestomerge: 4
   data:
     activate: false
-    maxfilestomerge: 10
+    maxfilestomerge: 400
 ml_study:   
-  activate: true
-  activate_models: 
-    BinaryClassification:
-      keras:
-        keras_simple_one_layer_binary_classifier: false
-        keras_simple_two_layer_binary_classifier: false
-      scikit:
-        scikit_adaboost_classifier: true
-        scikit_decision_tree_classifier: false
-        scikit_random_forest_classifier: false
-      xgboost:
-        xgboost_classifier: false
-    Regression:
-      scikit:
-        scikit_lasso_regression: false
-        scikit_linear_regression: false
-        scikit_ridge_regression: false
-  
-  applytodatamc: false
-  binmin: [6,8] 
-  binmax: [8,10]
-  doROC: false
+  activate: false          
+  applytodatamc: true
+  binmin: [6] 
+  binmax: [10]
+  doROC: true
   doboundary: false
   docorrelation: false
   docrossvalidation: false
   dogridsearch: false
-  doimportance: true
+  doimportance: false
   dolearningcurve: false
   dopca: false
   dopltregressionxy: false
-  dosignifopt: false
+  dosignifopt: true
   dostandard: false
-  dotesting: false
-  dotraining: false
+  dotesting: true
+  dotraining: true
   loadsampleoption: true
   mlsubtype: HFmeson
   mltype: BinaryClassification
   ncores: -1
-  nevt_bkg: 1000
-  nevt_sig: 1000
+  nevt_bkg: 10000
+  nevt_sig: 10000
   nkfolds: 5
   rnd_shuffle: 12
   rnd_splt: 12
@@ -73,15 +56,15 @@ ml_study:
 
 analysis:
   std:
-    activate: true
-  ml: 
     activate: false
-    model: XGBoost
-  binmin: [2]
-  binmax: [1000]
+  ml: 
+    activate: true
+  modelname: xgboost
+  binmin: [6]
+  binmax: [10]
   probcut: [0.9]
-  models: [null]
-  nmaxchunks: 200
+  models: [xgboost_classifiernevt_sig10000_nevt_bkg10000_BinaryClassificationLctopK0sPbPbCen010_dfselection_pt_cand_6.0_10.0.sav]
+  nmaxchunks: 400
   maxfiles: -1
   dofit: false
   doinvmassspectra: true

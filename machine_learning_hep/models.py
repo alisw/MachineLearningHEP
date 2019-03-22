@@ -46,13 +46,14 @@ def getclf_scikit(model_config):
     names = []
 
     for c in model_config["scikit"]:
-        try:
-            model = getattr(templates_scikit, c)(model_config["scikit"][c])
-            classifiers.append(model)
-            names.append(c)
-            logger.info("Added scikit model %s", c)
-        except AttributeError:
-            logger.critical("Could not load scikit model %s", c)
+        if model_config["scikit"][c]["activate"]:
+            try:
+                model = getattr(templates_scikit, c)(model_config["scikit"][c])
+                classifiers.append(model)
+                names.append(c)
+                logger.info("Added scikit model %s", c)
+            except AttributeError:
+                logger.critical("Could not load scikit model %s", c)
 
     return classifiers, names
 
@@ -70,13 +71,14 @@ def getclf_xgboost(model_config):
     names = []
 
     for c in model_config["xgboost"]:
-        try:
-            model = getattr(templates_xgboost, c)(model_config["xgboost"][c])
-            classifiers.append(model)
-            names.append(c)
-            logger.info("Added xgboost model %s", c)
-        except AttributeError:
-            logger.critical("Could not load xgboost model %s", c)
+        if model_config["xgboost"][c]["activate"]:
+            try:
+                model = getattr(templates_xgboost, c)(model_config["xgboost"][c])
+                classifiers.append(model)
+                names.append(c)
+                logger.info("Added xgboost model %s", c)
+            except AttributeError:
+                logger.critical("Could not load xgboost model %s", c)
 
     return classifiers, names
 
@@ -94,18 +96,17 @@ def getclf_keras(model_config, length_input):
     names = []
 
     for c in model_config["keras"]:
-        try:
-            classifiers.append(KerasClassifier(build_fn=lambda name=c: \
-                                               getattr(templates_keras, name)(
-                                                   model_config["keras"][name],
-                                                   length_input),
-                                               epochs=model_config["keras"][c]["epochs"],
-                                               batch_size=model_config["keras"][c]["batch_size"],
+        if model_config["keras"][c]["activate"]:
+            try:
+                classifiers.append(KerasClassifier(build_fn=lambda name=c: \
+                    getattr(templates_keras, name)(model_config["keras"][name], length_input), \
+                                               epochs=model_config["keras"][c]["epochs"], \
+                                               batch_size=model_config["keras"][c]["batch_size"], \
                                                verbose=0))
-            names.append(c)
-            logger.info("Added keras model %s", c)
-        except AttributeError:
-            logger.critical("Could not load keras model %s", c)
+                names.append(c)
+                logger.info("Added keras model %s", c)
+            except AttributeError:
+                logger.critical("Could not load keras model %s", c)
 
     #logger.critical("Some reason")
     return classifiers, names

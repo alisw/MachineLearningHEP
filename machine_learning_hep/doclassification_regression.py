@@ -26,7 +26,6 @@ from machine_learning_hep.general import createstringselection, filterdataframe_
 from machine_learning_hep.general import get_database_ml_gridsearch, filter_df_cand
 from machine_learning_hep.root import write_tree
 from machine_learning_hep.functions import create_mlsamples, do_correlation
-#from machine_learning_hep.config import Configuration
 from machine_learning_hep.pca import getdataframe_standardised, get_pcadataframe_pca
 from machine_learning_hep.pca import plotvariance_pca
 from machine_learning_hep.models import getclf_scikit, getclf_xgboost, getclf_keras
@@ -43,7 +42,7 @@ from machine_learning_hep.optimization import study_signif
 DATA_PREFIX = os.path.expanduser("~/.machine_learning_hep")
 
 
-def doclassification_regression(run_config, data, case, binmin, binmax):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+def doclassification_regression(run_config, data, model_config, case, binmin, binmax):  # pylint: disable=too-many-locals, too-many-statements, too-many-branches
     logger = get_logger()
     logger.info(f"Start classification_regression run") # pylint: disable=logging-fstring-interpolation
 
@@ -179,15 +178,15 @@ def doclassification_regression(run_config, data, case, binmin, binmax):  # pyli
         plotvariance_pca(pca, mlplot)
 
 
-    classifiers_scikit, names_scikit = getclf_scikit(run_config)
+    classifiers_scikit, names_scikit = getclf_scikit(model_config)
 
-    classifiers_xgboost, names_xgboost = getclf_xgboost(run_config)
+    classifiers_xgboost, names_xgboost = getclf_xgboost(model_config)
 
-    classifiers_keras, names_keras = getclf_keras(run_config, len(x_train.columns))
+    classifiers_keras, names_keras = getclf_keras(model_config, len(x_train.columns))
 
     classifiers = classifiers_scikit+classifiers_xgboost+classifiers_keras
     names = names_scikit+names_xgboost+names_keras
-
+    print(names)
     if dotraining == 1:
         trainedmodels = fit(names, classifiers, x_train, y_train)
         savemodels(names, trainedmodels, mlout, suffix)
