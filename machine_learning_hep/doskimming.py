@@ -21,28 +21,46 @@ import time
 import pickle
 import uproot
 import pandas as pd
+import numpy as np
 #from machine_learning_hep.logger import get_logger
 #from machine_learning_hep.general import get_database_ml_parameters, get_database_ml_analysis
 from machine_learning_hep.listfiles import list_files_dir_lev2, list_files_lev2
+from machine_learning_hep.general import filter_df_cand
+from machine_learning_hep.selectionutils import selectfidacc
 
 def flattenroot_to_pandas(filein, fileout, treenamein, var_all, skimming_sel):
     tree = uproot.open(filein)[treenamein]
     df = tree.pandas.df(branches=var_all, flatten=True)
-    df = df.query(skimming_sel)
+    if skimming_sel is not None:
+        df = df.query(skimming_sel)
     df.to_pickle(fileout)
 
 def convert_to_pandas(filein, fileout, treenamein, var_all, skimming_sel):
     tree = uproot.open(filein)[treenamein]
     df = tree.pandas.df(branches=var_all)
-    df = df.query(skimming_sel)
+    if skimming_sel is not None:
+        df = df.query(skimming_sel)
     df.to_pickle(fileout)
 
-def skimmer(filein, filevt, fileout, skimming_sel, var_evt_match):
+def skimmer(filein, filevt, fileout, skimming_sel, var_evt_match,
+            param_case, presel_reco, sel_cent, skimming2_dotrackpid):
     df = pickle.load(open(filein, "rb"))
+    dfevt = pickle.load(open(filevt, "rb"))
     if "Evt" not in filein:
-        dfevt = pickle.load(open(filevt, "rb"))
         df = pd.merge(df, dfevt, on=var_evt_match)
-    df = df.query(skimming_sel)
+    if skimming_sel is not None:
+        df = df.query(skimming_sel)
+    if "Reco" in filein:
+        if skimming2_dotrackpid is True:
+            df = filter_df_cand(df, param_case, 'presel_track_pid')
+        if presel_reco is not None:
+            df = df.query(presel_reco)
+        array_pt = df.pt_cand.values
+        array_y = df.y_cand.values
+        isselacc = selectfidacc(array_pt, array_y)
+        df = df[np.array(isselacc, dtype=bool)]
+    if sel_cent is not None:
+        df = df.query(sel_cent)
     df.to_pickle(fileout)
 
 def flattenallpickle(chunk, chunkout, treenamein, var_all, skimming_sel):
@@ -63,10 +81,13 @@ def convertallpickle(chunk, chunkout, treenamein, var_all, skimming_sel):
     for p in processes:
         p.join()
 
-def skimall(chunk, chunkevt, chunkout, skimming_sel, var_evt_match):
+def skimall(chunk, chunkevt, chunkout, skimming_sel, var_evt_match,
+            param_case, presel_reco, sel_cent, skimming2_dotrackpid):
     processes = [mp.Process(target=skimmer, args=(filein, chunkevt[index],
                                                   chunkout[index],
-                                                  skimming_sel, var_evt_match))
+                                                  skimming_sel, var_evt_match,
+                                                  param_case, presel_reco,
+                                                  sel_cent, skimming2_dotrackpid))
                  for index, filein in enumerate(chunk)]
     for p in processes:
         p.start()
@@ -156,6 +177,7 @@ def conversion(data_config, data_param, mcordata):
 def skim(data_config, data_param, mcordata):
 
     case = data_config["case"]
+    param_case = data_param[case]
 
     namefile_reco = data_param[case]["files_names"]["namefile_reco"]
     namefile_evt = data_param[case]["files_names"]["namefile_evt"]
@@ -168,6 +190,9 @@ def skim(data_config, data_param, mcordata):
     skimming_sel = data_param[case]["skimming2_sel"]
     skimming_sel_gen = data_param[case]["skimming2_sel_gen"]
     skimming_sel_evt = data_param[case]["skimming2_sel_evt"]
+    presel_reco = data_param[case]["presel_reco"]
+    sel_cent = data_param[case]["sel_cent"]
+    skimming2_dotrackpid = data_param[case]["skimming2_dotrackpid"]
 
     inputdir = data_param[case]["output_folders"]["pkl_out"][mcordata]
     outputdir = data_param[case]["output_folders"]["pkl_skimmed"][mcordata]
@@ -189,12 +214,16 @@ def skim(data_config, data_param, mcordata):
 
     for index, _ in enumerate(chunks):
         print("Processing chunk number=", index)
-        skimall(chunks[index], chunksevt[index], chunksout[index], skimming_sel, var_evt_match)
+        skimall(chunks[index], chunksevt[index], chunksout[index],
+                skimming_sel, var_evt_match, param_case, presel_reco, sel_cent,
+                skimming2_dotrackpid)
         skimall(chunksevt[index], chunksevt[index], chunksoutevt[index], \
-                skimming_sel_evt, var_evt_match)
+                skimming_sel_evt, var_evt_match, param_case, presel_reco, \
+                sel_cent, skimming2_dotrackpid)
         if mcordata == "mc":
             skimall(chunksgen[index], chunksevt[index], chunksoutgen[index], \
-                    skimming_sel_gen, var_evt_match)
+                    skimming_sel_gen, var_evt_match, param_case, presel_reco, \
+                    sel_cent, skimming2_dotrackpid)
     print("Total time elapsed", time.time()-tstart)
 def merging(data_config, data_param, mcordata):
 

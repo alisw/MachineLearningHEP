@@ -21,6 +21,7 @@ import yaml
 from machine_learning_hep.doskimming import conversion, merging, skim
 from machine_learning_hep.doclassification_regression import doclassification_regression
 from machine_learning_hep.doanalysis import doanalysis
+from machine_learning_hep.extractmasshisto import extractmasshisto
 
 def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 
@@ -46,11 +47,14 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     doskimmingdata = data_config["skimming"]["data"]["activate"]
     doml = data_config["ml_study"]["activate"]
     mltype = data_config["ml_study"]["mltype"]
-    doanalyml = data_config["analysis"]["ml"]["activate"]
-    doanalystd = data_config["analysis"]["std"]["activate"]
-    #binminarrayan = data_config["analysis"]["binmin"]
-    #binmaxarrayan = data_config["analysis"]["binmax"]
-    #models = data_config["analysis"]["models"]
+    doapplymldata = data_config["analysis"]["data"]["ml"]["doapply"]
+    doapplystddata = data_config["analysis"]["data"]["std"]["doapply"]
+    doapplymlmc = data_config["analysis"]["mc"]["ml"]["doapply"]
+    doapplystdmc = data_config["analysis"]["mc"]["std"]["doapply"]
+    domassmldata = data_config["analysis"]["data"]["ml"]["domass"]
+    domassstddata = data_config["analysis"]["data"]["std"]["domass"]
+    domassmlmc = data_config["analysis"]["mc"]["ml"]["domass"]
+    domassstdmc = data_config["analysis"]["mc"]["std"]["domass"]
 
     if doconversionmc is True:
         pkl_mc = data_param[case]["output_folders"]["pkl_out"]["mc"]
@@ -114,35 +118,57 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
             merging(data_config, data_param, "mc")
 
     if doml is True:
-        mlout = data_param[case]["output_folders"]["mlout"]
-        mlplot = data_param[case]["output_folders"]["mlplot"]
-        if os.path.exists(mlout) or os.path.exists(mlplot):
-            print("ml folders exist")
-            print("rm -rf ", mlout)
-            print("rm -rf ", mlplot)
-        else:
-            print("creating ml folder dir")
-            os.makedirs(mlout)
-            os.makedirs(mlplot)
-            for binmin, binmax in zip(binminarray, binmaxarray):
-                print(binmin, binmax)
-                doclassification_regression(data_config["ml_study"],
-                                            data_param, data_model[mltype], case, binmin, binmax)
-    if doanalyml is True or doanalystd is True:
-        pltanaldir = data_param[case]["output_folders"]["plotsanalysis"]
-        histoanaldir = data_param[case]["output_folders"]["histoanalysis"]
+        for binmin, binmax in zip(binminarray, binmaxarray):
+            print(binmin, binmax)
+            doclassification_regression(data_config["ml_study"],
+                                        data_param, data_model[mltype], case, binmin, binmax)
+    if doapplymldata is True:
+        print("DOING ML DATA")
+        print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["data"])
+        useml = 1
+        doanalysis(data_config, data_param, case, useml, "data")
 
-        if os.path.exists(pltanaldir) or os.path.exists(histoanaldir):
-            print("ml folders exist")
-            print("rm -rf ", pltanaldir)
-            print("rm -rf ", histoanaldir)
-        else:
-            print("creating analysis dir")
-            os.makedirs(pltanaldir)
-            os.makedirs(histoanaldir)
-            useml = 1 if doanalyml is True else 0
-            print("UseML", useml)
-            doanalysis(data_config, data_param, case, useml)
+    if doapplystddata is True:
+        print("DOING STD DATA")
+        print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["data"])
+        useml = 0
+        doanalysis(data_config, data_param, case, useml, "data")
+
+    if doapplymlmc is True:
+        print("DOING ML MC")
+        print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["mc"])
+        useml = 1
+        doanalysis(data_config, data_param, case, useml, "mc")
+
+    if doapplystdmc is True:
+        print("DOING STD MC")
+        print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["mc"])
+        useml = 0
+        doanalysis(data_config, data_param, case, useml, "mc")
+
+    if domassmldata is True:
+        print("DOING ML DATA")
+        print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["data"])
+        useml = 1
+        extractmasshisto(data_config, data_param, case, useml, "data")
+
+    if domassstddata is True:
+        print("DOING STD DATA")
+        print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["data"])
+        useml = 0
+        extractmasshisto(data_config, data_param, case, useml, "data")
+
+    if domassmlmc is True:
+        print("DOING ML MC")
+        print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["mc"])
+        useml = 1
+        extractmasshisto(data_config, data_param, case, useml, "mc")
+
+    if domassstdmc is True:
+        print("DOING STD MC")
+        print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["mc"])
+        useml = 0
+        extractmasshisto(data_config, data_param, case, useml, "mc")
 
 do_entire_analysis()
 

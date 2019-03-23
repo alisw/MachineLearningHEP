@@ -17,29 +17,36 @@ main macro for charm analysis with python
 """
 #import argparse
 #import sys
-#import os.path
+import os.path
 
 # pylint: disable=import-error
 import time
 #from machine_learning_hep.general import get_database_ml_parameters # pylint: disable=import-error
 #from machine_learning_hep.general import get_database_ml_analysis
-from machine_learning_hep.listfiles import list_files_dir_lev2
-from machine_learning_hep.skimming import create_inv_mass
+from machine_learning_hep.listfiles import list_files_dir_lev2, list_files_lev2
 from machine_learning_hep.doskimming import merge
 #from ROOT import TFile # pylint: disable=import-error, no-name-in-module
-#from machine_learning_hep.skimming import plothisto
+from machine_learning_hep.skimming import selectcandidatesall
 #from machine_learning_hep.fit import fitmass, plot_graph_yield
 
 # pylint: disable=too-many-locals, too-many-statements, too-many-branches
-def doanalysis(data_config, data, case, useml):
+def doanalysis(data_config, data, case, useml, mcordata):
 
     var_pt = data[case]["variables"]["var_binning"]
-    fileinputdir = data[case]["output_folders"]["pkl_skimmed"]["data"]
-    namefilereco = data[case]["files_names"]["namefile_reco_skim"]
-    outputdirhisto = data[case]["output_folders"]["histoanalysis"]
+    fileinputdir = data[case]["output_folders"]["pkl_skimmed"][mcordata]
+    outputdirfin = data[case]["output_folders"]["pkl_final"][mcordata]
+    namefilereco_ml = data[case]["files_names"]["namefile_reco_skim_ml"]
+    namefilereco_std = data[case]["files_names"]["namefile_reco_skim_std"]
+    namefile_reco_skim = data[case]["files_names"]["namefile_reco_skim"]
+    namefile_gen_skim = data[case]["files_names"]["namefile_gen_skim"]
+    namefile_evt_skim = data[case]["files_names"]["namefile_evt_skim"]
+    namefilereco_ml_tot = data[case]["files_names"]["namefile_reco_skim_ml_tot"]
+    namefilereco_std_tot = data[case]["files_names"]["namefile_reco_skim_std_tot"]
+    namefile_gen_skim_tot = data[case]["files_names"]["namefile_gen_skim_tot"]
+    namefile_evt_skim_tot = data[case]["files_names"]["namefile_evt_skim_tot"]
 
-    maxfiles = data_config["analysis"]["maxfiles"]
-    nmaxchunks = data_config["analysis"]["nmaxchunks"]
+    maxfiles = data_config["analysis"][mcordata]["maxfiles"]
+    nmaxchunks = data_config["analysis"][mcordata]["nmaxchunks"]
     doinvmassspectra = data_config["analysis"]["doinvmassspectra"]
     binmin = data_config["analysis"]["binmin"]
     binmax = data_config["analysis"]["binmax"]
@@ -47,40 +54,52 @@ def doanalysis(data_config, data, case, useml):
     probcut = data_config["analysis"]["probcut"]
     models = data_config["analysis"]["models"]
     modelname = data_config["analysis"]["modelname"]
-    skimmeddf = "skimmedLc.pkl"
-
-    #yield_signal = []
-    #yield_signal_err = []
 
     tstart = time.time()
     if doinvmassspectra == 1:
         index = 0
         for imin, imax in zip(binmin, binmax):
-            namefilehist = ("histo%s_ptmin%s_%s_useml%d_0%d.root" % \
-                            (case, imin, imax, useml, 1000*probcut[index]))
-            listdf, listhisto = list_files_dir_lev2(fileinputdir, outputdirhisto,
-                                                    namefilereco, namefilehist)
-            listdf, listdfout = list_files_dir_lev2(fileinputdir, outputdirhisto,
-                                                    namefilereco, skimmeddf)
-            print(listdf)
+            listdf, listdfout_ml = list_files_dir_lev2(fileinputdir, outputdirfin,
+                                                       namefile_reco_skim, namefilereco_ml)
+            listdf, listdfout_std = list_files_dir_lev2(fileinputdir, outputdirfin,
+                                                        namefile_reco_skim, namefilereco_std)
             if maxfiles is not -1:
                 listdf = listdf[:maxfiles]
-                listhisto = listhisto[:maxfiles]
-
-            chunksdf = [listdf[x:x+nmaxchunks] for x in range(0, len(listdf), nmaxchunks)]
-            chunkshisto = [listhisto[x:x+nmaxchunks] \
-                           for x in range(0, len(listhisto), nmaxchunks)]
-
-            chunksoutdf = [listdfout[x:x+nmaxchunks] \
-                           for x in range(0, len(listdfout), nmaxchunks)]
+                listdfout_ml = listdfout_ml[:maxfiles]
+                listdfout_std = listdfout_std[:maxfiles]
+            chunksdf = [listdf[x:x+nmaxchunks] \
+                        for x in range(0, len(listdf), nmaxchunks)]
+            chunksdfout_ml = [listdfout_ml[x:x+nmaxchunks] \
+                           for x in range(0, len(listdfout_ml), nmaxchunks)]
+            chunksdfout_std = [listdfout_std[x:x+nmaxchunks] \
+                           for x in range(0, len(listdfout_std), nmaxchunks)]
 
             for idf, _ in enumerate(chunksdf):
                 print("chunk number=", idf)
-                _ = create_inv_mass(data, chunksdf[idf], chunkshisto[idf],
-                                    chunksoutdf[idf], var_pt, imin, imax,
+                selectcandidatesall(data, chunksdf[idf], chunksdfout_ml[idf],
+                                    chunksdfout_std[idf], var_pt, imin, imax,
                                     useml, modelname, models[index],
                                     probcut[index], case)
+            if useml == 1:
+                namefilereco_ml_tot = os.path.join(outputdirfin, namefilereco_ml_tot)
+                namefilereco_ml_tot = \
+                    namefilereco_ml_tot.replace(".pkl", "%d_%d.pkl" % (imin, imax))
+                merge(listdfout_ml, namefilereco_ml_tot)
+            if useml == 0:
+                namefilereco_std_tot = os.path.join(outputdirfin, namefilereco_std_tot)
+                namefilereco_std_tot = \
+                    namefilereco_std_tot.replace(".pkl", "%d_%d.pkl" % (imin, imax))
+                merge(listdfout_std, namefilereco_std_tot)
             index = index + 1
-        merge(listdfout, skimmeddf)
+
+        namefile_evt_skim_tot = os.path.join(outputdirfin, namefile_evt_skim_tot)
+        listevt, _ = list_files_lev2(fileinputdir, "", namefile_evt_skim, "")
+        merge(listevt, namefile_evt_skim_tot)
+
+        if mcordata == "mc":
+            namefile_gen_skim_tot = os.path.join(outputdirfin, namefile_gen_skim_tot)
+            listgen, _ = list_files_lev2(fileinputdir, "", namefile_gen_skim, "")
+            merge(listgen, namefile_gen_skim_tot)
+
     timestop = time.time()
     print("total time of filling histo=", tstart - timestop)

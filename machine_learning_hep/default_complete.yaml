@@ -10,22 +10,22 @@ conversion:
     maxfiles: -1
 skimming: 
   mc:
-    activate: false
+    activate: true
     nmaxconvers: 4
     maxfiles: -1
   data:
-    activate: false
-    nmaxconvers: 200
+    activate: true
+    nmaxconvers: 1000
     maxfiles: -1
 merging: 
   mc:
-    activate: false
+    activate: true
     maxfilestomerge: 4
   data:
-    activate: false
+    activate: true
     maxfilestomerge: 400
 ml_study:   
-  activate: true 
+  activate: false 
   applytodatamc: true
   binmin: [6] 
   binmax: [10]
@@ -55,16 +55,29 @@ ml_study:
   usefileserver: false
 
 analysis:
-  std:
-    activate: false
-  ml: 
-    activate: false
+  data:
+    nmaxchunks: 300
+    maxfiles: -1
+    std:
+      doapply: false
+      domass: false
+    ml:
+      doapply: false
+      domass: false
+  mc:
+    nmaxchunks: 10
+    maxfiles: -1
+    std:
+      doapply: false
+      domass: false
+    ml:
+      doapply: false
+      domass: false
   modelname: xgboost
   binmin: [6]
   binmax: [10]
   probcut: [0.70]
+  probcutoptimal: 0.8
   models: [xgboost_classifiernevt_sig10000_nevt_bkg10000_BinaryClassificationLctopK0sPbPbCen010_dfselection_pt_cand_6.0_10.0.sav]
-  nmaxchunks: 500
-  maxfiles: -1
-  dofit: false
   doinvmassspectra: true
+

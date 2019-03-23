@@ -20,6 +20,16 @@ import numba
 from machine_learning_hep.bitwise import filter_bit_df
 
 @numba.njit
+def selectcandidateml(array_prob, probcut):
+    array_is_sel = []
+    for prob in array_prob:
+        if prob > probcut:
+            array_is_sel.append(True)
+        else:
+            array_is_sel.append(False)
+    return array_is_sel
+
+@numba.njit
 def selectfidacc(array_pt, array_y):
     array_is_sel = []
     for icand, pt in enumerate(array_pt):

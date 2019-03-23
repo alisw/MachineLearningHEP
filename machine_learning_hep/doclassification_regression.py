@@ -102,7 +102,6 @@ def doclassification_regression(run_config, data, model_config, case, binmin, bi
     var_boundaries = data[case]["variables"]["var_boundaries"]
     var_binning = data[case]["variables"]['var_binning']
 
-    presel_reco = data[case]["presel_reco"]
     mlplot = data[case]["output_folders"]["mlplot"]
     mlout = data[case]["output_folders"]["mlout"]
 
@@ -142,24 +141,13 @@ def doclassification_regression(run_config, data, model_config, case, binmin, bi
         df_bkg = pd.read_pickle(filebkg)
         df_sig = filterdataframe_singlevar(df_sig, var_binning, binmin, binmax)
         df_bkg = filterdataframe_singlevar(df_bkg, var_binning, binmin, binmax)
-        if presel_reco is not None:
-            df_sig = df_sig.query(presel_reco)
-            df_bkg = df_bkg.query(presel_reco)
 
-        df_sig = filter_df_cand(df_sig, data[case], 'presel_track_pid')
-        df_bkg = filter_df_cand(df_bkg, data[case], 'presel_track_pid')
         df_sig = filter_df_cand(df_sig, data[case], 'mc_signal')
 
         df_mc = pd.read_pickle(filemc)
         df_data = pd.read_pickle(filedata)
         df_data = filterdataframe_singlevar(df_data, var_binning, binmin, binmax)
         df_mc = filterdataframe_singlevar(df_mc, var_binning, binmin, binmax)
-
-        if presel_reco is not None:
-            df_mc = df_mc.query(presel_reco)
-            df_data = df_data.query(presel_reco)
-        df_mc = filter_df_cand(df_mc, data[case], 'presel_track_pid')
-        df_data = filter_df_cand(df_data, data[case], 'presel_track_pid')
 
         _, df_ml_test, df_sig_train, df_bkg_train, _, _, \
         x_train, y_train, x_test, y_test = \
