@@ -142,7 +142,7 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
             os.makedirs(histoanaldir)
             useml = 1 if doanalyml is True else 0
             print("UseML", useml)
-            doanalysis(data_config, data_param, case, useml)
+            doanalysis(data_config, data_param, case, useml, "data")
 
 do_entire_analysis()
 

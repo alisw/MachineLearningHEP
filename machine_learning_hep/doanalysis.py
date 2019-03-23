@@ -30,19 +30,19 @@ from machine_learning_hep.skimming import selectcandidatesall
 #from machine_learning_hep.fit import fitmass, plot_graph_yield
 
 # pylint: disable=too-many-locals, too-many-statements, too-many-branches
-def doanalysis(data_config, data, case, useml):
+def doanalysis(data_config, data, case, useml, mcordata):
 
     var_pt = data[case]["variables"]["var_binning"]
-    fileinputdir = data[case]["output_folders"]["pkl_skimmed"]["data"]
-    outputdirfin = data[case]["output_folders"]["pkl_final"]["data"]
+    fileinputdir = data[case]["output_folders"]["pkl_skimmed"][mcordata]
+    outputdirfin = data[case]["output_folders"]["pkl_final"][mcordata]
     namefilereco_ml = data[case]["files_names"]["namefile_reco_skim_ml"]
     namefilereco_std = data[case]["files_names"]["namefile_reco_skim_std"]
     namefile_reco_skim = data[case]["files_names"]["namefile_reco_skim"]
-    #namefile_gen_skim = data[case]["files_names"]["namefile_gen_skim"]
+    namefile_gen_skim = data[case]["files_names"]["namefile_gen_skim"]
     namefile_evt_skim = data[case]["files_names"]["namefile_evt_skim"]
     namefilereco_ml_tot = data[case]["files_names"]["namefile_reco_skim_ml_tot"]
-    #namefilereco_std_tot = data[case]["files_names"]["namefile_reco_skim_std_tot"]
-    #namefile_gen_skim_tot = data[case]["files_names"]["namefile_gen_skim_tot"]
+    namefilereco_std_tot = data[case]["files_names"]["namefile_reco_skim_std_tot"]
+    namefile_gen_skim_tot = data[case]["files_names"]["namefile_gen_skim_tot"]
     namefile_evt_skim_tot = data[case]["files_names"]["namefile_evt_skim_tot"]
 
     maxfiles = data_config["analysis"]["maxfiles"]
@@ -81,17 +81,26 @@ def doanalysis(data_config, data, case, useml):
                                     chunksdfout_std[idf], var_pt, imin, imax,
                                     useml, modelname, models[index],
                                     probcut[index], case)
-            index = index + 1
-            namefilereco_ml_tot = os.path.join(outputdirfin, namefilereco_ml_tot)
-            #namefile_gen_skim_tot = os.path.join(outputdirfin, namefile_gen_skim_tot)
-            namefile_evt_skim_tot = os.path.join(outputdirfin, namefile_evt_skim_tot)
-            #listgen, _ = list_files_lev2(fileinputdir, "", namefile_gen_skim, "")
-            listevt, _ = list_files_lev2(fileinputdir, "", namefile_evt_skim, "")
-            #merge(listgen, namefile_gen_skim_tot)
-            namefilereco_ml_tot = \
+            if useml == 1:
+                namefilereco_ml_tot = os.path.join(outputdirfin, namefilereco_ml_tot)
+                namefilereco_ml_tot = \
                     namefilereco_ml_tot.replace(".pkl", "%d_%d.pkl" % (imin, imax))
-            merge(listdfout_ml, namefilereco_ml_tot)
+                merge(listdfout_ml, namefilereco_ml_tot)
+            if useml == 0:
+                namefilereco_std_tot = os.path.join(outputdirfin, namefilereco_std_tot)
+                namefilereco_std_tot = \
+                    namefilereco_std_tot.replace(".pkl", "%d_%d.pkl" % (imin, imax))
+                merge(listdfout_std, namefilereco_std_tot)
+            index = index + 1
+
+        namefile_evt_skim_tot = os.path.join(outputdirfin, namefile_evt_skim_tot)
+        listevt, _ = list_files_lev2(fileinputdir, "", namefile_evt_skim, "")
         merge(listevt, namefile_evt_skim_tot)
+
+        if mcordata == "mc":
+            namefile_gen_skim_tot = os.path.join(outputdirfin, namefile_gen_skim_tot)
+            listgen, _ = list_files_lev2(fileinputdir, "", namefile_gen_skim, "")
+            merge(listgen, namefile_gen_skim_tot)
 
     timestop = time.time()
     print("total time of filling histo=", tstart - timestop)
