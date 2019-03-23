@@ -45,8 +45,12 @@ def convert_to_pandas(filein, fileout, treenamein, var_all, skimming_sel):
 def skimmer(filein, filevt, fileout, skimming_sel, var_evt_match,
             param_case, presel_reco, sel_cent, skimming2_dotrackpid):
     df = pickle.load(open(filein, "rb"))
+    dfevt = pickle.load(open(filevt, "rb"))
+    if "Evt" not in filein:
+        df = pd.merge(df, dfevt, on=var_evt_match)
+    if skimming_sel is not None:
+        df = df.query(skimming_sel)
     if "Reco" in filein:
-        #df = df[isselacc]
         if skimming2_dotrackpid is True:
             df = filter_df_cand(df, param_case, 'presel_track_pid')
         if presel_reco is not None:
@@ -55,13 +59,6 @@ def skimmer(filein, filevt, fileout, skimming_sel, var_evt_match,
         array_y = df.y_cand.values
         isselacc = selectfidacc(array_pt, array_y)
         df = df[np.array(isselacc, dtype=bool)]
-        if skimming_sel is not None:
-            df = df.query(skimming_sel)
-    if "Evt" not in filein:
-        dfevt = pickle.load(open(filevt, "rb"))
-        df = pd.merge(df, dfevt, on=var_evt_match)
-        if skimming_sel is not None:
-            df = df.query(skimming_sel)
     if sel_cent is not None:
         df = df.query(sel_cent)
     df.to_pickle(fileout)
