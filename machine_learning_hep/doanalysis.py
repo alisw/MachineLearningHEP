@@ -45,8 +45,8 @@ def doanalysis(data_config, data, case, useml, mcordata):
     namefile_gen_skim_tot = data[case]["files_names"]["namefile_gen_skim_tot"]
     namefile_evt_skim_tot = data[case]["files_names"]["namefile_evt_skim_tot"]
 
-    maxfiles = data_config["analysis"]["maxfiles"]
-    nmaxchunks = data_config["analysis"]["nmaxchunks"]
+    maxfiles = data_config["analysis"][mcordata]["maxfiles"]
+    nmaxchunks = data_config["analysis"][mcordata]["nmaxchunks"]
     doinvmassspectra = data_config["analysis"]["doinvmassspectra"]
     binmin = data_config["analysis"]["binmin"]
     binmax = data_config["analysis"]["binmax"]
@@ -67,7 +67,6 @@ def doanalysis(data_config, data, case, useml, mcordata):
                 listdf = listdf[:maxfiles]
                 listdfout_ml = listdfout_ml[:maxfiles]
                 listdfout_std = listdfout_std[:maxfiles]
-
             chunksdf = [listdf[x:x+nmaxchunks] \
                         for x in range(0, len(listdf), nmaxchunks)]
             chunksdfout_ml = [listdfout_ml[x:x+nmaxchunks] \

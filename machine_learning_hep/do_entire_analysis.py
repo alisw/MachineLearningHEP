@@ -46,11 +46,10 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     doskimmingdata = data_config["skimming"]["data"]["activate"]
     doml = data_config["ml_study"]["activate"]
     mltype = data_config["ml_study"]["mltype"]
-    doanalyml = data_config["analysis"]["ml"]["activate"]
-    doanalystd = data_config["analysis"]["std"]["activate"]
-    #binminarrayan = data_config["analysis"]["binmin"]
-    #binmaxarrayan = data_config["analysis"]["binmax"]
-    #models = data_config["analysis"]["models"]
+    doanalymldata = data_config["analysis"]["data"]["ml"]["activate"]
+    doanalystddata = data_config["analysis"]["data"]["std"]["activate"]
+    doanalymlmc = data_config["analysis"]["mc"]["ml"]["activate"]
+    doanalystdmc = data_config["analysis"]["mc"]["std"]["activate"]
 
     if doconversionmc is True:
         pkl_mc = data_param[case]["output_folders"]["pkl_out"]["mc"]
@@ -114,36 +113,30 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
             merging(data_config, data_param, "mc")
 
     if doml is True:
-        mlout = data_param[case]["output_folders"]["mlout"]
-        mlplot = data_param[case]["output_folders"]["mlplot"]
-        if os.path.exists(mlout) or os.path.exists(mlplot):
-            print("ml folders exist")
-            print("rm -rf ", mlout)
-            print("rm -rf ", mlplot)
-        else:
-            print("creating ml folder dir")
-            os.makedirs(mlout)
-            os.makedirs(mlplot)
-            for binmin, binmax in zip(binminarray, binmaxarray):
-                print(binmin, binmax)
-                doclassification_regression(data_config["ml_study"],
-                                            data_param, data_model[mltype], case, binmin, binmax)
-    if doanalyml is True or doanalystd is True:
-        pltanaldir = data_param[case]["output_folders"]["plotsanalysis"]
-        histoanaldir = data_param[case]["output_folders"]["histoanalysis"]
-
-        if os.path.exists(pltanaldir) or os.path.exists(histoanaldir):
-            print("ml folders exist")
-            print("rm -rf ", pltanaldir)
-            print("rm -rf ", histoanaldir)
-        else:
-            print("creating analysis dir")
-            os.makedirs(pltanaldir)
-            os.makedirs(histoanaldir)
-            useml = 1 if doanalyml is True else 0
-            print("UseML", useml)
-            doanalysis(data_config, data_param, case, useml, "data")
-
+        for binmin, binmax in zip(binminarray, binmaxarray):
+            print(binmin, binmax)
+            doclassification_regression(data_config["ml_study"],
+                                        data_param, data_model[mltype], case, binmin, binmax)
+    if doanalymldata is True:
+        print("DOING ML DATA")
+        print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["data"])
+        useml = 1
+        doanalysis(data_config, data_param, case, useml, "data")
+    if doanalystddata is True:
+        print("DOING STD DATA")
+        print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["data"])
+        useml = 0
+        doanalysis(data_config, data_param, case, useml, "data")
+    if doanalymlmc is True:
+        print("DOING ML MC")
+        print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["mc"])
+        useml = 1
+        doanalysis(data_config, data_param, case, useml, "mc")
+    if doanalystdmc is True:
+        print("DOING STD MC")
+        print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["mc"])
+        useml = 0
+        doanalysis(data_config, data_param, case, useml, "mc")
 do_entire_analysis()
 
 #def doskimming(data_config, data_param):

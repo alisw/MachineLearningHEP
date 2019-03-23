@@ -25,7 +25,7 @@ merging:
     activate: false
     maxfilestomerge: 400
 ml_study:   
-  activate: true 
+  activate: false 
   applytodatamc: true
   binmin: [6] 
   binmax: [10]
@@ -55,16 +55,24 @@ ml_study:
   usefileserver: false
 
 analysis:
-  std:
-    activate: false
-  ml: 
-    activate: false
+  data:
+    nmaxchunks: 500
+    maxfiles: -1
+    std:
+      activate: true
+    ml:
+      activate: false
+  mc:
+    nmaxchunks: 500
+    maxfiles: -1
+    std:
+      activate: true
+    ml:
+      activate: false
   modelname: xgboost
   binmin: [6]
   binmax: [10]
   probcut: [0.70]
   models: [xgboost_classifiernevt_sig10000_nevt_bkg10000_BinaryClassificationLctopK0sPbPbCen010_dfselection_pt_cand_6.0_10.0.sav]
-  nmaxchunks: 500
-  maxfiles: -1
   dofit: false
   doinvmassspectra: true
