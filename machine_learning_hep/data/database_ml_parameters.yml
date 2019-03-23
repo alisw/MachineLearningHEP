@@ -52,6 +52,12 @@ LctopK0sPbPbCen010:
     namefile_reco_skim: AnalysisResultsRecoLctopK0sSkimmed.pkl
     namefile_evt_skim: AnalysisResultsEvtLctopK0sSkimmed.pkl
     namefile_gen_skim: AnalysisResultsGenLctopK0sSkimmed.pkl
+    namefile_reco_skim_ml: AnalysisResultsRecoLctopK0sSkimmed_ml.pkl
+    namefile_reco_skim_std: AnalysisResultsRecoLctopK0sSkimmed_std.pkl
+    namefile_reco_skim_ml_tot: AnalysisResultsRecoLctopK0sSkimmed_ml_tot.pkl
+    namefile_reco_skim_std_tot: AnalysisResultsRecoLctopK0sSkimmed_std_tot.pkl
+    namefile_gen_skim_tot: AnalysisResultsGenLctopK0sSkimmed_tot.pkl
+    namefile_evt_skim_tot: AnalysisResultsEvtLctopK0sSkimmed_tot.pkl
     treeoriginreco: 'PWGHF_TreeCreator/tree_Lc2V0bachelor'
     treeorigingen: 'PWGHF_TreeCreator/tree_Lc2V0bachelor_gen'
     treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
@@ -74,12 +80,15 @@ LctopK0sPbPbCen010:
     pkl_out: 
       data: /data/HeavyFlavour/PbPb_data_010/20-03-2019/385_20190319-2141/pickleLctopK0s 
       mc: /data/HeavyFlavour/pPb_MC/20-03-2019/387_20190319-2133/pickleLctopK0s
-    pkl_merged: 
-      data: /data/HeavyFlavour/PbPb_data_010/20-03-2019/385_20190319-2141/pickleLctopK0sskimmed6upMerged
-      mc: /data/HeavyFlavour/pPb_MC/20-03-2019/387_20190319-2133/pickleLctopK0sskimmed6upMerged
     pkl_skimmed: 
       data: /data/HeavyFlavour/PbPb_data_010/20-03-2019/385_20190319-2141/pickleLctopK0sskimmed6up 
       mc: /data/HeavyFlavour/pPb_MC/20-03-2019/387_20190319-2133/pickleLctopK0sskimmed6up
+    pkl_merged: 
+      data: /data/HeavyFlavour/PbPb_data_010/20-03-2019/385_20190319-2141/pickleLctopK0sskimmed6upMerged
+      mc: /data/HeavyFlavour/pPb_MC/20-03-2019/387_20190319-2133/pickleLctopK0sskimmed6upMerged
+    pkl_final: 
+      data: /data/HeavyFlavour/PbPb_data_010/20-03-2019/385_20190319-2141/pickleLctopK0sskimmed6upTot
+      mc: /data/HeavyFlavour/pPb_MC/20-03-2019/387_20190319-2133/pickleLctopK0sskimmed6upTot
 
   variables:
     var_all: [n_cand, cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, 
