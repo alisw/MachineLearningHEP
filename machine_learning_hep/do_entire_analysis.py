@@ -127,36 +127,43 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
         print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["data"])
         useml = 1
         doanalysis(data_config, data_param, case, useml, "data")
+
     if doapplystddata is True:
         print("DOING STD DATA")
         print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["data"])
         useml = 0
         doanalysis(data_config, data_param, case, useml, "data")
+
     if doapplymlmc is True:
         print("DOING ML MC")
         print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["mc"])
         useml = 1
         doanalysis(data_config, data_param, case, useml, "mc")
+
     if doapplystdmc is True:
         print("DOING STD MC")
         print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["mc"])
         useml = 0
         doanalysis(data_config, data_param, case, useml, "mc")
+
     if domassmldata is True:
         print("DOING ML DATA")
         print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["data"])
         useml = 1
         extractmasshisto(data_config, data_param, case, useml, "data")
+
     if domassstddata is True:
         print("DOING STD DATA")
         print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["data"])
         useml = 0
         extractmasshisto(data_config, data_param, case, useml, "data")
+
     if domassmlmc is True:
         print("DOING ML MC")
         print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["mc"])
         useml = 1
         extractmasshisto(data_config, data_param, case, useml, "mc")
+
     if domassstdmc is True:
         print("DOING STD MC")
         print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["mc"])

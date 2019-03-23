@@ -15,7 +15,7 @@ skimming:
     maxfiles: -1
   data:
     activate: true
-    nmaxconvers: 300
+    nmaxconvers: 1000
     maxfiles: -1
 merging: 
   mc:
