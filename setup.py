@@ -71,7 +71,7 @@ setup(
   # https://packaging.python.org/en/latest/requirements.html
   install_requires=[ "numpy", "pandas", "scipy", "matplotlib", "seaborn", "uproot", "scikit-learn",
                      "xgboost", "keras", "tensorflow", "PyYaml", "pylint", "twisted", "klein",
-                    "Jinja2", "numba", "pyarrow", "root_numpy"],
+                    "Jinja2", "numba", "pyarrow"],
 
   python_requires='>=3.6, <3.7',
 
