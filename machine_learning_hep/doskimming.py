@@ -43,11 +43,12 @@ def convert_to_pandas(filein, fileout, treenamein, var_all, skimming_sel):
     df.to_pickle(fileout)
 
 def skimmer(filein, filevt, fileout, skimming_sel, var_evt_match,
-            param_case, presel_reco, sel_cent):
+            param_case, presel_reco, sel_cent, skimming2_dotrackpid):
     df = pickle.load(open(filein, "rb"))
     if "Reco" in filein:
         #df = df[isselacc]
-        df = filter_df_cand(df, param_case, 'presel_track_pid')
+        if skimming2_dotrackpid is True:
+            df = filter_df_cand(df, param_case, 'presel_track_pid')
         if presel_reco is not None:
             df = df.query(presel_reco)
         array_pt = df.pt_cand.values
@@ -82,11 +83,12 @@ def convertallpickle(chunk, chunkout, treenamein, var_all, skimming_sel):
         p.join()
 
 def skimall(chunk, chunkevt, chunkout, skimming_sel, var_evt_match,
-            param_case, presel_reco, sel_cent):
+            param_case, presel_reco, sel_cent, skimming2_dotrackpid):
     processes = [mp.Process(target=skimmer, args=(filein, chunkevt[index],
                                                   chunkout[index],
                                                   skimming_sel, var_evt_match,
-                                                  param_case, presel_reco, sel_cent))
+                                                  param_case, presel_reco,
+                                                  sel_cent, skimming2_dotrackpid))
                  for index, filein in enumerate(chunk)]
     for p in processes:
         p.start()
@@ -191,6 +193,7 @@ def skim(data_config, data_param, mcordata):
     skimming_sel_evt = data_param[case]["skimming2_sel_evt"]
     presel_reco = data_param[case]["presel_reco"]
     sel_cent = data_param[case]["sel_cent"]
+    skimming2_dotrackpid = data_param[case]["skimming2_dotrackpid"]
 
     inputdir = data_param[case]["output_folders"]["pkl_out"][mcordata]
     outputdir = data_param[case]["output_folders"]["pkl_skimmed"][mcordata]
@@ -213,12 +216,15 @@ def skim(data_config, data_param, mcordata):
     for index, _ in enumerate(chunks):
         print("Processing chunk number=", index)
         skimall(chunks[index], chunksevt[index], chunksout[index],
-                skimming_sel, var_evt_match, param_case, presel_reco, sel_cent)
+                skimming_sel, var_evt_match, param_case, presel_reco, sel_cent,
+                skimming2_dotrackpid)
         skimall(chunksevt[index], chunksevt[index], chunksoutevt[index], \
-                skimming_sel_evt, var_evt_match, param_case, presel_reco, sel_cent)
+                skimming_sel_evt, var_evt_match, param_case, presel_reco, \
+                sel_cent, skimming2_dotrackpid)
         if mcordata == "mc":
             skimall(chunksgen[index], chunksevt[index], chunksoutgen[index], \
-                    skimming_sel_gen, var_evt_match, param_case, presel_reco, sel_cent)
+                    skimming_sel_gen, var_evt_match, param_case, presel_reco, \
+                    sel_cent, skimming2_dotrackpid)
     print("Total time elapsed", time.time()-tstart)
 def merging(data_config, data_param, mcordata):
 

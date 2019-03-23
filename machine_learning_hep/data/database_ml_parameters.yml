@@ -27,6 +27,7 @@ LctopK0sPbPbCen010:
   skimming2_sel: "pt_cand>6 & is_ev_rej==0" 
   skimming2_sel_gen: "pt_cand>6 & abs(z_vtx_gen)<10 " 
   skimming2_sel_evt: null
+  skimming2_dotrackpid: True 
   sel_cent: "centrality >=0 &  centrality <=10" ### DONT KNOW HOW TO PROPERLY SET THE LIMITS FOR CENTRALITY, NEED TO CHECK 
   ptgen: pt_cand
   
