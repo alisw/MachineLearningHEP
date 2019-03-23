@@ -55,6 +55,8 @@ def skimmer(filein, filevt, fileout, skimming_sel, var_evt_match,
         array_y = df.y_cand.values
         isselacc = selectfidacc(array_pt, array_y)
         df = df[np.array(isselacc, dtype=bool)]
+        if skimming_sel is not None:
+            df = df.query(skimming_sel)
     if "Evt" not in filein:
         dfevt = pickle.load(open(filevt, "rb"))
         df = pd.merge(df, dfevt, on=var_evt_match)
