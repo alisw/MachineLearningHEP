@@ -56,23 +56,28 @@ ml_study:
 
 analysis:
   data:
-    nmaxchunks: 500
+    nmaxchunks: 300
     maxfiles: -1
     std:
-      activate: true
+      doapply: true
+      domass: true
     ml:
-      activate: false
+      doapply: false
+      domass: false
   mc:
-    nmaxchunks: 500
+    nmaxchunks: 10
     maxfiles: -1
     std:
-      activate: true
+      doapply: false
+      domass: false
     ml:
-      activate: false
+      doapply: false
+      domass: false
   modelname: xgboost
   binmin: [6]
   binmax: [10]
   probcut: [0.70]
+  probcutoptimal: 0.8
   models: [xgboost_classifiernevt_sig10000_nevt_bkg10000_BinaryClassificationLctopK0sPbPbCen010_dfselection_pt_cand_6.0_10.0.sav]
-  dofit: false
   doinvmassspectra: true
+

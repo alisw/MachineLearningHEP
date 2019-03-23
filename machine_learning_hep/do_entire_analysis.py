@@ -21,6 +21,7 @@ import yaml
 from machine_learning_hep.doskimming import conversion, merging, skim
 from machine_learning_hep.doclassification_regression import doclassification_regression
 from machine_learning_hep.doanalysis import doanalysis
+from machine_learning_hep.extractmasshisto import extractmasshisto
 
 def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 
@@ -46,10 +47,14 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     doskimmingdata = data_config["skimming"]["data"]["activate"]
     doml = data_config["ml_study"]["activate"]
     mltype = data_config["ml_study"]["mltype"]
-    doanalymldata = data_config["analysis"]["data"]["ml"]["activate"]
-    doanalystddata = data_config["analysis"]["data"]["std"]["activate"]
-    doanalymlmc = data_config["analysis"]["mc"]["ml"]["activate"]
-    doanalystdmc = data_config["analysis"]["mc"]["std"]["activate"]
+    doapplymldata = data_config["analysis"]["data"]["ml"]["doapply"]
+    doapplystddata = data_config["analysis"]["data"]["std"]["doapply"]
+    doapplymlmc = data_config["analysis"]["mc"]["ml"]["doapply"]
+    doapplystdmc = data_config["analysis"]["mc"]["std"]["doapply"]
+    domassmldata = data_config["analysis"]["data"]["ml"]["domass"]
+    domassstddata = data_config["analysis"]["data"]["std"]["domass"]
+    domassmlmc = data_config["analysis"]["mc"]["ml"]["domass"]
+    domassstdmc = data_config["analysis"]["mc"]["std"]["domass"]
 
     if doconversionmc is True:
         pkl_mc = data_param[case]["output_folders"]["pkl_out"]["mc"]
@@ -117,26 +122,47 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
             print(binmin, binmax)
             doclassification_regression(data_config["ml_study"],
                                         data_param, data_model[mltype], case, binmin, binmax)
-    if doanalymldata is True:
+    if doapplymldata is True:
         print("DOING ML DATA")
         print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["data"])
         useml = 1
         doanalysis(data_config, data_param, case, useml, "data")
-    if doanalystddata is True:
+    if doapplystddata is True:
         print("DOING STD DATA")
         print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["data"])
         useml = 0
         doanalysis(data_config, data_param, case, useml, "data")
-    if doanalymlmc is True:
+    if doapplymlmc is True:
         print("DOING ML MC")
         print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["mc"])
         useml = 1
         doanalysis(data_config, data_param, case, useml, "mc")
-    if doanalystdmc is True:
+    if doapplystdmc is True:
         print("DOING STD MC")
         print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["mc"])
         useml = 0
         doanalysis(data_config, data_param, case, useml, "mc")
+    if domassmldata is True:
+        print("DOING ML DATA")
+        print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["data"])
+        useml = 1
+        extractmasshisto(data_config, data_param, case, useml, "data")
+    if domassstddata is True:
+        print("DOING STD DATA")
+        print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["data"])
+        useml = 0
+        extractmasshisto(data_config, data_param, case, useml, "data")
+    if domassmlmc is True:
+        print("DOING ML MC")
+        print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["mc"])
+        useml = 1
+        extractmasshisto(data_config, data_param, case, useml, "mc")
+    if domassstdmc is True:
+        print("DOING STD MC")
+        print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["mc"])
+        useml = 0
+        extractmasshisto(data_config, data_param, case, useml, "mc")
+
 do_entire_analysis()
 
 #def doskimming(data_config, data_param):
