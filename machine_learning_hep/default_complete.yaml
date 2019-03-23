@@ -10,19 +10,19 @@ conversion:
     maxfiles: -1
 skimming: 
   mc:
-    activate: false
+    activate: true
     nmaxconvers: 4
     maxfiles: -1
   data:
-    activate: false
-    nmaxconvers: 200
+    activate: true
+    nmaxconvers: 300
     maxfiles: -1
 merging: 
   mc:
-    activate: false
+    activate: true
     maxfilestomerge: 4
   data:
-    activate: false
+    activate: true
     maxfilestomerge: 400
 ml_study:   
   activate: false 
@@ -59,8 +59,8 @@ analysis:
     nmaxchunks: 300
     maxfiles: -1
     std:
-      doapply: true
-      domass: true
+      doapply: false
+      domass: false
     ml:
       doapply: false
       domass: false
