@@ -166,7 +166,8 @@ def study_signif(case, names, bin_lim, file_mc_gen, file_data_evt, df_mc_reco, d
     gROOT.ProcessLine("gErrorIgnoreLevel = kWarning;")
 
     gen_dict = get_database_ml_parameters()[case]
-    mass = gen_dict["mass"]
+    mass = gen_dict['mass']
+    var_bin = gen_dict['variables']['var_binning']
 
     sopt_dict = gen_dict['signif_opt']
     mass_fit_lim = sopt_dict['mass_fit_lim']
@@ -175,7 +176,7 @@ def study_signif(case, names, bin_lim, file_mc_gen, file_data_evt, df_mc_reco, d
 
     df_mc_gen = pd.read_pickle(file_mc_gen)
     df_mc_gen = df_mc_gen.query(gen_dict['presel_gen'])
-    df_mc_gen = filterdataframe_singlevar(df_mc_gen, gen_dict['ptgen'], bin_lim[0], bin_lim[1])
+    df_mc_gen = filterdataframe_singlevar(df_mc_gen, var_bin, bin_lim[0], bin_lim[1])
     df_evt = pd.read_pickle(file_data_evt)
     n_events = len(df_evt.query(sopt_dict['sel_event']))
     logger.debug("Number of events: %d", n_events)
