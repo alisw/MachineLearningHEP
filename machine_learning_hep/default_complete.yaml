@@ -10,22 +10,22 @@ conversion:
     maxfiles: -1
 skimming: 
   mc:
-    activate: true
+    activate: false
     nmaxconvers: 4
     maxfiles: -1
   data:
-    activate: true
+    activate: false
     nmaxconvers: 1000
     maxfiles: -1
 merging: 
   mc:
-    activate: true
+    activate: false
     maxfilestomerge: 4
   data:
-    activate: true
+    activate: false
     maxfilestomerge: 400
 ml_study:   
-  activate: false 
+  activate: true
   applytodatamc: true
   binmin: [6] 
   binmax: [10]
