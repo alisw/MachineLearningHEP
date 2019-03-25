@@ -118,54 +118,55 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
             merging(data_config, data_param, "mc")
 
     if doml is True:
+        print("DOING ML optimisation")
         for binmin, binmax in zip(binminarray, binmaxarray):
             print(binmin, binmax)
             doclassification_regression(data_config["ml_study"],
                                         data_param, data_model[mltype], case, binmin, binmax)
     if doapplymldata is True:
-        print("DOING ML DATA")
+        print("applying ml to data")
         print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["data"])
         useml = 1
         doanalysis(data_config, data_param, case, useml, "data")
 
     if doapplystddata is True:
-        print("DOING STD DATA")
+        print("applying std to data")
         print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["data"])
         useml = 0
         doanalysis(data_config, data_param, case, useml, "data")
 
     if doapplymlmc is True:
-        print("DOING ML MC")
+        print("applying ml to mc")
         print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["mc"])
         useml = 1
         doanalysis(data_config, data_param, case, useml, "mc")
 
     if doapplystdmc is True:
-        print("DOING STD MC")
+        print("applying std to mc")
         print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["mc"])
         useml = 0
         doanalysis(data_config, data_param, case, useml, "mc")
 
     if domassmldata is True:
-        print("DOING ML DATA")
+        print("extracting mass histo ml data")
         print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["data"])
         useml = 1
         extractmasshisto(data_config, data_param, case, useml, "data")
 
     if domassstddata is True:
-        print("DOING STD DATA")
+        print("extracting mass histo std data")
         print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["data"])
         useml = 0
         extractmasshisto(data_config, data_param, case, useml, "data")
 
     if domassmlmc is True:
-        print("DOING ML MC")
+        print("extracting mass histo std mc")
         print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["mc"])
         useml = 1
         extractmasshisto(data_config, data_param, case, useml, "mc")
 
     if domassstdmc is True:
-        print("DOING STD MC")
+        print("extracting mass histo std mc")
         print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["mc"])
         useml = 0
         extractmasshisto(data_config, data_param, case, useml, "mc")
