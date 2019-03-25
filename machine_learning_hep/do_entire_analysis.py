@@ -22,6 +22,7 @@ from machine_learning_hep.doskimming import conversion, merging, skim
 from machine_learning_hep.doclassification_regression import doclassification_regression
 from machine_learning_hep.doanalysis import doanalysis
 from machine_learning_hep.extractmasshisto import extractmasshisto
+from machine_learning_hep.efficiency import extract_eff_histo
 
 def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 
@@ -55,6 +56,8 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     domassstddata = data_config["analysis"]["data"]["std"]["domass"]
     domassmlmc = data_config["analysis"]["mc"]["ml"]["domass"]
     domassstdmc = data_config["analysis"]["mc"]["std"]["domass"]
+    doeffhistml = data_config["analysis"]["mc"]["ml"]["doeffhist"]
+    doeffhiststd = data_config["analysis"]["mc"]["std"]["doeffhist"]
 
     if doconversionmc is True:
         pkl_mc = data_param[case]["output_folders"]["pkl_out"]["mc"]
@@ -169,5 +172,13 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
         print("Writing output to", data_param[case]["output_folders"]["pkl_final"]["mc"])
         useml = 0
         extractmasshisto(data_config, data_param, case, useml, "mc")
+
+    if doeffhistml:
+        print("extracting eff x acc histo ml")
+        extract_eff_histo(data_config, data_param, case, 'ml')
+
+    if doeffhiststd:
+        print("extracting eff x acc histo std")
+        extract_eff_histo(data_config, data_param, case, 'std')
 
 do_entire_analysis()

@@ -20,7 +20,7 @@ LctopK0sPbPbCen010:
   invmasslow: 2.14
   invmasshigh: 2.48
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
-  presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
+  presel_gen: abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 # pre-selections on generated candidates
   skimming_sel: "pt_cand>4"
   skimming_sel_gen: "pt_cand>4"
   skimming_sel_evt: null
@@ -147,7 +147,7 @@ Dspp5TeV:
   invmasslow: 1.700
   invmasshigh: 2.150
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
-  presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
+  presel_gen: abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 # pre-selections on generated candidates
   skimming_sel: "pt_cand>2"
   skimming_sel_gen: "pt_cand>2"
   skimming_sel_evt: "is_ev_rej >= 0"
