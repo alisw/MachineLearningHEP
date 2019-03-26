@@ -101,7 +101,7 @@ LctopK0sPbPbCen010:
     var_evt: 
       data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
       mc: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
-    var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id, n_cand]
+    var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
     var_training: [cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, 
                    cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, 
                    imp_par_prong2, inv_mass_K0s, nsigTPC_Pr_0, nsigTOF_Pr_0]
@@ -145,8 +145,8 @@ Dspp5TeV:
   invmasshigh: 2.150
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
   presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
-  skimming_sel: "n_cand> 0 & pt_cand>2"
-  skimming_sel_gen: "n_cand> 0 & pt_cand>2"
+  skimming_sel: "pt_cand>2"
+  skimming_sel_gen: "pt_cand>2"
   skimming_sel_evt: "is_ev_rej >= 0"
   skimming2_sel: "delta_mass_KK<0.02 & is_ev_rej==0" 
   skimming2_sel_gen: "pt_cand>-100 & abs(z_vtx_gen)<10" 
@@ -206,7 +206,7 @@ Dspp5TeV:
       mc: null
 
   variables:
-    var_all: [n_cand, d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, 
+    var_all: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, 
               delta_mass_KK, cos_PiDs, cos_PiKPhi_3, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, 
               imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, inv_mass, pt_cand, cand_type, y_cand, 
               eta_prong0, eta_prong1, eta_prong2, run_number, ev_id, nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, 
@@ -214,7 +214,7 @@ Dspp5TeV:
     var_evt: 
       data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
       mc: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
-    var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id, n_cand]
+    var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
     var_training: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, delta_mass_KK, 
                   cos_PiDs, cos_PiKPhi_3, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, 
                   imp_par_prong2, max_norm_d0d0exp]
