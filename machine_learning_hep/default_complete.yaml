@@ -1,8 +1,8 @@
 case: LctopK0sPbPbCen010
 conversion:
   mc: 
-    activate: true #never change this without thinking!
-    nmaxconvers: 4
+    activate: false #never change this without thinking!
+    nmaxconvers: 300
     maxfiles: -1
   data:
     activate: true  #never change this without thinking!
@@ -10,8 +10,8 @@ conversion:
     maxfiles: -1
 skimming: 
   mc:
-    activate: true
-    nmaxconvers: 4
+    activate: false
+    nmaxconvers: 300
     maxfiles: -1
   data:
     activate: true
@@ -19,8 +19,8 @@ skimming:
     maxfiles: -1
 merging: 
   mc:
-    activate: true
-    maxfilestomerge: 4
+    activate: false
+    maxfilestomerge: 1000
   data:
     activate: true
     maxfilestomerge: 600
@@ -46,8 +46,8 @@ ml_study:
   mlsubtype: HFmeson
   mltype: BinaryClassification
   ncores: -1
-  nevt_bkg: 10000
-  nevt_sig: 10000
+  nevt_bkg: 100000
+  nevt_sig: 100000
   nkfolds: 5
   rnd_shuffle: 12
   rnd_splt: 12
@@ -56,13 +56,13 @@ ml_study:
 
 analysis:
   data:
-    nmaxchunks: 300
+    nmaxchunks: 1000
     maxfiles: -1
     std:
       doapply: false
       domass: false
     ml:
-      doapply: false
+      doapply: true
       domass: false
   mc:
     nmaxchunks: 10
@@ -76,7 +76,7 @@ analysis:
   modelname: xgboost
   binmin: [6]
   binmax: [10]
-  probcut: [0.70]
+  probcut: [0.80]
   probcutoptimal: 0.8
   models: [xgboost_classifiernevt_sig10000_nevt_bkg10000_BinaryClassificationLctopK0sPbPbCen010_dfselection_pt_cand_6.0_10.0.sav]
   doinvmassspectra: true

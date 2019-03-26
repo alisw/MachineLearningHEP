@@ -15,4 +15,4 @@
 from xgboost import XGBClassifier
 
 def xgboost_classifier(model_config): # pylint: disable=W0613
-    return XGBClassifier()
+    return XGBClassifier(n_gpus=0)
