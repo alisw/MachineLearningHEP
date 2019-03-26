@@ -21,8 +21,8 @@ LctopK0sPbPbCen010:
   invmasshigh: 2.48
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
   presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
-  skimming_sel: "n_cand> 0 & pt_cand>4"
-  skimming_sel_gen: "n_cand> 0 & pt_cand>4"
+  skimming_sel: "pt_cand>4"
+  skimming_sel_gen: "pt_cand>4"
   skimming_sel_evt: null
   skimming2_sel: "pt_cand>6 & is_ev_rej==0" 
   skimming2_sel_gen: "pt_cand>6 & abs(z_vtx_gen)<10 " 
@@ -40,7 +40,7 @@ LctopK0sPbPbCen010:
     mcsignal_prompt_on_off: [[1,3],[5]]
     mcsignal_feed_on_off: [[1,4],[5]]
     mcbkg_on_off: [[2],[]]
-    preseltrack_pid_on_off : [[7,8],[]]
+    preseltrack_pid_on_off : [[8],[]]
     std_analysis_on_off : [[0],[]]
   
   files_names:
@@ -68,11 +68,11 @@ LctopK0sPbPbCen010:
   inputs:
     data:
       production: LHC18q 
-      unmerged_tree_dir: /data/HeavyFlavour/PbPb_data_010/20-03-2019/385_20190319-2141/unmerged
+      unmerged_tree_dir: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/unmerged
 
     mc:
       production: LHC17j4d2
-      unmerged_tree_dir: /data/HeavyFlavour/pPb_MC/20-03-2019/387_20190319-2133/unmerged
+      unmerged_tree_dir: /data/HeavyFlavour/pPb_MC/25-03-2019/391_20190323-2033/unmerged
 
   output_folders:
     plotsanalysis: plotsanalysis
@@ -80,20 +80,20 @@ LctopK0sPbPbCen010:
     mlplot: mlplot
     mlout: /data/trained_models/PbPb010/LctopK0sPbPbCen010
     pkl_out: 
-      data: /data/HeavyFlavour/PbPb_data_010/20-03-2019/385_20190319-2141/pickleLctopK0s 
-      mc: /data/HeavyFlavour/pPb_MC/20-03-2019/387_20190319-2133/pickleLctopK0s
+      data: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleLctopK0s 
+      mc: /data/HeavyFlavour/pPb_MC/25-03-2019/391_20190323-2033/pickleLctopK0s
     pkl_skimmed: 
-      data: /data/HeavyFlavour/PbPb_data_010/20-03-2019/385_20190319-2141/pickleLctopK0sskimmed6up 
-      mc: /data/HeavyFlavour/pPb_MC/20-03-2019/387_20190319-2133/pickleLctopK0sskimmed6up
+      data: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleLctopK0sskimmed6up 
+      mc: /data/HeavyFlavour/pPb_MC/25-03-2019/391_20190323-2033/pickleLctopK0sskimmed6up
     pkl_merged: 
-      data: /data/HeavyFlavour/PbPb_data_010/20-03-2019/385_20190319-2141/pickleLctopK0sskimmed6upMerged
-      mc: /data/HeavyFlavour/pPb_MC/20-03-2019/387_20190319-2133/pickleLctopK0sskimmed6upMerged
+      data: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleLctopK0sskimmed6upMerged
+      mc: /data/HeavyFlavour/pPb_MC/25-03-2019/391_20190323-2033/pickleLctopK0sskimmed6upMerged
     pkl_final: 
-      data: /data/HeavyFlavour/PbPb_data_010/20-03-2019/385_20190319-2141/pickleLctopK0sskimmed6upTot
-      mc: /data/HeavyFlavour/pPb_MC/20-03-2019/387_20190319-2133/pickleLctopK0sskimmed6upTot
+      data: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleLctopK0sskimmed6upTot
+      mc: /data/HeavyFlavour/pPb_MC/25-03-2019/391_20190323-2033/pickleLctopK0sskimmed6upTot
 
   variables:
-    var_all: [n_cand, cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, 
+    var_all: [cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, 
               cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2, 
               inv_mass, pt_cand, inv_mass_K0s, pt_K0s, cand_type, y_cand, eta_prong0, eta_prong1, eta_prong2, 
               run_number, ev_id, nsigTPC_Pr_0, nsigTOF_Pi_0, nsigTOF_Pr_0, nsigTPC_Pi_1, nsigTPC_Pr_1, 
@@ -101,7 +101,7 @@ LctopK0sPbPbCen010:
     var_evt: 
       data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
       mc: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
-    var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id, n_cand]
+    var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
     var_training: [cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, 
                    cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, 
                    imp_par_prong2, inv_mass_K0s, nsigTPC_Pr_0, nsigTOF_Pr_0]
@@ -145,8 +145,8 @@ Dspp5TeV:
   invmasshigh: 2.150
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
   presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
-  skimming_sel: "n_cand> 0 & pt_cand>2"
-  skimming_sel_gen: "n_cand> 0 & pt_cand>2"
+  skimming_sel: "pt_cand>2"
+  skimming_sel_gen: "pt_cand>2"
   skimming_sel_evt: "is_ev_rej >= 0"
   skimming2_sel: "delta_mass_KK<0.02 & is_ev_rej==0" 
   skimming2_sel_gen: "pt_cand>-100 & abs(z_vtx_gen)<10" 
@@ -206,7 +206,7 @@ Dspp5TeV:
       mc: null
 
   variables:
-    var_all: [n_cand, d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, 
+    var_all: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, 
               delta_mass_KK, cos_PiDs, cos_PiKPhi_3, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, 
               imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, inv_mass, pt_cand, cand_type, y_cand, 
               eta_prong0, eta_prong1, eta_prong2, run_number, ev_id, nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, 
@@ -214,7 +214,7 @@ Dspp5TeV:
     var_evt: 
       data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
       mc: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
-    var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id, n_cand]
+    var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
     var_training: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, delta_mass_KK, 
                   cos_PiDs, cos_PiKPhi_3, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, 
                   imp_par_prong2, max_norm_d0d0exp]

@@ -30,7 +30,7 @@ from machine_learning_hep.selectionutils import selectfidacc
 
 def flattenroot_to_pandas(filein, fileout, treenamein, var_all, skimming_sel):
     tree = uproot.open(filein)[treenamein]
-    df = tree.pandas.df(branches=var_all, flatten=True)
+    df = tree.pandas.df(branches=var_all)
     if skimming_sel is not None:
         df = df.query(skimming_sel)
     df.to_pickle(fileout)
@@ -171,6 +171,7 @@ def conversion(data_config, data_param, mcordata):
         if mcordata == "mc":
             flattenallpickle(chunksgen[index], chunksoutgen[index], treeorigingen, \
                              var_gen, skimming_sel_gen)
+        time.sleep(10)
     print("Total time elapsed", time.time()-tstart)
 
 # pylint: disable=too-many-locals, too-many-statements, too-many-branches
