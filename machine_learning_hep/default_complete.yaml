@@ -5,7 +5,7 @@ conversion:
     nmaxconvers: 300
     maxfiles: -1
   data:
-    activate: false  #never change this without thinking!
+    activate: true  #never change this without thinking!
     nmaxconvers: 200
     maxfiles: -1
 skimming: 
