@@ -5,7 +5,7 @@ conversion:
     nmaxconvers: 300
     maxfiles: -1
   data:
-    activate: true  #never change this without thinking!
+    activate: false  #never change this without thinking!
     nmaxconvers: 200
     maxfiles: -1
 skimming: 
@@ -14,7 +14,7 @@ skimming:
     nmaxconvers: 300
     maxfiles: -1
   data:
-    activate: true
+    activate: false
     nmaxconvers: 500
     maxfiles: -1
 merging: 
@@ -22,10 +22,10 @@ merging:
     activate: false
     maxfilestomerge: 1000
   data:
-    activate: true
+    activate: false
     maxfilestomerge: 600
 ml_study:   
-  activate: false
+  activate: true
   applytodatamc: true
   binmin: [6] 
   binmax: [10]
