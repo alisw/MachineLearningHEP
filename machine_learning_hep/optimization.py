@@ -166,12 +166,10 @@ def study_signif(case, names, bin_lim, file_mc_gen, file_data_evt, df_mc_reco, d
     gROOT.ProcessLine("gErrorIgnoreLevel = kWarning;")
 
     gen_dict = get_database_ml_parameters()[case]
-    mass = gen_dict['mass']
-    var_bin = gen_dict['variables']['var_binning']
-
+    mass = gen_dict["mass"]
+    mass_fit_lim = gen_dict['mass_fit_lim']
+    bin_width = gen_dict['bin_width']
     sopt_dict = gen_dict['signif_opt']
-    mass_fit_lim = sopt_dict['mass_fit_lim']
-    bin_width = sopt_dict['bin_width']
     bkg_fract = sopt_dict['bkg_data_fraction']
 
     df_mc_gen = pd.read_pickle(file_mc_gen)

@@ -16,9 +16,8 @@ LctopK0sPbPbCen010:
 
   mass: 2.2864
   pdg_code: null
-  invmassbins: 170
-  invmasslow: 2.14
-  invmasshigh: 2.48
+  mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
+  bin_width: 0.002 # bin width of the invariant mass histogram
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
   presel_gen: abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 # pre-selections on generated candidates
   skimming_sel: "pt_cand>4"
@@ -130,8 +129,6 @@ LctopK0sPbPbCen010:
     sigma_MB: 0.000043 # 1./<TAA> for 0-10% where <TAA(0-10%)> =  23.2 mb^-1 ( from http://dde.web.cern.ch/dde/glauber_lhc.htm )
     BR: 1.09e-2 # branching ratio of the decay Lc->pK0s * K0s->pi+pi-
     f_prompt: 0.9 # estimated fraction of prompt candidates
-    mass_fit_lim: [2.12, 2.45] # region for the fit of the invariant mass distribution [GeV/c^2]
-    bin_width: 0.008 # bin width of the invariant mass histogram
     bkg_data_fraction: 0.1 # fraction of real data used in the estimation
     num_steps: 101 # number of steps used in efficiency and signif. estimation
   
@@ -268,9 +265,8 @@ Dspp5TeV:
 
   mass: 1.970
   pdg_code: null
-  invmassbins: 180
-  invmasslow: 1.700
-  invmasshigh: 2.150
+  mass_fit_lim: [1.70, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
+  bin_width: 0.006 # bin width of the invariant mass histogram
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
   presel_gen: abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 # pre-selections on generated candidates
   skimming_sel: "pt_cand>2"
@@ -386,8 +382,6 @@ Dspp5TeV:
     sigma_MB: 50.87e-3 # Minimum Bias cross section (pp) [b]
     BR: 2.27e-2 # branching ratio of the decay
     f_prompt: 0.9 # estimated fraction of prompt candidates
-    mass_fit_lim: [1.70, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
-    bin_width: 0.008 # bin width of the invariant mass histogram
     bkg_data_fraction: 0.1 # fraction of real data used in the estimation
     num_steps: 101 # number of steps used in efficiency and signif. estimation 
   
