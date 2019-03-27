@@ -15,6 +15,7 @@
 Methods to: study expected efficiency
 """
 import os.path
+import array
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -216,7 +217,7 @@ def extract_eff_histo(run_config, data_dict, case, sel_type='ml'):
     bin_min = run_config['analysis']['binmin']
     bin_max = run_config['analysis']['binmax']
     model_name = run_config['analysis']['modelname']
-    test_df_list = run_config['analysis']['test_df']
+    test_df_list = run_config['analysis']['test_df_list']
     cuts = run_config['analysis']['probcutoptimal']
 
     data_dict = data_dict[case]
@@ -229,7 +230,8 @@ def extract_eff_histo(run_config, data_dict, case, sel_type='ml'):
     if len(bin_min) != len(bin_max):
         logger.Critical('Wrong bin limits in default file')
     n_bins = len(bin_min)
-    bin_lims = bin_min.append(bin_max[n_bins-1])
+    bin_min.append(bin_max[n_bins-1])
+    bin_lims = array.array('f', bin_min)
 
     h_eff_model_prompt = TH1F('hEff_Prompt_Model', ';#it{p}_{T} (GeV/#it{c});Model Efficiency',
                               n_bins, bin_lims)
