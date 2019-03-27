@@ -216,7 +216,8 @@ def extract_eff_histo(run_config, data_dict, case, sel_type='ml'):
 
     bin_min = run_config['analysis']['binmin']
     bin_max = run_config['analysis']['binmax']
-    model_name = run_config['analysis']['modelname']
+    model_name_temp = run_config['analysis']['modelname']
+    model_name = str(model_name_temp) + '_classifier'
     test_df_list = run_config['analysis']['test_df_list']
     cuts = run_config['analysis']['probcutoptimal']
 
@@ -224,14 +225,14 @@ def extract_eff_histo(run_config, data_dict, case, sel_type='ml'):
     var_bin = data_dict['variables']['var_binning']
     folder_mc = data_dict['output_folders']['pkl_merged']['mc']
     test_df_dir = data_dict['output_folders']['mlout']
+    out_dir = data_dict['output_folders']['histoanalysis']
     file_mc_reco = data_dict['files_names']['namefile_reco_merged']
     file_mc_gen = data_dict['files_names']['namefile_gen_merged']
 
     if len(bin_min) != len(bin_max):
-        logger.Critical('Wrong bin limits in default file')
+        logger.critical('Wrong bin limits in default file')
     n_bins = len(bin_min)
-    bin_min.append(bin_max[n_bins-1])
-    bin_lims = array.array('f', bin_min)
+    bin_lims = array.array('f', list(bin_min).append(bin_max[n_bins-1]))
 
     h_eff_model_prompt = TH1F('hEff_Prompt_Model', ';#it{p}_{T} (GeV/#it{c});Model Efficiency',
                               n_bins, bin_lims)
@@ -343,7 +344,7 @@ def extract_eff_histo(run_config, data_dict, case, sel_type='ml'):
     h_effacc_fd.SetMarkerColor(kBlue+2)
     h_effacc_fd.SetLineColor(kBlue+2)
 
-    out_file = TFile.Open(f'efficiencies_{case}_{sel_type}.root', 'recreate')
+    out_file = TFile.Open(f'{out_dir}/efficiencies_{case}_{sel_type}.root', 'recreate')
     out_file.cd()
     h_tot_prompt.Write()
     h_tot_fd.Write()
