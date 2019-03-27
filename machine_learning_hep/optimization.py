@@ -121,7 +121,8 @@ def calc_signif(sig_array, sig_err_array, bkg_array, bkg_err_array):
     return signif_array, signif_err_array
 
 
-def calc_sig_dmeson(filename, fonll_pred, frag_frac, branch_ratio, sigma_mb, f_prompt,
+#pylint: disable=too-many-arguments
+def calc_sig_dmeson(filename, fonll_pred, frag_frac, branch_ratio, sigma_mb, taa, f_prompt,
                     ptmin, ptmax, eff_acc, n_events):
     """
     Estimate the expected signal yield before the ML model selections,
@@ -132,7 +133,7 @@ def calc_sig_dmeson(filename, fonll_pred, frag_frac, branch_ratio, sigma_mb, f_p
     df_in_pt = df.query('(pt >= @ptmin) and (pt < @ptmax)')[fonll_pred]
     prod_cross = df_in_pt.sum() * frag_frac * 1e-12 / len(df_in_pt)
     delta_pt = ptmax - ptmin
-    signal_yield = 2. * prod_cross * delta_pt * branch_ratio * eff_acc * n_events \
+    signal_yield = 2. * prod_cross * delta_pt * branch_ratio * eff_acc * n_events * taa \
                    / (sigma_mb * f_prompt)
     logger.debug("Expected signal yield: %f", signal_yield)
 
@@ -184,7 +185,8 @@ def study_signif(case, names, bin_lim, file_mc_gen, file_data_evt, df_mc_reco, d
     eff_acc, _ = calc_eff_acc(df_mc_gen, df_mc_reco, 'mc_signal_prompt', gen_dict)
     exp_signal = calc_sig_dmeson(sopt_dict['filename_fonll'], sopt_dict['fonll_pred'],
                                  sopt_dict['FF'], sopt_dict['BR'], sopt_dict['sigma_MB'],
-                                 sopt_dict['f_prompt'], bin_lim[0], bin_lim[1], eff_acc, n_events)
+                                 sopt_dict['Taa'], sopt_dict['f_prompt'], bin_lim[0], bin_lim[1],
+                                 eff_acc, n_events)
     plot_fonll(sopt_dict['filename_fonll'], sopt_dict['fonll_pred'],
                sopt_dict['FF'], case, suffix, plot_dir)
 

@@ -126,7 +126,8 @@ LctopK0sPbPbCen010:
     filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
     fonll_pred: 'max' # edge of the FONLL prediction
     FF: 0.1281 # fragmentation fraction
-    sigma_MB: 0.000043 # 1./<TAA> for 0-10% where <TAA(0-10%)> =  23.2 mb^-1 ( from http://dde.web.cern.ch/dde/glauber_lhc.htm )
+    sigma_MB: 1  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
+    Taa: 23260 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
     BR: 1.09e-2 # branching ratio of the decay Lc->pK0s * K0s->pi+pi-
     f_prompt: 0.9 # estimated fraction of prompt candidates
     bkg_data_fraction: 0.1 # fraction of real data used in the estimation
@@ -379,7 +380,8 @@ Dspp5TeV:
     filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
     fonll_pred: 'max' # edge of the FONLL prediction
     FF: 0.1281 # fragmentation fraction
-    sigma_MB: 50.87e-3 # Minimum Bias cross section (pp) [b]
+    sigma_MB: 50.87e-3 # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
+    Taa: 1 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
     BR: 2.27e-2 # branching ratio of the decay
     f_prompt: 0.9 # estimated fraction of prompt candidates
     bkg_data_fraction: 0.1 # fraction of real data used in the estimation
