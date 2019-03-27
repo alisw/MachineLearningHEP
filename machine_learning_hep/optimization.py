@@ -18,13 +18,13 @@ Methods to: study expected significance
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-from ROOT import TH1F, TF1, gROOT  # pylint: disable=import-error,no-name-in-module
+from ROOT import TH1F, TF1, TFile, gROOT  # pylint: disable=import-error,no-name-in-module
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.general import get_database_ml_parameters
 from machine_learning_hep.general import filterdataframe_singlevar, filter_df_cand
 from machine_learning_hep.efficiency import calc_eff, calc_eff_acc
 
-def calc_bkg(df_bkg, name, num_step, fit_region, bin_width, sig_region):
+def calc_bkg(df_bkg, name, num_step, fit_region, bin_width, sig_region, save_fit, out_dir):
     """
     Estimate the number of background candidates under the signal peak. This is obtained
     from real data with a fit of the sidebands of the invariant mass distribution.
@@ -37,29 +37,38 @@ def calc_bkg(df_bkg, name, num_step, fit_region, bin_width, sig_region):
     num_bins = int(round(num_bins))
     bin_width = (fit_region[1] - fit_region[0]) / num_bins
 
+    if save_fit:
+        logger.debug("Saving bkg fits to file")
+        out_file = TFile(f'{out_dir}/bkg_fits_{name}.root', 'recreate')
+        out_file.cd()
+
     logger.debug("To fit the bkg an exponential function is used")
     for thr in x_axis:
         bkg = 0.
         bkg_err = 0.
-        hmass = TH1F('hmass', '', num_bins, fit_region[0], fit_region[1])
+        hmass = TH1F(f'hmass_{thr}', '', num_bins, fit_region[0], fit_region[1])
         bkg_sel_mask = df_bkg['y_test_prob' + name].values >= thr
         sel_mass_array = df_bkg[bkg_sel_mask]['inv_mass'].values
 
         if len(sel_mass_array) > 5:
             for mass_value in np.nditer(sel_mass_array):
                 hmass.Fill(mass_value)
-
             fit = hmass.Fit('expo', 'Q', '', fit_region[0], fit_region[1])
+            if save_fit:
+                hmass.Write()
             if int(fit) == 0:
                 fit_func = hmass.GetFunction('expo')
                 bkg = fit_func.Integral(sig_region[0], sig_region[1]) / bin_width
                 bkg_err = fit_func.IntegralError(sig_region[0], sig_region[1]) / bin_width
                 del fit_func
+        elif save_fit:
+            hmass.Write()
 
         bkg_array.append(bkg)
         bkg_err_array.append(bkg_err)
         del hmass
 
+    out_file.Close()
     return bkg_array, bkg_err_array, x_axis
 
 
@@ -172,6 +181,7 @@ def study_signif(case, names, bin_lim, file_mc_gen, file_data_evt, df_mc_reco, d
     bin_width = gen_dict['bin_width']
     sopt_dict = gen_dict['signif_opt']
     bkg_fract = sopt_dict['bkg_data_fraction']
+    save_fit = sopt_dict['save_fit']
 
     df_mc_gen = pd.read_pickle(file_mc_gen)
     df_mc_gen = df_mc_gen.query(gen_dict['presel_gen'])
@@ -192,7 +202,7 @@ def study_signif(case, names, bin_lim, file_mc_gen, file_data_evt, df_mc_reco, d
 
     fig_signif = plt.figure(figsize=(20, 15))
     plt.xlabel('Threshold', fontsize=20)
-    plt.ylabel('Significance (A.U.)', fontsize=20)
+    plt.ylabel('Significance', fontsize=20)
     plt.title("Significance vs Threshold", fontsize=20)
 
     df_data_dec = df_data_dec.tail(round(len(df_data_dec) * bkg_fract))
@@ -206,7 +216,8 @@ def study_signif(case, names, bin_lim, file_mc_gen, file_data_evt, df_mc_reco, d
         sig_array = [eff * exp_signal for eff in eff_array]
         sig_err_array = [eff_err * exp_signal for eff_err in eff_err_array]
         bkg_array, bkg_err_array, _ = calc_bkg(df_data_dec, name, sopt_dict['num_steps'],
-                                               mass_fit_lim, bin_width, sig_region)
+                                               mass_fit_lim, bin_width, sig_region, save_fit,
+                                               plotdir)
         bkg_array = [bkg / bkg_fract for bkg in bkg_array]
         bkg_err_array = [bkg_err / bkg_fract for bkg_err in bkg_err_array]
         signif_array, signif_err_array = calc_signif(sig_array, sig_err_array, bkg_array,
@@ -217,4 +228,4 @@ def study_signif(case, names, bin_lim, file_mc_gen, file_data_evt, df_mc_reco, d
 
     plt.figure(fig_signif.number)
     plt.legend(loc="lower left", prop={'size': 18})
-    plt.savefig(plot_dir + '/Significance%s.png' % suffix)
+    plt.savefig(f'{plotdir}/Significance{suffix}.png')
