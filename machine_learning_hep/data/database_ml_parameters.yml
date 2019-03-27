@@ -128,8 +128,8 @@ LctopK0sPbPbCen010:
     filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
     fonll_pred: 'max' # edge of the FONLL prediction
     FF: 0.1281 # fragmentation fraction
-    sigma_MB: 50.87e-3 # Minimum Bias cross section (pp) [b]
-    BR: 1.58e-2 # branching ratio of the decay
+    sigma_MB: 0.000043 # 1./<TAA> for 0-10% where <TAA(0-10%)> =  23.2 mb^-1 ( from http://dde.web.cern.ch/dde/glauber_lhc.htm )
+    BR: 1.09e-2 # branching ratio of the decay Lc->pK0s * K0s->pi+pi-
     f_prompt: 0.9 # estimated fraction of prompt candidates
     mass_fit_lim: [2.12, 2.45] # region for the fit of the invariant mass distribution [GeV/c^2]
     bin_width: 0.008 # bin width of the invariant mass histogram
