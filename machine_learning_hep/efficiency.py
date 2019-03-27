@@ -212,7 +212,7 @@ def extract_eff_histo(run_config, data_dict, case, sel_type='ml'):
     """
     logger = get_logger()
     gROOT.SetBatch(True)
-    gROOT.ProcessLine('gErrorIgnoreLevel = kWarning;')
+    gROOT.ProcessLine('gErrorIgnoreLevel = kError;')
 
     bin_min = run_config['analysis']['binmin']
     bin_max = run_config['analysis']['binmax']
@@ -232,7 +232,9 @@ def extract_eff_histo(run_config, data_dict, case, sel_type='ml'):
     if len(bin_min) != len(bin_max):
         logger.critical('Wrong bin limits in default file')
     n_bins = len(bin_min)
-    bin_lims = array.array('f', list(bin_min).append(bin_max[n_bins-1]))
+    bin_lims_temp = list(bin_min)
+    bin_lims_temp.append(bin_max[n_bins-1])
+    bin_lims = array.array('f', bin_lims_temp)
 
     h_eff_model_prompt = TH1F('hEff_Prompt_Model', ';#it{p}_{T} (GeV/#it{c});Model Efficiency',
                               n_bins, bin_lims)
