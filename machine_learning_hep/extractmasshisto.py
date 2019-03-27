@@ -38,7 +38,7 @@ def extractmasshisto(data_config, data, case, useml, mcordata):
 
     index = 0
     histomassall = []
-    for imin, imax in zip(binmin, binmax):
+    for imin, imax, prob_cut in zip(binmin, binmax, probcutoptimal):
         df = pd.DataFrame()
         if useml == 0:
             namefilereco_std_tot = \
@@ -48,7 +48,7 @@ def extractmasshisto(data_config, data, case, useml, mcordata):
             namefilereco_ml_tot = \
                 namefilereco_ml_tot.replace(".pkl", "%d_%d.pkl" % (imin, imax))
             df = pickle.load(open(namefilereco_ml_tot, "rb"))
-            sel_ml = "y_test_prob%s>%s" % (modelname, probcutoptimal)
+            sel_ml = "y_test_prob%s>%s" % (modelname, prob_cut)
             df = df.query(sel_ml)
         array_inv_mass_sel = df.inv_mass.values
         namehisto = "h_invmass%d_%d" % (imin, imax)
