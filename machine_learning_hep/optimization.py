@@ -13,7 +13,7 @@
 #############################################################################
 
 """
-Methods to: study selection efficiency and expected significance
+Methods to: study expected significance
 """
 import numpy as np
 import matplotlib.pyplot as plt
@@ -22,34 +22,7 @@ from ROOT import TH1F, TF1, gROOT  # pylint: disable=import-error,no-name-in-mod
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.general import get_database_ml_parameters
 from machine_learning_hep.general import filterdataframe_singlevar, filter_df_cand
-
-def calc_efficiency(df_to_sel, sel_opt, main_dict, name, num_step, do_std=False):
-    """
-    Calculate the ML selection efficiency as a function of the treshold on the
-    ML model output.
-    """
-    df_sig = filter_df_cand(df_to_sel, main_dict, sel_opt)
-    x_axis = np.linspace(0, 1.00, num_step)
-    num_tot_cand = len(df_sig)
-    eff_array = []
-    eff_err_array = []
-
-    if not do_std:
-        for thr in x_axis:
-            num_sel_cand = len(df_sig[df_sig['y_test_prob' + name].values >= thr])
-            eff = num_sel_cand / num_tot_cand
-            eff_err = np.sqrt(eff * (1 - eff) / num_tot_cand)
-            eff_array.append(eff)
-            eff_err_array.append(eff_err)
-    else:
-        num_sel_cand = len(filter_df_cand(df_sig, main_dict, 'sel_std_analysis'))
-        eff = num_sel_cand / num_tot_cand
-        eff_err = np.sqrt(eff * (1 - eff) / num_tot_cand)
-        eff_array = [eff] * num_step
-        eff_err_array = [eff_err] * num_step
-
-    return eff_array, eff_err_array, x_axis
-
+from machine_learning_hep.efficiency import calc_eff, calc_eff_acc
 
 def calc_bkg(df_bkg, name, num_step, fit_region, bin_width, sig_region):
     """
@@ -148,38 +121,6 @@ def calc_signif(sig_array, sig_err_array, bkg_array, bkg_err_array):
     return signif_array, signif_err_array
 
 
-def plot_fonll(filename, fonll_pred, frag_frac, part_label, suffix, plot_dir):
-    """
-    Plot the FONLL prediction for the current particle.
-    """
-    df = pd.read_csv(filename)
-    plt.figure(figsize=(20, 15))
-    plt.subplot(111)
-    plt.plot(df['pt'], df[fonll_pred] * frag_frac, linewidth=4.0)
-    plt.xlabel('P_t [GeV/c]', fontsize=20)
-    plt.ylabel('Cross Section [pb/GeV]', fontsize=20)
-    plt.title("FONLL cross section " + part_label, fontsize=20)
-    plt.semilogy()
-    plot_name = plot_dir + '/FONLL curve %s.png' % (suffix)
-    plt.savefig(plot_name)
-
-
-def calc_eff_acc(df_mc_gen, df_mc_reco, sel_opt, main_dict):
-    """
-    Calculate the efficiency times acceptance before the ML model selections.
-    """
-    logger = get_logger()
-    df_mc_gen_sel = filter_df_cand(df_mc_gen, main_dict, sel_opt, True)
-    df_mc_reco_sel = filter_df_cand(df_mc_reco, main_dict, sel_opt)
-    if df_mc_gen_sel.empty:
-        logger.error("In division denominator is empty")
-        return 0.
-    eff_acc = len(df_mc_reco_sel) / len(df_mc_gen_sel)
-    logger.debug("Pre-selection efficiency times acceptance: %f", eff_acc)
-
-    return eff_acc
-
-
 def calc_sig_dmeson(filename, fonll_pred, frag_frac, branch_ratio, sigma_mb, f_prompt,
                     ptmin, ptmax, eff_acc, n_events):
     """
@@ -198,8 +139,24 @@ def calc_sig_dmeson(filename, fonll_pred, frag_frac, branch_ratio, sigma_mb, f_p
     return signal_yield
 
 
+def plot_fonll(filename, fonll_pred, frag_frac, part_label, suffix, plot_dir):
+    """
+    Plot the FONLL prediction for the current particle.
+    """
+    df = pd.read_csv(filename)
+    plt.figure(figsize=(20, 15))
+    plt.subplot(111)
+    plt.plot(df['pt'], df[fonll_pred] * frag_frac, linewidth=4.0)
+    plt.xlabel('P_t [GeV/c]', fontsize=20)
+    plt.ylabel('Cross Section [pb/GeV]', fontsize=20)
+    plt.title("FONLL cross section " + part_label, fontsize=20)
+    plt.semilogy()
+    plot_name = plot_dir + '/FONLL curve %s.png' % (suffix)
+    plt.savefig(plot_name)
+
+
 def study_signif(case, names, bin_lim, file_mc_gen, file_data_evt, df_mc_reco, df_ml_test,
-                 df_data_dec, suffix, plotdir):
+                 df_data_dec, suffix, plot_dir):
     """
     Study the efficiency and the expected signal significance as a function of
     the threshold value on a ML model output.
@@ -209,7 +166,8 @@ def study_signif(case, names, bin_lim, file_mc_gen, file_data_evt, df_mc_reco, d
     gROOT.ProcessLine("gErrorIgnoreLevel = kWarning;")
 
     gen_dict = get_database_ml_parameters()[case]
-    mass = gen_dict["mass"]
+    mass = gen_dict['mass']
+    var_bin = gen_dict['variables']['var_binning']
 
     sopt_dict = gen_dict['signif_opt']
     mass_fit_lim = sopt_dict['mass_fit_lim']
@@ -218,29 +176,24 @@ def study_signif(case, names, bin_lim, file_mc_gen, file_data_evt, df_mc_reco, d
 
     df_mc_gen = pd.read_pickle(file_mc_gen)
     df_mc_gen = df_mc_gen.query(gen_dict['presel_gen'])
-    df_mc_gen = filterdataframe_singlevar(df_mc_gen, gen_dict['ptgen'], bin_lim[0], bin_lim[1])
+    df_mc_gen = filterdataframe_singlevar(df_mc_gen, var_bin, bin_lim[0], bin_lim[1])
     df_evt = pd.read_pickle(file_data_evt)
     n_events = len(df_evt.query(sopt_dict['sel_event']))
     logger.debug("Number of events: %d", n_events)
 
     # The uncertainty on the pre-selection efficiency times acceptance is neglected as
     # that on the expected signal yield
-    eff_acc = calc_eff_acc(df_mc_gen, df_mc_reco, 'mc_signal_prompt', gen_dict)
+    eff_acc, _ = calc_eff_acc(df_mc_gen, df_mc_reco, 'mc_signal_prompt', gen_dict)
     exp_signal = calc_sig_dmeson(sopt_dict['filename_fonll'], sopt_dict['fonll_pred'],
                                  sopt_dict['FF'], sopt_dict['BR'], sopt_dict['sigma_MB'],
                                  sopt_dict['f_prompt'], bin_lim[0], bin_lim[1], eff_acc, n_events)
     plot_fonll(sopt_dict['filename_fonll'], sopt_dict['fonll_pred'],
-               sopt_dict['FF'], case, suffix, plotdir)
-
-    fig_eff = plt.figure(figsize=(20, 15))
-    plt.xlabel('Probability', fontsize=20)
-    plt.ylabel('Efficiency', fontsize=20)
-    plt.title("Efficiency Signal", fontsize=20)
+               sopt_dict['FF'], case, suffix, plot_dir)
 
     fig_signif = plt.figure(figsize=(20, 15))
-    plt.xlabel('Probability', fontsize=20)
+    plt.xlabel('Threshold', fontsize=20)
     plt.ylabel('Significance (A.U.)', fontsize=20)
-    plt.title("Significance vs probability ", fontsize=20)
+    plt.title("Significance vs Threshold", fontsize=20)
 
     df_data_dec = df_data_dec.tail(round(len(df_data_dec) * bkg_fract))
     sigma = calc_peak_sigma(df_mc_reco, 'mc_signal', gen_dict, mass, mass_fit_lim, bin_width)
@@ -248,12 +201,8 @@ def study_signif(case, names, bin_lim, file_mc_gen, file_data_evt, df_mc_reco, d
 
     for name in names:
 
-        eff_array, eff_err_array, x_axis = calc_efficiency(df_ml_test, 'mc_signal_prompt',
-                                                           gen_dict, name, sopt_dict['num_steps'])
-        plt.figure(fig_eff.number)
-        plt.errorbar(x_axis, eff_array, yerr=eff_err_array, alpha=0.3, label=f'{name}',
-                     elinewidth=2.5, linewidth=4.0)
-
+        eff_array, eff_err_array, x_axis = calc_eff(df_ml_test, 'mc_signal_prompt', gen_dict, name,
+                                                    sopt_dict['num_steps'])
         sig_array = [eff * exp_signal for eff in eff_array]
         sig_err_array = [eff_err * exp_signal for eff_err in eff_err_array]
         bkg_array, bkg_err_array, _ = calc_bkg(df_data_dec, name, sopt_dict['num_steps'],
@@ -266,17 +215,6 @@ def study_signif(case, names, bin_lim, file_mc_gen, file_data_evt, df_mc_reco, d
         plt.errorbar(x_axis, signif_array, yerr=signif_err_array, alpha=0.3, label=f'{name}',
                      elinewidth=2.5, linewidth=4.0)
 
-    eff_arr_std, eff_er_arr_std, x_axis_std = calc_efficiency(df_ml_test, 'mc_signal_prompt',
-                                                              gen_dict, 'ALICE Standard',
-                                                              sopt_dict['num_steps'], True)
-    plt.figure(fig_eff.number)
-    plt.errorbar(x_axis_std, eff_arr_std, yerr=eff_er_arr_std, alpha=0.3, label=f'ALICE Standard',
-                 elinewidth=2.5, linewidth=4.0)
-
-    plt.figure(fig_eff.number)
-    plt.legend(loc="lower left", prop={'size': 18})
-    plt.savefig(plotdir + '/Efficiency%sSignal.png' % suffix)
-
     plt.figure(fig_signif.number)
     plt.legend(loc="lower left", prop={'size': 18})
-    plt.savefig(plotdir + '/Significance%s.png' % suffix)
+    plt.savefig(plot_dir + '/Significance%s.png' % suffix)

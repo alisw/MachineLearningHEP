@@ -123,6 +123,10 @@ dosignifopt:
   default: False
   type_as: [True]
 
+doefficiency:
+  default: False
+  type_as: [True]
+
 # This configuration defaults are filled on the dly from the models database
 # config_model_parameters.yml
 activate_models:

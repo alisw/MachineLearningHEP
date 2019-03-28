@@ -28,6 +28,7 @@ dolearningcurve: false
 dopca: false
 dopltregressionxy: false
 dosignifopt: false
+doefficiency: false
 dostandard: false
 dotesting: true
 dotraining: true

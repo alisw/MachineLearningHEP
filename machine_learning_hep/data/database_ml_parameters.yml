@@ -20,7 +20,7 @@ LctopK0sPbPbCen010:
   invmasslow: 2.14
   invmasshigh: 2.48
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
-  presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
+  presel_gen: abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 # pre-selections on generated candidates
   skimming_sel: "pt_cand>4"
   skimming_sel_gen: "pt_cand>4"
   skimming_sel_evt: null
@@ -29,7 +29,6 @@ LctopK0sPbPbCen010:
   skimming2_sel_evt: null
   skimming2_dotrackpid: True 
   sel_cent: null #"centrality >=0 &  centrality <=10" ### DONT KNOW HOW TO PROPERLY SET THE LIMITS FOR CENTRALITY, NEED TO CHECK 
-  ptgen: pt_cand
   
   old_sel:
     use: False # Obsolete selection method not implemented, see Ds as a reference
@@ -135,6 +134,10 @@ LctopK0sPbPbCen010:
     bin_width: 0.008 # bin width of the invariant mass histogram
     bkg_data_fraction: 0.1 # fraction of real data used in the estimation
     num_steps: 101 # number of steps used in efficiency and signif. estimation
+  
+  efficiency:
+    split_prompt_FD: True # True to split prompt and feed-down candidates
+    num_steps: 101 # number of steps used in efficiency estimation
 
 
 LctopK0sPbPbCen3050:
@@ -269,17 +272,23 @@ Dspp5TeV:
   invmasslow: 1.700
   invmasshigh: 2.150
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
-  presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
+  presel_gen: abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 # pre-selections on generated candidates
   skimming_sel: "pt_cand>2"
   skimming_sel_gen: "pt_cand>2"
   skimming_sel_evt: "is_ev_rej >= 0"
   skimming2_sel: "delta_mass_KK<0.02 & is_ev_rej==0" 
   skimming2_sel_gen: "pt_cand>-100 & abs(z_vtx_gen)<10" 
   skimming2_sel_evt: "is_ev_rej >=0"
-  ptgen: pt_cand
   
   old_sel:
     use: False 
+    mc_signal: cand_type == [10, 11, 74, 75, 138, 139, 202, 203, 266, 267, 330, 331, 394, 395, 458, 459,
+                                18, 19, 82, 83, 146, 147, 210, 211, 274, 275, 338, 339, 402, 403, 466, 467]
+    mc_signal_prompt: cand_type == [10, 11, 74, 75, 138, 139, 202, 203, 266, 267, 330, 331, 394, 395, 458, 459]
+    mc_signal_FD: cand_type == [18, 19, 82, 83, 146, 147, 210, 211, 274, 275, 338, 339, 402, 403, 466, 467]
+    mc_bkg: cand_type >= 0 # dummy, not used
+    presel_track_pid: cand_type >= 256 # note that all Dplus to KKPi pass this selection, proper condition is more complex
+    sel_std_analysis: cand_type == [11, 75, 139, 203, 267, 331, 395, 459, 19, 83, 147, 211, 275, 339, 403, 467]
   bitmap_sel:
     use: True
     var_sel: cand_type
@@ -381,3 +390,7 @@ Dspp5TeV:
     bin_width: 0.008 # bin width of the invariant mass histogram
     bkg_data_fraction: 0.1 # fraction of real data used in the estimation
     num_steps: 101 # number of steps used in efficiency and signif. estimation 
+  
+  efficiency:
+    split_prompt_FD: True # True to split prompt and feed-down candidates
+    num_steps: 101 # number of steps used in efficiency estimation

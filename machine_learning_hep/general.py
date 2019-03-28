@@ -79,8 +79,8 @@ def createstringselection(var, low, high):
     return string_selection
 
 
-# pylint: disable=too-many-statements, too-many-branches
-def filter_df_cand(dataframe, main_dict, sel_opt, mc_gen=False):
+# pylint: disable=too-many-branches
+def filter_df_cand(dataframe, main_dict, sel_opt):
     '''Filter a dataframe looking at the type of candidate.
 
     It works both for bitmap and old selection method.
@@ -90,17 +90,14 @@ def filter_df_cand(dataframe, main_dict, sel_opt, mc_gen=False):
         - 'mc_signal' -> select MC signal
         - 'mc_signal_prompt' -> select only prompt MC signal
         - 'mc_signal_FD' -> select only feed-down MC signal
-        - 'mc_bkg' -> select MC background (reco MC only)
+        - 'mc_bkg' -> select MC background
         - 'presel_track_pid' -> select candidates satisfing PID and track pre-selections
-                                (reco MC only)
         - 'sel_std_analysis' -> select candidates fulfilling the std analysis selections
-                                (reco MC only)
 
     Args:
         dataframe: pandas dataframe to filter
         main_dict: dictionary of parameters loaded from 'database_ml_parameters.yml'
         sel_opt: selection option (string)
-        mc_gen: flag to distinguish reconstructed and generated MC
 
     Return:
         df_selected: filtered pandas dataframe
@@ -125,11 +122,11 @@ def filter_df_cand(dataframe, main_dict, sel_opt, mc_gen=False):
             sel_bits = bitmap_dict['mcsignal_prompt_on_off']
         elif sel_opt == 'mc_signal_FD':
             sel_bits = bitmap_dict['mcsignal_feed_on_off']
-        elif sel_opt == 'mc_bkg' and not mc_gen:
+        elif sel_opt == 'mc_bkg':
             sel_bits = bitmap_dict['mcbkg_on_off']
-        elif sel_opt == 'presel_track_pid' and not mc_gen:
+        elif sel_opt == 'presel_track_pid':
             sel_bits = bitmap_dict['preseltrack_pid_on_off']
-        elif sel_opt == 'sel_std_analysis' and not mc_gen:
+        elif sel_opt == 'sel_std_analysis':
             sel_bits = bitmap_dict['std_analysis_on_off']
         else:
             logger.critical("Wrong selection option!")
@@ -142,25 +139,16 @@ def filter_df_cand(dataframe, main_dict, sel_opt, mc_gen=False):
         logger.debug("Using old selection")
 
         if sel_opt == 'mc_signal':
-            if mc_gen:
-                sel_string = old_dict['mc_gen_signal']
-            else:
-                sel_string = old_dict['mc_signal']
+            sel_string = old_dict['mc_signal']
         elif sel_opt == 'mc_signal_prompt':
-            if mc_gen:
-                sel_string = old_dict['mc_gen_signal_prompt']
-            else:
-                sel_string = old_dict['mc_signal_prompt']
+            sel_string = old_dict['mc_signal_prompt']
         elif sel_opt == 'mc_signal_FD':
-            if mc_gen:
-                sel_string = old_dict['mc_gen_signal_FD']
-            else:
-                sel_string = old_dict['mc_signal_FD']
-        elif sel_opt == 'mc_bkg' and not mc_gen:
+            sel_string = old_dict['mc_signal_FD']
+        elif sel_opt == 'mc_bkg':
             sel_string = old_dict['mc_bkg']
-        elif sel_opt == 'presel_track_pid'and not mc_gen:
+        elif sel_opt == 'presel_track_pid':
             sel_string = old_dict['presel_track_pid']
-        elif sel_opt == 'sel_std_analysis' and not mc_gen:
+        elif sel_opt == 'sel_std_analysis':
             sel_string = old_dict['sel_std_analysis']
         else:
             logger.critical("Wrong selection option!")

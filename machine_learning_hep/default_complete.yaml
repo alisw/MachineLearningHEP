@@ -39,6 +39,7 @@ ml_study:
   dopca: false
   dopltregressionxy: false
   dosignifopt: true
+  doefficiency: true
   dostandard: false
   dotesting: true
   dotraining: true
@@ -70,15 +71,18 @@ analysis:
     std:
       doapply: false
       domass: false
+      doeffhist: false
     ml:
       doapply: false
       domass: false
+      doeffhist: false
   modelname: xgboost
   binmin: [6]
   binmax: [10]
-  probcut: [0.70]
-  probcutoptimal: 0.8
+  probcut: [0.80]
+  probcutoptimal: [0.8]
   models: [null]
+  test_df_list: [xxxx]
   doinvmassspectra: true
   uselikelihood: 0
   sgnfunc: [kGaus]
