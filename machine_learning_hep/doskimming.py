@@ -26,7 +26,7 @@ import numpy as np
 #from machine_learning_hep.general import get_database_ml_parameters, get_database_ml_analysis
 from machine_learning_hep.listfiles import list_files_dir_lev2, list_files_lev2
 from machine_learning_hep.general import filter_df_cand
-from machine_learning_hep.selectionutils import selectfidacc
+from machine_learning_hep.selectionutils import selectfidacc, select_runs
 
 def flattenroot_to_pandas(filein, fileout, treenamein, var_all, skimming_sel):
     tree = uproot.open(filein)[treenamein]
@@ -43,13 +43,18 @@ def convert_to_pandas(filein, fileout, treenamein, var_all, skimming_sel):
     df.to_pickle(fileout)
 
 def skimmer(filein, filevt, fileout, skimming_sel, var_evt_match,
-            param_case, presel_reco, sel_cent, skimming2_dotrackpid):
+            param_case, presel_reco, sel_cent, skimming2_dotrackpid,
+            runlist):
     df = pickle.load(open(filein, "rb"))
     dfevt = pickle.load(open(filevt, "rb"))
     if "Evt" not in filein:
         df = pd.merge(df, dfevt, on=var_evt_match)
     if skimming_sel is not None:
         df = df.query(skimming_sel)
+    if runlist is not None:
+        array_run = df.run_number.values
+        isgoodrun = select_runs(runlist, array_run)
+        df = df[np.array(isgoodrun, dtype=bool)]
     if "Reco" in filein:
         if skimming2_dotrackpid is True:
             df = filter_df_cand(df, param_case, 'presel_track_pid')
@@ -82,12 +87,13 @@ def convertallpickle(chunk, chunkout, treenamein, var_all, skimming_sel):
         p.join()
 
 def skimall(chunk, chunkevt, chunkout, skimming_sel, var_evt_match,
-            param_case, presel_reco, sel_cent, skimming2_dotrackpid):
+            param_case, presel_reco, sel_cent, skimming2_dotrackpid, runlist):
     processes = [mp.Process(target=skimmer, args=(filein, chunkevt[index],
                                                   chunkout[index],
                                                   skimming_sel, var_evt_match,
                                                   param_case, presel_reco,
-                                                  sel_cent, skimming2_dotrackpid))
+                                                  sel_cent,
+                                                  skimming2_dotrackpid, runlist))
                  for index, filein in enumerate(chunk)]
     for p in processes:
         p.start()
@@ -175,7 +181,7 @@ def conversion(data_config, data_param, mcordata):
     print("Total time elapsed", time.time()-tstart)
 
 # pylint: disable=too-many-locals, too-many-statements, too-many-branches
-def skim(data_config, data_param, mcordata):
+def skim(data_config, data_param, mcordata, run_param):
 
     case = data_config["case"]
     param_case = data_param[case]
@@ -205,7 +211,8 @@ def skim(data_config, data_param, mcordata):
         list_create_dir(inputdir, outputdir, namefile_reco, \
                         namefile_evt, namefile_gen, \
                         namefile_reco_skim, namefile_evt_skim, namefile_gen_skim, maxfiles)
-    print(inputdir)
+    prod = data_param[case]["inputs"][mcordata]["production"]
+    runlist = run_param[prod]
     tstart = time.time()
     print("I am skimming")
 
@@ -217,14 +224,14 @@ def skim(data_config, data_param, mcordata):
         print("Processing chunk number=", index)
         skimall(chunks[index], chunksevt[index], chunksout[index],
                 skimming_sel, var_evt_match, param_case, presel_reco, sel_cent,
-                skimming2_dotrackpid)
+                skimming2_dotrackpid, runlist)
         skimall(chunksevt[index], chunksevt[index], chunksoutevt[index], \
                 skimming_sel_evt, var_evt_match, param_case, presel_reco, \
-                sel_cent, skimming2_dotrackpid)
+                sel_cent, skimming2_dotrackpid, runlist)
         if mcordata == "mc":
             skimall(chunksgen[index], chunksevt[index], chunksoutgen[index], \
                     skimming_sel_gen, var_evt_match, param_case, presel_reco, \
-                    sel_cent, skimming2_dotrackpid)
+                    sel_cent, skimming2_dotrackpid, runlist)
     print("Total time elapsed", time.time()-tstart)
 def merging(data_config, data_param, mcordata):
 

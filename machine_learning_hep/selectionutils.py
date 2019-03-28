@@ -30,6 +30,16 @@ def selectcandidateml(array_prob, probcut):
     return array_is_sel
 
 @numba.njit
+def select_runs(good_runlist, array_run):
+    array_run_sel = []
+    for candrun in array_run:
+        is_sel = False
+        if candrun in good_runlist:
+            is_sel = True
+        array_run_sel.append(is_sel)
+    return array_run_sel
+
+@numba.njit
 def selectfidacc(array_pt, array_y):
     array_is_sel = []
     for icand, pt in enumerate(array_pt):
