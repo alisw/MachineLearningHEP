@@ -193,7 +193,7 @@ def study_eff(case, names, suffix, plot_dir, df_ml_test):
 
     plt.figure(fig_eff.number)
     plt.legend(loc="lower left", prop={'size': 18})
-    plt.savefig(plot_dir + '/Efficiency%sSignal.png' % suffix)
+    plt.savefig(f'{plot_dir}/Efficiency_{suffix}.png')
 
 
 # pylint: disable=too-many-statements, too-many-locals

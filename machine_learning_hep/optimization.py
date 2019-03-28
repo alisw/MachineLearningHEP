@@ -42,11 +42,11 @@ def calc_bkg(df_bkg, name, num_step, fit_region, bin_width, sig_region, save_fit
         out_file = TFile(f'{out_dir}/bkg_fits_{name}.root', 'recreate')
         out_file.cd()
 
-    logger.debug("To fit the bkg an exponential function is used")
+    logger.debug("To fit the bkg a pol2 function is used")
     for thr in x_axis:
         bkg = 0.
         bkg_err = 0.
-        hmass = TH1F(f'hmass_{thr:.2f}', '', num_bins, fit_region[0], fit_region[1])
+        hmass = TH1F(f'hmass_{thr:.5f}', '', num_bins, fit_region[0], fit_region[1])
         bkg_sel_mask = df_bkg['y_test_prob' + name].values >= thr
         sel_mass_array = df_bkg[bkg_sel_mask]['inv_mass'].values
 
@@ -161,8 +161,7 @@ def plot_fonll(filename, fonll_pred, frag_frac, part_label, suffix, plot_dir):
     plt.ylabel('Cross Section [pb/GeV]', fontsize=20)
     plt.title("FONLL cross section " + part_label, fontsize=20)
     plt.semilogy()
-    plot_name = plot_dir + '/FONLL curve %s.png' % (suffix)
-    plt.savefig(plot_name)
+    plt.savefig(f'{plot_dir}/FONLL_curve_{suffix}.png')
 
 
 def study_signif(case, names, bin_lim, file_mc_gen, file_data_evt, df_mc_reco, df_ml_test,
@@ -229,4 +228,4 @@ def study_signif(case, names, bin_lim, file_mc_gen, file_data_evt, df_mc_reco, d
 
     plt.figure(fig_signif.number)
     plt.legend(loc="lower left", prop={'size': 18})
-    plt.savefig(f'{plot_dir}/Significance{suffix}.png')
+    plt.savefig(f'{plot_dir}/Significance_{suffix}.png')
