@@ -78,7 +78,7 @@ analysis:
   binmax: [10]
   probcut: [0.70]
   probcutoptimal: 0.8
-  models: [xgboost_classifiernevt_sig50000_nevt_bkg50000_BinaryClassificationLctopK0sPbPbCen3050_dfselection_pt_cand_6.0_10.0.sav]
+  models: [null]
   doinvmassspectra: true
   uselikelihood: 0
   sgnfunc: [kGaus]
