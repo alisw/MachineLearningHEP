@@ -46,8 +46,8 @@ LctopK0sPbPbCen010:
     namefile_reco: AnalysisResultsRecoLctopK0s.pkl
     namefile_evt: AnalysisResultsEvtLctopK0s.pkl
     namefile_gen: AnalysisResultsGenLctopK0s.pkl
-    namefile_reco_merged: AnalysisResultsRecoLctopK0sMerged.pkl
-    namefile_evt_merged: AnalysisResultsEvtLctopK0sMerged.pkl
+    namefile_reco_merged: AnalysisResultsRecoLctopK0sMerged.pkl #ml dataset
+    namefile_evt_merged: AnalysisResultsEvtLctopK0sMerged.pkl #ml dataset
     namefile_gen_merged: AnalysisResultsGenLctopK0sMerged.pkl
     namefile_reco_skim: AnalysisResultsRecoLctopK0sSkimmed.pkl
     namefile_evt_skim: AnalysisResultsEvtLctopK0sSkimmed.pkl
@@ -57,7 +57,7 @@ LctopK0sPbPbCen010:
     namefile_reco_skim_ml_tot: AnalysisResultsRecoLctopK0sSkimmed_ml_tot.pkl
     namefile_reco_skim_std_tot: AnalysisResultsRecoLctopK0sSkimmed_std_tot.pkl
     namefile_gen_skim_tot: AnalysisResultsGenLctopK0sSkimmed_tot.pkl
-    namefile_evt_skim_tot: AnalysisResultsEvtLctopK0sSkimmed_tot.pkl
+    namefile_evt_skim_tot: AnalysisResultsEvtLctopK0sSkimmed_tot.pkl #all dataset
     treeoriginreco: 'PWGHF_TreeCreator/tree_Lc2V0bachelor'
     treeorigingen: 'PWGHF_TreeCreator/tree_Lc2V0bachelor_gen'
     treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
@@ -156,7 +156,6 @@ LctopK0sPbPbCen3050:
   skimming2_sel_evt: null
   skimming2_dotrackpid: True 
   sel_cent: null #"centrality >=0 &  centrality <=10" ### DONT KNOW HOW TO PROPERLY SET THE LIMITS FOR CENTRALITY, NEED TO CHECK 
-  ptgen: pt_cand
   
   old_sel:
     use: False # Obsolete selection method not implemented, see Ds as a reference
@@ -277,10 +276,10 @@ Dspp5TeV:
   presel_gen: abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 # pre-selections on generated candidates
   skimming_sel: "pt_cand>2"
   skimming_sel_gen: "pt_cand>2"
-  skimming_sel_evt: "is_ev_rej >= 0"
+  skimming_sel_evt: null
   skimming2_sel: "delta_mass_KK<0.02 & is_ev_rej==0" 
   skimming2_sel_gen: "pt_cand>-100 & abs(z_vtx_gen)<10" 
-  skimming2_sel_evt: "is_ev_rej >=0"
+  skimming2_sel_evt: null
   skimming2_dotrackpid: True
   
   old_sel:
@@ -409,10 +408,10 @@ DsPbPb010:
   presel_gen: abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 # pre-selections on generated candidates
   skimming_sel: "n_cand>0 & pt_cand>2"
   skimming_sel_gen: "n_cand>0 & pt_cand>2"
-  skimming_sel_evt: "is_ev_rej >= 0"
+  skimming_sel_evt: null
   skimming2_sel: "delta_mass_KK<0.02 & is_ev_rej==0" 
   skimming2_sel_gen: "abs(z_vtx_gen)<10" 
-  skimming2_sel_evt: "is_ev_rej >=0"
+  skimming2_sel_evt: null
   skimming2_dotrackpid: True
   sel_cent: null
 
@@ -535,10 +534,10 @@ DsPbPb3050:
   presel_gen: abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 # pre-selections on generated candidates
   skimming_sel: "n_cand>0 & pt_cand>2"
   skimming_sel_gen: "n_cand>0 & pt_cand>2"
-  skimming_sel_evt: "is_ev_rej >= 0"
+  skimming_sel_evt: null
   skimming2_sel: "delta_mass_KK<0.02 & is_ev_rej==0" 
   skimming2_sel_gen: "abs(z_vtx_gen)<10" 
-  skimming2_sel_evt: "is_ev_rej >=0"
+  skimming2_sel_evt: null
   skimming2_dotrackpid: True
   sel_cent: null
 
