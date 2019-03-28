@@ -25,13 +25,17 @@ from machine_learning_hep.general import get_database_ml_parameters
 from machine_learning_hep.general import filterdataframe_singlevar, filter_df_cand
 from machine_learning_hep.efficiency import calc_eff, calc_eff_acc
 
-def calc_bkg(df_bkg, name, num_step, fit_region, bin_width, sig_region, save_fit, out_dir):
+def calc_bkg(df_bkg, name, num_steps, fit_region, bin_width, sig_region, save_fit, out_dir):
     """
     Estimate the number of background candidates under the signal peak. This is obtained
     from real data with a fit of the sidebands of the invariant mass distribution.
     """
     logger = get_logger()
-    x_axis = np.linspace(0, 1.00, num_step)
+    ns_left = int(num_steps / 10) - 1
+    ns_right = num_steps - ns_left
+    x_axis_left = np.linspace(0., 0.49, ns_left)
+    x_axis_right = np.linspace(0.5, 1.0, ns_right)
+    x_axis = np.concatenate((x_axis_left, x_axis_right))
     bkg_array = []
     bkg_err_array = []
     num_bins = (fit_region[1] - fit_region[0]) / bin_width

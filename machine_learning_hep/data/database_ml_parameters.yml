@@ -131,12 +131,12 @@ LctopK0sPbPbCen010:
     BR: 1.09e-2 # branching ratio of the decay Lc->pK0s * K0s->pi+pi-
     f_prompt: 0.9 # estimated fraction of prompt candidates
     bkg_data_fraction: 0.1 # fraction of real data used in the estimation
-    num_steps: 101 # number of steps used in efficiency and signif. estimation
+    num_steps: 111 # number of steps used in efficiency and signif. estimation
     save_fit: True # save bkg fits with the various cuts on ML output
   
   efficiency:
     split_prompt_FD: True # True to split prompt and feed-down candidates
-    num_steps: 101 # number of steps used in efficiency estimation
+    num_steps: 111 # number of steps used in efficiency estimation
 
 
 LctopK0sPbPbCen3050:
@@ -259,12 +259,12 @@ LctopK0sPbPbCen3050:
     BR: 1.09e-2 # branching ratio of the decay Lc->pK0s * K0s->pi+pi-
     f_prompt: 0.9 # estimated fraction of prompt candidates
     bkg_data_fraction: 0.1 # fraction of real data used in the estimation
-    num_steps: 101 # number of steps used in efficiency and signif. estimation
+    num_steps: 111 # number of steps used in efficiency and signif. estimation
     save_fit: True # save bkg fits with the various cuts on ML output
 
   efficiency:
     split_prompt_FD: True # True to split prompt and feed-down candidates
-    num_steps: 101 # number of steps used in efficiency estimation
+    num_steps: 111 # number of steps used in efficiency estimation
 
 Dspp5TeV:
 
@@ -391,12 +391,12 @@ Dspp5TeV:
     BR: 2.27e-2 # branching ratio of the decay
     f_prompt: 0.9 # estimated fraction of prompt candidates
     bkg_data_fraction: 0.1 # fraction of real data used in the estimation
-    num_steps: 101 # number of steps used in efficiency and signif. estimation
+    num_steps: 111 # number of steps used in efficiency and signif. estimation
     save_fit: True # save bkg fits with the various cuts on ML output
   
   efficiency:
     split_prompt_FD: True # True to split prompt and feed-down candidates
-    num_steps: 101 # number of steps used in efficiency estimation
+    num_steps: 111 # number of steps used in efficiency estimation
 
 DsPbPb010:
 
@@ -517,12 +517,12 @@ DsPbPb010:
     BR: 2.27e-2 # branching ratio of the decay
     f_prompt: 0.9 # estimated fraction of prompt candidates
     bkg_data_fraction: 0.1 # fraction of real data used in the estimation
-    num_steps: 101 # number of steps used in efficiency and signif. estimation 
+    num_steps: 111 # number of steps used in efficiency and signif. estimation 
     save_fit: True # save bkg fits with the various cuts on ML output
 
   efficiency:
     split_prompt_FD: True # True to split prompt and feed-down candidates
-    num_steps: 101 # number of steps used in efficiency estimation
+    num_steps: 111 # number of steps used in efficiency estimation
 
 DsPbPb3050:
 
@@ -643,9 +643,9 @@ DsPbPb3050:
     BR: 2.27e-2 # branching ratio of the decay
     f_prompt: 0.9 # estimated fraction of prompt candidates
     bkg_data_fraction: 0.1 # fraction of real data used in the estimation
-    num_steps: 101 # number of steps used in efficiency and signif. estimation 
+    num_steps: 111 # number of steps used in efficiency and signif. estimation 
     save_fit: True # save bkg fits with the various cuts on ML output
 
   efficiency:
     split_prompt_FD: True # True to split prompt and feed-down candidates
-    num_steps: 101 # number of steps used in efficiency estimation
+    num_steps: 111 # number of steps used in efficiency estimation
