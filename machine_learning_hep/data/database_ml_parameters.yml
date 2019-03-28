@@ -136,6 +136,131 @@ LctopK0sPbPbCen010:
     bkg_data_fraction: 0.1 # fraction of real data used in the estimation
     num_steps: 101 # number of steps used in efficiency and signif. estimation
 
+
+LctopK0sPbPbCen3050:
+
+  mass: 2.2864
+  pdg_code: null
+  invmassbins: 170
+  invmasslow: 2.14
+  invmasshigh: 2.48
+  presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
+  presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
+  skimming_sel: "pt_cand>4"
+  skimming_sel_gen: "pt_cand>4"
+  skimming_sel_evt: null
+  skimming2_sel: "pt_cand>4 & is_ev_rej==0" 
+  skimming2_sel_gen: "pt_cand>4 & abs(z_vtx_gen)<10 " 
+  skimming2_sel_evt: null
+  skimming2_dotrackpid: True 
+  sel_cent: null #"centrality >=0 &  centrality <=10" ### DONT KNOW HOW TO PROPERLY SET THE LIMITS FOR CENTRALITY, NEED TO CHECK 
+  ptgen: pt_cand
+  
+  old_sel:
+    use: False # Obsolete selection method not implemented, see Ds as a reference
+  bitmap_sel:
+    use: True
+    var_sel: cand_type
+    mcsignal_on_off: [[1],[5]]
+    mcsignal_prompt_on_off: [[1,3],[5]]
+    mcsignal_feed_on_off: [[1,4],[5]]
+    mcbkg_on_off: [[2],[]]
+    preseltrack_pid_on_off : [[8],[]]
+    std_analysis_on_off : [[0],[]]
+  
+  files_names:
+    namefile_unmerged_tree: AnalysisResults.root
+    namefile_reco: AnalysisResultsRecoLctopK0s.pkl
+    namefile_evt: AnalysisResultsEvtLctopK0s.pkl
+    namefile_gen: AnalysisResultsGenLctopK0s.pkl
+    namefile_reco_merged: AnalysisResultsRecoLctopK0sMerged.pkl
+    namefile_evt_merged: AnalysisResultsEvtLctopK0sMerged.pkl
+    namefile_gen_merged: AnalysisResultsGenLctopK0sMerged.pkl
+    namefile_reco_skim: AnalysisResultsRecoLctopK0sSkimmed.pkl
+    namefile_evt_skim: AnalysisResultsEvtLctopK0sSkimmed.pkl
+    namefile_gen_skim: AnalysisResultsGenLctopK0sSkimmed.pkl
+    namefile_reco_skim_ml: AnalysisResultsRecoLctopK0sSkimmed_ml.pkl
+    namefile_reco_skim_std: AnalysisResultsRecoLctopK0sSkimmed_std.pkl
+    namefile_reco_skim_ml_tot: AnalysisResultsRecoLctopK0sSkimmed_ml_tot.pkl
+    namefile_reco_skim_std_tot: AnalysisResultsRecoLctopK0sSkimmed_std_tot.pkl
+    namefile_gen_skim_tot: AnalysisResultsGenLctopK0sSkimmed_tot.pkl
+    namefile_evt_skim_tot: AnalysisResultsEvtLctopK0sSkimmed_tot.pkl
+    treeoriginreco: 'PWGHF_TreeCreator/tree_Lc2V0bachelor'
+    treeorigingen: 'PWGHF_TreeCreator/tree_Lc2V0bachelor_gen'
+    treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
+    treeoutput: fTreeLctopK0sFlagged 
+ 
+  inputs:
+    data:
+      production: LHC18r
+      unmerged_tree_dir: /data/HeavyFlavour/PbPb_data_3050/27-03-2019/396_20190326-2301/unmerged 
+
+    mc:
+      production: LHC17j4d2
+      unmerged_tree_dir: /data/HeavyFlavour/PbPb_MC_3050/27-03-2019/397_20190326-2332/unmerged 
+
+  output_folders:
+    plotsanalysis: plotsanalysis
+    histoanalysis: histoanalysis
+    mlplot: mlplot
+    mlout: /data/trained_models/PbPb3050 
+    pkl_out: 
+      data: /data/HeavyFlavour/PbPb_data_3050/27-03-2019/396_20190326-2301/pickleLctopK0s 
+      mc: /data/HeavyFlavour/PbPb_MC_3050/27-03-2019/397_20190326-2332/pickleLctopK0s
+    pkl_skimmed: 
+      data: /data/HeavyFlavour/PbPb_data_3050/27-03-2019/396_20190326-2301/pickleLctopK0sskimmed6up
+      mc: /data/HeavyFlavour/PbPb_MC_3050/27-03-2019/397_20190326-2332/pickleLctopK0sskimmed6up
+    pkl_merged: 
+      data: /data/HeavyFlavour/PbPb_data_3050/27-03-2019/396_20190326-2301/pickleLctopK0sskimmed6upMerged
+      mc: /data/HeavyFlavour/PbPb_MC_3050/27-03-2019/397_20190326-2332/pickleLctopK0sskimmed6upMerged
+    pkl_final:
+      data: /data/HeavyFlavour/PbPb_data_3050/27-03-2019/396_20190326-2301/pickleLctopK0sskimmed6upTot
+      mc: /data/HeavyFlavour/PbPb_MC_3050/27-03-2019/397_20190326-2332/pickleLctopK0sskimmed6upTot
+
+  variables:
+    var_all: [cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, 
+              cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2, 
+              inv_mass, pt_cand, inv_mass_K0s, pt_K0s, cand_type, y_cand, eta_prong0, eta_prong1, eta_prong2, 
+              run_number, ev_id, nsigTPC_Pr_0, nsigTOF_Pi_0, nsigTOF_Pr_0, nsigTPC_Pi_1, nsigTPC_Pr_1, 
+              nsigTOF_Pi_1, nsigTOF_Pr_1, nsigTPC_Pi_2, nsigTPC_Pr_2, nsigTOF_Pi_2, nsigTOF_Pr_2]
+    var_evt: 
+      data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
+      mc: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
+    var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
+    var_training: [cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, 
+                   cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, 
+                   imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0]
+    var_boundaries: [cos_t_star, signd0]
+    var_correlation:
+      - [cos_t_star]
+      - [imp_par_K0s]
+    var_others: [inv_mass, pt_cand]
+    var_signal: signal
+    var_binning: pt_cand
+    var_inv_mass: inv_mass
+    var_cand_type: cand_type
+    var_evt_match: [run_number, ev_id]
+  
+  ml_study:    
+    prepare:
+      sig_tag: 1 #mc
+      bkg_tag: 0 #data
+      sel_signal: mc_signal # used for webapp, selection option of filter_df_cand
+      sel_bkg: inv_mass<2.1864 or inv_mass>2.3864
+  
+  signif_opt: 
+    sel_event: is_ev_rej==0
+    filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
+    fonll_pred: 'max' # edge of the FONLL prediction
+    FF: 0.1281 # fragmentation fraction
+    sigma_MB: 0.0002631 # 1./<TAA> for 0-10% where <TAA(30-50%)> =  3.80 mb^-1 ( from http://dde.web.cern.ch/dde/glauber_lhc.htm )
+    BR: 1.09e-2 # branching ratio of the decay Lc->pK0s * K0s->pi+pi-
+    f_prompt: 0.9 # estimated fraction of prompt candidates
+    mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
+    bin_width: 0.008 # bin width of the invariant mass histogram
+    bkg_data_fraction: 0.1 # fraction of real data used in the estimation
+    num_steps: 101 # number of steps used in efficiency and signif. estimation
+
 Dspp5TeV:
 
   mass: 1.970

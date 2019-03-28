@@ -5,7 +5,7 @@ conversion:
     nmaxconvers: 300
     maxfiles: -1
   data:
-    activate: true  #never change this without thinking!
+    activate: false  #never change this without thinking!
     nmaxconvers: 200
     maxfiles: -1
 skimming: 
@@ -14,7 +14,7 @@ skimming:
     nmaxconvers: 300
     maxfiles: -1
   data:
-    activate: true
+    activate: false
     nmaxconvers: 500
     maxfiles: -1
 merging: 
@@ -22,7 +22,7 @@ merging:
     activate: false
     maxfilestomerge: 1000
   data:
-    activate: true
+    activate: false
     maxfilestomerge: 600
 ml_study:   
   activate: false
@@ -46,8 +46,8 @@ ml_study:
   mlsubtype: HFmeson
   mltype: BinaryClassification
   ncores: -1
-  nevt_bkg: 100000
-  nevt_sig: 100000
+  nevt_bkg: 50000
+  nevt_sig: 50000
   nkfolds: 5
   rnd_shuffle: 12
   rnd_splt: 12
@@ -62,7 +62,7 @@ analysis:
       doapply: false
       domass: false
     ml:
-      doapply: true
+      doapply: false
       domass: false
   mc:
     nmaxchunks: 10
@@ -76,9 +76,9 @@ analysis:
   modelname: xgboost
   binmin: [6]
   binmax: [10]
-  probcut: [0.80]
+  probcut: [0.70]
   probcutoptimal: 0.8
-  models: [xgboost_classifiernevt_sig10000_nevt_bkg10000_BinaryClassificationLctopK0sPbPbCen010_dfselection_pt_cand_6.0_10.0.sav]
+  models: [null]
   doinvmassspectra: true
   uselikelihood: 0
   sgnfunc: [kGaus]
