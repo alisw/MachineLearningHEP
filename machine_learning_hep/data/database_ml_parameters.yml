@@ -509,7 +509,7 @@ DsPbPb010:
   
   signif_opt: 
     sel_event: is_ev_rej==0
-    filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
+    filename_fonll: 'data/fonll/fo_PbPb_d0meson_5TeV_y0p5_wRaa_ds_010_min.csv' # file with FONLL predictions, corrected with Raa for PbPb
     fonll_pred: 'max' # edge of the FONLL prediction
     FF: 0.1281 # fragmentation fraction
     sigma_MB: 1  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
@@ -635,7 +635,7 @@ DsPbPb3050:
   
   signif_opt: 
     sel_event: is_ev_rej==0
-    filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
+    filename_fonll: 'data/fonll/fo_PbPb_d0meson_5TeV_y0p5_wRaa_ds_3050_min.csv' # file with FONLL predictions, corrected with Raa for PbPb
     fonll_pred: 'max' # edge of the FONLL prediction
     FF: 0.1281 # fragmentation fraction
     sigma_MB: 1  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
