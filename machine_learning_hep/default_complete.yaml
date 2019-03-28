@@ -1,4 +1,4 @@
-case: LctopK0sPbPbCen010
+case: LctopK0sPbPbCen3050
 conversion:
   mc: 
     activate: false #never change this without thinking!
@@ -22,8 +22,8 @@ merging:
     activate: false
     maxfilestomerge: 1000
   data:
-    activate: false
-    maxfilestomerge: 600
+    activate: false     
+    maxfilestomerge: 500
 ml_study:   
   activate: false
   applytodatamc: true

@@ -37,6 +37,9 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     with open("data/config_model_parameters.yml", 'r') as mod_config:
         data_model = yaml.load(mod_config)
 
+    with open("data/database_run_list.yml", 'r') as runlist_config:
+        run_param = yaml.load(runlist_config)
+
     case = data_config["case"]
     binminarray = data_config["ml_study"]["binmin"]
     binmaxarray = data_config["ml_study"]["binmax"]
@@ -87,17 +90,18 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
         else:
             print("creating dir data skimmed pkl")
             os.makedirs(pkl_skimmed_data)
-            skim(data_config, data_param, "data")
+            skim(data_config, data_param, "data", run_param)
 
     if doskimmingmc is True:
         pkl_skimmed_mc = data_param[case]["output_folders"]["pkl_skimmed"]["mc"]
+
         if os.path.exists(pkl_skimmed_mc):
             print("output mc skimmed pkl exists")
             print("rm -rf ", pkl_skimmed_mc)
         else:
             print("creating dir mc skimmed pkl")
             os.makedirs(pkl_skimmed_mc)
-            skim(data_config, data_param, "mc")
+            skim(data_config, data_param, "mc", run_param)
 
     if domergingdata is True:
         pkl_merged_data = data_param[case]["output_folders"]["pkl_merged"]["data"]
