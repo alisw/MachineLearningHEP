@@ -278,9 +278,10 @@ Dspp5TeV:
   skimming_sel_gen: "pt_cand>2"
   skimming_sel_evt: null
   skimming2_sel: "delta_mass_KK<0.02 & is_ev_rej==0" 
-  skimming2_sel_gen: "pt_cand>-100 & abs(z_vtx_gen)<10" 
+  skimming2_sel_gen: "abs(z_vtx_gen)<10" 
   skimming2_sel_evt: null
   skimming2_dotrackpid: True
+  sel_cent: null
   
   old_sel:
     use: False 
