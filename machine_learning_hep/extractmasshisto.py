@@ -16,7 +16,7 @@ import pickle
 import pandas as pd
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
-from machine_learning_hep.selectionutils import getnormforselevt
+#from machine_learning_hep.selectionutils import getnormforselevt
 
 
 def extractmasshisto(data_config, data, case, useml, mcordata):
@@ -52,15 +52,16 @@ def extractmasshisto(data_config, data, case, useml, mcordata):
             df = df.query(sel_ml)
         array_inv_mass_sel = df.inv_mass.values
         namehisto = "h_invmass%d_%d" % (imin, imax)
+        if useml == 1:
+            namehisto = "h_invmass%d_%d_prob%.2f" % (imin, imax, prob_cut)
         h_invmass = TH1F(namehisto, "", invmassbins, invmasslow, invmasshigh)
         fill_hist(h_invmass, array_inv_mass_sel)
         histomassall.append(h_invmass)
         index = index + 1
-
-    df_evt = pickle.load(open(namefile_evt_skim_tot, "rb"))
-    print("events for normalisation", getnormforselevt(df_evt))
-
-    myfile = TFile.Open("roottotal%s%s.root" % (mcordata, useml), "recreate")
+    #df_evt = pickle.load(open(namefile_evt_skim_tot, "rb"))
+    #print("events for normalisation", getnormforselevt(df_evt))
+    namefile = "masshisto%s%s%s.root" % (case, mcordata, useml)
+    myfile = TFile.Open(namefile, "recreate")
     myfile.cd()
     for index, _ in enumerate(binmin):
         histomassall[index].Write()
