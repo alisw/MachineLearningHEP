@@ -242,6 +242,7 @@ def merging(data_config, data_param, mcordata):
     namefile_reco = data_param[case]["files_names"]["namefile_reco_skim"]
     namefile_gen = data_param[case]["files_names"]["namefile_gen_skim"]
     namefile_evt = data_param[case]["files_names"]["namefile_evt_skim"]
+    namefile_evt_skim_tot = data_param[case]["files_names"]["namefile_evt_skim_tot"]
     namefile_reco_merged = data_param[case]["files_names"]["namefile_reco_merged"]
     namefile_evt_merged = data_param[case]["files_names"]["namefile_evt_merged"]
     namefile_gen_merged = data_param[case]["files_names"]["namefile_gen_merged"]
@@ -252,6 +253,7 @@ def merging(data_config, data_param, mcordata):
     listfilespathtomerge, _ = list_files_lev2(outputdir, "", namefile_reco, "")
     listfilespathgentomerge, _ = list_files_lev2(outputdir, "", namefile_gen, "")
     listfilespathevttomerge, _ = list_files_lev2(outputdir, "", namefile_evt, "")
+    merge(listfilespathevttomerge, os.path.join(outputdirmerged, namefile_evt_skim_tot))
     if maxfilestomerge is not -1:
         listfilespathtomerge = listfilespathtomerge[:maxfilestomerge]
         listfilespathgentomerge = listfilespathgentomerge[:maxfilestomerge]

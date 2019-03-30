@@ -15,7 +15,7 @@ import os
 import pickle
 import pandas as pd
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
-from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
+from ROOT import TFile, TH1F, TCanvas # pylint: disable=import-error, no-name-in-module
 #from machine_learning_hep.selectionutils import getnormforselevt
 
 
@@ -59,10 +59,16 @@ def extractmasshisto(data_config, data, case, useml, mcordata):
         h_invmass = TH1F(namehisto, "", num_bins, mass_fit_lim[0], mass_fit_lim[1])
         fill_hist(h_invmass, array_inv_mass_sel)
         histomassall.append(h_invmass)
+        c = TCanvas('c%d' % index, '', 500, 500)
+        h_invmass.Draw()
+        c.SaveAs(namehisto+".pdf")
         index = index + 1
     #df_evt = pickle.load(open(namefile_evt_skim_tot, "rb"))
     #print("events for normalisation", getnormforselevt(df_evt))
     namefile = "masshisto%s%s%s.root" % (case, mcordata, useml)
+    if useml == 1:
+        namefile = "masshisto%s%s%s_%.2f.root" % (case, mcordata, useml,
+                                                  probcutoptimal[0])
     myfile = TFile.Open(namefile, "recreate")
     myfile.cd()
     for index, _ in enumerate(binmin):

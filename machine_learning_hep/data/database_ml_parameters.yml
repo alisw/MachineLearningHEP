@@ -101,8 +101,7 @@ LctopK0sPbPbCen010:
       mc: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
     var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
     var_training: [cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, 
-                   cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, 
-                   imp_par_prong2, inv_mass_K0s, nsigTPC_Pr_0, nsigTOF_Pr_0]
+                   cos_p_K0s, imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s]
     var_boundaries: [cos_t_star, signd0]
     var_correlation:
       - [cos_t_star]
@@ -143,19 +142,18 @@ LctopK0sPbPbCen3050:
 
   mass: 2.2864
   pdg_code: null
-  invmassbins: 170
-  invmasslow: 2.14
-  invmasshigh: 2.48
+  mass_fit_lim: [2.14, 2.48]
+  bin_width: 0.002
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
   presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
   skimming_sel: "pt_cand>4"
   skimming_sel_gen: "pt_cand>4"
   skimming_sel_evt: null
-  skimming2_sel: "pt_cand>4 & is_ev_rej==0" 
+  skimming2_sel: "pt_cand>4 & is_ev_rej==0 & abs(nsigTOF_Pr_0)<3." 
   skimming2_sel_gen: "pt_cand>4 & abs(z_vtx_gen)<10 " 
   skimming2_sel_evt: null
   skimming2_dotrackpid: True 
-  sel_cent: null #"centrality >=0 &  centrality <=10" ### DONT KNOW HOW TO PROPERLY SET THE LIMITS FOR CENTRALITY, NEED TO CHECK 
+  sel_cent: "centrality >=30 & centrality <=50" 
   
   old_sel:
     use: False # Obsolete selection method not implemented, see Ds as a reference
@@ -229,8 +227,7 @@ LctopK0sPbPbCen3050:
       mc: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
     var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
     var_training: [cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, 
-                   cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, 
-                   imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0]
+                   cos_p_K0s, imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s]
     var_boundaries: [cos_t_star, signd0]
     var_correlation:
       - [cos_t_star]

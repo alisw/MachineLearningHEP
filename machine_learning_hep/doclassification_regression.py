@@ -82,7 +82,7 @@ def doclassification_regression(run_config, data, model_config, case, binmin, bi
     filemc = os.path.join(foldermc, filemc)
     file_data_evt_ml = os.path.join(folderdata, file_data_evt_ml)
     filemc_gen = os.path.join(foldermc, filemc_gen)
-    file_data_evt_tot = os.path.join(folder_evt_tot, file_data_evt_tot)
+    file_data_evt_tot = os.path.join(folderdata, file_data_evt_tot)
 
     arrayname = [filedata, filemc]
 
