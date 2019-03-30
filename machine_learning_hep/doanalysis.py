@@ -59,12 +59,12 @@ def doanalysis(data_config, data, case, useml, mcordata):
     if doinvmassspectra == 1:
         index = 0
         for imin, imax in zip(binmin, binmax):
-            namefilereco_ml = namefilereco_ml.replace(".pkl", "%d_%d.pkl" % (imin, imax))
-            namefilereco_std = namefilereco_std.replace(".pkl", "%d_%d.pkl" % (imin, imax))
+            namefilereco_ml_in = namefilereco_ml.replace(".pkl", "%d_%d.pkl" % (imin, imax))
+            namefilereco_std_in = namefilereco_std.replace(".pkl", "%d_%d.pkl" % (imin, imax))
             listdf, listdfout_ml = list_files_dir_lev2(fileinputdir, outputdirfin,
-                                                       namefile_reco_skim, namefilereco_ml)
+                                                       namefile_reco_skim, namefilereco_ml_in)
             listdf, listdfout_std = list_files_dir_lev2(fileinputdir, outputdirfin,
-                                                        namefile_reco_skim, namefilereco_std)
+                                                        namefile_reco_skim, namefilereco_std_in)
             if maxfiles is not -1:
                 listdf = listdf[:maxfiles]
                 listdfout_ml = listdfout_ml[:maxfiles]

@@ -70,7 +70,7 @@ def doclassification_regression(run_config, data, model_config, case, binmin, bi
 
     foldermc = data[case]["output_folders"]["pkl_merged"]["mc"]
     folderdata = data[case]["output_folders"]["pkl_merged"]["data"]
-    folder_evt_tot = data[case]["output_folders"]["pkl_final"]["data"]
+    #folder_evt_tot = data[case]["output_folders"]["pkl_final"]["data"]
 
     filedata = data[case]["files_names"]["namefile_reco_merged"]
     filemc = data[case]["files_names"]["namefile_reco_merged"]
@@ -82,7 +82,7 @@ def doclassification_regression(run_config, data, model_config, case, binmin, bi
     filemc = os.path.join(foldermc, filemc)
     file_data_evt_ml = os.path.join(folderdata, file_data_evt_ml)
     filemc_gen = os.path.join(foldermc, filemc_gen)
-    file_data_evt_tot = os.path.join(folder_evt_tot, file_data_evt_tot)
+    file_data_evt_tot = os.path.join(folderdata, file_data_evt_tot)
 
     arrayname = [filedata, filemc]
 

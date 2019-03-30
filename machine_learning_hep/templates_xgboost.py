@@ -16,3 +16,4 @@ from xgboost import XGBClassifier
 
 def xgboost_classifier(model_config): # pylint: disable=W0613
     return XGBClassifier(n_gpus=0)
+#max_depth=4,  n_estimators=300, subsample=0.8, colsample_bytree=0.8

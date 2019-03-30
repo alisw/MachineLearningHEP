@@ -22,13 +22,13 @@ merging:
     activate: false
     maxfilestomerge: 1000
   data:
-    activate: false     
+    activate: false  
     maxfilestomerge: 500
 ml_study:   
   activate: false
   applytodatamc: true
-  binmin: [6] 
-  binmax: [10]
+  binmin: [4,8] 
+  binmax: [8,20]
   doROC: true
   doboundary: false
   docorrelation: false
@@ -58,12 +58,12 @@ ml_study:
 analysis:
   data:
     nmaxchunks: 1000
-    maxfiles: -1
+    maxfiles: 500
     std:
       doapply: false
       domass: false
     ml:
-      doapply: false
+      doapply: true
       domass: false
   mc:
     nmaxchunks: 10
@@ -77,11 +77,12 @@ analysis:
       domass: false
       doeffhist: false
   modelname: xgboost
-  binmin: [6]
-  binmax: [10]
-  probcut: [0.80]
-  probcutoptimal: [0.8]
-  models: [null]
+  binmin: [4,8]
+  binmax: [8,20]
+  probcut: [0.3,0.3]
+  probcutoptimal: [0.85,0.85]
+  models: [xgboost_classifiernevt_sig50000_nevt_bkg50000_BinaryClassificationLctopK0sPbPbCen3050_dfselection_pt_cand_4.0_8.0.sav, 
+           xgboost_classifiernevt_sig50000_nevt_bkg50000_BinaryClassificationLctopK0sPbPbCen3050_dfselection_pt_cand_8.0_20.0.sav]
   test_df_list: [xxxx]
   doinvmassspectra: true
   uselikelihood: 0
