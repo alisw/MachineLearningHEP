@@ -16,9 +16,8 @@ LctopK0sPbPbCen010:
 
   mass: 2.2864
   pdg_code: null
-  invmassbins: 170
-  invmasslow: 2.14
-  invmasshigh: 2.48
+  mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
+  bin_width: 0.002 # bin width of the invariant mass histogram
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
   presel_gen: abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 # pre-selections on generated candidates
   skimming_sel: "pt_cand>4"
@@ -47,8 +46,8 @@ LctopK0sPbPbCen010:
     namefile_reco: AnalysisResultsRecoLctopK0s.pkl
     namefile_evt: AnalysisResultsEvtLctopK0s.pkl
     namefile_gen: AnalysisResultsGenLctopK0s.pkl
-    namefile_reco_merged: AnalysisResultsRecoLctopK0sMerged.pkl
-    namefile_evt_merged: AnalysisResultsEvtLctopK0sMerged.pkl
+    namefile_reco_merged: AnalysisResultsRecoLctopK0sMerged.pkl #ml dataset
+    namefile_evt_merged: AnalysisResultsEvtLctopK0sMerged.pkl #ml dataset
     namefile_gen_merged: AnalysisResultsGenLctopK0sMerged.pkl
     namefile_reco_skim: AnalysisResultsRecoLctopK0sSkimmed.pkl
     namefile_evt_skim: AnalysisResultsEvtLctopK0sSkimmed.pkl
@@ -58,7 +57,7 @@ LctopK0sPbPbCen010:
     namefile_reco_skim_ml_tot: AnalysisResultsRecoLctopK0sSkimmed_ml_tot.pkl
     namefile_reco_skim_std_tot: AnalysisResultsRecoLctopK0sSkimmed_std_tot.pkl
     namefile_gen_skim_tot: AnalysisResultsGenLctopK0sSkimmed_tot.pkl
-    namefile_evt_skim_tot: AnalysisResultsEvtLctopK0sSkimmed_tot.pkl
+    namefile_evt_skim_tot: AnalysisResultsEvtLctopK0sSkimmed_tot.pkl #all dataset
     treeoriginreco: 'PWGHF_TreeCreator/tree_Lc2V0bachelor'
     treeorigingen: 'PWGHF_TreeCreator/tree_Lc2V0bachelor_gen'
     treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
@@ -120,24 +119,24 @@ LctopK0sPbPbCen010:
       sig_tag: 1 #mc
       bkg_tag: 0 #data
       sel_signal: mc_signal # used for webapp, selection option of filter_df_cand
-      sel_bkg: inv_mass<2.1864 or inv_mass>2.3864
+      sel_bkg: inv_mass<2.186 or inv_mass>2.386 #ensure to set the cuts as multiples of the bin_width, i.e. left_limit + K * bin_width 
   
   signif_opt: 
     sel_event: is_ev_rej==0
     filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
     fonll_pred: 'max' # edge of the FONLL prediction
     FF: 0.1281 # fragmentation fraction
-    sigma_MB: 0.000043 # 1./<TAA> for 0-10% where <TAA(0-10%)> =  23.2 mb^-1 ( from http://dde.web.cern.ch/dde/glauber_lhc.htm )
+    sigma_MB: 1  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
+    Taa: 23260 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
     BR: 1.09e-2 # branching ratio of the decay Lc->pK0s * K0s->pi+pi-
     f_prompt: 0.9 # estimated fraction of prompt candidates
-    mass_fit_lim: [2.12, 2.45] # region for the fit of the invariant mass distribution [GeV/c^2]
-    bin_width: 0.008 # bin width of the invariant mass histogram
     bkg_data_fraction: 0.1 # fraction of real data used in the estimation
-    num_steps: 101 # number of steps used in efficiency and signif. estimation
+    num_steps: 111 # number of steps used in efficiency and signif. estimation
+    save_fit: True # save bkg fits with the various cuts on ML output
   
   efficiency:
     split_prompt_FD: True # True to split prompt and feed-down candidates
-    num_steps: 101 # number of steps used in efficiency estimation
+    num_steps: 111 # number of steps used in efficiency estimation
 
 
 LctopK0sPbPbCen3050:
@@ -157,7 +156,6 @@ LctopK0sPbPbCen3050:
   skimming2_sel_evt: null
   skimming2_dotrackpid: True 
   sel_cent: null #"centrality >=0 &  centrality <=10" ### DONT KNOW HOW TO PROPERLY SET THE LIMITS FOR CENTRALITY, NEED TO CHECK 
-  ptgen: pt_cand
   
   old_sel:
     use: False # Obsolete selection method not implemented, see Ds as a reference
@@ -249,36 +247,41 @@ LctopK0sPbPbCen3050:
       sig_tag: 1 #mc
       bkg_tag: 0 #data
       sel_signal: mc_signal # used for webapp, selection option of filter_df_cand
-      sel_bkg: inv_mass<2.1864 or inv_mass>2.3864
+      sel_bkg: inv_mass<2.186 or inv_mass>2.386 #ensure to set the cuts as multiples of the bin_width, i.e. left_limit + K * bin_width 
   
   signif_opt: 
     sel_event: is_ev_rej==0
     filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
     fonll_pred: 'max' # edge of the FONLL prediction
     FF: 0.1281 # fragmentation fraction
-    sigma_MB: 0.0002631 # 1./<TAA> for 0-10% where <TAA(30-50%)> =  3.80 mb^-1 ( from http://dde.web.cern.ch/dde/glauber_lhc.htm )
+    sigma_MB: 1  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
+    Taa: 3917 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
     BR: 1.09e-2 # branching ratio of the decay Lc->pK0s * K0s->pi+pi-
     f_prompt: 0.9 # estimated fraction of prompt candidates
-    mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
-    bin_width: 0.008 # bin width of the invariant mass histogram
     bkg_data_fraction: 0.1 # fraction of real data used in the estimation
-    num_steps: 101 # number of steps used in efficiency and signif. estimation
+    num_steps: 111 # number of steps used in efficiency and signif. estimation
+    save_fit: True # save bkg fits with the various cuts on ML output
+
+  efficiency:
+    split_prompt_FD: True # True to split prompt and feed-down candidates
+    num_steps: 111 # number of steps used in efficiency estimation
 
 Dspp5TeV:
 
   mass: 1.970
   pdg_code: null
-  invmassbins: 180
-  invmasslow: 1.700
-  invmasshigh: 2.150
+  mass_fit_lim: [1.70, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
+  bin_width: 0.006 # bin width of the invariant mass histogram
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
   presel_gen: abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 # pre-selections on generated candidates
   skimming_sel: "pt_cand>2"
   skimming_sel_gen: "pt_cand>2"
-  skimming_sel_evt: "is_ev_rej >= 0"
+  skimming_sel_evt: null
   skimming2_sel: "delta_mass_KK<0.02 & is_ev_rej==0" 
-  skimming2_sel_gen: "pt_cand>-100 & abs(z_vtx_gen)<10" 
-  skimming2_sel_evt: "is_ev_rej >=0"
+  skimming2_sel_gen: "abs(z_vtx_gen)<10" 
+  skimming2_sel_evt: null
+  skimming2_dotrackpid: True
+  sel_cent: null
   
   old_sel:
     use: False 
@@ -310,34 +313,43 @@ Dspp5TeV:
     namefile_reco_skim: AnalysisResultsRecoDsSkimmed.pkl
     namefile_evt_skim: AnalysisResultsEvtDsSkimmed.pkl
     namefile_gen_skim: AnalysisResultsGenDsSkimmed.pkl
+    namefile_reco_skim_ml: AnalysisResultsRecoDsSkimmed_ml.pkl
+    namefile_reco_skim_std: AnalysisResultsRecoDsSkimmed_std.pkl
+    namefile_reco_skim_ml_tot: AnalysisResultsRecoDsSkimmed_ml_tot.pkl
+    namefile_reco_skim_std_tot: AnalysisResultsRecoDsSkimmed_std_tot.pkl
+    namefile_gen_skim_tot: AnalysisResultsGenDsSkimmed_tot.pkl
+    namefile_evt_skim_tot: AnalysisResultsEvtDsSkimmed_tot.pkl
     treeoriginreco: 'PWGHF_TreeCreator/tree_Ds'
     treeorigingen: 'PWGHF_TreeCreator/tree_Ds_gen'
     treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
-    treeoutput: fTreeDsFlagged 
+    treeoutput: fTreeDsFlagged
  
   inputs:
     data:
       production: LHC17pq
-      unmerged_tree_dir: /data/HeavyFlavour/pp_data/18-03-2019/374_20190312-1725/unmerged
+      unmerged_tree_dir: /data2/HeavyFlavour/pp_data/18-03-2019/374_20190312-1725/unmerged
 
     mc:
-      production: null 
-      unmerged_tree_dir: null
+      production: LHC18a4a2 
+      unmerged_tree_dir: /data2/HeavyFlavour/pp_MC/27-03-2019/375_20190312-1755/unmerged
 
   output_folders:
     plotsanalysis: plotsanalysis
     histoanalysis: histoanalysis
     mlplot: mlplot
-    mlout: mlout
+    mlout: /data2/trained_models/Dspp5TeV 
     pkl_out: 
-      data: /data/HeavyFlavour/pp_data/18-03-2019/374_20190312-1725/pickleDs
-      mc: null
+      data: /data2/HeavyFlavour/pp_data/18-03-2019/374_20190312-1725/pickleDs
+      mc: /data2/HeavyFlavour/pp_MC/27-03-2019/375_20190312-1755/pickleDs
     pkl_merged: 
-      data: /data/HeavyFlavour/pp_data/18-03-2019/374_20190312-1725/pickleDsskimmedmerged_evt
-      mc: null
+      data: /data2/HeavyFlavour/pp_data/18-03-2019/374_20190312-1725/pickleDsskimmedmerged_evt
+      mc: /data2/HeavyFlavour/pp_MC/27-03-2019/375_20190312-1755/pickleDsskimmedmerged_evt
     pkl_skimmed: 
-      data: /data/HeavyFlavour/pp_data/18-03-2019/374_20190312-1725/pickleDsskimmed_evt
-      mc: null
+      data: /data2/HeavyFlavour/pp_data/18-03-2019/374_20190312-1725/pickleDsskimmed_evt
+      mc: /data2/HeavyFlavour/pp_MC/27-03-2019/375_20190312-1755/pickleDsskimmed_evt
+    pkl_final: 
+      data: /data2/HeavyFlavour/pp_data/18-03-2019/374_20190312-1725/pickleDsskimmed_evt
+      mc: /data2/HeavyFlavour/pp_MC/27-03-2019/375_20190312-1755/pickleDsskimmed_evt
 
   variables:
     var_all: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, 
@@ -362,35 +374,279 @@ Dspp5TeV:
     var_inv_mass: inv_mass
     var_cand_type: cand_type
     var_evt_match: [run_number, ev_id]
-  
-  ml_study:
-    reco_local:
-      mc: pickleproduction_mc_merged/AnalysisResultsRecoDsMerged.pkl
-      data: pickleproduction_data_merged/AnalysisResultsDsMerged.pkl
-    evt_local: 
-      mc: pickleproduction_mc_merged/AnalysisResultsEvtDsMerged.pkl
-      data: pickleproduction_data_merged/AnalysisResultsEvtDsMerged.pkl
-    gen_local:  
-      mc: pickleproduction_mc_merged/AnalysisResultsGenDsMerged.pkl
     
+  ml_study:    
     prepare:
-      sig_bkg_tag: [mc, data]
+      sig_tag: 1 #mc
+      bkg_tag: 0 #data
       sel_signal: mc_signal # used for webapp, selection option of filter_df_cand
-      sel_bkg: inv_mass<1.83 or inv_mass>2.012
+      sel_bkg: inv_mass<1.832 or inv_mass>2.012 #ensure to set the cuts as multiples of the bin_width, i.e. left_limit + K * bin_width 
   
   signif_opt: 
     sel_event: is_ev_rej==0
     filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
     fonll_pred: 'max' # edge of the FONLL prediction
     FF: 0.1281 # fragmentation fraction
-    sigma_MB: 50.87e-3 # Minimum Bias cross section (pp) [b]
+    sigma_MB: 50.87e-3 # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
+    Taa: 1 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
     BR: 2.27e-2 # branching ratio of the decay
     f_prompt: 0.9 # estimated fraction of prompt candidates
-    mass_fit_lim: [1.70, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
-    bin_width: 0.008 # bin width of the invariant mass histogram
     bkg_data_fraction: 0.1 # fraction of real data used in the estimation
-    num_steps: 101 # number of steps used in efficiency and signif. estimation 
+    num_steps: 111 # number of steps used in efficiency and signif. estimation
+    save_fit: True # save bkg fits with the various cuts on ML output
   
   efficiency:
     split_prompt_FD: True # True to split prompt and feed-down candidates
-    num_steps: 101 # number of steps used in efficiency estimation
+    num_steps: 111 # number of steps used in efficiency estimation
+
+DsPbPb010:
+
+  mass: 1.970
+  pdg_code: null
+  mass_fit_lim: [1.70, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
+  bin_width: 0.006 # bin width of the invariant mass histogram
+  presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
+  presel_gen: abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 # pre-selections on generated candidates
+  skimming_sel: "n_cand>0 & pt_cand>2"
+  skimming_sel_gen: "n_cand>0 & pt_cand>2"
+  skimming_sel_evt: null
+  skimming2_sel: "delta_mass_KK<0.02 & is_ev_rej==0" 
+  skimming2_sel_gen: "abs(z_vtx_gen)<10" 
+  skimming2_sel_evt: null
+  skimming2_dotrackpid: True
+  sel_cent: null
+
+  old_sel:
+    use: False 
+  bitmap_sel:
+    use: True
+    var_sel: cand_type
+    mcsignal_on_off: [[1],[5,11]]
+    mcsignal_prompt_on_off: [[1,3],[5,11]]
+    mcsignal_feed_on_off: [[1,4],[5,11]]
+    mcbkg_on_off: [[2],[11]]
+    preseltrack_pid_on_off : [[8],[]]
+    std_analysis_on_off : [[0],[]]
+
+  files_names:
+    namefile_unmerged_tree: AnalysisResults.root
+    namefile_reco: AnalysisResultsRecoDs.pkl
+    namefile_evt: AnalysisResultsEvtDs.pkl
+    namefile_gen: AnalysisResultsGenDs.pkl
+    namefile_reco_merged: AnalysisResultsRecoDsMerged.pkl
+    namefile_evt_merged: AnalysisResultsEvDsMerged.pkl
+    namefile_gen_merged: AnalysisResultsGenDsMerged.pkl
+    namefile_reco_skim: AnalysisResultsRecoDsSkimmed.pkl
+    namefile_evt_skim: AnalysisResultsEvtDsSkimmed.pkl
+    namefile_gen_skim: AnalysisResultsGenDsSkimmed.pkl
+    namefile_reco_skim_ml: AnalysisResultsRecoDsSkimmed_ml.pkl
+    namefile_reco_skim_std: AnalysisResultsRecoDsSkimmed_std.pkl
+    namefile_reco_skim_ml_tot: AnalysisResultsRecoDsSkimmed_ml_tot.pkl
+    namefile_reco_skim_std_tot: AnalysisResultsRecoDsSkimmed_std_tot.pkl
+    namefile_gen_skim_tot: AnalysisResultsGenDsSkimmed_tot.pkl
+    namefile_evt_skim_tot: AnalysisResultsEvtDsSkimmed_tot.pkl
+    treeoriginreco: 'PWGHF_TreeCreator/tree_Ds'
+    treeorigingen: 'PWGHF_TreeCreator/tree_Ds_gen'
+    treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
+    treeoutput: fTreeDsFlagged 
+ 
+  inputs:
+    data:
+      production: LHC18r
+      unmerged_tree_dir: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/unmerged
+
+    mc:
+      production: null 
+      unmerged_tree_dir: null
+
+  output_folders:
+    plotsanalysis: plotsanalysis
+    histoanalysis: histoanalysis
+    mlplot: mlplot
+    mlout: /data/trained_models/DsPbPb010
+    pkl_out: 
+      data: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDs
+      mc: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDs
+    pkl_merged: 
+      data: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDsskimmedmerged_evt
+      mc: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDsskimmedmerged_evt
+    pkl_skimmed: 
+      data: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDsskimmed_evt
+      mc: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDsskimmed_evt
+    pkl_final: 
+      data: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDsskimmed_evt
+      mc: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDsskimmed_evt
+
+  variables:
+    var_all: [n_cand, d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, 
+             delta_mass_KK, cos_PiDs, cos_PiKPhi_3, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, 
+             imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, inv_mass, pt_cand, cand_type, y_cand, 
+             eta_prong0, eta_prong1, eta_prong2, run_number, ev_id, nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, 
+             nsigTPC_Pi_1, nsigTPC_K_1, nsigTOF_Pi_1, nsigTOF_K_1, nsigTPC_Pi_2, nsigTPC_K_2, nsigTOF_Pi_2, nsigTOF_K_2]    
+    var_evt: 
+      data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
+      mc: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
+    var_gen: [n_cand, y_cand, pt_cand, cand_type, run_number, ev_id]
+    var_training: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, delta_mass_KK, 
+                  cos_PiDs, cos_PiKPhi_3, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, 
+                  imp_par_prong2, max_norm_d0d0exp]
+    var_boundaries: [d_len, max_norm_d0d0exp]
+    var_correlation:
+      - [pt_cand, d_len_xy, sig_vert, pt_cand, pt_cand, norm_dl_xy, cos_PiDs, cos_p_xy, cos_p_xy]
+      - [d_len_xy, sig_vert, delta_mass_KK, delta_mass_KK, sig_vert, d_len_xy, cos_PiKPhi_3, sig_vert, pt_cand]
+    var_others: [inv_mass, pt_cand]
+    var_signal: signal
+    var_binning: pt_cand
+    var_inv_mass: inv_mass
+    var_cand_type: cand_type
+    var_evt_match: [run_number, ev_id]
+  
+  ml_study:    
+    prepare:
+      sig_tag: 1 #mc
+      bkg_tag: 0 #data
+      sel_signal: mc_signal # used for webapp, selection option of filter_df_cand
+      sel_bkg: inv_mass<1.832 or inv_mass>2.012 #ensure to set the cuts as multiples of the bin_width, i.e. left_limit + K * bin_width 
+  
+  signif_opt: 
+    sel_event: is_ev_rej==0
+    filename_fonll: 'data/fonll/fo_PbPb_d0meson_5TeV_y0p5_wRaa_ds_010_min.csv' # file with FONLL predictions, corrected with Raa for PbPb
+    fonll_pred: 'max' # edge of the FONLL prediction
+    FF: 0.1281 # fragmentation fraction
+    sigma_MB: 1  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
+    Taa: 23260 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
+    BR: 2.27e-2 # branching ratio of the decay
+    f_prompt: 0.9 # estimated fraction of prompt candidates
+    bkg_data_fraction: 0.1 # fraction of real data used in the estimation
+    num_steps: 111 # number of steps used in efficiency and signif. estimation 
+    save_fit: True # save bkg fits with the various cuts on ML output
+
+  efficiency:
+    split_prompt_FD: True # True to split prompt and feed-down candidates
+    num_steps: 111 # number of steps used in efficiency estimation
+
+DsPbPb3050:
+
+  mass: 1.970
+  pdg_code: null
+  mass_fit_lim: [1.70, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
+  bin_width: 0.006 # bin width of the invariant mass histogram
+  presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
+  presel_gen: abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 # pre-selections on generated candidates
+  skimming_sel: "n_cand>0 & pt_cand>2"
+  skimming_sel_gen: "n_cand>0 & pt_cand>2"
+  skimming_sel_evt: null
+  skimming2_sel: "delta_mass_KK<0.02 & is_ev_rej==0" 
+  skimming2_sel_gen: "abs(z_vtx_gen)<10" 
+  skimming2_sel_evt: null
+  skimming2_dotrackpid: True
+  sel_cent: null
+
+  old_sel:
+    use: False 
+  bitmap_sel:
+    use: True
+    var_sel: cand_type
+    mcsignal_on_off: [[1],[5,11]]
+    mcsignal_prompt_on_off: [[1,3],[5,11]]
+    mcsignal_feed_on_off: [[1,4],[5,11]]
+    mcbkg_on_off: [[2],[11]]
+    preseltrack_pid_on_off : [[8],[]]
+    std_analysis_on_off : [[0],[]]
+
+  files_names:
+    namefile_unmerged_tree: AnalysisResults.root
+    namefile_reco: AnalysisResultsRecoDs.pkl
+    namefile_evt: AnalysisResultsEvtDs.pkl
+    namefile_gen: AnalysisResultsGenDs.pkl
+    namefile_reco_merged: AnalysisResultsRecoDsMerged.pkl
+    namefile_evt_merged: AnalysisResultsEvDsMerged.pkl
+    namefile_gen_merged: AnalysisResultsGenDsMerged.pkl
+    namefile_reco_skim: AnalysisResultsRecoDsSkimmed.pkl
+    namefile_evt_skim: AnalysisResultsEvtDsSkimmed.pkl
+    namefile_gen_skim: AnalysisResultsGenDsSkimmed.pkl
+    namefile_reco_skim_ml: AnalysisResultsRecoDsSkimmed_ml.pkl
+    namefile_reco_skim_std: AnalysisResultsRecoDsSkimmed_std.pkl
+    namefile_reco_skim_ml_tot: AnalysisResultsRecoDsSkimmed_ml_tot.pkl
+    namefile_reco_skim_std_tot: AnalysisResultsRecoDsSkimmed_std_tot.pkl
+    namefile_gen_skim_tot: AnalysisResultsGenDsSkimmed_tot.pkl
+    namefile_evt_skim_tot: AnalysisResultsEvtDsSkimmed_tot.pkl
+    treeoriginreco: 'PWGHF_TreeCreator/tree_Ds'
+    treeorigingen: 'PWGHF_TreeCreator/tree_Ds_gen'
+    treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
+    treeoutput: fTreeDsFlagged 
+ 
+  inputs:
+    data:
+      production: LHC18r
+      unmerged_tree_dir: null
+
+    mc:
+      production: null 
+      unmerged_tree_dir: null
+
+  output_folders:
+    plotsanalysis: plotsanalysis
+    histoanalysis: histoanalysis
+    mlplot: mlplot
+    mlout: /data/trained_models/DsPbPb3050
+    pkl_out: 
+      data: null
+      mc: null
+    pkl_merged: 
+      data: null
+      mc: null
+    pkl_skimmed: 
+      data: null
+      mc: null
+    pkl_final: 
+      data: null
+      mc: null
+
+  variables:
+    var_all: [n_cand, d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, 
+             delta_mass_KK, cos_PiDs, cos_PiKPhi_3, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, 
+             imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, inv_mass, pt_cand, cand_type, y_cand, 
+             eta_prong0, eta_prong1, eta_prong2, run_number, ev_id, nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, 
+             nsigTPC_Pi_1, nsigTPC_K_1, nsigTOF_Pi_1, nsigTOF_K_1, nsigTPC_Pi_2, nsigTPC_K_2, nsigTOF_Pi_2, nsigTOF_K_2]    
+    var_evt: 
+      data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
+      mc: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
+    var_gen: [n_cand, y_cand, pt_cand, cand_type, run_number, ev_id]
+    var_training: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, delta_mass_KK, 
+                  cos_PiDs, cos_PiKPhi_3, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, 
+                  imp_par_prong2, max_norm_d0d0exp]
+    var_boundaries: [d_len, max_norm_d0d0exp]
+    var_correlation:
+      - [pt_cand, d_len_xy, sig_vert, pt_cand, pt_cand, norm_dl_xy, cos_PiDs, cos_p_xy, cos_p_xy]
+      - [d_len_xy, sig_vert, delta_mass_KK, delta_mass_KK, sig_vert, d_len_xy, cos_PiKPhi_3, sig_vert, pt_cand]
+    var_others: [inv_mass, pt_cand]
+    var_signal: signal
+    var_binning: pt_cand
+    var_inv_mass: inv_mass
+    var_cand_type: cand_type
+    var_evt_match: [run_number, ev_id]
+  
+  ml_study:
+    prepare:
+      sig_tag: 1 #mc
+      bkg_tag: 0 #data
+      sel_signal: mc_signal # used for webapp, selection option of filter_df_cand
+      sel_bkg: inv_mass<1.832 or inv_mass>2.012 #ensure to set the cuts as multiples of the bin_width, i.e. left_limit + K * bin_width 
+  
+  signif_opt: 
+    sel_event: is_ev_rej==0
+    filename_fonll: 'data/fonll/fo_PbPb_d0meson_5TeV_y0p5_wRaa_ds_3050_min.csv' # file with FONLL predictions, corrected with Raa for PbPb
+    fonll_pred: 'max' # edge of the FONLL prediction
+    FF: 0.1281 # fragmentation fraction
+    sigma_MB: 1  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
+    Taa: 3917 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
+    BR: 2.27e-2 # branching ratio of the decay
+    f_prompt: 0.9 # estimated fraction of prompt candidates
+    bkg_data_fraction: 0.1 # fraction of real data used in the estimation
+    num_steps: 111 # number of steps used in efficiency and signif. estimation 
+    save_fit: True # save bkg fits with the various cuts on ML output
+
+  efficiency:
+    split_prompt_FD: True # True to split prompt and feed-down candidates
+    num_steps: 111 # number of steps used in efficiency estimation

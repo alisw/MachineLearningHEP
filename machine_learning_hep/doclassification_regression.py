@@ -70,16 +70,19 @@ def doclassification_regression(run_config, data, model_config, case, binmin, bi
 
     foldermc = data[case]["output_folders"]["pkl_merged"]["mc"]
     folderdata = data[case]["output_folders"]["pkl_merged"]["data"]
+    folder_evt_tot = data[case]["output_folders"]["pkl_final"]["data"]
 
     filedata = data[case]["files_names"]["namefile_reco_merged"]
     filemc = data[case]["files_names"]["namefile_reco_merged"]
-    filedata_evt = data[case]["files_names"]["namefile_evt_merged"]
+    file_data_evt_ml = data[case]["files_names"]["namefile_evt_merged"]
     filemc_gen = data[case]["files_names"]["namefile_gen_merged"]
+    file_data_evt_tot = data[case]["files_names"]["namefile_evt_skim_tot"]
 
     filedata = os.path.join(folderdata, filedata)
     filemc = os.path.join(foldermc, filemc)
-    filedata_evt = os.path.join(folderdata, filedata_evt)
+    file_data_evt_ml = os.path.join(folderdata, file_data_evt_ml)
     filemc_gen = os.path.join(foldermc, filemc_gen)
+    file_data_evt_tot = os.path.join(folder_evt_tot, file_data_evt_tot)
 
     arrayname = [filedata, filemc]
 
@@ -237,8 +240,8 @@ def doclassification_regression(run_config, data, model_config, case, binmin, bi
             if mlsubtype == "HFmeson":
                 df_data_opt = df_data.query(sel_bkg)
                 df_data_opt = shuffle(df_data_opt, random_state=rnd_shuffle)
-                study_signif(case, names, [binmin, binmax], filemc_gen, filedata_evt, df_mc,
-                             df_ml_test, df_data_opt, suffix, mlplot)
+                study_signif(case, names, [binmin, binmax], filemc_gen, file_data_evt_ml,
+                             file_data_evt_tot, df_mc, df_ml_test, df_data_opt, suffix, mlplot)
             else:
                 logger.error("Optimisation is not implemented for this classification problem.")
         else:

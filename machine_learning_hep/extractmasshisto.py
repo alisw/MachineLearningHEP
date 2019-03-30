@@ -22,9 +22,8 @@ from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
 def extractmasshisto(data_config, data, case, useml, mcordata):
     binmin = data_config["analysis"]["binmin"]
     binmax = data_config["analysis"]["binmax"]
-    invmassbins = data[case]["invmassbins"]
-    invmasslow = data[case]["invmasslow"]
-    invmasshigh = data[case]["invmasshigh"]
+    mass_fit_lim = data[case]['mass_fit_lim']
+    bin_width = data[case]['bin_width']
     namefilereco_ml_tot = data[case]["files_names"]["namefile_reco_skim_ml_tot"]
     namefilereco_std_tot = data[case]["files_names"]["namefile_reco_skim_std_tot"]
     namefile_evt_skim_tot = data[case]["files_names"]["namefile_evt_skim_tot"]
@@ -35,6 +34,9 @@ def extractmasshisto(data_config, data, case, useml, mcordata):
     namefilereco_std_tot = os.path.join(outputdirfin, namefilereco_std_tot)
     namefile_evt_skim_tot = os.path.join(outputdirfin, namefile_evt_skim_tot)
     probcutoptimal = data_config["analysis"]["probcutoptimal"]
+
+    num_bins = (mass_fit_lim[1] - mass_fit_lim[0]) / bin_width
+    num_bins = int(round(num_bins))
 
     index = 0
     histomassall = []
@@ -54,7 +56,7 @@ def extractmasshisto(data_config, data, case, useml, mcordata):
         namehisto = "h_invmass%d_%d" % (imin, imax)
         if useml == 1:
             namehisto = "h_invmass%d_%d_prob%.2f" % (imin, imax, prob_cut)
-        h_invmass = TH1F(namehisto, "", invmassbins, invmasslow, invmasshigh)
+        h_invmass = TH1F(namehisto, "", num_bins, mass_fit_lim[0], mass_fit_lim[1])
         fill_hist(h_invmass, array_inv_mass_sel)
         histomassall.append(h_invmass)
         index = index + 1

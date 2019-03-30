@@ -25,7 +25,7 @@ from machine_learning_hep.logger import get_logger
 from machine_learning_hep.general import filter_df_cand, get_database_ml_parameters
 from machine_learning_hep.general import filterdataframe_singlevar
 
-def calc_eff(df_to_sel, sel_opt, main_dict, name, num_step, do_std=False):
+def calc_eff(df_to_sel, sel_opt, main_dict, name, num_steps, do_std=False):
     """Calculate the selection efficiency as a function of the treshold on the ML model output.
 
     It works also for standard selections, setting do_std to True. In this case the same value is
@@ -38,7 +38,7 @@ def calc_eff(df_to_sel, sel_opt, main_dict, name, num_step, do_std=False):
         main_dict: dictionary of parameters loaded from 'database_ml_parameters.yml' with case
                    already selected
         name: name of the ML model
-        num_step: number of divisions on the model prediction output
+        num_steps: number of divisions on the model prediction output
         do_std: True for standard selections
 
     Return:
@@ -47,7 +47,11 @@ def calc_eff(df_to_sel, sel_opt, main_dict, name, num_step, do_std=False):
         x_axis: array of threshold values
     """
     df_sig = filter_df_cand(df_to_sel, main_dict, sel_opt)
-    x_axis = np.linspace(0, 1.00, num_step)
+    ns_left = int(num_steps / 10) - 1
+    ns_right = num_steps - ns_left
+    x_axis_left = np.linspace(0., 0.49, ns_left)
+    x_axis_right = np.linspace(0.5, 1.0, ns_right)
+    x_axis = np.concatenate((x_axis_left, x_axis_right))
     num_tot_cand = len(df_sig)
     eff_array = []
     eff_err_array = []
@@ -63,8 +67,8 @@ def calc_eff(df_to_sel, sel_opt, main_dict, name, num_step, do_std=False):
         num_sel_cand = len(filter_df_cand(df_sig, main_dict, 'sel_std_analysis'))
         eff = num_sel_cand / num_tot_cand
         eff_err = np.sqrt(eff * (1 - eff) / num_tot_cand)
-        eff_array = [eff] * num_step
-        eff_err_array = [eff_err] * num_step
+        eff_array = [eff] * num_steps
+        eff_err_array = [eff_err] * num_steps
 
     return eff_array, eff_err_array, x_axis
 
@@ -145,7 +149,7 @@ def study_eff(case, names, suffix, plot_dir, df_ml_test):
     """
     gen_dict = get_database_ml_parameters()[case]
     split_prompt_fd = gen_dict['efficiency']['split_prompt_FD']
-    num_step = gen_dict['efficiency']['num_steps']
+    num_steps = gen_dict['efficiency']['num_steps']
 
     fig_eff = plt.figure(figsize=(20, 15))
     plt.xlabel('Threshold', fontsize=20)
@@ -156,17 +160,17 @@ def study_eff(case, names, suffix, plot_dir, df_ml_test):
 
         if split_prompt_fd:
             eff_prompt, eff_err_prompt, x_axis = calc_eff(df_ml_test, 'mc_signal_prompt', gen_dict,
-                                                          name, num_step)
+                                                          name, num_steps)
             plt.figure(fig_eff.number)
             plt.errorbar(x_axis, eff_prompt, yerr=eff_err_prompt, alpha=0.3,
                          label=f'{name} - Prompt', elinewidth=2.5, linewidth=4.0)
 
-            eff_fd, eff_err_fd, _ = calc_eff(df_ml_test, 'mc_signal_FD', gen_dict, name, num_step)
+            eff_fd, eff_err_fd, _ = calc_eff(df_ml_test, 'mc_signal_FD', gen_dict, name, num_steps)
             plt.figure(fig_eff.number)
             plt.errorbar(x_axis, eff_fd, yerr=eff_err_fd, alpha=0.3,
                          label=f'{name} - FD', elinewidth=2.5, linewidth=4.0)
         else:
-            eff, eff_err, x_axis = calc_eff(df_ml_test, 'mc_signal', gen_dict, name, num_step)
+            eff, eff_err, x_axis = calc_eff(df_ml_test, 'mc_signal', gen_dict, name, num_steps)
             plt.figure(fig_eff.number)
             plt.errorbar(x_axis, eff, yerr=eff_err, alpha=0.3, label=f'{name}', elinewidth=2.5,
                          linewidth=4.0)
@@ -174,26 +178,26 @@ def study_eff(case, names, suffix, plot_dir, df_ml_test):
     # efficiency of std selections estimated on the same candidates as ML models
     if split_prompt_fd:
         eff_prompt_std, eff_err_prompt_std, x_axis_std = calc_eff(df_ml_test, 'mc_signal_prompt',
-                                                                  gen_dict, '', num_step, True)
+                                                                  gen_dict, '', num_steps, True)
         plt.figure(fig_eff.number)
         plt.errorbar(x_axis_std, eff_prompt_std, yerr=eff_err_prompt_std, alpha=0.3,
                      label='ALICE Standard - Prompt', elinewidth=2.5, linewidth=4.0)
 
         eff_fd_std, eff_err_fd_std, _ = calc_eff(df_ml_test, 'mc_signal_FD', gen_dict, '',
-                                                 num_step, True)
+                                                 num_steps, True)
         plt.figure(fig_eff.number)
         plt.errorbar(x_axis_std, eff_fd_std, yerr=eff_err_fd_std, alpha=0.3,
                      label='ALICE Standard - FD', elinewidth=2.5, linewidth=4.0)
     else:
         eff_std, eff_err_std, x_axis_std = calc_eff(df_ml_test, 'mc_signal', gen_dict, '',
-                                                    num_step, True)
+                                                    num_steps, True)
         plt.figure(fig_eff.number)
         plt.errorbar(x_axis_std, eff_std, yerr=eff_err_std, alpha=0.3, label='ALICE Standard',
                      elinewidth=2.5, linewidth=4.0)
 
     plt.figure(fig_eff.number)
     plt.legend(loc="lower left", prop={'size': 18})
-    plt.savefig(plot_dir + '/Efficiency%sSignal.png' % suffix)
+    plt.savefig(f'{plot_dir}/Efficiency_{suffix}.png')
 
 
 # pylint: disable=too-many-statements, too-many-locals
