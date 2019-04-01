@@ -149,7 +149,7 @@ LctopK0sPbPbCen3050:
   skimming_sel: "pt_cand>4"
   skimming_sel_gen: "pt_cand>4"
   skimming_sel_evt: null
-  skimming2_sel: "pt_cand>4 & is_ev_rej==0" 
+  skimming2_sel: "pt_cand>4 & is_ev_rej==0 & abs(nsigTOF_Pr_0)<3." 
   skimming2_sel_gen: "pt_cand>4 & abs(z_vtx_gen)<10 " 
   skimming2_sel_evt: null
   skimming2_dotrackpid: True 

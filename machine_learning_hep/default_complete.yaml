@@ -58,13 +58,13 @@ ml_study:
 analysis:
   data:
     nmaxchunks: 1000
-    maxfiles: -1
+    maxfiles: 500
     std:
       doapply: false
       domass: false
     ml:
       doapply: false
-      domass: true
+      domass: false
   mc:
     nmaxchunks: 10
     maxfiles: -1
