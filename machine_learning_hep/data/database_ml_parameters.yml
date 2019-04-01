@@ -27,7 +27,7 @@ LctopK0sPbPbCen010:
   skimming2_sel_gen: "pt_cand>6 & abs(z_vtx_gen)<10 " 
   skimming2_sel_evt: null
   skimming2_dotrackpid: True 
-  sel_cent: null #"centrality >=0 &  centrality <=10" ### DONT KNOW HOW TO PROPERLY SET THE LIMITS FOR CENTRALITY, NEED TO CHECK 
+  sel_cent: "centrality >=0 & centrality <=10"
   
   old_sel:
     use: False # Obsolete selection method not implemented, see Ds as a reference
@@ -76,7 +76,7 @@ LctopK0sPbPbCen010:
     plotsanalysis: plotsanalysis
     histoanalysis: histoanalysis
     mlplot: mlplot
-    mlout: /data/trained_models/PbPb010/LctopK0sPbPbCen010
+    mlout: /data/trained_models/PbPb010/LctopK0s
     pkl_out: 
       data: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleLctopK0s 
       mc: /data/HeavyFlavour/PbPb_MC_010/26-03-2019/393_20190325-2122/pickleLctopK0s
@@ -149,7 +149,7 @@ LctopK0sPbPbCen3050:
   skimming_sel: "pt_cand>4"
   skimming_sel_gen: "pt_cand>4"
   skimming_sel_evt: null
-  skimming2_sel: "pt_cand>4 & is_ev_rej==0 & abs(nsigTOF_Pr_0)<3." 
+  skimming2_sel: "pt_cand>4 & is_ev_rej==0" 
   skimming2_sel_gen: "pt_cand>4 & abs(z_vtx_gen)<10 " 
   skimming2_sel_evt: null
   skimming2_dotrackpid: True 
@@ -202,7 +202,7 @@ LctopK0sPbPbCen3050:
     plotsanalysis: plotsanalysis
     histoanalysis: histoanalysis
     mlplot: mlplot
-    mlout: /data/trained_models/PbPb3050 
+    mlout: /data/trained_models/PbPb3050/LctopK0s
     pkl_out: 
       data: /data/HeavyFlavour/PbPb_data_3050/27-03-2019/396_20190326-2301/pickleLctopK0s 
       mc: /data/HeavyFlavour/PbPb_MC_3050/27-03-2019/397_20190326-2332/pickleLctopK0s
