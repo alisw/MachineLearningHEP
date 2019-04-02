@@ -39,11 +39,9 @@ def doanalysis(data_config, data, case, useml, mcordata):
     namefilereco_std = data[case]["files_names"]["namefile_reco_skim_std"]
     namefile_reco_skim = data[case]["files_names"]["namefile_reco_skim"]
     namefile_gen_skim = data[case]["files_names"]["namefile_gen_skim"]
-    namefile_evt_skim = data[case]["files_names"]["namefile_evt_skim"]
     namefilereco_ml_tot = data[case]["files_names"]["namefile_reco_skim_ml_tot"]
     namefilereco_std_tot = data[case]["files_names"]["namefile_reco_skim_std_tot"]
     namefile_gen_skim_tot = data[case]["files_names"]["namefile_gen_skim_tot"]
-    namefile_evt_skim_tot = data[case]["files_names"]["namefile_evt_skim_tot"]
 
     maxfiles = data_config["analysis"][mcordata]["maxfiles"]
     nmaxchunks = data_config["analysis"][mcordata]["nmaxchunks"]
@@ -93,10 +91,6 @@ def doanalysis(data_config, data, case, useml, mcordata):
                     namefilereco_std_tot.replace(".pkl", "%d_%d.pkl" % (imin, imax))
                 merge(listdfout_std, namefilereco_std_tot)
             index = index + 1
-
-        namefile_evt_skim_tot = os.path.join(outputdirfin, namefile_evt_skim_tot)
-        listevt, _ = list_files_lev2(fileinputdir, "", namefile_evt_skim, "")
-        merge(listevt, namefile_evt_skim_tot)
 
         if mcordata == "mc":
             namefile_gen_skim_tot = os.path.join(outputdirfin, namefile_gen_skim_tot)
