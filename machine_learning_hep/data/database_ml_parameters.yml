@@ -40,7 +40,10 @@ LctopK0sPbPbCen010:
     mcbkg_on_off: [[2],[]]
     preseltrack_pid_on_off : [[8],[]]
     std_analysis_on_off : [[0],[]]
-  
+  custom_std_sel:
+    use: False
+    cuts_config_file: null
+
   files_names:
     namefile_unmerged_tree: AnalysisResults.root
     namefile_reco: AnalysisResultsRecoLctopK0s.pkl
@@ -166,6 +169,9 @@ LctopK0sPbPbCen3050:
     mcbkg_on_off: [[2],[]]
     preseltrack_pid_on_off : [[8],[]]
     std_analysis_on_off : [[0],[]]
+  custom_std_sel:
+    use: False
+    cuts_config_file: null
   
   files_names:
     namefile_unmerged_tree: AnalysisResults.root
@@ -298,6 +304,9 @@ Dspp5TeV:
     mcbkg_on_off: [[2],[11]]
     preseltrack_pid_on_off : [[7,8],[]]
     std_analysis_on_off : [[0],[]]
+  custom_std_sel:
+    use: True
+    cuts_config_file: data/database_std_cuts_Dspp5TeV.yml
 
   files_names:
     namefile_unmerged_tree: AnalysisResults.root
@@ -424,6 +433,9 @@ DsPbPb010:
     mcbkg_on_off: [[2],[11]]
     preseltrack_pid_on_off : [[8],[]]
     std_analysis_on_off : [[0],[]]
+  custom_std_sel:
+    use: False
+    cuts_config_file: null
 
   files_names:
     namefile_unmerged_tree: AnalysisResults.root
@@ -550,6 +562,9 @@ DsPbPb3050:
     mcbkg_on_off: [[2],[11]]
     preseltrack_pid_on_off : [[8],[]]
     std_analysis_on_off : [[0],[]]
+  custom_std_sel:
+    use: False
+    cuts_config_file: null
 
   files_names:
     namefile_unmerged_tree: AnalysisResults.root
