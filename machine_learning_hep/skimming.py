@@ -56,8 +56,10 @@ def selectcandidates(data, namefiledf, namefiledf_ml, namefiledf_std, var_pt, pt
             for icutvar in std_cuts_map:
                 if icutvar != "var_binning":
                     array_var = df.loc[:, std_cuts_map[icutvar]["name"]].values
-                    is_selected = selectcand_lincut(array_var, std_cuts_map[icutvar]["min"][ibin_std_cuts], \
-                        std_cuts_map[icutvar]["max"][ibin_std_cuts], std_cuts_map[icutvar]["isabsval"])
+                    is_selected = selectcand_lincut(array_var, \
+                            std_cuts_map[icutvar]["min"][ibin_std_cuts], \
+                            std_cuts_map[icutvar]["max"][ibin_std_cuts], \
+                            std_cuts_map[icutvar]["isabsval"])
                     df = df[is_selected]
             df.to_pickle(namefiledf_std)
     elif useml == 1:
