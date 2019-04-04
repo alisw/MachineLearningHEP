@@ -263,9 +263,9 @@ def extract_eff_histo(run_config, data_dict, case, sel_type='ml'):
 
     cuts_map = None
     if sel_type == 'std':
-        usecustomsel = data_dict[case]["custom_std_sel"]["use"]
+        usecustomsel = data_dict["custom_std_sel"]["use"]
         if usecustomsel:
-            cuts_config_filename = data_dict[case]["custom_std_sel"]["cuts_config_file"]
+            cuts_config_filename = data_dict["custom_std_sel"]["cuts_config_file"]
             with open(cuts_config_filename, 'r') as cuts_config:
                 cuts_map = yaml.load(cuts_config)
             #NB: in case of custom linear selections it overrides pT bins of default_complete
