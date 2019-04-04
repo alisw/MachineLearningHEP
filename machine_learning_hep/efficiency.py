@@ -302,7 +302,6 @@ def extract_eff_histo(run_config, data_dict, case, sel_type='ml'):
     i = 1
     for b_min, b_max in zip(bin_min, bin_max):
         #pre-sel eff x acc
-        print(b_min,b_max,var_bin)
         df_reco_sel = filterdataframe_singlevar(df_mc_reco, var_bin, b_min, b_max)
         df_gen_sel = filterdataframe_singlevar(df_mc_gen, var_bin, b_min, b_max)
         ea_prompt, ea_prompt_err = calc_eff_acc(df_gen_sel, df_reco_sel, 'mc_signal_prompt', \
