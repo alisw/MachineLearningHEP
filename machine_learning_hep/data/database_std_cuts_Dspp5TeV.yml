@@ -6,7 +6,7 @@ var_binning: #used to define binning (e.g. pT)
 #cut variables (roughly order from the more to the less effective to speed up)
 delta_mass_KK:
     min: [ 0., 0., 0., 0., 0., 0., 0., 0. ]
-    max: [ 10., 10., 10., 10., 10., 10., 10., 10. ]
+    max: [ 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01, 0.01 ]
     isabsval: False
     name: delta_mass_KK
 norm_dl_xy:

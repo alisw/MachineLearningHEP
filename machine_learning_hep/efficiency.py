@@ -115,16 +115,16 @@ def calc_eff_fixed(df_to_sel, sel_opt, main_dict, name, thr_value, do_std=False,
             num_sel_cand = len(filter_df_cand(df_sig, main_dict, 'sel_std_analysis'))
         else:
             #preselection on pid and track vars using bitmap
-            df = filter_df_cand(df_sig, main_dict, 'presel_track_pid')
+            df_sig = filter_df_cand(df_sig, main_dict, 'presel_track_pid')
             #apply standard cuts from file
             for icutvar in std_cuts_map:
                 if icutvar != "var_binning":
-                    array_var = df.loc[:, std_cuts_map[icutvar]["name"]].values
+                    array_var = df_sig.loc[:, std_cuts_map[icutvar]["name"]].values
                     is_selected = selectcand_lincut(array_var, \
                             std_cuts_map[icutvar]["min"][ibin_std_cuts], \
                             std_cuts_map[icutvar]["max"][ibin_std_cuts], \
                             std_cuts_map[icutvar]["isabsval"])
-                    df = df[is_selected]
+                    df_sig = df_sig[is_selected]
             num_sel_cand = len(df_sig)
     else:
         num_sel_cand = len(df_sig[df_sig['y_test_prob' + name].values >= thr_value])
