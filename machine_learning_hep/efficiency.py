@@ -118,10 +118,10 @@ def calc_eff_fixed(df_to_sel, sel_opt, main_dict, name, thr_value, do_std=False,
             df = filter_df_cand(df_sig, main_dict, 'presel_track_pid')
             #apply standard cuts from file
             for icutvar in std_cuts_map:
-                if icutvar["name"] != "var_binning":
-                    array_var = df.loc[:, icutvar["name"]].values
-                    is_selected = selectcand_lincut(array_var, icutvar["min"][ibin_std_cuts], \
-                        icutvar["max"][ibin_std_cuts], icutvar["isabsval"])
+                if icutvar != "var_binning":
+                    array_var = df.loc[:, std_cuts_map[icutvar]["name"]].values
+                    is_selected = selectcand_lincut(array_var, std_cuts_map[icutvar]["min"][ibin_std_cuts], \
+                        std_cuts_map[icutvar]["max"][ibin_std_cuts], std_cuts_map[icutvar]["isabsval"])
                     df = df[is_selected]
             num_sel_cand = len(df_sig)
     else:
@@ -270,7 +270,7 @@ def extract_eff_histo(run_config, data_dict, case, sel_type='ml'):
                 cuts_map = yaml.load(cuts_config)
             #NB: in case of custom linear selections it overrides pT bins of default_complete
             bin_min = cuts_map["var_binning"]["min"]
-            bin_min = cuts_map["var_binning"]["max"]
+            bin_max = cuts_map["var_binning"]["max"]
 
     if len(bin_min) != len(bin_max):
         logger.critical('Wrong bin limits in default file')
@@ -302,10 +302,11 @@ def extract_eff_histo(run_config, data_dict, case, sel_type='ml'):
     i = 1
     for b_min, b_max in zip(bin_min, bin_max):
         #pre-sel eff x acc
+        print(b_min,b_max,var_bin)
         df_reco_sel = filterdataframe_singlevar(df_mc_reco, var_bin, b_min, b_max)
         df_gen_sel = filterdataframe_singlevar(df_mc_gen, var_bin, b_min, b_max)
-        ea_prompt, ea_prompt_err = calc_eff_acc(df_gen_sel, df_reco_sel, 'mc_signal_prompt',
-                                                data_dict)
+        ea_prompt, ea_prompt_err = calc_eff_acc(df_gen_sel, df_reco_sel, 'mc_signal_prompt', \
+                data_dict)
         h_effacc_prompt.SetBinContent(i, ea_prompt)
         h_effacc_prompt.SetBinError(i, ea_prompt_err)
         ea_fd, ea_fd_err = calc_eff_acc(df_gen_sel, df_reco_sel, 'mc_signal_FD', data_dict)
