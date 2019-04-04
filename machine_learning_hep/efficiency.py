@@ -120,8 +120,10 @@ def calc_eff_fixed(df_to_sel, sel_opt, main_dict, name, thr_value, do_std=False,
             for icutvar in std_cuts_map:
                 if icutvar != "var_binning":
                     array_var = df.loc[:, std_cuts_map[icutvar]["name"]].values
-                    is_selected = selectcand_lincut(array_var, std_cuts_map[icutvar]["min"][ibin_std_cuts], \
-                        std_cuts_map[icutvar]["max"][ibin_std_cuts], std_cuts_map[icutvar]["isabsval"])
+                    is_selected = selectcand_lincut(array_var, \
+                            std_cuts_map[icutvar]["min"][ibin_std_cuts], \
+                            std_cuts_map[icutvar]["max"][ibin_std_cuts], \
+                            std_cuts_map[icutvar]["isabsval"])
                     df = df[is_selected]
             num_sel_cand = len(df_sig)
     else:
