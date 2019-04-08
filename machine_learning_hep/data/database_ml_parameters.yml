@@ -40,7 +40,10 @@ LctopK0sPbPbCen010:
     mcbkg_on_off: [[2],[]]
     preseltrack_pid_on_off : [[8],[]]
     std_analysis_on_off : [[0],[]]
-  
+  custom_std_sel:
+    use: False
+    cuts_config_file: null
+
   files_names:
     namefile_unmerged_tree: AnalysisResults.root
     namefile_reco: AnalysisResultsRecoLctopK0s.pkl
@@ -166,6 +169,9 @@ LctopK0sPbPbCen3050:
     mcbkg_on_off: [[2],[]]
     preseltrack_pid_on_off : [[8],[]]
     std_analysis_on_off : [[0],[]]
+  custom_std_sel:
+    use: False
+    cuts_config_file: null
   
   files_names:
     namefile_unmerged_tree: AnalysisResults.root
@@ -265,10 +271,10 @@ LctopK0sPbPbCen3050:
 
 Dspp5TeV:
 
-  mass: 1.970
+  mass: 1.9685000
   pdg_code: null
-  mass_fit_lim: [1.70, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
-  bin_width: 0.006 # bin width of the invariant mass histogram
+  mass_fit_lim: [1.7435000, 2.1935000] # region for the fit of the invariant mass distribution [GeV/c^2]
+  bin_width: 0.002 # bin width of the invariant mass histogram
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
   presel_gen: abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 # pre-selections on generated candidates
   skimming_sel: "pt_cand>2"
@@ -298,6 +304,9 @@ Dspp5TeV:
     mcbkg_on_off: [[2],[11]]
     preseltrack_pid_on_off : [[7,8],[]]
     std_analysis_on_off : [[0],[]]
+  custom_std_sel:
+    use: True
+    cuts_config_file: data/database_std_cuts_Dspp5TeV.yml
 
   files_names:
     namefile_unmerged_tree: AnalysisResults.root
@@ -398,10 +407,10 @@ Dspp5TeV:
 
 DsPbPb010:
 
-  mass: 1.970
+  mass: 1.9685000
   pdg_code: null
-  mass_fit_lim: [1.70, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
-  bin_width: 0.006 # bin width of the invariant mass histogram
+  mass_fit_lim: [1.7435000, 2.1935000] # region for the fit of the invariant mass distribution [GeV/c^2]
+  bin_width: 0.002 # bin width of the invariant mass histogram
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
   presel_gen: abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 # pre-selections on generated candidates
   skimming_sel: "n_cand>0 & pt_cand>2"
@@ -411,7 +420,7 @@ DsPbPb010:
   skimming2_sel_gen: "abs(z_vtx_gen)<10" 
   skimming2_sel_evt: null
   skimming2_dotrackpid: True
-  sel_cent: null
+  sel_cent: "centrality >=0 & centrality <=10"
 
   old_sel:
     use: False 
@@ -424,6 +433,9 @@ DsPbPb010:
     mcbkg_on_off: [[2],[11]]
     preseltrack_pid_on_off : [[8],[]]
     std_analysis_on_off : [[0],[]]
+  custom_std_sel:
+    use: False
+    cuts_config_file: null
 
   files_names:
     namefile_unmerged_tree: AnalysisResults.root
@@ -450,10 +462,10 @@ DsPbPb010:
   inputs:
     data:
       production: LHC18r
-      unmerged_tree_dir: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/unmerged
+      unmerged_tree_dir: null
 
     mc:
-      production: null 
+      production: LHC19c3a 
       unmerged_tree_dir: null
 
   output_folders:
@@ -462,17 +474,17 @@ DsPbPb010:
     mlplot: mlplot
     mlout: /data/trained_models/DsPbPb010
     pkl_out: 
-      data: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDs
-      mc: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDs
+      data: null
+      mc: null
     pkl_merged: 
-      data: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDsskimmedmerged_evt
-      mc: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDsskimmedmerged_evt
+      data: null
+      mc: null
     pkl_skimmed: 
-      data: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDsskimmed_evt
-      mc: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDsskimmed_evt
+      data: null
+      mc: null
     pkl_final: 
-      data: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDsskimmed_evt
-      mc: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDsskimmed_evt
+      data: null
+      mc: null
 
   variables:
     var_all: [n_cand, d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, 
@@ -524,20 +536,20 @@ DsPbPb010:
 
 DsPbPb3050:
 
-  mass: 1.970
+  mass: 1.9685000
   pdg_code: null
-  mass_fit_lim: [1.70, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
-  bin_width: 0.006 # bin width of the invariant mass histogram
+  mass_fit_lim: [1.7435000, 2.1935000] # region for the fit of the invariant mass distribution [GeV/c^2]
+  bin_width: 0.002 # bin width of the invariant mass histogram
   presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
   presel_gen: abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 # pre-selections on generated candidates
-  skimming_sel: "n_cand>0 & pt_cand>2"
-  skimming_sel_gen: "n_cand>0 & pt_cand>2"
+  skimming_sel: "pt_cand>2"
+  skimming_sel_gen: "pt_cand>2"
   skimming_sel_evt: null
   skimming2_sel: "delta_mass_KK<0.02 & is_ev_rej==0" 
   skimming2_sel_gen: "abs(z_vtx_gen)<10" 
   skimming2_sel_evt: null
   skimming2_dotrackpid: True
-  sel_cent: null
+  sel_cent: "centrality >=30 & centrality <=50"
 
   old_sel:
     use: False 
@@ -550,6 +562,9 @@ DsPbPb3050:
     mcbkg_on_off: [[2],[11]]
     preseltrack_pid_on_off : [[8],[]]
     std_analysis_on_off : [[0],[]]
+  custom_std_sel:
+    use: False
+    cuts_config_file: null
 
   files_names:
     namefile_unmerged_tree: AnalysisResults.root
@@ -576,11 +591,11 @@ DsPbPb3050:
   inputs:
     data:
       production: LHC18r
-      unmerged_tree_dir: null
+      unmerged_tree_dir: /data/HeavyFlavour/PbPb_data_3050/01-04-2019/401_20190328-1536/unmerged
 
     mc:
-      production: null 
-      unmerged_tree_dir: null
+      production: LHC19c2b 
+      unmerged_tree_dir: /data/HeavyFlavour/PbPb_MC_3050/02-04-2019/403_20190328-1540/unmerged
 
   output_folders:
     plotsanalysis: plotsanalysis
@@ -588,20 +603,20 @@ DsPbPb3050:
     mlplot: mlplot
     mlout: /data/trained_models/DsPbPb3050
     pkl_out: 
-      data: null
-      mc: null
+      data: /data/HeavyFlavour/PbPb_data_3050/01-04-2019/401_20190328-1536/pickleDs
+      mc: /data/HeavyFlavour/PbPb_MC_3050/02-04-2019/403_20190328-1540/pickleDs
     pkl_merged: 
-      data: null
-      mc: null
+      data: /data/HeavyFlavour/PbPb_data_3050/01-04-2019/401_20190328-1536/pickleDsskimmedMerged
+      mc: /data/HeavyFlavour/PbPb_MC_3050/02-04-2019/403_20190328-1540/pickleDsskimmedMerged
     pkl_skimmed: 
-      data: null
-      mc: null
+      data: /data/HeavyFlavour/PbPb_data_3050/01-04-2019/401_20190328-1536/pickleDsskimmed
+      mc: /data/HeavyFlavour/PbPb_MC_3050/02-04-2019/403_20190328-1540/pickleDsskimmed
     pkl_final: 
-      data: null
-      mc: null
+      data: /data/HeavyFlavour/PbPb_data_3050/01-04-2019/401_20190328-1536/pickleDsskimmedMerged
+      mc: /data/HeavyFlavour/PbPb_MC_3050/02-04-2019/403_20190328-1540/pickleDsskimmedMerged
 
   variables:
-    var_all: [n_cand, d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, 
+    var_all: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, 
              delta_mass_KK, cos_PiDs, cos_PiKPhi_3, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, 
              imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, inv_mass, pt_cand, cand_type, y_cand, 
              eta_prong0, eta_prong1, eta_prong2, run_number, ev_id, nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, 
@@ -609,7 +624,7 @@ DsPbPb3050:
     var_evt: 
       data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
       mc: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
-    var_gen: [n_cand, y_cand, pt_cand, cand_type, run_number, ev_id]
+    var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
     var_training: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, delta_mass_KK, 
                   cos_PiDs, cos_PiKPhi_3, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, 
                   imp_par_prong2, max_norm_d0d0exp]

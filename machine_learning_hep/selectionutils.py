@@ -13,7 +13,7 @@
 #############################################################################
 
 """
-utilities for fiducial acceptance and pid selections
+utilities for fiducial acceptance, pid, single topological variable selections and normalization
 """
 
 import numba
@@ -66,7 +66,7 @@ def selectpid_dstokkpi(array_nsigma_tpc_pi_0, array_nsigma_tpc_k_0, \
 
     array_is_pid_sel = []
 
-    for icand in range(array_nsigma_tpc_pi_0):
+    for icand, _ in enumerate(array_nsigma_tpc_pi_0):
         is_track_0_sel = array_nsigma_tpc_pi_0[icand] < nsigmacut \
             or array_nsigma_tof_pi_0[icand] < nsigmacut \
                 or array_nsigma_tpc_k_0[icand] < nsigmacut \
@@ -92,7 +92,7 @@ def selectpid_dzerotokpi(array_nsigma_tpc_pi_0, array_nsigma_tpc_k_0, \
 
     array_is_pid_sel = []
 
-    for icand in range(array_nsigma_tpc_pi_0):
+    for icand, _ in enumerate(array_nsigma_tpc_pi_0):
         is_track_0_sel = array_nsigma_tpc_pi_0[icand] < nsigmacut \
             or array_nsigma_tof_pi_0[icand] < nsigmacut \
                 or array_nsigma_tpc_k_0[icand] < nsigmacut \
@@ -112,7 +112,7 @@ def selectpid_lctov0bachelor(array_nsigma_tpc, array_nsigma_tof, nsigmacut):
     #nsigma for desired species (i.e. p in case of pK0s or pi in case of piL)
     array_is_pid_sel = []
 
-    for icand in range(array_nsigma_tpc):
+    for icand, _ in enumerate(array_nsigma_tpc):
         is_track_sel = array_nsigma_tpc[icand] < nsigmacut or \
             array_nsigma_tof[icand] < nsigmacut
         if is_track_sel:
@@ -120,6 +120,20 @@ def selectpid_lctov0bachelor(array_nsigma_tpc, array_nsigma_tof, nsigmacut):
         else:
             array_is_pid_sel.append(False)
     return array_is_pid_sel
+
+@numba.njit
+def selectcand_lincut(array_cut_var, minvalue, maxvalue, isabs):
+    array_is_sel = []
+    for icand, _ in enumerate(array_cut_var):
+        if isabs:
+            value = abs(array_cut_var[icand])
+        else:
+            value = array_cut_var[icand]
+        if minvalue < value < maxvalue:
+            array_is_sel.append(True)
+        else:
+            array_is_sel.append(False)
+    return array_is_sel
 
 def getnormforselevt(df_evt):
     #accepted events
