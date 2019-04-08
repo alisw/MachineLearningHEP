@@ -23,12 +23,12 @@ import numpy as np
 #from ROOT import TFile, TH1F, TCanvas # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.general import filter_df_cand
 from machine_learning_hep.models import apply # pylint: disable=import-error
-from machine_learning_hep.selectionutils import selectcandidateml
+from machine_learning_hep.selectionutils import selectcandidateml, selectcand_lincut
 #from machine_learning_hep.general import get_database_ml_parameters # pylint: disable=import-error
 
  # pylint: disable=too-many-arguments,too-many-statements
 def selectcandidates(data, namefiledf, namefiledf_ml, namefiledf_std, var_pt, ptmin, ptmax,
-                     useml, modelname, model, probcut, case):
+                     useml, modelname, model, probcut, case, std_cuts_map=None, ibin_std_cuts=None):
 
     presel_reco = data[case]["presel_reco"]
     var_training = data[case]["variables"]["var_training"]
@@ -46,9 +46,23 @@ def selectcandidates(data, namefiledf, namefiledf_ml, namefiledf_std, var_pt, pt
         df = df.query(presel_reco)
 
     if useml == 0:
-        df = filter_df_cand(df, data[case], 'sel_std_analysis')
-        df.to_pickle(namefiledf_std)
-    if useml == 1:
+        if std_cuts_map is None:
+            df = filter_df_cand(df, data[case], 'sel_std_analysis')
+            df.to_pickle(namefiledf_std)
+        else:
+            #preselection on pid and track vars using bitmap
+            df = filter_df_cand(df, data[case], 'presel_track_pid')
+            #apply standard cuts from file
+            for icutvar in std_cuts_map:
+                if icutvar != "var_binning":
+                    array_var = df.loc[:, std_cuts_map[icutvar]["name"]].values
+                    is_selected = selectcand_lincut(array_var, \
+                            std_cuts_map[icutvar]["min"][ibin_std_cuts], \
+                            std_cuts_map[icutvar]["max"][ibin_std_cuts], \
+                            std_cuts_map[icutvar]["isabsval"])
+                    df = df[is_selected]
+            df.to_pickle(namefiledf_std)
+    elif useml == 1:
         df = filter_df_cand(df, data[case], 'presel_track_pid')
         mod = pickle.load(open(model, 'rb'))
         df = apply("BinaryClassification", [modelname], [mod], df, var_training)
@@ -58,11 +72,12 @@ def selectcandidates(data, namefiledf, namefiledf_ml, namefiledf_std, var_pt, pt
         df.to_pickle(namefiledf_ml)
 
 def selectcandidatesall(data, listdf, listdfout_ml, listdfout_std, pt_var, ptmin, ptmax,
-                        useml, modelname, model, probcut, case):
+                        useml, modelname, model, probcut, case, std_cuts_map=None, \
+                            ibin_std_cuts=None):
     processes = [mp.Process(target=selectcandidates, \
                  args=(data, listdf[index], listdfout_ml[index], \
                        listdfout_std[index], pt_var, ptmin, ptmax, \
-                       useml, modelname, model, probcut, case))
+                       useml, modelname, model, probcut, case, std_cuts_map, ibin_std_cuts))
                  for index, _ in enumerate(listdf)]
     for p in processes:
         p.start()

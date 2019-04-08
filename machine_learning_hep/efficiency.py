@@ -19,13 +19,16 @@ import array
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+import yaml
 from ROOT import TFile, TH1F, gROOT # pylint: disable=import-error,no-name-in-module
 from ROOT import kRed, kBlue, kFALSE # pylint: disable=import-error,no-name-in-module
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.general import filter_df_cand, get_database_ml_parameters
 from machine_learning_hep.general import filterdataframe_singlevar
+from machine_learning_hep.selectionutils import selectcand_lincut
 
-def calc_eff(df_to_sel, sel_opt, main_dict, name, num_steps, do_std=False):
+def calc_eff(df_to_sel, sel_opt, main_dict, name, num_steps, do_std=False, \
+    std_cuts_map=None, ibin_std_cuts=None):
     """Calculate the selection efficiency as a function of the treshold on the ML model output.
 
     It works also for standard selections, setting do_std to True. In this case the same value is
@@ -64,7 +67,19 @@ def calc_eff(df_to_sel, sel_opt, main_dict, name, num_steps, do_std=False):
             eff_array.append(eff)
             eff_err_array.append(eff_err)
     else:
-        num_sel_cand = len(filter_df_cand(df_sig, main_dict, 'sel_std_analysis'))
+        if std_cuts_map is None:
+            num_sel_cand = len(filter_df_cand(df_sig, main_dict, 'sel_std_analysis'))
+        else:
+            #preselection on pid and track vars using bitmap
+            df = filter_df_cand(df_sig, main_dict, 'presel_track_pid')
+            #apply standard cuts from file
+            for icutvar in std_cuts_map:
+                if icutvar["name"] != "var_binning":
+                    array_var = df.loc[:, icutvar["name"]].values
+                    is_selected = selectcand_lincut(array_var, icutvar["min"][ibin_std_cuts], \
+                        icutvar["max"][ibin_std_cuts], icutvar["isabsval"])
+                    df = df[is_selected]
+            num_sel_cand = len(df_sig)
         eff = num_sel_cand / num_tot_cand
         eff_err = np.sqrt(eff * (1 - eff) / num_tot_cand)
         eff_array = [eff] * num_steps
@@ -73,7 +88,8 @@ def calc_eff(df_to_sel, sel_opt, main_dict, name, num_steps, do_std=False):
     return eff_array, eff_err_array, x_axis
 
 
-def calc_eff_fixed(df_to_sel, sel_opt, main_dict, name, thr_value, do_std=False):
+def calc_eff_fixed(df_to_sel, sel_opt, main_dict, name, thr_value, do_std=False, \
+    std_cuts_map=None, ibin_std_cuts=None):
     """Calculate the selection efficiency of a ML model for a fixed threshold.
 
     It works also for standard selections, setting do_std to True.
@@ -95,7 +111,21 @@ def calc_eff_fixed(df_to_sel, sel_opt, main_dict, name, thr_value, do_std=False)
     num_tot_cand = len(df_sig)
 
     if do_std:
-        num_sel_cand = len(filter_df_cand(df_sig, main_dict, 'sel_std_analysis'))
+        if std_cuts_map is None:
+            num_sel_cand = len(filter_df_cand(df_sig, main_dict, 'sel_std_analysis'))
+        else:
+            #preselection on pid and track vars using bitmap
+            df_sig = filter_df_cand(df_sig, main_dict, 'presel_track_pid')
+            #apply standard cuts from file
+            for icutvar in std_cuts_map:
+                if icutvar != "var_binning":
+                    array_var = df_sig.loc[:, std_cuts_map[icutvar]["name"]].values
+                    is_selected = selectcand_lincut(array_var, \
+                            std_cuts_map[icutvar]["min"][ibin_std_cuts], \
+                            std_cuts_map[icutvar]["max"][ibin_std_cuts], \
+                            std_cuts_map[icutvar]["isabsval"])
+                    df_sig = df_sig[is_selected]
+            num_sel_cand = len(df_sig)
     else:
         num_sel_cand = len(df_sig[df_sig['y_test_prob' + name].values >= thr_value])
 
@@ -233,6 +263,17 @@ def extract_eff_histo(run_config, data_dict, case, sel_type='ml'):
     file_mc_reco = data_dict['files_names']['namefile_reco_merged']
     file_mc_gen = data_dict['files_names']['namefile_gen_merged']
 
+    cuts_map = None
+    if sel_type == 'std':
+        usecustomsel = data_dict["custom_std_sel"]["use"]
+        if usecustomsel:
+            cuts_config_filename = data_dict["custom_std_sel"]["cuts_config_file"]
+            with open(cuts_config_filename, 'r') as cuts_config:
+                cuts_map = yaml.load(cuts_config)
+            #NB: in case of custom linear selections it overrides pT bins of default_complete
+            bin_min = cuts_map["var_binning"]["min"]
+            bin_max = cuts_map["var_binning"]["max"]
+
     if len(bin_min) != len(bin_max):
         logger.critical('Wrong bin limits in default file')
     n_bins = len(bin_min)
@@ -265,8 +306,8 @@ def extract_eff_histo(run_config, data_dict, case, sel_type='ml'):
         #pre-sel eff x acc
         df_reco_sel = filterdataframe_singlevar(df_mc_reco, var_bin, b_min, b_max)
         df_gen_sel = filterdataframe_singlevar(df_mc_gen, var_bin, b_min, b_max)
-        ea_prompt, ea_prompt_err = calc_eff_acc(df_gen_sel, df_reco_sel, 'mc_signal_prompt',
-                                                data_dict)
+        ea_prompt, ea_prompt_err = calc_eff_acc(df_gen_sel, df_reco_sel, 'mc_signal_prompt', \
+                data_dict)
         h_effacc_prompt.SetBinContent(i, ea_prompt)
         h_effacc_prompt.SetBinError(i, ea_prompt_err)
         ea_fd, ea_fd_err = calc_eff_acc(df_gen_sel, df_reco_sel, 'mc_signal_FD', data_dict)
@@ -275,12 +316,12 @@ def extract_eff_histo(run_config, data_dict, case, sel_type='ml'):
 
         #std selection efficiency
         if sel_type == 'std':
-            eff_prompt_std, eff_prompt_std_err = calc_eff_fixed(df_reco_sel, 'mc_signal_prompt',
-                                                                data_dict, '', None, True)
+            eff_prompt_std, eff_prompt_std_err = calc_eff_fixed(df_reco_sel, 'mc_signal_prompt', \
+                data_dict, '', None, True, cuts_map, i-1)
             h_eff_model_prompt.SetBinContent(i, eff_prompt_std)
             h_eff_model_prompt.SetBinError(i, eff_prompt_std_err)
             eff_fd_std, eff_fd_std_err = calc_eff_fixed(df_reco_sel, 'mc_signal_FD',
-                                                        data_dict, '', None, True)
+                                                        data_dict, '', None, True, cuts_map, i-1)
             h_eff_model_fd.SetBinContent(i, eff_fd_std)
             h_eff_model_fd.SetBinError(i, eff_fd_std_err)
 

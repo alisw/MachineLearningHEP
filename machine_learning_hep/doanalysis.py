@@ -21,6 +21,7 @@ import os.path
 
 # pylint: disable=import-error
 import time
+import yaml
 #from machine_learning_hep.general import get_database_ml_parameters # pylint: disable=import-error
 #from machine_learning_hep.general import get_database_ml_analysis
 from machine_learning_hep.listfiles import list_files_dir_lev2, list_files_lev2
@@ -53,10 +54,21 @@ def doanalysis(data_config, data, case, useml, mcordata):
     models = data_config["analysis"]["models"]
     modelname = data_config["analysis"]["modelname"]
 
+    cuts_map = None
+    if useml == 0:
+        usecustomsel = data[case]["custom_std_sel"]["use"]
+        if usecustomsel:
+            cuts_config_filename = data[case]["custom_std_sel"]["cuts_config_file"]
+            with open(cuts_config_filename, 'r') as cuts_config:
+                cuts_map = yaml.load(cuts_config)
+            #NB: in case of custom linear selections it overrides pT bins of default_complete
+            binmin = cuts_map["var_binning"]["min"]
+            binmax = cuts_map["var_binning"]["max"]
+
     tstart = time.time()
     if doinvmassspectra == 1:
         index = 0
-        for imin, imax in zip(binmin, binmax):
+        for imin, imax, ibin in zip(binmin, binmax, enumerate(binmin)):
             namefilereco_ml_in = namefilereco_ml.replace(".pkl", "%d_%d.pkl" % (imin, imax))
             namefilereco_std_in = namefilereco_std.replace(".pkl", "%d_%d.pkl" % (imin, imax))
             listdf, listdfout_ml = list_files_dir_lev2(fileinputdir, outputdirfin,
@@ -79,7 +91,7 @@ def doanalysis(data_config, data, case, useml, mcordata):
                 selectcandidatesall(data, chunksdf[idf], chunksdfout_ml[idf],
                                     chunksdfout_std[idf], var_pt, imin, imax,
                                     useml, modelname, models[index],
-                                    probcut[index], case)
+                                    probcut[index], case, cuts_map, ibin[0])
             if useml == 1:
                 namefilereco_ml_tot = os.path.join(outputdirfin, namefilereco_ml_tot)
                 namefilereco_ml_tot = \
