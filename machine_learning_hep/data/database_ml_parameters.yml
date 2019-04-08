@@ -647,3 +647,243 @@ DsPbPb3050:
   efficiency:
     split_prompt_FD: True # True to split prompt and feed-down candidates
     num_steps: 111 # number of steps used in efficiency estimation
+
+DzeroPbPb010:
+
+  mass: 1.864
+  pdg_code: null
+  mass_fit_lim: [1.70, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
+  bin_width: 0.001 # bin width of the invariant mass histogram
+  presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8
+  presel_gen: abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 # pre-selections on generated candidates
+  skimming_sel: "n_cand>0 & pt_cand>0"
+  skimming_sel_gen: "n_cand>0 & pt_cand>0"
+  skimming_sel_evt: null
+  skimming2_sel: "is_ev_rej==0" 
+  skimming2_sel_gen: "abs(z_vtx_gen)<10" 
+  skimming2_sel_evt: null
+  skimming2_dotrackpid: True
+  sel_cent: "centrality>=0 & centrality<10"
+
+  old_sel:
+    use: False 
+  bitmap_sel:
+    use: True
+    var_sel: cand_type
+    mcsignal_on_off: [[1],[5]]
+    mcsignal_prompt_on_off: [[1,3],[5]]
+    mcsignal_feed_on_off: [[1,4],[5]]
+    mcbkg_on_off: [[2],[]]
+    preseltrack_pid_on_off : [[7,8],[]]
+    std_analysis_on_off : [[0],[]]
+
+  files_names:
+    namefile_unmerged_tree: AnalysisResults.root
+    namefile_reco: AnalysisResultsRecoDzero.pkl
+    namefile_evt: AnalysisResultsEvtDzero.pkl
+    namefile_gen: AnalysisResultsGenDzero.pkl
+    namefile_reco_merged: AnalysisResultsRecoDzeroMerged.pkl
+    namefile_evt_merged: AnalysisResultsEvDzeroMerged.pkl
+    namefile_gen_merged: AnalysisResultsGenDzeroMerged.pkl
+    namefile_reco_skim: AnalysisResultsRecoDzeroSkimmed.pkl
+    namefile_evt_skim: AnalysisResultsEvtDzeroSkimmed.pkl
+    namefile_gen_skim: AnalysisResultsGenDzeroSkimmed.pkl
+    namefile_reco_skim_ml: AnalysisResultsRecoDzeroSkimmed_ml.pkl
+    namefile_reco_skim_std: AnalysisResultsRecoDzeroSkimmed_std.pkl
+    namefile_reco_skim_ml_tot: AnalysisResultsRecoDzeroSkimmed_ml_tot.pkl
+    namefile_reco_skim_std_tot: AnalysisResultsRecoDzeroSkimmed_std_tot.pkl
+    namefile_gen_skim_tot: AnalysisResultsGenDzeroSkimmed_tot.pkl
+    namefile_evt_skim_tot: AnalysisResultsEvtDzeroSkimmed_tot.pkl
+    treeoriginreco: 'PWGHF_TreeCreator/tree_D0'
+    treeorigingen: 'PWGHF_TreeCreator/tree_D0_gen'
+    treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
+    treeoutput: fTreeD0Flagged 
+ 
+  inputs:
+    data:
+      production: LHC18r
+      unmerged_tree_dir: /data/HeavyFlavour/
+
+    mc:
+      production: null 
+      unmerged_tree_dir: null
+
+  output_folders:
+    plotsanalysis: plotsanalysis
+    histoanalysis: histoanalysis
+    mlplot: mlplot
+    mlout: /data/trained_models/DzeroPbPb010
+    pkl_out: 
+      data: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDzero
+      mc: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDzero
+    pkl_merged: 
+      data: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDzeroskimmedmerged_evt
+      mc: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDzeroskimmedmerged_evt
+    pkl_skimmed: 
+      data: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDzeroskimmed_evt
+      mc: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDzeroskimmed_evt
+    pkl_final: 
+      data: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDzeroskimmed_evt
+      mc: /data/HeavyFlavour/PbPb_data_010/25-03-2019/389_20190323-2048/pickleDzeroskimmed_evt
+
+  variables:
+    var_all: [n_cand, d_len, d_len_xy, norm_dl, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, cos_t_star, imp_par_prod, pt_prong0, pt_prong1, imp_par_prong0, imp_par_prong1, imp_par_err_prong0, imp_par_err_prong1, max_norm_d0d0exp, inv_mass, pt_cand, cand_type, y_cand, eta_prong0, eta_prong1, run_number, ev_id]
+    var_evt: 
+      data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
+      mc: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
+    var_gen: [n_cand, y_cand, pt_cand, cand_type, run_number, ev_id]
+    var_training: [d_len, d_len_xy, norm_dl, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, cos_t_star, imp_par_prod, pt_prong0, pt_prong1, imp_par_prong0, imp_par_prong1, imp_par_err_prong0, imp_par_err_prong1, max_norm_d0d0exp] 
+    var_boundaries: [d_len, max_norm_d0d0exp]
+    var_correlation:
+    - [pt_cand, d_len_xy, d_len, pt_cand, pt_cand, norm_dl_xy, max_norm_d0d0exp, cos_p_xy, cos_p_xy]
+    - [d_len_xy, imp_par_xy, max_norm_d0d0exp, imp_par_xy, cos_p, d_len_xy, imp_par_xy, cos_p, pt_cand]
+    var_others: [inv_mass, pt_cand]
+    var_signal: signal
+    var_binning: pt_cand
+    var_inv_mass: inv_mass
+    var_cand_type: cand_type
+    var_evt_match: [run_number, ev_id]
+  
+  ml_study:    
+    prepare:
+      sig_tag: 1 #mc
+      bkg_tag: 0 #data
+      sel_signal: mc_signal # used for webapp, selection option of filter_df_cand
+      sel_bkg: inv_mass<1.830 or inv_mass>2.010 #ensure to set the cuts as multiples of the bin_width, i.e. left_limit + K * bin_width 
+  
+  signif_opt: 
+    sel_event: is_ev_rej==0
+    filename_fonll: 'data/fonll/fo_PbPb_d0meson_5TeV_y0p5.csv' # file with FONLL predictions, not corrected with Raa for PbPb
+    fonll_pred: 'max' # edge of the FONLL prediction
+    FF: 0.542  # fragmentation fraction
+    sigma_MB: 1  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
+    Taa: 23260 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
+    BR: 3.89e-2 # branching ratio of the decay
+    f_prompt: 0.9 # estimated fraction of prompt candidates
+    bkg_data_fraction: 0.1 # fraction of real data used in the estimation
+    num_steps: 111 # number of steps used in efficiency and signif. estimation 
+    save_fit: True # save bkg fits with the various cuts on ML output
+
+  efficiency:
+    split_prompt_FD: True # True to split prompt and feed-down candidates
+    num_steps: 111 # number of steps used in efficiency estimation
+
+DzeroPbPb3050:
+
+  mass: 1.864
+  pdg_code: null
+  mass_fit_lim: [1.70, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
+  bin_width: 0.001 # bin width of the invariant mass histogram
+  presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8
+  presel_gen: abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 # pre-selections on generated candidates
+  skimming_sel: "n_cand>0 & pt_cand>0"
+  skimming_sel_gen: "n_cand>0 & pt_cand>0"
+  skimming_sel_evt: null
+  skimming2_sel: "is_ev_rej==0"
+  skimming2_sel_gen: "abs(z_vtx_gen)<10"
+  skimming2_sel_evt: null
+  skimming2_dotrackpid: True
+  sel_cent: "centrality>=30 & centrality<50"
+
+  old_sel:
+    use: False
+  bitmap_sel:
+    use: True
+    var_sel: cand_type
+    mcsignal_on_off: [[1],[5]]
+    mcsignal_prompt_on_off: [[1,3],[5]]
+    mcsignal_feed_on_off: [[1,4],[5]]
+    mcbkg_on_off: [[2],[]]
+    preseltrack_pid_on_off : [[7,8],[]]
+    std_analysis_on_off : [[0],[]]
+
+  files_names:
+    namefile_unmerged_tree: AnalysisResults.root
+    namefile_reco: AnalysisResultsRecoDzero.pkl
+    namefile_evt: AnalysisResultsEvtDzero.pkl
+    namefile_gen: AnalysisResultsGenDzero.pkl
+    namefile_reco_merged: AnalysisResultsRecoDzeroMerged.pkl
+    namefile_evt_merged: AnalysisResultsEvDzeroMerged.pkl
+    namefile_gen_merged: AnalysisResultsGenDzeroMerged.pkl
+    namefile_reco_skim: AnalysisResultsRecoDzeroSkimmed.pkl
+    namefile_evt_skim: AnalysisResultsEvtDzeroSkimmed.pkl
+    namefile_gen_skim: AnalysisResultsGenDzeroSkimmed.pkl
+    namefile_reco_skim_ml: AnalysisResultsRecoDzeroSkimmed_ml.pkl
+    namefile_reco_skim_std: AnalysisResultsRecoDzeroSkimmed_std.pkl
+    namefile_reco_skim_ml_tot: AnalysisResultsRecoDzeroSkimmed_ml_tot.pkl
+    namefile_reco_skim_std_tot: AnalysisResultsRecoDzeroSkimmed_std_tot.pkl
+    namefile_gen_skim_tot: AnalysisResultsGenDzeroSkimmed_tot.pkl
+    namefile_evt_skim_tot: AnalysisResultsEvtDzeroSkimmed_tot.pkl
+    treeoriginreco: 'PWGHF_TreeCreator/tree_D0'
+    treeorigingen: 'PWGHF_TreeCreator/tree_D0_gen'
+    treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
+    treeoutput: fTreeD0Flagged
+
+  inputs:
+    data:
+      production: LHC18r
+      unmerged_tree_dir: /data/HeavyFlavour/
+
+    mc:
+      production: null
+      unmerged_tree_dir: null
+
+  output_folders:
+    plotsanalysis: plotsanalysis
+    histoanalysis: histoanalysis
+    mlplot: mlplot
+    mlout: /data/trained_models/DzeroPbPb3050
+    pkl_out:
+      data: /data/HeavyFlavour/PbPb_data_3050/25-03-2019/389_20190323-2048/pickleDzero
+      mc: /data/HeavyFlavour/PbPb_data_3050/25-03-2019/389_20190323-2048/pickleDzero
+    pkl_merged:
+      data: /data/HeavyFlavour/PbPb_data_3050/25-03-2019/389_20190323-2048/pickleDzeroskimmedmerged_evt
+      mc: /data/HeavyFlavour/PbPb_data_3050/25-03-2019/389_20190323-2048/pickleDzeroskimmedmerged_evt
+    pkl_skimmed:
+      data: /data/HeavyFlavour/PbPb_data_3050/25-03-2019/389_20190323-2048/pickleDzeroskimmed_evt
+      mc: /data/HeavyFlavour/PbPb_data_3050/25-03-2019/389_20190323-2048/pickleDzeroskimmed_evt
+    pkl_final:
+      data: /data/HeavyFlavour/PbPb_data_3050/25-03-2019/389_20190323-2048/pickleDzeroskimmed_evt
+      mc: /data/HeavyFlavour/PbPb_data_3050/25-03-2019/389_20190323-2048/pickleDzeroskimmed_evt
+
+  variables:
+    var_all: [n_cand, d_len, d_len_xy, norm_dl, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, cos_t_star, imp_par_prod, pt_prong0, pt_prong1, imp_par_prong0, imp_par_prong1, imp_par_err_prong0, imp_par_err_prong1, max_norm_d0d0exp, inv_mass, pt_cand, cand_type, y_cand, eta_prong0, eta_prong1, run_number, ev_id]
+    var_evt:
+      data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
+      mc: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
+    var_gen: [n_cand, y_cand, pt_cand, cand_type, run_number, ev_id]
+    var_training: [d_len, d_len_xy, norm_dl, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, cos_t_star, imp_par_prod, pt_prong0, pt_prong1, imp_par_prong0, imp_par_prong1, imp_par_err_prong0, imp_par_err_prong1, max_norm_d0d0exp]
+    var_boundaries: [d_len, max_norm_d0d0exp]
+    var_correlation:
+    - [pt_cand, d_len_xy, d_len, pt_cand, pt_cand, norm_dl_xy, max_norm_d0d0exp, cos_p_xy, cos_p_xy]
+    - [d_len_xy, imp_par_xy, max_norm_d0d0exp, imp_par_xy, cos_p, d_len_xy, imp_par_xy, cos_p, pt_cand]
+    var_others: [inv_mass, pt_cand]
+    var_signal: signal
+    var_binning: pt_cand
+    var_inv_mass: inv_mass
+    var_cand_type: cand_type
+    var_evt_match: [run_number, ev_id]
+
+  ml_study:
+    prepare:
+      sig_tag: 1 #mc
+      bkg_tag: 0 #data
+      sel_signal: mc_signal # used for webapp, selection option of filter_df_cand
+      sel_bkg: inv_mass<1.830 or inv_mass>2.010 #ensure to set the cuts as multiples of the bin_width, i.e. left_limit + K * bin_width 
+
+  signif_opt:
+    sel_event: is_ev_rej==0
+    filename_fonll: 'data/fonll/fo_PbPb_d0meson_5TeV_y0p5.csv' # file with FONLL predictions, not corrected with Raa for PbPb
+    fonll_pred: 'max' # edge of the FONLL prediction
+    FF: 0.542  # fragmentation fraction
+    sigma_MB: 1  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
+    Taa: 3917 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
+    BR: 3.89e-2 # branching ratio of the decay
+    f_prompt: 0.9 # estimated fraction of prompt candidates
+    bkg_data_fraction: 0.1 # fraction of real data used in the estimation
+    num_steps: 111 # number of steps used in efficiency and signif. estimation 
+    save_fit: True # save bkg fits with the various cuts on ML output
+
+  efficiency:
+    split_prompt_FD: True # True to split prompt and feed-down candidates
+    num_steps: 111 # number of steps used in efficiency estimation
