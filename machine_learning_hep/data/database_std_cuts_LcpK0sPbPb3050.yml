@@ -12,17 +12,14 @@ inv_mass_K0s:
     name: inv_mass_K0s
 cos_p_K0s:
     #cutobject [9]
-    #min: [ 0.9998 ]
-    min: [ 0.998] 
+    min: [ 0.9998 ]
     max: [ 1.1 ]
     isabsval: False
     name: cos_p_K0s
 imp_par_K0s:
     #cutobject [11]
-    #min: [ -1.5 ]
-    #max: [ 1.5 ]
-    min: [ -2.0 ]
-    max: [  2.0 ]
+    min: [ -1.5 ]
+    max: [ 1.5 ]
     isabsval: False
     name: imp_par_K0s
 dca_K0s:
