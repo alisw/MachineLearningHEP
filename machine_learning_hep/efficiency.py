@@ -74,7 +74,7 @@ def calc_eff(df_to_sel, sel_opt, main_dict, name, num_steps, do_std=False, \
             df = filter_df_cand(df_sig, main_dict, 'presel_track_pid')
             #apply standard cuts from file
             for icutvar in std_cuts_map:
-                if icutvar["name"] != "var_binning":
+                if not df.empty and icutvar["name"] != "var_binning":
                     array_var = df.loc[:, icutvar["name"]].values
                     is_selected = selectcand_lincut(array_var, icutvar["min"][ibin_std_cuts], \
                         icutvar["max"][ibin_std_cuts], icutvar["isabsval"])
@@ -118,7 +118,7 @@ def calc_eff_fixed(df_to_sel, sel_opt, main_dict, name, thr_value, do_std=False,
             df_sig = filter_df_cand(df_sig, main_dict, 'presel_track_pid')
             #apply standard cuts from file
             for icutvar in std_cuts_map:
-                if icutvar != "var_binning":
+                if not df_sig.empty and icutvar != "var_binning":
                     array_var = df_sig.loc[:, std_cuts_map[icutvar]["name"]].values
                     is_selected = selectcand_lincut(array_var, \
                             std_cuts_map[icutvar]["min"][ibin_std_cuts], \

@@ -54,7 +54,7 @@ def selectcandidates(data, namefiledf, namefiledf_ml, namefiledf_std, var_pt, pt
             df = filter_df_cand(df, data[case], 'presel_track_pid')
             #apply standard cuts from file
             for icutvar in std_cuts_map:
-                if icutvar != "var_binning":
+                if not df.empty and icutvar != "var_binning":
                     array_var = df.loc[:, std_cuts_map[icutvar]["name"]].values
                     is_selected = selectcand_lincut(array_var, \
                             std_cuts_map[icutvar]["min"][ibin_std_cuts], \
