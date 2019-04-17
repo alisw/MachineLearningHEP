@@ -146,17 +146,17 @@ LctopK0sPbPbCen3050:
   mass: 2.2864
   pdg_code: null
   mass_fit_lim: [2.14, 2.48]
-  bin_width: 0.002
-  presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
-  presel_gen: abs(y_cand) < 0.5 # pre-selections on generated candidates
+  bin_width: 0.001
+  presel_reco: "abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8"
+  presel_gen: "abs(y_cand)<0.5 and abs(z_vtx_gen)<10" # pre-selections on generated candidates
   skimming_sel: "pt_cand>4"
   skimming_sel_gen: "pt_cand>4"
   skimming_sel_evt: null
-  skimming2_sel: "pt_cand>4 & is_ev_rej==0 & abs(nsigTOF_Pr_0)<3." 
-  skimming2_sel_gen: "pt_cand>4 & abs(z_vtx_gen)<10 " 
+  skimming2_sel: "pt_cand>4 and is_ev_rej==0" 
+  skimming2_sel_gen: "pt_cand>4 and abs(z_vtx_gen)<10 " 
   skimming2_sel_evt: null
   skimming2_dotrackpid: True 
-  sel_cent: "centrality >=30 & centrality <=50" 
+  sel_cent: "centrality >=30 & centrality <50" 
   
   old_sel:
     use: False # Obsolete selection method not implemented, see Ds as a reference
@@ -198,29 +198,29 @@ LctopK0sPbPbCen3050:
   inputs:
     data:
       production: LHC18r
-      unmerged_tree_dir: /data/HeavyFlavour/PbPb_data_3050/27-03-2019/396_20190326-2301/unmerged 
+      unmerged_tree_dir: /data/HeavyFlavour/PbPb_data_3050/03-04-2019/409_20190402-1744/unmerged 
 
     mc:
-      production: LHC17j4d2
-      unmerged_tree_dir: /data/HeavyFlavour/PbPb_MC_3050/27-03-2019/397_20190326-2332/unmerged 
+      production: LHC19c2b
+      unmerged_tree_dir: /data/HeavyFlavour/PbPb_MC_3050/01-04-2019/402_20190330-1143/unmerged
 
   output_folders:
     plotsanalysis: plotsanalysis
     histoanalysis: histoanalysis
-    mlplot: mlplot
-    mlout: /data/trained_models/PbPb3050/LctopK0s
+    mlplot: /home/afestant/mlplot/PbPb3050/16-04-2019/new_config_xgboost
+    mlout: /home/afestant/trained_models/PbPb3050/16-04-2019/new_config_xgboost
     pkl_out: 
-      data: /data/HeavyFlavour/PbPb_data_3050/27-03-2019/396_20190326-2301/pickleLctopK0s 
-      mc: /data/HeavyFlavour/PbPb_MC_3050/27-03-2019/397_20190326-2332/pickleLctopK0s
+      data: /data/HeavyFlavour/PbPb_data_3050/03-04-2019/409_20190402-1744/pickleLctopK0s 
+      mc: /data/HeavyFlavour/PbPb_MC_3050/01-04-2019/402_20190330-1143/pickleLctopK0s
     pkl_skimmed: 
-      data: /data/HeavyFlavour/PbPb_data_3050/27-03-2019/396_20190326-2301/pickleLctopK0sskimmed6up
-      mc: /data/HeavyFlavour/PbPb_MC_3050/27-03-2019/397_20190326-2332/pickleLctopK0sskimmed6up
+      data: /data/HeavyFlavour/PbPb_data_3050/03-04-2019/409_20190402-1744/pickleLctopK0sskimmed6up
+      mc: /data/HeavyFlavour/PbPb_MC_3050/01-04-2019/402_20190330-1143/pickleLctopK0sskimmed6up
     pkl_merged: 
-      data: /data/HeavyFlavour/PbPb_data_3050/27-03-2019/396_20190326-2301/pickleLctopK0sskimmed6upMerged
-      mc: /data/HeavyFlavour/PbPb_MC_3050/27-03-2019/397_20190326-2332/pickleLctopK0sskimmed6upMerged
+      data: /data/HeavyFlavour/PbPb_data_3050/03-04-2019/409_20190402-1744/pickleLctopK0sskimmed6upMerged
+      mc: /data/HeavyFlavour/PbPb_MC_3050/01-04-2019/402_20190330-1143/pickleLctopK0sskimmed6upMerged
     pkl_final:
-      data: /data/HeavyFlavour/PbPb_data_3050/27-03-2019/396_20190326-2301/pickleLctopK0sskimmed6upTot
-      mc: /data/HeavyFlavour/PbPb_MC_3050/27-03-2019/397_20190326-2332/pickleLctopK0sskimmed6upTot
+      data: /data/HeavyFlavour/PbPb_data_3050/03-04-2019/409_20190402-1744/pickleLctopK0sskimmed6upTot
+      mc: /data/HeavyFlavour/PbPb_MC_3050/01-04-2019/402_20190330-1143/pickleLctopK0sskimmed6upTot
 
   variables:
     var_all: [cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, 
@@ -232,8 +232,8 @@ LctopK0sPbPbCen3050:
       data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
       mc: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
     var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
-    var_training: [cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, 
-                   cos_p_K0s, imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s]
+    var_training: [cos_t_star, dca_K0s, signd0, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, 
+                   cos_p_K0s, imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0]
     var_boundaries: [cos_t_star, signd0]
     var_correlation:
       - [cos_t_star]

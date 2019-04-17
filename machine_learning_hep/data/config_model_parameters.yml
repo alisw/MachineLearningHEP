@@ -34,10 +34,17 @@ BinaryClassification:
       activate: False
       max_depth: 5
 
+#not default parameters
   xgboost:
     xgboost_classifier:
       activate: True
-
+      min_child_weight: 3
+      max_depth: 9
+      gamma: 0
+      subsample: 0.9
+      colsample_bytree: 0.9
+      learning_rate: 0.1
+      n_estimators: 100
 
 Regression:
 
