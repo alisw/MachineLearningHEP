@@ -29,6 +29,9 @@ BinaryClassification:
 
     scikit_adaboost_classifier:
       activate: False
+      #max_depth: 3       # 1 default
+      #n_estimators: 50   # 50 default
+      #learning_rate: 0.5 # 1 default
 
     scikit_decision_tree_classifier:
       activate: False
@@ -39,12 +42,12 @@ BinaryClassification:
     xgboost_classifier:
       activate: True
       min_child_weight: 3
-      max_depth: 3
+      max_depth: 3 #9
       gamma: 0
-      subsample: 0.9
-      colsample_bytree: 0.9
+      subsample: 0.8 #0.9
+      colsample_bytree: 0.8 #0.9
       learning_rate: 0.1
-      n_estimators: 800
+      n_estimators: 850 #100
 
 Regression:
 
