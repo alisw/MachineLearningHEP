@@ -42,7 +42,7 @@ LctopK0sPbPbCen010:
     std_analysis_on_off : [[0],[]]
   custom_std_sel:
     use: False
-    cuts_config_file: null
+    cuts_config_file: data/database_std_cuts_LcpK0sPbPb3050.yml
 
   files_names:
     namefile_unmerged_tree: AnalysisResults.root
@@ -152,8 +152,8 @@ LctopK0sPbPbCen3050:
   skimming_sel: "pt_cand>4"
   skimming_sel_gen: "pt_cand>4"
   skimming_sel_evt: null
-  skimming2_sel: "pt_cand>6 & is_ev_rej==0 & abs(nsigTPC_Pr_0)<3" 
-  skimming2_sel_gen: "pt_cand>6 & abs(z_vtx_gen)<10" 
+  skimming2_sel: "pt_cand>4 & is_ev_rej==0"
+  skimming2_sel_gen: "pt_cand>4 & abs(z_vtx_gen)<10" 
   skimming2_sel_evt: null 
   skimming2_dotrackpid: True 
   sel_cent: "centrality >=30 & centrality <50" 
@@ -171,7 +171,7 @@ LctopK0sPbPbCen3050:
     std_analysis_on_off : [[0],[]]
   custom_std_sel:
     use: False
-    cuts_config_file: null
+    cuts_config_file: data/database_std_cuts_LcpK0sPbPb3050.yml
   
   files_names:
     namefile_unmerged_tree: AnalysisResults.root
@@ -198,7 +198,7 @@ LctopK0sPbPbCen3050:
   inputs:
     data:
       production: LHC18r
-      unmerged_tree_dir: /data/HeavyFlavour/PbPb_data_3050/03-04-2019/409_20190402-1744/unmerged 
+      unmerged_tree_dir: /data2/HeavyFlavour/PbPb_data_3050/24-04-2019/421_20190416-2157/unmerged
 
     mc:
       production: LHC19c2b
@@ -210,16 +210,16 @@ LctopK0sPbPbCen3050:
     mlplot: mlout
     mlout: /data/trained_models/PbPb3050/LctopK0s
     pkl_out: 
-      data: /data/HeavyFlavour/PbPb_data_3050/03-04-2019/409_20190402-1744/pickleLctopK0s 
+      data: /data2/HeavyFlavour/PbPb_data_3050/24-04-2019/421_20190416-2157/pickleLctopK0s
       mc: /data/HeavyFlavour/PbPb_MC_3050/01-04-2019/402_20190330-1143/pickleLctopK0s
     pkl_skimmed: 
-      data: /data/HeavyFlavour/PbPb_data_3050/03-04-2019/409_20190402-1744/pickleLctopK0sskimmed6up
+      data: /data2/HeavyFlavour/PbPb_data_3050/24-04-2019/421_20190416-2157/pickleLctopK0sskimmed4up
       mc: /data/HeavyFlavour/PbPb_MC_3050/01-04-2019/402_20190330-1143/pickleLctopK0sskimmed6up
     pkl_merged: 
-      data: /data/HeavyFlavour/PbPb_data_3050/03-04-2019/409_20190402-1744/pickleLctopK0sskimmed6upMerged
+      data: /data2/HeavyFlavour/PbPb_data_3050/24-04-2019/421_20190416-2157/pickleLctopK0sskimmed4upMerged
       mc: /data/HeavyFlavour/PbPb_MC_3050/01-04-2019/402_20190330-1143/pickleLctopK0sskimmed6upMerged
     pkl_final:
-      data: /data/HeavyFlavour/PbPb_data_3050/03-04-2019/409_20190402-1744/pickleLctopK0sskimmed6upTot
+      data: /data2/HeavyFlavour/PbPb_data_3050/24-04-2019/421_20190416-2157/pickleLctopK0sskimmed4upTot
       mc: /data/HeavyFlavour/PbPb_MC_3050/01-04-2019/402_20190330-1143/pickleLctopK0sskimmed6upTot
 
   variables:
@@ -232,8 +232,8 @@ LctopK0sPbPbCen3050:
       data: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco ]
       mc: [is_ev_rej, run_number, ev_id, n_tracks, centrality, n_tracklets, V0Amult, z_vtx_reco, z_vtx_gen]
     var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
-    var_training: [cos_t_star, dca_K0s, signd0, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, 
-                   cos_p_K0s, imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0]
+    var_training: [cos_t_star, dca_K0s, signd0, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,
+                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0]
     var_boundaries: [cos_t_star, signd0]
     var_correlation:
       - [cos_t_star]
