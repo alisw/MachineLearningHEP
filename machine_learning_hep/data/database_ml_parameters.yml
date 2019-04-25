@@ -147,14 +147,14 @@ LctopK0sPbPbCen3050:
   pdg_code: null
   mass_fit_lim: [2.14, 2.48]
   bin_width: 0.001
-  presel_reco: "abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8"
-  presel_gen: "abs(y_cand)<0.5 and abs(z_vtx_gen)<10" # pre-selections on generated candidates
+  presel_reco: abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8
+  presel_gen: abs(y_cand)<0.5 and abs(z_vtx_gen)<10 # pre-selections on generated candidates
   skimming_sel: "pt_cand>4"
   skimming_sel_gen: "pt_cand>4"
   skimming_sel_evt: null
-  skimming2_sel: "pt_cand>4 and is_ev_rej==0" 
-  skimming2_sel_gen: "pt_cand>4 and abs(z_vtx_gen)<10 " 
-  skimming2_sel_evt: null
+  skimming2_sel: "pt_cand>6 & is_ev_rej==0 & abs(nsigTPC_Pr_0)<3" 
+  skimming2_sel_gen: "pt_cand>6 & abs(z_vtx_gen)<10" 
+  skimming2_sel_evt: null 
   skimming2_dotrackpid: True 
   sel_cent: "centrality >=30 & centrality <50" 
   
@@ -207,8 +207,8 @@ LctopK0sPbPbCen3050:
   output_folders:
     plotsanalysis: plotsanalysis
     histoanalysis: histoanalysis
-    mlplot: /home/afestant/mlplot/PbPb3050/16-04-2019/new_config_xgboost
-    mlout: /home/afestant/trained_models/PbPb3050/16-04-2019/new_config_xgboost
+    mlplot: mlout
+    mlout: /data/trained_models/PbPb3050/LctopK0s
     pkl_out: 
       data: /data/HeavyFlavour/PbPb_data_3050/03-04-2019/409_20190402-1744/pickleLctopK0s 
       mc: /data/HeavyFlavour/PbPb_MC_3050/01-04-2019/402_20190330-1143/pickleLctopK0s
