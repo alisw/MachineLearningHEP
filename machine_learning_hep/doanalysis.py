@@ -31,11 +31,11 @@ from machine_learning_hep.skimming import selectcandidatesall
 #from machine_learning_hep.fit import fitmass, plot_graph_yield
 
 # pylint: disable=too-many-locals, too-many-statements, too-many-branches
-def doanalysis(data_config, data, case, useml, mcordata):
+def doanalysis(data_config, data, case, useml, mcordata, index):
 
     var_pt = data[case]["variables"]["var_binning"]
-    fileinputdir = data[case]["output_folders"]["pkl_skimmed"][mcordata]
-    outputdirfin = data[case]["output_folders"]["pkl_final"][mcordata]
+    fileinputdir = data[case]["output_folders"]["pkl_skimmed"][mcordata][index]
+    outputdirfin = data[case]["output_folders"]["pkl_final"][mcordata][index]
     namefilereco_ml = data[case]["files_names"]["namefile_reco_skim_ml"]
     namefilereco_std = data[case]["files_names"]["namefile_reco_skim_std"]
     namefile_reco_skim = data[case]["files_names"]["namefile_reco_skim"]
