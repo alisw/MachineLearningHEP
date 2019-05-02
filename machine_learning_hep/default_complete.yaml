@@ -1,34 +1,41 @@
-case: LctopK0sPbPbCen010
+case: LctopK0sPbPbCen3050
 conversion:
   mc: 
-    activate: false #never change this without thinking!
+    activate: true #never change this without thinking!
     nmaxconvers: 300
     maxfiles: -1
   data:
-    activate: false  #never change this without thinking!
-    nmaxconvers: 200
-    maxfiles: -1
+    activate: true  #never change this without thinking!
+    nmaxconvers: 300
+    maxfiles: 1000
 skimming: 
   mc:
-    activate: false
+    activate: true
     nmaxconvers: 300
     maxfiles: -1
   data:
-    activate: false
-    nmaxconvers: 1000
-    maxfiles: -1
+    activate: true
+    nmaxconvers: 300
+    maxfiles: 1000
 merging: 
   mc:
-    activate: false
-    maxfilestomerge: 1000
+    activate: true
+    rnd_seed: 12
+    maxfilestomerge: -1
   data:
-    activate: false
-    maxfilestomerge: 500
+    activate: true
+    rnd_seed: 12
+    maxfilestomerge: 200
+mergingperiods: 
+  mc:
+    activate: true
+  data:
+    activate: true
 ml_study:   
-  activate: false
+  activate: true
   applytodatamc: true
-  binmin: [6] 
-  binmax: [12]
+  binmin: [4] 
+  binmax: [6]
   doROC: true
   doboundary: false
   docorrelation: false
@@ -47,8 +54,8 @@ ml_study:
   mlsubtype: HFmeson
   mltype: BinaryClassification
   ncores: -1
-  nevt_bkg: 50000
-  nevt_sig: 50000
+  nevt_bkg: 5000
+  nevt_sig: 5000
   nkfolds: 5
   rnd_shuffle: 12
   rnd_splt: 12
@@ -57,31 +64,31 @@ ml_study:
 
 analysis:
   data:
-    nmaxchunks: 1000
-    maxfiles: 500
+    nmaxchunks: 300
+    maxfiles: 1000
     std:
-      doapply: false
-      domass: false
+      doapply: true
+      domass: true
     ml:
-      doapply: false
-      domass: false
+      doapply: true
+      domass: true
   mc:
-    nmaxchunks: 10
+    nmaxchunks: 300
     maxfiles: -1
     std:
-      doapply: false
-      domass: false
+      doapply: true
+      domass: true
       doeffhist: false
     ml:
-      doapply: false
-      domass: false
+      doapply: true
+      domass: true
       doeffhist: false
   modelname: xgboost
-  binmin: [6]
-  binmax: [12]
+  binmin: [4]
+  binmax: [6]
   probcut: [0.4]
   probcutoptimal: [0.80]
-  models: [xgboost_classifiernevt_sig50000_nevt_bkg50000_BinaryClassificationLctopK0sPbPbCen010_dfselection_pt_cand_6.0_12.0.sav] 
+  models: [xgboost_classifiernevt_sig5000_nevt_bkg5000_BinaryClassificationLctopK0sPbPbCen3050_dfselection_pt_cand_4.0_6.0.sav] 
   test_df_list: [xxxx]
   doinvmassspectra: true
   uselikelihood: 0

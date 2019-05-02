@@ -19,7 +19,7 @@ from ROOT import TFile, TH1F, TCanvas # pylint: disable=import-error, no-name-in
 #from machine_learning_hep.selectionutils import getnormforselevt
 
 
-def extractmasshisto(data_config, data, case, useml, mcordata):
+def extractmasshisto(data_config, data, case, useml, mcordata, index):
     binmin = data_config["analysis"]["binmin"]
     binmax = data_config["analysis"]["binmax"]
     mass_fit_lim = data[case]['mass_fit_lim']
@@ -27,14 +27,14 @@ def extractmasshisto(data_config, data, case, useml, mcordata):
     namefilereco_ml_tot = data[case]["files_names"]["namefile_reco_skim_ml_tot"]
     namefilereco_std_tot = data[case]["files_names"]["namefile_reco_skim_std_tot"]
     namefile_evt_skim_tot = data[case]["files_names"]["namefile_evt_skim_tot"]
-    outputdirfin = data[case]["output_folders"]["pkl_final"][mcordata]
+    outputdirfin = data[case]["output_folders"]["pkl_final"][mcordata][index]
     modelname = data_config["analysis"]["modelname"]
 
     namefilereco_ml_tot = os.path.join(outputdirfin, namefilereco_ml_tot)
     namefilereco_std_tot = os.path.join(outputdirfin, namefilereco_std_tot)
     namefile_evt_skim_tot = os.path.join(outputdirfin, namefile_evt_skim_tot)
     probcutoptimal = data_config["analysis"]["probcutoptimal"]
-
+    outputdir = data[case]["output_folders"]["plotsanalysis"][mcordata][index]
     num_bins = (mass_fit_lim[1] - mass_fit_lim[0]) / bin_width
     num_bins = int(round(num_bins))
 
@@ -61,7 +61,7 @@ def extractmasshisto(data_config, data, case, useml, mcordata):
         histomassall.append(h_invmass)
         c = TCanvas('c%d' % index, '', 500, 500)
         h_invmass.Draw()
-        c.SaveAs(namehisto+".pdf")
+        c.SaveAs(outputdir + "/" + namehisto+".pdf")
         index = index + 1
     #df_evt = pickle.load(open(namefile_evt_skim_tot, "rb"))
     #print("events for normalisation", getnormforselevt(df_evt))
@@ -69,9 +69,9 @@ def extractmasshisto(data_config, data, case, useml, mcordata):
     if useml == 1:
         namefile = "masshisto%s%s%s_%.2f.root" % (case, mcordata, useml,
                                                   probcutoptimal[0])
-    myfile = TFile.Open(namefile, "recreate")
+    myfile = TFile.Open(outputdir + "/" + namefile, "recreate")
     myfile.cd()
-    for index, _ in enumerate(binmin):
-        histomassall[index].Write()
+    for indexh, _ in enumerate(binmin):
+        histomassall[indexh].Write()
     h_invmass.Write()
     myfile.Close()

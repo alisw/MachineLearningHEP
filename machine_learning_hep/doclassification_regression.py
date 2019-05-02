@@ -68,8 +68,8 @@ def doclassification_regression(run_config, data, model_config, case, binmin, bi
     nkfolds = run_config['nkfolds']
     ncores = run_config['ncores']
 
-    foldermc = data[case]["output_folders"]["pkl_merged"]["mc"]
-    folderdata = data[case]["output_folders"]["pkl_merged"]["data"]
+    foldermc = data[case]["output_folders"]["pkl_merged_all"]["mc"]
+    folderdata = data[case]["output_folders"]["pkl_merged_all"]["data"]
 
     filedata = data[case]["files_names"]["namefile_reco_merged"]
     filemc = data[case]["files_names"]["namefile_reco_merged"]

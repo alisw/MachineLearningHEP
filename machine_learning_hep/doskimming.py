@@ -19,11 +19,13 @@ import os
 import multiprocessing as mp
 import time
 import pickle
+import random
 import uproot
 import pandas as pd
 import numpy as np
 #from machine_learning_hep.logger import get_logger
 #from machine_learning_hep.general import get_database_ml_parameters, get_database_ml_analysis
+
 from machine_learning_hep.listfiles import list_files_dir_lev2, list_files_lev2
 from machine_learning_hep.general import filter_df_cand
 from machine_learning_hep.selectionutils import selectfidacc, select_runs
@@ -131,11 +133,11 @@ def createchunks(listin, listout, maxperchunk):
     return chunks, chunksout
 
 # pylint: disable=too-many-locals, too-many-statements, too-many-branches
-def conversion(data_config, data_param, mcordata):
+def conversion(data_config, data_param, mcordata, indexp):
 
     case = data_config["case"]
 
-    inputdir = data_param[case]["inputs"][mcordata]["unmerged_tree_dir"]
+    inputdir = data_param[case]["inputs"][mcordata]["unmerged_tree_dir"][indexp]
     namefile_unmerged_tree = data_param[case]["files_names"]["namefile_unmerged_tree"]
 
     namefile_reco = data_param[case]["files_names"]["namefile_reco"]
@@ -153,7 +155,7 @@ def conversion(data_config, data_param, mcordata):
     skimming_sel_gen = data_param[case]["skimming_sel_gen"]
     skimming_sel_evt = data_param[case]["skimming_sel_evt"]
 
-    outputdir = data_param[case]["output_folders"]["pkl_out"][mcordata]
+    outputdir = data_param[case]["output_folders"]["pkl_out"][mcordata][indexp]
     maxfiles = data_config["conversion"][mcordata]["maxfiles"]
     nmaxconvers = data_config["conversion"][mcordata]["nmaxconvers"]
 
@@ -181,7 +183,7 @@ def conversion(data_config, data_param, mcordata):
     print("Total time elapsed", time.time()-tstart)
 
 # pylint: disable=too-many-locals, too-many-statements, too-many-branches
-def skim(data_config, data_param, mcordata, run_param):
+def skim(data_config, data_param, mcordata, run_param, indexp):
 
     case = data_config["case"]
     param_case = data_param[case]
@@ -201,8 +203,8 @@ def skim(data_config, data_param, mcordata, run_param):
     sel_cent = data_param[case]["sel_cent"]
     skimming2_dotrackpid = data_param[case]["skimming2_dotrackpid"]
 
-    inputdir = data_param[case]["output_folders"]["pkl_out"][mcordata]
-    outputdir = data_param[case]["output_folders"]["pkl_skimmed"][mcordata]
+    inputdir = data_param[case]["output_folders"]["pkl_out"][mcordata][indexp]
+    outputdir = data_param[case]["output_folders"]["pkl_skimmed"][mcordata][indexp]
     maxfiles = data_config["skimming"][mcordata]["maxfiles"]
     nmaxconvers = data_config["skimming"][mcordata]["nmaxconvers"]
 
@@ -211,7 +213,7 @@ def skim(data_config, data_param, mcordata, run_param):
         list_create_dir(inputdir, outputdir, namefile_reco, \
                         namefile_evt, namefile_gen, \
                         namefile_reco_skim, namefile_evt_skim, namefile_gen_skim, maxfiles)
-    prod = data_param[case]["inputs"][mcordata]["production"]
+    prod = data_param[case]["inputs"][mcordata]["production"][indexp]
     runlist = run_param[prod]
     tstart = time.time()
     print("I am skimming")
@@ -233,10 +235,11 @@ def skim(data_config, data_param, mcordata, run_param):
                     skimming_sel_gen, var_evt_match, param_case, presel_reco, \
                     sel_cent, skimming2_dotrackpid, runlist)
     print("Total time elapsed", time.time()-tstart)
-def merging(data_config, data_param, mcordata):
+def merging(data_config, data_param, mcordata, indexp):
 
     case = data_config["case"]
     maxfilestomerge = data_config["merging"][mcordata]["maxfilestomerge"]
+    rnd_seed = data_config["merging"][mcordata]["rnd_seed"]
 
     print("I am merging flat trees")
     namefile_reco = data_param[case]["files_names"]["namefile_reco_skim"]
@@ -247,12 +250,23 @@ def merging(data_config, data_param, mcordata):
     namefile_evt_merged = data_param[case]["files_names"]["namefile_evt_merged"]
     namefile_gen_merged = data_param[case]["files_names"]["namefile_gen_merged"]
 
-    outputdir = data_param[case]["output_folders"]["pkl_skimmed"][mcordata]
-    outputdirmerged = data_param[case]["output_folders"]["pkl_merged"][mcordata]
+    outputdir = data_param[case]["output_folders"]["pkl_skimmed"][mcordata][indexp]
+    outputdirmerged = data_param[case]["output_folders"]["pkl_merged"][mcordata][indexp]
 
     listfilespathtomerge, _ = list_files_lev2(outputdir, "", namefile_reco, "")
     listfilespathgentomerge, _ = list_files_lev2(outputdir, "", namefile_gen, "")
     listfilespathevttomerge, _ = list_files_lev2(outputdir, "", namefile_evt, "")
+    if mcordata == "mc":
+        list_zip = list(zip(listfilespathtomerge, listfilespathgentomerge, listfilespathevttomerge))
+        random.seed(rnd_seed)
+        random.shuffle(list_zip)
+        listfilespathtomerge, listfilespathgentomerge, listfilespathevttomerge = zip(*list_zip)
+    else:
+        list_zip = list(zip(listfilespathtomerge, listfilespathevttomerge))
+        random.seed(rnd_seed)
+        random.shuffle(list_zip)
+        listfilespathtomerge, listfilespathevttomerge = zip(*list_zip)
+
     merge(listfilespathevttomerge, os.path.join(outputdirmerged, namefile_evt_skim_tot))
     if maxfilestomerge is not -1:
         listfilespathtomerge = listfilespathtomerge[:maxfilestomerge]
@@ -263,3 +277,27 @@ def merging(data_config, data_param, mcordata):
     merge(listfilespathevttomerge, os.path.join(outputdirmerged, namefile_evt_merged))
     if mcordata == "mc":
         merge(listfilespathgentomerge, os.path.join(outputdirmerged, namefile_gen_merged))
+
+def merging_period(data_config, data_param, mcordata):
+    case = data_config["case"]
+
+    print("I am merging flat trees all periods")
+
+    namefile_reco_merged = data_param[case]["files_names"]["namefile_reco_merged"]
+    namefile_evt_merged = data_param[case]["files_names"]["namefile_evt_merged"]
+    namefile_gen_merged = data_param[case]["files_names"]["namefile_gen_merged"]
+    namefile_evt_skim_tot = data_param[case]["files_names"]["namefile_evt_skim_tot"]
+
+    outputindir_list = data_param[case]["output_folders"]["pkl_merged"][mcordata]
+    outputoutdir = data_param[case]["output_folders"]["pkl_merged_all"][mcordata]
+
+    listfilesreco = [os.path.join(dirin, namefile_reco_merged) for dirin in outputindir_list]
+    listfilesgen = [os.path.join(dirin, namefile_gen_merged) for dirin in outputindir_list]
+    listfilesevt = [os.path.join(dirin, namefile_evt_merged) for dirin in outputindir_list]
+    listfilesevttot = [os.path.join(dirin, namefile_evt_skim_tot) for dirin in outputindir_list]
+
+    merge(listfilesreco, os.path.join(outputoutdir, namefile_reco_merged))
+    merge(listfilesevt, os.path.join(outputoutdir, namefile_evt_merged))
+    merge(listfilesevttot, os.path.join(outputoutdir, namefile_evt_skim_tot))
+    if mcordata == "mc":
+        merge(listfilesgen, os.path.join(outputoutdir, namefile_gen_merged))

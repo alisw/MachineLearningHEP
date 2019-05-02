@@ -231,7 +231,7 @@ def study_eff(case, names, suffix, plot_dir, df_ml_test):
 
 
 # pylint: disable=too-many-statements, too-many-locals
-def extract_eff_histo(run_config, data_dict, case, sel_type='ml'):
+def extract_eff_histo(index, run_config, data_dict, case, sel_type='ml'):
     """Build a histogram with the ML model selection efficiency for the different transverse
     momentum of the analysis.
 
@@ -257,7 +257,7 @@ def extract_eff_histo(run_config, data_dict, case, sel_type='ml'):
 
     data_dict = data_dict[case]
     var_bin = data_dict['variables']['var_binning']
-    folder_mc = data_dict['output_folders']['pkl_merged']['mc']
+    folder_mc = data_dict['output_folders']['pkl_merged']['mc'][index]
     test_df_dir = data_dict['output_folders']['mlout']
     out_dir = data_dict['output_folders']['histoanalysis']
     file_mc_reco = data_dict['files_names']['namefile_reco_merged']
