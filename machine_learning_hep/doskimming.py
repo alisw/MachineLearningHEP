@@ -30,33 +30,26 @@ from machine_learning_hep.listfiles import list_files_dir_lev2, list_files_lev2
 from machine_learning_hep.general import filter_df_cand
 from machine_learning_hep.selectionutils import selectfidacc, select_runs
 
-def flattenroot_to_pandas(filein, fileout, treenamein, var_all, skimming_sel):
+def flattenroot_to_pandas(filein, fileout, treenamein, var_all, skimming_sel, runlist):
     tree = uproot.open(filein)[treenamein]
     df = tree.pandas.df(branches=var_all)
-    if skimming_sel is not None:
-        df = df.query(skimming_sel)
-    df.to_pickle(fileout)
-
-def convert_to_pandas(filein, fileout, treenamein, var_all, skimming_sel):
-    tree = uproot.open(filein)[treenamein]
-    df = tree.pandas.df(branches=var_all)
-    if skimming_sel is not None:
-        df = df.query(skimming_sel)
-    df.to_pickle(fileout)
-
-def skimmer(filein, filevt, fileout, skimming_sel, var_evt_match,
-            param_case, presel_reco, sel_cent, skimming2_dotrackpid,
-            runlist):
-    df = pickle.load(open(filein, "rb"))
-    dfevt = pickle.load(open(filevt, "rb"))
-    if "Evt" not in filein:
-        df = pd.merge(df, dfevt, on=var_evt_match)
     if skimming_sel is not None:
         df = df.query(skimming_sel)
     if runlist is not None:
         array_run = df.run_number.values
         isgoodrun = select_runs(runlist, array_run)
         df = df[np.array(isgoodrun, dtype=bool)]
+    df.to_pickle(fileout)
+
+
+def skimmer(filein, filevt, fileout, skimming_sel, var_evt_match,
+            param_case, presel_reco, sel_cent, skimming2_dotrackpid):
+    df = pickle.load(open(filein, "rb"))
+    dfevt = pickle.load(open(filevt, "rb"))
+    if "Evt" not in filein:
+        df = pd.merge(df, dfevt, on=var_evt_match)
+    if skimming_sel is not None:
+        df = df.query(skimming_sel)
     if "Reco" in filein:
         if skimming2_dotrackpid is True:
             df = filter_df_cand(df, param_case, 'presel_track_pid')
@@ -70,18 +63,11 @@ def skimmer(filein, filevt, fileout, skimming_sel, var_evt_match,
         df = df.query(sel_cent)
     df.to_pickle(fileout)
 
-def flattenallpickle(chunk, chunkout, treenamein, var_all, skimming_sel):
+def flattenallpickle(chunk, chunkout, treenamein, var_all, skimming_sel,
+                     runlist):
     processes = [mp.Process(target=flattenroot_to_pandas, args=(filein, chunkout[index], \
-                                                         treenamein, var_all, skimming_sel))
-                 for index, filein in enumerate(chunk)]
-    for p in processes:
-        p.start()
-    for p in processes:
-        p.join()
-
-def convertallpickle(chunk, chunkout, treenamein, var_all, skimming_sel):
-    processes = [mp.Process(target=convert_to_pandas, args=(filein, chunkout[index], \
-                                                         treenamein, var_all, skimming_sel))
+                                                         treenamein, var_all, \
+                                                         skimming_sel,  runlist))
                  for index, filein in enumerate(chunk)]
     for p in processes:
         p.start()
@@ -89,13 +75,13 @@ def convertallpickle(chunk, chunkout, treenamein, var_all, skimming_sel):
         p.join()
 
 def skimall(chunk, chunkevt, chunkout, skimming_sel, var_evt_match,
-            param_case, presel_reco, sel_cent, skimming2_dotrackpid, runlist):
+            param_case, presel_reco, sel_cent, skimming2_dotrackpid):
     processes = [mp.Process(target=skimmer, args=(filein, chunkevt[index],
                                                   chunkout[index],
                                                   skimming_sel, var_evt_match,
                                                   param_case, presel_reco,
                                                   sel_cent,
-                                                  skimming2_dotrackpid, runlist))
+                                                  skimming2_dotrackpid))
                  for index, filein in enumerate(chunk)]
     for p in processes:
         p.start()
@@ -133,7 +119,7 @@ def createchunks(listin, listout, maxperchunk):
     return chunks, chunksout
 
 # pylint: disable=too-many-locals, too-many-statements, too-many-branches
-def conversion(data_config, data_param, mcordata, indexp):
+def conversion(data_config, data_param, run_param, mcordata, indexp):
 
     case = data_config["case"]
 
@@ -164,7 +150,8 @@ def conversion(data_config, data_param, mcordata, indexp):
         list_create_dir(inputdir, outputdir, \
                         namefile_unmerged_tree, namefile_unmerged_tree, namefile_unmerged_tree, \
                         namefile_reco, namefile_evt, namefile_gen, maxfiles)
-    print(inputdir)
+    prod = data_param[case]["inputs"][mcordata]["production"][indexp]
+    runlist = run_param[prod]
     tstart = time.time()
     print("I am extracting flat trees")
 
@@ -173,17 +160,18 @@ def conversion(data_config, data_param, mcordata, indexp):
     chunksevt, chunksoutevt = createchunks(listfilespathevt, listfilespathoutevt, nmaxconvers)
     for index, _ in enumerate(chunks):
         print("Processing chunk number=", index)
-        flattenallpickle(chunks[index], chunksout[index], treeoriginreco, var_all, skimming_sel)
+        flattenallpickle(chunks[index], chunksout[index], treeoriginreco,
+                         var_all, skimming_sel, runlist)
         flattenallpickle(chunksevt[index], chunksoutevt[index], treeoriginevt, \
-                         var_evt, skimming_sel_evt)
+                         var_evt, skimming_sel_evt, runlist)
         if mcordata == "mc":
             flattenallpickle(chunksgen[index], chunksoutgen[index], treeorigingen, \
-                             var_gen, skimming_sel_gen)
+                             var_gen, skimming_sel_gen, runlist)
         time.sleep(10)
     print("Total time elapsed", time.time()-tstart)
 
 # pylint: disable=too-many-locals, too-many-statements, too-many-branches
-def skim(data_config, data_param, mcordata, run_param, indexp):
+def skim(data_config, data_param, mcordata, indexp):
 
     case = data_config["case"]
     param_case = data_param[case]
@@ -213,8 +201,6 @@ def skim(data_config, data_param, mcordata, run_param, indexp):
         list_create_dir(inputdir, outputdir, namefile_reco, \
                         namefile_evt, namefile_gen, \
                         namefile_reco_skim, namefile_evt_skim, namefile_gen_skim, maxfiles)
-    prod = data_param[case]["inputs"][mcordata]["production"][indexp]
-    runlist = run_param[prod]
     tstart = time.time()
     print("I am skimming")
 
@@ -226,14 +212,14 @@ def skim(data_config, data_param, mcordata, run_param, indexp):
         print("Processing chunk number=", index)
         skimall(chunks[index], chunksevt[index], chunksout[index],
                 skimming_sel, var_evt_match, param_case, presel_reco, sel_cent,
-                skimming2_dotrackpid, runlist)
+                skimming2_dotrackpid)
         skimall(chunksevt[index], chunksevt[index], chunksoutevt[index], \
                 skimming_sel_evt, var_evt_match, param_case, presel_reco, \
-                sel_cent, skimming2_dotrackpid, runlist)
+                sel_cent, skimming2_dotrackpid)
         if mcordata == "mc":
             skimall(chunksgen[index], chunksevt[index], chunksoutgen[index], \
                     skimming_sel_gen, var_evt_match, param_case, presel_reco, \
-                    sel_cent, skimming2_dotrackpid, runlist)
+                    sel_cent, skimming2_dotrackpid)
     print("Total time elapsed", time.time()-tstart)
 def merging(data_config, data_param, mcordata, indexp):
 

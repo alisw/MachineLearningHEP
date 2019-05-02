@@ -86,7 +86,7 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
             else:
                 print("creating dir mc pkl period=", index)
                 os.makedirs(pkl_mc)
-                conversion(data_config, data_param, "mc", index)
+                conversion(data_config, data_param, run_param, "mc", index)
 
     if doconversiondata is True:
         for index, pkl_data in enumerate(pkl_data_list):
@@ -96,7 +96,7 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
             else:
                 print("creating dir data pkl period=", index)
                 os.makedirs(pkl_data)
-                conversion(data_config, data_param, "data", index)
+                conversion(data_config, data_param, run_param, "data", index)
 
     if doskimmingmc is True:
         print(pkl_skimmed_mc_list)
@@ -107,7 +107,7 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
             else:
                 print("creating dir mc skimmed pkl period=", index)
                 os.makedirs(pkl_skimmed_mc)
-                skim(data_config, data_param, "mc", run_param, index)
+                skim(data_config, data_param, "mc", index)
 
     if doskimmingdata is True:
         for index, pkl_skimmed_data in enumerate(pkl_skimmed_data_list):
@@ -117,7 +117,7 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
             else:
                 print("creating dir data skimmed pkl period=", pkl_skimmed_data)
                 os.makedirs(pkl_skimmed_data)
-                skim(data_config, data_param, "data", run_param, index)
+                skim(data_config, data_param, "data", index)
 
     if domergingdata is True:
         for index, pkl_merged_data in enumerate(pkl_merged_data_list):
