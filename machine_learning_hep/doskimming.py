@@ -67,7 +67,7 @@ def flattenallpickle(chunk, chunkout, treenamein, var_all, skimming_sel,
                      runlist):
     processes = [mp.Process(target=flattenroot_to_pandas, args=(filein, chunkout[index], \
                                                          treenamein, var_all, \
-                                                         skimming_sel,  runlist))
+                                                         skimming_sel, runlist))
                  for index, filein in enumerate(chunk)]
     for p in processes:
         p.start()
