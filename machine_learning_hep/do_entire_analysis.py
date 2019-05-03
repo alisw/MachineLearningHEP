@@ -22,7 +22,7 @@ from machine_learning_hep.doskimming import conversion, merging, merging_period,
 from machine_learning_hep.doclassification_regression import doclassification_regression
 from machine_learning_hep.doanalysis import doanalysis
 from machine_learning_hep.extractmasshisto import extractmasshisto
-#from machine_learning_hep.efficiency import extract_eff_histo
+from machine_learning_hep.efficiencyan import analysis_eff
 
 def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 
@@ -59,8 +59,8 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     domassstddata = data_config["analysis"]["data"]["std"]["domass"]
     domassmlmc = data_config["analysis"]["mc"]["ml"]["domass"]
     domassstdmc = data_config["analysis"]["mc"]["std"]["domass"]
-    #doeffhistml = data_config["analysis"]["mc"]["ml"]["doeffhist"]
-    #doeffhiststd = data_config["analysis"]["mc"]["std"]["doeffhist"]
+    doeffhistml = data_config["analysis"]["mc"]["ml"]["doeffhist"]
+    doeffhiststd = data_config["analysis"]["mc"]["std"]["doeffhist"]
 
     pkl_mc_list = data_param[case]["output_folders"]["pkl_out"]["mc"]
     pkl_data_list = data_param[case]["output_folders"]["pkl_out"]["data"]
@@ -232,14 +232,19 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
             print("Writing output to", pkl_analysis_mc)
             useml = 0
             extractmasshisto(data_config, data_param, case, useml, "mc", index)
-#
-#    if doeffhistml:
-#        pkl_final_mc_list = data_param[case]["output_folders"]["pkl_final"]["mc"]
-#        index = 0
-#        for pkl_final_data in pkl_final_data_list:
-#            print("extracting eff x acc histo ml")
-#            extract_eff_histo(index, data_config, data_param, case, 'ml')
-#
+
+    if doeffhistml:
+        for index, pkl_final_mc in enumerate(pkl_final_mc_list):
+            print("extracting eff x acc histo ml written to ", pkl_final_mc)
+            sel_type = "ml"
+            analysis_eff(data_config, data_param, case, sel_type, index)
+
+    if doeffhiststd:
+        for index, pkl_final_mc in enumerate(pkl_final_mc_list):
+            print("extracting eff x acc histo std written to ", pkl_final_mc)
+            sel_type = "std"
+            analysis_eff(data_config, data_param, case, sel_type, index)
+
 #    if doeffhiststd:
 #        pkl_final_mc_list = data_param[case]["output_folders"]["pkl_final"]["mc"]
 #        index = 0

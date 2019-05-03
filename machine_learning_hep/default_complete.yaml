@@ -1,38 +1,38 @@
 case: LctopK0sPbPbCen3050
 conversion:
   mc: 
-    activate: true #never change this without thinking!
+    activate: false #never change this without thinking!
     nmaxconvers: 300
     maxfiles: -1
   data:
-    activate: true  #never change this without thinking!
+    activate: false  #never change this without thinking!
     nmaxconvers: 300
     maxfiles: 1000
 skimming: 
   mc:
-    activate: true
+    activate: false
     nmaxconvers: 300
     maxfiles: -1
   data:
-    activate: true
+    activate: false
     nmaxconvers: 300
     maxfiles: 1000
 merging: 
   mc:
-    activate: true
+    activate: false
     rnd_seed: 12
     maxfilestomerge: -1
   data:
-    activate: true
+    activate: false
     rnd_seed: 12
     maxfilestomerge: 200
 mergingperiods: 
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 ml_study:   
-  activate: true
+  activate: false
   applytodatamc: true
   binmin: [4] 
   binmax: [6]
@@ -67,28 +67,33 @@ analysis:
     nmaxchunks: 300
     maxfiles: 1000
     std:
-      doapply: true
-      domass: true
+      usecustom: false
+      doapply: false
+      domass: false
     ml:
-      doapply: true
-      domass: true
+      doapply: false
+      domass: false
   mc:
     nmaxchunks: 300
     maxfiles: -1
     std:
+      usecustom: true
       doapply: true
       domass: true
-      doeffhist: false
+      doeffhist: true
     ml:
       doapply: true
-      domass: true
+      domass: true     
       doeffhist: false
   modelname: xgboost
-  binmin: [4]
-  binmax: [6]
+  modelbinmin: [4]
+  modelbinmax: [6]
   probcut: [0.4]
   probcutoptimal: [0.80]
-  models: [xgboost_classifiernevt_sig5000_nevt_bkg5000_BinaryClassificationLctopK0sPbPbCen3050_dfselection_pt_cand_4.0_6.0.sav] 
+  models: [xgboost_classifiernevt_sig300003_nevt_bkg300003_BinaryClassificationLctopK0sPbPbCen3050_dfselection_pt_cand_4.0_6.0.sav] 
+  analysisbinmin: [4,5]
+  analysisbinmax: [5,6]
+  modeltouse: [0,0]
   test_df_list: [xxxx]
   doinvmassspectra: true
   uselikelihood: 0
