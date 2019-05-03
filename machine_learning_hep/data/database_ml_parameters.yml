@@ -82,14 +82,14 @@ LctopK0sPbPbCen010:
 
   output_folders:
     plotsanalysis:
-      data: [plots/plotsanalysis_data_LHC18r_010_422_423_presel,
-             plots/plotsanalysis_data_LHC18q_010_422_423_presel]
-      mc: [plots/plotsanalysis_mc_LHC19c2a2_q_010_430_presel,
-           plots/plotsanalysis_mc_LHC19c2a2_r_010_431_presel,
-           plots/plotsanalysis_mc_LHC19c2a_q_010_432_presel, 
-           plots/plotsanalysis_mc_LHC19c2a_r_010_433_presel]
-    mlplot: mlplot
-    mlout: mlout
+      data: [plots010/plotsanalysis_data_LHC18r_010_422_423_presel,
+             plots010/plotsanalysis_data_LHC18q_010_422_423_presel]
+      mc: [plots010/plotsanalysis_mc_LHC19c2a2_q_010_430_presel,
+           plots010/plotsanalysis_mc_LHC19c2a2_r_010_431_presel,
+           plots010/plotsanalysis_mc_LHC19c2a_q_010_432_presel, 
+           plots010/plotsanalysis_mc_LHC19c2a_r_010_433_presel]
+    mlplot: mlplot010
+    mlout: mlout010
     pkl_out:
       data: [/data2/HeavyFlavour/PbPb_data_010/24-04-2019/423_20190416-2158/pickleLctopK0s_presel, 
              /data2/HeavyFlavour/PbPb_data_010/24-04-2019/422_20190416-2157/pickleLctopK0s_presel]
@@ -180,8 +180,8 @@ LctopK0sPbPbCen3050:
   skimming_sel: "pt_cand>4"
   skimming_sel_gen: "pt_cand>4"
   skimming_sel_evt: null
-  skimming2_sel: "pt_cand>4 & is_ev_rej==0 & abs(nsigTPC_Pr_0)<3"
-  skimming2_sel_gen: "pt_cand>4 & abs(z_vtx_gen)<10 "
+  skimming2_sel: "pt_cand>4 & is_ev_rej==0"
+  skimming2_sel_gen: "pt_cand>4 & abs(z_vtx_gen)<10"
   skimming2_sel_evt: null
   skimming2_dotrackpid: True
   sel_cent: "centrality >=30 & centrality <50"
@@ -199,7 +199,7 @@ LctopK0sPbPbCen3050:
     std_analysis_on_off : [[0],[]]
   custom_std_sel:
     use: False
-    cuts_config_file: null
+    cuts_config_file: data/database_std_cuts_LcpK0sPbPb3050.yml
 
   files_names:
     namefile_unmerged_tree: AnalysisResults.root
@@ -214,7 +214,7 @@ LctopK0sPbPbCen3050:
     namefile_gen_skim: AnalysisResultsGenLctopK0sSkimmed.pkl
     namefile_reco_skim_ml: AnalysisResultsRecoLctopK0sSkimmed_ml.pkl
     namefile_reco_skim_std: AnalysisResultsRecoLctopK0sSkimmed_std.pkl
-    namefile_reco_skim_ml_tot: AnalysisResultsRecoLctopK0sSkimmed_ml_tot_xgboost.pkl
+    namefile_reco_skim_ml_tot: AnalysisResultsRecoLctopK0sSkimmed_ml_tot.pkl
     namefile_reco_skim_std_tot: AnalysisResultsRecoLctopK0sSkimmed_std_tot.pkl
     namefile_gen_skim_tot: AnalysisResultsGenLctopK0sSkimmed_tot.pkl
     namefile_evt_skim_tot: AnalysisResultsEvtLctopK0sSkimmed_tot.pkl #all dataset
@@ -227,34 +227,67 @@ LctopK0sPbPbCen3050:
   nperiodsdata: 2
   inputs:
     data:
-      production: [LHC18r, LHC18q]
-      unmerged_tree_dir: [/data2/HeavyFlavour/PbPb_data_3050/24-04-2019/421_20190416-2157/unmerged,
-                          /data2/HeavyFlavour/PbPb_data_3050/24-04-2019/420_20190416-2232/unmerged]
+      production: [LHC18q, LHC18r]
+      unmerged_tree_dir: [/data2/HeavyFlavour/PbPb_data_3050/24-04-2019/420_20190416-2232/unmerged,
+                          /data2/HeavyFlavour/PbPb_data_3050/24-04-2019/421_20190416-2157/unmerged]
     mc:
       production: [LHC19c2b2_q, LHC19c2b2_r, LHC19c2b_q, LHC19c2b_r]
-      unmerged_tree_dir: [/data2/HeavyFlavour/PbPb_MC_3050/27-04-2019/434_20190425-1115/unmerged,                                
+      unmerged_tree_dir: [/data2/HeavyFlavour/PbPb_MC_3050/27-04-2019/434_20190425-1115/unmerged,
                           /data2/HeavyFlavour/PbPb_MC_3050/27-04-2019/436_20190425-1149/unmerged,
                           /data2/HeavyFlavour/PbPb_MC_3050/27-04-2019/435_20190425-1115/unmerged,
                           /data2/HeavyFlavour/PbPb_MC_3050/27-04-2019/437_20190425-1114/unmerged]
-
+      #production: [LHC19c3b2_q, LHC19c3b2_r, LHC19c3b_q, LHC19c3b_r]
+      #unmerged_tree_dir: [/data2/HeavyFlavour/PbPb_MC_3050/28-04-2019/444_20190425-1440/unmerged,
+      #                    /data2/HeavyFlavour/PbPb_MC_3050/28-04-2019/445_20190425-1441/unmerged,
+      #                    /data2/HeavyFlavour/PbPb_MC_3050/28-04-2019/446_20190425-1441/unmerged,
+      #                    /data2/HeavyFlavour/PbPb_MC_3050/28-04-2019/447_20190425-1442/unmerged]
   output_folders:
     plotsanalysis: 
-      data: [plots/plotsanalysis_data_LHC18r, plots/plotsanalysis_data_LHC18q]
-      mc: [plots/plotsanalysis_mc_LHC19c2b2_q, plots/plotsanalysis_mc_LHC19c2b2_r, plots/plotsanalysis_mc_LHC19c2b_q, plots/plotsanalysis_mc_LHC19c2b_r] 
-    mlplot: mlplot
-    mlout: mlout
+      data: [plots3050/plotsanalysis_data_LHC18q, 
+             plots3050/plotsanalysis_data_LHC18r]
+      mc: [plots3050/plotsanalysis_mc_LHC19c2b2_q, 
+           plots3050/plotsanalysis_mc_LHC19c2b2_r, 
+           plots3050/plotsanalysis_mc_LHC19c2b_q, 
+           plots3050/plotsanalysis_mc_LHC19c2b_r]
+    mlplot: mlplot3050
+    mlout: mlout3050
     pkl_out:
-      data: [test/pkl_data_LHC18r, test/pkl_data_LHC18q] 
-      mc: [test/pkl_mc_LHC19c2b2_q, test/pkl_mc_LHC19c2b2_r, test/pkl_mc_LHC19c2b_q, test/pkl_mc_LHC19c2b_r]
+      data: [/data2/HeavyFlavour/PbPb_data_3050/24-04-2019/420_20190416-2232/pickleLctopK0s,
+             /data2/HeavyFlavour/PbPb_data_3050/24-04-2019/421_20190416-2157/pickleLctopK0s]
+      mc: [/data2/HeavyFlavour/PbPb_MC_3050/27-04-2019/434_20190425-1115/pickleLctopK0s,
+           /data2/HeavyFlavour/PbPb_MC_3050/27-04-2019/435_20190425-1115/pickleLctopK0s,
+           /data2/HeavyFlavour/PbPb_MC_3050/27-04-2019/436_20190425-1149/pickleLctopK0s,
+           /data2/HeavyFlavour/PbPb_MC_3050/27-04-2019/437_20190425-1114/pickleLctopK0s]
+      #mc : [/data2/HeavyFlavour/PbPb_MC_3050/28-04-2019/444_20190425-1440/pickleLctopK0s,
+      #      /data2/HeavyFlavour/PbPb_MC_3050/28-04-2019/445_20190425-1441/pickleLctopK0s,
+      #      /data2/HeavyFlavour/PbPb_MC_3050/28-04-2019/446_20190425-1441/pickleLctopK0s,
+      #      /data2/HeavyFlavour/PbPb_MC_3050/28-04-2019/447_20190425-1442/pickleLctopK0s]
     pkl_skimmed:
-      data: [test/pkl_skimmed_data_LHC18r, test/pkl_skimmed_data_LHC18q]
-      mc: [test/pkl_skimmed_mc_LHC19c2b2_q, test/pkl_skimmed_mc_LHC19c2b2_r, test/pkl_mc_skimmed_LHC19c2b_q, test/pkl_mc_skimmed_LHC19c2b_r]
+      data: [/data2/HeavyFlavour/PbPb_data_3050/24-04-2019/420_20190416-2232/pickleLctopK0sskimmed4up,
+             /data2/HeavyFlavour/PbPb_data_3050/24-04-2019/421_20190416-2157/pickleLctopK0sskimmed4up]
+      mc: [/data2/HeavyFlavour/PbPb_MC_3050/27-04-2019/434_20190425-1115/pickleLctopK0sskimmed4up,
+           /data2/HeavyFlavour/PbPb_MC_3050/27-04-2019/435_20190425-1115/pickleLctopK0sskimmed4up,
+           /data2/HeavyFlavour/PbPb_MC_3050/27-04-2019/436_20190425-1149/pickleLctopK0sskimmed4up,
+           /data2/HeavyFlavour/PbPb_MC_3050/27-04-2019/437_20190425-1114/pickleLctopK0sskimmed4up]
+      #mc : [/data2/HeavyFlavour/PbPb_MC_3050/28-04-2019/444_20190425-1440/pickleLctopK0sskimmed4up,
+      #      /data2/HeavyFlavour/PbPb_MC_3050/28-04-2019/445_20190425-1441/pickleLctopK0sskimmed4up,
+      #      /data2/HeavyFlavour/PbPb_MC_3050/28-04-2019/446_20190425-1441/pickleLctopK0sskimmed4up,
+      #      /data2/HeavyFlavour/PbPb_MC_3050/28-04-2019/447_20190425-1442/pickleLctopK0sskimmed4up]
     pkl_merged:
-      data: [test/pkl_merged_data_LHC18r, test/pkl_merged_data_LHC18q]
-      mc: [test/pkl_mc_merged_LHC19c2b2_q, test/pkl_mc_merged_LHC19c2b2_r, test/pkl_mc_merged_LHC19c2b_q, test/pkl_mc_merged_LHC19c2b_r]
+      data: [/data2/HeavyFlavour/PbPb_data_3050/24-04-2019/420_20190416-2232/pickleLctopK0sskimmed4upMerged,
+             /data2/HeavyFlavour/PbPb_data_3050/24-04-2019/421_20190416-2157/pickleLctopK0sskimmed4upMerged]
+      mc: [/data2/HeavyFlavour/PbPb_MC_3050/27-04-2019/434_20190425-1115/pickleLctopK0sskimmed4upMerged,
+           /data2/HeavyFlavour/PbPb_MC_3050/27-04-2019/435_20190425-1115/pickleLctopK0sskimmed4upMerged,
+           /data2/HeavyFlavour/PbPb_MC_3050/27-04-2019/436_20190425-1149/pickleLctopK0sskimmed4upMerged,
+           /data2/HeavyFlavour/PbPb_MC_3050/27-04-2019/437_20190425-1114/pickleLctopK0sskimmed4upMerged]
+      #mc : [/data2/HeavyFlavour/PbPb_MC_3050/28-04-2019/444_20190425-1440/pickleLctopK0sskimmed4upMerged,
+      #      /data2/HeavyFlavour/PbPb_MC_3050/28-04-2019/445_20190425-1441/pickleLctopK0sskimmed4upMerged,
+      #      /data2/HeavyFlavour/PbPb_MC_3050/28-04-2019/446_20190425-1441/pickleLctopK0sskimmed4upMerged,
+      #      /data2/HeavyFlavour/PbPb_MC_3050/28-04-2019/447_20190425-1442/pickleLctopK0sskimmed4upMerged]
     pkl_merged_all:
-      data: test/pkl_merged_data_all
-      mc: test/pkl_merged_mc_all
+      data: /data2/HeavyFlavour/PbPb_data_3050/24-04-2019/420421_pickleLctopK0sskimmed4upMerged
+      mc: /data2/HeavyFlavour/PbPb_MC_3050/27-04-2019/434till437_3050sel_pickleLctopK0sskimmed4upMerged
+      #mc: /data2/HeavyFlavour/PbPb_MC_3050/28-04-2019/444till447_3050sel_pickleLctopK0sskimmed4upMerged
     pkl_final:
       data: [pkl_final_data_LHC18r, pkl_final_data_LHC18q] 
       mc: [test/pkl_final_mc_LHC19c2b2_q, test/pkl_final_mc_LHC19c2b2_r, test/pkl_final_mc_LHC19c2b_q, test/pkl_mc_final_LHC19c2b_r]
