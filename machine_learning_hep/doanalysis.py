@@ -47,8 +47,8 @@ def doanalysis(data_config, data, case, useml, mcordata, index):
     maxfiles = data_config["analysis"][mcordata]["maxfiles"]
     nmaxchunks = data_config["analysis"][mcordata]["nmaxchunks"]
     doinvmassspectra = data_config["analysis"]["doinvmassspectra"]
-    binmin = data_config["analysis"]["binmin"]
-    binmax = data_config["analysis"]["binmax"]
+    binmin = data_config["analysis"]["modelbinmin"]
+    binmax = data_config["analysis"]["modelbinmax"]
     models = data_config["analysis"]["models"]
     probcut = data_config["analysis"]["probcut"]
     models = data_config["analysis"]["models"]
@@ -56,7 +56,7 @@ def doanalysis(data_config, data, case, useml, mcordata, index):
 
     cuts_map = None
     if useml == 0:
-        usecustomsel = data[case]["custom_std_sel"]["use"]
+        usecustomsel = data_config["analysis"][mcordata]["std"]["usecustom"]
         if usecustomsel:
             cuts_config_filename = data[case]["custom_std_sel"]["cuts_config_file"]
             with open(cuts_config_filename, 'r') as cuts_config:
@@ -99,8 +99,6 @@ def doanalysis(data_config, data, case, useml, mcordata, index):
                 merge(listdfout_ml, namefilereco_ml_tot)
             if useml == 0:
                 namefilereco_std_tot = os.path.join(outputdirfin, namefilereco_std_tot)
-                namefilereco_std_tot = \
-                    namefilereco_std_tot.replace(".pkl", "%d_%d.pkl" % (imin, imax))
                 merge(listdfout_std, namefilereco_std_tot)
             index = index + 1
 
