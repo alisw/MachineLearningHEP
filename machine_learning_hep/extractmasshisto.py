@@ -18,7 +18,7 @@ from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-modu
 from ROOT import TFile, TH1F, TCanvas # pylint: disable=import-error, no-name-in-module
 #from machine_learning_hep.selectionutils import getnormforselevt
 
-
+# pylint: disable=too-many-statements
 def extractmasshisto(data_config, data, case, useml, mcordata, index):
 
     mass_fit_lim = data[case]['mass_fit_lim']
@@ -73,7 +73,7 @@ def extractmasshisto(data_config, data, case, useml, mcordata, index):
         index = index + 1
     namefile = "masshisto%s_useml%s_usecustom%d.root" % (case, useml, (int)(usecustomsel))
     if useml == 1:
-        namefile = "masshisto%s_useml%s_%.2f.root" % (case, useml,
+        namefile = "masshisto%s_useml%s_%.2f.root" % (case, useml, \
                                                   probcutoptimal[0])
     myfile = TFile.Open(outputdir + "/" + namefile, "recreate")
     myfile.cd()

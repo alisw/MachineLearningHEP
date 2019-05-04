@@ -17,18 +17,14 @@ Methods to: study expected efficiency
 import os.path
 import array
 import math
-import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
 import yaml
-from ROOT import TFile, TH1F, gROOT # pylint: disable=import-error,no-name-in-module
-from ROOT import kRed, kBlue, kFALSE # pylint: disable=import-error,no-name-in-module
-from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
-from machine_learning_hep.general import filter_df_cand, get_database_ml_parameters
+from ROOT import TFile, TH1F # pylint: disable=import-error,no-name-in-module
+from machine_learning_hep.general import filter_df_cand
 from machine_learning_hep.general import filterdataframe_singlevar
 from machine_learning_hep.selectionutils import selectcand_lincut
 
-# pylint: disable=too-many-statements, too-many-locals
+# pylint: disable=too-many-statements, too-many-locals, too-many-branches
 def analysis_eff(run_config, data_dict, case, sel_type, index):
 
     analysis_bin_min = run_config['analysis']['analysisbinmin']
@@ -107,7 +103,7 @@ def analysis_eff(run_config, data_dict, case, sel_type, index):
             if usecustomsel:
                 df_reco_sel_pr = filter_df_cand(df_reco_sel_pr, data_dict, 'presel_track_pid')
             #apply standard cuts from file
-                for key, icutvar in cuts_map.items():
+                for _, icutvar in cuts_map.items():
                     if not df_reco_sel_pr.empty and icutvar["name"] != "var_binning":
                         array_var = df_reco_sel_pr.loc[:, icutvar["name"]].values
                         is_selected = selectcand_lincut(array_var, icutvar["min"][bincounter], \
@@ -137,7 +133,7 @@ def analysis_eff(run_config, data_dict, case, sel_type, index):
             if usecustomsel:
                 df_reco_sel_fd = filter_df_cand(df_reco_sel_fd, data_dict, 'presel_track_pid')
             #apply standard cuts from file
-                for key, icutvar in cuts_map.items():
+                for _, icutvar in cuts_map.items():
                     if not df_reco_sel_fd.empty and icutvar["name"] != "var_binning":
                         array_var = df_reco_sel_fd.loc[:, icutvar["name"]].values
                         is_selected = selectcand_lincut(array_var, icutvar["min"][bincounter], \
@@ -159,8 +155,9 @@ def analysis_eff(run_config, data_dict, case, sel_type, index):
         print("fd efficiency tot ptbin=", bincounter, ", value = ",
               len(df_reco_sel_fd)/len(df_gen_sel_fd))
         bincounter = bincounter + 1
-    usecustomsel = (int) (usecustomsel)
-    out_file = TFile.Open(f'{out_dir}/efficiencies_{case}_{sel_type}_custom{usecustomsel}.root', 'recreate')
+    usecustomsel = (int)(usecustomsel)
+    out_file = TFile.Open( \
+               f'{out_dir}/efficiencies_{case}_{sel_type}_custom{usecustomsel}.root', 'recreate')
     out_file.cd()
     h_gen_pr.Write()
     h_presel_pr.Write()
