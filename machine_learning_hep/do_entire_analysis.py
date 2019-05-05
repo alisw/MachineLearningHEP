@@ -16,13 +16,16 @@
 main script for doing data processing, machine learning and analysis
 """
 
-import os
+#import os
 import yaml
-from machine_learning_hep.doskimming import conversion, merging, merging_period, skim
-from machine_learning_hep.doclassification_regression import doclassification_regression
-from machine_learning_hep.doanalysis import doanalysis
-from machine_learning_hep.extractmasshisto import extractmasshisto
-from machine_learning_hep.efficiencyan import analysis_eff
+from multiprocesser import MultiProcesser  # pylint: disable=import-error
+#from machine_learning_hep.doskimming import conversion, merging, merging_period, skim
+#from machine_learning_hep.doclassification_regression import doclassification_regression
+#from machine_learning_hep.doanalysis import doanalysis
+#from machine_learning_hep.extractmasshisto import extractmasshisto
+#from machine_learning_hep.efficiencyan import analysis_eff
+from  machine_learning_hep.utilities import checkdirlist, checkdir
+from optimiser import Optimiser
 
 def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 
@@ -38,9 +41,10 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     with open("data/database_run_list.yml", 'r') as runlist_config:
         run_param = yaml.load(runlist_config)
 
+    with open("data/database_ml_gridsearch.yml", 'r') as grid_config:
+        grid_param = yaml.load(grid_config)
+
     case = data_config["case"]
-    binminarray = data_config["ml_study"]["binmin"]
-    binmaxarray = data_config["ml_study"]["binmax"]
     doconversionmc = data_config["conversion"]["mc"]["activate"]
     doconversiondata = data_config["conversion"]["data"]["activate"]
     domergingmc = data_config["merging"]["mc"]["activate"]
@@ -50,206 +54,188 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     domergingperiodsmc = data_config["mergingperiods"]["mc"]["activate"]
     domergingperiodsdata = data_config["mergingperiods"]["data"]["activate"]
     doml = data_config["ml_study"]["activate"]
-    mltype = data_config["ml_study"]["mltype"]
-    doapplymldata = data_config["analysis"]["data"]["ml"]["doapply"]
-    doapplystddata = data_config["analysis"]["data"]["std"]["doapply"]
-    doapplymlmc = data_config["analysis"]["mc"]["ml"]["doapply"]
-    doapplystdmc = data_config["analysis"]["mc"]["std"]["doapply"]
-    domassmldata = data_config["analysis"]["data"]["ml"]["domass"]
-    domassstddata = data_config["analysis"]["data"]["std"]["domass"]
-    domassmlmc = data_config["analysis"]["mc"]["ml"]["domass"]
-    domassstdmc = data_config["analysis"]["mc"]["std"]["domass"]
-    doeffhistml = data_config["analysis"]["mc"]["ml"]["doeffhist"]
-    doeffhiststd = data_config["analysis"]["mc"]["std"]["doeffhist"]
+    docorrelation = data_config["ml_study"]['docorrelation']
+    dotraining = data_config["ml_study"]['dotraining']
+    dotesting = data_config["ml_study"]['dotesting']
+    doapplytodatamc = data_config["ml_study"]['applytodatamc']
+    docrossvalidation = data_config["ml_study"]['docrossvalidation']
+    dolearningcurve = data_config["ml_study"]['dolearningcurve']
+    doroc = data_config["ml_study"]['doroc']
+    doboundary = data_config["ml_study"]['doboundary']
+    doimportance = data_config["ml_study"]['doimportance']
+    dogridsearch = data_config["ml_study"]['dogridsearch']
+    dosignifopt = data_config["ml_study"]['dosignifopt']
+    #doefficiency = run_config['doefficiency']
+    doapplydata = data_config["analysis"]["data"]["doapply"]
+    doapplymc = data_config["analysis"]["mc"]["doapply"]
+    domergeapplydata = data_config["analysis"]["data"]["domergeapply"]
+    domergeapplymc = data_config["analysis"]["mc"]["domergeapply"]
+    dohistomassmc = data_config["analysis"]["mc"]["histomass"]
+    dohistomassdata = data_config["analysis"]["data"]["histomass"]
+    doefficiency = data_config["analysis"]["mc"]["efficiency"]
 
-    pkl_mc_list = data_param[case]["output_folders"]["pkl_out"]["mc"]
-    pkl_data_list = data_param[case]["output_folders"]["pkl_out"]["data"]
-    pkl_skimmed_mc_list = data_param[case]["output_folders"]["pkl_skimmed"]["mc"]
-    pkl_skimmed_data_list = data_param[case]["output_folders"]["pkl_skimmed"]["data"]
-    pkl_merged_data_list = data_param[case]["output_folders"]["pkl_merged"]["data"]
-    pkl_merged_mc_list = data_param[case]["output_folders"]["pkl_merged"]["mc"]
-    pkl_merged_all_data = data_param[case]["output_folders"]["pkl_merged_all"]["data"]
-    pkl_merged_all_mc = data_param[case]["output_folders"]["pkl_merged_all"]["mc"]
-    pkl_final_mc_list = data_param[case]["output_folders"]["pkl_final"]["mc"]
-    pkl_final_data_list = data_param[case]["output_folders"]["pkl_final"]["data"]
-    pkl_analysis_data_list = data_param[case]["output_folders"]["plotsanalysis"]["data"]
-    pkl_analysis_mc_list = data_param[case]["output_folders"]["plotsanalysis"]["mc"]
+    dirpklmc = data_param[case]["multi"]["mc"]["pkl"]
+    dirpklevtcounter_allmc = data_param[case]["multi"]["mc"]["pkl_evtcounter_all"]
+    dirpklskmc = data_param[case]["multi"]["mc"]["pkl_skimmed"]
+    dirpklmlmc = data_param[case]["multi"]["mc"]["pkl_skimmed_merge_for_ml"]
+    dirpklmltotmc = data_param[case]["multi"]["mc"]["pkl_skimmed_merge_for_ml_all"]
+    dirpkldata = data_param[case]["multi"]["data"]["pkl"]
+    dirpklevtcounter_alldata = data_param[case]["multi"]["data"]["pkl_evtcounter_all"]
+    dirpklskdata = data_param[case]["multi"]["data"]["pkl_skimmed"]
+    dirpklmldata = data_param[case]["multi"]["data"]["pkl_skimmed_merge_for_ml"]
+    dirpklmltotdata = data_param[case]["multi"]["data"]["pkl_skimmed_merge_for_ml_all"]
+    dirpklskdecmc = data_param[case]["analysis"]["mc"]["pkl_skimmed_dec"]
+    dirpklskdec_mergedmc = data_param[case]["analysis"]["mc"]["pkl_skimmed_decmerged"]
+    dirpklskdecdata = data_param[case]["analysis"]["data"]["pkl_skimmed_dec"]
+    dirpklskdec_mergeddata = data_param[case]["analysis"]["data"]["pkl_skimmed_decmerged"]
 
-    #nperiodsmc = data_param[case]["nperiodsmc"]
-    #nperiodsdata = data_param[case]["nperiodsdata"]
+    dirresultsdata = data_param[case]["analysis"]["data"]["results"]
+    dirresultsmc = data_param[case]["analysis"]["mc"]["results"]
 
+    binminarray = data_param[case]["ml"]["binmin"]
+    binmaxarray = data_param[case]["ml"]["binmax"]
+    mltype = data_param[case]["ml"]["mltype"]
+
+    mlout = data_param[case]["ml"]["mlout"]
+    mlplot = data_param[case]["ml"]["mlplot"]
+
+
+    mymultiprocessmc = MultiProcesser(data_param[case], run_param, "mc")
+    mymultiprocessdata = MultiProcesser(data_param[case], run_param, "data")
+
+    #creating folder if not present
     if doconversionmc is True:
-        for index, pkl_mc in enumerate(pkl_mc_list):
-            if os.path.exists(pkl_mc):
-                print("output mc pkl exists")
-                print("rm -rf ", pkl_mc)
-            else:
-                print("creating dir mc pkl period=", index)
-                os.makedirs(pkl_mc)
-                conversion(data_config, data_param, run_param, "mc", index)
+        if checkdirlist(dirpklmc) or checkdir(dirpklevtcounter_allmc) is True:
+            exit()
 
     if doconversiondata is True:
-        for index, pkl_data in enumerate(pkl_data_list):
-            if os.path.exists(pkl_data):
-                print("output data pkl exists")
-                print("rm -rf ", pkl_data)
-            else:
-                print("creating dir data pkl period=", index)
-                os.makedirs(pkl_data)
-                conversion(data_config, data_param, run_param, "data", index)
+        if checkdirlist(dirpkldata) or checkdir(dirpklevtcounter_alldata) is True:
+            exit()
 
     if doskimmingmc is True:
-        print(pkl_skimmed_mc_list)
-        for index, pkl_skimmed_mc in enumerate(pkl_skimmed_mc_list):
-            if os.path.exists(pkl_skimmed_mc):
-                print("output mc skimmed pkl exists")
-                print("rm -rf ", pkl_skimmed_mc)
-            else:
-                print("creating dir mc skimmed pkl period=", index)
-                os.makedirs(pkl_skimmed_mc)
-                skim(data_config, data_param, "mc", index)
+        if checkdirlist(dirpklskmc) is True:
+            exit()
 
     if doskimmingdata is True:
-        for index, pkl_skimmed_data in enumerate(pkl_skimmed_data_list):
-            if os.path.exists(pkl_skimmed_data):
-                print("output data skimmed pkl exists")
-                print("rm -rf ", pkl_skimmed_data)
-            else:
-                print("creating dir data skimmed pkl period=", pkl_skimmed_data)
-                os.makedirs(pkl_skimmed_data)
-                skim(data_config, data_param, "data", index)
-
-    if domergingdata is True:
-        for index, pkl_merged_data in enumerate(pkl_merged_data_list):
-            if os.path.exists(pkl_merged_data):
-                print("output data merged pkl exists")
-                print("rm -rf ", pkl_merged_data)
-            else:
-                print("creating dir data merged pkl period=", index)
-                os.makedirs(pkl_merged_data)
-                merging(data_config, data_param, "data", index)
+        if checkdirlist(dirpklskdata) is True:
+            exit()
 
     if domergingmc is True:
-        for index, pkl_merged_mc in enumerate(pkl_merged_mc_list):
-            if os.path.exists(pkl_merged_mc):
-                print("output mc merged pkl exists")
-                print("rm -rf ", pkl_merged_mc)
-            else:
-                print("creating dir mc merged pkl period=", index)
-                os.makedirs(pkl_merged_mc)
-                merging(data_config, data_param, "mc", index)
+        if checkdirlist(dirpklmlmc) is True:
+            exit()
 
-    if domergingperiodsdata is True:
-        if os.path.exists(pkl_merged_all_data):
-            print("output data merged all periods pkl exists")
-            print("rm -rf ", pkl_merged_all_data)
-        else:
-            print("creating dir data merged all periods pkl")
-            os.makedirs(pkl_merged_all_data)
-            merging_period(data_config, data_param, "data")
+    if domergingdata is True:
+        if checkdirlist(dirpklmldata) is True:
+            exit()
 
     if domergingperiodsmc is True:
-        if os.path.exists(pkl_merged_all_mc):
-            print("output mc merged all periods pkl exists")
-            print("rm -rf ", pkl_merged_all_mc)
-        else:
-            print("creating dir mc merged all periods pkl")
-            os.makedirs(pkl_merged_all_mc)
-            merging_period(data_config, data_param, "mc")
+        if checkdir(dirpklmltotmc) is True:
+            exit()
+
+    if domergingperiodsdata is True:
+        if checkdir(dirpklmltotdata) is True:
+            exit()
 
     if doml is True:
-        print("DOING ML optimisation")
+        if checkdir(mlout) or checkdir(mlplot) is True:
+            print("check mlout and mlplot")
+
+    if doapplymc is True:
+        if checkdirlist(dirpklskdecmc) is True:
+            exit()
+
+    if doapplydata is True:
+        if checkdirlist(dirpklskdecdata) is True:
+            exit()
+
+    if domergeapplymc is True:
+        if checkdirlist(dirpklskdec_mergedmc) is True:
+            exit()
+
+    if domergeapplydata is True:
+        if checkdirlist(dirpklskdec_mergeddata) is True:
+            exit()
+
+    if dohistomassmc is True:
+        if checkdirlist(dirresultsmc) is True:
+            exit()
+
+    if dohistomassdata is True:
+        if checkdirlist(dirresultsdata) is True:
+            exit()
+
+    #perform the analysis flow
+    if doconversionmc == 1:
+        mymultiprocessmc.multi_unpack_allperiods()
+
+    if doconversiondata == 1:
+        mymultiprocessdata.multi_unpack_allperiods()
+
+    if doskimmingmc == 1:
+        mymultiprocessmc.multi_skim_allperiods()
+
+    if doskimmingdata == 1:
+        mymultiprocessdata.multi_skim_allperiods()
+
+    if domergingmc == 1:
+        mymultiprocessmc.multi_mergeml_allperiods()
+
+    if domergingdata == 1:
+        mymultiprocessdata.multi_mergeml_allperiods()
+
+    if domergingperiodsmc == 1:
+        mymultiprocessmc.multi_mergeml_allinone()
+
+    if domergingperiodsdata == 1:
+        mymultiprocessdata.multi_mergeml_allinone()
+
+    if doml is True:
         for binmin, binmax in zip(binminarray, binmaxarray):
-            print(binmin, binmax)
-            doclassification_regression(data_config["ml_study"],
-                                        data_param, data_model[mltype], case, binmin, binmax)
+            myopt = Optimiser(data_param[case], case,
+                              data_model[mltype], grid_param, binmin, binmax)
+            if docorrelation is True:
+                myopt.do_corr()
+            if dotraining is True:
+                myopt.do_train()
+            if dotesting is True:
+                myopt.do_test()
+            if doapplytodatamc is True:
+                myopt.do_apply()
+            if docrossvalidation is True:
+                myopt.do_crossval()
+            if dolearningcurve is True:
+                myopt.do_learningcurve()
+            if doroc is True:
+                myopt.do_roc()
+            if doimportance is True:
+                myopt.do_importance()
+            if dogridsearch is True:
+                myopt.do_grid()
+            if doboundary is True:
+                myopt.do_boundary()
+            if dosignifopt is True:
+                myopt.do_significance()
 
-    for index, pkl_final_data in enumerate(pkl_final_data_list):
-        if os.path.exists(pkl_final_data) is not True:
-            os.makedirs(pkl_final_data)
-    for index, pkl_final_mc in enumerate(pkl_final_mc_list):
-        if os.path.exists(pkl_final_mc) is not True:
-            os.makedirs(pkl_final_mc)
-    for index, pkl_analysis_data in enumerate(pkl_analysis_data_list):
-        if os.path.exists(pkl_analysis_data) is not True:
-            os.makedirs(pkl_analysis_data)
-    for index, pkl_analysis_mc in enumerate(pkl_analysis_mc_list):
-        if os.path.exists(pkl_analysis_mc) is not True:
-            os.makedirs(pkl_analysis_mc)
-
-    if doapplymldata is True:
-        for index, pkl_final_data in enumerate(pkl_final_data_list):
-            print("applying ml to data")
-            print("Writing output to", pkl_final_data)
-            useml = 1
-            doanalysis(data_config, data_param, case, useml, "data", index)
-
-    if doapplymlmc is True:
-        for index, pkl_final_mc in enumerate(pkl_final_mc_list):
-            print("applying ml to mc")
-            print("Writing output to", pkl_final_mc)
-            useml = 1
-            doanalysis(data_config, data_param, case, useml, "mc", index)
-
-    if doapplystddata is True:
-        for index, pkl_final_data in enumerate(pkl_final_data_list):
-            print("applying std to data")
-            print("Writing output to", pkl_final_data)
-            useml = 0
-            doanalysis(data_config, data_param, case, useml, "data", index)
-
-    if doapplystdmc is True:
-        for index, pkl_final_mc in enumerate(pkl_final_mc_list):
-            print("applying std to mc")
-            print("Writing output to", pkl_final_mc)
-            useml = 0
-            doanalysis(data_config, data_param, case, useml, "mc", index)
-
-    if domassmldata is True:
-        for index, pkl_analysis_data in enumerate(pkl_analysis_data_list):
-            print("extracting mass histo ml data")
-            print("Writing output to", pkl_analysis_data)
-            useml = 1
-            extractmasshisto(data_config, data_param, case, useml, "data", index)
-
-    if domassmlmc is True:
-        for index, pkl_analysis_mc in enumerate(pkl_analysis_mc_list):
-            print("extracting mass histo ml mc")
-            print("Writing output to", pkl_analysis_mc)
-            useml = 1
-            extractmasshisto(data_config, data_param, case, useml, "mc", index)
-
-    if domassstddata is True:
-        for index, pkl_analysis_data in enumerate(pkl_analysis_data_list):
-            print("extracting mass histo std data")
-            print("Writing output to", pkl_analysis_data)
-            useml = 0
-            extractmasshisto(data_config, data_param, case, useml, "data", index)
-
-    if domassstdmc is True:
-        for index, pkl_analysis_mc in enumerate(pkl_analysis_mc_list):
-            print("extracting mass histo std mc")
-            print("Writing output to", pkl_analysis_mc)
-            useml = 0
-            extractmasshisto(data_config, data_param, case, useml, "mc", index)
-
-    if doeffhistml:
-        for index, pkl_final_mc in enumerate(pkl_final_mc_list):
-            print("extracting eff x acc histo ml written to ", pkl_final_mc)
-            sel_type = "ml"
-            analysis_eff(data_config, data_param, case, sel_type, index)
-
-    if doeffhiststd:
-        for index, pkl_final_mc in enumerate(pkl_final_mc_list):
-            print("extracting eff x acc histo std written to ", pkl_final_mc)
-            sel_type = "std"
-            analysis_eff(data_config, data_param, case, sel_type, index)
-
-#    if doeffhiststd:
-#        pkl_final_mc_list = data_param[case]["output_folders"]["pkl_final"]["mc"]
-#        index = 0
-#        for pkl_final_data in pkl_final_data_list:
-#            print("extracting eff x acc histo std")
-#            extract_eff_histo(index, data_config, data_param, case, 'std')
+    if doapplydata is True:
+        mymultiprocessapplydata = MultiProcesser(data_param[case], run_param, "data")
+        mymultiprocessapplydata.multi_apply_allperiods()
+    if doapplymc is True:
+        mymultiprocessapplymc = MultiProcesser(data_param[case], run_param, "mc")
+        mymultiprocessapplymc.multi_apply_allperiods()
+    if domergeapplydata is True:
+        mymultiprocessmergeapplydata = MultiProcesser(data_param[case], run_param, "data")
+        mymultiprocessmergeapplydata.multi_mergeapply_allperiods()
+    if domergeapplymc is True:
+        mymultiprocessmergeapplymc = MultiProcesser(data_param[case], run_param, "mc")
+        mymultiprocessmergeapplymc.multi_mergeapply_allperiods()
+    if dohistomassmc is True:
+        mymultiprocessapplymc = MultiProcesser(data_param[case], run_param, "mc")
+        mymultiprocessapplymc.multi_histomass()
+    if dohistomassdata is True:
+        mymultiprocessapplydata = MultiProcesser(data_param[case], run_param, "data")
+        mymultiprocessapplydata.multi_histomass()
+    if doefficiency is True:
+        mymultiprocesseffmc = MultiProcesser(data_param[case], run_param, "mc")
+        mymultiprocesseffmc.multi_efficiency()
 
 do_entire_analysis()

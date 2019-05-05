@@ -1,107 +1,52 @@
 case: LctopK0sPbPbCen3050
+
 conversion:
   mc: 
-    activate: false #never change this without thinking!
-    nmaxconvers: 300
-    maxfiles: -1
+    activate: false 
   data:
-    activate: false  #never change this without thinking!
-    nmaxconvers: 300
-    maxfiles: 1000
+    activate: false
 skimming: 
   mc:
     activate: false
-    nmaxconvers: 300
-    maxfiles: -1
   data:
     activate: false
-    nmaxconvers: 300
-    maxfiles: 1000
 merging: 
   mc:
     activate: false
-    rnd_seed: 12
-    maxfilestomerge: -1
   data:
     activate: false
-    rnd_seed: 12
-    maxfilestomerge: 200
 mergingperiods: 
   mc:
     activate: false
   data:
     activate: false
+
 ml_study:   
-  activate: false
+  activate: true
   applytodatamc: true
-  binmin: [4] 
-  binmax: [6]
-  doROC: true
+  doroc: false
   doboundary: false
   docorrelation: false
-  docrossvalidation: true
+  docrossvalidation: false
   dogridsearch: false
-  doimportance: true
-  dolearningcurve: true
+  doimportance: false
+  dolearningcurve: false
   dopca: false
-  dopltregressionxy: false
   dosignifopt: true
-  doefficiency: true
-  dostandard: false
+  doefficiency: false
   dotesting: true
   dotraining: true
-  loadsampleoption: true
-  mlsubtype: HFmeson
-  mltype: BinaryClassification
-  ncores: -1
-  nevt_bkg: 5000
-  nevt_sig: 5000
-  nkfolds: 5
-  rnd_shuffle: 12
-  rnd_splt: 12
-  test_frac: 0.2
-  usefileserver: false
 
 analysis:
   data:
-    nmaxchunks: 300
-    maxfiles: 1000
-    std:
-      usecustom: false
-      doapply: false
-      domass: false
-    ml:
-      doapply: false
-      domass: false
+    doapply: false
+    domergeapply: false
+    domergeapplyperiods: false
+    histomass: false
   mc:
-    nmaxchunks: 300
-    maxfiles: -1
-    std:
-      usecustom: true
-      doapply: true
-      domass: true
-      doeffhist: true
-    ml:
-      doapply: true
-      domass: true     
-      doeffhist: false
-  modelname: xgboost
-  modelbinmin: [4]
-  modelbinmax: [6]
-  probcut: [0.4]
-  probcutoptimal: [0.80]
-  models: [xgboost_classifiernevt_sig300003_nevt_bkg300003_BinaryClassificationLctopK0sPbPbCen3050_dfselection_pt_cand_4.0_6.0.sav] 
-  analysisbinmin: [4,5]
-  analysisbinmax: [5,6]
-  modeltouse: [0,0]
-  test_df_list: [xxxx]
-  doinvmassspectra: true
-  uselikelihood: 0
-  sgnfunc: [kGaus]
-  bkgfunc: [kExpo]
-  masspeak: 2.2864
-  massmin: [2.14]
-  massmax: [2.48]
-  rebin: [2]
-  includesecpeak: [0]
-  masssecpeak: 1.869
+    doapply: false
+    domergeapply: false
+    domergeapplyperiods: false
+    histomass: false
+    efficiency: false
+   

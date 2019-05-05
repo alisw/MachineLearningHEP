@@ -46,9 +46,12 @@ def create_mlsamples(df_sig, df_bkg, sel_opt_sig, main_dict, sel_bkg, rnd_shuffl
         x_train, y_train, x_test, y_test
 
 
-def do_correlation(df_sig_train, df_bkg_train, var_all, var_corr_x, var_corr_y, plotdir):
-    imageIO_vardist = vardistplot(df_sig_train, df_bkg_train, var_all, plotdir)
-    imageIO_scatterplot = scatterplot(df_sig_train, df_bkg_train, var_corr_x, var_corr_y, plotdir)
-    imageIO_corr_sig = correlationmatrix(df_sig_train, plotdir, "signal")
-    imageIO_corr_bkg = correlationmatrix(df_bkg_train, plotdir, "background")
+def do_correlation(df_sig_train, df_bkg_train, var_all, var_corr_x, var_corr_y,
+                   plotdir, binmin=0, binmax=999):
+    imageIO_vardist = vardistplot(df_sig_train, df_bkg_train, var_all, plotdir,
+                                  binmin, binmax)
+    imageIO_scatterplot = scatterplot(df_sig_train, df_bkg_train, var_corr_x,
+                                      var_corr_y, plotdir, binmin, binmax)
+    imageIO_corr_sig = correlationmatrix(df_sig_train, plotdir, "signal", binmin, binmax)
+    imageIO_corr_bkg = correlationmatrix(df_bkg_train, plotdir, "background", binmin, binmax)
     return imageIO_vardist, imageIO_scatterplot, imageIO_corr_sig, imageIO_corr_bkg

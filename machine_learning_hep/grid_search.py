@@ -22,6 +22,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier  # pylint: disable=unused-import
+from xgboost import XGBClassifier # pylint: disable=unused-import
 from machine_learning_hep.logger import get_logger
 
 

@@ -14,13 +14,13 @@
 
 LctopK0sPbPbCen3050:
   mass: 2.2864
-  sel_reco_unp: "pt_cand>4"
-  sel_reco_singletrac_unp : null
+  sel_reco_unp: "pt_cand>4 & abs(eta_prong0)<0.8 and abs(eta_prong1)<0.8 and abs(eta_prong2)<0.8"
+  sel_reco_singletrac_unp : [[8],[]]
   sel_gen_unp: "pt_cand>4 and abs(z_vtx_gen)<10"
   sel_cen_unp: "centrality >=30 & centrality <50"
   sel_good_evt_unp: "is_ev_rej == 0"
-  sel_reco_skim: [null]
-  sel_gen_skim: [null]
+  sel_reco_skim: ["pt_cand>4"]
+  sel_gen_skim: ["pt_cand>4"]
   
   bitmap_sel:
     use: True
@@ -39,7 +39,7 @@ LctopK0sPbPbCen3050:
   variables:
     var_all: [cos_t_star, dca_K0s, signd0, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s,
               cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2,
-              inv_mass, pt_cand, inv_mass_K0s, pt_K0s, cand_type, y_cand,
+              inv_mass, pt_cand, inv_mass_K0s, pt_K0s, cand_type, y_cand, eta_prong0, eta_prong1, eta_prong2,
               run_number, ev_id, nsigTPC_Pr_0, nsigTOF_Pr_0]
     var_evt:
       data: [is_ev_rej, run_number, ev_id, centrality, z_vtx_reco]
@@ -47,7 +47,7 @@ LctopK0sPbPbCen3050:
     var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
     var_evt_match: [run_number, ev_id]
     var_training: [cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s, 
-                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTPC_Pr_0, nsigTOF_Pr_0]
+                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0]
     var_boundaries: [cos_t_star, signd0]
     var_correlation:
       - [cos_t_star]
@@ -71,33 +71,35 @@ LctopK0sPbPbCen3050:
     efffilename: "effhisto.root"
   multi:
     data:
-      nperiods: 1
-      nprocessesparallel: 50
-      maxfiles : [-1]
-      chunksizeunp : [500]
-      chunksizeskim: [500]
-      fracmerge : [1.0]
-      seedmerge: [23]
-      period: [LHC18q]
-      unmerged_tree_dir: [/Users/gianmicheleinnocenti/Desktop/copy/datarootsdsds12/unmerged]
-      pkl: [datapklLHC18q]
-      pkl_skimmed: [datapklskLHC18q]
-      pkl_skimmed_merge_for_ml: [datapklskMLLHC18q]
+      nperiods: 2
+      nprocessesparallel: 64
+      maxfiles : [-1, -1]
+      chunksizeunp : [300, 300]
+      chunksizeskim: [100, 300]
+      fracmerge : [0.05, 0.05]
+      seedmerge: [23, 23]
+      period: [LHC18q, LHC18r]
+      unmerged_tree_dir: [/data2/HeavyFlavour/PbPb_data_3050/09-05-2019/469_20190507-2218/unmerged,
+                          /data2/HeavyFlavour/PbPb_data_3050/09-05-2019/470_20190507-2220/unmerged]
+      pkl: [datapklLHC18q, datapklLHC18r]
+      pkl_skimmed: [datapklskLHC18q, datapklskLHC18r]
+      pkl_skimmed_merge_for_ml: [datapklskMLLHC18q, datapklskMLLHC18r]
       pkl_skimmed_merge_for_ml_all: datapklskMLallperiods
       pkl_evtcounter_all: datapklevtcounter_all
     mc:
-      nperiods: 1
-      nprocessesparallel: 50
-      maxfiles : [-1]
-      chunksizeunp : [300]
-      chunksizeskim: [300]
-      fracmerge : [1.0]
-      seedmerge: [23]
-      period: [LHC19c2b2_q] 
-      unmerged_tree_dir: [/Users/gianmicheleinnocenti/Desktop/copy/mcroote34343/unmerged]
-      pkl: [mcpklLHC19c2b2_q]
-      pkl_skimmed: [mcpklskLHC19c2b2_q]
-      pkl_skimmed_merge_for_ml: [mcpklskMLLHC19c2b2_q] 
+      nperiods: 2
+      nprocessesparallel: 64
+      maxfiles : [-1, -1]
+      chunksizeunp : [100, 100]
+      chunksizeskim: [100, 100]
+      fracmerge : [1.0, 1.0]
+      seedmerge: [23, 23]
+      period: [LHC19c2b2_q, LHC19c2b2_r] 
+      unmerged_tree_dir: [/data2/HeavyFlavour/PbPb_MC_3050/09-05-2019/477_20190508-0011/unmerged,
+                          /data2/HeavyFlavour/PbPb_MC_3050/09-05-2019/478_20190508-0011/unmerged]
+      pkl: [mcpklLHC19c2b2_q, mcpklLHC19c2b2_r]
+      pkl_skimmed: [mcpklskLHC19c2b2_q, mcpklskLHC19c2b2_r]
+      pkl_skimmed_merge_for_ml: [mcpklskMLLHC19c2b2_q, mcpklskMLLHC19c2b2_r] 
       pkl_skimmed_merge_for_ml_all: mcpklskMLallperiods
       pkl_evtcounter_all: mcpklevtcounter_all
 
@@ -133,13 +135,13 @@ LctopK0sPbPbCen3050:
 
   analysis:
     data:
-      pkl_skimmed_dec: [datapklskdecLHC18q]
-      pkl_skimmed_decmerged: [datapklskdecmergedLHC18q]
-      results: [analysisdataLHC18q]
+      pkl_skimmed_dec: [datapklskdecLHC18q, datapklskdecLHC18r]
+      pkl_skimmed_decmerged: [datapklskdecmergedLHC18q, datapklskdecmergedLHC18r]
+      results: [analysisdataLHC18q, analysisdataLHC18r]
     mc:
-      pkl_skimmed_dec: [mcpklskdecLHC19c2b2_q]
-      pkl_skimmed_decmerged: [mcpklskdecmergedLHC19c2b2_q]
-      results: [analysismcHC19c2b2_q]
+      pkl_skimmed_dec: [mcpklskdecLHC19c2b2_q, mcpklskdecLHC19c2b2_r]
+      pkl_skimmed_decmerged: [mcpklskdecmergedLHC19c2b2_q, mcpklskdecmergedLHC19c2b2_r]
+      results: [analysismcHC19c2b2_q, analysismcHC19c2b2_r]
     modelname: xgboost
     analysisbinmin: [4]
     analysisbinmax: [6]
