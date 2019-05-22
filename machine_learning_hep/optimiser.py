@@ -41,7 +41,8 @@ class Optimiser:
     #Class Attribute
     species = "optimiser"
 
-    def __init__(self, data_param, case, model_config, grid_config, binmin, binmax):
+    def __init__(self, data_param, case, model_config, grid_config, binmin,
+                 binmax, raahp):
 
         dirmcml = data_param["multi"]["mc"]["pkl_skimmed_merge_for_ml_all"]
         dirdataml = data_param["multi"]["data"]["pkl_skimmed_merge_for_ml_all"]
@@ -140,7 +141,7 @@ class Optimiser:
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
                                      self.p_bin_width))
         self.p_mass = data_param["mass"]
-
+        self.p_raahp = raahp
         self.preparesample()
         self.loadmodels()
         self.create_suffix()
@@ -158,7 +159,6 @@ class Optimiser:
         self.df_mcgen = pd.read_pickle(self.f_gen_mc)
         self.df_mcgen = self.df_mcgen.query(self.p_presel_gen_eff)
         arraydf = [self.df_data, self.df_mc]
-
         self.df_mc = seldf_singlevar(self.df_mc, self.v_bin, self.p_binmin, self.p_binmax)
         self.df_mcgen = seldf_singlevar(self.df_mcgen, self.v_bin, self.p_binmin, self.p_binmax)
         self.df_data = seldf_singlevar(self.df_data, self.v_bin, self.p_binmin, self.p_binmax)
@@ -169,8 +169,6 @@ class Optimiser:
         self.df_bkg = seldf_singlevar(self.df_bkg, self.v_bin, self.p_binmin, self.p_binmax)
         self.df_sig = self.df_sig.query(self.s_selsigml)
         self.df_bkg = self.df_bkg.query(self.s_selbkgml)
-        self.df_sig = shuffle(self.df_sig, random_state=self.rnd_shuffle)
-        self.df_bkg = shuffle(self.df_bkg, random_state=self.rnd_shuffle)
         self.df_bkg["ismcsignal"] = 0
         self.df_bkg["ismcprompt"] = 0
         self.df_bkg["ismcfd"] = 0
@@ -188,18 +186,20 @@ class Optimiser:
         logger.info("Used number of signal events is %d", self.p_nsig)
         logger.info("Used number of background events is %d", self.p_nbkg)
 
+        self.df_ml = pd.DataFrame()
+        self.df_sig = shuffle(self.df_sig, random_state=self.rnd_shuffle)
+        self.df_bkg = shuffle(self.df_bkg, random_state=self.rnd_shuffle)
         self.df_sig = self.df_sig[:self.p_nsig]
         self.df_bkg = self.df_bkg[:self.p_nbkg]
         self.df_sig[self.v_sig] = 1
         self.df_bkg[self.v_sig] = 0
-        self.df_ml = pd.DataFrame()
         self.df_ml = pd.concat([self.df_sig, self.df_bkg])
         self.df_mltrain, self.df_mltest = train_test_split(self.df_ml, \
                                            test_size=self.test_frac, random_state=self.rnd_splt)
-
+        self.df_mltrain = self.df_mltrain.reset_index(drop=True)
+        self.df_mltest = self.df_mltest.reset_index(drop=True)
         self.df_sigtrain, self.df_bkgtrain = split_df_sigbkg(self.df_mltrain, self.v_sig)
         self.df_sigtest, self.df_bkgtest = split_df_sigbkg(self.df_mltest, self.v_sig)
-
         logger.info("Nev ml train %d and test %d", len(self.df_mltrain), len(self.df_mltest))
         logger.info("Nev signal train %d and test %d", len(self.df_sigtrain), len(self.df_sigtest))
         logger.info("Nev bkg train %d and test %d", len(self.df_bkgtrain), len(self.df_bkgtest))
@@ -208,10 +208,8 @@ class Optimiser:
         self.df_ytrain = self.df_mltrain[self.v_sig]
         self.df_xtest = self.df_mltest[self.v_train]
         self.df_ytest = self.df_mltest[self.v_sig]
-
         self.df_evt_data = None
         self.df_evttotsample_data = None
-
     def do_corr(self):
         imageIO_vardist = vardistplot(self.df_sigtrain, self.df_bkgtrain,
                                       self.v_all, self.dirmlplot,
@@ -348,6 +346,9 @@ class Optimiser:
         signal_yield = 2. * prod_cross * delta_pt * self.p_br * acc * self.p_taa \
                        / (self.p_sigmamb * self.p_fprompt)
         print("Expected signal yield: %f", signal_yield)
+        signal_yield = self.p_raahp * signal_yield
+        print("Expected signal yield x RAA hp: %f", signal_yield)
+
         #now we plot the fonll expectation
         plt.figure(figsize=(20, 15))
         plt.subplot(111)

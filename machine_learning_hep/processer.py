@@ -186,23 +186,24 @@ class Processer: # pylint: disable=too-many-instance-attributes
         dfevtorig = treeevtorig.pandas.df(branches=self.v_evt)
         dfevtorig = selectdfrunlist(dfevtorig, self.runlist, "run_number")
         dfevtorig = selectdfquery(dfevtorig, self.s_cen_unp)
+        dfevtorig = dfevtorig.reset_index(drop=True)
         dfevtorig.to_pickle(self.l_evtorig[file_index])
         dfevt = selectdfquery(dfevtorig, self.s_good_evt_unp)
+        dfevt = dfevt.reset_index(drop=True)
         dfevt.to_pickle(self.l_evt[file_index])
 
         treereco = uproot.open(self.l_root[file_index])[self.n_treereco]
         dfreco = treereco.pandas.df(branches=self.v_all)
         dfreco = selectdfrunlist(dfreco, self.runlist, "run_number")
         dfreco = selectdfquery(dfreco, self.s_reco_unp)
-        dfreco = pd.merge(dfreco, dfevt, on=self.v_evtmatch)
-        dfgen = selectdfquery(dfreco, self.s_cen_unp)
-        #dfreco = selectdfquery(dfreco, self.s_good_evt_unp)
+        dfreco = pd.merge(dfreco, dfevt, on=self.v_evtmatch);
         isselacc = selectfidacc(dfreco.pt_cand.values, dfreco.y_cand.values)
         dfreco = dfreco[np.array(isselacc, dtype=bool)]
         if self.b_trackcuts is not None:
             dfreco = filter_bit_df(dfreco, self.v_bitvar, self.b_trackcuts)
         dfreco[self.v_isstd] = np.array(tag_bit_df(dfreco, self.v_bitvar,
                                                    self.b_std), dtype=int)
+        dfreco = dfreco.reset_index(drop=True)
         if self.mcordata == "mc":
             dfreco[self.v_ismcsignal] = np.array(tag_bit_df(dfreco, self.v_bitvar,
                                                             self.b_mcsig), dtype=int)
@@ -218,10 +219,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
             treegen = uproot.open(self.l_root[file_index])[self.n_treegen]
             dfgen = treegen.pandas.df(branches=self.v_gen)
             dfgen = selectdfrunlist(dfgen, self.runlist, "run_number")
-            dfgen = pd.merge(dfgen, dfevt, on=self.v_evtmatch)
+            dfgen = pd.merge(dfgen, dfevtorig, on=self.v_evtmatch)
             dfgen = selectdfquery(dfgen, self.s_gen_unp)
-            dfgen = selectdfquery(dfgen, self.s_good_evt_unp)
-            dfgen = selectdfquery(dfgen, self.s_cen_unp)
             dfgen[self.v_isstd] = np.array(tag_bit_df(dfgen, self.v_bitvar,
                                                       self.b_std), dtype=int)
             dfgen[self.v_ismcsignal] = np.array(tag_bit_df(dfgen, self.v_bitvar,
@@ -232,6 +231,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                                        self.b_mcsigfd), dtype=int)
             dfgen[self.v_ismcbkg] = np.array(tag_bit_df(dfgen, self.v_bitvar,
                                                         self.b_mcbkg), dtype=int)
+            dfgen = dfgen.reset_index(drop=True)
             dfgen.to_pickle(self.l_gen[file_index])
 
     def skim(self, file_index):
@@ -240,13 +240,14 @@ class Processer: # pylint: disable=too-many-instance-attributes
             dfrecosk = seldf_singlevar(dfreco, self.v_var_binning,
                                        self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
             dfrecosk = selectdfquery(dfrecosk, self.s_reco_skim[ipt])
+            dfrecosk = dfrecosk.reset_index(drop=True)
             dfrecosk.to_pickle(self.mptfiles_recosk[ipt][file_index])
-
             if self.mcordata == "mc":
                 dfgen = pickle.load(open(self.l_gen[file_index], "rb"))
                 dfgensk = seldf_singlevar(dfgen, self.v_var_binning,
                                           self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
                 dfgensk = selectdfquery(dfgensk, self.s_gen_skim[ipt])
+                dfgensk = dfgensk.reset_index(drop=True)
                 dfgensk.to_pickle(self.mptfiles_gensk[ipt][file_index])
 
     def applymodel(self, file_index):
@@ -297,8 +298,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         for ipt in range(self.p_nptbins):
             list_sel_recosk = [self.mptfiles_recosk[ipt][j] for j in filesel]
             merge_method(list_sel_recosk, self.lpt_reco_ml[ipt])
-            print(list_sel_recosk)
-            print(self.lpt_reco_ml[ipt])
             if self.mcordata == "mc":
                 list_sel_gensk = [self.mptfiles_gensk[ipt][j] for j in filesel]
                 merge_method(list_sel_gensk, self.lpt_gen_ml[ipt])

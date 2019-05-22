@@ -94,6 +94,7 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
 
     binminarray = data_param[case]["ml"]["binmin"]
     binmaxarray = data_param[case]["ml"]["binmax"]
+    raahp = data_param[case]["ml"]["opt"]["raahp"]
     mltype = data_param[case]["ml"]["mltype"]
 
     mlout = data_param[case]["ml"]["mlout"]
@@ -162,7 +163,7 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
 
     if dohistomassdata is True:
         if checkdirlist(dirresultsdata) is True:
-            exit()
+            print("folder exists")
 
     #perform the analysis flow
     if doconversionmc == 1:
@@ -190,9 +191,11 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
         mymultiprocessdata.multi_mergeml_allinone()
 
     if doml is True:
+        index = 0
         for binmin, binmax in zip(binminarray, binmaxarray):
             myopt = Optimiser(data_param[case], case,
-                              data_model[mltype], grid_param, binmin, binmax)
+                              data_model[mltype], grid_param, binmin, binmax,
+                              raahp[index])
             if docorrelation is True:
                 myopt.do_corr()
             if dotraining is True:
@@ -215,6 +218,7 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
                 myopt.do_boundary()
             if dosignifopt is True:
                 myopt.do_significance()
+            index = index + 1
 
     if doapplydata is True:
         mymultiprocessapplydata = MultiProcesser(data_param[case], run_param, "data")
