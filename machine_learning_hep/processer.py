@@ -292,6 +292,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
     def process_mergeforml(self):
         nfiles = len(self.mptfiles_recosk[0])
+        if nfiles == 0:
+            print("increase the fraction of merged files or the total number")
+            print(" of files you process")
         ntomerge = (int)(nfiles * self.p_frac_merge)
         rd.seed(self.p_rd_merge)
         filesel = rd.sample(range(0, nfiles), ntomerge)

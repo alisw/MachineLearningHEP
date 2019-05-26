@@ -40,10 +40,7 @@ LctopK0sPbPbCen3050:
     var_all: [cos_t_star, dca_K0s, signd0, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s,
               cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2,
               inv_mass, pt_cand, inv_mass_K0s, pt_K0s, cand_type, y_cand,
-              run_number, ev_id, 
-              nsigTPC_Pr_0, nsigTOF_Pr_0, nsigTPC_Pi_0, nsigTOF_Pi_0, 
-              nsigTPC_Pr_1, nsigTOF_Pr_1, nsigTPC_Pi_1, nsigTOF_Pi_1,
-              nsigTPC_Pr_2, nsigTOF_Pr_2, nsigTPC_Pi_2, nsigTOF_Pi_2]
+              run_number, ev_id, nsigTPC_Pr_0, nsigTOF_Pr_0]
     var_evt:
       data: [is_ev_rej, run_number, ev_id, centrality, z_vtx_reco]
       mc: [is_ev_rej, run_number, ev_id, centrality, z_vtx_reco, z_vtx_gen]
@@ -74,55 +71,61 @@ LctopK0sPbPbCen3050:
     efffilename: "effhisto.root"
   multi:
     data:
-      nperiods: 1
+      nperiods: 2
       nprocessesparallel: 50
-      maxfiles : [-1]
-      chunksizeunp : [500]
-      chunksizeskim: [500]
-      #fracmerge : [0.05]
-      fracmerge : [1.0]
-      seedmerge: [12]
-      period: [LHC18q]
-      #unmerged_tree_dir: [/data2/HeavyFlavour/PbPb_data_3050/09-05-2019/469_20190507-2218/unmerged]
-      unmerged_tree_dir: [/Users/gianmicheleinnocenti/Desktop/sample/data/unmerged]
-      pkl: [datapkl]
-      pkl_skimmed: [dataskpkl]
-      pkl_skimmed_merge_for_ml: [dataskmergedpkl]
+      maxfiles : [-1, -1]
+      chunksizeunp : [500, 500]
+      chunksizeskim: [500, 500]
+      fracmerge : [0.05, 0.05]
+      #fracmerge : [1.0]
+      seedmerge: [12, 12]
+      period: [LHC18q, LHC18r]
+      unmerged_tree_dir: [/data2/HeavyFlavour/PbPb_data_3050/09-05-2019/469_20190507-2218/unmerged, 
+                          /data2/HeavyFlavour/PbPb_data_3050/09-05-2019/470_20190507-2220/unmerged]
+      #unmerged_tree_dir: [/Users/gianmicheleinnocenti/Desktop/sample/data/unmerged]
+      pkl: [datapklLHC18q, datapklLHC18r]
+      pkl_skimmed: [datapklskLHC18q, datapklskLHC18r]
+      pkl_skimmed_merge_for_ml: [datapklskMLLHC18q, datapklskMLLHC18r]
       pkl_skimmed_merge_for_ml_all: dataskmergedpklall
       pkl_evtcounter_all: datapklevtcounter_all
     mc:
-      nperiods: 1
+      nperiods: 8
       nprocessesparallel: 50
-      maxfiles : [-1]
-      chunksizeunp : [300]
-      chunksizeskim: [300]
-      fracmerge : [1.0]
-      seedmerge: [12]
-      period: [LHC19c2b2_q] 
-      unmerged_tree_dir: [/Users/gianmicheleinnocenti/Desktop/sample/mc/unmerged]
-      pkl: [mcpkl]
-      pkl_skimmed: [mcpskpkl]
-      pkl_skimmed_merge_for_ml: [mcpskmergedpkl] 
-      pkl_skimmed_merge_for_ml_all: mcpskmergedpklall
-#      maxfiles : [-1, -1, -1, -1]
-#      chunksizeunp : [300, 300, 300, 300]
-#      chunksizeskim: [300, 300, 300, 300]
-#      fracmerge : [1.0, 1.0, 1.0, 1.0]
-#      seedmerge: [12, 12, 12, 12        ]
-#      period: [LHC18q, LHC18q, LHC18q, LHC18q] 
-#      unmerged_tree_dir: [/data2/HeavyFlavour/PbPb_MC_3050/09-05-2019/475_20190508-0011/unmerged,
-#                          /data2/HeavyFlavour/PbPb_MC_3050/09-05-2019/477_20190508-0011/unmerged,
-#                          /data2/HeavyFlavour/PbPb_MC_3050/09-05-2019/481_20190508-0011/unmerged,
-#                          /data2/HeavyFlavour/PbPb_MC_3050/09-05-2019/483_20190508-0011/unmerged]
-#      pkl: [mcpkl475, mcpkl477, mcpkl481, mcpkl483]
-#      pkl_skimmed: [mcpklsk475, mcpklsk477, mcpklsk481, mcpklsk483]
-#      pkl_skimmed_merge_for_ml: [mcpklskml475, mcpklskml477, mcpklskml481, mcpklskml483]
-#      pkl_skimmed_merge_for_ml_all: mcpklskMLallperiods
+#      maxfiles : [-1]
+#      chunksizeunp : [300]
+#      chunksizeskim: [300]
+#      fracmerge : [1.0]
+#      seedmerge: [12]
+#      period: [LHC19c2b2_q] 
+#      unmerged_tree_dir: [/Users/gianmicheleinnocenti/Desktop/sample/mc/unmerged]
+#      pkl: [mcpkl]
+#      pkl_skimmed: [mcpskpkl]
+#      pkl_skimmed_merge_for_ml: [mcpskmergedpkl] 
+#      pkl_skimmed_merge_for_ml_all: mcpskmergedpklall
+      maxfiles : [-1, -1, -1, -1, -1, -1, -1, -1]
+      #maxfiles: [10, 10, 10, 10, 10, 10, 10, 10]
+      chunksizeunp : [300, 300, 300, 300, 300, 300, 300, 300]
+      chunksizeskim: [300, 300, 300, 300, 300, 300, 300, 300]
+      fracmerge : [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0]
+      seedmerge: [12, 12, 12, 12, 12, 12, 12, 12]
+      period: [LHC18q, LHC18q, LHC18q, LHC18q, LHC18r, LHC18r, LHC18r, LHC18r] 
+      unmerged_tree_dir: [/data2/HeavyFlavour/PbPb_MC_3050/09-05-2019/475_20190508-0011/unmerged,
+                          /data2/HeavyFlavour/PbPb_MC_3050/09-05-2019/477_20190508-0011/unmerged,
+                          /data2/HeavyFlavour/PbPb_MC_3050/09-05-2019/481_20190508-0011/unmerged,
+                          /data2/HeavyFlavour/PbPb_MC_3050/09-05-2019/483_20190508-0011/unmerged, 
+                          /data2/HeavyFlavour/PbPb_MC_3050/09-05-2019/476_20190508-0011/unmerged,
+                          /data2/HeavyFlavour/PbPb_MC_3050/09-05-2019/478_20190508-0011/unmerged,
+                          /data2/HeavyFlavour/PbPb_MC_3050/09-05-2019/482_20190508-0011/unmerged,
+                          /data2/HeavyFlavour/PbPb_MC_3050/09-05-2019/484_20190508-0012/unmerged]
+      pkl: [mcpkl475, mcpkl477, mcpkl481, mcpkl483, mcpkl476, mcpkl478, mcpkl482, mcpkl484]
+      pkl_skimmed: [mcpklsk475, mcpklsk477, mcpklsk481, mcpklsk483, mcpklsk476, mcpklsk478, mcpklsk482, mcpklsk484]
+      pkl_skimmed_merge_for_ml: [mcpklskML475, mcpklskML477, mcpklskML481, mcpklskML483, mcpklskML476, mcpklskML478, mcpklskML482, mcpklskML484]
+      pkl_skimmed_merge_for_ml_all: mcpklskMLallperiods
       pkl_evtcounter_all: mcpklevtcounter_all
 
   ml:
-    nbkg: 1000
-    nsig: 1000
+    nbkg: 500000
+    nsig: 500000
     sampletagforsignal: 1
     sampletagforbkg: 0
     sel_sigml: ismcprompt == 1
@@ -152,13 +155,13 @@ LctopK0sPbPbCen3050:
       raahp: [1]
   analysis:
     data:
-      pkl_skimmed_dec: [datapklskdecLHC18q]
-      pkl_skimmed_decmerged: [datapklskdecmergedLHC18q]
-      results: [datapklanalysisLHC18q]
+      pkl_skimmed_dec: [datapklskdecLHC18q, datapklskdecLHC18r]
+      pkl_skimmed_decmerged: [datapklskdecmergedLHC18q, datapklskdecmergedLHC18r]
+      results: [datapklanalysisLHC18q, datapklanalysisLHC18r]
     mc:
-      pkl_skimmed_dec: [mcpklskdecLHC18q]
-      pkl_skimmed_decmerged: [mcpklskdecmergedLHC18q]
-      results: [mcpklanalysisLHC18q]
+      pkl_skimmed_dec: [mcpklskdec475, mcpklskdec477, mcpklskdec481, mcpklskdec483, mcpklskdec476, mcpklskdec478, mcpklskdec482, mcpklskdec484]
+      pkl_skimmed_decmerged: [mcpklskdecmerged475, mcpklskdecmerged477, mcpklskdecmerged481, mcpklskdecmerged483, mcpklskdecmerged476, mcpklskdecmerged478, mcpklskdecmerged482, mcpklskdecmerged484]
+      results: [mcpklanalysis475, mcpklanalysis477, mcpklanalysis481, mcpklanalysis483, mcpklanalysis476, mcpklanalysis478,  mcpklanalysis482, mcpklanalysis484]
 #      pkl_skimmed_dec: [mcpklskdec475, mcpklskdec477, mcpklskdec481, mcpklskdec483]
 #      pkl_skimmed_decmerged: [mcpklsdecmer475, mcpklsdecmer477, mcpklsdecmer481, mcpklsdecmer483]
 #      results: [mcres475, mcres477, mcres481, mcres483]
