@@ -43,6 +43,8 @@ def merge_method(listfiles, namemerged):
 
 # pylint: disable=too-many-nested-blocks
 def list_folders(main_dir, filenameinput, maxfiles):
+    if not os.path.isdir(main_dir):
+        print("the input directory =", main_dir, "doesnt exist")
     list_subdir0 = os.listdir(main_dir)
     listfolders = list()
     for subdir0 in list_subdir0:

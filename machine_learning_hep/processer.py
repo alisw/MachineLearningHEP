@@ -112,7 +112,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.v_var_binning = datap["variables"]["var_binning"]
         #list of files names
 
-        self.l_path = list_folders(self.d_root, self.n_root, self.p_maxfiles)
+        self.l_path = None
+        if os.path.isdir(self.d_root):
+            self.l_path = list_folders(self.d_root, self.n_root, self.p_maxfiles)
+        else:
+            self.l_path = list_folders(self.d_pkl, self.n_reco, self.p_maxfiles)
+
         self.l_root = createlist(self.d_root, self.l_path, self.n_root)
         self.l_reco = createlist(self.d_pkl, self.l_path, self.n_reco)
         self.l_evt = createlist(self.d_pkl, self.l_path, self.n_evt)
