@@ -52,10 +52,10 @@ class Optimiser:
         self.dirmlplot = data_param["ml"]["mlplot"]
         #ml file names
         self.n_reco = data_param["files_names"]["namefile_reco"]
-        self.n_reco = self.n_reco.replace(".pkl","%d_%d.pkl" % (binmin, binmax))
+        self.n_reco = self.n_reco.replace(".pkl", "%d_%d.pkl" % (binmin, binmax))
         self.n_evt = data_param["files_names"]["namefile_evt"]
         self.n_gen = data_param["files_names"]["namefile_gen"]
-        self.n_gen = self.n_gen.replace(".pkl","%d_%d.pkl" % (binmin, binmax))
+        self.n_gen = self.n_gen.replace(".pkl", "%d_%d.pkl" % (binmin, binmax))
         self.n_treetest = data_param["files_names"]["treeoutput"]
         # ml files
         self.f_gen_mc = os.path.join(dirmcml, self.n_gen)
@@ -145,6 +145,8 @@ class Optimiser:
         self.preparesample()
         self.loadmodels()
         self.create_suffix()
+        self.df_evt_data = None
+        self.df_evttotsample_data = None
 
     def create_suffix(self):
         string_selection = createstringselection(self.v_bin, self.p_binmin, self.p_binmax)
@@ -208,8 +210,6 @@ class Optimiser:
         self.df_ytrain = self.df_mltrain[self.v_sig]
         self.df_xtest = self.df_mltest[self.v_train]
         self.df_ytest = self.df_mltest[self.v_sig]
-        self.df_evt_data = None
-        self.df_evttotsample_data = None
     def do_corr(self):
         imageIO_vardist = vardistplot(self.df_sigtrain, self.df_bkgtrain,
                                       self.v_all, self.dirmlplot,

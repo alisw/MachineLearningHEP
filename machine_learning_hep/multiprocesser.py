@@ -55,12 +55,14 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.lpt_gensk = [self.n_gen.replace(".pkl", "%d_%d.pkl" % \
                           (self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
                           for i in range(self.p_nptbins)]
-        self.lptper_recoml = [[os.path.join(direc, self.lpt_recosk[ipt]) for direc in self.dlper_pklml] \
-                             for ipt in range(self.p_nptbins)]
+        self.lptper_recoml = [[os.path.join(direc, self.lpt_recosk[ipt]) \
+                               for direc in self.dlper_pklml] \
+                               for ipt in range(self.p_nptbins)]
         self.lper_evtml = [os.path.join(direc, self.n_evt) for direc in self.dlper_pklml]
         self.lper_evtorigml = [os.path.join(direc, self.n_evtorig) for direc in self.dlper_pklml]
-        self.lptper_genml = [[os.path.join(direc, self.lpt_gensk[ipt]) for direc in self.dlper_pklml] \
-                             for ipt in range(self.p_nptbins)]
+        self.lptper_genml = [[os.path.join(direc, self.lpt_gensk[ipt]) \
+                              for direc in self.dlper_pklml] \
+                              for ipt in range(self.p_nptbins)]
         self.lpt_recoml_mergedallp = [os.path.join(self.d_pklml_mergedallp, self.lpt_recosk[ipt]) \
                                     for ipt in range(self.p_nptbins)]
         self.lpt_genml_mergedallp = [os.path.join(self.d_pklml_mergedallp, self.lpt_gensk[ipt]) \

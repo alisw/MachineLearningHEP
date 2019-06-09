@@ -201,7 +201,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         dfreco = treereco.pandas.df(branches=self.v_all)
         dfreco = selectdfrunlist(dfreco, self.runlist, "run_number")
         dfreco = selectdfquery(dfreco, self.s_reco_unp)
-        dfreco = pd.merge(dfreco, dfevt, on=self.v_evtmatch);
+        dfreco = pd.merge(dfreco, dfevt, on=self.v_evtmatch)
         isselacc = selectfidacc(dfreco.pt_cand.values, dfreco.y_cand.values)
         dfreco = dfreco[np.array(isselacc, dtype=bool)]
         if self.b_trackcuts is not None:

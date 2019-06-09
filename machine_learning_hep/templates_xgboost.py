@@ -23,4 +23,3 @@ def xgboost_classifier(model_config): # pylint: disable=W0613
                          colsample_bytree=model_config['colsample_bytree'],
                          learning_rate=model_config['learning_rate'],
                          n_estimators=model_config['n_estimators'])
-
