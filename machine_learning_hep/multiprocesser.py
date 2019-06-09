@@ -33,9 +33,9 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.p_chunksizeunp = datap["multi"][self.mcordata]["chunksizeunp"]
         self.p_chunksizeskim = datap["multi"][self.mcordata]["chunksizeskim"]
         self.p_nparall = datap["multi"][self.mcordata]["nprocessesparallel"]
-        self.lpt_anbinmin = datap["analysis"]["analysisbinmin"]
-        self.lpt_anbinmax = datap["analysis"]["analysisbinmax"]
-        self.p_nptbins = len(datap["analysis"]["analysisbinmin"])
+        self.lpt_anbinmin = datap["sel_skim_binmin"]
+        self.lpt_anbinmax = datap["sel_skim_binmax"]
+        self.p_nptbins = len(datap["sel_skim_binmax"])
         #directories
         self.dlper_root = datap["multi"][self.mcordata]["unmerged_tree_dir"]
         self.dlper_pkl = datap["multi"][self.mcordata]["pkl"]
@@ -73,9 +73,6 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.dlper_reco_modapp = datap["analysis"][self.mcordata]["pkl_skimmed_dec"]
         self.dlper_reco_modappmerged = datap["analysis"][self.mcordata]["pkl_skimmed_decmerged"]
         self.d_results = datap["analysis"][self.mcordata]["results"]
-        self.lpt_anbinmin = datap["analysis"]["analysisbinmin"]
-        self.lpt_anbinmax = datap["analysis"]["analysisbinmax"]
-        self.p_nptbins = len(datap["analysis"]["analysisbinmin"])
         self.lpt_probcutpre = datap["analysis"]["probcutpresel"]
         self.lpt_probcut = datap["analysis"]["probcutoptimal"]
         self.f_evt_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evt)
@@ -99,13 +96,12 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
     def multi_unpack_allperiods(self):
         for indexp in range(self.prodnumber):
             self.process_listsample[indexp].process_unpack_par()
-        merge_method(self.lper_evt, self.f_evt_mergedallp)
-        merge_method(self.lper_evtorig, self.f_evtorig_mergedallp)
-
 
     def multi_skim_allperiods(self):
         for indexp in range(self.prodnumber):
             self.process_listsample[indexp].process_skim_par()
+        merge_method(self.lper_evt, self.f_evt_mergedallp)
+        merge_method(self.lper_evtorig, self.f_evtorig_mergedallp)
 
     def multi_mergeml_allperiods(self):
         for indexp in range(self.prodnumber):

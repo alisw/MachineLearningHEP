@@ -106,19 +106,19 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
 
     #creating folder if not present
     if doconversionmc is True:
-        if checkdirlist(dirpklmc) or checkdir(dirpklevtcounter_allmc) is True:
+        if checkdirlist(dirpklmc) is True:
             exit()
 
     if doconversiondata is True:
-        if checkdirlist(dirpkldata) or checkdir(dirpklevtcounter_alldata) is True:
+        if checkdirlist(dirpkldata) is True:
             exit()
 
     if doskimmingmc is True:
-        if checkdirlist(dirpklskmc) is True:
+        if checkdirlist(dirpklskmc) or checkdir(dirpklevtcounter_allmc) is True:
             exit()
 
     if doskimmingdata is True:
-        if checkdirlist(dirpklskdata) is True:
+        if checkdirlist(dirpklskdata) or checkdir(dirpklevtcounter_alldata) is True:
             exit()
 
     if domergingmc is True:

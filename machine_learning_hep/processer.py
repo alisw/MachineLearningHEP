@@ -130,9 +130,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.f_totevtorig = os.path.join(self.d_pkl, self.n_evtorig)
 
         self.p_modelname = datap["analysis"]["modelname"]
-        self.lpt_anbinmin = datap["analysis"]["analysisbinmin"]
-        self.lpt_anbinmax = datap["analysis"]["analysisbinmax"]
-        self.p_nptbins = len(datap["analysis"]["analysisbinmin"])
+        self.lpt_anbinmin = datap["sel_skim_binmin"]
+        self.lpt_anbinmax = datap["sel_skim_binmax"]
+        self.p_nptbins = len(datap["sel_skim_binmax"])
         self.lpt_model = datap["analysis"]["modelsperptbin"]
         self.dirmodel = datap["ml"]["mlout"]
         self.lpt_model = appendmainfoldertolist(self.dirmodel, self.lpt_model)
@@ -279,14 +279,14 @@ class Processer: # pylint: disable=too-many-instance-attributes
         create_folder_struc(self.d_pkl, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
         self.parallelizer(self.unpack, arguments, self.p_chunksizeunp)
-        merge_method(self.l_evt, self.f_totevt)
-        merge_method(self.l_evtorig, self.f_totevtorig)
 
     def process_skim_par(self):
         print("doing skimming", self.mcordata, self.period)
         create_folder_struc(self.d_pklsk, self.l_path)
         arguments = [(i,) for i in range(len(self.l_reco))]
         self.parallelizer(self.skim, arguments, self.p_chunksizeskim)
+        merge_method(self.l_evt, self.f_totevt)
+        merge_method(self.l_evtorig, self.f_totevtorig)
 
     def process_applymodel_par(self):
         print("doing apply model", self.mcordata, self.period)
