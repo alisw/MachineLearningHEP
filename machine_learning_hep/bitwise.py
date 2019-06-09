@@ -48,7 +48,7 @@ def selectbitoff(array_cand_type, bits):
     return is_selected
 
 
-def filter_bit_df(dfin, namebitmap, activatedbit):
+def tag_bit_df(dfin, namebitmap, activatedbit):
     bitson = activatedbit[0]
     bitsoff = activatedbit[1]
     array_cand_type = dfin.loc[:, namebitmap].values.astype("int")
@@ -63,5 +63,9 @@ def filter_bit_df(dfin, namebitmap, activatedbit):
         bitmapoff = selectbitoff(array_cand_type, bitsoff)
         res_off = pd.Series(bitmapoff)
     res = res_on & res_off
+    return res
+
+def filter_bit_df(dfin, namebitmap, activatedbit):
+    res = tag_bit_df(dfin, namebitmap, activatedbit)
     df_sel = dfin[res.values]
     return df_sel

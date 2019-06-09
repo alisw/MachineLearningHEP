@@ -188,6 +188,8 @@ def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder)
             continue
         if "Logistic" in name:
             continue
+        if "Keras" in name:
+            continue
         ax1 = plt.subplot(2, (len(names_)+1)/2, i)
         #plt.subplots_adjust(left=0.3, right=0.9)
         feature_importances_ = model.feature_importances_

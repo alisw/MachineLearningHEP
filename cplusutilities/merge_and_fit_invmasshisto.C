@@ -17,21 +17,21 @@ Double_t min_fit = mass-0.14;
 Double_t max_fit = mass+0.14;
 Int_t signal_fit_f = 0;    // kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2
 Int_t background_fit_f = 2;// kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5
-Int_t rebin = 5;
+Int_t rebin = 4;
 
-const int nptbins = 2;
-float ptlimits[nptbins+1] = {6, 8, 12};
-TString dir[nptbins] = {"6-8", "8-12"};
+const int nptbins = 1;
+float ptlimits[nptbins+1] = {6, 8};
+TString dir[nptbins] = {"/home/ginnocen/MachineLearningHEP/machine_learning_hep/datapklanalysisLHC18q"};
 
-const int nprob_test = 3;
-TString   prob_test[nprob_test] = {"0.80", "0.85", "0.90"};
+const int nprob_test = 1;
+TString   prob_test[nprob_test] = {"0.70"};
 
-const int nfiles = 2;
-TString   files[nfiles] = {"18q", "18r"};
-TString   cent = "010";
+const int nfiles = 1;
+TString   files[nfiles] = {"LHC18q"};
+TString   cent = "3050";
 
 bool fixsigma = true;
-float sigmafix[nptbins] = {0.013, 0.013};
+float sigmafix[nptbins] = {0.013};
 
 void merge_and_fit_invmasshisto(){
     
@@ -52,8 +52,10 @@ void merge_and_fit_invmasshisto(){
             c_fit_prob->Divide(3,2);
             // single period analysis
             for(int ifil=0; ifil<nfiles; ifil++){
-                TFile *f = TFile::Open(Form("%s/masshistoLctopK0sPbPbCen%sdata1_%s_%s.root",dir[i].Data(),cent.Data(),prob_test[iprob].Data(),files[ifil].Data()));
-                TH1F *h = (TH1F*)f->Get(Form("h_invmass%.0f_%.0f_prob%s",ptlimits[i],ptlimits[i+1],prob_test[iprob].Data()));
+		    std::cout<<Form("%s/masshistoLctopK0sPbPbCen%s%s_%.0f_%.0f.root",dir[i].Data(),cent.Data(),"_byHand",ptlimits[i], ptlimits[i+1])<<std::endl;
+		TFile *f = TFile::Open(Form("%s/masshisto%.0f_%.0f_%s.root",dir[i].Data(),ptlimits[i], ptlimits[i+1],prob_test[iprob].Data()));
+                
+		TH1F *h = (TH1F*)f->Get("hmass");
                 h->SetName(Form("h_invmass%s_%.0f_%.0f_prob%s",files[ifil].Data(),ptlimits[i],ptlimits[i+1],prob_test[iprob].Data()));
                 if(ifil==0){
                     hmerge=(TH1F*)h->Clone("h_merge");
@@ -157,11 +159,13 @@ void merge_and_fit_invmasshisto(){
             fitterbkg->DrawHere(gPad);
             c_fit->cd(iprob+4);
             fitterbkg->DrawHere(gPad);
-        }
+            c_fit_prob->Write();
+	}
     }
     fout->cd();
     for(int k=0; k<nprob_test; k++){
         h_raw_signal[k]->Write();
+    	
     }
 }
 

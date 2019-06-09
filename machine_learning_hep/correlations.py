@@ -21,7 +21,8 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 
-def vardistplot(dataframe_sig_, dataframe_bkg_, mylistvariables_, output_):
+def vardistplot(dataframe_sig_, dataframe_bkg_, mylistvariables_, output_,
+                binmin, binmax):
     figure = plt.figure(figsize=(20, 15)) # pylint: disable=unused-variable
     i = 1
     for var in mylistvariables_:
@@ -34,7 +35,7 @@ def vardistplot(dataframe_sig_, dataframe_bkg_, mylistvariables_, output_):
         plt.hist(dataframe_bkg_[var], facecolor='g', label='background', **kwargs)
         ax.legend()
         i = i+1
-    plotname = output_+'/variablesDistribution.png'
+    plotname = output_+'/variablesDistribution%d%d.png' % (binmin, binmax)
     plt.savefig(plotname, bbox_inches='tight')
     imagebytesIO = BytesIO()
     plt.savefig(imagebytesIO, format='png')
@@ -42,7 +43,8 @@ def vardistplot(dataframe_sig_, dataframe_bkg_, mylistvariables_, output_):
     return imagebytesIO
 
 
-def scatterplot(dataframe_sig_, dataframe_bkg_, mylistvariablesx_, mylistvariablesy_, output_):
+def scatterplot(dataframe_sig_, dataframe_bkg_, mylistvariablesx_,
+                mylistvariablesy_, output_, binmin, binmax):
     figurecorr = plt.figure(figsize=(30, 20)) # pylint: disable=unused-variable
     i = 1
     for j, _ in enumerate(mylistvariablesx_):
@@ -62,7 +64,7 @@ def scatterplot(dataframe_sig_, dataframe_bkg_, mylistvariablesx_, mylistvariabl
             dataframe_bkg_.corr().loc[mylistvariablesx_[j]][mylistvariablesy_[j]].round(2))
         axcorr.legend()
         i = i+1
-    plotname = output_+'/variablesScatterPlot.png'
+    plotname = output_+'/variablesScatterPlot%f%f.png' % (binmin, binmax)
     plt.savefig(plotname, bbox_inches='tight')
     imagebytesIO = BytesIO()
     plt.savefig(imagebytesIO, format='png')
@@ -70,7 +72,7 @@ def scatterplot(dataframe_sig_, dataframe_bkg_, mylistvariablesx_, mylistvariabl
     return imagebytesIO
 
 
-def correlationmatrix(dataframe, output_, label):
+def correlationmatrix(dataframe, output_, label, binmin, binmax):
     corr = dataframe.corr()
     f, ax = plt.subplots(figsize=(10, 8)) # pylint: disable=unused-variable
     plt.title(label, fontsize=11)
@@ -78,7 +80,7 @@ def correlationmatrix(dataframe, output_, label):
         corr, mask=np.zeros_like(corr, dtype=np.bool),
         cmap=sns.diverging_palette(220, 10, as_cmap=True), vmin=-1, vmax=1,
         square=True, ax=ax)
-    plotname = output_+'/correlationmatrix'+label+'.png'
+    plotname = output_+'/correlationmatrix%f%f.png' % (binmin, binmax)
     plt.savefig(plotname, bbox_inches='tight')
     imagebytesIO = BytesIO()
     plt.savefig(imagebytesIO, format='png')
