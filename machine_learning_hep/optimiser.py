@@ -18,6 +18,7 @@ main script for doing ml optisation
 import os
 import time
 from math import sqrt
+import pickle
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -35,6 +36,7 @@ from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perf
 from machine_learning_hep.models import importanceplotall
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.optimization import calc_bkg, calc_signif
+from machine_learning_hep.correlations import vardistplot_probscan, efficiency_cutscan
 
 # pylint: disable=too-many-instance-attributes, too-many-statements, too-few-public-methods
 class Optimiser:
@@ -57,6 +59,8 @@ class Optimiser:
         self.n_gen = data_param["files_names"]["namefile_gen"]
         self.n_gen = self.n_gen.replace(".pkl", "%d_%d.pkl" % (binmin, binmax))
         self.n_treetest = data_param["files_names"]["treeoutput"]
+        self.n_reco_applieddata = data_param["files_names"]["namefile_reco_applieddata"]
+        self.n_reco_appliedmc = data_param["files_names"]["namefile_reco_appliedmc"]
         # ml files
         self.f_gen_mc = os.path.join(dirmcml, self.n_gen)
         self.f_reco_mc = os.path.join(dirmcml, self.n_reco)
@@ -64,6 +68,8 @@ class Optimiser:
         self.f_reco_data = os.path.join(dirdataml, self.n_reco)
         self.f_evt_data = os.path.join(dirdataml, self.n_evt)
         self.f_evttotsample_data = os.path.join(dirdatatotsample, self.n_evt)
+        self.f_reco_applieddata = os.path.join(self.dirmlout, self.n_reco_applieddata)
+        self.f_reco_appliedmc = os.path.join(self.dirmlout, self.n_reco_appliedmc)
         #variables
         self.v_all = data_param["variables"]["var_all"]
         self.v_train = data_param["variables"]["var_training"]
@@ -147,6 +153,11 @@ class Optimiser:
         self.create_suffix()
         self.df_evt_data = None
         self.df_evttotsample_data = None
+
+        self.f_reco_applieddata = \
+                self.f_reco_applieddata.replace(".pkl", "%s.pkl" % self.s_suffix)
+        self.f_reco_appliedmc = \
+                self.f_reco_appliedmc.replace(".pkl", "%s.pkl" % self.s_suffix)
 
     def create_suffix(self):
         string_selection = createstringselection(self.v_bin, self.p_binmin, self.p_binmax)
@@ -237,6 +248,7 @@ class Optimiser:
         savemodels(self.p_classname, self.p_trainedmod, self.dirmlout, self.s_suffix)
         print("training over")
         print("time elapsed=", time.time() -t0)
+
     def do_test(self):
         df_ml_test = test(self.p_mltype, self.p_classname, self.p_trainedmod,
                           self.df_mltest, self.v_train, self.v_sig)
@@ -250,10 +262,8 @@ class Optimiser:
                         self.df_data, self.v_train)
         df_mc = apply(self.p_mltype, self.p_classname, self.p_trainedmod,
                       self.df_mc, self.v_train)
-        df_data_to_root = self.dirmlout+"/data_%s_mldecision.root" % (self.s_suffix)
-        df_mc_to_root = self.dirmlout+"/mc_%s_mldecision.root" % (self.s_suffix)
-        write_tree(df_data_to_root, self.n_treetest, df_data)
-        write_tree(df_mc_to_root, self.n_treetest, df_mc)
+        df_data.to_pickle(self.f_reco_applieddata)
+        df_mc.to_pickle(self.f_reco_appliedmc)
 
     def do_crossval(self):
         df_scores = cross_validation_mse(self.p_classname, self.p_class,
@@ -428,3 +438,25 @@ class Optimiser:
             plt.figure(fig_signif.number)
             plt.legend(loc="lower left", prop={'size': 18})
             plt.savefig(f'{self.dirmlplot}/Significance_{self.s_suffix}.png')
+
+    def do_scancuts(self):
+        print("Doing scanning cuts")
+        prob_array = [0.0, 0.2, 0.6, 0.9]
+        dfdata = pickle.load(open(self.f_reco_applieddata, "rb"))
+        dfmc = pickle.load(open(self.f_reco_appliedmc, "rb"))
+        vardistplot_probscan(dfmc, self.v_train, "xgboost_classifier",
+                             prob_array, self.dirmlplot, "scancutsmc", 0)
+        vardistplot_probscan(dfmc, self.v_train, "xgboost_classifier",
+                             prob_array, self.dirmlplot, "scancutsmc", 1)
+        efficiency_cutscan(dfmc, self.v_train, "xgboost_classifier", 0.5,
+                           self.dirmlplot, "mc")
+        efficiency_cutscan(dfmc, self.v_train, "xgboost_classifier", 0.9,
+                           self.dirmlplot, "mc")
+        vardistplot_probscan(dfdata, self.v_train, "xgboost_classifier",
+                             prob_array, self.dirmlplot, "scancutsdata", 0)
+        vardistplot_probscan(dfdata, self.v_train, "xgboost_classifier",
+                             prob_array, self.dirmlplot, "scancutsdata", 1)
+        efficiency_cutscan(dfdata, self.v_train, "xgboost_classifier", 0.5,
+                           self.dirmlplot, "data")
+        efficiency_cutscan(dfdata, self.v_train, "xgboost_classifier", 0.9,
+                           self.dirmlplot, "data")
