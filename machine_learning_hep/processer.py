@@ -33,7 +33,7 @@ from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar
 from machine_learning_hep.models import apply # pylint: disable=import-error
-
+from machine_learning_hep.correlations import vardistplot_probscan
 class Processer: # pylint: disable=too-many-instance-attributes
     # Class Attribute
     species = 'processer'
@@ -50,6 +50,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.d_pkl = d_pkl
         self.d_pklsk = d_pklsk
         self.d_pkl_ml = d_pkl_ml
+        self.d_results = d_results
         self.datap = datap
         self.mcordata = mcordata
         self.p_frac_merge = p_frac_merge
@@ -144,8 +145,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.mptfiles_gensk = []
 
         self.d_pkl_decmerged = d_pkl_decmerged
-        self.n_filemass = os.path.join(d_results, self.n_filemass)
-        self.n_fileeff = os.path.join(d_results, self.n_fileeff)
+        self.n_filemass = os.path.join(self.d_results, self.n_filemass)
+        self.n_fileeff = os.path.join(self.d_results, self.n_fileeff)
 
         self.lpt_recosk = [self.n_reco.replace(".pkl", "%d_%d.pkl" % \
                           (self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
@@ -401,3 +402,17 @@ class Processer: # pylint: disable=too-many-instance-attributes
         h_gen_fd.Write()
         h_presel_fd.Write()
         h_sel_fd.Write()
+
+    def process_scancuts(self):
+        prob_array = [0.5, 0.6]
+        for ipt in range(self.p_nptbins):
+            df = pickle.load(open(self.lpt_recodecmerged[ipt], "rb"))
+            vardistplot_probscan(df, self.v_train, self.p_modelname,
+                                 prob_array, self.d_results, "scancuts")
+            if self.mcordata == "mc":
+                df_sig = df[df[self.v_ismcsignal] == 1]
+                df_bkg = df[df[self.v_ismcsignal] == 0]
+                vardistplot_probscan(df_sig, self.v_train, self.p_modelname,
+                                     prob_array, self.d_results, "scancutssignal")
+                vardistplot_probscan(df_bkg, self.v_train, self.p_modelname,
+                                     prob_array, self.d_results, "scancutsbkg")
