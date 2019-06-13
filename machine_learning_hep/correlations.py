@@ -69,7 +69,7 @@ def vardistplot_probscan(dataframe_, mylistvariables_, modelname_, tresharray_, 
             lbl = text
             clr = color[j-1]
             plt.hist(df_[var], facecolor=clr, label=lbl, **kwargs)
-            ax.legend(fontsize=30)
+            ax.legend(fontsize=10)
             i = i+1
         j = j+1
     plotname = output_+'/variablesDistribution_'+suffix_+'.png'

@@ -137,8 +137,11 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.lpt_model = datap["analysis"]["modelsperptbin"]
         self.dirmodel = datap["ml"]["mlout"]
         self.lpt_model = appendmainfoldertolist(self.dirmodel, self.lpt_model)
-        self.lpt_probcutpre = datap["analysis"]["probcutpresel"]
+        self.lpt_probcutpre = datap["analysis"]["probcutpresel"][self.mcordata]
         self.lpt_probcutfin = datap["analysis"]["probcutoptimal"]
+
+        if self.lpt_probcutfin < self.lpt_probcutpre:
+            print("FATAL error: probability cut final must be tighter!")
 
         self.d_pkl_dec = d_pkl_dec
         self.mptfiles_recosk = []
@@ -404,15 +407,13 @@ class Processer: # pylint: disable=too-many-instance-attributes
         h_sel_fd.Write()
 
     def process_scancuts(self):
-        prob_array = [0.5, 0.6]
+        prob_array = [0.0, 0.2, 0.6, 0.9]
+        listvar = self.v_train.append("inv_mass")
         for ipt in range(self.p_nptbins):
             df = pickle.load(open(self.lpt_recodecmerged[ipt], "rb"))
             vardistplot_probscan(df, self.v_train, self.p_modelname,
                                  prob_array, self.d_results, "scancuts")
             if self.mcordata == "mc":
                 df_sig = df[df[self.v_ismcsignal] == 1]
-                df_bkg = df[df[self.v_ismcsignal] == 0]
                 vardistplot_probscan(df_sig, self.v_train, self.p_modelname,
-                                     prob_array, self.d_results, "scancutssignal")
-                vardistplot_probscan(df_bkg, self.v_train, self.p_modelname,
-                                     prob_array, self.d_results, "scancutsbkg")
+                                     prob_array, self.d_results, "scancutssig")

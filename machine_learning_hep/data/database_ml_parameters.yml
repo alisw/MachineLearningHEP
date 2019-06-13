@@ -211,7 +211,9 @@ LctopK0sPbPbCen3050:
 #      results: [mcres475, mcres477, mcres481, mcres483]
     modelname: xgboost
     modelsperptbin: [xgboost_classifiernevt_sig500000_nevt_bkg500000_LctopK0sPbPbCen3050_dfselection_pt_cand_4.0_6.0.sav]
-    probcutpresel: [0.5]
+    probcutpresel: 
+      data: [0.5]
+      mc: [0.0]
     probcutoptimal: [0.90]
     mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
     bin_width: 0.001 # bin width of the invariant mass histogram
