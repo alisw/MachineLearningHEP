@@ -44,34 +44,59 @@ def vardistplot(dataframe_sig_, dataframe_bkg_, mylistvariables_, output_,
 
 def vardistplot_probscan(dataframe_, mylistvariables_, modelname_, tresharray_, output_, suffix_):
     color = ['C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9']
-    figure = plt.figure(figsize=(60, 25)) # pylint: disable=unused-variable
-    j = 1
+    dfprob = []
     for treshold in tresharray_:
-        #print(treshold)
-        #selection on data df
         selml = "y_test_prob%s>%s" % (modelname_, treshold)
         df_ = dataframe_.query(selml)
-        i = 1
-        for var in mylistvariables_:
-            ax = plt.subplot(3, int(len(mylistvariables_)/3+1), i)
-            plt.xlabel(var, fontsize=30)
-            plt.ylabel("entries", fontsize=30)
-            plt.yscale('log')
-            plt.xticks(fontsize=20)
-            plt.yticks(fontsize=20)
-            isvarpid = "TPC" in var or "TOF" in var
-            if isvarpid is True:
-                kwargs = dict(alpha=0.3, density=False, bins=100, range=[-4, 4])
-            else:
-                kwargs = dict(alpha=0.3, density=False, bins=100)
-            n = len(df_[var])
+        dfprob.append(df_)
+    figure = plt.figure(figsize=(60, 25)) # pylint: disable=unused-variable
+    i = 1
+    for var in mylistvariables_:
+        isvarpid = "TPC" in var or "TOF" in var
+        if isvarpid is True:
+            kwargs = dict(alpha=0.3, density=False, bins=100, range=[-4, 4])
+        else:
+            kwargs = dict(alpha=0.3, density=False, bins=100)
+        ax = plt.subplot(3, int(len(mylistvariables_)/3+1), i)
+        plt.xlabel(var, fontsize=30)
+        plt.ylabel("entries", fontsize=30)
+        plt.yscale('log')
+        plt.xticks(fontsize=20)
+        plt.yticks(fontsize=20)
+        j = 0
+        for treshold in tresharray_:
+            n = len(dfprob[j][var])
             text = f'prob > {treshold} n = {n}'
             lbl = text
-            clr = color[j-1]
-            plt.hist(df_[var], facecolor=clr, label=lbl, **kwargs)
-            ax.legend(fontsize=10)
-            i = i+1
-        j = j+1
+            clr = color[j]
+            plt.hist(dfprob[j][var], facecolor=clr, label=lbl, **kwargs)
+            j = j+1
+        ax.legend(fontsize=10)
+        i = i+1
+    figureratio = plt.figure(figsize=(60, 25)) # pylint: disable=unused-variable
+    i = 1
+    for var in mylistvariables_:
+        isvarpid = "TPC" in var or "TOF" in var
+        if isvarpid is True:
+            kwargs = dict(alpha=0.3, density=False, bins=100, range=[-4, 4])
+        else:
+            kwargs = dict(alpha=0.3, density=False, bins=100)
+        ax = plt.subplot(3, int(len(mylistvariables_)/3+1), i)
+        plt.xlabel(var, fontsize=30)
+        plt.ylabel("entries", fontsize=30)
+        plt.yscale('log')
+        plt.xticks(fontsize=20)
+        plt.yticks(fontsize=20)
+        j = 0
+        for treshold in tresharray_:
+            n = len(dfprob[j][var])
+            text = f'prob > {treshold} n = {n}'
+            lbl = text
+            clr = color[j]
+            plt.hist(dfprob[j][var], facecolor=clr, label=lbl, **kwargs)
+            j = j+1
+        ax.legend(fontsize=10)
+        i = i+1
     plotname = output_+'/variablesDistribution_'+suffix_+'.png'
     plt.savefig(plotname, bbox_inches='tight')
 
