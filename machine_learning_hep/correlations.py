@@ -64,7 +64,6 @@ def vardistplot_probscan(dataframe_, mylistvariables_, modelname_, tresharray_,
         ax = plt.subplot(3, int(len(mylistvariables_)/3+1), i)
         plt.xlabel(var, fontsize=30)
         plt.ylabel("entries", fontsize=30)
-        plt.yscale('log')
         plt.xticks(fontsize=20)
         plt.yticks(fontsize=20)
         j = 0
@@ -83,15 +82,16 @@ def vardistplot_probscan(dataframe_, mylistvariables_, modelname_, tresharray_,
             width = np.diff(bina)
             center = (bina[:-1] + bina[1:]) / 2
             if opt == 0:
+                plt.yscale('log')
                 ax.bar(center, his, align='center', width=width, facecolor=clr, label=lbl)
             if opt == 1:
                 ratio = np.divide(his,his0)
                 ax.bar(center, ratio, align='center', width=width, facecolor=clr, label=lbl)
-                plt.ylim(0.001,10)
+                plt.ylim(0.001, 1.1)
             j = j+1
         ax.legend(fontsize=10)
         i = i+1
-    plotname = output_+'/variablesDistribution_'+suffix_+'.png'
+    plotname = output_+'/variablesDistribution_'+suffix_+'ratio'+ ("%d") % opt+'.png'
     plt.savefig(plotname, bbox_inches='tight')
 
 def scatterplot(dataframe_sig_, dataframe_bkg_, mylistvariablesx_,
