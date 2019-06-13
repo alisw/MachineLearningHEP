@@ -42,21 +42,25 @@ def vardistplot(dataframe_sig_, dataframe_bkg_, mylistvariables_, output_,
     imagebytesIO.seek(0)
     return imagebytesIO
 
-def vardistplot_probscan(dataframe_, mylistvariables_, modelname_, tresharray_, output_, suffix_):
+def vardistplot_probscan(dataframe_, mylistvariables_, modelname_, tresharray_,
+                         output_, suffix_, opt = 1):
     color = ['C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9']
     dfprob = []
+    list_ns_th_var = []
+    list_bins_th_var = []
+
     for treshold in tresharray_:
         selml = "y_test_prob%s>%s" % (modelname_, treshold)
         df_ = dataframe_.query(selml)
         dfprob.append(df_)
-    figure = plt.figure(figsize=(60, 25)) # pylint: disable=unused-variable
+
+    figure, ax = plt.subplots(figsize=(60, 25)) # pylint: disable=unused-variable
     i = 1
     for var in mylistvariables_:
+        list_ns_th = []
+        list_bins_th = []
         isvarpid = "TPC" in var or "TOF" in var
-        if isvarpid is True:
-            kwargs = dict(alpha=0.3, density=False, bins=100, range=[-4, 4])
-        else:
-            kwargs = dict(alpha=0.3, density=False, bins=100)
+
         ax = plt.subplot(3, int(len(mylistvariables_)/3+1), i)
         plt.xlabel(var, fontsize=30)
         plt.ylabel("entries", fontsize=30)
@@ -64,36 +68,26 @@ def vardistplot_probscan(dataframe_, mylistvariables_, modelname_, tresharray_, 
         plt.xticks(fontsize=20)
         plt.yticks(fontsize=20)
         j = 0
-        for treshold in tresharray_:
-            n = len(dfprob[j][var])
-            text = f'prob > {treshold} n = {n}'
-            lbl = text
-            clr = color[j]
-            plt.hist(dfprob[j][var], facecolor=clr, label=lbl, **kwargs)
-            j = j+1
-        ax.legend(fontsize=10)
-        i = i+1
-    figureratio = plt.figure(figsize=(60, 25)) # pylint: disable=unused-variable
-    i = 1
-    for var in mylistvariables_:
-        isvarpid = "TPC" in var or "TOF" in var
+        values0 = dfprob[0][var]
+        minv, maxv = values0.min(), values0.max()
         if isvarpid is True:
-            kwargs = dict(alpha=0.3, density=False, bins=100, range=[-4, 4])
-        else:
-            kwargs = dict(alpha=0.3, density=False, bins=100)
-        ax = plt.subplot(3, int(len(mylistvariables_)/3+1), i)
-        plt.xlabel(var, fontsize=30)
-        plt.ylabel("entries", fontsize=30)
-        plt.yscale('log')
-        plt.xticks(fontsize=20)
-        plt.yticks(fontsize=20)
-        j = 0
+            minv, maxv = -4, 4
+        his0, _ = np.histogram(dfprob[0][var], range=(minv, maxv), bins=100)
         for treshold in tresharray_:
             n = len(dfprob[j][var])
             text = f'prob > {treshold} n = {n}'
             lbl = text
             clr = color[j]
-            plt.hist(dfprob[j][var], facecolor=clr, label=lbl, **kwargs)
+            values = dfprob[j][var]
+            his, bina = np.histogram(values, range=(minv, maxv), bins=100)
+            width = np.diff(bina)
+            center = (bina[:-1] + bina[1:]) / 2
+            if opt == 0:
+                ax.bar(center, his, align='center', width=width, facecolor=clr, label=lbl)
+            if opt == 1:
+                ratio = np.divide(his,his0)
+                ax.bar(center, ratio, align='center', width=width, facecolor=clr, label=lbl)
+                plt.ylim(0.001,10)
             j = j+1
         ax.legend(fontsize=10)
         i = i+1
