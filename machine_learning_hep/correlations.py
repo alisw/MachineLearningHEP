@@ -46,8 +46,6 @@ def vardistplot_probscan(dataframe_, mylistvariables_, modelname_, tresharray_,
                          output_, suffix_, opt = 1):
     color = ['C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9']
     dfprob = []
-    list_ns_th_var = []
-    list_bins_th_var = []
 
     for treshold in tresharray_:
         selml = "y_test_prob%s>%s" % (modelname_, treshold)
@@ -57,8 +55,6 @@ def vardistplot_probscan(dataframe_, mylistvariables_, modelname_, tresharray_,
     figure, ax = plt.subplots(figsize=(60, 25)) # pylint: disable=unused-variable
     i = 1
     for var in mylistvariables_:
-        list_ns_th = []
-        list_bins_th = []
         isvarpid = "TPC" in var or "TOF" in var
 
         ax = plt.subplot(3, int(len(mylistvariables_)/3+1), i)
@@ -92,6 +88,38 @@ def vardistplot_probscan(dataframe_, mylistvariables_, modelname_, tresharray_,
         ax.legend(fontsize=10)
         i = i+1
     plotname = output_+'/variablesDistribution_'+suffix_+'ratio'+ ("%d") % opt+'.png'
+    plt.savefig(plotname, bbox_inches='tight')
+
+def efficiency_cutscan(dataframe_, mylistvariables_, output_):
+
+    figure, ax = plt.subplots(figsize=(60, 25)) # pylint: disable=unused-variable
+    i = 1
+    for var in mylistvariables_:
+
+        ax = plt.subplot(3, int(len(mylistvariables_)/3+1), i)
+        plt.xlabel(var, fontsize=30)
+        plt.ylabel("entries", fontsize=30)
+        plt.xticks(fontsize=20)
+        plt.yticks(fontsize=20)
+        values = dataframe_[var].values
+        nbinscan = 100
+        minv, maxv = values.min(), values.max()
+        sumval = len(values)
+        ratio = []
+        _, bina = np.histogram(values, range=(minv, maxv), bins=nbinscan)
+        widthbin = (maxv - minv)/(float)(nbinscan)
+        width = np.diff(bina)
+        center = (bina[:-1] + bina[1:]) / 2
+        den = len(values)
+        for ibin in range(nbinscan):
+            valuesel = values[values > minv+widthbin*ibin]
+            num = len(valuesel)
+            eff = float(num)/float(den)
+            ratio.append(eff)
+        ax.bar(center, ratio, align='center', width=width, label="non")
+        ax.legend(fontsize=10)
+        i = i+1
+    plotname = output_+'/variableseffscan' + var + '.png'
     plt.savefig(plotname, bbox_inches='tight')
 
 def scatterplot(dataframe_sig_, dataframe_bkg_, mylistvariablesx_,
