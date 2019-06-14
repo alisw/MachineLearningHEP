@@ -65,6 +65,7 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     doimportance = data_config["ml_study"]['doimportance']
     dogridsearch = data_config["ml_study"]['dogridsearch']
     dosignifopt = data_config["ml_study"]['dosignifopt']
+    doscancuts = data_config["ml_study"]["doscancuts"]
     #doefficiency = run_config['doefficiency']
     doapplydata = data_config["analysis"]["data"]["doapply"]
     doapplymc = data_config["analysis"]["mc"]["doapply"]
@@ -73,8 +74,6 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     dohistomassmc = data_config["analysis"]["mc"]["histomass"]
     dohistomassdata = data_config["analysis"]["data"]["histomass"]
     doefficiency = data_config["analysis"]["mc"]["efficiency"]
-    doscancutsdata = data_config["analysis"]["data"]["scancuts"]
-    doscancutsmc = data_config["analysis"]["mc"]["scancuts"]
 
     dirpklmc = data_param[case]["multi"]["mc"]["pkl"]
     dirpklevtcounter_allmc = data_param[case]["multi"]["mc"]["pkl_evtcounter_all"]
@@ -220,6 +219,8 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
                 myopt.do_boundary()
             if dosignifopt is True:
                 myopt.do_significance()
+            if doscancuts is True:
+                myopt.do_scancuts()
             index = index + 1
 
     if doapplydata is True:
@@ -243,11 +244,5 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     if doefficiency is True:
         mymultiprocesseffmc = MultiProcesser(data_param[case], run_param, "mc")
         mymultiprocesseffmc.multi_efficiency()
-    if doscancutsdata is True:
-        mymultiprocesseffdata = MultiProcesser(data_param[case], run_param, "data")
-        mymultiprocesseffdata.multi_scancuts()
-    if doscancutsmc is True:
-        mymultiprocesseffmc = MultiProcesser(data_param[case], run_param, "mc")
-        mymultiprocesseffmc.multi_scancuts()
 
 do_entire_analysis()

@@ -64,6 +64,9 @@ LctopK0sPbPbCen3050:
     namefile_evt: AnalysisResultsEvt.pkl
     namefile_evtorig: AnalysisResultsEvtOrig.pkl
     namefile_gen: AnalysisResultsGen.pkl
+    namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl
+    namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl
+    namefile_reco: AnalysisResultsReco.pkl
     treeoriginreco: 'PWGHF_TreeCreator/tree_Lc2V0bachelor'
     treeorigingen: 'PWGHF_TreeCreator/tree_Lc2V0bachelor_gen'
     treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'

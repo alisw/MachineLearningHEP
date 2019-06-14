@@ -33,7 +33,6 @@ from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar
 from machine_learning_hep.models import apply # pylint: disable=import-error
-from machine_learning_hep.correlations import vardistplot_probscan, efficiency_cutscan
 class Processer: # pylint: disable=too-many-instance-attributes
     # Class Attribute
     species = 'processer'
@@ -406,15 +405,3 @@ class Processer: # pylint: disable=too-many-instance-attributes
         h_presel_fd.Write()
         h_sel_fd.Write()
 
-    def process_scancuts(self):
-        prob_array = [0.0, 0.2, 0.6, 0.9]
-        for ipt in range(self.p_nptbins):
-            df = pickle.load(open(self.lpt_recodecmerged[ipt], "rb"))
-            vardistplot_probscan(df, self.v_train, self.p_modelname,
-                                 prob_array, self.d_results, "scancuts", 0)
-#            vardistplot_probscan(df, self.v_train, self.p_modelname,
-#                                 prob_array, self.d_results, "scancuts",1)
-        efficiency_cutscan(df, self.v_train, self.p_modelname, 0.9,
-                           self.d_results, self.mcordata)
-        efficiency_cutscan(df, self.v_train, self.p_modelname, 0.,
-                           self.d_results, self.mcordata)
