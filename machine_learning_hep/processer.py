@@ -404,4 +404,3 @@ class Processer: # pylint: disable=too-many-instance-attributes
         h_gen_fd.Write()
         h_presel_fd.Write()
         h_sel_fd.Write()
-
