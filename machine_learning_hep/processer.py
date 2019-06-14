@@ -408,13 +408,13 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
     def process_scancuts(self):
         prob_array = [0.0, 0.2, 0.6, 0.9]
-        dirsel = []
-        listvar = self.v_train.append("inv_mass")
         for ipt in range(self.p_nptbins):
             df = pickle.load(open(self.lpt_recodecmerged[ipt], "rb"))
-#            vardistplot_probscan(df, self.v_train, self.p_modelname,
-#                                 prob_array, self.d_results, "scancuts",0)
+            vardistplot_probscan(df, self.v_train, self.p_modelname,
+                                 prob_array, self.d_results, "scancuts", 0)
 #            vardistplot_probscan(df, self.v_train, self.p_modelname,
 #                                 prob_array, self.d_results, "scancuts",1)
-        efficiency_cutscan(df, self.v_train, self.d_results)
-
+        efficiency_cutscan(df, self.v_train, self.p_modelname, 0.9,
+                           self.d_results, self.mcordata)
+        efficiency_cutscan(df, self.v_train, self.p_modelname, 0.,
+                           self.d_results, self.mcordata)
