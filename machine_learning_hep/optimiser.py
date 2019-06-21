@@ -49,15 +49,16 @@ class Optimiser:
         dirmcml = data_param["multi"]["mc"]["pkl_skimmed_merge_for_ml_all"]
         dirdataml = data_param["multi"]["data"]["pkl_skimmed_merge_for_ml_all"]
         dirdatatotsample = data_param["multi"]["data"]["pkl_evtcounter_all"]
+        self.v_bin = data_param["var_binning"]
         #directory
         self.dirmlout = data_param["ml"]["mlout"]
         self.dirmlplot = data_param["ml"]["mlplot"]
         #ml file names
         self.n_reco = data_param["files_names"]["namefile_reco"]
-        self.n_reco = self.n_reco.replace(".pkl", "%d_%d.pkl" % (binmin, binmax))
+        self.n_reco = self.n_reco.replace(".pkl", "_%s%d_%d.pkl" % (self.v_bin, binmin, binmax))
         self.n_evt = data_param["files_names"]["namefile_evt"]
         self.n_gen = data_param["files_names"]["namefile_gen"]
-        self.n_gen = self.n_gen.replace(".pkl", "%d_%d.pkl" % (binmin, binmax))
+        self.n_gen = self.n_gen.replace(".pkl", "_%s%d_%d.pkl" % (self.v_bin, binmin, binmax))
         self.n_treetest = data_param["files_names"]["treeoutput"]
         self.n_reco_applieddata = data_param["files_names"]["namefile_reco_applieddata"]
         self.n_reco_appliedmc = data_param["files_names"]["namefile_reco_appliedmc"]
@@ -75,7 +76,6 @@ class Optimiser:
         self.v_train = data_param["variables"]["var_training"]
         self.v_bound = data_param["variables"]["var_boundaries"]
         self.v_sig = data_param["variables"]["var_signal"]
-        self.v_bin = data_param["variables"]["var_binning"]
         self.v_invmass = data_param["variables"]["var_inv_mass"]
         self.v_corrx = data_param["variables"]["var_correlation"][0]
         self.v_corry = data_param["variables"]["var_correlation"][1]

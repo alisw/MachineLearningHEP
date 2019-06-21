@@ -2,24 +2,24 @@ case: D0pp_multiplicity
 
 conversion:
   mc: 
-    activate: true 
+    activate: false 
   data:
-    activate: true
+    activate: false
 skimming: 
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 merging: 
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 mergingperiods: 
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 
 ml_study:   
   activate: false
@@ -33,10 +33,11 @@ ml_study:
   doimportance: false
   dolearningcurve: true
   dopca: false
-  dosignifopt: true
+  dosignifopt: false
   doefficiency: false
   dotesting: true
   dotraining: true
+  doscancuts: true
 
 analysis:
   data:
@@ -50,4 +51,3 @@ analysis:
     domergeapplyperiods: false
     histomass: false
     efficiency: false
-   
