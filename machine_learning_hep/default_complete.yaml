@@ -23,6 +23,7 @@ mergingperiods:
 
 ml_study:   
   activate: false
+  doscancuts: false
   applytodatamc: true
   doroc: true
   doboundary: false
