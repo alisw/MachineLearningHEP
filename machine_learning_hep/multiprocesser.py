@@ -45,15 +45,16 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.d_pklevt_mergedallp = datap["multi"][self.mcordata]["pkl_evtcounter_all"]
 
         #namefiles pkl
+        self.v_var_binning = datap["var_binning"]
         self.n_reco = datap["files_names"]["namefile_reco"]
         self.n_evt = datap["files_names"]["namefile_evt"]
         self.n_evtorig = datap["files_names"]["namefile_evtorig"]
         self.n_gen = datap["files_names"]["namefile_gen"]
-        self.lpt_recosk = [self.n_reco.replace(".pkl", "%d_%d.pkl" % \
-                          (self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
+        self.lpt_recosk = [self.n_reco.replace(".pkl", "_%s%d_%d.pkl" % \
+                          (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
                           for i in range(self.p_nptbins)]
-        self.lpt_gensk = [self.n_gen.replace(".pkl", "%d_%d.pkl" % \
-                          (self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
+        self.lpt_gensk = [self.n_gen.replace(".pkl", "_%s%d_%d.pkl" % \
+                          (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
                           for i in range(self.p_nptbins)]
         self.lptper_recoml = [[os.path.join(direc, self.lpt_recosk[ipt]) \
                                for direc in self.dlper_pklml] \
