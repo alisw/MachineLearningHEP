@@ -225,17 +225,17 @@ LctopK0sPbPbCen3050:
 
 
 D0pp_multiplicity:
-  mass: 2.2864
-  sel_reco_unp: "pt_cand>0"
+  mass: 1.864
+  sel_reco_unp: "pt_cand>2"
   sel_reco_singletrac_unp : null
-  sel_gen_unp: "pt_cand>4 and abs(z_vtx_gen)<10"
+  sel_gen_unp: "pt_cand>2 and abs(z_vtx_gen)<10"
   sel_cen_unp: null
-  sel_good_evt_unp: null
+  sel_good_evt_unp: "is_ev_rej == 0"
   sel_reco_skim: [null]
   sel_gen_skim: [null]
-  sel_skim_binmin: [4]
-  sel_skim_binmax: [6]
-  var_binning: pt_cand
+  sel_skim_binmin: [0]
+  sel_skim_binmax: [100]
+  var_binning: n_tracklets
   
   bitmap_sel:
     use: True
@@ -252,14 +252,13 @@ D0pp_multiplicity:
     ismcbkg: [[2],[]]
     
   variables:
-    var_all: [cos_t_star, pt_prong0, pt_prong1, imp_par_prong0, imp_par_prong1,
-              inv_mass, pt_cand, cand_type, y_cand, run_number, ev_id]
+    var_all: [d_len, d_len_xy, norm_dl, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, cos_t_star, imp_par_prod, pt_prong0, pt_prong1, imp_par_prong0, imp_par_prong1, imp_par_err_prong0, imp_par_err_prong1, max_norm_d0d0exp, inv_mass, pt_cand, cand_type, y_cand, eta_prong0, eta_prong1, run_number, ev_id]
     var_evt:
-      data: [is_ev_rej, run_number, ev_id, centrality, z_vtx_reco]
-      mc: [is_ev_rej, run_number, ev_id, centrality, z_vtx_reco, z_vtx_gen]
+      data: [is_ev_rej, run_number, ev_id, centrality, z_vtx_reco, n_tracklets]
+      mc: [is_ev_rej, run_number, ev_id, centrality, z_vtx_reco, z_vtx_gen, n_tracklets]
     var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
     var_evt_match: [run_number, ev_id]
-    var_training: [cos_t_star, pt_prong0, pt_prong1, imp_par_prong0, imp_par_prong1] 
+    var_training: [d_len, d_len_xy, norm_dl, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, cos_t_star, imp_par_prod, pt_prong0, pt_prong1, imp_par_prong0, imp_par_prong1, imp_par_err_prong0, imp_par_err_prong1, max_norm_d0d0exp] 
     var_boundaries: [cos_t_star, pt_prong0]
     var_correlation:
       - [cos_t_star]
@@ -303,23 +302,9 @@ D0pp_multiplicity:
     mc:
       nperiods: 3
       nprocessesparallel: 50
-#      maxfiles : [-1]
-#      chunksizeunp : [300]
-#      chunksizeskim: [300]
-#      fracmerge : [1.0]
-#      seedmerge: [12]
-#      period: [LHC19c2b2_q] 
-#      unmerged_tree_dir: [/Users/gianmicheleinnocenti/Desktop/sample/mc/unmerged]
-#      pkl: [mcpkl]
-#      pkl_skimmed: [mcpskpkl]
-#      pkl_skimmed_merge_for_ml: [mcpskmergedpkl] 
-#      pkl_skimmed_merge_for_ml_all: mcpskmergedpklall
       maxfiles : [-1, -1, -1]
-      #maxfiles: [10, 10, 10, 10, 10, 10, 10, 10]
       chunksizeunp : [300, 300, 300]
       chunksizeskim: [300, 300, 300]
-      #chunksizeunp : [30, 30, 30, 30, 30, 30, 30, 30]
-      #chunksizeskim: [30, 30, 30, 30, 30, 30, 30, 30]
       fracmerge : [1.0, 1.0, 1.0]
       seedmerge: [12, 12, 12]
       period: [LHC18bdefghijklmnop, LHC18bdefghijklmnop, LHC18bdefghijklmnop]
@@ -344,7 +329,7 @@ D0pp_multiplicity:
     sampletagforsignal: 1
     sampletagforbkg: 0
     sel_sigml: ismcprompt == 1
-    sel_bkgml: inv_mass<2.186 or inv_mass>2.386  
+    sel_bkgml: inv_mass<1.77 or inv_mass>1.97 
     nkfolds: 5
     rnd_shuffle: 12
     rnd_splt: 12
@@ -353,16 +338,16 @@ D0pp_multiplicity:
     binmax: [6]
     mltype: BinaryClassification
     ncorescrossval: 10 
-    mlplot: mlplot3050 # to be removed
-    mlout: mlout3050 # to be removed
+    mlplot: mlplotD0pp # to be removed
+    mlout: mloutD0pp # to be removed
 
     opt:
       filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
       fonll_pred: 'max' # edge of the FONLL prediction
-      FF: 0.1281 # fragmentation fraction
+      FF: 0.6086 # fragmentation fraction
       sigma_MB: 1  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
-      Taa: 3917 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
-      BR: 1.09e-2 # branching ratio of the decay Lc->pK0s * K0s->pi+pi-
+      Taa: 1 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
+      BR: 3.89e-2 # branching ratio of the decay Lc->pK0s * K0s->pi+pi-
       f_prompt: 0.9 # estimated fraction of prompt candidates
       bkg_data_fraction: 0.1 # fraction of real data used in the estimation
       num_steps: 111 # number of steps used in efficiency and signif. estimation
