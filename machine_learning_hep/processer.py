@@ -109,7 +109,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.v_ismcprompt = datap["bitmap_sel"]["var_ismcprompt"]
         self.v_ismcfd = datap["bitmap_sel"]["var_ismcfd"]
         self.v_ismcbkg = datap["bitmap_sel"]["var_ismcbkg"]
-        self.v_var_binning = datap["variables"]["var_binning"]
+        self.v_var_binning = datap["var_binning"]
         #list of files names
 
         self.l_path = None
@@ -150,11 +150,11 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.n_filemass = os.path.join(self.d_results, self.n_filemass)
         self.n_fileeff = os.path.join(self.d_results, self.n_fileeff)
 
-        self.lpt_recosk = [self.n_reco.replace(".pkl", "%d_%d.pkl" % \
-                          (self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
+        self.lpt_recosk = [self.n_reco.replace(".pkl", "_%s%d_%d.pkl" % \
+                          (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
                           for i in range(self.p_nptbins)]
-        self.lpt_gensk = [self.n_gen.replace(".pkl", "%d_%d.pkl" % \
-                          (self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
+        self.lpt_gensk = [self.n_gen.replace(".pkl", "_%s%d_%d.pkl" % \
+                          (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
                           for i in range(self.p_nptbins)]
         self.lpt_reco_ml = [os.path.join(self.d_pkl_ml, self.lpt_recosk[ipt]) \
                              for ipt in range(self.p_nptbins)]

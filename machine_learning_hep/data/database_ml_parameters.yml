@@ -23,6 +23,7 @@ LctopK0sPbPbCen3050:
   sel_gen_skim: [null]
   sel_skim_binmin: [4]
   sel_skim_binmax: [6]
+  var_binning: pt_cand
   
   bitmap_sel:
     use: True
@@ -55,7 +56,6 @@ LctopK0sPbPbCen3050:
       - [cos_t_star]
       - [imp_par_K0s]
     var_signal: signal
-    var_binning: pt_cand
     var_inv_mass: inv_mass
 
   files_names:
@@ -235,6 +235,7 @@ D0pp_multiplicity:
   sel_gen_skim: [null]
   sel_skim_binmin: [4]
   sel_skim_binmax: [6]
+  var_binning: pt_cand
   
   bitmap_sel:
     use: True
@@ -264,7 +265,6 @@ D0pp_multiplicity:
       - [cos_t_star]
       - [pt_prong0]
     var_signal: signal
-    var_binning: pt_cand
     var_inv_mass: inv_mass
 
   files_names:
