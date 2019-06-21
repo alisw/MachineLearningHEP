@@ -42,6 +42,111 @@ def vardistplot(dataframe_sig_, dataframe_bkg_, mylistvariables_, output_,
     imagebytesIO.seek(0)
     return imagebytesIO
 
+def vardistplot_probscan(dataframe_, mylistvariables_, modelname_, tresharray_,
+                         output_, suffix_, opt=1):
+    color = ['C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9']
+    dfprob = []
+
+    for treshold in tresharray_:
+        selml = "y_test_prob%s>%s" % (modelname_, treshold)
+        df_ = dataframe_.query(selml)
+        dfprob.append(df_)
+
+    figure, ax = plt.subplots(figsize=(60, 25)) # pylint: disable=unused-variable
+    i = 1
+    for var in mylistvariables_:
+        isvarpid = "TPC" in var or "TOF" in var
+
+        ax = plt.subplot(3, int(len(mylistvariables_)/3+1), i)
+        plt.xlabel(var, fontsize=30)
+        plt.ylabel("entries", fontsize=30)
+        plt.xticks(fontsize=20)
+        plt.yticks(fontsize=20)
+        j = 0
+        values0 = dfprob[0][var]
+        minv, maxv = values0.min(), values0.max()
+        if isvarpid is True:
+            minv, maxv = -4, 4
+        his0, _ = np.histogram(dfprob[0][var], range=(minv, maxv), bins=100)
+        for treshold in tresharray_:
+            n = len(dfprob[j][var])
+            text = f'prob > {treshold} n = {n}'
+            lbl = text
+            clr = color[j]
+            values = dfprob[j][var]
+            his, bina = np.histogram(values, range=(minv, maxv), bins=100)
+            width = np.diff(bina)
+            center = (bina[:-1] + bina[1:]) / 2
+            if opt == 0:
+                plt.yscale('log')
+                ax.bar(center, his, align='center', width=width, facecolor=clr, label=lbl)
+            if opt == 1:
+                ratio = np.divide(his, his0)
+                ax.bar(center, ratio, align='center', width=width, facecolor=clr, label=lbl)
+                plt.ylim(0.001, 1.1)
+            j = j+1
+        ax.legend(fontsize=10)
+        i = i+1
+    plotname = output_+'/variablesDistribution_'+suffix_+'ratio'+ ("%d") % opt+'.png'
+    plt.savefig(plotname, bbox_inches='tight')
+
+def efficiency_cutscan(dataframe_, mylistvariables_, modelname_, treshold,
+                       output_, suffix_):
+
+    selml = "y_test_prob%s>%s" % (modelname_, treshold)
+    dataframe_ = dataframe_.query(selml)
+
+    figure, ax = plt.subplots(figsize=(60, 25)) # pylint: disable=unused-variable
+    i = 1
+    listvardir = ["st", "lt", "st", "absst", "lt", "lt", "st", "lt",
+                  "absst", "absst", "absst", "absst", "absst", "absst"]
+    listcentral = [None, None, None, 0., None, None, None, None,
+                   0., 0., 0., 0.4977, 0., 0.]
+    for ivar, var in enumerate(mylistvariables_):
+        var = mylistvariables_[ivar]
+        vardir = listvardir[ivar]
+        cen = listcentral[ivar]
+        isvarpid = "TPC" in var or "TOF" in var
+        ax = plt.subplot(3, int(len(mylistvariables_)/3+1), i)
+        plt.xlabel(var, fontsize=30)
+        plt.ylabel("entries", fontsize=30)
+        plt.xticks(fontsize=20)
+        plt.yticks(fontsize=20)
+        plt.yscale('log')
+        plt.ylim(0.005, 1.5)
+        values = dataframe_[var].values
+        if "abs" in  vardir:
+            values = np.array([abs(i - cen) for i in values])
+        nbinscan = 100
+        minv, maxv = values.min(), values.max()
+        if isvarpid is True:
+            minv, maxv = -4, 4
+        ratio = []
+        _, bina = np.histogram(values, range=(minv, maxv), bins=nbinscan)
+        widthbin = (maxv - minv)/(float)(nbinscan)
+        width = np.diff(bina)
+        center = (bina[:-1] + bina[1:]) / 2
+        den = len(values)
+        valuesel = []
+        if "lt" in vardir:
+            for ibin in range(nbinscan):
+                valuesel = values[values > minv+widthbin*ibin]
+                num = len(valuesel)
+                eff = float(num)/float(den)
+                ratio.append(eff)
+        if "st" in vardir:
+            for ibin in range(nbinscan):
+                valuesel = values[values < minv+widthbin*ibin]
+                num = len(valuesel)
+                eff = float(num)/float(den)
+                ratio.append(eff)
+        text = f'prob > {treshold}'
+        lbl = text
+        ax.bar(center, ratio, align='center', width=width, label=lbl)
+        ax.legend(fontsize=30)
+        i = i+1
+    plotname = output_+'/variableseffscan_prob'+ "%f" % treshold + suffix_ + '.png'
+    plt.savefig(plotname, bbox_inches='tight')
 
 def scatterplot(dataframe_sig_, dataframe_bkg_, mylistvariablesx_,
                 mylistvariablesy_, output_, binmin, binmax):

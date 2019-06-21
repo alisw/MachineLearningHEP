@@ -33,7 +33,6 @@ from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar
 from machine_learning_hep.models import apply # pylint: disable=import-error
-
 class Processer: # pylint: disable=too-many-instance-attributes
     # Class Attribute
     species = 'processer'
@@ -50,6 +49,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.d_pkl = d_pkl
         self.d_pklsk = d_pklsk
         self.d_pkl_ml = d_pkl_ml
+        self.d_results = d_results
         self.datap = datap
         self.mcordata = mcordata
         self.p_frac_merge = p_frac_merge
@@ -136,16 +136,19 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.lpt_model = datap["analysis"]["modelsperptbin"]
         self.dirmodel = datap["ml"]["mlout"]
         self.lpt_model = appendmainfoldertolist(self.dirmodel, self.lpt_model)
-        self.lpt_probcutpre = datap["analysis"]["probcutpresel"]
+        self.lpt_probcutpre = datap["analysis"]["probcutpresel"][self.mcordata]
         self.lpt_probcutfin = datap["analysis"]["probcutoptimal"]
+
+        if self.lpt_probcutfin < self.lpt_probcutpre:
+            print("FATAL error: probability cut final must be tighter!")
 
         self.d_pkl_dec = d_pkl_dec
         self.mptfiles_recosk = []
         self.mptfiles_gensk = []
 
         self.d_pkl_decmerged = d_pkl_decmerged
-        self.n_filemass = os.path.join(d_results, self.n_filemass)
-        self.n_fileeff = os.path.join(d_results, self.n_fileeff)
+        self.n_filemass = os.path.join(self.d_results, self.n_filemass)
+        self.n_fileeff = os.path.join(self.d_results, self.n_fileeff)
 
         self.lpt_recosk = [self.n_reco.replace(".pkl", "%d_%d.pkl" % \
                           (self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \

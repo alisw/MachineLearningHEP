@@ -65,6 +65,7 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     doimportance = data_config["ml_study"]['doimportance']
     dogridsearch = data_config["ml_study"]['dogridsearch']
     dosignifopt = data_config["ml_study"]['dosignifopt']
+    doscancuts = data_config["ml_study"]["doscancuts"]
     #doefficiency = run_config['doefficiency']
     doapplydata = data_config["analysis"]["data"]["doapply"]
     doapplymc = data_config["analysis"]["mc"]["doapply"]
@@ -218,6 +219,8 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
                 myopt.do_boundary()
             if dosignifopt is True:
                 myopt.do_significance()
+            if doscancuts is True:
+                myopt.do_scancuts()
             index = index + 1
 
     if doapplydata is True:
