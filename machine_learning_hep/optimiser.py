@@ -168,9 +168,9 @@ class Optimiser:
     def preparesample(self):
         logger = get_logger()
         print("prepare sample")
-        self.df_data = pd.read_pickle(self.f_reco_data)
-        self.df_mc = pd.read_pickle(self.f_reco_mc)
-        self.df_mcgen = pd.read_pickle(self.f_gen_mc)
+        self.df_data = pickle.load(openfile(self.f_reco_data, "rb"))
+        self.df_mc = pickle.load(openfile(self.f_reco_mc, "rb"))
+        self.df_mcgen = pickle.load(openfile(self.f_gen_mc, "rb"))
         self.df_mcgen = self.df_mcgen.query(self.p_presel_gen_eff)
         arraydf = [self.df_data, self.df_mc]
         self.df_mc = seldf_singlevar(self.df_mc, self.v_bin, self.p_binmin, self.p_binmax)
@@ -255,7 +255,6 @@ class Optimiser:
                           self.df_mltest, self.v_train, self.v_sig)
         df_ml_test_to_df = self.dirmlout+"/testsample_%s_mldecision.pkl" % (self.s_suffix)
         df_ml_test_to_root = self.dirmlout+"/testsample_%s_mldecision.root" % (self.s_suffix)
-        # df_ml_test.to_pickle(df_ml_test_to_df)
         pickle.dump(df_ml_test, openfile(df_ml_test_to_df, "wb"))
         write_tree(df_ml_test_to_root, self.n_treetest, df_ml_test)
 
@@ -264,8 +263,8 @@ class Optimiser:
                         self.df_data, self.v_train)
         df_mc = apply(self.p_mltype, self.p_classname, self.p_trainedmod,
                       self.df_mc, self.v_train)
-        df_data.to_pickle(self.f_reco_applieddata)
-        df_mc.to_pickle(self.f_reco_appliedmc)
+        pickle.dump(df_data, openfile(self.f_reco_applieddata, "wb"))
+        pickle.dump(df_mc, openfile(self.f_reco_appliedmc, "wb"))
 
     def do_crossval(self):
         df_scores = cross_validation_mse(self.p_classname, self.p_class,
@@ -444,8 +443,8 @@ class Optimiser:
     def do_scancuts(self):
         print("Doing scanning cuts")
         prob_array = [0.0, 0.2, 0.6, 0.9]
-        dfdata = pickle.load(open(self.f_reco_applieddata, "rb"))
-        dfmc = pickle.load(open(self.f_reco_appliedmc, "rb"))
+        dfdata = pickle.load(openfile(self.f_reco_applieddata, "rb"))
+        dfmc = pickle.load(openfile(self.f_reco_appliedmc, "rb"))
         vardistplot_probscan(dfmc, self.v_train, "xgboost_classifier",
                              prob_array, self.dirmlplot, "scancutsmc", 0)
         vardistplot_probscan(dfmc, self.v_train, "xgboost_classifier",
