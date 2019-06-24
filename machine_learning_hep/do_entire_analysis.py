@@ -30,19 +30,19 @@ from optimiser import Optimiser
 def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 
     with open("default_complete.yaml", 'r') as run_config:
-        data_config = yaml.load(run_config)
+        data_config = yaml.load(run_config, Loader=yaml.FullLoader)
 
     with open("data/database_ml_parameters.yml", 'r') as param_config:
-        data_param = yaml.load(param_config)
+        data_param = yaml.load(param_config, Loader=yaml.FullLoader)
 
     with open("data/config_model_parameters.yml", 'r') as mod_config:
-        data_model = yaml.load(mod_config)
+        data_model = yaml.load(mod_config, Loader=yaml.FullLoader)
 
     with open("data/database_run_list.yml", 'r') as runlist_config:
-        run_param = yaml.load(runlist_config)
+        run_param = yaml.load(runlist_config, Loader=yaml.FullLoader)
 
     with open("data/database_ml_gridsearch.yml", 'r') as grid_config:
-        grid_param = yaml.load(grid_config)
+        grid_param = yaml.load(grid_config, Loader=yaml.FullLoader)
 
     case = data_config["case"]
     doconversionmc = data_config["conversion"]["mc"]["activate"]

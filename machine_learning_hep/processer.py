@@ -31,7 +31,7 @@ from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge_method
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
-from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar
+from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
 from machine_learning_hep.models import apply # pylint: disable=import-error
 class Processer: # pylint: disable=too-many-instance-attributes
     # Class Attribute
@@ -195,10 +195,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
         dfevtorig = selectdfrunlist(dfevtorig, self.runlist, "run_number")
         dfevtorig = selectdfquery(dfevtorig, self.s_cen_unp)
         dfevtorig = dfevtorig.reset_index(drop=True)
-        dfevtorig.to_pickle(self.l_evtorig[file_index])
+        pickle.dump(dfevtorig, openfile(self.l_evtorig[file_index], "wb"))
         dfevt = selectdfquery(dfevtorig, self.s_good_evt_unp)
         dfevt = dfevt.reset_index(drop=True)
-        dfevt.to_pickle(self.l_evt[file_index])
+        pickle.dump(dfevt, openfile(self.l_evt[file_index], "wb"))
 
         treereco = uproot.open(self.l_root[file_index])[self.n_treereco]
         dfreco = treereco.pandas.df(branches=self.v_all)
@@ -221,7 +221,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                                         self.b_mcsigfd), dtype=int)
             dfreco[self.v_ismcbkg] = np.array(tag_bit_df(dfreco, self.v_bitvar,
                                                          self.b_mcbkg), dtype=int)
-        dfreco.to_pickle(self.l_reco[file_index])
+        pickle.dump(dfreco, openfile(self.l_reco[file_index], "wb"))
 
         if self.mcordata == "mc":
             treegen = uproot.open(self.l_root[file_index])[self.n_treegen]
@@ -240,33 +240,42 @@ class Processer: # pylint: disable=too-many-instance-attributes
             dfgen[self.v_ismcbkg] = np.array(tag_bit_df(dfgen, self.v_bitvar,
                                                         self.b_mcbkg), dtype=int)
             dfgen = dfgen.reset_index(drop=True)
-            dfgen.to_pickle(self.l_gen[file_index])
+            pickle.dump(dfgen, openfile(self.l_gen[file_index], "wb"))
 
     def skim(self, file_index):
-        dfreco = pickle.load(open(self.l_reco[file_index], "rb"))
+        try:
+            dfreco = pickle.load(openfile(self.l_reco[file_index], "rb"))
+        except Exception as e: # pylint: disable=broad-except
+            print('failed to open file', self.l_reco[file_index], str(e))
         for ipt in range(self.p_nptbins):
             dfrecosk = seldf_singlevar(dfreco, self.v_var_binning,
                                        self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
             dfrecosk = selectdfquery(dfrecosk, self.s_reco_skim[ipt])
             dfrecosk = dfrecosk.reset_index(drop=True)
-            dfrecosk.to_pickle(self.mptfiles_recosk[ipt][file_index])
+            print('writing skimmed output to', self.mptfiles_recosk[ipt][file_index])
+            f = openfile(self.mptfiles_recosk[ipt][file_index], "wb")
+            pickle.dump(dfrecosk, f)
+            f.close()
             if self.mcordata == "mc":
-                dfgen = pickle.load(open(self.l_gen[file_index], "rb"))
+                try:
+                    dfgen = pickle.load(openfile(self.l_gen[file_index], "rb"))
+                except Exception as e: # pylint: disable=broad-except
+                    print('failed to open MC file', self.l_gen[file_index], str(e))
                 dfgensk = seldf_singlevar(dfgen, self.v_var_binning,
                                           self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
                 dfgensk = selectdfquery(dfgensk, self.s_gen_skim[ipt])
                 dfgensk = dfgensk.reset_index(drop=True)
-                dfgensk.to_pickle(self.mptfiles_gensk[ipt][file_index])
+                pickle.dump(dfgensk, openfile(self.mptfiles_gensk[ipt][file_index], "wb"))
 
     def applymodel(self, file_index):
         for ipt in range(self.p_nptbins):
-            dfrecosk = pickle.load(open(self.mptfiles_recosk[ipt][file_index], "rb"))
-            mod = pickle.load(open(self.lpt_model[ipt], 'rb'))
+            dfrecosk = pickle.load(openfile(self.mptfiles_recosk[ipt][file_index], "rb"))
+            mod = pickle.load(openfile(self.lpt_model[ipt], 'rb'))
             dfrecoskml = apply("BinaryClassification", [self.p_modelname], [mod],
                                dfrecosk, self.v_train)
             probvar = "y_test_prob" + self.p_modelname
             dfrecoskml = dfrecoskml.loc[dfrecoskml[probvar] > self.lpt_probcutpre[ipt]]
-            dfrecoskml.to_pickle(self.mptfiles_recoskmldec[ipt][file_index])
+            pickle.dump(dfrecoskml, openfile(self.mptfiles_recoskmldec[ipt][file_index], "wb"))
     def parallelizer(self, function, argument_list, maxperchunk):
         chunks = [argument_list[x:x+maxperchunk] \
                   for x in range(0, len(argument_list), maxperchunk)]
@@ -327,7 +336,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
     def process_histomass(self):
         for ipt in range(self.p_nptbins):
             myfile = TFile.Open(self.lpt_filemass[ipt], "recreate")
-            df = pickle.load(open(self.lpt_recodecmerged[ipt], "rb"))
+            df = pickle.load(openfile(self.lpt_recodecmerged[ipt], "rb"))
             df = df.query(self.l_selml[ipt])
             h_invmass = TH1F("hmass", "", self.p_num_bins,
                              self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])

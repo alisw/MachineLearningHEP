@@ -26,6 +26,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 from ROOT import TH1F, TF1  # pylint: disable=import-error,no-name-in-module
 from machine_learning_hep.utilities import seldf_singlevar, split_df_sigbkg, createstringselection
+from machine_learning_hep.utilities import openfile
 from machine_learning_hep.correlations import vardistplot, scatterplot, correlationmatrix
 from machine_learning_hep.models import getclf_scikit, getclf_xgboost, getclf_keras
 from machine_learning_hep.models import fit, savemodels, test, apply, decisionboundaries
@@ -254,7 +255,8 @@ class Optimiser:
                           self.df_mltest, self.v_train, self.v_sig)
         df_ml_test_to_df = self.dirmlout+"/testsample_%s_mldecision.pkl" % (self.s_suffix)
         df_ml_test_to_root = self.dirmlout+"/testsample_%s_mldecision.root" % (self.s_suffix)
-        df_ml_test.to_pickle(df_ml_test_to_df)
+        # df_ml_test.to_pickle(df_ml_test_to_df)
+        pickle.dump(df_ml_test, openfile(df_ml_test_to_df, "wb"))
         write_tree(df_ml_test_to_root, self.n_treetest, df_ml_test)
 
     def do_apply(self):

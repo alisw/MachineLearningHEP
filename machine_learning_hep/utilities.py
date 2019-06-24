@@ -16,10 +16,25 @@
 main script for doing data processing, machine learning and analysis
 """
 import pickle
+import bz2
+import gzip
+import lzma
 import os
 import numpy as np
 import pandas as pd
+import lz4
 from machine_learning_hep.selectionutils import select_runs
+
+def openfile(filename, attr):
+    if filename.lower().endswith('.bz2'):
+        return bz2.BZ2File(filename, attr)
+    if filename.lower().endswith('.xz'):
+        return lzma.open(filename, attr)
+    if filename.lower().endswith('.gz'):
+        return gzip.open(filename, attr)
+    if filename.lower().endswith('.lz4'):
+        return lz4.frame.open(filename, attr)
+    return open(filename, attr)
 
 def selectdfquery(dfr, selection):
     if selection is not None:
@@ -35,11 +50,11 @@ def selectdfrunlist(dfr, runlist, runvar):
 def merge_method(listfiles, namemerged):
     dflist = []
     for myfilename in listfiles:
-        myfile = open(myfilename, "rb")
+        myfile = openfile(myfilename, "rb")
         df = pickle.load(myfile)
         dflist.append(df)
     dftot = pd.concat(dflist)
-    dftot.to_pickle(namemerged)
+    pickle.dump(dftot, openfile(namemerged, "wb"))
 
 # pylint: disable=too-many-nested-blocks
 def list_folders(main_dir, filenameinput, maxfiles):
