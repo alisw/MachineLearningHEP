@@ -1,5 +1,4 @@
 case: LcpK0spp_multiplicity
-
 conversion:
   mc: 
     activate: false 
@@ -51,4 +50,3 @@ analysis:
     domergeapplyperiods: false
     histomass: false
     efficiency: false
-

@@ -495,7 +495,7 @@ LcpK0spp_multiplicity:
     opt:
       filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
       fonll_pred: 'max' # edge of the FONLL prediction
-      FF: 0.1281 # fragmentation fraction
+      FF: 0.6086 # fragmentation fraction
       sigma_MB: 1  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
       Taa: 1 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
       BR: 1.09e-2 # branching ratio of the decay Lc->pK0s * K0s->pi+pi-
@@ -519,7 +519,6 @@ LcpK0spp_multiplicity:
       data: [0.5]
       mc: [0.0]
     probcutoptimal: [0.90]
-    mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
+    mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
     bin_width: 0.001 # bin width of the invariant mass histogram
     presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
-
