@@ -1,5 +1,4 @@
-case: D0pp_multiplicity
-
+case: LcpK0spp_multiplicity
 conversion:
   mc: 
     activate: false 
@@ -22,12 +21,12 @@ mergingperiods:
     activate: false
 
 ml_study:   
-  activate: false
+  activate: true
   doscancuts: false
   applytodatamc: true
   doroc: true
   doboundary: false
-  docorrelation: false
+  docorrelation: true
   docrossvalidation: false
   dogridsearch: false
   doimportance: false
