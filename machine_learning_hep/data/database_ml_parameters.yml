@@ -377,3 +377,149 @@ D0pp_multiplicity:
     mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
     bin_width: 0.001 # bin width of the invariant mass histogram
     presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
+
+
+LcpK0spp_multiplicity:
+  mass: 2.2864
+  sel_reco_unp: "pt_cand>2"
+  sel_reco_singletrac_unp : null
+  sel_gen_unp: "pt_cand>2 and abs(z_vtx_gen)<10"
+  sel_cen_unp: null
+  #sel_good_evt_unp: "is_ev_rej == 0"
+  sel_good_evt_unp: null
+  sel_reco_skim: [null]
+  sel_gen_skim: [null]
+  sel_skim_binmin: [0]
+  sel_skim_binmax: [100]
+  var_binning: n_tracklets
+  
+  bitmap_sel:
+    use: True
+    var_name: cand_type
+    var_isstd: isstd
+    var_ismcsignal: ismcsignal
+    var_ismcprompt: ismcprompt
+    var_ismcfd: ismcfd
+    var_ismcbkg: ismcbkg
+    isstd : [[0],[]]
+    ismcsignal: [[1],[5]]
+    ismcprompt: [[1,3],[5]]
+    ismcfd: [[1,4],[5]]
+    ismcbkg: [[2],[]]
+    
+  variables:
+    var_all: [cos_t_star, dca_K0s, signd0, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s,
+              cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2,
+              inv_mass, pt_cand, inv_mass_K0s, pt_K0s, cand_type, y_cand,
+              run_number, ev_id, nsigTPC_Pr_0, nsigTOF_Pr_0]
+    var_evt:
+      data: [is_ev_rej, run_number, ev_id, centrality, z_vtx_reco, n_tracklets]
+      mc: [is_ev_rej, run_number, ev_id, centrality, z_vtx_reco, z_vtx_gen, n_tracklets]
+    var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
+    var_evt_match: [run_number, ev_id]
+    var_training: [cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,  
+                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0] 
+    var_boundaries: [cos_t_star, signd0]
+    var_correlation:
+      - [cos_t_star]
+      - [imp_par_K0s]
+    var_signal: signal
+    var_inv_mass: inv_mass
+
+  files_names:
+    namefile_unmerged_tree: AnalysisResults.root
+    namefile_reco: AnalysisResultsReco.pkl
+    namefile_evt: AnalysisResultsEvt.pkl
+    namefile_evtorig: AnalysisResultsEvtOrig.pkl
+    namefile_gen: AnalysisResultsGen.pkl
+    namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl
+    namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl
+    namefile_reco: AnalysisResultsReco.pkl
+    treeoriginreco: 'PWGHF_TreeCreator/tree_Lc2V0bachelor'
+    treeorigingen: 'PWGHF_TreeCreator/tree_Lc2V0bachelor_gen'
+    treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
+    namefile_reco_ml_applied: AnalysisResultsRecoML.pkl
+    treeoutput: "Lctree"
+    histofilename: "masshisto.root"
+    efffilename: "effhisto.root"
+
+  multi:
+    data:
+      nperiods: 1
+      nprocessesparallel: 50
+      maxfiles : [500]
+      chunksizeunp : [500]
+      chunksizeskim: [500]
+      fracmerge : [0.05]
+      seedmerge: [12]
+      period: [LHC18bdefghijklmnop]
+      unmerged_tree_dir: [/data2/HeavyFlavour/pp_data_2018/23-06-2019/49_20190621-2117/unmerged] 
+      pkl: [datapklppLcK0s]
+      pkl_skimmed: [datapklskppLcK0s]
+      pkl_skimmed_merge_for_ml: [datapklskppLcK0sML]
+      pkl_skimmed_merge_for_ml_all: datapklskppLcK0sMLallperiods
+      pkl_evtcounter_all: datapklevtcounterLcK0s_all
+    mc:
+      nperiods: 1
+      nprocessesparallel: 50
+      maxfiles : [300]
+      chunksizeunp : [300]
+      chunksizeskim: [300]
+      fracmerge : [1.0]
+      seedmerge: [12]
+      period: [LHC18bdefghijklmnop]
+      unmerged_tree_dir: [/data2/HeavyFlavour/pp_MC_2018/23-06-2019/56_20190622-1929/unmerged]
+      pkl: [mcpklppLcK0s]
+      pkl_skimmed: [mcpklskppLcK0s]
+      pkl_skimmed_merge_for_ml: [mcpklskppLcK0sML]
+      pkl_skimmed_merge_for_ml_all: mcpklskppLcK0sMLallperiods
+      pkl_evtcounter_all: mcpklevtcounterLcK0s_all
+  ml:
+    nbkg: 50000
+    nsig: 50000
+    sampletagforsignal: 1
+    sampletagforbkg: 0
+    sel_sigml: ismcprompt == 1
+    sel_bkgml: inv_mass<2.186 or inv_mass>2.386  
+    nkfolds: 5
+    rnd_shuffle: 12
+    rnd_splt: 12
+    test_frac: 0.2
+    binmin: [0]
+    binmax: [100]
+    mltype: BinaryClassification
+    ncorescrossval: 10 
+    mlplot: mlplotLcK0spp # to be removed
+    mlout: mloutLcK0spp # to be removed
+
+    opt:
+      filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
+      fonll_pred: 'max' # edge of the FONLL prediction
+      FF: 0.1281 # fragmentation fraction
+      sigma_MB: 1  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
+      Taa: 1 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
+      BR: 1.09e-2 # branching ratio of the decay Lc->pK0s * K0s->pi+pi-
+      f_prompt: 0.9 # estimated fraction of prompt candidates
+      bkg_data_fraction: 0.1 # fraction of real data used in the estimation
+      num_steps: 111 # number of steps used in efficiency and signif. estimation
+      save_fit: True # save bkg fits with the various cuts on ML output
+      raahp: [1]
+  analysis:
+    data:
+      pkl_skimmed_dec: [datapklskdecppLcK0s]
+      pkl_skimmed_decmerged: [datapklskdecmergedppLcK0s]
+      results: [dataanalysisLcK0s]
+    mc:
+      pkl_skimmed_dec: [mcpklskdecppLcK0s]
+      pkl_skimmed_decmerged: [mcpklskdecmergedppLcK0s]
+      results: [mcanalysisLcK0s]
+    modelname: xgboost
+    modelsperptbin: [xgboost_classifiernevt_sig500000_nevt_bkg500000_D0pp_multiplicity_dfselection_n_tracklets_0.0_100.0.sav]
+    probcutpresel: 
+      data: [0.5]
+      mc: [0.0]
+    probcutoptimal: [0.90]
+    mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
+    bin_width: 0.001 # bin width of the invariant mass histogram
+    presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
+
