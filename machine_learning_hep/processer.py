@@ -252,7 +252,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                        self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
             dfrecosk = selectdfquery(dfrecosk, self.s_reco_skim[ipt])
             dfrecosk = dfrecosk.reset_index(drop=True)
-            print('writing skimmed output to', self.mptfiles_recosk[ipt][file_index])
             f = openfile(self.mptfiles_recosk[ipt][file_index], "wb")
             pickle.dump(dfrecosk, f)
             f.close()
