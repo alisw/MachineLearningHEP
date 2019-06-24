@@ -15,38 +15,18 @@
 """
 Methods to: perform bitwise operations on dataframes
 """
+from functools import reduce
+import operator
 import pandas as pd
 import numba
 
 @numba.njit
-def selectbiton(array_cand_type, bits):
-    is_selected = []
-    for cand_type  in array_cand_type:
-        iscandsel = 1
-        for bit in bits:
-            if not (cand_type >> bit) & 0x1:
-                iscandsel = 0
-                break
-        if iscandsel == 1:
-            is_selected.append(True)
-        else:
-            is_selected.append(False)
-    return is_selected
+def selectbiton(array_cand_type, mask):
+    return [((cand_type & mask) == mask) for cand_type in array_cand_type]
 
-def selectbitoff(array_cand_type, bits):
-    is_selected = []
-    for cand_type  in array_cand_type:
-        iscandsel = 1
-        for bit in bits:
-            if (cand_type >> bit) & 0x1:
-                iscandsel = 0
-                break
-        if iscandsel == 1:
-            is_selected.append(True)
-        else:
-            is_selected.append(False)
-    return is_selected
-
+@numba.njit
+def selectbitoff(array_cand_type, mask):
+    return [((cand_type & mask) == 0) for cand_type in array_cand_type]
 
 def tag_bit_df(dfin, namebitmap, activatedbit):
     bitson = activatedbit[0]
@@ -57,10 +37,12 @@ def tag_bit_df(dfin, namebitmap, activatedbit):
     res = pd.Series()
 
     if bitson:
-        bitmapon = selectbiton(array_cand_type, bitson)
+        mask = reduce(operator.or_, ((1 << bit) for bit in bitson), 0)
+        bitmapon = selectbiton(array_cand_type, mask)
         res_on = pd.Series(bitmapon)
     if bitsoff:
-        bitmapoff = selectbitoff(array_cand_type, bitsoff)
+        mask = reduce(operator.or_, ((1 << bit) for bit in bitsoff), 0)
+        bitmapoff = selectbitoff(array_cand_type, mask)
         res_off = pd.Series(bitmapoff)
     res = res_on & res_off
     return res
