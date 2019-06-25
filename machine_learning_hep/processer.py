@@ -21,12 +21,12 @@ import multiprocessing as mp
 import pickle
 import os
 import random as rd
+import yaml
 import uproot
 import pandas as pd
 import numpy as np
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
-
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge_method
@@ -38,14 +38,12 @@ from machine_learning_hep.globalfitter import fitter
 class Processer: # pylint: disable=too-many-instance-attributes
     # Class Attribute
     species = 'processer'
-
     # Initializer / Instance Attributes
     # pylint: disable=too-many-statements, too-many-arguments
     def __init__(self, datap, run_param, mcordata, p_maxfiles,
                  d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged, d_results):
-
         #directories
         self.d_root = d_root
         self.d_pkl = d_pkl
@@ -81,7 +79,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.p_dolike = datap["analysis"]["dolikelihood"]
         self.p_sigmaarray = datap["analysis"]["sigmaarray"]
         self.p_fixedsigma = datap["analysis"]["FixedSigma"]
-
+        self.p_casefit = datap["analysis"]["fitcase"]
         #namefile root
         self.n_root = datap["files_names"]["namefile_unmerged_tree"]
         #troot trees names
@@ -358,9 +356,11 @@ class Processer: # pylint: disable=too-many-instance-attributes
                              self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
             fill_hist(h_invmass, df.inv_mass)
             myfile.cd()
-            fitter(histo, case, sgnfunc[ipt], bkgfunc[ipt], masspeak, ..., outputfolder)
+            fitter(h_invmass, self.p_casefit, self.p_sgnfunc[ipt], self.p_bkgfunc[ipt], \
+                self.p_masspeak, self.p_rebin[ipt], self.p_dolike, self.p_fixingausmean, \
+                self.p_fixingaussigma, self.p_sigmaarray[ipt], self.p_massmin[ipt], \
+                self.p_massmax[ipt], self.p_fixedmean, self.p_fixedsigma, self.d_results)
             h_invmass.Write()
-
     def process_efficiency(self):
         n_bins = len(self.lpt_anbinmin)
         analysis_bin_lims_temp = list(self.lpt_anbinmin)

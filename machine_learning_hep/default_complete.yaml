@@ -24,19 +24,19 @@ ml_study:
   activate: false
   doscancuts: false
   applytodatamc: true
-  doroc: true
+  doroc: false
   doboundary: false
-  docorrelation: true
+  docorrelation: false
   docrossvalidation: false
   dogridsearch: false
   doimportance: false
-  dolearningcurve: true
+  dolearningcurve: false
   dopca: false
   dosignifopt: false
   doefficiency: false
   dotesting: true
   dotraining: true
-  doscancuts: true
+  doscancuts: false
 
 analysis:
   data:
@@ -45,8 +45,8 @@ analysis:
     domergeapplyperiods: false
     histomass: false
   mc:
-    doapply: true
-    domergeapply: true
-    domergeapplyperiods: true
+    doapply: false
+    domergeapply: false
+    domergeapplyperiods: false
     histomass: true
     efficiency: false

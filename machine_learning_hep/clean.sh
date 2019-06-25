@@ -31,3 +31,4 @@ rm -rf mcpkl* datapkl* *pklanalysis*
 rm mlplot*/*.*
 rm mlout*/*.*
 rm -rf *pkl*
+rm -rf *mcanalysis* *dataanalysis*

@@ -519,7 +519,7 @@ LcpK0spp_multiplicity:
       data: [0.5]
       mc: [0.0]
     probcutoptimal: [0.90]
-    mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
+    mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
     bin_width: 0.001 # bin width of the invariant mass histogram
     presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
     #parameters for fitter
@@ -537,7 +537,7 @@ LcpK0spp_multiplicity:
     dolikelihood: true
     sigmaarray: [0.010]
     FixedSigma: true  
-
+    fitcase: Lc
 LcpKpipp_multiplicity:
   mass: 2.2864
   sel_reco_unp: "pt_cand>2"
