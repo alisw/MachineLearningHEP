@@ -16,24 +16,34 @@ def gaus_func():
     sigval = "[0]/(sqrt(2.*pi))/[2]*(exp(-(x-[1])*(x-[1])/2./[2]/[2]))"
     return sigval
 
-def plo2_func(massmax, massmin):
-    plo2_func = "[0]/(%s)+[1]*(x-0.5*(%s))+[2]*(x*x-1/3.*(%s)/(%s))"%\
-        ((massmax-massmin), (massmax+massmin), (massmax*massmax*massmax-\
-        massmin*massmin*massmin), (massmax-massmin))
+def plo2_func(bkg, massmax, massmin):
+    plo2_func = ""
+    if bkg == "Pol1":
+        plo2_func = "[0]/(%s)+[1]*(x-0.5*(%s))"%\
+            ((massmax-massmin), (massmax+massmin))
+    if bkg == "Pol2":
+        plo2_func = "[0]/(%s)+[1]*(x-0.5*(%s))+[2]*(x*x-1/3.*(%s)/(%s))"%\
+            ((massmax-massmin), (massmax+massmin), (massmax*massmax*massmax-\
+            massmin*massmin*massmin), (massmax-massmin))
     return plo2_func
 
-def tot_func(massmax, massmin):
+def tot_func(bkg, massmax, massmin):
     print("tot_function = plo2 function + gaus function")
-    tot_func = "[0]/(%s)+[1]*(x-0.5*(%s))+[2]*(x*x-1/3.*(%s)/(%s))\
-        + [3]/(sqrt(2.*pi))/[5]*(exp(-(x-[4])*(x-[4])/2./[5]/[5]))"%\
-        ((massmax-massmin), (massmax+massmin), (massmax*massmax*massmax\
-        -massmin*massmin*massmin), (massmax-massmin))
+    if bkg == "Pol1":
+        tot_func = "[0]/(%s)+[1]*(x-0.5*(%s))\
+            + [3]/(sqrt(2.*pi))/[5]*(exp(-(x-[4])*(x-[4])/2./[5]/[5]))"%\
+            ((massmax-massmin), (massmax+massmin))
+    if bkg == "Pol2":
+        tot_func = "[0]/(%s)+[1]*(x-0.5*(%s))+[2]*(x*x-1/3.*(%s)/(%s))\
+            + [3]/(sqrt(2.*pi))/[5]*(exp(-(x-[4])*(x-[4])/2./[5]/[5]))"%\
+            ((massmax-massmin), (massmax+massmin), (massmax*massmax*massmax\
+            -massmin*massmin*massmin), (massmax-massmin))
     return tot_func
 
 def fitter(histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihood,\
     setinitialgaussianmean, setfixgaussiansigma, sigma, massmin, massmax,\
     fixedmean, fixedsigma, outputfolder):
-
+    print(bkgfunc)
     if "Lc" in case:
         print("add my fitter")
         histo.GetXaxis().SetTitle("Invariant Mass L_{c}^{+}(GeV/c^{2})")
@@ -51,7 +61,7 @@ def fitter(histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihood,\
         print("fit background (just side bands)")
         nSigma4SideBands = 4.
         integralHisto = histo.Integral(histo.FindBin(massmin), histo.FindBin(massmax), "width")
-        back_fit = TF1("back_fit", plo2_func(massmax, massmin), massmin, massmax)
+        back_fit = TF1("back_fit", plo2_func(bkgfunc, massmax, massmin), massmin, massmax)
         back_fit.SetParNames("BkgInt", "Coef1", "Coef2")
         back_fit.SetParameters(integralHisto, -10., 5)
         back_fit.SetLineColor(kBlue+3)
@@ -67,7 +77,7 @@ def fitter(histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihood,\
         back_fit.SetLineStyle(2)
 
         print("refit (all range)")
-        back_refit = TF1("back_refit", plo2_func(massmax, massmin), massmin, massmax)
+        back_refit = TF1("back_refit", plo2_func(bkgfunc, massmax, massmin), massmin, massmax)
         back_refit.SetParNames("BkgInt", "Coef1", "Coef2")
         back_refit.SetParameters(integralHisto, -10., 5)
         back_fit.SetLineColor(kBlue+3)
@@ -105,7 +115,7 @@ def fitter(histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihood,\
             par[ipar_gaus] = par_gaus2[ipar_gaus-3]
 
         print("fit all (signal + background)")
-        tot_fit = TF1("tot_fit", tot_func(massmax, massmin), massmin, massmax)
+        tot_fit = TF1("tot_fit", tot_func(bkgfunc, massmax, massmin), massmin, massmax)
         tot_fit.SetLineColor(4)
         tot_fit.SetParameters(par)
         nParsBkg = 3

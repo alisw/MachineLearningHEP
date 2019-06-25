@@ -524,7 +524,7 @@ LcpK0spp_multiplicity:
     presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
     #parameters for fitter
     sgnfunc: [kGaus]
-    bkgfunc: [kExpo]
+    bkgfunc: [Pol2]
     masspeak: 2.2864
     massmin: [2.14]
     massmax: [2.436]
@@ -535,7 +535,7 @@ LcpK0spp_multiplicity:
     SetFixGaussianSigma: true
     SetInitialGaussianMean: true
     dolikelihood: true
-    sigmaarray: [0.010]
+    sigmaarray: [0.01]
     FixedSigma: true  
     fitcase: Lc
 LcpKpipp_multiplicity:
