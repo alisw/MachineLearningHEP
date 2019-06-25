@@ -21,7 +21,7 @@ mergingperiods:
     activate: false
 
 ml_study:   
-  activate: true
+  activate: false
   doscancuts: false
   applytodatamc: true
   doroc: true
@@ -45,8 +45,8 @@ analysis:
     domergeapplyperiods: false
     histomass: false
   mc:
-    doapply: false
-    domergeapply: false
-    domergeapplyperiods: false
-    histomass: false
+    doapply: true
+    domergeapply: true
+    domergeapplyperiods: true
+    histomass: true
     efficiency: false

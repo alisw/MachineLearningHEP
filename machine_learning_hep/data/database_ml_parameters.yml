@@ -514,7 +514,7 @@ LcpK0spp_multiplicity:
       pkl_skimmed_decmerged: [mcpklskdecmergedppLcK0s]
       results: [mcanalysisLcK0s]
     modelname: xgboost
-    modelsperptbin: [xgboost_classifiernevt_sig500000_nevt_bkg500000_D0pp_multiplicity_dfselection_n_tracklets_0.0_100.0.sav]
+    modelsperptbin: [xgboost_classifiernevt_sig50000_nevt_bkg50000_LcpK0spp_multiplicity_dfselection_n_tracklets_0.0_100.0.sav]
     probcutpresel: 
       data: [0.5]
       mc: [0.0]
@@ -522,6 +522,21 @@ LcpK0spp_multiplicity:
     mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
     bin_width: 0.001 # bin width of the invariant mass histogram
     presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
+    #parameters for fitter
+    sgnfunc: [kGaus]
+    bkgfunc: [kExpo]
+    masspeak: 2.2864
+    massmin: [2.14]
+    massmax: [2.436]
+    rebin: [6]
+    includesecpeak: [0]
+    masssecpeak: 1.869
+    FixedMean: false
+    SetFixGaussianSigma: true
+    SetInitialGaussianMean: true
+    dolikelihood: true
+    sigmaarray: [0.010]
+    FixedSigma: true  
 
 LcpKpipp_multiplicity:
   mass: 2.2864
