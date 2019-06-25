@@ -224,25 +224,18 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
             index = index + 1
 
     if doapplydata is True:
-        mymultiprocessapplydata = MultiProcesser(data_param[case], run_param, "data")
-        mymultiprocessapplydata.multi_apply_allperiods()
+        mymultiprocessdata.multi_apply_allperiods()
     if doapplymc is True:
-        mymultiprocessapplymc = MultiProcesser(data_param[case], run_param, "mc")
-        mymultiprocessapplymc.multi_apply_allperiods()
+        mymultiprocessmc.multi_apply_allperiods()
     if domergeapplydata is True:
-        mymultiprocessmergeapplydata = MultiProcesser(data_param[case], run_param, "data")
-        mymultiprocessmergeapplydata.multi_mergeapply_allperiods()
+        mymultiprocessdata.multi_mergeapply_allperiods()
     if domergeapplymc is True:
-        mymultiprocessmergeapplymc = MultiProcesser(data_param[case], run_param, "mc")
-        mymultiprocessmergeapplymc.multi_mergeapply_allperiods()
+        mymultiprocessmc.multi_mergeapply_allperiods()
     if dohistomassmc is True:
-        mymultiprocessapplymc = MultiProcesser(data_param[case], run_param, "mc")
-        mymultiprocessapplymc.multi_histomass()
+        mymultiprocessmc.multi_histomass()
     if dohistomassdata is True:
-        mymultiprocessapplydata = MultiProcesser(data_param[case], run_param, "data")
-        mymultiprocessapplydata.multi_histomass()
+        mymultiprocessdata.multi_histomass()
     if doefficiency is True:
-        mymultiprocesseffmc = MultiProcesser(data_param[case], run_param, "mc")
-        mymultiprocesseffmc.multi_efficiency()
+        mymultiprocessmc.multi_efficiency()
 
 do_entire_analysis()
