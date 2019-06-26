@@ -1,4 +1,7 @@
 case: LcpK0spp_multiplicity
+download:
+  alice:
+    activate: true
 conversion:
   mc: 
     activate: false 
@@ -21,7 +24,7 @@ mergingperiods:
     activate: false
 
 ml_study:   
-  activate: true
+  activate: false
   doscancuts: false
   applytodatamc: true
   doroc: true

@@ -18,6 +18,7 @@ main script for doing data processing, machine learning and analysis
 
 #import os
 import yaml
+import subprocess
 from multiprocesser import MultiProcesser  # pylint: disable=import-error
 #from machine_learning_hep.doskimming import conversion, merging, merging_period, skim
 #from machine_learning_hep.doclassification_regression import doclassification_regression
@@ -45,6 +46,7 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
         grid_param = yaml.load(grid_config, Loader=yaml.FullLoader)
 
     case = data_config["case"]
+    dodownloadalice = data_config["download"]["alice"]["activate"]
     doconversionmc = data_config["conversion"]["mc"]["activate"]
     doconversiondata = data_config["conversion"]["data"]["activate"]
     domergingmc = data_config["merging"]["mc"]["activate"]
@@ -167,6 +169,9 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
             print("folder exists")
 
     #perform the analysis flow
+    if dodownloadalice == 1:
+        subprocess.call("../cplusutilities/Download.sh")
+
     if doconversionmc == 1:
         mymultiprocessmc.multi_unpack_allperiods()
 
