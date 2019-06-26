@@ -54,7 +54,7 @@ def merge_method(listfiles, namemerged):
         df = pickle.load(myfile)
         dflist.append(df)
     dftot = pd.concat(dflist)
-    pickle.dump(dftot, openfile(namemerged, "wb"))
+    pickle.dump(dftot, openfile(namemerged, "wb"), protocol=4)
 
 # pylint: disable=too-many-nested-blocks
 def list_folders(main_dir, filenameinput, maxfiles):

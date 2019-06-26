@@ -195,10 +195,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
         dfevtorig = selectdfrunlist(dfevtorig, self.runlist, "run_number")
         dfevtorig = selectdfquery(dfevtorig, self.s_cen_unp)
         dfevtorig = dfevtorig.reset_index(drop=True)
-        pickle.dump(dfevtorig, openfile(self.l_evtorig[file_index], "wb"))
+        pickle.dump(dfevtorig, openfile(self.l_evtorig[file_index], "wb"), protocol=4)
         dfevt = selectdfquery(dfevtorig, self.s_good_evt_unp)
         dfevt = dfevt.reset_index(drop=True)
-        pickle.dump(dfevt, openfile(self.l_evt[file_index], "wb"))
+        pickle.dump(dfevt, openfile(self.l_evt[file_index], "wb"), protocol=4)
 
         treereco = uproot.open(self.l_root[file_index])[self.n_treereco]
         dfreco = treereco.pandas.df(branches=self.v_all)
@@ -221,7 +221,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                                         self.b_mcsigfd), dtype=int)
             dfreco[self.v_ismcbkg] = np.array(tag_bit_df(dfreco, self.v_bitvar,
                                                          self.b_mcbkg), dtype=int)
-        pickle.dump(dfreco, openfile(self.l_reco[file_index], "wb"))
+        pickle.dump(dfreco, openfile(self.l_reco[file_index], "wb"), protocol=4)
 
         if self.mcordata == "mc":
             treegen = uproot.open(self.l_root[file_index])[self.n_treegen]
@@ -240,7 +240,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             dfgen[self.v_ismcbkg] = np.array(tag_bit_df(dfgen, self.v_bitvar,
                                                         self.b_mcbkg), dtype=int)
             dfgen = dfgen.reset_index(drop=True)
-            pickle.dump(dfgen, openfile(self.l_gen[file_index], "wb"))
+            pickle.dump(dfgen, openfile(self.l_gen[file_index], "wb"), protocol=4)
 
     def skim(self, file_index):
         try:
@@ -253,7 +253,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             dfrecosk = selectdfquery(dfrecosk, self.s_reco_skim[ipt])
             dfrecosk = dfrecosk.reset_index(drop=True)
             f = openfile(self.mptfiles_recosk[ipt][file_index], "wb")
-            pickle.dump(dfrecosk, f)
+            pickle.dump(dfrecosk, f, protocol=4)
             f.close()
             if self.mcordata == "mc":
                 try:
@@ -264,7 +264,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                           self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
                 dfgensk = selectdfquery(dfgensk, self.s_gen_skim[ipt])
                 dfgensk = dfgensk.reset_index(drop=True)
-                pickle.dump(dfgensk, openfile(self.mptfiles_gensk[ipt][file_index], "wb"))
+                pickle.dump(dfgensk, openfile(self.mptfiles_gensk[ipt][file_index], "wb"),
+                            protocol=4)
 
     def applymodel(self, file_index):
         for ipt in range(self.p_nptbins):
@@ -274,7 +275,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                dfrecosk, self.v_train)
             probvar = "y_test_prob" + self.p_modelname
             dfrecoskml = dfrecoskml.loc[dfrecoskml[probvar] > self.lpt_probcutpre[ipt]]
-            pickle.dump(dfrecoskml, openfile(self.mptfiles_recoskmldec[ipt][file_index], "wb"))
+            pickle.dump(dfrecoskml, openfile(self.mptfiles_recoskmldec[ipt][file_index], "wb"),
+                        protocol=4)
     def parallelizer(self, function, argument_list, maxperchunk):
         chunks = [argument_list[x:x+maxperchunk] \
                   for x in range(0, len(argument_list), maxperchunk)]
