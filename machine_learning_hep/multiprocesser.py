@@ -140,3 +140,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
     def multi_scancuts(self):
         for indexp in range(self.prodnumber):
             self.process_listsample[indexp].process_scancuts()
+
+    def multi_validate(self):
+        for indexp in range(self.prodnumber):
+            self.process_listsample[indexp].process_validate()

@@ -264,7 +264,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
     def skim(self, file_index):
         try:
             dfreco = pickle.load(openfile(self.l_reco[file_index], "rb"))
-        except Exception as e: # pylint: disable=broad-except
+        except (IOError, OSError) as e:
             print('failed to open file', self.l_reco[file_index], str(e))
         for ipt in range(self.p_nptbins):
             dfrecosk = seldf_singlevar(dfreco, self.v_var_binning,
@@ -277,7 +277,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             if self.mcordata == "mc":
                 try:
                     dfgen = pickle.load(openfile(self.l_gen[file_index], "rb"))
-                except Exception as e: # pylint: disable=broad-except
+                except (IOError, OSError) as e:
                     print('failed to open MC file', self.l_gen[file_index], str(e))
                 dfgensk = seldf_singlevar(dfgen, self.v_var_binning,
                                           self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
@@ -444,3 +444,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
         h_gen_fd.Write()
         h_presel_fd.Write()
         h_sel_fd.Write()
+
+    def process_validate(self):
+        print("doing validation", self.mcordata, self.period)
+        for ipt in range(self.p_nptbins):
+            print('validating pt bin', ipt)

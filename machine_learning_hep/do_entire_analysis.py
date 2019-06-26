@@ -18,6 +18,7 @@ main script for doing data processing, machine learning and analysis
 
 #import os
 import subprocess
+import argparse
 import yaml
 from multiprocesser import MultiProcesser  # pylint: disable=import-error
 #from machine_learning_hep.doskimming import conversion, merging, merging_period, skim
@@ -30,12 +31,31 @@ from optimiser import Optimiser
 
 def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 
-    with open("default_complete.yaml", 'r') as run_config:
-        data_config = yaml.load(run_config, Loader=yaml.FullLoader)
+    parser = argparse.ArgumentParser(description='Run analysis')
+    parser.add_argument('-v, --validation', action='store_true', dest='validation', default=False)
+    parser.add_argument('-c, --config', dest='cfgfile', default=None)
+    args = parser.parse_args()
+    if args.validation:
+        print('running in validation mode')
+
+    if args.cfgfile:
+        with open(args.cfgfile, 'r') as run_config:
+            data_config = yaml.load(run_config, Loader=yaml.FullLoader)
+    elif not args.validation:
+        with open('validation_complete.yaml', 'r') as run_config:
+            data_config = yaml.load(run_config, Loader=yaml.FullLoader)
+    else:
+        with open("default_complete.yaml", 'r') as run_config:
+            data_config = yaml.load(run_config, Loader=yaml.FullLoader)
+
     case = data_config["case"]
 
-    with open("data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
-        data_param = yaml.load(param_config, Loader=yaml.FullLoader)
+    if args.validation:
+        with open("data/database_ml_parameters_validation.yml", 'r') as param_config:
+            data_param = yaml.load(param_config, Loader=yaml.FullLoader)
+    else:
+        with open("data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
+            data_param = yaml.load(param_config, Loader=yaml.FullLoader)
 
     with open("data/config_model_parameters.yml", 'r') as mod_config:
         data_model = yaml.load(mod_config, Loader=yaml.FullLoader)
@@ -242,5 +262,10 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
         mymultiprocessdata.multi_histomass()
     if doefficiency is True:
         mymultiprocessmc.multi_efficiency()
+
+    if args.validation:
+        print('validating ...')
+        mymultiprocessmc.multi_validate()
+        mymultiprocessdata.multi_validate()
 
 do_entire_analysis()
