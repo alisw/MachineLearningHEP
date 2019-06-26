@@ -350,7 +350,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         analysis_bin_lims_temp = list(self.lpt_anbinmin)
         analysis_bin_lims_temp.append(self.lpt_anbinmax[n_bins-1])
         analysis_bin_lims = array.array('f', analysis_bin_lims_temp)
-
         h_gen_pr = TH1F("h_gen_pr", "Prompt Generated in acceptance |y|<0.5", \
                         n_bins, analysis_bin_lims)
         h_presel_pr = TH1F("h_presel_pr", "Prompt Reco in acc |#eta|<0.8 and sel", \
@@ -378,8 +377,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         bincounter = 0
         for ipt in range(self.p_nptbins):
-            df_mc_reco = pd.read_pickle(self.lpt_recodecmerged[ipt])
-            df_mc_gen = pd.read_pickle(self.lpt_gendecmerged[ipt])
+            df_mc_reco = pickle.load(openfile(self.lpt_recodecmerged[ipt], "rb"))
+            df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[ipt], "rb"))
             df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
             df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
             df_reco_presel_pr = df_mc_reco[df_mc_reco.ismcprompt == 1]
