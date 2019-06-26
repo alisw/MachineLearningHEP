@@ -671,8 +671,8 @@ LcpK0spp_pt:
   sel_cen_unp: null
   #sel_good_evt_unp: "is_ev_rej == 0"
   sel_good_evt_unp: null
-  sel_reco_skim: [null]
-  sel_gen_skim: [null]
+  sel_reco_skim: [null,null,null]
+  sel_gen_skim: [null,null,null]
   sel_skim_binmin: [2,5,10]
   sel_skim_binmax: [5,10,20]
   var_binning: pt_cand
@@ -759,8 +759,8 @@ LcpK0spp_pt:
       pkl_skimmed_merge_for_ml_all: mcpklskppLcK0sptMLallperiods
       pkl_evtcounter_all: mcpklevtcounterLcK0spt_all
   ml:
-    nbkg: 50000
-    nsig: 50000
+    nbkg: 5000
+    nsig: 5000
     sampletagforsignal: 1
     sampletagforbkg: 0
     sel_sigml: ismcprompt == 1
