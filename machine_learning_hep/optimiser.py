@@ -47,6 +47,8 @@ class Optimiser:
     def __init__(self, data_param, case, model_config, grid_config, binmin,
                  binmax, raahp):
 
+        self.logger = get_logger()
+
         dirmcml = data_param["multi"]["mc"]["pkl_skimmed_merge_for_ml_all"]
         dirdataml = data_param["multi"]["data"]["pkl_skimmed_merge_for_ml_all"]
         dirdatatotsample = data_param["multi"]["data"]["pkl_evtcounter_all"]
@@ -78,6 +80,7 @@ class Optimiser:
         self.v_bound = data_param["variables"]["var_boundaries"]
         self.v_sig = data_param["variables"]["var_signal"]
         self.v_invmass = data_param["variables"]["var_inv_mass"]
+        self.v_cuts = data_param["variables"].get("var_cuts", [])
         self.v_corrx = data_param["variables"]["var_correlation"][0]
         self.v_corry = data_param["variables"]["var_correlation"][1]
         self.v_isstd = data_param["bitmap_sel"]["var_isstd"]
@@ -100,6 +103,7 @@ class Optimiser:
         self.rnd_shuffle = data_param["ml"]["rnd_shuffle"]
         self.rnd_splt = data_param["ml"]["rnd_splt"]
         self.test_frac = data_param["ml"]["test_frac"]
+        self.p_plot_options = data_param["variables"].get("plot_options", {})
         #dataframes
         self.df_mc = None
         self.df_mcgen = None
@@ -441,23 +445,27 @@ class Optimiser:
             plt.savefig(f'{self.dirmlplot}/Significance_{self.s_suffix}.png')
 
     def do_scancuts(self):
-        print("Doing scanning cuts")
+        self.logger.info("Scanning cuts")
+
         prob_array = [0.0, 0.2, 0.6, 0.9]
         dfdata = pickle.load(openfile(self.f_reco_applieddata, "rb"))
         dfmc = pickle.load(openfile(self.f_reco_appliedmc, "rb"))
-        vardistplot_probscan(dfmc, self.v_train, "xgboost_classifier",
-                             prob_array, self.dirmlplot, "scancutsmc", 0)
-        vardistplot_probscan(dfmc, self.v_train, "xgboost_classifier",
-                             prob_array, self.dirmlplot, "scancutsmc", 1)
-        efficiency_cutscan(dfmc, self.v_train, "xgboost_classifier", 0.5,
-                           self.dirmlplot, "mc")
-        efficiency_cutscan(dfmc, self.v_train, "xgboost_classifier", 0.9,
-                           self.dirmlplot, "mc")
-        vardistplot_probscan(dfdata, self.v_train, "xgboost_classifier",
-                             prob_array, self.dirmlplot, "scancutsdata", 0)
-        vardistplot_probscan(dfdata, self.v_train, "xgboost_classifier",
-                             prob_array, self.dirmlplot, "scancutsdata", 1)
-        efficiency_cutscan(dfdata, self.v_train, "xgboost_classifier", 0.5,
-                           self.dirmlplot, "data")
-        efficiency_cutscan(dfdata, self.v_train, "xgboost_classifier", 0.9,
-                           self.dirmlplot, "data")
+        vardistplot_probscan(dfmc, self.v_all, "xgboost_classifier",
+                             prob_array, self.dirmlplot, "scancutsmc", 0, self.p_plot_options)
+        vardistplot_probscan(dfmc, self.v_all, "xgboost_classifier",
+                             prob_array, self.dirmlplot, "scancutsmc", 1, self.p_plot_options)
+        vardistplot_probscan(dfdata, self.v_all, "xgboost_classifier",
+                             prob_array, self.dirmlplot, "scancutsdata", 0, self.p_plot_options)
+        vardistplot_probscan(dfdata, self.v_all, "xgboost_classifier",
+                             prob_array, self.dirmlplot, "scancutsdata", 1, self.p_plot_options)
+        if not self.v_cuts:
+            self.logger.warning("No variables for cut efficiency scan. Will be skipped")
+            return
+        efficiency_cutscan(dfmc, self.v_cuts, "xgboost_classifier", 0.5,
+                           self.dirmlplot, "mc", self.p_plot_options)
+        efficiency_cutscan(dfmc, self.v_cuts, "xgboost_classifier", 0.9,
+                           self.dirmlplot, "mc", self.p_plot_options)
+        efficiency_cutscan(dfdata, self.v_cuts, "xgboost_classifier", 0.5,
+                           self.dirmlplot, "data", self.p_plot_options)
+        efficiency_cutscan(dfdata, self.v_cuts, "xgboost_classifier", 0.9,
+                           self.dirmlplot, "data", self.p_plot_options)
