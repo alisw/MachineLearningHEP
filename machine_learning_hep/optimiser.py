@@ -255,7 +255,7 @@ class Optimiser:
                           self.df_mltest, self.v_train, self.v_sig)
         df_ml_test_to_df = self.dirmlout+"/testsample_%s_mldecision.pkl" % (self.s_suffix)
         df_ml_test_to_root = self.dirmlout+"/testsample_%s_mldecision.root" % (self.s_suffix)
-        pickle.dump(df_ml_test, openfile(df_ml_test_to_df, "wb"))
+        pickle.dump(df_ml_test, openfile(df_ml_test_to_df, "wb"), protocol=4)
         write_tree(df_ml_test_to_root, self.n_treetest, df_ml_test)
 
     def do_apply(self):
@@ -263,8 +263,8 @@ class Optimiser:
                         self.df_data, self.v_train)
         df_mc = apply(self.p_mltype, self.p_classname, self.p_trainedmod,
                       self.df_mc, self.v_train)
-        pickle.dump(df_data, openfile(self.f_reco_applieddata, "wb"))
-        pickle.dump(df_mc, openfile(self.f_reco_appliedmc, "wb"))
+        pickle.dump(df_data, openfile(self.f_reco_applieddata, "wb"), protocol=4)
+        pickle.dump(df_mc, openfile(self.f_reco_appliedmc, "wb"), protocol=4)
 
     def do_crossval(self):
         df_scores = cross_validation_mse(self.p_classname, self.p_class,

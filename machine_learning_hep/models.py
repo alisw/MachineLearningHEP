@@ -164,10 +164,10 @@ def savemodels(names_, trainedmodels_, folder_, suffix_):
             model.model.save_weights(weights_file)
         if "scikit" in name:
             fileoutmodel = folder_+"/"+name+suffix_+".sav"
-            pickle.dump(model, open(fileoutmodel, 'wb'))
+            pickle.dump(model, open(fileoutmodel, 'wb'), protocol=4)
         if "xgboost" in name:
             fileoutmodel = folder_+"/"+name+suffix_+".sav"
-            pickle.dump(model, open(fileoutmodel, 'wb'))
+            pickle.dump(model, open(fileoutmodel, 'wb'), protocol=4)
 
 def readmodels(names_, folder_, suffix_):
     trainedmodels_ = []
