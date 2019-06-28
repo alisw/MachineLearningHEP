@@ -15,11 +15,14 @@
 """
 Methods for correlation and variable plots
 """
+import pickle
+from os.path import join
+from collections import deque
 from io import BytesIO
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib.gridspec import GridSpec
 import seaborn as sns
-
 
 def vardistplot(dataframe_sig_, dataframe_bkg_, mylistvariables_, output_,
                 binmin, binmax):
@@ -42,110 +45,201 @@ def vardistplot(dataframe_sig_, dataframe_bkg_, mylistvariables_, output_,
     imagebytesIO.seek(0)
     return imagebytesIO
 
-def vardistplot_probscan(dataframe_, mylistvariables_, modelname_, tresharray_,
-                         output_, suffix_, opt=1):
+def vardistplot_probscan(dataframe_, mylistvariables_, modelname_, thresharray_, # pylint: disable=too-many-statements
+                         output_, suffix_, opt=1, plot_options_=None):
+
+    plot_type_name = "prob_cut_scan"
+    plot_options = {}
+    if isinstance(plot_options_, dict):
+        plot_options = plot_options_.get(plot_type_name, {})
     color = ['C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9']
-    dfprob = []
 
-    for treshold in tresharray_:
-        selml = "y_test_prob%s>%s" % (modelname_, treshold)
-        df_ = dataframe_.query(selml)
-        dfprob.append(df_)
+    fig = plt.figure(figsize=(60, 25))
+    gs = GridSpec(3, int(len(mylistvariables_)/3+1))
+    axes = [fig.add_subplot(gs[i]) for i in range(len(mylistvariables_))]
 
-    figure, ax = plt.subplots(figsize=(60, 25)) # pylint: disable=unused-variable
-    i = 1
-    for var in mylistvariables_:
-        isvarpid = "TPC" in var or "TOF" in var
+    # Sort the thresharray_
+    thresharray_.sort()
+    # Re-use skimmed dataframe
+    df_skimmed = None
+    variables_selected = mylistvariables_ + [f"y_test_prob{modelname_}"]
 
-        ax = plt.subplot(3, int(len(mylistvariables_)/3+1), i)
-        plt.xlabel(var, fontsize=30)
-        plt.ylabel("entries", fontsize=30)
-        plt.xticks(fontsize=20)
-        plt.yticks(fontsize=20)
-        j = 0
-        values0 = dfprob[0][var]
-        minv, maxv = values0.min(), values0.max()
-        if isvarpid is True:
-            minv, maxv = -4, 4
-        his0, _ = np.histogram(dfprob[0][var], range=(minv, maxv), bins=100)
-        for treshold in tresharray_:
-            n = len(dfprob[j][var])
-            text = f'prob > {treshold} n = {n}'
-            lbl = text
-            clr = color[j]
-            values = dfprob[j][var]
-            his, bina = np.histogram(values, range=(minv, maxv), bins=100)
+    xrange_min = []
+    xrange_max = []
+    ref_hists = []
+    for thresh_index, threshold in enumerate(thresharray_):
+        selml = f"y_test_prob{modelname_}>{threshold}"
+        if df_skimmed is None:
+            df_skimmed = dataframe_.query(selml)[variables_selected]
+        else:
+            df_skimmed = df_skimmed.query(selml)
+
+        for i, var in enumerate(mylistvariables_):
+
+            # Extract minimum and maximum for x-axis, this is only done once
+            # for each variable
+            if thresh_index == 0:
+                axes[i].set_xlabel(var, fontsize=30)
+                ylabel = "entries"
+                if opt == 1:
+                    ylabel += f"/entries(prob{thresharray_[0]})"
+                axes[i].set_ylabel(ylabel, fontsize=30)
+                axes[i].tick_params(labelsize=20)
+                if var in plot_options and "xlim" in plot_options[var]:
+                    xrange_min.append(plot_options[var]["xlim"][0])
+                    xrange_max.append(plot_options[var]["xlim"][1])
+                else:
+                    values0 = df_skimmed[var]
+                    xrange_min.append(values0.min())
+                    xrange_max.append(values0.max())
+
+            n = len(df_skimmed[var])
+            lbl = f'prob > {threshold} n = {n}'
+            clr = color[thresh_index%len(color)]
+            values = df_skimmed[var]
+            his, bina = np.histogram(values, range=(xrange_min[i], xrange_max[i]), bins=100)
+            if thresh_index == 0:
+                ref_hists.append(his)
             width = np.diff(bina)
             center = (bina[:-1] + bina[1:]) / 2
+
             if opt == 0:
-                plt.yscale('log')
-                ax.bar(center, his, align='center', width=width, facecolor=clr, label=lbl)
-            if opt == 1:
-                ratio = np.divide(his, his0)
-                ax.bar(center, ratio, align='center', width=width, facecolor=clr, label=lbl)
-                plt.ylim(0.001, 1.1)
-            j = j+1
-        ax.legend(fontsize=10)
-        i = i+1
-    plotname = output_+'/variablesDistribution_'+suffix_+'ratio'+ ("%d") % opt+'.png'
+                axes[i].set_yscale('log')
+            elif opt == 1:
+                his = np.divide(his, ref_hists[i])
+                axes[i].set_ylim(0.001, 1.1)
+            axes[i].bar(center, his, align='center', width=width, facecolor=clr, label=lbl)
+            axes[i].legend(fontsize=10)
+    plotname = join(output_, f"variables_distribution_{suffix_}_ratio{opt}.png")
     plt.savefig(plotname, bbox_inches='tight')
 
-def efficiency_cutscan(dataframe_, mylistvariables_, modelname_, treshold,
-                       output_, suffix_):
+def efficiency_cutscan(dataframe_, mylistvariables_, modelname_, threshold, # pylint: disable=too-many-statements
+                       output_, suffix_, plot_options_=None):
 
-    selml = "y_test_prob%s>%s" % (modelname_, treshold)
+    plot_type_name = "eff_cut_scan"
+    plot_options = {}
+    if isinstance(plot_options_, dict):
+        plot_options = plot_options_.get(plot_type_name, {})
+    selml = "y_test_prob%s>%s" % (modelname_, threshold)
     dataframe_ = dataframe_.query(selml)
 
-    figure, ax = plt.subplots(figsize=(60, 25)) # pylint: disable=unused-variable
-    i = 1
-    listvardir = ["st", "lt", "st", "absst", "lt", "lt", "st", "lt",
-                  "absst", "absst", "absst", "absst", "absst", "absst"]
-    listcentral = [None, None, None, 0., None, None, None, None,
-                   0., 0., 0., 0.4977, 0., 0.]
-    for ivar, var in enumerate(mylistvariables_):
-        var = mylistvariables_[ivar]
-        vardir = listvardir[ivar]
-        cen = listcentral[ivar]
-        isvarpid = "TPC" in var or "TOF" in var
-        ax = plt.subplot(3, int(len(mylistvariables_)/3+1), i)
-        plt.xlabel(var, fontsize=30)
-        plt.ylabel("entries", fontsize=30)
-        plt.xticks(fontsize=20)
-        plt.yticks(fontsize=20)
-        plt.yscale('log')
-        plt.ylim(0.005, 1.5)
+    fig = plt.figure(figsize=(60, 25))
+    gs = GridSpec(3, int(len(mylistvariables_)/3+1))
+    axes = [fig.add_subplot(gs[i]) for i in range(len(mylistvariables_))]
+
+    for i, var_tuple in enumerate(mylistvariables_):
+        var = var_tuple[0]
+        vardir = var_tuple[1]
+        cen = var_tuple[2]
+
+        axes[i].set_xlabel(var, fontsize=30)
+        axes[i].set_ylabel("entries (normalised)", fontsize=30)
+        axes[i].tick_params(labelsize=20)
+        axes[i].set_yscale('log')
+        axes[i].set_ylim(0.005, 1.5)
         values = dataframe_[var].values
         if "abs" in  vardir:
-            values = np.array([abs(i - cen) for i in values])
+            values = np.array([abs(v - cen) for v in values])
         nbinscan = 100
         minv, maxv = values.min(), values.max()
-        if isvarpid is True:
-            minv, maxv = -4, 4
-        ratio = []
+        if var in plot_options and "xlim" in plot_options[var]:
+            minv = plot_options[var]["xlim"][0]
+            maxv = plot_options[var]["xlim"][1]
+        else:
+            minv = values.min()
+            maxv = values.max()
         _, bina = np.histogram(values, range=(minv, maxv), bins=nbinscan)
         widthbin = (maxv - minv)/(float)(nbinscan)
         width = np.diff(bina)
         center = (bina[:-1] + bina[1:]) / 2
         den = len(values)
-        valuesel = []
+        ratios = deque()
         if "lt" in vardir:
             for ibin in range(nbinscan):
-                valuesel = values[values > minv+widthbin*ibin]
-                num = len(valuesel)
+                values = values[values > minv+widthbin*ibin]
+                num = len(values)
                 eff = float(num)/float(den)
-                ratio.append(eff)
-        if "st" in vardir:
+                ratios.append(eff)
+        elif "st" in vardir:
+            for ibin in range(nbinscan, 0, -1):
+                values = values[values < minv+widthbin*ibin]
+                num = len(values)
+                eff = float(num)/float(den)
+                ratios.appendleft(eff)
+        lbl = f'prob > {threshold}'
+        axes[i].bar(center, ratios, align='center', width=width, label=lbl)
+        axes[i].legend(fontsize=30)
+    plotname = join(output_, f"variables_effscan_prob{threshold}_{suffix_}.png")
+    plt.savefig(plotname, bbox_inches='tight')
+    plt.savefig(plotname, bbox_inches='tight')
+
+def picklesize_cutscan(dataframe_, mylistvariables_, output_, suffix_, plot_options_=None): # pylint: disable=too-many-statements
+
+    plot_type_name = "picklesize_cut_scan"
+    plot_options = {}
+    if isinstance(plot_options_, dict):
+        plot_options = plot_options_.get(plot_type_name, {})
+
+    fig = plt.figure(figsize=(60, 25))
+    gs = GridSpec(3, int(len(mylistvariables_)/3+1))
+    axes = [fig.add_subplot(gs[i]) for i in range(len(mylistvariables_))]
+
+    df_reference_pkl_size = len(pickle.dumps(dataframe_, protocol=4))
+    df_reference_size = dataframe_.shape[0] * dataframe_.shape[1]
+
+    for i, var_tuple in enumerate(mylistvariables_):
+        var = var_tuple[0]
+        vardir = var_tuple[1]
+        cen = var_tuple[2]
+
+        axes[i].set_xlabel(var, fontsize=30)
+        axes[i].set_ylabel("rel. pickle size after cut", fontsize=30)
+        axes[i].tick_params(labelsize=20)
+        axes[i].set_yscale('log')
+        axes[i].set_ylim(0.005, 1.5)
+        values = dataframe_[var].values
+        if "abs" in  vardir:
+            values = np.array([abs(v - cen) for v in values])
+        nbinscan = 100
+        if var in plot_options and "xlim" in plot_options[var]:
+            minv = plot_options[var]["xlim"][0]
+            maxv = plot_options[var]["xlim"][1]
+        else:
+            minv = values.min()
+            maxv = values.max()
+        _, bina = np.histogram(values, range=(minv, maxv), bins=nbinscan)
+        widthbin = (maxv - minv)/(float)(nbinscan)
+        width = np.diff(bina)
+        center = (bina[:-1] + bina[1:]) / 2
+        ratios_df_pkl_size = deque()
+        ratios_df_size = deque()
+        df_skimmed = dataframe_
+        if "lt" in vardir:
             for ibin in range(nbinscan):
-                valuesel = values[values < minv+widthbin*ibin]
-                num = len(valuesel)
-                eff = float(num)/float(den)
-                ratio.append(eff)
-        text = f'prob > {treshold}'
-        lbl = text
-        ax.bar(center, ratio, align='center', width=width, label=lbl)
-        ax.legend(fontsize=30)
-        i = i+1
-    plotname = output_+'/variableseffscan_prob'+ "%f" % treshold + suffix_ + '.png'
+                df_skimmed = df_skimmed.iloc[values > minv+widthbin*ibin]
+                values = values[values > minv+widthbin*ibin]
+                num = len(pickle.dumps(df_skimmed, protocol=4))
+                eff = float(num)/float(df_reference_pkl_size)
+                ratios_df_pkl_size.append(eff)
+                num = df_skimmed.shape[0] * df_skimmed.shape[1]
+                eff = float(num)/float(df_reference_size)
+                ratios_df_size.append(eff)
+        elif "st" in vardir:
+            for ibin in range(nbinscan, 0, -1):
+                df_skimmed = df_skimmed.iloc[values < minv+widthbin*ibin]
+                values = values[values < minv+widthbin*ibin]
+                num = len(pickle.dumps(df_skimmed, protocol=4))
+                eff = float(num)/float(df_reference_pkl_size)
+                ratios_df_pkl_size.appendleft(eff)
+                num = df_skimmed.shape[0] * df_skimmed.shape[1]
+                eff = float(num)/float(df_reference_size)
+                ratios_df_size.appendleft(eff)
+        axes[i].bar(center, ratios_df_pkl_size, align='center', width=width, label="rel. pkl size",
+                    alpha=0.5)
+        axes[i].bar(center, ratios_df_size, align='center', width=width, label="rel. df length",
+                    alpha=0.5)
+        axes[i].legend(fontsize=30)
+    plotname = join(output_, f"variables_cutscan_picklesize_{suffix_}.png")
     plt.savefig(plotname, bbox_inches='tight')
 
 def scatterplot(dataframe_sig_, dataframe_bkg_, mylistvariablesx_,
