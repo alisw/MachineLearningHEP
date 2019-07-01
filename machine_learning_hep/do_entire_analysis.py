@@ -17,8 +17,8 @@ main script for doing data processing, machine learning and analysis
 """
 
 #import os
-import yaml
 import subprocess
+import yaml
 from multiprocesser import MultiProcesser  # pylint: disable=import-error
 #from machine_learning_hep.doskimming import conversion, merging, merging_period, skim
 #from machine_learning_hep.doclassification_regression import doclassification_regression
