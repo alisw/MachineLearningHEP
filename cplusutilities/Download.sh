@@ -147,6 +147,20 @@ elif [ "$dataset" == "LHC17j4_kl_MC_pp" ]; then
   isMC=1
   ispp=1
   datasetwithchilds=0
+elif [ "$dataset" == "LHC17j4b_MC_pp" ]; then
+  #Lc->pK0s MC: pp 13 TeV 2016 childs 5 and 6 correspond are pass1 but corresponding data is pass2
+  inputpaths=(/alice/sim/2017/LHC17j4b/252371/PWGHF/HF_TreeCreator
+              /alice/sim/2017/LHC17j4b/253529/PWGHF/HF_TreeCreator
+              /alice/sim/2017/LHC17j4b/254331/PWGHF/HF_TreeCreator
+              /alice/sim/2017/LHC17j4b/254651/PWGHF/HF_TreeCreator
+              /alice/sim/2017/LHC17j4b/257630/PWGHF/HF_TreeCreator
+              /alice/sim/2017/LHC17j4b/259164/PWGHF/HF_TreeCreator
+              /alice/sim/2017/LHC17j4b/256307/PWGHF/HF_TreeCreator
+              /alice/sim/2017/LHC17j4b/263741/PWGHF/HF_TreeCreator
+              /alice/sim/2017/LHC17j4b/264076/PWGHF/HF_TreeCreator)
+  isMC=1
+  ispp=1
+  datasetwithchilds=1
 elif [ "$dataset" == "LHC17j4d2" ]; then
   #Lc->pK0s MC: pPb 5 TeV (used for pp for now)
   inputpaths=(/alice/sim/2017/LHC17j4d2_fast/265343/PWGHF/HF_TreeCreator
