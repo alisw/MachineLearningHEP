@@ -32,8 +32,9 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
 
     with open("default_complete.yaml", 'r') as run_config:
         data_config = yaml.load(run_config, Loader=yaml.FullLoader)
+    case = data_config["case"]
 
-    with open("data/database_ml_parameters.yml", 'r') as param_config:
+    with open("data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
 
     with open("data/config_model_parameters.yml", 'r') as mod_config:
@@ -45,7 +46,6 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     with open("data/database_ml_gridsearch.yml", 'r') as grid_config:
         grid_param = yaml.load(grid_config, Loader=yaml.FullLoader)
 
-    case = data_config["case"]
     dodownloadalice = data_config["download"]["alice"]["activate"]
     doconversionmc = data_config["conversion"]["mc"]["activate"]
     doconversiondata = data_config["conversion"]["data"]["activate"]

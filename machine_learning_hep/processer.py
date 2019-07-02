@@ -25,7 +25,7 @@ import uproot
 import pandas as pd
 import numpy as np
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
-from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
+from ROOT import TFile, TH1F, TCanvas  # pylint: disable=import-error, no-name-in-module
 
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
@@ -270,6 +270,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
     def applymodel(self, file_index):
         for ipt in range(self.p_nptbins):
             dfrecosk = pickle.load(openfile(self.mptfiles_recosk[ipt][file_index], "rb"))
+            if os.path.isfile(self.lpt_model[ipt]) is False:
+                print("Model file not present in bin %d" % ipt)
             mod = pickle.load(openfile(self.lpt_model[ipt], 'rb'))
             dfrecoskml = apply("BinaryClassification", [self.p_modelname], [mod],
                                dfrecosk, self.v_train)
@@ -344,6 +346,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
             fill_hist(h_invmass, df.inv_mass)
             myfile.cd()
             h_invmass.Write()
+            canv_mass = TCanvas("c%d" % (ipt), "canvas", 500, 500)
+            h_invmass.Draw()
+            canv_mass.SaveAs("%s/chisto_bin%d.pdf" % (self.d_results, ipt))
 
     def process_efficiency(self):
         n_bins = len(self.lpt_anbinmin)

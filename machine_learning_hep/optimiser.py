@@ -166,8 +166,7 @@ class Optimiser:
 
     def create_suffix(self):
         string_selection = createstringselection(self.v_bin, self.p_binmin, self.p_binmax)
-        self.s_suffix = f"nevt_sig{self.p_nsig}_nevt_bkg{self.p_nbkg}_" \
-                 f"{self.p_case}_{string_selection}"
+        self.s_suffix = f"{self.p_case}_{string_selection}"
 
     def preparesample(self):
         logger = get_logger()
