@@ -1,7 +1,7 @@
-case: LcpK0s_multiplicity
+case: D0pp_jets
 download:
   alice:
-    activate: true
+    activate: false
 conversion:
   mc: 
     activate: true 
@@ -24,7 +24,7 @@ mergingperiods:
     activate: true
 
 ml_study:   
-  activate: false
+  activate: true
   doscancuts: false
   applytodatamc: false
   doroc: true
