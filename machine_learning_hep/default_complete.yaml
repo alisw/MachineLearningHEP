@@ -1,27 +1,27 @@
-case: D0pp_jets
+case: LcpK0s_multiplicity
 download:
   alice:
     activate: false
 conversion:
   mc: 
-    activate: true 
+    activate: false 
   data:
-    activate: true
+    activate: false
 skimming: 
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 merging: 
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 mergingperiods: 
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 
 ml_study:   
   activate: true
@@ -31,24 +31,24 @@ ml_study:
   doboundary: false
   docorrelation: false
   docrossvalidation: false
-  dogridsearch: false
+  dogridsearch: true
   doimportance: false
-  dolearningcurve: true
+  dolearningcurve: false
   dopca: false
   dosignifopt: false
   doefficiency: false
   dotesting: false
-  dotraining: true
+  dotraining: false
 
 analysis:
   data:
-    doapply: true
-    domergeapply: true
-    domergeapplyperiods: true
-    histomass: true
+    doapply: false
+    domergeapply: false
+    domergeapplyperiods: false
+    histomass: false
   mc:
-    doapply: true
-    domergeapply: true
-    domergeapplyperiods: true
-    histomass: true
-    efficiency: true
+    doapply: false
+    domergeapply: false
+    domergeapplyperiods: false
+    histomass: false
+    efficiency: false
