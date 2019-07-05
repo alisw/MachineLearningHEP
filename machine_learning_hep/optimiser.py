@@ -169,8 +169,7 @@ class Optimiser:
         self.s_suffix = f"{self.p_case}_{string_selection}"
 
     def preparesample(self):
-        logger = get_logger()
-        print("prepare sample")
+        self.logger.info("Prepare Sample")
         self.df_data = pickle.load(openfile(self.f_reco_data, "rb"))
         self.df_mc = pickle.load(openfile(self.f_reco_mc, "rb"))
         self.df_mcgen = pickle.load(openfile(self.f_gen_mc, "rb"))
@@ -193,15 +192,15 @@ class Optimiser:
 
 
         if self.p_nsig > len(self.df_sig):
-            logger.warning("There are not enough signal events")
+            self.logger.warning("There are not enough signal events")
         if self.p_nbkg > len(self.df_bkg):
-            logger.warning("There are not enough background events")
+            self.logger.warning("There are not enough background events")
 
         self.p_nsig = min(len(self.df_sig), self.p_nsig)
         self.p_nbkg = min(len(self.df_bkg), self.p_nbkg)
 
-        logger.info("Used number of signal events is %d", self.p_nsig)
-        logger.info("Used number of background events is %d", self.p_nbkg)
+        self.logger.info("Used number of signal events is %d", self.p_nsig)
+        self.logger.info("Used number of background events is %d", self.p_nbkg)
 
         self.df_ml = pd.DataFrame()
         self.df_sig = shuffle(self.df_sig, random_state=self.rnd_shuffle)
@@ -217,9 +216,12 @@ class Optimiser:
         self.df_mltest = self.df_mltest.reset_index(drop=True)
         self.df_sigtrain, self.df_bkgtrain = split_df_sigbkg(self.df_mltrain, self.v_sig)
         self.df_sigtest, self.df_bkgtest = split_df_sigbkg(self.df_mltest, self.v_sig)
-        logger.info("Nev ml train %d and test %d", len(self.df_mltrain), len(self.df_mltest))
-        logger.info("Nev signal train %d and test %d", len(self.df_sigtrain), len(self.df_sigtest))
-        logger.info("Nev bkg train %d and test %d", len(self.df_bkgtrain), len(self.df_bkgtest))
+        self.logger.info("Total number of candidates: train %d and test %d", len(self.df_mltrain),
+                         len(self.df_mltest))
+        self.logger.info("Number of signal candidates: train %d and test %d",
+                         len(self.df_sigtrain), len(self.df_sigtest))
+        self.logger.info("Number of bkg candidates: %d and test %d", len(self.df_bkgtrain),
+                         len(self.df_bkgtest))
 
         self.df_xtrain = self.df_mltrain[self.v_train]
         self.df_ytrain = self.df_mltrain[self.v_sig]
@@ -246,12 +248,12 @@ class Optimiser:
         self.p_classname = names_scikit+names_xgboost+names_keras
 
     def do_train(self):
+        self.logger.info("Training")
         t0 = time.time()
-        print("training")
         self.p_trainedmod = fit(self.p_classname, self.p_class, self.df_xtrain, self.df_ytrain)
         savemodels(self.p_classname, self.p_trainedmod, self.dirmlout, self.s_suffix)
-        print("training over")
-        print("time elapsed=", time.time() -t0)
+        self.logger.info("Training over")
+        self.logger.info("Time elapsed = %.3f", time.time() - t0)
 
     def do_test(self):
         df_ml_test = test(self.p_mltype, self.p_classname, self.p_trainedmod,
@@ -333,14 +335,15 @@ class Optimiser:
 
     # pylint: disable=too-many-locals
     def do_significance(self):
+        self.logger.info("Doing significance optimization")
         self.df_evt_data = pickle.load(openfile(self.f_evt_data, 'rb'))
         self.df_evttotsample_data = pickle.load(openfile(self.f_evttotsample_data, 'rb'))
         #first extract the number of data events in the ml sample
         #and the total number of events
         self.p_nevttot = len(self.df_evttotsample_data)
         self.p_nevtml = len(self.df_evt_data)
-        print("Number of data events used for ML: %d", self.p_nevtml)
-        print("Total number of data events: %d", self.p_nevttot)
+        self.logger.info("Number of data events used for ML: %d", self.p_nevtml)
+        self.logger.info("Total number of data events: %d", self.p_nevttot)
         #calculate acceptance correction. we use in this case all
         #the signal from the mc sample, without limiting to the n. signal
         #events used for training
@@ -348,20 +351,19 @@ class Optimiser:
         numacc = len(self.df_mc[self.df_mc["ismcprompt"] == 1])
         acc, acc_err = self.calceff(numacc, denacc)
 
-        print("acceptance and error", acc, acc_err)
+        self.logger.info("Acceptance: %.3e +/- %.3e", acc, acc_err)
         #calculation of the expected fonll signals
         df_fonll = pd.read_csv(self.f_fonll)
         ptmin = self.p_binmin
         ptmax = self.p_binmax
-        df_fonll_in_pt = \
-                df_fonll.query('(pt >= @ptmin) and (pt < @ptmax)')[self.p_fonllband]
+        df_fonll_in_pt = df_fonll.query('(pt >= @ptmin) and (pt < @ptmax)')[self.p_fonllband]
         prod_cross = df_fonll_in_pt.sum() * self.p_fragf * 1e-12 / len(df_fonll_in_pt)
         delta_pt = ptmax - ptmin
         signal_yield = 2. * prod_cross * delta_pt * self.p_br * acc * self.p_taa \
                        / (self.p_sigmamb * self.p_fprompt)
-        print("Expected signal yield: %f", signal_yield)
+        self.logger.info("Expected signal yield: %.3e", signal_yield)
         signal_yield = self.p_raahp * signal_yield
-        print("Expected signal yield x RAA hp: %f", signal_yield)
+        self.logger.info("Expected signal yield x RAA hp: %.3e", signal_yield)
 
         #now we plot the fonll expectation
         plt.figure(figsize=(20, 15))
@@ -386,16 +388,16 @@ class Optimiser:
         gaus_fit.SetParameters(0, hmass.Integral())
         gaus_fit.SetParameters(1, self.p_mass)
         gaus_fit.SetParameters(2, 0.02)
-        print("To fit the signal a gaussian function is used")
+        self.logger.info("To fit the signal a gaussian function is used")
         fitsucc = hmass.Fit("gaus_fit", "RQ")
 
         if int(fitsucc) != 0:
-            print("Problem in signal peak fit")
+            self.logger.warning("Problem in signal peak fit")
             sigma = 0.
 
         sigma = gaus_fit.GetParameter(2)
-        print("Mean of the gaussian: %f", gaus_fit.GetParameter(1))
-        print("Sigma of the gaussian: %f", sigma)
+        self.logger.info("Mean of the gaussian: %.3e", gaus_fit.GetParameter(1))
+        self.logger.info("Sigma of the gaussian: %.3e", sigma)
         sig_region = [self.p_mass - 3 * sigma, self.p_mass + 3 * sigma]
         fig_signif_pevt = plt.figure(figsize=(20, 15))
         plt.xlabel('Threshold', fontsize=20)
@@ -407,7 +409,6 @@ class Optimiser:
         plt.title("Significance vs Threshold", fontsize=20)
 
         for name in self.p_classname:
-            print(name)
             df_sig = self.df_mltest[self.df_mltest["ismcprompt"] == 1]
             eff_array, eff_err_array, x_axis = self.calc_sigeff_steps(self.p_nstepsign,
                                                                       df_sig, name)
