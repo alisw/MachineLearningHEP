@@ -412,8 +412,6 @@ class Optimiser:
             df_sig = self.df_mltest[self.df_mltest["ismcprompt"] == 1]
             eff_array, eff_err_array, x_axis = self.calc_sigeff_steps(self.p_nstepsign,
                                                                       df_sig, name)
-            df_bkg = self.df_mltest[self.df_mltest["ismcprompt"] == 0]
-            df_bkg = df_bkg[df_bkg["ismcsignal"] == 0]
             bkg_array, bkg_err_array, _ = calc_bkg(df_data_sideband, name, self.p_nstepsign,
                                                    self.p_mass_fit_lim, self.p_bin_width,
                                                    sig_region, self.p_savefit, self.dirmlplot)
