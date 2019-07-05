@@ -333,10 +333,10 @@ class Optimiser:
 
     # pylint: disable=too-many-locals
     def do_significance(self):
-        self.df_evt_data = pd.read_pickle(self.f_evt_data)
-        self.df_evttotsample_data = pd.read_pickle(self.f_evttotsample_data)
+        self.df_evt_data = pickle.load(openfile(self.f_evt_data, 'rb'))
+        self.df_evttotsample_data = pickle.load(openfile(self.f_evttotsample_data, 'rb'))
         #first extract the number of data events in the ml sample
-        #and in the total number of events
+        #and the total number of events
         self.p_nevttot = len(self.df_evttotsample_data)
         self.p_nevtml = len(self.df_evt_data)
         print("Number of data events used for ML: %d", self.p_nevtml)
