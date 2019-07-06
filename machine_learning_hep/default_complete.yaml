@@ -1,4 +1,4 @@
-case: LcpK0s_multiplicity
+case: LcpK0s_multiplicity_test
 download:
   alice:
     activate: false
