@@ -104,6 +104,7 @@ class Optimiser:
         self.rnd_splt = data_param["ml"]["rnd_splt"]
         self.test_frac = data_param["ml"]["test_frac"]
         self.p_plot_options = data_param["variables"].get("plot_options", {})
+        self.p_dofullevtmerge = data_param["dofullevtmerge"]
         #dataframes
         self.df_mc = None
         self.df_mcgen = None
@@ -336,9 +337,14 @@ class Optimiser:
     # pylint: disable=too-many-locals
     def do_significance(self):
         self.logger.info("Doing significance optimization")
-        self.df_evt_data = pickle.load(openfile(self.f_evt_data, 'rb'))
-        self.df_evttotsample_data = pickle.load(openfile(self.f_evttotsample_data, 'rb'))
         #first extract the number of data events in the ml sample
+        self.df_evt_data = pickle.load(openfile(self.f_evt_data, 'rb'))
+        if self.p_dofullevtmerge is True:
+            self.df_evttotsample_data = pickle.load(openfile(self.f_evttotsample_data, 'rb'))
+        else:
+            self.logger.info("The total merged event dataframe was not merged \
+                             for space limits")
+            self.df_evttotsample_data = pickle.load(openfile(self.f_evt_data, 'rb'))
         #and the total number of events
         self.p_nevttot = len(self.df_evttotsample_data)
         self.p_nevtml = len(self.df_evt_data)

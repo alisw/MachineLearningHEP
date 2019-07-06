@@ -25,7 +25,8 @@ LcpK0s_multiplicity_test:
   sel_skim_binmin: [ 0,20] #list of nbins
   sel_skim_binmax: [20,100] #list of nbins
   var_binning: n_tracklets
-  
+  dofullevtmerge: false
+
   bitmap_sel:
     use: True
     var_name: cand_type

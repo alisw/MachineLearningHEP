@@ -34,6 +34,7 @@ D0pp_jets:
   sel_skim_binmin: [4,6] #list of nbins
   sel_skim_binmax: [6,10] #list of nbins
   var_binning: pt_cand
+  dofullevtmerge: false
   
   bitmap_sel:
     use: True
