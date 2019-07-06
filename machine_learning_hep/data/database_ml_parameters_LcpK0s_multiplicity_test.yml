@@ -86,7 +86,7 @@ LcpK0s_multiplicity_test:
       fracmerge : [0.3] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC18pp] #list of periods
-      unmerged_tree_dir: [/Users/gianmicheleinnocenti/samplesMLexample/data/unmerged] #list of periods
+      unmerged_tree_dir: [~/samplesMLexample/data/unmerged] #list of periods
       pkl: [LcpK0s_multiplicity/datapkl] #list of periods
       pkl_skimmed: [LcpK0s_multiplicity/datapklsk] #list of periods
       pkl_skimmed_merge_for_ml: [LcpK0s_multiplicity/datapklskML] #list of periods
@@ -101,7 +101,7 @@ LcpK0s_multiplicity_test:
       fracmerge : [1.0] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC18pp] #list of periods
-      unmerged_tree_dir: [/Users/gianmicheleinnocenti/samplesMLexample/mc/unmerged] # this is pPb MC, #list of periods
+      unmerged_tree_dir: [~/samplesMLexample/mc/unmerged] # this is pPb MC, #list of periods
       pkl: [LcpK0s_multiplicity/mcpkl] #list of periods
       pkl_skimmed: [LcpK0s_multiplicity/mcpklsk] #list of periods
       pkl_skimmed_merge_for_ml: [LcpK0s_multiplicity/mcpklskML] #list of periods
