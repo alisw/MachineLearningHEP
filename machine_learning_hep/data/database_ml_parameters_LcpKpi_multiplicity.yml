@@ -25,6 +25,7 @@ LcpKpi_multiplicity:
   sel_skim_binmin: [20] #list of nbins
   sel_skim_binmax: [50] #list of nbins
   var_binning: n_tracklets
+  dofullevtmerge: false
   
   bitmap_sel:
     use: True

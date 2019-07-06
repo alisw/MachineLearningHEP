@@ -81,6 +81,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.p_sigmaarray = datap["analysis"]["sigmaarray"]
         self.p_fixedsigma = datap["analysis"]["FixedSigma"]
         self.p_casefit = datap["analysis"]["fitcase"]
+        self.p_dofullevtmerge = datap["dofullevtmerge"]
 
         #namefile root
         self.n_root = datap["files_names"]["namefile_unmerged_tree"]
@@ -318,8 +319,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
         create_folder_struc(self.d_pklsk, self.l_path)
         arguments = [(i,) for i in range(len(self.l_reco))]
         self.parallelizer(self.skim, arguments, self.p_chunksizeskim)
-        merge_method(self.l_evt, self.f_totevt)
-        merge_method(self.l_evtorig, self.f_totevtorig)
+        if self.p_dofullevtmerge is True:
+            merge_method(self.l_evt, self.f_totevt)
+            merge_method(self.l_evtorig, self.f_totevtorig)
 
     def process_applymodel_par(self):
         print("doing apply model", self.mcordata, self.period)

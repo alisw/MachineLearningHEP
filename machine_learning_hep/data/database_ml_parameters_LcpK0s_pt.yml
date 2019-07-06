@@ -25,6 +25,7 @@ LcpK0s_pt:
   sel_skim_binmin: [1,2,3,4,5,6,8,12] #list of nbins
   sel_skim_binmax: [2,3,4,5,6,8,12,24] #list of nbins
   var_binning: pt_cand
+  dofullevtmerge: false
   
   bitmap_sel:
     use: True

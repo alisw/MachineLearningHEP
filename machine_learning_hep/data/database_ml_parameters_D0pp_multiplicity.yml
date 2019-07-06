@@ -25,6 +25,7 @@ D0pp_multiplicity:
   sel_skim_binmin: [0,10,30] #list of nbins
   sel_skim_binmax: [10,30,50] #list of nbins
   var_binning: n_tracklets
+  dofullevtmerge: false
   
   bitmap_sel:
     use: True
