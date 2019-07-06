@@ -61,17 +61,17 @@ D0pp_multiplicity:
 
   files_names:
     namefile_unmerged_tree: AnalysisResults.root
-    namefile_reco: AnalysisResultsReco.pkl.lz4
-    namefile_evt: AnalysisResultsEvt.pkl.lz4
-    namefile_evtorig: AnalysisResultsEvtOrig.pkl.lz4
-    namefile_gen: AnalysisResultsGen.pkl.lz4
-    namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl.lz4
-    namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl.lz4
-    namefile_reco: AnalysisResultsReco.pkl.lz4
+    namefile_reco: AnalysisResultsReco.pkl
+    namefile_evt: AnalysisResultsEvt.pkl
+    namefile_evtorig: AnalysisResultsEvtOrig.pkl
+    namefile_gen: AnalysisResultsGen.pkl
+    namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl
+    namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl
+    namefile_reco: AnalysisResultsReco.pkl
     treeoriginreco: 'PWGHF_TreeCreator/tree_D0'
     treeorigingen: 'PWGHF_TreeCreator/tree_D0_gen'
     treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
-    namefile_reco_ml_applied: AnalysisResultsRecoML.pkl.lz4
+    namefile_reco_ml_applied: AnalysisResultsRecoML.pkl
     treeoutput: "D0tree"
     histofilename: "masshisto.root"
     efffilename: "effhisto.root"
@@ -148,9 +148,9 @@ D0pp_multiplicity:
       pkl_skimmed_decmerged: [D0ppall/mcpklskdecmerged] #list of periods
       results: [D0ppall/mcanalysis] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifiernevt_sig2969_nevt_bkg11879_D0pp_multiplicity_dfselection_n_tracklets_0.0_10.0.sav,
-                     xgboost_classifiernevt_sig20645_nevt_bkg50000_D0pp_multiplicity_dfselection_n_tracklets_10.0_30.0.sav,
-                     xgboost_classifiernevt_sig4433_nevt_bkg50000_D0pp_multiplicity_dfselection_n_tracklets_30.0_50.0.sav] #list of nbins
+    modelsperptbin: [xgboost_classifierD0pp_multiplicity_dfselection_n_tracklets_0.0_10.0.sav,
+                     xgboost_classifierD0pp_multiplicity_dfselection_n_tracklets_10.0_30.0.sav,
+                     xgboost_classifierD0pp_multiplicity_dfselection_n_tracklets_30.0_50.0.sav] #list of nbins
     probcutpresel: 
       data: [0.3,0.3,0.3] #list of nbins
       mc: [0.3,0.3,0.3] #list of nbins
@@ -159,3 +159,19 @@ D0pp_multiplicity:
     mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
     bin_width: 0.001 # bin width of the invariant mass histogram
     presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
+    usefit: false
+    sgnfunc: null
+    bkgfunc: null
+    masspeak: null
+    massmin: null
+    massmax: null
+    rebin: null
+    includesecpeak: null
+    masssecpeak: null
+    FixedMean: null
+    SetFixGaussianSigma: null
+    SetInitialGaussianMean: null
+    dolikelihood: null
+    sigmaarray: null
+    FixedSigma: null  
+    fitcase: Dzero
