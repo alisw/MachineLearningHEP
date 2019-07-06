@@ -1,42 +1,54 @@
+#############################################################################
+##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
+## This program is free software: you can redistribute it and/or modify it ##
+##  under the terms of the GNU General Public License as published by the  ##
+## Free Software Foundation, either version 3 of the License, or (at your  ##
+## option) any later version. This program is distributed in the hope that ##
+##  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  ##
+##     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    ##
+##           See the GNU General Public License for more details.          ##
+##    You should have received a copy of the GNU General Public License    ##
+##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
+#############################################################################
 
 """
 Methods to: fit inv. mass
-Authors: xiuxiu.jiang@cern.ch
 """
 
 import math
 from array import array
-from ROOT import TF1, TFile
-from ROOT import gStyle
-from ROOT import kBlue, kGray
-from ROOT import TCanvas, TPaveText, Double
-from ROOT import TVirtualFitter
+from ROOT import TF1 # pylint: disable=import-error,no-name-in-module
+from ROOT import gStyle # pylint: disable=import-error,no-name-in-module
+from ROOT import kBlue, kGray # pylint: disable=import-error,no-name-in-module
+from ROOT import TCanvas, TPaveText, Double # pylint: disable=import-error,no-name-in-module
+from ROOT import TVirtualFitter # pylint: disable=import-error,no-name-in-module
 
 def gaus_func(sgnfunc):
     if sgnfunc == "kGaus":
         sigval = "[0]/(sqrt(2.*pi))/[2]*(exp(-(x-[1])*(x-[1])/2./[2]/[2]))"
     return sigval
 
-def pol1_func(x, par):
-    plo1_func = par[0]/par[2]+par[1]*(x[0]-0.5*par[3])
+def pol1_func(xval, par):
+    plo1_func = par[0]/par[2]+par[1]*(xval[0]-0.5*par[3])
     return plo1_func
 
-def pol2_func(x, par):
-    plo2_func = par[0]/par[3]+par[1]*(x[0]-0.5*par[4])+par[2]*\
-        (x[0]*x[0]-1/3.*par[5]/par[3])
+def pol2_func(xval, par):
+    plo2_func = par[0]/par[3]+par[1]*(xval[0]-0.5*par[4])+par[2]*\
+        (xval[0]*xval[0]-1/3.*par[5]/par[3])
     return plo2_func
 
-def pol1_func_sidebands(x, par):
-    if abs(x[0]-par[4]) < par[5] is True:
+def pol1_func_sidebands(xval, par):
+    if abs(xval[0]-par[4]) < par[5] is True:
         TF1.RejectPoint()
-    plo1_func = par[0]/par[2]+par[1]*(x[0]-0.5*par[3])
+    plo1_func = par[0]/par[2]+par[1]*(xval[0]-0.5*par[3])
     return plo1_func
 
-def pol2_func_sidebands(x, par):
-    if abs(x[0]-par[6]) < par[7] is True:
+def pol2_func_sidebands(xval, par):
+    if abs(xval[0]-par[6]) < par[7] is True:
         TF1.RejectPoint()
-    plo2_func = par[0]/par[3]+par[1]*(x[0]-0.5*par[4])+par[2]*\
-        (x[0]*x[0]-1/3.*par[5]/par[3])
+    plo2_func = par[0]/par[3]+par[1]*(xval[0]-0.5*par[4])+par[2]*\
+        (xval[0]*xval[0]-1/3.*par[5]/par[3])
     return plo2_func
 
 def fixpar(massmin, massmax, masspeak, range_signal):
@@ -46,15 +58,15 @@ def fixpar(massmin, massmax, masspeak, range_signal):
     par_fix4 = Double(masspeak)
     par_fix5 = Double(range_signal)
     return par_fix1, par_fix2, par_fix3, par_fix4, par_fix5
-
-def func_fit(fitsidebands, bkgfunc, massmin, massmax, integralHisto, masspeak, range_signal):
+# pylint: disable=no-else-return
+def func_fit(fitsidebands, bkgfunc, massmin, massmax, integralhisto, masspeak, range_signal):
     par_fix1, par_fix2, par_fix3, par_fix4, par_fix5 =\
         fixpar(massmin, massmax, masspeak, range_signal)
     if fitsidebands:
         if bkgfunc == "Pol1":
             back_fit_new = TF1("back_fit_new", pol1_func_sidebands, massmin, massmax, 6)
             back_fit_new.SetParNames("BkgInt", "Slope", "", "", "", "")
-            back_fit_new.SetParameters(integralHisto, -100.)
+            back_fit_new.SetParameters(integralhisto, -100.)
             back_fit_new.FixParameter(2, par_fix1)
             back_fit_new.FixParameter(3, par_fix2)
             back_fit_new.FixParameter(4, par_fix4)
@@ -62,7 +74,7 @@ def func_fit(fitsidebands, bkgfunc, massmin, massmax, integralHisto, masspeak, r
         if bkgfunc == "Pol2":
             back_fit_new = TF1("back_fit_new", pol2_func_sidebands, massmin, massmax, 8)
             back_fit_new.SetParNames("BkgInt", "Coef1", "Coef2", "", "", "", "", "")
-            back_fit_new.SetParameters(integralHisto, -10., 5)
+            back_fit_new.SetParameters(integralhisto, -10., 5)
             back_fit_new.FixParameter(3, par_fix1)
             back_fit_new.FixParameter(4, par_fix2)
             back_fit_new.FixParameter(5, par_fix3)
@@ -73,13 +85,13 @@ def func_fit(fitsidebands, bkgfunc, massmin, massmax, integralHisto, masspeak, r
         if bkgfunc == "Pol1":
             back_refit_new = TF1("back_refit", pol1_func, massmin, massmax, 4)
             back_refit_new.SetParNames("BkgInt", "Slope", "", "")
-            back_refit_new.SetParameters(integralHisto, -100.)
+            back_refit_new.SetParameters(integralhisto, -100.)
             back_refit_new.FixParameter(2, par_fix1)
             back_refit_new.FixParameter(3, par_fix2)
         if bkgfunc == "Pol2":
             back_refit_new = TF1("back_refit", pol2_func, massmin, massmax, 6)
             back_refit_new.SetParNames("BkgInt", "Coef1", "Coef2", "", "", "")
-            back_refit_new.SetParameters(integralHisto, -10., 5)
+            back_refit_new.SetParameters(integralhisto, -10., 5)
             back_refit_new.FixParameter(3, par_fix1)
             back_refit_new.FixParameter(4, par_fix2)
             back_refit_new.FixParameter(5, par_fix3)
@@ -88,17 +100,18 @@ def func_fit(fitsidebands, bkgfunc, massmin, massmax, integralHisto, masspeak, r
 def tot_func(bkg, massmax, massmin):
     print("tot_function = plo2 function + gaus function")
     if bkg == "Pol1":
-        tot_func = "[0]/(%s)+[1]*(x-0.5*(%s))\
+        mytot_func = "[0]/(%s)+[1]*(x-0.5*(%s))\
             + [3]/(sqrt(2.*pi))/[5]*(exp(-(x-[4])*(x-[4])/2./[5]/[5]))"%\
             ((massmax-massmin), (massmax+massmin))
     if bkg == "Pol2":
-        tot_func = "[0]/(%s)+[1]*(x-0.5*(%s))+[2]*(x*x-1/3.*(%s)/(%s))\
+        mytot_func = "[0]/(%s)+[1]*(x-0.5*(%s))+[2]*(x*x-1/3.*(%s)/(%s))\
             + [3]/(sqrt(2.*pi))/[5]*(exp(-(x-[4])*(x-[4])/2./[5]/[5]))"%\
             ((massmax-massmin), (massmax+massmin), (massmax*massmax*massmax\
             -massmin*massmin*massmin), (massmax-massmin))
-    return tot_func
+    return mytot_func
 
-
+# pylint: disable=too-many-arguments, too-many-locals, too-many-branches,
+# pylint: disable=too-many-statements, pointless-statement
 def fitter(histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihood,\
     setinitialgaussianmean, setfixgaussiansigma, sigma, massmin, massmax,\
     fixedmean, fixedsigma, outputfolder, varbin, minvar, maxvar):
@@ -122,9 +135,10 @@ def fitter(histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihood,\
         fitsidebands = True
         nSigma4SideBands = 4.
         range_signal = nSigma4SideBands*sigmaSgn
-        integralHisto = Double(histo.Integral(histo.FindBin(massmin), histo.FindBin(massmax), "width"))
+        integralhisto = Double(histo.Integral(histo.FindBin(massmin), \
+                                              histo.FindBin(massmax), "width"))
         back_fit = func_fit(fitsidebands, bkgfunc, massmin, massmax,\
-            integralHisto, masspeak, range_signal)
+            integralhisto, masspeak, range_signal)
         back_fit.SetLineColor(kBlue+3)
         histo.Fit("back_fit", ("R,%s,+,0" % (fitOption)))
         back_fit.SetLineColor(kGray+1)
@@ -133,7 +147,7 @@ def fitter(histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihood,\
         print("refit (all range)")
         fitsidebands = False
         back_refit = func_fit(fitsidebands, bkgfunc, massmin, massmax,\
-            integralHisto, masspeak, range_signal)
+            integralhisto, masspeak, range_signal)
         back_refit.SetLineColor(kBlue+3)
         histo.Fit("back_refit", ("R,%s,+,0" % (fitOption)))
         back_refit.SetLineColor(2)

@@ -364,10 +364,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
             fill_hist(h_invmass, df.inv_mass)
             myfile.cd()
             if self.usefit is True:
-                canvas = fitter(h_invmass, self.p_casefit, self.p_sgnfunc[ipt], self.p_bkgfunc[ipt], \
+                fitter(h_invmass, self.p_casefit, self.p_sgnfunc[ipt], self.p_bkgfunc[ipt], \
                     self.p_masspeak, self.p_rebin[ipt], self.p_dolike, self.p_fixingausmean, \
                     self.p_fixingaussigma, self.p_sigmaarray[ipt], self.p_massmin[ipt], \
-                    self.p_massmax[ipt], self.p_fixedmean, self.p_fixedsigma, self.d_results,
+                    self.p_massmax[ipt], self.p_fixedmean, self.p_fixedsigma, self.d_results, \
                     self.v_var_binning, self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
             h_invmass.Write()
             canv_mass = TCanvas("c%d" % (ipt), "canvas", 500, 500)
