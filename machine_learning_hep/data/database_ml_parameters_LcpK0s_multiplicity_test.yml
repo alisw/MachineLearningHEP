@@ -86,7 +86,7 @@ LcpK0s_multiplicity_test:
       fracmerge : [0.3] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC18pp] #list of periods
-      unmerged_tree_dir: [~/samplesMLexample/data/unmerged] #list of periods
+      unmerged_tree_dir: [/Users/gianmicheleinnocenti/samplesMLexample/data/unmerged] #list of periods
       pkl: [LcpK0s_multiplicity/datapkl] #list of periods
       pkl_skimmed: [LcpK0s_multiplicity/datapklsk] #list of periods
       pkl_skimmed_merge_for_ml: [LcpK0s_multiplicity/datapklskML] #list of periods
@@ -101,7 +101,7 @@ LcpK0s_multiplicity_test:
       fracmerge : [1.0] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC18pp] #list of periods
-      unmerged_tree_dir: [~/samplesMLexample/mc/unmerged] # this is pPb MC, #list of periods
+      unmerged_tree_dir: [/Users/gianmicheleinnocenti/samplesMLexample/mc/unmerged] # this is pPb MC, #list of periods
       pkl: [LcpK0s_multiplicity/mcpkl] #list of periods
       pkl_skimmed: [LcpK0s_multiplicity/mcpklsk] #list of periods
       pkl_skimmed_merge_for_ml: [LcpK0s_multiplicity/mcpklskML] #list of periods
@@ -157,3 +157,20 @@ LcpK0s_multiplicity_test:
     mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
     bin_width: 0.001 # bin width of the invariant mass histogram
     presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
+    #parameters for fitter
+    usefit: true
+    sgnfunc: [kGaus,kGaus]
+    bkgfunc: [Pol2,Pol2]
+    masspeak: 2.2864
+    massmin: [2.14,2.14]
+    massmax: [2.436,2.436]
+    rebin: [6,6]
+    includesecpeak: [0,0]
+    masssecpeak: 1.869
+    FixedMean: false
+    SetFixGaussianSigma: true
+    SetInitialGaussianMean: true
+    dolikelihood: true
+    sigmaarray: [0.01,0.01]
+    FixedSigma: true  
+    fitcase: Lc

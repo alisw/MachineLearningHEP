@@ -26,13 +26,14 @@ import pandas as pd
 import numpy as np
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TH1F, TCanvas  # pylint: disable=import-error, no-name-in-module
-
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge_method
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
 from machine_learning_hep.models import apply # pylint: disable=import-error
+from machine_learning_hep.globalfitter import fitter
+
 class Processer: # pylint: disable=too-many-instance-attributes
     # Class Attribute
     species = 'processer'
@@ -64,6 +65,22 @@ class Processer: # pylint: disable=too-many-instance-attributes
         #parameter names
         self.p_maxprocess = p_maxprocess
         self.indexsample = None
+        #parameter fitter
+        self.p_sgnfunc = datap["analysis"]["sgnfunc"]
+        self.p_bkgfunc = datap["analysis"]["bkgfunc"]
+        self.p_masspeak = datap["analysis"]["masspeak"]
+        self.p_massmin = datap["analysis"]["massmin"]
+        self.p_massmax = datap["analysis"]["massmax"]
+        self.p_rebin = datap["analysis"]["rebin"]
+        self.p_includesecpeak = datap["analysis"]["includesecpeak"]
+        self.p_masssecpeak = datap["analysis"]["masssecpeak"]
+        self.p_fixedmean = datap["analysis"]["FixedMean"]
+        self.p_fixingaussigma = datap["analysis"]["SetFixGaussianSigma"]
+        self.p_fixingausmean = datap["analysis"]["SetInitialGaussianMean"]
+        self.p_dolike = datap["analysis"]["dolikelihood"]
+        self.p_sigmaarray = datap["analysis"]["sigmaarray"]
+        self.p_fixedsigma = datap["analysis"]["FixedSigma"]
+        self.p_casefit = datap["analysis"]["fitcase"]
 
         #namefile root
         self.n_root = datap["files_names"]["namefile_unmerged_tree"]
@@ -129,6 +146,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.f_totevt = os.path.join(self.d_pkl, self.n_evt)
         self.f_totevtorig = os.path.join(self.d_pkl, self.n_evtorig)
 
+        self.usefit = datap["analysis"]["usefit"]
         self.p_modelname = datap["analysis"]["modelname"]
         self.lpt_anbinmin = datap["sel_skim_binmin"]
         self.lpt_anbinmax = datap["sel_skim_binmax"]
@@ -345,6 +363,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
                              self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
             fill_hist(h_invmass, df.inv_mass)
             myfile.cd()
+            if self.usefit is True:
+                canvas = fitter(h_invmass, self.p_casefit, self.p_sgnfunc[ipt], self.p_bkgfunc[ipt], \
+                    self.p_masspeak, self.p_rebin[ipt], self.p_dolike, self.p_fixingausmean, \
+                    self.p_fixingaussigma, self.p_sigmaarray[ipt], self.p_massmin[ipt], \
+                    self.p_massmax[ipt], self.p_fixedmean, self.p_fixedsigma, self.d_results,
+                    self.v_var_binning, self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
             h_invmass.Write()
             canv_mass = TCanvas("c%d" % (ipt), "canvas", 500, 500)
             h_invmass.Draw()
