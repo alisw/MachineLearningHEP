@@ -1,4 +1,4 @@
-case: D0pp_jets
+case: LcpK0s_multiplicity
 download:
   alice:
     activate: false
