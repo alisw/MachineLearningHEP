@@ -153,3 +153,19 @@ Dspp_multiplicity:
     mass_fit_lim: [1.75, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
     bin_width: 0.001 # bin width of the invariant mass histogram
     presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
+    usefit: false
+    sgnfunc: null
+    bkgfunc: null
+    masspeak: null
+    massmin: null
+    massmax: null
+    rebin: null
+    includesecpeak: null
+    masssecpeak: null
+    FixedMean: null
+    SetFixGaussianSigma: null
+    SetInitialGaussianMean: null
+    dolikelihood: null
+    sigmaarray: null
+    FixedSigma: null  
+    fitcase: Dzero
