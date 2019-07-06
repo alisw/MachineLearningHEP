@@ -267,6 +267,62 @@ elif [ "$dataset" == "LHC18q" ]; then
   isMC=0
   ispp=0
   datasetwithchilds=0
+elif [ "$dataset" == "LHC19c3a_q" ]; then
+  #D2H MC: PbPb 5 TeV 2018 0-10
+  inputpaths=(/alice/sim/2019/LHC19c3a/296433/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c3a2/296433/PWGHF/HF_TreeCreator)
+  isMC=1
+  ispp=0
+  datasetwithchilds=1
+ elif [ "$dataset" == "LHC19c3a_r" ]; then
+  #D2H MC: PbPb 5 TeV 2018 0-10
+  inputpaths=(/alice/sim/2019/LHC19c3a/297481/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c3a2/297481/PWGHF/HF_TreeCreator)
+  isMC=1
+  ispp=0
+  datasetwithchilds=1
+ elif [ "$dataset" == "LHC19c3b_q" ]; then
+  #D2H MC: PbPb 5 TeV 2018 30-50
+  inputpaths=(/alice/sim/2019/LHC19c3b/296433/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c3b2/296433/PWGHF/HF_TreeCreator)
+  isMC=1
+  ispp=0
+  datasetwithchilds=1
+ elif [ "$dataset" == "LHC19c3b_r" ]; then
+  #D2H MC: PbPb 5 TeV 2018 30-50
+  inputpaths=(/alice/sim/2019/LHC19c3b/297481/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c3b2/297481/PWGHF/HF_TreeCreator)
+  isMC=1
+  ispp=0
+  datasetwithchilds=1
+ elif [ "$dataset" == "LHC19d4a_q" ]; then
+  #Ds->KKpi MC: PbPb 5 TeV 2018 0-10
+  inputpaths=(/alice/sim/2019/LHC19d4a/296433/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19d4a2/296244/PWGHF/HF_TreeCreator)
+  isMC=1
+  ispp=0
+  datasetwithchilds=1
+ elif [ "$dataset" == "LHC19d4a_r" ]; then
+  #Ds->KKpi MC: PbPb 5 TeV 2018 0-10
+  inputpaths=(/alice/sim/2019/LHC19d4a/297481/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19d4a2/297481/PWGHF/HF_TreeCreator)
+  isMC=1
+  ispp=0
+  datasetwithchilds=1
+ elif [ "$dataset" == "LHC19d4b_q" ]; then
+  #Ds->KKpi MC: PbPb 5 TeV 2018 30-50
+  inputpaths=(/alice/sim/2019/LHC19d4b/296433/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19d4b2/296433/PWGHF/HF_TreeCreator)
+  isMC=1
+  ispp=0
+  datasetwithchilds=1
+ elif [ "$dataset" == "LHC19d4b_r" ]; then
+  #Ds->KKpi MC: PbPb 5 TeV 2018 30-50
+  inputpaths=(/alice/sim/2019/LHC19d4b/297481/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19d4b2/297481/PWGHF/HF_TreeCreator)
+  isMC=1
+  ispp=0
+  datasetwithchilds=1
 else
   printf "\e[1;31mError: Dataset not yet implemented. Returning...\e[0m\n\n"
   exit
