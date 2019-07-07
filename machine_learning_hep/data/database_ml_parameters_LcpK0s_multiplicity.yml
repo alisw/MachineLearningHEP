@@ -82,17 +82,17 @@ LcpK0s_multiplicity:
       nperiods: 1
       nprocessesparallel: 50
       maxfiles : [-1] #list of periods
-      chunksizeunp : [1000] #list of periods
-      chunksizeskim: [1000] #list of periods
+      chunksizeunp : [100] #list of periods
+      chunksizeskim: [100] #list of periods
       fracmerge : [0.05] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC18pp] #list of periods
-      unmerged_tree_dir: [/data2/HeavyFlavour/pp_data_2018/01-07-2019/71_20190629-1549/unmerged] #list of periods
-      pkl: [/data2/ginnocen/LcpK0s_multiplicity/datapkl] #list of periods
-      pkl_skimmed: [/data2/ginnocen/LcpK0s_multiplicity/datapklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [/data2/ginnocen/LcpK0s_multiplicity/datapklskML] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data2/ginnocen/LcpK0s_multiplicity/datapklskMLallperiods
-      pkl_evtcounter_all: /data2/ginnocen/LcpK0s_multiplicity/datapklevtHC18ppallperiods
+      unmerged_tree_dir: [/data2/HeavyFlavour/pp_data_2018/01-07-2019/71_20190629-1549/merged] #list of periods
+      pkl: [/data2/ginnocen/LcpK0s_multiplicity2018/datapkl] #list of periods
+      pkl_skimmed: [/data2/ginnocen/LcpK0s_multiplicity2018/datapklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/data2/ginnocen/LcpK0s_multiplicity2018/datapklskML] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data2/ginnocen/LcpK0s_multiplicity2018/datapklskMLallperiods
+      pkl_evtcounter_all: /data2/ginnocen/LcpK0s_multiplicity2018/datapklevtHC18ppallperiods
     mc:
       nperiods: 1
       nprocessesparallel: 50
@@ -103,11 +103,11 @@ LcpK0s_multiplicity:
       seedmerge: [12] #list of periods
       period: [LHC18pp] #list of periods
       unmerged_tree_dir: [/data2/HeavyFlavour/pp_MC_2018/23-06-2019/56_20190622-1929/unmerged] # this is pPb MC, #list of periods
-      pkl: [/data2/ginnocen/LcpK0s_multiplicity/mcpkl] #list of periods
-      pkl_skimmed: [/data2/ginnocen/LcpK0s_multiplicity/mcpklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [/data2/ginnocen/LcpK0s_multiplicity/mcpklskML] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data2/ginnocen/LcpK0s_multiplicity/mcpklskMLallperiods
-      pkl_evtcounter_all: /data2/ginnocen/LcpK0s_multiplicity/mcpklevtHC18ppallperiods
+      pkl: [/data2/ginnocen/LcpK0s_multiplicity2018/mcpkl] #list of periods
+      pkl_skimmed: [/data2/ginnocen/LcpK0s_multiplicity2018/mcpklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/data2/ginnocen/LcpK0s_multiplicity2018/mcpklskML] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data2/ginnocen/LcpK0s_multiplicity2018/mcpklskMLallperiods
+      pkl_evtcounter_all: /data2/ginnocen/LcpK0s_multiplicity2018/mcpklevtHC18ppallperiods
   ml:
     nbkg: 1000000
     nsig: 1000000
@@ -123,8 +123,8 @@ LcpK0s_multiplicity:
     binmax: [10,20,40,60,80,100] #list of nbins
     mltype: BinaryClassification
     ncorescrossval: 10 
-    mlplot: /data2/ginnocen/LcpK0s_multiplicity/mlplot # to be removed
-    mlout: /data2/ginnocen/LcpK0s_multiplicity/mlout # to be removed
+    mlplot: /data2/ginnocen/LcpK0s_multiplicity2018/mlplot # to be removed
+    mlout: /data2/ginnocen/LcpK0s_multiplicity2018/mlout # to be removed
 
     opt:
       filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
@@ -140,13 +140,13 @@ LcpK0s_multiplicity:
       raahp: [1,1,1,1,1,1] #list of nbins
   analysis:
     data:
-      pkl_skimmed_dec: [/data2/ginnocen/LcpK0s_multiplicity/datapklskdec] #list of periods
-      pkl_skimmed_decmerged: [/data2/ginnocen/LcpK0s_multiplicity/datapklskdecmerged] #list of periods
-      results: [/data2/ginnocen/LcpK0s_multiplicity/dataanalysis] #list of periods
+      pkl_skimmed_dec: [/data2/ginnocen/LcpK0s_multiplicity2018/datapklskdec] #list of periods
+      pkl_skimmed_decmerged: [/data2/ginnocen/LcpK0s_multiplicity2018/datapklskdecmerged] #list of periods
+      results: [/data2/ginnocen/LcpK0s_multiplicity2018/dataanalysis] #list of periods
     mc:
-      pkl_skimmed_dec: [/data2/ginnocen/LcpK0s_multiplicity/mcpklskdec] #list of periods
-      pkl_skimmed_decmerged: [/data2/ginnocen/LcpK0s_multiplicity/mcpklskdecmerged] #list of periods
-      results: [/data2/ginnocen/LcpK0s_multiplicity/mcanalysis] #list of periods
+      pkl_skimmed_dec: [/data2/ginnocen/LcpK0s_multiplicity2018/mcpklskdec] #list of periods
+      pkl_skimmed_decmerged: [/data2/ginnocen/LcpK0s_multiplicity2018/mcpklskdecmerged] #list of periods
+      results: [/data2/ginnocen/LcpK0s_multiplicity2018/mcanalysis] #list of periods
     modelname: xgboost
     modelsperptbin: [xgboost_classifierLcpK0s_multiplicity_dfselection_n_tracklets_0.0_10.0.sav,
                      xgboost_classifierLcpK0s_multiplicity_dfselection_n_tracklets_10.0_20.0.sav,
@@ -155,26 +155,26 @@ LcpK0s_multiplicity:
                      xgboost_classifierLcpK0s_multiplicity_dfselection_n_tracklets_60.0_80.0.sav,
                      xgboost_classifierLcpK0s_multiplicity_dfselection_n_tracklets_80.0_100.0.sav] #list of nbins
     probcutpresel: 
-      data: [0.3,0.3,0.3,0.3,0.3,0.3] #list of nbins
-      mc: [0.3,0.3,0.3,0.3,0.3,0.3] #list of nbins
+      data: [0.15,0.15,0.15,0.15,0.15,0.15] #list of nbins
+      mc: [0.15,0.15,0.15,0.15,0.15,0.15] #list of nbins
 
-    probcutoptimal: [0.5,0.5,0.5,0.5,0.5,0.5] #list of nbins
+    probcutoptimal: [0.3,0.3,0.3,0.3,0.3,0.3] #list of nbins
     mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
     bin_width: 0.001 # bin width of the invariant mass histogram
     presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
-    usefit: false
-    sgnfunc: null
-    bkgfunc: null
-    masspeak: null
-    massmin: null
-    massmax: null
-    rebin: null
-    includesecpeak: null
-    masssecpeak: null
-    FixedMean: null
-    SetFixGaussianSigma: null
-    SetInitialGaussianMean: null
-    dolikelihood: null
-    sigmaarray: null
-    FixedSigma: null  
+    usefit: true
+    sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
+    bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
+    masspeak: 2.2864
+    massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
+    massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
+    rebin: [6,6,6,6,6,6]
+    includesecpeak: [0,0,0,0,0,0]
+    masssecpeak: 1.869
+    FixedMean: false
+    SetFixGaussianSigma: true
+    SetInitialGaussianMean: true
+    dolikelihood: true
+    sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01]
+    FixedSigma: true  
     fitcase: Lc
