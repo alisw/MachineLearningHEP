@@ -12,7 +12,7 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-LcpK0s_multiplicity:
+LcpK0spp_multiplicity:
   mass: 2.2864
   sel_reco_unp: "pt_cand>4 and pt_cand<8"
   sel_reco_singletrac_unp : null
