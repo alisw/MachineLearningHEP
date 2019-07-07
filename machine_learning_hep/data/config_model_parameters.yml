@@ -47,7 +47,7 @@ BinaryClassification:
       subsample: 0.8 #0.9
       colsample_bytree: 0.8 #0.9
       learning_rate: 0.1
-      n_estimators: 350 #100
+      n_estimators: 850 #100
 
 Regression:
 

@@ -20,10 +20,10 @@ Dspp_multiplicity:
   sel_cen_unp: null
   #sel_good_evt_unp: "is_ev_rej == 0"
   sel_good_evt_unp: null
-  sel_reco_skim: [null]
-  sel_gen_skim: [null]
-  sel_skim_binmin: [20] #list of nbins
-  sel_skim_binmax: [50] #list of nbins
+  sel_reco_skim: [null,null,null,null,null,null]
+  sel_gen_skim: [null,null,null,null,null,null]
+  sel_skim_binmin: [ 0,10,20,40,60,80] #list of nbins
+  sel_skim_binmax: [10,20,40,60,80,100] #list of nbins
   var_binning: n_tracklets
   dofullevtmerge: false
   
@@ -77,36 +77,36 @@ Dspp_multiplicity:
     data:
       nperiods: 1
       nprocessesparallel: 50
-      maxfiles : [10000] #list of periods
+      maxfiles : [-1] #list of periods
+      chunksizeunp : [100] #list of periods
+      chunksizeskim: [100] #list of periods
+      fracmerge : [0.05] #list of periods
+      seedmerge: [12] #list of periods
+      period: [LHC18pp] #list of periods
+      unmerged_tree_dir: [/data2/HeavyFlavour/pp_data_2018/01-07-2019/71_20190629-1549/merged] #list of periods
+      pkl: [/data2/ginnocen/Dspp_multiplicity2018/datapkl] #list of periods
+      pkl_skimmed: [/data2/ginnocen/Dspp_multiplicity2018/datapklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/data2/ginnocen/Dspp_multiplicity2018/datapklskML] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data2/ginnocen/Dspp_multiplicity2018/datapklskMLallperiods
+      pkl_evtcounter_all: /data2/ginnocen/Dspp_multiplicity2018/datapklevtHC18ppallperiods
+    mc:
+      nperiods: 1
+      nprocessesparallel: 50
+      maxfiles : [-1] #list of periods
       chunksizeunp : [1000] #list of periods
       chunksizeskim: [1000] #list of periods
       fracmerge : [1.0] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC18pp] #list of periods
-      unmerged_tree_dir: [/data2/HeavyFlavour/pp_data_2018/01-07-2019/71_20190629-1549/unmerged] #list of periods
-      pkl: [Dspp_multiplicity/datapkl] #list of periods
-      pkl_skimmed: [Dspp_multiplicity/datapklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [Dspp_multiplicity/datapklskML] #list of periods
-      pkl_skimmed_merge_for_ml_all: Dspp_multiplicity/datapklskMLallperiods
-      pkl_evtcounter_all: Dspp_multiplicity/datapklevtHC18ppallperiods
-    mc:
-      nperiods: 1
-      nprocessesparallel: 50
-      maxfiles : [-1] #list of periods
-      chunksizeunp : [300] #list of periods
-      chunksizeskim: [300] #list of periods
-      fracmerge : [1.0] #list of periods
-      seedmerge: [12] #list of periods
-      period: [LHC18pp] #list of periods
       unmerged_tree_dir: [/data2/HeavyFlavour/pp_MC_2016/01-07-2019/73_20190629-1619/unmerged] #list of periods
-      pkl: [Dspp_multiplicity/mcpkl] #list of periods
-      pkl_skimmed: [Dspp_multiplicity/mcpklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [Dspp_multiplicity/mcpklskML] #list of periods
-      pkl_skimmed_merge_for_ml_all: Dspp_multiplicity/mcpklskMLallperiods
-      pkl_evtcounter_all: Dspp_multiplicity/mcpklevtHC18ppallperiods
+      pkl: [/data2/ginnocen/Dspp_multiplicity2018/mcpkl] #list of periods
+      pkl_skimmed: [/data2/ginnocen/Dspp_multiplicity2018/mcpklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/data2/ginnocen/Dspp_multiplicity2018/mcpklskML] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data2/ginnocen/Dspp_multiplicity2018/mcpklskMLallperiods
+      pkl_evtcounter_all: /data2/ginnocen/Dspp_multiplicity2018/mcpklevtHC18ppallperiods
   ml:
-    nbkg: 50000
-    nsig: 50000
+    nbkg: 1000000
+    nsig: 1000000
     sampletagforsignal: 1
     sampletagforbkg: 0
     sel_sigml: ismcprompt == 1
@@ -115,12 +115,12 @@ Dspp_multiplicity:
     rnd_shuffle: 12
     rnd_splt: 12
     test_frac: 0.2
-    binmin: [20] #list of nbins
-    binmax: [50] #list of nbins
+    binmin: [ 0,10,20,40,60,80] #list of nbins
+    binmax: [10,20,40,60,80,100] #list of nbins
     mltype: BinaryClassification
     ncorescrossval: 10 
-    mlplot: Dspp_multiplicity/mlplot # to be removed
-    mlout: Dspp_multiplicity/mlout # to be removed
+    mlplot: /data2/ginnocen/Dspp_multiplicity2018/mlplot # to be removed
+    mlout: /data2/ginnocen/Dspp_multiplicity2018/mlout # to be removed
 
     opt:
       filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
@@ -133,24 +133,29 @@ Dspp_multiplicity:
       bkg_data_fraction: 0.1 # fraction of real data used in the estimation
       num_steps: 111 # number of steps used in efficiency and signif. estimation
       save_fit: True # save bkg fits with the various cuts on ML output
-      raahp: [1] #list of nbins
+      raahp: [1,1,1,1,1,1] #list of nbins
   
   analysis:
     data:
-      pkl_skimmed_dec: [Dspp_multiplicity/datapklskdec] #list of periods
-      pkl_skimmed_decmerged: [Dspp_multiplicity/datapklskdecmerged] #list of periods
-      results: [Dspp_multiplicity/dataanalysis] #list of periods
+      pkl_skimmed_dec: [/data2/ginnocen/Dspp_multiplicity2018/datapklskdec] #list of periods
+      pkl_skimmed_decmerged: [/data2/ginnocen/Dspp_multiplicity2018/datapklskdecmerged] #list of periods
+      results: [/data2/ginnocen/Dspp_multiplicity2018/dataanalysis] #list of periods
     mc:
-      pkl_skimmed_dec: [Dspp_multiplicity/mcpklskdec] #list of periods
-      pkl_skimmed_decmerged: [Dspp_multiplicity/mcpklskdecmerged] #list of periods
-      results: [Dspp_multiplicity/mcanalysis] #list of periods
+      pkl_skimmed_dec: [/data2/ginnocen/Dspp_multiplicity2018/mcpklskdec] #list of periods
+      pkl_skimmed_decmerged: [/data2/ginnocen/Dspp_multiplicity2018/mcpklskdecmerged] #list of periods
+      results: [/data2/ginnocen/Dspp_multiplicity2018/mcanalysis] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifiernevt_sig1249_nevt_bkg50000_Dspp_multiplicity_dfselection_n_tracklets_20.0_50.0.sav] #list of nbins
+    modelsperptbin: [xgboost_classifierDspp_multiplicity_dfselection_n_tracklets_0.0_10.0.sav,
+                     xgboost_classifierDspp_multiplicity_dfselection_n_tracklets_10.0_20.0.sav,
+                     xgboost_classifierDspp_multiplicity_dfselection_n_tracklets_20.0_40.0.sav,
+                     xgboost_classifierDspp_multiplicity_dfselection_n_tracklets_40.0_60.0.sav,
+                     xgboost_classifierDspp_multiplicity_dfselection_n_tracklets_60.0_80.0.sav,
+                     xgboost_classifierDspp_multiplicity_dfselection_n_tracklets_80.0_100.0.sav] #list of nbins
     probcutpresel: 
-      data: [0.3] #list of nbins
-      mc: [0.3] #list of nbins
+      data: [0.15,0.15,0.15,0.15,0.15,0.15] #list of nbins
+      mc: [0.15,0.15,0.15,0.15,0.15,0.15] #list of nbins
 
-    probcutoptimal: [0.5] #list of nbins
+    probcutoptimal: [0.15,0.15,0.15,0.15,0.15,0.15] #list of nbins
     mass_fit_lim: [1.75, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
     bin_width: 0.001 # bin width of the invariant mass histogram
     presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
@@ -169,4 +174,4 @@ Dspp_multiplicity:
     dolikelihood: null
     sigmaarray: null
     FixedSigma: null  
-    fitcase: Dzero
+    fitcase: Ds
