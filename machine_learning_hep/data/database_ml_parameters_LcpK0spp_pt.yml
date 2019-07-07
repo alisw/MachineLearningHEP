@@ -12,7 +12,7 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-LcpK0s_pt:
+LcpK0spp_pt:
   mass: 2.2864
   sel_reco_unp: "pt_cand>1"
   sel_reco_singletrac_unp : null
@@ -62,17 +62,17 @@ LcpK0s_pt:
 
   files_names:
     namefile_unmerged_tree: AnalysisResults.root
-    namefile_reco: AnalysisResultsReco.pkl.lz4
-    namefile_evt: AnalysisResultsEvt.pkl.lz4
-    namefile_evtorig: AnalysisResultsEvtOrig.pkl.lz4
-    namefile_gen: AnalysisResultsGen.pkl.lz4
-    namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl.lz4
-    namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl.lz4
-    namefile_reco: AnalysisResultsReco.pkl.lz4
+    namefile_reco: AnalysisResultsReco.pkl
+    namefile_evt: AnalysisResultsEvt.pkl
+    namefile_evtorig: AnalysisResultsEvtOrig.pkl
+    namefile_gen: AnalysisResultsGen.pkl
+    namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl
+    namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl
+    namefile_reco: AnalysisResultsReco.pkl
     treeoriginreco: 'PWGHF_TreeCreator/tree_Lc2V0bachelor'
     treeorigingen: 'PWGHF_TreeCreator/tree_Lc2V0bachelor_gen'
     treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
-    namefile_reco_ml_applied: AnalysisResultsRecoML.pkl.lz4
+    namefile_reco_ml_applied: AnalysisResultsRecoML.pkl
     treeoutput: "Lctree"
     histofilename: "masshisto.root"
     efffilename: "effhisto.root"
@@ -81,33 +81,33 @@ LcpK0s_pt:
     data:
       nperiods: 1
       nprocessesparallel: 50
-      maxfiles : [20] #list of periods
-      chunksizeunp : [1000] #list of periods
-      chunksizeskim: [1000] #list of periods
+      maxfiles : [-1] #list of periods
+      chunksizeunp : [100] #list of periods
+      chunksizeskim: [100] #list of periods
       fracmerge : [0.05] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC18pp] #list of periods
-      unmerged_tree_dir: [/data2/HeavyFlavour/pp_data_2018/01-07-2019/71_20190629-1549/unmerged] #list of periods
-      pkl: [LcpK0s_pt/datapkl] #list of periods
-      pkl_skimmed: [LcpK0s_pt/datapklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [LcpK0s_pt/datapklskML] #list of periods
-      pkl_skimmed_merge_for_ml_all: LcpK0s_pt/datapklskMLallperiods
-      pkl_evtcounter_all: LcpK0s_pt/datapklevtHC18ppallperiods
+      unmerged_tree_dir: [/data2/HeavyFlavour/pp_data_2018/01-07-2019/71_20190629-1549/merged] #list of periods
+      pkl: [/data2/HeavyFlavour/LcpK0spp_pt2018/datapkl] #list of periods
+      pkl_skimmed: [/data2/HeavyFlavour/LcpK0spp_pt2018/datapklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/data2/HeavyFlavour/LcpK0spp_pt2018/datapklskML] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data2/HeavyFlavour/LcpK0spp_pt2018/datapklskMLallperiods
+      pkl_evtcounter_all: /data2/HeavyFlavour/LcpK0spp_pt2018/datapklevtHC18ppallperiods
     mc:
       nperiods: 1
       nprocessesparallel: 50
-      maxfiles : [20] #list of periods
+      maxfiles : [-1] #list of periods
       chunksizeunp : [1000] #list of periods
       chunksizeskim: [1000] #list of periods
       fracmerge : [1.0] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC18pp] #list of periods
       unmerged_tree_dir: [/data2/HeavyFlavour/pp_MC_2018/23-06-2019/56_20190622-1929/unmerged] # this is pPb MC, #list of periods
-      pkl: [LcpK0s_pt/mcpkl] #list of periods
-      pkl_skimmed: [LcpK0s_pt/mcpklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [LcpK0s_pt/mcpklskML] #list of periods
-      pkl_skimmed_merge_for_ml_all: LcpK0s_pt/mcpklskMLallperiods
-      pkl_evtcounter_all: LcpK0s_pt/mcpklevtHC18ppallperiods
+      pkl: [/data2/HeavyFlavour/LcpK0spp_pt2018/mcpkl] #list of periods
+      pkl_skimmed: [/data2/HeavyFlavour/LcpK0spp_pt2018/mcpklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/data2/HeavyFlavour/LcpK0spp_pt2018/mcpklskML] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data2/HeavyFlavour/LcpK0spp_pt2018/mcpklskMLallperiods
+      pkl_evtcounter_all: /data2/HeavyFlavour/LcpK0spp_pt2018/mcpklevtHC18ppallperiods
   ml:
     nbkg: 500000
     nsig: 500000
@@ -123,8 +123,8 @@ LcpK0s_pt:
     binmax: [2,3,4,5,6,8,12,24] #list of nbins
     mltype: BinaryClassification
     ncorescrossval: 10 
-    mlplot: LcpK0s_pt/mlplot # to be removed
-    mlout: LcpK0s_pt/mlout # to be removed
+    mlplot: /data2/HeavyFlavour/LcpK0spp_pt2018/mlplot # to be removed
+    mlout: /data2/HeavyFlavour/LcpK0spp_pt2018/mlout # to be removed
 
     opt:
       filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
@@ -140,22 +140,22 @@ LcpK0s_pt:
       raahp: [1,1,1,1,1,1,1,1] #list of nbins
   analysis:
     data:
-      pkl_skimmed_dec: [LcpK0s_pt/datapklskdec] #list of periods
-      pkl_skimmed_decmerged: [LcpK0s_pt/datapklskdecmerged] #list of periods
-      results: [LcpK0s_pt/dataanalysis] #list of periods
+      pkl_skimmed_dec: [/data2/HeavyFlavour/LcpK0spp_pt2018/datapklskdec] #list of periods
+      pkl_skimmed_decmerged: [/data2/HeavyFlavour/LcpK0spp_pt2018/datapklskdecmerged] #list of periods
+      results: [/data2/HeavyFlavour/LcpK0spp_pt2018/dataanalysis] #list of periods
     mc:
-      pkl_skimmed_dec: [LcpK0s_pt/mcpklskdec] #list of periods
-      pkl_skimmed_decmerged: [LcpK0s_pt/mcpklskdecmerged] #list of periods
-      results: [LcpK0s_pt/mcanalysis] #list of periods
+      pkl_skimmed_dec: [/data2/HeavyFlavour/LcpK0spp_pt2018/mcpklskdec] #list of periods
+      pkl_skimmed_decmerged: [/data2/HeavyFlavour/LcpK0spp_pt2018/mcpklskdecmerged] #list of periods
+      results: [/data2/HeavyFlavour/LcpK0spp_pt2018/mcanalysis] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierLcpK0s_pt_dfselection_pt_cand_1.0_2.0.sav,
-                     xgboost_classifierLcpK0s_pt_dfselection_pt_cand_2.0_3.0.sav,
-                     xgboost_classifierLcpK0s_pt_dfselection_pt_cand_3.0_4.0.sav,
-                     xgboost_classifierLcpK0s_pt_dfselection_pt_cand_4.0_5.0.sav,
-                     xgboost_classifierLcpK0s_pt_dfselection_pt_cand_5.0_6.0.sav,
-                     xgboost_classifierLcpK0s_pt_dfselection_pt_cand_6.0_8.0.sav,
-                     xgboost_classifierLcpK0s_pt_dfselection_pt_cand_8.0_12.0.sav,
-                     xgboost_classifierLcpK0s_pt_dfselection_pt_cand_12.0_24.0.sav]
+    modelsperptbin: [xgboost_classifierLcpK0spp_pt_dfselection_pt_cand_1.0_2.0.sav,
+                     xgboost_classifierLcpK0spp_pt_dfselection_pt_cand_2.0_3.0.sav,
+                     xgboost_classifierLcpK0spp_pt_dfselection_pt_cand_3.0_4.0.sav,
+                     xgboost_classifierLcpK0spp_pt_dfselection_pt_cand_4.0_5.0.sav,
+                     xgboost_classifierLcpK0spp_pt_dfselection_pt_cand_5.0_6.0.sav,
+                     xgboost_classifierLcpK0spp_pt_dfselection_pt_cand_6.0_8.0.sav,
+                     xgboost_classifierLcpK0spp_pt_dfselection_pt_cand_8.0_12.0.sav,
+                     xgboost_classifierLcpK0spp_pt_dfselection_pt_cand_12.0_24.0.sav]
     
     probcutpresel: 
       data: [0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3] #list of nbins
@@ -165,19 +165,19 @@ LcpK0s_pt:
     mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
     bin_width: 0.001 # bin width of the invariant mass histogram
     presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
-    usefit: false
-    sgnfunc: null
-    bkgfunc: null
-    masspeak: null
-    massmin: null
-    massmax: null
-    rebin: null
-    includesecpeak: null
-    masssecpeak: null
-    FixedMean: null
-    SetFixGaussianSigma: null
-    SetInitialGaussianMean: null
-    dolikelihood: null
-    sigmaarray: null
-    FixedSigma: null  
+    usefit: true
+    sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
+    bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
+    masspeak: 2.2864
+    massmin: [2.14,2.14,2.14,2.14,2.14,2.14,2.14,2.14]
+    massmax: [2.436,2.436,2.436,2.436,2.436,2.436,2.436,2.436]
+    rebin: [6,6,6,6,6,6,6,6]
+    includesecpeak: [0,0,0,0,0,0,0,0]
+    masssecpeak: 1.869
+    FixedMean: false
+    SetFixGaussianSigma: true
+    SetInitialGaussianMean: true
+    dolikelihood: true
+    sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
+    FixedSigma: true  
     fitcase: Lc
