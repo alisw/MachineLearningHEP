@@ -27,13 +27,13 @@ ml_study:
   activate: true
   doscancuts: false
   applytodatamc: false
-  doroc: true
+  doroc: false
   doboundary: false
   docorrelation: false
   docrossvalidation: false
   dogridsearch: false
   doimportance: false
-  dolearningcurve: true
+  dolearningcurve: false
   dopca: false
   dosignifopt: false
   doefficiency: false
