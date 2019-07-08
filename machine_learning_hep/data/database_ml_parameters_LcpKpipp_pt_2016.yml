@@ -12,7 +12,7 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-LcpKpipp_pt:
+LcpKpipp_pt_2016:
   mass: 2.2864
   sel_reco_unp: "pt_cand>1"
   sel_reco_singletrac_unp : null
@@ -90,8 +90,8 @@ LcpKpipp_pt:
       fracmerge : [0.05,0.05] #list of periods
       seedmerge: [12,12] #list of periods
       period: [LHC16pp_kl,LHC16pp_deghjop] #list of periods
-      unmerged_tree_dir: [/data2/HeavyFlavour/pp_data_2016/04-07-2019/68_20190629-1511/unmerged,
-                          /data2/HeavyFlavour/pp_data_2016/30-06-2019/69_20190629-1548/unmerged]
+      unmerged_tree_dir: [/data2/HeavyFlavour/pp_data_2016/04-07-2019/68_20190629-1511/merged,
+                          /data2/HeavyFlavour/pp_data_2016/30-06-2019/69_20190629-1548/merged]
       pkl: [/data2/HeavyFlavour/LcpKpipp_pt2016_kl/datapkl,/data2/HeavyFlavour/LcpKpipp_pt2016_de/datapkl] #list of periods
       pkl_skimmed: [/data2/HeavyFlavour/LcpKpipp_pt2016_kl/datapklsk,/data2/HeavyFlavour/LcpKpipp_pt2016_de/datapklsk] #list of periods
       pkl_skimmed_merge_for_ml: [/data2/HeavyFlavour/LcpKpipp_pt2016_kl/datapklskML,/data2/HeavyFlavour/LcpKpipp_pt2016_de/datapklskML] #list of periods

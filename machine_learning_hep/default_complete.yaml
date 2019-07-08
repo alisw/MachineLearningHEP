@@ -1,39 +1,39 @@
-case: LcpK0s_multiplicity_test
+case: LcpKpipp_pt_2016
 download:
   alice:
     activate: false
 conversion:
   mc: 
-    activate: true 
+    activate: false 
   data:
-    activate: true
+    activate: false
 skimming: 
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 merging: 
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 mergingperiods: 
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 
 ml_study:   
-  activate: true
+  activate: false
   doscancuts: false
   applytodatamc: false
-  doroc: true
+  doroc: false
   doboundary: false
   docorrelation: false
   docrossvalidation: false
   dogridsearch: false
   doimportance: false
-  dolearningcurve: true
+  dolearningcurve: false
   dopca: false
   dosignifopt: false
   doefficiency: false
