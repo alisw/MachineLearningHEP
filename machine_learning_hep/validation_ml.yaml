@@ -1,30 +1,27 @@
-case: LcpK0s_multiplicity_test
-download:
-  alice:
-    activate: false
+case: D0pp_multiplicity
 conversion:
   mc: 
-    activate: true 
+    activate: false
   data:
-    activate: true
+    activate: false
 skimming: 
   mc:
-    activate: true
+    activate: false 
   data:
-    activate: true
+    activate: false
 merging: 
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 mergingperiods: 
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 
 ml_study:   
-  activate: false
+  activate: true
   doscancuts: false
   applytodatamc: false
   doroc: false
@@ -39,16 +36,17 @@ ml_study:
   doefficiency: false
   dotesting: false
   dotraining: true
+  doscancuts: false
 
 analysis:
   data:
     doapply: false
-    domergeapply: true
-    domergeapplyperiods: true
-    histomass: true
+    domergeapply: false
+    domergeapplyperiods: false
+    histomass: false
   mc:
     doapply: false
-    domergeapply: true
-    domergeapplyperiods: true
-    histomass: true
-    efficiency: true
+    domergeapply: false
+    domergeapplyperiods: false
+    histomass: false
+    efficiency: false

@@ -60,13 +60,19 @@ LctopK0sPbPbCen3050:
 
   files_names:
     namefile_unmerged_tree: AnalysisResults.root
-    namefile_reco: AnalysisResultsReco.pkl
     namefile_evt: AnalysisResultsEvt.pkl
     namefile_evtorig: AnalysisResultsEvtOrig.pkl
     namefile_gen: AnalysisResultsGen.pkl
     namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl
     namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl
-    namefile_reco: AnalysisResultsReco.pkl
+    namefile_reco: AnalysisResultsReco.pkl.lz4
+    namefile_evt: AnalysisResultsEvt.pkl.lz4
+    namefile_evtorig: AnalysisResultsEvtOrig.pkl.lz4
+    namefile_gen: AnalysisResultsGen.pkl.lz4
+    #namefile_reco: AnalysisResultsReco.pkl
+    #namefile_evt: AnalysisResultsEvt.pkl
+    #namefile_evtorig: AnalysisResultsEvtOrig.pkl
+    #namefile_gen: AnalysisResultsGen.pkl
     treeoriginreco: 'PWGHF_TreeCreator/tree_Lc2V0bachelor'
     treeorigingen: 'PWGHF_TreeCreator/tree_Lc2V0bachelor_gen'
     treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
@@ -76,25 +82,40 @@ LctopK0sPbPbCen3050:
     efffilename: "effhisto.root"
   multi:
     data:
-      nperiods: 2
+      nperiods: 1
       nprocessesparallel: 50
-      maxfiles : [-1, -1]
-      chunksizeunp : [500, 500]
-      chunksizeskim: [500, 500]
-      fracmerge : [0.05, 0.05]
+      maxfiles : [1000]
+      chunksizeunp : [500]
+      chunksizeskim: [500]
+      fracmerge : [0.30]
       #fracmerge : [1.0]
-      seedmerge: [12, 12]
-      period: [LHC18q, LHC18r]
-      unmerged_tree_dir: [/data2/HeavyFlavour/PbPb_data_3050/09-05-2019/469_20190507-2218/unmerged, 
-                          /data2/HeavyFlavour/PbPb_data_3050/09-05-2019/470_20190507-2220/unmerged]
-      pkl: [/data2/HeavyFlavour/PbPb3050analysis_20190609/datapklLHC18q, 
-            /data2/HeavyFlavour/PbPb3050analysis_20190609/datapklLHC18r]
-      pkl_skimmed: [/data2/HeavyFlavour/PbPb3050analysis_20190609/datapklskLHC18q, 
-                    /data2/HeavyFlavour/PbPb3050analysis_20190609/datapklskLHC18r]
-      pkl_skimmed_merge_for_ml: [/data2/HeavyFlavour/PbPb3050analysis_20190609/datapklskMLLHC18q, 
-                                 /data2/HeavyFlavour/PbPb3050analysis_20190609/datapklskMLLHC18r]
-      pkl_skimmed_merge_for_ml_all: /data2/HeavyFlavour/PbPb3050analysis_20190609/dataskmergedpklall
-      pkl_evtcounter_all: /data2/HeavyFlavour/PbPb3050analysis_20190609/datapklevtcounter_all
+      seedmerge: [12]
+      period: [LHC18q]
+      unmerged_tree_dir: [/data2/TestFilesPbPb3050/12-06-2019/469_20190507-2218/unmerged]
+      pkl: [datapklLHC18q]
+      pkl_skimmed: [datapklskLHC18q]
+      pkl_skimmed_merge_for_ml: [datapklskMLLHC18q]
+      pkl_skimmed_merge_for_ml_all: dataskmergedpklall
+      pkl_evtcounter_all: datapklevtcounter_all
+      #    data:
+      #      nperiods: 2
+      #      nprocessesparallel: 50
+      #      maxfiles : [1000, 1000]
+      #      chunksizeunp : [500, 500]
+      #      chunksizeskim: [500, 500]
+      #      fracmerge : [0.30, 0.30]
+      #      #fracmerge : [1.0]
+      #      seedmerge: [12, 12]
+      #      period: [LHC18q, LHC18r]
+      #      unmerged_tree_dir: [/data2/TestFilesPbPb3050/12-06-2019/469_20190507-2218/unmerged]
+      #      unmerged_tree_dir: [/data2/HeavyFlavour/PbPb_data_3050/09-05-2019/469_20190507-2218/unmerged, 
+      #                          /data2/HeavyFlavour/PbPb_data_3050/09-05-2019/470_20190507-2220/unmerged]
+      #      pkl: [/data2/jkl/datapklLHC18q, /data2/jkl/datapklLHC18r]
+      #      # pkl: [/data2/HeavyFlavour/PbPb3050analysis_20190609/datapklLHC18q, /data2/HeavyFlavour/PbPb3050analysis_20190609/datapklLHC18r]
+      #      pkl_skimmed: [datapklskLHC18q, datapklskLHC18r]
+      #      pkl_skimmed_merge_for_ml: [datapklskMLLHC18q, datapklskMLLHC18r]
+      #      pkl_skimmed_merge_for_ml_all: dataskmergedpklall
+      #      pkl_evtcounter_all: datapklevtcounter_all
     mc:
       nperiods: 8
       nprocessesparallel: 50
@@ -389,7 +410,7 @@ LcpK0spp_multiplicity:
     mc:
       nperiods: 1
       nprocessesparallel: 50
-      maxfiles : [300]
+      maxfiles : [50]
       chunksizeunp : [300]
       chunksizeskim: [300]
       fracmerge : [1.0]

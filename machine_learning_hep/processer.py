@@ -298,15 +298,16 @@ class Processer: # pylint: disable=too-many-instance-attributes
             dfrecoskml = dfrecoskml.loc[dfrecoskml[probvar] > self.lpt_probcutpre[ipt]]
             pickle.dump(dfrecoskml, openfile(self.mptfiles_recoskmldec[ipt][file_index], "wb"),
                         protocol=4)
+
     def parallelizer(self, function, argument_list, maxperchunk):
         chunks = [argument_list[x:x+maxperchunk] \
                   for x in range(0, len(argument_list), maxperchunk)]
+        print("Processing new chunck size=", maxperchunk)
+        pool = mp.Pool(self.p_maxprocess)
         for chunk in chunks:
-            print("Processing new chunck size=", maxperchunk)
-            pool = mp.Pool(self.p_maxprocess)
             _ = [pool.apply_async(function, args=chunk[i]) for i in range(len(chunk))]
-            pool.close()
-            pool.join()
+        pool.close()
+        pool.join()
 
     def process_unpack_par(self):
         print("doing unpacking", self.mcordata, self.period)

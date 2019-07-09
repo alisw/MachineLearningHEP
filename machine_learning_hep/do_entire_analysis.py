@@ -41,7 +41,7 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     if args.cfgfile:
         with open(args.cfgfile, 'r') as run_config:
             data_config = yaml.load(run_config, Loader=yaml.FullLoader)
-    elif not args.validation:
+    elif args.validation:
         with open('validation_complete.yaml', 'r') as run_config:
             data_config = yaml.load(run_config, Loader=yaml.FullLoader)
     else:
