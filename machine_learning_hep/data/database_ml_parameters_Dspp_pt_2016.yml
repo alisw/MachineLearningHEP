@@ -82,23 +82,23 @@ Dspp_pt_2016:
       maxfiles : [10,10] #list of periods
       chunksizeunp : [100,100] #list of periods
       chunksizeskim: [100,100] #list of periods
-      fracmerge : [0.2,0.2] #list of periods
+      fracmerge : [0.1,0.1] #list of periods
       seedmerge: [12,12] #list of periods
       period: [LHC16pp,LHC16pp] #list of periods
       unmerged_tree_dir: [/data2/HeavyFlavour/pp_data_2016/04-07-2019/68_20190629-1511/merged,
                           /data2/HeavyFlavour/pp_data_2016/30-06-2019/69_20190629-1548/merged] #list of periods
-      pkl: [/data2/HeavyFlavour/Dspp_pt2016/datapkl68, 
-            /data2/HeavyFlavour/Dspp_pt2016/datapkl69] #list of periods
-      pkl_skimmed: [/data2/HeavyFlavour/Dspp_pt2016/datapklsk68,
-                    /data2/HeavyFlavour/Dspp_pt2016/datapklsk69] #list of periods
-      pkl_skimmed_merge_for_ml: [/data2/HeavyFlavour/Dspp_pt2016/datapklskML68,
-                                /data2/HeavyFlavour/Dspp_pt2016/datapklskML69] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data2/HeavyFlavour/Dspp_pt2016/datapklskMLallperiods
-      pkl_evtcounter_all: /data2/HeavyFlavour/Dspp_pt2016/datapklevtppallperiods
+      pkl: [/data2/HeavyFlavour/Dsppdata2016_10072019/pkl68, 
+            /data2/HeavyFlavour/Dsppdata2016_10072019/pkl69] #list of periods
+      pkl_skimmed: [/data2/HeavyFlavour/Dsppdata2016vspt_10072019/pklsk68,
+                    /data2/HeavyFlavour/Dsppdata2016vspt_10072019/pklsk69] #list of periods
+      pkl_skimmed_merge_for_ml: [/data2/HeavyFlavour/Dsppdata2016vspt_10072019/pklskptML68,
+                                /data2/HeavyFlavour/Dsppdata2016vspt_10072019/pklskML69] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data2/HeavyFlavour/Dsppdata2016vspt_10072019/pklskMLallperiods
+      pkl_evtcounter_all: /data2/HeavyFlavour/Dsppdata2016vspt_10072019/pklevtppallperiods
     mc:
       nperiods: 2
       nprocessesparallel: 50
-      maxfiles : [10,10] #list of periods
+      maxfiles : [1000,1000] #list of periods
       chunksizeunp : [1000,1000] #list of periods
       chunksizeskim: [1000,1000] #list of periods
       fracmerge : [1.0,1.0] #list of periods
@@ -106,14 +106,14 @@ Dspp_pt_2016:
       period: [LHC16pp,LHC16pp] #list of periods
       unmerged_tree_dir: [/data2/HeavyFlavour/pp_MC_2016/01-07-2019/72_20190629-1618/unmerged, 
                           /data2/HeavyFlavour/pp_MC_2016/01-07-2019/73_20190629-1619/unmerged] #list of periods
-      pkl: [/data2/HeavyFlavour/Dspp_pt2016/mcpkl72,
-            /data2/HeavyFlavour/Dspp_pt2016/mcpkl73] #list of periods
-      pkl_skimmed: [/data2/HeavyFlavour/Dspp_pt2016/mcpklsk72,
-                    /data2/HeavyFlavour/Dspp_pt2016/mcpklsk73] #list of periods
-      pkl_skimmed_merge_for_ml: [/data2/HeavyFlavour/Dspp_pt2016/mcpklskML72,
-                                 /data2/HeavyFlavour/Dspp_pt2016/mcpklskML73] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data2/HeavyFlavour/Dspp_pt2016/mcpklskMLallperiods
-      pkl_evtcounter_all: /data2/HeavyFlavour/Dspp_pt2016/mcpklevtppallperiods
+      pkl: [/data2/HeavyFlavour/Dsppmc2016_10072019/pkl72,
+            /data2/HeavyFlavour/Dsppmc2016_10072019/pkl73] #list of periods
+      pkl_skimmed: [/data2/HeavyFlavour/Dsppmc2016vspt_10072019/pklsk72,
+                    /data2/HeavyFlavour/Dsppmc2016vspt_10072019/pklsk73] #list of periods
+      pkl_skimmed_merge_for_ml: [/data2/HeavyFlavour/Dsppmc2016vspt_10072019/pklskML72,
+                                 /data2/HeavyFlavour/Dsppmc2016vspt_10072019/pklskML73] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data2/HeavyFlavour/Dsppmc2016vspt_10072019/pklskMLallperiods
+      pkl_evtcounter_all: /data2/HeavyFlavour/Dsppmc2016vspt_10072019/pklevtppallperiods
   ml:
     nbkg: 1000000
     nsig: 1000000
@@ -129,8 +129,8 @@ Dspp_pt_2016:
     binmax: [2,3,4,5,6,8,12,24] #list of nbins
     mltype: BinaryClassification
     ncorescrossval: 10 
-    mlplot: /data2/HeavyFlavour/Dspp_pt2016/mlplot # to be removed
-    mlout: /data2/HeavyFlavour/Dspp_pt2016/mlout # to be removed
+    mlplot: MLplots_Dspp2016vspt_10072019 # to be removed
+    mlout: MLmodels_Dspp2016vspt_10072019 # to be removed
 
     opt:
       filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
@@ -147,19 +147,19 @@ Dspp_pt_2016:
   
   analysis:
     data:
-      pkl_skimmed_dec: [/data2/HeavyFlavour/Dspp_pt2016/datapklskdec68, 
-                        /data2/HeavyFlavour/Dspp_pt2016/datapklskdec69] #list of periods
-      pkl_skimmed_decmerged: [/data2/HeavyFlavour/Dspp_pt2016/datapklskdecmerged68,
-                              /data2/HeavyFlavour/Dspp_pt2016/datapklskdecmerged69] #list of periods
-      results: [/data2/HeavyFlavour/Dspp_pt2016/dataanalysis68, 
-                /data2/HeavyFlavour/Dspp_pt2016/dataanalysis69] #list of periods
+      pkl_skimmed_dec: [Dsppdata2016vspt_applied_10072019/pklskdec68, 
+                        Dsppdata2016vspt_applied_10072019/pklskdec69] #list of periods
+      pkl_skimmed_decmerged: [Dsppdata2016vspt_applied_10072019/datapklskdecmerged68,
+                              Dsppdata2016vspt_applied_10072019/datapklskdecmerged69] #list of periods
+      results: [Dsppdata2016vspt_applied_10072019/results68, 
+                Dsppdata2016vspt_applied_10072019/results69] #list of periods
     mc:
-      pkl_skimmed_dec: [/data2/HeavyFlavour/Dspp_pt2016/mcpklskdec72,
-                        /data2/HeavyFlavour/Dspp_pt2016/mcpklskdec73] #list of periods
-      pkl_skimmed_decmerged: [/data2/HeavyFlavour/Dspp_pt2016/mcpklskdecmerged72,
-                              /data2/HeavyFlavour/Dspp_pt2016/mcpklskdecmerged73] #list of periods
-      results: [/data2/HeavyFlavour/Dspp_pt2016/mcanalysis72, 
-                /data2/HeavyFlavour/Dspp_pt2016/mcanalysis73] #list of periods
+      pkl_skimmed_dec: [Dsppmc2016vspt_applied_10072019/pklskdec72, 
+                        Dsppmc2016vspt_applied_10072019/pklskdec73] #list of periods
+      pkl_skimmed_decmerged: [Dsppmc2016vspt_applied_10072019/datapklskdecmerged72,
+                              Dsppmc2016vspt_applied_10072019/datapklskdecmerged73] #list of periods
+      results: [Dsppmc2016vspt_applied_10072019/results72, 
+                Dsppmc2016vspt_applied_10072019/results73] #list of periods
     modelname: xgboost
     modelsperptbin: [xgboost_classifierDspp_pt_2016_dfselection_pt_cand_1.0_2.0.sav,
                      xgboost_classifierDspp_pt_2016_dfselection_pt_cand_2.0_3.0.sav,
