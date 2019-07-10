@@ -189,14 +189,14 @@ Dspp_pt:
                 /data2/ginnocen/productions/Dsppmcvspt_applied_10072019/results76_2017,
                 /data2/ginnocen/productions/Dsppmcvspt_applied_10072019/results77_2018] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierDspp_pt_2016_dfselection_pt_cand_1.0_2.0.sav,
-                     xgboost_classifierDspp_pt_2016_dfselection_pt_cand_2.0_3.0.sav,
-                     xgboost_classifierDspp_pt_2016_dfselection_pt_cand_3.0_4.0.sav,
-                     xgboost_classifierDspp_pt_2016_dfselection_pt_cand_4.0_5.0.sav,
-                     xgboost_classifierDspp_pt_2016_dfselection_pt_cand_5.0_6.0.sav,
-                     xgboost_classifierDspp_pt_2016_dfselection_pt_cand_6.0_8.0.sav,
-                     xgboost_classifierDspp_pt_2016_dfselection_pt_cand_8.0_12.0.sav,
-                     xgboost_classifierDspp_pt_2016_dfselection_pt_cand_12.0_24.0.sav]
+    modelsperptbin: [xgboost_classifierDspp_pt_dfselection_pt_cand_1.0_2.0.sav,
+                     xgboost_classifierDspp_pt_dfselection_pt_cand_2.0_3.0.sav,
+                     xgboost_classifierDspp_pt_dfselection_pt_cand_3.0_4.0.sav,
+                     xgboost_classifierDspp_pt_dfselection_pt_cand_4.0_5.0.sav,
+                     xgboost_classifierDspp_pt_dfselection_pt_cand_5.0_6.0.sav,
+                     xgboost_classifierDspp_pt_dfselection_pt_cand_6.0_8.0.sav,
+                     xgboost_classifierDspp_pt_dfselection_pt_cand_8.0_12.0.sav,
+                     xgboost_classifierDspp_pt_dfselection_pt_cand_12.0_24.0.sav]
     probcutpresel: 
       data: [0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1] #list of nbins
       mc: [0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1] #list of nbins
