@@ -12,7 +12,7 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-Dspp_pt_2016:
+Dspp_pt:
   mass: 1.972
   sel_reco_unp: "pt_cand>1"
   sel_reco_singletrac_unp : null
@@ -87,7 +87,7 @@ Dspp_pt_2016:
       period: [LHC16pp,LHC16pp,LHC17pp,LHC18pp] #list of periods
       unmerged_tree_dir: [/data2/HeavyFlavour/pp_data_2016/04-07-2019/68_20190629-1511/merged,
                           /data2/HeavyFlavour/pp_data_2016/30-06-2019/69_20190629-1548/merged,
-                          /data2/HeavyFlavour/pp_data_2016/30-06-2019/69_20190629-1548/merged, ## to be updated
+                          /data2/HeavyFlavour/pp_data_2017/10-07-2019/70_20190629-1550/merged,
                           /data2/HeavyFlavour/pp_data_2018/01-07-2019/71_20190629-1549/merged] #list of periods
       pkl: [/data2/HeavyFlavour/Dsppdata_10072019/pkl68_2016, 
             /data2/HeavyFlavour/Dsppdata_10072019/pkl69_2016,
