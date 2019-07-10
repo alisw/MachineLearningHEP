@@ -12,19 +12,19 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-LcpK0spp_pt:
+LcpK0spp_mult:
   mass: 2.2864
-  sel_reco_unp: "pt_cand>1"
+  sel_reco_unp: "pt_cand>2 and pt_cand<4"
   sel_reco_singletrac_unp : null
-  sel_gen_unp: "pt_cand>1 and abs(z_vtx_gen)<10"
+  sel_gen_unp: "pt_cand>2 and pt_cand<4 and abs(z_vtx_gen)<10"
   sel_cen_unp: null
   #sel_good_evt_unp: "is_ev_rej == 0"
   sel_good_evt_unp: null
   sel_reco_skim: [null,null,null,null,null,null,null,null]
   sel_gen_skim: [null,null,null,null,null,null,null,null]
-  sel_skim_binmin: [1,2,3,4,5,6,8,12] #list of nbins
-  sel_skim_binmax: [2,3,4,5,6,8,12,24] #list of nbins
-  var_binning: pt_cand
+  sel_skim_binmin: [ 0,10,20,40,60,80] #list of nbins
+  sel_skim_binmax: [10,20,40,60,80,100] #list of nbins
+  var_binning: n_tracklets
   dofullevtmerge: false
   
   bitmap_sel:
@@ -95,16 +95,16 @@ LcpK0spp_pt:
             /data2/HeavyFlavour/LcpK0sppdata_10072019/pkl69_2016,
             /data2/HeavyFlavour/LcpK0sppdata_10072019/pkl70_2017,
             /data2/HeavyFlavour/LcpK0sppdata_10072019/pkl71_2018] #list of periods
-      pkl_skimmed: [/data2/HeavyFlavour/LcpK0sppdatavspt_10072019/pklsk68_2016,
-                    /data2/HeavyFlavour/LcpK0sppdatavspt_10072019/pklsk69_2016, 
-                    /data2/HeavyFlavour/LcpK0sppdatavspt_10072019/pklsk70_2017,
-                    /data2/HeavyFlavour/LcpK0sppdatavspt_10072019/pklsk71_2018] #list of periods
-      pkl_skimmed_merge_for_ml: [/data2/HeavyFlavour/LcpK0sppdatavspt_10072019/pklskML68_2016,
-                                 /data2/HeavyFlavour/LcpK0sppdatavspt_10072019/pklskML69_2016,
-                                 /data2/HeavyFlavour/LcpK0sppdatavspt_10072019/pklskML70_2017,
-                                 /data2/HeavyFlavour/LcpK0sppdatavspt_10072019/pklskML71_2018] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data2/HeavyFlavour/LcpK0sppdatavspt_10072019/pklskMLallperiods
-      pkl_evtcounter_all: /data2/HeavyFlavour/LcpK0sppdatavspt_10072019/pklevtppallperiods
+      pkl_skimmed: [/data2/HeavyFlavour/LcpK0sppdatavsmult_10072019/pklsk68_2016,
+                    /data2/HeavyFlavour/LcpK0sppdatavsmult_10072019/pklsk69_2016, 
+                    /data2/HeavyFlavour/LcpK0sppdatavsmult_10072019/pklsk70_2017,
+                    /data2/HeavyFlavour/LcpK0sppdatavsmult_10072019/pklsk71_2018] #list of periods
+      pkl_skimmed_merge_for_ml: [/data2/HeavyFlavour/LcpK0sppdatavsmult_10072019/pklskML68_2016,
+                                 /data2/HeavyFlavour/LcpK0sppdatavsmult_10072019/pklskML69_2016,
+                                 /data2/HeavyFlavour/LcpK0sppdatavsmult_10072019/pklskML70_2017,
+                                 /data2/HeavyFlavour/LcpK0sppdatavsmult_10072019/pklskML71_2018] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data2/HeavyFlavour/LcpK0sppdatavsmult_10072019/pklskMLallperiods
+      pkl_evtcounter_all: /data2/HeavyFlavour/LcpK0sppdatavsmult_10072019/pklevtppallperiods
     mc:
       nperiods: 1
       nprocessesparallel: 50
@@ -116,10 +116,10 @@ LcpK0spp_pt:
       period: [LHC18pp] #list of periods
       unmerged_tree_dir: [/data2/HeavyFlavour/pp_MC_2018/23-06-2019/56_20190622-1929/unmerged] # this is pPb MC, #list of periods
       pkl: [/data2/HeavyFlavour/LcpK0sppmc_10072019/pkl56_2018] #list of periods
-      pkl_skimmed: [/data2/HeavyFlavour/LcpK0sppmcvspt_10072019/pklsk56_2018] #list of periods
-      pkl_skimmed_merge_for_ml: [/data2/HeavyFlavour/LcpK0sppmcvspt_10072019/pklskML56_2018] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data2/HeavyFlavour/LcpK0sppmcvspt_10072019/pklskMLallperiods
-      pkl_evtcounter_all: /data2/HeavyFlavour/LcpK0sppmcvspt_10072019/pklevtppallperiod
+      pkl_skimmed: [/data2/HeavyFlavour/LcpK0sppmcvsmult_10072019/pklsk56_2018] #list of periods
+      pkl_skimmed_merge_for_ml: [/data2/HeavyFlavour/LcpK0sppmcvsmult_10072019/pklskML56_2018] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data2/HeavyFlavour/LcpK0sppmcvsmult_10072019/pklskMLallperiods
+      pkl_evtcounter_all: /data2/HeavyFlavour/LcpK0sppmcvsmult_10072019/pklevtppallperiod
   ml:
     nbkg: 500000
     nsig: 500000
@@ -131,12 +131,12 @@ LcpK0spp_pt:
     rnd_shuffle: 12
     rnd_splt: 12
     test_frac: 0.2
-    binmin: [1,2,3,4,5,6,8,12] #list of nbins
-    binmax: [2,3,4,5,6,8,12,24] #list of nbins
+    binmin: [ 0,10,20,40,60,80] #list of nbins
+    binmax: [10,20,40,60,80,100] #list of nbins
     mltype: BinaryClassification
     ncorescrossval: 10 
-    mlplot: /data2/ginnocen/productions/MLplots_LcpK0sppmcvspt_10072019 # to be removed
-    mlout: /data2/ginnocen/productions/MLmodels_LcpK0sppmcvspt_10072019 # to be removed
+    mlplot: /data2/ginnocen/productions/MLplots_LcpK0sppmcvsmult_10072019 # to be removed
+    mlout: /data2/ginnocen/productions/MLmodels_LcpK0sppmcvsmult_10072019 # to be removed
 
     opt:
       filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
@@ -149,56 +149,54 @@ LcpK0spp_pt:
       bkg_data_fraction: 0.1 # fraction of real data used in the estimation
       num_steps: 111 # number of steps used in efficiency and signif. estimation
       save_fit: True # save bkg fits with the various cuts on ML output
-      raahp: [1,1,1,1,1,1,1,1] #list of nbins
+      raahp: [1,1,1,1,1,1] #list of nbins
   analysis:
     data:
-      pkl_skimmed_dec: [/data2/ginnocen/productions/LcpK0sppdatavspt_applied_10072019/pklskdec68_2016, 
-                        /data2/ginnocen/productions/LcpK0sppdatavspt_applied_10072019/pklskdec69_2016,
-                        /data2/ginnocen/productions/LcpK0sppdatavspt_applied_10072019/pklskdec70_2017,
-                        /data2/ginnocen/productions/LcpK0sppdatavspt_applied_10072019/pklskdec71_2018] #list of periods
-      pkl_skimmed_decmerged: [/data2/ginnocen/productions/LcpK0sppdatavspt_applied_10072019/pklskdecmerged68_2016,
-                              /data2/ginnocen/productions/LcpK0sppdatavspt_applied_10072019/pklskdecmerged69_2016,
-                              /data2/ginnocen/productions/LcpK0sppdatavspt_applied_10072019/pklskdecmerged70_2017,
-                              /data2/ginnocen/productions/LcpK0sppdatavspt_applied_10072019/pklskdecmerged71_2018] #list of periods
-      results: [/data2/ginnocen/productions/LcpK0sppdatavspt_applied_10072019/results68_2016, 
-                /data2/ginnocen/productions/LcpK0sppdatavspt_applied_10072019/results69_2016,
-                /data2/ginnocen/productions/LcpK0sppdatavspt_applied_10072019/results70_2017,
-                /data2/ginnocen/productions/LcpK0sppdatavspt_applied_10072019/results71_2018] #list of periods
+      pkl_skimmed_dec: [/data2/ginnocen/productions/LcpK0sppdatavsmult_applied_10072019/pklskdec68_2016, 
+                        /data2/ginnocen/productions/LcpK0sppdatavsmult_applied_10072019/pklskdec69_2016,
+                        /data2/ginnocen/productions/LcpK0sppdatavsmult_applied_10072019/pklskdec70_2017,
+                        /data2/ginnocen/productions/LcpK0sppdatavsmult_applied_10072019/pklskdec71_2018] #list of periods
+      pkl_skimmed_decmerged: [/data2/ginnocen/productions/LcpK0sppdatavsmult_applied_10072019/pklskdecmerged68_2016,
+                              /data2/ginnocen/productions/LcpK0sppdatavsmult_applied_10072019/pklskdecmerged69_2016,
+                              /data2/ginnocen/productions/LcpK0sppdatavsmult_applied_10072019/pklskdecmerged70_2017,
+                              /data2/ginnocen/productions/LcpK0sppdatavsmult_applied_10072019/pklskdecmerged71_2018] #list of periods
+      results: [/data2/ginnocen/productions/LcpK0sppdatavsmult_applied_10072019/results68_2016, 
+                /data2/ginnocen/productions/LcpK0sppdatavsmult_applied_10072019/results69_2016,
+                /data2/ginnocen/productions/LcpK0sppdatavsmult_applied_10072019/results70_2017,
+                /data2/ginnocen/productions/LcpK0sppdatavsmult_applied_10072019/results71_2018] #list of periods
     mc:
-      pkl_skimmed_dec: [/data2/ginnocen/productions/LcpK0sppmcvspt_applied_10072019/pklskdec56_2018] #list of periods
-      pkl_skimmed_decmerged: [/data2/ginnocen/productions/LcpK0sppmcvspt_applied_10072019/pklskdecmerged56_2018] #list of periods
-      results: [/data2/ginnocen/productions/LcpK0sppmcvspt_applied_10072019/results56_2018] #list of periods
+      pkl_skimmed_dec: [/data2/ginnocen/productions/LcpK0sppmcvsmult_applied_10072019/pklskdec56_2018] #list of periods
+      pkl_skimmed_decmerged: [/data2/ginnocen/productions/LcpK0sppmcvsmult_applied_10072019/pklskdecmerged56_2018] #list of periods
+      results: [/data2/ginnocen/productions/LcpK0sppmcvsmult_applied_10072019/results56_2018] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierLcpK0spp_pt_dfselection_pt_cand_1.0_2.0.sav,
-                     xgboost_classifierLcpK0spp_pt_dfselection_pt_cand_2.0_3.0.sav,
-                     xgboost_classifierLcpK0spp_pt_dfselection_pt_cand_3.0_4.0.sav,
-                     xgboost_classifierLcpK0spp_pt_dfselection_pt_cand_4.0_5.0.sav,
-                     xgboost_classifierLcpK0spp_pt_dfselection_pt_cand_5.0_6.0.sav,
-                     xgboost_classifierLcpK0spp_pt_dfselection_pt_cand_6.0_8.0.sav,
-                     xgboost_classifierLcpK0spp_pt_dfselection_pt_cand_8.0_12.0.sav,
-                     xgboost_classifierLcpK0spp_pt_dfselection_pt_cand_12.0_24.0.sav]
+    modelsperptbin: [xgboost_classifierLcpK0spp_mult_dfselection_n_tracklets_0.0_10.0.sav,
+                     xgboost_classifierLcpK0spp_mult_dfselection_n_tracklets_10.0_20.0.sav,
+                     xgboost_classifierLcpK0spp_mult_dfselection_n_tracklets_20.0_40.0.sav,
+                     xgboost_classifierLcpK0spp_mult_dfselection_n_tracklets_40.0_60.0.sav,
+                     xgboost_classifierLcpK0spp_mult_dfselection_n_tracklets_60.0_80.0.sav,
+                     xgboost_classifierLcpK0spp_mult_dfselection_n_tracklets_80.0_100.0.sav] #list of nbins
     
     probcutpresel: 
-      data: [0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2] #list of nbins
-      mc: [0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2] #list of nbins
+      data: [0.1,0.1,0.1,0.1,0.1,0.1] #list of nbins
+      mc: [0.1,0.1,0.1,0.1,0.1,0.1] #list of nbins
 
-    probcutoptimal: [0.3,0.3,0.3,0.3,0.3,0.3,0.3,0.3] #list of nbins
+    probcutoptimal: [0.2,0.2,0.2,0.2,0.2,0.2] #list of nbins
     mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
     bin_width: 0.001 # bin width of the invariant mass histogram
     presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
     usefit: true
-    sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
-    bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
+    sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
+    bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
     masspeak: 2.2864
-    massmin: [2.14,2.14,2.14,2.14,2.14,2.14,2.14,2.14]
-    massmax: [2.436,2.436,2.436,2.436,2.436,2.436,2.436,2.436]
-    rebin: [6,6,6,6,6,6,6,6]
-    includesecpeak: [0,0,0,0,0,0,0,0]
+    massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
+    massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
+    rebin: [6,6,6,6,6,6]
+    includesecpeak: [0,0,0,0,0,0]
     masssecpeak: 1.869
     FixedMean: false
     SetFixGaussianSigma: true
     SetInitialGaussianMean: true
     dolikelihood: true
-    sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
+    sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01]
     FixedSigma: true  
     fitcase: Lc

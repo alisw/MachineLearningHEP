@@ -14,7 +14,7 @@
 
 Dspp_mult:
   mass: 1.972
-  sel_reco_unp: "pt_cand>1"
+  sel_reco_unp: "pt_cand>2 and pt_cand<4"
   sel_reco_singletrac_unp : null
   sel_gen_unp: "pt_cand>2 and pt_cand<4 and abs(z_vtx_gen)<10"
   sel_cen_unp: null
@@ -159,7 +159,7 @@ Dspp_mult:
       bkg_data_fraction: 0.1 # fraction of real data used in the estimation
       num_steps: 111 # number of steps used in efficiency and signif. estimation
       save_fit: True # save bkg fits with the various cuts on ML output
-      raahp: [1,1,1,1,1,1,1,1] #list of nbins
+      raahp: [1,1,1,1,1,1] #list of nbins
   
   analysis:
     data:
@@ -189,19 +189,17 @@ Dspp_mult:
                 /data2/ginnocen/productions/Dsppmcvsmult_applied_10072019/results76_2017,
                 /data2/ginnocen/productions/Dsppmcvsmult_applied_10072019/results77_2018] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierDspp_mult_dfselection_pt_cand_1.0_2.0.sav,
-                     xgboost_classifierDspp_mult_dfselection_pt_cand_2.0_3.0.sav,
-                     xgboost_classifierDspp_mult_dfselection_pt_cand_3.0_4.0.sav,
-                     xgboost_classifierDspp_mult_dfselection_pt_cand_4.0_5.0.sav,
-                     xgboost_classifierDspp_mult_dfselection_pt_cand_5.0_6.0.sav,
-                     xgboost_classifierDspp_mult_dfselection_pt_cand_6.0_8.0.sav,
-                     xgboost_classifierDspp_mult_dfselection_pt_cand_8.0_12.0.sav,
-                     xgboost_classifierDspp_mult_dfselection_pt_cand_12.0_24.0.sav]
+    modelsperptbin: [xgboost_classifierDspp_mult_dfselection_n_tracklets_0.0_10.0.sav,
+                     xgboost_classifierDspp_mult_dfselection_n_tracklets_10.0_20.0.sav,
+                     xgboost_classifierDspp_mult_dfselection_n_tracklets_20.0_40.0.sav,
+                     xgboost_classifierDspp_mult_dfselection_n_tracklets_40.0_60.0.sav,
+                     xgboost_classifierDspp_mult_dfselection_n_tracklets_60.0_80.0.sav,
+                     xgboost_classifierDspp_mult_dfselection_n_tracklets_80.0_100.0.sav] #list of nbins
     probcutpresel: 
-      data: [0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1] #list of nbins
-      mc: [0.1,0.1,0.1,0.1,0.1,0.1,0.1,0.1] #list of nbins
+      data: [0.1,0.1,0.1,0.1,0.1,0.1] #list of nbins
+      mc: [0.1,0.1,0.1,0.1,0.1,0.1] #list of nbins
 
-    probcutoptimal: [0.2,0.2,0.2,0.2,0.2,0.2,0.2,0.2] #list of nbins
+    probcutoptimal: [0.2,0.2,0.2,0.2,0.2,0.2] #list of nbins
     mass_fit_lim: [1.75, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
     bin_width: 0.001 # bin width of the invariant mass histogram
     presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
