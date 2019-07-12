@@ -111,6 +111,7 @@ setup(
       "console_scripts": [ "ml-get-data = machine_learning_hep.ml_get_data:main",
                            "ml-doclassification-regression = " \
                            "machine_learning_hep.doclassification_regression:main",
-                           "ml-webapp = machine_learning_hep.webapp:main" ]
+                           "ml-webapp = machine_learning_hep.webapp:main",
+                           "ml-plot = machine_learning_hep.plot_from_file:main" ]
   }
 )
