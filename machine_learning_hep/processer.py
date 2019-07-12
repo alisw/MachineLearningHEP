@@ -25,14 +25,16 @@ import uproot
 import pandas as pd
 import numpy as np
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
-from ROOT import TFile, TH1F, TCanvas  # pylint: disable=import-error, no-name-in-module
+from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge_method
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
+from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.models import apply # pylint: disable=import-error
-from machine_learning_hep.globalfitter import fitter
+#from machine_learning_hep.globalfitter import fitter
+from machine_learning_hep.selectionutils import getnormforselevt
 
 class Processer: # pylint: disable=too-many-instance-attributes
     # Class Attribute
@@ -94,6 +96,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.n_reco = datap["files_names"]["namefile_reco"]
         self.n_evt = datap["files_names"]["namefile_evt"]
         self.n_evtorig = datap["files_names"]["namefile_evtorig"]
+        self.n_evtorigroot = datap["files_names"]["namefile_evtorigroot"]
         self.n_gen = datap["files_names"]["namefile_gen"]
         self.n_filemass = datap["files_names"]["histofilename"]
         self.n_fileeff = datap["files_names"]["efffilename"]
@@ -140,12 +143,15 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.l_reco = createlist(self.d_pkl, self.l_path, self.n_reco)
         self.l_evt = createlist(self.d_pkl, self.l_path, self.n_evt)
         self.l_evtorig = createlist(self.d_pkl, self.l_path, self.n_evtorig)
+        self.l_evtorigroot = createlist(self.d_pkl, self.l_path, self.n_evtorigroot)
+
 
         if self.mcordata == "mc":
             self.l_gen = createlist(self.d_pkl, self.l_path, self.n_gen)
 
         self.f_totevt = os.path.join(self.d_pkl, self.n_evt)
         self.f_totevtorig = os.path.join(self.d_pkl, self.n_evtorig)
+        self.f_totevtorigroot = os.path.join(self.d_pkl, self.n_evtorigroot)
 
         self.usefit = datap["analysis"]["usefit"]
         self.p_modelname = datap["analysis"]["modelname"]
@@ -208,6 +214,15 @@ class Processer: # pylint: disable=too-many-instance-attributes
                        for ipt in range(self.p_nptbins)]
         self.s_presel_gen_eff = datap["analysis"]['presel_gen_eff']
 
+        self.lvar2_binmin = datap["analysis"]["sel_binmin2"]
+        self.lvar2_binmax = datap["analysis"]["sel_binmax2"]
+        self.v_var2_binning = datap["analysis"]["var_binning2"]
+
+        self.lpt_finbinmin = datap["analysis"]["sel_an_binmin"]
+        self.lpt_finbinmax = datap["analysis"]["sel_an_binmax"]
+        self.bin_matching = datap["analysis"]["binning_matching"]
+        self.p_nptfinbins = len(self.lpt_finbinmin)
+
     def unpack(self, file_index):
         treeevtorig = uproot.open(self.l_root[file_index])[self.n_treeevt]
         dfevtorig = treeevtorig.pandas.df(branches=self.v_evt)
@@ -218,6 +233,17 @@ class Processer: # pylint: disable=too-many-instance-attributes
         dfevt = selectdfquery(dfevtorig, self.s_good_evt_unp)
         dfevt = dfevt.reset_index(drop=True)
         pickle.dump(dfevt, openfile(self.l_evt[file_index], "wb"), protocol=4)
+
+        fileevtroot = TFile.Open(self.l_evtorigroot[file_index], "recreate")
+        nselevt = len(dfevt.query("is_ev_rej==0"))
+        norm = getnormforselevt(dfevt)
+        hNorm = TH1F("hEvForNorm", ";;Normalisation", 2, 0.5, 2.5)
+        hNorm.GetXaxis().SetBinLabel(1, "normsalisation factor")
+        hNorm.GetXaxis().SetBinLabel(2, "selected events")
+        hNorm.SetBinContent(1, norm)
+        hNorm.SetBinContent(2, nselevt)
+        hNorm.Write()
+        fileevtroot.Close()
 
         treereco = uproot.open(self.l_root[file_index])[self.n_treereco]
         dfreco = treereco.pandas.df(branches=self.v_all)
@@ -319,6 +345,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         create_folder_struc(self.d_pklsk, self.l_path)
         arguments = [(i,) for i in range(len(self.l_reco))]
         self.parallelizer(self.skim, arguments, self.p_chunksizeskim)
+        mergerootfiles(self.l_evtorigroot, self.f_totevtorigroot)
         if self.p_dofullevtmerge is True:
             merge_method(self.l_evt, self.f_totevt)
             merge_method(self.l_evtorig, self.f_totevtorig)
@@ -357,90 +384,110 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 merge_method(self.mptfiles_gensk[ipt], self.lpt_gendecmerged[ipt])
 
     def process_histomass(self):
-        for ipt in range(self.p_nptbins):
-            myfile = TFile.Open(self.lpt_filemass[ipt], "recreate")
-            df = pickle.load(openfile(self.lpt_recodecmerged[ipt], "rb"))
-            df = df.query(self.l_selml[ipt])
-            h_invmass = TH1F("hmass", "", self.p_num_bins,
-                             self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-            fill_hist(h_invmass, df.inv_mass)
-            myfile.cd()
-            if self.usefit is True:
-                fitter(h_invmass, self.p_casefit, self.p_sgnfunc[ipt], self.p_bkgfunc[ipt], \
-                    self.p_masspeak, self.p_rebin[ipt], self.p_dolike, self.p_fixingausmean, \
-                    self.p_fixingaussigma, self.p_sigmaarray[ipt], self.p_massmin[ipt], \
-                    self.p_massmax[ipt], self.p_fixedmean, self.p_fixedsigma, self.d_results, \
-                    self.v_var_binning, self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
-            h_invmass.Write()
-            canv_mass = TCanvas("c%d" % (ipt), "canvas", 500, 500)
-            h_invmass.Draw()
-            canv_mass.SaveAs("%s/chisto_bin%d.pdf" % (self.d_results, ipt))
+        myfile = TFile.Open(self.n_filemass, "recreate")
+        print(self.p_nptfinbins)
+        print(self.p_nptfinbins)
 
+        print(self.p_nptfinbins)
+
+        for ipt in range(self.p_nptfinbins):
+            bin_id = self.bin_matching[ipt]
+            df = pickle.load(openfile(self.lpt_recodecmerged[bin_id], "rb"))
+            df = df.query(self.l_selml[bin_id])
+            df = seldf_singlevar(df, self.v_var_binning, \
+                                 self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+            for ibin2 in range(len(self.lvar2_binmin)):
+                suffix = "%s%d_%d_%.2f%s_%d_%d" % \
+                         (self.v_var_binning, self.lpt_finbinmin[ipt],
+                          self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
+                          self.v_var2_binning, self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
+                                 self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+                df_bin = seldf_singlevar(df, self.v_var2_binning,
+                                         self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                fill_hist(h_invmass, df_bin.inv_mass)
+                myfile.cd()
+                h_invmass.Write()
+    # pylint: disable=line-too-long
     def process_efficiency(self):
-        n_bins = len(self.lpt_anbinmin)
-        analysis_bin_lims_temp = list(self.lpt_anbinmin)
-        analysis_bin_lims_temp.append(self.lpt_anbinmax[n_bins-1])
-        analysis_bin_lims = array.array('f', analysis_bin_lims_temp)
-        h_gen_pr = TH1F("h_gen_pr", "Prompt Generated in acceptance |y|<0.5", \
-                        n_bins, analysis_bin_lims)
-        h_presel_pr = TH1F("h_presel_pr", "Prompt Reco in acc |#eta|<0.8 and sel", \
-                           n_bins, analysis_bin_lims)
-        h_sel_pr = TH1F("h_sel_pr", "Prompt Reco and sel in acc |#eta|<0.8 and sel", \
-                        n_bins, analysis_bin_lims)
-        h_gen_fd = TH1F("h_gen_fd", "FD Generated in acceptance |y|<0.5", \
-                        n_bins, analysis_bin_lims)
-        h_presel_fd = TH1F("h_presel_fd", "FD Reco in acc |#eta|<0.8 and sel", \
-                           n_bins, analysis_bin_lims)
-        h_sel_fd = TH1F("h_sel_fd", "FD Reco and sel in acc |#eta|<0.8 and sel", \
-                        n_bins, analysis_bin_lims)
-        h_gen_pr = TH1F("h_gen_pr", "Prompt Generated in acceptance |y|<0.5", \
-                        n_bins, analysis_bin_lims)
-        h_presel_pr = TH1F("h_presel_pr", "Prompt Reco in acc |#eta|<0.8 and sel", \
-                           n_bins, analysis_bin_lims)
-        h_sel_pr = TH1F("h_sel_pr", "Prompt Reco and sel in acc |#eta|<0.8 and sel", \
-                        n_bins, analysis_bin_lims)
-        h_gen_fd = TH1F("h_gen_fd", "FD Generated in acceptance |y|<0.5", \
-                        n_bins, analysis_bin_lims)
-        h_presel_fd = TH1F("h_presel_fd", "FD Reco in acc |#eta|<0.8 and sel", \
-                           n_bins, analysis_bin_lims)
-        h_sel_fd = TH1F("h_sel_fd", "FD Reco and sel in acc |#eta|<0.8 and sel", \
-                        n_bins, analysis_bin_lims)
-
-        bincounter = 0
-        for ipt in range(self.p_nptbins):
-            df_mc_reco = pickle.load(openfile(self.lpt_recodecmerged[ipt], "rb"))
-            df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[ipt], "rb"))
-            df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
-            df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
-            df_reco_presel_pr = df_mc_reco[df_mc_reco.ismcprompt == 1]
-            df_reco_sel_pr = df_reco_presel_pr.query(self.l_selml[ipt])
-            df_gen_sel_fd = df_mc_gen[df_mc_gen.ismcfd == 1]
-            df_reco_presel_fd = df_mc_reco[df_mc_reco.ismcfd == 1]
-            df_reco_sel_fd = df_reco_presel_fd.query(self.l_selml[ipt])
-
-            h_gen_pr.SetBinContent(bincounter + 1, len(df_gen_sel_pr))
-            h_gen_pr.SetBinError(bincounter + 1, math.sqrt(len(df_gen_sel_pr)))
-            h_presel_pr.SetBinContent(bincounter + 1, len(df_reco_presel_pr))
-            h_presel_pr.SetBinError(bincounter + 1, math.sqrt(len(df_reco_presel_pr)))
-            h_sel_pr.SetBinContent(bincounter + 1, len(df_reco_sel_pr))
-            h_sel_pr.SetBinError(bincounter + 1, math.sqrt(len(df_reco_sel_pr)))
-            print("prompt efficiency tot ptbin=", bincounter, ", value = ",
-                  len(df_reco_sel_pr)/len(df_gen_sel_pr))
-
-            h_gen_fd.SetBinContent(bincounter + 1, len(df_gen_sel_fd))
-            h_gen_fd.SetBinError(bincounter + 1, math.sqrt(len(df_gen_sel_fd)))
-            h_presel_fd.SetBinContent(bincounter + 1, len(df_reco_presel_fd))
-            h_presel_fd.SetBinError(bincounter + 1, math.sqrt(len(df_reco_presel_fd)))
-            h_sel_fd.SetBinContent(bincounter + 1, len(df_reco_sel_fd))
-            h_sel_fd.SetBinError(bincounter + 1, math.sqrt(len(df_reco_sel_fd)))
-            print("fd efficiency tot ptbin=", bincounter, ", value = ",
-                  len(df_reco_sel_fd)/len(df_gen_sel_fd))
-            bincounter = bincounter + 1
         out_file = TFile.Open(self.n_fileeff, "recreate")
-        out_file.cd()
-        h_gen_pr.Write()
-        h_presel_pr.Write()
-        h_sel_pr.Write()
-        h_gen_fd.Write()
-        h_presel_fd.Write()
-        h_sel_fd.Write()
+        for ibin2 in range(len(self.lvar2_binmin)):
+            stringbin2 = "_%s_%d_%d" % (self.v_var2_binning,
+                                        self.lvar2_binmin[ibin2],
+                                        self.lvar2_binmax[ibin2])
+            print(stringbin2)
+            n_bins = len(self.lpt_finbinmin)
+            analysis_bin_lims_temp = list(self.lpt_finbinmin)
+            analysis_bin_lims_temp.append(self.lpt_finbinmax[n_bins-1])
+            analysis_bin_lims = array.array('f', analysis_bin_lims_temp)
+            h_gen_pr = TH1F("h_gen_pr" + stringbin2, "Prompt Generated in acceptance |y|<0.5", \
+                            n_bins, analysis_bin_lims)
+            h_presel_pr = TH1F("h_presel_pr" + stringbin2, "Prompt Reco in acc |#eta|<0.8 and sel", \
+                               n_bins, analysis_bin_lims)
+            h_sel_pr = TH1F("h_sel_pr" + stringbin2, "Prompt Reco and sel in acc |#eta|<0.8 and sel", \
+                            n_bins, analysis_bin_lims)
+            h_gen_fd = TH1F("h_gen_fd" + stringbin2, "FD Generated in acceptance |y|<0.5", \
+                            n_bins, analysis_bin_lims)
+            h_presel_fd = TH1F("h_presel_fd" + stringbin2, "FD Reco in acc |#eta|<0.8 and sel", \
+                               n_bins, analysis_bin_lims)
+            h_sel_fd = TH1F("h_sel_fd" + stringbin2, "FD Reco and sel in acc |#eta|<0.8 and sel", \
+                            n_bins, analysis_bin_lims)
+            h_gen_pr = TH1F("h_gen_pr" + stringbin2, "Prompt Generated in acceptance |y|<0.5", \
+                            n_bins, analysis_bin_lims)
+            h_presel_pr = TH1F("h_presel_pr" + stringbin2, "Prompt Reco in acc |#eta|<0.8 and sel", \
+                               n_bins, analysis_bin_lims)
+            h_sel_pr = TH1F("h_sel_pr" + stringbin2, "Prompt Reco and sel in acc |#eta|<0.8 and sel", \
+                            n_bins, analysis_bin_lims)
+            h_gen_fd = TH1F("h_gen_fd" + stringbin2, "FD Generated in acceptance |y|<0.5", \
+                            n_bins, analysis_bin_lims)
+            h_presel_fd = TH1F("h_presel_fd" + stringbin2, "FD Reco in acc |#eta|<0.8 and sel", \
+                               n_bins, analysis_bin_lims)
+            h_sel_fd = TH1F("h_sel_fd" + stringbin2, "FD Reco and sel in acc |#eta|<0.8 and sel", \
+                            n_bins, analysis_bin_lims)
+
+            bincounter = 0
+            for ipt in range(self.p_nptfinbins):
+                bin_id = self.bin_matching[ipt]
+                df_mc_reco = pickle.load(openfile(self.lpt_recodecmerged[bin_id], "rb"))
+                df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[bin_id], "rb"))
+                df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
+                df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var_binning, \
+                                     self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+                df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \
+                                     self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+                df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning, \
+                                             self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning, \
+                                            self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
+                df_reco_presel_pr = df_mc_reco[df_mc_reco.ismcprompt == 1]
+                df_reco_sel_pr = df_reco_presel_pr.query(self.l_selml[bin_id])
+                df_gen_sel_fd = df_mc_gen[df_mc_gen.ismcfd == 1]
+                df_reco_presel_fd = df_mc_reco[df_mc_reco.ismcfd == 1]
+                df_reco_sel_fd = df_reco_presel_fd.query(self.l_selml[bin_id])
+
+                h_gen_pr.SetBinContent(bincounter + 1, len(df_gen_sel_pr))
+                h_gen_pr.SetBinError(bincounter + 1, math.sqrt(len(df_gen_sel_pr)))
+                h_presel_pr.SetBinContent(bincounter + 1, len(df_reco_presel_pr))
+                h_presel_pr.SetBinError(bincounter + 1, math.sqrt(len(df_reco_presel_pr)))
+                h_sel_pr.SetBinContent(bincounter + 1, len(df_reco_sel_pr))
+                h_sel_pr.SetBinError(bincounter + 1, math.sqrt(len(df_reco_sel_pr)))
+                print("prompt efficiency tot ptbin=", bincounter, ", value = ",
+                      len(df_reco_sel_pr)/len(df_gen_sel_pr))
+
+                h_gen_fd.SetBinContent(bincounter + 1, len(df_gen_sel_fd))
+                h_gen_fd.SetBinError(bincounter + 1, math.sqrt(len(df_gen_sel_fd)))
+                h_presel_fd.SetBinContent(bincounter + 1, len(df_reco_presel_fd))
+                h_presel_fd.SetBinError(bincounter + 1, math.sqrt(len(df_reco_presel_fd)))
+                h_sel_fd.SetBinContent(bincounter + 1, len(df_reco_sel_fd))
+                h_sel_fd.SetBinError(bincounter + 1, math.sqrt(len(df_reco_sel_fd)))
+                print("fd efficiency tot ptbin=", bincounter, ", value = ",
+                      len(df_reco_sel_fd)/len(df_gen_sel_fd))
+                bincounter = bincounter + 1
+            out_file.cd()
+            h_gen_pr.Write()
+            h_presel_pr.Write()
+            h_sel_pr.Write()
+            h_gen_fd.Write()
+            h_presel_fd.Write()
+            h_sel_fd.Write()

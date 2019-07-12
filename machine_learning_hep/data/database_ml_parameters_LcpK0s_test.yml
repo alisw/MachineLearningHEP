@@ -12,19 +12,20 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-LcpK0s_multiplicity_test:
+LcpK0s_test:
   mass: 2.2864
-  sel_reco_unp: "pt_cand>4 and pt_cand<8"
+  sel_reco_unp: "pt_cand>2"
   sel_reco_singletrac_unp : null
-  sel_gen_unp: "pt_cand>4 and pt_cand<8 and abs(z_vtx_gen)<10"
+  sel_gen_unp: "pt_cand>2 and abs(z_vtx_gen)<10"
   sel_cen_unp: null
   #sel_good_evt_unp: "is_ev_rej == 0"
   sel_good_evt_unp: null
-  sel_reco_skim: [null,null]
-  sel_gen_skim: [null,null]
-  sel_skim_binmin: [ 0,20] #list of nbins
-  sel_skim_binmax: [20,100] #list of nbins
-  var_binning: n_tracklets
+  sel_reco_skim: ["pt_prong0>0.25 and pt_prong1>0.30 and pt_prong2>0.30 and cos_p_K0s>0.999 and abs(nsigTPC_Pr_0)<3.0",
+                  "pt_prong0>0.25 and pt_prong1>0.30 and pt_prong2>0.30 and cos_p_K0s>0.999 and abs(nsigTPC_Pr_0)<3.0"]
+  sel_gen_skim: [null, null]
+  sel_skim_binmin: [2,4] #list of nbins
+  sel_skim_binmax: [4,8] #list of nbins
+  var_binning: pt_cand
   dofullevtmerge: false
 
   bitmap_sel:
@@ -59,11 +60,118 @@ LcpK0s_multiplicity_test:
       - [pt_cand]
     var_signal: signal
     var_inv_mass: inv_mass
+    var_cuts: 
+        - [pt_prong0, lt, null]
+        - [pt_prong1, lt, null]
+        - [pt_prong2, lt, null]
+        - [inv_mass_K0s, absst, 0.4977]
+        - [nsigTPC_Pr_0, absst, 0.]
+        - [nsigTOF_Pr_0, absst, 0.]
+        - [imp_par_prong0, absst, 0.]
+        - [cos_p_K0s, lt, null]
+        - [armenteros_K0s, st, null]
+        - [imp_par_K0s, absst, 0.]
+        - [dca_K0s, absst, 0.]
+        - [signd0, lt, null]
+        - [cos_t_star, st, null]
+
+    plot_options:
+      prob_cut_scan:
+        cos_t_star:
+          xlim: 
+            - -1
+            - 1
+        pt_K0s:
+          xlim: 
+            - 0
+            - 1
+        pt_prong0:
+          xlim: 
+            - 0
+            - 1
+        pt_prong1:
+          xlim: 
+            - 0
+            - 1
+        pt_prong2:
+          xlim: 
+            - 0
+            - 1
+        nsigTOF_Pr_0:
+          xlim: 
+            - -4
+            - 4
+        armenteros_K0s:
+          xlim: 
+            - 0
+            - 2
+        signd0:
+          xlim: 
+            - 0
+            - 0.3
+        nsigTPC_Pr_0:
+          xlim: 
+            - -4
+            - 4
+      eff_cut_scan:
+        cos_t_star:
+          xlim: 
+            - -1
+            - 1
+        pt_K0s:
+          xlim: 
+            - 0
+            - 1
+        pt_prong0:
+          xlim: 
+            - 0
+            - 1
+        pt_prong1:
+          xlim: 
+            - 0
+            - 1
+        pt_prong2:
+          xlim: 
+            - 0
+            - 1
+        inv_mass_K0s:
+          xlim: 
+            - 0.
+            - 0.04
+        armenteros_K0s:
+          xlim: 
+            - 0
+            - 2
+        signd0:
+          xlim: 
+            - 0
+            - 0.3
+        nsigTOF_Pr_0:
+          xlim: 
+            - 0
+            - 1000
+        nsigTPC_Pr_0:
+          xlim: 
+            - 0
+            - 4
+        imp_par_prong0:
+          xlim: 
+            - 0
+            - 0.3
+        imp_par_K0s:
+          xlim: 
+            - 0
+            - 1.
+        dca_K0s:
+          xlim: 
+            - 0
+            - 1.
 
   files_names:
     namefile_unmerged_tree: AnalysisResults.root
     namefile_reco: AnalysisResultsReco.pkl
     namefile_evt: AnalysisResultsEvt.pkl
+    namefile_evtorigroot: AnalysisResultsROOTEvt.root
     namefile_evtorig: AnalysisResultsEvtOrig.pkl
     namefile_gen: AnalysisResultsGen.pkl
     namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl
@@ -76,6 +184,7 @@ LcpK0s_multiplicity_test:
     treeoutput: "Lctree"
     histofilename: "masshisto.root"
     efffilename: "effhisto.root"
+    crossfilename: "cross_section_tot.root"
 
   multi:
     data:
@@ -88,11 +197,11 @@ LcpK0s_multiplicity_test:
       seedmerge: [12] #list of periods
       period: [LHC18pp] #list of periods
       unmerged_tree_dir: [/Users/gianmicheleinnocenti/samplesMLexample/data/unmerged] #list of periods
-      pkl: [LcpK0s_multiplicity/datapkl] #list of periods
-      pkl_skimmed: [LcpK0s_multiplicity/datapklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [LcpK0s_multiplicity/datapklskML] #list of periods
-      pkl_skimmed_merge_for_ml_all: LcpK0s_multiplicity/datapklskMLallperiods
-      pkl_evtcounter_all: LcpK0s_multiplicity/datapklevtHC18ppallperiods
+      pkl: [LcpK0s_test/datapkl] #list of periods
+      pkl_skimmed: [LcpK0s_test/datapklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [LcpK0s_test/datapklskML] #list of periods
+      pkl_skimmed_merge_for_ml_all: LcpK0s_test/datapklskMLallperiods
+      pkl_evtcounter_all: LcpK0s_test/datapklevtHC18ppallperiods
     mc:
       nperiods: 1
       nprocessesparallel: 50
@@ -103,11 +212,11 @@ LcpK0s_multiplicity_test:
       seedmerge: [12] #list of periods
       period: [LHC18pp] #list of periods
       unmerged_tree_dir: [/Users/gianmicheleinnocenti/samplesMLexample/mc/unmerged] # this is pPb MC, #list of periods
-      pkl: [LcpK0s_multiplicity/mcpkl] #list of periods
-      pkl_skimmed: [LcpK0s_multiplicity/mcpklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [LcpK0s_multiplicity/mcpklskML] #list of periods
-      pkl_skimmed_merge_for_ml_all: LcpK0s_multiplicity/mcpklskMLallperiods
-      pkl_evtcounter_all: LcpK0s_multiplicity/mcpklevtHC18ppallperiods
+      pkl: [LcpK0s_test/mcpkl] #list of periods
+      pkl_skimmed: [LcpK0s_test/mcpklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [LcpK0s_test/mcpklskML] #list of periods
+      pkl_skimmed_merge_for_ml_all: LcpK0s_test/mcpklskMLallperiods
+      pkl_evtcounter_all: LcpK0s_test/mcpklevtHC18ppallperiods
   ml:
     nbkg: 1000
     nsig: 1000
@@ -119,12 +228,12 @@ LcpK0s_multiplicity_test:
     rnd_shuffle: 12
     rnd_splt: 12
     test_frac: 0.2
-    binmin: [ 0,20] #list of nbins
-    binmax: [20,100] #list of nbins
+    binmin: [2,4] #list of nbins
+    binmax: [4,8] #list of nbins
     mltype: BinaryClassification
     ncorescrossval: 10 
-    mlplot: LcpK0s_multiplicity/mlplot # to be removed
-    mlout: LcpK0s_multiplicity/mlout # to be removed
+    mlplot: LcpK0s_test/mlplot # to be removed
+    mlout: LcpK0s_test/mlout # to be removed
 
     opt:
       filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
@@ -138,40 +247,53 @@ LcpK0s_multiplicity_test:
       num_steps: 111 # number of steps used in efficiency and signif. estimation
       save_fit: True # save bkg fits with the various cuts on ML output
       raahp: [1,1] #list of nbins
+  
   analysis:
+    sel_binmin2: [0] #list of nbins
+    sel_binmax2: [999] #list of nbins
+    var_binning2: n_tracklets
+
     data:
-      pkl_skimmed_dec: [LcpK0s_multiplicity/datapklskdec] #list of periods
-      pkl_skimmed_decmerged: [LcpK0s_multiplicity/datapklskdecmerged] #list of periods
-      results: [LcpK0s_multiplicity/dataanalysis] #list of periods
+      pkl_skimmed_dec: [LcpK0s_test/datapklskdec] #list of periods
+      pkl_skimmed_decmerged: [LcpK0s_test/datapklskdecmerged] #list of periods
+      results: [LcpK0s_test/dataanalysis] #list of periods
+      resultsallp: LcpK0s_test/dataanalysistot #list of periods
     mc:
-      pkl_skimmed_dec: [LcpK0s_multiplicity/mcpklskdec] #list of periods
-      pkl_skimmed_decmerged: [LcpK0s_multiplicity/mcpklskdecmerged] #list of periods
-      results: [LcpK0s_multiplicity/mcanalysis] #list of periods
+      pkl_skimmed_dec: [LcpK0s_test/mcpklskdec] #list of periods
+      pkl_skimmed_decmerged: [LcpK0s_test/mcpklskdecmerged] #list of periods
+      results: [LcpK0s_test/mcanalysis] #list of periods
+      resultsallp: LcpK0s_test/mcanalysistot #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierLcpK0s_multiplicity_test_dfselection_n_tracklets_0.0_20.0.sav,
-                     xgboost_classifierLcpK0s_multiplicity_test_dfselection_n_tracklets_20.0_100.0.sav] #list of nbins
+    modelsperptbin: [xgboost_classifierLcpK0s_test_dfselection_pt_cand_2.0_4.0.sav,
+                     xgboost_classifierLcpK0s_test_dfselection_pt_cand_4.0_8.0.sav] #list of nbins
     probcutpresel: 
       data: [0.3,0.3] #list of nbins
       mc: [0.3,0.3] #list of nbins
 
     probcutoptimal: [0.5,0.5] #list of nbins
+    
+    
+    ##### last stage of the analysis, from now on the binning is the final analysis binning 
+    sel_an_binmin: [2,3,4,5] #list of nbins
+    sel_an_binmax: [3,4,5,6] #list of nbins
+    binning_matching: [0,0,1,1] #list of nbins 
     mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
     bin_width: 0.001 # bin width of the invariant mass histogram
     presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
     #parameters for fitter
     usefit: true
-    sgnfunc: [kGaus,kGaus]
-    bkgfunc: [Pol2,Pol2]
+    sgnfunc: [kGaus,kGaus,kGaus,kGaus]
+    bkgfunc: [Pol2,Pol2,Pol2,Pol2]
     masspeak: 2.2864
-    massmin: [2.14,2.14]
-    massmax: [2.436,2.436]
-    rebin: [6,6]
-    includesecpeak: [0,0]
+    massmin: [2.14,2.14,2.14,2.14]
+    massmax: [2.436,2.436,2.436,2.436]
+    rebin: [6,6,6,6]
+    includesecpeak: [0,0,0,0]
     masssecpeak: 1.869
     FixedMean: false
     SetFixGaussianSigma: true
     SetInitialGaussianMean: true
     dolikelihood: true
-    sigmaarray: [0.01,0.01]
+    sigmaarray: [0.01,0.01,0.01,0.01]
     FixedSigma: true  
     fitcase: Lc

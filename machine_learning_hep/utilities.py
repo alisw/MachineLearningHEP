@@ -95,22 +95,24 @@ def checkdirlist(dirlist):
     for _, mydir in enumerate(dirlist):
         if os.path.exists(mydir):
             print("rm -rf ", mydir)
-            exfolders = exfolders + 1
-        else:
-            print("creating folder ", mydir)
-            os.makedirs(mydir)
-    return exfolders > 0
+            exfolders = exfolders - 1
+    return exfolders
 
 def checkdir(mydir):
-    exfolder = 0
+    exfolders = 0
     if os.path.exists(mydir):
         print("rm -rf ", mydir)
-        exfolder = exfolder + 1
-    else:
+        exfolders = -1
+    return exfolders
+
+def checkmakedirlist(dirlist):
+    for _, mydir in enumerate(dirlist):
         print("creating folder ", mydir)
         os.makedirs(mydir)
 
-    return exfolder > 0
+def checkmakedir(mydir):
+    print("creating folder ", mydir)
+    os.makedirs(mydir)
 
 def appendfiletolist(mylist, namefile):
     return [os.path.join(path, namefile) for path in mylist]
@@ -134,3 +136,9 @@ def split_df_sigbkg(dataframe_, var_signal_):
 def createstringselection(var, low, high):
     string_selection = "dfselection_"+(("%s_%.1f_%.1f") % (var, low, high))
     return string_selection
+
+def mergerootfiles(listfiles, mergedfile):
+    outstring = ""
+    for indexp, _ in enumerate(listfiles):
+        outstring = outstring + listfiles[indexp] + " "
+    os.system("hadd -f %s  %s " % (mergedfile, outstring))

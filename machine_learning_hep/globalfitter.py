@@ -114,8 +114,9 @@ def tot_func(bkg, massmax, massmin):
 # pylint: disable=too-many-statements, pointless-statement
 def fitter(histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihood,\
     setinitialgaussianmean, setfixgaussiansigma, sigma, massmin, massmax,\
-    fixedmean, fixedsigma, outputfolder, varbin, minvar, maxvar):
-    print(bkgfunc)
+    fixedmean, fixedsigma, outputfolder, suffix):
+    rawYield = -1
+    rawYieldErr = -1
     if "Lc" in case:
         print("add my fitter")
         histo.GetXaxis().SetTitle("Invariant Mass L_{c}^{+}(GeV/c^{2})")
@@ -301,4 +302,5 @@ def fitter(histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihood,\
             (nsigma, significance, errsignificance))
         pinfos.Draw()
         c1.Update()
-        c1.SaveAs("%s/fittedplot%s_%d_%d.pdf" % (outputfolder, varbin, minvar, maxvar))
+        c1.SaveAs("%s/fittedplot%s.pdf" % (outputfolder, suffix))
+    return rawYield, rawYieldErr

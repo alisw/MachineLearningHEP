@@ -455,21 +455,25 @@ class Optimiser:
         dfdata = pickle.load(openfile(self.f_reco_applieddata, "rb"))
         dfmc = pickle.load(openfile(self.f_reco_appliedmc, "rb"))
         vardistplot_probscan(dfmc, self.v_all, "xgboost_classifier",
-                             prob_array, self.dirmlplot, "scancutsmc", 0, self.p_plot_options)
+                             prob_array, self.dirmlplot, "mc" + self.s_suffix,
+                             0, self.p_plot_options)
         vardistplot_probscan(dfmc, self.v_all, "xgboost_classifier",
-                             prob_array, self.dirmlplot, "scancutsmc", 1, self.p_plot_options)
+                             prob_array, self.dirmlplot, "mc" + self.s_suffix,
+                             1, self.p_plot_options)
         vardistplot_probscan(dfdata, self.v_all, "xgboost_classifier",
-                             prob_array, self.dirmlplot, "scancutsdata", 0, self.p_plot_options)
+                             prob_array, self.dirmlplot, "data" + self.s_suffix,
+                             0, self.p_plot_options)
         vardistplot_probscan(dfdata, self.v_all, "xgboost_classifier",
-                             prob_array, self.dirmlplot, "scancutsdata", 1, self.p_plot_options)
+                             prob_array, self.dirmlplot, "data" + self.s_suffix,
+                             1, self.p_plot_options)
         if not self.v_cuts:
             self.logger.warning("No variables for cut efficiency scan. Will be skipped")
             return
+        efficiency_cutscan(dfmc, self.v_cuts, "xgboost_classifier", 0.0,
+                           self.dirmlplot, "mc" + self.s_suffix, self.p_plot_options)
         efficiency_cutscan(dfmc, self.v_cuts, "xgboost_classifier", 0.5,
-                           self.dirmlplot, "mc", self.p_plot_options)
-        efficiency_cutscan(dfmc, self.v_cuts, "xgboost_classifier", 0.9,
-                           self.dirmlplot, "mc", self.p_plot_options)
+                           self.dirmlplot, "mc" + self.s_suffix, self.p_plot_options)
+        efficiency_cutscan(dfdata, self.v_cuts, "xgboost_classifier", 0.0,
+                           self.dirmlplot, "data" + self.s_suffix, self.p_plot_options)
         efficiency_cutscan(dfdata, self.v_cuts, "xgboost_classifier", 0.5,
-                           self.dirmlplot, "data", self.p_plot_options)
-        efficiency_cutscan(dfdata, self.v_cuts, "xgboost_classifier", 0.9,
-                           self.dirmlplot, "data", self.p_plot_options)
+                           self.dirmlplot, "data" + self.s_suffix, self.p_plot_options)

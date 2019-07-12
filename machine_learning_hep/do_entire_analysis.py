@@ -25,9 +25,10 @@ from multiprocesser import MultiProcesser  # pylint: disable=import-error
 #from machine_learning_hep.doanalysis import doanalysis
 #from machine_learning_hep.extractmasshisto import extractmasshisto
 #from machine_learning_hep.efficiencyan import analysis_eff
+from  machine_learning_hep.utilities import checkmakedirlist, checkmakedir
 from  machine_learning_hep.utilities import checkdirlist, checkdir
 from optimiser import Optimiser
-
+from analyzer import Analyzer
 def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 
     with open("default_complete.yaml", 'r') as run_config:
@@ -76,6 +77,8 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     dohistomassmc = data_config["analysis"]["mc"]["histomass"]
     dohistomassdata = data_config["analysis"]["data"]["histomass"]
     doefficiency = data_config["analysis"]["mc"]["efficiency"]
+    dofit = data_config["analysis"]["dofit"]
+    docross = data_config["analysis"]["docross"]
 
     dirpklmc = data_param[case]["multi"]["mc"]["pkl"]
     dirpklevtcounter_allmc = data_param[case]["multi"]["mc"]["pkl_evtcounter_all"]
@@ -94,6 +97,8 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
 
     dirresultsdata = data_param[case]["analysis"]["data"]["results"]
     dirresultsmc = data_param[case]["analysis"]["mc"]["results"]
+    dirresultsdatatot = data_param[case]["analysis"]["data"]["resultsallp"]
+    dirresultsmctot = data_param[case]["analysis"]["mc"]["resultsallp"]
 
     binminarray = data_param[case]["ml"]["binmin"]
     binmaxarray = data_param[case]["ml"]["binmax"]
@@ -108,65 +113,110 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     mymultiprocessdata = MultiProcesser(data_param[case], run_param, "data")
 
     #creating folder if not present
+    counter = 0
     if doconversionmc is True:
-        if checkdirlist(dirpklmc) is True:
-            exit()
+        counter = counter + checkdirlist(dirpklmc)
 
     if doconversiondata is True:
-        if checkdirlist(dirpkldata) is True:
-            exit()
+        counter = counter + checkdirlist(dirpkldata)
 
     if doskimmingmc is True:
-        if checkdirlist(dirpklskmc) or checkdir(dirpklevtcounter_allmc) is True:
-            exit()
+        checkdirlist(dirpklskmc)
+        counter = counter + checkdir(dirpklevtcounter_allmc)
 
     if doskimmingdata is True:
-        if checkdirlist(dirpklskdata) or checkdir(dirpklevtcounter_alldata) is True:
-            exit()
+        counter = counter + checkdirlist(dirpklskdata)
+        counter = counter + checkdir(dirpklevtcounter_alldata)
 
     if domergingmc is True:
-        if checkdirlist(dirpklmlmc) is True:
-            exit()
+        counter = counter + checkdirlist(dirpklmlmc)
 
     if domergingdata is True:
-        if checkdirlist(dirpklmldata) is True:
-            exit()
+        counter = counter + checkdirlist(dirpklmldata)
 
     if domergingperiodsmc is True:
-        if checkdir(dirpklmltotmc) is True:
-            exit()
+        counter = counter + checkdir(dirpklmltotmc)
 
     if domergingperiodsdata is True:
-        if checkdir(dirpklmltotdata) is True:
-            exit()
+        counter = counter + checkdir(dirpklmltotdata)
 
     if doml is True:
-        if checkdir(mlout) or checkdir(mlplot) is True:
-            print("check mlout and mlplot")
+        counter = counter + checkdir(mlout)
+        counter = counter + checkdir(mlplot)
 
     if doapplymc is True:
-        if checkdirlist(dirpklskdecmc) is True:
-            exit()
+        counter = counter + checkdirlist(dirpklskdecmc)
 
     if doapplydata is True:
-        if checkdirlist(dirpklskdecdata) is True:
-            exit()
+        counter = counter + checkdirlist(dirpklskdecdata)
 
     if domergeapplymc is True:
-        if checkdirlist(dirpklskdec_mergedmc) is True:
-            exit()
+        counter = counter + checkdirlist(dirpklskdec_mergedmc)
 
     if domergeapplydata is True:
-        if checkdirlist(dirpklskdec_mergeddata) is True:
-            exit()
+        counter = counter + checkdirlist(dirpklskdec_mergeddata)
 
     if dohistomassmc is True:
-        if checkdirlist(dirresultsmc) is True:
-            exit()
+        counter = counter + checkdirlist(dirresultsmc)
+        counter = counter + checkdir(dirresultsmctot)
 
     if dohistomassdata is True:
-        if checkdirlist(dirresultsdata) is True:
-            print("folder exists")
+        counter = counter + checkdirlist(dirresultsdata)
+        counter = counter + checkdir(dirresultsdatatot)
+
+    if counter < 0:
+        exit()
+    # check and create directories
+
+    if doconversionmc is True:
+        checkmakedirlist(dirpklmc)
+
+    if doconversiondata is True:
+        checkmakedirlist(dirpkldata)
+
+    if doskimmingmc is True:
+        checkmakedirlist(dirpklskmc)
+        checkmakedir(dirpklevtcounter_allmc)
+
+    if doskimmingdata is True:
+        checkmakedirlist(dirpklskdata)
+        checkmakedir(dirpklevtcounter_alldata)
+
+    if domergingmc is True:
+        checkmakedirlist(dirpklmlmc)
+
+    if domergingdata is True:
+        checkmakedirlist(dirpklmldata)
+
+    if domergingperiodsmc is True:
+        checkmakedir(dirpklmltotmc)
+
+    if domergingperiodsdata is True:
+        checkmakedir(dirpklmltotdata)
+
+    if doml is True:
+        checkmakedir(mlout)
+        checkmakedir(mlplot)
+
+    if doapplymc is True:
+        checkmakedirlist(dirpklskdecmc)
+
+    if doapplydata is True:
+        checkmakedirlist(dirpklskdecdata)
+
+    if domergeapplymc is True:
+        checkmakedirlist(dirpklskdec_mergedmc)
+
+    if domergeapplydata is True:
+        checkmakedirlist(dirpklskdec_mergeddata)
+
+    if dohistomassmc is True:
+        checkmakedirlist(dirresultsmc)
+        checkmakedir(dirresultsmctot)
+
+    if dohistomassdata is True:
+        checkmakedirlist(dirresultsdata)
+        checkmakedir(dirresultsdatatot)
 
     #perform the analysis flow
     if dodownloadalice == 1:
@@ -242,5 +292,10 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
         mymultiprocessdata.multi_histomass()
     if doefficiency is True:
         mymultiprocessmc.multi_efficiency()
-
+    if dofit is True:
+        myan = Analyzer(data_param[case])
+        myan.fitter()
+    if docross is True:
+        myan = Analyzer(data_param[case])
+        myan.plotter()
 do_entire_analysis()
