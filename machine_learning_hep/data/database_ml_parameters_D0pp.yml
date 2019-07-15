@@ -144,10 +144,10 @@ D0pp:
       fracmerge : [1.0,1.0,1.0,1.0] #list of periods
       seedmerge: [12,12,12,12] #list of periods
       period: [LHC16pp,LHC16pp,LHC17pp,LHC18pp] #list of periods
-      unmerged_tree_dir: [/data2/HeavyFlavour/pp_MC_2016/01-07-2019/72_20190629-1618/unmerged_, 
-                          /data2/HeavyFlavour/pp_MC_2016/01-07-2019/75_20190629-1619/unmerged_,
-                          /data2/HeavyFlavour/pp_MC_2017/01-07-2019/76_20190629-1619/unmerged_,
-                          /data2/HeavyFlavour/pp_MC_2018/01-07-2019/77_20190629-1620/unmerged_] #list of periods
+      unmerged_tree_dir: [/data2/HeavyFlavour/pp_MC_2016/01-07-2019/72_20190629-1618/unmerged, 
+                          /data2/HeavyFlavour/pp_MC_2016/01-07-2019/75_20190629-1619/unmerged,
+                          /data2/HeavyFlavour/pp_MC_2017/01-07-2019/76_20190629-1619/unmerged,
+                          /data2/HeavyFlavour/pp_MC_2018/01-07-2019/77_20190629-1620/unmerged] #list of periods
       pkl: [/data2/HeavyFlavour/D0pp_15072019/D0ppmc_15072019/pkl72_2016,
             /data2/HeavyFlavour/D0pp_15072019/D0ppmc_15072019/pkl75_2016,
             /data2/HeavyFlavour/D0pp_15072019/D0ppmc_15072019/pkl76_2017,
