@@ -136,7 +136,7 @@ def efficiency_cutscan(dataframe_, mylistvariables_, modelname_, threshold, # py
         axes[i].set_ylabel("entries (normalised)", fontsize=30)
         axes[i].tick_params(labelsize=20)
         axes[i].set_yscale('log')
-        axes[i].set_ylim(0.005, 1.5)
+        axes[i].set_ylim(0.1, 1.5)
         values = dataframe_[var].values
         if "abs" in  vardir:
             values = np.array([abs(v - cen) for v in values])
