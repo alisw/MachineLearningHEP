@@ -162,7 +162,11 @@ def process_files(top_dir, file_signature, recursive, n_files, plot_config):
         # Brute force for now
         for plot in plots:
             for o in plot["observables"]:
-                for cut in o["cuts"]:
+                legend_labels = o.get("legend_labels", o["cuts"])
+                if len(legend_labels) != len(o["cuts"]):
+                    logger_string = f"Different number of legend labels and cuts found for observable {o['name']}"
+                    logger.fatal(logger_string)
+                for cut, label in zip(o["cuts"], legend_labels):
                     if cut is None:
                         values = pickle.load(openfile(f, "rb"))[o["name"]]
                         if values.size == 0:
@@ -173,7 +177,7 @@ def process_files(top_dir, file_signature, recursive, n_files, plot_config):
                         if o["name"] not in histograms:
                             histograms[o["name"]] = {}
                         if histo_name not in histograms[o["name"]]:
-                                histograms[o["name"]][histo_name] = Histo1D(histo_name, o["bins"], o["range"], "no_cut", o.get("xlabel", "xlabel"), o.get("ylabel", "ylabel"))
+                                histograms[o["name"]][histo_name] = Histo1D(histo_name, o["bins"], o["range"], str(label), o.get("xlabel", "xlabel"), o.get("ylabel", "ylabel"))
                         histograms[o["name"]][histo_name].add_values(values)
                     else:
                         values = pickle.load(openfile(f, "rb")).query(available_cuts[cut]["expression"])[o["name"]]
@@ -185,7 +189,7 @@ def process_files(top_dir, file_signature, recursive, n_files, plot_config):
                         if o["name"] not in histograms:
                             histograms[o["name"]] = {}
                         if histo_name not in histograms[o["name"]]:
-                            histograms[o["name"]][histo_name] = Histo1D(histo_name, o["bins"], o["range"], available_cuts[cut]["expression"], o.get("xlabel", "xlabel"), o.get("ylabel", "ylabel"))
+                            histograms[o["name"]][histo_name] = Histo1D(histo_name, o["bins"], o["range"], str(label), o.get("xlabel", "xlabel"), o.get("ylabel", "ylabel"))
                         histograms[o["name"]][histo_name].add_values(values)
 
     return make_plots_stats(histograms)
