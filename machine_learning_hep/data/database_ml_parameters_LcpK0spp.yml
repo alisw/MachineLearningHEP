@@ -262,8 +262,8 @@ LcpK0spp:
       save_fit: True # save bkg fits with the various cuts on ML output
       raahp: [1,1,1,1] #list of nbins
   analysis:
-    sel_binmin2: [0] #list of nbins
-    sel_binmax2: [9999] #list of nbins
+    sel_binmin2: [0,10,20,40,60,0] #list of nbins
+    sel_binmax2: [10,20,40,60,100,9999] #list of nbins
     var_binning2: n_tracklets
     data:
       pkl_skimmed_dec: [/data2/ginnocen/productions/LcpK0spp_1307201/LcpK0sppdatavspt_applied_13072019/pklskdec68_2016, 
@@ -274,16 +274,16 @@ LcpK0spp:
                               /data2/ginnocen/productions/LcpK0spp_1307201/LcpK0sppdatavspt_applied_13072019/pklskdecmerged69_2016,
                               /data2/ginnocen/productions/LcpK0spp_1307201/LcpK0sppdatavspt_applied_13072019/pklskdecmerged70_2017,
                               /data2/ginnocen/productions/LcpK0spp_1307201/LcpK0sppdatavspt_applied_13072019/pklskdecmerged71_2018] #list of periods
-      results: [resultsdata/results68_2016, 
-                resultsdata/results69_2016,
-                resultsdata/results70_2017,
-                resultsdata/results71_2018] #list of periods
-      resultsallp: resultsdata/resultstot 
+      results: [/data2/ginnocen/productions/LcpK0spp_1307201/resultsdata/results68_2016, 
+                /data2/ginnocen/productions/LcpK0spp_1307201/resultsdata/results69_2016,
+                /data2/ginnocen/productions/LcpK0spp_1307201/resultsdata/results70_2017,
+                /data2/ginnocen/productions/LcpK0spp_1307201/resultsdata/results71_2018] #list of periods
+      resultsallp: /data2/ginnocen/productions/LcpK0spp_1307201/resultsdata/resultstot 
     mc:
       pkl_skimmed_dec: [/data2/ginnocen/productions/LcpK0spp_1307201/LcpK0sppmcvspt_applied_13072019/pklskdec56_2018] #list of periods
       pkl_skimmed_decmerged: [/data2/ginnocen/productions/LcpK0spp_1307201/LcpK0sppmcvspt_applied_13072019/pklskdecmerged56_2018] #list of periods
-      results: [resultsmc/results56_2018] #list of periods
-      resultsallp: resultsmc/resultstot
+      results: [/data2/ginnocen/productions/LcpK0spp_1307201/resultsmc/results56_2018] #list of periods
+      resultsallp: /data2/ginnocen/productions/LcpK0spp_1307201/resultsmc/resultstot
     modelname: xgboost
     modelsperptbin: [xgboost_classifierLcpK0spp_pt_dfselection_pt_cand_2.0_4.0.sav,
                      xgboost_classifierLcpK0spp_pt_dfselection_pt_cand_4.0_8.0.sav,
@@ -295,7 +295,6 @@ LcpK0spp:
       mc: [0.3,0.3,0.3,0.3] #list of nbins
 
     probcutoptimal: [0.4,0.3,0.3,0.3] #list of nbins
-
 
 
     sel_an_binmin: [2,3,4,5,6,8,12]
@@ -321,4 +320,4 @@ LcpK0spp:
     sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01]
     FixedSigma: true  
     fitcase: Lc
-
+    nevents: 1700000000.

@@ -77,6 +77,11 @@ class Analyzer:
         self.ptranges.append(self.lpt_finbinmax[-1])
         self.lmult_yieldshisto = [TH1F("hyields%d" % (imult), "", \
             self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
+
+        self.p_nevents = datap["analysis"]["nevents"]
+        self.p_sigmamb = datap["ml"]["opt"]["sigma_MB"]
+        self.p_br = datap["ml"]["opt"]["BR"]
+
     def fitter(self):
         lfile = TFile.Open(self.n_filemass)
         fileout = TFile.Open(self.n_filecross, "recreate")
@@ -94,30 +99,39 @@ class Analyzer:
                     self.p_fixingaussigma, self.p_sigmaarray[ipt], self.p_massmin[ipt], \
                     self.p_massmax[ipt], self.p_fixedmean, self.p_fixedsigma, \
                     self.d_resultsallpdata, suffix)
+                rawYield = rawYield/(self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
+                rawYieldErr = rawYieldErr/(self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
                 self.lmult_yieldshisto[imult].SetBinContent(ipt + 1, rawYield)
                 self.lmult_yieldshisto[imult].SetBinError(ipt + 1, rawYieldErr)
             fileout.cd()
             self.lmult_yieldshisto[imult].Write()
+        print("Fitter done")
 
     def plotter(self):
+        cYields = TCanvas('cYields', 'The Fit Canvas')
+        cYields.SetLogy()
         lfile = TFile.Open(self.n_filecross)
-        c1 = TCanvas('c1', 'The Fit Canvas')
-        c1.SetLogy()
+        histoyieldlist = []
+        histocrosslist = []
+        histoefflist = []
         for imult in range(self.p_nbin2):
-            h_invmass = lfile.Get("hyields%d" % (imult))
-            h_invmass.SetMinimum(1)
-            h_invmass.SetMaximum(1e7)
-            h_invmass.SetLineColor(imult + 1)
-            h_invmass.Draw("same")
-        c1.SaveAs("canvasYields.pdf")
+            histoyield = lfile.Get("hyields%d" % (imult))
+            histoyield.SetMinimum(1)
+            histoyield.SetMaximum(1e14)
+            histoyield.SetLineColor(imult+1)
+            histoyield.Draw("same")
+            histoyieldlist.append(histoyield)
+            histocrosslist.append(histoyield)
+        cYields.SaveAs("Yields.pdf")
 
+        cEff = TCanvas('cEff', 'The Fit Canvas')
+        cEff.SetLogy()
         lfileeff = TFile.Open(self.n_fileff)
-        cprompt = TCanvas("cprompt", "efficiency canvas")
-        cfeed = TCanvas("cfeed", "efficiency canvas")
-        for ibin2 in range(self.p_nbin2):
+
+        for imult in range(self.p_nbin2):
             stringbin2 = "_%s_%d_%d" % (self.v_var2_binning,
-                                        self.lvar2_binmin[ibin2],
-                                        self.lvar2_binmax[ibin2])
+                                        self.lvar2_binmin[imult],
+                                        self.lvar2_binmax[imult])
             h_gen_pr = lfileeff.Get("h_gen_pr" + stringbin2)
             h_sel_pr = lfileeff.Get("h_sel_pr" + stringbin2)
             h_gen_fd = lfileeff.Get("h_gen_fd" + stringbin2)
@@ -125,10 +139,21 @@ class Analyzer:
 
             h_sel_pr.Divide(h_sel_pr, h_gen_pr, 1.0, 1.0, "B")
             h_sel_fd.Divide(h_sel_fd, h_gen_fd, 1.0, 1.0, "B")
-
-            cprompt.cd()
+            histoefflist.append(h_sel_pr)
+            h_sel_pr.SetLineColor(imult+1)
             h_sel_pr.Draw("same")
-            cfeed.cd()
-            h_sel_fd.Draw("same")
-        cprompt.SaveAs("canvasEffprompt.pdf")
-        cfeed.SaveAs("canvasEfffeed.pdf")
+        cEff.SaveAs("Eff.pdf")
+
+        histoefflist[0].Draw()
+        cCross = TCanvas('cCross', 'The Fit Canvas')
+        cCross.SetLogy()
+        hcross = histocrosslist[0]
+        hden = histoefflist[0]
+        hcross.Divide(hden)
+        hcross.SetMinimum(1)
+        hcross.SetMaximum(1e14)
+        hcross.SetLineColor(imult+1)
+        norm = 2 * self.p_br * self.p_nevents / (self.p_sigmamb * 1e12)
+        hcross.Scale(1./norm)
+        hcross.Draw("same")
+        cCross.SaveAs("Cross.pdf")
