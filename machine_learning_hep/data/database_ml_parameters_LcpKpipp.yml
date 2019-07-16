@@ -202,8 +202,8 @@ LcpKpipp:
       save_fit: True # save bkg fits with the various cuts on ML output
       raahp: [1,1,1,1]     # list of bins
   analysis:
-    sel_binmin2: [0,10,20,30,40,60] #list of nbins
-    sel_binmax2: [10,20,30,40,60,100] #list of nbins
+    sel_binmin2: [0,0,10,20,30,40] #list of nbins
+    sel_binmax2: [9999,10,20,30,40,60] #list of nbins
     var_binning2: n_tracklets
     data:
       pkl_skimmed_dec: [/data2/HeavyFlavour/LcpKpipp_15072019/LcpKpipp_pt_2016_kl/datapklskdec,
@@ -214,10 +214,10 @@ LcpKpipp:
                               /data2/HeavyFlavour/LcpKpipp_15072019/LcpKpipp_pt_2016_de/datapklskdecmerged,
                               /data2/HeavyFlavour/LcpKpipp_15072019/LcpKpipp_pt_2017/datapklskdecmerged,
                               /data2/HeavyFlavour/LcpKpipp_15072019/LcpKpipp_pt_2018/datapklskdecmerged] #list of periods
-      results: [dataanalysis/results2016_kl,
-                dataanalysis/results2016_de,
-                dataanalysis/results2017,
-                dataanalysis/results2018]
+      results: [resultsdata/results2016_kl,
+                resultsdata/results2016_de,
+                resultsdata/results2017,
+                resultsdata/results2018]
       resultsallp: resultsdata/resultstot 
     mc:
       pkl_skimmed_dec: [/data2/HeavyFlavour/LcpKpipp_15072019/LcpKpipp_pt_2016_kl/mcpklskdec,
@@ -228,10 +228,10 @@ LcpKpipp:
                               /data2/HeavyFlavour/LcpKpipp_15072019/LcpKpipp_pt_2016_de/mcpklskdecmerged,
                               /data2/HeavyFlavour/LcpKpipp_15072019/LcpKpipp_pt_2017/mcpklskdecmerged,
                               /data2/HeavyFlavour/LcpKpipp_15072019/LcpKpipp_pt_2018/mcpklskdecmerged] #list of periods
-      results: [mcanalysis/results2016_kl,
-                mcanalysis/results2016_de,
-                mcanalysis/results2017,
-                mcanalysis/results2018]
+      results: [resultsmc/results2016_kl,
+                resultsmc/results2016_de,
+                resultsmc/results2017,
+                resultsmc/results2018]
       resultsallp: resultsmc/resultstot
     modelname: xgboost
     modelsperptbin: [xgboost_classifierLcpKpipp_pt_dfselection_pt_cand_2.0_4.0.sav,
@@ -267,4 +267,4 @@ LcpKpipp:
     sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01]
     FixedSigma: true  
     fitcase: Lc
-
+    nevents: 1700000000.

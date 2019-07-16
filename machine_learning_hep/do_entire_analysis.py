@@ -69,7 +69,6 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     dogridsearch = data_config["ml_study"]['dogridsearch']
     dosignifopt = data_config["ml_study"]['dosignifopt']
     doscancuts = data_config["ml_study"]["doscancuts"]
-    #doefficiency = run_config['doefficiency']
     doapplydata = data_config["analysis"]["data"]["doapply"]
     doapplymc = data_config["analysis"]["mc"]["doapply"]
     domergeapplydata = data_config["analysis"]["data"]["domergeapply"]
@@ -111,6 +110,7 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
 
     mymultiprocessmc = MultiProcesser(data_param[case], run_param, "mc")
     mymultiprocessdata = MultiProcesser(data_param[case], run_param, "data")
+    myan = Analyzer(data_param[case])
 
     #creating folder if not present
     counter = 0
@@ -293,9 +293,8 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     if doefficiency is True:
         mymultiprocessmc.multi_efficiency()
     if dofit is True:
-        myan = Analyzer(data_param[case])
         myan.fitter()
     if docross is True:
-        myan = Analyzer(data_param[case])
         myan.plotter()
+
 do_entire_analysis()
