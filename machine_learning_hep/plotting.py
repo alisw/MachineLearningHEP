@@ -30,9 +30,13 @@ class Histo1D:
         self.xlabel = xlabel
         self.ylabel = ylabel
         self.label = label
-        self.hist, self.edges = np.histogram([], bins, axis_range)
+
+        self.hist, self.edges = np.histogram(np.array([], dtype="float64"), bins, axis_range, None, np.array([], dtype="float64"))
 
     def add_values(self, values, weights=None):
+        values = [float(v) for v in values]
+        if weights is not None:
+            weights = [float(w) for w in weights]
         self.hist += np.histogram(values, self.bins, self.axis_range, None, weights)[0]
 
     def get_statistics(self):
@@ -62,6 +66,8 @@ def plot1D(histograms, plot_name, ax=None):
             logger_string = f"Incompatible edges found in histogram {h.name}"
             logger.fatal(logger_string)
         ax.bar(bin_centers, h.hist, width=bin_widths, alpha=0.5, label=h.label, bottom=new_bottom)
+    ax.set_xticks(common_edges)
+    ax.set_xticklabels(common_edges)
     ax.legend(fontsize=30)
     ax.set_xlabel(common_xlabel, fontsize=30)
     ax.set_ylabel(common_ylabel, fontsize=30)
@@ -125,7 +131,6 @@ def make_plots_stats(histograms, in_one_figure=False):
             figures.append(fig)
 
     return figures, names, stats
-
 
 
 def process_files(top_dir, file_signature, recursive, n_files, plot_config):
@@ -239,6 +244,32 @@ def process_dataframe(dfs, plot_config, output_dir):
                         histograms[o["name"]][histo_name].add_values(values)
 
     return make_plots_stats(histograms)
+
+
+def plot_from_yamls(yamls):
+
+    logger = get_logger()
+    logger.info("Create histograms from YAML files")
+    try:
+        it = iter(yamls)
+    except TypeError as te:
+        yamls = [yamls]
+
+    histograms = {}
+    for y in yamls:
+        y_dict = parse_yaml(y)
+        y_dict["label"] = y_dict.get("label", "label")
+        y_dict["xlabel"] = y_dict.get("xlabel", "xlabel")
+        y_dict["ylabel"] = y_dict.get("ylabel", "ylabel")
+
+        # Get lower edges from all bins and the very last one
+        edges = [ e[1] for e in y_dict["edges"] ] + [y_dict["edges"][-1][2]]
+        bin_centers = [ (edges[i+1] + edges[i]) / 2 for i in range(len(edges) - 1) ]
+        histo = Histo1D(y_dict["name"], edges, None, y_dict["label"], y_dict["xlabel"], y_dict["ylabel"])
+        histo.add_values(bin_centers, [e[3] for e in y_dict["edges"]])
+        histograms[y_dict["name"]] = histo
+
+    return make_plots_stats({"plot": histograms})
 
 
 def save_plots(figures, names, stats, output_dir="./", close_figures=True):
