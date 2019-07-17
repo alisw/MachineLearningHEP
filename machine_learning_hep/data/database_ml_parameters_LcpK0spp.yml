@@ -227,8 +227,8 @@ LcpK0spp:
       period: [LHC16pp,LHC16pp,LHC17pp,LHC18pp] #list of periods
       unmerged_tree_dir: [/data2/HeavyFlavour/pp_MC_2016/15-07-2019/79_20190715-1231_kl/unmerged,
                           /data2/HeavyFlavour/pp_MC_2016/15-07-2019/79_20190715-1231_de/unmerged,
-                          /data2/HeavyFlavour/pp_MC_2017/01-07-2019/76_20190629-1619/unmerged,
-                          /data2/HeavyFlavour/pp_MC_2018/01-07-2019/77_20190629-1620/unmerged] # this is pPb MC, #list of periods
+                          /data2/HeavyFlavour/pp_MC_2017/16-07-2019/76_20190629-1619/unmerged,
+                          /data2/HeavyFlavour/pp_MC_2018/16-07-2019/77_20190629-1620/unmerged] #list of periods
       pkl: [/data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppmc_1307201/pkl79_2016_kl,
             /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppmc_1307201/pkl79_2016_de,
             /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppmc_1307201/pkl76_2017,
