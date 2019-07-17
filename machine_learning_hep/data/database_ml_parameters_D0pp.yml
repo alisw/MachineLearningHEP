@@ -14,9 +14,9 @@
 
 D0pp:
   mass: 1.864
-  sel_reco_unp: "pt_cand>2 and pt_cand<4"
+  sel_reco_unp: "pt_cand>2"
   sel_reco_singletrac_unp : null
-  sel_gen_unp: "pt_cand>2 and pt_cand<4 and abs(z_vtx_gen)<10"
+  sel_gen_unp: "pt_cand>2 and abs(z_vtx_gen)<10"
   sel_cen_unp: null
   #sel_good_evt_unp: "is_ev_rej == 0"
   sel_good_evt_unp: null
@@ -47,7 +47,7 @@ D0pp:
   variables:
     var_all: [d_len, d_len_xy, norm_dl, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, cos_t_star, imp_par_prod, 
               pt_prong0, pt_prong1, imp_par_prong0, imp_par_prong1, imp_par_err_prong0, imp_par_err_prong1, max_norm_d0d0exp, 
-              inv_mass, pt_cand, cand_type, y_cand, eta_prong0, eta_prong1, run_number, ev_id
+              inv_mass, pt_cand, cand_type, y_cand, eta_prong0, eta_prong1, run_number, ev_id,
               nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, nsigTPC_Pi_1, nsigTPC_K_1, nsigTOF_Pi_1, nsigTOF_K_1]
     var_evt:
       data: [is_ev_rej, run_number, ev_id, centrality, z_vtx_reco, n_tracklets]
@@ -56,7 +56,7 @@ D0pp:
     var_evt_match: [run_number, ev_id]
     var_training: [d_len, d_len_xy, norm_dl, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, cos_t_star, 
                    imp_par_prod, pt_prong0, pt_prong1, imp_par_prong0, imp_par_prong1, imp_par_err_prong0, 
-                   imp_par_err_prong1, max_norm_d0d0exp
+                   imp_par_err_prong1, max_norm_d0d0exp,
                    nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, nsigTPC_Pi_1, nsigTPC_K_1, nsigTOF_Pi_1, nsigTOF_K_1] 
     var_boundaries: [cos_t_star, pt_prong0]
     var_correlation:

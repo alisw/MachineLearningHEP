@@ -391,10 +391,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
     def process_histomass(self):
         myfile = TFile.Open(self.n_filemass, "recreate")
-        print(self.p_nptfinbins)
-        print(self.p_nptfinbins)
-
-        print(self.p_nptfinbins)
 
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
@@ -423,7 +419,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                         self.lvar2_binmax[ibin2])
             print(stringbin2)
             n_bins = len(self.lpt_finbinmin)
-            analysis_bin_lims_temp = list(self.lpt_finbinmin)
+            analysis_bin_lims_temp = self.lpt_finbinmin.copy()
             analysis_bin_lims_temp.append(self.lpt_finbinmax[n_bins-1])
             analysis_bin_lims = array.array('f', analysis_bin_lims_temp)
             h_gen_pr = TH1F("h_gen_pr" + stringbin2, "Prompt Generated in acceptance |y|<0.5", \
