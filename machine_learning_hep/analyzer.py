@@ -73,7 +73,7 @@ class Analyzer:
         self.p_casefit = datap["analysis"]["fitcase"]
         self.p_dofullevtmerge = datap["dofullevtmerge"]
 
-        self.ptranges = self.lpt_finbinmin
+        self.ptranges = self.lpt_finbinmin.copy()
         self.ptranges.append(self.lpt_finbinmax[-1])
         self.lmult_yieldshisto = [TH1F("hyields%d" % (imult), "", \
             self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
