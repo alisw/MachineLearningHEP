@@ -202,47 +202,35 @@ LcpK0spp:
                           /data2/HeavyFlavour/pp_data_2016/30-06-2019/69_20190629-1548/merged,
                           /data2/HeavyFlavour/pp_data_2017/10-07-2019/70_20190629-1550/merged,
                           /data2/HeavyFlavour/pp_data_2018/01-07-2019/71_20190629-1549/merged] #list of periods
-      pkl: [/data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppdata_1307201/pkl68_2016,
-            /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppdata_1307201/pkl69_2016,
-            /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppdata_1307201/pkl70_2017,
-            /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppdata_1307201/pkl71_2018] #list of periods
-      pkl_skimmed: [/data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppdatavspt_13072019/pklsk68_2016,
-                    /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppdatavspt_13072019/pklsk69_2016, 
-                    /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppdatavspt_13072019/pklsk70_2017,
-                    /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppdatavspt_13072019/pklsk71_2018] #list of periods
-      pkl_skimmed_merge_for_ml: [/data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppdatavspt_13072019/pklskML68_2016,
-                                 /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppdatavspt_13072019/pklskML69_2016,
-                                 /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppdatavspt_13072019/pklskML70_2017,
-                                 /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppdatavspt_13072019/pklskML71_2018] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppdatavspt_13072019/pklskMLallperiods
-      pkl_evtcounter_all: /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppdatavspt_13072019/pklevtppallperiods
+      pkl: [/data2/HeavyFlavour/LcpK0spp_1307201/LcpK0sppdata_1307201/pkl68_2016,
+            /data2/HeavyFlavour/LcpK0spp_1307201/LcpK0sppdata_1307201/pkl69_2016,
+            /data2/HeavyFlavour/LcpK0spp_1307201/LcpK0sppdata_1307201/pkl70_2017,
+            /data2/HeavyFlavour/LcpK0spp_1307201/LcpK0sppdata_1307201/pkl71_2018] #list of periods
+      pkl_skimmed: [/data2/HeavyFlavour/LcpK0spp_1307201/LcpK0sppdatavspt_13072019/pklsk68_2016,
+                    /data2/HeavyFlavour/LcpK0spp_1307201/LcpK0sppdatavspt_13072019/pklsk69_2016, 
+                    /data2/HeavyFlavour/LcpK0spp_1307201/LcpK0sppdatavspt_13072019/pklsk70_2017,
+                    /data2/HeavyFlavour/LcpK0spp_1307201/LcpK0sppdatavspt_13072019/pklsk71_2018] #list of periods
+      pkl_skimmed_merge_for_ml: [/data2/HeavyFlavour/LcpK0spp_1307201/LcpK0sppdatavspt_13072019/pklskML68_2016,
+                                 /data2/HeavyFlavour/LcpK0spp_1307201/LcpK0sppdatavspt_13072019/pklskML69_2016,
+                                 /data2/HeavyFlavour/LcpK0spp_1307201/LcpK0sppdatavspt_13072019/pklskML70_2017,
+                                 /data2/HeavyFlavour/LcpK0spp_1307201/LcpK0sppdatavspt_13072019/pklskML71_2018] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data2/HeavyFlavour/LcpK0spp_1307201/LcpK0sppdatavspt_13072019/pklskMLallperiods
+      pkl_evtcounter_all: /data2/HeavyFlavour/LcpK0spp_1307201/LcpK0sppdatavspt_13072019/pklevtppallperiods
     mc:
-      nperiods: 4
+      nperiods: 1
       nprocessesparallel: 50
-      maxfiles : [-1,-1,-1,-1] #list of periods
-      chunksizeunp : [1000,1000,1000,1000] #list of periods
-      chunksizeskim: [1000,1000,1000,1000] #list of periods
-      fracmerge : [1.0,1.0,1.0,1.0] #list of periods
-      seedmerge: [12,12,12,12] #list of periods
-      period: [LHC16pp,LHC16pp,LHC17pp,LHC18pp] #list of periods
-      unmerged_tree_dir: [/data2/HeavyFlavour/pp_MC_2016/15-07-2019/79_20190715-1231_kl/unmerged,
-                          /data2/HeavyFlavour/pp_MC_2016/15-07-2019/79_20190715-1231_de/unmerged,
-                          /data2/HeavyFlavour/pp_MC_2017/01-07-2019/76_20190629-1619/unmerged,
-                          /data2/HeavyFlavour/pp_MC_2018/01-07-2019/77_20190629-1620/unmerged] # this is pPb MC, #list of periods
-      pkl: [/data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppmc_1307201/pkl79_2016_kl,
-            /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppmc_1307201/pkl79_2016_de,
-            /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppmc_1307201/pkl76_2017,
-            /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppmc_1307201/pkl77_2018] #list of periods
-      pkl_skimmed: [/data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppmcvspt_13072019/pklsk79_2016_kl,
-                    /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppmcvspt_13072019/pklsk79_2016_de,
-                    /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppmcvspt_13072019/pklsk76_2017,
-                    /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppmcvspt_13072019/pklsk77_2018] #list of periods
-      pkl_skimmed_merge_for_ml: [/data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppmcvspt_13072019/pklskML79_2016_kl,
-                                 /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppmcvspt_13072019/pklskML79_2016_de,
-                                 /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppmcvspt_13072019/pklskML76_2017,
-                                 /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppmcvspt_13072019/pklskML77_2018] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppmcvspt_13072019/pklskMLallperiods
-      pkl_evtcounter_all: /data2/HeavyFlavour/LcpK0spp_1307201_allmult/LcpK0sppmcvspt_13072019/pklevtppallperiod
+      maxfiles : [-1] #list of periods
+      chunksizeunp : [1000] #list of periods
+      chunksizeskim: [1000] #list of periods
+      fracmerge : [1.0] #list of periods
+      seedmerge: [12] #list of periods
+      period: [LHC18pp] #list of periods
+      unmerged_tree_dir: [/data2/HeavyFlavour/pp_MC_2018/23-06-2019/56_20190622-1929/unmerged] # this is pPb MC, #list of periods
+      pkl: [/data2/HeavyFlavour/LcpK0spp_1307201/LcpK0sppmc_1307201/pkl56_2018] #list of periods
+      pkl_skimmed: [/data2/HeavyFlavour/LcpK0spp_1307201/LcpK0sppmcvspt_13072019/pklsk56_2018] #list of periods
+      pkl_skimmed_merge_for_ml: [/data2/HeavyFlavour/LcpK0spp_1307201/LcpK0sppmcvspt_13072019/pklskML56_2018] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data2/HeavyFlavour/LcpK0spp_1307201/LcpK0sppmcvspt_13072019/pklskMLallperiods
+      pkl_evtcounter_all: /data2/HeavyFlavour/LcpK0spp_1307201/LcpK0sppmcvspt_13072019/pklevtppallperiod
   ml:
     nbkg: 500000
     nsig: 500000
@@ -258,8 +246,8 @@ LcpK0spp:
     binmax: [4,8,12,24] #list of nbins
     mltype: BinaryClassification
     ncorescrossval: 10 
-    mlplot: /data2/ginnocen/productions/LcpK0spp_1307201_allmult/MLplots_LcpK0sppmcvspt_14072019 # to be removed
-    mlout: /data2/ginnocen/productions/LcpK0spp_1307201_allmult/MLmodels_LcpK0sppmcvspt_14072019 # to be removed
+    mlplot: /data2/ginnocen/productions/LcpK0spp_1307201/MLplots_LcpK0sppmcvspt_14072019 # to be removed
+    mlout: /data2/ginnocen/productions/LcpK0spp_1307201/MLmodels_LcpK0sppmcvspt_14072019 # to be removed
 
     opt:
       filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
@@ -278,33 +266,24 @@ LcpK0spp:
     sel_binmax2: [10,20,40,60,100,9999] #list of nbins
     var_binning2: n_tracklets
     data:
-      pkl_skimmed_dec: [/data2/ginnocen/productions/LcpK0spp_1307201_allmult/LcpK0sppdatavspt_applied_13072019/pklskdec68_2016, 
-                        /data2/ginnocen/productions/LcpK0spp_1307201_allmult/LcpK0sppdatavspt_applied_13072019/pklskdec69_2016,
-                        /data2/ginnocen/productions/LcpK0spp_1307201_allmult/LcpK0sppdatavspt_applied_13072019/pklskdec70_2017,
-                        /data2/ginnocen/productions/LcpK0spp_1307201_allmult/LcpK0sppdatavspt_applied_13072019/pklskdec71_2018] #list of periods
-      pkl_skimmed_decmerged: [/data2/ginnocen/productions/LcpK0spp_1307201_allmult/LcpK0sppdatavspt_applied_13072019/pklskdecmerged68_2016,
-                              /data2/ginnocen/productions/LcpK0spp_1307201_allmult/LcpK0sppdatavspt_applied_13072019/pklskdecmerged69_2016,
-                              /data2/ginnocen/productions/LcpK0spp_1307201_allmult/LcpK0sppdatavspt_applied_13072019/pklskdecmerged70_2017,
-                              /data2/ginnocen/productions/LcpK0spp_1307201_allmult/LcpK0sppdatavspt_applied_13072019/pklskdecmerged71_2018] #list of periods
-      results: [/data2/ginnocen/productions/LcpK0spp_1307201_allmult/resultsdata/results68_2016, 
-                /data2/ginnocen/productions/LcpK0spp_1307201_allmult/resultsdata/results69_2016,
-                /data2/ginnocen/productions/LcpK0spp_1307201_allmult/resultsdata/results70_2017,
-                /data2/ginnocen/productions/LcpK0spp_1307201_allmult/resultsdata/results71_2018] #list of periods
-      resultsallp: /data2/ginnocen/productions/LcpK0spp_1307201_allmult/resultsdata/resultstot 
+      pkl_skimmed_dec: [/data2/ginnocen/productions/LcpK0spp_1307201/LcpK0sppdatavspt_applied_13072019/pklskdec68_2016, 
+                        /data2/ginnocen/productions/LcpK0spp_1307201/LcpK0sppdatavspt_applied_13072019/pklskdec69_2016,
+                        /data2/ginnocen/productions/LcpK0spp_1307201/LcpK0sppdatavspt_applied_13072019/pklskdec70_2017,
+                        /data2/ginnocen/productions/LcpK0spp_1307201/LcpK0sppdatavspt_applied_13072019/pklskdec71_2018] #list of periods
+      pkl_skimmed_decmerged: [/data2/ginnocen/productions/LcpK0spp_1307201/LcpK0sppdatavspt_applied_13072019/pklskdecmerged68_2016,
+                              /data2/ginnocen/productions/LcpK0spp_1307201/LcpK0sppdatavspt_applied_13072019/pklskdecmerged69_2016,
+                              /data2/ginnocen/productions/LcpK0spp_1307201/LcpK0sppdatavspt_applied_13072019/pklskdecmerged70_2017,
+                              /data2/ginnocen/productions/LcpK0spp_1307201/LcpK0sppdatavspt_applied_13072019/pklskdecmerged71_2018] #list of periods
+      results: [/data2/ginnocen/productions/LcpK0spp_1307201/resultsdata/results68_2016, 
+                /data2/ginnocen/productions/LcpK0spp_1307201/resultsdata/results69_2016,
+                /data2/ginnocen/productions/LcpK0spp_1307201/resultsdata/results70_2017,
+                /data2/ginnocen/productions/LcpK0spp_1307201/resultsdata/results71_2018] #list of periods
+      resultsallp: /data2/ginnocen/productions/LcpK0spp_1307201/resultsdata/resultstot 
     mc:
-      pkl_skimmed_dec: [/data2/ginnocen/productions/LcpK0spp_1307201_allmult/LcpK0sppmcvspt_applied_13072019/pklskdec79_2016_kl,
-                        /data2/ginnocen/productions/LcpK0spp_1307201_allmult/LcpK0sppmcvspt_applied_13072019/pklskdec79_2016_de,
-                        /data2/ginnocen/productions/LcpK0spp_1307201_allmult/LcpK0sppmcvspt_applied_13072019/pklskdec76_2017,
-                        /data2/ginnocen/productions/LcpK0spp_1307201_allmult/LcpK0sppmcvspt_applied_13072019/pklskdec77_2018] #list of periods
-      pkl_skimmed_decmerged: [/data2/ginnocen/productions/LcpK0spp_1307201_allmult/LcpK0sppmcvspt_applied_13072019/pklskdecmerged79_2016_kl,
-                              /data2/ginnocen/productions/LcpK0spp_1307201_allmult/LcpK0sppmcvspt_applied_13072019/pklskdecmerged79_2016_de,
-                              /data2/ginnocen/productions/LcpK0spp_1307201_allmult/LcpK0sppmcvspt_applied_13072019/pklskdecmerged76_2017,
-                              /data2/ginnocen/productions/LcpK0spp_1307201_allmult/LcpK0sppmcvspt_applied_13072019/pklskdecmerged77_2018] #list of periods
-      results: [/data2/ginnocen/productions/LcpK0spp_1307201_allmult/resultsmc/results79_2016_kl,
-                /data2/ginnocen/productions/LcpK0spp_1307201_allmult/resultsmc/results79_2016_de,
-                /data2/ginnocen/productions/LcpK0spp_1307201_allmult/resultsmc/results76_2017,
-                /data2/ginnocen/productions/LcpK0spp_1307201_allmult/resultsmc/results77_2018] #list of periods
-      resultsallp: /data2/ginnocen/productions/LcpK0spp_1307201_allmult/resultsmc/resultstot
+      pkl_skimmed_dec: [/data2/ginnocen/productions/LcpK0spp_1307201/LcpK0sppmcvspt_applied_13072019/pklskdec56_2018] #list of periods
+      pkl_skimmed_decmerged: [/data2/ginnocen/productions/LcpK0spp_1307201/LcpK0sppmcvspt_applied_13072019/pklskdecmerged56_2018] #list of periods
+      results: [/data2/ginnocen/productions/LcpK0spp_1307201/resultsmc/results56_2018] #list of periods
+      resultsallp: /data2/ginnocen/productions/LcpK0spp_1307201/resultsmc/resultstot
     modelname: xgboost
     modelsperptbin: [xgboost_classifierLcpK0spp_pt_dfselection_pt_cand_2.0_4.0.sav,
                      xgboost_classifierLcpK0spp_pt_dfselection_pt_cand_4.0_8.0.sav,
