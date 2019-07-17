@@ -235,11 +235,17 @@ class Processer: # pylint: disable=too-many-instance-attributes
         pickle.dump(dfevt, openfile(self.l_evt[file_index], "wb"), protocol=4)
 
         fileevtroot = TFile.Open(self.l_evtorigroot[file_index], "recreate")
-        nselevt = len(dfevt.query("is_ev_rej==0"))
-        norm = getnormforselevt(dfevt)
         hNorm = TH1F("hEvForNorm", ";;Normalisation", 2, 0.5, 2.5)
         hNorm.GetXaxis().SetBinLabel(1, "normsalisation factor")
         hNorm.GetXaxis().SetBinLabel(2, "selected events")
+        nselevt = 0
+        norm = 0
+        # Handle silent weird behaviour of Pandas if dataframe is empty
+        # Otherwise, if it is empty it might just silently return from this frunction for some
+        # reason and everything what follows would just be skipped.
+        if not dfevt.empty:
+            nselevt = len(dfevt.query("is_ev_rej==0"))
+            norm = getnormforselevt(dfevt)
         hNorm.SetBinContent(1, norm)
         hNorm.SetBinContent(2, nselevt)
         hNorm.Write()
