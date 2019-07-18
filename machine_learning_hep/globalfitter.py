@@ -117,7 +117,7 @@ def fitter(histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihood,\
     fixedmean, fixedsigma, outputfolder, suffix):
     rawYield = -1
     rawYieldErr = -1
-    if "Lc" in case:
+    if "Lc" or "D0" in case:
         print("add my fitter")
         histo.GetXaxis().SetTitle("Invariant Mass L_{c}^{+}(GeV/c^{2})")
         histo.Rebin(rebin)
@@ -259,8 +259,12 @@ def fitter(histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihood,\
         errSigSq = rawYieldErr*rawYieldErr
         errBkgSq = errbackground*errbackground
         sigPlusBkg = background+rawYield
-        significance = rawYield/(math.sqrt(sigPlusBkg))
-        errsignificance = significance*(math.sqrt((errSigSq+errBkgSq)/(4.*sigPlusBkg*sigPlusBkg)\
+        significance = 0
+        errsignificance = 0
+        if sigPlusBkg > 0:
+            significance = rawYield/(math.sqrt(sigPlusBkg))
+            errsignificance = \
+            significance*(math.sqrt((errSigSq+errBkgSq)/(4.*sigPlusBkg*sigPlusBkg)\
             +(background/sigPlusBkg)*errSigSq/rawYield/rawYield))
         print(significance, errsignificance)
         #Draw

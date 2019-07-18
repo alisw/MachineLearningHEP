@@ -202,8 +202,8 @@ LcpKpipp:
       save_fit: True # save bkg fits with the various cuts on ML output
       raahp: [1,1,1,1]     # list of bins
   analysis:
-    sel_binmin2: [0,0,10,20,30,40] #list of nbins
-    sel_binmax2: [9999,10,20,30,40,60] #list of nbins
+    sel_binmin2: [0,0,20] #list of nbins
+    sel_binmax2: [9999,20,100] #list of nbins
     var_binning2: n_tracklets
     data:
       pkl_skimmed_dec: [/data2/HeavyFlavour/LcpKpipp_15072019/LcpKpipp_pt_2016_kl/datapklskdec,
@@ -214,11 +214,11 @@ LcpKpipp:
                               /data2/HeavyFlavour/LcpKpipp_15072019/LcpKpipp_pt_2016_de/datapklskdecmerged,
                               /data2/HeavyFlavour/LcpKpipp_15072019/LcpKpipp_pt_2017/datapklskdecmerged,
                               /data2/HeavyFlavour/LcpKpipp_15072019/LcpKpipp_pt_2018/datapklskdecmerged] #list of periods
-      results: [resultsdata/results2016_kl,
-                resultsdata/results2016_de,
-                resultsdata/results2017,
-                resultsdata/results2018]
-      resultsallp: resultsdata/resultstot 
+      results: [/data2/ginnocen/productions/LcpKpipp_15072019/resultsdata/results2016_kl,
+                /data2/ginnocen/productions/LcpKpipp_15072019/resultsdata/results2016_de,
+                /data2/ginnocen/productions/LcpKpipp_15072019/resultsdata/results2017,
+                /data2/ginnocen/productions/LcpKpipp_15072019/resultsdata/results2018]
+      resultsallp: /data2/ginnocen/productions/LcpKpipp_15072019/resultsdata/resultstot 
     mc:
       pkl_skimmed_dec: [/data2/HeavyFlavour/LcpKpipp_15072019/LcpKpipp_pt_2016_kl/mcpklskdec,
                         /data2/HeavyFlavour/LcpKpipp_15072019/LcpKpipp_pt_2016_de/mcpklskdec,
@@ -228,11 +228,11 @@ LcpKpipp:
                               /data2/HeavyFlavour/LcpKpipp_15072019/LcpKpipp_pt_2016_de/mcpklskdecmerged,
                               /data2/HeavyFlavour/LcpKpipp_15072019/LcpKpipp_pt_2017/mcpklskdecmerged,
                               /data2/HeavyFlavour/LcpKpipp_15072019/LcpKpipp_pt_2018/mcpklskdecmerged] #list of periods
-      results: [resultsmc/results2016_kl,
-                resultsmc/results2016_de,
-                resultsmc/results2017,
-                resultsmc/results2018]
-      resultsallp: resultsmc/resultstot
+      results: [/data2/ginnocen/productions/LcpKpipp_15072019/resultsmc/results2016_kl,
+                /data2/ginnocen/productions/LcpKpipp_15072019/resultsmc/results2016_de,
+                /data2/ginnocen/productions/LcpKpipp_15072019/resultsmc/results2017,
+                /data2/ginnocen/productions/LcpKpipp_15072019/resultsmc/results2018]
+      resultsallp: /data2/ginnocen/productions/LcpKpipp_15072019/resultsmc/resultstot
     modelname: xgboost
     modelsperptbin: [xgboost_classifierLcpKpipp_pt_dfselection_pt_cand_2.0_4.0.sav,
                      xgboost_classifierLcpKpipp_pt_dfselection_pt_cand_4.0_8.0.sav,

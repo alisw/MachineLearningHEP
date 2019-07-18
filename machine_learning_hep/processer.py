@@ -474,8 +474,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 h_presel_pr.SetBinError(bincounter + 1, math.sqrt(len(df_reco_presel_pr)))
                 h_sel_pr.SetBinContent(bincounter + 1, len(df_reco_sel_pr))
                 h_sel_pr.SetBinError(bincounter + 1, math.sqrt(len(df_reco_sel_pr)))
-                print("prompt efficiency tot ptbin=", bincounter, ", value = ",
-                      len(df_reco_sel_pr)/len(df_gen_sel_pr))
+                #print("prompt efficiency tot ptbin=", bincounter, ", value = ",
+                #      len(df_reco_sel_pr)/len(df_gen_sel_pr))
 
                 h_gen_fd.SetBinContent(bincounter + 1, len(df_gen_sel_fd))
                 h_gen_fd.SetBinError(bincounter + 1, math.sqrt(len(df_gen_sel_fd)))
@@ -483,8 +483,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 h_presel_fd.SetBinError(bincounter + 1, math.sqrt(len(df_reco_presel_fd)))
                 h_sel_fd.SetBinContent(bincounter + 1, len(df_reco_sel_fd))
                 h_sel_fd.SetBinError(bincounter + 1, math.sqrt(len(df_reco_sel_fd)))
-                print("fd efficiency tot ptbin=", bincounter, ", value = ",
-                      len(df_reco_sel_fd)/len(df_gen_sel_fd))
+                #print("fd efficiency tot ptbin=", bincounter, ", value = ",
+                #      len(df_reco_sel_fd)/len(df_gen_sel_fd))
                 bincounter = bincounter + 1
             out_file.cd()
             h_gen_pr.Write()
