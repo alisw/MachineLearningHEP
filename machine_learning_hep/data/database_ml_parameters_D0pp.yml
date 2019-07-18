@@ -163,8 +163,8 @@ D0pp:
       pkl_skimmed_merge_for_ml_all: /data2/HeavyFlavour/D0pp_15072019/D0ppmc_15072019/pklskMLallperiods
       pkl_evtcounter_all: /data2/HeavyFlavour/D0pp_15072019/D0ppmc_15072019/pklevtppallperiods
   ml:
-    nbkg: 50000
-    nsig: 50000
+    nbkg: 5000000
+    nsig: 5000000
     sampletagforsignal: 1
     sampletagforbkg: 0
     sel_sigml: ismcprompt == 1
@@ -184,7 +184,7 @@ D0pp:
       filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
       fonll_pred: 'max' # edge of the FONLL prediction
       FF: 0.6086 # fragmentation fraction
-      sigma_MB: 1  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
+      sigma_MB: 57.8e-3  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
       Taa: 1 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
       BR: 3.89e-2 # branching ratio of the decay Lc->pK0s * K0s->pi+pi-
       f_prompt: 0.9 # estimated fraction of prompt candidates
@@ -194,8 +194,8 @@ D0pp:
       raahp: [1,1,1,1] #list of nbins
   
   analysis:
-    sel_binmin2: [0] #list of nbins
-    sel_binmax2: [9999] #list of nbins
+    sel_binmin2: [0,0,20] #list of nbins
+    sel_binmax2: [9999,20,100] #list of nbins
     var_binning2: n_tracklets
     data:
       pkl_skimmed_dec: [/data2/ginnocen/productions/D0pp_15072019/D0ppdata_applied_15072019/pklskdec68_2016, 
@@ -206,11 +206,11 @@ D0pp:
                               /data2/ginnocen/productions/D0pp_15072019/D0ppdata_applied_15072019/datapklskdecmerged69_2016,
                               /data2/ginnocen/productions/D0pp_15072019/D0ppdata_applied_15072019/datapklskdecmerged70_2017,
                               /data2/ginnocen/productions/D0pp_15072019/D0ppdata_applied_15072019/datapklskdecmerged71_2018] #list of periods
-      results: [resultsdata/results68_2016, 
-                resultsdata/results69_2016,
-                resultsdata/results70_2017,
-                resultsdata/results71_2018] #list of periods
-      resultsallp: resultsdata/resultstot 
+      results: [/data2/ginnocen/productions/D0pp_15072019/resultsdataD0pp/results68_2016, 
+                /data2/ginnocen/productions/D0pp_15072019/resultsdataD0pp/results69_2016,
+                /data2/ginnocen/productions/D0pp_15072019/resultsdataD0pp/results70_2017,
+                /data2/ginnocen/productions/D0pp_15072019/resultsdataD0pp/results71_2018] #list of periods
+      resultsallp: /data2/ginnocen/productions/D0pp_15072019/resultsdataD0pp/resultstot 
     mc:
       pkl_skimmed_dec: [/data2/ginnocen/productions/D0pp_15072019/D0ppmc_applied_15072019/pklskdec72_2016, 
                         /data2/ginnocen/productions/D0pp_15072019/D0ppmc_applied_15072019/pklskdec75_2016,
@@ -220,11 +220,11 @@ D0pp:
                               /data2/ginnocen/productions/D0pp_15072019/D0ppmc_applied_15072019/datapklskdecmerged75_2016,
                               /data2/ginnocen/productions/D0pp_15072019/D0ppmc_applied_15072019/datapklskdecmerged76_2017,
                               /data2/ginnocen/productions/D0pp_15072019/D0ppmc_applied_15072019/datapklskdecmerged77_2018] #list of periods
-      results: [resultsmc/results72_2016, 
-                resultsmc/results75_2016,
-                resultsmc/results76_2017,
-                resultsmc/results77_2018] #list of periods
-      resultsallp: resultsmc/resultstot
+      results: [/data2/ginnocen/productions/D0pp_15072019/resultsmcD0pp/results72_2016, 
+                /data2/ginnocen/productions/D0pp_15072019/resultsmcD0pp/results75_2016,
+                /data2/ginnocen/productions/D0pp_15072019/resultsmcD0pp/results76_2017,
+                /data2/ginnocen/productions/D0pp_15072019/resultsmcD0pp/results77_2018] #list of periods
+      resultsallp: /data2/ginnocen/productions/D0pp_15072019/resultsmcD0pp/resultstot
     modelname: xgboost
     modelsperptbin: [xgboost_classifierD0pp_dfselection_pt_cand_2.0_4.0.sav,
                      xgboost_classifierD0pp_dfselection_pt_cand_4.0_8.0.sav,
@@ -234,7 +234,7 @@ D0pp:
       data: [0.3,0.3,0.3,0.3] #list of nbins
       mc: [0.3,0.3,0.3,0.3] #list of nbins
 
-    probcutoptimal: [0.4,0.3,0.3,0.3] #list of nbins
+    probcutoptimal: [0.3,0.3,0.3,0.3] #list of nbins
 
     sel_an_binmin: [2,3,4,5,6,8,12]
     sel_an_binmax: [3,4,5,6,8,12,24]
@@ -243,20 +243,20 @@ D0pp:
     mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
     bin_width: 0.001 # bin width of the invariant mass histogram
     presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
-    usefit: false
-    sgnfunc: null
-    bkgfunc: null
-    masspeak: null
-    massmin: null
-    massmax: null
-    rebin: null
-    includesecpeak: null
-    masssecpeak: null
-    FixedMean: null
-    SetFixGaussianSigma: null
-    SetInitialGaussianMean: null
-    dolikelihood: null
-    sigmaarray: null
-    FixedSigma: null  
+    usefit: true
+    sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
+    bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
+    masspeak: 1.89
+    massmin: [1.70,1.70,1.70,1.70,1.70,1.70,1.70]
+    massmax: [2.05,2.05,2.05,2.05,2.05,2.05,2.05]
+    rebin: [6,6,6,6,6,6,6]
+    includesecpeak: [0,0,0,0,0,0,0]
+    masssecpeak: 1.864
+    FixedMean: False
+    SetFixGaussianSigma: true
+    SetInitialGaussianMean: true
+    dolikelihood: true
+    sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01]
+    FixedSigma: true 
     fitcase: D0
     nevents: 1700000000.

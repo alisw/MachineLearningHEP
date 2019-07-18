@@ -77,6 +77,7 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     dohistomassdata = data_config["analysis"]["data"]["histomass"]
     doefficiency = data_config["analysis"]["mc"]["efficiency"]
     dofit = data_config["analysis"]["dofit"]
+    doeff = data_config["analysis"]["doeff"]
     docross = data_config["analysis"]["docross"]
 
     dirpklmc = data_param[case]["multi"]["mc"]["pkl"]
@@ -110,7 +111,7 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
 
     mymultiprocessmc = MultiProcesser(data_param[case], run_param, "mc")
     mymultiprocessdata = MultiProcesser(data_param[case], run_param, "data")
-    myan = Analyzer(data_param[case])
+    myan = Analyzer(data_param[case], case)
 
     #creating folder if not present
     counter = 0
@@ -294,6 +295,8 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
         mymultiprocessmc.multi_efficiency()
     if dofit is True:
         myan.fitter()
+    if doeff is True:
+        myan.efficiency()
     if docross is True:
         myan.plotter()
 

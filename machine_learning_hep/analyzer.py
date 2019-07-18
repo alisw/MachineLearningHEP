@@ -25,10 +25,11 @@ from machine_learning_hep.globalfitter import fitter
 # pylint: disable=too-few-public-methods, too-many-instance-attributes
 class Analyzer:
     species = "analyzer"
-    def __init__(self, datap):
+    def __init__(self, datap, case):
 
 
         #namefiles pkl
+        self.case = case
         self.v_var_binning = datap["var_binning"]
         self.lpt_finbinmin = datap["analysis"]["sel_an_binmin"]
         self.lpt_finbinmax = datap["analysis"]["sel_an_binmax"]
@@ -84,7 +85,7 @@ class Analyzer:
 
     def fitter(self):
         lfile = TFile.Open(self.n_filemass)
-        fileout = TFile.Open(self.n_filecross, "recreate")
+        fileout = TFile.Open("yields%s.root" % self.case, "recreate")
         for imult in range(self.p_nbin2):
             for ipt in range(self.p_nptbins):
                 bin_id = self.bin_matching[ipt]
@@ -105,29 +106,21 @@ class Analyzer:
                 self.lmult_yieldshisto[imult].SetBinError(ipt + 1, rawYieldErr)
             fileout.cd()
             self.lmult_yieldshisto[imult].Write()
-        print("Fitter done")
 
-    def plotter(self):
         cYields = TCanvas('cYields', 'The Fit Canvas')
         cYields.SetLogy()
-        lfile = TFile.Open(self.n_filecross)
-        histoyieldlist = []
-        histocrosslist = []
-        histoefflist = []
+        lfile = TFile.Open("yields%s.root" % self.case)
         for imult in range(self.p_nbin2):
-            histoyield = lfile.Get("hyields%d" % (imult))
-            histoyield.SetMinimum(1)
-            histoyield.SetMaximum(1e14)
-            histoyield.SetLineColor(imult+1)
-            histoyield.Draw("same")
-            histoyieldlist.append(histoyield)
-            histocrosslist.append(histoyield)
-        cYields.SaveAs("Yields.pdf")
+            self.lmult_yieldshisto[imult].SetMinimum(1)
+            self.lmult_yieldshisto[imult].SetMaximum(1e14)
+            self.lmult_yieldshisto[imult].SetLineColor(imult+1)
+            self.lmult_yieldshisto[imult].Draw("same")
+        cYields.SaveAs("Yields%s.pdf" % self.case)
 
-        cEff = TCanvas('cEff', 'The Fit Canvas')
-        cEff.SetLogy()
+    def efficiency(self):
         lfileeff = TFile.Open(self.n_fileff)
-
+        fileouteff = TFile.Open("efficiencies%s.root" % self.case, "recreate")
+        cEff = TCanvas('cEff', 'The Fit Canvas')
         for imult in range(self.p_nbin2):
             stringbin2 = "_%s_%d_%d" % (self.v_var2_binning,
                                         self.lvar2_binmin[imult],
@@ -139,21 +132,30 @@ class Analyzer:
 
             h_sel_pr.Divide(h_sel_pr, h_gen_pr, 1.0, 1.0, "B")
             h_sel_fd.Divide(h_sel_fd, h_gen_fd, 1.0, 1.0, "B")
-            histoefflist.append(h_sel_pr)
             h_sel_pr.SetLineColor(imult+1)
             h_sel_pr.Draw("same")
-        cEff.SaveAs("Eff.pdf")
+            fileouteff.cd()
+            h_sel_pr.SetName("eff_mult%d" % imult)
+            h_sel_pr.Write()
+        cEff.SaveAs("Eff%s.pdf" % self.case)
 
-        histoefflist[0].Draw()
+    def plotter(self):
+
+        fileouteff = TFile.Open("efficiencies%s.root" % self.case)
+        fileoutyield = TFile.Open("yields%s.root" % self.case)
+        fileoutcross = TFile.Open("finalcross%s.root" % self.case, "recreate")
         cCross = TCanvas('cCross', 'The Fit Canvas')
         cCross.SetLogy()
-        hcross = histocrosslist[0]
-        hden = histoefflist[0]
-        hcross.Divide(hden)
-        hcross.SetMinimum(1)
-        hcross.SetMaximum(1e14)
-        hcross.SetLineColor(imult+1)
-        norm = 2 * self.p_br * self.p_nevents / (self.p_sigmamb * 1e12)
-        hcross.Scale(1./norm)
-        hcross.Draw("same")
-        cCross.SaveAs("Cross.pdf")
+        for imult in range(self.p_nbin2):
+            heff = fileouteff.Get("eff_mult%d" % (imult))
+            hcross = fileoutyield.Get("hyields%d" % (imult))
+            hcross.Divide(heff)
+            hcross.SetLineColor(imult+1)
+            norm = 2 * self.p_br * self.p_nevents / (self.p_sigmamb * 1e12)
+            hcross.Scale(1./norm)
+            fileoutcross.cd()
+            hcross.SetName("hcross%d" % imult)
+            hcross.GetYaxis().SetRangeUser(1e4, 1e14)
+            hcross.Draw("same")
+            hcross.Write()
+        cCross.SaveAs("Cross%s.pdf" % self.case)
