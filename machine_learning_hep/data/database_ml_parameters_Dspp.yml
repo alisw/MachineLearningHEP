@@ -238,29 +238,29 @@ Dspp:
       data: [0.2,0.2,0.2,0.2] #list of nbins
       mc: [0.2,0.2,0.2,0.2] #list of nbins
 
-    probcutoptimal: [0.3,0.3,0.3,0.3] #list of nbins
+    probcutoptimal: [0.4,0.4,0.3,0.3] #list of nbins
     
     sel_an_binmin: [2,3,4,5,6,8,12]
     sel_an_binmax: [3,4,5,6,8,12,24]
     binning_matching: [0,0,1,1,1,2,3]  
     
-    mass_fit_lim: [1.75, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
+    mass_fit_lim: [1.90, 2.05] # region for the fit of the invariant mass distribution [GeV/c^2]
     bin_width: 0.001 # bin width of the invariant mass histogram
     presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
-    usefit: false
-    sgnfunc: null
-    bkgfunc: null
-    masspeak: null
-    massmin: null
-    massmax: null
-    rebin: null
-    includesecpeak: null
-    masssecpeak: null
-    FixedMean: null
-    SetFixGaussianSigma: null
-    SetInitialGaussianMean: null
-    dolikelihood: null
-    sigmaarray: null
-    FixedSigma: null  
+    usefit: true
+    sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
+    bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
+    masspeak: 1.969
+    massmin: [1.90,1.90,1.90,1.90,1.90,1.90,1.90]
+    massmax: [2.05,2.05,2.05,2.05,2.05,2.05,2.05]
+    rebin: [6,6,6,6,6,6,6]
+    includesecpeak: [0,0,0,0,0,0,0]
+    masssecpeak: 1.969
+    FixedMean: True
+    SetFixGaussianSigma: true
+    SetInitialGaussianMean: true
+    dolikelihood: true
+    sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01]
+    FixedSigma: true 
     fitcase: Ds
     nevents: 1700000000.
