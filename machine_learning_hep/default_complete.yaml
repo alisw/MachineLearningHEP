@@ -53,4 +53,5 @@ analysis:
     histomass: false
     efficiency: false
   dofit: false
+  doeff: false
   docross: true
