@@ -41,13 +41,14 @@ BinaryClassification:
   xgboost:
     xgboost_classifier:
       activate: True
-      min_child_weight: 3
-      max_depth: 3 #9
+      min_child_weight: 2
+      max_depth: 4 #9
       gamma: 0
       subsample: 0.8 #0.9
       colsample_bytree: 0.8 #0.9
-      learning_rate: 0.1
-      n_estimators: 850 #100
+      learning_rate: 0.01
+      n_estimators: 3112 #100
+      reg_alpha: 0.1
 
 Regression:
 

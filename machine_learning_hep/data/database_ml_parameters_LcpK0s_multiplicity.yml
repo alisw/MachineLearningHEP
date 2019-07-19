@@ -108,8 +108,8 @@ LcpK0s_multiplicity:
       pkl_skimmed_merge_for_ml_all: /data2/haris/LcpK0s_multiplicity/mcpklskMLallperiods
       pkl_evtcounter_all: /data2/haris/LcpK0s_multiplicity/mcpklevtHC18ppallperiods
   ml:
-    nbkg: 1000
-    nsig: 1000
+    nbkg: 50000
+    nsig: 50000
     sampletagforsignal: 1
     sampletagforbkg: 0
     sel_sigml: ismcprompt == 1
