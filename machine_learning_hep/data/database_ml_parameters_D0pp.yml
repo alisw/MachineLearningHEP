@@ -259,4 +259,7 @@ D0pp:
     sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01]
     FixedSigma: true 
     fitcase: D0
+    latexnamemeson: "D^{0}"
+    latexbin2var: "n_{trkl}"
     nevents: 1700000000.
+    dodoublecross: false

@@ -67,22 +67,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         #parameter names
         self.p_maxprocess = p_maxprocess
         self.indexsample = None
-        #parameter fitter
-        self.p_sgnfunc = datap["analysis"]["sgnfunc"]
-        self.p_bkgfunc = datap["analysis"]["bkgfunc"]
-        self.p_masspeak = datap["analysis"]["masspeak"]
-        self.p_massmin = datap["analysis"]["massmin"]
-        self.p_massmax = datap["analysis"]["massmax"]
-        self.p_rebin = datap["analysis"]["rebin"]
-        self.p_includesecpeak = datap["analysis"]["includesecpeak"]
-        self.p_masssecpeak = datap["analysis"]["masssecpeak"]
-        self.p_fixedmean = datap["analysis"]["FixedMean"]
-        self.p_fixingaussigma = datap["analysis"]["SetFixGaussianSigma"]
-        self.p_fixingausmean = datap["analysis"]["SetInitialGaussianMean"]
-        self.p_dolike = datap["analysis"]["dolikelihood"]
-        self.p_sigmaarray = datap["analysis"]["sigmaarray"]
-        self.p_fixedsigma = datap["analysis"]["FixedSigma"]
-        self.p_casefit = datap["analysis"]["fitcase"]
         self.p_dofullevtmerge = datap["dofullevtmerge"]
 
         #namefile root
@@ -153,7 +137,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.f_totevtorig = os.path.join(self.d_pkl, self.n_evtorig)
         self.f_totevtorigroot = os.path.join(self.d_pkl, self.n_evtorigroot)
 
-        self.usefit = datap["analysis"]["usefit"]
         self.p_modelname = datap["analysis"]["modelname"]
         self.lpt_anbinmin = datap["sel_skim_binmin"]
         self.lpt_anbinmax = datap["sel_skim_binmax"]
@@ -399,7 +382,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             df = seldf_singlevar(df, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
             for ibin2 in range(len(self.lvar2_binmin)):
-                suffix = "%s%d_%d_%.2f%s_%d_%d" % \
+                suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
@@ -414,7 +397,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
     def process_efficiency(self):
         out_file = TFile.Open(self.n_fileeff, "recreate")
         for ibin2 in range(len(self.lvar2_binmin)):
-            stringbin2 = "_%s_%d_%d" % (self.v_var2_binning,
+            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning,
                                         self.lvar2_binmin[ibin2],
                                         self.lvar2_binmax[ibin2])
             print(stringbin2)

@@ -267,4 +267,7 @@ LcpKpipp:
     sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01]
     FixedSigma: true  
     fitcase: Lc
+    latexnamemeson: "L_{c}^{pKpi}"
+    latexbin2var: "n_{trkl}"
     nevents: 1700000000.
+    dodoublecross: false
