@@ -397,8 +397,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
     def process_efficiency(self):
         out_file = TFile.Open(self.n_fileeff, "recreate")
         for ibin2 in range(len(self.lvar2_binmin)):
-            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning,
-                                        self.lvar2_binmin[ibin2],
+            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
+                                        self.lvar2_binmin[ibin2], \
                                         self.lvar2_binmax[ibin2])
             print(stringbin2)
             n_bins = len(self.lpt_finbinmin)

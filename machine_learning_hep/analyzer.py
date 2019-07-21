@@ -130,9 +130,9 @@ class Analyzer:
         fileouteff = TFile.Open("efficiencies%s.root" % self.case, "recreate")
         cEff = TCanvas('cEff', 'The Fit Canvas')
         for imult in range(self.p_nbin2):
-            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning,
-                                        self.lvar2_binmin[imult],
-                                        self.lvar2_binmax[imult])
+            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
+                                            self.lvar2_binmin[imult], \
+                                            self.lvar2_binmax[imult])
             h_gen_pr = lfileeff.Get("h_gen_pr" + stringbin2)
             h_sel_pr = lfileeff.Get("h_sel_pr" + stringbin2)
             h_gen_fd = lfileeff.Get("h_gen_fd" + stringbin2)
