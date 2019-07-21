@@ -1,30 +1,30 @@
-case: LcpK0spp_pt
+case: LcpK0s_test
 download:
   alice:
     activate: false
 conversion:
   mc: 
-    activate: false
+    activate: true
   data:
-    activate: false
+    activate: true
 skimming: 
   mc:
-    activate: false
+    activate: true
   data:
-    activate: false
+    activate: true
 merging: 
   mc:
-    activate: false
+    activate: true
   data:
-    activate: false
+    activate: true
 mergingperiods: 
   mc:
-    activate: false
+    activate: true
   data:
-    activate: false
+    activate: true
 
 ml_study:   
-  activate: false
+  activate: true
   doscancuts: false
   applytodatamc: false
   doroc: false
@@ -42,16 +42,16 @@ ml_study:
 
 analysis:
   data:
-    doapply: false
-    domergeapply: false
-    domergeapplyperiods: false
-    histomass: false
+    doapply: true
+    domergeapply: true
+    domergeapplyperiods: true
+    histomass: true
   mc:
-    doapply: false
-    domergeapply: false
-    domergeapplyperiods: false
-    histomass: false
-    efficiency: false
-  dofit: false
-  doeff: false
+    doapply: true
+    domergeapply: true
+    domergeapplyperiods: true
+    histomass: true
+    efficiency: true
+  dofit: true
+  doeff: true
   docross: true
