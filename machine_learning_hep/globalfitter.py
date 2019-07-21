@@ -250,7 +250,9 @@ def fitter(histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihood,\
             sum2 += histo.GetBinError(i_right)*histo.GetBinError(i_right)
         intBerr = math.sqrt(sum2)
         background = back_refit.Integral(minMass_fit, maxMass_fit)/Double(histo.GetBinWidth(1))
-        errbackground = intBerr/intB*background
+        errbackground = 0
+        if intB > 0:
+            errbackground = intBerr/intB*background
         print(background, errbackground)
         rawYield = tot_fit.GetParameter(nParsBkg)/Double(histo.GetBinWidth(1))
         rawYieldErr = tot_fit.GetParError(nParsBkg)/Double(histo.GetBinWidth(1))

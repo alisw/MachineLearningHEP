@@ -341,4 +341,7 @@ LcpK0spp:
     sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01]
     FixedSigma: true  
     fitcase: Lc
+    latexnamemeson: "L_{c}^{K0s}"
+    latexbin2var: "n_{trkl}"
     nevents: 1700000000.
+    dodoublecross: false

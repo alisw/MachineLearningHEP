@@ -20,9 +20,12 @@ import os
 from array import *
 # pylint: disable=import-error, no-name-in-module, unused-import
 from ROOT import TFile, TH1F, TCanvas
+from ROOT import gStyle, TLegend
+from ROOT import gROOT
+from ROOT import TStyle
 from machine_learning_hep.globalfitter import fitter
 
-# pylint: disable=too-few-public-methods, too-many-instance-attributes
+# pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements
 class Analyzer:
     species = "analyzer"
     def __init__(self, datap, case):
@@ -72,10 +75,15 @@ class Analyzer:
         self.p_sigmaarray = datap["analysis"]["sigmaarray"]
         self.p_fixedsigma = datap["analysis"]["FixedSigma"]
         self.p_casefit = datap["analysis"]["fitcase"]
+        self.p_latexnmeson = datap["analysis"]["latexnamemeson"]
+        self.p_latexbin2var = datap["analysis"]["latexbin2var"]
         self.p_dofullevtmerge = datap["dofullevtmerge"]
-
+        self.p_dodoublecross = datap["analysis"]["dodoublecross"]
         self.ptranges = self.lpt_finbinmin.copy()
         self.ptranges.append(self.lpt_finbinmax[-1])
+        self.var2ranges = self.lvar2_binmin.copy()
+        self.var2ranges.append(self.lvar2_binmax[-1])
+        print(self.var2ranges)
         self.lmult_yieldshisto = [TH1F("hyields%d" % (imult), "", \
             self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
 
@@ -89,7 +97,7 @@ class Analyzer:
         for imult in range(self.p_nbin2):
             for ipt in range(self.p_nptbins):
                 bin_id = self.bin_matching[ipt]
-                suffix = "%s%d_%d_%.2f%s_%d_%d" % \
+                suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
@@ -122,9 +130,9 @@ class Analyzer:
         fileouteff = TFile.Open("efficiencies%s.root" % self.case, "recreate")
         cEff = TCanvas('cEff', 'The Fit Canvas')
         for imult in range(self.p_nbin2):
-            stringbin2 = "_%s_%d_%d" % (self.v_var2_binning,
-                                        self.lvar2_binmin[imult],
-                                        self.lvar2_binmax[imult])
+            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
+                                            self.lvar2_binmin[imult], \
+                                            self.lvar2_binmax[imult])
             h_gen_pr = lfileeff.Get("h_gen_pr" + stringbin2)
             h_sel_pr = lfileeff.Get("h_sel_pr" + stringbin2)
             h_gen_fd = lfileeff.Get("h_gen_fd" + stringbin2)
@@ -141,12 +149,35 @@ class Analyzer:
 
     def plotter(self):
 
+        gROOT.SetStyle("Plain")
+        gStyle.SetOptStat(0)
+        gStyle.SetOptStat(0000)
+        gStyle.SetPalette(0)
+        gStyle.SetCanvasColor(0)
+        gStyle.SetFrameFillColor(0)
+        gStyle.SetOptTitle(0)
+
         fileouteff = TFile.Open("efficiencies%s.root" % self.case)
         fileoutyield = TFile.Open("yields%s.root" % self.case)
         fileoutcross = TFile.Open("finalcross%s.root" % self.case, "recreate")
-        cCross = TCanvas('cCross', 'The Fit Canvas')
-        cCross.SetLogy()
+
+        cCrossvsvar1 = TCanvas('cCrossvsvar1', 'The Fit Canvas')
+        cCrossvsvar1.SetCanvasSize(1900, 1500)
+        cCrossvsvar1.SetWindowSize(500, 500)
+        cCrossvsvar1.SetLogy()
+
+        legvsvar1 = TLegend(.5, .65, .7, .85)
+        legvsvar1.SetBorderSize(0)
+        legvsvar1.SetFillColor(0)
+        legvsvar1.SetFillStyle(0)
+        legvsvar1.SetTextFont(42)
+        legvsvar1.SetTextSize(0.035)
+
+        listvalues = []
+        listvalueserr = []
+
         for imult in range(self.p_nbin2):
+            listvalpt = []
             heff = fileouteff.Get("eff_mult%d" % (imult))
             hcross = fileoutyield.Get("hyields%d" % (imult))
             hcross.Divide(heff)
@@ -154,8 +185,55 @@ class Analyzer:
             norm = 2 * self.p_br * self.p_nevents / (self.p_sigmamb * 1e12)
             hcross.Scale(1./norm)
             fileoutcross.cd()
+            hcross.GetXaxis().SetTitle("p_{T} %s (GeV)" % self.p_latexnmeson)
+            hcross.GetYaxis().SetTitle("d#sigma/dp_{T} (%s)" % self.p_latexnmeson)
             hcross.SetName("hcross%d" % imult)
-            hcross.GetYaxis().SetRangeUser(1e4, 1e14)
+            hcross.GetYaxis().SetRangeUser(1e4, 1e10)
+            legvsvar1endstring = "%.1f < %s < %.1f GeV/c" % \
+                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
+            legvsvar1.AddEntry(hcross, legvsvar1endstring, "LEP")
             hcross.Draw("same")
             hcross.Write()
-        cCross.SaveAs("Cross%s.pdf" % self.case)
+            listvalpt = [hcross.GetBinContent(ipt+1) for ipt in range(self.p_nptbins)]
+            listvalues.append(listvalpt)
+            listvalerrpt = [hcross.GetBinError(ipt+1) for ipt in range(self.p_nptbins)]
+            listvalueserr.append(listvalerrpt)
+        legvsvar1.Draw()
+        cCrossvsvar1.SaveAs("Cross%sVs%s.pdf" % (self.case, self.v_var_binning))
+
+        cCrossvsvar2 = TCanvas('cCrossvsvar2', 'The Fit Canvas')
+        cCrossvsvar2.SetCanvasSize(1900, 1500)
+        cCrossvsvar2.SetWindowSize(500, 500)
+        cCrossvsvar2.SetLogy()
+
+        legvsvar2 = TLegend(.5, .65, .7, .85)
+        legvsvar2.SetBorderSize(0)
+        legvsvar2.SetFillColor(0)
+        legvsvar2.SetFillStyle(0)
+        legvsvar2.SetTextFont(42)
+        legvsvar2.SetTextSize(0.035)
+        hcrossvsvar2 = [TH1F("hcrossvsvar2" + "pt%d" % ipt, "", \
+                        self.p_nbin2, array("d", self.var2ranges)) \
+                        for ipt in range(self.p_nptbins)]
+
+        for ipt in range(self.p_nptbins):
+            print("pt", ipt)
+            for imult in range(self.p_nbin2):
+                hcrossvsvar2[ipt].SetLineColor(ipt+1)
+                hcrossvsvar2[ipt].GetXaxis().SetTitle("%s" % self.p_latexbin2var)
+                hcrossvsvar2[ipt].GetYaxis().SetTitle(self.p_latexnmeson)
+                binmulrange = self.var2ranges[imult+1]-self.var2ranges[imult]
+                if self.p_dodoublecross is True:
+                    hcrossvsvar2[ipt].SetBinContent(imult+1, listvalues[imult][ipt]/binmulrange)
+                    hcrossvsvar2[ipt].SetBinError(imult+1, listvalueserr[imult][ipt]/binmulrange)
+                else:
+                    hcrossvsvar2[ipt].SetBinContent(imult+1, listvalues[imult][ipt])
+                    hcrossvsvar2[ipt].SetBinError(imult+1, listvalueserr[imult][ipt])
+
+                hcrossvsvar2[ipt].GetYaxis().SetRangeUser(1e4, 1e10)
+            legvsvar2endstring = "%.1f < %s < %.1f GeV/c" % \
+                    (self.lpt_finbinmin[ipt], "p_{T}", self.lpt_finbinmax[ipt])
+            hcrossvsvar2[ipt].Draw("same")
+            legvsvar2.AddEntry(hcrossvsvar2[ipt], legvsvar2endstring, "LEP")
+        legvsvar2.Draw()
+        cCrossvsvar2.SaveAs("Cross%sVs%s.pdf" % (self.case, self.v_var2_binning))
