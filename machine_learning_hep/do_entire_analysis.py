@@ -27,9 +27,35 @@ from multiprocesser import MultiProcesser  # pylint: disable=import-error
 #from machine_learning_hep.efficiencyan import analysis_eff
 from  machine_learning_hep.utilities import checkmakedirlist, checkmakedir
 from  machine_learning_hep.utilities import checkdirlist, checkdir
+from  machine_learning_hep.logger import configure_logger, get_logger
 from optimiser import Optimiser
 from analyzer import Analyzer
+
+try:
+# FIXME(https://github.com/abseil/abseil-py/issues/99) # pylint: disable=fixme
+# FIXME(https://github.com/abseil/abseil-py/issues/102) #pylint: disable=fixme
+# Unfortunately, many libraries that include absl (including Tensorflow)
+# will get bitten by double-logging due to absl's incorrect use of
+# the python logging library:
+#   2019-07-19 23:47:38,829 my_logger   779 : test
+#   I0719 23:47:38.829330 139904865122112 foo.py:63] test
+#   2019-07-19 23:47:38,829 my_logger   779 : test
+#   I0719 23:47:38.829469 139904865122112 foo.py:63] test
+# The code below fixes this double-logging.  FMI see:
+#   https://github.com/tensorflow/tensorflow/issues/26691#issuecomment-500369493
+    import logging
+    import absl.logging
+    logging.root.removeHandler(absl.logging._absl_handler) # pylint: disable=protected-access
+    absl.logging._warn_preinit_stderr = False # pylint: disable=protected-access
+except Exception as e: # pylint: disable=broad-except
+    print("##############################")
+    print("Failed to fix absl logging bug", e)
+    print("##############################")
+
 def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+
+    configure_logger(True)
+    get_logger().info("Start full analysis chain")
 
     with open("default_complete.yaml", 'r') as run_config:
         data_config = yaml.load(run_config, Loader=yaml.FullLoader)
