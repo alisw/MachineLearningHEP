@@ -111,6 +111,25 @@ elif [ "$dataset" == "LHC2018_pp" ] || [  "$dataset" == "LHC2018_AOD208_bdefghij
   isMC=0
   ispp=1
   datasetwithchilds=1
+elif [ "$dataset" == "LHC2016_kl_pp" ] || [  "$dataset" == "LHC2016_AOD208_kl_13TeV_pp" ]; then
+  #Data: pp 13 TeV 2016 kl
+  inputpaths=(/alice/data/2016/LHC16k/000257630/pass2/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2016/LHC16l/000259164/pass2/AOD208/PWGHF/HF_TreeCreator)
+  isMC=0
+  ispp=1
+  datasetwithchilds=1
+elif [ "$dataset" == "LHC2016_de_pp" ] || [  "$dataset" == "LHC2016_AOD208_deghjop_13TeV_pp" ]; then
+  #Data: pp 13 TeV 2016 de...
+  inputpaths=(/alice/data/2016/LHC16d/000252371/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2016/LHC16e/000253563/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2016/LHC16g/000254331/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2016/LHC16h/000255440/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2016/LHC16j/000256307/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2016/LHC16o/000262849/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2016/LHC16p/000264109/pass1/PWGHF/HF_TreeCreator)
+  isMC=0
+  ispp=1
+  datasetwithchilds=1
 elif [ "$dataset" == "LHC2017_pp" ] || [  "$dataset" == "LHC2017_AOD208_cefhijklmor_13TeV_pp" ]; then
   #Data: pp 13 TeV 2017
   inputpaths=(/alice/data/2017/LHC17e/000270824/pass1/AOD208/PWGHF/HF_TreeCreator
