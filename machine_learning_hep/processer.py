@@ -203,8 +203,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         self.lpt_finbinmin = datap["analysis"]["sel_an_binmin"]
         self.lpt_finbinmax = datap["analysis"]["sel_an_binmax"]
-        self.bin_matching = datap["analysis"]["binning_matching"]
         self.p_nptfinbins = len(self.lpt_finbinmin)
+        self.bin_matching = datap["analysis"]["binning_matching"]
+        self.sel_final_fineptbins = datap["analysis"]["sel_final_fineptbins"]
 
     def unpack(self, file_index):
         treeevtorig = uproot.open(self.l_root[file_index])[self.n_treeevt]
@@ -379,6 +380,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.lpt_recodecmerged[bin_id], "rb"))
             df = df.query(self.l_selml[bin_id])
+            if self.sel_final_fineptbins is not None:
+                df = df.query(self.sel_final_fineptbins[ipt])
             df = seldf_singlevar(df, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
             for ibin2 in range(len(self.lvar2_binmin)):
@@ -434,6 +437,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
             for ipt in range(self.p_nptfinbins):
                 bin_id = self.bin_matching[ipt]
                 df_mc_reco = pickle.load(openfile(self.lpt_recodecmerged[bin_id], "rb"))
+                if self.sel_final_fineptbins is not None:
+                    df_mc_reco = df_mc_reco.query(self.sel_final_fineptbins[ipt])
                 df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[bin_id], "rb"))
                 df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
                 df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var_binning, \

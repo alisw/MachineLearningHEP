@@ -243,6 +243,13 @@ Dspp:
     sel_an_binmin: [2,3,4,5,6,8,12]
     sel_an_binmax: [3,4,5,6,8,12,24]
     binning_matching: [0,0,1,1,1,2,3]  
+    sel_final_fineptbins: ["is_ev_rej==0",
+                           "is_ev_rej==0", 
+                           "is_ev_rej==0",
+                           "is_ev_rej==0",
+                           "is_ev_rej==0",
+                           "is_ev_rej==0",
+                           "is_ev_rej==0"]  
     
     mass_fit_lim: [1.90, 2.05] # region for the fit of the invariant mass distribution [GeV/c^2]
     bin_width: 0.001 # bin width of the invariant mass histogram
