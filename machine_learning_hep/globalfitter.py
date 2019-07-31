@@ -129,8 +129,8 @@ def fitter(histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihood,\
         if setinitialgaussianmean is True:
             mean = masspeak
         if setfixgaussiansigma is True:
-            sigmaSgn = sigma
             fixedsigma == 1
+        sigmaSgn = sigma
 
         print("fit background (just side bands)")
         fitsidebands = True
