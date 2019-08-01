@@ -86,11 +86,19 @@ setup(
   # installed, specify them here. Note that you need to specify those files in
   # MANIFEST.in as well, since Python tools behave inconsistently
   include_package_data=True,
-  package_data={ "machine_learning_hep.data": [ "database_ml_parameters.yml",
+  package_data={ "machine_learning_hep": [ "default_complete.yaml" ],
+                 "machine_learning_hep.data": [ "database_ml_parameters_D0pp.yml",
+                                                "database_ml_parameters_D0pp_multiplicity.yml",
+                                                "database_ml_parameters_Dspp_mult.yml",
+                                                "database_ml_parameters_Dspp_pt.yml",
+                                                "database_ml_parameters_DstoKKpiPbPbCen3050.yml",
+                                                "database_ml_parameters_LcpK0s_test.yml",
+                                                "database_ml_parameters_LcpK0spp.yml",
+                                                "database_ml_parameters_LcpK0spp_oldmc.yml",
+                                                "database_ml_parameters_LcpKpipp.yml",
                                                 "database_ml_gridsearch.yml",
-                                                "database_ml_analysis.yml",
-                                                "config_run_parameters.yml",
-                                                "config_model_parameters.yml"],
+                                                "config_model_parameters.yml",
+                                                "database_run_list.yml"],
                  "machine_learning_hep.webapp.templates": [ "display.html",
                                                             "index.html",
                                                             "test.html" ],
@@ -109,8 +117,8 @@ setup(
   # See: https://chriswarrick.com/blog/2014/09/15/python-apps-the-right-way-entry_points-and-scripts/
   entry_points={
       "console_scripts": [ "ml-get-data = machine_learning_hep.ml_get_data:main",
-                           "ml-doclassification-regression = " \
-                           "machine_learning_hep.doclassification_regression:main",
+                           "ml-analysis = " \
+                           "machine_learning_hep.steer_analysis:main",
                            "ml-webapp = machine_learning_hep.webapp:main" ]
   }
 )
