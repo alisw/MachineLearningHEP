@@ -272,6 +272,16 @@ LcpK0s_test:
 
     probcutoptimal: [0.5,0.5] #list of nbins
     
+    sel_an_binmin: [2,3,4,5,6,8,12]
+    sel_an_binmax: [3,4,5,6,8,12,24]
+    binning_matching: [0,0,1,1,1,2,3] 
+    sel_final_fineptbins: ["is_ev_rej==0",
+                           "is_ev_rej==0", 
+                           "is_ev_rej==0",
+                           "is_ev_rej==0",
+                           "is_ev_rej==0",
+                           "is_ev_rej==0",
+                           "is_ev_rej==0"]  
     
     ##### last stage of the analysis, from now on the binning is the final analysis binning 
     sel_an_binmin: [2,3,4,5] #list of nbins
