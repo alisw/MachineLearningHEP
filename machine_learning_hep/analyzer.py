@@ -123,7 +123,7 @@ class Analyzer:
             self.lmult_yieldshisto[imult].SetMaximum(1e14)
             self.lmult_yieldshisto[imult].SetLineColor(imult+1)
             self.lmult_yieldshisto[imult].Draw("same")
-        cYields.SaveAs("Yields%s.pdf" % self.case)
+        cYields.SaveAs("Yields%s.eps" % self.case)
 
     def efficiency(self):
         lfileeff = TFile.Open(self.n_fileff)
@@ -145,7 +145,7 @@ class Analyzer:
             fileouteff.cd()
             h_sel_pr.SetName("eff_mult%d" % imult)
             h_sel_pr.Write()
-        cEff.SaveAs("Eff%s.pdf" % self.case)
+        cEff.SaveAs("Eff%s.eps" % self.case)
 
     def plotter(self):
 
@@ -199,7 +199,7 @@ class Analyzer:
             listvalerrpt = [hcross.GetBinError(ipt+1) for ipt in range(self.p_nptbins)]
             listvalueserr.append(listvalerrpt)
         legvsvar1.Draw()
-        cCrossvsvar1.SaveAs("Cross%sVs%s.pdf" % (self.case, self.v_var_binning))
+        cCrossvsvar1.SaveAs("Cross%sVs%s.eps" % (self.case, self.v_var_binning))
 
         cCrossvsvar2 = TCanvas('cCrossvsvar2', 'The Fit Canvas')
         cCrossvsvar2.SetCanvasSize(1900, 1500)
@@ -236,4 +236,4 @@ class Analyzer:
             hcrossvsvar2[ipt].Draw("same")
             legvsvar2.AddEntry(hcrossvsvar2[ipt], legvsvar2endstring, "LEP")
         legvsvar2.Draw()
-        cCrossvsvar2.SaveAs("Cross%sVs%s.pdf" % (self.case, self.v_var2_binning))
+        cCrossvsvar2.SaveAs("Cross%sVs%s.eps" % (self.case, self.v_var2_binning))

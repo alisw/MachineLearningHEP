@@ -93,6 +93,6 @@ def ratio(imult):
     leg.AddEntry(hcrossLcpK0spp, legendtxt[imult-1][2], "LEP")
 
     leg.Draw()
-    ccross.SaveAs("ComparisonRatios%d.pdf" % imult)
+    ccross.SaveAs("ComparisonRatios%d.eps" % imult)
 ratio(1)
 ratio(2)
