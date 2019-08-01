@@ -315,7 +315,7 @@ LcpK0spp:
       data: [0.3,0.3,0.3,0.3] #list of nbins
       mc: [0.3,0.3,0.3,0.3] #list of nbins
 
-    probcutoptimal: [0.4,0.3,0.3,0.3] #list of nbins
+    probcutoptimal: [0.45,0.4,0.3,0.3] #list of nbins
 
 
     sel_an_binmin: [2,3,4,5,6,8,12]
@@ -345,7 +345,7 @@ LcpK0spp:
     SetFixGaussianSigma: true
     SetInitialGaussianMean: true
     dolikelihood: true
-    sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01]
+    sigmaarray: [0.008,0.008,0.009,0.009,0.01,0.011,0.014]
     FixedSigma: true  
     fitcase: Lc
     latexnamemeson: "L_{c}^{K0s}"
