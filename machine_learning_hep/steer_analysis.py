@@ -100,6 +100,12 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     doeff = data_config["analysis"]["doeff"]
     docross = data_config["analysis"]["docross"]
 
+
+    dovalhistodata = data_config["validation"]["data"]["docreatehisto"]
+    dovalhistomc = data_config["validation"]["mc"]["docreatehisto"]
+    #dovalplotsdata = data_config["validation"]["data"]["doplots"]
+    #dovalplotsmc = data_config["validation"]["mc"]["doplots"]
+
     dirpklmc = data_param[case]["multi"]["mc"]["pkl"]
     dirpklevtcounter_allmc = data_param[case]["multi"]["mc"]["pkl_evtcounter_all"]
     dirpklskmc = data_param[case]["multi"]["mc"]["pkl_skimmed"]
@@ -119,6 +125,11 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     dirresultsmc = data_param[case]["analysis"]["mc"]["results"]
     dirresultsdatatot = data_param[case]["analysis"]["data"]["resultsallp"]
     dirresultsmctot = data_param[case]["analysis"]["mc"]["resultsallp"]
+
+    dirvalmc = data_param[case]["validation"]["mc"]["dir"]
+    dirvaldata = data_param[case]["validation"]["data"]["dir"]
+    dirvalmcmerged = data_param[case]["validation"]["mc"]["dirmerged"]
+    dirvaldatamerged = data_param[case]["validation"]["data"]["dirmerged"]
 
     binminarray = data_param[case]["ml"]["binmin"]
     binmaxarray = data_param[case]["ml"]["binmax"]
@@ -185,6 +196,14 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         counter = counter + checkdirlist(dirresultsdata)
         counter = counter + checkdir(dirresultsdatatot)
 
+    if dovalhistodata is True:
+        counter = counter + checkdirlist(dirvaldata)
+        counter = counter + checkdir(dirvaldatamerged)
+
+    if dovalhistomc is True:
+        counter = counter + checkdirlist(dirvalmc)
+        counter = counter + checkdir(dirvalmcmerged)
+
     if counter < 0:
         exit()
     # check and create directories
@@ -238,6 +257,14 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     if dohistomassdata is True:
         checkmakedirlist(dirresultsdata)
         checkmakedir(dirresultsdatatot)
+
+    if dovalhistomc is True:
+        checkmakedirlist(dirvalmc)
+        checkmakedir(dirvalmcmerged)
+
+    if dovalhistodata is True:
+        checkmakedirlist(dirvaldata)
+        checkmakedir(dirvaldatamerged)
 
     #perform the analysis flow
     if dodownloadalice == 1:
@@ -319,6 +346,11 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         myan.efficiency()
     if docross is True:
         myan.plotter()
+
+    if dovalhistomc is True:
+        mymultiprocessmc.multi_valevents()
+    if dovalhistodata is True:
+        mymultiprocessdata.multi_valevents()
 
 
 def load_config(user_path: str, default_path: tuple) -> dict:

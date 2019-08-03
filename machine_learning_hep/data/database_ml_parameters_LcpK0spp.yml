@@ -50,8 +50,14 @@ LcpK0spp:
               inv_mass, pt_cand, inv_mass_K0s, pt_K0s, cand_type, y_cand,
               run_number, ev_id, nsigTPC_Pr_0, nsigTOF_Pr_0]
     var_evt:
-      data: [is_ev_rej, run_number, ev_id, centrality, z_vtx_reco, n_tracklets]
-      mc: [is_ev_rej, run_number, ev_id, centrality, z_vtx_reco, z_vtx_gen, n_tracklets]
+       data: [centrality, z_vtx_reco, n_vtx_contributors, n_tracks, is_ev_rej, run_number,
+              ev_id, n_tracklets,V0Amult, trigger_hasbit_INT7, trigger_hasbit_HighMultSPD,
+              trigger_hasbit_HighMultV0, trigger_hasclass_INT7, trigger_hasclass_HighMultSPD,
+              trigger_hasclass_HighMultV0, n_tracklets_corr, v0m, v0m_eq]
+       mc: [z_vtx_gen, centrality, z_vtx_reco, n_vtx_contributors, n_tracks, is_ev_rej, run_number,
+              ev_id, n_tracklets, V0Amult, trigger_hasbit_INT7, trigger_hasbit_HighMultSPD,
+              trigger_hasbit_HighMultV0, trigger_hasclass_INT7, trigger_hasclass_HighMultSPD,
+              trigger_hasclass_HighMultV0, n_tracklets_corr, v0m, v0m_eq]
     var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
     var_evt_match: [run_number, ev_id]
     var_training: [cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,  
@@ -173,7 +179,7 @@ LcpK0spp:
     namefile_unmerged_tree: AnalysisResults.root
     namefile_reco: AnalysisResultsReco.pkl
     namefile_evt: AnalysisResultsEvt.pkl
-    namefile_evtorigroot: AnalysisResultsROOTEvt.root
+    namefile_evtvalroot: AnalysisResultsROOTEvtVal.root
     namefile_evtorig: AnalysisResultsEvtOrig.pkl
     namefile_gen: AnalysisResultsGen.pkl
     namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl
@@ -352,3 +358,11 @@ LcpK0spp:
     latexbin2var: "n_{trkl}"
     nevents: 1700000000.
     dodoublecross: false
+
+  validation:
+    data:
+      dir: [dataval] #list of periods
+      dirmerged: datavaltot
+    mc:
+      dir: [mcval] #list of periods
+      dirmerged: mcvaltot

@@ -31,7 +31,7 @@ from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge_method
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
-from machine_learning_hep.utilities import mergerootfiles
+from machine_learning_hep.utilities import mergerootfiles, makeff, scatterplot
 from machine_learning_hep.models import apply # pylint: disable=import-error
 #from machine_learning_hep.globalfitter import fitter
 from machine_learning_hep.selectionutils import getnormforselevt
@@ -45,7 +45,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
     def __init__(self, datap, run_param, mcordata, p_maxfiles,
                  d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
-                 p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged, d_results):
+                 p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
+                 d_results, d_val):
 
         #directories
         self.d_root = d_root
@@ -53,6 +54,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.d_pklsk = d_pklsk
         self.d_pkl_ml = d_pkl_ml
         self.d_results = d_results
+        self.d_val = d_val
         self.datap = datap
         self.mcordata = mcordata
         self.p_frac_merge = p_frac_merge
@@ -80,7 +82,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.n_reco = datap["files_names"]["namefile_reco"]
         self.n_evt = datap["files_names"]["namefile_evt"]
         self.n_evtorig = datap["files_names"]["namefile_evtorig"]
-        self.n_evtorigroot = datap["files_names"]["namefile_evtorigroot"]
+        self.n_evtvalroot = datap["files_names"]["namefile_evtvalroot"]
         self.n_gen = datap["files_names"]["namefile_gen"]
         self.n_filemass = datap["files_names"]["histofilename"]
         self.n_fileeff = datap["files_names"]["efffilename"]
@@ -127,7 +129,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.l_reco = createlist(self.d_pkl, self.l_path, self.n_reco)
         self.l_evt = createlist(self.d_pkl, self.l_path, self.n_evt)
         self.l_evtorig = createlist(self.d_pkl, self.l_path, self.n_evtorig)
-        self.l_evtorigroot = createlist(self.d_pkl, self.l_path, self.n_evtorigroot)
+        self.l_evtvalroot = createlist(self.d_val, self.l_path, self.n_evtvalroot)
 
 
         if self.mcordata == "mc":
@@ -135,7 +137,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         self.f_totevt = os.path.join(self.d_pkl, self.n_evt)
         self.f_totevtorig = os.path.join(self.d_pkl, self.n_evtorig)
-        self.f_totevtorigroot = os.path.join(self.d_pkl, self.n_evtorigroot)
+        self.f_totevtvalroot = os.path.join(self.d_val, self.n_evtvalroot)
 
         self.p_modelname = datap["analysis"]["modelname"]
         self.lpt_anbinmin = datap["sel_skim_binmin"]
@@ -218,22 +220,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         dfevt = dfevt.reset_index(drop=True)
         pickle.dump(dfevt, openfile(self.l_evt[file_index], "wb"), protocol=4)
 
-        fileevtroot = TFile.Open(self.l_evtorigroot[file_index], "recreate")
-        hNorm = TH1F("hEvForNorm", ";;Normalisation", 2, 0.5, 2.5)
-        hNorm.GetXaxis().SetBinLabel(1, "normsalisation factor")
-        hNorm.GetXaxis().SetBinLabel(2, "selected events")
-        nselevt = 0
-        norm = 0
-        # Handle silent weird behaviour of Pandas if dataframe is empty
-        # Otherwise, if it is empty it might just silently return from this frunction for some
-        # reason and everything what follows would just be skipped.
-        if not dfevt.empty:
-            nselevt = len(dfevt.query("is_ev_rej==0"))
-            norm = getnormforselevt(dfevt)
-        hNorm.SetBinContent(1, norm)
-        hNorm.SetBinContent(2, nselevt)
-        hNorm.Write()
-        fileevtroot.Close()
 
         treereco = uproot.open(self.l_root[file_index])[self.n_treereco]
         dfreco = treereco.pandas.df(branches=self.v_all)
@@ -335,7 +321,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         create_folder_struc(self.d_pklsk, self.l_path)
         arguments = [(i,) for i in range(len(self.l_reco))]
         self.parallelizer(self.skim, arguments, self.p_chunksizeskim)
-        mergerootfiles(self.l_evtorigroot, self.f_totevtorigroot)
         if self.p_dofullevtmerge is True:
             merge_method(self.l_evt, self.f_totevt)
             merge_method(self.l_evtorig, self.f_totevtorig)
@@ -481,3 +466,60 @@ class Processer: # pylint: disable=too-many-instance-attributes
             h_gen_fd.Write()
             h_presel_fd.Write()
             h_sel_fd.Write()
+
+    def process_valevents(self, file_index):
+        dfevt = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
+        dfevtnorm = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
+        mbsel = "trigger_hasclass_INT7<99999 and is_ev_rej==0"
+        dfevt = dfevt.query(mbsel)
+        sel_trigger = ["trigger_hasbit_INT7==1", "trigger_hasbit_HighMultSPD==1",
+                       "trigger_hasbit_HighMultV0==1", "trigger_hasbit_INT7==1",
+                       "trigger_hasbit_HighMultSPD==1", "trigger_hasbit_HighMultV0==1"]
+        variable = ["v0m", "v0m", "v0m", "n_tracklets", "n_tracklets", "n_tracklets"]
+        nbins = [30, 30, 30, 30, 30, 30]
+        minr = [0, 0, 0, 0, 0, 0]
+        maxr = [1000, 1000, 1000, 100, 100, 100]
+        label = ["kINT7_vsv0m", "HighMultSPD_vsv0m", "HighMultV0_vsv0m",
+                 "kINT7_vsntracklets", "HighMultSPD_vsntracklets", "HighMultV0_vsntracklets"]
+        fileevtroot = TFile.Open(self.l_evtvalroot[file_index], "recreate")
+        for index, _ in enumerate(sel_trigger):
+            hden, hnum = makeff(dfevt, sel_trigger[index], None, label[index],
+                                nbins[index], minr[index], maxr[index], variable[index])
+            hden.Write()
+            hnum.Write()
+        scatter_name1 = ["v0m"]
+        scatter_name2 = ["n_tracklets"]
+        nbins1 = [30]
+        minr1 = [0]
+        maxr1 = [1000]
+        nbins2 = [30]
+        minr2 = [0]
+        maxr2 = [100]
+        for index2, _ in enumerate(scatter_name1):
+            hscatter = scatterplot(dfevt, scatter_name1[index2], scatter_name2[index2], \
+                    nbins1[index2], minr1[index2], maxr1[index2], \
+                    nbins2[index2], minr2[index2], maxr2[index2]) \
+
+            hscatter.Write()
+
+        hNorm = TH1F("hEvForNorm", ";;Normalisation", 2, 0.5, 2.5)
+        hNorm.GetXaxis().SetBinLabel(1, "normsalisation factor")
+        hNorm.GetXaxis().SetBinLabel(2, "selected events")
+        nselevt = 0
+        norm = 0
+        if not dfevtnorm.empty:
+            nselevt = len(dfevtnorm.query("is_ev_rej==0"))
+            norm = getnormforselevt(dfevtnorm)
+        hNorm.SetBinContent(1, norm)
+        hNorm.SetBinContent(2, nselevt)
+        hNorm.Write()
+        hden.Write()
+        hnum.Write()
+        fileevtroot.Close()
+
+    def process_valevents_par(self):
+        print("doing event validation", self.mcordata, self.period)
+        create_folder_struc(self.d_val, self.l_path)
+        arguments = [(i,) for i in range(len(self.l_evtorig))]
+        self.parallelizer(self.process_valevents, arguments, self.p_chunksizeskim)
+        mergerootfiles(self.l_evtvalroot, self.f_totevtvalroot)
