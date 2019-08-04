@@ -470,7 +470,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
     def process_valevents(self, file_index):
         dfevt = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
         dfevtnorm = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
-        mbsel = "trigger_hasclass_INT7<99999 and is_ev_rej==0"
+        mbsel = "trigger_hasclass_INT7==1 and is_ev_rej==0"
+        if self.mcordata == "mc":
+            mbsel = "is_ev_rej==0"
         dfevt = dfevt.query(mbsel)
         sel_trigger = ["trigger_hasbit_INT7==1", "trigger_hasbit_HighMultSPD==1",
                        "trigger_hasbit_HighMultV0==1", "trigger_hasbit_INT7==1",
@@ -487,6 +489,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                 nbins[index], minr[index], maxr[index], variable[index])
             hden.Write()
             hnum.Write()
+
         scatter_name1 = ["v0m"]
         scatter_name2 = ["n_tracklets"]
         nbins1 = [30]
@@ -498,9 +501,20 @@ class Processer: # pylint: disable=too-many-instance-attributes
         for index2, _ in enumerate(scatter_name1):
             hscatter = scatterplot(dfevt, scatter_name1[index2], scatter_name2[index2], \
                     nbins1[index2], minr1[index2], maxr1[index2], \
-                    nbins2[index2], minr2[index2], maxr2[index2]) \
-
+                    nbins2[index2], minr2[index2], maxr2[index2])
             hscatter.Write()
+
+        distrname = ["v0m", "n_tracklets"]
+        nbinsdist = [30, 30]
+        minrdist = [0, 0]
+        maxrdist = [1000, 100]
+
+        for index, _ in enumerate(distrname):
+            hdistr = TH1F("hdistr" + distrname[index], "hdistr" + distrname[index],
+                          nbinsdist[index], minrdist[index], maxrdist[index])
+            fill_hist(hdistr, dfevt[distrname[index]])
+            hdistr.Write()
+
 
         hNorm = TH1F("hEvForNorm", ";;Normalisation", 2, 0.5, 2.5)
         hNorm.GetXaxis().SetBinLabel(1, "normsalisation factor")

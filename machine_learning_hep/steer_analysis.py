@@ -103,8 +103,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
 
     dovalhistodata = data_config["validation"]["data"]["docreatehisto"]
     dovalhistomc = data_config["validation"]["mc"]["docreatehisto"]
-    #dovalplotsdata = data_config["validation"]["data"]["doplots"]
-    #dovalplotsmc = data_config["validation"]["mc"]["doplots"]
+    dovalplots = data_config["validation"]["plotevents"]
 
     dirpklmc = data_param[case]["multi"]["mc"]["pkl"]
     dirpklevtcounter_allmc = data_param[case]["multi"]["mc"]["pkl_evtcounter_all"]
@@ -351,6 +350,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         mymultiprocessmc.multi_valevents()
     if dovalhistodata is True:
         mymultiprocessdata.multi_valevents()
+    if dovalplots:
+        myan.studyevents()
 
 
 def load_config(user_path: str, default_path: tuple) -> dict:

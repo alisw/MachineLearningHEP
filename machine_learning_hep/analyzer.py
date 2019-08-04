@@ -55,6 +55,7 @@ class Analyzer:
 
         self.n_fileff = datap["files_names"]["efffilename"]
         self.n_fileff = os.path.join(self.d_resultsallpmc, self.n_fileff)
+        self.n_evtvalroot = datap["files_names"]["namefile_evtvalroot"]
 
         self.p_bin_width = datap["analysis"]['bin_width']
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
@@ -90,6 +91,11 @@ class Analyzer:
         self.p_nevents = datap["analysis"]["nevents"]
         self.p_sigmamb = datap["ml"]["opt"]["sigma_MB"]
         self.p_br = datap["ml"]["opt"]["BR"]
+
+        self.d_valevtdata = datap["validation"]["data"]["dirmerged"]
+        self.d_valevtmc = datap["validation"]["mc"]["dirmerged"]
+        self.f_evtvaldata = os.path.join(self.d_valevtdata, self.n_evtvalroot)
+        self.f_evtvalmc = os.path.join(self.d_valevtmc, self.n_evtvalroot)
 
     def fitter(self):
         lfile = TFile.Open(self.n_filemass)
@@ -237,3 +243,19 @@ class Analyzer:
             legvsvar2.AddEntry(hcrossvsvar2[ipt], legvsvar2endstring, "LEP")
         legvsvar2.Draw()
         cCrossvsvar2.SaveAs("Cross%sVs%s.eps" % (self.case, self.v_var2_binning))
+
+    def studyevents(self):
+        print(self.f_evtvaldata)
+        print(self.f_evtvalmc)
+        filedata = TFile.Open(self.f_evtvaldata)
+        filemc = TFile.Open(self.f_evtvalmc)
+        v0mn_trackletsdata = filedata.Get("v0mn_tracklets")
+        v0mn_trackletsmc = filemc.Get("v0mn_tracklets")
+        cscatter = TCanvas('cscatter', 'The Fit Canvas')
+        cscatter.SetCanvasSize(1900, 1000)
+        cscatter.Divide(2,1)
+        cscatter.cd(1)
+        v0mn_trackletsdata.Draw("colz")
+        cscatter.cd(2)
+        v0mn_trackletsmc.Draw("colz")
+        cscatter.SaveAs("cscatter.pdf")

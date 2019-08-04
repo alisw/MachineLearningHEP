@@ -202,7 +202,7 @@ LcpK0s_test:
       fracmerge : [0.3] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC18pp] #list of periods
-      unmerged_tree_dir: [/Users/gianmicheleinnocenti/samplesMLexampleEvt/mc/unmerged] #list of periods
+      unmerged_tree_dir: [/Users/gianmicheleinnocenti/samplesMLexampleEvt/data/unmerged] #list of periods
       pkl: [LcpK0s_test/datapkl] #list of periods
       pkl_skimmed: [LcpK0s_test/datapklsk] #list of periods
       pkl_skimmed_merge_for_ml: [LcpK0s_test/datapklskML] #list of periods
