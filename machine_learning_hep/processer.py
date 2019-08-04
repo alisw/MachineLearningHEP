@@ -515,6 +515,16 @@ class Processer: # pylint: disable=too-many-instance-attributes
             fill_hist(hdistr, dfevt[distrname[index]])
             hdistr.Write()
 
+        varname = "v0m"
+        cutonspd = [20, 30, 40, 50, 60]
+        hdenv0m = TH1F("hdenv0m", "hdenv0m", 30, 0, 1000)
+        fill_hist(hdenv0m, dfevt[varname])
+        for index, _ in enumerate(cutonspd):
+            hnum = TH1F("hnumv0mspd%d" % cutonspd[index], "hnumv0mspd%d" % cutonspd[index], 30, 0, 1000)
+            devtsel = dfevt.query("n_tracklets>=%d" % cutonspd[index])
+            fill_hist(hnum, devtsel[varname])
+            hnum.Write()
+        hdenv0m.Write()
 
         hNorm = TH1F("hEvForNorm", ";;Normalisation", 2, 0.5, 2.5)
         hNorm.GetXaxis().SetBinLabel(1, "normsalisation factor")
@@ -527,8 +537,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         hNorm.SetBinContent(1, norm)
         hNorm.SetBinContent(2, nselevt)
         hNorm.Write()
-        hden.Write()
-        hnum.Write()
         fileevtroot.Close()
 
     def process_valevents_par(self):
