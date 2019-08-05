@@ -1,4 +1,4 @@
-case: LcpK0s_test
+case: LcpK0spp
 download:
   alice:
     activate: false
@@ -38,7 +38,7 @@ ml_study:
   dosignifopt: false
   doefficiency: false
   dotesting: false
-  dotraining: true
+  dotraining: false
 
 analysis:
   data:
@@ -59,7 +59,6 @@ analysis:
 validation:
   data: 
     docreatehisto: true
-    doplots: false
   mc: 
     docreatehisto: true
-    doplots: false
+  plotevents: true

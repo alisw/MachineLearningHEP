@@ -23,7 +23,7 @@ import os
 import numpy as np
 import pandas as pd
 import lz4
-from root_numpy import fill_hist
+from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
 from ROOT import TH1F, TH2F  # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.selectionutils import select_runs
 def openfile(filename, attr):
@@ -147,6 +147,8 @@ def mergerootfiles(listfiles, mergedfile):
 def createhisto(stringname, nbins, rmin, rmax):
     hden = TH1F("hden" + stringname, "hden" + stringname, nbins, rmin, rmax)
     hnum = TH1F("hnum" + stringname, "hnum" + stringname, nbins, rmin, rmax)
+    hnum.Sumw2()
+    hden.Sumw2()
     return hden, hnum
 
 def makeff(dfevt, selnum, selden, stringname, nbins, rmin, rmax, variable):

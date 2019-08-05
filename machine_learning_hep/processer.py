@@ -478,9 +478,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
                        "trigger_hasbit_HighMultV0==1", "trigger_hasbit_INT7==1",
                        "trigger_hasbit_HighMultSPD==1", "trigger_hasbit_HighMultV0==1"]
         variable = ["v0m", "v0m", "v0m", "n_tracklets", "n_tracklets", "n_tracklets"]
-        nbins = [30, 30, 30, 30, 30, 30]
+        nbins = [100, 100, 100, 100, 100, 100]
         minr = [0, 0, 0, 0, 0, 0]
-        maxr = [1000, 1000, 1000, 100, 100, 100]
+        maxr = [1500, 1500, 1500, 150, 150, 150]
         label = ["kINT7_vsv0m", "HighMultSPD_vsv0m", "HighMultV0_vsv0m",
                  "kINT7_vsntracklets", "HighMultSPD_vsntracklets", "HighMultV0_vsntracklets"]
         fileevtroot = TFile.Open(self.l_evtvalroot[file_index], "recreate")
@@ -492,12 +492,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         scatter_name1 = ["v0m"]
         scatter_name2 = ["n_tracklets"]
-        nbins1 = [30]
+        nbins1 = [100]
         minr1 = [0]
-        maxr1 = [1000]
-        nbins2 = [30]
+        maxr1 = [1500]
+        nbins2 = [100]
         minr2 = [0]
-        maxr2 = [100]
+        maxr2 = [150]
         for index2, _ in enumerate(scatter_name1):
             hscatter = scatterplot(dfevt, scatter_name1[index2], scatter_name2[index2], \
                     nbins1[index2], minr1[index2], maxr1[index2], \
@@ -505,22 +505,25 @@ class Processer: # pylint: disable=too-many-instance-attributes
             hscatter.Write()
 
         distrname = ["v0m", "n_tracklets"]
-        nbinsdist = [30, 30]
+        nbinsdist = [100, 100]
         minrdist = [0, 0]
-        maxrdist = [1000, 100]
+        maxrdist = [1500, 150]
 
         for index, _ in enumerate(distrname):
             hdistr = TH1F("hdistr" + distrname[index], "hdistr" + distrname[index],
                           nbinsdist[index], minrdist[index], maxrdist[index])
+            hdistr.Sumw2()
             fill_hist(hdistr, dfevt[distrname[index]])
             hdistr.Write()
 
         varname = "v0m"
         cutonspd = [20, 30, 40, 50, 60]
         hdenv0m = TH1F("hdenv0m", "hdenv0m", 30, 0, 1000)
+        hdenv0m.Sumw2()
         fill_hist(hdenv0m, dfevt[varname])
         for index, _ in enumerate(cutonspd):
             hnum = TH1F("hnumv0mspd%d" % cutonspd[index], "hnumv0mspd%d" % cutonspd[index], 30, 0, 1000)
+            hnum.Sumw2()
             devtsel = dfevt.query("n_tracklets>=%d" % cutonspd[index])
             fill_hist(hnum, devtsel[varname])
             hnum.Write()
