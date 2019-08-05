@@ -86,28 +86,46 @@ elif [ "$dataset" == "LHC18a4a2" ]; then
   datasetwithchilds=1
 elif [ "$dataset" == "LHC2018_pp" ] || [  "$dataset" == "LHC2018_AOD208_bdefghijklmnop_13TeV_pp" ]; then
   #Data: pp 13 TeV 2018
-  inputpaths=(/alice/data/2018/LHC18b/000285064/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18d/000286313/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18e/000286653/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18f/000287784/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18g/000288750/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18h/000288806/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18i/000288908/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18j/000288943/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18k/000289177/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18l/000289931/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18m/000292430/pass1_withTRDtracking/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18n/000293359/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18o/000293741/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18p/000294011/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18f/000287208/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18l/000289444/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18m/000291397/pass1_withTRDtracking/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18m/000292701/pass1_withTRDtracking/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18m/000292430/pass1_withTRDtracking/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18p/000294925/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18p/000294152/pass1/PWGHF/HF_TreeCreator)
-  childdownloadpath=(1 2 3 4 5 6 7 8 9 10 11 12 13 14 4 10 11 11 11 14 14)
+#OLD pp2018 train settings
+#  inputpaths=(/alice/data/2018/LHC18b/000285064/pass1/PWGHF/HF_TreeCreator
+#              /alice/data/2018/LHC18d/000286313/pass1/PWGHF/HF_TreeCreator
+#              /alice/data/2018/LHC18e/000286653/pass1/PWGHF/HF_TreeCreator
+#              /alice/data/2018/LHC18f/000287784/pass1/PWGHF/HF_TreeCreator
+#              /alice/data/2018/LHC18g/000288750/pass1/PWGHF/HF_TreeCreator
+#              /alice/data/2018/LHC18h/000288806/pass1/PWGHF/HF_TreeCreator
+#              /alice/data/2018/LHC18i/000288908/pass1/PWGHF/HF_TreeCreator
+#              /alice/data/2018/LHC18j/000288943/pass1/PWGHF/HF_TreeCreator
+#              /alice/data/2018/LHC18k/000289177/pass1/PWGHF/HF_TreeCreator
+#              /alice/data/2018/LHC18l/000289931/pass1/PWGHF/HF_TreeCreator
+#              /alice/data/2018/LHC18m/000292430/pass1_withTRDtracking/PWGHF/HF_TreeCreator
+#              /alice/data/2018/LHC18n/000293359/pass1/PWGHF/HF_TreeCreator
+#              /alice/data/2018/LHC18o/000293741/pass1/PWGHF/HF_TreeCreator
+#              /alice/data/2018/LHC18p/000294011/pass1/PWGHF/HF_TreeCreator
+#              /alice/data/2018/LHC18f/000287208/pass1/PWGHF/HF_TreeCreator
+#              /alice/data/2018/LHC18l/000289444/pass1/PWGHF/HF_TreeCreator
+#              /alice/data/2018/LHC18m/000291397/pass1_withTRDtracking/PWGHF/HF_TreeCreator
+#              /alice/data/2018/LHC18m/000292701/pass1_withTRDtracking/PWGHF/HF_TreeCreator
+#              /alice/data/2018/LHC18m/000292430/pass1_withTRDtracking/PWGHF/HF_TreeCreator
+#              /alice/data/2018/LHC18p/000294925/pass1/PWGHF/HF_TreeCreator
+#              /alice/data/2018/LHC18p/000294152/pass1/PWGHF/HF_TreeCreator)
+#  childdownloadpath=(1 2 3 4 5 6 7 8 9 10 11 12 13 14 4 10 11 11 11 14 14)
+#NEW pp2018 train settings (or just unlucky once?)
+  inputpaths=(/alice/data/2018/LHC18b/000285064/pass1/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18d/000286313/pass1/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18e/000286653/pass1/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18f/000287784/pass1/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18g/000288750/pass1/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18h/000288806/pass1/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18i/000288908/pass1/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18j/000288943/pass1/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18k/000289177/pass1/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18l/000289444/pass1/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18m/000291447/pass1_withTRDtracking/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18n/000293359/pass1/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18o/000293741/pass1/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18p/000294925/pass1/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18m/000291397/pass1_withTRDtracking/AOD208/PWGHF/HF_TreeCreator)
+  childdownloadpath=(1 2 3 4 5 6 7 8 9 10 11 12 13 14 11)
   isMC=0
   ispp=1
   datasetwithchilds=1
@@ -146,7 +164,7 @@ elif [ "$dataset" == "LHC2017_pp" ] || [  "$dataset" == "LHC2017_AOD208_cefhijkl
   isMC=0
   ispp=1
   datasetwithchilds=1
-elif [ "$dataset" == "LHC2016_pass1_MC_pp" ] || [  "$dataset" == "LHC17h8a" ]; then
+elif [ "$dataset" == "LHC2016_pass1_MC_pp" ] || [  "$dataset" == "LHC17h8a_MC_pp" ]; then
   #D2H MC: pp 13 TeV 2016 pass1
   inputpaths=(/alice/sim/2017/LHC17h8a/253529/PWGHF/HF_TreeCreator)
   isMC=1
