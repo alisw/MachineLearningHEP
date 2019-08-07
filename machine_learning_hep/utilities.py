@@ -23,8 +23,9 @@ import os
 import numpy as np
 import pandas as pd
 import lz4
+from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
+from ROOT import TH1F, TH2F  # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.selectionutils import select_runs
-
 def openfile(filename, attr):
     if filename.lower().endswith('.bz2'):
         return bz2.BZ2File(filename, attr)
@@ -142,3 +143,30 @@ def mergerootfiles(listfiles, mergedfile):
     for indexp, _ in enumerate(listfiles):
         outstring = outstring + listfiles[indexp] + " "
     os.system("hadd -f %s  %s " % (mergedfile, outstring))
+
+def createhisto(stringname, nbins, rmin, rmax):
+    hden = TH1F("hden" + stringname, "hden" + stringname, nbins, rmin, rmax)
+    hnum = TH1F("hnum" + stringname, "hnum" + stringname, nbins, rmin, rmax)
+    hnum.Sumw2()
+    hden.Sumw2()
+    return hden, hnum
+
+def makeff(dfevt, selnum, selden, stringname, nbins, rmin, rmax, variable):
+    #loadstyle()
+    hden, hnum = createhisto(stringname, nbins, rmin, rmax)
+    dnum = dfevt
+    dden = dfevt
+    if selnum is not None:
+        dnum = dfevt.query(selnum)
+    if selden is not None:
+        dden = dfevt.query(selden)
+    fill_hist(hden, dden[variable])
+    fill_hist(hnum, dnum[variable])
+    return hden, hnum
+
+def scatterplot(dfevt, nvar1, nvar2, nbins1, min1, max1, nbins2, min2, max2):
+    hmult1_mult2 = TH2F(nvar1 + nvar2, nvar1 + nvar2, nbins1, min1, max1, nbins2, min2, max2)
+    dfevt_rd = dfevt[[nvar1, nvar2]]
+    arr2 = dfevt_rd.values
+    fill_hist(hmult1_mult2, arr2)
+    return hmult1_mult2
