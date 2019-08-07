@@ -45,12 +45,15 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.d_pklml_mergedallp = datap["multi"][self.mcordata]["pkl_skimmed_merge_for_ml_all"]
         self.d_pklevt_mergedallp = datap["multi"][self.mcordata]["pkl_evtcounter_all"]
 
+        self.dlper_valevtroot = datap["validation"][self.mcordata]["dir"]
+        self.d_valevtroot_mergedallp = datap["validation"][self.mcordata]["dirmerged"]
+
         #namefiles pkl
         self.v_var_binning = datap["var_binning"]
         self.n_reco = datap["files_names"]["namefile_reco"]
         self.n_evt = datap["files_names"]["namefile_evt"]
         self.n_evtorig = datap["files_names"]["namefile_evtorig"]
-        self.n_evtorigroot = datap["files_names"]["namefile_evtorigroot"]
+        self.n_evtvalroot = datap["files_names"]["namefile_evtvalroot"]
         self.n_gen = datap["files_names"]["namefile_gen"]
         self.lpt_recosk = [self.n_reco.replace(".pkl", "_%s%d_%d.pkl" % \
                           (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
@@ -74,8 +77,8 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.f_evtorigml_mergedallp = os.path.join(self.d_pklml_mergedallp, self.n_evtorig)
         self.lper_evt = [os.path.join(direc, self.n_evt) for direc in self.dlper_pkl]
         self.lper_evtorig = [os.path.join(direc, self.n_evtorig) for direc in self.dlper_pkl]
-        self.lper_evtorigroot = [os.path.join(direc, self.n_evtorigroot) \
-                                 for direc in self.dlper_pkl]
+        self.lper_evtvalroot = [os.path.join(direc, self.n_evtvalroot) \
+                                 for direc in self.dlper_valevtroot]
 
         self.dlper_reco_modapp = datap["analysis"][self.mcordata]["pkl_skimmed_dec"]
         self.dlper_reco_modappmerged = datap["analysis"][self.mcordata]["pkl_skimmed_decmerged"]
@@ -85,7 +88,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.lpt_probcut = datap["analysis"]["probcutoptimal"]
         self.f_evt_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evt)
         self.f_evtorig_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evtorig)
-        self.f_evtorigroot_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evtorigroot)
+        self.f_evtvalroot_mergedallp = os.path.join(self.d_valevtroot_mergedallp, self.n_evtvalroot)
 
         self.process_listsample = []
         for indexp in range(self.prodnumber):
@@ -98,9 +101,11 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
                                   self.p_fracmerge[indexp], self.p_seedmerge[indexp],
                                   self.dlper_reco_modapp[indexp],
                                   self.dlper_reco_modappmerged[indexp],
-                                  self.d_results[indexp])
+                                  self.d_results[indexp],
+                                  self.dlper_valevtroot[indexp])
             self.process_listsample.append(myprocess)
 
+        self.f_evtorigroot_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evtvalroot)
         self.n_filemass = datap["files_names"]["histofilename"]
         self.n_fileeff = datap["files_names"]["efffilename"]
         self.lper_filemass = [os.path.join(direc, self.n_filemass) for direc in self.d_results]
@@ -115,7 +120,6 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
     def multi_skim_allperiods(self):
         for indexp in range(self.prodnumber):
             self.process_listsample[indexp].process_skim_par()
-        mergerootfiles(self.lper_evtorigroot, self.f_evtorigroot_mergedallp)
         if self.p_dofullevtmerge is True:
             merge_method(self.lper_evt, self.f_evt_mergedallp)
             merge_method(self.lper_evtorig, self.f_evtorig_mergedallp)
@@ -153,3 +157,8 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
     def multi_scancuts(self):
         for indexp in range(self.prodnumber):
             self.process_listsample[indexp].process_scancuts()
+
+    def multi_valevents(self):
+        for indexp in range(self.prodnumber):
+            self.process_listsample[indexp].process_valevents_par()
+        mergerootfiles(self.lper_evtvalroot, self.f_evtvalroot_mergedallp)
