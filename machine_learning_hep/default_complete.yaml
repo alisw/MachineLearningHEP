@@ -1,12 +1,12 @@
-case: LcpK0spp
+case: D0jetpp
 download:
   alice:
     activate: false
 conversion:
   mc: 
-    activate: false
+    activate: true
   data:
-    activate: false
+    activate: true
 skimming: 
   mc:
     activate: false
@@ -58,7 +58,7 @@ analysis:
 
 validation:
   data: 
-    docreatehisto: true
+    docreatehisto: false
   mc: 
-    docreatehisto: true
-  plotevents: true
+    docreatehisto: false
+  plotevents: false
