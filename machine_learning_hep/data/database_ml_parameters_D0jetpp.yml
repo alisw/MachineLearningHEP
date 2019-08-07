@@ -25,7 +25,7 @@ D0jetpp:
                   "pt_prong0>0.4 and pt_prong1>0.4",
                   "pt_prong0>0.4 and pt_prong1>0.4",
                   "pt_prong0>0.4 and pt_prong1>0.4"]
-  sel_gen_skim: [null,null,null,null]
+  sel_gen_skim: [null,null,null,null,null]
   sel_skim_binmin: [1,2,4,8,12] #list of nbins
   sel_skim_binmax: [2,4,8,12,24] #list of nbins
   var_binning: pt_cand
@@ -59,8 +59,8 @@ D0jetpp:
        mc:   [centrality, z_vtx_reco, n_vtx_contributors, n_tracks, is_ev_rej, run_number,
               ev_id, n_tracklets,V0Amult, trigger_hasbit_INT7, trigger_hasbit_HighMultSPD,
               trigger_hasbit_HighMultV0, trigger_hasclass_INT7, trigger_hasclass_HighMultSPD,
-              trigger_hasclass_HighMultV0, n_tracklets_corr, v0m, v0m_eq]
-    var_gen: [y_cand, pt_cand, cand_type, pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet, run_number, z_vtx_gen, ev_id]
+              trigger_hasclass_HighMultV0, n_tracklets_corr, v0m, v0m_eq, z_vtx_gen]
+    var_gen: [y_cand, pt_cand, cand_type, pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet, run_number, ev_id]
     var_evt_match: [run_number, ev_id]
     var_training: [d_len, d_len_xy, norm_dl, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, cos_t_star, 
                    imp_par_prod, pt_prong0, pt_prong1, imp_par_prong0, imp_par_prong1, imp_par_err_prong0, 
@@ -119,7 +119,7 @@ D0jetpp:
     data:
       nperiods: 1
       nprocessesparallel: 50
-      maxfiles : [10] #list of periods
+      maxfiles : [-1] #list of periods
       chunksizeunp : [100] #list of periods
       chunksizeskim: [100] #list of periods
       fracmerge : [0.05] #list of periods
@@ -134,7 +134,7 @@ D0jetpp:
     mc:
       nperiods: 1
       nprocessesparallel: 50
-      maxfiles : [10] #list of periods
+      maxfiles : [-1] #list of periods
       chunksizeunp : [100] #list of periods
       chunksizeskim: [100] #list of periods
       fracmerge : [1.0] #list of periods
