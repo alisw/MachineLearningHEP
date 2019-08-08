@@ -121,7 +121,7 @@ Dspp:
     data:
       nperiods: 4
       nprocessesparallel: 50
-      maxfiles : [10,10,10,10] #list of periods
+      maxfiles : [-1,-1,-1,-1] #list of periods
       chunksizeunp : [100,100,100,100] #list of periods
       chunksizeskim: [100,100,100,100] #list of periods
       fracmerge : [0.4,0.4,0.4,0.4] #list of periods
@@ -148,7 +148,7 @@ Dspp:
     mc:
       nperiods: 4
       nprocessesparallel: 50
-      maxfiles : [10,10,10,10] #list of periods
+      maxfiles : [-1,-1,-1,-1] #list of periods
       chunksizeunp : [1000,1000,1000,1000] #list of periods
       chunksizeskim: [1000,1000,1000,1000] #list of periods
       fracmerge : [1.0,1.0,1.0,1.0] #list of periods
@@ -282,8 +282,8 @@ Dspp:
 
   validation:
     data:
-      dir: [LHC16pp_deghjop,LHC16pp_kl,LHC17pp,LHC18pp] #list of periods
-      dirmerged: /data/Derived/DskINT7withJets/vAN-20190804_ROOT6-1/pp_data/datavaltot
+      dir: [dataval_LHC16pp_deghjop,dataval_LHC16pp_kl,dataval_LHC17pp,dataval_LHC18pp] #list of periods
+      dirmerged: datavaltot
     mc:
-      dir: [LHC16pp_deghjop,LHC16pp_kl,LHC17pp,LHC18pp] #list of periods
-      dirmerged: /data/Derived/DskINT7withJets/vAN-20190804_ROOT6-1/pp_mc_prodD2H/mcvaltot
+      dir: [mcval_LHC16pp_deghjop,mcval_LHC16pp_kl,mcval_LHC17pp,mcval_LHC18pp] #list of periods
+      dirmerged: mcvaltot
