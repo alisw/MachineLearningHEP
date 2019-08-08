@@ -125,12 +125,12 @@ Dspp:
       chunksizeunp : [100,100,100,100] #list of periods
       chunksizeskim: [100,100,100,100] #list of periods
       fracmerge : [0.4,0.4,0.4,0.4] #list of periods
-      seedmerge: [12] #list of periods
+      seedmerge: [12,12,12,12] #list of periods
       period: [LHC16pp_deghjop,LHC16pp_kl,LHC17pp,LHC18pp] #list of periods
       unmerged_tree_dir: [/data/TTree/D0DsLckINT7withJets/vAN-20190804_ROOT6-1/pp_2016_data/122_20190805-2347/merged,
                           /data/TTree/D0DsLckINT7withJets/vAN-20190804_ROOT6-1/pp_2016_data/123_20190805-2347/merged,
                           /data/TTree/D0DsLckINT7withJets/vAN-20190804_ROOT6-1/pp_2017_data/124_20190805-2347/merged,
-                          /data/TTree/D0DsLckINT7withJets/vAN-20190804_ROOT6-1/pp_2017_data/125_20190805-2348/merged]
+                          /data/TTree/D0DsLckINT7withJets/vAN-20190804_ROOT6-1/pp_2018_data/125_20190805-2348/merged]
       pkl: [/data/Derived/DskINT7withJets/vAN-20190804_ROOT6-1/pp_2016_data/122_20190805-2347/pkl,
             /data/Derived/DskINT7withJets/vAN-20190804_ROOT6-1/pp_2016_data/123_20190805-2347/pkl,
             /data/Derived/DskINT7withJets/vAN-20190804_ROOT6-1/pp_2017_data/124_20190805-2347/pkl,
@@ -152,7 +152,7 @@ Dspp:
       chunksizeunp : [1000,1000,1000,1000] #list of periods
       chunksizeskim: [1000,1000,1000,1000] #list of periods
       fracmerge : [1.0,1.0,1.0,1.0] #list of periods
-      seedmerge: [12] #list of periods
+      seedmerge: [12,12,12,12] #list of periods
       period: [LHC16pp_deghjop,LHC16pp_kl,LHC17pp,LHC18pp] #list of periods
       unmerged_tree_dir: [/data/TTree/D0DsLckINT7withJets/vAN-20190804_ROOT6-1/pp_2016_mc_prodD2H/121_20190805-2344/merged,
                           /data/TTree/D0DsLckINT7withJets/vAN-20190804_ROOT6-1/pp_2016_mc_prodD2H/117_20190805-2343/merged,
@@ -282,8 +282,8 @@ Dspp:
 
   validation:
     data:
-      dir: [dataval] #list of periods
-      dirmerged: datavaltot
+      dir: [LHC16pp_deghjop,LHC16pp_kl,LHC17pp,LHC18pp] #list of periods
+      dirmerged: /data/Derived/DskINT7withJets/vAN-20190804_ROOT6-1/pp_data/datavaltot
     mc:
-      dir: [mcval] #list of periods
-      dirmerged: mcvaltot
+      dir: [LHC16pp_deghjop,LHC16pp_kl,LHC17pp,LHC18pp] #list of periods
+      dirmerged: /data/Derived/DskINT7withJets/vAN-20190804_ROOT6-1/pp_mc_prodD2H/mcvaltot
