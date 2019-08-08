@@ -61,6 +61,7 @@ function print_usage()
 {
     echo -e "Usage: post_download \n" \
                                    "[[ [-i | --input <input_directory> top directory where \"unmerged\" directory can be found] \n" \
+                                   "   [-o | --output <output_directory> output directory where \"merged\" directory will be placed]\n" \
                                    "   [-s | --target-size <size> target size in kB]\n" \
                                    "   [-m | --max-input-size <max_input_size> in case input file might be bigger that target size]\n" \
                                    "   [-n | --n-max-size <n_max_size> number of big files accepted]\n" \
@@ -79,7 +80,7 @@ function check_settings()
             "number of big files accepted: $MAX_ACCEPTED_BIG_INPUT \n" \
             "number of jobs: $N_PACKING_JOBS \n"
     echo
-    echo -e "Merged files will be written to ${STREAM_START_BOLD}$INPUT_PATH/merged${STREAM_END_FORMAT}."
+    echo -e "Merged files will be written to ${STREAM_START_BOLD}$OUTPUT_PATH/merged${STREAM_END_FORMAT}."
     echo -e "Log files will be written to ${STREAM_START_BOLD}${LOG_DIR}${STREAM_END_FORMAT}."
     echo
 
@@ -98,6 +99,9 @@ do
     case $1 in
         -i | --input )              shift
                                     INPUT_PATH="$1"
+                                    ;;
+        -o | --output )             shift
+                                    OUTPUT_PATH="$1"
                                     ;;
         -s | --target-size )        shift
                                     TARGET_PACK_SIZE="$1"
@@ -135,6 +139,7 @@ echo
 
 # Make it an absolute path...
 INPUT_PATH=$(realpath $INPUT_PATH)
+OUTPUT_PATH=${OUTPUT_PATH:-$INPUT_PATH}
 
 # ... and go there
 cd $INPUT_PATH
@@ -154,7 +159,7 @@ fi
 
 
 # Fail if "merged" directory exists already
-[[ -d "$MERGED_DIR" ]] && { echo -e "${STREAM_START_RED}ERROR${STREAM_END_FORMAT}: Seems that the merge directory already exists"; exit 1; }
+[[ -d "${OUTPUT_PATH}/$MERGED_DIR" ]] && { echo -e "${STREAM_START_RED}ERROR${STREAM_END_FORMAT}: Seems that the merge directory already exists"; exit 1; }
 
 # To do some logging
 mkdir -p $LOG_DIR
@@ -224,7 +229,7 @@ do
             output_dir="$MERGED_CHILD_DIR/pack_${n_packs}"
             n_job_delay $N_PACKING_JOBS 10
             log_file=$LOG_DIR/${c_stripped}_${n_packs}.log
-            packing $INPUT_PATH/$output_dir "$file_pack" $log_file &
+            packing $OUTPUT_PATH/$output_dir "$file_pack" $log_file &
             # Need to add that since it would be skipped otherwise
             file_pack="$rfc "
             current_size="$next_size"
@@ -236,7 +241,7 @@ do
     output_dir="$MERGED_CHILD_DIR/pack_${n_packs}"
     n_job_delay $N_PACKING_JOBS 10
     log_file=$LOG_DIR/${c_stripped}_${n_packs}.log
-    packing $INPUT_PATH/$output_dir "$file_pack" $log_file &
+    packing $OUTPUT_PATH/$output_dir "$file_pack" $log_file &
 
 done
 
