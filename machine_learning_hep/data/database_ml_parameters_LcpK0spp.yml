@@ -199,7 +199,7 @@ LcpK0spp:
     data:
       nperiods: 4
       nprocessesparallel: 20
-      maxfiles : [40,40,40,40] #list of periods
+      maxfiles : [20,20,20,20] #list of periods
       chunksizeunp : [100,100,100,100] #list of periods
       chunksizeskim: [100,100,100,100] #list of periods
       fracmerge : [0.05,0.05,0.05,0.05] #list of periods
@@ -227,7 +227,7 @@ LcpK0spp:
     mc:
       nperiods: 4
       nprocessesparallel: 20
-      maxfiles : [40,40,40,40] #list of periods
+      maxfiles : [20,20,20,20] #list of periods
       chunksizeunp : [1000,1000,1000,1000] #list of periods
       chunksizeskim: [1000,1000,1000,1000] #list of periods
       fracmerge : [1.0,1.0,1.0,1.0] #list of periods
@@ -324,12 +324,12 @@ LcpK0spp:
       data: [0.3,0.3,0.3,0.3,0.3] #list of nbins
       mc: [0.3,0.3,0.3,0.3,0.3] #list of nbins
 
-    probcutoptimal: [0.45,0.45,0.4,0.3,0.3] #list of nbins
+    probcutoptimal: [0.3,0.3,0.3,0.3,0.3] #list of nbins
 
 
     sel_an_binmin: [1,2,3,4,5,6,8,12]
     sel_an_binmax: [2,3,4,5,6,8,12,24]
-    binning_matching: [0,0,0,1,1,1,2,3] 
+    binning_matching: [0,1,1,2,2,2,3,4] 
     sel_final_fineptbins: ["is_ev_rej==0","is_ev_rej==0","is_ev_rej==0","is_ev_rej==0","is_ev_rej==0","is_ev_rej==0","is_ev_rej==0","is_ev_rej==0"]  
 
     mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
