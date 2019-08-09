@@ -37,23 +37,15 @@ The scripts are saved in *~/MachineLearningHEP/cplusutilities. There are three w
 2) Run ./Download.sh **without** arguments. The script will ask you for the required input.
 3) Run ./Download.sh **with** arguments: *./Download.sh trainname outputdirectory gridmergingstage* 
  
-The first argument is the trainname, which has the format: *trainnumber_date-time*. With this info, the script automatically loads the correct dataset name and AliPhysics tag. The second argument is the output directory. Please do *not* use your local folder. The last argument is the GRID merging stage, which should be in the format Stage_#. If this argument is empty, JAliEn will download the unmerged files from GRID. 
-> For now downloading the unmerged files is the preferred way, as it is not yet possible to distinguish between processed and unprocessed (in case of Stage_1 merging failure) jobs. One can perform offline merging with the post_download.sh script.
- 
- 
-If (some of the) arguments are empty, the script will ask for your input:
-1) The script will always ask for confirmation of the hardcoded variables (see below). Please read them carefully when submitting a job over full statistics.
-2) You will be asked to fill in the trainname (if not provided).
-3) Confirmation will be asked to save output in "./" (if no outputdirectory was provided). Output path can be changed if one doesn't answer 'y' or 'Y'
-4) A warning will be shown that the script will download unmerged GRID files if the fourth argument was empty. This should however already have been checked in 1).
+The first argument is the trainname, which has the format: *trainnumber_date-time*. With this info, the script automatically loads the correct dataset name and AliPhysics tag. The second argument is the output directory. Please do *not* use your local folder. The last argument is the GRID merging stage, which should be in the format Stage_#. If this argument is empty, JAliEn will download the unmerged files from GRID. If (some of the) arguments are empty, the script will ask for your input.
  
 
 ### a) Hardcoded values
 
-A few variables are hardcoded in *DownloadSkimMerge.sh*:
+A few variables are hardcoded in *Download.sh*:
 1) The number of files to download from GRID. By default all files will be downloaded: **nfiles="/*/"**. For test runs, one can add some zeros ("/000*/", assuming 1000 < jobs < 9999) to download less files.
 2) The file to be downloaded is by default: **AnalysisResults.root**.
-3) There are hardcoded paths for the different datasets from where to get the LEGO train output. Unfortunately, it is not possible to automatically get these from the train settings, as some of the child are splitted into multiple paths when the output is too big. For debugging purposes, the script will compare the hardcoded paths with the ones it can get from the train config.
+3) There are hardcoded paths for the different datasets from where to get the LEGO train output. Unfortunately, it is not possible to automatically get these from the train config, as some of the child are splitted into multiple paths when the output is too big. For debugging purposes, the script will print the hardcoded paths with the ones it can get from the train config.
 
 ### b) The screen program
 
@@ -77,7 +69,7 @@ ssh username@lxplus008.cern.ch          #Change to your situation
 screen -list
 screen -rD 32693.pts-30.lxplus008       #Change to your situation
 ```
-Is the script ready? Exit the *screen* program with **Ctrl-d**. Is the script still running, detach again with **Ctrl-a d**.
+Is the download finished? Exit the *screen* program with **Ctrl-d**. Is the script still running, detach again with **Ctrl-a d**.
 
 
 ## 3) Post download merging
