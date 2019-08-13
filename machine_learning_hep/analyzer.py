@@ -74,7 +74,6 @@ class Analyzer:
         self.p_fixingausmean = datap["analysis"]["SetInitialGaussianMean"]
         self.p_dolike = datap["analysis"]["dolikelihood"]
         self.p_sigmaarray = datap["analysis"]["sigmaarray"]
-        self.p_fixedsigma = datap["analysis"]["FixedSigma"]
         self.p_casefit = datap["analysis"]["fitcase"]
         self.p_latexnmeson = datap["analysis"]["latexnamemeson"]
         self.p_latexbin2var = datap["analysis"]["latexbin2var"]
@@ -112,8 +111,7 @@ class Analyzer:
                     fitter(h_invmass, self.p_casefit, self.p_sgnfunc[ipt], self.p_bkgfunc[ipt], \
                     self.p_masspeak, self.p_rebin[ipt], self.p_dolike, self.p_fixingausmean, \
                     self.p_fixingaussigma, self.p_sigmaarray[ipt], self.p_massmin[ipt], \
-                    self.p_massmax[ipt], self.p_fixedmean, self.p_fixedsigma, \
-                    self.d_resultsallpdata, suffix)
+                    self.p_massmax[ipt], self.p_fixedmean, self.d_resultsallpdata, suffix)
                 rawYield = rawYield/(self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
                 rawYieldErr = rawYieldErr/(self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
                 self.lmult_yieldshisto[imult].SetBinContent(ipt + 1, rawYield)
