@@ -207,7 +207,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.lpt_finbinmax = datap["analysis"]["sel_an_binmax"]
         self.p_nptfinbins = len(self.lpt_finbinmin)
         self.bin_matching = datap["analysis"]["binning_matching"]
-        self.sel_final_fineptbins = datap["analysis"]["sel_final_fineptbins"]
+        self.sel_final_fineptbins_mc = datap["analysis"]["sel_final_fineptbins"]["mc"]
+        self.sel_final_fineptbins_data = datap["analysis"]["sel_final_fineptbins"]["data"]
 
     def unpack(self, file_index):
         treeevtorig = uproot.open(self.l_root[file_index])[self.n_treeevt]
@@ -365,8 +366,13 @@ class Processer: # pylint: disable=too-many-instance-attributes
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.lpt_recodecmerged[bin_id], "rb"))
             df = df.query(self.l_selml[bin_id])
-            if self.sel_final_fineptbins is not None:
-                df = df.query(self.sel_final_fineptbins[ipt])
+            # That is normally not called for MC...
+            # Anyway, just to be sure the correct thing is done
+            if self.mcordata == "mc":
+                if self.sel_final_fineptbins_mc is not None:
+                    df = df.query(self.sel_final_fineptbins_mc[ipt])
+            elif self.sel_final_fineptbins_data is not None:
+                df = df.query(self.sel_final_fineptbins_data[ipt])
             df = seldf_singlevar(df, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
             for ibin2 in range(len(self.lvar2_binmin)):
@@ -381,7 +387,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 fill_hist(h_invmass, df_bin.inv_mass)
                 myfile.cd()
                 h_invmass.Write()
-    # pylint: disable=line-too-long
+
     def process_efficiency(self):
         out_file = TFile.Open(self.n_fileeff, "recreate")
         for ibin2 in range(len(self.lvar2_binmin)):
@@ -393,37 +399,34 @@ class Processer: # pylint: disable=too-many-instance-attributes
             analysis_bin_lims_temp = self.lpt_finbinmin.copy()
             analysis_bin_lims_temp.append(self.lpt_finbinmax[n_bins-1])
             analysis_bin_lims = array.array('f', analysis_bin_lims_temp)
-            h_gen_pr = TH1F("h_gen_pr" + stringbin2, "Prompt Generated in acceptance |y|<0.5", \
+            h_gen_pr = TH1F("h_gen_pr" + stringbin2,
+                            "Prompt Generated in acceptance |y|<0.5",
                             n_bins, analysis_bin_lims)
-            h_presel_pr = TH1F("h_presel_pr" + stringbin2, "Prompt Reco in acc |#eta|<0.8 and sel", \
+            h_presel_pr = TH1F("h_presel_pr" + stringbin2,
+                               "Prompt Reco in acc |#eta|<0.8 and sel",
                                n_bins, analysis_bin_lims)
-            h_sel_pr = TH1F("h_sel_pr" + stringbin2, "Prompt Reco and sel in acc |#eta|<0.8 and sel", \
+            h_sel_pr = TH1F("h_sel_pr" + stringbin2,
+                            "Prompt Reco and sel in acc |#eta|<0.8 and sel",
                             n_bins, analysis_bin_lims)
-            h_gen_fd = TH1F("h_gen_fd" + stringbin2, "FD Generated in acceptance |y|<0.5", \
+            h_gen_fd = TH1F("h_gen_fd" + stringbin2, "FD Generated in acceptance |y|<0.5",
                             n_bins, analysis_bin_lims)
-            h_presel_fd = TH1F("h_presel_fd" + stringbin2, "FD Reco in acc |#eta|<0.8 and sel", \
+            h_presel_fd = TH1F("h_presel_fd" + stringbin2, "FD Reco in acc |#eta|<0.8 and sel",
                                n_bins, analysis_bin_lims)
-            h_sel_fd = TH1F("h_sel_fd" + stringbin2, "FD Reco and sel in acc |#eta|<0.8 and sel", \
-                            n_bins, analysis_bin_lims)
-            h_gen_pr = TH1F("h_gen_pr" + stringbin2, "Prompt Generated in acceptance |y|<0.5", \
-                            n_bins, analysis_bin_lims)
-            h_presel_pr = TH1F("h_presel_pr" + stringbin2, "Prompt Reco in acc |#eta|<0.8 and sel", \
-                               n_bins, analysis_bin_lims)
-            h_sel_pr = TH1F("h_sel_pr" + stringbin2, "Prompt Reco and sel in acc |#eta|<0.8 and sel", \
-                            n_bins, analysis_bin_lims)
-            h_gen_fd = TH1F("h_gen_fd" + stringbin2, "FD Generated in acceptance |y|<0.5", \
-                            n_bins, analysis_bin_lims)
-            h_presel_fd = TH1F("h_presel_fd" + stringbin2, "FD Reco in acc |#eta|<0.8 and sel", \
-                               n_bins, analysis_bin_lims)
-            h_sel_fd = TH1F("h_sel_fd" + stringbin2, "FD Reco and sel in acc |#eta|<0.8 and sel", \
+            h_sel_fd = TH1F("h_sel_fd" + stringbin2, "FD Reco and sel in acc |#eta|<0.8 and sel",
                             n_bins, analysis_bin_lims)
 
             bincounter = 0
             for ipt in range(self.p_nptfinbins):
                 bin_id = self.bin_matching[ipt]
                 df_mc_reco = pickle.load(openfile(self.lpt_recodecmerged[bin_id], "rb"))
-                if self.sel_final_fineptbins is not None:
-                    df_mc_reco = df_mc_reco.query(self.sel_final_fineptbins[ipt])
+                # That is normally not called for data...
+                # Anyway, just to be sure the correct thing is done
+                if self.mcordata == "mc":
+                    if self.sel_final_fineptbins_mc is not None:
+                        df_mc_reco = df_mc_reco.query(self.sel_final_fineptbins_mc[ipt])
+                elif self.sel_final_fineptbins_data is not None:
+                    df_mc_reco = df_mc_reco.query(self.sel_final_fineptbins_data[ipt])
+
                 df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[bin_id], "rb"))
                 df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
                 df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var_binning, \
@@ -522,7 +525,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
         hdenv0m.Sumw2()
         fill_hist(hdenv0m, dfevt[varname])
         for index, _ in enumerate(cutonspd):
-            hnum = TH1F("hnumv0mspd%d" % cutonspd[index], "hnumv0mspd%d" % cutonspd[index], 30, 0, 1000)
+            hnum = TH1F("hnumv0mspd%d" % cutonspd[index], "hnumv0mspd%d" % cutonspd[index],
+                        30, 0, 1000)
             hnum.Sumw2()
             devtsel = dfevt.query("n_tracklets>=%d" % cutonspd[index])
             fill_hist(hnum, devtsel[varname])
