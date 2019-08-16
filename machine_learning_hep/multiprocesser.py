@@ -20,8 +20,9 @@ from machine_learning_hep.processer import Processer
 from machine_learning_hep.utilities import merge_method, mergerootfiles
 class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-statements
     species = "multiprocesser"
-    def __init__(self, datap, run_param, mcordata):
+    def __init__(self, datap, typean, run_param, mcordata):
         self.datap = datap
+        self.typean = typean
         self.run_param = run_param
         self.mcordata = mcordata
         self.prodnumber = len(datap["multi"][self.mcordata]["unmerged_tree_dir"])
@@ -80,12 +81,13 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.lper_evtvalroot = [os.path.join(direc, self.n_evtvalroot) \
                                  for direc in self.dlper_valevtroot]
 
-        self.dlper_reco_modapp = datap["analysis"][self.mcordata]["pkl_skimmed_dec"]
-        self.dlper_reco_modappmerged = datap["analysis"][self.mcordata]["pkl_skimmed_decmerged"]
-        self.d_results = datap["analysis"][self.mcordata]["results"]
-        self.d_resulsallp = datap["analysis"][self.mcordata]["resultsallp"]
-        self.lpt_probcutpre = datap["analysis"]["probcutpresel"]
-        self.lpt_probcut = datap["analysis"]["probcutoptimal"]
+        self.dlper_reco_modapp = datap["mlapplication"][self.mcordata]["pkl_skimmed_dec"]
+        self.dlper_reco_modappmerged = \
+                datap["mlapplication"][self.mcordata]["pkl_skimmed_decmerged"]
+        self.d_results = datap["analysis"][self.typean][self.mcordata]["results"]
+        self.d_resulsallp = datap["analysis"][self.typean][self.mcordata]["resultsallp"]
+        self.lpt_probcutpre = datap["mlapplication"]["probcutpresel"]
+        self.lpt_probcut = datap["mlapplication"]["probcutoptimal"]
         self.f_evt_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evt)
         self.f_evtorig_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evtorig)
         self.f_evtvalroot_mergedallp = os.path.join(self.d_valevtroot_mergedallp, self.n_evtvalroot)
@@ -102,7 +104,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
                                   self.dlper_reco_modapp[indexp],
                                   self.dlper_reco_modappmerged[indexp],
                                   self.d_results[indexp],
-                                  self.dlper_valevtroot[indexp])
+                                  self.dlper_valevtroot[indexp], self.typean)
             self.process_listsample.append(myprocess)
 
         self.f_evtorigroot_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evtvalroot)
