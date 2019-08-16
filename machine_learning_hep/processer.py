@@ -46,8 +46,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                  d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
-                 d_results, d_val):
-
+                 d_results, d_val, typean):
+        self.typean = typean
         #directories
         self.d_root = d_root
         self.d_pkl = d_pkl
@@ -139,15 +139,15 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.f_totevtorig = os.path.join(self.d_pkl, self.n_evtorig)
         self.f_totevtvalroot = os.path.join(self.d_val, self.n_evtvalroot)
 
-        self.p_modelname = datap["analysis"]["modelname"]
+        self.p_modelname = datap["mlapplication"]["modelname"]
         self.lpt_anbinmin = datap["sel_skim_binmin"]
         self.lpt_anbinmax = datap["sel_skim_binmax"]
         self.p_nptbins = len(datap["sel_skim_binmax"])
-        self.lpt_model = datap["analysis"]["modelsperptbin"]
+        self.lpt_model = datap["mlapplication"]["modelsperptbin"]
         self.dirmodel = datap["ml"]["mlout"]
         self.lpt_model = appendmainfoldertolist(self.dirmodel, self.lpt_model)
-        self.lpt_probcutpre = datap["analysis"]["probcutpresel"][self.mcordata]
-        self.lpt_probcutfin = datap["analysis"]["probcutoptimal"]
+        self.lpt_probcutpre = datap["mlapplication"]["probcutpresel"][self.mcordata]
+        self.lpt_probcutfin = datap["mlapplication"]["probcutoptimal"]
 
         if self.lpt_probcutfin < self.lpt_probcutpre:
             print("FATAL error: probability cut final must be tighter!")
@@ -191,23 +191,25 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 (self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt], \
                  self.lpt_probcutfin[ipt])) for ipt in range(self.p_nptbins)]
 
-        self.p_mass_fit_lim = datap["analysis"]['mass_fit_lim']
-        self.p_bin_width = datap["analysis"]['bin_width']
+        self.p_mass_fit_lim = datap["analysis"][self.typean]['mass_fit_lim']
+        self.p_bin_width = datap["analysis"][self.typean]['bin_width']
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
                                     self.p_bin_width))
         self.l_selml = ["y_test_prob%s>%s" % (self.p_modelname, self.lpt_probcutfin[ipt]) \
                        for ipt in range(self.p_nptbins)]
-        self.s_presel_gen_eff = datap["analysis"]['presel_gen_eff']
+        self.s_presel_gen_eff = datap["analysis"][self.typean]['presel_gen_eff']
 
-        self.lvar2_binmin = datap["analysis"]["sel_binmin2"]
-        self.lvar2_binmax = datap["analysis"]["sel_binmax2"]
-        self.v_var2_binning = datap["analysis"]["var_binning2"]
+        self.lvar2_binmin = datap["analysis"][self.typean]["sel_binmin2"]
+        self.lvar2_binmax = datap["analysis"][self.typean]["sel_binmax2"]
+        self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
 
-        self.lpt_finbinmin = datap["analysis"]["sel_an_binmin"]
-        self.lpt_finbinmax = datap["analysis"]["sel_an_binmax"]
+        self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
+        self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
         self.p_nptfinbins = len(self.lpt_finbinmin)
-        self.bin_matching = datap["analysis"]["binning_matching"]
-        self.sel_final_fineptbins = datap["analysis"]["sel_final_fineptbins"]
+        self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
+        #self.sel_final_fineptbins = datap["analysis"][self.typean]["sel_final_fineptbins"]
+        self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
+        self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
 
     def unpack(self, file_index):
         treeevtorig = uproot.open(self.l_root[file_index])[self.n_treeevt]
@@ -365,8 +367,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.lpt_recodecmerged[bin_id], "rb"))
             df = df.query(self.l_selml[bin_id])
-            if self.sel_final_fineptbins is not None:
-                df = df.query(self.sel_final_fineptbins[ipt])
+            if self.s_evtsel is not None:
+                df = df.query(self.s_evtsel)
+            if self.s_trigger is not None:
+                df = df.query(self.s_trigger)
             df = seldf_singlevar(df, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
             for ibin2 in range(len(self.lvar2_binmin)):
@@ -422,8 +426,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
             for ipt in range(self.p_nptfinbins):
                 bin_id = self.bin_matching[ipt]
                 df_mc_reco = pickle.load(openfile(self.lpt_recodecmerged[bin_id], "rb"))
-                if self.sel_final_fineptbins is not None:
-                    df_mc_reco = df_mc_reco.query(self.sel_final_fineptbins[ipt])
+                if self.s_evtsel is not None:
+                    df_mc_reco = df_mc_reco.query(self.s_evtsel)
+                if self.s_trigger is not None:
+                    df_mc_reco = df_mc_reco.query(self.s_trigger)
                 df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[bin_id], "rb"))
                 df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
                 df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var_binning, \

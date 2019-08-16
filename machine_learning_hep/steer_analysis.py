@@ -89,16 +89,18 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     dogridsearch = data_config["ml_study"]['dogridsearch']
     dosignifopt = data_config["ml_study"]['dosignifopt']
     doscancuts = data_config["ml_study"]["doscancuts"]
-    doapplydata = data_config["analysis"]["data"]["doapply"]
-    doapplymc = data_config["analysis"]["mc"]["doapply"]
-    domergeapplydata = data_config["analysis"]["data"]["domergeapply"]
-    domergeapplymc = data_config["analysis"]["mc"]["domergeapply"]
+    doapplydata = data_config["mlapplication"]["data"]["doapply"]
+    doapplymc = data_config["mlapplication"]["mc"]["doapply"]
+    domergeapplydata = data_config["mlapplication"]["data"]["domergeapply"]
+    domergeapplymc = data_config["mlapplication"]["mc"]["domergeapply"]
     dohistomassmc = data_config["analysis"]["mc"]["histomass"]
     dohistomassdata = data_config["analysis"]["data"]["histomass"]
     doefficiency = data_config["analysis"]["mc"]["efficiency"]
     dofit = data_config["analysis"]["dofit"]
     doeff = data_config["analysis"]["doeff"]
     docross = data_config["analysis"]["docross"]
+
+    typean = data_config["analysis"]["type"]
 
 
     dovalhistodata = data_config["validation"]["data"]["docreatehisto"]
@@ -115,15 +117,15 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     dirpklskdata = data_param[case]["multi"]["data"]["pkl_skimmed"]
     dirpklmldata = data_param[case]["multi"]["data"]["pkl_skimmed_merge_for_ml"]
     dirpklmltotdata = data_param[case]["multi"]["data"]["pkl_skimmed_merge_for_ml_all"]
-    dirpklskdecmc = data_param[case]["analysis"]["mc"]["pkl_skimmed_dec"]
-    dirpklskdec_mergedmc = data_param[case]["analysis"]["mc"]["pkl_skimmed_decmerged"]
-    dirpklskdecdata = data_param[case]["analysis"]["data"]["pkl_skimmed_dec"]
-    dirpklskdec_mergeddata = data_param[case]["analysis"]["data"]["pkl_skimmed_decmerged"]
+    dirpklskdecmc = data_param[case]["mlapplication"]["mc"]["pkl_skimmed_dec"]
+    dirpklskdec_mergedmc = data_param[case]["mlapplication"]["mc"]["pkl_skimmed_decmerged"]
+    dirpklskdecdata = data_param[case]["mlapplication"]["data"]["pkl_skimmed_dec"]
+    dirpklskdec_mergeddata = data_param[case]["mlapplication"]["data"]["pkl_skimmed_decmerged"]
 
-    dirresultsdata = data_param[case]["analysis"]["data"]["results"]
-    dirresultsmc = data_param[case]["analysis"]["mc"]["results"]
-    dirresultsdatatot = data_param[case]["analysis"]["data"]["resultsallp"]
-    dirresultsmctot = data_param[case]["analysis"]["mc"]["resultsallp"]
+    dirresultsdata = data_param[case]["analysis"][typean]["data"]["results"]
+    dirresultsmc = data_param[case]["analysis"][typean]["mc"]["results"]
+    dirresultsdatatot = data_param[case]["analysis"][typean]["data"]["resultsallp"]
+    dirresultsmctot = data_param[case]["analysis"][typean]["mc"]["resultsallp"]
 
     dirvalmc = data_param[case]["validation"]["mc"]["dir"]
     dirvaldata = data_param[case]["validation"]["data"]["dir"]
@@ -139,9 +141,9 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     mlplot = data_param[case]["ml"]["mlplot"]
 
 
-    mymultiprocessmc = MultiProcesser(data_param[case], run_param, "mc")
-    mymultiprocessdata = MultiProcesser(data_param[case], run_param, "data")
-    myan = Analyzer(data_param[case], case)
+    mymultiprocessmc = MultiProcesser(data_param[case], typean, run_param, "mc")
+    mymultiprocessdata = MultiProcesser(data_param[case], typean, run_param, "data")
+    myan = Analyzer(data_param[case], case, typean)
 
     #creating folder if not present
     counter = 0
