@@ -1,4 +1,4 @@
-case: LcpK0spp_tm
+case: LcpK0spp
 download:
   alice:
     activate: false
