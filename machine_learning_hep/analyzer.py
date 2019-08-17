@@ -100,7 +100,7 @@ class Analyzer:
 
     def fitter(self):
         lfile = TFile.Open(self.n_filemass)
-        fileout = TFile.Open("yields%s.root" % self.case + self.typean, "recreate")
+        fileout = TFile.Open("yields%s%s.root" % (self.case, self.typean), "recreate")
         for imult in range(self.p_nbin2):
             for ipt in range(self.p_nptbins):
                 bin_id = self.bin_matching[ipt]
@@ -124,17 +124,17 @@ class Analyzer:
 
         cYields = TCanvas('cYields', 'The Fit Canvas')
         cYields.SetLogy()
-        lfile = TFile.Open("yields%s.root" % self.case + self.typean)
+        lfile = TFile.Open("yields%s%s.root" % (self.case, self.typean))
         for imult in range(self.p_nbin2):
             self.lmult_yieldshisto[imult].SetMinimum(1)
             self.lmult_yieldshisto[imult].SetMaximum(1e14)
             self.lmult_yieldshisto[imult].SetLineColor(imult+1)
             self.lmult_yieldshisto[imult].Draw("same")
-        cYields.SaveAs("Yields%s.eps" % self.case + self.typean)
+        cYields.SaveAs("Yields%s%s.eps" % (self.case, self.typean))
 
     def efficiency(self):
         lfileeff = TFile.Open(self.n_fileff)
-        fileouteff = TFile.Open("efficiencies%s.root" % self.case + self.typean, "recreate")
+        fileouteff = TFile.Open("efficiencies%s%s.root" % (self.case, self.typean), "recreate")
         cEff = TCanvas('cEff', 'The Fit Canvas')
         for imult in range(self.p_nbin2):
             stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
@@ -152,7 +152,7 @@ class Analyzer:
             fileouteff.cd()
             h_sel_pr.SetName("eff_mult%d" % imult)
             h_sel_pr.Write()
-        cEff.SaveAs("Eff%s.eps" % self.case + self.typean)
+        cEff.SaveAs("Eff%s%s.eps" % (self.case, self.typean))
 
     def plotter(self):
 
@@ -164,9 +164,9 @@ class Analyzer:
         gStyle.SetFrameFillColor(0)
         gStyle.SetOptTitle(0)
 
-        fileouteff = TFile.Open("efficiencies%s.root" % self.case + self.typean)
-        fileoutyield = TFile.Open("yields%s.root" % self.case + self.typean)
-        fileoutcross = TFile.Open("finalcross%s.root" % self.case + self.typean, "recreate")
+        fileouteff = TFile.Open("efficiencies%s%s.root" % (self.case, self.typean))
+        fileoutyield = TFile.Open("yields%s%s.root" % (self.case, self.typean))
+        fileoutcross = TFile.Open("finalcross%s%s.root" % (self.case, self.typean), "recreate")
 
         cCrossvsvar1 = TCanvas('cCrossvsvar1', 'The Fit Canvas')
         cCrossvsvar1.SetCanvasSize(1900, 1500)
@@ -195,7 +195,7 @@ class Analyzer:
             hcross.GetXaxis().SetTitle("p_{T} %s (GeV)" % self.p_latexnmeson)
             hcross.GetYaxis().SetTitle("d#sigma/dp_{T} (%s)" % self.p_latexnmeson)
             hcross.SetName("hcross%d" % imult)
-            hcross.GetYaxis().SetRangeUser(1e4, 1e10)
+            hcross.GetYaxis().SetRangeUser(1e1, 1e10)
             legvsvar1endstring = "%.1f < %s < %.1f GeV/c" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legvsvar1.AddEntry(hcross, legvsvar1endstring, "LEP")
@@ -206,7 +206,7 @@ class Analyzer:
             listvalerrpt = [hcross.GetBinError(ipt+1) for ipt in range(self.p_nptbins)]
             listvalueserr.append(listvalerrpt)
         legvsvar1.Draw()
-        cCrossvsvar1.SaveAs("Cross%sVs%s.eps" % (self.case + self.typean, self.v_var_binning))
+        cCrossvsvar1.SaveAs("Cross%s%sVs%s.eps" % (self.case, self.typean, self.v_var_binning))
 
         cCrossvsvar2 = TCanvas('cCrossvsvar2', 'The Fit Canvas')
         cCrossvsvar2.SetCanvasSize(1900, 1500)
@@ -243,7 +243,7 @@ class Analyzer:
             hcrossvsvar2[ipt].Draw("same")
             legvsvar2.AddEntry(hcrossvsvar2[ipt], legvsvar2endstring, "LEP")
         legvsvar2.Draw()
-        cCrossvsvar2.SaveAs("Cross%sVs%s.eps" % (self.case + self.typean, self.v_var2_binning))
+        cCrossvsvar2.SaveAs("Cross%s%sVs%s.eps" % (self.case, self.typean, self.v_var2_binning))
 
     def studyevents(self):
         gROOT.SetStyle("Plain")
