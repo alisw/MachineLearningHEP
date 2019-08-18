@@ -198,12 +198,6 @@ class Analyzer:
             fileouteff.cd()
             h_sel_pr.SetName("eff_mult%d" % imult)
             h_sel_pr.Write()
-<<<<<<< HEAD
-        cEff.SaveAs("%s/Eff%s%s.eps" % (self.d_resultsallpmc,
-                                        self.case, self.typean))
-=======
->>>>>>> eff228a84ae481547ea2db0cb64b3af870a5d7be
-
             legeffstring = "%.1f < %s < %.1f GeV/c" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legeff.AddEntry(h_sel_pr, legeffstring, "LEP")
