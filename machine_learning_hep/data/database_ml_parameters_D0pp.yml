@@ -435,7 +435,7 @@ D0pp:
       FixedSigma: true
       fitcase: D0
       latexnamemeson: "D^{0}"
-      latexbin2var: "n_{trkl}"
+      latexbin2var: "V0M"
       nevents: 1700000000.
       dodoublecross: false
 

@@ -465,7 +465,7 @@ LcpK0spp:
       FixedSigma: true  
       fitcase: Lc
       latexnamemeson: "L_{c}^{K0s}"
-      latexbin2var: "n_{trkl}"
+      latexbin2var: "V0M"
       nevents: 1700000000.
       dodoublecross: false
   
