@@ -23,6 +23,7 @@ from ROOT import TFile, TH1F, TCanvas
 from ROOT import gStyle, TLegend
 from ROOT import gROOT
 from ROOT import TStyle
+from ROOT import TLatex
 from machine_learning_hep.globalfitter import fitter
 
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements
@@ -98,7 +99,18 @@ class Analyzer:
         self.f_evtvaldata = os.path.join(self.d_valevtdata, self.n_evtvalroot)
         self.f_evtvalmc = os.path.join(self.d_valevtmc, self.n_evtvalroot)
 
+    @staticmethod
+    def loadstyle():
+        gROOT.SetStyle("Plain")
+        gStyle.SetOptStat(0)
+        gStyle.SetOptStat(0000)
+        gStyle.SetPalette(0)
+        gStyle.SetCanvasColor(0)
+        gStyle.SetFrameFillColor(0)
+        gStyle.SetOptTitle(0)
+
     def fitter(self):
+        self.loadstyle()
         lfile = TFile.Open(self.n_filemass)
         fileout = TFile.Open("%s/yields%s%s.root" % (self.d_resultsallpdata,
                                                      self.case, self.typean), "recreate")
@@ -124,22 +136,52 @@ class Analyzer:
             self.lmult_yieldshisto[imult].Write()
 
         cYields = TCanvas('cYields', 'The Fit Canvas')
+        cYields.SetCanvasSize(1900, 1500)
+        cYields.SetWindowSize(500, 500)
         cYields.SetLogy()
+
+        legyield = TLegend(.5, .65, .7, .85)
+        legyield.SetBorderSize(0)
+        legyield.SetFillColor(0)
+        legyield.SetFillStyle(0)
+        legyield.SetTextFont(42)
+        legyield.SetTextSize(0.035)
+
         lfile = TFile.Open("%s/yields%s%s.root" % (self.d_resultsallpdata,
                                                    self.case, self.typean))
         for imult in range(self.p_nbin2):
             self.lmult_yieldshisto[imult].SetMinimum(1)
-            self.lmult_yieldshisto[imult].SetMaximum(1e14)
+            self.lmult_yieldshisto[imult].SetMaximum(1e6)
             self.lmult_yieldshisto[imult].SetLineColor(imult+1)
             self.lmult_yieldshisto[imult].Draw("same")
+            legyieldstring = "%.1f < %s < %.1f GeV/c" % \
+                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
+            legyield.AddEntry(self.lmult_yieldshisto[imult], legyieldstring, "LEP")
+            self.lmult_yieldshisto[imult].GetXaxis().SetTitle("p_{T} (GeV)")
+            self.lmult_yieldshisto[imult].GetYaxis().SetTitle("Uncorrected yields %s %s (1/GeV)" \
+                    % (self.p_latexnmeson, self.typean))
+
+        legyield.Draw()
         cYields.SaveAs("%s/Yields%s%s.eps" % (self.d_resultsallpdata,
                                               self.case, self.typean))
 
     def efficiency(self):
+        self.loadstyle()
+
         lfileeff = TFile.Open(self.n_fileff)
         fileouteff = TFile.Open("%s/efficiencies%s%s.root" % (self.d_resultsallpmc, \
                                  self.case, self.typean), "recreate")
         cEff = TCanvas('cEff', 'The Fit Canvas')
+        cEff.SetCanvasSize(1900, 1500)
+        cEff.SetWindowSize(500, 500)
+
+        legeff = TLegend(.5, .65, .7, .85)
+        legeff.SetBorderSize(0)
+        legeff.SetFillColor(0)
+        legeff.SetFillStyle(0)
+        legeff.SetTextFont(42)
+        legeff.SetTextSize(0.035)
+
         for imult in range(self.p_nbin2):
             stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
                                             self.lvar2_binmin[imult], \
@@ -156,18 +198,26 @@ class Analyzer:
             fileouteff.cd()
             h_sel_pr.SetName("eff_mult%d" % imult)
             h_sel_pr.Write()
+<<<<<<< HEAD
+        cEff.SaveAs("%s/Eff%s%s.eps" % (self.d_resultsallpmc,
+                                        self.case, self.typean))
+=======
+>>>>>>> eff228a84ae481547ea2db0cb64b3af870a5d7be
+
+            legeffstring = "%.1f < %s < %.1f GeV/c" % \
+                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
+            legeff.AddEntry(h_sel_pr, legeffstring, "LEP")
+            h_sel_pr.GetXaxis().SetTitle("p_{T} (GeV)")
+            h_sel_pr.GetYaxis().SetTitle("Uncorrected yields %s %s (1/GeV)" \
+                    % (self.p_latexnmeson, self.typean))
+            h_sel_pr.SetMinimum(0.)
+            h_sel_pr.SetMaximum(1.5)
+        legeff.Draw()
         cEff.SaveAs("%s/Eff%s%s.eps" % (self.d_resultsallpmc,
                                         self.case, self.typean))
 
     def plotter(self):
-
-        gROOT.SetStyle("Plain")
-        gStyle.SetOptStat(0)
-        gStyle.SetOptStat(0000)
-        gStyle.SetPalette(0)
-        gStyle.SetCanvasColor(0)
-        gStyle.SetFrameFillColor(0)
-        gStyle.SetOptTitle(0)
+        self.loadstyle()
 
         fileouteff = TFile.Open("%s/efficiencies%s%s.root" % \
                                 (self.d_resultsallpmc, self.case, self.typean))
@@ -201,7 +251,8 @@ class Analyzer:
             hcross.Scale(1./norm)
             fileoutcross.cd()
             hcross.GetXaxis().SetTitle("p_{T} %s (GeV)" % self.p_latexnmeson)
-            hcross.GetYaxis().SetTitle("d#sigma/dp_{T} (%s)" % self.p_latexnmeson)
+            hcross.GetYaxis().SetTitle("d#sigma/dp_{T} (%s) %s" %
+                                       (self.p_latexnmeson, self.typean))
             hcross.SetName("hcross%d" % imult)
             hcross.GetYaxis().SetRangeUser(1e1, 1e10)
             legvsvar1endstring = "%.1f < %s < %.1f GeV/c" % \
@@ -256,13 +307,7 @@ class Analyzer:
                                                       self.case, self.typean, self.v_var2_binning))
 
     def studyevents(self):
-        gROOT.SetStyle("Plain")
-        gStyle.SetOptStat(0)
-        gStyle.SetOptStat(0000)
-        gStyle.SetPalette(0)
-        gStyle.SetCanvasColor(0)
-        gStyle.SetFrameFillColor(0)
-        gStyle.SetOptTitle(0)
+        self.loadstyle()
 
         filedata = TFile.Open(self.f_evtvaldata)
         filemc = TFile.Open(self.f_evtvalmc)

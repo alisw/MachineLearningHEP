@@ -82,7 +82,8 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
                                  for direc in self.dlper_valevtroot]
 
         self.dlper_reco_modapp = datap["mlapplication"][self.mcordata]["pkl_skimmed_dec"]
-        self.dlper_reco_modappmerged = datap["mlapplication"][self.mcordata]["pkl_skimmed_decmerged"]
+        self.dlper_reco_modappmerged = \
+                datap["mlapplication"][self.mcordata]["pkl_skimmed_decmerged"]
         self.d_results = datap["analysis"][self.typean][self.mcordata]["results"]
         self.d_resulsallp = datap["analysis"][self.typean][self.mcordata]["resultsallp"]
         self.lpt_probcutpre = datap["mlapplication"]["probcutpresel"]

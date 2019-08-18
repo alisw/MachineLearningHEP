@@ -228,7 +228,6 @@ D0pp:
     probcutpresel:
       data: [0.45,0.45,0.45,0.45,0.45] #list of nbins
       mc: [0.45,0.45,0.45,0.45,0.45] #list of nbins
-
     probcutoptimal: [0.5,0.5,0.5,0.5,0.5] #list of nbins
   
   analysis:
