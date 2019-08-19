@@ -298,7 +298,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     if doml is True:
         index = 0
         for binmin, binmax in zip(binminarray, binmaxarray):
-            myopt = Optimiser(data_param[case], case,
+            myopt = Optimiser(data_param[case], case, typean,
                               data_model[mltype], grid_param, binmin, binmax,
                               raahp[index])
             if docorrelation is True:
