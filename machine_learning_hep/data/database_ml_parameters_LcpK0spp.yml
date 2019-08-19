@@ -373,8 +373,8 @@ LcpK0spp:
 
 
     MBjetvspt:
-      sel_binmin2: [5,15] #list of nbins
-      sel_binmax2: [15,30] #list of nbins
+      sel_binmin2: [5] #list of nbins
+      sel_binmax2: [15] #list of nbins
       var_binning2: pt_jet
 
       sel_an_binmin: [2,4,5,6,8,12] #list of pt nbins
