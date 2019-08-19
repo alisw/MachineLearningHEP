@@ -1,12 +1,12 @@
-case: D0jetpp
+case: LcpK0spp
 download:
   alice:
     activate: false
 conversion:
   mc: 
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 skimming: 
   mc:
     activate: false
@@ -38,23 +38,28 @@ ml_study:
   dosignifopt: false
   doefficiency: false
   dotesting: false
-  dotraining: false
+  dotraining: true
 
-analysis:
+mlapplication:
   data:
     doapply: false
     domergeapply: false
     domergeapplyperiods: false
-    histomass: false
   mc:
     doapply: false
     domergeapply: false
     domergeapplyperiods: false
-    histomass: false
-    efficiency: false
-  dofit: false
-  doeff: false
-  docross: false
+
+analysis:
+  type: SPDvspt
+  data:
+    histomass: true
+  mc: 
+    histomass: true
+    efficiency: true
+  dofit: true
+  doeff: true
+  docross: true
 
 validation:
   data: 
