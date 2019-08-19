@@ -147,7 +147,7 @@ class Optimiser:
         self.p_savefit = data_param["ml"]["opt"]["save_fit"]
         self.p_nevtml = None
         self.p_nevttot = None
-        self.p_presel_gen_eff = data_param["analysis"]["presel_gen_eff"]
+        self.p_presel_gen_eff = data_param["ml"]["opt"]["presel_gen_eff"]
         self.p_mass_fit_lim = data_param["analysis"]['mass_fit_lim']
         self.p_bin_width = data_param["analysis"]['bin_width']
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
