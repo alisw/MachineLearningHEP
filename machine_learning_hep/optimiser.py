@@ -44,7 +44,7 @@ class Optimiser:
     #Class Attribute
     species = "optimiser"
 
-    def __init__(self, data_param, case, model_config, grid_config, binmin,
+    def __init__(self, data_param, case, typean, model_config, grid_config, binmin,
                  binmax, raahp):
 
         self.logger = get_logger()
@@ -90,6 +90,7 @@ class Optimiser:
         self.v_ismcbkg = data_param["bitmap_sel"]["var_ismcbkg"]
         #parameters
         self.p_case = case
+        self.p_typean = typean
         self.p_nbkg = data_param["ml"]["nbkg"]
         self.p_nsig = data_param["ml"]["nsig"]
         self.p_tagsig = data_param["ml"]["sampletagforsignal"]
@@ -148,8 +149,8 @@ class Optimiser:
         self.p_nevtml = None
         self.p_nevttot = None
         self.p_presel_gen_eff = data_param["ml"]["opt"]["presel_gen_eff"]
-        self.p_mass_fit_lim = data_param["analysis"]['mass_fit_lim']
-        self.p_bin_width = data_param["analysis"]['bin_width']
+        self.p_mass_fit_lim = data_param["analysis"][self.p_typean]['mass_fit_lim']
+        self.p_bin_width = data_param["analysis"][self.p_typean]['bin_width']
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
                                      self.p_bin_width))
         self.p_mass = data_param["mass"]
