@@ -51,9 +51,8 @@ LcpK0spp:
               inv_mass, pt_cand, inv_mass_K0s, pt_K0s, cand_type, y_cand,
               run_number, ev_id, nsigTPC_Pr_0, nsigTOF_Pr_0,
               spdhits_prong0, spdhits_prong1, spdhits_prong2,
-              pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet, ntracks_jet, zg_jet, rg_jet,
-              pt_gen_jet, eta_gen_jet, phi_gen_jet, delta_eta_gen_jet, delta_phi_gen_jet, delta_r_gen_jet, ntracks_gen_jet,
-              zg_gen_jet, rg_gen_jet]
+              pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet,
+              pt_gen_jet, eta_gen_jet, phi_gen_jet, delta_eta_gen_jet, delta_phi_gen_jet, delta_r_gen_jet, pt_gen_cand]
     var_evt:
       data: [centrality, z_vtx_reco, n_vtx_contributors, n_tracks, is_ev_rej, run_number,
               ev_id, n_tracklets,V0Amult, trigger_hasbit_INT7, trigger_hasbit_HighMultSPD,
@@ -64,7 +63,7 @@ LcpK0spp:
               trigger_hasbit_HighMultV0, trigger_hasclass_INT7, trigger_hasclass_HighMultSPD,
               trigger_hasclass_HighMultV0, n_tracklets_corr, v0m, v0m_eq, v0m_corr, v0m_eq_corr,
               mult_gen, mult_gen_v0a, mult_gen_v0c]
-    var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
+    var_gen: [y_cand, pt_cand, cand_type, pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet, run_number, ev_id]
     var_evt_match: [run_number, ev_id]
     var_training: [cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,  
                    imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0] 
@@ -233,7 +232,7 @@ LcpK0spp:
       nperiods: 4
       nprocessesparallel: 20
       maxfiles : [-1,-1,-1,-1] #list of periods
-      chunksizeunp : [1000,1000,1000,1000] #list of periods
+      chunksizeunp : [100,100,100,100] #list of periods
       chunksizeskim: [1000,1000,1000,1000] #list of periods
       fracmerge : [1.0,1.0,1.0,1.0] #list of periods
       seedmerge: [12,12,12,12] #list of periods
@@ -368,6 +367,61 @@ LcpK0spp:
       latexbin2var: "n_{trkl}"
       nevents: 1700000000.
       dodoublecross: false
+
+
+
+    MBjetvspt:
+      sel_binmin2: [5,15] #list of nbins
+      sel_binmax2: [15,30] #list of nbins
+      var_binning2: pt_jet
+
+      sel_an_binmin: [2,4,5,6,8,12] #list of pt nbins
+      sel_an_binmax: [4,5,6,8,12,24] #list of pt nbins
+      binning_matching: [1,2,2,2,3,4] #list of pt nbins
+      presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet)<0.5"
+      evtsel: is_ev_rej==0
+      triggersel:
+        data: "trigger_hasclass_INT7==1 and trigger_hasbit_INT7==1 and abs(eta_jet)<0.5"
+        mc: "abs(eta_jet)<0.5"
+
+      data:
+        results: [LckINT7HighMultwithJets/vAN-20190810_ROOT6-1/pp_2016_data/136_20190811-0107/resultsMBjetvspt,
+                  LckINT7HighMultwithJets/vAN-20190810_ROOT6-1/pp_2016_data/137_20190811-0108/resultsMBjetvspt,
+                  LckINT7HighMultwithJets/vAN-20190810_ROOT6-1/pp_2017_data/138_20190811-0108/resultsMBjetvspt,
+                  LckINT7HighMultwithJets/vAN-20190810_ROOT6-1/pp_2018_data/139_20190811-0108/resultsMBjetvspt] #list of periods
+        resultsallp: LckINT7HighMultwithJets/vAN-20190810_ROOT6-1/pp_data/resultsMBjetvspt
+      mc:
+        results: [LckINT7HighMultwithJets/vAN-20190810_ROOT6-1/pp_2016_mc_prodD2H/129_20190811-0106/resultsMBjetvspt,
+                  LckINT7HighMultwithJets/vAN-20190810_ROOT6-1/pp_2016_mc_prodD2H/133_20190811-0107/resultsMBjetvspt,
+                  LckINT7HighMultwithJets/vAN-20190810_ROOT6-1/pp_2017_mc_prodD2H/134_20190811-0107/resultsMBjetvspt,
+                  LckINT7HighMultwithJets/vAN-20190810_ROOT6-1/pp_2018_mc_prodD2H/135_20190811-0107/resultsMBjetvspt] #list of periods
+        resultsallp: LckINT7HighMultwithJets/vAN-20190810_ROOT6-1/pp_mc_prodD2H/resultsMBjetvspt
+
+
+
+      mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
+      bin_width: 0.001 # bin width of the invariant mass histogram
+      usefit: true
+      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
+      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
+      masspeak: 2.2864
+      massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
+      massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
+      rebin: [6,6,6,6,6,6]
+      includesecpeak: [0,0,0,0,0,0]
+      masssecpeak: 2.2864
+      FixedMean: False
+      SetFixGaussianSigma: true
+      SetInitialGaussianMean: true
+      dolikelihood: true
+      sigmaarray: [0.008,0.008,0.009,0.009,0.011,0.014]
+      FixedSigma: true
+      fitcase: Lc
+      latexnamemeson: "L_{c}^{K0s}"
+      latexbin2var: "p_{T,jet}"
+      nevents: 1700000000.
+      dodoublecross: false
+      
     
     SPDvspt:
       sel_binmin2:  [0,30,60] #list of var2 splittng nbins
