@@ -33,6 +33,9 @@ dist/*
 
 #input and output data
 machine_learning_hep/data/**/*.root
+machine_learning_hep/D0kINT7HighMultwithJets
+machine_learning_hep/LckINT7HighMultwithJets
+
 dataframes_*
 plots_*
 output_*

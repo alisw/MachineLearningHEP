@@ -23,62 +23,65 @@ from ROOT import TFile, TH1F, TCanvas
 from ROOT import gStyle, TLegend
 from ROOT import gROOT
 from ROOT import TStyle
+from ROOT import TLatex
 from machine_learning_hep.globalfitter import fitter
 
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements
 class Analyzer:
     species = "analyzer"
-    def __init__(self, datap, case):
+    def __init__(self, datap, case, typean):
 
 
         #namefiles pkl
         self.case = case
+        self.typean = typean
         self.v_var_binning = datap["var_binning"]
-        self.lpt_finbinmin = datap["analysis"]["sel_an_binmin"]
-        self.lpt_finbinmax = datap["analysis"]["sel_an_binmax"]
-        self.bin_matching = datap["analysis"]["binning_matching"]
+        self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
+        self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
+        self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
         self.p_nptbins = len(self.lpt_finbinmin)
-        self.lpt_probcutfin = datap["analysis"]["probcutoptimal"]
+        self.lpt_probcutfin = datap["mlapplication"]["probcutoptimal"]
 
-        self.lvar2_binmin = datap["analysis"]["sel_binmin2"]
-        self.lvar2_binmax = datap["analysis"]["sel_binmax2"]
-        self.v_var2_binning = datap["analysis"]["var_binning2"]
+        self.lvar2_binmin = datap["analysis"][self.typean]["sel_binmin2"]
+        self.lvar2_binmax = datap["analysis"][self.typean]["sel_binmax2"]
+        self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
         self.p_nbin2 = len(self.lvar2_binmin)
 
-        self.d_resultsallpmc = datap["analysis"]["mc"]["resultsallp"]
-        self.d_resultsallpdata = datap["analysis"]["data"]["resultsallp"]
+        self.d_resultsallpmc = datap["analysis"][self.typean]["mc"]["resultsallp"]
+        self.d_resultsallpdata = datap["analysis"][self.typean]["data"]["resultsallp"]
 
         self.n_filemass = datap["files_names"]["histofilename"]
         self.n_filemass = os.path.join(self.d_resultsallpdata, self.n_filemass)
         self.n_filecross = datap["files_names"]["crossfilename"]
-        self.p_mass_fit_lim = datap["analysis"]['mass_fit_lim']
+        self.p_mass_fit_lim = datap["analysis"][self.typean]['mass_fit_lim']
 
         self.n_fileff = datap["files_names"]["efffilename"]
         self.n_fileff = os.path.join(self.d_resultsallpmc, self.n_fileff)
         self.n_evtvalroot = datap["files_names"]["namefile_evtvalroot"]
 
-        self.p_bin_width = datap["analysis"]['bin_width']
+        self.p_bin_width = datap["analysis"][self.typean]['bin_width']
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
                                     self.p_bin_width))
         #parameter fitter
-        self.p_sgnfunc = datap["analysis"]["sgnfunc"]
-        self.p_bkgfunc = datap["analysis"]["bkgfunc"]
-        self.p_masspeak = datap["analysis"]["masspeak"]
-        self.p_massmin = datap["analysis"]["massmin"]
-        self.p_massmax = datap["analysis"]["massmax"]
-        self.p_rebin = datap["analysis"]["rebin"]
-        self.p_includesecpeak = datap["analysis"]["includesecpeak"]
-        self.p_masssecpeak = datap["analysis"]["masssecpeak"]
-        self.p_fixedmean = datap["analysis"]["FixedMean"]
-        self.p_fixingaussigma = datap["analysis"]["SetFixGaussianSigma"]
-        self.p_fixingausmean = datap["analysis"]["SetInitialGaussianMean"]
-        self.p_dolike = datap["analysis"]["dolikelihood"]
-        self.p_sigmaarray = datap["analysis"]["sigmaarray"]
-        self.p_casefit = datap["analysis"]["fitcase"]
-        self.p_latexnmeson = datap["analysis"]["latexnamemeson"]
-        self.p_latexbin2var = datap["analysis"]["latexbin2var"]
+        self.p_sgnfunc = datap["analysis"][self.typean]["sgnfunc"]
+        self.p_bkgfunc = datap["analysis"][self.typean]["bkgfunc"]
+        self.p_masspeak = datap["analysis"][self.typean]["masspeak"]
+        self.p_massmin = datap["analysis"][self.typean]["massmin"]
+        self.p_massmax = datap["analysis"][self.typean]["massmax"]
+        self.p_rebin = datap["analysis"][self.typean]["rebin"]
+        self.p_includesecpeak = datap["analysis"][self.typean]["includesecpeak"]
+        self.p_masssecpeak = datap["analysis"][self.typean]["masssecpeak"]
+        self.p_fixedmean = datap["analysis"][self.typean]["FixedMean"]
+        self.p_fixingaussigma = datap["analysis"][self.typean]["SetFixGaussianSigma"]
+        self.p_fixingausmean = datap["analysis"][self.typean]["SetInitialGaussianMean"]
+        self.p_dolike = datap["analysis"][self.typean]["dolikelihood"]
+        self.p_sigmaarray = datap["analysis"][self.typean]["sigmaarray"]
+        self.p_fixedsigma = datap["analysis"][self.typean]["FixedSigma"]
+        self.p_casefit = datap["analysis"][self.typean]["fitcase"]
+        self.p_latexnmeson = datap["analysis"][self.typean]["latexnamemeson"]
+        self.p_latexbin2var = datap["analysis"][self.typean]["latexbin2var"]
         self.p_dofullevtmerge = datap["dofullevtmerge"]
-        self.p_dodoublecross = datap["analysis"]["dodoublecross"]
+        self.p_dodoublecross = datap["analysis"][self.typean]["dodoublecross"]
         self.ptranges = self.lpt_finbinmin.copy()
         self.ptranges.append(self.lpt_finbinmax[-1])
         self.var2ranges = self.lvar2_binmin.copy()
@@ -87,7 +90,7 @@ class Analyzer:
         self.lmult_yieldshisto = [TH1F("hyields%d" % (imult), "", \
             self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
 
-        self.p_nevents = datap["analysis"]["nevents"]
+        self.p_nevents = datap["analysis"][self.typean]["nevents"]
         self.p_sigmamb = datap["ml"]["opt"]["sigma_MB"]
         self.p_br = datap["ml"]["opt"]["BR"]
 
@@ -96,9 +99,21 @@ class Analyzer:
         self.f_evtvaldata = os.path.join(self.d_valevtdata, self.n_evtvalroot)
         self.f_evtvalmc = os.path.join(self.d_valevtmc, self.n_evtvalroot)
 
+    @staticmethod
+    def loadstyle():
+        gROOT.SetStyle("Plain")
+        gStyle.SetOptStat(0)
+        gStyle.SetOptStat(0000)
+        gStyle.SetPalette(0)
+        gStyle.SetCanvasColor(0)
+        gStyle.SetFrameFillColor(0)
+        gStyle.SetOptTitle(0)
+
     def fitter(self):
+        self.loadstyle()
         lfile = TFile.Open(self.n_filemass)
-        fileout = TFile.Open("yields%s.root" % self.case, "recreate")
+        fileout = TFile.Open("%s/yields%s%s.root" % (self.d_resultsallpdata,
+                                                     self.case, self.typean), "recreate")
         for imult in range(self.p_nbin2):
             for ipt in range(self.p_nptbins):
                 bin_id = self.bin_matching[ipt]
@@ -120,19 +135,52 @@ class Analyzer:
             self.lmult_yieldshisto[imult].Write()
 
         cYields = TCanvas('cYields', 'The Fit Canvas')
+        cYields.SetCanvasSize(1900, 1500)
+        cYields.SetWindowSize(500, 500)
         cYields.SetLogy()
-        lfile = TFile.Open("yields%s.root" % self.case)
+
+        legyield = TLegend(.5, .65, .7, .85)
+        legyield.SetBorderSize(0)
+        legyield.SetFillColor(0)
+        legyield.SetFillStyle(0)
+        legyield.SetTextFont(42)
+        legyield.SetTextSize(0.035)
+
+        lfile = TFile.Open("%s/yields%s%s.root" % (self.d_resultsallpdata,
+                                                   self.case, self.typean))
         for imult in range(self.p_nbin2):
             self.lmult_yieldshisto[imult].SetMinimum(1)
-            self.lmult_yieldshisto[imult].SetMaximum(1e14)
+            self.lmult_yieldshisto[imult].SetMaximum(1e6)
             self.lmult_yieldshisto[imult].SetLineColor(imult+1)
             self.lmult_yieldshisto[imult].Draw("same")
-        cYields.SaveAs("Yields%s.eps" % self.case)
+            legyieldstring = "%.1f < %s < %.1f GeV/c" % \
+                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
+            legyield.AddEntry(self.lmult_yieldshisto[imult], legyieldstring, "LEP")
+            self.lmult_yieldshisto[imult].GetXaxis().SetTitle("p_{T} (GeV)")
+            self.lmult_yieldshisto[imult].GetYaxis().SetTitle("Uncorrected yields %s %s (1/GeV)" \
+                    % (self.p_latexnmeson, self.typean))
+
+        legyield.Draw()
+        cYields.SaveAs("%s/Yields%s%s.eps" % (self.d_resultsallpdata,
+                                              self.case, self.typean))
 
     def efficiency(self):
+        self.loadstyle()
+
         lfileeff = TFile.Open(self.n_fileff)
-        fileouteff = TFile.Open("efficiencies%s.root" % self.case, "recreate")
+        fileouteff = TFile.Open("%s/efficiencies%s%s.root" % (self.d_resultsallpmc, \
+                                 self.case, self.typean), "recreate")
         cEff = TCanvas('cEff', 'The Fit Canvas')
+        cEff.SetCanvasSize(1900, 1500)
+        cEff.SetWindowSize(500, 500)
+
+        legeff = TLegend(.5, .65, .7, .85)
+        legeff.SetBorderSize(0)
+        legeff.SetFillColor(0)
+        legeff.SetFillStyle(0)
+        legeff.SetTextFont(42)
+        legeff.SetTextSize(0.035)
+
         for imult in range(self.p_nbin2):
             stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
                                             self.lvar2_binmin[imult], \
@@ -149,21 +197,27 @@ class Analyzer:
             fileouteff.cd()
             h_sel_pr.SetName("eff_mult%d" % imult)
             h_sel_pr.Write()
-        cEff.SaveAs("Eff%s.eps" % self.case)
+            legeffstring = "%.1f < %s < %.1f GeV/c" % \
+                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
+            legeff.AddEntry(h_sel_pr, legeffstring, "LEP")
+            h_sel_pr.GetXaxis().SetTitle("p_{T} (GeV)")
+            h_sel_pr.GetYaxis().SetTitle("Uncorrected yields %s %s (1/GeV)" \
+                    % (self.p_latexnmeson, self.typean))
+            h_sel_pr.SetMinimum(0.)
+            h_sel_pr.SetMaximum(1.5)
+        legeff.Draw()
+        cEff.SaveAs("%s/Eff%s%s.eps" % (self.d_resultsallpmc,
+                                        self.case, self.typean))
 
     def plotter(self):
+        self.loadstyle()
 
-        gROOT.SetStyle("Plain")
-        gStyle.SetOptStat(0)
-        gStyle.SetOptStat(0000)
-        gStyle.SetPalette(0)
-        gStyle.SetCanvasColor(0)
-        gStyle.SetFrameFillColor(0)
-        gStyle.SetOptTitle(0)
-
-        fileouteff = TFile.Open("efficiencies%s.root" % self.case)
-        fileoutyield = TFile.Open("yields%s.root" % self.case)
-        fileoutcross = TFile.Open("finalcross%s.root" % self.case, "recreate")
+        fileouteff = TFile.Open("%s/efficiencies%s%s.root" % \
+                                (self.d_resultsallpmc, self.case, self.typean))
+        fileoutyield = TFile.Open("%s/yields%s%s.root" % \
+                                  (self.d_resultsallpdata, self.case, self.typean))
+        fileoutcross = TFile.Open("%s/finalcross%s%s.root" % \
+                                  (self.d_resultsallpdata, self.case, self.typean), "recreate")
 
         cCrossvsvar1 = TCanvas('cCrossvsvar1', 'The Fit Canvas')
         cCrossvsvar1.SetCanvasSize(1900, 1500)
@@ -190,9 +244,10 @@ class Analyzer:
             hcross.Scale(1./norm)
             fileoutcross.cd()
             hcross.GetXaxis().SetTitle("p_{T} %s (GeV)" % self.p_latexnmeson)
-            hcross.GetYaxis().SetTitle("d#sigma/dp_{T} (%s)" % self.p_latexnmeson)
+            hcross.GetYaxis().SetTitle("d#sigma/dp_{T} (%s) %s" %
+                                       (self.p_latexnmeson, self.typean))
             hcross.SetName("hcross%d" % imult)
-            hcross.GetYaxis().SetRangeUser(1e4, 1e10)
+            hcross.GetYaxis().SetRangeUser(1e1, 1e10)
             legvsvar1endstring = "%.1f < %s < %.1f GeV/c" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legvsvar1.AddEntry(hcross, legvsvar1endstring, "LEP")
@@ -203,7 +258,8 @@ class Analyzer:
             listvalerrpt = [hcross.GetBinError(ipt+1) for ipt in range(self.p_nptbins)]
             listvalueserr.append(listvalerrpt)
         legvsvar1.Draw()
-        cCrossvsvar1.SaveAs("Cross%sVs%s.eps" % (self.case, self.v_var_binning))
+        cCrossvsvar1.SaveAs("%s/Cross%s%sVs%s.eps" % (self.d_resultsallpdata,
+                                                      self.case, self.typean, self.v_var_binning))
 
         cCrossvsvar2 = TCanvas('cCrossvsvar2', 'The Fit Canvas')
         cCrossvsvar2.SetCanvasSize(1900, 1500)
@@ -240,16 +296,11 @@ class Analyzer:
             hcrossvsvar2[ipt].Draw("same")
             legvsvar2.AddEntry(hcrossvsvar2[ipt], legvsvar2endstring, "LEP")
         legvsvar2.Draw()
-        cCrossvsvar2.SaveAs("Cross%sVs%s.eps" % (self.case, self.v_var2_binning))
+        cCrossvsvar2.SaveAs("%s/Cross%s%sVs%s.eps" % (self.d_resultsallpdata,
+                                                      self.case, self.typean, self.v_var2_binning))
 
     def studyevents(self):
-        gROOT.SetStyle("Plain")
-        gStyle.SetOptStat(0)
-        gStyle.SetOptStat(0000)
-        gStyle.SetPalette(0)
-        gStyle.SetCanvasColor(0)
-        gStyle.SetFrameFillColor(0)
-        gStyle.SetOptTitle(0)
+        self.loadstyle()
 
         filedata = TFile.Open(self.f_evtvaldata)
         filemc = TFile.Open(self.f_evtvalmc)
