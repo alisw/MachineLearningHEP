@@ -47,7 +47,7 @@ D0pp:
   variables:
     var_all: [d_len, d_len_xy, norm_dl, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, cos_t_star, imp_par_prod,
               pt_prong0, pt_prong1, imp_par_prong0, imp_par_prong1, imp_par_err_prong0, imp_par_err_prong1, max_norm_d0d0exp,
-              inv_mass, pt_cand, phi_cand, cand_type, y_cand, eta_prong0, eta_prong1, run_number, ev_id,
+              inv_mass, pt_cand, phi_cand, eta_cand, cand_type, y_cand, eta_prong0, eta_prong1, run_number, ev_id,
               nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, nsigTPC_Pi_1, nsigTPC_K_1, nsigTOF_Pi_1, nsigTOF_K_1,
               pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet,
               pt_gen_jet, eta_gen_jet, phi_gen_jet, delta_eta_gen_jet, delta_phi_gen_jet, delta_r_gen_jet, pt_gen_cand]
