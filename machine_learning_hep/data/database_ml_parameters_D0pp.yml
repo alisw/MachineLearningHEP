@@ -20,11 +20,11 @@ D0pp:
   sel_cen_unp: null
   #sel_good_evt_unp: "is_ev_rej == 0"
   sel_good_evt_unp: null
-  sel_reco_skim: ["pt_prong0>0.4 and pt_prong1>0.4",
-                  "pt_prong0>0.4 and pt_prong1>0.4",
-                  "pt_prong0>0.4 and pt_prong1>0.4",
-                  "pt_prong0>0.4 and pt_prong1>0.4",
-                  "pt_prong0>0.4 and pt_prong1>0.4"]
+  sel_reco_skim: ["pt_prong0>0.5 and pt_prong1>0.5 and dca<0.05 and abs(imp_par_prong0) < 0.5 and abs(imp_par_prong1) < 0.5 and imp_par_prod < 0.1 and cos_p > 0.6",
+                  "pt_prong0>0.6 and pt_prong1>0.6 and dca<0.05 and abs(imp_par_prong0) < 0.5 and abs(imp_par_prong1) < 0.5 and imp_par_prod < 0.1 and cos_p > 0.6",
+                  "pt_prong0>0.6 and pt_prong1>0.6 and dca<0.05 and abs(imp_par_prong0) < 0.5 and abs(imp_par_prong1) < 0.5 and imp_par_prod < 0.1 and cos_p > 0.6",
+                  "pt_prong0>0.6 and pt_prong1>0.6 and dca<0.05 and abs(imp_par_prong0) < 0.5 and abs(imp_par_prong1) < 0.5 and imp_par_prod < 0.1 and cos_p > 0.6",
+                  "pt_prong0>0.6 and pt_prong1>0.6 and dca<0.05 and abs(imp_par_prong0) < 0.5 and abs(imp_par_prong1) < 0.5 and imp_par_prod < 0.1 and cos_p > 0.6"]
   sel_gen_skim: [null,null,null,null,null]
   sel_skim_binmin: [1,2,4,8,12] #list of nbins
   sel_skim_binmax: [2,4,8,12,24] #list of nbins
@@ -223,11 +223,11 @@ D0pp:
                               /data/Derived/D0kINT7HighMultwithJets/vAN-20190810_ROOT6-1/pp_2017_mc_prodD2H/134_20190811-0107/skpkldecmerged,
                               /data/Derived/D0kINT7HighMultwithJets/vAN-20190810_ROOT6-1/pp_2018_mc_prodD2H/135_20190811-0107/skpkldecmerged] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierD0jetpp_dfselection_pt_cand_1.0_2.0.sav,
-                     xgboost_classifierD0jetpp_dfselection_pt_cand_2.0_4.0.sav,
-                     xgboost_classifierD0jetpp_dfselection_pt_cand_4.0_8.0.sav,
-                     xgboost_classifierD0jetpp_dfselection_pt_cand_8.0_12.0.sav,
-                     xgboost_classifierD0jetpp_dfselection_pt_cand_12.0_24.0.sav]
+    modelsperptbin: [xgboost_classifierD0pp_dfselection_pt_cand_1.0_2.0.sav,
+                     xgboost_classifierD0pp_dfselection_pt_cand_2.0_4.0.sav,
+                     xgboost_classifierD0pp_dfselection_pt_cand_4.0_8.0.sav,
+                     xgboost_classifierD0pp_dfselection_pt_cand_8.0_12.0.sav,
+                     xgboost_classifierD0pp_dfselection_pt_cand_12.0_24.0.sav]
     probcutpresel:
       data: [0.45,0.45,0.45,0.45,0.45] #list of nbins
       mc: [0.45,0.45,0.45,0.45,0.45] #list of nbins
