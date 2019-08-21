@@ -99,6 +99,9 @@ class Analyzer:
         self.f_evtvaldata = os.path.join(self.d_valevtdata, self.n_evtvalroot)
         self.f_evtvalmc = os.path.join(self.d_valevtmc, self.n_evtvalroot)
 
+        self.sig_fit = None
+        self.bkg_fit = None
+
     @staticmethod
     def loadstyle():
         gROOT.SetStyle("Plain")
@@ -122,18 +125,20 @@ class Analyzer:
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
                 h_invmass = lfile.Get("hmass" + suffix)
-                rawYield, rawYieldErr = \
+                rawYield, rawYieldErr, sig_fit, bkg_fit = \
                     fitter(h_invmass, self.p_casefit, self.p_sgnfunc[ipt], self.p_bkgfunc[ipt], \
                     self.p_masspeak, self.p_rebin[ipt], self.p_dolike, self.p_fixingausmean, \
                     self.p_fixingaussigma, self.p_sigmaarray[ipt], self.p_massmin[ipt], \
                     self.p_massmax[ipt], self.p_fixedmean, self.d_resultsallpdata, suffix)
+                self.sig_fit = sig_fit
+                self.bkg_fit = bkg_fit
                 rawYield = rawYield/(self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
                 rawYieldErr = rawYieldErr/(self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
                 self.lmult_yieldshisto[imult].SetBinContent(ipt + 1, rawYield)
                 self.lmult_yieldshisto[imult].SetBinError(ipt + 1, rawYieldErr)
             fileout.cd()
             self.lmult_yieldshisto[imult].Write()
-
+        fileout.Close()
         cYields = TCanvas('cYields', 'The Fit Canvas')
         cYields.SetCanvasSize(1900, 1500)
         cYields.SetWindowSize(500, 500)
@@ -163,7 +168,51 @@ class Analyzer:
         legyield.Draw()
         cYields.SaveAs("%s/Yields%s%s.eps" % (self.d_resultsallpdata,
                                               self.case, self.typean))
+        lfile.Close()
+    def side_band_sub(self):
+        self.loadstyle()
+        lfile = TFile.Open(self.n_filemass)
+        fileouts = TFile.Open("%s/side_band_sub%s%s.root" % (self.d_resultsallpdata,
+                                                     self.case, self.typean), "recreate")
+        for imult in range(self.p_nbin2):
+            for ipt in range(self.p_nptbins):
+                bin_id = self.bin_matching[ipt]
+                suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
+                         (self.v_var_binning, self.lpt_finbinmin[ipt],
+                          self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
+                          self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
+                hzvsmass = lfile.Get("hzvsmass" + suffix)
+                mean = self.sig_fit.GetParameter(1)
+                sigma = self.sig_fit.GetParameter(2)
+                binmasslow2sig = hzvsmass.GetXaxis().FindBin(mean - 2*sigma)
+                binmasshigh2sig = hzvsmass.GetXaxis().FindBin(mean + 2*sigma)
+                binmasslow4sig = hzvsmass.GetXaxis().FindBin(mean - 4*sigma)
+                binmasshigh4sig = hzvsmass.GetXaxis().FindBin(mean + 4*sigma)
+                binmasslow9sig = hzvsmass.GetXaxis().FindBin(mean - 9*sigma)
+                binmasshigh9sig = hzvsmass.GetXaxis().FindBin(mean + 9*sigma)
 
+                hzsig = hzvsmass.ProjectionY("hzsig" + suffix, \
+                             binmasslow2sig, binmasshigh2sig, "e")
+                hzbkgleft = hzvsmass.ProjectionY("hzbkgleft" + suffix, \
+                             binmasslow9sig, binmasslow4sig, "e")
+                hzbkgright = hzvsmass.ProjectionY("hzbkgright" + suffix, \
+                             binmasshigh4sig, binmasshigh9sig, "e")
+
+                hzbkg = hzbkgleft.Clone("hzbkg" + suffix)
+                hzbkg.Add(hzbkgright)
+                fileouts.cd()
+                hzsig.Write()
+                hzbkgleft.Write()
+                hzbkgright.Write()
+                hzbkg.Write()
+                cside = TCanvas('cside' + suffix, 'The Fit Canvas')
+                cside.SetCanvasSize(1900, 1500)
+                cside.SetWindowSize(500, 500)
+                hzvsmass.Draw("colz")
+
+                cside.SaveAs("%s/side_band_sub%s%s_%s.eps" % (self.d_resultsallpdata,
+                                                           self.case, self.typean, suffix))
+        fileouts.Close()
     def efficiency(self):
         self.loadstyle()
 
