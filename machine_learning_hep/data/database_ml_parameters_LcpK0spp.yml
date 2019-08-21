@@ -362,7 +362,7 @@ LcpK0spp:
       SetFixGaussianSigma: true
       SetInitialGaussianMean: true
       dolikelihood: true
-      sigmaarray: [0.008,0.008,0.008,0.009,0.009,0.01,0.011,0.014]
+      sigmaarray: [0.0078, 0.0078, 0.0082, 0.0091, 0.0097, 0.0109, 0.0117, 0.0156]
       FixedSigma: true  
       fitcase: Lc
       latexnamemeson: "L_{c}^{K0s}"
@@ -416,7 +416,7 @@ LcpK0spp:
       SetFixGaussianSigma: true
       SetInitialGaussianMean: true
       dolikelihood: true
-      sigmaarray: [0.008,0.008,0.009,0.009,0.011,0.014]
+      sigmaarray: [0.0078, 0.0091, 0.0097, 0.0109, 0.0117, 0.0156]
       FixedSigma: true
       fitcase: Lc
       latexnamemeson: "L_{c}^{K0s}"
@@ -467,7 +467,7 @@ LcpK0spp:
       SetFixGaussianSigma: true
       SetInitialGaussianMean: true
       dolikelihood: true
-      sigmaarray: [0.008,0.008,0.008,0.009,0.009,0.01,0.011,0.014]
+      sigmaarray: [0.0078, 0.0078, 0.0082, 0.0091, 0.0097, 0.0109, 0.0117, 0.0156]
       FixedSigma: true  
       fitcase: Lc
       latexnamemeson: "L_{c}^{K0s}"
@@ -517,7 +517,7 @@ LcpK0spp:
       SetFixGaussianSigma: true
       SetInitialGaussianMean: true
       dolikelihood: true
-      sigmaarray: [0.008,0.008,0.008,0.009,0.009,0.01,0.011,0.014]
+      sigmaarray: [0.0078, 0.0078, 0.0082, 0.0091, 0.0097, 0.0109, 0.0117, 0.0156]
       FixedSigma: true  
       fitcase: Lc
       latexnamemeson: "L_{c}^{K0s}"
