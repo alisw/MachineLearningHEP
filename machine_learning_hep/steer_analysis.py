@@ -344,12 +344,12 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         mymultiprocessmc.multi_efficiency()
     if dofit is True:
         myan.fitter()
+    if doeff is True:
+        myan.efficiency()
     if dojetstudies is True:
         if dofit is False:
             myan.fitter()
         myan.side_band_sub()
-    if doeff is True:
-        myan.efficiency()
     if docross is True:
         myan.plotter()
 
