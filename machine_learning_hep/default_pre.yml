@@ -1,0 +1,69 @@
+case: D0pp
+download:
+  alice:
+    activate: false
+conversion:
+  mc: 
+    activate: true
+  data:
+    activate: true
+skimming: 
+  mc:
+    activate: true
+  data:
+    activate: true
+merging: 
+  mc:
+    activate: true
+  data:
+    activate: true
+mergingperiods: 
+  mc:
+    activate: true
+  data:
+    activate: true
+
+ml_study:   
+  activate: false
+  doscancuts: false
+  applytodatamc: false
+  doroc: false
+  doboundary: false
+  docorrelation: false
+  docrossvalidation: false
+  dogridsearch: false
+  doimportance: false
+  dolearningcurve: false
+  dopca: false
+  dosignifopt: false
+  doefficiency: false
+  dotesting: false
+  dotraining: false
+
+mlapplication:
+  data:
+    doapply: false
+    domergeapply: false
+    domergeapplyperiods: false
+  mc:
+    doapply: false
+    domergeapply: false
+    domergeapplyperiods: false
+
+analysis:
+  type: SPDvspt
+  data:
+    histomass: false
+  mc:
+    histomass: false
+    efficiency: false
+  dofit: false
+  doeff: false
+  docross: false
+
+validation:
+  data:
+    docreatehisto: false
+  mc:
+    docreatehisto: false
+  plotevents: false
