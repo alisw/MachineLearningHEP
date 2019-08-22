@@ -426,8 +426,8 @@ LcpK0spp:
       
     
     SPDvspt:
-      sel_binmin2:  [0,30,60] #list of var2 splittng nbins
-      sel_binmax2: [30,60,100] #list of var2 splitting nbins
+      sel_binmin2:  [0,0,30,60] #list of var2 splittng nbins
+      sel_binmax2: [9999,30,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
       
       sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
@@ -441,7 +441,7 @@ LcpK0spp:
       data: 
         results: [LckINT7HighMultwithJets/vAN-20190810_ROOT6-1/pp_2016_data/136_20190811-01077/resultsSPDvspt, 
                   LckINT7HighMultwithJets/vAN-20190810_ROOT6-1/pp_2016_data/137_20190811-0108/resultsSPDvspt,
-                  LckINT7HighMultwithJets/vAN-20190810_ROOT6-1/pp_2017_data/138_20190811-0108/resultsSPDvspt,
+                  LckINT79999,HighMultwithJets/vAN-20190810_ROOT6-1/pp_2017_data/138_20190811-0108/resultsSPDvspt,
                   LckINT7HighMultwithJets/vAN-20190810_ROOT6-1/pp_2018_data/139_20190811-0108/resultsSPDvspt] #list of periods
         resultsallp: LckINT7HighMultwithJets/vAN-20190810_ROOT6-1/pp_data/resultsSPDvspt
       mc:
@@ -476,8 +476,8 @@ LcpK0spp:
       dodoublecross: false
     
     V0mvspt:
-      sel_binmin2:    [0, 300,600] #list of var2 splittng nbins
-      sel_binmax2:  [300,600,1000] #list of var2 splitting nbins
+      sel_binmin2:    [0,0, 300,600] #list of var2 splittng nbins
+      sel_binmax2:  [9999,300,600,1000] #list of var2 splitting nbins
       var_binning2: v0m_corr
       
       sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
