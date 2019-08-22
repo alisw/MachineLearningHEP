@@ -396,6 +396,8 @@ def main():
                         help="ml gridsearch database to be used")
     parser.add_argument("--database-run-list", dest="database_run_list",
                         help="run list database to be used")
+    parser.add_argument("--analysis", "-a", dest="type_ana",
+                        help="choose type of analysis")
 
     args = parser.parse_args()
 
@@ -406,6 +408,8 @@ def main():
     pkg_data_run_config = "machine_learning_hep"
     run_config = load_config(args.run_config, (pkg_data_run_config, "default_complete.yaml"))
     case = run_config["case"]
+    if args.type_ana is not None:
+        run_config["analysis"]["type"] = args.type_ana
 
     db_analysis_default_name = f"database_ml_parameters_{case}.yml"
     print(args.database_analysis)
