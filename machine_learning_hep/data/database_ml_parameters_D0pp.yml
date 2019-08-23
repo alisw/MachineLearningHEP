@@ -341,9 +341,9 @@ D0pp:
       dodoublecross: false
   
     SPDvspt:
-      plotbin: [1,0,0,0]
-      sel_binmin2:  [0,0,30,60] #list of var2 splittng nbins
-      sel_binmax2: [9999,30,60,100] #list of var2 splitting nbins
+      plotbin: [0,1]
+      sel_binmin2:  [0,60] #list of var2 splittng nbins
+      sel_binmax2: [9999,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
       
       sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
