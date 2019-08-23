@@ -238,7 +238,7 @@ class Analyzer:
 
         for imult in range(self.p_nbin2):
             listvalpt = []
-            heff = fileouteff.Get("eff_mult%d" % (imult))
+            heff = fileouteff.Get("eff_mult%d" % (0))
             hcross = fileoutyield.Get("hyields%d" % (imult))
             hcross.Divide(heff)
             hcross.SetLineColor(imult+1)

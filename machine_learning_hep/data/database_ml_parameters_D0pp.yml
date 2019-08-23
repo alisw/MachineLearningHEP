@@ -235,6 +235,7 @@ D0pp:
   
   analysis:
     MBvspt:
+      plotbin: [1,1,1,0]
       sel_binmin2:  [0,0,30,60] #list of var2 splittng nbins
       sel_binmax2: [9999,30,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
@@ -269,8 +270,8 @@ D0pp:
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 1.89
-      massmin: [1.70,1.70,1.70,1.70,1.70,1.70,1.70,1.70]
-      massmax: [2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05]
+      massmin: [1.75,1.70,1.70,1.70,1.70,1.70,1.70,1.70]
+      massmax: [2.00,2.05,2.05,2.05,2.05,2.05,2.05,2.05]
       rebin: [6,6,6,6,6,6,6,6]
       includesecpeak: [0,0,0,0,0,0,0,0]
       masssecpeak: 1.864
@@ -287,6 +288,7 @@ D0pp:
       dodoublecross: false
 
     MBjetvspt:
+      plotbin: [1]
       sel_binmin2: [5] #list of nbins
       sel_binmax2: [15] #list of nbins
       var_binning2: pt_jet
@@ -339,6 +341,7 @@ D0pp:
       dodoublecross: false
   
     SPDvspt:
+      plotbin: [1,0,0,0]
       sel_binmin2:  [0,0,30,60] #list of var2 splittng nbins
       sel_binmax2: [9999,30,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
@@ -389,8 +392,9 @@ D0pp:
 
 
     V0mvspt:
-      sel_binmin2:    [0, 0, 300,600] #list of var2 splittng nbins
-      sel_binmax2:  [9999,300,600,1000] #list of var2 splitting nbins
+      plotbin: [1,1,1,0]
+      sel_binmin2:    [0, 300,600,800] #list of var2 splittng nbins
+      sel_binmax2:  [9999,600,800,1000] #list of var2 splitting nbins
       var_binning2: v0m
       
       sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
