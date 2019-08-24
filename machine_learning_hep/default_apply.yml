@@ -58,6 +58,7 @@ analysis:
     histomass: false
     efficiency: false
   dofit: false
+  dojetstudies: false
   doeff: false
   docross: false
 

@@ -101,6 +101,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     docross = data_config["analysis"]["docross"]
 
     typean = data_config["analysis"]["type"]
+    dojetstudies = data_config["analysis"]["dojetstudies"]
 
 
     dovalhistodata = data_config["validation"]["data"]["docreatehisto"]
@@ -345,6 +346,10 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         myan.fitter()
     if doeff is True:
         myan.efficiency()
+    if dojetstudies is True:
+        if dofit is False:
+            myan.fitter()
+       # myan.side_band_sub()
     if docross is True:
         myan.plotter()
 

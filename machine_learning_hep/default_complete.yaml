@@ -51,13 +51,14 @@ mlapplication:
     domergeapplyperiods: false
 
 analysis:
-  type: SPDvspt
+  type: MBjetvspt
   data:
     histomass: true
   mc: 
     histomass: true
     efficiency: true
   dofit: true
+  dojetstudies: true
   doeff: true
   docross: true
 
