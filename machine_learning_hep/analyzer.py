@@ -91,6 +91,7 @@ class Analyzer:
             self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
 
         self.p_nevents = datap["analysis"][self.typean]["nevents"]
+        self.p_bineff = datap["analysis"][self.typean]["usesinglebineff"]
         self.p_sigmamb = datap["ml"]["opt"]["sigma_MB"]
         self.p_br = datap["ml"]["opt"]["BR"]
 
@@ -238,7 +239,14 @@ class Analyzer:
 
         for imult in range(self.p_nbin2):
             listvalpt = []
-            heff = fileouteff.Get("eff_mult%d" % (imult))
+            bineff = -1
+            if self.p_bineff is None:
+                bineff = imult
+                print("Using efficiency for each var2 bin")
+            else:
+                bineff = self.p_bineff
+                print("Using efficiency always from bin=", bineff)
+            heff = fileouteff.Get("eff_mult%d" % (bineff))
             hcross = fileoutyield.Get("hyields%d" % (imult))
             hcross.Divide(heff)
             hcross.SetLineColor(imult+1)
