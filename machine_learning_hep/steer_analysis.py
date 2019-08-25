@@ -349,6 +349,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     if dojetstudies is True:
         if dofit is False:
             myan.fitter()
+        if doeff is False:
+            myan.efficiency()
        # myan.side_band_sub()
     if docross is True:
         myan.plotter()
