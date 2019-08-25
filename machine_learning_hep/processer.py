@@ -25,13 +25,13 @@ import uproot
 import pandas as pd
 import numpy as np
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
-from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
+from ROOT import TFile, TH1F, TH2F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge_method
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
-from machine_learning_hep.utilities import mergerootfiles, makeff, scatterplot
+from machine_learning_hep.utilities import mergerootfiles, makeff, scatterplot, z_calc
 from machine_learning_hep.models import apply # pylint: disable=import-error
 #from machine_learning_hep.globalfitter import fitter
 from machine_learning_hep.selectionutils import getnormforselevt
@@ -385,6 +385,15 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 fill_hist(h_invmass, df_bin.inv_mass)
                 myfile.cd()
                 h_invmass.Write()
+
+                if "pt_jet" in df_bin.columns:
+                    zarray = z_calc(df_bin.pt_jet, df_bin.phi_jet, df_bin.eta_jet,
+                                    df_bin.pt_cand, df_bin.phi_cand, df_bin.eta_cand)
+                    h_zvsinvmass = TH2F("hzvsmass" + suffix, "", 5000, 1.00, 6.00, 2000, -0.5, 1.5)
+                    zvsinvmass = np.vstack((df_bin.inv_mass, zarray)).T
+                    fill_hist(h_zvsinvmass, zvsinvmass)
+                    h_zvsinvmass.Write()
+
     # pylint: disable=line-too-long
     def process_efficiency(self):
         out_file = TFile.Open(self.n_fileeff, "recreate")

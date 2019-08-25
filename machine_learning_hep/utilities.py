@@ -170,3 +170,28 @@ def scatterplot(dfevt, nvar1, nvar2, nbins1, min1, max1, nbins2, min2, max2):
     arr2 = dfevt_rd.values
     fill_hist(hmult1_mult2, arr2)
     return hmult1_mult2
+
+def z_calc(pt_1, phi_1, eta_1, pt_2, phi_2, eta_2):
+    np_pt_1 = pt_1.values
+    np_pt_2 = pt_2.values
+    np_phi_1 = phi_1.values
+    np_phi_2 = phi_2.values
+    np_eta_1 = eta_1.values
+    np_eta_2 = eta_2.values
+
+    cos_phi_1 = np.cos(np_phi_1)
+    cos_phi_2 =	np.cos(np_phi_2)
+    sin_phi_1 =	np.sin(np_phi_1)
+    sin_phi_2 = np.sin(np_phi_2)
+    sinh_eta_1 = np.sinh(np_eta_1)
+    sinh_eta_2 = np.sinh(np_eta_2)
+
+    px_1 = np_pt_1*cos_phi_1
+    px_2 = np_pt_2*cos_phi_2
+    py_1 = np_pt_1*sin_phi_1
+    py_2 = np_pt_2*sin_phi_2
+    pz_1 = np_pt_1*sinh_eta_1
+    pz_2 = np_pt_2*sinh_eta_2
+    numerator = px_1*px_2+py_1*py_2+pz_1*pz_2
+    denominator = px_1*px_1+py_1*py_1+pz_1*pz_1
+    return numerator/denominator
