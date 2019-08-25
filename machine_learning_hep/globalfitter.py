@@ -313,4 +313,4 @@ def fitter(histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihood, setinit
     pinfos.Draw()
     c1.Update()
     c1.SaveAs("%s/fittedplot%s.eps" % (outputfolder, suffix))
-    return rawYield, rawYieldErr
+    return rawYield, rawYieldErr, sig_fit, back_fit
