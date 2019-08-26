@@ -33,6 +33,7 @@ from  machine_learning_hep.utilities import checkdirlist, checkdir
 from  machine_learning_hep.logger import configure_logger, get_logger
 from machine_learning_hep.optimiser import Optimiser
 from machine_learning_hep.analyzer import Analyzer
+from machine_learning_hep.systematics import Systematics
 
 try:
 # FIXME(https://github.com/abseil/abseil-py/issues/99) # pylint: disable=fixme
@@ -99,6 +100,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     dofit = data_config["analysis"]["dofit"]
     doeff = data_config["analysis"]["doeff"]
     docross = data_config["analysis"]["docross"]
+    dosystprob = data_config["systematics"]["probvariation"]
 
     typean = data_config["analysis"]["type"]
     dojetstudies = data_config["analysis"]["dojetstudies"]
@@ -145,6 +147,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     mymultiprocessmc = MultiProcesser(data_param[case], typean, run_param, "mc")
     mymultiprocessdata = MultiProcesser(data_param[case], typean, run_param, "data")
     myan = Analyzer(data_param[case], case, typean)
+    mysis = Systematics(data_param[case], case, typean)
 
     #creating folder if not present
     counter = 0
@@ -354,6 +357,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         myan.side_band_sub()
     if docross is True:
         myan.plotter()
+    if dosystprob is True:
+        mysis.probvariation()
 
     if dovalhistomc is True:
         mymultiprocessmc.multi_valevents()
