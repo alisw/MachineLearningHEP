@@ -26,7 +26,6 @@ Bspp:
   sel_skim_binmax: [5,10,20] #list of nbins
   var_binning: pt_cand
   dofullevtmerge: false
-  
   bitmap_sel:
     use: True
     var_name: cand_type
@@ -184,17 +183,13 @@ Bspp:
       save_fit: True # save bkg fits with the various cuts on ML output
       raahp: [1,1,1] #list of nbins
   
-  analysis:
+  mlapplication:
     data:
       pkl_skimmed_dec: [/home/lvermunt/ITS3/test_pp5/vAN-20190807_ROOT6-1/128_20190807-2226/skpkldec] #list of periods
       pkl_skimmed_decmerged: [/home/lvermunt/ITS3/test_pp5/vAN-20190807_ROOT6-1/128_20190807-2226/skpkldecmerged] #list of periods
-      results: [/home/lvermunt/ITS3/test_pp5/vAN-20190807_ROOT6-1/128_20190807-2226/results] #list of periods
-      resultsallp: /home/lvermunt/ITS3/test_pp5/vAN-20190807_ROOT6-1/128_20190807-2226/results
     mc:
       pkl_skimmed_dec: [/home/lvermunt/ITS3/test_pp5/vAN-20190807_ROOT6-1/pp5_2017_mc_prodD2H/127_20190807-2219/skpkldec] #list of periods
       pkl_skimmed_decmerged: [/home/lvermunt/ITS3/test_pp5/vAN-20190807_ROOT6-1/pp5_2017_mc_prodD2H/127_20190807-2219/skpkldecmerged] #list of periods
-      results: [/home/lvermunt/ITS3/test_pp5/vAN-20190807_ROOT6-1/pp5_2017_mc_prodD2H/127_20190807-2219/results] #list of periods
-      resultsallp: /home/lvermunt/ITS3/test_pp5/vAN-20190807_ROOT6-1/pp5_2017_mc_prodD2H/127_20190807-2219/results
     modelname: xgboost
     modelsperptbin: [xgboost_classifierD0jetpp_dfselection_pt_cand_0.0_5.0.sav,
                      xgboost_classifierD0jetpp_dfselection_pt_cand_5.0_10.0.sav,
@@ -202,82 +197,65 @@ Bspp:
     probcutpresel: 
       data: [0.3,0.3,0.3] #list of nbins
       mc: [0.3,0.3,0.3] #list of nbins
-
     probcutoptimal: [0.5,0.5,0.5] #list of nbins
-    mass_fit_lim: [5.0, 5.7] # region for the fit of the invariant mass distribution [GeV/c^2]
-    bin_width: 0.001 # bin width of the invariant mass histogram
-    presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
-    usefit: true
-    masspeak: 5.366
-    
-#    ##### R-shape analysis
-#    sel_binmin2: [0.00,0.01,0.02,0.025,0.03,0.04,0.05,0.07,0.1,0.15,0.2,0.3] #list of nbins
-#    sel_binmax2: [0.01,0.02,0.025,0.03,0.04,0.05,0.07,0.1,0.15,0.2,0.3,0.4] #list of nbins
-#    var_binning2: delta_r_jet
-#    sel_an_binmin: [4]
-#    sel_an_binmax: [8]
-#    binning_matching: [1] 
-#    sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
-#    bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
-#    massmin: [1.70,1.70,1.70,1.70,1.70,1.70,1.70,1.70,1.70,1.70,1.70,1.70]
-#    massmax: [2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05]
-#    rebin: [4,4,4,4,4,4,4,4,4,4,4,4]
-#    includesecpeak: [0,0,0,0,0,0,0,0,0,0,0,0]
-#    masssecpeak: 1.89
-#    FixedMean: false
-#    SetFixGaussianSigma: true
-#    SetInitialGaussianMean: true
-#    dolikelihood: true
-#    sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
-#    FixedSigma: true 
-#    fitcase: D0
-#    latexnamemeson: "d#sigma/d p_{T} d#DeltaR (D^{0})"
-#    latexbin2var: "#Delta R (D^{0} - jet)"
-#    dodoublecross: true
-#    nevents: 1700000000.
-    ####### Fragmentation analysis
-    sel_binmin2: [10,20,30] #list of nbins
-    sel_binmax2: [20,30,50] #list of nbins  
-    var_binning2: pt_jet
-    sel_an_binmin: [1,2,3,4,5,6,8,10,12]
-    sel_an_binmax: [2,3,4,5,6,8,10,12,24]
-    binning_matching: [0,1,1,2,2,2,3,3,4]
-    sel_final_fineptbins: ["is_ev_rej==0",
-                           "is_ev_rej==0",
-                           "is_ev_rej==0",
-                           "is_ev_rej==0",
-                           "is_ev_rej==0",
-                           "is_ev_rej==0",
-                           "is_ev_rej==0",
-                           "is_ev_rej==0",
-                           "is_ev_rej==0"]
-    mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
-    bin_width: 0.001 # bin width of the invariant mass histogram
-    presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
-    usefit: true
-    sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
-    bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
-    massmin: [1.70,1.70,1.70,1.70,1.70,1.70,1.70,1.70,1.70]
-    massmax: [2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05]
-    rebin: [4,4,4,4,4,4,4,4,4]
-    includesecpeak: [0,0,0,0,0,0,0,0,0,0]
-    masssecpeak: 1.89
-    FixedMean: false
-    SetFixGaussianSigma: true
-    SetInitialGaussianMean: true
-    dolikelihood: true
-    sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
-    FixedSigma: true 
-    fitcase: D0
-    latexnamemeson: "D^{0}"
-    latexbin2var: "jet p_{T}"
-    nevents: 1700000000.
-    dodoublecross: false
+
+  analysis:
+    MBvspt:
+      plotbin: [1]
+      usesinglebineff: 0
+      sel_binmin2: [0] #list of nbins
+      sel_binmax2: [9999] #list of nbins  
+      var_binning2: n_tracklets_corr
+      
+      sel_an_binmin: [0,5,10]
+      sel_an_binmax: [5,10,20]
+      binning_matching: [0,1,2]
+      presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
+      evtsel: is_ev_rej==0
+      triggersel: 
+        data: null
+        mc: null
+
+      data:
+        results: [/home/lvermunt/ITS3/test_pp5/vAN-20190807_ROOT6-1/128_20190807-2226/results] #list of periods
+        resultsallp: /home/lvermunt/ITS3/test_pp5/vAN-20190807_ROOT6-1/128_20190807-2226/results
+      mc:
+        results: [/home/lvermunt/ITS3/test_pp5/vAN-20190807_ROOT6-1/pp5_2017_mc_prodD2H/127_20190807-2219/results] #list of periods
+        resultsallp: /home/lvermunt/ITS3/test_pp5/vAN-20190807_ROOT6-1/pp5_2017_mc_prodD2H/127_20190807-2219/results
+
+
+
+      mass_fit_lim: [5.0, 5.7] # region for the fit of the invariant mass distribution [GeV/c^2]
+      bin_width: 0.001 # bin width of the invariant mass histogram
+      usefit: true
+      sgnfunc: [kGaus,kGaus,kGaus]
+      bkgfunc: [Pol2,Pol2,Pol2]
+      masspeak: 5.366
+      massmin: [5.1,5.1,5.1]
+      massmax: [5.6,5.6,5.6]
+      rebin: [6,6,6]
+      includesecpeak: [0,0,0]
+      masssecpeak: 0.
+      FixedMean: False
+      SetFixGaussianSigma: true
+      SetInitialGaussianMean: true
+      dolikelihood: true
+      sigmaarray: [0.01,0.01,0.01]
+      FixedSigma: true
+      fitcase: Bs0
+      latexnamemeson: "B^{0}_{s}"
+      latexbin2var: "n_{trkl}"
+      nevents: 1000000.
+      dodoublecross: false
+      
+  systematics:
+    probvariation:
+      prob_range: [0.5,0.6,0.7]
 
   validation:
     data:
-      dir: [dataval/122_20190805-2347] #list of periods
+      dir: [dataval/128_20190807-2226] #list of periods
       dirmerged: datavaltot
     mc:
-      dir: [mcval/121_20190805-2344] #list of periods
+      dir: [mcval/127_20190807-2219] #list of periods
       dirmerged: mcvaltot
