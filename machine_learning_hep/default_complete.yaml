@@ -62,6 +62,9 @@ analysis:
   doeff: true
   docross: true
 
+systematics:
+  probvariation: false
+
 validation:
   data: 
     docreatehisto: false

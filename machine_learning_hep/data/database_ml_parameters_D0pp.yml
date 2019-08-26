@@ -446,6 +446,10 @@ D0pp:
       nevents: 1700000000.
       dodoublecross: false
 
+  systematics:
+    probvariation:
+      prob_range: [0.5,0.6,0.7]
+  
   validation:
     data:
       dir: [dataval_16, dataval_16, dataval_17, dataval_18] #list of periods
