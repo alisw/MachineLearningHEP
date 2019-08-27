@@ -357,7 +357,7 @@ elif [ "$dataset" == "LHC19c3a_q" ]; then
   ispp=0
   datasetwithchilds=1
   dataset_short="PbPb010_2018_mc_prodD2H"
- elif [ "$dataset" == "LHC19c3a_r" ]; then
+elif [ "$dataset" == "LHC19c3a_r" ]; then
   #D2H MC: PbPb 5 TeV 2018 0-10
   inputpaths=(/alice/sim/2019/LHC19c3a/297481/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19c3a2/297481/PWGHF/HF_TreeCreator)
@@ -365,7 +365,7 @@ elif [ "$dataset" == "LHC19c3a_q" ]; then
   ispp=0
   datasetwithchilds=1
   dataset_short="PbPb010_2018_mc_prodD2H"
- elif [ "$dataset" == "LHC19c3b_q" ]; then
+elif [ "$dataset" == "LHC19c3b_q" ]; then
   #D2H MC: PbPb 5 TeV 2018 30-50
   inputpaths=(/alice/sim/2019/LHC19c3b/296433/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19c3b2/296433/PWGHF/HF_TreeCreator)
@@ -373,7 +373,7 @@ elif [ "$dataset" == "LHC19c3a_q" ]; then
   ispp=0
   datasetwithchilds=1
   dataset_short="PbPb3050_2018_mc_prodD2H"
- elif [ "$dataset" == "LHC19c3b_r" ]; then
+elif [ "$dataset" == "LHC19c3b_r" ]; then
   #D2H MC: PbPb 5 TeV 2018 30-50
   inputpaths=(/alice/sim/2019/LHC19c3b/297481/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19c3b2/297481/PWGHF/HF_TreeCreator)
@@ -381,7 +381,7 @@ elif [ "$dataset" == "LHC19c3a_q" ]; then
   ispp=0
   datasetwithchilds=1
   dataset_short="PbPb3050_2018_mc_prodD2H"
- elif [ "$dataset" == "LHC19d4a_q" ]; then
+elif [ "$dataset" == "LHC19d4a_q" ]; then
   #Ds->KKpi MC: PbPb 5 TeV 2018 0-10
   inputpaths=(/alice/sim/2019/LHC19d4a/296433/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19d4a2/296244/PWGHF/HF_TreeCreator)
@@ -389,7 +389,7 @@ elif [ "$dataset" == "LHC19c3a_q" ]; then
   ispp=0
   datasetwithchilds=1
   dataset_short="PbPb010_2018_mc_prodDs"
- elif [ "$dataset" == "LHC19d4a_r" ]; then
+elif [ "$dataset" == "LHC19d4a_r" ]; then
   #Ds->KKpi MC: PbPb 5 TeV 2018 0-10
   inputpaths=(/alice/sim/2019/LHC19d4a/297481/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19d4a2/297481/PWGHF/HF_TreeCreator)
@@ -397,7 +397,7 @@ elif [ "$dataset" == "LHC19c3a_q" ]; then
   ispp=0
   datasetwithchilds=1
   dataset_short="PbPb010_2018_mc_prodDs"
- elif [ "$dataset" == "LHC19d4b_q" ]; then
+elif [ "$dataset" == "LHC19d4b_q" ]; then
   #Ds->KKpi MC: PbPb 5 TeV 2018 30-50
   inputpaths=(/alice/sim/2019/LHC19d4b/296433/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19d4b2/296433/PWGHF/HF_TreeCreator)
@@ -405,7 +405,7 @@ elif [ "$dataset" == "LHC19c3a_q" ]; then
   ispp=0
   datasetwithchilds=1
   dataset_short="PbPb3050_2018_mc_prodDs"
- elif [ "$dataset" == "LHC19d4b_r" ]; then
+elif [ "$dataset" == "LHC19d4b_r" ]; then
   #Ds->KKpi MC: PbPb 5 TeV 2018 30-50
   inputpaths=(/alice/sim/2019/LHC19d4b/297481/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19d4b2/297481/PWGHF/HF_TreeCreator)
@@ -413,6 +413,29 @@ elif [ "$dataset" == "LHC19c3a_q" ]; then
   ispp=0
   datasetwithchilds=1
   dataset_short="PbPb3050_2018_mc_prodDs"
+elif [ "$dataset" == "LHC13d19" ]; then
+  #MC: PbPb 5 TeV ITS2 upgrade
+  inputpaths=(/alice/sim/2013/LHC13d19/138275/PWGHF/HF_TreeCreator)
+  isMC=1
+  ispp=0
+  datasetwithchilds=0
+  dataset_short="ITS2_13d19"
+elif [ "$dataset" == "LHC14j5_new" ]; then
+  #MC: PbPb 5 TeV ITS2 upgrade (new)
+  inputpaths=(/alice/sim/2014/LHC14j5_new/138364/PWGHF/HF_TreeCreator
+              /alice/sim/2014/LHC14j5_new/137844/PWGHF/HF_TreeCreator
+              /alice/sim/2014/LHC14j5_new/137686/PWGHF/HF_TreeCreator
+              /alice/sim/2014/LHC14j5_new/137541/PWGHF/HF_TreeCreator
+              /alice/sim/2014/LHC14j5_new/138275/PWGHF/HF_TreeCreator
+              /alice/sim/2014/LHC14j5_new/137608/PWGHF/HF_TreeCreator
+              /alice/sim/2014/LHC14j5_new/138396/PWGHF/HF_TreeCreator
+              /alice/sim/2014/LHC14j5_new/138225/PWGHF/HF_TreeCreator
+              /alice/sim/2014/LHC14j5_new/137162/PWGHF/HF_TreeCreator
+              /alice/sim/2014/LHC14j5_new/138197/PWGHF/HF_TreeCreator)
+  isMC=1
+  ispp=0
+  datasetwithchilds=0
+  dataset_short="ITS2_14j5new"
 else
   printf "\e[1;31mError: Dataset not yet implemented. Returning...\e[0m\n\n"
   exit
