@@ -182,6 +182,7 @@ Bspp:
       num_steps: 111 # number of steps used in efficiency and signif. estimation
       save_fit: True # save bkg fits with the various cuts on ML output
       raahp: [1,1,1] #list of nbins
+      presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
   
   mlapplication:
     data:

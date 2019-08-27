@@ -18,12 +18,12 @@ LbITS2:
   sel_reco_singletrac_unp : null
   sel_gen_unp: "pt_cand>0 and abs(z_vtx_gen)<10"
   sel_cen_unp: null
-  sel_good_evt_unp: "is_ev_rej == 0"
-  #sel_good_evt_unp: null
+  #sel_good_evt_unp: "is_ev_rej == 0"
+  sel_good_evt_unp: null
   sel_reco_skim: [null,null,null]
   sel_gen_skim: [null,null,null]
-  sel_skim_binmin: [0,5,10] #list of nbins
-  sel_skim_binmax: [5,10,20] #list of nbins
+  sel_skim_binmin: [0,8,20] #list of nbins
+  sel_skim_binmax: [8,20,99] #list of nbins
   var_binning: pt_cand
   dofullevtmerge: false
   bitmap_sel:
@@ -50,7 +50,7 @@ LbITS2:
 #              dist_12_Lc, dist_23_Lc, max_norm_d0d0exp_Lc, sum_d0d0_prongs_Lc, dca_prong0_Lc, dca_prong1_Lc, dca_prong2_Lc]
     var_all: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, cos_t_star, imp_par_prod, ctau, pt_prong0,
               pt_prong1, pt_prong2, pt_prong3, imp_par_prong0, imp_par_prong1, imp_par_prong2, imp_par_prong3, inv_mass_Lc, 
-              pt_Lc, y_Lc, d_len_Lc, d_len_xy_Lc, norm_dl_xy_Lc, cos_p_Lc, cos_p_xy_Lc, imp_par_xy_Lc, dca_Lc, sig_vert_Lc, 
+              imp_par_Lc, pt_Lc, y_Lc, d_len_Lc, d_len_xy_Lc, norm_dl_xy_Lc, cos_p_Lc, cos_p_xy_Lc, imp_par_xy_Lc, dca_Lc, sig_vert_Lc, 
               dist_12_Lc, dist_23_Lc, max_norm_d0d0exp_Lc, sum_d0d0_prongs_Lc, dca_prong0_Lc, dca_prong1_Lc, dca_prong2_Lc,
               inv_mass, pt_cand, phi_cand, cand_type, y_cand, eta_prong0, eta_prong1, eta_prong2, eta_prong3, run_number, ev_id,
               nsigTPC_Pi_0, nsigTPC_K_0, nsigTPC_Pr_0, nsigTOF_Pi_0, nsigTOF_K_0, nsigTOF_Pr_0,
@@ -136,11 +136,11 @@ LbITS2:
       seedmerge: [12] #list of periods
       period: [LHC13d19] #list of periods
       unmerged_tree_dir: [/data/TTree/LbkAnyITS2ITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19/154_20190825-0840/merged] #list of periods
-      pkl: [/data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19/154_20190825-0840/pkl] #list of periods
-      pkl_skimmed: [/data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19/154_20190825-0840/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [/data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19/154_20190825-0840/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19/154_20190825-0840/pp_data_mltot
-      pkl_evtcounter_all: /data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19/154_20190825-0840/pp_data_evttot
+      pkl: [/data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/154_20190825-0840/pkl] #list of periods
+      pkl_skimmed: [/data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/154_20190825-0840/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/154_20190825-0840/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/154_20190825-0840/ITS2Upgr_13_bkg_mltot
+      pkl_evtcounter_all: /data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/154_20190825-0840/ITS2Upgr_13_bkg_evttot
     mc:
       nperiods: 1
       nprocessesparallel: 50
@@ -151,11 +151,11 @@ LbITS2:
       seedmerge: [12] #list of periods
       period: [LHC13d19] #list of periods
       unmerged_tree_dir: [/data/TTree/LbkAnyITS2ITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19/153_20190825-0840/merged] #list of periods
-      pkl: [/data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19/153_20190825-0840/pkl] #list of periods
-      pkl_skimmed: [/data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19/153_20190825-0840/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [/data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19/153_20190825-0840/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19/153_20190825-0840/pp_mc_prodD2H_mltot
-      pkl_evtcounter_all: /data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19/153_20190825-0840/pp_mc_prodD2H_evttot
+      pkl: [/data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/pkl] #list of periods
+      pkl_skimmed: [/data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/ITS2Upgr_13_sig_mltot
+      pkl_evtcounter_all: /data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/ITS2Upgr_13_sig_evttot
   ml:
     nbkg: 5000000
     nsig: 5000000
@@ -167,8 +167,8 @@ LbITS2:
     rnd_shuffle: 12
     rnd_splt: 12
     test_frac: 0.2
-    binmin: [0,5,10] #list of nbins
-    binmax: [5,10,20] #list of nbins
+    binmin: [0,8,20] #list of nbins
+    binmax: [8,20,99] #list of nbins
     mltype: BinaryClassification
     ncorescrossval: 10 
     mlplot: /data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/mlplot # to be removed
@@ -186,14 +186,15 @@ LbITS2:
       num_steps: 111 # number of steps used in efficiency and signif. estimation
       save_fit: True # save bkg fits with the various cuts on ML output
       raahp: [1,1,1] #list of nbins
+      presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
   
   mlapplication:
     data:
-      pkl_skimmed_dec: [/data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19/154_20190825-0840/skpkldec] #list of periods
-      pkl_skimmed_decmerged: [/data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19/154_20190825-0840/skpkldecmerged] #list of periods
+      pkl_skimmed_dec: [/data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/154_20190825-0840/skpkldec] #list of periods
+      pkl_skimmed_decmerged: [/data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/154_20190825-0840/skpkldecmerged] #list of periods
     mc:
-      pkl_skimmed_dec: [/data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19/153_20190825-0840/skpkldec] #list of periods
-      pkl_skimmed_decmerged: [/data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19/153_20190825-0840/skpkldecmerged] #list of periods
+      pkl_skimmed_dec: [/data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/skpkldec] #list of periods
+      pkl_skimmed_decmerged: [/data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/skpkldecmerged] #list of periods
     modelname: xgboost
     modelsperptbin: [xgboost_classifierLbITS2_dfselection_pt_cand_0.0_5.0.sav,
                      xgboost_classifierLbITS2_dfselection_pt_cand_5.0_10.0.sav,
@@ -211,8 +212,8 @@ LbITS2:
       sel_binmax2: [9999] #list of nbins  
       var_binning2: n_tracklets_corr
       
-      sel_an_binmin: [0,5,10]
-      sel_an_binmax: [5,10,20]
+      sel_an_binmin: [0,8,20]
+      sel_an_binmax: [8,20,99]
       binning_matching: [0,1,2]
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
@@ -221,11 +222,11 @@ LbITS2:
         mc: null
 
       data:
-        results: [LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19/154_20190825-0840/results] #list of periods
-        resultsallp: LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19/154_20190825-0840/results
+        results: [LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/154_20190825-0840/results] #list of periods
+        resultsallp: LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/154_20190825-0840/results
       mc:
-        results: [LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19/153_20190825-0840/results] #list of periods
-        resultsallp: LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19/153_20190825-0840/results
+        results: [LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/results] #list of periods
+        resultsallp: LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/results
 
 
 
@@ -276,12 +277,12 @@ LbITS3:
   sel_reco_singletrac_unp : null
   sel_gen_unp: "pt_cand>0 and abs(z_vtx_gen)<10"
   sel_cen_unp: null
-  sel_good_evt_unp: "is_ev_rej == 0"
-  #sel_good_evt_unp: null
+  #sel_good_evt_unp: "is_ev_rej == 0"
+  sel_good_evt_unp: null
   sel_reco_skim: [null,null,null]
   sel_gen_skim: [null,null,null]
-  sel_skim_binmin: [0,5,10] #list of nbins
-  sel_skim_binmax: [5,10,20] #list of nbins
+  sel_skim_binmin: [0,8,20] #list of nbins
+  sel_skim_binmax: [8,20,99] #list of nbins
   var_binning: pt_cand
   dofullevtmerge: false
   bitmap_sel:
@@ -394,11 +395,11 @@ LbITS3:
       seedmerge: [12] #list of periods
       period: [LHC13d19] #list of periods
       unmerged_tree_dir: [/data/TTree/LbkAnyITS2ITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19/154_20190825-0840/merged] #list of periods
-      pkl: [/data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19/154_20190825-0840/pkl] #list of periods
-      pkl_skimmed: [/data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19/154_20190825-0840/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [/data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19/154_20190825-0840/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19/154_20190825-0840/pp_data_mltot
-      pkl_evtcounter_all: /data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19/154_20190825-0840/pp_data_evttot
+      pkl: [/data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19_v2/154_20190825-0840/pkl] #list of periods
+      pkl_skimmed: [/data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19_v2/154_20190825-0840/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19_v2/154_20190825-0840/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19_v2/154_20190825-0840/ITS3Impr_13_bkg_mltot
+      pkl_evtcounter_all: /data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19_v2/154_20190825-0840/ITS3Impr_13_bkg_evttot
     mc:
       nperiods: 1
       nprocessesparallel: 50
@@ -409,11 +410,11 @@ LbITS3:
       seedmerge: [12] #list of periods
       period: [LHC13d19] #list of periods
       unmerged_tree_dir: [/data/TTree/LbkAnyITS2ITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19/153_20190825-0840/merged] #list of periods
-      pkl: [/data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19/153_20190825-0840/pkl] #list of periods
-      pkl_skimmed: [/data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19/153_20190825-0840/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [/data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19/153_20190825-0840/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19/153_20190825-0840/pp_mc_prodD2H_mltot
-      pkl_evtcounter_all: /data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19/153_20190825-0840/pp_mc_prodD2H_evttot
+      pkl: [/data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/pkl] #list of periods
+      pkl_skimmed: [/data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/ITS3Impr_13_sig_mltot
+      pkl_evtcounter_all: /data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/ITS3Impr_13_sig_evttot
   ml:
     nbkg: 5000000
     nsig: 5000000
@@ -425,8 +426,8 @@ LbITS3:
     rnd_shuffle: 12
     rnd_splt: 12
     test_frac: 0.2
-    binmin: [0,5,10] #list of nbins
-    binmax: [5,10,20] #list of nbins
+    binmin: [0,8,20] #list of nbins
+    binmax: [8,20,99] #list of nbins
     mltype: BinaryClassification
     ncorescrossval: 10 
     mlplot: /data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/mlplot # to be removed
@@ -444,14 +445,15 @@ LbITS3:
       num_steps: 111 # number of steps used in efficiency and signif. estimation
       save_fit: True # save bkg fits with the various cuts on ML output
       raahp: [1,1,1] #list of nbins
+      presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
   
   mlapplication:
     data:
-      pkl_skimmed_dec: [/data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19/154_20190825-0840/skpkldec] #list of periods
-      pkl_skimmed_decmerged: [/data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19/154_20190825-0840/skpkldecmerged] #list of periods
+      pkl_skimmed_dec: [/data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19_v2/154_20190825-0840/skpkldec] #list of periods
+      pkl_skimmed_decmerged: [/data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19_v2/154_20190825-0840/skpkldecmerged] #list of periods
     mc:
-      pkl_skimmed_dec: [/data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19/153_20190825-0840/skpkldec] #list of periods
-      pkl_skimmed_decmerged: [/data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19/153_20190825-0840/skpkldecmerged] #list of periods
+      pkl_skimmed_dec: [/data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/skpkldec] #list of periods
+      pkl_skimmed_decmerged: [/data/Derived/LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/skpkldecmerged] #list of periods
     modelname: xgboost
     modelsperptbin: [xgboost_classifierLbITS3_dfselection_pt_cand_0.0_5.0.sav,
                      xgboost_classifierLbITS3_dfselection_pt_cand_5.0_10.0.sav,
@@ -469,8 +471,8 @@ LbITS3:
       sel_binmax2: [9999] #list of nbins  
       var_binning2: n_tracklets_corr
       
-      sel_an_binmin: [0,5,10]
-      sel_an_binmax: [5,10,20]
+      sel_an_binmin: [0,8,20]
+      sel_an_binmax: [8,20,99]
       binning_matching: [0,1,2]
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
@@ -479,11 +481,11 @@ LbITS3:
         mc: null
 
       data:
-        results: [LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19/154_20190825-0840/results] #list of periods
-        resultsallp: LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19/154_20190825-0840/results
+        results: [LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19_v2/154_20190825-0840/results] #list of periods
+        resultsallp: LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19_v2/154_20190825-0840/results
       mc:
-        results: [LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19/153_20190825-0840/results] #list of periods
-        resultsallp: LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19/153_20190825-0840/results
+        results: [LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/results] #list of periods
+        resultsallp: LbkAnyITS3Improver/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/results
 
 
 
