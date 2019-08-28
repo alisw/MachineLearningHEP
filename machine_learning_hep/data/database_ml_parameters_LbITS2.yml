@@ -153,8 +153,8 @@ LbITS2:
       pkl_skimmed_merge_for_ml_all: /data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/ITS2Upgr_13_sig_mltot
       pkl_evtcounter_all: /data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/ITS2Upgr_13_sig_evttot
   ml:
-    nbkg: 100000
-    nsig: 100000
+    nbkg: 500000
+    nsig: 500000
     sampletagforsignal: 1
     sampletagforbkg: 0
     sel_sigml: ismcprompt == 1
@@ -192,37 +192,37 @@ LbITS2:
       pkl_skimmed_dec: [/data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/skpkldec] #list of periods
       pkl_skimmed_decmerged: [/data/Derived/LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/skpkldecmerged] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierLbITS2_dfselection_pt_cand_0.0_5.0.sav,
-                     xgboost_classifierLbITS2_dfselection_pt_cand_5.0_10.0.sav,
-                     xgboost_classifierLbITS2_dfselection_pt_cand_10.0_20.0.sav]
+    modelsperptbin: [xgboost_classifierLbITS2_dfselection_pt_cand_0.0_8.0.sav,
+                     xgboost_classifierLbITS2_dfselection_pt_cand_8.0_20.0.sav,
+                     xgboost_classifierLbITS2_dfselection_pt_cand_20.0_99.0.sav]
     probcutpresel: 
-      data: [0.3,0.3,0.3] #list of nbins
-      mc: [0.3,0.3,0.3] #list of nbins
-    probcutoptimal: [0.5,0.5,0.5] #list of nbins
+      data: [0.2,0.2,0.2] #list of nbins
+      mc: [0.2,0.2,0.2] #list of nbins
+    probcutoptimal: [0.3,0.3,0.3] #list of nbins
 
   analysis:
     MBvspt:
       plotbin: [1]
       usesinglebineff: 0
-      sel_binmin2: [0] #list of nbins
+      sel_binmin2: [0.] #list of nbins
       sel_binmax2: [9999] #list of nbins  
-      var_binning2: n_tracklets_corr
+      var_binning2: pt_cand
       
       sel_an_binmin: [0,8,20]
       sel_an_binmax: [8,20,99]
       binning_matching: [0,1,2]
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
-      evtsel: is_ev_rej==0
+      evtsel: null
       triggersel: 
         data: null
         mc: null
 
       data:
         results: [LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/154_20190825-0840/results] #list of periods
-        resultsallp: LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/154_20190825-0840/results
+        resultsallp: LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/154_20190825-0840/resultstot
       mc:
         results: [LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/results] #list of periods
-        resultsallp: LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/results
+        resultsallp: LbkAnyITS2/vAN-20190824_ROOT6-1/ITS2_13d19_v2/153_20190825-0840/resultstot
 
 
 
@@ -232,17 +232,17 @@ LbITS2:
       sgnfunc: [kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2]
       masspeak: 5.62
-      massmin: [5.1,5.1,5.1]
-      massmax: [5.6,5.6,5.6]
+      massmin: [5.3,5.3,5.3]
+      massmax: [5.9,5.9,5.9]
       rebin: [6,6,6]
       includesecpeak: [0,0,0]
       masssecpeak: 0.
-      FixedMean: False
-      SetFixGaussianSigma: true
+      FixedMean: false
+      SetFixGaussianSigma: false
       SetInitialGaussianMean: true
       dolikelihood: true
       sigmaarray: [0.01,0.01,0.01]
-      FixedSigma: true
+      FixedSigma: false
       fitcase: Lb0
       latexnamemeson: "#Lambda^{0}_{b}"
       latexbin2var: "n_{trkl}"
