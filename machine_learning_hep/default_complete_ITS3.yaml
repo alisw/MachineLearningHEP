@@ -1,4 +1,4 @@
-case: LbITS2
+case: LbITS3
 download:
   alice:
     activate: false
@@ -24,13 +24,13 @@ mergingperiods:
     activate: false
 
 ml_study:   
-  activate: true
+  activate: false
   doscancuts: false
   applytodatamc: false
-  doroc: false
+  doroc: true
   doboundary: false
   docorrelation: true
-  docrossvalidation: false
+  docrossvalidation: true
   dogridsearch: false
   doimportance: true
   dolearningcurve: false
@@ -53,14 +53,28 @@ mlapplication:
 analysis:
   type: MBvspt
   data:
-    histomass: false
+    histomass: true
   mc: 
-    histomass: false
+    histomass: true
     efficiency: false
-  dofit: false
+  dofit: true
   dojetstudies: false
   doeff: false
   docross: false
+
+analysis:
+  type: MBvspt
+  data:
+    histomass: true
+  mc: 
+    histomass: true
+    efficiency: true
+  dofit: true
+  dojetstudies: true
+  doeff: true
+  docross: true
+  doeff: true
+  docross: true
 
 systematics:
   probvariation: false
