@@ -1,4 +1,4 @@
-case: LbITS2
+case: LcpK0spp
 download:
   alice:
     activate: false
