@@ -138,7 +138,7 @@ def fitter(histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihood, setinit
     logger.info("Argument \"setinitialgaussianmean\" set to %u, however not used at the moment",
                 setinitialgaussianmean)
 
-    if "Lc" not in case and "D0" not in case and "Ds" not in case:
+    if "Lb" not in case and "Lc" not in case and "D0" not in case and "Ds" not in case:
         logger.warning("Can only do the fit for Lc, D0 or Ds, however found case %s", case)
         return -1, -1
 
