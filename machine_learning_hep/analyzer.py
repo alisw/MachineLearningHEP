@@ -25,6 +25,7 @@ from ROOT import gROOT
 from ROOT import TStyle
 from ROOT import TLatex
 from machine_learning_hep.globalfitter import fitter
+from  machine_learning_hep.logger import get_logger
 
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements
 class Analyzer:
@@ -50,8 +51,9 @@ class Analyzer:
         self.d_resultsallpmc = datap["analysis"][self.typean]["mc"]["resultsallp"]
         self.d_resultsallpdata = datap["analysis"][self.typean]["data"]["resultsallp"]
 
-        self.n_filemass = datap["files_names"]["histofilename"]
-        self.n_filemass = os.path.join(self.d_resultsallpdata, self.n_filemass)
+        n_filemass_name = datap["files_names"]["histofilename"]
+        self.n_filemass = os.path.join(self.d_resultsallpdata, n_filemass_name)
+        self.n_filemass_mc = os.path.join(self.d_resultsallpmc, n_filemass_name)
         self.n_filecross = datap["files_names"]["crossfilename"]
         self.p_mass_fit_lim = datap["analysis"][self.typean]['mass_fit_lim']
 
@@ -113,6 +115,8 @@ class Analyzer:
     def fitter(self):
         self.loadstyle()
         lfile = TFile.Open(self.n_filemass)
+        lfile_mc = TFile.Open(self.n_filemass_mc, "READ")
+
         fileout = TFile.Open("%s/yields%s%s.root" % (self.d_resultsallpdata,
                                                      self.case, self.typean), "recreate")
         for imult in range(self.p_nbin2):
@@ -123,20 +127,26 @@ class Analyzer:
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
                 h_invmass = lfile.Get("hmass" + suffix)
+                h_invmass_mc = lfile_mc.Get("hmass" + suffix)
                 rawYield, rawYieldErr, sig_fit, bkg_fit = \
-                    fitter(h_invmass, self.p_casefit, self.p_sgnfunc[ipt], self.p_bkgfunc[ipt], \
-                    self.p_masspeak, self.p_rebin[ipt], self.p_dolike, self.p_fixingausmean, \
-                    self.p_fixingaussigma, self.p_sigmaarray[ipt], self.p_massmin[ipt], \
-                    self.p_massmax[ipt], self.p_fixedmean, self.d_resultsallpdata, suffix)
+                    fitter(h_invmass_mc, h_invmass, self.p_casefit, self.p_sgnfunc[ipt],
+                           self.p_bkgfunc[ipt], self.p_masspeak, self.p_rebin[ipt],
+                           self.p_dolike, self.p_fixingausmean, self.p_fixingaussigma,
+                           self.p_sigmaarray[ipt], self.p_massmin[ipt], self.p_massmax[ipt],
+                           self.p_fixedmean, self.d_resultsallpdata, suffix)
                 fileout.cd()
-                sig_fit.SetName("sigfit" + suffix)
-                sig_fit.Write("sigfit" + suffix)
-                bkg_fit.SetName("bkgfit" + suffix)
-                bkg_fit.Write("bkgfit" + suffix)
-                rawYield = rawYield/(self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
-                rawYieldErr = rawYieldErr/(self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
-                self.lmult_yieldshisto[imult].SetBinContent(ipt + 1, rawYield)
-                self.lmult_yieldshisto[imult].SetBinError(ipt + 1, rawYieldErr)
+                if sig_fit is None or bkg_fit is None:
+                    get_logger().error("Fit failed for suffix %s some reason (to be investigated)",
+                                       suffix)
+                else:
+                    sig_fit.SetName("sigfit" + suffix)
+                    sig_fit.Write("sigfit" + suffix)
+                    bkg_fit.SetName("bkgfit" + suffix)
+                    bkg_fit.Write("bkgfit" + suffix)
+                    rawYield = rawYield/(self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
+                    rawYieldErr = rawYieldErr/(self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
+                    self.lmult_yieldshisto[imult].SetBinContent(ipt + 1, rawYield)
+                    self.lmult_yieldshisto[imult].SetBinError(ipt + 1, rawYieldErr)
             fileout.cd()
             self.lmult_yieldshisto[imult].Write()
         fileout.Close()
