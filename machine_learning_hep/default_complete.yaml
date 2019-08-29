@@ -1,4 +1,4 @@
-case: LbITS2
+case: LcpK0spp
 download:
   alice:
     activate: false
@@ -24,15 +24,15 @@ mergingperiods:
     activate: false
 
 ml_study:   
-  activate: true
+  activate: false
   doscancuts: false
   applytodatamc: false
   doroc: false
   doboundary: false
-  docorrelation: true
+  docorrelation: false
   docrossvalidation: false
   dogridsearch: false
-  doimportance: true
+  doimportance: false
   dolearningcurve: false
   dopca: false
   dosignifopt: false
@@ -51,16 +51,16 @@ mlapplication:
     domergeapplyperiods: false
 
 analysis:
-  type: MBvspt
+  type: MBjetvspt
   data:
-    histomass: false
+    histomass: true
   mc: 
-    histomass: false
-    efficiency: false
-  dofit: false
-  dojetstudies: false
-  doeff: false
-  docross: false
+    histomass: true
+    efficiency: true
+  dofit: true
+  dojetstudies: true
+  doeff: true
+  docross: true
 
 systematics:
   probvariation: false
