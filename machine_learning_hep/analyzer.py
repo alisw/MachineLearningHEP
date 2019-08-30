@@ -74,12 +74,15 @@ class Analyzer:
         self.p_includesecpeak = datap["analysis"][self.typean]["includesecpeak"]
         self.p_masssecpeak = datap["analysis"][self.typean]["masssecpeak"]
         self.p_fixedmean = datap["analysis"][self.typean]["FixedMean"]
+        self.p_use_user_gauss_sigma = datap["analysis"][self.typean]["SetInitialGaussianSigma"]
         self.p_fixingaussigma = datap["analysis"][self.typean]["SetFixGaussianSigma"]
-        self.p_fixingausmean = datap["analysis"][self.typean]["SetInitialGaussianMean"]
+        self.p_use_user_gauss_mean = datap["analysis"][self.typean]["SetInitialGaussianMean"]
         self.p_dolike = datap["analysis"][self.typean]["dolikelihood"]
         self.p_sigmaarray = datap["analysis"][self.typean]["sigmaarray"]
         self.p_fixedsigma = datap["analysis"][self.typean]["FixedSigma"]
         self.p_casefit = datap["analysis"][self.typean]["fitcase"]
+        self.fit_try_rms_ranges = datap["analysis"][self.typean].get("try_rms_ranges", [])
+        self.fit_use_rms = datap["analysis"][self.typean]["use_rms_range"]
         self.p_latexnmeson = datap["analysis"][self.typean]["latexnamemeson"]
         self.p_latexbin2var = datap["analysis"][self.typean]["latexbin2var"]
         self.p_dofullevtmerge = datap["dofullevtmerge"]
@@ -128,17 +131,23 @@ class Analyzer:
                           self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
                 h_invmass = lfile.Get("hmass" + suffix)
                 h_invmass_mc = lfile_mc.Get("hmass" + suffix)
-                rawYield, rawYieldErr, sig_fit, bkg_fit = \
+                rawYield, rawYieldErr, sig_fit, bkg_fit, sig_fits_mc = \
                     fitter(h_invmass_mc, h_invmass, self.p_casefit, self.p_sgnfunc[ipt],
                            self.p_bkgfunc[ipt], self.p_masspeak, self.p_rebin[ipt],
-                           self.p_dolike, self.p_fixingausmean, self.p_fixingaussigma,
+                           self.p_dolike, self.p_use_user_gauss_mean,
+                           self.p_use_user_gauss_sigma, self.p_fixingaussigma,
                            self.p_sigmaarray[ipt], self.p_massmin[ipt], self.p_massmax[ipt],
-                           self.p_fixedmean, self.d_resultsallpdata, suffix)
+                           self.p_fixedmean, self.fit_try_rms_ranges, self.fit_use_rms[ipt],
+                           self.d_resultsallpdata, suffix)
                 fileout.cd()
                 if sig_fit is None or bkg_fit is None:
                     get_logger().error("Fit failed for suffix %s some reason (to be investigated)",
                                        suffix)
+                    continue
                 else:
+                    for f in sig_fits_mc:
+                        f.SetName(f.GetName() + suffix)
+                        f.Write()
                     sig_fit.SetName("sigfit" + suffix)
                     sig_fit.Write("sigfit" + suffix)
                     bkg_fit.SetName("bkgfit" + suffix)

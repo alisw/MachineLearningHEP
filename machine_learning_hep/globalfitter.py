@@ -17,7 +17,9 @@ Methods to: fit inv. mass
 """
 
 import math
-from ROOT import TF1, gStyle, TCanvas, TPaveText, TLine, Double, TVirtualFitter, kBlue, kGray, kRed # pylint: disable=import-error,no-name-in-module
+# pylint: disable=import-error,no-name-in-module
+from ROOT import TF1, gStyle, TCanvas, TPaveText, TLine, Double, TVirtualFitter, \
+                 kBlue, kGray, kRed, kGreen
 from  machine_learning_hep.logger import get_logger
 
 def fixpar(massmin, massmax, masspeak, range_signal):
@@ -118,7 +120,8 @@ def tot_func(bkgfunc, massmax, massmin):
             (massmax * massmax * massmax - massmin * massmin * massmin),
             (massmax-massmin))
 
-def fit_mc(histo_mc, sig_func_name, rebin, do_likelihood, rms_range, save_path):
+# pylint: disable=too-many-statements
+def fit_mc(histo_mc, sig_func_name, rebin, do_likelihood, rms_ranges, save_path):
     """
     This take ony the MC mass histogram and fits the desired signal function to that.
     NOTE: For now only a single Gaussian is considered although the option for requesting
@@ -136,61 +139,73 @@ def fit_mc(histo_mc, sig_func_name, rebin, do_likelihood, rms_range, save_path):
     # Fix the initial sigma for now just to something small
     sigma_initial = 0.01
     # Very rough estimation of the initial integral
+    colors = [kBlue + 2, kRed + 2, kGreen + 2]
+    styles = [1, 7, 9]
     integral_initial = histo_rms * histo_maximum
-    # The range does not really play a role here as we fit in a range of a certain number of rms of
-    # the MC histogram, so omit that
-    sig_fit = TF1("sig_fit_mc", signal_func(sig_func_name), histo_mc.GetXaxis().GetXmin(),
-                  histo_mc.GetXaxis().GetXmax())
-    sig_fit.SetParameter(0, integral_initial)
-    sig_fit.SetParameter(1, mean_initial)
-    sig_fit.SetParameter(2, sigma_initial)
-
-    # Now do the fit
-    histo_mc.Fit("sig_fit_mc", fit_options, "", mean_initial - rms_range * histo_rms,
-                 mean_initial + rms_range * histo_rms)
-
     c1 = TCanvas('c1', 'The Fit Canvas', 700, 700)
     c1.cd()
     histo_mc.SetStats(False)
     histo_mc.SetMarkerStyle(20)
     histo_mc.SetMarkerSize(1)
     histo_mc.Draw("PE")
-    sig_fit.SetLineColor(kBlue)
-    sig_fit.Draw("same")
-    infoBox = TPaveText(0.12, 0.6, 0.5, 0.85, "NDC")
-    infoBox.SetTextSize(0.03)
-    infoBox.SetBorderSize(0)
-    infoBox.SetFillStyle(0)
-    infoBox.SetTextAlign(11)
-    for i in range(sig_fit.GetNpar()):
-        infoBox.AddText(f"{sig_fit.GetParName(i)}: {sig_fit.GetParameter(i)}")
-    infoBox.AddText(f"#chi^{2} / NDF of fit: {sig_fit.GetChisquare() / sig_fit.GetNDF()}")
-    infoBox.Draw()
-    infoBox.AddText(f"fit in #RMS range: {rms_range}")
-    lineLeft = TLine(mean_initial - rms_range * histo_rms, 0, mean_initial - rms_range * histo_rms,
-                     histo_maximum)
-    lineRight = TLine(mean_initial + rms_range * histo_rms, 0, mean_initial + rms_range * histo_rms,
-                      histo_maximum)
-    lineLeft.SetLineColor(kRed)
-    lineLeft.SetLineWidth(1)
-    lineLeft.SetLineStyle(7)
-    lineLeft.Draw()
-    lineRight.SetLineColor(kRed)
-    lineRight.SetLineWidth(1)
-    lineRight.SetLineStyle(7)
-    lineRight.Draw()
-    c1.Update()
+    lines = []
+    boxes = []
+    box_height = 0.25
+    box_y_up_init = 0.9
+    # Do it in certain RMS ranges
+    sig_fits = []
+    for i, r in enumerate(rms_ranges):
+        sig_fits.append(TF1("sig_fit_mc_rms_" + str(r), signal_func(sig_func_name),
+                            histo_mc.GetXaxis().GetXmin(), histo_mc.GetXaxis().GetXmax()))
+        sig_fits[i].SetParameter(0, integral_initial)
+        sig_fits[i].SetParameter(1, mean_initial)
+        sig_fits[i].SetParameter(2, sigma_initial)
+        # Now do the fit
+        fit_range_low = mean_initial - r * histo_rms if r > 0 else 0
+        fit_range_up = mean_initial + r * histo_rms if r > 0 else 0
+        histo_mc.Fit("sig_fit_mc_rms_" + str(r), fit_options, "", fit_range_low, fit_range_up)
 
+        sig_fits[i].SetLineColor(colors[i%len(colors)])
+        sig_fits[i].SetLineStyle(styles[i%len(styles)])
+        sig_fits[i].Draw("same")
+
+        boxes.append(TPaveText(0.12, box_y_up_init - (i + 1) * box_height, 0.5,
+                               box_y_up_init - i * box_height, "NDC"))
+        boxes[i].SetTextSize(0.02)
+        boxes[i].SetTextColor(colors[i%len(colors)])
+        boxes[i].SetBorderSize(0)
+        boxes[i].SetFillStyle(0)
+        boxes[i].SetTextAlign(11)
+        for j in range(sig_fits[i].GetNpar()):
+            boxes[i].AddText(f"{sig_fits[i].GetParName(j)}: {sig_fits[i].GetParameter(j)}")
+        boxes[i].AddText("#chi^{2} / NDF of fit: %f"
+                         % (sig_fits[i].GetChisquare() / sig_fits[i].GetNDF()))
+        boxes[i].AddText(f"fit in #RMS range: {r}")
+        boxes[i].Draw()
+        if r > 0:
+            lines.append(TLine(fit_range_low, 0, fit_range_low, histo_maximum))
+            lines.append(TLine(fit_range_up, 0, fit_range_up, histo_maximum))
+            il = len(lines)
+            lines[il-2].SetLineColor(colors[i%len(colors)])
+            lines[il-2].SetLineWidth(1)
+            lines[il-2].SetLineStyle(7)
+            lines[il-2].Draw()
+            lines[il-1].SetLineColor(colors[i%len(colors)])
+            lines[il-1].SetLineWidth(1)
+            lines[il-1].SetLineStyle(7)
+            lines[il-1].Draw()
+        c1.Update()
     c1.SaveAs(save_path)
     c1.Close()
 
-    return sig_fit
+    return sig_fits
 
 # pylint: disable=too-many-arguments, too-many-locals, too-many-branches,
 # pylint: disable=too-many-statements
 def fitter(histo_mc, histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihood,
-           setinitialgaussianmean, setfixgaussiansigma, sigma_sig, massmin, massmax,
-           fixedmean, outputfolder, suffix, draw_side_band_fit=False):
+           use_user_mean, use_user_sigma, fixgaussiansigma,
+           sigma_sig, massmin, massmax, fixedmean, try_rms_ranges, use_rms_range,
+           outputfolder, suffix, draw_side_band_fit=False):
     """
     Some comments:
         -> The object 'back_fit' is fitted using only the side-bands
@@ -207,7 +222,7 @@ def fitter(histo_mc, histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihoo
 
     if "Lb" not in case and "Lc" not in case and "D0" not in case and "Ds" not in case:
         logger.warning("Can only do the fit for Lc, D0 or Ds, however found case %s", case)
-        return -1, -1, None, None
+        return -1, -1, None, None, None
 
     histo.GetXaxis().SetTitle("Invariant Mass L_{c}^{+}(GeV/c^{2})")
     histo.Rebin(rebin)
@@ -222,6 +237,35 @@ def fitter(histo_mc, histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihoo
                                                          else ["IntBkg", "BkgCoeff1"]
 
     fitOption = "L,E" if dolikelihood else ""
+
+    # Add the RMS range to be used, keep only unique ranges
+    # (you never know what a user does...) and extract the position in the list
+    try_rms_ranges = try_rms_ranges.copy()
+    try_rms_ranges.append(use_rms_range)
+    try_rms_ranges = list(set(try_rms_ranges))
+    use_rms_range_key = -1
+    for i, v in enumerate(try_rms_ranges):
+        if v == use_rms_range:
+            use_rms_range_key = i
+            break
+    logger.info("Do fit to MC only first")
+    # Extract the initial mean and sigma signal only fit to MC to get the initial sigma(s)
+    save_mc_fit_path = f"{outputfolder}/fittedplot_mc_{suffix}.eps"
+    sig_fits_mc = fit_mc(histo_mc, sgnfunc, rebin, dolikelihood, try_rms_ranges, save_mc_fit_path)
+    # Extract the one the user has requested
+    sig_fit = sig_fits_mc[use_rms_range_key].Clone("signal_fit_nominal")
+    # Set the estimated signal integral estimated from background subtraction
+    if use_user_mean:
+        # Reset that to the user mass peak...
+        sig_fit.SetParameter(1, masspeak)
+    if use_user_sigma:
+        # Reset to what the user asked for...
+        sig_fit.SetParameter(2, sigma_sig)
+
+    # Now this is what is going to be used
+    masspeak = sig_fit.GetParameter(1)
+    sigma_sig = sig_fit.GetParameter(2)
+    sig_fit.SetParNames(*par_names_sig)
 
     logger.info("Initial parameters for signal fit are")
     print(f"mean = {masspeak}\nsigma = {sigma_sig}")
@@ -251,16 +295,8 @@ def fitter(histo_mc, histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihoo
         sum_tot += histo.GetBinContent(ibin)
         sumback += back_fit.Eval(histo.GetBinCenter(ibin))
     integsig = Double((sum_tot - sumback) * (histo.GetBinWidth(1)))
-
-    # Extract the initial mean and sigma signal only fit to MC to get the initial sigma(s)
-    save_mc_fit_path = f"{outputfolder}/fittedplot_mc_{suffix}.eps"
-    sig_fit = fit_mc(histo_mc, sgnfunc, rebin, dolikelihood, 2, save_mc_fit_path)
-    # Set the estimated signal integral estimated from background subtraction
+    # Finally set the initial value for the integral
     sig_fit.SetParameter(0, integsig)
-    if setinitialgaussianmean:
-        # Reset that to the user mass peak
-        sig_fit.SetParameter(1, masspeak)
-    sig_fit.SetParNames(*par_names_sig)
 
     logger.debug("Prepare parameters for total fit")
 
@@ -272,13 +308,13 @@ def fitter(histo_mc, histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihoo
     for ipar in range(0, npar_sig):
         tot_fit.SetParameter(ipar + npar_bkg, sig_fit.GetParameter(ipar))
         sig_fit.GetParLimits(ipar, parmin, parmax)
-        #tot_fit.SetParLimits(ipar + npar_bkg, parmin, parmax)
+        tot_fit.SetParLimits(ipar + npar_bkg, parmin, parmax)
     for ipar in range(0, npar_bkg):
         tot_fit.SetParameter(ipar, back_fit.GetParameter(ipar))
     if fixedmean:
         # Mass peak would be fixed to what user sets
         tot_fit.FixParameter(npar_bkg + 1, masspeak)
-    if setfixgaussiansigma is True:
+    if fixgaussiansigma is True:
         # Sigma would be fixed to what the fit to MC gives
         tot_fit.FixParameter(npar_bkg + 2, tot_fit.GetParameter(npar_bkg + 2))
     tot_fit.SetParNames(*par_names_bkg, *par_names_sig)
@@ -373,6 +409,7 @@ def fitter(histo_mc, histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihoo
     pinfom.SetFillStyle(0)
     pinfom.SetTextColor(kBlue)
     pinfom.SetTextSize(0.03)
+    pinfom.AddText("#chi^{2}/NDF = %f" % (tot_fit.GetChisquare() / tot_fit.GetNDF()))
     pinfom.AddText("%s = %.3f #pm %.3f" % (sig_fit.GetParName(1),\
         sig_fit.GetParameter(1), sig_fit.GetParError(1)))
     pinfom.AddText("%s = %.3f #pm %.3f" % (sig_fit.GetParName(2),\
@@ -389,4 +426,4 @@ def fitter(histo_mc, histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihoo
     c1.SaveAs("%s/fittedplot%s.eps" % (outputfolder, suffix))
     c1.Close()
 
-    return rawYield, rawYieldErr, sig_fit, back_fit
+    return rawYield, rawYieldErr, sig_fit, back_fit, sig_fits_mc
