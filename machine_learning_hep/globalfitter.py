@@ -17,8 +17,9 @@ Methods to: fit inv. mass
 """
 
 import math
+from array import array
 # pylint: disable=import-error,no-name-in-module
-from ROOT import TF1, gStyle, TCanvas, TPaveText, TLine, Double, TVirtualFitter, \
+from ROOT import TH1F, TF1, gStyle, TCanvas, TPaveText, TLine, Double, TVirtualFitter, \
                  kBlue, kGray, kRed, kGreen
 from  machine_learning_hep.logger import get_logger
 
@@ -202,8 +203,8 @@ def fit_mc(histo_mc, sig_func_name, rebin, do_likelihood, rms_ranges, save_path)
 
 # pylint: disable=too-many-arguments, too-many-locals, too-many-branches,
 # pylint: disable=too-many-statements
-def fitter(histo_mc, histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihood,
-           use_user_mean, use_user_sigma, fixgaussiansigma,
+def fitter(histo_mc, histo, case, sgnfunc, bkgfunc, masspeak, rebin, exclude_nsigma_sideband,
+           dolikelihood, use_user_mean, use_user_sigma, fixgaussiansigma,
            sigma_sig, massmin, massmax, fixedmean, try_rms_ranges, use_rms_range,
            outputfolder, suffix, draw_side_band_fit=False):
     """
@@ -222,7 +223,7 @@ def fitter(histo_mc, histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihoo
 
     if "Lb" not in case and "Lc" not in case and "D0" not in case and "Ds" not in case:
         logger.warning("Can only do the fit for Lc, D0 or Ds, however found case %s", case)
-        return -1, -1, None, None, None
+        return -1, -1, None, None, None, None
 
     histo.GetXaxis().SetTitle("Invariant Mass L_{c}^{+}(GeV/c^{2})")
     histo.Rebin(rebin)
@@ -271,8 +272,7 @@ def fitter(histo_mc, histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihoo
     print(f"mean = {masspeak}\nsigma = {sigma_sig}")
 
     logger.debug("fit background (just side bands)")
-    nSigma4SideBands = 4.
-    range_signal = nSigma4SideBands * sigma_sig
+    range_signal = exclude_nsigma_sideband * sigma_sig
     integralhisto = Double(histo.Integral(histo.FindBin(massmin), histo.FindBin(massmax), "width"))
     back_fit = bkg_fit_func("bkg_fit_sidebands", bkgfunc, massmin, massmax, integralhisto,
                             masspeak, range_signal)
@@ -285,8 +285,8 @@ def fitter(histo_mc, histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihoo
 
     # Prepare a function to store the signal parameters which will finally be extracted
     # from the total fit. So this is just a helper for now
-    minForSig = masspeak - 4. * sigma_sig
-    maxForSig = masspeak + 4. * sigma_sig
+    minForSig = masspeak - range_signal
+    maxForSig = masspeak + range_signal
     binForMinSig = histo.FindBin(minForSig)
     binForMaxSig = histo.FindBin(maxForSig)
     sum_tot = 0.
@@ -339,8 +339,8 @@ def fitter(histo_mc, histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihoo
     fSigmaSgn = sig_fit.GetParameter(2)
     minMass_fit = fMass - nsigma * fSigmaSgn
     maxMass_fit = fMass + nsigma * fSigmaSgn
-    leftBand = histo.FindBin(fMass - nSigma4SideBands * fSigmaSgn)
-    rightBand = histo.FindBin(fMass + nSigma4SideBands * fSigmaSgn)
+    leftBand = histo.FindBin(fMass - exclude_nsigma_sideband * fSigmaSgn)
+    rightBand = histo.FindBin(fMass + exclude_nsigma_sideband * fSigmaSgn)
     intB = histo.Integral(1, leftBand) + histo.Integral(rightBand, histo.GetNbinsX())
     sum2 = 0.
     for i_left in range(1, leftBand + 1):
@@ -422,8 +422,19 @@ def fitter(histo_mc, histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihoo
     pinfos.AddText("Signif (%.0f#sigma) = %.1f #pm %.1f " %\
         (nsigma, significance, errsignificance))
     pinfos.Draw()
+    # Shading the sideband areas
+    shade_bins = array("d", [massmin, minMass_fit, maxMass_fit, massmax])
+    shade_histo = TH1F("shade_histo", "", 3, shade_bins)
+    y_axis_half = (histo_max + histo_min) / 2.
+    shade_histo.SetBinContent(1, y_axis_half)
+    shade_histo.SetBinContent(3, y_axis_half)
+    shade_histo.SetFillStyle(3004)
+    shade_histo.SetFillColor(kGray + 2)
+    shade_histo.SetLineWidth(0)
+    shade_histo.Draw("same")
+
     c1.Update()
     c1.SaveAs("%s/fittedplot%s.eps" % (outputfolder, suffix))
     c1.Close()
 
-    return rawYield, rawYieldErr, sig_fit, back_fit, sig_fits_mc
+    return rawYield, rawYieldErr, sig_fit, back_fit, back_refit, sig_fits_mc

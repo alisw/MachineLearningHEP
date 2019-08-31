@@ -351,6 +351,11 @@ LcpK0spp:
   
   
       mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
+      # Only signal fit in MC. Try fitting in different numbers of RMS of the MC data points
+      # (where -1 means the entire MC distribution is used
+      try_rms_ranges: [-1,2,3]
+      # The number of RMS ranges to be used per pT bin
+      use_rms_range: [2, 2, 3, 2, 2, 2, 2, 2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
@@ -361,9 +366,16 @@ LcpK0spp:
       rebin: [6,6,6,6,6,6,6,6]
       includesecpeak: [0,0,0,0,0,0,0,0]
       masssecpeak: 2.2864
-      FixedMean: true
+      # Fix mean and/or sigma
+      FixedMean: False
       SetFixGaussianSigma: true
+      # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
+      # Use values set for "sigmaarray" for initializing total fit (per pT bin),
+      # otherwise what is derived from MC fit is used
+      SetInitialGaussianSigma: false
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
+      exclude_nsigma_sideband: 4
       dolikelihood: true
       sigmaarray: [0.0078, 0.0078, 0.0082, 0.0091, 0.0097, 0.0109, 0.0117, 0.0156]
       FixedSigma: true  
@@ -407,6 +419,11 @@ LcpK0spp:
 
 
       mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
+      # Only signal fit in MC. Try fitting in different numbers of RMS of the MC data points
+      # (where -1 means the entire MC distribution is used
+      try_rms_ranges: [-1,2,3]
+      # The number of RMS ranges to be used per pT bin
+      use_rms_range: [2, 2, 2, 2, 2, 2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
@@ -417,9 +434,16 @@ LcpK0spp:
       rebin: [6,6,6,6,6,6]
       includesecpeak: [0,0,0,0,0,0]
       masssecpeak: 2.2864
+      # Fix mean and/or sigma
       FixedMean: False
       SetFixGaussianSigma: true
+      # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
+      # Use values set for "sigmaarray" for initializing total fit (per pT bin),
+      # otherwise what is derived from MC fit is used
+      SetInitialGaussianSigma: false
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
+      exclude_nsigma_sideband: 4
       dolikelihood: true
       sigmaarray: [0.0078, 0.0091, 0.0097, 0.0109, 0.0117, 0.0156]
       FixedSigma: true
@@ -460,6 +484,11 @@ LcpK0spp:
   
   
       mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
+      # Only signal fit in MC. Try fitting in different numbers of RMS of the MC data points
+      # (where -1 means the entire MC distribution is used
+      try_rms_ranges: [-1,2,3]
+      # The number of RMS ranges to be used per pT bin
+      use_rms_range: [2, 2, 3, 2, 2, 2, 2, 2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
@@ -470,9 +499,16 @@ LcpK0spp:
       rebin: [6,6,6,6,6,6,6,6]
       includesecpeak: [0,0,0,0,0,0,0,0]
       masssecpeak: 2.2864
-      FixedMean: true
+      # Fix mean and/or sigma
+      FixedMean: False
       SetFixGaussianSigma: true
+      # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
+      # Use values set for "sigmaarray" for initializing total fit (per pT bin),
+      # otherwise what is derived from MC fit is used
+      SetInitialGaussianSigma: false
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
+      exclude_nsigma_sideband: 4
       dolikelihood: true
       sigmaarray: [0.0078, 0.0078, 0.0082, 0.0091, 0.0097, 0.0109, 0.0117, 0.0156]
       FixedSigma: true  
@@ -512,6 +548,11 @@ LcpK0spp:
   
   
       mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
+      # Only signal fit in MC. Try fitting in different numbers of RMS of the MC data points
+      # (where -1 means the entire MC distribution is used
+      try_rms_ranges: [-1,2,3]
+      # The number of RMS ranges to be used per pT bin
+      use_rms_range: [2, 2, 3, 2, 2, 2, 2, 2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
@@ -522,9 +563,16 @@ LcpK0spp:
       rebin: [6,6,6,6,6,6,6,6]
       includesecpeak: [0,0,0,0,0,0,0,0]
       masssecpeak: 2.2864
-      FixedMean: true
+      # Fix mean and/or sigma
+      FixedMean: False
       SetFixGaussianSigma: true
+      # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
+      # Use values set for "sigmaarray" for initializing total fit (per pT bin),
+      # otherwise what is derived from MC fit is used
+      SetInitialGaussianSigma: false
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
+      exclude_nsigma_sideband: 4
       dolikelihood: true
       sigmaarray: [0.0078, 0.0078, 0.0082, 0.0091, 0.0097, 0.0109, 0.0117, 0.0156]
       FixedSigma: true  
