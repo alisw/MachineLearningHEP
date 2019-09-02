@@ -24,7 +24,7 @@ from ROOT import gStyle, TLegend
 from ROOT import gROOT
 from ROOT import TStyle
 from ROOT import TLatex
-from machine_learning_hep.globalfitter import fitter
+from machine_learning_hep.globalfitter import Fitter
 from  machine_learning_hep.logger import get_logger
 
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements
@@ -57,6 +57,11 @@ class Analyzer:
         self.n_filecross = datap["files_names"]["crossfilename"]
         self.p_mass_fit_lim = datap["analysis"][self.typean]['mass_fit_lim']
 
+        # Output directories and filenames
+        self.yields_filename = "yields"
+        self.efficiency_filename = "efficiencies"
+        self.sideband_subtracted_filename = "sideband_subtracted"
+
         self.n_fileff = datap["files_names"]["efffilename"]
         self.n_fileff = os.path.join(self.d_resultsallpmc, self.n_fileff)
         self.n_evtvalroot = datap["files_names"]["namefile_evtvalroot"]
@@ -76,14 +81,13 @@ class Analyzer:
         self.p_fixedmean = datap["analysis"][self.typean]["FixedMean"]
         self.p_use_user_gauss_sigma = datap["analysis"][self.typean]["SetInitialGaussianSigma"]
         self.p_exclude_nsigma_sideband = datap["analysis"][self.typean]["exclude_nsigma_sideband"]
+        self.p_nsigma_signal = datap["analysis"][self.typean]["nsigma_signal"]
         self.p_fixingaussigma = datap["analysis"][self.typean]["SetFixGaussianSigma"]
         self.p_use_user_gauss_mean = datap["analysis"][self.typean]["SetInitialGaussianMean"]
         self.p_dolike = datap["analysis"][self.typean]["dolikelihood"]
         self.p_sigmaarray = datap["analysis"][self.typean]["sigmaarray"]
         self.p_fixedsigma = datap["analysis"][self.typean]["FixedSigma"]
         self.p_casefit = datap["analysis"][self.typean]["fitcase"]
-        self.fit_try_rms_ranges = datap["analysis"][self.typean].get("try_rms_ranges", [])
-        self.fit_use_rms = datap["analysis"][self.typean]["use_rms_range"]
         self.p_latexnmeson = datap["analysis"][self.typean]["latexnamemeson"]
         self.p_latexbin2var = datap["analysis"][self.typean]["latexbin2var"]
         self.p_dofullevtmerge = datap["dofullevtmerge"]
@@ -106,6 +110,7 @@ class Analyzer:
         self.f_evtvaldata = os.path.join(self.d_valevtdata, self.n_evtvalroot)
         self.f_evtvalmc = os.path.join(self.d_valevtmc, self.n_evtvalroot)
 
+
     @staticmethod
     def loadstyle():
         gROOT.SetStyle("Plain")
@@ -116,13 +121,42 @@ class Analyzer:
         gStyle.SetFrameFillColor(0)
         gStyle.SetOptTitle(0)
 
+
+    @staticmethod
+    def make_pre_suffix(args):
+        """
+        Construct a common file suffix from args
+        """
+        try:
+            _ = iter(args)
+        except TypeError:
+            args = [args]
+        else:
+            if isinstance(args, str):
+                args = [args]
+        return "_".join(args)
+
+    @staticmethod
+    def make_file_path(directory, filename, extension, prefix=None, suffix=None):
+        if prefix is not None:
+            filename = Analyzer.make_pre_suffix(prefix) + "_" + filename
+        if suffix is not None:
+            filename = filename + "_" + Analyzer.make_pre_suffix(suffix)
+        extension = extension.replace(".", "")
+        return os.path.join(directory, filename + "." + extension)
+
+
     def fitter(self):
         self.loadstyle()
+        mass_fitter = Fitter()
+
         lfile = TFile.Open(self.n_filemass)
         lfile_mc = TFile.Open(self.n_filemass_mc, "READ")
 
-        fileout = TFile.Open("%s/yields%s%s.root" % (self.d_resultsallpdata,
-                                                     self.case, self.typean), "recreate")
+        fileout_name = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
+                                           None, [self.case, self.typean])
+        fileout = TFile(fileout_name, "RECREATE")
+
         for imult in range(self.p_nbin2):
             for ipt in range(self.p_nptbins):
                 bin_id = self.bin_matching[ipt]
@@ -130,35 +164,52 @@ class Analyzer:
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
+                #suffix = self.make_pre_suffix([self.v_var_binning,
+                #                               f"{self.lpt_finbinmin[ipt]:.2f}",
+                #                               f"{self.lpt_finbinmax[ipt]:.2f}",
+                #                               f"{self.lpt_probcutfin[bin_id]:.2f}",
+                #                               self.v_var2_binning,
+                #                               f"{self.lvar2_binmin[imult]:.2f}",
+                #                               f"{self.lvar2_binmax[imult]:.2f}"])
                 h_invmass = lfile.Get("hmass" + suffix)
                 h_invmass_mc = lfile_mc.Get("hmass" + suffix)
-                rawYield, rawYieldErr, sig_fit, bkg_fit, bkg_refit, sig_fits_mc = \
-                    fitter(h_invmass_mc, h_invmass, self.p_casefit, self.p_sgnfunc[ipt],
-                           self.p_bkgfunc[ipt], self.p_masspeak, self.p_rebin[ipt],
-                           self.p_exclude_nsigma_sideband, self.p_dolike,
-                           self.p_use_user_gauss_mean, self.p_use_user_gauss_sigma,
-                           self.p_fixingaussigma, self.p_sigmaarray[ipt], self.p_massmin[ipt],
-                           self.p_massmax[ipt], self.p_fixedmean, self.fit_try_rms_ranges,
-                           self.fit_use_rms[ipt], self.d_resultsallpdata, suffix)
+
+                # First do it for MC only
+                mass_fitter.initialize(h_invmass_mc, self.p_sgnfunc[ipt], self.p_bkgfunc[ipt],
+                                       self.p_rebin[ipt], self.p_masspeak, self.p_sigmaarray[ipt],
+                                       False, False, self.p_exclude_nsigma_sideband,
+                                       self.p_nsigma_signal, self.p_massmin[ipt],
+                                       self.p_massmax[ipt])
+                mass_fitter.do_likelihood()
+                mass_fitter.fit()
+                mass_fitter.draw_fit(self.make_file_path(self.d_resultsallpdata, "fittedplot_mc",
+                                                         "eps", None, suffix))
+
+                # And now with data
+                mass_fitter.initialize(h_invmass, self.p_sgnfunc[ipt], self.p_bkgfunc[ipt],
+                                       self.p_rebin[ipt], mass_fitter.mean_fit,
+                                       mass_fitter.sigma_fit, self.p_fixedmean,
+                                       self.p_fixingaussigma, self.p_exclude_nsigma_sideband,
+                                       self.p_nsigma_signal, self.p_massmin[ipt],
+                                       self.p_massmax[ipt])
+                mass_fitter.fit()
+                mass_fitter.draw_fit(self.make_file_path(self.d_resultsallpdata, "fittedplot",
+                                                         "eps", None, suffix))
+
                 fileout.cd()
-                if sig_fit is None or bkg_fit is None:
-                    get_logger().error("Fit failed for suffix %s some reason (to be investigated)",
-                                       suffix)
-                    continue
-                else:
-                    for f in sig_fits_mc:
-                        f.SetName(f.GetName() + suffix)
-                        f.Write()
-                    sig_fit.SetName("sigfit" + suffix)
-                    sig_fit.Write("sigfit" + suffix)
-                    bkg_fit.SetName("bkgfit" + suffix)
-                    bkg_fit.Write("bkgfit" + suffix)
-                    bkg_refit.SetName("bkgrefit" + suffix)
-                    bkg_refit.Write("bkgrefit" + suffix)
-                    rawYield = rawYield/(self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
-                    rawYieldErr = rawYieldErr/(self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
-                    self.lmult_yieldshisto[imult].SetBinContent(ipt + 1, rawYield)
-                    self.lmult_yieldshisto[imult].SetBinError(ipt + 1, rawYieldErr)
+
+                mass_fitter.sig_fit_func.SetName("sigfit" + suffix)
+                mass_fitter.sig_fit_func.Write("sigfit" + suffix)
+                mass_fitter.bkg_sideband_fit_func.SetName("bkgfit" + suffix)
+                mass_fitter.bkg_sideband_fit_func.Write("bkgfit" + suffix)
+                mass_fitter.bkg_tot_fit_func.SetName("bkgrefit" + suffix)
+                mass_fitter.bkg_tot_fit_func.Write("bkgrefit" + suffix)
+                rawYield = mass_fitter.yield_sig / \
+                        (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
+                rawYieldErr = mass_fitter.yield_sig_err / \
+                        (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
+                self.lmult_yieldshisto[imult].SetBinContent(ipt + 1, rawYield)
+                self.lmult_yieldshisto[imult].SetBinError(ipt + 1, rawYieldErr)
             fileout.cd()
             self.lmult_yieldshisto[imult].Write()
         fileout.Close()
@@ -174,8 +225,7 @@ class Analyzer:
         legyield.SetTextFont(42)
         legyield.SetTextSize(0.035)
 
-        lfile = TFile.Open("%s/yields%s%s.root" % (self.d_resultsallpdata,
-                                                   self.case, self.typean))
+        lfile = TFile.Open(fileout_name)
         for imult in range(self.p_nbin2):
             self.lmult_yieldshisto[imult].SetMinimum(1)
             self.lmult_yieldshisto[imult].SetMaximum(1e6)
@@ -189,8 +239,9 @@ class Analyzer:
                     % (self.p_latexnmeson, self.typean))
 
         legyield.Draw()
-        cYields.SaveAs("%s/Yields%s%s.eps" % (self.d_resultsallpdata,
-                                              self.case, self.typean))
+        yields_save_name = self.make_file_path(self.d_resultsallpdata, "Yields", "eps", None,
+                                               [self.case, self.typean])
+        cYields.SaveAs(yields_save_name)
         lfile.Close()
     def efficiency(self):
         self.loadstyle()
@@ -243,8 +294,9 @@ class Analyzer:
     def side_band_sub(self):
         self.loadstyle()
         lfile = TFile.Open(self.n_filemass)
-        func_file = TFile.Open("%s/yields%s%s.root" % \
-                               (self.d_resultsallpdata, self.case, self.typean))
+        func_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
+                                            None, [self.case, self.typean])
+        func_file = TFile.Open(func_filename, "READ")
         eff_file = TFile.Open("%s/efficiencies%s%s.root" % \
                               (self.d_resultsallpmc, self.case, self.typean))
         fileouts = TFile.Open("%s/side_band_sub%s%s.root" % \
@@ -258,6 +310,13 @@ class Analyzer:
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
+                #suffix = self.make_pre_suffix([self.v_var_binning,
+                #                               f"{self.lpt_finbinmin[ipt]:.2f}",
+                #                               f"{self.lpt_finbinmax[ipt]:.2f}",
+                #                               f"{self.lpt_probcutfin[bin_id]:.2f}",
+                #                               self.v_var2_binning,
+                #                               f"{self.lvar2_binmin[imult]:.2f}",
+                #                               f"{self.lvar2_binmax[imult]:.2f}"])
                 hzvsmass = lfile.Get("hzvsmass" + suffix)
                 sig_fit = func_file.Get("sigfit" + suffix)
                 mean = sig_fit.GetParameter(1)
@@ -286,7 +345,7 @@ class Analyzer:
                 hzbkgright.Rebin(100)
                 hzbkg = hzbkgleft.Clone("hzbkg" + suffix)
                 hzbkg.Add(hzbkgright)
-                bkg_fit = func_file.Get("bkgfit" + suffix)
+                bkg_fit = func_file.Get("bkgrefit" + suffix)
                 area_scale_denominator = bkg_fit.Integral(masslow9sig, masslow4sig) + \
                 bkg_fit.Integral(masshigh4sig, masshigh9sig)
                 area_scale = bkg_fit.Integral(masslow2sig, masshigh2sig)/area_scale_denominator
