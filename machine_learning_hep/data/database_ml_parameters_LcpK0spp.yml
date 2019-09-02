@@ -203,8 +203,8 @@ LcpK0spp:
     data:
       nperiods: 4
       nprocessesparallel: 20
-      maxfiles : [0,0,0,50] #list of periods
-      activate : [1, 0, 0, 0]
+      maxfiles : [-1,-1,-1,-1] #list of periods
+      activate : [1, 1, 1, 1]
       chunksizeunp : [100,100,100,100] #list of periods
       chunksizeskim: [100,100,100,100] #list of periods
       fracmerge : [0.05,0.05,0.05,0.05] #list of periods
