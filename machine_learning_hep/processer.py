@@ -482,6 +482,49 @@ class Processer: # pylint: disable=too-many-instance-attributes
             h_presel_fd.Write()
             h_sel_fd.Write()
 
+    def process_response(self):
+        out_file = TFile.Open(self.n_fileeff, "update")
+        list_df_mc_reco = []
+        list_df_mc_gen = []
+        for iptskim, _ in enumerate(self.lpt_anbinmin):
+            df_mc_reco = pickle.load(openfile(self.lpt_recodecmerged[iptskim], "rb"))
+            if self.s_evtsel is not None:
+                df_mc_reco = df_mc_reco.query(self.s_evtsel)
+            if self.s_trigger is not None:
+                df_mc_reco = df_mc_reco.query(self.s_trigger)
+            df_mc_reco = df_mc_reco.query(self.l_selml[iptskim])
+            list_df_mc_reco.append(df_mc_reco)
+            df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[iptskim], "rb"))
+            df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
+            list_df_mc_gen.append(df_mc_gen)
+        df_mc_reco_merged = pd.concat(list_df_mc_reco)
+        df_mc_gen_merged = pd.concat(list_df_mc_gen)
+        df_mc_reco_merged_fd = df_mc_reco_merged[df_mc_reco_merged.ismcfd == 1] # reconstructed & selected non-prompt jets
+        df_mc_gen_merged_fd = df_mc_gen_merged[df_mc_gen_merged.ismcfd == 1] # generated & selected non-prompt jets
+
+        # Detector response matrix of pt_jet of non-prompt jets
+        df_resp_jet_fd = df_mc_reco_merged_fd.loc[:, ["pt_gen_jet", "pt_jet"]]
+        his_resp_jet_fd = TH2F("his_resp_jet_fd", \
+            "Response matrix of #it{p}_{T}^{jet, ch} of non-prompt jets;#it{p}_{T}^{jet, ch, gen.} (GeV/#it{c});#it{p}_{T}^{jet, ch, rec.} (GeV/#it{c})", \
+            100, 0, 100, 100, 0, 100)
+        fill_hist(his_resp_jet_fd, df_resp_jet_fd)
+
+        # Simulated pt_cand vs. pt_jet of non-prompt jets
+        df_ptc_ptjet_fd = df_mc_gen_merged_fd.loc[:, ["pt_cand", "pt_jet"]]
+        n_bins = len(self.lpt_finbinmin)
+        analysis_bin_lims_temp = self.lpt_finbinmin.copy()
+        analysis_bin_lims_temp.append(self.lpt_finbinmax[n_bins-1])
+        analysis_bin_lims = array.array('d', analysis_bin_lims_temp)
+        his_ptc_ptjet_fd = TH2F("his_ptc_ptjet_fd", \
+            "Simulated #it{p}_{T}^{cand.} vs. #it{p}_{T}^{jet} of non-prompt jets;#it{p}_{T}^{cand., gen.} (GeV/#it{c});#it{p}_{T}^{jet, ch, gen.} (GeV/#it{c})", \
+            n_bins, analysis_bin_lims, 100, 0, 100)
+        fill_hist(his_ptc_ptjet_fd, df_ptc_ptjet_fd)
+
+        out_file.cd()
+        his_resp_jet_fd.Write()
+        his_ptc_ptjet_fd.Write()
+        out_file.Close()
+
     def process_valevents(self, file_index):
         dfevt = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
         dfevtnorm = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
