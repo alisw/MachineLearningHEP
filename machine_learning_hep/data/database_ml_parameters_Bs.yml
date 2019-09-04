@@ -248,7 +248,7 @@ Bspp:
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
       exclude_nsigma_sideband: 4
       # Sigma around mean where signal is integrated after total fit has been done
-      sigma_signal: 3
+      nsigma_signal: 3
       dolikelihood: true
       sigmaarray: [0.01,0.01,0.01]
       FixedSigma: true
