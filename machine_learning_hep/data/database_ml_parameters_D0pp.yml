@@ -268,6 +268,7 @@ D0pp:
       mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
+      # Note for now that only a Gaussian fit is available
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 1.89
@@ -276,9 +277,18 @@ D0pp:
       rebin: [6,6,6,6,6,6,6,6]
       includesecpeak: [0,0,0,0,0,0,0,0]
       masssecpeak: 1.864
+      # Fix mean and/or sigma
       FixedMean: False
       SetFixGaussianSigma: true
+      # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
+      # Use values set for "sigmaarray" for initializing total fit (per pT bin),
+      # otherwise what is derived from MC fit is used
+      SetInitialGaussianSigma: false
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
+      exclude_nsigma_sideband: 4
+      # Sigma around mean where signal is integrated after total fit has been done
+      sigma_signal: 3
       dolikelihood: true
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
       FixedSigma: true
@@ -330,9 +340,18 @@ D0pp:
       rebin: [6,6,6,6,6,6]
       includesecpeak: [0,0,0,0,0,0]
       masssecpeak: 1.864
+      # Fix mean and/or sigma
       FixedMean: False
       SetFixGaussianSigma: true
+      # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
+      # Use values set for "sigmaarray" for initializing total fit (per pT bin),
+      # otherwise what is derived from MC fit is used
+      SetInitialGaussianSigma: false
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
+      exclude_nsigma_sideband: 4
+      # Sigma around mean where signal is integrated after total fit has been done
+      sigma_signal: 3
       dolikelihood: true
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01]
       FixedSigma: true
@@ -381,9 +400,18 @@ D0pp:
       rebin: [6,6,6,6,6,6,6,6]
       includesecpeak: [0,0,0,0,0,0,0,0]
       masssecpeak: 1.864
+      # Fix mean and/or sigma
       FixedMean: False
       SetFixGaussianSigma: true
+      # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
+      # Use values set for "sigmaarray" for initializing total fit (per pT bin),
+      # otherwise what is derived from MC fit is used
+      SetInitialGaussianSigma: false
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
+      exclude_nsigma_sideband: 4
+      # Sigma around mean where signal is integrated after total fit has been done
+      sigma_signal: 3
       dolikelihood: true
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
       FixedSigma: true
@@ -434,9 +462,18 @@ D0pp:
       rebin: [6,6,6,6,6,6,6,6]
       includesecpeak: [0,0,0,0,0,0,0,0]
       masssecpeak: 1.864
+      # Fix mean and/or sigma
       FixedMean: False
       SetFixGaussianSigma: true
+      # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
+      # Use values set for "sigmaarray" for initializing total fit (per pT bin),
+      # otherwise what is derived from MC fit is used
+      SetInitialGaussianSigma: false
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
+      exclude_nsigma_sideband: 4
+      # Sigma around mean where signal is integrated after total fit has been done
+      sigma_signal: 3
       dolikelihood: true
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
       FixedSigma: true

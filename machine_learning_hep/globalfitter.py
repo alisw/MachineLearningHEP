@@ -17,7 +17,9 @@ Methods to: fit inv. mass
 """
 
 import math
-from ROOT import TF1, gStyle, TCanvas, TPaveText, Double, TVirtualFitter, kBlue, kGray # pylint: disable=import-error,no-name-in-module
+# pylint: disable=import-error,no-name-in-module
+from ROOT import TF1, gStyle, TCanvas, TPaveText, Double, TVirtualFitter, \
+                 kBlue
 from  machine_learning_hep.logger import get_logger
 
 def fixpar(massmin, massmax, masspeak, range_signal):
@@ -28,30 +30,16 @@ def fixpar(massmin, massmax, masspeak, range_signal):
     par_fix5 = Double(range_signal)
     return par_fix1, par_fix2, par_fix3, par_fix4, par_fix5
 
-def update_check_signal_fit(sig_fit):
-    error_list = []
-    int_sig = sig_fit.GetParameter(0)
-    mean = sig_fit.GetParameter(1)
-    sigma = sig_fit.GetParameter(2)
-    if int_sig < 0. < sigma or sigma < 0. < int_sig:
-        error_list.append(f"Both integral pre-factor and sigma have to have the same sign. " \
-                          f"However, pre-factor is {int_sig} and sigma is {sigma}.")
-    if mean < 0.:
-        error_list.append(f"Mean is negative: {mean}")
+def gaus_fit_func(xval, par):
+    return par[0] / math.sqrt(2. * math.pi) / par[2] * \
+           math.exp(-(xval[0] - par[1]) * (xval[0] - par[1]) / 2. / par[2] / par[2])
 
-    if error_list:
-        return "\n".join(error_list)
-
-    # Seems sane, set both sigma and int_sig to positive values
-    sig_fit.SetParameter(0, abs(int_sig))
-    sig_fit.SetParameter(2, abs(sigma))
-
-    return ""
-
-def signal_func(sgnfunc):
+def signal_func(func_name, sgnfunc, fit_range_low, fit_range_up):
     if sgnfunc != "kGaus":
         get_logger().fatal("Unknown signal fit function %s", sgnfunc)
-    return "[0]/(sqrt(2.*pi))/[2]*(exp(-(x-[1])*(x-[1])/2./[2]/[2]))"
+    func = TF1(func_name, gaus_fit_func, fit_range_low, fit_range_up, 3)
+    func.SetParNames("Int", "Mean", "Sigma")
+    return func
 
 def pol1_func_sidebands(xval, par):
     if par[6] > 0 and abs(xval[0] - par[4]) < par[5]:
@@ -70,7 +58,7 @@ def bkg_fit_func(func_name, func_type, massmin, massmax, integralhisto, masspeak
                  reject_signal_region=True):
     # Immediately exit if function is unknown
     if func_type not in ["Pol1", "Pol2"]:
-        get_logger().fatal("Unkown background fit dunction %s", func_type)
+        get_logger().fatal("Unkown background fit function %s", func_type)
 
     par_fix1, par_fix2, par_fix3, par_fix4, par_fix5 = \
         fixpar(massmin, massmax, masspeak, range_signal)
@@ -88,7 +76,7 @@ def bkg_fit_func(func_name, func_type, massmin, massmax, integralhisto, masspeak
         return back_fit
 
     back_fit = TF1(func_name, pol2_func_sidebands, massmin, massmax, 9)
-    back_fit.SetParNames("BkgInt", "Coef1", "Coef2", "AlwaysFixedPar1", "AlwaysFixedPar2",
+    back_fit.SetParNames("BkgInt", "Coeff1", "Coeff2", "AlwaysFixedPar1", "AlwaysFixedPar2",
                          "AlwaysFixedPar3", "HelperParMassPeak", "HelperParSigRange",
                          "HelperParRejectSigRange")
     back_fit.SetParameters(integralhisto, -10., 5)
@@ -118,199 +106,285 @@ def tot_func(bkgfunc, massmax, massmin):
             (massmax * massmax * massmax - massmin * massmin * massmin),
             (massmax-massmin))
 
-# pylint: disable=too-many-arguments, too-many-locals, too-many-branches,
-# pylint: disable=too-many-statements
-def fitter(histo, case, sgnfunc, bkgfunc, masspeak, rebin, dolikelihood, setinitialgaussianmean,
-           setfixgaussiansigma, sigma_sig, massmin, massmax, fixedmean, outputfolder, suffix,
-           draw_side_band_fit=False):
-    """
-    Some comments:
-        -> The object 'back_fit' is fitted using only the side-bands
-        -> The object 'tot_fit' is fitted to the entire extracted inv-mass distribution
-        -> The object 'back_refit' is not used for fitting but only stores the background fit
-           parameters from fitted 'tot_fit'
-        -> The object 'sig_fit' is not used for fitting but only stores the signal fit
-           parameters from fitted 'tot_fit'
-    """
-    logger = get_logger()
 
-    logger.info("Do fitting")
-    logger.info("Argument \"setinitialgaussianmean\" set to %u, however not used at the moment",
-                setinitialgaussianmean)
+# pylint: disable=too-many-instance-attributes
+class Fitter:
+    def __init__(self):
 
-    if "Lb" not in case and "Lc" not in case and "D0" not in case and "Ds" not in case:
-        logger.warning("Can only do the fit for Lc, D0 or Ds, however found case %s", case)
-        return -1, -1
+        self.logger = get_logger()
+        # These are filled after the fit has been done
+        self.yield_sig = None
+        self.yield_sig_err = None
+        self.yield_bkg = None
+        self.yield_bkg_err = None
+        self.sig_bincount = None
+        self.sig_bincount_err = None
+        self.bkg_bincount = None
+        self.bkg_bincount_err = None
+        self.mean_fit = None
+        self.mean_err_fit = None
+        self.sigma_fit = None
+        self.sigma_err_fit = None
+        self.significance = None
+        self.errsignificance = None
 
-    histo.GetXaxis().SetTitle("Invariant Mass L_{c}^{+}(GeV/c^{2})")
-    histo.Rebin(rebin)
-    histo.SetStats(0)
-    TVirtualFitter.SetDefaultFitter("Minuit")
+        # Some initial values
+        self.mean = None
+        self.sigma = None
+        self.fix_mean = None
+        self.fix_sigma = None
 
-    # Prepare what can be prepared
-    npar_sig = 3
-    npar_bkg = 3 if bkgfunc == "Pol2" else 2
-    par_names_sig = ["IntSig", "Mean", "Sigma"]
-    par_names_bkg = ["IntBkg", "BkgCoeff1", "BkgCoeff2"] if bkgfunc == "Pol2" \
-                                                         else ["IntBkg", "BkgCoeff1"]
+        # The following are derived after the initialization
+        self.tot_fit_func = None
+        self.sig_fit_func = None
+        self.bkg_sideband_fit_func = None
+        self.bkg_tot_fit_func = None
 
-    fitOption = "L,E" if dolikelihood else ""
+        # Some further options
+        self.fit_options = ""
+        self.nsigma_sideband = None
+        self.nsigma_sig = None
+        self.fit_range_low = None
+        self.fit_range_up = None
 
-    logger.info("Initial parameters for signal fit are")
-    print(f"mean = {masspeak}\nsigma = {sigma_sig}")
+        # The original histogram to be fitted
+        self.histo_to_fit = None
+        # The histogram after background subtraction after the fit has been performed
+        #self.histo_sideband_sub = None
 
-    logger.debug("fit background (just side bands)")
-    nSigma4SideBands = 4.
-    range_signal = nSigma4SideBands * sigma_sig
-    integralhisto = Double(histo.Integral(histo.FindBin(massmin), histo.FindBin(massmax), "width"))
-    back_fit = bkg_fit_func("bkg_fit_sidebands", bkgfunc, massmin, massmax, integralhisto,
-                            masspeak, range_signal)
-    histo.Fit("bkg_fit_sidebands", ("R,%s,+,0" % (fitOption)))
+    # pylint: disable=too-many-arguments
+    def initialize(self, histo, sig_func_name, bkg_func_name, rebin, mean, sigma, fix_mean,
+                   fix_sigma, nsigma_sideband, nsigma_sig, fit_range_low, fit_range_up):
 
-    #logger.debug("refit background (all range)")
-    # Prepare this function to store the background fit parameters obtained from the total fit
-    back_refit = bkg_fit_func("bkg_fit_from_tot_fit", bkgfunc, massmin, massmax, integralhisto,
-                              masspeak, range_signal, False)
+        self.mean = mean
+        self.sigma = sigma
+        self.fix_mean = fix_mean
+        self.fix_sigma = fix_sigma
+        self.nsigma_sideband = nsigma_sideband
+        self.nsigma_sig = nsigma_sig
+        self.fit_range_low = fit_range_low
+        self.fit_range_up = fit_range_up
+        self.histo_to_fit = histo.Clone(histo.GetName() + "_for_fit")
+        self.histo_to_fit.Rebin(rebin)
 
-    # Prepare a function to store the signal parameters which will finally be extracted
-    # from the total fit. So this is just a helper for now
-    minForSig = masspeak - 4. * sigma_sig
-    maxForSig = masspeak + 4. * sigma_sig
-    binForMinSig = histo.FindBin(minForSig)
-    binForMaxSig = histo.FindBin(maxForSig)
-    sum_tot = 0.
-    sumback = 0.
-    for ibin in range(binForMinSig, binForMaxSig + 1):
-        sum_tot += histo.GetBinContent(ibin)
-        sumback += back_fit.Eval(histo.GetBinCenter(ibin))
-    integsig = Double((sum_tot - sumback) * (histo.GetBinWidth(1)))
-    sig_fit = TF1("sig_fit", signal_func(sgnfunc), massmin, massmax)
-    sig_fit.SetParameter(0, integsig)
-    sig_fit.SetParameter(1, masspeak)
-    sig_fit.SetParameter(2, sigma_sig)
-    sig_fit.SetParNames(*par_names_sig)
+        self.nsigma_sideband = nsigma_sideband
 
-    logger.debug("Prepare parameters for total fit")
+        bkg_int_initial = Double(histo.Integral(histo.FindBin(fit_range_low),
+                                                histo.FindBin(fit_range_up), "width"))
+        self.sig_fit_func = signal_func("sig_fit", sig_func_name, fit_range_low, fit_range_up)
+        self.bkg_sideband_fit_func = bkg_fit_func("bkg_fit_sidebands", bkg_func_name, fit_range_low,
+                                                  fit_range_up, bkg_int_initial, mean,
+                                                  nsigma_sideband * sigma)
+        self.bkg_tot_fit_func = bkg_fit_func("bkg_fit_from_tot_fit", bkg_func_name,
+                                             fit_range_low, fit_range_up, bkg_int_initial, mean,
+                                             nsigma_sideband * sigma, False)
+        self.tot_fit_func = TF1("tot_fit", tot_func(bkg_func_name, fit_range_up, fit_range_low),
+                                fit_range_low, fit_range_up)
 
-    logger.info("fit all (signal + background)")
-    tot_fit = TF1("tot_fit", tot_func(bkgfunc, massmax, massmin), massmin, massmax)
-    tot_fit.SetLineColor(4)
-    parmin = Double()
-    parmax = Double()
-    for ipar in range(0, npar_sig):
-        tot_fit.SetParameter(ipar + npar_bkg, sig_fit.GetParameter(ipar))
-        sig_fit.GetParLimits(ipar, parmin, parmax)
-        tot_fit.SetParLimits(ipar + npar_bkg, parmin, parmax)
-    for ipar in range(0, npar_bkg):
-        tot_fit.SetParameter(ipar, back_fit.GetParameter(ipar))
-    if fixedmean:
-        tot_fit.FixParameter(npar_bkg + 1, masspeak)
-    if setfixgaussiansigma is True:
-        tot_fit.FixParameter(npar_bkg + 2, sigma_sig)
-    tot_fit.SetParNames(*par_names_bkg, *par_names_sig)
-    histo.Fit("tot_fit", ("R,%s,+,0" % (fitOption)))
+    def do_likelihood(self):
+        self.fit_options = "L,E"
 
-    logger.info("calculate signal, backgroud, S/B, significance")
-    for ipar in range(0, npar_bkg):
-        back_refit.SetParameter(ipar, tot_fit.GetParameter(ipar))
-        back_refit.SetParError(ipar, tot_fit.GetParameter(ipar))
-    for ipar in range(npar_bkg, (npar_bkg + npar_sig)):
-        sig_fit.SetParameter(ipar - npar_bkg, tot_fit.GetParameter(ipar))
-        sig_fit.SetParError(ipar - npar_bkg, tot_fit.GetParError(ipar))
+    def update_check_signal_fit(self):
+        error_list = []
+        int_sig = self.sig_fit_func.GetParameter(0)
+        mean = self.sig_fit_func.GetParameter(1)
+        sigma = self.sig_fit_func.GetParameter(2)
+        if int_sig < 0. < sigma or sigma < 0. < int_sig:
+            error_list.append(f"Both integral pre-factor and sigma have to have the same sign. " \
+                              f"However, pre-factor is {int_sig} and sigma is {sigma}.")
+        if mean < 0.:
+            error_list.append(f"Mean is negative: {mean}")
 
-    # Check the signal fit
-    error = update_check_signal_fit(sig_fit)
-    if error != "":
-        logger.error("Signal fit probably bad for following reasons:\n%s", error)
+        if error_list:
+            return "\n".join(error_list)
 
-    nsigma = 3.0
-    fMass = sig_fit.GetParameter(1)
-    # Could be negative together with the integral pre-factor
-    fSigmaSgn = sig_fit.GetParameter(2)
-    minMass_fit = fMass - nsigma * fSigmaSgn
-    maxMass_fit = fMass + nsigma * fSigmaSgn
-    leftBand = histo.FindBin(fMass - nSigma4SideBands * fSigmaSgn)
-    rightBand = histo.FindBin(fMass + nSigma4SideBands * fSigmaSgn)
-    intB = histo.Integral(1, leftBand) + histo.Integral(rightBand, histo.GetNbinsX())
-    sum2 = 0.
-    for i_left in range(1, leftBand + 1):
-        sum2 += histo.GetBinError(i_left) * histo.GetBinError(i_left)
-    for i_right in range(rightBand, (histo.GetNbinsX()) + 1):
-        sum2 += histo.GetBinError(i_right) * histo.GetBinError(i_right)
-    intBerr = math.sqrt(sum2)
-    background = back_refit.Integral(minMass_fit, maxMass_fit) / Double(histo.GetBinWidth(1))
-    #if background <= 0:
-    #    return -1, -1
-    errbackground = 0
-    if intB > 0:
-        # Rescale the error
-        errbackground = intBerr / intB * background
+        # Seems sane, set both sigma and int_sig to positive values
+        self.sig_fit_func.SetParameter(0, abs(int_sig))
+        self.sig_fit_func.SetParameter(2, abs(sigma))
 
-    logger.info("Background: {background}, error background: %s", errbackground)
-    rawYield = sig_fit.GetParameter(0) / Double(histo.GetBinWidth(1))
-    rawYieldErr = sig_fit.GetParError(0) / Double(histo.GetBinWidth(1))
+        return ""
 
-    logger.info("Raw yield: %f, raw yield error: %f", rawYield, rawYieldErr)
-    sigOverback = rawYield / background
-    errSigSq = rawYieldErr * rawYieldErr
-    errBkgSq = errbackground * errbackground
-    sigPlusBkg = background + rawYield
-    significance = 0
-    errsignificance = 0
-    if sigPlusBkg > 0:
-        significance = rawYield/(math.sqrt(sigPlusBkg))
-        errsignificance = significance * (math.sqrt((errSigSq + errBkgSq) / \
-                          (4. * sigPlusBkg * sigPlusBkg) +                  \
-                          (background / sigPlusBkg) * errSigSq /            \
-                          rawYield / rawYield))
+    def derive_yields(self):
+        self.logger.info("calculate signal, backgroud, S/B, significance")
+        self.mean_fit = self.sig_fit_func.GetParameter(1)
+        self.mean_err_fit = self.sig_fit_func.GetParError(1)
+        # Could be negative together with the integral pre-factor
+        self.sigma_fit = self.sig_fit_func.GetParameter(2)
+        self.sigma_err_fit = self.sig_fit_func.GetParError(2)
 
-    logger.info("Significance: %f, error significance: %f", significance, errsignificance)
-    #Draw
-    c1 = TCanvas('c1', 'The Fit Canvas', 700, 700)
+        minMass_fit = self.mean_fit - self.nsigma_sig * self.sigma_fit
+        maxMass_fit = self.mean_fit + self.nsigma_sig * self.sigma_fit
+        leftBand = self.histo_to_fit.FindBin(self.mean_fit - self.nsigma_sideband * self.sigma_fit)
+        rightBand = self.histo_to_fit.FindBin(self.mean_fit + self.nsigma_sideband * self.sigma_fit)
+        intB = self.histo_to_fit.Integral(1, leftBand) + \
+               self.histo_to_fit.Integral(rightBand, self.histo_to_fit.GetNbinsX())
+        sum2 = 0.
+        for i_left in range(1, leftBand + 1):
+            sum2 += self.histo_to_fit.GetBinError(i_left) * self.histo_to_fit.GetBinError(i_left)
+        for i_right in range(rightBand, (self.histo_to_fit.GetNbinsX()) + 1):
+            sum2 += self.histo_to_fit.GetBinError(i_right) * self.histo_to_fit.GetBinError(i_right)
+        intBerr = math.sqrt(sum2)
+        self.yield_bkg = self.bkg_tot_fit_func.Integral(minMass_fit, maxMass_fit) / \
+                         Double(self.histo_to_fit.GetBinWidth(1))
+        #if background <= 0:
+        #    return -1, -1
+        self.yield_bkg_err = 0
+        if intB > 0:
+            # Rescale the error
+            self.yield_bkg_err = intBerr / intB * self.yield_bkg
 
-    gStyle.SetOptStat(0)
-    gStyle.SetCanvasColor(0)
-    gStyle.SetFrameFillColor(0)
-    c1.cd()
-    histo.GetXaxis().SetRangeUser(massmin, massmax)
-    # Adjust y-range for good readability
-    histo_min = histo.GetMinimum() * 0.9
-    histo_max = histo.GetMaximum() + (histo.GetMaximum() - histo_min)
-    histo.GetYaxis().SetRangeUser(histo_min, histo_max)
-    histo.SetMarkerStyle(20)
-    histo.SetMarkerSize(1)
-    #histo.SetMinimum(0.)
-    histo.Draw("PE")
-    back_refit.Draw("same")
-    tot_fit.Draw("same")
-    if draw_side_band_fit:
-        back_fit.SetLineColor(kGray + 1)
-        back_fit.SetLineStyle(2)
-        back_fit.Draw("same")
-    #write info.
-    pinfos = TPaveText(0.12, 0.7, 0.47, 0.89, "NDC")
-    pinfos.SetBorderSize(0)
-    pinfos.SetFillStyle(0)
-    pinfos.SetTextAlign(11)
-    pinfos.SetTextSize(0.03)
-    pinfom = TPaveText(0.5, 0.7, 1., .89, "NDC")
-    pinfom.SetTextAlign(11)
-    pinfom.SetBorderSize(0)
-    pinfom.SetFillStyle(0)
-    pinfom.SetTextColor(kBlue)
-    pinfom.SetTextSize(0.03)
-    pinfom.AddText("%s = %.3f #pm %.3f" % (sig_fit.GetParName(1),\
-        sig_fit.GetParameter(1), sig_fit.GetParError(1)))
-    pinfom.AddText("%s = %.3f #pm %.3f" % (sig_fit.GetParName(2),\
-        sig_fit.GetParameter(2), sig_fit.GetParError(2)))
-    pinfom.Draw()
-    pinfos.AddText("S = %.0f #pm %.0f " % (rawYield, rawYieldErr))
-    pinfos.AddText("B (%.0f#sigma) = %.0f #pm %.0f" % \
-        (nsigma, background, errbackground))
-    pinfos.AddText("S/B (%.0f#sigma) = %.4f " % (nsigma, sigOverback))
-    pinfos.AddText("Signif (%.0f#sigma) = %.1f #pm %.1f " %\
-        (nsigma, significance, errsignificance))
-    pinfos.Draw()
-    c1.Update()
-    c1.SaveAs("%s/fittedplot%s.eps" % (outputfolder, suffix))
-    return rawYield, rawYieldErr, sig_fit, back_fit
+        self.logger.info("Background: %s, error background: %s", self.yield_bkg, self.yield_bkg_err)
+        self.yield_sig = self.sig_fit_func.GetParameter(0) / \
+                         Double(self.histo_to_fit.GetBinWidth(1))
+        self.yield_sig_err = self.sig_fit_func.GetParError(0) / \
+                             Double(self.histo_to_fit.GetBinWidth(1))
+
+        self.logger.info("Raw yield: %f, raw yield error: %f", self.yield_sig, self.yield_sig_err)
+        errSigSq = self.yield_sig_err * self.yield_sig_err
+        errBkgSq = self.yield_bkg_err * self.yield_bkg_err
+        sigPlusBkg = self.yield_bkg + self.yield_sig
+        self.significance = 0
+        self.errsignificance = 0
+        if sigPlusBkg > 0:
+            self.significance = self.yield_sig / (math.sqrt(sigPlusBkg))
+            self.errsignificance = self.significance * (math.sqrt((errSigSq + errBkgSq) / \
+                              (4. * sigPlusBkg * sigPlusBkg) +                  \
+                              (self.yield_bkg / sigPlusBkg) * errSigSq /            \
+                              self.yield_sig / self.yield_sig))
+
+        self.logger.info("Significance: %f, error significance: %f", self.significance,
+                         self.errsignificance)
+
+    # pylint: disable=too-many-arguments, too-many-locals, too-many-branches,
+    # pylint: disable=too-many-statements
+    def fit(self):
+        """
+        Some comments:
+            -> The object 'back_fit' is fitted using only the side-bands
+            -> The object 'tot_fit' is fitted to the entire extracted inv-mass distribution
+            -> The object 'back_refit' is not used for fitting but only stores the background fit
+               parameters from fitted 'tot_fit'
+            -> The object 'sig_fit' is not used for fitting but only stores the signal fit
+               parameters from fitted 'tot_fit'
+        """
+
+        self.logger.info("Do fitting")
+
+        TVirtualFitter.SetDefaultFitter("Minuit")
+
+        # Prepare what can be prepared
+        npar_sig = self.sig_fit_func.GetNpar()
+        # Need to do it that way since background functions have a few dummy parameters
+        npar_bkg = self.tot_fit_func.GetNpar() - npar_sig
+
+        self.logger.info("Initial parameters for signal fit are")
+        print(f"mean = {self.mean}\nsigma = {self.sigma}")
+
+        self.logger.debug("fit background (just side bands)")
+        self.histo_to_fit.Fit(self.bkg_sideband_fit_func, ("R,%s,+,0" % (self.fit_options)))
+
+        # Prepare a function to store the signal parameters which will finally be extracted
+        # from the total fit. So this is just a helper for now
+        minForSig = self.mean - self.nsigma_sideband * self.sigma
+        maxForSig = self.mean + self.nsigma_sideband * self.sigma
+        binForMinSig = self.histo_to_fit.FindBin(minForSig)
+        binForMaxSig = self.histo_to_fit.FindBin(maxForSig)
+        sum_tot = 0.
+        sumback = 0.
+        for ibin in range(binForMinSig, binForMaxSig + 1):
+            sum_tot += self.histo_to_fit.GetBinContent(ibin)
+            sumback += self.bkg_sideband_fit_func.Eval(self.histo_to_fit.GetBinCenter(ibin))
+        integsig = Double((sum_tot - sumback) * (self.histo_to_fit.GetBinWidth(1)))
+
+        self.sig_fit_func.SetParameter(0, integsig)
+        self.sig_fit_func.SetParameter(1, self.mean)
+        self.sig_fit_func.SetParameter(2, self.sigma)
+
+        self.logger.info("fit all (signal + background)")
+        self.tot_fit_func.SetLineColor(4)
+        parmin = Double()
+        parmax = Double()
+        for ipar in range(0, npar_sig):
+            self.tot_fit_func.SetParameter(ipar + npar_bkg, self.sig_fit_func.GetParameter(ipar))
+            self.sig_fit_func.GetParLimits(ipar, parmin, parmax)
+            self.tot_fit_func.SetParLimits(ipar + npar_bkg, parmin, parmax)
+        for ipar in range(0, npar_bkg):
+            self.tot_fit_func.SetParameter(ipar, self.bkg_sideband_fit_func.GetParameter(ipar))
+        if self.fix_mean:
+            # Mass peak would be fixed to what user sets
+            self.tot_fit_func.FixParameter(npar_bkg + 1, self.mean)
+        if self.fix_sigma is True:
+            # Sigma would be fixed to what the fit to MC gives
+            self.tot_fit_func.FixParameter(npar_bkg + 2,
+                                           self.tot_fit_func.GetParameter(npar_bkg + 2))
+        #tot_fit.SetParNames(*par_names_bkg, *par_names_sig)
+        self.histo_to_fit.Fit(self.tot_fit_func, ("R,%s,+,0" % (self.fit_options)))
+
+        for ipar in range(0, npar_bkg):
+            self.bkg_tot_fit_func.SetParameter(ipar, self.tot_fit_func.GetParameter(ipar))
+            self.bkg_tot_fit_func.SetParError(ipar, self.tot_fit_func.GetParameter(ipar))
+        for ipar in range(npar_bkg, (npar_bkg + npar_sig)):
+            self.sig_fit_func.SetParameter(ipar - npar_bkg, self.tot_fit_func.GetParameter(ipar))
+            self.sig_fit_func.SetParError(ipar - npar_bkg, self.tot_fit_func.GetParError(ipar))
+
+        # Check the signal fit
+        error = self.update_check_signal_fit()
+        if error != "":
+            self.logger.error("Signal fit probably bad for following reasons:\n%s", error)
+
+        self.derive_yields()
+
+    def draw_fit(self, save_name):
+        #Draw
+        self.histo_to_fit.GetXaxis().SetTitle("Invariant Mass L_{c}^{+}(GeV/c^{2})")
+        self.histo_to_fit.SetStats(0)
+
+        c1 = TCanvas('c1', 'The Fit Canvas', 700, 700)
+        c1.cd()
+        gStyle.SetOptStat(0)
+        gStyle.SetCanvasColor(0)
+        gStyle.SetFrameFillColor(0)
+        c1.cd()
+        self.histo_to_fit.GetXaxis().SetRangeUser(self.fit_range_low, self.fit_range_up)
+        # Adjust y-range for good readability
+        histo_min = self.histo_to_fit.GetMinimum() * 0.9
+        histo_max = self.histo_to_fit.GetMaximum() + (self.histo_to_fit.GetMaximum() - histo_min)
+        self.histo_to_fit.GetYaxis().SetRangeUser(histo_min, histo_max)
+        self.histo_to_fit.SetMarkerStyle(20)
+        self.histo_to_fit.SetMarkerSize(1)
+        #histo.SetMinimum(0.)
+        self.histo_to_fit.Draw("PE")
+        self.bkg_tot_fit_func.Draw("same")
+        self.tot_fit_func.Draw("same")
+
+        #write info.
+        pinfos = TPaveText(0.12, 0.7, 0.47, 0.89, "NDC")
+        pinfos.SetBorderSize(0)
+        pinfos.SetFillStyle(0)
+        pinfos.SetTextAlign(11)
+        pinfos.SetTextSize(0.03)
+        pinfom = TPaveText(0.5, 0.7, 1., .89, "NDC")
+        pinfom.SetTextAlign(11)
+        pinfom.SetBorderSize(0)
+        pinfom.SetFillStyle(0)
+        pinfom.SetTextColor(kBlue)
+        pinfom.SetTextSize(0.03)
+        pinfom.AddText("#chi^{2}/NDF = %f" % (self.tot_fit_func.GetChisquare() / \
+                self.tot_fit_func.GetNDF()))
+        pinfom.AddText("%s = %.3f #pm %.3f" % (self.sig_fit_func.GetParName(1),\
+            self.sig_fit_func.GetParameter(1), self.sig_fit_func.GetParError(1)))
+        pinfom.AddText("%s = %.3f #pm %.3f" % (self.sig_fit_func.GetParName(2),\
+            self.sig_fit_func.GetParameter(2), self.sig_fit_func.GetParError(2)))
+        pinfom.Draw()
+        pinfos.AddText("S = %.0f #pm %.0f " % (self.yield_sig, self.yield_sig_err))
+        pinfos.AddText("B (%.0f#sigma) = %.0f #pm %.0f" % \
+            (self.nsigma_sig, self.yield_bkg, self.yield_bkg_err))
+        sig_over_back = self.yield_sig / self.yield_bkg if self.yield_bkg > 0. else 0.
+        pinfos.AddText("S/B (%.0f#sigma) = %.4f " % (self.nsigma_sig, sig_over_back))
+        pinfos.AddText("Signif (%.0f#sigma) = %.1f #pm %.1f " %\
+            (self.nsigma_sig, self.significance, self.errsignificance))
+        pinfos.Draw()
+
+        c1.Update()
+        c1.SaveAs(save_name)
+        c1.Close()
