@@ -17,8 +17,9 @@ main script for doing final stage analysis
 """
 import os
 # pylint: disable=unused-wildcard-import, wildcard-import
-import numpy as np
 from array import *
+import numpy as np
+from root_numpy import hist2array, array2hist
 # pylint: disable=import-error, no-name-in-module, unused-import
 from ROOT import TFile, TH1F, TCanvas
 from ROOT import gStyle, TLegend
@@ -26,8 +27,7 @@ from ROOT import gROOT
 from ROOT import TStyle
 from ROOT import TLatex
 from machine_learning_hep.globalfitter import Fitter
-from  machine_learning_hep.logger import get_logger
-from root_numpy import hist2array, array2hist
+from machine_learning_hep.logger import get_logger
 
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements
 class Analyzer:
@@ -322,7 +322,8 @@ class Analyzer:
             arr_eff_ratio = arr_eff_fd / arr_eff_pr
             # Get the feed-down yield = response * simulated non-prompts * ratio of efficiencies.
             arr_sim_fd_eff_smeared = arr_resp_fd.dot(arr_sim_fd.dot(arr_eff_ratio))
-            his_fd = TH1F("fd_mult%d" % imult, "Feed-down_mult%d" % imult, len(bins_final) - 1, bins_final)
+            his_fd = TH1F("fd_mult%d" % imult, "Feed-down_mult%d" % imult, \
+                          len(bins_final) - 1, bins_final)
             array2hist(arr_sim_fd_eff_smeared, his_fd)
             file_out.cd()
             his_fd.Write()
