@@ -409,8 +409,9 @@ class Analyzer:
 
         fileouteff = TFile.Open("%s/efficiencies%s%s.root" % \
                                 (self.d_resultsallpmc, self.case, self.typean))
-        fileoutyield = TFile.Open("%s/yields%s%s.root" % \
-                                  (self.d_resultsallpdata, self.case, self.typean))
+        yield_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
+                                             None, [self.case, self.typean])
+        fileoutyield = TFile.Open(yield_filename, "READ")
         fileoutcross = TFile.Open("%s/finalcross%s%s.root" % \
                                   (self.d_resultsallpdata, self.case, self.typean), "recreate")
 
