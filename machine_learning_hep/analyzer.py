@@ -19,8 +19,8 @@ import os
 # pylint: disable=unused-wildcard-import, wildcard-import
 from array import *
 import numpy as np
-from root_numpy import hist2array, array2hist
 # pylint: disable=import-error, no-name-in-module, unused-import
+from root_numpy import hist2array, array2hist
 from ROOT import TFile, TH1F, TCanvas
 from ROOT import gStyle, TLegend
 from ROOT import gROOT
@@ -29,7 +29,7 @@ from ROOT import TLatex
 from machine_learning_hep.globalfitter import Fitter
 from machine_learning_hep.logger import get_logger
 
-# pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements
+# pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
 class Analyzer:
     species = "analyzer"
     def __init__(self, datap, case, typean):
