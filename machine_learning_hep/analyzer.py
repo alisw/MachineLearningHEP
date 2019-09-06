@@ -27,7 +27,10 @@ from ROOT import gROOT
 from ROOT import TStyle
 from ROOT import TLatex
 from machine_learning_hep.globalfitter import Fitter
-from machine_learning_hep.logger import get_logger
+from  machine_learning_hep.logger import get_logger
+#from ROOT import RooUnfoldResponse
+#from ROOT import RooUnfold
+#from ROOT import RooUnfoldBayes
 
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
 class Analyzer:
@@ -386,12 +389,15 @@ class Analyzer:
                 hzbkgright.Rebin(100)
                 hzbkg = hzbkgleft.Clone("hzbkg" + suffix)
                 hzbkg.Add(hzbkgright)
+                hzbkg_scaled = hzbkg.Clone("hzbkg_scaled" + suffix)
                 bkg_fit = func_file.Get("bkgrefit" + suffix)
                 area_scale_denominator = bkg_fit.Integral(masslow9sig, masslow4sig) + \
                 bkg_fit.Integral(masshigh4sig, masshigh9sig)
                 area_scale = bkg_fit.Integral(masslow2sig, masshigh2sig)/area_scale_denominator
                 hzsub = hzsig.Clone("hzsub" + suffix)
                 hzsub.Add(hzbkg, -1*area_scale)
+                hzsub_noteffscaled = hzsub.Clone("hzsub_noteffscaled" + suffix)
+                hzbkg_scaled.Scale(area_scale)
                 eff = heff.GetBinContent(ipt+1)
                 hzsub.Scale(1.0/(eff*0.9545))
                 if ipt == 0:
@@ -436,12 +442,28 @@ class Analyzer:
 
                 csubz.SaveAs("%s/side_band_sub%s%s_%s.eps" % \
                              (self.d_resultsallpdata, self.case, self.typean, suffix))
+
+                csigbkgsubz = TCanvas('csigbkgsubz' + suffix, 'The Side-Band Canvas')
+                csigbkgsubz.SetCanvasSize(1900, 1500)
+                csigbkgsubz.SetWindowSize(500, 500)
+                hzsig.GetYaxis().SetRangeUser(0.0, max(hzsig.GetBinContent(hzsig.GetMaximumBin()), \
+                    hzbkg_scaled.GetBinContent(hzbkg_scaled.GetMaximumBin()), \
+                    hzsub_noteffscaled.GetBinContent(hzsub_noteffscaled.GetMaximumBin()))*1.2)
+                hzsig.SetLineColor(2)
+                hzsig.Draw()
+                hzbkg_scaled.SetLineColor(3)
+                hzbkg_scaled.Draw("same")
+                hzsub_noteffscaled.SetLineColor(4)
+                hzsub_noteffscaled.Draw("same")
+
+                csigbkgsubz.SaveAs("%s/side_band_%s%s_%s.eps" % \
+                             (self.d_resultsallpdata, self.case, self.typean, suffix))
             cz = TCanvas('cz' + suffix, 'The Efficiency Corrected Signal Yield Canvas')
             cz.SetCanvasSize(1900, 1500)
             cz.SetWindowSize(500, 500)
             hz.Draw()
 
-            cz.SaveAs("%s/side_band_sub%s%s_%s_%.2f_%.2f.eps" % \
+            cz.SaveAs("%s/efficiencycorrected_fullsub%s%s_%s_%.2f_%.2f.eps" % \
                       (self.d_resultsallpdata, self.case, self.typean, self.v_var2_binning, \
                        self.lvar2_binmin[imult], self.lvar2_binmax[imult]))
         fileouts.Close()
