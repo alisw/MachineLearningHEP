@@ -1,29 +1,29 @@
-case: LcpK0spp
+case: D0pp
 download:
   alice:
     activate: false
 conversion:
-  mc: 
-    activate: false
-  data:
-    activate: false
-skimming: 
   mc:
     activate: false
   data:
     activate: false
-merging: 
+skimming:
   mc:
     activate: false
   data:
     activate: false
-mergingperiods: 
+merging:
+  mc:
+    activate: false
+  data:
+    activate: false
+mergingperiods:
   mc:
     activate: false
   data:
     activate: false
 
-ml_study:   
+ml_study:
   activate: false
   doscancuts: false
   applytodatamc: false
@@ -51,23 +51,24 @@ mlapplication:
     domergeapplyperiods: false
 
 analysis:
-  type: MBvspt
+  type: MBjetvspt
   data:
-    histomass: true
-  mc: 
-    histomass: true
+    histomass: false
+  mc:
+    histomass: false
     efficiency: true
-  dofit: true
+    feeddown: true
+  dofit: false
   dojetstudies: false
   doeff: true
-  docross: true
+  docross: false
 
 systematics:
   probvariation: false
 
 validation:
-  data: 
+  data:
     docreatehisto: false
-  mc: 
+  mc:
     docreatehisto: false
   plotevents: false

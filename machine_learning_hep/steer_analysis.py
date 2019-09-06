@@ -97,6 +97,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     dohistomassmc = data_config["analysis"]["mc"]["histomass"]
     dohistomassdata = data_config["analysis"]["data"]["histomass"]
     doefficiency = data_config["analysis"]["mc"]["efficiency"]
+    dofeeddown = data_config["analysis"]["mc"]["feeddown"]
     dofit = data_config["analysis"]["dofit"]
     doeff = data_config["analysis"]["doeff"]
     docross = data_config["analysis"]["docross"]
@@ -355,6 +356,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         if doeff is False:
             myan.efficiency()
         myan.side_band_sub()
+    if dofeeddown is True:
+        myan.feeddown()
     if docross is True:
         myan.plotter()
     if dosystprob is True:
