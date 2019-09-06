@@ -18,16 +18,18 @@ main script for doing final stage analysis
 import os
 # pylint: disable=unused-wildcard-import, wildcard-import
 from array import *
+import numpy as np
 # pylint: disable=import-error, no-name-in-module, unused-import
+from root_numpy import hist2array, array2hist
 from ROOT import TFile, TH1F, TCanvas
 from ROOT import gStyle, TLegend
 from ROOT import gROOT
 from ROOT import TStyle
 from ROOT import TLatex
 from machine_learning_hep.globalfitter import Fitter
-from  machine_learning_hep.logger import get_logger
+from machine_learning_hep.logger import get_logger
 
-# pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements
+# pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
 class Analyzer:
     species = "analyzer"
     def __init__(self, datap, case, typean):
@@ -243,6 +245,7 @@ class Analyzer:
                                                [self.case, self.typean])
         cYields.SaveAs(yields_save_name)
         lfile.Close()
+
     def efficiency(self):
         self.loadstyle()
 
@@ -289,6 +292,44 @@ class Analyzer:
         legeff.Draw()
         cEff.SaveAs("%s/Eff%s%s.eps" % (self.d_resultsallpmc,
                                         self.case, self.typean))
+
+    def feeddown(self):
+        # TODO: Propagate uncertainties.
+        file_resp = TFile.Open(self.n_fileff)
+        file_eff = TFile.Open("%s/efficiencies%s%s.root" % (self.d_resultsallpmc, \
+                              self.case, self.typean))
+        file_out = TFile.Open("%s/feeddown%s%s.root" % \
+                              (self.d_resultsallpmc, self.case, self.typean), "recreate")
+
+        # Get feed-down detector response
+        his_resp_fd = file_resp.Get("his_resp_jet_fd")
+        arr_resp_fd = hist2array(his_resp_fd).T
+        bins_final = np.array([his_resp_fd.GetYaxis().GetBinLowEdge(i) for i in \
+            range(1, his_resp_fd.GetYaxis().GetNbins() + 2)])
+        # TODO: Normalize so that projection on the pt_gen = 1.
+
+        # Get simulated pt_cand vs. pt_jet of non-prompt jets.
+        his_sim_fd = file_resp.Get("his_ptc_ptjet_fd")
+        arr_sim_fd = hist2array(his_sim_fd).T
+
+        for imult in range(self.p_nbin2):
+            # Get efficiencies.
+            his_eff_pr = file_eff.Get("eff_mult%d" % imult)
+            his_eff_fd = file_eff.Get("eff_fd_mult%d" % imult)
+            arr_eff_pr = hist2array(his_eff_pr)
+            arr_eff_fd = hist2array(his_eff_fd)
+            # Get the ratio of efficiencies.
+            arr_eff_ratio = arr_eff_fd / arr_eff_pr
+            # Get the feed-down yield = response * simulated non-prompts * ratio of efficiencies.
+            arr_sim_fd_eff_smeared = arr_resp_fd.dot(arr_sim_fd.dot(arr_eff_ratio))
+            his_fd = TH1F("fd_mult%d" % imult, "Feed-down_mult%d" % imult, \
+                          len(bins_final) - 1, bins_final)
+            array2hist(arr_sim_fd_eff_smeared, his_fd)
+            file_out.cd()
+            his_fd.Write()
+        file_resp.Close()
+        file_eff.Close()
+        file_out.Close()
 
     # pylint: disable=too-many-locals
     def side_band_sub(self):
@@ -404,6 +445,7 @@ class Analyzer:
                       (self.d_resultsallpdata, self.case, self.typean, self.v_var2_binning, \
                        self.lvar2_binmin[imult], self.lvar2_binmax[imult]))
         fileouts.Close()
+
     def plotter(self):
         self.loadstyle()
 

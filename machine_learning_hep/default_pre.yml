@@ -3,27 +3,27 @@ download:
   alice:
     activate: false
 conversion:
-  mc: 
-    activate: true
-  data:
-    activate: true
-skimming: 
   mc:
     activate: true
   data:
     activate: true
-merging: 
+skimming:
   mc:
     activate: true
   data:
     activate: true
-mergingperiods: 
+merging:
+  mc:
+    activate: true
+  data:
+    activate: true
+mergingperiods:
   mc:
     activate: true
   data:
     activate: true
 
-ml_study:   
+ml_study:
   activate: false
   doscancuts: false
   applytodatamc: false
@@ -57,6 +57,7 @@ analysis:
   mc:
     histomass: false
     efficiency: false
+    feeddown: false
   dofit: false
   dojetstudies: false
   doeff: false
