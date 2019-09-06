@@ -355,7 +355,7 @@ class Analyzer:
                 area_scale = bkg_fit.Integral(masslow2sig, masshigh2sig)/area_scale_denominator
                 hzsub = hzsig.Clone("hzsub" + suffix)
                 hzsub.Add(hzbkg, -1*area_scale)
-                hzsub_noteffscaled=hzsub.Clone("hzsub_noteffscaled" + suffix)
+                hzsub_noteffscaled = hzsub.Clone("hzsub_noteffscaled" + suffix)
                 hzbkg_scaled.Scale(area_scale)
                 eff = heff.GetBinContent(ipt+1)
                 hzsub.Scale(1.0/(eff*0.9545))
@@ -405,7 +405,9 @@ class Analyzer:
                 csigbkgsubz = TCanvas('csigbkgsubz' + suffix, 'The Side-Band Canvas')
                 csigbkgsubz.SetCanvasSize(1900, 1500)
                 csigbkgsubz.SetWindowSize(500, 500)
-                hzsig.GetYaxis().SetRangeUser(0.0,max(hzsig.GetBinContent(hzsig.GetMaximumBin()),hzbkg_scaled.GetBinContent(hzbkg_scaled.GetMaximumBin()),hzsub_noteffscaled.GetBinContent(hzsub_noteffscaled.GetMaximumBin()))*1.2)
+                hzsig.GetYaxis().SetRangeUser(0.0, max(hzsig.GetBinContent(hzsig.GetMaximumBin()), \
+                    hzbkg_scaled.GetBinContent(hzbkg_scaled.GetMaximumBin()), \
+                    hzsub_noteffscaled.GetBinContent(hzsub_noteffscaled.GetMaximumBin()))*1.2)
                 hzsig.SetLineColor(2)
                 hzsig.Draw()
                 hzbkg_scaled.SetLineColor(3)
@@ -415,7 +417,6 @@ class Analyzer:
 
                 csigbkgsubz.SaveAs("%s/side_band_%s%s_%s.eps" % \
                              (self.d_resultsallpdata, self.case, self.typean, suffix))
-                
             cz = TCanvas('cz' + suffix, 'The Efficiency Corrected Signal Yield Canvas')
             cz.SetCanvasSize(1900, 1500)
             cz.SetWindowSize(500, 500)
