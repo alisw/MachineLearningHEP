@@ -121,7 +121,7 @@ class Analyzer:
         gROOT.SetStyle("Plain")
         gStyle.SetOptStat(0)
         gStyle.SetOptStat(0000)
-        gStyle.SetPalette(0)
+        gStyle.SetPalette(1)
         gStyle.SetCanvasColor(0)
         gStyle.SetFrameFillColor(0)
         gStyle.SetOptTitle(0)
@@ -298,6 +298,7 @@ class Analyzer:
 
     def feeddown(self):
         # TODO: Propagate uncertainties.
+        self.loadstyle()
         file_resp = TFile.Open(self.n_fileff)
         file_eff = TFile.Open("%s/efficiencies%s%s.root" % (self.d_resultsallpmc, \
                               self.case, self.typean))
@@ -310,26 +311,77 @@ class Analyzer:
         bins_final = np.array([his_resp_fd.GetYaxis().GetBinLowEdge(i) for i in \
             range(1, his_resp_fd.GetYaxis().GetNbins() + 2)])
         # TODO: Normalize so that projection on the pt_gen = 1.
+        can_resp_fd = TCanvas("can_resp_fd", "Feed-down detector response", 800, 800)
+        his_resp_fd.Draw("colz")
+        can_resp_fd.SetLogz()
+        can_resp_fd.SetLeftMargin(0.15)
+        can_resp_fd.SetRightMargin(0.15)
+        can_resp_fd.SaveAs("%s/Response%s%s.eps" % (self.d_resultsallpmc, \
+                            self.case, self.typean))
 
         # Get simulated pt_cand vs. pt_jet of non-prompt jets.
         his_sim_fd = file_resp.Get("his_ptc_ptjet_fd")
         arr_sim_fd = hist2array(his_sim_fd).T
+        can_sim_fd = TCanvas("can_sim_fd", \
+                        "Simulated pt cand vs. pt jet of non-prompt jets", 800, 800)
+        his_sim_fd.Draw("colz")
+        can_sim_fd.SetLogz()
+        can_sim_fd.SetLeftMargin(0.15)
+        can_sim_fd.SetRightMargin(0.15)
+        can_sim_fd.SaveAs("%s/GenFD%s%s.eps" % (self.d_resultsallpmc, \
+                            self.case, self.typean))
 
         for imult in range(self.p_nbin2):
             # Get efficiencies.
             his_eff_pr = file_eff.Get("eff_mult%d" % imult)
             his_eff_fd = file_eff.Get("eff_fd_mult%d" % imult)
+            his_eff_pr.SetLineColor(2)
+            his_eff_fd.SetLineColor(3)
+            his_eff_pr.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
+            his_eff_pr.GetYaxis().SetTitle("reconstruction efficiency %s %s" \
+                    % (self.p_latexnmeson, self.typean))
+            his_eff_pr.GetYaxis().SetRangeUser(0, 0.5)
+            leg_eff = TLegend(.5, .15, .7, .35)
+            leg_eff.SetBorderSize(0)
+            leg_eff.SetFillColor(0)
+            leg_eff.SetFillStyle(0)
+            leg_eff.SetTextFont(42)
+            leg_eff.SetTextSize(0.035)
+            can_eff = TCanvas("can_eff%d" % imult, "Efficiency%d" % imult, 800, 600)
+            his_eff_pr.Draw("same")
+            his_eff_fd.Draw("same")
+            legeffstring = "%.1f < %s < %.1f GeV/#it{c}" % \
+                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
+            leg_eff.SetHeader(legeffstring)
+            leg_eff.AddEntry(his_eff_pr, "prompt", "LEP")
+            leg_eff.AddEntry(his_eff_fd, "non-prompt", "LEP")
+            leg_eff.Draw()
+            can_eff.SaveAs("%s/Efficiency%s%s%s.eps" % (self.d_resultsallpmc, \
+                            self.case, self.typean, imult))
             arr_eff_pr = hist2array(his_eff_pr)
             arr_eff_fd = hist2array(his_eff_fd)
             # Get the ratio of efficiencies.
             arr_eff_ratio = arr_eff_fd / arr_eff_pr
             # Get the feed-down yield = response * simulated non-prompts * ratio of efficiencies.
             arr_sim_fd_eff_smeared = arr_resp_fd.dot(arr_sim_fd.dot(arr_eff_ratio))
-            his_fd = TH1F("fd_mult%d" % imult, "Feed-down_mult%d" % imult, \
+            his_fd = TH1F("fd_mult%d" % imult, \
+                          "Feed-down_mult%d;#it{p}_{T}^{jet ch.} (GeV/#it{c});"
+                          "d#it{#sigma}^{jet ch.}/d#it{p}_{T} (arb. units)" % imult, \
                           len(bins_final) - 1, bins_final)
             array2hist(arr_sim_fd_eff_smeared, his_fd)
+            his_fd.GetYaxis().SetTitleOffset(1.3)
+            his_fd.GetYaxis().SetTitleFont(42)
+            his_fd.GetYaxis().SetLabelFont(42)
+            his_fd.GetXaxis().SetTitleFont(42)
+            his_fd.GetXaxis().SetLabelFont(42)
             file_out.cd()
             his_fd.Write()
+            can_fd = TCanvas("can_fd%d" % imult, "Feeddown spectrum", 800, 600)
+            his_fd.Draw("same")
+            can_fd.SetLogy()
+            can_fd.SetLeftMargin(0.12)
+            can_fd.SaveAs("%s/Feeddown%s%s%s.eps" % (self.d_resultsallpmc, \
+                            self.case, self.typean, imult))
         file_resp.Close()
         file_eff.Close()
         file_out.Close()
