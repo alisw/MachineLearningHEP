@@ -1,0 +1,267 @@
+#############################################################################
+##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
+## This program is free software: you can redistribute it and/or modify it ##
+##  under the terms of the GNU General Public License as published by the  ##
+## Free Software Foundation, either version 3 of the License, or (at your  ##
+## option) any later version. This program is distributed in the hope that ##
+##  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  ##
+##     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    ##
+##           See the GNU General Public License for more details.          ##
+##    You should have received a copy of the GNU General Public License    ##
+##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
+#############################################################################
+
+DsPbPb3050:
+  mass: 1.9685
+  sel_reco_unp: null
+  sel_reco_singletrac_unp : [[8],[]]
+  sel_gen_unp: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10" # pre-selections on generated candidates
+  sel_cen_unp: "centrality >=30 and centrality <=50"
+  sel_good_evt_unp: "is_ev_rej == 0"
+  sel_reco_skim: ["delta_mass_KK<0.02","delta_mass_KK<0.02","delta_mass_KK<0.02",
+                  "delta_mass_KK<0.02","delta_mass_KK<0.02"]
+  sel_gen_skim: [null,null,null,null,null]
+  sel_skim_binmin: [2,3,16,24,36] #list of nbins min
+  sel_skim_binmax: [3,4,24,36,50] #list of nbins max
+  var_binning: pt_cand
+  dofullevtmerge: true
+  
+  bitmap_sel:
+    use: True
+    var_name: cand_type
+    var_isstd: isstd
+    var_ismcsignal: ismcsignal
+    var_ismcprompt: ismcprompt
+    var_ismcfd: ismcfd
+    var_ismcbkg: ismcbkg
+    isstd : [[0],[]]
+    ismcsignal: [[1],[5,11]]
+    ismcprompt: [[1,3],[5,11]]
+    ismcfd: [[1,4],[5,11]]
+    ismcbkg: [[2],[11]]
+    
+  variables:
+    var_all: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, 
+             delta_mass_KK, cos_PiDs, cos_PiKPhi_3, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, 
+             imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, inv_mass, pt_cand, cand_type, y_cand, 
+             eta_prong0, eta_prong1, eta_prong2, run_number, ev_id, nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, 
+             nsigTPC_Pi_1, nsigTPC_K_1, nsigTOF_Pi_1, nsigTOF_K_1, nsigTPC_Pi_2, nsigTPC_K_2, nsigTOF_Pi_2, nsigTOF_K_2, 
+             nsigComb_Pi_0, nsigComb_Pi_1, nsigComb_Pi_2, nsigComb_K_0, nsigComb_K_1, nsigComb_K_2]    
+    #var_all: [inv_mass, pt_cand, cos_p_xy, d_len, norm_dl_xy, sig_vert, delta_mass_KK, cos_PiKPhi_3,
+    #          max_norm_d0d0exp, nsigComb_Pi_0, nsigComb_Pi_1, nsigComb_Pi_2, nsigComb_K_0, nsigComb_K_1, nsigComb_K_2]
+    var_evt:
+      data: [is_ev_rej, run_number, ev_id, centrality, z_vtx_reco]
+      mc: [is_ev_rej, run_number, ev_id, centrality, z_vtx_reco, z_vtx_gen]
+    var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
+    var_evt_match: [run_number, ev_id]
+    var_training: [cos_p_xy, d_len, norm_dl_xy, sig_vert, delta_mass_KK, cos_PiKPhi_3,
+                   max_norm_d0d0exp, nsigComb_Pi_0, nsigComb_Pi_1, nsigComb_Pi_2, nsigComb_K_0, nsigComb_K_1, nsigComb_K_2]
+    var_boundaries: [d_len, max_norm_d0d0exp]
+    var_correlation:
+      - [pt_cand]
+      - [d_len_xy]
+    var_signal: signal
+    var_inv_mass: inv_mass
+    var_cuts:
+      - [pt_prong0, lt, null]
+    plot_options:
+      prob_cut_scan:
+        pt_prong0:
+          xlim:
+            - 0
+            - 1
+      eff_cut_scan:
+        pt_prong0:
+          xlim:
+            - 0
+            - 1
+
+  files_names:
+    namefile_unmerged_tree: AnalysisResults.root
+    namefile_reco: AnalysisResultsReco.pkl.lz4
+    namefile_evt: AnalysisResultsEvt.pkl.lz4
+    namefile_evtvalroot: AnalysisResultsROOTEvtVal.root
+    namefile_evtorig: AnalysisResultsEvtOrig.pkl.lz4
+    namefile_gen: AnalysisResultsGen.pkl.lz4
+    namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl.lz4
+    namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl.lz4
+    namefile_reco: AnalysisResultsReco.pkl.lz4
+    treeoriginreco: 'PWGHF_TreeCreator/tree_Ds'
+    treeorigingen: 'PWGHF_TreeCreator/tree_Ds_gen'
+    treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
+    namefile_reco_ml_applied: AnalysisResultsRecoML.pkl.lz4
+    treeoutput: fTreeDsFlagged
+    histofilename: "masshisto.root"
+    efffilename: "effhisto.root"
+    crossfilename: "cross_section_tot.root"
+
+  multi:
+    data:
+      nperiods: 2
+      nprocessesparallel: 16
+      maxfiles : [-1,-1] #list of periods
+      chunksizeunp : [300,300] #list of periods
+      chunksizeskim: [300,300] #list of periods
+      fracmerge : [0.05,0.05] #list of periods
+      seedmerge: [12,12] #list of periods
+      period: [LHC18r, LHC18q] #list of periods
+      unmerged_tree_dir: [/data/DsPbPb/PbPb_data_3050/04-07-2019/8_20190515-1018/unmerged,
+                          /data/DsPbPb/PbPb_data_3050/04-07-2019/17_20190521-1741/unmerged] #list of periods
+      pkl: [/data/DsPbPb/PbPb_data_3050/04-07-2019/8_20190515-1018/datapkl,
+            /data/DsPbPb/PbPb_data_3050/04-07-2019/17_20190521-1741/datapkl] #list of periods
+      pkl_skimmed: [/data/DsPbPb/PbPb_data_3050/04-07-2019/8_20190515-1018/datapklsk,
+                    /data/DsPbPb/PbPb_data_3050/04-07-2019/17_20190521-1741/datapklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/DsPbPb/PbPb_data_3050/04-07-2019/8_20190515-1018/datapklskML,
+                                 /data/DsPbPb/PbPb_data_3050/04-07-2019/17_20190521-1741/datapklskML] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/DsPbPb/PbPb_data_3050/04-07-2019/datapklskMLallperiods
+      pkl_evtcounter_all: /data/DsPbPb/PbPb_data_3050/04-07-2019/datapklevtallperiods
+    mc:
+      nperiods: 4
+      nprocessesparallel: 8
+      maxfiles : [-1,-1,-1,-1] #list of periods
+      chunksizeunp : [300,300,300,300] #list of periods
+      chunksizeskim: [300,300,300,300] #list of periods
+      fracmerge : [1.0,1.0,1.0,1.0] #list of periods
+      seedmerge: [12,12,12,12] #list of periods
+      period: [LHC19c3b_q, LHC19c3b_r, LHC19d4b_q, LHC19d4b_r] #list of periods
+      unmerged_tree_dir: [/data/DsPbPb/PbPb_MC_3050/05-07-2019/11_20190515-1540/unmerged,
+                          /data/DsPbPb/PbPb_MC_3050/05-07-2019/12_20190515-1024/unmerged,
+                          /data/DsPbPb/PbPb_MC_3050/05-07-2019/15_20190520-1349/unmerged,
+                          /data/DsPbPb/PbPb_MC_3050/05-07-2019/16_20190520-1647/unmerged] # this is pPb MC, #list of periods
+      pkl: [/data/DsPbPb/PbPb_MC_3050/05-07-2019/11_20190515-1540/mcpkl,
+            /data/DsPbPb/PbPb_MC_3050/05-07-2019/12_20190515-1024/mcpkl,
+            /data/DsPbPb/PbPb_MC_3050/05-07-2019/15_20190520-1349/mcpkl,
+            /data/DsPbPb/PbPb_MC_3050/05-07-2019/16_20190520-1647/mcpkl] #list of periods
+      pkl_skimmed: [/data/DsPbPb/PbPb_MC_3050/05-07-2019/11_20190515-1540/mcpklsk,
+                    /data/DsPbPb/PbPb_MC_3050/05-07-2019/12_20190515-1024/mcpklsk,
+                    /data/DsPbPb/PbPb_MC_3050/05-07-2019/15_20190520-1349/mcpklsk,
+                    /data/DsPbPb/PbPb_MC_3050/05-07-2019/16_20190520-1647/mcpklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/DsPbPb/PbPb_MC_3050/05-07-2019/11_20190515-1540/mcpklskML,
+                                 /data/DsPbPb/PbPb_MC_3050/05-07-2019/12_20190515-1024/mcpklskML,
+                                 /data/DsPbPb/PbPb_MC_3050/05-07-2019/15_20190520-1349/mcpklskML,
+                                 /data/DsPbPb/PbPb_MC_3050/05-07-2019/16_20190520-1647/mcpklskML] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/DsPbPb/PbPb_MC_3050/05-07-2019/mcpklskMLallperiods
+      pkl_evtcounter_all: /data/DsPbPb/PbPb_MC_3050/05-07-2019/mcpklevtallperiods
+  ml:
+    nbkg: 5000
+    nsig: 5000
+    sampletagforsignal: 1
+    sampletagforbkg: 0
+    sel_sigml: ismcprompt == 1
+    sel_bkgml: inv_mass<1.832 or inv_mass>2.012 #ensure to set the cuts as multiples of the bin_width, i.e. left_limit + K * bin_width   
+    nkfolds: 5
+    rnd_shuffle: 42
+    rnd_splt: 42
+    test_frac: 0.2
+    binmin: [2,3,16,24,36] #list of nbins #list of nbins min
+    binmax: [3,4,24,36,50] #list of nbins
+    mltype: BinaryClassification
+    ncorescrossval: 24 
+    mlplot: /home/fcatalan/test_QM/mlplot3050 # to be removed
+    mlout: /home/fcatalan/test_QM/mlout3050 # to be removed
+
+    opt:
+      filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions, corrected with Raa for PbPb 'data/fonll/fo_PbPb_d0meson_5TeV_y0p5_wRaa_ds_3050_min.csv'
+      fonll_pred: 'max' # edge of the FONLL prediction
+      FF: 0.092 # fragmentation fraction #0.1281 
+      sigma_MB: 1  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
+      Taa: 3917 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
+      BR: 2.27e-2 # branching ratio of the decay
+      f_prompt: 0.9 # estimated fraction of prompt candidates
+      bkg_data_fraction: 0.4 # fraction of real data used in the estimation
+      num_steps: 111 # number of steps used in efficiency and signif. estimation 
+      save_fit: True # save bkg fits with the various cuts on ML output
+      raahp: [1,1,1,1,1] #list of nbins
+      presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
+
+  mlapplication:
+    data:
+      pkl_skimmed_dec: [/data/DsPbPb/PbPb_data_3050/04-07-2019/8_20190515-1018/datapklskdec,
+                        /data/DsPbPb/PbPb_data_3050/04-07-2019/17_20190521-1741/datapklskdec] #list of periods
+      pkl_skimmed_decmerged: [/data/DsPbPb/PbPb_data_3050/04-07-2019/8_20190515-1018/datapklskdecmerged,
+                              /data/DsPbPb/PbPb_data_3050/04-07-2019/17_20190521-1741/datapklskdecmerged] #list of periods
+    mc:
+      pkl_skimmed_dec: [/data/DsPbPb/PbPb_MC_3050/05-07-2019/11_20190515-1540/mcpklskdec,
+                        /data/DsPbPb/PbPb_MC_3050/05-07-2019/12_20190515-1024/mcpklskdec,
+                        /data/DsPbPb/PbPb_MC_3050/05-07-2019/15_20190520-1349/mcpklskdec,
+                        /data/DsPbPb/PbPb_MC_3050/05-07-2019/16_20190520-1647/mcpklskdec] #list of periods
+      pkl_skimmed_decmerged: [/data/DsPbPb/PbPb_MC_3050/05-07-2019/11_20190515-1540/mcpklskdecmerged,
+                              /data/DsPbPb/PbPb_MC_3050/05-07-2019/12_20190515-1024/mcpklskdecmerged,
+                              /data/DsPbPb/PbPb_MC_3050/05-07-2019/15_20190520-1349/mcpklskdecmerged,
+                              /data/DsPbPb/PbPb_MC_3050/05-07-2019/16_20190520-1647/mcpklskdecmerged] #list of periods
+    modelname: xgboost
+    modelsperptbin: [xgboost_classifierLcpK0s_pt_dfselection_pt_cand_1.0_2.0.sav,
+                     xgboost_classifierLcpK0s_pt_dfselection_pt_cand_1.0_2.0.sav,
+                     xgboost_classifierLcpK0s_pt_dfselection_pt_cand_1.0_2.0.sav,
+                     xgboost_classifierLcpK0s_pt_dfselection_pt_cand_1.0_2.0.sav, 
+                     xgboost_classifierLcpK0s_pt_dfselection_pt_cand_1.0_2.0.sav]
+    probcutpresel: 
+      data: [0.8,0.8,0.8,0.8,0.8] #list of nbins
+      mc: [0.8,0.8,0.8,0.8,0.8] #list of nbins
+    probcutoptimal: [0.99,0.99,0.99,0.99,0.99] #list of nbins
+
+  analysis:
+    MBvspt:
+      plotbin: [1]
+      usesinglebineff: 0
+      sel_binmin2: [null] #list of var2 splittng nbins
+      sel_binmax2: [null] #list of var2 splitting nbins
+      var_binning2: null
+      
+      sel_an_binmin: [2,3] #list of pt nbins
+      sel_an_binmax: [3,4] #list of pt nbins
+      binning_matching: [0,1] #list of pt nbins
+      presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
+      evtsel: is_ev_rej == 0
+      triggersel: 
+        data: null
+        mc: null
+      data:
+        results: [/home/fcatalan/test_QM/results3050/LHC18r_3050_8_17_presel,
+                  /home/fcatalan/test_QM/results3050/LHC18q_3050_8_17_presel] #list of periods
+        resultsallp: /home/fcatalan/test_QM/results3050/data_merged
+      mc:
+        results: [/home/fcatalan/test_QM/results3050/LHC19c3a_q_010_9_presel,
+                  /home/fcatalan/test_QM/results3050/LHC19c3a_r_010_10_presel,
+                  /home/fcatalan/test_QM/results3050/LHC19d4a_q_010_13_presel, 
+                  /home/fcatalan/test_QM/results3050/LHC19d4a_r_010_14_presel] #list of periods
+        resultsallp: /home/fcatalan/test_QM/results3050/mc_merged
+
+      mass_fit_lim: [1.742, 2.194]  # region for the fit of the invariant mass distribution [GeV/c^2]
+      bin_width: 0.002 # bin width of the invariant mass histogram
+      usefit: false
+      sgnfunc: null
+      bkgfunc: null
+      masspeak: null
+      massmin: null
+      massmax: null
+      rebin: null
+      includesecpeak: null
+      masssecpeak: null
+      FixedMean: null
+      SetFixGaussianSigma: null
+      SetInitialGaussianMean: null
+      SetInitialGaussianSigma: null
+      exclude_nsigma_sideband: null
+      nsigma_signal: null
+      dolikelihood: null
+      sigmaarray: null
+      FixedSigma: null  
+      fitcase: Ds
+      latexnamemeson: "D_{s}"
+      latexbin2var: null
+      nevents: null
+      dodoublecross: false
+
+  systematics:
+      probvariation:
+        prob_range: [null]
+  
+  validation:
+    data:
+      dir: ['',''] #list of periods
+      dirmerged: ''
+    mc:
+      dir: ['','','',''] #list of periods
+      dirmerged: ''
