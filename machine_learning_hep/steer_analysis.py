@@ -300,6 +300,13 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     if domergingperiodsdata == 1:
         mymultiprocessdata.multi_mergeml_allinone()
 
+    if dovalhistomc is True:
+        mymultiprocessmc.multi_valevents()
+    if dovalhistodata is True:
+        mymultiprocessdata.multi_valevents()
+    if dovalplots:
+        myan.studyevents()
+
     if doml is True:
         index = 0
         for binmin, binmax in zip(binminarray, binmaxarray):
@@ -362,13 +369,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         myan.plotter()
     if dosystprob is True:
         mysis.probvariation()
-
-    if dovalhistomc is True:
-        mymultiprocessmc.multi_valevents()
-    if dovalhistodata is True:
-        mymultiprocessdata.multi_valevents()
-    if dovalplots:
-        myan.studyevents()
 
 
 def load_config(user_path: str, default_path: tuple) -> dict:

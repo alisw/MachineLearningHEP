@@ -382,7 +382,13 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                  self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 df_bin = seldf_singlevar(df, self.v_var2_binning,
                                          self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
-                fill_hist(h_invmass, df_bin.inv_mass)
+                weights = None
+                apply_weights = self.datap["analysis"][self.typean]["triggersel"]["weights"]
+                if apply_weights != None:
+                    filenorm = TFile.Open("norm.root", "read")
+                    hnorm = filenorm.Get("hnorm_" + apply_weights[0] + "_" + apply_weights[1])
+                    weights = [hnorm.GetBinContent(hnorm.FindBin(_bin)) for _bin in df_bin[apply_weights[0]]]
+                fill_hist(h_invmass, df_bin.inv_mass, weights=weights)
                 myfile.cd()
                 h_invmass.Write()
 
@@ -528,20 +534,34 @@ class Processer: # pylint: disable=too-many-instance-attributes
     def process_valevents(self, file_index):
         dfevt = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
         dfevtnorm = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
+        evtsel = "is_ev_rej==0"
         mbsel = "trigger_hasclass_INT7==1 and is_ev_rej==0"
         if self.mcordata == "mc":
             mbsel = "is_ev_rej==0"
-        dfevt = dfevt.query(mbsel)
         sel_trigger = ["trigger_hasbit_INT7==1", "trigger_hasbit_HighMultSPD==1",
                        "trigger_hasbit_HighMultV0==1", "trigger_hasbit_INT7==1",
                        "trigger_hasbit_HighMultSPD==1", "trigger_hasbit_HighMultV0==1"]
+        evt_trigger = ["trigger_hasclass_INT7==1", "trigger_hasclass_HighMultSPD==1",
+                       "trigger_hasclass_HighMultV0==1", "trigger_hasclass_INT7==1",
+                       "trigger_hasclass_HighMultSPD==1", "trigger_hasclass_HighMultV0==1"]
         variable = ["v0m", "v0m", "v0m", "n_tracklets", "n_tracklets", "n_tracklets"]
         nbins = [100, 100, 100, 100, 100, 100]
         minr = [0, 0, 0, 0, 0, 0]
         maxr = [1500, 1500, 1500, 150, 150, 150]
         label = ["kINT7_vsv0m", "HighMultSPD_vsv0m", "HighMultV0_vsv0m",
                  "kINT7_vsntracklets", "HighMultSPD_vsntracklets", "HighMultV0_vsntracklets"]
+        label_evt = ["INT7_vsv0m", "SHM_vsv0m", "VHM_vsv0m",
+                     "INT7_vsntracklets", "SHM_vsntracklets", "VHM_vsntracklets"]
         fileevtroot = TFile.Open(self.l_evtvalroot[file_index], "recreate")
+
+        dfevt = dfevt.query(evtsel)
+        for index, _ in enumerate(evt_trigger):
+            hden, hnum = makeff(dfevt, evt_trigger[index], None, label_evt[index],
+                                nbins[index], minr[index], maxr[index], variable[index])
+            hden.Write()
+            hnum.Write()
+
+        dfevt = dfevt.query(mbsel)
         for index, _ in enumerate(sel_trigger):
             hden, hnum = makeff(dfevt, sel_trigger[index], None, label[index],
                                 nbins[index], minr[index], maxr[index], variable[index])

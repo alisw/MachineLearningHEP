@@ -120,7 +120,7 @@ D0pp:
     data:
       nperiods: 4
       nprocessesparallel: 50
-      maxfiles : [-1,-1,-1,-1] #list of periods
+      maxfiles : [0,0,0,-1] #list of periods
       chunksizeunp : [100,100,100,100] #list of periods
       chunksizeskim: [100,100,100,100] #list of periods
       fracmerge : [0.05,0.05,0.05,0.05] #list of periods
@@ -435,6 +435,7 @@ D0pp:
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
+        weights: [ "v0m", "vhm" ]
         data: "trigger_hasclass_HighMultV0==1 and trigger_hasbit_HighMultV0==1"
         mc: null
 
@@ -489,8 +490,8 @@ D0pp:
   
   validation:
     data:
-      dir: [dataval_16, dataval_16, dataval_17, dataval_18] #list of periods
+      dir: [dataval_16, dataval_16_2, dataval_17, dataval_18] #list of periods
       dirmerged: datavaltot
     mc:
-      dir: [mcval_16, mcval_16, mcval_17, mcval_18] #list of periods
+      dir: [mcval_16, mcval_16_2, mcval_17, mcval_18] #list of periods
       dirmerged: mcvaltot
