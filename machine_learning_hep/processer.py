@@ -384,10 +384,11 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                          self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 weights = None
                 apply_weights = self.datap["analysis"][self.typean]["triggersel"]["weights"]
-                if apply_weights != None:
+                if apply_weights is not None:
                     filenorm = TFile.Open("norm.root", "read")
                     hnorm = filenorm.Get("hnorm_" + apply_weights[0] + "_" + apply_weights[1])
-                    weights = [hnorm.GetBinContent(hnorm.FindBin(_bin)) for _bin in df_bin[apply_weights[0]]]
+                    weights = [hnorm.GetBinContent(hnorm.FindBin(_bin)) \
+                               for _bin in df_bin[apply_weights[0]]]
                 fill_hist(h_invmass, df_bin.inv_mass, weights=weights)
                 myfile.cd()
                 h_invmass.Write()
@@ -531,6 +532,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         his_ptc_ptjet_fd.Write()
         out_file.Close()
 
+    # pylint: disable=too-many-locals
     def process_valevents(self, file_index):
         dfevt = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
         dfevtnorm = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
