@@ -540,9 +540,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
         mbsel = "trigger_hasclass_INT7==1 and is_ev_rej==0"
         if self.mcordata == "mc":
             mbsel = "is_ev_rej==0"
-        sel_trigger = ["trigger_hasbit_INT7==1", "trigger_hasbit_HighMultSPD==1",
-                       "trigger_hasbit_HighMultV0==1", "trigger_hasbit_INT7==1",
-                       "trigger_hasbit_HighMultSPD==1", "trigger_hasbit_HighMultV0==1"]
+        sel_trigger = ["trigger_hasclass_INT7==1", "trigger_hasclass_HighMultSPD==1",
+                       "trigger_hasclass_HighMultV0==1", "trigger_hasclass_INT7==1",
+                       "trigger_hasclass_HighMultSPD==1", "trigger_hasclass_HighMultV0==1"]
         evt_trigger = ["trigger_hasclass_INT7==1", "trigger_hasclass_HighMultSPD==1",
                        "trigger_hasclass_HighMultV0==1", "trigger_hasclass_INT7==1",
                        "trigger_hasclass_HighMultSPD==1", "trigger_hasclass_HighMultV0==1"]

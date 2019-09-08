@@ -120,7 +120,7 @@ D0pp:
     data:
       nperiods: 4
       nprocessesparallel: 50
-      maxfiles : [0,0,0,-1] #list of periods
+      maxfiles : [-1,-1,-1,-1] #list of periods
       chunksizeunp : [100,100,100,100] #list of periods
       chunksizeskim: [100,100,100,100] #list of periods
       fracmerge : [0.05,0.05,0.05,0.05] #list of periods
@@ -376,7 +376,6 @@ D0pp:
       triggersel: 
         data: "trigger_hasclass_HighMultSPD==1 and trigger_hasbit_HighMultSPD==1"
         mc: null
-
       data:      
         results: [D0kINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsSPDvspt,
                   D0kINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsSPDvspt,

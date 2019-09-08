@@ -35,7 +35,8 @@ from  machine_learning_hep.logger import get_logger
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
 class Analyzer:
     species = "analyzer"
-    def __init__(self, datap, case, typean):
+    def __init__(self, datap, case, typean,
+                 resultsdata, resultsmc, valdata, valmc):
 
 
         #namefiles pkl
@@ -53,8 +54,8 @@ class Analyzer:
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
         self.p_nbin2 = len(self.lvar2_binmin)
 
-        self.d_resultsallpmc = datap["analysis"][self.typean]["mc"]["resultsallp"]
-        self.d_resultsallpdata = datap["analysis"][self.typean]["data"]["resultsallp"]
+        self.d_resultsallpmc = resultsmc
+        self.d_resultsallpdata = resultsdata
 
         n_filemass_name = datap["files_names"]["histofilename"]
         self.n_filemass = os.path.join(self.d_resultsallpdata, n_filemass_name)
@@ -110,8 +111,9 @@ class Analyzer:
         self.p_sigmamb = datap["ml"]["opt"]["sigma_MB"]
         self.p_br = datap["ml"]["opt"]["BR"]
 
-        self.d_valevtdata = datap["validation"]["data"]["dirmerged"]
-        self.d_valevtmc = datap["validation"]["mc"]["dirmerged"]
+        self.d_valevtdata = valdata
+        self.d_valevtmc = valmc
+
         self.f_evtvaldata = os.path.join(self.d_valevtdata, self.n_evtvalroot)
         self.f_evtvalmc = os.path.join(self.d_valevtmc, self.n_evtvalroot)
 
@@ -637,13 +639,13 @@ class Analyzer:
         v0mn_trackletsmc.GetXaxis().SetTitle("offline V0 (mc)")
         v0mn_trackletsmc.GetYaxis().SetTitle("offline SPD (mc)")
         v0mn_trackletsmc.Draw("colz")
-        cscatter.SaveAs("cscatter.pdf")
-
+        cscatter.SaveAs(self.make_file_path(self.d_valevtdata, "cscatter", "eps", \
+                                        None, ""))
         labelsv0_norm = ["INT7_vsv0m", "VHM_vsv0m"]
         labelsspd_norm = ["INT7_vsntracklets", "SHM_vsntracklets"]
 
-        labelsv0 = ["kINT7_vsv0m", "HighMultV0_vsv0m", "HighMultSPD_vsv0m"]
-        labelsspd = ["kINT7_vsntracklets", "HighMultSPD_vsntracklets", "HighMultV0_vsntracklets"]
+        labelsv0 = ["kINT7_vsv0m", "HighMultV0_vsv0m"]
+        labelsspd = ["kINT7_vsntracklets", "HighMultSPD_vsntracklets"]
         cutonspd = [20, 30, 40, 50, 60]
 
         filenorm = TFile.Open("norm.root", "recreate")
@@ -666,7 +668,8 @@ class Analyzer:
             heff.Draw("epsame")
             leg_v0m.AddEntry(heff, lab, "LEP")
         leg_v0m.Draw()
-        cv0m.SaveAs("norm_v0m.pdf")
+        cv0m.SaveAs(self.make_file_path(self.d_valevtdata, "norm_v0m", "eps", \
+                                        None, ""))
         hnorm = filedata.Get("hnum%s" % labelsv0_norm[1])
         hnorm.SetName("hnorm_v0m_vhm")
         hnorm.Write()
@@ -689,7 +692,8 @@ class Analyzer:
             heff.Draw("epsame")
             leg_spd.AddEntry(heff, lab, "LEP")
         leg_spd.Draw()
-        cspd.SaveAs("norm_spd.pdf")
+        cspd.SaveAs(self.make_file_path(self.d_valevtdata, "norm_spd", "eps", \
+                                        None, ""))
         hnorm = filedata.Get("hnum%s" % labelsspd_norm[1])
         hnorm.SetName("hnorm_ntracklets_shm")
         hnorm.Write()
@@ -737,8 +741,8 @@ class Analyzer:
             heff.Draw("epsame")
             lega.AddEntry(heff, labelsspd[i], "LEP")
         lega.Draw()
-        ctrigger.SaveAs("ctrigger.pdf")
-
+        ctrigger.SaveAs(self.make_file_path(self.d_valevtdata, "ctrigger", "eps", \
+                                        None, ""))
         cv0m = TCanvas('cv0m', 'V0M multiplicity')
         leg_v0m = TLegend(.5, .65, .7, .85)
         leg_v0m.SetBorderSize(0)
@@ -758,7 +762,8 @@ class Analyzer:
             heff.Draw("epsame")
             leg_v0m.AddEntry(heff, lab, "LEP")
         leg_v0m.Draw()
-        cv0m.SaveAs("cv0m.pdf")
+        cv0m.SaveAs(self.make_file_path(self.d_valevtdata, "cv0m", "eps", \
+                                        None, ""))
 
         cspd = TCanvas('cspd', 'SPD multiplicity')
         leg_spd = TLegend(.5, .65, .7, .85)
@@ -779,7 +784,8 @@ class Analyzer:
             heff.Draw("epsame")
             leg_spd.AddEntry(heff, lab, "LEP")
         leg_spd.Draw()
-        cspd.SaveAs("cspd.pdf")
+        cspd.SaveAs(self.make_file_path(self.d_valevtdata, "cspd", "eps", \
+                                        None, ""))
 
         ccutstudy = TCanvas('ccutstudy', 'The Fit Canvas')
         ccutstudy.SetCanvasSize(2200, 1000)
@@ -813,4 +819,5 @@ class Analyzer:
             heffmc.GetYaxis().SetTitle("pseudo efficiency")
             heffmc.Draw("epsame")
             legc.Draw()
-        ccutstudy.SaveAs("ccutstudy.pdf")
+        ccutstudy.SaveAs(self.make_file_path(self.d_valevtdata, "ccutstudy", "eps", \
+                                        None, ""))
