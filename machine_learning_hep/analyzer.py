@@ -642,6 +642,10 @@ class Analyzer:
             labelMB = "hclassINT7vs%s" % varlist[i]
             heff = filedata.Get(labeltriggerANDMB)
             hden = filedata.Get(labelMB)
+            if not heff or not hden:
+                continue
+            heff = heff.Clone()
+            heff.SetName(heff.GetName() + "_new")
             heff.SetLineColor(i+1)
             heff.Divide(heff, hden, 1.0, 1.0, "B")
             heff.SetMaximum(2.)
@@ -652,7 +656,7 @@ class Analyzer:
             leg.AddEntry(heff, triggerlist[i], "LEP")
             leg.Draw()
         ctrigger.SaveAs(self.make_file_path(self.d_valevtdata, "ctrigger", "eps", \
-                                        None, ""))
+                                        None, None))
 
         ccorrection = TCanvas('ccorrection', 'The Fit Canvas')
         ccorrection.SetCanvasSize(2100, 1000)
@@ -670,8 +674,10 @@ class Analyzer:
             labelMB = "hclassINT7vs%s" % varlist[i]
             hratio = filedata.Get(labeltrigger)
             hden = filedata.Get(labelMB)
+            if not hratio:
+                continue
             hratio.SetLineColor(i+1)
-            hratio.Divide(heff, hden, 1.0, 1.0, "B")
+            hratio.Divide(hratio, hden, 1.0, 1.0, "B")
             hratio.GetXaxis().SetTitle("offline %s" % varlist[i])
             hratio.SetMinimum(0.)
             hratio.GetYaxis().SetTitle("ratio %s/MB" % triggerlist[i])
@@ -679,4 +685,4 @@ class Analyzer:
             leg.AddEntry(hratio, triggerlist[i], "LEP")
             leg.Draw()
         ccorrection.SaveAs(self.make_file_path(self.d_valevtdata, "ccorrection", "eps", \
-                                        None, ""))
+                                        None, None))
