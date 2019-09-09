@@ -642,9 +642,6 @@ class Analyzer:
             labelMB = "hclassINT7vs%s" % varlist[i]
             heff = filedata.Get(labeltriggerANDMB)
             hden = filedata.Get(labelMB)
-            if not heff or not hden:
-                continue
-            heff = heff.Clone()
             heff.SetName(heff.GetName() + "_new")
             heff.SetLineColor(i+1)
             heff.Divide(heff, hden, 1.0, 1.0, "B")
@@ -655,6 +652,7 @@ class Analyzer:
             heff.Draw("epsame")
             leg.AddEntry(heff, triggerlist[i], "LEP")
             leg.Draw()
+            print("INDEX", i)
         ctrigger.SaveAs(self.make_file_path(self.d_valevtdata, "ctrigger", "eps", \
                                         None, None))
 
@@ -674,8 +672,6 @@ class Analyzer:
             labelMB = "hclassINT7vs%s" % varlist[i]
             hratio = filedata.Get(labeltrigger)
             hden = filedata.Get(labelMB)
-            if not hratio:
-                continue
             hratio.SetLineColor(i+1)
             hratio.Divide(hratio, hden, 1.0, 1.0, "B")
             hratio.GetXaxis().SetTitle("offline %s" % varlist[i])
