@@ -237,7 +237,7 @@ class Optimiser:
         imageIO_scatterplot = scatterplot(self.df_sigtrain, self.df_bkgtrain,
                                           self.v_corrx, self.v_corry,
                                           self.dirmlplot, self.p_binmin, self.p_binmax)
-        imageIO_corr_sig = correlationmatrix(self.df_sigtrain, self.v_all, "Signal", 
+        imageIO_corr_sig = correlationmatrix(self.df_sigtrain, self.v_all, "Signal",
                                              self.dirmlplot, self.p_binmin, self.p_binmax)
         imageIO_corr_bkg = correlationmatrix(self.df_bkgtrain, self.v_all, "Background",
                                              self.dirmlplot, self.p_binmin, self.p_binmax)
