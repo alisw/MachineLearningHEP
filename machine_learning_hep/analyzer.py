@@ -316,7 +316,7 @@ class Analyzer:
         can_resp_fd.SetLogz()
         can_resp_fd.SetLeftMargin(0.15)
         can_resp_fd.SetRightMargin(0.15)
-        can_resp_fd.SaveAs("%s/Response%s%s.eps" % (self.d_resultsallpmc, \
+        can_resp_fd.SaveAs("%s/ResponseFD%s%s.eps" % (self.d_resultsallpmc, \
                             self.case, self.typean))
 
         # Get simulated pt_cand vs. pt_jet of non-prompt jets.
@@ -340,7 +340,7 @@ class Analyzer:
             his_eff_pr.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
             his_eff_pr.GetYaxis().SetTitle("reconstruction efficiency %s %s" \
                     % (self.p_latexnmeson, self.typean))
-            his_eff_pr.GetYaxis().SetRangeUser(0, 0.5)
+            his_eff_pr.GetYaxis().SetRangeUser(0, 0.6)
             leg_eff = TLegend(.5, .15, .7, .35)
             leg_eff.SetBorderSize(0)
             leg_eff.SetFillColor(0)
