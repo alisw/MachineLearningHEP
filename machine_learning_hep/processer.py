@@ -31,7 +31,7 @@ from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge_method
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
-from machine_learning_hep.utilities import mergerootfiles, makeff, scatterplot, z_calc
+from machine_learning_hep.utilities import mergerootfiles, z_calc
 from machine_learning_hep.models import apply # pylint: disable=import-error
 #from machine_learning_hep.globalfitter import fitter
 from machine_learning_hep.selectionutils import getnormforselevt
@@ -383,12 +383,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 df_bin = seldf_singlevar(df, self.v_var2_binning,
                                          self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 weights = None
-                apply_weights = self.datap["analysis"][self.typean]["triggersel"]["weights"]
-                if apply_weights is not None:
-                    filenorm = TFile.Open("norm.root", "read")
-                    hnorm = filenorm.Get("hnorm_" + apply_weights[0] + "_" + apply_weights[1])
-                    weights = [hnorm.GetBinContent(hnorm.FindBin(_bin)) \
-                               for _bin in df_bin[apply_weights[0]]]
+                #apply_weights = self.datap["analysis"][self.typean]["triggersel"]["weights"]
+                #if apply_weights is not None:
+                #    filenorm = TFile.Open("norm.root", "read")
+                #    hnorm = filenorm.Get("hnorm_" + apply_weights[0] + "_" + apply_weights[1])
+                #    weights = [hnorm.GetBinContent(hnorm.FindBin(_bin)) \
+                #               for _bin in df_bin[apply_weights[0]]]
                 fill_hist(h_invmass, df_bin.inv_mass, weights=weights)
                 myfile.cd()
                 h_invmass.Write()
@@ -535,80 +535,34 @@ class Processer: # pylint: disable=too-many-instance-attributes
     # pylint: disable=too-many-locals
     def process_valevents(self, file_index):
         dfevt = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
-        dfevtnorm = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
-        evtsel = "is_ev_rej==0"
-        mbsel = "trigger_hasclass_INT7==1 and is_ev_rej==0"
-        if self.mcordata == "mc":
-            mbsel = "is_ev_rej==0"
-        sel_trigger = ["trigger_hasclass_INT7==1", "trigger_hasclass_HighMultSPD==1",
-                       "trigger_hasclass_HighMultV0==1", "trigger_hasclass_INT7==1",
-                       "trigger_hasclass_HighMultSPD==1", "trigger_hasclass_HighMultV0==1"]
-        evt_trigger = ["trigger_hasclass_INT7==1", "trigger_hasclass_HighMultSPD==1",
-                       "trigger_hasclass_HighMultV0==1", "trigger_hasclass_INT7==1",
-                       "trigger_hasclass_HighMultSPD==1", "trigger_hasclass_HighMultV0==1"]
-        variable = ["v0m", "v0m", "v0m", "n_tracklets", "n_tracklets", "n_tracklets"]
-        nbins = [100, 100, 100, 100, 100, 100]
-        minr = [0, 0, 0, 0, 0, 0]
-        maxr = [1500, 1500, 1500, 150, 150, 150]
-        label = ["kINT7_vsv0m", "HighMultSPD_vsv0m", "HighMultV0_vsv0m",
-                 "kINT7_vsntracklets", "HighMultSPD_vsntracklets", "HighMultV0_vsntracklets"]
-        label_evt = ["INT7_vsv0m", "SHM_vsv0m", "VHM_vsv0m",
-                     "INT7_vsntracklets", "SHM_vsntracklets", "VHM_vsntracklets"]
+        dfevt = dfevt.query("is_ev_rej==0")
+        triggerlist = ["HighMultV0", "HighMultSPD"]
+        varlist = ["v0m", "n_tracklets"]
+        nbinsvar = [100, 100]
+        minrvar = [0, 0]
+        maxrvar = [1500, 200]
         fileevtroot = TFile.Open(self.l_evtvalroot[file_index], "recreate")
 
-        dfevt = dfevt.query(evtsel)
-        for index, _ in enumerate(evt_trigger):
-            hden, hnum = makeff(dfevt, evt_trigger[index], None, label_evt[index],
-                                nbins[index], minr[index], maxr[index], variable[index])
-            hden.Write()
-            hnum.Write()
+        for ivar, var in enumerate(varlist):
+            label = "hclassINT7vs%s" % (var)
+            histoMB = TH1F(label, label, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
+            fill_hist(histoMB, dfevt.query("trigger_hasclass_INT7==1")[var])
+            histoMB.Sumw2()
+            histoMB.Write()
+            for trigger in triggerlist:
+                triggerclass = "trigger_hasclass_%s==1" % trigger
+                labeltriggerANDMB = "hclass%sANDINT7vs%s" % (trigger, var)
+                labeltrigger = "hclass%svs%s" % (trigger, var)
+                histotrigANDMB = TH1F(labeltriggerANDMB, labeltriggerANDMB, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
+                histotrig = TH1F(labeltrigger, labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
+                fill_hist(histotrigANDMB, dfevt.query(triggerclass + " and trigger_hasclass_INT7==1")[var])
+                fill_hist(histotrig, dfevt.query(triggerclass)[var])
+                histotrigANDMB.Sumw2()
+                histotrig.Sumw2()
+                histotrigANDMB.Write()
+                histotrig.Write()
 
-        dfevt = dfevt.query(mbsel)
-        for index, _ in enumerate(sel_trigger):
-            hden, hnum = makeff(dfevt, sel_trigger[index], None, label[index],
-                                nbins[index], minr[index], maxr[index], variable[index])
-            hden.Write()
-            hnum.Write()
-
-        scatter_name1 = ["v0m"]
-        scatter_name2 = ["n_tracklets"]
-        nbins1 = [100]
-        minr1 = [0]
-        maxr1 = [1500]
-        nbins2 = [100]
-        minr2 = [0]
-        maxr2 = [150]
-        for index2, _ in enumerate(scatter_name1):
-            hscatter = scatterplot(dfevt, scatter_name1[index2], scatter_name2[index2], \
-                    nbins1[index2], minr1[index2], maxr1[index2], \
-                    nbins2[index2], minr2[index2], maxr2[index2])
-            hscatter.Write()
-
-        distrname = ["v0m", "n_tracklets"]
-        nbinsdist = [100, 100]
-        minrdist = [0, 0]
-        maxrdist = [1500, 150]
-
-        for index, _ in enumerate(distrname):
-            hdistr = TH1F("hdistr" + distrname[index], "hdistr" + distrname[index],
-                          nbinsdist[index], minrdist[index], maxrdist[index])
-            hdistr.Sumw2()
-            fill_hist(hdistr, dfevt[distrname[index]])
-            hdistr.Write()
-
-        varname = "v0m"
-        cutonspd = [20, 30, 40, 50, 60]
-        hdenv0m = TH1F("hdenv0m", "hdenv0m", 30, 0, 1000)
-        hdenv0m.Sumw2()
-        fill_hist(hdenv0m, dfevt[varname])
-        for index, _ in enumerate(cutonspd):
-            hnum = TH1F("hnumv0mspd%d" % cutonspd[index], "hnumv0mspd%d" % cutonspd[index], 30, 0, 1000)
-            hnum.Sumw2()
-            devtsel = dfevt.query("n_tracklets>=%d" % cutonspd[index])
-            fill_hist(hnum, devtsel[varname])
-            hnum.Write()
-        hdenv0m.Write()
-
+        dfevtnorm = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
         hNorm = TH1F("hEvForNorm", ";;Normalisation", 2, 0.5, 2.5)
         hNorm.GetXaxis().SetBinLabel(1, "normsalisation factor")
         hNorm.GetXaxis().SetBinLabel(2, "selected events")
