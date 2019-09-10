@@ -123,6 +123,7 @@ class Analyzer:
         self.p_rebin_syst = syst_dict["rebin"] if syst_dict is not None else None
         self.p_fit_ranges_low_syst = syst_dict["massmin"] if syst_dict is not None else None
         self.p_fit_ranges_up_syst = syst_dict["massmax"] if syst_dict is not None else None
+        self.p_bincount_sigma_syst = syst_dict["bincount_sigma"] if syst_dict is not None else None
 
 
     @staticmethod
@@ -290,11 +291,13 @@ class Analyzer:
                 mass_fitter_nominal.load(func_file.GetDirectory(suffix), True)
                 yield_nominal = mass_fitter_nominal.yield_sig / \
                         (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
-                bincount_nominal = mass_fitter_nominal.sig_bincount / \
-                        (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
                 yield_err_nominal = mass_fitter_nominal.yield_sig_err / \
                         (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
-                bincount_err_nominal = mass_fitter_nominal.sig_bincount_err / \
+                bincount_nominal, bincount_err_nominal = \
+                        mass_fitter_nominal.bincount(self.p_nsigma_signal)
+                bincount_nominal = bincount_nominal / \
+                        (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
+                bincount_err_nominal = bincount_err_nominal / \
                         (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
                 mean_nominal = mass_fitter_nominal.mean_fit
                 sigma_nominal = mass_fitter_nominal.sigma_fit
@@ -311,8 +314,8 @@ class Analyzer:
                 chisquares_syst = []
 
                 # Crazy nested loop
-                for fix_mean in [True, False]:
-                    for fix_sigma in [True, False]:
+                for fix_mean in [False]:
+                    for fix_sigma in [True]:
                         for rebin in self.p_rebin_syst:
                             for fr_up in self.p_fit_ranges_up_syst:
                                 for fr_low in self.p_fit_ranges_low_syst:
@@ -338,17 +341,20 @@ class Analyzer:
                                                 (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
                                         rawYieldErr = mass_fitter_syst.yield_sig_err / \
                                                 (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
-                                        rawBinCount = mass_fitter_syst.sig_bincount / \
-                                                (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
-                                        rawBinCountErr = mass_fitter_syst.sig_bincount_err / \
-                                                (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
                                         yields_syst.append(rawYield)
                                         yields_syst_err.append(rawYieldErr)
-                                        bincounts_syst.append(rawBinCount)
-                                        bincounts_syst_err.append(rawBinCountErr)
                                         means_syst.append(mass_fitter_syst.mean_fit)
                                         sigmas_syst.append(mass_fitter_syst.sigma_fit)
                                         chisquares_syst.append(chisquare_ndf_syst)
+                                        for sigma in self.p_bincount_sigma_syst:
+                                            rawBC, rawBC_err = mass_fitter_syst.bincount(sigma)
+                                            if rawBC is not None:
+                                                rawBC = rawBC / \
+                                                        (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
+                                                rawBC_err = rawBC_err / \
+                                                        (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
+                                                bincounts_syst.append(rawBC)
+                                                bincounts_syst_err.append(rawBC_err)
 
                 fileout.cd()
                 # Each pT and secondary binning gets its own directory in the output ROOT file
@@ -389,12 +395,13 @@ class Analyzer:
                                                               chisquares_syst):
                         histo_yields.Fill(y)
                         histo_yields_err.Fill(y_err)
-                        histo_bincounts.Fill(bc)
-                        histo_bincounts_err.Fill(bc_err)
                         histo_means.SetBinContent(i_bin, m)
                         histo_sigmas.SetBinContent(i_bin, s)
                         histo_chisquares.SetBinContent(i_bin, cs)
                         i_bin += 1
+                    for bc, bc_err in zip(bincounts_syst, bincounts_syst_err):
+                        histo_bincounts.Fill(bc)
+                        histo_bincounts_err.Fill(bc_err)
                 else:
                     self.logger.error("No systematics could be derived for %s", suffix)
 

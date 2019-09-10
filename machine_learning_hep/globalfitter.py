@@ -125,8 +125,6 @@ class Fitter:
         self.yield_sig_err = None
         self.yield_bkg = None
         self.yield_bkg_err = None
-        self.sig_bincount = None
-        self.sig_bincount_err = None
         self.mean_fit = None
         self.mean_err_fit = None
         self.sigma_fit = None
@@ -251,16 +249,6 @@ class Fitter:
         self.yield_sig_err = self.sig_fit_func.GetParError(0) / \
                              Double(self.histo_to_fit.GetBinWidth(1))
 
-        # Now yield from bin count
-        self.sig_bincount = 0.
-        self.sig_bincount_err = 0.
-        for b in range(leftBand, rightBand + 1, 1):
-            bkg_count = self.bkg_tot_fit_func.Integral(self.histo_to_fit.GetBinLowEdge(b),
-                                                       self.histo_to_fit.GetBinLowEdge(b) + self.histo_to_fit.GetBinWidth(b)) / \
-                        self.histo_to_fit.GetBinWidth(b)
-            self.sig_bincount += self.histo_to_fit.GetBinContent(b) - bkg_count
-            self.sig_bincount_err += self.histo_to_fit.GetBinError(b) * self.histo_to_fit.GetBinError(b)
-        self.sig_bincount_err = math.sqrt(self.sig_bincount_err)
 
 
 
@@ -279,6 +267,26 @@ class Fitter:
 
         self.logger.info("Significance: %f, error significance: %f", self.significance,
                          self.errsignificance)
+
+    def bincount(self, nsigma):
+
+        if not self.fitted:
+            self.logger.error("Cannot compute bincount. Fit required first!")
+            return None, None
+
+        # Now yield from bin count
+        bincount = 0.
+        bincount_err = 0.
+        leftBand = self.histo_to_fit.FindBin(self.mean_fit - nsigma * self.sigma_fit)
+        rightBand = self.histo_to_fit.FindBin(self.mean_fit + nsigma * self.sigma_fit)
+        for b in range(leftBand, rightBand + 1, 1):
+            bkg_count = self.bkg_tot_fit_func.Integral(self.histo_to_fit.GetBinLowEdge(b),
+                                                       self.histo_to_fit.GetBinLowEdge(b) + self.histo_to_fit.GetBinWidth(b)) / \
+                        self.histo_to_fit.GetBinWidth(b)
+            bincount += self.histo_to_fit.GetBinContent(b) - bkg_count
+            bincount_err += self.histo_to_fit.GetBinError(b) * self.histo_to_fit.GetBinError(b)
+
+        return bincount, math.sqrt(bincount_err)
 
     def save(self, root_dir):
         if not self.fitted:
