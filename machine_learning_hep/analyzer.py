@@ -495,18 +495,30 @@ class Analyzer:
                 csubz.SaveAs("%s/side_band_sub%s%s_%s.eps" % \
                              (self.d_resultsallpdata, self.case, self.typean, suffix))
 
+
+
+                legsigbkgsubz = TLegend(.2, .65, .35, .85)
+                legsigbkgsubz.SetBorderSize(0)
+                legsigbkgsubz.SetFillColor(0)
+                legsigbkgsubz.SetFillStyle(0)
+                legsigbkgsubz.SetTextFont(42)
+                legsigbkgsubz.SetTextSize(0.035)
                 csigbkgsubz = TCanvas('csigbkgsubz' + suffix, 'The Side-Band Canvas')
                 csigbkgsubz.SetCanvasSize(1900, 1500)
                 csigbkgsubz.SetWindowSize(500, 500)
+                legsigbkgsubz.AddEntry(hzsig, "signal", "LEP")
                 hzsig.GetYaxis().SetRangeUser(0.0, max(hzsig.GetBinContent(hzsig.GetMaximumBin()), \
                     hzbkg_scaled.GetBinContent(hzbkg_scaled.GetMaximumBin()), \
                     hzsub_noteffscaled.GetBinContent(hzsub_noteffscaled.GetMaximumBin()))*1.2)
                 hzsig.SetLineColor(2)
                 hzsig.Draw()
+                legsigbkgsubz.AddEntry(hzbkg_scaled, "side-band", "LEP")
                 hzbkg_scaled.SetLineColor(3)
                 hzbkg_scaled.Draw("same")
+                legsigbkgsubz.AddEntry(hzsub_noteffscaled, "subtracted", "LEP")
                 hzsub_noteffscaled.SetLineColor(4)
                 hzsub_noteffscaled.Draw("same")
+                legsigbkgsubz.Draw()
 
                 csigbkgsubz.SaveAs("%s/side_band_%s%s_%s.eps" % \
                              (self.d_resultsallpdata, self.case, self.typean, suffix))
