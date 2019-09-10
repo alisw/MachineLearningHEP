@@ -24,7 +24,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
-from ROOT import TH1F, TF1  # pylint: disable=import-error,no-name-in-module
+from ROOT import TH1F, TF1, gROOT  # pylint: disable=import-error,no-name-in-module
 from machine_learning_hep.utilities import seldf_singlevar, split_df_sigbkg, createstringselection
 from machine_learning_hep.utilities import openfile
 from machine_learning_hep.correlations import vardistplot, scatterplot, correlationmatrix
@@ -145,6 +145,7 @@ class Optimiser:
         self.p_fprompt = data_param["ml"]["opt"]["f_prompt"]
         self.p_bkgfracopt = data_param["ml"]["opt"]["bkg_data_fraction"]
         self.p_nstepsign = data_param["ml"]["opt"]["num_steps"]
+        self.p_bkg_func = data_param["ml"]["opt"]["bkg_function"]
         self.p_savefit = data_param["ml"]["opt"]["save_fit"]
         self.p_nevtml = None
         self.p_nevttot = None
@@ -339,13 +340,14 @@ class Optimiser:
     # pylint: disable=too-many-locals
     def do_significance(self):
         self.logger.info("Doing significance optimization")
+        gROOT.SetBatch(True)
+        gROOT.ProcessLine("gErrorIgnoreLevel = kWarning;")
         #first extract the number of data events in the ml sample
         self.df_evt_data = pickle.load(openfile(self.f_evt_data, 'rb'))
         if self.p_dofullevtmerge is True:
             self.df_evttotsample_data = pickle.load(openfile(self.f_evttotsample_data, 'rb'))
         else:
-            self.logger.info("The total merged event dataframe was not merged \
-                             for space limits")
+            self.logger.info("The total merged event dataframe was not merged for space limits")
             self.df_evttotsample_data = pickle.load(openfile(self.f_evt_data, 'rb'))
         #and the total number of events
         self.p_nevttot = len(self.df_evttotsample_data)
@@ -358,7 +360,6 @@ class Optimiser:
         denacc = len(self.df_mcgen[self.df_mcgen["ismcprompt"] == 1])
         numacc = len(self.df_mc[self.df_mc["ismcprompt"] == 1])
         acc, acc_err = self.calceff(numacc, denacc)
-
         self.logger.info("Acceptance: %.3e +/- %.3e", acc, acc_err)
         #calculation of the expected fonll signals
         df_fonll = pd.read_csv(self.f_fonll)
@@ -416,13 +417,15 @@ class Optimiser:
         plt.ylabel(r'Significance ($3 \sigma$)', fontsize=20)
         plt.title("Significance vs Threshold", fontsize=20)
 
+        df_sig = self.df_mltest[self.df_mltest["ismcprompt"] == 1]
+
         for name in self.p_classname:
-            df_sig = self.df_mltest[self.df_mltest["ismcprompt"] == 1]
             eff_array, eff_err_array, x_axis = self.calc_sigeff_steps(self.p_nstepsign,
                                                                       df_sig, name)
             bkg_array, bkg_err_array, _ = calc_bkg(df_data_sideband, name, self.p_nstepsign,
-                                                   self.p_mass_fit_lim, self.p_bin_width,
-                                                   sig_region, self.p_savefit, self.dirmlplot)
+                                                   self.p_mass_fit_lim, self.p_bkg_func,
+                                                   self.p_bin_width, sig_region, self.p_savefit,
+                                                   self.dirmlplot)
             sig_array = [eff * signal_yield for eff in eff_array]
             sig_err_array = [eff_err * signal_yield for eff_err in eff_err_array]
             bkg_array = [bkg / (self.p_bkgfracopt * self.p_nevtml) for bkg in bkg_array]
