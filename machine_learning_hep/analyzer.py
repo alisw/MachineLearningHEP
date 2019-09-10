@@ -22,9 +22,9 @@ import numpy as np
 # pylint: disable=import-error, no-name-in-module, unused-import
 from root_numpy import hist2array, array2hist
 from ROOT import TFile, TH1F, TCanvas
-from ROOT import gStyle, TLegend
+from ROOT import gStyle, TLegend, TLine, TText
 from ROOT import gROOT
-from ROOT import TStyle
+from ROOT import TStyle, kBlue, kGreen
 from ROOT import TLatex
 from machine_learning_hep.globalfitter import Fitter
 from  machine_learning_hep.logger import get_logger
@@ -38,7 +38,7 @@ class Analyzer:
     def __init__(self, datap, case, typean,
                  resultsdata, resultsmc, valdata, valmc):
 
-
+        self.logger = get_logger()
         #namefiles pkl
         self.case = case
         self.typean = typean
@@ -65,6 +65,7 @@ class Analyzer:
 
         # Output directories and filenames
         self.yields_filename = "yields"
+        self.yields_syst_filename = "yields_syst"
         self.efficiency_filename = "efficiencies"
         self.sideband_subtracted_filename = "sideband_subtracted"
 
@@ -116,6 +117,12 @@ class Analyzer:
 
         self.f_evtvaldata = os.path.join(self.d_valevtdata, self.n_evtvalroot)
         self.f_evtvalmc = os.path.join(self.d_valevtmc, self.n_evtvalroot)
+
+        # Systematics
+        syst_dict = datap["analysis"][self.typean].get("systematics", None)
+        self.p_rebin_syst = syst_dict["rebin"] if syst_dict is not None else None
+        self.p_fit_ranges_low_syst = syst_dict["massmin"] if syst_dict is not None else None
+        self.p_fit_ranges_up_syst = syst_dict["massmax"] if syst_dict is not None else None
 
 
     @staticmethod
@@ -171,13 +178,6 @@ class Analyzer:
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
-                #suffix = self.make_pre_suffix([self.v_var_binning,
-                #                               f"{self.lpt_finbinmin[ipt]:.2f}",
-                #                               f"{self.lpt_finbinmax[ipt]:.2f}",
-                #                               f"{self.lpt_probcutfin[bin_id]:.2f}",
-                #                               self.v_var2_binning,
-                #                               f"{self.lvar2_binmin[imult]:.2f}",
-                #                               f"{self.lvar2_binmax[imult]:.2f}"])
                 h_invmass = lfile.Get("hmass" + suffix)
                 h_invmass_mc = lfile_mc.Get("hmass" + suffix)
 
@@ -204,13 +204,9 @@ class Analyzer:
                                                          "eps", None, suffix))
 
                 fileout.cd()
+                save_dir = fileout.mkdir(suffix)
+                mass_fitter.save(save_dir)
 
-                mass_fitter.sig_fit_func.SetName("sigfit" + suffix)
-                mass_fitter.sig_fit_func.Write("sigfit" + suffix)
-                mass_fitter.bkg_sideband_fit_func.SetName("bkgfit" + suffix)
-                mass_fitter.bkg_sideband_fit_func.Write("bkgfit" + suffix)
-                mass_fitter.bkg_tot_fit_func.SetName("bkgrefit" + suffix)
-                mass_fitter.bkg_tot_fit_func.Write("bkgrefit" + suffix)
                 rawYield = mass_fitter.yield_sig / \
                         (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
                 rawYieldErr = mass_fitter.yield_sig_err / \
@@ -250,6 +246,340 @@ class Analyzer:
                                                [self.case, self.typean])
         cYields.SaveAs(yields_save_name)
         lfile.Close()
+
+    # pylint: disable=too-many-locals, too-many-nested-blocks, too-many-branches
+    def yield_syst(self):
+
+        # First check if systematics can be computed by checking if parameters are set
+        if self.p_rebin_syst is None:
+            self.logger.error("Parameters for systematics calculation not set. Skip...")
+            return
+
+
+        # We need both the mass histograms and the nominal fits. First check, whether they exist
+        func_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename,
+                                            "root", None, [self.case, self.typean])
+        if not os.path.exists(func_filename) or not os.path.exists(self.n_filemass):
+            self.logger.fatal("Cannot find ROOT files with nominal fits and raw " \
+                              "mass histograms at %s and %s, respectively", func_filename,
+                              self.n_filemass)
+
+        # Open files with nominal fits and raw mass histograms
+        lfile = TFile.Open(self.n_filemass)
+        func_file = TFile.Open(func_filename, "READ")
+
+        # Variations written to dedicated file
+        fileout_name = self.make_file_path(self.d_resultsallpdata, self.yields_syst_filename,
+                                           "root", None, [self.case, self.typean])
+        fileout = TFile(fileout_name, "RECREATE")
+
+        # One fitter to extract the respective nominal fit and one used for the variation
+        mass_fitter_nominal = Fitter()
+        mass_fitter_syst = Fitter()
+
+        for imult in range(self.p_nbin2):
+            for ipt in range(self.p_nptbins):
+                bin_id = self.bin_matching[ipt]
+                suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
+                         (self.v_var_binning, self.lpt_finbinmin[ipt],
+                          self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
+                          self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
+                h_invmass = lfile.Get("hmass" + suffix)
+
+                # Get the nominal fit values to compare to
+                mass_fitter_nominal.load(func_file.GetDirectory(suffix), True)
+                yield_nominal = mass_fitter_nominal.yield_sig / \
+                        (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
+                bincount_nominal = mass_fitter_nominal.sig_bincount / \
+                        (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
+                yield_err_nominal = mass_fitter_nominal.yield_sig_err / \
+                        (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
+                bincount_err_nominal = mass_fitter_nominal.sig_bincount_err / \
+                        (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
+                mean_nominal = mass_fitter_nominal.mean_fit
+                sigma_nominal = mass_fitter_nominal.sigma_fit
+                chisquare_ndf_nominal = mass_fitter_nominal.tot_fit_func.GetChisquare() / \
+                        mass_fitter_nominal.tot_fit_func.GetNDF()
+
+                # Collect vaiation values
+                yields_syst = []
+                yields_syst_err = []
+                bincounts_syst = []
+                bincounts_syst_err = []
+                means_syst = []
+                sigmas_syst = []
+                chisquares_syst = []
+
+                # Crazy nested loop
+                for fix_mean in [True, False]:
+                    for fix_sigma in [True, False]:
+                        for rebin in self.p_rebin_syst:
+                            for fr_up in self.p_fit_ranges_up_syst:
+                                for fr_low in self.p_fit_ranges_low_syst:
+                                    mass_fitter_syst.initialize(h_invmass, self.p_sgnfunc[ipt],
+                                                                self.p_bkgfunc[ipt], rebin,
+                                                                mass_fitter_nominal.mean_fit,
+                                                                mass_fitter_nominal.sigma_fit,
+                                                                fix_mean, fix_sigma,
+                                                                self.p_exclude_nsigma_sideband,
+                                                                self.p_nsigma_signal, fr_low,
+                                                                fr_up)
+
+                                    mass_fitter_syst.do_likelihood()
+                                    success = mass_fitter_syst.fit()
+                                    chisquare_ndf_syst = \
+                                    mass_fitter_syst.tot_fit_func.GetChisquare() / \
+                                            mass_fitter_syst.tot_fit_func.GetNDF()
+                                    # Only if the fit was successful and in case the chisquare does
+                                    # exceed the nominal too much we extract the values from this
+                                    # variation
+                                    if success and chisquare_ndf_syst < 2 * chisquare_ndf_nominal:
+                                        rawYield = mass_fitter_syst.yield_sig / \
+                                                (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
+                                        rawYieldErr = mass_fitter_syst.yield_sig_err / \
+                                                (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
+                                        rawBinCount = mass_fitter_syst.sig_bincount / \
+                                                (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
+                                        rawBinCountErr = mass_fitter_syst.sig_bincount_err / \
+                                                (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
+                                        yields_syst.append(rawYield)
+                                        yields_syst_err.append(rawYieldErr)
+                                        bincounts_syst.append(rawBinCount)
+                                        bincounts_syst_err.append(rawBinCountErr)
+                                        means_syst.append(mass_fitter_syst.mean_fit)
+                                        sigmas_syst.append(mass_fitter_syst.sigma_fit)
+                                        chisquares_syst.append(chisquare_ndf_syst)
+
+                fileout.cd()
+                # Each pT and secondary binning gets its own directory in the output ROOT file
+                root_dir = fileout.mkdir(suffix)
+                root_dir.cd()
+                # Let's use the same binning for fitted and bincount values
+                min_y = min(min(yields_syst), min(bincounts_syst)) if yields_syst else 0
+                max_y = max(max(yields_syst), max(bincounts_syst)) if yields_syst else 1
+                histo_yields = TH1F("yields_syst", "", 40, 0.9 * min_y + 1, 1.1 * max_y + 1)
+                histo_bincounts = TH1F("bincounts_syst", "", 40, 0.9 * min_y + 1, 1.1 * max_y + 1)
+
+                # Let's use the same binning for fitted and bincount values
+                min_y = min(min(yields_syst_err), min(bincounts_syst_err)) if yields_syst else 0
+                max_y = max(max(yields_syst_err), max(bincounts_syst_err)) if yields_syst else 1
+                histo_yields_err = TH1F("yields_syst_err", "", 40, 0.9 * min_y + 1,
+                                        1.1 * max_y + 1)
+                histo_bincounts_err = TH1F("bincounts_syst_err", "", 40, 0.9 * min_y + 1,
+                                           1.1 * max_y + 1)
+
+                # Means, sigmas, chi squares
+                histo_means = TH1F("means_syst", "", len(means_syst), 0.5, len(means_syst) + 0.5)
+                histo_means.SetMarkerStyle(2)
+                histo_sigmas = TH1F("sigmas_syst", "", len(sigmas_syst), 0.5,
+                                    len(sigmas_syst) + 0.5)
+                histo_sigmas.SetMarkerStyle(2)
+                histo_chisquares = TH1F("chisquares_syst", "", len(chisquares_syst), 0.5,
+                                        len(chisquares_syst) + 0.5)
+                histo_chisquares.SetMarkerStyle(2)
+                # Fill the histograms if there is at least one good fit from the variation
+                if yields_syst:
+                    i_bin = 1
+                    for y, y_err, bc, bc_err, m, s, cs in zip(yields_syst,
+                                                              yields_syst_err,
+                                                              bincounts_syst,
+                                                              bincounts_syst_err,
+                                                              means_syst,
+                                                              sigmas_syst,
+                                                              chisquares_syst):
+                        histo_yields.Fill(y)
+                        histo_yields_err.Fill(y_err)
+                        histo_bincounts.Fill(bc)
+                        histo_bincounts_err.Fill(bc_err)
+                        histo_means.SetBinContent(i_bin, m)
+                        histo_sigmas.SetBinContent(i_bin, s)
+                        histo_chisquares.SetBinContent(i_bin, cs)
+                        i_bin += 1
+                else:
+                    self.logger.error("No systematics could be derived for %s", suffix)
+
+                # First, write the histgrams for potential re-usage
+                histo_yields.Write()
+                histo_yields_err.Write()
+                histo_bincounts.Write()
+                histo_bincounts_err.Write()
+                histo_means.Write()
+                histo_sigmas.Write()
+                histo_chisquares.Write()
+
+                # Keep all additional objects in a plot until it has been saved. Otherwise,
+                # they will be deleted by Python as soon as something goes out of scope
+                tmp_plot_objects = []
+
+                # Used here internally for plotting
+                def draw_histos(pad, x_axis_label, y_axis_label, draw_legend, nominals, hori_vert,
+                                histos, plot_options, save_path):
+                    colors = [kBlue, kGreen + 2]
+                    pad.cd()
+                    if draw_legend:
+                        legend = TLegend(0.12, 0.7, 0.48, 0.88)
+                        # pylint: disable=cell-var-from-loop
+                        tmp_plot_objects.append(legend)
+                        legend.SetLineWidth(0)
+                        legend.SetTextSize(0.02)
+
+                    lines = []
+                    x_min = histos[0].GetXaxis().GetXmin()
+                    x_max = histos[0].GetXaxis().GetXmax()
+                    y_max = histos[0].GetMaximum()
+                    for i, h in enumerate(histos):
+                        x_min = min(h.GetXaxis().GetXmin(), x_min)
+                        x_max = max(h.GetXaxis().GetXmax(), x_max)
+                        y_max = max(h.GetMaximum(), y_max)
+                        h.SetFillStyle(3004)
+                        h.SetStats(0)
+                        h.SetLineColor(colors[i%len(colors)])
+                        h.SetFillColor(colors[i%len(colors)])
+                        h.SetMarkerColor(colors[i%len(colors)])
+                        h.SetLineWidth(1)
+                        h.GetXaxis().SetTitle(x_axis_label)
+                        h.GetYaxis().SetTitle(y_axis_label)
+                    plot_options = " ".join(["same", plot_options])
+                    for h, nom in zip(histos, nominals):
+                        if draw_legend:
+                            legend.AddEntry(h, h.GetName())
+                        h.GetXaxis().SetRangeUser(x_min, x_max)
+                        h.GetYaxis().SetRangeUser(0., 1.5 * y_max)
+                        h.Draw(plot_options)
+                        if hori_vert is not None:
+                            if hori_vert == "v":
+                                # vertical lines
+                                lines.append(TLine(nom, 0., nom, 1.2 * y_max))
+                            else:
+                                # horizontal lines
+                                lines.append(TLine(x_min, nom, x_max, nom))
+                            lines[-1].SetLineColor(h.GetLineColor())
+                            lines[-1].SetLineWidth(1)
+                            lines[-1].Draw("same")
+                    if draw_legend:
+                        legend.Draw("same")
+                    # pylint: disable=cell-var-from-loop
+                    tmp_plot_objects.append(lines)
+                    pad.Update()
+                    pad.SaveAs(save_path)
+
+                # Draw into canvas
+                canvas = TCanvas("syst_canvas", "", 1400, 800)
+                canvas.Divide(3, 2)
+                pad = canvas.cd(5)
+                filename = self.make_file_path(self.d_resultsallpdata, self.yields_syst_filename,
+                                               "eps", None, suffix)
+                draw_histos(pad, "yield", "# entries", True, [yield_nominal, bincount_nominal], "v",
+                            [histo_yields, histo_bincounts], "hist", filename)
+                pad = canvas.cd(4)
+                filename = self.make_file_path(self.d_resultsallpdata, self.yields_syst_filename,
+                                               "eps", None, ["err", suffix])
+                draw_histos(pad, "yield_err", "# entries", True,
+                            [yield_err_nominal, bincount_err_nominal], "v",
+                            [histo_yields_err, histo_bincounts_err], "hist", filename)
+                pad = canvas.cd(1)
+                filename = self.make_file_path(self.d_resultsallpdata, "means_syst", "eps",
+                                               None, suffix)
+                draw_histos(pad, "trial", "#mu", False, [mean_nominal], None,
+                            [histo_means], "p", filename)
+                pad = canvas.cd(2)
+                filename = self.make_file_path(self.d_resultsallpdata, "sigmas_syst", "eps",
+                                               None, suffix)
+                draw_histos(pad, "trial", "#sigma", False, [sigma_nominal], None,
+                            [histo_sigmas], "p", filename)
+                pad = canvas.cd(3)
+                filename = self.make_file_path(self.d_resultsallpdata, "chisquares_syst", "eps",
+                                               None, suffix)
+                draw_histos(pad, "trial", "#chi^{2}/NDF", False, [chisquare_ndf_nominal], None,
+                            [histo_chisquares], "p", filename)
+
+                # Add some numbers
+                pad = canvas.cd(6)
+                yield_text = TText(0.05, 0.93, "Fit yields")
+                yield_text.SetTextSize(0.03)
+                yield_text.SetNDC()
+                yield_text.Draw()
+
+                yield_fit_text = TText(0.05, 0.88, f"nominal = {yield_nominal:.0f}")
+                yield_fit_text.SetTextSize(0.03)
+                yield_fit_text.SetNDC()
+                yield_fit_text.Draw()
+
+
+                yield_fit_mt_mean_text = TText(0.05, 0.83, f"mean multi trial= " \
+                                                           f"{histo_yields.GetMean():.0f}")
+                yield_fit_mt_mean_text.SetTextColor(histo_yields.GetLineColor())
+                yield_fit_mt_mean_text.SetTextSize(0.03)
+                yield_fit_mt_mean_text.SetNDC()
+                yield_fit_mt_mean_text.Draw()
+
+                yield_fit_mt_rms_text = TText(0.05, 0.78,
+                                              f"RMS multi trial = " \
+                                              f"{histo_yields.GetRMS():.0f}")
+                yield_fit_mt_rms_text.SetTextColor(histo_yields.GetLineColor())
+                yield_fit_mt_rms_text.SetTextSize(0.03)
+                yield_fit_mt_rms_text.SetNDC()
+                yield_fit_mt_rms_text.Draw()
+
+
+                bc_text = TText(0.05, 0.63, "Bin count yields")
+                bc_text.SetTextSize(0.03)
+                bc_text.SetNDC()
+                bc_text.Draw()
+
+                yield_bc_text = TText(0.05, 0.58,
+                                      f"nominal = {bincount_nominal:.0f}")
+                yield_bc_text.SetTextSize(0.03)
+                yield_bc_text.SetNDC()
+                yield_bc_text.Draw()
+
+                yield_bc_mt_mean_text = TText(0.05, 0.53, f"mean multi trial = " \
+                                                          f"{histo_bincounts.GetMean():.0f}")
+                yield_bc_mt_mean_text.SetTextColor(histo_bincounts.GetLineColor())
+                yield_bc_mt_mean_text.SetTextSize(0.03)
+                yield_bc_mt_mean_text.SetNDC()
+                yield_bc_mt_mean_text.Draw()
+
+                yield_bc_mt_rms_text = TText(0.05, 0.48, f"RMS multi trial = " \
+                                                         f"{histo_bincounts.GetRMS():.0f}")
+                yield_bc_mt_rms_text.SetTextColor(histo_bincounts.GetLineColor())
+                yield_bc_mt_rms_text.SetTextSize(0.03)
+                yield_bc_mt_rms_text.SetNDC()
+                yield_bc_mt_rms_text.Draw()
+
+
+                deviation_text = TText(0.05, 0.33, "Deviations")
+                deviation_text.SetTextSize(0.03)
+                deviation_text.SetNDC()
+                deviation_text.Draw()
+
+                yield_fit_diff = yield_nominal - histo_yields.GetMean()
+                yield_fit_diff_ratio = yield_fit_diff / yield_nominal * 100
+                yield_fit_fit_mt_text = TText(0.05, 0.28, f"yield fit (nominal) - yield fit " \
+                                                          f"(multi) = {yield_fit_diff:.0f} " \
+                                                          f"({yield_fit_diff_ratio:.2f}%)")
+                yield_fit_fit_mt_text.SetTextSize(0.03)
+                yield_fit_fit_mt_text.SetNDC()
+                yield_fit_fit_mt_text.Draw()
+
+                yield_bc_diff = bincount_nominal - histo_bincounts.GetMean()
+                yield_bc_diff_ratio = yield_bc_diff / bincount_nominal * 100
+                yield_bc_bc_mt_text = TText(0.05, 0.23, f"yield bincount (nominal) - yield " \
+                                                        f"bincount (multi) = " \
+                                                        f"{yield_bc_diff:.0f} " \
+                                                        f"({yield_bc_diff_ratio:.2f}%)")
+                yield_bc_bc_mt_text.SetTextSize(0.03)
+                yield_bc_bc_mt_text.SetNDC()
+                yield_bc_bc_mt_text.Draw()
+
+
+                filename = self.make_file_path(self.d_resultsallpdata, "all_syst", "eps",
+                                               None, suffix)
+                canvas.SaveAs(filename)
+                canvas.Close()
+
+        fileout.Write()
+        fileout.Close()
 
     def efficiency(self):
         self.loadstyle()
@@ -416,7 +746,10 @@ class Analyzer:
                 #                               f"{self.lvar2_binmin[imult]:.2f}",
                 #                               f"{self.lvar2_binmax[imult]:.2f}"])
                 hzvsmass = lfile.Get("hzvsmass" + suffix)
-                sig_fit = func_file.Get("sigfit" + suffix)
+                load_dir = func_file.GetDirectory(suffix)
+                mass_fitter = Fitter()
+                mass_fitter.load(load_dir)
+                sig_fit = mass_fitter.sig_fit_func #func_file.Get("sigfit" + suffix)
                 mean = sig_fit.GetParameter(1)
                 sigma = sig_fit.GetParameter(2)
                 binmasslow2sig = hzvsmass.GetXaxis().FindBin(mean - 2*sigma)

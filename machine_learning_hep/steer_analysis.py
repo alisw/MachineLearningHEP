@@ -101,6 +101,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     dofit = data_config["analysis"]["dofit"]
     doeff = data_config["analysis"]["doeff"]
     docross = data_config["analysis"]["docross"]
+    dosyst = data_config["analysis"]["dosyst"]
     dosystprob = data_config["systematics"]["probvariation"]
 
     typean = data_config["analysis"]["type"]
@@ -355,6 +356,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         mymultiprocessmc.multi_efficiency()
     if dofit is True:
         myan.multi_fitter()
+    if dosyst is True:
+        myan.yield_syst()
     if doeff is True:
         myan.multi_efficiency()
     if dojetstudies is True:
