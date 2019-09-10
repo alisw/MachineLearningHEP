@@ -229,6 +229,7 @@ class Optimiser:
         self.df_ytrain = self.df_mltrain[self.v_sig]
         self.df_xtest = self.df_mltest[self.v_train]
         self.df_ytest = self.df_mltest[self.v_sig]
+
     def do_corr(self):
         imageIO_vardist = vardistplot(self.df_sigtrain, self.df_bkgtrain,
                                       self.v_all, self.dirmlplot,
@@ -236,10 +237,10 @@ class Optimiser:
         imageIO_scatterplot = scatterplot(self.df_sigtrain, self.df_bkgtrain,
                                           self.v_corrx, self.v_corry,
                                           self.dirmlplot, self.p_binmin, self.p_binmax)
-        imageIO_corr_sig = correlationmatrix(self.df_sigtrain, self.dirmlplot,
-                                             "signal", self.p_binmin, self.p_binmax)
-        imageIO_corr_bkg = correlationmatrix(self.df_bkgtrain, self.dirmlplot,
-                                             "background", self.p_binmin, self.p_binmax)
+        imageIO_corr_sig = correlationmatrix(self.df_sigtrain, self.v_all, "Signal",
+                                             self.dirmlplot, self.p_binmin, self.p_binmax)
+        imageIO_corr_bkg = correlationmatrix(self.df_bkgtrain, self.v_all, "Background",
+                                             self.dirmlplot, self.p_binmin, self.p_binmax)
         return imageIO_vardist, imageIO_scatterplot, imageIO_corr_sig, imageIO_corr_bkg
 
     def loadmodels(self):

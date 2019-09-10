@@ -271,15 +271,14 @@ def scatterplot(dataframe_sig_, dataframe_bkg_, mylistvariablesx_,
     return imagebytesIO
 
 
-def correlationmatrix(dataframe, output_, label, binmin, binmax):
-    corr = dataframe.corr()
-    f, ax = plt.subplots(figsize=(10, 8)) # pylint: disable=unused-variable
+def correlationmatrix(dataframe, mylistvariables, label, output, binmin, binmax):
+    corr = dataframe[mylistvariables].corr()
+    _, ax = plt.subplots(figsize=(10, 8))
     plt.title(label, fontsize=11)
-    sns.heatmap(
-        corr, mask=np.zeros_like(corr, dtype=np.bool),
-        cmap=sns.diverging_palette(220, 10, as_cmap=True), vmin=-1, vmax=1,
-        square=True, ax=ax)
-    plotname = output_+'/correlationmatrix%f%f.png' % (binmin, binmax)
+    sns.heatmap(corr, mask=np.zeros_like(corr, dtype=np.bool),
+                cmap=sns.diverging_palette(220, 10, as_cmap=True), vmin=-1, vmax=1,
+                square=True, ax=ax)
+    plotname = f'{output}/CorrMatrix_{label}_{binmin:.1f}_{binmax:.1f}.png'
     plt.savefig(plotname, bbox_inches='tight')
     imagebytesIO = BytesIO()
     plt.savefig(imagebytesIO, format='png')
