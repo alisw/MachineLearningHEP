@@ -452,6 +452,8 @@ class Optimiser:
             plt.figure(fig_signif.number)
             plt.legend(loc="lower left", prop={'size': 18})
             plt.savefig(f'{self.dirmlplot}/Significance_{self.s_suffix}.png')
+            with open(f'{self.dirmlplot}/Significance_{self.s_suffix}.pickle', 'wb') as out:
+                pickle.dump(fig_signif, out)
 
     def do_scancuts(self):
         self.logger.info("Scanning cuts")
