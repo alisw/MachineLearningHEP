@@ -483,11 +483,13 @@ class Processer: # pylint: disable=too-many-instance-attributes
             h_sel_fd.Write()
 
     def process_response(self):
-        out_file = TFile.Open(self.n_fileeff, "update")
         list_df_mc_reco = []
         list_df_mc_gen = []
         for iptskim, _ in enumerate(self.lpt_anbinmin):
             df_mc_reco = pickle.load(openfile(self.lpt_recodecmerged[iptskim], "rb"))
+            if "pt_jet" not in df_mc_reco.columns:
+                print("Jet variables not found in the dataframe. Skipping process_response.")
+                return
             if self.s_evtsel is not None:
                 df_mc_reco = df_mc_reco.query(self.s_evtsel)
             if self.s_trigger is not None:
@@ -501,6 +503,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         df_mc_gen_merged = pd.concat(list_df_mc_gen)
         df_mc_reco_merged_fd = df_mc_reco_merged[df_mc_reco_merged.ismcfd == 1] # reconstructed & selected non-prompt jets
         df_mc_gen_merged_fd = df_mc_gen_merged[df_mc_gen_merged.ismcfd == 1] # generated & selected non-prompt jets
+        out_file = TFile.Open(self.n_fileeff, "update")
 
         # Detector response matrix of pt_jet of non-prompt jets
         df_resp_jet_fd = df_mc_reco_merged_fd.loc[:, ["pt_gen_jet", "pt_jet"]]
