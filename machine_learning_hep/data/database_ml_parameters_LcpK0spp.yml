@@ -533,7 +533,7 @@ LcpK0spp:
       normalizecross: true
       plotbin: [1]
       usesinglebineff: null
-      sel_binmin2: [5] #list of nbins
+      sel_binmin2: [4] #list of nbins
       sel_binmax2: [15] #list of nbins
       var_binning2: pt_jet
       triggerbit: INT7
