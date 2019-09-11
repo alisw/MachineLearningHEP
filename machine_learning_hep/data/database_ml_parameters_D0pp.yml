@@ -298,6 +298,14 @@ D0pp:
       nevents: 1700000000.
       dodoublecross: false
 
+      systematics:
+        # For now don't do these things per pT bin
+        max_chisquare_ndf: 2.
+        rebin: [4,6,8]
+        massmin: [1.70, 1.73, 1.75, 1.78]
+        massmax: [2.05, 2.02, 1.99, 1.96]
+        bincount_sigma: [3.5, 4.0,4.5]
+
     MBjetvspt:
       plotbin: [1]
       usesinglebineff: null
