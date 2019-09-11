@@ -36,7 +36,7 @@ from machine_learning_hep.mlperformance import plot_learning_curves, precision_r
 from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perform_plot_gridsearch
 from machine_learning_hep.models import importanceplotall
 from machine_learning_hep.logger import get_logger
-from machine_learning_hep.optimization import calc_bkg, calc_signif
+from machine_learning_hep.optimization import calc_bkg, calc_signif, calc_eff, calc_sigeff_steps
 from machine_learning_hep.correlations import vardistplot_probscan, efficiency_cutscan
 
 # pylint: disable=too-many-instance-attributes, too-many-statements, too-few-public-methods
@@ -315,27 +315,23 @@ class Optimiser:
             names_2var, trainedmodels_2var, self.s_suffix+"2var", x_test_boundary,
             self.df_ytest, self.dirmlplot)
 
-    @staticmethod
-    def calceff(num, den):
-        eff = num / den
-        eff_err = np.sqrt(eff * (1 - eff) / den)
-        return eff, eff_err
-
-    def calc_sigeff_steps(self, num_steps, df_sig, name):
-        ns_left = int(num_steps / 10) - 1
-        ns_right = num_steps - ns_left
-        x_axis_left = np.linspace(0., 0.49, ns_left)
-        x_axis_right = np.linspace(0.5, 1.0, ns_right)
-        x_axis = np.concatenate((x_axis_left, x_axis_right))
-        eff_array = []
-        eff_err_array = []
-        num_tot_cand = len(df_sig)
-        for thr in x_axis:
-            num_sel_cand = len(df_sig[df_sig['y_test_prob' + name].values >= thr])
-            eff, err_eff = self.calceff(num_sel_cand, num_tot_cand)
-            eff_array.append(eff)
-            eff_err_array.append(err_eff)
-        return eff_array, eff_err_array, x_axis
+    def do_efficiency(self):
+        self.logger.info("Doing efficiency estimation")
+        fig_eff = plt.figure(figsize=(20, 15))
+        plt.xlabel('Threshold', fontsize=20)
+        plt.ylabel('Model Efficiency', fontsize=20)
+        plt.title("Efficiency vs Threshold", fontsize=20)
+        df_sig = self.df_mltest[self.df_mltest["ismcprompt"] == 1]
+        for name in self.p_classname:
+            eff_array, eff_err_array, x_axis = calc_sigeff_steps(self.p_nstepsign, df_sig, name)
+            plt.figure(fig_eff.number)
+            plt.errorbar(x_axis, eff_array, yerr=eff_err_array, alpha=0.3, label=f'{name}',
+                         elinewidth=2.5, linewidth=4.0)
+        plt.figure(fig_eff.number)
+        plt.legend(loc="lower left", prop={'size': 18})
+        plt.savefig(f'{self.dirmlplot}/Efficiency_{self.s_suffix}.png')
+        with open(f'{self.dirmlplot}/Efficiency_{self.s_suffix}.pickle', 'wb') as out:
+            pickle.dump(fig_eff, out)
 
     # pylint: disable=too-many-locals
     def do_significance(self):
@@ -347,20 +343,20 @@ class Optimiser:
         if self.p_dofullevtmerge is True:
             self.df_evttotsample_data = pickle.load(openfile(self.f_evttotsample_data, 'rb'))
         else:
-            self.logger.info("The total merged event dataframe was not merged for space limits")
+            self.logger.warning("The total merged event dataframe was not merged for space limits")
             self.df_evttotsample_data = pickle.load(openfile(self.f_evt_data, 'rb'))
         #and the total number of events
         self.p_nevttot = len(self.df_evttotsample_data)
         self.p_nevtml = len(self.df_evt_data)
-        self.logger.info("Number of data events used for ML: %d", self.p_nevtml)
-        self.logger.info("Total number of data events: %d", self.p_nevttot)
+        self.logger.debug("Number of data events used for ML: %d", self.p_nevtml)
+        self.logger.debug("Total number of data events: %d", self.p_nevttot)
         #calculate acceptance correction. we use in this case all
         #the signal from the mc sample, without limiting to the n. signal
         #events used for training
         denacc = len(self.df_mcgen[self.df_mcgen["ismcprompt"] == 1])
         numacc = len(self.df_mc[self.df_mc["ismcprompt"] == 1])
-        acc, acc_err = self.calceff(numacc, denacc)
-        self.logger.info("Acceptance: %.3e +/- %.3e", acc, acc_err)
+        acc, acc_err = calc_eff(numacc, denacc)
+        self.logger.debug("Acceptance: %.3e +/- %.3e", acc, acc_err)
         #calculation of the expected fonll signals
         df_fonll = pd.read_csv(self.f_fonll)
         ptmin = self.p_binmin
@@ -370,9 +366,9 @@ class Optimiser:
         delta_pt = ptmax - ptmin
         signal_yield = 2. * prod_cross * delta_pt * self.p_br * acc * self.p_taa \
                        / (self.p_sigmamb * self.p_fprompt)
-        self.logger.info("Expected signal yield: %.3e", signal_yield)
+        self.logger.debug("Expected signal yield: %.3e", signal_yield)
         signal_yield = self.p_raahp * signal_yield
-        self.logger.info("Expected signal yield x RAA hp: %.3e", signal_yield)
+        self.logger.debug("Expected signal yield x RAA hp: %.3e", signal_yield)
 
         #now we plot the fonll expectation
         plt.figure(figsize=(20, 15))
@@ -397,7 +393,7 @@ class Optimiser:
         gaus_fit.SetParameters(0, hmass.Integral())
         gaus_fit.SetParameters(1, self.p_mass)
         gaus_fit.SetParameters(2, 0.02)
-        self.logger.info("To fit the signal a gaussian function is used")
+        self.logger.debug("To fit the signal a gaussian function is used")
         fitsucc = hmass.Fit("gaus_fit", "RQ")
 
         if int(fitsucc) != 0:
@@ -405,8 +401,8 @@ class Optimiser:
             sigma = 0.
 
         sigma = gaus_fit.GetParameter(2)
-        self.logger.info("Mean of the gaussian: %.3e", gaus_fit.GetParameter(1))
-        self.logger.info("Sigma of the gaussian: %.3e", sigma)
+        self.logger.debug("Mean of the gaussian: %.3e", gaus_fit.GetParameter(1))
+        self.logger.debug("Sigma of the gaussian: %.3e", sigma)
         sig_region = [self.p_mass - 3 * sigma, self.p_mass + 3 * sigma]
         fig_signif_pevt = plt.figure(figsize=(20, 15))
         plt.xlabel('Threshold', fontsize=20)
@@ -420,8 +416,7 @@ class Optimiser:
         df_sig = self.df_mltest[self.df_mltest["ismcprompt"] == 1]
 
         for name in self.p_classname:
-            eff_array, eff_err_array, x_axis = self.calc_sigeff_steps(self.p_nstepsign,
-                                                                      df_sig, name)
+            eff_array, eff_err_array, x_axis = calc_sigeff_steps(self.p_nstepsign, df_sig, name)
             bkg_array, bkg_err_array, _ = calc_bkg(df_data_sideband, name, self.p_nstepsign,
                                                    self.p_mass_fit_lim, self.p_bkg_func,
                                                    self.p_bin_width, sig_region, self.p_savefit,

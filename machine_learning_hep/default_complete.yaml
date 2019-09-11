@@ -35,8 +35,8 @@ ml_study:
   doimportance: false
   dolearningcurve: false
   dopca: false
-  dosignifopt: false
   doefficiency: false
+  dosignifopt: false
   dotesting: false
   dotraining: true
 

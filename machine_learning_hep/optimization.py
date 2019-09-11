@@ -13,7 +13,7 @@
 #############################################################################
 
 """
-Methods to: study expected significance
+Methods to: utility methods to conpute efficiency and study expected significance
 """
 import numpy as np
 from ROOT import TH1F, TFile  # pylint: disable=import-error,no-name-in-module
@@ -94,3 +94,33 @@ def calc_signif(sig_array, sig_err_array, bkg_array, bkg_err_array):
         signif_err_array.append(signif_err)
 
     return signif_array, signif_err_array
+
+def calc_eff(num, den):
+    eff = num / den
+    eff_err = np.sqrt(eff * (1 - eff) / den)
+
+    return eff, eff_err
+
+def calc_sigeff_steps(num_steps, df_sig, name):
+    logger = get_logger()
+    ns_left = int(num_steps / 10) - 1
+    ns_right = num_steps - ns_left
+    x_axis_left = np.linspace(0., 0.49, ns_left)
+    x_axis_right = np.linspace(0.5, 1.0, ns_right)
+    x_axis = np.concatenate((x_axis_left, x_axis_right))
+    if df_sig.empty:
+        logger.error("In division denominator is empty")
+        eff_array = [0] * num_steps
+        eff_err_array = [0] * num_steps
+        return eff_array, eff_err_array, x_axis
+    num_tot_cand = len(df_sig)
+    eff_array = []
+    eff_err_array = []
+    for thr in x_axis:
+        num_sel_cand = len(df_sig[df_sig['y_test_prob' + name].values >= thr])
+        eff, err_eff = calc_eff(num_sel_cand, num_tot_cand)
+        eff_array.append(eff)
+        eff_err_array.append(err_eff)
+
+    return eff_array, eff_err_array, x_axis
+    
