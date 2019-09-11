@@ -342,8 +342,8 @@ Dspp:
       mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
-      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
-      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
+      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus]
+      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 1.89
       massmin: [1.70,1.70,1.70,1.70,1.70]
       massmax: [2.05,2.05,2.05,2.05,2.05]
