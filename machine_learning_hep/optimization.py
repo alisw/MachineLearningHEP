@@ -19,8 +19,8 @@ import numpy as np
 from ROOT import TH1F, TFile  # pylint: disable=import-error,no-name-in-module
 from machine_learning_hep.logger import get_logger
 
-def calc_bkg(df_bkg, name, num_steps, fit_region, bin_width, sig_region, save_fit, out_dir,
-             ptmin, ptmax):
+def calc_bkg(df_bkg, name, num_steps, fit_region, bkg_func, bin_width, sig_region, save_fit,
+             out_dir, pt_lims):
     """
     Estimate the number of background candidates under the signal peak. This is obtained
     from real data with a fit of the sidebands of the invariant mass distribution.
@@ -39,10 +39,12 @@ def calc_bkg(df_bkg, name, num_steps, fit_region, bin_width, sig_region, save_fi
 
     if save_fit:
         logger.debug("Saving bkg fits to file")
-        out_file = TFile(f'{out_dir}/bkg_fits_{ptmin}_{ptmax}_{name}.root', 'recreate')
+        pt_min = pt_lims[0]
+        pt_max = pt_lims[1]
+        out_file = TFile(f'{out_dir}/bkg_fits_{name}_pt{pt_min:.1f}_{pt_max:.1f}.root', 'recreate')
         out_file.cd()
 
-    logger.debug("To fit the bkg a pol2 function is used")
+    logger.debug("To fit the bkg a %s function is used", bkg_func)
     for thr in x_axis:
         bkg = 0.
         bkg_err = 0.
@@ -53,11 +55,11 @@ def calc_bkg(df_bkg, name, num_steps, fit_region, bin_width, sig_region, save_fi
         if len(sel_mass_array) > 5:
             for mass_value in np.nditer(sel_mass_array):
                 hmass.Fill(mass_value)
-            fit = hmass.Fit('pol2', 'Q', '', fit_region[0], fit_region[1])
+            fit = hmass.Fit(bkg_func, 'Q', '', fit_region[0], fit_region[1])
             if save_fit:
                 hmass.Write()
             if int(fit) == 0:
-                fit_func = hmass.GetFunction('pol2')
+                fit_func = hmass.GetFunction(bkg_func)
                 bkg = fit_func.Integral(sig_region[0], sig_region[1]) / bin_width
                 bkg_err = fit_func.IntegralError(sig_region[0], sig_region[1]) / bin_width
                 del fit_func
