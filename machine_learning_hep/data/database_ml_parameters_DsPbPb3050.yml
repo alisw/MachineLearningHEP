@@ -253,5 +253,5 @@ DsPbPb3050:
       dir: ['',''] #list of periods
       dirmerged: ''
     mc:
-      dir: ['','','',''] #list of periods
+      dir: ['',''] #list of periods
       dirmerged: ''
