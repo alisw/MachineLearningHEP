@@ -34,6 +34,7 @@ ml_study:
   dolearningcurve: true
   doroc: true
   doroctraintest: false
+  doplotdistr: false
   doimportance: true
   dogridsearch: false
   doboundary: false
