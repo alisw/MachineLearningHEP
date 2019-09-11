@@ -119,6 +119,7 @@ def tot_func(bkgfunc, massmax, massmin):
 
 # pylint: disable=too-many-instance-attributes
 class Fitter:
+    species = "fitter"
     def __init__(self):
 
         self.logger = get_logger()

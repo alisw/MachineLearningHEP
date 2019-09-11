@@ -52,6 +52,9 @@ mlapplication:
 
 analysis:
   type: MBjetvspt
+  # Do each period separately including merged (true)
+  # Do only merged (false)
+  doperperiod: true
   data:
     histomass: false
   mc:
@@ -59,11 +62,14 @@ analysis:
     efficiency: true
     feeddown: true
   dofit: false
+  # Control the yield systemaitc uncertainty
+  dosyst: false
   dojetstudies: false
   doeff: true
   docross: false
 
 systematics:
+  # Not yet used
   probvariation: false
 
 validation:

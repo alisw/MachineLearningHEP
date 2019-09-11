@@ -52,6 +52,9 @@ mlapplication:
 
 analysis:
   type: SPDvspt
+  # Do each period separately including merged (true)
+  # Do only merged (false)
+  doperperiod: true
   data:
     histomass: false
   mc:
@@ -59,6 +62,8 @@ analysis:
     efficiency: false
     feeddown: false
   dofit: false
+  # Control the yield systemaitc uncertainty
+  dosyst: false
   dojetstudies: false
   doeff: false
   docross: false

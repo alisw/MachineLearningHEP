@@ -49,6 +49,12 @@ class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-st
                 self.process_listsample[indexp].fitter()
         self.myanalyzertot.fitter()
 
+    def multi_yield_syst(self):
+        if self.doperiodbyperiod is True:
+            for indexp in range(self.prodnumber):
+                self.process_listsample[indexp].yield_syst()
+        self.myanalyzertot.yield_syst()
+
     def multi_efficiency(self):
         if self.doperiodbyperiod is True:
             for indexp in range(self.prodnumber):

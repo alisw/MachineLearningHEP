@@ -103,6 +103,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     docross = data_config["analysis"]["docross"]
     dosyst = data_config["analysis"]["dosyst"]
     dosystprob = data_config["systematics"]["probvariation"]
+    doanaperperiod = data_config["analysis"]["doperperiod"]
 
     typean = data_config["analysis"]["type"]
     dojetstudies = data_config["analysis"]["dojetstudies"]
@@ -148,7 +149,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
 
     mymultiprocessmc = MultiProcesser(data_param[case], typean, run_param, "mc")
     mymultiprocessdata = MultiProcesser(data_param[case], typean, run_param, "data")
-    myan = MultiAnalyzer(data_param[case], case, typean, True)
+    myan = MultiAnalyzer(data_param[case], case, typean, doanaperperiod)
     mysis = Systematics(data_param[case], case, typean)
 
     #creating folder if not present
@@ -357,7 +358,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     if dofit is True:
         myan.multi_fitter()
     if dosyst is True:
-        myan.yield_syst()
+        myan.multi_yield_syst()
     if doeff is True:
         myan.multi_efficiency()
     if dojetstudies is True:
