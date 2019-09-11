@@ -35,7 +35,8 @@ from  machine_learning_hep.logger import get_logger
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
 class Analyzer:
     species = "analyzer"
-    def __init__(self, datap, case, typean):
+    def __init__(self, datap, case, typean,
+                 resultsdata, resultsmc, valdata, valmc):
 
 
         #namefiles pkl
@@ -53,8 +54,8 @@ class Analyzer:
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
         self.p_nbin2 = len(self.lvar2_binmin)
 
-        self.d_resultsallpmc = datap["analysis"][self.typean]["mc"]["resultsallp"]
-        self.d_resultsallpdata = datap["analysis"][self.typean]["data"]["resultsallp"]
+        self.d_resultsallpmc = resultsmc
+        self.d_resultsallpdata = resultsdata
 
         n_filemass_name = datap["files_names"]["histofilename"]
         self.n_filemass = os.path.join(self.d_resultsallpdata, n_filemass_name)
@@ -110,8 +111,9 @@ class Analyzer:
         self.p_sigmamb = datap["ml"]["opt"]["sigma_MB"]
         self.p_br = datap["ml"]["opt"]["BR"]
 
-        self.d_valevtdata = datap["validation"]["data"]["dirmerged"]
-        self.d_valevtmc = datap["validation"]["mc"]["dirmerged"]
+        self.d_valevtdata = valdata
+        self.d_valevtmc = valmc
+
         self.f_evtvaldata = os.path.join(self.d_valevtdata, self.n_evtvalroot)
         self.f_evtvalmc = os.path.join(self.d_valevtmc, self.n_evtvalroot)
 
@@ -495,18 +497,30 @@ class Analyzer:
                 csubz.SaveAs("%s/side_band_sub%s%s_%s.eps" % \
                              (self.d_resultsallpdata, self.case, self.typean, suffix))
 
+
+
+                legsigbkgsubz = TLegend(.2, .65, .35, .85)
+                legsigbkgsubz.SetBorderSize(0)
+                legsigbkgsubz.SetFillColor(0)
+                legsigbkgsubz.SetFillStyle(0)
+                legsigbkgsubz.SetTextFont(42)
+                legsigbkgsubz.SetTextSize(0.035)
                 csigbkgsubz = TCanvas('csigbkgsubz' + suffix, 'The Side-Band Canvas')
                 csigbkgsubz.SetCanvasSize(1900, 1500)
                 csigbkgsubz.SetWindowSize(500, 500)
+                legsigbkgsubz.AddEntry(hzsig, "signal", "LEP")
                 hzsig.GetYaxis().SetRangeUser(0.0, max(hzsig.GetBinContent(hzsig.GetMaximumBin()), \
                     hzbkg_scaled.GetBinContent(hzbkg_scaled.GetMaximumBin()), \
                     hzsub_noteffscaled.GetBinContent(hzsub_noteffscaled.GetMaximumBin()))*1.2)
                 hzsig.SetLineColor(2)
                 hzsig.Draw()
+                legsigbkgsubz.AddEntry(hzbkg_scaled, "side-band", "LEP")
                 hzbkg_scaled.SetLineColor(3)
                 hzbkg_scaled.Draw("same")
+                legsigbkgsubz.AddEntry(hzsub_noteffscaled, "subtracted", "LEP")
                 hzsub_noteffscaled.SetLineColor(4)
                 hzsub_noteffscaled.Draw("same")
+                legsigbkgsubz.Draw()
 
                 csigbkgsubz.SaveAs("%s/side_band_%s%s_%s.eps" % \
                              (self.d_resultsallpdata, self.case, self.typean, suffix))
@@ -620,103 +634,63 @@ class Analyzer:
 
     def studyevents(self):
         self.loadstyle()
-
         filedata = TFile.Open(self.f_evtvaldata)
-        filemc = TFile.Open(self.f_evtvalmc)
-        v0mn_trackletsdata = filedata.Get("v0mn_tracklets")
-        v0mn_trackletsmc = filemc.Get("v0mn_tracklets")
-
-        cscatter = TCanvas('cscatter', 'The Fit Canvas')
-        cscatter.SetCanvasSize(1900, 1000)
-        cscatter.Divide(2, 1)
-        cscatter.cd(1)
-        v0mn_trackletsdata.GetXaxis().SetTitle("offline V0 (data)")
-        v0mn_trackletsdata.GetYaxis().SetTitle("offline SPD (data)")
-        v0mn_trackletsdata.Draw("colz")
-        cscatter.cd(2)
-        v0mn_trackletsmc.GetXaxis().SetTitle("offline V0 (mc)")
-        v0mn_trackletsmc.GetYaxis().SetTitle("offline SPD (mc)")
-        v0mn_trackletsmc.Draw("colz")
-        cscatter.SaveAs("cscatter.pdf")
-
-        labelsv0 = ["kINT7_vsv0m", "HighMultSPD_vsv0m", "HighMultV0_vsv0m"]
-        labelsspd = ["kINT7_vsntracklets", "HighMultSPD_vsntracklets", "HighMultV0_vsntracklets"]
-        cutonspd = [20, 30, 40, 50, 60]
+        triggerlist = ["HighMultV0", "HighMultSPD"]
+        varlist = ["v0m", "n_tracklets"]
 
         ctrigger = TCanvas('ctrigger', 'The Fit Canvas')
         ctrigger.SetCanvasSize(2100, 1000)
         ctrigger.Divide(2, 1)
-        ctrigger.cd(1)
-        leg = TLegend(.5, .65, .7, .85)
-        leg.SetBorderSize(0)
-        leg.SetFillColor(0)
-        leg.SetFillStyle(0)
-        leg.SetTextFont(42)
-        leg.SetTextSize(0.035)
-        for i, lab in enumerate(labelsv0):
-            heff = filedata.Get("hnum%s" % lab)
-            hden = filedata.Get("hden%s" % lab)
+        for i, _ in enumerate(triggerlist):
+            ctrigger.cd(i+1)
+            leg = TLegend(.5, .65, .7, .85)
+            leg.SetBorderSize(0)
+            leg.SetFillColor(0)
+            leg.SetFillStyle(0)
+            leg.SetTextFont(42)
+            leg.SetTextSize(0.035)
+
+            labeltriggerANDMB = "hclass%sANDINT7vs%s" % (triggerlist[i], varlist[i])
+            labelMB = "hclassINT7vs%s" % varlist[i]
+            heff = filedata.Get(labeltriggerANDMB)
+            hden = filedata.Get(labelMB)
+            heff.SetName(heff.GetName() + "_new")
             heff.SetLineColor(i+1)
             heff.Divide(heff, hden, 1.0, 1.0, "B")
             heff.SetMaximum(2.)
-            heff.GetXaxis().SetTitle("offline V0M")
+            heff.GetXaxis().SetTitle("offline %s" % varlist[i])
             heff.SetMinimum(0.)
             heff.GetYaxis().SetTitle("trigger efficiency")
             heff.Draw("epsame")
-            leg.AddEntry(heff, labelsv0[i], "LEP")
-        leg.Draw()
+            leg.AddEntry(heff, triggerlist[i], "LEP")
+            leg.Draw()
+            print("INDEX", i)
+        ctrigger.SaveAs(self.make_file_path(self.d_valevtdata, "ctrigger", "eps", \
+                                        None, None))
 
-        ctrigger.cd(2)
-        lega = TLegend(.5, .65, .7, .85)
-        lega.SetBorderSize(0)
-        lega.SetFillColor(0)
-        lega.SetFillStyle(0)
-        lega.SetTextFont(42)
-        lega.SetTextSize(0.035)
-        for i, lab in enumerate(labelsspd):
-            heff = filedata.Get("hnum%s" % lab)
-            hden = filedata.Get("hden%s" % lab)
-            heff.SetLineColor(i+1)
-            heff.Divide(heff, hden, 1.0, 1.0, "B")
-            heff.GetXaxis().SetTitle("offline SPD mul")
-            heff.GetYaxis().SetTitle("trigger efficiency")
-            heff.SetMinimum(0.)
-            heff.SetMaximum(2.)
-            heff.Draw("epsame")
-            lega.AddEntry(heff, labelsspd[i], "LEP")
-        lega.Draw()
-        ctrigger.SaveAs("ctrigger.pdf")
+        ccorrection = TCanvas('ccorrection', 'The Fit Canvas')
+        ccorrection.SetCanvasSize(2100, 1000)
+        ccorrection.Divide(2, 1)
+        for i, _ in enumerate(triggerlist):
+            ccorrection.cd(i+1)
+            leg = TLegend(.5, .65, .7, .85)
+            leg.SetBorderSize(0)
+            leg.SetFillColor(0)
+            leg.SetFillStyle(0)
+            leg.SetTextFont(42)
+            leg.SetTextSize(0.035)
 
-        ccutstudy = TCanvas('ccutstudy', 'The Fit Canvas')
-        ccutstudy.SetCanvasSize(2200, 1000)
-        ccutstudy.Divide(2, 1)
-        ccutstudy.cd(1)
-        legc = TLegend(.5, .65, .7, .85)
-        legc.SetBorderSize(0)
-        legc.SetFillColor(0)
-        legc.SetFillStyle(0)
-        legc.SetTextFont(42)
-        legc.SetTextSize(0.035)
-        for i, lab in enumerate(cutonspd):
-            hdenv0mdata = filedata.Get("hdenv0m")
-            heffdata = filedata.Get("hnumv0mspd%d" % lab)
-            heffdata.SetLineColor(i+1)
-            heffdata.Divide(heffdata, hdenv0mdata, 1.0, 1.0, "B")
-            heffdata.SetMaximum(2.)
-            heffdata.GetXaxis().SetTitle("offline V0M (data)")
-            heffdata.GetYaxis().SetTitle("pseudo efficiency")
-            heffdata.Draw("epsame")
-            legc.AddEntry(heffdata, "SPD mult >=%d" % lab, "LEP")
-            legc.Draw()
-        ccutstudy.cd(2)
-        for i, lab in enumerate(cutonspd):
-            hdenv0mmc = filemc.Get("hdenv0m")
-            heffmc = filemc.Get("hnumv0mspd%d" % lab)
-            heffmc.SetLineColor(i+1)
-            heffmc.Divide(heffmc, hdenv0mmc, 1.0, 1.0, "B")
-            heffmc.SetMaximum(2.)
-            heffmc.GetXaxis().SetTitle("offline V0M (mc)")
-            heffmc.GetYaxis().SetTitle("pseudo efficiency")
-            heffmc.Draw("epsame")
-            legc.Draw()
-        ccutstudy.SaveAs("ccutstudy.pdf")
+            labeltrigger = "hclass%svs%s" % (triggerlist[i], varlist[i])
+            labelMB = "hclassINT7vs%s" % varlist[i]
+            hratio = filedata.Get(labeltrigger)
+            hden = filedata.Get(labelMB)
+            hratio.SetLineColor(i+1)
+            hratio.Divide(hratio, hden, 1.0, 1.0, "B")
+            hratio.GetXaxis().SetTitle("offline %s" % varlist[i])
+            hratio.SetMinimum(0.)
+            hratio.GetYaxis().SetTitle("ratio %s/MB" % triggerlist[i])
+            hratio.Draw("epsame")
+            leg.AddEntry(hratio, triggerlist[i], "LEP")
+            leg.Draw()
+        ccorrection.SaveAs(self.make_file_path(self.d_valevtdata, "ccorrection", "eps", \
+                                        None, None))

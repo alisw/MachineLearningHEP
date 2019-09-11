@@ -32,7 +32,7 @@ from  machine_learning_hep.utilities import checkmakedirlist, checkmakedir
 from  machine_learning_hep.utilities import checkdirlist, checkdir
 from  machine_learning_hep.logger import configure_logger, get_logger
 from machine_learning_hep.optimiser import Optimiser
-from machine_learning_hep.analyzer import Analyzer
+from machine_learning_hep.multianalyzer import MultiAnalyzer
 from machine_learning_hep.systematics import Systematics
 
 try:
@@ -81,10 +81,11 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     docorrelation = data_config["ml_study"]['docorrelation']
     dotraining = data_config["ml_study"]['dotraining']
     dotesting = data_config["ml_study"]['dotesting']
-    doapplytodatamc = data_config["ml_study"]['applytodatamc']
+    doapplytodatamc = data_config["ml_study"]['doapplytodatamc']
     docrossvalidation = data_config["ml_study"]['docrossvalidation']
     dolearningcurve = data_config["ml_study"]['dolearningcurve']
     doroc = data_config["ml_study"]['doroc']
+    doroctraintest = data_config["ml_study"]['doroctraintest']
     doboundary = data_config["ml_study"]['doboundary']
     doimportance = data_config["ml_study"]['doimportance']
     dogridsearch = data_config["ml_study"]['dogridsearch']
@@ -148,7 +149,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
 
     mymultiprocessmc = MultiProcesser(data_param[case], typean, run_param, "mc")
     mymultiprocessdata = MultiProcesser(data_param[case], typean, run_param, "data")
-    myan = Analyzer(data_param[case], case, typean)
+    myan = MultiAnalyzer(data_param[case], case, typean, True)
     mysis = Systematics(data_param[case], case, typean)
 
     #creating folder if not present
@@ -301,6 +302,13 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     if domergingperiodsdata == 1:
         mymultiprocessdata.multi_mergeml_allinone()
 
+    if dovalhistomc is True:
+        mymultiprocessmc.multi_valevents()
+    if dovalhistodata is True:
+        mymultiprocessdata.multi_valevents()
+    if dovalplots:
+        myan.multi_studyevents()
+
     if doml is True:
         index = 0
         for binmin, binmax in zip(binminarray, binmaxarray):
@@ -321,6 +329,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
                 myopt.do_learningcurve()
             if doroc is True:
                 myopt.do_roc()
+            if doroctraintest is True:
+                myopt.do_roc_train_test()
             if doimportance is True:
                 myopt.do_importance()
             if dogridsearch is True:
@@ -350,28 +360,21 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     if doefficiency is True:
         mymultiprocessmc.multi_efficiency()
     if dofit is True:
-        myan.fitter()
+        myan.multi_fitter()
     if doeff is True:
-        myan.efficiency()
+        myan.multi_efficiency()
     if dojetstudies is True:
         if dofit is False:
-            myan.fitter()
+            myan.multi_fitter()
         if doeff is False:
-            myan.efficiency()
-        myan.side_band_sub()
+            myan.multi_efficiency()
+        myan.multi_side_band_sub()
     if dofeeddown is True:
-        myan.feeddown()
+        myan.multi_feeddown()
     if docross is True:
-        myan.plotter()
+        myan.multi_plotter()
     if dosystprob is True:
         mysis.probvariation()
-
-    if dovalhistomc is True:
-        mymultiprocessmc.multi_valevents()
-    if dovalhistodata is True:
-        mymultiprocessdata.multi_valevents()
-    if dovalplots:
-        myan.studyevents()
 
 
 def load_config(user_path: str, default_path: tuple) -> dict:
