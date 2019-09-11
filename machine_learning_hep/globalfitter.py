@@ -16,7 +16,7 @@
 Methods to: fit inv. mass
 """
 
-import math
+from math import sqrt, pi, exp
 # pylint: disable=import-error,no-name-in-module
 from ROOT import TF1, gStyle, TCanvas, TPaveText, Double, TVirtualFitter, \
                  kGreen, kRed, kBlue, TGraph, gROOT
@@ -28,8 +28,10 @@ gROOT.ProcessLine("struct FitValues { Double_t mean; Double_t sigma; Double_t me
                                       Double_t nsigma_sig; Double_t nsigma_sideband; \
                                       Double_t fit_range_low; Double_t fit_range_up; \
                                       };")
+
+# pylint: disable=wrong-import-position, ungrouped-imports
 from ROOT import FitValues
-                    
+
 def fixpar(massmin, massmax, masspeak, range_signal):
     par_fix1 = Double(massmax-massmin)
     par_fix2 = Double(massmax+massmin)
@@ -39,8 +41,8 @@ def fixpar(massmin, massmax, masspeak, range_signal):
     return par_fix1, par_fix2, par_fix3, par_fix4, par_fix5
 
 def gaus_fit_func(xval, par):
-    return par[0] / math.sqrt(2. * math.pi) / par[2] * \
-           math.exp(-(xval[0] - par[1]) * (xval[0] - par[1]) / 2. / par[2] / par[2])
+    return par[0] / sqrt(2. * pi) / par[2] * \
+           exp(-(xval[0] - par[1]) * (xval[0] - par[1]) / 2. / par[2] / par[2])
 
 def signal_func(func_name, sgnfunc, fit_range_low, fit_range_up):
     if sgnfunc != "kGaus":
@@ -142,6 +144,7 @@ class Fitter:
         self.tot_fit_func = None
         self.sig_fit_func = None
         self.bkg_sideband_fit_func = None
+        self.bkg_fit_func = None
         self.bkg_tot_fit_func = None
 
         # Some further options
@@ -184,8 +187,10 @@ class Fitter:
         self.bkg_sideband_fit_func = bkg_fit_func("bkg_fit_sidebands", bkg_func_name, fit_range_low,
                                                   fit_range_up, bkg_int_initial, mean,
                                                   nsigma_sideband * sigma)
-        self.bkg_tot_fit_func = bkg_fit_func("bkg_fit_from_tot_fit", bkg_func_name,
-                                             fit_range_low, fit_range_up, bkg_int_initial, mean,
+        self.bkg_fit_func = bkg_fit_func("bkg_fit", bkg_func_name, fit_range_low, fit_range_up,
+                                         bkg_int_initial, mean, nsigma_sideband * sigma, False)
+        self.bkg_tot_fit_func = bkg_fit_func("bkg_fit_from_tot_fit", bkg_func_name, fit_range_low,
+                                             fit_range_up, bkg_int_initial, mean,
                                              nsigma_sideband * sigma, False)
         self.tot_fit_func = TF1("tot_fit", tot_func(bkg_func_name, fit_range_up, fit_range_low),
                                 fit_range_low, fit_range_up)
@@ -233,7 +238,7 @@ class Fitter:
             sum2 += self.histo_to_fit.GetBinError(i_left) * self.histo_to_fit.GetBinError(i_left)
         for i_right in range(rightBand, (self.histo_to_fit.GetNbinsX()) + 1):
             sum2 += self.histo_to_fit.GetBinError(i_right) * self.histo_to_fit.GetBinError(i_right)
-        intBerr = math.sqrt(sum2)
+        intBerr = sqrt(sum2)
         self.yield_bkg = self.bkg_tot_fit_func.Integral(minMass_fit, maxMass_fit) / \
                          Double(self.histo_to_fit.GetBinWidth(1))
         #if background <= 0:
@@ -259,8 +264,8 @@ class Fitter:
         self.significance = 0
         self.errsignificance = 0
         if sigPlusBkg > 0:
-            self.significance = self.yield_sig / (math.sqrt(sigPlusBkg))
-            self.errsignificance = self.significance * (math.sqrt((errSigSq + errBkgSq) / \
+            self.significance = self.yield_sig / (sqrt(sigPlusBkg))
+            self.errsignificance = self.significance * (sqrt((errSigSq + errBkgSq) / \
                               (4. * sigPlusBkg * sigPlusBkg) +                  \
                               (self.yield_bkg / sigPlusBkg) * errSigSq /            \
                               self.yield_sig / self.yield_sig))
@@ -268,7 +273,7 @@ class Fitter:
         self.logger.info("Significance: %f, error significance: %f", self.significance,
                          self.errsignificance)
 
-    def bincount(self, nsigma):
+    def bincount(self, nsigma, use_integral=True):
 
         if not self.fitted:
             self.logger.error("Cannot compute bincount. Fit required first!")
@@ -280,13 +285,19 @@ class Fitter:
         leftBand = self.histo_to_fit.FindBin(self.mean_fit - nsigma * self.sigma_fit)
         rightBand = self.histo_to_fit.FindBin(self.mean_fit + nsigma * self.sigma_fit)
         for b in range(leftBand, rightBand + 1, 1):
-            bkg_count = self.bkg_tot_fit_func.Integral(self.histo_to_fit.GetBinLowEdge(b),
-                                                       self.histo_to_fit.GetBinLowEdge(b) + self.histo_to_fit.GetBinWidth(b)) / \
-                        self.histo_to_fit.GetBinWidth(b)
+            bkg_count = 0
+            if use_integral:
+                bkg_count = self.bkg_fit_func.Integral(self.histo_to_fit.GetBinLowEdge(b),
+                                                       self.histo_to_fit.GetBinLowEdge(b) + \
+                                                       self.histo_to_fit.GetBinWidth(b)) / \
+                                                       self.histo_to_fit.GetBinWidth(b)
+            else:
+                bkg_count = self.bkg_fit_func.Eval(self.histo_to_fit.GetBinCenter(b))
+
             bincount += self.histo_to_fit.GetBinContent(b) - bkg_count
             bincount_err += self.histo_to_fit.GetBinError(b) * self.histo_to_fit.GetBinError(b)
 
-        return bincount, math.sqrt(bincount_err)
+        return bincount, sqrt(bincount_err)
 
     def save(self, root_dir):
         if not self.fitted:
@@ -296,6 +307,7 @@ class Fitter:
 
         self.sig_fit_func.Write()
         self.bkg_sideband_fit_func.Write()
+        self.bkg_fit_func.Write()
         self.bkg_tot_fit_func.Write()
         self.tot_fit_func.Write()
         self.histo_to_fit.Write("histo_to_fit")
@@ -315,11 +327,13 @@ class Fitter:
 
     def load(self, root_dir, force=False):
         if self.fitted and not force:
-            self.logger.warning("Was fitted before and will be overwritten with what is found in ROOT dir%s", root_dir.GetName())
-        
+            self.logger.warning("Was fitted before and will be overwritten with what is found " \
+                                "in ROOT dir%s", root_dir.GetName())
+
         self.sig_fit_func = root_dir.Get("sig_fit")
         self.bkg_sideband_fit_func = root_dir.Get("bkg_fit_sidebands")
         self.bkg_tot_fit_func = root_dir.Get("bkg_fit_from_tot_fit")
+        self.bkg_fit_func = root_dir.Get("bkg_fit")
         self.tot_fit_func = root_dir.Get("tot_fit")
         self.histo_to_fit = root_dir.Get("histo_to_fit")
 
@@ -396,6 +410,7 @@ class Fitter:
             self.tot_fit_func.SetParLimits(ipar + npar_bkg, parmin, parmax)
         for ipar in range(0, npar_bkg):
             self.tot_fit_func.SetParameter(ipar, self.bkg_sideband_fit_func.GetParameter(ipar))
+            self.bkg_fit_func.SetParameter(ipar, self.bkg_sideband_fit_func.GetParameter(ipar))
         if self.fix_mean:
             # Mass peak would be fixed to what user sets
             self.tot_fit_func.FixParameter(npar_bkg + 1, self.mean)
@@ -424,7 +439,7 @@ class Fitter:
         self.fit_success = (error == "")
         return self.fit_success
 
-    def draw_fit(self, save_name):
+    def draw_fit(self, save_name, shade_regions=False):
         #Draw
         self.histo_to_fit.GetXaxis().SetTitle("Invariant Mass L_{c}^{+}(GeV/c^{2})")
         self.histo_to_fit.SetStats(0)
@@ -449,40 +464,50 @@ class Fitter:
         c1.Update()
 
         # Shading sideband area
-        sideband_fill_left = self.bkg_tot_fit_func.Clone("bkg_fit_fill_left")
-        sideband_fill_left.SetRange(self.histo_to_fit.GetXaxis().GetXmin(), self.mean - self.nsigma_sideband * self.sigma)
-        sideband_fill_left.SetLineWidth(0)
-        sideband_fill_left.SetFillColor(self.bkg_tot_fit_func.GetLineColor())
-        sideband_fill_left.SetFillStyle(3001)
-        sideband_fill_left.Draw("same fc")
+        sideband_fill_left = None
+        sideband_fill_right = None
+        sig_fill = None
+        bkg_fill = None
+        if shade_regions:
+            sideband_fill_left = self.bkg_tot_fit_func.Clone("bkg_fit_fill_left")
+            sideband_fill_left.SetRange(self.mean_fit - 9 * self.sigma_fit,
+                                        self.mean_fit - self.nsigma_sideband * self.sigma_fit)
+            sideband_fill_left.SetLineWidth(0)
+            sideband_fill_left.SetFillColor(self.bkg_tot_fit_func.GetLineColor())
+            sideband_fill_left.SetFillStyle(3001)
+            sideband_fill_left.Draw("same fc")
 
-        sideband_fill_right = self.bkg_tot_fit_func.Clone("bkg_fit_fill_right")
-        sideband_fill_right.SetRange(self.mean + self.nsigma_sideband * self.sigma, self.histo_to_fit.GetXaxis().GetXmax())
-        sideband_fill_right.SetLineWidth(0)
-        sideband_fill_right.SetFillColor(self.bkg_tot_fit_func.GetLineColor())
-        sideband_fill_right.SetFillStyle(3001)
-        sideband_fill_right.Draw("same fc")
+            sideband_fill_right = self.bkg_tot_fit_func.Clone("bkg_fit_fill_right")
+            sideband_fill_right.SetRange(self.mean_fit + self.nsigma_sideband * self.sigma_fit,
+                                         self.mean_fit + 9 * self.sigma_fit)
+            sideband_fill_right.SetLineWidth(0)
+            sideband_fill_right.SetFillColor(self.bkg_tot_fit_func.GetLineColor())
+            sideband_fill_right.SetFillStyle(3001)
+            sideband_fill_right.Draw("same fc")
 
-        # Shading bakground in signal region
-        bkg_fill = self.bkg_tot_fit_func.Clone("bkg_fit_under_sig_fill")
-        bkg_fill.SetRange(self.mean_fit - self.nsigma_sig * self.sigma_fit, self.mean_fit + self.nsigma_sig * self.sigma_fit)
-        bkg_fill.SetLineWidth(0)
-        bkg_fill.SetFillColor(kRed + 2)
-        bkg_fill.SetFillStyle(3001)
-        bkg_fill.Draw("same fc")
+            # Shading bakground in signal region
+            bkg_fill = self.bkg_tot_fit_func.Clone("bkg_fit_under_sig_fill")
+            bkg_fill.SetRange(self.mean_fit - self.nsigma_sig * self.sigma_fit,
+                              self.mean_fit + self.nsigma_sig * self.sigma_fit)
+            bkg_fill.SetLineWidth(0)
+            bkg_fill.SetFillColor(kRed + 2)
+            bkg_fill.SetFillStyle(3001)
+            bkg_fill.Draw("same fc")
 
-        # Shading signal above background
-        n_points = 100
-        dx = (2 * self.nsigma_sig * self.sigma_fit) / n_points
-        sig_fill = TGraph(2 * n_points)
-        sig_fill.SetFillColor(kGreen + 2)
-        sig_fill.SetFillStyle(3001)
-        range_low = self.mean_fit - self.nsigma_sig * self.sigma_fit
-        range_up = self.mean_fit + self.nsigma_sig * self.sigma_fit
-        for ip in range(n_points):
-            sig_fill.SetPoint(ip, range_low + ip * dx, self.tot_fit_func.Eval(range_low + ip * dx))
-            sig_fill.SetPoint(n_points + ip, range_up - ip * dx, self.bkg_tot_fit_func.Eval(range_up - ip * dx))
-        sig_fill.Draw("f")
+            # Shading signal above background
+            n_points = 100
+            dx = (2 * self.nsigma_sig * self.sigma_fit) / n_points
+            sig_fill = TGraph(2 * n_points)
+            sig_fill.SetFillColor(kGreen + 2)
+            sig_fill.SetFillStyle(3001)
+            range_low = self.mean_fit - self.nsigma_sig * self.sigma_fit
+            range_up = self.mean_fit + self.nsigma_sig * self.sigma_fit
+            for ip in range(n_points):
+                sig_fill.SetPoint(ip, range_low + ip * dx,
+                                  self.tot_fit_func.Eval(range_low + ip * dx))
+                sig_fill.SetPoint(n_points + ip, range_up - ip * dx,
+                                  self.bkg_tot_fit_func.Eval(range_up - ip * dx))
+            sig_fill.Draw("f")
 
         #write info.
         pinfos = TPaveText(0.12, 0.7, 0.47, 0.89, "NDC")

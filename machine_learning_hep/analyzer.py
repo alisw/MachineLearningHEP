@@ -15,7 +15,9 @@
 """
 main script for doing final stage analysis
 """
+# pylint: disable=too-many-lines
 import os
+from math import sqrt
 # pylint: disable=unused-wildcard-import, wildcard-import
 from array import *
 import numpy as np
@@ -24,7 +26,7 @@ from root_numpy import hist2array, array2hist
 from ROOT import TFile, TH1F, TCanvas
 from ROOT import gStyle, TLegend, TLine, TText
 from ROOT import gROOT
-from ROOT import TStyle, kBlue, kGreen
+from ROOT import TStyle, kBlue, kGreen, kBlack, kRed
 from ROOT import TLatex
 from machine_learning_hep.globalfitter import Fitter
 from  machine_learning_hep.logger import get_logger
@@ -120,6 +122,8 @@ class Analyzer:
 
         # Systematics
         syst_dict = datap["analysis"][self.typean].get("systematics", None)
+        self.p_max_chisquare_ndf_syst = syst_dict["max_chisquare_ndf"] \
+                if syst_dict is not None else None
         self.p_rebin_syst = syst_dict["rebin"] if syst_dict is not None else None
         self.p_fit_ranges_low_syst = syst_dict["massmin"] if syst_dict is not None else None
         self.p_fit_ranges_up_syst = syst_dict["massmax"] if syst_dict is not None else None
@@ -162,6 +166,10 @@ class Analyzer:
 
 
     def fitter(self):
+        # Enable ROOT batch mode and reset in the end
+        tmp_is_root_batch = gROOT.IsBatch()
+        gROOT.SetBatch(True)
+
         self.loadstyle()
         mass_fitter = Fitter()
 
@@ -248,8 +256,14 @@ class Analyzer:
         cYields.SaveAs(yields_save_name)
         lfile.Close()
 
+        # Reset to former mode
+        gROOT.SetBatch(tmp_is_root_batch)
+
     # pylint: disable=too-many-locals, too-many-nested-blocks, too-many-branches
     def yield_syst(self):
+        # Enable ROOT batch mode and reset in the end
+        tmp_is_root_batch = gROOT.IsBatch()
+        gROOT.SetBatch(True)
 
         # First check if systematics can be computed by checking if parameters are set
         if self.p_rebin_syst is None:
@@ -289,22 +303,18 @@ class Analyzer:
 
                 # Get the nominal fit values to compare to
                 mass_fitter_nominal.load(func_file.GetDirectory(suffix), True)
-                yield_nominal = mass_fitter_nominal.yield_sig / \
-                        (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
-                yield_err_nominal = mass_fitter_nominal.yield_sig_err / \
-                        (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
+                yield_nominal = mass_fitter_nominal.yield_sig
+                yield_err_nominal = mass_fitter_nominal.yield_sig_err
                 bincount_nominal, bincount_err_nominal = \
                         mass_fitter_nominal.bincount(self.p_nsigma_signal)
-                bincount_nominal = bincount_nominal / \
-                        (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
-                bincount_err_nominal = bincount_err_nominal / \
-                        (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
+                bincount_nominal = bincount_nominal
+                bincount_err_nominal = bincount_err_nominal
                 mean_nominal = mass_fitter_nominal.mean_fit
                 sigma_nominal = mass_fitter_nominal.sigma_fit
                 chisquare_ndf_nominal = mass_fitter_nominal.tot_fit_func.GetChisquare() / \
                         mass_fitter_nominal.tot_fit_func.GetNDF()
 
-                # Collect vaiation values
+                # Collect variation values
                 yields_syst = []
                 yields_syst_err = []
                 bincounts_syst = []
@@ -314,6 +324,8 @@ class Analyzer:
                 chisquares_syst = []
 
                 # Crazy nested loop
+                # For now only go for fixed sigma and free mean as this is what
+                # we do for the nominal
                 for fix_mean in [False]:
                     for fix_sigma in [True]:
                         for rebin in self.p_rebin_syst:
@@ -336,11 +348,10 @@ class Analyzer:
                                     # Only if the fit was successful and in case the chisquare does
                                     # exceed the nominal too much we extract the values from this
                                     # variation
-                                    if success and chisquare_ndf_syst < 2 * chisquare_ndf_nominal:
-                                        rawYield = mass_fitter_syst.yield_sig / \
-                                                (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
-                                        rawYieldErr = mass_fitter_syst.yield_sig_err / \
-                                                (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
+                                    if success and \
+                                            chisquare_ndf_syst < self.p_max_chisquare_ndf_syst:
+                                        rawYield = mass_fitter_syst.yield_sig #/ \
+                                        rawYieldErr = mass_fitter_syst.yield_sig_err #/ \
                                         yields_syst.append(rawYield)
                                         yields_syst_err.append(rawYieldErr)
                                         means_syst.append(mass_fitter_syst.mean_fit)
@@ -349,10 +360,6 @@ class Analyzer:
                                         for sigma in self.p_bincount_sigma_syst:
                                             rawBC, rawBC_err = mass_fitter_syst.bincount(sigma)
                                             if rawBC is not None:
-                                                rawBC = rawBC / \
-                                                        (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
-                                                rawBC_err = rawBC_err / \
-                                                        (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
                                                 bincounts_syst.append(rawBC)
                                                 bincounts_syst_err.append(rawBC_err)
 
@@ -363,15 +370,15 @@ class Analyzer:
                 # Let's use the same binning for fitted and bincount values
                 min_y = min(min(yields_syst), min(bincounts_syst)) if yields_syst else 0
                 max_y = max(max(yields_syst), max(bincounts_syst)) if yields_syst else 1
-                histo_yields = TH1F("yields_syst", "", 40, 0.9 * min_y + 1, 1.1 * max_y + 1)
-                histo_bincounts = TH1F("bincounts_syst", "", 40, 0.9 * min_y + 1, 1.1 * max_y + 1)
+                histo_yields = TH1F("yields_syst", "", 25, 0.9 * min_y + 1, 1.1 * max_y + 1)
+                histo_bincounts = TH1F("bincounts_syst", "", 25, 0.9 * min_y + 1, 1.1 * max_y + 1)
 
                 # Let's use the same binning for fitted and bincount values
                 min_y = min(min(yields_syst_err), min(bincounts_syst_err)) if yields_syst else 0
                 max_y = max(max(yields_syst_err), max(bincounts_syst_err)) if yields_syst else 1
-                histo_yields_err = TH1F("yields_syst_err", "", 40, 0.9 * min_y + 1,
+                histo_yields_err = TH1F("yields_syst_err", "", 30, 0.9 * min_y + 1,
                                         1.1 * max_y + 1)
-                histo_bincounts_err = TH1F("bincounts_syst_err", "", 40, 0.9 * min_y + 1,
+                histo_bincounts_err = TH1F("bincounts_syst_err", "", 30, 0.9 * min_y + 1,
                                            1.1 * max_y + 1)
 
                 # Means, sigmas, chi squares
@@ -500,85 +507,103 @@ class Analyzer:
                 draw_histos(pad, "trial", "#chi^{2}/NDF", False, [chisquare_ndf_nominal], None,
                             [histo_chisquares], "p", filename)
 
+
+                def create_text(pos_x, pos_y, text, color=kBlack):
+                    root_text = TText(pos_x, pos_y, text)
+                    root_text.SetTextSize(0.03)
+                    root_text.SetTextColor(color)
+                    root_text.SetNDC()
+                    return root_text
                 # Add some numbers
                 pad = canvas.cd(6)
-                yield_text = TText(0.05, 0.93, "Fit yields")
-                yield_text.SetTextSize(0.03)
-                yield_text.SetNDC()
-                yield_text.Draw()
 
-                yield_fit_text = TText(0.05, 0.88, f"nominal = {yield_nominal:.0f}")
-                yield_fit_text.SetTextSize(0.03)
-                yield_fit_text.SetNDC()
-                yield_fit_text.Draw()
+                root_texts = []
+                fit_color = histo_yields.GetLineColor()
+                bc_color = histo_bincounts.GetLineColor()
+                root_texts.append(create_text(0.05, 0.93, "Fit yields"))
 
+                mean_fit = histo_yields.GetMean()
+                rms_fit = histo_yields.GetRMS()
+                unc_mean = rms_fit / mean_fit * 100 if mean_fit > 0. else 0.
+                min_val = histo_yields.GetBinLowEdge(histo_yields.FindFirstBinAbove())
+                last_bin = histo_yields.FindFirstBinAbove()
+                max_val = histo_yields.GetBinLowEdge(last_bin) + histo_yields.GetBinWidth(last_bin)
+                diff_min_max = (max_val - min_val) / sqrt(12)
+                unc_min_max = diff_min_max / mean_fit * 100 if mean_fit > 0. else 0.
 
-                yield_fit_mt_mean_text = TText(0.05, 0.83, f"mean multi trial= " \
-                                                           f"{histo_yields.GetMean():.0f}")
-                yield_fit_mt_mean_text.SetTextColor(histo_yields.GetLineColor())
-                yield_fit_mt_mean_text.SetTextSize(0.03)
-                yield_fit_mt_mean_text.SetNDC()
-                yield_fit_mt_mean_text.Draw()
+                root_texts.append(create_text(0.05, 0.88, f"nominal = {yield_nominal:.0f}"))
 
-                yield_fit_mt_rms_text = TText(0.05, 0.78,
-                                              f"RMS multi trial = " \
-                                              f"{histo_yields.GetRMS():.0f}")
-                yield_fit_mt_rms_text.SetTextColor(histo_yields.GetLineColor())
-                yield_fit_mt_rms_text.SetTextSize(0.03)
-                yield_fit_mt_rms_text.SetNDC()
-                yield_fit_mt_rms_text.Draw()
+                root_texts.append(create_text(0.05, 0.83,
+                                              f"MEAN = " \
+                                              f"{mean_fit:.0f}",
+                                              fit_color))
 
+                root_texts.append(create_text(0.05, 0.78,
+                                              f"RMS = " \
+                                              f"{rms_fit:.0f} ({unc_mean:.2f}%)", fit_color))
 
-                bc_text = TText(0.05, 0.63, "Bin count yields")
-                bc_text.SetTextSize(0.03)
-                bc_text.SetNDC()
-                bc_text.Draw()
+                root_texts.append(create_text(0.05, 0.73,
+                                              f"MIN = {min_val:.0f}" \
+                                              f"    " \
+                                              f"MAX = {max_val:.0f}", fit_color))
 
-                yield_bc_text = TText(0.05, 0.58,
-                                      f"nominal = {bincount_nominal:.0f}")
-                yield_bc_text.SetTextSize(0.03)
-                yield_bc_text.SetNDC()
-                yield_bc_text.Draw()
+                root_texts.append(create_text(0.05, 0.68,
+                                              f"(MAX - MIN) / sqrt(12) = " \
+                                              f"{diff_min_max:.0f} ({unc_min_max:.2f}%)",
+                                              fit_color))
 
-                yield_bc_mt_mean_text = TText(0.05, 0.53, f"mean multi trial = " \
-                                                          f"{histo_bincounts.GetMean():.0f}")
-                yield_bc_mt_mean_text.SetTextColor(histo_bincounts.GetLineColor())
-                yield_bc_mt_mean_text.SetTextSize(0.03)
-                yield_bc_mt_mean_text.SetNDC()
-                yield_bc_mt_mean_text.Draw()
+                mean_bc = histo_bincounts.GetMean()
+                rms_bc = histo_bincounts.GetRMS()
+                unc_mean = rms_bc / mean_bc * 100 if mean_bc > 0. else 0.
+                min_val = histo_bincounts.GetBinLowEdge(histo_bincounts.FindFirstBinAbove())
+                last_bin = histo_bincounts.FindFirstBinAbove()
+                max_val = histo_bincounts.GetBinLowEdge(last_bin) + \
+                        histo_bincounts.GetBinWidth(last_bin)
+                diff_min_max = (max_val - min_val) / sqrt(12)
+                unc_min_max = diff_min_max / mean_bc * 100 if mean_bc > 0. else 0.
 
-                yield_bc_mt_rms_text = TText(0.05, 0.48, f"RMS multi trial = " \
-                                                         f"{histo_bincounts.GetRMS():.0f}")
-                yield_bc_mt_rms_text.SetTextColor(histo_bincounts.GetLineColor())
-                yield_bc_mt_rms_text.SetTextSize(0.03)
-                yield_bc_mt_rms_text.SetNDC()
-                yield_bc_mt_rms_text.Draw()
+                root_texts.append(create_text(0.05, 0.58, "Bin count yields"))
 
+                root_texts.append(create_text(0.05, 0.53,
+                                              f"nominal = {bincount_nominal:.0f}"))
 
-                deviation_text = TText(0.05, 0.33, "Deviations")
-                deviation_text.SetTextSize(0.03)
-                deviation_text.SetNDC()
-                deviation_text.Draw()
+                root_texts.append(create_text(0.05, 0.48,
+                                              f"MEAN = " \
+                                              f"{mean_bc:.0f}", bc_color))
 
-                yield_fit_diff = yield_nominal - histo_yields.GetMean()
-                yield_fit_diff_ratio = yield_fit_diff / yield_nominal * 100
-                yield_fit_fit_mt_text = TText(0.05, 0.28, f"yield fit (nominal) - yield fit " \
-                                                          f"(multi) = {yield_fit_diff:.0f} " \
-                                                          f"({yield_fit_diff_ratio:.2f}%)")
-                yield_fit_fit_mt_text.SetTextSize(0.03)
-                yield_fit_fit_mt_text.SetNDC()
-                yield_fit_fit_mt_text.Draw()
+                root_texts.append(create_text(0.05, 0.43,
+                                              f"RMS = " \
+                                              f"{rms_bc:.0f}", bc_color))
 
-                yield_bc_diff = bincount_nominal - histo_bincounts.GetMean()
-                yield_bc_diff_ratio = yield_bc_diff / bincount_nominal * 100
-                yield_bc_bc_mt_text = TText(0.05, 0.23, f"yield bincount (nominal) - yield " \
-                                                        f"bincount (multi) = " \
-                                                        f"{yield_bc_diff:.0f} " \
-                                                        f"({yield_bc_diff_ratio:.2f}%)")
-                yield_bc_bc_mt_text.SetTextSize(0.03)
-                yield_bc_bc_mt_text.SetNDC()
-                yield_bc_bc_mt_text.Draw()
+                root_texts.append(create_text(0.05, 0.38,
+                                              f"MIN = {min_val:.0f}" \
+                                              f"    " \
+                                              f"MAX = {max_val:.0f}", bc_color))
 
+                root_texts.append(create_text(0.05, 0.33,
+                                              f"(MAX - MIN) / sqrt(12) = " \
+                                              f"{diff_min_max:.0f} ({unc_min_max:.2f}%)",
+                                              bc_color))
+
+                root_texts.append(create_text(0.05, 0.23, "Deviations"))
+
+                diff = yield_nominal - mean_fit
+                diff_ratio = diff / yield_nominal * 100
+                root_texts.append(create_text(0.05, 0.18,
+                                              f"yield fit (nominal) - yield fit " \
+                                              f"(multi) = {diff:.0f} " \
+                                              f"({diff_ratio:.2f}%)", kRed + 2))
+
+                diff = yield_nominal - mean_bc
+                diff_ratio = diff / yield_nominal * 100
+                root_texts.append(create_text(0.05, 0.13,
+                                              f"yield fit (nominal) - yield " \
+                                              f"bincount (multi) = " \
+                                              f"{diff:.0f} " \
+                                              f"({diff_ratio:.2f}%)", kRed + 2))
+
+                for t in root_texts:
+                    t.Draw()
 
                 filename = self.make_file_path(self.d_resultsallpdata, "all_syst", "eps",
                                                None, suffix)
@@ -587,6 +612,9 @@ class Analyzer:
 
         fileout.Write()
         fileout.Close()
+
+        # Reset to former mode
+        gROOT.SetBatch(tmp_is_root_batch)
 
     def efficiency(self):
         self.loadstyle()
