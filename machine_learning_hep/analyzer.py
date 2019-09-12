@@ -291,7 +291,7 @@ class Analyzer:
         # One fitter to extract the respective nominal fit and one used for the variation
         mass_fitter_nominal = Fitter()
         mass_fitter_syst = Fitter()
-    
+
         # Keep all additional objects in a plot until it has been saved. Otherwise,
         # they will be deleted by Python as soon as something goes out of scope
         tmp_plot_objects = []
@@ -361,11 +361,8 @@ class Analyzer:
                     array_pt.append(up)
             array_pt = array("d", array_pt)
             histo_mt_fit_pt = TH1F("histo_mt_fit_pt", "", len(array_pt) - 1, array_pt)
-            histo_mt_fit_pt.SetDirectory(0)
             histo_mt_bincount_pt = TH1F("histo_mt_bincount_pt", "", len(array_pt) - 1, array_pt)
-            histo_mt_bincount_pt.SetDirectory(0)
             histo_nominal_pt = TH1F("histo_nominal_pt", "", len(array_pt) - 1, array_pt)
-            histo_nominal_pt.SetDirectory(0)
 
             fileout.cd()
 
@@ -427,6 +424,8 @@ class Analyzer:
                                     if success and \
                                             chisquare_ndf_syst < self.p_max_chisquare_ndf_syst:
                                         rawYield = mass_fitter_syst.yield_sig
+                                        if rawYield < 0:
+                                            self.logger.fatal("Found negative yield %f", rawYield)
                                         rawYieldErr = mass_fitter_syst.yield_sig_err
                                         yields_syst.append(rawYield)
                                         yields_syst_err.append(rawYieldErr)
@@ -647,7 +646,6 @@ class Analyzer:
                 histo_mt_bincount_pt.SetBinError(ipt + 1, rms_bc)
                 histo_nominal_pt.SetBinContent(ipt + 1, yield_nominal)
                 histo_nominal_pt.SetBinError(ipt + 1, yield_err_nominal)
-        
 
             # Draw into canvas
             histo_mt_fit_pt.SetMarkerStyle(20)
@@ -664,7 +662,7 @@ class Analyzer:
             histo_nominal_pt.SetFillStyle(0)
 
             histo_ratio_mt_fit = histo_mt_fit_pt.Clone(histo_mt_fit_pt.GetName() + "_ratio")
-            histo_ratio_mt_fit.SetDirectory(0)
+            histo_ratio_mt_fit.Divide(histo_nominal_pt)
             histo_ratio_mt_fit.GetYaxis().SetTitleSize(20)
             histo_ratio_mt_fit.GetYaxis().SetTitleFont(43)
             histo_ratio_mt_fit.GetYaxis().SetTitleOffset(1.55)
@@ -678,12 +676,9 @@ class Analyzer:
             histo_ratio_mt_fit.GetXaxis().SetTitleOffset(4.)
             histo_ratio_mt_fit.GetXaxis().SetTitle("p_{T} (GeV/c)")
 
-            histo_ratio_mt_bincount = histo_mt_bincount_pt.Clone(histo_mt_bincount_pt.GetName() + "_ratio")
-            histo_ratio_mt_bincount.SetDirectory(0)
-            histo_ratio_mt_fit.Divide(histo_nominal_pt)
+            histo_ratio_mt_bincount = \
+                    histo_mt_bincount_pt.Clone(histo_mt_bincount_pt.GetName() + "_ratio")
             histo_ratio_mt_bincount.Divide(histo_nominal_pt)
-            histo_ratio_mt_fit.SetMarkerStyle(2)
-            histo_ratio_mt_bincount.SetMarkerStyle(2)
 
             canvas_mt = TCanvas("some_canvas", "", 800, 800)
 
@@ -695,14 +690,16 @@ class Analyzer:
             draw_histos(pad_up, True, [0, 0, 0], None,
                         [histo_mt_fit_pt, histo_mt_bincount_pt, histo_nominal_pt], "e2p",
                         [color_mt_fit, color_mt_bincount, color_nominal])
-            
-            text_box = TPaveText(0.5, 0.8, 1., 0.89, "NDC")
+
+            text_box = TPaveText(0.5, 0.7, 1., 0.89, "NDC")
             text_box.SetBorderSize(0)
             text_box.SetFillStyle(0)
             text_box.SetTextAlign(11)
             text_box.SetTextSize(20)
             text_box.SetTextFont(43)
             text_box.AddText(f"{self.p_latexnmeson} | analysis type: {self.typean}")
+            text_box.AddText(f"{self.lvar2_binmin[imult]} < {self.v_var2_binning} < " \
+                             f"{self.lvar2_binmax[imult]}")
             pad_up.cd()
             text_box.Draw()
             canvas_mt.cd()
@@ -717,6 +714,7 @@ class Analyzer:
                                histo_ratio_mt_bincount.GetXaxis().GetXmax(), 1.)
             line_unity.Draw()
 
+            pad_ratio.cd()
             # Reset the range of the ratio plot
             y_max_ratio = 1.3
             y_min_ratio = 0.7
@@ -726,17 +724,17 @@ class Analyzer:
             def replace_with_arrows(histo, center_value, min_value, max_value):
                 arrows = []
                 for i in range(1, histo.GetNbinsX() + 1):
-                    content = histo_ratio_mt_fit.GetBinContent(i)
+                    content = histo.GetBinContent(i)
                     if content < min_value:
                         histo.SetBinContent(i, 0.)
                         histo.SetBinError(i, 0.)
                         bin_center = histo.GetBinCenter(i)
-                        arrows.append(TArrow(bin_center, center_value, bin_center, min_value))
+                        arrows.append(TArrow(bin_center, center_value, bin_center, min_value, 0.04))
                     elif content > max_value:
                         histo.SetBinContent(i, 0.)
                         histo.SetBinError(i, 0.)
                         bin_center = histo.GetBinCenter(i)
-                        arrows.append(TArrow(bin_center, center_value, bin_center, max_value))
+                        arrows.append(TArrow(bin_center, center_value, bin_center, max_value, 0.04))
                 return arrows
 
             arrows_fit = replace_with_arrows(histo_ratio_mt_fit, 1., y_min_ratio, y_max_ratio)
@@ -744,6 +742,7 @@ class Analyzer:
                 a.SetLineColor(color_mt_fit)
                 a.SetLineStyle(2)
                 a.Draw()
+
             arrows_bc = replace_with_arrows(histo_ratio_mt_bincount, 1., y_min_ratio, y_max_ratio)
             for a in arrows_bc:
                 a.SetLineColor(color_mt_bincount)
@@ -751,7 +750,8 @@ class Analyzer:
                 a.Draw()
 
             filename = self.make_file_path(self.d_resultsallpdata, "multi_trial_summary", "eps",
-                                           None, [f"{self.lvar2_binmin[imult]:.2f}", f"{self.lvar2_binmax[imult]:.2f}"])
+                                           None, [f"{self.lvar2_binmin[imult]:.2f}",
+                                                  f"{self.lvar2_binmax[imult]:.2f}"])
 
 
             canvas_mt.SaveAs(filename)
