@@ -23,8 +23,8 @@ from array import *
 import numpy as np
 # pylint: disable=import-error, no-name-in-module, unused-import
 from root_numpy import hist2array, array2hist
-from ROOT import TFile, TH1F, TCanvas
-from ROOT import gStyle, TLegend, TLine, TText
+from ROOT import TFile, TH1F, TCanvas, TPad
+from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
 from ROOT import gROOT
 from ROOT import TStyle, kBlue, kGreen, kBlack, kRed
 from ROOT import TLatex
@@ -291,8 +291,84 @@ class Analyzer:
         # One fitter to extract the respective nominal fit and one used for the variation
         mass_fitter_nominal = Fitter()
         mass_fitter_syst = Fitter()
+    
+        # Keep all additional objects in a plot until it has been saved. Otherwise,
+        # they will be deleted by Python as soon as something goes out of scope
+        tmp_plot_objects = []
+
+        color_mt_fit = kBlue
+        color_mt_bincount = kGreen + 2
+        color_nominal = kBlack
+
+        # Used here internally for plotting
+        def draw_histos(pad, draw_legend, nominals, hori_vert,
+                        histos, plot_options, colors, save_path=None):
+            pad.cd()
+            if draw_legend:
+                legend = TLegend(0.12, 0.7, 0.48, 0.88)
+                # pylint: disable=cell-var-from-loop
+                tmp_plot_objects.append(legend)
+                legend.SetLineWidth(0)
+                legend.SetTextSize(0.02)
+
+            lines = []
+            x_min = histos[0].GetXaxis().GetXmin()
+            x_max = histos[0].GetXaxis().GetXmax()
+            y_max = histos[0].GetMaximum()
+            for i, h in enumerate(histos):
+                x_min = min(h.GetXaxis().GetXmin(), x_min)
+                x_max = max(h.GetXaxis().GetXmax(), x_max)
+                y_max = max(h.GetMaximum(), y_max)
+                h.SetFillStyle(0)
+                h.SetStats(0)
+                h.SetLineColor(colors[i])
+                h.SetFillColor(colors[i])
+                h.SetMarkerColor(colors[i])
+                h.SetLineWidth(1)
+            plot_options = " ".join(["same", plot_options])
+            for h, nom in zip(histos, nominals):
+                if draw_legend:
+                    legend.AddEntry(h, h.GetName())
+                h.GetXaxis().SetRangeUser(x_min, x_max)
+                h.GetYaxis().SetRangeUser(0., 1.5 * y_max)
+                h.Draw(plot_options)
+                if hori_vert is not None:
+                    if hori_vert == "v":
+                        # vertical lines
+                        lines.append(TLine(nom, 0., nom, 1.2 * y_max))
+                    else:
+                        # horizontal lines
+                        lines.append(TLine(x_min, nom, x_max, nom))
+                    lines[-1].SetLineColor(h.GetLineColor())
+                    lines[-1].SetLineWidth(1)
+                    lines[-1].Draw("same")
+            if draw_legend:
+                legend.Draw("same")
+            # pylint: disable=cell-var-from-loop
+            tmp_plot_objects.append(lines)
+            pad.Update()
+            if save_path is not None:
+                pad.SaveAs(save_path)
 
         for imult in range(self.p_nbin2):
+            # Prepare lists summarising multi trial results in bins of pT
+            # Assumin pT bins don't overlap
+            array_pt = []
+            for low, up in zip(self.lpt_finbinmin, self.lpt_finbinmax):
+                if low not in array_pt:
+                    array_pt.append(low)
+                if up not in array_pt:
+                    array_pt.append(up)
+            array_pt = array("d", array_pt)
+            histo_mt_fit_pt = TH1F("histo_mt_fit_pt", "", len(array_pt) - 1, array_pt)
+            histo_mt_fit_pt.SetDirectory(0)
+            histo_mt_bincount_pt = TH1F("histo_mt_bincount_pt", "", len(array_pt) - 1, array_pt)
+            histo_mt_bincount_pt.SetDirectory(0)
+            histo_nominal_pt = TH1F("histo_nominal_pt", "", len(array_pt) - 1, array_pt)
+            histo_nominal_pt.SetDirectory(0)
+
+            fileout.cd()
+
             for ipt in range(self.p_nptbins):
                 bin_id = self.bin_matching[ipt]
                 suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
@@ -350,8 +426,8 @@ class Analyzer:
                                     # variation
                                     if success and \
                                             chisquare_ndf_syst < self.p_max_chisquare_ndf_syst:
-                                        rawYield = mass_fitter_syst.yield_sig #/ \
-                                        rawYieldErr = mass_fitter_syst.yield_sig_err #/ \
+                                        rawYield = mass_fitter_syst.yield_sig
+                                        rawYieldErr = mass_fitter_syst.yield_sig_err
                                         yields_syst.append(rawYield)
                                         yields_syst_err.append(rawYieldErr)
                                         means_syst.append(mass_fitter_syst.mean_fit)
@@ -421,91 +497,47 @@ class Analyzer:
                 histo_sigmas.Write()
                 histo_chisquares.Write()
 
-                # Keep all additional objects in a plot until it has been saved. Otherwise,
-                # they will be deleted by Python as soon as something goes out of scope
-                tmp_plot_objects = []
-
-                # Used here internally for plotting
-                def draw_histos(pad, x_axis_label, y_axis_label, draw_legend, nominals, hori_vert,
-                                histos, plot_options, save_path):
-                    colors = [kBlue, kGreen + 2]
-                    pad.cd()
-                    if draw_legend:
-                        legend = TLegend(0.12, 0.7, 0.48, 0.88)
-                        # pylint: disable=cell-var-from-loop
-                        tmp_plot_objects.append(legend)
-                        legend.SetLineWidth(0)
-                        legend.SetTextSize(0.02)
-
-                    lines = []
-                    x_min = histos[0].GetXaxis().GetXmin()
-                    x_max = histos[0].GetXaxis().GetXmax()
-                    y_max = histos[0].GetMaximum()
-                    for i, h in enumerate(histos):
-                        x_min = min(h.GetXaxis().GetXmin(), x_min)
-                        x_max = max(h.GetXaxis().GetXmax(), x_max)
-                        y_max = max(h.GetMaximum(), y_max)
-                        h.SetFillStyle(3004)
-                        h.SetStats(0)
-                        h.SetLineColor(colors[i%len(colors)])
-                        h.SetFillColor(colors[i%len(colors)])
-                        h.SetMarkerColor(colors[i%len(colors)])
-                        h.SetLineWidth(1)
-                        h.GetXaxis().SetTitle(x_axis_label)
-                        h.GetYaxis().SetTitle(y_axis_label)
-                    plot_options = " ".join(["same", plot_options])
-                    for h, nom in zip(histos, nominals):
-                        if draw_legend:
-                            legend.AddEntry(h, h.GetName())
-                        h.GetXaxis().SetRangeUser(x_min, x_max)
-                        h.GetYaxis().SetRangeUser(0., 1.5 * y_max)
-                        h.Draw(plot_options)
-                        if hori_vert is not None:
-                            if hori_vert == "v":
-                                # vertical lines
-                                lines.append(TLine(nom, 0., nom, 1.2 * y_max))
-                            else:
-                                # horizontal lines
-                                lines.append(TLine(x_min, nom, x_max, nom))
-                            lines[-1].SetLineColor(h.GetLineColor())
-                            lines[-1].SetLineWidth(1)
-                            lines[-1].Draw("same")
-                    if draw_legend:
-                        legend.Draw("same")
-                    # pylint: disable=cell-var-from-loop
-                    tmp_plot_objects.append(lines)
-                    pad.Update()
-                    pad.SaveAs(save_path)
-
                 # Draw into canvas
                 canvas = TCanvas("syst_canvas", "", 1400, 800)
                 canvas.Divide(3, 2)
                 pad = canvas.cd(5)
                 filename = self.make_file_path(self.d_resultsallpdata, self.yields_syst_filename,
                                                "eps", None, suffix)
-                draw_histos(pad, "yield", "# entries", True, [yield_nominal, bincount_nominal], "v",
-                            [histo_yields, histo_bincounts], "hist", filename)
+                histo_yields.GetXaxis().SetTitle("yield")
+                histo_yields.GetYaxis().SetTitle("# entries")
+                draw_histos(pad, True, [yield_nominal, bincount_nominal], "v",
+                            [histo_yields, histo_bincounts], "hist",
+                            [color_mt_fit, color_mt_bincount], filename)
                 pad = canvas.cd(4)
                 filename = self.make_file_path(self.d_resultsallpdata, self.yields_syst_filename,
                                                "eps", None, ["err", suffix])
-                draw_histos(pad, "yield_err", "# entries", True,
+                histo_yields_err.GetXaxis().SetTitle("yield err")
+                histo_yields_err.GetYaxis().SetTitle("# entries")
+                draw_histos(pad, True,
                             [yield_err_nominal, bincount_err_nominal], "v",
-                            [histo_yields_err, histo_bincounts_err], "hist", filename)
+                            [histo_yields_err, histo_bincounts_err], "hist",
+                            [color_mt_fit, color_mt_bincount], filename)
                 pad = canvas.cd(1)
                 filename = self.make_file_path(self.d_resultsallpdata, "means_syst", "eps",
                                                None, suffix)
-                draw_histos(pad, "trial", "#mu", False, [mean_nominal], None,
-                            [histo_means], "p", filename)
+                histo_means.GetXaxis().SetTitle("trial")
+                histo_means.GetYaxis().SetTitle("#mu")
+                draw_histos(pad, False, [mean_nominal], None,
+                            [histo_means], "p", [color_mt_fit], filename)
                 pad = canvas.cd(2)
                 filename = self.make_file_path(self.d_resultsallpdata, "sigmas_syst", "eps",
                                                None, suffix)
-                draw_histos(pad, "trial", "#sigma", False, [sigma_nominal], None,
-                            [histo_sigmas], "p", filename)
+                histo_sigmas.GetXaxis().SetTitle("trial")
+                histo_sigmas.GetYaxis().SetTitle("#sigma")
+                draw_histos(pad, False, [sigma_nominal], None,
+                            [histo_sigmas], "p", [color_mt_fit], filename)
                 pad = canvas.cd(3)
                 filename = self.make_file_path(self.d_resultsallpdata, "chisquares_syst", "eps",
                                                None, suffix)
-                draw_histos(pad, "trial", "#chi^{2}/NDF", False, [chisquare_ndf_nominal], None,
-                            [histo_chisquares], "p", filename)
+                histo_chisquares.GetXaxis().SetTitle("trial")
+                histo_chisquares.GetYaxis().SetTitle("#chi^{2}/NDF")
+                draw_histos(pad, False, [chisquare_ndf_nominal], None,
+                            [histo_chisquares], "p", [color_mt_fit], filename)
 
 
                 def create_text(pos_x, pos_y, text, color=kBlack):
@@ -518,8 +550,6 @@ class Analyzer:
                 pad = canvas.cd(6)
 
                 root_texts = []
-                fit_color = histo_yields.GetLineColor()
-                bc_color = histo_bincounts.GetLineColor()
                 root_texts.append(create_text(0.05, 0.93, "Fit yields"))
 
                 mean_fit = histo_yields.GetMean()
@@ -536,21 +566,21 @@ class Analyzer:
                 root_texts.append(create_text(0.05, 0.83,
                                               f"MEAN = " \
                                               f"{mean_fit:.0f}",
-                                              fit_color))
+                                              color_mt_fit))
 
                 root_texts.append(create_text(0.05, 0.78,
                                               f"RMS = " \
-                                              f"{rms_fit:.0f} ({unc_mean:.2f}%)", fit_color))
+                                              f"{rms_fit:.0f} ({unc_mean:.2f}%)", color_mt_fit))
 
                 root_texts.append(create_text(0.05, 0.73,
                                               f"MIN = {min_val:.0f}" \
                                               f"    " \
-                                              f"MAX = {max_val:.0f}", fit_color))
+                                              f"MAX = {max_val:.0f}", color_mt_fit))
 
                 root_texts.append(create_text(0.05, 0.68,
                                               f"(MAX - MIN) / sqrt(12) = " \
                                               f"{diff_min_max:.0f} ({unc_min_max:.2f}%)",
-                                              fit_color))
+                                              color_mt_fit))
 
                 mean_bc = histo_bincounts.GetMean()
                 rms_bc = histo_bincounts.GetRMS()
@@ -569,21 +599,21 @@ class Analyzer:
 
                 root_texts.append(create_text(0.05, 0.48,
                                               f"MEAN = " \
-                                              f"{mean_bc:.0f}", bc_color))
+                                              f"{mean_bc:.0f}", color_mt_bincount))
 
                 root_texts.append(create_text(0.05, 0.43,
                                               f"RMS = " \
-                                              f"{rms_bc:.0f}", bc_color))
+                                              f"{rms_bc:.0f}", color_mt_bincount))
 
                 root_texts.append(create_text(0.05, 0.38,
                                               f"MIN = {min_val:.0f}" \
                                               f"    " \
-                                              f"MAX = {max_val:.0f}", bc_color))
+                                              f"MAX = {max_val:.0f}", color_mt_bincount))
 
                 root_texts.append(create_text(0.05, 0.33,
                                               f"(MAX - MIN) / sqrt(12) = " \
                                               f"{diff_min_max:.0f} ({unc_min_max:.2f}%)",
-                                              bc_color))
+                                              color_mt_bincount))
 
                 root_texts.append(create_text(0.05, 0.23, "Deviations"))
 
@@ -609,6 +639,123 @@ class Analyzer:
                                                None, suffix)
                 canvas.SaveAs(filename)
                 canvas.Close()
+
+                # Put in final histogram
+                histo_mt_fit_pt.SetBinContent(ipt + 1, mean_fit)
+                histo_mt_fit_pt.SetBinError(ipt + 1, rms_fit)
+                histo_mt_bincount_pt.SetBinContent(ipt + 1, mean_bc)
+                histo_mt_bincount_pt.SetBinError(ipt + 1, rms_bc)
+                histo_nominal_pt.SetBinContent(ipt + 1, yield_nominal)
+                histo_nominal_pt.SetBinError(ipt + 1, yield_err_nominal)
+        
+
+            # Draw into canvas
+            histo_mt_fit_pt.SetMarkerStyle(20)
+            histo_mt_fit_pt.SetFillStyle(0)
+            histo_mt_fit_pt.GetYaxis().SetTitleSize(20)
+            histo_mt_fit_pt.GetYaxis().SetTitleFont(43)
+            histo_mt_fit_pt.GetYaxis().SetTitleOffset(1.55)
+            histo_mt_fit_pt.GetYaxis().SetTitle("yield")
+            histo_mt_fit_pt.GetYaxis().SetLabelSize(15)
+            histo_mt_fit_pt.GetYaxis().SetLabelFont(43)
+            histo_mt_bincount_pt.SetMarkerStyle(20)
+            histo_mt_bincount_pt.SetFillStyle(0)
+            histo_nominal_pt.SetMarkerStyle(20)
+            histo_nominal_pt.SetFillStyle(0)
+
+            histo_ratio_mt_fit = histo_mt_fit_pt.Clone(histo_mt_fit_pt.GetName() + "_ratio")
+            histo_ratio_mt_fit.SetDirectory(0)
+            histo_ratio_mt_fit.GetYaxis().SetTitleSize(20)
+            histo_ratio_mt_fit.GetYaxis().SetTitleFont(43)
+            histo_ratio_mt_fit.GetYaxis().SetTitleOffset(1.55)
+            histo_ratio_mt_fit.GetYaxis().SetLabelSize(15)
+            histo_ratio_mt_fit.GetYaxis().SetLabelFont(43)
+            histo_ratio_mt_fit.GetYaxis().SetTitle("multi / nominal")
+            histo_ratio_mt_fit.GetXaxis().SetTitleSize(20)
+            histo_ratio_mt_fit.GetXaxis().SetLabelSize(15)
+            histo_ratio_mt_fit.GetXaxis().SetLabelFont(43)
+            histo_ratio_mt_fit.GetXaxis().SetTitleFont(43)
+            histo_ratio_mt_fit.GetXaxis().SetTitleOffset(4.)
+            histo_ratio_mt_fit.GetXaxis().SetTitle("p_{T} (GeV/c)")
+
+            histo_ratio_mt_bincount = histo_mt_bincount_pt.Clone(histo_mt_bincount_pt.GetName() + "_ratio")
+            histo_ratio_mt_bincount.SetDirectory(0)
+            histo_ratio_mt_fit.Divide(histo_nominal_pt)
+            histo_ratio_mt_bincount.Divide(histo_nominal_pt)
+            histo_ratio_mt_fit.SetMarkerStyle(2)
+            histo_ratio_mt_bincount.SetMarkerStyle(2)
+
+            canvas_mt = TCanvas("some_canvas", "", 800, 800)
+
+            canvas_mt.cd()
+            pad_up = TPad("pad_up", "", 0., 0.3, 1., 1.)
+            pad_up.SetBottomMargin(0.)
+            pad_up.Draw()
+
+            draw_histos(pad_up, True, [0, 0, 0], None,
+                        [histo_mt_fit_pt, histo_mt_bincount_pt, histo_nominal_pt], "e2p",
+                        [color_mt_fit, color_mt_bincount, color_nominal])
+            
+            text_box = TPaveText(0.5, 0.8, 1., 0.89, "NDC")
+            text_box.SetBorderSize(0)
+            text_box.SetFillStyle(0)
+            text_box.SetTextAlign(11)
+            text_box.SetTextSize(20)
+            text_box.SetTextFont(43)
+            text_box.AddText(f"{self.p_latexnmeson} | analysis type: {self.typean}")
+            pad_up.cd()
+            text_box.Draw()
+            canvas_mt.cd()
+            pad_ratio = TPad("pad_ratio", "", 0., 0.05, 1., 0.3)
+            pad_ratio.SetTopMargin(0.)
+            pad_ratio.SetBottomMargin(0.3)
+            pad_ratio.Draw()
+            draw_histos(pad_ratio, False, [0, 0], None,
+                        [histo_ratio_mt_fit, histo_ratio_mt_bincount], "e2p",
+                        [color_mt_fit, color_mt_bincount])
+            line_unity = TLine(histo_ratio_mt_bincount.GetXaxis().GetXmin(), 1.,
+                               histo_ratio_mt_bincount.GetXaxis().GetXmax(), 1.)
+            line_unity.Draw()
+
+            # Reset the range of the ratio plot
+            y_max_ratio = 1.3
+            y_min_ratio = 0.7
+            histo_ratio_mt_fit.GetYaxis().SetRangeUser(y_min_ratio, y_max_ratio)
+            histo_ratio_mt_bincount.GetYaxis().SetRangeUser(y_min_ratio, y_max_ratio)
+
+            def replace_with_arrows(histo, center_value, min_value, max_value):
+                arrows = []
+                for i in range(1, histo.GetNbinsX() + 1):
+                    content = histo_ratio_mt_fit.GetBinContent(i)
+                    if content < min_value:
+                        histo.SetBinContent(i, 0.)
+                        histo.SetBinError(i, 0.)
+                        bin_center = histo.GetBinCenter(i)
+                        arrows.append(TArrow(bin_center, center_value, bin_center, min_value))
+                    elif content > max_value:
+                        histo.SetBinContent(i, 0.)
+                        histo.SetBinError(i, 0.)
+                        bin_center = histo.GetBinCenter(i)
+                        arrows.append(TArrow(bin_center, center_value, bin_center, max_value))
+                return arrows
+
+            arrows_fit = replace_with_arrows(histo_ratio_mt_fit, 1., y_min_ratio, y_max_ratio)
+            for a in arrows_fit:
+                a.SetLineColor(color_mt_fit)
+                a.SetLineStyle(2)
+                a.Draw()
+            arrows_bc = replace_with_arrows(histo_ratio_mt_bincount, 1., y_min_ratio, y_max_ratio)
+            for a in arrows_bc:
+                a.SetLineColor(color_mt_bincount)
+                a.SetLineStyle(7)
+                a.Draw()
+
+            filename = self.make_file_path(self.d_resultsallpdata, "multi_trial_summary", "eps",
+                                           None, [f"{self.lvar2_binmin[imult]:.2f}", f"{self.lvar2_binmax[imult]:.2f}"])
+
+
+            canvas_mt.SaveAs(filename)
+            canvas_mt.Close()
 
         fileout.Write()
         fileout.Close()
