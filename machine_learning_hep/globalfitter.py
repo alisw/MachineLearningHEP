@@ -264,7 +264,7 @@ class Fitter:
         sigPlusBkg = self.yield_bkg + self.yield_sig
         self.significance = 0
         self.errsignificance = 0
-        if sigPlusBkg > 0:
+        if sigPlusBkg > 0 and self.yield_sig > 0:
             self.significance = self.yield_sig / (sqrt(sigPlusBkg))
             self.errsignificance = self.significance * (sqrt((errSigSq + errBkgSq) / \
                               (4. * sigPlusBkg * sigPlusBkg) +                  \
