@@ -244,11 +244,11 @@ Dspp:
     probcutoptimal: [0.5,0.5,0.5,0.5,0.5] #list of nbins
   
   analysis:
-    MBvspt:
-      plotbin: [1]
+    MBvspt_ntrkl:
+      plotbin: [1,1,1,0]
       usesinglebineff: 0
-      sel_binmin2:  [0] #list of var2 splittng nbins
-      sel_binmax2: [9999] #list of var2 splitting nbins
+      sel_binmin2:  [0,0,20,50] #list of var2 splittng nbins
+      sel_binmax2: [9999,20,50,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
       
       sel_an_binmin: [1,2,3,4,5,6,8,12,16] #list of pt nbins
@@ -257,21 +257,85 @@ Dspp:
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
-        data: "trigger_hasclass_INT7==1 and trigger_hasbit_INT7==1"
+        data: "trigger_hasbit_INT7==1"
         mc: null
 
       data:      
-        results: [DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsMBvspt,
-                  DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsMBvspt,
-                  DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_data/158_20190828-1658/resultsMBvspt,
-                  DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_data/157_20190828-1657/resultsMBvspt] #list of periods
-        resultsallp: DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_data/resultsMBvspt
+        results: [DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsMBvspt_ntrkl,
+                  DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsMBvspt_ntrkl,
+                  DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_data/158_20190828-1658/resultsMBvspt_ntrkl,
+                  DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_data/157_20190828-1657/resultsMBvspt_ntrkl] #list of periods
+        resultsallp: DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_data/resultsMBvspt_ntrkl
       mc:
-        results: [DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/161_20190828-1800/resultsMBvspt,
-                  DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/165_20190828-1801/resultsMBvspt,
-                  DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsMBvspt,
-                  DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsMBvspt] #list of periods
-        resultsallp: DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsMBvspt
+        results: [DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/161_20190828-1800/resultsMBvspt_ntrkl,
+                  DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/165_20190828-1801/resultsMBvspt_ntrkl,
+                  DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsMBvspt_ntrkl,
+                  DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsMBvspt_ntrkl] #list of periods
+        resultsallp: DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_ntrkl
+
+
+
+      mass_fit_lim: [1.75, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
+      bin_width: 0.001 # bin width of the invariant mass histogram
+      usefit: true
+      # Note for now that only a Gaussian fit is available
+      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
+      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
+      masspeak: 1.89
+      massmin: [1.75,1.75,1.75,1.75,1.75,1.75,1.75,1.75,1.75]
+      massmax: [2.15,2.15,2.15,2.15,2.15,2.15,2.15,2.15,2.15]
+      rebin: [2,2,2,2,3,3,3,4,4]
+      includesecpeak: [1,1,1,1,1,1,1,1,1]
+      masssecpeak: 1.969
+      # Fix mean and/or sigma
+      FixedMean: False
+      SetFixGaussianSigma: true
+      # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
+      SetInitialGaussianMean: true
+      # Use values set for "sigmaarray" for initializing total fit (per pT bin),
+      # otherwise what is derived from MC fit is used
+      SetInitialGaussianSigma: false
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
+      exclude_nsigma_sideband: 4
+      # Sigma around mean where signal is integrated after total fit has been done
+      nsigma_signal: 3
+      dolikelihood: true
+      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
+      FixedSigma: false
+      fitcase: Ds
+      latexnamemeson: "D_{s}"
+      latexbin2var: "n_{trkl}"
+      nevents: 1700000000.
+      dodoublecross: false
+
+    MBvspt_v0m:
+      plotbin: [1,1,1,0]
+      usesinglebineff: 0
+      sel_binmin2:  [0,0,200,600] #list of var2 splittng nbins
+      sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
+      var_binning2: v0m_corr
+      
+      sel_an_binmin: [1,2,3,4,5,6,8,12,16] #list of pt nbins
+      sel_an_binmax: [2,3,4,5,6,8,12,16,24] #list of pt nbins
+      binning_matching: [0,1,1,2,2,2,3,4,4] #list of pt nbins
+      presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
+      evtsel: is_ev_rej==0
+      triggersel: 
+        data: "trigger_hasbit_INT7==1"
+        mc: null
+
+      data:      
+        results: [DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsMBvspt_v0m,
+                  DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsMBvspt_v0m,
+                  DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_data/158_20190828-1658/resultsMBvspt_v0m,
+                  DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_data/157_20190828-1657/resultsMBvspt_v0m] #list of periods
+        resultsallp: DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_data/resultsMBvspt_v0m
+      mc:
+        results: [DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/161_20190828-1800/resultsMBvspt_v0m,
+                  DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/165_20190828-1801/resultsMBvspt_v0m,
+                  DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsMBvspt_v0m,
+                  DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsMBvspt_v0m] #list of periods
+        resultsallp: DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_v0m
 
 
 
@@ -374,8 +438,8 @@ Dspp:
     SPDvspt:
       plotbin: [0,1]
       usesinglebineff: 0
-      sel_binmin2:  [0,60] #list of var2 splittng nbins
-      sel_binmax2: [9999,100] #list of var2 splitting nbins
+      sel_binmin2:  [0,0,20,50] #list of var2 splittng nbins
+      sel_binmax2: [9999,20,50,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
       
       sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
@@ -384,7 +448,7 @@ Dspp:
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
-        data: "trigger_hasclass_HighMultSPD==1 and trigger_hasbit_HighMultSPD==1"
+        data: "trigger_hasbit_HighMultSPD==1"
         mc: null
 
       data:      
@@ -435,9 +499,9 @@ Dspp:
     V0mvspt:
       plotbin: [1,1,1,0]
       usesinglebineff: 0
-      sel_binmin2:    [0, 300,600,800] #list of var2 splittng nbins
-      sel_binmax2:  [9999,600,800,1000] #list of var2 splitting nbins
-      var_binning2: v0m
+      sel_binmin2:  [0,0,200,600] #list of var2 splittng nbins
+      sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
+      var_binning2: v0m_corr
       
       sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
       sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
@@ -445,7 +509,7 @@ Dspp:
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
-        data: "trigger_hasclass_HighMultV0==1 and trigger_hasbit_HighMultV0==1"
+        data: "trigger_hasbit_HighMultV0==1"
         mc: null
 
       data:      
