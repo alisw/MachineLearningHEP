@@ -57,6 +57,8 @@ N_PACKING_JOBS=20
 
 MERGED_DIR="merged"
 
+FORCE=false
+
 function print_usage()
 {
     echo -e "Usage: post_download \n" \
@@ -66,6 +68,7 @@ function print_usage()
                                    "   [-m | --max-input-size <max_input_size> in case input file might be bigger that target size]\n" \
                                    "   [-n | --n-max-size <n_max_size> number of big files accepted]\n" \
                                    "   [-j | --jobs <n_jobs> number of ROOT \"hadd\" jobs]]\n" \
+                                   "   [-f | --force do not ask for confirmation]]\n" \
                                    " | [-h | --help print this help message and exit]]"
 }
 
@@ -84,12 +87,16 @@ function check_settings()
     echo -e "Log files will be written to ${STREAM_START_BOLD}${LOG_DIR}${STREAM_END_FORMAT}."
     echo
 
-    echo -e "${STREAM_START_BOLD}Do you agree with these settings? [y/n]${STREAM_END_FORMAT}"
-    read answer
-    if [[ "$answer" != "Y" && "$answer" != "y" ]]
-    then
-        echo "Abort, you were not satisfied apparently. Set your desired values and start again. If you need help, use \"--help\" flag."
-        exit 0
+    if [ "${FORCE}" = true ]; then
+        sleep 5;
+    else
+        echo -e "${STREAM_START_BOLD}Do you agree with these settings? [y/n]${STREAM_END_FORMAT}"
+        read answer
+        if [[ "$answer" != "Y" && "$answer" != "y" ]]
+        then
+            echo "Abort, you were not satisfied apparently. Set your desired values and start again. If you need help, use \"--help\" flag."
+            exit 0
+        fi
     fi
 }
 
@@ -115,6 +122,9 @@ do
         -j | --jobs )               shift
                                     N_PACKING_JOBS="$1"
                                     ;;
+        -f | --force )              shift
+                                    FORCE=true
+                                    ;;
         -h | --help )               shift
                                     print_usage
                                     exit 0
@@ -128,6 +138,10 @@ do
     shift
 done
 
+# Make it an absolute path...
+INPUT_PATH=$(realpath $INPUT_PATH)
+OUTPUT_PATH=${OUTPUT_PATH:-$INPUT_PATH}
+
 check_settings
                            
 echo "#####"
@@ -136,10 +150,6 @@ echo "MERGING GRID DATA up to target file size of $TARGET_PACK_SIZE kB"
 echo "#####"
 echo "#####"
 echo
-
-# Make it an absolute path...
-INPUT_PATH=$(realpath $INPUT_PATH)
-OUTPUT_PATH=${OUTPUT_PATH:-$INPUT_PATH}
 
 # ... and go there
 cd $INPUT_PATH
