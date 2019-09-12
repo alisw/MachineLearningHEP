@@ -95,6 +95,19 @@ LcpKpipp:
           xlim: 
             - 0
             - 1
+        pt_prong2:
+          xlim:
+            - 0
+            - 1
+      eff_cut_scan:
+        pt_prong0:
+          xlim:
+            - 0
+            - 1
+        pt_prong1:
+          xlim:
+            - 0
+            - 1
 
   files_names:
     namefile_unmerged_tree: AnalysisResults.root
@@ -119,10 +132,10 @@ LcpKpipp:
     data:
       nperiods: 4
       nprocessesparallel: 50
-      maxfiles : [50,50,50,50] #list of periods
+      maxfiles : [-1,-1,-1,-1] #list of periods
       chunksizeunp : [100,100,100,100] #list of periods
       chunksizeskim: [100,100,100,100] #list of periods
-      fracmerge : [0.2,0.2,0.2,0.2] #list of periods
+      fracmerge : [0.05,0.05,0.05,0.05] #list of periods
       seedmerge: [12,12,12,12] #list of periods
       period: [LHC16pp,LHC16pp,LHC17pp,LHC18pp] #list of periods
       unmerged_tree_dir: [/data/TTree/D0DsLckINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/merged,
@@ -146,7 +159,7 @@ LcpKpipp:
     mc:
       nperiods: 4
       nprocessesparallel: 50
-      maxfiles : [50,50,50,50] #list of periods
+      maxfiles : [-1,-1,-1,-1] #list of periods
       chunksizeunp : [100,100,100,100] #list of periods
       chunksizeskim: [1000,1000,1000,1000] #list of periods
       fracmerge : [1.0,1.0,1.0,1.0] #list of periods
