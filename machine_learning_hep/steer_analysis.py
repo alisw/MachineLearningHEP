@@ -375,7 +375,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         if normalizecross is False:
             myan.multi_plotter()
         if normalizecross is True:
-            myan.multi_plotterNormYields()
+            myan.multi_plotternormyields()
     if dosystprob is True:
         mysis.probvariation()
 

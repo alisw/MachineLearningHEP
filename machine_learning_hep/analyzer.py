@@ -1148,7 +1148,7 @@ class Analyzer:
         cCrossvsvar2.SaveAs("%s/Cross%s%sVs%s.eps" % (self.d_resultsallpdata,
                                                       self.case, self.typean, self.v_var2_binning))
 
-    def plotterNormYields(self):
+    def plotternormyields(self):
         self.loadstyle()
 
         fileouteff = TFile.Open("%s/efficiencies%s%s.root" % \
@@ -1213,7 +1213,8 @@ class Analyzer:
             listvalueserr.append(listvalerrpt)
         legvsvar1.Draw()
         cCrossvsvar1.SaveAs("%s/CorrectedYieldsNorm%s%sVs%s.eps" % (self.d_resultsallpdata,
-                                                      self.case, self.typean, self.v_var_binning))
+                                                                    self.case, self.typean,
+                                                                    self.v_var_binning))
     def studyevents(self):
         self.loadstyle()
         filedata = TFile.Open(self.f_evtvaldata)
