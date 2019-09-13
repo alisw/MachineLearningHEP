@@ -276,22 +276,22 @@ LcpKpipp:
                   /data/Derived/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsMBvspt_ntrkl] #list of periods
         resultsallp: /data/Derived/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_ntrkl
 
-      mass_fit_lim: [2.16, 2.46] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [2.166, 2.406] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       # Note for now that only a Gaussian fit is available
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.2864
-      massmin: [2.14,2.14,2.14,2.14,2.14,2.14,2.14,2.14]
-      massmax: [2.436,2.436,2.436,2.436,2.436,2.436,2.436,2.436]
-      rebin: [6,6,6,6,6,6,6,6]
+      massmin: [2.166,2.166,2.166,2.166,2.166,2.166,2.166,2.166]
+      massmax: [2.406,2.406,2.406,2.406,2.406,2.406,2.406,2.406]
+      rebin: [4,4,4,4,4,4,4,4]
       includesecpeak: [0,0,0,0,0,0,0,0]
       masssecpeak: 2.2864
 
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: true
+      SetFixGaussianSigma: false
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
@@ -302,7 +302,7 @@ LcpKpipp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.0078, 0.0078, 0.0082, 0.0091, 0.0097, 0.0109, 0.0117, 0.0156]
+      sigmaarray: [0.0059, 0.0060, 0.0065, 0.0070, 0.0073, 0.0080, 0.0085, 0.0090]
       FixedSigma: true
       fitcase: Lc
       latexnamemeson: "\Lambda_{c}"
@@ -348,22 +348,22 @@ LcpKpipp:
                   /data/Derived/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsMBvspt_v0m] #list of periods
         resultsallp: /data/Derived/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_v0m
 
-      mass_fit_lim: [2.16, 2.46] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [2.166, 2.406] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       # Note for now that only a Gaussian fit is available
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.2864
-      massmin: [2.14,2.14,2.14,2.14,2.14,2.14,2.14,2.14]
-      massmax: [2.436,2.436,2.436,2.436,2.436,2.436,2.436,2.436]
-      rebin: [6,6,6,6,6,6,6,6]
+      massmin: [2.166,2.166,2.166,2.166,2.166,2.166,2.166,2.166]
+      massmax: [2.406,2.406,2.406,2.406,2.406,2.406,2.406,2.406]
+      rebin: [4,4,4,4,4,4,4,4]
       includesecpeak: [0,0,0,0,0,0,0,0]
       masssecpeak: 2.2864
 
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: true
+      SetFixGaussianSigma: false
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
@@ -374,7 +374,7 @@ LcpKpipp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.0078, 0.0078, 0.0082, 0.0091, 0.0097, 0.0109, 0.0117, 0.0156]
+      sigmaarray: [0.0059, 0.0060, 0.0065, 0.0070, 0.0073, 0.0080, 0.0085, 0.0090]
       FixedSigma: true
       fitcase: Lc
       latexnamemeson: "\Lambda_{c}"
@@ -423,20 +423,20 @@ LcpKpipp:
 
 
 
-      mass_fit_lim: [2.14, 2.46] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [2.166, 2.406] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.2864
-      massmin: [2.14,2.14,2.14,2.14,2.14]
-      massmax: [2.436,2.436,2.436,2.436,2.436]
-      rebin: [6,6,6,6,6]
+      massmin: [2.166,2.166,2.166,2.166,2.166,2.166,2.166,2.166]
+      massmax: [2.406,2.406,2.406,2.406,2.406,2.406,2.406,2.406]
+      rebin: [4,4,4,4,4,4,4,4]
       includesecpeak: [0,0,0,0,0]
       masssecpeak: 2.2864
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: true
+      SetFixGaussianSigma: false
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
@@ -447,7 +447,7 @@ LcpKpipp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.0078, 0.0091, 0.0097, 0.0109, 0.0117]
+      sigmaarray: [0.0059, 0.0060, 0.0065, 0.0070, 0.0073, 0.0080, 0.0085, 0.0090]
       FixedSigma: true
       fitcase: Lc
       latexnamemeson: "\Lambda_{c}"
@@ -484,20 +484,20 @@ LcpKpipp:
                   /data/Derived/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsSPDvspt,
                   /data/Derived/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsSPDvspt] #list of periods
         resultsallp: /data/Derived/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsSPDvspt
-      mass_fit_lim: [2.14, 2.46] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [2.166, 2.406] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.2864
-      massmin: [2.14,2.14,2.14,2.14,2.14,2.14,2.14,2.14]
-      massmax: [2.436,2.436,2.436,2.436,2.436,2.436,2.436,2.436]
-      rebin: [6,6,6,6,6,6,6,6]
+      massmin: [2.14,2.14,2.14,2.14,2.14]
+      massmax: [2.436,2.436,2.436,2.436,2.436]
+      rebin: [4,4,4,4,4,4,4,4]
       includesecpeak: [0,0,0,0,0,0,0,0]
       masssecpeak: 2.2864
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: true
+      SetFixGaussianSigma: false
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
@@ -508,7 +508,7 @@ LcpKpipp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
+      sigmaarray: [0.0059, 0.0060, 0.0065, 0.0070, 0.0073, 0.0080, 0.0085, 0.0090]
       FixedSigma: true
       fitcase: Lc
       latexnamemeson: "\Lambda_{c}"
@@ -549,20 +549,20 @@ LcpKpipp:
                   /data/Derived/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsV0mvspt] #list of periods
         resultsallp: /data/Derived/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsV0mvspt
 
-      mass_fit_lim: [2.14, 2.46] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [2.166, 2.406] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.2864
-      massmin: [2.14,2.14,2.14,2.14,2.14,2.14,2.14,2.14]
-      massmax: [2.436,2.436,2.436,2.436,2.436,2.436,2.436,2.436]
-      rebin: [6,6,6,6,6,6,6,6]
+      massmin: [2.166,2.166,2.166,2.166,2.166,2.166,2.166,2.166]
+      massmax: [2.406,2.406,2.406,2.406,2.406,2.406,2.406,2.406]
+      rebin: [4,4,4,4,4,4,4,4]
       includesecpeak: [0,0,0,0,0,0,0,0]
       masssecpeak: 2.2864
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: true
+      SetFixGaussianSigma: false
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
@@ -573,7 +573,7 @@ LcpKpipp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.0078, 0.0078, 0.0082, 0.0091, 0.0097, 0.0109, 0.0117, 0.0156]
+      sigmaarray: [0.0059, 0.0060, 0.0065, 0.0070, 0.0073, 0.0080, 0.0085, 0.0090]
       FixedSigma: true
       fitcase: Lc
       latexnamemeson: "\Lambda_{c}"
