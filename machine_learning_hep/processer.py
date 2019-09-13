@@ -539,32 +539,31 @@ class Processer: # pylint: disable=too-many-instance-attributes
     def process_valevents(self, file_index):
         dfevt = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
         dfevt = dfevt.query("is_ev_rej==0")
-        triggerlist = ["HighMultV0", "HighMultSPD"]
-        varlist = ["v0m", "n_tracklets"]
-        nbinsvar = [100, 100]
+        triggerlist = ["HighMultV0", "HighMultSPD", "INT7"]
+        varlist = ["v0m_corr", "n_tracklets_corr"]
+        nbinsvar = [100, 200]
         minrvar = [0, 0]
         maxrvar = [1500, 200]
         fileevtroot = TFile.Open(self.l_evtvalroot[file_index], "recreate")
 
         for ivar, var in enumerate(varlist):
-            label = "hclassINT7vs%s" % (var)
+            label = "hbitINT7vs%s" % (var)
             histoMB = TH1F(label, label, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
-            fill_hist(histoMB, dfevt.query("trigger_hasclass_INT7==1")[var])
+            fill_hist(histoMB, dfevt.query("trigger_hasbit_INT7==1")[var])
             histoMB.Sumw2()
             histoMB.Write()
             for trigger in triggerlist:
-                triggerclass = "trigger_hasclass_%s==1" % trigger
-                labeltriggerANDMB = "hclass%sANDINT7vs%s" % (trigger, var)
-                labeltrigger = "hclass%svs%s" % (trigger, var)
+                triggerbit = "trigger_hasbit_%s==1" % trigger
+                labeltriggerANDMB = "hbit%sANDINT7vs%s" % (trigger, var)
+                labeltrigger = "hbit%svs%s" % (trigger, var)
                 histotrigANDMB = TH1F(labeltriggerANDMB, labeltriggerANDMB, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
                 histotrig = TH1F(labeltrigger, labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
-                fill_hist(histotrigANDMB, dfevt.query(triggerclass + " and trigger_hasclass_INT7==1")[var])
-                fill_hist(histotrig, dfevt.query(triggerclass)[var])
+                fill_hist(histotrigANDMB, dfevt.query(triggerbit + " and trigger_hasbit_INT7==1")[var])
+                fill_hist(histotrig, dfevt.query(triggerbit)[var])
                 histotrigANDMB.Sumw2()
                 histotrig.Sumw2()
                 histotrigANDMB.Write()
                 histotrig.Write()
-
         dfevtnorm = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
         hNorm = TH1F("hEvForNorm", ";;Normalisation", 2, 0.5, 2.5)
         hNorm.GetXaxis().SetBinLabel(1, "normsalisation factor")

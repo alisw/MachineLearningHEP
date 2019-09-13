@@ -1,4 +1,4 @@
-case: D0pp
+case: LcpK0spp
 download:
   alice:
     activate: false
@@ -51,22 +51,22 @@ mlapplication:
     domergeapplyperiods: false
 
 analysis:
-  type: MBjetvspt
+  type: MBvspt_ntrkl
   # Do each period separately including merged (true)
   # Do only merged (false)
-  doperperiod: true
+  doperperiod: false
   data:
     histomass: false
   mc:
     histomass: false
-    efficiency: true
-    feeddown: true
+    efficiency: false
+    feeddown: false
   dofit: false
   # Control the yield systemaitc uncertainty
   dosyst: false
   dojetstudies: false
-  doeff: true
-  docross: false
+  doeff: false
+  docross: true
 
 systematics:
   # Not yet used
