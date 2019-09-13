@@ -402,8 +402,9 @@ class Analyzer:
                 bincount_err_nominal = bincount_err_nominal
                 mean_nominal = mass_fitter_nominal.mean_fit
                 sigma_nominal = mass_fitter_nominal.sigma_fit
+                chisquare_ndf_nominal = mass_fitter_nominal.tot_fit_func.GetNDF()
                 chisquare_ndf_nominal = mass_fitter_nominal.tot_fit_func.GetChisquare() / \
-                        mass_fitter_nominal.tot_fit_func.GetNDF()
+                        chisquare_ndf_nominal if chisquare_ndf_nominal > 0. else 0.
 
                 # Collect variation values
                 yields_syst = []
@@ -433,14 +434,16 @@ class Analyzer:
 
                                     mass_fitter_syst.do_likelihood()
                                     success = mass_fitter_syst.fit()
+                                    chisquare_ndf_syst = mass_fitter_syst.tot_fit_func.GetNDF()
                                     chisquare_ndf_syst = \
-                                    mass_fitter_syst.tot_fit_func.GetChisquare() / \
-                                            mass_fitter_syst.tot_fit_func.GetNDF()
+                                            mass_fitter_syst.tot_fit_func.GetChisquare() / \
+                                            chisquare_ndf_syst if chisquare_ndf_syst > 0. else 0.
                                     # Only if the fit was successful and in case the chisquare does
                                     # exceed the nominal too much we extract the values from this
                                     # variation
                                     if success and \
-                                            chisquare_ndf_syst < self.p_max_chisquare_ndf_syst:
+                                            0. < chisquare_ndf_syst < \
+                                            self.p_max_chisquare_ndf_syst:
                                         rawYield = mass_fitter_syst.yield_sig
                                         rawYieldErr = mass_fitter_syst.yield_sig_err
                                         yields_syst.append(rawYield)
