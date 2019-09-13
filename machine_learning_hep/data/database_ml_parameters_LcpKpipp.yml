@@ -247,11 +247,13 @@ LcpKpipp:
 
   analysis:
     MBvspt_ntrkl:
+      normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0
       sel_binmin2:  [0,0,20,50] #list of var2 splittng nbins
       sel_binmax2: [9999,20,50,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
+      triggerbit: INT7
 
       sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
       sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
@@ -317,11 +319,13 @@ LcpKpipp:
         bincount_sigma: [3.5, 4.0,4.5]
 
     MBvspt_v0m:
+      normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0
       sel_binmin2:  [0,0,200,600] #list of var2 splittng nbins
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
       var_binning2: v0m_corr
+      triggerbit: INT7
 
       sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
       sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
@@ -387,11 +391,13 @@ LcpKpipp:
         bincount_sigma: [3.5, 4.0,4.5]
 
     MBjetvspt:
+      normalizecross: true
       plotbin: [1]
       usesinglebineff: null
       sel_binmin2: [5] #list of nbins
       sel_binmax2: [15] #list of nbins
       var_binning2: pt_jet
+      triggerbit: INT7
       
       sel_an_binmin: [2,4,5,6,8] #list of pt nbins
       sel_an_binmax: [4,5,6,8,12] #list of pt nbins
@@ -450,11 +456,13 @@ LcpKpipp:
       dodoublecross: false
   
     SPDvspt:
+      normalizecross: false
       plotbin: [0,1]
       usesinglebineff: 0
       sel_binmin2:  [0,0,20,50] #list of var2 splittng nbins
       sel_binmax2: [9999,20,50,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
+      triggerbit: HighMultSPD
       
       sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
       sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
@@ -510,11 +518,13 @@ LcpKpipp:
 
 
     V0mvspt:
+      normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0
       sel_binmin2:  [0,0,200,600] #list of var2 splittng nbins
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
       var_binning2: v0m_corr
+      triggerbit: HighMultV0M
       
       sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
       sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
