@@ -247,11 +247,13 @@ LcpKpipp:
 
   analysis:
     MBvspt_ntrkl:
+      normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0
       sel_binmin2:  [0,0,20,50] #list of var2 splittng nbins
       sel_binmax2: [9999,20,50,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
+      triggerbit: INT7
 
       sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
       sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
@@ -262,34 +264,34 @@ LcpKpipp:
         data: "trigger_hasbit_INT7==1"
         mc: null
       data:
-        results: [LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsMBvspt_ntrkl,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsMBvspt_ntrkl,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_data/158_20190828-1658/resultsMBvspt_ntrkl,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_data/157_20190828-1657/resultsMBvspt_ntrkl] #list of periods
-        resultsallp: LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_data/resultsMBvspt_ntrkl
+        results: [/data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_data/158_20190828-1658/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_data/157_20190828-1657/resultsMBvspt_ntrkl] #list of periods
+        resultsallp: /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_data/resultsMBvspt_ntrkl
       mc:
-        results: [LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodLcpKpi/162_20190828-1800/resultsMBvspt_ntrkl,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodLcpKpi/164_20190828-1801/resultsMBvspt_ntrkl,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsMBvspt_ntrkl,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsMBvspt_ntrkl] #list of periods
-        resultsallp: LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_ntrkl
+        results: [/data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodLcpKpi/162_20190828-1800/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodLcpKpi/164_20190828-1801/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsMBvspt_ntrkl] #list of periods
+        resultsallp: /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_ntrkl
 
-      mass_fit_lim: [2.16, 2.46] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [2.166, 2.406] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       # Note for now that only a Gaussian fit is available
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.2864
-      massmin: [2.14,2.14,2.14,2.14,2.14,2.14,2.14,2.14]
-      massmax: [2.436,2.436,2.436,2.436,2.436,2.436,2.436,2.436]
-      rebin: [6,6,6,6,6,6,6,6]
+      massmin: [2.166,2.166,2.166,2.166,2.166,2.166,2.166,2.166]
+      massmax: [2.406,2.406,2.406,2.406,2.406,2.406,2.406,2.406]
+      rebin: [4,4,4,4,4,4,4,4]
       includesecpeak: [0,0,0,0,0,0,0,0]
       masssecpeak: 2.2864
 
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: true
+      SetFixGaussianSigma: false
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
@@ -300,7 +302,7 @@ LcpKpipp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.0078, 0.0078, 0.0082, 0.0091, 0.0097, 0.0109, 0.0117, 0.0156]
+      sigmaarray: [0.0059, 0.0060, 0.0065, 0.0070, 0.0073, 0.0080, 0.0085, 0.0090]
       FixedSigma: true
       fitcase: Lc
       latexnamemeson: "\Lambda_{c}"
@@ -317,11 +319,13 @@ LcpKpipp:
         bincount_sigma: [3.5, 4.0,4.5]
 
     MBvspt_v0m:
+      normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0
       sel_binmin2:  [0,0,200,600] #list of var2 splittng nbins
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
       var_binning2: v0m_corr
+      triggerbit: INT7
 
       sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
       sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
@@ -332,34 +336,34 @@ LcpKpipp:
         data: "trigger_hasbit_INT7==1"
         mc: null
       data:
-        results: [LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsMBvspt_v0m,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsMBvspt_v0m,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_data/158_20190828-1658/resultsMBvspt_v0m,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_data/157_20190828-1657/resultsMBvspt_v0m] #list of periods
-        resultsallp: LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_data/resultsMBvspt_v0m
+        results: [/data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsMBvspt_v0m,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsMBvspt_v0m,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_data/158_20190828-1658/resultsMBvspt_v0m,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_data/157_20190828-1657/resultsMBvspt_v0m] #list of periods
+        resultsallp: /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_data/resultsMBvspt_v0m
       mc:
-        results: [LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodLcpKpi/162_20190828-1800/resultsMBvspt_v0m,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodLcpKpi/164_20190828-1801/resultsMBvspt_v0m,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsMBvspt_v0m,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsMBvspt_v0m] #list of periods
-        resultsallp: LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_v0m
+        results: [/data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodLcpKpi/162_20190828-1800/resultsMBvspt_v0m,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodLcpKpi/164_20190828-1801/resultsMBvspt_v0m,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsMBvspt_v0m,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsMBvspt_v0m] #list of periods
+        resultsallp: /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_v0m
 
-      mass_fit_lim: [2.16, 2.46] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [2.166, 2.406] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       # Note for now that only a Gaussian fit is available
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.2864
-      massmin: [2.14,2.14,2.14,2.14,2.14,2.14,2.14,2.14]
-      massmax: [2.436,2.436,2.436,2.436,2.436,2.436,2.436,2.436]
-      rebin: [6,6,6,6,6,6,6,6]
+      massmin: [2.166,2.166,2.166,2.166,2.166,2.166,2.166,2.166]
+      massmax: [2.406,2.406,2.406,2.406,2.406,2.406,2.406,2.406]
+      rebin: [4,4,4,4,4,4,4,4]
       includesecpeak: [0,0,0,0,0,0,0,0]
       masssecpeak: 2.2864
 
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: true
+      SetFixGaussianSigma: false
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
@@ -370,7 +374,7 @@ LcpKpipp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.0078, 0.0078, 0.0082, 0.0091, 0.0097, 0.0109, 0.0117, 0.0156]
+      sigmaarray: [0.0059, 0.0060, 0.0065, 0.0070, 0.0073, 0.0080, 0.0085, 0.0090]
       FixedSigma: true
       fitcase: Lc
       latexnamemeson: "\Lambda_{c}"
@@ -387,11 +391,13 @@ LcpKpipp:
         bincount_sigma: [3.5, 4.0,4.5]
 
     MBjetvspt:
+      normalizecross: true
       plotbin: [1]
       usesinglebineff: null
       sel_binmin2: [5] #list of nbins
       sel_binmax2: [15] #list of nbins
       var_binning2: pt_jet
+      triggerbit: INT7
       
       sel_an_binmin: [2,4,5,6,8] #list of pt nbins
       sel_an_binmax: [4,5,6,8,12] #list of pt nbins
@@ -403,34 +409,34 @@ LcpKpipp:
         mc: "abs(eta_jet)<0.5"
 
       data:      
-        results: [LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsMBjetvspt,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsMBjetvspt,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_data/158_20190828-1658/resultsMBjetvspt,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_data/157_20190828-1657/resultsMBjetvspt] #list of periods
-        resultsallp: LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_data/resultsMBjetvspt
+        results: [/data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsMBjetvspt,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsMBjetvspt,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_data/158_20190828-1658/resultsMBjetvspt,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_data/157_20190828-1657/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_data/resultsMBjetvspt
       mc:
-        results: [LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodLcpKpi/162_20190828-1800/resultsMBjetvspt,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodLcpKpi/164_20190828-1801/resultsMBjetvspt,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsMBjetvspt,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsMBjetvspt] #list of periods
-        resultsallp: LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsMBjetvspt
+        results: [/data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodLcpKpi/162_20190828-1800/resultsMBjetvspt,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodLcpKpi/164_20190828-1801/resultsMBjetvspt,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsMBjetvspt,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsMBjetvspt
 
 
 
-      mass_fit_lim: [2.14, 2.46] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [2.166, 2.406] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.2864
-      massmin: [2.14,2.14,2.14,2.14,2.14]
-      massmax: [2.436,2.436,2.436,2.436,2.436]
-      rebin: [6,6,6,6,6]
+      massmin: [2.166,2.166,2.166,2.166,2.166]
+      massmax: [2.406,2.406,2.406,2.406,2.406]
+      rebin: [4,4,4,4,4]
       includesecpeak: [0,0,0,0,0]
       masssecpeak: 2.2864
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: true
+      SetFixGaussianSigma: false
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
@@ -441,7 +447,7 @@ LcpKpipp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.0078, 0.0091, 0.0097, 0.0109, 0.0117]
+      sigmaarray: [0.0059, 0.0060, 0.0065, 0.0070, 0.0073, 0.0080, 0.0085, 0.0090]
       FixedSigma: true
       fitcase: Lc
       latexnamemeson: "\Lambda_{c}"
@@ -450,11 +456,13 @@ LcpKpipp:
       dodoublecross: false
   
     SPDvspt:
+      normalizecross: false
       plotbin: [0,1]
       usesinglebineff: 0
       sel_binmin2:  [0,0,20,50] #list of var2 splittng nbins
       sel_binmax2: [9999,20,50,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
+      triggerbit: HighMultSPD
       
       sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
       sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
@@ -465,31 +473,31 @@ LcpKpipp:
         data: "trigger_hasbit_HighMultSPD==1"
         mc: null
       data:      
-        results: [LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsSPDvspt,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsSPDvspt,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_data/158_20190828-1658/resultsSPDvspt,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_data/157_20190828-1657/resultsSPDvspt] #list of periods
-        resultsallp: LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_data/resultsSPDvspt
+        results: [/data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsSPDvspt,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsSPDvspt,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_data/158_20190828-1658/resultsSPDvspt,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_data/157_20190828-1657/resultsSPDvspt] #list of periods
+        resultsallp: /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_data/resultsSPDvspt
       mc:
-        results: [LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodLcpKpi/162_20190828-1800/resultsSPDvspt,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodLcpKpi/164_20190828-1801/resultsSPDvspt,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsSPDvspt,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsSPDvspt] #list of periods
-        resultsallp: LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsSPDvspt
-      mass_fit_lim: [2.14, 2.46] # region for the fit of the invariant mass distribution [GeV/c^2]
+        results: [/data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodLcpKpi/162_20190828-1800/resultsSPDvspt,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodLcpKpi/164_20190828-1801/resultsSPDvspt,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsSPDvspt,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsSPDvspt] #list of periods
+        resultsallp: /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsSPDvspt
+      mass_fit_lim: [2.166, 2.406] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.2864
-      massmin: [2.14,2.14,2.14,2.14,2.14,2.14,2.14,2.14]
-      massmax: [2.436,2.436,2.436,2.436,2.436,2.436,2.436,2.436]
-      rebin: [6,6,6,6,6,6,6,6]
+      massmin: [2.166,2.166,2.166,2.166,2.166,2.166,2.166,2.166]
+      massmax: [2.406,2.406,2.406,2.406,2.406,2.406,2.406,2.406]
+      rebin: [4,4,4,4,4,4,4,4]
       includesecpeak: [0,0,0,0,0,0,0,0]
       masssecpeak: 2.2864
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: true
+      SetFixGaussianSigma: false
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
@@ -500,7 +508,7 @@ LcpKpipp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
+      sigmaarray: [0.0059, 0.0060, 0.0065, 0.0070, 0.0073, 0.0080, 0.0085, 0.0090]
       FixedSigma: true
       fitcase: Lc
       latexnamemeson: "\Lambda_{c}"
@@ -510,11 +518,13 @@ LcpKpipp:
 
 
     V0mvspt:
+      normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0
       sel_binmin2:  [0,0,200,600] #list of var2 splittng nbins
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
       var_binning2: v0m_corr
+      triggerbit: HighMultV0
       
       sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
       sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
@@ -527,32 +537,32 @@ LcpKpipp:
         mc: null
 
       data:      
-        results: [LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsV0mvspt,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsV0mvspt,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_data/158_20190828-1658/resultsV0mvspt,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_data/157_20190828-1657/resultsV0mvspt] #list of periods
-        resultsallp: LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_data/resultsV0mvspt
+        results: [/data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsV0mvspt,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsV0mvspt,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_data/158_20190828-1658/resultsV0mvspt,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_data/157_20190828-1657/resultsV0mvspt] #list of periods
+        resultsallp: /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_data/resultsV0mvspt
       mc:
-        results: [LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodLcpKpi/162_20190828-1800/resultsV0mvspt,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodLcpKpi/164_20190828-1801/resultsV0mvspt,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsV0mvspt,
-                  LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsV0mvspt] #list of periods
-        resultsallp: LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsV0mvspt
+        results: [/data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodLcpKpi/162_20190828-1800/resultsV0mvspt,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodLcpKpi/164_20190828-1801/resultsV0mvspt,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsV0mvspt,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsV0mvspt] #list of periods
+        resultsallp: /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsV0mvspt
 
-      mass_fit_lim: [2.14, 2.46] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [2.166, 2.406] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.2864
-      massmin: [2.14,2.14,2.14,2.14,2.14,2.14,2.14,2.14]
-      massmax: [2.436,2.436,2.436,2.436,2.436,2.436,2.436,2.436]
-      rebin: [6,6,6,6,6,6,6,6]
+      massmin: [2.166,2.166,2.166,2.166,2.166,2.166,2.166,2.166]
+      massmax: [2.406,2.406,2.406,2.406,2.406,2.406,2.406,2.406]
+      rebin: [4,4,4,4,4,4,4,4]
       includesecpeak: [0,0,0,0,0,0,0,0]
       masssecpeak: 2.2864
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: true
+      SetFixGaussianSigma: false
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
@@ -563,7 +573,7 @@ LcpKpipp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.0078, 0.0078, 0.0082, 0.0091, 0.0097, 0.0109, 0.0117, 0.0156]
+      sigmaarray: [0.0059, 0.0060, 0.0065, 0.0070, 0.0073, 0.0080, 0.0085, 0.0090]
       FixedSigma: true
       fitcase: Lc
       latexnamemeson: "\Lambda_{c}"
@@ -577,8 +587,9 @@ LcpKpipp:
   
   validation:
     data:
-      dir: [dataval_16, dataval_16_2, dataval_17, dataval_18] #list of periods
-      dirmerged: datavaltot
+      dir: [/data/Derived/dataval_16, /data/Derived/dataval_16_2, /data/Derived/dataval_17, /data/Derived/dataval_18] #list of periods
+      dirmerged: /data/Derived/datavaltot
     mc:
-      dir: [mcval_16, mcval_16_2, mcval_17, mcval_18] #list of periods
-      dirmerged: mcvaltot
+      dir: [/data/Derived/mcval_16, /data/Derived/mcval_16_2, /data/Derived/mcval_17, /data/Derived/mcval_18] #list of periods
+      dirmerged: /data/Derived/mcvaltot
+ 

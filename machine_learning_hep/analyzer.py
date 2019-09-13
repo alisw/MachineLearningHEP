@@ -1213,7 +1213,8 @@ class Analyzer:
             binminv = hmult.GetXaxis().FindBin(self.lvar2_binmin[imult])
             binmaxv = hmult.GetXaxis().FindBin(self.lvar2_binmax[imult])
             norm = hmult.Integral(binminv, binmaxv)
-            hcross.Scale(1./norm)
+            if norm > 0:
+                hcross.Scale(1./norm)
             fileoutcross.cd()
             hcross.GetXaxis().SetTitle("p_{T} %s (GeV)" % self.p_latexnmeson)
             hcross.GetYaxis().SetTitleOffset(1.3)
