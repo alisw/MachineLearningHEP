@@ -23,7 +23,7 @@ from array import *
 import numpy as np
 # pylint: disable=import-error, no-name-in-module, unused-import
 from root_numpy import hist2array, array2hist
-from ROOT import TFile, TH1F, TCanvas, TPad
+from ROOT import TFile, TH1F, TCanvas, TPad, TF1
 from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
 from ROOT import gROOT
 from ROOT import TStyle, kBlue, kGreen, kBlack, kRed
@@ -1150,14 +1150,14 @@ class Analyzer:
     def studyevents(self):
         self.loadstyle()
         filedata = TFile.Open(self.f_evtvaldata)
-        triggerlist = ["HighMultV0", "HighMultSPD"]
-        varlist = ["v0m", "n_tracklets"]
+        triggerlist = ["HighMultV0", "HighMultV0", "HighMultSPD"]
+        varlist = ["v0m", "perc_v0m", "n_tracklets"]
 
-        ctrigger = TCanvas('ctrigger', 'The Fit Canvas')
-        ctrigger.SetCanvasSize(2100, 1000)
-        ctrigger.Divide(2, 1)
-        for i, _ in enumerate(triggerlist):
-            ctrigger.cd(i+1)
+        ctrigger_vhm = TCanvas('ctrigger_vhm', 'The Fit Canvas')
+        ctrigger_vhm.SetCanvasSize(2100, 1000)
+        ctrigger_vhm.Divide(2, 1)
+        for i, _ in enumerate(triggerlist[0:2]):
+            ctrigger_vhm.cd(i+1)
             leg = TLegend(.5, .65, .7, .85)
             leg.SetBorderSize(0)
             leg.SetFillColor(0)
@@ -1165,8 +1165,8 @@ class Analyzer:
             leg.SetTextFont(42)
             leg.SetTextSize(0.035)
 
-            labeltriggerANDMB = "hclass%sANDINT7vs%s" % (triggerlist[i], varlist[i])
-            labelMB = "hclassINT7vs%s" % varlist[i]
+            labeltriggerANDMB = "hbit%sANDINT7vs%s" % (triggerlist[i], varlist[i])
+            labelMB = "hbitINT7vs%s" % varlist[i]
             heff = filedata.Get(labeltriggerANDMB)
             hden = filedata.Get(labelMB)
             heff.SetName(heff.GetName() + "_new")
@@ -1179,13 +1179,44 @@ class Analyzer:
             heff.Draw("epsame")
             leg.AddEntry(heff, triggerlist[i], "LEP")
             leg.Draw()
-            print("INDEX", i)
-        ctrigger.SaveAs(self.make_file_path(self.d_valevtdata, "ctrigger", "eps", \
+        ctrigger_vhm.SaveAs(self.make_file_path(self.d_valevtdata, "ctrigger_vhm", "eps", \
                                         None, None))
 
+        ctrigger_shm = TCanvas('ctrigger_shm', 'The Fit Canvas')
+        ctrigger_shm.SetCanvasSize(1100, 1000)
+        ctrigger_shm.Divide(1, 1)
+        for i, _ in enumerate(triggerlist[2:]):
+            ctrigger_shm.cd(i+1)
+            leg = TLegend(.5, .65, .7, .85)
+            leg.SetBorderSize(0)
+            leg.SetFillColor(0)
+            leg.SetFillStyle(0)
+            leg.SetTextFont(42)
+            leg.SetTextSize(0.035)
+
+            i = i + 2
+            labeltriggerANDMB = "hbit%sANDINT7vs%s" % (triggerlist[i], varlist[i])
+            labelMB = "hbitINT7vs%s" % varlist[i]
+            heff = filedata.Get(labeltriggerANDMB)
+            hden = filedata.Get(labelMB)
+            heff.SetName(heff.GetName() + "_new")
+            heff.SetLineColor(i+1)
+            heff.Divide(heff, hden, 1.0, 1.0, "B")
+            heff.SetMaximum(2.)
+            heff.GetXaxis().SetTitle("offline %s" % varlist[i])
+            heff.SetMinimum(0.)
+            heff.GetYaxis().SetTitle("trigger efficiency")
+            heff.Draw("epsame")
+            leg.AddEntry(heff, triggerlist[i], "LEP")
+            leg.Draw()
+        ctrigger_shm.SaveAs(self.make_file_path(self.d_valevtdata, "ctrigger_shm", "eps", \
+                                        None, None))
+
+        filenorm = TFile.Open(self.make_file_path(self.d_valevtdata, "trigger_norm", "root", None, None), "recreate")
         ccorrection = TCanvas('ccorrection', 'The Fit Canvas')
-        ccorrection.SetCanvasSize(2100, 1000)
-        ccorrection.Divide(2, 1)
+        ccorrection.SetCanvasSize(3100, 1000)
+        ccorrection.Divide(3, 1)
+        funcs = []
         for i, _ in enumerate(triggerlist):
             ccorrection.cd(i+1)
             leg = TLegend(.5, .65, .7, .85)
@@ -1195,17 +1226,35 @@ class Analyzer:
             leg.SetTextFont(42)
             leg.SetTextSize(0.035)
 
-            labeltrigger = "hclass%svs%s" % (triggerlist[i], varlist[i])
-            labelMB = "hclassINT7vs%s" % varlist[i]
+            labeltrigger = "hbit%svs%s" % (triggerlist[i], varlist[i])
+            labelMB = "hbitINT7vs%s" % varlist[i]
             hratio = filedata.Get(labeltrigger)
             hden = filedata.Get(labelMB)
             hratio.SetLineColor(i+1)
-            hratio.Divide(hratio, hden, 1.0, 1.0, "B")
+            hratio.Divide(hratio, hden, 1.0, 1.0, "")
             hratio.GetXaxis().SetTitle("offline %s" % varlist[i])
             hratio.SetMinimum(0.)
             hratio.GetYaxis().SetTitle("ratio %s/MB" % triggerlist[i])
             hratio.Draw("epsame")
+            func = TF1("func_%s" % triggerlist[i], "([0]/(1+ TMath::Exp(-[1]*(x-[2]))))")
+            if (i == 0):
+                func.SetParameters(300, .1, 570)
+                func.SetParLimits(1, 0., 10.)
+                func.SetParLimits(2, 0., 1500.)
+                func.SetRange(0., 1500.)
+            else:
+                func.SetParameters(100, .1, 50)
+                func.SetParLimits(1, 0., 10.)
+                func.SetParLimits(2, 0., 200.)
+                func.SetRange(0., 200.)
+            func.SetLineWidth(1)
+            hratio.Fit(func, "L")
+            func.Draw("same")
+            func.SetLineColor(i+1)
+            funcs.append(func)
             leg.AddEntry(hratio, triggerlist[i], "LEP")
             leg.Draw()
+            hratio.Write()
         ccorrection.SaveAs(self.make_file_path(self.d_valevtdata, "ccorrection", "eps", \
                                         None, None))
+        filenorm.Close()
