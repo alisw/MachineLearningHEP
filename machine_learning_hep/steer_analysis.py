@@ -152,6 +152,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     myan = MultiAnalyzer(data_param[case], case, typean, doanaperperiod)
     mysis = Systematics(data_param[case], case, typean)
 
+    normalizecross = data_param[case]["analysis"][typean]["normalizecross"]
+
     #creating folder if not present
     counter = 0
     if doconversionmc is True:
@@ -370,7 +372,10 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     if dofeeddown is True:
         myan.multi_feeddown()
     if docross is True:
-        myan.multi_plotter()
+        if normalizecross is False:
+            myan.multi_plotter()
+        if normalizecross is True:
+            myan.multi_plotterNormYields()
     if dosystprob is True:
         mysis.probvariation()
 

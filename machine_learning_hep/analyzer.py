@@ -54,6 +54,7 @@ class Analyzer:
         self.lvar2_binmin = datap["analysis"][self.typean]["sel_binmin2"]
         self.lvar2_binmax = datap["analysis"][self.typean]["sel_binmax2"]
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
+        self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.p_nbin2 = len(self.lvar2_binmin)
 
         self.d_resultsallpmc = resultsmc
@@ -1147,11 +1148,77 @@ class Analyzer:
         cCrossvsvar2.SaveAs("%s/Cross%s%sVs%s.eps" % (self.d_resultsallpdata,
                                                       self.case, self.typean, self.v_var2_binning))
 
+    def plotterNormYields(self):
+        self.loadstyle()
+
+        fileouteff = TFile.Open("%s/efficiencies%s%s.root" % \
+                                (self.d_resultsallpmc, self.case, self.typean))
+        yield_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
+                                             None, [self.case, self.typean])
+        fileoutyield = TFile.Open(yield_filename, "READ")
+        fileoutcross = TFile.Open("%s/finalcross%s%s.root" % \
+                                  (self.d_resultsallpdata, self.case, self.typean), "recreate")
+
+        filedataval = TFile.Open(self.f_evtvaldata)
+
+        cCrossvsvar1 = TCanvas('cCrossvsvar1', 'The Fit Canvas')
+        cCrossvsvar1.SetCanvasSize(1900, 1500)
+        cCrossvsvar1.SetWindowSize(500, 500)
+        cCrossvsvar1.SetLogy()
+
+        legvsvar1 = TLegend(.5, .65, .7, .85)
+        legvsvar1.SetBorderSize(0)
+        legvsvar1.SetFillColor(0)
+        legvsvar1.SetFillStyle(0)
+        legvsvar1.SetTextFont(42)
+        legvsvar1.SetTextSize(0.035)
+
+        listvalues = []
+        listvalueserr = []
+
+        for imult in range(self.p_nbin2):
+            listvalpt = []
+            bineff = -1
+            if self.p_bineff is None:
+                bineff = imult
+                print("Using efficiency for each var2 bin")
+            else:
+                bineff = self.p_bineff
+                print("Using efficiency always from bin=", bineff)
+            heff = fileouteff.Get("eff_mult%d" % (bineff))
+            hcross = fileoutyield.Get("hyields%d" % (imult))
+            hcross.Divide(heff)
+            hcross.SetLineColor(imult+1)
+            labelhisto = "hbit%svs%s" % (self.triggerbit, self.v_var2_binning)
+            hmult = filedataval.Get(labelhisto)
+            binminv = hmult.GetXaxis().FindBin(self.lvar2_binmin[imult])
+            binmaxv = hmult.GetXaxis().FindBin(self.lvar2_binmax[imult])
+            norm = hmult.Integral(binminv, binmaxv)
+            hcross.Scale(1./norm)
+            fileoutcross.cd()
+            hcross.GetXaxis().SetTitle("p_{T} %s (GeV)" % self.p_latexnmeson)
+            hcross.GetYaxis().SetTitleOffset(1.3)
+            hcross.GetYaxis().SetTitle("Corrected yield/events (%s) %s" %
+                                       (self.p_latexnmeson, self.typean))
+            hcross.SetName("hcross%d" % imult)
+            hcross.GetYaxis().SetRangeUser(1e-10, 1)
+            legvsvar1endstring = "%.1f < %s < %.1f GeV/c" % \
+                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
+            legvsvar1.AddEntry(hcross, legvsvar1endstring, "LEP")
+            hcross.Draw("same")
+            hcross.Write()
+            listvalpt = [hcross.GetBinContent(ipt+1) for ipt in range(self.p_nptbins)]
+            listvalues.append(listvalpt)
+            listvalerrpt = [hcross.GetBinError(ipt+1) for ipt in range(self.p_nptbins)]
+            listvalueserr.append(listvalerrpt)
+        legvsvar1.Draw()
+        cCrossvsvar1.SaveAs("%s/CorrectedYieldsNorm%s%sVs%s.eps" % (self.d_resultsallpdata,
+                                                      self.case, self.typean, self.v_var_binning))
     def studyevents(self):
         self.loadstyle()
         filedata = TFile.Open(self.f_evtvaldata)
         triggerlist = ["HighMultV0", "HighMultSPD"]
-        varlist = ["v0m", "n_tracklets"]
+        varlist = ["v0m_corr", "n_tracklets_corr"]
 
         ctrigger = TCanvas('ctrigger', 'The Fit Canvas')
         ctrigger.SetCanvasSize(2100, 1000)
@@ -1165,8 +1232,8 @@ class Analyzer:
             leg.SetTextFont(42)
             leg.SetTextSize(0.035)
 
-            labeltriggerANDMB = "hclass%sANDINT7vs%s" % (triggerlist[i], varlist[i])
-            labelMB = "hclassINT7vs%s" % varlist[i]
+            labeltriggerANDMB = "hbit%sANDINT7vs%s" % (triggerlist[i], varlist[i])
+            labelMB = "hbitINT7vs%s" % varlist[i]
             heff = filedata.Get(labeltriggerANDMB)
             hden = filedata.Get(labelMB)
             heff.SetName(heff.GetName() + "_new")
@@ -1195,8 +1262,8 @@ class Analyzer:
             leg.SetTextFont(42)
             leg.SetTextSize(0.035)
 
-            labeltrigger = "hclass%svs%s" % (triggerlist[i], varlist[i])
-            labelMB = "hclassINT7vs%s" % varlist[i]
+            labeltrigger = "hbit%svs%s" % (triggerlist[i], varlist[i])
+            labelMB = "hbitINT7vs%s" % varlist[i]
             hratio = filedata.Get(labeltrigger)
             hden = filedata.Get(labelMB)
             hratio.SetLineColor(i+1)
