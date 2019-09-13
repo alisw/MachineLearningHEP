@@ -197,20 +197,36 @@ class Analyzer:
                                        self.p_nsigma_signal, self.p_massmin[ipt],
                                        self.p_massmax[ipt])
                 mass_fitter.do_likelihood()
-                mass_fitter.fit()
+                success = mass_fitter.fit()
+                flag_plot_message = []
+                if not success:
+                    flag_plot_message.append("Check MC fit")
+
+
                 mass_fitter.draw_fit(self.make_file_path(self.d_resultsallpdata, "fittedplot_mc",
-                                                         "eps", None, suffix))
+                                                         "eps", None, suffix), flag_plot_message)
 
                 # And now with data
+                sigma_for_data = mass_fitter.sigma_fit
+                mean_for_data = mass_fitter.mean_fit
+                # If the fit to MC was not successful use user values
+                if not success:
+                    self.logger.error("Fit to MC was not successful. Use user values for mean " \
+                                      "to initialize fit to data")
+                sigma_for_data = self.p_sigmaarray[ipt]
+                mean_for_data = self.p_masspeak
                 mass_fitter.initialize(h_invmass, self.p_sgnfunc[ipt], self.p_bkgfunc[ipt],
-                                       self.p_rebin[ipt], mass_fitter.mean_fit,
-                                       mass_fitter.sigma_fit, self.p_fixedmean,
+                                       self.p_rebin[ipt], mean_for_data,
+                                       sigma_for_data, self.p_fixedmean,
                                        self.p_fixingaussigma, self.p_exclude_nsigma_sideband,
                                        self.p_nsigma_signal, self.p_massmin[ipt],
                                        self.p_massmax[ipt])
-                mass_fitter.fit()
+                success = mass_fitter.fit()
+                if not success:
+                    flag_plot_message.append("Check MC fit")
+
                 mass_fitter.draw_fit(self.make_file_path(self.d_resultsallpdata, "fittedplot",
-                                                         "eps", None, suffix))
+                                                         "eps", None, suffix), flag_plot_message)
 
                 fileout.cd()
                 save_dir = fileout.mkdir(suffix)
@@ -376,6 +392,8 @@ class Analyzer:
 
                 # Get the nominal fit values to compare to
                 mass_fitter_nominal.load(func_file.GetDirectory(suffix), True)
+                if not mass_fitter_nominal.fit_success:
+                    continue
                 yield_nominal = mass_fitter_nominal.yield_sig
                 yield_err_nominal = mass_fitter_nominal.yield_sig_err
                 bincount_nominal, bincount_err_nominal = \
@@ -424,8 +442,6 @@ class Analyzer:
                                     if success and \
                                             chisquare_ndf_syst < self.p_max_chisquare_ndf_syst:
                                         rawYield = mass_fitter_syst.yield_sig
-                                        if rawYield < 0:
-                                            self.logger.fatal("Found negative yield %f", rawYield)
                                         rawYieldErr = mass_fitter_syst.yield_sig_err
                                         yields_syst.append(rawYield)
                                         yields_syst_err.append(rawYieldErr)
@@ -617,14 +633,14 @@ class Analyzer:
                 root_texts.append(create_text(0.05, 0.23, "Deviations"))
 
                 diff = yield_nominal - mean_fit
-                diff_ratio = diff / yield_nominal * 100
+                diff_ratio = diff / yield_nominal * 100 if yield_nominal > 0. else 0.
                 root_texts.append(create_text(0.05, 0.18,
                                               f"yield fit (nominal) - yield fit " \
                                               f"(multi) = {diff:.0f} " \
                                               f"({diff_ratio:.2f}%)", kRed + 2))
 
                 diff = yield_nominal - mean_bc
-                diff_ratio = diff / yield_nominal * 100
+                diff_ratio = diff / yield_nominal * 100 if yield_nominal > 0. else 0.
                 root_texts.append(create_text(0.05, 0.13,
                                               f"yield fit (nominal) - yield " \
                                               f"bincount (multi) = " \
@@ -708,7 +724,7 @@ class Analyzer:
             pad_ratio.SetBottomMargin(0.3)
             pad_ratio.Draw()
             draw_histos(pad_ratio, False, [0, 0], None,
-                        [histo_ratio_mt_fit, histo_ratio_mt_bincount], "e2p",
+                        [histo_ratio_mt_fit, histo_ratio_mt_bincount], "p",
                         [color_mt_fit, color_mt_bincount])
             line_unity = TLine(histo_ratio_mt_bincount.GetXaxis().GetXmin(), 1.,
                                histo_ratio_mt_bincount.GetXaxis().GetXmax(), 1.)
