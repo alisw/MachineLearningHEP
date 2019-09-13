@@ -27,7 +27,7 @@ gROOT.ProcessLine("struct FitValues { Double_t mean; Double_t sigma; Double_t me
                                       Double_t sigma_fit; Bool_t fix_mean; Bool_t fix_sigma; \
                                       Double_t nsigma_sig; Double_t nsigma_sideband; \
                                       Double_t fit_range_low; Double_t fit_range_up; \
-                                      };")
+                                      Bool_t success;};")
 
 # pylint: disable=wrong-import-position, ungrouped-imports
 from ROOT import FitValues
@@ -202,21 +202,22 @@ class Fitter:
 
     def update_check_signal_fit(self):
         error_list = []
-        int_sig = self.sig_fit_func.GetParameter(0)
-        mean = self.sig_fit_func.GetParameter(1)
-        sigma = self.sig_fit_func.GetParameter(2)
-        if int_sig < 0. < sigma or sigma < 0. < int_sig:
+        if self.yield_sig < 0. < self.sigma_fit or self.sigma_fit < 0. < self.yield_sig:
             error_list.append(f"Both integral pre-factor and sigma have to have the same sign. " \
-                              f"However, pre-factor is {int_sig} and sigma is {sigma}.")
-        if mean < 0.:
-            error_list.append(f"Mean is negative: {mean}")
+                              f"However, pre-factor is {self.yield_sig} and sigma is " \
+                              f"{self.sigma_fit}.")
+        if self.mean_fit < 0.:
+            error_list.append(f"Mean is negative: {self.mean_fit}")
 
+        if abs(self.sigma_fit) > 100 * self.sigma:
+            error_list.append(f"Fitted sigma is larger than 100 times initial sigma " \
+                              f"{self.sigma:.4f} vs. {self.sigma_fit:.4f}")
         if error_list:
             return "\n".join(error_list)
 
         # Seems sane, set both sigma and int_sig to positive values
-        self.sig_fit_func.SetParameter(0, abs(int_sig))
-        self.sig_fit_func.SetParameter(2, abs(sigma))
+        self.yield_sig = abs(self.yield_sig)
+        self.sigma_fit = abs(self.sigma_fit)
 
         return ""
 
@@ -323,6 +324,7 @@ class Fitter:
         fit_values.fit_range_up = self.fit_range_up
         fit_values.nsigma_sig = self.nsigma_sig
         fit_values.nsigma_sideband = self.nsigma_sideband
+        fit_values.success = self.fit_success
 
         root_dir.WriteObject(fit_values, "fit_values")
 
@@ -350,11 +352,13 @@ class Fitter:
         self.fit_range_up = fit_values.fit_range_up
         self.nsigma_sideband = fit_values.nsigma_sideband
         self.nsigma_sig = fit_values.nsigma_sig
-        #self.fit_options = root_dir.Get("fit_options")
 
         self.derive_yields()
+        # Check the signal fit
+        error = self.update_check_signal_fit()
 
         self.fitted = True
+        self.fit_success = (error == "")
 
     # pylint: disable=too-many-arguments, too-many-locals, too-many-branches,
     # pylint: disable=too-many-statements
@@ -429,18 +433,18 @@ class Fitter:
             self.sig_fit_func.SetParameter(ipar - npar_bkg, self.tot_fit_func.GetParameter(ipar))
             self.sig_fit_func.SetParError(ipar - npar_bkg, self.tot_fit_func.GetParError(ipar))
 
+        self.derive_yields()
+
         # Check the signal fit
         error = self.update_check_signal_fit()
         if error != "":
             self.logger.error("Signal fit probably bad for following reasons:\n%s", error)
 
-        self.derive_yields()
-
         self.fitted = True
         self.fit_success = (error == "")
         return self.fit_success
 
-    def draw_fit(self, save_name, shade_regions=False):
+    def draw_fit(self, save_name, flag_plot_message=None, shade_regions=False):
         #Draw
         self.histo_to_fit.GetXaxis().SetTitle("Invariant Mass L_{c}^{+}(GeV/c^{2})")
         self.histo_to_fit.SetStats(0)
@@ -522,13 +526,27 @@ class Fitter:
         pinfom.SetFillStyle(0)
         pinfom.SetTextColor(kBlue)
         pinfom.SetTextSize(0.03)
-        pinfom.AddText("#chi^{2}/NDF = %f" % (self.tot_fit_func.GetChisquare() / \
-                self.tot_fit_func.GetNDF()))
+        chisquare_ndf = self.tot_fit_func.GetNDF()
+        chisquare_ndf = self.tot_fit_func.GetChisquare() / chisquare_ndf if chisquare_ndf > 0. \
+                else 0.
+        pinfom.AddText("#chi^{2}/NDF = %f" % (chisquare_ndf))
         pinfom.AddText("%s = %.3f #pm %.3f" % (self.sig_fit_func.GetParName(1),\
             self.sig_fit_func.GetParameter(1), self.sig_fit_func.GetParError(1)))
         pinfom.AddText("%s = %.3f #pm %.3f" % (self.sig_fit_func.GetParName(2),\
             self.sig_fit_func.GetParameter(2), self.sig_fit_func.GetParError(2)))
         pinfom.Draw()
+        flag_info = None
+        if flag_plot_message is not None:
+            flag_info = TPaveText(0.5, 0.5, 1., 0.68, "NDC")
+            flag_info.SetBorderSize(0)
+            flag_info.SetFillStyle(0)
+            flag_info.SetTextAlign(11)
+            flag_info.SetTextSize(0.03)
+            for t in flag_plot_message:
+                text = flag_info.AddText(t)
+                text.SetTextColor(kRed + 2)
+            flag_info.Draw()
+
         sig_text = pinfos.AddText("S = %.0f #pm %.0f " % (self.yield_sig, self.yield_sig_err))
         sig_text.SetTextColor(kGreen + 2)
         bkg_text = pinfos.AddText("B (%.0f#sigma) = %.0f #pm %.0f" % \
