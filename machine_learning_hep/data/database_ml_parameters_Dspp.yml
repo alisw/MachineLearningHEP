@@ -253,9 +253,9 @@ Dspp:
       var_binning2: n_tracklets_corr
       triggerbit: INT7
       
-      sel_an_binmin: [1,2,3,4,5,6,8,12,16] #list of pt nbins
-      sel_an_binmax: [2,3,4,5,6,8,12,16,24] #list of pt nbins
-      binning_matching: [0,1,1,2,2,2,3,4,4] #list of pt nbins
+      sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
+      sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
+      binning_matching: [0,1,1,2,2,2,3,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
@@ -263,31 +263,31 @@ Dspp:
         mc: null
 
       data:      
-        results: [/data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsMBvspt_ntrkl,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsMBvspt_ntrkl,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_data/158_20190828-1658/resultsMBvspt_ntrkl,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_data/157_20190828-1657/resultsMBvspt_ntrkl] #list of periods
-        resultsallp: /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_data/resultsMBvspt_ntrkl
+        results: [/data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_data/158_20190828-1658/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_data/157_20190828-1657/resultsMBvspt_ntrkl] #list of periods
+        resultsallp: /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_data/resultsMBvspt_ntrkl
       mc:
-        results: [/data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/161_20190828-1800/resultsMBvspt_ntrkl,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/165_20190828-1801/resultsMBvspt_ntrkl,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsMBvspt_ntrkl,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsMBvspt_ntrkl] #list of periods
-        resultsallp: /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_ntrkl
+        results: [/data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/161_20190828-1800/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/165_20190828-1801/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsMBvspt_ntrkl] #list of periods
+        resultsallp: /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_ntrkl
 
 
 
-      mass_fit_lim: [1.75, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [1.90, 2.05] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       # Note for now that only a Gaussian fit is available
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
-      masspeak: 1.89
-      massmin: [1.75,1.75,1.75,1.75,1.75,1.75,1.75,1.75,1.75]
-      massmax: [2.15,2.15,2.15,2.15,2.15,2.15,2.15,2.15,2.15]
-      rebin: [2,2,2,2,3,3,3,4,4]
-      includesecpeak: [1,1,1,1,1,1,1,1,1]
+      masspeak: 1.969
+      massmin: [1.90,1.90,1.90,1.90,1.90,1.90,1.90,1.90]
+      massmax: [2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05]
+      rebin: [4,4,4,4,4,4,4,4]
+      includesecpeak: [0,0,0,0,0,0,0,0]
       masssecpeak: 1.969
       # Fix mean and/or sigma
       FixedMean: False
@@ -302,7 +302,7 @@ Dspp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
+      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
       FixedSigma: false
       fitcase: Ds
       latexnamemeson: "D_{s}"
@@ -319,9 +319,9 @@ Dspp:
       var_binning2: v0m_corr
       triggerbit: INT7
       
-      sel_an_binmin: [1,2,3,4,5,6,8,12,16] #list of pt nbins
-      sel_an_binmax: [2,3,4,5,6,8,12,16,24] #list of pt nbins
-      binning_matching: [0,1,1,2,2,2,3,4,4] #list of pt nbins
+      sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
+      sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
+      binning_matching: [0,1,1,2,2,2,3,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
@@ -329,31 +329,31 @@ Dspp:
         mc: null
 
       data:      
-        results: [/data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsMBvspt_v0m,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsMBvspt_v0m,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_data/158_20190828-1658/resultsMBvspt_v0m,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_data/157_20190828-1657/resultsMBvspt_v0m] #list of periods
-        resultsallp: /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_data/resultsMBvspt_v0m
+        results: [/data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsMBvspt_v0m,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsMBvspt_v0m,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_data/158_20190828-1658/resultsMBvspt_v0m,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_data/157_20190828-1657/resultsMBvspt_v0m] #list of periods
+        resultsallp: /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_data/resultsMBvspt_v0m
       mc:
-        results: [/data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/161_20190828-1800/resultsMBvspt_v0m,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/165_20190828-1801/resultsMBvspt_v0m,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsMBvspt_v0m,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsMBvspt_v0m] #list of periods
-        resultsallp: /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_v0m
+        results: [/data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/161_20190828-1800/resultsMBvspt_v0m,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/165_20190828-1801/resultsMBvspt_v0m,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsMBvspt_v0m,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsMBvspt_v0m] #list of periods
+        resultsallp: /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_v0m
 
 
 
-      mass_fit_lim: [1.75, 2.15] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [1.90, 2.05] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       # Note for now that only a Gaussian fit is available
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
-      masspeak: 1.89
-      massmin: [1.75,1.75,1.75,1.75,1.75,1.75,1.75,1.75,1.75]
-      massmax: [2.15,2.15,2.15,2.15,2.15,2.15,2.15,2.15,2.15]
-      rebin: [2,2,2,2,3,3,3,4,4]
-      includesecpeak: [1,1,1,1,1,1,1,1,1]
+      masspeak: 1.969
+      massmin: [1.90,1.90,1.90,1.90,1.90,1.90,1.90,1.90]
+      massmax: [2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05]
+      rebin: [4,4,4,4,4,4,4,4]
+      includesecpeak: [0,0,0,0,0,0,0,0]
       masssecpeak: 1.969
       # Fix mean and/or sigma
       FixedMean: False
@@ -368,7 +368,7 @@ Dspp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
+      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
       FixedSigma: false
       fitcase: Ds
       latexnamemeson: "D_{s}"
@@ -395,31 +395,32 @@ Dspp:
         mc: "abs(eta_jet)<0.5"
 
       data:      
-        results: [/data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsMBjetvspt,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsMBjetvspt,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_data/158_20190828-1658/resultsMBjetvspt,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_data/157_20190828-1657/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_data/resultsMBjetvspt
+        results: [/data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsMBjetvspt,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsMBjetvspt,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_data/158_20190828-1658/resultsMBjetvspt,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_data/157_20190828-1657/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_data/resultsMBjetvspt
       mc:
-        results: [/data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/161_20190828-1800/resultsMBjetvspt,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/165_20190828-1801/resultsMBjetvspt,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsMBjetvspt,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsMBjetvspt
+        results: [/data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/161_20190828-1800/resultsMBjetvspt,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/165_20190828-1801/resultsMBjetvspt,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsMBjetvspt,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsMBjetvspt
 
 
 
-      mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [1.90, 2.05] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
-      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus]
-      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2]
-      masspeak: 1.89
-      massmin: [1.70,1.70,1.70,1.70,1.70]
-      massmax: [2.05,2.05,2.05,2.05,2.05]
-      rebin: [6,6,6,6,6]
-      includesecpeak: [0,0,0,0,0]
-      masssecpeak: 1.864
+      # Note for now that only a Gaussian fit is available
+      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
+      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
+      masspeak: 1.969
+      massmin: [1.90,1.90,1.90,1.90,1.90,1.90,1.90,1.90]
+      massmax: [2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05]
+      rebin: [4,4,4,4,4,4,4,4]
+      includesecpeak: [0,0,0,0,0,0,0,0]
+      masssecpeak: 1.969
       # Fix mean and/or sigma
       FixedMean: False
       SetFixGaussianSigma: true
@@ -460,28 +461,29 @@ Dspp:
         mc: null
 
       data:      
-        results: [/data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsSPDvspt,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsSPDvspt,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_data/158_20190828-1658/resultsSPDvspt,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_data/157_20190828-1657/resultsSPDvspt] #list of periods
-        resultsallp: /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_data/resultsSPDvspt
+        results: [/data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsSPDvspt,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsSPDvspt,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_data/158_20190828-1658/resultsSPDvspt,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_data/157_20190828-1657/resultsSPDvspt] #list of periods
+        resultsallp: /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_data/resultsSPDvspt
       mc:
-        results: [/data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/161_20190828-1800/resultsSPDvspt,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/165_20190828-1801/resultsSPDvspt,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsSPDvspt,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsSPDvspt] #list of periods
-        resultsallp: /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsSPDvspt
-      mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
+        results: [/data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/161_20190828-1800/resultsSPDvspt,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/165_20190828-1801/resultsSPDvspt,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsSPDvspt,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsSPDvspt] #list of periods
+        resultsallp: /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsSPDvspt
+      mass_fit_lim: [1.90, 2.05] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
-      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
-      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
-      masspeak: 1.89
-      massmin: [1.70,1.70,1.70,1.70,1.70,1.70,1.70,1.70]
+      # Note for now that only a Gaussian fit is available
+      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
+      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
+      masspeak: 1.969
+      massmin: [1.90,1.90,1.90,1.90,1.90,1.90,1.90,1.90]
       massmax: [2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05]
-      rebin: [6,6,6,6,6,6,6,6]
+      rebin: [4,4,4,4,4,4,4,4]
       includesecpeak: [0,0,0,0,0,0,0,0]
-      masssecpeak: 1.864
+      masssecpeak: 1.969
       # Fix mean and/or sigma
       FixedMean: False
       SetFixGaussianSigma: true
@@ -511,7 +513,7 @@ Dspp:
       sel_binmin2:  [0,0,200,600] #list of var2 splittng nbins
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
       var_binning2: v0m_corr
-      triggerbit: HighMultV0M
+      triggerbit: HighMultV0
       
       sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
       sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
@@ -523,29 +525,30 @@ Dspp:
         mc: null
 
       data:      
-        results: [/data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsV0mvspt,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsV0mvspt,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_data/158_20190828-1658/resultsV0mvspt,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_data/157_20190828-1657/resultsV0mvspt] #list of periods
-        resultsallp: /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_data/resultsV0mvspt
+        results: [/data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/159_20190828-1655/resultsV0mvspt,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_data/160_20190828-1656/resultsV0mvspt,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_data/158_20190828-1658/resultsV0mvspt,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_data/157_20190828-1657/resultsV0mvspt] #list of periods
+        resultsallp: /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_data/resultsV0mvspt
       mc:
-        results: [/data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/161_20190828-1800/resultsV0mvspt,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/165_20190828-1801/resultsV0mvspt,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsV0mvspt,
-                  /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsV0mvspt] #list of periods
-        resultsallp: /data/Derived/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsV0mvspt
+        results: [/data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/161_20190828-1800/resultsV0mvspt,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2016_mc_prodD2H/165_20190828-1801/resultsV0mvspt,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2017_mc_prodD2H/166_20190828-1801/resultsV0mvspt,
+                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_2018_mc_prodD2H/167_20190828-1801/resultsV0mvspt] #list of periods
+        resultsallp: /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190827_ROOT6-1/pp_mc_prodD2H/resultsV0mvspt
 
-      mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [1.90, 2.05] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
-      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
-      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
-      masspeak: 1.89
-      massmin: [1.70,1.70,1.70,1.70,1.70,1.70,1.70,1.70]
+      # Note for now that only a Gaussian fit is available
+      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
+      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
+      masspeak: 1.969
+      massmin: [1.90,1.90,1.90,1.90,1.90,1.90,1.90,1.90]
       massmax: [2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05]
-      rebin: [6,6,6,6,6,6,6,6]
+      rebin: [4,4,4,4,4,4,4,4]
       includesecpeak: [0,0,0,0,0,0,0,0]
-      masssecpeak: 1.864
+      masssecpeak: 1.969
       # Fix mean and/or sigma
       FixedMean: False
       SetFixGaussianSigma: true
@@ -573,9 +576,9 @@ Dspp:
   
   validation:
     data:
-      dir: [/data/derived/dataval_16, /data/derived/dataval_16_2, /data/derived/dataval_17, /data/derived/dataval_18] #list of periods
-      dirmerged: /data/derived/datavaltot
+      dir: [/data/Derived/dataval_16, /data/Derived/dataval_16_2, /data/Derived/dataval_17, /data/Derived/dataval_18] #list of periods
+      dirmerged: /data/Derived/datavaltot
     mc:
-      dir: [/data/derived/mcval_16, /data/derived/mcval_16_2, /data/derived/mcval_17, /data/derived/mcval_18] #list of periods
-      dirmerged: /data/derived/mcvaltot
+      dir: [/data/Derived/mcval_16, /data/Derived/mcval_16_2, /data/Derived/mcval_17, /data/Derived/mcval_18] #list of periods
+      dirmerged: /data/Derived/mcvaltot
  

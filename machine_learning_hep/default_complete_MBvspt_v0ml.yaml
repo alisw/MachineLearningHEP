@@ -1,0 +1,80 @@
+case: Dspp
+download:
+  alice:
+    activate: false
+conversion:
+  mc:
+    activate: false
+  data:
+    activate: false
+skimming:
+  mc:
+    activate: false
+  data:
+    activate: false
+merging:
+  mc:
+    activate: false
+  data:
+    activate: false
+mergingperiods:
+  mc:
+    activate: false
+  data:
+    activate: false
+
+ml_study:
+  activate: false
+  doscancuts: false
+  applytodatamc: false
+  doroc: false
+  doboundary: false
+  docorrelation: false
+  docrossvalidation: false
+  dogridsearch: false
+  doimportance: false
+  dolearningcurve: false
+  dopca: false
+  dosignifopt: false
+  doefficiency: false
+  dotesting: false
+  dotraining: true
+
+mlapplication:
+  data:
+    doapply: false
+    domergeapply: false
+    domergeapplyperiods: false
+  mc:
+    doapply: false
+    domergeapply: false
+    domergeapplyperiods: false
+
+analysis:
+  type: MBvspt_v0m #MBvspt_ntrk, MBvspt_v0ml, SPDvspt, V0mvspt
+  # Do each period separately including merged (true)
+  # Do only merged (false)
+  doperperiod: false
+  data:
+    histomass: true
+  mc:
+    histomass: true
+    efficiency: true
+    feeddown: false
+  dofit: true
+  # Control the yield systemaitc uncertainty
+  dosyst: false
+  dojetstudies: false
+  doeff: true
+  docross: true
+
+systematics:
+  # Not yet used
+  probvariation: false
+
+validation:
+  data:
+    docreatehisto: false
+  mc:
+    docreatehisto: false
+  plotevents: false
