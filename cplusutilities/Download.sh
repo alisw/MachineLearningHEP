@@ -310,46 +310,51 @@ elif [ "$dataset" == "LHC18l8c2_r" ]; then
   ispp=0
   datasetwithchilds=0
   dataset_short="PbPb3050_2018_mc_prodGP"
-elif [ "$dataset" == "LHC18r" ]; then
+elif [ "$dataset" == "LHC18r_pass1" ]; then
   #Data: PbPb 5 TeV 2018
-  inputpaths=(/alice/data/2018/LHC18r/000296894/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18r/000297218/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18r/000297366/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18r/000297481/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18r/000297193/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18r/000297590/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18r/000296899/pass1/PWGHF/HF_TreeCreator
+  inputpaths=(/alice/data/2018/LHC18r/000296749/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000296750/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000296785/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000296848/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000296849/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000296932/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000296966/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000297029/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000297123/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000297196/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000297219/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000297332/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000297379/pass1/PWGHF/HF_TreeCreator
               /alice/data/2018/LHC18r/000297415/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18r/000297479/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18r/000296799/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18r/000297588/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18r/000297512/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18r/000296851/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18r/000297413/pass1/PWGHF/HF_TreeCreator)
+              /alice/data/2018/LHC18r/000297451/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000297481/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000297542/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000297595/pass1/PWGHF/HF_TreeCreator)
   isMC=0
   ispp=0
   datasetwithchilds=0
   dataset_short="PbPb_2018_data"
-elif [ "$dataset" == "LHC18q" ]; then
+elif [ "$dataset" == "LHC18q_pass1" ]; then
   #Data: PbPb 5 TeV 2018
-  inputpaths=(/alice/data/2018/LHC18q/000296415/pass1/PWGHF/HF_TreeCreator
+  inputpaths=(/alice/data/2018/LHC18q/000296623/pass1/PWGHF/HF_TreeCreator
               /alice/data/2018/LHC18q/000296549/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18q/000296377/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18q/000296197/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000296509/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000296415/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000296379/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000296309/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000296273/pass1/PWGHF/HF_TreeCreator
               /alice/data/2018/LHC18q/000296244/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18q/000295831/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18q/000296550/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18q/000296433/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18q/000296623/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18q/000295826/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18q/000295854/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18q/000296511/pass1/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18q/000296424/pass1/PWGHF/HF_TreeCreator)
+              /alice/data/2018/LHC18q/000296194/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000296133/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000295913/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000295822/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000295753/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000295725/pass1/PWGHF/HF_TreeCreator)
   isMC=0
   ispp=0
   datasetwithchilds=0
   dataset_short="PbPb_2018_data"
-elif [ "$dataset" == "LHC19c3a_q" ]; then
+elif [ "$dataset" == "LHC19c3a_all_q" ]; then
   #D2H MC: PbPb 5 TeV 2018 0-10
   inputpaths=(/alice/sim/2019/LHC19c3a/296433/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19c3a2/296433/PWGHF/HF_TreeCreator)
@@ -357,7 +362,7 @@ elif [ "$dataset" == "LHC19c3a_q" ]; then
   ispp=0
   datasetwithchilds=1
   dataset_short="PbPb010_2018_mc_prodD2H"
-elif [ "$dataset" == "LHC19c3a_r" ]; then
+elif [ "$dataset" == "LHC19c3a_all_r" ]; then
   #D2H MC: PbPb 5 TeV 2018 0-10
   inputpaths=(/alice/sim/2019/LHC19c3a/297481/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19c3a2/297481/PWGHF/HF_TreeCreator)
@@ -365,7 +370,7 @@ elif [ "$dataset" == "LHC19c3a_r" ]; then
   ispp=0
   datasetwithchilds=1
   dataset_short="PbPb010_2018_mc_prodD2H"
-elif [ "$dataset" == "LHC19c3b_q" ]; then
+elif [ "$dataset" == "LHC19c3b_all_q" ]; then
   #D2H MC: PbPb 5 TeV 2018 30-50
   inputpaths=(/alice/sim/2019/LHC19c3b/296433/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19c3b2/296433/PWGHF/HF_TreeCreator)
@@ -373,7 +378,7 @@ elif [ "$dataset" == "LHC19c3b_q" ]; then
   ispp=0
   datasetwithchilds=1
   dataset_short="PbPb3050_2018_mc_prodD2H"
-elif [ "$dataset" == "LHC19c3b_r" ]; then
+elif [ "$dataset" == "LHC19c3b_all_r" ]; then
   #D2H MC: PbPb 5 TeV 2018 30-50
   inputpaths=(/alice/sim/2019/LHC19c3b/297481/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19c3b2/297481/PWGHF/HF_TreeCreator)
