@@ -508,6 +508,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             list_df_mc_gen.append(df_mc_gen)
         df_rec = pd.concat(list_df_mc_reco)
         df_gen = pd.concat(list_df_mc_gen)
+        n_jets_gen = len(df_gen.index) # total number of generated & selected jets
         df_rec = df_rec[df_rec.ismcfd == 1] # reconstructed & selected non-prompt jets
         df_gen = df_gen[df_gen.ismcfd == 1] # generated & selected non-prompt jets
         out_file = TFile.Open(self.n_fileeff, "update")
@@ -541,6 +542,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             "Simulated #it{p}_{T}^{cand.} vs. #it{p}_{T}^{jet} of non-prompt jets;#it{p}_{T}^{cand., gen.} (GeV/#it{c});#it{p}_{T}^{jet, ch, gen.} (GeV/#it{c})", \
             n_bins_ptc, bins_ptc, 100, 0, 100)
         fill_hist(his_ptc_ptjet_fd, df_ptc_ptjet_fd)
+        his_ptc_ptjet_fd.Scale(1./n_jets_gen) # Normalise by the total number of selected jets.
 
         # z_gen of reconstructed feed-down jets (for response)
         arr_z_gen_resp = z_gen_calc(df_rec.pt_gen_jet, df_rec.phi_gen_jet, df_rec.eta_gen_jet,
@@ -564,6 +566,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             "#it{z}", \
             n_bins_ptc, bins_ptc, n_bins_ptjet, bins_ptjet, n_bins_z, bins_z)
         fill_hist(his_ptc_ptjet_z_fd, df_ptc_ptjet_z_fd)
+        his_ptc_ptjet_z_fd.Scale(1./n_jets_gen) # Normalise by the total number of selected jets.
 
         out_file.cd()
         his_resp_jet_fd.Write()
