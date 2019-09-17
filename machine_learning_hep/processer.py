@@ -25,13 +25,13 @@ import uproot
 import pandas as pd
 import numpy as np
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
-from ROOT import TFile, TH1F, TH2F # pylint: disable=import-error, no-name-in-module
+from ROOT import TFile, TH1F, TH2F, TH3F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge_method
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
-from machine_learning_hep.utilities import mergerootfiles, z_calc
+from machine_learning_hep.utilities import mergerootfiles, z_calc, z_gen_calc
 from machine_learning_hep.models import apply # pylint: disable=import-error
 #from machine_learning_hep.globalfitter import fitter
 from machine_learning_hep.selectionutils import getnormforselevt
@@ -506,33 +506,69 @@ class Processer: # pylint: disable=too-many-instance-attributes
             df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[iptskim], "rb"))
             df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
             list_df_mc_gen.append(df_mc_gen)
-        df_mc_reco_merged = pd.concat(list_df_mc_reco)
-        df_mc_gen_merged = pd.concat(list_df_mc_gen)
-        df_mc_reco_merged_fd = df_mc_reco_merged[df_mc_reco_merged.ismcfd == 1] # reconstructed & selected non-prompt jets
-        df_mc_gen_merged_fd = df_mc_gen_merged[df_mc_gen_merged.ismcfd == 1] # generated & selected non-prompt jets
+        df_rec = pd.concat(list_df_mc_reco)
+        df_gen = pd.concat(list_df_mc_gen)
+        df_rec = df_rec[df_rec.ismcfd == 1] # reconstructed & selected non-prompt jets
+        df_gen = df_gen[df_gen.ismcfd == 1] # generated & selected non-prompt jets
         out_file = TFile.Open(self.n_fileeff, "update")
 
+        # Bin arrays
+        # pt_cand
+        n_bins_ptc = len(self.lpt_finbinmin)
+        bins_ptc_temp = self.lpt_finbinmin.copy()
+        bins_ptc_temp.append(self.lpt_finbinmax[n_bins_ptc - 1])
+        bins_ptc = array.array('d', bins_ptc_temp)
+        # pt_jet
+        n_bins_ptjet = len(self.lvar2_binmin)
+        bins_ptjet_temp = self.lvar2_binmin.copy()
+        bins_ptjet_temp.append(self.lvar2_binmax[n_bins_ptjet - 1])
+        bins_ptjet = array.array('d', bins_ptjet_temp)
+        # z
+        bins_z_temp = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+        n_bins_z = len(bins_z_temp) - 1
+        bins_z = array.array('d', bins_z_temp)
+
         # Detector response matrix of pt_jet of non-prompt jets
-        df_resp_jet_fd = df_mc_reco_merged_fd.loc[:, ["pt_gen_jet", "pt_jet"]]
+        df_resp_jet_fd = df_rec.loc[:, ["pt_gen_jet", "pt_jet"]]
         his_resp_jet_fd = TH2F("his_resp_jet_fd", \
             "Response matrix of #it{p}_{T}^{jet, ch} of non-prompt jets;#it{p}_{T}^{jet, ch, gen.} (GeV/#it{c});#it{p}_{T}^{jet, ch, rec.} (GeV/#it{c})", \
             100, 0, 100, 100, 0, 100)
         fill_hist(his_resp_jet_fd, df_resp_jet_fd)
 
         # Simulated pt_cand vs. pt_jet of non-prompt jets
-        df_ptc_ptjet_fd = df_mc_gen_merged_fd.loc[:, ["pt_cand", "pt_jet"]]
-        n_bins = len(self.lpt_finbinmin)
-        analysis_bin_lims_temp = self.lpt_finbinmin.copy()
-        analysis_bin_lims_temp.append(self.lpt_finbinmax[n_bins-1])
-        analysis_bin_lims = array.array('d', analysis_bin_lims_temp)
+        df_ptc_ptjet_fd = df_gen.loc[:, ["pt_cand", "pt_jet"]]
         his_ptc_ptjet_fd = TH2F("his_ptc_ptjet_fd", \
             "Simulated #it{p}_{T}^{cand.} vs. #it{p}_{T}^{jet} of non-prompt jets;#it{p}_{T}^{cand., gen.} (GeV/#it{c});#it{p}_{T}^{jet, ch, gen.} (GeV/#it{c})", \
-            n_bins, analysis_bin_lims, 100, 0, 100)
+            n_bins_ptc, bins_ptc, 100, 0, 100)
         fill_hist(his_ptc_ptjet_fd, df_ptc_ptjet_fd)
+
+        # z_gen of reconstructed feed-down jets (for response)
+        arr_z_gen_resp = z_gen_calc(df_rec.pt_gen_jet, df_rec.phi_gen_jet, df_rec.eta_gen_jet,
+                                    df_rec.pt_gen_cand, df_rec.delta_phi_gen_jet, df_rec.delta_eta_gen_jet)
+        # z_rec of reconstructed feed-down jets (for response)
+        arr_z_rec_resp = z_calc(df_rec.pt_jet, df_rec.phi_jet, df_rec.eta_jet,
+                                df_rec.pt_cand, df_rec.phi_cand, df_rec.eta_cand)
+        # z_gen of simulated feed-down jets
+        arr_z_gen_sim = z_calc(df_gen.pt_jet, df_gen.phi_jet, df_gen.eta_jet,
+                               df_gen.pt_cand, df_gen.phi_cand, df_gen.eta_cand)
+        df_rec["z_gen"] = arr_z_gen_resp
+        df_rec["z"] = arr_z_rec_resp
+        df_gen["z"] = arr_z_gen_sim
+
+        # Simulated pt_cand vs. pt_jet vs z of non-prompt jets
+        df_ptc_ptjet_z_fd = df_gen.loc[:, ["pt_cand", "pt_jet", "z"]]
+        his_ptc_ptjet_z_fd = TH3F("his_ptc_ptjet_z_fd", \
+            "Simulated #it{p}_{T}^{cand.} vs. #it{p}_{T}^{jet} vs. #it{z} of non-prompt jets;"
+            "#it{p}_{T}^{cand., gen.} (GeV/#it{c});"
+            "#it{p}_{T}^{jet, ch, gen.} (GeV/#it{c});"
+            "#it{z}", \
+            n_bins_ptc, bins_ptc, n_bins_ptjet, bins_ptjet, n_bins_z, bins_z)
+        fill_hist(his_ptc_ptjet_z_fd, df_ptc_ptjet_z_fd)
 
         out_file.cd()
         his_resp_jet_fd.Write()
         his_ptc_ptjet_fd.Write()
+        his_ptc_ptjet_z_fd.Write()
         out_file.Close()
 
     # pylint: disable=too-many-locals
