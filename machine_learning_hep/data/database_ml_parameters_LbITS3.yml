@@ -207,6 +207,10 @@ LbITS2:
       sel_binmin2: [0.] #list of nbins
       sel_binmax2: [9999] #list of nbins  
       var_binning2: pt_cand
+
+      # To initialize the individual fits in pT bins
+      # Decide whether to take the sigma from MC or data for individual fits
+      init_fits_from: mc # data # data or mc
       
       sel_an_binmin: [0,8,20]
       sel_an_binmax: [8,20,99]

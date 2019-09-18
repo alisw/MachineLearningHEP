@@ -89,7 +89,7 @@ def bkg_fit_func(func_name, func_type, massmin, massmax, integralhisto, masspeak
     back_fit.SetParNames("BkgInt", "Coeff1", "Coeff2", "AlwaysFixedPar1", "AlwaysFixedPar2",
                          "AlwaysFixedPar3", "HelperParMassPeak", "HelperParSigRange",
                          "HelperParRejectSigRange")
-    back_fit.SetParameters(integralhisto, -10., 5)
+    back_fit.SetParameters(integralhisto, -10., 5.)
     back_fit.FixParameter(3, par_fix1)
     back_fit.FixParameter(4, par_fix2)
     back_fit.FixParameter(5, par_fix3)
@@ -106,11 +106,11 @@ def tot_func(bkgfunc, massmax, massmin):
 
     # in the following return asap
     if bkgfunc == "Pol1":
-        return "[0]/(%s)+[1]*(x-0.5*(%s))                                    \
+        return "[0]/(%f)+[1]*(x-0.5*(%f))                                    \
                 +[2]/(sqrt(2.*pi))/[4]*(exp(-(x-[3])*(x-[3])/2./[4]/[4]))" % \
                 ((massmax-massmin), (massmax+massmin))
 
-    return "[0]/(%s)+[1]*(x-0.5*(%s))+[2]*(x*x-1/3.*(%s)/(%s))           \
+    return "[0]/(%f)+[1]*(x-0.5*(%f))+[2]*(x*x-1/3.*(%f)/(%f))           \
             +[3]/(sqrt(2.*pi))/[5]*(exp(-(x-[4])*(x-[4])/2./[5]/[5]))" % \
            ((massmax - massmin), (massmax + massmin),
             (massmax * massmax * massmax - massmin * massmin * massmin),
@@ -195,6 +195,8 @@ class Fitter:
                                              nsigma_sideband * sigma, False)
         self.tot_fit_func = TF1("tot_fit", tot_func(bkg_func_name, fit_range_up, fit_range_low),
                                 fit_range_low, fit_range_up)
+        self.fitted = False
+        self.fit_success = False
 
     def do_likelihood(self):
         self.fit_options = "L,E"
@@ -217,7 +219,9 @@ class Fitter:
 
         # Seems sane, set both sigma and int_sig to positive values
         self.yield_sig = abs(self.yield_sig)
+        self.sig_fit_func.SetParameter(0, abs(self.sig_fit_func.GetParameter(0)))
         self.sigma_fit = abs(self.sigma_fit)
+        self.sig_fit_func.SetParameter(2, abs(self.sig_fit_func.GetParameter(2)))
 
         return ""
 
@@ -423,7 +427,6 @@ class Fitter:
             # Sigma would be fixed to what the fit to MC gives
             self.tot_fit_func.FixParameter(npar_bkg + 2,
                                            self.tot_fit_func.GetParameter(npar_bkg + 2))
-        #tot_fit.SetParNames(*par_names_bkg, *par_names_sig)
         self.histo_to_fit.Fit(self.tot_fit_func, ("R,%s,+,0" % (self.fit_options)))
 
         for ipar in range(0, npar_bkg):

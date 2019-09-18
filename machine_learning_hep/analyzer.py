@@ -81,7 +81,6 @@ class Analyzer:
                                     self.p_bin_width))
         #parameter fitter
         # For initial fit in integrated mult bin
-        self.p_fixingaussigma_init = datap["analysis"][self.typean]["SetFixGaussianSigma_init"]
         self.init_fits_from = datap["analysis"][self.typean]["init_fits_from"]
         self.p_sgnfunc = datap["analysis"][self.typean]["sgnfunc"]
         self.p_bkgfunc = datap["analysis"][self.typean]["bkgfunc"]
@@ -183,9 +182,11 @@ class Analyzer:
         # Get fitter for integrated mult bins for all pT bins
         mass_fitters_int_mc = []
         mass_fitters_int_data = []
+
+        bin_mult_int = self.p_bineff if self.p_bineff is not None else 0
         # Fit mult integrated MC and data in integrated multiplicity bin for all pT bins
-        mult_int_min = self.lvar2_binmin[self.p_bineff]
-        mult_int_max = self.lvar2_binmax[self.p_bineff]
+        mult_int_min = self.lvar2_binmin[bin_mult_int]
+        mult_int_max = self.lvar2_binmax[bin_mult_int]
 
         for ipt in range(self.p_nptbins):
             bin_id = self.bin_matching[ipt]
@@ -226,10 +227,11 @@ class Analyzer:
                                                    "eps", None, suffix), flag_plot_message)
 
             # And now with data
+            # Never fix Gaussian sigma. In that case the user could just use MC as init
             fitter_data.initialize(h_invmass, self.p_sgnfunc[ipt], self.p_bkgfunc[ipt],
                                    self.p_rebin[ipt], mean_for_data,
-                                   sigma_for_data, self.p_fixedmean,
-                                   self.p_fixingaussigma_init, self.p_exclude_nsigma_sideband,
+                                   sigma_for_data, False,
+                                   False, self.p_exclude_nsigma_sideband,
                                    self.p_nsigma_signal, self.p_massmin[ipt],
                                    self.p_massmax[ipt])
             if self.p_dolike:

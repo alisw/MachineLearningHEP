@@ -244,10 +244,7 @@ D0pp:
       triggerbit: INT7
 
       # To initialize the individual fits in pT bins
-      # 1) Rely on usesinglebineff value to find the integrated bin (defined above)
-      # 2) As a fit to MC is done first, decide whether or not that should be set fixed for consequent data fit
-      SetFixGaussianSigma_init: false
-      # 3) Decide whether to take the sigma from MC or data for individual fits
+      # Decide whether to take the sigma from MC or data for individual fits
       init_fits_from: mc # data # data or mc
       
       sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
@@ -323,6 +320,10 @@ D0pp:
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
       var_binning2: v0m_corr
       triggerbit: INT7
+
+      # To initialize the individual fits in pT bins
+      # Decide whether to take the sigma from MC or data for individual fits
+      init_fits_from: mc # data # data or mc
       
       sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
       sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
@@ -397,6 +398,10 @@ D0pp:
       sel_binmax2: [15] #list of nbins
       var_binning2: pt_jet
       triggerbit: INT7
+
+      # To initialize the individual fits in pT bins
+      # Decide whether to take the sigma from MC or data for individual fits
+      init_fits_from: mc # data # data or mc
       
       sel_an_binmin: [2,4,5,6,8] #list of pt nbins
       sel_an_binmax: [4,5,6,8,12] #list of pt nbins
@@ -462,6 +467,10 @@ D0pp:
       sel_binmax2: [9999,20,50,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
       triggerbit: HighMultSPD
+
+      # To initialize the individual fits in pT bins
+      # Decide whether to take the sigma from MC or data for individual fits
+      init_fits_from: mc # data # data or mc
       
       sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
       sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
@@ -524,6 +533,10 @@ D0pp:
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
       var_binning2: v0m_corr
       triggerbit: HighMultV0
+
+      # To initialize the individual fits in pT bins
+      # Decide whether to take the sigma from MC or data for individual fits
+      init_fits_from: mc # data # data or mc
       
       sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
       sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins

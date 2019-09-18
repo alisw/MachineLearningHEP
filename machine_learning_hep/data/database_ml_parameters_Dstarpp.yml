@@ -194,6 +194,10 @@ Dstarpp:
       sel_binmin2:  [0,0,30,60] #list of var2 splittng nbins
       sel_binmax2: [9999,30,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
+
+      # To initialize the individual fits in pT bins
+      # Decide whether to take the sigma from MC or data for individual fits
+      init_fits_from: mc # data # data or mc
       
       sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
       sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
@@ -242,6 +246,10 @@ Dstarpp:
       sel_binmin2: [5] #list of nbins
       sel_binmax2: [15] #list of nbins
       var_binning2: pt_jet
+
+      # To initialize the individual fits in pT bins
+      # Decide whether to take the sigma from MC or data for individual fits
+      init_fits_from: mc # data # data or mc
       
       sel_an_binmin: [2,4,5,6,8,12] #list of pt nbins
       sel_an_binmax: [4,5,6,8,12,24] #list of pt nbins
@@ -290,6 +298,10 @@ Dstarpp:
       sel_binmin2:  [0,60] #list of var2 splittng nbins
       sel_binmax2: [9999,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
+
+      # To initialize the individual fits in pT bins
+      # Decide whether to take the sigma from MC or data for individual fits
+      init_fits_from: mc # data # data or mc
       
       sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
       sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
@@ -336,6 +348,10 @@ Dstarpp:
       sel_binmin2:    [0, 300,600,800] #list of var2 splittng nbins
       sel_binmax2:  [9999,600,800,1000] #list of var2 splitting nbins
       var_binning2: v0m
+
+      # To initialize the individual fits in pT bins
+      # Decide whether to take the sigma from MC or data for individual fits
+      init_fits_from: mc # data # data or mc
       
       sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
       sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
