@@ -168,7 +168,7 @@ class Analyzer:
         return os.path.join(directory, filename + "." + extension)
 
 
-    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-branches, too-many-locals
     def fitter(self):
         # Enable ROOT batch mode and reset in the end
         tmp_is_root_batch = gROOT.IsBatch()
@@ -176,127 +176,129 @@ class Analyzer:
 
         self.loadstyle()
 
+        # Immediately fail if something weird was chosen for fit init
+        if self.init_fits_from not in  ["mc", "data"]:
+            self.logger.fatal("Fit can only be initialized from \"data\" or \"mc\"")
+
         lfile = TFile.Open(self.n_filemass)
         lfile_mc = TFile.Open(self.n_filemass_mc, "READ")
 
-        # Get fitter for integrated mult bins for all pT bins
-        mass_fitters_int_mc = []
-        mass_fitters_int_data = []
-
-        bin_mult_int = self.p_bineff if self.p_bineff is not None else 0
-        # Fit mult integrated MC and data in integrated multiplicity bin for all pT bins
-        mult_int_min = self.lvar2_binmin[bin_mult_int]
-        mult_int_max = self.lvar2_binmax[bin_mult_int]
-
-        for ipt in range(self.p_nptbins):
-            bin_id = self.bin_matching[ipt]
-            suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
-                     (self.v_var_binning, self.lpt_finbinmin[ipt],
-                      self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
-                      self.v_var2_binning, mult_int_min, mult_int_max)
-            h_invmass = lfile.Get("hmass" + suffix)
-            h_invmass_mc = lfile_mc.Get("hmass" + suffix)
-
-            fitter_mc = Fitter()
-            mass_fitters_int_mc.append(fitter_mc)
-            fitter_data = Fitter()
-            mass_fitters_int_data.append(fitter_data)
-
-            fitter_mc.initialize(h_invmass_mc, self.p_sgnfunc[ipt], self.p_bkgfunc[ipt],
-                                 self.p_rebin[ipt], self.p_masspeak, self.p_sigmaarray[ipt],
-                                 False, False, self.p_exclude_nsigma_sideband,
-                                 self.p_nsigma_signal, self.p_massmin[ipt],
-                                 self.p_massmax[ipt])
-            if self.p_dolike:
-                fitter_mc.do_likelihood()
-            success = fitter_mc.fit()
-
-            sigma_for_data = fitter_mc.sigma_fit
-            mean_for_data = fitter_mc.mean_fit
-            flag_plot_message = []
-            if not success:
-                self.logger.error("Fit to MC was not successful. Use user values for mean " \
-                                  "to initialize fit to data")
-                flag_plot_message.append("Check MC fit")
-                # If the fit to MC was not successful use user values
-                sigma_for_data = self.p_sigmaarray[ipt]
-                mean_for_data = self.p_masspeak
-
-            fitter_mc.draw_fit(self.make_file_path(self.d_resultsallpdata,
-                                                   "fittedplot_mc_integrated",
-                                                   "eps", None, suffix), flag_plot_message)
-
-            # And now with data
-            # Never fix Gaussian sigma. In that case the user could just use MC as init
-            fitter_data.initialize(h_invmass, self.p_sgnfunc[ipt], self.p_bkgfunc[ipt],
-                                   self.p_rebin[ipt], mean_for_data,
-                                   sigma_for_data, False,
-                                   False, self.p_exclude_nsigma_sideband,
-                                   self.p_nsigma_signal, self.p_massmin[ipt],
-                                   self.p_massmax[ipt])
-            if self.p_dolike:
-                fitter_data.do_likelihood()
-            success = fitter_data.fit()
-            if not success:
-                flag_plot_message.append("Check data fit")
-
-            fitter_data.draw_fit(self.make_file_path(self.d_resultsallpdata,
-                                                     "fittedplot_integrated",
-                                                     "eps", None, suffix), flag_plot_message)
-
-        # Now we go for the individual fits in all pT and mult bins
         fileout_name = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                            None, [self.case, self.typean])
         fileout = TFile(fileout_name, "RECREATE")
-        # Collect in mult histograms
+        # Summarize in mult histograms in pT bins
         yieldshistos = [TH1F("hyields%d" % (imult), "", \
                 self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
+        fit_means_histos = [TH1F("hmeans%d" % (imult), "", \
+                self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
+        fit_sigmas_histos = [TH1F("hsigmas%d" % (imult), "", \
+                self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
+        fit_signifs_histos = [TH1F("hsignificances%d" % (imult), "", \
+                self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
 
+        # The fitter object to be used for all fits
         mass_fitter = Fitter()
 
+        # Collect min and max of means and sigmas
+        mean_min = 9999.
+        mean_max = 0.
+        sigma_min = 9999.
+        sigma_max = 0.
+        signif_min = 9999.
+        signif_max = 0.
+
+        # Fit mult integrated MC and data in integrated multiplicity bin for all pT bins
+        # Hence, extract respective bin of second variable
+        bin_mult_int = self.p_bineff if self.p_bineff is not None else 0
+        mult_int_min = self.lvar2_binmin[bin_mult_int]
+        mult_int_max = self.lvar2_binmax[bin_mult_int]
+
+        # Start fitting...
         for imult in range(self.p_nbin2):
             for ipt in range(self.p_nptbins):
                 bin_id = self.bin_matching[ipt]
+
+                # Initialize mean and sigma with user seeds. This is also the fallback if initial
+                # MC and data fits fail
+                sigma_for_data = self.p_sigmaarray[ipt]
+                mean_for_data = self.p_masspeak
+                flag_plot_message = []
+                flag_plot_message_init = []
+
+                ########################
+                # START initialize fit #
+                ########################
+                # Get integrated histograms
+                suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
+                         (self.v_var_binning, self.lpt_finbinmin[ipt],
+                          self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
+                          self.v_var2_binning, mult_int_min, mult_int_max)
+                h_invmass_int = lfile.Get("hmass" + suffix)
+                h_invmass_mc_int = lfile_mc.Get("hmass" + suffix)
+
+                # First try MC fit. These values are in any case used to initialize the potential
+                # baseline data fit
+                mass_fitter.initialize(h_invmass_mc_int, self.p_sgnfunc[ipt], self.p_bkgfunc[ipt],
+                                       self.p_rebin[ipt], self.p_masspeak, self.p_sigmaarray[ipt],
+                                       False, False, self.p_exclude_nsigma_sideband,
+                                       self.p_nsigma_signal, self.p_massmin[ipt],
+                                       self.p_massmax[ipt])
+                if self.p_dolike:
+                    mass_fitter.do_likelihood()
+                success = mass_fitter.fit()
+
+                # If failed, just flag the plots, otherwise use fitted mean and sigma to go on
+                if not success:
+                    self.logger.error("Already the initial fit to MC failed")
+                    flag_plot_message.append("Initial MC fit failed")
+                    flag_plot_message_init.append("Initial MC fit failed")
+                else:
+                    sigma_for_data = mass_fitter.sigma_fit
+                    mean_for_data = mass_fitter.mean_fit
+
+                mass_fitter.draw_fit(self.make_file_path(self.d_resultsallpdata,
+                                                         "fittedplot_mc_integrated",
+                                                         "eps", None, suffix),
+                                     flag_plot_message_init)
+
+                # Try also on data
+                mass_fitter.initialize(h_invmass_int, self.p_sgnfunc[ipt], self.p_bkgfunc[ipt],
+                                       self.p_rebin[ipt], mean_for_data, sigma_for_data,
+                                       False, False, self.p_exclude_nsigma_sideband,
+                                       self.p_nsigma_signal, self.p_massmin[ipt],
+                                       self.p_massmax[ipt])
+                if self.p_dolike:
+                    mass_fitter.do_likelihood()
+
+                success = mass_fitter.fit()
+
+                # If failed, just flag plots, otherwise use fitted mean and sigma to go on
+                if not success:
+                    self.logger.error("Initial fit to data failed, fall back to MC if possible")
+                    if self.init_fits_from == "data":
+                        flag_plot_message.append("Initial data fit failed, " \
+                                                 "fall back to MC if possible")
+                    flag_plot_message_init.append("Initial data fit failed")
+                elif self.init_fits_from == "data":
+                    # If that was requested for initialization use values
+                    sigma_for_data = mass_fitter.sigma_fit
+                    mean_for_data = mass_fitter.mean_fit
+
+                mass_fitter.draw_fit(self.make_file_path(self.d_resultsallpdata,
+                                                         "fittedplot_integrated",
+                                                         "eps", None, suffix),
+                                     flag_plot_message_init)
+
+                ######################
+                # END initialize fit #
+                ######################
+
+                # Now comes the actual fit
                 suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
                 h_invmass = lfile.Get("hmass" + suffix)
-                h_invmass_mc = lfile_mc.Get("hmass" + suffix)
-
-                # Try to initialize the fit mean and sigma from previous integrated fits
-                sigma_for_data = self.p_sigmaarray[ipt]
-                mean_for_data = self.p_masspeak
-                flag_plot_message = []
-
-                if self.init_fits_from not in  ["mc", "data"]:
-                    self.logger.fatal("Fit can only be initialized from \"data\" or \"mc\"")
-
-                fitter_init = None
-                if (not mass_fitters_int_mc[ipt].fit_success and not \
-                        mass_fitters_int_data[ipt].fit_success) or not mass_fitters_int_mc:
-                    self.logger.error("Can neither init fit from MC nor from data")
-                    flag_plot_message.append("Can neither init fit from MC nor from data")
-
-                elif self.init_fits_from == "data":
-                    if mass_fitters_int_data[ipt].fit_success:
-                        fitter_init = mass_fitters_int_data[ipt]
-                    else:
-                        self.logger.error("Need to fallback to MC init")
-                        flag_plot_message.append("Need to fallback to MC init")
-                        fitter_init = mass_fitters_int_mc[ipt]
-                else:
-                    if mass_fitters_int_mc[ipt].fit_success:
-                        fitter_init = mass_fitters_int_mc[ipt]
-                    else:
-                        self.logger.error("Need to fallback to data init")
-                        flag_plot_message.append("Need to fallback to data init")
-                        fitter_init = mass_fitters_int_data[ipt]
-
-                if fitter_init is not None:
-                    mean_for_data = fitter_init.mean_fit
-                    sigma_for_data = fitter_init.sigma_fit
-
                 # And now with data
                 mass_fitter.initialize(h_invmass, self.p_sgnfunc[ipt], self.p_bkgfunc[ipt],
                                        self.p_rebin[ipt], mean_for_data,
@@ -309,6 +311,21 @@ class Analyzer:
                 success = mass_fitter.fit()
                 if not success:
                     flag_plot_message.append("Check fit")
+                else:
+                    # Update minima and maxima for means and sigmas
+                    if mass_fitter.mean_fit < mean_min:
+                        mean_min = mass_fitter.mean_fit
+                    if mass_fitter.mean_fit > mean_max:
+                        mean_max = mass_fitter.mean_fit
+                    if mass_fitter.sigma_fit < sigma_min:
+                        sigma_min = mass_fitter.sigma_fit
+                    if mass_fitter.sigma_fit > sigma_max:
+                        sigma_max = mass_fitter.sigma_fit
+                    if mass_fitter.significance < signif_min:
+                        signif_min = mass_fitter.significance
+                    if mass_fitter.significance > signif_max:
+                        signif_max = mass_fitter.significance
+
 
                 mass_fitter.draw_fit(self.make_file_path(self.d_resultsallpdata, "fittedplot",
                                                          "eps", None, suffix), flag_plot_message)
@@ -323,9 +340,24 @@ class Analyzer:
                         (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
                 yieldshistos[imult].SetBinContent(ipt + 1, rawYield)
                 yieldshistos[imult].SetBinError(ipt + 1, rawYieldErr)
+
+                # Fill for means and sigmas
+                fit_means_histos[imult].SetBinContent(ipt + 1, mass_fitter.mean_fit)
+                fit_means_histos[imult].SetBinError(ipt + 1, mass_fitter.mean_err_fit)
+
+                fit_sigmas_histos[imult].SetBinContent(ipt + 1, mass_fitter.sigma_fit)
+                fit_sigmas_histos[imult].SetBinError(ipt + 1, mass_fitter.sigma_err_fit)
+
+                fit_signifs_histos[imult].SetBinContent(ipt + 1, mass_fitter.significance)
+                fit_signifs_histos[imult].SetBinError(ipt + 1, mass_fitter.errsignificance)
+
             fileout.cd()
             yieldshistos[imult].Write()
+            fit_means_histos[imult].Write()
+            fit_sigmas_histos[imult].Write()
+            fit_signifs_histos[imult].Write()
 
+        # Yields summary plot
         cYields = TCanvas('cYields', 'The Fit Canvas')
         cYields.SetCanvasSize(1900, 1500)
         cYields.SetWindowSize(500, 500)
@@ -338,7 +370,43 @@ class Analyzer:
         legyield.SetTextFont(42)
         legyield.SetTextSize(0.035)
 
+        # Means summary plot
+        cMeans = TCanvas('cMeans', 'Fitted means')
+        cMeans.SetCanvasSize(1900, 1500)
+        cMeans.SetWindowSize(500, 500)
+
+        leg_means = TLegend(.5, .65, .7, .85)
+        leg_means.SetBorderSize(0)
+        leg_means.SetFillColor(0)
+        leg_means.SetFillStyle(0)
+        leg_means.SetTextFont(42)
+        leg_means.SetTextSize(0.035)
+
+        cSigmas = TCanvas('cSigmas', 'Fitted sigmas')
+        cSigmas.SetCanvasSize(1900, 1500)
+        cSigmas.SetWindowSize(500, 500)
+
+        leg_sigmas = TLegend(.5, .65, .7, .85)
+        leg_sigmas.SetBorderSize(0)
+        leg_sigmas.SetFillColor(0)
+        leg_sigmas.SetFillStyle(0)
+        leg_sigmas.SetTextFont(42)
+        leg_sigmas.SetTextSize(0.035)
+
+        cSignifs = TCanvas('cSignifs', 'Fitted sigmas')
+        cSignifs.SetCanvasSize(1900, 1500)
+        cSignifs.SetWindowSize(500, 500)
+
+        leg_signifs = TLegend(.5, .65, .7, .85)
+        leg_signifs.SetBorderSize(0)
+        leg_signifs.SetFillColor(0)
+        leg_signifs.SetFillStyle(0)
+        leg_signifs.SetTextFont(42)
+        leg_signifs.SetTextSize(0.035)
+
         for imult in range(self.p_nbin2):
+            # Draw yields
+            cYields.cd()
             yieldshistos[imult].SetMinimum(1)
             yieldshistos[imult].SetMaximum(1e6)
             yieldshistos[imult].SetLineColor(imult+1)
@@ -350,10 +418,67 @@ class Analyzer:
             yieldshistos[imult].GetYaxis().SetTitle("Uncorrected yields %s %s (1/GeV)" \
                     % (self.p_latexnmeson, self.typean))
 
+            # Draw means and sigmas, significances
+            cMeans.cd()
+            fit_means_histos[imult].SetMinimum(0.99 * mean_min)
+            fit_means_histos[imult].SetMaximum(1.02 * mean_max)
+            fit_means_histos[imult].SetLineColor(imult+1)
+            fit_means_histos[imult].Draw("same")
+            legyieldstring = "%.1f < %s < %.1f GeV/c" % \
+                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
+            leg_means.AddEntry(fit_means_histos[imult], legyieldstring, "LEP")
+            fit_means_histos[imult].GetXaxis().SetTitle("p_{T} (GeV)")
+            fit_means_histos[imult].GetYaxis().SetTitle("#mu_{fit} %s %s" \
+                    % (self.p_latexnmeson, self.typean))
+
+            cSigmas.cd()
+            fit_sigmas_histos[imult].SetMinimum(0.9 * sigma_min)
+            fit_sigmas_histos[imult].SetMaximum(1.1 * sigma_max)
+            fit_sigmas_histos[imult].SetLineColor(imult+1)
+            fit_sigmas_histos[imult].Draw("same")
+            legyieldstring = "%.1f < %s < %.1f GeV/c" % \
+                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
+            leg_sigmas.AddEntry(fit_sigmas_histos[imult], legyieldstring, "LEP")
+            fit_sigmas_histos[imult].GetXaxis().SetTitle("p_{T} (GeV)")
+            fit_sigmas_histos[imult].GetYaxis().SetTitle("#sigma_{fit} %s %s" \
+                    % (self.p_latexnmeson, self.typean))
+
+            cSignifs.cd()
+            fit_signifs_histos[imult].SetMinimum(0.9 * signif_min)
+            fit_signifs_histos[imult].SetMaximum(1.1 * signif_max)
+            fit_signifs_histos[imult].SetLineColor(imult+1)
+            fit_signifs_histos[imult].Draw("same")
+            legyieldstring = "%.1f < %s < %.1f GeV/c" % \
+                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
+            leg_signifs.AddEntry(fit_signifs_histos[imult], legyieldstring, "LEP")
+            fit_signifs_histos[imult].GetXaxis().SetTitle("p_{T} (GeV)")
+            fit_signifs_histos[imult].GetYaxis().SetTitle("significane_{fit} %s %s" \
+                    % (self.p_latexnmeson, self.typean))
+
+        cYields.cd()
         legyield.Draw()
-        yields_save_name = self.make_file_path(self.d_resultsallpdata, "Yields", "eps", None,
-                                               [self.case, self.typean])
-        cYields.SaveAs(yields_save_name)
+        save_name = self.make_file_path(self.d_resultsallpdata, "Yields", "eps", None,
+                                        [self.case, self.typean])
+        cYields.SaveAs(save_name)
+
+        cMeans.cd()
+        leg_means.Draw()
+        save_name = self.make_file_path(self.d_resultsallpdata, "Means", "eps", None,
+                                        [self.case, self.typean])
+        cMeans.SaveAs(save_name)
+
+        cSigmas.cd()
+        leg_sigmas.Draw()
+        save_name = self.make_file_path(self.d_resultsallpdata, "Sigmas", "eps", None,
+                                        [self.case, self.typean])
+        cSigmas.SaveAs(save_name)
+
+        cSignifs.cd()
+        leg_signifs.Draw()
+        save_name = self.make_file_path(self.d_resultsallpdata, "Significanes", "eps", None,
+                                        [self.case, self.typean])
+        cSignifs.SaveAs(save_name)
+
         fileout.Close()
 
         # Reset to former mode

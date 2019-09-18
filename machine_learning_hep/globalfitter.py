@@ -211,8 +211,12 @@ class Fitter:
         if self.mean_fit < 0.:
             error_list.append(f"Mean is negative: {self.mean_fit}")
 
-        if abs(self.sigma_fit) > 100 * self.sigma:
-            error_list.append(f"Fitted sigma is larger than 100 times initial sigma " \
+        if abs(self.sigma_fit) > 10 * self.sigma:
+            error_list.append(f"Fitted sigma is larger than 10 times initial sigma " \
+                              f"{self.sigma:.4f} vs. {self.sigma_fit:.4f}")
+
+        if abs(self.sigma_fit) < 0.1 * self.sigma:
+            error_list.append(f"Fitted sigma is smaller than 0.1 times initial sigma " \
                               f"{self.sigma:.4f} vs. {self.sigma_fit:.4f}")
         if error_list:
             return "\n".join(error_list)
