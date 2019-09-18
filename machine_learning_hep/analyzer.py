@@ -189,23 +189,9 @@ class Analyzer:
         # Summarize in mult histograms in pT bins
         yieldshistos = [TH1F("hyields%d" % (imult), "", \
                 self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
-        fit_means_histos = [TH1F("hmeans%d" % (imult), "", \
-                self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
-        fit_sigmas_histos = [TH1F("hsigmas%d" % (imult), "", \
-                self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
-        fit_signifs_histos = [TH1F("hsignificances%d" % (imult), "", \
-                self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
 
         # The fitter object to be used for all fits
         mass_fitter = Fitter()
-
-        # Collect min and max of means and sigmas
-        mean_min = 9999.
-        mean_max = 0.
-        sigma_min = 9999.
-        sigma_max = 0.
-        signif_min = 9999.
-        signif_max = 0.
 
         # Fit mult integrated MC and data in integrated multiplicity bin for all pT bins
         # Hence, extract respective bin of second variable
@@ -311,21 +297,6 @@ class Analyzer:
                 success = mass_fitter.fit()
                 if not success:
                     flag_plot_message.append("Check fit")
-                else:
-                    # Update minima and maxima for means and sigmas
-                    if mass_fitter.mean_fit < mean_min:
-                        mean_min = mass_fitter.mean_fit
-                    if mass_fitter.mean_fit > mean_max:
-                        mean_max = mass_fitter.mean_fit
-                    if mass_fitter.sigma_fit < sigma_min:
-                        sigma_min = mass_fitter.sigma_fit
-                    if mass_fitter.sigma_fit > sigma_max:
-                        sigma_max = mass_fitter.sigma_fit
-                    if mass_fitter.significance < signif_min:
-                        signif_min = mass_fitter.significance
-                    if mass_fitter.significance > signif_max:
-                        signif_max = mass_fitter.significance
-
 
                 mass_fitter.draw_fit(self.make_file_path(self.d_resultsallpdata, "fittedplot",
                                                          "eps", None, suffix), flag_plot_message)
@@ -340,22 +311,8 @@ class Analyzer:
                         (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
                 yieldshistos[imult].SetBinContent(ipt + 1, rawYield)
                 yieldshistos[imult].SetBinError(ipt + 1, rawYieldErr)
-
-                # Fill for means and sigmas
-                fit_means_histos[imult].SetBinContent(ipt + 1, mass_fitter.mean_fit)
-                fit_means_histos[imult].SetBinError(ipt + 1, mass_fitter.mean_err_fit)
-
-                fit_sigmas_histos[imult].SetBinContent(ipt + 1, mass_fitter.sigma_fit)
-                fit_sigmas_histos[imult].SetBinError(ipt + 1, mass_fitter.sigma_err_fit)
-
-                fit_signifs_histos[imult].SetBinContent(ipt + 1, mass_fitter.significance)
-                fit_signifs_histos[imult].SetBinError(ipt + 1, mass_fitter.errsignificance)
-
             fileout.cd()
             yieldshistos[imult].Write()
-            fit_means_histos[imult].Write()
-            fit_sigmas_histos[imult].Write()
-            fit_signifs_histos[imult].Write()
 
         # Yields summary plot
         cYields = TCanvas('cYields', 'The Fit Canvas')
@@ -369,40 +326,6 @@ class Analyzer:
         legyield.SetFillStyle(0)
         legyield.SetTextFont(42)
         legyield.SetTextSize(0.035)
-
-        # Means summary plot
-        cMeans = TCanvas('cMeans', 'Fitted means')
-        cMeans.SetCanvasSize(1900, 1500)
-        cMeans.SetWindowSize(500, 500)
-
-        leg_means = TLegend(.5, .65, .7, .85)
-        leg_means.SetBorderSize(0)
-        leg_means.SetFillColor(0)
-        leg_means.SetFillStyle(0)
-        leg_means.SetTextFont(42)
-        leg_means.SetTextSize(0.035)
-
-        cSigmas = TCanvas('cSigmas', 'Fitted sigmas')
-        cSigmas.SetCanvasSize(1900, 1500)
-        cSigmas.SetWindowSize(500, 500)
-
-        leg_sigmas = TLegend(.5, .65, .7, .85)
-        leg_sigmas.SetBorderSize(0)
-        leg_sigmas.SetFillColor(0)
-        leg_sigmas.SetFillStyle(0)
-        leg_sigmas.SetTextFont(42)
-        leg_sigmas.SetTextSize(0.035)
-
-        cSignifs = TCanvas('cSignifs', 'Fitted sigmas')
-        cSignifs.SetCanvasSize(1900, 1500)
-        cSignifs.SetWindowSize(500, 500)
-
-        leg_signifs = TLegend(.5, .65, .7, .85)
-        leg_signifs.SetBorderSize(0)
-        leg_signifs.SetFillColor(0)
-        leg_signifs.SetFillStyle(0)
-        leg_signifs.SetTextFont(42)
-        leg_signifs.SetTextSize(0.035)
 
         for imult in range(self.p_nbin2):
             # Draw yields
@@ -418,66 +341,11 @@ class Analyzer:
             yieldshistos[imult].GetYaxis().SetTitle("Uncorrected yields %s %s (1/GeV)" \
                     % (self.p_latexnmeson, self.typean))
 
-            # Draw means and sigmas, significances
-            cMeans.cd()
-            fit_means_histos[imult].SetMinimum(0.99 * mean_min)
-            fit_means_histos[imult].SetMaximum(1.02 * mean_max)
-            fit_means_histos[imult].SetLineColor(imult+1)
-            fit_means_histos[imult].Draw("same")
-            legyieldstring = "%.1f < %s < %.1f GeV/c" % \
-                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
-            leg_means.AddEntry(fit_means_histos[imult], legyieldstring, "LEP")
-            fit_means_histos[imult].GetXaxis().SetTitle("p_{T} (GeV)")
-            fit_means_histos[imult].GetYaxis().SetTitle("#mu_{fit} %s %s" \
-                    % (self.p_latexnmeson, self.typean))
-
-            cSigmas.cd()
-            fit_sigmas_histos[imult].SetMinimum(0.9 * sigma_min)
-            fit_sigmas_histos[imult].SetMaximum(1.1 * sigma_max)
-            fit_sigmas_histos[imult].SetLineColor(imult+1)
-            fit_sigmas_histos[imult].Draw("same")
-            legyieldstring = "%.1f < %s < %.1f GeV/c" % \
-                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
-            leg_sigmas.AddEntry(fit_sigmas_histos[imult], legyieldstring, "LEP")
-            fit_sigmas_histos[imult].GetXaxis().SetTitle("p_{T} (GeV)")
-            fit_sigmas_histos[imult].GetYaxis().SetTitle("#sigma_{fit} %s %s" \
-                    % (self.p_latexnmeson, self.typean))
-
-            cSignifs.cd()
-            fit_signifs_histos[imult].SetMinimum(0.9 * signif_min)
-            fit_signifs_histos[imult].SetMaximum(1.1 * signif_max)
-            fit_signifs_histos[imult].SetLineColor(imult+1)
-            fit_signifs_histos[imult].Draw("same")
-            legyieldstring = "%.1f < %s < %.1f GeV/c" % \
-                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
-            leg_signifs.AddEntry(fit_signifs_histos[imult], legyieldstring, "LEP")
-            fit_signifs_histos[imult].GetXaxis().SetTitle("p_{T} (GeV)")
-            fit_signifs_histos[imult].GetYaxis().SetTitle("significane_{fit} %s %s" \
-                    % (self.p_latexnmeson, self.typean))
-
         cYields.cd()
         legyield.Draw()
         save_name = self.make_file_path(self.d_resultsallpdata, "Yields", "eps", None,
                                         [self.case, self.typean])
         cYields.SaveAs(save_name)
-
-        cMeans.cd()
-        leg_means.Draw()
-        save_name = self.make_file_path(self.d_resultsallpdata, "Means", "eps", None,
-                                        [self.case, self.typean])
-        cMeans.SaveAs(save_name)
-
-        cSigmas.cd()
-        leg_sigmas.Draw()
-        save_name = self.make_file_path(self.d_resultsallpdata, "Sigmas", "eps", None,
-                                        [self.case, self.typean])
-        cSigmas.SaveAs(save_name)
-
-        cSignifs.cd()
-        leg_signifs.Draw()
-        save_name = self.make_file_path(self.d_resultsallpdata, "Significanes", "eps", None,
-                                        [self.case, self.typean])
-        cSignifs.SaveAs(save_name)
 
         fileout.Close()
 
