@@ -892,10 +892,9 @@ class Analyzer:
             leg_eff.Draw()
             can_eff.SaveAs("%s/Efficiency%s%s%s.eps" % (self.d_resultsallpmc, \
                             self.case, self.typean, imult))
-            arr_eff_pr = hist2array(his_eff_pr)
-            arr_eff_fd = hist2array(his_eff_fd)
             # Get the ratio of efficiencies.
-            arr_eff_ratio = arr_eff_fd / arr_eff_pr
+            his_eff_fd.Divide(his_eff_pr)
+            arr_eff_ratio = hist2array(his_eff_fd)
             # Get the feed-down yield = response * simulated non-prompts * ratio of efficiencies.
             arr_sim_fd_eff_smeared = arr_resp_fd.dot(arr_sim_fd.dot(arr_eff_ratio))
             his_fd = TH1F("fd_mult%d" % imult, \
@@ -916,6 +915,34 @@ class Analyzer:
             can_fd.SetLeftMargin(0.12)
             can_fd.SaveAs("%s/Feeddown%s%s%s.eps" % (self.d_resultsallpmc, \
                             self.case, self.typean, imult))
+
+        # Get simulated pt_cand vs. pt_jet vs. z of non-prompt jets.
+        his_sim_z_fd = file_resp.Get("his_ptc_ptjet_z_fd")
+        his_sim_z_fd_2d = his_sim_z_fd.Project3D("yz") # final feed-down histogram
+        # x axis = z, y axis = pt_jet
+        his_sim_z_fd_2d.Reset()
+        # Scale with the ratio of efficiencies.
+        # loop over pt_jet bins
+        for i_ptjet in range(self.p_nbin2):
+            bin_ptjet = i_ptjet + 1
+            # Get efficiencies.
+            his_eff_pr = file_eff.Get("eff_mult%d" % i_ptjet)
+            his_eff_fd = file_eff.Get("eff_fd_mult%d" % i_ptjet)
+            his_eff_fd.Divide(his_eff_pr)
+            his_eff_ratio = his_eff_fd
+            # loop over z bins
+            for i_z in range(his_sim_z_fd_2d.GetNbinsX()):
+                bin_z = i_z + 1
+                his_sim_z_fd.GetYaxis().SetRange(bin_ptjet, bin_ptjet)
+                his_sim_z_fd.GetZaxis().SetRange(bin_z, bin_z)
+                his_sim_ptc_fd = his_sim_z_fd.Project3D("x") # pt_cand
+                his_sim_ptc_fd.Multiply(his_eff_ratio)
+                his_sim_z_fd_2d.SetBinContent(bin_z, bin_ptjet, his_sim_ptc_fd.Integral())
+
+        # TODO: Building the response matrix and smearing.
+        file_out.cd()
+        his_sim_z_fd_2d.Write("fd_z_ptjet")
+
         file_resp.Close()
         file_eff.Close()
         file_out.Close()
