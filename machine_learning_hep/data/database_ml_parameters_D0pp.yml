@@ -65,7 +65,7 @@ D0pp:
               mult_gen, mult_gen_v0a, mult_gen_v0c, perc_v0m]
     var_gen: [y_cand, pt_cand, eta_cand, phi_cand, cand_type, pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet, run_number, ev_id]
     var_evt_match: [run_number, ev_id]
-    var_training: [d_len, d_len_xy, norm_dl, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, cos_t_star,
+    var_training: [d_len, d_len_xy, norm_dl, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca,
                    imp_par_prod, pt_prong0, pt_prong1, imp_par_prong0, imp_par_prong1, imp_par_err_prong0,
                    imp_par_err_prong1, max_norm_d0d0exp,
                    nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, nsigTPC_Pi_1, nsigTPC_K_1, nsigTOF_Pi_1, nsigTOF_K_1]
@@ -173,7 +173,13 @@ D0pp:
                                  /data/Derived/D0kINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2018_mc_prodD2H/219_20190909-2125/pklskml] #list of periods
       pkl_skimmed_merge_for_ml_all: /data/Derived/D0kINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_mc_prodD2H_mltot
       pkl_evtcounter_all: /data/Derived/D0kINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_mc_prodD2H_evttot
+  
   ml:
+    evtsel: is_ev_rej==0
+    triggersel:
+      data: "trigger_hasbit_INT7==1"
+      mc: null
+
     nbkg: 5000000
     nsig: 5000000
     sampletagforsignal: 1

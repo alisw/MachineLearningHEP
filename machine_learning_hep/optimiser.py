@@ -26,7 +26,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 from ROOT import TH1F, TF1  # pylint: disable=import-error,no-name-in-module
 from machine_learning_hep.utilities import seldf_singlevar, split_df_sigbkg, createstringselection
-from machine_learning_hep.utilities import openfile
+from machine_learning_hep.utilities import openfile, selectdfquery
 from machine_learning_hep.correlations import vardistplot, scatterplot, correlationmatrix
 from machine_learning_hep.models import getclf_scikit, getclf_xgboost, getclf_keras
 from machine_learning_hep.models import fit, savemodels, test, apply, decisionboundaries
@@ -106,6 +106,11 @@ class Optimiser:
         self.test_frac = data_param["ml"]["test_frac"]
         self.p_plot_options = data_param["variables"].get("plot_options", {})
         self.p_dofullevtmerge = data_param["dofullevtmerge"]
+
+        self.p_evtsel = data_param["ml"]["evtsel"]
+        self.p_triggersel_mc = data_param["ml"]["triggersel"]["mc"]
+        self.p_triggersel_data = data_param["ml"]["triggersel"]["data"]
+
         #dataframes
         self.df_mc = None
         self.df_mcgen = None
@@ -175,6 +180,14 @@ class Optimiser:
         self.df_data = pickle.load(openfile(self.f_reco_data, "rb"))
         self.df_mc = pickle.load(openfile(self.f_reco_mc, "rb"))
         self.df_mcgen = pickle.load(openfile(self.f_gen_mc, "rb"))
+        self.df_data = selectdfquery(self.df_data, self.p_evtsel)
+        self.df_mc = selectdfquery(self.df_mc, self.p_evtsel)
+        self.df_mcgen = selectdfquery(self.df_mcgen, self.p_evtsel)
+
+        self.df_data = selectdfquery(self.df_data, self.p_triggersel_data)
+        self.df_mc = selectdfquery(self.df_mc, self.p_triggersel_mc)
+        self.df_mcgen = selectdfquery(self.df_mcgen, self.p_triggersel_mc)
+
         self.df_mcgen = self.df_mcgen.query(self.p_presel_gen_eff)
         arraydf = [self.df_data, self.df_mc]
         self.df_mc = seldf_singlevar(self.df_mc, self.v_bin, self.p_binmin, self.p_binmax)

@@ -67,7 +67,7 @@ LcpK0spp:
               mult_gen, mult_gen_v0a, mult_gen_v0c, perc_v0m]
     var_gen: [y_cand, pt_cand, eta_cand, phi_cand, cand_type, pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet, run_number, ev_id]
     var_evt_match: [run_number, ev_id]
-    var_training: [cos_t_star, signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,  
+    var_training: [signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,  
                    imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0] 
     var_boundaries: [cos_t_star, pt_cand]
     var_correlation:
@@ -259,6 +259,10 @@ LcpK0spp:
       pkl_skimmed_merge_for_ml_all: /data/Derived/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pklskMLallperiods
       pkl_evtcounter_all: /data/Derived/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pklevtppallperiod
   ml:
+    evtsel: is_ev_rej==0
+    triggersel:
+      data: "trigger_hasbit_INT7==1"
+      mc: null
     nbkg: 500000
     nsig: 500000
     sampletagforsignal: 1
