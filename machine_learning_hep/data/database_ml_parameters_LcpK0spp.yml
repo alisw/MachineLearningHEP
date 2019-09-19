@@ -259,6 +259,10 @@ LcpK0spp:
       pkl_skimmed_merge_for_ml_all: /data/Derived/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pklskMLallperiods
       pkl_evtcounter_all: /data/Derived/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pklevtppallperiod
   ml:
+    evtsel: is_ev_rej==0
+    triggersel:
+      data: "trigger_hasbit_INT7==1"
+      mc: null
     nbkg: 500000
     nsig: 500000
     sampletagforsignal: 1
