@@ -963,6 +963,8 @@ class Analyzer:
             # Get efficiencies.
             his_eff_pr = file_eff.Get("eff_mult%d" % imult)
             his_eff_fd = file_eff.Get("eff_fd_mult%d" % imult)
+            his_eff_pr = his_eff_pr.Clone("his_eff_pr1_%d" % imult)
+            his_eff_fd = his_eff_fd.Clone("his_eff_fd1_%d" % imult)
             his_eff_pr.SetLineColor(2)
             his_eff_fd.SetLineColor(3)
             his_eff_pr.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
@@ -1023,6 +1025,8 @@ class Analyzer:
             # Get efficiencies.
             his_eff_pr = file_eff.Get("eff_mult%d" % i_ptjet)
             his_eff_fd = file_eff.Get("eff_fd_mult%d" % i_ptjet)
+            his_eff_pr = his_eff_pr.Clone("his_eff_pr2_%d" % i_ptjet)
+            his_eff_fd = his_eff_fd.Clone("his_eff_fd2_%d" % i_ptjet)
             his_eff_fd.Divide(his_eff_pr)
             his_eff_ratio = his_eff_fd
             # loop over z bins
