@@ -25,9 +25,11 @@ import numpy as np
 from root_numpy import hist2array, array2hist
 from ROOT import TFile, TH1F, TCanvas, TPad
 from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
-from ROOT import gROOT
+from ROOT import gROOT, TDirectory
 from ROOT import TStyle, kBlue, kGreen, kBlack, kRed
 from ROOT import TLatex
+# HF specific imports
+from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
 from machine_learning_hep.globalfitter import Fitter
 from  machine_learning_hep.logger import get_logger
 #from ROOT import RooUnfoldResponse
@@ -80,6 +82,8 @@ class Analyzer:
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
                                     self.p_bin_width))
         #parameter fitter
+        self.sig_func_map = {"kGaus": 0, "k2Gaus": 1, "kGausSigmaRatioPar": 2}
+        self.bkg_func_map = {"kExpo": 0, "kLin": 1, "Pol2": 2, "kNoBk": 3, "kPow": 4, "kPowEx": 5}
         # For initial fit in integrated mult bin
         self.init_fits_from = datap["analysis"][self.typean]["init_fits_from"]
         self.p_sgnfunc = datap["analysis"][self.typean]["sgnfunc"]
@@ -109,8 +113,6 @@ class Analyzer:
         self.var2ranges = self.lvar2_binmin.copy()
         self.var2ranges.append(self.lvar2_binmax[-1])
         print(self.var2ranges)
-        #self.lmult_yieldshisto = [TH1F("hyields%d" % (imult), "", \
-        #    self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
 
         self.p_nevents = datap["analysis"][self.typean]["nevents"]
         self.p_bineff = datap["analysis"][self.typean]["usesinglebineff"]
@@ -180,7 +182,7 @@ class Analyzer:
         if self.init_fits_from not in  ["mc", "data"]:
             self.logger.fatal("Fit can only be initialized from \"data\" or \"mc\"")
 
-        lfile = TFile.Open(self.n_filemass)
+        lfile = TFile.Open(self.n_filemass, "READ")
         lfile_mc = TFile.Open(self.n_filemass_mc, "READ")
 
         fileout_name = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
@@ -189,9 +191,6 @@ class Analyzer:
         # Summarize in mult histograms in pT bins
         yieldshistos = [TH1F("hyields%d" % (imult), "", \
                 self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
-
-        # The fitter object to be used for all fits
-        mass_fitter = Fitter()
 
         # Fit mult integrated MC and data in integrated multiplicity bin for all pT bins
         # Hence, extract respective bin of second variable
@@ -208,8 +207,6 @@ class Analyzer:
                 # MC and data fits fail
                 sigma_for_data = self.p_sigmaarray[ipt]
                 mean_for_data = self.p_masspeak
-                flag_plot_message = []
-                flag_plot_message_init = []
 
                 ########################
                 # START initialize fit #
@@ -219,61 +216,68 @@ class Analyzer:
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, mult_int_min, mult_int_max)
-                h_invmass_int = lfile.Get("hmass" + suffix)
-                h_invmass_mc_int = lfile_mc.Get("hmass" + suffix)
+                h_invmass_init = lfile.Get("hmass" + suffix)
+                h_invmass_mc_init = lfile_mc.Get("hmass" + suffix)
 
-                # First try MC fit. These values are in any case used to initialize the potential
-                # baseline data fit
-                mass_fitter.initialize(h_invmass_mc_int, self.p_sgnfunc[ipt], self.p_bkgfunc[ipt],
-                                       self.p_rebin[ipt], self.p_masspeak, self.p_sigmaarray[ipt],
-                                       False, False, self.p_exclude_nsigma_sideband,
-                                       self.p_nsigma_signal, self.p_massmin[ipt],
-                                       self.p_massmax[ipt])
+                h_mc_init_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_mc_init,
+                                                                  self.p_rebin[ipt], -1)
+                h_mc_init_rebin = TH1F()
+                h_mc_init_rebin_.Copy(h_mc_init_rebin)
+
+                mass_fitter_mc_init = AliHFInvMassFitter(h_mc_init_rebin, self.p_massmin[ipt],
+                                                         self.p_massmax[ipt],
+                                                         self.bkg_func_map[self.p_bkgfunc[ipt]],
+                                                         self.sig_func_map[self.p_sgnfunc[ipt]])
+
                 if self.p_dolike:
-                    mass_fitter.do_likelihood()
-                success = mass_fitter.fit()
-
-                # If failed, just flag the plots, otherwise use fitted mean and sigma to go on
-                if not success:
-                    self.logger.error("Already the initial fit to MC failed")
-                    flag_plot_message.append("Initial MC fit failed")
-                    flag_plot_message_init.append("Initial MC fit failed")
+                    mass_fitter_mc_init.SetUseLikelihoodFit()
+                mass_fitter_mc_init.SetInitialGaussianMean(mean_for_data)
+                mass_fitter_mc_init.SetInitialGaussianSigma(sigma_for_data)
+                mass_fitter_mc_init.SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
+                success = mass_fitter_mc_init.MassFitter(False)
+                if success:
+                    sigma_for_data = mass_fitter_mc_init.GetSigma()
+                    mean_for_data = mass_fitter_mc_init.GetMean()
                 else:
-                    sigma_for_data = mass_fitter.sigma_fit
-                    mean_for_data = mass_fitter.mean_fit
+                    self.logger.error("Could not do initial fit on MC")
 
-                mass_fitter.draw_fit(self.make_file_path(self.d_resultsallpdata,
-                                                         "fittedplot_mc_integrated",
-                                                         "eps", None, suffix),
-                                     flag_plot_message_init)
+                canvas = TCanvas("fit_canvas_mc_init", suffix, 700, 700)
+                mass_fitter_mc_init.DrawHere(canvas, self.p_nsigma_signal)
 
-                # Try also on data
-                mass_fitter.initialize(h_invmass_int, self.p_sgnfunc[ipt], self.p_bkgfunc[ipt],
-                                       self.p_rebin[ipt], mean_for_data, sigma_for_data,
-                                       False, False, self.p_exclude_nsigma_sideband,
-                                       self.p_nsigma_signal, self.p_massmin[ipt],
-                                       self.p_massmax[ipt])
+
+                canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
+                                                  "fittedplot_integrated_mc", "eps",
+                                                  None, suffix))
+                #canvas.Close()
+
+                # Now, try also for data
+                h_data_init_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_init,
+                                                                    self.p_rebin[ipt], -1)
+                h_data_init_rebin = TH1F()
+                h_data_init_rebin_.Copy(h_data_init_rebin)
+                mass_fitter_data_init = AliHFInvMassFitter(h_data_init_rebin, self.p_massmin[ipt],
+                                                           self.p_massmax[ipt],
+                                                           self.bkg_func_map[self.p_bkgfunc[ipt]],
+                                                           self.sig_func_map[self.p_sgnfunc[ipt]])
+
                 if self.p_dolike:
-                    mass_fitter.do_likelihood()
+                    mass_fitter_data_init.SetUseLikelihoodFit()
+                mass_fitter_data_init.SetInitialGaussianMean(mean_for_data)
+                mass_fitter_data_init.SetInitialGaussianSigma(sigma_for_data)
+                mass_fitter_data_init.SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
+                success = mass_fitter_data_init.MassFitter(False)
+                if success and self.init_fits_from == "data":
+                    sigma_for_data = mass_fitter_data_init.GetSigma()
+                    mean_for_data = mass_fitter_data_init.GetMean()
 
-                success = mass_fitter.fit()
+                canvas = TCanvas("fit_canvas_data_init", suffix, 700, 700)
+                mass_fitter_data_init.DrawHere(canvas, self.p_nsigma_signal)
 
-                # If failed, just flag plots, otherwise use fitted mean and sigma to go on
-                if not success:
-                    self.logger.error("Initial fit to data failed, fall back to MC if possible")
-                    if self.init_fits_from == "data":
-                        flag_plot_message.append("Initial data fit failed, " \
-                                                 "fall back to MC if possible")
-                    flag_plot_message_init.append("Initial data fit failed")
-                elif self.init_fits_from == "data":
-                    # If that was requested for initialization use values
-                    sigma_for_data = mass_fitter.sigma_fit
-                    mean_for_data = mass_fitter.mean_fit
 
-                mass_fitter.draw_fit(self.make_file_path(self.d_resultsallpdata,
-                                                         "fittedplot_integrated",
-                                                         "eps", None, suffix),
-                                     flag_plot_message_init)
+                canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
+                                                  "fittedplot_integrated", "eps",
+                                                  None, suffix))
+                #canvas.Close()
 
                 ######################
                 # END initialize fit #
@@ -285,29 +289,38 @@ class Analyzer:
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
                 h_invmass = lfile.Get("hmass" + suffix)
-                # And now with data
-                mass_fitter.initialize(h_invmass, self.p_sgnfunc[ipt], self.p_bkgfunc[ipt],
-                                       self.p_rebin[ipt], mean_for_data,
-                                       sigma_for_data, self.p_fixedmean,
-                                       self.p_fixingaussigma, self.p_exclude_nsigma_sideband,
-                                       self.p_nsigma_signal, self.p_massmin[ipt],
-                                       self.p_massmax[ipt])
+
+
+                h_invmass_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass, self.p_rebin[ipt], -1)
+                h_invmass_rebin = TH1F()
+                h_invmass_rebin_.Copy(h_invmass_rebin)
+                mass_fitter = AliHFInvMassFitter(h_invmass_rebin, self.p_massmin[ipt],
+                                                 self.p_massmax[ipt],
+                                                 self.bkg_func_map[self.p_bkgfunc[ipt]],
+                                                 self.sig_func_map[self.p_sgnfunc[ipt]])
+
+
                 if self.p_dolike:
-                    mass_fitter.do_likelihood()
-                success = mass_fitter.fit()
-                if not success:
-                    flag_plot_message.append("Check fit")
+                    mass_fitter.SetUseLikelihoodFit()
+                mass_fitter.SetInitialGaussianMean(mean_for_data)
+                mass_fitter.SetInitialGaussianSigma(sigma_for_data)
+                if self.p_fixedmean:
+                    mass_fitter.SetFixGaussianMean(mean_for_data)
+                if self.p_fixingaussigma:
+                    mass_fitter.SetFixGaussianSigma(sigma_for_data)
+                mass_fitter.SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
+                success = mass_fitter.MassFitter(False)
+                canvas = TCanvas("fit_canvas", suffix, 700, 700)
+                mass_fitter.DrawHere(canvas, self.p_nsigma_signal)
 
-                mass_fitter.draw_fit(self.make_file_path(self.d_resultsallpdata, "fittedplot",
-                                                         "eps", None, suffix), flag_plot_message)
 
-                fileout.cd()
-                save_dir = fileout.mkdir(suffix)
-                mass_fitter.save(save_dir)
+                canvas.SaveAs(self.make_file_path(self.d_resultsallpdata, "fittedplot", "eps",
+                                                  None, suffix))
+                #canvas.Close()
 
-                rawYield = mass_fitter.yield_sig / \
+                rawYield = mass_fitter.GetRawYield() / \
                         (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
-                rawYieldErr = mass_fitter.yield_sig_err / \
+                rawYieldErr = mass_fitter.GetRawYieldError() / \
                         (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
                 yieldshistos[imult].SetBinContent(ipt + 1, rawYield)
                 yieldshistos[imult].SetBinError(ipt + 1, rawYieldErr)
@@ -346,7 +359,7 @@ class Analyzer:
         save_name = self.make_file_path(self.d_resultsallpdata, "Yields", "eps", None,
                                         [self.case, self.typean])
         cYields.SaveAs(save_name)
-
+        cYields.Close()
         fileout.Close()
 
         # Reset to former mode
