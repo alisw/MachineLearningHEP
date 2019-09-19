@@ -20,8 +20,8 @@ D0pp:
   sel_cen_unp: null
   #sel_good_evt_unp: "is_ev_rej == 0"
   sel_good_evt_unp: null
-  sel_reco_skim: ["pt_prong0>0.5 and pt_prong1>0.5 and dca<0.05 and abs(imp_par_prong0) < 0.5 and abs(imp_par_prong1) < 0.5 and imp_par_prod < 0.1 and cos_p > 0.6",
-                  "pt_prong0>0.6 and pt_prong1>0.6 and dca<0.05 and abs(imp_par_prong0) < 0.5 and abs(imp_par_prong1) < 0.5 and imp_par_prod < 0.1 and cos_p > 0.6",
+  sel_reco_skim: ["pt_prong0>0.3 and pt_prong1>0.3 and dca<0.05 and abs(imp_par_prong0) < 0.5 and abs(imp_par_prong1) < 0.5 and imp_par_prod < 0.1 and cos_p > 0.6",
+                  "pt_prong0>0.5 and pt_prong1>0.5 and dca<0.05 and abs(imp_par_prong0) < 0.5 and abs(imp_par_prong1) < 0.5 and imp_par_prod < 0.1 and cos_p > 0.6",
                   "pt_prong0>0.6 and pt_prong1>0.6 and dca<0.05 and abs(imp_par_prong0) < 0.5 and abs(imp_par_prong1) < 0.5 and imp_par_prod < 0.1 and cos_p > 0.6",
                   "pt_prong0>0.6 and pt_prong1>0.6 and dca<0.05 and abs(imp_par_prong0) < 0.5 and abs(imp_par_prong1) < 0.5 and imp_par_prod < 0.1 and cos_p > 0.6",
                   "pt_prong0>0.6 and pt_prong1>0.6 and dca<0.05 and abs(imp_par_prong0) < 0.5 and abs(imp_par_prong1) < 0.5 and imp_par_prod < 0.1 and cos_p > 0.6"]
@@ -38,11 +38,13 @@ D0pp:
     var_ismcprompt: ismcprompt
     var_ismcfd: ismcfd
     var_ismcbkg: ismcbkg
+    var_ismcrefl: ismcrefl
     isstd : [[0],[]]
     ismcsignal: [[1],[5]]
     ismcprompt: [[1,3],[5]]
     ismcfd: [[1,4],[5]]
     ismcbkg: [[2],[]]
+    ismcrefl: [[5],[]]
 
   variables:
     var_all: [d_len, d_len_xy, norm_dl, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, cos_t_star, imp_par_prod,
