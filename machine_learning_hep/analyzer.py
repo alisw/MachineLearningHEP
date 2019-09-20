@@ -265,7 +265,7 @@ class Analyzer:
                 canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
                                                   "fittedplot_integrated_mc", "eps",
                                                   None, suffix))
-                #canvas.Close()
+                canvas.Close()
 
                 # Now, try also for data
                 h_data_init_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_init,
@@ -305,7 +305,7 @@ class Analyzer:
                 canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
                                                   "fittedplot_integrated", "eps",
                                                   None, suffix))
-                #canvas.Close()
+                canvas.Close()
 
                 ######################
                 # END initialize fit #
@@ -356,7 +356,7 @@ class Analyzer:
 
                 canvas.SaveAs(self.make_file_path(self.d_resultsallpdata, "fittedplot", "eps",
                                                   None, suffix))
-                #canvas.Close()
+                canvas.Close()
 
                 rawYield = mass_fitter.GetRawYield() / \
                         (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
