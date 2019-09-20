@@ -35,7 +35,7 @@ from  machine_learning_hep.logger import get_logger
 #from ROOT import RooUnfoldResponse
 #from ROOT import RooUnfold
 #from ROOT import RooUnfoldBayes
-
+from ROOT import gInterpreter
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
 class Analyzer:
     species = "analyzer"
@@ -1351,73 +1351,92 @@ class Analyzer:
                                                       self.case, self.typean, self.v_var2_binning))
 
     def plotternormyields(self):
-        self.loadstyle()
 
-        fileouteff = TFile.Open("%s/efficiencies%s%s.root" % \
-                                (self.d_resultsallpmc, self.case, self.typean))
+        self.loadstyle()
+        self.test_aliphysics()
+        namehistoeffprompt = "eff_mult0"
+        namehistoefffeed = "eff_fd_mult0"
+        nameyield = "hyields0"
+        fileouteff = "%s/efficiencies%s%s.root" % \
+                      (self.d_resultsallpmc, self.case, self.typean)
         yield_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                              None, [self.case, self.typean])
-        fileoutyield = TFile.Open(yield_filename, "READ")
-        fileoutcross = TFile.Open("%s/finalcross%s%s.root" % \
-                                  (self.d_resultsallpdata, self.case, self.typean), "recreate")
+        print(yield_filename)
+        print(fileouteff)
+        fileoutcross = "%s/finalcross%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
+        gInterpreter.ProcessLine('.x HFPtSpectrum.C(5, \
+                                 "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
+                                 "%s", "%s", "%s", "%s", "%s", "%s")' \
+                                 % (fileouteff, namehistoeffprompt,
+                                    namehistoefffeed, yield_filename,
+                                    nameyield, fileoutcross))
+        #test_macro = \
+        #"HFPtSpectrum.C(5,
+        #\"inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root\",{})"
 
-        filedataval = TFile.Open(self.f_evtvaldata)
 
-        cCrossvsvar1 = TCanvas('cCrossvsvar1', 'The Fit Canvas')
-        cCrossvsvar1.SetCanvasSize(1900, 1500)
-        cCrossvsvar1.SetWindowSize(500, 500)
-        cCrossvsvar1.SetLogy()
+        #proc = Popen(["root", "-l", "-b", "-q", test_macro])
+        #success = proc.wait()
+        #if success != 0:
+        #    self.logger.fatal("You are not in the AliPhysics env")
 
-        legvsvar1 = TLegend(.5, .65, .7, .85)
-        legvsvar1.SetBorderSize(0)
-        legvsvar1.SetFillColor(0)
-        legvsvar1.SetFillStyle(0)
-        legvsvar1.SetTextFont(42)
-        legvsvar1.SetTextSize(0.035)
-
-        listvalues = []
-        listvalueserr = []
-
-        for imult in range(self.p_nbin2):
-            listvalpt = []
-            bineff = -1
-            if self.p_bineff is None:
-                bineff = imult
-                print("Using efficiency for each var2 bin")
-            else:
-                bineff = self.p_bineff
-                print("Using efficiency always from bin=", bineff)
-            heff = fileouteff.Get("eff_mult%d" % (bineff))
-            hcross = fileoutyield.Get("hyields%d" % (imult))
-            hcross.Divide(heff)
-            hcross.SetLineColor(imult+1)
-            labelhisto = "hbit%svs%s" % (self.triggerbit, self.v_var2_binning)
-            hmult = filedataval.Get(labelhisto)
-            binminv = hmult.GetXaxis().FindBin(self.lvar2_binmin[imult])
-            binmaxv = hmult.GetXaxis().FindBin(self.lvar2_binmax[imult])
-            norm = hmult.Integral(binminv, binmaxv)
-            if norm > 0:
-                hcross.Scale(1./norm)
-            fileoutcross.cd()
-            hcross.GetXaxis().SetTitle("p_{T} %s (GeV)" % self.p_latexnmeson)
-            hcross.GetYaxis().SetTitleOffset(1.3)
-            hcross.GetYaxis().SetTitle("Corrected yield/events (%s) %s" %
-                                       (self.p_latexnmeson, self.typean))
-            hcross.SetName("hcross%d" % imult)
-            hcross.GetYaxis().SetRangeUser(1e-10, 1)
-            legvsvar1endstring = "%.1f < %s < %.1f GeV/c" % \
-                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
-            legvsvar1.AddEntry(hcross, legvsvar1endstring, "LEP")
-            hcross.Draw("same")
-            hcross.Write()
-            listvalpt = [hcross.GetBinContent(ipt+1) for ipt in range(self.p_nptbins)]
-            listvalues.append(listvalpt)
-            listvalerrpt = [hcross.GetBinError(ipt+1) for ipt in range(self.p_nptbins)]
-            listvalueserr.append(listvalerrpt)
-        legvsvar1.Draw()
-        cCrossvsvar1.SaveAs("%s/CorrectedYieldsNorm%s%sVs%s.eps" % (self.d_resultsallpdata,
-                                                                    self.case, self.typean,
-                                                                    self.v_var_binning))
+#        filedataval = TFile.Open(self.f_evtvaldata)
+#
+#        cCrossvsvar1 = TCanvas('cCrossvsvar1', 'The Fit Canvas')
+#        cCrossvsvar1.SetCanvasSize(1900, 1500)
+#        cCrossvsvar1.SetWindowSize(500, 500)
+#        cCrossvsvar1.SetLogy()
+#
+#        legvsvar1 = TLegend(.5, .65, .7, .85)
+#        legvsvar1.SetBorderSize(0)
+#        legvsvar1.SetFillColor(0)
+#        legvsvar1.SetFillStyle(0)
+#        legvsvar1.SetTextFont(42)
+#        legvsvar1.SetTextSize(0.035)
+#
+#        listvalues = []
+#        listvalueserr = []
+#
+#        for imult in range(self.p_nbin2):
+#            listvalpt = []
+#            bineff = -1
+#            if self.p_bineff is None:
+#                bineff = imult
+#                print("Using efficiency for each var2 bin")
+#            else:
+#                bineff = self.p_bineff
+#                print("Using efficiency always from bin=", bineff)
+#            heff = fileouteff.Get("eff_mult%d" % (bineff))
+#            hcross = fileoutyield.Get("hyields%d" % (imult))
+#            hcross.Divide(heff)
+#            hcross.SetLineColor(imult+1)
+#            labelhisto = "hbit%svs%s" % (self.triggerbit, self.v_var2_binning)
+#            hmult = filedataval.Get(labelhisto)
+#            binminv = hmult.GetXaxis().FindBin(self.lvar2_binmin[imult])
+#            binmaxv = hmult.GetXaxis().FindBin(self.lvar2_binmax[imult])
+#            norm = hmult.Integral(binminv, binmaxv)
+#            if norm > 0:
+#                hcross.Scale(1./norm)
+#            fileoutcross.cd()
+#            hcross.GetXaxis().SetTitle("p_{T} %s (GeV)" % self.p_latexnmeson)
+#            hcross.GetYaxis().SetTitleOffset(1.3)
+#            hcross.GetYaxis().SetTitle("Corrected yield/events (%s) %s" %
+#                                       (self.p_latexnmeson, self.typean))
+#            hcross.SetName("hcross%d" % imult)
+#            hcross.GetYaxis().SetRangeUser(1e-10, 1)
+#            legvsvar1endstring = "%.1f < %s < %.1f GeV/c" % \
+#                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
+#            legvsvar1.AddEntry(hcross, legvsvar1endstring, "LEP")
+#            hcross.Draw("same")
+#            hcross.Write()
+#            listvalpt = [hcross.GetBinContent(ipt+1) for ipt in range(self.p_nptbins)]
+#            listvalues.append(listvalpt)
+#            listvalerrpt = [hcross.GetBinError(ipt+1) for ipt in range(self.p_nptbins)]
+#            listvalueserr.append(listvalerrpt)
+#        legvsvar1.Draw()
+#        cCrossvsvar1.SaveAs("%s/CorrectedYieldsNorm%s%sVs%s.eps" % (self.d_resultsallpdata,
+#                                                                    self.case, self.typean,
+#                                                                    self.v_var_binning))
     def studyevents(self):
         self.loadstyle()
         filedata = TFile.Open(self.f_evtvaldata)
