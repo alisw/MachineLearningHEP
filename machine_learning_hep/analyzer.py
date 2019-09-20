@@ -29,7 +29,6 @@ from ROOT import gROOT, TDirectory
 from ROOT import TStyle, kBlue, kGreen, kBlack, kRed
 from ROOT import TLatex
 # HF specific imports
-from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
 from machine_learning_hep.globalfitter import Fitter
 from  machine_learning_hep.logger import get_logger
 #from ROOT import RooUnfoldResponse
@@ -172,6 +171,7 @@ class Analyzer:
 
     # pylint: disable=too-many-branches, too-many-locals
     def fitter(self):
+        from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
         # Enable ROOT batch mode and reset in the end
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
