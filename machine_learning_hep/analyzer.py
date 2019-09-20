@@ -20,6 +20,7 @@ import os
 from math import sqrt
 # pylint: disable=unused-wildcard-import, wildcard-import
 from array import *
+from subprocess import Popen
 import numpy as np
 # pylint: disable=import-error, no-name-in-module, unused-import
 from root_numpy import hist2array, array2hist
@@ -168,9 +169,25 @@ class Analyzer:
         extension = extension.replace(".", "")
         return os.path.join(directory, filename + "." + extension)
 
+    def test_aliphysics(self):
+        test_macro = "/tmp/aliphysics_test.C"
+        with open(test_macro, "w") as m:
+            m.write("void aliphysics_test()\n{\n")
+            m.write("TH1F* h = new TH1F(\"name\", \"\", 2, 1., 2.);\n \
+                    auto fitter = new AliHFInvMassFitter(h, 1., 2., 1, 1);\n \
+                    if(fitter) { std::cerr << \" Success \"; }\n \
+                    else { std::cerr << \"Fail\"; }\n \
+                    std::cerr << std::endl; }")
+        proc = Popen(["root", "-l", "-b", "-q", test_macro])
+        success = proc.wait()
+        if success != 0:
+            self.logger.fatal("You are not in the AliPhysics env")
+
 
     # pylint: disable=too-many-branches, too-many-locals
     def fitter(self):
+        # Test if we are in AliPhysics env
+        self.test_aliphysics()
         from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
         # Enable ROOT batch mode and reset in the end
         tmp_is_root_batch = gROOT.IsBatch()
