@@ -1380,8 +1380,8 @@ class Analyzer:
                                              None, [self.case, self.typean])
         fileoutcross = TFile.Open("%s/finalcross%s%s.root" % (self.d_resultsallpdata, self.case, \
                                   self.typean), "recreate")
-#        for imult in range(self.p_nbin2):
-        for imult in range(1):
+        for imult in range(self.p_nbin2):
+#        for imult in range(1):
             listvalpt = []
             bineff = -1
             if self.p_bineff is None:
