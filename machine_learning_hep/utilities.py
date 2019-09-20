@@ -200,3 +200,6 @@ def z_gen_calc(pt_1, phi_1, eta_1, pt_2, delta_phi, delta_eta):
     phi_2 = phi_1 + delta_phi
     eta_2 = eta_1 - delta_eta
     return z_calc(pt_1, phi_1, eta_1, pt_2, phi_2, eta_2)
+
+def get_bins(axis):
+    return np.array([axis.GetBinLowEdge(i) for i in range(1, axis.GetNbins() + 2)])

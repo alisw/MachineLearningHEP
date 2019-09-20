@@ -20,14 +20,16 @@ import os
 from math import sqrt
 # pylint: disable=unused-wildcard-import, wildcard-import
 from array import *
+from subprocess import Popen
 import numpy as np
 # pylint: disable=import-error, no-name-in-module, unused-import
 from root_numpy import hist2array, array2hist
 from ROOT import TFile, TH1F, TCanvas, TPad
 from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
-from ROOT import gROOT
+from ROOT import gROOT, TDirectory
 from ROOT import TStyle, kBlue, kGreen, kBlack, kRed
 from ROOT import TLatex
+# HF specific imports
 from machine_learning_hep.globalfitter import Fitter
 from  machine_learning_hep.logger import get_logger
 #from ROOT import RooUnfoldResponse
@@ -80,6 +82,10 @@ class Analyzer:
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
                                     self.p_bin_width))
         #parameter fitter
+        self.sig_func_map = {"kGaus": 0, "k2Gaus": 1, "kGausSigmaRatioPar": 2}
+        self.bkg_func_map = {"kExpo": 0, "kLin": 1, "Pol2": 2, "kNoBk": 3, "kPow": 4, "kPowEx": 5}
+        # For initial fit in integrated mult bin
+        self.init_fits_from = datap["analysis"][self.typean]["init_fits_from"]
         self.p_sgnfunc = datap["analysis"][self.typean]["sgnfunc"]
         self.p_bkgfunc = datap["analysis"][self.typean]["bkgfunc"]
         self.p_masspeak = datap["analysis"][self.typean]["masspeak"]
@@ -87,7 +93,16 @@ class Analyzer:
         self.p_massmax = datap["analysis"][self.typean]["massmax"]
         self.p_rebin = datap["analysis"][self.typean]["rebin"]
         self.p_includesecpeak = datap["analysis"][self.typean]["includesecpeak"]
-        self.p_masssecpeak = datap["analysis"][self.typean]["masssecpeak"]
+        self.p_masssecpeak = datap["analysis"][self.typean]["masssecpeak"] \
+                if self.p_includesecpeak else None
+        self.p_fix_masssecpeak = datap["analysis"][self.typean]["fix_masssecpeak"] \
+                if self.p_includesecpeak else None
+        self.p_widthsecpeak = datap["analysis"][self.typean]["widthsecpeak"] \
+                if self.p_includesecpeak else None
+        self.p_fix_widthsecpeak = datap["analysis"][self.typean]["fix_widthsecpeak"] \
+                if self.p_includesecpeak else None
+        if self.p_includesecpeak is None:
+            self.p_includesecpeak = [False for ipt in range(self.p_nptbins)]
         self.p_fixedmean = datap["analysis"][self.typean]["FixedMean"]
         self.p_use_user_gauss_sigma = datap["analysis"][self.typean]["SetInitialGaussianSigma"]
         self.p_exclude_nsigma_sideband = datap["analysis"][self.typean]["exclude_nsigma_sideband"]
@@ -106,9 +121,9 @@ class Analyzer:
         self.ptranges.append(self.lpt_finbinmax[-1])
         self.var2ranges = self.lvar2_binmin.copy()
         self.var2ranges.append(self.lvar2_binmax[-1])
+        # More specific fit options
+        self.include_reflection = datap["analysis"][self.typean].get("include_reflection", False)
         print(self.var2ranges)
-        self.lmult_yieldshisto = [TH1F("hyields%d" % (imult), "", \
-            self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
 
         self.p_nevents = datap["analysis"][self.typean]["nevents"]
         self.p_bineff = datap["analysis"][self.typean]["usesinglebineff"]
@@ -165,83 +180,215 @@ class Analyzer:
         extension = extension.replace(".", "")
         return os.path.join(directory, filename + "." + extension)
 
+    def test_aliphysics(self):
+        test_macro = "/tmp/aliphysics_test.C"
+        with open(test_macro, "w") as m:
+            m.write("void aliphysics_test()\n{\n")
+            m.write("TH1F* h = new TH1F(\"name\", \"\", 2, 1., 2.);\n \
+                    auto fitter = new AliHFInvMassFitter(h, 1., 2., 1, 1);\n \
+                    if(fitter) { std::cerr << \" Success \"; }\n \
+                    else { std::cerr << \"Fail\"; }\n \
+                    std::cerr << std::endl; }")
+        proc = Popen(["root", "-l", "-b", "-q", test_macro])
+        success = proc.wait()
+        if success != 0:
+            self.logger.fatal("You are not in the AliPhysics env")
 
+
+    # pylint: disable=too-many-branches, too-many-locals
     def fitter(self):
+        # Test if we are in AliPhysics env
+        self.test_aliphysics()
+        from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
         # Enable ROOT batch mode and reset in the end
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
 
         self.loadstyle()
-        mass_fitter = Fitter()
 
-        lfile = TFile.Open(self.n_filemass)
+        # Immediately fail if something weird was chosen for fit init
+        if self.init_fits_from not in  ["mc", "data"]:
+            self.logger.fatal("Fit can only be initialized from \"data\" or \"mc\"")
+
+        lfile = TFile.Open(self.n_filemass, "READ")
         lfile_mc = TFile.Open(self.n_filemass_mc, "READ")
 
         fileout_name = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                            None, [self.case, self.typean])
         fileout = TFile(fileout_name, "RECREATE")
+        # Summarize in mult histograms in pT bins
+        yieldshistos = [TH1F("hyields%d" % (imult), "", \
+                self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
 
+        # Fit mult integrated MC and data in integrated multiplicity bin for all pT bins
+        # Hence, extract respective bin of second variable
+        bin_mult_int = self.p_bineff if self.p_bineff is not None else 0
+        mult_int_min = self.lvar2_binmin[bin_mult_int]
+        mult_int_max = self.lvar2_binmax[bin_mult_int]
+
+        # Start fitting...
         for imult in range(self.p_nbin2):
             for ipt in range(self.p_nptbins):
                 bin_id = self.bin_matching[ipt]
+
+                # Initialize mean and sigma with user seeds. This is also the fallback if initial
+                # MC and data fits fail
+                sigma_for_data = self.p_sigmaarray[ipt]
+                mean_for_data = self.p_masspeak
+
+                ########################
+                # START initialize fit #
+                ########################
+                # Get integrated histograms
+                suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
+                         (self.v_var_binning, self.lpt_finbinmin[ipt],
+                          self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
+                          self.v_var2_binning, mult_int_min, mult_int_max)
+                h_invmass_init = lfile.Get("hmass" + suffix)
+                h_invmass_mc_init = lfile_mc.Get("hmass" + suffix)
+                h_invmass_mc_refl_init = None
+                if self.include_reflection:
+                    h_invmass_mc_refl_init = lfile_mc.Get("hmass_refl" + suffix)
+
+                h_mc_init_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_mc_init,
+                                                                  self.p_rebin[ipt], -1)
+                h_mc_init_rebin = TH1F()
+                h_mc_init_rebin_.Copy(h_mc_init_rebin)
+
+                mass_fitter_mc_init = AliHFInvMassFitter(h_mc_init_rebin, self.p_massmin[ipt],
+                                                         self.p_massmax[ipt],
+                                                         self.bkg_func_map[self.p_bkgfunc[ipt]],
+                                                         self.sig_func_map[self.p_sgnfunc[ipt]])
+
+                if h_invmass_mc_refl_init is not None and h_invmass_mc_refl_init.Integral() > 0.:
+                    mass_fitter_mc_init.SetTemplateReflections(h_invmass_mc_refl_init, "templ",
+                                                               self.p_massmin[ipt],
+                                                               self.p_massmax[ipt])
+                    # TODO Need init for ReflOverS?
+                if self.p_dolike:
+                    mass_fitter_mc_init.SetUseLikelihoodFit()
+                mass_fitter_mc_init.SetInitialGaussianMean(mean_for_data)
+                mass_fitter_mc_init.SetInitialGaussianSigma(sigma_for_data)
+                mass_fitter_mc_init.SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
+                success = mass_fitter_mc_init.MassFitter(False)
+                if success:
+                    sigma_for_data = mass_fitter_mc_init.GetSigma()
+                    mean_for_data = mass_fitter_mc_init.GetMean()
+                else:
+                    self.logger.error("Could not do initial fit on MC")
+
+                canvas = TCanvas("fit_canvas_mc_init", suffix, 700, 700)
+                mass_fitter_mc_init.DrawHere(canvas, self.p_nsigma_signal)
+
+
+                canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
+                                                  "fittedplot_integrated_mc", "eps",
+                                                  None, suffix))
+                canvas.Close()
+
+                # Now, try also for data
+                h_data_init_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_init,
+                                                                    self.p_rebin[ipt], -1)
+                h_data_init_rebin = TH1F()
+                h_data_init_rebin_.Copy(h_data_init_rebin)
+                mass_fitter_data_init = AliHFInvMassFitter(h_data_init_rebin, self.p_massmin[ipt],
+                                                           self.p_massmax[ipt],
+                                                           self.bkg_func_map[self.p_bkgfunc[ipt]],
+                                                           self.sig_func_map[self.p_sgnfunc[ipt]])
+
+                if h_invmass_mc_refl_init is not None and h_invmass_mc_refl_init.Integral() > 0.:
+                    mass_fitter_data_init.SetTemplateReflections(h_invmass_mc_refl_init, "templ",
+                                                                 self.p_massmin[ipt],
+                                                                 self.p_massmax[ipt])
+                    # TODO Need init for ReflOverS?
+                if self.p_dolike:
+                    mass_fitter_data_init.SetUseLikelihoodFit()
+                mass_fitter_data_init.SetInitialGaussianMean(mean_for_data)
+                mass_fitter_data_init.SetInitialGaussianSigma(sigma_for_data)
+                mass_fitter_data_init.SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
+                # Second peak?
+                if self.p_includesecpeak[ipt]:
+                    mass_fitter_data_init.IncludeSecondGausPeak(self.p_masssecpeak,
+                                                                self.p_fix_masssecpeak,
+                                                                self.p_widthsecpeak,
+                                                                self.p_fix_widthsecpeak)
+                success = mass_fitter_data_init.MassFitter(False)
+                if success and self.init_fits_from == "data":
+                    sigma_for_data = mass_fitter_data_init.GetSigma()
+                    mean_for_data = mass_fitter_data_init.GetMean()
+
+                canvas = TCanvas("fit_canvas_data_init", suffix, 700, 700)
+                mass_fitter_data_init.DrawHere(canvas, self.p_nsigma_signal)
+
+
+                canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
+                                                  "fittedplot_integrated", "eps",
+                                                  None, suffix))
+                canvas.Close()
+
+                ######################
+                # END initialize fit #
+                ######################
+
+                # Now comes the actual fit
                 suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
                 h_invmass = lfile.Get("hmass" + suffix)
-                h_invmass_mc = lfile_mc.Get("hmass" + suffix)
-
-                # First do it for MC only
-                mass_fitter.initialize(h_invmass_mc, self.p_sgnfunc[ipt], self.p_bkgfunc[ipt],
-                                       self.p_rebin[ipt], self.p_masspeak, self.p_sigmaarray[ipt],
-                                       False, False, self.p_exclude_nsigma_sideband,
-                                       self.p_nsigma_signal, self.p_massmin[ipt],
-                                       self.p_massmax[ipt])
-                mass_fitter.do_likelihood()
-                success = mass_fitter.fit()
-                flag_plot_message = []
-                if not success:
-                    flag_plot_message.append("Check MC fit")
+                h_invmass_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass, self.p_rebin[ipt], -1)
+                h_invmass_rebin = TH1F()
+                h_invmass_rebin_.Copy(h_invmass_rebin)
+                mass_fitter = AliHFInvMassFitter(h_invmass_rebin, self.p_massmin[ipt],
+                                                 self.p_massmax[ipt],
+                                                 self.bkg_func_map[self.p_bkgfunc[ipt]],
+                                                 self.sig_func_map[self.p_sgnfunc[ipt]])
 
 
-                mass_fitter.draw_fit(self.make_file_path(self.d_resultsallpdata, "fittedplot_mc",
-                                                         "eps", None, suffix), flag_plot_message)
+                if self.p_dolike:
+                    mass_fitter.SetUseLikelihoodFit()
+                mass_fitter.SetInitialGaussianMean(mean_for_data)
+                mass_fitter.SetInitialGaussianSigma(sigma_for_data)
+                if self.p_fixedmean:
+                    mass_fitter.SetFixGaussianMean(mean_for_data)
+                if self.p_fixingaussigma:
+                    mass_fitter.SetFixGaussianSigma(sigma_for_data)
+                mass_fitter.SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
 
-                # And now with data
-                sigma_for_data = mass_fitter.sigma_fit
-                mean_for_data = mass_fitter.mean_fit
-                # If the fit to MC was not successful use user values
-                if not success:
-                    self.logger.error("Fit to MC was not successful. Use user values for mean " \
-                                      "to initialize fit to data")
-                sigma_for_data = self.p_sigmaarray[ipt]
-                mean_for_data = self.p_masspeak
-                mass_fitter.initialize(h_invmass, self.p_sgnfunc[ipt], self.p_bkgfunc[ipt],
-                                       self.p_rebin[ipt], mean_for_data,
-                                       sigma_for_data, self.p_fixedmean,
-                                       self.p_fixingaussigma, self.p_exclude_nsigma_sideband,
-                                       self.p_nsigma_signal, self.p_massmin[ipt],
-                                       self.p_massmax[ipt])
-                success = mass_fitter.fit()
-                if not success:
-                    flag_plot_message.append("Check MC fit")
+                if self.include_reflection:
+                    h_invmass_refl = AliVertexingHFUtils.RebinHisto(
+                        lfile_mc.Get("hmass_refl" + suffix), self.p_rebin[ipt], -1)
+                    if h_invmass_refl.Integral() > 0.:
+                        mass_fitter.SetTemplateReflections(h_invmass_refl, "templ",
+                                                           self.p_massmin[ipt],
+                                                           self.p_massmax[ipt])
+                    else:
+                        self.logger.warning("Reflection requested but template empty")
+                    # TODO Need init for ReflOverS?
+                if self.p_includesecpeak[ipt]:
+                    mass_fitter.IncludeSecondGausPeak(self.p_masssecpeak, self.p_fix_masssecpeak,
+                                                      self.p_widthsecpeak, self.p_fix_widthsecpeak)
 
-                mass_fitter.draw_fit(self.make_file_path(self.d_resultsallpdata, "fittedplot",
-                                                         "eps", None, suffix), flag_plot_message)
+                success = mass_fitter.MassFitter(False)
+                canvas = TCanvas("fit_canvas", suffix, 700, 700)
+                mass_fitter.DrawHere(canvas, self.p_nsigma_signal)
 
-                fileout.cd()
-                save_dir = fileout.mkdir(suffix)
-                mass_fitter.save(save_dir)
+                canvas.SaveAs(self.make_file_path(self.d_resultsallpdata, "fittedplot", "eps",
+                                                  None, suffix))
+                canvas.Close()
 
-                rawYield = mass_fitter.yield_sig / \
+                fit_dir = fileout.mkdir(suffix)
+                fit_dir.WriteObject(mass_fitter, "fitter")
+                rawYield = mass_fitter.GetRawYield() / \
                         (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
-                rawYieldErr = mass_fitter.yield_sig_err / \
+                rawYieldErr = mass_fitter.GetRawYieldError() / \
                         (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
-                self.lmult_yieldshisto[imult].SetBinContent(ipt + 1, rawYield)
-                self.lmult_yieldshisto[imult].SetBinError(ipt + 1, rawYieldErr)
+                yieldshistos[imult].SetBinContent(ipt + 1, rawYield)
+                yieldshistos[imult].SetBinError(ipt + 1, rawYieldErr)
             fileout.cd()
-            self.lmult_yieldshisto[imult].Write()
-        fileout.Close()
+            yieldshistos[imult].Write()
+
+        # Yields summary plot
         cYields = TCanvas('cYields', 'The Fit Canvas')
         cYields.SetCanvasSize(1900, 1500)
         cYields.SetWindowSize(500, 500)
@@ -254,24 +401,27 @@ class Analyzer:
         legyield.SetTextFont(42)
         legyield.SetTextSize(0.035)
 
-        lfile = TFile.Open(fileout_name)
         for imult in range(self.p_nbin2):
-            self.lmult_yieldshisto[imult].SetMinimum(1)
-            self.lmult_yieldshisto[imult].SetMaximum(1e6)
-            self.lmult_yieldshisto[imult].SetLineColor(imult+1)
-            self.lmult_yieldshisto[imult].Draw("same")
+            # Draw yields
+            cYields.cd()
+            yieldshistos[imult].SetMinimum(1)
+            yieldshistos[imult].SetMaximum(1e6)
+            yieldshistos[imult].SetLineColor(imult+1)
+            yieldshistos[imult].Draw("same")
             legyieldstring = "%.1f < %s < %.1f GeV/c" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
-            legyield.AddEntry(self.lmult_yieldshisto[imult], legyieldstring, "LEP")
-            self.lmult_yieldshisto[imult].GetXaxis().SetTitle("p_{T} (GeV)")
-            self.lmult_yieldshisto[imult].GetYaxis().SetTitle("Uncorrected yields %s %s (1/GeV)" \
+            legyield.AddEntry(yieldshistos[imult], legyieldstring, "LEP")
+            yieldshistos[imult].GetXaxis().SetTitle("p_{T} (GeV)")
+            yieldshistos[imult].GetYaxis().SetTitle("Uncorrected yields %s %s (1/GeV)" \
                     % (self.p_latexnmeson, self.typean))
 
+        cYields.cd()
         legyield.Draw()
-        yields_save_name = self.make_file_path(self.d_resultsallpdata, "Yields", "eps", None,
-                                               [self.case, self.typean])
-        cYields.SaveAs(yields_save_name)
-        lfile.Close()
+        save_name = self.make_file_path(self.d_resultsallpdata, "Yields", "eps", None,
+                                        [self.case, self.typean])
+        cYields.SaveAs(save_name)
+        cYields.Close()
+        fileout.Close()
 
         # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
@@ -839,12 +989,12 @@ class Analyzer:
         file_out = TFile.Open("%s/feeddown%s%s.root" % \
                               (self.d_resultsallpmc, self.case, self.typean), "recreate")
 
-        # Get feed-down detector response
+        # Get feed-down detector response.
         his_resp_fd = file_resp.Get("his_resp_jet_fd")
         arr_resp_fd = hist2array(his_resp_fd).T
         bins_final = np.array([his_resp_fd.GetYaxis().GetBinLowEdge(i) for i in \
             range(1, his_resp_fd.GetYaxis().GetNbins() + 2)])
-        # TODO: Normalize so that projection on the pt_gen = 1.
+        # TODO: Normalise so that projection on the pt_gen = 1.
         can_resp_fd = TCanvas("can_resp_fd", "Feed-down detector response", 800, 800)
         his_resp_fd.Draw("colz")
         can_resp_fd.SetLogz()
@@ -853,8 +1003,13 @@ class Analyzer:
         can_resp_fd.SaveAs("%s/ResponseFD%s%s.eps" % (self.d_resultsallpmc, \
                             self.case, self.typean))
 
+        # Get the number of generated jets for feed-down normalisation.
+        his_njets = file_resp.Get("his_njets_gen")
+        n_jets_gen = his_njets.GetBinContent(1)
+
         # Get simulated pt_cand vs. pt_jet of non-prompt jets.
         his_sim_fd = file_resp.Get("his_ptc_ptjet_fd")
+        his_sim_fd.Scale(1./n_jets_gen) # Normalise by the total number of selected jets.
         arr_sim_fd = hist2array(his_sim_fd).T
         can_sim_fd = TCanvas("can_sim_fd", \
                         "Simulated pt cand vs. pt jet of non-prompt jets", 800, 800)
@@ -869,6 +1024,8 @@ class Analyzer:
             # Get efficiencies.
             his_eff_pr = file_eff.Get("eff_mult%d" % imult)
             his_eff_fd = file_eff.Get("eff_fd_mult%d" % imult)
+            his_eff_pr = his_eff_pr.Clone("his_eff_pr1_%d" % imult)
+            his_eff_fd = his_eff_fd.Clone("his_eff_fd1_%d" % imult)
             his_eff_pr.SetLineColor(2)
             his_eff_fd.SetLineColor(3)
             his_eff_pr.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
@@ -892,10 +1049,9 @@ class Analyzer:
             leg_eff.Draw()
             can_eff.SaveAs("%s/Efficiency%s%s%s.eps" % (self.d_resultsallpmc, \
                             self.case, self.typean, imult))
-            arr_eff_pr = hist2array(his_eff_pr)
-            arr_eff_fd = hist2array(his_eff_fd)
             # Get the ratio of efficiencies.
-            arr_eff_ratio = arr_eff_fd / arr_eff_pr
+            his_eff_fd.Divide(his_eff_pr)
+            arr_eff_ratio = hist2array(his_eff_fd)
             # Get the feed-down yield = response * simulated non-prompts * ratio of efficiencies.
             arr_sim_fd_eff_smeared = arr_resp_fd.dot(arr_sim_fd.dot(arr_eff_ratio))
             his_fd = TH1F("fd_mult%d" % imult, \
@@ -916,6 +1072,42 @@ class Analyzer:
             can_fd.SetLeftMargin(0.12)
             can_fd.SaveAs("%s/Feeddown%s%s%s.eps" % (self.d_resultsallpmc, \
                             self.case, self.typean, imult))
+
+        # Get simulated pt_cand vs. pt_jet vs. z of non-prompt jets.
+        his_sim_z_fd = file_resp.Get("his_ptc_ptjet_z_fd")
+        his_sim_z_fd.Scale(1./n_jets_gen) # Normalise by the total number of selected jets.
+        his_sim_z_fd_2d = his_sim_z_fd.Project3D("yz") # final feed-down histogram
+        # x axis = z, y axis = pt_jet
+        his_sim_z_fd_2d.Reset()
+        # Scale with the ratio of efficiencies.
+        # loop over pt_jet bins
+        for i_ptjet in range(self.p_nbin2):
+            bin_ptjet = i_ptjet + 1
+            # Get efficiencies.
+            his_eff_pr = file_eff.Get("eff_mult%d" % i_ptjet)
+            his_eff_fd = file_eff.Get("eff_fd_mult%d" % i_ptjet)
+            his_eff_pr = his_eff_pr.Clone("his_eff_pr2_%d" % i_ptjet)
+            his_eff_fd = his_eff_fd.Clone("his_eff_fd2_%d" % i_ptjet)
+            his_eff_fd.Divide(his_eff_pr)
+            his_eff_ratio = his_eff_fd
+            # loop over z bins
+            for i_z in range(his_sim_z_fd_2d.GetNbinsX()):
+                bin_z = i_z + 1
+                his_sim_z_fd.GetYaxis().SetRange(bin_ptjet, bin_ptjet)
+                his_sim_z_fd.GetZaxis().SetRange(bin_z, bin_z)
+                his_sim_ptc_fd = his_sim_z_fd.Project3D("x") # pt_cand
+                his_sim_ptc_fd.Multiply(his_eff_ratio)
+                his_sim_z_fd_2d.SetBinContent(bin_z, bin_ptjet, his_sim_ptc_fd.Integral())
+            can_fd = TCanvas("can_fd_z%d" % i_ptjet, "Feeddown FF", 800, 600)
+            his_ff_fd = his_sim_z_fd_2d.ProjectionX("ff", bin_ptjet, bin_ptjet, "e")
+            his_ff_fd.Draw()
+            can_fd.SaveAs("%s/Feeddown-z-effscaled_%s%s%s.eps" % (self.d_resultsallpmc, \
+                            self.case, self.typean, i_ptjet))
+
+        # TODO: Building the response matrix and smearing.
+        file_out.cd()
+        his_sim_z_fd_2d.Write("fd_z_ptjet")
+
         file_resp.Close()
         file_eff.Close()
         file_out.Close()
@@ -940,20 +1132,11 @@ class Analyzer:
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
-                #suffix = self.make_pre_suffix([self.v_var_binning,
-                #                               f"{self.lpt_finbinmin[ipt]:.2f}",
-                #                               f"{self.lpt_finbinmax[ipt]:.2f}",
-                #                               f"{self.lpt_probcutfin[bin_id]:.2f}",
-                #                               self.v_var2_binning,
-                #                               f"{self.lvar2_binmin[imult]:.2f}",
-                #                               f"{self.lvar2_binmax[imult]:.2f}"])
                 hzvsmass = lfile.Get("hzvsmass" + suffix)
                 load_dir = func_file.GetDirectory(suffix)
-                mass_fitter = Fitter()
-                mass_fitter.load(load_dir)
-                sig_fit = mass_fitter.sig_fit_func #func_file.Get("sigfit" + suffix)
-                mean = sig_fit.GetParameter(1)
-                sigma = sig_fit.GetParameter(2)
+                mass_fitter = load_dir.Get("fitter")
+                mean = mass_fitter.GetMean()
+                sigma = mass_fitter.GetSigma()
                 binmasslow2sig = hzvsmass.GetXaxis().FindBin(mean - 2*sigma)
                 masslow2sig = mean - 2*sigma
                 binmasshigh2sig = hzvsmass.GetXaxis().FindBin(mean + 2*sigma)

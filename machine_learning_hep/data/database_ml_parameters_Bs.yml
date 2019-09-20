@@ -208,6 +208,10 @@ Bspp:
       sel_binmax2: [9999] #list of nbins  
       var_binning2: n_tracklets_corr
       
+      # To initialize the individual fits in pT bins
+      # Decide whether to take the sigma from MC or data for individual fits
+      init_fits_from: mc # data # data or mc
+
       sel_an_binmin: [0,5,10]
       sel_an_binmax: [5,10,20]
       binning_matching: [0,1,2]
@@ -235,7 +239,7 @@ Bspp:
       massmin: [5.1,5.1,5.1]
       massmax: [5.6,5.6,5.6]
       rebin: [6,6,6]
-      includesecpeak: [0,0,0]
+      includesecpeak: Null #[0,0,0]
       masssecpeak: 0.
       # Fix mean and/or sigma
       FixedMean: False

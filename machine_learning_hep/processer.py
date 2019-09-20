@@ -103,6 +103,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.b_mcsigprompt = datap["bitmap_sel"]["ismcprompt"]
         self.b_mcsigfd = datap["bitmap_sel"]["ismcfd"]
         self.b_mcbkg = datap["bitmap_sel"]["ismcbkg"]
+        self.b_mcrefl = datap["bitmap_sel"]["ismcrefl"]
 
         #variables name
         self.v_all = datap["variables"]["var_all"]
@@ -116,6 +117,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.v_ismcprompt = datap["bitmap_sel"]["var_ismcprompt"]
         self.v_ismcfd = datap["bitmap_sel"]["var_ismcfd"]
         self.v_ismcbkg = datap["bitmap_sel"]["var_ismcbkg"]
+        self.v_ismcrefl = datap["bitmap_sel"]["var_ismcrefl"]
         self.v_var_binning = datap["var_binning"]
         #list of files names
 
@@ -401,6 +403,21 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     fill_hist(h_zvsinvmass, zvsinvmass)
                     h_zvsinvmass.Write()
 
+                if self.mcordata == "mc":
+                    df_bin[self.v_ismcrefl] = np.array(tag_bit_df(df_bin, self.v_bitvar,
+                                                                  self.b_mcrefl), dtype=int)
+                    df_bin_sig = df_bin[df_bin[self.v_ismcsignal] == 1]
+                    df_bin_refl = df_bin[df_bin[self.v_ismcrefl] == 1]
+                    h_invmass_sig = TH1F("hmass_sig" + suffix, "", self.p_num_bins,
+                                         self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+                    h_invmass_refl = TH1F("hmass_refl" + suffix, "", self.p_num_bins,
+                                          self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+                    fill_hist(h_invmass_sig, df_bin_sig.inv_mass)
+                    fill_hist(h_invmass_refl, df_bin_refl.inv_mass)
+                    myfile.cd()
+                    h_invmass_sig.Write()
+                    h_invmass_refl.Write()
+
     # pylint: disable=line-too-long
     def process_efficiency(self):
         out_file = TFile.Open(self.n_fileeff, "recreate")
@@ -508,6 +525,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
             list_df_mc_gen.append(df_mc_gen)
         df_rec = pd.concat(list_df_mc_reco)
         df_gen = pd.concat(list_df_mc_gen)
+        his_njets = TH1F("his_njets_gen", "Number of MC jets", 1, 0, 1)
+        his_njets.SetBinContent(1, len(df_gen.index)) # total number of generated & selected jets for normalisation
         df_rec = df_rec[df_rec.ismcfd == 1] # reconstructed & selected non-prompt jets
         df_gen = df_gen[df_gen.ismcfd == 1] # generated & selected non-prompt jets
         out_file = TFile.Open(self.n_fileeff, "update")
@@ -569,6 +588,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         his_resp_jet_fd.Write()
         his_ptc_ptjet_fd.Write()
         his_ptc_ptjet_z_fd.Write()
+        his_njets.Write()
         out_file.Close()
 
     # pylint: disable=too-many-locals
