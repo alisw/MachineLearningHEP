@@ -358,6 +358,8 @@ class Analyzer:
                                                   None, suffix))
                 canvas.Close()
 
+                fit_dir = fileout.mkdir(suffix)
+                fit_dir.WriteObject(mass_fitter, "fitter")
                 rawYield = mass_fitter.GetRawYield() / \
                         (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
                 rawYieldErr = mass_fitter.GetRawYieldError() / \
@@ -1101,20 +1103,11 @@ class Analyzer:
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
-                #suffix = self.make_pre_suffix([self.v_var_binning,
-                #                               f"{self.lpt_finbinmin[ipt]:.2f}",
-                #                               f"{self.lpt_finbinmax[ipt]:.2f}",
-                #                               f"{self.lpt_probcutfin[bin_id]:.2f}",
-                #                               self.v_var2_binning,
-                #                               f"{self.lvar2_binmin[imult]:.2f}",
-                #                               f"{self.lvar2_binmax[imult]:.2f}"])
                 hzvsmass = lfile.Get("hzvsmass" + suffix)
                 load_dir = func_file.GetDirectory(suffix)
-                mass_fitter = Fitter()
-                mass_fitter.load(load_dir)
-                sig_fit = mass_fitter.sig_fit_func #func_file.Get("sigfit" + suffix)
-                mean = sig_fit.GetParameter(1)
-                sigma = sig_fit.GetParameter(2)
+                mass_fitter = load_dir.Get("fitter")
+                mean = mass_fitter.GetMean()
+                sigma = mass_fitter.GetSigma()
                 binmasslow2sig = hzvsmass.GetXaxis().FindBin(mean - 2*sigma)
                 masslow2sig = mean - 2*sigma
                 binmasshigh2sig = hzvsmass.GetXaxis().FindBin(mean + 2*sigma)
