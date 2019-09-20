@@ -66,8 +66,8 @@ Dspp:
               mult_gen, mult_gen_v0a, mult_gen_v0c, perc_v0m]
     var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
     var_evt_match: [run_number, ev_id]
-    var_training: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, 
-                   imp_par_xy, dca, sig_vert, delta_mass_KK, cos_PiDs, cos_PiKPhi_3, imp_par_prong0, imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, 
+    var_training: [d_len, d_len_xy, norm_dl_xy, 
+                   imp_par_xy, dca, sig_vert, delta_mass_KK, cos_PiKPhi_3, imp_par_prong0, imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, 
                    nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, 
                    nsigTPC_Pi_1, nsigTPC_K_1, nsigTOF_Pi_1, nsigTOF_K_1, 
                    nsigTPC_Pi_2, nsigTPC_K_2, nsigTOF_Pi_2, nsigTOF_K_2]
