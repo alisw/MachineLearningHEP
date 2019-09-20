@@ -1098,10 +1098,15 @@ class Analyzer:
                 his_sim_ptc_fd = his_sim_z_fd.Project3D("x") # pt_cand
                 his_sim_ptc_fd.Multiply(his_eff_ratio)
                 his_sim_z_fd_2d.SetBinContent(bin_z, bin_ptjet, his_sim_ptc_fd.Integral())
-            can_fd = TCanvas("can_fd_z%d" % i_ptjet, "Feeddown FF", 800, 600)
-            his_ff_fd = his_sim_z_fd_2d.ProjectionX("ff", bin_ptjet, bin_ptjet, "e")
+            can_ff_fd = TCanvas("can_fd_z%d" % i_ptjet, "Feeddown FF", 800, 600)
+            his_ff_fd = his_sim_z_fd_2d.ProjectionX("ff%d" % i_ptjet, bin_ptjet, bin_ptjet, "e")
+            his_ff_fd.GetYaxis().SetTitle("#frac{1}{#it{N}_{jet}} #frac{d#it{N}}{d#it{z}}")
+            his_ff_fd.GetYaxis().SetTitleOffset(1.6)
+            his_ff_fd.GetYaxis().SetTitleFont(42)
+            his_ff_fd.GetYaxis().SetLabelFont(42)
             his_ff_fd.Draw()
-            can_fd.SaveAs("%s/Feeddown-z-effscaled_%s%s%s.eps" % (self.d_resultsallpmc, \
+            can_ff_fd.SetLeftMargin(0.15)
+            can_ff_fd.SaveAs("%s/Feeddown-z-effscaled_%s%s%s.eps" % (self.d_resultsallpmc, \
                             self.case, self.typean, i_ptjet))
 
         # TODO: Building the response matrix and smearing.
