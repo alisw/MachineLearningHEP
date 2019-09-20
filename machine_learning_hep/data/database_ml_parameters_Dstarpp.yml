@@ -228,7 +228,7 @@ Dstarpp:
       massmin: [1.8,1.80,1.80,1.80,1.80,1.80,1.80,1.80]
       massmax: [2.2,2.2,2.2,2.2,2.2,2.2,2.2,2.2]
       rebin: [4,4,4,4,4,4,4,4]
-      includesecpeak: [0,0,0,0,0,0,0,0]
+      includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 2.010
       FixedMean: False
       SetFixGaussianSigma: true
@@ -280,7 +280,7 @@ Dstarpp:
       massmin: [1.80,1.80,1.80,1.80,1.80,1.80]
       massmax: [2.2,2.2,2.2,2.2,2.2,2.2]
       rebin: [4,4,4,4,4,4]
-      includesecpeak: [0,0,0,0,0,0]
+      includesecpeak: Null #[0,0,0,0,0,0]
       masssecpeak: 2.010
       FixedMean: False
       SetFixGaussianSigma: true
@@ -329,7 +329,7 @@ Dstarpp:
       massmin: [1.80,1.80,1.80,1.80,1.80,1.80,1.80,1.80]
       massmax: [2.2,2.2,2.2,2.2,2.2,2.2,2.2,2.2]
       rebin: [4,4,4,4,4,4,4,4]
-      includesecpeak: [0,0,0,0,0,0,0,0]
+      includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 2.010
       FixedMean: False
       SetFixGaussianSigma: true
@@ -380,7 +380,7 @@ Dstarpp:
       massmin: [1.80,1.80,1.80,1.80,1.80,1.80,1.80,1.80]
       massmax: [2.2,2.2,2.2,2.2,2.2,2.2,2.2,2.2]
       rebin: [4,4,4,4,4,4,4,4]
-      includesecpeak: [0,0,0,0,0,0,0,0]
+      includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 2.010
       FixedMean: False
       SetFixGaussianSigma: true

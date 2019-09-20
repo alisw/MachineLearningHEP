@@ -289,7 +289,7 @@ D0pp:
       massmin: [1.75,1.70,1.70,1.70,1.70,1.70,1.70,1.70]
       massmax: [2.00,2.05,2.05,2.05,2.05,2.05,2.05,2.05]
       rebin: [6,6,6,6,6,6,6,6]
-      includesecpeak: [0,0,0,0,0,0,0,0]
+      includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 1.864
       # Fix mean and/or sigma
       FixedMean: False
@@ -367,7 +367,7 @@ D0pp:
       massmin: [1.75,1.70,1.70,1.70,1.70,1.70,1.70,1.70]
       massmax: [2.00,2.05,2.05,2.05,2.05,2.05,2.05,2.05]
       rebin: [6,6,6,6,6,6,6,6]
-      includesecpeak: [0,0,0,0,0,0,0,0]
+      includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 1.864
       # Fix mean and/or sigma
       FixedMean: False
@@ -444,7 +444,7 @@ D0pp:
       massmin: [1.70,1.70,1.70,1.70,1.70]
       massmax: [2.05,2.05,2.05,2.05,2.05]
       rebin: [6,6,6,6,6]
-      includesecpeak: [0,0,0,0,0]
+      includesecpeak: Null #[0,0,0,0,0]
       masssecpeak: 1.864
       # Fix mean and/or sigma
       FixedMean: False
@@ -509,7 +509,7 @@ D0pp:
       massmin: [1.70,1.70,1.70,1.70,1.70,1.70,1.70,1.70]
       massmax: [2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05]
       rebin: [6,6,6,6,6,6,6,6]
-      includesecpeak: [0,0,0,0,0,0,0,0]
+      includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 1.864
       # Fix mean and/or sigma
       FixedMean: False
@@ -578,7 +578,7 @@ D0pp:
       massmin: [1.70,1.70,1.70,1.70,1.70,1.70,1.70,1.70]
       massmax: [2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05]
       rebin: [6,6,6,6,6,6,6,6]
-      includesecpeak: [0,0,0,0,0,0,0,0]
+      includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 1.864
       # Fix mean and/or sigma
       FixedMean: False

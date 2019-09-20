@@ -297,7 +297,7 @@ LcpKpipp:
       massmin: [2.166,2.166,2.166,2.166,2.166,2.166,2.166,2.166]
       massmax: [2.406,2.406,2.406,2.406,2.406,2.406,2.406,2.406]
       rebin: [4,4,4,4,4,4,4,4]
-      includesecpeak: [0,0,0,0,0,0,0,0]
+      includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 2.2864
 
       # Fix mean and/or sigma
@@ -373,7 +373,7 @@ LcpKpipp:
       massmin: [2.166,2.166,2.166,2.166,2.166,2.166,2.166,2.166]
       massmax: [2.406,2.406,2.406,2.406,2.406,2.406,2.406,2.406]
       rebin: [4,4,4,4,4,4,4,4]
-      includesecpeak: [0,0,0,0,0,0,0,0]
+      includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 2.2864
 
       # Fix mean and/or sigma
@@ -451,7 +451,7 @@ LcpKpipp:
       massmin: [2.166,2.166,2.166,2.166,2.166]
       massmax: [2.406,2.406,2.406,2.406,2.406]
       rebin: [4,4,4,4,4]
-      includesecpeak: [0,0,0,0,0]
+      includesecpeak: Null #[0,0,0,0,0]
       masssecpeak: 2.2864
       # Fix mean and/or sigma
       FixedMean: False
@@ -516,7 +516,7 @@ LcpKpipp:
       massmin: [2.166,2.166,2.166,2.166,2.166,2.166,2.166,2.166]
       massmax: [2.406,2.406,2.406,2.406,2.406,2.406,2.406,2.406]
       rebin: [4,4,4,4,4,4,4,4]
-      includesecpeak: [0,0,0,0,0,0,0,0]
+      includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 2.2864
       # Fix mean and/or sigma
       FixedMean: False
@@ -585,7 +585,7 @@ LcpKpipp:
       massmin: [2.166,2.166,2.166,2.166,2.166,2.166,2.166,2.166]
       massmax: [2.406,2.406,2.406,2.406,2.406,2.406,2.406,2.406]
       rebin: [4,4,4,4,4,4,4,4]
-      includesecpeak: [0,0,0,0,0,0,0,0]
+      includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 2.2864
       # Fix mean and/or sigma
       FixedMean: False

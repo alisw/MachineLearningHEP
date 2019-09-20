@@ -239,7 +239,7 @@ LbITS2:
       massmin: [5.3,5.3,5.3]
       massmax: [5.9,5.9,5.9]
       rebin: [6,6,6]
-      includesecpeak: [0,0,0]
+      includesecpeak: Null #[0,0,0]
       masssecpeak: 0.
       # Fix mean and/or sigma
       FixedMean: False

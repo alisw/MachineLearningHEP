@@ -101,6 +101,8 @@ class Analyzer:
                 if self.p_includesecpeak else None
         self.p_fix_widthsecpeak = datap["analysis"][self.typean]["fix_widthsecpeak"] \
                 if self.p_includesecpeak else None
+        if self.p_includesecpeak is None:
+            self.p_includesecpeak = [False for ipt in range(self.p_nptbins)]
         self.p_fixedmean = datap["analysis"][self.typean]["FixedMean"]
         self.p_use_user_gauss_sigma = datap["analysis"][self.typean]["SetInitialGaussianSigma"]
         self.p_exclude_nsigma_sideband = datap["analysis"][self.typean]["exclude_nsigma_sideband"]
