@@ -372,7 +372,7 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   //
   // Define the output histograms
   //
-  TFile *out = new TFile(outfilename,"update");
+  TFile *out = new TFile(outfilename,"recreate");
   //
   TH1D *histofc=0;
   TH1D *histofcMax=0;
@@ -1090,6 +1090,6 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   // Draw the cross-section
   //  spectra->DrawSpectrum(gPrediction);
 
-  //  out->Close();
+    out->Close();
 
 }
