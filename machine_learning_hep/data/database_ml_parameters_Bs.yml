@@ -239,7 +239,7 @@ Bspp:
       massmin: [5.1,5.1,5.1]
       massmax: [5.6,5.6,5.6]
       rebin: [6,6,6]
-      includesecpeak: [0,0,0]
+      includesecpeak: Null #[0,0,0]
       masssecpeak: 0.
       # Fix mean and/or sigma
       FixedMean: False
