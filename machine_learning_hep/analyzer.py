@@ -93,7 +93,14 @@ class Analyzer:
         self.p_massmax = datap["analysis"][self.typean]["massmax"]
         self.p_rebin = datap["analysis"][self.typean]["rebin"]
         self.p_includesecpeak = datap["analysis"][self.typean]["includesecpeak"]
-        self.p_masssecpeak = datap["analysis"][self.typean]["masssecpeak"]
+        self.p_masssecpeak = datap["analysis"][self.typean]["masssecpeak"] \
+                if self.p_includesecpeak else None
+        self.p_fix_masssecpeak = datap["analysis"][self.typean]["fix_masssecpeak"] \
+                if self.p_includesecpeak else None
+        self.p_widthsecpeak = datap["analysis"][self.typean]["widthsecpeak"] \
+                if self.p_includesecpeak else None
+        self.p_fix_widthsecpeak = datap["analysis"][self.typean]["fix_widthsecpeak"] \
+                if self.p_includesecpeak else None
         self.p_fixedmean = datap["analysis"][self.typean]["FixedMean"]
         self.p_use_user_gauss_sigma = datap["analysis"][self.typean]["SetInitialGaussianSigma"]
         self.p_exclude_nsigma_sideband = datap["analysis"][self.typean]["exclude_nsigma_sideband"]
@@ -112,6 +119,8 @@ class Analyzer:
         self.ptranges.append(self.lpt_finbinmax[-1])
         self.var2ranges = self.lvar2_binmin.copy()
         self.var2ranges.append(self.lvar2_binmax[-1])
+        # More specific fit options
+        self.include_reflection = datap["analysis"][self.typean].get("include_reflection", False)
         print(self.var2ranges)
 
         self.p_nevents = datap["analysis"][self.typean]["nevents"]
@@ -235,6 +244,9 @@ class Analyzer:
                           self.v_var2_binning, mult_int_min, mult_int_max)
                 h_invmass_init = lfile.Get("hmass" + suffix)
                 h_invmass_mc_init = lfile_mc.Get("hmass" + suffix)
+                h_invmass_mc_refl_init = None
+                if self.include_reflection:
+                    h_invmass_mc_refl_init = lfile_mc.Get("hmass_refl" + suffix)
 
                 h_mc_init_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_mc_init,
                                                                   self.p_rebin[ipt], -1)
@@ -246,6 +258,11 @@ class Analyzer:
                                                          self.bkg_func_map[self.p_bkgfunc[ipt]],
                                                          self.sig_func_map[self.p_sgnfunc[ipt]])
 
+                if h_invmass_mc_refl_init is not None and h_invmass_mc_refl_init.Integral() > 0.:
+                    mass_fitter_mc_init.SetTemplateReflections(h_invmass_mc_refl_init, "templ",
+                                                               self.p_massmin[ipt],
+                                                               self.p_massmax[ipt])
+                    # TODO Need init for ReflOverS?
                 if self.p_dolike:
                     mass_fitter_mc_init.SetUseLikelihoodFit()
                 mass_fitter_mc_init.SetInitialGaussianMean(mean_for_data)
@@ -265,7 +282,7 @@ class Analyzer:
                 canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
                                                   "fittedplot_integrated_mc", "eps",
                                                   None, suffix))
-                #canvas.Close()
+                canvas.Close()
 
                 # Now, try also for data
                 h_data_init_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_init,
@@ -277,11 +294,22 @@ class Analyzer:
                                                            self.bkg_func_map[self.p_bkgfunc[ipt]],
                                                            self.sig_func_map[self.p_sgnfunc[ipt]])
 
+                if h_invmass_mc_refl_init is not None and h_invmass_mc_refl_init.Integral() > 0.:
+                    mass_fitter_data_init.SetTemplateReflections(h_invmass_mc_refl_init, "templ",
+                                                                 self.p_massmin[ipt],
+                                                                 self.p_massmax[ipt])
+                    # TODO Need init for ReflOverS?
                 if self.p_dolike:
                     mass_fitter_data_init.SetUseLikelihoodFit()
                 mass_fitter_data_init.SetInitialGaussianMean(mean_for_data)
                 mass_fitter_data_init.SetInitialGaussianSigma(sigma_for_data)
                 mass_fitter_data_init.SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
+                # Second peak?
+                if self.p_includesecpeak[ipt]:
+                    mass_fitter_data_init.IncludeSecondGausPeak(self.p_masssecpeak,
+                                                                self.p_fix_masssecpeak,
+                                                                self.p_widthsecpeak,
+                                                                self.p_fix_widthsecpeak)
                 success = mass_fitter_data_init.MassFitter(False)
                 if success and self.init_fits_from == "data":
                     sigma_for_data = mass_fitter_data_init.GetSigma()
@@ -294,7 +322,7 @@ class Analyzer:
                 canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
                                                   "fittedplot_integrated", "eps",
                                                   None, suffix))
-                #canvas.Close()
+                canvas.Close()
 
                 ######################
                 # END initialize fit #
@@ -306,8 +334,6 @@ class Analyzer:
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
                 h_invmass = lfile.Get("hmass" + suffix)
-
-
                 h_invmass_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass, self.p_rebin[ipt], -1)
                 h_invmass_rebin = TH1F()
                 h_invmass_rebin_.Copy(h_invmass_rebin)
@@ -326,15 +352,31 @@ class Analyzer:
                 if self.p_fixingaussigma:
                     mass_fitter.SetFixGaussianSigma(sigma_for_data)
                 mass_fitter.SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
+
+                if self.include_reflection:
+                    h_invmass_refl = AliVertexingHFUtils.RebinHisto(
+                        lfile_mc.Get("hmass_refl" + suffix), self.p_rebin[ipt], -1)
+                    if h_invmass_refl.Integral() > 0.:
+                        mass_fitter.SetTemplateReflections(h_invmass_refl, "templ",
+                                                           self.p_massmin[ipt],
+                                                           self.p_massmax[ipt])
+                    else:
+                        self.logger.warning("Reflection requested but template empty")
+                    # TODO Need init for ReflOverS?
+                if self.p_includesecpeak[ipt]:
+                    mass_fitter.IncludeSecondGausPeak(self.p_masssecpeak, self.p_fix_masssecpeak,
+                                                      self.p_widthsecpeak, self.p_fix_widthsecpeak)
+
                 success = mass_fitter.MassFitter(False)
                 canvas = TCanvas("fit_canvas", suffix, 700, 700)
                 mass_fitter.DrawHere(canvas, self.p_nsigma_signal)
 
-
                 canvas.SaveAs(self.make_file_path(self.d_resultsallpdata, "fittedplot", "eps",
                                                   None, suffix))
-                #canvas.Close()
+                canvas.Close()
 
+                fit_dir = fileout.mkdir(suffix)
+                fit_dir.WriteObject(mass_fitter, "fitter")
                 rawYield = mass_fitter.GetRawYield() / \
                         (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
                 rawYieldErr = mass_fitter.GetRawYieldError() / \
@@ -1088,20 +1130,11 @@ class Analyzer:
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
-                #suffix = self.make_pre_suffix([self.v_var_binning,
-                #                               f"{self.lpt_finbinmin[ipt]:.2f}",
-                #                               f"{self.lpt_finbinmax[ipt]:.2f}",
-                #                               f"{self.lpt_probcutfin[bin_id]:.2f}",
-                #                               self.v_var2_binning,
-                #                               f"{self.lvar2_binmin[imult]:.2f}",
-                #                               f"{self.lvar2_binmax[imult]:.2f}"])
                 hzvsmass = lfile.Get("hzvsmass" + suffix)
                 load_dir = func_file.GetDirectory(suffix)
-                mass_fitter = Fitter()
-                mass_fitter.load(load_dir)
-                sig_fit = mass_fitter.sig_fit_func #func_file.Get("sigfit" + suffix)
-                mean = sig_fit.GetParameter(1)
-                sigma = sig_fit.GetParameter(2)
+                mass_fitter = load_dir.Get("fitter")
+                mean = mass_fitter.GetMean()
+                sigma = mass_fitter.GetSigma()
                 binmasslow2sig = hzvsmass.GetXaxis().FindBin(mean - 2*sigma)
                 masslow2sig = mean - 2*sigma
                 binmasshigh2sig = hzvsmass.GetXaxis().FindBin(mean + 2*sigma)
