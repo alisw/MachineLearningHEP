@@ -945,12 +945,12 @@ class Analyzer:
         file_out = TFile.Open("%s/feeddown%s%s.root" % \
                               (self.d_resultsallpmc, self.case, self.typean), "recreate")
 
-        # Get feed-down detector response
+        # Get feed-down detector response.
         his_resp_fd = file_resp.Get("his_resp_jet_fd")
         arr_resp_fd = hist2array(his_resp_fd).T
         bins_final = np.array([his_resp_fd.GetYaxis().GetBinLowEdge(i) for i in \
             range(1, his_resp_fd.GetYaxis().GetNbins() + 2)])
-        # TODO: Normalize so that projection on the pt_gen = 1.
+        # TODO: Normalise so that projection on the pt_gen = 1.
         can_resp_fd = TCanvas("can_resp_fd", "Feed-down detector response", 800, 800)
         his_resp_fd.Draw("colz")
         can_resp_fd.SetLogz()
@@ -959,8 +959,13 @@ class Analyzer:
         can_resp_fd.SaveAs("%s/ResponseFD%s%s.eps" % (self.d_resultsallpmc, \
                             self.case, self.typean))
 
+        # Get the number of generated jets for feed-down normalisation.
+        his_njets = file_resp.Get("his_njets_gen")
+        n_jets_gen = his_njets.GetBinContent(1)
+
         # Get simulated pt_cand vs. pt_jet of non-prompt jets.
         his_sim_fd = file_resp.Get("his_ptc_ptjet_fd")
+        his_sim_fd.Scale(1./n_jets_gen) # Normalise by the total number of selected jets.
         arr_sim_fd = hist2array(his_sim_fd).T
         can_sim_fd = TCanvas("can_sim_fd", \
                         "Simulated pt cand vs. pt jet of non-prompt jets", 800, 800)
@@ -975,6 +980,8 @@ class Analyzer:
             # Get efficiencies.
             his_eff_pr = file_eff.Get("eff_mult%d" % imult)
             his_eff_fd = file_eff.Get("eff_fd_mult%d" % imult)
+            his_eff_pr = his_eff_pr.Clone("his_eff_pr1_%d" % imult)
+            his_eff_fd = his_eff_fd.Clone("his_eff_fd1_%d" % imult)
             his_eff_pr.SetLineColor(2)
             his_eff_fd.SetLineColor(3)
             his_eff_pr.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
@@ -1024,6 +1031,7 @@ class Analyzer:
 
         # Get simulated pt_cand vs. pt_jet vs. z of non-prompt jets.
         his_sim_z_fd = file_resp.Get("his_ptc_ptjet_z_fd")
+        his_sim_z_fd.Scale(1./n_jets_gen) # Normalise by the total number of selected jets.
         his_sim_z_fd_2d = his_sim_z_fd.Project3D("yz") # final feed-down histogram
         # x axis = z, y axis = pt_jet
         his_sim_z_fd_2d.Reset()
@@ -1034,6 +1042,8 @@ class Analyzer:
             # Get efficiencies.
             his_eff_pr = file_eff.Get("eff_mult%d" % i_ptjet)
             his_eff_fd = file_eff.Get("eff_fd_mult%d" % i_ptjet)
+            his_eff_pr = his_eff_pr.Clone("his_eff_pr2_%d" % i_ptjet)
+            his_eff_fd = his_eff_fd.Clone("his_eff_fd2_%d" % i_ptjet)
             his_eff_fd.Divide(his_eff_pr)
             his_eff_ratio = his_eff_fd
             # loop over z bins
