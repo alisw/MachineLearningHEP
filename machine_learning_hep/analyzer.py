@@ -288,7 +288,7 @@ class Analyzer:
                 mass_fitter_data_init.SetInitialGaussianSigma(sigma_for_data)
                 mass_fitter_data_init.SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
                 # Second peak?
-                if self.p_includesecpeak:
+                if self.p_includesecpeak[ipt]:
                     mass_fitter_data_init.IncludeSecondGausPeak(self.p_masssecpeak,
                                                                 self.p_fix_masssecpeak,
                                                                 self.p_widthsecpeak,
@@ -346,7 +346,7 @@ class Analyzer:
                     else:
                         self.logger.warning("Reflection requested but template empty")
                     # TODO Need init for ReflOverS?
-                if self.p_includesecpeak:
+                if self.p_includesecpeak[ipt]:
                     mass_fitter.IncludeSecondGausPeak(self.p_masssecpeak, self.p_fix_masssecpeak,
                                                       self.p_widthsecpeak, self.p_fix_widthsecpeak)
 
