@@ -67,6 +67,7 @@ analysis:
   dojetstudies: false
   doeff: false
   docross: false
+  doplots: true
 
 systematics:
   probvariation: false

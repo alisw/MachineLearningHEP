@@ -1354,36 +1354,19 @@ class Analyzer:
         cCrossvsvar2.SaveAs("%s/Cross%s%sVs%s.eps" % (self.d_resultsallpdata,
                                                       self.case, self.typean, self.v_var2_binning))
 
-    def plotternormyields(self):
+    def makenormyields(self):
 
         self.loadstyle()
         self.test_aliphysics()
         filedataval = TFile.Open(self.f_evtvaldata)
 
-        cCrossvsvar1 = TCanvas('cCrossvsvar1', 'The Fit Canvas')
-        cCrossvsvar1.SetCanvasSize(1900, 1500)
-        cCrossvsvar1.SetWindowSize(500, 500)
-        cCrossvsvar1.SetLogy()
-
-        legvsvar1 = TLegend(.5, .65, .7, .85)
-        legvsvar1.SetBorderSize(0)
-        legvsvar1.SetFillColor(0)
-        legvsvar1.SetFillStyle(0)
-        legvsvar1.SetTextFont(42)
-        legvsvar1.SetTextSize(0.035)
-
-        listvalues = []
-        listvalueserr = []
         fileouteff = "%s/efficiencies%s%s.root" % \
                       (self.d_resultsallpmc, self.case, self.typean)
         yield_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                              None, [self.case, self.typean])
-        fileoutcross = TFile.Open("%s/finalcross%s%s.root" % (self.d_resultsallpdata, self.case, \
-                                  self.typean), "recreate")
-        gROOT.LoadMacro("HFPtSpectrum.C+")
+        gROOT.LoadMacro("HFPtSpectrum.C")
         from ROOT import HFPtSpectrum
         for imult in range(self.p_nbin2):
-            listvalpt = []
             bineff = -1
             if self.p_bineff is None:
                 bineff = imult
@@ -1402,31 +1385,52 @@ class Analyzer:
             binmaxv = hmult.GetXaxis().FindBin(self.lvar2_binmax[imult])
             norm = hmult.Integral(binminv, binmaxv)
             # Now use the function we have just compiled above
-            HFPtSpectrum(self.p_indexhpt,
-                         "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root",
-                         fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield,
-                         fileoutcrossmult, norm, 1, self.p_fd_method, self.p_cctype)
+            HFPtSpectrum(self.p_indexhpt, \
+                "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
+                fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
+                fileoutcrossmult, norm, 1, self.p_fd_method, self.p_cctype)
 
+        fileoutcrosstot = TFile.Open("%s/finalcross%s%smulttot.root" % \
+            (self.d_resultsallpdata, self.case, self.typean), "recreate")
+
+        for imult in range(self.p_nbin2):
+            fileoutcrossmult = "%s/finalcross%s%smult%d.root" % \
+                (self.d_resultsallpdata, self.case, self.typean, imult)
             f_fileoutcrossmult = TFile.Open(fileoutcrossmult)
             hcross = f_fileoutcrossmult.Get("histoSigmaCorr")
+            hcross.SetName("histoSigmaCorr%d" % imult)
+            fileoutcrosstot.cd()
+            hcross.Write()
+        fileoutcrosstot.Close()
+
+
+    def plotternormyields(self):
+        cCrossvsvar1 = TCanvas('cCrossvsvar1', 'The Fit Canvas')
+        cCrossvsvar1.SetCanvasSize(1900, 1500)
+        cCrossvsvar1.SetWindowSize(500, 500)
+        cCrossvsvar1.SetLogy()
+        cCrossvsvar1.cd()
+        legvsvar1 = TLegend(.5, .65, .7, .85)
+        legvsvar1.SetBorderSize(0)
+        legvsvar1.SetFillColor(0)
+        legvsvar1.SetFillStyle(0)
+        legvsvar1.SetTextFont(42)
+        legvsvar1.SetTextSize(0.035)
+        fileoutcrosstot = TFile.Open("%s/finalcross%s%smulttot.root" % \
+            (self.d_resultsallpdata, self.case, self.typean))
+
+        for imult in range(self.p_nbin2):
+            hcross = fileoutcrosstot.Get("histoSigmaCorr%d" % imult)
             hcross.SetLineColor(imult+1)
-            fileoutcross.cd()
             hcross.GetXaxis().SetTitle("p_{T} %s (GeV)" % self.p_latexnmeson)
             hcross.GetYaxis().SetTitleOffset(1.3)
             hcross.GetYaxis().SetTitle("Corrected yield/events (%s) %s" %
                                        (self.p_latexnmeson, self.typean))
-            hcross.SetName("hcross%d" % imult)
             hcross.GetYaxis().SetRangeUser(1e-10, 1)
             legvsvar1endstring = "%.1f < %s < %.1f GeV/c" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legvsvar1.AddEntry(hcross, legvsvar1endstring, "LEP")
-            cCrossvsvar1.cd()
             hcross.Draw("same")
-            hcross.Write()
-            listvalpt = [hcross.GetBinContent(ipt+1) for ipt in range(self.p_nptbins)]
-            listvalues.append(listvalpt)
-            listvalerrpt = [hcross.GetBinError(ipt+1) for ipt in range(self.p_nptbins)]
-            listvalueserr.append(listvalerrpt)
         legvsvar1.Draw()
         cCrossvsvar1.SaveAs("%s/CorrectedYieldsNorm%s%sVs%s.eps" % (self.d_resultsallpdata,
                                                                     self.case, self.typean,

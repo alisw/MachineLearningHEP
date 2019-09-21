@@ -82,8 +82,14 @@ class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-st
     def multi_plotternormyields(self):
         if self.doperiodbyperiod is True:
             for indexp in range(self.prodnumber):
-                self.process_listsample[indexp].plotter()
+                self.process_listsample[indexp].plotternormyields()
         self.myanalyzertot.plotternormyields()
+
+    def multi_makenormyields(self):
+        if self.doperiodbyperiod is True:
+            for indexp in range(self.prodnumber):
+                self.process_listsample[indexp].makenormyields()
+        self.myanalyzertot.makenormyields()
 
     def multi_studyevents(self):
         if self.doperiodbyperiod is True:
