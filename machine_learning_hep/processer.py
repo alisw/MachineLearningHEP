@@ -543,7 +543,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         bins_ptjet_temp.append(self.lvar2_binmax[n_bins_ptjet - 1])
         bins_ptjet = array.array('d', bins_ptjet_temp)
         # z
-        bins_z_temp = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
+        bins_z_temp = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1]
         n_bins_z = len(bins_z_temp) - 1
         bins_z = array.array('d', bins_z_temp)
 
