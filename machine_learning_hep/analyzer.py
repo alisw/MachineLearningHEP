@@ -24,7 +24,7 @@ from subprocess import Popen
 import numpy as np
 # pylint: disable=import-error, no-name-in-module, unused-import
 from root_numpy import hist2array, array2hist
-from ROOT import TFile, TH1F, TCanvas, TPad
+from ROOT import TFile, TH1F, TCanvas, TPad, TF1
 from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
 from ROOT import gROOT, TDirectory
 from ROOT import TStyle, kBlue, kGreen, kBlack, kRed
@@ -1446,6 +1446,10 @@ class Analyzer:
         triggerlist = ["HighMultV0", "HighMultSPD"]
         varlist = ["v0m_corr", "n_tracklets_corr"]
 
+        fileout_name = self.make_file_path(self.d_valevtdata, "corrections", "root",
+                                           None, [self.case, self.typean])
+        fileout = TFile.Open(fileout_name, "recreate")
+        fileout.cd()
         ctrigger = TCanvas('ctrigger', 'The Fit Canvas')
         ctrigger.SetCanvasSize(2100, 1000)
         ctrigger.Divide(2, 1)
@@ -1473,12 +1477,15 @@ class Analyzer:
             leg.AddEntry(heff, triggerlist[i], "LEP")
             leg.Draw()
             print("INDEX", i)
+            heff.SetName("heff%sANDINT7vs%s" % (triggerlist[i], varlist[i]))
+            heff.Write()
         ctrigger.SaveAs(self.make_file_path(self.d_valevtdata, "ctrigger", "eps", \
                                         None, None))
 
         ccorrection = TCanvas('ccorrection', 'The Fit Canvas')
         ccorrection.SetCanvasSize(2100, 1000)
         ccorrection.Divide(2, 1)
+        funcs = []
         for i, _ in enumerate(triggerlist):
             ccorrection.cd(i+1)
             leg = TLegend(.5, .65, .7, .85)
@@ -1498,7 +1505,36 @@ class Analyzer:
             hratio.SetMinimum(0.)
             hratio.GetYaxis().SetTitle("ratio %s/MB" % triggerlist[i])
             hratio.Draw("epsame")
+            if i == 0:
+                func = TF1("func_%s" % triggerlist[i], \
+                           "([0]/(1+TMath::Exp(-[1]*(x-[2]))))", 0, 1000)
+                func.SetParameters(300, .1, 570)
+                func.SetParLimits(1, 0., 10.)
+                func.SetParLimits(2, 0., 1000.)
+                func.SetRange(0., 1000.)
+                func.SetLineWidth(1)
+                hratio.Fit(func, "L", "", 0, 1000)
+                func.Draw("same")
+                func.SetLineColor(i+1)
+            if i == 1:
+                func = TF1("func_%s" % triggerlist[i], \
+                           "([0]/(1+TMath::Exp(-[1]*(x-[2]))))", 20, 100)
+                func.SetParameters(100, .1, 50)
+                func.SetParLimits(1, 0., 10.)
+                func.SetParLimits(2, 0., 200.)
+                func.SetRange(0., 100.)
+                func.SetLineWidth(1)
+                hratio.Fit(func, "L", "", 0, 100)
+                func.SetLineColor(i+1)
+            funcs.append(func)
+            func.Write()
+            funcnorm = func.Clone("funcnorm_%s" % triggerlist[i])
+            funcnorm.FixParameter(0, funcnorm.GetParameter(0)/funcnorm.GetMaximum())
+            funcnorm.Write()
+            hratio.SetName("hratio%svs%s" % (triggerlist[i], varlist[i]))
+            hratio.Write()
             leg.AddEntry(hratio, triggerlist[i], "LEP")
             leg.Draw()
         ccorrection.SaveAs(self.make_file_path(self.d_valevtdata, "ccorrection", "eps", \
                                         None, None))
+        fileout.Close()
