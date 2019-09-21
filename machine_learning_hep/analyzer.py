@@ -1380,8 +1380,9 @@ class Analyzer:
                                              None, [self.case, self.typean])
         fileoutcross = TFile.Open("%s/finalcross%s%s.root" % (self.d_resultsallpdata, self.case, \
                                   self.typean), "recreate")
-#        for imult in range(self.p_nbin2):
-        for imult in range(1):
+        gROOT.LoadMacro("HFPtSpectrum.C+")
+        from ROOT import HFPtSpectrum
+        for imult in range(self.p_nbin2):
             listvalpt = []
             bineff = -1
             if self.p_bineff is None:
@@ -1400,12 +1401,12 @@ class Analyzer:
             binminv = hmult.GetXaxis().FindBin(self.lvar2_binmin[imult])
             binmaxv = hmult.GetXaxis().FindBin(self.lvar2_binmax[imult])
             norm = hmult.Integral(binminv, binmaxv)
-            gInterpreter.ExecuteMacro('HFPtSpectrum.C(%d, \
-                        "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
-                        "%s", "%s", "%s", "%s", "%s", "%s", %d, %d, %d, %d)' \
-                        % (self.p_indexhpt, fileouteff, namehistoeffprompt, namehistoefffeed, \
-                           yield_filename, nameyield, fileoutcrossmult, norm, 1, \
-                           self.p_fd_method, self.p_cctype))
+            # Now use the function we have just compiled above
+            HFPtSpectrum(self.p_indexhpt,
+                         "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root",
+                         fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield,
+                         fileoutcrossmult, norm, 1, self.p_fd_method, self.p_cctype)
+
             f_fileoutcrossmult = TFile.Open(fileoutcrossmult)
             hcross = f_fileoutcrossmult.Get("histoSigmaCorr")
             hcross.SetLineColor(imult+1)
