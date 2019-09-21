@@ -67,6 +67,7 @@ analysis:
   dojetstudies: false
   doeff: true
   docross: true
+  doplots: true
 
 systematics:
   # Not yet used

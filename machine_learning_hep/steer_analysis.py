@@ -101,6 +101,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     dofit = data_config["analysis"]["dofit"]
     doeff = data_config["analysis"]["doeff"]
     docross = data_config["analysis"]["docross"]
+    doplots = data_config["analysis"]["doplots"]
     dosyst = data_config["analysis"]["dosyst"]
     dosystprob = data_config["systematics"]["probvariation"]
     doanaperperiod = data_config["analysis"]["doperperiod"]
@@ -375,7 +376,9 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         if normalizecross is True:
             myan.multi_plotter()
         if normalizecross is False:
-            myan.multi_plotternormyields()
+            myan.multi_makenormyields()
+    if doplots is True:
+        myan.multi_plotternormyields()
     if dosystprob is True:
         mysis.probvariation()
 
