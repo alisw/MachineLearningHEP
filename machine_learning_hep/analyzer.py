@@ -1398,9 +1398,19 @@ class Analyzer:
                 (self.d_resultsallpdata, self.case, self.typean, imult)
             labelhisto = "hbit%svs%s" % (self.triggerbit, self.v_var2_binning)
             hmult = filedataval.Get(labelhisto)
+#            if "INT7" not in self.triggerbit:
+#                fileout_name = "%s/correctionsweights.root" % self.d_valevtdata
+#                fileout = TFile.Open(fileout_name, "read")
+#                funcnorm = fileout.Get("funcnorm_%s" % self.triggerbit)
+#                for ibin in range(hmult.GetNbinsX()):
+#                    myweight = funcnorm.Eval(hmult.GetBinCenter(ibin + 1))
+#                    print(hmult.GetBinCenter(ibin+1), 1/myweight)
+#                    hmult.SetBinContent(ibin + 1, hmult.GetBinContent(ibin+1) / myweight)
             binminv = hmult.GetXaxis().FindBin(self.lvar2_binmin[imult])
             binmaxv = hmult.GetXaxis().FindBin(self.lvar2_binmax[imult])
             norm = hmult.Integral(binminv, binmaxv)
+
+
             # Now use the function we have just compiled above
             HFPtSpectrum(self.p_indexhpt, \
                 "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
