@@ -390,9 +390,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 df_bin = seldf_singlevar(df, self.v_var2_binning,
                                          self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 fill_hist(h_invmass, df_bin.inv_mass)
-                myfile.cd()
-                h_invmass.Write()
-                if self.mcordata == "data":
+                apply_weights = self.datap["analysis"][self.typean]["triggersel"]["weighttrig"]
+                if self.mcordata == "data" and apply_weights is True:
                     fileweight_name = "%s/correctionsweights.root" % self.d_val
                     fileweight = TFile.Open(fileweight_name, "read")
                     namefunction = "funcnorm_%s" % self.triggerbit
@@ -401,7 +400,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     weightsinv = [1./weight for weight in weights]
 #                   print([weightsinv, df_bin[self.v_var2_binning].values])
                     fill_hist(h_invmass_weight, df_bin.inv_mass, weights=weightsinv)
-                    h_invmass_weight.Write()
+                myfile.cd()
+                h_invmass.Write()
+                h_invmass_weight.Write()
 
                 if "pt_jet" in df_bin.columns:
                     zarray = z_calc(df_bin.pt_jet, df_bin.phi_jet, df_bin.eta_jet,
