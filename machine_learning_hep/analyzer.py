@@ -1549,3 +1549,13 @@ class Analyzer:
             leg.Draw()
             ctrigger.SaveAs(self.make_file_path(self.d_valevtdata, "ctrigger" + trigger, "eps", \
                                                 None, None))
+        cscatter = TCanvas("cscatter", 'The Fit Canvas')
+        cscatter.SetCanvasSize(2100, 2000)
+        cscatter.cd()
+        cscatter.SetLogx()
+        hv0mvsperc = filedata.Get("hv0mvsperc")
+        hv0mvsperc.GetXaxis().SetTitle("percentile (max value = 100)")
+        hv0mvsperc.GetYaxis().SetTitle("V0M corrected for z")
+        hv0mvsperc.Draw("colz")
+        cscatter.SaveAs(self.make_file_path(self.d_valevtdata, "cscatter", "eps", \
+                                            None, None))

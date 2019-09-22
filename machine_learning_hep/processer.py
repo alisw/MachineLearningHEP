@@ -31,7 +31,7 @@ from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge_method
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
-from machine_learning_hep.utilities import mergerootfiles, z_calc, z_gen_calc
+from machine_learning_hep.utilities import mergerootfiles, z_calc, z_gen_calc, scatterplot
 from machine_learning_hep.models import apply # pylint: disable=import-error
 #from machine_learning_hep.globalfitter import fitter
 from machine_learning_hep.selectionutils import getnormforselevt
@@ -605,12 +605,14 @@ class Processer: # pylint: disable=too-many-instance-attributes
         dfevt = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
         dfevt = dfevt.query("is_ev_rej==0")
         triggerlist = ["HighMultV0", "HighMultSPD", "INT7"]
-        varlist = ["v0m_corr", "n_tracklets_corr"]
+        varlist = ["v0m_corr", "n_tracklets_corr", "perc_v0m"]
         nbinsvar = [100, 200]
         minrvar = [0, 0]
         maxrvar = [1500, 200]
         fileevtroot = TFile.Open(self.l_evtvalroot[file_index], "recreate")
-
+        hv0mvsperc = scatterplot(dfevt, "perc_v0m", "v0m_corr", 1000, 0, 1, 200, 0., 2000.)
+        hv0mvsperc.SetName("hv0mvsperc")
+        hv0mvsperc.Write()
         for ivar, var in enumerate(varlist):
             label = "hbitINT7vs%s" % (var)
             histoMB = TH1F(label, label, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
