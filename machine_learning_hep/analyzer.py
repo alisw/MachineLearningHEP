@@ -29,7 +29,7 @@ from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
 from ROOT import gROOT, TDirectory
 from ROOT import TStyle, kBlue, kGreen, kBlack, kRed
 from ROOT import TLatex
-from ROOT import gInterpreter
+from ROOT import gInterpreter, gPad
 # HF specific imports
 from machine_learning_hep.globalfitter import Fitter
 from  machine_learning_hep.logger import get_logger
@@ -1484,6 +1484,30 @@ class Analyzer:
         ctrigger.SaveAs(self.make_file_path(self.d_valevtdata, "ctrigger", "eps", \
                                         None, None))
 
+#        cdistr = TCanvas('cdistr', 'The Fit Canvas')
+#        cdistr.SetCanvasSize(2100, 1000)
+#        cdistr.Divide(2, 1)
+#        for i, _ in enumerate(triggerlist):
+#            cdistr.cd(i+1)
+#            gPad.SetLogy();
+#            leg = TLegend(.5, .65, .7, .85)
+#            leg.SetBorderSize(0)
+#            leg.SetFillColor(0)
+#            leg.SetFillStyle(0)
+#            leg.SetTextFont(42)
+#            leg.SetTextSize(0.035)
+#
+#            labelMB = "hbitINT7vs%s" % varlist[i]
+#            hden = filedata.Get(labelMB)
+#            hden.SetLineColor(i+1)
+#            hden.GetXaxis().SetTitle("offline %s" % varlist[i])
+#            hden.GetYaxis().SetTitle("entries")
+#            hden.Draw("epsame")
+#            leg.AddEntry(heff, triggerlist[i], "LEP")
+#            leg.Draw()
+#        cdistr.SaveAs(self.make_file_path(self.d_valevtdata, "cdistr", "eps", \
+#                                        None, None))
+
         ccorrection = TCanvas('ccorrection', 'The Fit Canvas')
         ccorrection.SetCanvasSize(2100, 1000)
         ccorrection.Divide(2, 1)
@@ -1540,3 +1564,24 @@ class Analyzer:
         ccorrection.SaveAs(self.make_file_path(self.d_valevtdata, "ccorrection", "eps", \
                                         None, None))
         fileout.Close()
+        fileoutf = TFile.Open(fileout_name, "read")
+        cfunc = TCanvas('cdistr', 'The Fit Canvas')
+        cfunc.SetCanvasSize(2100, 1000)
+        cfunc.Divide(2, 1)
+        hempty = TH1F("hempty","hempty", 100, 0, 800)
+        for i, _ in enumerate(triggerlist):
+            cfunc.cd(i+1)
+            leg = TLegend(.5, .65, .7, .85)
+            leg.SetBorderSize(0)
+            leg.SetFillColor(0)
+            leg.SetFillStyle(0)
+            leg.SetTextFont(42)
+            leg.SetTextSize(0.035)
+            myhempty = hempty.Clone()
+            myhempty.Draw()
+            myfunc = fileoutf.Get("funcnorm_%s" % triggerlist[i])
+            myfunc.Draw("same")
+            leg.AddEntry(myfunc, triggerlist[i], "LEP")
+            leg.Draw()
+        cfunc.SaveAs(self.make_file_path(self.d_valevtdata, "cfunc", "eps", \
+                                        None, None))
