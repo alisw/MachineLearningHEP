@@ -148,8 +148,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     mlplot = data_param[case]["ml"]["mlplot"]
 
 
-    mymultiprocessmc = MultiProcesser(data_param[case], typean, run_param, "mc")
-    mymultiprocessdata = MultiProcesser(data_param[case], typean, run_param, "data")
+    mymultiprocessmc = MultiProcesser(case, data_param[case], typean, run_param, "mc")
+    mymultiprocessdata = MultiProcesser(case, data_param[case], typean, run_param, "data")
     myan = MultiAnalyzer(data_param[case], case, typean, doanaperperiod)
     mysis = Systematics(data_param[case], case, typean)
 

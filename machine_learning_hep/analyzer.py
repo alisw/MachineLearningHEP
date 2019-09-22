@@ -148,7 +148,7 @@ class Analyzer:
         self.p_indexhpt = datap["analysis"]["indexhptspectrum"]
         self.p_fd_method = datap["analysis"]["fd_method"]
         self.p_cctype = datap["analysis"]["cctype"]
-
+        self.apply_weights = datap["analysis"][self.typean]["triggersel"]["weighttrig"]
 
     @staticmethod
     def loadstyle():
@@ -339,7 +339,11 @@ class Analyzer:
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
-                h_invmass = lfile.Get("hmass" + suffix)
+                histname = "hmass"
+                if self.apply_weights is True:
+                    histname = "h_invmass_weight"
+                    print("*********** I AM USING WEIGHTED HISTOGRAMS")
+                h_invmass = lfile.Get(histname + suffix)
                 h_invmass_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass, self.p_rebin[ipt], -1)
                 h_invmass_rebin = TH1F()
                 h_invmass_rebin_.Copy(h_invmass_rebin)
@@ -1445,9 +1449,7 @@ class Analyzer:
         filedata = TFile.Open(self.f_evtvaldata)
         triggerlist = ["HighMultV0", "HighMultSPD"]
         varlist = ["v0m_corr", "n_tracklets_corr"]
-
-        fileout_name = self.make_file_path(self.d_valevtdata, "corrections", "root",
-                                           None, [self.case, self.typean])
+        fileout_name = "%s/correctionsweights.root" % self.d_valevtdata
         fileout = TFile.Open(fileout_name, "recreate")
         fileout.cd()
         ctrigger = TCanvas('ctrigger', 'The Fit Canvas')

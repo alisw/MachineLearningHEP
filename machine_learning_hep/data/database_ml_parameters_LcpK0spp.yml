@@ -358,6 +358,7 @@ LcpK0spp:
       triggersel: 
         data: "trigger_hasbit_INT7==1"
         mc: null
+        weighttrig: false
       data: 
         results: [/data/DerivedResults/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/211_20190909-21197/resultsMBvspt_ntrkl,
                   /data/DerivedResults/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/212_20190909-2119/resultsMBvspt_ntrkl,
@@ -427,6 +428,7 @@ LcpK0spp:
       triggersel: 
         data: "trigger_hasbit_INT7==1"
         mc: null
+        weighttrig: false
       data: 
         results: [/data/DerivedResults/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/211_20190909-2119/resultsMBvspt_v0m,
                   /data/DerivedResults/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/212_20190909-2119/resultsMBvspt_v0m,
@@ -503,6 +505,7 @@ LcpK0spp:
       triggersel:
         data: "trigger_hasbit_INT7==1 and abs(eta_jet)<0.5"
         mc: "abs(eta_jet)<0.5"
+        weighttrig: false
 
       data:
         results: [/data/DerivedResults/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/211_20190909-2119/resultsMBjetvspt,
@@ -573,6 +576,7 @@ LcpK0spp:
       triggersel: 
         data: "trigger_hasbit_HighMultSPD==1"
         mc: null
+        weighttrig: true
       data: 
         results: [/data/DerivedResults/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/211_20190909-21197/resultsSPDvspt, 
                   /data/DerivedResults/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/212_20190909-2119/resultsSPDvspt,
@@ -640,6 +644,7 @@ LcpK0spp:
       triggersel: 
         data: "trigger_hasbit_HighMultV0==1"
         mc: null
+        weighttrig: true
       data: 
         results: [/data/DerivedResults/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/211_20190909-21197/resultsV0mvspt, 
                   /data/DerivedResults/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/212_20190909-2119/resultsV0mvspt,
