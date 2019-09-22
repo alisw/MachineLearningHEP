@@ -390,15 +390,14 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 df_bin = seldf_singlevar(df, self.v_var2_binning,
                                          self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 fill_hist(h_invmass, df_bin.inv_mass)
-                apply_weights = self.datap["analysis"][self.typean]["triggersel"]["weighttrig"]
-                if self.mcordata == "data" and apply_weights is True:
+                triggerbit = self.datap["analysis"][self.typean]["triggerbit"]
+                if "INT7" not in triggerbit and self.mcordata == "data":
                     fileweight_name = "%s/correctionsweights.root" % self.d_val
                     fileweight = TFile.Open(fileweight_name, "read")
                     namefunction = "funcnorm_%s" % self.triggerbit
                     funcweighttrig = fileweight.Get(namefunction)
                     weights = evaluate(funcweighttrig, df_bin[self.v_var2_binning])
                     weightsinv = [1./weight for weight in weights]
-#                   print([weightsinv, df_bin[self.v_var2_binning].values])
                     fill_hist(h_invmass_weight, df_bin.inv_mass, weights=weightsinv)
                 myfile.cd()
                 h_invmass.Write()

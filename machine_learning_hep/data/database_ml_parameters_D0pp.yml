@@ -245,7 +245,7 @@ D0pp:
   
   analysis:
     indexhptspectrum: 0 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5 
-    fd_method: 2 #knone=0, kfc=1, kNb=2
+    fd_method: 1 #knone=0, kfc=1, kNb=2
     cctype: 1 #kpp7
     MBvspt_ntrkl:
       normalizecross: false
@@ -477,7 +477,7 @@ D0pp:
   
     SPDvspt:
       normalizecross: false
-      plotbin: [0,1]
+      plotbin: [0,0,1,1]
       usesinglebineff: 0
       sel_binmin2:  [0,0,20,50] #list of var2 splittng nbins
       sel_binmax2: [9999,20,50,100] #list of var2 splitting nbins

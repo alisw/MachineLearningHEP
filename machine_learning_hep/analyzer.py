@@ -202,11 +202,11 @@ class Analyzer:
     # pylint: disable=too-many-branches, too-many-locals
     def fitter(self):
         # Test if we are in AliPhysics env
-        self.test_aliphysics()
-        from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
-        # Enable ROOT batch mode and reset in the end
+        #self.test_aliphysics()
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
+        from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
+        # Enable ROOT batch mode and reset in the end
 
         self.loadstyle()
 
@@ -381,8 +381,12 @@ class Analyzer:
                 canvas = TCanvas("fit_canvas", suffix, 700, 700)
                 mass_fitter.DrawHere(canvas, self.p_nsigma_signal)
 
-                canvas.SaveAs(self.make_file_path(self.d_resultsallpdata, "fittedplot", "eps",
-                                                  None, suffix))
+                if self.apply_weights is False:
+                    canvas.SaveAs(self.make_file_path(self.d_resultsallpdata, "fittedplot", "eps",
+                                                      None, suffix))
+                else:
+                    canvas.SaveAs(self.make_file_path(self.d_resultsallpdata, "fittedplotweights", "eps",
+                                                      None, suffix))
                 canvas.Close()
 
                 fit_dir = fileout.mkdir(suffix)
@@ -1266,6 +1270,8 @@ class Analyzer:
         fileouts.Close()
 
     def plotter(self):
+        tmp_is_root_batch = gROOT.IsBatch()
+        gROOT.SetBatch(True)
         self.loadstyle()
 
         fileouteff = TFile.Open("%s/efficiencies%s%s.root" % \
@@ -1364,9 +1370,11 @@ class Analyzer:
                                                       self.case, self.typean, self.v_var2_binning))
 
     def makenormyields(self):
+        tmp_is_root_batch = gROOT.IsBatch()
+        gROOT.SetBatch(True)
 
         self.loadstyle()
-        self.test_aliphysics()
+        #self.test_aliphysics()
         filedataval = TFile.Open(self.f_evtvaldata)
 
         fileouteff = "%s/efficiencies%s%s.root" % \
@@ -1414,6 +1422,8 @@ class Analyzer:
 
 
     def plotternormyields(self):
+        tmp_is_root_batch = gROOT.IsBatch()
+        gROOT.SetBatch(True)
         cCrossvsvar1 = TCanvas('cCrossvsvar1', 'The Fit Canvas')
         cCrossvsvar1.SetCanvasSize(1900, 1500)
         cCrossvsvar1.SetWindowSize(500, 500)
