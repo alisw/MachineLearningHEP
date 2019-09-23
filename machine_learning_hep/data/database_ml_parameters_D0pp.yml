@@ -426,7 +426,7 @@ D0pp:
       triggersel: 
         data: "trigger_hasclass_INT7==1 and trigger_hasbit_INT7==1 and abs(eta_jet)<0.5"
         mc: "abs(eta_jet)<0.5"
-        weighttrig: true
+        weighttrig: false
 
       data:      
         results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/211_20190909-2119/resultsMBjetvspt,
@@ -561,7 +561,6 @@ D0pp:
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
-        weights: [ "v0m", "vhm" ]
         data: "trigger_hasbit_HighMultV0==1"
         mc: null
         weighttrig: true
