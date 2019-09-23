@@ -609,7 +609,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         minrvar = [0, 0]
         maxrvar = [1500, 200]
         fileevtroot = TFile.Open(self.l_evtvalroot[file_index], "recreate")
-        hv0mvsperc = scatterplot(dfevt, "perc_v0m", "v0m_corr", 10000, 0, 10, 200, 0., 2000.)
+        hv0mvsperc = scatterplot(dfevt, "perc_v0m", "v0m_corr", 50000, 0, 100, 200, 0., 2000.)
         hv0mvsperc.SetName("hv0mvsperc")
         hv0mvsperc.Write()
         for ivar, var in enumerate(varlist):
