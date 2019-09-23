@@ -44,11 +44,11 @@ mlapplication:
   data:
     doapply: false
     domergeapply: false
-    domergeapplyperiods: false
+    docontinueafterstop: false
   mc:
     doapply: false
     domergeapply: false
-    domergeapplyperiods: false
+    docontinueafterstop: false
 
 analysis:
   type: V0mvspt #MBvspt_ntrk, MBvspt_v0ml, SPDvspt, V0mvspt
