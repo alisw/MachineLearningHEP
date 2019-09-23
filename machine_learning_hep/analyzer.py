@@ -1390,8 +1390,8 @@ class Analyzer:
             else:
                 bineff = self.p_bineff
                 print("Using efficiency always from bin=", bineff)
-            namehistoeffprompt = "eff_mult%d" % imult
-            namehistoefffeed = "eff_fd_mult%d" % imult
+            namehistoeffprompt = "eff_mult%d" % bineff
+            namehistoefffeed = "eff_fd_mult%d" % bineff
             nameyield = "hyields%d" % imult
             fileoutcrossmult = "%s/finalcross%s%smult%d.root" % \
                 (self.d_resultsallpdata, self.case, self.typean, imult)
