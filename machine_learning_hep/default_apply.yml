@@ -44,11 +44,11 @@ mlapplication:
   data:
     doapply: true
     domergeapply: true
-    domergeapplyperiods: true
+    docontinueafterstop: false
   mc:
     doapply: true
     domergeapply: true
-    domergeapplyperiods: true
+    docontinueafterstop: false
 
 analysis:
   type: SPDvspt

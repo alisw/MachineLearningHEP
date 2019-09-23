@@ -297,6 +297,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
     def applymodel(self, file_index):
         for ipt in range(self.p_nptbins):
+            if os.path.exists(self.mptfiles_recoskmldec[ipt][file_index]):
+                if os.stat(self.mptfiles_recoskmldec[ipt][file_index]).st_size != 0:
+                    continue
             dfrecosk = pickle.load(openfile(self.mptfiles_recosk[ipt][file_index], "rb"))
             if os.path.isfile(self.lpt_model[ipt]) is False:
                 print("Model file not present in bin %d" % ipt)
@@ -307,6 +310,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             dfrecoskml = dfrecoskml.loc[dfrecoskml[probvar] > self.lpt_probcutpre[ipt]]
             pickle.dump(dfrecoskml, openfile(self.mptfiles_recoskmldec[ipt][file_index], "wb"),
                         protocol=4)
+
     def parallelizer(self, function, argument_list, maxperchunk):
         chunks = [argument_list[x:x+maxperchunk] \
                   for x in range(0, len(argument_list), maxperchunk)]
