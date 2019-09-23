@@ -385,8 +385,9 @@ class Analyzer:
                     canvas.SaveAs(self.make_file_path(self.d_resultsallpdata, "fittedplot", "eps",
                                                       None, suffix))
                 else:
-                    canvas.SaveAs(self.make_file_path(self.d_resultsallpdata, "fittedplotweights", "eps",
-                                                      None, suffix))
+                    canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
+                                                      "fittedplotweights",
+                                                      "eps", None, suffix))
                 canvas.Close()
 
                 fit_dir = fileout.mkdir(suffix)
@@ -1270,7 +1271,6 @@ class Analyzer:
         fileouts.Close()
 
     def plotter(self):
-        tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
         self.loadstyle()
 
@@ -1370,7 +1370,6 @@ class Analyzer:
                                                       self.case, self.typean, self.v_var2_binning))
 
     def makenormyields(self):
-        tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
 
         self.loadstyle()
@@ -1398,18 +1397,24 @@ class Analyzer:
                 (self.d_resultsallpdata, self.case, self.typean, imult)
             labelhisto = "hbit%svs%s" % (self.triggerbit, self.v_var2_binning)
             hmult = filedataval.Get(labelhisto)
-#            if "INT7" not in self.triggerbit:
-#                fileout_name = "%s/correctionsweights.root" % self.d_valevtdata
-#                fileout = TFile.Open(fileout_name, "read")
-#                funcnorm = fileout.Get("funcnorm_%s" % self.triggerbit)
-#                for ibin in range(hmult.GetNbinsX()):
-#                    myweight = funcnorm.Eval(hmult.GetBinCenter(ibin + 1))
-#                    print(hmult.GetBinCenter(ibin+1), 1/myweight)
-#                    hmult.SetBinContent(ibin + 1, hmult.GetBinContent(ibin+1) / myweight)
-            binminv = hmult.GetXaxis().FindBin(self.lvar2_binmin[imult])
-            binmaxv = hmult.GetXaxis().FindBin(self.lvar2_binmax[imult])
-            norm = hmult.Integral(binminv, binmaxv)
-
+            hmult.SetName("hmult")
+            hmultweighted = hmult.Clone("hmultweighed")
+            norm = -1
+            if self.apply_weights is True:
+                fileout_name = "%s/correctionsweights.root" % self.d_valevtdata
+                fileout = TFile.Open(fileout_name, "read")
+                funcnormal = fileout.Get("funcnorm_%s" % self.triggerbit)
+                for ibin in range(hmult.GetNbinsX()):
+                    myweight = funcnormal.Eval(hmult.GetBinCenter(ibin + 1))
+                    print(hmult.GetBinCenter(ibin+1), 1/myweight)
+                    hmultweighted.SetBinContent(ibin + 1, hmult.GetBinContent(ibin+1) / myweight)
+                binminv = hmultweighted.GetXaxis().FindBin(self.lvar2_binmin[imult])
+                binmaxv = hmultweighted.GetXaxis().FindBin(self.lvar2_binmax[imult])
+                norm = hmultweighted.Integral(binminv, binmaxv)
+            else:
+                binminv = hmult.GetXaxis().FindBin(self.lvar2_binmin[imult])
+                binmaxv = hmult.GetXaxis().FindBin(self.lvar2_binmax[imult])
+                norm = hmult.Integral(binminv, binmaxv)
 
             # Now use the function we have just compiled above
             HFPtSpectrum(self.p_indexhpt, \
@@ -1428,11 +1433,14 @@ class Analyzer:
             hcross.SetName("histoSigmaCorr%d" % imult)
             fileoutcrosstot.cd()
             hcross.Write()
+            hmult.Write()
+            hmultweighted.Write()
+            if self.apply_weights is True:
+                funcnormal.Write()
         fileoutcrosstot.Close()
 
 
     def plotternormyields(self):
-        tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
         cCrossvsvar1 = TCanvas('cCrossvsvar1', 'The Fit Canvas')
         cCrossvsvar1.SetCanvasSize(1900, 1500)
@@ -1465,7 +1473,6 @@ class Analyzer:
                                                                     self.case, self.typean,
                                                                     self.v_var_binning))
     def studyevents(self):
-        tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
         self.loadstyle()
         filedata = TFile.Open(self.f_evtvaldata)
@@ -1496,7 +1503,7 @@ class Analyzer:
             leg.SetTextSize(0.035)
 
             ctrigger.cd(1)
-            gPad.SetLogy();
+            gPad.SetLogy()
             hden.GetXaxis().SetTitle("offline %s" % varlist[i])
             hden.GetYaxis().SetTitle("entries")
             hden.SetLineColor(1)
@@ -1555,7 +1562,7 @@ class Analyzer:
                 maxhistx = 1000
             else:
                 maxhistx = 150
-            hempty = TH1F("hempty","hempty", 100, 0, maxhistx)
+            hempty = TH1F("hempty", "hempty", 100, 0, maxhistx)
             hempty.GetYaxis().SetTitleOffset(1.2)
             hempty.GetYaxis().SetTitleFont(42)
             hempty.GetXaxis().SetTitleFont(42)

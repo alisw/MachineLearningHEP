@@ -260,8 +260,8 @@ LcpKpipp:
       normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0
-      sel_binmin2:  [0,0,20,50] #list of var2 splittng nbins
-      sel_binmax2: [9999,20,50,100] #list of var2 splitting nbins
+      sel_binmin2:  [0,0,20,60] #list of var2 splittng nbins
+      sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
       triggerbit: INT7
 
@@ -481,8 +481,8 @@ LcpKpipp:
       normalizecross: false
       plotbin: [0,1]
       usesinglebineff: 0
-      sel_binmin2:  [0,0,20,50] #list of var2 splittng nbins
-      sel_binmax2: [9999,20,50,100] #list of var2 splitting nbins
+      sel_binmin2:  [0,0,20,60] #list of var2 splittng nbins
+      sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
       triggerbit: HighMultSPD
 
