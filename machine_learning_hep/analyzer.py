@@ -1406,7 +1406,6 @@ class Analyzer:
                 funcnormal = fileout.Get("funcnorm_%s" % self.triggerbit)
                 for ibin in range(hmult.GetNbinsX()):
                     myweight = funcnormal.Eval(hmult.GetBinCenter(ibin + 1))
-                    print(hmult.GetBinCenter(ibin+1), 1/myweight)
                     hmultweighted.SetBinContent(ibin + 1, hmult.GetBinContent(ibin+1) / myweight)
                 binminv = hmultweighted.GetXaxis().FindBin(self.lvar2_binmin[imult])
                 binmaxv = hmultweighted.GetXaxis().FindBin(self.lvar2_binmax[imult])
