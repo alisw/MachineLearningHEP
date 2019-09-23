@@ -693,7 +693,7 @@ LcpK0spp:
     
     V0mvspt:
       normalizecross: false
-      plotbin: [1,1,1,0]
+      plotbin: [0,0,0,1]
       usesinglebineff: 0
       sel_binmin2:  [0,0,200,600] #list of var2 splittng nbins
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
@@ -761,7 +761,7 @@ LcpK0spp:
     
     V0mvspt_perc_v0m:
       normalizecross: false
-      plotbin: [1,1,1,0]
+      plotbin: [0,0,0,1]
       usesinglebineff: 0
       sel_binmin2:  [0,30,0.1,0.] #list of var2 splittng nbins
       sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
