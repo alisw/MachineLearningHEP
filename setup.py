@@ -99,6 +99,8 @@ setup(
                                                 "database_ml_gridsearch.yml",
                                                 "config_model_parameters.yml",
                                                 "database_run_list.yml"],
+                 "machine_learning_hep.macros": [ "HFPtSpectrum.C" ],
+                 "machine_learning_hep.data.inputsCross": [ "D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root" ],
                  "machine_learning_hep.webapp.templates": [ "display.html",
                                                             "index.html",
                                                             "test.html" ],

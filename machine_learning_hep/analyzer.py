@@ -21,6 +21,7 @@ from math import sqrt
 # pylint: disable=unused-wildcard-import, wildcard-import
 from array import *
 from subprocess import Popen
+from pkg_resources import resource_filename
 import numpy as np
 # pylint: disable=import-error, no-name-in-module, unused-import
 from root_numpy import hist2array, array2hist
@@ -36,6 +37,14 @@ from  machine_learning_hep.logger import get_logger
 #from ROOT import RooUnfoldResponse
 #from ROOT import RooUnfold
 #from ROOT import RooUnfoldBayes
+
+def get_macro_name(name):
+    macro_name = resource_filename("machine_learning_hep.macros", name)
+    return macro_name
+
+def get_resource_name(sub_data_dir, name):
+    return resource_filename(".".join(["machine_learning_hep.data", sub_data_dir]), name)
+
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
 class Analyzer:
     species = "analyzer"
@@ -1369,7 +1378,10 @@ class Analyzer:
                       (self.d_resultsallpmc, self.case, self.typean)
         yield_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                              None, [self.case, self.typean])
-        gROOT.LoadMacro("HFPtSpectrum.C")
+
+        macro_name = get_macro_name("HFPtSpectrum.C")
+        input_cross_sec = get_resource_name("inputsCross", "D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root")
+        gROOT.LoadMacro(macro_name)
         from ROOT import HFPtSpectrum
         for imult in range(self.p_nbin2):
             bineff = -1
@@ -1391,7 +1403,7 @@ class Analyzer:
             norm = hmult.Integral(binminv, binmaxv)
             # Now use the function we have just compiled above
             HFPtSpectrum(self.p_indexhpt, \
-                "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
+                inputs_cross_sec, \
                 fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
                 fileoutcrossmult, norm, 1, self.p_fd_method, self.p_cctype)
 
