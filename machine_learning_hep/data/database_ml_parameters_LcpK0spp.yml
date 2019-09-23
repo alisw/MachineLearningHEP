@@ -831,11 +831,13 @@ LcpK0spp:
     probvariation:
       prob_range: [0.5,0.6,0.7]
   
+
   validation:
     data:
-      dir: [/data/Derived/dataval_16, /data/Derived/dataval_16_2, /data/Derived/dataval_17, /data/Derived/dataval_18] #list of periods
-      dirmerged: /data/Derived/datavaltot
+      dir: [/data/DerivedVal/dataval_16, /data/DerivedVal/dataval_16_2, /data/DerivedVal/dataval_17, /data/DerivedVal/dataval_18] #list of periods
+      dirmerged: /data/DerivedVal/datavaltot
     mc:
-      dir: [/data/Derived/mcval_16, /data/Derived/mcval_16_2, /data/Derived/mcval_17, /data/Derived/mcval_18] #list of periods
-      dirmerged: /data/Derived/mcvaltot
+      dir: [/data/DerivedVal/mcval_16, /data/DerivedVal/mcval_16_2, /data/DerivedVal/mcval_17, /data/DerivedVal/mcval_18] #list of periods
+      dirmerged: /data/DerivedVal/mcvaltot
  
+
