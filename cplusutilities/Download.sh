@@ -93,14 +93,13 @@ source HF_TreeCreator_env.sh
 dataset=$PERIOD_NAME
 
 #Hardcoded information about dataset
+splitchildsdifferentpaths=0
 if [ "$dataset" == "LHC17pq_woSDD" ] || [  "$dataset" == "LHC17pq_pass1" ]; then
   #Data: pp 5 TeV
   inputpaths=(/alice/data/2017/LHC17p/000282341/pass1_FAST/PWGHF/HF_TreeCreator
               /alice/data/2017/LHC17q/000282366/pass1_FAST/PWGHF/HF_TreeCreator
               /alice/data/2017/LHC17p/000282341/pass1_CENT_woSDD/PWGHF/HF_TreeCreator
               /alice/data/2017/LHC17q/000282366/pass1_CENT_woSDD/PWGHF/HF_TreeCreator)
-  isMC=0
-  ispp=1
   datasetwithchilds=1
   dataset_short="pp5_2017_data"
 elif [ "$dataset" == "LHC18a4a2" ]; then
@@ -109,8 +108,6 @@ elif [ "$dataset" == "LHC18a4a2" ]; then
               /alice/sim/2018/LHC18a4a2_fast/282366/PWGHF/HF_TreeCreator
               /alice/sim/2018/LHC18a4a2_cent/282341/PWGHF/HF_TreeCreator
               /alice/sim/2018/LHC18a4a2_cent/282366/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=1
   datasetwithchilds=1
   dataset_short="pp5_2017_mc_prodD2H"
 elif [ "$dataset" == "LHC2018_pp" ] || [  "$dataset" == "LHC2018_AOD208_bdefghijklmnop_13TeV_pp" ]; then
@@ -131,20 +128,16 @@ elif [ "$dataset" == "LHC2018_pp" ] || [  "$dataset" == "LHC2018_AOD208_bdefghij
               /alice/data/2018/LHC18p/000294925/pass1/AOD208/PWGHF/HF_TreeCreator
               /alice/data/2018/LHC18m/000291397/pass1_withTRDtracking/AOD208/PWGHF/HF_TreeCreator)
   childdownloadpath=(1 2 3 4 5 6 7 8 9 10 11 12 13 14 11)
-  isMC=0
-  ispp=1
   datasetwithchilds=1
   dataset_short="pp_2018_data"
 elif [ "$dataset" == "LHC2016_kl_pp" ] || [  "$dataset" == "LHC2016_AOD208_kl_13TeV_pp" ]; then
   #Data: pp 13 TeV 2016 kl
   inputpaths=(/alice/data/2016/LHC16k/000257630/pass2/AOD208/PWGHF/HF_TreeCreator
               /alice/data/2016/LHC16l/000259164/pass2/AOD208/PWGHF/HF_TreeCreator)
-  isMC=0
-  ispp=1
   datasetwithchilds=1
   dataset_short="pp_2016_data"
 elif [ "$dataset" == "LHC2016_de_pp" ] || [  "$dataset" == "LHC2016_AOD208_deghjop_13TeV_pp" ]; then
-  #Data: pp 13 TeV 2016 de...
+  #Data: pp 13 TeV 2016 deghjop
   inputpaths=(/alice/data/2016/LHC16d/000252371/pass1/AOD208/PWGHF/HF_TreeCreator
               /alice/data/2016/LHC16e/000253563/pass1/AOD208/PWGHF/HF_TreeCreator
               /alice/data/2016/LHC16g/000254331/pass1/AOD208/PWGHF/HF_TreeCreator
@@ -154,8 +147,22 @@ elif [ "$dataset" == "LHC2016_de_pp" ] || [  "$dataset" == "LHC2016_AOD208_deghj
               /alice/data/2016/LHC16p/000264109/pass1/AOD208/PWGHF/HF_TreeCreator
               /alice/data/2016/LHC16h/000255180/pass1/AOD208/PWGHF/HF_TreeCreator)
   childdownloadpath=(1 2 3 4 5 6 7 4)
-  isMC=0
-  ispp=1
+  datasetwithchilds=1
+  dataset_short="pp_2016_data"
+elif [  "$dataset" == "LHC2016_AOD208_deghjklop_13TeV_pp" ]; then
+  #Data: pp 13 TeV 2016 deghjklop
+  printf "\e[1;31m  Warning: New dataset, hardcoded paths not yet tested.\e[0m\n\n"
+  inputpaths=(/alice/data/2016/LHC16d/000252371/pass1/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2016/LHC16e/000253563/pass1/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2016/LHC16g/000254331/pass1/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2016/LHC16h/000255440/pass1/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2016/LHC16j/000256307/pass1/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2016/LHC16k/000257630/pass2/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2016/LHC16l/000259164/pass2/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2016/LHC16o/000262849/pass1/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2016/LHC16p/000264109/pass1/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2016/LHC16h/000255180/pass1/AOD208/PWGHF/HF_TreeCreator)
+  childdownloadpath=(1 2 3 4 5 6 7 8 9 4)
   datasetwithchilds=1
   dataset_short="pp_2016_data"
 elif [ "$dataset" == "LHC2017_pp" ] || [  "$dataset" == "LHC2017_AOD208_cefhijklmor_13TeV_pp" ]; then
@@ -171,50 +178,36 @@ elif [ "$dataset" == "LHC2017_pp" ] || [  "$dataset" == "LHC2017_AOD208_cefhijkl
               /alice/data/2017/LHC17r/000282573/pass1/AOD208/PWGHF/HF_TreeCreator
               /alice/data/2017/LHC17o/000281243/pass1/AOD208/PWGHF/HF_TreeCreator)
   childdownloadpath=(2 3 4 5 6 7 8 9 10 11)
-  isMC=0
-  ispp=1
   datasetwithchilds=1
   dataset_short="pp_2017_data"
 elif [ "$dataset" == "LHC2016_pass1_MC_pp" ] || [  "$dataset" == "LHC17h8a_MC_pp" ]; then
   #D2H MC: pp 13 TeV 2016 pass1
   inputpaths=(/alice/sim/2017/LHC17h8a/253529/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=1
   datasetwithchilds=0
   dataset_short="pp_2016_mc_prodD2H"
 elif [ "$dataset" == "LHC2016_pass2_MC_pp" ] || [  "$dataset" == "LHC18f4a_MC_pp" ]; then
   #D2H MC: pp 13 TeV 2016 pass2
   inputpaths=(/alice/sim/2018/LHC18f4a/257630/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=1
   datasetwithchilds=0
   dataset_short="pp_2016_mc_prodD2H"
 elif [ "$dataset" == "LHC2017_MC_pp" ] || [  "$dataset" == "LHC18l4a_MC_pp" ]; then
   #D2H MC: pp 13 TeV 2017
   inputpaths=(/alice/sim/2018/LHC18l4a/272123/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=1
   datasetwithchilds=0
   dataset_short="pp_2017_mc_prodD2H"
 elif [ "$dataset" == "LHC2018_MC_pp" ] || [  "$dataset" == "LHC18l4b_MC_pp" ]; then
   #D2H MC: pp 13 TeV 2018
   inputpaths=(/alice/sim/2018/LHC18l4b/285064/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=1
   datasetwithchilds=0
   dataset_short="pp_2018_mc_prodD2H"
 elif [ "$dataset" == "LHC17j4_adeghjop_MC_pp" ]; then
   #Lc->pKpi MC: pp 13 TeV 2016 pass1
   inputpaths=(/alice/sim/2017/LHC17j4a/253529/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=1
   datasetwithchilds=0
   dataset_short="pp_2016_mc_prodLcpKpi"
 elif [ "$dataset" == "LHC17j4_kl_MC_pp" ]; then
   #Lc->pKpi MC: pp 13 TeV 2016 pass1 (data = pass2!)
   inputpaths=(/alice/sim/2017/LHC17j4a/257630/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=1
   datasetwithchilds=0
   dataset_short="pp_2016_mc_prodLcpKpi"
 elif [ "$dataset" == "LHC17j4b_MC_pp" ]; then
@@ -228,18 +221,45 @@ elif [ "$dataset" == "LHC17j4b_MC_pp" ]; then
               /alice/sim/2017/LHC17j4b/256307/PWGHF/HF_TreeCreator
               /alice/sim/2017/LHC17j4b/263741/PWGHF/HF_TreeCreator
               /alice/sim/2017/LHC17j4b/264076/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=1
   datasetwithchilds=1
   dataset_short="pp_2016_mc_prodLcpK0s"
+elif [ "$dataset" == "MCpp13TeV_MB_all" ]; then
+  #D2H and dedicated MB MC's for 2016-17-18. See short names below/LEGO train page for order of childs.
+  printf "\e[1;31m  Warning: New dataset, hardcoded paths not yet tested.\e[0m\n\n"
+  inputpaths=(/alice/sim/2017/LHC17h8a/253529/PWGHF/HF_TreeCreator
+              /alice/sim/2018/LHC18f4a/257630/PWGHF/HF_TreeCreator
+              /alice/sim/2018/LHC18l4a/272123/PWGHF/HF_TreeCreator
+              /alice/sim/2018/LHC18l4b/288908/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h4c1/257630/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h4b1/272123/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h4a1/293386/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h4c2/257630/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h4b2/272123/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h4a2/293386/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h4c3/257630/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h4b3/272123/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h4a3/293386/PWGHF/HF_TreeCreator)
+  datasetwithchilds=1
+  splitchildsdifferentpaths=1
+  dataset_short_arr=("pp_2016_mc_prodD2H"
+                     "pp_2016_mc_prodD2H"
+                     "pp_2017_mc_prodD2H"
+                     "pp_2018_mc_prodD2H"
+                     "pp_2016_mc_prodLcpKpi"
+                     "pp_2017_mc_prodLcpKpi"
+                     "pp_2018_mc_prodLcpKpi"
+                     "pp_2016_mc_prodLcpK0s"
+                     "pp_2017_mc_prodLcpK0s"
+                     "pp_2018_mc_prodLcpK0s"
+                     "pp_2016_mc_prodDs"
+                     "pp_2017_mc_prodDs"
+                     "pp_2018_mc_prodDs")
 elif [ "$dataset" == "LHC17j4d2" ]; then
   #Lc->pK0s MC: pPb 5 TeV (used for pp for now)
   inputpaths=(/alice/sim/2017/LHC17j4d2_fast/265343/PWGHF/HF_TreeCreator
               /alice/sim/2017/LHC17j4d2_fast/267163/PWGHF/HF_TreeCreator
               /alice/sim/2017/LHC17j4d2_cent_wSDD/265343/PWGHF/HF_TreeCreator
               /alice/sim/2017/LHC17j4d2_cent_wSDD/267163/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=1
   datasetwithchilds=1
   dataset_short="pPb_2016_mc_prodLcpK0s"
 elif [ "$dataset" == "LHC19c2b_all_q" ]; then
@@ -248,8 +268,6 @@ elif [ "$dataset" == "LHC19c2b_all_q" ]; then
               /alice/sim/2019/LHC19c2b2/296433/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19c2b_extra/296433/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19c2b2_extra/296433/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=0
   datasetwithchilds=1
   dataset_short="PbPb3050_2018_mc_prodLcpK0s"
 elif [ "$dataset" == "LHC19c2b_all_r" ]; then
@@ -258,8 +276,6 @@ elif [ "$dataset" == "LHC19c2b_all_r" ]; then
               /alice/sim/2019/LHC19c2b2/297481/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19c2b_extra/297481/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19c2b2_extra/297481/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=0
   datasetwithchilds=1
   dataset_short="PbPb3050_2018_mc_prodLcpK0s"
 elif [ "$dataset" == "LHC19c2a_all_q" ]; then
@@ -268,8 +284,6 @@ elif [ "$dataset" == "LHC19c2a_all_q" ]; then
               /alice/sim/2019/LHC19c2a2/296244/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19c2a_extra/296433/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19c2a2_extra/296244/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=0
   datasetwithchilds=1
   dataset_short="PbPb010_2018_mc_prodLcpK0s"
 elif [ "$dataset" == "LHC19c2a_all_r" ]; then
@@ -278,36 +292,26 @@ elif [ "$dataset" == "LHC19c2a_all_r" ]; then
               /alice/sim/2019/LHC19c2a2/297481/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19c2a_extra/297481/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19c2a2_extra/297481/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=0
   datasetwithchilds=1
   dataset_short="PbPb010_2018_mc_prodLcpK0s"
 elif [ "$dataset" == "LHC18l8b2_q" ]; then
   #GP MC: PbPb 5 TeV 2018 0-10
   inputpaths=(/alice/sim/2018/LHC18l8b2/296433/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=0
   datasetwithchilds=0
   dataset_short="PbPb010_2018_mc_prodGP"
 elif [ "$dataset" == "LHC18l8b2_r" ]; then
   #GP MC: PbPb 5 TeV 2018 0-10
   inputpaths=(/alice/sim/2018/LHC18l8b2/297481/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=0
   datasetwithchilds=0
   dataset_short="PbPb010_2018_mc_prodGP"
 elif [ "$dataset" == "LHC18l8c2_q" ]; then
   #GP MC: PbPb 5 TeV 2018 30-50
   inputpaths=(/alice/sim/2018/LHC18l8c2/296433/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=0
   datasetwithchilds=0
   dataset_short="PbPb3050_2018_mc_prodGP"
 elif [ "$dataset" == "LHC18l8c2_r" ]; then
   #GP MC: PbPb 5 TeV 2018 30-50
   inputpaths=(/alice/sim/2018/LHC18l8c2/297481/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=0
   datasetwithchilds=0
   dataset_short="PbPb3050_2018_mc_prodGP"
 elif [ "$dataset" == "LHC18r_pass1" ]; then
@@ -330,8 +334,6 @@ elif [ "$dataset" == "LHC18r_pass1" ]; then
               /alice/data/2018/LHC18r/000297481/pass1/PWGHF/HF_TreeCreator
               /alice/data/2018/LHC18r/000297542/pass1/PWGHF/HF_TreeCreator
               /alice/data/2018/LHC18r/000297595/pass1/PWGHF/HF_TreeCreator)
-  isMC=0
-  ispp=0
   datasetwithchilds=0
   dataset_short="PbPb_2018_data"
 elif [ "$dataset" == "LHC18q_pass1" ]; then
@@ -350,79 +352,59 @@ elif [ "$dataset" == "LHC18q_pass1" ]; then
               /alice/data/2018/LHC18q/000295822/pass1/PWGHF/HF_TreeCreator
               /alice/data/2018/LHC18q/000295753/pass1/PWGHF/HF_TreeCreator
               /alice/data/2018/LHC18q/000295725/pass1/PWGHF/HF_TreeCreator)
-  isMC=0
-  ispp=0
   datasetwithchilds=0
   dataset_short="PbPb_2018_data"
 elif [ "$dataset" == "LHC19c3a_all_q" ]; then
   #D2H MC: PbPb 5 TeV 2018 0-10
   inputpaths=(/alice/sim/2019/LHC19c3a/296433/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19c3a2/296433/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=0
   datasetwithchilds=1
   dataset_short="PbPb010_2018_mc_prodD2H"
 elif [ "$dataset" == "LHC19c3a_all_r" ]; then
   #D2H MC: PbPb 5 TeV 2018 0-10
   inputpaths=(/alice/sim/2019/LHC19c3a/297481/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19c3a2/297481/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=0
   datasetwithchilds=1
   dataset_short="PbPb010_2018_mc_prodD2H"
 elif [ "$dataset" == "LHC19c3b_all_q" ]; then
   #D2H MC: PbPb 5 TeV 2018 30-50
   inputpaths=(/alice/sim/2019/LHC19c3b/296433/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19c3b2/296433/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=0
   datasetwithchilds=1
   dataset_short="PbPb3050_2018_mc_prodD2H"
 elif [ "$dataset" == "LHC19c3b_all_r" ]; then
   #D2H MC: PbPb 5 TeV 2018 30-50
   inputpaths=(/alice/sim/2019/LHC19c3b/297481/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19c3b2/297481/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=0
   datasetwithchilds=1
   dataset_short="PbPb3050_2018_mc_prodD2H"
 elif [ "$dataset" == "LHC19d4a_q" ]; then
   #Ds->KKpi MC: PbPb 5 TeV 2018 0-10
   inputpaths=(/alice/sim/2019/LHC19d4a/296433/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19d4a2/296244/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=0
   datasetwithchilds=1
   dataset_short="PbPb010_2018_mc_prodDs"
 elif [ "$dataset" == "LHC19d4a_r" ]; then
   #Ds->KKpi MC: PbPb 5 TeV 2018 0-10
   inputpaths=(/alice/sim/2019/LHC19d4a/297481/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19d4a2/297481/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=0
   datasetwithchilds=1
   dataset_short="PbPb010_2018_mc_prodDs"
 elif [ "$dataset" == "LHC19d4b_q" ]; then
   #Ds->KKpi MC: PbPb 5 TeV 2018 30-50
   inputpaths=(/alice/sim/2019/LHC19d4b/296433/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19d4b2/296433/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=0
   datasetwithchilds=1
   dataset_short="PbPb3050_2018_mc_prodDs"
 elif [ "$dataset" == "LHC19d4b_r" ]; then
   #Ds->KKpi MC: PbPb 5 TeV 2018 30-50
   inputpaths=(/alice/sim/2019/LHC19d4b/297481/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19d4b2/297481/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=0
   datasetwithchilds=1
   dataset_short="PbPb3050_2018_mc_prodDs"
 elif [ "$dataset" == "LHC13d19" ]; then
   #MC: PbPb 5 TeV ITS2 upgrade
   inputpaths=(/alice/sim/2013/LHC13d19/138275/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=0
   datasetwithchilds=0
   dataset_short="ITS2_13d19"
 elif [ "$dataset" == "LHC14j5_new" ]; then
@@ -437,8 +419,6 @@ elif [ "$dataset" == "LHC14j5_new" ]; then
               /alice/sim/2014/LHC14j5_new/138225/PWGHF/HF_TreeCreator
               /alice/sim/2014/LHC14j5_new/137162/PWGHF/HF_TreeCreator
               /alice/sim/2014/LHC14j5_new/138197/PWGHF/HF_TreeCreator)
-  isMC=1
-  ispp=0
   datasetwithchilds=0
   dataset_short="ITS2_14j5new"
 else
@@ -482,30 +462,48 @@ else
   printf "Created directory: \e[1m$placetosave/$TAG\e[0m \n"
 fi
 placetosave=$placetosave/$TAG
-#Adding short description of dataset to path
-mkdir -p -m 777 $placetosave/$dataset_short
-if [ $? -ne 0 ]; then
-  printf "\n\e[1;31mError: Could not create output directory. Is $placetosave writable? Returning... \e[0m\n\n"
-  exit
-else
-  printf "Created directory: \e[1m$placetosave/$dataset_short\e[0m \n"
-fi
-placetosave=$placetosave/$dataset_short
-#Adding train ID to path
-mkdir -p -m 777 $placetosave/$trainname
-if [ $? -ne 0 ]; then
-  printf "\n\e[1;31mError: Could not create output directory. Is $placetosave writable? Returning... \e[0m\n\n"
-  exit
-else
-   printf "Created directory: \e[1m$placetosave/$trainname\e[0m \n"
-fi
-mkdir -p -m 777 $placetosave/$trainname/unmerged
-if [ $? -ne 0 ]; then
-  printf "\n\e[1;31mError: Could not create output directory. Is $placetosave/$trainname writable? Returning... \e[0m\n\n"
-  exit
-else
-   printf "Created directory: \e[1m$placetosave/$trainname/unmerged\e[0m \n"
-fi
+
+for input_index in ${!inputpaths[*]}
+do
+  if [ $splitchildsdifferentpaths -eq 1 ]; then
+    dataset_short=${dataset_short_arr[$input_index]}
+  fi
+  placetosavearr[$input_index]=$placetosave/$dataset_short
+done
+
+for input_index in ${!inputpaths[*]}
+do
+  placetosave=${placetosavearr[$input_index]}
+
+  #Adding short description of dataset to path (set above)
+  mkdir -p -m 777 $placetosave
+  if [ $? -ne 0 ]; then
+    printf "\n\e[1;31mError: Could not create output directory. Is $placetosave writable? Returning... \e[0m\n\n"
+    exit
+  else
+    printf "Created directory: \e[1m$placetosave\e[0m \n"
+  fi
+
+  #Adding train ID to path
+  mkdir -p -m 777 $placetosave/$trainname
+  if [ $? -ne 0 ]; then
+    printf "\n\e[1;31mError: Could not create output directory. Is $placetosave writable? Returning... \e[0m\n\n"
+    exit
+  else
+     printf "Created directory: \e[1m$placetosave/$trainname\e[0m \n"
+  fi
+  mkdir -p -m 777 $placetosave/$trainname/unmerged
+  if [ $? -ne 0 ]; then
+    printf "\n\e[1;31mError: Could not create output directory. Is $placetosave/$trainname writable? Returning... \e[0m\n\n"
+    exit
+  else
+     printf "Created directory: \e[1m$placetosave/$trainname/unmerged\e[0m \n"
+  fi
+
+  if [ $splitchildsdifferentpaths -eq 0 ]; then
+    break
+  fi
+done
 
 #Log files ('D' is for download) + trainID, date, and timestamp
 datestamp="$(date +"%d-%m-%Y")"
@@ -533,13 +531,21 @@ do
     ithinput=$(($input_index+1))
   fi
   localchild=$(($input_index+1))
+  placetosave=${placetosavearr[$input_index]}
 
   sh ../cplusutilities/run_downloader $rundownloader ${inputpaths[$input_index]} $ithinput "$nfiles" $outputfile $placetosave $trainname $datasetwithchilds $localchild $stage >> "$stdoutputfile" 2>> "$stderrorfile"
 done
 
 
-#give all permissions to all directories downloaded from the GRID
-chmod -R 777 $placetosave/$trainname/unmerged/
+for input_index in ${!inputpaths[*]}
+do
+  placetosave=${placetosavearr[$input_index]}
+  #give all permissions to all directories downloaded from the GRID
+  chmod -R 777 $placetosave/$trainname/unmerged/
+  if [ $splitchildsdifferentpaths -eq 0 ]; then
+    break
+  fi
+done
 
 #Check logs for the comman 'jalien command not found' error. If this is the case, no files where downloaded.
 if grep -q "jalien\|command not found" "$stderrorfile"
@@ -555,15 +561,24 @@ fi
 rm HF_TreeCreator_env.sh
 source clean_HF_TreeCreator_env.sh
 
-#Saving log files in output directory
-mv $stdoutputfile $placetosave/$trainname/
-mv $stderrorfile $placetosave/$trainname/
-printf "\e[1mMoved log files to $placetosave/$trainname/\e[0m\n"
-printf "\e[1m----DOWNLOADER FINISHED----\e[0m\n\n"
-
+for input_index in ${!inputpaths[*]}
+do
+  placetosave=${placetosavearr[$input_index]}
+  #Saving log files in output directory
+  cp $stdoutputfile $placetosave/$trainname/
+  cp $stderrorfile $placetosave/$trainname/
+  printf "\e[1mMoved log files to $placetosave/$trainname/\e[0m\n"
+  printf "\e[1m----DOWNLOADER FINISHED----\e[0m\n\n"
+  if [ $splitchildsdifferentpaths -eq 0 ]; then
+    break
+  fi
+done
+rm $stdoutputfile
+rm $stderrorfile
 
 printf "\n\e[1m<<<Ready downloading? Please kill JAliEn daemons>>>\e[0m\n"
 printf "  killall java\n"
 printf "\e[1m<<<And remove alien logs if you like>>>\e[0m\n"
 printf "  rm alien-config* alien-fine* alien-info* alien-severe* alien-warning*\n"
 printf "  rm ../cplusutilities/alien-config* ../cplusutilities/alien-fine* ../cplusutilities/alien-info* ../cplusutilities/alien-severe* ../cplusutilities/alien-warning*\n"
+
