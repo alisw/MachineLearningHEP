@@ -260,8 +260,8 @@ LcpKpipp:
       normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0
-      sel_binmin2:  [0,0,20,50] #list of var2 splittng nbins
-      sel_binmax2: [9999,20,50,100] #list of var2 splitting nbins
+      sel_binmin2:  [0,0,20,60] #list of var2 splittng nbins
+      sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
       triggerbit: INT7
 
@@ -277,6 +277,7 @@ LcpKpipp:
       triggersel:
         data: "trigger_hasbit_INT7==1"
         mc: null
+        weighttrig: false
       data:
         results: [/data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/211_20190909-2119/resultsMBvspt_ntrkl,
                   /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/212_20190909-2119/resultsMBvspt_ntrkl,
@@ -353,6 +354,7 @@ LcpKpipp:
       triggersel:
         data: "trigger_hasbit_INT7==1"
         mc: null
+        weighttrig: false
       data:
         results: [/data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/211_20190909-2119/resultsMBvspt_v0m,
                   /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/212_20190909-2119/resultsMBvspt_v0m,
@@ -429,6 +431,7 @@ LcpKpipp:
       triggersel: 
         data: "trigger_hasclass_INT7==1 and trigger_hasbit_INT7==1 and abs(eta_jet)<0.5"
         mc: "abs(eta_jet)<0.5"
+        weighttrig: false
 
       data:      
         results: [/data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/211_20190909-2119/resultsMBjetvspt,
@@ -481,8 +484,8 @@ LcpKpipp:
       normalizecross: false
       plotbin: [0,1]
       usesinglebineff: 0
-      sel_binmin2:  [0,0,20,50] #list of var2 splittng nbins
-      sel_binmax2: [9999,20,50,100] #list of var2 splitting nbins
+      sel_binmin2:  [0,0,20,60] #list of var2 splittng nbins
+      sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
       triggerbit: HighMultSPD
 
@@ -498,6 +501,7 @@ LcpKpipp:
       triggersel: 
         data: "trigger_hasbit_HighMultSPD==1"
         mc: null
+        weighttrig: true
       data:      
         results: [/data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/211_20190909-2119/resultsSPDvspt,
                   /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/212_20190909-2119/resultsSPDvspt,
@@ -562,10 +566,9 @@ LcpKpipp:
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
-        weights: [ "v0m", "vhm" ]
         data: "trigger_hasbit_HighMultV0==1"
         mc: null
-
+        weighttrig: true
       data:      
         results: [/data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/211_20190909-2119/resultsV0mvspt,
                   /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/212_20190909-2119/resultsV0mvspt,

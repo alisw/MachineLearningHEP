@@ -24,14 +24,14 @@ import random as rd
 import uproot
 import pandas as pd
 import numpy as np
-from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
+from root_numpy import fill_hist, evaluate # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TH1F, TH2F, TH3F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge_method
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
-from machine_learning_hep.utilities import mergerootfiles, z_calc, z_gen_calc
+from machine_learning_hep.utilities import mergerootfiles, z_calc, z_gen_calc, scatterplot
 from machine_learning_hep.models import apply # pylint: disable=import-error
 #from machine_learning_hep.globalfitter import fitter
 from machine_learning_hep.selectionutils import getnormforselevt
@@ -42,11 +42,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
     # Initializer / Instance Attributes
     # pylint: disable=too-many-statements, too-many-arguments
-    def __init__(self, datap, run_param, mcordata, p_maxfiles,
+    def __init__(self, case, datap, run_param, mcordata, p_maxfiles,
                  d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
                  d_results, d_val, typean):
+        self.case = case
         self.typean = typean
         #directories
         self.d_root = d_root
@@ -212,6 +213,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
         #self.sel_final_fineptbins = datap["analysis"][self.typean]["sel_final_fineptbins"]
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
         self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
+        self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
+
 
     def unpack(self, file_index):
         treeevtorig = uproot.open(self.l_root[file_index])[self.n_treeevt]
@@ -382,18 +385,23 @@ class Processer: # pylint: disable=too-many-instance-attributes
                           self.v_var2_binning, self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
                                  self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+                h_invmass_weight = TH1F("h_invmass_weight" + suffix, "", self.p_num_bins,
+                                        self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 df_bin = seldf_singlevar(df, self.v_var2_binning,
                                          self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
-                weights = None
-                #apply_weights = self.datap["analysis"][self.typean]["triggersel"]["weights"]
-                #if apply_weights is not None:
-                #    filenorm = TFile.Open("norm.root", "read")
-                #    hnorm = filenorm.Get("hnorm_" + apply_weights[0] + "_" + apply_weights[1])
-                #    weights = [hnorm.GetBinContent(hnorm.FindBin(_bin)) \
-                #               for _bin in df_bin[apply_weights[0]]]
-                fill_hist(h_invmass, df_bin.inv_mass, weights=weights)
+                fill_hist(h_invmass, df_bin.inv_mass)
+                triggerbit = self.datap["analysis"][self.typean]["triggerbit"]
+                if "INT7" not in triggerbit and self.mcordata == "data":
+                    fileweight_name = "%s/correctionsweights.root" % self.d_val
+                    fileweight = TFile.Open(fileweight_name, "read")
+                    namefunction = "funcnorm_%s" % self.triggerbit
+                    funcweighttrig = fileweight.Get(namefunction)
+                    weights = evaluate(funcweighttrig, df_bin[self.v_var2_binning])
+                    weightsinv = [1./weight for weight in weights]
+                    fill_hist(h_invmass_weight, df_bin.inv_mass, weights=weightsinv)
                 myfile.cd()
                 h_invmass.Write()
+                h_invmass_weight.Write()
 
                 if "pt_jet" in df_bin.columns:
                     zarray = z_calc(df_bin.pt_jet, df_bin.phi_jet, df_bin.eta_jet,
@@ -596,12 +604,14 @@ class Processer: # pylint: disable=too-many-instance-attributes
         dfevt = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
         dfevt = dfevt.query("is_ev_rej==0")
         triggerlist = ["HighMultV0", "HighMultSPD", "INT7"]
-        varlist = ["v0m_corr", "n_tracklets_corr"]
+        varlist = ["v0m_corr", "n_tracklets_corr", "perc_v0m"]
         nbinsvar = [100, 200]
         minrvar = [0, 0]
         maxrvar = [1500, 200]
         fileevtroot = TFile.Open(self.l_evtvalroot[file_index], "recreate")
-
+        hv0mvsperc = scatterplot(dfevt, "perc_v0m", "v0m_corr", 50000, 0, 100, 200, 0., 2000.)
+        hv0mvsperc.SetName("hv0mvsperc")
+        hv0mvsperc.Write()
         for ivar, var in enumerate(varlist):
             label = "hbitINT7vs%s" % (var)
             histoMB = TH1F(label, label, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])

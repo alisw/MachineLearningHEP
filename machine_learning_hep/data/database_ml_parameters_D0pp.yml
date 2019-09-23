@@ -245,14 +245,14 @@ D0pp:
   
   analysis:
     indexhptspectrum: 0 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5 
-    fd_method: 2 #knone=0, kfc=1, kNb=2
+    fd_method: 1 #knone=0, kfc=1, kNb=2
     cctype: 1 #kpp7
     MBvspt_ntrkl:
       normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0
-      sel_binmin2:  [0,0,20,50] #list of var2 splittng nbins
-      sel_binmax2: [9999,20,50,100] #list of var2 splitting nbins
+      sel_binmin2:  [0,0,20,60] #list of var2 splittng nbins
+      sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
       triggerbit: INT7
 
@@ -268,6 +268,7 @@ D0pp:
       triggersel: 
         data: "trigger_hasbit_INT7==1"
         mc: null
+        weighttrig: false
 
       data:      
         results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/211_20190909-2119/resultsMBvspt_ntrkl_opt,
@@ -346,6 +347,7 @@ D0pp:
       triggersel: 
         data: "trigger_hasbit_INT7==1"
         mc: null
+        weighttrig: false
 
       data:      
         results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/211_20190909-2119/resultsMBvspt_v0m,
@@ -424,6 +426,7 @@ D0pp:
       triggersel: 
         data: "trigger_hasclass_INT7==1 and trigger_hasbit_INT7==1 and abs(eta_jet)<0.5"
         mc: "abs(eta_jet)<0.5"
+        weighttrig: false
 
       data:      
         results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/211_20190909-2119/resultsMBjetvspt,
@@ -474,10 +477,10 @@ D0pp:
   
     SPDvspt:
       normalizecross: false
-      plotbin: [0,1]
+      plotbin: [0,0,1,1]
       usesinglebineff: 0
-      sel_binmin2:  [0,0,20,50] #list of var2 splittng nbins
-      sel_binmax2: [9999,20,50,100] #list of var2 splitting nbins
+      sel_binmin2:  [0,0,20,60] #list of var2 splittng nbins
+      sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
       triggerbit: HighMultSPD
 
@@ -493,6 +496,7 @@ D0pp:
       triggersel: 
         data: "trigger_hasbit_HighMultSPD==1"
         mc: null
+        weighttrig: true
       data:      
         results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/211_20190909-2119/resultsSPDvspt,
                   /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/212_20190909-2119/resultsSPDvspt,
@@ -557,9 +561,9 @@ D0pp:
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
-        weights: [ "v0m", "vhm" ]
         data: "trigger_hasbit_HighMultV0==1"
         mc: null
+        weighttrig: true
 
       data:      
         results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/211_20190909-2119/resultsV0mvspt,
@@ -612,9 +616,9 @@ D0pp:
   
   validation:
     data:
-      dir: [/data/Derived/dataval_16, /data/Derived/dataval_16_2, /data/Derived/dataval_17, /data/Derived/dataval_18] #list of periods
-      dirmerged: /data/Derived/datavaltot
+      dir: [/data/DerivedVal/dataval_16, /data/DerivedVal/dataval_16_2, /data/DerivedVal/dataval_17, /data/DerivedVal/dataval_18] #list of periods
+      dirmerged: /data/DerivedVal/datavaltot
     mc:
-      dir: [/data/Derived/mcval_16, /data/Derived/mcval_16_2, /data/Derived/mcval_17, /data/Derived/mcval_18] #list of periods
-      dirmerged: /data/Derived/mcvaltot
+      dir: [/data/DerivedVal/mcval_16, /data/DerivedVal/mcval_16_2, /data/DerivedVal/mcval_17, /data/DerivedVal/mcval_18] #list of periods
+      dirmerged: /data/DerivedVal/mcvaltot
  
