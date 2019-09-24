@@ -26,6 +26,7 @@ from ROOT import TStyle, gPad
 
 # pylint: disable=import-error, no-name-in-module, unused-import
 # pylint: disable=too-many-statements
+# pylint: disable=too-many-branches
 def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
 
     gROOT.SetStyle("Plain")
@@ -54,7 +55,7 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
 
     fileres_MB_allperiods = TFile.Open("%s/finalcross%s%smulttot.root" % \
                                  (folder_MB_allperiods, case, arraytype[0]))
-    fileres_MB = [TFile.Open("%s/finalcross%s%smult%d.root" % (folder_MB_allperiods,
+    fileres_MB = [TFile.Open("%s/finalcross%s%smult%d.root" % (folder_MB_allperiods, \
                         case, arraytype[0], i)) for i in [0, 1, 2]]
 
     fileres_trig_allperiods = TFile.Open("%s/finalcross%s%smulttot.root" % \
@@ -65,8 +66,8 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
     gStyle.SetTitleOffset(1.15, "y")
     gStyle.SetTitleFont(42, "xy")
     gStyle.SetLabelFont(42, "xy")
-    gStyle.SetTitleSize(0.042,"xy")
-    gStyle.SetLabelSize(0.035,"xy")
+    gStyle.SetTitleSize(0.042, "xy")
+    gStyle.SetLabelSize(0.035, "xy")
     gStyle.SetPadTickX(1)
     gStyle.SetPadTickY(1)
 
@@ -74,7 +75,7 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
     ccross = TCanvas('cCross', 'The Fit Canvas')
     ccross.SetCanvasSize(1500, 1500)
     ccross.SetWindowSize(500, 500)
-    ccross.cd(1).DrawFrame(0,1.e-9,30,10,";#it{p}_{T} (GeV/#it{c});Corrected yield %s" % name)
+    ccross.cd(1).DrawFrame(0, 1.e-9, 30, 10, ";#it{p}_{T} (GeV/#it{c});Corrected yield %s" % name)
     #ccross.SetLogx()
 
     legyield = TLegend(.25, .65, .65, .85)
@@ -86,7 +87,8 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
 
     colors = [kBlack, kRed, kGreen+2, kBlue]
     for imult, iplot in enumerate(plotbinMB):
-        if not iplot: continue
+        if not iplot:
+            continue
         gPad.SetLogy()
         hyield = fileres_MB_allperiods.Get("histoSigmaCorr%d" % (imult))
         hyield.Scale(1./br)
@@ -99,7 +101,8 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
         legyield.AddEntry(hyield, legyieldstring, "LEP")
 
     for imult, iplot in enumerate(plotbinHM):
-        if not iplot: continue
+        if not iplot:
+            continue
         gPad.SetLogy()
         hyieldHM = fileres_trig_allperiods.Get("histoSigmaCorr%d" % (imult))
         hyieldHM.Scale(1./br)
@@ -118,7 +121,7 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
     #Efficiency plot
     cEff = TCanvas('cEff', '', 800, 400)
     cEff.Divide(2)
-    cEff.cd(1).DrawFrame(0,1.e-4,25,1.,';#it{p}_{T} (GeV/#it{c});Prompt (Acc #times eff)')
+    cEff.cd(1).DrawFrame(0, 1.e-4, 25, 1., ';#it{p}_{T} (GeV/#it{c});Prompt (Acc #times eff)')
     cEff.cd(1).SetLogy()
 
     legeff = TLegend(.3, .15, .7, .35)
@@ -131,7 +134,8 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
     lstyle = [1, 2, 3, 4]
     idx = 0
     for imult, iplot in enumerate(plotbinMB):
-        if not iplot: continue
+        if not iplot:
+            continue
         hEffpr = fileres_MB[idx].Get("hDirectEffpt")
         hEffpr.SetLineColor(colors[imult])
         hEffpr.SetLineStyle(lstyle[imult])
@@ -146,7 +150,8 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
 
     idx = 0
     for imult, iplot in enumerate(plotbinHM):
-        if not iplot: continue
+        if not iplot:
+            continue
         hEffprHM = fileres_trig[idx].Get("hDirectEffpt")
         hEffprHM.SetLineColor(colors[imult])
         hEffprHM.SetLineStyle(lstyle[imult])
@@ -160,12 +165,13 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
         idx = idx + 1
     legeff.Draw()
 
-    cEff.cd(2).DrawFrame(0,1.e-4,25,1.,';#it{p}_{T} (GeV/#it{c});Feed-down (Acc #times eff)')
+    cEff.cd(2).DrawFrame(0, 1.e-4, 25, 1., ';#it{p}_{T} (GeV/#it{c});Feed-down (Acc #times eff)')
     cEff.cd(2).SetLogy()
 
     idx = 0
     for imult, iplot in enumerate(plotbinMB):
-        if not iplot: continue
+        if not iplot:
+            continue
         hEfffd = fileres_MB[idx].Get("hFeedDownEffpt")
         hEfffd.SetLineColor(colors[imult])
         hEfffd.SetLineStyle(lstyle[imult])
@@ -177,7 +183,8 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
 
     idx = 0
     for imult, iplot in enumerate(plotbinHM):
-        if not iplot: continue
+        if not iplot:
+            continue
         gPad.SetLogy()
         hEfffdHM = fileres_trig[idx].Get("hFeedDownEffpt")
         hEfffdHM.SetLineColor(colors[imult])
@@ -192,15 +199,16 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
 
     #fprompt
     cfPrompt = TCanvas('cfPrompt', '', 800, 800)
-    cfPrompt.Divide(2,2)
+    cfPrompt.Divide(2, 2)
 
-    pt = TLatex();
-    pt.SetTextSize(0.04);
+    pt = TLatex()
+    pt.SetTextSize(0.04)
 
     idx = 0
     for imult, iplot in enumerate(plotbinMB):
-        if not iplot: continue
-        cfPrompt.cd(imult+1).DrawFrame(0,0,25,1.05,';#it{p}_{T} (GeV/#it{c});#it{f}_{prompt}')
+        if not iplot:
+            continue
+        cfPrompt.cd(imult+1).DrawFrame(0, 0, 25, 1.05, ';#it{p}_{T} (GeV/#it{c});#it{f}_{prompt}')
         grfPrompt = fileres_MB[idx].Get("gFcConservative")
         grfPrompt.SetTitle(';#it{p}_{T} (GeV/#it{c});#it{f}_{prompt}')
         grfPrompt.SetLineColor(colors[imult])
@@ -214,8 +222,9 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
 
     idx = 0
     for imult, iplot in enumerate(plotbinHM):
-        if not iplot: continue
-        cfPrompt.cd(imult+1).DrawFrame(0,0,25,1.05,';#it{p}_{T} (GeV/#it{c});#it{f}_{prompt}')
+        if not iplot:
+            continue
+        cfPrompt.cd(imult+1).DrawFrame(0, 0, 25, 1.05, ';#it{p}_{T} (GeV/#it{c});#it{f}_{prompt}')
         grfPromptHM = fileres_trig[idx].Get("gFcConservative")
         grfPromptHM.SetLineColor(colors[imult])
         grfPromptHM.SetMarkerColor(colors[imult])
