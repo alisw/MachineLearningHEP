@@ -1481,8 +1481,8 @@ class Analyzer:
         gROOT.SetBatch(True)
         self.loadstyle()
         filedata = TFile.Open(self.f_evtvaldata)
-        triggerlist = ["HighMultV0", "HighMultSPD"]
-        varlist = ["v0m_corr", "n_tracklets_corr"]
+        triggerlist = ["HighMultV0", "HighMultSPD", "HighMultV0"]
+        varlist = ["v0m_corr", "n_tracklets_corr", "perc_v0m"]
         fileout_name = "%s/correctionsweights.root" % self.d_valevtdata
         fileout = TFile.Open(fileout_name, "recreate")
         fileout.cd()
@@ -1494,6 +1494,8 @@ class Analyzer:
             heff = filedata.Get(labeltriggerANDMB)
             heff.Divide(heff, hden, 1.0, 1.0, "B")
             hratio = filedata.Get(labeltrigger)
+            if not hratio:
+                continue
             hratio.Divide(hratio, hden, 1.0, 1.0, "B")
 
             ctrigger = TCanvas('ctrigger%s' % trigger, 'The Fit Canvas')
@@ -1556,6 +1558,16 @@ class Analyzer:
                 func.SetLineWidth(1)
                 hratio.Fit(func, "L", "", 0, 100)
                 func.SetLineColor(i+1)
+            if i == 2:
+                func = TF1("func_%s" % triggerlist[i], \
+                           "([0]/(1+TMath::Exp([1]*(x-[2]))))", 20, 100)
+                func.SetParameters(315, 30., .2)
+                func.SetParLimits(1, 0., 100.)
+                func.SetParLimits(2, 0., .5)
+                func.SetRange(0., .5)
+                func.SetLineWidth(1)
+                hratio.Fit(func, "w", "", 0, .5)
+                func.SetLineColor(i+1)
             func.Write()
             funcnorm = func.Clone("funcnorm_%s" % triggerlist[i])
             funcnorm.FixParameter(0, funcnorm.GetParameter(0)/funcnorm.GetMaximum())
@@ -1565,8 +1577,10 @@ class Analyzer:
             maxhistx = 0
             if i == 0:
                 maxhistx = 1000
-            else:
+            elif i == 1:
                 maxhistx = 150
+            else:
+                maxhistx = .5
             hempty = TH1F("hempty", "hempty", 100, 0, maxhistx)
             hempty.GetYaxis().SetTitleOffset(1.2)
             hempty.GetYaxis().SetTitleFont(42)
@@ -1579,8 +1593,8 @@ class Analyzer:
             funcnorm.SetLineColor(1)
             funcnorm.Draw("same")
             leg.Draw()
-            ctrigger.SaveAs(self.make_file_path(self.d_valevtdata, "ctrigger" + trigger, "eps", \
-                                                None, None))
+            ctrigger.SaveAs(self.make_file_path(self.d_valevtdata, "ctrigger" + trigger + "_" \
+                                                + varlist[i], "eps", None, None))
         cscatter = TCanvas("cscatter", 'The Fit Canvas')
         cscatter.SetCanvasSize(2100, 2000)
         cscatter.cd()
