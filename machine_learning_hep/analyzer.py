@@ -1536,10 +1536,9 @@ class Analyzer:
             hratio.SetLineColor(1)
             hratio.Draw()
             leg.Draw()
-            func = None
+            func = TF1("func_%s_%s" % (triggerlist[i], varlist[i]), \
+                       "([0]/(1+TMath::Exp(-[1]*(x-[2]))))", 0, 1000)
             if i == 0:
-                func = TF1("func_%s" % triggerlist[i], \
-                           "([0]/(1+TMath::Exp(-[1]*(x-[2]))))", 0, 1000)
                 func.SetParameters(300, .1, 570)
                 func.SetParLimits(1, 0., 10.)
                 func.SetParLimits(2, 0., 1000.)
@@ -1549,8 +1548,6 @@ class Analyzer:
                 func.Draw("same")
                 func.SetLineColor(i+1)
             if i == 1:
-                func = TF1("func_%s" % triggerlist[i], \
-                           "([0]/(1+TMath::Exp(-[1]*(x-[2]))))", 20, 100)
                 func.SetParameters(100, .1, 50)
                 func.SetParLimits(1, 0., 10.)
                 func.SetParLimits(2, 0., 200.)
@@ -1559,17 +1556,15 @@ class Analyzer:
                 hratio.Fit(func, "L", "", 0, 100)
                 func.SetLineColor(i+1)
             if i == 2:
-                func = TF1("func_%s" % triggerlist[i], \
-                           "([0]/(1+TMath::Exp([1]*(x-[2]))))", 20, 100)
-                func.SetParameters(315, 30., .2)
-                func.SetParLimits(1, 0., 100.)
+                func.SetParameters(315, -30., .2)
+                func.SetParLimits(1, -100., 0.)
                 func.SetParLimits(2, 0., .5)
                 func.SetRange(0., .5)
                 func.SetLineWidth(1)
                 hratio.Fit(func, "w", "", 0, .5)
                 func.SetLineColor(i+1)
             func.Write()
-            funcnorm = func.Clone("funcnorm_%s" % triggerlist[i])
+            funcnorm = func.Clone("funcnorm_%s_%s" % (triggerlist[i], varlist[i]))
             funcnorm.FixParameter(0, funcnorm.GetParameter(0)/funcnorm.GetMaximum())
             funcnorm.Write()
             leg.Draw()
@@ -1593,8 +1588,9 @@ class Analyzer:
             funcnorm.SetLineColor(1)
             funcnorm.Draw("same")
             leg.Draw()
-            ctrigger.SaveAs(self.make_file_path(self.d_valevtdata, "ctrigger" + trigger + "_" \
-                                                + varlist[i], "eps", None, None))
+            ctrigger.SaveAs(self.make_file_path(self.d_valevtdata, \
+                    "ctrigger_%s_%s" % (trigger, varlist[i]), "eps", \
+                    None, None))
         cscatter = TCanvas("cscatter", 'The Fit Canvas')
         cscatter.SetCanvasSize(2100, 2000)
         cscatter.cd()
