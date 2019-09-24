@@ -26,7 +26,7 @@ from ROOT import TStyle, gPad
 
 # pylint: disable=import-error, no-name-in-module, unused-import
 # pylint: disable=too-many-statements
-def plotcomparison(case):
+def plotcomparison_ntrkl(case, arraytype, var):
 
     gROOT.SetStyle("Plain")
     gStyle.SetOptStat(0)
@@ -35,12 +35,13 @@ def plotcomparison(case):
     gStyle.SetCanvasColor(0)
     gStyle.SetFrameFillColor(0)
     gStyle.SetOptTitle(0)
-
+    print(var)
     with open("data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
 
-    folder_MB_allperiods = data_param[case]["analysis"]["MBvspt_ntrkl"]["data"]["resultsallp"]
-    folder_SPD_2018 = data_param[case]["analysis"]["SPDvspt"]["data"]["results"][3]
+    folder_MB_allperiods = data_param[case]["analysis"][arraytype[0]]["data"]["resultsallp"]
+    folder_triggered = data_param[case]["analysis"][arraytype[1]]["data"]["results"][3]
+    br = data_param[case]["ml"]["opt"]["BR"]
 
 
     ccross = TCanvas('cCross', 'The Fit Canvas', 100, 600)
@@ -57,21 +58,51 @@ def plotcomparison(case):
     legyield.SetTextSize(0.035)
 
     fileres_MB_allperiods = TFile.Open("%s/finalcross%s%smulttot.root" % \
-                            (folder_MB_allperiods, "D0pp", "MBvspt_ntrkl"))
+                            (folder_MB_allperiods, case, "MBvspt_ntrkl"))
     fileres_MB_SPD2018 = TFile.Open("%s/finalcross%s%smulttot.root" % \
-                            (folder_SPD_2018, "D0pp", "SPDvspt"))
+                            (folder_triggered, case, "SPDvspt"))
 
-    for imult  in [1, 2, 3]:
-        print(imult)
+    hempty = TH1F("hempty", "hempty", 100, 0, 30)
+    hempty.GetYaxis().SetTitleOffset(1.2)
+    hempty.GetYaxis().SetTitleFont(42)
+    hempty.GetXaxis().SetTitleFont(42)
+    hempty.GetYaxis().SetLabelFont(42)
+    hempty.GetXaxis().SetLabelFont(42)
+    hempty.GetYaxis().SetTitle("Corrected yield %s" % case)
+    hempty.GetXaxis().SetTitle("p_{T} (GeV)")
+    hempty.SetMinimum(1e-8)
+    hempty.SetMaximum(1000)
+    hempty.Draw()
+
+    legyield = TLegend(.3, .65, .7, .85)
+    legyield.SetBorderSize(0)
+    legyield.SetFillColor(0)
+    legyield.SetFillStyle(0)
+    legyield.SetTextFont(42)
+    legyield.SetTextSize(0.035)
+
+    colors = [1, 2, 3, 4]
+    legends = ["integrated from MB",
+               "ntrkl 0-20 from MB",
+               "ntrkl 20-60 from MB",
+               "ntrkl 60-1000 from HighMultSPD"]
+    for imult  in [0, 1, 2]:
         gPad.SetLogy()
         hyield = fileres_MB_allperiods.Get("histoSigmaCorr%d" % (imult))
-        hyield.SetMaximum(0.001)
-        hyield.GetXaxis().SetTitle("p_{T} (GeV)")
-        hyield.GetYaxis().SetTitle("Corrected yield")
+        hyield.Scale(1./br)
+        hyield.SetLineColor(colors[imult])
+        hyield.SetMarkerColor(colors[imult])
         hyield.Draw("same")
+        legyield.AddEntry(hyield, legends[imult], "LEP")
+    legyield.Draw()
 
     hyieldSPD2018 = fileres_MB_SPD2018.Get("histoSigmaCorr3")
+    hyieldSPD2018.Scale(1./br)
+    hyieldSPD2018.SetLineColor(4)
+    hyieldSPD2018.SetMarkerColor(4)
     hyieldSPD2018.Draw("same")
-    ccross.SaveAs("Comparison_%s.eps" % (case))
+    legyield.AddEntry(hyieldSPD2018, legends[3], "LEP")
+    ccross.SaveAs("ComparisonCorrYields_%s%s.eps" % (case, var))
 
-plotcomparison("D0pp")
+plotcomparison_ntrkl("LcpK0spp", ["MBvspt_ntrkl", "SPDvspt"], "ntrkl")
+plotcomparison_ntrkl("D0pp", ["MBvspt_ntrkl", "SPDvspt"], "ntrkl")
