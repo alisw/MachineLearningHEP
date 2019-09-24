@@ -568,7 +568,6 @@ class Analyzer:
                 yield_err_nominal = mass_fitter_nominal.yield_sig_err
                 bincount_nominal, bincount_err_nominal = \
                         mass_fitter_nominal.bincount(self.p_nsigma_signal)
-                bincount_err_nominal = bincount_err_nominal
                 mean_nominal = mass_fitter_nominal.mean_fit
                 sigma_nominal = mass_fitter_nominal.sigma_fit
                 chisquare_ndf_nominal = mass_fitter_nominal.tot_fit_func.GetNDF()
