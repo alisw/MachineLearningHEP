@@ -396,7 +396,7 @@ D0pp:
       FixedSigma: true
       fitcase: D0
       latexnamemeson: "D^{0}"
-      latexbin2var: "n_{trkl}"
+      latexbin2var: "V0M ampl."
       nevents: 1700000000.
       dodoublecross: false
 
@@ -475,7 +475,7 @@ D0pp:
       FixedSigma: true
       fitcase: D0
       latexnamemeson: "D^{0}"
-      latexbin2var: "n_{trkl}"
+      latexbin2var: "V0M perc."
       nevents: 1700000000.
       dodoublecross: false
     
@@ -551,7 +551,7 @@ D0pp:
   
     SPDvspt:
       normalizecross: false
-      plotbin: [0,0,1,1]
+      plotbin: [0,0,0,1]
       usesinglebineff: 0
       sel_binmin2:  [0,0,20,60] #list of var2 splittng nbins
       sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
@@ -618,7 +618,7 @@ D0pp:
 
     V0mvspt:
       normalizecross: false
-      plotbin: [1,1,1,0]
+      plotbin: [0,0,0,1]
       usesinglebineff: 0
       sel_binmin2:  [0,0,200,600] #list of var2 splittng nbins
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
@@ -680,13 +680,13 @@ D0pp:
       FixedSigma: true
       fitcase: D0
       latexnamemeson: "D^{0}"
-      latexbin2var: "V0M"
+      latexbin2var: "V0M ampl."
       nevents: 1700000000.
       dodoublecross: false
     
     V0mvspt_perc_v0m:
       normalizecross: false
-      plotbin: [1,1,1,0]
+      plotbin: [0,0,0,1]
       usesinglebineff: 0
       sel_binmin2:  [0,30,0.1,0.] #list of var2 splittng nbins
       sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
@@ -748,7 +748,7 @@ D0pp:
       FixedSigma: true
       fitcase: D0
       latexnamemeson: "D^{0}"
-      latexbin2var: "V0M"
+      latexbin2var: "V0M perc."
       nevents: 1700000000.
       dodoublecross: false
 

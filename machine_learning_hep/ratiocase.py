@@ -97,8 +97,6 @@ def ratiocase(case_num, case_den, arraytype, isv0m=False):
                                         (folder_num_triggered, case_num, arraytype[1]))
         file_den_triggered = TFile.Open("%s/finalcross%s%smulttot.root" % \
                                         (folder_den_triggered, case_den, arraytype[1]))
-        print("%s/finalcross%s%smulttot.root" % (folder_den_triggered, case_den, arraytype[1]))
-        print(file_den_triggered)
 
     colors = [kBlack, kRed, kGreen+2, kBlue]
     for imult in partMB:
@@ -110,7 +108,7 @@ def ratiocase(case_num, case_den, arraytype, isv0m=False):
         hratio.Divide(hcross_den)
         hratio.SetLineColor(colors[imult])
         hratio.SetMarkerColor(colors[imult])
-        hratio.GetXaxis().SetTitle("#it{p}_{T} (GeV)")
+        hratio.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
         hratio.GetYaxis().SetTitle("%s / %s" % (name_num, name_den))
         hratio.GetYaxis().SetRangeUser(0., 1.)
         if plotbin[imult] == 1:
@@ -144,3 +142,4 @@ def ratiocase(case_num, case_den, arraytype, isv0m=False):
 
 ratiocase("LcpK0spp", "D0pp", ["MBvspt_ntrkl", "SPDvspt"])
 ratiocase("LcpK0spp", "D0pp", ["MBvspt_v0m", "V0mvspt"], True)
+ratiocase("LcpK0spp", "D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"], True)
