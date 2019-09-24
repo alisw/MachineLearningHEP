@@ -122,8 +122,7 @@ do
         -j | --jobs )               shift
                                     N_PACKING_JOBS="$1"
                                     ;;
-        -f | --force )              shift
-                                    FORCE=true
+        -f | --force )              FORCE=true
                                     ;;
         -h | --help )               shift
                                     print_usage
