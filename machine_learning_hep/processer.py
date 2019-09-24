@@ -339,9 +339,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
     def process_applymodel_par(self):
         print("doing apply model", self.mcordata, self.period)
         create_folder_struc(self.d_pkl_dec, self.l_path)
-        for ipt in range(self.p_nptbins):
-            arguments = [(i,) for i in range(len(self.mptfiles_recosk[ipt]))]
-            self.parallelizer(self.applymodel, arguments, self.p_chunksizeskim)
+        arguments = [(i,) for i in range(len(self.mptfiles_recosk[0]))]
+        self.parallelizer(self.applymodel, arguments, self.p_chunksizeskim)
 
     def process_mergeforml(self):
         nfiles = len(self.mptfiles_recosk[0])
