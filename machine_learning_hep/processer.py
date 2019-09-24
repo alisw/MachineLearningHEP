@@ -606,11 +606,11 @@ class Processer: # pylint: disable=too-many-instance-attributes
     def process_valevents(self, file_index):
         dfevt = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
         dfevt = dfevt.query("is_ev_rej==0")
-        triggerlist = ["HighMultV0", "HighMultSPD", "INT7"]
+        triggerlist = ["HighMultV0", "HighMultSPD", "HighMultV0", "INT7"]
         varlist = ["v0m_corr", "n_tracklets_corr", "perc_v0m"]
-        nbinsvar = [100, 200]
-        minrvar = [0, 0]
-        maxrvar = [1500, 200]
+        nbinsvar = [100, 200, 200]
+        minrvar = [0, 0, 0]
+        maxrvar = [1500, 200, .5]
         fileevtroot = TFile.Open(self.l_evtvalroot[file_index], "recreate")
         hv0mvsperc = scatterplot(dfevt, "perc_v0m", "v0m_corr", 50000, 0, 100, 200, 0., 2000.)
         hv0mvsperc.SetName("hv0mvsperc")
