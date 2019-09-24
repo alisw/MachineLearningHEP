@@ -40,7 +40,7 @@ def plotcomparison_ntrkl(case, arraytype, var):
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
 
     folder_MB_allperiods = data_param[case]["analysis"][arraytype[0]]["data"]["resultsallp"]
-    folder_SPD_2018 = data_param[case]["analysis"][arraytype[1]]["data"]["results"][3]
+    folder_triggered = data_param[case]["analysis"][arraytype[1]]["data"]["results"][3]
     br = data_param[case]["ml"]["opt"]["BR"]
 
 
@@ -60,7 +60,7 @@ def plotcomparison_ntrkl(case, arraytype, var):
     fileres_MB_allperiods = TFile.Open("%s/finalcross%s%smulttot.root" % \
                             (folder_MB_allperiods, case, "MBvspt_ntrkl"))
     fileres_MB_SPD2018 = TFile.Open("%s/finalcross%s%smulttot.root" % \
-                            (folder_SPD_2018, case, "SPDvspt"))
+                            (folder_triggered, case, "SPDvspt"))
 
     hempty = TH1F("hempty", "hempty", 100, 0, 30)
     hempty.GetYaxis().SetTitleOffset(1.2)
@@ -102,7 +102,7 @@ def plotcomparison_ntrkl(case, arraytype, var):
     hyieldSPD2018.SetMarkerColor(4)
     hyieldSPD2018.Draw("same")
     legyield.AddEntry(hyieldSPD2018, legends[3], "LEP")
-    ccross.SaveAs("Comparison_%s.eps" % (case))
+    ccross.SaveAs("ComparisonCorrYields_%s%s.eps" % (case, var))
 
 plotcomparison_ntrkl("LcpK0spp", ["MBvspt_ntrkl", "SPDvspt"], "ntrkl")
 plotcomparison_ntrkl("D0pp", ["MBvspt_ntrkl", "SPDvspt"], "ntrkl")
