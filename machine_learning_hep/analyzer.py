@@ -190,7 +190,8 @@ class Analyzer:
             m.write("void aliphysics_test()\n{\n")
             m.write("TH1F* h = new TH1F(\"name\", \"\", 2, 1., 2.);\n \
                     auto fitter = new AliHFInvMassFitter(h, 1., 2., 1, 1);\n \
-                    if(fitter) { std::cerr << \" Success \"; }\n \
+                    if(fitter) { std::cerr << \" Success \"; \n \
+                    delete fitter; }\n \
                     else { std::cerr << \"Fail\"; }\n \
                     std::cerr << std::endl; }")
         proc = Popen(["root", "-l", "-b", "-q", test_macro])
@@ -248,6 +249,11 @@ class Analyzer:
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, mult_int_min, mult_int_max)
+
+                suffix_write = "%s%d_%d_%s_%.2f_%.2f" % \
+                               (self.v_var_binning, self.lpt_finbinmin[ipt],
+                                self.lpt_finbinmax[ipt],
+                                self.v_var2_binning, mult_int_min, mult_int_max)
                 h_invmass_init = lfile.Get("hmass" + suffix)
                 h_invmass_mc_init = lfile_mc.Get("hmass" + suffix)
                 h_invmass_mc_refl_init = None
@@ -281,13 +287,13 @@ class Analyzer:
                 else:
                     self.logger.error("Could not do initial fit on MC")
 
-                canvas = TCanvas("fit_canvas_mc_init", suffix, 700, 700)
+                canvas = TCanvas("fit_canvas_mc_init", suffix_write, 700, 700)
                 mass_fitter_mc_init.DrawHere(canvas, self.p_nsigma_signal)
 
 
                 canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
                                                   "fittedplot_integrated_mc", "eps",
-                                                  None, suffix))
+                                                  None, suffix_write))
                 canvas.Close()
 
                 # Now, try also for data
@@ -321,13 +327,13 @@ class Analyzer:
                     sigma_for_data = mass_fitter_data_init.GetSigma()
                     mean_for_data = mass_fitter_data_init.GetMean()
 
-                canvas = TCanvas("fit_canvas_data_init", suffix, 700, 700)
+                canvas = TCanvas("fit_canvas_data_init", suffix_write, 700, 700)
                 mass_fitter_data_init.DrawHere(canvas, self.p_nsigma_signal)
 
 
                 canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
                                                   "fittedplot_integrated", "eps",
-                                                  None, suffix))
+                                                  None, suffix_write))
                 canvas.Close()
 
                 ######################
@@ -383,11 +389,11 @@ class Analyzer:
 
                 if self.apply_weights is False:
                     canvas.SaveAs(self.make_file_path(self.d_resultsallpdata, "fittedplot", "eps",
-                                                      None, suffix))
+                                                      None, suffix_write))
                 else:
                     canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
                                                       "fittedplotweights",
-                                                      "eps", None, suffix))
+                                                      "eps", None, suffix_write))
                 canvas.Close()
 
                 fit_dir = fileout.mkdir(suffix)
