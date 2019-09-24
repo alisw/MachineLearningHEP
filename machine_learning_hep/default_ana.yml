@@ -1,27 +1,27 @@
-case: D0pp
+case: LcpK0spp
 download:
   alice:
     activate: false
 conversion:
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 skimming:
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 merging:
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 mergingperiods:
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 
 ml_study:
   activate: false
@@ -38,7 +38,7 @@ ml_study:
   dosignifopt: false
   doefficiency: false
   dotesting: false
-  dotraining: false
+  dotraining: true
 
 mlapplication:
   data:
@@ -51,25 +51,26 @@ mlapplication:
     docontinueafterstop: false
 
 analysis:
-  type: SPDvspt
+  type: MBvspt_ntrkl
   # Do each period separately including merged (true)
   # Do only merged (false)
   doperperiod: true
   data:
-    histomass: false
+    histomass: true
   mc:
-    histomass: false
-    efficiency: false
+    histomass: true
+    efficiency: true
     feeddown: false
-  dofit: false
+  dofit: true
   # Control the yield systemaitc uncertainty
   dosyst: false
   dojetstudies: false
-  doeff: false
-  docross: false
+  doeff: true
+  docross: true 
   doplots: true
 
 systematics:
+  # Not yet used
   probvariation: false
 
 validation:

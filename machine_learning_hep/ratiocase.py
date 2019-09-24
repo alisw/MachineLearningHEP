@@ -49,6 +49,8 @@ def ratiocase(case_num, case_den, typean):
     latexbin2var = data_param_num[case_num]["analysis"][typean]["latexbin2var"]
     plotbin = data_param_num[case_num]["analysis"][typean]["plotbin"]
 
+    br_num = data_param_num[case_num]["ml"]["opt"]["BR"]
+    br_den = data_param_den[case_den]["ml"]["opt"]["BR"]
     ccross = TCanvas('cCross', 'The Fit Canvas', 100, 600)
     ccross = TCanvas('cCross', 'The Fit Canvas')
     ccross.SetCanvasSize(1500, 1500)
@@ -62,13 +64,15 @@ def ratiocase(case_num, case_den, typean):
     legyield.SetTextFont(42)
     legyield.SetTextSize(0.035)
 
-    file_num = TFile.Open("%s/finalcross%s%s.root" % (folder_num, case_num, typean))
-    file_den = TFile.Open("%s/finalcross%s%s.root" % (folder_den, case_den, typean))
+    file_num = TFile.Open("%s/finalcross%s%smulttot.root" % (folder_num, case_num, typean))
+    file_den = TFile.Open("%s/finalcross%s%smulttot.root" % (folder_den, case_den, typean))
 
     for imult, _ in enumerate(binsmax_num):
         print(imult)
-        hratio = file_num.Get("hcross%d" % (imult))
-        hcross_den = file_den.Get("hcross%d" % (imult))
+        hratio = file_num.Get("histoSigmaCorr%d" % (imult))
+        hratio.Scale(1./br_num)
+        hcross_den = file_den.Get("histoSigmaCorr%d" % (imult))
+        hcross_den.Scale(1./br_den)
         hratio.Divide(hcross_den)
         hratio.GetXaxis().SetTitle("p_{T} (GeV)")
         hratio.GetYaxis().SetTitle("Particle ratio")
@@ -82,6 +86,8 @@ def ratiocase(case_num, case_den, typean):
     ccross.SaveAs("ComparisonRatios_%s%s_%s.eps" % \
                   (case_num, case_den, typean))
 
-#ratiocase("LcpK0spp", "D0pp", "MBvspt")
 #ratiocase("LcpK0spp", "D0pp", "SPDvspt")
-ratiocase("LcpK0spp", "D0pp", "V0mvspt")
+#ratiocase("LcpK0spp", "D0pp", "MBvspt_ntrkl")
+#ratiocase("LcpK0spp", "D0pp", "V0mvspt_perc_v0m")
+ratiocase("LcpK0spp", "D0pp", "V0mvspt_perc_v0m")
+ratiocase("LcpK0spp", "D0pp", "MBvspt_perc")

@@ -24,18 +24,18 @@ from subprocess import Popen
 import numpy as np
 # pylint: disable=import-error, no-name-in-module, unused-import
 from root_numpy import hist2array, array2hist
-from ROOT import TFile, TH1F, TCanvas, TPad
+from ROOT import TFile, TH1F, TCanvas, TPad, TF1
 from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
 from ROOT import gROOT, TDirectory
 from ROOT import TStyle, kBlue, kGreen, kBlack, kRed
 from ROOT import TLatex
+from ROOT import gInterpreter, gPad
 # HF specific imports
 from machine_learning_hep.globalfitter import Fitter
 from  machine_learning_hep.logger import get_logger
 #from ROOT import RooUnfoldResponse
 #from ROOT import RooUnfold
 #from ROOT import RooUnfoldBayes
-
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
 class Analyzer:
     species = "analyzer"
@@ -145,6 +145,10 @@ class Analyzer:
         self.p_fit_ranges_up_syst = syst_dict["massmax"] if syst_dict is not None else None
         self.p_bincount_sigma_syst = syst_dict["bincount_sigma"] if syst_dict is not None else None
 
+        self.p_indexhpt = datap["analysis"]["indexhptspectrum"]
+        self.p_fd_method = datap["analysis"]["fd_method"]
+        self.p_cctype = datap["analysis"]["cctype"]
+        self.apply_weights = datap["analysis"][self.typean]["triggersel"]["weighttrig"]
 
     @staticmethod
     def loadstyle():
@@ -186,7 +190,8 @@ class Analyzer:
             m.write("void aliphysics_test()\n{\n")
             m.write("TH1F* h = new TH1F(\"name\", \"\", 2, 1., 2.);\n \
                     auto fitter = new AliHFInvMassFitter(h, 1., 2., 1, 1);\n \
-                    if(fitter) { std::cerr << \" Success \"; }\n \
+                    if(fitter) { std::cerr << \" Success \"; \n \
+                    delete fitter; }\n \
                     else { std::cerr << \"Fail\"; }\n \
                     std::cerr << std::endl; }")
         proc = Popen(["root", "-l", "-b", "-q", test_macro])
@@ -198,11 +203,11 @@ class Analyzer:
     # pylint: disable=too-many-branches, too-many-locals
     def fitter(self):
         # Test if we are in AliPhysics env
-        self.test_aliphysics()
-        from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
-        # Enable ROOT batch mode and reset in the end
+        #self.test_aliphysics()
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
+        from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
+        # Enable ROOT batch mode and reset in the end
 
         self.loadstyle()
 
@@ -244,6 +249,11 @@ class Analyzer:
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, mult_int_min, mult_int_max)
+
+                suffix_write = "%s%d_%d_%s_%.2f_%.2f" % \
+                               (self.v_var_binning, self.lpt_finbinmin[ipt],
+                                self.lpt_finbinmax[ipt],
+                                self.v_var2_binning, mult_int_min, mult_int_max)
                 h_invmass_init = lfile.Get("hmass" + suffix)
                 h_invmass_mc_init = lfile_mc.Get("hmass" + suffix)
                 h_invmass_mc_refl_init = None
@@ -277,13 +287,13 @@ class Analyzer:
                 else:
                     self.logger.error("Could not do initial fit on MC")
 
-                canvas = TCanvas("fit_canvas_mc_init", suffix, 700, 700)
+                canvas = TCanvas("fit_canvas_mc_init", suffix_write, 700, 700)
                 mass_fitter_mc_init.DrawHere(canvas, self.p_nsigma_signal)
 
 
                 canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
                                                   "fittedplot_integrated_mc", "eps",
-                                                  None, suffix))
+                                                  None, suffix_write))
                 canvas.Close()
 
                 # Now, try also for data
@@ -317,13 +327,13 @@ class Analyzer:
                     sigma_for_data = mass_fitter_data_init.GetSigma()
                     mean_for_data = mass_fitter_data_init.GetMean()
 
-                canvas = TCanvas("fit_canvas_data_init", suffix, 700, 700)
+                canvas = TCanvas("fit_canvas_data_init", suffix_write, 700, 700)
                 mass_fitter_data_init.DrawHere(canvas, self.p_nsigma_signal)
 
 
                 canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
                                                   "fittedplot_integrated", "eps",
-                                                  None, suffix))
+                                                  None, suffix_write))
                 canvas.Close()
 
                 ######################
@@ -335,7 +345,11 @@ class Analyzer:
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
-                h_invmass = lfile.Get("hmass" + suffix)
+                histname = "hmass"
+                if self.apply_weights is True:
+                    histname = "h_invmass_weight"
+                    print("*********** I AM USING WEIGHTED HISTOGRAMS")
+                h_invmass = lfile.Get(histname + suffix)
                 h_invmass_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass, self.p_rebin[ipt], -1)
                 h_invmass_rebin = TH1F()
                 h_invmass_rebin_.Copy(h_invmass_rebin)
@@ -373,8 +387,13 @@ class Analyzer:
                 canvas = TCanvas("fit_canvas", suffix, 700, 700)
                 mass_fitter.DrawHere(canvas, self.p_nsigma_signal)
 
-                canvas.SaveAs(self.make_file_path(self.d_resultsallpdata, "fittedplot", "eps",
-                                                  None, suffix))
+                if self.apply_weights is False:
+                    canvas.SaveAs(self.make_file_path(self.d_resultsallpdata, "fittedplot", "eps",
+                                                      None, suffix_write))
+                else:
+                    canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
+                                                      "fittedplotweights",
+                                                      "eps", None, suffix_write))
                 canvas.Close()
 
                 fit_dir = fileout.mkdir(suffix)
@@ -549,8 +568,6 @@ class Analyzer:
                 yield_err_nominal = mass_fitter_nominal.yield_sig_err
                 bincount_nominal, bincount_err_nominal = \
                         mass_fitter_nominal.bincount(self.p_nsigma_signal)
-                bincount_nominal = bincount_nominal
-                bincount_err_nominal = bincount_err_nominal
                 mean_nominal = mass_fitter_nominal.mean_fit
                 sigma_nominal = mass_fitter_nominal.sigma_fit
                 chisquare_ndf_nominal = mass_fitter_nominal.tot_fit_func.GetNDF()
@@ -1098,10 +1115,15 @@ class Analyzer:
                 his_sim_ptc_fd = his_sim_z_fd.Project3D("x") # pt_cand
                 his_sim_ptc_fd.Multiply(his_eff_ratio)
                 his_sim_z_fd_2d.SetBinContent(bin_z, bin_ptjet, his_sim_ptc_fd.Integral())
-            can_fd = TCanvas("can_fd_z%d" % i_ptjet, "Feeddown FF", 800, 600)
-            his_ff_fd = his_sim_z_fd_2d.ProjectionX("ff", bin_ptjet, bin_ptjet, "e")
+            can_ff_fd = TCanvas("can_fd_z%d" % i_ptjet, "Feeddown FF", 800, 600)
+            his_ff_fd = his_sim_z_fd_2d.ProjectionX("ff%d" % i_ptjet, bin_ptjet, bin_ptjet, "e")
+            his_ff_fd.GetYaxis().SetTitle("#frac{1}{#it{N}_{jet}} #frac{d#it{N}}{d#it{z}}")
+            his_ff_fd.GetYaxis().SetTitleOffset(1.6)
+            his_ff_fd.GetYaxis().SetTitleFont(42)
+            his_ff_fd.GetYaxis().SetLabelFont(42)
             his_ff_fd.Draw()
-            can_fd.SaveAs("%s/Feeddown-z-effscaled_%s%s%s.eps" % (self.d_resultsallpmc, \
+            can_ff_fd.SetLeftMargin(0.15)
+            can_ff_fd.SaveAs("%s/Feeddown-z-effscaled_%s%s%s.eps" % (self.d_resultsallpmc, \
                             self.case, self.typean, i_ptjet))
 
         # TODO: Building the response matrix and smearing.
@@ -1253,6 +1275,7 @@ class Analyzer:
         fileouts.Close()
 
     def plotter(self):
+        gROOT.SetBatch(True)
         self.loadstyle()
 
         fileouteff = TFile.Open("%s/efficiencies%s%s.root" % \
@@ -1350,36 +1373,20 @@ class Analyzer:
         cCrossvsvar2.SaveAs("%s/Cross%s%sVs%s.eps" % (self.d_resultsallpdata,
                                                       self.case, self.typean, self.v_var2_binning))
 
-    def plotternormyields(self):
+    def makenormyields(self):
+        gROOT.SetBatch(True)
+
         self.loadstyle()
-
-        fileouteff = TFile.Open("%s/efficiencies%s%s.root" % \
-                                (self.d_resultsallpmc, self.case, self.typean))
-        yield_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
-                                             None, [self.case, self.typean])
-        fileoutyield = TFile.Open(yield_filename, "READ")
-        fileoutcross = TFile.Open("%s/finalcross%s%s.root" % \
-                                  (self.d_resultsallpdata, self.case, self.typean), "recreate")
-
+        #self.test_aliphysics()
         filedataval = TFile.Open(self.f_evtvaldata)
 
-        cCrossvsvar1 = TCanvas('cCrossvsvar1', 'The Fit Canvas')
-        cCrossvsvar1.SetCanvasSize(1900, 1500)
-        cCrossvsvar1.SetWindowSize(500, 500)
-        cCrossvsvar1.SetLogy()
-
-        legvsvar1 = TLegend(.5, .65, .7, .85)
-        legvsvar1.SetBorderSize(0)
-        legvsvar1.SetFillColor(0)
-        legvsvar1.SetFillStyle(0)
-        legvsvar1.SetTextFont(42)
-        legvsvar1.SetTextSize(0.035)
-
-        listvalues = []
-        listvalueserr = []
-
+        fileouteff = "%s/efficiencies%s%s.root" % \
+                      (self.d_resultsallpmc, self.case, self.typean)
+        yield_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
+                                             None, [self.case, self.typean])
+        gROOT.LoadMacro("HFPtSpectrum.C")
+        from ROOT import HFPtSpectrum
         for imult in range(self.p_nbin2):
-            listvalpt = []
             bineff = -1
             if self.p_bineff is None:
                 bineff = imult
@@ -1387,96 +1394,212 @@ class Analyzer:
             else:
                 bineff = self.p_bineff
                 print("Using efficiency always from bin=", bineff)
-            heff = fileouteff.Get("eff_mult%d" % (bineff))
-            hcross = fileoutyield.Get("hyields%d" % (imult))
-            hcross.Divide(heff)
-            hcross.SetLineColor(imult+1)
+            namehistoeffprompt = "eff_mult%d" % bineff
+            namehistoefffeed = "eff_fd_mult%d" % bineff
+            nameyield = "hyields%d" % imult
+            fileoutcrossmult = "%s/finalcross%s%smult%d.root" % \
+                (self.d_resultsallpdata, self.case, self.typean, imult)
             labelhisto = "hbit%svs%s" % (self.triggerbit, self.v_var2_binning)
             hmult = filedataval.Get(labelhisto)
-            binminv = hmult.GetXaxis().FindBin(self.lvar2_binmin[imult])
-            binmaxv = hmult.GetXaxis().FindBin(self.lvar2_binmax[imult])
-            norm = hmult.Integral(binminv, binmaxv)
-            if norm > 0:
-                hcross.Scale(1./norm)
-            fileoutcross.cd()
+            hmult.SetName("hmult")
+            hmultweighted = hmult.Clone("hmultweighed")
+            norm = -1
+            if self.apply_weights is True:
+                fileout_name = "%s/correctionsweights.root" % self.d_valevtdata
+                fileout = TFile.Open(fileout_name, "read")
+                funcnormal = fileout.Get("funcnorm_%s" % self.triggerbit)
+                for ibin in range(hmult.GetNbinsX()):
+                    myweight = funcnormal.Eval(hmult.GetBinCenter(ibin + 1))
+                    hmultweighted.SetBinContent(ibin + 1, hmult.GetBinContent(ibin+1) / myweight)
+                binminv = hmultweighted.GetXaxis().FindBin(self.lvar2_binmin[imult])
+                binmaxv = hmultweighted.GetXaxis().FindBin(self.lvar2_binmax[imult])
+                norm = hmultweighted.Integral(binminv, binmaxv)
+            else:
+                binminv = hmult.GetXaxis().FindBin(self.lvar2_binmin[imult])
+                binmaxv = hmult.GetXaxis().FindBin(self.lvar2_binmax[imult])
+                norm = hmult.Integral(binminv, binmaxv)
+
+            # Now use the function we have just compiled above
+            HFPtSpectrum(self.p_indexhpt, \
+                "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
+                fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
+                fileoutcrossmult, norm, 1, self.p_fd_method, self.p_cctype)
+
+        fileoutcrosstot = TFile.Open("%s/finalcross%s%smulttot.root" % \
+            (self.d_resultsallpdata, self.case, self.typean), "recreate")
+
+        for imult in range(self.p_nbin2):
+            fileoutcrossmult = "%s/finalcross%s%smult%d.root" % \
+                (self.d_resultsallpdata, self.case, self.typean, imult)
+            f_fileoutcrossmult = TFile.Open(fileoutcrossmult)
+            hcross = f_fileoutcrossmult.Get("histoSigmaCorr")
+            hcross.SetName("histoSigmaCorr%d" % imult)
+            fileoutcrosstot.cd()
+            hcross.Write()
+            hmult.Write()
+            hmultweighted.Write()
+            if self.apply_weights is True:
+                funcnormal.Write()
+        fileoutcrosstot.Close()
+
+
+    def plotternormyields(self):
+        gROOT.SetBatch(True)
+        cCrossvsvar1 = TCanvas('cCrossvsvar1', 'The Fit Canvas')
+        cCrossvsvar1.SetCanvasSize(1900, 1500)
+        cCrossvsvar1.SetWindowSize(500, 500)
+        cCrossvsvar1.SetLogy()
+        cCrossvsvar1.cd()
+        legvsvar1 = TLegend(.5, .65, .7, .85)
+        legvsvar1.SetBorderSize(0)
+        legvsvar1.SetFillColor(0)
+        legvsvar1.SetFillStyle(0)
+        legvsvar1.SetTextFont(42)
+        legvsvar1.SetTextSize(0.035)
+        fileoutcrosstot = TFile.Open("%s/finalcross%s%smulttot.root" % \
+            (self.d_resultsallpdata, self.case, self.typean))
+
+        for imult in range(self.p_nbin2):
+            hcross = fileoutcrosstot.Get("histoSigmaCorr%d" % imult)
+            hcross.SetLineColor(imult+1)
             hcross.GetXaxis().SetTitle("p_{T} %s (GeV)" % self.p_latexnmeson)
             hcross.GetYaxis().SetTitleOffset(1.3)
             hcross.GetYaxis().SetTitle("Corrected yield/events (%s) %s" %
                                        (self.p_latexnmeson, self.typean))
-            hcross.SetName("hcross%d" % imult)
             hcross.GetYaxis().SetRangeUser(1e-10, 1)
             legvsvar1endstring = "%.1f < %s < %.1f GeV/c" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legvsvar1.AddEntry(hcross, legvsvar1endstring, "LEP")
             hcross.Draw("same")
-            hcross.Write()
-            listvalpt = [hcross.GetBinContent(ipt+1) for ipt in range(self.p_nptbins)]
-            listvalues.append(listvalpt)
-            listvalerrpt = [hcross.GetBinError(ipt+1) for ipt in range(self.p_nptbins)]
-            listvalueserr.append(listvalerrpt)
         legvsvar1.Draw()
         cCrossvsvar1.SaveAs("%s/CorrectedYieldsNorm%s%sVs%s.eps" % (self.d_resultsallpdata,
                                                                     self.case, self.typean,
                                                                     self.v_var_binning))
     def studyevents(self):
+        gROOT.SetBatch(True)
         self.loadstyle()
         filedata = TFile.Open(self.f_evtvaldata)
-        triggerlist = ["HighMultV0", "HighMultSPD"]
-        varlist = ["v0m_corr", "n_tracklets_corr"]
+        triggerlist = ["HighMultV0", "HighMultSPD", "HighMultV0"]
+        varlist = ["v0m_corr", "n_tracklets_corr", "perc_v0m"]
+        fileout_name = "%s/correctionsweights.root" % self.d_valevtdata
+        fileout = TFile.Open(fileout_name, "recreate")
+        fileout.cd()
+        for i, trigger in enumerate(triggerlist):
+            labeltriggerANDMB = "hbit%sANDINT7vs%s" % (triggerlist[i], varlist[i])
+            labelMB = "hbitINT7vs%s" % varlist[i]
+            labeltrigger = "hbit%svs%s" % (triggerlist[i], varlist[i])
+            hden = filedata.Get(labelMB)
+            heff = filedata.Get(labeltriggerANDMB)
+            heff.Divide(heff, hden, 1.0, 1.0, "B")
+            hratio = filedata.Get(labeltrigger)
+            if not hratio:
+                continue
+            hratio.Divide(hratio, hden, 1.0, 1.0, "B")
 
-        ctrigger = TCanvas('ctrigger', 'The Fit Canvas')
-        ctrigger.SetCanvasSize(2100, 1000)
-        ctrigger.Divide(2, 1)
-        for i, _ in enumerate(triggerlist):
-            ctrigger.cd(i+1)
-            leg = TLegend(.5, .65, .7, .85)
+            ctrigger = TCanvas('ctrigger%s' % trigger, 'The Fit Canvas')
+            ctrigger.SetCanvasSize(2100, 2000)
+            ctrigger.Divide(2, 2)
+
+            leg = TLegend(.2, .65, .4, .75)
             leg.SetBorderSize(0)
             leg.SetFillColor(0)
             leg.SetFillStyle(0)
             leg.SetTextFont(42)
             leg.SetTextSize(0.035)
 
-            labeltriggerANDMB = "hbit%sANDINT7vs%s" % (triggerlist[i], varlist[i])
-            labelMB = "hbitINT7vs%s" % varlist[i]
-            heff = filedata.Get(labeltriggerANDMB)
-            hden = filedata.Get(labelMB)
-            heff.SetName(heff.GetName() + "_new")
-            heff.SetLineColor(i+1)
-            heff.Divide(heff, hden, 1.0, 1.0, "B")
+            ctrigger.cd(1)
+            gPad.SetLogy()
+            hden.GetXaxis().SetTitle("offline %s" % varlist[i])
+            hden.GetYaxis().SetTitle("entries")
+            hden.SetLineColor(1)
+            hden.Draw()
+            hden.Write()
+            leg.AddEntry(hden, triggerlist[i], "LEP")
+            leg.Draw()
+
+            ctrigger.cd(2)
             heff.SetMaximum(2.)
             heff.GetXaxis().SetTitle("offline %s" % varlist[i])
             heff.SetMinimum(0.)
-            heff.GetYaxis().SetTitle("trigger efficiency")
-            heff.Draw("epsame")
-            leg.AddEntry(heff, triggerlist[i], "LEP")
+            heff.GetYaxis().SetTitle("trigger efficiency from MB events")
+            heff.SetLineColor(1)
+            heff.Draw()
+            heff.Write()
             leg.Draw()
-            print("INDEX", i)
-        ctrigger.SaveAs(self.make_file_path(self.d_valevtdata, "ctrigger", "eps", \
-                                        None, None))
 
-        ccorrection = TCanvas('ccorrection', 'The Fit Canvas')
-        ccorrection.SetCanvasSize(2100, 1000)
-        ccorrection.Divide(2, 1)
-        for i, _ in enumerate(triggerlist):
-            ccorrection.cd(i+1)
-            leg = TLegend(.5, .65, .7, .85)
-            leg.SetBorderSize(0)
-            leg.SetFillColor(0)
-            leg.SetFillStyle(0)
-            leg.SetTextFont(42)
-            leg.SetTextSize(0.035)
-
-            labeltrigger = "hbit%svs%s" % (triggerlist[i], varlist[i])
-            labelMB = "hbitINT7vs%s" % varlist[i]
-            hratio = filedata.Get(labeltrigger)
-            hden = filedata.Get(labelMB)
-            hratio.SetLineColor(i+1)
-            hratio.Divide(hratio, hden, 1.0, 1.0, "B")
+            ctrigger.cd(3)
             hratio.GetXaxis().SetTitle("offline %s" % varlist[i])
-            hratio.SetMinimum(0.)
-            hratio.GetYaxis().SetTitle("ratio %s/MB" % triggerlist[i])
-            hratio.Draw("epsame")
-            leg.AddEntry(hratio, triggerlist[i], "LEP")
+            hratio.GetYaxis().SetTitle("ratio triggered/MB")
+            hratio.Write()
+            hratio.SetLineColor(1)
+            hratio.Draw()
             leg.Draw()
-        ccorrection.SaveAs(self.make_file_path(self.d_valevtdata, "ccorrection", "eps", \
-                                        None, None))
+            func = None
+            if i == 0:
+                func = TF1("func_%s" % triggerlist[i], \
+                           "([0]/(1+TMath::Exp(-[1]*(x-[2]))))", 0, 1000)
+                func.SetParameters(300, .1, 570)
+                func.SetParLimits(1, 0., 10.)
+                func.SetParLimits(2, 0., 1000.)
+                func.SetRange(0., 1000.)
+                func.SetLineWidth(1)
+                hratio.Fit(func, "L", "", 0, 1000)
+                func.Draw("same")
+                func.SetLineColor(i+1)
+            if i == 1:
+                func = TF1("func_%s" % triggerlist[i], \
+                           "([0]/(1+TMath::Exp(-[1]*(x-[2]))))", 20, 100)
+                func.SetParameters(100, .1, 50)
+                func.SetParLimits(1, 0., 10.)
+                func.SetParLimits(2, 0., 200.)
+                func.SetRange(0., 100.)
+                func.SetLineWidth(1)
+                hratio.Fit(func, "L", "", 0, 100)
+                func.SetLineColor(i+1)
+            if i == 2:
+                func = TF1("func_%s" % triggerlist[i], \
+                           "([0]/(1+TMath::Exp([1]*(x-[2]))))", 20, 100)
+                func.SetParameters(315, 30., .2)
+                func.SetParLimits(1, 0., 100.)
+                func.SetParLimits(2, 0., .5)
+                func.SetRange(0., .5)
+                func.SetLineWidth(1)
+                hratio.Fit(func, "w", "", 0, .5)
+                func.SetLineColor(i+1)
+            func.Write()
+            funcnorm = func.Clone("funcnorm_%s" % triggerlist[i])
+            funcnorm.FixParameter(0, funcnorm.GetParameter(0)/funcnorm.GetMaximum())
+            funcnorm.Write()
+            leg.Draw()
+            ctrigger.cd(4)
+            maxhistx = 0
+            if i == 0:
+                maxhistx = 1000
+            elif i == 1:
+                maxhistx = 150
+            else:
+                maxhistx = .5
+            hempty = TH1F("hempty", "hempty", 100, 0, maxhistx)
+            hempty.GetYaxis().SetTitleOffset(1.2)
+            hempty.GetYaxis().SetTitleFont(42)
+            hempty.GetXaxis().SetTitleFont(42)
+            hempty.GetYaxis().SetLabelFont(42)
+            hempty.GetXaxis().SetLabelFont(42)
+            hempty.GetXaxis().SetTitle("offline %s" % varlist[i])
+            hempty.GetYaxis().SetTitle("trigger efficiency from effective")
+            hempty.Draw()
+            funcnorm.SetLineColor(1)
+            funcnorm.Draw("same")
+            leg.Draw()
+            ctrigger.SaveAs(self.make_file_path(self.d_valevtdata, "ctrigger" + trigger + "_" \
+                                                + varlist[i], "eps", None, None))
+        cscatter = TCanvas("cscatter", 'The Fit Canvas')
+        cscatter.SetCanvasSize(2100, 2000)
+        cscatter.cd()
+        cscatter.SetLogx()
+        hv0mvsperc = filedata.Get("hv0mvsperc")
+        hv0mvsperc.GetXaxis().SetTitle("percentile (max value = 100)")
+        hv0mvsperc.GetYaxis().SetTitle("V0M corrected for z")
+        hv0mvsperc.Draw("colz")
+        cscatter.SaveAs(self.make_file_path(self.d_valevtdata, "cscatter", "eps", \
+                                            None, None))

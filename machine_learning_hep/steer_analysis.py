@@ -94,6 +94,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     doapplymc = data_config["mlapplication"]["mc"]["doapply"]
     domergeapplydata = data_config["mlapplication"]["data"]["domergeapply"]
     domergeapplymc = data_config["mlapplication"]["mc"]["domergeapply"]
+    docontinueapplydata = data_config["mlapplication"]["data"]["docontinueafterstop"]
+    docontinueapplymc = data_config["mlapplication"]["mc"]["docontinueafterstop"]
     dohistomassmc = data_config["analysis"]["mc"]["histomass"]
     dohistomassdata = data_config["analysis"]["data"]["histomass"]
     doefficiency = data_config["analysis"]["mc"]["efficiency"]
@@ -101,6 +103,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     dofit = data_config["analysis"]["dofit"]
     doeff = data_config["analysis"]["doeff"]
     docross = data_config["analysis"]["docross"]
+    doplots = data_config["analysis"]["doplots"]
     dosyst = data_config["analysis"]["dosyst"]
     dosystprob = data_config["systematics"]["probvariation"]
     doanaperperiod = data_config["analysis"]["doperperiod"]
@@ -147,8 +150,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     mlplot = data_param[case]["ml"]["mlplot"]
 
 
-    mymultiprocessmc = MultiProcesser(data_param[case], typean, run_param, "mc")
-    mymultiprocessdata = MultiProcesser(data_param[case], typean, run_param, "data")
+    mymultiprocessmc = MultiProcesser(case, data_param[case], typean, run_param, "mc")
+    mymultiprocessdata = MultiProcesser(case, data_param[case], typean, run_param, "data")
     myan = MultiAnalyzer(data_param[case], case, typean, doanaperperiod)
     mysis = Systematics(data_param[case], case, typean)
 
@@ -186,17 +189,19 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         counter = counter + checkdir(mlout)
         counter = counter + checkdir(mlplot)
 
-    if doapplymc is True:
-        counter = counter + checkdirlist(dirpklskdecmc)
+    if docontinueapplymc is False:
+        if doapplymc is True:
+            counter = counter + checkdirlist(dirpklskdecmc)
 
-    if doapplydata is True:
-        counter = counter + checkdirlist(dirpklskdecdata)
+        if domergeapplymc is True:
+            counter = counter + checkdirlist(dirpklskdec_mergedmc)
 
-    if domergeapplymc is True:
-        counter = counter + checkdirlist(dirpklskdec_mergedmc)
+    if docontinueapplydata is False:
+        if doapplydata is True:
+            counter = counter + checkdirlist(dirpklskdecdata)
 
-    if domergeapplydata is True:
-        counter = counter + checkdirlist(dirpklskdec_mergeddata)
+        if domergeapplydata is True:
+            counter = counter + checkdirlist(dirpklskdec_mergeddata)
 
     if dohistomassmc is True:
         counter = counter + checkdirlist(dirresultsmc)
@@ -248,17 +253,19 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         checkmakedir(mlout)
         checkmakedir(mlplot)
 
-    if doapplymc is True:
-        checkmakedirlist(dirpklskdecmc)
+    if docontinueapplymc is False:
+        if doapplymc is True:
+            checkmakedirlist(dirpklskdecmc)
 
-    if doapplydata is True:
-        checkmakedirlist(dirpklskdecdata)
+        if domergeapplymc is True:
+            checkmakedirlist(dirpklskdec_mergedmc)
 
-    if domergeapplymc is True:
-        checkmakedirlist(dirpklskdec_mergedmc)
+    if docontinueapplydata is False:
+        if doapplydata is True:
+            checkmakedirlist(dirpklskdecdata)
 
-    if domergeapplydata is True:
-        checkmakedirlist(dirpklskdec_mergeddata)
+        if domergeapplydata is True:
+            checkmakedirlist(dirpklskdec_mergeddata)
 
     if dohistomassmc is True:
         checkmakedirlist(dirresultsmc)
@@ -375,7 +382,9 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         if normalizecross is True:
             myan.multi_plotter()
         if normalizecross is False:
-            myan.multi_plotternormyields()
+            myan.multi_makenormyields()
+    if doplots is True:
+        myan.multi_plotternormyields()
     if dosystprob is True:
         mysis.probvariation()
 

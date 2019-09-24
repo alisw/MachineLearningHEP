@@ -44,11 +44,11 @@ mlapplication:
   data:
     doapply: false
     domergeapply: false
-    domergeapplyperiods: false
+    docontinueafterstop: false
   mc:
     doapply: false
     domergeapply: false
-    domergeapplyperiods: false
+    docontinueafterstop: false
 
 analysis:
   type: MBvspt_ntrkl
@@ -67,6 +67,7 @@ analysis:
   dojetstudies: false
   doeff: false
   docross: true
+  doplots: true
 
 systematics:
   # Not yet used

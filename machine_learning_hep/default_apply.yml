@@ -44,11 +44,11 @@ mlapplication:
   data:
     doapply: true
     domergeapply: true
-    domergeapplyperiods: true
+    docontinueafterstop: false
   mc:
     doapply: true
     domergeapply: true
-    domergeapplyperiods: true
+    docontinueafterstop: false
 
 analysis:
   type: SPDvspt
@@ -67,6 +67,7 @@ analysis:
   dojetstudies: false
   doeff: false
   docross: false
+  doplots: true
 
 systematics:
   probvariation: false
