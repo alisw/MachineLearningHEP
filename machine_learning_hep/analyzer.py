@@ -1538,6 +1538,7 @@ class Analyzer:
             for zbins in range(20):
                     hzvsjetpt.SetBinContent(zbins+1,imult+1,hz.GetBinContent(zbins+1))
                     hzvsjetpt.SetBinError(zbins+1,imult+1,hz.GetBinError(zbins+1))
+        hzvsjetpt.Write()
         czvsjetpt = TCanvas('czvsjetpt' + suffix, '2D input to unfolding')
         czvsjetpt.SetCanvasSize(1900, 1500)
         czvsjetpt.SetWindowSize(500, 500)
@@ -1973,20 +1974,19 @@ class Analyzer:
                                             None, None))
         
     def unfolding(self):
-        lfile = TFile.Open(self.n_filemass)
+        lfile = TFile.Open(self.n_filemass,"update")
         unfolding_input_data_file = TFile.Open("%s/side_band_sub%s%s.root" % \
                               (self.d_resultsallpdata, self.case, self.typean))
-        unfolding_input_file = TFile.Open("%s/unfoldinginputs%s%s.root" % \
-                              (self.d_resultsallpmc, self.case, self.typean))
+        unfolding_input_file = TFile.Open(self.n_fileff)
         response_matrix = unfolding_input_file.Get("response_matrix")
         input_data = unfolding_input_data_file.Get("hzvsjetpt")
         kinematic_eff = unfolding_input_file.Get("kin_eff")
-        for i in 15 :
+        for i in range(15) :
             unfolding_object = RooUnfoldBayes(response_matrix, input_data, i)
-            unfolded_zvsjetpt = unfolding_object.Hreco(errorTreatment)
+            unfolded_zvsjetpt = unfolding_object.Hreco(2) #check this
             unfolded_z = unfolded_zvsjetpt.ProjectionX("unfolded_z",2,2,"e")
             unfolded_z_scaled = unfolded_z.Clone("unfolded_z_scaled") 
-            unfolded_z_scaled.divide(kinematic_eff)
+            unfolded_z_scaled.Divide(kinematic_eff)
             unfolded_z_scaled.Scale(1.0/unfolded_z.Integral(1,-1),"width")
             unfolded_z_scaled.Write("unfolded_z_%d" % i)
             refolded_z = folding(unfolded_z, response_matrix, input_data)
@@ -1994,18 +1994,18 @@ class Analyzer:
             refolding_test.Divide(refolded_z)
 
     def unfolding_closure(self):
-        unfolding_input_file = TFile.Open("%s/unfoldinginputs%s%s.root" % \
-                              (self.d_resultsallpmc, self.case, self.typean))
+        lfile = TFile.Open(self.n_filemass,"update")
+        unfolding_input_file = TFile.Open(self.n_fileff)
         response_matrix = unfolding_input_file.Get("response_matrix_closure")
         input_mc_det = unfolding_input_file.Get("input_closure_reco")
         input_mc_gen = unfolding_input_file.Get("input_closure_gen")
         input_mc_gen.Scale(1.0/input_mc_gen.Integral(1,-1),"width")
         kinematic_eff = unfolding_input_file.Get("kin_eff")
-        for i in 15 :
+        for i in range(15) :
             unfolding_object = RooUnfoldBayes(response_matrix, input_mc_det, i)
-            unfolded_zvsjetpt = unfolding_object.Hreco(errorTreatment)
+            unfolded_zvsjetpt = unfolding_object.Hreco(2)
             unfolded_z = unfolded_zvsjetpt.ProjectionX("unfolded_z",2,2,"e")
-            unfolded_z.divide(kinematic_eff)
+            unfolded_z.Divide(kinematic_eff)
             unfolded_z.Scale(1.0/unfolded_z.Integral(1,-1),"width")
             unfolded_z.Divide(input_mc_gen)
             unfolded_z.Write("closure_test_%d" % i)
