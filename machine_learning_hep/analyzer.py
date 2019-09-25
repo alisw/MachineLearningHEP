@@ -1401,11 +1401,12 @@ class Analyzer:
         fileouts = TFile.Open("%s/side_band_sub%s%s.root" % \
                               (self.d_resultsallpdata, self.case, self.typean), "recreate")
         zbin =[]
-        for zbin_i in range(21) :
-            zbin.append(zbin,-0.5+zbin_i*0.1)
+        for zbin_i in range(21):
+            zbin.append(-0.5+zbin_i*0.1)
         zbinarray=array("d",zbin)
         jetptbin = [0.0,5.0,15.0,35.0]
-        hzvsjetpt = TH2F("hzvsjetpt","",20, zbinarray, 3, jetptbin)
+        jetptbinarray=array("d",jetptbin)
+        hzvsjetpt = TH2F("hzvsjetpt","",20, zbinarray, 3, jetptbinarray)
         for imult in range(self.p_nbin2):
             heff = eff_file.Get("eff_mult%d" % imult)
             hz = None
