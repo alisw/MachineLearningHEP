@@ -200,7 +200,7 @@ class Analyzer:
             self.logger.fatal("You are not in the AliPhysics env")
 
 
-    # pylint: disable=too-many-branches, too-many-locals
+    # pylint: disable=too-many-branches, too-many-locals, too-many-nested-blocks
     def fitter(self):
         # Test if we are in AliPhysics env
         #self.test_aliphysics()
@@ -238,8 +238,9 @@ class Analyzer:
 
                 # Initialize mean and sigma with user seeds. This is also the fallback if initial
                 # MC and data fits fail
-                sigma_for_data = self.p_sigmaarray[ipt]
                 mean_for_data = self.p_masspeak
+                sigma_for_data = self.p_sigmaarray[ipt]
+                means_sigmas_init = [(2, mean_for_data, sigma_for_data)]
 
                 ########################
                 # START initialize fit #
@@ -282,8 +283,9 @@ class Analyzer:
                 mass_fitter_mc_init.SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
                 success = mass_fitter_mc_init.MassFitter(False)
                 if success:
-                    sigma_for_data = mass_fitter_mc_init.GetSigma()
                     mean_for_data = mass_fitter_mc_init.GetMean()
+                    sigma_for_data = mass_fitter_mc_init.GetSigma()
+                    means_sigmas_init.insert(0, (1, mean_for_data, sigma_for_data))
                 else:
                     self.logger.error("Could not do initial fit on MC")
 
@@ -323,13 +325,12 @@ class Analyzer:
                                                                 self.p_widthsecpeak,
                                                                 self.p_fix_widthsecpeak)
                 success = mass_fitter_data_init.MassFitter(False)
-                if success and self.init_fits_from == "data":
-                    sigma_for_data = mass_fitter_data_init.GetSigma()
-                    mean_for_data = mass_fitter_data_init.GetMean()
+                if success:
+                    means_sigmas_init.insert(0, (0, mass_fitter_data_init.GetMean(),
+                                                 mass_fitter_data_init.GetSigma()))
 
                 canvas = TCanvas("fit_canvas_data_init", suffix_write, 700, 700)
                 mass_fitter_data_init.DrawHere(canvas, self.p_nsigma_signal)
-
 
                 canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
                                                   "fittedplot_integrated", "eps",
@@ -353,37 +354,57 @@ class Analyzer:
                 h_invmass_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass, self.p_rebin[ipt], -1)
                 h_invmass_rebin = TH1F()
                 h_invmass_rebin_.Copy(h_invmass_rebin)
-                mass_fitter = AliHFInvMassFitter(h_invmass_rebin, self.p_massmin[ipt],
-                                                 self.p_massmax[ipt],
-                                                 self.bkg_func_map[self.p_bkgfunc[ipt]],
-                                                 self.sig_func_map[self.p_sgnfunc[ipt]])
+
+                success = False
+
+                mass_fitter = None
+                # First try not fixing sigma for all cases (mean always floating)
+                for fix in [False, True]:
+                    # For now, ignore case. Use later to tell which fit was used
+                    for _, mean, sigma in means_sigmas_init:
+
+                        mass_fitter = AliHFInvMassFitter(h_invmass_rebin, self.p_massmin[ipt],
+                                                         self.p_massmax[ipt],
+                                                         self.bkg_func_map[self.p_bkgfunc[ipt]],
+                                                         self.sig_func_map[self.p_sgnfunc[ipt]])
 
 
-                if self.p_dolike:
-                    mass_fitter.SetUseLikelihoodFit()
-                mass_fitter.SetInitialGaussianMean(mean_for_data)
-                mass_fitter.SetInitialGaussianSigma(sigma_for_data)
-                if self.p_fixedmean:
-                    mass_fitter.SetFixGaussianMean(mean_for_data)
-                if self.p_fixingaussigma:
-                    mass_fitter.SetFixGaussianSigma(sigma_for_data)
-                mass_fitter.SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
+                        if self.p_dolike:
+                            mass_fitter.SetUseLikelihoodFit()
+                        # At this point *_for_data is either
+                        # -> the seed value extracted from integrated data pre-fit if successful
+                        # -> the seed value extracted from integrated MC pre-fit if successful
+                        #    and data pre-fit failed
+                        # -> the seed value set by the user in the database if both
+                        #    data and MC pre-fit fail
+                        mass_fitter.SetInitialGaussianMean(mean)
+                        mass_fitter.SetInitialGaussianSigma(sigma)
+                        #if self.p_fixedmean:
+                        #    mass_fitter.SetFixGaussianMean(mean_for_data)
+                        if fix:
+                            mass_fitter.SetFixGaussianSigma(sigma)
+                        mass_fitter.SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
 
-                if self.include_reflection:
-                    h_invmass_refl = AliVertexingHFUtils.RebinHisto(
-                        lfile_mc.Get("hmass_refl" + suffix), self.p_rebin[ipt], -1)
-                    if h_invmass_refl.Integral() > 0.:
-                        mass_fitter.SetTemplateReflections(h_invmass_refl, "templ",
-                                                           self.p_massmin[ipt],
-                                                           self.p_massmax[ipt])
-                    else:
-                        self.logger.warning("Reflection requested but template empty")
-                    # TODO Need init for ReflOverS?
-                if self.p_includesecpeak[ipt]:
-                    mass_fitter.IncludeSecondGausPeak(self.p_masssecpeak, self.p_fix_masssecpeak,
-                                                      self.p_widthsecpeak, self.p_fix_widthsecpeak)
+                        if self.include_reflection:
+                            h_invmass_refl = AliVertexingHFUtils.RebinHisto(
+                                lfile_mc.Get("hmass_refl" + suffix), self.p_rebin[ipt], -1)
+                            if h_invmass_refl.Integral() > 0.:
+                                mass_fitter.SetTemplateReflections(h_invmass_refl, "templ",
+                                                                   self.p_massmin[ipt],
+                                                                   self.p_massmax[ipt])
+                            else:
+                                self.logger.warning("Reflection requested but template empty")
+                            # TODO Need init for ReflOverS?
+                        if self.p_includesecpeak[ipt]:
+                            mass_fitter.IncludeSecondGausPeak(self.p_masssecpeak,
+                                                              self.p_fix_masssecpeak,
+                                                              self.p_widthsecpeak,
+                                                              self.p_fix_widthsecpeak)
 
-                success = mass_fitter.MassFitter(False)
+                        if mass_fitter.MassFitter(False):
+                            success = True
+                            break
+
                 canvas = TCanvas("fit_canvas", suffix, 700, 700)
                 mass_fitter.DrawHere(canvas, self.p_nsigma_signal)
 
@@ -398,12 +419,15 @@ class Analyzer:
 
                 fit_dir = fileout.mkdir(suffix)
                 fit_dir.WriteObject(mass_fitter, "fitter")
-                rawYield = mass_fitter.GetRawYield() / \
-                        (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
-                rawYieldErr = mass_fitter.GetRawYieldError() / \
-                        (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
-                yieldshistos[imult].SetBinContent(ipt + 1, rawYield)
-                yieldshistos[imult].SetBinError(ipt + 1, rawYieldErr)
+                if success:
+                    rawYield = mass_fitter.GetRawYield() / \
+                            (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
+                    rawYieldErr = mass_fitter.GetRawYieldError() / \
+                            (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
+                    yieldshistos[imult].SetBinContent(ipt + 1, rawYield)
+                    yieldshistos[imult].SetBinError(ipt + 1, rawYieldErr)
+                else:
+                    self.logger.error("Fit failed for suffix %s", suffix_write)
             fileout.cd()
             yieldshistos[imult].Write()
 
