@@ -36,6 +36,14 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
     gStyle.SetCanvasColor(0)
     gStyle.SetFrameFillColor(0)
     gStyle.SetOptTitle(0)
+    gStyle.SetTitleOffset(1.15, "y")
+    gStyle.SetTitleFont(42, "xy")
+    gStyle.SetLabelFont(42, "xy")
+    gStyle.SetTitleSize(0.042, "xy")
+    gStyle.SetLabelSize(0.035, "xy")
+    gStyle.SetPadTickX(1)
+    gStyle.SetPadTickY(1)
+
     with open("data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
 
@@ -62,14 +70,6 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
                                     (folder_triggered, case, arraytype[1]))
     fileres_trig = [TFile.Open("%s/finalcross%s%smult%d.root" % (folder_MB_allperiods, \
                           case, arraytype[0], i)) for i in [0, 1, 2]]
-
-    gStyle.SetTitleOffset(1.15, "y")
-    gStyle.SetTitleFont(42, "xy")
-    gStyle.SetLabelFont(42, "xy")
-    gStyle.SetTitleSize(0.042, "xy")
-    gStyle.SetLabelSize(0.035, "xy")
-    gStyle.SetPadTickX(1)
-    gStyle.SetPadTickY(1)
 
     #Corrected yield plot
     ccross = TCanvas('cCross', 'The Fit Canvas')
@@ -238,9 +238,122 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
     cfPrompt.SaveAs("ComparisonfPrompt_%s_%scombined%s.eps" % \
                   (case, arraytype[0], arraytype[1]))
 
+# pylint: disable=import-error, no-name-in-module, unused-import
+# pylint: disable=too-many-statements
+def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype, isv0m=False):
+
+    gROOT.SetStyle("Plain")
+    gStyle.SetOptStat(0)
+    gStyle.SetOptStat(0000)
+    gStyle.SetPalette(0)
+    gStyle.SetCanvasColor(0)
+    gStyle.SetFrameFillColor(0)
+    gStyle.SetOptTitle(0)
+    gStyle.SetTitleOffset(1.15, "y")
+    gStyle.SetTitleFont(42, "xy")
+    gStyle.SetLabelFont(42, "xy")
+    gStyle.SetTitleSize(0.042, "xy")
+    gStyle.SetLabelSize(0.035, "xy")
+    gStyle.SetPadTickX(1)
+    gStyle.SetPadTickY(1)
+
+    with open("data/database_ml_parameters_%s.yml" % case_num, 'r') as param_config_num:
+        data_param_num = yaml.load(param_config_num, Loader=yaml.FullLoader)
+
+    with open("data/database_ml_parameters_%s.yml" % case_den, 'r') as param_config_den:
+        data_param_den = yaml.load(param_config_den, Loader=yaml.FullLoader)
+
+    folder_num_allperiods = \
+        data_param_num[case_num]["analysis"][arraytype[0]]["data"]["resultsallp"]
+    folder_den_allperiods = \
+        data_param_den[case_den]["analysis"][arraytype[0]]["data"]["resultsallp"]
+    if isv0m is False:
+        folder_num_triggered = \
+            data_param_num[case_num]["analysis"][arraytype[1]]["data"]["results"][3]
+        folder_den_triggered = \
+            data_param_den[case_den]["analysis"][arraytype[1]]["data"]["results"][3]
+    else:
+        folder_num_triggered = \
+            data_param_num[case_num]["analysis"][arraytype[1]]["data"]["resultsallp"]
+        folder_den_triggered = \
+            data_param_den[case_den]["analysis"][arraytype[1]]["data"]["resultsallp"]
+
+    binsmin_num = data_param_num[case_num]["analysis"][arraytype[0]]["sel_binmin2"]
+    binsmax_num = data_param_num[case_num]["analysis"][arraytype[0]]["sel_binmax2"]
+    name_num = data_param_num[case_num]["analysis"][arraytype[0]]["latexnamemeson"]
+    name_den = data_param_den[case_den]["analysis"][arraytype[0]]["latexnamemeson"]
+    latexbin2var = data_param_num[case_num]["analysis"][arraytype[0]]["latexbin2var"]
+    plotbinMB = data_param_num[case_num]["analysis"][arraytype[0]]["plotbin"]
+    plotbinHM = data_param_num[case_num]["analysis"][arraytype[1]]["plotbin"]
+    br_num = data_param_num[case_num]["ml"]["opt"]["BR"]
+    br_den = data_param_den[case_den]["ml"]["opt"]["BR"]
+
+    file_num_allperiods = TFile.Open("%s/finalcross%s%smulttot.root" % \
+                                     (folder_num_allperiods, case_num, arraytype[0]))
+    file_den_allperiods = TFile.Open("%s/finalcross%s%smulttot.root" % \
+                                     (folder_den_allperiods, case_den, arraytype[0]))
+    file_num_triggered = TFile.Open("%s/finalcross%s%smulttot.root" % \
+                                      (folder_num_triggered, case_num, arraytype[1]))
+    file_den_triggered = TFile.Open("%s/finalcross%s%smulttot.root" % \
+                                      (folder_den_triggered, case_den, arraytype[1]))
+
+    ccross = TCanvas('cRatioCross', 'The Fit Canvas')
+    ccross.SetCanvasSize(1500, 1500)
+    ccross.SetWindowSize(500, 500)
+    ccross.cd(1).DrawFrame(0.9, 0, 30, 1, ";#it{p}_{T} (GeV/#it{c});%s / %s" % (name_num, name_den))
+    ccross.cd(1).SetLogx()
+
+    legyield = TLegend(.4, .68, .8, .88)
+    legyield.SetBorderSize(0)
+    legyield.SetFillColor(0)
+    legyield.SetFillStyle(0)
+    legyield.SetTextFont(42)
+    legyield.SetTextSize(0.025)
+
+    colors = [kBlack, kRed, kGreen+2, kBlue]
+    for imult, iplot in enumerate(plotbinMB):
+        if not iplot:
+            continue
+        hratio = file_num_allperiods.Get("histoSigmaCorr%d" % (imult))
+        hratio.Scale(1./br_num)
+        hcross_den = file_den_allperiods.Get("histoSigmaCorr%d" % (imult))
+        hcross_den.Scale(1./br_den)
+        hratio.Divide(hcross_den)
+        hratio.SetLineColor(colors[imult])
+        hratio.SetMarkerColor(colors[imult])
+        hratio.SetMarkerStyle(21)
+        hratio.Draw("same")
+        legyieldstring = "%.1f < %s < %.1f (MB)" % \
+                    (binsmin_num[imult], latexbin2var, binsmax_num[imult])
+        legyield.AddEntry(hratio, legyieldstring, "LEP")
+
+    for imult, iplot in enumerate(plotbinHM):
+        if not iplot:
+            continue
+        hratioHM = file_num_triggered.Get("histoSigmaCorr%d" % (imult))
+        hratioHM.Scale(1./br_num)
+        hcrossHM_den = file_den_triggered.Get("histoSigmaCorr%d" % (imult))
+        hcrossHM_den.Scale(1./br_den)
+        hratioHM.Divide(hcrossHM_den)
+        hratioHM.SetLineColor(colors[imult])
+        hratioHM.SetMarkerColor(colors[imult])
+        hratioHM.Draw("same")
+        legyieldstring = "%.1f < %s < %.1f (HM)" % \
+                (binsmin_num[imult], latexbin2var, binsmax_num[imult])
+        legyield.AddEntry(hratioHM, legyieldstring, "LEP")
+    legyield.Draw()
+
+    ccross.SaveAs("ComparisonRatios_%s%s_%scombined%s.eps" % \
+                  (case_num, case_den, arraytype[0], arraytype[1]))
+
+
 plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_ntrkl", "SPDvspt"])
 plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_v0m", "V0mvspt"], True)
 plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_perc", "V0mvspt_perc_v0m"], True)
 plot_hfptspectrum_comb("D0pp", ["MBvspt_ntrkl", "SPDvspt"])
 plot_hfptspectrum_comb("D0pp", ["MBvspt_v0m", "V0mvspt"], True)
 plot_hfptspectrum_comb("D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"], True)
+
+plot_hfptspectrum_ratios_comb("LcpK0spp", "D0pp", ["MBvspt_ntrkl", "SPDvspt"])
+plot_hfptspectrum_ratios_comb("LcpK0spp", "D0pp", ["MBvspt_v0m", "V0mvspt"], True)
+plot_hfptspectrum_ratios_comb("LcpK0spp", "D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"], True)
