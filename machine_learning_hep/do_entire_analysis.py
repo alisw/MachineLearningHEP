@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #############################################################################
 ##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##

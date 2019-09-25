@@ -1490,6 +1490,8 @@ class Analyzer:
             labeltrigger = "hbit%svs%s" % (triggerlist[i], varlist[i])
             hden = filedata.Get(labelMB)
             heff = filedata.Get(labeltriggerANDMB)
+            if not heff or not hden:
+                continue
             heff.Divide(heff, hden, 1.0, 1.0, "B")
             hratio = filedata.Get(labeltrigger)
             if not hratio:

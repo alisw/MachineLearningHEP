@@ -606,7 +606,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
     def process_valevents(self, file_index):
         dfevt = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
         dfevt = dfevt.query("is_ev_rej==0")
-        triggerlist = ["HighMultV0", "HighMultSPD", "HighMultV0", "INT7"]
+        triggerlist = ["HighMultV0", "HighMultSPD", "INT7"]
         varlist = ["v0m_corr", "n_tracklets_corr", "perc_v0m"]
         nbinsvar = [100, 200, 200]
         minrvar = [0, 0, 0]
@@ -615,6 +615,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         hv0mvsperc = scatterplot(dfevt, "perc_v0m", "v0m_corr", 50000, 0, 100, 200, 0., 2000.)
         hv0mvsperc.SetName("hv0mvsperc")
         hv0mvsperc.Write()
+        dfevtnorm = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
         for ivar, var in enumerate(varlist):
             label = "hbitINT7vs%s" % (var)
             histoMB = TH1F(label, label, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
@@ -633,7 +634,28 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 histotrig.Sumw2()
                 histotrigANDMB.Write()
                 histotrig.Write()
-        dfevtnorm = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
+                hSelMult = TH1F('sel_' + labeltriggerANDMB, 'sel_' + labeltriggerANDMB, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
+                hNoVtxMult = TH1F('novtx_' + labeltriggerANDMB, 'novtx_' + labeltriggerANDMB, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
+                hVtxOutMult = TH1F('vtxout_' + labeltriggerANDMB, 'vtxout_' + labeltriggerANDMB, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
+
+                # multiplicity dependent normalisation
+                dftrg = dfevtnorm.query(triggerbit)
+                dfsel = dftrg.query('is_ev_rej == 0')
+                df_to_keep = filter_bit_df(dftrg, 'is_ev_rej', [[], [0, 5, 6, 10, 11]])
+                # events with reco vtx after previous selection
+                tag_vtx = tag_bit_df(df_to_keep, 'is_ev_rej', [[], [1, 2, 7, 12]])
+                df_no_vtx = df_to_keep[~tag_vtx.values]
+                # events with reco zvtx > 10 cm after previous selection
+                df_bit_zvtx_gr10 = filter_bit_df(df_to_keep, 'is_ev_rej', [[3], [1, 2, 7, 12]])
+
+                fill_hist(hSelMult, dfsel[var])
+                fill_hist(hNoVtxMult, df_no_vtx[var])
+                fill_hist(hVtxOutMult, df_bit_zvtx_gr10[var])
+
+                hSelMult.Write()
+                hNoVtxMult.Write()
+                hVtxOutMult.Write()
+
         hNorm = TH1F("hEvForNorm", ";;Normalisation", 2, 0.5, 2.5)
         hNorm.GetXaxis().SetBinLabel(1, "normsalisation factor")
         hNorm.GetXaxis().SetBinLabel(2, "selected events")
