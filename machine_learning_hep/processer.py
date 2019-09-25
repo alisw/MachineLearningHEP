@@ -603,10 +603,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
     # pylint: disable=too-many-locals
     def process_unfolding(self):
-
-        out_file = TFile.Open("%s/unfoldinginputs%s%s.root" % \
-                              (self.d_resultsallpmc, self.case, self.typean), "update")
-
+        out_file = TFile.Open(self.n_fileeff, "update")
         list_df_mc_reco = []
         for iptskim, _ in enumerate(self.lpt_anbinmin):
             df_mc_reco = pickle.load(openfile(self.lpt_recodecmerged[iptskim], "rb"))
@@ -639,19 +636,19 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         hz_gen_nocuts=TH1F("hz_gen_nocuts","",20, zbin)
         hz_gen_cuts=TH1F("hz_gen_cuts","",20,zbin)
-        
+
         hzvsjetpt_reco_closure=TH2F("hzvsjetpt_reco_closure","",20,zbin,3, jetptbin)
         hzvsjetpt_gen_closure=TH2F("hzvsjetpt_gen_closure","",20,zbin,3, jetptbin)
 
         hzvsjetpt_reco=TH2F("hzvsjetpt_reco","",20,zbin,3,jetptbin)
         hzvsjetpt_gen=TH2F("hzvsjetpt_gen","",20,zbin,3,jetptbin)
-        
+
         response_matrix = RooUnfoldResponse(hzvsjetpt_reco, hzvsjetpt_gen)
         response_matrix_closure = RooUnfoldResponse(hzvsjetpt_reco, hzvsjetpt_gen)
 
         random_number = TRandom3(0)
         for row in df_mc_reco_merged_prompt.rows:
-            
+
             hzvsjetpt_reco.Fill(row['z_reco'],row['pt_jet'])
             hzvsjetpt_gen.Fill(row['z_gen'],row['pt_gen_jet'])
 

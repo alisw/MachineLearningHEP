@@ -51,7 +51,7 @@ mlapplication:
     docontinueafterstop: false
 
 analysis:
-  type: MBvspt_ntrkl
+  type: MBjetvspt
   # Do each period separately including merged (true)
   # Do only merged (false)
   doperperiod: false
@@ -61,6 +61,8 @@ analysis:
     histomass: true
     efficiency: true
     feeddown: false
+    dounfolding: true
+
   dofit: true
   # Control the yield systemaitc uncertainty
   dosyst: false

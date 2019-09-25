@@ -156,7 +156,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         for indexp in range(self.prodnumber):
             self.process_listsample[indexp].process_efficiency()
             self.process_listsample[indexp].process_response()
-
+            self.process_listsample[indexp].process_unfolding()
         mergerootfiles(self.lper_fileeff, self.fileeff_mergedall)
 
     def multi_scancuts(self):
