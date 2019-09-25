@@ -22,7 +22,7 @@ import yaml
 from ROOT import TFile, TH1F, TCanvas
 from ROOT import gStyle, TLegend
 from ROOT import gROOT
-from ROOT import TStyle, gPad
+from ROOT import TStyle, gPad, TLatex, TText
 
 # pylint: disable=import-error, no-name-in-module, unused-import
 # pylint: disable=too-many-statements
@@ -45,9 +45,7 @@ def plotcomparison_ntrkl(case, arraytype, var):
 
 
     ccross = TCanvas('cCross', 'The Fit Canvas', 100, 600)
-    ccross = TCanvas('cCross', 'The Fit Canvas')
-    ccross.SetCanvasSize(1500, 1500)
-    ccross.SetWindowSize(500, 500)
+    ccross = TCanvas('cCross', 'The Fit Canvas',1)
     ccross.SetLogx()
 
     legyield = TLegend(.3, .65, .7, .85)
@@ -68,24 +66,40 @@ def plotcomparison_ntrkl(case, arraytype, var):
     hempty.GetXaxis().SetTitleFont(42)
     hempty.GetYaxis().SetLabelFont(42)
     hempty.GetXaxis().SetLabelFont(42)
-    hempty.GetYaxis().SetTitle("Corrected yield %s" % case)
-    hempty.GetXaxis().SetTitle("p_{T} (GeV)")
-    hempty.SetMinimum(1e-8)
-    hempty.SetMaximum(1000)
+
+    part = case[:-2]
+    if part=="D0":
+        part="D^{0}"
+    elif part=="Dstar":
+        part="D^{*#pm}"
+    elif part=="Ds":
+        part="D_{s}^{#pm}"
+    elif part=="LcpKpi":
+        part="#Lambda_{c}^{#pm} (pKpi)"
+    elif part=="LcpK0s":
+        part="#Lambda_{c}^{#pm} (pK^{0}_{s})"
+    else:
+        part=case
+
+    hempty.GetYaxis().SetTitle("%s corrected yield" % part)
+    hempty.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
+    hempty.SetMinimum(1e-9)
+    hempty.SetMaximum(100)
     hempty.Draw()
 
-    legyield = TLegend(.3, .65, .7, .85)
+    legyield = TLegend(.13, .15, .4, .35)
     legyield.SetBorderSize(0)
     legyield.SetFillColor(0)
     legyield.SetFillStyle(0)
     legyield.SetTextFont(42)
     legyield.SetTextSize(0.035)
 
-    colors = [1, 2, 3, 4]
+    colors = [12, 2, 8, 4]
     legends = ["integrated from MB",
-               "ntrkl 0-20 from MB",
-               "ntrkl 20-60 from MB",
-               "ntrkl 60-1000 from HighMultSPD"]
+               "n_{trkl} #in [0, 20] from MB",
+               "n_{trkl} #in [20, 60] from MB",
+               "n_{trkl} #in [60, 1000] from HighMultSPD"]
+
     for imult  in [0, 1, 2]:
         gPad.SetLogy()
         hyield = fileres_MB_allperiods.Get("histoSigmaCorr%d" % (imult))
@@ -94,6 +108,15 @@ def plotcomparison_ntrkl(case, arraytype, var):
         hyield.SetMarkerColor(colors[imult])
         hyield.Draw("same")
         legyield.AddEntry(hyield, legends[imult], "LEP")
+
+    param = TLatex()
+    param.SetNDC()
+    param.SetTextSize(0.04)
+    param.SetTextColor(1)
+    param.DrawLatex(0.15, 0.83, "#font[42]{ALICE}")
+    param.SetTextSize(0.035)
+    param.DrawLatex(0.15, 0.78, "#font[42]{pp #sqrt{#it{s}} = 13 TeV, |#it{y}| < 0.5}")
+
     legyield.Draw()
 
     hyieldSPD2018 = fileres_MB_SPD2018.Get("histoSigmaCorr3")
