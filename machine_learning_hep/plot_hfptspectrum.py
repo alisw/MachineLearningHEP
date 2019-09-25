@@ -85,38 +85,62 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
     legyield.SetTextFont(42)
     legyield.SetTextSize(0.035)
 
-    colors = [kBlack, kRed, kGreen+2, kBlue]
-    for imult, iplot in enumerate(plotbinMB):
-        if not iplot:
-            continue
-        gPad.SetLogy()
-        hyield = fileres_MB_allperiods.Get("histoSigmaCorr%d" % (imult))
-        hyield.Scale(1./br)
-        hyield.SetLineColor(colors[imult])
-        hyield.SetMarkerColor(colors[imult])
-        hyield.SetMarkerStyle(21)
-        hyield.Draw("same")
-        legyieldstring = "%.1f < %s < %.1f (MB)" % \
-                    (binsmin[imult], latexbin2var, binsmax[imult])
-        legyield.AddEntry(hyield, legyieldstring, "LEP")
+    if fileres_MB_allperiods and fileres_trig_allperiods:
 
-    for imult, iplot in enumerate(plotbinHM):
-        if not iplot:
-            continue
-        gPad.SetLogy()
-        hyieldHM = fileres_trig_allperiods.Get("histoSigmaCorr%d" % (imult))
-        hyieldHM.Scale(1./br)
-        hyieldHM.SetLineColor(colors[imult])
-        hyieldHM.SetMarkerColor(colors[imult])
-        hyieldHM.SetMarkerStyle(21)
-        hyieldHM.Draw("same")
-        legyieldstring = "%.1f < %s < %.1f (HM)" % \
-              (binsmin[imult], latexbin2var, binsmax[imult])
-        legyield.AddEntry(hyieldHM, legyieldstring, "LEP")
-    legyield.Draw()
+        colors = [kBlack, kRed, kGreen+2, kBlue]
+        for imult, iplot in enumerate(plotbinMB):
+            if not iplot:
+                continue
+            gPad.SetLogy()
+            hyield = fileres_MB_allperiods.Get("histoSigmaCorr%d" % (imult))
+            hyield.Scale(1./br)
+            hyield.SetLineColor(colors[imult])
+            hyield.SetMarkerColor(colors[imult])
+            hyield.SetMarkerStyle(21)
+            hyield.Draw("same")
+            legyieldstring = "%.1f < %s < %.1f (MB)" % \
+                        (binsmin[imult], latexbin2var, binsmax[imult])
+            legyield.AddEntry(hyield, legyieldstring, "LEP")
 
-    ccross.SaveAs("ComparisonCorrYields_%s_%scombined%s.eps" % \
+        for imult, iplot in enumerate(plotbinHM):
+            if not iplot:
+                continue
+            gPad.SetLogy()
+            hyieldHM = fileres_trig_allperiods.Get("histoSigmaCorr%d" % (imult))
+            hyieldHM.Scale(1./br)
+            hyieldHM.SetLineColor(colors[imult])
+            hyieldHM.SetMarkerColor(colors[imult])
+            hyieldHM.SetMarkerStyle(21)
+            hyieldHM.Draw("same")
+            legyieldstring = "%.1f < %s < %.1f (HM)" % \
+                  (binsmin[imult], latexbin2var, binsmax[imult])
+            legyield.AddEntry(hyieldHM, legyieldstring, "LEP")
+        legyield.Draw()
+
+        ccross.SaveAs("ComparisonCorrYields_%s_%scombined%s.eps" % \
                   (case, arraytype[0], arraytype[1]))
+    else:
+        print("---Warning: Issue with merged files. Corr. yield plot skipped for %s (%s, %s)---" % \
+                 (case, arraytype[0], arraytype[1]))
+
+    idx = 0
+    for iplot in plotbinMB:
+        if not iplot:
+            continue
+        if not fileres_MB[idx]:
+            print("---Warning: Issue with MB file. Eff and FD plot skipped for %s (%s, %s)---" % \
+                   (case, arraytype[0], arraytype[1]))
+            return
+        idx = idx + 1
+    idx = 0
+    for iplot in plotbinHM:
+        if not iplot:
+            continue
+        if not fileres_trig[idx]:
+            print("---Warning: Issue with HM file. Eff and FD plot skipped for %s (%s, %s)---" % \
+                   (case, arraytype[0], arraytype[1]))
+            return
+        idx = idx + 1
 
     #Efficiency plot
     cEff = TCanvas('cEff', '', 800, 400)
@@ -297,6 +321,26 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype, isv0m=False):
     file_den_triggered = TFile.Open("%s/finalcross%s%smulttot.root" % \
                                       (folder_den_triggered, case_den, arraytype[1]))
 
+    print("%s/finalcross%s%smulttot.root" % \
+      (folder_num_allperiods, case_num, arraytype[0]))
+    print("%s/finalcross%s%smulttot.root" % \
+        (folder_den_allperiods, case_den, arraytype[0]))
+    print("%s/finalcross%s%smulttot.root" % \
+          (folder_num_triggered, case_num, arraytype[1]))
+    print("%s/finalcross%s%smulttot.root" % \
+            (folder_den_triggered, case_den, arraytype[1]))
+    if not file_num_allperiods or not file_num_triggered:
+        print("---Warning: Issue with %s merged files. Meson ratio plot skipped (%s, %s)---" % \
+                 (case_num, arraytype[0], arraytype[1]))
+        return
+    if not file_den_allperiods or not file_den_triggered:
+        print("---Warning: Issue with %s merged files. Meson ratio plot skipped (%s, %s)---" % \
+                 (case_den, arraytype[0], arraytype[1]))
+        return
+
+    fileoutput = TFile.Open("ComparisonRatios_%s%s_%scombined%s.root" % \
+                        (case_num, case_den, arraytype[0], arraytype[1]), "recreate")
+
     ccross = TCanvas('cRatioCross', 'The Fit Canvas')
     ccross.SetCanvasSize(1500, 1500)
     ccross.SetWindowSize(500, 500)
@@ -322,10 +366,14 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype, isv0m=False):
         hratio.SetLineColor(colors[imult])
         hratio.SetMarkerColor(colors[imult])
         hratio.SetMarkerStyle(21)
+        hratio.SetTitle(";#it{p}_{T} (GeV/#it{c});%s / %s" % (name_num, name_den))
         hratio.Draw("same")
         legyieldstring = "%.1f < %s < %.1f (MB)" % \
                     (binsmin_num[imult], latexbin2var, binsmax_num[imult])
         legyield.AddEntry(hratio, legyieldstring, "LEP")
+        fileoutput.cd()
+        hratio.Write("hratio_fromMB_%.1f_%s_%.1f" % \
+                          (binsmin_num[imult], latexbin2var, binsmax_num[imult]))
 
     for imult, iplot in enumerate(plotbinHM):
         if not iplot:
@@ -337,15 +385,24 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype, isv0m=False):
         hratioHM.Divide(hcrossHM_den)
         hratioHM.SetLineColor(colors[imult])
         hratioHM.SetMarkerColor(colors[imult])
+        hratioHM.SetTitle(";#it{p}_{T} (GeV/#it{c});%s / %s" % (name_num, name_den))
         hratioHM.Draw("same")
         legyieldstring = "%.1f < %s < %.1f (HM)" % \
                 (binsmin_num[imult], latexbin2var, binsmax_num[imult])
         legyield.AddEntry(hratioHM, legyieldstring, "LEP")
+        fileoutput.cd()
+        hratioHM.Write("hratio_fromHM_%.1f_%s_%.1f" % \
+                          (binsmin_num[imult], latexbin2var, binsmax_num[imult]))
     legyield.Draw()
 
     ccross.SaveAs("ComparisonRatios_%s%s_%scombined%s.eps" % \
                   (case_num, case_den, arraytype[0], arraytype[1]))
 
+    fileoutput.cd()
+    ccross.Write()
+    fileoutput.Close()
+    print("---Output stored in: ComparisonRatios_%s%s_%scombined%s.root---" % \
+            (case_num, case_den, arraytype[0], arraytype[1]))
 
 plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_ntrkl", "SPDvspt"])
 plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_v0m", "V0mvspt"], True)
