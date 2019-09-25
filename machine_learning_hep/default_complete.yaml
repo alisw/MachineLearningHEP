@@ -38,7 +38,7 @@ ml_study:
   dosignifopt: false
   doefficiency: false
   dotesting: false
-  dotraining: true
+  dotraining: false
 
 mlapplication:
   data:
@@ -56,15 +56,15 @@ analysis:
   # Do only merged (false)
   doperperiod: false
   data:
-    histomass: false
+    histomass: true
   mc:
-    histomass: false
-    efficiency: false
+    histomass: true
+    efficiency: true
     feeddown: false
   dofit: true
   # Control the yield systemaitc uncertainty
   dosyst: false
-  dojetstudies: false
+  dojetstudies: true
   doeff: true
   docross: true
   doplots: true

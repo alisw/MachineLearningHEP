@@ -24,7 +24,7 @@ from subprocess import Popen
 import numpy as np
 # pylint: disable=import-error, no-name-in-module, unused-import
 from root_numpy import hist2array, array2hist
-from ROOT import TFile, TH1F, TCanvas, TPad, TF1
+from ROOT import TFile, TH1F, TH2F, TCanvas, TPad, TF1
 from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
 from ROOT import gROOT, TDirectory, TPaveLabel
 from ROOT import TStyle, kBlue, kGreen, kBlack, kRed
@@ -34,9 +34,10 @@ from ROOT import gInterpreter, gPad
 from machine_learning_hep.globalfitter import Fitter
 from  machine_learning_hep.logger import get_logger
 from  machine_learning_hep.io import dump_yaml_from_dict
-#from ROOT import RooUnfoldResponse
-#from ROOT import RooUnfold
-#from ROOT import RooUnfoldBayes
+from ROOT import RooUnfoldResponse  
+from ROOT import RooUnfold  
+from ROOT import RooUnfoldBayes
+
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
 class Analyzer:
     species = "analyzer"
@@ -1399,6 +1400,12 @@ class Analyzer:
                               (self.d_resultsallpmc, self.case, self.typean))
         fileouts = TFile.Open("%s/side_band_sub%s%s.root" % \
                               (self.d_resultsallpdata, self.case, self.typean), "recreate")
+        zbin =[]
+        for zbin_i in range(21) :
+            zbin.append(zbin,-0.5+zbin_i*0.1)
+        zbinarray=array("d",zbin)
+        jetptbin = [0.0,5.0,15.0,35.0]
+        hzvsjetpt = TH2F("hzvsjetpt","",20, zbinarray, 3, jetptbin)
         for imult in range(self.p_nbin2):
             heff = eff_file.Get("eff_mult%d" % imult)
             hz = None
@@ -1447,7 +1454,8 @@ class Analyzer:
                 hzsub_noteffscaled = hzsub.Clone("hzsub_noteffscaled" + suffix)
                 hzbkg_scaled.Scale(area_scale)
                 eff = heff.GetBinContent(ipt+1)
-                hzsub.Scale(1.0/(eff*0.9545))
+                if eff > 0.0 :
+                    hzsub.Scale(1.0/(eff*0.9545))
                 if ipt == 0:
                     hz = hzsub.Clone("hz")
                 else:
@@ -1526,6 +1534,14 @@ class Analyzer:
             cz.SaveAs("%s/efficiencycorrected_fullsub%s%s_%s_%.2f_%.2f.eps" % \
                       (self.d_resultsallpdata, self.case, self.typean, self.v_var2_binning, \
                        self.lvar2_binmin[imult], self.lvar2_binmax[imult]))
+            for zbins in range(20):
+                    hzvsjetpt.SetBinContent(zbins+1,imult+1,hz.GetBinContent(zbins+1))
+                    hzvsjetpt.SetBinError(zbins+1,imult+1,hz.GetBinError(zbins+1))
+        czvsjetpt = TCanvas('czvsjetpt' + suffix, '2D input to unfolding')
+        czvsjetpt.SetCanvasSize(1900, 1500)
+        czvsjetpt.SetWindowSize(500, 500)
+        hzvsjetpt.Draw("text")
+        czvsjetpt.SaveAs("%s/czvsjetpt.eps" % self.d_resultsallpdata)
         fileouts.Close()
 
     def plotter(self):
@@ -1954,3 +1970,41 @@ class Analyzer:
             hntrklsv0m.Draw("colz")
         cscatter.SaveAs(self.make_file_path(self.d_valevtdata, "cscatter", "eps", \
                                             None, None))
+        
+    def unfolding(self):
+        lfile = TFile.Open(self.n_filemass)
+        unfolding_input_data_file = TFile.Open("%s/side_band_sub%s%s.root" % \
+                              (self.d_resultsallpdata, self.case, self.typean))
+        unfolding_input_file = TFile.Open("%s/unfoldinginputs%s%s.root" % \
+                              (self.d_resultsallpmc, self.case, self.typean))
+        response_matrix = unfolding_input_file.Get("response_matrix")
+        input_data = unfolding_input_data_file.Get("hzvsjetpt")
+        kinematic_eff = unfolding_input_file.Get("kin_eff")
+        for i in 15 :
+            unfolding_object = RooUnfoldBayes(response_matrix, input_data, i)
+            unfolded_zvsjetpt = unfolding_object.Hreco(errorTreatment)
+            unfolded_z = unfolded_zvsjetpt.ProjectionX("unfolded_z",2,2,"e")
+            unfolded_z_scaled = unfolded_z.Clone("unfolded_z_scaled") 
+            unfolded_z_scaled.divide(kinematic_eff)
+            unfolded_z_scaled.Scale(1.0/unfolded_z.Integral(1,-1),"width")
+            unfolded_z_scaled.Write("unfolded_z_%d" % i)
+            refolded_z = folding(unfolded_z, response_matrix, input_data)
+            refolding_test = unfolded_z.Clone("refolding_test")
+            refolding_test.Divide(refolded_z)
+
+    def unfolding_closure(self):
+        unfolding_input_file = TFile.Open("%s/unfoldinginputs%s%s.root" % \
+                              (self.d_resultsallpmc, self.case, self.typean))
+        response_matrix = unfolding_input_file.Get("response_matrix_closure")
+        input_mc_det = unfolding_input_file.Get("input_closure_reco")
+        input_mc_gen = unfolding_input_file.Get("input_closure_gen")
+        input_mc_gen.Scale(1.0/input_mc_gen.Integral(1,-1),"width")
+        kinematic_eff = unfolding_input_file.Get("kin_eff")
+        for i in 15 :
+            unfolding_object = RooUnfoldBayes(response_matrix, input_mc_det, i)
+            unfolded_zvsjetpt = unfolding_object.Hreco(errorTreatment)
+            unfolded_z = unfolded_zvsjetpt.ProjectionX("unfolded_z",2,2,"e")
+            unfolded_z.divide(kinematic_eff)
+            unfolded_z.Scale(1.0/unfolded_z.Integral(1,-1),"width")
+            unfolded_z.Divide(input_mc_gen)
+            unfolded_z.Write("closure_test_%d" % i)
