@@ -67,6 +67,18 @@ class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-st
                 self.process_listsample[indexp].feeddown()
         self.myanalyzertot.feeddown()
 
+    def multi_unfolding(self):
+        if self.doperiodbyperiod is True:
+            for indexp in range(self.prodnumber):
+                self.process_listsample[indexp].unfolding()
+        self.myanalyzertot.unfolding()
+
+    def multi_unfolding_closure(self):
+        if self.doperiodbyperiod is True:
+            for indexp in range(self.prodnumber):
+                self.process_listsample[indexp].unfolding_closure()
+        self.myanalyzertot.unfolding_closure()
+
     def multi_side_band_sub(self):
         if self.doperiodbyperiod is True:
             for indexp in range(self.prodnumber):
