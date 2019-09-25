@@ -322,7 +322,7 @@ Dspp:
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
       FixedSigma: false
       fitcase: Ds
-      latexnamemeson: "D_{s}"
+      latexnamemeson: "D_{s}^{+}"
       latexbin2var: "n_{trkl}"
       nevents: 1700000000.
       dodoublecross: false
@@ -395,8 +395,8 @@ Dspp:
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
       FixedSigma: false
       fitcase: Ds
-      latexnamemeson: "D_{s}"
-      latexbin2var: "n_{trkl}"
+      latexnamemeson: "D_{s}^{+}"
+      latexbin2var: "V0M ampl."
       nevents: 1700000000.
       dodoublecross: false
 
@@ -471,8 +471,8 @@ Dspp:
       dolikelihood: true
       sigmaarray: [0.01,0.01,0.01,0.01,0.01]
       FixedSigma: true
-      fitcase: D0
-      latexnamemeson: "D^{0}"
+      fitcase: Ds
+      latexnamemeson: "D_{s}^{+}"
       latexbin2var: "p_{T,jet}"
       nevents: 1700000000.
       dodoublecross: false
@@ -541,8 +541,8 @@ Dspp:
       dolikelihood: true
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
       FixedSigma: true
-      fitcase: D0
-      latexnamemeson: "D^{0}"
+      fitcase: Ds
+      latexnamemeson: "D_{s}^{+}"
       latexbin2var: "n_{trkl}"
       nevents: 1700000000.
       dodoublecross: false
@@ -613,9 +613,9 @@ Dspp:
       dolikelihood: true
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
       FixedSigma: true
-      fitcase: D0
-      latexnamemeson: "D^{0}"
-      latexbin2var: "V0M"
+      fitcase: Ds
+      latexnamemeson: "D_{s}^{+}"
+      latexbin2var: "V0M ampl."
       nevents: 1700000000.
       dodoublecross: false
 

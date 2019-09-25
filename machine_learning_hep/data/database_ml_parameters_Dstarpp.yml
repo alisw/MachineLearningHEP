@@ -390,7 +390,7 @@ Dstarpp:
       FixedSigma: true
       fitcase: Dstarpp
       latexnamemeson: "D*"
-      latexbin2var: "V0M"
+      latexbin2var: "V0M ampl."
       nevents: 1700000000.
       dodoublecross: false
 
