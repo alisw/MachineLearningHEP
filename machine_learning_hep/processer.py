@@ -627,13 +627,13 @@ class Processer: # pylint: disable=too-many-instance-attributes
         zarray_gen = z_gen_calc(df_mc_reco_merged_prompt.pt_gen_jet, df_mc_reco_merged_prompt.phi_gen_jet, df_mc_reco_merged_prompt.eta_gen_jet,
                                     df_mc_reco_merged_prompt.pt_gen_cand, df_mc_reco_merged_prompt.delta_phi_gen_jet, df_mc_reco_merged_prompt.delta_eta_gen_jet)
 
-        df['z_reco'] = zarray_reco
-        df['z_gen'] = zarray_gen
+        df_mc_reco_merged_prompt['z_reco'] = zarray_reco
+        df_mc_reco_merged_prompt['z_gen'] = zarray_gen
 
         zbin =[]
         for zbin_i in range(21) :
-            zbin.append(zbin,-0.5+zbin_i*0.1)
-        zbinarray=array("d",zbin)
+            zbin.append(-0.5+zbin_i*0.1)
+        zbinarray=array.array("d",zbin)
         jetptbin = [0.0,5.0,15.0,35.0]
 
         hz_gen_nocuts=TH1F("hz_gen_nocuts","",20, zbin)
