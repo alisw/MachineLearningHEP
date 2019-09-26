@@ -434,6 +434,9 @@ class Analyzer:
                     if success:
                         break
 
+                fit_status[imult][ipt]["data"]["success"] = success
+
+
                 canvas = TCanvas("fit_canvas", suffix, 700, 700)
                 mass_fitter.DrawHere(canvas, self.p_nsigma_signal)
 
