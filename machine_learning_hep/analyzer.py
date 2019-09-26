@@ -289,7 +289,7 @@ class Analyzer:
                 mass_fitter_mc_init.SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
                 success = mass_fitter_mc_init.MassFitter(False)
                 fit_status[imult][ipt]["init_MC"] = False
-                if success:
+                if success == 1:
                     mean_for_data = mass_fitter_mc_init.GetMean()
                     sigma_for_data = mass_fitter_mc_init.GetSigma()
                     means_sigmas_init.insert(0, (1, mean_for_data, sigma_for_data))
@@ -329,7 +329,7 @@ class Analyzer:
                                                                 self.p_fix_widthsecpeak)
                 success = mass_fitter_data_init.MassFitter(False)
                 fit_status[imult][ipt]["init_data"] = False
-                if success:
+                if success == 1:
                     means_sigmas_init.insert(0, (0, mass_fitter_data_init.GetMean(),
                                                  mass_fitter_data_init.GetSigma()))
                     fit_status[imult][ipt]["init_data"] = True
@@ -423,10 +423,10 @@ class Analyzer:
                                                               self.p_fix_masssecpeak,
                                                               self.p_widthsecpeak,
                                                               self.p_fix_widthsecpeak)
+                        fit_status[imult][ipt]["data"]["fix"] = fix
+                        fit_status[imult][ipt]["data"]["case"] = case
                         success = mass_fitter.MassFitter(False)
-                        if success > 0:
-                            fit_status[imult][ipt]["data"]["fix"] = fix
-                            fit_status[imult][ipt]["data"]["case"] = case
+                        if success == 1:
                             break
                     if success == 1:
                         break
