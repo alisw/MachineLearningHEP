@@ -279,7 +279,7 @@ D0pp:
       usefit: true
       # Note for now that only a Gaussian fit is available
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
-      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
+      bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.89
       massmin: [1.75,1.70,1.70,1.70,1.70,1.70,1.70,1.70]
       massmax: [2.00,2.05,2.05,2.05,2.05,2.05,2.05,2.05]
@@ -306,6 +306,7 @@ D0pp:
       latexbin2var: "n_{trkl}"
       nevents: 1700000000.
       dodoublecross: false
+      include_reflection: True
 
       systematics:
         # For now don't do these things per pT bin
@@ -356,7 +357,7 @@ D0pp:
       usefit: true
       # Note for now that only a Gaussian fit is available
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
-      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
+      bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.89
       massmin: [1.75,1.70,1.70,1.70,1.70,1.70,1.70,1.70]
       massmax: [2.00,2.05,2.05,2.05,2.05,2.05,2.05,2.05]
@@ -383,6 +384,7 @@ D0pp:
       latexbin2var: "n_{trkl}"
       nevents: 1700000000.
       dodoublecross: false
+      include_reflection: True
 
       systematics:
         # For now don't do these things per pT bin
@@ -433,7 +435,7 @@ D0pp:
       usefit: true
       # Note for now that only a Gaussian fit is available
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
-      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
+      bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.89
       massmin: [1.75,1.70,1.70,1.70,1.70,1.70,1.70,1.70]
       massmax: [2.00,2.05,2.05,2.05,2.05,2.05,2.05,2.05]
@@ -460,6 +462,7 @@ D0pp:
       latexbin2var: "n_{trkl}"
       nevents: 1700000000.
       dodoublecross: false
+      include_reflection: True
     
     MBjetvspt:
       normalizecross: true
@@ -501,7 +504,7 @@ D0pp:
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus]
-      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2]
+      bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.89
       massmin: [1.70,1.70,1.70,1.70,1.70]
       massmax: [2.05,2.05,2.05,2.05,2.05]
@@ -528,6 +531,7 @@ D0pp:
       latexbin2var: "p_{T,jet}"
       nevents: 1700000000.
       dodoublecross: false
+      include_reflection: True
   
     SPDvspt:
       normalizecross: false
@@ -565,7 +569,7 @@ D0pp:
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
-      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
+      bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.89
       massmin: [1.70,1.70,1.70,1.70,1.70,1.70,1.70,1.70]
       massmax: [2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05]
@@ -592,6 +596,7 @@ D0pp:
       latexbin2var: "n_{trkl}"
       nevents: 1700000000.
       dodoublecross: false
+      include_reflection: True
 
 
     V0mvspt:
@@ -632,7 +637,7 @@ D0pp:
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
-      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
+      bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.89
       massmin: [1.70,1.70,1.70,1.70,1.70,1.70,1.70,1.70]
       massmax: [2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05]
@@ -659,6 +664,7 @@ D0pp:
       latexbin2var: "V0M"
       nevents: 1700000000.
       dodoublecross: false
+      include_reflection: True
     
     V0mvspt_perc_v0m:
       normalizecross: false
@@ -698,7 +704,7 @@ D0pp:
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
-      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
+      bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.89
       massmin: [1.70,1.70,1.70,1.70,1.70,1.70,1.70,1.70]
       massmax: [2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05]
@@ -725,6 +731,7 @@ D0pp:
       latexbin2var: "V0M"
       nevents: 1700000000.
       dodoublecross: false
+      include_reflection: True
 
   systematics:
     probvariation:
