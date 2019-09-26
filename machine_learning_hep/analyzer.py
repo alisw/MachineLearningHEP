@@ -451,10 +451,8 @@ class Analyzer:
 
                 if success == 1:
                     # In case of success == 2, no signal was found, in case of 0, fit failed
-                    rawYield = mass_fitter.GetRawYield() / \
-                            (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
-                    rawYieldErr = mass_fitter.GetRawYieldError() / \
-                            (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
+                    rawYield = mass_fitter.GetRawYield()
+                    rawYieldErr = mass_fitter.GetRawYieldError()
                     yieldshistos[imult].SetBinContent(ipt + 1, rawYield)
                     yieldshistos[imult].SetBinError(ipt + 1, rawYieldErr)
 
