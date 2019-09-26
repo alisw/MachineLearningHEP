@@ -370,7 +370,7 @@ class Analyzer:
                                                                      self.p_rebin[ipt], -1)
                 h_invmass_mc_rebin = TH1F()
                 h_invmass_mc_rebin_.Copy(h_invmass_mc_rebin)
-                success = False
+                success = 0
 
                 fit_status[imult][ipt]["data"] = {}
                 mass_fitter = None
@@ -423,12 +423,12 @@ class Analyzer:
                                                               self.p_fix_masssecpeak,
                                                               self.p_widthsecpeak,
                                                               self.p_fix_widthsecpeak)
-                        if mass_fitter.MassFitter(False):
-                            success = True
+                        success = mass_fitter.MassFitter(False)
+                        if success > 0:
                             fit_status[imult][ipt]["data"]["fix"] = fix
                             fit_status[imult][ipt]["data"]["case"] = case
                             break
-                    if success:
+                    if success == 1:
                         break
 
                 fit_status[imult][ipt]["data"]["success"] = success
@@ -446,9 +446,11 @@ class Analyzer:
                                                       "eps", None, suffix_write))
                 canvas.Close()
 
-                #fit_dir = fileout.mkdir(suffix)
-                #fit_dir.WriteObject(mass_fitter, "fitter")
-                if success:
+                fit_dir = fileout.mkdir(suffix)
+                fit_dir.WriteObject(mass_fitter, "fitter")
+
+                if success == 1:
+                    # In case of success == 2, no signal was found, in case of 0, fit failed
                     rawYield = mass_fitter.GetRawYield() / \
                             (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
                     rawYieldErr = mass_fitter.GetRawYieldError() / \
