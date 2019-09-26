@@ -233,13 +233,13 @@ Dspp:
                      xgboost_classifierDspp_dfselection_pt_cand_8.0_12.0.sav,
                      xgboost_classifierDspp_dfselection_pt_cand_12.0_24.0.sav]
     probcutpresel:
-      data: [0.45,0.45,0.45,0.45,0.45] #list of nbins
-      mc: [0.45,0.45,0.45,0.45,0.45] #list of nbins
-    probcutoptimal: [0.5,0.5,0.5,0.5,0.5] #list of nbins
+      data: [0.3,0.3,0.3,0.1,0.1] #list of nbins
+      mc: [0.3,0.3,0.3,0.1,0.1] #list of nbins
+    probcutoptimal: [0.8,0.7,0.7,0.5,0.5] #list of nbins
   
   analysis:
     indexhptspectrum: 3 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5 
-    fd_method: 2 #knone=0, kfc=1, kNb=2
+    fd_method: 1 #knone=0, kfc=1, kNb=2
     cctype: 1 #kpp7
     MBvspt_ntrkl:
       normalizecross: false  
@@ -603,9 +603,9 @@ Dspp:
   
   validation:
     data:
-      dir: [/data/Derived/dataval_16, /data/Derived/dataval_17, /data/Derived/dataval_18] #list of periods
-      dirmerged: /data/Derived/datavaltot
+      dir: [/data/DerivedVal/dataval_16, /data/DerivedVal/dataval_16_2, /data/DerivedVal/dataval_17, /data/DerivedVal/dataval_18] #list of periods
+      dirmerged: /data/DerivedVal/datavaltot
     mc:
-      dir: [/data/Derived/mcval_16, /data/Derived/mcval_17, /data/Derived/mcval_18] #list of periods
-      dirmerged: /data/Derived/mcvaltot
+      dir: [/data/DerivedVal/mcval_16, /data/DerivedVal/mcval_16_2, /data/DerivedVal/mcval_17, /data/DerivedVal/mcval_18] #list of periods
+      dirmerged: /data/DerivedVal/mcvaltot
  
