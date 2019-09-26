@@ -218,6 +218,7 @@ LbITS3:
     indexhptspectrum: -1 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
     fd_method: -1 #knone=0, kfc=1, kNb=2
     cctype: -1 #kpp7
+    sigmav0: -1
     MBvspt:
       normalizecross: false
       plotbin: [1]

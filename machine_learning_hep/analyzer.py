@@ -149,6 +149,7 @@ class Analyzer:
         self.p_indexhpt = datap["analysis"]["indexhptspectrum"]
         self.p_fd_method = datap["analysis"]["fd_method"]
         self.p_cctype = datap["analysis"]["cctype"]
+        self.p_sigmav0 = datap["analysis"]["sigmav0"]
         self.apply_weights = datap["analysis"][self.typean]["triggersel"]["weighttrig"]
 
     @staticmethod
@@ -1582,7 +1583,7 @@ class Analyzer:
             HFPtSpectrum(self.p_indexhpt, \
                 "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
                 fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
-                fileoutcrossmult, norm, 1, self.p_fd_method, self.p_cctype)
+                fileoutcrossmult, norm, self.p_sigmav0, self.p_fd_method, self.p_cctype)
 
         fileoutcrosstot = TFile.Open("%s/finalcross%s%smulttot.root" % \
             (self.d_resultsallpdata, self.case, self.typean), "recreate")
