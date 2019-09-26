@@ -320,7 +320,7 @@ LcpKpipp:
       sigmaarray: [0.0059, 0.0060, 0.0065, 0.0070, 0.0073, 0.0080, 0.0085, 0.0090]
       FixedSigma: true
       fitcase: Lc
-      latexnamemeson: "\Lambda_{c}"
+      latexnamemeson: "#Lambda_{c}^{pKpi}"
       latexbin2var: "n_{trkl}"
       nevents: 1700000000.
       dodoublecross: false
@@ -397,7 +397,7 @@ LcpKpipp:
       sigmaarray: [0.0059, 0.0060, 0.0065, 0.0070, 0.0073, 0.0080, 0.0085, 0.0090]
       FixedSigma: true
       fitcase: Lc
-      latexnamemeson: "\Lambda_{c}"
+      latexnamemeson: "#Lambda_{c}^{pKpi}"
       latexbin2var: "n_{trkl}"
       nevents: 1700000000.
       dodoublecross: false
@@ -475,7 +475,7 @@ LcpKpipp:
       sigmaarray: [0.0059, 0.0060, 0.0065, 0.0070, 0.0073, 0.0080, 0.0085, 0.0090]
       FixedSigma: true
       fitcase: Lc
-      latexnamemeson: "\Lambda_{c}"
+      latexnamemeson: "#Lambda_{c}^{pKpi}"
       latexbin2var: "p_{T,jet}"
       nevents: 1700000000.
       dodoublecross: false
@@ -541,7 +541,7 @@ LcpKpipp:
       sigmaarray: [0.0059, 0.0060, 0.0065, 0.0070, 0.0073, 0.0080, 0.0085, 0.0090]
       FixedSigma: true
       fitcase: Lc
-      latexnamemeson: "\Lambda_{c}"
+      latexnamemeson: "#Lambda_{c}^{pKpi}"
       latexbin2var: "n_{trkl}"
       nevents: 1700000000.
       dodoublecross: false
@@ -609,8 +609,8 @@ LcpKpipp:
       sigmaarray: [0.0059, 0.0060, 0.0065, 0.0070, 0.0073, 0.0080, 0.0085, 0.0090]
       FixedSigma: true
       fitcase: Lc
-      latexnamemeson: "\Lambda_{c}"
-      latexbin2var: "V0M"
+      latexnamemeson: "#Lambda_{c}^{pKpi}"
+      latexbin2var: "V0M ampl."
       nevents: 1700000000.
       dodoublecross: false
 

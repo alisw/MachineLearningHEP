@@ -400,7 +400,7 @@ LcpK0spp:
       sigmaarray: [0.0078, 0.0078, 0.0082, 0.0091, 0.0097, 0.0109, 0.0117, 0.0156]
       FixedSigma: true  
       fitcase: Lc
-      latexnamemeson: "L_{c}^{K0s}"
+      latexnamemeson: "#Lambda_{c}^{pK0s}"
       latexbin2var: "n_{trkl}"
       nevents: 1700000000.
       dodoublecross: false
@@ -470,8 +470,8 @@ LcpK0spp:
       sigmaarray: [0.0078, 0.0078, 0.0082, 0.0091, 0.0097, 0.0109, 0.0117, 0.0156]
       FixedSigma: true  
       fitcase: Lc
-      latexnamemeson: "L_{c}^{K0s}"
-      latexbin2var: "n_{trkl}"
+      latexnamemeson: "#Lambda_{c}^{pK0s}"
+      latexbin2var: "V0M ampl."
       nevents: 1700000000.
       dodoublecross: false
     
@@ -538,8 +538,8 @@ LcpK0spp:
       sigmaarray: [0.0078, 0.0078, 0.0082, 0.0091, 0.0097, 0.0109, 0.0117, 0.0156]
       FixedSigma: true  
       fitcase: Lc
-      latexnamemeson: "L_{c}^{K0s}"
-      latexbin2var: "n_{trkl}"
+      latexnamemeson: "#Lambda_{c}^{pK0s}"
+      latexbin2var: "V0M perc."
       nevents: 1700000000.
       dodoublecross: false
 
@@ -617,7 +617,7 @@ LcpK0spp:
       sigmaarray: [0.0078, 0.0091, 0.0097, 0.0109, 0.0117]
       FixedSigma: true
       fitcase: Lc
-      latexnamemeson: "L_{c}^{K0s}"
+      latexnamemeson: "#Lambda_{c}^{pK0s}"
       latexbin2var: "p_{T,jet}"
       nevents: 1700000000.
       dodoublecross: false
@@ -686,7 +686,7 @@ LcpK0spp:
       sigmaarray: [0.0078, 0.0078, 0.0082, 0.0091, 0.0097, 0.0109, 0.0117, 0.0156]
       FixedSigma: true  
       fitcase: Lc
-      latexnamemeson: "L_{c}^{K0s}"
+      latexnamemeson: "#Lambda_{c}^{pK0s}"
       latexbin2var: "n_{trkl}"
       nevents: 1700000000.
       dodoublecross: false
@@ -754,8 +754,8 @@ LcpK0spp:
       sigmaarray: [0.0078, 0.0078, 0.0082, 0.0091, 0.0097, 0.0109, 0.0117, 0.0156]
       FixedSigma: true  
       fitcase: Lc
-      latexnamemeson: "L_{c}^{K0s}"
-      latexbin2var: "V0M"
+      latexnamemeson: "#Lambda_{c}^{pK0s}"
+      latexbin2var: "V0M ampl."
       nevents: 1700000000.
       dodoublecross: false
     
@@ -822,8 +822,8 @@ LcpK0spp:
       sigmaarray: [0.0078, 0.0078, 0.0082, 0.0091, 0.0097, 0.0109, 0.0117, 0.0156]
       FixedSigma: true  
       fitcase: Lc
-      latexnamemeson: "L_{c}^{K0s}"
-      latexbin2var: "V0M"
+      latexnamemeson: "#Lambda_{c}^{pK0s}"
+      latexbin2var: "V0M perc."
       nevents: 1700000000.
       dodoublecross: false
   
