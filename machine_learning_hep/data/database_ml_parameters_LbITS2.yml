@@ -159,6 +159,11 @@ LbITS2:
       pkl_skimmed_merge_for_ml_all: /data/Derived/LbkAnyITS2/vAN-20190923_ROOT6-1/ITS2_13d19/247_20190924-0053/ITS2Upgr_13_sig_mltot
       pkl_evtcounter_all: /data/Derived/LbkAnyITS2/vAN-20190923_ROOT6-1/ITS2_13d19/247_20190924-0053/ITS2Upgr_13_sig_evttot
   ml:
+    evtsel: null
+    triggersel:
+      data: null
+      mc: null
+
     nbkg: 500000
     nsig: 500000
     sampletagforsignal: 1
