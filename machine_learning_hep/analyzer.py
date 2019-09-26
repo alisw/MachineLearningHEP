@@ -33,6 +33,7 @@ from ROOT import gInterpreter, gPad
 # HF specific imports
 from machine_learning_hep.globalfitter import Fitter
 from  machine_learning_hep.logger import get_logger
+from  machine_learning_hep.io import dump_yaml_from_dict
 #from ROOT import RooUnfoldResponse
 #from ROOT import RooUnfold
 #from ROOT import RooUnfoldBayes
@@ -231,9 +232,14 @@ class Analyzer:
         mult_int_min = self.lvar2_binmin[bin_mult_int]
         mult_int_max = self.lvar2_binmax[bin_mult_int]
 
+        fit_status = {}
         # Start fitting...
         for imult in range(self.p_nbin2):
+            if imult not in fit_status:
+                fit_status[imult] = {}
             for ipt in range(self.p_nptbins):
+                if ipt not in fit_status[imult]:
+                    fit_status[imult][ipt] = {}
                 bin_id = self.bin_matching[ipt]
 
                 # Initialize mean and sigma with user seeds. This is also the fallback if initial
@@ -282,10 +288,12 @@ class Analyzer:
                 mass_fitter_mc_init.SetInitialGaussianSigma(sigma_for_data)
                 mass_fitter_mc_init.SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
                 success = mass_fitter_mc_init.MassFitter(False)
+                fit_status[imult][ipt]["init_MC"] = False
                 if success:
                     mean_for_data = mass_fitter_mc_init.GetMean()
                     sigma_for_data = mass_fitter_mc_init.GetSigma()
                     means_sigmas_init.insert(0, (1, mean_for_data, sigma_for_data))
+                    fit_status[imult][ipt]["init_MC"] = True
                 else:
                     self.logger.error("Could not do initial fit on MC")
 
@@ -309,7 +317,7 @@ class Analyzer:
                                                            self.sig_func_map[self.p_sgnfunc[ipt]])
 
                 if h_invmass_mc_refl_init is not None and h_invmass_mc_refl_init.Integral() > 0.:
-                    mass_fitter_data_init.SetTemplateReflections(h_invmass_mc_refl_init, "templ",
+                    mass_fitter_data_init.SetTemplateReflections(h_invmass_mc_refl_init, "1gaus",
                                                                  self.p_massmin[ipt],
                                                                  self.p_massmax[ipt])
                     # TODO Need init for ReflOverS?
@@ -325,9 +333,11 @@ class Analyzer:
                                                                 self.p_widthsecpeak,
                                                                 self.p_fix_widthsecpeak)
                 success = mass_fitter_data_init.MassFitter(False)
+                fit_status[imult][ipt]["init_data"] = False
                 if success:
                     means_sigmas_init.insert(0, (0, mass_fitter_data_init.GetMean(),
                                                  mass_fitter_data_init.GetSigma()))
+                    fit_status[imult][ipt]["init_data"] = True
 
                 canvas = TCanvas("fit_canvas_data_init", suffix_write, 700, 700)
                 mass_fitter_data_init.DrawHere(canvas, self.p_nsigma_signal)
@@ -346,6 +356,11 @@ class Analyzer:
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
+                suffix_write = "%s%d_%d_%s_%.2f_%.2f" % \
+                               (self.v_var_binning, self.lpt_finbinmin[ipt],
+                                self.lpt_finbinmax[ipt],
+                                self.v_var2_binning, self.lvar2_binmin[imult],
+                                self.lvar2_binmax[imult])
                 histname = "hmass"
                 if self.apply_weights is True:
                     histname = "h_invmass_weight"
@@ -357,11 +372,12 @@ class Analyzer:
 
                 success = False
 
+                fit_status[imult][ipt]["data"] = {}
                 mass_fitter = None
                 # First try not fixing sigma for all cases (mean always floating)
                 for fix in [False, True]:
                     # For now, ignore case. Use later to tell which fit was used
-                    for _, mean, sigma in means_sigmas_init:
+                    for case, mean, sigma in means_sigmas_init:
 
                         mass_fitter = AliHFInvMassFitter(h_invmass_rebin, self.p_massmin[ipt],
                                                          self.p_massmax[ipt],
@@ -386,12 +402,20 @@ class Analyzer:
                         mass_fitter.SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
 
                         if self.include_reflection:
-                            h_invmass_refl = AliVertexingHFUtils.RebinHisto(
-                                lfile_mc.Get("hmass_refl" + suffix), self.p_rebin[ipt], -1)
+                            h_invmass_refl = AliVertexingHFUtils.AdaptTemplateRangeAndBinning(
+                                lfile_mc.Get("hmass_refl" + suffix), h_invmass_rebin,
+                                self.p_massmin[ipt], self.p_massmax[ipt])
+
+                            #h_invmass_refl = AliVertexingHFUtils.RebinHisto(
+                            #    lfile_mc.Get("hmass_refl" + suffix), self.p_rebin[ipt], -1)
                             if h_invmass_refl.Integral() > 0.:
-                                mass_fitter.SetTemplateReflections(h_invmass_refl, "templ",
+                                mass_fitter.SetTemplateReflections(h_invmass_refl, "1gaus",
                                                                    self.p_massmin[ipt],
                                                                    self.p_massmax[ipt])
+                                r_over_s = h_invmass_rebin.Integral()
+                                if r_over_s > 0.:
+                                    r_over_s = h_invmass_refl.Integral() / r_over_s
+                                    mass_fitter.SetFixReflOverS(r_over_s)
                             else:
                                 self.logger.warning("Reflection requested but template empty")
                             # TODO Need init for ReflOverS?
@@ -403,7 +427,12 @@ class Analyzer:
 
                         if mass_fitter.MassFitter(False):
                             success = True
+                            fit_status[imult][ipt]["data"]["fix"] = fix
+                            fit_status[imult][ipt]["data"]["case"] = case
                             break
+
+                    if success:
+                        break
 
                 canvas = TCanvas("fit_canvas", suffix, 700, 700)
                 mass_fitter.DrawHere(canvas, self.p_nsigma_signal)
@@ -417,8 +446,8 @@ class Analyzer:
                                                       "eps", None, suffix_write))
                 canvas.Close()
 
-                fit_dir = fileout.mkdir(suffix)
-                fit_dir.WriteObject(mass_fitter, "fitter")
+                #fit_dir = fileout.mkdir(suffix)
+                #fit_dir.WriteObject(mass_fitter, "fitter")
                 if success:
                     rawYield = mass_fitter.GetRawYield() / \
                             (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
@@ -431,6 +460,9 @@ class Analyzer:
             fileout.cd()
             yieldshistos[imult].Write()
 
+        # Write the fit status dict
+        dump_yaml_from_dict(fit_status, self.make_file_path(self.d_resultsallpdata, "fit_status",
+                                                            "yaml"))
         # Yields summary plot
         cYields = TCanvas('cYields', 'The Fit Canvas')
         cYields.SetCanvasSize(1900, 1500)
