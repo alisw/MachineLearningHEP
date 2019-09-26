@@ -1157,7 +1157,7 @@ class Analyzer:
             h_sel_fd.SetMaximum(1.5)
         legeffFD.Draw()
         cEffFD.SaveAs("%s/EffFD%s%s.eps" % (self.d_resultsallpmc,
-                                        self.case, self.typean))
+                                            self.case, self.typean))
     def feeddown(self):
         # TODO: Propagate uncertainties.
         self.loadstyle()
