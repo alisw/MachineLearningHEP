@@ -449,8 +449,8 @@ class Analyzer:
                                                       "eps", None, suffix_write))
                 canvas.Close()
 
-                #fit_dir = fileout.mkdir(suffix)
-                #fit_dir.WriteObject(mass_fitter, "fitter")
+                fit_dir = fileout.mkdir(suffix)
+                fit_dir.WriteObject(mass_fitter, "fitter")
                 if success:
                     rawYield = mass_fitter.GetRawYield() / \
                             (self.lpt_finbinmax[ipt] - self.lpt_finbinmin[ipt])
@@ -1243,7 +1243,7 @@ class Analyzer:
                 hzbkg = hzbkgleft.Clone("hzbkg" + suffix)
                 hzbkg.Add(hzbkgright)
                 hzbkg_scaled = hzbkg.Clone("hzbkg_scaled" + suffix)
-                bkg_fit = func_file.Get("bkgrefit" + suffix)
+                bkg_fit = mass_fitter.GetBackgroundRecalcFunc()
                 area_scale_denominator = bkg_fit.Integral(masslow9sig, masslow4sig) + \
                 bkg_fit.Integral(masshigh4sig, masshigh9sig)
                 area_scale = bkg_fit.Integral(masslow2sig, masshigh2sig)/area_scale_denominator
