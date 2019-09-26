@@ -279,7 +279,8 @@ def correlationmatrix(dataframe, mylistvariables, label, output, binmin, binmax)
     sns.heatmap(corr, mask=np.zeros_like(corr, dtype=np.bool),
                 cmap=sns.diverging_palette(220, 10, as_cmap=True), vmin=-1, vmax=1,
                 square=True, ax=ax)
-    plotname = f'{output}/CorrMatrix_{label}_{binmin:.1f}_{binmax:.1f}.png'
+    nVar = len(mylistvariables)
+    plotname = f'{output}/CorrMatrix_{label}_nVar{nVar}_{binmin:.1f}_{binmax:.1f}.png'
     plt.savefig(plotname, bbox_inches='tight')
     imagebytesIO = BytesIO()
     plt.savefig(imagebytesIO, format='png')
