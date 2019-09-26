@@ -1106,23 +1106,17 @@ class Analyzer:
                                             self.lvar2_binmax[imult])
             h_gen_pr = lfileeff.Get("h_gen_pr" + stringbin2)
             h_sel_pr = lfileeff.Get("h_sel_pr" + stringbin2)
-            h_gen_fd = lfileeff.Get("h_gen_fd" + stringbin2)
-            h_sel_fd = lfileeff.Get("h_sel_fd" + stringbin2)
-
             h_sel_pr.Divide(h_sel_pr, h_gen_pr, 1.0, 1.0, "B")
-            h_sel_fd.Divide(h_sel_fd, h_gen_fd, 1.0, 1.0, "B")
             h_sel_pr.SetLineColor(imult+1)
             h_sel_pr.Draw("same")
             fileouteff.cd()
             h_sel_pr.SetName("eff_mult%d" % imult)
             h_sel_pr.Write()
-            h_sel_fd.SetName("eff_fd_mult%d" % imult)
-            h_sel_fd.Write()
             legeffstring = "%.1f < %s < %.1f GeV/c" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legeff.AddEntry(h_sel_pr, legeffstring, "LEP")
             h_sel_pr.GetXaxis().SetTitle("p_{T} (GeV)")
-            h_sel_pr.GetYaxis().SetTitle("Uncorrected yields %s %s (1/GeV)" \
+            h_sel_pr.GetYaxis().SetTitle("Acc x efficiency (prompt) %s %s (1/GeV)" \
                     % (self.p_latexnmeson, self.typean))
             h_sel_pr.SetMinimum(0.)
             h_sel_pr.SetMaximum(1.5)
@@ -1130,6 +1124,40 @@ class Analyzer:
         cEff.SaveAs("%s/Eff%s%s.eps" % (self.d_resultsallpmc,
                                         self.case, self.typean))
 
+        cEffFD = TCanvas('cEffFD', 'The Fit Canvas')
+        cEffFD.SetCanvasSize(1900, 1500)
+        cEffFD.SetWindowSize(500, 500)
+
+        legeffFD = TLegend(.5, .65, .7, .85)
+        legeffFD.SetBorderSize(0)
+        legeffFD.SetFillColor(0)
+        legeffFD.SetFillStyle(0)
+        legeffFD.SetTextFont(42)
+        legeffFD.SetTextSize(0.035)
+
+        for imult in range(self.p_nbin2):
+            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
+                                            self.lvar2_binmin[imult], \
+                                            self.lvar2_binmax[imult])
+            h_gen_fd = lfileeff.Get("h_gen_fd" + stringbin2)
+            h_sel_fd = lfileeff.Get("h_sel_fd" + stringbin2)
+            h_sel_fd.Divide(h_sel_fd, h_gen_fd, 1.0, 1.0, "B")
+            h_sel_fd.SetLineColor(imult+1)
+            h_sel_fd.Draw("same")
+            fileouteff.cd()
+            h_sel_fd.SetName("eff_fd_mult%d" % imult)
+            h_sel_fd.Write()
+            legeffFDstring = "%.1f < %s < %.1f GeV/c" % \
+                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
+            legeffFD.AddEntry(h_sel_pr, legeffFDstring, "LEP")
+            h_sel_fd.GetXaxis().SetTitle("p_{T} (GeV)")
+            h_sel_fd.GetYaxis().SetTitle("Acc x efficiency feed-down %s %s (1/GeV)" \
+                    % (self.p_latexnmeson, self.typean))
+            h_sel_fd.SetMinimum(0.)
+            h_sel_fd.SetMaximum(1.5)
+        legeffFD.Draw()
+        cEffFD.SaveAs("%s/EffFD%s%s.eps" % (self.d_resultsallpmc,
+                                        self.case, self.typean))
     def feeddown(self):
         # TODO: Propagate uncertainties.
         self.loadstyle()
