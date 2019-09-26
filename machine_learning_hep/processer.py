@@ -399,9 +399,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     fileweight = TFile.Open(fileweight_name, "read")
                     namefunction = "funcnorm_%s_%s" % (self.triggerbit, self.v_var2_binning)
                     funcweighttrig = fileweight.Get(namefunction)
-                    weights = evaluate(funcweighttrig, df_bin[self.v_var2_binning])
-                    weightsinv = [1./weight for weight in weights]
-                    fill_hist(h_invmass_weight, df_bin.inv_mass, weights=weightsinv)
+                    if funcweighttrig:
+                        weights = evaluate(funcweighttrig, df_bin[self.v_var2_binning])
+                        weightsinv = [1./weight for weight in weights]
+                        fill_hist(h_invmass_weight, df_bin.inv_mass, weights=weightsinv)
                 myfile.cd()
                 h_invmass.Write()
                 h_invmass_weight.Write()
@@ -634,9 +635,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 histotrig.Sumw2()
                 histotrigANDMB.Write()
                 histotrig.Write()
-                hSelMult = TH1F('sel_' + labeltriggerANDMB, 'sel_' + labeltriggerANDMB, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
-                hNoVtxMult = TH1F('novtx_' + labeltriggerANDMB, 'novtx_' + labeltriggerANDMB, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
-                hVtxOutMult = TH1F('vtxout_' + labeltriggerANDMB, 'vtxout_' + labeltriggerANDMB, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
+                hSelMult = TH1F('sel_' + labeltrigger, 'sel_' + labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
+                hNoVtxMult = TH1F('novtx_' + labeltrigger, 'novtx_' + labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
+                hVtxOutMult = TH1F('vtxout_' + labeltrigger, 'vtxout_' + labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
 
                 # multiplicity dependent normalisation
                 dftrg = dfevtnorm.query(triggerbit)

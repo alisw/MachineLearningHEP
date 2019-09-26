@@ -1401,6 +1401,8 @@ class Analyzer:
                 (self.d_resultsallpdata, self.case, self.typean, imult)
             labelhisto = "hbit%svs%s" % (self.triggerbit, self.v_var2_binning)
             hmult = filedataval.Get(labelhisto)
+            if not hmult:
+                continue
             hmult.SetName("hmult")
             hmultweighted = hmult.Clone("hmultweighed")
             norm = -1
@@ -1418,6 +1420,19 @@ class Analyzer:
                 binminv = hmult.GetXaxis().FindBin(self.lvar2_binmin[imult])
                 binmaxv = hmult.GetXaxis().FindBin(self.lvar2_binmax[imult])
                 norm = hmult.Integral(binminv, binmaxv)
+
+            hSelMult = filedataval.Get('sel_' + labelhisto)
+            hNoVtxMult = filedataval.Get('novtx_' + labelhisto)
+            hVtxOutMult = filedataval.Get('vtxout_' + labelhisto)
+
+            # normalisation based on multiplicity histograms
+            binminv = hSelMult.GetXaxis().FindBin(self.lvar2_binmin[imult])
+            binmaxv = hSelMult.GetXaxis().FindBin(self.lvar2_binmax[imult])
+
+            n_sel = hSelMult.Integral(binminv, binmaxv)
+            n_novtx = hNoVtxMult.Integral(binminv, binmaxv)
+            n_vtxout = hVtxOutMult.Integral(binminv, binmaxv)
+            norm = (n_sel + n_novtx) - n_novtx * n_vtxout / (n_sel + n_vtxout)
 
             # Now use the function we have just compiled above
             HFPtSpectrum(self.p_indexhpt, \
@@ -1596,8 +1611,9 @@ class Analyzer:
         cscatter.cd()
         cscatter.SetLogx()
         hv0mvsperc = filedata.Get("hv0mvsperc")
-        hv0mvsperc.GetXaxis().SetTitle("percentile (max value = 100)")
-        hv0mvsperc.GetYaxis().SetTitle("V0M corrected for z")
-        hv0mvsperc.Draw("colz")
+        if hv0mvsperc:
+            hv0mvsperc.GetXaxis().SetTitle("percentile (max value = 100)")
+            hv0mvsperc.GetYaxis().SetTitle("V0M corrected for z")
+            hv0mvsperc.Draw("colz")
         cscatter.SaveAs(self.make_file_path(self.d_valevtdata, "cscatter", "eps", \
                                             None, None))
