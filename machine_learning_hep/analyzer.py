@@ -1421,6 +1421,9 @@ class Analyzer:
                 binmaxv = hmult.GetXaxis().FindBin(self.lvar2_binmax[imult])
                 norm = hmult.Integral(binminv, binmaxv)
 
+            # new normalization calculation
+            norm_old = norm
+
             hSelMult = filedataval.Get('sel_' + labelhisto)
             hNoVtxMult = filedataval.Get('novtx_' + labelhisto)
             hVtxOutMult = filedataval.Get('vtxout_' + labelhisto)
@@ -1433,6 +1436,8 @@ class Analyzer:
             n_novtx = hNoVtxMult.Integral(binminv, binmaxv)
             n_vtxout = hVtxOutMult.Integral(binminv, binmaxv)
             norm = (n_sel + n_novtx) - n_novtx * n_vtxout / (n_sel + n_vtxout)
+
+            print('new normalization: ', norm, norm_old)
 
             # Now use the function we have just compiled above
             HFPtSpectrum(self.p_indexhpt, \
@@ -1447,6 +1452,8 @@ class Analyzer:
             fileoutcrossmult = "%s/finalcross%s%smult%d.root" % \
                 (self.d_resultsallpdata, self.case, self.typean, imult)
             f_fileoutcrossmult = TFile.Open(fileoutcrossmult)
+            if not f_fileoutcrossmult:
+                continue
             hcross = f_fileoutcrossmult.Get("histoSigmaCorr")
             hcross.SetName("histoSigmaCorr%d" % imult)
             fileoutcrosstot.cd()
