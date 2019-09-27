@@ -49,7 +49,7 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
 
     folder_MB_allperiods = data_param[case]["analysis"][arraytype[0]]["data"]["resultsallp"]
     if isv0m is False:
-        folder_triggered = data_param[case]["analysis"][arraytype[1]]["data"]["results"][3]
+        folder_triggered = data_param[case]["analysis"][arraytype[1]]["data"]["results"][2]
     else:
         folder_triggered = data_param[case]["analysis"][arraytype[1]]["data"]["resultsallp"]
 
@@ -75,7 +75,7 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
     ccross = TCanvas('cCross', 'The Fit Canvas')
     ccross.SetCanvasSize(1500, 1500)
     ccross.SetWindowSize(500, 500)
-    ccross.cd(1).DrawFrame(0, 1.e-9, 30, 10, ";#it{p}_{T} (GeV/#it{c});Corrected yield %s" % name)
+    ccross.cd(1).DrawFrame(0, 100, 30, 1.e12, ";#it{p}_{T} (GeV/#it{c});Corrected yield %s" % name)
     #ccross.SetLogx()
 
     legyield = TLegend(.25, .65, .65, .85)
@@ -293,9 +293,9 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype, isv0m=False):
         data_param_den[case_den]["analysis"][arraytype[0]]["data"]["resultsallp"]
     if isv0m is False:
         folder_num_triggered = \
-            data_param_num[case_num]["analysis"][arraytype[1]]["data"]["results"][3]
+            data_param_num[case_num]["analysis"][arraytype[1]]["data"]["results"][2]
         folder_den_triggered = \
-            data_param_den[case_den]["analysis"][arraytype[1]]["data"]["results"][3]
+            data_param_den[case_den]["analysis"][arraytype[1]]["data"]["results"][2]
     else:
         folder_num_triggered = \
             data_param_num[case_num]["analysis"][arraytype[1]]["data"]["resultsallp"]
@@ -321,14 +321,6 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype, isv0m=False):
     file_den_triggered = TFile.Open("%s/finalcross%s%smulttot.root" % \
                                       (folder_den_triggered, case_den, arraytype[1]))
 
-    print("%s/finalcross%s%smulttot.root" % \
-      (folder_num_allperiods, case_num, arraytype[0]))
-    print("%s/finalcross%s%smulttot.root" % \
-        (folder_den_allperiods, case_den, arraytype[0]))
-    print("%s/finalcross%s%smulttot.root" % \
-          (folder_num_triggered, case_num, arraytype[1]))
-    print("%s/finalcross%s%smulttot.root" % \
-            (folder_den_triggered, case_den, arraytype[1]))
     if not file_num_allperiods or not file_num_triggered:
         print("---Warning: Issue with %s merged files. Meson ratio plot skipped (%s, %s)---" % \
                  (case_num, arraytype[0], arraytype[1]))
