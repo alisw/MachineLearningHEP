@@ -477,7 +477,7 @@ Dspp:
       triggersel: 
         data: "trigger_hasbit_HighMultSPD==1"
         mc: null
-        weighttrig: true
+        weighttrig: false
 
       data:      
         results: [/data/DerivedResults/DskINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2016_data/244_20190923-1806/resultsSPDvspt,
@@ -546,7 +546,7 @@ Dspp:
       triggersel: 
         data: "trigger_hasbit_HighMultV0==1"
         mc: null
-        weighttrig: true
+        weighttrig: false
 
       data:      
         results: [/data/DerivedResults/DskINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2016_data/244_20190923-1806/resultsV0mvspt,
