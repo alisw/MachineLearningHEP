@@ -1,4 +1,4 @@
-case: Dspp
+case: LcpK0spp
 download:
   alice:
     activate: false
@@ -59,7 +59,7 @@ analysis:
     histomass: false
   mc:
     histomass: false
-    efficiency: true
+    efficiency: false
     feeddown: false
     dounfolding: true
 
@@ -68,8 +68,8 @@ analysis:
   dosyst: false
   dojetstudies: true
   doeff: true
-  docross: true
-  doplots: true
+  docross: false
+  doplots: false
 
 systematics:
   # Not yet used

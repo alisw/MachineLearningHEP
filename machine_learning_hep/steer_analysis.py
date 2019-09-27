@@ -381,7 +381,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         myan.multi_feeddown()
     if dounfolding is True:
         myan.multi_unfolding()
-        myan.multi_unfolding_closure()
+        #myan.multi_unfolding_closure()
     if docross is True:
         myan.multi_preparenorm()
         if normalizecross is True:

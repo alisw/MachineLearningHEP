@@ -1447,6 +1447,11 @@ class Analyzer:
                 hzbkg.Add(hzbkgright)
                 hzbkg_scaled = hzbkg.Clone("hzbkg_scaled" + suffix)
                 bkg_fit = mass_fitter.GetBackgroundRecalcFunc()
+
+                area_scale_denominator = -1
+                if not bkg_fit:
+                    return
+
                 area_scale_denominator = bkg_fit.Integral(masslow9sig, masslow4sig) + \
                 bkg_fit.Integral(masshigh4sig, masshigh9sig)
                 area_scale = bkg_fit.Integral(masslow2sig, masshigh2sig)/area_scale_denominator
@@ -1978,20 +1983,20 @@ class Analyzer:
         unfolding_input_data_file = TFile.Open("%s/side_band_sub%s%s.root" % \
                               (self.d_resultsallpdata, self.case, self.typean))
         unfolding_input_file = TFile.Open(self.n_fileff)
-        response_matrix = unfolding_input_file.Get("response_matrix")
-        input_data = unfolding_input_data_file.Get("hzvsjetpt")
-        kinematic_eff = unfolding_input_file.Get("kin_eff")
-        for i in range(15) :
-            unfolding_object = RooUnfoldBayes(response_matrix, input_data, i)
-            unfolded_zvsjetpt = unfolding_object.Hreco(2) #check this
-            unfolded_z = unfolded_zvsjetpt.ProjectionX("unfolded_z",2,2,"e")
-            unfolded_z_scaled = unfolded_z.Clone("unfolded_z_scaled") 
-            unfolded_z_scaled.Divide(kinematic_eff)
-            unfolded_z_scaled.Scale(1.0/unfolded_z.Integral(1,-1),"width")
-            unfolded_z_scaled.Write("unfolded_z_%d" % i)
-            refolded_z = folding(unfolded_z, response_matrix, input_data)
-            refolding_test = unfolded_z.Clone("refolding_test")
-            refolding_test.Divide(refolded_z)
+#        response_matrix = unfolding_input_file.Get("response_matrix")
+#        input_data = unfolding_input_data_file.Get("hzvsjetpt")
+#        kinematic_eff = unfolding_input_file.Get("kin_eff")
+#        for i in range(15) :
+#            unfolding_object = RooUnfoldBayes(response_matrix, input_data, i)
+#            unfolded_zvsjetpt = unfolding_object.Hreco(2) #check this
+#            unfolded_z = unfolded_zvsjetpt.ProjectionX("unfolded_z",2,2,"e")
+#            unfolded_z_scaled = unfolded_z.Clone("unfolded_z_scaled") 
+#            unfolded_z_scaled.Divide(kinematic_eff)
+#            unfolded_z_scaled.Scale(1.0/unfolded_z.Integral(1,-1),"width")
+#            unfolded_z_scaled.Write("unfolded_z_%d" % i)
+#            refolded_z = folding(unfolded_z, response_matrix, input_data)
+#            refolding_test = unfolded_z.Clone("refolding_test")
+#            refolding_test.Divide(refolded_z)
 
     def unfolding_closure(self):
         lfile = TFile.Open(self.n_filemass,"update")
