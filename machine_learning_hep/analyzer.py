@@ -1308,8 +1308,9 @@ class Analyzer:
         func_file = TFile.Open(func_filename, "READ")
         eff_file = TFile.Open("%s/efficiencies%s%s.root" % \
                               (self.d_resultsallpmc, self.case, self.typean))
-        fileouts = TFile.Open("%s/side_band_sub%s%s.root" % \
-                              (self.d_resultsallpdata, self.case, self.typean), "recreate")
+        fileouts = TFile.Open("%s/sideband_sub%s%s.root" % \
+                              (self.d_resultsallpdata, self.case, self.typean), "RECREATE")
+        fileouts.cd()
         zbin =[]
         for zbin_i in range(21):
             zbin.append(-0.5+zbin_i*0.1)
@@ -1319,7 +1320,8 @@ class Analyzer:
         hzvsjetpt = TH2F("hzvsjetpt","",20, zbinarray, 3, jetptbinarray)
         for imult in range(self.p_nbin2):
             heff = eff_file.Get("eff_mult%d" % imult)
-            hz = None
+            hz = TH1F()
+            first_fit = 0
             for ipt in range(self.p_nptbins):
                 bin_id = self.bin_matching[ipt]
                 suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
@@ -1360,8 +1362,7 @@ class Analyzer:
 
                 area_scale_denominator = -1
                 if not bkg_fit:
-                    return
-
+                    continue
                 area_scale_denominator = bkg_fit.Integral(masslow9sig, masslow4sig) + \
                 bkg_fit.Integral(masshigh4sig, masshigh9sig)
                 area_scale = bkg_fit.Integral(masslow2sig, masshigh2sig)/area_scale_denominator
@@ -1372,17 +1373,17 @@ class Analyzer:
                 eff = heff.GetBinContent(ipt+1)
                 if eff > 0.0 :
                     hzsub.Scale(1.0/(eff*0.9545))
-                if ipt == 0:
-                    hz = hzsub.Clone("hz")
+                if first_fit == 0:
+                    hz = hzsub.Clone("hz" + suffix)
+                    first_fit=1
                 else:
                     hz.Add(hzsub)
-                fileouts.cd()
-                hzsig.Write()
-                hzbkgleft.Write()
-                hzbkgright.Write()
-                hzbkg.Write()
-                hzsub.Write()
-                hz.Write()
+                hzsig.Write("hzsig" + suffix)
+                hzbkgleft.Write("hzbkgleft" + suffix)
+                hzbkgright.Write("hzbkgright" + suffix)
+                hzbkg.Write("hzbkg" + suffix)
+                hzsub.Write("hzsub" + suffix)
+                hz.Write("hz" + suffix)
                 cside = TCanvas('cside' + suffix, 'The Fit Canvas')
                 cside.SetCanvasSize(1900, 1500)
                 cside.SetWindowSize(500, 500)
@@ -1452,8 +1453,8 @@ class Analyzer:
                        self.lvar2_binmin[imult], self.lvar2_binmax[imult]))
             for zbins in range(20):
                     hzvsjetpt.SetBinContent(zbins+1,imult+1,hz.GetBinContent(zbins+1))
-                    hzvsjetpt.SetBinError(zbins+1,imult+1,hz.GetBinError(zbins+1))
-        hzvsjetpt.Write()
+                    hzvsjetpt.SetBinError(zbins+1,imult+1,hz.GetBinError(zbins+1)) 
+        hzvsjetpt.Write("hzvsjetpt")
         czvsjetpt = TCanvas('czvsjetpt' + suffix, '2D input to unfolding')
         czvsjetpt.SetCanvasSize(1900, 1500)
         czvsjetpt.SetWindowSize(500, 500)
@@ -1789,26 +1790,32 @@ class Analyzer:
         
     def unfolding(self):
         lfile = TFile.Open(self.n_filemass,"update")
+        fileouts = TFile.Open("%s/unfolding_results%s%s.root" % \
+                              (self.d_resultsallpdata, self.case, self.typean), "recreate")
         unfolding_input_data_file = TFile.Open("%s/side_band_sub%s%s.root" % \
-                              (self.d_resultsallpdata, self.case, self.typean))
+                                               (self.d_resultsallpdata, self.case, self.typean))
         unfolding_input_file = TFile.Open(self.n_fileff)
-#        response_matrix = unfolding_input_file.Get("response_matrix")
-#        input_data = unfolding_input_data_file.Get("hzvsjetpt")
-#        kinematic_eff = unfolding_input_file.Get("kin_eff")
-#        for i in range(15) :
-#            unfolding_object = RooUnfoldBayes(response_matrix, input_data, i)
-#            unfolded_zvsjetpt = unfolding_object.Hreco(2) #check this
-#            unfolded_z = unfolded_zvsjetpt.ProjectionX("unfolded_z",2,2,"e")
-#            unfolded_z_scaled = unfolded_z.Clone("unfolded_z_scaled") 
-#            unfolded_z_scaled.Divide(kinematic_eff)
-#            unfolded_z_scaled.Scale(1.0/unfolded_z.Integral(1,-1),"width")
-#            unfolded_z_scaled.Write("unfolded_z_%d" % i)
-#            refolded_z = folding(unfolded_z, response_matrix, input_data)
-#            refolding_test = unfolded_z.Clone("refolding_test")
-#            refolding_test.Divide(refolded_z)
+        response_matrix = unfolding_input_file.Get("response_matrix")
+        input_data = unfolding_input_data_file.Get("hzvsjetpt")
+        print(input_data.GetBinContent(20))
+        kinematic_eff = unfolding_input_file.Get("kin_eff")
+        for i in range(15) :
+            unfolding_object = RooUnfoldBayes(response_matrix, input_data, i)
+            unfolded_zvsjetpt = unfolding_object.Hreco(2) #check this
+            unfolded_z = unfolded_zvsjetpt.ProjectionX("unfolded_z",2,2,"e")
+            unfolded_z_scaled = unfolded_z.Clone("unfolded_z_scaled") 
+            unfolded_z_scaled.Divide(kinematic_eff)
+            unfolded_z_scaled.Scale(1.0/unfolded_z.Integral(1,-1),"width")
+            fileouts.cd()
+            unfolded_z_scaled.Write("unfolded_z_%d" % i)
+            refolded_z = folding(unfolded_z, response_matrix, input_data)
+            refolding_test = unfolded_z.Clone("refolding_test")
+            refolding_test.Divide(refolded_z)
 
     def unfolding_closure(self):
         lfile = TFile.Open(self.n_filemass,"update")
+        fileouts = TFile.Open("%s/unfolding_closure_results%s%s.root" % \
+                              (self.d_resultsallpdata, self.case, self.typean), "recreate")
         unfolding_input_file = TFile.Open(self.n_fileff)
         response_matrix = unfolding_input_file.Get("response_matrix_closure")
         input_mc_det = unfolding_input_file.Get("input_closure_reco")
@@ -1822,4 +1829,5 @@ class Analyzer:
             unfolded_z.Divide(kinematic_eff)
             unfolded_z.Scale(1.0/unfolded_z.Integral(1,-1),"width")
             unfolded_z.Divide(input_mc_gen)
+            fileouts.cd()
             unfolded_z.Write("closure_test_%d" % i)
