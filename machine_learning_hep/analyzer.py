@@ -1320,7 +1320,7 @@ class Analyzer:
         hzvsjetpt = TH2F("hzvsjetpt","",20, zbinarray, 3, jetptbinarray)
         for imult in range(self.p_nbin2):
             heff = eff_file.Get("eff_mult%d" % imult)
-            hz = TH1F()
+            hz = None
             first_fit = 0
             for ipt in range(self.p_nptbins):
                 bin_id = self.bin_matching[ipt]
@@ -1374,7 +1374,7 @@ class Analyzer:
                 if eff > 0.0 :
                     hzsub.Scale(1.0/(eff*0.9545))
                 if first_fit == 0:
-                    hz = hzsub.Clone("hz" + suffix)
+                    hz = hzsub.Clone("hz")
                     first_fit=1
                 else:
                     hz.Add(hzsub)
