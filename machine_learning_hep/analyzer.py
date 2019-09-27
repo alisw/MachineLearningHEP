@@ -295,7 +295,9 @@ class Analyzer:
                     sigma_for_data = mass_fitter_mc_init.GetSigma()
                     means_sigmas_init.insert(0, (1, mean_for_data, sigma_for_data))
                     fit_status[imult][ipt]["init_MC"] = True
+                    sigma_fixmc = mass_fitter_mc_init.GetSigma()
                 else:
+                    sigma_fixmc = sigma_for_data
                     self.logger.error("Could not do initial fit on MC")
 
                 canvas = TCanvas("fit_canvas_mc_init", suffix_write, 700, 700)
@@ -400,6 +402,8 @@ class Analyzer:
                         #    mass_fitter.SetFixGaussianMean(mean_for_data)
                         if fix:
                             mass_fitter.SetFixGaussianSigma(sigma)
+                        if self.p_fixingaussigma:
+                            mass_fitter.SetFixGaussianSigma(sigma_fixmc)
                         mass_fitter.SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
 
                         if self.include_reflection:
@@ -1583,7 +1587,7 @@ class Analyzer:
             HFPtSpectrum(self.p_indexhpt, \
                 "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
                 fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
-                fileoutcrossmult, norm, self.p_sigmav0, self.p_fd_method, self.p_cctype)
+                fileoutcrossmult, norm, self.p_sigmav0 * 1e12, self.p_fd_method, self.p_cctype)
 
         fileoutcrosstot = TFile.Open("%s/finalcross%s%smulttot.root" % \
             (self.d_resultsallpdata, self.case, self.typean), "recreate")
