@@ -19,7 +19,8 @@ import numpy as np
 from ROOT import TH1F, TFile  # pylint: disable=import-error,no-name-in-module
 from machine_learning_hep.logger import get_logger
 
-def calc_bkg(df_bkg, name, num_steps, fit_region, bin_width, sig_region, save_fit, out_dir):
+def calc_bkg(df_bkg, name, num_steps, fit_region, bin_width, sig_region, save_fit, out_dir,
+             ptmin, ptmax):
     """
     Estimate the number of background candidates under the signal peak. This is obtained
     from real data with a fit of the sidebands of the invariant mass distribution.
@@ -38,7 +39,7 @@ def calc_bkg(df_bkg, name, num_steps, fit_region, bin_width, sig_region, save_fi
 
     if save_fit:
         logger.debug("Saving bkg fits to file")
-        out_file = TFile(f'{out_dir}/bkg_fits_{name}.root', 'recreate')
+        out_file = TFile(f'{out_dir}/bkg_fits_{ptmin}_{ptmax}_{name}.root', 'recreate')
         out_file.cd()
 
     logger.debug("To fit the bkg a pol2 function is used")

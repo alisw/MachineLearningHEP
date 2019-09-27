@@ -1152,7 +1152,7 @@ class Analyzer:
             h_sel_fd.Write()
             legeffFDstring = "%.1f < %s < %.1f GeV/c" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
-            legeffFD.AddEntry(h_sel_pr, legeffFDstring, "LEP")
+            legeffFD.AddEntry(h_sel_fd, legeffFDstring, "LEP")
             h_sel_fd.GetXaxis().SetTitle("p_{T} (GeV)")
             h_sel_fd.GetYaxis().SetTitle("Acc x efficiency feed-down %s %s (1/GeV)" \
                     % (self.p_latexnmeson, self.typean))

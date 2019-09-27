@@ -453,18 +453,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                n_bins, analysis_bin_lims)
             h_sel_fd = TH1F("h_sel_fd" + stringbin2, "FD Reco and sel in acc |#eta|<0.8 and sel", \
                             n_bins, analysis_bin_lims)
-            h_gen_pr = TH1F("h_gen_pr" + stringbin2, "Prompt Generated in acceptance |y|<0.5", \
-                            n_bins, analysis_bin_lims)
-            h_presel_pr = TH1F("h_presel_pr" + stringbin2, "Prompt Reco in acc |#eta|<0.8 and sel", \
-                               n_bins, analysis_bin_lims)
-            h_sel_pr = TH1F("h_sel_pr" + stringbin2, "Prompt Reco and sel in acc |#eta|<0.8 and sel", \
-                            n_bins, analysis_bin_lims)
-            h_gen_fd = TH1F("h_gen_fd" + stringbin2, "FD Generated in acceptance |y|<0.5", \
-                            n_bins, analysis_bin_lims)
-            h_presel_fd = TH1F("h_presel_fd" + stringbin2, "FD Reco in acc |#eta|<0.8 and sel", \
-                               n_bins, analysis_bin_lims)
-            h_sel_fd = TH1F("h_sel_fd" + stringbin2, "FD Reco and sel in acc |#eta|<0.8 and sel", \
-                            n_bins, analysis_bin_lims)
 
             bincounter = 0
             for ipt in range(self.p_nptfinbins):
