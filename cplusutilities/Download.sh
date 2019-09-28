@@ -122,7 +122,7 @@ elif [ "$dataset" == "LHC2018_pp" ] || [  "$dataset" == "LHC2018_AOD208_bdefghij
               /alice/data/2018/LHC18j/000288943/pass1/AOD208/PWGHF/HF_TreeCreator
               /alice/data/2018/LHC18k/000289177/pass1/AOD208/PWGHF/HF_TreeCreator
               /alice/data/2018/LHC18l/000289444/pass1/AOD208/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18m/000291447/pass1_withTRDtracking/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18m/000292460/pass1_withTRDtracking/AOD208/PWGHF/HF_TreeCreator
               /alice/data/2018/LHC18n/000293359/pass1/AOD208/PWGHF/HF_TreeCreator
               /alice/data/2018/LHC18o/000293741/pass1/AOD208/PWGHF/HF_TreeCreator
               /alice/data/2018/LHC18p/000294925/pass1/AOD208/PWGHF/HF_TreeCreator
@@ -161,7 +161,7 @@ elif [  "$dataset" == "LHC2016_AOD208_deghjklop_13TeV_pp" ]; then
               /alice/data/2016/LHC16l/000259164/pass2/AOD208/PWGHF/HF_TreeCreator
               /alice/data/2016/LHC16o/000262849/pass1/AOD208/PWGHF/HF_TreeCreator
               /alice/data/2016/LHC16p/000264109/pass1/AOD208/PWGHF/HF_TreeCreator
-              /alice/data/2016/LHC16h/000255180/pass1/AOD208/PWGHF/HF_TreeCreator)
+              /alice/data/2016/LHC16h/000254653/pass1/AOD208/PWGHF/HF_TreeCreator)
   childdownloadpath=(1 2 3 4 5 6 7 8 9 4)
   datasetwithchilds=1
   dataset_short="pp_2016_data"
