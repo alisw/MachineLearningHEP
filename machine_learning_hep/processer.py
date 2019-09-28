@@ -594,7 +594,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
     def process_valevents(self, file_index):
         dfevt = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
         dfevt = dfevt.query("is_ev_rej==0")
-        triggerlist = ["HighMultV0", "HighMultSPD", "HighMultV0", "INT7"]
+        triggerlist = ["HighMultV0", "HighMultSPD", "HighMultV0"]
         varlist = ["v0m_corr", "n_tracklets_corr", "perc_v0m"]
         nbinsvar = [100, 200, 200]
         minrvar = [0, 0, 0]
