@@ -1793,10 +1793,11 @@ class Analyzer:
                     "ctrigger_%s_%s" % (trigger, varlist[i]), "eps", \
                     None, None))
         cscatter = TCanvas("cscatter", 'The Fit Canvas')
-        cscatter.SetCanvasSize(2100, 2000)
-        cscatter.Divide(2, 1)
+        cscatter.SetCanvasSize(2100, 800)
+        cscatter.Divide(3, 1)
         hv0mvsperc = filedata.Get("hv0mvsperc")
         hntrklsperc = filedata.Get("hntrklsperc")
+        hntrklsv0m = filedata.Get("hntrklsv0m")
         if hv0mvsperc:
             cscatter.cd(1)
             gPad.SetLogx()
@@ -1805,8 +1806,18 @@ class Analyzer:
             hv0mvsperc.Draw("colz")
         if hntrklsperc:
             cscatter.cd(2)
+            gPad.SetLogx()
+            gPad.SetLogz()
+            hntrklsperc.GetYaxis().SetRangeUser(0., 200.)
             hntrklsperc.GetXaxis().SetTitle("percentile (max value = 100)")
             hntrklsperc.GetYaxis().SetTitle("SPD ntracklets for z")
             hntrklsperc.Draw("colz")
+        if hntrklsv0m:
+            cscatter.cd(2)
+            gPad.SetLogx()
+            gPad.SetLogz()
+            hntrklsv0m.GetXaxis().SetTitle("V0M corrected for z")
+            hntrklsv0m.GetYaxis().SetTitle("SPD ntracklets for z")
+            hntrklsv0m.Draw("colz")
         cscatter.SaveAs(self.make_file_path(self.d_valevtdata, "cscatter", "eps", \
                                             None, None))

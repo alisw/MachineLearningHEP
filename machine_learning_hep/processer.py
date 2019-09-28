@@ -605,9 +605,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
         hv0mvsperc.SetName("hv0mvsperc")
         hv0mvsperc.Write()
         dfevtnorm = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
-        hntrklsperc = scatterplot(dfevt, "perc_v0m", "n_tracklets_corr", 50000, 0, 100, 200, 0., 2000.)
+        hntrklsperc = scatterplot(dfevt, "perc_v0m", "n_tracklets_corr", 50000, 0, 100, 200, 0., 200.)
         hntrklsperc.SetName("hntrklsperc")
         hntrklsperc.Write()
+        hntrklsv0m = scatterplot(dfevt, "v0m_corr", "n_tracklets_corr", 2000, 0, 2000, 200, 0., 200.)
+        hntrklsv0m.SetName("hntrklsv0m")
+        hntrklsv0m.Write()
         for ivar, var in enumerate(varlist):
             label = "hbitINT7vs%s" % (var)
             histoMB = TH1F(label, label, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
