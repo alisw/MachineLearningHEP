@@ -454,18 +454,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                n_bins, analysis_bin_lims)
             h_sel_fd = TH1F("h_sel_fd" + stringbin2, "FD Reco and sel in acc |#eta|<0.8 and sel", \
                             n_bins, analysis_bin_lims)
-            h_gen_pr = TH1F("h_gen_pr" + stringbin2, "Prompt Generated in acceptance |y|<0.5", \
-                            n_bins, analysis_bin_lims)
-            h_presel_pr = TH1F("h_presel_pr" + stringbin2, "Prompt Reco in acc |#eta|<0.8 and sel", \
-                               n_bins, analysis_bin_lims)
-            h_sel_pr = TH1F("h_sel_pr" + stringbin2, "Prompt Reco and sel in acc |#eta|<0.8 and sel", \
-                            n_bins, analysis_bin_lims)
-            h_gen_fd = TH1F("h_gen_fd" + stringbin2, "FD Generated in acceptance |y|<0.5", \
-                            n_bins, analysis_bin_lims)
-            h_presel_fd = TH1F("h_presel_fd" + stringbin2, "FD Reco in acc |#eta|<0.8 and sel", \
-                               n_bins, analysis_bin_lims)
-            h_sel_fd = TH1F("h_sel_fd" + stringbin2, "FD Reco and sel in acc |#eta|<0.8 and sel", \
-                            n_bins, analysis_bin_lims)
 
             bincounter = 0
             for ipt in range(self.p_nptfinbins):
@@ -617,6 +605,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
         hv0mvsperc.SetName("hv0mvsperc")
         hv0mvsperc.Write()
         dfevtnorm = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
+        hntrklsperc = scatterplot(dfevt, "perc_v0m", "n_tracklets_corr", 50000, 0, 100, 200, 0., 2000.)
+        hntrklsperc.SetName("hntrklsperc")
+        hntrklsperc.Write()
         for ivar, var in enumerate(varlist):
             label = "hbitINT7vs%s" % (var)
             histoMB = TH1F(label, label, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
@@ -640,7 +631,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 hVtxOutMult = TH1F('vtxout_' + labeltrigger, 'vtxout_' + labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
 
                 # multiplicity dependent normalisation
-                dftrg = dfevtnorm.query(triggerbit)
+                dftrg = 
+                
+                .query(triggerbit)
                 dfsel = dftrg.query('is_ev_rej == 0')
                 df_to_keep = filter_bit_df(dftrg, 'is_ev_rej', [[], [0, 5, 6, 10, 11]])
                 # events with reco vtx after previous selection
@@ -669,7 +662,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         hNorm.SetBinContent(2, nselevt)
         hNorm.Write()
         fileevtroot.Close()
-
     def process_valevents_par(self):
         print("doing event validation", self.mcordata, self.period)
         create_folder_struc(self.d_val, self.l_path)

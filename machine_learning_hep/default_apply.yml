@@ -54,7 +54,7 @@ analysis:
   type: SPDvspt
   # Do each period separately including merged (true)
   # Do only merged (false)
-  doperperiod: true
+  doperperiod: false
   data:
     histomass: false
   mc:
@@ -67,7 +67,7 @@ analysis:
   dojetstudies: false
   doeff: false
   docross: false
-  doplots: true
+  doplots: false
 
 systematics:
   probvariation: false

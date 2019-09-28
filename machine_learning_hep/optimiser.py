@@ -244,17 +244,26 @@ class Optimiser:
         self.df_ytest = self.df_mltest[self.v_sig]
 
     def do_corr(self):
-        imageIO_vardist = vardistplot(self.df_sigtrain, self.df_bkgtrain,
-                                      self.v_all, self.dirmlplot,
-                                      self.p_binmin, self.p_binmax)
+        imageIO_vardist_all = vardistplot(self.df_sigtrain, self.df_bkgtrain,
+                                          self.v_all, self.dirmlplot,
+                                          self.p_binmin, self.p_binmax)
+        imageIO_vardist_train = vardistplot(self.df_sigtrain, self.df_bkgtrain,
+                                            self.v_train, self.dirmlplot,
+                                            self.p_binmin, self.p_binmax)
         imageIO_scatterplot = scatterplot(self.df_sigtrain, self.df_bkgtrain,
                                           self.v_corrx, self.v_corry,
                                           self.dirmlplot, self.p_binmin, self.p_binmax)
-        imageIO_corr_sig = correlationmatrix(self.df_sigtrain, self.v_all, "Signal",
-                                             self.dirmlplot, self.p_binmin, self.p_binmax)
-        imageIO_corr_bkg = correlationmatrix(self.df_bkgtrain, self.v_all, "Background",
-                                             self.dirmlplot, self.p_binmin, self.p_binmax)
-        return imageIO_vardist, imageIO_scatterplot, imageIO_corr_sig, imageIO_corr_bkg
+        imageIO_corr_sig_all = correlationmatrix(self.df_sigtrain, self.v_all, "Signal",
+                                                 self.dirmlplot, self.p_binmin, self.p_binmax)
+        imageIO_corr_bkg_all = correlationmatrix(self.df_bkgtrain, self.v_all, "Background",
+                                                 self.dirmlplot, self.p_binmin, self.p_binmax)
+        imageIO_corr_sig_train = correlationmatrix(self.df_sigtrain, self.v_train, "Signal",
+                                                   self.dirmlplot, self.p_binmin, self.p_binmax)
+        imageIO_corr_bkg_train = correlationmatrix(self.df_bkgtrain, self.v_train, "Background",
+                                                   self.dirmlplot, self.p_binmin, self.p_binmax)
+        return imageIO_vardist_all, imageIO_vardist_train, imageIO_scatterplot, \
+                  imageIO_corr_sig_all, imageIO_corr_bkg_all, imageIO_corr_sig_train, \
+                  imageIO_corr_bkg_train
 
     def loadmodels(self):
         classifiers_scikit, names_scikit = getclf_scikit(self.db_model)
@@ -424,10 +433,14 @@ class Optimiser:
         plt.xlabel('Threshold', fontsize=20)
         plt.ylabel(r'Significance Per Event ($3 \sigma$)', fontsize=20)
         plt.title("Significance Per Event vs Threshold", fontsize=20)
+        plt.xticks(fontsize=18)
+        plt.yticks(fontsize=18)
         fig_signif = plt.figure(figsize=(20, 15))
         plt.xlabel('Threshold', fontsize=20)
         plt.ylabel(r'Significance ($3 \sigma$)', fontsize=20)
         plt.title("Significance vs Threshold", fontsize=20)
+        plt.xticks(fontsize=18)
+        plt.yticks(fontsize=18)
 
         for name in self.p_classname:
             df_sig = self.df_mltest[self.df_mltest["ismcprompt"] == 1]
@@ -435,7 +448,8 @@ class Optimiser:
                                                                       df_sig, name)
             bkg_array, bkg_err_array, _ = calc_bkg(df_data_sideband, name, self.p_nstepsign,
                                                    self.p_mass_fit_lim, self.p_bin_width,
-                                                   sig_region, self.p_savefit, self.dirmlplot)
+                                                   sig_region, self.p_savefit, self.dirmlplot,
+                                                   self.p_binmin, self.p_binmax)
             sig_array = [eff * signal_yield for eff in eff_array]
             sig_err_array = [eff_err * signal_yield for eff_err in eff_err_array]
             bkg_array = [bkg / (self.p_bkgfracopt * self.p_nevtml) for bkg in bkg_array]
@@ -444,23 +458,23 @@ class Optimiser:
             signif_array, signif_err_array = calc_signif(sig_array, sig_err_array, bkg_array,
                                                          bkg_err_array)
             plt.figure(fig_signif_pevt.number)
-            plt.errorbar(x_axis, signif_array, yerr=signif_err_array, alpha=0.3, label=f'{name}',
-                         elinewidth=2.5, linewidth=4.0)
+            plt.errorbar(x_axis, signif_array, yerr=signif_err_array, label=f'{name}',
+                         elinewidth=2.5, linewidth=5.0)
             signif_array_ml = [sig * sqrt(self.p_nevtml) for sig in signif_array]
             signif_err_array_ml = [sig_err * sqrt(self.p_nevtml) for sig_err in signif_err_array]
             plt.figure(fig_signif.number)
-            plt.errorbar(x_axis, signif_array_ml, yerr=signif_err_array_ml, alpha=0.3,
-                         label=f'{name}_ML_dataset', elinewidth=2.5, linewidth=4.0)
+            plt.errorbar(x_axis, signif_array_ml, yerr=signif_err_array_ml,
+                         label=f'{name}_ML_dataset', elinewidth=2.5, linewidth=5.0)
             signif_array_tot = [sig * sqrt(self.p_nevttot) for sig in signif_array]
             signif_err_array_tot = [sig_err * sqrt(self.p_nevttot) for sig_err in signif_err_array]
             plt.figure(fig_signif.number)
-            plt.errorbar(x_axis, signif_array_tot, yerr=signif_err_array_tot, alpha=0.3,
-                         label=f'{name}_Tot', elinewidth=2.5, linewidth=4.0)
+            plt.errorbar(x_axis, signif_array_tot, yerr=signif_err_array_tot,
+                         label=f'{name}_Tot', elinewidth=2.5, linewidth=5.0)
             plt.figure(fig_signif_pevt.number)
-            plt.legend(loc="lower left", prop={'size': 18})
+            plt.legend(loc="upper left", prop={'size': 30})
             plt.savefig(f'{self.dirmlplot}/Significance_PerEvent_{self.s_suffix}.png')
             plt.figure(fig_signif.number)
-            plt.legend(loc="lower left", prop={'size': 18})
+            plt.legend(loc="upper left", prop={'size': 30})
             plt.savefig(f'{self.dirmlplot}/Significance_{self.s_suffix}.png')
 
     def do_scancuts(self):

@@ -1,4 +1,4 @@
-case: D0jetpp
+case: D0pp
 download:
   alice:
     activate: false
@@ -26,18 +26,18 @@ mergingperiods:
 ml_study:
   activate: true
   doscancuts: false
-  applytodatamc: false
+  applytodatamc: true
   doroc: true
   doboundary: false
-  docorrelation: false
+  docorrelation: true
   docrossvalidation: false
   dogridsearch: false
-  doimportance: false
-  dolearningcurve: false
+  doimportance: true
+  dolearningcurve: true
   dopca: false
-  dosignifopt: false
-  doefficiency: false
-  dotesting: false
+  dosignifopt: true
+  doefficiency: true
+  dotesting: true
   dotraining: true
 
 mlapplication:
@@ -54,7 +54,7 @@ analysis:
   type: SPDvspt
   # Do each period separately including merged (true)
   # Do only merged (false)
-  doperperiod: true
+  doperperiod: false
   data:
     histomass: false
   mc:
@@ -67,7 +67,7 @@ analysis:
   dojetstudies: false
   doeff: false
   docross: false
-  doplots: true
+  doplots: false
 
 systematics:
   probvariation: false
