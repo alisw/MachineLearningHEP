@@ -595,6 +595,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
     def process_valevents(self, file_index):
         dfevt = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
         dfevt = dfevt.query("is_ev_rej==0")
+        dfevtmb = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
+        dfevtmb = dfevtmb.query("is_ev_rej==0")
+        myrunlisttrigmb = self.runlistrigger["INT7"]
+        dfevtselmb = selectdfrunlist(dfevtmb, self.run_param[myrunlisttrigmb], "run_number")
         triggerlist = ["HighMultSPD"]
         varlist = ["v0m_corr", "n_tracklets_corr", "perc_v0m"]
         nbinsvar = [100, 200, 200]
@@ -611,7 +615,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         for ivar, var in enumerate(varlist):
             label = "hbitINT7vs%s" % (var)
             histoMB = TH1F(label, label, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
-            fill_hist(histoMB, dfevt.query("trigger_hasbit_INT7==1")[var])
+            fill_hist(histoMB, dfevtselmb.query("trigger_hasbit_INT7==1")[var])
             histoMB.Sumw2()
             histoMB.Write()
             for trigger in triggerlist:
@@ -622,12 +626,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 histotrig = TH1F(labeltrigger, labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
                 myrunlisttrig = self.runlistrigger[trigger]
                 ev = len(dfevt)
-                dfevt = selectdfrunlist(dfevt, self.run_param[myrunlisttrig], "run_number")
-                if len(dfevt)<ev:
+                dfevtsel = selectdfrunlist(dfevt, self.run_param[myrunlisttrig], "run_number")
+                if len(dfevtsel)<ev:
                     print("Select")
-                    print(ev, len(dfevt))
-                fill_hist(histotrigANDMB, dfevt.query(triggerbit + " and trigger_hasbit_INT7==1")[var])
-                fill_hist(histotrig, dfevt.query(triggerbit)[var])
+                    print(ev, len(dfevtsel))
+                fill_hist(histotrigANDMB, dfevtsel.query(triggerbit + " and trigger_hasbit_INT7==1")[var])
+                fill_hist(histotrig, dfevtsel.query(triggerbit)[var])
                 histotrigANDMB.Sumw2()
                 histotrig.Sumw2()
                 histotrigANDMB.Write()
@@ -666,7 +670,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         hNorm.SetBinContent(2, nselevt)
         hNorm.Write()
         fileevtroot.Close()
-
     def process_valevents_par(self):
         print("doing event validation", self.mcordata, self.period)
         create_folder_struc(self.d_val, self.l_path)
