@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 #############################################################################
 ##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
@@ -12,6 +11,8 @@
 ##    You should have received a copy of the GNU General Public License    ##
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
+
+#!/usr/bin/env python
 
 """
 main script for doing data processing, machine learning and analysis
