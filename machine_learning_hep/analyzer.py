@@ -106,6 +106,7 @@ class Analyzer:
             self.p_includesecpeak = [False for ipt in range(self.p_nptbins)]
         self.p_fixedmean = datap["analysis"][self.typean]["FixedMean"]
         self.p_use_user_gauss_sigma = datap["analysis"][self.typean]["SetInitialGaussianSigma"]
+        self.p_max_perc_sigma_diff = datap["analysis"][self.typean]["MaxPercSigmaDeviation"]
         self.p_exclude_nsigma_sideband = datap["analysis"][self.typean]["exclude_nsigma_sideband"]
         self.p_nsigma_signal = datap["analysis"][self.typean]["nsigma_signal"]
         self.p_fixingaussigma = datap["analysis"][self.typean]["SetFixGaussianSigma"]
@@ -231,6 +232,26 @@ class Analyzer:
         sigmas_histos = [TH1F("hsigmas%d" % (imult), "", \
                 self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
 
+        canvas_init_mc = [TCanvas("canvas_init_mc%d" % (imult), "MC", 1000, 800) \
+                     for imult in range(self.p_nbin2)]
+        canvas_init_data = [TCanvas("canvas_init_data%d" % (imult), "Data", 1000, 800) \
+                       for imult in range(self.p_nbin2)]
+        canvas_data = [TCanvas("canvas_data%d" % (imult), "Data", 1000, 800) \
+                       for imult in range(self.p_nbin2)]
+        if self.p_nptbins < 9:
+            nx = 4
+            ny = 2
+        elif self.p_nptbins < 13:
+            nx = 4
+            ny = 3
+        else:
+            nx = 5
+            ny = 4
+        for imult in range(self.p_nbin2):
+            canvas_init_mc[imult].Divide(nx, ny)
+            canvas_init_data[imult].Divide(nx, ny)
+            canvas_data[imult].Divide(nx, ny)
+
         # Fit mult integrated MC and data in integrated multiplicity bin for all pT bins
         # Hence, extract respective bin of second variable
         bin_mult_int = self.p_bineff if self.p_bineff is not None else 0
@@ -242,6 +263,8 @@ class Analyzer:
         mean_max = 0.
         sigma_min = 9999.
         sigma_max = 0.
+        minperc = 1 - self.p_max_perc_sigma_diff
+        maxperc = 1 + self.p_max_perc_sigma_diff
         # Start fitting...
         for imult in range(self.p_nbin2):
             if imult not in fit_status:
@@ -281,6 +304,13 @@ class Analyzer:
                                                                   self.p_rebin[ipt], -1)
                 h_mc_init_rebin = TH1F()
                 h_mc_init_rebin_.Copy(h_mc_init_rebin)
+                h_mc_init_rebin.SetTitle("%.1f < #it{p}_{T} < %.1f (prob > %.2f)" \
+                                         % (self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt], \
+                                            self.lpt_probcutfin[bin_id]))
+                h_mc_init_rebin.GetXaxis().SetTitle("#it{M}_{inv} (GeV/#it{c}^{2})")
+                h_mc_init_rebin.GetYaxis().SetTitle("Entries/(%.0f MeV/#it{c}^{2})" \
+                                                    % (h_data_init_rebin.GetBinWidth(1) * 1000))
+                h_mc_init_rebin.GetYaxis().SetTitleOffset(1.1);
 
                 mass_fitter_mc_init = AliHFInvMassFitter(h_mc_init_rebin, self.p_massmin[ipt],
                                                          self.p_massmax[ipt],
@@ -307,18 +337,26 @@ class Analyzer:
 
                 canvas = TCanvas("fit_canvas_mc_init", suffix_write, 700, 700)
                 mass_fitter_mc_init.DrawHere(canvas, self.p_nsigma_signal)
-
-
                 canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
                                                   "fittedplot_integrated_mc", "eps",
                                                   None, suffix_write))
                 canvas.Close()
+                canvas_init_mc[imult].cd(ipt+1)
+                mass_fitter_mc_init.DrawHere(gPad, self.p_nsigma_signal)
 
                 # Now, try also for data
                 h_data_init_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_init,
                                                                     self.p_rebin[ipt], -1)
                 h_data_init_rebin = TH1F()
                 h_data_init_rebin_.Copy(h_data_init_rebin)
+                h_data_init_rebin.SetTitle("%.1f < #it{p}_{T} < %.1f (prob > %.2f)" \
+                                           % (self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt], \
+                                              self.lpt_probcutfin[bin_id]))
+                h_data_init_rebin.GetXaxis().SetTitle("#it{M}_{inv} (GeV/#it{c}^{2})")
+                h_data_init_rebin.GetYaxis().SetTitle("Entries/(%.0f MeV/#it{c}^{2})" \
+                                                      % (h_data_init_rebin.GetBinWidth(1) * 1000))
+                h_data_init_rebin.GetYaxis().SetTitleOffset(1.1);
+
                 mass_fitter_data_init = AliHFInvMassFitter(h_data_init_rebin, self.p_massmin[ipt],
                                                            self.p_massmax[ipt],
                                                            self.bkg_func_map[self.p_bkgfunc[ipt]],
@@ -338,20 +376,23 @@ class Analyzer:
                 success = mass_fitter_data_init.MassFitter(False)
                 fit_status[imult][ipt]["init_data"] = False
                 if success == 1:
-                    means_sigmas_init.insert(0, (1, mass_fitter_data_init.GetMean(),
-                                                 mass_fitter_data_init.GetSigma()))
-                    fit_status[imult][ipt]["init_data"] = True
-                    if self.init_fits_from == "data":
-                        mean_case_user = mass_fitter_data_init.GetMean()
-                        sigma_case_user = mass_fitter_data_init.GetSigma()
+                    sigmafit = mass_fitter_data_init.GetSigma()
+                    if sigmafit > minperc * sigma_for_data and sigmafit < maxperc * sigma_for_data:
+                        means_sigmas_init.insert(0, (1, mass_fitter_data_init.GetMean(),
+                                                     mass_fitter_data_init.GetSigma()))
+                        fit_status[imult][ipt]["init_data"] = True
+                        if self.init_fits_from == "data":
+                            mean_case_user = mass_fitter_data_init.GetMean()
+                            sigma_case_user = mass_fitter_data_init.GetSigma()
 
                 canvas = TCanvas("fit_canvas_data_init", suffix_write, 700, 700)
                 mass_fitter_data_init.DrawHere(canvas, self.p_nsigma_signal)
-
                 canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
                                                   "fittedplot_integrated", "eps",
                                                   None, suffix_write))
                 canvas.Close()
+                canvas_init_data[imult].cd(ipt+1)
+                mass_fitter_data_init.DrawHere(gPad, self.p_nsigma_signal)
 
                 ######################
                 # END initialize fit #
@@ -373,11 +414,6 @@ class Analyzer:
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
-                suffix_write = "%s%d_%d_%s_%.2f_%.2f" % \
-                               (self.v_var_binning, self.lpt_finbinmin[ipt],
-                                self.lpt_finbinmax[ipt],
-                                self.v_var2_binning, self.lvar2_binmin[imult],
-                                self.lvar2_binmax[imult])
                 histname = "hmass"
                 if self.apply_weights is True:
                     histname = "h_invmass_weight"
@@ -386,6 +422,13 @@ class Analyzer:
                 h_invmass_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass, self.p_rebin[ipt], -1)
                 h_invmass_rebin = TH1F()
                 h_invmass_rebin_.Copy(h_invmass_rebin)
+                h_invmass_rebin.SetTitle("%.1f < #it{p}_{T} < %.1f (prob > %.2f)" \
+                                         % (self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt], \
+                                            self.lpt_probcutfin[bin_id]))
+                h_invmass_rebin.GetXaxis().SetTitle("#it{M}_{inv} (GeV/#it{c}^{2})")
+                h_invmass_rebin.GetYaxis().SetTitle("Entries/(%.0f MeV/#it{c}^{2})" \
+                                                    % (h_invmass_rebin.GetBinWidth(1) * 1000))
+                h_invmass_rebin.GetYaxis().SetTitleOffset(1.1);
 
                 h_invmass_mc = lfile_mc.Get("hmass" + suffix)
                 h_invmass_mc_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_mc,
@@ -449,22 +492,27 @@ class Analyzer:
                     fit_status[imult][ipt]["data"]["case"] = case
                     success = mass_fitter.MassFitter(False)
                     if success == 1:
-                        break
+                        sigma_final = mass_fitter.GetSigma()
+                        if sigma_final > minperc * sigma and sigma_final < maxperc * sigma:
+                            break
+                        else:
+                            self.logger.warning("Free fit succesful, but bad sigma. Skipped!")
 
                 fit_status[imult][ipt]["data"]["success"] = success
 
 
                 canvas = TCanvas("fit_canvas", suffix, 700, 700)
                 mass_fitter.DrawHere(canvas, self.p_nsigma_signal)
-
                 if self.apply_weights is False:
                     canvas.SaveAs(self.make_file_path(self.d_resultsallpdata, "fittedplot", "eps",
-                                                      None, suffix_write))
+                                                      None, suffix))
                 else:
                     canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
                                                       "fittedplotweights",
-                                                      "eps", None, suffix_write))
+                                                      "eps", None, suffix))
                 canvas.Close()
+                canvas_data[imult].cd(ipt+1)
+                mass_fitter.DrawHere(gPad, self.p_nsigma_signal)
 
                 fit_dir = fileout.mkdir(suffix)
                 fit_dir.WriteObject(mass_fitter, "fitter")
@@ -491,8 +539,22 @@ class Analyzer:
                     sigmas_histos[imult].SetBinError(ipt + 1, mass_fitter.GetSigmaUncertainty())
 
                 else:
-                    self.logger.error("Fit failed for suffix %s", suffix_write)
+                    self.logger.error("Fit failed for suffix %s", suffix)
                 del mass_fitter
+            suffix2 = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmax, \
+                                        self.v_var2_binning)
+            canvas_init_mc[imult].SaveAs(self.make_file_path(self.d_resultsallpdata,
+                                                             "canvas_InitMC",
+                                                             "eps", None, suffix2))
+            canvas_init_mc[imult].Close()
+            canvas_init_data[imult].SaveAs(self.make_file_path(self.d_resultsallpdata,
+                                                               "canvas_InitData",
+                                                               "eps", None, suffix2))
+            canvas_init_data[imult].Close()
+            canvas_data[imult].SaveAs(self.make_file_path(self.d_resultsallpdata,
+                                                          "canvas_FinalData",
+                                                          "eps", None, suffix2))
+            canvas_data[imult].Close()
             fileout.cd()
             yieldshistos[imult].Write()
 
@@ -546,7 +608,7 @@ class Analyzer:
             yieldshistos[imult].SetLineColor(imult+1)
             yieldshistos[imult].Draw("same")
             legyield.AddEntry(yieldshistos[imult], legstring, "LEP")
-            yieldshistos[imult].GetXaxis().SetTitle("p_{T} (GeV)")
+            yieldshistos[imult].GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
             yieldshistos[imult].GetYaxis().SetTitle("Uncorrected yields %s %s (1/GeV)" \
                     % (self.p_latexnmeson, self.typean))
 
@@ -556,7 +618,7 @@ class Analyzer:
             means_histos[imult].SetLineColor(imult+1)
             means_histos[imult].Draw("same")
             leg_means.AddEntry(means_histos[imult], legstring, "LEP")
-            means_histos[imult].GetXaxis().SetTitle("p_{T} (GeV)")
+            means_histos[imult].GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
             means_histos[imult].GetYaxis().SetTitle("#mu_{fit} %s %s" \
                     % (self.p_latexnmeson, self.typean))
 
@@ -566,7 +628,7 @@ class Analyzer:
             sigmas_histos[imult].SetLineColor(imult+1)
             sigmas_histos[imult].Draw("same")
             leg_sigmas.AddEntry(sigmas_histos[imult], legstring, "LEP")
-            sigmas_histos[imult].GetXaxis().SetTitle("p_{T} (GeV)")
+            sigmas_histos[imult].GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
             sigmas_histos[imult].GetYaxis().SetTitle("#sigma_{fit} %s %s" \
                     % (self.p_latexnmeson, self.typean))
 
@@ -1012,7 +1074,7 @@ class Analyzer:
             histo_ratio_mt_fit.GetXaxis().SetLabelFont(43)
             histo_ratio_mt_fit.GetXaxis().SetTitleFont(43)
             histo_ratio_mt_fit.GetXaxis().SetTitleOffset(4.)
-            histo_ratio_mt_fit.GetXaxis().SetTitle("p_{T} (GeV/c)")
+            histo_ratio_mt_fit.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
 
             histo_ratio_mt_bincount = \
                     histo_mt_bincount_pt.Clone(histo_mt_bincount_pt.GetName() + "_ratio")
@@ -1130,10 +1192,10 @@ class Analyzer:
             fileouteff.cd()
             h_sel_pr.SetName("eff_mult%d" % imult)
             h_sel_pr.Write()
-            legeffstring = "%.1f < %s < %.1f GeV/c" % \
+            legeffstring = "%.1f < %s < %.1f GeV/#it{c}" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legeff.AddEntry(h_sel_pr, legeffstring, "LEP")
-            h_sel_pr.GetXaxis().SetTitle("p_{T} (GeV)")
+            h_sel_pr.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
             h_sel_pr.GetYaxis().SetTitle("Acc x efficiency (prompt) %s %s (1/GeV)" \
                     % (self.p_latexnmeson, self.typean))
             h_sel_pr.SetMinimum(0.)
@@ -1165,10 +1227,10 @@ class Analyzer:
             fileouteff.cd()
             h_sel_fd.SetName("eff_fd_mult%d" % imult)
             h_sel_fd.Write()
-            legeffFDstring = "%.1f < %s < %.1f GeV/c" % \
+            legeffFDstring = "%.1f < %s < %.1f GeV/#it{c}" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legeffFD.AddEntry(h_sel_fd, legeffFDstring, "LEP")
-            h_sel_fd.GetXaxis().SetTitle("p_{T} (GeV)")
+            h_sel_fd.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
             h_sel_fd.GetYaxis().SetTitle("Acc x efficiency feed-down %s %s (1/GeV)" \
                     % (self.p_latexnmeson, self.typean))
             h_sel_fd.SetMinimum(0.)
@@ -1496,12 +1558,12 @@ class Analyzer:
             norm = 2 * self.p_br * self.p_nevents / (self.p_sigmamb * 1e12)
             hcross.Scale(1./norm)
             fileoutcross.cd()
-            hcross.GetXaxis().SetTitle("p_{T} %s (GeV)" % self.p_latexnmeson)
-            hcross.GetYaxis().SetTitle("d#sigma/dp_{T} (%s) %s" %
+            hcross.GetXaxis().SetTitle("#it{p}_{T} %s (GeV/#it{c})" % self.p_latexnmeson)
+            hcross.GetYaxis().SetTitle("d#sigma/d#it{p}_{T} (%s) %s" %
                                        (self.p_latexnmeson, self.typean))
             hcross.SetName("hcross%d" % imult)
             hcross.GetYaxis().SetRangeUser(1e1, 1e10)
-            legvsvar1endstring = "%.1f < %s < %.1f GeV/c" % \
+            legvsvar1endstring = "%.1f < %s < %.1f GeV/#it{c}" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legvsvar1.AddEntry(hcross, legvsvar1endstring, "LEP")
             hcross.Draw("same")
@@ -1544,8 +1606,8 @@ class Analyzer:
                     hcrossvsvar2[ipt].SetBinError(imult+1, listvalueserr[imult][ipt])
 
                 hcrossvsvar2[ipt].GetYaxis().SetRangeUser(1e4, 1e10)
-            legvsvar2endstring = "%.1f < %s < %.1f GeV/c" % \
-                    (self.lpt_finbinmin[ipt], "p_{T}", self.lpt_finbinmax[ipt])
+            legvsvar2endstring = "%.1f < %s < %.1f GeV/#it{c}" % \
+                   (self.lpt_finbinmin[ipt], "#it{p}_{T}", self.lpt_finbinmax[ipt])
             hcrossvsvar2[ipt].Draw("same")
             legvsvar2.AddEntry(hcrossvsvar2[ipt], legvsvar2endstring, "LEP")
         legvsvar2.Draw()
@@ -1641,12 +1703,12 @@ class Analyzer:
         for imult in range(self.p_nbin2):
             hcross = fileoutcrosstot.Get("histoSigmaCorr%d" % imult)
             hcross.SetLineColor(imult+1)
-            hcross.GetXaxis().SetTitle("p_{T} %s (GeV)" % self.p_latexnmeson)
+            hcross.GetXaxis().SetTitle("#it{p}_{T} %s (GeV/#it{c})" % self.p_latexnmeson)
             hcross.GetYaxis().SetTitleOffset(1.3)
             hcross.GetYaxis().SetTitle("Corrected yield/events (%s) %s" %
                                        (self.p_latexnmeson, self.typean))
             hcross.GetYaxis().SetRangeUser(1e-10, 1)
-            legvsvar1endstring = "%.1f < %s < %.1f GeV/c" % \
+            legvsvar1endstring = "%.1f < %s < %.1f GeV/#it{c}" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legvsvar1.AddEntry(hcross, legvsvar1endstring, "LEP")
             hcross.Draw("same")

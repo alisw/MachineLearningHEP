@@ -311,8 +311,7 @@ LcpK0spp:
     probcutpresel:
       data: [0.3,0.3,0.3,0.3,0.3] #list of nbins
       mc: [0.3,0.3,0.3,0.3,0.3] #list of nbins
-
-    probcutoptimal: [0.6,0.8,0.75,0.7,0.6] #list of nbins
+    probcutoptimal: [0.4,0.4,0.4,0.3,0.3] #list of nbins
 
   analysis:
     indexhptspectrum: 5 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
@@ -378,6 +377,8 @@ LcpK0spp:
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: false
+      # Max percentage deviation in sigma (from init) to be considered as a good fit
+      MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
       exclude_nsigma_sideband: 4
       # Sigma around mean where signal is integrated after total fit has been done
@@ -445,6 +446,8 @@ LcpK0spp:
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: false
+      # Max percentage deviation in sigma (from init) to be considered as a good fit
+      MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
       exclude_nsigma_sideband: 4
       # Sigma around mean where signal is integrated after total fit has been done
@@ -510,6 +513,8 @@ LcpK0spp:
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: false
+      # Max percentage deviation in sigma (from init) to be considered as a good fit
+      MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
       exclude_nsigma_sideband: 4
       # Sigma around mean where signal is integrated after total fit has been done
@@ -585,6 +590,8 @@ LcpK0spp:
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: false
+      # Max percentage deviation in sigma (from init) to be considered as a good fit
+      MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
       exclude_nsigma_sideband: 4
       # Sigma around mean where signal is integrated after total fit has been done
@@ -651,6 +658,8 @@ LcpK0spp:
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: false
+      # Max percentage deviation in sigma (from init) to be considered as a good fit
+      MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
       exclude_nsigma_sideband: 4
       # Sigma around mean where signal is integrated after total fit has been done
@@ -716,6 +725,8 @@ LcpK0spp:
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: false
+      # Max percentage deviation in sigma (from init) to be considered as a good fit
+      MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
       exclude_nsigma_sideband: 4
       # Sigma around mean where signal is integrated after total fit has been done
@@ -781,6 +792,8 @@ LcpK0spp:
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: false
+      # Max percentage deviation in sigma (from init) to be considered as a good fit
+      MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
       exclude_nsigma_sideband: 4
       # Sigma around mean where signal is integrated after total fit has been done
