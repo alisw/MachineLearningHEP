@@ -631,9 +631,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 hVtxOutMult = TH1F('vtxout_' + labeltrigger, 'vtxout_' + labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
 
                 # multiplicity dependent normalisation
-                dftrg = 
-                
-                .query(triggerbit)
+                dftrg = dfevtnorm.query(triggerbit)
                 dfsel = dftrg.query('is_ev_rej == 0')
                 df_to_keep = filter_bit_df(dftrg, 'is_ev_rej', [[], [0, 5, 6, 10, 11]])
                 # events with reco vtx after previous selection
