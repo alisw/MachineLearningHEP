@@ -1813,7 +1813,8 @@ class Analyzer:
             hntrklsperc.GetYaxis().SetTitle("SPD ntracklets for z")
             hntrklsperc.Draw("colz")
         if hntrklsv0m:
-            cscatter.cd(2)
+            cscatter.cd(3)
+            hntrklsv0m.GetYaxis().SetRangeUser(0.,200.)
             gPad.SetLogx()
             gPad.SetLogz()
             hntrklsv0m.GetXaxis().SetTitle("V0M corrected for z")
