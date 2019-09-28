@@ -46,7 +46,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                  d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
-                 d_results, d_val, typean):
+                 d_results, d_val, typean, runlisttrigger):
         self.case = case
         self.typean = typean
         #directories
@@ -62,7 +62,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.p_rd_merge = p_rd_merge
         self.period = p_period
         self.runlist = run_param[self.period]
-
+        self.run_param = run_param
         self.p_maxfiles = p_maxfiles
         self.p_chunksizeunp = p_chunksizeunp
         self.p_chunksizeskim = p_chunksizeskim
@@ -214,7 +214,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
         self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
-
+        self.runlistrigger = runlisttrigger
 
     def unpack(self, file_index):
         treeevtorig = uproot.open(self.l_root[file_index])[self.n_treeevt]
@@ -595,7 +595,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
     def process_valevents(self, file_index):
         dfevt = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
         dfevt = dfevt.query("is_ev_rej==0")
-        triggerlist = ["HighMultV0", "HighMultSPD", "INT7"]
+        triggerlist = ["HighMultSPD"]
         varlist = ["v0m_corr", "n_tracklets_corr", "perc_v0m"]
         nbinsvar = [100, 200, 200]
         minrvar = [0, 0, 0]
@@ -605,12 +605,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
         hv0mvsperc.SetName("hv0mvsperc")
         hv0mvsperc.Write()
         dfevtnorm = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
-        hntrklsperc = scatterplot(dfevt, "perc_v0m", "n_tracklets_corr", 50000, 0, 100, 200, 0., 200.)
+        hntrklsperc = scatterplot(dfevt, "perc_v0m", "n_tracklets_corr", 50000, 0, 100, 200, 0., 2000.)
         hntrklsperc.SetName("hntrklsperc")
         hntrklsperc.Write()
-        hntrklsv0m = scatterplot(dfevt, "v0m_corr", "n_tracklets_corr", 2000, 0, 2000, 200, 0., 200.)
-        hntrklsv0m.SetName("hntrklsv0m")
-        hntrklsv0m.Write()
         for ivar, var in enumerate(varlist):
             label = "hbitINT7vs%s" % (var)
             histoMB = TH1F(label, label, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
@@ -623,6 +620,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 labeltrigger = "hbit%svs%s" % (trigger, var)
                 histotrigANDMB = TH1F(labeltriggerANDMB, labeltriggerANDMB, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
                 histotrig = TH1F(labeltrigger, labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
+                myrunlisttrig = self.runlistrigger[trigger]
+                ev = len(dfevt)
+                dfevt = selectdfrunlist(dfevt, self.run_param[myrunlisttrig], "run_number")
+                if len(dfevt)<ev:
+                    print("Select")
+                    print(ev, len(dfevt))
                 fill_hist(histotrigANDMB, dfevt.query(triggerbit + " and trigger_hasbit_INT7==1")[var])
                 fill_hist(histotrig, dfevt.query(triggerbit)[var])
                 histotrigANDMB.Sumw2()
@@ -663,6 +666,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         hNorm.SetBinContent(2, nselevt)
         hNorm.Write()
         fileevtroot.Close()
+
     def process_valevents_par(self):
         print("doing event validation", self.mcordata, self.period)
         create_folder_struc(self.d_val, self.l_path)

@@ -124,7 +124,7 @@ D0pp:
     data:
       nperiods: 3
       nprocessesparallel: 50
-      maxfiles : [-1,-1,-1] #list of periods
+      maxfiles : [0,0,-1] #list of periods
       chunksizeunp : [100,100,100] #list of periods
       chunksizeskim: [100,100,100] #list of periods
       fracmerge : [0.08,0.08,0.08] #list of periods
@@ -743,10 +743,22 @@ D0pp:
       prob_range: [0.5,0.6,0.7]
 
   validation:
+    runlisttrigger: 
+      LHC16pp:
+        INT7: nosel
+        HighMultSPD: nosel
+        HighMultV0: nosel
+      LHC17pp:
+        INT7: nosel
+        HighMultSPD: nosel
+        HighMultV0: nosel
+      LHC18pp:
+        INT7: nosel
+        HighMultSPD: HighMultSPD2018
+        HighMultV0: nosel
     data:
       dir: [/data/DerivedValStudy/dataval_16, /data/DerivedValStudy/dataval_17, /data/DerivedValStudy/dataval_18] #list of periods
-      dirmerged: /data/DerivedValStudy/datavaltot
+      dirmerged: /data/DerivedValStudy/datavaltot 
     mc:
       dir: [/data/DerivedValStudy/mcval_16, /data/DerivedValStudy/mcval_17, /data/DerivedValStudy/mcval_18] #list of periods
       dirmerged: /data/DerivedValStudy/mcvaltot
-

@@ -93,6 +93,9 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.f_evtorig_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evtorig)
         self.f_evtvalroot_mergedallp = os.path.join(self.d_valevtroot_mergedallp, self.n_evtvalroot)
 
+        self.lper_runlistrigger = datap["validation"]["runlisttrigger"]
+
+
         self.process_listsample = []
         for indexp in range(self.prodnumber):
             myprocess = Processer(self.case, self.datap, self.run_param, self.mcordata,
@@ -105,7 +108,8 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
                                   self.dlper_reco_modapp[indexp],
                                   self.dlper_reco_modappmerged[indexp],
                                   self.d_results[indexp],
-                                  self.dlper_valevtroot[indexp], self.typean)
+                                  self.dlper_valevtroot[indexp], self.typean,
+                                  self.lper_runlistrigger[self.p_period[indexp]])
             self.process_listsample.append(myprocess)
 
         self.f_evtorigroot_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evtvalroot)
