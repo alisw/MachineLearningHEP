@@ -1814,7 +1814,7 @@ class Analyzer:
             hntrklsperc.Draw("colz")
         if hntrklsv0m:
             cscatter.cd(3)
-            hntrklsv0m.GetYaxis().SetRangeUser(0.,200.)
+            hntrklsv0m.GetYaxis().SetRangeUser(0., 200.)
             gPad.SetLogx()
             gPad.SetLogz()
             hntrklsv0m.GetXaxis().SetTitle("V0M corrected for z")

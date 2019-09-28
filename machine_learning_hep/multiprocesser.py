@@ -111,10 +111,16 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.f_evtorigroot_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evtvalroot)
         self.n_filemass = datap["files_names"]["histofilename"]
         self.n_fileeff = datap["files_names"]["efffilename"]
-        self.lper_filemass = [os.path.join(direc, self.n_filemass) for direc in self.d_results]
-        self.lper_fileeff = [os.path.join(direc, self.n_fileeff) for direc in self.d_results]
         self.filemass_mergedall = os.path.join(self.d_resulsallp, self.n_filemass)
         self.fileeff_mergedall = os.path.join(self.d_resulsallp, self.n_fileeff)
+
+        self.p_useperiod = datap["analysis"][self.typean]["useperiod"]
+        self.lper_filemass = []
+        self.lper_fileeff = []
+        for i, direc in enumerate(self.d_results):
+            if self.p_useperiod[i] == 1:
+                self.lper_filemass.append(os.path.join(direc, self.n_filemass))
+                self.lper_fileeff.append(os.path.join(direc, self.n_fileeff))
 
     def multi_unpack_allperiods(self):
         for indexp in range(self.prodnumber):
