@@ -1797,7 +1797,7 @@ class Analyzer:
         cscatter.Divide(2, 1)
         hv0mvsperc = filedata.Get("hv0mvsperc")
         hntrklsperc = filedata.Get("hntrklsperc")
-        if hv0mvsperc :
+        if hv0mvsperc:
             cscatter.cd(1)
             gPad.SetLogx()
             hv0mvsperc.GetXaxis().SetTitle("percentile (max value = 100)")
