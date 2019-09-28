@@ -1753,7 +1753,7 @@ class Analyzer:
                 maxhistx = 150
             else:
                 maxhistx = .5
-            hempty = TH1F("hempty", "hempty", 100, 0, maxhistx)
+            hempty = TH1F("hempty_%d" % i, "hempty", 100, 0, maxhistx)
             hempty.GetYaxis().SetTitleOffset(1.2)
             hempty.GetYaxis().SetTitleFont(42)
             hempty.GetXaxis().SetTitleFont(42)
