@@ -310,7 +310,7 @@ class Analyzer:
                 h_mc_init_rebin.GetXaxis().SetTitle("#it{M}_{inv} (GeV/#it{c}^{2})")
                 h_mc_init_rebin.GetYaxis().SetTitle("Entries/(%.0f MeV/#it{c}^{2})" \
                                                     % (h_data_init_rebin.GetBinWidth(1) * 1000))
-                h_mc_init_rebin.GetYaxis().SetTitleOffset(1.1);
+                h_mc_init_rebin.GetYaxis().SetTitleOffset(1.1)
 
                 mass_fitter_mc_init = AliHFInvMassFitter(h_mc_init_rebin, self.p_massmin[ipt],
                                                          self.p_massmax[ipt],
@@ -355,7 +355,7 @@ class Analyzer:
                 h_data_init_rebin.GetXaxis().SetTitle("#it{M}_{inv} (GeV/#it{c}^{2})")
                 h_data_init_rebin.GetYaxis().SetTitle("Entries/(%.0f MeV/#it{c}^{2})" \
                                                       % (h_data_init_rebin.GetBinWidth(1) * 1000))
-                h_data_init_rebin.GetYaxis().SetTitleOffset(1.1);
+                h_data_init_rebin.GetYaxis().SetTitleOffset(1.1)
 
                 mass_fitter_data_init = AliHFInvMassFitter(h_data_init_rebin, self.p_massmin[ipt],
                                                            self.p_massmax[ipt],
@@ -377,7 +377,7 @@ class Analyzer:
                 fit_status[imult][ipt]["init_data"] = False
                 if success == 1:
                     sigmafit = mass_fitter_data_init.GetSigma()
-                    if sigmafit > minperc * sigma_for_data and sigmafit < maxperc * sigma_for_data:
+                    if minperc * sigma_for_data < sigmafit < maxperc * sigma_for_data:
                         means_sigmas_init.insert(0, (1, mass_fitter_data_init.GetMean(),
                                                      mass_fitter_data_init.GetSigma()))
                         fit_status[imult][ipt]["init_data"] = True
@@ -428,7 +428,7 @@ class Analyzer:
                 h_invmass_rebin.GetXaxis().SetTitle("#it{M}_{inv} (GeV/#it{c}^{2})")
                 h_invmass_rebin.GetYaxis().SetTitle("Entries/(%.0f MeV/#it{c}^{2})" \
                                                     % (h_invmass_rebin.GetBinWidth(1) * 1000))
-                h_invmass_rebin.GetYaxis().SetTitleOffset(1.1);
+                h_invmass_rebin.GetYaxis().SetTitleOffset(1.1)
 
                 h_invmass_mc = lfile_mc.Get("hmass" + suffix)
                 h_invmass_mc_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_mc,
@@ -493,10 +493,9 @@ class Analyzer:
                     success = mass_fitter.MassFitter(False)
                     if success == 1:
                         sigma_final = mass_fitter.GetSigma()
-                        if sigma_final > minperc * sigma and sigma_final < maxperc * sigma:
+                        if minperc * sigma < sigma_final < maxperc * sigma:
                             break
-                        else:
-                            self.logger.warning("Free fit succesful, but bad sigma. Skipped!")
+                        self.logger.warning("Free fit succesful, but bad sigma. Skipped!")
 
                 fit_status[imult][ipt]["data"]["success"] = success
 
