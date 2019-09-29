@@ -51,7 +51,7 @@ class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-st
         self.lper_normfiles = []
         self.dlper_valevtroot = datap["validation"]["data"]["dir"]
         for i, _ in enumerate(self.d_resultsdata):
-            self.lper_normfilesorig.append(os.path.join(self.dlper_valevtroot[i],
+            self.lper_normfilesorig.append(os.path.join(self.dlper_valevtroot[i], \
                                                    "correctionsweights.root"))
             self.lper_normfiles.append(os.path.join(self.d_resultsdata[i], \
                                                    "correctionsweights.root"))

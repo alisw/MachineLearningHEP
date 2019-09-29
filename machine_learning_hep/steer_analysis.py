@@ -17,6 +17,7 @@ main script for doing data processing, machine learning and analysis
 """
 
 #import os
+import sys
 import subprocess
 import argparse
 from os.path import exists
@@ -216,8 +217,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         counter = counter + checkdirlist(dirvalmc)
 
     if counter < 0:
-        # pylint: disable=consider-using-sys-exit
-        exit()  # pylint: disable=consider-using-sys-exit
+        sys.exit()
     # check and create directories
 
     if doconversionmc is True:

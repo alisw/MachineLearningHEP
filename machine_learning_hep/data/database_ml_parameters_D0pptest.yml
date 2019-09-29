@@ -293,6 +293,8 @@ D0pptest:
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: false
+      # Max percentage deviation in sigma (from init) to be considered as a good fit
+      MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
       exclude_nsigma_sideband: 4
       # Sigma around mean where signal is integrated after total fit has been done
@@ -372,6 +374,8 @@ D0pptest:
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: false
+      # Max percentage deviation in sigma (from init) to be considered as a good fit
+      MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
       exclude_nsigma_sideband: 4
       # Sigma around mean where signal is integrated after total fit has been done
@@ -452,6 +456,8 @@ D0pptest:
       # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: false
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
+      MaxPercSigmaDeviation: 0.5
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
       exclude_nsigma_sideband: 4
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
@@ -522,6 +528,8 @@ D0pptest:
       # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: false
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
+      MaxPercSigmaDeviation: 0.5
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
       exclude_nsigma_sideband: 4
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
@@ -557,7 +565,7 @@ D0pptest:
       triggersel:
         data: "trigger_hasbit_HighMultSPD==1"
         mc: null
-        weighttrig: false
+        weighttrig: true
       data:
         results: [/data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2016_data/244_20190923-1806/resultsSPDvspt,
                   /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2017_data/245_20190923-1806/resultsSPDvspt,
@@ -587,6 +595,8 @@ D0pptest:
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: false
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
+      MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
       exclude_nsigma_sideband: 4
       # Sigma around mean where signal is integrated after total fit has been done
@@ -657,6 +667,8 @@ D0pptest:
       # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: false
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
+      MaxPercSigmaDeviation: 0.5
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
       exclude_nsigma_sideband: 4
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
@@ -724,6 +736,8 @@ D0pptest:
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: false
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
+      MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
       exclude_nsigma_sideband: 4
       # Sigma around mean where signal is integrated after total fit has been done
