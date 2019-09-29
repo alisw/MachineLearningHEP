@@ -15,8 +15,8 @@
 """
 main script for doing data processing, machine learning and analysis
 """
-from machine_learning_hep.analyzer import Analyzer
 import os
+from machine_learning_hep.analyzer import Analyzer
 from machine_learning_hep.utilities import mergerootfiles
 class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-statements
     species = "multianalyzer"
@@ -46,11 +46,12 @@ class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-st
                                       self.d_resultsallpdata, self.d_resultsallpmc)
         self.lper_normfiles = []
         self.dlper_valevtroot = datap["validation"]["data"]["dir"]
-        for i, direc in enumerate(self.d_resultsdata):
+        for i, _ in enumerate(self.d_resultsdata):
             if self.p_useperiod[i] == 1:
                 self.lper_normfiles.append(os.path.join(self.dlper_valevtroot[i],
                                                         "correctionsweights.root"))
-        self.f_evtvalroot_mergedallp = os.path.join(self.d_resultsallpdata, "correctionsweights.root")
+        self.f_evtvalroot_mergedallp = os.path.join(self.d_resultsallpdata, \
+                                                    "correctionsweights.root")
 
     def multi_fitter(self):
         if self.doperiodbyperiod is True:

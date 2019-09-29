@@ -273,11 +273,9 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
 
     if dovalhistomc is True:
         checkmakedirlist(dirvalmc)
-        checkmakedir(dirvalmcmerged)
 
     if dovalhistodata is True:
         checkmakedirlist(dirvaldata)
-        checkmakedir(dirvaldatamerged)
 
     #perform the analysis flow
     if dodownloadalice == 1:

@@ -1553,13 +1553,12 @@ class Analyzer:
         cCrossvsvar2.SaveAs("%s/Cross%s%sVs%s.eps" % (self.d_resultsallpdata,
                                                       self.case, self.typean, self.v_var2_binning))
 
-    def calculate_norm(self, filename, trigger, var, multmin, multmax, doweight):
-        filedataval = TFile.Open(filename)
-        fileout_name = "%s/correctionsweights.root" % self.d_valevtdata
-        fileout = TFile.Open(fileout_name, "read")
+    @staticmethod
+    def calculate_norm(filename, trigger, var, multmin, multmax, doweight):
+        fileout = TFile.Open(filename, "read")
         if not fileout:
-            return
-        namehisto = None
+            return -1
+        namehistomulti = None
         if doweight is True:
             namehistomulti = "hmultweighted%svs%s" % (trigger, var)
         else:

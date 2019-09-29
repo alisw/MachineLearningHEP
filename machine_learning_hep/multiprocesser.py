@@ -177,7 +177,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
             self.process_listsample[indexp].process_scancuts()
 
     def multi_preparenorm(self):
-        mergerootfiles(self.lper_normfile, self.f_evtvalroot_mergedallp)
+        mergerootfiles(self.lper_normfiles, self.f_evtvalroot_mergedallp)
 
     def multi_valevents(self):
         for indexp in range(self.prodnumber):
