@@ -392,9 +392,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                         self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 df_bin = seldf_singlevar(df, self.v_var2_binning,
                                          self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                print("Using run selection for mass histo",
+                      self.runlistrigger[self.triggerbit], "for period", self.period)
+                df_bin = selectdfrunlist(df_bin, \
+                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
                 fill_hist(h_invmass, df_bin.inv_mass)
-                triggerbit = self.datap["analysis"][self.typean]["triggerbit"]
-                if "INT7" not in triggerbit and self.mcordata == "data":
+                if "INT7" not in self.triggerbit and self.mcordata == "data":
                     fileweight_name = "%s/correctionsweights.root" % self.d_val
                     fileweight = TFile.Open(fileweight_name, "read")
                     namefunction = "funcnorm_%s_%s" % (self.triggerbit, self.v_var2_binning)
@@ -463,8 +466,14 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_trigger is not None:
                     df_mc_reco = df_mc_reco.query(self.s_trigger)
+                print("Using run selection for eff histo",
+                      self.runlistrigger[self.triggerbit], "for period", self.period)
+                df_mc_reco = selectdfrunlist(df_mc_reco, \
+                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
                 df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[bin_id], "rb"))
                 df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
+                df_mc_gen = selectdfrunlist(df_mc_gen, \
+                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
                 df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var_binning, \
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
                 df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \
@@ -518,9 +527,13 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 df_mc_reco = df_mc_reco.query(self.s_evtsel)
             if self.s_trigger is not None:
                 df_mc_reco = df_mc_reco.query(self.s_trigger)
+            df_mc_reco = selectdfrunlist(df_mc_reco, \
+                  self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
             df_mc_reco = df_mc_reco.query(self.l_selml[iptskim])
             list_df_mc_reco.append(df_mc_reco)
             df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[iptskim], "rb"))
+            df_mc_gen = selectdfrunlist(df_mc_gen, \
+                    self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
             df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
             list_df_mc_gen.append(df_mc_gen)
         df_rec = pd.concat(list_df_mc_reco)
