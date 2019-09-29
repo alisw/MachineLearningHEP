@@ -26,7 +26,7 @@ import numpy as np
 from root_numpy import hist2array, array2hist
 from ROOT import TFile, TH1F, TCanvas, TPad, TF1
 from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
-from ROOT import gROOT, TDirectory
+from ROOT import gROOT, TDirectory, TPaveLabel
 from ROOT import TStyle, kBlue, kGreen, kBlack, kRed
 from ROOT import TLatex
 from ROOT import gInterpreter, gPad
@@ -1695,32 +1695,19 @@ class Analyzer:
                 continue
             heff.Divide(heff, hden, 1.0, 1.0, "B")
             hratio = filedata.Get(labeltrigger)
+            hmult = hratio.Clone("hmult%svs%s" % (triggerlist[i], varlist[i]))
+            hmultweighted = hratio.Clone("hmultweighted%svs%s" % (triggerlist[i], varlist[i]))
             if not hratio:
                 continue
             hratio.Divide(hratio, hden, 1.0, 1.0, "B")
 
             ctrigger = TCanvas('ctrigger%s' % trigger, 'The Fit Canvas')
-            ctrigger.SetCanvasSize(2100, 2000)
-            ctrigger.Divide(2, 2)
+            ctrigger.SetCanvasSize(3500, 2000)
+            ctrigger.Divide(3, 2)
 
-            leg = TLegend(.2, .65, .4, .75)
-            leg.SetBorderSize(0)
-            leg.SetFillColor(0)
-            leg.SetFillStyle(0)
-            leg.SetTextFont(42)
-            leg.SetTextSize(0.035)
+
 
             ctrigger.cd(1)
-            gPad.SetLogy()
-            hden.GetXaxis().SetTitle("offline %s" % varlist[i])
-            hden.GetYaxis().SetTitle("entries")
-            hden.SetLineColor(1)
-            hden.Draw()
-            hden.Write()
-            leg.AddEntry(hden, triggerlist[i], "LEP")
-            leg.Draw()
-
-            ctrigger.cd(2)
             heff.SetMaximum(2.)
             heff.GetXaxis().SetTitle("offline %s" % varlist[i])
             heff.SetMinimum(0.)
@@ -1728,55 +1715,62 @@ class Analyzer:
             heff.SetLineColor(1)
             heff.Draw()
             heff.Write()
-            leg.Draw()
 
-            ctrigger.cd(3)
+            ctrigger.cd(2)
             hratio.GetXaxis().SetTitle("offline %s" % varlist[i])
             hratio.GetYaxis().SetTitle("ratio triggered/MB")
+            hratio.GetYaxis().SetTitleOffset(1.3)
             hratio.Write()
             hratio.SetLineColor(1)
             hratio.Draw()
-            leg.Draw()
             func = TF1("func_%s_%s" % (triggerlist[i], varlist[i]), \
                        "([0]/(1+TMath::Exp(-[1]*(x-[2]))))", 0, 1000)
             if i == 0:
                 func.SetParameters(300, .1, 570)
                 func.SetParLimits(1, 0., 10.)
                 func.SetParLimits(2, 0., 1000.)
-                func.SetRange(0., 1000.)
+                func.SetRange(550., 1100.)
                 func.SetLineWidth(1)
-                hratio.Fit(func, "L", "", 0, 1000)
+                hratio.Fit(func, "L", "", 550, 1100)
                 func.Draw("same")
                 func.SetLineColor(i+1)
             if i == 1:
                 func.SetParameters(100, .1, 50)
                 func.SetParLimits(1, 0., 10.)
                 func.SetParLimits(2, 0., 200.)
-                func.SetRange(0., 100.)
+                func.SetRange(45., 105)
                 func.SetLineWidth(1)
-                hratio.Fit(func, "L", "", 0, 100)
+                hratio.Fit(func, "L", "", 45, 105)
                 func.SetLineColor(i+1)
             if i == 2:
                 func.SetParameters(315, -30., .2)
                 func.SetParLimits(1, -100., 0.)
                 func.SetParLimits(2, 0., .5)
-                func.SetRange(0., .5)
+                func.SetRange(0., .15)
                 func.SetLineWidth(1)
-                hratio.Fit(func, "w", "", 0, .5)
+                hratio.Fit(func, "w", "", 0, .15)
                 func.SetLineColor(i+1)
             func.Write()
             funcnorm = func.Clone("funcnorm_%s_%s" % (triggerlist[i], varlist[i]))
             funcnorm.FixParameter(0, funcnorm.GetParameter(0)/funcnorm.GetMaximum())
             funcnorm.Write()
-            leg.Draw()
-            ctrigger.cd(4)
+            ctrigger.cd(3)
             maxhistx = 0
             if i == 0:
+                minhistx = 300
                 maxhistx = 1000
+                fulleffmin = 700
+                fulleffmax = 800
             elif i == 1:
+                minhistx = 40
                 maxhistx = 150
+                fulleffmin = 80
+                fulleffmax = 90
             else:
+                minhistx = .0
                 maxhistx = .5
+                fulleffmin = 0.
+                fulleffmax = 0.03
             hempty = TH1F("hempty_%d" % i, "hempty", 100, 0, maxhistx)
             hempty.GetYaxis().SetTitleOffset(1.2)
             hempty.GetYaxis().SetTitleFont(42)
@@ -1788,10 +1782,70 @@ class Analyzer:
             hempty.Draw()
             funcnorm.SetLineColor(1)
             funcnorm.Draw("same")
-            leg.Draw()
+
+            ctrigger.cd(4)
+            gPad.SetLogy()
+            leg1 = TLegend(.2, .75, .4, .85)
+            leg1.SetBorderSize(0)
+            leg1.SetFillColor(0)
+            leg1.SetFillStyle(0)
+            leg1.SetTextFont(42)
+            leg1.SetTextSize(0.035)
+            hmult.GetXaxis().SetTitle("offline %s" % varlist[i])
+            hmult.GetYaxis().SetTitle("entries")
+            hmult.SetLineColor(1)
+            hden.SetLineColor(2)
+            hmultweighted.SetLineColor(3)
+            hmult.Draw()
+            hmult.SetMaximum(1e10)
+            hden.Draw("same")
+            hmult.Write()
+            for ibin in range(hmult.GetNbinsX()):
+                myweight = funcnorm.Eval(hmult.GetBinCenter(ibin + 1))
+                hmultweighted.SetBinContent(ibin + 1, hmult.GetBinContent(ibin+1) / myweight)
+            hmultweighted.Draw("same")
+            leg1.AddEntry(hden, "MB distribution", "LEP")
+            leg1.AddEntry(hmult, "triggered uncorr", "LEP")
+            leg1.AddEntry(hmultweighted, "triggered corr.", "LEP")
+            leg1.Draw()
+            print("event before", hmult.GetEntries(), "after",
+                  hmultweighted.Integral())
+
+            ctrigger.cd(5)
+            leg2 = TLegend(.2, .75, .4, .85)
+            leg2.SetBorderSize(0)
+            leg2.SetFillColor(0)
+            leg2.SetFillStyle(0)
+            leg2.SetTextFont(42)
+            leg2.SetTextSize(0.035)
+            linear = TF1("lin_%s_%s" % (triggerlist[i], varlist[i]), \
+                       "[0]", fulleffmin, fulleffmax)
+            hratioMBcorr = hmultweighted.Clone("hratioMBcorr")
+            hratioMBcorr.Divide(hden)
+            hratioMBuncorr = hmult.Clone("hratioMBuncorr")
+            hratioMBuncorr.Divide(hden)
+            hratioMBuncorr.Fit(linear, "w", "", fulleffmin, fulleffmax)
+            hratioMBuncorr.Scale(1./linear.GetParameter(0))
+            hratioMBcorr.Scale(1./linear.GetParameter(0))
+            hratioMBcorr.SetLineColor(3)
+            hratioMBuncorr.SetLineColor(2)
+            hratioMBcorr.GetXaxis().SetTitle("offline %s" % varlist[i])
+            hratioMBcorr.GetYaxis().SetTitle("entries")
+            hratioMBcorr.GetXaxis().SetRangeUser(minhistx, maxhistx)
+            hratioMBcorr.GetYaxis().SetRangeUser(0.8, 1.2)
+            hratioMBcorr.Draw()
+            hratioMBuncorr.Draw("same")
+            leg2.AddEntry(hratioMBcorr, "triggered/MB", "LEP")
+            leg2.AddEntry(hratioMBuncorr, "triggered/MB corr.", "LEP")
+            leg2.Draw()
+            ctrigger.cd(6)
+            ptext = TPaveText(.05, .1, .95, .8)
+            ptext.AddText("%s" % (trigger))
+            ptext.Draw()
             ctrigger.SaveAs(self.make_file_path(self.d_valevtdata, \
                     "ctrigger_%s_%s" % (trigger, varlist[i]), "eps", \
                     None, None))
+
         cscatter = TCanvas("cscatter", 'The Fit Canvas')
         cscatter.SetCanvasSize(2100, 800)
         cscatter.Divide(3, 1)
