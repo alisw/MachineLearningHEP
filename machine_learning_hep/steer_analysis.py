@@ -138,8 +138,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
 
     dirvalmc = data_param[case]["validation"]["mc"]["dir"]
     dirvaldata = data_param[case]["validation"]["data"]["dir"]
-    dirvalmcmerged = data_param[case]["validation"]["mc"]["dirmerged"]
-    dirvaldatamerged = data_param[case]["validation"]["data"]["dirmerged"]
 
     binminarray = data_param[case]["ml"]["binmin"]
     binmaxarray = data_param[case]["ml"]["binmax"]
@@ -213,11 +211,9 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
 
     if dovalhistodata is True:
         counter = counter + checkdirlist(dirvaldata)
-        counter = counter + checkdir(dirvaldatamerged)
 
     if dovalhistomc is True:
         counter = counter + checkdirlist(dirvalmc)
-        counter = counter + checkdir(dirvalmcmerged)
 
     if counter < 0:
         exit()
@@ -379,6 +375,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     if dofeeddown is True:
         myan.multi_feeddown()
     if docross is True:
+        myan.multi_preparenorm()
         if normalizecross is True:
             myan.multi_plotter()
         if normalizecross is False:

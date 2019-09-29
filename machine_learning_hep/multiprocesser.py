@@ -48,7 +48,6 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.d_pklevt_mergedallp = datap["multi"][self.mcordata]["pkl_evtcounter_all"]
 
         self.dlper_valevtroot = datap["validation"][self.mcordata]["dir"]
-        self.d_valevtroot_mergedallp = datap["validation"][self.mcordata]["dirmerged"]
 
         #namefiles pkl
         self.v_var_binning = datap["var_binning"]
@@ -91,7 +90,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.lpt_probcut = datap["mlapplication"]["probcutoptimal"]
         self.f_evt_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evt)
         self.f_evtorig_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evtorig)
-        self.f_evtvalroot_mergedallp = os.path.join(self.d_valevtroot_mergedallp, self.n_evtvalroot)
+        self.f_evtvalroot_mergedallp = os.path.join(self.d_resulsallp, self.n_evtvalroot)
 
         self.lper_runlistrigger = datap["validation"]["runlisttrigger"]
 
@@ -121,10 +120,13 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.p_useperiod = datap["analysis"][self.typean]["useperiod"]
         self.lper_filemass = []
         self.lper_fileeff = []
+        self.lper_normfiles = []
         for i, direc in enumerate(self.d_results):
             if self.p_useperiod[i] == 1:
                 self.lper_filemass.append(os.path.join(direc, self.n_filemass))
                 self.lper_fileeff.append(os.path.join(direc, self.n_fileeff))
+                self.lper_normfiles.append(os.path.join(self.dlper_valevtroot[i],
+                                                        "correctionsweights.root"))
 
     def multi_unpack_allperiods(self):
         for indexp in range(self.prodnumber):
@@ -159,21 +161,24 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
 
     def multi_histomass(self):
         for indexp in range(self.prodnumber):
-            self.process_listsample[indexp].process_histomass()
+            if self.p_useperiod[indexp] == 1:
+                self.process_listsample[indexp].process_histomass()
         mergerootfiles(self.lper_filemass, self.filemass_mergedall)
 
     def multi_efficiency(self):
         for indexp in range(self.prodnumber):
-            self.process_listsample[indexp].process_efficiency()
-            self.process_listsample[indexp].process_response()
-
+            if self.p_useperiod[indexp] == 1:
+                self.process_listsample[indexp].process_efficiency()
+                self.process_listsample[indexp].process_response()
         mergerootfiles(self.lper_fileeff, self.fileeff_mergedall)
 
     def multi_scancuts(self):
         for indexp in range(self.prodnumber):
             self.process_listsample[indexp].process_scancuts()
 
+    def multi_preparenorm(self):
+        mergerootfiles(self.lper_normfile, self.f_evtvalroot_mergedallp)
+
     def multi_valevents(self):
         for indexp in range(self.prodnumber):
             self.process_listsample[indexp].process_valevents_par()
-        mergerootfiles(self.lper_evtvalroot, self.f_evtvalroot_mergedallp)

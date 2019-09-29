@@ -16,6 +16,8 @@
 main script for doing data processing, machine learning and analysis
 """
 from machine_learning_hep.analyzer import Analyzer
+import os
+from machine_learning_hep.utilities import mergerootfiles
 class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-statements
     species = "multianalyzer"
     def __init__(self, datap, case, typean, doperiodbyperiod):
@@ -23,14 +25,14 @@ class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-st
         self.typean = typean
         self.d_resultsallpmc = datap["analysis"][self.typean]["mc"]["resultsallp"]
         self.d_resultsallpdata = datap["analysis"][self.typean]["data"]["resultsallp"]
-        self.d_valevtallpdata = datap["validation"]["data"]["dirmerged"]
-        self.d_valevtallpmc = datap["validation"]["mc"]["dirmerged"]
         self.d_resultsmc = datap["analysis"][self.typean]["mc"]["results"]
         self.d_resultsdata = datap["analysis"][self.typean]["data"]["results"]
         self.d_valevtdata = datap["validation"]["data"]["dir"]
         self.d_valevtmc = datap["validation"]["mc"]["dir"]
+        self.n_evtvalroot = datap["files_names"]["namefile_evtvalroot"]
         self.prodnumber = len(self.d_resultsmc)
         self.process_listsample = []
+        self.p_useperiod = datap["analysis"][self.typean]["useperiod"]
         self.doperiodbyperiod = doperiodbyperiod
         for indexp in range(self.prodnumber):
             myanalyzer = Analyzer(self.datap, case, typean,
@@ -41,12 +43,20 @@ class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-st
 
         self.myanalyzertot = Analyzer(self.datap, case, typean,
                                       self.d_resultsallpdata, self.d_resultsallpmc,
-                                      self.d_valevtallpdata, self.d_valevtallpmc)
+                                      self.d_resultsallpdata, self.d_resultsallpmc)
+        self.lper_normfiles = []
+        self.dlper_valevtroot = datap["validation"]["data"]["dir"]
+        for i, direc in enumerate(self.d_resultsdata):
+            if self.p_useperiod[i] == 1:
+                self.lper_normfiles.append(os.path.join(self.dlper_valevtroot[i],
+                                                        "correctionsweights.root"))
+        self.f_evtvalroot_mergedallp = os.path.join(self.d_resultsallpdata, "correctionsweights.root")
 
     def multi_fitter(self):
         if self.doperiodbyperiod is True:
             for indexp in range(self.prodnumber):
-                self.process_listsample[indexp].fitter()
+                if self.p_useperiod[indexp] == 1:
+                    self.process_listsample[indexp].fitter()
         self.myanalyzertot.fitter()
 
     def multi_yield_syst(self):
@@ -58,38 +68,47 @@ class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-st
     def multi_efficiency(self):
         if self.doperiodbyperiod is True:
             for indexp in range(self.prodnumber):
-                self.process_listsample[indexp].efficiency()
+                if self.p_useperiod[indexp] == 1:
+                    self.process_listsample[indexp].efficiency()
         self.myanalyzertot.efficiency()
 
     def multi_feeddown(self):
         if self.doperiodbyperiod is True:
             for indexp in range(self.prodnumber):
-                self.process_listsample[indexp].feeddown()
+                if self.p_useperiod[indexp] == 1:
+                    self.process_listsample[indexp].feeddown()
         self.myanalyzertot.feeddown()
 
     def multi_side_band_sub(self):
         if self.doperiodbyperiod is True:
             for indexp in range(self.prodnumber):
-                self.process_listsample[indexp].side_band_sub()
+                if self.p_useperiod[indexp] == 1:
+                    self.process_listsample[indexp].side_band_sub()
         self.myanalyzertot.side_band_sub()
 
     def multi_plotter(self):
         if self.doperiodbyperiod is True:
             for indexp in range(self.prodnumber):
-                self.process_listsample[indexp].plotter()
+                if self.p_useperiod[indexp] == 1:
+                    self.process_listsample[indexp].plotter()
         self.myanalyzertot.plotter()
 
     def multi_plotternormyields(self):
         if self.doperiodbyperiod is True:
             for indexp in range(self.prodnumber):
-                self.process_listsample[indexp].plotternormyields()
+                if self.p_useperiod[indexp] == 1:
+                    self.process_listsample[indexp].plotternormyields()
         self.myanalyzertot.plotternormyields()
 
     def multi_makenormyields(self):
         if self.doperiodbyperiod is True:
             for indexp in range(self.prodnumber):
-                self.process_listsample[indexp].makenormyields()
+                if self.p_useperiod[indexp] == 1:
+                    self.process_listsample[indexp].makenormyields()
         self.myanalyzertot.makenormyields()
+
+    def multi_preparenorm(self):
+        mergerootfiles(self.lper_normfiles, self.f_evtvalroot_mergedallp)
 
     def multi_studyevents(self):
         if self.doperiodbyperiod is True:

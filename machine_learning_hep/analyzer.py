@@ -136,6 +136,7 @@ class Analyzer:
 
         self.f_evtvaldata = os.path.join(self.d_valevtdata, self.n_evtvalroot)
         self.f_evtvalmc = os.path.join(self.d_valevtmc, self.n_evtvalroot)
+        self.f_evtnorm = os.path.join(self.d_valevtdata, "correctionsweights.root")
 
         # Systematics
         syst_dict = datap["analysis"][self.typean].get("systematics", None)
@@ -1552,12 +1553,31 @@ class Analyzer:
         cCrossvsvar2.SaveAs("%s/Cross%s%sVs%s.eps" % (self.d_resultsallpdata,
                                                       self.case, self.typean, self.v_var2_binning))
 
+    def calculate_norm(self, filename, trigger, var, multmin, multmax, doweight):
+        filedataval = TFile.Open(filename)
+        fileout_name = "%s/correctionsweights.root" % self.d_valevtdata
+        fileout = TFile.Open(fileout_name, "read")
+        if not fileout:
+            return
+        namehisto = None
+        if doweight is True:
+            namehistomulti = "hmultweighted%svs%s" % (trigger, var)
+        else:
+            namehistomulti = "hbit%svs%s" % (trigger, var)
+        hmult = fileout.Get(namehistomulti)
+        if not hmult:
+            print("MISSING NORMALIZATION MULTIPLICITY")
+        binminv = hmult.GetXaxis().FindBin(multmin)
+        binmaxv = hmult.GetXaxis().FindBin(multmax)
+        norm = hmult.Integral(binminv, binmaxv)
+        return norm
+
     def makenormyields(self):
         gROOT.SetBatch(True)
 
         self.loadstyle()
         #self.test_aliphysics()
-        filedataval = TFile.Open(self.f_evtvaldata)
+        filedataval = TFile.Open(self.f_evtnorm)
 
         fileouteff = "%s/efficiencies%s%s.root" % \
                       (self.d_resultsallpmc, self.case, self.typean)
@@ -1582,42 +1602,28 @@ class Analyzer:
             hmult = filedataval.Get(labelhisto)
             if not hmult:
                 continue
-            hmult.SetName("hmult")
-            hmultweighted = hmult.Clone("hmultweighed")
             norm = -1
-            if self.apply_weights is True:
-                fileout_name = "%s/correctionsweights.root" % self.d_valevtdata
-                fileout = TFile.Open(fileout_name, "read")
-                funcnormal = fileout.Get("funcnorm_%s" % self.triggerbit)
-                for ibin in range(hmult.GetNbinsX()):
-                    myweight = funcnormal.Eval(hmult.GetBinCenter(ibin + 1))
-                    hmultweighted.SetBinContent(ibin + 1, hmult.GetBinContent(ibin+1) / myweight)
-                binminv = hmultweighted.GetXaxis().FindBin(self.lvar2_binmin[imult])
-                binmaxv = hmultweighted.GetXaxis().FindBin(self.lvar2_binmax[imult])
-                norm = hmultweighted.Integral(binminv, binmaxv)
-            else:
-                binminv = hmult.GetXaxis().FindBin(self.lvar2_binmin[imult])
-                binmaxv = hmult.GetXaxis().FindBin(self.lvar2_binmax[imult])
-                norm = hmult.Integral(binminv, binmaxv)
-
-            # new normalization calculation
-            norm_old = norm
-
-            hSelMult = filedataval.Get('sel_' + labelhisto)
-            hNoVtxMult = filedataval.Get('novtx_' + labelhisto)
-            hVtxOutMult = filedataval.Get('vtxout_' + labelhisto)
-
-            # normalisation based on multiplicity histograms
-            binminv = hSelMult.GetXaxis().FindBin(self.lvar2_binmin[imult])
-            binmaxv = hSelMult.GetXaxis().FindBin(self.lvar2_binmax[imult])
-
-            n_sel = hSelMult.Integral(binminv, binmaxv)
-            n_novtx = hNoVtxMult.Integral(binminv, binmaxv)
-            n_vtxout = hVtxOutMult.Integral(binminv, binmaxv)
-            norm = (n_sel + n_novtx) - n_novtx * n_vtxout / (n_sel + n_vtxout)
-
-            print('new normalization: ', norm, norm_old)
-
+            fileout_name = "%s/correctionsweights.root" % self.d_valevtdata
+            norm = self.calculate_norm(fileout_name, self.triggerbit, \
+                         self.v_var2_binning, self.lvar2_binmin[imult], \
+                         self.lvar2_binmax[imult], self.apply_weights)
+            print(self.apply_weights, self.lvar2_binmin[imult], self.lvar2_binmax[imult], norm)
+#
+#            hSelMult = filedataval.Get('sel_' + labelhisto)
+#            hNoVtxMult = filedataval.Get('novtx_' + labelhisto)
+#            hVtxOutMult = filedataval.Get('vtxout_' + labelhisto)
+#
+#            # normalisation based on multiplicity histograms
+#            binminv = hSelMult.GetXaxis().FindBin(self.lvar2_binmin[imult])
+#            binmaxv = hSelMult.GetXaxis().FindBin(self.lvar2_binmax[imult])
+#
+#            n_sel = hSelMult.Integral(binminv, binmaxv)
+#            n_novtx = hNoVtxMult.Integral(binminv, binmaxv)
+#            n_vtxout = hVtxOutMult.Integral(binminv, binmaxv)
+#            norm = (n_sel + n_novtx) - n_novtx * n_vtxout / (n_sel + n_vtxout)
+#
+#            print('new normalization: ', norm, norm_old)
+#
             # Now use the function we have just compiled above
             HFPtSpectrum(self.p_indexhpt, \
                 "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
@@ -1637,10 +1643,6 @@ class Analyzer:
             hcross.SetName("histoSigmaCorr%d" % imult)
             fileoutcrosstot.cd()
             hcross.Write()
-            hmult.Write()
-            hmultweighted.Write()
-            if self.apply_weights is True:
-                funcnormal.Write()
         fileoutcrosstot.Close()
 
 
@@ -1690,6 +1692,7 @@ class Analyzer:
             labelMB = "hbitINT7vs%s" % varlist[i]
             labeltrigger = "hbit%svs%s" % (triggerlist[i], varlist[i])
             hden = filedata.Get(labelMB)
+            hden.Write()
             heff = filedata.Get(labeltriggerANDMB)
             if not heff or not hden:
                 continue
@@ -1799,10 +1802,11 @@ class Analyzer:
             hmult.Draw()
             hmult.SetMaximum(1e10)
             hden.Draw("same")
-            hmult.Write()
             for ibin in range(hmult.GetNbinsX()):
                 myweight = funcnorm.Eval(hmult.GetBinCenter(ibin + 1))
                 hmultweighted.SetBinContent(ibin + 1, hmult.GetBinContent(ibin+1) / myweight)
+            hmult.Write()
+            hmultweighted.Write()
             hmultweighted.Draw("same")
             leg1.AddEntry(hden, "MB distribution", "LEP")
             leg1.AddEntry(hmult, "triggered uncorr", "LEP")
