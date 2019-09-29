@@ -758,5 +758,7 @@ D0pptest:
         HighMultV0: nosel
     data:
       dir: [/data/DerivedValStudy/dataval_16, /data/DerivedValStudy/dataval_17, /data/DerivedValStudy/dataval_18] #list of periods
+      dirmerged: /data/DerivedValStudy/datavaltot
     mc:
       dir: [/data/DerivedValStudy/mcval_16, /data/DerivedValStudy/mcval_17, /data/DerivedValStudy/mcval_18] #list of periods
+      dirmerged: /data/DerivedValStudy/mcvaltot
