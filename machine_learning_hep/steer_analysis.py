@@ -216,7 +216,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         counter = counter + checkdirlist(dirvalmc)
 
     if counter < 0:
-        exit()
+        exit()  # pylint: disable=consider-using-sys-exit
     # check and create directories
 
     if doconversionmc is True:
