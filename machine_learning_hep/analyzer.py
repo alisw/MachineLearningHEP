@@ -1735,7 +1735,9 @@ class Analyzer:
 
         for imult in range(self.p_nbin2):
             hcross = fileoutcrosstot.Get("histoSigmaCorr%d" % imult)
+            hcross.Scale(1./(self.p_sigmav0 * 1e12))
             hcross.SetLineColor(imult+1)
+            hcross.SetMarkerColor(imult+1)
             hcross.GetXaxis().SetTitle("#it{p}_{T} %s (GeV/#it{c})" % self.p_latexnmeson)
             hcross.GetYaxis().SetTitleOffset(1.3)
             hcross.GetYaxis().SetTitle("Corrected yield/events (%s) %s" %

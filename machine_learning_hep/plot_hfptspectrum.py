@@ -60,6 +60,7 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
     plotbinMB = data_param[case]["analysis"][arraytype[0]]["plotbin"]
     plotbinHM = data_param[case]["analysis"][arraytype[1]]["plotbin"]
     br = data_param[case]["ml"]["opt"]["BR"]
+    sigmav0 = data_param["analysis"]["sigmav0"]
 
     fileres_MB_allperiods = TFile.Open("%s/finalcross%s%smulttot.root" % \
                                  (folder_MB_allperiods, case, arraytype[0]))
@@ -75,7 +76,7 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
     ccross = TCanvas('cCross', 'The Fit Canvas')
     ccross.SetCanvasSize(1500, 1500)
     ccross.SetWindowSize(500, 500)
-    ccross.cd(1).DrawFrame(0, 100, 30, 1.e12, ";#it{p}_{T} (GeV/#it{c});Corrected yield %s" % name)
+    ccross.cd(1).DrawFrame(0, 1.e-9, 30, 10, ";#it{p}_{T} (GeV/#it{c});Corrected yield %s" % name)
     #ccross.SetLogx()
 
     legyield = TLegend(.25, .65, .65, .85)
@@ -93,7 +94,7 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
                 continue
             gPad.SetLogy()
             hyield = fileres_MB_allperiods.Get("histoSigmaCorr%d" % (imult))
-            hyield.Scale(1./br)
+            hyield.Scale(1./(br * sigmav0 * 1e12))
             hyield.SetLineColor(colors[imult])
             hyield.SetMarkerColor(colors[imult])
             hyield.SetMarkerStyle(21)
@@ -107,7 +108,7 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
                 continue
             gPad.SetLogy()
             hyieldHM = fileres_trig_allperiods.Get("histoSigmaCorr%d" % (imult))
-            hyieldHM.Scale(1./br)
+            hyieldHM.Scale(1./(br * sigmav0 * 1e12))
             hyieldHM.SetLineColor(colors[imult])
             hyieldHM.SetMarkerColor(colors[imult])
             hyieldHM.SetMarkerStyle(21)
@@ -311,6 +312,8 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype, isv0m=False):
     plotbinHM = data_param_num[case_num]["analysis"][arraytype[1]]["plotbin"]
     br_num = data_param_num[case_num]["ml"]["opt"]["BR"]
     br_den = data_param_den[case_den]["ml"]["opt"]["BR"]
+    sigmav0_num = data_param_num["analysis"]["sigmav0"]
+    sigmav0_den = data_param_den["analysis"]["sigmav0"]
 
     file_num_allperiods = TFile.Open("%s/finalcross%s%smulttot.root" % \
                                      (folder_num_allperiods, case_num, arraytype[0]))
@@ -351,9 +354,9 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype, isv0m=False):
         if not iplot:
             continue
         hratio = file_num_allperiods.Get("histoSigmaCorr%d" % (imult))
-        hratio.Scale(1./br_num)
+        hratio.Scale(1./(br_num * sigmav0_num * 1e12))
         hcross_den = file_den_allperiods.Get("histoSigmaCorr%d" % (imult))
-        hcross_den.Scale(1./br_den)
+        hcross_den.Scale(1./(br_den * sigmav0_den * 1e12))
         hratio.Divide(hcross_den)
         hratio.SetLineColor(colors[imult])
         hratio.SetMarkerColor(colors[imult])
@@ -371,9 +374,9 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype, isv0m=False):
         if not iplot:
             continue
         hratioHM = file_num_triggered.Get("histoSigmaCorr%d" % (imult))
-        hratioHM.Scale(1./br_num)
+        hratioHM.Scale(1./(br_num * sigmav0_num * 1e12))
         hcrossHM_den = file_den_triggered.Get("histoSigmaCorr%d" % (imult))
-        hcrossHM_den.Scale(1./br_den)
+        hcrossHM_den.Scale(1./(br_den * sigmav0_den * 1e12))
         hratioHM.Divide(hcrossHM_den)
         hratioHM.SetLineColor(colors[imult])
         hratioHM.SetMarkerColor(colors[imult])
