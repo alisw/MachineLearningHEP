@@ -29,6 +29,8 @@ class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-st
         self.d_resultsdata = datap["analysis"][self.typean]["data"]["results"]
         self.d_valevtdata = datap["validation"]["data"]["dir"]
         self.d_valevtmc = datap["validation"]["mc"]["dir"]
+        self.d_valevtallpdata = datap["validation"]["data"]["dirmerged"]
+        self.d_valevtallpmc = datap["validation"]["mc"]["dirmerged"]
         self.n_evtvalroot = datap["files_names"]["namefile_evtvalroot"]
         self.prodnumber = len(self.d_resultsmc)
         self.process_listsample = []
@@ -43,14 +45,17 @@ class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-st
 
         self.myanalyzertot = Analyzer(self.datap, case, typean,
                                       self.d_resultsallpdata, self.d_resultsallpmc,
-                                      self.d_resultsallpdata, self.d_resultsallpmc)
+                                      self.d_valevtallpdata, self.d_valevtallpmc)
+
+        self.lper_normfilesorig = []
         self.lper_normfiles = []
         self.dlper_valevtroot = datap["validation"]["data"]["dir"]
         for i, _ in enumerate(self.d_resultsdata):
-            if self.p_useperiod[i] == 1:
-                self.lper_normfiles.append(os.path.join(self.dlper_valevtroot[i],
-                                                        "correctionsweights.root"))
-        self.f_evtvalroot_mergedallp = os.path.join(self.d_resultsallpdata, \
+            self.lper_normfilesorig.append(os.path.join(self.dlper_valevtroot[i],
+                                                   "correctionsweights.root"))
+            self.lper_normfiles.append(os.path.join(self.d_resultsdata[i], \
+                                                   "correctionsweights.root"))
+        self.f_normmerged = os.path.join(self.d_resultsallpdata, \
                                                     "correctionsweights.root")
 
     def multi_fitter(self):
@@ -109,7 +114,14 @@ class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-st
         self.myanalyzertot.makenormyields()
 
     def multi_preparenorm(self):
-        mergerootfiles(self.lper_normfiles, self.f_evtvalroot_mergedallp)
+        listempty = []
+        for indexp in range(self.prodnumber):
+            mergerootfiles([self.lper_normfilesorig[indexp]], self.lper_normfiles[indexp])
+        if self.doperiodbyperiod is True:
+            for indexp in range(self.prodnumber):
+                if self.p_useperiod[indexp] == 1:
+                    listempty.append(self.lper_normfiles[indexp])
+        mergerootfiles(listempty, self.f_normmerged)
 
     def multi_studyevents(self):
         if self.doperiodbyperiod is True:

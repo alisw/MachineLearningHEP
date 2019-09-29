@@ -136,7 +136,8 @@ class Analyzer:
 
         self.f_evtvaldata = os.path.join(self.d_valevtdata, self.n_evtvalroot)
         self.f_evtvalmc = os.path.join(self.d_valevtmc, self.n_evtvalroot)
-        self.f_evtnorm = os.path.join(self.d_valevtdata, "correctionsweights.root")
+
+        self.f_evtnorm = os.path.join(self.d_resultsallpdata, "correctionsweights.root")
 
         # Systematics
         syst_dict = datap["analysis"][self.typean].get("systematics", None)
@@ -1562,7 +1563,7 @@ class Analyzer:
         if doweight is True:
             namehistomulti = "hmultweighted%svs%s" % (trigger, var)
         else:
-            namehistomulti = "hbit%svs%s" % (trigger, var)
+            namehistomulti = "hmult%svs%s" % (trigger, var)
         hmult = fileout.Get(namehistomulti)
         if not hmult:
             print("MISSING NORMALIZATION MULTIPLICITY")
@@ -1602,8 +1603,7 @@ class Analyzer:
             if not hmult:
                 continue
             norm = -1
-            fileout_name = "%s/correctionsweights.root" % self.d_valevtdata
-            norm = self.calculate_norm(fileout_name, self.triggerbit, \
+            norm = self.calculate_norm(self.f_evtnorm, self.triggerbit, \
                          self.v_var2_binning, self.lvar2_binmin[imult], \
                          self.lvar2_binmax[imult], self.apply_weights)
             print(self.apply_weights, self.lvar2_binmin[imult], self.lvar2_binmax[imult], norm)
@@ -1628,7 +1628,7 @@ class Analyzer:
                 "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
                 fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
                 fileoutcrossmult, norm, self.p_sigmav0 * 1e12, self.p_fd_method, self.p_cctype)
-
+        print(norm, "AAAA")
         fileoutcrosstot = TFile.Open("%s/finalcross%s%smulttot.root" % \
             (self.d_resultsallpdata, self.case, self.typean), "recreate")
 
@@ -1691,6 +1691,7 @@ class Analyzer:
             labelMB = "hbitINT7vs%s" % varlist[i]
             labeltrigger = "hbit%svs%s" % (triggerlist[i], varlist[i])
             hden = filedata.Get(labelMB)
+            hden.SetName("hmultINT7vs%s" % (varlist[i]))
             hden.Write()
             heff = filedata.Get(labeltriggerANDMB)
             if not heff or not hden:

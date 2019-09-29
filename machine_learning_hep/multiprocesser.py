@@ -48,6 +48,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.d_pklevt_mergedallp = datap["multi"][self.mcordata]["pkl_evtcounter_all"]
 
         self.dlper_valevtroot = datap["validation"][self.mcordata]["dir"]
+        self.d_valevtroot_mergedallp = datap["validation"][self.mcordata]["dirmerged"]
 
         #namefiles pkl
         self.v_var_binning = datap["var_binning"]
@@ -90,7 +91,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.lpt_probcut = datap["mlapplication"]["probcutoptimal"]
         self.f_evt_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evt)
         self.f_evtorig_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evtorig)
-        self.f_evtvalroot_mergedallp = os.path.join(self.d_resulsallp, self.n_evtvalroot)
+        self.f_evtvalroot_mergedallp = os.path.join(self.d_valevtroot_mergedallp, self.n_evtvalroot)
 
         self.lper_runlistrigger = datap["validation"]["runlisttrigger"]
 
@@ -182,3 +183,4 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
     def multi_valevents(self):
         for indexp in range(self.prodnumber):
             self.process_listsample[indexp].process_valevents_par()
+        mergerootfiles(self.lper_evtvalroot, self.f_evtvalroot_mergedallp)
