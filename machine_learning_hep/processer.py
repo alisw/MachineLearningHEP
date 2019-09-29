@@ -599,7 +599,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         dfevtmb = dfevtmb.query("is_ev_rej==0")
         myrunlisttrigmb = self.runlistrigger["INT7"]
         dfevtselmb = selectdfrunlist(dfevtmb, self.run_param[myrunlisttrigmb], "run_number")
-        triggerlist = ["HighMultSPD"]
+        triggerlist = ["INT7", "HighMultV0", "HighMultSPD"]
         varlist = ["v0m_corr", "n_tracklets_corr", "perc_v0m"]
         nbinsvar = [100, 200, 200]
         minrvar = [0, 0, 0]
@@ -627,8 +627,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 myrunlisttrig = self.runlistrigger[trigger]
                 ev = len(dfevt)
                 dfevtsel = selectdfrunlist(dfevt, self.run_param[myrunlisttrig], "run_number")
-                if len(dfevtsel)<ev:
-                    print("Select")
+                if len(dfevtsel) < ev:
+                    print("Reduced number of events in trigger", trigger)
                     print(ev, len(dfevtsel))
                 fill_hist(histotrigANDMB, dfevtsel.query(triggerbit + " and trigger_hasbit_INT7==1")[var])
                 fill_hist(histotrig, dfevtsel.query(triggerbit)[var])
