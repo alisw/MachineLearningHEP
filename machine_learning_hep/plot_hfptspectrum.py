@@ -60,7 +60,7 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
     plotbinMB = data_param[case]["analysis"][arraytype[0]]["plotbin"]
     plotbinHM = data_param[case]["analysis"][arraytype[1]]["plotbin"]
     br = data_param[case]["ml"]["opt"]["BR"]
-    sigmav0 = data_param["analysis"]["sigmav0"]
+    sigmav0 = data_param[case]["analysis"]["sigmav0"]
 
     fileres_MB_allperiods = TFile.Open("%s/finalcross%s%smulttot.root" % \
                                  (folder_MB_allperiods, case, arraytype[0]))
@@ -86,9 +86,9 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
     legyield.SetTextFont(42)
     legyield.SetTextSize(0.035)
 
+    colors = [kBlack, kRed, kGreen+2, kBlue]
     if fileres_MB_allperiods and fileres_trig_allperiods:
 
-        colors = [kBlack, kRed, kGreen+2, kBlue]
         for imult, iplot in enumerate(plotbinMB):
             if not iplot:
                 continue
@@ -312,8 +312,8 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype, isv0m=False):
     plotbinHM = data_param_num[case_num]["analysis"][arraytype[1]]["plotbin"]
     br_num = data_param_num[case_num]["ml"]["opt"]["BR"]
     br_den = data_param_den[case_den]["ml"]["opt"]["BR"]
-    sigmav0_num = data_param_num["analysis"]["sigmav0"]
-    sigmav0_den = data_param_den["analysis"]["sigmav0"]
+    sigmav0_num = data_param_num[case_num]["analysis"]["sigmav0"]
+    sigmav0_den = data_param_den[case_den]["analysis"]["sigmav0"]
 
     file_num_allperiods = TFile.Open("%s/finalcross%s%smulttot.root" % \
                                      (folder_num_allperiods, case_num, arraytype[0]))
