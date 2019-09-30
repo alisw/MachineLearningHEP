@@ -12,6 +12,7 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
+import sys
 import subprocess
 import os
 import errno
@@ -40,7 +41,7 @@ def main():
     except OSError as exc:
         if not os.path.isdir(args.dest) or exc.errno != errno.EEXIST:
             print(f"Cannot create directory {args.dest}: check your permissions")
-            exit(1)
+            sys.exit(1)
 
     if args.verbose:
         redir = None
@@ -55,7 +56,7 @@ def main():
         subprocess.check_call(["curl", "-L", SOURCE, "-o", zipFile], stdout=redir, stderr=redir)
     except subprocess.CalledProcessError:
         print(f"Error downloading source data file {SOURCE}")
-        exit(2)
+        sys.exit(2)
 
     if args.clean:
         print("Removing old data...")
@@ -63,7 +64,7 @@ def main():
             rmtree(args.dest)
         except OSError as exc:
             print(f"Cannot remove old data under {args.dest}")
-            exit(3)
+            sys.exit(3)
 
     # Unpack data
     print("Unpacking...")
@@ -72,7 +73,7 @@ def main():
     except subprocess.CalledProcessError as exc:
         if exc.returncode != 2:
             print(f"Error unpacking {zipFile} into {args.dest}: zip file has been kept")
-            exit(4)
+            sys.exit(4)
 
     # All OK: clean up
     try:
