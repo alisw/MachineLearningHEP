@@ -612,7 +612,7 @@ class Analyzer:
         leg_sigmas.SetTextSize(0.035)
 
         for imult in range(self.p_nbin2):
-            legstring = "%.1f < %s < %.1f" % \
+            legstring = "%.1f #leq %s < %.1f" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             # Draw yields
             cYields.cd()
@@ -1111,7 +1111,7 @@ class Analyzer:
             text_box.SetTextSize(20)
             text_box.SetTextFont(43)
             text_box.AddText(f"{self.p_latexnmeson} | analysis type: {self.typean}")
-            text_box.AddText(f"{self.lvar2_binmin[imult]} < {self.v_var2_binning} < " \
+            text_box.AddText(f"{self.lvar2_binmin[imult]} #leq {self.v_var2_binning} < " \
                              f"{self.lvar2_binmax[imult]}")
             pad_up.cd()
             text_box.Draw()
@@ -1205,7 +1205,7 @@ class Analyzer:
             fileouteff.cd()
             h_sel_pr.SetName("eff_mult%d" % imult)
             h_sel_pr.Write()
-            legeffstring = "%.1f < %s < %.1f GeV/#it{c}" % \
+            legeffstring = "%.1f #leq %s < %.1f GeV/#it{c}" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legeff.AddEntry(h_sel_pr, legeffstring, "LEP")
             h_sel_pr.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
@@ -1240,7 +1240,7 @@ class Analyzer:
             fileouteff.cd()
             h_sel_fd.SetName("eff_fd_mult%d" % imult)
             h_sel_fd.Write()
-            legeffFDstring = "%.1f < %s < %.1f GeV/#it{c}" % \
+            legeffFDstring = "%.1f #leq %s < %.1f GeV/#it{c}" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legeffFD.AddEntry(h_sel_fd, legeffFDstring, "LEP")
             h_sel_fd.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
@@ -1312,7 +1312,7 @@ class Analyzer:
             can_eff = TCanvas("can_eff%d" % imult, "Efficiency%d" % imult, 800, 600)
             his_eff_pr.Draw("same")
             his_eff_fd.Draw("same")
-            legeffstring = "%.1f < %s < %.1f GeV/#it{c}" % \
+            legeffstring = "%.1f #leq %s < %.1f GeV/#it{c}" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             leg_eff.SetHeader(legeffstring)
             leg_eff.AddEntry(his_eff_pr, "prompt", "LEP")
@@ -1743,7 +1743,7 @@ class Analyzer:
             hcross.GetYaxis().SetTitle("Corrected yield/events (%s) %s" %
                                        (self.p_latexnmeson, self.typean))
             hcross.GetYaxis().SetRangeUser(1e-10, 1)
-            legvsvar1endstring = "%.1f < %s < %.1f GeV/#it{c}" % \
+            legvsvar1endstring = "%.1f #leq %s < %.1f GeV/#it{c}" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legvsvar1.AddEntry(hcross, legvsvar1endstring, "LEP")
             hcross.Draw("same")

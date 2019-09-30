@@ -96,7 +96,7 @@ def plot_hfptspectrum_comb(case, arraytype):
             hyield.SetMarkerColor(colors[imult])
             hyield.SetMarkerStyle(21)
             hyield.Draw("same")
-            legyieldstring = "%.1f < %s < %.1f (MB)" % \
+            legyieldstring = "%.1f #leq %s < %.1f (MB)" % \
                         (binsmin[imult], latexbin2var, binsmax[imult])
             legyield.AddEntry(hyield, legyieldstring, "LEP")
 
@@ -110,7 +110,7 @@ def plot_hfptspectrum_comb(case, arraytype):
             hyieldHM.SetMarkerColor(colors[imult])
             hyieldHM.SetMarkerStyle(21)
             hyieldHM.Draw("same")
-            legyieldstring = "%.1f < %s < %.1f (HM)" % \
+            legyieldstring = "%.1f #leq %s < %.1f (HM)" % \
                   (binsmin[imult], latexbin2var, binsmax[imult])
             legyield.AddEntry(hyieldHM, legyieldstring, "LEP")
         legyield.Draw()
@@ -165,7 +165,7 @@ def plot_hfptspectrum_comb(case, arraytype):
         hEffpr.SetMarkerStyle(21)
         hEffpr.SetMarkerSize(0.8)
         hEffpr.Draw("same")
-        legeffstring = "%.1f < %s < %.1f (MB)" % \
+        legeffstring = "%.1f #leq %s < %.1f (MB)" % \
                          (binsmin[imult], latexbin2var, binsmax[imult])
         legeff.AddEntry(hEffpr, legeffstring, "LEP")
         idx = idx + 1
@@ -181,7 +181,7 @@ def plot_hfptspectrum_comb(case, arraytype):
         hEffprHM.SetMarkerStyle(21)
         hEffprHM.SetMarkerSize(0.8)
         hEffprHM.Draw("same")
-        legeffstring = "%.1f < %s < %.1f (HM)" % \
+        legeffstring = "%.1f #leq %s < %.1f (HM)" % \
                     (binsmin[imult], latexbin2var, binsmax[imult])
         legeff.AddEntry(hEffprHM, legeffstring, "LEP")
         idx = idx + 1
@@ -238,7 +238,7 @@ def plot_hfptspectrum_comb(case, arraytype):
         grfPrompt.SetMarkerStyle(21)
         grfPrompt.SetMarkerSize(0.5)
         grfPrompt.Draw("ap")
-        pt.DrawTextNDC(0.15, 0.15, "%.1f < %s < %.1f (MB)" % \
+        pt.DrawTextNDC(0.15, 0.15, "%.1f #leq %s < %.1f (MB)" % \
                      (binsmin[imult], latexbin2var, binsmax[imult]))
         idx = idx + 1
 
@@ -253,7 +253,7 @@ def plot_hfptspectrum_comb(case, arraytype):
         grfPromptHM.SetMarkerStyle(21)
         grfPromptHM.SetMarkerSize(0.5)
         grfPromptHM.Draw("ap")
-        pt.DrawTextNDC(0.15, 0.15, "%.1f < %s < %.1f (HM)" % \
+        pt.DrawTextNDC(0.15, 0.15, "%.1f #leq %s < %.1f (HM)" % \
                      (binsmin[imult], latexbin2var, binsmax[imult]))
         idx = idx + 1
 
@@ -354,7 +354,7 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype):
         hratio.SetMarkerStyle(21)
         hratio.SetTitle(";#it{p}_{T} (GeV/#it{c});%s / %s" % (name_num, name_den))
         hratio.Draw("same")
-        legyieldstring = "%.1f < %s < %.1f (MB)" % \
+        legyieldstring = "%.1f #leq %s < %.1f (MB)" % \
                     (binsmin_num[imult], latexbin2var, binsmax_num[imult])
         legyield.AddEntry(hratio, legyieldstring, "LEP")
         fileoutput.cd()
@@ -373,7 +373,7 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype):
         hratioHM.SetMarkerColor(colors[imult])
         hratioHM.SetTitle(";#it{p}_{T} (GeV/#it{c});%s / %s" % (name_num, name_den))
         hratioHM.Draw("same")
-        legyieldstring = "%.1f < %s < %.1f (HM)" % \
+        legyieldstring = "%.1f #leq %s < %.1f (HM)" % \
                 (binsmin_num[imult], latexbin2var, binsmax_num[imult])
         legyield.AddEntry(hratioHM, legyieldstring, "LEP")
         fileoutput.cd()
