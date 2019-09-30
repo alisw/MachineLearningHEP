@@ -434,18 +434,15 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     h_invmass_sig.Write()
                     h_invmass_refl.Write()
 
-    def get_reweighted_count(self, df):
-        count = 0
+    def get_reweighted_count(self, dfsel):
         filename = os.path.join(self.d_mcreweights, self.n_mcreweights)
         weight_file = TFile.Open(filename, "read")
-        try:
-            weights = weight_file.Get("Weights0")
-        except Exception as e:
-            print('failed opening file for MC weights:', e)
-        w = [weights.GetBinContent(weights.FindBin(v)) for v in df[self.v_var2_binning]]
+        weights = weight_file.Get("Weights0")
+        w = [weights.GetBinContent(weights.FindBin(v)) for v in dfsel[self.v_var2_binning]]
         val = sum(w)
         err = math.sqrt(sum(map(lambda i: i * i, w)))
-        print('reweighting sum: {:.1f} +- {:.1f} -> {:.1f} +- {:.1f} (zeroes: {})'.format(len(df), math.sqrt(len(df)), val, err, w.count(0.)))
+        print('reweighting sum: {:.1f} +- {:.1f} -> {:.1f} +- {:.1f} (zeroes: {})' \
+              .format(len(dfsel), math.sqrt(len(dfsel)), val, err, w.count(0.)))
         return val, err
 
     # pylint: disable=line-too-long

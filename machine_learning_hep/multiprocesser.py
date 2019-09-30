@@ -102,7 +102,8 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
 
         self.lper_mcreweights = None
         if self.mcordata == "mc":
-            self.lper_mcreweights = [os.path.join(direc, self.n_mcreweights) for direc in self.dlper_mcreweights]
+            self.lper_mcreweights = [os.path.join(direc, self.n_mcreweights)
+                                     for direc in self.dlper_mcreweights]
 
         self.process_listsample = []
         for indexp in range(self.prodnumber):
