@@ -15,7 +15,7 @@
 #ML model optimised at 23-09-2019 using 09-09-2019 trains (Luuk)
 #  cos_t_star removed from training (funky background shape for 1-2)
 
-D0pp:
+D0pptest:
   mass: 1.864
   sel_reco_unp: "pt_cand>1"
   sel_reco_singletrac_unp : null
@@ -230,7 +230,6 @@ D0pp:
       data: [0.75,0.75,0.65,0.65,0.45] #list of nbins
       mc: [0.75,0.75,0.65,0.65,0.45] #list of nbins
     probcutoptimal: [0.92,0.9,0.82,0.8,0.6] #list of nbins
-    #To study: tighter probcutoptimal for last three
 
   analysis:
     indexhptspectrum: 0 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
@@ -262,15 +261,15 @@ D0pp:
         weighttrig: false
 
       data:
-        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2016_data/244_20190923-1806/resultsMBvspt_ntrkl,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2017_data/245_20190923-1806/resultsMBvspt_ntrkl,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2018_data/246_20190923-1806/resultsMBvspt_ntrkl] #list of periods
-        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_data/resultsMBvspt_ntrkl
+        results: [/data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2016_data/244_20190923-1806/resultsMBvspt_ntrkl,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2017_data/245_20190923-1806/resultsMBvspt_ntrkl,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2018_data/246_20190923-1806/resultsMBvspt_ntrkl] #list of periods
+        resultsallp: /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_data/resultsMBvspt_ntrkl
       mc:
-        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2016_mc_prodD2H/243_20190922-2234/resultsMBvspt_ntrkl,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2017_mc_prodD2H/243_20190922-2234/resultsMBvspt_ntrkl,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2018_mc_prodD2H/243_20190922-2234/resultsMBvspt_ntrkl] #list of periods
-        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_ntrkl
+        results: [/data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2016_mc_prodD2H/243_20190922-2234/resultsMBvspt_ntrkl,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2017_mc_prodD2H/243_20190922-2234/resultsMBvspt_ntrkl,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2018_mc_prodD2H/243_20190922-2234/resultsMBvspt_ntrkl] #list of periods
+        resultsallp: /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_ntrkl
 
 
 
@@ -319,7 +318,7 @@ D0pp:
         bincount_sigma: [3.5, 4.0,4.5]
 
     MBvspt_v0m:
-      useperiod: [0,1,1]
+      useperiod: [1,1,1]
       normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0
@@ -343,15 +342,15 @@ D0pp:
         weighttrig: false
 
       data:
-        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2016_data/244_20190923-1806/resultsMBvspt_v0m,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2017_data/245_20190923-1806/resultsMBvspt_v0m,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2018_data/246_20190923-1806/resultsMBvspt_v0m] #list of periods
-        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_data/resultsMBvspt_v0m
+        results: [/data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2016_data/244_20190923-1806/resultsMBvspt_v0m,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2017_data/245_20190923-1806/resultsMBvspt_v0m,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2018_data/246_20190923-1806/resultsMBvspt_v0m] #list of periods
+        resultsallp: /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_data/resultsMBvspt_v0m
       mc:
-        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2016_mc_prodD2H/243_20190922-2234/resultsMBvspt_v0m,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2017_mc_prodD2H/243_20190922-2234/resultsMBvspt_v0m,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2018_mc_prodD2H/243_20190922-2234/resultsMBvspt_v0m] #list of periods
-        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_v0m
+        results: [/data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2016_mc_prodD2H/243_20190922-2234/resultsMBvspt_v0m,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2017_mc_prodD2H/243_20190922-2234/resultsMBvspt_v0m,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2018_mc_prodD2H/243_20190922-2234/resultsMBvspt_v0m] #list of periods
+        resultsallp: /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_v0m
 
 
 
@@ -400,7 +399,7 @@ D0pp:
         bincount_sigma: [3.5, 4.0,4.5]
 
     MBvspt_perc:
-      useperiod: [0,1,1]
+      useperiod: [1,1,1]
       normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0
@@ -424,15 +423,15 @@ D0pp:
         weighttrig: false
 
       data:
-        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2016_data/244_20190923-1806/resultsMBvspt_perc_v0m,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2017_data/245_20190923-1806/resultsMBvspt_perc_v0m,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2018_data/246_20190923-1806/resultsMBvspt_perc_v0m] #list of periods
-        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_data/resultsMBvspt_perc_v0m
+        results: [/data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2016_data/244_20190923-1806/resultsMBvspt_perc_v0m,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2017_data/245_20190923-1806/resultsMBvspt_perc_v0m,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2018_data/246_20190923-1806/resultsMBvspt_perc_v0m] #list of periods
+        resultsallp: /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_data/resultsMBvspt_perc_v0m
       mc:
-        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2016_mc_prodD2H/243_20190922-2234/resultsMBvspt_perc_v0m,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2017_mc_prodD2H/243_20190922-2234/resultsMBvspt_perc_v0m,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2018_mc_prodD2H/243_20190922-2234/resultsMBvspt_perc_v0m] #list of periods
-        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_perc_v0m
+        results: [/data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2016_mc_prodD2H/243_20190922-2234/resultsMBvspt_perc_v0m,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2017_mc_prodD2H/243_20190922-2234/resultsMBvspt_perc_v0m,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2018_mc_prodD2H/243_20190922-2234/resultsMBvspt_perc_v0m] #list of periods
+        resultsallp: /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_perc_v0m
 
 
 
@@ -456,7 +455,7 @@ D0pp:
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: false
-      # Max percentage deviation in sigma (from init) to be considered as a good fit
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
       MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
       exclude_nsigma_sideband: 4
@@ -497,15 +496,15 @@ D0pp:
         weighttrig: false
 
       data:
-        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2016_data/244_20190923-1806/resultsMBjetvspt,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2017_data/245_20190923-1806/resultsMBjetvspt,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2018_data/246_20190923-1806/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_data/resultsMBjetvspt
+        results: [/data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2016_data/244_20190923-1806/resultsMBjetvspt,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2017_data/245_20190923-1806/resultsMBjetvspt,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2018_data/246_20190923-1806/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_data/resultsMBjetvspt
       mc:
-        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2016_mc_prodD2H/243_20190922-2234/resultsMBjetvspt,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2017_mc_prodD2H/243_20190922-2234/resultsMBjetvspt,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2018_mc_prodD2H/243_20190922-2234/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_mc_prodD2H/resultsMBjetvspt
+        results: [/data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2016_mc_prodD2H/243_20190922-2234/resultsMBjetvspt,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2017_mc_prodD2H/243_20190922-2234/resultsMBjetvspt,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2018_mc_prodD2H/243_20190922-2234/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_mc_prodD2H/resultsMBjetvspt
 
 
 
@@ -528,7 +527,7 @@ D0pp:
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: false
-      # Max percentage deviation in sigma (from init) to be considered as a good fit
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
       MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
       exclude_nsigma_sideband: 4
@@ -566,17 +565,17 @@ D0pp:
       triggersel:
         data: "trigger_hasbit_HighMultSPD==1"
         mc: null
-        weighttrig: false
+        weighttrig: true
       data:
-        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2016_data/244_20190923-1806/resultsSPDvspt,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2017_data/245_20190923-1806/resultsSPDvspt,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2018_data/246_20190923-1806/resultsSPDvspt] #list of periods
-        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_data/resultsSPDvspt
+        results: [/data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2016_data/244_20190923-1806/resultsSPDvspt,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2017_data/245_20190923-1806/resultsSPDvspt,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2018_data/246_20190923-1806/resultsSPDvspt] #list of periods
+        resultsallp: /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_data/resultsSPDvspt
       mc:
-        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2016_mc_prodD2H/243_20190922-2234/resultsSPDvspt,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2017_mc_prodD2H/243_20190922-2234/resultsSPDvspt,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2018_mc_prodD2H/243_20190922-2234/resultsSPDvspt] #list of periods
-        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_mc_prodD2H/resultsSPDvspt
+        results: [/data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2016_mc_prodD2H/243_20190922-2234/resultsSPDvspt,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2017_mc_prodD2H/243_20190922-2234/resultsSPDvspt,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2018_mc_prodD2H/243_20190922-2234/resultsSPDvspt] #list of periods
+        resultsallp: /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_mc_prodD2H/resultsSPDvspt
       mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
@@ -596,7 +595,7 @@ D0pp:
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: false
-      # Max percentage deviation in sigma (from init) to be considered as a good fit
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
       MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
       exclude_nsigma_sideband: 4
@@ -638,15 +637,15 @@ D0pp:
         weighttrig: false
 
       data:
-        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2016_data/244_20190923-1806/resultsV0mvspt,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2017_data/245_20190923-1806/resultsV0mvspt,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2018_data/246_20190923-1806/resultsV0mvspt] #list of periods
-        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_data/resultsV0mvspt
+        results: [/data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2016_data/244_20190923-1806/resultsV0mvspt,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2017_data/245_20190923-1806/resultsV0mvspt,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2018_data/246_20190923-1806/resultsV0mvspt] #list of periods
+        resultsallp: /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_data/resultsV0mvspt
       mc:
-        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2016_mc_prodD2H/243_20190922-2234/resultsV0mvspt,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2017_mc_prodD2H/243_20190922-2234/resultsV0mvspt,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2018_mc_prodD2H/243_20190922-2234/resultsV0mvspt] #list of periods
-        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_mc_prodD2H/resultsV0mvspt
+        results: [/data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2016_mc_prodD2H/243_20190922-2234/resultsV0mvspt,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2017_mc_prodD2H/243_20190922-2234/resultsV0mvspt,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2018_mc_prodD2H/243_20190922-2234/resultsV0mvspt] #list of periods
+        resultsallp: /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_mc_prodD2H/resultsV0mvspt
 
       mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
@@ -667,7 +666,7 @@ D0pp:
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: false
-      # Max percentage deviation in sigma (from init) to be considered as a good fit
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
       MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
       exclude_nsigma_sideband: 4
@@ -708,16 +707,16 @@ D0pp:
         weighttrig: false
 
       data:
-        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2016_data/244_20190923-1806/resultsV0mvspt_perc_v0m,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2017_data/245_20190923-1806/resultsV0mvspt_perc_v0m,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2018_data/246_20190923-1806/resultsV0mvspt_perc_v0m] #list of periods
-        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_data/resultsV0mvspt_perc_v0m
+        results: [/data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2016_data/244_20190923-1806/resultsV0mvspt_perc_v0m,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2017_data/245_20190923-1806/resultsV0mvspt_perc_v0m,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2018_data/246_20190923-1806/resultsV0mvspt_perc_v0m] #list of periods
+        resultsallp: /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_data/resultsV0mvspt_perc_v0m
       mc:
-        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2016_mc_prodD2H/243_20190922-2234/resultsV0mvspt_perc_v0m,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2017_mc_prodD2H/243_20190922-2234/resultsV0mvspt_perc_v0m,
-                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2018_mc_prodD2H/243_20190922-2234/resultsV0mvspt_perc_v0m] #list of periods
-        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_mc_prodD2H/resultsV0mvspt_perc_v0m
-
+        results: [/data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2016_mc_prodD2H/243_20190922-2234/resultsV0mvspt_perc_v0m,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2017_mc_prodD2H/243_20190922-2234/resultsV0mvspt_perc_v0m,
+                  /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2018_mc_prodD2H/243_20190922-2234/resultsV0mvspt_perc_v0m] #list of periods
+        resultsallp: /data/DerivedResultsStudy/D0kINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_mc_prodD2H/resultsV0mvspt_perc_v0m
+      
       mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
@@ -737,7 +736,7 @@ D0pp:
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: false
-      # Max percentage deviation in sigma (from init) to be considered as a good fit
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
       MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
       exclude_nsigma_sideband: 4
@@ -772,9 +771,8 @@ D0pp:
         HighMultSPD: HighMultSPD2018
         HighMultV0: nosel
     data:
-      dir: [/data/DerivedVal/dataval_16, /data/DerivedVal/dataval_17, /data/DerivedVal/dataval_18] #list of periods
-      dirmerged: /data/DerivedVal/datavaltot
+      dir: [/data/DerivedValStudy/dataval_16, /data/DerivedValStudy/dataval_17, /data/DerivedValStudy/dataval_18] #list of periods
+      dirmerged: /data/DerivedValStudy/datavaltot
     mc:
-      dir: [/data/DerivedVal/mcval_16, /data/DerivedVal/mcval_17, /data/DerivedVal/mcval_18] #list of periods
-      dirmerged: /data/DerivedVal/mcvaltot
-
+      dir: [/data/DerivedValStudy/mcval_16, /data/DerivedValStudy/mcval_17, /data/DerivedValStudy/mcval_18] #list of periods
+      dirmerged: /data/DerivedValStudy/mcvaltot

@@ -46,7 +46,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                  d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
-                 d_results, d_val, typean):
+                 d_results, d_val, typean, runlisttrigger):
         self.case = case
         self.typean = typean
         #directories
@@ -62,7 +62,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.p_rd_merge = p_rd_merge
         self.period = p_period
         self.runlist = run_param[self.period]
-
+        self.run_param = run_param
         self.p_maxfiles = p_maxfiles
         self.p_chunksizeunp = p_chunksizeunp
         self.p_chunksizeskim = p_chunksizeskim
@@ -214,7 +214,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
         self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
-
+        self.runlistrigger = runlisttrigger
 
     def unpack(self, file_index):
         treeevtorig = uproot.open(self.l_root[file_index])[self.n_treeevt]
@@ -392,9 +392,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                         self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 df_bin = seldf_singlevar(df, self.v_var2_binning,
                                          self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                print("Using run selection for mass histo",
+                      self.runlistrigger[self.triggerbit], "for period", self.period)
+                df_bin = selectdfrunlist(df_bin, \
+                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
                 fill_hist(h_invmass, df_bin.inv_mass)
-                triggerbit = self.datap["analysis"][self.typean]["triggerbit"]
-                if "INT7" not in triggerbit and self.mcordata == "data":
+                if "INT7" not in self.triggerbit and self.mcordata == "data":
                     fileweight_name = "%s/correctionsweights.root" % self.d_val
                     fileweight = TFile.Open(fileweight_name, "read")
                     namefunction = "funcnorm_%s_%s" % (self.triggerbit, self.v_var2_binning)
@@ -463,8 +466,14 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_trigger is not None:
                     df_mc_reco = df_mc_reco.query(self.s_trigger)
+                print("Using run selection for eff histo",
+                      self.runlistrigger[self.triggerbit], "for period", self.period)
+                df_mc_reco = selectdfrunlist(df_mc_reco, \
+                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
                 df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[bin_id], "rb"))
                 df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
+                df_mc_gen = selectdfrunlist(df_mc_gen, \
+                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
                 df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var_binning, \
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
                 df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \
@@ -518,9 +527,13 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 df_mc_reco = df_mc_reco.query(self.s_evtsel)
             if self.s_trigger is not None:
                 df_mc_reco = df_mc_reco.query(self.s_trigger)
+            df_mc_reco = selectdfrunlist(df_mc_reco, \
+                  self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
             df_mc_reco = df_mc_reco.query(self.l_selml[iptskim])
             list_df_mc_reco.append(df_mc_reco)
             df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[iptskim], "rb"))
+            df_mc_gen = selectdfrunlist(df_mc_gen, \
+                    self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
             df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
             list_df_mc_gen.append(df_mc_gen)
         df_rec = pd.concat(list_df_mc_reco)
@@ -595,7 +608,11 @@ class Processer: # pylint: disable=too-many-instance-attributes
     def process_valevents(self, file_index):
         dfevt = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
         dfevt = dfevt.query("is_ev_rej==0")
-        triggerlist = ["HighMultV0", "HighMultSPD", "INT7"]
+        dfevtmb = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
+        dfevtmb = dfevtmb.query("is_ev_rej==0")
+        myrunlisttrigmb = self.runlistrigger["INT7"]
+        dfevtselmb = selectdfrunlist(dfevtmb, self.run_param[myrunlisttrigmb], "run_number")
+        triggerlist = ["INT7", "HighMultV0", "HighMultSPD"]
         varlist = ["v0m_corr", "n_tracklets_corr", "perc_v0m"]
         nbinsvar = [100, 200, 200]
         minrvar = [0, 0, 0]
@@ -611,7 +628,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         for ivar, var in enumerate(varlist):
             label = "hbitINT7vs%s" % (var)
             histoMB = TH1F(label, label, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
-            fill_hist(histoMB, dfevt.query("trigger_hasbit_INT7==1")[var])
+            fill_hist(histoMB, dfevtselmb.query("trigger_hasbit_INT7==1")[var])
             histoMB.Sumw2()
             histoMB.Write()
             for trigger in triggerlist:
@@ -620,8 +637,14 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 labeltrigger = "hbit%svs%s" % (trigger, var)
                 histotrigANDMB = TH1F(labeltriggerANDMB, labeltriggerANDMB, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
                 histotrig = TH1F(labeltrigger, labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
-                fill_hist(histotrigANDMB, dfevt.query(triggerbit + " and trigger_hasbit_INT7==1")[var])
-                fill_hist(histotrig, dfevt.query(triggerbit)[var])
+                myrunlisttrig = self.runlistrigger[trigger]
+                ev = len(dfevt)
+                dfevtsel = selectdfrunlist(dfevt, self.run_param[myrunlisttrig], "run_number")
+                if len(dfevtsel) < ev:
+                    print("Reduced number of events in trigger", trigger)
+                    print(ev, len(dfevtsel))
+                fill_hist(histotrigANDMB, dfevtsel.query(triggerbit + " and trigger_hasbit_INT7==1")[var])
+                fill_hist(histotrig, dfevtsel.query(triggerbit)[var])
                 histotrigANDMB.Sumw2()
                 histotrig.Sumw2()
                 histotrigANDMB.Write()
