@@ -50,7 +50,8 @@ Dspp:
     var_all: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, delta_mass_KK, 
               cos_PiDs, cos_PiKPhi_3, imp_par_prong0, imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, 
               inv_mass, pt_cand, cand_type, y_cand, ev_id, run_number, 
-              pt_prong0, pt_prong1, pt_prong2, 
+              pt_prong0, pt_prong1, pt_prong2,
+              spdhits_prong0, spdhits_prong1, spdhits_prong2,
               nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, 
               nsigTPC_Pi_1, nsigTPC_K_1, nsigTOF_Pi_1, nsigTOF_K_1, 
               nsigTPC_Pi_2, nsigTPC_K_2, nsigTOF_Pi_2, nsigTOF_K_2]
@@ -239,22 +240,22 @@ Dspp:
   
   analysis:
     indexhptspectrum: 3 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5 
-    fd_method: 1 #knone=0, kfc=1, kNb=2
+    fd_method: 2 #knone=0, kfc=1, kNb=2
     cctype: 1 #kpp7
     sigmav0: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
     MBvspt_ntrkl:
       useperiod: [1,1,1]
       normalizecross: false  
       plotbin: [1,1,1,0]
-      usesinglebineff: 0
-      sel_binmin2:  [0,0,20,60] #list of var2 splittng nbins
+      usesinglebineff: null
+      sel_binmin2:  [0,1,20,60] #list of var2 splittng nbins
       sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
       triggerbit: INT7
 
-      sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
-      sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,1,2,2,2,3,4] #list of pt nbins
+      sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
+      sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
+      binning_matching: [0,1,2,2,3,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
@@ -273,8 +274,6 @@ Dspp:
                   /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2018_mc_prodDs/243_20190922-2234/resultsMBvspt_ntrkl] #list of periods
         resultsallp: /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_mc_prodDs/resultsMBvspt_ntrkl
 
-
-
       # The global mass limits
       mass_fit_lim: [1.75, 2.05] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
@@ -282,7 +281,6 @@ Dspp:
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
       init_fits_from: mc # data # data or mc
-      
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.969
@@ -314,22 +312,22 @@ Dspp:
       fitcase: Ds
       latexnamemeson: "D_{s}^{+}"
       latexbin2var: "n_{trkl}"
-      nevents: 1700000000.
+      nevents: null
       dodoublecross: false
 
     MBvspt_v0m:
       useperiod: [0,1,1]
       normalizecross: false
       plotbin: [1,1,1,0]
-      usesinglebineff: 0
-      sel_binmin2:  [0,0,200,600] #list of var2 splittng nbins
+      usesinglebineff: null
+      sel_binmin2:  [0,1,200,600] #list of var2 splittng nbins
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
       var_binning2: v0m_corr
       triggerbit: INT7
 
-      sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
-      sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,1,2,2,2,3,4] #list of pt nbins
+      sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
+      sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
+      binning_matching: [0,1,2,2,3,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
@@ -348,15 +346,12 @@ Dspp:
                   /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2018_mc_prodDs/243_20190922-2234/resultsMBvspt_v0m] #list of periods
         resultsallp: /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_mc_prodDs/resultsMBvspt_v0m
 
-
-
       mass_fit_lim: [1.75, 2.05] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
       init_fits_from: mc # data # data or mc
-      
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.969
@@ -388,22 +383,22 @@ Dspp:
       fitcase: Ds
       latexnamemeson: "D_{s}^{+}"
       latexbin2var: "V0M ampl."
-      nevents: 1700000000.
+      nevents: null
       dodoublecross: false
 
     MBvspt_perc:
       useperiod: [0,1,1]
       normalizecross: false
       plotbin: [1,1,1,0]
-      usesinglebineff: 0
+      usesinglebineff: null
       sel_binmin2:  [0,30,0.1,0.] #list of var2 splittng nbins
       sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m
       triggerbit: INT7
 
-      sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
-      sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,1,2,2,2,3,4] #list of pt nbins
+      sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
+      sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
+      binning_matching: [0,1,2,2,3,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
@@ -422,15 +417,12 @@ Dspp:
                   /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2018_mc_prodDs/243_20190922-2234/resultsMBvspt_perc_v0m] #list of periods
         resultsallp: /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_mc_prodDs/resultsMBvspt_perc_v0m
 
-
-
       mass_fit_lim: [1.75, 2.05] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
       init_fits_from: mc # data # data or mc
-      
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.969
@@ -462,7 +454,7 @@ Dspp:
       fitcase: Ds
       latexnamemeson: "D_{s}^{+}"
       latexbin2var: "V0M perc"
-      nevents: 1700000000.
+      nevents: null
       dodoublecross: false
 
     MBjetvspt:
@@ -475,10 +467,6 @@ Dspp:
       var_binning2: pt_jet
       triggerbit: INT7
 
-      # To initialize the individual fits in pT bins
-      # Decide whether to take the sigma from MC or data for individual fits
-      init_fits_from: mc # data # data or mc
-      
       sel_an_binmin: [2,4,5,6,8] #list of pt nbins
       sel_an_binmax: [4,5,6,8,12] #list of pt nbins
       binning_matching: [1,2,2,2,3] #list of pt nbins
@@ -500,15 +488,12 @@ Dspp:
                   /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2018_mc_prodDs/243_20190922-2234/resultsMBjetvspt] #list of periods
         resultsallp: /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_mc_prodDs/resultsMBjetvspt
 
-
-
       mass_fit_lim: [1.75, 2.05] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
       init_fits_from: mc # data # data or mc
-      
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.969
@@ -546,22 +531,22 @@ Dspp:
     SPDvspt:
       useperiod: [0,0,1]
       normalizecross: false
-      plotbin: [0,1]
-      usesinglebineff: 0
-      sel_binmin2:  [0,0,20,60] #list of var2 splittng nbins
+      plotbin: [0,0,0,1]
+      usesinglebineff: null
+      sel_binmin2:  [0,1,20,60] #list of var2 splittng nbins
       sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
       triggerbit: HighMultSPD
       
-      sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
-      sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,1,2,2,2,3,4] #list of pt nbins
+      sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
+      sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
+      binning_matching: [0,1,2,2,3,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
         data: "trigger_hasbit_HighMultSPD==1"
         mc: null
-        weighttrig: false
+        weighttrig: true
 
       data:      
         results: [/data/DerivedResults/DskINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2016_data/244_20190923-1806/resultsSPDvspt,
@@ -573,13 +558,13 @@ Dspp:
                   /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2017_mc_prodDs/243_20190922-2234/resultsSPDvspt,
                   /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2018_mc_prodDs/243_20190922-2234/resultsSPDvspt] #list of periods
         resultsallp: /data/DerivedResults/DskINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_mc_prodDs/resultsSPDvspt
+
       mass_fit_lim: [1.75, 2.05] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
       init_fits_from: mc # data # data or mc
-      
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.969
@@ -611,30 +596,28 @@ Dspp:
       fitcase: Ds
       latexnamemeson: "D_{s}^{+}"
       latexbin2var: "n_{trkl}"
-      nevents: 1700000000.
+      nevents: null
       dodoublecross: false
-
-
 
     V0mvspt:
       useperiod: [0,1,1]
       normalizecross: false
-      plotbin: [1,1,1,0]
-      usesinglebineff: 0
-      sel_binmin2:  [0,0,200,600] #list of var2 splittng nbins
+      plotbin: [0,0,0,1]
+      usesinglebineff: null
+      sel_binmin2:  [0,1,200,600] #list of var2 splittng nbins
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
       var_binning2: v0m_corr
       triggerbit: HighMultV0
       
-      sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
-      sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,1,2,2,2,3,4] #list of pt nbins
+      sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
+      sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
+      binning_matching: [0,1,2,2,3,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
         data: "trigger_hasbit_HighMultV0==1"
         mc: null
-        weighttrig: false
+        weighttrig: true
 
       data:      
         results: [/data/DerivedResults/DskINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2016_data/244_20190923-1806/resultsV0mvspt,
@@ -653,7 +636,6 @@ Dspp:
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
       init_fits_from: mc # data # data or mc
-      
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.969
@@ -685,28 +667,28 @@ Dspp:
       fitcase: Ds
       latexnamemeson: "D_{s}^{+}"
       latexbin2var: "V0M ampl."
-      nevents: 1700000000.
+      nevents: null
       dodoublecross: false
 
     V0mvspt_perc_v0m:
       useperiod: [0,1,1]
       normalizecross: false
       plotbin: [0,0,0,1]
-      usesinglebineff: 0
+      usesinglebineff: null
       sel_binmin2:  [0,30,0.1,0.] #list of var2 splittng nbins
       sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m
       triggerbit: HighMultV0
       
-      sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
-      sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,1,2,2,2,3,4] #list of pt nbins
+      sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
+      sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
+      binning_matching: [0,1,2,2,3,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
         data: "trigger_hasbit_HighMultV0==1"
         mc: null
-        weighttrig: false
+        weighttrig: true
 
       data:      
         results: [/data/DerivedResults/DskINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2016_data/244_20190923-1806/resultsV0mvspt_perc_v0m,
@@ -725,7 +707,6 @@ Dspp:
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
       init_fits_from: mc # data # data or mc
-      
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.969
@@ -757,8 +738,9 @@ Dspp:
       fitcase: Ds
       latexnamemeson: "D_{s}^{+}"
       latexbin2var: "V0M perc."
-      nevents: 1700000000.
+      nevents: null
       dodoublecross: false
+
   systematics:
     probvariation:
       prob_range: [0.5,0.6,0.7]
