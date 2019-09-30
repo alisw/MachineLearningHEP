@@ -250,19 +250,15 @@ LcpKpipp:
       useperiod: [1,1,1]
       normalizecross: false
       plotbin: [1,1,1,0]
-      usesinglebineff: 0
-      sel_binmin2:  [0,0,20,60] #list of var2 splittng nbins
+      usesinglebineff: null
+      sel_binmin2:  [0,1,20,60] #list of var2 splittng nbins
       sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
       triggerbit: INT7
 
-      # To initialize the individual fits in pT bins
-      # Decide whether to take the sigma from MC or data for individual fits
-      init_fits_from: mc # data # data or mc
-
-      sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
-      sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,1,2,2,2,3,4] #list of pt nbins
+      sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
+      sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
+      binning_matching: [0,1,2,2,3,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel:
@@ -283,6 +279,9 @@ LcpKpipp:
       mass_fit_lim: [2.166, 2.406] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
+      # To initialize the individual fits in pT bins
+      # Decide whether to take the sigma from MC or data for individual fits
+      init_fits_from: mc # data # data or mc
       # Note for now that only a Gaussian fit is available
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
@@ -292,7 +291,6 @@ LcpKpipp:
       rebin: [4,4,4,4,4,4,4,4]
       includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 2.2864
-
       # Fix mean and/or sigma
       FixedMean: False
       SetFixGaussianSigma: false
@@ -313,7 +311,7 @@ LcpKpipp:
       fitcase: Lc
       latexnamemeson: "#Lambda_{c}^{pKpi}"
       latexbin2var: "n_{trkl}"
-      nevents: 1700000000.
+      nevents: null
       dodoublecross: false
       
       systematics:
@@ -328,19 +326,15 @@ LcpKpipp:
       useperiod: [0,1,1]
       normalizecross: false
       plotbin: [1,1,1,0]
-      usesinglebineff: 0
-      sel_binmin2:  [0,0,200,600] #list of var2 splittng nbins
+      usesinglebineff: null
+      sel_binmin2:  [0,1,200,600] #list of var2 splittng nbins
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
       var_binning2: v0m_corr
       triggerbit: INT7
 
-      # To initialize the individual fits in pT bins
-      # Decide whether to take the sigma from MC or data for individual fits
-      init_fits_from: mc # data # data or mc
-
-      sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
-      sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,1,2,2,2,3,4] #list of pt nbins
+      sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
+      sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
+      binning_matching: [0,1,2,2,3,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel:
@@ -361,6 +355,9 @@ LcpKpipp:
       mass_fit_lim: [2.166, 2.406] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
+      # To initialize the individual fits in pT bins
+      # Decide whether to take the sigma from MC or data for individual fits
+      init_fits_from: mc # data # data or mc
       # Note for now that only a Gaussian fit is available
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
@@ -370,7 +367,6 @@ LcpKpipp:
       rebin: [4,4,4,4,4,4,4,4]
       includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 2.2864
-
       # Fix mean and/or sigma
       FixedMean: False
       SetFixGaussianSigma: True
@@ -390,8 +386,8 @@ LcpKpipp:
       FixedSigma: true
       fitcase: Lc
       latexnamemeson: "#Lambda_{c}^{pKpi}"
-      latexbin2var: "n_{trkl}"
-      nevents: 1700000000.
+      latexbin2var: "V0M ampl."
+      nevents: null
       dodoublecross: false
       
       systematics:
@@ -401,6 +397,74 @@ LcpKpipp:
         massmin: [2.12 2.13, 2.14, 2.15]
         massmax: [2.408, 2.407, 2.406, 2.405]
         bincount_sigma: [3.5, 4.0,4.5]
+
+    MBvspt_perc:
+      useperiod: [0,1,1]
+      normalizecross: false
+      plotbin: [1,1,1,0]
+      usesinglebineff: null
+      sel_binmin2: [0,30,0.1,0.] #list of var2 splittng nbins
+      sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
+      var_binning2: perc_v0m
+      triggerbit: INT7
+
+      sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
+      sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
+      binning_matching: [0,1,2,2,3,4] #list of pt nbins
+      presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
+      evtsel: is_ev_rej==0
+      triggersel:
+        data: "trigger_hasbit_INT7==1"
+        mc: null
+        weighttrig: false
+      data:
+        results: [/data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2016_data/244_20190923-1806/resultsMBvspt_perc_v0m,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2017_data/245_20190923-1806/resultsMBvspt_perc_v0m,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2018_data/246_20190923-1806/resultsMBvspt_perc_v0m] #list of periods
+        resultsallp: /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_data/resultsMBvspt_perc_v0m
+      mc:
+        results: [/data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2016_mc_prodLcpKpi/243_20190922-2234/resultsMBvspt_perc_v0m,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2017_mc_prodLcpKpi/243_20190922-2234/resultsMBvspt_perc_v0m,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2018_mc_prodLcpKpi/243_20190922-2234/resultsMBvspt_perc_v0m] #list of periods
+        resultsallp: /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_mc_prodLcpKpi/resultsMBvspt_perc_v0m
+
+      mass_fit_lim: [2.166, 2.406] # region for the fit of the invariant mass distribution [GeV/c^2]
+      bin_width: 0.001 # bin width of the invariant mass histogram
+      usefit: true
+      # To initialize the individual fits in pT bins
+      # Decide whether to take the sigma from MC or data for individual fits
+      init_fits_from: mc # data # data or mc
+      # Note for now that only a Gaussian fit is available
+      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
+      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
+      masspeak: 2.2864
+      massmin: [2.166,2.166,2.166,2.166,2.166,2.166,2.166,2.166]
+      massmax: [2.406,2.406,2.406,2.406,2.406,2.406,2.406,2.406]
+      rebin: [4,4,4,4,4,4,4,4]
+      includesecpeak: Null #[0,0,0,0,0,0,0,0]
+      masssecpeak: 2.2864
+      # Fix mean and/or sigma
+      FixedMean: False
+      SetFixGaussianSigma: True
+      # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
+      SetInitialGaussianMean: true
+      # Use values set for "sigmaarray" for initializing total fit (per pT bin),
+      # otherwise what is derived from MC fit is used
+      SetInitialGaussianSigma: false
+      # Max percentage deviation in sigma (from init) to be considered as a good fit
+      MaxPercSigmaDeviation: 0.5
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
+      exclude_nsigma_sideband: 4
+      # Sigma around mean where signal is integrated after total fit has been done
+      nsigma_signal: 3
+      dolikelihood: true
+      sigmaarray: [0.0059, 0.0060, 0.0065, 0.0070, 0.0073, 0.0080, 0.0085, 0.0090]
+      FixedSigma: true
+      fitcase: Lc
+      latexnamemeson: "#Lambda_{c}^{pKpi}"
+      latexbin2var: "V0M perc."
+      nevents: null
+      dodoublecross: false
 
     MBjetvspt:
       useperiod: [1,1,1]
@@ -412,10 +476,6 @@ LcpKpipp:
       var_binning2: pt_jet
       triggerbit: INT7
 
-      # To initialize the individual fits in pT bins
-      # Decide whether to take the sigma from MC or data for individual fits
-      init_fits_from: mc # data # data or mc
-      
       sel_an_binmin: [2,4,5,6,8] #list of pt nbins
       sel_an_binmax: [4,5,6,8,12] #list of pt nbins
       binning_matching: [1,2,2,2,3] #list of pt nbins
@@ -440,6 +500,9 @@ LcpKpipp:
       mass_fit_lim: [2.166, 2.406] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
+      # To initialize the individual fits in pT bins
+      # Decide whether to take the sigma from MC or data for individual fits
+      init_fits_from: mc # data # data or mc
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.2864
@@ -474,20 +537,16 @@ LcpKpipp:
     SPDvspt:
       useperiod: [0,0,1]
       normalizecross: false
-      plotbin: [0,1]
-      usesinglebineff: 0
-      sel_binmin2:  [0,0,20,60] #list of var2 splittng nbins
+      plotbin: [0,0,0,1]
+      usesinglebineff: null
+      sel_binmin2:  [0,1,20,60] #list of var2 splittng nbins
       sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
       triggerbit: HighMultSPD
 
-      # To initialize the individual fits in pT bins
-      # Decide whether to take the sigma from MC or data for individual fits
-      init_fits_from: mc # data # data or mc
-      
-      sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
-      sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,1,2,2,2,3,4] #list of pt nbins
+      sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
+      sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
+      binning_matching: [0,1,2,2,3,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
@@ -535,27 +594,22 @@ LcpKpipp:
       fitcase: Lc
       latexnamemeson: "#Lambda_{c}^{pKpi}"
       latexbin2var: "n_{trkl}"
-      nevents: 1700000000.
+      nevents: null
       dodoublecross: false
-
 
     V0mvspt:
       useperiod: [0,1,1]
       normalizecross: false
-      plotbin: [1,1,1,0]
-      usesinglebineff: 0
-      sel_binmin2:  [0,0,200,600] #list of var2 splittng nbins
+      plotbin: [0,0,0,1]
+      usesinglebineff: null
+      sel_binmin2:  [0,1,200,600] #list of var2 splittng nbins
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
       var_binning2: v0m_corr
       triggerbit: HighMultV0
 
-      # To initialize the individual fits in pT bins
-      # Decide whether to take the sigma from MC or data for individual fits
-      init_fits_from: mc # data # data or mc
-      
-      sel_an_binmin: [1,2,3,4,5,6,8,12] #list of pt nbins
-      sel_an_binmax: [2,3,4,5,6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,1,2,2,2,3,4] #list of pt nbins
+      sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
+      sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
+      binning_matching: [0,1,2,2,3,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
@@ -576,6 +630,9 @@ LcpKpipp:
       mass_fit_lim: [2.166, 2.406] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
+      # To initialize the individual fits in pT bins
+      # Decide whether to take the sigma from MC or data for individual fits
+      init_fits_from: mc # data # data or mc
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.2864
@@ -604,7 +661,74 @@ LcpKpipp:
       fitcase: Lc
       latexnamemeson: "#Lambda_{c}^{pKpi}"
       latexbin2var: "V0M ampl."
-      nevents: 1700000000.
+      nevents: null
+      dodoublecross: false
+
+    V0mvspt_perc_v0m:
+      useperiod: [0,1,1]
+      normalizecross: false
+      plotbin: [0,0,0,1]
+      usesinglebineff: null
+      sel_binmin2: [0,30,0.1,0.] #list of var2 splittng nbins
+      sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
+      var_binning2: perc_v0m
+      triggerbit: HighMultV0
+
+      sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
+      sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
+      binning_matching: [0,1,2,2,3,4] #list of pt nbins
+      presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
+      evtsel: is_ev_rej==0
+      triggersel:
+        data: "trigger_hasbit_HighMultV0==1"
+        mc: null
+        weighttrig: true
+      data:
+        results: [/data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2016_data/244_20190923-1806/resultsV0mvspt_perc_v0m,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2017_data/245_20190923-1806/resultsV0mvspt_perc_v0m,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_2018_data/246_20190923-1806/resultsV0mvspt_perc_v0m] #list of periods
+        resultsallp: /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190923_ROOT6-1/pp_data/resultsV0mvspt_perc_v0m
+      mc:
+        results: [/data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2016_mc_prodLcpKpi/243_20190922-2234/resultsV0mvspt_perc_v0m,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2017_mc_prodLcpKpi/243_20190922-2234/resultsV0mvspt_perc_v0m,
+                  /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2018_mc_prodLcpKpi/243_20190922-2234/resultsV0mvspt_perc_v0m] #list of periods
+        resultsallp: /data/DerivedResults/LcpKpikINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_mc_prodLcpKpi/resultsV0mvspt_perc_v0m
+
+      mass_fit_lim: [2.166, 2.406] # region for the fit of the invariant mass distribution [GeV/c^2]
+      bin_width: 0.001 # bin width of the invariant mass histogram
+      usefit: true
+      # To initialize the individual fits in pT bins
+      # Decide whether to take the sigma from MC or data for individual fits
+      init_fits_from: mc # data # data or mc
+      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
+      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
+      masspeak: 2.2864
+      massmin: [2.166,2.166,2.166,2.166,2.166,2.166,2.166,2.166]
+      massmax: [2.406,2.406,2.406,2.406,2.406,2.406,2.406,2.406]
+      rebin: [4,4,4,4,4,4,4,4]
+      includesecpeak: Null #[0,0,0,0,0,0,0,0]
+      masssecpeak: 2.2864
+      # Fix mean and/or sigma
+      FixedMean: False
+      SetFixGaussianSigma: True
+      # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
+      SetInitialGaussianMean: true
+      # Use values set for "sigmaarray" for initializing total fit (per pT bin),
+      # otherwise what is derived from MC fit is used
+      SetInitialGaussianSigma: false
+      # Max percentage deviation in sigma (from init) to be considered as a good fit
+      MaxPercSigmaDeviation: 0.5
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
+      exclude_nsigma_sideband: 4
+      # Sigma around mean where signal is integrated after total fit has been done
+      nsigma_signal: 3
+      dolikelihood: true
+      sigmaarray: [0.0059, 0.0060, 0.0065, 0.0070, 0.0073, 0.0080, 0.0085, 0.0090]
+      FixedSigma: true
+      fitcase: Lc
+      latexnamemeson: "#Lambda_{c}^{pKpi}"
+      latexbin2var: "V0M perc."
+      nevents: null
       dodoublecross: false
 
   systematics:

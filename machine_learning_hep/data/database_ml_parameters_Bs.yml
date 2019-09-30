@@ -41,13 +41,6 @@ Bspp:
     ismcbkg: [[2],[]]
 
   variables:
-#Only Bs (for plotting)
-#    var_all: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, cos_t_star, imp_par_prod,
-#              pt_prong0, pt_prong1, pt_prong2, pt_prong3, imp_par_prong0, imp_par_prong1, imp_par_prong2, imp_par_prong3,
-#              max_norm_d0d0exp, inv_mass, pt_cand]
-#Only Ds (for plotting)
-#    var_all: [inv_mass_Ds, pt_Ds, d_len_Ds, d_len_xy_Ds, norm_dl_xy_Ds, cos_p_Ds, cos_p_xy_Ds,
-#              imp_par_xy_Ds, dca_Ds, sig_vert_Ds, delta_mass_KK_Ds, cos_PiDs_Ds, cos_PiKPhi_3_Ds, max_norm_d0d0exp_Ds]
     var_all: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, cos_t_star, imp_par_prod, 
               pt_prong0, pt_prong1, pt_prong2, pt_prong3, imp_par_prong0, imp_par_prong1, imp_par_prong2, imp_par_prong3,
               max_norm_d0d0exp, inv_mass_Ds, pt_Ds, y_Ds, d_len_Ds, d_len_xy_Ds, norm_dl_xy_Ds, cos_p_Ds, cos_p_xy_Ds,
