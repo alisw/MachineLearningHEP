@@ -50,6 +50,10 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.dlper_valevtroot = datap["validation"][self.mcordata]["dir"]
         self.d_valevtroot_mergedallp = datap["validation"][self.mcordata]["dirmerged"]
 
+        self.dlper_mcreweights = None
+        if mcordata == "mc":
+            self.dlper_mcreweights = datap["multi"][self.mcordata]["mcreweights"]
+
         #namefiles pkl
         self.v_var_binning = datap["var_binning"]
         self.n_reco = datap["files_names"]["namefile_reco"]
@@ -57,6 +61,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.n_evtorig = datap["files_names"]["namefile_evtorig"]
         self.n_evtvalroot = datap["files_names"]["namefile_evtvalroot"]
         self.n_gen = datap["files_names"]["namefile_gen"]
+        self.n_mcreweights = datap["files_names"]["namefile_mcweights"]
         self.lpt_recosk = [self.n_reco.replace(".pkl", "_%s%d_%d.pkl" % \
                           (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
                           for i in range(self.p_nptbins)]
@@ -95,6 +100,9 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
 
         self.lper_runlistrigger = datap["validation"]["runlisttrigger"]
 
+        self.lper_mcreweights = None
+        if self.mcordata == "mc":
+            self.lper_mcreweights = [os.path.join(direc, self.n_mcreweights) for direc in self.dlper_mcreweights]
 
         self.process_listsample = []
         for indexp in range(self.prodnumber):
@@ -109,7 +117,8 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
                                   self.dlper_reco_modappmerged[indexp],
                                   self.d_results[indexp],
                                   self.dlper_valevtroot[indexp], self.typean,
-                                  self.lper_runlistrigger[self.p_period[indexp]])
+                                  self.lper_runlistrigger[self.p_period[indexp]],
+                                  self.dlper_mcreweights[indexp] if self.mcordata == "mc" else None)
             self.process_listsample.append(myprocess)
 
         self.f_evtorigroot_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evtvalroot)

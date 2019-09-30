@@ -46,7 +46,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                  d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
-                 d_results, d_val, typean, runlisttrigger):
+                 d_results, d_val, typean, runlisttrigger, d_mcreweights):
         self.case = case
         self.typean = typean
         #directories
@@ -56,6 +56,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.d_pkl_ml = d_pkl_ml
         self.d_results = d_results
         self.d_val = d_val
+        self.d_mcreweights = d_mcreweights
         self.datap = datap
         self.mcordata = mcordata
         self.p_frac_merge = p_frac_merge
@@ -87,7 +88,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.n_gen = datap["files_names"]["namefile_gen"]
         self.n_filemass = datap["files_names"]["histofilename"]
         self.n_fileeff = datap["files_names"]["efffilename"]
-
+        self.n_mcreweights = datap["files_names"]["namefile_mcweights"]
 
         #selections
         self.s_reco_unp = datap["sel_reco_unp"]
@@ -433,6 +434,20 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     h_invmass_sig.Write()
                     h_invmass_refl.Write()
 
+    def get_reweighted_count(self, df):
+        count = 0
+        filename = os.path.join(self.d_mcreweights, self.n_mcreweights)
+        weight_file = TFile.Open(filename, "read")
+        try:
+            weights = weight_file.Get("Weights0")
+        except Exception as e:
+            print('failed opening file for MC weights:', e)
+        w = [weights.GetBinContent(weights.FindBin(v)) for v in df[self.v_var2_binning]]
+        val = sum(w)
+        err = math.sqrt(sum(map(lambda i: i * i, w)))
+        print('reweighting sum: {:.1f} +- {:.1f} -> {:.1f} +- {:.1f} (zeroes: {})'.format(len(df), math.sqrt(len(df)), val, err, w.count(0.)))
+        return val, err
+
     # pylint: disable=line-too-long
     def process_efficiency(self):
         out_file = TFile.Open(self.n_fileeff, "recreate")
@@ -489,21 +504,27 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 df_reco_presel_fd = df_mc_reco[df_mc_reco.ismcfd == 1]
                 df_reco_sel_fd = df_reco_presel_fd.query(self.l_selml[bin_id])
 
-                h_gen_pr.SetBinContent(bincounter + 1, len(df_gen_sel_pr))
-                h_gen_pr.SetBinError(bincounter + 1, math.sqrt(len(df_gen_sel_pr)))
-                h_presel_pr.SetBinContent(bincounter + 1, len(df_reco_presel_pr))
-                h_presel_pr.SetBinError(bincounter + 1, math.sqrt(len(df_reco_presel_pr)))
-                h_sel_pr.SetBinContent(bincounter + 1, len(df_reco_sel_pr))
-                h_sel_pr.SetBinError(bincounter + 1, math.sqrt(len(df_reco_sel_pr)))
+                val, err = self.get_reweighted_count(df_gen_sel_pr)
+                h_gen_pr.SetBinContent(bincounter + 1, val)
+                h_gen_pr.SetBinError(bincounter + 1, err)
+                val, err = self.get_reweighted_count(df_reco_presel_pr)
+                h_presel_pr.SetBinContent(bincounter + 1, val)
+                h_presel_pr.SetBinError(bincounter + 1, err)
+                val, err = self.get_reweighted_count(df_reco_sel_pr)
+                h_sel_pr.SetBinContent(bincounter + 1, val)
+                h_sel_pr.SetBinError(bincounter + 1, err)
                 #print("prompt efficiency tot ptbin=", bincounter, ", value = ",
                 #      len(df_reco_sel_pr)/len(df_gen_sel_pr))
 
-                h_gen_fd.SetBinContent(bincounter + 1, len(df_gen_sel_fd))
-                h_gen_fd.SetBinError(bincounter + 1, math.sqrt(len(df_gen_sel_fd)))
-                h_presel_fd.SetBinContent(bincounter + 1, len(df_reco_presel_fd))
-                h_presel_fd.SetBinError(bincounter + 1, math.sqrt(len(df_reco_presel_fd)))
-                h_sel_fd.SetBinContent(bincounter + 1, len(df_reco_sel_fd))
-                h_sel_fd.SetBinError(bincounter + 1, math.sqrt(len(df_reco_sel_fd)))
+                val, err = self.get_reweighted_count(df_gen_sel_fd)
+                h_gen_fd.SetBinContent(bincounter + 1, val)
+                h_gen_fd.SetBinError(bincounter + 1, err)
+                val, err = self.get_reweighted_count(df_reco_presel_fd)
+                h_presel_fd.SetBinContent(bincounter + 1, val)
+                h_presel_fd.SetBinError(bincounter + 1, err)
+                val, err = self.get_reweighted_count(df_reco_sel_fd)
+                h_sel_fd.SetBinContent(bincounter + 1, val)
+                h_sel_fd.SetBinError(bincounter + 1, err)
                 #print("fd efficiency tot ptbin=", bincounter, ", value = ",
                 #      len(df_reco_sel_fd)/len(df_gen_sel_fd))
                 bincounter = bincounter + 1
