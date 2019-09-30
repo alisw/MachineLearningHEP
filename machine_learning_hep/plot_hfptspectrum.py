@@ -27,7 +27,7 @@ from ROOT import TStyle, gPad
 # pylint: disable=import-error, no-name-in-module, unused-import
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-branches
-def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
+def plot_hfptspectrum_comb(case, arraytype):
 
     gROOT.SetStyle("Plain")
     gStyle.SetOptStat(0)
@@ -48,10 +48,7 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
 
     folder_MB_allperiods = data_param[case]["analysis"][arraytype[0]]["data"]["resultsallp"]
-    if isv0m is False:
-        folder_triggered = data_param[case]["analysis"][arraytype[1]]["data"]["results"][2]
-    else:
-        folder_triggered = data_param[case]["analysis"][arraytype[1]]["data"]["resultsallp"]
+    folder_triggered = data_param[case]["analysis"][arraytype[1]]["data"]["resultsallp"]
 
     binsmin = data_param[case]["analysis"][arraytype[0]]["sel_binmin2"]
     binsmax = data_param[case]["analysis"][arraytype[0]]["sel_binmax2"]
@@ -69,7 +66,7 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
 
     fileres_trig_allperiods = TFile.Open("%s/finalcross%s%smulttot.root" % \
                                     (folder_triggered, case, arraytype[1]))
-    fileres_trig = [TFile.Open("%s/finalcross%s%smult%d.root" % (folder_MB_allperiods, \
+    fileres_trig = [TFile.Open("%s/finalcross%s%smult%d.root" % (folder_triggered, \
                           case, arraytype[0], i)) for i in [0, 1, 2]]
 
     #Corrected yield plot
@@ -256,7 +253,7 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
         grfPromptHM.SetMarkerStyle(21)
         grfPromptHM.SetMarkerSize(0.5)
         grfPromptHM.Draw("ap")
-        pt.DrawTextNDC(0.15, 0.15, "%.1f < %s < %.1f (MB)" % \
+        pt.DrawTextNDC(0.15, 0.15, "%.1f < %s < %.1f (HM)" % \
                      (binsmin[imult], latexbin2var, binsmax[imult]))
         idx = idx + 1
 
@@ -265,7 +262,7 @@ def plot_hfptspectrum_comb(case, arraytype, isv0m=False):
 
 # pylint: disable=import-error, no-name-in-module, unused-import
 # pylint: disable=too-many-statements
-def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype, isv0m=False):
+def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype):
 
     gROOT.SetStyle("Plain")
     gStyle.SetOptStat(0)
@@ -292,16 +289,10 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype, isv0m=False):
         data_param_num[case_num]["analysis"][arraytype[0]]["data"]["resultsallp"]
     folder_den_allperiods = \
         data_param_den[case_den]["analysis"][arraytype[0]]["data"]["resultsallp"]
-    if isv0m is False:
-        folder_num_triggered = \
-            data_param_num[case_num]["analysis"][arraytype[1]]["data"]["results"][2]
-        folder_den_triggered = \
-            data_param_den[case_den]["analysis"][arraytype[1]]["data"]["results"][2]
-    else:
-        folder_num_triggered = \
-            data_param_num[case_num]["analysis"][arraytype[1]]["data"]["resultsallp"]
-        folder_den_triggered = \
-            data_param_den[case_den]["analysis"][arraytype[1]]["data"]["resultsallp"]
+    folder_num_triggered = \
+        data_param_num[case_num]["analysis"][arraytype[1]]["data"]["resultsallp"]
+    folder_den_triggered = \
+        data_param_den[case_den]["analysis"][arraytype[1]]["data"]["resultsallp"]
 
     binsmin_num = data_param_num[case_num]["analysis"][arraytype[0]]["sel_binmin2"]
     binsmax_num = data_param_num[case_num]["analysis"][arraytype[0]]["sel_binmax2"]
@@ -400,12 +391,12 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype, isv0m=False):
             (case_num, case_den, arraytype[0], arraytype[1]))
 
 plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_ntrkl", "SPDvspt"])
-plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_v0m", "V0mvspt"], True)
-plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_perc", "V0mvspt_perc_v0m"], True)
+plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_v0m", "V0mvspt"])
+plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
 plot_hfptspectrum_comb("D0pp", ["MBvspt_ntrkl", "SPDvspt"])
-plot_hfptspectrum_comb("D0pp", ["MBvspt_v0m", "V0mvspt"], True)
-plot_hfptspectrum_comb("D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"], True)
+plot_hfptspectrum_comb("D0pp", ["MBvspt_v0m", "V0mvspt"])
+plot_hfptspectrum_comb("D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
 
 plot_hfptspectrum_ratios_comb("LcpK0spp", "D0pp", ["MBvspt_ntrkl", "SPDvspt"])
-plot_hfptspectrum_ratios_comb("LcpK0spp", "D0pp", ["MBvspt_v0m", "V0mvspt"], True)
-plot_hfptspectrum_ratios_comb("LcpK0spp", "D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"], True)
+plot_hfptspectrum_ratios_comb("LcpK0spp", "D0pp", ["MBvspt_v0m", "V0mvspt"])
+plot_hfptspectrum_ratios_comb("LcpK0spp", "D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
