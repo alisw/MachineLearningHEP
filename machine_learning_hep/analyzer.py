@@ -1647,10 +1647,10 @@ class Analyzer:
 
     def makenormyields(self):
         gROOT.SetBatch(True)
-
+        print("SSSSSSSSSSSSSSS")
         self.loadstyle()
         #self.test_aliphysics()
-        filedataval = TFile.Open(self.f_evtnorm)
+        #filedataval = TFile.Open(self.f_evtnorm)
 
         fileouteff = "%s/efficiencies%s%s.root" % \
                       (self.d_resultsallpmc, self.case, self.typean)
@@ -1671,10 +1671,6 @@ class Analyzer:
             nameyield = "hyields%d" % imult
             fileoutcrossmult = "%s/finalcross%s%smult%d.root" % \
                 (self.d_resultsallpdata, self.case, self.typean, imult)
-            labelhisto = "hbit%svs%s" % (self.triggerbit, self.v_var2_binning)
-            hmult = filedataval.Get(labelhisto)
-            if not hmult:
-                continue
             norm = -1
             norm = self.calculate_norm(self.f_evtnorm, self.triggerbit, \
                          self.v_var2_binning, self.lvar2_binmin[imult], \
