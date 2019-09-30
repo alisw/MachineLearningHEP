@@ -1650,7 +1650,7 @@ class Analyzer:
         print("SSSSSSSSSSSSSSS")
         self.loadstyle()
         #self.test_aliphysics()
-        filedataval = TFile.Open(self.f_evtnorm)
+        #filedataval = TFile.Open(self.f_evtnorm)
 
         fileouteff = "%s/efficiencies%s%s.root" % \
                       (self.d_resultsallpmc, self.case, self.typean)

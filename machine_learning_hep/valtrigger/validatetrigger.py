@@ -52,8 +52,6 @@ def validatetrigger():
     files = ["resultsSPDvspt/finalcrossD0pptestSPDvsptmult3Weight.root",
              "resultsSPDvspt/finalcrossD0pptestSPDvsptmult3NoWeight.root",
              "resultsMBvspt_ntrkl/finalcrossD0pptestMBvspt_ntrklmult3.root"]
-
-    colors = [1, 2, 4]
     legends = ["triggered weight ntracklets 60-100",
                "triggered no weight ntracklets 60-100",
                "MB ntracklets 60-100"]
@@ -63,7 +61,7 @@ def validatetrigger():
     hempty.GetXaxis().SetTitleFont(42)
     hempty.GetYaxis().SetLabelFont(42)
     hempty.GetXaxis().SetLabelFont(42)
-    hempty.GetXaxis().SetRangeUser(1,30)
+    hempty.GetXaxis().SetRangeUser(1, 30)
     hempty.GetYaxis().SetTitle("Corrected yield (AU)")
     hempty.GetXaxis().SetTitle("p_{T} (GeV)")
     hempty.SetMinimum(1e5)
@@ -76,7 +74,6 @@ def validatetrigger():
     legyield.SetFillStyle(0)
     legyield.SetTextFont(42)
     legyield.SetTextSize(0.035)
-    histolist = []
     hempty.Draw()
     gPad.SetLogy()
     myfileWeight = TFile.Open(files[0], "read")
