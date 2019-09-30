@@ -612,6 +612,19 @@ LcpKpipp:
       prob_range: [0.5,0.6,0.7]
   
   validation:
+    runlisttrigger: 
+      LHC16pp:
+        INT7: nosel
+        HighMultSPD: nosel
+        HighMultV0: nosel
+      LHC17pp:
+        INT7: nosel
+        HighMultSPD: nosel
+        HighMultV0: nosel
+      LHC18pp:
+        INT7: nosel
+        HighMultSPD: HighMultSPD2018
+        HighMultV0: nosel
     data:
       dir: [/data/Derived/dataval_16, /data/Derived/dataval_17, /data/Derived/dataval_18] #list of periods
       dirmerged: /data/Derived/datavaltot

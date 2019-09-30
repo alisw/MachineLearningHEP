@@ -778,8 +778,8 @@ Dspp:
         HighMultSPD: HighMultSPD2018
         HighMultV0: nosel
     data:
-      dir: [/data/DerivedValStudy/dataval_16, /data/DerivedValStudy/dataval_17, /data/DerivedValStudy/dataval_18] #list of periods
-      dirmerged: /data/DerivedValStudy/datavaltot 
+      dir: [/data/DerivedVal/dataval_16, /data/DerivedVal/dataval_17, /data/DerivedVal/dataval_18] #list of periods
+      dirmerged: /data/DerivedVal/datavaltot 
     mc:
-      dir: [/data/DerivedValStudy/mcval_16, /data/DerivedValStudy/mcval_17, /data/DerivedValStudy/mcval_18] #list of periods
-      dirmerged: /data/DerivedValStudy/mcvaltot
+      dir: [/data/DerivedVal/mcval_16, /data/DerivedVal/mcval_17, /data/DerivedVal/mcval_18] #list of periods
+      dirmerged: /data/DerivedVal/mcvaltot
