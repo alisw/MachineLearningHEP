@@ -139,7 +139,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
 
     dirvalmc = data_param[case]["validation"]["mc"]["dir"]
     dirvaldata = data_param[case]["validation"]["data"]["dir"]
-
+    dirvalmcmerged = data_param[case]["validation"]["mc"]["dirmerged"]
+    dirvaldatamerged = data_param[case]["validation"]["data"]["dirmerged"]
     binminarray = data_param[case]["ml"]["binmin"]
     binmaxarray = data_param[case]["ml"]["binmax"]
     raahp = data_param[case]["ml"]["opt"]["raahp"]
@@ -212,9 +213,11 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
 
     if dovalhistodata is True:
         counter = counter + checkdirlist(dirvaldata)
+        counter = counter + checkdir(dirvaldatamerged)
 
     if dovalhistomc is True:
         counter = counter + checkdirlist(dirvalmc)
+        counter = counter + checkdir(dirvalmcmerged)
 
     if counter < 0:
         sys.exit()
