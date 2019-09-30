@@ -125,8 +125,9 @@ def createlist(prefolder, mylistfolder, namefile):
     listfiles = appendfiletolist(mylistfolder, namefile)
     listfiles = appendmainfoldertolist(prefolder, listfiles)
     return listfiles
+
 def seldf_singlevar(dataframe, var, minval, maxval):
-    dataframe = dataframe.loc[(dataframe[var] > minval) & (dataframe[var] < maxval)]
+    dataframe = dataframe.loc[(dataframe[var] >= minval) & (dataframe[var] < maxval)]
     return dataframe
 
 def split_df_sigbkg(dataframe_, var_signal_):
