@@ -247,6 +247,7 @@ LcpKpipp:
     cctype: 1 #kpp7
     sigmav0: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
     MBvspt_ntrkl:
+      useperiod: [1,1,1]
       normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0
@@ -324,6 +325,7 @@ LcpKpipp:
         bincount_sigma: [3.5, 4.0,4.5]
 
     MBvspt_v0m:
+      useperiod: [1,1,1]
       normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0
@@ -401,6 +403,7 @@ LcpKpipp:
         bincount_sigma: [3.5, 4.0,4.5]
 
     MBjetvspt:
+      useperiod: [1,1,1]
       normalizecross: true
       plotbin: [1]
       usesinglebineff: null
@@ -469,6 +472,7 @@ LcpKpipp:
       dodoublecross: false
   
     SPDvspt:
+      useperiod: [0,0,1]
       normalizecross: false
       plotbin: [0,1]
       usesinglebineff: 0
@@ -536,6 +540,7 @@ LcpKpipp:
 
 
     V0mvspt:
+      useperiod: [0,1,1]
       normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0
@@ -607,6 +612,19 @@ LcpKpipp:
       prob_range: [0.5,0.6,0.7]
   
   validation:
+    runlisttrigger: 
+      LHC16pp:
+        INT7: nosel
+        HighMultSPD: nosel
+        HighMultV0: nosel
+      LHC17pp:
+        INT7: nosel
+        HighMultSPD: nosel
+        HighMultV0: nosel
+      LHC18pp:
+        INT7: nosel
+        HighMultSPD: HighMultSPD2018
+        HighMultV0: nosel
     data:
       dir: [/data/Derived/dataval_16, /data/Derived/dataval_17, /data/Derived/dataval_18] #list of periods
       dirmerged: /data/Derived/datavaltot

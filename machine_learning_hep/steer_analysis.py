@@ -17,6 +17,7 @@ main script for doing data processing, machine learning and analysis
 """
 
 #import os
+import sys
 import subprocess
 import argparse
 from os.path import exists
@@ -140,7 +141,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     dirvaldata = data_param[case]["validation"]["data"]["dir"]
     dirvalmcmerged = data_param[case]["validation"]["mc"]["dirmerged"]
     dirvaldatamerged = data_param[case]["validation"]["data"]["dirmerged"]
-
     binminarray = data_param[case]["ml"]["binmin"]
     binmaxarray = data_param[case]["ml"]["binmax"]
     raahp = data_param[case]["ml"]["opt"]["raahp"]
@@ -220,7 +220,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         counter = counter + checkdir(dirvalmcmerged)
 
     if counter < 0:
-        exit()
+        sys.exit()
     # check and create directories
 
     if doconversionmc is True:
@@ -379,6 +379,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     if dofeeddown is True:
         myan.multi_feeddown()
     if docross is True:
+        myan.multi_preparenorm()
         if normalizecross is True:
             myan.multi_plotter()
         if normalizecross is False:

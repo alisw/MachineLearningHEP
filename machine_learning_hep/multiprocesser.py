@@ -93,6 +93,9 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.f_evtorig_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evtorig)
         self.f_evtvalroot_mergedallp = os.path.join(self.d_valevtroot_mergedallp, self.n_evtvalroot)
 
+        self.lper_runlistrigger = datap["validation"]["runlisttrigger"]
+
+
         self.process_listsample = []
         for indexp in range(self.prodnumber):
             myprocess = Processer(self.case, self.datap, self.run_param, self.mcordata,
@@ -105,16 +108,26 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
                                   self.dlper_reco_modapp[indexp],
                                   self.dlper_reco_modappmerged[indexp],
                                   self.d_results[indexp],
-                                  self.dlper_valevtroot[indexp], self.typean)
+                                  self.dlper_valevtroot[indexp], self.typean,
+                                  self.lper_runlistrigger[self.p_period[indexp]])
             self.process_listsample.append(myprocess)
 
         self.f_evtorigroot_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evtvalroot)
         self.n_filemass = datap["files_names"]["histofilename"]
         self.n_fileeff = datap["files_names"]["efffilename"]
-        self.lper_filemass = [os.path.join(direc, self.n_filemass) for direc in self.d_results]
-        self.lper_fileeff = [os.path.join(direc, self.n_fileeff) for direc in self.d_results]
         self.filemass_mergedall = os.path.join(self.d_resulsallp, self.n_filemass)
         self.fileeff_mergedall = os.path.join(self.d_resulsallp, self.n_fileeff)
+
+        self.p_useperiod = datap["analysis"][self.typean]["useperiod"]
+        self.lper_filemass = []
+        self.lper_fileeff = []
+        self.lper_normfiles = []
+        for i, direc in enumerate(self.d_results):
+            if self.p_useperiod[i] == 1:
+                self.lper_filemass.append(os.path.join(direc, self.n_filemass))
+                self.lper_fileeff.append(os.path.join(direc, self.n_fileeff))
+                self.lper_normfiles.append(os.path.join(self.dlper_valevtroot[i],
+                                                        "correctionsweights.root"))
 
     def multi_unpack_allperiods(self):
         for indexp in range(self.prodnumber):
@@ -149,19 +162,23 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
 
     def multi_histomass(self):
         for indexp in range(self.prodnumber):
-            self.process_listsample[indexp].process_histomass()
+            if self.p_useperiod[indexp] == 1:
+                self.process_listsample[indexp].process_histomass()
         mergerootfiles(self.lper_filemass, self.filemass_mergedall)
 
     def multi_efficiency(self):
         for indexp in range(self.prodnumber):
-            self.process_listsample[indexp].process_efficiency()
-            self.process_listsample[indexp].process_response()
-
+            if self.p_useperiod[indexp] == 1:
+                self.process_listsample[indexp].process_efficiency()
+                self.process_listsample[indexp].process_response()
         mergerootfiles(self.lper_fileeff, self.fileeff_mergedall)
 
     def multi_scancuts(self):
         for indexp in range(self.prodnumber):
             self.process_listsample[indexp].process_scancuts()
+
+    def multi_preparenorm(self):
+        mergerootfiles(self.lper_normfiles, self.f_evtvalroot_mergedallp)
 
     def multi_valevents(self):
         for indexp in range(self.prodnumber):

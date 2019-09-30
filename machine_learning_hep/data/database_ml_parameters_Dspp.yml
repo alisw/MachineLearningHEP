@@ -243,6 +243,7 @@ Dspp:
     cctype: 1 #kpp7
     sigmav0: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
     MBvspt_ntrkl:
+      useperiod: [1,1,1]
       normalizecross: false  
       plotbin: [1,1,1,0]
       usesinglebineff: 0
@@ -317,6 +318,7 @@ Dspp:
       dodoublecross: false
 
     MBvspt_v0m:
+      useperiod: [1,1,1]
       normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0
@@ -390,6 +392,7 @@ Dspp:
       dodoublecross: false
 
     MBvspt_perc:
+      useperiod: [1,1,1]
       normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0
@@ -463,6 +466,7 @@ Dspp:
       dodoublecross: false
 
     MBjetvspt:
+      useperiod: [1,1,1]
       normalizecross: true
       plotbin: [1]
       usesinglebineff: null
@@ -540,6 +544,7 @@ Dspp:
       dodoublecross: false
   
     SPDvspt:
+      useperiod: [0,0,1]
       normalizecross: false
       plotbin: [0,1]
       usesinglebineff: 0
@@ -612,6 +617,7 @@ Dspp:
 
 
     V0mvspt:
+      useperiod: [0,1,1]
       normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0
@@ -683,6 +689,7 @@ Dspp:
       dodoublecross: false
 
     V0mvspt_perc_v0m:
+      useperiod: [0,1,1]
       normalizecross: false
       plotbin: [0,0,0,1]
       usesinglebineff: 0
@@ -757,10 +764,22 @@ Dspp:
       prob_range: [0.5,0.6,0.7]
   
   validation:
+    runlisttrigger: 
+      LHC16pp:
+        INT7: nosel
+        HighMultSPD: nosel
+        HighMultV0: nosel
+      LHC17pp:
+        INT7: nosel
+        HighMultSPD: nosel
+        HighMultV0: nosel
+      LHC18pp:
+        INT7: nosel
+        HighMultSPD: HighMultSPD2018
+        HighMultV0: nosel
     data:
-      dir: [/data/DerivedVal/dataval_16, /data/DerivedVal/dataval_16_2, /data/DerivedVal/dataval_17, /data/DerivedVal/dataval_18] #list of periods
-      dirmerged: /data/DerivedVal/datavaltot
+      dir: [/data/DerivedVal/dataval_16, /data/DerivedVal/dataval_17, /data/DerivedVal/dataval_18] #list of periods
+      dirmerged: /data/DerivedVal/datavaltot 
     mc:
-      dir: [/data/DerivedVal/mcval_16, /data/DerivedVal/mcval_16_2, /data/DerivedVal/mcval_17, /data/DerivedVal/mcval_18] #list of periods
+      dir: [/data/DerivedVal/mcval_16, /data/DerivedVal/mcval_17, /data/DerivedVal/mcval_18] #list of periods
       dirmerged: /data/DerivedVal/mcvaltot
- 
