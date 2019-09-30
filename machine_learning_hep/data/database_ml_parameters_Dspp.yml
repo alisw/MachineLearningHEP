@@ -318,7 +318,7 @@ Dspp:
       dodoublecross: false
 
     MBvspt_v0m:
-      useperiod: [1,1,1]
+      useperiod: [0,1,1]
       normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0
@@ -392,7 +392,7 @@ Dspp:
       dodoublecross: false
 
     MBvspt_perc:
-      useperiod: [1,1,1]
+      useperiod: [0,1,1]
       normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0

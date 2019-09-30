@@ -396,7 +396,7 @@ LcpK0spp:
 
 
     MBvspt_v0m:
-      useperiod: [1,1,1]
+      useperiod: [0,1,1]
       normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0
@@ -464,7 +464,7 @@ LcpK0spp:
       dodoublecross: false
 
     MBvspt_perc:
-      useperiod: [1,1,1]
+      useperiod: [0,1,1]
       normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0

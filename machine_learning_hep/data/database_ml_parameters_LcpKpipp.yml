@@ -325,7 +325,7 @@ LcpKpipp:
         bincount_sigma: [3.5, 4.0,4.5]
 
     MBvspt_v0m:
-      useperiod: [1,1,1]
+      useperiod: [0,1,1]
       normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0
