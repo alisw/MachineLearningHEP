@@ -300,7 +300,6 @@ class Analyzer:
                                (self.v_var_binning, self.lpt_finbinmin[ipt],
                                 self.lpt_finbinmax[ipt],
                                 self.v_var2_binning, mult_int_min, mult_int_max)
-                h_invmass_init = lfile.Get("hmass" + suffix)
                 h_invmass_mc_init = lfile_mc.Get("hmass" + suffix)
 
                 h_mc_init_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_mc_init,
@@ -348,6 +347,12 @@ class Analyzer:
                 mass_fitter_mc_init[ipt].DrawHere(gPad, self.p_nsigma_signal)
 
                 # Now, try also for data
+                histname = "hmass"
+                if self.apply_weights is True:
+                    histname = "h_invmass_weight"
+                    self.logger.info("*********** I AM USING WEIGHTED HISTOGRAMS")
+                # Weighted histograms onnly for data at the moment
+                h_invmass_init = lfile.Get(histname + suffix)
                 h_data_init_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_init,
                                                                     self.p_rebin[ipt], -1)
                 h_data_init_rebin = TH1F()
@@ -426,7 +431,8 @@ class Analyzer:
                 histname = "hmass"
                 if self.apply_weights is True:
                     histname = "h_invmass_weight"
-                    print("*********** I AM USING WEIGHTED HISTOGRAMS")
+                    self.logger.info("*********** I AM USING WEIGHTED HISTOGRAMS")
+                # Weighted histograms onnly for data at the moment
                 h_invmass = lfile.Get(histname + suffix)
                 h_invmass_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass, self.p_rebin[ipt], -1)
                 h_invmass_rebin = TH1F()
@@ -485,9 +491,13 @@ class Analyzer:
                             mass_fitter[ifit].SetTemplateReflections(h_invmass_refl, "1gaus",
                                                                      self.p_massmin[ipt],
                                                                      self.p_massmax[ipt])
-                            r_over_s = h_invmass_mc_rebin.Integral()
+                            r_over_s = h_invmass_mc_rebin.Integral(
+                                h_invmass_mc_rebin.FindBin(self.p_massmin[ipt]),
+                                h_invmass_mc_rebin.FindBin(self.p_massmax[ipt]))
                             if r_over_s > 0.:
-                                r_over_s = h_invmass_refl.Integral() / r_over_s
+                                r_over_s = h_invmass_refl.Integral(
+                                    h_invmass_refl.FindBin(self.p_massmin[ipt]),
+                                    h_invmass_refl.FindBin(self.p_massmax[ipt])) / r_over_s
                                 mass_fitter[ifit].SetFixReflOverS(r_over_s)
                         else:
                             self.logger.warning("Reflection requested but template empty")
@@ -522,7 +532,7 @@ class Analyzer:
                 mass_fitter[ifit].DrawHere(gPad, self.p_nsigma_signal)
 
                 fit_dir = fileout.mkdir(suffix)
-                fit_dir.WriteObject(mass_fitter[ifit], "fitter%d" % (ipt))
+                fit_dir.WriteObject(mass_fitter[ifit], "fitter")
 
                 if success == 1:
                     # In case of success == 2, no signal was found, in case of 0, fit failed
