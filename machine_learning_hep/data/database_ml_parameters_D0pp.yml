@@ -238,6 +238,7 @@ D0pp:
     cctype: 1 #kpp7
     sigmav0: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
     MBvspt_ntrkl:
+      useperiod: [1,1,1]
       normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0
@@ -318,6 +319,7 @@ D0pp:
         bincount_sigma: [3.5, 4.0,4.5]
 
     MBvspt_v0m:
+      useperiod: [1,1,1]
       normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0
@@ -398,6 +400,7 @@ D0pp:
         bincount_sigma: [3.5, 4.0,4.5]
 
     MBvspt_perc:
+      useperiod: [1,1,1]
       normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: 0
@@ -470,6 +473,7 @@ D0pp:
       include_reflection: True
 
     MBjetvspt:
+      useperiod: [1,1,1]
       normalizecross: true
       plotbin: [1]
       usesinglebineff: null
@@ -541,6 +545,7 @@ D0pp:
       include_reflection: True
 
     SPDvspt:
+      useperiod: [0,0,1]
       normalizecross: false
       plotbin: [0,0,0,1]
       usesinglebineff: 0
@@ -609,6 +614,7 @@ D0pp:
 
 
     V0mvspt:
+      useperiod: [0,1,1]
       normalizecross: false
       plotbin: [0,0,0,1]
       usesinglebineff: 0
@@ -678,6 +684,7 @@ D0pp:
       include_reflection: True
 
     V0mvspt_perc_v0m:
+      useperiod: [0,1,1]
       normalizecross: false
       plotbin: [0,0,0,1]
       usesinglebineff: 0
