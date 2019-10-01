@@ -17,7 +17,6 @@ main script for doing final stage analysis
 """
 # pylint: disable=too-many-lines
 import os
-from math import sqrt
 # pylint: disable=unused-wildcard-import, wildcard-import
 from array import *
 from subprocess import Popen
@@ -759,7 +758,7 @@ class Analyzer:
                 low_lim_steps = array("d", self.p_fit_ranges_low_syst)
                 up_lim_steps = array("d", self.p_fit_ranges_up_syst)
 
-                multi_trial.ConfigureRebinSteps(len(self.p_rebin_syst), rebin_steps )
+                multi_trial.ConfigureRebinSteps(len(self.p_rebin_syst), rebin_steps)
                 multi_trial.ConfigureLowLimFitSteps(len(self.p_fit_ranges_low_syst), low_lim_steps)
                 multi_trial.ConfigureUpLimFitSteps(len(self.p_fit_ranges_up_syst), up_lim_steps)
                 multi_trial.SetSaveBkgValue()
@@ -818,7 +817,12 @@ class Analyzer:
 
                 mt_filename = self.make_file_path(self.d_resultsallpdata, "multi_trial",
                                                   "root", None, suffix_write)
-                PlotMultiTrial(mt_filename, rawYield, mean_fit, sigma_fit, chisquare_fit, self.p_max_chisquare_ndf_syst, self.d_resultsallpdata, suffix)
+                title = f"{self.lpt_finbinmin[ipt]} GeV/c < {self.v_var_binning} < " \
+                        f"{self.lpt_finbinmax[ipt]} GeV/c, {self.lvar2_binmin[imult]} < " \
+                        f"{self.v_var2_binning} < {self.lvar2_binmax[imult]}"
+                PlotMultiTrial(mt_filename, rawYield, mean_fit, sigma_fit, chisquare_fit,
+                               self.p_max_chisquare_ndf_syst, self.d_resultsallpdata, suffix,
+                               title)
 
     def efficiency(self):
         self.loadstyle()

@@ -315,6 +315,7 @@ D0pp:
         massmin: [1.70, 1.73, 1.75, 1.78]
         massmax: [2.05, 2.02, 1.99, 1.96]
         bincount_sigma: [3.5, 4.0,4.5]
+        bkg_funcs: [Pol2, kExpo]
 
     MBvspt_v0m:
       useperiod: [0,1,1]

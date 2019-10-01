@@ -315,6 +315,15 @@ Dspp:
       nevents: null
       dodoublecross: false
 
+      systematics:
+        # For now don't do these things per pT bin
+        max_chisquare_ndf: 2.
+        rebin: [4,6,8]
+        massmin: [1.75, 1.78, 1.81, 1.84]
+        massmax: [2.15, 2.12, 2.09, 2.06]
+        bincount_sigma: [3.5, 4.0,4.5]
+        bkg_funcs: [kExpo, Pol2]
+
     MBvspt_v0m:
       useperiod: [0,1,1]
       normalizecross: false

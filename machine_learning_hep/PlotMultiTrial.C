@@ -1,5 +1,5 @@
 
-void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, double sigmaRef, double chi2Ref, double chi2Cut, const char* saveDir, const char* suffix) {
+void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, double sigmaRef, double chi2Ref, double chi2Cut, const char* saveDir, const char* suffix, const char* title) {
 
     // Extract the trials
     TString esesel(saveDir);
@@ -293,7 +293,7 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     hChi2All6->GetYaxis()->SetTitleOffset(1.7);
     hChi2All6->Draw("same");
     call->cd(4);
-    hRawYieldAll->SetTitle(Form("p_{T} bin SOMETHING"));
+    hRawYieldAll->SetTitle(title);
     gPad->SetLeftMargin(0.13);
     gPad->SetRightMargin(0.06);
     Double_t newmax=1.25*(hRawYieldAll->GetMaximum()+hRawYieldAll->GetBinError(1));
@@ -325,7 +325,7 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     call->cd(5);
     gPad->SetLeftMargin(0.14);
     gPad->SetRightMargin(0.06);
-    hRawYieldDistAll->SetTitle(Form("p_{T} bin SOMETHING"));
+    hRawYieldDistAll->SetTitle(title);
     hRawYieldDistAll->Draw();
     hRawYieldDistAll->GetXaxis()->SetRangeUser(minYield*0.8,maxYield*1.2);
     hRawYieldDistAllBC0->Draw("sameshist");
