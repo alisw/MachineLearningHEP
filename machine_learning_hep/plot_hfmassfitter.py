@@ -1,0 +1,310 @@
+#############################################################################
+##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
+## This program is free software: you can redistribute it and/or modify it ##
+##  under the terms of the GNU General Public License as published by the  ##
+## Free Software Foundation, either version 3 of the License, or (at your  ##
+## option) any later version. This program is distributed in the hope that ##
+##  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  ##
+##     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    ##
+##           See the GNU General Public License for more details.          ##
+##    You should have received a copy of the GNU General Public License    ##
+##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
+#############################################################################
+
+"""
+main script for doing final stage analysis
+"""
+import os
+# pylint: disable=unused-wildcard-import, wildcard-import
+from array import *
+# pylint: disable=import-error, no-name-in-module, unused-import
+import yaml
+from ROOT import TFile, TH1F, TCanvas
+from ROOT import gStyle, TLegend, TLatex
+from ROOT import Double
+from ROOT import gROOT, kRed, kGreen, kBlack, kBlue
+from ROOT import TStyle, gPad
+
+# pylint: disable=import-error, no-name-in-module, unused-import
+# pylint: disable=too-many-statements
+# pylint: disable=too-many-branches
+# pylint: disable=too-many-locals
+def plot_hfmassfitter(case, arraytype):
+
+    gROOT.SetStyle("Plain")
+    gStyle.SetOptStat(0)
+    gStyle.SetOptStat(0000)
+    gStyle.SetPalette(0)
+    gStyle.SetCanvasColor(0)
+    gStyle.SetFrameFillColor(0)
+    gStyle.SetOptTitle(0)
+    gStyle.SetTitleOffset(1.15, "y")
+    gStyle.SetTitleFont(42, "xy")
+    gStyle.SetLabelFont(42, "xy")
+    gStyle.SetTitleSize(0.042, "xy")
+    gStyle.SetLabelSize(0.035, "xy")
+    gStyle.SetPadTickX(1)
+    gStyle.SetPadTickY(1)
+
+    with open("data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
+        data_param = yaml.load(param_config, Loader=yaml.FullLoader)
+
+    v_var_binning = data_param[case]["var_binning"]
+    lpt_finbinminMB = data_param[case]["analysis"][arraytype[0]]["sel_an_binmin"]
+    lpt_finbinmaxMB = data_param[case]["analysis"][arraytype[0]]["sel_an_binmax"]
+    bin_matchingMB = data_param[case]["analysis"][arraytype[0]]["binning_matching"]
+    lpt_finbinminHM = data_param[case]["analysis"][arraytype[1]]["sel_an_binmin"]
+    lpt_finbinmaxHM = data_param[case]["analysis"][arraytype[1]]["sel_an_binmax"]
+    bin_matchingHM = data_param[case]["analysis"][arraytype[1]]["binning_matching"]
+    lpt_probcutfin = data_param[case]["mlapplication"]["probcutoptimal"]
+    ptranges = lpt_finbinminMB.copy()
+    ptranges.append(lpt_finbinmaxMB[-1])
+    p_nptbins = len(lpt_finbinminMB)
+
+    lvar2_binminMB = data_param[case]["analysis"][arraytype[0]]["sel_binmin2"]
+    lvar2_binmaxMB = data_param[case]["analysis"][arraytype[0]]["sel_binmax2"]
+    v_var2_binningMB = data_param[case]["analysis"][arraytype[0]]["var_binning2"]
+    lvar2_binminHM = data_param[case]["analysis"][arraytype[1]]["sel_binmin2"]
+    lvar2_binmaxHM = data_param[case]["analysis"][arraytype[1]]["sel_binmax2"]
+    v_var2_binningHM = data_param[case]["analysis"][arraytype[1]]["var_binning2"]
+    p_nbin2 = len(lvar2_binminMB)
+
+    name = data_param[case]["analysis"][arraytype[0]]["latexnamemeson"]
+    latexbin2var = data_param[case]["analysis"][arraytype[0]]["latexbin2var"]
+    plotbinMB = data_param[case]["analysis"][arraytype[0]]["plotbin"]
+    plotbinHM = data_param[case]["analysis"][arraytype[1]]["plotbin"]
+
+    d_resultsdataMB = data_param[case]["analysis"][arraytype[0]]["data"]["resultsallp"]
+    d_resultsdataHM = data_param[case]["analysis"][arraytype[1]]["data"]["resultsallp"]
+    yields_filename = "yields"
+
+
+    signfhistos = [TH1F("hsignf%d" % (imult), "", \
+                                    p_nptbins, array("d", ptranges)) \
+                                    for imult in range(p_nbin2)]
+    meanhistos = [TH1F("hmean%d" % (imult), "", \
+                                    p_nptbins, array("d", ptranges)) \
+                                    for imult in range(p_nbin2)]
+    sigmahistos = [TH1F("hsigma%d" % (imult), "", \
+                                    p_nptbins, array("d", ptranges)) \
+                                    for imult in range(p_nbin2)]
+
+    for imult, iplot in enumerate(plotbinMB):
+        if not iplot:
+            continue
+        func_filename = make_file_path(d_resultsdataMB, yields_filename, "root",
+                                       None, [case, arraytype[0]])
+        func_file = TFile.Open(func_filename, "READ")
+
+        for ipt in range(p_nptbins):
+            bin_id = bin_matchingMB[ipt]
+            suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
+                         (v_var_binning, lpt_finbinminMB[ipt],
+                          lpt_finbinmaxMB[ipt], lpt_probcutfin[bin_id],
+                          v_var2_binningMB, lvar2_binminMB[imult],
+                          lvar2_binmaxMB[imult])
+            load_dir = func_file.GetDirectory(suffix)
+            mass_fitter = load_dir.Get("fitter")
+            sign = 0
+            esign = 0
+            rootsign = Double(sign)
+            rootesign = Double(esign)
+            mass_fitter.Significance(3, rootsign, rootesign)
+            signfhistos[imult].SetBinContent(ipt + 1, rootsign)
+            signfhistos[imult].SetBinError(ipt + 1, rootesign)
+            mean = mass_fitter.GetMean()
+            emean = mass_fitter.GetMeanUncertainty()
+            meanhistos[imult].SetBinContent(ipt + 1, mean)
+            meanhistos[imult].SetBinError(ipt + 1, emean)
+            sigma = mass_fitter.GetSigma()
+            esigma = mass_fitter.GetSigmaUncertainty()
+            sigmahistos[imult].SetBinContent(ipt + 1, sigma)
+            sigmahistos[imult].SetBinError(ipt + 1, esigma)
+
+    for imult, iplot in enumerate(plotbinHM):
+        if not iplot:
+            continue
+        func_filename = make_file_path(d_resultsdataHM, yields_filename, "root",
+                                       None, [case, arraytype[1]])
+        func_file = TFile.Open(func_filename, "READ")
+
+        for ipt in range(p_nptbins):
+            bin_id = bin_matchingHM[ipt]
+            suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
+                         (v_var_binning, lpt_finbinminHM[ipt],
+                          lpt_finbinmaxHM[ipt], lpt_probcutfin[bin_id],
+                          v_var2_binningHM, lvar2_binminHM[imult],
+                          lvar2_binmaxHM[imult])
+            load_dir = func_file.GetDirectory(suffix)
+            mass_fitter = load_dir.Get("fitter")
+            sign = 0
+            esign = 0
+            rootsign = Double(sign)
+            rootesign = Double(esign)
+            mass_fitter.Significance(3, rootsign, rootesign)
+            signfhistos[imult].SetBinContent(ipt + 1, rootsign)
+            signfhistos[imult].SetBinError(ipt + 1, rootesign)
+            mean = mass_fitter.GetMean()
+            emean = mass_fitter.GetMeanUncertainty()
+            meanhistos[imult].SetBinContent(ipt + 1, mean)
+            meanhistos[imult].SetBinError(ipt + 1, emean)
+            sigma = mass_fitter.GetSigma()
+            esigma = mass_fitter.GetSigmaUncertainty()
+            sigmahistos[imult].SetBinContent(ipt + 1, sigma)
+            sigmahistos[imult].SetBinError(ipt + 1, esigma)
+
+    #Significance fit plot
+    csign = TCanvas('cSign', 'The Fit Canvas')
+    csign.SetCanvasSize(1500, 1500)
+    csign.SetWindowSize(500, 500)
+    maxplot = 25
+    if case == "D0pp":
+        maxplot = 120
+    if case == "Dspp":
+        maxplot = 40
+    csign.cd(1).DrawFrame(0, 0, 30, maxplot, ";#it{p}_{T} (GeV/#it{c});Significance %s" % name)
+
+    leg = TLegend(.25, .65, .65, .85)
+    leg.SetBorderSize(0)
+    leg.SetFillColor(0)
+    leg.SetFillStyle(0)
+    leg.SetTextFont(42)
+    leg.SetTextSize(0.035)
+
+    colors = [kBlack, kRed, kGreen+2, kBlue]
+    idx = 0
+    for imult, iplot in enumerate(plotbinMB):
+        if not iplot:
+            continue
+        signfhistos[idx].SetLineColor(colors[idx])
+        signfhistos[idx].SetMarkerColor(colors[idx])
+        signfhistos[idx].SetMarkerStyle(21)
+        signfhistos[idx].Draw("same")
+        legyieldstring = "%.1f #leq %s < %.1f (MB)" % \
+                    (lvar2_binminMB[imult], latexbin2var, lvar2_binmaxMB[imult])
+        leg.AddEntry(signfhistos[idx], legyieldstring, "LEP")
+        idx = idx + 1
+
+    for imult, iplot in enumerate(plotbinHM):
+        if not iplot:
+            continue
+        signfhistos[idx].SetLineColor(colors[idx])
+        signfhistos[idx].SetMarkerColor(colors[idx])
+        signfhistos[idx].SetMarkerStyle(21)
+        signfhistos[idx].Draw("same")
+        legyieldstring = "%.1f #leq %s < %.1f (HM)" % \
+                    (lvar2_binminHM[imult], latexbin2var, lvar2_binmaxHM[imult])
+        leg.AddEntry(signfhistos[idx], legyieldstring, "LEP")
+        idx = idx + 1
+    leg.Draw()
+    csign.SaveAs("MassFit_Signf_%s_%scombined%s.eps" % (case, arraytype[0], arraytype[1]))
+
+
+    #Mean fit plot
+    cmean = TCanvas('cMean', 'The Fit Canvas')
+    cmean.SetCanvasSize(1500, 1500)
+    cmean.SetWindowSize(500, 500)
+    minplot = 2.27
+    maxplot = 2.31
+    if case == "D0pp":
+        minplot = 1.85
+        maxplot = 1.89
+    if case == "Dspp":
+        minplot = 1.95
+        maxplot = 1.99
+    cmean.cd(1).DrawFrame(0, minplot, 30, maxplot, ";#it{p}_{T} (GeV/#it{c});Mean %s" % name)
+
+    idx = 0
+    for imult, iplot in enumerate(plotbinMB):
+        if not iplot:
+            continue
+        meanhistos[idx].SetLineColor(colors[idx])
+        meanhistos[idx].SetMarkerColor(colors[idx])
+        meanhistos[idx].SetMarkerStyle(21)
+        meanhistos[idx].Draw("same")
+        legyieldstring = "%.1f #leq %s < %.1f (MB)" % \
+                    (lvar2_binminMB[imult], latexbin2var, lvar2_binmaxMB[imult])
+        idx = idx + 1
+
+    for imult, iplot in enumerate(plotbinHM):
+        if not iplot:
+            continue
+        meanhistos[idx].SetLineColor(colors[idx])
+        meanhistos[idx].SetMarkerColor(colors[idx])
+        meanhistos[idx].SetMarkerStyle(21)
+        meanhistos[idx].Draw("same")
+        legyieldstring = "%.1f #leq %s < %.1f (HM)" % \
+                    (lvar2_binminHM[imult], latexbin2var, lvar2_binmaxHM[imult])
+        idx = idx + 1
+    leg.Draw()
+    cmean.SaveAs("MassFit_Mean_%s_%scombined%s.eps" % (case, arraytype[0], arraytype[1]))
+
+
+    #Sigma fit plot
+    csigm = TCanvas('cMean', 'The Fit Canvas')
+    csigm.SetCanvasSize(1500, 1500)
+    csigm.SetWindowSize(500, 500)
+    maxplot = 0.03
+    if case == "D0pp":
+        maxplot = 0.04
+    csigm.cd(1).DrawFrame(0, 0, 30, maxplot, ";#it{p}_{T} (GeV/#it{c});Width %s" % name)
+
+    idx = 0
+    for imult, iplot in enumerate(plotbinMB):
+        if not iplot:
+            continue
+        sigmahistos[idx].SetLineColor(colors[idx])
+        sigmahistos[idx].SetMarkerColor(colors[idx])
+        sigmahistos[idx].SetMarkerStyle(21)
+        sigmahistos[idx].Draw("same")
+        legyieldstring = "%.1f #leq %s < %.1f (MB)" % \
+                    (lvar2_binminMB[imult], latexbin2var, lvar2_binmaxMB[imult])
+        idx = idx + 1
+
+    for imult, iplot in enumerate(plotbinHM):
+        if not iplot:
+            continue
+        sigmahistos[idx].SetLineColor(colors[idx])
+        sigmahistos[idx].SetMarkerColor(colors[idx])
+        sigmahistos[idx].SetMarkerStyle(21)
+        sigmahistos[idx].Draw("same")
+        legyieldstring = "%.1f #leq %s < %.1f (HM)" % \
+                    (lvar2_binminHM[imult], latexbin2var, lvar2_binmaxHM[imult])
+        idx = idx + 1
+    leg.Draw()
+    csigm.SaveAs("MassFit_Sigma_%s_%scombined%s.eps" % (case, arraytype[0], arraytype[1]))
+
+def make_pre_suffix(args):
+    """
+    Construct a common file suffix from args
+    """
+    try:
+        _ = iter(args)
+    except TypeError:
+        args = [args]
+    else:
+        if isinstance(args, str):
+            args = [args]
+    return "_".join(args)
+
+def make_file_path(directory, filename, extension, prefix=None, suffix=None):
+    if prefix is not None:
+        filename = make_pre_suffix(prefix) + "_" + filename
+    if suffix is not None:
+        filename = filename + "_" + make_pre_suffix(suffix)
+    extension = extension.replace(".", "")
+    return os.path.join(directory, filename + "." + extension)
+
+plot_hfmassfitter("LcpK0spp", ["MBvspt_ntrkl", "SPDvspt"])
+plot_hfmassfitter("LcpK0spp", ["MBvspt_v0m", "V0mvspt"])
+plot_hfmassfitter("LcpK0spp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
+plot_hfmassfitter("D0pp", ["MBvspt_ntrkl", "SPDvspt"])
+plot_hfmassfitter("D0pp", ["MBvspt_v0m", "V0mvspt"])
+plot_hfmassfitter("D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
+plot_hfmassfitter("Dspp", ["MBvspt_ntrkl", "SPDvspt"])
+plot_hfmassfitter("Dspp", ["MBvspt_v0m", "V0mvspt"])
+plot_hfmassfitter("Dspp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
+#plot_hfmassfitter("LcpKpipp", ["MBvspt_ntrkl", "SPDvspt"])
+#plot_hfmassfitter("LcpKpipp", ["MBvspt_v0m", "V0mvspt"])
+#plot_hfmassfitter("LcpKpipp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
