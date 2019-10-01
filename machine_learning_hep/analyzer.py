@@ -531,8 +531,11 @@ class Analyzer:
                 canvas_data[imult].cd(ipt+1)
                 mass_fitter[ifit].DrawHere(gPad, self.p_nsigma_signal)
 
-                fit_dir = fileout.mkdir(suffix)
-                fit_dir.WriteObject(mass_fitter[ifit], "fitter")
+                # Write fitters to file
+                fit_root_dir = fileout.mkdir(suffix)
+                fit_root_dir.WriteObject(mass_fitter_mc_init[ipt], "fitter_mc_init")
+                fit_root_dir.WriteObject(mass_fitter_data_init[ipt], "fitter_data_init")
+                fit_root_dir.WriteObject(mass_fitter[ifit], "fitter")
 
                 if success == 1:
                     # In case of success == 2, no signal was found, in case of 0, fit failed
