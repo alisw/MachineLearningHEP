@@ -26,6 +26,7 @@ import pandas as pd
 import numpy as np
 from root_numpy import fill_hist, evaluate # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TH1F, TH2F, TH3F # pylint: disable=import-error, no-name-in-module
+from ROOT import RooUnfoldResponse
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge_method
@@ -597,11 +598,20 @@ class Processer: # pylint: disable=too-many-instance-attributes
             n_bins_ptc, bins_ptc, n_bins_ptjet, bins_ptjet, n_bins_z, bins_z)
         fill_hist(his_ptc_ptjet_z_fd, df_ptc_ptjet_z_fd)
 
+        # Create response matrix for feed-down smearing
+        # x axis = z, y axis = pt_jet
+        his_resp_rec = TH2F("his_resp_rec", "his_resp_rec", n_bins_z, bins_z, n_bins_ptjet, bins_ptjet)
+        his_resp_gen = TH2F("his_resp_gen", "his_resp_gen", n_bins_z, bins_z, n_bins_ptjet, bins_ptjet)
+        resp_z = RooUnfoldResponse(his_resp_rec, his_resp_gen)
+        for row in df_rec.itertuples():
+            resp_z.Fill(row.z, row.pt_jet, row.z_gen, row.pt_gen_jet)
+
         out_file.cd()
         his_resp_jet_fd.Write()
         his_ptc_ptjet_fd.Write()
         his_ptc_ptjet_z_fd.Write()
         his_njets.Write()
+        resp_z.Write()
         out_file.Close()
 
     # pylint: disable=too-many-locals
