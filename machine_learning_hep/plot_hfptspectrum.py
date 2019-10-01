@@ -62,12 +62,12 @@ def plot_hfptspectrum_comb(case, arraytype):
     fileres_MB_allperiods = TFile.Open("%s/finalcross%s%smulttot.root" % \
                                  (folder_MB_allperiods, case, arraytype[0]))
     fileres_MB = [TFile.Open("%s/finalcross%s%smult%d.root" % (folder_MB_allperiods, \
-                        case, arraytype[0], i)) for i in [0, 1, 2]]
+                        case, arraytype[0], i)) for i in [0, 1, 2, 3]]
 
     fileres_trig_allperiods = TFile.Open("%s/finalcross%s%smulttot.root" % \
                                     (folder_triggered, case, arraytype[1]))
     fileres_trig = [TFile.Open("%s/finalcross%s%smult%d.root" % (folder_triggered, \
-                          case, arraytype[0], i)) for i in [0, 1, 2]]
+                          case, arraytype[1], i)) for i in [0, 1, 2, 3]]
 
     #Corrected yield plot
     ccross = TCanvas('cCross', 'The Fit Canvas')
@@ -115,26 +115,26 @@ def plot_hfptspectrum_comb(case, arraytype):
             legyield.AddEntry(hyieldHM, legyieldstring, "LEP")
         legyield.Draw()
 
-        ccross.SaveAs("ComparisonCorrYields_%s_%scombined%s.eps" % \
+        ccross.SaveAs("PtSpec_ComparisonCorrYields_%s_%scombined%s.eps" % \
                   (case, arraytype[0], arraytype[1]))
     else:
         print("---Warning: Issue with merged files. Corr. yield plot skipped for %s (%s, %s)---" % \
                  (case, arraytype[0], arraytype[1]))
 
     idx = 0
-    for iplot in plotbinMB:
+    for imult, iplot in enumerate(plotbinMB):
         if not iplot:
             continue
-        if not fileres_MB[idx]:
+        if not fileres_MB[imult]:
             print("---Warning: Issue with MB file. Eff and FD plot skipped for %s (%s, %s)---" % \
                    (case, arraytype[0], arraytype[1]))
             return
         idx = idx + 1
     idx = 0
-    for iplot in plotbinHM:
+    for imult, iplot in enumerate(plotbinHM):
         if not iplot:
             continue
-        if not fileres_trig[idx]:
+        if not fileres_trig[imult]:
             print("---Warning: Issue with HM file. Eff and FD plot skipped for %s (%s, %s)---" % \
                    (case, arraytype[0], arraytype[1]))
             return
@@ -143,7 +143,8 @@ def plot_hfptspectrum_comb(case, arraytype):
     #Efficiency plot
     cEff = TCanvas('cEff', '', 800, 400)
     cEff.Divide(2)
-    cEff.cd(1).DrawFrame(0, 1.e-4, 25, 1., ';#it{p}_{T} (GeV/#it{c});Prompt (Acc #times eff)')
+    cEff.cd(1).DrawFrame(0, 1.e-4, 25, 1., \
+                         ";#it{p}_{T} (GeV/#it{c});Prompt %s (Acc #times eff)" % name)
     cEff.cd(1).SetLogy()
 
     legeff = TLegend(.3, .15, .7, .35)
@@ -158,7 +159,7 @@ def plot_hfptspectrum_comb(case, arraytype):
     for imult, iplot in enumerate(plotbinMB):
         if not iplot:
             continue
-        hEffpr = fileres_MB[idx].Get("hDirectEffpt")
+        hEffpr = fileres_MB[imult].Get("hDirectEffpt")
         hEffpr.SetLineColor(colors[imult])
         hEffpr.SetLineStyle(lstyle[imult])
         hEffpr.SetMarkerColor(colors[imult])
@@ -174,7 +175,7 @@ def plot_hfptspectrum_comb(case, arraytype):
     for imult, iplot in enumerate(plotbinHM):
         if not iplot:
             continue
-        hEffprHM = fileres_trig[idx].Get("hDirectEffpt")
+        hEffprHM = fileres_trig[imult].Get("hDirectEffpt")
         hEffprHM.SetLineColor(colors[imult])
         hEffprHM.SetLineStyle(lstyle[imult])
         hEffprHM.SetMarkerColor(colors[imult])
@@ -187,14 +188,15 @@ def plot_hfptspectrum_comb(case, arraytype):
         idx = idx + 1
     legeff.Draw()
 
-    cEff.cd(2).DrawFrame(0, 1.e-4, 25, 1., ';#it{p}_{T} (GeV/#it{c});Feed-down (Acc #times eff)')
+    cEff.cd(2).DrawFrame(0, 1.e-4, 25, 1., \
+                         ";#it{p}_{T} (GeV/#it{c});Feed-down %s (Acc #times eff)" % name)
     cEff.cd(2).SetLogy()
 
     idx = 0
     for imult, iplot in enumerate(plotbinMB):
         if not iplot:
             continue
-        hEfffd = fileres_MB[idx].Get("hFeedDownEffpt")
+        hEfffd = fileres_MB[imult].Get("hFeedDownEffpt")
         hEfffd.SetLineColor(colors[imult])
         hEfffd.SetLineStyle(lstyle[imult])
         hEfffd.SetMarkerColor(colors[imult])
@@ -208,7 +210,7 @@ def plot_hfptspectrum_comb(case, arraytype):
         if not iplot:
             continue
         gPad.SetLogy()
-        hEfffdHM = fileres_trig[idx].Get("hFeedDownEffpt")
+        hEfffdHM = fileres_trig[imult].Get("hFeedDownEffpt")
         hEfffdHM.SetLineColor(colors[imult])
         hEfffdHM.SetLineStyle(lstyle[imult])
         hEfffdHM.SetMarkerColor(colors[imult])
@@ -216,7 +218,7 @@ def plot_hfptspectrum_comb(case, arraytype):
         hEfffdHM.Draw("same")
         idx = idx + 1
 
-    cEff.SaveAs("ComparisonEfficiencies_%s_%scombined%s.eps" % \
+    cEff.SaveAs("PtSpec_ComparisonEfficiencies_%s_%scombined%s.eps" % \
                   (case, arraytype[0], arraytype[1]))
 
     #fprompt
@@ -230,15 +232,16 @@ def plot_hfptspectrum_comb(case, arraytype):
     for imult, iplot in enumerate(plotbinMB):
         if not iplot:
             continue
-        cfPrompt.cd(imult+1).DrawFrame(0, 0, 25, 1.05, ';#it{p}_{T} (GeV/#it{c});#it{f}_{prompt}')
-        grfPrompt = fileres_MB[idx].Get("gFcConservative")
-        grfPrompt.SetTitle(';#it{p}_{T} (GeV/#it{c});#it{f}_{prompt}')
+        cfPrompt.cd(imult+1).DrawFrame(0, 0, 25, 1.05, \
+                                       ";#it{p}_{T} (GeV/#it{c});#it{f}_{prompt}(%s)" % name)
+        grfPrompt = fileres_MB[imult].Get("gFcConservative")
+        grfPrompt.SetTitle(";#it{p}_{T} (GeV/#it{c});#it{f}_{prompt}(%s)" % name)
         grfPrompt.SetLineColor(colors[imult])
         grfPrompt.SetMarkerColor(colors[imult])
         grfPrompt.SetMarkerStyle(21)
         grfPrompt.SetMarkerSize(0.5)
         grfPrompt.Draw("ap")
-        pt.DrawTextNDC(0.15, 0.15, "%.1f #leq %s < %.1f (MB)" % \
+        pt.DrawLatexNDC(0.15, 0.15, "%.1f #leq %s < %.1f (MB)" % \
                      (binsmin[imult], latexbin2var, binsmax[imult]))
         idx = idx + 1
 
@@ -246,18 +249,20 @@ def plot_hfptspectrum_comb(case, arraytype):
     for imult, iplot in enumerate(plotbinHM):
         if not iplot:
             continue
-        cfPrompt.cd(imult+1).DrawFrame(0, 0, 25, 1.05, ';#it{p}_{T} (GeV/#it{c});#it{f}_{prompt}')
-        grfPromptHM = fileres_trig[idx].Get("gFcConservative")
+        cfPrompt.cd(imult+1).DrawFrame(0, 0, 25, 1.05, \
+                                       ";#it{p}_{T} (GeV/#it{c});#it{f}_{prompt}(%s)" % name)
+        grfPromptHM = fileres_trig[imult].Get("gFcConservative")
+        grfPromptHM.SetTitle(";#it{p}_{T} (GeV/#it{c});#it{f}_{prompt}(%s)" % name)
         grfPromptHM.SetLineColor(colors[imult])
         grfPromptHM.SetMarkerColor(colors[imult])
         grfPromptHM.SetMarkerStyle(21)
         grfPromptHM.SetMarkerSize(0.5)
         grfPromptHM.Draw("ap")
-        pt.DrawTextNDC(0.15, 0.15, "%.1f #leq %s < %.1f (HM)" % \
+        pt.DrawLatexNDC(0.15, 0.15, "%.1f #leq %s < %.1f (HM)" % \
                      (binsmin[imult], latexbin2var, binsmax[imult]))
         idx = idx + 1
 
-    cfPrompt.SaveAs("ComparisonfPrompt_%s_%scombined%s.eps" % \
+    cfPrompt.SaveAs("PtSpec_ComparisonfPrompt_%s_%scombined%s.eps" % \
                   (case, arraytype[0], arraytype[1]))
 
 # pylint: disable=import-error, no-name-in-module, unused-import
@@ -381,7 +386,7 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype):
                           (binsmin_num[imult], latexbin2var, binsmax_num[imult]))
     legyield.Draw()
 
-    ccross.SaveAs("ComparisonRatios_%s%s_%scombined%s.eps" % \
+    ccross.SaveAs("PtSpec_ComparisonRatios_%s%s_%scombined%s.eps" % \
                   (case_num, case_den, arraytype[0], arraytype[1]))
 
     fileoutput.cd()
@@ -396,7 +401,19 @@ plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
 plot_hfptspectrum_comb("D0pp", ["MBvspt_ntrkl", "SPDvspt"])
 plot_hfptspectrum_comb("D0pp", ["MBvspt_v0m", "V0mvspt"])
 plot_hfptspectrum_comb("D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
+plot_hfptspectrum_comb("Dspp", ["MBvspt_ntrkl", "SPDvspt"])
+plot_hfptspectrum_comb("Dspp", ["MBvspt_v0m", "V0mvspt"])
+plot_hfptspectrum_comb("Dspp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
+#plot_hfptspectrum_comb("LcpKpipp", ["MBvspt_ntrkl", "SPDvspt"])
+#plot_hfptspectrum_comb("LcpKpipp", ["MBvspt_v0m", "V0mvspt"])
+#plot_hfptspectrum_comb("LcpKpipp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
 
 plot_hfptspectrum_ratios_comb("LcpK0spp", "D0pp", ["MBvspt_ntrkl", "SPDvspt"])
 plot_hfptspectrum_ratios_comb("LcpK0spp", "D0pp", ["MBvspt_v0m", "V0mvspt"])
 plot_hfptspectrum_ratios_comb("LcpK0spp", "D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
+plot_hfptspectrum_ratios_comb("Dspp", "D0pp", ["MBvspt_ntrkl", "SPDvspt"])
+plot_hfptspectrum_ratios_comb("Dspp", "D0pp", ["MBvspt_v0m", "V0mvspt"])
+plot_hfptspectrum_ratios_comb("Dspp", "D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
+#plot_hfptspectrum_ratios_comb("LcpKpipp", "D0pp", ["MBvspt_ntrkl", "SPDvspt"])
+#plot_hfptspectrum_ratios_comb("LcpKpipp", "D0pp", ["MBvspt_v0m", "V0mvspt"])
+#plot_hfptspectrum_ratios_comb("LcpKpipp", "D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
