@@ -532,7 +532,7 @@ Dspp:
       useperiod: [0,0,1]
       normalizecross: false
       plotbin: [0,0,0,1]
-      usesinglebineff: null
+      usesinglebineff: 2
       sel_binmin2:  [0,1,20,60] #list of var2 splittng nbins
       sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
@@ -603,7 +603,7 @@ Dspp:
       useperiod: [0,1,1]
       normalizecross: false
       plotbin: [0,0,0,1]
-      usesinglebineff: null
+      usesinglebineff: 2
       sel_binmin2:  [0,1,200,600] #list of var2 splittng nbins
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
       var_binning2: v0m_corr
@@ -674,7 +674,7 @@ Dspp:
       useperiod: [0,1,1]
       normalizecross: false
       plotbin: [0,0,0,1]
-      usesinglebineff: null
+      usesinglebineff: 2
       sel_binmin2:  [0,30,0.1,0.] #list of var2 splittng nbins
       sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m
