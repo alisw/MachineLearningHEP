@@ -237,9 +237,9 @@ LcpKpipp:
                      xgboost_classifierLcpKpipp_dfselection_pt_cand_8.0_12.0.sav,   
                      xgboost_classifierLcpKpipp_dfselection_pt_cand_12.0_24.0.sav] 
     probcutpresel:
-      data: [0.1,0.1,0.1,0.1,0.1] #list of nbins
-      mc: [0.1,0.1,0.1,0.1,0.1] #list of nbins
-    probcutoptimal: [0.1,0.1,0.1,0.1,0.1] #list of nbins
+      data: [0.3,0.3,0.3,0.3,0.3] #list of nbins
+      mc: [0.3,0.3,0.3,0.3,0.3] #list of nbins
+    probcutoptimal: [0.6,0.6,0.65,0.65,0.6] #list of nbins
 
   analysis:
     indexhptspectrum: 4 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5 
