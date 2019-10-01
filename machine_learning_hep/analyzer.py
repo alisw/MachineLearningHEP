@@ -300,7 +300,6 @@ class Analyzer:
                                (self.v_var_binning, self.lpt_finbinmin[ipt],
                                 self.lpt_finbinmax[ipt],
                                 self.v_var2_binning, mult_int_min, mult_int_max)
-                h_invmass_init = lfile.Get("hmass" + suffix)
                 h_invmass_mc_init = lfile_mc.Get("hmass" + suffix)
 
                 h_mc_init_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_mc_init,
@@ -348,6 +347,12 @@ class Analyzer:
                 mass_fitter_mc_init[ipt].DrawHere(gPad, self.p_nsigma_signal)
 
                 # Now, try also for data
+                histname = "hmass"
+                if self.apply_weights is True:
+                    histname = "h_invmass_weight"
+                    self.logger.info("*********** I AM USING WEIGHTED HISTOGRAMS")
+                # Weighted histograms onnly for data at the moment
+                h_invmass_init = lfile.Get(histname + suffix)
                 h_data_init_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_init,
                                                                     self.p_rebin[ipt], -1)
                 h_data_init_rebin = TH1F()
@@ -426,7 +431,8 @@ class Analyzer:
                 histname = "hmass"
                 if self.apply_weights is True:
                     histname = "h_invmass_weight"
-                    print("*********** I AM USING WEIGHTED HISTOGRAMS")
+                    self.logger.info("*********** I AM USING WEIGHTED HISTOGRAMS")
+                # Weighted histograms onnly for data at the moment
                 h_invmass = lfile.Get(histname + suffix)
                 h_invmass_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass, self.p_rebin[ipt], -1)
                 h_invmass_rebin = TH1F()
@@ -485,9 +491,13 @@ class Analyzer:
                             mass_fitter[ifit].SetTemplateReflections(h_invmass_refl, "1gaus",
                                                                      self.p_massmin[ipt],
                                                                      self.p_massmax[ipt])
-                            r_over_s = h_invmass_mc_rebin.Integral()
+                            r_over_s = h_invmass_mc_rebin.Integral(
+                                h_invmass_mc_rebin.FindBin(self.p_massmin[ipt]),
+                                h_invmass_mc_rebin.FindBin(self.p_massmax[ipt]))
                             if r_over_s > 0.:
-                                r_over_s = h_invmass_refl.Integral() / r_over_s
+                                r_over_s = h_invmass_refl.Integral(
+                                    h_invmass_refl.FindBin(self.p_massmin[ipt]),
+                                    h_invmass_refl.FindBin(self.p_massmax[ipt])) / r_over_s
                                 mass_fitter[ifit].SetFixReflOverS(r_over_s)
                         else:
                             self.logger.warning("Reflection requested but template empty")
@@ -521,8 +531,11 @@ class Analyzer:
                 canvas_data[imult].cd(ipt+1)
                 mass_fitter[ifit].DrawHere(gPad, self.p_nsigma_signal)
 
-                fit_dir = fileout.mkdir(suffix)
-                fit_dir.WriteObject(mass_fitter[ifit], "fitter%d" % (ipt))
+                # Write fitters to file
+                fit_root_dir = fileout.mkdir(suffix)
+                fit_root_dir.WriteObject(mass_fitter_mc_init[ipt], "fitter_mc_init")
+                fit_root_dir.WriteObject(mass_fitter_data_init[ipt], "fitter_data_init")
+                fit_root_dir.WriteObject(mass_fitter[ifit], "fitter")
 
                 if success == 1:
                     # In case of success == 2, no signal was found, in case of 0, fit failed
@@ -1647,10 +1660,10 @@ class Analyzer:
 
     def makenormyields(self):
         gROOT.SetBatch(True)
-
+        print("SSSSSSSSSSSSSSS")
         self.loadstyle()
         #self.test_aliphysics()
-        filedataval = TFile.Open(self.f_evtnorm)
+        #filedataval = TFile.Open(self.f_evtnorm)
 
         fileouteff = "%s/efficiencies%s%s.root" % \
                       (self.d_resultsallpmc, self.case, self.typean)
@@ -1671,10 +1684,6 @@ class Analyzer:
             nameyield = "hyields%d" % imult
             fileoutcrossmult = "%s/finalcross%s%smult%d.root" % \
                 (self.d_resultsallpdata, self.case, self.typean, imult)
-            labelhisto = "hbit%svs%s" % (self.triggerbit, self.v_var2_binning)
-            hmult = filedataval.Get(labelhisto)
-            if not hmult:
-                continue
             norm = -1
             norm = self.calculate_norm(self.f_evtnorm, self.triggerbit, \
                          self.v_var2_binning, self.lvar2_binmin[imult], \
