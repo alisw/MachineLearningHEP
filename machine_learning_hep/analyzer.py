@@ -1361,6 +1361,8 @@ class Analyzer:
         his_sim_z_fd = file_resp.Get("his_ptc_ptjet_z_fd")
         his_sim_z_fd.Scale(1./n_jets_gen) # Normalise by the total number of selected jets.
         his_sim_z_fd_2d = his_sim_z_fd.Project3D("yz") # final feed-down histogram
+        file_out.cd()
+        his_sim_z_fd_2d.Write("fd_z_ptjet_gen")
         # x axis = z, y axis = pt_jet
         his_sim_z_fd_2d.Reset()
         # Scale with the ratio of efficiencies.
@@ -1393,9 +1395,13 @@ class Analyzer:
             can_ff_fd.SaveAs("%s/Feeddown-z-effscaled_%s%s%s.eps" % (self.d_resultsallpmc, \
                             self.case, self.typean, i_ptjet))
 
-        # TODO: Building the response matrix and smearing.
+        # Smear (fold) the simulated distribution with the response matrix.
+        resp_z = file_resp.Get("resp_z")
+        his_sim_z_fd_2d_folded = resp_z.ApplyToTruth(his_sim_z_fd_2d)
+
         file_out.cd()
-        his_sim_z_fd_2d.Write("fd_z_ptjet")
+        his_sim_z_fd_2d.Write("fd_z_ptjet_eff")
+        his_sim_z_fd_2d_folded.Write("fd_z_ptjet_fold")
 
         file_resp.Close()
         file_eff.Close()
