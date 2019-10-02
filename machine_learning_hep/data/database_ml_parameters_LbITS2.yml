@@ -212,6 +212,8 @@ LbITS2:
     fd_method: -1 #knone=0, kfc=1, kNb=2
     cctype: -1 #kpp7
     sigmav0: -1
+    dir_general_plots: analysis_plots
+
     MBvspt:
       useperiod: [1]
       normalizecross: false

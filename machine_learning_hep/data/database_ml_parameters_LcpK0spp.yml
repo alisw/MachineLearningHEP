@@ -318,6 +318,8 @@ LcpK0spp:
     fd_method: 2 #knone=0, kfc=1, kNb=2
     cctype: 1 #kpp7
     sigmav0: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
+    dir_general_plots: /data/DerivedResults/LckINT7HighMultwithJets/vAN-20190923_ROOT6-1/analysis_plots
+
     MBvspt_ntrkl:
       useperiod: [1,1,1]
       normalizecross: false
