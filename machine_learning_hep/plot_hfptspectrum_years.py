@@ -15,6 +15,7 @@
 """
 main script for doing final stage analysis
 """
+import os
 # pylint: disable=unused-wildcard-import, wildcard-import
 from array import *
 # pylint: disable=import-error, no-name-in-module, unused-import
@@ -49,6 +50,17 @@ def plot_hfspectrum_years_ratios(case_1, case_2, ana_type):
 
     with open("data/database_ml_parameters_%s.yml" % case_2, 'r') as param_config:
         data_param_2 = yaml.load(param_config, Loader=yaml.FullLoader)
+
+    folder_plots_1 = data_param_1[case_1]["analysis"]["dir_general_plots"]
+    folder_plots_2 = data_param_2[case_2]["analysis"]["dir_general_plots"]
+    folder_plots_1 = folder_plots_1 + "/comp_years"
+    folder_plots_2 = folder_plots_2 + "/comp_years"
+    if not os.path.exists(folder_plots_1):
+        print("creating folder ", folder_plots_1)
+        os.makedirs(folder_plots_1)
+    if not os.path.exists(folder_plots_2):
+        print("creating folder ", folder_plots_2)
+        os.makedirs(folder_plots_2)
 
     use_period = data_param_1[case_1]["analysis"][ana_type]["useperiod"]
     latexbin2var = data_param_1[case_1]["analysis"][ana_type]["latexbin2var"]
@@ -181,8 +193,10 @@ def plot_hfspectrum_years_ratios(case_1, case_2, ana_type):
         line_unity.SetLineStyle(histos[0].GetLineStyle())
         line_unity.Draw()
 
-        ccross.SaveAs("ComparisonCorrYields_%s_%s_%s_combined%s_%d.eps" % \
-                  (case_1, case_2, ana_type, "_".join(periods), imult))
+        ccross.SaveAs("%s/ComparisonCorrYields_%s_%s_%s_combined%s_%d.eps" % \
+                  (folder_plots_1, case_1, case_2, ana_type, "_".join(periods), imult))
+        ccross.SaveAs("%s/ComparisonCorrYields_%s_%s_%s_combined%s_%d.eps" % \
+                  (folder_plots_2, case_1, case_2, ana_type, "_".join(periods), imult))
         ccross.Close()
 
 # pylint: disable=import-error, no-name-in-module, unused-import
@@ -207,6 +221,12 @@ def plot_hfspectrum_years(case, ana_type):
 
     with open("data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
+
+    folder_plots = data_param[case]["analysis"]["dir_general_plots"]
+    folder_plots = folder_plots + "/comp_years"
+    if not os.path.exists(folder_plots):
+        print("creating folder ", folder_plots)
+        os.makedirs(folder_plots)
 
     use_period = data_param[case]["analysis"][ana_type]["useperiod"]
     result_paths = [data_param[case]["analysis"][ana_type]["data"]["results"][i] \
@@ -332,8 +352,8 @@ def plot_hfspectrum_years(case, ana_type):
             h.Draw("same")
         leg_eff.Draw()
 
-        ceff.SaveAs("ComparisonEffs_%s_%s_combined%s_%d.eps" \
-                % (case, ana_type, "_".join(periods), imult))
+        ceff.SaveAs("%s/ComparisonEffs_%s_%s_combined%s_%d.eps" \
+                % (folder_plots, case, ana_type, "_".join(periods), imult))
         ceff.Close()
 
         # Prepare ratio plot, year/merged (merged is always first in the histo list)
@@ -391,8 +411,8 @@ def plot_hfspectrum_years(case, ana_type):
         line_unity.SetLineStyle(histos_cross[0].GetLineStyle())
         line_unity.Draw()
 
-        ccross.SaveAs("ComparisonCorrYields_%s_%s_combined%s_%d.eps" % \
-                  (case, ana_type, "_".join(periods), imult))
+        ccross.SaveAs("%s/ComparisonCorrYields_%s_%s_combined%s_%d.eps" % \
+                  (folder_plots, case, ana_type, "_".join(periods), imult))
         ccross.Close()
 
 #####################################

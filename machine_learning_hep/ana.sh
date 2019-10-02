@@ -47,3 +47,4 @@ wait
 
 srun python plot_hfmassfitter.py
 srun python plot_hfptspectrum.py
+srun python plot_hfptspectrum_years.py
