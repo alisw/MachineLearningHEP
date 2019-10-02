@@ -578,6 +578,8 @@ class Analyzer:
             #canvas_data[imult].Close()
             fileout.cd()
             yieldshistos[imult].Write()
+            means_histos[imult].Write()
+            sigmas_histos[imult].Write()
 
             del mass_fitter_mc_init[:]
             del mass_fitter_data_init[:]

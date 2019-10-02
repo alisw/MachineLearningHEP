@@ -65,13 +65,17 @@ analysis:
   # Control the yield systemaitc uncertainty
   dosyst: false
   dojetstudies: false
-  doeff: true
-  docross: true
-  doplots: true
+  doeff: false
+  docross: false
+  doplots: false
 
 systematics:
   # Not yet used
-  probvariation: false
+  cutvar:
+    activate: true
+    probvariationmass: false
+    probvariationeff: false
+    probvariationfit: true
 
 validation:
   data:

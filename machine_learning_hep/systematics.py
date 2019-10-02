@@ -15,23 +15,30 @@
 """
 main script for doing systematics
 """
-import math
-import array
-import pickle
+# pylint: disable=too-many-lines
 import os
-import uproot
-import pandas as pd
-import numpy as np
-from root_numpy import fill_hist, evaluate # pylint: disable=import-error, no-name-in-module
-from ROOT import TFile, TH1F, TH2F, TH3F # pylint: disable=import-error, no-name-in-module
+import math
+# pylint: disable=unused-wildcard-import, wildcard-import
+from array import *
+import pickle
+# pylint: disable=import-error, no-name-in-module, unused-import
+from root_numpy import fill_hist, evaluate
+from ROOT import gROOT, gStyle
+from ROOT import TFile, TH1F, TCanvas, TPad
+from ROOT import gInterpreter, gPad
 from machine_learning_hep.utilities import selectdfrunlist
 from machine_learning_hep.utilities import seldf_singlevar, openfile
+from machine_learning_hep.logger import get_logger
 
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements
 class Systematics:
     species = "systematics"
-    def __init__(self, datap, typean, run_param, d_pkl_decmerged_mc, d_pkl_decmerged_data, d_results, d_val, p_period, runlisttrigger):
+    def __init__(self, case, datap, typean, run_param, d_pkl_decmerged_mc, \
+                 d_pkl_decmerged_data, d_results, d_val, p_period, runlisttrigger):
 
+        self.logger = get_logger()
+
+        self.case = case
         self.typean = typean
         self.run_param = run_param
         self.d_pkl_decmerged_mc = d_pkl_decmerged_mc
@@ -60,8 +67,8 @@ class Systematics:
 
         self.lpt_recodecmerged_mc = [os.path.join(self.d_pkl_decmerged_mc, self.lpt_recodec_mc[ipt])
                                      for ipt in range(self.p_nptbins)]
-        self.lpt_recodecmerged_data = [os.path.join(self.d_pkl_decmerged_data, self.lpt_recodec_data[ipt])
-                                       for ipt in range(self.p_nptbins)]
+        self.lpt_recodecmerged_data = [os.path.join(self.d_pkl_decmerged_data, \
+                                       self.lpt_recodec_data[ipt]) for ipt in range(self.p_nptbins)]
 
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
         self.s_trigger_mc = datap["analysis"][self.typean]["triggersel"]["mc"]
@@ -71,16 +78,16 @@ class Systematics:
         self.lpt_gensk = [self.n_gen.replace(".pkl", "_%s%d_%d.pkl" % \
                           (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
                           for i in range(self.p_nptbins)]
-        self.lpt_gendecmerged = [os.path.join(self.d_pkl_decmerged_mc, self.lpt_gensk[ipt])
+        self.lpt_gendecmerged = [os.path.join(self.d_pkl_decmerged_mc, self.lpt_gensk[ipt]) \
                                  for ipt in range(self.p_nptbins)]
-        
+
         self.s_presel_gen_eff = datap["analysis"][self.typean]["presel_gen_eff"]
 
         self.lvar2_binmin = datap["analysis"][self.typean]["sel_binmin2"]
         self.lvar2_binmax = datap["analysis"][self.typean]["sel_binmax2"]
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
         self.use_var2_bin = 0
-        
+
         self.p_modelname = datap["mlapplication"]["modelname"]
         self.lpt_probcutfin = datap["mlapplication"]["probcutoptimal"]
 
@@ -90,6 +97,8 @@ class Systematics:
         self.n_fileeff_cutvar = self.n_fileeff.replace(".root", "_cutvar.root")
         self.n_filemass_cutvar = os.path.join(self.d_results, self.n_filemass_cutvar)
         self.n_fileeff_cutvar = os.path.join(self.d_results, self.n_fileeff_cutvar)
+        self.yields_filename_std = "yields"
+        self.yields_filename = "yields_cutvar"
 
         self.p_mass_fit_lim = datap["analysis"][self.typean]["mass_fit_lim"]
         self.p_bin_width = datap["analysis"][self.typean]["bin_width"]
@@ -100,12 +109,49 @@ class Systematics:
         self.runlistrigger = runlisttrigger
         self.d_val = d_val
         self.period = p_period
-        
+
+        #For fitting (to check what can be removed)
+        self.p_bin_width = datap["analysis"][self.typean]['bin_width']
+        self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
+                                    self.p_bin_width))
+        #parameter fitter
+        self.sig_fmap = {"kGaus": 0, "k2Gaus": 1, "kGausSigmaRatioPar": 2}
+        self.bkg_fmap = {"kExpo": 0, "kLin": 1, "Pol2": 2, "kNoBk": 3, "kPow": 4, "kPowEx": 5}
+        # For initial fit in integrated mult bin
+        self.p_sgnfunc = datap["analysis"][self.typean]["sgnfunc"]
+        self.p_bkgfunc = datap["analysis"][self.typean]["bkgfunc"]
+        self.p_massmin = datap["analysis"][self.typean]["massmin"]
+        self.p_massmax = datap["analysis"][self.typean]["massmax"]
+        self.p_rebin = datap["analysis"][self.typean]["rebin"]
+        self.p_masspeak = datap["analysis"][self.typean]["masspeak"]
+        self.p_sigmaarray = datap["analysis"][self.typean]["sigmaarray"]
+        self.p_includesecpeak = datap["analysis"][self.typean]["includesecpeak"]
+        self.p_masssecpeak = datap["analysis"][self.typean]["masssecpeak"] \
+                if self.p_includesecpeak else None
+        self.p_fix_masssecpeak = datap["analysis"][self.typean]["fix_masssecpeak"] \
+                if self.p_includesecpeak else None
+        self.p_widthsecpeak = datap["analysis"][self.typean]["widthsecpeak"] \
+                if self.p_includesecpeak else None
+        self.p_fix_widthsecpeak = datap["analysis"][self.typean]["fix_widthsecpeak"] \
+                if self.p_includesecpeak else None
+        if self.p_includesecpeak is None:
+            self.p_includesecpeak = [False for ipt in range(self.p_nptbins)]
+        self.p_exclude_nsigma_sideband = datap["analysis"][self.typean]["exclude_nsigma_sideband"]
+        self.p_nsigma_signal = datap["analysis"][self.typean]["nsigma_signal"]
+        self.p_dolike = datap["analysis"][self.typean]["dolikelihood"]
+        self.ptranges = self.lpt_finbinmin.copy()
+        self.ptranges.append(self.lpt_finbinmax[-1])
+        self.include_reflection = datap["analysis"][self.typean].get("include_reflection", False)
+        self.apply_weights = datap["analysis"][self.typean]["triggersel"]["weighttrig"]
+
         #To add in databases
         self.p_cutvar_minrange = [0.88, 0.84, 0.7, 0.7, 0.3]
         self.p_cutvar_maxrange = [0.97, 0.94, 0.9, 0.9, 0.7]
         self.p_ncutvar = 10
         self.p_maxperccutvar = 0.2
+        self.p_fixedmean = True
+        self.p_fixedsigma = True
+
         #To remove from databases
         #self.p_prob_range = datap["systematics"]["probvariation"]["prob_range"]
 
@@ -117,16 +163,12 @@ class Systematics:
         gStyle.SetCanvasColor(0)
         gStyle.SetFrameFillColor(0)
 
-    def probvariation(self):
-        self.loadstyle()
-        print(self.p_prob_range)
-
     def define_cutvariation_limits(self):
 
         min_cv_cut = []
         max_cv_cut = []
         for ipt in range(self.p_nptfinbins):
-        
+
             print("Systematics pt-bin: ", ipt)
 
             bin_id = self.bin_matching[ipt]
@@ -159,8 +201,9 @@ class Systematics:
             len_gen_pr = len(df_gen_sel_pr)
             eff_cent = len(df_reco_sel_pr)/len_gen_pr
             print("Central efficiency pt-bin", ipt, ": ", eff_cent)
-            
-            stepsmin = (self.lpt_probcutfin[bin_id] - self.p_cutvar_minrange[bin_id]) / self.p_ncutvar
+
+            stepsmin = \
+              (self.lpt_probcutfin[bin_id] - self.p_cutvar_minrange[bin_id]) / self.p_ncutvar
             min_cv_cut.append(self.lpt_probcutfin[bin_id])
             df_reco_cvmin_pr = df_reco_presel_pr
             for icv in range(self.p_ncutvar):
@@ -173,8 +216,9 @@ class Systematics:
 
             eff_min = len(df_reco_cvmin_pr)/len_gen_pr
             print("Minimal efficiency pt-bin", ipt, ": ", eff_min, "(", eff_min / eff_cent, ")")
- 
-            stepsmax = (self.p_cutvar_maxrange[bin_id] - self.lpt_probcutfin[bin_id]) / self.p_ncutvar
+
+            stepsmax = \
+              (self.p_cutvar_maxrange[bin_id] - self.lpt_probcutfin[bin_id]) / self.p_ncutvar
             max_cv_cut.append(self.lpt_probcutfin[bin_id])
             df_reco_cvmax_pr = df_reco_sel_pr
             for icv in range(self.p_ncutvar):
@@ -184,7 +228,7 @@ class Systematics:
                 eff_max = len(df_reco_cvmax_pr)/len_gen_pr
                 if eff_max / eff_cent < 1 - self.p_maxperccutvar:
                     break
-            
+
             eff_max = len(df_reco_cvmax_pr)/len_gen_pr
             print("Maximal efficiency pt-bin", ipt, ": ", eff_max, "(", eff_max / eff_cent, ")")
 
@@ -201,7 +245,7 @@ class Systematics:
             stepsmax = (max_cv_cut[ipt] - self.lpt_probcutfin[bin_id]) / self.p_ncutvar
             ntrials = 2 * self.p_ncutvar + 1
             icvmax = 1
-            
+
             if self.s_evtsel is not None:
                 df = df.query(self.s_evtsel)
             if self.s_trigger_data is not None:
@@ -219,7 +263,7 @@ class Systematics:
                 elif icv == self.p_ncutvar:
                     selml_cvval = self.lpt_probcutfin[bin_id]
                 else:
-                    selml_cvval = self.lpt_probcutfin[bin_id] + icvmax * stepsmin
+                    selml_cvval = self.lpt_probcutfin[bin_id] + icvmax * stepsmax
                     icvmax = icvmax + 1
                 selml_cv = "y_test_prob%s>%s" % (self.p_modelname, selml_cvval)
 
@@ -239,9 +283,9 @@ class Systematics:
 
                     df_bin = seldf_singlevar(df, self.v_var2_binning,
                                              self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
-                      
+
                     fill_hist(h_invmass, df_bin.inv_mass)
-                      
+
                     if "INT7" not in self.triggerbit:
                         fileweight_name = "%s/correctionsweights.root" % self.d_val
                         fileweight = TFile.Open(fileweight_name, "read")
@@ -260,10 +304,8 @@ class Systematics:
         myfile = TFile.Open(self.n_fileeff_cutvar, "recreate")
 
         h_gen_pr = []
-        h_presel_pr = []
         h_sel_pr = []
         h_gen_fd = []
-        h_presel_fd = []
         h_sel_fd = []
 
         idx = 0
@@ -301,7 +343,7 @@ class Systematics:
                 elif icv == self.p_ncutvar:
                     selml_cvval = self.lpt_probcutfin[bin_id]
                 else:
-                    selml_cvval = self.lpt_probcutfin[bin_id] + icvmax * stepsmin
+                    selml_cvval = self.lpt_probcutfin[bin_id] + icvmax * stepsmax
                     icvmax = icvmax + 1
                 selml_cv = "y_test_prob%s>%s" % (self.p_modelname, selml_cvval)
 
@@ -313,12 +355,12 @@ class Systematics:
                                                 self.v_var2_binning, \
                                                 self.lvar2_binmin[ibin2], \
                                                 self.lvar2_binmax[ibin2])
-            
+
                     if ipt == 0:
                         n_bins = len(self.lpt_finbinmin)
                         analysis_bin_lims_temp = self.lpt_finbinmin.copy()
                         analysis_bin_lims_temp.append(self.lpt_finbinmax[n_bins-1])
-                        analysis_bin_lims = array.array('f', analysis_bin_lims_temp)
+                        analysis_bin_lims = array('f', analysis_bin_lims_temp)
                         h_gen_pr.append(TH1F("h_gen_pr" + stringbin2, "Prompt Generated in acceptance |y|<0.5", \
                                         n_bins, analysis_bin_lims))
                         h_sel_pr.append(TH1F("h_sel_pr" + stringbin2, "Prompt Reco and sel in acc |#eta|<0.8 and sel", \
@@ -355,3 +397,198 @@ class Systematics:
             h_sel_pr[i].Write()
             h_gen_fd[i].Write()
             h_sel_fd[i].Write()
+
+    # pylint: disable=too-many-branches, too-many-locals, too-many-nested-blocks
+    def cutvariation_fitter(self, min_cv_cut, max_cv_cut):
+
+        # Test if we are in AliPhysics env
+        #self.test_aliphysics()
+
+        tmp_is_root_batch = gROOT.IsBatch()
+        gROOT.SetBatch(True)
+        from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
+        # Enable ROOT batch mode and reset in the end
+
+        self.loadstyle()
+
+        lfile = TFile.Open(self.n_filemass_cutvar, "READ")
+
+        ntrials = 2 * self.p_ncutvar + 1
+        icvmax = 1
+        
+        mass_fitter = []
+        ifit = 0
+        for icv in range(ntrials):
+
+            fileout_name = self.make_file_path(self.d_results, self.yields_filename, "root", \
+                                           None, [self.typean, str(icv)])
+            fileout = TFile(fileout_name, "RECREATE")
+
+            yieldshistos = [TH1F("hyields%d_%d" % (icv, imult), "", \
+                    self.p_nptbins, array("d", self.ptranges)) for imult in range(len(self.lvar2_binmin))]
+
+            if self.p_nptbins < 9:
+                nx = 4
+                ny = 2
+                canvy = 533
+            elif self.p_nptbins < 13:
+                nx = 4
+                ny = 3
+                canvy = 800
+            else:
+                nx = 5
+                ny = 4
+
+            canvas_data = [TCanvas("canvas_cutvar%d_%d" % (icv, imult), "Data", 1000, canvy) \
+                           for imult in range(len(self.lvar2_binmin))]
+            for imult in range(len(self.lvar2_binmin)):
+                canvas_data[imult].Divide(nx, ny)
+
+            for imult in range(len(self.lvar2_binmin)):
+
+                mean_for_data, sigma_for_data = self.load_central_meansigma(imult)
+
+                for ipt in range(self.p_nptbins):
+                    bin_id = self.bin_matching[ipt]
+
+                    suffix = "%s%d_%d_%d_%s%.2f_%.2f" % \
+                             (self.v_var_binning, self.lpt_finbinmin[ipt],
+                              self.lpt_finbinmax[ipt], icv,
+                              self.v_var2_binning, self.lvar2_binmin[imult],
+                              self.lvar2_binmax[imult])
+                    
+                    stepsmin = (self.lpt_probcutfin[bin_id] - min_cv_cut[ipt]) / self.p_ncutvar
+                    stepsmax = (max_cv_cut[ipt] - self.lpt_probcutfin[bin_id]) / self.p_ncutvar
+                    ntrials = 2 * self.p_ncutvar + 1
+
+                    selml_cvval = 0
+                    if icv < self.p_ncutvar:
+                        selml_cvval = min_cv_cut[ipt] + icv * stepsmin
+                    elif icv == self.p_ncutvar:
+                        selml_cvval = self.lpt_probcutfin[bin_id]
+                    else:
+                        selml_cvval = self.lpt_probcutfin[bin_id] + icvmax * stepsmax
+
+                    histname = "hmass"
+                    if self.apply_weights is True:
+                        histname = "h_invmass_weight"
+                        self.logger.info("*********** I AM USING WEIGHTED HISTOGRAMS")
+
+                    h_invmass = lfile.Get(histname + suffix)
+                    h_invmass_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass, self.p_rebin[ipt], -1)
+                    h_invmass_rebin = TH1F()
+                    h_invmass_rebin_.Copy(h_invmass_rebin)
+                    h_invmass_rebin.SetTitle("%.1f < #it{p}_{T} < %.1f (prob > %.4f)" \
+                                             % (self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt], \
+                                                selml_cvval))
+                    h_invmass_rebin.GetXaxis().SetTitle("#it{M}_{inv} (GeV/#it{c}^{2})")
+                    h_invmass_rebin.GetYaxis().SetTitle("Entries/(%.0f MeV/#it{c}^{2})" \
+                                                        % (h_invmass_rebin.GetBinWidth(1) * 1000))
+                    h_invmass_rebin.GetYaxis().SetTitleOffset(1.1)
+
+                    mass_fitter.append(AliHFInvMassFitter(h_invmass_rebin, self.p_massmin[ipt],
+                                                          self.p_massmax[ipt],
+                                                          self.bkg_fmap[self.p_bkgfunc[ipt]],
+                                                          self.sig_fmap[self.p_sgnfunc[ipt]]))
+
+                    if self.p_dolike:
+                        mass_fitter[ifit].SetUseLikelihoodFit()
+
+                    mass_fitter[ifit].SetInitialGaussianMean(self.p_masspeak)
+                    mass_fitter[ifit].SetInitialGaussianSigma(self.p_sigmaarray[ipt])
+                    if self.p_fixedmean:
+                        mass_fitter[ifit].SetFixGaussianMean(mean_for_data[ipt])
+                    if self.p_fixedsigma:
+                        mass_fitter[ifit].SetFixGaussianSigma(sigma_for_data[ipt])
+
+                    mass_fitter[ifit].SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
+                    mass_fitter[ifit].SetCheckSignalCountsAfterFirstFit(False)
+
+                    #Reflections to be included
+
+                    if self.p_includesecpeak[ipt]:
+                        mass_fitter[ifit].IncludeSecondGausPeak(self.p_masssecpeak,
+                                                                self.p_fix_masssecpeak,
+                                                                self.p_widthsecpeak,
+                                                                self.p_fix_widthsecpeak)
+
+                    success = mass_fitter[ifit].MassFitter(False)
+
+                    canvas_data[imult].cd(ipt+1)
+                    if success != 1:
+                        mass_fitter[ifit].GetHistoClone().Draw()
+                        self.logger.error("Fit failed for suffix %s", suffix)
+                        ifit = ifit + 1
+                        continue
+                    else:
+                        mass_fitter[ifit].DrawHere(gPad, self.p_nsigma_signal)
+
+                        # Write fitters to file
+                        fit_root_dir = fileout.mkdir(suffix)
+                        fit_root_dir.WriteObject(mass_fitter[ifit], "fittercutvar")
+
+                        # In case of success == 2, no signal was found, in case of 0, fit failed
+                        rawYield = mass_fitter[ifit].GetRawYield()
+                        rawYieldErr = mass_fitter[ifit].GetRawYieldError()
+                        yieldshistos[imult].SetBinContent(ipt + 1, rawYield)
+                        yieldshistos[imult].SetBinError(ipt + 1, rawYieldErr)
+                        ifit = ifit + 1
+                          
+                suffix2 = "cutvar%d_%s%.2f_%.2f" % \
+                           (icv, self.v_var2_binning, self.lvar2_binmin[imult], \
+                           self.lvar2_binmax[imult])
+
+                canvas_data[imult].SaveAs(self.make_file_path(self.d_results,
+                                                              "canvas_FinalData",
+                                                              "eps", None, suffix2))
+                fileout.cd()
+                yieldshistos[imult].Write()
+
+            fileout.Close()
+            icvmax = icvmax + 1
+
+        del mass_fitter[:]
+        # Reset to former mode
+        gROOT.SetBatch(tmp_is_root_batch)
+
+    def load_central_meansigma(self, imult):
+
+        func_filename_std = self.make_file_path(self.d_results, self.yields_filename_std, "root",
+                                           None, [self.case, self.typean])
+        print(func_filename_std)
+        massfile_std = TFile.Open(func_filename_std, "READ")
+        means_histo = massfile_std.Get("hmeanss%d" % (imult))
+        sigmas_histo = massfile_std.Get("hsigmas%d" % (imult))
+
+        mean_for_data = []
+        sigma_for_data = []
+        for ipt in range(self.p_nptbins):
+            bin_id = self.bin_matching[ipt]
+
+            mean_for_data.append(means_histo.GetBinContent(ipt + 1))
+            sigma_for_data.append(sigmas_histo.GetBinContent(ipt + 1))
+
+        return mean_for_data, sigma_for_data
+
+    @staticmethod
+    def make_file_path(directory, filename, extension, prefix=None, suffix=None):
+        if prefix is not None:
+            filename = Systematics.make_pre_suffix(prefix) + "_" + filename
+        if suffix is not None:
+            filename = filename + "_" + Systematics.make_pre_suffix(suffix)
+        extension = extension.replace(".", "")
+        return os.path.join(directory, filename + "." + extension)
+
+    @staticmethod
+    def make_pre_suffix(args):
+        """
+        Construct a common file suffix from args
+        """
+        try:
+            _ = iter(args)
+        except TypeError:
+            args = [args]
+        else:
+            if isinstance(args, str):
+                args = [args]
+        return "_".join(args)

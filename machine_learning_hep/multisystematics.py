@@ -62,7 +62,7 @@ class MultiSystematics: # pylint: disable=too-many-instance-attributes, too-many
 
         self.process_listsample = []
         for indexp in range(self.prodnumber):
-            myprocess = Systematics(self.datap, self.typean, self.run_param,
+            myprocess = Systematics(self.case, self.datap, self.typean, self.run_param,
                                     self.dlper_reco_modappmerged_mc[indexp],
                                     self.dlper_reco_modappmerged_data[indexp],
                                     self.d_results[indexp], self.dlper_valevtroot[indexp],
@@ -70,19 +70,25 @@ class MultiSystematics: # pylint: disable=too-many-instance-attributes, too-many
             self.process_listsample.append(myprocess)
 
 
-    def multi_cutvariation(self):
+    def multi_cutvariation(self, domass, doeff, dofit):
         for indexp in range(self.prodnumber):
             if self.p_useperiodforlimits[indexp] == 1:
                 print("Processing systematics period: ", indexp)
                 min_cv_cut, max_cv_cut = self.process_listsample[indexp].define_cutvariation_limits()
     
-        for indexp in range(self.prodnumber):
-            if self.p_useperiod[indexp] == 1:
-                self.process_listsample[indexp].cutvariation_masshistos(min_cv_cut, max_cv_cut)
-                self.process_listsample[indexp].cutvariation_efficiencies(min_cv_cut, max_cv_cut)
-        mergerootfiles(self.lper_filemass_cutvar, self.filemass_cutvar_mergedall)
-        mergerootfiles(self.lper_fileeff_cutvar, self.fileeff_cutvar_mergedall)
-        
-        for indexp in range(self.prodnumber):
-            if self.p_useperiod[indexp] == 1:
-                self.process_listsample[indexp].cutvariation_fitter()
+        if domass is True:
+            for indexp in range(self.prodnumber):
+                if self.p_useperiod[indexp] == 1:
+                    self.process_listsample[indexp].cutvariation_masshistos(min_cv_cut, max_cv_cut)
+            mergerootfiles(self.lper_filemass_cutvar, self.filemass_cutvar_mergedall)
+
+        if doeff is True:
+            for indexp in range(self.prodnumber):
+                if self.p_useperiod[indexp] == 1:
+                    self.process_listsample[indexp].cutvariation_efficiencies(min_cv_cut, max_cv_cut)
+            mergerootfiles(self.lper_fileeff_cutvar, self.fileeff_cutvar_mergedall)
+
+        if dofit is True:
+            for indexp in range(self.prodnumber):
+                if self.p_useperiod[indexp] == 1:
+                    self.process_listsample[indexp].cutvariation_fitter(min_cv_cut, max_cv_cut)
