@@ -631,6 +631,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         df_mc_reco_merged_prompt['z_gen'] = zarray_gen
 
         zbin =[]
+
         for zbin_i in range(12) :
             zbin.append(zbin_i*0.1)
         zbinarray=array.array("d",zbin)
@@ -651,10 +652,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         random_number = TRandom3(0)
         for index, row in df_mc_reco_merged_prompt.iterrows():
+
             hzvsjetpt_reco.Fill(row['z_reco'],row['pt_jet'])
             hzvsjetpt_gen.Fill(row['z_gen'],row['pt_gen_jet'])
 
             response_matrix.Fill(row['z_reco'],row['pt_jet'],row['z_gen'],row['pt_gen_jet'])
+
             if row['pt_gen_jet'] > 5 and row['pt_gen_jet'] <15 :
                 hz_gen_nocuts.Fill(row['z_gen'])
                 if row['pt_jet'] > 5 and row['pt_jet'] <15 :

@@ -543,6 +543,7 @@ LcpK0spp:
     MBjetvspt:
       useperiod: [1,1,1,1]
       normalizecross: true
+
       plotbin: [1,1,1,1]
       usesinglebineff: null
       sel_binmin2: [0,5,15] #list of nbins
@@ -577,6 +578,7 @@ LcpK0spp:
       mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
+
 
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits

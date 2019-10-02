@@ -1541,13 +1541,15 @@ class Analyzer:
             cz.SaveAs("%s/efficiencycorrected_fullsub%s%s_%s_%.2f_%.2f.eps" % \
                       (self.d_resultsallpdata, self.case, self.typean, self.v_var2_binning, \
                        self.lvar2_binmin[imult], self.lvar2_binmax[imult]))
-            for zbins in range(20):
+            for zbins in range(11):
                 if hz.GetBinContent(zbins+1) is not 0.0:
                     hzvsjetpt.SetBinContent(zbins+1,imult+1,hz.GetBinContent(zbins+1))
                     hzvsjetpt.SetBinError(zbins+1,imult+1,hz.GetBinError(zbins+1))
                 else:
                     hzvsjetpt.SetBinContent(zbins+1,imult+1,0.0)
                     hzvsjetpt.SetBinError(zbins+1,imult+1,0.0)
+
+
         hzvsjetpt.Write("hzvsjetpt")
         czvsjetpt = TCanvas('czvsjetpt' + suffix, '2D input to unfolding')
         czvsjetpt.SetCanvasSize(1900, 1500)
@@ -1987,7 +1989,10 @@ class Analyzer:
         lfile = TFile.Open(self.n_filemass,"update")
         fileouts = TFile.Open("%s/unfolding_results%s%s.root" % \
                               (self.d_resultsallpdata, self.case, self.typean), "recreate")
+
         unfolding_input_data_file = TFile.Open("%s/sideband_sub%s%s.root" % \
+
+
                                                (self.d_resultsallpdata, self.case, self.typean))
         unfolding_input_file = TFile.Open(self.n_fileff)
         response_matrix = unfolding_input_file.Get("response_matrix")

@@ -168,6 +168,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
 
     def multi_efficiency(self):
         for indexp in range(self.prodnumber):
+
             if self.p_useperiod[indexp] == 1:
                 self.process_listsample[indexp].process_efficiency()
                 self.process_listsample[indexp].process_response()
