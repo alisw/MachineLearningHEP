@@ -410,9 +410,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 h_invmass_weight.Write()
                 if "pt_jet" in df_bin.columns:
                     zarray = z_calc(df_bin.pt_jet, df_bin.phi_jet, df_bin.eta_jet,
-                                    df_bin.pt_cand, df_bin.phi_cand, df_bin.eta_cand)
-                    h_zvsinvmass = TH2F("hzvsmass" + suffix, "", 5000, 1.00, 6.00, 2000, -0.5, 1.5)
-                    h_zvsinvmass.Sumw2()
+                                    df_bin.pt_cand, df_bin.phi_jet, df_bin.eta_jet)
+                    h_zvsinvmass = TH2F("hzvsmass" + suffix, "", 5000, 1.00, 6.00, 1100, 0.0, 1.1)
                     zvsinvmass = np.vstack((df_bin.inv_mass, zarray)).T
                     fill_hist(h_zvsinvmass, zvsinvmass)
                     h_zvsinvmass.Write()
@@ -434,6 +433,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
     # pylint: disable=line-too-long
     def process_efficiency(self):
+        
         out_file = TFile.Open(self.n_fileeff, "recreate")
         for ibin2 in range(len(self.lvar2_binmin)):
             stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
@@ -631,35 +631,34 @@ class Processer: # pylint: disable=too-many-instance-attributes
         df_mc_reco_merged_prompt['z_gen'] = zarray_gen
 
         zbin =[]
-        for zbin_i in range(21) :
-            zbin.append(-0.5+zbin_i*0.1)
+        for zbin_i in range(12) :
+            zbin.append(zbin_i*0.1)
         zbinarray=array.array("d",zbin)
         jetptbin = [0.0,5.0,15.0,35.0]
         jetptbinarray=array.array("d",jetptbin)
         
-        hz_gen_nocuts=TH1F("hz_gen_nocuts","",20, zbinarray)
-        hz_gen_cuts=TH1F("hz_gen_cuts","",20,zbinarray)
+        hz_gen_nocuts=TH1F("hz_gen_nocuts","",11, zbinarray)
+        hz_gen_cuts=TH1F("hz_gen_cuts","",11,zbinarray)
 
-        hzvsjetpt_reco_closure=TH2F("hzvsjetpt_reco_closure","",20,zbinarray,3, jetptbinarray)
-        hzvsjetpt_gen_closure=TH2F("hzvsjetpt_gen_closure","",20,zbinarray,3, jetptbinarray)
+        hzvsjetpt_reco_closure=TH2F("hzvsjetpt_reco_closure","",11,zbinarray,3,jetptbinarray)
+        hzvsjetpt_gen_closure=TH2F("hzvsjetpt_gen_closure","",11,zbinarray,3,jetptbinarray)
 
-        hzvsjetpt_reco=TH2F("hzvsjetpt_reco","",20,zbinarray,3,jetptbinarray)
-        hzvsjetpt_gen=TH2F("hzvsjetpt_gen","",20,zbinarray,3,jetptbinarray)
+        hzvsjetpt_reco=TH2F("hzvsjetpt_reco","",11,zbinarray,3,jetptbinarray)
+        hzvsjetpt_gen=TH2F("hzvsjetpt_gen","",11,zbinarray,3,jetptbinarray)
 
         response_matrix = RooUnfoldResponse(hzvsjetpt_reco, hzvsjetpt_gen)
         response_matrix_closure = RooUnfoldResponse(hzvsjetpt_reco, hzvsjetpt_gen)
 
         random_number = TRandom3(0)
         for index, row in df_mc_reco_merged_prompt.iterrows():
-
             hzvsjetpt_reco.Fill(row['z_reco'],row['pt_jet'])
             hzvsjetpt_gen.Fill(row['z_gen'],row['pt_gen_jet'])
 
             response_matrix.Fill(row['z_reco'],row['pt_jet'],row['z_gen'],row['pt_gen_jet'])
-
-            hz_gen_nocuts.Fill(row['z_gen'])
-            if row['pt_jet'] > 5 and row['pt_jet'] <15 :
-                hz_gen_cuts.Fill(row['z_gen'])
+            if row['pt_gen_jet'] > 5 and row['pt_gen_jet'] <15 :
+                hz_gen_nocuts.Fill(row['z_gen'])
+                if row['pt_jet'] > 5 and row['pt_jet'] <15 :
+                    hz_gen_cuts.Fill(row['z_gen'])
 
             if random_number.Rndm() < 0.1 :
                 hzvsjetpt_reco_closure.Fill(row['z_reco'],row['pt_jet'])

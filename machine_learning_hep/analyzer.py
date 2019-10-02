@@ -1402,12 +1402,12 @@ class Analyzer:
                               (self.d_resultsallpdata, self.case, self.typean), "RECREATE")
         fileouts.cd()
         zbin =[]
-        for zbin_i in range(21):
-            zbin.append(-0.5+zbin_i*0.1)
+        for zbin_i in range(12):
+            zbin.append(zbin_i*0.1)
         zbinarray=array("d",zbin)
         jetptbin = [0.0,5.0,15.0,35.0]
         jetptbinarray=array("d",jetptbin)
-        hzvsjetpt = TH2F("hzvsjetpt","",20, zbinarray, 3, jetptbinarray)
+        hzvsjetpt = TH2F("hzvsjetpt","",11, zbinarray, 3, jetptbinarray)
         for imult in range(self.p_nbin2):
             heff = eff_file.Get("eff_mult%d" % imult)
             hz = None
@@ -1420,7 +1420,7 @@ class Analyzer:
                           self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
                 hzvsmass = lfile.Get("hzvsmass" + suffix)
                 load_dir = func_file.GetDirectory(suffix)
-                mass_fitter = load_dir.Get("fitter")
+                mass_fitter = load_dir.Get("fitter%d" % (ipt))
                 mean = mass_fitter.GetMean()
                 sigma = mass_fitter.GetSigma()
                 binmasslow2sig = hzvsmass.GetXaxis().FindBin(mean - 2*sigma)
@@ -1542,8 +1542,12 @@ class Analyzer:
                       (self.d_resultsallpdata, self.case, self.typean, self.v_var2_binning, \
                        self.lvar2_binmin[imult], self.lvar2_binmax[imult]))
             for zbins in range(20):
+                if hz.GetBinContent(zbins+1) is not 0.0:
                     hzvsjetpt.SetBinContent(zbins+1,imult+1,hz.GetBinContent(zbins+1))
-                    hzvsjetpt.SetBinError(zbins+1,imult+1,hz.GetBinError(zbins+1)) 
+                    hzvsjetpt.SetBinError(zbins+1,imult+1,hz.GetBinError(zbins+1))
+                else:
+                    hzvsjetpt.SetBinContent(zbins+1,imult+1,0.0)
+                    hzvsjetpt.SetBinError(zbins+1,imult+1,0.0)
         hzvsjetpt.Write("hzvsjetpt")
         czvsjetpt = TCanvas('czvsjetpt' + suffix, '2D input to unfolding')
         czvsjetpt.SetCanvasSize(1900, 1500)
@@ -1983,16 +1987,31 @@ class Analyzer:
         lfile = TFile.Open(self.n_filemass,"update")
         fileouts = TFile.Open("%s/unfolding_results%s%s.root" % \
                               (self.d_resultsallpdata, self.case, self.typean), "recreate")
-        unfolding_input_data_file = TFile.Open("%s/side_band_sub%s%s.root" % \
+        unfolding_input_data_file = TFile.Open("%s/sideband_sub%s%s.root" % \
                                                (self.d_resultsallpdata, self.case, self.typean))
         unfolding_input_file = TFile.Open(self.n_fileff)
         response_matrix = unfolding_input_file.Get("response_matrix")
         input_data = unfolding_input_data_file.Get("hzvsjetpt")
-        print(input_data.GetBinContent(20))
         kinematic_eff = unfolding_input_file.Get("kin_eff")
+        fileouts.cd()
         for i in range(15) :
             unfolding_object = RooUnfoldBayes(response_matrix, input_data, i)
-            unfolded_zvsjetpt = unfolding_object.Hreco(2) #check this
+            unfolded_zvsjetpt = unfolding_object.Hreco(2)
+        
+            cunfolded_zvsjetpt = TCanvas('cunfolded_zvsjetpt ', '2D output of unfolding')
+            cunfolded_zvsjetpt.SetCanvasSize(1900, 1500)
+            cunfolded_zvsjetpt.SetWindowSize(500, 500)
+            unfolded_zvsjetpt.Draw("text")
+            cunfolded_zvsjetpt.SaveAs("%s/cunfolded_zvsjetpt.eps" % self.d_resultsallpdata)
+
+
+            cunfolded_input = TCanvas('cunfolded_input ', '2D input of unfolding')
+            cunfolded_input.SetCanvasSize(1900, 1500)
+            cunfolded_input.SetWindowSize(500, 500)
+            input_data.Draw("text")
+            cunfolded_input.SaveAs("%s/cunfolded_input.eps" % self.d_resultsallpdata)
+
+            
             unfolded_z = unfolded_zvsjetpt.ProjectionX("unfolded_z",2,2,"e")
             unfolded_z_scaled = unfolded_z.Clone("unfolded_z_scaled") 
             unfolded_z_scaled.Divide(kinematic_eff)
