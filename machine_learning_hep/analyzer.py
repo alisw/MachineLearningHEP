@@ -568,12 +568,6 @@ class Analyzer:
                 canvas_data[imult].cd(ipt+1)
                 mass_fitter[ifit].DrawHere(gPad, self.p_nsigma_signal)
 
-                # Write fitters to file
-                fit_root_dir = fileout.mkdir(suffix)
-                fit_root_dir.WriteObject(mass_fitter_mc_init[ipt], "fitter_mc_init")
-                fit_root_dir.WriteObject(mass_fitter_data_init[ipt], "fitter_data_init")
-                fit_root_dir.WriteObject(mass_fitter[ifit], "fitter")
-
                 if success == 1:
                     # In case of success == 2, no signal was found, in case of 0, fit failed
                     rawYield = mass_fitter[ifit].GetRawYield()
@@ -596,8 +590,36 @@ class Analyzer:
                     sigmas_histos[imult].SetBinError(ipt + 1, \
                                                      mass_fitter[ifit].GetSigmaUncertainty())
 
+                    # Residual plot
+                    h_pulls = h_invmass_rebin.Clone(f"{h_invmass_rebin.GetName()}_pull")
+                    h_residual_trend = \
+                            h_invmass_rebin.Clone(f"{h_invmass_rebin.GetName()}_residual_trend")
+                    h_pulls_trend = \
+                            h_invmass_rebin.Clone(f"{h_invmass_rebin.GetName()}_pulls_trend")
+                    h_sig_sub = mass_fitter[ifit].GetOverBackgroundResidualsAndPulls( \
+                            h_pulls, h_residual_trend, h_pulls_trend, self.p_massmin[ipt],
+                            self.p_massmax[ipt])
+
+                    c_res = TCanvas('cRes', 'The Fit Canvas', 800, 800)
+                    c_res.cd()
+                    h_sig_sub.Draw()
+                    c_res.SaveAs(self.make_file_path(self.d_resultsallpdata, "residual", "eps",
+                                                     None, suffix_write))
+                    c_res.Close()
+
                 else:
                     self.logger.error("Fit failed for suffix %s", suffix_write)
+
+                # Write fitters to file
+                fit_root_dir = fileout.mkdir(suffix)
+                fit_root_dir.WriteObject(mass_fitter_mc_init[ipt], "fitter_mc_init")
+                fit_root_dir.WriteObject(mass_fitter_data_init[ipt], "fitter_data_init")
+                fit_root_dir.WriteObject(mass_fitter[ifit], "fitter")
+
+            #####################
+            # Back in mult loop #
+            #####################
+
             suffix2 = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin[imult], \
                                         self.lvar2_binmax[imult])
             if imult == 0:
@@ -615,6 +637,7 @@ class Analyzer:
             #canvas_data[imult].Close()
             fileout.cd()
             yieldshistos[imult].Write()
+
 
             del mass_fitter_mc_init[:]
             del mass_fitter_data_init[:]
