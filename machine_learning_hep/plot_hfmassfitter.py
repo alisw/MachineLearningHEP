@@ -23,7 +23,7 @@ import yaml
 from ROOT import TFile, TH1F, TCanvas
 from ROOT import gStyle, TLegend, TLatex
 from ROOT import Double
-from ROOT import gROOT, kRed, kGreen, kBlack, kBlue
+from ROOT import gROOT, kRed, kGreen, kBlack, kBlue, kOrange, kViolet, kAzure
 from ROOT import TStyle, gPad
 
 # pylint: disable=import-error, no-name-in-module, unused-import
@@ -49,6 +49,11 @@ def plot_hfmassfitter(case, arraytype):
 
     with open("data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
+
+    folder_plots = data_param[case]["analysis"]["dir_general_plots"]
+    if not os.path.exists(folder_plots):
+        print("creating folder ", folder_plots)
+        os.makedirs(folder_plots)
 
     v_var_binning = data_param[case]["var_binning"]
     lpt_finbinminMB = data_param[case]["analysis"][arraytype[0]]["sel_an_binmin"]
@@ -89,6 +94,12 @@ def plot_hfmassfitter(case, arraytype):
     sigmahistos = [TH1F("hsigma%d" % (imult), "", \
                                     p_nptbins, array("d", ptranges)) \
                                     for imult in range(p_nbin2)]
+    sighistos = [TH1F("hsig%d" % (imult), "", \
+                                p_nptbins, array("d", ptranges)) \
+                                for imult in range(p_nbin2)]
+    backhistos = [TH1F("hback%d" % (imult), "", \
+                                  p_nptbins, array("d", ptranges)) \
+                                  for imult in range(p_nbin2)]
 
     for imult, iplot in enumerate(plotbinMB):
         if not iplot:
@@ -121,6 +132,17 @@ def plot_hfmassfitter(case, arraytype):
             esigma = mass_fitter.GetSigmaUncertainty()
             sigmahistos[imult].SetBinContent(ipt + 1, sigma)
             sigmahistos[imult].SetBinError(ipt + 1, esigma)
+            sig = mass_fitter.GetRawYield()
+            esig = mass_fitter.GetRawYieldError()
+            sighistos[imult].SetBinContent(ipt + 1, sig)
+            sighistos[imult].SetBinError(ipt + 1, esig)
+            back = 0
+            eback = 0
+            rootback = Double(back)
+            rooteback = Double(eback)
+            mass_fitter.Background(3, rootback, rooteback)
+            backhistos[imult].SetBinContent(ipt + 1, rootback)
+            backhistos[imult].SetBinError(ipt + 1, rooteback)
 
     for imult, iplot in enumerate(plotbinHM):
         if not iplot:
@@ -153,6 +175,17 @@ def plot_hfmassfitter(case, arraytype):
             esigma = mass_fitter.GetSigmaUncertainty()
             sigmahistos[imult].SetBinContent(ipt + 1, sigma)
             sigmahistos[imult].SetBinError(ipt + 1, esigma)
+            sig = mass_fitter.GetRawYield()
+            esig = mass_fitter.GetRawYieldError()
+            sighistos[imult].SetBinContent(ipt + 1, sig)
+            sighistos[imult].SetBinError(ipt + 1, esig)
+            back = 0
+            eback = 0
+            rootback = Double(back)
+            rooteback = Double(eback)
+            mass_fitter.Background(3, rootback, rooteback)
+            backhistos[imult].SetBinContent(ipt + 1, rootback)
+            backhistos[imult].SetBinError(ipt + 1, rooteback)
 
     #Significance fit plot
     csign = TCanvas('cSign', 'The Fit Canvas')
@@ -172,33 +205,31 @@ def plot_hfmassfitter(case, arraytype):
     leg.SetTextFont(42)
     leg.SetTextSize(0.035)
 
-    colors = [kBlack, kRed, kGreen+2, kBlue]
-    idx = 0
+    colors = [kBlack, kRed, kGreen+2, kBlue, kOrange+2, kViolet-1, kAzure+1, kOrange-7]
     for imult, iplot in enumerate(plotbinMB):
         if not iplot:
             continue
-        signfhistos[idx].SetLineColor(colors[idx])
-        signfhistos[idx].SetMarkerColor(colors[idx])
-        signfhistos[idx].SetMarkerStyle(21)
-        signfhistos[idx].Draw("same")
+        signfhistos[imult].SetLineColor(colors[imult])
+        signfhistos[imult].SetMarkerColor(colors[imult])
+        signfhistos[imult].SetMarkerStyle(21)
+        signfhistos[imult].Draw("same")
         legyieldstring = "%.1f #leq %s < %.1f (MB)" % \
                     (lvar2_binminMB[imult], latexbin2var, lvar2_binmaxMB[imult])
-        leg.AddEntry(signfhistos[idx], legyieldstring, "LEP")
-        idx = idx + 1
+        leg.AddEntry(signfhistos[imult], legyieldstring, "LEP")
 
     for imult, iplot in enumerate(plotbinHM):
         if not iplot:
             continue
-        signfhistos[idx].SetLineColor(colors[idx])
-        signfhistos[idx].SetMarkerColor(colors[idx])
-        signfhistos[idx].SetMarkerStyle(21)
-        signfhistos[idx].Draw("same")
+        signfhistos[imult].SetLineColor(colors[imult])
+        signfhistos[imult].SetMarkerColor(colors[imult])
+        signfhistos[imult].SetMarkerStyle(21)
+        signfhistos[imult].Draw("same")
         legyieldstring = "%.1f #leq %s < %.1f (HM)" % \
                     (lvar2_binminHM[imult], latexbin2var, lvar2_binmaxHM[imult])
-        leg.AddEntry(signfhistos[idx], legyieldstring, "LEP")
-        idx = idx + 1
+        leg.AddEntry(signfhistos[imult], legyieldstring, "LEP")
     leg.Draw()
-    csign.SaveAs("MassFit_Signf_%s_%scombined%s.eps" % (case, arraytype[0], arraytype[1]))
+    csign.SaveAs("%s/MassFit_Signf_%s_%scombined%s.eps" % \
+                 (folder_plots, case, arraytype[0], arraytype[1]))
 
 
     #Mean fit plot
@@ -215,34 +246,28 @@ def plot_hfmassfitter(case, arraytype):
         maxplot = 1.99
     cmean.cd(1).DrawFrame(0, minplot, 30, maxplot, ";#it{p}_{T} (GeV/#it{c});Mean %s" % name)
 
-    idx = 0
     for imult, iplot in enumerate(plotbinMB):
         if not iplot:
             continue
-        meanhistos[idx].SetLineColor(colors[idx])
-        meanhistos[idx].SetMarkerColor(colors[idx])
-        meanhistos[idx].SetMarkerStyle(21)
-        meanhistos[idx].Draw("same")
-        legyieldstring = "%.1f #leq %s < %.1f (MB)" % \
-                    (lvar2_binminMB[imult], latexbin2var, lvar2_binmaxMB[imult])
-        idx = idx + 1
+        meanhistos[imult].SetLineColor(colors[imult])
+        meanhistos[imult].SetMarkerColor(colors[imult])
+        meanhistos[imult].SetMarkerStyle(21)
+        meanhistos[imult].Draw("same")
 
     for imult, iplot in enumerate(plotbinHM):
         if not iplot:
             continue
-        meanhistos[idx].SetLineColor(colors[idx])
-        meanhistos[idx].SetMarkerColor(colors[idx])
-        meanhistos[idx].SetMarkerStyle(21)
-        meanhistos[idx].Draw("same")
-        legyieldstring = "%.1f #leq %s < %.1f (HM)" % \
-                    (lvar2_binminHM[imult], latexbin2var, lvar2_binmaxHM[imult])
-        idx = idx + 1
+        meanhistos[imult].SetLineColor(colors[imult])
+        meanhistos[imult].SetMarkerColor(colors[imult])
+        meanhistos[imult].SetMarkerStyle(21)
+        meanhistos[imult].Draw("same")
     leg.Draw()
-    cmean.SaveAs("MassFit_Mean_%s_%scombined%s.eps" % (case, arraytype[0], arraytype[1]))
+    cmean.SaveAs("%s/MassFit_Mean_%s_%scombined%s.eps" % \
+                 (folder_plots, case, arraytype[0], arraytype[1]))
 
 
-    #Sigma fit plot
-    csigm = TCanvas('cMean', 'The Fit Canvas')
+    #Sigma fit plot (to add MC!)
+    csigm = TCanvas('cSigma', 'The Fit Canvas')
     csigm.SetCanvasSize(1500, 1500)
     csigm.SetWindowSize(500, 500)
     maxplot = 0.03
@@ -250,30 +275,82 @@ def plot_hfmassfitter(case, arraytype):
         maxplot = 0.04
     csigm.cd(1).DrawFrame(0, 0, 30, maxplot, ";#it{p}_{T} (GeV/#it{c});Width %s" % name)
 
-    idx = 0
     for imult, iplot in enumerate(plotbinMB):
         if not iplot:
             continue
-        sigmahistos[idx].SetLineColor(colors[idx])
-        sigmahistos[idx].SetMarkerColor(colors[idx])
-        sigmahistos[idx].SetMarkerStyle(21)
-        sigmahistos[idx].Draw("same")
-        legyieldstring = "%.1f #leq %s < %.1f (MB)" % \
-                    (lvar2_binminMB[imult], latexbin2var, lvar2_binmaxMB[imult])
-        idx = idx + 1
+        sigmahistos[imult].SetLineColor(colors[imult])
+        sigmahistos[imult].SetMarkerColor(colors[imult])
+        sigmahistos[imult].SetMarkerStyle(21)
+        sigmahistos[imult].Draw("same")
 
     for imult, iplot in enumerate(plotbinHM):
         if not iplot:
             continue
-        sigmahistos[idx].SetLineColor(colors[idx])
-        sigmahistos[idx].SetMarkerColor(colors[idx])
-        sigmahistos[idx].SetMarkerStyle(21)
-        sigmahistos[idx].Draw("same")
-        legyieldstring = "%.1f #leq %s < %.1f (HM)" % \
-                    (lvar2_binminHM[imult], latexbin2var, lvar2_binmaxHM[imult])
-        idx = idx + 1
+        sigmahistos[imult].SetLineColor(colors[imult])
+        sigmahistos[imult].SetMarkerColor(colors[imult])
+        sigmahistos[imult].SetMarkerStyle(21)
+        sigmahistos[imult].Draw("same")
     leg.Draw()
-    csigm.SaveAs("MassFit_Sigma_%s_%scombined%s.eps" % (case, arraytype[0], arraytype[1]))
+    csigm.SaveAs("%s/MassFit_Sigma_%s_%scombined%s.eps" % \
+                 (folder_plots, case, arraytype[0], arraytype[1]))
+
+
+    #Signal fit plot
+    csig = TCanvas('cSig', 'The Fit Canvas')
+    csig.SetCanvasSize(1500, 1500)
+    csig.SetWindowSize(500, 500)
+    csig.cd(1)
+
+    #First draw HM for scale
+    for imult, iplot in enumerate(plotbinHM):
+        if not iplot:
+            continue
+        sighistos[imult].SetTitle(";#it{p}_{T} (GeV/#it{c});Signal %s" % name)
+        sighistos[imult].SetLineColor(colors[imult])
+        sighistos[imult].SetMarkerColor(colors[imult])
+        sighistos[imult].SetMarkerStyle(21)
+        sighistos[imult].Draw("same")
+
+    for imult, iplot in enumerate(plotbinMB):
+        if not iplot:
+            continue
+        sighistos[imult].SetTitle(";#it{p}_{T} (GeV/#it{c});Signal %s" % name)
+        sighistos[imult].SetLineColor(colors[imult])
+        sighistos[imult].SetMarkerColor(colors[imult])
+        sighistos[imult].SetMarkerStyle(21)
+        sighistos[imult].Draw("same")
+    leg.Draw()
+    csig.SaveAs("%s/MassFit_Signal_%s_%scombined%s.eps" % \
+                (folder_plots, case, arraytype[0], arraytype[1]))
+
+
+    #Background fit plot
+    cback = TCanvas('cBack', 'The Fit Canvas')
+    cback.SetCanvasSize(1500, 1500)
+    cback.SetWindowSize(500, 500)
+    cback.cd(1)
+
+    #First draw HM for scale
+    for imult, iplot in enumerate(plotbinHM):
+        if not iplot:
+            continue
+        backhistos[imult].SetTitle(";#it{p}_{T} (GeV/#it{c});Background %s" % name)
+        backhistos[imult].SetLineColor(colors[imult])
+        backhistos[imult].SetMarkerColor(colors[imult])
+        backhistos[imult].SetMarkerStyle(21)
+        backhistos[imult].Draw("same")
+
+    for imult, iplot in enumerate(plotbinMB):
+        if not iplot:
+            continue
+        backhistos[imult].SetTitle(";#it{p}_{T} (GeV/#it{c});Background %s" % name)
+        backhistos[imult].SetLineColor(colors[imult])
+        backhistos[imult].SetMarkerColor(colors[imult])
+        backhistos[imult].SetMarkerStyle(21)
+        backhistos[imult].Draw("same")
+    leg.Draw()
+    cback.SaveAs("%s/MassFit_Background_%s_%scombined%s.eps" % \
+                 (folder_plots, case, arraytype[0], arraytype[1]))
 
 def make_pre_suffix(args):
     """
@@ -305,6 +382,6 @@ plot_hfmassfitter("D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
 plot_hfmassfitter("Dspp", ["MBvspt_ntrkl", "SPDvspt"])
 plot_hfmassfitter("Dspp", ["MBvspt_v0m", "V0mvspt"])
 plot_hfmassfitter("Dspp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
-#plot_hfmassfitter("LcpKpipp", ["MBvspt_ntrkl", "SPDvspt"])
-#plot_hfmassfitter("LcpKpipp", ["MBvspt_v0m", "V0mvspt"])
-#plot_hfmassfitter("LcpKpipp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
+plot_hfmassfitter("LcpKpipp", ["MBvspt_ntrkl", "SPDvspt"])
+plot_hfmassfitter("LcpKpipp", ["MBvspt_v0m", "V0mvspt"])
+plot_hfmassfitter("LcpKpipp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
