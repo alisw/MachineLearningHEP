@@ -21,7 +21,7 @@ from array import *
 # pylint: disable=import-error, no-name-in-module, unused-import
 import yaml
 from ROOT import TFile, TH1F, TCanvas
-from ROOT import gStyle, TLegend
+from ROOT import gStyle, TLegend, TPad, TLine
 from ROOT import gROOT, kRed, kGreen
 
 # pylint: disable=import-error, no-name-in-module, unused-import
@@ -47,7 +47,13 @@ def plot_hfspectrum_years_ratios(histo_ml, histo_std, title, x_label, y_label, s
 
     canvas = TCanvas('cCross', 'The Fit Canvas', 800, 800)
     canvas.SetLogy()
-    canvas.cd(1).DrawFrame(min_x, 0.5 * min_y, max_x, 2 * max_y, f"{title};{x_label};{y_label}")
+    pad_up = TPad("pad_up", "", 0., 0.4, 1., 1.)
+    pad_up.SetBottomMargin(0.)
+    pad_up.Draw()
+    #ccross.SetLogx()
+    pad_up.SetLogy()
+    pad_up.cd()
+    pad_up.DrawFrame(min_x, 0.5 * min_y, max_x, 2 * max_y, f"{title};;{y_label}")
     # ML histogram
     legend.AddEntry(histo_ml, "ML")
     histo_ml.SetLineColor(kGreen + 2)
@@ -55,6 +61,9 @@ def plot_hfspectrum_years_ratios(histo_ml, histo_std, title, x_label, y_label, s
     histo_ml.SetMarkerColor(kGreen + 2)
     histo_ml.SetStats(0)
     histo_ml.Draw("same")
+
+    histo_ratio = histo_ml.Clone("ratio")
+    histo_ratio.Divide(histo_std)
     # STD histogram
     legend.AddEntry(histo_std, "STD")
     histo_std.SetLineColor(kRed + 2)
@@ -64,8 +73,30 @@ def plot_hfspectrum_years_ratios(histo_ml, histo_std, title, x_label, y_label, s
     histo_std.SetStats(0)
     histo_std.Draw("same")
     legend.Draw()
+
+    canvas.cd()
+    pad_double = TPad("pad_double", "", 0., 0.05, 1., 0.4)
+    pad_double.SetTopMargin(0.)
+    pad_double.SetBottomMargin(0.3)
+    pad_double.Draw()
+    pad_double.cd()
+    frame_double = pad_double.DrawFrame(min_x, 0.5 * histo_ratio.GetMinimum(),
+                                        max_x, 2 * histo_ratio.GetMaximum(),
+                                        f"; {x_label} ; ML / STD")
+    frame_double.SetTitleFont(42, "xy")
+    frame_double.SetTitleSize(0.04, "xy")
+    frame_double.SetLabelSize(0.04, "xy")
+    histo_ratio.Draw("same")
+
+    line_unity = TLine(frame_double.GetXaxis().GetXmin(), 1.,
+                       frame_double.GetXaxis().GetXmax(), 1.)
+    line_unity.SetLineColor(histo_std.GetLineColor())
+    line_unity.SetLineStyle(histo_std.GetLineStyle())
+    line_unity.Draw()
+
     canvas.SaveAs(save_path)
     canvas.Close()
+
 
 def compare_ml_std(case_ml, ana_type_ml, filepath_std):
 
@@ -102,7 +133,7 @@ def compare_ml_std(case_ml, ana_type_ml, filepath_std):
         save_path = f"{folder_plots}/{hn}_ml_std.eps"
 
         plot_hfspectrum_years_ratios(histo_ml, histo_std, histo_ml.GetTitle(),
-                                     histo_ml.GetXaxis().GetTitle(),
+                                     "#it{p}_{T} (GeV/#it{c}",
                                      histo_ml.GetYaxis().GetTitle(), save_path)
 
 #####################################
