@@ -123,6 +123,7 @@ LcpKpipp:
     namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl.lz4
     namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl.lz4
     namefile_reco: AnalysisResultsReco.pkl.lz4
+    namefile_mcweights: mcweights.root
     treeoriginreco: 'PWGHF_TreeCreator/tree_LctopKpi'
     treeorigingen: 'PWGHF_TreeCreator/tree_LctopKpi_gen'
     treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
@@ -179,6 +180,7 @@ LcpKpipp:
                                  /data/Derived/LcpKpikINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_2018_mc_prodLcpKpi/243_20190922-2234/pklskml] #list of periods
       pkl_skimmed_merge_for_ml_all: /data/Derived/LcpKpikINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_mc_prodLcpKpi_mltot
       pkl_evtcounter_all: /data/Derived/LcpKpikINT7HighMultwithJets/vAN-20190922_ROOT6-1/pp_mc_prodLcpKpi_evttot
+      mcreweights: [reweighting/prodD2H_16, reweighting/prodD2H_17, reweighting/prodD2H_18]
   ml:
     evtsel: is_ev_rej==0
     triggersel:
