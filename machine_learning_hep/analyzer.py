@@ -141,6 +141,7 @@ class Analyzer:
 
         # Systematics
         syst_dict = datap["analysis"][self.typean].get("systematics", None)
+        self.do_syst = not syst_dict
         self.p_max_chisquare_ndf_syst = syst_dict["max_chisquare_ndf"] \
                 if syst_dict is not None else None
         self.p_rebin_syst = syst_dict["rebin"] if syst_dict is not None else None
@@ -687,6 +688,9 @@ class Analyzer:
 
     # pylint: disable=too-many-locals, too-many-nested-blocks, too-many-branches
     def yield_syst(self):
+        if not self.do_syst:
+            self.logger.warning("Could not find parameters for doing systemtics. Skip...")
+            return
         # Enable ROOT batch mode and reset in the end
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
@@ -733,6 +737,9 @@ class Analyzer:
                 multi_trial.SetSigmaGaussMC(mass_fitter_nominal.GetSigma())
 
                 # Set background functions to test
+                if not self.p_bkg_funcs_syst:
+                    self.logger.fatal("You need to choose at least one background function for " \
+                                      "the multi trial")
                 for bkg in self.p_bkg_funcs_syst:
                     if bkg == "kExpo":
                         multi_trial.SetUseExpoBackground(True)
@@ -754,13 +761,17 @@ class Analyzer:
                         continue
 
                     self.logger.fatal("Unknown background %s for multi trial", bkg)
-                rebin_steps = array("i", self.p_rebin_syst)
-                low_lim_steps = array("d", self.p_fit_ranges_low_syst)
-                up_lim_steps = array("d", self.p_fit_ranges_up_syst)
 
-                multi_trial.ConfigureRebinSteps(len(self.p_rebin_syst), rebin_steps)
-                multi_trial.ConfigureLowLimFitSteps(len(self.p_fit_ranges_low_syst), low_lim_steps)
-                multi_trial.ConfigureUpLimFitSteps(len(self.p_fit_ranges_up_syst), up_lim_steps)
+                if self.p_rebin_syst:
+                    rebin_steps = array("i", self.p_rebin_syst)
+                    multi_trial.ConfigureRebinSteps(len(self.p_rebin_syst), rebin_steps)
+                if self.p_fit_ranges_low_syst:
+                    low_lim_steps = array("d", self.p_fit_ranges_low_syst)
+                    multi_trial.ConfigureLowLimFitSteps(len(self.p_fit_ranges_low_syst),
+                                                        low_lim_steps)
+                if self.p_fit_ranges_up_syst:
+                    up_lim_steps = array("d", self.p_fit_ranges_up_syst)
+                    multi_trial.ConfigureUpLimFitSteps(len(self.p_fit_ranges_up_syst), up_lim_steps)
                 multi_trial.SetSaveBkgValue()
 
                 if h_invmass_mc_refl is not None:
