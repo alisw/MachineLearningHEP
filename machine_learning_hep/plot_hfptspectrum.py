@@ -29,6 +29,7 @@ from ROOT import TStyle, gPad
 # pylint: disable=import-error, no-name-in-module, unused-import
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-branches
+# pylint: disable=too-many-locals
 def plot_hfptspectrum_comb(case, arraytype):
 
     gROOT.SetStyle("Plain")
@@ -127,21 +128,21 @@ def plot_hfptspectrum_comb(case, arraytype):
                   (folder_plots, case, arraytype[0], arraytype[1]))
         tryunmerged = False
     else:
-        print("---Warning: Issue with merged files. Trying with unmerged files for %s (%s, %s)---" % \
+        print("---Warning: Issue with merged, trying with unmerged files for %s (%s, %s)---" % \
                  (case, arraytype[0], arraytype[1]))
 
     for imult, iplot in enumerate(plotbinMB):
         if not iplot:
             continue
         if not fileres_MB[imult]:
-            print("---Warning: Issue with MB file. Eff, FD (and corr. yield) plot skipped for %s (%s, %s)---" % \
+            print("---Warning: Issue with MB file. Eff, FD, CY plot skipped for %s (%s, %s)---" % \
                    (case, arraytype[0], arraytype[1]))
             return
     for imult, iplot in enumerate(plotbinHM):
         if not iplot:
             continue
         if not fileres_trig[imult]:
-            print("---Warning: Issue with HM file. Eff, FD (and corr. yield) plot skipped for %s (%s, %s)---" % \
+            print("---Warning: Issue with HM file. Eff, FD, CY plot skipped for %s (%s, %s)---" % \
                    (case, arraytype[0], arraytype[1]))
             return
 
@@ -377,6 +378,7 @@ def plot_hfptspectrum_comb(case, arraytype):
 
 # pylint: disable=import-error, no-name-in-module, unused-import
 # pylint: disable=too-many-statements
+# pylint: disable=too-many-locals
 def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype):
 
     gROOT.SetStyle("Plain")
@@ -403,8 +405,8 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype):
     folder_plots_num = data_param_num[case_num]["analysis"]["dir_general_plots"]
     folder_plots_den = data_param_den[case_den]["analysis"]["dir_general_plots"]
     if not os.path.exists(folder_plots_num):
-      print("creating folder ", folder_plots_num)
-      os.makedirs(folder_plots_num)
+        print("creating folder ", folder_plots_num)
+        os.makedirs(folder_plots_num)
     if not os.path.exists(folder_plots_den):
         print("creating folder ", folder_plots_den)
         os.makedirs(folder_plots_den)
@@ -458,7 +460,8 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype):
     maxplot = 1.0
     if case_num == "Dspp":
         maxplot = 0.5
-    ccross.cd(1).DrawFrame(0.9, 0, 30, maxplot, ";#it{p}_{T} (GeV/#it{c});%s / %s" % (name_num, name_den))
+    ccross.cd(1).DrawFrame(0.9, 0, 30, maxplot, ";#it{p}_{T} (GeV/#it{c});%s / %s" % \
+                           (name_num, name_den))
     ccross.cd(1).SetLogx()
 
     legyield = TLegend(.4, .68, .8, .88)
