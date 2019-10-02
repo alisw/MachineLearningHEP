@@ -320,7 +320,8 @@ def plot_hfmassfitter(case, arraytype):
         sighistos[imult].SetMarkerStyle(21)
         sighistos[imult].Draw("same")
     leg.Draw()
-    csig.SaveAs("%s/MassFit_Signal_%s_%scombined%s.eps" % (folder_plots, case, arraytype[0], arraytype[1]))
+    csig.SaveAs("%s/MassFit_Signal_%s_%scombined%s.eps" % \
+                (folder_plots, case, arraytype[0], arraytype[1]))
 
 
     #Background fit plot
