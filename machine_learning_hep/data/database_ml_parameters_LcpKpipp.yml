@@ -393,14 +393,6 @@ LcpKpipp:
       nevents: null
       dodoublecross: false
       
-      systematics:
-        # For now don't do these things per pT bin
-        max_chisquare_ndf: 2.
-        rebin: [4,6,8]
-        massmin: [2.12 2.13, 2.14, 2.15]
-        massmax: [2.408, 2.407, 2.406, 2.405]
-        bincount_sigma: [3.5, 4.0,4.5]
-
     MBvspt_perc:
       useperiod: [0,1,1]
       normalizecross: false
