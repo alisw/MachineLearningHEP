@@ -385,6 +385,15 @@ LcpK0spp:
       nevents: null
       dodoublecross: false
 
+      systematics:
+        # For now don't do these things per pT bin
+        max_chisquare_ndf: 2.
+        rebin: [4,6,8]
+        massmin: [2.14, 2.17, 2.20, 2.23]
+        massmax: [2.436, 2.406, 2.376, 2.346]
+        bincount_sigma: [3.5, 4.0,4.5]
+        bkg_funcs: [Pol2, Pol3]
+
     MBvspt_v0m:
       useperiod: [0,1,1]
       normalizecross: false
@@ -518,15 +527,6 @@ LcpK0spp:
       latexbin2var: "V0M perc."
       nevents: null
       dodoublecross: false
-
-      systematics:
-        # For now don't do these things per pT bin
-        max_chisquare_ndf: 2.
-        rebin: [4,6,8]
-        massmin: [2.14, 2.17, 2.20, 2.23]
-        massmax: [2.436, 2.406, 2.376, 2.346]
-        bincount_sigma: [3.5, 4.0,4.5]
-
 
     MBjetvspt:
       useperiod: [1,1,1]
