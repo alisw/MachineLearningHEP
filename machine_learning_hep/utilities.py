@@ -20,6 +20,7 @@ import bz2
 import gzip
 import lzma
 import os
+import math
 import numpy as np
 import pandas as pd
 import lz4
@@ -204,3 +205,23 @@ def z_gen_calc(pt_1, phi_1, eta_1, pt_2, delta_phi, delta_eta):
 
 def get_bins(axis):
     return np.array([axis.GetBinLowEdge(i) for i in range(1, axis.GetNbins() + 2)])
+
+def folding(h_input, response_matrix, h_output):
+    h_folded = h_output.Clone("h_folded")
+    for a in range(h_output.GetNbinsX()):
+        for b in range(h_output.GetNbinsY()):
+            val = 0.
+            val_err = 0.
+            for k in range(h_input.GetNbinsX()):
+                for l in range(h_input.GetNbinsY()):
+                    index_x_out = a + h_output.GetNbinsX() * b
+                    index_x_in = k + h_input.GetNbinsX() * l
+                    val += h_input.GetBinContent(k + 1, l + 1) * \
+                        response_matrix(index_x_out, index_x_in)
+                    val_err += h_input.GetBinError(k + 1, l + 1) * \
+                        h_input.GetBinError(k + 1, l + 1) * \
+                        response_matrix(index_x_out, index_x_in) * \
+                        response_matrix(index_x_out, index_x_in)
+            h_folded.SetBinContent(a + 1, b + 1, val)
+            h_folded.SetBinError(a + 1, b + 1, math.sqrt(val_err))
+    return h_folded

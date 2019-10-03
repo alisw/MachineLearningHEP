@@ -23,7 +23,7 @@ from subprocess import Popen
 import numpy as np
 # pylint: disable=import-error, no-name-in-module, unused-import
 from root_numpy import hist2array, array2hist
-from ROOT import TFile, TH1F, TCanvas, TPad, TF1, TH1D
+from ROOT import TFile, TH1F, TH2F, TCanvas, TPad, TF1, TH1D
 from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
 from ROOT import gROOT, TDirectory, TPaveLabel
 from ROOT import TStyle, kBlue, kGreen, kBlack, kRed
@@ -33,6 +33,7 @@ from ROOT import gInterpreter, gPad
 from machine_learning_hep.globalfitter import Fitter
 from  machine_learning_hep.logger import get_logger
 from  machine_learning_hep.io import dump_yaml_from_dict
+from machine_learning_hep.utilities import folding, get_bins
 #from ROOT import RooUnfoldResponse
 #from ROOT import RooUnfold
 #from ROOT import RooUnfoldBayes
@@ -1108,11 +1109,13 @@ class Analyzer:
         # Get simulated pt_cand vs. pt_jet vs. z of non-prompt jets.
         his_sim_z_fd = file_resp.Get("his_ptc_ptjet_z_fd")
         his_sim_z_fd.Scale(1./n_jets_gen) # Normalise by the total number of selected jets.
-        his_sim_z_fd_2d = his_sim_z_fd.Project3D("yz") # final feed-down histogram
-        file_out.cd()
-        his_sim_z_fd_2d.Write("fd_z_ptjet_gen")
+        his_sim_z_fd_2d_gen = his_sim_z_fd.Project3D("yz")
+        bins_z = get_bins(his_sim_z_fd_2d_gen.GetXaxis())
+        bins_ptjet = get_bins(his_sim_z_fd_2d_gen.GetYaxis())
+        his_sim_z_fd_2d_eff = TH2F("fd_z_ptjet_eff", "fd_z_ptjet_eff", \
+            len(bins_z) - 1, bins_z, len(bins_ptjet) - 1, bins_ptjet) # final feed-down histogram
+        his_sim_z_fd_2d_eff.Sumw2()
         # x axis = z, y axis = pt_jet
-        his_sim_z_fd_2d.Reset()
         # Scale with the ratio of efficiencies.
         # loop over pt_jet bins
         for i_ptjet in range(self.p_nbin2):
@@ -1125,31 +1128,72 @@ class Analyzer:
             his_eff_fd.Divide(his_eff_pr)
             his_eff_ratio = his_eff_fd
             # loop over z bins
-            for i_z in range(his_sim_z_fd_2d.GetNbinsX()):
+            for i_z in range(his_sim_z_fd_2d_eff.GetNbinsX()):
                 bin_z = i_z + 1
                 his_sim_z_fd.GetYaxis().SetRange(bin_ptjet, bin_ptjet)
                 his_sim_z_fd.GetZaxis().SetRange(bin_z, bin_z)
                 his_sim_ptc_fd = his_sim_z_fd.Project3D("x") # pt_cand
                 his_sim_ptc_fd.Multiply(his_eff_ratio)
-                his_sim_z_fd_2d.SetBinContent(bin_z, bin_ptjet, his_sim_ptc_fd.Integral())
-            can_ff_fd = TCanvas("can_fd_z%d" % i_ptjet, "Feeddown FF", 800, 600)
-            his_ff_fd = his_sim_z_fd_2d.ProjectionX("ff%d" % i_ptjet, bin_ptjet, bin_ptjet, "e")
-            his_ff_fd.GetYaxis().SetTitle("#frac{1}{#it{N}_{jet}} #frac{d#it{N}}{d#it{z}}")
-            his_ff_fd.GetYaxis().SetTitleOffset(1.6)
-            his_ff_fd.GetYaxis().SetTitleFont(42)
-            his_ff_fd.GetYaxis().SetLabelFont(42)
-            his_ff_fd.Draw()
-            can_ff_fd.SetLeftMargin(0.15)
-            can_ff_fd.SaveAs("%s/Feeddown-z-effscaled_%s%s%s.eps" % (self.d_resultsallpmc, \
-                            self.case, self.typean, i_ptjet))
+                his_sim_z_fd_2d_eff.SetBinContent(bin_z, bin_ptjet, his_sim_ptc_fd.Integral())
+                his_sim_z_fd_2d_eff.SetBinError(bin_z, bin_ptjet, 0)
 
         # Smear (fold) the simulated distribution with the response matrix.
         resp_z = file_resp.Get("resp_z")
-        his_sim_z_fd_2d_folded = resp_z.ApplyToTruth(his_sim_z_fd_2d)
+        his_sim_z_fd_2d_folded = resp_z.ApplyToTruth(his_sim_z_fd_2d_eff)
+        # Alternative way of folding without RooUnfold
+        #his_sim_z_fd_2d_folded = his_sim_z_fd_2d_eff.Clone("his_sim_z_fd_2d_folded")
+        #his_sim_z_fd_2d_folded.Reset()
+        #his_sim_z_fd_2d_folded = folding(his_sim_z_fd_2d_eff, resp_z, his_sim_z_fd_2d_folded)
+        resp_z_proj = resp_z.Hresponse()
+        can_resp_z = TCanvas("can_resp_z", "can_resp_z", 800, 600)
+        resp_z_proj.Draw("colz")
+        can_resp_z.SetLogz()
+        can_resp_z.SaveAs("%s/Feeddown-z-response_%s%s.eps" \
+                % (self.d_resultsallpmc, self.case, self.typean))
+
+        for i_ptjet in range(self.p_nbin2):
+            bin_ptjet = i_ptjet + 1
+            can_ff_fd_fold = TCanvas("can_fd_z_all%d" % i_ptjet, "Feeddown FF all", 800, 600)
+            his_ff_fd_gen = his_sim_z_fd_2d_gen.ProjectionX("ff_gen%d" \
+                % i_ptjet, bin_ptjet, bin_ptjet)
+            his_ff_fd_eff = his_sim_z_fd_2d_eff.ProjectionX("ff_eff%d" \
+                % i_ptjet, bin_ptjet, bin_ptjet)
+            his_ff_fd_fold = his_sim_z_fd_2d_folded.ProjectionX("ff_fold%d" \
+                % i_ptjet, bin_ptjet, bin_ptjet)
+            his_ff_fd_gen.GetYaxis().SetTitle("#frac{1}{#it{N}_{jet}} #frac{d#it{N}}{d#it{z}}")
+            his_ff_fd_gen.GetYaxis().SetTitleOffset(1.6)
+            his_ff_fd_gen.GetYaxis().SetTitleFont(42)
+            his_ff_fd_gen.GetYaxis().SetLabelFont(42)
+            his_ff_fd_gen.GetYaxis().SetRangeUser(0.0, 1.1 * max(his_ff_fd_gen.GetMaximum(), \
+                his_ff_fd_eff.GetMaximum(), his_ff_fd_fold.GetMaximum()))
+            his_ff_fd_gen.SetLineColor(1)
+            his_ff_fd_eff.SetLineColor(2)
+            his_ff_fd_fold.SetLineColor(3)
+            leg_ff_fd = TLegend(.15, .65, .35, .85)
+            leg_ff_fd.SetBorderSize(0)
+            leg_ff_fd.SetFillColor(0)
+            leg_ff_fd.SetFillStyle(0)
+            leg_ff_fd.SetTextFont(42)
+            leg_ff_fd.SetTextSize(0.035)
+            his_ff_fd_gen.SetTitle("")
+            his_ff_fd_eff.SetTitle("")
+            his_ff_fd_fold.SetTitle("")
+            his_ff_fd_gen.Draw("")
+            his_ff_fd_eff.Draw("same")
+            his_ff_fd_fold.Draw("same")
+            leg_ff_fd.AddEntry(his_ff_fd_gen, "generated", "LEP")
+            leg_ff_fd.AddEntry(his_ff_fd_eff, "eff.-scaled", "LEP")
+            leg_ff_fd.AddEntry(his_ff_fd_fold, "folded", "LEP")
+            leg_ff_fd.Draw()
+            can_ff_fd_fold.SetLeftMargin(0.15)
+            can_ff_fd_fold.SaveAs("%s/Feeddown-z-all_%s%s%s.eps" \
+                % (self.d_resultsallpmc, self.case, self.typean, i_ptjet))
 
         file_out.cd()
-        his_sim_z_fd_2d.Write("fd_z_ptjet_eff")
+        his_sim_z_fd_2d_gen.Write("fd_z_ptjet_gen")
+        his_sim_z_fd_2d_eff.Write("fd_z_ptjet_eff")
         his_sim_z_fd_2d_folded.Write("fd_z_ptjet_fold")
+        resp_z_proj.Write("resp_z_proj")
 
         file_resp.Close()
         file_eff.Close()
