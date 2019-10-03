@@ -232,6 +232,15 @@ class Analyzer:
                 self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
         sigmas_histos = [TH1F("hsigmas%d" % (imult), "", \
                 self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
+        have_summary_pt_bins = []
+        means_init_mc_histos = TH1F("hmeans_init_mc", "",
+                                    self.p_nptbins, array("d", self.ptranges))
+        sigmas_init_mc_histos = TH1F("hsigmas_init_mc", "",
+                                     self.p_nptbins, array("d", self.ptranges))
+        means_init_data_histos = TH1F("hmeans_init_data", "",
+                                      self.p_nptbins, array("d", self.ptranges))
+        sigmas_init_data_histos = TH1F("hsigmas_init_data", "",
+                                       self.p_nptbins, array("d", self.ptranges))
 
         if self.p_nptbins < 9:
             nx = 4
@@ -321,6 +330,8 @@ class Analyzer:
                                                               self.bkg_fmap[self.p_bkgfunc[ipt]],
                                                               self.sig_fmap[self.p_sgnfunc[ipt]]))
 
+                # Force to go on with final fit although there is no estimated signal
+                mass_fitter_mc_init[ipt].SetCheckSignalCountsAfterFirstFit(False)
                 if self.p_dolike:
                     mass_fitter_mc_init[ipt].SetUseLikelihoodFit()
                 mass_fitter_mc_init[ipt].SetInitialGaussianMean(mean_for_data)
@@ -332,6 +343,16 @@ class Analyzer:
                     mean_for_data = mass_fitter_mc_init[ipt].GetMean()
                     sigma_for_data = mass_fitter_mc_init[ipt].GetSigma()
                     means_sigmas_init.insert(0, (2, mean_for_data, sigma_for_data))
+                    if ipt not in have_summary_pt_bins:
+                        means_init_mc_histos.SetBinContent(ipt + 1,
+                                                           mass_fitter_mc_init[ipt].GetMean())
+                        means_init_mc_histos.SetBinError(ipt + 1, \
+                                mass_fitter_mc_init[ipt].GetMeanUncertainty())
+                        sigmas_init_mc_histos.SetBinContent(ipt + 1,
+                                                            mass_fitter_mc_init[ipt].GetSigma())
+                        sigmas_init_mc_histos.SetBinError(ipt + 1, \
+                                mass_fitter_mc_init[ipt].GetSigmaUncertainty())
+
                     fit_status[imult][ipt]["init_MC"] = True
                     if self.init_fits_from == "mc":
                         mean_case_user = mean_for_data
@@ -373,6 +394,8 @@ class Analyzer:
                                                                 self.bkg_fmap[self.p_bkgfunc[ipt]],
                                                                 self.sig_fmap[self.p_sgnfunc[ipt]]))
 
+                # Force to go on with final fit although there is no estimated signal
+                mass_fitter_data_init[ipt].SetCheckSignalCountsAfterFirstFit(False)
                 if self.p_dolike:
                     mass_fitter_data_init[ipt].SetUseLikelihoodFit()
                 mass_fitter_data_init[ipt].SetInitialGaussianMean(mean_for_data)
@@ -387,6 +410,16 @@ class Analyzer:
                 success = mass_fitter_data_init[ipt].MassFitter(False)
                 fit_status[imult][ipt]["init_data"] = False
                 if success == 1:
+                    if ipt not in have_summary_pt_bins:
+                        means_init_data_histos.SetBinContent(ipt + 1, \
+                                mass_fitter_data_init[ipt].GetMean())
+                        means_init_data_histos.SetBinError(ipt + 1, \
+                                mass_fitter_data_init[ipt].GetMeanUncertainty())
+                        sigmas_init_data_histos.SetBinContent(ipt + 1, \
+                                mass_fitter_data_init[ipt].GetSigma())
+                        sigmas_init_data_histos.SetBinError(ipt + 1, \
+                                mass_fitter_data_init[ipt].GetSigmaUncertainty())
+
                     sigmafit = mass_fitter_data_init[ipt].GetSigma()
                     if minperc * sigma_for_data < sigmafit < maxperc * sigma_for_data:
                         means_sigmas_init.insert(0, (1, mass_fitter_data_init[ipt].GetMean(),
@@ -405,6 +438,8 @@ class Analyzer:
                 canvas_init_data.cd(ipt+1)
                 mass_fitter_data_init[ipt].DrawHere(gPad, self.p_nsigma_signal)
 
+                # Remember that we have filled this pT bin
+                have_summary_pt_bins.append(ipt)
                 ######################
                 # END initialize fit #
                 ######################
@@ -466,6 +501,8 @@ class Analyzer:
                                                           self.bkg_fmap[self.p_bkgfunc[ipt]],
                                                           self.sig_fmap[self.p_sgnfunc[ipt]]))
 
+                    # Force to go on with final fit although there is no estimated signal
+                    mass_fitter[ifit].SetCheckSignalCountsAfterFirstFit(False)
                     if self.p_dolike:
                         mass_fitter[ifit].SetUseLikelihoodFit()
                     # At this point *_for_data is either
@@ -534,12 +571,6 @@ class Analyzer:
                 canvas_data[imult].cd(ipt+1)
                 mass_fitter[ifit].DrawHere(gPad, self.p_nsigma_signal)
 
-                # Write fitters to file
-                fit_root_dir = fileout.mkdir(suffix)
-                fit_root_dir.WriteObject(mass_fitter_mc_init[ipt], "fitter_mc_init")
-                fit_root_dir.WriteObject(mass_fitter_data_init[ipt], "fitter_data_init")
-                fit_root_dir.WriteObject(mass_fitter[ifit], "fitter")
-
                 if success == 1:
                     # In case of success == 2, no signal was found, in case of 0, fit failed
                     rawYield = mass_fitter[ifit].GetRawYield()
@@ -562,8 +593,36 @@ class Analyzer:
                     sigmas_histos[imult].SetBinError(ipt + 1, \
                                                      mass_fitter[ifit].GetSigmaUncertainty())
 
+                    # Residual plot
+                    h_pulls = h_invmass_rebin.Clone(f"{h_invmass_rebin.GetName()}_pull")
+                    h_residual_trend = \
+                            h_invmass_rebin.Clone(f"{h_invmass_rebin.GetName()}_residual_trend")
+                    h_pulls_trend = \
+                            h_invmass_rebin.Clone(f"{h_invmass_rebin.GetName()}_pulls_trend")
+                    h_sig_sub = mass_fitter[ifit].GetOverBackgroundResidualsAndPulls( \
+                            h_pulls, h_residual_trend, h_pulls_trend, self.p_massmin[ipt],
+                            self.p_massmax[ipt])
+
+                    c_res = TCanvas('cRes', 'The Fit Canvas', 800, 800)
+                    c_res.cd()
+                    h_sig_sub.Draw()
+                    c_res.SaveAs(self.make_file_path(self.d_resultsallpdata, "residual", "eps",
+                                                     None, suffix_write))
+                    c_res.Close()
+
                 else:
                     self.logger.error("Fit failed for suffix %s", suffix_write)
+
+                # Write fitters to file
+                fit_root_dir = fileout.mkdir(suffix)
+                fit_root_dir.WriteObject(mass_fitter_mc_init[ipt], "fitter_mc_init")
+                fit_root_dir.WriteObject(mass_fitter_data_init[ipt], "fitter_data_init")
+                fit_root_dir.WriteObject(mass_fitter[ifit], "fitter")
+
+            #####################
+            # Back in mult loop #
+            #####################
+
             suffix2 = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin[imult], \
                                         self.lvar2_binmax[imult])
             if imult == 0:
@@ -682,8 +741,50 @@ class Analyzer:
         cSigmas.SaveAs(save_name)
         cSigmas.Close()
 
-        fileout.Close()
+        # Plot the initialized means and sigma for MC and data
+        # Yields summary plot
+        def plot_fast(histos, legend_strings, label_x, label_y, save_path):
+            canvas = TCanvas('c_init', 'The Fit Canvas')
+            legend = TLegend(.5, .65, .7, .85)
+            colours = [kRed, kGreen + 2, kBlue]
+            legend.SetHeader(f"{mult_int_min} < {self.v_var2_binning} < {mult_int_max}", "C")
+            canvas.SetCanvasSize(1900, 1500)
+            canvas.SetWindowSize(500, 500)
+            legend.SetBorderSize(0)
+            legend.SetFillColor(0)
+            legend.SetFillStyle(0)
+            legend.SetTextFont(42)
+            legend.SetTextSize(0.035)
+            min_y = histos[0].GetMinimum()
+            max_y = histos[0].GetMaximum()
+            min_x = histos[0].GetXaxis().GetXmin()
+            max_x = histos[0].GetXaxis().GetXmax()
+            for i, h in enumerate(histos):
+                min_y = min(min_y, h.GetMinimum())
+                max_y = max(max_y, h.GetMaximum())
+                min_x = min(min_x, h.GetXaxis().GetXmin())
+                max_x = max(max_x, h.GetXaxis().GetXmax())
+                h.SetLineColor(colours[i % len(colours)])
+                legend.AddEntry(h, legend_strings[i])
+            canvas.cd(1).DrawFrame(min_x, max(0, 2 * min_y - max_y), max_x, 2 * max_y - min_y,
+                                   f";{label_x};{label_y}")
+            for h in histos:
+                h.Draw("same")
+            legend.Draw()
+            canvas.SaveAs(save_path)
+            canvas.Close()
 
+        save_name = self.make_file_path(self.d_resultsallpdata, "Means_mult_int", "eps", None,
+                                        [self.case, self.typean])
+        plot_fast([means_init_mc_histos, means_init_data_histos], ["MC", "data"],
+                  "#it{p}_{T} (GeV/c)", "#mu_{mult int}", save_name)
+
+        save_name = self.make_file_path(self.d_resultsallpdata, "Sigmas_mult_int", "eps", None,
+                                        [self.case, self.typean])
+        plot_fast([sigmas_init_mc_histos, sigmas_init_data_histos], ["MC", "data"],
+                  "#it{p}_{T} (GeV/c)", "#sigma_{init_mc}", save_name)
+
+        fileout.Close()
         # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
 
