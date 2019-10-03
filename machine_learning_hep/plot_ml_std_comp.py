@@ -16,6 +16,7 @@
 main script for doing final stage analysis
 """
 import os
+from math import sqrt
 # pylint: disable=unused-wildcard-import, wildcard-import
 from array import *
 # pylint: disable=import-error, no-name-in-module, unused-import
@@ -53,7 +54,7 @@ def plot_hfspectrum_years_ratios(histo_ml, histo_std, title, x_label, y_label, s
     #ccross.SetLogx()
     pad_up.SetLogy()
     pad_up.cd()
-    pad_up.DrawFrame(min_x, 0.5 * min_y, max_x, 2 * max_y, f"{title};;{y_label}")
+    pad_up.DrawFrame(min_x, min_y / 10., max_x, 10 * max_y, f"{title};;{y_label}")
     # ML histogram
     legend.AddEntry(histo_ml, "ML")
     histo_ml.SetLineColor(kGreen + 2)
@@ -81,7 +82,7 @@ def plot_hfspectrum_years_ratios(histo_ml, histo_std, title, x_label, y_label, s
     pad_double.Draw()
     pad_double.cd()
     frame_double = pad_double.DrawFrame(min_x, 0.5 * histo_ratio.GetMinimum(),
-                                        max_x, 2 * histo_ratio.GetMaximum(),
+                                        max_x, 1.2 * histo_ratio.GetMaximum(),
                                         f"; {x_label} ; ML / STD")
     frame_double.SetTitleFont(42, "xy")
     frame_double.SetTitleSize(0.04, "xy")
@@ -98,7 +99,7 @@ def plot_hfspectrum_years_ratios(histo_ml, histo_std, title, x_label, y_label, s
     canvas.Close()
 
 
-def compare_ml_std(case_ml, ana_type_ml, filepath_std):
+def compare_ml_std(case_ml, ana_type_ml, filepath_std, map_std_bins=None):
 
     with open("data/database_ml_parameters_%s.yml" % case_ml, 'r') as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
@@ -120,10 +121,31 @@ def compare_ml_std(case_ml, ana_type_ml, filepath_std):
 
     for hn in histo_names:
         histo_ml = file_ml.Get(hn)
-        histo_std = file_std.Get(hn)
-        if not histo_ml or not histo_std:
+        histo_std_tmp = file_std.Get(hn)
+        histo_std = None
+
+        if not histo_ml or not histo_std_tmp:
             print(f"Could not find histogram {hn}, continue...")
             continue
+
+        if "MC" not in hn and map_std_bins is not None:
+            histo_std = histo_ml.Clone("std_rebin")
+            histo_std.Reset("ICESM")
+
+            contents = [0] * histo_ml.GetNbinsX()
+            errors = [0] * histo_ml.GetNbinsX()
+
+            for ml_bin, std_bins in map_std_bins:
+                for b in std_bins:
+                    contents[ml_bin-1] += histo_std_tmp.GetBinContent(b)
+                    errors[ml_bin-1] += histo_std_tmp.GetBinError(b) * histo_std_tmp.GetBinError(b)
+
+            for b in range(histo_std.GetNbinsX()):
+                histo_std.SetBinContent(b+1, contents[b])
+                histo_std.SetBinError(b+1, sqrt(errors[b]))
+
+        else:
+            histo_std = histo_std_tmp.Clone("std_cloned")
 
         folder_plots = os.path.join(filepath_ml, "ml_std_comparison")
         if not os.path.exists(folder_plots):
@@ -156,5 +178,7 @@ gStyle.SetPadTickX(1)
 gStyle.SetPadTickY(1)
 
 
-compare_ml_std("D0pp", "MBvspt_ntrkl", "data/std_results/HPT_D020161718.root")
-compare_ml_std("LcpKpipp", "MBvspt_ntrkl", "data/std_results/HP_Lc_newCut.root")
+compare_ml_std("D0pp", "MBvspt_ntrkl", "data/std_results/HPT_D020161718.root",
+               [(1, [1]), (2, [2, 3]), (3, [4, 5]), (4, [6]), (5, [7]), (6, [8])])
+compare_ml_std("LcpKpipp", "MBvspt_ntrkl", "data/std_results/HP_Lc_newCut.root",
+               [(1, [1]), (2, [2, 3]), (3, [4, 5]), (4, [6]), (5, [7]), (6, [8])])
