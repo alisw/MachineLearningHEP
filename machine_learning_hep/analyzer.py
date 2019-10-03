@@ -1443,8 +1443,6 @@ class Analyzer:
             ctrigger.SetCanvasSize(3500, 2000)
             ctrigger.Divide(3, 2)
 
-
-
             ctrigger.cd(1)
             heff.SetMaximum(2.)
             heff.GetXaxis().SetTitle("offline %s" % varlist[i])
@@ -1580,6 +1578,8 @@ class Analyzer:
             ctrigger.cd(6)
             ptext = TPaveText(.05, .1, .95, .8)
             ptext.AddText("%s" % (trigger))
+            ptext.AddText("MB events=%f M" % (float(hden.Integral())/1.e6))
+            ptext.AddText("%s events=%f M" % (trigger, float(hmult.Integral())/1.e6))
             ptext.Draw()
             ctrigger.SaveAs(self.make_file_path(self.d_valevtdata, \
                     "ctrigger_%s_%s" % (trigger, varlist[i]), "eps", \
