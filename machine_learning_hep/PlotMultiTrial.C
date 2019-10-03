@@ -1,5 +1,5 @@
 
-void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, double sigmaRef, double chi2Ref, double chi2Cut, const char* saveDir, const char* suffix, const char* title) {
+void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, double sigmaRef, double chi2Ref, double chi2Cut, Bool_t* usedBkgs, const char* saveDir, const char* suffix, const char* title, TDirectory* derivedResultsDir) {
 
     // Extract the trials
     TString esesel(saveDir);
@@ -18,13 +18,20 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     const Int_t totCases=nConfigCases*nBackFuncCases;
     
     // 0= not used; 1 = used for fit; 2= used also for bin count0, 3=use also bin count1, 4=use both binc
-    Int_t mask[totCases]={0,0,4,4,0,0,   // fixed sigma (Expo, Lin, Pol2,Pol3,Pol4)
-        0,0,0,0,0,0,   // fixed sigma upper
-        0,0,0,0,0,0,   // fixed sigma lower
-        0,0,4,4,0,0,   // free sigma, free mean
-        0,0,0,0,0,0,   // free sigma, fixed mean
-        0,0,0,0,0,0,   // fixed mean, fixed sigma
+    Int_t mask[totCases]={0,0,4,0,0,0,   // fixed sigma (Expo, Lin, Pol2,Pol3,Pol4)
+                          0,0,0,0,0,0,   // fixed sigma upper
+                          0,0,0,0,0,0,   // fixed sigma lower
+                          0,0,0,0,0,0,   // free sigma, free mean
+                          0,0,0,0,0,0,   // free sigma, fixed mean
+                          0,0,0,0,0,0,   // fixed mean, fixed sigma
     };
+    // Enable only the background cases we ran the multi trial with
+    /*
+    for(Int_t i = 0; i < 6; i++) {
+        mask[i] = (usedBkgs[i] > 0) ? 4 : 0;
+        mask[18+i] = (usedBkgs[i] > 0) ? 4 : 0;
+    }*/
+
     
     TH1F* histo6[totCases];
     cout << "nconfigcases " << nConfigCases << "\t nbackgfunccases " << nBackFuncCases << endl;
@@ -265,7 +272,10 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     hRawYieldDistAllBC0->SetLineStyle(7);
     hRawYieldDistAllBC0->Scale(hRawYieldDistAll->GetEntries()/hRawYieldDistAllBC0->GetEntries());
     hRawYieldDistAll->SetLineWidth(2);
-    
+
+    // Write fit and bin count distribution for further usage
+    derivedResultsDir->WriteObject(hRawYieldDistAll, "h_mt_fit");
+    derivedResultsDir->WriteObject(hRawYieldDistAllBC0, "h_mt_bc");
     
     TLine *l=new TLine(rawYieldRef,0.,rawYieldRef,hRawYieldDistAll->GetMaximum());
     l->SetLineColor(kRed);

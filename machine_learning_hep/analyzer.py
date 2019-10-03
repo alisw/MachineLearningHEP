@@ -146,7 +146,7 @@ class Analyzer:
 
         # Systematics
         syst_dict = datap["analysis"][self.typean].get("systematics", None)
-        self.do_syst = not syst_dict
+        self.do_syst = syst_dict is not None
         self.p_max_chisquare_ndf_syst = syst_dict["max_chisquare_ndf"] \
                 if syst_dict is not None else None
         self.p_rebin_syst = syst_dict["rebin"] if syst_dict is not None else None
@@ -807,6 +807,10 @@ class Analyzer:
 
         from ROOT import AliHFInvMassMultiTrialFit
 
+        mt_results_path = os.path.join(self.d_resultsallpdata, "multi_trial")
+        if not os.path.exists(mt_results_path):
+            os.makedirs(mt_results_path)
+
         lfile = TFile.Open(self.n_filemass, "READ")
         lfile_mc = TFile.Open(self.n_filemass_mc, "READ")
 
@@ -894,7 +898,7 @@ class Analyzer:
 
                 success = multi_trial.DoMultiTrials(h_invmass)
                 if success:
-                    mt_filename = self.make_file_path(self.d_resultsallpdata, "multi_trial",
+                    mt_filename = self.make_file_path(mt_results_path, "multi_trial",
                                                       "root", None, suffix_write)
                     multi_trial.SaveToRoot(mt_filename)
                 # Just make sure it's kept until the workflow is done
@@ -907,12 +911,22 @@ class Analyzer:
 
     def plot_multi_trial(self):
 
+        mt_results_path = os.path.join(self.d_resultsallpdata, "multi_trial")
+        if not os.path.exists(mt_results_path):
+            self.logger.error("Could not find multi trial results directory %s. Skip...", mt_results_path)
+            return
+
         gROOT.LoadMacro("PlotMultiTrial.C")
         from ROOT import PlotMultiTrial
 
         func_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                             None, [self.case, self.typean])
         func_file = TFile.Open(func_filename, "READ")
+
+        # Some derived values from multi trial
+        mt_derived_filename = self.make_file_path(mt_results_path, "multi_trial_summary",
+                                                  "root", None, [self.case, self.typean])
+        mt_derived_file = TFile.Open(mt_derived_filename, "RECREATE")
 
         for imult in range(self.p_nbin2):
             for ipt in range(self.p_nptbins):
@@ -936,14 +950,23 @@ class Analyzer:
                 sigma_fit = mass_fitter.GetSigma()
                 chisquare_fit = mass_fitter.GetChiSquare()
 
-                mt_filename = self.make_file_path(self.d_resultsallpdata, "multi_trial",
+                mt_filename = self.make_file_path(mt_results_path, "multi_trial",
                                                   "root", None, suffix_write)
                 title = f"{self.lpt_finbinmin[ipt]} GeV/c < {self.v_var_binning} < " \
                         f"{self.lpt_finbinmax[ipt]} GeV/c, {self.lvar2_binmin[imult]} < " \
                         f"{self.v_var2_binning} < {self.lvar2_binmax[imult]}"
+                derived_dir = mt_derived_file.mkdir(suffix)
+
+                used_bkgs = array("b", ["kExpo" in self.p_bkg_funcs_syst,
+                                        "kLin" in self.p_bkg_funcs_syst,
+                                         "Pol2" in self.p_bkg_funcs_syst,
+                                         "Pol3" in self.p_bkg_funcs_syst,
+                                         "Pol4" in self.p_bkg_funcs_syst,
+                                         "Pol5" in self.p_bkg_funcs_syst])
+
                 PlotMultiTrial(mt_filename, rawYield, mean_fit, sigma_fit, chisquare_fit,
-                               self.p_max_chisquare_ndf_syst, self.d_resultsallpdata, suffix,
-                               title)
+                               self.p_max_chisquare_ndf_syst, used_bkgs, mt_results_path,
+                               suffix, title, derived_dir)
 
     def efficiency(self):
         self.loadstyle()
