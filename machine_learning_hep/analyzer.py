@@ -1292,26 +1292,9 @@ class Analyzer:
         cCrossvsvar2.SaveAs("%s/Cross%s%sVs%s.eps" % (self.d_resultsallpdata,
                                                       self.case, self.typean, self.v_var2_binning))
 
-    @staticmethod
-    def calculate_norm(filename, trigger, var, multmin, multmax, doweight):
-        fileout = TFile.Open(filename, "read")
-        if not fileout:
-            return -1
-        namehistomulti = None
-        if doweight is True:
-            namehistomulti = "hmultweighted%svs%s" % (trigger, var)
-        else:
-            namehistomulti = "hmult%svs%s" % (trigger, var)
-        hmult = fileout.Get(namehistomulti)
-        if not hmult:
-            print("MISSING NORMALIZATION MULTIPLICITY")
-        binminv = hmult.GetXaxis().FindBin(multmin)
-        binmaxv = hmult.GetXaxis().FindBin(multmax)
-        norm = hmult.Integral(binminv, binmaxv)
-        return norm
 
     @staticmethod
-    def calculate_norm_counter(mode, filename, trigger, var, multmin, multmax, doweight):
+    def calculate_norm(mode, filename, trigger, var, multmin, multmax, doweight):
         fileout = TFile.Open(filename, "read")
         labeltrigger = "hbit%svs%s" % (trigger, var)
         norm = -1
@@ -1337,21 +1320,30 @@ class Analyzer:
             namehnovtx = None
             namehvtxout = None
             if doweight is True:
-                namehsel  = 'sel_' + labeltrigger
-                namehnovtx  = 'novtx_' + labeltrigger
-                namehvtxout  = 'vtxout_' + labeltrigger
+                namehsel = 'sel_' + labeltrigger
+                namehnovtx = 'novtx_' + labeltrigger
+                namehvtxout = 'vtxout_' + labeltrigger
             else:
-                namehsel  = 'sel_' + labeltrigger + "weighted"
-                namehnovtx  = 'novtx_' + labeltrigger + "weighted"
-                namehvtxout  = 'vtxout_' + labeltrigger + "weighted"
+                namehsel = 'sel_' + labeltrigger + "weighted"
+                namehnovtx = 'novtx_' + labeltrigger + "weighted"
+                namehvtxout = 'vtxout_' + labeltrigger + "weighted"
+            print(namehsel)
+            print(namehnovtx)
+            print(namehvtxout)
+            hsel = fileout.Get(namehsel)
+            hnovt = fileout.Get(namehnovtx)
+            hvtxout = fileout.Get(namehvtxout)
 
-            hsel = filedata.get(namehsel)
-            hnovt = filedata.get(namehnovtx)
-            hvtxout = filedata.get(namehvtxout)
+            binminv = hsel.GetXaxis().FindBin(multmin)
+            binmaxv = hsel.GetXaxis().FindBin(multmax)
 
-            binminv = hsel.GetXaxis().FindBin(self.lvar2_binmin[imult])
-            binmaxv = hsel.GetXaxis().FindBin(self.lvar2_binmax[imult])
 
+            if not hsel:
+                print("ERRORRISISMSO")
+            if not hnovt:
+                print("ERRORRISISMSO")
+            if not hvtxout:
+                print("ERRORRISISMSO")
             n_sel = hsel.Integral(binminv, binmaxv)
             n_novtx = hnovt.Integral(binminv, binmaxv)
             n_vtxout = hvtxout.Integral(binminv, binmaxv)
@@ -1388,7 +1380,7 @@ class Analyzer:
             norm = self.calculate_norm(1, self.f_evtnorm, self.triggerbit, \
                          self.v_var2_binning, self.lvar2_binmin[imult], \
                          self.lvar2_binmax[imult], self.apply_weights)
-            normold = self.calculate_norm(1, self.f_evtnorm, self.triggerbit, \
+            normold = self.calculate_norm(0, self.f_evtnorm, self.triggerbit, \
                          self.v_var2_binning, self.lvar2_binmin[imult], \
                          self.lvar2_binmax[imult], self.apply_weights)
             print(self.apply_weights, self.lvar2_binmin[imult], self.lvar2_binmax[imult], norm)
@@ -1454,194 +1446,197 @@ class Analyzer:
         gROOT.SetBatch(True)
         self.loadstyle()
         filedata = TFile.Open(self.f_evtvaldata)
-        triggerlist = ["HighMultV0", "HighMultSPD", "HighMultV0"]
+        triggerlist = ["HighMultV0", "HighMultSPD", "INT7"]
         varlist = ["v0m_corr", "n_tracklets_corr", "perc_v0m"]
         fileout_name = "%s/correctionsweights.root" % self.d_valevtdata
         fileout = TFile.Open(fileout_name, "recreate")
         fileout.cd()
-        for i, trigger in enumerate(triggerlist):
-            labeltriggerANDMB = "hbit%sANDINT7vs%s" % (triggerlist[i], varlist[i])
-            labelMB = "hbitINT7vs%s" % varlist[i]
-            labeltrigger = "hbit%svs%s" % (triggerlist[i], varlist[i])
+        for ivar, var in enumerate(varlist):
+            labelMB = "hbitINT7vs%s" % (var)
             hden = filedata.Get(labelMB)
-            hden.SetName("hmultINT7vs%s" % (varlist[i]))
+            hden.SetName("hmultINT7vs%s" % (var))
             hden.Write()
-            heff = filedata.Get(labeltriggerANDMB)
-            if not heff or not hden:
-                continue
-            heff.Divide(heff, hden, 1.0, 1.0, "B")
-            hratio = filedata.Get(labeltrigger)
-            hmult = hratio.Clone("hmult%svs%s" % (triggerlist[i], varlist[i]))
-            hmultweighted = hratio.Clone("hmultweighted%svs%s" % (triggerlist[i], varlist[i]))
-            if not hratio:
-                continue
-            hratio.Divide(hratio, hden, 1.0, 1.0, "B")
+            for trigger in triggerlist:
+                labeltriggerANDMB = "hbit%sANDINT7vs%s" % (trigger, var)
+                labeltrigger = "hbit%svs%s" % (trigger, var)
+                heff = filedata.Get(labeltriggerANDMB)
+                if not heff or not hden:
+                    continue
+                heff.Divide(heff, hden, 1.0, 1.0, "B")
+                hratio = filedata.Get(labeltrigger)
+                hmult = hratio.Clone("hmult%svs%s" % (trigger, var))
+                hmultweighted = hratio.Clone("hmultweighted%svs%s" % (trigger, var))
+                if not hratio:
+                    continue
+                hratio.Divide(hratio, hden, 1.0, 1.0, "B")
 
-            ctrigger = TCanvas('ctrigger%s' % trigger, 'The Fit Canvas')
-            ctrigger.SetCanvasSize(3500, 2000)
-            ctrigger.Divide(3, 2)
+                ctrigger = TCanvas('ctrigger%s' % trigger, 'The Fit Canvas')
+                ctrigger.SetCanvasSize(3500, 2000)
+                ctrigger.Divide(3, 2)
 
-            ctrigger.cd(1)
-            heff.SetMaximum(2.)
-            heff.GetXaxis().SetTitle("offline %s" % varlist[i])
-            heff.SetMinimum(0.)
-            heff.GetYaxis().SetTitle("trigger efficiency from MB events")
-            heff.SetLineColor(1)
-            heff.Draw()
-            heff.Write()
+                ctrigger.cd(1)
+                heff.SetMaximum(2.)
+                heff.GetXaxis().SetTitle("offline %s" % var)
+                heff.SetMinimum(0.)
+                heff.GetYaxis().SetTitle("trigger efficiency from MB events")
+                heff.SetLineColor(1)
+                heff.Draw()
+                heff.Write()
 
-            ctrigger.cd(2)
-            hratio.GetXaxis().SetTitle("offline %s" % varlist[i])
-            hratio.GetYaxis().SetTitle("ratio triggered/MB")
-            hratio.GetYaxis().SetTitleOffset(1.3)
-            hratio.Write()
-            hratio.SetLineColor(1)
-            hratio.Draw()
-            func = TF1("func_%s_%s" % (triggerlist[i], varlist[i]), \
-                       "([0]/(1+TMath::Exp(-[1]*(x-[2]))))", 0, 1000)
-            if i == 0:
-                func.SetParameters(300, .1, 570)
-                func.SetParLimits(1, 0., 10.)
-                func.SetParLimits(2, 0., 1000.)
-                func.SetRange(550., 1100.)
-                func.SetLineWidth(1)
-                hratio.Fit(func, "L", "", 550, 1100)
-                func.Draw("same")
-                func.SetLineColor(i+1)
-            if i == 1:
-                func.SetParameters(100, .1, 50)
-                func.SetParLimits(1, 0., 10.)
-                func.SetParLimits(2, 0., 200.)
-                func.SetRange(45., 105)
-                func.SetLineWidth(1)
-                hratio.Fit(func, "L", "", 45, 105)
-                func.SetLineColor(i+1)
-            if i == 2:
-                func.SetParameters(315, -30., .2)
-                func.SetParLimits(1, -100., 0.)
-                func.SetParLimits(2, 0., .5)
-                func.SetRange(0., .15)
-                func.SetLineWidth(1)
-                hratio.Fit(func, "w", "", 0, .15)
-                func.SetLineColor(i+1)
-            func.Write()
-            funcnorm = func.Clone("funcnorm_%s_%s" % (triggerlist[i], varlist[i]))
-            funcnorm.FixParameter(0, funcnorm.GetParameter(0)/funcnorm.GetMaximum())
-            funcnorm.Write()
-            ctrigger.cd(3)
-            maxhistx = 0
-            if i == 0:
-                minhistx = 300
-                maxhistx = 1000
-                fulleffmin = 700
-                fulleffmax = 800
-            elif i == 1:
-                minhistx = 40
-                maxhistx = 150
-                fulleffmin = 80
-                fulleffmax = 90
-            else:
-                minhistx = .0
-                maxhistx = .5
-                fulleffmin = 0.
-                fulleffmax = 0.03
-            hempty = TH1F("hempty_%d" % i, "hempty", 100, 0, maxhistx)
-            hempty.GetYaxis().SetTitleOffset(1.2)
-            hempty.GetYaxis().SetTitleFont(42)
-            hempty.GetXaxis().SetTitleFont(42)
-            hempty.GetYaxis().SetLabelFont(42)
-            hempty.GetXaxis().SetLabelFont(42)
-            hempty.GetXaxis().SetTitle("offline %s" % varlist[i])
-            hempty.GetYaxis().SetTitle("trigger efficiency from effective")
-            hempty.Draw()
-            funcnorm.SetLineColor(1)
-            funcnorm.Draw("same")
+                ctrigger.cd(2)
+                hratio.GetXaxis().SetTitle("offline %s" % var)
+                hratio.GetYaxis().SetTitle("ratio triggered/MB")
+                hratio.GetYaxis().SetTitleOffset(1.3)
+                hratio.Write()
+                hratio.SetLineColor(1)
+                hratio.Draw()
+                func = TF1("func_%s_%s" % (trigger, var), \
+                           "([0]/(1+TMath::Exp(-[1]*(x-[2]))))", 0, 1000)
+                if ivar == 0:
+                    func.SetParameters(300, .1, 570)
+                    func.SetParLimits(1, 0., 10.)
+                    func.SetParLimits(2, 0., 1000.)
+                    func.SetRange(550., 1100.)
+                    func.SetLineWidth(1)
+                    hratio.Fit(func, "L", "", 550, 1100)
+                    func.Draw("same")
+                    func.SetLineColor(ivar+1)
+                if ivar == 1:
+                    func.SetParameters(100, .1, 50)
+                    func.SetParLimits(1, 0., 10.)
+                    func.SetParLimits(2, 0., 200.)
+                    func.SetRange(45., 105)
+                    func.SetLineWidth(1)
+                    hratio.Fit(func, "L", "", 45, 105)
+                    func.SetLineColor(ivar+1)
+                if ivar == 2:
+                    func.SetParameters(315, -30., .2)
+                    func.SetParLimits(1, -100., 0.)
+                    func.SetParLimits(2, 0., .5)
+                    func.SetRange(0., .15)
+                    func.SetLineWidth(1)
+                    hratio.Fit(func, "w", "", 0, .15)
+                    func.SetLineColor(ivar+1)
+                func.Write()
+                funcnorm = func.Clone("funcnorm_%s_%s" % (trigger, var))
+                funcnorm.FixParameter(0, funcnorm.GetParameter(0)/funcnorm.GetMaximum())
+                funcnorm.Write()
+                ctrigger.cd(3)
+                maxhistx = 0
+                if ivar == 0:
+                    minhistx = 300
+                    maxhistx = 1000
+                    fulleffmin = 700
+                    fulleffmax = 800
+                elif ivar == 1:
+                    minhistx = 40
+                    maxhistx = 150
+                    fulleffmin = 80
+                    fulleffmax = 90
+                else:
+                    minhistx = .0
+                    maxhistx = .5
+                    fulleffmin = 0.
+                    fulleffmax = 0.03
+                hempty = TH1F("hempty_%d" % ivar, "hempty", 100, 0, maxhistx)
+                hempty.GetYaxis().SetTitleOffset(1.2)
+                hempty.GetYaxis().SetTitleFont(42)
+                hempty.GetXaxis().SetTitleFont(42)
+                hempty.GetYaxis().SetLabelFont(42)
+                hempty.GetXaxis().SetLabelFont(42)
+                hempty.GetXaxis().SetTitle("offline %s" % var)
+                hempty.GetYaxis().SetTitle("trigger efficiency from effective")
+                hempty.Draw()
+                funcnorm.SetLineColor(1)
+                funcnorm.Draw("same")
 
-            ctrigger.cd(4)
-            gPad.SetLogy()
-            leg1 = TLegend(.2, .75, .4, .85)
-            leg1.SetBorderSize(0)
-            leg1.SetFillColor(0)
-            leg1.SetFillStyle(0)
-            leg1.SetTextFont(42)
-            leg1.SetTextSize(0.035)
-            hmult.GetXaxis().SetTitle("offline %s" % varlist[i])
-            hmult.GetYaxis().SetTitle("entries")
-            hmult.SetLineColor(1)
-            hden.SetLineColor(2)
-            hmultweighted.SetLineColor(3)
-            hmult.Draw()
-            hmult.SetMaximum(1e10)
-            hden.Draw("same")
-            for ibin in range(hmult.GetNbinsX()):
-                myweight = funcnorm.Eval(hmult.GetBinCenter(ibin + 1))
-                hmultweighted.SetBinContent(ibin + 1, hmult.GetBinContent(ibin+1) / myweight)
-            hmult.Write()
-            hmultweighted.Write()
-            hmultweighted.Draw("same")
-            leg1.AddEntry(hden, "MB distribution", "LEP")
-            leg1.AddEntry(hmult, "triggered uncorr", "LEP")
-            leg1.AddEntry(hmultweighted, "triggered corr.", "LEP")
-            leg1.Draw()
-            print("event before", hmult.GetEntries(), "after",
-                  hmultweighted.Integral())
+                ctrigger.cd(4)
+                gPad.SetLogy()
+                leg1 = TLegend(.2, .75, .4, .85)
+                leg1.SetBorderSize(0)
+                leg1.SetFillColor(0)
+                leg1.SetFillStyle(0)
+                leg1.SetTextFont(42)
+                leg1.SetTextSize(0.035)
+                hmult.GetXaxis().SetTitle("offline %s" % var)
+                hmult.GetYaxis().SetTitle("entries")
+                hmult.SetLineColor(1)
+                hden.SetLineColor(2)
+                hmultweighted.SetLineColor(3)
+                hmult.Draw()
+                hmult.SetMaximum(1e10)
+                hden.Draw("same")
+                for ibin in range(hmult.GetNbinsX()):
+                    myweight = funcnorm.Eval(hmult.GetBinCenter(ibin + 1))
+                    hmultweighted.SetBinContent(ibin + 1, hmult.GetBinContent(ibin+1) / myweight)
+                hmult.Write()
+                hmultweighted.Write()
+                hmultweighted.Draw("same")
+                leg1.AddEntry(hden, "MB distribution", "LEP")
+                leg1.AddEntry(hmult, "triggered uncorr", "LEP")
+                leg1.AddEntry(hmultweighted, "triggered corr.", "LEP")
+                leg1.Draw()
+                print("event before", hmult.GetEntries(), "after",
+                      hmultweighted.Integral())
+                ctrigger.cd(5)
+                leg2 = TLegend(.2, .75, .4, .85)
+                leg2.SetBorderSize(0)
+                leg2.SetFillColor(0)
+                leg2.SetFillStyle(0)
+                leg2.SetTextFont(42)
+                leg2.SetTextSize(0.035)
+                linear = TF1("lin_%s_%s" % (trigger, var), \
+                           "[0]", fulleffmin, fulleffmax)
+                hratioMBcorr = hmultweighted.Clone("hratioMBcorr")
+                hratioMBcorr.Divide(hden)
+                hratioMBuncorr = hmult.Clone("hratioMBuncorr")
+                hratioMBuncorr.Divide(hden)
+                hratioMBuncorr.Fit(linear, "w", "", fulleffmin, fulleffmax)
+                hratioMBuncorr.Scale(1./linear.GetParameter(0))
+                hratioMBcorr.Scale(1./linear.GetParameter(0))
+                hratioMBcorr.SetLineColor(3)
+                hratioMBuncorr.SetLineColor(2)
+                hratioMBcorr.GetXaxis().SetTitle("offline %s" % var)
+                hratioMBcorr.GetYaxis().SetTitle("entries")
+                hratioMBcorr.GetXaxis().SetRangeUser(minhistx, maxhistx)
+                hratioMBcorr.GetYaxis().SetRangeUser(0.8, 1.2)
+                hratioMBcorr.Draw()
+                hratioMBuncorr.Draw("same")
+                leg2.AddEntry(hratioMBcorr, "triggered/MB", "LEP")
+                leg2.AddEntry(hratioMBuncorr, "triggered/MB corr.", "LEP")
+                leg2.Draw()
+                ctrigger.cd(6)
+                ptext = TPaveText(.05, .1, .95, .8)
+                ptext.AddText("%s" % (trigger))
+                ptext.AddText("MB events=%f M" % (float(hden.Integral())/1.e6))
+                ptext.AddText("%s events=%f M" % (trigger, float(hmult.Integral())/1.e6))
+                ptext.Draw()
 
-            ctrigger.cd(5)
-            leg2 = TLegend(.2, .75, .4, .85)
-            leg2.SetBorderSize(0)
-            leg2.SetFillColor(0)
-            leg2.SetFillStyle(0)
-            leg2.SetTextFont(42)
-            leg2.SetTextSize(0.035)
-            linear = TF1("lin_%s_%s" % (triggerlist[i], varlist[i]), \
-                       "[0]", fulleffmin, fulleffmax)
-            hratioMBcorr = hmultweighted.Clone("hratioMBcorr")
-            hratioMBcorr.Divide(hden)
-            hratioMBuncorr = hmult.Clone("hratioMBuncorr")
-            hratioMBuncorr.Divide(hden)
-            hratioMBuncorr.Fit(linear, "w", "", fulleffmin, fulleffmax)
-            hratioMBuncorr.Scale(1./linear.GetParameter(0))
-            hratioMBcorr.Scale(1./linear.GetParameter(0))
-            hratioMBcorr.SetLineColor(3)
-            hratioMBuncorr.SetLineColor(2)
-            hratioMBcorr.GetXaxis().SetTitle("offline %s" % varlist[i])
-            hratioMBcorr.GetYaxis().SetTitle("entries")
-            hratioMBcorr.GetXaxis().SetRangeUser(minhistx, maxhistx)
-            hratioMBcorr.GetYaxis().SetRangeUser(0.8, 1.2)
-            hratioMBcorr.Draw()
-            hratioMBuncorr.Draw("same")
-            leg2.AddEntry(hratioMBcorr, "triggered/MB", "LEP")
-            leg2.AddEntry(hratioMBuncorr, "triggered/MB corr.", "LEP")
-            leg2.Draw()
-            ctrigger.cd(6)
-            ptext = TPaveText(.05, .1, .95, .8)
-            ptext.AddText("%s" % (trigger))
-            ptext.AddText("MB events=%f M" % (float(hden.Integral())/1.e6))
-            ptext.AddText("%s events=%f M" % (trigger, float(hmult.Integral())/1.e6))
-            ptext.Draw()
-            ctrigger.SaveAs(self.make_file_path(self.d_valevtdata, \
-                    "ctrigger_%s_%s" % (trigger, varlist[i]), "eps", \
-                    None, None))
+                hsel = filedata.Get('sel_' + labeltrigger)
+                hnovtx = filedata.Get('novtx_' + labeltrigger)
+                hvtxout = filedata.Get('vtxout_' + labeltrigger)
+                hselweighted = hsel.Clone('sel_' + labeltrigger + "weighted")
+                hnovtxweighted = hnovtx.Clone('novtx_' + labeltrigger + "weighted")
+                hvtxoutweighted = hvtxout.Clone('vtxout_' + labeltrigger + "weighted")
 
-            hsel = filedata.Get('sel_' + labeltrigger)
-            hnovtx = filedata.Get('novtx_' + labeltrigger)
-            hvtxout = filedata.Get('vtxout_' + labeltrigger)
-            hselweighted = hsel.Clone('sel_' + labeltrigger + "weighted")
-            hnovtxweighted = hnovtx.Clone('novtx__' + labeltrigger + "weighted")
-            hvtxoutweighted = hvtxout.Clone('vtxout__' + labeltrigger + "weighted")
+                for ibin in range(hmult.GetNbinsX()):
+                    myweight = funcnorm.Eval(hsel.GetBinCenter(ibin + 1))
+                    hselweighted.SetBinContent(ibin + 1, \
+                        hsel.GetBinContent(ibin+1) / myweight)
+                    hnovtxweighted.SetBinContent(ibin + 1, \
+                        hnovtx.GetBinContent(ibin+1) / myweight)
+                    hvtxoutweighted.SetBinContent(ibin + 1, \
+                        hvtxout.GetBinContent(ibin+1) / myweight)
+                hsel.Write()
+                hnovtx.Write()
+                hvtxout.Write()
+                hselweighted.Write()
+                hnovtxweighted.Write()
+                hvtxoutweighted.Write()
 
-            for ibin in range(hmult.GetNbinsX()):
-                myweight = funcnorm.Eval(hsel.GetBinCenter(ibin + 1))
-                hselweighted.SetBinContent(ibin + 1, hsel.GetBinContent(ibin+1) / myweight)
-                hnovtxweighted.SetBinContent(ibin + 1, hnovtx.GetBinContent(ibin+1) / myweight)
-                hvtxoutweighted.SetBinContent(ibin + 1, hvtxout.GetBinContent(ibin+1) / myweight)
-            hsel.Write()
-            hnovtx.Write()
-            hvtxout.Write()
-            hselweighted.Write()
-            hnovtxweighted.Write()
-            hvtxoutweighted.Write()
-
+                ctrigger.SaveAs(self.make_file_path(self.d_valevtdata, \
+                        "ctrigger_%s_%s" % (trigger, var), "eps", \
+                        None, None))
 
         cscatter = TCanvas("cscatter", 'The Fit Canvas')
         cscatter.SetCanvasSize(2100, 800)
