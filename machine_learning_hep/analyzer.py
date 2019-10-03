@@ -599,13 +599,13 @@ class Analyzer:
                             h_invmass_rebin.Clone(f"{h_invmass_rebin.GetName()}_residual_trend")
                     h_pulls_trend = \
                             h_invmass_rebin.Clone(f"{h_invmass_rebin.GetName()}_pulls_trend")
-                    h_sig_sub = mass_fitter[ifit].GetOverBackgroundResidualsAndPulls( \
+                    _ = mass_fitter[ifit].GetOverBackgroundResidualsAndPulls( \
                             h_pulls, h_residual_trend, h_pulls_trend, self.p_massmin[ipt],
                             self.p_massmax[ipt])
 
                     c_res = TCanvas('cRes', 'The Fit Canvas', 800, 800)
                     c_res.cd()
-                    h_sig_sub.Draw()
+                    h_residual_trend.Draw()
                     c_res.SaveAs(self.make_file_path(self.d_resultsallpdata, "residual", "eps",
                                                      None, suffix_write))
                     c_res.Close()
