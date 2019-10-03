@@ -499,7 +499,7 @@ class Analyzer:
                                                           self.sig_fmap[self.p_sgnfunc[ipt]]))
 
                     # Force to go on with final fit although there is no estimated signal
-                    mass_fitter[ipt].SetCheckSignalCountsAfterFirstFit(False)
+                    mass_fitter[ifit].SetCheckSignalCountsAfterFirstFit(False)
                     if self.p_dolike:
                         mass_fitter[ifit].SetUseLikelihoodFit()
                     # At this point *_for_data is either
@@ -638,7 +638,6 @@ class Analyzer:
             fileout.cd()
             yieldshistos[imult].Write()
 
-
             del mass_fitter_mc_init[:]
             del mass_fitter_data_init[:]
 
@@ -741,8 +740,11 @@ class Analyzer:
 
         # Plot the initialized means and sigma for MC and data
         # Yields summary plot
-        def plot_fast(canvas, histo, legend, label_x, label_y, save_path):
-            canvas.cd()
+        def plot_fast(histos, legend_strings, label_x, label_y, save_path):
+            canvas = TCanvas('c_init', 'The Fit Canvas')
+            legend = TLegend(.5, .65, .7, .85)
+            colours = [kRed, kGreen + 2, kBlue]
+            legend.SetHeader(f"{mult_int_min} < {self.v_var2_binning} < {mult_int_max}", "C")
             canvas.SetCanvasSize(1900, 1500)
             canvas.SetWindowSize(500, 500)
             legend.SetBorderSize(0)
@@ -750,45 +752,34 @@ class Analyzer:
             legend.SetFillStyle(0)
             legend.SetTextFont(42)
             legend.SetTextSize(0.035)
-            histo.GetXaxis().SetTitle(label_x)
-            histo.GetYaxis().SetTitle(label_y)
-            histo.Draw()
-            legend_string = f"{mult_int_min} < {self.v_var2_binning} < {mult_int_max}"
-            legend.AddEntry(histo, legend_string)
+            min_y = histos[0].GetMinimum()
+            max_y = histos[0].GetMaximum()
+            min_x = histos[0].GetXaxis().GetXmin()
+            max_x = histos[0].GetXaxis().GetXmax()
+            for i, h in enumerate(histos):
+                min_y = min(min_y, h.GetMinimum())
+                max_y = max(max_y, h.GetMaximum())
+                min_x = min(min_x, h.GetXaxis().GetXmin())
+                max_x = max(max_x, h.GetXaxis().GetXmax())
+                h.SetLineColor(colours[i % len(colours)])
+                legend.AddEntry(h, legend_strings[i])
+            canvas.cd(1).DrawFrame(min_x, max(0, 2 * min_y - max_y), max_x, 2 * max_y - min_y,
+                                   f";{label_x};{label_y}")
+            for h in histos:
+                h.Draw("same")
             legend.Draw()
             canvas.SaveAs(save_path)
+            canvas.Close()
 
-        c_init = TCanvas('c_init', 'The Fit Canvas')
-        legend = TLegend(.5, .65, .7, .85)
-        save_name = self.make_file_path(self.d_resultsallpdata, "Means_mc_init", "eps", None,
+        save_name = self.make_file_path(self.d_resultsallpdata, "Means_mult_int", "eps", None,
                                         [self.case, self.typean])
-        plot_fast(c_init, means_init_mc_histos, legend, "#it{p}_{T} (GeV/c)", "#mu_{init_mc}",
-                  save_name)
-        c_init.Close()
+        plot_fast([means_init_mc_histos, means_init_data_histos], ["MC", "data"],
+                  "#it{p}_{T} (GeV/c)", "#mu_{mult int}", save_name)
 
-        c_init = TCanvas('c_init', 'The Fit Canvas')
-        legend = TLegend(.5, .65, .7, .85)
-        save_name = self.make_file_path(self.d_resultsallpdata, "Sigmas_mc_init", "eps", None,
+        save_name = self.make_file_path(self.d_resultsallpdata, "Sigmas_mult_int", "eps", None,
                                         [self.case, self.typean])
-        plot_fast(c_init, sigmas_init_mc_histos, legend, "#it{p}_{T} (GeV/c)", "#sigma_{init_mc}",
-                  save_name)
-        c_init.Close()
-
-        c_init = TCanvas('c_init', 'The Fit Canvas')
-        legend = TLegend(.5, .65, .7, .85)
-        save_name = self.make_file_path(self.d_resultsallpdata, "Means_data_init", "eps", None,
-                                        [self.case, self.typean])
-        plot_fast(c_init, means_init_data_histos, legend, "#it{p}_{T} (GeV/c)", "#mu_{init_data}",
-                  save_name)
-        c_init.Close()
-
-        c_init = TCanvas('c_init', 'The Fit Canvas')
-        legend = TLegend(.5, .65, .7, .85)
-        save_name = self.make_file_path(self.d_resultsallpdata, "Sigmas_data_init", "eps", None,
-                                        [self.case, self.typean])
-        plot_fast(c_init, sigmas_init_data_histos, legend, "#it{p}_{T} (GeV/c)",
-                  "#sigma_{init_data}", save_name)
-        c_init.Close()
+        plot_fast([sigmas_init_mc_histos, sigmas_init_data_histos], ["MC", "data"],
+                  "#it{p}_{T} (GeV/c)", "#sigma_{init_mc}", save_name)
 
         fileout.Close()
         # Reset to former mode
