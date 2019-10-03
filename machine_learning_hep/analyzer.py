@@ -1144,6 +1144,12 @@ class Analyzer:
         #his_sim_z_fd_2d_folded = his_sim_z_fd_2d_eff.Clone("his_sim_z_fd_2d_folded")
         #his_sim_z_fd_2d_folded.Reset()
         #his_sim_z_fd_2d_folded = folding(his_sim_z_fd_2d_eff, resp_z, his_sim_z_fd_2d_folded)
+        resp_z_proj = resp_z.Hresponse()
+        can_resp_z = TCanvas("can_resp_z", "can_resp_z", 800, 600)
+        resp_z_proj.Draw("colz")
+        can_resp_z.SetLogz()
+        can_resp_z.SaveAs("%s/Feeddown-z-response_%s%s.eps" \
+                % (self.d_resultsallpmc, self.case, self.typean))
 
         for i_ptjet in range(self.p_nbin2):
             bin_ptjet = i_ptjet + 1
@@ -1187,6 +1193,7 @@ class Analyzer:
         his_sim_z_fd_2d_gen.Write("fd_z_ptjet_gen")
         his_sim_z_fd_2d_eff.Write("fd_z_ptjet_eff")
         his_sim_z_fd_2d_folded.Write("fd_z_ptjet_fold")
+        resp_z_proj.Write("resp_z_proj")
 
         file_resp.Close()
         file_eff.Close()
