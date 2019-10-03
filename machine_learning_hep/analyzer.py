@@ -1337,13 +1337,12 @@ class Analyzer:
             binminv = hsel.GetXaxis().FindBin(multmin)
             binmaxv = hsel.GetXaxis().FindBin(multmax)
 
-
             if not hsel:
-                print("ERRORRISISMSO")
+                print("Missing hsel")
             if not hnovt:
-                print("ERRORRISISMSO")
+                print("Missing hnovt")
             if not hvtxout:
-                print("ERRORRISISMSO")
+                print("Missing hvtxout")
             n_sel = hsel.Integral(binminv, binmaxv)
             n_novtx = hnovt.Integral(binminv, binmaxv)
             n_vtxout = hvtxout.Integral(binminv, binmaxv)
@@ -1383,10 +1382,10 @@ class Analyzer:
             normold = self.calculate_norm(0, self.f_evtnorm, self.triggerbit, \
                          self.v_var2_binning, self.lvar2_binmin[imult], \
                          self.lvar2_binmax[imult], self.apply_weights)
-            print(self.apply_weights, self.lvar2_binmin[imult], self.lvar2_binmax[imult], norm)
-
-            print("NORM OLD", normold)
-            print("NORM NEW", norm)
+            print("--------- NORMALIZATION -----------")
+            print(self.triggerbit, self.v_var2_binning,
+                  self.lvar2_binmin[imult], self.lvar2_binmax[imult])
+            print("N. events selected=", normold, "N. events counter =", norm)
 
             HFPtSpectrum(self.p_indexhpt, \
                 "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
