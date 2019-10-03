@@ -1310,9 +1310,57 @@ class Analyzer:
         norm = hmult.Integral(binminv, binmaxv)
         return norm
 
+    @staticmethod
+    def calculate_norm_counter(mode, filename, trigger, var, multmin, multmax, doweight):
+        fileout = TFile.Open(filename, "read")
+        labeltrigger = "hbit%svs%s" % (trigger, var)
+        norm = -1
+
+        if not fileout:
+            return -1
+        if mode == 0:
+            namehistomulti = None
+            if doweight is True:
+                namehistomulti = "hmultweighted%svs%s" % (trigger, var)
+            else:
+                namehistomulti = "hmult%svs%s" % (trigger, var)
+            hmult = fileout.Get(namehistomulti)
+            if not hmult:
+                print("MISSING NORMALIZATION MULTIPLICITY")
+
+            binminv = hmult.GetXaxis().FindBin(multmin)
+            binmaxv = hmult.GetXaxis().FindBin(multmax)
+            norm = hmult.Integral(binminv, binmaxv)
+
+        if mode == 1:
+            namehsel = None
+            namehnovtx = None
+            namehvtxout = None
+            if doweight is True:
+                namehsel  = 'sel_' + labeltrigger
+                namehnovtx  = 'novtx_' + labeltrigger
+                namehvtxout  = 'vtxout_' + labeltrigger
+            else:
+                namehsel  = 'sel_' + labeltrigger + "weighted"
+                namehnovtx  = 'novtx_' + labeltrigger + "weighted"
+                namehvtxout  = 'vtxout_' + labeltrigger + "weighted"
+
+            hsel = filedata.get(namehsel)
+            hnovt = filedata.get(namehnovtx)
+            hvtxout = filedata.get(namehvtxout)
+
+            binminv = hsel.GetXaxis().FindBin(self.lvar2_binmin[imult])
+            binmaxv = hsel.GetXaxis().FindBin(self.lvar2_binmax[imult])
+
+            n_sel = hsel.Integral(binminv, binmaxv)
+            n_novtx = hnovt.Integral(binminv, binmaxv)
+            n_vtxout = hvtxout.Integral(binminv, binmaxv)
+            norm = (n_sel + n_novtx) - n_novtx * n_vtxout / (n_sel + n_vtxout)
+
+        return norm
+
     def makenormyields(self):
         gROOT.SetBatch(True)
-        print("SSSSSSSSSSSSSSS")
         self.loadstyle()
         #self.test_aliphysics()
         #filedataval = TFile.Open(self.f_evtnorm)
@@ -1337,27 +1385,17 @@ class Analyzer:
             fileoutcrossmult = "%s/finalcross%s%smult%d.root" % \
                 (self.d_resultsallpdata, self.case, self.typean, imult)
             norm = -1
-            norm = self.calculate_norm(self.f_evtnorm, self.triggerbit, \
+            norm = self.calculate_norm(1, self.f_evtnorm, self.triggerbit, \
+                         self.v_var2_binning, self.lvar2_binmin[imult], \
+                         self.lvar2_binmax[imult], self.apply_weights)
+            normold = self.calculate_norm(1, self.f_evtnorm, self.triggerbit, \
                          self.v_var2_binning, self.lvar2_binmin[imult], \
                          self.lvar2_binmax[imult], self.apply_weights)
             print(self.apply_weights, self.lvar2_binmin[imult], self.lvar2_binmax[imult], norm)
-#
-#            hSelMult = filedataval.Get('sel_' + labelhisto)
-#            hNoVtxMult = filedataval.Get('novtx_' + labelhisto)
-#            hVtxOutMult = filedataval.Get('vtxout_' + labelhisto)
-#
-#            # normalisation based on multiplicity histograms
-#            binminv = hSelMult.GetXaxis().FindBin(self.lvar2_binmin[imult])
-#            binmaxv = hSelMult.GetXaxis().FindBin(self.lvar2_binmax[imult])
-#
-#            n_sel = hSelMult.Integral(binminv, binmaxv)
-#            n_novtx = hNoVtxMult.Integral(binminv, binmaxv)
-#            n_vtxout = hVtxOutMult.Integral(binminv, binmaxv)
-#            norm = (n_sel + n_novtx) - n_novtx * n_vtxout / (n_sel + n_vtxout)
-#
-#            print('new normalization: ', norm, norm_old)
-#
-            # Now use the function we have just compiled above
+
+            print("NORM OLD", normold)
+            print("NORM NEW", norm)
+
             HFPtSpectrum(self.p_indexhpt, \
                 "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
                 fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
@@ -1584,6 +1622,26 @@ class Analyzer:
             ctrigger.SaveAs(self.make_file_path(self.d_valevtdata, \
                     "ctrigger_%s_%s" % (trigger, varlist[i]), "eps", \
                     None, None))
+
+            hsel = filedata.Get('sel_' + labeltrigger)
+            hnovtx = filedata.Get('novtx_' + labeltrigger)
+            hvtxout = filedata.Get('vtxout_' + labeltrigger)
+            hselweighted = hsel.Clone('sel_' + labeltrigger + "weighted")
+            hnovtxweighted = hnovtx.Clone('novtx__' + labeltrigger + "weighted")
+            hvtxoutweighted = hvtxout.Clone('vtxout__' + labeltrigger + "weighted")
+
+            for ibin in range(hmult.GetNbinsX()):
+                myweight = funcnorm.Eval(hsel.GetBinCenter(ibin + 1))
+                hselweighted.SetBinContent(ibin + 1, hsel.GetBinContent(ibin+1) / myweight)
+                hnovtxweighted.SetBinContent(ibin + 1, hnovtx.GetBinContent(ibin+1) / myweight)
+                hvtxoutweighted.SetBinContent(ibin + 1, hvtxout.GetBinContent(ibin+1) / myweight)
+            hsel.Write()
+            hnovtx.Write()
+            hvtxout.Write()
+            hselweighted.Write()
+            hnovtxweighted.Write()
+            hvtxoutweighted.Write()
+
 
         cscatter = TCanvas("cscatter", 'The Fit Canvas')
         cscatter.SetCanvasSize(2100, 800)
