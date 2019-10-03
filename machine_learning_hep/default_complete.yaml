@@ -1,4 +1,4 @@
-case: Dspp
+case: D0pp
 download:
   alice:
     activate: false
@@ -70,12 +70,12 @@ analysis:
   doplots: false
 
 systematics:
-  # Not yet used
   cutvar:
-    activate: true
+    activate: false
     probvariationmass: false
     probvariationeff: false
-    probvariationfit: true
+    probvariationfit: false
+    probvariationcross: false
 
 validation:
   data:

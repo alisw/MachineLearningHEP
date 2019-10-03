@@ -110,6 +110,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     dosystprobmass = data_config["systematics"]["cutvar"]["probvariationmass"]
     dosystprobeff = data_config["systematics"]["cutvar"]["probvariationeff"]
     dosystprobfit = data_config["systematics"]["cutvar"]["probvariationfit"]
+    dosystprobcross = data_config["systematics"]["cutvar"]["probvariationcross"]
 
     doanaperperiod = data_config["analysis"]["doperperiod"]
 
@@ -373,7 +374,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     if dosyst is True:
         myan.multi_yield_syst()
     if dosystprob is True:
-        mysis.multi_cutvariation(dosystprobmass, dosystprobeff, dosystprobfit)
+        mysis.multi_cutvariation(dosystprobmass, dosystprobeff, dosystprobfit, dosystprobcross)
     if doeff is True:
         myan.multi_efficiency()
     if dojetstudies is True:

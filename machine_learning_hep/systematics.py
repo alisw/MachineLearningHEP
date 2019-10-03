@@ -24,13 +24,14 @@ import pickle
 # pylint: disable=import-error, no-name-in-module, unused-import
 from root_numpy import fill_hist, evaluate
 from ROOT import gROOT, gStyle
-from ROOT import TFile, TH1F, TCanvas, TPad
+from ROOT import TFile, TH1F, TCanvas, TPad, TLegend
+from ROOT import kRed, kGreen, kBlack, kBlue, kOrange, kViolet, kAzure, kYellow
 from ROOT import gInterpreter, gPad
 from machine_learning_hep.utilities import selectdfrunlist
 from machine_learning_hep.utilities import seldf_singlevar, openfile
 from machine_learning_hep.logger import get_logger
 
-# pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements
+# pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, too-many-arguments
 class Systematics:
     species = "systematics"
     def __init__(self, case, datap, typean, run_param, d_pkl_decmerged_mc, \
@@ -95,10 +96,18 @@ class Systematics:
         self.n_fileeff = datap["files_names"]["efffilename"]
         self.n_filemass_cutvar = self.n_filemass.replace(".root", "_cutvar.root")
         self.n_fileeff_cutvar = self.n_fileeff.replace(".root", "_cutvar.root")
-        self.n_filemass_cutvar = os.path.join(self.d_results, self.n_filemass_cutvar)
-        self.n_fileeff_cutvar = os.path.join(self.d_results, self.n_fileeff_cutvar)
+        self.d_results_cv = self.d_results + "/cutvar"
+        if not os.path.exists(self.d_results_cv):
+            print("creating folder ", self.d_results_cv)
+            os.makedirs(self.d_results_cv)
+        self.n_filemass_cutvar = os.path.join(self.d_results_cv, self.n_filemass_cutvar)
+        self.n_fileeff_cutvar = os.path.join(self.d_results_cv, self.n_fileeff_cutvar)
         self.yields_filename_std = "yields"
         self.yields_filename = "yields_cutvar"
+        self.efficiency_filename_std = "efficiencies"
+        self.efficiency_filename = "efficiencies_cutvar"
+        self.cross_filename_std = "finalcross"
+        self.cross_filename = "finalcross_cutvar"
 
         self.p_mass_fit_lim = datap["analysis"][self.typean]["mass_fit_lim"]
         self.p_bin_width = datap["analysis"][self.typean]["bin_width"]
@@ -135,7 +144,7 @@ class Systematics:
         self.p_fix_widthsecpeak = datap["analysis"][self.typean]["fix_widthsecpeak"] \
                 if self.p_includesecpeak else None
         if self.p_includesecpeak is None:
-            self.p_includesecpeak = [False for ipt in range(self.p_nptbins)]
+            self.p_includesecpeak = [False for ipt in range(self.p_nptfinbins)]
         self.p_exclude_nsigma_sideband = datap["analysis"][self.typean]["exclude_nsigma_sideband"]
         self.p_nsigma_signal = datap["analysis"][self.typean]["nsigma_signal"]
         self.p_dolike = datap["analysis"][self.typean]["dolikelihood"]
@@ -143,15 +152,20 @@ class Systematics:
         self.ptranges.append(self.lpt_finbinmax[-1])
         self.include_reflection = datap["analysis"][self.typean].get("include_reflection", False)
         self.apply_weights = datap["analysis"][self.typean]["triggersel"]["weighttrig"]
+        self.p_bineff = datap["analysis"][self.typean]["usesinglebineff"]
+        self.p_sigmav0 = datap["analysis"]["sigmav0"]
 
-        #To add in databases
-        self.p_cutvar_minrange = [0.88, 0.84, 0.7, 0.7, 0.3]
-        self.p_cutvar_maxrange = [0.97, 0.94, 0.9, 0.9, 0.7]
-        self.p_ncutvar = 10
-        self.p_maxperccutvar = 0.2
-        self.p_fixedmean = True
-        self.p_fixedsigma = True
+        self.f_evtnorm = os.path.join(self.d_results, "correctionsweights.root")
+        self.p_indexhpt = datap["analysis"]["indexhptspectrum"]
+        self.p_fd_method = datap["analysis"]["fd_method"]
+        self.p_cctype = datap["analysis"]["cctype"]
 
+        self.p_cutvar_minrange = datap["systematics"]["probvariation"]["cutvarminrange"]
+        self.p_cutvar_maxrange = datap["systematics"]["probvariation"]["cutvarmaxrange"]
+        self.p_ncutvar = datap["systematics"]["probvariation"]["ncutvar"]
+        self.p_maxperccutvar = datap["systematics"]["probvariation"]["maxperccutvar"]
+        self.p_fixedmean = datap["systematics"]["probvariation"]["fixedmean"]
+        self.p_fixedsigma = datap["systematics"]["probvariation"]["fixedsigma"]
         #To remove from databases
         #self.p_prob_range = datap["systematics"]["probvariation"]["prob_range"]
 
@@ -163,10 +177,27 @@ class Systematics:
         gStyle.SetCanvasColor(0)
         gStyle.SetFrameFillColor(0)
 
+    @staticmethod
+    def loadstyle2():
+        gROOT.SetStyle("Plain")
+        gStyle.SetOptStat(0)
+        gStyle.SetOptStat(0000)
+        gStyle.SetPalette(0)
+        gStyle.SetCanvasColor(0)
+        gStyle.SetFrameFillColor(0)
+        gStyle.SetTitleOffset(1.15, "y")
+        gStyle.SetTitleFont(42, "xy")
+        gStyle.SetLabelFont(42, "xy")
+        gStyle.SetTitleSize(0.042, "xy")
+        gStyle.SetLabelSize(0.035, "xy")
+        gStyle.SetPadTickX(1)
+        gStyle.SetPadTickY(1)
+
     def define_cutvariation_limits(self):
 
         min_cv_cut = []
         max_cv_cut = []
+        ncutvar_temp = self.p_ncutvar * 2
         for ipt in range(self.p_nptfinbins):
 
             print("Systematics pt-bin: ", ipt)
@@ -203,10 +234,10 @@ class Systematics:
             print("Central efficiency pt-bin", ipt, ": ", eff_cent)
 
             stepsmin = \
-              (self.lpt_probcutfin[bin_id] - self.p_cutvar_minrange[bin_id]) / self.p_ncutvar
+              (self.lpt_probcutfin[bin_id] - self.p_cutvar_minrange[bin_id]) / ncutvar_temp
             min_cv_cut.append(self.lpt_probcutfin[bin_id])
             df_reco_cvmin_pr = df_reco_presel_pr
-            for icv in range(self.p_ncutvar):
+            for icv in range(ncutvar_temp):
                 min_cv_cut[ipt] = self.p_cutvar_minrange[bin_id] + icv * stepsmin
                 selml_min = "y_test_prob%s>%s" % (self.p_modelname, min_cv_cut[ipt])
                 df_reco_cvmin_pr = df_reco_cvmin_pr.query(selml_min)
@@ -218,10 +249,10 @@ class Systematics:
             print("Minimal efficiency pt-bin", ipt, ": ", eff_min, "(", eff_min / eff_cent, ")")
 
             stepsmax = \
-              (self.p_cutvar_maxrange[bin_id] - self.lpt_probcutfin[bin_id]) / self.p_ncutvar
+              (self.p_cutvar_maxrange[bin_id] - self.lpt_probcutfin[bin_id]) / ncutvar_temp
             max_cv_cut.append(self.lpt_probcutfin[bin_id])
             df_reco_cvmax_pr = df_reco_sel_pr
-            for icv in range(self.p_ncutvar):
+            for icv in range(ncutvar_temp):
                 max_cv_cut[ipt] = self.lpt_probcutfin[bin_id] + icv * stepsmax
                 selml_max = "y_test_prob%s>%s" % (self.p_modelname, max_cv_cut[ipt])
                 df_reco_cvmax_pr = df_reco_cvmax_pr.query(selml_max)
@@ -415,29 +446,30 @@ class Systematics:
 
         ntrials = 2 * self.p_ncutvar + 1
         icvmax = 1
-        
+
         mass_fitter = []
         ifit = 0
         for icv in range(ntrials):
 
-            fileout_name = self.make_file_path(self.d_results, self.yields_filename, "root", \
+            fileout_name = self.make_file_path(self.d_results_cv, self.yields_filename, "root", \
                                            None, [self.typean, str(icv)])
             fileout = TFile(fileout_name, "RECREATE")
 
-            yieldshistos = [TH1F("hyields%d_%d" % (icv, imult), "", \
-                    self.p_nptbins, array("d", self.ptranges)) for imult in range(len(self.lvar2_binmin))]
+            yieldshistos = [TH1F("hyields%d" % (imult), "", \
+                    self.p_nptfinbins, array("d", self.ptranges)) for imult in range(len(self.lvar2_binmin))]
 
-            if self.p_nptbins < 9:
+            if self.p_nptfinbins < 9:
                 nx = 4
                 ny = 2
                 canvy = 533
-            elif self.p_nptbins < 13:
+            elif self.p_nptfinbins < 13:
                 nx = 4
                 ny = 3
                 canvy = 800
             else:
                 nx = 5
                 ny = 4
+                canvy = 1200
 
             canvas_data = [TCanvas("canvas_cutvar%d_%d" % (icv, imult), "Data", 1000, canvy) \
                            for imult in range(len(self.lvar2_binmin))]
@@ -448,7 +480,7 @@ class Systematics:
 
                 mean_for_data, sigma_for_data = self.load_central_meansigma(imult)
 
-                for ipt in range(self.p_nptbins):
+                for ipt in range(self.p_nptfinbins):
                     bin_id = self.bin_matching[ipt]
 
                     suffix = "%s%d_%d_%d_%s%.2f_%.2f" % \
@@ -456,7 +488,7 @@ class Systematics:
                               self.lpt_finbinmax[ipt], icv,
                               self.v_var2_binning, self.lvar2_binmin[imult],
                               self.lvar2_binmax[imult])
-                    
+
                     stepsmin = (self.lpt_probcutfin[bin_id] - min_cv_cut[ipt]) / self.p_ncutvar
                     stepsmax = (max_cv_cut[ipt] - self.lpt_probcutfin[bin_id]) / self.p_ncutvar
                     ntrials = 2 * self.p_ncutvar + 1
@@ -520,25 +552,24 @@ class Systematics:
                         self.logger.error("Fit failed for suffix %s", suffix)
                         ifit = ifit + 1
                         continue
-                    else:
-                        mass_fitter[ifit].DrawHere(gPad, self.p_nsigma_signal)
+                    mass_fitter[ifit].DrawHere(gPad, self.p_nsigma_signal)
 
-                        # Write fitters to file
-                        fit_root_dir = fileout.mkdir(suffix)
-                        fit_root_dir.WriteObject(mass_fitter[ifit], "fittercutvar")
+                    # Write fitters to file
+                    fit_root_dir = fileout.mkdir(suffix)
+                    fit_root_dir.WriteObject(mass_fitter[ifit], "fittercutvar")
 
-                        # In case of success == 2, no signal was found, in case of 0, fit failed
-                        rawYield = mass_fitter[ifit].GetRawYield()
-                        rawYieldErr = mass_fitter[ifit].GetRawYieldError()
-                        yieldshistos[imult].SetBinContent(ipt + 1, rawYield)
-                        yieldshistos[imult].SetBinError(ipt + 1, rawYieldErr)
-                        ifit = ifit + 1
-                          
+                    # In case of success == 2, no signal was found, in case of 0, fit failed
+                    rawYield = mass_fitter[ifit].GetRawYield()
+                    rawYieldErr = mass_fitter[ifit].GetRawYieldError()
+                    yieldshistos[imult].SetBinContent(ipt + 1, rawYield)
+                    yieldshistos[imult].SetBinError(ipt + 1, rawYieldErr)
+                    ifit = ifit + 1
+
                 suffix2 = "cutvar%d_%s%.2f_%.2f" % \
                            (icv, self.v_var2_binning, self.lvar2_binmin[imult], \
                            self.lvar2_binmax[imult])
 
-                canvas_data[imult].SaveAs(self.make_file_path(self.d_results,
+                canvas_data[imult].SaveAs(self.make_file_path(self.d_results_cv,
                                                               "canvas_FinalData",
                                                               "eps", None, suffix2))
                 fileout.cd()
@@ -551,10 +582,226 @@ class Systematics:
         # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
 
+    def cutvariation_efficiency(self):
+        self.loadstyle()
+
+        lfileeff = TFile.Open(self.n_fileeff_cutvar, "READ")
+
+        ntrials = 2 * self.p_ncutvar + 1
+        for icv in range(ntrials):
+            print("Making efficiency for cutvariation: ", icv)
+            fileout_name = self.make_file_path(self.d_results_cv, self.efficiency_filename, "root", \
+                                           None, [self.typean, str(icv)])
+            fileout = TFile(fileout_name, "RECREATE")
+
+            for imult in range(len(self.lvar2_binmin)):
+
+                stringbin2 = "_%d_%s_%.2f_%.2f" % (icv, self.v_var2_binning, \
+                                                self.lvar2_binmin[imult], \
+                                                self.lvar2_binmax[imult])
+
+                h_gen_pr = lfileeff.Get("h_gen_pr" + stringbin2)
+                h_sel_pr = lfileeff.Get("h_sel_pr" + stringbin2)
+                h_sel_pr.Divide(h_sel_pr, h_gen_pr, 1.0, 1.0, "B")
+
+                h_gen_fd = lfileeff.Get("h_gen_fd" + stringbin2)
+                h_sel_fd = lfileeff.Get("h_sel_fd" + stringbin2)
+                h_sel_fd.Divide(h_sel_fd, h_gen_fd, 1.0, 1.0, "B")
+
+                fileout.cd()
+                h_sel_pr.SetName("eff_mult%d" % imult)
+                h_sel_fd.SetName("eff_fd_mult%d" % imult)
+                h_sel_pr.Write()
+                h_sel_fd.Write()
+
+            fileout.Close()
+
+    def cutvariation_makenormyields(self):
+        #self.test_aliphysics()
+
+        gROOT.SetBatch(True)
+        self.loadstyle()
+        gROOT.LoadMacro("HFPtSpectrum.C")
+        from ROOT import HFPtSpectrum
+
+        ntrials = 2 * self.p_ncutvar + 1
+        for icv in range(ntrials):
+
+            fileouteff = self.make_file_path(self.d_results_cv, self.efficiency_filename, \
+                                             "root", None, [self.typean, str(icv)])
+            yield_filename = self.make_file_path(self.d_results_cv, self.yields_filename,
+                                                 "root", None, [self.typean, str(icv)])
+
+            for imult in range(len(self.lvar2_binmin)):
+                bineff = -1
+                if self.p_bineff is None:
+                    bineff = imult
+                    print("Using efficiency for each var2 bin")
+                else:
+                    bineff = self.p_bineff
+                    print("Using efficiency always from bin=", bineff)
+
+                namehistoeffprompt = "eff_mult%d" % bineff
+                namehistoefffeed = "eff_fd_mult%d" % bineff
+                nameyield = "hyields%d" % imult
+                fileoutcrossmult = self.make_file_path(self.d_results_cv, self.cross_filename, \
+                                                       "root", None, [self.typean, "cutvar", str(icv), \
+                                                                      "mult", str(imult)])
+                norm = -1
+                norm = self.calculate_norm(self.f_evtnorm, self.triggerbit, \
+                             self.v_var2_binning, self.lvar2_binmin[imult], \
+                             self.lvar2_binmax[imult], self.apply_weights)
+                print(self.apply_weights, self.lvar2_binmin[imult], self.lvar2_binmax[imult], norm)
+
+                #To be included when it's back in analyzer.py
+#                filedataval = TFile.Open(self.f_evtnorm)
+#                hSelMult = filedataval.Get('sel_' + labelhisto)
+#                hNoVtxMult = filedataval.Get('novtx_' + labelhisto)
+#                hVtxOutMult = filedataval.Get('vtxout_' + labelhisto)
+#
+#                # normalisation based on multiplicity histograms
+#                binminv = hSelMult.GetXaxis().FindBin(self.lvar2_binmin[imult])
+#                binmaxv = hSelMult.GetXaxis().FindBin(self.lvar2_binmax[imult])
+#
+#                n_sel = hSelMult.Integral(binminv, binmaxv)
+#                n_novtx = hNoVtxMult.Integral(binminv, binmaxv)
+#                n_vtxout = hVtxOutMult.Integral(binminv, binmaxv)
+#                norm = (n_sel + n_novtx) - n_novtx * n_vtxout / (n_sel + n_vtxout)
+#
+#                print('new normalization: ', norm, norm_old)
+
+                # Now usefp_nbin2 the function we have just compiled above
+                HFPtSpectrum(self.p_indexhpt, \
+                    "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
+                    fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
+                    fileoutcrossmult, norm, self.p_sigmav0 * 1e12, self.p_fd_method, self.p_cctype)
+
+            fileoutcrosstot = TFile.Open(self.make_file_path(self.d_results_cv, self.efficiency_filename, \
+                                                             "root", None, [self.typean, "cutvar", str(icv), \
+                                                              "multtot"]), "recreate")
+
+            for imult in range(len(self.lvar2_binmin)):
+                fileoutcrossmult = self.make_file_path(self.d_results_cv, self.efficiency_filename, \
+                                                       "root", None, [self.typean, "cutvar", str(icv), \
+                                                                      "mult", str(imult)])
+                f_fileoutcrossmult = TFile.Open(fileoutcrossmult)
+                if not f_fileoutcrossmult:
+                    continue
+                hcross = f_fileoutcrossmult.Get("histoSigmaCorr")
+                hcross.SetName("histoSigmaCorr%d" % imult)
+                fileoutcrosstot.cd()
+                hcross.Write()
+            fileoutcrosstot.Close()
+
+    def cutvariation_makeplots(self, plotname):
+
+        self.loadstyle2()
+
+        leg = TLegend(.15, .65, .85, .85)
+        leg.SetBorderSize(0)
+        leg.SetFillColor(0)
+        leg.SetFillStyle(0)
+        leg.SetTextFont(42)
+        leg.SetTextSize(0.024)
+        leg.SetNColumns(4)
+        colours = [kBlack, kRed, kGreen+2, kBlue, kOrange+2, kViolet-1, \
+                   kAzure+1, kOrange-7, kViolet+2, kYellow-3]
+
+        ntrials = 2 * self.p_ncutvar + 1
+        for imult in range(len(self.lvar2_binmin)):
+
+            canv = TCanvas("%s%d" % (plotname, imult), '', 400, 400)
+
+            diffratio = 0.5
+            if plotname == "histoSigmaCorr":
+                diffratio = 0.2
+            canv.cd(1).DrawFrame(0, 1 - diffratio, 25, 1 + diffratio, \
+                                 "%s %.2f < %s < %.2f;#it{p}_{T} (GeV/#it{c});Ratio %s" % \
+                                 (self.typean, self.lvar2_binmin[imult], self.v_var2_binning, \
+                                  self.lvar2_binmax[imult], plotname))
+
+            fileoutcrossmultref = self.make_file_path(self.d_results_cv, self.cross_filename, \
+                                                      "root", None, [self.typean, "cutvar", \
+                                                                     str(self.p_ncutvar), \
+                                                                     "mult", str(imult)])
+
+            f_fileoutcrossmultref = TFile.Open(fileoutcrossmultref)
+            href = f_fileoutcrossmultref.Get(plotname)
+            imk = 0
+            icol = 0
+            legname = "looser"
+            hcutvar = []
+
+            markers = [20, 21, 22, 23]
+            for icv in range(ntrials):
+                if icv == self.p_ncutvar:
+                    markers = [markers[i] + 4 for i in range(len(markers))]
+                    imk = 0
+                    legname = "tighter"
+                    continue
+                if icol == len(colours) - 1:
+                    imk = imk + 1
+                fileoutcrossmult = self.make_file_path(self.d_results_cv, self.cross_filename, \
+                                                       "root", None, [self.typean, "cutvar", str(icv), \
+                                                                      "mult", str(imult)])
+                f_fileoutcrossmult = TFile.Open(fileoutcrossmult)
+                hcutvar.append(f_fileoutcrossmult.Get(plotname))
+                hcutvar[icol].SetDirectory(0)
+                hcutvar[icol].SetLineColor(colours[icol % len(colours)])
+                hcutvar[icol].SetMarkerColor(colours[icol % len(colours)])
+                hcutvar[icol].SetMarkerStyle(markers[imk])
+                hcutvar[icol].SetMarkerSize(0.8)
+                hcutvar[icol].Divide(href)
+                hcutvar[icol].Draw("same")
+                if imult == 0:
+                    leg.AddEntry(hcutvar[icol], "Set %d (%s)" % (icv, legname), "LEP")
+                icol = icol + 1
+                f_fileoutcrossmult.Close()
+            leg.Draw()
+            canv.SaveAs("%s/Cutvar_%s_mult%d.eps" % (self.d_results_cv, plotname, imult))
+
+        if plotname == "histoSigmaCorr":
+            if self.p_nptfinbins < 9:
+                nx = 4
+                ny = 2
+                canvy = 533
+            elif self.p_nptfinbins < 13:
+                nx = 4
+                ny = 3
+                canvy = 800
+            else:
+                nx = 5
+                ny = 4
+                canvy = 1200
+            canv = [TCanvas("canvas_corryieldvspt%d_%d" % (icv, imult), "Data", \
+                             1000, canvy) for imult in range(len(self.lvar2_binmin))]
+            for imult in range(len(self.lvar2_binmin)):
+                for icv in range(ntrials):
+                    fileoutcrossmult = self.make_file_path(self.d_results_cv, \
+                                                           self.cross_filename, "root", None, \
+                                                           [self.typean, "cutvar", str(icv), \
+                                                            "mult", str(imult)])
+                    f_fileoutcrossmult = TFile.Open(fileoutcrossmult)
+                    hcutvar2 = f_fileoutcrossmult.Get(plotname)
+                    arrhistos = [TH1F("hcorryieldvscut%d%d" % (imult, ipt), \
+                                      "%d < #it{p}_{T} < %d;#it{p}_{T} (GeV/#it{c});Corr. Yield" % \
+                                      (self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt]), ntrials, \
+                                       0.5, ntrials + 0.5) for ipt in range(len(self.p_nptfinbins))]
+                    for ipt in range(self.p_nptfinbins):
+                        arrhistos[ipt].SetBinContent(icv + 1, hcutvar2.GetBinContent(ipt + 1))
+                        arrhistos[ipt].SetBinError(icv + 1, hcutvar2.GetBinError(ipt + 1))
+
+                canv.Divide(nx, ny)
+                for ipt in range(self.p_nptfinbins):
+                    canv.cd(ipt + 1)
+                    arrhistos.SetLineColor(colours[ipt])
+                    arrhistos.SetMarkerColor(colours[ipt])
+                    arrhistos.Draw("ep")
+
     def load_central_meansigma(self, imult):
 
-        func_filename_std = self.make_file_path(self.d_results, self.yields_filename_std, "root",
-                                           None, [self.case, self.typean])
+        func_filename_std = self.make_file_path(self.d_results, self.yields_filename_std, \
+                                                "root", None, [self.case, self.typean])
         print(func_filename_std)
         massfile_std = TFile.Open(func_filename_std, "READ")
         means_histo = massfile_std.Get("hmeanss%d" % (imult))
@@ -562,13 +809,30 @@ class Systematics:
 
         mean_for_data = []
         sigma_for_data = []
-        for ipt in range(self.p_nptbins):
-            bin_id = self.bin_matching[ipt]
+        for ipt in range(self.p_nptfinbins):
 
             mean_for_data.append(means_histo.GetBinContent(ipt + 1))
             sigma_for_data.append(sigmas_histo.GetBinContent(ipt + 1))
 
         return mean_for_data, sigma_for_data
+
+    @staticmethod
+    def calculate_norm(filename, trigger, var, multmin, multmax, doweight):
+        fileout = TFile.Open(filename, "read")
+        if not fileout:
+            return -1
+        namehistomulti = None
+        if doweight is True:
+            namehistomulti = "hmultweighted%svs%s" % (trigger, var)
+        else:
+            namehistomulti = "hmult%svs%s" % (trigger, var)
+        hmult = fileout.Get(namehistomulti)
+        if not hmult:
+            print("MISSING NORMALIZATION MULTIPLICITY")
+        binminv = hmult.GetXaxis().FindBin(multmin)
+        binmaxv = hmult.GetXaxis().FindBin(multmax)
+        norm = hmult.Integral(binminv, binmaxv)
+        return norm
 
     @staticmethod
     def make_file_path(directory, filename, extension, prefix=None, suffix=None):

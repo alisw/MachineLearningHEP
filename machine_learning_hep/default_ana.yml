@@ -70,8 +70,12 @@ analysis:
   doplots: true
 
 systematics:
-  # Not yet used
-  probvariation: false
+  cutvar:
+    activate: true
+    probvariationmass: true
+    probvariationeff: true
+    probvariationfit: true
+    probvariationcross: false
 
 validation:
   data:

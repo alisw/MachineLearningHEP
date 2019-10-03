@@ -242,6 +242,7 @@ class Analyzer:
         else:
             nx = 5
             ny = 4
+            canvy = 1200
         canvas_init_mc = TCanvas("canvas_init_mc", "MC", 1000, canvy)
         canvas_init_data = TCanvas("canvas_init_data", "Data", 1000, canvy)
         canvas_data = [TCanvas("canvas_data%d" % (imult), "Data", 1000, canvy) \
