@@ -37,6 +37,7 @@ from  machine_learning_hep.io import dump_yaml_from_dict
 from ROOT import RooUnfoldResponse  
 from ROOT import RooUnfold  
 from ROOT import RooUnfoldBayes
+from machine_learning_hep.utilities import folding
 
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
 class Analyzer:
@@ -1402,12 +1403,15 @@ class Analyzer:
                               (self.d_resultsallpdata, self.case, self.typean), "RECREATE")
         fileouts.cd()
         zbin =[]
-        for zbin_i in range(12):
-            zbin.append(zbin_i*0.1)
-        zbinarray=array("d",zbin)
-        jetptbin = [0.0,5.0,15.0,35.0]
-        jetptbinarray=array("d",jetptbin)
-        hzvsjetpt = TH2F("hzvsjetpt","",11, zbinarray, 3, jetptbinarray)
+        nzbins=8
+        for zbin_i in range(nzbins+1):
+            zbin.append(0.2001+zbin_i*0.1)
+        zbinarray=array("f",zbin)
+        jetptbin = [5.0,15.0,35.0]
+        njetptbins=2
+        jetptbinarray=array("f",jetptbin)
+        hzvsjetpt = TH2F("hzvsjetpt","",nzbins, zbinarray, njetptbins, jetptbinarray)
+        hzvsjetpt.Sumw2()
         for imult in range(self.p_nbin2):
             heff = eff_file.Get("eff_mult%d" % imult)
             hz = None
@@ -1473,7 +1477,6 @@ class Analyzer:
                 hzbkgright.Write("hzbkgright" + suffix)
                 hzbkg.Write("hzbkg" + suffix)
                 hzsub.Write("hzsub" + suffix)
-                hz.Write("hz" + suffix)
                 cside = TCanvas('cside' + suffix, 'The Fit Canvas')
                 cside.SetCanvasSize(1900, 1500)
                 cside.SetWindowSize(500, 500)
@@ -1541,13 +1544,17 @@ class Analyzer:
             cz.SaveAs("%s/efficiencycorrected_fullsub%s%s_%s_%.2f_%.2f.eps" % \
                       (self.d_resultsallpdata, self.case, self.typean, self.v_var2_binning, \
                        self.lvar2_binmin[imult], self.lvar2_binmax[imult]))
-            for zbins in range(11):
-                if hz.GetBinContent(zbins+1) is not 0.0:
-                    hzvsjetpt.SetBinContent(zbins+1,imult+1,hz.GetBinContent(zbins+1))
-                    hzvsjetpt.SetBinError(zbins+1,imult+1,hz.GetBinError(zbins+1))
-                else:
-                    hzvsjetpt.SetBinContent(zbins+1,imult+1,0.0)
-                    hzvsjetpt.SetBinError(zbins+1,imult+1,0.0)
+            for zbins in range(nzbins):
+                hzvsjetpt.SetBinContent(zbins+1,imult,hz.GetBinContent(zbins+1))                                                                                                                                                                                                                                                                                     
+                hzvsjetpt.SetBinError(zbins+1,imult,hz.GetBinError(zbins+1)) 
+            #    if hz.GetBinContent(zbins+1) >= 0.0 :
+             #       hzvsjetpt.SetBinContent(zbins+1,imult+1,hz.GetBinContent(zbins+1))
+              #      hzvsjetpt.SetBinError(zbins+1,imult+1,hz.GetBinError(zbins+1))
+               # else:
+                #    hzvsjetpt.SetBinContent(zbins+1,imult+1,0.0)
+                 #   hzvsjetpt.SetBinError(zbins+1,imult+1,0.0)
+            hz.Scale(1.0/hz.Integral(1,-1))
+            hz.Write("hz" + suffix)
 
 
         hzvsjetpt.Write("hzvsjetpt")
@@ -1991,42 +1998,139 @@ class Analyzer:
                               (self.d_resultsallpdata, self.case, self.typean), "recreate")
 
         unfolding_input_data_file = TFile.Open("%s/sideband_sub%s%s.root" % \
-
-
                                                (self.d_resultsallpdata, self.case, self.typean))
         unfolding_input_file = TFile.Open(self.n_fileff)
         response_matrix = unfolding_input_file.Get("response_matrix")
         input_data = unfolding_input_data_file.Get("hzvsjetpt")
-        kinematic_eff = unfolding_input_file.Get("kin_eff")
+        input_data_z = input_data.ProjectionX("input_data_z",1,1,"e")
+        kinematic_eff = unfolding_input_file.Get("hz_gen_cuts")
+        hz_gen_nocuts = unfolding_input_file.Get("hz_gen_nocuts")
+        kinematic_eff.Divide(hz_gen_nocuts)
+        input_mc_gen = unfolding_input_file.Get("hzvsjetpt_gen_unmatched")
+        input_mc_gen_z = input_mc_gen.ProjectionX("input_mc_gen_z",2,2,"e")
+        print(input_mc_gen.GetYaxis().GetBinCenter(2))
+        input_mc_gen_z.Scale(1.0/input_mc_gen_z.Integral(2,-1))
+        
+        ckinematic_eff = TCanvas('ckinematic_eff ', 'Kinematic Eff')
+        ckinematic_eff.SetCanvasSize(1900, 1500)
+        ckinematic_eff.SetWindowSize(500, 500)
+        kinematic_eff.GetXaxis().SetRangeUser(0.21,0.99)
+        kinematic_eff.Draw()
+        ckinematic_eff.SaveAs("%s/ckinematic_eff.eps" % self.d_resultsallpdata)
+        
         fileouts.cd()
+        unfolded_z_scaled_list=[]
+        refolding_test_list=[]
         for i in range(15) :
-            unfolding_object = RooUnfoldBayes(response_matrix, input_data, i)
+            unfolding_object = RooUnfoldBayes(response_matrix, input_data, i+1)
             unfolded_zvsjetpt = unfolding_object.Hreco(2)
         
-            cunfolded_zvsjetpt = TCanvas('cunfolded_zvsjetpt ', '2D output of unfolding')
-            cunfolded_zvsjetpt.SetCanvasSize(1900, 1500)
-            cunfolded_zvsjetpt.SetWindowSize(500, 500)
-            unfolded_zvsjetpt.Draw("text")
-            cunfolded_zvsjetpt.SaveAs("%s/cunfolded_zvsjetpt.eps" % self.d_resultsallpdata)
-
-
-            cunfolded_input = TCanvas('cunfolded_input ', '2D input of unfolding')
-            cunfolded_input.SetCanvasSize(1900, 1500)
-            cunfolded_input.SetWindowSize(500, 500)
-            input_data.Draw("text")
-            cunfolded_input.SaveAs("%s/cunfolded_input.eps" % self.d_resultsallpdata)
-
-            
             unfolded_z = unfolded_zvsjetpt.ProjectionX("unfolded_z",2,2,"e")
-            unfolded_z_scaled = unfolded_z.Clone("unfolded_z_scaled") 
+            unfolded_z.Sumw2()
+            unfolded_z_scaled = unfolded_z.Clone("unfolded_z_scaled_%d" % (i+1)) 
             unfolded_z_scaled.Divide(kinematic_eff)
-            unfolded_z_scaled.Scale(1.0/unfolded_z.Integral(1,-1),"width")
+            unfolded_z_scaled.Scale(1.0/unfolded_z_scaled.Integral(2,-1))
             fileouts.cd()
-            unfolded_z_scaled.Write("unfolded_z_%d" % i)
-            refolded_z = folding(unfolded_z, response_matrix, input_data)
-            refolding_test = unfolded_z.Clone("refolding_test")
+            unfolded_z_scaled.Write("unfolded_z_%d" % (i+1))
+            unfolded_z_scaled_list.append(unfolded_z_scaled)
+            refolded = folding(unfolded_zvsjetpt, response_matrix, input_data)
+            refolded.Sumw2()
+            refolded_z=refolded.ProjectionX("refolded_z",1,1,"e")
+            refolding_test = input_data_z.Clone("refolding_test_%d" % (i+1))
             refolding_test.Divide(refolded_z)
+            refolding_test_list.append(refolding_test)
 
+            cunfolded_z = TCanvas('cunfolded_z ', '1D output of unfolding')
+            cunfolded_z.SetCanvasSize(1900, 1500)
+            cunfolded_z.SetWindowSize(500, 500)
+            unfolded_z_scaled.GetXaxis().SetRangeUser(0.21,0.99)
+            unfolded_z_scaled.Draw()
+            cunfolded_z.SaveAs("%s/cunfolded_z_%d.eps" % (self.d_resultsallpdata, i+1))
+
+            cfolded_z = TCanvas('cfolded_z ', '1D output of folding')
+            cfolded_z.SetCanvasSize(1900, 1500)
+            cfolded_z.SetWindowSize(500, 500)
+            refolding_test.GetYaxis().SetRangeUser(0.5,1.5)
+            refolding_test.Draw()
+            cfolded_z.SaveAs("%s/cfolded_z_%d.eps" % (self.d_resultsallpdata, i+1))
+
+        cconvergence_z = TCanvas('cconvergence_z ', '1D output of convergence')
+        cconvergence_z.SetCanvasSize(1900, 1500)
+        cconvergence_z.SetWindowSize(500, 500)
+        leg_z = TLegend(.75, .5, .9, .9, "iterations")
+        leg_z.SetBorderSize(0)
+        leg_z.SetFillColor(0)
+        leg_z.SetFillStyle(0)
+        leg_z.SetTextFont(42)
+        leg_z.SetTextSize(0.035)
+        for i in range(15) :
+            leg_z.AddEntry(unfolded_z_scaled_list[i],("%d" % (i+1)),"LEP")
+            unfolded_z_scaled_list[i].GetXaxis().SetRangeUser(0.21,0.99)
+            unfolded_z_scaled_list[i].SetLineColor(i+1)
+            unfolded_z_scaled_list[i].Draw("same")
+        leg_z.Draw("same")
+        cconvergence_z.SaveAs("%s/convergence_z.eps" % (self.d_resultsallpdata))
+
+        cconvergence_refolding_z = TCanvas('cconvergence_refolding_z ', '1D output of refolding convergence')
+        cconvergence_refolding_z.SetCanvasSize(1900, 1500)
+        cconvergence_refolding_z.SetWindowSize(500, 500)
+        leg_refolding_z = TLegend(.75, .5, .9, .9, "iterations")
+        leg_refolding_z.SetBorderSize(0)
+        leg_refolding_z.SetFillColor(0)
+        leg_refolding_z.SetFillStyle(0)
+        leg_refolding_z.SetTextFont(42)
+        leg_refolding_z.SetTextSize(0.035)
+        for i in range(15) :
+            leg_refolding_z.AddEntry(refolding_test_list[i],("%d" % (i+1)),"LEP")
+            refolding_test_list[i].SetLineColor(i+1)
+            refolding_test_list[i].Draw("same")
+        leg_refolding_z.Draw("same")
+        cconvergence_refolding_z.SaveAs("%s/convergence_refolding_z.eps" % (self.d_resultsallpdata))
+
+        input_data_z_scaled=input_data_z.Clone("input_data_z_scaled")
+        input_data_z_scaled.Scale(1.0/input_data_z_scaled.Integral(1,-1))
+
+        cunfolded_not_z = TCanvas('cunfolded_not_z ', 'Unfolded vs not Unfolded')
+        cunfolded_not_z.SetCanvasSize(1900, 1500)
+        cunfolded_not_z.SetWindowSize(500, 500)
+        leg_cunfolded_not_z = TLegend(.15, .75, .35, .9, "")
+        leg_cunfolded_not_z.SetBorderSize(0)
+        leg_cunfolded_not_z.SetFillColor(0)
+        leg_cunfolded_not_z.SetFillStyle(0)
+        leg_cunfolded_not_z.SetTextFont(42)
+        leg_cunfolded_not_z.SetTextSize(0.035)
+        leg_cunfolded_not_z.AddEntry(unfolded_z_scaled_list[3], "unfolded ALICE data", "LEP")
+        unfolded_z_scaled_list[3].SetLineColor(2)
+        unfolded_z_scaled_list[3].GetXaxis().SetRangeUser(0.21,0.99)
+        unfolded_z_scaled_list[3].Draw()
+        leg_cunfolded_not_z.AddEntry(input_data_z_scaled, "Side-Band sub, Eff Corrected", "LEP")
+        input_data_z_scaled.SetLineColor(4)
+        input_data_z_scaled.Draw("same")
+        leg_cunfolded_not_z.Draw("same")
+        cunfolded_not_z.SaveAs("%s/cunfolded_not_z.eps" % self.d_resultsallpdata)
+
+
+        
+
+        cinput_mc_gen_z = TCanvas('cinput_mc_gen_z ', '1D gen pythia z')
+        cinput_mc_gen_z.SetCanvasSize(1900, 1500)
+        cinput_mc_gen_z.SetWindowSize(500, 500)
+        leg_input_mc_gen_z = TLegend(.2, .7, .45, .85, "")
+        leg_input_mc_gen_z.SetBorderSize(0)
+        leg_input_mc_gen_z.SetFillColor(0)
+        leg_input_mc_gen_z.SetFillStyle(0)
+        leg_input_mc_gen_z.SetTextFont(42)
+        leg_input_mc_gen_z.SetTextSize(0.035)
+        leg_input_mc_gen_z.AddEntry(input_mc_gen_z, "PYTHIA gen level", "LEP")
+        input_mc_gen_z.SetLineColor(4)
+        input_mc_gen_z.GetXaxis().SetRangeUser(0.21,0.99)
+        input_mc_gen_z.Draw()
+        leg_input_mc_gen_z.AddEntry(unfolded_z_scaled_list[3], "unfolded ALICE data", "LEP")
+        unfolded_z_scaled_list[3].SetLineColor(2)
+        unfolded_z_scaled_list[3].Draw("same")
+        leg_input_mc_gen_z.Draw("same")
+        cinput_mc_gen_z.SaveAs("%s/cinput_mc_gen_z.eps" % self.d_resultsallpdata)
+                         
     def unfolding_closure(self):
         lfile = TFile.Open(self.n_filemass,"update")
         fileouts = TFile.Open("%s/unfolding_closure_results%s%s.root" % \
@@ -2034,15 +2138,74 @@ class Analyzer:
         unfolding_input_file = TFile.Open(self.n_fileff)
         response_matrix = unfolding_input_file.Get("response_matrix_closure")
         input_mc_det = unfolding_input_file.Get("input_closure_reco")
+        input_mc_det_z = input_mc_det.ProjectionX("input_mc_det_z",1,1,"e")
         input_mc_gen = unfolding_input_file.Get("input_closure_gen")
-        input_mc_gen.Scale(1.0/input_mc_gen.Integral(1,-1),"width")
-        kinematic_eff = unfolding_input_file.Get("kin_eff")
+        input_mc_gen_z = input_mc_gen.ProjectionX("input_mc_gen_z",2,2,"e")
+        input_mc_gen_z.Scale(1.0/input_mc_gen_z.Integral(2,-1))
+        kinematic_eff = unfolding_input_file.Get("hz_gen_cuts")
+        hz_gen_nocuts = unfolding_input_file.Get("hz_gen_nocuts")
+        kinematic_eff.Divide(hz_gen_nocuts)
+        unfolded_z_closure_list=[]
         for i in range(15) :
-            unfolding_object = RooUnfoldBayes(response_matrix, input_mc_det, i)
+            unfolding_object = RooUnfoldBayes(response_matrix, input_mc_det, i+1)
             unfolded_zvsjetpt = unfolding_object.Hreco(2)
-            unfolded_z = unfolded_zvsjetpt.ProjectionX("unfolded_z",2,2,"e")
+            unfolded_zvsjetpt.Sumw2()
+            unfolded_z = unfolded_zvsjetpt.ProjectionX("unfolded_z_%d" % (i+1),2,2,"e")
             unfolded_z.Divide(kinematic_eff)
-            unfolded_z.Scale(1.0/unfolded_z.Integral(1,-1),"width")
-            unfolded_z.Divide(input_mc_gen)
+            unfolded_z.Scale(1.0/unfolded_z.Integral(2,-1))
+            unfolded_z.Divide(input_mc_gen_z)
             fileouts.cd()
-            unfolded_z.Write("closure_test_%d" % i)
+            unfolded_z.Write("closure_test_%d" % (i+1))
+            unfolded_z_closure_list.append(unfolded_z)
+            
+            cclosure_z = TCanvas('cclosure_z ', '1D output of closure')
+            cclosure_z.SetCanvasSize(1900, 1500)
+            cclosure_z.SetWindowSize(500, 500)
+            unfolded_z.GetYaxis().SetRangeUser(0.5,1.5)
+            unfolded_z.GetXaxis().SetRangeUser(0.21,0.99)
+            unfolded_z.Draw()
+            cclosure_z.SaveAs("%s/cclosure_z_%d.eps" % (self.d_resultsallpdata, i+1))
+
+        unfolding_input_data_file = TFile.Open("%s/sideband_sub%s%s.root" % \
+                                               (self.d_resultsallpdata, self.case, self.typean))
+        input_data = unfolding_input_data_file.Get("hzvsjetpt")
+        input_data_z = input_data.ProjectionX("input_data_z",1,1,"e")
+
+        input_data_z.Scale(1.0/input_data_z.Integral(1,-1))
+        input_mc_det_z.Scale(1.0/input_mc_det_z.Integral(1,-1))
+
+        
+        cinput_mc_det_z = TCanvas('cinput_mc_det_z ', '1D det pythia z')
+        cinput_mc_det_z.SetCanvasSize(1900, 1500)
+        cinput_mc_det_z.SetWindowSize(500, 500)
+        leg_input_mc_det_z = TLegend(.2, .7, .45, .85, "")
+        leg_input_mc_det_z.SetBorderSize(0)
+        leg_input_mc_det_z.SetFillColor(0)
+        leg_input_mc_det_z.SetFillStyle(0)
+        leg_input_mc_det_z.SetTextFont(42)
+        leg_input_mc_det_z.SetTextSize(0.035)
+        leg_input_mc_det_z.AddEntry(input_mc_det, "PYTHIA reco level", "LEP")
+        input_mc_det_z.SetLineColor(4)
+        input_mc_det_z.Draw()
+        leg_input_mc_det_z.AddEntry(input_data_z, "side-band sub, eff corrected", "LEP")
+        input_data_z.SetLineColor(2)
+        input_data_z.GetXaxis().SetRangeUser(0.21,0.99)
+        input_data_z.Draw("same")
+        leg_input_mc_det_z.Draw("same")
+        cinput_mc_det_z.SaveAs("%s/cinput_mc_det_z.eps" % self.d_resultsallpdata)
+
+        cconvergence_closure_z = TCanvas('cconvergence_closure_z ', '1D output of closure convergence')
+        cconvergence_closure_z.SetCanvasSize(1900, 1500)
+        cconvergence_closure_z.SetWindowSize(500, 500)
+        leg_closure = TLegend(.75, .5, .9, .9, "iterations")
+        leg_closure.SetBorderSize(0)
+        leg_closure.SetFillColor(0)
+        leg_closure.SetFillStyle(0)
+        leg_closure.SetTextFont(42)
+        leg_closure.SetTextSize(0.035)
+        for i in range(15) :
+            leg_closure.AddEntry(unfolded_z_closure_list[i],("%d" % (i+1)),"LEP")
+            unfolded_z_closure_list[i].SetLineColor(i+1)
+            unfolded_z_closure_list[i].Draw("same")
+        leg_closure.Draw("same")
+        cconvergence_closure_z.SaveAs("%s/convergence_closure_z.eps" % (self.d_resultsallpdata))

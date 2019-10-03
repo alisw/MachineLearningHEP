@@ -411,7 +411,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 if "pt_jet" in df_bin.columns:
                     zarray = z_calc(df_bin.pt_jet, df_bin.phi_jet, df_bin.eta_jet,
                                     df_bin.pt_cand, df_bin.phi_jet, df_bin.eta_jet)
-                    h_zvsinvmass = TH2F("hzvsmass" + suffix, "", 5000, 1.00, 6.00, 1100, 0.0, 1.1)
+                    h_zvsinvmass = TH2F("hzvsmass" + suffix, "", 5000, 1.00, 6.00, 800, 0.2001, 1.001)
+                    h_zvsinvmass.Sumw2()
                     zvsinvmass = np.vstack((df_bin.inv_mass, zarray)).T
                     fill_hist(h_zvsinvmass, zvsinvmass)
                     h_zvsinvmass.Write()
@@ -607,7 +608,15 @@ class Processer: # pylint: disable=too-many-instance-attributes
     def process_unfolding(self):
         out_file = TFile.Open(self.n_fileeff, "update")
         list_df_mc_reco = []
+        list_df_mc_gen = []
         for iptskim, _ in enumerate(self.lpt_anbinmin):
+
+            df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[iptskim], "rb"))
+            df_mc_gen = selectdfrunlist(df_mc_gen, \
+                    self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
+            df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
+            list_df_mc_gen.append(df_mc_gen)
+            
             df_mc_reco = pickle.load(openfile(self.lpt_recodecmerged[iptskim], "rb"))
             if "pt_jet" not in df_mc_reco.columns:
                 print("Jet variables not found in the dataframe. Skipping process_response.")
@@ -618,7 +627,44 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 df_mc_reco = df_mc_reco.query(self.s_trigger)
             df_mc_reco = df_mc_reco.query(self.l_selml[iptskim])
             list_df_mc_reco.append(df_mc_reco)
+
+
+        zbin_reco =[]
+        nzbins_reco=8
+        for zbin_i in range(nzbins_reco+1) :
+            zbin_reco.append(0.2001+zbin_i*0.1)
+        zbinarray_reco=array.array("f",zbin_reco)
+
+        zbin_gen =[]
+        nzbins_gen=9
+        for zbin_i in range(nzbins_gen+1) :
+            zbin_gen.append(0.1001+zbin_i*0.1)
+        zbinarray_gen=array.array("f",zbin_gen)
+
+        njetptbins_reco=2
+        jetptbin_reco = [5.0,15.0,35.0]
+        jetptbinarray_reco=array.array("f",jetptbin_reco)
+
+        njetptbins_gen=3
+        jetptbin_gen = [2.0,5.0,15.0,35.0]
+        jetptbinarray_gen=array.array("f",jetptbin_gen)
+        
+        df_gen = pd.concat(list_df_mc_gen)
+        z_array_gen_unmatched = z_calc(df_gen.pt_jet, df_gen.phi_jet, df_gen.eta_jet,
+                               df_gen.pt_cand, df_gen.phi_cand, df_gen.eta_cand)
+        df_gen["z_gen"] = z_array_gen_unmatched
+        df_zvsjetpt_gen_unmatched = df_gen.loc[:, ["z_gen", "pt_jet"]]
+        hzvsjetpt_gen_unmatched = TH2F("hzvsjetpt_gen_unmatched", "hzvsjetpt_gen_unmatched",nzbins_gen,zbinarray_gen,njetptbins_gen,jetptbinarray_gen)
+        fill_hist(hzvsjetpt_gen_unmatched, df_zvsjetpt_gen_unmatched)
+
+
+        
         df_mc_reco_merged = pd.concat(list_df_mc_reco)
+
+
+
+
+        
         df_mc_reco_merged_prompt = df_mc_reco_merged[df_mc_reco_merged.ismcprompt == 1] # reconstructed & selected non-prompt jets
 
         zarray_reco = z_calc(df_mc_reco_merged_prompt.pt_jet, df_mc_reco_merged_prompt.phi_jet, df_mc_reco_merged_prompt.eta_jet,
@@ -630,55 +676,54 @@ class Processer: # pylint: disable=too-many-instance-attributes
         df_mc_reco_merged_prompt['z_reco'] = zarray_reco
         df_mc_reco_merged_prompt['z_gen'] = zarray_gen
 
-        zbin =[]
+                
+        hz_gen_nocuts=TH1F("hz_gen_nocuts","hz_gen_nocuts",nzbins_gen, zbinarray_gen)
+        hz_gen_nocuts.Sumw2()
+        hz_gen_cuts=TH1F("hz_gen_cuts","hz_gen_cuts",nzbins_gen,zbinarray_gen)
+        hz_gen_cuts.Sumw2()
 
-        for zbin_i in range(12) :
-            zbin.append(zbin_i*0.1)
-        zbinarray=array.array("d",zbin)
-        jetptbin = [0.0,5.0,15.0,35.0]
-        jetptbinarray=array.array("d",jetptbin)
+        hzvsjetpt_reco_closure=TH2F("hzvsjetpt_reco_closure","hzvsjetpt_reco_closure",nzbins_reco,zbinarray_reco,njetptbins_reco,jetptbinarray_reco)
+        hzvsjetpt_reco_closure.Sumw2()
+        hzvsjetpt_gen_closure=TH2F("hzvsjetpt_gen_closure","hzvsjetpt_gen_closure",nzbins_gen,zbinarray_gen,njetptbins_gen,jetptbinarray_gen)
+        hzvsjetpt_gen_closure.Sumw2()
         
-        hz_gen_nocuts=TH1F("hz_gen_nocuts","",11, zbinarray)
-        hz_gen_cuts=TH1F("hz_gen_cuts","",11,zbinarray)
-
-        hzvsjetpt_reco_closure=TH2F("hzvsjetpt_reco_closure","",11,zbinarray,3,jetptbinarray)
-        hzvsjetpt_gen_closure=TH2F("hzvsjetpt_gen_closure","",11,zbinarray,3,jetptbinarray)
-
-        hzvsjetpt_reco=TH2F("hzvsjetpt_reco","",11,zbinarray,3,jetptbinarray)
-        hzvsjetpt_gen=TH2F("hzvsjetpt_gen","",11,zbinarray,3,jetptbinarray)
-
+        hzvsjetpt_reco=TH2F("hzvsjetpt_reco","hzvsjetpt_reco",nzbins_reco,zbinarray_reco,njetptbins_reco,jetptbinarray_reco)
+        hzvsjetpt_reco.Sumw2()
+        hzvsjetpt_gen=TH2F("hzvsjetpt_gen","hzvsjetpt_gen",nzbins_gen,zbinarray_gen,njetptbins_gen,jetptbinarray_gen)
+        hzvsjetpt_gen.Sumw2()
+        
         response_matrix = RooUnfoldResponse(hzvsjetpt_reco, hzvsjetpt_gen)
         response_matrix_closure = RooUnfoldResponse(hzvsjetpt_reco, hzvsjetpt_gen)
 
         random_number = TRandom3(0)
-        for index, row in df_mc_reco_merged_prompt.iterrows():
+        for row in df_mc_reco_merged_prompt.itertuples():
 
-            hzvsjetpt_reco.Fill(row['z_reco'],row['pt_jet'])
-            hzvsjetpt_gen.Fill(row['z_gen'],row['pt_gen_jet'])
+            hzvsjetpt_reco.Fill(row.z_reco,row.pt_jet)
+            hzvsjetpt_gen.Fill(row.z_gen,row.pt_gen_jet)
 
-            response_matrix.Fill(row['z_reco'],row['pt_jet'],row['z_gen'],row['pt_gen_jet'])
+            response_matrix.Fill(row.z_reco,row.pt_jet,row.z_gen,row.pt_gen_jet)
 
-            if row['pt_gen_jet'] > 5 and row['pt_gen_jet'] <15 :
-                hz_gen_nocuts.Fill(row['z_gen'])
-                if row['pt_jet'] > 5 and row['pt_jet'] <15 :
-                    hz_gen_cuts.Fill(row['z_gen'])
+            if row.pt_gen_jet >= 5.0 and row.pt_gen_jet <15.0 and row.z_gen >= 0.1001 :
+                hz_gen_nocuts.Fill(row.z_gen)
+                if row.pt_jet >= 5.0 and row.pt_jet <15.0 and row.z_reco >= 0.2001 :
+                    hz_gen_cuts.Fill(row.z_gen)
 
-            if random_number.Rndm() < 0.1 :
-                hzvsjetpt_reco_closure.Fill(row['z_reco'],row['pt_jet'])
-                hzvsjetpt_gen_closure.Fill(row['z_gen'],row['pt_gen_jet'])
+            if random_number.Rndm() < 0.2 :
+                hzvsjetpt_reco_closure.Fill(row.z_reco,row.pt_jet)
+                hzvsjetpt_gen_closure.Fill(row.z_gen,row.pt_gen_jet)
             else:
-                response_matrix_closure.Fill(row['z_reco'],row['pt_jet'],row['z_gen'],row['pt_gen_jet'])
-        kine_eff = hz_gen_nocuts.Clone("kine_eff")
-        kine_eff.Divide(hz_gen_cuts)
+                response_matrix_closure.Fill(row.z_reco,row.pt_jet,row.z_gen,row.pt_gen_jet)
 
         hzvsjetpt_reco.Write()
         hzvsjetpt_gen.Write()
+        hz_gen_nocuts.Write()
+        hz_gen_cuts.Write()
+        hzvsjetpt_gen_unmatched.Write()
         response_matrix.Write("response_matrix")
         response_matrix_closure.Write("response_matrix_closure")
         hzvsjetpt_reco_closure.Write("input_closure_reco")
         hzvsjetpt_gen_closure.Write("input_closure_gen")
-        kine_eff.Write("kin_eff") 
-
+        out_file.Close()
 
 
         

@@ -546,7 +546,7 @@ LcpK0spp:
 
       plotbin: [1,1,1,1]
       usesinglebineff: null
-      sel_binmin2: [0,5,15] #list of nbins
+      sel_binmin2: [2,5,15] #list of nbins
       sel_binmax2: [5,15,35] #list of nbins
       var_binning2: pt_jet
       triggerbit: INT7

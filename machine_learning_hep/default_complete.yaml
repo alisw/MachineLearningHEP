@@ -56,9 +56,9 @@ analysis:
   # Do only merged (false)
   doperperiod: false
   data:
-    histomass: true
+    histomass: false
   mc:
-    histomass: true
+    histomass: false
     efficiency: true
     feeddown: false
     dounfolding: true

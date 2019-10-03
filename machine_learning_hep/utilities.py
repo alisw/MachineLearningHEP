@@ -23,6 +23,7 @@ import os
 import numpy as np
 import pandas as pd
 import lz4
+import math
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
 from ROOT import TH1F, TH2F  # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.selectionutils import select_runs
@@ -208,8 +209,8 @@ def folding(h_input, response_matrix, h_output):
     h_folded=h_output.Clone("h_folded")
     for a in range(h_output.GetNbinsX()):
         for b in range(h_output.GetNbinsY()):
-            val=None
-            val_err=None
+            val=0.0
+            val_err=0.0
             for k in range(h_input.GetNbinsX()):
                 for l in range(h_input.GetNbinsY()):
                     index_x_out=a+h_output.GetNbinsX()*b
@@ -217,6 +218,6 @@ def folding(h_input, response_matrix, h_output):
                     val+=h_input.GetBinContent(k+1,l+1)*response_matrix(index_x_out, index_x_in)
                     val_err+=h_input.GetBinError(k+1,l+1)*h_input.GetBinError(k+1,l+1)*response_matrix(index_x_out, index_x_in)*response_matrix(index_x_out, index_x_in)
             h_folded.SetBinContent(a+1, b+1, val)
-            h_folded.SetBinError(a+1, b+1, math.sqrt(error))
+            h_folded.SetBinError(a+1, b+1, math.sqrt(val_err))
     return h_folded
 
