@@ -236,7 +236,7 @@ Bspp:
       masssecpeak: 0.
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: true
+      SetFixGaussianSigma: [true, true, true]
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),

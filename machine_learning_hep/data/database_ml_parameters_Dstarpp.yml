@@ -236,7 +236,7 @@ Dstarpp:
       includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 2.010
       FixedMean: False
-      SetFixGaussianSigma: true
+      SetFixGaussianSigma: [true,true,true,true,true,true,true,true]
       SetInitialGaussianMean: true
       dolikelihood: true
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
@@ -288,7 +288,7 @@ Dstarpp:
       includesecpeak: Null #[0,0,0,0,0,0]
       masssecpeak: 2.010
       FixedMean: False
-      SetFixGaussianSigma: true
+      SetFixGaussianSigma: [true,true,true,true,true,true]
       SetInitialGaussianMean: true
       dolikelihood: true
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01]
@@ -337,7 +337,7 @@ Dstarpp:
       includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 2.010
       FixedMean: False
-      SetFixGaussianSigma: true
+      SetFixGaussianSigma: [true,true,true,true,true,true,true,true]
       SetInitialGaussianMean: true
       dolikelihood: true
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
@@ -388,7 +388,7 @@ Dstarpp:
       includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 2.010
       FixedMean: False
-      SetFixGaussianSigma: true
+      SetFixGaussianSigma: [true,true,true,true,true,true,true,true]
       SetInitialGaussianMean: true
       dolikelihood: true
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
