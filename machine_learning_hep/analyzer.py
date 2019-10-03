@@ -415,7 +415,8 @@ class Analyzer:
                     for ms in means_sigmas_init:
                         fit_cases.append((ms[0], ms[1], ms[2], fix))
                 if mean_case_user is not None:
-                    fit_cases.insert(0, (0, mean_case_user, sigma_case_user, self.p_fixingaussigma))
+                    fit_cases.insert(0, (0, mean_case_user, sigma_case_user,
+                                         self.p_fixingaussigma[ipt]))
                 else:
                     self.logger.error("Cannot initialise fit with what is requested by the " \
                                       "user... Try fallback options")

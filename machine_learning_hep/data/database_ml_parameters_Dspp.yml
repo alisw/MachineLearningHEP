@@ -283,20 +283,20 @@ Dspp:
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
       init_fits_from: mc # data # data or mc
-      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
-      bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
+      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
+      bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.969
-      massmin: [1.75,1.75,1.75,1.75,1.75,1.75,1.75,1.75]
-      massmax: [2.15,2.15,2.15,2.15,2.15,2.15,2.15,2.15]
-      rebin: [4,4,4,4,4,4,4,4]
-      includesecpeak: [true, true, true, true, true, true, true, true]
+      massmin: [1.75,1.75,1.75,1.75,1.75,1.75]
+      massmax: [2.15,2.15,2.15,2.15,2.15,2.15]
+      rebin: [4,4,4,4,4,4]
+      includesecpeak: [true, true, true, true, true, true]
       masssecpeak: 1.869
       fix_masssecpeak: False
       widthsecpeak: 0.01
       fix_widthsecpeak: False
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: true
+      SetFixGaussianSigma: [true,true,true,true,true,true]
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
@@ -309,7 +309,7 @@ Dspp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
+      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01]
       FixedSigma: false
       fitcase: Ds
       latexnamemeson: "D_{s}^{+}"
@@ -363,20 +363,20 @@ Dspp:
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
       init_fits_from: mc # data # data or mc
-      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
-      bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
+      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
+      bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.969
-      massmin: [1.75,1.75,1.75,1.75,1.75,1.75,1.75,1.75]
-      massmax: [2.15,2.15,2.15,2.15,2.15,2.15,2.15,2.15]
-      rebin: [4,4,4,4,4,4,4,4]
-      includesecpeak: [true, true, true, true, true, true, true, true]
+      massmin: [1.75,1.75,1.75,1.75,1.75,1.75]
+      massmax: [2.15,2.15,2.15,2.15,2.15,2.15]
+      rebin: [4,4,4,4,4,4]
+      includesecpeak: [true, true, true, true, true, true]
       masssecpeak: 1.869
       fix_masssecpeak: False
       widthsecpeak: 0.01
       fix_widthsecpeak: False
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: true
+      SetFixGaussianSigma: [true,true,true,true,true,true]
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
@@ -389,7 +389,7 @@ Dspp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
+      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01]
       FixedSigma: false
       fitcase: Ds
       latexnamemeson: "D_{s}^{+}"
@@ -434,20 +434,20 @@ Dspp:
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
       init_fits_from: mc # data # data or mc
-      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
-      bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
+      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
+      bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.969
-      massmin: [1.75,1.75,1.75,1.75,1.75,1.75,1.75,1.75]
-      massmax: [2.15,2.15,2.15,2.15,2.15,2.15,2.15,2.15]
-      rebin: [4,4,4,4,4,4,4,4]
-      includesecpeak: [true, true, true, true, true, true, true, true]
+      massmin: [1.75,1.75,1.75,1.75,1.75,1.75]
+      massmax: [2.15,2.15,2.15,2.15,2.15,2.15]
+      rebin: [4,4,4,4,4,4]
+      includesecpeak: [true, true, true, true, true, true]
       masssecpeak: 1.869
       fix_masssecpeak: False
       widthsecpeak: 0.01
       fix_widthsecpeak: False
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: true
+      SetFixGaussianSigma: [true,true,true,true,true,true]
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
@@ -460,7 +460,7 @@ Dspp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
+      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01]
       FixedSigma: false
       fitcase: Ds
       latexnamemeson: "D_{s}^{+}"
@@ -505,20 +505,20 @@ Dspp:
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
       init_fits_from: mc # data # data or mc
-      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
-      bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
+      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus]
+      bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.969
-      massmin: [1.75,1.75,1.75,1.75,1.75,1.75,1.75,1.75]
-      massmax: [2.15,2.15,2.15,2.15,2.15,2.15,2.15,2.15]
-      rebin: [4,4,4,4,4,4,4,4]
-      includesecpeak: [true, true, true, true, true, true, true, true]
+      massmin: [1.75,1.75,1.75,1.75,1.75]
+      massmax: [2.15,2.15,2.15,2.15,2.15]
+      rebin: [4,4,4,4,4]
+      includesecpeak: [true, true, true, true, true]
       masssecpeak: 1.869
       fix_masssecpeak: False
       widthsecpeak: 0.01
       fix_widthsecpeak: False
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: true
+      SetFixGaussianSigma: [true,true,true,true,true]
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
@@ -576,20 +576,20 @@ Dspp:
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
       init_fits_from: mc # data # data or mc
-      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
-      bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
+      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
+      bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.969
-      massmin: [1.75,1.75,1.75,1.75,1.75,1.75,1.75,1.75]
-      massmax: [2.15,2.15,2.15,2.15,2.15,2.15,2.15,2.15]
-      rebin: [4,4,4,4,4,4,4,4]
-      includesecpeak: [true, true, true, true, true, true, true, true]
+      massmin: [1.75,1.75,1.75,1.75,1.75,1.75]
+      massmax: [2.15,2.15,2.15,2.15,2.15,2.15]
+      rebin: [4,4,4,4,4,4]
+      includesecpeak: [true, true, true, true, true, true]
       masssecpeak: 1.869
       fix_masssecpeak: False
       widthsecpeak: 0.01
       fix_widthsecpeak: False
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: true
+      SetFixGaussianSigma: [true,true,true,true,true,true]
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
@@ -602,7 +602,7 @@ Dspp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
+      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01]
       FixedSigma: true
       fitcase: Ds
       latexnamemeson: "D_{s}^{+}"
@@ -647,20 +647,20 @@ Dspp:
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
       init_fits_from: mc # data # data or mc
-      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
-      bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
+      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
+      bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.969
-      massmin: [1.75,1.75,1.75,1.75,1.75,1.75,1.75,1.75]
-      massmax: [2.15,2.15,2.15,2.15,2.15,2.15,2.15,2.15]
-      rebin: [4,4,4,4,4,4,4,4]
-      includesecpeak: [true, true, true, true, true, true, true, true]
+      massmin: [1.75,1.75,1.75,1.75,1.75,1.75]
+      massmax: [2.15,2.15,2.15,2.15,2.15,2.15]
+      rebin: [4,4,4,4,4,4]
+      includesecpeak: [true, true, true, true, true, true]
       masssecpeak: 1.869
       fix_masssecpeak: False
       widthsecpeak: 0.01
       fix_widthsecpeak: False
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: true
+      SetFixGaussianSigma: [true,true,true,true,true,true]
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
@@ -673,7 +673,7 @@ Dspp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
+      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01]
       FixedSigma: true
       fitcase: Ds
       latexnamemeson: "D_{s}^{+}"
@@ -718,20 +718,20 @@ Dspp:
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
       init_fits_from: mc # data # data or mc
-      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
-      bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
+      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
+      bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.969
-      massmin: [1.75,1.75,1.75,1.75,1.75,1.75,1.75,1.75]
-      massmax: [2.15,2.15,2.15,2.15,2.15,2.15,2.15,2.15]
-      rebin: [4,4,4,4,4,4,4,4]
-      includesecpeak: [true, true, true, true, true, true, true, true]
+      massmin: [1.75,1.75,1.75,1.75,1.75,1.75]
+      massmax: [2.15,2.15,2.15,2.15,2.15,2.15]
+      rebin: [4,4,4,4,4,4]
+      includesecpeak: [true, true, true, true, true, true]
       masssecpeak: 1.869
       fix_masssecpeak: False
       widthsecpeak: 0.01
       fix_widthsecpeak: False
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: true
+      SetFixGaussianSigma: [true,true,true,true,true,true]
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
@@ -744,7 +744,7 @@ Dspp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
+      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01]
       FixedSigma: true
       fitcase: Ds
       latexnamemeson: "D_{s}^{+}"
