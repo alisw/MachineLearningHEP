@@ -98,7 +98,7 @@ def plot_hfspectrum_years_ratios(histo_ml, histo_std, title, x_label, y_label, s
     canvas.Close()
 
 
-def compare_ml_std(case_ml, ana_type_ml, filepath_std):
+def compare_ml_std(case_ml, ana_type_ml, filepath_std, map_std_bins=None):
 
     with open("data/database_ml_parameters_%s.yml" % case_ml, 'r') as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
@@ -120,10 +120,47 @@ def compare_ml_std(case_ml, ana_type_ml, filepath_std):
 
     for hn in histo_names:
         histo_ml = file_ml.Get(hn)
-        histo_std = file_std.Get(hn)
+        histo_std_tmp = file_std.Get(hn)
+        histo_std = None
+
         if not histo_ml or not histo_std:
             print(f"Could not find histogram {hn}, continue...")
             continue
+
+        if "MC" not in hn and map_std_bins is not None:
+            histo_std = histo_ml.Clone("std_rebin")
+            histo_std.Reset("ICESM")
+            histo_std_keep_bins.Reset("ICESM")
+            histo_std_rebin_bins.Reset("ICESM")
+
+            contents = [0 * histo_ml.GetNbins()]
+            errors = [0 * histo_ml.GetNbins()]
+
+            for std_bin, ml_bin in map_std_bins:
+                for m  
+
+            treat_std_as_ml_bins = []
+            for rebins in merge_std_bins:
+                ml_bin = rebins[0]
+                content = 0.
+                error = 0.
+                for ibin in rebins:
+                    content += histo_std_tmp.GetBinContent(ibin)
+                    error += histo_std_tmp.GetBinError(ibin) * histo_std_tmp.GetBinError(ibin)
+                histo_std_rebin_bins.SetBinContent(ml_bin, content)
+                histo_std_rebinn_bins.SetBinError(ml_bin, sqrt(error))
+
+            map_ml_std_bins = []
+            counter = 1
+            for ibin in histo_std_tmp.GetNbinsX():
+
+                
+
+
+        else:
+            histo_std = histo_std_tmp.Clone("std_cloned")
+
+
 
         folder_plots = os.path.join(filepath_ml, "ml_std_comparison")
         if not os.path.exists(folder_plots):
@@ -156,5 +193,5 @@ gStyle.SetPadTickX(1)
 gStyle.SetPadTickY(1)
 
 
-compare_ml_std("D0pp", "MBvspt_ntrkl", "data/std_results/HPT_D020161718.root")
-compare_ml_std("LcpKpipp", "MBvspt_ntrkl", "data/std_results/HP_Lc_newCut.root")
+compare_ml_std("D0pp", "MBvspt_ntrkl", "data/std_results/HPT_D020161718.root", [[2,3], [4,5]])
+compare_ml_std("LcpKpipp", "MBvspt_ntrkl", "data/std_results/HP_Lc_newCut.root", [[2,3], [4,5]])
