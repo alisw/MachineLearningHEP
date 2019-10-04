@@ -15,18 +15,21 @@
 """
 main script for doing final stage analysis
 """
+import os
+from shutil import copyfile
 # pylint: disable=unused-wildcard-import, wildcard-import
 from array import *
 # pylint: disable=import-error, no-name-in-module, unused-import
 import yaml
 from ROOT import TFile, TH1F, TCanvas
 from ROOT import gStyle, TLegend, TLatex
-from ROOT import gROOT, kRed, kGreen, kBlack, kBlue
+from ROOT import gROOT, kRed, kGreen, kBlack, kBlue, kOrange, kViolet, kAzure
 from ROOT import TStyle, gPad
 
 # pylint: disable=import-error, no-name-in-module, unused-import
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-branches
+# pylint: disable=too-many-locals
 def plot_hfptspectrum_comb(case, arraytype):
 
     gROOT.SetStyle("Plain")
@@ -46,6 +49,11 @@ def plot_hfptspectrum_comb(case, arraytype):
 
     with open("data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
+
+    folder_plots = data_param[case]["analysis"]["dir_general_plots"]
+    if not os.path.exists(folder_plots):
+        print("creating folder ", folder_plots)
+        os.makedirs(folder_plots)
 
     folder_MB_allperiods = data_param[case]["analysis"][arraytype[0]]["data"]["resultsallp"]
     folder_triggered = data_param[case]["analysis"][arraytype[1]]["data"]["resultsallp"]
@@ -83,7 +91,8 @@ def plot_hfptspectrum_comb(case, arraytype):
     legyield.SetTextFont(42)
     legyield.SetTextSize(0.035)
 
-    colors = [kBlack, kRed, kGreen+2, kBlue]
+    colors = [kBlack, kRed, kGreen+2, kBlue, kOrange+2, kViolet-1, kAzure+1, kOrange-7]
+    tryunmerged = True
     if fileres_MB_allperiods and fileres_trig_allperiods:
 
         for imult, iplot in enumerate(plotbinMB):
@@ -115,30 +124,60 @@ def plot_hfptspectrum_comb(case, arraytype):
             legyield.AddEntry(hyieldHM, legyieldstring, "LEP")
         legyield.Draw()
 
-        ccross.SaveAs("PtSpec_ComparisonCorrYields_%s_%scombined%s.eps" % \
-                  (case, arraytype[0], arraytype[1]))
+        ccross.SaveAs("%s/PtSpec_ComparisonCorrYields_%s_%scombined%s.eps" % \
+                  (folder_plots, case, arraytype[0], arraytype[1]))
+        tryunmerged = False
     else:
-        print("---Warning: Issue with merged files. Corr. yield plot skipped for %s (%s, %s)---" % \
+        print("---Warning: Issue with merged, trying with unmerged files for %s (%s, %s)---" % \
                  (case, arraytype[0], arraytype[1]))
 
-    idx = 0
     for imult, iplot in enumerate(plotbinMB):
         if not iplot:
             continue
         if not fileres_MB[imult]:
-            print("---Warning: Issue with MB file. Eff and FD plot skipped for %s (%s, %s)---" % \
+            print("---Warning: Issue with MB file. Eff, FD, CY plot skipped for %s (%s, %s)---" % \
                    (case, arraytype[0], arraytype[1]))
             return
-        idx = idx + 1
-    idx = 0
     for imult, iplot in enumerate(plotbinHM):
         if not iplot:
             continue
         if not fileres_trig[imult]:
-            print("---Warning: Issue with HM file. Eff and FD plot skipped for %s (%s, %s)---" % \
+            print("---Warning: Issue with HM file. Eff, FD, CY plot skipped for %s (%s, %s)---" % \
                    (case, arraytype[0], arraytype[1]))
             return
-        idx = idx + 1
+
+    if tryunmerged is True:
+        for imult, iplot in enumerate(plotbinMB):
+            if not iplot:
+                continue
+            gPad.SetLogy()
+            hyield = fileres_MB[imult].Get("histoSigmaCorr%d" % (imult))
+            hyield.Scale(1./(br * sigmav0 * 1e12))
+            hyield.SetLineColor(colors[imult])
+            hyield.SetMarkerColor(colors[imult])
+            hyield.SetMarkerStyle(21)
+            hyield.Draw("same")
+            legyieldstring = "%.1f #leq %s < %.1f (MB)" % \
+                        (binsmin[imult], latexbin2var, binsmax[imult])
+            legyield.AddEntry(hyield, legyieldstring, "LEP")
+
+        for imult, iplot in enumerate(plotbinHM):
+            if not iplot:
+                continue
+            gPad.SetLogy()
+            hyieldHM = fileres_trig[imult].Get("histoSigmaCorr%d" % (imult))
+            hyieldHM.Scale(1./(br * sigmav0 * 1e12))
+            hyieldHM.SetLineColor(colors[imult])
+            hyieldHM.SetMarkerColor(colors[imult])
+            hyieldHM.SetMarkerStyle(21)
+            hyieldHM.Draw("same")
+            legyieldstring = "%.1f #leq %s < %.1f (HM)" % \
+                  (binsmin[imult], latexbin2var, binsmax[imult])
+            legyield.AddEntry(hyieldHM, legyieldstring, "LEP")
+        legyield.Draw()
+
+        ccross.SaveAs("%s/PtSpec_ComparisonCorrYields_%s_%scombined%s.eps" % \
+                  (folder_plots, case, arraytype[0], arraytype[1]))
 
     #Efficiency plot
     cEff = TCanvas('cEff', '', 800, 400)
@@ -155,7 +194,6 @@ def plot_hfptspectrum_comb(case, arraytype):
     legeff.SetTextSize(0.035)
 
     lstyle = [1, 2, 3, 4]
-    idx = 0
     for imult, iplot in enumerate(plotbinMB):
         if not iplot:
             continue
@@ -169,9 +207,7 @@ def plot_hfptspectrum_comb(case, arraytype):
         legeffstring = "%.1f #leq %s < %.1f (MB)" % \
                          (binsmin[imult], latexbin2var, binsmax[imult])
         legeff.AddEntry(hEffpr, legeffstring, "LEP")
-        idx = idx + 1
 
-    idx = 0
     for imult, iplot in enumerate(plotbinHM):
         if not iplot:
             continue
@@ -185,14 +221,12 @@ def plot_hfptspectrum_comb(case, arraytype):
         legeffstring = "%.1f #leq %s < %.1f (HM)" % \
                     (binsmin[imult], latexbin2var, binsmax[imult])
         legeff.AddEntry(hEffprHM, legeffstring, "LEP")
-        idx = idx + 1
     legeff.Draw()
 
     cEff.cd(2).DrawFrame(0, 1.e-4, 25, 1., \
                          ";#it{p}_{T} (GeV/#it{c});Feed-down %s (Acc #times eff)" % name)
     cEff.cd(2).SetLogy()
 
-    idx = 0
     for imult, iplot in enumerate(plotbinMB):
         if not iplot:
             continue
@@ -203,23 +237,104 @@ def plot_hfptspectrum_comb(case, arraytype):
         hEfffd.SetMarkerStyle(21)
         hEfffd.SetMarkerSize(0.8)
         hEfffd.Draw("same")
-        idx = idx + 1
 
-    idx = 0
     for imult, iplot in enumerate(plotbinHM):
         if not iplot:
             continue
-        gPad.SetLogy()
         hEfffdHM = fileres_trig[imult].Get("hFeedDownEffpt")
         hEfffdHM.SetLineColor(colors[imult])
         hEfffdHM.SetLineStyle(lstyle[imult])
         hEfffdHM.SetMarkerColor(colors[imult])
         hEfffdHM.SetMarkerStyle(21)
         hEfffdHM.Draw("same")
-        idx = idx + 1
 
-    cEff.SaveAs("PtSpec_ComparisonEfficiencies_%s_%scombined%s.eps" % \
-                  (case, arraytype[0], arraytype[1]))
+    cEff.SaveAs("%s/PtSpec_ComparisonEfficiencies_%s_%scombined%s.eps" % \
+                  (folder_plots, case, arraytype[0], arraytype[1]))
+
+    #Efficiency ratio plot
+    cEffRatio = TCanvas('cEffRatio', '', 800, 400)
+    cEffRatio.Divide(2)
+    cEffRatio.cd(1).DrawFrame(0, 0.5, 25, 1.5, \
+                         ";#it{p}_{T} (GeV/#it{c});Prompt %s (Acc #times eff) Ratio" % name)
+
+    hEffprden = TH1F()
+    if plotbinMB[0] == 1:
+        hEffprden = fileres_MB[0].Get("hDirectEffpt")
+    if plotbinHM[0] == 1:
+        hEffprden = fileres_trig[0].Get("hDirectEffpt")
+
+    lstyle = [1, 2, 3, 4]
+    for imult, iplot in enumerate(plotbinMB):
+        if not iplot:
+            continue
+        if imult == 0:
+            hEffpr = hEffprden.Clone()
+        else:
+            hEffpr = fileres_MB[imult].Get("hDirectEffpt")
+        hEffpr.SetLineColor(colors[imult])
+        hEffpr.SetLineStyle(lstyle[imult])
+        hEffpr.SetMarkerColor(colors[imult])
+        hEffpr.SetMarkerStyle(21)
+        hEffpr.SetMarkerSize(0.8)
+        hEffpr.Divide(hEffprden)
+        hEffpr.Draw("same")
+
+    for imult, iplot in enumerate(plotbinHM):
+        if not iplot:
+            continue
+        if imult == 0:
+            hEffprHM = hEffprden.Clone()
+        else:
+            hEffprHM = fileres_trig[imult].Get("hDirectEffpt")
+        hEffprHM.SetLineColor(colors[imult])
+        hEffprHM.SetLineStyle(lstyle[imult])
+        hEffprHM.SetMarkerColor(colors[imult])
+        hEffprHM.SetMarkerStyle(21)
+        hEffprHM.SetMarkerSize(0.8)
+        hEffprHM.Divide(hEffprden)
+        hEffprHM.Draw("same")
+    legeff.Draw()
+
+    cEffRatio.cd(2).DrawFrame(0, 0.5, 25, 1.5, \
+                         ";#it{p}_{T} (GeV/#it{c});Feed-down %s (Acc #times eff) Ratio" % name)
+
+    hEfffdden = TH1F()
+    if plotbinMB[0] == 1:
+        hEfffdden = fileres_MB[0].Get("hFeedDownEffpt")
+    if plotbinHM[0] == 1:
+        hEfffdden = fileres_trig[0].Get("hFeedDownEffpt")
+
+    for imult, iplot in enumerate(plotbinMB):
+        if not iplot:
+            continue
+        if imult == 0:
+            hEfffd = hEfffdden.Clone()
+        else:
+            hEfffd = fileres_MB[imult].Get("hFeedDownEffpt")
+        hEfffd.SetLineColor(colors[imult])
+        hEfffd.SetLineStyle(lstyle[imult])
+        hEfffd.SetMarkerColor(colors[imult])
+        hEfffd.SetMarkerStyle(21)
+        hEfffd.SetMarkerSize(0.8)
+        hEfffd.Divide(hEfffdden)
+        hEfffd.Draw("same")
+
+    for imult, iplot in enumerate(plotbinHM):
+        if not iplot:
+            continue
+        if imult == 0:
+            hEfffdHM = hEfffdden.Clone()
+        else:
+            hEfffdHM = fileres_trig[imult].Get("hFeedDownEffpt")
+        hEfffdHM.SetLineColor(colors[imult])
+        hEfffdHM.SetLineStyle(lstyle[imult])
+        hEfffdHM.SetMarkerColor(colors[imult])
+        hEfffdHM.SetMarkerStyle(21)
+        hEfffdHM.Divide(hEfffdden)
+        hEfffdHM.Draw("same")
+
+    cEffRatio.SaveAs("%s/PtSpec_ComparisonEfficienciesRatio_%s_%scombined%s.eps" % \
+                  (folder_plots, case, arraytype[0], arraytype[1]))
 
     #fprompt
     cfPrompt = TCanvas('cfPrompt', '', 800, 800)
@@ -228,14 +343,13 @@ def plot_hfptspectrum_comb(case, arraytype):
     pt = TLatex()
     pt.SetTextSize(0.04)
 
-    idx = 0
     for imult, iplot in enumerate(plotbinMB):
         if not iplot:
             continue
         cfPrompt.cd(imult+1).DrawFrame(0, 0, 25, 1.05, \
-                                       ";#it{p}_{T} (GeV/#it{c});#it{f}_{prompt}(%s)" % name)
+                                       ";#it{p}_{T} (GeV/#it{c});#it{f}_{prompt} %s" % name)
         grfPrompt = fileres_MB[imult].Get("gFcConservative")
-        grfPrompt.SetTitle(";#it{p}_{T} (GeV/#it{c});#it{f}_{prompt}(%s)" % name)
+        grfPrompt.SetTitle(";#it{p}_{T} (GeV/#it{c});#it{f}_{prompt} %s" % name)
         grfPrompt.SetLineColor(colors[imult])
         grfPrompt.SetMarkerColor(colors[imult])
         grfPrompt.SetMarkerStyle(21)
@@ -243,16 +357,14 @@ def plot_hfptspectrum_comb(case, arraytype):
         grfPrompt.Draw("ap")
         pt.DrawLatexNDC(0.15, 0.15, "%.1f #leq %s < %.1f (MB)" % \
                      (binsmin[imult], latexbin2var, binsmax[imult]))
-        idx = idx + 1
 
-    idx = 0
     for imult, iplot in enumerate(plotbinHM):
         if not iplot:
             continue
         cfPrompt.cd(imult+1).DrawFrame(0, 0, 25, 1.05, \
-                                       ";#it{p}_{T} (GeV/#it{c});#it{f}_{prompt}(%s)" % name)
+                                       ";#it{p}_{T} (GeV/#it{c});#it{f}_{prompt} %s" % name)
         grfPromptHM = fileres_trig[imult].Get("gFcConservative")
-        grfPromptHM.SetTitle(";#it{p}_{T} (GeV/#it{c});#it{f}_{prompt}(%s)" % name)
+        grfPromptHM.SetTitle(";#it{p}_{T} (GeV/#it{c});#it{f}_{prompt} %s" % name)
         grfPromptHM.SetLineColor(colors[imult])
         grfPromptHM.SetMarkerColor(colors[imult])
         grfPromptHM.SetMarkerStyle(21)
@@ -260,13 +372,13 @@ def plot_hfptspectrum_comb(case, arraytype):
         grfPromptHM.Draw("ap")
         pt.DrawLatexNDC(0.15, 0.15, "%.1f #leq %s < %.1f (HM)" % \
                      (binsmin[imult], latexbin2var, binsmax[imult]))
-        idx = idx + 1
 
-    cfPrompt.SaveAs("PtSpec_ComparisonfPrompt_%s_%scombined%s.eps" % \
-                  (case, arraytype[0], arraytype[1]))
+    cfPrompt.SaveAs("%s/PtSpec_ComparisonfPrompt_%s_%scombined%s.eps" % \
+                  (folder_plots, case, arraytype[0], arraytype[1]))
 
 # pylint: disable=import-error, no-name-in-module, unused-import
 # pylint: disable=too-many-statements
+# pylint: disable=too-many-locals
 def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype):
 
     gROOT.SetStyle("Plain")
@@ -289,6 +401,15 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype):
 
     with open("data/database_ml_parameters_%s.yml" % case_den, 'r') as param_config_den:
         data_param_den = yaml.load(param_config_den, Loader=yaml.FullLoader)
+
+    folder_plots_num = data_param_num[case_num]["analysis"]["dir_general_plots"]
+    folder_plots_den = data_param_den[case_den]["analysis"]["dir_general_plots"]
+    if not os.path.exists(folder_plots_num):
+        print("creating folder ", folder_plots_num)
+        os.makedirs(folder_plots_num)
+    if not os.path.exists(folder_plots_den):
+        print("creating folder ", folder_plots_den)
+        os.makedirs(folder_plots_den)
 
     folder_num_allperiods = \
         data_param_num[case_num]["analysis"][arraytype[0]]["data"]["resultsallp"]
@@ -329,13 +450,18 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype):
                  (case_den, arraytype[0], arraytype[1]))
         return
 
-    fileoutput = TFile.Open("ComparisonRatios_%s%s_%scombined%s.root" % \
-                        (case_num, case_den, arraytype[0], arraytype[1]), "recreate")
+    rootfilename = "%s/ComparisonRatios_%s%s_%scombined%s.root" % \
+                     (folder_plots_num, case_num, case_den, arraytype[0], arraytype[1])
+    fileoutput = TFile.Open(rootfilename, "recreate")
 
     ccross = TCanvas('cRatioCross', 'The Fit Canvas')
     ccross.SetCanvasSize(1500, 1500)
     ccross.SetWindowSize(500, 500)
-    ccross.cd(1).DrawFrame(0.9, 0, 30, 1, ";#it{p}_{T} (GeV/#it{c});%s / %s" % (name_num, name_den))
+    maxplot = 1.0
+    if case_num == "Dspp":
+        maxplot = 0.5
+    ccross.cd(1).DrawFrame(0.9, 0, 30, maxplot, ";#it{p}_{T} (GeV/#it{c});%s / %s" % \
+                           (name_num, name_den))
     ccross.cd(1).SetLogx()
 
     legyield = TLegend(.4, .68, .8, .88)
@@ -386,14 +512,25 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype):
                           (binsmin_num[imult], latexbin2var, binsmax_num[imult]))
     legyield.Draw()
 
-    ccross.SaveAs("PtSpec_ComparisonRatios_%s%s_%scombined%s.eps" % \
-                  (case_num, case_den, arraytype[0], arraytype[1]))
+    ccross.SaveAs("%s/PtSpec_ComparisonRatios_%s%s_%scombined%s_logx.eps" % \
+                  (folder_plots_num, case_num, case_den, arraytype[0], arraytype[1]))
+    ccross.SaveAs("%s/PtSpec_ComparisonRatios_%s%s_%scombined%s_logx.eps" % \
+                  (folder_plots_den, case_num, case_den, arraytype[0], arraytype[1]))
+
+    ccross.cd(1).SetLogx(0)
+    ccross.SaveAs("%s/PtSpec_ComparisonRatios_%s%s_%scombined%s.eps" % \
+                  (folder_plots_num, case_num, case_den, arraytype[0], arraytype[1]))
+    ccross.SaveAs("%s/PtSpec_ComparisonRatios_%s%s_%scombined%s.eps" % \
+                  (folder_plots_den, case_num, case_den, arraytype[0], arraytype[1]))
 
     fileoutput.cd()
     ccross.Write()
     fileoutput.Close()
-    print("---Output stored in: ComparisonRatios_%s%s_%scombined%s.root---" % \
-            (case_num, case_den, arraytype[0], arraytype[1]))
+
+    rootfilenameden = "%s/ComparisonRatios_%s%s_%scombined%s.root" % \
+                        (folder_plots_den, case_num, case_den, arraytype[0], arraytype[1])
+    copyfile(rootfilename, rootfilenameden)
+    print("---Output stored in:", rootfilename, "and", rootfilenameden, "---")
 
 plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_ntrkl", "SPDvspt"])
 plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_v0m", "V0mvspt"])
@@ -404,9 +541,9 @@ plot_hfptspectrum_comb("D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
 plot_hfptspectrum_comb("Dspp", ["MBvspt_ntrkl", "SPDvspt"])
 plot_hfptspectrum_comb("Dspp", ["MBvspt_v0m", "V0mvspt"])
 plot_hfptspectrum_comb("Dspp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
-#plot_hfptspectrum_comb("LcpKpipp", ["MBvspt_ntrkl", "SPDvspt"])
-#plot_hfptspectrum_comb("LcpKpipp", ["MBvspt_v0m", "V0mvspt"])
-#plot_hfptspectrum_comb("LcpKpipp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
+plot_hfptspectrum_comb("LcpKpipp", ["MBvspt_ntrkl", "SPDvspt"])
+plot_hfptspectrum_comb("LcpKpipp", ["MBvspt_v0m", "V0mvspt"])
+plot_hfptspectrum_comb("LcpKpipp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
 
 plot_hfptspectrum_ratios_comb("LcpK0spp", "D0pp", ["MBvspt_ntrkl", "SPDvspt"])
 plot_hfptspectrum_ratios_comb("LcpK0spp", "D0pp", ["MBvspt_v0m", "V0mvspt"])
@@ -414,6 +551,6 @@ plot_hfptspectrum_ratios_comb("LcpK0spp", "D0pp", ["MBvspt_perc", "V0mvspt_perc_
 plot_hfptspectrum_ratios_comb("Dspp", "D0pp", ["MBvspt_ntrkl", "SPDvspt"])
 plot_hfptspectrum_ratios_comb("Dspp", "D0pp", ["MBvspt_v0m", "V0mvspt"])
 plot_hfptspectrum_ratios_comb("Dspp", "D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
-#plot_hfptspectrum_ratios_comb("LcpKpipp", "D0pp", ["MBvspt_ntrkl", "SPDvspt"])
-#plot_hfptspectrum_ratios_comb("LcpKpipp", "D0pp", ["MBvspt_v0m", "V0mvspt"])
-#plot_hfptspectrum_ratios_comb("LcpKpipp", "D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
+plot_hfptspectrum_ratios_comb("LcpKpipp", "D0pp", ["MBvspt_ntrkl", "SPDvspt"])
+plot_hfptspectrum_ratios_comb("LcpKpipp", "D0pp", ["MBvspt_v0m", "V0mvspt"])
+plot_hfptspectrum_ratios_comb("LcpKpipp", "D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"])

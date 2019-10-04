@@ -212,6 +212,8 @@ LbITS3:
     fd_method: -1 #knone=0, kfc=1, kNb=2
     cctype: -1 #kpp7
     sigmav0: -1
+    dir_general_plots: analysis_plots
+
     MBvspt:
       useperiod: [1]
       normalizecross: false
@@ -258,7 +260,7 @@ LbITS3:
       masssecpeak: 0.
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: false
+      SetFixGaussianSigma: [false,false,false,false,false]
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
