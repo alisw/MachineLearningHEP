@@ -729,8 +729,14 @@ LcpKpipp:
 
   systematics:
     probvariation:
-      prob_range: [0.5,0.6,0.7]
-  
+      useperiod: [0,0,1] #period from where to define prob cuts
+      ncutvar: 10 #number of looser and tighter variations
+      maxperccutvar: 0.25 #max diff in efficiency for loosest/tightest var
+      cutvarminrange: [0.10, 0.10, 0.10, 0.10, 0.10] #Min starting point for scan
+      cutvarmaxrange: [0.90, 0.90, 0.90, 0.90, 0.90] #Max starting point for scan
+      fixedmean: True #Fix mean cutvar histo to central fit
+      fixedsigma: True #Fix sigma cutvar histo to central fit
+
   validation:
     runlisttrigger: 
       LHC16pp:

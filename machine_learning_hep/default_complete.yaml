@@ -1,4 +1,4 @@
-case: Dspp
+case: D0pp
 download:
   alice:
     activate: false
@@ -65,13 +65,17 @@ analysis:
   # Control the yield systemaitc uncertainty
   dosyst: false
   dojetstudies: false
-  doeff: true
-  docross: true
-  doplots: true
+  doeff: false
+  docross: false
+  doplots: false
 
 systematics:
-  # Not yet used
-  probvariation: false
+  cutvar:
+    activate: false
+    probvariationmass: false
+    probvariationeff: false
+    probvariationfit: false
+    probvariationcross: false
 
 validation:
   data:

@@ -34,7 +34,7 @@ from  machine_learning_hep.utilities import checkdirlist, checkdir
 from  machine_learning_hep.logger import configure_logger, get_logger
 from machine_learning_hep.optimiser import Optimiser
 from machine_learning_hep.multianalyzer import MultiAnalyzer
-from machine_learning_hep.systematics import Systematics
+from machine_learning_hep.multisystematics import MultiSystematics
 
 try:
 # FIXME(https://github.com/abseil/abseil-py/issues/99) # pylint: disable=fixme
@@ -106,7 +106,12 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     docross = data_config["analysis"]["docross"]
     doplots = data_config["analysis"]["doplots"]
     dosyst = data_config["analysis"]["dosyst"]
-    dosystprob = data_config["systematics"]["probvariation"]
+    dosystprob = data_config["systematics"]["cutvar"]["activate"]
+    dosystprobmass = data_config["systematics"]["cutvar"]["probvariationmass"]
+    dosystprobeff = data_config["systematics"]["cutvar"]["probvariationeff"]
+    dosystprobfit = data_config["systematics"]["cutvar"]["probvariationfit"]
+    dosystprobcross = data_config["systematics"]["cutvar"]["probvariationcross"]
+
     doanaperperiod = data_config["analysis"]["doperperiod"]
 
     typean = data_config["analysis"]["type"]
@@ -153,7 +158,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     mymultiprocessmc = MultiProcesser(case, data_param[case], typean, run_param, "mc")
     mymultiprocessdata = MultiProcesser(case, data_param[case], typean, run_param, "data")
     myan = MultiAnalyzer(data_param[case], case, typean, doanaperperiod)
-    mysis = Systematics(data_param[case], case, typean)
+    mysis = MultiSystematics(case, data_param[case], typean, run_param)
 
     normalizecross = data_param[case]["analysis"][typean]["normalizecross"]
 
@@ -368,6 +373,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         myan.multi_fitter()
     if dosyst is True:
         myan.multi_yield_syst()
+    if dosystprob is True:
+        mysis.multi_cutvariation(dosystprobmass, dosystprobeff, dosystprobfit, dosystprobcross)
     if doeff is True:
         myan.multi_efficiency()
     if dojetstudies is True:
@@ -386,8 +393,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
             myan.multi_makenormyields()
     if doplots is True:
         myan.multi_plotternormyields()
-    if dosystprob is True:
-        mysis.probvariation()
 
 
 def load_config(user_path: str, default_path: tuple) -> dict:
