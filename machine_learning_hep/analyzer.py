@@ -1495,8 +1495,8 @@ class Analyzer:
             n_sel = hsel.Integral(binminv, binmaxv)
             n_novtx = hnovt.Integral(binminv, binmaxv)
             n_vtxout = hvtxout.Integral(binminv, binmaxv)
-            norm = (n_sel + n_novtx) - n_novtx * n_vtxout / (n_sel + n_vtxout)
-
+            if n_sel + n_vtxout > 0:
+                norm = (n_sel + n_novtx) - n_novtx * n_vtxout / (n_sel + n_vtxout)
         return norm
 
     def makenormyields(self):
