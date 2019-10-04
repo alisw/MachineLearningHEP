@@ -99,15 +99,15 @@ def plot_hfspectrum_years_ratios(histo_ml, histo_std, title, x_label, y_label, s
     canvas.Close()
 
 
-def compare_ml_std(case_ml, ana_type_ml, filepath_std, map_std_bins=None):
+def compare_ml_std(case_ml, ana_type_ml, period_number, filepath_std, scale_std=None,
+                   map_std_bins=None):
 
     with open("data/database_ml_parameters_%s.yml" % case_ml, 'r') as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
-    filepath_ml = data_param[case_ml]["analysis"][ana_type_ml]["data"]["resultsallp"]
-
-    # Scale by branching ratio
-    #br = data_param[case_ml]["ml"]["opt"]["BR"]
-    #sigmav0 = data_param[case_ml]["analysis"]["sigmav0"]
+    if period_number < 0:
+        filepath_ml = data_param[case_ml]["analysis"][ana_type_ml]["data"]["resultsallp"]
+    else:
+        filepath_ml = data_param[case_ml]["analysis"][ana_type_ml]["data"]["results"][period_number]
 
     # Get pt spectrum files
     file_ml = TFile.Open(f"{filepath_ml}/finalcross{case_ml}{ana_type_ml}mult0.root", "READ")
@@ -137,7 +137,7 @@ def compare_ml_std(case_ml, ana_type_ml, filepath_std, map_std_bins=None):
 
             for ml_bin, std_bins in map_std_bins:
                 for b in std_bins:
-                    contents[ml_bin-1] += histo_std_tmp.GetBinContent(b)
+                    contents[ml_bin-1] += histo_std_tmp.GetBinContent(b) / len(std_bins)
                     errors[ml_bin-1] += histo_std_tmp.GetBinError(b) * histo_std_tmp.GetBinError(b)
 
             for b in range(histo_std.GetNbinsX()):
@@ -146,6 +146,8 @@ def compare_ml_std(case_ml, ana_type_ml, filepath_std, map_std_bins=None):
 
         else:
             histo_std = histo_std_tmp.Clone("std_cloned")
+            if scale_std is not None:
+                histo_std.Scale(scale_std)
 
         folder_plots = os.path.join(filepath_ml, "ml_std_comparison")
         if not os.path.exists(folder_plots):
@@ -178,7 +180,10 @@ gStyle.SetPadTickX(1)
 gStyle.SetPadTickY(1)
 
 
-compare_ml_std("D0pp", "MBvspt_ntrkl", "data/std_results/HPT_D020161718.root",
-               [(1, [1]), (2, [2, 3]), (3, [4, 5]), (4, [6]), (5, [7]), (6, [8])])
-compare_ml_std("LcpKpipp", "MBvspt_ntrkl", "data/std_results/HP_Lc_newCut.root",
-               [(1, [1]), (2, [2, 3]), (3, [4, 5]), (4, [6]), (5, [7]), (6, [8])])
+compare_ml_std("D0pp", "MBvspt_ntrkl", -1, "data/std_results/HFPtSpectrum_D0_20191003.root")
+compare_ml_std("D0pp", "MBvspt_ntrkl", -1, "data/std_results/HFPtSpectrum_D0_20191003.root")
+# Correct for branching ratios BR(Lc->pKpi) / BR(Lc->pK0s)
+compare_ml_std("LcpK0spp", "MBvspt_ntrkl", -1, "data/std_results/HFPtSpectrum_LcpKpi_20191003.root",
+               1./5.75)
+compare_ml_std("D0pp", "MBvspt_ntrkl", 0, "data/std_results/HFPtSpectrum_D0_2016_20191003.root",
+               None, [(1, [1]), (2, [2, 3]), (3, [4, 5]), (4, [6, 7]), (5, [8, 9]), (6, [10, 11])])
