@@ -154,12 +154,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     mlout = data_param[case]["ml"]["mlout"]
     mlplot = data_param[case]["ml"]["mlplot"]
 
-
-    mymultiprocessmc = MultiProcesser(case, data_param[case], typean, run_param, "mc")
-    mymultiprocessdata = MultiProcesser(case, data_param[case], typean, run_param, "data")
-    myan = MultiAnalyzer(data_param[case], case, typean, doanaperperiod)
-    mysis = MultiSystematics(case, data_param[case], typean, run_param)
-
     normalizecross = data_param[case]["analysis"][typean]["normalizecross"]
 
     #creating folder if not present
@@ -288,6 +282,11 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         checkmakedirlist(dirvaldata)
         checkmakedir(dirvaldatamerged)
 
+    mymultiprocessmc = MultiProcesser(case, data_param[case], typean, run_param, "mc")
+    mymultiprocessdata = MultiProcesser(case, data_param[case], typean, run_param, "data")
+    myan = MultiAnalyzer(data_param[case], case, typean, doanaperperiod)
+    mysis = MultiSystematics(case, data_param[case], typean, run_param)
+
     #perform the analysis flow
     if dodownloadalice == 1:
         subprocess.call("../cplusutilities/Download.sh")
@@ -373,8 +372,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         myan.multi_fitter()
     if dosyst is True:
         myan.multi_yield_syst()
-    if dosystprob is True:
-        mysis.multi_cutvariation(dosystprobmass, dosystprobeff, dosystprobfit, dosystprobcross)
     if doeff is True:
         myan.multi_efficiency()
     if dojetstudies is True:
@@ -393,6 +390,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
             myan.multi_makenormyields()
     if doplots is True:
         myan.multi_plotternormyields()
+    if dosystprob is True:
+        mysis.multi_cutvariation(dosystprobmass, dosystprobeff, dosystprobfit, dosystprobcross)
 
 
 def load_config(user_path: str, default_path: tuple) -> dict:
