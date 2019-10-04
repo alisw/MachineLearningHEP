@@ -54,7 +54,7 @@ analysis:
   type: MBvspt_v0m #MBvspt_ntrk, MBvspt_v0ml, SPDvspt, V0mvspt
   # Do each period separately including merged (true)
   # Do only merged (false)
-  doperperiod: false
+  doperperiod: true
   data:
     histomass: true
   mc:

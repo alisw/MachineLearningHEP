@@ -40,8 +40,19 @@ class MultiSystematics: # pylint: disable=too-many-instance-attributes, too-many
         self.dlper_reco_modappmerged_data = datap["mlapplication"]["data"]["pkl_skimmed_decmerged"]
 
         #Analysis
+        self.d_results_cv = []
+        self.d_resultsallp_cv = ""
         self.d_results = datap["analysis"][self.typean]["data"]["results"]
         self.d_resultsallp = datap["analysis"][self.typean]["data"]["resultsallp"]
+        for i, direc in enumerate(self.d_results):
+            self.d_results_cv.append(self.d_results[i] + "/cutvar")
+            if not os.path.exists(self.d_results_cv[i]):
+                print("creating folder ", self.d_results_cv[i])
+                os.makedirs(self.d_results_cv[i])
+        self.d_resultsallp_cv = self.d_resultsallp + "/cutvar"
+        if not os.path.exists(self.d_resultsallp_cv):
+            print("creating folder ", self.d_resultsallp_cv)
+            os.makedirs(self.d_resultsallp_cv)
 
         #File names
         self.n_filemass = datap["files_names"]["histofilename"]

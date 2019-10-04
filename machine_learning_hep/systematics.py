@@ -97,9 +97,6 @@ class Systematics:
         self.n_filemass_cutvar = self.n_filemass.replace(".root", "_cutvar.root")
         self.n_fileeff_cutvar = self.n_fileeff.replace(".root", "_cutvar.root")
         self.d_results_cv = self.d_results + "/cutvar"
-        if not os.path.exists(self.d_results_cv):
-            print("creating folder ", self.d_results_cv)
-            os.makedirs(self.d_results_cv)
         self.n_filemass_cutvar = os.path.join(self.d_results_cv, self.n_filemass_cutvar)
         self.n_fileeff_cutvar = os.path.join(self.d_results_cv, self.n_fileeff_cutvar)
         self.yields_filename_std = "yields"
@@ -676,12 +673,12 @@ class Systematics:
                     fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
                     fileoutcrossmult, norm, self.p_sigmav0 * 1e12, self.p_fd_method, self.p_cctype)
 
-            fileoutcrosstot = TFile.Open(self.make_file_path(self.d_results_cv, self.efficiency_filename, \
+            fileoutcrosstot = TFile.Open(self.make_file_path(self.d_results_cv, self.cross_filename, \
                                                              "root", None, [self.typean, "cutvar", str(icv), \
                                                               "multtot"]), "recreate")
 
             for imult in range(len(self.lvar2_binmin)):
-                fileoutcrossmult = self.make_file_path(self.d_results_cv, self.efficiency_filename, \
+                fileoutcrossmult = self.make_file_path(self.d_results_cv, self.cross_filename, \
                                                        "root", None, [self.typean, "cutvar", str(icv), \
                                                                       "mult", str(imult)])
                 f_fileoutcrossmult = TFile.Open(fileoutcrossmult)
@@ -786,17 +783,18 @@ class Systematics:
                     arrhistos = [TH1F("hcorryieldvscut%d%d" % (imult, ipt), \
                                       "%d < #it{p}_{T} < %d;#it{p}_{T} (GeV/#it{c});Corr. Yield" % \
                                       (self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt]), ntrials, \
-                                       0.5, ntrials + 0.5) for ipt in range(len(self.p_nptfinbins))]
+                                       0.5, ntrials + 0.5) for ipt in range(self.p_nptfinbins)]
                     for ipt in range(self.p_nptfinbins):
                         arrhistos[ipt].SetBinContent(icv + 1, hcutvar2.GetBinContent(ipt + 1))
                         arrhistos[ipt].SetBinError(icv + 1, hcutvar2.GetBinError(ipt + 1))
 
-                canv.Divide(nx, ny)
+                canv[imult].Divide(nx, ny)
                 for ipt in range(self.p_nptfinbins):
-                    canv.cd(ipt + 1)
-                    arrhistos.SetLineColor(colours[ipt])
-                    arrhistos.SetMarkerColor(colours[ipt])
-                    arrhistos.Draw("ep")
+                    canv[imult].cd(ipt + 1)
+                    arrhistos[ipt].SetLineColor(colours[ipt])
+                    arrhistos[ipt].SetMarkerColor(colours[ipt])
+                    arrhistos[ipt].Draw("ep")
+                canv[imult].SaveAs("%s/Cutvar_CorrYieldvsSet_mult%d.eps" % (self.d_results_cv, imult))
 
     def load_central_meansigma(self, imult):
 
