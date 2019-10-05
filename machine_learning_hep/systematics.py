@@ -676,6 +676,7 @@ class Systematics:
                 hcross.SetName("histoSigmaCorr%d" % imult)
                 fileoutcrosstot.cd()
                 hcross.Write()
+                f_fileoutcrossmult.Close()
             fileoutcrosstot.Close()
 
     def cutvariation_makeplots(self, plotname, min_cv_cut, max_cv_cut):
@@ -744,6 +745,7 @@ class Systematics:
                 f_fileoutcrossmult.Close()
             leg.Draw()
             canv.SaveAs("%s/Cutvar_%s_mult%d.eps" % (self.d_results_cv, plotname, imult))
+            f_fileoutcrossmultref.Close()
 
         if plotname == "histoSigmaCorr":
             if self.p_nptfinbins < 9:
@@ -780,6 +782,7 @@ class Systematics:
                     for ipt in range(self.p_nptfinbins):
                         arrhistos[ipt].SetBinContent(icv + 1, hcutvar2.GetBinContent(ipt + 1))
                         arrhistos[ipt].SetBinError(icv + 1, hcutvar2.GetBinError(ipt + 1))
+                    f_fileoutcrossmult.Close()
 
                 canv[imult].Divide(nx, ny)
                 for ipt in range(self.p_nptfinbins):
@@ -850,6 +853,7 @@ class Systematics:
                             arrhistos2[ipt].SetBinError(ibin, hcutvar2.GetBinError(ipt + 1))
                         if icv > self.p_ncutvar:
                             icvmax = icvmax + 1
+                        f_fileoutcrossmult.Close()
 
                     canv2[imult].Divide(nx, ny)
                     for ipt in range(self.p_nptfinbins):
@@ -876,6 +880,7 @@ class Systematics:
             mean_for_data.append(means_histo.GetBinContent(ipt + 1))
             sigma_for_data.append(sigmas_histo.GetBinContent(ipt + 1))
 
+        massfile_std.Close()
         return mean_for_data, sigma_for_data
 
     @staticmethod
@@ -894,6 +899,7 @@ class Systematics:
         binminv = hmult.GetXaxis().FindBin(multmin)
         binmaxv = hmult.GetXaxis().FindBin(multmax)
         norm = hmult.Integral(binminv, binmaxv)
+        fileout.Close()
         return norm
 
     @staticmethod

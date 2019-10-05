@@ -1091,5 +1091,7 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
   //  spectra->DrawSpectrum(gPrediction);
 
     out->Close();
-
+    recofile->Close();
+    efffile->Close();
+    mcfile->Close();
 }
