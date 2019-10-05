@@ -1510,7 +1510,8 @@ class Analyzer:
         yield_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                              None, [self.case, self.typean])
         gROOT.LoadMacro("HFPtSpectrum.C")
-        from ROOT import HFPtSpectrum
+        gROOT.LoadMacro("HFPtSpectrum2.C")
+        from ROOT import HFPtSpectrum, HFPtSpectrum2
         for imult in range(self.p_nbin2):
             bineff = -1
             if self.p_bineff is None:
@@ -1536,10 +1537,16 @@ class Analyzer:
                   self.lvar2_binmin[imult], self.lvar2_binmax[imult])
             print("N. events selected=", normold, "N. events counter =", norm)
 
-            HFPtSpectrum(self.p_indexhpt, \
-                "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
-                fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
-                fileoutcrossmult, norm, self.p_sigmav0 * 1e12, self.p_fd_method, self.p_cctype)
+            if self.p_fprompt_from_mb is None or imult == 0 or self.p_fd_method != 2:
+                HFPtSpectrum(self.p_indexhpt, \
+                    "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
+                    fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
+                    fileoutcrossmult, norm, self.p_sigmav0 * 1e12, self.p_fd_method, self.p_cctype)
+            else:
+                self.logger.info("Calculating spectra using fPrompt from MB (Nb). Assuming MB is bin 0!")
+                filecrossmb = "%s/finalcross%s%smult0.root" % (self.d_resultsallpdata, self.case, self.typean)
+                HFPtSpectrum2(filecrossmb, fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, \
+                              nameyield, fileoutcrossmult, norm, self.p_sigmav0 * 1e12)
         fileoutcrosstot = TFile.Open("%s/finalcross%s%smulttot.root" % \
             (self.d_resultsallpdata, self.case, self.typean), "recreate")
 

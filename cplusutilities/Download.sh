@@ -230,15 +230,15 @@ elif [ "$dataset" == "MCpp13TeV_MB_all" ]; then
               /alice/sim/2018/LHC18f4a/257630/PWGHF/HF_TreeCreator
               /alice/sim/2018/LHC18l4a/272123/PWGHF/HF_TreeCreator
               /alice/sim/2018/LHC18l4b/288908/PWGHF/HF_TreeCreator
-              /alice/sim/2019/LHC19h4c1/257630/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h4c1/253529/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19h4b1/272123/PWGHF/HF_TreeCreator
-              /alice/sim/2019/LHC19h4a1/293386/PWGHF/HF_TreeCreator
-              /alice/sim/2019/LHC19h4c2/257630/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h4a1/288908/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h4c2/253529/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19h4b2/272123/PWGHF/HF_TreeCreator
-              /alice/sim/2019/LHC19h4a2/293386/PWGHF/HF_TreeCreator
-              /alice/sim/2019/LHC19h4c3/257630/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h4a2/288908/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h4c3/253529/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19h4b3/272123/PWGHF/HF_TreeCreator
-              /alice/sim/2019/LHC19h4a3/293386/PWGHF/HF_TreeCreator)
+              /alice/sim/2019/LHC19h4a3/288908/PWGHF/HF_TreeCreator)
   datasetwithchilds=1
   splitchildsdifferentpaths=1
   dataset_short_arr=("pp_2016_mc_prodD2H"
