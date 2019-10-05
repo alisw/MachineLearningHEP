@@ -168,6 +168,8 @@ def savemodels(names_, trainedmodels_, folder_, suffix_):
         if "xgboost" in name:
             fileoutmodel = folder_+"/"+name+suffix_+".sav"
             pickle.dump(model, open(fileoutmodel, 'wb'), protocol=4)
+            fileoutmodel = fileoutmodel.replace(".sav", ".model")
+            model.save_model(fileoutmodel)
 
 def readmodels(names_, folder_, suffix_):
     trainedmodels_ = []
