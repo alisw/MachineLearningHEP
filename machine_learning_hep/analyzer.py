@@ -129,6 +129,7 @@ class Analyzer:
 
         self.p_nevents = datap["analysis"][self.typean]["nevents"]
         self.p_bineff = datap["analysis"][self.typean]["usesinglebineff"]
+        self.p_fprompt_from_mb = datap["analysis"][self.typean]["fprompt_from_mb"]
         self.p_sigmamb = datap["ml"]["opt"]["sigma_MB"]
         self.p_br = datap["ml"]["opt"]["BR"]
 
@@ -1539,14 +1540,17 @@ class Analyzer:
 
             if self.p_fprompt_from_mb is None or imult == 0 or self.p_fd_method != 2:
                 HFPtSpectrum(self.p_indexhpt, \
-                    "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
-                    fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
-                    fileoutcrossmult, norm, self.p_sigmav0 * 1e12, self.p_fd_method, self.p_cctype)
+                 "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
+                 fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
+                 fileoutcrossmult, norm, self.p_sigmav0 * 1e12, self.p_fd_method, self.p_cctype)
             else:
-                self.logger.info("Calculating spectra using fPrompt from MB (Nb). Assuming MB is bin 0!")
-                filecrossmb = "%s/finalcross%s%smult0.root" % (self.d_resultsallpdata, self.case, self.typean)
-                HFPtSpectrum2(filecrossmb, fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, \
-                              nameyield, fileoutcrossmult, norm, self.p_sigmav0 * 1e12)
+                self.logger.info("Calculating spectra using fPrompt from MB (Nb). "\
+                                 "Assuming MB is bin 0!")
+                filecrossmb = "%s/finalcross%s%smult0.root" % \
+                               (self.d_resultsallpdata, self.case, self.typean)
+                HFPtSpectrum2(filecrossmb, fileouteff, namehistoeffprompt, namehistoefffeed, \
+                              yield_filename, nameyield, fileoutcrossmult, norm, \
+                              self.p_sigmav0 * 1e12)
         fileoutcrosstot = TFile.Open("%s/finalcross%s%smulttot.root" % \
             (self.d_resultsallpdata, self.case, self.typean), "recreate")
 
