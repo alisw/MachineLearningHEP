@@ -45,7 +45,7 @@ class Optimiser:
     species = "optimiser"
 
     def __init__(self, data_param, case, typean, model_config, grid_config, binmin,
-                 binmax, raahp):
+                 binmax, raahp, training_var):
 
         self.logger = get_logger()
 
@@ -76,7 +76,7 @@ class Optimiser:
         self.f_reco_appliedmc = os.path.join(self.dirmlout, self.n_reco_appliedmc)
         #variables
         self.v_all = data_param["variables"]["var_all"]
-        self.v_train = data_param["variables"]["var_training"]
+        self.v_train = training_var
         self.v_bound = data_param["variables"]["var_boundaries"]
         self.v_sig = data_param["variables"]["var_signal"]
         self.v_invmass = data_param["variables"]["var_inv_mass"]
@@ -170,6 +170,8 @@ class Optimiser:
                 self.f_reco_applieddata.replace(".pkl", "%s.pkl" % self.s_suffix)
         self.f_reco_appliedmc = \
                 self.f_reco_appliedmc.replace(".pkl", "%s.pkl" % self.s_suffix)
+
+        print(training_var)
 
     def create_suffix(self):
         string_selection = createstringselection(self.v_bin, self.p_binmin, self.p_binmax)
