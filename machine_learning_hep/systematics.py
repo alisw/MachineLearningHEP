@@ -239,11 +239,13 @@ class Systematics:
                 selml_min = "y_test_prob%s>%s" % (self.p_modelname, min_cv_cut[ipt])
                 df_reco_cvmin_pr = df_reco_cvmin_pr.query(selml_min)
                 eff_min = len(df_reco_cvmin_pr)/len_gen_pr
+                if eff_cent == 0:
+                    break
                 if eff_min / eff_cent < 1 + self.p_maxperccutvar:
                     break
 
             eff_min = len(df_reco_cvmin_pr)/len_gen_pr
-            print("Minimal efficiency pt-bin", ipt, ": ", eff_min, "(", eff_min / eff_cent, ")")
+            print("Minimal efficiency pt-bin", ipt, ": ", eff_min)
 
             stepsmax = \
               (self.p_cutvar_maxrange[bin_id] - self.lpt_probcutfin[bin_id]) / ncutvar_temp
@@ -254,11 +256,13 @@ class Systematics:
                 selml_max = "y_test_prob%s>%s" % (self.p_modelname, max_cv_cut[ipt])
                 df_reco_cvmax_pr = df_reco_cvmax_pr.query(selml_max)
                 eff_max = len(df_reco_cvmax_pr)/len_gen_pr
+                if eff_cent == 0:
+                    break
                 if eff_max / eff_cent < 1 - self.p_maxperccutvar:
                     break
 
             eff_max = len(df_reco_cvmax_pr)/len_gen_pr
-            print("Maximal efficiency pt-bin", ipt, ": ", eff_max, "(", eff_max / eff_cent, ")")
+            print("Maximal efficiency pt-bin", ipt, ": ", eff_max)
 
         return min_cv_cut, max_cv_cut
 
@@ -573,7 +577,8 @@ class Systematics:
                 yieldshistos[imult].Write()
 
             fileout.Close()
-            icvmax = icvmax + 1
+            if icv > self.p_ncutvar:
+                icvmax = icvmax + 1
 
         del mass_fitter[:]
         # Reset to former mode
@@ -650,24 +655,7 @@ class Systematics:
                              self.lvar2_binmax[imult], self.apply_weights)
                 print(self.apply_weights, self.lvar2_binmin[imult], self.lvar2_binmax[imult], norm)
 
-                #To be included when it's back in analyzer.py
-#                filedataval = TFile.Open(self.f_evtnorm)
-#                hSelMult = filedataval.Get('sel_' + labelhisto)
-#                hNoVtxMult = filedataval.Get('novtx_' + labelhisto)
-#                hVtxOutMult = filedataval.Get('vtxout_' + labelhisto)
-#
-#                # normalisation based on multiplicity histograms
-#                binminv = hSelMult.GetXaxis().FindBin(self.lvar2_binmin[imult])
-#                binmaxv = hSelMult.GetXaxis().FindBin(self.lvar2_binmax[imult])
-#
-#                n_sel = hSelMult.Integral(binminv, binmaxv)
-#                n_novtx = hNoVtxMult.Integral(binminv, binmaxv)
-#                n_vtxout = hVtxOutMult.Integral(binminv, binmaxv)
-#                norm = (n_sel + n_novtx) - n_novtx * n_vtxout / (n_sel + n_vtxout)
-#
-#                print('new normalization: ', norm, norm_old)
-
-                # Now usefp_nbin2 the function we have just compiled above
+                #Keep it simple, don't apply full normalisation
                 HFPtSpectrum(self.p_indexhpt, \
                     "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
                     fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
@@ -688,9 +676,10 @@ class Systematics:
                 hcross.SetName("histoSigmaCorr%d" % imult)
                 fileoutcrosstot.cd()
                 hcross.Write()
+                f_fileoutcrossmult.Close()
             fileoutcrosstot.Close()
 
-    def cutvariation_makeplots(self, plotname):
+    def cutvariation_makeplots(self, plotname, min_cv_cut, max_cv_cut):
 
         self.loadstyle2()
 
@@ -709,7 +698,7 @@ class Systematics:
 
             canv = TCanvas("%s%d" % (plotname, imult), '', 400, 400)
 
-            diffratio = 0.5
+            diffratio = 2 * self.p_maxperccutvar
             if plotname == "histoSigmaCorr":
                 diffratio = 0.2
             canv.cd(1).DrawFrame(0, 1 - diffratio, 25, 1 + diffratio, \
@@ -756,6 +745,7 @@ class Systematics:
                 f_fileoutcrossmult.Close()
             leg.Draw()
             canv.SaveAs("%s/Cutvar_%s_mult%d.eps" % (self.d_results_cv, plotname, imult))
+            f_fileoutcrossmultref.Close()
 
         if plotname == "histoSigmaCorr":
             if self.p_nptfinbins < 9:
@@ -770,9 +760,18 @@ class Systematics:
                 nx = 5
                 ny = 4
                 canvy = 1200
+
             canv = [TCanvas("canvas_corryieldvspt%d_%d" % (icv, imult), "Data", \
                              1000, canvy) for imult in range(len(self.lvar2_binmin))]
+            arrhistos = [None for ipt in range(self.p_nptfinbins)]
             for imult in range(len(self.lvar2_binmin)):
+                for ipt in range(self.p_nptfinbins):
+                    arrhistos[ipt] = TH1F("hcorryieldvscut%d%d" % (imult, ipt), \
+                                          "%d < #it{p}_{T} < %d;cut set;Corr. Yield" % \
+                                          (self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt]),
+                                          ntrials, -0.5, ntrials - 0.5)
+                    arrhistos[ipt].SetDirectory(0)
+
                 for icv in range(ntrials):
                     fileoutcrossmult = self.make_file_path(self.d_results_cv, \
                                                            self.cross_filename, "root", None, \
@@ -780,13 +779,10 @@ class Systematics:
                                                             "mult", str(imult)])
                     f_fileoutcrossmult = TFile.Open(fileoutcrossmult)
                     hcutvar2 = f_fileoutcrossmult.Get(plotname)
-                    arrhistos = [TH1F("hcorryieldvscut%d%d" % (imult, ipt), \
-                                      "%d < #it{p}_{T} < %d;#it{p}_{T} (GeV/#it{c});Corr. Yield" % \
-                                      (self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt]), ntrials, \
-                                       0.5, ntrials + 0.5) for ipt in range(self.p_nptfinbins)]
                     for ipt in range(self.p_nptfinbins):
                         arrhistos[ipt].SetBinContent(icv + 1, hcutvar2.GetBinContent(ipt + 1))
                         arrhistos[ipt].SetBinError(icv + 1, hcutvar2.GetBinError(ipt + 1))
+                    f_fileoutcrossmult.Close()
 
                 canv[imult].Divide(nx, ny)
                 for ipt in range(self.p_nptfinbins):
@@ -795,6 +791,78 @@ class Systematics:
                     arrhistos[ipt].SetMarkerColor(colours[ipt])
                     arrhistos[ipt].Draw("ep")
                 canv[imult].SaveAs("%s/Cutvar_CorrYieldvsSet_mult%d.eps" % (self.d_results_cv, imult))
+
+            if min_cv_cut is not None and max_cv_cut is not None:
+
+                probcuts = [None for ipt in range(self.p_nptfinbins)]
+                probarr = [None for icv in range(2 + 2 * ntrials)]
+                for ipt in range(self.p_nptfinbins):
+                    bin_id = self.bin_matching[ipt]
+                    stepsmin = (self.lpt_probcutfin[bin_id] - min_cv_cut[ipt]) / self.p_ncutvar
+                    stepsmax = (max_cv_cut[ipt] - self.lpt_probcutfin[bin_id]) / self.p_ncutvar
+
+                    probarr[0] = 0
+                    icvmax = 1
+                    for icv in range(ntrials):
+                        if icv < self.p_ncutvar:
+                            probarr[2 * icv + 1] = min_cv_cut[ipt] + (icv - 0.1) * stepsmin
+                            probarr[2 * icv + 2] = min_cv_cut[ipt] + (icv + 0.1) * stepsmin
+                        elif icv == self.p_ncutvar:
+                            probarr[2 * icv + 1] = self.lpt_probcutfin[bin_id] - 0.1 * stepsmax
+                            probarr[2 * icv + 2] = self.lpt_probcutfin[bin_id] + 0.1 * stepsmax
+                        else:
+                            probarr[2 * icv + 1] = self.lpt_probcutfin[bin_id] + (icvmax - 0.1) * stepsmax
+                            probarr[2 * icv + 2] = self.lpt_probcutfin[bin_id] + (icvmax + 0.1) * stepsmax
+                            icvmax = icvmax + 1
+                    probarr[-1] = 1
+                    probcuts[ipt] = probarr[:]
+
+                canv2 = [TCanvas("canvas_corryieldvsprob%d_%d" % (icv, imult), "Data", \
+                                 1000, canvy) for imult in range(len(self.lvar2_binmin))]
+                arrhistos2 = [None for ipt in range(self.p_nptfinbins)]
+                for imult in range(len(self.lvar2_binmin)):
+                    for ipt in range(self.p_nptfinbins):
+                        arrhistos2[ipt] = TH1F("hcorryieldvsprob%d%d" % (imult, ipt), \
+                                              "%d < #it{p}_{T} < %d;Probability;Corr. Yield" % \
+                                              (self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt]), \
+                                               len(probcuts[ipt]) - 1, array('f', probcuts[ipt]))
+                        arrhistos2[ipt].SetDirectory(0)
+
+                    icvmax = 1
+                    for icv in range(ntrials):
+                        fileoutcrossmult = self.make_file_path(self.d_results_cv, \
+                                                             self.cross_filename, "root", None, \
+                                                             [self.typean, "cutvar", str(icv), \
+                                                              "mult", str(imult)])
+                        f_fileoutcrossmult = TFile.Open(fileoutcrossmult)
+                        hcutvar2 = f_fileoutcrossmult.Get(plotname)
+
+                        for ipt in range(self.p_nptfinbins):
+                            bin_id = self.bin_matching[ipt]
+                            stepsmin = (self.lpt_probcutfin[bin_id] - min_cv_cut[ipt]) / self.p_ncutvar
+                            stepsmax = (max_cv_cut[ipt] - self.lpt_probcutfin[bin_id]) / self.p_ncutvar
+                            selml_cvval = 0
+                            if icv < self.p_ncutvar:
+                                selml_cvval = min_cv_cut[ipt] + icv * stepsmin
+                            elif icv == self.p_ncutvar:
+                                selml_cvval = self.lpt_probcutfin[bin_id]
+                            else:
+                                selml_cvval = self.lpt_probcutfin[bin_id] + icvmax * stepsmax
+                            ibin = arrhistos2[ipt].FindBin(selml_cvval)
+                            arrhistos2[ipt].SetBinContent(ibin, hcutvar2.GetBinContent(ipt + 1))
+                            arrhistos2[ipt].SetBinError(ibin, hcutvar2.GetBinError(ipt + 1))
+                        if icv > self.p_ncutvar:
+                            icvmax = icvmax + 1
+                        f_fileoutcrossmult.Close()
+
+                    canv2[imult].Divide(nx, ny)
+                    for ipt in range(self.p_nptfinbins):
+                        canv2[imult].cd(ipt + 1)
+                        arrhistos2[ipt].SetLineColor(colours[ipt])
+                        arrhistos2[ipt].SetLineWidth(1)
+                        arrhistos2[ipt].SetMarkerColor(colours[ipt])
+                        arrhistos2[ipt].Draw("ep")
+                    canv2[imult].SaveAs("%s/Cutvar_CorrYieldvsProb_mult%d.eps" % (self.d_results_cv, imult))
 
     def load_central_meansigma(self, imult):
 
@@ -812,6 +880,7 @@ class Systematics:
             mean_for_data.append(means_histo.GetBinContent(ipt + 1))
             sigma_for_data.append(sigmas_histo.GetBinContent(ipt + 1))
 
+        massfile_std.Close()
         return mean_for_data, sigma_for_data
 
     @staticmethod
@@ -830,6 +899,7 @@ class Systematics:
         binminv = hmult.GetXaxis().FindBin(multmin)
         binmaxv = hmult.GetXaxis().FindBin(multmax)
         norm = hmult.Integral(binminv, binmaxv)
+        fileout.Close()
         return norm
 
     @staticmethod

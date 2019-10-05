@@ -15,11 +15,18 @@
 from xgboost import XGBClassifier
 
 def xgboost_classifier(model_config): # pylint: disable=W0613
-    return XGBClassifier(n_gpus=0, n_jobs=10, tree_method="hist",
-                         min_child_weight=model_config['min_child_weight'],
+    return XGBClassifier(n_gpus=0,
+                         n_jobs=model_config['n_jobs'],
+                         tree_method=model_config['tree_method'],
                          max_depth=model_config['max_depth'],
+                         learning_rate=model_config['learning_rate'],
+                         n_estimators=model_config['n_estimators'],
+                         objective=model_config['objective'],
                          gamma=model_config['gamma'],
+                         min_child_weight=model_config['min_child_weight'],
+                         early_stopping_rounds=model_config['early_stopping_rounds'],
                          subsample=model_config['subsample'],
                          colsample_bytree=model_config['colsample_bytree'],
-                         learning_rate=model_config['learning_rate'],
-                         n_estimators=model_config['n_estimators'])
+                         colsample_bynode=model_config['colsample_bynode'],
+                         random_state=model_config['random_state']
+                         )

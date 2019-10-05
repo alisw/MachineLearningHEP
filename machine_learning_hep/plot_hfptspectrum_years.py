@@ -16,34 +16,20 @@
 main script for doing final stage analysis
 """
 import os
-# pylint: disable=unused-wildcard-import, wildcard-import
-from array import *
 # pylint: disable=import-error, no-name-in-module, unused-import
 import yaml
-from ROOT import TFile, TH1F, TCanvas
-from ROOT import gStyle, TLegend, TLatex
-from ROOT import gROOT, kRed, kGreen, kBlack, kBlue
-from ROOT import TStyle, gPad, TPad, TLine
+from ROOT import gROOT, TFile
+from machine_learning_hep.utilities import plot_histograms
+
+FILES_NOT_FOUND = []
 
 # pylint: disable=import-error, no-name-in-module, unused-import
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-branches, too-many-locals
-def plot_hfspectrum_years_ratios(case_1, case_2, ana_type):
+def plot_hfspectrum_years_ratios(case_1, case_2, ana_type, mult_bins=None):
 
-    gROOT.SetStyle("Plain")
-    gStyle.SetOptStat(0)
-    gStyle.SetOptStat(0000)
-    gStyle.SetPalette(0)
-    gStyle.SetCanvasColor(0)
-    gStyle.SetFrameFillColor(0)
-    gStyle.SetOptTitle(0)
-    gStyle.SetTitleOffset(1.15, "y")
-    gStyle.SetTitleFont(42, "xy")
-    gStyle.SetLabelFont(42, "xy")
-    gStyle.SetTitleSize(0.02, "xy")
-    gStyle.SetLabelSize(0.02, "xy")
-    gStyle.SetPadTickX(1)
-    gStyle.SetPadTickY(1)
+    if mult_bins is None:
+        mult_bins = [0, 1, 2, 3]
 
     with open("data/database_ml_parameters_%s.yml" % case_1, 'r') as param_config:
         data_param_1 = yaml.load(param_config, Loader=yaml.FullLoader)
@@ -83,141 +69,68 @@ def plot_hfspectrum_years_ratios(case_1, case_2, ana_type):
     name_1 = data_param_1[case_1]["analysis"][ana_type]["latexnamemeson"]
     name_2 = data_param_2[case_2]["analysis"][ana_type]["latexnamemeson"]
 
-    br_1 = data_param_1[case_1]["ml"]["opt"]["BR"]
-    br_2 = data_param_2[case_2]["ml"]["opt"]["BR"]
-    sigmav0_1 = data_param_1[case_1]["analysis"]["sigmav0"]
-    sigmav0_2 = data_param_2[case_2]["analysis"]["sigmav0"]
+    #br_1 = data_param_1[case_1]["ml"]["opt"]["BR"]
+    #br_2 = data_param_2[case_2]["ml"]["opt"]["BR"]
+    #sigmav0_1 = data_param_1[case_1]["analysis"]["sigmav0"]
+    #sigmav0_2 = data_param_2[case_2]["analysis"]["sigmav0"]
 
-    files_tot_cross_1 = [TFile.Open("%s/finalcross%s%smulttot.root" % \
-                                    (folder, case_1, ana_type)) for folder in result_paths_1]
-    files_tot_cross_2 = [TFile.Open("%s/finalcross%s%smulttot.root" % \
-                                    (folder, case_2, ana_type)) for folder in result_paths_2]
     files_mult_1 = []
     files_mult_2 = []
-    for i in [0, 1, 2, 3]:
-        files_mult_1.append([TFile.Open("%s/finalcross%s%smult%d.root" \
-                % (folder, case_1, ana_type, i)) for folder in result_paths_1])
-        files_mult_2.append([TFile.Open("%s/finalcross%s%smult%d.root" \
-                % (folder, case_2, ana_type, i)) for folder in result_paths_2])
+    periods_string = "_".join(periods)
+    for imult in mult_bins:
+        files_years_1 = []
+        files_years_2 = []
+        for folder_1, folder_2 in zip(result_paths_1, result_paths_2):
+            path_1 = f"{folder_1}/finalcross{case_1}{ana_type}mult{imult}.root"
+            path_2 = f"{folder_2}/finalcross{case_2}{ana_type}mult{imult}.root"
+            if not os.path.exists(path_1) or not os.path.exists(path_2):
+                FILES_NOT_FOUND.append(f"{path_1} or {path_2}")
+                continue
+            files_years_1.append(path_1)
+            files_years_2.append(path_2)
 
-    linestyles = [1, 1, 1, 1]
-    markerstyles = [2, 4, 5, 32]
-    colors = [kBlack, kRed, kGreen+2, kBlue]
+        files_mult_1.append(files_years_1)
+        files_mult_2.append(files_years_2)
 
-    for imult in [0, 1, 2, 3]:
-
-        legyield = TLegend(.25, .65, .65, .85)
-        legyield.SetTextFont(42)
-        legyield.SetTextSize(0.03)
-        legyield.SetBorderSize(0)
-        legyield.SetFillColor(0)
-        legyield.SetFillStyle(0)
-        legyield.SetTextFont(42)
-        counter = 0
         histos = []
-        min_y = 9999.
-        max_y = 0.
-        for period, root_file_1, root_file_2 in zip(periods, files_tot_cross_1, files_tot_cross_2):
-            hyield_1 = root_file_1.Get("histoSigmaCorr%d" % (imult))
-            hyield_2 = root_file_2.Get("histoSigmaCorr%d" % (imult))
-            hyield_1.Scale(1./(br_1 * sigmav0_1 * 1e12))
-            hyield_2.Scale(1./(br_2 * sigmav0_2 * 1e12))
+        legend_titles = []
+        for period, path_1, path_2 in zip(periods, files_years_1, files_years_2):
+            file_1 = TFile.Open(path_1, "READ")
+            file_2 = TFile.Open(path_2, "READ")
+            hyield_1 = file_1.Get("histoSigmaCorr")
+            hyield_1.SetDirectory(0)
+            hyield_2 = file_2.Get("histoSigmaCorr")
+            hyield_2.SetDirectory(0)
+            #hyield_1.Scale(1./(br_1 * sigmav0_1 * 1e12))
+            #hyield_2.Scale(1./(br_2 * sigmav0_2 * 1e12))
             hyield_ratio = hyield_1.Clone(f"{case_1}_{case_2}_ratio_{period}_{imult}")
             hyield_ratio.Divide(hyield_2)
             histos.append(hyield_ratio)
 
-            max_y = max(hyield_ratio.GetMaximum(), max_y)
-            min_y = min(hyield_ratio.GetMinimum(), min_y)
+            l_string = f"{binsmin[imult]:.1f} #leq {latexbin2var} < {binsmax[imult]:.1f} "\
+                       f"({ana_type}), {period}"
+            legend_titles.append(l_string)
 
-            hyield_ratio.SetLineColor(colors[counter % len(colors)])
-            hyield_ratio.SetLineStyle(linestyles[counter % len(linestyles)])
-            hyield_ratio.SetMarkerStyle(markerstyles[counter % len(markerstyles)])
-            hyield_ratio.SetMarkerColor(colors[counter % len(colors)])
-            legyieldstring = "%.1f #leq %s < %.1f (%s), %s" % \
-                        (binsmin[imult], latexbin2var, binsmax[imult], ana_type, period)
-            legyield.AddEntry(hyield_ratio, legyieldstring, "LEP")
-            counter += 1
+        if not histos:
+            continue
 
-        # Now, do year over merged (where merged is always the last in the lists)
-        double_ratios = []
-        min_y_r = 9999.
-        max_y_r = 0.
-        for p in range(1, len(periods)):
-            h_double_r = histos[p].Clone(f"{histos[p].GetName()}_ratio")
-            h_double_r.Divide(h_double_r, histos[0], 1, 1, "B")
-            #h_double_r.Divide(histos[0])
-            double_ratios.append(h_double_r)
+        sub_folder = os.path.join(folder_plots_1, "ratios", ana_type)
+        if not os.path.exists(sub_folder):
+            os.makedirs(sub_folder)
 
-            max_y_r = max(h_double_r.GetMaximum(), max_y_r)
-            min_y_r = min(h_double_r.GetMinimum(), min_y_r)
+        save_path = f"{sub_folder}/{histos[0].GetName()}_combined_{periods_string}_{imult}.eps"
+        y_label = f"{histos[0].GetYaxis().GetTitle()} {name_1} / {name_2}"
 
-            h_double_r.SetLineColor(colors[p % len(colors)])
-            h_double_r.SetLineStyle(linestyles[p % len(linestyles)])
-            h_double_r.SetMarkerStyle(markerstyles[p % len(markerstyles)])
-            h_double_r.SetMarkerColor(colors[p % len(colors)])
-            h_double_r.SetLineWidth(1)
-
-        #Corrected yield plot
-        ccross = TCanvas('cCross', 'The Fit Canvas')
-        ccross.SetCanvasSize(1500, 1500)
-        ccross.SetWindowSize(500, 500)
-        ccross.cd()
-        pad_up = TPad("pad_up", "", 0., 0.4, 1., 1.)
-        pad_up.SetBottomMargin(0.)
-        pad_up.Draw()
-        #ccross.SetLogx()
-        pad_up.cd()
-        pad_up.DrawFrame(0, 0.5 * min_y, 30, 2 * max_y,
-                         ";; yield ratio %s / %s" % (name_1, name_2))
-        for h in histos:
-            h.Draw("same")
-        legyield.Draw()
-
-        ccross.cd()
-        pad_double = TPad("pad_double", "", 0., 0.05, 1., 0.4)
-        pad_double.SetTopMargin(0.)
-        pad_double.SetBottomMargin(0.3)
-        pad_double.Draw()
-        pad_double.cd()
-        frame_double = pad_double.DrawFrame(0, 0.5 * min_y_r, 30, 2 * max_y_r,
-                                            ";#it{p}_{T} (GeV/#it{c}); year/merged")
-        frame_double.SetTitleFont(42, "xy")
-        frame_double.SetTitleSize(0.04, "xy")
-        frame_double.SetLabelSize(0.04, "xy")
-        for h in double_ratios:
-            h.Draw("same")
-
-        line_unity = TLine(frame_double.GetXaxis().GetXmin(), 1.,
-                           frame_double.GetXaxis().GetXmax(), 1.)
-        line_unity.SetLineColor(histos[0].GetLineColor())
-        line_unity.SetLineStyle(histos[0].GetLineStyle())
-        line_unity.Draw()
-
-        ccross.SaveAs("%s/ComparisonCorrYields_%s_%s_%s_combined%s_%d.eps" % \
-                  (folder_plots_1, case_1, case_2, ana_type, "_".join(periods), imult))
-        ccross.SaveAs("%s/ComparisonCorrYields_%s_%s_%s_combined%s_%d.eps" % \
-                  (folder_plots_2, case_1, case_2, ana_type, "_".join(periods), imult))
-        ccross.Close()
+        plot_histograms(histos, True, True, legend_titles, histos[0].GetTitle(),
+                        "#it{p}_{T} (GeV/#it{c})", y_label, "year / merged", save_path)
 
 # pylint: disable=import-error, no-name-in-module, unused-import
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-branches, too-many-locals
-def plot_hfspectrum_years(case, ana_type):
+def plot_hfspectrum_years(case, ana_type, mult_bins=None):
 
-    gROOT.SetStyle("Plain")
-    gStyle.SetOptStat(0)
-    gStyle.SetOptStat(0000)
-    gStyle.SetPalette(0)
-    gStyle.SetCanvasColor(0)
-    gStyle.SetFrameFillColor(0)
-    gStyle.SetOptTitle(0)
-    gStyle.SetTitleOffset(1.15, "y")
-    gStyle.SetTitleFont(42, "xy")
-    gStyle.SetLabelFont(42, "xy")
-    gStyle.SetTitleSize(0.02, "xy")
-    gStyle.SetLabelSize(0.02, "xy")
-    gStyle.SetPadTickX(1)
-    gStyle.SetPadTickY(1)
+    if mult_bins is None:
+        mult_bins = [0, 1, 2, 3]
 
     with open("data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
@@ -241,179 +154,64 @@ def plot_hfspectrum_years(case, ana_type):
     binsmax = data_param[case]["analysis"][ana_type]["sel_binmax2"]
     name = data_param[case]["analysis"][ana_type]["latexnamemeson"]
     latexbin2var = data_param[case]["analysis"][ana_type]["latexbin2var"]
-    br = data_param[case]["ml"]["opt"]["BR"]
-    sigmav0 = data_param[case]["analysis"]["sigmav0"]
+    #br = data_param[case]["ml"]["opt"]["BR"]
+    #sigmav0 = data_param[case]["analysis"]["sigmav0"]
 
-    files_tot_cross = [TFile.Open("%s/finalcross%s%smulttot.root" \
-            % (folder, case, ana_type)) for folder in result_paths]
     files_mult = []
-    for i in [0, 1, 2, 3]:
-        files_mult.append([TFile.Open("%s/finalcross%s%smult%d.root" \
-                % (folder, case, ana_type, i)) for folder in result_paths])
-
-    linestyles = [1, 1, 1, 1]
-    markerstyles = [2, 4, 5, 32]
-    colors = [kBlack, kRed, kGreen+2, kBlue]
+    for imult in mult_bins:
+        files_years = []
+        for folder in result_paths:
+            path = f"{folder}/finalcross{case}{ana_type}mult{imult}.root"
+            if not os.path.exists(path):
+                FILES_NOT_FOUND.append(path)
+                continue
+            files_years.append(path)
+        files_mult.append(files_years)
 
     print("################")
     print(f"case {case} in analysis {ana_type}")
 
-    for imult in [0, 1, 2, 3]:
-        #Corrected yield plot
+    histo_names = ["hDirectMCpt", "hFeedDownMCpt", "hDirectMCptMax", "hDirectMCptMin",
+                   "hFeedDownMCptMax", "hFeedDownMCptMin", "hDirectEffpt", "hFeedDownEffpt",
+                   "hRECpt", "histoYieldCorr", "histoYieldCorrMax", "histoYieldCorrMin",
+                   "histoSigmaCorr", "histoSigmaCorrMax", "histoSigmaCorrMin"]
 
-        legyield = TLegend(.25, .65, .65, .85)
-        legyield.SetBorderSize(0)
-        legyield.SetFillColor(0)
-        legyield.SetFillStyle(0)
-        legyield.SetTextFont(42)
-        legyield.SetTextSize(0.02)
+    periods_string = "_".join(periods)
 
-        #Corrected eff plot
-        ceff = TCanvas('cEff', 'The Fit Canvas')
-        ceff.SetCanvasSize(1500, 1500)
-        ceff.SetWindowSize(500, 500)
+    for hn in histo_names:
 
-        leg_eff = TLegend(.25, .65, .65, .85)
-        leg_eff.SetBorderSize(0)
-        leg_eff.SetFillColor(0)
-        leg_eff.SetFillStyle(0)
-        leg_eff.SetTextFont(42)
-        leg_eff.SetTextSize(0.02)
+        for imult in mult_bins:
 
-        counter = 0
-        histos_cross = []
-        histos_eff = []
-        max_y = 0.
-        min_y = 9999.
-        max_y_eff = 0.
-        min_y_eff = 9999.
-        for period, root_file in zip(periods, files_tot_cross):
+            histos = []
+            legend_titles = []
+            for period, path in zip(periods, files_mult[imult]):
 
-            h_eff = files_mult[imult][counter].Get("hDirectEffpt")
-            h_eff.SetLineStyle(linestyles[counter % len(linestyles)])
-            h_eff.SetLineColor(colors[counter % len(colors)])
-            h_eff.SetMarkerStyle(markerstyles[counter % len(markerstyles)])
-            h_eff.SetMarkerColor(colors[counter % len(colors)])
-            h_eff.GetXaxis().SetTitleSize(0.02)
-            h_eff.GetXaxis().SetTitleSize(0.02)
-            h_eff.GetYaxis().SetTitleSize(0.02)
-            histos_eff.append(h_eff)
-            max_y_eff = max(h_eff.GetMaximum(), max_y_eff)
-            if h_eff.GetMinimum(0.) > 0.:
-                print(h_eff.GetMinimum(0.))
-                min_y_eff = min(h_eff.GetMinimum(0.), min_y_eff)
-            else:
-                print(f"Smaller than/equal 0.: {hyield.GetMinimum()} in period {period} for " \
-                      f"multiplicity {imult} and case {case}")
-            comment_eff = ""
-            if h_eff.Integral() <= 0. or h_eff.GetEntries() == 0:
-                print(f"Empty period {period}, {case}, {ana_type}, mult {imult}")
-                comment_eff = "(empty)"
-            legyieldstring = "%.1f #leq %s < %.1f (%s), %s %s" \
-                    % (binsmin[imult], latexbin2var, binsmax[imult], ana_type, period, comment_eff)
-            leg_eff.AddEntry(h_eff, legyieldstring, "LEP")
+                print(f"Mult {imult}, period {period}")
+                print(f"In file {path}")
 
-            print(f"Mult {imult}, period {period}")
-            print(f"In file {root_file}")
+                root_file = TFile.Open(path, "READ")
+                h = root_file.Get(hn)
+                h.SetDirectory(0)
+                histos.append(h)
+                comment = ""
+                if histos[-1].Integral() <= 0. or histos[-1].GetEntries() == 0:
+                    print(f"Empty period {period}, {case}, {ana_type}, mult {imult}")
+                    comment = "(empty)"
+                l_string = f"{binsmin[imult]:.1f} #leq {latexbin2var} < {binsmax[imult]:.1f} "\
+                           f"({ana_type}), {period} {comment}"
+                legend_titles.append(l_string)
 
-            hyield = root_file.Get("histoSigmaCorr%d" % (imult))
-            hyield.Scale(1./(br * sigmav0 * 1e12))
-            hyield.SetLineStyle(linestyles[counter % len(linestyles)])
-            hyield.SetLineColor(colors[counter % len(colors)])
-            hyield.SetMarkerStyle(markerstyles[counter % len(markerstyles)])
-            hyield.SetMarkerColor(colors[counter % len(colors)])
-            hyield.GetXaxis().SetTitleSize(0.02)
-            hyield.GetXaxis().SetTitleSize(0.02)
-            hyield.GetYaxis().SetTitleSize(0.02)
-            histos_cross.append(hyield)
-            max_y = max(hyield.GetMaximum(), max_y)
-            if hyield.GetMinimum(0.) > 0.:
-                print(hyield.GetMinimum(0.))
-                min_y = min(hyield.GetMinimum(0.), min_y)
-            else:
-                print(f"Smaller than/equal 0.: {hyield.GetMinimum()} in period {period} for " \
-                      f"multiplicity {imult} and case {case}")
-            comment = ""
-            if hyield.Integral() <= 0. or hyield.GetEntries() == 0:
-                print(f"Empty period {period}, {case}, {ana_type}, mult {imult}")
-                comment = "(empty)"
-            legyieldstring = "%.1f #leq %s < %.1f (%s), %s %s" % \
-                        (binsmin[imult], latexbin2var, binsmax[imult], ana_type, period, comment)
-            legyield.AddEntry(hyield, legyieldstring, "LEP")
-            counter += 1
+            if not histos:
+                continue
 
-        # Efficiencies
-        ceff.cd(1).DrawFrame(0, min_y_eff / 1000., 30, 1000. * max_y_eff,
-                             ";#it{p}_{T} (GeV/#it{c}); Efficiencies %s" % name)
-        ceff.cd()
-        gPad.SetLogy()
-        gPad.SetLogy()
-        for h in histos_eff:
-            h.Draw("same")
-        leg_eff.Draw()
+            sub_folder = os.path.join(folder_plots, ana_type)
+            if not os.path.exists(sub_folder):
+                os.makedirs(sub_folder)
+            save_path = f"{sub_folder}/{hn}_combined_{periods_string}_{imult}.eps"
 
-        ceff.SaveAs("%s/ComparisonEffs_%s_%s_combined%s_%d.eps" \
-                % (folder_plots, case, ana_type, "_".join(periods), imult))
-        ceff.Close()
-
-        # Prepare ratio plot, year/merged (merged is always first in the histo list)
-        double_ratios = []
-        min_y_r = 9999.
-        max_y_r = 0.
-        for p in range(1, len(periods)):
-            h_double_r = histos_cross[p].Clone(f"{histos_cross[p].GetName()}_ratio")
-            h_double_r.Divide(h_double_r, histos_cross[0], 1, 1, "B")
-            #h_double_r.Divide(histos[0])
-            double_ratios.append(h_double_r)
-
-            max_y_r = max(h_double_r.GetMaximum(), max_y_r)
-            min_y_r = min(h_double_r.GetMinimum(), min_y_r)
-
-            h_double_r.SetLineColor(colors[p % len(colors)])
-            h_double_r.SetLineStyle(linestyles[p % len(linestyles)])
-            h_double_r.SetMarkerStyle(markerstyles[p % len(markerstyles)])
-            h_double_r.SetMarkerColor(colors[p % len(colors)])
-            h_double_r.SetLineWidth(1)
-
-        #Corrected yield plot
-        ccross = TCanvas('cCross', 'The Fit Canvas')
-        ccross.SetCanvasSize(1500, 1500)
-        ccross.SetWindowSize(500, 500)
-        ccross.cd()
-        pad_up = TPad("pad_up", "", 0., 0.4, 1., 1.)
-        pad_up.SetBottomMargin(0.)
-        pad_up.Draw()
-        #ccross.SetLogx()
-        pad_up.cd()
-        pad_up.SetLogy()
-        pad_up.DrawFrame(0, min_y / 100., 30, 100. * max_y, ";;Corrected yield %s" % name)
-        for h in histos_cross:
-            h.Draw("same")
-        legyield.Draw()
-
-        ccross.cd()
-        pad_double = TPad("pad_double", "", 0., 0.05, 1., 0.4)
-        pad_double.SetTopMargin(0.)
-        pad_double.SetBottomMargin(0.3)
-        pad_double.Draw()
-        pad_double.cd()
-        frame_double = pad_double.DrawFrame(0, 0.5 * min_y_r, 30, 2 * max_y_r,
-                                            ";#it{p}_{T} (GeV/#it{c}); year/merged")
-        frame_double.SetTitleFont(42, "xy")
-        frame_double.SetTitleSize(0.04, "xy")
-        frame_double.SetLabelSize(0.04, "xy")
-        for h in double_ratios:
-            h.Draw("same")
-
-        line_unity = TLine(frame_double.GetXaxis().GetXmin(), 1.,
-                           frame_double.GetXaxis().GetXmax(), 1.)
-        line_unity.SetLineColor(histos_cross[0].GetLineColor())
-        line_unity.SetLineStyle(histos_cross[0].GetLineStyle())
-        line_unity.Draw()
-
-        ccross.SaveAs("%s/ComparisonCorrYields_%s_%s_combined%s_%d.eps" % \
-                  (folder_plots, case, ana_type, "_".join(periods), imult))
-        ccross.Close()
+            label_y = f"{histos[0].GetYaxis().GetTitle()} {name}"
+            plot_histograms(histos, True, True, legend_titles, histos[0].GetTitle(),
+                            "#it{p}_{T} (GeV/#it{c})", label_y, "year / merged", save_path)
 
 #####################################
 
@@ -433,6 +231,8 @@ plot_hfspectrum_years("D0pp", "V0mvspt")
 plot_hfspectrum_years("D0pp", "V0mvspt_perc_v0m")
 plot_hfspectrum_years("D0pp", "SPDvspt")
 
+# pylint: disable=pointless-string-statement
+"""
 plot_hfspectrum_years("Dspp", "MBvspt_ntrkl")
 plot_hfspectrum_years("Dspp", "MBvspt_v0m")
 plot_hfspectrum_years("Dspp", "MBvspt_perc")
@@ -446,8 +246,9 @@ plot_hfspectrum_years("LcpKpipp", "MBvspt_perc")
 plot_hfspectrum_years("LcpKpipp", "V0mvspt")
 plot_hfspectrum_years("LcpKpipp", "V0mvspt_perc_v0m")
 plot_hfspectrum_years("LcpKpipp", "SPDvspt")
-
+"""
 print("RATIOS over D0")
+"""
 plot_hfspectrum_years_ratios("Dspp", "D0pp", "MBvspt_ntrkl")
 plot_hfspectrum_years_ratios("Dspp", "D0pp", "MBvspt_v0m")
 plot_hfspectrum_years_ratios("Dspp", "D0pp", "MBvspt_perc")
@@ -468,3 +269,8 @@ plot_hfspectrum_years_ratios("LcpKpipp", "D0pp", "MBvspt_perc")
 plot_hfspectrum_years_ratios("LcpKpipp", "D0pp", "V0mvspt")
 plot_hfspectrum_years_ratios("LcpKpipp", "D0pp", "V0mvspt_perc_v0m")
 plot_hfspectrum_years_ratios("LcpKpipp", "D0pp", "SPDvspt")
+"""
+if FILES_NOT_FOUND:
+    print("FILES NOT FOUND:")
+    for f in FILES_NOT_FOUND:
+        print(f)

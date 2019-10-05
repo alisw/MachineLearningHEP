@@ -41,7 +41,6 @@ class MultiSystematics: # pylint: disable=too-many-instance-attributes, too-many
 
         #Analysis
         self.d_results_cv = []
-        self.d_resultsallp_cv = ""
         self.d_results = datap["analysis"][self.typean]["data"]["results"]
         self.d_resultsallp = datap["analysis"][self.typean]["data"]["resultsallp"]
         for i, direc in enumerate(self.d_results):
@@ -59,15 +58,15 @@ class MultiSystematics: # pylint: disable=too-many-instance-attributes, too-many
         self.n_fileeff = datap["files_names"]["efffilename"]
         self.n_filemass_cutvar = self.n_filemass.replace(".root", "_cutvar.root")
         self.n_fileeff_cutvar = self.n_fileeff.replace(".root", "_cutvar.root")
-        self.filemass_cutvar_mergedall = os.path.join(self.d_resultsallp, self.n_filemass_cutvar)
-        self.fileeff_cutvar_mergedall = os.path.join(self.d_resultsallp, self.n_fileeff_cutvar)
+        self.filemass_cutvar_mergedall = os.path.join(self.d_resultsallp_cv, self.n_filemass_cutvar)
+        self.fileeff_cutvar_mergedall = os.path.join(self.d_resultsallp_cv, self.n_fileeff_cutvar)
 
         self.p_useperiodforlimits = datap["systematics"]["probvariation"]["useperiod"]
         self.p_useperiod = datap["analysis"][self.typean]["useperiod"]
 
         self.lper_filemass_cutvar = []
         self.lper_fileeff_cutvar = []
-        for i, direc in enumerate(self.d_results):
+        for i, direc in enumerate(self.d_results_cv):
             if self.p_useperiod[i] == 1:
                 self.lper_filemass_cutvar.append(os.path.join(direc, self.n_filemass_cutvar))
                 self.lper_fileeff_cutvar.append(os.path.join(direc, self.n_fileeff_cutvar))
@@ -126,5 +125,13 @@ class MultiSystematics: # pylint: disable=too-many-instance-attributes, too-many
             for name in histname:
                 for indexp in range(self.prodnumber):
                     if self.p_useperiod[indexp] == 1:
-                        self.process_listsample[indexp].cutvariation_makeplots(name)
-                self.myprocesstot.cutvariation_makeplots(name)
+                        if domass is True or doeff is True or dofit is True:
+                            self.process_listsample[indexp].cutvariation_makeplots(name, \
+                                                                                   min_cv_cut, \
+                                                                                   max_cv_cut)
+                        else:
+                            self.process_listsample[indexp].cutvariation_makeplots(name, None, None)
+                if domass is True or doeff is True or dofit is True:
+                    self.myprocesstot.cutvariation_makeplots(name, min_cv_cut, max_cv_cut)
+                else:
+                    self.myprocesstot.cutvariation_makeplots(name, None, None)
