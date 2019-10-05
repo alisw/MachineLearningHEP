@@ -33,6 +33,7 @@ from machine_learning_hep.models import fit, savemodels, test, apply, decisionbo
 from machine_learning_hep.root import write_tree
 from machine_learning_hep.mlperformance import cross_validation_mse, plot_cross_validation_mse
 from machine_learning_hep.mlperformance import plot_learning_curves, precision_recall
+from machine_learning_hep.mlperformance import roc_train_test
 from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perform_plot_gridsearch
 from machine_learning_hep.models import importanceplotall
 from machine_learning_hep.logger import get_logger
@@ -310,6 +311,10 @@ class Optimiser:
     def do_roc(self):
         precision_recall(self.p_classname, self.p_class, self.s_suffix,
                          self.df_xtrain, self.df_ytrain, self.p_nkfolds, self.dirmlplot)
+
+    def do_roc_train_test(self):
+        roc_train_test(self.p_classname, self.p_class, self.df_xtrain, self.df_ytrain,
+                       self.df_xtest, self.df_ytest, self.s_suffix, self.dirmlplot)
 
     def do_importance(self):
         importanceplotall(self.v_train, self.p_classname, self.p_class,
