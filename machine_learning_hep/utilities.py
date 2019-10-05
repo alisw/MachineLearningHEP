@@ -20,11 +20,14 @@ import bz2
 import gzip
 import lzma
 import os
+import math
 import numpy as np
 import pandas as pd
 import lz4
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
-from ROOT import TH1F, TH2F  # pylint: disable=import-error, no-name-in-module
+# pylint: disable=import-error, no-name-in-module
+from ROOT import TH1F, TH2F
+from ROOT import TPad, TCanvas, TLegend, kBlack, kGreen, kRed, kBlue
 from machine_learning_hep.selectionutils import select_runs
 def openfile(filename, attr):
     if filename.lower().endswith('.bz2'):
@@ -125,8 +128,9 @@ def createlist(prefolder, mylistfolder, namefile):
     listfiles = appendfiletolist(mylistfolder, namefile)
     listfiles = appendmainfoldertolist(prefolder, listfiles)
     return listfiles
+
 def seldf_singlevar(dataframe, var, minval, maxval):
-    dataframe = dataframe.loc[(dataframe[var] > minval) & (dataframe[var] < maxval)]
+    dataframe = dataframe.loc[(dataframe[var] >= minval) & (dataframe[var] < maxval)]
     return dataframe
 
 def split_df_sigbkg(dataframe_, var_signal_):
@@ -195,3 +199,146 @@ def z_calc(pt_1, phi_1, eta_1, pt_2, phi_2, eta_2):
     numerator = px_1*px_2+py_1*py_2+pz_1*pz_2
     denominator = px_1*px_1+py_1*py_1+pz_1*pz_1
     return numerator/denominator
+
+def z_gen_calc(pt_1, phi_1, eta_1, pt_2, delta_phi, delta_eta):
+    phi_2 = phi_1 + delta_phi
+    eta_2 = eta_1 - delta_eta
+    return z_calc(pt_1, phi_1, eta_1, pt_2, phi_2, eta_2)
+
+def get_bins(axis):
+    return np.array([axis.GetBinLowEdge(i) for i in range(1, axis.GetNbins() + 2)])
+
+def folding(h_input, response_matrix, h_output):
+    h_folded = h_output.Clone("h_folded")
+    for a in range(h_output.GetNbinsX()):
+        for b in range(h_output.GetNbinsY()):
+            val = 0.
+            val_err = 0.
+            for k in range(h_input.GetNbinsX()):
+                for l in range(h_input.GetNbinsY()):
+                    index_x_out = a + h_output.GetNbinsX() * b
+                    index_x_in = k + h_input.GetNbinsX() * l
+                    val += h_input.GetBinContent(k + 1, l + 1) * \
+                        response_matrix(index_x_out, index_x_in)
+                    val_err += h_input.GetBinError(k + 1, l + 1) * \
+                        h_input.GetBinError(k + 1, l + 1) * \
+                        response_matrix(index_x_out, index_x_in) * \
+                        response_matrix(index_x_out, index_x_in)
+            h_folded.SetBinContent(a + 1, b + 1, val)
+            h_folded.SetBinError(a + 1, b + 1, math.sqrt(val_err))
+    return h_folded
+
+# Plotting stuff
+
+def find_axes_limits(histos, use_log_y=False):
+    """
+    Finds common axes limits for list of histograms provided
+    """
+    max_y = histos[0].GetMaximum()
+    min_y = histos[0].GetMinimum()
+    if not min_y > 0. and use_log_y:
+        min_y = 10.e-9
+
+    max_x = histos[0].GetXaxis().GetXmax()
+    min_x = histos[0].GetXaxis().GetXmin()
+
+    for h in histos:
+        min_x = min(min_x, h.GetXaxis().GetXmin())
+        max_x = max(max_x, h.GetXaxis().GetXmax())
+        min_y = min(min_y, h.GetMinimum(0.)) if use_log_y else min(min_y, h.GetMinimum())
+        max_y = max(max_y, h.GetMaximum())
+
+    return min_x, max_x, min_y, max_y
+
+def style_histograms(histos, linestyles=None, markerstyles=None, colors=None):
+    """
+    Loops over given line- and markerstyles as well as colors applying them to the given list
+    of histograms. The list of histograms might be larger than the styles provided. In that case
+    the styles start again
+    """
+    if linestyles is None:
+        linestyles = [1, 1, 1, 1]
+    if markerstyles is None:
+        markerstyles = [2, 4, 5, 32]
+    if colors is None:
+        colors = [kBlack, kRed, kGreen + 2, kBlue]
+
+    for i, h in enumerate(histos):
+        h.SetLineColor(colors[i % len(colors)])
+        h.SetLineStyle(linestyles[i % len(linestyles)])
+        h.SetMarkerStyle(markerstyles[i % len(markerstyles)])
+        h.SetMarkerColor(colors[i % len(colors)])
+        h.GetXaxis().SetTitleSize(0.02)
+        h.GetXaxis().SetTitleSize(0.02)
+        h.GetYaxis().SetTitleSize(0.02)
+
+def divide_all_by_first(histos):
+    """
+    Divides all histograms in the list by the first one in the list and returns the
+    divided histograms in the same order
+    """
+
+    histos_ratio = []
+    for h in histos:
+        histos_ratio.append(h.Clone(f"{h.GetName()}_ratio"))
+        histos_ratio[-1].Divide(histos[0])
+    return histos_ratio
+
+def put_in_pad(pad, use_log_y, histos, title="", x_label="", y_label=""):
+    """
+    Providing a TPad this plots all given histograms in that pad adjusting the X- and Y-ranges
+    accordingly.
+    """
+    min_x, max_x, min_y, max_y = find_axes_limits(histos, use_log_y)
+    pad.SetLogy(use_log_y)
+    pad.cd()
+    scale_frame_y = (0.1, 10.) if use_log_y else (0.7, 1.2)
+    pad.DrawFrame(min_x, min_y * scale_frame_y[0], max_x, max_y * scale_frame_y[1],
+                  f"{title};{x_label};{y_label}")
+    for h in histos:
+        h.Draw("same")
+
+def plot_histograms(histos, use_log_y=False, ratio=False, legend_titles=None, title="", x_label="",
+                    y_label_up="", y_label_ratio="", save_path="./plot.eps", canvas_name="Canvas"):
+    """
+    Throws all given histograms into one canvas. If desired, a ratio plot will be added.
+    """
+    style_histograms(histos)
+
+    canvas = TCanvas('canvas', canvas_name, 800, 800)
+    pad_up_start = 0.4 if ratio else 0.
+
+    pad_up = TPad("pad_up", "", 0., pad_up_start, 1., 1.)
+    pad_up.SetBottomMargin(0.)
+    pad_up.Draw()
+
+    put_in_pad(pad_up, use_log_y, histos, title, "", y_label_up)
+
+    pad_up.cd()
+    legend = None
+    if legend_titles is not None:
+        legend = TLegend(.45, .65, .85, .85)
+        legend.SetBorderSize(0)
+        legend.SetFillColor(0)
+        legend.SetFillStyle(0)
+        legend.SetTextFont(42)
+        legend.SetTextSize(0.02)
+        for h, l in zip(histos, legend_titles):
+            legend.AddEntry(h, l)
+        legend.Draw()
+
+    canvas.cd()
+    pad_ratio = None
+    histos_ratio = None
+
+    if ratio:
+        histos_ratio = divide_all_by_first(histos)
+        pad_ratio = TPad("pad_ratio", "", 0., 0.05, 1., pad_up_start)
+        pad_ratio.SetTopMargin(0.)
+        pad_ratio.SetBottomMargin(0.3)
+        pad_ratio.Draw()
+
+        put_in_pad(pad_ratio, False, histos_ratio, "", x_label, y_label_ratio)
+
+    canvas.SaveAs(save_path)
+    canvas.Close()

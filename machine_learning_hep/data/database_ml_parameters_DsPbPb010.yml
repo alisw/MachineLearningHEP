@@ -1,0 +1,255 @@
+#############################################################################
+##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
+## This program is free software: you can redistribute it and/or modify it ##
+##  under the terms of the GNU General Public License as published by the  ##
+## Free Software Foundation, either version 3 of the License, or (at your  ##
+## option) any later version. This program is distributed in the hope that ##
+##  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  ##
+##     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    ##
+##           See the GNU General Public License for more details.          ##
+##    You should have received a copy of the GNU General Public License    ##
+##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
+#############################################################################
+
+DsPbPb010:
+  mass: 1.9685
+  sel_reco_unp: null
+  sel_reco_singletrac_unp : [[8],[]]
+  sel_gen_unp: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10" # pre-selections on generated candidates
+  #sel_cen_unp: "centrality >= 0 and centrality <= 10" # for data
+  sel_cen_unp: null # for MC
+  sel_good_evt_unp: "is_ev_rej == 0"
+  sel_reco_skim: ["delta_mass_KK < 0.02","delta_mass_KK < 0.02","delta_mass_KK < 0.02","delta_mass_KK < 0.02"]
+  sel_gen_skim: [null,null,null,null]
+  sel_skim_binmin: [2,4,6,12] #list of nbins min
+  sel_skim_binmax: [4,6,12,50] #list of nbins max
+  var_binning: pt_cand
+  dofullevtmerge: true
+  
+  bitmap_sel:
+    use: True
+    var_name: cand_type
+    var_isstd: isstd
+    var_ismcsignal: ismcsignal
+    var_ismcprompt: ismcprompt
+    var_ismcfd: ismcfd
+    var_ismcbkg: ismcbkg
+    isstd : [[0],[]]
+    ismcsignal: [[1],[5,11]]
+    ismcprompt: [[1,3],[5,11]]
+    ismcfd: [[1,4],[5,11]]
+    ismcbkg: [[2],[11]]
+    
+  variables:
+    var_all: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, 
+             delta_mass_KK, cos_PiDs, cos_PiKPhi_3, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, 
+             imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, inv_mass, pt_cand, cand_type, y_cand, 
+             eta_prong0, eta_prong1, eta_prong2, run_number, ev_id, nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, 
+             nsigTPC_Pi_1, nsigTPC_K_1, nsigTOF_Pi_1, nsigTOF_K_1, nsigTPC_Pi_2, nsigTPC_K_2, nsigTOF_Pi_2, nsigTOF_K_2, 
+             nsigComb_Pi_0, nsigComb_Pi_1, nsigComb_Pi_2, nsigComb_K_0, nsigComb_K_1, nsigComb_K_2]    
+    #var_all: [inv_mass, pt_cand, cos_p_xy, d_len, norm_dl_xy, sig_vert, delta_mass_KK, cos_PiKPhi_3,
+    #          max_norm_d0d0exp, nsigComb_Pi_0, nsigComb_Pi_1, nsigComb_Pi_2, nsigComb_K_0, nsigComb_K_1, nsigComb_K_2]
+    var_evt:
+      data: [is_ev_rej, run_number, ev_id, centrality, z_vtx_reco]
+      mc: [is_ev_rej, run_number, ev_id, centrality, z_vtx_reco, z_vtx_gen]
+    var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
+    var_evt_match: [run_number, ev_id]
+    var_training: [cos_p_xy, d_len, norm_dl_xy, sig_vert, delta_mass_KK, cos_PiKPhi_3,
+                   max_norm_d0d0exp, nsigComb_Pi_0, nsigComb_Pi_1, nsigComb_Pi_2, nsigComb_K_0, nsigComb_K_1, nsigComb_K_2]
+    var_boundaries: [d_len, max_norm_d0d0exp]
+    var_correlation:
+      - [pt_cand]
+      - [d_len_xy]
+    var_signal: signal
+    var_inv_mass: inv_mass
+    var_cuts:
+      - [pt_prong0, lt, null]
+    plot_options:
+      prob_cut_scan:
+        pt_prong0:
+          xlim:
+            - 0
+            - 1
+      eff_cut_scan:
+        pt_prong0:
+          xlim:
+            - 0
+            - 1
+
+  files_names:
+    namefile_unmerged_tree: AnalysisResults.root
+    namefile_reco: AnalysisResultsReco.pkl
+    namefile_evt: AnalysisResultsEvt.pkl
+    namefile_evtvalroot: AnalysisResultsEvtVal.root
+    namefile_evtorig: AnalysisResultsEvtOrig.pkl
+    namefile_gen: AnalysisResultsGen.pkl
+    namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl
+    namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl
+    namefile_reco_ml_applied: AnalysisResultsRecoAppliedML.pkl
+    treeoriginreco: 'PWGHF_TreeCreator/tree_Ds'
+    treeorigingen: 'PWGHF_TreeCreator/tree_Ds_gen'
+    treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
+    treeoutput: fTreeDsFlagged
+    histofilename: "masshisto.root"
+    efffilename: "effhisto.root"
+    crossfilename: "cross_section_tot.root"
+
+  multi:
+    data:
+      nperiods: 2
+      nprocessesparallel: 40
+      maxfiles : [-1,-1] #list of periods
+      chunksizeunp : [300,300] #list of periods
+      chunksizeskim: [300,300] #list of periods
+      fracmerge : [1.,1.] #list of periods
+      seedmerge: [12,12] #list of periods
+      period: [LHC18q, LHC18r] #list of periods
+      unmerged_tree_dir: [/data/DsPbPb/PbPb_data_010/vAN-20190905_ROOT6-1/PbPb_2018_data/188_20190906-0928/unmerged,
+                          /data/DsPbPb/PbPb_data_010/vAN-20190905_ROOT6-1/PbPb_2018_data/189_20190906-0928/unmerged] #list of periods
+      pkl: [/data/DsPbPb/PbPb_data_010/vAN-20190905_ROOT6-1/PbPb_2018_data/188_20190906-0928/pkl,
+            /data/DsPbPb/PbPb_data_010/vAN-20190905_ROOT6-1/PbPb_2018_data/189_20190906-0928/pkl] #list of periods
+      pkl_skimmed: [/data/DsPbPb/PbPb_data_010/vAN-20190905_ROOT6-1/PbPb_2018_data/188_20190906-0928/pkl_skimmed,
+                    /data/DsPbPb/PbPb_data_010/vAN-20190905_ROOT6-1/PbPb_2018_data/189_20190906-0928/pkl_skimmed] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/DsPbPb/PbPb_data_010/vAN-20190905_ROOT6-1/PbPb_2018_data/188_20190906-0928/pkl_ML,
+                                 /data/DsPbPb/PbPb_data_010/vAN-20190905_ROOT6-1/PbPb_2018_data/189_20190906-0928/pkl_ML] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/DsPbPb/PbPb_data_010/pkl_ML_all
+      pkl_evtcounter_all: /data/DsPbPb/PbPb_data_010/pkl_evt_all
+    mc:
+      nperiods: 2
+      nprocessesparallel: 40
+      maxfiles : [-1,-1] #list of periods
+      chunksizeunp : [300,300] #list of periods
+      chunksizeskim: [300,300] #list of periods
+      fracmerge : [1.0,1.0] #list of periods
+      seedmerge: [12,12] #list of periods
+      #period: [LHC19d4a_r, LHC19d4a_q] #list of periods
+      #unmerged_tree_dir: [/data/DsPbPb/PbPb_MC_010/vAN-20190905_ROOT6-1/PbPb010_2018_mc_prodDs/194_20190906-1052/unmerged,
+      #                    /data/DsPbPb/PbPb_MC_010/vAN-20190905_ROOT6-1/PbPb010_2018_mc_prodDs/226_20190913-1835/unmerged] #list of periods
+      #pkl: [/data/DsPbPb/PbPb_MC_010/vAN-20190905_ROOT6-1/PbPb010_2018_mc_prodDs/194_20190906-1052/pkl,
+      #      /data/DsPbPb/PbPb_MC_010/vAN-20190905_ROOT6-1/PbPb010_2018_mc_prodDs/226_20190913-1835/pkl] #list of periods
+      #pkl_skimmed: [/data/DsPbPb/PbPb_MC_010/vAN-20190905_ROOT6-1/PbPb010_2018_mc_prodDs/194_20190906-1052/pkl_skimmed,
+      #              /data/DsPbPb/PbPb_MC_010/vAN-20190905_ROOT6-1/PbPb010_2018_mc_prodDs/226_20190913-1835/pkl_skimmed] #list of periods
+      #pkl_skimmed_merge_for_ml: [/data/DsPbPb/PbPb_MC_010/vAN-20190905_ROOT6-1/PbPb010_2018_mc_prodDs/194_20190906-1052/pkl_ML,
+      #                           /data/DsPbPb/PbPb_MC_010/vAN-20190905_ROOT6-1/PbPb010_2018_mc_prodDs/226_20190913-1835/pkl_ML] #list of periods
+      #pkl_skimmed_merge_for_ml_all: /data/DsPbPb/PbPb_MC_010/pkl_ML_DsDed
+      #pkl_evtcounter_all: /data/DsPbPb/PbPb_MC_010/pkl_evt_DsDed
+      period: [LHC19c3a_all_q, LHC19c3a_all_r] #list of periods
+      unmerged_tree_dir: [/data/DsPbPb/PbPb_MC_010/vAN-20190910_ROOT6-1/PbPb010_2018_mc_prodD2H/221_20190911-1606/unmerged,
+                          /data/DsPbPb/PbPb_MC_010/vAN-20190910_ROOT6-1/PbPb010_2018_mc_prodD2H/222_20190911-1355/unmerged] #list of periods
+      pkl: [/data/DsPbPb/PbPb_MC_010/vAN-20190910_ROOT6-1/PbPb010_2018_mc_prodD2H/221_20190911-1606/pkl,
+            /data/DsPbPb/PbPb_MC_010/vAN-20190910_ROOT6-1/PbPb010_2018_mc_prodD2H/222_20190911-1355/pkl] #list of periods
+      pkl_skimmed: [/data/DsPbPb/PbPb_MC_010/vAN-20190910_ROOT6-1/PbPb010_2018_mc_prodD2H/221_20190911-1606/pkl_skimmed,
+                    /data/DsPbPb/PbPb_MC_010/vAN-20190910_ROOT6-1/PbPb010_2018_mc_prodD2H/222_20190911-1355/pkl_skimmed] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/DsPbPb/PbPb_MC_010/vAN-20190910_ROOT6-1/PbPb010_2018_mc_prodD2H/221_20190911-1606/pkl_ML,
+                                 /data/DsPbPb/PbPb_MC_010/vAN-20190910_ROOT6-1/PbPb010_2018_mc_prodD2H/222_20190911-1355/pkl_ML] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/DsPbPb/PbPb_MC_010/pkl_ML_D2Hprod
+      pkl_evtcounter_all: /data/DsPbPb/PbPb_MC_010/pkl_evt_D2Hprod
+  ml:
+    nbkg: 5000
+    nsig: 5000
+    sampletagforsignal: 1
+    sampletagforbkg: 0
+    sel_sigml: ismcprompt == 1
+    sel_bkgml: inv_mass<1.832 or inv_mass>2.012 #ensure to set the cuts as multiples of the bin_width, i.e. left_limit + K * bin_width   
+    nkfolds: 5
+    rnd_shuffle: 42
+    rnd_splt: 42
+    test_frac: 0.2
+    binmin: [2] #list of nbins #list of nbins min
+    binmax: [4] #list of nbins
+    mltype: BinaryClassification
+    ncorescrossval: 24 
+    mlplot: /home/fcatalan/test_QM/mlplot010 # to be removed
+    mlout: /home/fcatalan/test_QM/mlout010 # to be removed
+
+    opt:
+      filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions, corrected with Raa for PbPb 'data/fonll/fo_PbPb_d0meson_5TeV_y0p5_wRaa_ds_3050_min.csv'
+      fonll_pred: 'max' # edge of the FONLL prediction
+      FF: 0.092 # fragmentation fraction #0.1281 
+      sigma_MB: 1  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
+      Taa: 3917 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
+      BR: 2.27e-2 # branching ratio of the decay
+      f_prompt: 0.9 # estimated fraction of prompt candidates
+      bkg_data_fraction: 0.4 # fraction of real data used in the estimation
+      num_steps: 111 # number of steps used in efficiency and signif. estimation 
+      bkg_function: pol2 # fit function for bkg (among TH1 predefined fit functions, e.g. expo, pol1, pol2, ...)
+      save_fit: True # save bkg fits with the various cuts on ML output
+      raahp: [1] #list of nbins
+      presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
+
+  mlapplication:
+    data:
+      pkl_skimmed_dec: ['',''] #list of periods
+      pkl_skimmed_decmerged: ['',''] #list of periods
+    mc:
+      pkl_skimmed_dec: ['',''] #list of periods
+      pkl_skimmed_decmerged: ['',''] #list of periods
+    modelname: xgboost
+    modelsperptbin: ['','','','']
+    probcutpresel: 
+      data: [0.,0.,0.,0.] #list of nbins
+      mc: [0.,0.,0.,0.] #list of nbins
+    probcutoptimal: [0.,0.,0.,0.] #list of nbins
+
+  analysis:
+    MBvspt:
+      normalizecross: false
+      plotbin: [1]
+      usesinglebineff: 0
+      sel_binmin2: [null] #list of var2 splittng nbins
+      sel_binmax2: [null] #list of var2 splitting nbins
+      var_binning2: null
+      triggerbit: ''
+      sel_an_binmin: [2,3] #list of pt nbins
+      sel_an_binmax: [3,4] #list of pt nbins
+      binning_matching: [0,1] #list of pt nbins
+      presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
+      evtsel: is_ev_rej == 0
+      triggersel: 
+        data: null
+        mc: null
+      data:
+        results: ['',''] #list of periods
+        resultsallp: ''
+      mc:
+        results: ['',''] #list of periods
+        resultsallp: ''
+
+      mass_fit_lim: [1.742, 2.194]  # region for the fit of the invariant mass distribution [GeV/c^2]
+      bin_width: 0.002 # bin width of the invariant mass histogram
+      usefit: false
+      sgnfunc: null
+      bkgfunc: null
+      masspeak: null
+      massmin: null
+      massmax: null
+      rebin: null
+      includesecpeak: null
+      masssecpeak: null
+      FixedMean: null
+      SetFixGaussianSigma: null
+      SetInitialGaussianMean: null
+      SetInitialGaussianSigma: null
+      exclude_nsigma_sideband: null
+      nsigma_signal: null
+      dolikelihood: null
+      sigmaarray: null
+      FixedSigma: null  
+      fitcase: Ds
+      latexnamemeson: "D_{s}"
+      latexbin2var: null
+      nevents: null
+      dodoublecross: false
+
+  systematics:
+    probvariation:
+      prob_range: [0.]
+  
+  validation:
+    data:
+      dir: ['',''] #list of periods
+      dirmerged: ''
+    mc:
+      dir: ['',''] #list of periods
+      dirmerged: ''

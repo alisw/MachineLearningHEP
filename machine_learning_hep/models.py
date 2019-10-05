@@ -168,6 +168,8 @@ def savemodels(names_, trainedmodels_, folder_, suffix_):
         if "xgboost" in name:
             fileoutmodel = folder_+"/"+name+suffix_+".sav"
             pickle.dump(model, open(fileoutmodel, 'wb'), protocol=4)
+            fileoutmodel = fileoutmodel.replace(".sav", ".model")
+            model.save_model(fileoutmodel)
 
 def readmodels(names_, folder_, suffix_):
     trainedmodels_ = []
@@ -179,8 +181,11 @@ def readmodels(names_, folder_, suffix_):
 
 
 def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder):
-    plt.figure(figsize=(25, 15))
-    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.4, hspace=0.2)
+
+    if len(names_) == 1:
+        plt.figure(figsize=(18, 15))
+    else:
+        plt.figure(figsize=(25, 15))
 
     i = 1
     for name, model in zip(names_, trainedmodels_):
@@ -190,7 +195,10 @@ def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder)
             continue
         if "Keras" in name:
             continue
-        ax1 = plt.subplot(2, (len(names_)+1)/2, i)
+        if len(names_) > 1:
+            ax1 = plt.subplot(2, (len(names_)+1)/2, i)
+        else:
+            ax1 = plt.subplot(1, 1, i)
         #plt.subplots_adjust(left=0.3, right=0.9)
         feature_importances_ = model.feature_importances_
         y_pos = np.arange(len(mylistvariables_))

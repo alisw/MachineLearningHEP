@@ -17,6 +17,7 @@ main script for doing data processing, machine learning and analysis
 """
 
 #import os
+import sys
 import subprocess
 import argparse
 from os.path import exists
@@ -32,8 +33,8 @@ from  machine_learning_hep.utilities import checkmakedirlist, checkmakedir
 from  machine_learning_hep.utilities import checkdirlist, checkdir
 from  machine_learning_hep.logger import configure_logger, get_logger
 from machine_learning_hep.optimiser import Optimiser
-from machine_learning_hep.analyzer import Analyzer
-from machine_learning_hep.systematics import Systematics
+from machine_learning_hep.multianalyzer import MultiAnalyzer
+from machine_learning_hep.multisystematics import MultiSystematics
 
 try:
 # FIXME(https://github.com/abseil/abseil-py/issues/99) # pylint: disable=fixme
@@ -95,6 +96,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     doapplymc = data_config["mlapplication"]["mc"]["doapply"]
     domergeapplydata = data_config["mlapplication"]["data"]["domergeapply"]
     domergeapplymc = data_config["mlapplication"]["mc"]["domergeapply"]
+    docontinueapplydata = data_config["mlapplication"]["data"]["docontinueafterstop"]
+    docontinueapplymc = data_config["mlapplication"]["mc"]["docontinueafterstop"]
     dohistomassmc = data_config["analysis"]["mc"]["histomass"]
     dohistomassdata = data_config["analysis"]["data"]["histomass"]
     doefficiency = data_config["analysis"]["mc"]["efficiency"]
@@ -102,7 +105,15 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     dofit = data_config["analysis"]["dofit"]
     doeff = data_config["analysis"]["doeff"]
     docross = data_config["analysis"]["docross"]
-    dosystprob = data_config["systematics"]["probvariation"]
+    doplots = data_config["analysis"]["doplots"]
+    dosyst = data_config["analysis"]["dosyst"]
+    dosystprob = data_config["systematics"]["cutvar"]["activate"]
+    dosystprobmass = data_config["systematics"]["cutvar"]["probvariationmass"]
+    dosystprobeff = data_config["systematics"]["cutvar"]["probvariationeff"]
+    dosystprobfit = data_config["systematics"]["cutvar"]["probvariationfit"]
+    dosystprobcross = data_config["systematics"]["cutvar"]["probvariationcross"]
+
+    doanaperperiod = data_config["analysis"]["doperperiod"]
 
     typean = data_config["analysis"]["type"]
     dojetstudies = data_config["analysis"]["dojetstudies"]
@@ -136,7 +147,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     dirvaldata = data_param[case]["validation"]["data"]["dir"]
     dirvalmcmerged = data_param[case]["validation"]["mc"]["dirmerged"]
     dirvaldatamerged = data_param[case]["validation"]["data"]["dirmerged"]
-
     binminarray = data_param[case]["ml"]["binmin"]
     binmaxarray = data_param[case]["ml"]["binmax"]
     raahp = data_param[case]["ml"]["opt"]["raahp"]
@@ -145,11 +155,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     mlout = data_param[case]["ml"]["mlout"]
     mlplot = data_param[case]["ml"]["mlplot"]
 
-
-    mymultiprocessmc = MultiProcesser(data_param[case], typean, run_param, "mc")
-    mymultiprocessdata = MultiProcesser(data_param[case], typean, run_param, "data")
-    myan = Analyzer(data_param[case], case, typean)
-    mysis = Systematics(data_param[case], case, typean)
+    normalizecross = data_param[case]["analysis"][typean]["normalizecross"]
 
     #creating folder if not present
     counter = 0
@@ -183,17 +189,19 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         counter = counter + checkdir(mlout)
         counter = counter + checkdir(mlplot)
 
-    if doapplymc is True:
-        counter = counter + checkdirlist(dirpklskdecmc)
+    if docontinueapplymc is False:
+        if doapplymc is True:
+            counter = counter + checkdirlist(dirpklskdecmc)
 
-    if doapplydata is True:
-        counter = counter + checkdirlist(dirpklskdecdata)
+        if domergeapplymc is True:
+            counter = counter + checkdirlist(dirpklskdec_mergedmc)
 
-    if domergeapplymc is True:
-        counter = counter + checkdirlist(dirpklskdec_mergedmc)
+    if docontinueapplydata is False:
+        if doapplydata is True:
+            counter = counter + checkdirlist(dirpklskdecdata)
 
-    if domergeapplydata is True:
-        counter = counter + checkdirlist(dirpklskdec_mergeddata)
+        if domergeapplydata is True:
+            counter = counter + checkdirlist(dirpklskdec_mergeddata)
 
     if dohistomassmc is True:
         counter = counter + checkdirlist(dirresultsmc)
@@ -212,7 +220,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         counter = counter + checkdir(dirvalmcmerged)
 
     if counter < 0:
-        exit()
+        sys.exit()
     # check and create directories
 
     if doconversionmc is True:
@@ -245,17 +253,19 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         checkmakedir(mlout)
         checkmakedir(mlplot)
 
-    if doapplymc is True:
-        checkmakedirlist(dirpklskdecmc)
+    if docontinueapplymc is False:
+        if doapplymc is True:
+            checkmakedirlist(dirpklskdecmc)
 
-    if doapplydata is True:
-        checkmakedirlist(dirpklskdecdata)
+        if domergeapplymc is True:
+            checkmakedirlist(dirpklskdec_mergedmc)
 
-    if domergeapplymc is True:
-        checkmakedirlist(dirpklskdec_mergedmc)
+    if docontinueapplydata is False:
+        if doapplydata is True:
+            checkmakedirlist(dirpklskdecdata)
 
-    if domergeapplydata is True:
-        checkmakedirlist(dirpklskdec_mergeddata)
+        if domergeapplydata is True:
+            checkmakedirlist(dirpklskdec_mergeddata)
 
     if dohistomassmc is True:
         checkmakedirlist(dirresultsmc)
@@ -272,6 +282,11 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     if dovalhistodata is True:
         checkmakedirlist(dirvaldata)
         checkmakedir(dirvaldatamerged)
+
+    mymultiprocessmc = MultiProcesser(case, data_param[case], typean, run_param, "mc")
+    mymultiprocessdata = MultiProcesser(case, data_param[case], typean, run_param, "data")
+    myan = MultiAnalyzer(data_param[case], case, typean, doanaperperiod)
+    mysis = MultiSystematics(case, data_param[case], typean, run_param)
 
     #perform the analysis flow
     if dodownloadalice == 1:
@@ -300,6 +315,13 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
 
     if domergingperiodsdata == 1:
         mymultiprocessdata.multi_mergeml_allinone()
+
+    if dovalhistomc is True:
+        mymultiprocessmc.multi_valevents()
+    if dovalhistodata is True:
+        mymultiprocessdata.multi_valevents()
+    if dovalplots:
+        myan.multi_studyevents()
 
     if doml is True:
         index = 0
@@ -350,28 +372,29 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     if doefficiency is True:
         mymultiprocessmc.multi_efficiency()
     if dofit is True:
-        myan.fitter()
+        myan.multi_fitter()
+    if dosyst is True:
+        myan.multi_yield_syst()
     if doeff is True:
-        myan.efficiency()
+        myan.multi_efficiency()
     if dojetstudies is True:
         if dofit is False:
-            myan.fitter()
+            myan.multi_fitter()
         if doeff is False:
-            myan.efficiency()
-        myan.side_band_sub()
+            myan.multi_efficiency()
+        myan.multi_side_band_sub()
     if dofeeddown is True:
-        myan.feeddown()
+        myan.multi_feeddown()
     if docross is True:
-        myan.plotter()
+        myan.multi_preparenorm()
+        if normalizecross is True:
+            myan.multi_plotter()
+        if normalizecross is False:
+            myan.multi_makenormyields()
+    if doplots is True:
+        myan.multi_plotternormyields()
     if dosystprob is True:
-        mysis.probvariation()
-
-    if dovalhistomc is True:
-        mymultiprocessmc.multi_valevents()
-    if dovalhistodata is True:
-        mymultiprocessdata.multi_valevents()
-    if dovalplots:
-        myan.studyevents()
+        mysis.multi_cutvariation(dosystprobmass, dosystprobeff, dosystprobfit, dosystprobcross)
 
 
 def load_config(user_path: str, default_path: tuple) -> dict:

@@ -38,7 +38,8 @@ def vardistplot(dataframe_sig_, dataframe_bkg_, mylistvariables_, output_,
         plt.hist(dataframe_bkg_[var], facecolor='g', label='background', **kwargs)
         ax.legend()
         i = i+1
-    plotname = output_+'/variablesDistribution%d%d.png' % (binmin, binmax)
+    plotname = output_+'/variablesDistribution_nVar%d_%d%d.png' % \
+                            (len(mylistvariables_), binmin, binmax)
     plt.savefig(plotname, bbox_inches='tight')
     imagebytesIO = BytesIO()
     plt.savefig(imagebytesIO, format='png')
@@ -263,7 +264,7 @@ def scatterplot(dataframe_sig_, dataframe_bkg_, mylistvariablesx_,
             dataframe_bkg_.corr().loc[mylistvariablesx_[j]][mylistvariablesy_[j]].round(2))
         axcorr.legend()
         i = i+1
-    plotname = output_+'/variablesScatterPlot%f%f.png' % (binmin, binmax)
+    plotname = output_+'/variablesScatterPlot%d%d.png' % (binmin, binmax)
     plt.savefig(plotname, bbox_inches='tight')
     imagebytesIO = BytesIO()
     plt.savefig(imagebytesIO, format='png')
@@ -271,15 +272,15 @@ def scatterplot(dataframe_sig_, dataframe_bkg_, mylistvariablesx_,
     return imagebytesIO
 
 
-def correlationmatrix(dataframe, output_, label, binmin, binmax):
-    corr = dataframe.corr()
-    f, ax = plt.subplots(figsize=(10, 8)) # pylint: disable=unused-variable
+def correlationmatrix(dataframe, mylistvariables, label, output, binmin, binmax):
+    corr = dataframe[mylistvariables].corr()
+    _, ax = plt.subplots(figsize=(10, 8))
     plt.title(label, fontsize=11)
-    sns.heatmap(
-        corr, mask=np.zeros_like(corr, dtype=np.bool),
-        cmap=sns.diverging_palette(220, 10, as_cmap=True), vmin=-1, vmax=1,
-        square=True, ax=ax)
-    plotname = output_+'/correlationmatrix%f%f.png' % (binmin, binmax)
+    sns.heatmap(corr, mask=np.zeros_like(corr, dtype=np.bool),
+                cmap=sns.diverging_palette(220, 10, as_cmap=True), vmin=-1, vmax=1,
+                square=True, ax=ax)
+    nVar = len(mylistvariables)
+    plotname = f'{output}/CorrMatrix_{label}_nVar{nVar}_{binmin:.1f}_{binmax:.1f}.png'
     plt.savefig(plotname, bbox_inches='tight')
     imagebytesIO = BytesIO()
     plt.savefig(imagebytesIO, format='png')

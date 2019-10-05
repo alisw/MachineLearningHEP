@@ -24,14 +24,14 @@ import random as rd
 import uproot
 import pandas as pd
 import numpy as np
-from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
-from ROOT import TFile, TH1F, TH2F # pylint: disable=import-error, no-name-in-module
+from root_numpy import fill_hist, evaluate # pylint: disable=import-error, no-name-in-module
+from ROOT import TFile, TH1F, TH2F, TH3F, RooUnfoldResponse # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge_method
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
-from machine_learning_hep.utilities import mergerootfiles, makeff, scatterplot, z_calc
+from machine_learning_hep.utilities import mergerootfiles, z_calc, z_gen_calc, scatterplot
 from machine_learning_hep.models import apply # pylint: disable=import-error
 #from machine_learning_hep.globalfitter import fitter
 from machine_learning_hep.selectionutils import getnormforselevt
@@ -42,11 +42,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
     # Initializer / Instance Attributes
     # pylint: disable=too-many-statements, too-many-arguments
-    def __init__(self, datap, run_param, mcordata, p_maxfiles,
+    def __init__(self, case, datap, run_param, mcordata, p_maxfiles,
                  d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
-                 d_results, d_val, typean):
+                 d_results, d_val, typean, runlisttrigger):
+        self.case = case
         self.typean = typean
         #directories
         self.d_root = d_root
@@ -61,7 +62,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.p_rd_merge = p_rd_merge
         self.period = p_period
         self.runlist = run_param[self.period]
-
+        self.run_param = run_param
         self.p_maxfiles = p_maxfiles
         self.p_chunksizeunp = p_chunksizeunp
         self.p_chunksizeskim = p_chunksizeskim
@@ -103,6 +104,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.b_mcsigprompt = datap["bitmap_sel"]["ismcprompt"]
         self.b_mcsigfd = datap["bitmap_sel"]["ismcfd"]
         self.b_mcbkg = datap["bitmap_sel"]["ismcbkg"]
+        self.b_mcrefl = datap["bitmap_sel"]["ismcrefl"]
 
         #variables name
         self.v_all = datap["variables"]["var_all"]
@@ -116,6 +118,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.v_ismcprompt = datap["bitmap_sel"]["var_ismcprompt"]
         self.v_ismcfd = datap["bitmap_sel"]["var_ismcfd"]
         self.v_ismcbkg = datap["bitmap_sel"]["var_ismcbkg"]
+        self.v_ismcrefl = datap["bitmap_sel"]["var_ismcrefl"]
         self.v_var_binning = datap["var_binning"]
         #list of files names
 
@@ -210,6 +213,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
         #self.sel_final_fineptbins = datap["analysis"][self.typean]["sel_final_fineptbins"]
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
         self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
+        self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
+        self.runlistrigger = runlisttrigger
 
     def unpack(self, file_index):
         treeevtorig = uproot.open(self.l_root[file_index])[self.n_treeevt]
@@ -292,6 +297,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
     def applymodel(self, file_index):
         for ipt in range(self.p_nptbins):
+            if os.path.exists(self.mptfiles_recoskmldec[ipt][file_index]):
+                if os.stat(self.mptfiles_recoskmldec[ipt][file_index]).st_size != 0:
+                    continue
             dfrecosk = pickle.load(openfile(self.mptfiles_recosk[ipt][file_index], "rb"))
             if os.path.isfile(self.lpt_model[ipt]) is False:
                 print("Model file not present in bin %d" % ipt)
@@ -302,6 +310,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             dfrecoskml = dfrecoskml.loc[dfrecoskml[probvar] > self.lpt_probcutpre[ipt]]
             pickle.dump(dfrecoskml, openfile(self.mptfiles_recoskmldec[ipt][file_index], "wb"),
                         protocol=4)
+
     def parallelizer(self, function, argument_list, maxperchunk):
         chunks = [argument_list[x:x+maxperchunk] \
                   for x in range(0, len(argument_list), maxperchunk)]
@@ -330,9 +339,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
     def process_applymodel_par(self):
         print("doing apply model", self.mcordata, self.period)
         create_folder_struc(self.d_pkl_dec, self.l_path)
-        for ipt in range(self.p_nptbins):
-            arguments = [(i,) for i in range(len(self.mptfiles_recosk[ipt]))]
-            self.parallelizer(self.applymodel, arguments, self.p_chunksizeskim)
+        arguments = [(i,) for i in range(len(self.mptfiles_recosk[0]))]
+        self.parallelizer(self.applymodel, arguments, self.p_chunksizeskim)
 
     def process_mergeforml(self):
         nfiles = len(self.mptfiles_recosk[0])
@@ -380,11 +388,27 @@ class Processer: # pylint: disable=too-many-instance-attributes
                           self.v_var2_binning, self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
                                  self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+                h_invmass_weight = TH1F("h_invmass_weight" + suffix, "", self.p_num_bins,
+                                        self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 df_bin = seldf_singlevar(df, self.v_var2_binning,
                                          self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                print("Using run selection for mass histo",
+                      self.runlistrigger[self.triggerbit], "for period", self.period)
+                df_bin = selectdfrunlist(df_bin, \
+                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
                 fill_hist(h_invmass, df_bin.inv_mass)
+                if "INT7" not in self.triggerbit and self.mcordata == "data":
+                    fileweight_name = "%s/correctionsweights.root" % self.d_val
+                    fileweight = TFile.Open(fileweight_name, "read")
+                    namefunction = "funcnorm_%s_%s" % (self.triggerbit, self.v_var2_binning)
+                    funcweighttrig = fileweight.Get(namefunction)
+                    if funcweighttrig:
+                        weights = evaluate(funcweighttrig, df_bin[self.v_var2_binning])
+                        weightsinv = [1./weight for weight in weights]
+                        fill_hist(h_invmass_weight, df_bin.inv_mass, weights=weightsinv)
                 myfile.cd()
                 h_invmass.Write()
+                h_invmass_weight.Write()
 
                 if "pt_jet" in df_bin.columns:
                     zarray = z_calc(df_bin.pt_jet, df_bin.phi_jet, df_bin.eta_jet,
@@ -393,6 +417,21 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     zvsinvmass = np.vstack((df_bin.inv_mass, zarray)).T
                     fill_hist(h_zvsinvmass, zvsinvmass)
                     h_zvsinvmass.Write()
+
+                if self.mcordata == "mc":
+                    df_bin[self.v_ismcrefl] = np.array(tag_bit_df(df_bin, self.v_bitvar,
+                                                                  self.b_mcrefl), dtype=int)
+                    df_bin_sig = df_bin[df_bin[self.v_ismcsignal] == 1]
+                    df_bin_refl = df_bin[df_bin[self.v_ismcrefl] == 1]
+                    h_invmass_sig = TH1F("hmass_sig" + suffix, "", self.p_num_bins,
+                                         self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+                    h_invmass_refl = TH1F("hmass_refl" + suffix, "", self.p_num_bins,
+                                          self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+                    fill_hist(h_invmass_sig, df_bin_sig.inv_mass)
+                    fill_hist(h_invmass_refl, df_bin_refl.inv_mass)
+                    myfile.cd()
+                    h_invmass_sig.Write()
+                    h_invmass_refl.Write()
 
     # pylint: disable=line-too-long
     def process_efficiency(self):
@@ -418,18 +457,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                n_bins, analysis_bin_lims)
             h_sel_fd = TH1F("h_sel_fd" + stringbin2, "FD Reco and sel in acc |#eta|<0.8 and sel", \
                             n_bins, analysis_bin_lims)
-            h_gen_pr = TH1F("h_gen_pr" + stringbin2, "Prompt Generated in acceptance |y|<0.5", \
-                            n_bins, analysis_bin_lims)
-            h_presel_pr = TH1F("h_presel_pr" + stringbin2, "Prompt Reco in acc |#eta|<0.8 and sel", \
-                               n_bins, analysis_bin_lims)
-            h_sel_pr = TH1F("h_sel_pr" + stringbin2, "Prompt Reco and sel in acc |#eta|<0.8 and sel", \
-                            n_bins, analysis_bin_lims)
-            h_gen_fd = TH1F("h_gen_fd" + stringbin2, "FD Generated in acceptance |y|<0.5", \
-                            n_bins, analysis_bin_lims)
-            h_presel_fd = TH1F("h_presel_fd" + stringbin2, "FD Reco in acc |#eta|<0.8 and sel", \
-                               n_bins, analysis_bin_lims)
-            h_sel_fd = TH1F("h_sel_fd" + stringbin2, "FD Reco and sel in acc |#eta|<0.8 and sel", \
-                            n_bins, analysis_bin_lims)
 
             bincounter = 0
             for ipt in range(self.p_nptfinbins):
@@ -439,8 +466,14 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_trigger is not None:
                     df_mc_reco = df_mc_reco.query(self.s_trigger)
+                print("Using run selection for eff histo",
+                      self.runlistrigger[self.triggerbit], "for period", self.period)
+                df_mc_reco = selectdfrunlist(df_mc_reco, \
+                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
                 df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[bin_id], "rb"))
                 df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
+                df_mc_gen = selectdfrunlist(df_mc_gen, \
+                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
                 df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var_binning, \
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
                 df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \
@@ -483,109 +516,169 @@ class Processer: # pylint: disable=too-many-instance-attributes
             h_sel_fd.Write()
 
     def process_response(self):
-        out_file = TFile.Open(self.n_fileeff, "update")
         list_df_mc_reco = []
         list_df_mc_gen = []
         for iptskim, _ in enumerate(self.lpt_anbinmin):
             df_mc_reco = pickle.load(openfile(self.lpt_recodecmerged[iptskim], "rb"))
+            if "pt_jet" not in df_mc_reco.columns:
+                print("Jet variables not found in the dataframe. Skipping process_response.")
+                return
             if self.s_evtsel is not None:
                 df_mc_reco = df_mc_reco.query(self.s_evtsel)
             if self.s_trigger is not None:
                 df_mc_reco = df_mc_reco.query(self.s_trigger)
+            df_mc_reco = selectdfrunlist(df_mc_reco, \
+                  self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
             df_mc_reco = df_mc_reco.query(self.l_selml[iptskim])
             list_df_mc_reco.append(df_mc_reco)
             df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[iptskim], "rb"))
+            df_mc_gen = selectdfrunlist(df_mc_gen, \
+                    self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
             df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
             list_df_mc_gen.append(df_mc_gen)
-        df_mc_reco_merged = pd.concat(list_df_mc_reco)
-        df_mc_gen_merged = pd.concat(list_df_mc_gen)
-        df_mc_reco_merged_fd = df_mc_reco_merged[df_mc_reco_merged.ismcfd == 1] # reconstructed & selected non-prompt jets
-        df_mc_gen_merged_fd = df_mc_gen_merged[df_mc_gen_merged.ismcfd == 1] # generated & selected non-prompt jets
+        df_rec = pd.concat(list_df_mc_reco)
+        df_gen = pd.concat(list_df_mc_gen)
+        his_njets = TH1F("his_njets_gen", "Number of MC jets", 1, 0, 1)
+        his_njets.SetBinContent(1, len(df_gen.index)) # total number of generated & selected jets for normalisation
+        df_rec = df_rec[df_rec.ismcfd == 1] # reconstructed & selected non-prompt jets
+        df_gen = df_gen[df_gen.ismcfd == 1] # generated & selected non-prompt jets
+        out_file = TFile.Open(self.n_fileeff, "update")
+
+        # Bin arrays
+        # pt_cand
+        n_bins_ptc = len(self.lpt_finbinmin)
+        bins_ptc_temp = self.lpt_finbinmin.copy()
+        bins_ptc_temp.append(self.lpt_finbinmax[n_bins_ptc - 1])
+        bins_ptc = array.array('d', bins_ptc_temp)
+        # pt_jet
+        n_bins_ptjet = len(self.lvar2_binmin)
+        bins_ptjet_temp = self.lvar2_binmin.copy()
+        bins_ptjet_temp.append(self.lvar2_binmax[n_bins_ptjet - 1])
+        bins_ptjet = array.array('d', bins_ptjet_temp)
+        # z
+        bins_z_temp = [0.0, 0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.1]
+        n_bins_z = len(bins_z_temp) - 1
+        bins_z = array.array('d', bins_z_temp)
 
         # Detector response matrix of pt_jet of non-prompt jets
-        df_resp_jet_fd = df_mc_reco_merged_fd.loc[:, ["pt_gen_jet", "pt_jet"]]
+        df_resp_jet_fd = df_rec.loc[:, ["pt_gen_jet", "pt_jet"]]
         his_resp_jet_fd = TH2F("his_resp_jet_fd", \
             "Response matrix of #it{p}_{T}^{jet, ch} of non-prompt jets;#it{p}_{T}^{jet, ch, gen.} (GeV/#it{c});#it{p}_{T}^{jet, ch, rec.} (GeV/#it{c})", \
             100, 0, 100, 100, 0, 100)
         fill_hist(his_resp_jet_fd, df_resp_jet_fd)
 
         # Simulated pt_cand vs. pt_jet of non-prompt jets
-        df_ptc_ptjet_fd = df_mc_gen_merged_fd.loc[:, ["pt_cand", "pt_jet"]]
-        n_bins = len(self.lpt_finbinmin)
-        analysis_bin_lims_temp = self.lpt_finbinmin.copy()
-        analysis_bin_lims_temp.append(self.lpt_finbinmax[n_bins-1])
-        analysis_bin_lims = array.array('d', analysis_bin_lims_temp)
+        df_ptc_ptjet_fd = df_gen.loc[:, ["pt_cand", "pt_jet"]]
         his_ptc_ptjet_fd = TH2F("his_ptc_ptjet_fd", \
             "Simulated #it{p}_{T}^{cand.} vs. #it{p}_{T}^{jet} of non-prompt jets;#it{p}_{T}^{cand., gen.} (GeV/#it{c});#it{p}_{T}^{jet, ch, gen.} (GeV/#it{c})", \
-            n_bins, analysis_bin_lims, 100, 0, 100)
+            n_bins_ptc, bins_ptc, 100, 0, 100)
         fill_hist(his_ptc_ptjet_fd, df_ptc_ptjet_fd)
+
+        # z_gen of reconstructed feed-down jets (for response)
+        arr_z_gen_resp = z_gen_calc(df_rec.pt_gen_jet, df_rec.phi_gen_jet, df_rec.eta_gen_jet,
+                                    df_rec.pt_gen_cand, df_rec.delta_phi_gen_jet, df_rec.delta_eta_gen_jet)
+        # z_rec of reconstructed feed-down jets (for response)
+        arr_z_rec_resp = z_calc(df_rec.pt_jet, df_rec.phi_jet, df_rec.eta_jet,
+                                df_rec.pt_cand, df_rec.phi_cand, df_rec.eta_cand)
+        # z_gen of simulated feed-down jets
+        arr_z_gen_sim = z_calc(df_gen.pt_jet, df_gen.phi_jet, df_gen.eta_jet,
+                               df_gen.pt_cand, df_gen.phi_cand, df_gen.eta_cand)
+        df_rec["z_gen"] = arr_z_gen_resp
+        df_rec["z"] = arr_z_rec_resp
+        df_gen["z"] = arr_z_gen_sim
+
+        # Simulated pt_cand vs. pt_jet vs z of non-prompt jets
+        df_ptc_ptjet_z_fd = df_gen.loc[:, ["pt_cand", "pt_jet", "z"]]
+        his_ptc_ptjet_z_fd = TH3F("his_ptc_ptjet_z_fd", \
+            "Simulated #it{p}_{T}^{cand.} vs. #it{p}_{T}^{jet} vs. #it{z} of non-prompt jets;"
+            "#it{p}_{T}^{cand., gen.} (GeV/#it{c});"
+            "#it{p}_{T}^{jet, ch, gen.} (GeV/#it{c});"
+            "#it{z}", \
+            n_bins_ptc, bins_ptc, n_bins_ptjet, bins_ptjet, n_bins_z, bins_z)
+        fill_hist(his_ptc_ptjet_z_fd, df_ptc_ptjet_z_fd)
+
+        # Create response matrix for feed-down smearing
+        # x axis = z, y axis = pt_jet
+        his_resp_rec = TH2F("his_resp_rec", "his_resp_rec", n_bins_z, bins_z, n_bins_ptjet, bins_ptjet)
+        his_resp_gen = TH2F("his_resp_gen", "his_resp_gen", n_bins_z, bins_z, n_bins_ptjet, bins_ptjet)
+        resp_z = RooUnfoldResponse(his_resp_rec, his_resp_gen)
+        for row in df_rec.itertuples():
+            resp_z.Fill(row.z, row.pt_jet, row.z_gen, row.pt_gen_jet)
 
         out_file.cd()
         his_resp_jet_fd.Write()
         his_ptc_ptjet_fd.Write()
+        his_ptc_ptjet_z_fd.Write()
+        his_njets.Write()
+        resp_z.Write("resp_z")
         out_file.Close()
 
+    # pylint: disable=too-many-locals
     def process_valevents(self, file_index):
         dfevt = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
-        dfevtnorm = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
-        mbsel = "trigger_hasclass_INT7==1 and is_ev_rej==0"
-        if self.mcordata == "mc":
-            mbsel = "is_ev_rej==0"
-        dfevt = dfevt.query(mbsel)
-        sel_trigger = ["trigger_hasbit_INT7==1", "trigger_hasbit_HighMultSPD==1",
-                       "trigger_hasbit_HighMultV0==1", "trigger_hasbit_INT7==1",
-                       "trigger_hasbit_HighMultSPD==1", "trigger_hasbit_HighMultV0==1"]
-        variable = ["v0m", "v0m", "v0m", "n_tracklets", "n_tracklets", "n_tracklets"]
-        nbins = [100, 100, 100, 100, 100, 100]
-        minr = [0, 0, 0, 0, 0, 0]
-        maxr = [1500, 1500, 1500, 150, 150, 150]
-        label = ["kINT7_vsv0m", "HighMultSPD_vsv0m", "HighMultV0_vsv0m",
-                 "kINT7_vsntracklets", "HighMultSPD_vsntracklets", "HighMultV0_vsntracklets"]
+        dfevt = dfevt.query("is_ev_rej==0")
+        dfevtmb = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
+        dfevtmb = dfevtmb.query("is_ev_rej==0")
+        myrunlisttrigmb = self.runlistrigger["INT7"]
+        dfevtselmb = selectdfrunlist(dfevtmb, self.run_param[myrunlisttrigmb], "run_number")
+        triggerlist = ["INT7", "HighMultV0", "HighMultSPD"]
+        varlist = ["v0m_corr", "n_tracklets_corr", "perc_v0m"]
+        nbinsvar = [100, 200, 200]
+        minrvar = [0, 0, 0]
+        maxrvar = [1500, 200, .5]
         fileevtroot = TFile.Open(self.l_evtvalroot[file_index], "recreate")
-        for index, _ in enumerate(sel_trigger):
-            hden, hnum = makeff(dfevt, sel_trigger[index], None, label[index],
-                                nbins[index], minr[index], maxr[index], variable[index])
-            hden.Write()
-            hnum.Write()
+        hv0mvsperc = scatterplot(dfevt, "perc_v0m", "v0m_corr", 50000, 0, 100, 200, 0., 2000.)
+        hv0mvsperc.SetName("hv0mvsperc")
+        hv0mvsperc.Write()
+        dfevtnorm = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
+        hntrklsperc = scatterplot(dfevt, "perc_v0m", "n_tracklets_corr", 50000, 0, 100, 200, 0., 2000.)
+        hntrklsperc.SetName("hntrklsperc")
+        hntrklsperc.Write()
+        for ivar, var in enumerate(varlist):
+            label = "hbitINT7vs%s" % (var)
+            histoMB = TH1F(label, label, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
+            fill_hist(histoMB, dfevtselmb.query("trigger_hasbit_INT7==1")[var])
+            histoMB.Sumw2()
+            histoMB.Write()
+            for trigger in triggerlist:
+                triggerbit = "trigger_hasbit_%s==1" % trigger
+                labeltriggerANDMB = "hbit%sANDINT7vs%s" % (trigger, var)
+                labeltrigger = "hbit%svs%s" % (trigger, var)
+                histotrigANDMB = TH1F(labeltriggerANDMB, labeltriggerANDMB, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
+                histotrig = TH1F(labeltrigger, labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
+                myrunlisttrig = self.runlistrigger[trigger]
+                ev = len(dfevt)
+                dfevtsel = selectdfrunlist(dfevt, self.run_param[myrunlisttrig], "run_number")
+                if len(dfevtsel) < ev:
+                    print("Reduced number of events in trigger", trigger)
+                    print(ev, len(dfevtsel))
+                fill_hist(histotrigANDMB, dfevtsel.query(triggerbit + " and trigger_hasbit_INT7==1")[var])
+                fill_hist(histotrig, dfevtsel.query(triggerbit)[var])
+                histotrigANDMB.Sumw2()
+                histotrig.Sumw2()
+                histotrigANDMB.Write()
+                histotrig.Write()
+                hSelMult = TH1F('sel_' + labeltrigger, 'sel_' + labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
+                hNoVtxMult = TH1F('novtx_' + labeltrigger, 'novtx_' + labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
+                hVtxOutMult = TH1F('vtxout_' + labeltrigger, 'vtxout_' + labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
 
-        scatter_name1 = ["v0m"]
-        scatter_name2 = ["n_tracklets"]
-        nbins1 = [100]
-        minr1 = [0]
-        maxr1 = [1500]
-        nbins2 = [100]
-        minr2 = [0]
-        maxr2 = [150]
-        for index2, _ in enumerate(scatter_name1):
-            hscatter = scatterplot(dfevt, scatter_name1[index2], scatter_name2[index2], \
-                    nbins1[index2], minr1[index2], maxr1[index2], \
-                    nbins2[index2], minr2[index2], maxr2[index2])
-            hscatter.Write()
+                # multiplicity dependent normalisation
+                dftrg = dfevtnorm.query(triggerbit)
+                dfsel = dftrg.query('is_ev_rej == 0')
+                df_to_keep = filter_bit_df(dftrg, 'is_ev_rej', [[], [0, 5, 6, 10, 11]])
+                # events with reco vtx after previous selection
+                tag_vtx = tag_bit_df(df_to_keep, 'is_ev_rej', [[], [1, 2, 7, 12]])
+                df_no_vtx = df_to_keep[~tag_vtx.values]
+                # events with reco zvtx > 10 cm after previous selection
+                df_bit_zvtx_gr10 = filter_bit_df(df_to_keep, 'is_ev_rej', [[3], [1, 2, 7, 12]])
 
-        distrname = ["v0m", "n_tracklets"]
-        nbinsdist = [100, 100]
-        minrdist = [0, 0]
-        maxrdist = [1500, 150]
+                fill_hist(hSelMult, dfsel[var])
+                fill_hist(hNoVtxMult, df_no_vtx[var])
+                fill_hist(hVtxOutMult, df_bit_zvtx_gr10[var])
 
-        for index, _ in enumerate(distrname):
-            hdistr = TH1F("hdistr" + distrname[index], "hdistr" + distrname[index],
-                          nbinsdist[index], minrdist[index], maxrdist[index])
-            hdistr.Sumw2()
-            fill_hist(hdistr, dfevt[distrname[index]])
-            hdistr.Write()
-
-        varname = "v0m"
-        cutonspd = [20, 30, 40, 50, 60]
-        hdenv0m = TH1F("hdenv0m", "hdenv0m", 30, 0, 1000)
-        hdenv0m.Sumw2()
-        fill_hist(hdenv0m, dfevt[varname])
-        for index, _ in enumerate(cutonspd):
-            hnum = TH1F("hnumv0mspd%d" % cutonspd[index], "hnumv0mspd%d" % cutonspd[index], 30, 0, 1000)
-            hnum.Sumw2()
-            devtsel = dfevt.query("n_tracklets>=%d" % cutonspd[index])
-            fill_hist(hnum, devtsel[varname])
-            hnum.Write()
-        hdenv0m.Write()
+                hSelMult.Write()
+                hNoVtxMult.Write()
+                hVtxOutMult.Write()
 
         hNorm = TH1F("hEvForNorm", ";;Normalisation", 2, 0.5, 2.5)
         hNorm.GetXaxis().SetBinLabel(1, "normsalisation factor")
@@ -599,7 +692,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         hNorm.SetBinContent(2, nselevt)
         hNorm.Write()
         fileevtroot.Close()
-
     def process_valevents_par(self):
         print("doing event validation", self.mcordata, self.period)
         create_folder_struc(self.d_val, self.l_path)

@@ -45,27 +45,38 @@ mlapplication:
   data:
     doapply: false
     domergeapply: false
-    domergeapplyperiods: false
+    docontinueafterstop: false
   mc:
     doapply: false
     domergeapply: false
-    domergeapplyperiods: false
+    docontinueafterstop: false
 
 analysis:
-  type: MBjetvspt
+  type: MBvspt_ntrkl
+  # Do each period separately including merged (true)
+  # Do only merged (false)
+  doperperiod: true
   data:
     histomass: false
   mc:
     histomass: false
-    efficiency: true
-    feeddown: true
-  dofit: false
+    efficiency: false
+    feeddown: false
+  dofit: true
+  # Control the yield systemaitc uncertainty
+  dosyst: false
   dojetstudies: false
-  doeff: true
+  doeff: false
   docross: false
+  doplots: false
 
 systematics:
-  probvariation: false
+  cutvar:
+    activate: false
+    probvariationmass: false
+    probvariationeff: false
+    probvariationfit: false
+    probvariationcross: false
 
 validation:
   data:

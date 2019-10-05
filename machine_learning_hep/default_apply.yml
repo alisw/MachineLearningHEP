@@ -45,14 +45,17 @@ mlapplication:
   data:
     doapply: true
     domergeapply: true
-    domergeapplyperiods: true
+    docontinueafterstop: false
   mc:
     doapply: true
     domergeapply: true
-    domergeapplyperiods: true
+    docontinueafterstop: false
 
 analysis:
   type: SPDvspt
+  # Do each period separately including merged (true)
+  # Do only merged (false)
+  doperperiod: true
   data:
     histomass: false
   mc:
@@ -60,12 +63,20 @@ analysis:
     efficiency: false
     feeddown: false
   dofit: false
+  # Control the yield systemaitc uncertainty
+  dosyst: false
   dojetstudies: false
   doeff: false
   docross: false
+  doplots: false
 
 systematics:
-  probvariation: false
+  cutvar:
+    activate: false
+    probvariationmass: false
+    probvariationeff: false
+    probvariationfit: false
+    probvariationcross: false
 
 validation:
   data:
