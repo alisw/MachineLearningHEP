@@ -151,6 +151,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     binmaxarray = data_param[case]["ml"]["binmax"]
     raahp = data_param[case]["ml"]["opt"]["raahp"]
     mltype = data_param[case]["ml"]["mltype"]
+    training_vars = data_param[case]["variables"]["var_training"]
 
     mlout = data_param[case]["ml"]["mlout"]
     mlplot = data_param[case]["ml"]["mlplot"]
@@ -328,7 +329,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         for binmin, binmax in zip(binminarray, binmaxarray):
             myopt = Optimiser(data_param[case], case, typean,
                               data_model[mltype], grid_param, binmin, binmax,
-                              raahp[index])
+                              raahp[index], training_vars[index])
             if docorrelation is True:
                 myopt.do_corr()
             if dotraining is True:

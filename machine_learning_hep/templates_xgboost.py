@@ -24,6 +24,7 @@ def xgboost_classifier(model_config): # pylint: disable=W0613
                          objective=model_config['objective'],
                          gamma=model_config['gamma'],
                          min_child_weight=model_config['min_child_weight'],
+                         #early_stopping_rounds=model_config['early_stopping_rounds'],
                          subsample=model_config['subsample'],
                          colsample_bytree=model_config['colsample_bytree'],
                          colsample_bynode=model_config['colsample_bynode'],

@@ -26,8 +26,8 @@ Dspp:
                   "pt_prong0>0.3 and pt_prong1>0.3 and pt_prong2>0.3",
                   "pt_prong0>0.3 and pt_prong1>0.3 and pt_prong2>0.3"]
   sel_gen_skim: [null,null,null,null,null]
-  sel_skim_binmin: [1,2,4,8,12] #list of nbins
-  sel_skim_binmax: [2,4,8,12,24] #list of nbins
+  sel_skim_binmin: [1,2,4,6,8] #list of nbins
+  sel_skim_binmax: [2,4,6,8,24] #list of nbins
   var_binning: pt_cand
   dofullevtmerge: false
   bitmap_sel:
@@ -50,7 +50,7 @@ Dspp:
     var_all: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, delta_mass_KK, 
               cos_PiDs, cos_PiKPhi_3, imp_par_prong0, imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, 
               inv_mass, pt_cand, cand_type, y_cand, ev_id, run_number, 
-              pt_prong0, pt_prong1, pt_prong2,
+              pt_prong0, pt_prong1, pt_prong2, p_prong0, p_prong1, p_prong2,
               spdhits_prong0, spdhits_prong1, spdhits_prong2,
               nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, 
               nsigTPC_Pi_1, nsigTPC_K_1, nsigTOF_Pi_1, nsigTOF_K_1, 
@@ -67,11 +67,25 @@ Dspp:
               mult_gen, mult_gen_v0a, mult_gen_v0c, perc_v0m]
     var_gen: [y_cand, pt_cand, cand_type, run_number, ev_id]
     var_evt_match: [run_number, ev_id]
-    var_training: [d_len, d_len_xy, norm_dl_xy, 
+    var_training: [[d_len, d_len_xy, norm_dl_xy, 
                    imp_par_xy, dca, sig_vert, delta_mass_KK, cos_PiKPhi_3, imp_par_prong0, imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, 
-                   nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, 
-                   nsigTPC_Pi_1, nsigTPC_K_1, nsigTOF_Pi_1, nsigTOF_K_1, 
-                   nsigTPC_Pi_2, nsigTPC_K_2, nsigTOF_Pi_2, nsigTOF_K_2]
+                   nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, nsigTPC_Pi_1, nsigTPC_K_1, nsigTOF_Pi_1, nsigTOF_K_1, 
+                   nsigTPC_Pi_2, nsigTPC_K_2, nsigTOF_Pi_2, nsigTOF_K_2],
+                   [d_len, d_len_xy, norm_dl_xy, 
+                   imp_par_xy, dca, sig_vert, delta_mass_KK, cos_PiKPhi_3, imp_par_prong0, imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, 
+                   nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, nsigTPC_Pi_1, nsigTPC_K_1, nsigTOF_Pi_1, nsigTOF_K_1, 
+                   nsigTPC_Pi_2, nsigTPC_K_2, nsigTOF_Pi_2, nsigTOF_K_2],
+                   [d_len, d_len_xy, norm_dl_xy, 
+                   imp_par_xy, dca, sig_vert, delta_mass_KK, cos_PiKPhi_3, imp_par_prong0, imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, 
+                   nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, nsigTPC_Pi_1, nsigTPC_K_1, nsigTOF_Pi_1, nsigTOF_K_1, 
+                   nsigTPC_Pi_2, nsigTPC_K_2, nsigTOF_Pi_2, nsigTOF_K_2],
+                   [d_len, d_len_xy, norm_dl_xy, 
+                   imp_par_xy, dca, sig_vert, delta_mass_KK, cos_PiKPhi_3, imp_par_prong0, imp_par_prong1, imp_par_prong2, max_norm_d0d0exp, 
+                   nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, nsigTPC_Pi_1, nsigTPC_K_1, nsigTOF_Pi_1, nsigTOF_K_1, 
+                   nsigTPC_Pi_2, nsigTPC_K_2, nsigTOF_Pi_2, nsigTOF_K_2],
+                   [d_len, d_len_xy, norm_dl_xy, 
+                   imp_par_xy, dca, sig_vert, delta_mass_KK, cos_PiKPhi_3, imp_par_prong0, imp_par_prong1, imp_par_prong2, max_norm_d0d0exp]]
+
     var_boundaries: [d_len_xy, cos_p_xy]
     var_correlation:
       - [d_len_xy]
@@ -191,8 +205,8 @@ Dspp:
     rnd_shuffle: 12
     rnd_splt: 12
     test_frac: 0.2
-    binmin: [1,2,4,8,12] #list of nbins
-    binmax: [2,4,8,12,24] #list of nbins
+    binmin: [1,2,4,6,8] #list of nbins
+    binmax: [2,4,6,8,24] #list of nbins
     mltype: BinaryClassification
     ncorescrossval: 10
     mlplot: /data/Derived/DskINT7HighMultwithJets/vAN-20190922_ROOT6-1/mlplot # to be removed
@@ -257,7 +271,7 @@ Dspp:
 
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,2,2,3,4] #list of pt nbins
+      binning_matching: [0,1,2,3,4,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
@@ -338,7 +352,7 @@ Dspp:
 
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,2,2,3,4] #list of pt nbins
+      binning_matching: [0,1,2,3,4,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
@@ -409,7 +423,7 @@ Dspp:
 
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,2,2,3,4] #list of pt nbins
+      binning_matching: [0,1,2,3,4,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
@@ -480,7 +494,7 @@ Dspp:
 
       sel_an_binmin: [2,4,5,6,8] #list of pt nbins
       sel_an_binmax: [4,5,6,8,12] #list of pt nbins
-      binning_matching: [1,2,2,2,3] #list of pt nbins
+      binning_matching: [1,2,2,3,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet)<0.5"
       evtsel: is_ev_rej==0
       triggersel: 
@@ -551,7 +565,7 @@ Dspp:
       
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,2,2,3,4] #list of pt nbins
+      binning_matching: [0,1,2,3,4,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
@@ -622,7 +636,7 @@ Dspp:
       
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,2,2,3,4] #list of pt nbins
+      binning_matching: [0,1,2,3,4,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
@@ -693,7 +707,7 @@ Dspp:
       
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,2,2,3,4] #list of pt nbins
+      binning_matching: [0,1,2,3,4,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 

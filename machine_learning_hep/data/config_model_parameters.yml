@@ -53,7 +53,7 @@ BinaryClassification:
       colsample_bynode: 1
       random_state: 0
       tree_method: 'hist'
-
+      #      early_stopping_rounds: 10
 Regression:
 
   scikit:
