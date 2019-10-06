@@ -12,16 +12,16 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     Int_t minBCrange=3;
     Int_t maxBCrange=5;
     Int_t nBCranges=maxBCrange-minBCrange+1;
-    TString confCase[nConfigCases]={"FixedSig","FixedSigUp","FixedSigDw","FreeSig","FixedMeanFreeSig","FixedMeanFixedSig"};
+    TString confCase[nConfigCases]={"FixedSigFreeMean","FixedSigUp","FixedSigDw","FreeSigFreeMean","FreeSigFixedMean","FixedSigFixedMean"};
     TString bkgFunc[nBackFuncCases]={"Expo","Lin","Pol2","Pol3","Pol4","Pol5"};
     
     const Int_t totCases=nConfigCases*nBackFuncCases;
     
     // 0 => not used; 1 => used for fit; 2 => used also for bin count
-    Int_t mask[totCases]={0,0,0,0,0,0,   // fixed sigma (Expo, Lin, Pol2,Pol3,Pol4)
+    Int_t mask[totCases]={0,0,2,0,0,0,   // fixed sigma, free mean (Expo, Lin, Pol2,Pol3,Pol4)
                           0,0,0,0,0,0,   // fixed sigma upper
                           0,0,0,0,0,0,   // fixed sigma lower
-                          0,0,0,0,0,0,   // free sigma, free mean
+                          0,0,2,0,0,0,   // free sigma, free mean
                           0,0,0,0,0,0,   // free sigma, fixed mean
                           0,0,0,0,0,0,   // fixed mean, fixed sigma
     };
@@ -30,7 +30,6 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
         mask[i] = (usedBkgs[i] > 0) ? 2 : 0;
         mask[18+i] = (usedBkgs[i] > 0) ? 2 : 0;
     }
-
     
     TH1F* histo6[totCases];
     cout << "nconfigcases " << nConfigCases << "\t nbackgfunccases " << nBackFuncCases << endl;
@@ -53,7 +52,7 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     TLatex **tlabels=new TLatex*[totCases+1];
 
     for(Int_t nc=0; nc<totCases; nc++) {
-        if(mask[nc] == 0 || !histo6) {
+        if(mask[nc] == 0 || !histo6[nc]) {
             mask[nc]=0;
             continue;
         }
@@ -62,11 +61,11 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
         last[nc]=totTrials;
         ++totHistos;
 
-        printf("  %d) %s  -- %d \n",ja,histo6[ja]->GetName(),first[ja]);
-        vlines[ja]=new TLine(last[ja],0.,last[ja],50000.);
-        vlines[ja]->SetLineColor(kMagenta+2);
-        vlines[ja]->SetLineStyle(2);
-        TString ttt=histo6[ja]->GetName();
+        printf("  %d) %s  -- %d \n",nc,histo6[nc]->GetName(),first[nc]);
+        vlines[nc]=new TLine(last[nc],0.,last[nc],50000.);
+        vlines[nc]->SetLineColor(kMagenta+2);
+        vlines[nc]->SetLineStyle(2);
+        TString ttt=histo6[nc]->GetName();
         ttt.ReplaceAll("hRawYieldTrial","");
         if(ttt.Contains("FixedMean")) ttt="Fix #mu";
         if(ttt.Contains("FixedSp20")) ttt="#sigma+";
@@ -76,9 +75,9 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
         if(bkgTreat != "" && ttt.Contains(bkgTreat.Data())) {
             ttt.ReplaceAll(bkgTreat.Data(),"");
         }
-        tlabels[ja]=new TLatex(first[ja]+0.02*totTrials,10,ttt.Data());
-        tlabels[ja]->SetTextColor(kMagenta+2);
-        tlabels[ja]->SetTextColor(kMagenta+2);
+        tlabels[nc]=new TLatex(first[nc]+0.02*totTrials,10,ttt.Data());
+        tlabels[nc]->SetTextColor(kMagenta+2);
+        tlabels[nc]->SetTextColor(kMagenta+2);
 
         if(mask[nc]==2) {
             TString hbcname=histo6[nc]->GetName();
@@ -150,8 +149,6 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     for(Int_t nc=0; nc<totCases; nc++){
         if(mask[nc]){
             Printf("%d \t %d \t %d \t %d \t %d",nc,first[nc],last[nc],firstBC0[nc],lastBC0[nc]);
-            // NOTE Not use at the moment
-            /*
             TString hmeanname=histo6[nc]->GetName();
             hmeanname.ReplaceAll("RawYield","Mean");
             TH1F* hmeant6=(TH1F*)inputFile->Get(hmeanname.Data());
@@ -163,7 +160,6 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
             TString hchi2name=histo6[nc]->GetName();
             hchi2name.ReplaceAll("RawYield","Chi2");
             TH1F* hchi2t6=(TH1F*)inputFile->Get(hchi2name.Data());
-            */
             
             TString hbcname=histo6[nc]->GetName();
             hbcname.ReplaceAll("Trial","TrialBinC0");
@@ -173,8 +169,6 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
                 //cout<< " ry " << ry <<endl;
                 Double_t ery=histo6[nc]->GetBinError(ib);
                 
-                // NOTE Not use at the moment
-                /*
                 Double_t pos=hmeant6->GetBinContent(ib);
                 Double_t epos=hmeant6->GetBinError(ib);
                 
@@ -182,7 +176,6 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
                 Double_t esig=hsigmat6->GetBinError(ib);
                 
                 Double_t chi2=hchi2t6->GetBinContent(ib);
-                */
 
                 // Fill 
                 if(ry>0.001 && ery>(0.01*ry) && ery<(0.5*ry) && chi2<chi2Cut){

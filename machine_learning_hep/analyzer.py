@@ -145,15 +145,8 @@ class Analyzer:
         self.f_evtnorm = os.path.join(self.d_resultsallpdata, "correctionsweights.root")
 
         # Systematics
-        syst_dict = datap["analysis"][self.typean].get("systematics", None)
-        self.do_syst = syst_dict is not None
-        self.p_max_chisquare_ndf_syst = syst_dict["max_chisquare_ndf"] \
-                if syst_dict is not None else None
-        self.p_rebin_syst = syst_dict["rebin"] if syst_dict is not None else None
-        self.p_fit_ranges_low_syst = syst_dict["massmin"] if syst_dict is not None else None
-        self.p_fit_ranges_up_syst = syst_dict["massmax"] if syst_dict is not None else None
-        self.p_bincount_sigma_syst = syst_dict["bincount_sigma"] if syst_dict is not None else None
-        self.p_bkg_funcs_syst = syst_dict["bkg_funcs"] if syst_dict is not None else None
+        self.mt_syst_dict = datap["analysis"][self.typean].get("systematics", None)
+        self.d_mt_results_path = os.path.join(self.d_resultsallpdata, "multi_trial")
 
         self.p_indexhpt = datap["analysis"]["indexhptspectrum"]
         self.p_fd_method = datap["analysis"]["fd_method"]
@@ -798,18 +791,28 @@ class Analyzer:
 
     # pylint: disable=too-many-locals, too-many-nested-blocks, too-many-branches
     def yield_syst(self):
-        if not self.do_syst:
+        if self.mt_syst_dict is None:
             self.logger.warning("Could not find parameters for doing systemtics. Skip...")
             return
         # Enable ROOT batch mode and reset in the end
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
 
+        # Load configurable multi trial variations
+        rebin = self.mt_syst_dict.get("rebin", None)
+        fit_ranges_low = self.mt_syst_dict.get("massmin", None)
+        fit_ranges_up = self.mt_syst_dict.get("massmax", None)
+        bincount_sigma = self.mt_syst_dict.get("bincount_sigma", None)
+        bkg_funcs = self.mt_syst_dict.get("bkg_funcs", None)
+        if not bkg_funcs:
+            self.logger.error("You need to choose at least one background function for " \
+                              "the multi trial")
+            return
+
         from ROOT import AliHFInvMassMultiTrialFit
 
-        mt_results_path = os.path.join(self.d_resultsallpdata, "multi_trial")
-        if not os.path.exists(mt_results_path):
-            os.makedirs(mt_results_path)
+        if not os.path.exists(self.d_mt_results_path):
+            os.makedirs(self.d_mt_results_path)
 
         lfile = TFile.Open(self.n_filemass, "READ")
         lfile_mc = TFile.Open(self.n_filemass_mc, "READ")
@@ -850,11 +853,7 @@ class Analyzer:
                 # That is not the MC sigma but the one from the nominal fit
                 multi_trial.SetSigmaGaussMC(mass_fitter_nominal.GetSigma())
 
-                # Set background functions to test
-                if not self.p_bkg_funcs_syst:
-                    self.logger.fatal("You need to choose at least one background function for " \
-                                      "the multi trial")
-                for bkg in self.p_bkg_funcs_syst:
+                for bkg in bkg_funcs:
                     if bkg == "kExpo":
                         multi_trial.SetUseExpoBackground(True)
                         continue
@@ -876,16 +875,21 @@ class Analyzer:
 
                     self.logger.fatal("Unknown background %s for multi trial", bkg)
 
-                if self.p_rebin_syst:
-                    rebin_steps = array("i", self.p_rebin_syst)
-                    multi_trial.ConfigureRebinSteps(len(self.p_rebin_syst), rebin_steps)
-                if self.p_fit_ranges_low_syst:
-                    low_lim_steps = array("d", self.p_fit_ranges_low_syst)
-                    multi_trial.ConfigureLowLimFitSteps(len(self.p_fit_ranges_low_syst),
+                if rebin:
+                    rebin_steps = array("i", rebin)
+                    multi_trial.ConfigureRebinSteps(len(rebin), rebin_steps)
+                if fit_ranges_low:
+                    low_lim_steps = array("d", fit_ranges_low)
+                    multi_trial.ConfigureLowLimFitSteps(len(fit_ranges_low),
                                                         low_lim_steps)
-                if self.p_fit_ranges_up_syst:
-                    up_lim_steps = array("d", self.p_fit_ranges_up_syst)
-                    multi_trial.ConfigureUpLimFitSteps(len(self.p_fit_ranges_up_syst), up_lim_steps)
+                if fit_ranges_up:
+                    up_lim_steps = array("d", fit_ranges_up)
+                    multi_trial.ConfigureUpLimFitSteps(len(fit_ranges_up), up_lim_steps)
+
+                if bincount_sigma:
+                    multi_trial.ConfigurenSigmaBinCSteps(len(bincount_sigma),
+                                                         array("d", bincount_sigma))
+
                 multi_trial.SetSaveBkgValue()
 
                 if h_invmass_mc_refl is not None:
@@ -898,7 +902,7 @@ class Analyzer:
 
                 success = multi_trial.DoMultiTrials(h_invmass)
                 if success:
-                    mt_filename = self.make_file_path(mt_results_path, "multi_trial",
+                    mt_filename = self.make_file_path(self.d_mt_results_path, "multi_trial",
                                                       "root", None, suffix_write)
                     multi_trial.SaveToRoot(mt_filename)
                 # Just make sure it's kept until the workflow is done
@@ -911,10 +915,14 @@ class Analyzer:
 
     def plot_multi_trial(self):
 
-        mt_results_path = os.path.join(self.d_resultsallpdata, "multi_trial")
-        if not os.path.exists(mt_results_path):
-            self.logger.error("Could not find multi trial results directory %s. Skip...", mt_results_path)
+        if not os.path.exists(self.d_mt_results_path):
+            self.logger.error("Could not find multi trial results directory %s. Skip...",
+                              self.d_mt_results_path)
             return
+
+        # Enable ROOT batch mode and reset in the end
+        tmp_is_root_batch = gROOT.IsBatch()
+        gROOT.SetBatch(True)
 
         gROOT.LoadMacro("PlotMultiTrial.C")
         from ROOT import PlotMultiTrial
@@ -924,7 +932,7 @@ class Analyzer:
         func_file = TFile.Open(func_filename, "READ")
 
         # Some derived values from multi trial
-        mt_derived_filename = self.make_file_path(mt_results_path, "multi_trial_summary",
+        mt_derived_filename = self.make_file_path(self.d_mt_results_path, "multi_trial_summary",
                                                   "root", None, [self.case, self.typean])
         mt_derived_file = TFile.Open(mt_derived_filename, "RECREATE")
 
@@ -950,23 +958,29 @@ class Analyzer:
                 sigma_fit = mass_fitter.GetSigma()
                 chisquare_fit = mass_fitter.GetChiSquare()
 
-                mt_filename = self.make_file_path(mt_results_path, "multi_trial",
+                mt_filename = self.make_file_path(self.d_mt_results_path, "multi_trial",
                                                   "root", None, suffix_write)
+                self.logger.info("Process file %s", mt_filename)
                 title = f"{self.lpt_finbinmin[ipt]} GeV/c < {self.v_var_binning} < " \
                         f"{self.lpt_finbinmax[ipt]} GeV/c, {self.lvar2_binmin[imult]} < " \
                         f"{self.v_var2_binning} < {self.lvar2_binmax[imult]}"
                 derived_dir = mt_derived_file.mkdir(suffix)
 
-                used_bkgs = array("b", ["kExpo" in self.p_bkg_funcs_syst,
-                                        "kLin" in self.p_bkg_funcs_syst,
-                                         "Pol2" in self.p_bkg_funcs_syst,
-                                         "Pol3" in self.p_bkg_funcs_syst,
-                                         "Pol4" in self.p_bkg_funcs_syst,
-                                         "Pol5" in self.p_bkg_funcs_syst])
+                bkg_funcs = self.mt_syst_dict.get("bkg_funcs", None)
+                used_bkgs = array("b", ["kExpo" in bkg_funcs,
+                                        "kLin" in bkg_funcs,
+                                        "Pol2" in bkg_funcs,
+                                        "Pol3" in bkg_funcs,
+                                        "Pol4" in bkg_funcs,
+                                        "Pol5" in bkg_funcs])
 
+                max_chisquare_ndf = self.mt_syst_dict.get("max_chisquare_ndf", 2.)
                 PlotMultiTrial(mt_filename, rawYield, mean_fit, sigma_fit, chisquare_fit,
-                               self.p_max_chisquare_ndf_syst, used_bkgs, mt_results_path,
+                               max_chisquare_ndf, used_bkgs, self.d_mt_results_path,
                                suffix, title, derived_dir)
+
+        # Reset to former mode
+        gROOT.SetBatch(tmp_is_root_batch)
 
     def efficiency(self):
         self.loadstyle()
