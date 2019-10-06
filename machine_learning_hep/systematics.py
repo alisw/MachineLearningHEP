@@ -151,6 +151,7 @@ class Systematics:
         self.apply_weights = datap["analysis"][self.typean]["triggersel"]["weighttrig"]
         self.p_bineff = datap["analysis"][self.typean]["usesinglebineff"]
         self.p_sigmav0 = datap["analysis"]["sigmav0"]
+        self.p_fprompt_from_mb = datap["analysis"][self.typean]["fprompt_from_mb"]
 
         self.f_evtnorm = os.path.join(self.d_results, "correctionsweights.root")
         self.p_indexhpt = datap["analysis"]["indexhptspectrum"]
@@ -624,7 +625,8 @@ class Systematics:
         gROOT.SetBatch(True)
         self.loadstyle()
         gROOT.LoadMacro("HFPtSpectrum.C")
-        from ROOT import HFPtSpectrum
+        gROOT.LoadMacro("HFPtSpectrum2.C")
+        from ROOT import HFPtSpectrum, HFPtSpectrum2
 
         ntrials = 2 * self.p_ncutvar + 1
         for icv in range(ntrials):
@@ -634,6 +636,7 @@ class Systematics:
             yield_filename = self.make_file_path(self.d_results_cv, self.yields_filename,
                                                  "root", None, [self.typean, str(icv)])
 
+            filecrossmb = ""
             for imult in range(len(self.lvar2_binmin)):
                 bineff = -1
                 if self.p_bineff is None:
@@ -654,12 +657,23 @@ class Systematics:
                              self.v_var2_binning, self.lvar2_binmin[imult], \
                              self.lvar2_binmax[imult], self.apply_weights)
                 print(self.apply_weights, self.lvar2_binmin[imult], self.lvar2_binmax[imult], norm)
-
+                self.logger.info("Not full normalisation is applied. Result may differ from central.")
                 #Keep it simple, don't apply full normalisation
-                HFPtSpectrum(self.p_indexhpt, \
-                    "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
-                    fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
-                    fileoutcrossmult, norm, self.p_sigmav0 * 1e12, self.p_fd_method, self.p_cctype)
+
+                #Keep it simple, don't correct HM with MB fprompt, but with HM mult-int
+                if self.p_fprompt_from_mb is None or imult == 0 or self.p_fd_method != 2:
+                    HFPtSpectrum(self.p_indexhpt, \
+                     "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
+                     fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
+                     fileoutcrossmult, norm, self.p_sigmav0 * 1e12, self.p_fd_method, self.p_cctype)
+                    filecrossmb = fileoutcrossmult
+                else:
+                    self.logger.info("Calculating spectra using fPrompt from mult-int. "\
+                                         "Assuming mult-int is bin 0: %s", filecrossmb)
+                    self.logger.info("HM mult classes take fprompt from HM mult-integrated.  Result may " \
+                                     "differ from central where MB mult-int is taken.")
+                    HFPtSpectrum2(filecrossmb, fileouteff, namehistoeffprompt, namehistoefffeed, \
+                                  yield_filename, nameyield, fileoutcrossmult, norm, self.p_sigmav0 * 1e12)
 
             fileoutcrosstot = TFile.Open(self.make_file_path(self.d_results_cv, self.cross_filename, \
                                                              "root", None, [self.typean, "cutvar", str(icv), \
