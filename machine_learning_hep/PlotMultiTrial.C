@@ -4,7 +4,7 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     // Extract the trials
     TString esesel(saveDir);
     TString bkgTreat("");
-    TFile* fil6=new TFile(filepath, "READ");
+    TFile* inputFile=new TFile(filepath, "READ");
     
     const Int_t nBackFuncCases=6;
     const Int_t nConfigCases=6;
@@ -17,8 +17,8 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     
     const Int_t totCases=nConfigCases*nBackFuncCases;
     
-    // 0= not used; 1 = used for fit; 2= used also for bin count0, 3=use also bin count1, 4=use both binc
-    Int_t mask[totCases]={0,0,4,0,0,0,   // fixed sigma (Expo, Lin, Pol2,Pol3,Pol4)
+    // 0 => not used; 1 => used for fit; 2 => used also for bin count
+    Int_t mask[totCases]={0,0,0,0,0,0,   // fixed sigma (Expo, Lin, Pol2,Pol3,Pol4)
                           0,0,0,0,0,0,   // fixed sigma upper
                           0,0,0,0,0,0,   // fixed sigma lower
                           0,0,0,0,0,0,   // free sigma, free mean
@@ -26,11 +26,10 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
                           0,0,0,0,0,0,   // fixed mean, fixed sigma
     };
     // Enable only the background cases we ran the multi trial with
-    /*
     for(Int_t i = 0; i < 6; i++) {
-        mask[i] = (usedBkgs[i] > 0) ? 4 : 0;
-        mask[18+i] = (usedBkgs[i] > 0) ? 4 : 0;
-    }*/
+        mask[i] = (usedBkgs[i] > 0) ? 2 : 0;
+        mask[18+i] = (usedBkgs[i] > 0) ? 2 : 0;
+    }
 
     
     TH1F* histo6[totCases];
@@ -38,7 +37,7 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     Int_t kjh=0;
     for(Int_t iConf=0; iConf<nConfigCases; iConf++){
         for(Int_t iType=0; iType<nBackFuncCases; iType++){
-            histo6[kjh++]=(TH1F*)fil6->Get(Form("hRawYieldTrial%s%s%s",bkgFunc[iType].Data(),confCase[iConf].Data(),bkgTreat.Data()));
+            histo6[kjh++]=(TH1F*)inputFile->Get(Form("hRawYieldTrial%s%s%s",bkgFunc[iType].Data(),confCase[iConf].Data(),bkgTreat.Data()));
             if (!histo6[kjh]) cout << "Histo6 " << Form("hRawYieldTrial%s%s%s",bkgFunc[iType].Data(),confCase[iConf].Data(),bkgTreat.Data()) << " not found " << endl;
         }
     }
@@ -50,68 +49,53 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     Int_t last[totCases];
     Int_t firstBC0[totCases];
     Int_t lastBC0[totCases];
-    Double_t minyd=9e9;
-    Double_t maxyd=0;
-    for(Int_t nc=0; nc<totCases; nc++){
-        if(mask[nc]){
-            //change all histo1 to histo6
-            if(histo6[nc]){
-                first[nc]=totTrials;
-                totTrials+=histo6[nc]->GetNbinsX();
-                last[nc]=totTrials;
-                Double_t thisMin=histo6[nc]->GetBinContent(histo6[nc]->GetMinimumBin());
-                Double_t thisMax=histo6[nc]->GetBinContent(histo6[nc]->GetMaximumBin());
-                if(thisMin<minyd) minyd=thisMin;
-                if(thisMax>maxyd) maxyd=thisMax;
-                ++totHistos;
-                if(mask[nc]==2 || mask[nc]==4){
-                    TString hbcname=histo6[nc]->GetName();
-                    //hbcname.ReplaceAll("Trial","TrialBinC0");
-                    hbcname.ReplaceAll("Trial","TrialBinC0");
-                    cout<< " name bc " << hbcname.Data() << endl;
-                    TH2F* hbc2dt=(TH2F*)fil6->Get(hbcname.Data());
-                    Int_t bnx,bny,bnz;
-                    hbc2dt->GetMinimumBin(bnx,bny,bnz);
-                    thisMin=hbc2dt->GetBinContent(bnx,bny);
-                    hbc2dt->GetMaximumBin(bnx,bny,bnz);
-                    thisMax=hbc2dt->GetBinContent(bnx,bny);
-                    if(thisMin<minyd) minyd=thisMin;
-                    if(thisMax>maxyd) maxyd=thisMax;
-                    firstBC0[nc]=totTrialsBC0;
-                    totTrialsBC0+=hbc2dt->GetNbinsX();
-                    lastBC0[nc]=totTrialsBC0;
-                }
-            }else{
-                mask[nc]=0;
-            }
-        }
-    }
     TLine **vlines=new TLine*[totCases];
     TLatex **tlabels=new TLatex*[totCases+1];
-    
-    printf("Histos merged = %d    totTrials=%d\n",totHistos,totTrials);
-    for(Int_t ja=0; ja<totCases; ja++){
-        if(mask[ja]){
-            printf("  %d) %s  -- %d \n",ja,histo6[ja]->GetName(),first[ja]);
-            vlines[ja]=new TLine(last[ja],0.,last[ja],50000.);
-            vlines[ja]->SetLineColor(kMagenta+2);
-            vlines[ja]->SetLineStyle(2);
-            TString ttt=histo6[ja]->GetName();
-            ttt.ReplaceAll("hRawYieldTrial","");
-            if(ttt.Contains("FixedMean")) ttt="Fix #mu";
-            if(ttt.Contains("FixedSp20")) ttt="#sigma+";
-            if(ttt.Contains("FixedSm20")) ttt="#sigma-";
-            if(ttt.Contains("FreeS")) ttt="Free #sigma";
-            ttt.ReplaceAll("FixedS","");
-            if(bkgTreat!="" && ttt.Contains(bkgTreat.Data())) ttt.ReplaceAll(bkgTreat.Data(),"");
-            tlabels[ja]=new TLatex(first[ja]+0.02*totTrials,10,ttt.Data());
-            tlabels[ja]->SetTextColor(kMagenta+2);
-            tlabels[ja]->SetTextColor(kMagenta+2);
+
+    for(Int_t nc=0; nc<totCases; nc++) {
+        if(mask[nc] == 0 || !histo6) {
+            mask[nc]=0;
+            continue;
+        }
+        first[nc]=totTrials;
+        totTrials+=histo6[nc]->GetNbinsX();
+        last[nc]=totTrials;
+        ++totHistos;
+
+        printf("  %d) %s  -- %d \n",ja,histo6[ja]->GetName(),first[ja]);
+        vlines[ja]=new TLine(last[ja],0.,last[ja],50000.);
+        vlines[ja]->SetLineColor(kMagenta+2);
+        vlines[ja]->SetLineStyle(2);
+        TString ttt=histo6[ja]->GetName();
+        ttt.ReplaceAll("hRawYieldTrial","");
+        if(ttt.Contains("FixedMean")) ttt="Fix #mu";
+        if(ttt.Contains("FixedSp20")) ttt="#sigma+";
+        if(ttt.Contains("FixedSm20")) ttt="#sigma-";
+        if(ttt.Contains("FreeS")) ttt="Free #sigma";
+        ttt.ReplaceAll("FixedS","");
+        if(bkgTreat != "" && ttt.Contains(bkgTreat.Data())) {
+            ttt.ReplaceAll(bkgTreat.Data(),"");
+        }
+        tlabels[ja]=new TLatex(first[ja]+0.02*totTrials,10,ttt.Data());
+        tlabels[ja]->SetTextColor(kMagenta+2);
+        tlabels[ja]->SetTextColor(kMagenta+2);
+
+        if(mask[nc]==2) {
+            TString hbcname=histo6[nc]->GetName();
+            hbcname.ReplaceAll("Trial","TrialBinC0");
+            cout<< " name bc " << hbcname.Data() << endl;
+            TH2F* hbc2dt=(TH2F*)inputFile->Get(hbcname.Data());
+            firstBC0[nc]=totTrialsBC0;
+            totTrialsBC0+=hbc2dt->GetNbinsX();
+            lastBC0[nc]=totTrialsBC0;
         }
     }
+    
     tlabels[totCases]=new TLatex(totTrials+30,10,"BinCnt");
     tlabels[totCases]->SetTextColor(kMagenta+2);
     tlabels[totCases]->SetTextColor(kMagenta+2);
+    
+    printf("Histos merged = %d    totTrials=%d\n",totHistos,totTrials);
     
     Printf("tottrials \t tottrialsBC0 \t  nBC ranges \t ");
     Printf("%d \t %d \t %d",totTrials,totTrialsBC0,nBCranges);
@@ -146,14 +130,13 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     }
     Double_t upperEdgeYieldHistos = rawYieldRef + 1.5 * rawYieldRef;
     TH1F* hRawYieldDistAll=new TH1F("hRawYieldDistAll","  ; raw yield",200,lowerEdgeYieldHistos,upperEdgeYieldHistos);
-    //hRawYieldDistAll->GetXaxis()->SetRangeUser(0.2,0.6);
     hRawYieldDistAll->SetFillStyle(3003);
     hRawYieldDistAll->SetFillColor(kBlue+1);
     TH1F* hRawYieldDistAllBC0=new TH1F("hRawYieldDistAllBC0","  ; raw yield",200,lowerEdgeYieldHistos,upperEdgeYieldHistos);
-    //hRawYieldDistAllBC0->GetXaxis()->SetRangeUser(0.2,0.6);
     hRawYieldDistAllBC0->SetFillStyle(3004);
-    TH1F* hStatErrDistAll=new TH1F("hStatErrDistAll","  ; Stat Unc on Yield",300,0,10000);
-    TH1F* hRelStatErrDistAll=new TH1F("hRelStatErrDistAll","  ; Rel Stat Unc on Yield",100,0.,1.);
+    // NOTE Note uses at the moment
+    //TH1F* hStatErrDistAll=new TH1F("hStatErrDistAll","  ; Stat Unc on Yield",300,0,10000);
+    //TH1F* hRelStatErrDistAll=new TH1F("hRelStatErrDistAll","  ; Rel Stat Unc on Yield",100,0.,1.);
     
     Double_t minYield=999999.;
     Double_t maxYield=0.;
@@ -167,27 +150,31 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     for(Int_t nc=0; nc<totCases; nc++){
         if(mask[nc]){
             Printf("%d \t %d \t %d \t %d \t %d",nc,first[nc],last[nc],firstBC0[nc],lastBC0[nc]);
-            
+            // NOTE Not use at the moment
+            /*
             TString hmeanname=histo6[nc]->GetName();
             hmeanname.ReplaceAll("RawYield","Mean");
-            TH1F* hmeant6=(TH1F*)fil6->Get(hmeanname.Data());
+            TH1F* hmeant6=(TH1F*)inputFile->Get(hmeanname.Data());
             
             TString hsigmaname=histo6[nc]->GetName();
             hsigmaname.ReplaceAll("RawYield","Sigma");
-            TH1F* hsigmat6=(TH1F*)fil6->Get(hsigmaname.Data());
+            TH1F* hsigmat6=(TH1F*)inputFile->Get(hsigmaname.Data());
             
             TString hchi2name=histo6[nc]->GetName();
             hchi2name.ReplaceAll("RawYield","Chi2");
-            TH1F* hchi2t6=(TH1F*)fil6->Get(hchi2name.Data());
+            TH1F* hchi2t6=(TH1F*)inputFile->Get(hchi2name.Data());
+            */
             
             TString hbcname=histo6[nc]->GetName();
             hbcname.ReplaceAll("Trial","TrialBinC0");
-            TH2F* hbc2dt060=(TH2F*)fil6->Get(hbcname.Data());
+            TH2F* hbc2dt060=(TH2F*)inputFile->Get(hbcname.Data());
             for(Int_t ib=1; ib<=histo6[nc]->GetNbinsX(); ib++){
                 Double_t ry=histo6[nc]->GetBinContent(ib);
                 //cout<< " ry " << ry <<endl;
                 Double_t ery=histo6[nc]->GetBinError(ib);
                 
+                // NOTE Not use at the moment
+                /*
                 Double_t pos=hmeant6->GetBinContent(ib);
                 Double_t epos=hmeant6->GetBinError(ib);
                 
@@ -195,17 +182,18 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
                 Double_t esig=hsigmat6->GetBinError(ib);
                 
                 Double_t chi2=hchi2t6->GetBinContent(ib);
-                
+                */
 
                 // Fill 
                 if(ry>0.001 && ery>(0.01*ry) && ery<(0.5*ry) && chi2<chi2Cut){
                 // This also throws away some chi2 == 0
                 //if(chi2<chi2Cut && chi2>0){
                     hRawYieldDistAll->Fill(ry);
-                    hStatErrDistAll->Fill(ery);
-                    hRelStatErrDistAll->Fill(ery/ry);
                     hRawYieldAll->SetBinContent(first[nc]+ib,ry);
                     hRawYieldAll->SetBinError(first[nc]+ib,ery);
+                    // NOTE Not used at the moment
+                    //hStatErrDistAll->Fill(ery);
+                    //hRelStatErrDistAll->Fill(ery/ry);
                     if(ry<minYield) minYield=ry;
                     if(ry>maxYield) maxYield=ry;
                     wei[0]=1.;
@@ -220,12 +208,11 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
                     counts+=1.;
                     hSigmaAll6->SetBinContent(first[nc]+ib,sig);
                     hSigmaAll6->SetBinError(first[nc]+ib,esig);
-                    std::cerr << "############ MEAN " << pos << std::endl;
                     hMeanAll6->SetBinContent(first[nc]+ib,pos);
                     hMeanAll6->SetBinError(first[nc]+ib,epos);
                     hChi2All6->SetBinContent(first[nc]+ib,chi2);
                     hChi2All6->SetBinError(first[nc]+ib,0.000001);
-                    if(mask[nc]==2 || mask[nc]==4){
+                    if(mask[nc]==2){
                         for(Int_t iy=minBCrange; iy<=maxBCrange;iy++){
                             Double_t bc=hbc2dt060->GetBinContent(ib,iy);
                             Double_t ebc=hbc2dt060->GetBinError(ib,iy);
@@ -528,6 +515,6 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     //   call->Print(callname);
     //   callname.ReplaceAll(".root",".png");
     //   call->Print(callname);
-    fil6->Close();
+    inputFile->Close();
 }
 
