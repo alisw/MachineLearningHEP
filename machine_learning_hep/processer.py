@@ -305,7 +305,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 print("Model file not present in bin %d" % ipt)
             mod = pickle.load(openfile(self.lpt_model[ipt], 'rb'))
             dfrecoskml = apply("BinaryClassification", [self.p_modelname], [mod],
-                               dfrecosk, self.v_train)
+                               dfrecosk, self.v_train[ipt])
             probvar = "y_test_prob" + self.p_modelname
             dfrecoskml = dfrecoskml.loc[dfrecoskml[probvar] > self.lpt_probcutpre[ipt]]
             pickle.dump(dfrecoskml, openfile(self.mptfiles_recoskmldec[ipt][file_index], "wb"),

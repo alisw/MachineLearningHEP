@@ -82,10 +82,11 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     docorrelation = data_config["ml_study"]['docorrelation']
     dotraining = data_config["ml_study"]['dotraining']
     dotesting = data_config["ml_study"]['dotesting']
-    doapplytodatamc = data_config["ml_study"]['applytodatamc']
+    doapplytodatamc = data_config["ml_study"]['doapplytodatamc']
     docrossvalidation = data_config["ml_study"]['docrossvalidation']
     dolearningcurve = data_config["ml_study"]['dolearningcurve']
     doroc = data_config["ml_study"]['doroc']
+    doroctraintest = data_config["ml_study"]['doroctraintest']
     doboundary = data_config["ml_study"]['doboundary']
     doimportance = data_config["ml_study"]['doimportance']
     dogridsearch = data_config["ml_study"]['dogridsearch']
@@ -150,6 +151,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     binmaxarray = data_param[case]["ml"]["binmax"]
     raahp = data_param[case]["ml"]["opt"]["raahp"]
     mltype = data_param[case]["ml"]["mltype"]
+    training_vars = data_param[case]["variables"]["var_training"]
 
     mlout = data_param[case]["ml"]["mlout"]
     mlplot = data_param[case]["ml"]["mlplot"]
@@ -327,7 +329,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         for binmin, binmax in zip(binminarray, binmaxarray):
             myopt = Optimiser(data_param[case], case, typean,
                               data_model[mltype], grid_param, binmin, binmax,
-                              raahp[index])
+                              raahp[index], training_vars[index])
             if docorrelation is True:
                 myopt.do_corr()
             if dotraining is True:
@@ -342,6 +344,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
                 myopt.do_learningcurve()
             if doroc is True:
                 myopt.do_roc()
+            if doroctraintest is True:
+                myopt.do_roc_train_test()
             if doimportance is True:
                 myopt.do_importance()
             if dogridsearch is True:

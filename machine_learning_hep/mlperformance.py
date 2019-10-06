@@ -16,14 +16,15 @@
 Methods to: model performance evaluation
 """
 from io import BytesIO
+import pickle
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sn
-from sklearn.model_selection import cross_val_score, cross_val_predict, \
-    train_test_split, StratifiedKFold
-from sklearn.metrics import roc_curve, auc, confusion_matrix, precision_recall_curve, \
-    mean_squared_error
+from sklearn.model_selection import cross_val_score, cross_val_predict, train_test_split
+from sklearn.model_selection import StratifiedKFold
+from sklearn.metrics import roc_curve, auc, confusion_matrix, precision_recall_curve
+from sklearn.metrics import mean_squared_error
 
 
 def cross_validation_mse(names_, classifiers_, x_train, y_train, cv_, ncores):
@@ -321,3 +322,29 @@ def plot_overtraining(names_, classifiers_, suffix_, folder, \
         img_overtrain_array += img_overtrain
         plt.clf()
     return img_overtrain_array
+
+def roc_train_test(names, classifiers, x_train, y_train, x_test, y_test, suffix, folder):
+    fig = plt.figure(figsize=(20, 15))
+
+    for name, clf in zip(names, classifiers):
+        y_train_pred = clf.predict_proba(x_train)[:, 1]
+        y_test_pred = clf.predict_proba(x_test)[:, 1]
+        fpr_train, tpr_train, _ = roc_curve(y_train, y_train_pred)
+        fpr_test, tpr_test, _ = roc_curve(y_test, y_test_pred)
+        roc_auc_train = auc(fpr_train, tpr_train)
+        roc_auc_test = auc(fpr_test, tpr_test)
+        train_line = plt.plot(fpr_train, tpr_train, lw=3, alpha=0.4,
+                              label=f'ROC {name} - Train set (AUC = {roc_auc_train:.4f})')
+        plt.plot(fpr_test, tpr_test, lw=3, alpha=0.8, c=train_line[0].get_color(),
+                 label=f'ROC {name} - Test set (AUC = {roc_auc_test:.4f})')
+
+    plt.xlim([-0.05, 1.05])
+    plt.ylim([-0.05, 1.05])
+    plt.xlabel('False Positive Rate', fontsize=20)
+    plt.ylabel('True Positive Rate', fontsize=20)
+    plt.legend(loc='lower right', prop={'size': 18})
+    plot_name = f'{folder}/ROCtraintest{suffix}.png'
+    fig.savefig(plot_name)
+    plot_name = plot_name.replace('png', 'pickle')
+    with open(plot_name, 'wb') as out:
+        pickle.dump(fig, out)

@@ -33,6 +33,7 @@ from machine_learning_hep.models import fit, savemodels, test, apply, decisionbo
 from machine_learning_hep.root import write_tree
 from machine_learning_hep.mlperformance import cross_validation_mse, plot_cross_validation_mse
 from machine_learning_hep.mlperformance import plot_learning_curves, precision_recall
+from machine_learning_hep.mlperformance import roc_train_test
 from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perform_plot_gridsearch
 from machine_learning_hep.models import importanceplotall
 from machine_learning_hep.logger import get_logger
@@ -45,7 +46,7 @@ class Optimiser:
     species = "optimiser"
 
     def __init__(self, data_param, case, typean, model_config, grid_config, binmin,
-                 binmax, raahp):
+                 binmax, raahp, training_var):
 
         self.logger = get_logger()
 
@@ -76,7 +77,7 @@ class Optimiser:
         self.f_reco_appliedmc = os.path.join(self.dirmlout, self.n_reco_appliedmc)
         #variables
         self.v_all = data_param["variables"]["var_all"]
-        self.v_train = data_param["variables"]["var_training"]
+        self.v_train = training_var
         self.v_bound = data_param["variables"]["var_boundaries"]
         self.v_sig = data_param["variables"]["var_signal"]
         self.v_invmass = data_param["variables"]["var_inv_mass"]
@@ -170,6 +171,8 @@ class Optimiser:
                 self.f_reco_applieddata.replace(".pkl", "%s.pkl" % self.s_suffix)
         self.f_reco_appliedmc = \
                 self.f_reco_appliedmc.replace(".pkl", "%s.pkl" % self.s_suffix)
+
+        print(training_var)
 
     def create_suffix(self):
         string_selection = createstringselection(self.v_bin, self.p_binmin, self.p_binmax)
@@ -310,6 +313,10 @@ class Optimiser:
     def do_roc(self):
         precision_recall(self.p_classname, self.p_class, self.s_suffix,
                          self.df_xtrain, self.df_ytrain, self.p_nkfolds, self.dirmlplot)
+
+    def do_roc_train_test(self):
+        roc_train_test(self.p_classname, self.p_class, self.df_xtrain, self.df_ytrain,
+                       self.df_xtest, self.df_ytest, self.s_suffix, self.dirmlplot)
 
     def do_importance(self):
         importanceplotall(self.v_train, self.p_classname, self.p_class,
