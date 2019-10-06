@@ -123,7 +123,7 @@ void HFPtSpectrum2 (const char *inputCrossSection,
   Double_t *fPtBinLimits = new Double_t[fnPtBins+1];
   Double_t *fPtBinWidths = new Double_t[fnPtBins];
   Double_t xlow=0., binwidth=0.;
-  for(Int_t i=1; i<fnPtBins; i++){
+  for(Int_t i=1; i<=fnPtBins; i++){
     binwidth = hRECpt->GetBinWidth(i);
     xlow = hRECpt->GetBinLowEdge(i);
     fPtBinLimits[i-1] = xlow;
