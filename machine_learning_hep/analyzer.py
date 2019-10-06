@@ -62,6 +62,9 @@ class Analyzer:
 
         self.d_resultsallpmc = resultsmc
         self.d_resultsallpdata = resultsdata
+        self.p_corrmb_typean = datap["analysis"][self.typean]["corresp_mb_typean"]
+        if self.p_corrmb_typean is not None:
+            self.results_mb = datap["analysis"][self.p_corrmb_typean]["data"]["resultsallp"]
 
         n_filemass_name = datap["files_names"]["histofilename"]
         self.n_filemass = os.path.join(self.d_resultsallpdata, n_filemass_name)
@@ -129,6 +132,7 @@ class Analyzer:
 
         self.p_nevents = datap["analysis"][self.typean]["nevents"]
         self.p_bineff = datap["analysis"][self.typean]["usesinglebineff"]
+        self.p_fprompt_from_mb = datap["analysis"][self.typean]["fprompt_from_mb"]
         self.p_sigmamb = datap["ml"]["opt"]["sigma_MB"]
         self.p_br = datap["ml"]["opt"]["BR"]
 
@@ -1510,7 +1514,8 @@ class Analyzer:
         yield_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                              None, [self.case, self.typean])
         gROOT.LoadMacro("HFPtSpectrum.C")
-        from ROOT import HFPtSpectrum
+        gROOT.LoadMacro("HFPtSpectrum2.C")
+        from ROOT import HFPtSpectrum, HFPtSpectrum2
         for imult in range(self.p_nbin2):
             bineff = -1
             if self.p_bineff is None:
@@ -1536,10 +1541,37 @@ class Analyzer:
                   self.lvar2_binmin[imult], self.lvar2_binmax[imult])
             print("N. events selected=", normold, "N. events counter =", norm)
 
-            HFPtSpectrum(self.p_indexhpt, \
-                "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
-                fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
-                fileoutcrossmult, norm, self.p_sigmav0 * 1e12, self.p_fd_method, self.p_cctype)
+            filecrossmb = None
+            if self.p_fprompt_from_mb is True and self.p_fd_method == 2:
+                if self.p_corrmb_typean is not None:
+                    pathtoreplace = os.path.basename(os.path.normpath(self.d_resultsallpdata))
+                    pathreplaceby = os.path.basename(os.path.normpath(self.results_mb))
+                    resultpathmb = self.d_resultsallpdata.replace(pathtoreplace, pathreplaceby)
+                    filecrossmb = "%s/finalcross%s%smult0.root" % (resultpathmb, self.case, \
+                                                                   self.p_corrmb_typean)
+                    self.logger.info("Looking for %s", filecrossmb)
+                    if os.path.exists(filecrossmb):
+                        self.logger.info("Calculating spectra using fPrompt from MB. "\
+                                         "Assuming MB is bin 0: %s", filecrossmb)
+                    else:
+                        self.logger.fatal("First run MB if you want to use MB fPrompt!")
+
+            if self.p_fprompt_from_mb is None or self.p_fd_method != 2 or \
+              (imult == 0 and self.p_corrmb_typean is None):
+                HFPtSpectrum(self.p_indexhpt, \
+                 "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
+                 fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
+                 fileoutcrossmult, norm, self.p_sigmav0 * 1e12, self.p_fd_method, self.p_cctype)
+            else:
+                if filecrossmb is None:
+                    filecrossmb = "%s/finalcross%s%smult0.root" % \
+                                   (self.d_resultsallpdata, self.case, self.typean)
+                    self.logger.info("Calculating spectra using fPrompt from MB. "\
+                                     "Assuming MB is bin 0: %s", filecrossmb)
+                HFPtSpectrum2(filecrossmb, fileouteff, namehistoeffprompt, namehistoefffeed, \
+                              yield_filename, nameyield, fileoutcrossmult, norm, \
+                              self.p_sigmav0 * 1e12)
+
         fileoutcrosstot = TFile.Open("%s/finalcross%s%smulttot.root" % \
             (self.d_resultsallpdata, self.case, self.typean), "recreate")
 

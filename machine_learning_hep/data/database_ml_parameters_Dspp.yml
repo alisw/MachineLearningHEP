@@ -264,6 +264,8 @@ Dspp:
       normalizecross: false  
       plotbin: [1,1,1,0]
       usesinglebineff: null
+      fprompt_from_mb: true
+      corresp_mb_typean: null
       sel_binmin2:  [0,1,20,60] #list of var2 splittng nbins
       sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
@@ -345,6 +347,8 @@ Dspp:
       normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: null
+      fprompt_from_mb: true
+      corresp_mb_typean: null
       sel_binmin2:  [0,1,200,600] #list of var2 splittng nbins
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
       var_binning2: v0m_corr
@@ -416,6 +420,8 @@ Dspp:
       normalizecross: false
       plotbin: [1,1,1,0]
       usesinglebineff: null
+      fprompt_from_mb: true
+      corresp_mb_typean: null
       sel_binmin2:  [0,30,0.1,0.] #list of var2 splittng nbins
       sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m
@@ -487,6 +493,8 @@ Dspp:
       normalizecross: true
       plotbin: [1]
       usesinglebineff: null
+      fprompt_from_mb: true
+      corresp_mb_typean: null
       sel_binmin2: [5] #list of nbins
       sel_binmax2: [15] #list of nbins
       var_binning2: pt_jet
@@ -558,6 +566,8 @@ Dspp:
       normalizecross: false
       plotbin: [0,0,0,1]
       usesinglebineff: 2
+      fprompt_from_mb: true
+      corresp_mb_typean: MBvspt_ntrkl
       sel_binmin2:  [0,1,20,60] #list of var2 splittng nbins
       sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
@@ -629,6 +639,8 @@ Dspp:
       normalizecross: false
       plotbin: [0,0,0,1]
       usesinglebineff: 2
+      fprompt_from_mb: true
+      corresp_mb_typean: MBvspt_v0m
       sel_binmin2:  [0,1,200,600] #list of var2 splittng nbins
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
       var_binning2: v0m_corr
@@ -700,6 +712,8 @@ Dspp:
       normalizecross: false
       plotbin: [0,0,0,1]
       usesinglebineff: 2
+      fprompt_from_mb: true
+      corresp_mb_typean: MBvspt_perc
       sel_binmin2:  [0,30,0.1,0.] #list of var2 splittng nbins
       sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m
