@@ -299,11 +299,15 @@ def put_in_pad(pad, use_log_y, histos, title="", x_label="", y_label=""):
         h.Draw("same")
 
 def plot_histograms(histos, use_log_y=False, ratio=False, legend_titles=None, title="", x_label="",
-                    y_label_up="", y_label_ratio="", save_path="./plot.eps", canvas_name="Canvas"):
+                    y_label_up="", y_label_ratio="", save_path="./plot.eps", **kwargs):
     """
     Throws all given histograms into one canvas. If desired, a ratio plot will be added.
     """
-    style_histograms(histos)
+    linestyles = kwargs.get("linestyles", None)
+    markerstyles = kwargs.get("markerstyles", None)
+    colors = kwargs.get("colors", None)
+    canvas_name = kwargs.get("canvas_name", "Canvas")
+    style_histograms(histos, linestyles, markerstyles, colors)
 
     canvas = TCanvas('canvas', canvas_name, 800, 800)
     pad_up_start = 0.4 if ratio else 0.

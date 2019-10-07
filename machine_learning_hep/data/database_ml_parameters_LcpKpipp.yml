@@ -340,6 +340,8 @@ LcpKpipp:
         massmax: [2.408, 2.407, 2.406, 2.405]
         bincount_sigma: [3.5, 4.0,4.5]
         bkg_funcs: [Pol2, Pol3]
+        # Whether to include the free sigma option in the derivation of raw yield uncertainty in given pT bin
+        consider_free_sigma: [True, True, True, True, True, True]
 
     MBvspt_v0m:
       useperiod: [0,1,1]
