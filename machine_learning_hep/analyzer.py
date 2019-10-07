@@ -26,7 +26,7 @@ from root_numpy import hist2array, array2hist
 from ROOT import TFile, TH1F, TH2F, TCanvas, TPad, TF1, TH1D
 from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
 from ROOT import gROOT, TDirectory, TPaveLabel
-from ROOT import TStyle, kBlue, kGreen, kBlack, kRed
+from ROOT import TStyle, kBlue, kGreen, kBlack, kRed, kOrange
 from ROOT import TLatex
 from ROOT import gInterpreter, gPad
 # HF specific imports
@@ -867,10 +867,19 @@ class Analyzer:
                                                   "root", None, [self.case, self.typean])
         mt_derived_file = TFile.Open(mt_derived_filename, "RECREATE")
 
+        max_chisquare_ndf = self.mt_syst_dict.get("max_chisquare_ndf", 2.)
+        # As this plotting function is called right after the actual multi trial,
+        # the background function list could also just be assumed to be there...
+        bkg_funcs = self.mt_syst_dict.get("bkg_funcs", None)
+        consider_free_sigma = self.mt_syst_dict.get("consider_free_sigma",
+                                                    [False for i in range(self.p_nptbins)])
+
         for imult in range(self.p_nbin2):
             h_nominal = TH1F("h_nominal_sum", "", self.p_nptbins, array("d", self.ptranges))
             h_fit_all = TH1F("h_yield_sum", "", self.p_nptbins, array("d", self.ptranges))
-            h_bincount_all = TH1F("h_bincount_sum", "", self.p_nptbins, array("d", self.ptranges))
+            h_fit_all = TH1F("h_yield_sum", "", self.p_nptbins, array("d", self.ptranges))
+            h_bincount_all0 = TH1F("h_bincount_sum0", "", self.p_nptbins, array("d", self.ptranges))
+            h_bincount_all1 = TH1F("h_bincount_sum1", "", self.p_nptbins, array("d", self.ptranges))
 
             for ipt in range(self.p_nptbins):
                 bin_id = self.bin_matching[ipt]
@@ -902,7 +911,6 @@ class Analyzer:
                         f"{self.v_var2_binning} < {self.lvar2_binmax[imult]}"
                 derived_dir = mt_derived_file.mkdir(suffix)
 
-                bkg_funcs = self.mt_syst_dict.get("bkg_funcs", None)
                 used_bkgs = array("b", ["kExpo" in bkg_funcs,
                                         "kLin" in bkg_funcs,
                                         "Pol2" in bkg_funcs,
@@ -910,47 +918,61 @@ class Analyzer:
                                         "Pol4" in bkg_funcs,
                                         "Pol5" in bkg_funcs])
 
-                max_chisquare_ndf = self.mt_syst_dict.get("max_chisquare_ndf", 2.)
                 PlotMultiTrial(mt_filename, rawYield, mean_fit, sigma_fit, chisquare_fit,
-                               max_chisquare_ndf, used_bkgs, not self.p_fixingaussigma[ipt],
+                               max_chisquare_ndf, used_bkgs, consider_free_sigma[ipt],
                                self.d_mt_results_path, suffix, title, derived_dir)
 
                 h_mt_fit = derived_dir.Get("h_mt_fit")
-                h_mt_bc = derived_dir.Get("h_mt_bc")
+                h_mt_bc0 = derived_dir.Get("h_mt_bc0")
+                h_mt_bc1 = derived_dir.Get("h_mt_bc1")
 
                 h_nominal.SetBinContent(ipt + 1, rawYield)
                 h_nominal.SetBinError(ipt + 1, rawYieldError)
                 h_fit_all.SetBinContent(ipt + 1, h_mt_fit.GetMean())
                 h_fit_all.SetBinError(ipt + 1, h_mt_fit.GetRMS())
-                h_bincount_all.SetBinContent(ipt + 1, h_mt_bc.GetMean())
-                h_bincount_all.SetBinError(ipt + 1, h_mt_bc.GetRMS())
+                h_bincount_all0.SetBinContent(ipt + 1, h_mt_bc0.GetMean())
+                h_bincount_all0.SetBinError(ipt + 1, h_mt_bc0.GetRMS())
+                h_bincount_all1.SetBinContent(ipt + 1, h_mt_bc1.GetMean())
+                h_bincount_all1.SetBinError(ipt + 1, h_mt_bc1.GetRMS())
 
             filename_mt_summary = self.make_file_path(self.d_mt_results_path, "multi_trial_summary",
                                                       "eps", None, [imult])
 
-            plot_histograms([h_nominal, h_fit_all, h_bincount_all], False, True,
-                            ["central fit", "mean MT fit", "mean MT BC"],
+            plot_histograms([h_nominal, h_fit_all, h_bincount_all0, h_bincount_all1], False, True,
+                            ["central fit", "mean MT fit", "mean MT BC (bkg. fit)",
+                             "mean MT BC (bkg. refit)"],
                             f"{self.lvar2_binmin[imult]} < {self.v_var2_binning} " \
                             f"< {self.lvar2_binmax[imult]}", "#it{p}_{T} (GeV/c)", "yield",
-                            "MT / central", filename_mt_summary)
-            column_names = ["central fit", "mean MT fit", "mean MT BC", "rel. unc. MT fit",
-                            "rel.unc. MT BC"]
+                            "MT / central", filename_mt_summary, colors=[kBlack, kBlue, kGreen+2,
+                                                                         kOrange+5])
+            column_names = ["central fit", "mean MT fit", "mean MT BC (bkg. fit)",
+                            "mean MT BC (bkg. refit)", "rel.unc. central", "rel. unc. MT fit",
+                            "rel.unc. MT BC (bkg. fit)", "rel.unc. MT BC (bkg. refit)"]
             row_names = [f"{self.lpt_finbinmin[ipt]} GeV/c < {self.v_var_binning} < " \
                          f"{self.lpt_finbinmax[ipt]} GeV/c" for ipt in range(self.p_nptbins)]
             rows = []
             for b in range(h_nominal.GetNbinsX()):
                 yield_nominal = h_nominal.GetBinContent(b + 1)
+                yield_nominal_err = h_nominal.GetBinError(b + 1)
                 yield_mt_fit = h_fit_all.GetBinContent(b + 1)
-                yield_mt_bc = h_bincount_all.GetBinContent(b + 1)
+                yield_mt_bc0 = h_bincount_all0.GetBinContent(b + 1)
+                yield_mt_bc1 = h_bincount_all1.GetBinContent(b + 1)
+                rel_centr_fit = yield_nominal_err / yield_nominal if yield_nominal > 0. \
+                        else 0.
                 rel_mt_fit = (yield_nominal - yield_mt_fit) / yield_nominal if yield_nominal > 0. \
                         else 0.
-                rel_mt_bc = (yield_nominal - yield_mt_bc) / yield_nominal if yield_nominal > 0. \
+                rel_mt_bc0 = (yield_nominal - yield_mt_bc0) / yield_nominal if yield_nominal > 0. \
                         else 0.
-                rows.append([f"{yield_nominal:.2f} ({h_nominal.GetBinError(b + 1):.2f})",
+                rel_mt_bc1 = (yield_nominal - yield_mt_bc1) / yield_nominal if yield_nominal > 0. \
+                        else 0.
+                rows.append([f"{yield_nominal:.2f} ({yield_nominal_err:.2f})",
                              f"{yield_mt_fit:.2f} ({h_fit_all.GetBinError(b + 1):.2f})",
-                             f"{yield_mt_bc:.2f} ({h_bincount_all.GetBinError(b + 1):.2f})",
+                             f"{yield_mt_bc0:.2f} ({h_bincount_all0.GetBinError(b + 1):.2f})",
+                             f"{yield_mt_bc1:.2f} ({h_bincount_all1.GetBinError(b + 1):.2f})",
+                             f"{rel_centr_fit:.3f}",
                              f"{rel_mt_fit:.3f}",
-                             f"{rel_mt_bc:.3f}"])
+                             f"{rel_mt_bc0:.3f}",
+                             f"{rel_mt_bc1:.3f}"])
 
             caption = f"{self.lvar2_binmin[imult]} < {self.v_var2_binning} < " \
                       f"{self.lvar2_binmax[imult]}"
