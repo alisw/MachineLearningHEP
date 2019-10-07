@@ -1,5 +1,5 @@
 
-void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, double sigmaRef, double chi2Ref, double chi2Cut, Bool_t* usedBkgs, const char* saveDir, const char* suffix, const char* title, TDirectory* derivedResultsDir) {
+void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, double sigmaRef, double chi2Ref, double chi2Cut, Bool_t* usedBkgs, Bool_t considerFreeSigma, const char* saveDir, const char* suffix, const char* title, TDirectory* derivedResultsDir) {
 
     // Extract the trials
     TString esesel(saveDir);
@@ -18,17 +18,19 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     const Int_t totCases=nConfigCases*nBackFuncCases;
     
     // 0 => not used; 1 => used for fit; 2 => used also for bin count
-    Int_t mask[totCases]={0,0,2,0,0,0,   // fixed sigma, free mean (Expo, Lin, Pol2,Pol3,Pol4)
+    Int_t mask[totCases]={0,0,0,0,0,0,   // fixed sigma, free mean (Expo, Lin, Pol2,Pol3,Pol4)
                           0,0,0,0,0,0,   // fixed sigma upper
                           0,0,0,0,0,0,   // fixed sigma lower
-                          0,0,2,0,0,0,   // free sigma, free mean
+                          0,0,0,0,0,0,   // free sigma, free mean
                           0,0,0,0,0,0,   // free sigma, fixed mean
                           0,0,0,0,0,0,   // fixed mean, fixed sigma
     };
     // Enable only the background cases we ran the multi trial with
     for(Int_t i = 0; i < 6; i++) {
         mask[i] = (usedBkgs[i] > 0) ? 2 : 0;
-        mask[18+i] = (usedBkgs[i] > 0) ? 2 : 0;
+        if(considerFreeSigma) {
+            mask[18+i] = (usedBkgs[i] > 0) ? 2 : 0;
+        }
     }
     
     TH1F* histo6[totCases];
@@ -81,7 +83,8 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
 
         if(mask[nc]==2) {
             TString hbcname=histo6[nc]->GetName();
-            hbcname.ReplaceAll("Trial","TrialBinC0");
+            // Take bin count from background function of total fit
+            hbcname.ReplaceAll("Trial","TrialBinC1");
             cout<< " name bc " << hbcname.Data() << endl;
             TH2F* hbc2dt=(TH2F*)inputFile->Get(hbcname.Data());
             firstBC0[nc]=totTrialsBC0;
