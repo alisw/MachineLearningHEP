@@ -342,3 +342,28 @@ def plot_histograms(histos, use_log_y=False, ratio=False, legend_titles=None, ti
 
     canvas.SaveAs(save_path)
     canvas.Close()
+
+def make_latex_table(column_names, row_names, rows, caption=None, save_path="./table.tex"):
+    caption = caption if caption is not None else "Caption"
+    with open(save_path, "w") as f:
+        f.write("\\documentclass{article}\n")
+        f.write("\\usepackage[margin=0.7in]{geometry}")
+        f.write("\\usepackage[parfill]{parskip}")
+        f.write("\\usepackage[utf8]{inputenc}")
+        f.write("\\begin{table}[h!]")
+        f.write("\\centering")
+        # As many columns as we need
+        columns = "|".join(["c"] * len(column_names))
+        f.write("\\begin{tabular}{" + columns + "}")
+        f.write("\\hline")
+        columns = "&".join(column_names)
+        f.write(f"{columns} \\\\")
+        f.write("\\hline\\hline")
+        for rn, row in zip(row_names, rows):
+            row_string = "&".join(rn + row)
+            f.write(f"{row_string} \\\\")
+        f.write("\\end{tabular}")
+        f.write("\\caption{" + caption + "}")
+        f.write("\\end{table}")
+        f.write("\\end{document}")
+

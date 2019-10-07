@@ -33,7 +33,8 @@ from ROOT import gInterpreter, gPad
 from machine_learning_hep.globalfitter import Fitter
 from  machine_learning_hep.logger import get_logger
 from  machine_learning_hep.io import dump_yaml_from_dict
-from machine_learning_hep.utilities import folding, get_bins
+from machine_learning_hep.utilities import folding, get_bins, plot_histograms, make_latex_table, \
+                                           make_latex_table
 #from ROOT import RooUnfoldResponse
 #from ROOT import RooUnfold
 #from ROOT import RooUnfoldBayes
@@ -175,6 +176,7 @@ class Analyzer:
         else:
             if isinstance(args, str):
                 args = [args]
+        args = [str(a) for a in args]
         return "_".join(args)
 
     @staticmethod
@@ -795,6 +797,8 @@ class Analyzer:
             self.logger.warning("Could not find parameters for doing systemtics. Skip...")
             return
         # Enable ROOT batch mode and reset in the end
+        #self.plot_multi_trial()
+        #return
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
 
@@ -937,6 +941,10 @@ class Analyzer:
         mt_derived_file = TFile.Open(mt_derived_filename, "RECREATE")
 
         for imult in range(self.p_nbin2):
+            h_nominal = TH1F("h_nominal_sum", "", self.p_nptbins, array("d", self.ptranges))
+            h_fit_all = TH1F("h_yield_sum", "", self.p_nptbins, array("d", self.ptranges))
+            h_bincount_all = TH1F("h_bincount_sum", "", self.p_nptbins, array("d", self.ptranges))
+
             for ipt in range(self.p_nptbins):
                 bin_id = self.bin_matching[ipt]
 
@@ -954,6 +962,7 @@ class Analyzer:
                 mass_fitter = load_dir.Get("fitter")
 
                 rawYield = mass_fitter.GetRawYield()
+                rawYieldError = mass_fitter.GetRawYieldError()
                 mean_fit = mass_fitter.GetMean()
                 sigma_fit = mass_fitter.GetSigma()
                 chisquare_fit = mass_fitter.GetChiSquare()
@@ -979,6 +988,40 @@ class Analyzer:
                                max_chisquare_ndf, used_bkgs, self.d_mt_results_path,
                                suffix, title, derived_dir)
 
+                h_mt_fit = derived_dir.Get("h_mt_fit")
+                h_mt_bc = derived_dir.Get("h_mt_bc")
+
+                h_nominal.SetBinContent(ipt + 1, rawYield)
+                h_nominal.SetBinError(ipt + 1, rawYieldError)
+                h_fit_all.SetBinContent(ipt + 1, h_mt_fit.GetMean())
+                h_fit_all.SetBinError(ipt + 1, h_mt_fit.GetRMS())
+                h_bincount_all.SetBinContent(ipt + 1, h_mt_bc.GetMean())
+                h_bincount_all.SetBinError(ipt + 1, h_mt_bc.GetRMS())
+
+            filename_mt_summary = self.make_file_path(self.d_mt_results_path, "multi_trial_summary",
+                                                      "eps", None, [imult])
+
+            plot_histograms([h_nominal, h_fit_all, h_bincount_all], False, True,
+                            ["central fit", "mean MT fit", "mean MT BC"], 
+                            f"{self.lvar2_binmin[imult]} < {self.v_var2_binning} " \
+                            f"< {self.lvar2_binmax[imult]}", "#it{p}_{T} (GeV/c)", "yield",
+                            "MT / central", filename_mt_summary)
+            column_names = ["central fit", "mean MT fit", "mean MT BC"]
+            row_names = [ f"{self.lpt_finbinmin[ipt]} GeV/c < {self.v_var_binning} < " \
+                          f"{self.lpt_finbinmax[ipt]} GeV/c" for ipt in self.p_nptbins]
+            rows = []
+            for b in range(h_nominal.GetNbinsX()):
+                rows.append([f"{h_nominal.GetBinContent(b + 1)} ({h_nominal.GetBinError(b + 1)}",
+                             f"{h_fit_all.GetBinContent(b + 1)} ({h_fit_all.GetBinError(b + 1)}",
+                             f"{h_bc_all.GetBinContent(b + 1)} ({h_bc_all.GetBinError(b + 1)}"])
+
+            caption = f"{self.lvar2_binmin[imult]} < {self.v_var2_binning} < " \
+                      f"{self.lvar2_binmax[imult]}"
+            filename_mt_summary = self.make_file_path(self.d_mt_results_path, "multi_trial_summary",
+                                                      "tex", None, [imult])
+            make_latex_table(column_names, row_names, rows, caption, filename_mt_summary)
+
+            
         # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
 
