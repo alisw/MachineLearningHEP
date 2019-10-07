@@ -309,7 +309,8 @@ def plot_histograms(histos, use_log_y=False, ratio=False, legend_titles=None, ti
     pad_up_start = 0.4 if ratio else 0.
 
     pad_up = TPad("pad_up", "", 0., pad_up_start, 1., 1.)
-    pad_up.SetBottomMargin(0.)
+    if ratio:
+        pad_up.SetBottomMargin(0.)
     pad_up.Draw()
 
     put_in_pad(pad_up, use_log_y, histos, title, "", y_label_up)
@@ -342,3 +343,32 @@ def plot_histograms(histos, use_log_y=False, ratio=False, legend_titles=None, ti
 
     canvas.SaveAs(save_path)
     canvas.Close()
+
+def make_latex_table(column_names, row_names, rows, caption=None, save_path="./table.tex"):
+    caption = caption if caption is not None else "Caption"
+    with open(save_path, "w") as f:
+        f.write("\\documentclass{article}\n\n")
+        f.write("\\usepackage[margin=0.7in]{geometry}\n")
+        f.write("\\usepackage[parfill]{parskip}\n")
+        f.write("\\usepackage{rotating}\n")
+        f.write("\\usepackage[utf8]{inputenc}\n")
+        f.write("\\begin{document}\n")
+        f.write("\\begin{sidewaystable}\n")
+        f.write("\\centering\n")
+        # As many columns as we need
+        columns = "|".join(["c"] * (len(column_names) + 1))
+        f.write("\\begin{tabular}{" + columns + "}\n")
+        f.write("\\hline\n")
+        columns = "&".join([""] + column_names)
+        columns = columns.replace("_", "\\_")
+        f.write(columns + "\\\\\n")
+        f.write("\\hline\\hline\n")
+        for rn, row in zip(row_names, rows):
+            row_string = "&".join([rn] + row)
+            row_string = row_string.replace("_", "\\_")
+            f.write(row_string + "\\\\\n")
+        f.write("\\end{tabular}\n")
+        caption = caption.replace("_", "\\_")
+        f.write("\\caption{" + caption + "}\n")
+        f.write("\\end{sidewaystable}\n")
+        f.write("\\end{document}\n")
