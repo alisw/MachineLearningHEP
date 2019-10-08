@@ -33,7 +33,8 @@ from ROOT import gInterpreter, gPad
 from machine_learning_hep.globalfitter import Fitter
 from  machine_learning_hep.logger import get_logger
 from  machine_learning_hep.io import dump_yaml_from_dict
-from machine_learning_hep.utilities import folding, get_bins, plot_histograms, make_latex_table
+from machine_learning_hep.utilities import folding, get_bins, plot_histograms, make_latex_table, \
+                                           parallelizer
 #from ROOT import RooUnfoldResponse
 #from ROOT import RooUnfold
 #from ROOT import RooUnfoldBayes
@@ -694,6 +695,11 @@ class Analyzer:
         # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
 
+    @staticmethod
+    def do_single_multi_trial(mt_fitter, h_invmass, save_file):
+        if mt_fitter.DoMultiTrials(h_invmass):
+            mt_fitter.SaveToRoot(save_file)
+
     # pylint: disable=too-many-locals, too-many-nested-blocks, too-many-branches
     def yield_syst(self):
         if self.mt_syst_dict is None:
@@ -726,6 +732,8 @@ class Analyzer:
                                              None, [self.case, self.typean])
         file_fits = TFile(file_fits_name, "READ")
 
+        # Collect arguments for parallelized multi trial run
+        mt_args = []
         for imult in range(self.p_nbin2):
             for ipt in range(self.p_nptbins):
                 bin_id = self.bin_matching[ipt]
@@ -831,14 +839,13 @@ class Analyzer:
                                                       self.p_widthsecpeak,
                                                       self.p_fix_widthsecpeak)
 
-                success = multi_trial.DoMultiTrials(h_invmass)
-                if success:
-                    mt_filename = self.make_file_path(self.d_mt_results_path, "multi_trial",
-                                                      "root", None, suffix_write)
-                    multi_trial.SaveToRoot(mt_filename)
                 # Just make sure it's kept until the workflow is done
                 self.root_objects.append(multi_trial)
+                mt_filename = self.make_file_path(self.d_mt_results_path, "multi_trial",
+                                                  "root", None, suffix_write)
+                mt_args.append((multi_trial, h_invmass, mt_filename,))
 
+        parallelizer(self.do_single_multi_trial, mt_args, 4, self.p_nbin2 * self.p_nptbins)
         self.plot_multi_trial()
 
         # Reset to former mode
@@ -893,6 +900,12 @@ class Analyzer:
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
 
+                mt_filename = self.make_file_path(self.d_mt_results_path, "multi_trial",
+                                                  "root", None, suffix_write)
+                if not os.path.exists(mt_filename):
+                    self.logger.warning("Multi trial file %s does not exist. MT might have " \
+                                        "failed before. Skipping...", mt_filename)
+                    continue
                 # Get the nominal fit
                 load_dir = func_file.GetDirectory(suffix)
                 mass_fitter = load_dir.Get("fitter")
@@ -903,8 +916,6 @@ class Analyzer:
                 sigma_fit = mass_fitter.GetSigma()
                 chisquare_fit = mass_fitter.GetChiSquare()
 
-                mt_filename = self.make_file_path(self.d_mt_results_path, "multi_trial",
-                                                  "root", None, suffix_write)
                 self.logger.info("Process file %s", mt_filename)
                 title = f"{self.lpt_finbinmin[ipt]} GeV/c < {self.v_var_binning} < " \
                         f"{self.lpt_finbinmax[ipt]} GeV/c, {self.lvar2_binmin[imult]} < " \
