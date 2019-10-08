@@ -32,6 +32,7 @@ from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
 from machine_learning_hep.utilities import mergerootfiles, z_calc, z_gen_calc, scatterplot
+from machine_learning_hep.utilities import get_timestamp_string
 from machine_learning_hep.models import apply # pylint: disable=import-error
 #from machine_learning_hep.globalfitter import fitter
 from machine_learning_hep.selectionutils import getnormforselevt
@@ -692,20 +693,11 @@ class Processer: # pylint: disable=too-many-instance-attributes
         hNorm.SetBinContent(2, nselevt)
         hNorm.Write()
         fileevtroot.Close()
+
     def process_valevents_par(self):
-        def divide_chunks(list_to_split, chunk_size):
-            # looping till length l
-            for i in range(0, len(list_to_split), chunk_size):
-                yield list_to_split[i:i + chunk_size]
         print("doing event validation", self.mcordata, self.period)
         create_folder_struc(self.d_val, self.l_path)
-        tmp_merged = f"/data/DerivedVal/tmp/{self.case}_{self.typean}/"
-        if not os.path.exists(tmp_merged):
-            os.makedirs(tmp_merged)
+        tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/val_{self.period}/{get_timestamp_string()}/"
         arguments = [(i,) for i in range(len(self.l_evtorig))]
         self.parallelizer(self.process_valevents, arguments, self.p_chunksizeskim)
-        tmp_files = []
-        for i, split_list in enumerate(divide_chunks(self.l_evtvalroot, 1000)):
-            tmp_files.append(os.path.join(tmp_merged, f"merged{i}.root"))
-            mergerootfiles(split_list, tmp_files[-1])
-        mergerootfiles(tmp_files, self.f_totevtvalroot)
+        mergerootfiles(self.l_evtvalroot, self.f_totevtvalroot, tmp_merged)

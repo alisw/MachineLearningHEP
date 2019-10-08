@@ -17,12 +17,13 @@ main script for doing data processing, machine learning and analysis
 """
 import os
 from machine_learning_hep.analyzer import Analyzer
-from machine_learning_hep.utilities import mergerootfiles
+from machine_learning_hep.utilities import mergerootfiles, get_timestamp_string
 class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-statements
     species = "multianalyzer"
     def __init__(self, datap, case, typean, doperiodbyperiod):
         self.datap = datap
         self.typean = typean
+        self.case = case
         self.d_resultsallpmc = datap["analysis"][self.typean]["mc"]["resultsallp"]
         self.d_resultsallpdata = datap["analysis"][self.typean]["data"]["resultsallp"]
         self.d_resultsmc = datap["analysis"][self.typean]["mc"]["results"]
@@ -115,13 +116,16 @@ class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-st
 
     def multi_preparenorm(self):
         listempty = []
+        tmp_merged = \
+                f"/data/tmp/hadd/{self.case}_{self.typean}/norm_analyzer/{get_timestamp_string()}/"
         for indexp in range(self.prodnumber):
-            mergerootfiles([self.lper_normfilesorig[indexp]], self.lper_normfiles[indexp])
+            mergerootfiles([self.lper_normfilesorig[indexp]], self.lper_normfiles[indexp],
+                           tmp_merged)
         if self.doperiodbyperiod is True:
             for indexp in range(self.prodnumber):
                 if self.p_useperiod[indexp] == 1:
                     listempty.append(self.lper_normfiles[indexp])
-        mergerootfiles(listempty, self.f_normmerged)
+        mergerootfiles(listempty, self.f_normmerged, tmp_merged)
 
     def multi_studyevents(self):
         if self.doperiodbyperiod is True:

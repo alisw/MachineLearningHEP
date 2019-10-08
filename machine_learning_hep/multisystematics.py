@@ -17,7 +17,7 @@ main script for doing data processing, machine learning and analysis
 """
 import os
 from machine_learning_hep.systematics import Systematics
-from machine_learning_hep.utilities import mergerootfiles
+from machine_learning_hep.utilities import mergerootfiles, get_timestamp_string
 class MultiSystematics: # pylint: disable=too-many-instance-attributes, too-many-statements, too-few-public-methods
     species = "multisystematic"
     def __init__(self, case, datap, typean, run_param):
@@ -98,14 +98,18 @@ class MultiSystematics: # pylint: disable=too-many-instance-attributes, too-many
             for indexp in range(self.prodnumber):
                 if self.p_useperiod[indexp] == 1:
                     self.process_listsample[indexp].cutvariation_masshistos(min_cv_cut, max_cv_cut)
-            mergerootfiles(self.lper_filemass_cutvar, self.filemass_cutvar_mergedall)
+            tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/cutvar_mass/" \
+                         f"{get_timestamp_string()}/"
+            mergerootfiles(self.lper_filemass_cutvar, self.filemass_cutvar_mergedall, tmp_merged)
 
         if doeff is True:
             for indexp in range(self.prodnumber):
                 if self.p_useperiod[indexp] == 1:
                     self.process_listsample[indexp].cutvariation_efficiencies(min_cv_cut, \
                                                                               max_cv_cut)
-            mergerootfiles(self.lper_fileeff_cutvar, self.fileeff_cutvar_mergedall)
+            tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/cutvar_eff/" \
+                         f"{get_timestamp_string()}/"
+            mergerootfiles(self.lper_fileeff_cutvar, self.fileeff_cutvar_mergedall, tmp_merged)
 
         if dofit is True:
             for indexp in range(self.prodnumber):
