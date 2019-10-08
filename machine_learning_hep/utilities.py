@@ -15,6 +15,7 @@
 """
 main script for doing data processing, machine learning and analysis
 """
+import multiprocessing as mp
 import pickle
 import bz2
 import gzip
@@ -376,3 +377,17 @@ def make_latex_table(column_names, row_names, rows, caption=None, save_path="./t
         f.write("\\caption{" + caption + "}\n")
         f.write("\\end{sidewaystable}\n")
         f.write("\\end{document}\n")
+
+def parallelizer(function, argument_list, maxperchunk, max_n_procs=2):
+    """
+    A centralized version for quickly parallelizing basically identical to what can found in
+    the Processer. It could also rely on this one.
+    """
+    chunks = [argument_list[x:x+maxperchunk] \
+              for x in range(0, len(argument_list), maxperchunk)]
+    for chunk in chunks:
+        print("Processing new chunck size=", maxperchunk)
+        pool = mp.Pool(max_n_procs)
+        _ = [pool.apply_async(function, args=chunk[i]) for i in range(len(chunk))]
+        pool.close()
+        pool.join()
