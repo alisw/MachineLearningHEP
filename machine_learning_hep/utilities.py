@@ -16,6 +16,7 @@
 main script for doing data processing, machine learning and analysis
 """
 import multiprocessing as mp
+from datetime import datetime
 import pickle
 import bz2
 import gzip
@@ -143,10 +144,24 @@ def createstringselection(var, low, high):
     string_selection = "dfselection_"+(("%s_%.1f_%.1f") % (var, low, high))
     return string_selection
 
-def mergerootfiles(listfiles, mergedfile):
-    outstring = ""
-    for indexp, _ in enumerate(listfiles):
-        outstring = outstring + listfiles[indexp] + " "
+def mergerootfiles(listfiles, mergedfile, tmp_dir):
+    def divide_chunks(list_to_split, chunk_size):
+        for i in range(0, len(list_to_split), chunk_size):
+            yield list_to_split[i:i + chunk_size]
+
+    tmp_files = []
+    if len(listfiles) > 1000:
+        if not os.path.exists(tmp_dir):
+            os.makedirs(tmp_dir)
+
+        for i, split_list in enumerate(divide_chunks(listfiles, 1000)):
+            tmp_files.append(os.path.join(tmp_dir, f"hadd_tmp_merged{i}.root"))
+            outstring = " ".join(split_list)
+            os.system("hadd -f %s  %s " % (tmp_files[-1], outstring))
+    else:
+        tmp_files = listfiles
+
+    outstring = " ".join(tmp_files)
     os.system("hadd -f %s  %s " % (mergedfile, outstring))
 
 def createhisto(stringname, nbins, rmin, rmax):
@@ -391,3 +406,6 @@ def parallelizer(function, argument_list, maxperchunk, max_n_procs=2):
         _ = [pool.apply_async(function, args=chunk[i]) for i in range(len(chunk))]
         pool.close()
         pool.join()
+
+def get_timestamp_string():
+    return datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
