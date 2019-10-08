@@ -818,10 +818,10 @@ class Analyzer:
                     h_invmass_mc_rebin_.Copy(h_invmass_mc)
                     h_invmass_mc_refl_ = lfile_mc.Get("hmass_refl" + suffix)
                     h_invmass_mc_refl = AliVertexingHFUtils.AdaptTemplateRangeAndBinning(
-                        h_invmass_mc_refl_, h_invmass_mc,
+                        h_invmass_mc_refl_, h_invmass,
                         self.p_massmin[ipt], self.p_massmax[ipt])
                     if h_invmass_mc_refl.Integral() > 0.:
-                        multi_trial.SetTemplatesForReflections(h_invmass_mc_refl, h_invmass_mc)
+                        multi_trial.SetTemplatesForReflections(h_invmass_mc_refl, h_invmass_mc_)
                         r_over_s = h_invmass_mc.Integral(
                             h_invmass_mc.FindBin(self.p_massmin[ipt]),
                             h_invmass_mc.FindBin(self.p_massmax[ipt]))
@@ -957,8 +957,10 @@ class Analyzer:
                             "MT / central", filename_mt_summary, colors=[kBlack, kBlue, kGreen+2,
                                                                          kOrange+5])
             column_names = ["central fit", "mean MT fit", "mean MT BC (bkg. fit)",
-                            "mean MT BC (bkg. refit)", "rel.unc. central", "rel. unc. MT fit",
-                            "rel.unc. MT BC (bkg. fit)", "rel.unc. MT BC (bkg. refit)"]
+                            "mean MT BC (bkg. refit)",
+                            "rel.unc. central", "rel. (central -  MT fit)",
+                            "rel. (central - MT BC (bkg. fit))",
+                            "rel. (central -  MT BC (bkg. refit))"]
             row_names = [f"{self.lpt_finbinmin[ipt]} GeV/c < {self.v_var_binning} < " \
                          f"{self.lpt_finbinmax[ipt]} GeV/c" for ipt in range(self.p_nptbins)]
             rows = []
