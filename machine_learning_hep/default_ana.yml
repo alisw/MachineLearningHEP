@@ -25,20 +25,22 @@ mergingperiods:
 
 ml_study:
   activate: false
-  doscancuts: false
-  applytodatamc: false
-  doroc: false
-  doboundary: false
-  docorrelation: false
-  docrossvalidation: false
-  dogridsearch: false
-  doimportance: false
-  dolearningcurve: false
   dopca: false
-  dosignifopt: false
-  doefficiency: false
-  dotesting: false
+  docorrelation: false
   dotraining: true
+  dotesting: false
+  doapplytodatamc: false
+  docrossvalidation: false
+  dolearningcurve: false
+  doroc: false
+  doroctraintest: false
+  doimportance: false
+  dogridsearch: false
+  doboundary: false
+  doefficiency: false
+  dosignifopt: false
+  doscancuts: false
+
 
 mlapplication:
   data:
@@ -70,8 +72,12 @@ analysis:
   doplots: true
 
 systematics:
-  # Not yet used
-  probvariation: false
+  cutvar:
+    activate: false
+    probvariationmass: true
+    probvariationeff: true
+    probvariationfit: true
+    probvariationcross: false
 
 validation:
   data:

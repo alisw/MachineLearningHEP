@@ -32,6 +32,7 @@ from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
 from machine_learning_hep.utilities import mergerootfiles, z_calc, z_gen_calc, scatterplot
+from machine_learning_hep.utilities import get_timestamp_string
 from machine_learning_hep.models import apply # pylint: disable=import-error
 #from machine_learning_hep.globalfitter import fitter
 from machine_learning_hep.selectionutils import getnormforselevt
@@ -306,7 +307,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 print("Model file not present in bin %d" % ipt)
             mod = pickle.load(openfile(self.lpt_model[ipt], 'rb'))
             dfrecoskml = apply("BinaryClassification", [self.p_modelname], [mod],
-                               dfrecosk, self.v_train)
+                               dfrecosk, self.v_train[ipt])
             probvar = "y_test_prob" + self.p_modelname
             dfrecoskml = dfrecoskml.loc[dfrecoskml[probvar] > self.lpt_probcutpre[ipt]]
             pickle.dump(dfrecoskml, openfile(self.mptfiles_recoskmldec[ipt][file_index], "wb"),
@@ -710,9 +711,11 @@ class Processer: # pylint: disable=too-many-instance-attributes
         hNorm.SetBinContent(2, nselevt)
         hNorm.Write()
         fileevtroot.Close()
+
     def process_valevents_par(self):
         print("doing event validation", self.mcordata, self.period)
         create_folder_struc(self.d_val, self.l_path)
+        tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/val_{self.period}/{get_timestamp_string()}/"
         arguments = [(i,) for i in range(len(self.l_evtorig))]
         self.parallelizer(self.process_valevents, arguments, self.p_chunksizeskim)
-        mergerootfiles(self.l_evtvalroot, self.f_totevtvalroot)
+        mergerootfiles(self.l_evtvalroot, self.f_totevtvalroot, tmp_merged)

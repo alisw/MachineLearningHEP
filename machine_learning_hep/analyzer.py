@@ -23,16 +23,18 @@ from subprocess import Popen
 import numpy as np
 # pylint: disable=import-error, no-name-in-module, unused-import
 from root_numpy import hist2array, array2hist
-from ROOT import TFile, TH1F, TCanvas, TPad, TF1, TH1D
+from ROOT import TFile, TH1F, TH2F, TCanvas, TPad, TF1, TH1D
 from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
 from ROOT import gROOT, TDirectory, TPaveLabel
-from ROOT import TStyle, kBlue, kGreen, kBlack, kRed
+from ROOT import TStyle, kBlue, kGreen, kBlack, kRed, kOrange
 from ROOT import TLatex
 from ROOT import gInterpreter, gPad
 # HF specific imports
 from machine_learning_hep.globalfitter import Fitter
 from  machine_learning_hep.logger import get_logger
 from  machine_learning_hep.io import dump_yaml_from_dict
+from machine_learning_hep.utilities import folding, get_bins, plot_histograms, make_latex_table, \
+                                           parallelizer
 #from ROOT import RooUnfoldResponse
 #from ROOT import RooUnfold
 #from ROOT import RooUnfoldBayes
@@ -61,6 +63,9 @@ class Analyzer:
 
         self.d_resultsallpmc = resultsmc
         self.d_resultsallpdata = resultsdata
+        self.p_corrmb_typean = datap["analysis"][self.typean]["corresp_mb_typean"]
+        if self.p_corrmb_typean is not None:
+            self.results_mb = datap["analysis"][self.p_corrmb_typean]["data"]["resultsallp"]
 
         n_filemass_name = datap["files_names"]["histofilename"]
         self.n_filemass = os.path.join(self.d_resultsallpdata, n_filemass_name)
@@ -128,6 +133,7 @@ class Analyzer:
 
         self.p_nevents = datap["analysis"][self.typean]["nevents"]
         self.p_bineff = datap["analysis"][self.typean]["usesinglebineff"]
+        self.p_fprompt_from_mb = datap["analysis"][self.typean]["fprompt_from_mb"]
         self.p_sigmamb = datap["ml"]["opt"]["sigma_MB"]
         self.p_br = datap["ml"]["opt"]["BR"]
 
@@ -140,15 +146,8 @@ class Analyzer:
         self.f_evtnorm = os.path.join(self.d_resultsallpdata, "correctionsweights.root")
 
         # Systematics
-        syst_dict = datap["analysis"][self.typean].get("systematics", None)
-        self.do_syst = not syst_dict
-        self.p_max_chisquare_ndf_syst = syst_dict["max_chisquare_ndf"] \
-                if syst_dict is not None else None
-        self.p_rebin_syst = syst_dict["rebin"] if syst_dict is not None else None
-        self.p_fit_ranges_low_syst = syst_dict["massmin"] if syst_dict is not None else None
-        self.p_fit_ranges_up_syst = syst_dict["massmax"] if syst_dict is not None else None
-        self.p_bincount_sigma_syst = syst_dict["bincount_sigma"] if syst_dict is not None else None
-        self.p_bkg_funcs_syst = syst_dict["bkg_funcs"] if syst_dict is not None else None
+        self.mt_syst_dict = datap["analysis"][self.typean].get("systematics", None)
+        self.d_mt_results_path = os.path.join(self.d_resultsallpdata, "multi_trial")
 
         self.p_indexhpt = datap["analysis"]["indexhptspectrum"]
         self.p_fd_method = datap["analysis"]["fd_method"]
@@ -177,6 +176,7 @@ class Analyzer:
         else:
             if isinstance(args, str):
                 args = [args]
+        args = [str(a) for a in args]
         return "_".join(args)
 
     @staticmethod
@@ -232,6 +232,15 @@ class Analyzer:
                 self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
         sigmas_histos = [TH1F("hsigmas%d" % (imult), "", \
                 self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
+        have_summary_pt_bins = []
+        means_init_mc_histos = TH1F("hmeans_init_mc", "",
+                                    self.p_nptbins, array("d", self.ptranges))
+        sigmas_init_mc_histos = TH1F("hsigmas_init_mc", "",
+                                     self.p_nptbins, array("d", self.ptranges))
+        means_init_data_histos = TH1F("hmeans_init_data", "",
+                                      self.p_nptbins, array("d", self.ptranges))
+        sigmas_init_data_histos = TH1F("hsigmas_init_data", "",
+                                       self.p_nptbins, array("d", self.ptranges))
 
         if self.p_nptbins < 9:
             nx = 4
@@ -244,6 +253,7 @@ class Analyzer:
         else:
             nx = 5
             ny = 4
+            canvy = 1200
         canvas_init_mc = TCanvas("canvas_init_mc", "MC", 1000, canvy)
         canvas_init_data = TCanvas("canvas_init_data", "Data", 1000, canvy)
         canvas_data = [TCanvas("canvas_data%d" % (imult), "Data", 1000, canvy) \
@@ -321,6 +331,8 @@ class Analyzer:
                                                               self.bkg_fmap[self.p_bkgfunc[ipt]],
                                                               self.sig_fmap[self.p_sgnfunc[ipt]]))
 
+                # Force to go on with final fit although there is no estimated signal
+                mass_fitter_mc_init[ipt].SetCheckSignalCountsAfterFirstFit(False)
                 if self.p_dolike:
                     mass_fitter_mc_init[ipt].SetUseLikelihoodFit()
                 mass_fitter_mc_init[ipt].SetInitialGaussianMean(mean_for_data)
@@ -332,6 +344,16 @@ class Analyzer:
                     mean_for_data = mass_fitter_mc_init[ipt].GetMean()
                     sigma_for_data = mass_fitter_mc_init[ipt].GetSigma()
                     means_sigmas_init.insert(0, (2, mean_for_data, sigma_for_data))
+                    if ipt not in have_summary_pt_bins:
+                        means_init_mc_histos.SetBinContent(ipt + 1,
+                                                           mass_fitter_mc_init[ipt].GetMean())
+                        means_init_mc_histos.SetBinError(ipt + 1, \
+                                mass_fitter_mc_init[ipt].GetMeanUncertainty())
+                        sigmas_init_mc_histos.SetBinContent(ipt + 1,
+                                                            mass_fitter_mc_init[ipt].GetSigma())
+                        sigmas_init_mc_histos.SetBinError(ipt + 1, \
+                                mass_fitter_mc_init[ipt].GetSigmaUncertainty())
+
                     fit_status[imult][ipt]["init_MC"] = True
                     if self.init_fits_from == "mc":
                         mean_case_user = mean_for_data
@@ -373,6 +395,8 @@ class Analyzer:
                                                                 self.bkg_fmap[self.p_bkgfunc[ipt]],
                                                                 self.sig_fmap[self.p_sgnfunc[ipt]]))
 
+                # Force to go on with final fit although there is no estimated signal
+                mass_fitter_data_init[ipt].SetCheckSignalCountsAfterFirstFit(False)
                 if self.p_dolike:
                     mass_fitter_data_init[ipt].SetUseLikelihoodFit()
                 mass_fitter_data_init[ipt].SetInitialGaussianMean(mean_for_data)
@@ -387,6 +411,16 @@ class Analyzer:
                 success = mass_fitter_data_init[ipt].MassFitter(False)
                 fit_status[imult][ipt]["init_data"] = False
                 if success == 1:
+                    if ipt not in have_summary_pt_bins:
+                        means_init_data_histos.SetBinContent(ipt + 1, \
+                                mass_fitter_data_init[ipt].GetMean())
+                        means_init_data_histos.SetBinError(ipt + 1, \
+                                mass_fitter_data_init[ipt].GetMeanUncertainty())
+                        sigmas_init_data_histos.SetBinContent(ipt + 1, \
+                                mass_fitter_data_init[ipt].GetSigma())
+                        sigmas_init_data_histos.SetBinError(ipt + 1, \
+                                mass_fitter_data_init[ipt].GetSigmaUncertainty())
+
                     sigmafit = mass_fitter_data_init[ipt].GetSigma()
                     if minperc * sigma_for_data < sigmafit < maxperc * sigma_for_data:
                         means_sigmas_init.insert(0, (1, mass_fitter_data_init[ipt].GetMean(),
@@ -405,6 +439,8 @@ class Analyzer:
                 canvas_init_data.cd(ipt+1)
                 mass_fitter_data_init[ipt].DrawHere(gPad, self.p_nsigma_signal)
 
+                # Remember that we have filled this pT bin
+                have_summary_pt_bins.append(ipt)
                 ######################
                 # END initialize fit #
                 ######################
@@ -415,7 +451,8 @@ class Analyzer:
                     for ms in means_sigmas_init:
                         fit_cases.append((ms[0], ms[1], ms[2], fix))
                 if mean_case_user is not None:
-                    fit_cases.insert(0, (0, mean_case_user, sigma_case_user, self.p_fixingaussigma))
+                    fit_cases.insert(0, (0, mean_case_user, sigma_case_user,
+                                         self.p_fixingaussigma[ipt]))
                 else:
                     self.logger.error("Cannot initialise fit with what is requested by the " \
                                       "user... Try fallback options")
@@ -465,6 +502,8 @@ class Analyzer:
                                                           self.bkg_fmap[self.p_bkgfunc[ipt]],
                                                           self.sig_fmap[self.p_sgnfunc[ipt]]))
 
+                    # Force to go on with final fit although there is no estimated signal
+                    mass_fitter[ifit].SetCheckSignalCountsAfterFirstFit(False)
                     if self.p_dolike:
                         mass_fitter[ifit].SetUseLikelihoodFit()
                     # At this point *_for_data is either
@@ -533,12 +572,6 @@ class Analyzer:
                 canvas_data[imult].cd(ipt+1)
                 mass_fitter[ifit].DrawHere(gPad, self.p_nsigma_signal)
 
-                # Write fitters to file
-                fit_root_dir = fileout.mkdir(suffix)
-                fit_root_dir.WriteObject(mass_fitter_mc_init[ipt], "fitter_mc_init")
-                fit_root_dir.WriteObject(mass_fitter_data_init[ipt], "fitter_data_init")
-                fit_root_dir.WriteObject(mass_fitter[ifit], "fitter")
-
                 if success == 1:
                     # In case of success == 2, no signal was found, in case of 0, fit failed
                     rawYield = mass_fitter[ifit].GetRawYield()
@@ -561,8 +594,36 @@ class Analyzer:
                     sigmas_histos[imult].SetBinError(ipt + 1, \
                                                      mass_fitter[ifit].GetSigmaUncertainty())
 
+                    # Residual plot
+                    c_res = TCanvas('cRes', 'The Fit Canvas', 800, 800)
+                    c_res.cd()
+                    h_pulls = h_invmass_rebin.Clone(f"{h_invmass_rebin.GetName()}_pull")
+                    h_residual_trend = \
+                            h_invmass_rebin.Clone(f"{h_invmass_rebin.GetName()}_residual_trend")
+                    h_pulls_trend = \
+                            h_invmass_rebin.Clone(f"{h_invmass_rebin.GetName()}_pulls_trend")
+                    _ = mass_fitter[ifit].GetOverBackgroundResidualsAndPulls( \
+                            h_pulls, h_residual_trend, h_pulls_trend, self.p_massmin[ipt],
+                            self.p_massmax[ipt])
+
+                    h_residual_trend.Draw()
+                    c_res.SaveAs(self.make_file_path(self.d_resultsallpdata, "residual", "eps",
+                                                     None, suffix_write))
+                    c_res.Close()
+
                 else:
                     self.logger.error("Fit failed for suffix %s", suffix_write)
+
+                # Write fitters to file
+                fit_root_dir = fileout.mkdir(suffix)
+                fit_root_dir.WriteObject(mass_fitter_mc_init[ipt], "fitter_mc_init")
+                fit_root_dir.WriteObject(mass_fitter_data_init[ipt], "fitter_data_init")
+                fit_root_dir.WriteObject(mass_fitter[ifit], "fitter")
+
+            #####################
+            # Back in mult loop #
+            #####################
+
             suffix2 = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin[imult], \
                                         self.lvar2_binmax[imult])
             if imult == 0:
@@ -580,6 +641,8 @@ class Analyzer:
             #canvas_data[imult].Close()
             fileout.cd()
             yieldshistos[imult].Write()
+            means_histos[imult].Write()
+            sigmas_histos[imult].Write()
 
             del mass_fitter_mc_init[:]
             del mass_fitter_data_init[:]
@@ -589,113 +652,78 @@ class Analyzer:
         # Write the fit status dict
         dump_yaml_from_dict(fit_status, self.make_file_path(self.d_resultsallpdata, "fit_status",
                                                             "yaml"))
-        # Yields summary plot
-        cYields = TCanvas('cYields', 'The Fit Canvas')
-        cYields.SetCanvasSize(1900, 1500)
-        cYields.SetWindowSize(500, 500)
-        cYields.SetLogy()
 
-        legyield = TLegend(.5, .65, .7, .85)
-        legyield.SetBorderSize(0)
-        legyield.SetFillColor(0)
-        legyield.SetFillStyle(0)
-        legyield.SetTextFont(42)
-        legyield.SetTextSize(0.035)
-
-        # Means summary plot
-        cMeans = TCanvas('cMeans', 'Mean summary')
-        cMeans.SetCanvasSize(1900, 1500)
-        cMeans.SetWindowSize(500, 500)
-
-        leg_means = TLegend(.5, .65, .7, .85)
-        leg_means.SetBorderSize(0)
-        leg_means.SetFillColor(0)
-        leg_means.SetFillStyle(0)
-        leg_means.SetTextFont(42)
-        leg_means.SetTextSize(0.035)
-
-        # Means summary plot
-        cSigmas = TCanvas('cSigma', 'Sigma summary')
-        cSigmas.SetCanvasSize(1900, 1500)
-        cSigmas.SetWindowSize(500, 500)
-
-        leg_sigmas = TLegend(.5, .65, .7, .85)
-        leg_sigmas.SetBorderSize(0)
-        leg_sigmas.SetFillColor(0)
-        leg_sigmas.SetFillStyle(0)
-        leg_sigmas.SetTextFont(42)
-        leg_sigmas.SetTextSize(0.035)
-
-        for imult in range(self.p_nbin2):
-            legstring = "%.1f #leq %s < %.1f" % \
-                    (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
-            # Draw yields
-            cYields.cd()
-            yieldshistos[imult].SetMinimum(1)
-            yieldshistos[imult].SetMaximum(1e6)
-            yieldshistos[imult].SetLineColor(imult+1)
-            yieldshistos[imult].Draw("same")
-            legyield.AddEntry(yieldshistos[imult], legstring, "LEP")
-            yieldshistos[imult].GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
-            yieldshistos[imult].GetYaxis().SetTitle("Uncorrected yields %s %s (1/GeV)" \
-                    % (self.p_latexnmeson, self.typean))
-
-            cMeans.cd()
-            means_histos[imult].SetMinimum(0.999 * mean_min)
-            means_histos[imult].SetMaximum(1.001 * mean_max)
-            means_histos[imult].SetLineColor(imult+1)
-            means_histos[imult].Draw("same")
-            leg_means.AddEntry(means_histos[imult], legstring, "LEP")
-            means_histos[imult].GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
-            means_histos[imult].GetYaxis().SetTitle("#mu_{fit} %s %s" \
-                    % (self.p_latexnmeson, self.typean))
-
-            cSigmas.cd()
-            sigmas_histos[imult].SetMinimum(0.99 * sigma_min)
-            sigmas_histos[imult].SetMaximum(1.01 * sigma_max)
-            sigmas_histos[imult].SetLineColor(imult+1)
-            sigmas_histos[imult].Draw("same")
-            leg_sigmas.AddEntry(sigmas_histos[imult], legstring, "LEP")
-            sigmas_histos[imult].GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
-            sigmas_histos[imult].GetYaxis().SetTitle("#sigma_{fit} %s %s" \
-                    % (self.p_latexnmeson, self.typean))
-
-        cYields.cd()
-        legyield.Draw()
+        # Plot some summary historgrams
+        leg_strings = [f"{self.lvar2_binmin[imult]} #leq {self.p_latexbin2var} < " \
+                       f"{self.lvar2_binmax[imult]}" for imult in range(self.p_nbin2)]
         save_name = self.make_file_path(self.d_resultsallpdata, "Yields", "eps", None,
                                         [self.case, self.typean])
-        cYields.SaveAs(save_name)
-        cYields.Close()
-
-        cMeans.cd()
-        leg_means.Draw()
+        # Yields summary plot
+        plot_histograms(yieldshistos, True, True, leg_strings, "uncorrected yields",
+                        "#it{p}_{T} (GeV/#it{c})",
+                        f"Uncorrected yields {self.p_latexnmeson} {self.typean}", "mult. / int.",
+                        save_name)
         save_name = self.make_file_path(self.d_resultsallpdata, "Means", "eps", None,
                                         [self.case, self.typean])
-        cMeans.SaveAs(save_name)
-        cMeans.Close()
-
-        cSigmas.cd()
-        leg_sigmas.Draw()
+        # Means summary plot
+        plot_histograms(means_histos, False, True, leg_strings, "Means",
+                        "#it{p}_{T} (GeV/#it{c})",
+                        "#mu_{fit} " + f"{self.p_latexnmeson} {self.typean}", "mult. / int.",
+                        save_name)
         save_name = self.make_file_path(self.d_resultsallpdata, "Sigmas", "eps", None,
                                         [self.case, self.typean])
-        cSigmas.SaveAs(save_name)
-        cSigmas.Close()
+        #Sigmas summary plot
+        plot_histograms(sigmas_histos, False, True, leg_strings, "Sigmas",
+                        "#it{p}_{T} (GeV/#it{c})",
+                        "#sigma_{fit} " + f"{self.p_latexnmeson} {self.typean}", "mult. / int.",
+                        save_name)
+
+        # Plot the initialized means and sigma for MC and data
+        save_name = self.make_file_path(self.d_resultsallpdata, "Means_mult_int", "eps", None,
+                                        [self.case, self.typean])
+        plot_histograms([means_init_mc_histos, means_init_data_histos], False, False,
+                        ["MC", "data"], "Means of int. mult.", "#it{p}_{T} (GeV/#it{c})",
+                        "#mu_{fit} " + f"{self.p_latexnmeson} {self.typean}", "", save_name)
+
+        save_name = self.make_file_path(self.d_resultsallpdata, "Sigmas_mult_int", "eps", None,
+                                        [self.case, self.typean])
+        plot_histograms([sigmas_init_mc_histos, sigmas_init_data_histos], False, False,
+                        ["MC", "data"], "Sigmas of int. mult.", "#it{p}_{T} (GeV/#it{c})",
+                        "#sigma_{fit} " + f"{self.p_latexnmeson} {self.typean}", "", save_name)
 
         fileout.Close()
-
         # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
 
+    @staticmethod
+    def do_single_multi_trial(mt_fitter, h_invmass, save_file):
+        if mt_fitter.DoMultiTrials(h_invmass):
+            mt_fitter.SaveToRoot(save_file)
+
     # pylint: disable=too-many-locals, too-many-nested-blocks, too-many-branches
     def yield_syst(self):
-        if not self.do_syst:
+        if self.mt_syst_dict is None:
             self.logger.warning("Could not find parameters for doing systemtics. Skip...")
             return
         # Enable ROOT batch mode and reset in the end
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
 
-        from ROOT import AliHFInvMassMultiTrialFit
+        # Load configurable multi trial variations
+        rebin = self.mt_syst_dict.get("rebin", None)
+        fit_ranges_low = self.mt_syst_dict.get("massmin", None)
+        fit_ranges_up = self.mt_syst_dict.get("massmax", None)
+        bincount_sigma = self.mt_syst_dict.get("bincount_sigma", None)
+        bkg_funcs = self.mt_syst_dict.get("bkg_funcs", None)
+        if not bkg_funcs:
+            self.logger.error("You need to choose at least one background function for " \
+                              "the multi trial")
+            return
+
+        from ROOT import AliHFInvMassMultiTrialFit, AliVertexingHFUtils
+
+        if not os.path.exists(self.d_mt_results_path):
+            os.makedirs(self.d_mt_results_path)
 
         lfile = TFile.Open(self.n_filemass, "READ")
         lfile_mc = TFile.Open(self.n_filemass_mc, "READ")
@@ -704,6 +732,8 @@ class Analyzer:
                                              None, [self.case, self.typean])
         file_fits = TFile(file_fits_name, "READ")
 
+        # Collect arguments for parallelized multi trial run
+        mt_args = []
         for imult in range(self.p_nbin2):
             for ipt in range(self.p_nptbins):
                 bin_id = self.bin_matching[ipt]
@@ -721,12 +751,14 @@ class Analyzer:
                 mass_fitter_nominal = file_fits.GetDirectory(suffix).Get("fitter")
 
                 h_invmass_ = lfile.Get("hmass" + suffix)
+
                 h_invmass = TH1D()
                 h_invmass_.Copy(h_invmass)
-                h_invmass_mc = lfile_mc.Get("hmass" + suffix)
-                h_invmass_mc_refl = None
-                if self.include_reflection:
-                    h_invmass_mc_refl = lfile_mc.Get("hmass_refl" + suffix)
+
+                # Get MC histogram and rebin for central fit
+                h_invmass_mc_ = lfile_mc.Get("hmass" + suffix)
+                h_invmass_mc_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_mc_,
+                                                                     self.p_rebin[ipt], -1)
 
                 multi_trial = AliHFInvMassMultiTrialFit()
 
@@ -736,11 +768,7 @@ class Analyzer:
                 # That is not the MC sigma but the one from the nominal fit
                 multi_trial.SetSigmaGaussMC(mass_fitter_nominal.GetSigma())
 
-                # Set background functions to test
-                if not self.p_bkg_funcs_syst:
-                    self.logger.fatal("You need to choose at least one background function for " \
-                                      "the multi trial")
-                for bkg in self.p_bkg_funcs_syst:
+                for bkg in bkg_funcs:
                     if bkg == "kExpo":
                         multi_trial.SetUseExpoBackground(True)
                         continue
@@ -762,40 +790,77 @@ class Analyzer:
 
                     self.logger.fatal("Unknown background %s for multi trial", bkg)
 
-                if self.p_rebin_syst:
-                    rebin_steps = array("i", self.p_rebin_syst)
-                    multi_trial.ConfigureRebinSteps(len(self.p_rebin_syst), rebin_steps)
-                if self.p_fit_ranges_low_syst:
-                    low_lim_steps = array("d", self.p_fit_ranges_low_syst)
-                    multi_trial.ConfigureLowLimFitSteps(len(self.p_fit_ranges_low_syst),
+                if rebin:
+                    rebin_steps = array("i", rebin)
+                    multi_trial.ConfigureRebinSteps(len(rebin), rebin_steps)
+                if fit_ranges_low:
+                    low_lim_steps = array("d", fit_ranges_low)
+                    multi_trial.ConfigureLowLimFitSteps(len(fit_ranges_low),
                                                         low_lim_steps)
-                if self.p_fit_ranges_up_syst:
-                    up_lim_steps = array("d", self.p_fit_ranges_up_syst)
-                    multi_trial.ConfigureUpLimFitSteps(len(self.p_fit_ranges_up_syst), up_lim_steps)
+                if fit_ranges_up:
+                    up_lim_steps = array("d", fit_ranges_up)
+                    multi_trial.ConfigureUpLimFitSteps(len(fit_ranges_up), up_lim_steps)
+
+                if bincount_sigma:
+                    multi_trial.ConfigurenSigmaBinCSteps(len(bincount_sigma),
+                                                         array("d", bincount_sigma))
+
                 multi_trial.SetSaveBkgValue()
 
-                if h_invmass_mc_refl is not None:
-                    multi_trial.SetTemplatesForReflections(h_invmass_mc_refl, h_invmass_mc)
+                # Prepare for reflections if requested
+                h_invmass_mc = None
+                h_invmass_mc_refl = None
+                if self.include_reflection:
+                    h_invmass_mc_ = lfile_mc.Get("hmass" + suffix)
+                    h_invmass_mc_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_mc_,
+                                                                         self.p_rebin[ipt], -1)
+                    h_invmass_mc = TH1F()
+                    h_invmass_mc_rebin_.Copy(h_invmass_mc)
+                    h_invmass_mc_refl_ = lfile_mc.Get("hmass_refl" + suffix)
+                    h_invmass_mc_refl = AliVertexingHFUtils.AdaptTemplateRangeAndBinning(
+                        h_invmass_mc_refl_, h_invmass,
+                        self.p_massmin[ipt], self.p_massmax[ipt])
+                    if h_invmass_mc_refl.Integral() > 0.:
+                        multi_trial.SetTemplatesForReflections(h_invmass_mc_refl, h_invmass_mc_)
+                        r_over_s = h_invmass_mc.Integral(
+                            h_invmass_mc.FindBin(self.p_massmin[ipt]),
+                            h_invmass_mc.FindBin(self.p_massmax[ipt]))
+                        if r_over_s > 0.:
+                            r_over_s = h_invmass_mc_refl.Integral(
+                                h_invmass_mc_refl.FindBin(self.p_massmin[ipt]),
+                                h_invmass_mc_refl.FindBin(self.p_massmax[ipt])) / r_over_s
+                            multi_trial.SetFixRefoS(r_over_s)
+                    else:
+                        self.logger.warning("Reflection requested but template empty")
+
                 if self.p_includesecpeak[ipt]:
                     multi_trial.IncludeSecondGausPeak(self.p_masssecpeak,
                                                       self.p_fix_masssecpeak,
                                                       self.p_widthsecpeak,
                                                       self.p_fix_widthsecpeak)
 
-                success = multi_trial.DoMultiTrials(h_invmass)
-                if success:
-                    mt_filename = self.make_file_path(self.d_resultsallpdata, "multi_trial",
-                                                      "root", None, suffix_write)
-                    multi_trial.SaveToRoot(mt_filename)
                 # Just make sure it's kept until the workflow is done
                 self.root_objects.append(multi_trial)
+                mt_filename = self.make_file_path(self.d_mt_results_path, "multi_trial",
+                                                  "root", None, suffix_write)
+                mt_args.append((multi_trial, h_invmass, mt_filename,))
 
+        parallelizer(self.do_single_multi_trial, mt_args, 4, self.p_nbin2 * self.p_nptbins)
         self.plot_multi_trial()
 
         # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
 
     def plot_multi_trial(self):
+
+        if not os.path.exists(self.d_mt_results_path):
+            self.logger.error("Could not find multi trial results directory %s. Skip...",
+                              self.d_mt_results_path)
+            return
+
+        # Enable ROOT batch mode and reset in the end
+        tmp_is_root_batch = gROOT.IsBatch()
+        gROOT.SetBatch(True)
 
         gROOT.LoadMacro("PlotMultiTrial.C")
         from ROOT import PlotMultiTrial
@@ -804,7 +869,25 @@ class Analyzer:
                                             None, [self.case, self.typean])
         func_file = TFile.Open(func_filename, "READ")
 
+        # Some derived values from multi trial
+        mt_derived_filename = self.make_file_path(self.d_mt_results_path, "multi_trial_summary",
+                                                  "root", None, [self.case, self.typean])
+        mt_derived_file = TFile.Open(mt_derived_filename, "RECREATE")
+
+        max_chisquare_ndf = self.mt_syst_dict.get("max_chisquare_ndf", 2.)
+        # As this plotting function is called right after the actual multi trial,
+        # the background function list could also just be assumed to be there...
+        bkg_funcs = self.mt_syst_dict.get("bkg_funcs", None)
+        consider_free_sigma = self.mt_syst_dict.get("consider_free_sigma",
+                                                    [False for i in range(self.p_nptbins)])
+
         for imult in range(self.p_nbin2):
+            h_nominal = TH1F("h_nominal_sum", "", self.p_nptbins, array("d", self.ptranges))
+            h_fit_all = TH1F("h_yield_sum", "", self.p_nptbins, array("d", self.ptranges))
+            h_fit_all = TH1F("h_yield_sum", "", self.p_nptbins, array("d", self.ptranges))
+            h_bincount_all0 = TH1F("h_bincount_sum0", "", self.p_nptbins, array("d", self.ptranges))
+            h_bincount_all1 = TH1F("h_bincount_sum1", "", self.p_nptbins, array("d", self.ptranges))
+
             for ipt in range(self.p_nptbins):
                 bin_id = self.bin_matching[ipt]
 
@@ -817,23 +900,101 @@ class Analyzer:
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
 
+                mt_filename = self.make_file_path(self.d_mt_results_path, "multi_trial",
+                                                  "root", None, suffix_write)
+                if not os.path.exists(mt_filename):
+                    self.logger.warning("Multi trial file %s does not exist. MT might have " \
+                                        "failed before. Skipping...", mt_filename)
+                    continue
                 # Get the nominal fit
                 load_dir = func_file.GetDirectory(suffix)
                 mass_fitter = load_dir.Get("fitter")
 
                 rawYield = mass_fitter.GetRawYield()
+                rawYieldError = mass_fitter.GetRawYieldError()
                 mean_fit = mass_fitter.GetMean()
                 sigma_fit = mass_fitter.GetSigma()
                 chisquare_fit = mass_fitter.GetChiSquare()
 
-                mt_filename = self.make_file_path(self.d_resultsallpdata, "multi_trial",
-                                                  "root", None, suffix_write)
+                self.logger.info("Process file %s", mt_filename)
                 title = f"{self.lpt_finbinmin[ipt]} GeV/c < {self.v_var_binning} < " \
                         f"{self.lpt_finbinmax[ipt]} GeV/c, {self.lvar2_binmin[imult]} < " \
                         f"{self.v_var2_binning} < {self.lvar2_binmax[imult]}"
+                derived_dir = mt_derived_file.mkdir(suffix)
+
+                used_bkgs = array("b", ["kExpo" in bkg_funcs,
+                                        "kLin" in bkg_funcs,
+                                        "Pol2" in bkg_funcs,
+                                        "Pol3" in bkg_funcs,
+                                        "Pol4" in bkg_funcs,
+                                        "Pol5" in bkg_funcs])
+
                 PlotMultiTrial(mt_filename, rawYield, mean_fit, sigma_fit, chisquare_fit,
-                               self.p_max_chisquare_ndf_syst, self.d_resultsallpdata, suffix,
-                               title)
+                               max_chisquare_ndf, used_bkgs, consider_free_sigma[ipt],
+                               self.d_mt_results_path, suffix, title, derived_dir)
+
+                h_mt_fit = derived_dir.Get("h_mt_fit")
+                h_mt_bc0 = derived_dir.Get("h_mt_bc0")
+                h_mt_bc1 = derived_dir.Get("h_mt_bc1")
+
+                h_nominal.SetBinContent(ipt + 1, rawYield)
+                h_nominal.SetBinError(ipt + 1, rawYieldError)
+                h_fit_all.SetBinContent(ipt + 1, h_mt_fit.GetMean())
+                h_fit_all.SetBinError(ipt + 1, h_mt_fit.GetRMS())
+                h_bincount_all0.SetBinContent(ipt + 1, h_mt_bc0.GetMean())
+                h_bincount_all0.SetBinError(ipt + 1, h_mt_bc0.GetRMS())
+                h_bincount_all1.SetBinContent(ipt + 1, h_mt_bc1.GetMean())
+                h_bincount_all1.SetBinError(ipt + 1, h_mt_bc1.GetRMS())
+
+            filename_mt_summary = self.make_file_path(self.d_mt_results_path, "multi_trial_summary",
+                                                      "eps", None, [imult])
+
+            plot_histograms([h_nominal, h_fit_all, h_bincount_all0, h_bincount_all1], False, True,
+                            ["central fit", "mean MT fit", "mean MT BC (bkg. fit)",
+                             "mean MT BC (bkg. refit)"],
+                            f"{self.lvar2_binmin[imult]} < {self.v_var2_binning} " \
+                            f"< {self.lvar2_binmax[imult]}", "#it{p}_{T} (GeV/c)", "yield",
+                            "MT / central", filename_mt_summary, colors=[kBlack, kBlue, kGreen+2,
+                                                                         kOrange+5])
+            column_names = ["central fit", "mean MT fit", "mean MT BC (bkg. fit)",
+                            "mean MT BC (bkg. refit)",
+                            "rel.unc. central", "rel. (central -  MT fit)",
+                            "rel. (central - MT BC (bkg. fit))",
+                            "rel. (central -  MT BC (bkg. refit))"]
+            row_names = [f"{self.lpt_finbinmin[ipt]} GeV/c < {self.v_var_binning} < " \
+                         f"{self.lpt_finbinmax[ipt]} GeV/c" for ipt in range(self.p_nptbins)]
+            rows = []
+            for b in range(h_nominal.GetNbinsX()):
+                yield_nominal = h_nominal.GetBinContent(b + 1)
+                yield_nominal_err = h_nominal.GetBinError(b + 1)
+                yield_mt_fit = h_fit_all.GetBinContent(b + 1)
+                yield_mt_bc0 = h_bincount_all0.GetBinContent(b + 1)
+                yield_mt_bc1 = h_bincount_all1.GetBinContent(b + 1)
+                rel_centr_fit = yield_nominal_err / yield_nominal if yield_nominal > 0. \
+                        else 0.
+                rel_mt_fit = (yield_nominal - yield_mt_fit) / yield_nominal if yield_nominal > 0. \
+                        else 0.
+                rel_mt_bc0 = (yield_nominal - yield_mt_bc0) / yield_nominal if yield_nominal > 0. \
+                        else 0.
+                rel_mt_bc1 = (yield_nominal - yield_mt_bc1) / yield_nominal if yield_nominal > 0. \
+                        else 0.
+                rows.append([f"{yield_nominal:.2f} ({yield_nominal_err:.2f})",
+                             f"{yield_mt_fit:.2f} ({h_fit_all.GetBinError(b + 1):.2f})",
+                             f"{yield_mt_bc0:.2f} ({h_bincount_all0.GetBinError(b + 1):.2f})",
+                             f"{yield_mt_bc1:.2f} ({h_bincount_all1.GetBinError(b + 1):.2f})",
+                             f"{rel_centr_fit:.3f}",
+                             f"{rel_mt_fit:.3f}",
+                             f"{rel_mt_bc0:.3f}",
+                             f"{rel_mt_bc1:.3f}"])
+
+            caption = f"{self.lvar2_binmin[imult]} < {self.v_var2_binning} < " \
+                      f"{self.lvar2_binmax[imult]}"
+            filename_mt_summary = self.make_file_path(self.d_mt_results_path, "multi_trial_summary",
+                                                      "tex", None, [imult])
+            make_latex_table(column_names, row_names, rows, caption, filename_mt_summary)
+
+        # Reset to former mode
+        gROOT.SetBatch(tmp_is_root_batch)
 
     def efficiency(self):
         self.loadstyle()
@@ -1006,11 +1167,13 @@ class Analyzer:
         # Get simulated pt_cand vs. pt_jet vs. z of non-prompt jets.
         his_sim_z_fd = file_resp.Get("his_ptc_ptjet_z_fd")
         his_sim_z_fd.Scale(1./n_jets_gen) # Normalise by the total number of selected jets.
-        his_sim_z_fd_2d = his_sim_z_fd.Project3D("yz") # final feed-down histogram
-        file_out.cd()
-        his_sim_z_fd_2d.Write("fd_z_ptjet_gen")
+        his_sim_z_fd_2d_gen = his_sim_z_fd.Project3D("yz")
+        bins_z = get_bins(his_sim_z_fd_2d_gen.GetXaxis())
+        bins_ptjet = get_bins(his_sim_z_fd_2d_gen.GetYaxis())
+        his_sim_z_fd_2d_eff = TH2F("fd_z_ptjet_eff", "fd_z_ptjet_eff", \
+            len(bins_z) - 1, bins_z, len(bins_ptjet) - 1, bins_ptjet) # final feed-down histogram
+        his_sim_z_fd_2d_eff.Sumw2()
         # x axis = z, y axis = pt_jet
-        his_sim_z_fd_2d.Reset()
         # Scale with the ratio of efficiencies.
         # loop over pt_jet bins
         for i_ptjet in range(self.p_nbin2):
@@ -1023,31 +1186,72 @@ class Analyzer:
             his_eff_fd.Divide(his_eff_pr)
             his_eff_ratio = his_eff_fd
             # loop over z bins
-            for i_z in range(his_sim_z_fd_2d.GetNbinsX()):
+            for i_z in range(his_sim_z_fd_2d_eff.GetNbinsX()):
                 bin_z = i_z + 1
                 his_sim_z_fd.GetYaxis().SetRange(bin_ptjet, bin_ptjet)
                 his_sim_z_fd.GetZaxis().SetRange(bin_z, bin_z)
                 his_sim_ptc_fd = his_sim_z_fd.Project3D("x") # pt_cand
                 his_sim_ptc_fd.Multiply(his_eff_ratio)
-                his_sim_z_fd_2d.SetBinContent(bin_z, bin_ptjet, his_sim_ptc_fd.Integral())
-            can_ff_fd = TCanvas("can_fd_z%d" % i_ptjet, "Feeddown FF", 800, 600)
-            his_ff_fd = his_sim_z_fd_2d.ProjectionX("ff%d" % i_ptjet, bin_ptjet, bin_ptjet, "e")
-            his_ff_fd.GetYaxis().SetTitle("#frac{1}{#it{N}_{jet}} #frac{d#it{N}}{d#it{z}}")
-            his_ff_fd.GetYaxis().SetTitleOffset(1.6)
-            his_ff_fd.GetYaxis().SetTitleFont(42)
-            his_ff_fd.GetYaxis().SetLabelFont(42)
-            his_ff_fd.Draw()
-            can_ff_fd.SetLeftMargin(0.15)
-            can_ff_fd.SaveAs("%s/Feeddown-z-effscaled_%s%s%s.eps" % (self.d_resultsallpmc, \
-                            self.case, self.typean, i_ptjet))
+                his_sim_z_fd_2d_eff.SetBinContent(bin_z, bin_ptjet, his_sim_ptc_fd.Integral())
+                his_sim_z_fd_2d_eff.SetBinError(bin_z, bin_ptjet, 0)
 
         # Smear (fold) the simulated distribution with the response matrix.
         resp_z = file_resp.Get("resp_z")
-        his_sim_z_fd_2d_folded = resp_z.ApplyToTruth(his_sim_z_fd_2d)
+        his_sim_z_fd_2d_folded = resp_z.ApplyToTruth(his_sim_z_fd_2d_eff)
+        # Alternative way of folding without RooUnfold
+        #his_sim_z_fd_2d_folded = his_sim_z_fd_2d_eff.Clone("his_sim_z_fd_2d_folded")
+        #his_sim_z_fd_2d_folded.Reset()
+        #his_sim_z_fd_2d_folded = folding(his_sim_z_fd_2d_eff, resp_z, his_sim_z_fd_2d_folded)
+        resp_z_proj = resp_z.Hresponse()
+        can_resp_z = TCanvas("can_resp_z", "can_resp_z", 800, 600)
+        resp_z_proj.Draw("colz")
+        can_resp_z.SetLogz()
+        can_resp_z.SaveAs("%s/Feeddown-z-response_%s%s.eps" \
+                % (self.d_resultsallpmc, self.case, self.typean))
+
+        for i_ptjet in range(self.p_nbin2):
+            bin_ptjet = i_ptjet + 1
+            can_ff_fd_fold = TCanvas("can_fd_z_all%d" % i_ptjet, "Feeddown FF all", 800, 600)
+            his_ff_fd_gen = his_sim_z_fd_2d_gen.ProjectionX("ff_gen%d" \
+                % i_ptjet, bin_ptjet, bin_ptjet)
+            his_ff_fd_eff = his_sim_z_fd_2d_eff.ProjectionX("ff_eff%d" \
+                % i_ptjet, bin_ptjet, bin_ptjet)
+            his_ff_fd_fold = his_sim_z_fd_2d_folded.ProjectionX("ff_fold%d" \
+                % i_ptjet, bin_ptjet, bin_ptjet)
+            his_ff_fd_gen.GetYaxis().SetTitle("#frac{1}{#it{N}_{jet}} #frac{d#it{N}}{d#it{z}}")
+            his_ff_fd_gen.GetYaxis().SetTitleOffset(1.6)
+            his_ff_fd_gen.GetYaxis().SetTitleFont(42)
+            his_ff_fd_gen.GetYaxis().SetLabelFont(42)
+            his_ff_fd_gen.GetYaxis().SetRangeUser(0.0, 1.1 * max(his_ff_fd_gen.GetMaximum(), \
+                his_ff_fd_eff.GetMaximum(), his_ff_fd_fold.GetMaximum()))
+            his_ff_fd_gen.SetLineColor(1)
+            his_ff_fd_eff.SetLineColor(2)
+            his_ff_fd_fold.SetLineColor(3)
+            leg_ff_fd = TLegend(.15, .65, .35, .85)
+            leg_ff_fd.SetBorderSize(0)
+            leg_ff_fd.SetFillColor(0)
+            leg_ff_fd.SetFillStyle(0)
+            leg_ff_fd.SetTextFont(42)
+            leg_ff_fd.SetTextSize(0.035)
+            his_ff_fd_gen.SetTitle("")
+            his_ff_fd_eff.SetTitle("")
+            his_ff_fd_fold.SetTitle("")
+            his_ff_fd_gen.Draw("")
+            his_ff_fd_eff.Draw("same")
+            his_ff_fd_fold.Draw("same")
+            leg_ff_fd.AddEntry(his_ff_fd_gen, "generated", "LEP")
+            leg_ff_fd.AddEntry(his_ff_fd_eff, "eff.-scaled", "LEP")
+            leg_ff_fd.AddEntry(his_ff_fd_fold, "folded", "LEP")
+            leg_ff_fd.Draw()
+            can_ff_fd_fold.SetLeftMargin(0.15)
+            can_ff_fd_fold.SaveAs("%s/Feeddown-z-all_%s%s%s.eps" \
+                % (self.d_resultsallpmc, self.case, self.typean, i_ptjet))
 
         file_out.cd()
-        his_sim_z_fd_2d.Write("fd_z_ptjet_eff")
+        his_sim_z_fd_2d_gen.Write("fd_z_ptjet_gen")
+        his_sim_z_fd_2d_eff.Write("fd_z_ptjet_eff")
         his_sim_z_fd_2d_folded.Write("fd_z_ptjet_fold")
+        resp_z_proj.Write("resp_z_proj")
 
         file_resp.Close()
         file_eff.Close()
@@ -1292,27 +1496,66 @@ class Analyzer:
         cCrossvsvar2.SaveAs("%s/Cross%s%sVs%s.eps" % (self.d_resultsallpdata,
                                                       self.case, self.typean, self.v_var2_binning))
 
+
     @staticmethod
-    def calculate_norm(filename, trigger, var, multmin, multmax, doweight):
+    def calculate_norm(mode, filename, trigger, var, multmin, multmax, doweight):
         fileout = TFile.Open(filename, "read")
+        labeltrigger = "hbit%svs%s" % (trigger, var)
+        norm = -1
+
         if not fileout:
             return -1
-        namehistomulti = None
-        if doweight is True:
-            namehistomulti = "hmultweighted%svs%s" % (trigger, var)
-        else:
-            namehistomulti = "hmult%svs%s" % (trigger, var)
-        hmult = fileout.Get(namehistomulti)
-        if not hmult:
-            print("MISSING NORMALIZATION MULTIPLICITY")
-        binminv = hmult.GetXaxis().FindBin(multmin)
-        binmaxv = hmult.GetXaxis().FindBin(multmax)
-        norm = hmult.Integral(binminv, binmaxv)
+        if mode == 0:
+            namehistomulti = None
+            if doweight is True:
+                namehistomulti = "hmultweighted%svs%s" % (trigger, var)
+            else:
+                namehistomulti = "hmult%svs%s" % (trigger, var)
+            hmult = fileout.Get(namehistomulti)
+            if not hmult:
+                print("MISSING NORMALIZATION MULTIPLICITY")
+
+            binminv = hmult.GetXaxis().FindBin(multmin)
+            binmaxv = hmult.GetXaxis().FindBin(multmax)
+            norm = hmult.Integral(binminv, binmaxv)
+
+        if mode == 1:
+            namehsel = None
+            namehnovtx = None
+            namehvtxout = None
+            if doweight is True:
+                namehsel = 'sel_' + labeltrigger
+                namehnovtx = 'novtx_' + labeltrigger
+                namehvtxout = 'vtxout_' + labeltrigger
+            else:
+                namehsel = 'sel_' + labeltrigger + "weighted"
+                namehnovtx = 'novtx_' + labeltrigger + "weighted"
+                namehvtxout = 'vtxout_' + labeltrigger + "weighted"
+            print(namehsel)
+            print(namehnovtx)
+            print(namehvtxout)
+            hsel = fileout.Get(namehsel)
+            hnovt = fileout.Get(namehnovtx)
+            hvtxout = fileout.Get(namehvtxout)
+
+            binminv = hsel.GetXaxis().FindBin(multmin)
+            binmaxv = hsel.GetXaxis().FindBin(multmax)
+
+            if not hsel:
+                print("Missing hsel")
+            if not hnovt:
+                print("Missing hnovt")
+            if not hvtxout:
+                print("Missing hvtxout")
+            n_sel = hsel.Integral(binminv, binmaxv)
+            n_novtx = hnovt.Integral(binminv, binmaxv)
+            n_vtxout = hvtxout.Integral(binminv, binmaxv)
+            if n_sel + n_vtxout > 0:
+                norm = (n_sel + n_novtx) - n_novtx * n_vtxout / (n_sel + n_vtxout)
         return norm
 
     def makenormyields(self):
         gROOT.SetBatch(True)
-        print("SSSSSSSSSSSSSSS")
         self.loadstyle()
         #self.test_aliphysics()
         #filedataval = TFile.Open(self.f_evtnorm)
@@ -1322,7 +1565,8 @@ class Analyzer:
         yield_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                              None, [self.case, self.typean])
         gROOT.LoadMacro("HFPtSpectrum.C")
-        from ROOT import HFPtSpectrum
+        gROOT.LoadMacro("HFPtSpectrum2.C")
+        from ROOT import HFPtSpectrum, HFPtSpectrum2
         for imult in range(self.p_nbin2):
             bineff = -1
             if self.p_bineff is None:
@@ -1337,31 +1581,48 @@ class Analyzer:
             fileoutcrossmult = "%s/finalcross%s%smult%d.root" % \
                 (self.d_resultsallpdata, self.case, self.typean, imult)
             norm = -1
-            norm = self.calculate_norm(self.f_evtnorm, self.triggerbit, \
+            norm = self.calculate_norm(1, self.f_evtnorm, self.triggerbit, \
                          self.v_var2_binning, self.lvar2_binmin[imult], \
                          self.lvar2_binmax[imult], self.apply_weights)
-            print(self.apply_weights, self.lvar2_binmin[imult], self.lvar2_binmax[imult], norm)
-#
-#            hSelMult = filedataval.Get('sel_' + labelhisto)
-#            hNoVtxMult = filedataval.Get('novtx_' + labelhisto)
-#            hVtxOutMult = filedataval.Get('vtxout_' + labelhisto)
-#
-#            # normalisation based on multiplicity histograms
-#            binminv = hSelMult.GetXaxis().FindBin(self.lvar2_binmin[imult])
-#            binmaxv = hSelMult.GetXaxis().FindBin(self.lvar2_binmax[imult])
-#
-#            n_sel = hSelMult.Integral(binminv, binmaxv)
-#            n_novtx = hNoVtxMult.Integral(binminv, binmaxv)
-#            n_vtxout = hVtxOutMult.Integral(binminv, binmaxv)
-#            norm = (n_sel + n_novtx) - n_novtx * n_vtxout / (n_sel + n_vtxout)
-#
-#            print('new normalization: ', norm, norm_old)
-#
-            # Now use the function we have just compiled above
-            HFPtSpectrum(self.p_indexhpt, \
-                "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
-                fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
-                fileoutcrossmult, norm, self.p_sigmav0 * 1e12, self.p_fd_method, self.p_cctype)
+            normold = self.calculate_norm(0, self.f_evtnorm, self.triggerbit, \
+                         self.v_var2_binning, self.lvar2_binmin[imult], \
+                         self.lvar2_binmax[imult], self.apply_weights)
+            print("--------- NORMALIZATION -----------")
+            print(self.triggerbit, self.v_var2_binning,
+                  self.lvar2_binmin[imult], self.lvar2_binmax[imult])
+            print("N. events selected=", normold, "N. events counter =", norm)
+
+            filecrossmb = None
+            if self.p_fprompt_from_mb is True and self.p_fd_method == 2:
+                if self.p_corrmb_typean is not None:
+                    pathtoreplace = os.path.basename(os.path.normpath(self.d_resultsallpdata))
+                    pathreplaceby = os.path.basename(os.path.normpath(self.results_mb))
+                    resultpathmb = self.d_resultsallpdata.replace(pathtoreplace, pathreplaceby)
+                    filecrossmb = "%s/finalcross%s%smult0.root" % (resultpathmb, self.case, \
+                                                                   self.p_corrmb_typean)
+                    self.logger.info("Looking for %s", filecrossmb)
+                    if os.path.exists(filecrossmb):
+                        self.logger.info("Calculating spectra using fPrompt from MB. "\
+                                         "Assuming MB is bin 0: %s", filecrossmb)
+                    else:
+                        self.logger.fatal("First run MB if you want to use MB fPrompt!")
+
+            if self.p_fprompt_from_mb is None or self.p_fd_method != 2 or \
+              (imult == 0 and self.p_corrmb_typean is None):
+                HFPtSpectrum(self.p_indexhpt, \
+                 "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
+                 fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
+                 fileoutcrossmult, norm, self.p_sigmav0 * 1e12, self.p_fd_method, self.p_cctype)
+            else:
+                if filecrossmb is None:
+                    filecrossmb = "%s/finalcross%s%smult0.root" % \
+                                   (self.d_resultsallpdata, self.case, self.typean)
+                    self.logger.info("Calculating spectra using fPrompt from MB. "\
+                                     "Assuming MB is bin 0: %s", filecrossmb)
+                HFPtSpectrum2(filecrossmb, fileouteff, namehistoeffprompt, namehistoefffeed, \
+                              yield_filename, nameyield, fileoutcrossmult, norm, \
+                              self.p_sigmav0 * 1e12)
+
         fileoutcrosstot = TFile.Open("%s/finalcross%s%smulttot.root" % \
             (self.d_resultsallpdata, self.case, self.typean), "recreate")
 
@@ -1416,174 +1677,197 @@ class Analyzer:
         gROOT.SetBatch(True)
         self.loadstyle()
         filedata = TFile.Open(self.f_evtvaldata)
-        triggerlist = ["HighMultV0", "HighMultSPD", "HighMultV0"]
+        triggerlist = ["HighMultV0", "HighMultSPD", "INT7"]
         varlist = ["v0m_corr", "n_tracklets_corr", "perc_v0m"]
         fileout_name = "%s/correctionsweights.root" % self.d_valevtdata
         fileout = TFile.Open(fileout_name, "recreate")
         fileout.cd()
-        for i, trigger in enumerate(triggerlist):
-            labeltriggerANDMB = "hbit%sANDINT7vs%s" % (triggerlist[i], varlist[i])
-            labelMB = "hbitINT7vs%s" % varlist[i]
-            labeltrigger = "hbit%svs%s" % (triggerlist[i], varlist[i])
+        for ivar, var in enumerate(varlist):
+            labelMB = "hbitINT7vs%s" % (var)
             hden = filedata.Get(labelMB)
-            hden.SetName("hmultINT7vs%s" % (varlist[i]))
+            hden.SetName("hmultINT7vs%s" % (var))
             hden.Write()
-            heff = filedata.Get(labeltriggerANDMB)
-            if not heff or not hden:
-                continue
-            heff.Divide(heff, hden, 1.0, 1.0, "B")
-            hratio = filedata.Get(labeltrigger)
-            hmult = hratio.Clone("hmult%svs%s" % (triggerlist[i], varlist[i]))
-            hmultweighted = hratio.Clone("hmultweighted%svs%s" % (triggerlist[i], varlist[i]))
-            if not hratio:
-                continue
-            hratio.Divide(hratio, hden, 1.0, 1.0, "B")
+            for trigger in triggerlist:
+                labeltriggerANDMB = "hbit%sANDINT7vs%s" % (trigger, var)
+                labeltrigger = "hbit%svs%s" % (trigger, var)
+                heff = filedata.Get(labeltriggerANDMB)
+                if not heff or not hden:
+                    continue
+                heff.Divide(heff, hden, 1.0, 1.0, "B")
+                hratio = filedata.Get(labeltrigger)
+                hmult = hratio.Clone("hmult%svs%s" % (trigger, var))
+                hmultweighted = hratio.Clone("hmultweighted%svs%s" % (trigger, var))
+                if not hratio:
+                    continue
+                hratio.Divide(hratio, hden, 1.0, 1.0, "B")
 
-            ctrigger = TCanvas('ctrigger%s' % trigger, 'The Fit Canvas')
-            ctrigger.SetCanvasSize(3500, 2000)
-            ctrigger.Divide(3, 2)
+                ctrigger = TCanvas('ctrigger%s' % trigger, 'The Fit Canvas')
+                ctrigger.SetCanvasSize(3500, 2000)
+                ctrigger.Divide(3, 2)
 
+                ctrigger.cd(1)
+                heff.SetMaximum(2.)
+                heff.GetXaxis().SetTitle("offline %s" % var)
+                heff.SetMinimum(0.)
+                heff.GetYaxis().SetTitle("trigger efficiency from MB events")
+                heff.SetLineColor(1)
+                heff.Draw()
+                heff.Write()
 
+                ctrigger.cd(2)
+                hratio.GetXaxis().SetTitle("offline %s" % var)
+                hratio.GetYaxis().SetTitle("ratio triggered/MB")
+                hratio.GetYaxis().SetTitleOffset(1.3)
+                hratio.Write()
+                hratio.SetLineColor(1)
+                hratio.Draw()
+                func = TF1("func_%s_%s" % (trigger, var), \
+                           "([0]/(1+TMath::Exp(-[1]*(x-[2]))))", 0, 1000)
+                if ivar == 0:
+                    func.SetParameters(300, .1, 570)
+                    func.SetParLimits(1, 0., 10.)
+                    func.SetParLimits(2, 0., 1000.)
+                    func.SetRange(550., 1100.)
+                    func.SetLineWidth(1)
+                    hratio.Fit(func, "L", "", 550, 1100)
+                    func.Draw("same")
+                    func.SetLineColor(ivar+1)
+                if ivar == 1:
+                    func.SetParameters(100, .1, 50)
+                    func.SetParLimits(1, 0., 10.)
+                    func.SetParLimits(2, 0., 200.)
+                    func.SetRange(45., 105)
+                    func.SetLineWidth(1)
+                    hratio.Fit(func, "L", "", 45, 105)
+                    func.SetLineColor(ivar+1)
+                if ivar == 2:
+                    func.SetParameters(315, -30., .2)
+                    func.SetParLimits(1, -100., 0.)
+                    func.SetParLimits(2, 0., .5)
+                    func.SetRange(0., .15)
+                    func.SetLineWidth(1)
+                    hratio.Fit(func, "w", "", 0, .15)
+                    func.SetLineColor(ivar+1)
+                func.Write()
+                funcnorm = func.Clone("funcnorm_%s_%s" % (trigger, var))
+                funcnorm.FixParameter(0, funcnorm.GetParameter(0)/funcnorm.GetMaximum())
+                funcnorm.Write()
+                ctrigger.cd(3)
+                maxhistx = 0
+                if ivar == 0:
+                    minhistx = 300
+                    maxhistx = 1000
+                    fulleffmin = 700
+                    fulleffmax = 800
+                elif ivar == 1:
+                    minhistx = 40
+                    maxhistx = 150
+                    fulleffmin = 80
+                    fulleffmax = 90
+                else:
+                    minhistx = .0
+                    maxhistx = .5
+                    fulleffmin = 0.
+                    fulleffmax = 0.03
+                hempty = TH1F("hempty_%d" % ivar, "hempty", 100, 0, maxhistx)
+                hempty.GetYaxis().SetTitleOffset(1.2)
+                hempty.GetYaxis().SetTitleFont(42)
+                hempty.GetXaxis().SetTitleFont(42)
+                hempty.GetYaxis().SetLabelFont(42)
+                hempty.GetXaxis().SetLabelFont(42)
+                hempty.GetXaxis().SetTitle("offline %s" % var)
+                hempty.GetYaxis().SetTitle("trigger efficiency from effective")
+                hempty.Draw()
+                funcnorm.SetLineColor(1)
+                funcnorm.Draw("same")
 
-            ctrigger.cd(1)
-            heff.SetMaximum(2.)
-            heff.GetXaxis().SetTitle("offline %s" % varlist[i])
-            heff.SetMinimum(0.)
-            heff.GetYaxis().SetTitle("trigger efficiency from MB events")
-            heff.SetLineColor(1)
-            heff.Draw()
-            heff.Write()
+                ctrigger.cd(4)
+                gPad.SetLogy()
+                leg1 = TLegend(.2, .75, .4, .85)
+                leg1.SetBorderSize(0)
+                leg1.SetFillColor(0)
+                leg1.SetFillStyle(0)
+                leg1.SetTextFont(42)
+                leg1.SetTextSize(0.035)
+                hmult.GetXaxis().SetTitle("offline %s" % var)
+                hmult.GetYaxis().SetTitle("entries")
+                hmult.SetLineColor(1)
+                hden.SetLineColor(2)
+                hmultweighted.SetLineColor(3)
+                hmult.Draw()
+                hmult.SetMaximum(1e10)
+                hden.Draw("same")
+                for ibin in range(hmult.GetNbinsX()):
+                    myweight = funcnorm.Eval(hmult.GetBinCenter(ibin + 1))
+                    hmultweighted.SetBinContent(ibin + 1, hmult.GetBinContent(ibin+1) / myweight)
+                hmult.Write()
+                hmultweighted.Write()
+                hmultweighted.Draw("same")
+                leg1.AddEntry(hden, "MB distribution", "LEP")
+                leg1.AddEntry(hmult, "triggered uncorr", "LEP")
+                leg1.AddEntry(hmultweighted, "triggered corr.", "LEP")
+                leg1.Draw()
+                print("event before", hmult.GetEntries(), "after",
+                      hmultweighted.Integral())
+                ctrigger.cd(5)
+                leg2 = TLegend(.2, .75, .4, .85)
+                leg2.SetBorderSize(0)
+                leg2.SetFillColor(0)
+                leg2.SetFillStyle(0)
+                leg2.SetTextFont(42)
+                leg2.SetTextSize(0.035)
+                linear = TF1("lin_%s_%s" % (trigger, var), \
+                           "[0]", fulleffmin, fulleffmax)
+                hratioMBcorr = hmultweighted.Clone("hratioMBcorr")
+                hratioMBcorr.Divide(hden)
+                hratioMBuncorr = hmult.Clone("hratioMBuncorr")
+                hratioMBuncorr.Divide(hden)
+                hratioMBuncorr.Fit(linear, "w", "", fulleffmin, fulleffmax)
+                hratioMBuncorr.Scale(1./linear.GetParameter(0))
+                hratioMBcorr.Scale(1./linear.GetParameter(0))
+                hratioMBcorr.SetLineColor(3)
+                hratioMBuncorr.SetLineColor(2)
+                hratioMBcorr.GetXaxis().SetTitle("offline %s" % var)
+                hratioMBcorr.GetYaxis().SetTitle("entries")
+                hratioMBcorr.GetXaxis().SetRangeUser(minhistx, maxhistx)
+                hratioMBcorr.GetYaxis().SetRangeUser(0.8, 1.2)
+                hratioMBcorr.Draw()
+                hratioMBuncorr.Draw("same")
+                leg2.AddEntry(hratioMBcorr, "triggered/MB", "LEP")
+                leg2.AddEntry(hratioMBuncorr, "triggered/MB corr.", "LEP")
+                leg2.Draw()
+                ctrigger.cd(6)
+                ptext = TPaveText(.05, .1, .95, .8)
+                ptext.AddText("%s" % (trigger))
+                ptext.AddText("MB events=%f M" % (float(hden.Integral())/1.e6))
+                ptext.AddText("%s events=%f M" % (trigger, float(hmult.Integral())/1.e6))
+                ptext.Draw()
 
-            ctrigger.cd(2)
-            hratio.GetXaxis().SetTitle("offline %s" % varlist[i])
-            hratio.GetYaxis().SetTitle("ratio triggered/MB")
-            hratio.GetYaxis().SetTitleOffset(1.3)
-            hratio.Write()
-            hratio.SetLineColor(1)
-            hratio.Draw()
-            func = TF1("func_%s_%s" % (triggerlist[i], varlist[i]), \
-                       "([0]/(1+TMath::Exp(-[1]*(x-[2]))))", 0, 1000)
-            if i == 0:
-                func.SetParameters(300, .1, 570)
-                func.SetParLimits(1, 0., 10.)
-                func.SetParLimits(2, 0., 1000.)
-                func.SetRange(550., 1100.)
-                func.SetLineWidth(1)
-                hratio.Fit(func, "L", "", 550, 1100)
-                func.Draw("same")
-                func.SetLineColor(i+1)
-            if i == 1:
-                func.SetParameters(100, .1, 50)
-                func.SetParLimits(1, 0., 10.)
-                func.SetParLimits(2, 0., 200.)
-                func.SetRange(45., 105)
-                func.SetLineWidth(1)
-                hratio.Fit(func, "L", "", 45, 105)
-                func.SetLineColor(i+1)
-            if i == 2:
-                func.SetParameters(315, -30., .2)
-                func.SetParLimits(1, -100., 0.)
-                func.SetParLimits(2, 0., .5)
-                func.SetRange(0., .15)
-                func.SetLineWidth(1)
-                hratio.Fit(func, "w", "", 0, .15)
-                func.SetLineColor(i+1)
-            func.Write()
-            funcnorm = func.Clone("funcnorm_%s_%s" % (triggerlist[i], varlist[i]))
-            funcnorm.FixParameter(0, funcnorm.GetParameter(0)/funcnorm.GetMaximum())
-            funcnorm.Write()
-            ctrigger.cd(3)
-            maxhistx = 0
-            if i == 0:
-                minhistx = 300
-                maxhistx = 1000
-                fulleffmin = 700
-                fulleffmax = 800
-            elif i == 1:
-                minhistx = 40
-                maxhistx = 150
-                fulleffmin = 80
-                fulleffmax = 90
-            else:
-                minhistx = .0
-                maxhistx = .5
-                fulleffmin = 0.
-                fulleffmax = 0.03
-            hempty = TH1F("hempty_%d" % i, "hempty", 100, 0, maxhistx)
-            hempty.GetYaxis().SetTitleOffset(1.2)
-            hempty.GetYaxis().SetTitleFont(42)
-            hempty.GetXaxis().SetTitleFont(42)
-            hempty.GetYaxis().SetLabelFont(42)
-            hempty.GetXaxis().SetLabelFont(42)
-            hempty.GetXaxis().SetTitle("offline %s" % varlist[i])
-            hempty.GetYaxis().SetTitle("trigger efficiency from effective")
-            hempty.Draw()
-            funcnorm.SetLineColor(1)
-            funcnorm.Draw("same")
+                hsel = filedata.Get('sel_' + labeltrigger)
+                hnovtx = filedata.Get('novtx_' + labeltrigger)
+                hvtxout = filedata.Get('vtxout_' + labeltrigger)
+                hselweighted = hsel.Clone('sel_' + labeltrigger + "weighted")
+                hnovtxweighted = hnovtx.Clone('novtx_' + labeltrigger + "weighted")
+                hvtxoutweighted = hvtxout.Clone('vtxout_' + labeltrigger + "weighted")
 
-            ctrigger.cd(4)
-            gPad.SetLogy()
-            leg1 = TLegend(.2, .75, .4, .85)
-            leg1.SetBorderSize(0)
-            leg1.SetFillColor(0)
-            leg1.SetFillStyle(0)
-            leg1.SetTextFont(42)
-            leg1.SetTextSize(0.035)
-            hmult.GetXaxis().SetTitle("offline %s" % varlist[i])
-            hmult.GetYaxis().SetTitle("entries")
-            hmult.SetLineColor(1)
-            hden.SetLineColor(2)
-            hmultweighted.SetLineColor(3)
-            hmult.Draw()
-            hmult.SetMaximum(1e10)
-            hden.Draw("same")
-            for ibin in range(hmult.GetNbinsX()):
-                myweight = funcnorm.Eval(hmult.GetBinCenter(ibin + 1))
-                hmultweighted.SetBinContent(ibin + 1, hmult.GetBinContent(ibin+1) / myweight)
-            hmult.Write()
-            hmultweighted.Write()
-            hmultweighted.Draw("same")
-            leg1.AddEntry(hden, "MB distribution", "LEP")
-            leg1.AddEntry(hmult, "triggered uncorr", "LEP")
-            leg1.AddEntry(hmultweighted, "triggered corr.", "LEP")
-            leg1.Draw()
-            print("event before", hmult.GetEntries(), "after",
-                  hmultweighted.Integral())
+                for ibin in range(hmult.GetNbinsX()):
+                    myweight = funcnorm.Eval(hsel.GetBinCenter(ibin + 1))
+                    hselweighted.SetBinContent(ibin + 1, \
+                        hsel.GetBinContent(ibin+1) / myweight)
+                    hnovtxweighted.SetBinContent(ibin + 1, \
+                        hnovtx.GetBinContent(ibin+1) / myweight)
+                    hvtxoutweighted.SetBinContent(ibin + 1, \
+                        hvtxout.GetBinContent(ibin+1) / myweight)
+                hsel.Write()
+                hnovtx.Write()
+                hvtxout.Write()
+                hselweighted.Write()
+                hnovtxweighted.Write()
+                hvtxoutweighted.Write()
 
-            ctrigger.cd(5)
-            leg2 = TLegend(.2, .75, .4, .85)
-            leg2.SetBorderSize(0)
-            leg2.SetFillColor(0)
-            leg2.SetFillStyle(0)
-            leg2.SetTextFont(42)
-            leg2.SetTextSize(0.035)
-            linear = TF1("lin_%s_%s" % (triggerlist[i], varlist[i]), \
-                       "[0]", fulleffmin, fulleffmax)
-            hratioMBcorr = hmultweighted.Clone("hratioMBcorr")
-            hratioMBcorr.Divide(hden)
-            hratioMBuncorr = hmult.Clone("hratioMBuncorr")
-            hratioMBuncorr.Divide(hden)
-            hratioMBuncorr.Fit(linear, "w", "", fulleffmin, fulleffmax)
-            hratioMBuncorr.Scale(1./linear.GetParameter(0))
-            hratioMBcorr.Scale(1./linear.GetParameter(0))
-            hratioMBcorr.SetLineColor(3)
-            hratioMBuncorr.SetLineColor(2)
-            hratioMBcorr.GetXaxis().SetTitle("offline %s" % varlist[i])
-            hratioMBcorr.GetYaxis().SetTitle("entries")
-            hratioMBcorr.GetXaxis().SetRangeUser(minhistx, maxhistx)
-            hratioMBcorr.GetYaxis().SetRangeUser(0.8, 1.2)
-            hratioMBcorr.Draw()
-            hratioMBuncorr.Draw("same")
-            leg2.AddEntry(hratioMBcorr, "triggered/MB", "LEP")
-            leg2.AddEntry(hratioMBuncorr, "triggered/MB corr.", "LEP")
-            leg2.Draw()
-            ctrigger.cd(6)
-            ptext = TPaveText(.05, .1, .95, .8)
-            ptext.AddText("%s" % (trigger))
-            ptext.Draw()
-            ctrigger.SaveAs(self.make_file_path(self.d_valevtdata, \
-                    "ctrigger_%s_%s" % (trigger, varlist[i]), "eps", \
-                    None, None))
+                ctrigger.SaveAs(self.make_file_path(self.d_valevtdata, \
+                        "ctrigger_%s_%s" % (trigger, var), "eps", \
+                        None, None))
 
         cscatter = TCanvas("cscatter", 'The Fit Canvas')
         cscatter.SetCanvasSize(2100, 800)

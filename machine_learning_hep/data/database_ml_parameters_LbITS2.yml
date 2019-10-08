@@ -258,7 +258,7 @@ LbITS2:
       masssecpeak: 0.
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: false
+      SetFixGaussianSigma: [false,false,false,false,false]
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
@@ -281,7 +281,13 @@ LbITS2:
       
   systematics:
     probvariation:
-      prob_range: [0.5,0.6,0.7]
+      useperiod: [1] #period from where to define prob cuts
+      ncutvar: 10 #number of looser and tighter variations
+      maxperccutvar: 0.25 #max diff in efficiency for loosest/tightest var
+      cutvarminrange: [0.70, 0.50, 0.50, 0.3, 0.3] #Min starting point for scan
+      cutvarmaxrange: [0.95, 0.90, 0.90, 0.80, 0.80] #Max starting point for scan
+      fixedmean: True #Fix mean cutvar histo to central fit
+      fixedsigma: True #Fix sigma cutvar histo to central fit
 
   validation:
     data:

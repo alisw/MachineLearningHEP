@@ -17,7 +17,7 @@ main script for doing data processing, machine learning and analysis
 """
 import os
 from machine_learning_hep.processer import Processer
-from machine_learning_hep.utilities import merge_method, mergerootfiles
+from machine_learning_hep.utilities import merge_method, mergerootfiles, get_timestamp_string
 class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-statements
     species = "multiprocesser"
     def __init__(self, case, datap, typean, run_param, mcordata):
@@ -174,23 +174,29 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         for indexp in range(self.prodnumber):
             if self.p_useperiod[indexp] == 1:
                 self.process_listsample[indexp].process_histomass()
-        mergerootfiles(self.lper_filemass, self.filemass_mergedall)
+        tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/mass/{get_timestamp_string()}/"
+        mergerootfiles(self.lper_filemass, self.filemass_mergedall, tmp_merged)
 
     def multi_efficiency(self):
         for indexp in range(self.prodnumber):
             if self.p_useperiod[indexp] == 1:
                 self.process_listsample[indexp].process_efficiency()
                 self.process_listsample[indexp].process_response()
-        mergerootfiles(self.lper_fileeff, self.fileeff_mergedall)
+        tmp_merged = \
+                f"/data/tmp/hadd/{self.case}_{self.typean}/efficiency/{get_timestamp_string()}/"
+        mergerootfiles(self.lper_fileeff, self.fileeff_mergedall, tmp_merged)
 
     def multi_scancuts(self):
         for indexp in range(self.prodnumber):
             self.process_listsample[indexp].process_scancuts()
 
     def multi_preparenorm(self):
-        mergerootfiles(self.lper_normfiles, self.f_evtvalroot_mergedallp)
+        tmp_merged = \
+                f"/data/tmp/hadd/{self.case}_{self.typean}/norm_processer/{get_timestamp_string()}/"
+        mergerootfiles(self.lper_normfiles, self.f_evtvalroot_mergedallp, tmp_merged)
 
     def multi_valevents(self):
         for indexp in range(self.prodnumber):
             self.process_listsample[indexp].process_valevents_par()
-        mergerootfiles(self.lper_evtvalroot, self.f_evtvalroot_mergedallp)
+        tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/val_all/{get_timestamp_string()}/"
+        mergerootfiles(self.lper_evtvalroot, self.f_evtvalroot_mergedallp, tmp_merged)

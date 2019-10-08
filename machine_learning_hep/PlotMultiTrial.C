@@ -1,110 +1,114 @@
 
-void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, double sigmaRef, double chi2Ref, double chi2Cut, const char* saveDir, const char* suffix, const char* title) {
+void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, double sigmaRef, double chi2Ref, double chi2Cut, Bool_t* usedBkgs, Bool_t considerFreeSigma, const char* saveDir, const char* suffix, const char* title, TDirectory* derivedResultsDir) {
 
     // Extract the trials
     TString esesel(saveDir);
     TString bkgTreat("");
-    TFile* fil6=new TFile(filepath, "READ");
+    TFile* inputFile=new TFile(filepath, "READ");
     
     const Int_t nBackFuncCases=6;
     const Int_t nConfigCases=6;
     Int_t colorBC0=kGreen+2;
+    Int_t colorBC1=kOrange+5;
     Int_t minBCrange=3;
     Int_t maxBCrange=5;
     Int_t nBCranges=maxBCrange-minBCrange+1;
-    TString confCase[nConfigCases]={"FixedSig","FixedSigUp","FixedSigDw","FreeSig","FixedMeanFreeSig","FixedMeanFixedSig"};
+    TString confCase[nConfigCases]={"FixedSigFreeMean","FixedSigUp","FixedSigDw","FreeSigFreeMean","FreeSigFixedMean","FixedSigFixedMean"};
     TString bkgFunc[nBackFuncCases]={"Expo","Lin","Pol2","Pol3","Pol4","Pol5"};
     
     const Int_t totCases=nConfigCases*nBackFuncCases;
     
-    // 0= not used; 1 = used for fit; 2= used also for bin count0, 3=use also bin count1, 4=use both binc
-    Int_t mask[totCases]={0,0,4,4,0,0,   // fixed sigma (Expo, Lin, Pol2,Pol3,Pol4)
-        0,0,0,0,0,0,   // fixed sigma upper
-        0,0,0,0,0,0,   // fixed sigma lower
-        0,0,4,4,0,0,   // free sigma, free mean
-        0,0,0,0,0,0,   // free sigma, fixed mean
-        0,0,0,0,0,0,   // fixed mean, fixed sigma
+    // 0 => not used; 1 => used for fit; 2 => used also for bin count
+    Int_t mask[totCases]={0,0,0,0,0,0,   // fixed sigma, free mean (Expo, Lin, Pol2,Pol3,Pol4)
+                          0,0,0,0,0,0,   // fixed sigma upper
+                          0,0,0,0,0,0,   // fixed sigma lower
+                          0,0,0,0,0,0,   // free sigma, free mean
+                          0,0,0,0,0,0,   // free sigma, fixed mean
+                          0,0,0,0,0,0,   // fixed mean, fixed sigma
     };
+    // Enable only the background cases we ran the multi trial with
+    for(Int_t i = 0; i < 6; i++) {
+        mask[i] = (usedBkgs[i] > 0) ? 2 : 0;
+        if(considerFreeSigma) {
+            mask[18+i] = (usedBkgs[i] > 0) ? 2 : 0;
+        }
+    }
     
     TH1F* histo6[totCases];
     cout << "nconfigcases " << nConfigCases << "\t nbackgfunccases " << nBackFuncCases << endl;
     Int_t kjh=0;
     for(Int_t iConf=0; iConf<nConfigCases; iConf++){
         for(Int_t iType=0; iType<nBackFuncCases; iType++){
-            histo6[kjh++]=(TH1F*)fil6->Get(Form("hRawYieldTrial%s%s%s",bkgFunc[iType].Data(),confCase[iConf].Data(),bkgTreat.Data()));
+            histo6[kjh++]=(TH1F*)inputFile->Get(Form("hRawYieldTrial%s%s%s",bkgFunc[iType].Data(),confCase[iConf].Data(),bkgTreat.Data()));
             if (!histo6[kjh]) cout << "Histo6 " << Form("hRawYieldTrial%s%s%s",bkgFunc[iType].Data(),confCase[iConf].Data(),bkgTreat.Data()) << " not found " << endl;
         }
     }
     
     Int_t totTrials=0;
     Int_t totTrialsBC0=0;
+    Int_t totTrialsBC1=0;
     Int_t totHistos=0;
     Int_t first[totCases];
     Int_t last[totCases];
     Int_t firstBC0[totCases];
     Int_t lastBC0[totCases];
-    Double_t minyd=9e9;
-    Double_t maxyd=0;
-    for(Int_t nc=0; nc<totCases; nc++){
-        if(mask[nc]){
-            //change all histo1 to histo6
-            if(histo6[nc]){
-                first[nc]=totTrials;
-                totTrials+=histo6[nc]->GetNbinsX();
-                last[nc]=totTrials;
-                Double_t thisMin=histo6[nc]->GetBinContent(histo6[nc]->GetMinimumBin());
-                Double_t thisMax=histo6[nc]->GetBinContent(histo6[nc]->GetMaximumBin());
-                if(thisMin<minyd) minyd=thisMin;
-                if(thisMax>maxyd) maxyd=thisMax;
-                ++totHistos;
-                if(mask[nc]==2 || mask[nc]==4){
-                    TString hbcname=histo6[nc]->GetName();
-                    //hbcname.ReplaceAll("Trial","TrialBinC0");
-                    hbcname.ReplaceAll("Trial","TrialBinC0");
-                    cout<< " name bc " << hbcname.Data() << endl;
-                    TH2F* hbc2dt=(TH2F*)fil6->Get(hbcname.Data());
-                    Int_t bnx,bny,bnz;
-                    hbc2dt->GetMinimumBin(bnx,bny,bnz);
-                    thisMin=hbc2dt->GetBinContent(bnx,bny);
-                    hbc2dt->GetMaximumBin(bnx,bny,bnz);
-                    thisMax=hbc2dt->GetBinContent(bnx,bny);
-                    if(thisMin<minyd) minyd=thisMin;
-                    if(thisMax>maxyd) maxyd=thisMax;
-                    firstBC0[nc]=totTrialsBC0;
-                    totTrialsBC0+=hbc2dt->GetNbinsX();
-                    lastBC0[nc]=totTrialsBC0;
-                }
-            }else{
-                mask[nc]=0;
-            }
-        }
-    }
+    Int_t firstBC1[totCases];
+    Int_t lastBC1[totCases];
     TLine **vlines=new TLine*[totCases];
     TLatex **tlabels=new TLatex*[totCases+1];
-    
-    printf("Histos merged = %d    totTrials=%d\n",totHistos,totTrials);
-    for(Int_t ja=0; ja<totCases; ja++){
-        if(mask[ja]){
-            printf("  %d) %s  -- %d \n",ja,histo6[ja]->GetName(),first[ja]);
-            vlines[ja]=new TLine(last[ja],0.,last[ja],50000.);
-            vlines[ja]->SetLineColor(kMagenta+2);
-            vlines[ja]->SetLineStyle(2);
-            TString ttt=histo6[ja]->GetName();
-            ttt.ReplaceAll("hRawYieldTrial","");
-            if(ttt.Contains("FixedMean")) ttt="Fix #mu";
-            if(ttt.Contains("FixedSp20")) ttt="#sigma+";
-            if(ttt.Contains("FixedSm20")) ttt="#sigma-";
-            if(ttt.Contains("FreeS")) ttt="Free #sigma";
-            ttt.ReplaceAll("FixedS","");
-            if(bkgTreat!="" && ttt.Contains(bkgTreat.Data())) ttt.ReplaceAll(bkgTreat.Data(),"");
-            tlabels[ja]=new TLatex(first[ja]+0.02*totTrials,10,ttt.Data());
-            tlabels[ja]->SetTextColor(kMagenta+2);
-            tlabels[ja]->SetTextColor(kMagenta+2);
+
+    for(Int_t nc=0; nc<totCases; nc++) {
+        if(mask[nc] == 0 || !histo6[nc]) {
+            mask[nc]=0;
+            continue;
+        }
+        first[nc]=totTrials;
+        totTrials+=histo6[nc]->GetNbinsX();
+        last[nc]=totTrials;
+        ++totHistos;
+
+        printf("  %d) %s  -- %d \n",nc,histo6[nc]->GetName(),first[nc]);
+        vlines[nc]=new TLine(last[nc],0.,last[nc],50000.);
+        vlines[nc]->SetLineColor(kMagenta+2);
+        vlines[nc]->SetLineStyle(2);
+        TString ttt=histo6[nc]->GetName();
+        ttt.ReplaceAll("hRawYieldTrial","");
+        if(ttt.Contains("FixedMean")) ttt="Fix #mu";
+        if(ttt.Contains("FixedSp20")) ttt="#sigma+";
+        if(ttt.Contains("FixedSm20")) ttt="#sigma-";
+        if(ttt.Contains("FreeS")) ttt="Free #sigma";
+        ttt.ReplaceAll("FixedS","");
+        if(bkgTreat != "" && ttt.Contains(bkgTreat.Data())) {
+            ttt.ReplaceAll(bkgTreat.Data(),"");
+        }
+        tlabels[nc]=new TLatex(first[nc]+0.02*totTrials,10,ttt.Data());
+        tlabels[nc]->SetTextColor(kMagenta+2);
+        tlabels[nc]->SetTextColor(kMagenta+2);
+
+        if(mask[nc]==2) {
+            TString hbcname=histo6[nc]->GetName();
+            // Take bin count from background function of total fit
+            hbcname.ReplaceAll("Trial","TrialBinC0");
+            cout<< " name bc " << hbcname.Data() << endl;
+            TH2F* hbc2dt=(TH2F*)inputFile->Get(hbcname.Data());
+            firstBC0[nc]=totTrialsBC0;
+            totTrialsBC0+=hbc2dt->GetNbinsX();
+            lastBC0[nc]=totTrialsBC0;
+
+            hbcname.ReplaceAll("TrialBinC0","TrialBinC1");
+            cout<< " name bc " << hbcname.Data() << endl;
+            hbc2dt=(TH2F*)inputFile->Get(hbcname.Data());
+            firstBC1[nc]=totTrialsBC1;
+            totTrialsBC1+=hbc2dt->GetNbinsX();
+            lastBC1[nc]=totTrialsBC1;
         }
     }
+    
     tlabels[totCases]=new TLatex(totTrials+30,10,"BinCnt");
     tlabels[totCases]->SetTextColor(kMagenta+2);
     tlabels[totCases]->SetTextColor(kMagenta+2);
+    
+    printf("Histos merged = %d    totTrials=%d\n",totHistos,totTrials);
     
     Printf("tottrials \t tottrialsBC0 \t  nBC ranges \t ");
     Printf("%d \t %d \t %d",totTrials,totTrialsBC0,nBCranges);
@@ -119,6 +123,12 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
                                    totTrialsBC0*nBCranges,
                                    totTrials,
                                    totTrials+totTrialsBC0*nBCranges);
+
+    TH1F* hRawYieldAllBC1=new TH1F(Form("hRawYieldAllBC1_%s", suffix),
+                                   " ; Trial # ; raw yield",
+                                   totTrialsBC1*nBCranges,
+                                   totTrials,
+                                   totTrials+totTrialsBC1*nBCranges);
 
     TH1F* hMeanAll6=new TH1F(Form("hMeanAll_%s", suffix),
                                    " ; Trial # ; Gaussian mean", totTrials,0., totTrials);
@@ -139,14 +149,15 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     }
     Double_t upperEdgeYieldHistos = rawYieldRef + 1.5 * rawYieldRef;
     TH1F* hRawYieldDistAll=new TH1F("hRawYieldDistAll","  ; raw yield",200,lowerEdgeYieldHistos,upperEdgeYieldHistos);
-    //hRawYieldDistAll->GetXaxis()->SetRangeUser(0.2,0.6);
     hRawYieldDistAll->SetFillStyle(3003);
     hRawYieldDistAll->SetFillColor(kBlue+1);
     TH1F* hRawYieldDistAllBC0=new TH1F("hRawYieldDistAllBC0","  ; raw yield",200,lowerEdgeYieldHistos,upperEdgeYieldHistos);
-    //hRawYieldDistAllBC0->GetXaxis()->SetRangeUser(0.2,0.6);
+    TH1F* hRawYieldDistAllBC1=new TH1F("hRawYieldDistAllBC1","  ; raw yield",200,lowerEdgeYieldHistos,upperEdgeYieldHistos);
     hRawYieldDistAllBC0->SetFillStyle(3004);
-    TH1F* hStatErrDistAll=new TH1F("hStatErrDistAll","  ; Stat Unc on Yield",300,0,10000);
-    TH1F* hRelStatErrDistAll=new TH1F("hRelStatErrDistAll","  ; Rel Stat Unc on Yield",100,0.,1.);
+    hRawYieldDistAllBC1->SetFillStyle(3004);
+    // NOTE Note uses at the moment
+    //TH1F* hStatErrDistAll=new TH1F("hStatErrDistAll","  ; Stat Unc on Yield",300,0,10000);
+    //TH1F* hRelStatErrDistAll=new TH1F("hRelStatErrDistAll","  ; Rel Stat Unc on Yield",100,0.,1.);
     
     Double_t minYield=999999.;
     Double_t maxYield=0.;
@@ -160,22 +171,23 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     for(Int_t nc=0; nc<totCases; nc++){
         if(mask[nc]){
             Printf("%d \t %d \t %d \t %d \t %d",nc,first[nc],last[nc],firstBC0[nc],lastBC0[nc]);
-            
             TString hmeanname=histo6[nc]->GetName();
             hmeanname.ReplaceAll("RawYield","Mean");
-            TH1F* hmeant6=(TH1F*)fil6->Get(hmeanname.Data());
+            TH1F* hmeant6=(TH1F*)inputFile->Get(hmeanname.Data());
             
             TString hsigmaname=histo6[nc]->GetName();
             hsigmaname.ReplaceAll("RawYield","Sigma");
-            TH1F* hsigmat6=(TH1F*)fil6->Get(hsigmaname.Data());
+            TH1F* hsigmat6=(TH1F*)inputFile->Get(hsigmaname.Data());
             
             TString hchi2name=histo6[nc]->GetName();
             hchi2name.ReplaceAll("RawYield","Chi2");
-            TH1F* hchi2t6=(TH1F*)fil6->Get(hchi2name.Data());
+            TH1F* hchi2t6=(TH1F*)inputFile->Get(hchi2name.Data());
             
             TString hbcname=histo6[nc]->GetName();
             hbcname.ReplaceAll("Trial","TrialBinC0");
-            TH2F* hbc2dt060=(TH2F*)fil6->Get(hbcname.Data());
+            TH2F* hbc2dt060=(TH2F*)inputFile->Get(hbcname.Data());
+            hbcname.ReplaceAll("TrialBinC0","TrialBinC1");
+            TH2F* hbc2dt060_bc1=(TH2F*)inputFile->Get(hbcname.Data());
             for(Int_t ib=1; ib<=histo6[nc]->GetNbinsX(); ib++){
                 Double_t ry=histo6[nc]->GetBinContent(ib);
                 //cout<< " ry " << ry <<endl;
@@ -188,17 +200,17 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
                 Double_t esig=hsigmat6->GetBinError(ib);
                 
                 Double_t chi2=hchi2t6->GetBinContent(ib);
-                
 
                 // Fill 
                 if(ry>0.001 && ery>(0.01*ry) && ery<(0.5*ry) && chi2<chi2Cut){
                 // This also throws away some chi2 == 0
                 //if(chi2<chi2Cut && chi2>0){
                     hRawYieldDistAll->Fill(ry);
-                    hStatErrDistAll->Fill(ery);
-                    hRelStatErrDistAll->Fill(ery/ry);
                     hRawYieldAll->SetBinContent(first[nc]+ib,ry);
                     hRawYieldAll->SetBinError(first[nc]+ib,ery);
+                    // NOTE Not used at the moment
+                    //hStatErrDistAll->Fill(ery);
+                    //hRelStatErrDistAll->Fill(ery/ry);
                     if(ry<minYield) minYield=ry;
                     if(ry>maxYield) maxYield=ry;
                     wei[0]=1.;
@@ -213,15 +225,16 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
                     counts+=1.;
                     hSigmaAll6->SetBinContent(first[nc]+ib,sig);
                     hSigmaAll6->SetBinError(first[nc]+ib,esig);
-                    std::cerr << "############ MEAN " << pos << std::endl;
                     hMeanAll6->SetBinContent(first[nc]+ib,pos);
                     hMeanAll6->SetBinError(first[nc]+ib,epos);
                     hChi2All6->SetBinContent(first[nc]+ib,chi2);
                     hChi2All6->SetBinError(first[nc]+ib,0.000001);
-                    if(mask[nc]==2 || mask[nc]==4){
+                    if(mask[nc]==2){
                         for(Int_t iy=minBCrange; iy<=maxBCrange;iy++){
                             Double_t bc=hbc2dt060->GetBinContent(ib,iy);
                             Double_t ebc=hbc2dt060->GetBinError(ib,iy);
+                            Double_t bc_1=hbc2dt060_bc1->GetBinContent(ib,iy);
+                            Double_t ebc_1=hbc2dt060_bc1->GetBinError(ib,iy);
                             if(bc>0.001 && ebc<0.5*bc && bc<5.*ry){
                                 Int_t theBin=iy+(firstBC0[nc]+ib-1)*nBCranges;
                                 cout<< " bin content " << bc << " the bin " << theBin << " BCrange " << iy << endl;
@@ -229,6 +242,11 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
                                 hRawYieldAllBC0->SetBinError(theBin-2,ebc);
                                 hRawYieldDistAllBC0->Fill(bc);
                                 if(hRawYieldAllBC0->GetBinCenter(theBin-2)>maxFilled) maxFilled=hRawYieldAllBC0->GetBinCenter(theBin-2);
+                                theBin=iy+(firstBC1[nc]+ib-1)*nBCranges;
+                                hRawYieldAllBC1->SetBinContent(theBin-2,bc_1);
+                                hRawYieldAllBC1->SetBinError(theBin-2,ebc_1);
+                                hRawYieldDistAllBC1->Fill(bc_1);
+                                if(hRawYieldAllBC1->GetBinCenter(theBin-2)>maxFilled) maxFilled=hRawYieldAllBC1->GetBinCenter(theBin-2);
                             }
                         }
                     }
@@ -256,16 +274,31 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     hSigmaAll6->SetMinimum(0.);
     //if(hSigmaAll6->GetMaximum()<0.018) hSigmaAll6->SetMaximum(0.018);
     hSigmaAll6->SetMaximum(1.1 * sigmaRef);
+
     hRawYieldAllBC0->SetStats(0);
     hRawYieldAllBC0->SetMarkerColor(colorBC0);
     hRawYieldAllBC0->SetLineColor(colorBC0);
     hRawYieldDistAllBC0->SetLineColor(colorBC0);
     hRawYieldDistAllBC0->SetFillColor(colorBC0);
-    hRawYieldDistAllBC0->SetLineWidth(2);
-    hRawYieldDistAllBC0->SetLineStyle(7);
+    hRawYieldDistAllBC0->SetLineWidth(1);
+    hRawYieldDistAllBC0->SetLineStyle(1);
     hRawYieldDistAllBC0->Scale(hRawYieldDistAll->GetEntries()/hRawYieldDistAllBC0->GetEntries());
-    hRawYieldDistAll->SetLineWidth(2);
-    
+
+    hRawYieldAllBC1->SetStats(0);
+    hRawYieldAllBC1->SetMarkerColor(colorBC1);
+    hRawYieldAllBC1->SetLineColor(colorBC1);
+    hRawYieldDistAllBC1->SetLineColor(colorBC1);
+    hRawYieldDistAllBC1->SetFillColor(colorBC1);
+    hRawYieldDistAllBC1->SetLineWidth(1);
+    hRawYieldDistAllBC1->SetLineStyle(1);
+    hRawYieldDistAllBC1->Scale(hRawYieldDistAll->GetEntries()/hRawYieldDistAllBC1->GetEntries());
+
+    hRawYieldDistAll->SetLineWidth(1);
+
+    // Write fit and bin count distribution for further usage
+    derivedResultsDir->WriteObject(hRawYieldDistAll, "h_mt_fit");
+    derivedResultsDir->WriteObject(hRawYieldDistAllBC0, "h_mt_bc0");
+    derivedResultsDir->WriteObject(hRawYieldDistAllBC1, "h_mt_bc1");
     
     TLine *l=new TLine(rawYieldRef,0.,rawYieldRef,hRawYieldDistAll->GetMaximum());
     l->SetLineColor(kRed);
@@ -302,6 +335,7 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     if(maxFilled>0) hRawYieldAll->GetXaxis()->SetRangeUser(0.,maxFilled);
     hRawYieldAll->Draw();
     hRawYieldAllBC0->Draw("same");
+    hRawYieldAllBC1->Draw("same");
     ll->Draw("same");
     TLatex* tweimean[4];
     for(Int_t kw=0; kw<4; kw++){
@@ -329,6 +363,7 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     hRawYieldDistAll->Draw();
     hRawYieldDistAll->GetXaxis()->SetRangeUser(minYield*0.8,maxYield*1.2);
     hRawYieldDistAllBC0->Draw("sameshist");
+    hRawYieldDistAllBC1->Draw("sameshist");
     l->Draw("same");
     gPad->Update();
     // TODO This needs to be taken care of. At least for pK0s it does not work but it doesn't seem to be important as it's not used
@@ -353,19 +388,29 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     tmedian->SetNDC();
     tmedian->Draw();
     Double_t averBC0=hRawYieldDistAllBC0->GetMean();
-    TLatex* tmeanBC0=new TLatex(0.15,0.79,Form("mean(BinCount)=%.3f",averBC0));
+    TLatex* tmeanBC0=new TLatex(0.15,0.79,Form("mean(BinCount0)=%.3f",averBC0));
     tmeanBC0->SetNDC();
     tmeanBC0->SetTextColor(hRawYieldDistAllBC0->GetLineColor());
     tmeanBC0->Draw();
+    Double_t averBC1=hRawYieldDistAllBC1->GetMean();
+    TLatex* tmeanBC1=new TLatex(0.15,0.72,Form("mean(BinCount1)=%.3f",averBC1));
+    tmeanBC1->SetNDC();
+    tmeanBC1->SetTextColor(hRawYieldDistAllBC1->GetLineColor());
+    tmeanBC1->Draw();
     Double_t val=hRawYieldDistAll->GetRMS();
     TLatex* thrms=new TLatex(0.15,0.62,Form("rms=%.3f  (%.2f%%)",val,val/aver*100.));
     thrms->SetNDC();
     thrms->Draw();
     val=hRawYieldDistAllBC0->GetRMS();
-    TLatex* thrmsBC0=new TLatex(0.15,0.55,Form("rms(BinCount)=%.3f  (%.2f%%)",val,val/averBC0*100.));
+    TLatex* thrmsBC0=new TLatex(0.15,0.55,Form("rms(BinCount0)=%.3f  (%.2f%%)",val,val/averBC0*100.));
     thrmsBC0->SetNDC();
     thrmsBC0->SetTextColor(hRawYieldDistAllBC0->GetLineColor());
     thrmsBC0->Draw();
+    val=hRawYieldDistAllBC1->GetRMS();
+    TLatex* thrmsBC1=new TLatex(0.15,0.48,Form("rms(BinCount1)=%.3f  (%.2f%%)",val,val/averBC1*100.));
+    thrmsBC1->SetNDC();
+    thrmsBC1->SetTextColor(hRawYieldDistAllBC1->GetLineColor());
+    thrmsBC1->Draw();
     TLatex* tmin=new TLatex(0.15,0.38,Form("min=%.3f      max=%.2f",minYield,maxYield));
     tmin->SetNDC();
     tmin->Draw();
@@ -382,10 +427,14 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     meanRefDiff->SetNDC();
     meanRefDiff->SetTextColor(kBlack);
     meanRefDiff->Draw();
-    TLatex* meanRefDiffBC0=new TLatex(0.15,0.10,Form("mean(ref)-mean(BC)=%.3f  (%.2f%%)",rawYieldRef-averBC0,100.*(rawYieldRef-averBC0)/rawYieldRef));
+    TLatex* meanRefDiffBC0=new TLatex(0.15,0.10,Form("mean(ref)-mean(BC0)=%.3f  (%.2f%%)",rawYieldRef-averBC0,100.*(rawYieldRef-averBC0)/rawYieldRef));
     meanRefDiffBC0->SetNDC();
     meanRefDiffBC0->SetTextColor(hRawYieldDistAllBC0->GetLineColor());
     meanRefDiffBC0->Draw();
+    TLatex* meanRefDiffBC1=new TLatex(0.15,0.03,Form("mean(ref)-mean(BC1)=%.3f  (%.2f%%)",rawYieldRef-averBC1,100.*(rawYieldRef-averBC1)/rawYieldRef));
+    meanRefDiffBC1->SetNDC();
+    meanRefDiffBC1->SetTextColor(hRawYieldDistAllBC1->GetLineColor());
+    meanRefDiffBC1->Draw();
     //
     //
     //
@@ -426,6 +475,7 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     gPad->SetRightMargin(0.06);
     hRawYieldAll->Draw("PFC");
     hRawYieldAllBC0->Draw("PFCsame");
+    hRawYieldAllBC1->Draw("PFCsame");
     ll->Draw("same");
     for(Int_t j=0; j<totCases; j++){
         if(mask[j]){
@@ -440,6 +490,7 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     gPad->SetRightMargin(0.06);
     hRawYieldDistAll->Draw();
     hRawYieldDistAllBC0->Draw("sameshist");
+    hRawYieldDistAllBC1->Draw("sameshist");
     l->Draw("same");
     c3p->cd(3);
     gPad->SetLeftMargin(0.14);
@@ -518,6 +569,6 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     //   call->Print(callname);
     //   callname.ReplaceAll(".root",".png");
     //   call->Print(callname);
-    fil6->Close();
+    inputFile->Close();
 }
 
