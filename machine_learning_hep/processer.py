@@ -645,8 +645,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 triggerbit = "trigger_hasbit_%s==1" % trigger
                 labeltriggerANDMB = "hbit%sANDINT7vs%s" % (trigger, var)
                 labeltrigger = "hbit%svs%s" % (trigger, var)
-                histotrigANDMB = TH1F(labeltriggerANDMB + file_index, labeltriggerANDMB, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
-                histotrig = TH1F(labeltrigger + file_index, labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
+                histotrigANDMB = TH1F(labeltriggerANDMB, labeltriggerANDMB, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
+                histotrig = TH1F(labeltrigger, labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
                 myrunlisttrig = self.runlistrigger[trigger]
                 ev = len(dfevt)
                 dfevtsel = selectdfrunlist(dfevt, self.run_param[myrunlisttrig], "run_number")
@@ -657,11 +657,11 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 fill_hist(histotrig, dfevtsel.query(triggerbit)[var])
                 histotrigANDMB.Sumw2()
                 histotrig.Sumw2()
-                histotrigANDMB.Write(labeltriggerANDMB)
-                histotrig.Write(labeltrigger)
-                hSelMult = TH1F('sel_' + labeltrigger + file_index, 'sel_' + labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
-                hNoVtxMult = TH1F('novtx_' + labeltrigger + file_index, 'novtx_' + labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
-                hVtxOutMult = TH1F('vtxout_' + labeltrigger + file_index, 'vtxout_' + labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
+                histotrigANDMB.Write()
+                histotrig.Write()
+                hSelMult = TH1F('sel_' + labeltrigger, 'sel_' + labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
+                hNoVtxMult = TH1F('novtx_' + labeltrigger, 'novtx_' + labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
+                hVtxOutMult = TH1F('vtxout_' + labeltrigger, 'vtxout_' + labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
 
                 # multiplicity dependent normalisation
                 dftrg = dfevtnorm.query(triggerbit)
@@ -677,9 +677,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 fill_hist(hNoVtxMult, df_no_vtx[var])
                 fill_hist(hVtxOutMult, df_bit_zvtx_gr10[var])
 
-                hSelMult.Write("sel_" + labeltrigger)
-                hNoVtxMult.Write("novtx_" + labeltrigger)
-                hVtxOutMult.Write("vtxout_" + labeltrigger)
+                hSelMult.Write()
+                hNoVtxMult.Write()
+                hVtxOutMult.Write()
 
         hNorm = TH1F("hEvForNorm", ";;Normalisation", 2, 0.5, 2.5)
         hNorm.GetXaxis().SetBinLabel(1, "normsalisation factor")
