@@ -12,8 +12,6 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-#!/usr/bin/env python
-
 """
 main script for doing data processing, machine learning and analysis
 """

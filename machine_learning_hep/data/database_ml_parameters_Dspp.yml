@@ -134,6 +134,7 @@ Dspp:
     namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl.lz4
     namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl.lz4
     namefile_reco: AnalysisResultsReco.pkl.lz4
+    namefile_mcweights: mcweights.root
     treeoriginreco: 'PWGHF_TreeCreator/tree_Ds'
     treeorigingen: 'PWGHF_TreeCreator/tree_Ds_gen'
     treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
@@ -190,6 +191,7 @@ Dspp:
                                  /data/Derived/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodDs/261_20191004-0007/pklskml] #list of periods
       pkl_skimmed_merge_for_ml_all: /data/Derived/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_mc_prodDs_mltot
       pkl_evtcounter_all: /data/Derived/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_mc_prodDs_evttot
+      mcreweights: [reweighting/prodD2H_16, reweighting/prodD2H_17, reweighting/prodD2H_18]
   ml:
     evtsel: is_ev_rej==0
     triggersel:
