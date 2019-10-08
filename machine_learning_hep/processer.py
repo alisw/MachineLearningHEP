@@ -48,6 +48,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
                  d_results, d_val, typean, runlisttrigger, d_mcreweights):
+        self.doml = datap["doml"]
         self.case = case
         self.typean = typean
         #directories
@@ -73,7 +74,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.p_maxprocess = p_maxprocess
         self.indexsample = None
         self.p_dofullevtmerge = datap["dofullevtmerge"]
-
         #namefile root
         self.n_root = datap["files_names"]["namefile_unmerged_tree"]
         #troot trees names
@@ -177,10 +177,16 @@ class Processer: # pylint: disable=too-many-instance-attributes
                             for ipt in range(self.p_nptbins)]
         self.f_evt_ml = os.path.join(self.d_pkl_ml, self.n_evt)
         self.f_evtorig_ml = os.path.join(self.d_pkl_ml, self.n_evtorig)
+        self.lpt_recodec = None
+        if self.doml is True:
+            self.lpt_recodec = [self.n_reco.replace(".pkl", "%d_%d_%.2f.pkl" % \
+                               (self.lpt_anbinmin[i], self.lpt_anbinmax[i], \
+                                self.lpt_probcutpre[i])) for i in range(self.p_nptbins)]
+        else:
+            self.lpt_recodec = [self.n_reco.replace(".pkl", "%d_%d_std.pkl" % \
+                               (self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
+                                                    for i in range(self.p_nptbins)]
 
-        self.lpt_recodec = [self.n_reco.replace(".pkl", "%d_%d_%.2f.pkl" % \
-                           (self.lpt_anbinmin[i], self.lpt_anbinmax[i], \
-                            self.lpt_probcutpre[i])) for i in range(self.p_nptbins)]
         self.mptfiles_recosk = [createlist(self.d_pklsk, self.l_path, \
                                 self.lpt_recosk[ipt]) for ipt in range(self.p_nptbins)]
         self.mptfiles_recoskmldec = [createlist(self.d_pkl_dec, self.l_path, \
@@ -192,9 +198,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                     self.lpt_gensk[ipt]) for ipt in range(self.p_nptbins)]
             self.lpt_gendecmerged = [os.path.join(self.d_pkl_decmerged, self.lpt_gensk[ipt])
                                      for ipt in range(self.p_nptbins)]
-        self.lpt_filemass = [self.n_filemass.replace(".root", "%d_%d_%.2f.root" % \
-                (self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt], \
-                 self.lpt_probcutfin[ipt])) for ipt in range(self.p_nptbins)]
 
         self.p_mass_fit_lim = datap["analysis"][self.typean]['mass_fit_lim']
         self.p_bin_width = datap["analysis"][self.typean]['bin_width']
@@ -303,13 +306,18 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 if os.stat(self.mptfiles_recoskmldec[ipt][file_index]).st_size != 0:
                     continue
             dfrecosk = pickle.load(openfile(self.mptfiles_recosk[ipt][file_index], "rb"))
-            if os.path.isfile(self.lpt_model[ipt]) is False:
-                print("Model file not present in bin %d" % ipt)
-            mod = pickle.load(openfile(self.lpt_model[ipt], 'rb'))
-            dfrecoskml = apply("BinaryClassification", [self.p_modelname], [mod],
-                               dfrecosk, self.v_train[ipt])
-            probvar = "y_test_prob" + self.p_modelname
-            dfrecoskml = dfrecoskml.loc[dfrecoskml[probvar] > self.lpt_probcutpre[ipt]]
+            if self.doml is True:
+                if os.path.isfile(self.lpt_model[ipt]) is False:
+                    print("Model file not present in bin %d" % ipt)
+                mod = pickle.load(openfile(self.lpt_model[ipt], 'rb'))
+                dfrecoskml = apply("BinaryClassification", [self.p_modelname], [mod],
+                                   dfrecosk, self.v_train[ipt])
+                probvar = "y_test_prob" + self.p_modelname
+                dfrecoskml = dfrecoskml.loc[dfrecoskml[probvar] > self.lpt_probcutpre[ipt]]
+            else:
+                #print("DOING STD")
+                dfrecoskml = dfrecosk.query("isstd == 1")
+                #print("FINISHED STD")
             pickle.dump(dfrecoskml, openfile(self.mptfiles_recoskmldec[ipt][file_index], "wb"),
                         protocol=4)
 
@@ -376,7 +384,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.lpt_recodecmerged[bin_id], "rb"))
-            df = df.query(self.l_selml[bin_id])
+            if self.doml is True:
+                df = df.query(self.l_selml[bin_id])
+            else:
+                print("no extra selection neeeded since we are doing std analysis")
             if self.s_evtsel is not None:
                 df = df.query(self.s_evtsel)
             if self.s_trigger is not None:
@@ -497,11 +508,20 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                             self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
                 df_reco_presel_pr = df_mc_reco[df_mc_reco.ismcprompt == 1]
-                df_reco_sel_pr = df_reco_presel_pr.query(self.l_selml[bin_id])
+                df_reco_sel_pr = None
+                if self.doml is True:
+                    df_reco_sel_pr = df_reco_presel_pr.query(self.l_selml[bin_id])
+                else:
+                    df_reco_sel_pr = df_reco_presel_pr.copy()
+                    print("doing std analysis")
                 df_gen_sel_fd = df_mc_gen[df_mc_gen.ismcfd == 1]
                 df_reco_presel_fd = df_mc_reco[df_mc_reco.ismcfd == 1]
-                df_reco_sel_fd = df_reco_presel_fd.query(self.l_selml[bin_id])
-
+                df_reco_sel_fd = None
+                if self.doml is True:
+                    df_reco_sel_fd = df_reco_presel_fd.query(self.l_selml[bin_id])
+                else:
+                    df_reco_sel_fd = df_reco_presel_fd.copy()
+                    print("doing std analysis")
                 val, err = self.get_reweighted_count(df_gen_sel_pr)
                 h_gen_pr.SetBinContent(bincounter + 1, val)
                 h_gen_pr.SetBinError(bincounter + 1, err)
@@ -548,7 +568,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 df_mc_reco = df_mc_reco.query(self.s_trigger)
             df_mc_reco = selectdfrunlist(df_mc_reco, \
                   self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
-            df_mc_reco = df_mc_reco.query(self.l_selml[iptskim])
+            if self.doml is True:
+                df_mc_reco = df_mc_reco.query(self.l_selml[iptskim])
+            else:
+                print("Doing std analysis")
             list_df_mc_reco.append(df_mc_reco)
             df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[iptskim], "rb"))
             df_mc_gen = selectdfrunlist(df_mc_gen, \
