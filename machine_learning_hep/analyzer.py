@@ -58,6 +58,7 @@ class Analyzer:
         self.lvar2_binmin = datap["analysis"][self.typean]["sel_binmin2"]
         self.lvar2_binmax = datap["analysis"][self.typean]["sel_binmax2"]
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
+        self.v_var2_binning_gen = datap["analysis"][self.typean]["var_binning2_gen"]
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.p_nbin2 = len(self.lvar2_binmin)
 
@@ -1020,7 +1021,7 @@ class Analyzer:
         legeff.SetTextSize(0.035)
 
         for imult in range(self.p_nbin2):
-            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
+            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen, \
                                             self.lvar2_binmin[imult], \
                                             self.lvar2_binmax[imult])
             h_gen_pr = lfileeff.Get("h_gen_pr" + stringbin2)
@@ -1055,7 +1056,7 @@ class Analyzer:
         legeffFD.SetTextSize(0.035)
 
         for imult in range(self.p_nbin2):
-            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
+            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen, \
                                             self.lvar2_binmin[imult], \
                                             self.lvar2_binmax[imult])
             h_gen_fd = lfileeff.Get("h_gen_fd" + stringbin2)
@@ -1588,10 +1589,10 @@ class Analyzer:
                 (self.d_resultsallpdata, self.case, self.typean, imult)
             norm = -1
             norm = self.calculate_norm(1, self.f_evtnorm, self.triggerbit, \
-                         self.v_var2_binning, self.lvar2_binmin[imult], \
+                         self.v_var2_binning_gen, self.lvar2_binmin[imult], \
                          self.lvar2_binmax[imult], self.apply_weights)
             normold = self.calculate_norm(0, self.f_evtnorm, self.triggerbit, \
-                         self.v_var2_binning, self.lvar2_binmin[imult], \
+                         self.v_var2_binning_gen, self.lvar2_binmin[imult], \
                          self.lvar2_binmax[imult], self.apply_weights)
             print("--------- NORMALIZATION -----------")
             print(self.triggerbit, self.v_var2_binning,

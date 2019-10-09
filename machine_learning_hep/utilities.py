@@ -150,19 +150,19 @@ def mergerootfiles(listfiles, mergedfile, tmp_dir):
             yield list_to_split[i:i + chunk_size]
 
     tmp_files = []
-    if len(listfiles) > 1000:
+    if len(listfiles) > 500:
         if not os.path.exists(tmp_dir):
             os.makedirs(tmp_dir)
 
-        for i, split_list in enumerate(divide_chunks(listfiles, 1000)):
+        for i, split_list in enumerate(divide_chunks(listfiles, 500)):
             tmp_files.append(os.path.join(tmp_dir, f"hadd_tmp_merged{i}.root"))
             outstring = " ".join(split_list)
-            os.system("hadd -f %s  %s " % (tmp_files[-1], outstring))
+            os.system("hadd -f -j 30 %s  %s " % (tmp_files[-1], outstring))
     else:
         tmp_files = listfiles
 
     outstring = " ".join(tmp_files)
-    os.system("hadd -f %s  %s " % (mergedfile, outstring))
+    os.system("hadd -f -j 30 %s  %s " % (mergedfile, outstring))
 
 def createhisto(stringname, nbins, rmin, rmax):
     hden = TH1F("hden" + stringname, "hden" + stringname, nbins, rmin, rmax)
