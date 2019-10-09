@@ -136,6 +136,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.l_evt = createlist(self.d_pkl, self.l_path, self.n_evt)
         self.l_evtorig = createlist(self.d_pkl, self.l_path, self.n_evtorig)
         self.l_evtvalroot = createlist(self.d_val, self.l_path, self.n_evtvalroot)
+        self.l_histomass = createlist(self.d_results, self.l_path, self.n_filemass)
+        self.l_histoeff = createlist(self.d_results, self.l_path, self.n_fileeff)
 
 
         if self.mcordata == "mc":
@@ -211,6 +213,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.lvar2_binmin = datap["analysis"][self.typean]["sel_binmin2"]
         self.lvar2_binmax = datap["analysis"][self.typean]["sel_binmax2"]
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
+        self.v_var2_binning_gen = datap["analysis"][self.typean]["var_binning2_gen"]
 
         self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
         self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
@@ -390,12 +393,13 @@ class Processer: # pylint: disable=too-many-instance-attributes
             if self.mcordata == "mc":
                 merge_method(self.mptfiles_gensk[ipt], self.lpt_gendecmerged[ipt])
 
-    def process_histomass(self):
-        myfile = TFile.Open(self.n_filemass, "recreate")
+    def process_histomass_single(self, index):
+        myfile = TFile.Open(self.l_histomass[index], "recreate")
 
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
-            df = pickle.load(openfile(self.lpt_recodecmerged[bin_id], "rb"))
+            df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
+            print("MADE IT")
             if self.doml is True:
                 df = df.query(self.l_selml[bin_id])
             else:
@@ -458,11 +462,22 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     h_invmass_sig.Write()
                     h_invmass_refl.Write()
 
+    def process_histomass(self):
+        print("doing masshisto", self.mcordata, self.period)
+        create_folder_struc(self.d_results, self.l_path)
+        arguments = [(i,) for i in range(len(self.l_root))]
+        self.parallelizer(self.process_histomass_single, arguments, self.p_chunksizeunp)
+        tmp_merged = \
+        f"/data/tmp/hadd/{self.case}_{self.typean}/mass_{self.period}/{get_timestamp_string()}/"
+        mergerootfiles(self.l_histomass, self.n_filemass, tmp_merged)
+
+
     def get_reweighted_count(self, dfsel):
         filename = os.path.join(self.d_mcreweights, self.n_mcreweights)
         weight_file = TFile.Open(filename, "read")
         weights = weight_file.Get("Weights0")
-        w = [weights.GetBinContent(weights.FindBin(v)) for v in dfsel[self.v_var2_binning]]
+        w = [weights.GetBinContent(weights.FindBin(v)) for v in
+             dfsel[self.v_var2_binning_gen]]
         val = sum(w)
         err = math.sqrt(sum(map(lambda i: i * i, w)))
         print('reweighting sum: {:.1f} +- {:.1f} -> {:.1f} +- {:.1f} (zeroes: {})' \
@@ -470,10 +485,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
         return val, err
 
     # pylint: disable=line-too-long
-    def process_efficiency(self):
-        out_file = TFile.Open(self.n_fileeff, "recreate")
+    def process_efficiency_single(self, index):
+        out_file = TFile.Open(self.l_histoeff[index], "recreate")
         for ibin2 in range(len(self.lvar2_binmin)):
-            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
+            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen, \
                                         self.lvar2_binmin[ibin2], \
                                         self.lvar2_binmax[ibin2])
             print(stringbin2)
@@ -497,7 +512,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             bincounter = 0
             for ipt in range(self.p_nptfinbins):
                 bin_id = self.bin_matching[ipt]
-                df_mc_reco = pickle.load(openfile(self.lpt_recodecmerged[bin_id], "rb"))
+                df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
                 if self.s_evtsel is not None:
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_trigger is not None:
@@ -506,7 +521,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                       self.runlistrigger[self.triggerbit], "for period", self.period)
                 df_mc_reco = selectdfrunlist(df_mc_reco, \
                          self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
-                df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[bin_id], "rb"))
+                df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[bin_id][index], "rb"))
                 df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
                 df_mc_gen = selectdfrunlist(df_mc_gen, \
                          self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
@@ -514,9 +529,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
                 df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-                df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning, \
+                df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning_gen, \
                                              self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
-                df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning, \
+                df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning_gen, \
                                             self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
                 df_reco_presel_pr = df_mc_reco[df_mc_reco.ismcprompt == 1]
@@ -565,6 +580,14 @@ class Processer: # pylint: disable=too-many-instance-attributes
             h_gen_fd.Write()
             h_presel_fd.Write()
             h_sel_fd.Write()
+
+    def process_efficiency(self):
+        print("doing efficiencies", self.mcordata, self.period)
+        create_folder_struc(self.d_results, self.l_path)
+        arguments = [(i,) for i in range(len(self.l_root))]
+        self.parallelizer(self.process_efficiency_single, arguments, self.p_chunksizeunp)
+        tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/histoeff_{self.period}/{get_timestamp_string()}/"
+        mergerootfiles(self.l_histoeff, self.n_fileeff, tmp_merged)
 
     def process_response(self):
         list_df_mc_reco = []
