@@ -29,8 +29,10 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     // Enable only the background cases we ran the multi trial with
     for(Int_t i = 0; i < 6; i++) {
         mask[i] = (usedBkgs[i] > 0) ? 2 : 0;
+        mask[30+i] = (usedBkgs[i] > 0) ? 2 : 0;
         if(considerFreeSigma) {
             mask[18+i] = (usedBkgs[i] > 0) ? 2 : 0;
+            mask[24+i] = (usedBkgs[i] > 0) ? 2 : 0;
         }
     }
     
