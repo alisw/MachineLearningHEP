@@ -395,15 +395,33 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
     def process_histomass_single(self, index):
         myfile = TFile.Open(self.l_histomass[index], "recreate")
+        dfevtorig = pickle.load(openfile(self.l_evtorig[index], "rb"))
+        if self.s_trigger is not None:
+            dfevtorig = dfevtorig.query(self.s_trigger)
+        dfevtorig = selectdfrunlist(dfevtorig, \
+                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
+        for ibin2 in range(len(self.lvar2_binmin)):
+            mybindfevtorig = seldf_singlevar(dfevtorig, self.v_var2_binning_gen, \
+                                        self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+            hNorm = TH1F("hEvForNorm_mult%d" % ibin2, "hEvForNorm_mult%d" % ibin2, 2, 0.5, 2.5)
+            hNorm.GetXaxis().SetBinLabel(1, "normsalisation factor")
+            hNorm.GetXaxis().SetBinLabel(2, "selected events")
+            nselevt = 0
+            norm = 0
+            if not mybindfevtorig.empty:
+                nselevt = len(mybindfevtorig.query("is_ev_rej==0"))
+                norm = getnormforselevt(mybindfevtorig)
+            hNorm.SetBinContent(1, norm)
+            hNorm.SetBinContent(2, nselevt)
+            hNorm.Write()
 
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
-            print("MADE IT")
             if self.doml is True:
                 df = df.query(self.l_selml[bin_id])
-            else:
-                print("no extra selection neeeded since we are doing std analysis")
+            #else:
+            #    print("no extra selection neeeded since we are doing std analysis")
             if self.s_evtsel is not None:
                 df = df.query(self.s_evtsel)
             if self.s_trigger is not None:
@@ -421,8 +439,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                         self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 df_bin = seldf_singlevar(df, self.v_var2_binning,
                                          self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
-                print("Using run selection for mass histo",
-                      self.runlistrigger[self.triggerbit], "for period", self.period)
+                #print("Using run selection for mass histo",
+                #      self.runlistrigger[self.triggerbit], "for period", self.period)
                 df_bin = selectdfrunlist(df_bin, \
                          self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
                 fill_hist(h_invmass, df_bin.inv_mass)
