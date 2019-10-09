@@ -246,7 +246,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
         n_tracklets_corr_sub = None
         for iprong in range(self.nprongs):
             spdhits_thisprong = dfreco["spdhits_prong%s" % iprong].values
-            ntrackletsthisprong = [1 if spdhits_thisprong[index] == 3 else 0 for index in range(len(dfreco))]
+            ntrackletsthisprong = [1 if spdhits_thisprong[index] == 3 else 0 \
+                                   for index in range(len(dfreco))]
             arraysub = np.add(ntrackletsthisprong, arraysub)
         n_tracklets_corr_sub = np.subtract(n_tracklets_corr, arraysub)
 
