@@ -65,7 +65,7 @@ LcpKpipp:
       mc: [z_vtx_gen, centrality, z_vtx_reco, n_vtx_contributors, n_tracks, is_ev_rej, run_number,
               ev_id, n_tracklets, V0Amult, trigger_hasbit_INT7, trigger_hasbit_HighMultSPD,
               trigger_hasbit_HighMultV0, trigger_hasclass_INT7, trigger_hasclass_HighMultSPD,
-              trigger_hasclass_HighMultV0, n_tracklets_corr, v0m, v0m_eq, v0m_corr, v0m_eq_corr,
+              trigger_hasclass_HighMultV0, n_tracklets_corr, n_tracklets, v0m, v0m_eq, v0m_corr, v0m_eq_corr,
               mult_gen, mult_gen_v0a, mult_gen_v0c, perc_v0m]
     var_gen: [y_cand, pt_cand, eta_cand, phi_cand, cand_type, pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet, run_number, ev_id]
     var_evt_match: [run_number, ev_id]
@@ -275,7 +275,7 @@ LcpKpipp:
       corresp_mb_typean: null
       sel_binmin2:  [0,1,10,30,60] #list of var2 splittng nbins
       sel_binmax2: [9999,10,30,60,100] #list of var2 splitting nbins
-      var_binning2: n_tracklets_corr
+      var_binning2: n_tracklets_corr_sub
       triggerbit: INT7
 
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
@@ -566,7 +566,7 @@ LcpKpipp:
       corresp_mb_typean: MBvspt_ntrkl
       sel_binmin2:  [0,1,10,30,60] #list of var2 splittng nbins
       sel_binmax2: [9999,10,30,60,100] #list of var2 splitting nbins
-      var_binning2: n_tracklets_corr
+      var_binning2: n_tracklets_corr_sub
       triggerbit: HighMultSPD
 
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
