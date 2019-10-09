@@ -237,7 +237,8 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
                             Double_t ebc=hbc2dt060->GetBinError(ib,iy);
                             Double_t bc_1=hbc2dt060_bc1->GetBinContent(ib,iy);
                             Double_t ebc_1=hbc2dt060_bc1->GetBinError(ib,iy);
-                            if(bc>0.001 && ebc<0.5*bc && bc<5.*ry){
+                            //if(bc>0.001 && ebc<0.5*bc && bc<5.*ry){
+                            if(bc>0.001){
                                 Int_t theBin=iy+(firstBC0[nc]+ib-1)*nBCranges;
                                 cout<< " bin content " << bc << " the bin " << theBin << " BCrange " << iy << endl;
                                 hRawYieldAllBC0->SetBinContent(theBin-2,bc);
