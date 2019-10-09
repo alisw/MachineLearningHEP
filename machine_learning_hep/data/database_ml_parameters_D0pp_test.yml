@@ -15,7 +15,7 @@
 #ML model optimised at 23-09-2019 using 09-09-2019 trains (Luuk)
 #  cos_t_star removed from training (funky background shape for 1-2)
 
-D0pp:
+D0pp_test:
   nprongs: 2
   doml: false
   mass: 1.864
@@ -260,7 +260,7 @@ D0pp:
       corresp_mb_typean: null
       sel_binmin2:  [0,1,20,60] #list of var2 splittng nbins
       sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
-      var_binning2: n_tracklets_corr_sub
+      var_binning2: n_tracklets_corr
       var_binning2_gen: n_tracklets_corr
       triggerbit: INT7
 
@@ -270,7 +270,7 @@ D0pp:
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel:
-        data: "trigger_hasbit_INT7==1"
+        data: "trigger_hasbit_INT7==1 and trigger_hasclass_INT7==1"
         mc: null
         weighttrig: false
 
@@ -561,7 +561,7 @@ D0pp:
       corresp_mb_typean: MBvspt_ntrkl
       sel_binmin2:  [0,1,20,60] #list of var2 splittng nbins
       sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
-      var_binning2: n_tracklets_corr_sub
+      var_binning2: n_tracklets_corr
       triggerbit: HighMultSPD
 
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
