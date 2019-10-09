@@ -17,7 +17,7 @@
 
 D0pp:
   nprongs: 2
-  doml: False      
+  doml: true 
   mass: 1.864
   sel_reco_unp: "pt_cand>1"
   sel_reco_singletrac_unp : null
@@ -134,8 +134,8 @@ D0pp:
   multi:
     data:
       nperiods: 3
-      nprocessesparallel: 1
-      maxfiles : [4,0,0] #list of periods
+      nprocessesparallel: 50
+      maxfiles : [-1,-1,-1] #list of periods
       chunksizeunp : [100,100,100] #list of periods
       chunksizeskim: [100,100,100] #list of periods
       fracmerge : [0.08,0.08,0.08] #list of periods
@@ -144,21 +144,21 @@ D0pp:
       unmerged_tree_dir: [/data/TTree/D0DsLckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/merged,
                           /data/TTree/D0DsLckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/merged,
                           /data/TTree/D0DsLckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/merged] #list of periods
-      pkl: [/data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/pkl,
-            /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/pkl,
-            /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/pkl] #list of periods
-      pkl_skimmed: [/data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/pklsk,
-                    /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/pklsk,
-                    /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [/data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/pklskml,
-                                 /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/pklskml,
-                                 /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data_mltot
-      pkl_evtcounter_all: /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data_evttot
+      pkl: [/data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/pkl,
+            /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/pkl,
+            /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/pkl] #list of periods
+      pkl_skimmed: [/data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/pklsk,
+                    /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/pklsk,
+                    /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/pklskml,
+                                 /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/pklskml,
+                                 /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data_mltot
+      pkl_evtcounter_all: /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data_evttot
     mc:
       nperiods: 3
-      nprocessesparallel: 1
-      maxfiles : [4,0,0] #list of periods
+      nprocessesparallel: 50
+      maxfiles : [-1,-1,-1] #list of periods
       chunksizeunp : [100,100,100] #list of periods
       chunksizeskim: [1000,1000,1000] #list of periods
       fracmerge : [1.0,1.0,1.0] #list of periods
@@ -168,17 +168,17 @@ D0pp:
       unmerged_tree_dir: [/data/TTree/D0DsLckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/merged,
                           /data/TTree/D0DsLckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/merged,
                           /data/TTree/D0DsLckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/merged] #list of periods
-      pkl: [/data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/pkl,
-            /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/pkl,
-            /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/pkl] #list of periods
-      pkl_skimmed: [/data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/pklsk,
-                    /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/pklsk,
-                    /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [/data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/pklskml,
-                                 /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/pklskml,
-                                 /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_mc_prodD2H_mltot
-      pkl_evtcounter_all: /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/243_2016_2017_2018/pp_mc_prodD2H_evttot
+      pkl: [/data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/pkl,
+            /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/pkl,
+            /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/pkl] #list of periods
+      pkl_skimmed: [/data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/pklsk,
+                    /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/pklsk,
+                    /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/pklskml,
+                                 /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/pklskml,
+                                 /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_mc_prodD2H_mltot
+      pkl_evtcounter_all: /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/243_2016_2017_2018/pp_mc_prodD2H_evttot
       mcreweights: [reweighting/prodD2H_16, reweighting/prodD2H_17, reweighting/prodD2H_18]
       
   ml:
@@ -201,8 +201,8 @@ D0pp:
     binmax: [2,4,6,8,24] #list of nbins
     mltype: BinaryClassification
     ncorescrossval: 10
-    mlplot: /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/mlplot # to be removed
-    mlout: /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/mlout # to be removed
+    mlplot: /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/mlplot # to be removed
+    mlout: /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/mlout # to be removed
 
     opt:
       filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
@@ -220,19 +220,19 @@ D0pp:
 
   mlapplication:
     data:
-      pkl_skimmed_dec: [/data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/skpkldecstd,
-                        /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/skpkldecstd,
-                        /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/skpkldecstd] #list of periods
-      pkl_skimmed_decmerged: [/data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/skpkldecmergedstd,
-                              /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/skpkldecmergedstd,
-                              /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/skpkldecmergedstd] #list of periods
+      pkl_skimmed_dec: [/data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/skpkldec,
+                        /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/skpkldec,
+                        /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/skpkldec] #list of periods
+      pkl_skimmed_decmerged: [/data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/skpkldecmerged,
+                              /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/skpkldecmerged,
+                              /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/skpkldecmerged] #list of periods
     mc:
-      pkl_skimmed_dec: [/data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/skpkldecstd,
-                        /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/skpkldecstd,
-                        /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/skpkldecstd] #list of periods
-      pkl_skimmed_decmerged: [/data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/skpkldecmergedstd,
-                              /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/skpkldecmergedstd,
-                              /data/DerivedNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/skpkldecmergedstd] #list of periods
+      pkl_skimmed_dec: [/data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/skpkldec,
+                        /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/skpkldec,
+                        /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/skpkldec] #list of periods
+      pkl_skimmed_decmerged: [/data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/skpkldecmerged,
+                              /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/skpkldecmerged,
+                              /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/skpkldecmerged] #list of periods
     modelname: xgboost
     modelsperptbin: [xgboost_classifierD0pp_dfselection_pt_cand_1.0_2.0.sav,
                      xgboost_classifierD0pp_dfselection_pt_cand_2.0_4.0.sav,
@@ -249,7 +249,7 @@ D0pp:
     fd_method: 2 #knone=0, kfc=1, kNb=2
     cctype: 1 #kpp7
     sigmav0: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
-    dir_general_plots: /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/analysis_plots
+    dir_general_plots: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/analysis_plots
 
     MBvspt_ntrkl:
       useperiod: [1,1,1]
@@ -258,7 +258,7 @@ D0pp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
-      sel_binmin2:  [1,1,20,60] #list of var2 splittng nbins
+      sel_binmin2:  [0,1,20,60] #list of var2 splittng nbins
       sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
       triggerbit: INT7
@@ -274,15 +274,15 @@ D0pp:
         weighttrig: false
 
       data:
-        results: [/data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/resultsMBvspt_ntrkl,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/resultsMBvspt_ntrkl,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/resultsMBvspt_ntrkl] #list of periods
-        resultsallp: /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data/resultsMBvspt_ntrkl
+        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/resultsMBvspt_ntrkl] #list of periods
+        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data/resultsMBvspt_ntrkl
       mc:
-        results: [/data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/resultsMBvspt_ntrkl,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/resultsMBvspt_ntrkl,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/resultsMBvspt_ntrkl] #list of periods
-        resultsallp: /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_ntrkl
+        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/resultsMBvspt_ntrkl] #list of periods
+        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_ntrkl
 
       mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
@@ -357,15 +357,15 @@ D0pp:
         weighttrig: false
 
       data:
-        results: [/data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/resultsMBvspt_v0m,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/resultsMBvspt_v0m,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/resultsMBvspt_v0m] #list of periods
-        resultsallp: /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data/resultsMBvspt_v0m
+        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/resultsMBvspt_v0m,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/resultsMBvspt_v0m,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/resultsMBvspt_v0m] #list of periods
+        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data/resultsMBvspt_v0m
       mc:
-        results: [/data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/resultsMBvspt_v0m,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/resultsMBvspt_v0m,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/resultsMBvspt_v0m] #list of periods
-        resultsallp: /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_v0m
+        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/resultsMBvspt_v0m,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/resultsMBvspt_v0m,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/resultsMBvspt_v0m] #list of periods
+        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_v0m
 
       mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
@@ -429,15 +429,15 @@ D0pp:
         weighttrig: false
 
       data:
-        results: [/data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/resultsMBvspt_perc_v0m,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/resultsMBvspt_perc_v0m,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/resultsMBvspt_perc_v0m] #list of periods
-        resultsallp: /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data/resultsMBvspt_perc_v0m
+        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/resultsMBvspt_perc_v0m,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/resultsMBvspt_perc_v0m,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/resultsMBvspt_perc_v0m] #list of periods
+        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data/resultsMBvspt_perc_v0m
       mc:
-        results: [/data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/resultsMBvspt_perc_v0m,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/resultsMBvspt_perc_v0m,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/resultsMBvspt_perc_v0m] #list of periods
-        resultsallp: /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_perc_v0m
+        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/resultsMBvspt_perc_v0m,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/resultsMBvspt_perc_v0m,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/resultsMBvspt_perc_v0m] #list of periods
+        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_perc_v0m
 
 
 
@@ -503,15 +503,15 @@ D0pp:
         weighttrig: false
 
       data:
-        results: [/data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/resultsMBjetvspt,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/resultsMBjetvspt,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data/resultsMBjetvspt
+        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/resultsMBjetvspt,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/resultsMBjetvspt,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data/resultsMBjetvspt
       mc:
-        results: [/data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/resultsMBjetvspt,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/resultsMBjetvspt,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_mc_prodD2H/resultsMBjetvspt
+        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/resultsMBjetvspt,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/resultsMBjetvspt,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_mc_prodD2H/resultsMBjetvspt
 
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
@@ -574,15 +574,15 @@ D0pp:
         weighttrig: true
 
       data:
-        results: [/data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/resultsSPDvspt,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/resultsSPDvspt,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/resultsSPDvspt] #list of periods
-        resultsallp: /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data/resultsSPDvspt
+        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/resultsSPDvspt,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/resultsSPDvspt,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/resultsSPDvspt] #list of periods
+        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data/resultsSPDvspt
       mc:
-        results: [/data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/resultsSPDvspt,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/resultsSPDvspt,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/resultsSPDvspt] #list of periods
-        resultsallp: /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_mc_prodD2H/resultsSPDvspt
+        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/resultsSPDvspt,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/resultsSPDvspt,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/resultsSPDvspt] #list of periods
+        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_mc_prodD2H/resultsSPDvspt
 
       mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
@@ -646,15 +646,15 @@ D0pp:
         weighttrig: true
 
       data:
-        results: [/data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/resultsV0mvspt,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/resultsV0mvspt,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/resultsV0mvspt] #list of periods
-        resultsallp: /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data/resultsV0mvspt
+        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/resultsV0mvspt,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/resultsV0mvspt,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/resultsV0mvspt] #list of periods
+        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data/resultsV0mvspt
       mc:
-        results: [/data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/resultsV0mvspt,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/resultsV0mvspt,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/resultsV0mvspt] #list of periods
-        resultsallp: /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_mc_prodD2H/resultsV0mvspt
+        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/resultsV0mvspt,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/resultsV0mvspt,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/resultsV0mvspt] #list of periods
+        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_mc_prodD2H/resultsV0mvspt
 
       mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
@@ -717,15 +717,15 @@ D0pp:
         weighttrig: true
 
       data:
-        results: [/data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/resultsV0mvspt_perc_v0m,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/resultsV0mvspt_perc_v0m,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/resultsV0mvspt_perc_v0m] #list of periods
-        resultsallp: /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data/resultsV0mvspt_perc_v0m
+        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/resultsV0mvspt_perc_v0m,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/resultsV0mvspt_perc_v0m,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/resultsV0mvspt_perc_v0m] #list of periods
+        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data/resultsV0mvspt_perc_v0m
       mc:
-        results: [/data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/resultsV0mvspt_perc_v0m,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/resultsV0mvspt_perc_v0m,
-                  /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/resultsV0mvspt_perc_v0m] #list of periods
-        resultsallp: /data/DerivedResultsNorm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_mc_prodD2H/resultsV0mvspt_perc_v0m
+        results: [/data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/resultsV0mvspt_perc_v0m,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/resultsV0mvspt_perc_v0m,
+                  /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/resultsV0mvspt_perc_v0m] #list of periods
+        resultsallp: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_mc_prodD2H/resultsV0mvspt_perc_v0m
 
       mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
