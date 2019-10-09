@@ -29,8 +29,10 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     // Enable only the background cases we ran the multi trial with
     for(Int_t i = 0; i < 6; i++) {
         mask[i] = (usedBkgs[i] > 0) ? 2 : 0;
+        mask[30+i] = (usedBkgs[i] > 0) ? 2 : 0;
         if(considerFreeSigma) {
             mask[18+i] = (usedBkgs[i] > 0) ? 2 : 0;
+            mask[24+i] = (usedBkgs[i] > 0) ? 2 : 0;
         }
     }
     
@@ -235,7 +237,8 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
                             Double_t ebc=hbc2dt060->GetBinError(ib,iy);
                             Double_t bc_1=hbc2dt060_bc1->GetBinContent(ib,iy);
                             Double_t ebc_1=hbc2dt060_bc1->GetBinError(ib,iy);
-                            if(bc>0.001 && ebc<0.5*bc && bc<5.*ry){
+                            //if(bc>0.001 && ebc<0.5*bc && bc<5.*ry){
+                            if(bc>0.001){
                                 Int_t theBin=iy+(firstBC0[nc]+ib-1)*nBCranges;
                                 cout<< " bin content " << bc << " the bin " << theBin << " BCrange " << iy << endl;
                                 hRawYieldAllBC0->SetBinContent(theBin-2,bc);
