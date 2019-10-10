@@ -284,15 +284,15 @@ Dspp:
         weighttrig: false
 
       data:      
-        results: [/data/DerivedResults/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/resultsMBvspt_ntrkl,
-                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/resultsMBvspt_ntrkl,
-                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/resultsMBvspt_ntrkl] #list of periods
-        resultsallp: /data/DerivedResults/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data/resultsMBvspt_ntrkl
+        results: [./DerivedResults/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/resultsMBvspt_ntrkl,
+                  ./DerivedResults/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/resultsMBvspt_ntrkl,
+                  ./DerivedResults/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/resultsMBvspt_ntrkl] #list of periods
+        resultsallp: ./DerivedResults/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data/resultsMBvspt_ntrkl
       mc:
-        results: [/data/DerivedResults/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodDs/261_20191004-0007/resultsMBvspt_ntrkl,
-                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodDs/261_20191004-0007/resultsMBvspt_ntrkl,
-                  /data/DerivedResults/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodDs/261_20191004-0007/resultsMBvspt_ntrkl] #list of periods
-        resultsallp: /data/DerivedResults/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_mc_prodDs/resultsMBvspt_ntrkl
+        results: [./DerivedResults/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodDs/261_20191004-0007/resultsMBvspt_ntrkl,
+                  ./DerivedResults/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodDs/261_20191004-0007/resultsMBvspt_ntrkl,
+                  ./DerivedResults/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodDs/261_20191004-0007/resultsMBvspt_ntrkl] #list of periods
+        resultsallp: ./DerivedResults/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_mc_prodDs/resultsMBvspt_ntrkl
 
       # The global mass limits
       mass_fit_lim: [1.69, 2.21] # region for the fit of the invariant mass distribution [GeV/c^2]
