@@ -1566,7 +1566,6 @@ class Analyzer:
         self.loadstyle()
         #self.test_aliphysics()
         #filedataval = TFile.Open(self.f_evtnorm)
-        lfile = TFile.Open(self.n_filemass)
         fileouteff = "%s/efficiencies%s%s.root" % \
                       (self.d_resultsallpmc, self.case, self.typean)
         yield_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
@@ -1587,9 +1586,22 @@ class Analyzer:
             nameyield = "hyields%d" % imult
             fileoutcrossmult = "%s/finalcross%s%smult%d.root" % \
                 (self.d_resultsallpdata, self.case, self.typean, imult)
-            hNorm = lfile.Get("hEvForNorm_mult%d" % imult)
+            #hNorm = lfile.Get("hEvForNorm_mult%d" % imult)
+            #norm = hNorm.GetBinContent(1)
+            norm = -1
+            #lfile = TFile.Open(self.n_filemass)
+            #hNorm = lfile.Get("hEvForNorm_mult%d" % imult)
+            norm = self.calculate_norm(1, self.f_evtnorm, self.triggerbit, \
+                          self.v_var2_binning, self.lvar2_binmin[imult], \
+                          self.lvar2_binmax[imult], self.apply_weights)
+            normold = self.calculate_norm(0, self.f_evtnorm, self.triggerbit, \
+                          self.v_var2_binning, self.lvar2_binmin[imult], \
+                          self.lvar2_binmax[imult], self.apply_weights)
+            print("--------- NORMALIZATION -----------")
+            print(self.triggerbit, self.v_var2_binning,
+                  self.lvar2_binmin[imult], self.lvar2_binmax[imult])
+            print("N. events selected=", normold, "N. events counter =", norm)
 
-            norm = hNorm.GetBinContent(1)
             filecrossmb = None
             if self.p_fprompt_from_mb is True and self.p_fd_method == 2:
                 if self.p_corrmb_typean is not None:
