@@ -415,13 +415,17 @@ class Processer: # pylint: disable=too-many-instance-attributes
             hNorm.SetBinContent(2, nselevt)
             hNorm.Write()
             histmultevt = TH1F("hmultevtmult%d" % (ibin2), "hmultevtmult%d"  % (ibin2), 100,0,100)
-            print("step000")
             mybindfevtorig = mybindfevtorig.query("is_ev_rej==0")
-            print("step001")
             fill_hist(histmultevt, mybindfevtorig.n_tracklets_corr)
-            print("step002")
             histmultevt.Write()
-            print("FINI")
+            h_v0m_ntracklets = TH2F("h_v0m_ntracklets%d" % ibin2,
+                                    "h_v0m_ntracklets%d" % ibin2,
+                                    200, 0, 200, 200, -0.5, 1999.5)
+            v_v0m_ntracklets = np.vstack((mybindfevtorig.n_tracklets_corr,
+                                         mybindfevtorig.v0m_corr)).T
+            fill_hist(h_v0m_ntracklets, v_v0m_ntracklets)
+            h_v0m_ntracklets.Write()
+ 
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
@@ -463,9 +467,17 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 myfile.cd()
                 h_invmass.Write()
                 h_invmass_weight.Write()
-                histmult = TH1F("hmultpt%dmult%d" % (ipt, ibin2), "hmultpt%dmult%d"  % (ipt, ibin2), 100,0,100)
+                histmult = TH1F("hmultpt%dmult%d" % (ipt, ibin2),
+                                "hmultpt%dmult%d"  % (ipt, ibin2), 1000,0,1000)
                 fill_hist(histmult, df_bin.n_tracklets_corr)
                 histmult.Write()
+                h_v0m_ntrackletsD = TH2F("h_v0m_ntrackletsD%d%d" % (ibin2,ipt),
+                                        "h_v0m_ntrackletsD%d%d" % (ibin2,ipt),
+                                        200, 0, 200, 200, -0.5, 1999.5)
+                v_v0m_ntrackletsD = np.vstack((df_bin.n_tracklets_corr,
+                                             df_bin.v0m_corr)).T
+                fill_hist(h_v0m_ntrackletsD, v_v0m_ntrackletsD)
+                h_v0m_ntrackletsD.Write()
                 if "pt_jet" in df_bin.columns:
                     zarray = z_calc(df_bin.pt_jet, df_bin.phi_jet, df_bin.eta_jet,
                                     df_bin.pt_cand, df_bin.phi_cand, df_bin.eta_cand)
