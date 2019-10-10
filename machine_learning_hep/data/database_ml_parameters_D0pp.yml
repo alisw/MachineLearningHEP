@@ -252,12 +252,12 @@ D0pp:
     MBvspt_ntrkl:
       useperiod: [1,1,1]
       normalizecross: false
-      plotbin: [1,1,1,0]
+      plotbin: [1,1,1,1,0]
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
-      sel_binmin2:  [0,1,20,60] #list of var2 splittng nbins
-      sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
+      sel_binmin2:  [0,1,10,30,60] #list of var2 splittng nbins
+      sel_binmax2: [9999,10,30,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
       triggerbit: INT7
 
@@ -292,8 +292,8 @@ D0pp:
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.89
-      massmin: [1.78,1.73,1.73,1.73,1.73,1.73]
-      massmax: [1.97,2.02,2.02,2.02,2.02,2.02]
+      massmin: [1.72,1.72,1.72,1.72,1.72,1.72]
+      massmax: [2.05,2.05,2.05,2.05,2.05,2.05]
       rebin: [6,6,6,6,6,6]
       includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 1.864
@@ -324,10 +324,10 @@ D0pp:
       systematics:
         # For now don't do these things per pT bin
         max_chisquare_ndf: 2.
-        rebin: [4,6,8]
-        massmin: [1.73, 1.74, 1.75, 1.76]
-        massmax: [2.05, 2.04, 2.03, 2.02]
-        bincount_sigma: [3.5, 4.0,4.5]
+        rebin: [-1,0,1]
+        massmin: [1.71, 1.72, 1.73, 1.74, 1.75]
+        massmax: [2.06, 2.05, 2.04, 2.03, 2.02]
+        bincount_sigma: [3.0,5.0]
         bkg_funcs: [Pol2, kExpo]
         # Whether to include the free sigma option in the derivation of raw yield uncertainty in given pT bin
         consider_free_sigma: [True, True, True, True, True, True]
@@ -375,8 +375,8 @@ D0pp:
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.89
-      massmin: [1.78,1.73,1.73,1.73,1.73,1.73]
-      massmax: [1.97,2.02,2.02,2.02,2.02,2.02]
+      massmin: [1.72,1.72,1.72,1.72,1.72,1.72]
+      massmax: [2.05,2.05,2.05,2.05,2.05,2.05]
       rebin: [6,6,6,6,6,6]
       includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 1.864
@@ -449,8 +449,8 @@ D0pp:
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.89
-      massmin: [1.78,1.73,1.73,1.73,1.73,1.73]
-      massmax: [1.97,2.02,2.02,2.02,2.02,2.02]
+      massmin: [1.72,1.72,1.72,1.72,1.72,1.72]
+      massmax: [2.05,2.05,2.05,2.05,2.05,2.05]
       rebin: [6,6,6,6,6,6]
       includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 1.864
@@ -552,12 +552,12 @@ D0pp:
     SPDvspt:
       useperiod: [0,0,1]
       normalizecross: false
-      plotbin: [0,0,0,1]
+      plotbin: [0,0,0,0,1]
       usesinglebineff: 2
       fprompt_from_mb: true
       corresp_mb_typean: MBvspt_ntrkl
-      sel_binmin2:  [0,1,20,60] #list of var2 splittng nbins
-      sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
+      sel_binmin2:  [0,1,10,30,60] #list of var2 splittng nbins
+      sel_binmax2: [9999,10,30,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
       triggerbit: HighMultSPD
 
@@ -591,8 +591,8 @@ D0pp:
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.89
-      massmin: [1.78,1.73,1.73,1.73,1.73,1.73]
-      massmax: [1.97,2.02,2.02,2.02,2.02,2.02]
+      massmin: [1.72,1.72,1.72,1.72,1.72,1.72]
+      massmax: [2.05,2.05,2.05,2.05,2.05,2.05]
       rebin: [6,6,6,6,6,6]
       includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 1.864
@@ -663,8 +663,8 @@ D0pp:
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.89
-      massmin: [1.78,1.73,1.73,1.73,1.73,1.73]
-      massmax: [1.97,2.02,2.02,2.02,2.02,2.02]
+      massmin: [1.72,1.72,1.72,1.72,1.72,1.72]
+      massmax: [2.05,2.05,2.05,2.05,2.05,2.05]
       rebin: [6,6,6,6,6,6]
       includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 1.864
@@ -734,8 +734,8 @@ D0pp:
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.89
-      massmin: [1.78,1.73,1.73,1.73,1.73,1.73]
-      massmax: [1.97,2.02,2.02,2.02,2.02,2.02]
+      massmin: [1.72,1.72,1.72,1.72,1.72,1.72]
+      massmax: [2.05,2.05,2.05,2.05,2.05,2.05]
       rebin: [6,6,6,6,6,6]
       includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 1.864

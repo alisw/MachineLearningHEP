@@ -28,8 +28,6 @@ FILES_NOT_FOUND = []
 # pylint: disable=too-many-branches, too-many-locals
 def plot_hfspectrum_years_ratios(case_1, case_2, ana_type, mult_bins=None):
 
-    if mult_bins is None:
-        mult_bins = [0, 1, 2, 3]
 
     with open("data/database_ml_parameters_%s.yml" % case_1, 'r') as param_config:
         data_param_1 = yaml.load(param_config, Loader=yaml.FullLoader)
@@ -74,6 +72,8 @@ def plot_hfspectrum_years_ratios(case_1, case_2, ana_type, mult_bins=None):
     #sigmav0_1 = data_param_1[case_1]["analysis"]["sigmav0"]
     #sigmav0_2 = data_param_2[case_2]["analysis"]["sigmav0"]
 
+    if mult_bins is None:
+        mult_bins = range(len(binsmin))
     files_mult_1 = []
     files_mult_2 = []
     periods_string = "_".join(periods)
@@ -129,9 +129,6 @@ def plot_hfspectrum_years_ratios(case_1, case_2, ana_type, mult_bins=None):
 # pylint: disable=too-many-branches, too-many-locals
 def plot_hfspectrum_years(case, ana_type, mult_bins=None):
 
-    if mult_bins is None:
-        mult_bins = [0, 1, 2, 3]
-
     with open("data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
 
@@ -156,6 +153,9 @@ def plot_hfspectrum_years(case, ana_type, mult_bins=None):
     latexbin2var = data_param[case]["analysis"][ana_type]["latexbin2var"]
     #br = data_param[case]["ml"]["opt"]["BR"]
     #sigmav0 = data_param[case]["analysis"]["sigmav0"]
+
+    if mult_bins is None:
+        mult_bins = range(len(binsmin))
 
     files_mult = []
     for imult in mult_bins:
