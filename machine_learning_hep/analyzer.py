@@ -1589,8 +1589,9 @@ class Analyzer:
             #hNorm = lfile.Get("hEvForNorm_mult%d" % imult)
             #norm = hNorm.GetBinContent(1)
             norm = -1
-            #lfile = TFile.Open(self.n_filemass)
-            #hNorm = lfile.Get("hEvForNorm_mult%d" % imult)
+            lfile = TFile.Open(self.n_filemass)
+            hNorm = lfile.Get("hEvForNorm_mult%d" % imult)
+            normfromhisto = hNorm.GetBinContent(1)
             norm = self.calculate_norm(1, self.f_evtnorm, self.triggerbit, \
                           self.v_var2_binning, self.lvar2_binmin[imult], \
                           self.lvar2_binmax[imult], self.apply_weights)
@@ -1601,6 +1602,8 @@ class Analyzer:
             print(self.triggerbit, self.v_var2_binning,
                   self.lvar2_binmin[imult], self.lvar2_binmax[imult])
             print("N. events selected=", normold, "N. events counter =", norm)
+            if abs(norm - normfromhisto)/norm > 0.05 and self.apply_weights is False:
+                print("inconistent number of events", normfromhisto, norm)
 
             filecrossmb = None
             if self.p_fprompt_from_mb is True and self.p_fd_method == 2:
