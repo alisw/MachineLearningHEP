@@ -264,18 +264,18 @@ Dspp:
     MBvspt_ntrkl:
       useperiod: [1,1,1]
       normalizecross: false  
-      plotbin: [1,1,1,0]
+      plotbin: [1,1,1,1,0]
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
-      sel_binmin2:  [0,1,20,60] #list of var2 splittng nbins
-      sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
+      sel_binmin2: [0,1,10,30,60] #list of var2 splittng nbins
+      sel_binmax2: [9999,10,30,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
       triggerbit: INT7
 
-      sel_an_binmin: [1, 2, 4, 6, 8, 12]  # [1,2,4,6,8,12] #list of pt nbins
-      sel_an_binmax: [2, 4, 6, 8, 12, 24]  # [2,4,6,8,12,24] #list of pt nbins
-      binning_matching: [0, 1, 2, 3, 4, 4]  # [0,1,2,3,4,4] #list of pt nbins
+      sel_an_binmin: [1,2,4,6,8,12]  # [1,2,4,6,8,12] #list of pt nbins
+      sel_an_binmax: [2,4,6,8,12,24]  # [2,4,6,8,12,24] #list of pt nbins
+      binning_matching: [0,1,2,3,4,4]  # [0,1,2,3,4,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
@@ -306,7 +306,7 @@ Dspp:
       masspeak: 1.969
       massmin: [1.75,1.75,1.75,1.75,1.75,1.75]
       massmax: [2.15,2.15,2.15,2.15,2.15,2.15]
-      rebin: [[4,4,4,4,4,4],[5,4,4,4,5,7], [4,4,4,4,7,4], [4,4,4,4,4,4]]
+      rebin: [[4,4,4,4,4,4],[5,4,4,4,5,7], [5,4,4,4,5,7], [4,4,4,4,7,4], [4,4,4,4,4,4]]
       includesecpeak: [false, true, true, true, true, true]
       masssecpeak: 1.869
       fix_masssecpeak: False
@@ -338,7 +338,7 @@ Dspp:
       systematics:
         # For now don't do these things per pT bin
         max_chisquare_ndf: 2.
-        rebin: [2,4,6]
+        rebin: [-1,0,1]
         massmin: [1.69, 1.72, 1.75, 1.78, 1.81]
         massmax: [2.09, 2.12, 2.15, 2.18, 2.21]
         bincount_sigma: [3.,5.]
@@ -568,12 +568,12 @@ Dspp:
     SPDvspt:
       useperiod: [0,0,1]
       normalizecross: false
-      plotbin: [0,0,0,1]
+      plotbin: [0,0,0,0,1]
       usesinglebineff: 2
       fprompt_from_mb: true
       corresp_mb_typean: MBvspt_ntrkl
-      sel_binmin2:  [0,1,20,60] #list of var2 splittng nbins
-      sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
+      sel_binmin2: [0,1,10,30,60] #list of var2 splittng nbins
+      sel_binmax2: [9999,10,30,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
       triggerbit: HighMultSPD
       
@@ -609,7 +609,7 @@ Dspp:
       masspeak: 1.969
       massmin: [1.75,1.75,1.75,1.75,1.75,1.75]
       massmax: [2.15,2.15,2.15,2.15,2.15,2.15]
-      rebin: [[4,4,4,4,4,4], [4,4,4,4,4,4], [4,4,4,4,4,4], [5,4,4,6,6,5]]
+      rebin: [[4,4,4,4,4,4], [4,4,4,4,4,4], [4,4,4,4,4,4], [4,4,4,4,4,4], [5,4,4,6,6,5]]
       includesecpeak: [false, false, true, true, true, true]
       masssecpeak: 1.869
       fix_masssecpeak: False
