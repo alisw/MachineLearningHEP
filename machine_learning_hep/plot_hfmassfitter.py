@@ -209,8 +209,8 @@ def plot_hfmassfitter(case, arraytype):
     for imult, iplot in enumerate(plotbinMB):
         if not iplot:
             continue
-        signfhistos[imult].SetLineColor(colors[imult])
-        signfhistos[imult].SetMarkerColor(colors[imult])
+        signfhistos[imult].SetLineColor(colors[imult % len(colors)])
+        signfhistos[imult].SetMarkerColor(colors[imult % len(colors)])
         signfhistos[imult].SetMarkerStyle(21)
         signfhistos[imult].Draw("same")
         legyieldstring = "%.1f #leq %s < %.1f (MB)" % \
@@ -220,8 +220,8 @@ def plot_hfmassfitter(case, arraytype):
     for imult, iplot in enumerate(plotbinHM):
         if not iplot:
             continue
-        signfhistos[imult].SetLineColor(colors[imult])
-        signfhistos[imult].SetMarkerColor(colors[imult])
+        signfhistos[imult].SetLineColor(colors[imult % len(colors)])
+        signfhistos[imult].SetMarkerColor(colors[imult % len(colors)])
         signfhistos[imult].SetMarkerStyle(21)
         signfhistos[imult].Draw("same")
         legyieldstring = "%.1f #leq %s < %.1f (HM)" % \
@@ -249,16 +249,16 @@ def plot_hfmassfitter(case, arraytype):
     for imult, iplot in enumerate(plotbinMB):
         if not iplot:
             continue
-        meanhistos[imult].SetLineColor(colors[imult])
-        meanhistos[imult].SetMarkerColor(colors[imult])
+        meanhistos[imult].SetLineColor(colors[imult % len(colors)])
+        meanhistos[imult].SetMarkerColor(colors[imult % len(colors)])
         meanhistos[imult].SetMarkerStyle(21)
         meanhistos[imult].Draw("same")
 
     for imult, iplot in enumerate(plotbinHM):
         if not iplot:
             continue
-        meanhistos[imult].SetLineColor(colors[imult])
-        meanhistos[imult].SetMarkerColor(colors[imult])
+        meanhistos[imult].SetLineColor(colors[imult % len(colors)])
+        meanhistos[imult].SetMarkerColor(colors[imult % len(colors)])
         meanhistos[imult].SetMarkerStyle(21)
         meanhistos[imult].Draw("same")
     leg.Draw()
@@ -278,16 +278,16 @@ def plot_hfmassfitter(case, arraytype):
     for imult, iplot in enumerate(plotbinMB):
         if not iplot:
             continue
-        sigmahistos[imult].SetLineColor(colors[imult])
-        sigmahistos[imult].SetMarkerColor(colors[imult])
+        sigmahistos[imult].SetLineColor(colors[imult % len(colors)])
+        sigmahistos[imult].SetMarkerColor(colors[imult % len(colors)])
         sigmahistos[imult].SetMarkerStyle(21)
         sigmahistos[imult].Draw("same")
 
     for imult, iplot in enumerate(plotbinHM):
         if not iplot:
             continue
-        sigmahistos[imult].SetLineColor(colors[imult])
-        sigmahistos[imult].SetMarkerColor(colors[imult])
+        sigmahistos[imult].SetLineColor(colors[imult % len(colors)])
+        sigmahistos[imult].SetMarkerColor(colors[imult % len(colors)])
         sigmahistos[imult].SetMarkerStyle(21)
         sigmahistos[imult].Draw("same")
     leg.Draw()
@@ -306,8 +306,8 @@ def plot_hfmassfitter(case, arraytype):
         if not iplot:
             continue
         sighistos[imult].SetTitle(";#it{p}_{T} (GeV/#it{c});Signal %s" % name)
-        sighistos[imult].SetLineColor(colors[imult])
-        sighistos[imult].SetMarkerColor(colors[imult])
+        sighistos[imult].SetLineColor(colors[imult % len(colors)])
+        sighistos[imult].SetMarkerColor(colors[imult % len(colors)])
         sighistos[imult].SetMarkerStyle(21)
         sighistos[imult].Draw("same")
 
@@ -315,8 +315,8 @@ def plot_hfmassfitter(case, arraytype):
         if not iplot:
             continue
         sighistos[imult].SetTitle(";#it{p}_{T} (GeV/#it{c});Signal %s" % name)
-        sighistos[imult].SetLineColor(colors[imult])
-        sighistos[imult].SetMarkerColor(colors[imult])
+        sighistos[imult].SetLineColor(colors[imult % len(colors)])
+        sighistos[imult].SetMarkerColor(colors[imult % len(colors)])
         sighistos[imult].SetMarkerStyle(21)
         sighistos[imult].Draw("same")
     leg.Draw()
@@ -335,8 +335,8 @@ def plot_hfmassfitter(case, arraytype):
         if not iplot:
             continue
         backhistos[imult].SetTitle(";#it{p}_{T} (GeV/#it{c});Background %s" % name)
-        backhistos[imult].SetLineColor(colors[imult])
-        backhistos[imult].SetMarkerColor(colors[imult])
+        backhistos[imult].SetLineColor(colors[imult % len(colors)])
+        backhistos[imult].SetMarkerColor(colors[imult % len(colors)])
         backhistos[imult].SetMarkerStyle(21)
         backhistos[imult].Draw("same")
 
@@ -344,8 +344,8 @@ def plot_hfmassfitter(case, arraytype):
         if not iplot:
             continue
         backhistos[imult].SetTitle(";#it{p}_{T} (GeV/#it{c});Background %s" % name)
-        backhistos[imult].SetLineColor(colors[imult])
-        backhistos[imult].SetMarkerColor(colors[imult])
+        backhistos[imult].SetLineColor(colors[imult % len(colors)])
+        backhistos[imult].SetMarkerColor(colors[imult % len(colors)])
         backhistos[imult].SetMarkerStyle(21)
         backhistos[imult].Draw("same")
     leg.Draw()
