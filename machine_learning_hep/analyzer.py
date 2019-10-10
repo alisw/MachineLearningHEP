@@ -96,6 +96,12 @@ class Analyzer:
         self.p_masspeak = datap["analysis"][self.typean]["masspeak"]
         self.p_massmin = datap["analysis"][self.typean]["massmin"]
         self.p_massmax = datap["analysis"][self.typean]["massmax"]
+        # Enable rebinning per pT and multiplicity
+        # Note that this is not a deepcopy in case it's already a list of lists
+        self.rebins = datap["analysis"][self.typean]["rebin"].copy()
+        if not isinstance(self.rebins[0], list):
+            self.rebins = [self.rebins for _ in range(self.p_nbin2)]
+
         self.p_rebin = datap["analysis"][self.typean]["rebin"]
         self.p_includesecpeak = datap["analysis"][self.typean]["includesecpeak"]
         self.p_masssecpeak = datap["analysis"][self.typean]["masssecpeak"] \
@@ -278,6 +284,7 @@ class Analyzer:
         maxperc = 1 + self.p_max_perc_sigma_diff
         mass_fitter = []
         ifit = -1
+
         # Start fitting...
         for imult in range(self.p_nbin2):
             if imult not in fit_status:
@@ -315,7 +322,7 @@ class Analyzer:
                 h_invmass_mc_init = lfile_mc.Get("hmass" + suffix)
 
                 h_mc_init_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_mc_init,
-                                                                  self.p_rebin[ipt], -1)
+                                                                  self.rebins[imult][ipt], -1)
                 h_mc_init_rebin = TH1F()
                 h_mc_init_rebin_.Copy(h_mc_init_rebin)
                 h_mc_init_rebin.SetTitle("%.1f < #it{p}_{T} < %.1f (prob > %.2f)" \
@@ -378,7 +385,7 @@ class Analyzer:
                 # Weighted histograms onnly for data at the moment
                 h_invmass_init = lfile.Get(histname + suffix)
                 h_data_init_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_init,
-                                                                    self.p_rebin[ipt], -1)
+                                                                    self.rebins[imult][ipt], -1)
                 h_data_init_rebin = TH1F()
                 h_data_init_rebin_.Copy(h_data_init_rebin)
                 h_data_init_rebin.SetTitle("%.1f < #it{p}_{T} < %.1f (prob > %.2f)" \
@@ -473,7 +480,8 @@ class Analyzer:
                     self.logger.info("*********** I AM USING WEIGHTED HISTOGRAMS")
                 # Weighted histograms onnly for data at the moment
                 h_invmass = lfile.Get(histname + suffix)
-                h_invmass_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass, self.p_rebin[ipt], -1)
+                h_invmass_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass,
+                                                                  self.rebins[imult][ipt], -1)
                 h_invmass_rebin = TH1F()
                 h_invmass_rebin_.Copy(h_invmass_rebin)
                 h_invmass_rebin.SetTitle("%.1f < #it{p}_{T} < %.1f (prob > %.2f)" \
@@ -486,7 +494,7 @@ class Analyzer:
 
                 h_invmass_mc = lfile_mc.Get("hmass" + suffix)
                 h_invmass_mc_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_mc,
-                                                                     self.p_rebin[ipt], -1)
+                                                                     self.rebins[imult][ipt], -1)
                 h_invmass_mc_rebin = TH1F()
                 h_invmass_mc_rebin_.Copy(h_invmass_mc_rebin)
                 success = 0
@@ -526,8 +534,6 @@ class Analyzer:
                             lfile_mc.Get("hmass_refl" + suffix), h_invmass_rebin,
                             self.p_massmin[ipt], self.p_massmax[ipt])
 
-                        #h_invmass_refl = AliVertexingHFUtils.RebinHisto(
-                        #    lfile_mc.Get("hmass_refl" + suffix), self.p_rebin[ipt], -1)
                         if h_invmass_refl.Integral() > 0.:
                             mass_fitter[ifit].SetTemplateReflections(h_invmass_refl, "1gaus",
                                                                      self.p_massmin[ipt],
@@ -755,11 +761,6 @@ class Analyzer:
                 h_invmass = TH1D()
                 h_invmass_.Copy(h_invmass)
 
-                # Get MC histogram and rebin for central fit
-                h_invmass_mc_ = lfile_mc.Get("hmass" + suffix)
-                h_invmass_mc_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_mc_,
-                                                                     self.p_rebin[ipt], -1)
-
                 multi_trial = AliHFInvMassMultiTrialFit()
 
                 multi_trial.SetSuffixForHistoNames("")
@@ -813,7 +814,8 @@ class Analyzer:
                 if self.include_reflection:
                     h_invmass_mc_ = lfile_mc.Get("hmass" + suffix)
                     h_invmass_mc_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_mc_,
-                                                                         self.p_rebin[ipt], -1)
+                                                                         self.rebins[imult][ipt],
+                                                                         -1)
                     h_invmass_mc = TH1F()
                     h_invmass_mc_rebin_.Copy(h_invmass_mc)
                     h_invmass_mc_refl_ = lfile_mc.Get("hmass_refl" + suffix)

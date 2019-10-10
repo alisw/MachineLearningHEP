@@ -306,7 +306,12 @@ Dspp:
       masspeak: 1.969
       massmin: [1.75,1.75,1.75,1.75,1.75,1.75]
       massmax: [2.15,2.15,2.15,2.15,2.15,2.15]
-      rebin: [4,4,4,4,4,4]
+      # Rebin per multiplicity and then pT
+      rebin:
+        - [4,4,4,4,4,4]
+        - [4,4,4,4,4,4]
+        - [4,4,4,4,4,4]
+        - [4,4,4,4,4,4]
       includesecpeak: [true, true, true, true, true, true]
       masssecpeak: 1.869
       fix_masssecpeak: False
