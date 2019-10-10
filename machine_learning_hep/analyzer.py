@@ -792,8 +792,12 @@ class Analyzer:
                     self.logger.fatal("Unknown background %s for multi trial", bkg)
 
                 if rebin:
-                    rebin_steps = array("i", rebin)
-                    multi_trial.ConfigureRebinSteps(len(rebin), rebin_steps)
+                    rebin_steps = [self.rebins[imult][ipt] + rel_rb \
+                            if self.rebins[imult][ipt] + rel_rb > 0 else 1 for rel_rb in rebin]
+                    # To only have unique values and we don't care about the order we can just do
+                    rebin_steps = list(set(rebin_steps))
+                    rebin_steps = array("i", rebin_steps)
+                    multi_trial.ConfigureRebinSteps(len(rebin_steps), rebin_steps)
                 if fit_ranges_low:
                     low_lim_steps = array("d", fit_ranges_low)
                     multi_trial.ConfigureLowLimFitSteps(len(fit_ranges_low),
