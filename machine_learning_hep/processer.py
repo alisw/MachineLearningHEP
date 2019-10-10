@@ -414,7 +414,14 @@ class Processer: # pylint: disable=too-many-instance-attributes
             hNorm.SetBinContent(1, norm)
             hNorm.SetBinContent(2, nselevt)
             hNorm.Write()
-
+            histmultevt = TH1F("hmultevtmult%d" % (ibin2), "hmultevtmult%d"  % (ibin2), 100,0,100)
+            print("step000")
+            mybindfevtorig = mybindfevtorig.query("is_ev_rej==0")
+            print("step001")
+            fill_hist(histmultevt, mybindfevtorig.n_tracklets_corr)
+            print("step002")
+            histmultevt.Write()
+            print("FINI")
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
@@ -423,7 +430,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             #else:
             #    print("no extra selection neeeded since we are doing std analysis")
             if self.s_evtsel is not None:
-                df = df.query(self.s_evtsel)
+               df = df.query(self.s_evtsel)
             if self.s_trigger is not None:
                 df = df.query(self.s_trigger)
             df = seldf_singlevar(df, self.v_var_binning, \
@@ -456,7 +463,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 myfile.cd()
                 h_invmass.Write()
                 h_invmass_weight.Write()
-
+                histmult = TH1F("hmultpt%dmult%d" % (ipt, ibin2), "hmultpt%dmult%d"  % (ipt, ibin2), 100,0,100)
+                fill_hist(histmult, df_bin.n_tracklets_corr)
+                histmult.Write()
                 if "pt_jet" in df_bin.columns:
                     zarray = z_calc(df_bin.pt_jet, df_bin.phi_jet, df_bin.eta_jet,
                                     df_bin.pt_cand, df_bin.phi_cand, df_bin.eta_cand)
