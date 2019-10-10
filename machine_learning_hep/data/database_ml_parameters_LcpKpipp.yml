@@ -267,12 +267,12 @@ LcpKpipp:
     MBvspt_ntrkl:
       useperiod: [1,1,1]
       normalizecross: false
-      plotbin: [1,1,1,0]
+      plotbin: [1,1,1,1,0]
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
-      sel_binmin2:  [0,1,20,60] #list of var2 splittng nbins
-      sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
+      sel_binmin2:  [0,1,10,30,60] #list of var2 splittng nbins
+      sel_binmax2: [9999,10,30,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
       triggerbit: INT7
 
@@ -337,10 +337,10 @@ LcpKpipp:
       systematics:
         # For now don't do these things per pT bin
         max_chisquare_ndf: 2.
-        rebin: [4,6,8]
-        massmin: [2.12, 2.13, 2.14, 2.15]
+        rebin: [-1,0,1]
+        massmin: [2.11,2.12, 2.13, 2.14, 2.15]
         massmax: [2.408, 2.407, 2.406, 2.405]
-        bincount_sigma: [3.5, 4.0,4.5]
+        bincount_sigma: [3.0,5.0]
         bkg_funcs: [Pol2, Pol3]
         # Whether to include the free sigma option in the derivation of raw yield uncertainty in given pT bin
         consider_free_sigma: [True, True, True, True, True, True]
@@ -558,12 +558,12 @@ LcpKpipp:
     SPDvspt:
       useperiod: [0,0,1]
       normalizecross: false
-      plotbin: [0,0,0,1]
+      plotbin: [0,0,0,0,1]
       usesinglebineff: 2
       fprompt_from_mb: true
       corresp_mb_typean: MBvspt_ntrkl
-      sel_binmin2:  [0,1,20,60] #list of var2 splittng nbins
-      sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
+      sel_binmin2:  [0,1,10,30,60] #list of var2 splittng nbins
+      sel_binmax2: [9999,10,30,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr
       triggerbit: HighMultSPD
 
