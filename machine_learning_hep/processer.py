@@ -419,15 +419,15 @@ class Processer: # pylint: disable=too-many-instance-attributes
             histmultevt = TH1F("hmultevtmult%d" % ibin2,
                                "hmultevtmult%d"  % ibin2, 100, 0, 100)
             mybindfevtorig = mybindfevtorig.query("is_ev_rej==0")
-            fill_hist(histmultevt, mybindfevtorig.n_tracklets_corr)
-            histmultevt.Write()
-            h_v0m_ntracklets = TH2F("h_v0m_ntracklets%d" % ibin2,
-                                    "h_v0m_ntracklets%d" % ibin2,
-                                    200, 0, 200, 200, -0.5, 1999.5)
-            v_v0m_ntracklets = np.vstack((mybindfevtorig.n_tracklets_corr,
-                                          mybindfevtorig.v0m_corr)).T
-            fill_hist(h_v0m_ntracklets, v_v0m_ntracklets)
-            h_v0m_ntracklets.Write()
+#            fill_hist(histmultevt, mybindfevtorig.n_tracklets_corr)
+#            histmultevt.Write()
+#            h_v0m_ntracklets = TH2F("h_v0m_ntracklets%d" % ibin2,
+#                                    "h_v0m_ntracklets%d" % ibin2,
+#                                    200, 0, 200, 200, -0.5, 1999.5)
+#            v_v0m_ntracklets = np.vstack((mybindfevtorig.n_tracklets_corr,
+#                                          mybindfevtorig.v0m_corr)).T
+#            fill_hist(h_v0m_ntracklets, v_v0m_ntracklets)
+#            h_v0m_ntracklets.Write()
 
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
