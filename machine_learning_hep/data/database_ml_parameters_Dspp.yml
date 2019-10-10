@@ -272,7 +272,7 @@ Dspp:
       corresp_mb_typean: null
       sel_binmin2: [0,1,10,30,60] #list of var2 splittng nbins
       sel_binmax2: [9999,10,30,60,100] #list of var2 splitting nbins
-      var_binning2: n_tracklets_corr_sub
+      var_binning2: n_tracklets_corr
       var_binning2_gen: n_tracklets_corr
       triggerbit: INT7
 
@@ -577,7 +577,7 @@ Dspp:
       corresp_mb_typean: MBvspt_ntrkl
       sel_binmin2: [0,1,10,30,60] #list of var2 splittng nbins
       sel_binmax2: [9999,10,30,60,100] #list of var2 splitting nbins
-      var_binning2: n_tracklets_corr_sub
+      var_binning2: n_tracklets_corr
       var_binning2_gen: n_tracklets_corr
       triggerbit: HighMultSPD
       

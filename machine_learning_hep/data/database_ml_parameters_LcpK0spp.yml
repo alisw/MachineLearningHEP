@@ -342,7 +342,7 @@ LcpK0spp:
       corresp_mb_typean: null
       sel_binmin2:  [0,1,10,30,60] #list of var2 splittng nbins
       sel_binmax2: [9999,10,30,60,100] #list of var2 splitting nbins
-      var_binning2: n_tracklets_corr_sub
+      var_binning2: n_tracklets_corr
       var_binning2_gen: n_tracklets_corr
       triggerbit: INT7
 
@@ -407,9 +407,8 @@ LcpK0spp:
         # For now don't do these things per pT bin
         max_chisquare_ndf: 2.
         rebin: [-1,0,1]
-	massmin: [2.14, 2.13, 2.12, 2.15, 2.17]
-        massmax: [2.436, 2.435, 2.434, 2.437, 2438]
-	
+        massmin: [2.14, 2.13, 2.12, 2.15, 2.17]
+        massmax: [2.436, 2.435, 2.434, 2.437, 2.438]
         bincount_sigma: [3, 5]
         bkg_funcs: [Pol2, Pol3]
         # Whether to include the free sigma option in the derivation of raw yield uncertainty in given pT bin
@@ -631,7 +630,7 @@ LcpK0spp:
       corresp_mb_typean: MBvspt_ntrkl
       sel_binmin2:  [0,1,10,30,60] #list of var2 splittng nbins
       sel_binmax2: [9999,10,30,60,100] #list of var2 splitting nbins
-      var_binning2: n_tracklets_corr_sub
+      var_binning2: n_tracklets_corr
       var_binning2_gen: n_tracklets_corr
       triggerbit: HighMultSPD
 
