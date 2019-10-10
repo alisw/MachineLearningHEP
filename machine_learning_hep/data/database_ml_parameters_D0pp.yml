@@ -23,8 +23,7 @@ D0pp:
   sel_reco_singletrac_unp : null
   sel_gen_unp: "pt_cand>1 and abs(z_vtx_gen)<10"
   sel_cen_unp: null
-  #sel_good_evt_unp: "is_ev_rej == 0"
-  sel_good_evt_unp: null
+  sel_good_evt_unp: "is_ev_rej == 0"
   sel_reco_skim: ["pt_prong0>0.3 and pt_prong1>0.3 and dca<0.05 and abs(imp_par_prong0) < 0.5 and abs(imp_par_prong1) < 0.5 and imp_par_prod < 0.1 and cos_p > 0.6",
                   "pt_prong0>0.5 and pt_prong1>0.5 and dca<0.05 and abs(imp_par_prong0) < 0.5 and abs(imp_par_prong1) < 0.5 and imp_par_prod < 0.1 and cos_p > 0.6",
                   "pt_prong0>0.6 and pt_prong1>0.6 and dca<0.05 and abs(imp_par_prong0) < 0.5 and abs(imp_par_prong1) < 0.5 and imp_par_prod < 0.1 and cos_p > 0.6",
@@ -261,6 +260,7 @@ D0pp:
       sel_binmin2:  [0,1,20,60] #list of var2 splittng nbins
       sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
+      var_binning2_gen: n_tracklets_corr
       triggerbit: INT7
 
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
@@ -344,6 +344,7 @@ D0pp:
       sel_binmin2:  [0,1,200,600] #list of var2 splittng nbins
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
       var_binning2: v0m_corr
+      var_binning2_gen: v0m_corr
       triggerbit: INT7
 
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
@@ -416,6 +417,7 @@ D0pp:
       sel_binmin2:  [0,30,0.1,0.] #list of var2 splittng nbins
       sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m
+      var_binning2_gen: perc_v0m
       triggerbit: INT7
 
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
@@ -490,6 +492,7 @@ D0pp:
       sel_binmin2: [5] #list of nbins
       sel_binmax2: [15] #list of nbins
       var_binning2: pt_jet
+      var_binning2_gen: pt_jet
       triggerbit: INT7
 
       sel_an_binmin: [2,4,5,6,8] #list of pt nbins
@@ -561,6 +564,7 @@ D0pp:
       sel_binmin2:  [0,1,20,60] #list of var2 splittng nbins
       sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
+      var_binning2_gen: n_tracklets_corr
       triggerbit: HighMultSPD
 
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
@@ -633,6 +637,7 @@ D0pp:
       sel_binmin2:  [0,1,200,600] #list of var2 splittng nbins
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
       var_binning2: v0m_corr
+      var_binning2_gen: v0m_corr
       triggerbit: HighMultV0
 
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
