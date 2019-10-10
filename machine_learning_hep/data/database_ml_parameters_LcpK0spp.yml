@@ -79,7 +79,7 @@ LcpK0spp:
                    [signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,
                    imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0],
                    [signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,
-                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s]]
+                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0]]
     var_boundaries: [cos_t_star, pt_cand]
     var_correlation:
       - [cos_t_star]
@@ -336,13 +336,14 @@ LcpK0spp:
     MBvspt_ntrkl:
       useperiod: [1,1,1]
       normalizecross: false
-      plotbin: [1,1,1,0]
+      plotbin: [1,1,1,1,0]
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
-      sel_binmin2:  [0,1,20,60] #list of var2 splittng nbins
-      sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
+      sel_binmin2:  [0,1,10,30,60] #list of var2 splittng nbins
+      sel_binmax2: [9999,10,30,60,100] #list of var2 splitting nbins
+      var_binning2: n_tracklets_corr
       triggerbit: INT7
 
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
@@ -380,13 +381,13 @@ LcpK0spp:
       includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 2.2864
       # Fix mean and/or sigma
-      FixedMean: False
+      FixedMean: false
       SetFixGaussianSigma: [true,true,true,true,true,true]
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
-      SetInitialGaussianSigma: false
+      SetInitialGaussianSigma: true
       # Max percentage deviation in sigma (from init) to be considered as a good fit
       MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
@@ -405,10 +406,11 @@ LcpK0spp:
       systematics:
         # For now don't do these things per pT bin
         max_chisquare_ndf: 2.
-        rebin: [4,6,8]
-        massmin: [2.14, 2.15, 2.16, 2.17]
-        massmax: [2.436, 2.426, 2.416, 2.406]
-        bincount_sigma: [3.5, 4.0,4.5]
+        rebin: [-1,0,1]
+	massmin: [2.14, 2.13, 2.12, 2.15, 2.17]
+        massmax: [2.436, 2.435, 2.434, 2.437, 2438]
+	
+        bincount_sigma: [3, 5]
         bkg_funcs: [Pol2, Pol3]
         # Whether to include the free sigma option in the derivation of raw yield uncertainty in given pT bin
         consider_free_sigma: [False, False, False, False, False, False]
@@ -623,12 +625,12 @@ LcpK0spp:
     SPDvspt:
       useperiod: [0,0,1]
       normalizecross: false
-      plotbin: [0,0,0,1]
+      plotbin: [0,0,0,0,1]
       usesinglebineff: 2
       fprompt_from_mb: true
       corresp_mb_typean: MBvspt_ntrkl
-      sel_binmin2:  [0,1,20,60] #list of var2 splittng nbins
-      sel_binmax2: [9999,20,60,100] #list of var2 splitting nbins
+      sel_binmin2:  [0,1,10,30,60] #list of var2 splittng nbins
+      sel_binmax2: [9999,10,30,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
       triggerbit: HighMultSPD
 
