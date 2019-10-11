@@ -493,6 +493,7 @@ LcpK0spp:
       sel_binmin2:  [0,30,0.1,0.] #list of var2 splittng nbins
       sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m
+      var_binning2_gen: perc_v0m
       triggerbit: INT7
 
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
@@ -770,6 +771,7 @@ LcpK0spp:
       sel_binmin2:  [0,30,0.1,0.] #list of var2 splittng nbins
       sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m
+      var_binning2_gen: perc_v0m
       triggerbit: HighMultV0
 
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
