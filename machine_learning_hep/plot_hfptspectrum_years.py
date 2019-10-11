@@ -218,28 +218,28 @@ def plot_hfspectrum_years(case, ana_type, mult_bins=None):
 gROOT.SetBatch(True)
 
 plot_hfspectrum_years("LcpK0spp", "MBvspt_ntrkl")
-plot_hfspectrum_years("LcpK0spp", "MBvspt_v0m")
+#plot_hfspectrum_years("LcpK0spp", "MBvspt_v0m")
 plot_hfspectrum_years("LcpK0spp", "MBvspt_perc")
-plot_hfspectrum_years("LcpK0spp", "V0mvspt")
-plot_hfspectrum_years("LcpK0spp", "V0mvspt_perc_v0m")
+#plot_hfspectrum_years("LcpK0spp", "V0mvspt")
+#plot_hfspectrum_years("LcpK0spp", "V0mvspt_perc_v0m")
 plot_hfspectrum_years("LcpK0spp", "SPDvspt")
 
 plot_hfspectrum_years("D0pp", "MBvspt_ntrkl")
-plot_hfspectrum_years("D0pp", "MBvspt_v0m")
+#plot_hfspectrum_years("D0pp", "MBvspt_v0m")
 plot_hfspectrum_years("D0pp", "MBvspt_perc")
-plot_hfspectrum_years("D0pp", "V0mvspt")
-plot_hfspectrum_years("D0pp", "V0mvspt_perc_v0m")
+#plot_hfspectrum_years("D0pp", "V0mvspt")
+#plot_hfspectrum_years("D0pp", "V0mvspt_perc_v0m")
 plot_hfspectrum_years("D0pp", "SPDvspt")
+
+plot_hfspectrum_years("Dspp", "MBvspt_ntrkl")
+#plot_hfspectrum_years("Dspp", "MBvspt_v0m")
+plot_hfspectrum_years("Dspp", "MBvspt_perc")
+#plot_hfspectrum_years("Dspp", "V0mvspt")
+#plot_hfspectrum_years("Dspp", "V0mvspt_perc_v0m")
+plot_hfspectrum_years("Dspp", "SPDvspt")
 
 # pylint: disable=pointless-string-statement
 """
-plot_hfspectrum_years("Dspp", "MBvspt_ntrkl")
-plot_hfspectrum_years("Dspp", "MBvspt_v0m")
-plot_hfspectrum_years("Dspp", "MBvspt_perc")
-plot_hfspectrum_years("Dspp", "V0mvspt")
-plot_hfspectrum_years("Dspp", "V0mvspt_perc_v0m")
-plot_hfspectrum_years("Dspp", "SPDvspt")
-
 plot_hfspectrum_years("LcpKpipp", "MBvspt_ntrkl")
 plot_hfspectrum_years("LcpKpipp", "MBvspt_v0m")
 plot_hfspectrum_years("LcpKpipp", "MBvspt_perc")
