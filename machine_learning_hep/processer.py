@@ -416,8 +416,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
             hNorm.SetBinContent(1, norm)
             hNorm.SetBinContent(2, nselevt)
             hNorm.Write()
-            histmultevt = TH1F("hmultevtmult%d" % ibin2,
-                               "hmultevtmult%d"  % ibin2, 100, 0, 100)
+#            histmultevt = TH1F("hmultevtmult%d" % ibin2,
+#                               "hmultevtmult%d"  % ibin2, 100, 0, 100)
             mybindfevtorig = mybindfevtorig.query("is_ev_rej==0")
 #            fill_hist(histmultevt, mybindfevtorig.n_tracklets_corr)
 #            histmultevt.Write()
