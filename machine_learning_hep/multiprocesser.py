@@ -181,7 +181,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         for indexp in range(self.prodnumber):
             if self.p_useperiod[indexp] == 1:
                 self.process_listsample[indexp].process_efficiency()
-                self.process_listsample[indexp].process_response()
+#                self.process_listsample[indexp].process_response()
         tmp_merged = \
                 f"/data/tmp/hadd/{self.case}_{self.typean}/efficiency/{get_timestamp_string()}/"
         mergerootfiles(self.lper_fileeff, self.fileeff_mergedall, tmp_merged)

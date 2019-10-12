@@ -13,6 +13,8 @@
 #############################################################################
 
 Dspp:
+  nprongs: 3
+  doml: true 
   mass: 1.968
   sel_reco_unp: "pt_cand>1"
   sel_reco_singletrac_unp : null
@@ -26,8 +28,8 @@ Dspp:
                   "pt_prong0>0.3 and pt_prong1>0.3 and pt_prong2>0.3",
                   "pt_prong0>0.3 and pt_prong1>0.3 and pt_prong2>0.3"]
   sel_gen_skim: [null,null,null,null,null]
-  sel_skim_binmin: [1,2,4,6,8] #list of nbins
-  sel_skim_binmax: [2,4,6,8,24] #list of nbins
+  sel_skim_binmin: [1,2,4,8,12] #list of nbins
+  sel_skim_binmax: [2,4,8,12,24] #list of nbins
   var_binning: pt_cand
   dofullevtmerge: false
   bitmap_sel:
@@ -84,7 +86,9 @@ Dspp:
                    nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, nsigTPC_Pi_1, nsigTPC_K_1, nsigTOF_Pi_1, nsigTOF_K_1, 
                    nsigTPC_Pi_2, nsigTPC_K_2, nsigTOF_Pi_2, nsigTOF_K_2],
                    [d_len, d_len_xy, norm_dl_xy, 
-                   imp_par_xy, dca, sig_vert, delta_mass_KK, cos_PiKPhi_3, imp_par_prong0, imp_par_prong1, imp_par_prong2, max_norm_d0d0exp]]
+                   imp_par_xy, dca, sig_vert, delta_mass_KK, cos_PiKPhi_3, imp_par_prong0, imp_par_prong1, imp_par_prong2, max_norm_d0d0exp,
+                   nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, nsigTPC_Pi_1, nsigTPC_K_1, nsigTOF_Pi_1, nsigTOF_K_1, 
+                   nsigTPC_Pi_2, nsigTPC_K_2, nsigTOF_Pi_2, nsigTOF_K_2]]
 
     var_boundaries: [d_len_xy, cos_p_xy]
     var_correlation:
@@ -151,7 +155,7 @@ Dspp:
       maxfiles : [-1,-1,-1] #list of periods -1
       chunksizeunp : [100,100,100] #list of periods 100
       chunksizeskim: [100,100,100] #list of periods 100
-      fracmerge : [0.05,0.05,0.05] #list of periods
+      fracmerge : [0.1,0.1,0.1] #list of periods
       seedmerge: [12,12,12] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
       unmerged_tree_dir: [/data/TTree/D0DsLckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/merged,
@@ -207,8 +211,8 @@ Dspp:
     rnd_shuffle: 12
     rnd_splt: 12
     test_frac: 0.2
-    binmin: [1,2,4,6,8] #list of nbins
-    binmax: [2,4,6,8,24] #list of nbins
+    binmin: [1,2,4,8,12] #list of nbins
+    binmax: [2,4,8,12,24] #list of nbins
     mltype: BinaryClassification
     ncorescrossval: 10
     mlplot: /data/Derived/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1/mlplot # to be removed
@@ -246,12 +250,12 @@ Dspp:
     modelname: xgboost
     modelsperptbin: [xgboost_classifierDspp_dfselection_pt_cand_1.0_2.0.sav,
                      xgboost_classifierDspp_dfselection_pt_cand_2.0_4.0.sav,
-                     xgboost_classifierDspp_dfselection_pt_cand_4.0_6.0.sav,
-                     xgboost_classifierDspp_dfselection_pt_cand_6.0_8.0.sav,
-                     xgboost_classifierDspp_dfselection_pt_cand_8.0_24.0.sav]
+                     xgboost_classifierDspp_dfselection_pt_cand_4.0_8.0.sav,
+                     xgboost_classifierDspp_dfselection_pt_cand_8.0_12.0.sav,
+                     xgboost_classifierDspp_dfselection_pt_cand_12.0_24.0.sav]
     probcutpresel:
-      data: [0.3,0.3,0.3,0.1,0.1] #list of nbins
-      mc: [0.3,0.3,0.3,0.1,0.1] #list of nbins
+      data: [0.3,0.3,0.3,0.0,0.0] #list of nbins
+      mc: [0.3,0.3,0.3,0.0,0.0] #list of nbins
     probcutoptimal: [0.9,0.9,0.9,0.5,0.5] #list of nbins
   
   analysis:
@@ -270,12 +274,13 @@ Dspp:
       corresp_mb_typean: null
       sel_binmin2: [0,1,10,30,60] #list of var2 splittng nbins
       sel_binmax2: [9999,10,30,60,100] #list of var2 splitting nbins
-      var_binning2: n_tracklets_corr
+      var_binning2: n_tracklets_corr_sub
+      var_binning2_gen: n_tracklets_corr
       triggerbit: INT7
 
       sel_an_binmin: [1,2,4,6,8,12]  # [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24]  # [2,4,6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,2,3,4,4]  # [0,1,2,3,4,4] #list of pt nbins
+      binning_matching: [0,1,2,2,3,4]  # [0,1,2,2,3,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
@@ -356,11 +361,12 @@ Dspp:
       sel_binmin2:  [0,1,200,600] #list of var2 splittng nbins
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
       var_binning2: v0m_corr
+      var_binning2_gen: v0m_corr
       triggerbit: INT7
 
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,2,3,4,4] #list of pt nbins
+      binning_matching: [0,1,2,2,3,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
@@ -429,11 +435,12 @@ Dspp:
       sel_binmin2:  [0,30,0.1,0.] #list of var2 splittng nbins
       sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m
+      var_binning2_gen: perc_v0m
       triggerbit: INT7
 
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,2,3,4,4] #list of pt nbins
+      binning_matching: [0,1,2,2,3,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
@@ -502,6 +509,7 @@ Dspp:
       sel_binmin2: [5] #list of nbins
       sel_binmax2: [15] #list of nbins
       var_binning2: pt_jet
+      var_binning2_gen: pt_jet
       triggerbit: INT7
 
       sel_an_binmin: [2,4,5,6,8] #list of pt nbins
@@ -574,12 +582,13 @@ Dspp:
       corresp_mb_typean: MBvspt_ntrkl
       sel_binmin2: [0,1,10,30,60] #list of var2 splittng nbins
       sel_binmax2: [9999,10,30,60,100] #list of var2 splitting nbins
-      var_binning2: n_tracklets_corr
+      var_binning2: n_tracklets_corr_sub
+      var_binning2_gen: n_tracklets_corr
       triggerbit: HighMultSPD
       
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,2,3,4,4] #list of pt nbins
+      binning_matching: [0,1,2,2,3,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
@@ -648,11 +657,12 @@ Dspp:
       sel_binmin2:  [0,1,200,600] #list of var2 splittng nbins
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
       var_binning2: v0m_corr
+      var_binning2_gen: v0m_corr
       triggerbit: HighMultV0
       
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,2,3,4,4] #list of pt nbins
+      binning_matching: [0,1,2,2,3,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
@@ -721,11 +731,12 @@ Dspp:
       sel_binmin2:  [0,30,0.1,0.] #list of var2 splittng nbins
       sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m
+      var_binning2_gen: perc_v0m
       triggerbit: HighMultV0
       
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,2,3,4,4] #list of pt nbins
+      binning_matching: [0,1,2,2,3,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel: 
