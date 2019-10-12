@@ -1593,10 +1593,10 @@ class Analyzer:
             hNorm = lfile.Get("hEvForNorm_mult%d" % imult)
             normfromhisto = hNorm.GetBinContent(1)
             norm = self.calculate_norm(1, self.f_evtnorm, self.triggerbit, \
-                          self.v_var2_binning, self.lvar2_binmin[imult], \
+                          self.v_var2_binning_gen, self.lvar2_binmin[imult], \
                           self.lvar2_binmax[imult], self.apply_weights)
             normold = self.calculate_norm(0, self.f_evtnorm, self.triggerbit, \
-                          self.v_var2_binning, self.lvar2_binmin[imult], \
+                          self.v_var2_binning_gen, self.lvar2_binmin[imult], \
                           self.lvar2_binmax[imult], self.apply_weights)
             print("--------- NORMALIZATION -----------")
             print(self.triggerbit, self.v_var2_binning,
