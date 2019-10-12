@@ -577,7 +577,7 @@ Dspp:
       useperiod: [0,0,1]
       normalizecross: false
       plotbin: [0,0,0,0,1]
-      usesinglebineff: 2
+      usesinglebineff: 3
       fprompt_from_mb: true
       corresp_mb_typean: MBvspt_ntrkl
       sel_binmin2: [0,1,10,30,60] #list of var2 splittng nbins
