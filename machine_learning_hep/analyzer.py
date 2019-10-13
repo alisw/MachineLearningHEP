@@ -338,49 +338,71 @@ class Analyzer:
                                                     % (h_mc_init_rebin.GetBinWidth(1) * 1000))
                 h_mc_init_rebin.GetYaxis().SetTitleOffset(1.1)
 
-                mass_fitter_mc_init.append(AliHFInvMassFitter(h_mc_init_rebin, self.p_massmin[ipt],
-                                                              self.p_massmax[ipt],
-                                                              self.bkg_fmap[self.p_bkgfunc[ipt]],
-                                                              self.sig_fmap[self.p_sgnfunc[ipt]]))
+                #mass_fitter_mc_init.append(AliHFInvMassFitter(h_mc_init_rebin, self.p_massmin[ipt],
+                #                                              self.p_massmax[ipt],
+                #                                              self.bkg_fmap[self.p_bkgfunc[ipt]],
+                #                                              self.sig_fmap[self.p_sgnfunc[ipt]]))
 
                 # Force to go on with final fit although there is no estimated signal
-                mass_fitter_mc_init[ipt].SetCheckSignalCountsAfterFirstFit(False)
-                if self.p_dolike:
-                    mass_fitter_mc_init[ipt].SetUseLikelihoodFit()
-                mass_fitter_mc_init[ipt].SetInitialGaussianMean(mean_for_data)
-                mass_fitter_mc_init[ipt].SetInitialGaussianSigma(sigma_for_data)
-                mass_fitter_mc_init[ipt].SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
-                success = mass_fitter_mc_init[ipt].MassFitter(False)
-                fit_status[imult][ipt]["init_MC"] = False
-                if success == 1:
-                    mean_for_data = mass_fitter_mc_init[ipt].GetMean()
-                    sigma_for_data = mass_fitter_mc_init[ipt].GetSigma()
+                #mass_fitter_mc_init[ipt].SetCheckSignalCountsAfterFirstFit(False)
+                #if self.p_dolike:
+                #    mass_fitter_mc_init[ipt].SetUseLikelihoodFit()
+                #mass_fitter_mc_init[ipt].SetInitialGaussianMean(mean_for_data)
+                #mass_fitter_mc_init[ipt].SetInitialGaussianSigma(sigma_for_data)
+                #mass_fitter_mc_init[ipt].SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
+                #success = mass_fitter_mc_init[ipt].MassFitter(False)
+                guess_mean = h_mc_init_rebin.GetMean()
+                guess_sigma = h_mc_init_rebin.GetRMS()
+                guess_low_range = guess_mean - 3 * guess_sigma
+                guess_up_range = guess_mean + 3 * guess_sigma
+                guess_int = h_mc_init_rebin.Integral(h_mc_init_rebin.FindBin(guess_low_range),
+                                                     h_mc_init_rebin.FindBin(guess_up_range),
+                                                     "width")
+                gaus_func = TF1("mc_init_gaus", "gaus", guess_low_range, guess_up_range)
+                mass_fitter_mc_init.append(gaus_func)
+                gaus_func.SetParameter(0, guess_int)
+                gaus_func.SetParameter(1, guess_mean)
+                gaus_func.SetParameter(2, guess_sigma)
+                h_mc_init_rebin.Fit("BEL0+", "", guess_low_range, guess_up_range)
+                int_tmp = gaus_func.GetParameter(0)
+                mean_tmp = gaus_func.GetParameter(1)
+                mean_err_tmp = gaus_func.GetParError(1)
+                sigma_tmp = gaus_func.GetParameter(2)
+                sigma_err_tmp = gaus_func.GetParError(2)
+
+                fit_status[imult][ipt]["init_MC"] = True
+                if int_tmp * sigma_tmp < 0 or mean_tmp > 3 * guess_mean \
+                        or sigma_tmp > 3 * guess_sigma:
+                    fit_status[imult][ipt]["init_MC"] = False
+                    self.logger.error("Could not do initial fit on MC")
+                else:
+                    mean_for_data = mean_tmp
+                    sigma_for_data = sigma_tmp
                     means_sigmas_init.insert(0, (2, mean_for_data, sigma_for_data))
                     if ipt not in have_summary_pt_bins:
-                        means_init_mc_histos.SetBinContent(ipt + 1,
-                                                           mass_fitter_mc_init[ipt].GetMean())
-                        means_init_mc_histos.SetBinError(ipt + 1, \
-                                mass_fitter_mc_init[ipt].GetMeanUncertainty())
-                        sigmas_init_mc_histos.SetBinContent(ipt + 1,
-                                                            mass_fitter_mc_init[ipt].GetSigma())
-                        sigmas_init_mc_histos.SetBinError(ipt + 1, \
-                                mass_fitter_mc_init[ipt].GetSigmaUncertainty())
+                        means_init_mc_histos.SetBinContent(ipt + 1, mean_tmp)
+                        means_init_mc_histos.SetBinError(ipt + 1, mean_err_tmp)
+                        sigmas_init_mc_histos.SetBinContent(ipt + 1, sigma_tmp)
+                        sigmas_init_mc_histos.SetBinError(ipt + 1, sigma_err_tmp)
 
-                    fit_status[imult][ipt]["init_MC"] = True
                     if self.init_fits_from == "mc":
                         mean_case_user = mean_for_data
                         sigma_case_user = sigma_for_data
-                else:
-                    self.logger.error("Could not do initial fit on MC")
 
                 canvas = TCanvas("fit_canvas_mc_init", suffix_write, 700, 700)
-                mass_fitter_mc_init[ipt].DrawHere(canvas, self.p_nsigma_signal)
+                canvas.cd()
+                h_mc_init_rebin.Draw()
+                gaus_func.SetLineColor(kBlue)
+                gaus_func.Draw("same")
+                #mass_fitter_mc_init[ipt].DrawHere(canvas, self.p_nsigma_signal)
                 canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
                                                   "fittedplot_integrated_mc", "eps",
                                                   None, suffix_write))
                 canvas.Close()
                 canvas_init_mc.cd(ipt+1)
-                mass_fitter_mc_init[ipt].DrawHere(gPad, self.p_nsigma_signal)
+                h_mc_init_rebin.Draw()
+                gaus_func.Draw("same")
+                #mass_fitter_mc_init[ipt].DrawHere(gPad, self.p_nsigma_signal)
 
                 # Now, try also for data
                 histname = "hmass"
@@ -627,7 +649,7 @@ class Analyzer:
 
                 # Write fitters to file
                 fit_root_dir = fileout.mkdir(suffix)
-                fit_root_dir.WriteObject(mass_fitter_mc_init[ipt], "fitter_mc_init")
+                fit_root_dir.WriteObject(mass_fitter_mc_init[ipt], "gaus_mc_init")
                 fit_root_dir.WriteObject(mass_fitter_data_init[ipt], "fitter_data_init")
                 fit_root_dir.WriteObject(mass_fitter[ifit], "fitter")
 
