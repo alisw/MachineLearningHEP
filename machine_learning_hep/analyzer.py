@@ -103,18 +103,22 @@ class Analyzer:
         if not isinstance(self.rebins[0], list):
             self.rebins = [self.rebins for _ in range(self.p_nbin2)]
 
-        self.p_rebin = datap["analysis"][self.typean]["rebin"]
-        self.p_includesecpeak = datap["analysis"][self.typean]["includesecpeak"]
+        self.p_includesecpeaks = datap["analysis"][self.typean].get("includesecpeak", None)
+        if self.p_includesecpeaks is None:
+            self.p_includesecpeaks = [False for ipt in range(self.p_nptbins)]
+        # Now we have a list, either the one given by the user or the default one just filled above
+        self.p_includesecpeaks = self.p_includesecpeaks.copy()
+        if not isinstance(self.p_includesecpeaks[0], list):
+            self.p_inculdesecpeaks = [self.p_includesecpeaks for _ in range(self.p_nbin2)]
+
         self.p_masssecpeak = datap["analysis"][self.typean]["masssecpeak"] \
-                if self.p_includesecpeak else None
+                if self.p_includesecpeaks else None
         self.p_fix_masssecpeak = datap["analysis"][self.typean]["fix_masssecpeak"] \
-                if self.p_includesecpeak else None
+                if self.p_includesecpeaks else None
         self.p_widthsecpeak = datap["analysis"][self.typean]["widthsecpeak"] \
-                if self.p_includesecpeak else None
+                if self.p_includesecpeaks else None
         self.p_fix_widthsecpeak = datap["analysis"][self.typean]["fix_widthsecpeak"] \
-                if self.p_includesecpeak else None
-        if self.p_includesecpeak is None:
-            self.p_includesecpeak = [False for ipt in range(self.p_nptbins)]
+                if self.p_includesecpeaks else None
         self.p_fixedmean = datap["analysis"][self.typean]["FixedMean"]
         self.p_use_user_gauss_sigma = datap["analysis"][self.typean]["SetInitialGaussianSigma"]
         self.p_max_perc_sigma_diff = datap["analysis"][self.typean]["MaxPercSigmaDeviation"]
@@ -411,7 +415,7 @@ class Analyzer:
                 mass_fitter_data_init[ipt].SetInitialGaussianSigma(sigma_for_data)
                 mass_fitter_data_init[ipt].SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
                 # Second peak?
-                if self.p_includesecpeak[ipt]:
+                if self.p_includesecpeaks[imult][ipt]:
                     mass_fitter_data_init[ipt].IncludeSecondGausPeak(self.p_masssecpeak,
                                                                      self.p_fix_masssecpeak,
                                                                      self.p_widthsecpeak,
@@ -549,7 +553,7 @@ class Analyzer:
                                 mass_fitter[ifit].SetFixReflOverS(r_over_s)
                         else:
                             self.logger.warning("Reflection requested but template empty")
-                    if self.p_includesecpeak[ipt]:
+                    if self.p_includesecpeaks[imult][ipt]:
                         mass_fitter[ifit].IncludeSecondGausPeak(self.p_masssecpeak,
                                                                 self.p_fix_masssecpeak,
                                                                 self.p_widthsecpeak,
@@ -840,7 +844,7 @@ class Analyzer:
                     else:
                         self.logger.warning("Reflection requested but template empty")
 
-                if self.p_includesecpeak[ipt]:
+                if self.p_includesecpeaks[imult][ipt]:
                     multi_trial.IncludeSecondGausPeak(self.p_masssecpeak,
                                                       self.p_fix_masssecpeak,
                                                       self.p_widthsecpeak,
