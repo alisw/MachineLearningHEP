@@ -317,6 +317,7 @@ class Analyzer:
                 # START initialize fit #
                 ########################
                 # Get integrated histograms
+                fit_status[imult][ipt]["init_MC"] = {}
                 suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
@@ -329,7 +330,8 @@ class Analyzer:
                 h_invmass_mc_init = lfile_mc.Get("hmass_sig" + suffix)
 
                 h_mc_init_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_mc_init,
-                                                                  self.rebins[imult][ipt], -1)
+                                                                  self.rebins[bin_mult_int][ipt],
+                                                                  -1)
                 h_mc_init_rebin = TH1F()
                 h_mc_init_rebin_.Copy(h_mc_init_rebin)
                 h_mc_init_rebin.SetTitle("%.1f < #it{p}_{T} < %.1f (prob > %.2f)" \
@@ -354,6 +356,7 @@ class Analyzer:
                 #mass_fitter_mc_init[ipt].SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
                 #success = mass_fitter_mc_init[ipt].MassFitter(False)
                 success = False
+                user_init_success = False
                 for r in [2., 3., 4., 5., 6., 7.]:
                     guess_mean = h_mc_init_rebin.GetMean()
                     guess_sigma = h_mc_init_rebin.GetRMS()
@@ -390,15 +393,18 @@ class Analyzer:
                         break
 
 
-                fit_status[imult][ipt]["init_MC"] = success
+                fit_status[imult][ipt]["init_MC"]["sigma"] = -1.
+                fit_status[imult][ipt]["init_MC"]["success"] = success
                 if not success:
                     self.logger.error("Could not do initial fit on MC")
+
                 else:
                     mean_for_data = mass_fitter_mc_init[-1].GetParameter(1)
                     sigma_for_data = mass_fitter_mc_init[-1].GetParameter(2)
                     mean_err_tmp = mass_fitter_mc_init[-1].GetParError(1)
                     sigma_err_tmp = mass_fitter_mc_init[-1].GetParError(2)
                     means_sigmas_init.insert(0, (2, mean_for_data, sigma_for_data))
+                    fit_status[imult][ipt]["init_MC"]["sigma"] = sigma_for_data
                     if ipt not in have_summary_pt_bins:
                         means_init_mc_histos.SetBinContent(ipt + 1, mean_for_data)
                         means_init_mc_histos.SetBinError(ipt + 1, mean_err_tmp)
@@ -406,6 +412,7 @@ class Analyzer:
                         sigmas_init_mc_histos.SetBinError(ipt + 1, sigma_err_tmp)
 
                     if self.init_fits_from == "mc":
+                        user_init_success = True
                         mean_case_user = mean_for_data
                         sigma_case_user = sigma_for_data
                 canvas = TCanvas("fit_canvas_mc_init", suffix_write, 700, 700)
@@ -426,6 +433,7 @@ class Analyzer:
                 #mass_fitter_mc_init[ipt].DrawHere(gPad, self.p_nsigma_signal)
 
                 # Now, try also for data
+                fit_status[imult][ipt]["init_data"] = {}
                 histname = "hmass"
                 if self.apply_weights is True:
                     histname = "h_invmass_weight"
@@ -433,7 +441,8 @@ class Analyzer:
                 # Weighted histograms onnly for data at the moment
                 h_invmass_init = lfile.Get(histname + suffix)
                 h_data_init_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_init,
-                                                                    self.rebins[imult][ipt], -1)
+                                                                    self.rebins[bin_mult_int][ipt],
+                                                                    -1)
                 h_data_init_rebin = TH1F()
                 h_data_init_rebin_.Copy(h_data_init_rebin)
                 h_data_init_rebin.SetTitle("%.1f < #it{p}_{T} < %.1f (prob > %.2f)" \
@@ -458,13 +467,14 @@ class Analyzer:
                 mass_fitter_data_init[ipt].SetInitialGaussianSigma(sigma_for_data)
                 mass_fitter_data_init[ipt].SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
                 # Second peak?
-                if self.p_includesecpeaks[imult][ipt]:
+                if self.p_includesecpeaks[bin_mult_int][ipt]:
                     mass_fitter_data_init[ipt].IncludeSecondGausPeak(self.p_masssecpeak,
                                                                      self.p_fix_masssecpeak,
                                                                      self.p_widthsecpeak,
                                                                      self.p_fix_widthsecpeak)
                 success = mass_fitter_data_init[ipt].MassFitter(False)
-                fit_status[imult][ipt]["init_data"] = False
+                fit_status[imult][ipt]["init_data"]["success"] = False
+                fit_status[imult][ipt]["init_data"]["sigma"] = -1.
                 if success == 1:
                     if ipt not in have_summary_pt_bins:
                         means_init_data_histos.SetBinContent(ipt + 1, \
@@ -480,10 +490,13 @@ class Analyzer:
                     if minperc * sigma_for_data < sigmafit < maxperc * sigma_for_data:
                         means_sigmas_init.insert(0, (1, mass_fitter_data_init[ipt].GetMean(),
                                                      mass_fitter_data_init[ipt].GetSigma()))
-                        fit_status[imult][ipt]["init_data"] = True
+                        fit_status[imult][ipt]["init_data"]["success"] = True
+                        fit_status[imult][ipt]["init_data"]["sigma"] = \
+                                mass_fitter_data_init[ipt].GetSigma()
                         if self.init_fits_from == "data":
                             mean_case_user = mass_fitter_data_init[ipt].GetMean()
                             sigma_case_user = mass_fitter_data_init[ipt].GetSigma()
+                            user_init_success = True
 
                 canvas = TCanvas("fit_canvas_data_init", suffix_write, 700, 700)
                 mass_fitter_data_init[ipt].DrawHere(canvas, self.p_nsigma_signal)
@@ -505,7 +518,7 @@ class Analyzer:
                 for fix in [False, True]:
                     for ms in means_sigmas_init:
                         fit_cases.append((ms[0], ms[1], ms[2], fix))
-                if mean_case_user is not None:
+                if user_init_success:
                     fit_cases.insert(0, (0, mean_case_user, sigma_case_user,
                                          self.p_fixingaussigma[ipt]))
                 else:
@@ -621,11 +634,15 @@ class Analyzer:
                 pinfos.SetTextAlign(11)
                 pinfos.SetTextSize(0.03)
                 add_draw_objects.append(pinfos)
-                if not user_case_success:
-                    text = pinfos.AddText(f"USER FIT CASE FAILED ({self.init_fits_from}, " \
+                if not user_init_success:
+                    text = pinfos.AddText(f"USER INIT CASE FAILED ({self.init_fits_from}, " \
                             f"sigma fixed {self.p_fixingaussigma[ipt]})")
                     text.SetTextColor(kRed)
 
+                if not user_case_success:
+                    text = pinfos.AddText(f"FIT WITH USER INIT CASE FAILED " \
+                            f"({self.init_fits_from}, sigma fixed {self.p_fixingaussigma[ipt]})")
+                    text.SetTextColor(kRed)
                 if not success:
                     text = pinfos.AddText("FIT FAILED")
                     text.SetTextColor(kRed)
@@ -663,6 +680,7 @@ class Analyzer:
                     sigma_fit = mass_fitter[ifit].GetSigma()
                     sigma_min = min(sigma_fit, sigma_min)
                     sigma_max = max(sigma_fit, sigma_max)
+                    fit_status[imult][ipt]["data"]["sigma"] = sigma_fit
 
                     sigmas_histos[imult].SetBinContent(ipt + 1, sigma_fit)
                     sigmas_histos[imult].SetBinError(ipt + 1, \
