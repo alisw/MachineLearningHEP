@@ -296,6 +296,8 @@ class Analyzer:
                 fit_status[imult] = {}
             mass_fitter_mc_init = []
             mass_fitter_data_init = []
+            # Collect additional objects to be drawn outside of pT loop
+            add_draw_objects = []
             for ipt in range(self.p_nptbins):
                 if ipt not in fit_status[imult]:
                     fit_status[imult][ipt] = {}
@@ -324,7 +326,7 @@ class Analyzer:
                                (self.v_var_binning, self.lpt_finbinmin[ipt],
                                 self.lpt_finbinmax[ipt],
                                 self.v_var2_binning, mult_int_min, mult_int_max)
-                h_invmass_mc_init = lfile_mc.Get("hmass" + suffix)
+                h_invmass_mc_init = lfile_mc.Get("hmass_sig" + suffix)
 
                 h_mc_init_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_mc_init,
                                                                   self.rebins[imult][ipt], -1)
@@ -351,49 +353,67 @@ class Analyzer:
                 #mass_fitter_mc_init[ipt].SetInitialGaussianSigma(sigma_for_data)
                 #mass_fitter_mc_init[ipt].SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
                 #success = mass_fitter_mc_init[ipt].MassFitter(False)
-                guess_mean = h_mc_init_rebin.GetMean()
-                guess_sigma = h_mc_init_rebin.GetRMS()
-                guess_low_range = guess_mean - 3 * guess_sigma
-                guess_up_range = guess_mean + 3 * guess_sigma
-                guess_int = h_mc_init_rebin.Integral(h_mc_init_rebin.FindBin(guess_low_range),
-                                                     h_mc_init_rebin.FindBin(guess_up_range),
-                                                     "width")
-                gaus_func = TF1("mc_init_gaus", "gaus", guess_low_range, guess_up_range)
-                mass_fitter_mc_init.append(gaus_func)
-                gaus_func.SetParameter(0, guess_int)
-                gaus_func.SetParameter(1, guess_mean)
-                gaus_func.SetParameter(2, guess_sigma)
-                h_mc_init_rebin.Fit("BEL0+", "", guess_low_range, guess_up_range)
-                int_tmp = gaus_func.GetParameter(0)
-                mean_tmp = gaus_func.GetParameter(1)
-                mean_err_tmp = gaus_func.GetParError(1)
-                sigma_tmp = gaus_func.GetParameter(2)
-                sigma_err_tmp = gaus_func.GetParError(2)
+                success = False
+                for r in [2., 3., 4., 5., 6., 7.]:
+                    guess_mean = h_mc_init_rebin.GetMean()
+                    guess_sigma = h_mc_init_rebin.GetRMS()
+                    guess_low_range = guess_mean - r * guess_sigma
+                    guess_up_range = guess_mean + r * guess_sigma
+                    guess_int = h_mc_init_rebin.Integral(h_mc_init_rebin.FindBin(guess_low_range),
+                                                         h_mc_init_rebin.FindBin(guess_up_range),
+                                                         "width")
+                    gaus_func = TF1("mc_init_gaus", "gaus", guess_low_range, guess_up_range)
+                    gaus_func.SetParameter(0, guess_int)
+                    gaus_func.SetParameter(1, guess_mean)
+                    gaus_func.SetParameter(2, guess_sigma)
+                    h_mc_init_rebin.Fit(gaus_func, "BEL0+", "", guess_low_range, guess_up_range)
+                    int_tmp = gaus_func.GetParameter(0)
+                    mean_tmp = gaus_func.GetParameter(1)
+                    mean_err_tmp = gaus_func.GetParError(1)
+                    sigma_tmp = gaus_func.GetParameter(2)
+                    sigma_err_tmp = gaus_func.GetParError(2)
+                    ndf = gaus_func.GetNDF()
+                    chi2 = gaus_func.GetChisquare()
+                    chi2ndf = chi2 / ndf if ndf > 0 else 0
+                    print("########################")
+                    print(f"Fit n RMS {r}")
+                    print(f"Guessed sigma: {guess_sigma}")
+                    print(f"fit range: {guess_low_range} - {guess_up_range}")
+                    print(f"fitted sigma {sigma_tmp}")
+                    print(f"chi2 / NDF {chi2ndf}")
 
-                fit_status[imult][ipt]["init_MC"] = True
-                if int_tmp * sigma_tmp < 0 or mean_tmp > 3 * guess_mean \
-                        or sigma_tmp > 3 * guess_sigma:
-                    fit_status[imult][ipt]["init_MC"] = False
+                    if int_tmp * sigma_tmp > 0 and \
+                            guess_mean - guess_sigma < mean_tmp < guess_mean + guess_sigma and \
+                            sigma_tmp < 1.1 * guess_sigma and chi2ndf > 0:
+                        success = True
+                        mass_fitter_mc_init.append(gaus_func)
+                        break
+
+
+                fit_status[imult][ipt]["init_MC"] = success
+                if not success:
                     self.logger.error("Could not do initial fit on MC")
                 else:
-                    mean_for_data = mean_tmp
-                    sigma_for_data = sigma_tmp
+                    mean_for_data = mass_fitter_mc_init[-1].GetParameter(1)
+                    sigma_for_data = mass_fitter_mc_init[-1].GetParameter(2)
+                    mean_err_tmp = mass_fitter_mc_init[-1].GetParError(1)
+                    sigma_err_tmp = mass_fitter_mc_init[-1].GetParError(2)
                     means_sigmas_init.insert(0, (2, mean_for_data, sigma_for_data))
                     if ipt not in have_summary_pt_bins:
-                        means_init_mc_histos.SetBinContent(ipt + 1, mean_tmp)
+                        means_init_mc_histos.SetBinContent(ipt + 1, mean_for_data)
                         means_init_mc_histos.SetBinError(ipt + 1, mean_err_tmp)
-                        sigmas_init_mc_histos.SetBinContent(ipt + 1, sigma_tmp)
+                        sigmas_init_mc_histos.SetBinContent(ipt + 1, sigma_for_data)
                         sigmas_init_mc_histos.SetBinError(ipt + 1, sigma_err_tmp)
 
                     if self.init_fits_from == "mc":
                         mean_case_user = mean_for_data
                         sigma_case_user = sigma_for_data
-
                 canvas = TCanvas("fit_canvas_mc_init", suffix_write, 700, 700)
                 canvas.cd()
                 h_mc_init_rebin.Draw()
-                gaus_func.SetLineColor(kBlue)
-                gaus_func.Draw("same")
+                mass_fitter_mc_init[-1].SetLineColor(kBlue)
+                mass_fitter_mc_init[-1].Draw("same")
+
                 #mass_fitter_mc_init[ipt].DrawHere(canvas, self.p_nsigma_signal)
                 canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
                                                   "fittedplot_integrated_mc", "eps",
@@ -401,7 +421,8 @@ class Analyzer:
                 canvas.Close()
                 canvas_init_mc.cd(ipt+1)
                 h_mc_init_rebin.Draw()
-                gaus_func.Draw("same")
+                mass_fitter_mc_init[-1].Draw("same")
+                mass_fitter_mc_init.append(h_mc_init_rebin)
                 #mass_fitter_mc_init[ipt].DrawHere(gPad, self.p_nsigma_signal)
 
                 # Now, try also for data
@@ -529,6 +550,7 @@ class Analyzer:
                 fit_status[imult][ipt]["data"] = {}
 
                 # First try not fixing sigma for all cases (mean always floating)
+                user_case_success = True
                 for case, mean, sigma, fix in fit_cases:
 
                     ifit = ifit + 1
@@ -588,12 +610,30 @@ class Analyzer:
                         if minperc * sigma < sigma_final < maxperc * sigma:
                             break
                         self.logger.warning("Free fit succesful, but bad sigma. Skipped!")
+                    if case == 0:
+                        user_case_success = False
 
                 fit_status[imult][ipt]["data"]["success"] = success
 
+                pinfos = TPaveText(0.12, 0.7, 0.47, 0.89, "NDC")
+                pinfos.SetBorderSize(0)
+                pinfos.SetFillStyle(0)
+                pinfos.SetTextAlign(11)
+                pinfos.SetTextSize(0.03)
+                add_draw_objects.append(pinfos)
+                if not user_case_success:
+                    text = pinfos.AddText(f"USER FIT CASE FAILED ({self.init_fits_from}, " \
+                            f"sigma fixed {self.p_fixingaussigma[ipt]})")
+                    text.SetTextColor(kRed)
+
+                if not success:
+                    text = pinfos.AddText("FIT FAILED")
+                    text.SetTextColor(kRed)
 
                 canvas = TCanvas("fit_canvas", suffix, 700, 700)
                 mass_fitter[ifit].DrawHere(canvas, self.p_nsigma_signal)
+                canvas.cd()
+                pinfos.Draw()
                 if self.apply_weights is False:
                     canvas.SaveAs(self.make_file_path(self.d_resultsallpdata, "fittedplot", "eps",
                                                       None, suffix_write))
@@ -604,6 +644,7 @@ class Analyzer:
                 canvas.Close()
                 canvas_data[imult].cd(ipt+1)
                 mass_fitter[ifit].DrawHere(gPad, self.p_nsigma_signal)
+                pinfos.Draw()
 
                 if success == 1:
                     # In case of success == 2, no signal was found, in case of 0, fit failed
