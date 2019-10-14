@@ -462,7 +462,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 if "INT7" not in self.triggerbit and self.mcordata == "data":
                     fileweight_name = "%s/correctionsweights.root" % self.d_val
                     fileweight = TFile.Open(fileweight_name, "read")
-                    namefunction = "funcnorm_%s_%s" % (self.triggerbit, self.v_var2_binning)
+                    namefunction = "funcnorm_%s_%s" % (self.triggerbit, self.v_var2_binning_gen)
                     funcweighttrig = fileweight.Get(namefunction)
                     if funcweighttrig:
                         weights = evaluate(funcweighttrig, df_bin[self.v_var2_binning])
