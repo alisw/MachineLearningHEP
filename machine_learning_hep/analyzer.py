@@ -113,8 +113,15 @@ class Analyzer:
 
         self.p_masssecpeak = datap["analysis"][self.typean]["masssecpeak"] \
                 if self.p_includesecpeaks else None
-        self.p_fix_masssecpeak = datap["analysis"][self.typean]["fix_masssecpeak"] \
-                if self.p_includesecpeaks else None
+
+        self.p_fix_masssecpeaks = datap["analysis"][self.typean].get("fix_masssecpeak", None)
+        if self.p_fix_masssecpeaks is None:
+            self.p_fix_masssecpeaks = [False for ipt in range(self.p_nptbins)]
+        # Now we have a list, either the one given by the user or the default one just filled above
+        self.p_fix_masssecpeaks = self.p_fix_masssecpeaks.copy()
+        if not isinstance(self.p_fix_masssecpeaks[0], list):
+            self.p_fix_masssecpeaks = [self.p_fix_masssecpeaks for _ in range(self.p_nbin2)]
+
         self.p_widthsecpeak = datap["analysis"][self.typean]["widthsecpeak"] \
                 if self.p_includesecpeaks else None
         self.p_fix_widthsecpeak = datap["analysis"][self.typean]["fix_widthsecpeak"] \
@@ -468,9 +475,10 @@ class Analyzer:
                 mass_fitter_data_init[ipt].SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
                 # Second peak?
                 if self.p_includesecpeaks[bin_mult_int][ipt]:
+                    secpeakwidth = self.p_widthsecpeak * sigma_for_data
                     mass_fitter_data_init[ipt].IncludeSecondGausPeak(self.p_masssecpeak,
-                                                                     self.p_fix_masssecpeak,
-                                                                     self.p_widthsecpeak,
+                                                                     self.p_fix_masssecpeaks[bin_mult_int][ipt],
+                                                                     secpeakwidth,
                                                                      self.p_fix_widthsecpeak)
                 success = mass_fitter_data_init[ipt].MassFitter(False)
                 fit_status[imult][ipt]["init_data"]["success"] = False
@@ -611,9 +619,10 @@ class Analyzer:
                         else:
                             self.logger.warning("Reflection requested but template empty")
                     if self.p_includesecpeaks[imult][ipt]:
+                        secpeakwidth = self.p_widthsecpeak * sigma
                         mass_fitter[ifit].IncludeSecondGausPeak(self.p_masssecpeak,
-                                                                self.p_fix_masssecpeak,
-                                                                self.p_widthsecpeak,
+                                                                self.p_fix_masssecpeaks[imult][ipt],
+                                                                secpeakwidth,
                                                                 self.p_fix_widthsecpeak)
                     fit_status[imult][ipt]["data"]["fix"] = fix
                     fit_status[imult][ipt]["data"]["case"] = case
@@ -926,8 +935,9 @@ class Analyzer:
                         self.logger.warning("Reflection requested but template empty")
 
                 if self.p_includesecpeaks[imult][ipt]:
+                    #p_widthsecpeak to be fixed
                     multi_trial.IncludeSecondGausPeak(self.p_masssecpeak,
-                                                      self.p_fix_masssecpeak,
+                                                      self.p_fix_masssecpeaks[imult][ipt],
                                                       self.p_widthsecpeak,
                                                       self.p_fix_widthsecpeak)
 
