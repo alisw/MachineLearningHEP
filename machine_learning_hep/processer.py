@@ -645,7 +645,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     h_sel_fd.SetBinContent(bincounter + 1, val)
                     h_sel_fd.SetBinError(bincounter + 1, err)
 
-            bincounter = bincounter + 1
+                bincounter = bincounter + 1
+            
             out_file.cd()
             h_gen_pr.Write()
             h_presel_pr.Write()
