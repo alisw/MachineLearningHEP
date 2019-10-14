@@ -87,6 +87,7 @@ class Systematics:
         self.lvar2_binmin = datap["analysis"][self.typean]["sel_binmin2"]
         self.lvar2_binmax = datap["analysis"][self.typean]["sel_binmax2"]
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
+        self.v_var2_binning_gen = datap["analysis"][self.typean]["var_binning2_gen"]
         self.use_var2_bin = 0
 
         self.p_modelname = datap["mlapplication"]["modelname"]
@@ -128,20 +129,38 @@ class Systematics:
         self.p_bkgfunc = datap["analysis"][self.typean]["bkgfunc"]
         self.p_massmin = datap["analysis"][self.typean]["massmin"]
         self.p_massmax = datap["analysis"][self.typean]["massmax"]
+        # Enable rebinning per pT and multiplicity
+        # Note that this is not a deepcopy in case it's already a list of lists
+        self.rebins = datap["analysis"][self.typean]["rebin"].copy()
+        if not isinstance(self.rebins[0], list):
+            self.rebins = [self.rebins for _ in range(self.p_nbin2)]
         self.p_rebin = datap["analysis"][self.typean]["rebin"]
         self.p_masspeak = datap["analysis"][self.typean]["masspeak"]
         self.p_sigmaarray = datap["analysis"][self.typean]["sigmaarray"]
-        self.p_includesecpeak = datap["analysis"][self.typean]["includesecpeak"]
+
+        self.p_includesecpeaks = datap["analysis"][self.typean].get("includesecpeak", None)
+        if self.p_includesecpeaks is None:
+            self.p_includesecpeaks = [False for ipt in range(self.p_nptbins)]
+        # Now we have a list, either the one given by the user or the default one just filled above
+        self.p_includesecpeaks = self.p_includesecpeaks.copy()
+        if not isinstance(self.p_includesecpeaks[0], list):
+            self.p_inculdesecpeaks = [self.p_includesecpeaks for _ in range(self.p_nbin2)]
+
         self.p_masssecpeak = datap["analysis"][self.typean]["masssecpeak"] \
-                if self.p_includesecpeak else None
-        self.p_fix_masssecpeak = datap["analysis"][self.typean]["fix_masssecpeak"] \
-                if self.p_includesecpeak else None
+                if self.p_includesecpeaks else None
+
+        self.p_fix_masssecpeaks = datap["analysis"][self.typean].get("fix_masssecpeak", None)
+        if self.p_fix_masssecpeaks is None:
+            self.p_fix_masssecpeaks = [False for ipt in range(self.p_nptbins)]
+        # Now we have a list, either the one given by the user or the default one just filled above
+        self.p_fix_masssecpeaks = self.p_fix_masssecpeaks.copy()
+        if not isinstance(self.p_fix_masssecpeaks[0], list):
+            self.p_fix_masssecpeaks = [self.p_fix_masssecpeaks for _ in range(self.p_nbin2)]
+
         self.p_widthsecpeak = datap["analysis"][self.typean]["widthsecpeak"] \
-                if self.p_includesecpeak else None
+                if self.p_includesecpeaks else None
         self.p_fix_widthsecpeak = datap["analysis"][self.typean]["fix_widthsecpeak"] \
-                if self.p_includesecpeak else None
-        if self.p_includesecpeak is None:
-            self.p_includesecpeak = [False for ipt in range(self.p_nptfinbins)]
+                if self.p_includesecpeaks else None
         self.p_exclude_nsigma_sideband = datap["analysis"][self.typean]["exclude_nsigma_sideband"]
         self.p_nsigma_signal = datap["analysis"][self.typean]["nsigma_signal"]
         self.p_dolike = datap["analysis"][self.typean]["dolikelihood"]
@@ -210,15 +229,15 @@ class Systematics:
             df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[bin_id], "rb"))
             df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
 
-            df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var_binning, \
+            df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning_gen, \
                                 self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-            df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \
+            df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning_gen, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
 
-            df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning, \
+            df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning_gen, \
                                          self.lvar2_binmin[self.use_var2_bin], \
                                          self.lvar2_binmax[self.use_var2_bin])
-            df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning, \
+            df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning_gen, \
                                         self.lvar2_binmin[self.use_var2_bin], \
                                         self.lvar2_binmax[self.use_var2_bin])
 
@@ -385,7 +404,7 @@ class Systematics:
 
                 for ibin2 in range(len(self.lvar2_binmin)):
                     stringbin2 = "_%d_%s_%.2f_%.2f" % (icv, \
-                                                self.v_var2_binning, \
+                                                self.v_var2_binning_gen, \
                                                 self.lvar2_binmin[ibin2], \
                                                 self.lvar2_binmax[ibin2])
 
@@ -403,9 +422,9 @@ class Systematics:
                         h_sel_fd.append(TH1F("h_sel_fd" + stringbin2, "FD Reco and sel in acc |#eta|<0.8 and sel", \
                                         n_bins, analysis_bin_lims))
 
-                    df_bin = seldf_singlevar(df, self.v_var2_binning, self.lvar2_binmin[ibin2], \
+                    df_bin = seldf_singlevar(df, self.v_var2_binning_gen, self.lvar2_binmin[ibin2], \
                                          self.lvar2_binmax[ibin2])
-                    df_gen_bin = seldf_singlevar(df_gen, self.v_var2_binning, self.lvar2_binmin[ibin2], \
+                    df_gen_bin = seldf_singlevar(df_gen, self.v_var2_binning_gen, self.lvar2_binmin[ibin2], \
                                              self.lvar2_binmax[ibin2])
 
                     df_sel_pr = df_bin[df_bin.ismcprompt == 1]
@@ -509,7 +528,7 @@ class Systematics:
                         self.logger.info("*********** I AM USING WEIGHTED HISTOGRAMS")
 
                     h_invmass = lfile.Get(histname + suffix)
-                    h_invmass_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass, self.p_rebin[ipt], -1)
+                    h_invmass_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass, self.rebins[imult][ipt], -1)
                     h_invmass_rebin = TH1F()
                     h_invmass_rebin_.Copy(h_invmass_rebin)
                     h_invmass_rebin.SetTitle("%.1f < #it{p}_{T} < %.1f (prob > %.4f)" \
@@ -540,12 +559,12 @@ class Systematics:
 
                     #Reflections to be included
 
-                    if self.p_includesecpeak[ipt]:
-                        mass_fitter[ifit].IncludeSecondGausPeak(self.p_masssecpeak,
-                                                                self.p_fix_masssecpeak,
-                                                                self.p_widthsecpeak,
-                                                                self.p_fix_widthsecpeak)
-
+                    if self.p_includesecpeaks[imult][ipt]:
+                        secpeakwidth = self.p_widthsecpeak * sigma_for_data[ipt]
+                        mass_fitter[ifit].IncludeSecondGausPeak(self.p_masssecpeak, \
+                                          self.p_fix_masssecpeaks[imult][ipt], \
+                                          secpeakwidth, \
+                                          self.p_fix_widthsecpeak)
                     success = mass_fitter[ifit].MassFitter(False)
 
                     canvas_data[imult].cd(ipt+1)
@@ -599,7 +618,7 @@ class Systematics:
 
             for imult in range(len(self.lvar2_binmin)):
 
-                stringbin2 = "_%d_%s_%.2f_%.2f" % (icv, self.v_var2_binning, \
+                stringbin2 = "_%d_%s_%.2f_%.2f" % (icv, self.v_var2_binning_gen, \
                                                 self.lvar2_binmin[imult], \
                                                 self.lvar2_binmax[imult])
 
@@ -654,7 +673,7 @@ class Systematics:
                                                                       "mult", str(imult)])
                 norm = -1
                 norm = self.calculate_norm(self.f_evtnorm, self.triggerbit, \
-                             self.v_var2_binning, self.lvar2_binmin[imult], \
+                             self.v_var2_binning_gen, self.lvar2_binmin[imult], \
                              self.lvar2_binmax[imult], self.apply_weights)
                 print(self.apply_weights, self.lvar2_binmin[imult], self.lvar2_binmax[imult], norm)
                 self.logger.info("Not full normalisation is applied. Result may differ from central.")
