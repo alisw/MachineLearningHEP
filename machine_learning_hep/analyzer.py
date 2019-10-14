@@ -797,11 +797,6 @@ class Analyzer:
         # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
 
-    @staticmethod
-    def do_single_multi_trial(mt_fitter, h_invmass, save_file):
-        if mt_fitter.DoMultiTrials(h_invmass):
-            mt_fitter.SaveToRoot(save_file)
-
     # pylint: disable=too-many-locals, too-many-nested-blocks, too-many-branches
     def yield_syst(self):
         if self.mt_syst_dict is None:
@@ -817,6 +812,14 @@ class Analyzer:
         fit_ranges_up = self.mt_syst_dict.get("massmax", None)
         bincount_sigma = self.mt_syst_dict.get("bincount_sigma", None)
         bkg_funcs = self.mt_syst_dict.get("bkg_funcs", None)
+        # Sigma of MT can either be initialized from MC ("mc"), data ("data")
+        # or central ("central" ==> default)
+        initialize_sigma_from = self.mt_syst_dict.get("init_sigma_from", "central")
+        if not isinstance(initialize_sigma_from, list):
+            initialize_sigma_from = [initialize_sigma_from] * self.p_nptbins
+        if not isinstance(initialize_sigma_from[0], list):
+            initialize_sigma_from = [initialize_sigma_from] * self.p_nbin2
+
         if not bkg_funcs:
             self.logger.error("You need to choose at least one background function for " \
                               "the multi trial")
@@ -835,7 +838,6 @@ class Analyzer:
         file_fits = TFile(file_fits_name, "READ")
 
         # Collect arguments for parallelized multi trial run
-        mt_args = []
         for imult in range(self.p_nbin2):
             for ipt in range(self.p_nptbins):
                 bin_id = self.bin_matching[ipt]
@@ -850,20 +852,28 @@ class Analyzer:
                           self.lpt_finbinmax[ipt],
                           self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
 
+
+                # That we need to obtain the yield of the central fit and the initial mean
+                # set to the multi trial
                 mass_fitter_nominal = file_fits.GetDirectory(suffix).Get("fitter")
 
-                h_invmass_ = lfile.Get("hmass" + suffix)
+                # Next we need the sigma to be used for the multi trial
+                sigma_init = mass_fitter_nominal.GetSigma()
+                if initialize_sigma_from[imult][ipt] == "mc":
+                    fit = file_fits.GetDirectory(suffix).Get("gaus_mc_init")
+                    sigma_init = fit.GetParameter(2)
+                elif initialize_sigma_from[imult][ipt] == "data":
+                    fit = file_fits.GetDirectory(suffix).Get("fitter_data_init")
+                    sigma_init = fit.GetSigma()
 
-                h_invmass = TH1D()
-                h_invmass_.Copy(h_invmass)
-
+                # Initialize the multi trial
                 multi_trial = AliHFInvMassMultiTrialFit()
 
                 multi_trial.SetSuffixForHistoNames("")
                 multi_trial.SetDrawIndividualFits(False)
+                # This is always the mean of the central fit
                 multi_trial.SetMass(mass_fitter_nominal.GetMean())
-                # That is not the MC sigma but the one from the nominal fit
-                multi_trial.SetSigmaGaussMC(mass_fitter_nominal.GetSigma())
+                multi_trial.SetSigmaGaussMC(sigma_init)
 
                 for bkg in bkg_funcs:
                     if bkg == "kExpo":
@@ -907,6 +917,10 @@ class Analyzer:
                                                          array("d", bincount_sigma))
 
                 multi_trial.SetSaveBkgValue()
+                h_invmass_ = lfile.Get("hmass" + suffix)
+
+                h_invmass = TH1D()
+                h_invmass_.Copy(h_invmass)
 
                 # Prepare for reflections if requested
                 h_invmass_mc = None
@@ -946,9 +960,10 @@ class Analyzer:
                 self.root_objects.append(multi_trial)
                 mt_filename = self.make_file_path(self.d_mt_results_path, "multi_trial",
                                                   "root", None, suffix_write)
-                mt_args.append((multi_trial, h_invmass, mt_filename,))
 
-        parallelizer(self.do_single_multi_trial, mt_args, 4, self.p_nbin2 * self.p_nptbins)
+                if multi_trial.DoMultiTrials(h_invmass):
+                    multi_trial.SaveToRoot(mt_filename)
+
         self.plot_multi_trial()
 
         # Reset to former mode
@@ -1032,9 +1047,11 @@ class Analyzer:
                                         "Pol4" in bkg_funcs,
                                         "Pol5" in bkg_funcs])
 
+                n_bins_bincount = len(self.mt_syst_dict.get("bincount_sigma", []))
                 PlotMultiTrial(mt_filename, rawYield, mean_fit, sigma_fit, chisquare_fit,
-                               max_chisquare_ndf, used_bkgs, consider_free_sigma[ipt],
-                               self.d_mt_results_path, suffix, title, derived_dir)
+                               max_chisquare_ndf, used_bkgs, n_bins_bincount,
+                               consider_free_sigma[ipt], self.d_mt_results_path, suffix,
+                               title, derived_dir)
 
                 h_mt_fit = derived_dir.Get("h_mt_fit")
                 h_mt_bc0 = derived_dir.Get("h_mt_bc0")

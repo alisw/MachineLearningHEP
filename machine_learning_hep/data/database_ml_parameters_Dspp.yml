@@ -351,6 +351,19 @@ Dspp:
         bkg_funcs: [kExpo, Pol2]
         # Whether to include the free sigma option in the derivation of raw yield uncertainty in given pT bin
         consider_free_sigma: [True, True, True, True, True, True]
+        # Chose which sigma should be taken to initialize the multi trial
+        # If nothing is specified the value of the central fit is taken
+        # can be a sigle value taken for all pT and mult bins
+        #init_sigma_from: "central"
+        # Can be a list covering all pT bins
+        init_sigma_from: ["mc", "data", "data", "data", "data", "data"]
+        # Or a 2D list for all mult. and pT bins individually
+        #init_sigma_from:
+        #  - ["mc", "data", "data", "data", "data", "data"]
+        #  - ["mc", "data", "data", "data", "data", "data"]
+        #  - ["mc", "data", "data", "data", "data", "data"]
+        #  - ["mc", "data", "data", "data", "data", "data"]
+
 
     MBvspt_v0m:
       useperiod: [0,1,1]
