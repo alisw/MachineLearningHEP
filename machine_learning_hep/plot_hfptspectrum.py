@@ -70,12 +70,12 @@ def plot_hfptspectrum_comb(case, arraytype):
     fileres_MB_allperiods = TFile.Open("%s/finalcross%s%smulttot.root" % \
                                  (folder_MB_allperiods, case, arraytype[0]))
     fileres_MB = [TFile.Open("%s/finalcross%s%smult%d.root" % (folder_MB_allperiods, \
-                        case, arraytype[0], i)) for i in [0, 1, 2, 3]]
+                        case, arraytype[0], i)) for i in range(len(plotbinMB))]
 
     fileres_trig_allperiods = TFile.Open("%s/finalcross%s%smulttot.root" % \
                                     (folder_triggered, case, arraytype[1]))
     fileres_trig = [TFile.Open("%s/finalcross%s%smult%d.root" % (folder_triggered, \
-                          case, arraytype[1], i)) for i in [0, 1, 2, 3]]
+                          case, arraytype[1], i)) for i in range(len(plotbinMB))]
 
     #Corrected yield plot
     ccross = TCanvas('cCross', 'The Fit Canvas')
@@ -91,7 +91,7 @@ def plot_hfptspectrum_comb(case, arraytype):
     legyield.SetTextFont(42)
     legyield.SetTextSize(0.035)
 
-    colors = [kBlack, kRed, kGreen+2, kBlue, kOrange+2, kViolet-1, kAzure+1, kOrange-7]
+    colors = [kBlack, kRed, kGreen+2, kBlue, kViolet-1, kOrange+2, kAzure+1, kOrange-7]
     tryunmerged = True
     if fileres_MB_allperiods and fileres_trig_allperiods:
 
@@ -102,8 +102,9 @@ def plot_hfptspectrum_comb(case, arraytype):
             hyield = fileres_MB_allperiods.Get("histoSigmaCorr%d" % (imult))
             hyield.Scale(1./(br * sigmav0 * 1e12))
             hyield.SetLineColor(colors[imult % len(colors)])
-            hyield.SetMarkerColor(colors[imult % len(colors)] % len(colors))
+            hyield.SetMarkerColor(colors[imult % len(colors)])
             hyield.SetMarkerStyle(21)
+            hyield.SetMarkerSize(0.8)
             hyield.Draw("same")
             legyieldstring = "%.1f #leq %s < %.1f (MB)" % \
                         (binsmin[imult], latexbin2var, binsmax[imult])
@@ -118,6 +119,7 @@ def plot_hfptspectrum_comb(case, arraytype):
             hyieldHM.SetLineColor(colors[imult % len(colors)])
             hyieldHM.SetMarkerColor(colors[imult % len(colors)])
             hyieldHM.SetMarkerStyle(21)
+            hyieldHM.SetMarkerSize(0.8)
             hyieldHM.Draw("same")
             legyieldstring = "%.1f #leq %s < %.1f (HM)" % \
                   (binsmin[imult], latexbin2var, binsmax[imult])
@@ -156,6 +158,7 @@ def plot_hfptspectrum_comb(case, arraytype):
             hyield.SetLineColor(colors[imult % len(colors)])
             hyield.SetMarkerColor(colors[imult % len(colors)])
             hyield.SetMarkerStyle(21)
+            hyield.SetMarkerSize(0.8)
             hyield.Draw("same")
             legyieldstring = "%.1f #leq %s < %.1f (MB)" % \
                         (binsmin[imult], latexbin2var, binsmax[imult])
@@ -170,6 +173,7 @@ def plot_hfptspectrum_comb(case, arraytype):
             hyieldHM.SetLineColor(colors[imult % len(colors)])
             hyieldHM.SetMarkerColor(colors[imult % len(colors)])
             hyieldHM.SetMarkerStyle(21)
+            hyieldHM.SetMarkerSize(0.8)
             hyieldHM.Draw("same")
             legyieldstring = "%.1f #leq %s < %.1f (HM)" % \
                   (binsmin[imult], latexbin2var, binsmax[imult])
@@ -193,7 +197,7 @@ def plot_hfptspectrum_comb(case, arraytype):
     legeff.SetTextFont(42)
     legeff.SetTextSize(0.035)
 
-    lstyle = [1, 2, 3, 4]
+    lstyle = [1, 2, 3, 4, 5]
     for imult, iplot in enumerate(plotbinMB):
         if not iplot:
             continue
@@ -337,8 +341,8 @@ def plot_hfptspectrum_comb(case, arraytype):
                   (folder_plots, case, arraytype[0], arraytype[1]))
 
     #fprompt
-    cfPrompt = TCanvas('cfPrompt', '', 800, 800)
-    cfPrompt.Divide(2, 2)
+    cfPrompt = TCanvas('cfPrompt', '', 1200, 800)
+    cfPrompt.Divide(3, 2)
 
     pt = TLatex()
     pt.SetTextSize(0.04)
@@ -471,7 +475,7 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype):
     legyield.SetTextFont(42)
     legyield.SetTextSize(0.025)
 
-    colors = [kBlack, kRed, kGreen+2, kBlue]
+    colors = [kBlack, kRed, kGreen+2, kBlue, kViolet-1, kOrange+2, kAzure+1, kOrange-7]
     for imult, iplot in enumerate(plotbinMB):
         if not iplot:
             continue
@@ -532,25 +536,25 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype):
     copyfile(rootfilename, rootfilenameden)
     print("---Output stored in:", rootfilename, "and", rootfilenameden, "---")
 
-plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_ntrkl", "SPDvspt"])
-plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_v0m", "V0mvspt"])
-plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
-plot_hfptspectrum_comb("D0pp", ["MBvspt_ntrkl", "SPDvspt"])
-plot_hfptspectrum_comb("D0pp", ["MBvspt_v0m", "V0mvspt"])
-plot_hfptspectrum_comb("D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
+#plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_ntrkl", "SPDvspt"])
+#plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_v0m", "V0mvspt"])
+#plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
+#plot_hfptspectrum_comb("D0pp", ["MBvspt_ntrkl", "SPDvspt"])
+#plot_hfptspectrum_comb("D0pp", ["MBvspt_v0m", "V0mvspt"])
+#plot_hfptspectrum_comb("D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
 plot_hfptspectrum_comb("Dspp", ["MBvspt_ntrkl", "SPDvspt"])
-plot_hfptspectrum_comb("Dspp", ["MBvspt_v0m", "V0mvspt"])
-plot_hfptspectrum_comb("Dspp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
-plot_hfptspectrum_comb("LcpKpipp", ["MBvspt_ntrkl", "SPDvspt"])
-plot_hfptspectrum_comb("LcpKpipp", ["MBvspt_v0m", "V0mvspt"])
-plot_hfptspectrum_comb("LcpKpipp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
+#plot_hfptspectrum_comb("Dspp", ["MBvspt_v0m", "V0mvspt"])
+#plot_hfptspectrum_comb("Dspp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
+#plot_hfptspectrum_comb("LcpKpipp", ["MBvspt_ntrkl", "SPDvspt"])
+#plot_hfptspectrum_comb("LcpKpipp", ["MBvspt_v0m", "V0mvspt"])
+#plot_hfptspectrum_comb("LcpKpipp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
 
-plot_hfptspectrum_ratios_comb("LcpK0spp", "D0pp", ["MBvspt_ntrkl", "SPDvspt"])
-plot_hfptspectrum_ratios_comb("LcpK0spp", "D0pp", ["MBvspt_v0m", "V0mvspt"])
-plot_hfptspectrum_ratios_comb("LcpK0spp", "D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
-plot_hfptspectrum_ratios_comb("Dspp", "D0pp", ["MBvspt_ntrkl", "SPDvspt"])
-plot_hfptspectrum_ratios_comb("Dspp", "D0pp", ["MBvspt_v0m", "V0mvspt"])
-plot_hfptspectrum_ratios_comb("Dspp", "D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
-plot_hfptspectrum_ratios_comb("LcpKpipp", "D0pp", ["MBvspt_ntrkl", "SPDvspt"])
-plot_hfptspectrum_ratios_comb("LcpKpipp", "D0pp", ["MBvspt_v0m", "V0mvspt"])
-plot_hfptspectrum_ratios_comb("LcpKpipp", "D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
+#plot_hfptspectrum_ratios_comb("LcpK0spp", "D0pp", ["MBvspt_ntrkl", "SPDvspt"])
+#plot_hfptspectrum_ratios_comb("LcpK0spp", "D0pp", ["MBvspt_v0m", "V0mvspt"])
+#plot_hfptspectrum_ratios_comb("LcpK0spp", "D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
+#plot_hfptspectrum_ratios_comb("Dspp", "D0pp", ["MBvspt_ntrkl", "SPDvspt"])
+#plot_hfptspectrum_ratios_comb("Dspp", "D0pp", ["MBvspt_v0m", "V0mvspt"])
+#plot_hfptspectrum_ratios_comb("Dspp", "D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
+#plot_hfptspectrum_ratios_comb("LcpKpipp", "D0pp", ["MBvspt_ntrkl", "SPDvspt"])
+#plot_hfptspectrum_ratios_comb("LcpKpipp", "D0pp", ["MBvspt_v0m", "V0mvspt"])
+#plot_hfptspectrum_ratios_comb("LcpKpipp", "D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
