@@ -25,7 +25,7 @@ import pandas as pd
 import lz4
 import math
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
-from ROOT import TH1F, TH2F  # pylint: disable=import-error, no-name-in-module
+from ROOT import TH1F, TH2F, TLatex  # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.selectionutils import select_runs
 def openfile(filename, attr):
     if filename.lower().endswith('.bz2'):
@@ -221,3 +221,33 @@ def folding(h_input, response_matrix, h_output):
             h_folded.SetBinError(a+1, b+1, math.sqrt(val_err))
     return h_folded
 
+def setup_histogram(hist, colour=1, markerstyle=25):
+    hist.SetStats(0)
+    hist.SetTitleSize(0.04,"X")
+    hist.SetTitleOffset(1.0,"X")
+    hist.SetTitleSize(0.04,"Y")
+    hist.SetTitleOffset(1.0,"Y")
+    hist.SetLineWidth(2)
+    hist.SetLineColor(colour)
+    hist.SetMarkerSize(1.0)
+    hist.SetMarkerStyle(markerstyle)
+    hist.SetMarkerColor(colour)
+
+def setup_pad(pad):
+    pad.SetFillColor(0)
+    pad.SetMargin(0.15,0.9,0.15,0.9)
+    pad.Draw()
+    pad.SetTicks(1,1)
+    pad.cd()
+
+def setup_legend(legend):
+    legend.SetBorderSize(0)
+    legend.SetTextSize(0.03)
+    legend.SetTextFont(42)
+
+def draw_latex(latex,colour=1,textsize=0.03):
+    latex.SetNDC()
+    latex.SetTextSize(textsize)
+    latex.SetTextColor(colour)
+    latex.SetTextFont(42)
+    latex.Draw()
