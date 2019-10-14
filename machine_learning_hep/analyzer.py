@@ -234,7 +234,7 @@ class Analyzer:
         self.loadstyle()
 
         # Immediately fail if something weird was chosen for fit init
-        if self.init_fits_from not in  ["mc", "data"]:
+        if self.init_fits_from[0] not in  ["mc", "data"]:
             self.logger.fatal("Fit can only be initialized from \"data\" or \"mc\"")
 
         lfile = TFile.Open(self.n_filemass, "READ")
@@ -418,7 +418,7 @@ class Analyzer:
                         sigmas_init_mc_histos.SetBinContent(ipt + 1, sigma_for_data)
                         sigmas_init_mc_histos.SetBinError(ipt + 1, sigma_err_tmp)
 
-                    if self.init_fits_from == "mc":
+                    if self.init_fits_from[ipt] == "mc":
                         user_init_success = True
                         mean_case_user = mean_for_data
                         sigma_case_user = sigma_for_data
@@ -501,7 +501,7 @@ class Analyzer:
                         fit_status[imult][ipt]["init_data"]["success"] = True
                         fit_status[imult][ipt]["init_data"]["sigma"] = \
                                 mass_fitter_data_init[ipt].GetSigma()
-                        if self.init_fits_from == "data":
+                        if self.init_fits_from[ipt] == "data":
                             mean_case_user = mass_fitter_data_init[ipt].GetMean()
                             sigma_case_user = mass_fitter_data_init[ipt].GetSigma()
                             user_init_success = True
@@ -644,13 +644,14 @@ class Analyzer:
                 pinfos.SetTextSize(0.03)
                 add_draw_objects.append(pinfos)
                 if not user_init_success:
-                    text = pinfos.AddText(f"USER INIT CASE FAILED ({self.init_fits_from}, " \
+                    text = pinfos.AddText(f"USER INIT CASE FAILED ({self.init_fits_from[ipt]}, " \
                             f"sigma fixed {self.p_fixingaussigma[ipt]})")
                     text.SetTextColor(kRed)
 
                 if not user_case_success:
                     text = pinfos.AddText(f"FIT WITH USER INIT CASE FAILED " \
-                            f"({self.init_fits_from}, sigma fixed {self.p_fixingaussigma[ipt]})")
+                            f"({self.init_fits_from[ipt]}, " \
+                            f"sigma fixed {self.p_fixingaussigma[ipt]})")
                     text.SetTextColor(kRed)
                 if not success:
                     text = pinfos.AddText("FIT FAILED")
