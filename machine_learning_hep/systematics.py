@@ -734,7 +734,7 @@ class Systematics:
 
             diffratio = 2 * self.p_maxperccutvar
             if plotname == "histoSigmaCorr":
-                diffratio = 0.2
+                diffratio = self.p_maxperccutvar + 0.15
             canv.cd(1).DrawFrame(0, 1 - diffratio, 25, 1 + diffratio, \
                                  "%s %.2f < %s < %.2f;#it{p}_{T} (GeV/#it{c});Ratio %s" % \
                                  (self.typean, self.lvar2_binmin[imult], self.v_var2_binning, \
