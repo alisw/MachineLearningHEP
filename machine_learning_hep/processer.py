@@ -214,6 +214,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.lvar2_binmax = datap["analysis"][self.typean]["sel_binmax2"]
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
         self.v_var2_binning_gen = datap["analysis"][self.typean]["var_binning2_gen"]
+        self.corrEffMult = datap["analysis"][self.typean]["corrEffMult"]
 
         self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
         self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
@@ -592,30 +593,59 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 else:
                     df_reco_sel_fd = df_reco_presel_fd.copy()
                     print("doing std analysis")
-                val, err = self.get_reweighted_count(df_gen_sel_pr)
-                h_gen_pr.SetBinContent(bincounter + 1, val)
-                h_gen_pr.SetBinError(bincounter + 1, err)
-                val, err = self.get_reweighted_count(df_reco_presel_pr)
-                h_presel_pr.SetBinContent(bincounter + 1, val)
-                h_presel_pr.SetBinError(bincounter + 1, err)
-                val, err = self.get_reweighted_count(df_reco_sel_pr)
-                h_sel_pr.SetBinContent(bincounter + 1, val)
-                h_sel_pr.SetBinError(bincounter + 1, err)
-                #print("prompt efficiency tot ptbin=", bincounter, ", value = ",
-                #      len(df_reco_sel_pr)/len(df_gen_sel_pr))
 
-                val, err = self.get_reweighted_count(df_gen_sel_fd)
-                h_gen_fd.SetBinContent(bincounter + 1, val)
-                h_gen_fd.SetBinError(bincounter + 1, err)
-                val, err = self.get_reweighted_count(df_reco_presel_fd)
-                h_presel_fd.SetBinContent(bincounter + 1, val)
-                h_presel_fd.SetBinError(bincounter + 1, err)
-                val, err = self.get_reweighted_count(df_reco_sel_fd)
-                h_sel_fd.SetBinContent(bincounter + 1, val)
-                h_sel_fd.SetBinError(bincounter + 1, err)
-                #print("fd efficiency tot ptbin=", bincounter, ", value = ",
-                #      len(df_reco_sel_fd)/len(df_gen_sel_fd))
-                bincounter = bincounter + 1
+                if self.corrEffMult is True:
+                    val, err = self.get_reweighted_count(df_gen_sel_pr)
+                    h_gen_pr.SetBinContent(bincounter + 1, val)
+                    h_gen_pr.SetBinError(bincounter + 1, err)
+                    val, err = self.get_reweighted_count(df_reco_presel_pr)
+                    h_presel_pr.SetBinContent(bincounter + 1, val)
+                    h_presel_pr.SetBinError(bincounter + 1, err)
+                    val, err = self.get_reweighted_count(df_reco_sel_pr)
+                    h_sel_pr.SetBinContent(bincounter + 1, val)
+                    h_sel_pr.SetBinError(bincounter + 1, err)
+                    #print("prompt efficiency tot ptbin=", bincounter, ", value = ",
+                    #      len(df_reco_sel_pr)/len(df_gen_sel_pr))
+
+                    val, err = self.get_reweighted_count(df_gen_sel_fd)
+                    h_gen_fd.SetBinContent(bincounter + 1, val)
+                    h_gen_fd.SetBinError(bincounter + 1, err)
+                    val, err = self.get_reweighted_count(df_reco_presel_fd)
+                    h_presel_fd.SetBinContent(bincounter + 1, val)
+                    h_presel_fd.SetBinError(bincounter + 1, err)
+                    val, err = self.get_reweighted_count(df_reco_sel_fd)
+                    h_sel_fd.SetBinContent(bincounter + 1, val)
+                    h_sel_fd.SetBinError(bincounter + 1, err)
+                    #print("fd efficiency tot ptbin=", bincounter, ", value = ",
+                    #      len(df_reco_sel_fd)/len(df_gen_sel_fd))
+                else:
+                    val = len(f_gen_sel_pr[self.v_var2_binning_gen])
+                    err = math.sqrt(val)
+                    h_gen_pr.SetBinContent(bincounter + 1, val)
+                    h_gen_pr.SetBinError(bincounter + 1, err)
+                    val = len(f_reco_presel_pr[self.v_var2_binning_gen])
+                    err = math.sqrt(val)
+                    h_presel_pr.SetBinContent(bincounter + 1, val)
+                    h_presel_pr.SetBinError(bincounter + 1, err)
+                    val = len(f_reco_sel_pr[self.v_var2_binning_gen])
+                    err = math.sqrt(val)
+                    h_sel_pr.SetBinContent(bincounter + 1, val)
+                    h_sel_pr.SetBinError(bincounter + 1, err)
+
+                    val = len(f_gen_sel_fd[self.v_var2_binning_gen])
+                    err = math.sqrt(val)
+                    h_gen_fd.SetBinContent(bincounter + 1, val)
+                    h_gen_fd.SetBinError(bincounter + 1, err)
+                    val = len(f_reco_presel_fd[self.v_var2_binning_gen])
+                    err = math.sqrt(val)
+                    h_presel_fd.SetBinContent(bincounter + 1, val)
+                    h_presel_fd.SetBinError(bincounter + 1, err)
+                    val = len(f_reco_sel_fd[self.v_var2_binning_gen])
+                    err = math.sqrt(val)
+                    h_sel_fd.SetBinContent(bincounter + 1, val)
+                    h_sel_fd.SetBinError(bincounter + 1, err)
+
+            bincounter = bincounter + 1
             out_file.cd()
             h_gen_pr.Write()
             h_presel_pr.Write()
