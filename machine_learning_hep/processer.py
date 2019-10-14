@@ -214,7 +214,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.lvar2_binmax = datap["analysis"][self.typean]["sel_binmax2"]
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
         self.v_var2_binning_gen = datap["analysis"][self.typean]["var_binning2_gen"]
-        self.corrEffMult = datap["analysis"][self.typean]["corrEffMult"]
+        self.corr_eff_mult = datap["analysis"][self.typean]["corrEffMult"]
 
         self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
         self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
@@ -594,7 +594,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     df_reco_sel_fd = df_reco_presel_fd.copy()
                     print("doing std analysis")
 
-                if self.corrEffMult is True:
+                if self.corr_eff_mult is True:
                     val, err = self.get_reweighted_count(df_gen_sel_pr)
                     h_gen_pr.SetBinContent(bincounter + 1, val)
                     h_gen_pr.SetBinError(bincounter + 1, err)
@@ -619,28 +619,28 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     #print("fd efficiency tot ptbin=", bincounter, ", value = ",
                     #      len(df_reco_sel_fd)/len(df_gen_sel_fd))
                 else:
-                    val = len(f_gen_sel_pr[self.v_var2_binning_gen])
+                    val = len(df_gen_sel_pr[self.v_var2_binning_gen])
                     err = math.sqrt(val)
                     h_gen_pr.SetBinContent(bincounter + 1, val)
                     h_gen_pr.SetBinError(bincounter + 1, err)
-                    val = len(f_reco_presel_pr[self.v_var2_binning_gen])
+                    val = len(df_reco_presel_pr[self.v_var2_binning_gen])
                     err = math.sqrt(val)
                     h_presel_pr.SetBinContent(bincounter + 1, val)
                     h_presel_pr.SetBinError(bincounter + 1, err)
-                    val = len(f_reco_sel_pr[self.v_var2_binning_gen])
+                    val = len(df_reco_sel_pr[self.v_var2_binning_gen])
                     err = math.sqrt(val)
                     h_sel_pr.SetBinContent(bincounter + 1, val)
                     h_sel_pr.SetBinError(bincounter + 1, err)
 
-                    val = len(f_gen_sel_fd[self.v_var2_binning_gen])
+                    val = len(df_gen_sel_fd[self.v_var2_binning_gen])
                     err = math.sqrt(val)
                     h_gen_fd.SetBinContent(bincounter + 1, val)
                     h_gen_fd.SetBinError(bincounter + 1, err)
-                    val = len(f_reco_presel_fd[self.v_var2_binning_gen])
+                    val = len(df_reco_presel_fd[self.v_var2_binning_gen])
                     err = math.sqrt(val)
                     h_presel_fd.SetBinContent(bincounter + 1, val)
                     h_presel_fd.SetBinError(bincounter + 1, err)
-                    val = len(f_reco_sel_fd[self.v_var2_binning_gen])
+                    val = len(df_reco_sel_fd[self.v_var2_binning_gen])
                     err = math.sqrt(val)
                     h_sel_fd.SetBinContent(bincounter + 1, val)
                     h_sel_fd.SetBinError(bincounter + 1, err)
