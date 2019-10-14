@@ -476,10 +476,10 @@ class Analyzer:
                 # Second peak?
                 if self.p_includesecpeaks[bin_mult_int][ipt]:
                     secpeakwidth = self.p_widthsecpeak * sigma_for_data
-                    mass_fitter_data_init[ipt].IncludeSecondGausPeak(self.p_masssecpeak,
-                                                                     self.p_fix_masssecpeaks[bin_mult_int][ipt],
-                                                                     secpeakwidth,
-                                                                     self.p_fix_widthsecpeak)
+                    mass_fitter_data_init[ipt].IncludeSecondGausPeak(self.p_masssecpeak, \
+                                               self.p_fix_masssecpeaks[bin_mult_int][ipt], \
+                                               secpeakwidth, \
+                                               self.p_fix_widthsecpeak)
                 success = mass_fitter_data_init[ipt].MassFitter(False)
                 fit_status[imult][ipt]["init_data"]["success"] = False
                 fit_status[imult][ipt]["init_data"]["sigma"] = -1.
