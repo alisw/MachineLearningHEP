@@ -1643,11 +1643,13 @@ class Analyzer:
             namehsel = None
             namehnovtx = None
             namehvtxout = None
-            if doweight is True:
+            if doweight is False:
+                print("Counting n.events not corrected for the trigger")
                 namehsel = 'sel_' + labeltrigger
                 namehnovtx = 'novtx_' + labeltrigger
                 namehvtxout = 'vtxout_' + labeltrigger
             else:
+                print("Counting n.events corrected for the trigger")
                 namehsel = 'sel_' + labeltrigger + "weighted"
                 namehnovtx = 'novtx_' + labeltrigger + "weighted"
                 namehvtxout = 'vtxout_' + labeltrigger + "weighted"
