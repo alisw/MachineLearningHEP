@@ -619,34 +619,34 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     #print("fd efficiency tot ptbin=", bincounter, ", value = ",
                     #      len(df_reco_sel_fd)/len(df_gen_sel_fd))
                 else:
-                    val = len(df_gen_sel_pr[self.v_var2_binning_gen])
+                    val = len(df_gen_sel_pr)
                     err = math.sqrt(val)
                     h_gen_pr.SetBinContent(bincounter + 1, val)
                     h_gen_pr.SetBinError(bincounter + 1, err)
-                    val = len(df_reco_presel_pr[self.v_var2_binning_gen])
+                    val = len(df_reco_presel_pr)
                     err = math.sqrt(val)
                     h_presel_pr.SetBinContent(bincounter + 1, val)
                     h_presel_pr.SetBinError(bincounter + 1, err)
-                    val = len(df_reco_sel_pr[self.v_var2_binning_gen])
+                    val = len(df_reco_sel_pr)
                     err = math.sqrt(val)
                     h_sel_pr.SetBinContent(bincounter + 1, val)
                     h_sel_pr.SetBinError(bincounter + 1, err)
 
-                    val = len(df_gen_sel_fd[self.v_var2_binning_gen])
+                    val = len(df_gen_sel_fd)
                     err = math.sqrt(val)
                     h_gen_fd.SetBinContent(bincounter + 1, val)
                     h_gen_fd.SetBinError(bincounter + 1, err)
-                    val = len(df_reco_presel_fd[self.v_var2_binning_gen])
+                    val = len(df_reco_presel_fd)
                     err = math.sqrt(val)
                     h_presel_fd.SetBinContent(bincounter + 1, val)
                     h_presel_fd.SetBinError(bincounter + 1, err)
-                    val = len(df_reco_sel_fd[self.v_var2_binning_gen])
+                    val = len(df_reco_sel_fd)
                     err = math.sqrt(val)
                     h_sel_fd.SetBinContent(bincounter + 1, val)
                     h_sel_fd.SetBinError(bincounter + 1, err)
 
                 bincounter = bincounter + 1
-            
+
             out_file.cd()
             h_gen_pr.Write()
             h_presel_pr.Write()
