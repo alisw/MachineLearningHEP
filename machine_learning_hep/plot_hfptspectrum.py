@@ -16,6 +16,7 @@
 main script for doing final stage analysis
 """
 import os
+from math import sqrt
 from shutil import copyfile
 # pylint: disable=unused-wildcard-import, wildcard-import
 from array import *
@@ -25,7 +26,92 @@ from ROOT import TFile, TH1F, TCanvas
 from ROOT import gStyle, TLegend, TLatex
 from ROOT import gROOT, kRed, kGreen, kBlack, kBlue, kOrange, kViolet, kAzure
 from ROOT import TStyle, gPad
+from machine_learning_hep.utilities import plot_histograms
 
+FILES_NOT_FOUND = []
+# One single particle ratio
+# pylint: disable=too-many-branches, too-many-arguments
+def plot_hfptspectrum_ml_over_std(case_ml, ana_type_ml, period_number, filepath_std, case_std,
+                                  scale_std=None, map_std_bins=None, mult_bin=None,
+                                  ml_histo_names=None, std_histo_names=None, suffix=""):
+
+    with open("data/database_ml_parameters_%s.yml" % case_ml, 'r') as param_config:
+        data_param = yaml.load(param_config, Loader=yaml.FullLoader)
+    if period_number < 0:
+        filepath_ml = data_param[case_ml]["analysis"][ana_type_ml]["data"]["resultsallp"]
+    else:
+        filepath_ml = data_param[case_ml]["analysis"][ana_type_ml]["data"]["results"][period_number]
+
+    # Get pt spectrum files
+    if mult_bin is None:
+        mult_bin = 0
+    path_ml = f"{filepath_ml}/finalcross{case_ml}{ana_type_ml}mult{mult_bin}.root"
+    if not os.path.exists(path_ml):
+        FILES_NOT_FOUND.append(path_ml)
+        return
+
+    name = data_param[case_ml]["analysis"][ana_type_ml]["latexnamemeson"]
+
+    file_ml = TFile.Open(path_ml, "READ")
+    file_std = TFile.Open(filepath_std, "READ")
+
+    # Collect histo names to quickly loop later
+    histo_names = ["hDirectMCpt", "hFeedDownMCpt", "hDirectMCptMax", "hDirectMCptMin",
+                   "hFeedDownMCptMax", "hFeedDownMCptMin", "hDirectEffpt", "hFeedDownEffpt",
+                   "hRECpt", "histoYieldCorr", "histoYieldCorrMax", "histoYieldCorrMin",
+                   "histoSigmaCorr", "histoSigmaCorrMax", "histoSigmaCorrMin"]
+    if ml_histo_names is None:
+        ml_histo_names = histo_names
+    if std_histo_names is None:
+        std_histo_names = histo_names
+
+
+    for hn_ml, hn_std in zip(ml_histo_names, std_histo_names):
+        histo_ml = file_ml.Get(hn_ml)
+        histo_std_tmp = file_std.Get(hn_std)
+        histo_std = None
+
+        if not histo_ml:
+            print(f"Could not find histogram {hn_ml}, continue...")
+            continue
+        if not histo_std_tmp:
+            print(f"Could not find histogram {hn_std}, continue...")
+            continue
+
+        if "MC" not in hn_ml and map_std_bins is not None:
+            histo_std = histo_ml.Clone("std_rebin")
+            histo_std.Reset("ICESM")
+
+            contents = [0] * histo_ml.GetNbinsX()
+            errors = [0] * histo_ml.GetNbinsX()
+
+            for ml_bin, std_bins in map_std_bins:
+                for b in std_bins:
+                    contents[ml_bin-1] += histo_std_tmp.GetBinContent(b) / len(std_bins)
+                    errors[ml_bin-1] += histo_std_tmp.GetBinError(b) * histo_std_tmp.GetBinError(b)
+
+            for b in range(histo_std.GetNbinsX()):
+                histo_std.SetBinContent(b+1, contents[b])
+                histo_std.SetBinError(b+1, sqrt(errors[b]))
+
+        else:
+            histo_std = histo_std_tmp.Clone("std_cloned")
+            if scale_std is not None:
+                histo_std.Scale(scale_std)
+
+        folder_plots = data_param[case_ml]["analysis"]["dir_general_plots"]
+        if not os.path.exists(folder_plots):
+            print("creating folder ", folder_plots)
+            os.makedirs(folder_plots)
+
+        h_ratio = histo_ml.Clone(f"{histo_ml.GetName()}_ratio")
+        h_ratio.Divide(histo_std)
+
+        save_path = f"{folder_plots}/{hn_ml}_ml_std_{case_ml}_over_{case_std}_{suffix}.eps"
+
+        plot_histograms([h_ratio], False, False, None, histo_ml.GetTitle(),
+                        "#it{p}_{T} (GeV/#it{c}", f"{name} / {case_std}", "",
+                        save_path)
 # pylint: disable=import-error, no-name-in-module, unused-import
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-branches
@@ -536,6 +622,11 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype):
     copyfile(rootfilename, rootfilenameden)
     print("---Output stored in:", rootfilename, "and", rootfilenameden, "---")
 
+gROOT.SetBatch(True)
+
+plot_hfptspectrum_ml_over_std("Dspp", "MBvspt_ntrkl", -1,
+                              "data/std_results/HFPtSpectrum_D0_merged_20191010.root",
+                              "D0", None, None, 0, ["histoSigmaCorr"], ["histoSigmaCorr"])
 #plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_ntrkl", "SPDvspt"])
 #plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_v0m", "V0mvspt"])
 #plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_perc", "V0mvspt_perc_v0m"])

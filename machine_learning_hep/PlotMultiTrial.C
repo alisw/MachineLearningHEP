@@ -49,6 +49,7 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     }
     
     Int_t totTrials=0;
+    Int_t successfulTrials=0;
     Int_t totTrialsBC0=0;
     Int_t totTrialsBC1=0;
     Int_t totHistos=0;
@@ -166,13 +167,13 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     }
 
     TH1F* hRawYieldAllBC0=new TH1F(Form("hRawYieldAllBC0_%s", suffix),
-                                   " ; Trial # ; raw yield",
+                                   " ; Trial # ; raw yield BC",
                                    totTrialsBC0*nBCranges,
                                    0.,
                                    totTrialsBC0*nBCranges);
 
     TH1F* hRawYieldAllBC1=new TH1F(Form("hRawYieldAllBC1_%s", suffix),
-                                   " ; Trial # ; raw yield",
+                                   " ; Trial # ; raw yield BC",
                                    totTrialsBC1*nBCranges,
                                    0.,
                                    totTrialsBC1*nBCranges);
@@ -240,6 +241,8 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
                 if(ry>0.001 && ery>(0.01*ry) && ery<(0.5*ry) && chi2<chi2Cut){
                 // This also throws away some chi2 == 0
                 //if(chi2<chi2Cut && chi2>0){
+                    
+                    successfulTrials++;
 
                     // Get the right histograms to fill
                     TString bkgFuncName = hmeant6->GetName();
@@ -281,15 +284,14 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
                             Double_t bc_1=hbc2dt060_bc1->GetBinContent(ib,iy);
                             Double_t ebc_1=hbc2dt060_bc1->GetBinError(ib,iy);
                             //if(bc>0.001 && ebc<0.5*bc && bc<5.*ry){
-                            std::cout << bc << std::endl;
                             if(bc>0.001){
-                                Int_t theBin=iy+(firstBC0[nc]-1)*nBCranges;
+                                Int_t theBin=iy+(firstBC0[nc] + ib -1)*nBCranges;
                                 cout<< " bin content " << bc << " the bin " << theBin << " BCrange " << iy << endl;
                                 hRawYieldAllBC0->SetBinContent(theBin-2,bc);
                                 hRawYieldAllBC0->SetBinError(theBin-2,ebc);
                                 hRawYieldDistAllBC0->Fill(bc);
                                 if(hRawYieldAllBC0->GetBinCenter(theBin-2)>maxFilled) maxFilled=hRawYieldAllBC0->GetBinCenter(theBin-2);
-                                theBin=iy+(firstBC1[nc]-1)*nBCranges;
+                                theBin=iy+(firstBC1[nc] + ib - 1)*nBCranges;
                                 hRawYieldAllBC1->SetBinContent(theBin-2,bc_1);
                                 hRawYieldAllBC1->SetBinError(theBin-2,ebc_1);
                                 hRawYieldDistAllBC1->Fill(bc_1);
@@ -355,13 +357,19 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
         h.second->GetYaxis()->SetTitleOffset(1.7);
         h.second->Draw("same");
     }
+    auto bkgFuncLegend = new TLegend(0.2, 0.2, 0.5, 0.5);
+    bkgFuncLegend->SetTextSize(0.04);
+    bkgFuncLegend->SetBorderSize(0);
+    bkgFuncLegend->SetFillStyle(0);
     call->cd(2);
     gPad->SetLeftMargin(0.13);
     gPad->SetRightMargin(0.06);
     for(auto& h : hMeanAllBkgs) {
         h.second->GetYaxis()->SetTitleOffset(1.7);
         h.second->Draw("same");
+        bkgFuncLegend->AddEntry(h.second, h.first.Data());
     }
+    bkgFuncLegend->Draw("same");
     call->cd(3);
     gPad->SetLeftMargin(0.13);
     gPad->SetRightMargin(0.06);
@@ -369,7 +377,10 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
         h.second->GetYaxis()->SetTitleOffset(1.7);
         h.second->Draw("same");
     }
-    call->cd(4);
+    auto yieldPad = call->cd(4);
+    yieldPad->Divide(1,2);
+    yieldPad->cd(1);
+
     gPad->SetLeftMargin(0.13);
     gPad->SetRightMargin(0.06);
     Double_t newmax= 0.;
@@ -387,9 +398,17 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
         h.second->SetTitle(title);
         h.second->Draw("same");
     }
-    //hRawYieldAllBC0->Draw("same");
-    //hRawYieldAllBC1->Draw("same");
     ll->Draw("same");
+    yieldPad->cd(2);
+    gPad->SetLeftMargin(0.13);
+    gPad->SetRightMargin(0.06);
+
+    hRawYieldAllBC0->Draw("same");
+    hRawYieldAllBC1->Draw("same");
+    TLine *ll_bc=new TLine(0.,rawYieldRef,totTrials * nBCranges,rawYieldRef);
+    ll_bc->SetLineColor(kRed);
+    ll_bc->SetLineWidth(2);
+    ll_bc->Draw("same");
     /*
     TLatex* tweimean[4];
     for(Int_t kw=0; kw<4; kw++){
@@ -435,57 +454,75 @@ void PlotMultiTrial(const char* filepath, double rawYieldRef, double meanRef, do
     gPad->SetLeftMargin(0.14);
     gPad->SetRightMargin(0.06);
     Double_t aver=hRawYieldDistAll->GetMean();
-    TLatex* tmean=new TLatex(0.15,0.93,Form("mean=%.3f",aver));
+    auto relSuccTrials = (totTrials > 0) ? successfulTrials / static_cast<double>(totTrials) : 0.;
+    TLatex* trelSuccTrials=new TLatex(0.15,0.93,Form("succ. trials= %i / %i (%.2f%%) ", successfulTrials, totTrials, relSuccTrials * 100.));
+    trelSuccTrials->SetTextSize(0.04);
+    trelSuccTrials->SetNDC();
+    trelSuccTrials->Draw();
+    TLatex* tmean=new TLatex(0.15,0.87,Form("mean=%.3f",aver));
+    tmean->SetTextSize(0.04);
     tmean->SetNDC();
     tmean->Draw();
-    TLatex* tmedian=new TLatex(0.15,0.86,Form("median=%.3f",lim70[1]));
+    TLatex* tmedian=new TLatex(0.15,0.81,Form("median=%.3f",lim70[1]));
+    tmedian->SetTextSize(0.04);
     tmedian->SetNDC();
     tmedian->Draw();
     Double_t averBC0=hRawYieldDistAllBC0->GetMean();
-    TLatex* tmeanBC0=new TLatex(0.15,0.79,Form("mean(BinCount0)=%.3f",averBC0));
+    TLatex* tmeanBC0=new TLatex(0.15,0.75,Form("mean(BinCount0)=%.3f",averBC0));
+    tmeanBC0->SetTextSize(0.04);
     tmeanBC0->SetNDC();
     tmeanBC0->SetTextColor(hRawYieldDistAllBC0->GetLineColor());
     tmeanBC0->Draw();
     Double_t averBC1=hRawYieldDistAllBC1->GetMean();
-    TLatex* tmeanBC1=new TLatex(0.15,0.72,Form("mean(BinCount1)=%.3f",averBC1));
+    TLatex* tmeanBC1=new TLatex(0.15,0.69,Form("mean(BinCount1)=%.3f",averBC1));
+    tmeanBC1->SetTextSize(0.04);
     tmeanBC1->SetNDC();
     tmeanBC1->SetTextColor(hRawYieldDistAllBC1->GetLineColor());
     tmeanBC1->Draw();
     Double_t val=hRawYieldDistAll->GetRMS();
-    TLatex* thrms=new TLatex(0.15,0.62,Form("rms=%.3f  (%.2f%%)",val,val/aver*100.));
+    TLatex* thrms=new TLatex(0.15,0.60,Form("rms=%.3f  (%.2f%%)",val,val/aver*100.));
+    thrms->SetTextSize(0.04);
     thrms->SetNDC();
     thrms->Draw();
     val=hRawYieldDistAllBC0->GetRMS();
-    TLatex* thrmsBC0=new TLatex(0.15,0.55,Form("rms(BinCount0)=%.3f  (%.2f%%)",val,val/averBC0*100.));
+    TLatex* thrmsBC0=new TLatex(0.15,0.54,Form("rms(BinCount0)=%.3f  (%.2f%%)",val,val/averBC0*100.));
+    thrmsBC0->SetTextSize(0.04);
     thrmsBC0->SetNDC();
     thrmsBC0->SetTextColor(hRawYieldDistAllBC0->GetLineColor());
     thrmsBC0->Draw();
     val=hRawYieldDistAllBC1->GetRMS();
     TLatex* thrmsBC1=new TLatex(0.15,0.48,Form("rms(BinCount1)=%.3f  (%.2f%%)",val,val/averBC1*100.));
+    thrmsBC1->SetTextSize(0.04);
     thrmsBC1->SetNDC();
     thrmsBC1->SetTextColor(hRawYieldDistAllBC1->GetLineColor());
     thrmsBC1->Draw();
-    TLatex* tmin=new TLatex(0.15,0.38,Form("min=%.3f      max=%.2f",minYield,maxYield));
+    TLatex* tmin=new TLatex(0.15,0.39,Form("min=%.3f      max=%.2f",minYield,maxYield));
+    tmin->SetTextSize(0.04);
     tmin->SetNDC();
     tmin->Draw();
     val=(maxYield-minYield)/sqrt(12);
-    TLatex* trms=new TLatex(0.15,0.31,Form("(max-min)/sqrt(12)=%.3f  (%.2f%%)",val,val/aver*100.));
+    TLatex* trms=new TLatex(0.15,0.33,Form("(max-min)/sqrt(12)=%.3f  (%.2f%%)",val,val/aver*100.));
+    trms->SetTextSize(0.04);
     trms->SetNDC();
     trms->Draw();
-    TLatex* meanRefLabel=new TLatex(0.15,0.24,Form("mean(ref)=%.3f",rawYieldRef));
+    TLatex* meanRefLabel=new TLatex(0.15,0.27,Form("mean(ref)=%.3f",rawYieldRef));
+    meanRefLabel->SetTextSize(0.04);
     meanRefLabel->SetNDC();
     meanRefLabel->SetTextColor(kRed);
     meanRefLabel->Draw();
     //
-    TLatex* meanRefDiff=new TLatex(0.15,0.17,Form("mean(ref)-mean(fit)=%.3f  (%.2f%%)",rawYieldRef-aver,100.*(rawYieldRef-aver)/rawYieldRef));
+    TLatex* meanRefDiff=new TLatex(0.15,0.21,Form("mean(ref)-mean(fit)=%.3f  (%.2f%%)",rawYieldRef-aver,100.*(rawYieldRef-aver)/rawYieldRef));
+    meanRefDiff->SetTextSize(0.04);
     meanRefDiff->SetNDC();
     meanRefDiff->SetTextColor(kBlack);
     meanRefDiff->Draw();
-    TLatex* meanRefDiffBC0=new TLatex(0.15,0.10,Form("mean(ref)-mean(BC0)=%.3f  (%.2f%%)",rawYieldRef-averBC0,100.*(rawYieldRef-averBC0)/rawYieldRef));
+    TLatex* meanRefDiffBC0=new TLatex(0.15,0.15,Form("mean(ref)-mean(BC0)=%.3f  (%.2f%%)",rawYieldRef-averBC0,100.*(rawYieldRef-averBC0)/rawYieldRef));
+    meanRefDiffBC0->SetTextSize(0.04);
     meanRefDiffBC0->SetNDC();
     meanRefDiffBC0->SetTextColor(hRawYieldDistAllBC0->GetLineColor());
     meanRefDiffBC0->Draw();
-    TLatex* meanRefDiffBC1=new TLatex(0.15,0.03,Form("mean(ref)-mean(BC1)=%.3f  (%.2f%%)",rawYieldRef-averBC1,100.*(rawYieldRef-averBC1)/rawYieldRef));
+    TLatex* meanRefDiffBC1=new TLatex(0.15,0.09,Form("mean(ref)-mean(BC1)=%.3f  (%.2f%%)",rawYieldRef-averBC1,100.*(rawYieldRef-averBC1)/rawYieldRef));
+    meanRefDiffBC1->SetTextSize(0.04);
     meanRefDiffBC1->SetNDC();
     meanRefDiffBC1->SetTextColor(hRawYieldDistAllBC1->GetLineColor());
     meanRefDiffBC1->Draw();
