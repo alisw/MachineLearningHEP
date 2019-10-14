@@ -856,6 +856,15 @@ class Analyzer:
                 # That we need to obtain the yield of the central fit and the initial mean
                 # set to the multi trial
                 mass_fitter_nominal = file_fits.GetDirectory(suffix).Get("fitter")
+                histname = "hmass"
+                if self.apply_weights is True:
+                    histname = "h_invmass_weight"
+                    self.logger.info("*********** I AM USING WEIGHTED HISTOGRAMS")
+                # Weighted histograms onnly for data at the moment
+                h_invmass_ = lfile.Get(histname + suffix)
+
+                h_invmass = TH1D()
+                h_invmass_.Copy(h_invmass)
 
                 # Next we need the sigma to be used for the multi trial
                 sigma_init = mass_fitter_nominal.GetSigma()
@@ -874,6 +883,17 @@ class Analyzer:
                 # This is always the mean of the central fit
                 multi_trial.SetMass(mass_fitter_nominal.GetMean())
                 multi_trial.SetSigmaGaussMC(sigma_init)
+
+                # First, disable all
+                multi_trial.SetUseExpoBackground(False)
+                multi_trial.SetUseLinBackground(False)
+                multi_trial.SetUsePol2Background(False)
+                multi_trial.SetUsePol3Background(False)
+                multi_trial.SetUsePol4Background(False)
+                multi_trial.SetUsePol5Background(False)
+                multi_trial.SetUsePowerLawBackground(False)
+                multi_trial.SetUsePowerLawTimesExpoBackground(False)
+
 
                 for bkg in bkg_funcs:
                     if bkg == "kExpo":
@@ -916,12 +936,6 @@ class Analyzer:
                     multi_trial.ConfigurenSigmaBinCSteps(len(bincount_sigma),
                                                          array("d", bincount_sigma))
 
-                multi_trial.SetSaveBkgValue()
-                h_invmass_ = lfile.Get("hmass" + suffix)
-
-                h_invmass = TH1D()
-                h_invmass_.Copy(h_invmass)
-
                 # Prepare for reflections if requested
                 h_invmass_mc = None
                 h_invmass_mc_refl = None
@@ -950,10 +964,19 @@ class Analyzer:
                         self.logger.warning("Reflection requested but template empty")
 
                 if self.p_includesecpeaks[imult][ipt]:
+                    # To init the second peak we need to know what the user has chosen to be the
+                    # initialisation for the central fit
+                    sigma_sec = None
+                    if self.init_fits_from[ipt] == "data":
+                        fit = file_fits.GetDirectory(suffix).Get("fitter_data_init")
+                        sigma_sec = fit.GetSigma() * self.p_widthsecpeak
+                    else:
+                        fit = file_fits.GetDirectory(suffix).Get("gaus_mc_init")
+                        sigma_sec = fit.GetParameter(2) * self.p_widthsecpeak
                     #p_widthsecpeak to be fixed
                     multi_trial.IncludeSecondGausPeak(self.p_masssecpeak,
                                                       self.p_fix_masssecpeaks[imult][ipt],
-                                                      self.p_widthsecpeak,
+                                                      sigma_sec,
                                                       self.p_fix_widthsecpeak)
 
                 # Just make sure it's kept until the workflow is done
