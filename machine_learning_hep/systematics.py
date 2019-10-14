@@ -133,7 +133,7 @@ class Systematics:
         # Note that this is not a deepcopy in case it's already a list of lists
         self.rebins = datap["analysis"][self.typean]["rebin"].copy()
         if not isinstance(self.rebins[0], list):
-            self.rebins = [self.rebins for _ in range(self.p_nbin2)]
+            self.rebins = [self.rebins for _ in range(len(self.lvar2_binmin))]
         self.p_rebin = datap["analysis"][self.typean]["rebin"]
         self.p_masspeak = datap["analysis"][self.typean]["masspeak"]
         self.p_sigmaarray = datap["analysis"][self.typean]["sigmaarray"]
@@ -144,7 +144,7 @@ class Systematics:
         # Now we have a list, either the one given by the user or the default one just filled above
         self.p_includesecpeaks = self.p_includesecpeaks.copy()
         if not isinstance(self.p_includesecpeaks[0], list):
-            self.p_inculdesecpeaks = [self.p_includesecpeaks for _ in range(self.p_nbin2)]
+            self.p_inculdesecpeaks = [self.p_includesecpeaks for _ in range(len(self.lvar2_binmin))]
 
         self.p_masssecpeak = datap["analysis"][self.typean]["masssecpeak"] \
                 if self.p_includesecpeaks else None
@@ -155,7 +155,8 @@ class Systematics:
         # Now we have a list, either the one given by the user or the default one just filled above
         self.p_fix_masssecpeaks = self.p_fix_masssecpeaks.copy()
         if not isinstance(self.p_fix_masssecpeaks[0], list):
-            self.p_fix_masssecpeaks = [self.p_fix_masssecpeaks for _ in range(self.p_nbin2)]
+            self.p_fix_masssecpeaks = [self.p_fix_masssecpeaks \
+                                       for _ in range(len(self.lvar2_binmin))]
 
         self.p_widthsecpeak = datap["analysis"][self.typean]["widthsecpeak"] \
                 if self.p_includesecpeaks else None
