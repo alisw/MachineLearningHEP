@@ -87,7 +87,8 @@ def plot_hfptspectrum_ml_over_std(case_ml, ana_type_ml, period_number, filepath_
 
             for ml_bin, std_bins in map_std_bins:
                 for b in std_bins:
-                    contents[ml_bin-1] += histo_std_tmp.GetBinContent(b) / len(std_bins)
+                    contents[ml_bin-1] += histo_std_tmp.GetBinWidth(b) * \
+                            histo_std_tmp.GetBinContent(b) / histo_ml.GetBinWidth(ml_bin)
                     errors[ml_bin-1] += histo_std_tmp.GetBinError(b) * histo_std_tmp.GetBinError(b)
 
             for b in range(histo_std.GetNbinsX()):
@@ -96,8 +97,9 @@ def plot_hfptspectrum_ml_over_std(case_ml, ana_type_ml, period_number, filepath_
 
         else:
             histo_std = histo_std_tmp.Clone("std_cloned")
-            if scale_std is not None:
-                histo_std.Scale(scale_std)
+
+        if scale_std is not None:
+            histo_std.Scale(scale_std)
 
         folder_plots = data_param[case_ml]["analysis"]["dir_general_plots"]
         if not os.path.exists(folder_plots):
@@ -626,12 +628,14 @@ gROOT.SetBatch(True)
 
 plot_hfptspectrum_ml_over_std("Dspp", "MBvspt_ntrkl", -1,
                               "data/std_results/HFPtSpectrum_D0_merged_20191010.root",
-                              "D0", None, None, 0, ["histoSigmaCorr"], ["histoSigmaCorr"])
+                              "D0", 2.27 / 3.89, None, 0, ["histoSigmaCorr"], ["histoSigmaCorr"])
+# Scale STD one by branching ratios Ds / D0
 plot_hfptspectrum_ml_over_std("Dspp", "MBvspt_ntrkl", 0,
                               "data/std_results/HFPtSpectrum_D0_2016_prel_20191010.root", "D0",
-                              None,
-                              [(1, [1]), (2, [2, 3]), (3, [4, 5]), (4, [6]), (5, [7]), (6, [8])],
-                              0, ["histoSigmaCorr"], ["histoSigmaCorr"], "_prelim")
+                              2.27 / 3.89,
+                              [(1, [1]), (2, [2, 3]), (3, [4, 5]), (4, [6, 7]), (5, [8, 9]),
+                               (6, [10, 11])], 0, ["histoSigmaCorr"], ["histoSigmaCorr"],
+                              "_prelim")
 #plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_ntrkl", "SPDvspt"])
 #plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_v0m", "V0mvspt"])
 #plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
