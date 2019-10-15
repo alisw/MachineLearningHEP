@@ -272,6 +272,7 @@ Dspp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
+      corrEffMult: true
       sel_binmin2: [0,1,10,30,60] #list of var2 splittng nbins
       sel_binmax2: [9999,10,30,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
@@ -372,6 +373,7 @@ Dspp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
+      corrEffMult: true
       sel_binmin2:  [0,1,200,600] #list of var2 splittng nbins
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
       var_binning2: v0m_corr
@@ -447,6 +449,7 @@ Dspp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
+      corrEffMult: true
       sel_binmin2:  [0,30,0.1,0.] #list of var2 splittng nbins
       sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m
@@ -522,6 +525,7 @@ Dspp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
+      corrEffMult: true
       sel_binmin2: [5] #list of nbins
       sel_binmax2: [15] #list of nbins
       var_binning2: pt_jet
@@ -597,6 +601,7 @@ Dspp:
       usesinglebineff: 3
       fprompt_from_mb: true
       corresp_mb_typean: MBvspt_ntrkl
+      corrEffMult: true
       sel_binmin2: [0,1,10,30,60] #list of var2 splittng nbins
       sel_binmax2: [9999,10,30,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
@@ -672,6 +677,7 @@ Dspp:
       usesinglebineff: 2
       fprompt_from_mb: true
       corresp_mb_typean: MBvspt_v0m
+      corrEffMult: true
       sel_binmin2:  [0,1,200,600] #list of var2 splittng nbins
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
       var_binning2: v0m_corr
@@ -747,6 +753,7 @@ Dspp:
       usesinglebineff: 2
       fprompt_from_mb: true
       corresp_mb_typean: MBvspt_perc
+      corrEffMult: true
       sel_binmin2:  [0,30,0.1,0.] #list of var2 splittng nbins
       sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m
@@ -820,7 +827,7 @@ Dspp:
       useperiod: [0,0,1] #period from where to define prob cuts
       ncutvar: 10 #number of looser and tighter variations
       maxperccutvar: 0.25 #max diff in efficiency for loosest/tightest var
-      cutvarminrange: [0.60, 0.50, 0.50, 0.3, 0.3] #Min starting point for scan
+      cutvarminrange: [0.65, 0.70, 0.70, 0.3, 0.3] #Min starting point for scan
       cutvarmaxrange: [0.95, 0.97, 0.97, 0.90, 0.90] #Max starting point for scan
       fixedmean: True #Fix mean cutvar histo to central fit
       fixedsigma: True #Fix sigma cutvar histo to central fit
