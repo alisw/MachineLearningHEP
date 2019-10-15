@@ -627,6 +627,11 @@ gROOT.SetBatch(True)
 plot_hfptspectrum_ml_over_std("Dspp", "MBvspt_ntrkl", -1,
                               "data/std_results/HFPtSpectrum_D0_merged_20191010.root",
                               "D0", None, None, 0, ["histoSigmaCorr"], ["histoSigmaCorr"])
+plot_hfptspectrum_ml_over_std("Dspp", "MBvspt_ntrkl", 0,
+                              "data/std_results/HFPtSpectrum_D0_2016_prel_20191010.root", "D0",
+                              None,
+                              [(1, [1]), (2, [2, 3]), (3, [4, 5]), (4, [6]), (5, [7]), (6, [8])],
+                              0, ["histoSigmaCorr"], ["histoSigmaCorr"], "_prelim")
 #plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_ntrkl", "SPDvspt"])
 #plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_v0m", "V0mvspt"])
 #plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
