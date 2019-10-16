@@ -97,13 +97,17 @@ class Systematics:
         self.n_fileeff = datap["files_names"]["efffilename"]
         self.n_filemass_cutvar = self.n_filemass.replace(".root", "_cutvar.root")
         self.n_fileeff_cutvar = self.n_fileeff.replace(".root", "_cutvar.root")
+        self.n_fileeff_ptshape = self.n_fileeff.replace(".root", "_ptshape.root")
         self.d_results_cv = self.d_results + "/cutvar"
         self.n_filemass_cutvar = os.path.join(self.d_results_cv, self.n_filemass_cutvar)
         self.n_fileeff_cutvar = os.path.join(self.d_results_cv, self.n_fileeff_cutvar)
+        self.n_fileeff_ptshape = os.path.join(self.d_results, self.n_fileeff_ptshape)
         self.yields_filename_std = "yields"
         self.yields_filename = "yields_cutvar"
         self.efficiency_filename_std = "efficiencies"
         self.efficiency_filename = "efficiencies_cutvar"
+        self.efficiency_filename_pt = "efficiencies_mcptshape"
+        self.ptspectra_filename = "ptspectra_for_weights"
         self.cross_filename_std = "finalcross"
         self.cross_filename = "finalcross_cutvar"
 
@@ -186,6 +190,11 @@ class Systematics:
         self.p_fixedsigma = datap["systematics"]["probvariation"]["fixedsigma"]
         #To remove from databases
         #self.p_prob_range = datap["systematics"]["probvariation"]["prob_range"]
+
+        self.p_weights = datap["systematics"]["mcptshape"]["weights"]
+        self.p_weights_min_pt = datap["systematics"]["mcptshape"]["weights_min_pt"]
+        self.p_weights_max_pt = datap["systematics"]["mcptshape"]["weights_max_pt"]
+        self.p_weights_bins = datap["systematics"]["mcptshape"]["weights_bins"]
 
     @staticmethod
     def loadstyle():
@@ -916,6 +925,297 @@ class Systematics:
 
         massfile_std.Close()
         return mean_for_data, sigma_for_data
+
+    # pylint: disable=line-too-long
+    def mcptshape_get_generated(self):
+        fileout_name = self.make_file_path(self.d_results, self.ptspectra_filename, \
+                                       "root", None, [self.typean, self.case])
+        myfile = TFile(fileout_name, "RECREATE")
+
+        for ibin2 in range(len(self.lvar2_binmin)):
+            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen, \
+                                        self.lvar2_binmin[ibin2], \
+                                        self.lvar2_binmax[ibin2])
+
+            h_gen_pr = TH1F("h_gen_pr" + stringbin2, "Prompt Generated in acceptance |y|<0.5", \
+                            400, 0, 40)
+            h_gen_fd = TH1F("h_gen_fd" + stringbin2, "FD Generated in acceptance |y|<0.5", \
+                            400, 0, 40)
+
+            for ipt in range(self.p_nptfinbins):
+                bin_id = self.bin_matching[ipt]
+
+                df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[bin_id], "rb"))
+                df_mc_gen = df_mc_gen.query("abs(y_cand) < 0.5")
+                df_mc_gen = selectdfrunlist(df_mc_gen, \
+                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
+
+                df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \
+                                     self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+                df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning_gen, \
+                                            self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+
+                df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
+                df_gen_sel_fd = df_mc_gen[df_mc_gen.ismcfd == 1]
+
+                fill_hist(h_gen_pr, df_gen_sel_pr.pt_cand)
+                fill_hist(h_gen_fd, df_gen_sel_fd.pt_cand)
+            myfile.cd()
+            h_gen_pr.Write()
+            h_gen_fd.Write()
+        myfile.Close()
+
+    # pylint: disable=line-too-long
+    def mcptshape_build_efficiencies(self):
+        myfile = TFile.Open(self.n_fileeff_ptshape, "recreate")
+
+        for ibin2 in range(len(self.lvar2_binmin)):
+            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen, \
+                                        self.lvar2_binmin[ibin2], \
+                                        self.lvar2_binmax[ibin2])
+
+            n_bins = len(self.lpt_finbinmin)
+            analysis_bin_lims_temp = self.lpt_finbinmin.copy()
+            analysis_bin_lims_temp.append(self.lpt_finbinmax[n_bins-1])
+            analysis_bin_lims = array('f', analysis_bin_lims_temp)
+
+            h_gen_pr = TH1F("h_gen_pr" + stringbin2, "Prompt Generated in acceptance |y|<0.5", \
+                            n_bins, analysis_bin_lims)
+            h_presel_pr = TH1F("h_presel_pr" + stringbin2, "Prompt Reco in acc |#eta|<0.8 and sel", \
+                               n_bins, analysis_bin_lims)
+            h_sel_pr = TH1F("h_sel_pr" + stringbin2, "Prompt Reco and sel in acc |#eta|<0.8 and sel", \
+                            n_bins, analysis_bin_lims)
+            h_gen_fd = TH1F("h_gen_fd" + stringbin2, "FD Generated in acceptance |y|<0.5", \
+                            n_bins, analysis_bin_lims)
+            h_presel_fd = TH1F("h_presel_fd" + stringbin2, "FD Reco in acc |#eta|<0.8 and sel", \
+                               n_bins, analysis_bin_lims)
+            h_sel_fd = TH1F("h_sel_fd" + stringbin2, "FD Reco and sel in acc |#eta|<0.8 and sel", \
+                            n_bins, analysis_bin_lims)
+
+            bincounter = 0
+            for ipt in range(self.p_nptfinbins):
+                bin_id = self.bin_matching[ipt]
+                selml = "y_test_prob%s>%s" % (self.p_modelname, self.lpt_probcutfin[bin_id])
+
+                df_mc_reco = pickle.load(openfile(self.lpt_recodecmerged_mc[bin_id], "rb"))
+                if self.s_evtsel is not None:
+                    df_mc_reco = df_mc_reco.query(self.s_evtsel)
+                if self.s_trigger_mc is not None:
+                    df_mc_reco = df_mc_reco.query(self.s_trigger_mc)
+                print("Using run selection for eff histo",
+                      self.runlistrigger[self.triggerbit], "for period", self.period)
+                df_mc_reco = selectdfrunlist(df_mc_reco, \
+                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
+
+                df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[bin_id], "rb"))
+                df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
+                df_mc_gen = selectdfrunlist(df_mc_gen, \
+                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
+
+                df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var_binning, \
+                                     self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+                df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \
+                                     self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+
+                df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning_gen, \
+                                             self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning_gen, \
+                                            self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+
+                df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
+                df_reco_presel_pr = df_mc_reco[df_mc_reco.ismcprompt == 1]
+                df_reco_sel_pr = None
+                df_reco_sel_pr = df_reco_presel_pr.query(selml)
+
+                df_gen_sel_fd = df_mc_gen[df_mc_gen.ismcfd == 1]
+                df_reco_presel_fd = df_mc_reco[df_mc_reco.ismcfd == 1]
+                df_reco_sel_fd = None
+                df_reco_sel_fd = df_reco_presel_fd.query(selml)
+
+                val = len(df_gen_sel_pr)
+                err = math.sqrt(val)
+                h_gen_pr.SetBinContent(bincounter + 1, val)
+                h_gen_pr.SetBinError(bincounter + 1, err)
+                val = len(df_reco_presel_pr)
+                err = math.sqrt(val)
+                h_presel_pr.SetBinContent(bincounter + 1, val)
+                h_presel_pr.SetBinError(bincounter + 1, err)
+                val = len(df_reco_sel_pr)
+                err = math.sqrt(val)
+                h_sel_pr.SetBinContent(bincounter + 1, val)
+                h_sel_pr.SetBinError(bincounter + 1, err)
+
+                val = len(df_gen_sel_fd)
+                err = math.sqrt(val)
+                h_gen_fd.SetBinContent(bincounter + 1, val)
+                h_gen_fd.SetBinError(bincounter + 1, err)
+                val = len(df_reco_presel_fd)
+                err = math.sqrt(val)
+                h_presel_fd.SetBinContent(bincounter + 1, val)
+                h_presel_fd.SetBinError(bincounter + 1, err)
+                val = len(df_reco_sel_fd)
+                err = math.sqrt(val)
+                h_sel_fd.SetBinContent(bincounter + 1, val)
+                h_sel_fd.SetBinError(bincounter + 1, err)
+
+                bincounter = bincounter + 1
+
+            hw_gen_pr = TH1F("h_gen_pr_weight" + stringbin2, "Prompt Generated in acc |y|<0.5", \
+                            n_bins, analysis_bin_lims)
+            hw_presel_pr = TH1F("h_presel_pr_weight" + stringbin2, "Prompt Reco in acc |#eta|<0.8 and sel", \
+                               n_bins, analysis_bin_lims)
+            hw_sel_pr = TH1F("h_sel_pr_weight" + stringbin2, "Prompt Reco and sel in acc |#eta|<0.8 and sel", \
+                            n_bins, analysis_bin_lims)
+            hw_gen_fd = TH1F("h_gen_fd_weight" + stringbin2, "FD Generated in acc |y|<0.5", \
+                            n_bins, analysis_bin_lims)
+            hw_presel_fd = TH1F("h_presel_fd_weight" + stringbin2, "FD Reco in acc |#eta|<0.8 and sel", \
+                               n_bins, analysis_bin_lims)
+            hw_sel_fd = TH1F("h_sel_fd_weight" + stringbin2, "FD Reco and sel in acc |#eta|<0.8 and sel", \
+                            n_bins, analysis_bin_lims)
+
+            bincounter = 0
+            for ipt in range(self.p_nptfinbins):
+                bin_id = self.bin_matching[ipt]
+                selml = "y_test_prob%s>%s" % (self.p_modelname, self.lpt_probcutfin[bin_id])
+
+                df_mc_reco = pickle.load(openfile(self.lpt_recodecmerged_mc[bin_id], "rb"))
+                if self.s_evtsel is not None:
+                    df_mc_reco = df_mc_reco.query(self.s_evtsel)
+                if self.s_trigger_mc is not None:
+                    df_mc_reco = df_mc_reco.query(self.s_trigger_mc)
+                print("Using run selection for eff histo",
+                      self.runlistrigger[self.triggerbit], "for period", self.period)
+                df_mc_reco = selectdfrunlist(df_mc_reco, \
+                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
+
+                df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[bin_id], "rb"))
+                df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
+                df_mc_gen = selectdfrunlist(df_mc_gen, \
+                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
+
+                df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var_binning, \
+                                     self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+                df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \
+                                     self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+
+                df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning_gen, \
+                                             self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning_gen, \
+                                            self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+
+                df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
+                df_reco_presel_pr = df_mc_reco[df_mc_reco.ismcprompt == 1]
+                df_reco_sel_pr = None
+                df_reco_sel_pr = df_reco_presel_pr.query(selml)
+
+                df_gen_sel_fd = df_mc_gen[df_mc_gen.ismcfd == 1]
+                df_reco_presel_fd = df_mc_reco[df_mc_reco.ismcfd == 1]
+                df_reco_sel_fd = None
+                df_reco_sel_fd = df_reco_presel_fd.query(selml)
+
+                array_pt_gencand_gen = df_gen_sel_pr.pt_cand.values
+                array_pt_recocand_reco_presel = df_reco_presel_pr.pt_cand.values
+                array_pt_recocand_reco_sel = df_reco_sel_pr.pt_cand.values
+
+                val, err = self.get_reweighted_count(array_pt_gencand_gen)
+                hw_gen_pr.SetBinContent(bincounter + 1, val)
+                hw_gen_pr.SetBinError(bincounter + 1, err)
+                val, err = self.get_reweighted_count(array_pt_recocand_reco_presel)
+                hw_presel_pr.SetBinContent(bincounter + 1, val)
+                hw_presel_pr.SetBinError(bincounter + 1, err)
+                val, err = self.get_reweighted_count(array_pt_recocand_reco_sel)
+                hw_sel_pr.SetBinContent(bincounter + 1, val)
+                hw_sel_pr.SetBinError(bincounter + 1, err)
+
+                array_pt_gencand_genfd = df_gen_sel_fd.pt_cand.values
+                array_pt_recocand_reco_preselfd = df_reco_presel_fd.pt_cand.values
+                array_pt_recocand_reco_selfd = df_reco_sel_fd.pt_cand.values
+
+                val, err = self.get_reweighted_count(array_pt_gencand_genfd)
+                hw_gen_fd.SetBinContent(bincounter + 1, val)
+                hw_gen_fd.SetBinError(bincounter + 1, err)
+                val, err = self.get_reweighted_count(array_pt_recocand_reco_preselfd)
+                hw_presel_fd.SetBinContent(bincounter + 1, val)
+                hw_presel_fd.SetBinError(bincounter + 1, err)
+                val, err = self.get_reweighted_count(array_pt_recocand_reco_selfd)
+                hw_sel_fd.SetBinContent(bincounter + 1, val)
+                hw_sel_fd.SetBinError(bincounter + 1, err)
+
+                bincounter = bincounter + 1
+
+            myfile.cd()
+            h_gen_pr.Write()
+            h_presel_pr.Write()
+            h_sel_pr.Write()
+            h_gen_fd.Write()
+            h_presel_fd.Write()
+            h_sel_fd.Write()
+            hw_gen_pr.Write()
+            hw_presel_pr.Write()
+            hw_sel_pr.Write()
+            hw_gen_fd.Write()
+            hw_presel_fd.Write()
+            hw_sel_fd.Write()
+        myfile.Close()
+
+    def mcptshape_efficiency(self):
+
+        self.loadstyle()
+
+        lfileeff = TFile.Open(self.n_fileeff_ptshape, "READ")
+
+        fileout_name = self.make_file_path(self.d_results, self.efficiency_filename_pt, \
+                                       "root", None, [self.typean, self.case])
+        fileout = TFile(fileout_name, "RECREATE")
+
+        for imult in range(len(self.lvar2_binmin)):
+
+            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen, \
+                                           self.lvar2_binmin[imult], \
+                                           self.lvar2_binmax[imult])
+
+            h_gen_pr = lfileeff.Get("h_gen_pr" + stringbin2)
+            h_sel_pr = lfileeff.Get("h_sel_pr" + stringbin2)
+            h_sel_pr.Divide(h_sel_pr, h_gen_pr, 1.0, 1.0, "B")
+
+            h_gen_fd = lfileeff.Get("h_gen_fd" + stringbin2)
+            h_sel_fd = lfileeff.Get("h_sel_fd" + stringbin2)
+            h_sel_fd.Divide(h_sel_fd, h_gen_fd, 1.0, 1.0, "B")
+
+            hw_gen_pr = lfileeff.Get("h_gen_pr_weight" + stringbin2)
+            hw_sel_pr = lfileeff.Get("h_sel_pr_weight" + stringbin2)
+            hw_sel_pr.Divide(hw_sel_pr, hw_gen_pr, 1.0, 1.0, "B")
+
+            hw_gen_fd = lfileeff.Get("h_gen_fd_weight" + stringbin2)
+            hw_sel_fd = lfileeff.Get("h_sel_fd_weight" + stringbin2)
+            hw_sel_fd.Divide(hw_sel_fd, hw_gen_fd, 1.0, 1.0, "B")
+
+            fileout.cd()
+            h_sel_pr.SetName("eff_mult%d" % imult)
+            h_sel_fd.SetName("eff_fd_mult%d" % imult)
+            hw_sel_pr.SetName("eff_weight_mult%d" % imult)
+            hw_sel_fd.SetName("eff_weight_fd_mult%d" % imult)
+            h_sel_pr.Write()
+            h_sel_fd.Write()
+            hw_sel_pr.Write()
+            hw_sel_fd.Write()
+        fileout.Close()
+
+    def get_reweighted_count(self, arraypt):
+
+        weights = arraypt.copy()
+        binwidth = (self.p_weights_max_pt - self.p_weights_min_pt)/self.p_weights_bins
+        for j in range(weights.shape[0]):
+            pt = arraypt[j]
+            if pt - self.p_weights_min_pt < 0:
+                print("Warning: pT_gen < minimum pT of weights!")
+            ptbin_weights = int((pt - self.p_weights_min_pt)/binwidth)
+            #print("Following pt (",pt,") matched to ptbin = ",ptbin_weights)
+            #idea: make linear extrapolation with bins next to it
+            weights[j] = self.p_weights[ptbin_weights]
+        val = sum(weights)
+        err = math.sqrt(val)
+        return val, err
 
     @staticmethod
     def calculate_norm(filename, trigger, var, multmin, multmax, doweight):
