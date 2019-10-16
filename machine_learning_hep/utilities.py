@@ -28,8 +28,8 @@ import pandas as pd
 import lz4
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
 # pylint: disable=import-error, no-name-in-module
-from ROOT import TH1F, TH2F
-from ROOT import TPad, TCanvas, TLegend, kBlack, kGreen, kRed, kBlue
+from ROOT import TH1F, TH2F, TFile
+from ROOT import TPad, TCanvas, TLegend, kBlack, kGreen, kRed, kBlue, kWhite
 from machine_learning_hep.selectionutils import select_runs
 def openfile(filename, attr):
     if filename.lower().endswith('.bz2'):
@@ -266,7 +266,8 @@ def find_axes_limits(histos, use_log_y=False):
 
     return min_x, max_x, min_y, max_y
 
-def style_histograms(histos, linestyles=None, markerstyles=None, colors=None):
+def style_histograms(histos, linestyles=None, markerstyles=None, colors=None, linewidths=None,
+                     fillstyles=None, fillcolors=None):
     """
     Loops over given line- and markerstyles as well as colors applying them to the given list
     of histograms. The list of histograms might be larger than the styles provided. In that case
@@ -278,12 +279,21 @@ def style_histograms(histos, linestyles=None, markerstyles=None, colors=None):
         markerstyles = [2, 4, 5, 32]
     if colors is None:
         colors = [kBlack, kRed, kGreen + 2, kBlue]
+    if linewidths is None:
+        linewidths = [1]
+    if fillstyles is None:
+        fillstyles = [0]
+    if fillcolors is None:
+        fillcolors = [kWhite]
 
     for i, h in enumerate(histos):
         h.SetLineColor(colors[i % len(colors)])
         h.SetLineStyle(linestyles[i % len(linestyles)])
         h.SetMarkerStyle(markerstyles[i % len(markerstyles)])
         h.SetMarkerColor(colors[i % len(colors)])
+        h.SetLineWidth(linewidths[i % len(linewidths)])
+        h.SetFillStyle(fillstyles[i % len(fillstyles)])
+        h.SetFillColor(fillcolors[i % len(fillcolors)])
         h.GetXaxis().SetTitleSize(0.02)
         h.GetXaxis().SetTitleSize(0.02)
         h.GetYaxis().SetTitleSize(0.02)
@@ -300,19 +310,25 @@ def divide_all_by_first(histos):
         histos_ratio[-1].Divide(histos[0])
     return histos_ratio
 
-def put_in_pad(pad, use_log_y, histos, title="", x_label="", y_label=""):
+def put_in_pad(pad, use_log_y, histos, title="", x_label="", y_label="", **kwargs):
     """
     Providing a TPad this plots all given histograms in that pad adjusting the X- and Y-ranges
     accordingly.
     """
+
+    draw_options = kwargs.get("draw_options", None)
+
     min_x, max_x, min_y, max_y = find_axes_limits(histos, use_log_y)
     pad.SetLogy(use_log_y)
     pad.cd()
     scale_frame_y = (0.1, 10.) if use_log_y else (0.7, 1.2)
-    pad.DrawFrame(min_x, min_y * scale_frame_y[0], max_x, max_y * scale_frame_y[1],
-                  f"{title};{x_label};{y_label}")
-    for h in histos:
-        h.Draw("same")
+    frame = pad.DrawFrame(min_x, min_y * scale_frame_y[0], max_x, max_y * scale_frame_y[1],
+                          f"{title};{x_label};{y_label}")
+    frame.GetYaxis().SetTitleOffset(1.2)
+    if draw_options is None:
+        draw_options = ["" for _ in histos]
+    for h, o in zip(histos, draw_options):
+        h.Draw(f"same {o}")
 
 def plot_histograms(histos, use_log_y=False, ratio=False, legend_titles=None, title="", x_label="",
                     y_label_up="", y_label_ratio="", save_path="./plot.eps", **kwargs):
@@ -322,8 +338,12 @@ def plot_histograms(histos, use_log_y=False, ratio=False, legend_titles=None, ti
     linestyles = kwargs.get("linestyles", None)
     markerstyles = kwargs.get("markerstyles", None)
     colors = kwargs.get("colors", None)
+    draw_options = kwargs.get("draw_options", None)
+    linewidths = kwargs.get("linewidths", None)
+    fillstyles = kwargs.get("fillstyles", None)
+    fillcolors = kwargs.get("fillcolors", None)
     canvas_name = kwargs.get("canvas_name", "Canvas")
-    style_histograms(histos, linestyles, markerstyles, colors)
+    style_histograms(histos, linestyles, markerstyles, colors, linewidths, fillstyles, fillcolors)
 
     canvas = TCanvas('canvas', canvas_name, 800, 800)
     pad_up_start = 0.4 if ratio else 0.
@@ -333,7 +353,9 @@ def plot_histograms(histos, use_log_y=False, ratio=False, legend_titles=None, ti
         pad_up.SetBottomMargin(0.)
     pad_up.Draw()
 
-    put_in_pad(pad_up, use_log_y, histos, title, "", y_label_up)
+    x_label_up_tmp = x_label if not ratio else ""
+    put_in_pad(pad_up, use_log_y, histos, title, x_label_up_tmp, y_label_up,
+               draw_options=draw_options)
 
     pad_up.cd()
     legend = None
@@ -362,6 +384,17 @@ def plot_histograms(histos, use_log_y=False, ratio=False, legend_titles=None, ti
         put_in_pad(pad_ratio, False, histos_ratio, "", x_label, y_label_ratio)
 
     canvas.SaveAs(save_path)
+
+    index = save_path.rfind(".")
+
+    # Save also everything into a ROOT file
+    root_save_path = save_path[:index] + ".root"
+    root_file = TFile.Open(root_save_path, "RECREATE")
+    for h in histos:
+        h.Write()
+    canvas.Write()
+    root_file.Close()
+
     canvas.Close()
 
 def make_latex_table(column_names, row_names, rows, caption=None, save_path="./table.tex"):
