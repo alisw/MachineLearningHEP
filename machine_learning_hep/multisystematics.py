@@ -58,8 +58,10 @@ class MultiSystematics: # pylint: disable=too-many-instance-attributes, too-many
         self.n_fileeff = datap["files_names"]["efffilename"]
         self.n_filemass_cutvar = self.n_filemass.replace(".root", "_cutvar.root")
         self.n_fileeff_cutvar = self.n_fileeff.replace(".root", "_cutvar.root")
+        self.n_fileeff_mcptshape = self.n_fileeff.replace(".root", "_ptshape.root")
         self.filemass_cutvar_mergedall = os.path.join(self.d_resultsallp_cv, self.n_filemass_cutvar)
         self.fileeff_cutvar_mergedall = os.path.join(self.d_resultsallp_cv, self.n_fileeff_cutvar)
+        self.fileeff_ptshape_mergedall = os.path.join(self.d_resultsallp, self.n_fileeff_mcptshape)
 
         self.p_useperiodforlimits = datap["systematics"]["probvariation"]["useperiod"]
         self.p_useperiod = datap["analysis"][self.typean]["useperiod"]
@@ -70,6 +72,10 @@ class MultiSystematics: # pylint: disable=too-many-instance-attributes, too-many
             if self.p_useperiod[i] == 1:
                 self.lper_filemass_cutvar.append(os.path.join(direc, self.n_filemass_cutvar))
                 self.lper_fileeff_cutvar.append(os.path.join(direc, self.n_fileeff_cutvar))
+        self.lper_fileeff_mcptshape = []
+        for i, direc in enumerate(self.d_results):
+            if self.p_useperiod[i] == 1:
+                self.lper_fileeff_mcptshape.append(os.path.join(direc, self.n_fileeff_mcptshape))
 
         self.process_listsample = []
         for indexp in range(self.prodnumber):
@@ -139,3 +145,16 @@ class MultiSystematics: # pylint: disable=too-many-instance-attributes, too-many
                     self.myprocesstot.cutvariation_makeplots(name, min_cv_cut, max_cv_cut)
                 else:
                     self.myprocesstot.cutvariation_makeplots(name, None, None)
+
+    #pylint: disable=too-many-branches
+    def multimcptshape(self):
+
+        for indexp in range(self.prodnumber):
+            print("Processing MC pT shape systematics period: ", indexp)
+            self.process_listsample[indexp].mcptshape_get_generated()
+            self.process_listsample[indexp].mcptshape_build_efficiencies()
+            self.process_listsample[indexp].mcptshape_efficiency()
+        tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/mcptshape_eff/" \
+                      f"{get_timestamp_string()}/"
+        mergerootfiles(self.lper_fileeff_mcptshape, self.fileeff_ptshape_mergedall, tmp_merged)
+        self.myprocesstot.mcptshape_efficiency()
