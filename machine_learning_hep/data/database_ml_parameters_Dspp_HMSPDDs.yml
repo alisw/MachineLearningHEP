@@ -430,7 +430,6 @@ Dspp:
       weights_min_pt: 0
       weights_max_pt: 40
       weights_bins: 400
-
   validation:
     runlisttrigger: 
       LHC18pp:
