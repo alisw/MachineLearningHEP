@@ -179,7 +179,7 @@ Dspp:
       pkl_skimmed_merge_for_ml: [/data/Derived/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1_HMSPDD2H/pp_2018_mc_prodDs/275_20191014-0119/pklskml] #list of periods
       pkl_skimmed_merge_for_ml_all: /data/Derived/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1_HMSPDD2H/pp_mc_prodDs_mltot
       pkl_evtcounter_all: /data/Derived/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1_HMSPDD2H/pp_mc_prodDs_evttot
-      mcreweights: [reweighting/prodD2H_spdhm]
+      mcreweights: [reweighting/prodDs_spdhm_d2h]
   ml:
     evtsel: is_ev_rej==0
     triggersel:
@@ -441,5 +441,5 @@ Dspp:
       dir: [/data/DerivedVal/dataval_18] #list of periods
       dirmerged: /data/DerivedVal/datavaltot
     mc:
-      dir: [/data/DerivedVal/mcval_18] #list of periods
-      dirmerged: /data/DerivedVal/mcvaltot
+      dir: [/data/DerivedVal/mcvalspdhm_18_d2h] #list of periods
+      dirmerged: /data/DerivedVal/mcvalspdhm_d2h

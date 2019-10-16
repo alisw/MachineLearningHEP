@@ -440,5 +440,5 @@ Dspp:
       dir: [/data/DerivedVal/dataval_18] #list of periods
       dirmerged: /data/DerivedVal/datavaltot
     mc:
-      dir: [/data/DerivedVal/mcval_18] #list of periods
-      dirmerged: /data/DerivedVal/mcvaltot
+      dir: [/data/DerivedVal/mcvalspdhm_18_enr] #list of periods
+      dirmerged: /data/DerivedVal/mcvalspdhm_enr
