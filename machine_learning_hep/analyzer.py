@@ -515,6 +515,12 @@ class Analyzer:
                 canvas_init_data.cd(ipt+1)
                 mass_fitter_data_init[ipt].DrawHere(gPad, self.p_nsigma_signal)
 
+                # Initialize mean and sigma with user seeds.
+                if self.p_use_user_gauss_sigma[ipt] is True:
+                    mean_for_data = self.p_masspeak
+                    sigma_for_data = self.p_sigmaarray[ipt]
+                    means_sigmas_init.insert(0, (3, mean_for_data, sigma_for_data))
+
                 # Remember that we have filled this pT bin
                 have_summary_pt_bins.append(ipt)
                 ######################
@@ -526,8 +532,11 @@ class Analyzer:
                 for fix in [False, True]:
                     for ms in means_sigmas_init:
                         fit_cases.append((ms[0], ms[1], ms[2], fix))
-                if user_init_success:
+                if user_init_success and self.p_use_user_gauss_sigma[ipt] is False:
                     fit_cases.insert(0, (0, mean_case_user, sigma_case_user,
+                                         self.p_fixingaussigma[ipt]))
+                if self.p_use_user_gauss_sigma[ipt] is True:
+                    fit_cases.insert(0, (0, self.p_masspeak, self.p_sigmaarray[ipt], \
                                          self.p_fixingaussigma[ipt]))
                 else:
                     self.logger.error("Cannot initialise fit with what is requested by the " \
