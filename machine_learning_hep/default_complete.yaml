@@ -31,14 +31,15 @@ ml_study:
   doboundary: false
   docorrelation: false
   docrossvalidation: false
-  dogridsearch: false
   doimportance: false
-  dolearningcurve: true
+  dolearningcurve: false
   dopca: false
   dosignifopt: false
   doefficiency: false
   dotesting: false
-  dotraining: true
+  dotraining: false
+  dogridsearch: false
+  doconfusion: false
 
 analysis:
   data:

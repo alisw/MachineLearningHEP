@@ -86,12 +86,12 @@ LcpK0s_multiplicity:
       fracmerge : [1.0] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC18pp] #list of periods
-      unmerged_tree_dir: [/data2/HeavyFlavour/pp_data_2018/01-07-2019/71_20190629-1549/unmerged] #list of periods
-      pkl: [/data2/haris/LcpK0s_multiplicity/datapkl] #list of periods
-      pkl_skimmed: [/data2/haris/LcpK0s_multiplicity/datapklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [/data2/haris/LcpK0s_multiplicity/datapklskML] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data2/haris/LcpK0s_multiplicity/datapklskMLallperiods
-      pkl_evtcounter_all: /data2/haris/LcpK0s_multiplicity/datapklevtHC18ppallperiods
+      unmerged_tree_dir: [/mnt/temp/data2/HeavyFlavour/pp_data_2018/01-07-2019/71_20190629-1549/unmerged] #list of periods
+      pkl: [/mnt/temp/data2/haris/LcpK0s_multiplicity/datapkl] #list of periods
+      pkl_skimmed: [/mnt/temp/data2/haris/LcpK0s_multiplicity/datapklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/mnt/temp/data2/haris/LcpK0s_multiplicity/datapklskML] #list of periods
+      pkl_skimmed_merge_for_ml_all: /mnt/temp/data2/haris/LcpK0s_multiplicity/datapklskMLallperiods
+      pkl_evtcounter_all: /mnt/temp/data2/haris/LcpK0s_multiplicity/datapklevtHC18ppallperiods
     mc:
       nperiods: 1
       nprocessesparallel: 50
@@ -101,15 +101,15 @@ LcpK0s_multiplicity:
       fracmerge : [1.0] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC18pp] #list of periods
-      unmerged_tree_dir: [/data2/HeavyFlavour/pp_MC_2018/23-06-2019/56_20190622-1929/unmerged] # this is pPb MC, #list of periods
-      pkl: [/data2/haris/LcpK0s_multiplicity/mcpkl] #list of periods
-      pkl_skimmed: [/data2/haris/LcpK0s_multiplicity/mcpklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [/data2/haris/LcpK0s_multiplicity/mcpklskML] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data2/haris/LcpK0s_multiplicity/mcpklskMLallperiods
-      pkl_evtcounter_all: /data2/haris/LcpK0s_multiplicity/mcpklevtHC18ppallperiods
+      unmerged_tree_dir: [/mnt/temp/data2/HeavyFlavour/pp_MC_2018/23-06-2019/56_20190622-1929/unmerged] # this is pPb MC, #list of periods
+      pkl: [/mnt/temp/data2/haris/LcpK0s_multiplicity/mcpkl] #list of periods
+      pkl_skimmed: [/mnt/temp/data2/haris/LcpK0s_multiplicity/mcpklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/mnt/temp/data2/haris/LcpK0s_multiplicity/mcpklskML] #list of periods
+      pkl_skimmed_merge_for_ml_all: /mnt/temp/data2/haris/LcpK0s_multiplicity/mcpklskMLallperiods
+      pkl_evtcounter_all: /mnt/temp/data2/haris/LcpK0s_multiplicity/mcpklevtHC18ppallperiods
   ml:
-    nbkg: 50000
-    nsig: 50000
+    nbkg: 500000
+    nsig: 500000
     sampletagforsignal: 1
     sampletagforbkg: 0
     sel_sigml: ismcprompt == 1

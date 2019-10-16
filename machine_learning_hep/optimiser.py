@@ -33,23 +33,12 @@ from machine_learning_hep.models import fit, savemodels, test, apply, decisionbo
 from machine_learning_hep.root import write_tree
 from machine_learning_hep.mlperformance import cross_validation_mse, plot_cross_validation_mse
 from machine_learning_hep.mlperformance import plot_learning_curves, precision_recall
+from machine_learning_hep.mlperformance import confusion
 from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perform_plot_gridsearch
 from machine_learning_hep.models import importanceplotall
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.optimization import calc_bkg, calc_signif
 from machine_learning_hep.correlations import vardistplot_probscan, efficiency_cutscan
-
-import xgboost as xgb
-from xgboost.sklearn import XGBClassifier
-from sklearn.model_selection import cross_validate
-from sklearn import metrics
-from sklearn.model_selection import GridSearchCV
-#from sklearn import cross_validation, metrics  #Additional scklearn functions
-#from sklearn.grid_search import GridSearchCV   #Perforing grid search
-
-
-from matplotlib.pyplot import rcParams
-rcParams['figure.figsize'] = 12, 4
 
 # pylint: disable=too-many-instance-attributes, too-many-statements, too-few-public-methods
 class Optimiser:
@@ -238,6 +227,7 @@ class Optimiser:
         self.df_ytrain = self.df_mltrain[self.v_sig]
         self.df_xtest = self.df_mltest[self.v_train]
         self.df_ytest = self.df_mltest[self.v_sig]
+    
     def do_corr(self):
         imageIO_vardist = vardistplot(self.df_sigtrain, self.df_bkgtrain,
                                       self.v_all, self.dirmlplot,
@@ -257,292 +247,29 @@ class Optimiser:
         classifiers_keras, names_keras = getclf_keras(self.db_model, len(self.df_xtrain.columns))
         self.p_class = classifiers_scikit+classifiers_xgboost+classifiers_keras
         self.p_classname = names_scikit+names_xgboost+names_keras
-
-    def XGfit(self, alg, useTrainCV, cv_folds, early_stopping_rounds):
-    	useTrainCV = True
-    	cv_folds = 5
-    	early_stopping_rounds = 50
-    	if useTrainCV:
-    		xgb_param = alg.get_xgb_params()
-    		xgtrain = xgb.DMatrix(self.df_xtrain.values, label=self.df_ytrain.values)
-    		cvresult = xgb.cv(xgb_param, xgtrain, num_boost_round=alg.get_params()['n_estimators'], nfold=cv_folds,
-    		metrics='auc', early_stopping_rounds=early_stopping_rounds, show_progress=False)
-    		alg.set_params(n_estimators=cvresult.shape[0])
-    
-    	#Fit the algorithm on the data
-    	alg.fit(self.df_xtrain.values, self.df_ytrain.values, eval_metric='auc')
         
-    	#Predict training set:
-    	dtrain_predictions = alg.predict(self.df_xtrain.values)
-    	dtrain_predprob = alg.predict_proba(self.df_xtrain.values)[:,1]
-        
-    	#Print model report:
-    	print("\nModel Report")
-    	print("Accuracy : %.4g" % metrics.accuracy_score(self.df_ytrain.values, dtrain_predictions))
-    	print("AUC Score (Train): %f" % metrics.roc_auc_score(self.df_ytrain.values, dtrain_predprob))
-                    
-    	#feat_imp = pd.Series(alg.booster().get_fscore()).sort_values(ascending=False)
-    	#feat_imp.plot(kind='bar', title='Feature Importances')
-    	#plt.ylabel('Feature Importance Score')
-
     def do_train(self):
-    	t0 = time.time()
-    	print("training")
-    	#xgb1 = XGBClassifier(learning_rate =0.1, n_estimators=1000, max_depth=5, min_child_weight=1, gamma=0, subsample=0.8, colsample_bytree=0.8, objective= 'binary:logistic', nthread=10, scale_pos_weight=1, seed=27)
-    	#opt = Optimiser()
-
-    	#XGfit(xgb1, True, 5, 50)
-
-    	#useTrainCV = True
-    	#cv_folds = 5
-    	#early_stopping_rounds = 50
-    	#if useTrainCV:
-    		#xgb_param = xgb1.get_xgb_params()
-    		#xgtrain = xgb.DMatrix(self.df_xtrain.values, label=self.df_ytrain.values)
-    		#cvresult = xgb.cv(xgb_param, xgtrain, num_boost_round=xgb1.get_params()['n_estimators'], nfold=cv_folds,
-    		#metrics='auc', early_stopping_rounds=early_stopping_rounds, verbose_eval=False)
-    		#xgb1.set_params(n_estimators=cvresult.shape[0])
-    		#print(cvresult.shape[0]) #optimal number of estimators = 66 for lr=0.2 or 238 for lr = 0.1
-    
-    	#Fit the algorithm on the data
-    	#xgb1.fit(self.df_xtrain.values, self.df_ytrain.values, eval_metric='auc')
-        
-    	#Predict training set:
-    	#dtrain_predictions = xgb1.predict(self.df_xtrain.values)
-    	#dtrain_predprob = xgb1.predict_proba(self.df_xtrain.values)[:,1]
-        
-    	#Print model report:
-    	#print("\nModel Report")
-    	#print("Accuracy : %.4g" % metrics.accuracy_score(self.df_ytrain.values, dtrain_predictions))
-    	#print("AUC Score (Train): %f" % metrics.roc_auc_score(self.df_ytrain.values, dtrain_predprob))
-                    
-    	#feat_imp = pd.Series(xgb1.get_booster().get_fscore()).sort_values(ascending=False)
-    	#feat_imp.plot(kind='bar', title='Feature Importances')
-    	#plt.ylabel('Feature Importance Score')
-    	#plt.show()
-    	#param_test1 = {
- 	#'max_depth':range(3,10,2),
- 	#'min_child_weight':range(1,6,2)
-	#}
-    	#gsearch1 = GridSearchCV(estimator = XGBClassifier(learning_rate =0.1, 		n_estimators=238, max_depth=5,
-	#min_child_weight=1, gamma=0, subsample=0.8, colsample_bytree=0.8,
- 	#objective= 'binary:logistic', nthread=10, scale_pos_weight=1, seed=27), 
- 	#param_grid = param_test1, scoring='roc_auc',n_jobs=4,iid=False, cv=5)
-    	#gsearch1.fit(self.df_xtrain.values, self.df_ytrain.values)
-    	#print(gsearch1.cv_results_, gsearch1.best_params_, gsearch1.best_score_) # optimal value = max depth:5 min_child weight = 3
-    	#param_test2 = {
- 	#'max_depth':[4,5,6],
- 	#'min_child_weight':[2,3,4]
-	#}
-    	#gsearch2 = GridSearchCV(estimator = XGBClassifier(learning_rate=0.1, n_estimators=238, max_depth=5, min_child_weight=2, gamma=0, subsample=0.8, colsample_bytree=0.8, objective= 'binary:logistic', nthread=10, scale_pos_weight=1,seed=27), param_grid = param_test2, scoring='roc_auc', n_jobs=4, iid=False, cv=5)
-    	#gsearch2.fit(self.df_xtrain.values, self.df_ytrain.values)
-    	#print(gsearch2.cv_results_, gsearch2.best_params_, gsearch2.best_score_) #new optimal values,
-	#max depth = 4, min_child_weight = 2, n_estimators = 238
-    	#param_test2b = {
-     	#'min_child_weight':[2,4,6,8]
-    	#}
-    	#gsearch2b = GridSearchCV(estimator = XGBClassifier( learning_rate=0.1, n_estimators=238,      max_depth=4, min_child_weight=2, gamma=0, subsample=0.8, colsample_bytree=0.8, objective= 'binary:logistic', nthread=10, scale_pos_weight=1,seed=27), param_grid = param_test2b, scoring='roc_auc',n_jobs=10,iid=False, cv=5)
-    	#gsearch2b.fit(self.df_xtrain.values, self.df_ytrain.values)
-    	#print(gsearch2b.cv_results_, gsearch2b.best_params_, gsearch2b.best_score_)
-	
-	# confirmed that 2 is the optimal value for min_child_weight
-	
-	# optimal settings till now: min_child_weight: 2, max_depth: 4, n_estimators: 238
-
-
-	# tuning gamma
-    	#param_test3 = {
-    	#'gamma':[i/10.0 for i in range(0,5)]
-    	#}
-    	#gsearch3 = GridSearchCV(estimator = XGBClassifier(learning_rate =0.1, n_estimators=238, max_depth=4, min_child_weight=2, gamma=0, subsample=0.8, colsample_bytree=0.8, objective= 'binary:logistic', nthread=10, scale_pos_weight=1, seed=27), param_grid = param_test3, 	 scoring='roc_auc', n_jobs=10, iid=False, cv=5)
-    	#gsearch3.fit(self.df_xtrain.values, self.df_ytrain.values)
-    	#print(gsearch3.cv_results_, gsearch3.best_params_, gsearch3.best_score_)
-	# best value of gamma is: 0.0
-	
-	# optimal settings till now: min_child_weight: 2, max_depth: 4, n_estimators: 238, 
-	# gamma = 0.0
-	
-	#re-calibrate number of boosting rounds
-    	#xgb2 = XGBClassifier(
-    	#learning_rate = 0.1,
-    	#n_estimators = 1000,
-    	#max_depth = 4,
-    	#min_child_weight = 2,
-    	#gamma = 0,
-    	#subsample = 0.8,
-    	#colsample_bytree = 0.8,
-    	#objective = 'binary:logistic',
-    	#n_jobs = 10,
-    	#scale_pos_weight = 1,
-    	#seed = 27)
-    	#if useTrainCV:
-    	#	xgb_param = xgb2.get_xgb_params()
-    	#	xgtrain = xgb.DMatrix(self.df_xtrain.values, label=self.df_ytrain.values)
-    	#	cvresult = xgb.cv(xgb_param, xgtrain, num_boost_round=xgb2.get_params()['n_estimators'], nfold=cv_folds,
-    	#	metrics='auc', early_stopping_rounds=early_stopping_rounds, verbose_eval=False)
-    	#	xgb2.set_params(n_estimators=cvresult.shape[0])
-    	#	print(cvresult.shape[0]) # new optimal number of estimators = 260
-	
-	#Fit the algorithm on the data
-    	#xgb2.fit(self.df_xtrain.values, self.df_ytrain.values, eval_metric='auc')
-        
-    	#Predict training set:
-    	#dtrain_predictions = xgb2.predict(self.df_xtrain.values)
-    	#dtrain_predprob = xgb2.predict_proba(self.df_xtrain.values)[:,1]
-        
-    	#Print model report:
-    	#print("\nModel Report")
-    	#print("Accuracy : %.4g" % metrics.accuracy_score(self.df_ytrain.values, dtrain_predictions))
-    	#print("AUC Score (Train): %f" % metrics.roc_auc_score(self.df_ytrain.values, dtrain_predprob))
-
-	#optimal settings till now:
-	# min_child_weight: 2, max_depth: 4, n_estimators: 260, 
-	# gamma = 0.0
-
-	# tuning subsample and colsample_bytree
-    	#param_test4 = {
-    	#'subsample':[i/10.0 for i in range(6,10)],
-    	#'colsample_bytree':[i/10.0 for i in range(6,10)]
-    	#}
-    	#gsearch4 = GridSearchCV(estimator = XGBClassifier( learning_rate =0.1, n_estimators=260,  max_depth=4, min_child_weight=2, gamma=0, subsample=0.8, colsample_bytree=0.8, objective= 'binary:logistic', nthread=10, scale_pos_weight=1,seed=27), param_grid = param_test4, scoring='roc_auc', n_jobs = 10, iid=False, cv=5)
-    	#gsearch4.fit(self.df_xtrain.values, self.df_ytrain.values)
-    	#print(gsearch4.cv_results_, gsearch4.best_params_, gsearch4.best_score_)
-        #best subsample: 0.8,  best colsample_bytree: 0.8
-	
-	# grid search again for subsample and colsample_bytree
-    	#param_test5 = {
-    	#'subsample':[i/100.0 for i in range(75,90,5)],
-    	#'colsample_bytree':[i/100.0 for i in range(75,90,5)]
-    	#}
-
-    	#gsearch5 = GridSearchCV(estimator = XGBClassifier(learning_rate =0.1, n_estimators=260,  max_depth=4, min_child_weight=2, gamma=0, subsample=0.8, colsample_bytree=0.8, objective= 'binary:logistic', nthread=10, scale_pos_weight=1,seed=27), param_grid = param_test5, 	scoring='roc_auc',n_jobs=10, iid=False, cv=5)
-    	#gsearch5.fit(self.df_xtrain.values, self.df_ytrain.values)
-    	#print(gsearch5.cv_results_, gsearch5.best_params_, gsearch5.best_score_)
-	# confirmed that 0.8 is best value for both
-	# tune regularization param alpha
-    	#param_test6 = {
-    	#'reg_alpha':[1e-5, 1e-2, 0.1, 1, 100]
-    	#}
-    	#gsearch6 = GridSearchCV(estimator = XGBClassifier(learning_rate = 0.1, n_estimators=260,  max_depth=4, min_child_weight=2, gamma=0, subsample=0.8, colsample_bytree=0.8, objective= 'binary:logistic', nthread=10, scale_pos_weight=1,seed=27), param_grid = param_test6, scoring='roc_auc', n_jobs=10, iid=False, cv=5)
-    	#gsearch6.fit(self.df_xtrain.values, self.df_ytrain.values)
-    	#print(gsearch6.cv_results_, gsearch6.best_params_, gsearch6.best_score_)
-	# best alpha is: 0.1
-	# further tuning alpha
-    	#param_test7 = {
-    	#'reg_alpha':[0, 0.01, 0.05, 0.1, 0.5]
-    	#}
-    	#gsearch7 = GridSearchCV(estimator = XGBClassifier(learning_rate = 0.1, n_estimators=260, max_depth=4, min_child_weight=2, gamma=0, subsample=0.8, colsample_bytree=0.8, objective= 'binary:logistic', nthread=10, scale_pos_weight=1,seed=27), param_grid = param_test7, scoring='roc_auc',n_jobs=10,iid=False, cv=5)
-    	#gsearch7.fit(self.df_xtrain.values, self.df_ytrain.values)
-    	#print(gsearch7.cv_results_, gsearch7.best_params_, gsearch7.best_score_)
-	# confirmed that best alpha is 0.1
-
-	# building final model
-    	#xgb3 = XGBClassifier(
-    	#learning_rate = 0.1,
-    	#n_estimators = 1000,
-    	#max_depth = 4,
-    	#min_child_weight = 2,
-    	#gamma=0,
-    	#subsample=0.8,
-    	#colsample_bytree=0.8,
-    	#reg_alpha=0.1,
-    	#objective= 'binary:logistic',
-    	#n_jobs=10,
-    	#scale_pos_weight=1,
-    	#seed=27)
-
-    	#if useTrainCV:
-    	#	xgb_param = xgb3.get_xgb_params()
-    	#	xgtrain = xgb.DMatrix(self.df_xtrain.values, label=self.df_ytrain.values)
-    	#	cvresult = xgb.cv(xgb_param, xgtrain, num_boost_round=xgb3.get_params()['n_estimators'], nfold=cv_folds,
-    	#	metrics='auc', early_stopping_rounds=early_stopping_rounds, verbose_eval=False)
-    	#	xgb3.set_params(n_estimators=cvresult.shape[0])
-    	#	print(cvresult.shape[0]) # new optimal number of estimators = 251
-	
-  	#Fit the algorithm on the data
-    	#xgb3.fit(self.df_xtrain.values, self.df_ytrain.values, eval_metric='auc')
-        
-    	#Predict training set:
-    	#dtrain_predictions = xgb3.predict(self.df_xtrain.values)
-    	#dtrain_predprob = xgb3.predict_proba(self.df_xtrain.values)[:,1]
-        
-    	#Print model report:
-    	#print("\nModel Report")
-    	#print("Accuracy : %.4g" % metrics.accuracy_score(self.df_ytrain.values, dtrain_predictions))
-    	#print("AUC Score (Train): %f" % metrics.roc_auc_score(self.df_ytrain.values, dtrain_predprob))
-
-	# final step: reduce learning rate and build final, ultimate model
-    	#xgb4 = XGBClassifier(
-    	#learning_rate =0.01,
-    	#n_estimators=5000,
-    	#max_depth=4,
-     	#min_child_weight=2,
-     	#gamma=0,
-     	#subsample=0.8,
-     	#colsample_bytree=0.8,
-     	#reg_alpha=0.1,
-     	#objective= 'binary:logistic',
-     	#n_jobs=10,
-    	#scale_pos_weight=1,
-    	#seed=27)
-
-    	#if useTrainCV:
-    	#	xgb_param = xgb4.get_xgb_params()
-    	#	xgtrain = xgb.DMatrix(self.df_xtrain.values, label=self.df_ytrain.values)
-    	#	cvresult = xgb.cv(xgb_param, xgtrain, num_boost_round=xgb4.get_params() ['n_estimators'], nfold=cv_folds,
-    	#	metrics='auc', early_stopping_rounds=early_stopping_rounds, verbose_eval=False)
-    	#	xgb4.set_params(n_estimators=cvresult.shape[0])
-    	#	print(cvresult.shape[0]) # new optimal number of estimators = 
-	
-  	#Fit the algorithm on the data
-    	#xgb4.fit(self.df_xtrain.values, self.df_ytrain.values, eval_metric='auc')
-        
-    	#Predict training set:
-    	#dtrain_predictions = xgb4.predict(self.df_xtrain.values)
-    	#dtrain_predprob = xgb4.predict_proba(self.df_xtrain.values)[:,1]
-        
-    	#Print model report:
-    	#print("\nModel Report")
-    	#print("Accuracy : %.4g" % metrics.accuracy_score(self.df_ytrain.values, dtrain_predictions))
-    	#print("AUC Score (Train): %f" % metrics.roc_auc_score(self.df_ytrain.values, dtrain_predprob))
-	# final model: best settings: n_estimators = 3112, learning_rate = 0.01
-	#max_depth = 4, min_child_weight = 2, gamma = 0, subsample = 0.8, colsample_bytree = 0.8
-	#reg_alpha = 0.1, objective = binary: logistic, n_jobs = 10, scale_pos_weights = 1
-	
-	# actual training
-    	#self.p_trainedmod = fit(self.p_classname, self.p_class, self.df_xtrain, self.df_ytrain)
-    	#savemodels(self.p_classname, self.p_trainedmod, self.dirmlout, self.s_suffix)
-
-
-	# new tuning
-    	eval_set = [(self.df_xtrain.values, self.df_ytrain.values), (self.df_xtest.values,    self.df_ytest.values)]
-    	eval_metric = ["auc"] 
-    	model = XGBClassifier(silent=False,
-    	scale_pos_weight=1,
-    	learning_rate=0.01,  
-    	colsample_bytree = 0.8,
-    	subsample = 0.8,
-    	objective='binary:logistic', 
-    	n_estimators=1000, 
-    	reg_alpha = 0.1,
-    	max_depth=4,
-    	min_child_weight = 2, 
-    	n_jobs = 10,
-    	gamma=0)    
-    	
-    	model.fit(self.df_xtrain.values, self.df_ytrain.values, eval_metric=eval_metric,   eval_set=eval_set, verbose=True)
-
-
-    	print("training over")
-    	print("time elapsed=", time.time() -t0)
+        t0 = time.time()
+        print("training")
+ 
+	    # actual training
+        self.p_trainedmod = fit(self.p_classname, self.p_class, self.df_xtrain, self.df_ytrain)
+        savemodels(self.p_classname, self.p_trainedmod, self.dirmlout, self.s_suffix)
+     
+        print("training over")
+        print("time elapsed=", time.time() -t0)
 
     def do_test(self):
+        t0 = time.time()
+        print("testing")
         df_ml_test = test(self.p_mltype, self.p_classname, self.p_trainedmod,
                           self.df_mltest, self.v_train, self.v_sig)
         df_ml_test_to_df = self.dirmlout+"/testsample_%s_mldecision.pkl" % (self.s_suffix)
         df_ml_test_to_root = self.dirmlout+"/testsample_%s_mldecision.root" % (self.s_suffix)
         pickle.dump(df_ml_test, openfile(df_ml_test_to_df, "wb"), protocol=4)
         write_tree(df_ml_test_to_root, self.n_treetest, df_ml_test)
+        print("testing over")
+        print("time elapsed=", time.time() -t0)
 
     def do_apply(self):
         df_data = apply(self.p_mltype, self.p_classname, self.p_trainedmod,
@@ -551,6 +278,12 @@ class Optimiser:
                       self.df_mc, self.v_train)
         pickle.dump(df_data, openfile(self.f_reco_applieddata, "wb"), protocol=4)
         pickle.dump(df_mc, openfile(self.f_reco_appliedmc, "wb"), protocol=4)
+
+
+    def do_confusion(self):
+        confusion(self.p_classname, self.p_class, self.s_suffix, self.df_xtrain,
+                 self.df_ytrain, self.p_nkfolds, self.dirmlplot)
+    
 
     def do_crossval(self):
         df_scores = cross_validation_mse(self.p_classname, self.p_class,
@@ -570,16 +303,7 @@ class Optimiser:
     def do_importance(self):
         importanceplotall(self.v_train, self.p_classname, self.p_class,
                           self.s_suffix, self.dirmlplot)
-    def do_grid(self):
-        analysisdb = self.c_gridconfig[self.p_mltype]
-        names_cv, clf_cv, par_grid_cv, refit_cv, var_param, \
-            par_grid_cv_keys = read_grid_dict(analysisdb)
-        _, _, dfscore = do_gridsearch(
-            names_cv, clf_cv, par_grid_cv, refit_cv, self.df_xtrain,
-            self.df_ytrain, self.p_nkfolds, self.p_ncorescross)
-        perform_plot_gridsearch(
-            names_cv, dfscore, par_grid_cv, par_grid_cv_keys,
-            var_param, self.dirmlplot, self.s_suffix, 0.1)
+        
 
     def do_boundary(self):
         classifiers_scikit_2var, names_2var = getclf_scikit(self.db_model)
@@ -752,6 +476,7 @@ class Optimiser:
         efficiency_cutscan(dfdata, self.v_cuts, "xgboost_classifier", 0.9,
                            self.dirmlplot, "data", self.p_plot_options)
 
+    
 
 
 

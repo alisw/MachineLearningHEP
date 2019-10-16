@@ -60,6 +60,7 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
     dotraining = data_config["ml_study"]['dotraining']
     dotesting = data_config["ml_study"]['dotesting']
     doapplytodatamc = data_config["ml_study"]['applytodatamc']
+    doconfusion = data_config["ml_study"]['doconfusion']
     docrossvalidation = data_config["ml_study"]['docrossvalidation']
     dolearningcurve = data_config["ml_study"]['dolearningcurve']
     doroc = data_config["ml_study"]['doroc']
@@ -210,6 +211,8 @@ def do_entire_analysis(): # pylint: disable=too-many-locals, too-many-statements
                 myopt.do_test()
             if doapplytodatamc is True:
                 myopt.do_apply()
+            if doconfusion is True:
+                myopt.do_confusion()
             if docrossvalidation is True:
                 myopt.do_crossval()
             if dolearningcurve is True:
