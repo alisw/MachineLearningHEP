@@ -174,6 +174,10 @@ class Analyzer:
         self.apply_weights = datap["analysis"][self.typean]["triggersel"]["weighttrig"]
         self.root_objects = []
 
+        self.get_crossmb_from_path = datap["analysis"][self.typean].get("get_crossmb_from_path", \
+                                                                        None)
+        self.path_for_crossmb = datap["analysis"][self.typean].get("path_for_crossmb", None)
+
     @staticmethod
     def loadstyle():
         gStyle.SetOptStat(0)
@@ -1760,6 +1764,8 @@ class Analyzer:
                     resultpathmb = self.d_resultsallpdata.replace(pathtoreplace, pathreplaceby)
                     filecrossmb = "%s/finalcross%s%smult0.root" % (resultpathmb, self.case, \
                                                                    self.p_corrmb_typean)
+                    if self.get_crossmb_from_path is not None:
+                        filecrossmb = self.path_for_crossmb
                     self.logger.info("Looking for %s", filecrossmb)
                     if os.path.exists(filecrossmb):
                         self.logger.info("Calculating spectra using fPrompt from MB. "\

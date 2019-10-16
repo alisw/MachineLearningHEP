@@ -247,6 +247,8 @@ Dspp:
       plotbin: [1,1,1,1,0]
       usesinglebineff: null
       fprompt_from_mb: true
+      get_crossmb_from_path: true
+      path_for_crossmb: /data/DerivedResults/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_data/resultsMBvspt_ntrkl/finalcrossDsppMBvspt_ntrklmult0.root
       corresp_mb_typean: null
       corrEffMult: true
       sel_binmin2: [0,1,10,30,60] #list of var2 splittng nbins
@@ -343,6 +345,8 @@ Dspp:
       plotbin: [0,0,0,0,1]
       usesinglebineff: null
       fprompt_from_mb: true
+      get_crossmb_from_path: true
+      path_for_crossmb: /data/DerivedResults/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_data/resultsMBvspt_ntrkl/finalcrossDsppMBvspt_ntrklmult0.root
       corresp_mb_typean: MBvspt_ntrkl
       corrEffMult: true
       sel_binmin2: [0,1,10,30,60] #list of var2 splittng nbins
@@ -426,8 +430,6 @@ Dspp:
       weights_min_pt: 0
       weights_max_pt: 40
       weights_bins: 400
-
-
   validation:
     runlisttrigger: 
       LHC18pp:
