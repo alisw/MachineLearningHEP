@@ -1,30 +1,30 @@
-case: Dspp
+case: Dspp_HMSPDD2H
 download:
   alice:
     activate: false
 conversion:
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 skimming:
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 merging:
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 mergingperiods:
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 
 ml_study:
-  activate: true
+  activate: false
   dopca: false
   docorrelation: false
   dotraining: true
@@ -43,32 +43,32 @@ ml_study:
 
 mlapplication:
   data:
-    doapply: true
-    domergeapply: true
+    doapply: false
+    domergeapply: false
     docontinueafterstop: false
   mc:
-    doapply: true
-    domergeapply: true
+    doapply: false
+    domergeapply: false
     docontinueafterstop: false
 
 analysis:
-  type: MBvspt_ntrkl #V0mvspt_perc_v0m
+  type: SPDvspt #V0mvspt_perc_v0m
   # Do each period separately including merged (true)
   # Do only merged (false)
   doperperiod: true
   data:
-    histomass: true
+    histomass: false
   mc:
-    histomass: true
-    efficiency: true
+    histomass: false
+    efficiency: false
     feeddown: false
-  dofit: true
+  dofit: false
   # Control the yield systemaitc uncertainty
   dosyst: false
   dojetstudies: false
-  doeff: true
-  docross: true
-  doplots: true
+  doeff: false
+  docross: false
+  doplots: false
 
 systematics:
   cutvar:
@@ -84,5 +84,5 @@ validation:
   data:
     docreatehisto: false
   mc:
-    docreatehisto: false
-  plotevents: false
+    docreatehisto: true
+  plotevents: true
