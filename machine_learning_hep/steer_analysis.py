@@ -112,7 +112,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     dosystprobeff = data_config["systematics"]["cutvar"]["probvariationeff"]
     dosystprobfit = data_config["systematics"]["cutvar"]["probvariationfit"]
     dosystprobcross = data_config["systematics"]["cutvar"]["probvariationcross"]
-
+    dosystptshape = data_config["systematics"]["mcptshape"]["activate"]
     doanaperperiod = data_config["analysis"]["doperperiod"]
 
     typean = data_config["analysis"]["type"]
@@ -396,7 +396,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         myan.multi_plotternormyields()
     if dosystprob is True:
         mysis.multi_cutvariation(dosystprobmass, dosystprobeff, dosystprobfit, dosystprobcross)
-
+    if dosystptshape is True:
+        mysis.multimcptshape()
 
 def load_config(user_path: str, default_path: tuple) -> dict:
     """

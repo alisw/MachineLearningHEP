@@ -1,4 +1,4 @@
-case: LcpK0spp
+case: Dspp
 download:
   alice:
     activate: false
@@ -58,26 +58,28 @@ analysis:
   # Do only merged (false)
   doperperiod: true
   data:
-    histomass: true
+    histomass: false
   mc:
-    histomass: true
-    efficiency: true
+    histomass: false
+    efficiency: false
     feeddown: false
   dofit: true
   # Control the yield systemaitc uncertainty
   dosyst: false
   dojetstudies: false
   doeff: true
-  docross: true 
+  docross: true
   doplots: true
 
 systematics:
   cutvar:
     activate: false
-    probvariationmass: true
-    probvariationeff: true
-    probvariationfit: true
+    probvariationmass: false
+    probvariationeff: false
+    probvariationfit: false
     probvariationcross: false
+  mcptshape:
+    activate: false
 
 validation:
   data:

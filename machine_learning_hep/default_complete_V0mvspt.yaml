@@ -76,6 +76,8 @@ systematics:
     probvariationeff: false
     probvariationfit: false
     probvariationcross: false
+  mcptshape:
+    activate: false
 
 validation:
   data:
