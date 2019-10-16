@@ -102,6 +102,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     doefficiency = data_config["analysis"]["mc"]["efficiency"]
     dofeeddown = data_config["analysis"]["mc"]["feeddown"]
     dounfolding = data_config["analysis"]["mc"]["dounfolding"]
+    dojetsystematics = data_config["analysis"]["data"]["dojetsystematics"]
     dofit = data_config["analysis"]["dofit"]
     doeff = data_config["analysis"]["doeff"]
     docross = data_config["analysis"]["docross"]
@@ -382,6 +383,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     if dounfolding is True:
         myan.multi_unfolding()
         myan.multi_unfolding_closure()
+    if dojetsystematics is True:
+        myan.multi_jetsystematics()
     if docross is True:
         myan.multi_preparenorm()
         if normalizecross is True:

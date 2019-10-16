@@ -97,6 +97,12 @@ class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-st
                 self.process_listsample[indexp].unfolding_closure()
         self.myanalyzertot.unfolding_closure()
 
+    def multi_jetsystematics(self):
+        if self.doperiodbyperiod is True:
+            for indexp in range(self.prodnumber):
+                self.process_listsample[indexp].jetsystematics()
+        self.myanalyzertot.jetsystematics()
+
     def multi_side_band_sub(self):
         if self.doperiodbyperiod is True:
             for indexp in range(self.prodnumber):

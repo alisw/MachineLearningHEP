@@ -245,6 +245,17 @@ def setup_legend(legend):
     legend.SetTextSize(0.03)
     legend.SetTextFont(42)
 
+def setup_tgraph(tg, colour=46, alphastyle=0.3, fillstyle=1001):
+    tg.GetXaxis().SetTitleSize(0.04)
+    tg.GetXaxis().SetTitleOffset(1.0)
+    tg.GetYaxis().SetTitleSize(0.04)
+    tg.GetYaxis().SetTitleOffset(1.0)
+    tg.SetFillColorAlpha(colour,alphastyle)
+    tg.SetLineWidth(2)
+    tg.SetLineColor(colour)
+    tg.SetFillStyle(fillstyle)
+    tg.SetMarkerSize(0)
+  
 def draw_latex(latex,colour=1,textsize=0.03):
     latex.SetNDC()
     latex.SetTextSize(textsize)

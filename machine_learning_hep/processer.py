@@ -234,6 +234,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.varshaperanges_gen = self.lvarshape_binmin_gen.copy()
         self.varshaperanges_gen.append(self.lvarshape_binmax_gen[-1])
 
+        self.doprior = datap["analysis"][self.typean]["doprior"]
+
         self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
         self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
         self.p_nptfinbins = len(self.lpt_finbinmin)
@@ -938,11 +940,23 @@ class Processer: # pylint: disable=too-many-instance-attributes
             hz_fracdiff = TH1F("hz_fracdiff_prompt" +suffix,"hz_fracdiff_prompt" +suffix,100,-2,2)
             hz_fracdiff_list.append(hz_fracdiff)
 
+
+            
+        hzvsjetpt_prior_weights=TH2F("hzvsjetpt_prior_weights","hzvsjetpt_prior_weights",nzbin_gen,zbinarray_gen,njetptbin_gen,jetptbinarray_gen)
+        hzvsjetpt_prior_weights.Sumw2()
+        if self.doprior is True:
+            for row in df_mc_reco_merged_prompt.itertuples():
+                if row.pt_gen_jet >= self.lvar2_binmin_gen[0] and row.pt_gen_jet < self.lvar2_binmax_gen[-1] and row.z_gen >= self.lvarshape_binmin_gen[0] and row.z_gen < self.lvarshape_binmax_gen[-1]:
+                    if row.pt_jet >= self.lvar2_binmin_reco[0] and row.pt_jet < self.lvar2_binmax_reco[-1] and row.z_reco >= self.lvarshape_binmin_reco[0] and row.z_reco < self.lvarshape_binmax_reco[-1]:
+                        hzvsjetpt_prior_weights.Fill(row.z_gen,row.pt_gen_jet)
+            
         random_number = TRandom3(0)
         random_number_result=0.0
+        response_matrix_weight = 1.0
         for row in df_mc_reco_merged_prompt.itertuples():
 
             random_number_result=random_number.Rndm()
+            random_number_result_weights=random_number.Rndm()
             if row.pt_jet >= self.lvar2_binmin_reco[0] and row.pt_jet < self.lvar2_binmax_reco[-1] and row.z_reco >= self.lvarshape_binmin_reco[0] and row.z_reco < self.lvarshape_binmax_reco[-1]:
                 hzvsjetpt_reco.Fill(row.z_reco,row.pt_jet)
                 hzvsjetpt_reco_nocuts.Fill(row.z_reco,row.pt_jet)
@@ -956,7 +970,11 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 hzvsjetpt_gen.Fill(row.z_gen,row.pt_gen_jet)
             if row.pt_gen_jet >= self.lvar2_binmin_gen[0] and row.pt_gen_jet < self.lvar2_binmax_gen[-1] and row.z_gen >= self.lvarshape_binmin_gen[0] and row.z_gen < self.lvarshape_binmax_gen[-1]:
                 if row.pt_jet >= self.lvar2_binmin_reco[0] and row.pt_jet < self.lvar2_binmax_reco[-1] and row.z_reco >= self.lvarshape_binmin_reco[0] and row.z_reco < self.lvarshape_binmax_reco[-1]:
-                    response_matrix.Fill(row.z_reco,row.pt_jet,row.z_gen,row.pt_gen_jet)
+                    response_matrix_weight=1.0
+                    if self.doprior is True:
+                        if hzvsjetpt_prior_weights.GetBinContent(hzvsjetpt_prior_weights.GetXaxis().FindBin(row.z_gen),hzvsjetpt_prior_weights.GetYaxis().FindBin(row.pt_gen_jet)) > 0.0 :
+                            response_matrix_weight=1.0/hzvsjetpt_prior_weights.GetBinContent(hzvsjetpt_prior_weights.GetXaxis().FindBin(row.z_gen),hzvsjetpt_prior_weights.GetYaxis().FindBin(row.pt_gen_jet))
+                    response_matrix.Fill(row.z_reco,row.pt_jet,row.z_gen,row.pt_gen_jet,response_matrix_weight)
                     hjetpt_genvsreco_full.Fill(row.pt_gen_jet,row.pt_jet)
                     hz_genvsreco_full.Fill(row.z_gen,row.z_reco)
                     for ibin2 in range(len(self.lvar2_binmin_reco)):
@@ -998,7 +1016,11 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 hzvsjetpt_reco_closure.Fill(row.z_reco,row.pt_jet)
                 hzvsjetpt_gen_closure.Fill(row.z_gen,row.pt_gen_jet)
             else:
-                response_matrix_closure.Fill(row.z_reco,row.pt_jet,row.z_gen,row.pt_gen_jet)
+                response_matrix_weight=1.0
+                if self.doprior is True:
+                    if hzvsjetpt_prior_weights.GetBinContent(hzvsjetpt_prior_weights.GetXaxis().FindBin(row.z_gen),hzvsjetpt_prior_weights.GetYaxis().FindBin(row.pt_gen_jet)) > 0.0 :
+                        response_matrix_weight=1.0/hzvsjetpt_prior_weights.GetBinContent(hzvsjetpt_prior_weights.GetXaxis().FindBin(row.z_gen),hzvsjetpt_prior_weights.GetYaxis().FindBin(row.pt_gen_jet))
+                    response_matrix_closure.Fill(row.z_reco,row.pt_jet,row.z_gen,row.pt_gen_jet,response_matrix_weight)
 
         for ibin2 in range(len(self.lvar2_binmin_gen)):
             hz_gen_nocuts_list[ibin2].Write()

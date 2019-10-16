@@ -588,6 +588,24 @@ LcpK0spp:
       mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
+      signal_sigma: 2
+      sigma_scale: 0.9545
+      sideband_sigma_1: 4
+      sideband_sigma_2: 9
+      sidebandleftonly: false
+
+      niterunfolding : 15
+      niterunfoldingchosen : 4
+      niterunfoldingregdown : 3
+      niterunfoldingregup : 7
+
+      doprior : false
+
+      powheg_path_prompt : /data/POWHEG/LckINT7HighMultwithJets/prompt/powheg_lc_charm_central.root
+      powheg_path_nonprompt : /data/POWHEG/LckINT7HighMultwithJets/nonprompt/powheg_lc_beauty_central.root
+
+      systematic_catagories: ["fitting", "sideband", "cutvar", "powheg", "unfolding_prior", "regularisation"]
+      systematic_variations: [6, 3, 4, 1, 1, 2]
 
 
       # To initialize the individual fits in pT bins
