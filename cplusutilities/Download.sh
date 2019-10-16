@@ -254,6 +254,43 @@ elif [ "$dataset" == "MCpp13TeV_MB_all" ]; then
                      "pp_2016_mc_prodDs"
                      "pp_2017_mc_prodDs"
                      "pp_2018_mc_prodDs")
+elif [ "$dataset" == "MCpp13TeV_HM_all" ]; then
+  #D2H and dedicated HM MC's for 2016-17-18 (V0M) and 18 (SPD). See short names below/LEGO train page for order of childs.
+  printf "\e[1;31m  Warning: New dataset, hardcoded paths not yet tested.\e[0m\n\n"
+  inputpaths=(/alice/sim/2019/LHC19h5c/258454/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h5b/277117/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h5a/286653/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h5a2/294925/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h10c1/258454/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h10b1/277117/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h10a1/286653/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h10a1b/294925/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h10c2/258454/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h10b2/277117/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h10a2/286653/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h10a2b/294925/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h10c3/258454/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h10b3/277117/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h10a3/286653/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h10a3b/294925/PWGHF/HF_TreeCreator)
+  datasetwithchilds=1
+  splitchildsdifferentpaths=1
+  dataset_short_arr=("pp_2016_mc_prodHMV0MD2H"
+                     "pp_2017_mc_prodHMV0MD2H"
+                     "pp_2018_mc_prodHMV0MD2H"
+                     "pp_2018_mc_prodHMSPDD2H"
+                     "pp_2016_mc_prodHMV0MLcpKpi"
+                     "pp_2017_mc_prodHMV0MLcpKpi"
+                     "pp_2018_mc_prodHMV0MLcpKpi"
+                     "pp_2018_mc_prodHMSPDLcpKpi"
+                     "pp_2016_mc_prodHMV0MLcpK0s"
+                     "pp_2017_mc_prodHMV0MLcpK0s"
+                     "pp_2018_mc_prodHMV0MLcpK0s"
+                     "pp_2018_mc_prodHMSPDLcpK0s"
+                     "pp_2016_mc_prodHMV0MDs"
+                     "pp_2017_mc_prodHMV0MDs"
+                     "pp_2018_mc_prodHMV0MDs"
+                     "pp_2018_mc_prodHMSPDDs")
 elif [ "$dataset" == "LHC17j4d2" ]; then
   #Lc->pK0s MC: pPb 5 TeV (used for pp for now)
   inputpaths=(/alice/sim/2017/LHC17j4d2_fast/265343/PWGHF/HF_TreeCreator
