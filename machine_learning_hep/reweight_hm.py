@@ -20,8 +20,8 @@ import yaml
 from ROOT import gROOT, TFile, TCanvas, TF1, TH1F
 from machine_learning_hep.utilities import plot_histograms
 
-def make_syst_bin_edges():
-    filespd = TFile.Open("/data/DerivedVal/mcvalspdhm_18/AnalysisResultsROOTEvtVal.root", "read")
+def reweight_hm():
+    filespd = TFile.Open("/data/DerivedVal/mcvalspdhm_18_d2h/AnalysisResultsROOTEvtVal.root", "read")
     filemb = TFile.Open("/data/DerivedVal/dataval_18/AnalysisResultsROOTEvtVal.root", "read")
     histospd = filespd.Get("hbitINT7vsn_tracklets_corr")
     histomb = filemb.Get("hbitINT7vsn_tracklets_corr")
@@ -39,8 +39,10 @@ def make_syst_bin_edges():
         hweight.SetBinContent(ibin+1, func.Eval(bincenter))
         hweight.SetBinError(ibin+1, 0.)
     c.SaveAs("canvasDs.pdf")
-    f = TFile("reweighting/prodDs_spdhm/mcweights.root", "recreate")
+    f = TFile("reweighting/prodDs_spdhm_d2h/mcweights.root", "recreate")
     f.cd()
     hratio.Write()
     hweight.Write()
     f.Close()
+
+reweight_hm()
