@@ -250,17 +250,20 @@ def find_axes_limits(histos, use_log_y=False):
     """
     Finds common axes limits for list of histograms provided
     """
+    # That might be considered to be a hack since it now only has a chance to work
+    # reasonably well if there is at least one histogram.
     max_y = min([h.GetMinimum() for h in histos if isinstance(h, TH1)])
     min_y = min([h.GetMaximum() for h in histos if isinstance(h, TH1)])
-    #if not min_y > 0. and use_log_y:
-    #    min_y = 10.e-9
+    if not min_y > 0. and use_log_y:
+        min_y = 10.e-9
 
     max_x = max([h.GetXaxis().GetXmax() for h in histos])
     min_x = max([h.GetXaxis().GetXmin() for h in histos])
 
     for h in histos:
         if not isinstance(h, TH1):
-            print("CONTINUE")
+            # That might be considered to be a hack since it now only has a chance to work
+            # reasonably well if there is at least one histogram.
             continue
         min_x = min(min_x, h.GetXaxis().GetXmin())
         max_x = max(max_x, h.GetXaxis().GetXmax())
