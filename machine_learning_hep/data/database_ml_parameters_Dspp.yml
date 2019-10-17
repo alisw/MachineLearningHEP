@@ -357,7 +357,7 @@ Dspp:
         # can be a sigle value taken for all pT and mult bins
         #init_sigma_from: "central"
         # Can be a list covering all pT bins
-        init_sigma_from: ["data", "data", "data", "data", "data"]
+        init_sigma_from: ["user", "data", "data", "data", "data"]
         # Or a 2D list for all mult. and pT bins individually
         #init_sigma_from:
         #  - ["mc", "data", "data", "data", "data", "data"]
@@ -668,6 +668,29 @@ Dspp:
       latexbin2var: "n_{trkl}"
       nevents: null
       dodoublecross: false
+
+      systematics:
+        # For now don't do these things per pT bin
+        max_chisquare_ndf: 2.
+        rebin: [-1,0,1]
+        massmin: [1.69, 1.72, 1.75, 1.78, 1.81]
+        massmax: [2.09, 2.12, 2.15, 2.18, 2.21]
+        bincount_sigma: [3.,5.]
+        bkg_funcs: [kExpo, Pol2]
+        # Whether to include the free sigma option in the derivation of raw yield uncertainty in given pT bin
+        consider_free_sigma: [True, True, True, True, True]
+        # Chose which sigma should be taken to initialize the multi trial
+        # If nothing is specified the value of the central fit is taken
+        # can be a sigle value taken for all pT and mult bins
+        #init_sigma_from: "central"
+        # Can be a list covering all pT bins
+        init_sigma_from: ["user", "data", "data", "data", "data"]
+        # Or a 2D list for all mult. and pT bins individually
+        #init_sigma_from:
+        #  - ["mc", "data", "data", "data", "data", "data"]
+        #  - ["mc", "data", "data", "data", "data", "data"]
+        #  - ["mc", "data", "data", "data", "data", "data"]
+        #  - ["mc", "data", "data", "data", "data", "data"]
 
     V0mvspt:
       useperiod: [0,1,1]
