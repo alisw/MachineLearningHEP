@@ -20,57 +20,67 @@ from array import array
 from math import sqrt
 # pylint: disable=import-error, no-name-in-module, unused-import
 import yaml
-from ROOT import TFile, gStyle, gROOT, kBlack, kRed, kWhite, TH1F
+from ROOT import TFile, gStyle, gROOT, TH1F, TGraphAsymmErrors
+from ROOT import kBlue, kAzure, kOrange, kGreen, kBlack, kRed, kWhite
 from machine_learning_hep.utilities import plot_histograms
 
 FILES_NOT_FOUND = []
 
-def make_syst_bin_edges(histo_central):
-    # First find minimum bin width and make it a bit smaller even for the overlayed systematics
-    syst_width = min([histo_central.GetBinWidth(b+1) for b in range(histo_central.GetNbinsX())])
-    syst_width = 0.5 * syst_width
 
-    bin_edges = []
-    # Since we are multiplying the number of bins by 3 keep track which of these bins corresponds
-    # to the central binning
-    match_nominal_bins = []
-    # Start at 2 and add 3 all the time in the loop below
-    initial_bin_match = 2
-    axis = histo_central.GetXaxis()
-    # This basically now splits each bin in 3
-    for b in range(axis.GetNbins()):
-        match_nominal_bins.append(initial_bin_match)
-        bin_edges.append(axis.GetBinLowEdge(b+1))
-        bin_edges.append(axis.GetBinCenter(b+1) - syst_width / 2.)
-        bin_edges.append(axis.GetBinCenter(b+1) + syst_width / 2.)
-        initial_bin_match += 3
-    # Last bin edge has to be added by hand
-    bin_edges.append(axis.GetBinUpEdge(axis.GetNbins()))
+def results(histos_central, systematics_rel_all, title, legend_titles, x_label, y_label,
+            save_path, **kwargs):
 
-    return match_nominal_bins, bin_edges
+    if len(histos_central) != len(legend_titles):
+        print(f"Number of legend titles {len(legend_titles)} differs from number of " \
+              f"histograms {len(histos_central)}")
+        return
 
+    colors = kwargs.get("colors", [kRed - i for i in range(len(histos_central))])
+    colors = colors * 2
+    markerstyles = [1] * len(histos_central) + [20] * len(histos_central)
+    draw_options = ["E2"] * len(histos_central) + [""] * len(histos_central)
+    legend_titles = [None] * len(histos_central) + legend_titles
 
-def results(histo_central, systematics_rel, title, legend_title, x_label, y_label,
-            save_path):
+    histos_syst = []
+    for h, systematics_rel in zip(histos_central, systematics_rel_all):
+        n_bins_central = h.GetNbinsX()
+        bin_centers = array("d", [h.GetXaxis().GetBinCenter(b+1) for b in range(n_bins_central)])
+        bin_contents = array("d", [h.GetBinContent(b+1) for b in range(n_bins_central)])
+        # First find minimum bin width and make it a bit smaller even for the overlayed systematics
+        syst_width = min([h.GetBinWidth(b+1) for b in range(h.GetNbinsX())])
+        syst_width = 0.5 * syst_width
+        syst_width = 0.5 * syst_width
 
-    match_nominal_bins, bin_edges = make_syst_bin_edges(histo_central)
-    bin_edges = array("d", bin_edges)
+        x_syst_low = array("d", [syst_width for _ in range(n_bins_central)])
+        x_syst_up = array("d", [syst_width for _ in range(n_bins_central)])
+        print(bin_contents)
+        print(x_syst_low)
+        print(x_syst_up)
 
-    histo_syst = TH1F("syst", "", len(bin_edges) - 1, bin_edges)
-    systematics_rel_squ = [0] * histo_central.GetNbinsX()
-    for systs in systematics_rel:
-        for i, syst in enumerate(systs):
-            systematics_rel_squ[i] += (syst * syst)
-    for bc, bs, syst_squ in zip(range(histo_central.GetNbinsX()), match_nominal_bins,
-                                systematics_rel_squ):
-        syst = sqrt(syst_squ) * histo_central.GetBinContent(bc+1)
-        histo_syst.SetBinContent(bs, histo_central.GetBinContent(bc+1))
-        histo_syst.SetBinError(bs, syst)
+        # Low and upper errors
+        systematics_rel_squ = [[0, 0] for _ in range(h.GetNbinsX())]
+        for systs in systematics_rel:
+            for i, syst in enumerate(systs):
+                systematics_rel_squ[i][0] += (syst[0] * syst[0])
+                systematics_rel_squ[i][1] += (syst[1] * syst[1])
+        y_syst_low = [1 - sqrt(syst_rel_squ[0]) for syst_rel_squ in systematics_rel_squ]
+        y_syst_up = [1 + sqrt(syst_rel_squ[1]) for syst_rel_squ in systematics_rel_squ]
 
-    plot_histograms([histo_central, histo_syst], True, False, [legend_title, "syst"], title,
-                    x_label, y_label, "", save_path, linesytles=[1], markerstyles=[20, 1],
-                    colors=[kBlack, kRed], linewidths=[1, 1], draw_options=["", "E2"],
-                    fillstyles=[0, 0], fillcolors=[kWhite, kRed])
+        y_syst_low = array("d", [abs(y_syst_low[b] - 1) * h.GetBinContent(b+1) \
+                for b in range(n_bins_central)])
+        y_syst_up = array("d", [abs(y_syst_up[b] -1) * h.GetBinContent(b+1) \
+                for b in range(n_bins_central)])
+        print(y_syst_low)
+        print(y_syst_up)
+        gr_err = TGraphAsymmErrors(n_bins_central, bin_centers, bin_contents, x_syst_low,
+                                   x_syst_up, y_syst_low, y_syst_up)
+
+        histos_syst.append(gr_err)
+
+    plot_histograms([*histos_syst, *histos_central], True, False, legend_titles, title,
+                    x_label, y_label, "", save_path, linesytles=[1], markerstyles=markerstyles,
+                    colors=colors, linewidths=[1], draw_options=draw_options,
+                    fillstyles=[0])
 
 def get_param(case):
     with open("data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
@@ -90,29 +100,59 @@ def extract_histo(case, ana_type, mult_bin, period_number, histo_name):
     histo.SetDirectory(0)
     return histo
 
-def make_standard_save_path(case, ana_type, mult_bin, period_number, prefix):
+def make_standard_save_path(case, prefix):
     data_param = get_param(case)
     folder_plots = data_param[case]["analysis"]["dir_general_plots"]
-    folder_plots = f"{folder_plots}/final/{ana_type}"
+    folder_plots = f"{folder_plots}/final"
     if not os.path.exists(folder_plots):
         print("creating folder ", folder_plots)
         os.makedirs(folder_plots)
-    return f"{folder_plots}/{prefix}_mult_{mult_bin}_period_{period_number}.eps"
+    return f"{folder_plots}/{prefix}.eps"
 
 #############################################################
 gROOT.SetBatch(True)
 
 CASE = "Dspp"
-ANA = "MBvspt_ntrkl"
-MULT_BIN = 0
+ANA_MB = "MBvspt_ntrkl"
+ANA_HM = "SPDvspt"
 YEAR_NUMBER = -1 # -1 refers to all years merged
+
+LEGEND_TITLES = ["0 < n_{trkl} < #infty (MB)", "1 < n_{trkl} < 9 (MB)", "10 < n_{trkl} < 29 (MB)",
+                 "30 < n_{trkl} < 59 (MB)", "60 < n_{trkl} < 99 (HM)"]
+
+COLORS = [kBlue, kGreen + 2, kRed - 2, kAzure + 3, kOrange + 7]
 
 # Get the ML histogram of the particle case and analysis type
 # Everything available in the HFPtSpetrum can be requested
-HISTO = extract_histo(CASE, ANA, MULT_BIN, YEAR_NUMBER, "histoSigmaCorr")
-SAVE_PATH = make_standard_save_path(CASE, ANA, MULT_BIN, YEAR_NUMBER, "histoSigmaCorr")
+# From MB
+HISTOS = []
+for mb in range(4):
+    histo_ = extract_histo(CASE, ANA_MB, mb, YEAR_NUMBER, "histoSigmaCorr")
+    histo_.SetName(f"{histo_.GetName()}_{mb}")
+    HISTOS.append(histo_)
 
-REL_SYST = [[0.05, 0.05, 0.05, 0.05, 0.05], [0.08, 0.08, 0.08, 0.08, 0.08]]
+# Append the HM histogram
+HISTO = extract_histo(CASE, ANA_HM, 4, YEAR_NUMBER, "histoSigmaCorr")
+HISTO.SetName(f"{HISTO.GetName()}_4")
+HISTOS.append(HISTO)
 
-results(HISTO, REL_SYST, f"Corrected cross section", "pp @ #sqrt{s} = 13 TeV",
-        "#it{p}_{T} (GeV/#it{c})", "#sigma (D_{s}) #times BR(D_{s} #rightarrow KK#pi)", SAVE_PATH)
+
+# Relative systematic uncertainties
+REL_SYST = [[[(0.05, 0.1), (0.01, 0.04), (0.03, 0.05), (0.02, 0.12), (0.01, 0.04)],
+             [(0.08, 0.08), (0.08, 0.08), (0.08, 0.08), (0.08, 0.08), (0.08, 0.08)]],
+            [[(0.05, 0.1), (0.01, 0.04), (0.03, 0.05), (0.02, 0.12), (0.01, 0.04)],
+             [(0.08, 0.08), (0.08, 0.08), (0.08, 0.08), (0.08, 0.08), (0.08, 0.08)]],
+            [[(0.05, 0.1), (0.01, 0.04), (0.03, 0.05), (0.02, 0.12), (0.01, 0.04)],
+             [(0.08, 0.08), (0.08, 0.08), (0.08, 0.08), (0.08, 0.08), (0.08, 0.08)]],
+            [[(0.05, 0.1), (0.01, 0.04), (0.03, 0.05), (0.02, 0.12), (0.01, 0.04)],
+             [(0.08, 0.08), (0.08, 0.08), (0.08, 0.08), (0.08, 0.08), (0.08, 0.08)]],
+            [[(0.05, 0.1), (0.01, 0.04), (0.03, 0.05), (0.02, 0.12), (0.01, 0.04)],
+             [(0.08, 0.08), (0.08, 0.08), (0.08, 0.08), (0.08, 0.08), (0.08, 0.08)]]]
+
+# Save globally in Ds directory
+SAVE_PATH = make_standard_save_path(CASE, "histoSigmaCorr_all_years_MB_HM")
+
+
+results(HISTOS, REL_SYST, f"Corrected cross section", LEGEND_TITLES,
+        "#it{p}_{T} (GeV/#it{c})", "#sigma (D_{s}) #times BR(D_{s} #rightarrow KK#pi)",
+        SAVE_PATH, colors=COLORS)

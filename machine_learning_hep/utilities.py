@@ -28,7 +28,7 @@ import pandas as pd
 import lz4
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
 # pylint: disable=import-error, no-name-in-module
-from ROOT import TH1F, TH2F, TFile
+from ROOT import TH1F, TH2F, TFile, TH1
 from ROOT import TPad, TCanvas, TLegend, kBlack, kGreen, kRed, kBlue, kWhite
 from machine_learning_hep.selectionutils import select_runs
 def openfile(filename, attr):
@@ -250,19 +250,24 @@ def find_axes_limits(histos, use_log_y=False):
     """
     Finds common axes limits for list of histograms provided
     """
-    max_y = histos[0].GetMaximum()
-    min_y = histos[0].GetMinimum()
-    if not min_y > 0. and use_log_y:
-        min_y = 10.e-9
+    max_y = min([h.GetMinimum() for h in histos if isinstance(h, TH1)])
+    min_y = min([h.GetMaximum() for h in histos if isinstance(h, TH1)])
+    #if not min_y > 0. and use_log_y:
+    #    min_y = 10.e-9
 
-    max_x = histos[0].GetXaxis().GetXmax()
-    min_x = histos[0].GetXaxis().GetXmin()
+    max_x = max([h.GetXaxis().GetXmax() for h in histos])
+    min_x = max([h.GetXaxis().GetXmin() for h in histos])
 
     for h in histos:
+        if not isinstance(h, TH1):
+            print("CONTINUE")
+            continue
         min_x = min(min_x, h.GetXaxis().GetXmin())
         max_x = max(max_x, h.GetXaxis().GetXmax())
-        min_y = min(min_y, h.GetMinimum(0.)) if use_log_y else min(min_y, h.GetMinimum())
-        max_y = max(max_y, h.GetMaximum())
+        min_y_tmp = h.GetBinContent(h.GetMinimumBin())
+        if min_y_tmp > 0. and use_log_y or not use_log_y:
+            min_y = min(min_y, h.GetBinContent(h.GetMinimumBin()))
+        max_y = max(max_y, h.GetBinContent(h.GetMaximumBin()))
 
     return min_x, max_x, min_y, max_y
 
@@ -321,10 +326,11 @@ def put_in_pad(pad, use_log_y, histos, title="", x_label="", y_label="", **kwarg
     min_x, max_x, min_y, max_y = find_axes_limits(histos, use_log_y)
     pad.SetLogy(use_log_y)
     pad.cd()
-    scale_frame_y = (0.1, 10.) if use_log_y else (0.7, 1.2)
+    scale_frame_y = (0.01, 100.) if use_log_y else (0.7, 1.2)
     frame = pad.DrawFrame(min_x, min_y * scale_frame_y[0], max_x, max_y * scale_frame_y[1],
                           f"{title};{x_label};{y_label}")
     frame.GetYaxis().SetTitleOffset(1.2)
+    pad.SetTicks()
     if draw_options is None:
         draw_options = ["" for _ in histos]
     for h, o in zip(histos, draw_options):
@@ -367,7 +373,8 @@ def plot_histograms(histos, use_log_y=False, ratio=False, legend_titles=None, ti
         legend.SetTextFont(42)
         legend.SetTextSize(0.02)
         for h, l in zip(histos, legend_titles):
-            legend.AddEntry(h, l)
+            if l is not None:
+                legend.AddEntry(h, l)
         legend.Draw()
 
     canvas.cd()
