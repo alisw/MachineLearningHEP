@@ -539,7 +539,7 @@ class Analyzer:
                 if user_init_success and self.p_use_user_gauss_sigma[ipt] is False:
                     fit_cases.insert(0, (0, mean_case_user, sigma_case_user,
                                          self.p_fixingaussigma[ipt]))
-                if self.p_use_user_gauss_sigma[ipt] is True:
+                elif self.p_use_user_gauss_sigma[ipt] is True:
                     fit_cases.insert(0, (0, self.p_masspeak, self.p_sigmaarray[ipt], \
                                          self.p_fixingaussigma[ipt]))
                 else:
@@ -881,7 +881,10 @@ class Analyzer:
 
                 # Next we need the sigma to be used for the multi trial
                 sigma_init = mass_fitter_nominal.GetSigma()
-                if initialize_sigma_from[imult][ipt] == "mc":
+
+                if initialize_sigma_from[imult][ipt] == "user":
+                    sigma_init = self.p_sigmaarray[ipt]
+                elif initialize_sigma_from[imult][ipt] == "mc":
                     fit = file_fits.GetDirectory(suffix).Get("gaus_mc_init")
                     sigma_init = fit.GetParameter(2)
                 elif initialize_sigma_from[imult][ipt] == "data":
@@ -978,9 +981,12 @@ class Analyzer:
 
                 if self.p_includesecpeaks[imult][ipt]:
                     # To init the second peak we need to know what the user has chosen to be the
-                    # initialisation for the central fit
+                    # initialisation for the central fit since from that the sec. peak width was
+                    # derived
                     sigma_sec = None
-                    if self.init_fits_from[ipt] == "data":
+                    if self.p_use_user_gauss_sigma[ipt] is True:
+                        sigma_sec = self.p_sigmaarray[ipt] * self.p_widthsecpeak
+                    elif self.init_fits_from[ipt] == "data":
                         fit = file_fits.GetDirectory(suffix).Get("fitter_data_init")
                         sigma_sec = fit.GetSigma() * self.p_widthsecpeak
                     else:
