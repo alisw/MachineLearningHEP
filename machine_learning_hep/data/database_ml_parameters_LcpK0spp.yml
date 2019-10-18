@@ -75,11 +75,11 @@ LcpK0spp:
                    [signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,
                    imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0],
                    [signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,
-                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0],
+                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star],
                    [signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,
-                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0],
+                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star],
                    [signd0, dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,
-                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0]]
+                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star]]
     var_boundaries: [cos_t_star, pt_cand]
     var_correlation:
       - [cos_t_star]
@@ -324,7 +324,7 @@ LcpK0spp:
     probcutpresel:
       data: [0.3,0.3,0.3,0.3,0.3] #list of nbins
       mc: [0.3,0.3,0.3,0.3,0.3] #list of nbins
-    probcutoptimal: [0.4,0.4,0.4,0.3,0.3] #list of nbins
+    probcutoptimal: [0.5,0.5,0.5,0.5,0.5] #list of nbins
 
   analysis:
     indexhptspectrum: 5 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
@@ -340,8 +340,9 @@ LcpK0spp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
-      sel_binmin2:  [0,1,10,30,60] #list of var2 splittng nbins
-      sel_binmax2: [9999,10,30,60,100] #list of var2 splitting nbins
+      corrEffMult: true
+      sel_binmin2:  [0,1,10,30] #list of var2 splittng nbins
+      sel_binmax2: [9999,10,30,60] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
       var_binning2_gen: n_tracklets_corr
       triggerbit: INT7
@@ -378,8 +379,13 @@ LcpK0spp:
       massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
       massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
       rebin: [6,6,6,6,6,6]
-      includesecpeak: Null #[0,0,0,0,0,0,0,0]
+      
+      includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
       masssecpeak: 2.2864
+      fix_masssecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      widthsecpeak: 0.01
+      fix_widthsecpeak: true
+      
       # Fix mean and/or sigma
       FixedMean: false
       SetFixGaussianSigma: [true,true,true,true,true,true]
@@ -421,6 +427,7 @@ LcpK0spp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
+      corrEffMult: true
       sel_binmin2:  [0,1,200,600] #list of var2 splittng nbins
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
       var_binning2: v0m_corr
@@ -458,8 +465,13 @@ LcpK0spp:
       massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
       massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
       rebin: [6,6,6,6,6,6]
-      includesecpeak: Null #[0,0,0,0,0,0,0,0]
+      
+      includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
       masssecpeak: 2.2864
+      fix_masssecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      widthsecpeak: 0.01
+      fix_widthsecpeak: true
+      
       # Fix mean and/or sigma
       FixedMean: False
       SetFixGaussianSigma: [true,true,true,true,true,true]
@@ -490,6 +502,7 @@ LcpK0spp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
+      corrEffMult: true
       sel_binmin2:  [0,30,0.1,0.] #list of var2 splittng nbins
       sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m
@@ -528,8 +541,13 @@ LcpK0spp:
       massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
       massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
       rebin: [6,6,6,6,6,6]
-      includesecpeak: Null #[0,0,0,0,0,0,0,0]
+      
+      includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
       masssecpeak: 2.2864
+      fix_masssecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      widthsecpeak: 0.01
+      fix_widthsecpeak: true
+      
       # Fix mean and/or sigma
       FixedMean: False
       SetFixGaussianSigma: [true,true,true,true,true,true]
@@ -560,6 +578,7 @@ LcpK0spp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
+      corrEffMult: true
       sel_binmin2: [5] #list of nbins
       sel_binmax2: [15] #list of nbins
       var_binning2: pt_jet
@@ -597,8 +616,13 @@ LcpK0spp:
       massmin: [2.14,2.14,2.14,2.14,2.14]
       massmax: [2.436,2.436,2.436,2.436,2.436]
       rebin: [6,6,6,6,6]
-      includesecpeak: Null #[0,0,0,0,0]
+      
+      includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
       masssecpeak: 2.2864
+      fix_masssecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      widthsecpeak: 0.01
+      fix_widthsecpeak: true
+      
       # Fix mean and/or sigma
       FixedMean: False
       SetFixGaussianSigma: [true,true,true,true,true]
@@ -629,6 +653,7 @@ LcpK0spp:
       usesinglebineff: 2
       fprompt_from_mb: true
       corresp_mb_typean: MBvspt_ntrkl
+      corrEffMult: true
       sel_binmin2:  [0,1,10,30,60] #list of var2 splittng nbins
       sel_binmax2: [9999,10,30,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
@@ -667,8 +692,13 @@ LcpK0spp:
       massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
       massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
       rebin: [6,6,6,6,6,6]
-      includesecpeak: Null #[0,0,0,0,0,0,0,0]
+      
+      includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
       masssecpeak: 2.2864
+      fix_masssecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      widthsecpeak: 0.01
+      fix_widthsecpeak: true
+      
       # Fix mean and/or sigma
       FixedMean: False
       SetFixGaussianSigma: [true,true,true,true,true,true]
@@ -699,6 +729,7 @@ LcpK0spp:
       usesinglebineff: 2
       fprompt_from_mb: true
       corresp_mb_typean: MBvspt_v0m
+      corrEffMult: true
       sel_binmin2:  [0,1,200,600] #list of var2 splittng nbins
       sel_binmax2: [9999,200,600,1000] #list of var2 splitting nbins
       var_binning2: v0m_corr
@@ -736,8 +767,13 @@ LcpK0spp:
       massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
       massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
       rebin: [6,6,6,6,6,6]
-      includesecpeak: Null #[0,0,0,0,0,0,0,0]
+      
+      includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
       masssecpeak: 2.2864
+      fix_masssecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      widthsecpeak: 0.01
+      fix_widthsecpeak: true
+      
       # Fix mean and/or sigma
       FixedMean: False
       SetFixGaussianSigma: [true,true,true,true,true,true]
@@ -768,6 +804,7 @@ LcpK0spp:
       usesinglebineff: 2
       fprompt_from_mb: true
       corresp_mb_typean: MBvspt_perc
+      corrEffMult: true
       sel_binmin2:  [0,30,0.1,0.] #list of var2 splittng nbins
       sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m
@@ -806,8 +843,13 @@ LcpK0spp:
       massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
       massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
       rebin: [6,6,6,6,6,6]
-      includesecpeak: Null #[0,0,0,0,0,0,0,0]
+      
+      includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
       masssecpeak: 2.2864
+      fix_masssecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      widthsecpeak: 0.01
+      fix_widthsecpeak: true
+      
       # Fix mean and/or sigma
       FixedMean: False
       SetFixGaussianSigma: [true,true,true,true,true,true]
@@ -837,9 +879,17 @@ LcpK0spp:
       ncutvar: 10 #number of looser and tighter variations
       maxperccutvar: 0.25 #max diff in efficiency for loosest/tightest var
       cutvarminrange: [0.30, 0.30, 0.30, 0.30, 0.30] #Min starting point for scan
-      cutvarmaxrange: [0.90, 0.90, 0.90, 0.90, 0.90] #Max starting point for scan
+      cutvarmaxrange: [0.80, 0.80, 0.80, 0.80, 0.80] #Max starting point for scan
       fixedmean: True #Fix mean cutvar histo to central fit
       fixedsigma: True #Fix sigma cutvar histo to central fit
+    mcptshape:
+      #FONLL / generated LHC19h4c1
+      weights: [1.000000]
+      #From SetPtWeightsFromFONLL13overLHC17c3a12 in AliPhysics
+      #weights: [1.429770]
+      weights_min_pt: 0
+      weights_max_pt: 40
+      weights_bins: 400
 
   validation:
     runlisttrigger: 
