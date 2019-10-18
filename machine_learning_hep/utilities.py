@@ -15,6 +15,7 @@
 """
 main script for doing data processing, machine learning and analysis
 """
+from array import array
 import multiprocessing as mp
 from datetime import datetime
 import pickle
@@ -28,9 +29,11 @@ import pandas as pd
 import lz4
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
 # pylint: disable=import-error, no-name-in-module
-from ROOT import TH1F, TH2F, TFile, TH1
+from ROOT import TH1F, TH2F, TFile, TH1, TGraphAsymmErrors
 from ROOT import TPad, TCanvas, TLegend, kBlack, kGreen, kRed, kBlue, kWhite
 from machine_learning_hep.selectionutils import select_runs
+from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
+from machine_learning_hep.logger import get_logger
 def openfile(filename, attr):
     if filename.lower().endswith('.bz2'):
         return bz2.BZ2File(filename, attr)
@@ -274,6 +277,7 @@ def find_axes_limits(histos, use_log_y=False):
 
     return min_x, max_x, min_y, max_y
 
+
 def style_histograms(histos, linestyles=None, markerstyles=None, colors=None, linewidths=None,
                      fillstyles=None, fillcolors=None):
     """
@@ -452,3 +456,142 @@ def parallelizer(function, argument_list, maxperchunk, max_n_procs=2):
 
 def get_timestamp_string():
     return datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+
+class Errors:
+    """
+    Errors corresponding to one histogram
+    Relative errors are assumed
+    """
+    def __init__(self, n_bins):
+        # A dictionary of lists, lists will contain 4-tuples
+        self.errors = {}
+        # Number of errors per bin
+        self.n_bins = n_bins
+        # The logger...
+        self.logger = get_logger()
+
+    @staticmethod
+    def make_symm_y_errors(*args):
+        return [[0, 0, a, a] for a in args]
+
+    @staticmethod
+    def make_asymm_y_errors(*args):
+        if len(args) % 2 != 0:
+            get_logger().fatal("Need an even number ==> ((low, up) * n_central) of errors")
+        return [[0, 0, args[i], args[i+1]] for i in range(0, len(args), 2)]
+
+
+    @staticmethod
+    def make_root_asymm(histo_central, error_list, **kwargs):
+        """
+        This takes a list of 4-tuples and a central histogram assumed to have number of bins
+        corresponding to length of error_list
+        """
+        n_bins = histo_central.GetNbinsX()
+        if n_bins != len(error_list):
+            get_logger().fatal("Number of bins and number of errors mismatch, %i vs. %i",
+                               n_bins, len(error_list))
+        rel_x = kwargs.get("rel_x", True)
+        rel_y = kwargs.get("rel_y", True)
+        const_x_err = kwargs.get("const_x_err", None)
+        const_y_err = kwargs.get("const_y_err", None)
+
+        x_low = None
+        x_up = None
+        y_low = None
+        y_up = None
+        # Make x up and down
+        if const_x_err is not None:
+            x_up = array("d", [const_x_err] * n_bins)
+            x_low = array("d", [const_x_err] * n_bins)
+        elif rel_x is True:
+            x_up = array("d", [err[1] * histo_central.GetBinCenter(b + 1) \
+                    for b, err in enumerate(error_list)])
+            x_low = array("d", [err[0] * histo_central.GetBinCenter(b + 1) \
+                    for b, err in enumerate(error_list)])
+        else:
+            x_up = array("d", [err[1] for err in error_list])
+            x_low = array("d", [err[0] for err in error_list])
+
+        # Make y up and down
+        if const_y_err is not None:
+            y_up = array("d", [const_y_err] * n_bins)
+            y_low = array("d", [const_y_err] * n_bins)
+        elif rel_y is True:
+            y_up = array("d", [err[3] * histo_central.GetBinContent(b + 1) \
+                    for b, err in enumerate(error_list)])
+            y_low = array("d", [err[2] * histo_central.GetBinContent(b + 1) \
+                    for b, err in enumerate(error_list)])
+        else:
+            y_up = array("d", [err[3] for err in error_list])
+            y_low = array("d", [err[2] for err in error_list])
+
+        bin_centers = array("d", [histo_central.GetBinCenter(b + 1) for b in range(n_bins)])
+        bin_contents = array("d", [histo_central.GetBinContent(b + 1) for b in range(n_bins)])
+
+        return TGraphAsymmErrors(n_bins, bin_centers, bin_contents, x_low, x_up, y_low, y_up)
+
+    @staticmethod
+    def make_root_asymm_dummy(histo_central):
+        n_bins = histo_central.GetNbinsX()
+        bin_centers = array("d", [histo_central.GetBinCenter(b + 1) for b in range(n_bins)])
+        bin_contents = array("d", [histo_central.GetBinContent(b + 1) for b in range(n_bins)])
+        y_up = array("d", [0.] * n_bins)
+        y_low = array("d", [0.] * n_bins)
+        x_up = array("d", [0.] * n_bins)
+        x_low = array("d", [0.] * n_bins)
+
+        return TGraphAsymmErrors(n_bins, bin_centers, bin_contents, x_low, x_up, y_low, y_up)
+
+    def add_errors(self, name, err_list):
+        """
+        err_list assumed to be a list of 4-tuples
+        """
+        if name in self.errors:
+            self.logger.fatal("Error %s already registered", name)
+        if len(err_list) != self.n_bins:
+            self.logger.fatal("%i errors required, you want to push %i", self.n_bins, len(err_list))
+
+        self.errors[name] = err_list.copy()
+
+    def read(self, yaml_errors):
+        """
+        Read everything from YAML
+        """
+        error_dict = parse_yaml(yaml_errors)
+        for name, errors in error_dict.items():
+            self.add_errors(name, errors)
+
+    def write(self, yaml_path):
+        """
+        Write everything from YAML
+        """
+        dump_yaml_from_dict(self.errors, yaml_path)
+
+    def define_correlations(self):
+        """
+        Not yet defined
+        """
+        self.logger.warning("Function \"define_correlations\' not yet defined")
+
+    def divide(self):
+        """
+        Not yet defined
+        """
+        self.logger.warning("Function \"divide\" not yet defined")
+
+    def get_total(self):
+        """
+        Returns a list of total errors
+        For now only add in quadrature and take sqrt
+        """
+        tot_list = [[0., 0., 0., 0.] for _ in range(self.n_bins)]
+        for errors in self.errors.values():
+            for i in range(self.n_bins):
+                for nb in range(len(tot_list[i])):
+                    tot_list[i][nb] += (errors[i][nb] * errors[i][nb])
+        for errs in tot_list:
+            for err in errs:
+                err = math.sqrt(err)
+        return tot_list
