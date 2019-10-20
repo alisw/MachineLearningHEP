@@ -21,10 +21,11 @@ import yaml
 from ROOT import TFile, gStyle, gROOT, TH1F, TGraphAsymmErrors, TH1
 from ROOT import kBlue, kAzure, kOrange, kGreen, kBlack, kRed, kWhite
 from machine_learning_hep.utilities import plot_histograms, Errors
-
+from machine_learning_hep.utilities import calc_systematic_multovermb
+from machine_learning_hep.utilities import divide_all_by_first_multovermb
 
 def results(histos_central, systematics, title, legend_titles, x_label, y_label,
-            save_path, **kwargs):
+            save_path, ratio, **kwargs):
 
     if len(histos_central) != len(systematics):
         print(f"Number of systematics {len(systematics)} differs from number of " \
@@ -47,10 +48,16 @@ def results(histos_central, systematics, title, legend_titles, x_label, y_label,
     draw_options = ["E2"] * len(histos_central) + [""] * len(histos_central)
     legend_titles = [None] * len(histos_central) + legend_titles
 
-    plot_histograms([*systematics, *histos_central], True, False, legend_titles, title,
-                    x_label, y_label, "", save_path, linesytles=[1], markerstyles=markerstyles,
-                    colors=colors, linewidths=[1], draw_options=draw_options,
-                    fillstyles=[0])
+    if ratio is False:
+        plot_histograms([*systematics, *histos_central], True, False, legend_titles, title,
+                        x_label, y_label, "", save_path, linesytles=[1], markerstyles=markerstyles,
+                        colors=colors, linewidths=[1], draw_options=draw_options,
+                        fillstyles=[0])
+    else:
+        plot_histograms([*systematics, *histos_central], False, [False, True, [0, 2.5]],
+                        legend_titles, title, x_label, y_label, "", save_path, linesytles=[1],
+                        markerstyles=markerstyles, colors=colors, linewidths=[1],
+                        draw_options=draw_options, fillstyles=[0])
 
 def get_param(case):
     with open("data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
@@ -60,8 +67,7 @@ def get_param(case):
 def extract_histo_or_error(case, ana_type, mult_bin, period_number, histo_name):
     data_param = get_param(case)
     filepath = data_param[case]["analysis"][ana_type]["data"]["resultsallp"]
-    if period_number < 0:
-        period_number = -1
+    if period_number >= 0:
         filepath = data_param[case]["analysis"][ana_type]["data"]["results"][period_number]
 
     path = f"{filepath}/finalcross{case}{ana_type}mult{mult_bin}.root"
@@ -88,16 +94,21 @@ ANA_MB = "MBvspt_ntrkl"
 ANA_HM = "SPDvspt"
 YEAR_NUMBER = -1 # -1 refers to all years merged
 
-LEGEND_TITLES = ["0 < n_{trkl} < #infty (MB)", "1 < n_{trkl} < 9 (MB)", "10 < n_{trkl} < 29 (MB)",
-                 "30 < n_{trkl} < 59 (MB)"]
+LEGEND_TITLES = ["#kern[1]{0} #kern[-0.05]{#leq} #it{N}_{tracklets} < #infty (MB)",
+                 "#kern[1.6]{1} #kern[0.3]{#leq} #it{N}_{tracklets} < 9 (MB)",
+                 "10 #leq #it{N}_{tracklets} < 29 (MB)", "30 #leq #it{N}_{tracklets} < 59 (MB)"]
+LEGEND_TITLES2 = ["#kern[1.6]{1} #kern[0.3]{#leq} #it{N}_{tracklets} < 9 (MB)",
+                  "10 #leq #it{N}_{tracklets} < 29 (MB)", "30 #leq #it{N}_{tracklets} < 59 (MB)"]
 
 COLORS = [kBlue, kGreen + 2, kRed - 2, kAzure + 3]
+COLORS2 = [kGreen + 2, kRed - 2, kAzure + 3]
 
 # Get the ML histogram of the particle case and analysis type
 # Everything available in the HFPtSpetrum can be requested
 # From MB
 HISTOS = []
 ERRS = []
+ERRS_GR = []
 ERROR_FILES = ["data/errors/Dspp/MBvspt_ntrkl/errors_histoSigmaCorr_0.yaml",
                "data/errors/Dspp/MBvspt_ntrkl/errors_histoSigmaCorr_1.yaml",
                "data/errors/Dspp/MBvspt_ntrkl/errors_histoSigmaCorr_2.yaml",
@@ -109,9 +120,20 @@ for mb in range(4):
     histo_.SetName(f"{histo_.GetName()}_{mb}")
     HISTOS.append(histo_)
 
+    DICTNB = {}
+    GRFD = extract_histo_or_error(CASE, ANA_MB, mb, YEAR_NUMBER, "gFcConservative")
+    ERRORNB = []
+    EYHIGH = GRFD.GetEYhigh()
+    EYLOW = GRFD.GetEYlow()
+    for i in range(histo_.GetNbinsX()):
+        ERRORNB.append([0, 0, EYLOW[i+1], EYHIGH[i+1]])
+    DICTNB["feeddown_NB"] = ERRORNB
+
     errs = Errors(histo_.GetNbinsX())
-    errs.read(ERROR_FILES[mb])
-    ERRS.append(Errors.make_root_asymm(histo_, errs.get_total(), const_x_err=0.3))
+    errs.read(ERROR_FILES[mb], DICTNB)
+    ERRS.append(errs)
+    ERRS_GR.append(Errors.make_root_asymm(histo_, errs.get_total(), const_x_err=0.3))
+    ERRS_GR[mb].SetName("%s%d" % (ERRS_GR[mb].GetName(), mb))
 
 # Save globally in Ds directory
 SAVE_PATH = make_standard_save_path(CASE, f"histoSigmaCorr_all_years_{ANA_MB}_MB")
@@ -121,15 +143,16 @@ SAVE_PATH = make_standard_save_path(CASE, f"histoSigmaCorr_all_years_{ANA_MB}_MB
 # be added to the list the user has defined here.
 # The list of error objects can contain None and in the end have the same length as number
 # of histograms
-results(HISTOS, ERRS, "", LEGEND_TITLES, "#it{p}_{T} (GeV/#it{c})",
-        "#sigma (D_{s}) #times BR(D_{s} #rightarrow KK#pi)", SAVE_PATH, colors=COLORS)
+results(HISTOS, ERRS_GR, "", LEGEND_TITLES, "#it{p}_{T} (GeV/#it{c})",
+        "d^{2}#sigma/(d#it{p}_{T}d#it{y}) #times BR(D_{s}^{+} #rightarrow #phi#pi #rightarrow KK#pi) (#mub GeV^{-1} #it{c})",
+        SAVE_PATH, False, colors=COLORS)
 
 
 #############################################################################
 ##################### NOW ADD HM AND DO ANOTHER PLOT  #######################
 #############################################################################
 
-LEGEND_TITLES.append("60 < n_{trkl} < 99 (HM)")
+LEGEND_TITLES.append("60 #leq #it{N}_{tracklets} < 99 (HM)")
 
 COLORS.append(kOrange + 7)
 
@@ -138,13 +161,53 @@ COLORS.append(kOrange + 7)
 HISTO_HM = extract_histo_or_error(CASE, ANA_HM, 4, YEAR_NUMBER, "histoSigmaCorr")
 HISTO_HM.SetName(f"{HISTO_HM.GetName()}_4")
 HISTOS.append(HISTO_HM)
+
+DICTNB = {}
+GRFD = extract_histo_or_error(CASE, ANA_MB, 4, YEAR_NUMBER, "gFcConservative")
+ERRORNB = []
+EYHIGH = GRFD.GetEYhigh()
+EYLOW = GRFD.GetEYlow()
+for i in range(HISTO_HM.GetNbinsX()):
+    ERRORNB.append([0, 0, EYLOW[i+1], EYHIGH[i+1]])
+DICTNB["feeddown_NB"] = ERRORNB
+
 ERRS_HM = Errors(HISTO_HM.GetNbinsX())
-ERRS_HM.read(ERROR_FILES[4])
-ERRS.append(Errors.make_root_asymm(HISTO_HM, ERRS_HM.get_total(), const_x_err=0.3))
+ERRS_HM.read(ERROR_FILES[4], DICTNB)
+ERRS_GR.append(Errors.make_root_asymm(HISTO_HM, ERRS_HM.get_total_for_spectra_plot(), \
+               const_x_err=0.3))
+ERRS_GR[4].SetName("%s%d" % (ERRS_GR[4].GetName(), 4))
 
 # Save globally in Ds directory
 SAVE_PATH = make_standard_save_path(CASE, f"histoSigmaCorr_all_years_MB_{ANA_MB}_HM_{ANA_HM}")
 
-results(HISTOS, ERRS, "", LEGEND_TITLES, "#it{p}_{T} (GeV/#it{c})",
-        "#sigma (D_{s}) #times BR(D_{s} #rightarrow KK#pi)",
-        SAVE_PATH, colors=COLORS)
+results(HISTOS, ERRS_GR, "", LEGEND_TITLES, "#it{p}_{T} (GeV/#it{c})",
+        "d^{2}#sigma/(d#it{p}_{T}d#it{y}) #times BR(D_{s}^{+} #rightarrow #phi#pi #rightarrow KK#pi) (#mub GeV^{-1} #it{c})",
+        SAVE_PATH, False, colors=COLORS)
+
+
+#############################################################################
+##################### Plot spectra mult / spectra MB ########################
+#############################################################################
+
+#Divide by MB
+HISTOS_DIV = divide_all_by_first_multovermb(HISTOS)
+#Remove HM one
+HISTOS_DIVMB = HISTOS_DIV[:-1]
+#Remove MB one
+HISTOS_DIVMB = HISTOS_DIVMB[1:]
+ERRS_GR_DIV = []
+for mb, _ in enumerate(HISTOS_DIVMB):
+    tot_mult_over_MB = calc_systematic_multovermb(ERRS[mb+1], ERRS[0], HISTOS[0].GetNbinsX())
+    ERRS_GR_DIV.append(Errors.make_root_asymm(HISTOS_DIVMB[mb], tot_mult_over_MB, const_x_err=0.3))
+    ERRS_GR_DIV[mb].SetName("%s%d" % (ERRS_GR_DIV[mb].GetName(), mb+1))
+
+# Save globally in Ds directory
+SAVE_PATH = make_standard_save_path(CASE, f"histoSigmaCorr_MultOverMB_all_years_{ANA_MB}_MB")
+
+# As done here one can add an additional TGraphAsymmErrors per histogram. Those values will
+# be added to the list the user has defined here.
+# The list of error objects can contain None and in the end have the same length as number
+# of histograms
+results(HISTOS_DIVMB, ERRS_GR_DIV, "", LEGEND_TITLES2, "#it{p}_{T} (GeV/#it{c})",
+        "Ratio to (d^{2}#sigma/(d#it{p}_{T}d#it{y})) mult. int.",
+        SAVE_PATH, True, colors=COLORS2)

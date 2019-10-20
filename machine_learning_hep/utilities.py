@@ -320,9 +320,36 @@ def divide_all_by_first(histos):
     for h in histos:
         histos_ratio.append(h.Clone(f"{h.GetName()}_ratio"))
         histos_ratio[-1].Divide(histos[0])
+
     return histos_ratio
 
-def put_in_pad(pad, use_log_y, histos, title="", x_label="", y_label="", **kwargs):
+def divide_all_by_first_multovermb(histos):
+    """
+    Divides all histograms in the list by the first one in the list and returns the
+    divided histograms in the same order
+    """
+
+    for h in histos:
+        h.Scale(1./h.Integral())
+
+    histos_ratio = []
+    err = []
+    for h in histos:
+        histos_ratio.append(h.Clone(f"{h.GetName()}_ratio"))
+
+        stat = []
+        for j in range(h.GetNbinsX()):
+            stat.append(h.GetBinError(j+1) / h.GetBinContent(j+1))
+        err.append(stat)
+        histos_ratio[-1].Divide(histos[0])
+
+        for j in range(h.GetNbinsX()):
+            statunc = math.sqrt(abs(err[-1][j] * err[-1][j] - err[0][j] * err[0][j]))
+            histos_ratio[-1].SetBinError(j+1, histos_ratio[-1].GetBinContent(j+1) * statunc)
+
+    return histos_ratio
+
+def put_in_pad(pad, use_log_y, histos, title="", x_label="", y_label="", yrange=None, **kwargs):
     """
     Providing a TPad this plots all given histograms in that pad adjusting the X- and Y-ranges
     accordingly.
@@ -334,7 +361,9 @@ def put_in_pad(pad, use_log_y, histos, title="", x_label="", y_label="", **kwarg
     pad.SetLogy(use_log_y)
     pad.cd()
     scale_frame_y = (0.01, 100.) if use_log_y else (0.7, 1.2)
-    frame = pad.DrawFrame(min_x, min_y * scale_frame_y[0], max_x, max_y * scale_frame_y[1],
+    if yrange is None:
+        yrange = [min_y * scale_frame_y[0], max_y * scale_frame_y[1]]
+    frame = pad.DrawFrame(min_x, yrange[0], max_x, yrange[1],
                           f"{title};{x_label};{y_label}")
     frame.GetYaxis().SetTitleOffset(1.2)
     pad.SetTicks()
@@ -343,11 +372,22 @@ def put_in_pad(pad, use_log_y, histos, title="", x_label="", y_label="", **kwarg
     for h, o in zip(histos, draw_options):
         h.Draw(f"same {o}")
 
-def plot_histograms(histos, use_log_y=False, ratio=False, legend_titles=None, title="", x_label="",
+#pylint: disable=too-many-statements
+def plot_histograms(histos, use_log_y=False, ratio_=False, legend_titles=None, title="", x_label="",
                     y_label_up="", y_label_ratio="", save_path="./plot.eps", **kwargs):
     """
     Throws all given histograms into one canvas. If desired, a ratio plot will be added.
     """
+    justratioplot = False
+    yrange = None
+    if isinstance(ratio_, list):
+        ratio = ratio_[0]
+        justratioplot = ratio_[1]
+        yrange = ratio_[2]
+    else:
+        justratioplot = ratio_
+        ratio = ratio_
+
     linestyles = kwargs.get("linestyles", None)
     markerstyles = kwargs.get("markerstyles", None)
     colors = kwargs.get("colors", None)
@@ -368,12 +408,15 @@ def plot_histograms(histos, use_log_y=False, ratio=False, legend_titles=None, ti
 
     x_label_up_tmp = x_label if not ratio else ""
     put_in_pad(pad_up, use_log_y, histos, title, x_label_up_tmp, y_label_up,
-               draw_options=draw_options)
+               yrange, draw_options=draw_options)
 
     pad_up.cd()
     legend = None
     if legend_titles is not None:
-        legend = TLegend(.45, .65, .85, .85)
+        if justratioplot:
+            legend = TLegend(.2, .65, .6, .85)
+        else:
+            legend = TLegend(.45, .65, .85, .85)
         legend.SetBorderSize(0)
         legend.SetFillColor(0)
         legend.SetFillStyle(0)
@@ -388,7 +431,7 @@ def plot_histograms(histos, use_log_y=False, ratio=False, legend_titles=None, ti
     pad_ratio = None
     histos_ratio = None
 
-    if ratio:
+    if ratio and justratioplot is False:
         histos_ratio = divide_all_by_first(histos)
         pad_ratio = TPad("pad_ratio", "", 0., 0.05, 1., pad_up_start)
         pad_ratio.SetTopMargin(0.)
@@ -410,6 +453,52 @@ def plot_histograms(histos, use_log_y=False, ratio=False, legend_titles=None, ti
     root_file.Close()
 
     canvas.Close()
+
+def calc_systematic_multovermb(errnum_list, errden_list, n_bins):
+    """
+    Returns a list of total errors taking into account the defined correlations
+    Propagation uncertainties defined for Ds(mult) / Ds(MB). Check if applicable to your situation
+    """
+    tot_list = [[0., 0., 0., 0.] for _ in range(n_bins)]
+    if n_bins != len(list(errnum_list.errors.values())[0]) or \
+     n_bins != len(list(errden_list.errors.values())[0]):
+        get_logger().fatal("Number of bins and number of errors mismatch, %i vs. %i vs. %i", \
+                            n_bins, len(errnum_list.errors[0]), len(errden_list.errors[0]))
+
+    j = 0
+    for (_, errnum), (_, errden) in zip(errnum_list.errors.items(), errden_list.errors.items()):
+        for i in range(n_bins):
+            if errnum_list.names[j] != errden_list.names[j]:
+                get_logger().fatal("Names not in same order: %s vs %s", \
+                                   errnum.names[j], errden.names[j])
+            for nb in range(len(tot_list[i])):
+                if errnum_list.names[j] == "yield" or errnum_list.names[j] == "cut":
+                    #Partially correlated, take largest
+                    tot_list[i][nb] += max(errnum[i][nb], errden[i][nb]) \
+                                        * max(errnum[i][nb], errden[i][nb])
+                elif errnum_list.names[j] == "feeddown_mult" or \
+                 errnum_list.names[j] == "trigger" or \
+                 errnum_list.names[j] == "multiplicity_interval":
+                    #Assign directly from multiplicity case, no syst for MB
+                    #FD: estimated using 7TeV strategy directly for ratio
+                    #NB: At one point the strategy for spectra and Ds(mult)/Ds(MB) will change,
+                    #    then there should be two keys
+                    tot_list[i][nb] += errnum[i][nb] * errnum[i][nb]
+                elif errnum_list.names[j] == "multiplicity_weights":
+                    #Uncorrelated
+                    tot_list[i][nb] += errnum[i][nb] * errnum[i][nb] + errden[i][nb] * errden[i][nb]
+                elif errnum_list.names[j] == "track" or errnum_list.names[j] == "ptshape" \
+                 or errnum_list.names[j] == "feeddown_NB":
+                    #Correlated, do nothing
+                    pass
+                elif errnum_list.names[j] == "sigmav0" or errnum_list.names[j] == "branching_ratio":
+                    #Correlated and usually not plotted in boxes, do nothing
+                    pass
+                else:
+                    get_logger().fatal("Unknown systematic name: %s", errnum_list.names[j])
+        j = j + 1
+    tot_list = np.sqrt(tot_list)
+    return tot_list
 
 def make_latex_table(column_names, row_names, rows, caption=None, save_path="./table.tex"):
     caption = caption if caption is not None else "Caption"
@@ -468,6 +557,8 @@ class Errors:
         self.errors = {}
         # Number of errors per bin
         self.n_bins = n_bins
+        # Names of systematic in order as they appear in self.errors
+        self.names = {}
         # The logger...
         self.logger = get_logger()
 
@@ -555,13 +646,20 @@ class Errors:
 
         self.errors[name] = err_list.copy()
 
-    def read(self, yaml_errors):
+    def read(self, yaml_errors, extra_errors=None):
         """
         Read everything from YAML
         """
         error_dict = parse_yaml(yaml_errors)
         for name, errors in error_dict.items():
-            self.add_errors(name, errors)
+            if name == "names":
+                self.names = errors.copy()
+            else:
+                self.add_errors(name, errors)
+        if extra_errors is not None:
+            self.errors.update(extra_errors)
+            for key in extra_errors:
+                self.names.append(key)
 
     def write(self, yaml_path):
         """
@@ -587,11 +685,23 @@ class Errors:
         For now only add in quadrature and take sqrt
         """
         tot_list = [[0., 0., 0., 0.] for _ in range(self.n_bins)]
-        for errors in self.errors.values():
+        for _, errors in enumerate(self.errors.values()):
             for i in range(self.n_bins):
                 for nb in range(len(tot_list[i])):
                     tot_list[i][nb] += (errors[i][nb] * errors[i][nb])
-        for errs in tot_list:
-            for err in errs:
-                err = math.sqrt(err)
+        tot_list = np.sqrt(tot_list)
+        return tot_list
+
+    def get_total_for_spectra_plot(self):
+        """
+        Returns a list of total errors
+        For now only add in quadrature and take sqrt
+        """
+        tot_list = [[0., 0., 0., 0.] for _ in range(self.n_bins)]
+        for j, errors in enumerate(self.errors.values()):
+            for i in range(self.n_bins):
+                for nb in range(len(tot_list[i])):
+                    if self.names[j] != "branching_ratio" or self.names[j] != "sigmav0":
+                        tot_list[i][nb] += (errors[i][nb] * errors[i][nb])
+        tot_list = np.sqrt(tot_list)
         return tot_list
