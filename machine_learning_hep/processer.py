@@ -205,23 +205,23 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.lvar2_binmax = datap["analysis"][self.typean]["sel_binmax2"]
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
 
-        self.lvar2_binmin_reco = datap["analysis"][self.typean]["sel_binmin2_reco"]
-        self.lvar2_binmax_reco = datap["analysis"][self.typean]["sel_binmax2_reco"]
+        self.lvar2_binmin_reco = datap["analysis"][self.typean].get("sel_binmin2_reco", None)
+        self.lvar2_binmax_reco = datap["analysis"][self.typean].get("sel_binmax2_reco", None)
         self.p_nbin2_reco = len(self.lvar2_binmin_reco)
 
-        self.lvar2_binmin_gen = datap["analysis"][self.typean]["sel_binmin2_gen"]
-        self.lvar2_binmax_gen = datap["analysis"][self.typean]["sel_binmax2_gen"]
+        self.lvar2_binmin_gen = datap["analysis"][self.typean].get("sel_binmin2_gen", None)
+        self.lvar2_binmax_gen = datap["analysis"][self.typean].get("sel_binmax2_gen", None)
         self.p_nbin2_gen = len(self.lvar2_binmin_gen)
 
-        self.lvarshape_binmin_reco = datap["analysis"][self.typean]["sel_binminshape_reco"]
-        self.lvarshape_binmax_reco = datap["analysis"][self.typean]["sel_binmaxshape_reco"]
+        self.lvarshape_binmin_reco = datap["analysis"][self.typean].get("sel_binminshape_reco", None)
+        self.lvarshape_binmax_reco = datap["analysis"][self.typean].get("sel_binmaxshape_reco", None)
         self.p_nbinshape_reco = len(self.lvarshape_binmin_reco)
 
-        self.lvarshape_binmin_gen = datap["analysis"][self.typean]["sel_binminshape_gen"]
-        self.lvarshape_binmax_gen = datap["analysis"][self.typean]["sel_binmaxshape_gen"]
+        self.lvarshape_binmin_gen = datap["analysis"][self.typean].get("sel_binminshape_gen", None)
+        self.lvarshape_binmax_gen = datap["analysis"][self.typean].get("sel_binmaxshape_gen", None)
         self.p_nbinshape_gen = len(self.lvarshape_binmin_gen)
         
-        self.closure_frac = datap["analysis"][self.typean]["sel_closure_frac"]
+        self.closure_frac = datap["analysis"][self.typean].get("sel_closure_frac", None)
 
         self.var2ranges = self.lvar2_binmin.copy()
         self.var2ranges.append(self.lvar2_binmax[-1])
@@ -442,7 +442,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 if "pt_jet" in df_bin.columns:
                     zarray = z_calc(df_bin.pt_jet, df_bin.phi_jet, df_bin.eta_jet,
                                     df_bin.pt_cand, df_bin.phi_jet, df_bin.eta_jet)
-                    h_zvsinvmass = TH2F("hzvsmass" + suffix, "", 5000, 1.00, 6.00, self.p_nbinshape_reco, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
+                    h_zvsinvmass = TH2F("hzvsmass" + suffix, "", 500000, 1.00, 6.00, self.p_nbinshape_reco, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
                     h_zvsinvmass.Sumw2()
                     zvsinvmass = np.vstack((df_bin.inv_mass, zarray)).T
                     fill_hist(h_zvsinvmass, zvsinvmass)
@@ -1020,7 +1020,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 if self.doprior is True:
                     if hzvsjetpt_prior_weights.GetBinContent(hzvsjetpt_prior_weights.GetXaxis().FindBin(row.z_gen),hzvsjetpt_prior_weights.GetYaxis().FindBin(row.pt_gen_jet)) > 0.0 :
                         response_matrix_weight=1.0/hzvsjetpt_prior_weights.GetBinContent(hzvsjetpt_prior_weights.GetXaxis().FindBin(row.z_gen),hzvsjetpt_prior_weights.GetYaxis().FindBin(row.pt_gen_jet))
-                    response_matrix_closure.Fill(row.z_reco,row.pt_jet,row.z_gen,row.pt_gen_jet,response_matrix_weight)
+                response_matrix_closure.Fill(row.z_reco,row.pt_jet,row.z_gen,row.pt_gen_jet,response_matrix_weight)
 
         for ibin2 in range(len(self.lvar2_binmin_gen)):
             hz_gen_nocuts_list[ibin2].Write()

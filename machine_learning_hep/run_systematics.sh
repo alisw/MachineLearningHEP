@@ -5,7 +5,7 @@ DB_NAME_TMPL="database_ml_parameters_LcpK0spp_systematics.yml"
 #declare -a Sys=(fitting cutvar powheg)
 #declare -a NSys=(2 1 1)
 declare -a Sys=(fitting sideband cutvar powheg unfolding_prior)
-declare -a NSys=(6 3 4 1 1) #6 3 4 1 1
+declare -a NSys=(6 10 9 9 1) #6 10 9 9 1
 
 
 
@@ -27,7 +27,7 @@ for ((i=0; i<${#Sys[@]}; i++))
 	    
 	    if [ ${Sys[$i]} == "Fitting" ] && [ $j == 2 ]
 	    then
-		sed -i "s/massmax_variable/2.246/g" data/$db_name_curr
+		sed -i "s/massmax_variable/2.476/g" data/$db_name_curr
 	    else
 		sed -i "s/massmax_variable/2.436/g" data/$db_name_curr
 	    fi
@@ -52,13 +52,13 @@ for ((i=0; i<${#Sys[@]}; i++))
 	    else
 		sed -i "s/Fixed_sigma_variable/true/g" data/$db_name_curr
 	    fi
-	    
 	    if [ ${Sys[$i]} == "Fitting" ] && [ $j == 6 ]
 	    then
-		sed -i "s/masspeak_variable/2.283/g" data/$db_name_curr
+		sed -i "s/bkgfunc_variable/kExpo/g" data/$db_name_curr
 	    else
-		sed -i "s/masspeak_variable/2.2864/g" data/$db_name_curr
+		sed -i "s/bkgfunc_variable/Pol2/g" data/$db_name_curr
 	    fi
+	    
 	    
 	    if [ ${Sys[$i]} == "sideband" ] && [ $j == 1 ]
 	    then
@@ -69,40 +69,125 @@ for ((i=0; i<${#Sys[@]}; i++))
 		sed -i "s/sigma_scale_variable/0.9545/g" data/$db_name_curr
 	    fi
 
-	    if [ ${Sys[$i]} == "sideband" ] && [ $j == 2 ]
+	    if [ ${Sys[$i]} == "sideband" ] 
 	    then
-		sed -i "s/sideband_sigma_2_variable/8/g" data/$db_name_curr
+		if [ $j == 2 ]
+		then
+		    sed -i "s/sideband_sigma_1_left_variable/4/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_2_left_variable/8/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_1_right_variable/4/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_2_right_variable/8/g" data/$db_name_curr
+		    
+		elif [ $j == 3 ]
+		then
+		    sed -i "s/sideband_sigma_1_left_variable/4/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_2_left_variable/6/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_1_right_variable/4/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_2_right_variable/9/g" data/$db_name_curr
+		    
+		elif [ $j == 4 ]
+		then
+		    sed -i "s/sideband_sigma_1_left_variable/4/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_2_left_variable/9/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_1_right_variable/4/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_2_right_variable/6/g" data/$db_name_curr
+		    
+	        elif [ $j == 5 ]
+		then
+		    sed -i "s/sideband_sigma_1_left_variable/5/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_2_left_variable/7/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_1_right_variable/4/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_2_right_variable/9/g" data/$db_name_curr
+		    
+		elif [ $j == 6 ]
+		then
+		    sed -i "s/sideband_sigma_1_left_variable/4/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_2_left_variable/9/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_1_right_variable/5/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_2_right_variable/7/g" data/$db_name_curr
+		elif [ $j == 7 ]
+		then
+		    sed -i "s/sideband_sigma_1_left_variable/6/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_2_left_variable/8/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_1_right_variable/4/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_2_right_variable/9/g" data/$db_name_curr
+		elif [ $j == 8 ]
+		then
+		    sed -i "s/sideband_sigma_1_left_variable/4/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_2_left_variable/9/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_1_right_variable/6/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_2_right_variable/8/g" data/$db_name_curr
+		elif [ $j == 9 ]
+		then
+		    sed -i "s/sideband_sigma_1_left_variable/7/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_2_left_variable/9/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_1_right_variable/4/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_2_right_variable/9/g" data/$db_name_curr
+		elif [ $j == 10 ]
+		then
+		    sed -i "s/sideband_sigma_1_left_variable/4/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_2_left_variable/9/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_1_right_variable/7/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_2_right_variable/9/g" data/$db_name_curr
+		else
+		    sed -i "s/sideband_sigma_1_left_variable/4/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_2_left_variable/9/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_1_right_variable/4/g" data/$db_name_curr
+		    sed -i "s/sideband_sigma_2_right_variable/9/g" data/$db_name_curr
+		fi
 	    else
-		sed -i "s/sideband_sigma_2_variable/9/g" data/$db_name_curr
+		sed -i "s/sideband_sigma_1_left_variable/4/g" data/$db_name_curr
+		sed -i "s/sideband_sigma_2_left_variable/9/g" data/$db_name_curr
+		sed -i "s/sideband_sigma_1_right_variable/4/g" data/$db_name_curr
+		sed -i "s/sideband_sigma_2_right_variable/9/g" data/$db_name_curr
 	    fi
 
-	    if [ ${Sys[$i]} == "sideband" ] && [ $j == 3 ]
-	    then
-		sed -i "s/sidebandleftonly_variable/true/g" data/$db_name_curr
-	    else
-		sed -i "s/sidebandleftonly_variable/false/g" data/$db_name_curr
-	    fi
 
 	    if [ ${Sys[$i]} == "cutvar" ] 
 	    then
 		if [ $j == 1 ]
 		then
-		    sed -i "s/probcutoptimal_variable/[0.35,0.35,0.35,0.25,0.25]/g" data/$db_name_curr
+		    sed -i "s/probcutoptimal_variable/[0.3,0.3,0.3,0.3,0.3]/g" data/$db_name_curr
 		fi
-		
+
 		if [ $j == 2 ]
 		then
-		    sed -i "s/probcutoptimal_variable/[0.45,0.45,0.45,0.35,0.35]/g" data/$db_name_curr
+		    sed -i "s/probcutoptimal_variable/[0.325,0.325,0.325,0.31,0.31]/g" data/$db_name_curr
 		fi
 		
 		if [ $j == 3 ]
 		then
-		    sed -i "s/probcutoptimal_variable/[0.35,0.35,0.45,0.35,0.35]/g" data/$db_name_curr
+		    sed -i "s/probcutoptimal_variable/[0.35,0.35,0.35,0.32,0.32]/g" data/$db_name_curr
 		fi
-		
+
 		if [ $j == 4 ]
 		then
-		    sed -i "s/probcutoptimal_variable/[0.45,0.45,0.35,0.25,0.25]/g" data/$db_name_curr
+		    sed -i "s/probcutoptimal_variable/[0.375,0.375,0.375,0.33,0.33]/g" data/$db_name_curr
+		fi
+		
+		if [ $j == 5 ]
+		then
+		    sed -i "s/probcutoptimal_variable/[0.4,0.4,0.4,0.34,0.34]/g" data/$db_name_curr
+		fi
+
+		if [ $j == 6 ]
+		then
+		    sed -i "s/probcutoptimal_variable/[0.425,0.425,0.425,0.35,0.35]/g" data/$db_name_curr
+		fi
+
+		if [ $j == 7 ]
+		then
+		    sed -i "s/probcutoptimal_variable/[0.45,0.45,0.45,0.36,0.36]/g" data/$db_name_curr
+		fi
+
+		if [ $j == 8 ]
+		then
+		    sed -i "s/probcutoptimal_variable/[0.475,0.475,0.475,0.37,0.37]/g" data/$db_name_curr
+		fi
+		
+		if [ $j == 9 ]
+		then
+		    sed -i "s/probcutoptimal_variable/[0.5,0.5,0.5,0.38,0.38]/g" data/$db_name_curr
 		fi
 	    else
 		sed -i "s/probcutoptimal_variable/[0.4,0.4,0.4,0.3,0.3]/g" data/$db_name_curr
@@ -114,7 +199,47 @@ for ((i=0; i<${#Sys[@]}; i++))
 	    then
 		if [ $j == 1 ]
 		then
-		    sed -i "s/powheg_path_nonprompt_variable/R05_F1/g" data/$db_name_curr
+		    sed -i "s/powheg_path_nonprompt_variable/F1_R05/g" data/$db_name_curr
+		fi
+
+		if [ $j == 2 ]
+		then
+		    sed -i "s/powheg_path_nonprompt_variable/F05_R1/g" data/$db_name_curr
+		fi
+		
+		if [ $j == 3 ]
+		then
+		    sed -i "s/powheg_path_nonprompt_variable/F2_R1/g" data/$db_name_curr
+		fi
+
+		if [ $j == 4 ]
+		then
+		    sed -i "s/powheg_path_nonprompt_variable/F1_R2/g" data/$db_name_curr
+		fi
+
+		if [ $j == 5 ]
+		then
+		    sed -i "s/powheg_path_nonprompt_variable/F2_R2/g" data/$db_name_curr
+		fi
+
+		if [ $j == 6 ]
+		then
+		    sed -i "s/powheg_path_nonprompt_variable/F05_R05/g" data/$db_name_curr
+		fi
+
+		if [ $j == 7 ]
+		then
+		    sed -i "s/powheg_path_nonprompt_variable/Mhigh/g" data/$db_name_curr
+		fi
+
+		if [ $j == 8 ]
+		then
+		    sed -i "s/powheg_path_nonprompt_variable/Mlow/g" data/$db_name_curr
+		fi
+
+		if [ $j == 9 ]
+		then
+		    sed -i "s/powheg_path_nonprompt_variable/NoEvtGen/g" data/$db_name_curr
 		fi
 	    else
 		sed -i "s/powheg_path_nonprompt_variable/central/g" data/$db_name_curr

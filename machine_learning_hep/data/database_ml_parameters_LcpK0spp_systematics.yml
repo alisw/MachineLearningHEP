@@ -323,7 +323,7 @@ LcpK0spp:
     probcutpresel:
       data: [0.3,0.3,0.3,0.3,0.3] #list of nbins
       mc: [0.3,0.3,0.3,0.3,0.3] #list of nbins
-    probcutoptimal: [0.4,0.4,0.4,0.3,0.3] #list of nbins
+    probcutoptimal: probcutoptimal_variable #list of nbins
 
   analysis:
     indexhptspectrum: 5 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
@@ -573,41 +573,39 @@ LcpK0spp:
         mc: "abs(eta_jet)<0.5"
         weighttrig: false
       data:
-        results: [/data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/211_20190909-2119/resultsMBjetvspt,
-                  /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/212_20190909-2119/resultsMBjetvspt,
-                  /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2017_data/210_20190909-2119/resultsMBjetvspt,
-                  /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2018_data/209_20190909-2118/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_data/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/systematics/default/sys_1/pp_2016_data/211_20190909-2119/resultsMBjetvspt,
+                  /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/systematics/default/sys_1/pp_2016_data/212_20190909-2119/resultsMBjetvspt,
+                  /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/systematics/default/sys_1/pp_2017_data/210_20190909-2119/resultsMBjetvspt,
+                  /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/systematics/default/sys_1/pp_2018_data/209_20190909-2118/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/systematics/default/sys_1/pp_data/resultsMBjetvspt
       mc:
-        results: [/data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_mc_prodLcpK0s/213_20190909-2123/resultsMBjetvspt,
-                  /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_mc_prodLcpK0s/217_20190909-2124/resultsMBjetvspt,
-                  /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2017_mc_prodLcpK0s/218_20190909-2124/resultsMBjetvspt,
-                  /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2018_mc_prodLcpK0s/219_20190909-2125/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_mc_prodLcpK0s/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/systematics/default/sys_1/pp_2016_mc_prodLcpK0s/213_20190909-2123/resultsMBjetvspt,
+                  /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/systematics/default/sys_1/pp_2016_mc_prodLcpK0s/217_20190909-2124/resultsMBjetvspt,
+                  /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/systematics/default/sys_1/pp_2017_mc_prodLcpK0s/218_20190909-2124/resultsMBjetvspt,
+                  /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/systematics/default/sys_1/pp_2018_mc_prodLcpK0s/219_20190909-2125/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/systematics/default/sys_1/pp_mc_prodLcpK0s/resultsMBjetvspt
 
       mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       usefit: true
-      signal_sigma: 2
-      sigma_scale: 0.9545
-      sideband_sigma_1_left: 4
-      sideband_sigma_2_left: 9
-      sideband_sigma_1_right: 4
-      sideband_sigma_2_right: 9
+      signal_sigma: signal_sigma_variable
+      sigma_scale: sigma_scale_variable
+      sideband_sigma_1_left: sideband_sigma_1_left_variable
+      sideband_sigma_2_left: sideband_sigma_2_left_variable
+      sideband_sigma_1_right: sideband_sigma_1_right_variable
+      sideband_sigma_2_right: sideband_sigma_2_right_variable
       sidebandleftonly: false
 
       niterunfolding : 15
       niterunfoldingchosen : 4
-      niterunfoldingregdown : 3
-      niterunfoldingregup : 7
 
       branching_ratio : 0.016
       xsection_inel : 57.8
 
-      doprior : false
+      doprior : doprior_variable
 
       powheg_path_prompt : /data/POWHEG/LckINT7HighMultwithJets/prompt/powheg_lc_charm_central.root
-      powheg_path_nonprompt : /data/POWHEG/LckINT7HighMultwithJets/nonprompt/powheg_lc_beauty_central.root
+      powheg_path_nonprompt : /data/POWHEG/LckINT7HighMultwithJets/nonprompt/powheg_lc_beauty_powheg_path_nonprompt_variable.root
 
       powheg_prompt_variations_path : /data/POWHEG/LckINT7HighMultwithJets/prompt/powheg_lc_charm_
       powheg_prompt_variations : ["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
@@ -616,26 +614,19 @@ LcpK0spp:
       pythia8_prompt_variations : ["default","coloursoft_mode0", "colourhard_mode0","colourhard_mode2"]
 
 
-      systematic_catagories: ["fitting", "sideband", "cutvar", "powheg", "unfolding_prior", "regularisation"]
-      systematic_variations: [6, 10, 9, 9, 1, 2]
-      systematic_correlation: ["corr", "corr", "corr", "corr", "corr", "corr"]
-      systematic_rms : [true,  true, true, true , true, true]
-      systematic_symmetrise : [true,  true, true, true , true, true]
-
-
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
       init_fits_from: mc # data # data or mc
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
-      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
+      bkgfunc: [bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable] 
       masspeak: 2.2864
-      massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
-      massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
-      rebin: [6,6,6,6,6,6]
+      massmin: [massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable]
+      massmax: [massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable]
+      rebin: [rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable]
       includesecpeak: Null #[0,0,0,0,0,0]
-      masssecpeak: 2.2864
+      masssecpeak: masspeak_variable
       # Fix mean and/or sigma
-      FixedMean: False
+      FixedMean: FixedMean_variable
       SetFixGaussianSigma: true
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
@@ -650,7 +641,7 @@ LcpK0spp:
       nsigma_signal: 3
       dolikelihood: true
       sigmaarray: [0.0078, 0.0091, 0.0097, 0.0109, 0.0117, 0.0156]
-      FixedSigma: true
+      FixedSigma: Fixed_sigma_variable
       fitcase: Lc
       latexnamemeson: "#Lambda_{c}^{pK0s}"
       latexbin2var: "p_{T,jet}"

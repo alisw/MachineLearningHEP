@@ -37,7 +37,7 @@ from  machine_learning_hep.io import dump_yaml_from_dict
 from ROOT import RooUnfoldResponse  
 from ROOT import RooUnfold  
 from ROOT import RooUnfoldBayes
-from machine_learning_hep.utilities import folding, setup_histogram, setup_pad, setup_legend, setup_tgraph, draw_latex
+from machine_learning_hep.utilities import folding, setup_histogram, setup_pad, setup_legend, setup_tgraph, draw_latex, tg_sys
 
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
 class Analyzer:
@@ -60,34 +60,48 @@ class Analyzer:
         self.lvar2_binmax = datap["analysis"][self.typean]["sel_binmax2"]
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
 
-        self.lvar2_binmin_reco = datap["analysis"][self.typean]["sel_binmin2_reco"]
-        self.lvar2_binmax_reco = datap["analysis"][self.typean]["sel_binmax2_reco"]
+        self.lvar2_binmin_reco = datap["analysis"][self.typean].get("sel_binmin2_reco", None)
+        self.lvar2_binmax_reco = datap["analysis"][self.typean].get("sel_binmax2_reco", None)
         
-        self.lvar2_binmin_gen = datap["analysis"][self.typean]["sel_binmin2_gen"]
-        self.lvar2_binmax_gen = datap["analysis"][self.typean]["sel_binmax2_gen"]
+        self.lvar2_binmin_gen = datap["analysis"][self.typean].get("sel_binmin2_gen", None)
+        self.lvar2_binmax_gen = datap["analysis"][self.typean].get("sel_binmax2_gen", None)
         
-        self.lvarshape_binmin_reco = datap["analysis"][self.typean]["sel_binminshape_reco"]
-        self.lvarshape_binmax_reco = datap["analysis"][self.typean]["sel_binmaxshape_reco"]
+        self.lvarshape_binmin_reco = datap["analysis"][self.typean].get("sel_binminshape_reco", None)
+        self.lvarshape_binmax_reco = datap["analysis"][self.typean].get("sel_binmaxshape_reco", None)
         
-        self.lvarshape_binmin_gen = datap["analysis"][self.typean]["sel_binminshape_gen"]
-        self.lvarshape_binmax_gen = datap["analysis"][self.typean]["sel_binmaxshape_gen"]
+        self.lvarshape_binmin_gen = datap["analysis"][self.typean].get("sel_binminshape_gen", None)
+        self.lvarshape_binmax_gen = datap["analysis"][self.typean].get("sel_binmaxshape_gen", None)
 
-        self.niter_unfolding = datap["analysis"][self.typean]["niterunfolding"]
-        self.choice_iter_unfolding = datap["analysis"][self.typean]["niterunfoldingchosen"]
-        self.niterunfoldingregup = datap["analysis"][self.typean]["niterunfoldingregup"]
-        self.niterunfoldingregdown = datap["analysis"][self.typean]["niterunfoldingregdown"]
+        self.niter_unfolding = datap["analysis"][self.typean].get("niterunfolding", None)
+        self.choice_iter_unfolding = datap["analysis"][self.typean].get("niterunfoldingchosen", None)
+        self.niterunfoldingregup = datap["analysis"][self.typean].get("niterunfoldingregup", None)
+        self.niterunfoldingregdown = datap["analysis"][self.typean].get("niterunfoldingregdown", None)
 
-        self.signal_sigma = datap["analysis"][self.typean]["signal_sigma"]
-        self.sideband_sigma_1 = datap["analysis"][self.typean]["sideband_sigma_1"]
-        self.sideband_sigma_2 = datap["analysis"][self.typean]["sideband_sigma_2"]
-        self.sigma_scale = datap["analysis"][self.typean]["sigma_scale"]
-        self.sidebandleftonly = datap["analysis"][self.typean]["sidebandleftonly"]
+        self.signal_sigma = datap["analysis"][self.typean].get("signal_sigma", None)
+        self.sideband_sigma_1_left = datap["analysis"][self.typean].get("sideband_sigma_1_left", None)
+        self.sideband_sigma_1_right = datap["analysis"][self.typean].get("sideband_sigma_1_right", None)
+        self.sideband_sigma_2_left = datap["analysis"][self.typean].get("sideband_sigma_2_left", None)
+        self.sideband_sigma_2_right = datap["analysis"][self.typean].get("sideband_sigma_2_right", None)
+        self.sigma_scale = datap["analysis"][self.typean].get("sigma_scale", None)
+        self.sidebandleftonly = datap["analysis"][self.typean].get("sidebandleftonly", None)
 
-        self.powheg_path_prompt = datap["analysis"][self.typean]["powheg_path_prompt"]
-        self.powheg_path_nonprompt = datap["analysis"][self.typean]["powheg_path_nonprompt"]
+        self.powheg_path_prompt = datap["analysis"][self.typean].get("powheg_path_prompt", None)
+        self.powheg_path_nonprompt = datap["analysis"][self.typean].get("powheg_path_nonprompt", None)
 
-        self.systematic_catagories = datap["analysis"][self.typean]["systematic_catagories"]
-        self.systematic_variations = datap["analysis"][self.typean]["systematic_variations"]
+        self.powheg_prompt_variations = datap["analysis"][self.typean].get("powheg_prompt_variations", None)
+        self.powheg_prompt_variations_path = datap["analysis"][self.typean].get("powheg_prompt_variations_path", None)
+
+        self.pythia8_prompt_variations = datap["analysis"][self.typean].get("pythia8_prompt_variations", None)
+        self.pythia8_prompt_variations_path = datap["analysis"][self.typean].get("pythia8_prompt_variations_path", None)
+
+        self.systematic_catagories = datap["analysis"][self.typean].get("systematic_catagories", None)
+        self.systematic_variations = datap["analysis"][self.typean].get("systematic_variations", None)
+        self.systematic_correlation = datap["analysis"][self.typean].get("systematic_correlation", None)
+        self.systematic_rms  = datap["analysis"][self.typean].get("systematic_rms", None)
+        self.systematic_symmetrise  = datap["analysis"][self.typean].get("systematic_symmetrise", None)
+
+        self.branching_ratio = datap["analysis"][self.typean].get("branching_ratio", None)
+        self.xsection_inel = datap["analysis"][self.typean].get("xsection_inel", None)
                 
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.p_nbin2 = len(self.lvar2_binmin)
@@ -1246,7 +1260,10 @@ class Analyzer:
             h_sel_pr = lfileeff.Get("h_sel_pr" + stringbin2)
             h_sel_pr.Divide(h_sel_pr, h_gen_pr, 1.0, 1.0, "B")
             h_sel_pr.SetLineColor(imult+1)
-            h_sel_pr.Draw("same")
+            if imult == 1:
+                h_sel_pr.Draw("same")
+            else :
+                h_sel_pr.Draw("same")
             fileouteff.cd()
             h_sel_pr.SetName("eff_mult%d" % imult)
             h_sel_pr.Write()
@@ -1514,7 +1531,7 @@ class Analyzer:
             else:
                 input_data_scaled.Add(input_data_zvsjetpt_list[ipt])
         input_data_scaled.Multiply(hzvsjetpt_gen_eff)
-        input_data_scaled.Scale(self.p_nevents*0.016/57.8)
+        input_data_scaled.Scale(self.p_nevents*self.branching_ratio/self.xsection_inel)
         folded = folding(input_data_scaled, response_matrix, output_template)
         folded.Sumw2()
         folded.Divide(hzvsjetpt_reco_eff)
@@ -1669,14 +1686,14 @@ class Analyzer:
                 masslow2sig = mean - self.signal_sigma*sigma
                 binmasshigh2sig = hzvsmass.GetXaxis().FindBin(mean + self.signal_sigma*sigma)
                 masshigh2sig = mean + self.signal_sigma*sigma
-                binmasslow4sig = hzvsmass.GetXaxis().FindBin(mean - self.sideband_sigma_1*sigma)
-                masslow4sig = mean - self.sideband_sigma_1*sigma
-                binmasshigh4sig = hzvsmass.GetXaxis().FindBin(mean + self.sideband_sigma_1*sigma)
-                masshigh4sig = mean + self.sideband_sigma_1*sigma
-                binmasslow9sig = hzvsmass.GetXaxis().FindBin(mean - self.sideband_sigma_2*sigma)
-                masslow9sig = mean - self.sideband_sigma_2*sigma
-                binmasshigh9sig = hzvsmass.GetXaxis().FindBin(mean + self.sideband_sigma_2*sigma)
-                masshigh9sig = mean + self.sideband_sigma_2*sigma
+                binmasslow4sig = hzvsmass.GetXaxis().FindBin(mean - self.sideband_sigma_1_left*sigma)
+                masslow4sig = mean - self.sideband_sigma_1_left*sigma
+                binmasshigh4sig = hzvsmass.GetXaxis().FindBin(mean + self.sideband_sigma_1_right*sigma)
+                masshigh4sig = mean + self.sideband_sigma_1_right*sigma
+                binmasslow9sig = hzvsmass.GetXaxis().FindBin(mean - self.sideband_sigma_2_left*sigma)
+                masslow9sig = mean - self.sideband_sigma_2_left*sigma
+                binmasshigh9sig = hzvsmass.GetXaxis().FindBin(mean + self.sideband_sigma_2_right*sigma)
+                masshigh9sig = mean + self.sideband_sigma_2_right*sigma
 
                 hzsig = hzvsmass.ProjectionY("hzsig" + suffix, \
                              binmasslow2sig, binmasshigh2sig, "e")
@@ -2261,7 +2278,24 @@ class Analyzer:
 
         input_powheg_file = TFile.Open(self.powheg_path_prompt)
         input_powheg = input_powheg_file.Get("fh2_powheg_prompt")
+        input_powheg_xsection = input_powheg_file.Get("fh2_powheg_prompt_xsection")
+        input_powheg_file_sys = []
+        input_powheg_sys=[]
+        input_powheg_xsection_sys=[]
+        for i_powheg in range(len(self.powheg_prompt_variations)):
+            input_powheg_file_sys.append(TFile.Open("%s%s.root" % (self.powheg_prompt_variations_path,self.powheg_prompt_variations[i_powheg])))
+            input_powheg_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_powheg_prompt"))
+            input_powheg_xsection_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_powheg_prompt_xsection"))
         input_powheg_z=[]
+        input_powheg_xsection_z=[]
+        input_powheg_sys_z=[]
+        input_powheg_xsection_sys_z=[]
+        tg_powheg=[]
+        tg_powheg_xsection=[]
+
+
+        
+                
         
         for ibin2 in range(self.p_nbin2_reco):
             suffix = "%s_%.2f_%.2f" % \
@@ -2398,6 +2432,18 @@ class Analyzer:
             input_mc_gen_z[ibin2].Scale(1.0/input_mc_gen_z[ibin2].Integral(input_mc_gen_z[ibin2].FindBin(self.lvarshape_binmin_reco[0]),input_mc_gen_z[ibin2].FindBin(self.lvarshape_binmin_reco[-1])))
             input_powheg_z.append(input_powheg.ProjectionX("input_powheg_z"+suffix,ibin2+1,ibin2+1,"e"))
             input_powheg_z[ibin2].Scale(1.0/input_powheg_z[ibin2].Integral(input_powheg_z[ibin2].FindBin(self.lvarshape_binmin_reco[0]),input_powheg_z[ibin2].FindBin(self.lvarshape_binmin_reco[-1])))
+            input_powheg_xsection_z.append(input_powheg_xsection.ProjectionX("input_powheg_xsection_z"+suffix,ibin2+1,ibin2+1,"e"))
+            input_powheg_sys_z_iter=[]
+            input_powheg_xsection_sys_z_iter=[]
+            for i_powheg in range(len(self.powheg_prompt_variations)):
+                input_powheg_sys_z_iter.append(input_powheg_sys[i_powheg].ProjectionX("input_powheg_sys_z"+self.powheg_prompt_variations[i_powheg]+suffix,ibin2+1,ibin2+1,"e"))
+                input_powheg_sys_z_iter[i_powheg].Scale(1.0/input_powheg_sys_z_iter[i_powheg].Integral(input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[0]),input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[-1])))
+                input_powheg_xsection_sys_z_iter.append(input_powheg_xsection_sys[i_powheg].ProjectionX("input_powheg_xsection_sys_z"+self.powheg_prompt_variations[i_powheg]+suffix,ibin2+1,ibin2+1,"e"))
+            input_powheg_sys_z.append(input_powheg_sys_z_iter)
+            input_powheg_xsection_sys_z.append(input_powheg_xsection_sys_z_iter)
+            tg_powheg.append(tg_sys(input_powheg_z[ibin2], input_powheg_sys_z[ibin2]))
+            tg_powheg_xsection.append(tg_sys(input_powheg_xsection_z[ibin2], input_powheg_xsection_sys_z[ibin2]))
+            
         
         kinematic_eff_jetpt = unfolding_input_file.Get("hjetpt_gen_cuts")
         hjetpt_gen_nocuts=unfolding_input_file.Get("hjetpt_gen_nocuts")
@@ -2471,14 +2517,14 @@ class Analyzer:
         
         fileouts.cd()
         h_dummy = TH1F("hdummy","",1,0,1.0)
-        #unfolded_z_scaled_list=[[hdummy for x in range(self.pnbin2_gen)] for x in range(niter)]
         unfolded_z_scaled_list=[]
+        unfolded_z_xsection_list=[]
         unfolded_jetpt_scaled_list=[]
-        #refolding_test_list=[[hdummy for x in range(self.pnbin2_reco)] for x in range(niter)]
         refolding_test_list=[]
         refolding_test_jetpt_list=[]
         for i in range(self.niter_unfolding) :
             unfolded_z_scaled_list_iter=[]
+            unfolded_z_xsection_list_iter=[]
             refolding_test_list_iter=[]
             unfolding_object = RooUnfoldBayes(response_matrix, input_data, i+1)
             unfolded_zvsjetpt = unfolding_object.Hreco(2)
@@ -2490,9 +2536,13 @@ class Analyzer:
                 unfolded_z.Sumw2()
                 unfolded_z_scaled = unfolded_z.Clone("unfolded_z_scaled_%d_%s" % (i+1,suffix)) 
                 unfolded_z_scaled.Divide(kinematic_eff[ibin2])
+                unfolded_z_xsection = unfolded_z_scaled.Clone("unfolded_z_xsection_%d_%s" % (i+1,suffix))
+                unfolded_z_xsection.Scale((self.xsection_inel)/(self.p_nevents*self.branching_ratio))
                 unfolded_z_scaled.Scale(1.0/unfolded_z_scaled.Integral(unfolded_z_scaled.FindBin(self.lvarshape_binmin_reco[0]),unfolded_z_scaled.FindBin(self.lvarshape_binmin_reco[-1])))
                 unfolded_z_scaled.Write("unfolded_z_%d_%s" % (i+1,suffix))
+                unfolded_z_xsection.Write("unfolded_z_xsection_%d_%s" % (i+1,suffix))
                 unfolded_z_scaled_list_iter.append(unfolded_z_scaled)
+                unfolded_z_xsection_list_iter.append(unfolded_z_xsection)
                 cunfolded_z = TCanvas('cunfolded_z'+suffix, '1D output of unfolding'+suffix)
                 punfolded_z = TPad('punfolded_z'+suffix, "1D output of unfolding"+suffix,0.0,0.001,1.0,1.0)
                 setup_pad(punfolded_z)
@@ -2534,6 +2584,7 @@ class Analyzer:
             cunfolded_jetpt.SaveAs("%s/cunfolded_jetpt_%d.eps" % (self.d_resultsallpdata, i+1))
 
             unfolded_z_scaled_list.append(unfolded_z_scaled_list_iter)
+            unfolded_z_xsection_list.append(unfolded_z_xsection_list_iter)
             refolded = folding(unfolded_zvsjetpt, response_matrix, input_data)
             refolded.Sumw2()
 
@@ -2623,13 +2674,42 @@ class Analyzer:
             setup_histogram(unfolded_z_scaled_list[self.choice_iter_unfolding][ibin2],2)
             leg_input_mc_gen_z.AddEntry(unfolded_z_scaled_list[self.choice_iter_unfolding][ibin2], "unfolded ALICE data", "LEP")
             unfolded_z_scaled_list[self.choice_iter_unfolding][ibin2].Draw("same")
-            leg_input_mc_gen_z.Draw("same")
             setup_histogram(input_powheg_z[ibin2],3)
             leg_input_mc_gen_z.AddEntry(input_powheg_z[ibin2], "POWHEG + PYTHIA", "LEP")
             input_powheg_z[ibin2].Draw("same")
+            setup_tgraph(tg_powheg[ibin2],30,0.3)
+            tg_powheg[ibin2].Draw("5")
+            leg_input_mc_gen_z.Draw("same")
             latex = TLatex(0.6,0.2,'%.2f < p_{T,jet} < %.2f GeV/c' % (self.lvar2_binmin_gen[ibin2],self.lvar2_binmax_gen[ibin2]))
             draw_latex(latex)
             cinput_mc_gen_z.SaveAs("%s/cinput_mc_gen_z_%s.eps" % (self.d_resultsallpdata,suffix))
+            cinput_mc_gen_z.SaveAs("%s/cinput_mc_gen_z_%s.pdf" % (self.d_resultsallpdata,suffix))
+
+
+            cinput_mc_gen_z_xsection = TCanvas('cinput_mc_gen_z_xsection '+suffix, '1D gen pythia z xsection')
+            pinput_mc_gen_z_xsection = TPad('pinput_mc_gen_z_xsection'+suffix, "1D gen pythia z xsection"+suffix,0.0,0.001,1.0,1.0)
+            setup_pad(pinput_mc_gen_z_xsection)
+            cinput_mc_gen_z_xsection.SetCanvasSize(1900, 1500)
+            cinput_mc_gen_z_xsection.SetWindowSize(500, 500)
+            leg_input_mc_gen_z_xsection = TLegend(.2, .73, .45, .88, "")
+            setup_legend(leg_input_mc_gen_z_xsection)
+            setup_histogram(unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2],4)
+            leg_input_mc_gen_z_xsection.AddEntry(unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2], "unfolded ALICE data", "LEP")
+            unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_reco[0]+0.01,self.lvarshape_binmax_reco[-1]-0.001)
+            unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2].GetYaxis().SetRangeUser(0.0,unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2].GetMaximum()*2)
+            unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2].SetXTitle("z")
+            unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2].SetYTitle("xsection dN/dz")
+            unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2].Draw()
+            setup_histogram(input_powheg_xsection_z[ibin2],3)
+            leg_input_mc_gen_z.AddEntry(input_powheg_xsection_z[ibin2], "POWHEG + PYTHIA", "LEP")
+            input_powheg_xsection_z[ibin2].Draw("same")
+            setup_tgraph(tg_powheg_xsection[ibin2],30,0.3)
+            tg_powheg_xsection[ibin2].Draw("5")
+            latex = TLatex(0.6,0.2,'%.2f < p_{T,jet} < %.2f GeV/c' % (self.lvar2_binmin_gen[ibin2],self.lvar2_binmax_gen[ibin2]))
+            draw_latex(latex)
+            leg_input_mc_gen_z_xsection.Draw("same")
+            cinput_mc_gen_z_xsection.SaveAs("%s/cinput_mc_gen_z_xsection_%s.eps" % (self.d_resultsallpdata,suffix))
+            cinput_mc_gen_z_xsection.SaveAs("%s/cinput_mc_gen_z_xsection_%s.pdf" % (self.d_resultsallpdata,suffix))
         
         for ibin2 in range(self.p_nbin2_reco):
             suffix = "%s_%.2f_%.2f" % \
@@ -2813,7 +2893,7 @@ class Analyzer:
                 cclosure_z.SetWindowSize(500, 500)
                 setup_histogram(unfolded_z,4)
                 unfolded_z.GetYaxis().SetRangeUser(0.5,1.5)
-                unfolded_z.GetXaxis().SetRangeUser(0.21,0.99)
+                unfolded_z.GetXaxis().SetRangeUser(self.lvarshape_binmin_reco[0]+0.01,self.lvarshape_binmax_reco[-1]-0.001)
                 unfolded_z.SetXTitle("z")
                 unfolded_z.SetYTitle("closure test")
                 unfolded_z.Draw()
@@ -2965,13 +3045,45 @@ class Analyzer:
             for sys_cat in range(len(self.systematic_catagories)):
                 for sys_var in range(self.systematic_variations[sys_cat]):
                     nsys=nsys+1
-                    leg_sysvar.AddEntry(input_histograms_sys[ibin2][sys_cat][sys_var],("%s_%d" % (self.systematic_catagories[sys_cat],sys_var)),"LEP")
+                    leg_sysvar.AddEntry(input_histograms_sys[ibin2][sys_cat][sys_var],("%s_%d" % (self.systematic_catagories[sys_cat],sys_var+1)),"LEP")
                     setup_histogram(input_histograms_sys[ibin2][sys_cat][sys_var],nsys+1)
                     input_histograms_sys[ibin2][sys_cat][sys_var].Draw("same")
             latex = TLatex(0.2,0.8,'%.2f < p_{T,jet} < %.2f GeV/c' % (self.lvar2_binmin_gen[ibin2],self.lvar2_binmax_gen[ibin2]))
             draw_latex(latex)
             leg_sysvar.Draw("same")
             csysvar.SaveAs("%s/ysvar_%s.eps" % (self.d_resultsallpdata, suffix))
+
+
+            for sys_cat in range(len(self.systematic_catagories)):
+                suffix2="_%s" % (self.systematic_catagories[sys_cat])
+                nsys=0
+                csysvar_each = TCanvas('csysvar '+suffix2+suffix, 'systematic variations'+suffix2+suffix)
+                psysvar_each = TPad('psysvar'+suffix2+suffix, "systematic variations"+suffix2+suffix,0.0,0.001,1.0,1.0)
+                setup_pad(psysvar_each)
+                csysvar_each.SetCanvasSize(1900, 1500)
+                csysvar_each.SetWindowSize(500, 500)
+                leg_sysvar_each = TLegend(.7, .45, .85, .85, self.systematic_catagories[sys_cat])
+                setup_legend(leg_sysvar_each)
+                leg_sysvar_each.AddEntry(input_hisotgrams_default[ibin2],"default","LEP")
+                setup_histogram(input_hisotgrams_default[ibin2],1)
+                if sys_cat == 0 :
+                    input_hisotgrams_default[ibin2].GetYaxis().SetRangeUser(0.0,input_hisotgrams_default[ibin2].GetMaximum()*2.5)
+                input_hisotgrams_default[ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_gen[0]+0.01,self.lvarshape_binmax_gen[-1]-0.001)
+                input_hisotgrams_default[ibin2].SetXTitle("z")
+                input_hisotgrams_default[ibin2].SetYTitle("1/n_{jets} dN/dz")
+                input_hisotgrams_default[ibin2].Draw()
+                for sys_var in range(self.systematic_variations[sys_cat]):
+                    nsys=nsys+1
+                    leg_sysvar_each.AddEntry(input_histograms_sys[ibin2][sys_cat][sys_var],("%d" % (sys_var+1)),"LEP")
+                    setup_histogram(input_histograms_sys[ibin2][sys_cat][sys_var],nsys+1)
+                    input_histograms_sys[ibin2][sys_cat][sys_var].Draw("same")
+                latex = TLatex(0.2,0.8,'%.2f < p_{T,jet} < %.2f GeV/c' % (self.lvar2_binmin_gen[ibin2],self.lvar2_binmax_gen[ibin2]))
+                draw_latex(latex)
+                leg_sysvar_each.Draw("same")
+                csysvar_each.SaveAs("%s/ysvar%s_%s.eps" % (self.d_resultsallpdata, suffix2, suffix))
+
+
+            
 
         sys_up=[]
         sys_down=[]
@@ -2990,35 +3102,40 @@ class Analyzer:
                 for sys_cat in range(len(self.systematic_catagories)):
                     error_var_up=0
                     error_var_down=0
-                    count_fitting_up=0
-                    count_fitting_down=0
+                    count_sys_up=0
+                    count_sys_down=0
                     for sys_var in range(self.systematic_variations[sys_cat]):
                         error = input_histograms_sys[ibin2][sys_cat][sys_var].GetBinContent(ibinshape+1)-input_hisotgrams_default[ibin2].GetBinContent(ibinshape+1)
                         if error >= 0 :
-                            if self.systematic_catagories[sys_cat]=="fitting":
+                            if self.systematic_rms[sys_cat] is True:
                                 error_var_up+=error*error
-                                count_fitting_up=count_fitting_up+1
+                                count_sys_up=count_sys_up+1
                             else:
                                 if error > error_var_up :
                                     error_var_up=error
                         else:
-                            if self.systematic_catagories[sys_cat]=="fitting":
+                            if self.systematic_rms[sys_cat] is True:
                                 error_var_down+=error*error
-                                count_fitting_down=count_fitting_down+1
+                                count_sys_down=count_sys_down+1
                             else:
                                 if abs(error) > error_var_down :
                                     error_var_down = abs(error)
-                    if self.systematic_catagories[sys_cat]=="fitting":
-                        if count_fitting_up is not 0:
-                            error_var_up = error_var_up/count_fitting_up
+                    if self.systematic_rms[sys_cat]  is True:
+                        if count_sys_up is not 0:
+                            error_var_up = error_var_up/count_sys_up
                         else :
                             error_var_up=0.0
                         error_var_up=sqrt(error_var_up)
-                        if count_fitting_down is not 0:
-                            error_var_down = error_var_down/count_fitting_down
+                        if count_sys_down is not 0:
+                            error_var_down = error_var_down/count_sys_down
                         else :
                             error_var_down=0.0
                         error_var_down=sqrt(error_var_down)
+                    if self.systematic_symmetrise[sys_cat] is True :
+                        if error_var_up > error_var_down:
+                            error_var_down = error_var_up
+                        else :
+                            error_var_up = error_var_down
                     error_full_up+=error_var_up*error_var_up
                     error_full_down+=error_var_down*error_var_down
                     sys_up_z.append(error_var_up)
@@ -3048,8 +3165,8 @@ class Analyzer:
             for ibinshape in range(self.p_nbinshape_gen):
                 shapebins_centres.append(input_hisotgrams_default[ibin2].GetBinCenter(ibinshape+1))
                 shapebins_contents.append(input_hisotgrams_default[ibin2].GetBinContent(ibinshape+1))
-                shapebins_widths_up.append(input_hisotgrams_default[ibin2].GetBinWidth(ibinshape+1))
-                shapebins_widths_down.append(input_hisotgrams_default[ibin2].GetBinWidth(ibinshape+1))
+                shapebins_widths_up.append(input_hisotgrams_default[ibin2].GetBinWidth(ibinshape+1)*0.5)
+                shapebins_widths_down.append(input_hisotgrams_default[ibin2].GetBinWidth(ibinshape+1)*0.5)
                 shapebins_error_up.append(sys_up_full[ibin2][ibinshape])
                 shapebins_error_down.append(sys_down_full[ibin2][ibinshape])
             shapebins_centres_array = array('d',shapebins_centres)
@@ -3074,8 +3191,35 @@ class Analyzer:
                 
             tgsys.append(TGraphAsymmErrors(self.p_nbinshape_gen,shapebins_centres_array,shapebins_contents_array,shapebins_widths_down_array,shapebins_widths_up_array,shapebins_error_down_array,shapebins_error_up_array))
 
+        h_default_stat_err=[]
+        for ibin2 in range(self.p_nbin2_gen):
+            suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+            h_default_stat_err.append(input_hisotgrams_default[ibin2].Clone("h_default_stat_err"+suffix))
+            for i in range(h_default_stat_err[ibin2].GetNbinsX()):
+                h_default_stat_err[ibin2].SetBinContent(i+1,1.0)
+                h_default_stat_err[ibin2].SetBinError(i+1,input_hisotgrams_default[ibin2].GetBinError(i+1)/input_hisotgrams_default[ibin2].GetBinContent(i+1))
 
 
+
+        input_pythia8_file = []
+        input_pythia8 = []
+        input_pythia8_xsection = []
+        input_pythia8_z=[]
+        input_pythia8_xsection_z=[]
+        for i_pythia8 in range(len(self.pythia8_prompt_variations)):
+            input_pythia8_file.append(TFile.Open("%s%s.root" % (self.pythia8_prompt_variations_path,self.pythia8_prompt_variations[i_pythia8])))
+            input_pythia8.append(input_pythia8_file[i_pythia8].Get("fh2_pythia8_prompt"))
+            input_pythia8_xsection.append(input_pythia8_file[i_pythia8].Get("fh2_pythia8_prompt_xsection"))
+            input_pythia8_z_jetpt=[]
+            input_pythia8_xsection_z_jetpt=[]
+            for ibin2 in range(self.p_nbin2_gen) :
+                suffix = "%s_%.2f_%.2f" % \
+                     (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+                input_pythia8_z_jetpt.append(input_pythia8[i_pythia8].ProjectionX("input_pythia8"+self.pythia8_prompt_variations[i_pythia8]+suffix,ibin2+1,ibin2+1,"e"))
+                input_pythia8_z_jetpt[ibin2].Scale(1.0/input_pythia8_z_jetpt[ibin2].Integral(1,-1))
+                input_pythia8_xsection_z_jetpt.append(input_pythia8_xsection[i_pythia8].ProjectionX("input_pythia8_xsection"+self.pythia8_prompt_variations[i_pythia8]+suffix,ibin2+1,ibin2+1,"e"))
+            input_pythia8_z.append(input_pythia8_z_jetpt)
+            input_pythia8_xsection_z.append(input_pythia8_xsection_z_jetpt)
 
         for ibin2 in range(self.p_nbin2_gen):
             suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
@@ -3084,11 +3228,11 @@ class Analyzer:
             setup_pad(pfinalwsys)
             cfinalwsys.SetCanvasSize(1900, 1500)
             cfinalwsys.SetWindowSize(500, 500)
-            leg_finalwsys = TLegend(.7, .5, .85, .9, "")
+            leg_finalwsys = TLegend(.65, .6, .85, .8, "")
             setup_legend(leg_finalwsys)
             leg_finalwsys.AddEntry(input_hisotgrams_default[ibin2],"ALICE Data","LEP")
             setup_histogram(input_hisotgrams_default[ibin2],4)
-            input_hisotgrams_default[ibin2].GetYaxis().SetRangeUser(0.0,input_hisotgrams_default[ibin2].GetMaximum()*1.5)
+            input_hisotgrams_default[ibin2].GetYaxis().SetRangeUser(0.0,input_hisotgrams_default[ibin2].GetMaximum()/2.5)
             input_hisotgrams_default[ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_gen[0]+0.01,self.lvarshape_binmax_gen[-1]-0.001)
             input_hisotgrams_default[ibin2].SetXTitle("z")
             input_hisotgrams_default[ibin2].SetYTitle("1/n_{jets} dN/dz")
@@ -3099,7 +3243,34 @@ class Analyzer:
             latex = TLatex(0.2,0.8,'%.2f < p_{T,jet} < %.2f GeV/c' % (self.lvar2_binmin_gen[ibin2],self.lvar2_binmax_gen[ibin2]))
             draw_latex(latex)
             leg_finalwsys.Draw("same")
-            cfinalwsys.SaveAs("%s/finalwsys_%s.eps" % (self.d_resultsallpdata, suffix))
+            cfinalwsys.SaveAs("%s/finalwsys_%s.pdf" % (self.d_resultsallpdata, suffix))
+
+
+            cfinalwsys_wmodels = TCanvas('cfinalwsys_wmodels '+suffix, 'final result with systematic errors with models'+suffix)
+            pfinalwsys_wmodels = TPad('pfinalwsys_wmodels'+suffix, "final result with systematic errors with models"+suffix,0.0,0.001,1.0,1.0)
+            setup_pad(pfinalwsys_wmodels)
+            cfinalwsys_wmodels.SetCanvasSize(1900, 1500)
+            cfinalwsys_wmodels.SetWindowSize(500, 500)
+            leg_finalwsys_wmodels = TLegend(.6, .6, .8, .8, "")
+            setup_legend(leg_finalwsys_wmodels)
+            leg_finalwsys_wmodels.AddEntry(input_hisotgrams_default[ibin2],"ALICE Data","LEP")
+            setup_histogram(input_hisotgrams_default[ibin2],1)
+            input_hisotgrams_default[ibin2].GetYaxis().SetRangeUser(0.0,input_hisotgrams_default[ibin2].GetMaximum())
+            input_hisotgrams_default[ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_gen[0]+0.01,self.lvarshape_binmax_gen[-1]-0.001)
+            input_hisotgrams_default[ibin2].SetXTitle("z")
+            input_hisotgrams_default[ibin2].SetYTitle("1/n_{jets} dN/dz")
+            input_hisotgrams_default[ibin2].Draw()
+            leg_finalwsys_wmodels.AddEntry(tgsys[ibin2],"systematic error","LEP")
+            setup_tgraph(tgsys[ibin2],17,0.3)
+            tgsys[ibin2].Draw("5")
+            for i_pythia8 in range(len(self.pythia8_prompt_variations)):
+                setup_histogram(input_pythia8_z[i_pythia8][ibin2],i_pythia8+2)
+                leg_finalwsys_wmodels.AddEntry(input_pythia8_z[i_pythia8][ibin2],self.pythia8_prompt_variations[i_pythia8],"LEP")
+                input_pythia8_z[i_pythia8][ibin2].Draw("same")         
+            latex = TLatex(0.2,0.8,'%.2f < p_{T,jet} < %.2f GeV/c' % (self.lvar2_binmin_gen[ibin2],self.lvar2_binmax_gen[ibin2]))
+            draw_latex(latex)
+            leg_finalwsys_wmodels.Draw("same")
+            cfinalwsys_wmodels.SaveAs("%s/finalwsys_wmodels_%s.pdf" % (self.d_resultsallpdata, suffix))
 
             crelativesys = TCanvas('crelativesys '+suffix, 'relative systematic errors'+suffix)
             prelativesys = TPad('prelativesys'+suffix, "relative systematic errors"+suffix,0.0,0.001,1.0,1.0)
@@ -3110,7 +3281,7 @@ class Analyzer:
             setup_legend(leg_relativesys)
             for sys_cat in range(len(self.systematic_catagories)):
                 setup_tgraph(tgsys_cat[ibin2][sys_cat],sys_cat+1,0.3)
-                tgsys_cat[ibin2][sys_cat].GetYaxis().SetRangeUser(0.5,1.5)
+                tgsys_cat[ibin2][sys_cat].GetYaxis().SetRangeUser(0.0,2.8)
                 tgsys_cat[ibin2][sys_cat].GetXaxis().SetRangeUser(self.lvarshape_binmin_gen[0]+0.01,self.lvarshape_binmax_gen[-1]-0.001)
                 tgsys_cat[ibin2][sys_cat].GetXaxis().SetTitle("z")
                 tgsys_cat[ibin2][sys_cat].GetYaxis().SetTitle("relative systematic error")
@@ -3119,10 +3290,12 @@ class Analyzer:
                     tgsys_cat[ibin2][sys_cat].Draw("A2")
                 else :
                     tgsys_cat[ibin2][sys_cat].Draw("2")
+            setup_histogram(h_default_stat_err[ibin2],1)
+            h_default_stat_err[ibin2].Draw("same")
             latex = TLatex(0.2,0.8,'%.2f < p_{T,jet} < %.2f GeV/c' % (self.lvar2_binmin_gen[ibin2],self.lvar2_binmax_gen[ibin2]))
             draw_latex(latex)
-            leg_relativesys.DrawClone("same")
-            crelativesys.SaveAs("%s/relativesys_%s.eps" % (self.d_resultsallpdata, suffix))
+            leg_relativesys.Draw("same")
+            crelativesys.SaveAs("%s/relativesys_%s.pdf" % (self.d_resultsallpdata, suffix))
                 
 
 

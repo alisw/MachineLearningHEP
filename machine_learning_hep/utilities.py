@@ -25,8 +25,9 @@ import pandas as pd
 import lz4
 import math
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
-from ROOT import TH1F, TH2F, TLatex  # pylint: disable=import-error, no-name-in-module
+from ROOT import TH1F, TH2F, TLatex, TGraphAsymmErrors  # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.selectionutils import select_runs
+from array import *
 def openfile(filename, attr):
     if filename.lower().endswith('.bz2'):
         return bz2.BZ2File(filename, attr)
@@ -262,3 +263,37 @@ def draw_latex(latex,colour=1,textsize=0.03):
     latex.SetTextColor(colour)
     latex.SetTextFont(42)
     latex.Draw()
+
+def tg_sys(central, variations):
+    shapebins_centres=[]
+    shapebins_contents=[]
+    shapebins_widths_up=[]
+    shapebins_widths_down=[]
+    shapebins_error_up=[]
+    shapebins_error_down=[]
+
+    for i in range(central.GetNbinsX()):
+       shapebins_centres.append(central.GetBinCenter(i+1))
+       shapebins_contents.append(central.GetBinContent(i+1))
+       shapebins_widths_up.append(central.GetBinWidth(i+1)*0.5)
+       shapebins_widths_down.append(central.GetBinWidth(i+1)*0.5)
+       error_up=0
+       error_down=0
+       for j in range(len(variations)):
+           error = variations[j].GetBinContent(i+1)-central.GetBinContent(i+1)
+           if error > 0 and error > error_up :
+               error_up = error
+           if error < 0 and abs(error) > error_down :
+               error_down = abs(error)
+       shapebins_error_up.append(error_up)
+       shapebins_error_down.append(error_down)
+    shapebins_centres_array = array('d',shapebins_centres)
+    shapebins_contents_array = array('d',shapebins_contents)
+    shapebins_widths_up_array = array('d',shapebins_widths_up)
+    shapebins_widths_down_array = array('d',shapebins_widths_down)
+    shapebins_error_up_array = array('d',shapebins_error_up)
+    shapebins_error_down_array = array('d',shapebins_error_down)
+    tg = TGraphAsymmErrors(central.GetNbinsX(),shapebins_centres_array,shapebins_contents_array,shapebins_widths_down_array,shapebins_widths_up_array,shapebins_error_down_array,shapebins_error_up_array)
+    return tg
+               
+           
