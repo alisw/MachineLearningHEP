@@ -340,6 +340,7 @@ LcpK0spp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
+      corrEffMult: false
       sel_binmin2:  [0,1,10,30,60] #list of var2 splittng nbins
       sel_binmax2: [9999,10,30,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
@@ -380,6 +381,9 @@ LcpK0spp:
       rebin: [6,6,6,6,6,6]
       includesecpeak: Null #[0,0,0,0,0,0,0,0]
       masssecpeak: 2.2864
+      widthsecpeak: 0.92
+      fix_widthsecpeak: false
+      
       # Fix mean and/or sigma
       FixedMean: false
       SetFixGaussianSigma: [true,true,true,true,true,true]
@@ -560,9 +564,11 @@ LcpK0spp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
+      corrEffMult: false
       sel_binmin2: [5] #list of nbins
       sel_binmax2: [15] #list of nbins
       var_binning2: pt_jet
+      var_binning2_gen: pt_jet
       triggerbit: INT7
 
       sel_an_binmin: [2,4,5,6,8] #list of pt nbins
@@ -598,6 +604,8 @@ LcpK0spp:
       massmax: [2.436,2.436,2.436,2.436,2.436]
       rebin: [6,6,6,6,6]
       includesecpeak: Null #[0,0,0,0,0]
+      widthsecpeak: 0.92
+      fix_widthsecpeak: false
       masssecpeak: 2.2864
       # Fix mean and/or sigma
       FixedMean: False
@@ -840,6 +848,12 @@ LcpK0spp:
       cutvarmaxrange: [0.90, 0.90, 0.90, 0.90, 0.90] #Max starting point for scan
       fixedmean: True #Fix mean cutvar histo to central fit
       fixedsigma: True #Fix sigma cutvar histo to central fit
+    mcptshape:
+      #FONLL / generated LHC19h4c1
+      weights: Null
+      weights_min_pt: 0
+      weights_max_pt: 40
+      weights_bins: 400
 
   validation:
     runlisttrigger: 
