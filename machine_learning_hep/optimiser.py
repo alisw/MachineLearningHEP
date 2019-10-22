@@ -317,7 +317,7 @@ class Optimiser:
     def do_roc_train_test(self):
         roc_train_test(self.p_classname, self.p_class, self.df_xtrain, self.df_ytrain,
                        self.df_xtest, self.df_ytest, self.s_suffix, self.dirmlplot)
-                       
+
     def do_plot_model_pred(self):
         plot_overtraining(self.p_classname, self.p_class, self.s_suffix, self.dirmlplot,
                           self.df_xtrain, self.df_ytrain, self.df_xtest, self.df_ytest)
