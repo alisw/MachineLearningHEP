@@ -18,41 +18,41 @@ for ((i=0; i<${#Sys[@]}; i++))
 	    sed -i "s/default/${Sys[$i]}/g" data/$db_name_curr
 	    sed -i "s/sys_1/sys_$j/g" data/$db_name_curr
 	    #less $db_name_curr
-	    if [ ${Sys[$i]} == "Fitting" ] && [ $j == 1 ]
+	    if [ ${Sys[$i]} == "fitting" ] && [ $j == 1 ]
 	    then
 		sed -i "s/massmin_variable/2.18/g" data/$db_name_curr
 	    else
 		sed -i "s/massmin_variable/2.14/g" data/$db_name_curr
 	    fi
 	    
-	    if [ ${Sys[$i]} == "Fitting" ] && [ $j == 2 ]
+	    if [ ${Sys[$i]} == "fitting" ] && [ $j == 2 ]
 	    then
 		sed -i "s/massmax_variable/2.476/g" data/$db_name_curr
 	    else
 		sed -i "s/massmax_variable/2.436/g" data/$db_name_curr
 	    fi
 	    
-	    if [ ${Sys[$i]} == "Fitting" ] && [ $j == 3 ]
+	    if [ ${Sys[$i]} == "fitting" ] && [ $j == 3 ]
 	    then
 		sed -i "s/rebin_variable/12/g" data/$db_name_curr
 	    else
 		sed -i "s/rebin_variable/6/g" data/$db_name_curr
 	    fi
 	    
-	    if [ ${Sys[$i]} == "Fitting" ] && [ $j == 4 ]
+	    if [ ${Sys[$i]} == "fitting" ] && [ $j == 4 ]
 	    then
 		sed -i "s/FixedMean_variable/true/g" data/$db_name_curr
 	    else
 		sed -i "s/FixedMean_variable/false/g" data/$db_name_curr
 	    fi
 	    
-	    if [ ${Sys[$i]} == "Fitting" ] && [ $j == 5 ]
+	    if [ ${Sys[$i]} == "fitting" ] && [ $j == 5 ]
 	    then
 		sed -i "s/Fixed_sigma_variable/false/g" data/$db_name_curr
 	    else
 		sed -i "s/Fixed_sigma_variable/true/g" data/$db_name_curr
 	    fi
-	    if [ ${Sys[$i]} == "Fitting" ] && [ $j == 6 ]
+	    if [ ${Sys[$i]} == "fitting" ] && [ $j == 6 ]
 	    then
 		sed -i "s/bkgfunc_variable/kExpo/g" data/$db_name_curr
 	    else
