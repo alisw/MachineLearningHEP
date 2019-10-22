@@ -453,7 +453,7 @@ class Optimiser:
             bkg_array, bkg_err_array, _ = calc_bkg(df_data_sideband, name, self.p_nstepsign,
                                                    self.p_mass_fit_lim, self.p_bkg_func,
                                                    self.p_bin_width, sig_region, self.p_savefit,
-                                                   self.dirmlplot, [pt_min, pt_max])
+                                                   self.dirmlplot, [self.p_binmin, self.p_binmax])
             sig_array = [eff * signal_yield for eff in eff_array]
             sig_err_array = [eff_err * signal_yield for eff_err in eff_err_array]
             bkg_array = [bkg / (self.p_bkgfracopt * self.p_nevtml) for bkg in bkg_array]
