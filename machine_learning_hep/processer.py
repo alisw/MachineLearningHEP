@@ -25,7 +25,7 @@ import uproot
 import pandas as pd
 import numpy as np
 from root_numpy import fill_hist, evaluate # pylint: disable=import-error, no-name-in-module
-from ROOT import TFile, TH1F, TH2F, TH3F, RooUnfoldResponse # pylint: disable=import-error, no-name-in-module
+from ROOT import TFile, TH1F, TH2F, TH3F, RooUnfold, RooUnfoldResponse, RooUnfoldBayes, TRandom3 # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge_method
@@ -225,6 +225,37 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
+
+
+        #FF jet variables
+        self.lvar2_binmin_reco = datap["analysis"][self.typean].get("sel_binmin2_reco", None)
+        self.lvar2_binmax_reco = datap["analysis"][self.typean].get("sel_binmax2_reco", None)
+        self.p_nbin2_reco = len(self.lvar2_binmin_reco)
+        self.lvar2_binmin_gen = datap["analysis"][self.typean].get("sel_binmin2_gen", None)
+        self.lvar2_binmax_gen = datap["analysis"][self.typean].get("sel_binmax2_gen", None)
+        self.p_nbin2_gen = len(self.lvar2_binmin_gen)
+        self.lvarshape_binmin_reco = datap["analysis"][self.typean].get("sel_binminshape_reco", None)
+        self.lvarshape_binmax_reco = datap["analysis"][self.typean].get("sel_binmaxshape_reco", None)
+        self.p_nbinshape_reco = len(self.lvarshape_binmin_reco)
+        self.lvarshape_binmin_gen = datap["analysis"][self.typean].get("sel_binminshape_gen", None)
+        self.lvarshape_binmax_gen = datap["analysis"][self.typean].get("sel_binmaxshape_gen", None)
+        self.p_nbinshape_gen = len(self.lvarshape_binmin_gen)
+        self.closure_frac = datap["analysis"][self.typean].get("sel_closure_frac", None)
+
+        self.var2ranges = self.lvar2_binmin.copy()
+        self.var2ranges.append(self.lvar2_binmax[-1])
+        self.var2ranges_reco = self.lvar2_binmin_reco.copy()
+        self.var2ranges_reco.append(self.lvar2_binmax_reco[-1])
+        self.var2ranges_gen = self.lvar2_binmin_gen.copy()
+        self.var2ranges_gen.append(self.lvar2_binmax_gen[-1])
+        self.varshaperanges_reco = self.lvarshape_binmin_reco.copy()
+        self.varshaperanges_reco.append(self.lvarshape_binmax_reco[-1])
+        self.varshaperanges_gen = self.lvarshape_binmin_gen.copy()
+        self.varshaperanges_gen.append(self.lvarshape_binmax_gen[-1])
+
+        self.doprior = datap["analysis"][self.typean]["doprior"]
+
+
 
     def unpack(self, file_index):
         treeevtorig = uproot.open(self.l_root[file_index])[self.n_treeevt]
@@ -485,7 +516,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 if "pt_jet" in df_bin.columns:
                     zarray = z_calc(df_bin.pt_jet, df_bin.phi_jet, df_bin.eta_jet,
                                     df_bin.pt_cand, df_bin.phi_cand, df_bin.eta_cand)
-                    h_zvsinvmass = TH2F("hzvsmass" + suffix, "", 5000, 1.00, 6.00, 2000, -0.5, 1.5)
+                    h_zvsinvmass = TH2F("hzvsmass" + suffix, "", 500000, 1.00, 6.00, \
+                        self.p_nbinshape_reco, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
                     zvsinvmass = np.vstack((df_bin.inv_mass, zarray)).T
                     fill_hist(h_zvsinvmass, zvsinvmass)
                     h_zvsinvmass.Write()
