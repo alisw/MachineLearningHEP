@@ -581,15 +581,15 @@ LcpK0spp:
         mc: "abs(eta_jet)<0.5"
         weighttrig: false
       data:
-        results: [/data/DerivedResults/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/resultsMBjetvspt,
-                  /data/DerivedResults/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/resultsMBjetvspt,
-                  /data/DerivedResults/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResults/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data/resultsMBjetvspt
+        results: [/data/DerivedResultsApp/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/resultsMBjetvspt,
+                  /data/DerivedResultsApp/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/resultsMBjetvspt,
+                  /data/DerivedResultsApp/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsApp/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data/resultsMBjetvspt
       mc:
-        results: [/data/DerivedResults/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodLcpK0s/261_20191004-0007/resultsMBjetvspt,
-                  /data/DerivedResults/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodLcpK0s/261_20191004-0007/resultsMBjetvspt,
-                  /data/DerivedResults/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodLcpK0s/261_20191004-0007/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResults/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_mc_prodLcpK0s/resultsMBjetvspt
+        results: [/data/DerivedResultsApp/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodLcpK0s/261_20191004-0007/resultsMBjetvspt,
+                  /data/DerivedResultsApp/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodLcpK0s/261_20191004-0007/resultsMBjetvspt,
+                  /data/DerivedResultsApp/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodLcpK0s/261_20191004-0007/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsApp/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_mc_prodLcpK0s/resultsMBjetvspt
 
       mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram

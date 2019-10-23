@@ -397,12 +397,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
     # pylint: disable=too-many-branches
     def process_histomass_single(self, index):
         myfile = TFile.Open(self.l_histomass[index], "recreate")
-        dfevtorig = pickle.load(openfile(self.l_evtorig[index], "rb"))
-        if self.s_trigger is not None:
-            dfevtorig = dfevtorig.query(self.s_trigger)
-        dfevtorig = selectdfrunlist(dfevtorig, \
-                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
-        print("select runlist", self.runlistrigger[self.triggerbit])
+        #dfevtorig = pickle.load(openfile(self.l_evtorig[index], "rb"))
+        #if self.s_trigger is not None:
+        #    dfevtorig = dfevtorig.query(self.s_trigger)
+        #dfevtorig = selectdfrunlist(dfevtorig, \
+        #                 self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
+        #print("select runlist", self.runlistrigger[self.triggerbit])
         #for ibin2 in range(len(self.lvar2_binmin)):
             #mybindfevtorig = seldf_singlevar(dfevtorig, self.v_var2_binning_gen, \
             #                            self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
