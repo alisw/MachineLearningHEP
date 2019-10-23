@@ -560,7 +560,7 @@ LcpK0spp:
     MBjetvspt:
       useperiod: [1,1,1]
       normalizecross: true
-      plotbin: [1]
+      plotbin: [0]
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null

@@ -52,7 +52,7 @@ mlapplication:
     docontinueafterstop: false
 
 analysis:
-  type: MBvspt_ntrkl #V0mvspt_perc_v0m
+  type: MBjetvspt #V0mvspt_perc_v0m
   # Do each period separately including merged (true)
   # Do only merged (false)
   doperperiod: true

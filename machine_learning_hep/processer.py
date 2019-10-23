@@ -403,23 +403,23 @@ class Processer: # pylint: disable=too-many-instance-attributes
         dfevtorig = selectdfrunlist(dfevtorig, \
                          self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
         print("select runlist", self.runlistrigger[self.triggerbit])
-        for ibin2 in range(len(self.lvar2_binmin)):
-            mybindfevtorig = seldf_singlevar(dfevtorig, self.v_var2_binning_gen, \
-                                        self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
-            hNorm = TH1F("hEvForNorm_mult%d" % ibin2, "hEvForNorm_mult%d" % ibin2, 2, 0.5, 2.5)
-            hNorm.GetXaxis().SetBinLabel(1, "normsalisation factor")
-            hNorm.GetXaxis().SetBinLabel(2, "selected events")
-            nselevt = 0
-            norm = 0
-            if not mybindfevtorig.empty:
-                nselevt = len(mybindfevtorig.query("is_ev_rej==0"))
-                norm = getnormforselevt(mybindfevtorig)
-            hNorm.SetBinContent(1, norm)
-            hNorm.SetBinContent(2, nselevt)
-            hNorm.Write()
+        #for ibin2 in range(len(self.lvar2_binmin)):
+            #mybindfevtorig = seldf_singlevar(dfevtorig, self.v_var2_binning_gen, \
+            #                            self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+            #hNorm = TH1F("hEvForNorm_mult%d" % ibin2, "hEvForNorm_mult%d" % ibin2, 2, 0.5, 2.5)
+            #hNorm.GetXaxis().SetBinLabel(1, "normsalisation factor")
+            #hNorm.GetXaxis().SetBinLabel(2, "selected events")
+            #nselevt = 0
+            #norm = 0
+            #if not mybindfevtorig.empty:
+            #    nselevt = len(mybindfevtorig.query("is_ev_rej==0"))
+            #    norm = getnormforselevt(mybindfevtorig)
+            #hNorm.SetBinContent(1, norm)
+            #hNorm.SetBinContent(2, nselevt)
+            #hNorm.Write()
 #            histmultevt = TH1F("hmultevtmult%d" % ibin2,
 #                               "hmultevtmult%d"  % ibin2, 100, 0, 100)
-            mybindfevtorig = mybindfevtorig.query("is_ev_rej==0")
+            #mybindfevtorig = mybindfevtorig.query("is_ev_rej==0")
 #            fill_hist(histmultevt, mybindfevtorig.n_tracklets_corr)
 #            histmultevt.Write()
 #            h_v0m_ntracklets = TH2F("h_v0m_ntracklets%d" % ibin2,
@@ -429,7 +429,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
 #                                          mybindfevtorig.v0m_corr)).T
 #            fill_hist(h_v0m_ntracklets, v_v0m_ntracklets)
 #            h_v0m_ntracklets.Write()
-
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
