@@ -26,11 +26,13 @@ import math
 import numpy as np
 import pandas as pd
 import lz4
+import math
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
 # pylint: disable=import-error, no-name-in-module
-from ROOT import TH1F, TH2F, TFile, TH1
+from ROOT import TH1F, TH2F, TFile, TH1, TLatex, TGraphAsymmErrors
 from ROOT import TPad, TCanvas, TLegend, kBlack, kGreen, kRed, kBlue, kWhite
 from machine_learning_hep.selectionutils import select_runs
+from array import *
 def openfile(filename, attr):
     if filename.lower().endswith('.bz2'):
         return bz2.BZ2File(filename, attr)
@@ -452,3 +454,94 @@ def parallelizer(function, argument_list, maxperchunk, max_n_procs=2):
 
 def get_timestamp_string():
     return datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+
+
+def folding(h_input, response_matrix, h_output):
+    h_folded=h_output.Clone("h_folded")
+    for a in range(h_output.GetNbinsX()):
+        for b in range(h_output.GetNbinsY()):
+            val=0.0
+            val_err=0.0
+            for k in range(h_input.GetNbinsX()):
+                for l in range(h_input.GetNbinsY()):
+                    index_x_out=a+h_output.GetNbinsX()*b
+                    index_x_in=k+h_input.GetNbinsX()*l
+                    val+=h_input.GetBinContent(k+1,l+1)*response_matrix(index_x_out, index_x_in)
+                    val_err+=h_input.GetBinError(k+1,l+1)*h_input.GetBinError(k+1,l+1)*response_matrix(index_x_out, index_x_in)*response_matrix(index_x_out, index_x_in)
+            h_folded.SetBinContent(a+1, b+1, val)
+            h_folded.SetBinError(a+1, b+1, math.sqrt(val_err))
+    return h_folded
+
+def setup_histogram(hist, colour=1, markerstyle=25):
+    hist.SetStats(0)
+    hist.SetTitleSize(0.04,"X")
+    hist.SetTitleOffset(1.0,"X")
+    hist.SetTitleSize(0.04,"Y")
+    hist.SetTitleOffset(1.0,"Y")
+    hist.SetLineWidth(2)
+    hist.SetLineColor(colour)
+    hist.SetMarkerSize(1.0)
+    hist.SetMarkerStyle(markerstyle)
+    hist.SetMarkerColor(colour)
+
+def setup_pad(pad):
+    pad.SetFillColor(0)
+    pad.SetMargin(0.15,0.9,0.15,0.9)
+    pad.Draw()
+    pad.SetTicks(1,1)
+    pad.cd()
+
+def setup_legend(legend):
+    legend.SetBorderSize(0)
+    legend.SetTextSize(0.03)
+    legend.SetTextFont(42)
+
+def setup_tgraph(tg, colour=46, alphastyle=0.3, fillstyle=1001):
+    tg.GetXaxis().SetTitleSize(0.04)
+    tg.GetXaxis().SetTitleOffset(1.0)
+    tg.GetYaxis().SetTitleSize(0.04)
+    tg.GetYaxis().SetTitleOffset(1.0)
+    tg.SetFillColorAlpha(colour,alphastyle)
+    tg.SetLineWidth(2)
+    tg.SetLineColor(colour)
+    tg.SetFillStyle(fillstyle)
+    tg.SetMarkerSize(0)
+  
+def draw_latex(latex,colour=1,textsize=0.03):
+    latex.SetNDC()
+    latex.SetTextSize(textsize)
+    latex.SetTextColor(colour)
+    latex.SetTextFont(42)
+    latex.Draw()
+
+def tg_sys(central, variations):
+    shapebins_centres=[]
+    shapebins_contents=[]
+    shapebins_widths_up=[]
+    shapebins_widths_down=[]
+    shapebins_error_up=[]
+    shapebins_error_down=[]
+
+    for i in range(central.GetNbinsX()):
+       shapebins_centres.append(central.GetBinCenter(i+1))
+       shapebins_contents.append(central.GetBinContent(i+1))
+       shapebins_widths_up.append(central.GetBinWidth(i+1)*0.5)
+       shapebins_widths_down.append(central.GetBinWidth(i+1)*0.5)
+       error_up=0
+       error_down=0
+       for j in range(len(variations)):
+           error = variations[j].GetBinContent(i+1)-central.GetBinContent(i+1)
+           if error > 0 and error > error_up :
+               error_up = error
+           if error < 0 and abs(error) > error_down :
+               error_down = abs(error)
+       shapebins_error_up.append(error_up)
+       shapebins_error_down.append(error_down)
+    shapebins_centres_array = array('d',shapebins_centres)
+    shapebins_contents_array = array('d',shapebins_contents)
+    shapebins_widths_up_array = array('d',shapebins_widths_up)
+    shapebins_widths_down_array = array('d',shapebins_widths_down)
+    shapebins_error_up_array = array('d',shapebins_error_up)
+    shapebins_error_down_array = array('d',shapebins_error_down)
+    tg = TGraphAsymmErrors(central.GetNbinsX(),shapebins_centres_array,shapebins_contents_array,shapebins_widths_down_array,shapebins_widths_up_array,shapebins_error_down_array,shapebins_error_up_array)
+    return tg

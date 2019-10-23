@@ -641,16 +641,16 @@ LcpK0spp:
 
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
-      init_fits_from: mc # data # data or mc
-      # Decide whether to take the sigma from MC or data for individual fits
-      init_fits_from: mc # data # data or mc
+      init_fits_from: [mc, mc, mc, mc, mc] # data or mc
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.2864
       massmin: [2.14,2.14,2.14,2.14,2.14]
       massmax: [2.436,2.436,2.436,2.436,2.436]
       rebin: [6,6,6,6,6]
-      includesecpeak: Null #[0,0,0,0,0]
+      includesecpeak: [[false,false,false,false,false,false],[false,false,false,false,false,false],[false,false,false,false,false,false],[false,false,false,false,false,false],[false,false,false,false,false,false]]
+      masssecpeak: -1
+      fix_masssecpeak: [[false,false,false,false,false,false],[false,false,false,false,false,false],[false,false,false,false,false,false],[false,false,false,false,false,false],[false,false,false,false,false,false]]
       widthsecpeak: 0.92
       fix_widthsecpeak: false
       masssecpeak: 2.2864
@@ -661,7 +661,7 @@ LcpK0spp:
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
-      SetInitialGaussianSigma: false
+      SetInitialGaussianSigma: [false, false, false, false, false, false]
       # Max percentage deviation in sigma (from init) to be considered as a good fit
       MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
