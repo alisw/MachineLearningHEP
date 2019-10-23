@@ -529,8 +529,9 @@ def calc_systematic_multovermb(errnum_list, errden_list, n_bins):
                     #Correlated, do nothing
                     pass
                 elif errnum_list.names[j] == "ptshape":
-                    #Correlated, do nothing
-                    pass
+                    #Correlated, assign difference
+                    diff = abs(errnum[i][nb] - errden[i][nb])
+                    tot_list[i][nb] += diff * diff
                 elif errnum_list.names[j] == "feeddown_NB":
                     #Correlated, do nothing
                     pass
@@ -575,26 +576,40 @@ def calc_systematic_mesonratio(errnum_list, errden_list, n_bins):
                     #Uncorrelated
                     tot_list[i][nb] += errnum[i][nb] * errnum[i][nb] + errden[i][nb] * errden[i][nb]
                 elif errnum_list.names[j] == "feeddown_mult":
-                    #Correlated, do nothing
-                    pass
+                    #Correlated, WHAT DO WE DO?? Now assign difference
+                    diff = abs(errnum[i][nb] - errden[i][nb])
+                    tot_list[i][nb] += diff * diff
+                    print("Warning: strategy for feeddown_mult to be refined")
                 elif errnum_list.names[j] == "trigger":
                     #Correlated, do nothing
                     pass
-                elif errnum_list.names[j] == "multiplicity_interval":
-                    #Two cases here, for Ds/D0 it is case 1)
-                    #  1) Fully correlated under assumption central Fc value stays within Nb syst
-                    #  2) If sizable uncertainty by Fc method, sum in quadrature
-                    pass
+                elif errnum_list.names[j] == "feeddown_NB":
+                    #Fully correlated under assumption central Fc value stays within Nb syst
+                    ynum = errnum[i][4]
+                    yden = errden[i][4]
+                    ynuml = ynum - errnum[i][2]
+                    ydenl = yden - errden[i][2]
+                    ynumh = ynum + errnum[i][3]
+                    ydenh = yden + errden[i][3]
+                    ratio = [ynuml / ydenl, ynum / yden, ynumh / ydenh]
+                    minsyst = min(ratio)
+                    maxsyst = max(ratio)
+                    if nb == 2:
+                        tot_list[i][nb] += (ratio[1] - minsyst) * (ratio[1] - minsyst)
+                    if nb == 3:
+                        tot_list[i][nb] += (maxsyst - ratio[1]) * (maxsyst - ratio[1])
                 elif errnum_list.names[j] == "multiplicity_weights":
-                    #Correlated, do nothing
-                    pass
+                    #Correlated, assign difference
+                    diff = abs(errnum[i][nb] - errden[i][nb])
+                    tot_list[i][nb] += diff * diff
                 elif errnum_list.names[j] == "track":
-                    #Correlated, do nothing
-                    pass
+                    #Correlated, assign difference
+                    diff = abs(errnum[i][nb] - errden[i][nb])
+                    tot_list[i][nb] += diff * diff
                 elif errnum_list.names[j] == "ptshape":
                     #Uncorrelated
                     tot_list[i][nb] += errnum[i][nb] * errnum[i][nb] + errden[i][nb] * errden[i][nb]
-                elif errnum_list.names[j] == "feeddown_NB":
+                elif errnum_list.names[j] == "multiplicity_interval":
                     #NB: Assuming ratio: 3prongs over 2prongs here! 2prong part cancels
                     #We use 1/3 of systematic of numerator
                     tot_list[i][nb] += errnum[i][nb] * errnum[i][nb] / 9
@@ -813,5 +828,7 @@ class Errors:
                 for nb in range(len(tot_list[i])):
                     if self.names[j] != "branching_ratio" or self.names[j] != "sigmav0":
                         tot_list[i][nb] += (errors[i][nb] * errors[i][nb])
+                    if self.names[j] == "feeddown_mult":
+                        print("Warning: strategy for feeddown_mult to be refined")
         tot_list = np.sqrt(tot_list)
         return tot_list
