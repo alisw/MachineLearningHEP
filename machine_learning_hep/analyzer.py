@@ -1623,7 +1623,6 @@ class Analyzer:
         func_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                             None, [self.case, self.typean])
         func_file = TFile.Open(func_filename, "READ")
-        print(func_filename)
         eff_file = TFile.Open("%s/efficiencies%s%s.root" % \
                               (self.d_resultsallpmc, self.case, self.typean))
         fileouts = TFile.Open("%s/sideband_sub%s%s.root" % \
@@ -1669,7 +1668,6 @@ class Analyzer:
                 masslow9sig = mean - self.sideband_sigma_2_left*sigma
                 binmasshigh9sig = hzvsmass.GetXaxis().FindBin(mean + self.sideband_sigma_2_right*sigma)
                 masshigh9sig = mean + self.sideband_sigma_2_right*sigma
-
                 hzsig = hzvsmass.ProjectionY("hzsig" + suffix, \
                              binmasslow2sig, binmasshigh2sig, "e")
                 hzbkgleft = hzvsmass.ProjectionY("hzbkgleft" + suffix, \
@@ -1683,7 +1681,9 @@ class Analyzer:
                 bkg_fit = mass_fitter.GetBackgroundRecalcFunc()
 
                 area_scale_denominator = -1
-                print("---------", bkg_fit)
+                if mean<2. or mean>3.:
+                    print("not finding bkg")
+                    continue
                 if not bkg_fit:
                     continue
                 area_scale_denominator = bkg_fit.Integral(masslow9sig, masslow4sig) + \
