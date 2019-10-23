@@ -441,8 +441,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 h_invmass_weight.Write()
                 if "pt_jet" in df_bin.columns:
                     zarray = z_calc(df_bin.pt_jet, df_bin.phi_jet, df_bin.eta_jet,
-                                    df_bin.pt_cand, df_bin.phi_jet, df_bin.eta_jet)
-                    h_zvsinvmass = TH2F("hzvsmass" + suffix, "", 500000, 1.00, 6.00, self.p_nbinshape_reco, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
+                                    df_bin.pt_cand, df_bin.phi_cand, df_bin.eta_cand)
+                    h_zvsinvmass = TH2F("hzvsmass" + suffix, "", 5000, 1.00, 6.00, self.p_nbinshape_reco, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
                     h_zvsinvmass.Sumw2()
                     zvsinvmass = np.vstack((df_bin.inv_mass, zarray)).T
                     fill_hist(h_zvsinvmass, zvsinvmass)

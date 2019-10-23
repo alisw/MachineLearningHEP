@@ -57,9 +57,9 @@ analysis:
   doperperiod: false
   data:
     dojetsystematics : true #
-    histomass: true #
+    histomass: false #
   mc:
-    histomass: true #
+    histomass: false #
     efficiency: true #
     feeddown: true #
     dounfolding: true #
