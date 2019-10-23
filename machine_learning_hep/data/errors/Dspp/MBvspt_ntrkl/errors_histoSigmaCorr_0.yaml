@@ -4,7 +4,7 @@
 #
 
 #Systematics in this dictionary. feeddown_Nb will be read from inputfile
-names: ["yield", "cut", "track", "ptshape", "feeddown_mult", "trigger", "multiplicity_weights", "multiplicity_interval", "branching_ratio", "sigmav0"]
+names: ["yield", "cut", "pid", "track", "ptshape", "feeddown_mult", "feeddown_mult_spectra", "trigger", "multiplicity_weights", "multiplicity_interval", "branching_ratio", "sigmav0"]
 
 yield:
     - [0., 0., 0.02, 0.02]
@@ -19,6 +19,13 @@ cut:
     - [0., 0., 0.06, 0.06]
     - [0., 0., 0.06, 0.06]
     - [0., 0., 0.06, 0.06]
+
+pid:
+    - [0., 0., 0., 0.]
+    - [0., 0., 0., 0.]
+    - [0., 0., 0., 0.]
+    - [0., 0., 0., 0.]
+    - [0., 0., 0., 0.]
 
 track:
     - [0., 0., 0.06, 0.06]
@@ -40,6 +47,13 @@ feeddown_mult:
     - [0., 0., 0., 0.]
     - [0., 0., 0., 0.]
     - [0., 0., 0., 0.]
+
+feeddown_mult_spectra:
+    - [0., 0., 0., 0]
+    - [0., 0., 0., 0]
+    - [0., 0., 0., 0]
+    - [0., 0., 0., 0]
+    - [0., 0., 0., 0]
 
 trigger:
     - [0., 0., 0., 0.]
