@@ -52,21 +52,24 @@ mlapplication:
     docontinueafterstop: false
 
 analysis:
-  type: MBjetvspt #V0mvspt_perc_v0m
+  type: MBjetvspt
   # Do each period separately including merged (true)
   # Do only merged (false)
   doperperiod: true
   data:
-    histomass: true
+    histomass: false
+    dojetsystematics : false
   mc:
-    histomass: true
+    histomass: false
     efficiency: true
-    feeddown: false
-  dofit: false
+    feeddown: true
+    dounfolding: true
+    
+  dofit: true
   # Control the yield systemaitc uncertainty
   dosyst: false
-  dojetstudies: false
-  doeff: false
+  dojetstudies: true
+  doeff: true
   docross: false
   doplots: false
 

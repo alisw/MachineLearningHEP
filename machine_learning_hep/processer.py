@@ -910,6 +910,297 @@ class Processer: # pylint: disable=too-many-instance-attributes
         out_file.Close()
 
     # pylint: disable=too-many-locals
+    def process_unfolding(self):
+        out_file = TFile.Open(self.n_fileeff, "update")
+        list_df_mc_reco = []
+        list_df_mc_gen = []
+        for iptskim, _ in enumerate(self.lpt_anbinmin):
+
+            df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[iptskim], "rb"))
+            df_mc_gen = selectdfrunlist(df_mc_gen, \
+                    self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
+            df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
+            list_df_mc_gen.append(df_mc_gen)
+            
+            df_mc_reco = pickle.load(openfile(self.lpt_recodecmerged[iptskim], "rb"))
+            if "pt_jet" not in df_mc_reco.columns:
+                print("Jet variables not found in the dataframe. Skipping process_response.")
+                return
+            if self.s_evtsel is not None:
+                df_mc_reco = df_mc_reco.query(self.s_evtsel)
+            if self.s_trigger is not None:
+                df_mc_reco = df_mc_reco.query(self.s_trigger)
+            df_mc_reco = df_mc_reco.query(self.l_selml[iptskim])
+            list_df_mc_reco.append(df_mc_reco)
+
+        zbin_reco=[]
+        nzbin_reco=self.p_nbinshape_reco
+        zbin_reco =self.varshaperanges_reco
+        zbinarray_reco=array.array('d',zbin_reco)
+
+        zbin_gen =[]
+        nzbin_gen=self.p_nbinshape_gen
+        zbin_gen = self.varshaperanges_gen
+        zbinarray_gen=array.array('d',zbin_gen)
+        
+        jetptbin_reco =[]
+        njetptbin_reco=self.p_nbin2_reco
+        jetptbin_reco = self.var2ranges_reco
+        jetptbinarray_reco=array.array('d',jetptbin_reco)
+
+        jetptbin_gen =[]
+        njetptbin_gen=self.p_nbin2_gen
+        jetptbin_gen = self.var2ranges_gen
+        jetptbinarray_gen=array.array('d',jetptbin_gen)
+
+        
+        df_gen = pd.concat(list_df_mc_gen)
+        df_gen_prompt = df_gen[df_gen.ismcprompt == 1] # reconstructed & selected non-prompt jets  
+
+        
+        z_array_gen_unmatched = z_calc(df_gen_prompt.pt_jet, df_gen_prompt.phi_jet, df_gen_prompt.eta_jet,
+                               df_gen_prompt.pt_cand, df_gen_prompt.phi_cand, df_gen_prompt.eta_cand)
+        df_gen_prompt["z_gen"] = z_array_gen_unmatched
+        df_zvsjetpt_gen_unmatched = df_gen_prompt.loc[:, ["z_gen", "pt_jet"]]
+        hzvsjetpt_gen_unmatched = TH2F("hzvsjetpt_gen_unmatched", "hzvsjetpt_gen_unmatched",nzbin_gen,zbinarray_gen,njetptbin_gen,jetptbinarray_gen)
+        fill_hist(hzvsjetpt_gen_unmatched, df_zvsjetpt_gen_unmatched)
+
+
+        
+        df_mc_reco_merged = pd.concat(list_df_mc_reco)
+
+        
+        df_mc_reco_merged_prompt = df_mc_reco_merged[df_mc_reco_merged.ismcprompt == 1] # reconstructed & selected non-prompt jets
+
+        zarray_reco = z_calc(df_mc_reco_merged_prompt.pt_jet, df_mc_reco_merged_prompt.phi_jet, df_mc_reco_merged_prompt.eta_jet,
+                                    df_mc_reco_merged_prompt.pt_cand, df_mc_reco_merged_prompt.phi_cand, df_mc_reco_merged_prompt.eta_cand)
+
+        zarray_gen = z_gen_calc(df_mc_reco_merged_prompt.pt_gen_jet, df_mc_reco_merged_prompt.phi_gen_jet, df_mc_reco_merged_prompt.eta_gen_jet,
+                                    df_mc_reco_merged_prompt.pt_gen_cand, df_mc_reco_merged_prompt.delta_phi_gen_jet, df_mc_reco_merged_prompt.delta_eta_gen_jet)
+
+        df_mc_reco_merged_prompt['z_reco'] = zarray_reco
+        df_mc_reco_merged_prompt['z_gen'] = zarray_gen
+
+                
+        hzvsjetpt_reco_closure=TH2F("hzvsjetpt_reco_closure","hzvsjetpt_reco_closure",nzbin_reco,zbinarray_reco,njetptbin_reco,jetptbinarray_reco)
+        hzvsjetpt_reco_closure.Sumw2()
+        hzvsjetpt_gen_closure=TH2F("hzvsjetpt_gen_closure","hzvsjetpt_gen_closure",nzbin_gen,zbinarray_gen,njetptbin_gen,jetptbinarray_gen)
+        hzvsjetpt_gen_closure.Sumw2()
+        
+        hzvsjetpt_reco=TH2F("hzvsjetpt_reco","hzvsjetpt_reco",nzbin_reco,zbinarray_reco,njetptbin_reco,jetptbinarray_reco)
+        hzvsjetpt_reco.Sumw2()
+        hzvsjetpt_gen=TH2F("hzvsjetpt_gen","hzvsjetpt_gen",nzbin_gen,zbinarray_gen,njetptbin_gen,jetptbinarray_gen)
+        hzvsjetpt_gen.Sumw2()
+        
+        response_matrix = RooUnfoldResponse(hzvsjetpt_reco, hzvsjetpt_gen)
+        response_matrix_closure = RooUnfoldResponse(hzvsjetpt_reco, hzvsjetpt_gen)
+
+        
+        hz_gen_nocuts_list=[]
+        hz_gen_cuts_list=[]
+        hz_gen_nocuts_list_closure=[]
+        hz_gen_cuts_list_closure=[]
+
+        for ibin2 in range(len(self.lvar2_binmin_gen)):
+            suffix = "%s_%.2f_%.2f" % \
+                     (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+            hz_gen_nocuts=TH1F("hz_gen_nocuts" + suffix,"hz_gen_nocuts" + suffix,nzbin_gen, zbinarray_gen)
+            hz_gen_nocuts.Sumw2()
+            hz_gen_nocuts_list.append(hz_gen_nocuts)
+            hz_gen_cuts=TH1F("hz_gen_cuts" + suffix,"hz_gen_cuts" + suffix,nzbin_gen,zbinarray_gen)
+            hz_gen_cuts.Sumw2()
+            hz_gen_cuts_list.append(hz_gen_cuts)
+
+            hz_gen_nocuts_closure=TH1F("hz_gen_nocuts_closure" + suffix,"hz_gen_nocuts_closure" + suffix,nzbin_gen, zbinarray_gen)
+            hz_gen_nocuts_closure.Sumw2()
+            hz_gen_nocuts_list_closure.append(hz_gen_nocuts_closure)
+            hz_gen_cuts_closure=TH1F("hz_gen_cuts_closure" + suffix,"hz_gen_cuts_closure" + suffix,nzbin_gen,zbinarray_gen)
+            hz_gen_cuts_closure.Sumw2()
+            hz_gen_cuts_list_closure.append(hz_gen_cuts_closure)
+
+
+        
+        hjetpt_gen_nocuts=TH1F("hjetpt_gen_nocuts","hjetpt_gen_nocuts",njetptbin_gen, jetptbinarray_gen)
+        hjetpt_gen_nocuts.Sumw2()
+        hjetpt_gen_cuts=TH1F("hjetpt_gen_cuts","hjetpt_gen_cuts",njetptbin_gen,jetptbinarray_gen)
+        hjetpt_gen_cuts.Sumw2()
+                    
+        hjetpt_gen_nocuts_closure=TH1F("hjetpt_gen_nocuts_closure","hjetpt_gen_nocuts_closure",njetptbin_gen, jetptbinarray_gen)
+        hjetpt_gen_nocuts_closure.Sumw2()
+        hjetpt_gen_cuts_closure=TH1F("hjetpt_gen_cuts_closure","hjetpt_gen_cuts_closure",njetptbin_gen,jetptbinarray_gen)
+        hjetpt_gen_cuts_closure.Sumw2()
+        
+
+
+            
+        	
+        hzvsjetpt_reco_nocuts=TH2F("hzvsjetpt_reco_nocuts","hzvsjetpt_reco_nocuts",nzbin_reco, zbinarray_reco,njetptbin_reco,jetptbinarray_reco)
+        hzvsjetpt_reco_nocuts.Sumw2()
+        hzvsjetpt_reco_cuts=TH2F("hzvsjetpt_reco_cuts","hzvsjetpt_reco_cuts",nzbin_reco, zbinarray_reco,njetptbin_reco,jetptbinarray_reco)
+        hzvsjetpt_reco_cuts.Sumw2()
+
+        hzvsjetpt_reco_nocuts_closure=TH2F("hzvsjetpt_reco_nocuts_closure","hzvsjetpt_reco_nocuts_closure",nzbin_reco, zbinarray_reco,njetptbin_reco,jetptbinarray_reco)
+        hzvsjetpt_reco_nocuts_closure.Sumw2()
+        hzvsjetpt_reco_cuts_closure=TH2F("hzvsjetpt_reco_cuts_closure","hzvsjetpt_reco_cuts_closure",nzbin_reco, zbinarray_reco,njetptbin_reco,jetptbinarray_reco)
+        hzvsjetpt_reco_cuts_closure.Sumw2()
+
+
+
+        hjetpt_genvsreco_list=[]
+        hz_genvsreco_list=[]
+        hjetpt_genvsreco_full=TH2F("hjetpt_genvsreco_full","hjetpt_genvsreco_full",njetptbin_gen*100,self.lvar2_binmin_gen[0],self.lvar2_binmax_gen[-1],njetptbin_reco*100,self.lvar2_binmin_reco[0],self.lvar2_binmax_reco[-1])
+        hz_genvsreco_full=TH2F("hz_genvsreco_full","hz_genvsreco_full",nzbin_gen*100,self.lvarshape_binmin_gen[0],self.lvarshape_binmax_gen[-1],nzbin_reco*100,self.lvarshape_binmin_reco[0],self.lvarshape_binmax_reco[-1])
+
+        for ibinshape in range(len(self.lvarshape_binmin_reco)):
+            suffix = "z_%.2f_%.2f" % \
+                     (self.lvarshape_binmin_reco[ibinshape], self.lvarshape_binmax_reco[ibinshape])
+            hjetpt_genvsreco=TH2F("hjetpt_genvsreco"+suffix,"hjetpt_genvsreco"+suffix,njetptbin_gen*100,self.lvar2_binmin_gen[0],self.lvar2_binmax_gen[-1],njetptbin_reco*100,self.lvar2_binmin_reco[0],self.lvar2_binmax_reco[-1])
+            hjetpt_genvsreco_list.append(hjetpt_genvsreco)
+
+
+
+        for ibin2 in range(len(self.lvar2_binmin_reco)):
+            suffix = "%s_%.2f_%.2f" % \
+                     (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
+            hz_genvsreco=TH2F("hz_genvsreco"+suffix,"hz_genvsreco"+suffix,nzbin_gen*100,self.lvarshape_binmin_gen[0],self.lvarshape_binmax_gen[-1],nzbin_reco*100,self.lvarshape_binmin_reco[0],self.lvarshape_binmax_reco[-1])
+            hz_genvsreco_list.append(hz_genvsreco)
+
+        
+        hjetpt_fracdiff_list=[]
+        hz_fracdiff_list=[]
+        
+        for ibin2 in range(len(self.lvar2_binmin_gen)):
+            suffix = "%s_%.2f_%.2f" % \
+                     (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+            hjetpt_fracdiff = TH1F("hjetpt_fracdiff_prompt" +suffix,"hjetpt_fracdiff_prompt" +suffix,100,-2,2)
+            hjetpt_fracdiff_list.append(hjetpt_fracdiff)
+
+        for ibinshape in range(len(self.lvarshape_binmin_gen)):
+            suffix = "z_%.2f_%.2f" % \
+                     (self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape])
+            hz_fracdiff = TH1F("hz_fracdiff_prompt" +suffix,"hz_fracdiff_prompt" +suffix,100,-2,2)
+            hz_fracdiff_list.append(hz_fracdiff)
+
+
+            
+        hzvsjetpt_prior_weights=TH2F("hzvsjetpt_prior_weights","hzvsjetpt_prior_weights",nzbin_gen,zbinarray_gen,njetptbin_gen,jetptbinarray_gen)
+        hzvsjetpt_prior_weights.Sumw2()
+        if self.doprior is True:
+            for row in df_mc_reco_merged_prompt.itertuples():
+                if row.pt_gen_jet >= self.lvar2_binmin_gen[0] and row.pt_gen_jet < self.lvar2_binmax_gen[-1] and row.z_gen >= self.lvarshape_binmin_gen[0] and row.z_gen < self.lvarshape_binmax_gen[-1]:
+                    if row.pt_jet >= self.lvar2_binmin_reco[0] and row.pt_jet < self.lvar2_binmax_reco[-1] and row.z_reco >= self.lvarshape_binmin_reco[0] and row.z_reco < self.lvarshape_binmax_reco[-1]:
+                        hzvsjetpt_prior_weights.Fill(row.z_gen,row.pt_gen_jet)
+            
+        random_number = TRandom3(0)
+        random_number_result=0.0
+        response_matrix_weight = 1.0
+        for row in df_mc_reco_merged_prompt.itertuples():
+
+            random_number_result=random_number.Rndm()
+            random_number_result_weights=random_number.Rndm()
+            if row.pt_jet >= self.lvar2_binmin_reco[0] and row.pt_jet < self.lvar2_binmax_reco[-1] and row.z_reco >= self.lvarshape_binmin_reco[0] and row.z_reco < self.lvarshape_binmax_reco[-1]:
+                hzvsjetpt_reco.Fill(row.z_reco,row.pt_jet)
+                hzvsjetpt_reco_nocuts.Fill(row.z_reco,row.pt_jet)
+                if random_number_result < self.closure_frac :
+                    hzvsjetpt_reco_nocuts_closure.Fill(row.z_reco,row.pt_jet)
+                if row.pt_gen_jet >= self.lvar2_binmin_gen[0] and row.pt_gen_jet < self.lvar2_binmax_gen[-1] and row.z_gen >= self.lvarshape_binmin_gen[0] and row.z_gen < self.lvarshape_binmax_gen[-1]:
+                    hzvsjetpt_reco_cuts.Fill(row.z_reco,row.pt_jet)
+                    if random_number_result < self.closure_frac :
+                        hzvsjetpt_reco_cuts_closure.Fill(row.z_reco,row.pt_jet)
+            if row.pt_gen_jet >= self.lvar2_binmin_gen[0] and row.pt_gen_jet < self.lvar2_binmax_gen[-1] and row.z_gen >= self.lvarshape_binmin_gen[0] and row.z_gen < self.lvarshape_binmax_gen[-1]:
+                hzvsjetpt_gen.Fill(row.z_gen,row.pt_gen_jet)
+            if row.pt_gen_jet >= self.lvar2_binmin_gen[0] and row.pt_gen_jet < self.lvar2_binmax_gen[-1] and row.z_gen >= self.lvarshape_binmin_gen[0] and row.z_gen < self.lvarshape_binmax_gen[-1]:
+                if row.pt_jet >= self.lvar2_binmin_reco[0] and row.pt_jet < self.lvar2_binmax_reco[-1] and row.z_reco >= self.lvarshape_binmin_reco[0] and row.z_reco < self.lvarshape_binmax_reco[-1]:
+                    response_matrix_weight=1.0
+                    if self.doprior is True:
+                        if hzvsjetpt_prior_weights.GetBinContent(hzvsjetpt_prior_weights.GetXaxis().FindBin(row.z_gen),hzvsjetpt_prior_weights.GetYaxis().FindBin(row.pt_gen_jet)) > 0.0 :
+                            response_matrix_weight=1.0/hzvsjetpt_prior_weights.GetBinContent(hzvsjetpt_prior_weights.GetXaxis().FindBin(row.z_gen),hzvsjetpt_prior_weights.GetYaxis().FindBin(row.pt_gen_jet))
+                    response_matrix.Fill(row.z_reco,row.pt_jet,row.z_gen,row.pt_gen_jet,response_matrix_weight)
+                    hjetpt_genvsreco_full.Fill(row.pt_gen_jet,row.pt_jet)
+                    hz_genvsreco_full.Fill(row.z_gen,row.z_reco)
+                    for ibin2 in range(len(self.lvar2_binmin_reco)):
+                        if row.pt_jet >= self.lvar2_binmin_reco[ibin2] and row.pt_jet < self.lvar2_binmax_reco[ibin2]:
+                            hz_genvsreco_list[ibin2].Fill(row.z_gen,row.z_reco)
+                    for ibinshape in range(len(self.lvarshape_binmin_reco)):
+                        if row.z_reco >= self.lvarshape_binmin_reco[ibinshape] and row.z_reco < self.lvarshape_binmax_reco[ibinshape]:
+                            hjetpt_genvsreco_list[ibinshape].Fill(row.pt_gen_jet,row.pt_jet)
+
+            
+            for ibin2 in range(len(self.lvar2_binmin_gen)):
+                if row.pt_gen_jet >= self.lvar2_binmin_gen[ibin2] and row.pt_gen_jet < self.lvar2_binmax_gen[ibin2]:
+                    hjetpt_fracdiff_list[ibin2].Fill((row.pt_jet-row.pt_gen_jet)/row.pt_gen_jet)
+                    
+            for ibinshape in range(len(self.lvarshape_binmin_gen)):
+                if row.z_gen >= self.lvarshape_binmin_gen[ibinshape] and row.z_gen < self.lvarshape_binmax_gen[ibinshape]:
+                    hz_fracdiff_list[ibinshape].Fill((row.z_reco-row.z_gen)/row.z_gen)
+                    
+            for ibin2 in range(len(self.lvar2_binmin_gen)): 
+                if row.pt_gen_jet >= self.lvar2_binmin_gen[ibin2] and row.pt_gen_jet < self.lvar2_binmax_gen[ibin2] and row.z_gen >= self.lvarshape_binmin_gen[0] and row.z_gen < self.lvarshape_binmax_gen[-1] :
+                    hz_gen_nocuts_list[ibin2].Fill(row.z_gen)
+                    if random_number_result < self.closure_frac :
+                        hz_gen_nocuts_list_closure[ibin2].Fill(row.z_gen)
+                    if row.pt_jet >= self.lvar2_binmin_reco[0] and row.pt_jet < self.lvar2_binmax_reco[-1] and row.z_reco >= self.lvarshape_binmin_reco[0] and row.z_reco < self.lvarshape_binmax_reco[-1] :
+                        hz_gen_cuts_list[ibin2].Fill(row.z_gen)
+                        if random_number_result < self.closure_frac :
+                            hz_gen_cuts_list_closure[ibin2].Fill(row.z_gen)
+
+            if row.z_gen >= self.lvarshape_binmin_gen[0] and row.z_gen < self.lvarshape_binmax_gen[-1] and row.pt_gen_jet >= self.lvar2_binmin_gen[0] and row.pt_gen_jet < self.lvar2_binmax_gen[-1] :
+                hjetpt_gen_nocuts.Fill(row.pt_gen_jet)
+                if random_number_result < self.closure_frac :
+                    hjetpt_gen_nocuts_closure.Fill(row.pt_gen_jet)
+                if row.z_reco >= self.lvarshape_binmin_reco[0] and row.z_reco < self.lvarshape_binmax_reco[-1] and row.pt_jet >= self.lvar2_binmin_reco[0] and row.pt_jet < self.lvar2_binmax_reco[-1] :
+                    hjetpt_gen_cuts.Fill(row.pt_gen_jet)
+                    if random_number_result < self.closure_frac :
+                        hjetpt_gen_cuts_closure.Fill(row.pt_gen_jet)
+                            
+            if random_number_result < self.closure_frac :
+                hzvsjetpt_reco_closure.Fill(row.z_reco,row.pt_jet)
+                hzvsjetpt_gen_closure.Fill(row.z_gen,row.pt_gen_jet)
+            else:
+                response_matrix_weight=1.0
+                if self.doprior is True:
+                    if hzvsjetpt_prior_weights.GetBinContent(hzvsjetpt_prior_weights.GetXaxis().FindBin(row.z_gen),hzvsjetpt_prior_weights.GetYaxis().FindBin(row.pt_gen_jet)) > 0.0 :
+                        response_matrix_weight=1.0/hzvsjetpt_prior_weights.GetBinContent(hzvsjetpt_prior_weights.GetXaxis().FindBin(row.z_gen),hzvsjetpt_prior_weights.GetYaxis().FindBin(row.pt_gen_jet))
+                response_matrix_closure.Fill(row.z_reco,row.pt_jet,row.z_gen,row.pt_gen_jet,response_matrix_weight)
+
+        for ibin2 in range(len(self.lvar2_binmin_gen)):
+            hz_gen_nocuts_list[ibin2].Write()
+            hz_gen_cuts_list[ibin2].Write()
+            hz_gen_nocuts_list_closure[ibin2].Write()
+            hz_gen_cuts_list_closure[ibin2].Write()
+            hjetpt_fracdiff_list[ibin2].Scale(1.0/hjetpt_fracdiff_list[ibin2].Integral(1,-1))
+            hjetpt_fracdiff_list[ibin2].Write()
+        for ibinshape in range(len(self.lvarshape_binmin_gen)):
+            hz_fracdiff_list[ibinshape].Scale(1.0/hz_fracdiff_list[ibinshape].Integral(1,-1))
+            hz_fracdiff_list[ibinshape].Write()
+        for ibin2 in range(len(self.lvar2_binmin_reco)):
+            hz_genvsreco_list[ibin2].Scale(1.0/hz_genvsreco_list[ibin2].Integral(1,-1,1,-1))
+            hz_genvsreco_list[ibin2].Write()
+        for ibinshape in range(len(self.lvarshape_binmin_reco)):
+            hjetpt_genvsreco_list[ibin2].Scale(1.0/hjetpt_genvsreco_list[ibinshape].Integral(1,-1,1,-1))
+            hjetpt_genvsreco_list[ibinshape].Write()
+        hjetpt_gen_nocuts.Write()
+        hjetpt_gen_cuts.Write()
+        hjetpt_gen_nocuts_closure.Write()
+        hjetpt_gen_cuts_closure.Write()
+        hz_genvsreco_full.Scale(1.0/hz_genvsreco_full.Integral(1,-1,1,-1))
+        hz_genvsreco_full.Write()
+        hjetpt_genvsreco_full.Scale(1.0/hjetpt_genvsreco_full.Integral(1,-1,1,-1))
+        hjetpt_genvsreco_full.Write()
+        hzvsjetpt_reco.Write()
+        hzvsjetpt_gen.Write()
+        hzvsjetpt_gen_unmatched.Write()
+        hzvsjetpt_reco_nocuts.Write()
+        hzvsjetpt_reco_cuts.Write()
+        hzvsjetpt_reco_nocuts_closure.Write()
+        hzvsjetpt_reco_cuts_closure.Write()
+        response_matrix.Write("response_matrix")
+        response_matrix_closure.Write("response_matrix_closure")
+        hzvsjetpt_reco_closure.Write("input_closure_reco")
+        hzvsjetpt_gen_closure.Write("input_closure_gen")
+        out_file.Close()
+    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals
     def process_valevents(self, file_index):
         dfevt = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
         dfevt = dfevt.query("is_ev_rej==0")
