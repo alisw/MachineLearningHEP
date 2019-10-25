@@ -597,7 +597,7 @@ Dspp:
     SPDvspt:
       useperiod: [0,0,1]
       normalizecross: false
-      plotbin: [0,0,0,0,1]
+      plotbin: [0,0,0,0,0]
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: MBvspt_ntrkl

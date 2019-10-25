@@ -24,8 +24,9 @@ from ROOT import Double
 from machine_learning_hep.utilities import plot_histograms, Errors
 from machine_learning_hep.utilities import calc_systematic_multovermb
 from machine_learning_hep.utilities import divide_all_by_first_multovermb
-from machine_learning_hep.utilities import divide_by_eachother
+from machine_learning_hep.utilities import divide_by_eachother, divide_by_eachother_barlow
 from machine_learning_hep.utilities import calc_systematic_mesonratio
+from machine_learning_hep.utilities import calc_systematic_mesondoubleratio
 
 def results(histos_central, systematics, title, legend_titles, x_label, y_label,
             save_path, ratio, **kwargs):
@@ -52,12 +53,17 @@ def results(histos_central, systematics, title, legend_titles, x_label, y_label,
     legend_titles = [None] * len(histos_central) + legend_titles
 
     if ratio is False:
-        plot_histograms([*systematics, *histos_central], True, False, legend_titles, title,
+        plot_histograms([*systematics, *histos_central], True, [False, False, [1e-8, 1]], legend_titles, title,
                         x_label, y_label, "", save_path, linesytles=[1], markerstyles=markerstyles,
                         colors=colors, linewidths=[1], draw_options=draw_options,
                         fillstyles=[0])
     elif ratio is True:
-        plot_histograms([*systematics, *histos_central], False, [False, True, [0, 2.5]],
+        plot_histograms([*systematics, *histos_central], True, [False, True, [0.01, 100]],
+                        legend_titles, title, x_label, y_label, "", save_path, linesytles=[1],
+                        markerstyles=markerstyles, colors=colors, linewidths=[1],
+                        draw_options=draw_options, fillstyles=[0])
+    elif ratio == 2:
+        plot_histograms([*systematics, *histos_central], False, [False, True, [0, 3.1]],
                         legend_titles, title, x_label, y_label, "", save_path, linesytles=[1],
                         markerstyles=markerstyles, colors=colors, linewidths=[1],
                         draw_options=draw_options, fillstyles=[0])
@@ -106,16 +112,24 @@ YEAR_NUMBER = -1 # -1 refers to all years merged
 LEGEND_TITLES = ["#kern[1]{0} #kern[-0.05]{#leq} #it{N}_{tracklets} < #infty (MB)",
                  "#kern[1.6]{1} #kern[0.3]{#leq} #it{N}_{tracklets} < 9 (MB)",
                  "10 #leq #it{N}_{tracklets} < 29 (MB)", "30 #leq #it{N}_{tracklets} < 59 (MB)"]
+LEGEND_TITLES3 = ["#kern[1.6]{1} #kern[0.3]{#leq} #it{N}_{tracklets} < 9 (MB)",
+                 "30 #leq #it{N}_{tracklets} < 59 (MB)"]
 LEGEND_TITLESHM = ["#kern[1]{0} #kern[-0.05]{#leq} #it{N}_{tracklets} < #infty (MB)",
                    "#kern[1.6]{1} #kern[0.3]{#leq} #it{N}_{tracklets} < 9 (MB)",
                    "10 #leq #it{N}_{tracklets} < 29 (MB)", "30 #leq #it{N}_{tracklets} < 59 (MB)",
                    "60 #leq #it{N}_{tracklets} < 99 (HM)"]
 LEGEND_TITLES2 = ["#kern[1.6]{1} #kern[0.3]{#leq} #it{N}_{tracklets} < 9 (MB)",
                   "10 #leq #it{N}_{tracklets} < 29 (MB)", "30 #leq #it{N}_{tracklets} < 59 (MB)"]
+LEGEND_TITLES4 = ["[10 #leq #it{N}_{tracklets} < 29] / [1 #leq #it{N}_{tracklets} < 10]",
+                  "[30 #leq #it{N}_{tracklets} < 59] / [1 #leq #it{N}_{tracklets} < 10]"]
+LEGEND_TITLES5 = ["[#kern[1.6]{1} #kern[0.3]{#leq} #it{N}_{tracklets} < 9] / [#kern[1]{0} #kern[-0.05]{#leq} #it{N}_{tracklets} < #infty]",
+                 "[30 #leq #it{N}_{tracklets} < 59] / [#kern[1]{0} #kern[-0.05]{#leq} #it{N}_{tracklets} < #infty]"]
 
 COLORS = [kBlue, kGreen + 2, kRed - 2, kAzure + 3]
+COLORS3 = [kGreen + 2, kAzure + 3]
 COLORSHM = [kBlue, kGreen + 2, kRed - 2, kAzure + 3, kOrange + 7]
 COLORS2 = [kGreen + 2, kRed - 2, kAzure + 3]
+COLORS4 = [kRed - 2, kAzure + 3]
 
 # Get the ML histogram of the particle case and analysis type
 # Everything available in the HFPtSpetrum can be requested
@@ -134,12 +148,20 @@ ERROR_FILESD0 = ["data/errors/D0pp_full/MBvspt_ntrkl/errors_histoSigmaCorr_0.yam
                  "data/errors/D0pp_full/MBvspt_ntrkl/errors_histoSigmaCorr_3.yaml",
                  "data/errors/D0pp_full/SPDvspt/errors_histoSigmaCorr_4.yaml"]
 
-PATHD0 = "data/std_results/21Oct/"
-PATHLC = "data/std_results/22Oct/"
+PATHD0 = "data/std_results/23Oct/"
+PATHLC = "data/std_results/23Oct/"
+
+SIGMAV0 = 57.8e9
+BRLC = 0.0623
 
 for mb in range(4):
     histo_ = extract_histo_or_error(CASE, ANA_MB, mb, YEAR_NUMBER, "histoSigmaCorr", PATHLC)
     histo_.SetName(f"{histo_.GetName()}_{mb}")
+    histo_.Scale(1./SIGMAV0)
+    histo_.Scale(1./BRLC)
+    if mb == 0:
+        histo_.Scale(1./0.92)
+        histo_.Scale(1./0.94)
     HISTOS.append(histo_)
 
     DICTNB = {}
@@ -149,7 +171,7 @@ for mb in range(4):
     EYLOW = GRFD.GetEYlow()
     YVAL = GRFD.GetY()
     for i in range(histo_.GetNbinsX()):
-        ERRORNB.append([0, 0, EYLOW[i+1], EYHIGH[i+1]], YVAL)
+        ERRORNB.append([0, 0, EYLOW[i+1], EYHIGH[i+1], YVAL[i+1]])
     DICTNB["feeddown_NB"] = ERRORNB
 
     errs = Errors(histo_.GetNbinsX())
@@ -167,7 +189,7 @@ SAVE_PATH = make_standard_save_path(CASE, f"histoSigmaCorr_all_years_{ANA_MB}_MB
 # The list of error objects can contain None and in the end have the same length as number
 # of histograms
 results(HISTOS, ERRS_GR, "", LEGEND_TITLES, "#it{p}_{T} (GeV/#it{c})",
-        "d^{2}#sigma/(d#it{p}_{T}d#it{y}) #times BR(D_{s}^{+} #rightarrow #phi#pi #rightarrow KK#pi) (#mub GeV^{-1} #it{c})",
+        "d#it{N}/(d#it{p}_{T})|_{|y|<0.5} (GeV^{-1} #it{c})",
         SAVE_PATH, False, colors=COLORS)
 
 #############################################################################
@@ -192,7 +214,7 @@ SAVE_PATH = make_standard_save_path(CASE, f"histoSigmaCorr_MultOverMB_all_years_
 # The list of error objects can contain None and in the end have the same length as number
 # of histograms
 results(HISTOS_DIVMB, ERRS_GR_DIV, "", LEGEND_TITLES2, "#it{p}_{T} (GeV/#it{c})",
-        "Ratio to (d^{2}#sigma/(d#it{p}_{T}d#it{y})) mult. int.",
+        "Ratio to d#it{N}/(d#it{p}_{T})|_{|y|<0.5}  mult. int.",
         SAVE_PATH, True, colors=COLORS2)
 
 
@@ -208,6 +230,9 @@ ERRS_D0 = []
 ERRS_GR_DIVD0 = []
 
 for mb in range(4):
+
+    #if mb == 0 or mb == 2:
+    #    continue
     histo_ = extract_histo_or_error(CASE, ANA_MB, mb, YEAR_NUMBER, "histoSigmaCorr", PATHLC)
     histo_.SetName(f"{histo_.GetName()}_Lc{mb}")
     HISTOS_LC.append(histo_)
@@ -219,15 +244,18 @@ for mb in range(4):
     EYLOW = GRFD.GetEYlow()
     YVAL = GRFD.GetY()
     for i in range(histo_.GetNbinsX()):
-        ERRORNB.append([0, 0, EYLOW[i+1], EYHIGH[i+1]], YVAL)
+        ERRORNB.append([0, 0, EYLOW[i+1], EYHIGH[i+1], YVAL[i+1]])
     DICTNB["feeddown_NB"] = ERRORNB
 
     errs = Errors(histo_.GetNbinsX())
     errs.read(ERROR_FILES[mb], DICTNB)
     ERRS_LC.append(errs)
 
-PATHD0 = "data/std_results/21Oct/"
+PATHD0 = "data/std_results/23Oct/"
 for mb in range(4):
+
+    #if mb == 0 or mb == 2:
+    #    continue
     histo_ = extract_histo_or_error("D0pp", "MBvspt_ntrkl", mb, YEAR_NUMBER, \
                                     "histoSigmaCorr", PATHD0)
     histo_.SetName(f"{histo_.GetName()}_D0{mb}")
@@ -242,7 +270,7 @@ for mb in range(4):
     EYLOW = GRFD.GetEYlow()
     YVAL = GRFD.GetY()
     for i in range(histo_.GetNbinsX()):
-        ERRORNB.append([0, 0, EYLOW[i+2], EYHIGH[i+2]], YVAL)
+        ERRORNB.append([0, 0, EYLOW[i+1], EYHIGH[i+1], YVAL[i+1]])
     DICTNB["feeddown_NB"] = ERRORNB
 
     errs = Errors(histo_.GetNbinsX())
@@ -265,5 +293,60 @@ SAVE_PATH = make_standard_save_path(CASE, f"histoSigmaCorr_LcOverD0_all_years_{A
 # be added to the list the user has defined here.
 # The list of error objects can contain None and in the end have the same length as number
 # of histograms
+#results(HISTOS_LCOVERD0, ERRS_GR_DIVD0, "", LEGEND_TITLES3, "#it{p}_{T} (GeV/#it{c})",
+#        "#Lambda_{c}^{+} / D^{0}", SAVE_PATH, None, colors=COLORS3)
 results(HISTOS_LCOVERD0, ERRS_GR_DIVD0, "", LEGEND_TITLES, "#it{p}_{T} (GeV/#it{c})",
         "#Lambda_{c}^{+} / D^{0}", SAVE_PATH, None, colors=COLORS)
+
+
+
+###########################################################################
+##################### Plot Lc / D0 double ratio   #########################
+###########################################################################
+
+HISTO_DR_M = []
+ERRS_GR_DR_M = []
+HISTO_DR_M.append(divide_by_eachother([HISTOS_LCOVERD0[2]], [HISTOS_LCOVERD0[1]])[0])
+HISTO_DR_M.append(divide_by_eachother([HISTOS_LCOVERD0[3]], [HISTOS_LCOVERD0[1]])[0])
+
+for mb, _ in enumerate(HISTO_DR_M):
+    num = 2
+    den = 1
+    if mb == 1:
+         numb = 3
+    tot_Lc_over_D0_DR = calc_systematic_mesondoubleratio(ERRS_LC[num], ERRS_D0[num], ERRS_LC[den], ERRS_D0[den],
+                                                         HISTO_DR_M[mb].GetNbinsX())
+    ERRS_GR_DR_M.append(Errors.make_root_asymm(HISTO_DR_M[mb], \
+                                                tot_Lc_over_D0_DR, const_x_err=0.3))
+    ERRS_GR_DR_M[mb].SetName("%s%d" % (ERRS_GR_DR_M[mb].GetName(), mb+1))
+
+SAVE_PATH = make_standard_save_path(CASE, f"histoSigmaCorr_LcOverD0_DoubleRatioM_all_years_{ANA_MB}_MB")
+
+results(HISTO_DR_M, ERRS_GR_DR_M, "", LEGEND_TITLES4, "#it{p}_{T} (GeV/#it{c})",
+        "[#Lambda_{c}^{+} / D^{0}]_{i} / [#Lambda_{c}^{+} / D^{0}]_{j}", SAVE_PATH, 2, colors=COLORS4)
+
+#Stat Unc procedure to be changed
+#HISTO_DR_MB = []
+#HISTO_DR_MB.append(divide_by_eachother(HISTOS_LCOVERD0[1], HISTOS_LCOVERD0[0]))
+#HISTO_DR_MB.append(divide_by_eachother(HISTOS_LCOVERD0[3], HISTOS_LCOVERD0[0]))
+
+HISTO_DR_MB = []
+ERRS_GR_DR_MB = []
+HISTO_DR_MB.append(divide_by_eachother_barlow([HISTOS_LCOVERD0[1]], [HISTOS_LCOVERD0[0]])[0])
+HISTO_DR_MB.append(divide_by_eachother_barlow([HISTOS_LCOVERD0[3]], [HISTOS_LCOVERD0[0]])[0])
+
+for mb, _ in enumerate(HISTO_DR_MB):
+    num = 1
+    den = 0
+    if mb == 1:
+         numb = 3
+    tot_Lc_over_D0_DR = calc_systematic_mesondoubleratio(ERRS_LC[num], ERRS_D0[num], ERRS_LC[den], ERRS_D0[den],
+                                                         HISTO_DR_MB[mb].GetNbinsX())
+    ERRS_GR_DR_MB.append(Errors.make_root_asymm(HISTO_DR_MB[mb], \
+                                                tot_Lc_over_D0_DR, const_x_err=0.3))
+    ERRS_GR_DR_MB[mb].SetName("%s%d" % (ERRS_GR_DR_MB[mb].GetName(), mb+1))
+
+SAVE_PATH = make_standard_save_path(CASE, f"histoSigmaCorr_LcOverD0_DoubleRatioMB_all_years_{ANA_MB}_MB")
+
+results(HISTO_DR_MB, ERRS_GR_DR_MB, "", LEGEND_TITLES5, "#it{p}_{T} (GeV/#it{c})",
+        "[#Lambda_{c}^{+} / D^{0}]_{i} / [#Lambda_{c}^{+} / D^{0}]_{j}", SAVE_PATH, 2, colors=COLORS3)

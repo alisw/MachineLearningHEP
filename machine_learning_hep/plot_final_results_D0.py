@@ -52,12 +52,12 @@ def results(histos_central, systematics, title, legend_titles, x_label, y_label,
     legend_titles = [None] * len(histos_central) + legend_titles
 
     if ratio is False:
-        plot_histograms([*systematics, *histos_central], True, False, legend_titles, title,
+        plot_histograms([*systematics, *histos_central], True, [False, False, [1e-8, 1]], legend_titles, title,
                         x_label, y_label, "", save_path, linesytles=[1], markerstyles=markerstyles,
                         colors=colors, linewidths=[1], draw_options=draw_options,
                         fillstyles=[0])
     elif ratio is True:
-        plot_histograms([*systematics, *histos_central], False, [False, True, [0, 2.5]],
+        plot_histograms([*systematics, *histos_central], True, [False, True, [0.01, 100]],
                         legend_titles, title, x_label, y_label, "", save_path, linesytles=[1],
                         markerstyles=markerstyles, colors=colors, linewidths=[1],
                         draw_options=draw_options, fillstyles=[0])
@@ -132,12 +132,20 @@ ERROR_FILESD0 = ["data/errors/LcpKpipp/MBvspt_ntrkl/errors_histoSigmaCorr_0.yaml
                  "data/errors/LcpKpipp/MBvspt_ntrkl/errors_histoSigmaCorr_2.yaml",
                  "data/errors/LcpKpipp/MBvspt_ntrkl/errors_histoSigmaCorr_3.yaml"]
 
-PATHD0 = "data/std_results/21Oct/"
+PATHD0 = "data/std_results/23Oct/"
+
+SIGMAV0 = 57.8e9
+BRD0 = 0.0389
 
 for mb in range(4):
     histo_ = extract_histo_or_error(CASE, ANA_MB, mb, YEAR_NUMBER, "histoSigmaCorr", \
                                     PATHD0)
     histo_.SetName(f"{histo_.GetName()}_{mb}")
+    histo_.Scale(1./SIGMAV0)
+    histo_.Scale(1./BRD0)
+    if mb == 0:
+        histo_.Scale(1./0.92)
+        histo_.Scale(1./0.94)
     HISTOS.append(histo_)
 
     DICTNB = {}
@@ -148,7 +156,7 @@ for mb in range(4):
     EYLOW = GRFD.GetEYlow()
     YVAL = GRFD.GetY()
     for i in range(histo_.GetNbinsX()):
-        ERRORNB.append([0, 0, EYLOW[i+1], EYHIGH[i+1]], YVAL)
+        ERRORNB.append([0, 0, EYLOW[i+1], EYHIGH[i+1], YVAL[i+1]])
     DICTNB["feeddown_NB"] = ERRORNB
 
     errs = Errors(histo_.GetNbinsX())
@@ -166,7 +174,7 @@ SAVE_PATH = make_standard_save_path(CASE, f"histoSigmaCorr_all_years_{ANA_MB}_MB
 # The list of error objects can contain None and in the end have the same length as number
 # of histograms
 results(HISTOS, ERRS_GR, "", LEGEND_TITLES, "#it{p}_{T} (GeV/#it{c})",
-        "d^{2}#sigma/(d#it{p}_{T}d#it{y}) #times BR(D_{s}^{+} #rightarrow #phi#pi #rightarrow KK#pi) (#mub GeV^{-1} #it{c})",
+        "d#it{N}/(d#it{p}_{T})|_{|y|<0.5} (GeV^{-1} #it{c})",
         SAVE_PATH, False, colors=COLORS)
 
 #############################################################################
@@ -191,5 +199,5 @@ SAVE_PATH = make_standard_save_path(CASE, f"histoSigmaCorr_MultOverMB_all_years_
 # The list of error objects can contain None and in the end have the same length as number
 # of histograms
 results(HISTOS_DIVMB, ERRS_GR_DIV, "", LEGEND_TITLES2, "#it{p}_{T} (GeV/#it{c})",
-        "Ratio to (d^{2}#sigma/(d#it{p}_{T}d#it{y})) mult. int.",
+        "Ratio to d#it{N}/(d#it{p}_{T})|_{|y|<0.5} mult. int.",
         SAVE_PATH, True, colors=COLORS2)

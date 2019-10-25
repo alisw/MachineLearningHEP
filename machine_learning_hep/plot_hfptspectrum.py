@@ -626,41 +626,41 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype):
 
 gROOT.SetBatch(True)
 
-plot_hfptspectrum_ml_over_std("Dspp", "MBvspt_ntrkl", -1,
-                              "data/std_results/HFPtSpectrum_D0_merged_20191010.root",
-                              "D0", 2.27 / 3.89, None, 0, ["histoSigmaCorr"], ["histoSigmaCorr"])
+#plot_hfptspectrum_ml_over_std("Dspp", "MBvspt_ntrkl", -1,
+#                              "data/std_results/HFPtSpectrum_D0_merged_20191010.root",
+#                              "D0", 2.27 / 3.89, None, 0, ["histoSigmaCorr"], ["histoSigmaCorr"])
 ################## UNRELIABLE FOR NOW ########################
 # Mult 1-10
-plot_hfptspectrum_ml_over_std("Dspp", "MBvspt_ntrkl", -1,
-                              "data/std_results/D0_19_corryield.root",
-                              "D0", 1. / 57.8e-12 * 2.27 / 3.89, None, 1, ["histoSigmaCorr"],
-                              ["corrYield_19"], "mult_1_10")
+#plot_hfptspectrum_ml_over_std("Dspp", "MBvspt_ntrkl", -1,
+#                              "data/std_results/D0_19_corryield.root",
+#                              "D0", 1. / 57.8e-12 * 2.27 / 3.89, None, 1, ["histoSigmaCorr"],
+#                              ["corrYield_19"], "mult_1_10")
 # Mult 10-30
-plot_hfptspectrum_ml_over_std("Dspp", "MBvspt_ntrkl", -1,
-                              "data/std_results/D0_1029_corryield.root",
-                              "D0", 1. / 57.8e-12 * 2.27 / 3.89, None, 2, ["histoSigmaCorr"],
-                              ["corrYield_1029"], "mult_10_30")
+#plot_hfptspectrum_ml_over_std("Dspp", "MBvspt_ntrkl", -1,
+#                              "data/std_results/D0_1029_corryield.root",
+#                              "D0", 1. / 57.8e-12 * 2.27 / 3.89, None, 2, ["histoSigmaCorr"],
+#                              ["corrYield_1029"], "mult_10_30")
 # Scale STD one by branching ratios Ds / D0
 # Mult 30-60
-plot_hfptspectrum_ml_over_std("Dspp", "MBvspt_ntrkl", -1,
-                              "data/std_results/D0_3059_corryield.root",
-                              "D0", 1. / 57.8e-12 * 2.27 / 3.89, None, 3, ["histoSigmaCorr"],
-                              ["corrYield_3059"], "mult_30_60")
+#plot_hfptspectrum_ml_over_std("Dspp", "MBvspt_ntrkl", -1,
+#                              "data/std_results/D0_3059_corryield.root",
+#                              "D0", 1. / 57.8e-12 * 2.27 / 3.89, None, 3, ["histoSigmaCorr"],
+#                              ["corrYield_3059"], "mult_30_60")
 ##############################################################
 # With PRELIM 7 TeV
-plot_hfptspectrum_ml_over_std("Dspp", "MBvspt_ntrkl", 0,
-                              "data/std_results/HFPtSpectrum_D0_2016_prel_20191010.root", "D0",
-                              2.27 / 3.89,
-                              [(1, [1]), (2, [2, 3]), (3, [4, 5]), (4, [6, 7]), (5, [8, 9]),
-                               (6, [10, 11])], 0, ["histoSigmaCorr"], ["histoSigmaCorr"],
-                              "_prelim_7tev")
+#plot_hfptspectrum_ml_over_std("Dspp", "MBvspt_ntrkl", 0,
+#                              "data/std_results/HFPtSpectrum_D0_2016_prel_20191010.root", "D0",
+#                              2.27 / 3.89,
+#                              [(1, [1]), (2, [2, 3]), (3, [4, 5]), (4, [6, 7]), (5, [8, 9]),
+#                               (6, [10, 11])], 0, ["histoSigmaCorr"], ["histoSigmaCorr"],
+#                              "_prelim_7tev")
 # With PRELIM 5 TeV
-plot_hfptspectrum_ml_over_std("Dspp", "MBvspt_ntrkl", 0,
-                              "data/std_results/HFPtSpectrum_D0_2016_prel_5tev_20191015.root", "D0",
-                              2.27 / 3.89,
-                              [(1, [1]), (2, [2, 3]), (3, [4, 5]), (4, [6]), (5, [7]), (6, [8])],
-                              0, ["histoSigmaCorr"], ["histoSigmaCorr"],
-                              "_prelim_5tev")
+#plot_hfptspectrum_ml_over_std("Dspp", "MBvspt_ntrkl", 0,
+#                              "data/std_results/HFPtSpectrum_D0_2016_prel_5tev_20191015.root", "D0",
+#                              2.27 / 3.89,
+#                              [(1, [1]), (2, [2, 3]), (3, [4, 5]), (4, [6]), (5, [7]), (6, [8])],
+#                              0, ["histoSigmaCorr"], ["histoSigmaCorr"],
+#                              "_prelim_5tev")
 #plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_ntrkl", "SPDvspt"])
 #plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_v0m", "V0mvspt"])
 #plot_hfptspectrum_comb("LcpK0spp", ["MBvspt_perc", "V0mvspt_perc_v0m"])

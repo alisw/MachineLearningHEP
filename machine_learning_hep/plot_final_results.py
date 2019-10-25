@@ -52,12 +52,12 @@ def results(histos_central, systematics, title, legend_titles, x_label, y_label,
     legend_titles = [None] * len(histos_central) + legend_titles
 
     if ratio is False:
-        plot_histograms([*systematics, *histos_central], True, False, legend_titles, title,
+        plot_histograms([*systematics, *histos_central], True, [False, False, [1e-8, 1]], legend_titles, title,
                         x_label, y_label, "", save_path, linesytles=[1], markerstyles=markerstyles,
                         colors=colors, linewidths=[1], draw_options=draw_options,
                         fillstyles=[0])
     elif ratio is True:
-        plot_histograms([*systematics, *histos_central], False, [False, True, [0, 2.5]],
+        plot_histograms([*systematics, *histos_central], True, [False, True, [0.01, 100]],
                         legend_titles, title, x_label, y_label, "", save_path, linesytles=[1],
                         markerstyles=markerstyles, colors=colors, linewidths=[1],
                         draw_options=draw_options, fillstyles=[0])
@@ -106,6 +106,8 @@ YEAR_NUMBER = -1 # -1 refers to all years merged
 LEGEND_TITLES = ["#kern[1]{0} #kern[-0.05]{#leq} #it{N}_{tracklets} < #infty (MB)",
                  "#kern[1.6]{1} #kern[0.3]{#leq} #it{N}_{tracklets} < 9 (MB)",
                  "10 #leq #it{N}_{tracklets} < 29 (MB)", "30 #leq #it{N}_{tracklets} < 59 (MB)"]
+LEGEND_TITLES3 = ["#kern[1.6]{1} #kern[0.3]{#leq} #it{N}_{tracklets} < 9 (MB)",
+                 "30 #leq #it{N}_{tracklets} < 59 (MB)"]
 LEGEND_TITLESHM = ["#kern[1]{0} #kern[-0.05]{#leq} #it{N}_{tracklets} < #infty (MB)",
                    "#kern[1.6]{1} #kern[0.3]{#leq} #it{N}_{tracklets} < 9 (MB)",
                    "10 #leq #it{N}_{tracklets} < 29 (MB)", "30 #leq #it{N}_{tracklets} < 59 (MB)",
@@ -113,6 +115,7 @@ LEGEND_TITLESHM = ["#kern[1]{0} #kern[-0.05]{#leq} #it{N}_{tracklets} < #infty (
 LEGEND_TITLES2 = ["#kern[1.6]{1} #kern[0.3]{#leq} #it{N}_{tracklets} < 9 (MB)",
                   "10 #leq #it{N}_{tracklets} < 29 (MB)", "30 #leq #it{N}_{tracklets} < 59 (MB)"]
 
+COLORS3 = [kGreen + 2, kAzure + 3]
 COLORS = [kBlue, kGreen + 2, kRed - 2, kAzure + 3]
 COLORSHM = [kBlue, kGreen + 2, kRed - 2, kAzure + 3, kOrange + 7]
 COLORS2 = [kGreen + 2, kRed - 2, kAzure + 3]
@@ -134,9 +137,17 @@ ERROR_FILESD0 = ["data/errors/D0pp/MBvspt_ntrkl/errors_histoSigmaCorr_0.yaml",
                  "data/errors/D0pp/MBvspt_ntrkl/errors_histoSigmaCorr_3.yaml",
                  "data/errors/D0pp/SPDvspt/errors_histoSigmaCorr_4.yaml"]
 
+SIGMAV0 = 57.8e9
+BRDS = 0.0227
+
 for mb in range(4):
     histo_ = extract_histo_or_error(CASE, ANA_MB, mb, YEAR_NUMBER, "histoSigmaCorr")
     histo_.SetName(f"{histo_.GetName()}_{mb}")
+    histo_.Scale(1./SIGMAV0)
+    histo_.Scale(1./BRDS)
+    if mb == 0:
+        histo_.Scale(1./0.92)
+        histo_.Scale(1./0.94)
     HISTOS.append(histo_)
 
     DICTNB = {}
@@ -164,7 +175,7 @@ SAVE_PATH = make_standard_save_path(CASE, f"histoSigmaCorr_all_years_{ANA_MB}_MB
 # The list of error objects can contain None and in the end have the same length as number
 # of histograms
 results(HISTOS, ERRS_GR, "", LEGEND_TITLES, "#it{p}_{T} (GeV/#it{c})",
-        "d^{2}#sigma/(d#it{p}_{T}d#it{y}) #times BR(D_{s}^{+} #rightarrow #phi#pi #rightarrow KK#pi) (#mub GeV^{-1} #it{c})",
+        "d#it{N}/(d#it{p}_{T})|_{|y|<0.5} (GeV^{-1} #it{c})",
         SAVE_PATH, False, colors=COLORS)
 
 
@@ -225,7 +236,7 @@ SAVE_PATH = make_standard_save_path(CASE, f"histoSigmaCorr_MultOverMB_all_years_
 # The list of error objects can contain None and in the end have the same length as number
 # of histograms
 results(HISTOS_DIVMB, ERRS_GR_DIV, "", LEGEND_TITLES2, "#it{p}_{T} (GeV/#it{c})",
-        "Ratio to (d^{2}#sigma/(d#it{p}_{T}d#it{y})) mult. int.",
+        "Ratio to d#it{N}/(d#it{p}_{T})|_{|y|<0.5} mult. int.",
         SAVE_PATH, True, colors=COLORS2)
 
 
@@ -241,6 +252,9 @@ ERRS_D0 = []
 ERRS_GR_DIVD0 = []
 
 for mb in range(4):
+
+    #if mb == 0 or mb == 2:
+    #    continue
     histo_ = extract_histo_or_error(CASE, ANA_MB, mb, YEAR_NUMBER, "histoSigmaCorr")
     histo_.SetName(f"{histo_.GetName()}_Ds{mb}")
     HISTOS_DS.append(histo_)
@@ -259,8 +273,11 @@ for mb in range(4):
     errs.read(ERROR_FILES[mb], DICTNB)
     ERRS_DS.append(errs)
 
-PATHD0 = "data/std_results/21Oct/"
+PATHD0 = "data/std_results/23Oct/"
 for mb in range(4):
+
+    #if mb == 0 or mb == 2:
+    #    continue
     histo_ = extract_histo_or_error("D0pp", "MBvspt_ntrkl", mb, YEAR_NUMBER, \
                                     "histoSigmaCorr", PATHD0)
     histo_.SetName(f"{histo_.GetName()}_D0{mb}")
@@ -302,3 +319,5 @@ SAVE_PATH = make_standard_save_path(CASE, f"histoSigmaCorr_DsOverD0_all_years_{A
 # of histograms
 results(HISTOS_DSOVERD0, ERRS_GR_DIVD0, "", LEGEND_TITLES, "#it{p}_{T} (GeV/#it{c})",
         "D_{s}^{+} / D^{0}", SAVE_PATH, None, colors=COLORS)
+#results(HISTOS_DSOVERD0, ERRS_GR_DIVD0, "", LEGEND_TITLES3, "#it{p}_{T} (GeV/#it{c})",
+#        "D_{s}^{+} / D^{0}", SAVE_PATH, None, colors=COLORS3)

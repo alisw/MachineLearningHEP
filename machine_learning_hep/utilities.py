@@ -31,7 +31,7 @@ from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-modu
 # pylint: disable=import-error, no-name-in-module
 from ROOT import TH1F, TH2F, TFile, TH1, TGraphAsymmErrors
 from ROOT import TPad, TCanvas, TLegend, kBlack, kGreen, kRed, kBlue, kWhite
-from ROOT import Double
+from ROOT import Double, gStyle
 from machine_learning_hep.selectionutils import select_runs
 from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
 from machine_learning_hep.logger import get_logger
@@ -350,6 +350,40 @@ def divide_by_eachother(histos1, histos2, scale=None, rebin2=None):
 
     return histos_ratio
 
+def divide_by_eachother_barlow(histos1, histos2, scale=None, rebin2=None):
+    """
+    """
+
+    if len(histos1) != len(histos2):
+        get_logger().fatal("Number of histograms mismatch, %i vs. %i", \
+                            len(histos1), len(histos2))
+
+    histos_ratio = []
+    for i, _ in enumerate(histos1):
+
+        if rebin2 is not None:
+            rebin = array('d',rebin2)
+            histos2[i] = histos2[i].Rebin(len(rebin2)-1, f"{histos2[i].GetName()}_rebin", rebin)
+
+        if scale is not None:
+            histos1[i].Scale(1./scale[0])
+            histos2[i].Scale(1./scale[1])
+
+        stat1 = []
+        stat2 = []
+        for j in range(histos1[i].GetNbinsX()):
+            stat1.append(histos1[i].GetBinError(j+1) / histos1[i].GetBinContent(j+1))
+            stat2.append(histos2[i].GetBinError(j+1) / histos2[i].GetBinContent(j+1))
+
+        histos_ratio.append(histos1[i].Clone(f"{histos1[i].GetName()}_ratio"))
+        histos_ratio[-1].Divide(histos2[i])
+
+        for j in range(histos_ratio[-1].GetNbinsX()):
+            statunc = math.sqrt(abs(stat1[j] * stat1[j] - stat2[j] * stat2[j]))
+            histos_ratio[-1].SetBinError(j+1, histos_ratio[-1].GetBinContent(j+1) * statunc)
+
+    return histos_ratio
+
 
 def divide_all_by_first_multovermb(histos):
     """
@@ -357,8 +391,8 @@ def divide_all_by_first_multovermb(histos):
     divided histograms in the same order
     """
 
-    for h in histos:
-        h.Scale(1./h.Integral())
+#    for h in histos:
+#        h.Scale(1./h.Integral())
 
     histos_ratio = []
     err = []
@@ -406,6 +440,7 @@ def plot_histograms(histos, use_log_y=False, ratio_=False, legend_titles=None, t
     """
     Throws all given histograms into one canvas. If desired, a ratio plot will be added.
     """
+    gStyle.SetOptStat(0)
     justratioplot = False
     yrange = None
     if isinstance(ratio_, list):
@@ -511,16 +546,20 @@ def calc_systematic_multovermb(errnum_list, errden_list, n_bins):
                     #Partially correlated, take largest
                     tot_list[i][nb] += max(errnum[i][nb], errden[i][nb]) \
                                         * max(errnum[i][nb], errden[i][nb])
+                elif errnum_list.names[j] == "pid":
+                    #Correlated, do nothing
+                    pass
                 elif errnum_list.names[j] == "feeddown_mult":
                     #Assign directly from multiplicity case, no syst for MB
                     tot_list[i][nb] += errnum[i][nb] * errnum[i][nb]
+                elif errnum_list.names[j] == "feeddown_mult_spectra":
+                    #Ratio here, skip spectra syst
+                    pass
                 elif errnum_list.names[j] == "trigger":
                     #Assign directly from multiplicity case, no syst for MB
                     tot_list[i][nb] += errnum[i][nb] * errnum[i][nb]
                 elif errnum_list.names[j] == "multiplicity_interval":
                     #FD: estimated using 7TeV strategy directly for ratio
-                    #NB: At one point the strategy for spectra and Ds(mult)/Ds(MB) will change,
-                    #    then there should be two keys
                     tot_list[i][nb] += errnum[i][nb] * errnum[i][nb]
                 elif errnum_list.names[j] == "multiplicity_weights":
                     #Uncorrelated
@@ -575,11 +614,29 @@ def calc_systematic_mesonratio(errnum_list, errden_list, n_bins):
                 elif errnum_list.names[j] == "cut":
                     #Uncorrelated
                     tot_list[i][nb] += errnum[i][nb] * errnum[i][nb] + errden[i][nb] * errden[i][nb]
-                elif errnum_list.names[j] == "feeddown_mult":
-                    #Correlated, WHAT DO WE DO?? Now assign difference
+                elif errnum_list.names[j] == "pid":
+                    #Correlated, assign difference
                     diff = abs(errnum[i][nb] - errden[i][nb])
                     tot_list[i][nb] += diff * diff
-                    print("Warning: strategy for feeddown_mult to be refined")
+                elif errnum_list.names[j] == "feeddown_mult_spectra":
+                    #Fully correlated
+                    ynum = errnum_list.errors["feeddown_NB"][i][4]
+                    yden = errden_list.errors["feeddown_NB"][i][4]
+                    #Relative uncertainties stored, make absolute
+                    ynuml = ynum - ynum * errnum[i][2]
+                    ydenl = yden - yden * errden[i][2]
+                    ynumh = ynum + ynum * errnum[i][3]
+                    ydenh = yden + yden * errden[i][3]
+                    ratio = [ynuml / ydenl, ynum / yden, ynumh / ydenh]
+                    minsyst = min(ratio)
+                    maxsyst = max(ratio)
+                    if nb == 2:
+                        tot_list[i][nb] += (ratio[1] - minsyst) * (ratio[1] - minsyst) / (ratio[1] * ratio[1])
+                    if nb == 3:
+                        tot_list[i][nb] += (maxsyst - ratio[1]) * (maxsyst - ratio[1]) / (ratio[1] * ratio[1])
+                elif errnum_list.names[j] == "feeddown_mult":
+                    #Spectra here, skip ratio systematic
+                    pass
                 elif errnum_list.names[j] == "trigger":
                     #Correlated, do nothing
                     pass
@@ -587,6 +644,7 @@ def calc_systematic_mesonratio(errnum_list, errden_list, n_bins):
                     #Fully correlated under assumption central Fc value stays within Nb syst
                     ynum = errnum[i][4]
                     yden = errden[i][4]
+                    #Absolute uncertainties stored
                     ynuml = ynum - errnum[i][2]
                     ydenl = yden - errden[i][2]
                     ynumh = ynum + errnum[i][3]
@@ -595,9 +653,9 @@ def calc_systematic_mesonratio(errnum_list, errden_list, n_bins):
                     minsyst = min(ratio)
                     maxsyst = max(ratio)
                     if nb == 2:
-                        tot_list[i][nb] += (ratio[1] - minsyst) * (ratio[1] - minsyst)
+                        tot_list[i][nb] += (ratio[1] - minsyst) * (ratio[1] - minsyst) / (ratio[1] * ratio[1])
                     if nb == 3:
-                        tot_list[i][nb] += (maxsyst - ratio[1]) * (maxsyst - ratio[1])
+                        tot_list[i][nb] += (maxsyst - ratio[1]) * (maxsyst - ratio[1]) / (ratio[1] * ratio[1])
                 elif errnum_list.names[j] == "multiplicity_weights":
                     #Correlated, assign difference
                     diff = abs(errnum[i][nb] - errden[i][nb])
@@ -621,6 +679,70 @@ def calc_systematic_mesonratio(errnum_list, errden_list, n_bins):
                     pass
                 else:
                     get_logger().fatal("Unknown systematic name: %s", errnum_list.names[j])
+        j = j + 1
+    tot_list = np.sqrt(tot_list)
+    return tot_list
+
+def calc_systematic_mesondoubleratio(errnum_list1, errnum_list2, errden_list1, errden_list2, n_bins):
+    """
+    """
+    tot_list = [[0., 0., 0., 0.] for _ in range(n_bins)]
+    if n_bins != len(list(errnum_list1.errors.values())[0]) or \
+     n_bins != len(list(errden_list1.errors.values())[0]):
+        get_logger().fatal("Number of bins and number of errors mismatch, %i vs. %i vs. %i", \
+                            n_bins, len(errnum_list1.errors[0]), len(errden_list1.errors[0]))
+
+    j = 0
+    for (_, errnum1), (_, errnum2), (_, errden1), (_, errden2) in zip(errnum_list1.errors.items(), errnum_list2.errors.items(), errden_list1.errors.items(), errden_list2.errors.items()):
+        for i in range(n_bins):
+
+            if errnum_list1.names[j] != errden_list2.names[j]:
+                get_logger().fatal("Names not in same order: %s vs %s", \
+                                   errnum_list1.names[j], errden_list2.names[j])
+
+            for nb in range(len(tot_list[i])):
+                if errnum_list1.names[j] == "yield":
+                    #Uncorrelated
+                    tot_list[i][nb] += errnum1[i][nb] * errnum1[i][nb] + errnum2[i][nb] * errnum2[i][nb] + errden1[i][nb] * errden1[i][nb] + errden2[i][nb] * errden2[i][nb]
+                elif errnum_list1.names[j] == "cut":
+                    #Uncorrelated
+                    tot_list[i][nb] += errnum1[i][nb] * errnum1[i][nb] + errnum2[i][nb] * errnum2[i][nb] + errden1[i][nb] * errden1[i][nb] + errden2[i][nb] * errden2[i][nb]
+                elif errnum_list1.names[j] == "pid":
+                    #Correlated, do nothing
+                    pass
+                elif errnum_list1.names[j] == "feeddown_mult_spectra":
+                    #Correlated, do nothing
+                    pass
+                elif errnum_list1.names[j] == "feeddown_mult":
+                    #Correlated, do nothing
+                    pass
+                elif errnum_list1.names[j] == "trigger":
+                    #Correlated, do nothing
+                    pass
+                elif errnum_list1.names[j] == "feeddown_NB":
+                    #Correlated, do nothing
+                    pass
+                elif errnum_list1.names[j] == "multiplicity_weights":
+                    #Correlated, do nothing
+                    pass
+                elif errnum_list1.names[j] == "track":
+                    #Correlated, do nothing
+                    pass
+                elif errnum_list1.names[j] == "ptshape":
+                    #Uncorrelated
+                    tot_list[i][nb] += errnum1[i][nb] * errnum1[i][nb] + errnum2[i][nb] * errnum2[i][nb] + errden1[i][nb] * errden1[i][nb] + errden2[i][nb] * errden2[i][nb]
+                elif errnum_list1.names[j] == "multiplicity_interval":
+                    #NB: Assuming ratio: 3prongs over 2prongs here! 2prong part cancels
+                    #We use 1/3 of systematic of numerator
+                    tot_list[i][nb] += errden1[i][nb] * errden1[i][nb] / 9
+                elif errnum_list1.names[j] == "sigmav0":
+                    #Correlated and usually not plotted in boxes, do nothing
+                    pass
+                elif errnum_list1.names[j] == "branching_ratio":
+                    #Uncorrelated, but usually not plotted in boxes, so pass
+                    pass
+                else:
+                    get_logger().fatal("Unknown systematic name: %s", errnum_list1.names[j])
         j = j + 1
     tot_list = np.sqrt(tot_list)
     return tot_list
@@ -826,9 +948,8 @@ class Errors:
         for j, errors in enumerate(self.errors.values()):
             for i in range(self.n_bins):
                 for nb in range(len(tot_list[i])):
-                    if self.names[j] != "branching_ratio" or self.names[j] != "sigmav0":
+                    if self.names[j] != "branching_ratio" and self.names[j] != "sigmav0" \
+                      and self.names[j] != "feeddown_mult":
                         tot_list[i][nb] += (errors[i][nb] * errors[i][nb])
-                    if self.names[j] == "feeddown_mult":
-                        print("Warning: strategy for feeddown_mult to be refined")
         tot_list = np.sqrt(tot_list)
         return tot_list
