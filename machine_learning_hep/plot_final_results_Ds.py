@@ -21,7 +21,7 @@ import yaml
 from ROOT import TFile, gStyle, gROOT, TH1F, TGraphAsymmErrors, TH1
 from ROOT import kBlue, kAzure, kOrange, kGreen, kBlack, kRed, kWhite
 from ROOT import Double
-from machine_learning_hep.utilities import plot_histograms, Errors
+from machine_learning_hep.utilities import plot_histograms, save_histograms, Errors
 from machine_learning_hep.utilities import calc_systematic_multovermb
 from machine_learning_hep.utilities import divide_all_by_first_multovermb
 from machine_learning_hep.utilities import divide_by_eachother
@@ -125,7 +125,9 @@ COLORS2 = [kGreen + 2, kRed - 2, kAzure + 3]
 # From MB
 HISTOS = []
 ERRS = []
-ERRS_GR = []
+ERRS_GR_TOT = []
+ERRS_GR_FD = []
+ERRS_GR_WOFD = []
 ERROR_FILES = ["data/errors/Dspp/MBvspt_ntrkl/errors_histoSigmaCorr_0.yaml",
                "data/errors/Dspp/MBvspt_ntrkl/errors_histoSigmaCorr_1.yaml",
                "data/errors/Dspp/MBvspt_ntrkl/errors_histoSigmaCorr_2.yaml",
@@ -143,9 +145,11 @@ BRDS = 0.0227
 for mb in range(4):
     histo_ = extract_histo_or_error(CASE, ANA_MB, mb, YEAR_NUMBER, "histoSigmaCorr")
     histo_.SetName(f"{histo_.GetName()}_{mb}")
+    print("NOTE: Scaling with 1./57.8e9 (corr Y/ev) and 1./0.0227 (BR Ds)")
     histo_.Scale(1./SIGMAV0)
     histo_.Scale(1./BRDS)
     if mb == 0:
+        print("NOTE: Scaling MB with 1./0.92 (kINT7 trigger eff.) and 1./0.94 (nEvents for 1-999)")
         histo_.Scale(1./0.92)
         histo_.Scale(1./0.94)
     HISTOS.append(histo_)
@@ -163,53 +167,25 @@ for mb in range(4):
     errs = Errors(histo_.GetNbinsX())
     errs.read(ERROR_FILES[mb], DICTNB)
     ERRS.append(errs)
-    ERRS_GR.append(Errors.make_root_asymm(histo_, errs.get_total(), const_x_err=0.3))
-    ERRS_GR[mb].SetName("%s%d" % (ERRS_GR[mb].GetName(), mb))
+    ERRS_GR_TOT.append(Errors.make_root_asymm(histo_, errs.get_total_for_spectra_plot(), const_x_err=0.3))
+    ERRS_GR_FD.append(Errors.make_root_asymm(histo_, errs.get_total_for_spectra_plot(True), const_x_err=0.3))
+    ERRS_GR_WOFD.append(Errors.make_root_asymm(histo_, errs.get_total_for_spectra_plot(False), const_x_err=0.3))
+    ERRS_GR_TOT[mb].SetName("gr_TotSyst_%d" % mb)
+    ERRS_GR_FD[mb].SetName("gr_FDSyst_%d" % mb)
+    ERRS_GR_WOFD[mb].SetName("gr_TotSyst_woFD_%d" % mb)
 
 # Save globally in Ds directory
-SAVE_PATH = make_standard_save_path(CASE, f"histoSigmaCorr_all_years_{ANA_MB}_MB")
-
+SAVE_PATH = make_standard_save_path(CASE, f"CorrectedYieldPerEvent_{ANA_MB}_1999_19_1029_3059")
+save_histograms([*HISTOS, *ERRS_GR_TOT, *ERRS_GR_FD, *ERRS_GR_WOFD], SAVE_PATH)
+SAVE_PATH = make_standard_save_path(CASE, f"CorrectedYieldPerEvent_{ANA_MB}_1999_19_1029_3059_MLHEPCanvas")
 
 # As done here one can add an additional TGraphAsymmErrors per histogram. Those values will
 # be added to the list the user has defined here.
 # The list of error objects can contain None and in the end have the same length as number
 # of histograms
-results(HISTOS, ERRS_GR, "", LEGEND_TITLES, "#it{p}_{T} (GeV/#it{c})",
+results(HISTOS, ERRS_GR_TOT, "", LEGEND_TITLES, "#it{p}_{T} (GeV/#it{c})",
         "d#it{N}/(d#it{p}_{T})|_{|y|<0.5} (GeV^{-1} #it{c})",
         SAVE_PATH, False, colors=COLORS)
-
-
-#############################################################################
-##################### NOW ADD HM AND DO ANOTHER PLOT  #######################
-#############################################################################
-
-# Append the HM histogram
-HISTO_HM = extract_histo_or_error(CASE, ANA_HM, 4, YEAR_NUMBER, "histoSigmaCorr")
-HISTO_HM.SetName(f"{HISTO_HM.GetName()}_4")
-HISTOS.append(HISTO_HM)
-
-DICTNB = {}
-GRFD = extract_histo_or_error(CASE, ANA_MB, 4, YEAR_NUMBER, "gFcConservative")
-ERRORNB = []
-EYHIGH = GRFD.GetEYhigh()
-EYLOW = GRFD.GetEYlow()
-YVAL = GRFD.GetY()
-for i in range(HISTO_HM.GetNbinsX()):
-    ERRORNB.append([0, 0, EYLOW[i+1], EYHIGH[i+1], YVAL[i+1]])
-DICTNB["feeddown_NB"] = ERRORNB
-
-ERRS_HM = Errors(HISTO_HM.GetNbinsX())
-ERRS_HM.read(ERROR_FILES[4], DICTNB)
-ERRS_GR.append(Errors.make_root_asymm(HISTO_HM, ERRS_HM.get_total_for_spectra_plot(), \
-               const_x_err=0.3))
-ERRS_GR[4].SetName("%s%d" % (ERRS_GR[4].GetName(), 4))
-
-# Save globally in Ds directory
-SAVE_PATH = make_standard_save_path(CASE, f"histoSigmaCorr_all_years_MB_{ANA_MB}_HM_{ANA_HM}")
-
-results(HISTOS, ERRS_GR, "", LEGEND_TITLESHM, "#it{p}_{T} (GeV/#it{c})",
-        "d^{2}#sigma/(d#it{p}_{T}d#it{y}) #times BR(D_{s}^{+} #rightarrow #phi#pi #rightarrow KK#pi) (#mub GeV^{-1} #it{c})",
-        SAVE_PATH, False, colors=COLORSHM)
 
 
 #############################################################################
@@ -218,24 +194,33 @@ results(HISTOS, ERRS_GR, "", LEGEND_TITLESHM, "#it{p}_{T} (GeV/#it{c})",
 
 #Divide by MB
 HISTOS_DIV = divide_all_by_first_multovermb(HISTOS)
-#Remove HM one
-HISTOS_DIVMB = HISTOS_DIV[:-1]
 #Remove MB one
-HISTOS_DIVMB = HISTOS_DIVMB[1:]
-ERRS_GR_DIV = []
+HISTOS_DIVMB = HISTOS_DIV[1:]
+ERRS_GR_DIV_TOT = []
+ERRS_GR_DIV_WOFD = []
+ERRS_GR_DIV_FD = []
 for mb, _ in enumerate(HISTOS_DIVMB):
     tot_mult_over_MB = calc_systematic_multovermb(ERRS[mb+1], ERRS[0], HISTOS[0].GetNbinsX())
-    ERRS_GR_DIV.append(Errors.make_root_asymm(HISTOS_DIVMB[mb], tot_mult_over_MB, const_x_err=0.3))
-    ERRS_GR_DIV[mb].SetName("%s%d" % (ERRS_GR_DIV[mb].GetName(), mb+1))
+    tot_mult_over_MB_FD = calc_systematic_multovermb(ERRS[mb+1], ERRS[0], HISTOS[0].GetNbinsX(), True)
+    tot_mult_over_MB_WOFD = calc_systematic_multovermb(ERRS[mb+1], ERRS[0], HISTOS[0].GetNbinsX(), False)
+
+    ERRS_GR_DIV_TOT.append(Errors.make_root_asymm(HISTOS_DIVMB[mb], tot_mult_over_MB, const_x_err=0.3))
+    ERRS_GR_DIV_WOFD.append(Errors.make_root_asymm(HISTOS_DIVMB[mb], tot_mult_over_MB_WOFD, const_x_err=0.3))
+    ERRS_GR_DIV_FD.append(Errors.make_root_asymm(HISTOS_DIVMB[mb], tot_mult_over_MB_FD, const_x_err=0.3))
+    ERRS_GR_DIV_TOT[mb].SetName("gr_TotSyst_%d" % mb)
+    ERRS_GR_DIV_FD[mb].SetName("gr_FDSyst_%d" % mb)
+    ERRS_GR_DIV_WOFD[mb].SetName("gr_TotSyst_woFD_%d" % mb)
 
 # Save globally in Ds directory
-SAVE_PATH = make_standard_save_path(CASE, f"histoSigmaCorr_MultOverMB_all_years_{ANA_MB}_MB")
+SAVE_PATH = make_standard_save_path(CASE, f"MultOverMB_{ANA_MB}_19_1029_3059")
+save_histograms([*HISTOS_DIVMB, *ERRS_GR_DIV_TOT, *ERRS_GR_DIV_FD, *ERRS_GR_DIV_WOFD], SAVE_PATH)
+SAVE_PATH = make_standard_save_path(CASE, f"MultOverMB_{ANA_MB}_19_1029_3059_MLHEPCanvas")
 
 # As done here one can add an additional TGraphAsymmErrors per histogram. Those values will
 # be added to the list the user has defined here.
 # The list of error objects can contain None and in the end have the same length as number
 # of histograms
-results(HISTOS_DIVMB, ERRS_GR_DIV, "", LEGEND_TITLES2, "#it{p}_{T} (GeV/#it{c})",
+results(HISTOS_DIVMB, ERRS_GR_DIV_TOT, "", LEGEND_TITLES2, "#it{p}_{T} (GeV/#it{c})",
         "Ratio to d#it{N}/(d#it{p}_{T})|_{|y|<0.5} mult. int.",
         SAVE_PATH, True, colors=COLORS2)
 
@@ -249,7 +234,9 @@ HISTOS_DS = []
 HISTOS_D0 = []
 ERRS_DS = []
 ERRS_D0 = []
-ERRS_GR_DIVD0 = []
+ERRS_GR_DIVD0_TOT = []
+ERRS_GR_DIVD0_FD = []
+ERRS_GR_DIVD0_WOFD = []
 
 for mb in range(4):
 
@@ -306,18 +293,30 @@ HISTOS_DSOVERD0 = divide_by_eachother(HISTOS_DS, HISTOS_D0, [2.27, 3.89], [2,4,6
 for mb, _ in enumerate(HISTOS_DSOVERD0):
     tot_Ds_over_D0 = calc_systematic_mesonratio(ERRS_DS[mb], ERRS_D0[mb], \
                                                 HISTOS_DSOVERD0[mb].GetNbinsX())
-    ERRS_GR_DIVD0.append(Errors.make_root_asymm(HISTOS_DSOVERD0[mb], \
-                                                tot_Ds_over_D0, const_x_err=0.3))
-    ERRS_GR_DIVD0[mb].SetName("%s%d" % (ERRS_GR_DIVD0[mb].GetName(), mb+1))
+    tot_Ds_over_D0_FD = calc_systematic_mesonratio(ERRS_DS[mb], ERRS_D0[mb], \
+                                                   HISTOS_DSOVERD0[mb].GetNbinsX(), True)
+    tot_Ds_over_D0_WOFD = calc_systematic_mesonratio(ERRS_DS[mb], ERRS_D0[mb], \
+                                                     HISTOS_DSOVERD0[mb].GetNbinsX(), False)
+    ERRS_GR_DIVD0_TOT.append(Errors.make_root_asymm(HISTOS_DSOVERD0[mb], \
+                                                    tot_Ds_over_D0, const_x_err=0.3))
+    ERRS_GR_DIVD0_FD.append(Errors.make_root_asymm(HISTOS_DSOVERD0[mb], \
+                                                   tot_Ds_over_D0_FD, const_x_err=0.3))
+    ERRS_GR_DIVD0_WOFD.append(Errors.make_root_asymm(HISTOS_DSOVERD0[mb], \
+                                                     tot_Ds_over_D0_WOFD, const_x_err=0.3))
+    ERRS_GR_DIVD0_TOT[mb].SetName("gr_TotSyst_%d" % mb)
+    ERRS_GR_DIVD0_FD[mb].SetName("gr_FDSyst_%d" % mb)
+    ERRS_GR_DIVD0_WOFD[mb].SetName("gr_TotSyst_woFD_%d" % mb)
 
 # Save globally in Ds directory
-SAVE_PATH = make_standard_save_path(CASE, f"histoSigmaCorr_DsOverD0_all_years_{ANA_MB}_MB")
+SAVE_PATH = make_standard_save_path(CASE, f"DsOverD0_{ANA_MB}_1999_19_1029_3059")
+save_histograms([*HISTOS_DSOVERD0, *ERRS_GR_DIVD0_TOT, *ERRS_GR_DIVD0_FD, *ERRS_GR_DIVD0_WOFD], SAVE_PATH)
+SAVE_PATH = make_standard_save_path(CASE, f"DsOverD0_{ANA_MB}_1999_19_1029_3059_MLHEPCanvas")
 
 # As done here one can add an additional TGraphAsymmErrors per histogram. Those values will
 # be added to the list the user has defined here.
 # The list of error objects can contain None and in the end have the same length as number
 # of histograms
-results(HISTOS_DSOVERD0, ERRS_GR_DIVD0, "", LEGEND_TITLES, "#it{p}_{T} (GeV/#it{c})",
+results(HISTOS_DSOVERD0, ERRS_GR_DIVD0_TOT, "", LEGEND_TITLES, "#it{p}_{T} (GeV/#it{c})",
         "D_{s}^{+} / D^{0}", SAVE_PATH, None, colors=COLORS)
-#results(HISTOS_DSOVERD0, ERRS_GR_DIVD0, "", LEGEND_TITLES3, "#it{p}_{T} (GeV/#it{c})",
+#results(HISTOS_DSOVERD0, ERRS_GR_DIVD0_TOT, "", LEGEND_TITLES3, "#it{p}_{T} (GeV/#it{c})",
 #        "D_{s}^{+} / D^{0}", SAVE_PATH, None, colors=COLORS3)

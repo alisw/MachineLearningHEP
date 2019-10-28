@@ -517,8 +517,21 @@ def plot_histograms(histos, use_log_y=False, ratio_=False, legend_titles=None, t
 
     canvas.Close()
 
+def save_histograms(histos, save_path="./plot.root"):
+    """
+    Save everything into a ROOT file for offline plotting
+    """
+    index = save_path.rfind(".")
+
+    # Save also everything into a ROOT file
+    root_save_path = save_path[:index] + ".root"
+    root_file = TFile.Open(root_save_path, "RECREATE")
+    for h in histos:
+        h.Write()
+    root_file.Close()
+
 # pylint: disable=too-many-branches
-def calc_systematic_multovermb(errnum_list, errden_list, n_bins):
+def calc_systematic_multovermb(errnum_list, errden_list, n_bins, justfd=-99):
     """
     Returns a list of total errors taking into account the defined correlations
     Propagation uncertainties defined for Ds(mult) / Ds(MB). Check if applicable to your situation
@@ -529,65 +542,69 @@ def calc_systematic_multovermb(errnum_list, errden_list, n_bins):
         get_logger().fatal("Number of bins and number of errors mismatch, %i vs. %i vs. %i", \
                             n_bins, len(errnum_list.errors[0]), len(errden_list.errors[0]))
 
+    listimpl = ["yield", "cut", "pid", "feeddown_mult", "feeddown_mult_spectra", "trigger", \
+                "multiplicity_interval", "multiplicity_weights", "track", "ptshape", "feeddown_NB", \
+                "sigmav0", "branching_ratio"]
+
     j = 0
     for (_, errnum), (_, errden) in zip(errnum_list.errors.items(), errden_list.errors.items()):
         for i in range(n_bins):
 
+            if errnum_list.names[j] not in listimpl:
+                get_logger().fatal("Unknown systematic name: %s", errnum_list.names[j])
             if errnum_list.names[j] != errden_list.names[j]:
                 get_logger().fatal("Names not in same order: %s vs %s", \
                                    errnum.names[j], errden.names[j])
 
             for nb in range(len(tot_list[i])):
-                if errnum_list.names[j] == "yield":
+                if errnum_list.names[j] == "yield" and justfd is not True:
                     #Partially correlated, take largest
                     tot_list[i][nb] += max(errnum[i][nb], errden[i][nb]) \
                                         * max(errnum[i][nb], errden[i][nb])
-                elif errnum_list.names[j] == "cut":
+                elif errnum_list.names[j] == "cut" and justfd is not True:
                     #Partially correlated, take largest
                     tot_list[i][nb] += max(errnum[i][nb], errden[i][nb]) \
                                         * max(errnum[i][nb], errden[i][nb])
-                elif errnum_list.names[j] == "pid":
+                elif errnum_list.names[j] == "pid" and justfd is not True:
                     #Correlated, do nothing
                     pass
-                elif errnum_list.names[j] == "feeddown_mult":
+                elif errnum_list.names[j] == "feeddown_mult" and justfd is not False:
                     #Assign directly from multiplicity case, no syst for MB
                     tot_list[i][nb] += errnum[i][nb] * errnum[i][nb]
-                elif errnum_list.names[j] == "feeddown_mult_spectra":
+                elif errnum_list.names[j] == "feeddown_mult_spectra" and justfd is not False:
                     #Ratio here, skip spectra syst
                     pass
-                elif errnum_list.names[j] == "trigger":
+                elif errnum_list.names[j] == "trigger" and justfd is not True:
                     #Assign directly from multiplicity case, no syst for MB
                     tot_list[i][nb] += errnum[i][nb] * errnum[i][nb]
-                elif errnum_list.names[j] == "multiplicity_interval":
+                elif errnum_list.names[j] == "multiplicity_interval" and justfd is not True:
                     #FD: estimated using 7TeV strategy directly for ratio
                     tot_list[i][nb] += errnum[i][nb] * errnum[i][nb]
-                elif errnum_list.names[j] == "multiplicity_weights":
+                elif errnum_list.names[j] == "multiplicity_weights" and justfd is not True:
                     #Uncorrelated
                     tot_list[i][nb] += errnum[i][nb] * errnum[i][nb] + errden[i][nb] * errden[i][nb]
-                elif errnum_list.names[j] == "track":
+                elif errnum_list.names[j] == "track" and justfd is not True:
                     #Correlated, do nothing
                     pass
-                elif errnum_list.names[j] == "ptshape":
+                elif errnum_list.names[j] == "ptshape" and justfd is not True:
                     #Correlated, assign difference
                     diff = abs(errnum[i][nb] - errden[i][nb])
                     tot_list[i][nb] += diff * diff
-                elif errnum_list.names[j] == "feeddown_NB":
+                elif errnum_list.names[j] == "feeddown_NB" and justfd is not False:
                     #Correlated, do nothing
                     pass
-                elif errnum_list.names[j] == "sigmav0":
+                elif errnum_list.names[j] == "sigmav0" and justfd is not True:
                     #Correlated and usually not plotted in boxes, do nothing
                     pass
-                elif errnum_list.names[j] == "branching_ratio":
+                elif errnum_list.names[j] == "branching_ratio" and justfd is not True:
                     #Correlated and usually not plotted in boxes, do nothing
                     pass
-                else:
-                    get_logger().fatal("Unknown systematic name: %s", errnum_list.names[j])
         j = j + 1
     tot_list = np.sqrt(tot_list)
     return tot_list
 
 # pylint: disable=too-many-branches
-def calc_systematic_mesonratio(errnum_list, errden_list, n_bins):
+def calc_systematic_mesonratio(errnum_list, errden_list, n_bins, justfd=-99):
     """
     Returns a list of total errors taking into account the defined correlations
     Propagation uncertainties defined for Ds(MB or mult) / D0(MB or mult).
@@ -599,26 +616,32 @@ def calc_systematic_mesonratio(errnum_list, errden_list, n_bins):
         get_logger().fatal("Number of bins and number of errors mismatch, %i vs. %i vs. %i", \
                             n_bins, len(errnum_list.errors[0]), len(errden_list.errors[0]))
 
+    listimpl = ["yield", "cut", "pid", "feeddown_mult", "feeddown_mult_spectra", "trigger", \
+                "multiplicity_interval", "multiplicity_weights", "track", "ptshape", "feeddown_NB", \
+                "sigmav0", "branching_ratio"]
+
     j = 0
     for (_, errnum), (_, errden) in zip(errnum_list.errors.items(), errden_list.errors.items()):
         for i in range(n_bins):
 
+            if errnum_list.names[j] not in listimpl:
+                get_logger().fatal("Unknown systematic name: %s", errnum_list.names[j])
             if errnum_list.names[j] != errden_list.names[j]:
                 get_logger().fatal("Names not in same order: %s vs %s", \
                                    errnum_list.names[j], errden_list.names[j])
 
             for nb in range(len(tot_list[i])):
-                if errnum_list.names[j] == "yield":
+                if errnum_list.names[j] == "yield" and justfd is not True:
                     #Uncorrelated
                     tot_list[i][nb] += errnum[i][nb] * errnum[i][nb] + errden[i][nb] * errden[i][nb]
-                elif errnum_list.names[j] == "cut":
+                elif errnum_list.names[j] == "cut" and justfd is not True:
                     #Uncorrelated
                     tot_list[i][nb] += errnum[i][nb] * errnum[i][nb] + errden[i][nb] * errden[i][nb]
-                elif errnum_list.names[j] == "pid":
+                elif errnum_list.names[j] == "pid" and justfd is not True:
                     #Correlated, assign difference
                     diff = abs(errnum[i][nb] - errden[i][nb])
                     tot_list[i][nb] += diff * diff
-                elif errnum_list.names[j] == "feeddown_mult_spectra":
+                elif errnum_list.names[j] == "feeddown_mult_spectra" and justfd is not False:
                     #Fully correlated
                     ynum = errnum_list.errors["feeddown_NB"][i][4]
                     yden = errden_list.errors["feeddown_NB"][i][4]
@@ -634,13 +657,13 @@ def calc_systematic_mesonratio(errnum_list, errden_list, n_bins):
                         tot_list[i][nb] += (ratio[1] - minsyst) * (ratio[1] - minsyst) / (ratio[1] * ratio[1])
                     if nb == 3:
                         tot_list[i][nb] += (maxsyst - ratio[1]) * (maxsyst - ratio[1]) / (ratio[1] * ratio[1])
-                elif errnum_list.names[j] == "feeddown_mult":
+                elif errnum_list.names[j] == "feeddown_mult" and justfd is not False:
                     #Spectra here, skip ratio systematic
                     pass
-                elif errnum_list.names[j] == "trigger":
+                elif errnum_list.names[j] == "trigger" and justfd is not True:
                     #Correlated, do nothing
                     pass
-                elif errnum_list.names[j] == "feeddown_NB":
+                elif errnum_list.names[j] == "feeddown_NB" and justfd is not False:
                     #Fully correlated under assumption central Fc value stays within Nb syst
                     ynum = errnum[i][4]
                     yden = errden[i][4]
@@ -656,34 +679,32 @@ def calc_systematic_mesonratio(errnum_list, errden_list, n_bins):
                         tot_list[i][nb] += (ratio[1] - minsyst) * (ratio[1] - minsyst) / (ratio[1] * ratio[1])
                     if nb == 3:
                         tot_list[i][nb] += (maxsyst - ratio[1]) * (maxsyst - ratio[1]) / (ratio[1] * ratio[1])
-                elif errnum_list.names[j] == "multiplicity_weights":
+                elif errnum_list.names[j] == "multiplicity_weights" and justfd is not True:
                     #Correlated, assign difference
                     diff = abs(errnum[i][nb] - errden[i][nb])
                     tot_list[i][nb] += diff * diff
-                elif errnum_list.names[j] == "track":
+                elif errnum_list.names[j] == "track" and justfd is not True:
                     #Correlated, assign difference
                     diff = abs(errnum[i][nb] - errden[i][nb])
                     tot_list[i][nb] += diff * diff
-                elif errnum_list.names[j] == "ptshape":
+                elif errnum_list.names[j] == "ptshape" and justfd is not True:
                     #Uncorrelated
                     tot_list[i][nb] += errnum[i][nb] * errnum[i][nb] + errden[i][nb] * errden[i][nb]
-                elif errnum_list.names[j] == "multiplicity_interval":
+                elif errnum_list.names[j] == "multiplicity_interval" and justfd is not True:
                     #NB: Assuming ratio: 3prongs over 2prongs here! 2prong part cancels
                     #We use 1/3 of systematic of numerator
                     tot_list[i][nb] += errnum[i][nb] * errnum[i][nb] / 9
-                elif errnum_list.names[j] == "sigmav0":
+                elif errnum_list.names[j] == "sigmav0" and justfd is not True:
                     #Correlated and usually not plotted in boxes, do nothing
                     pass
-                elif errnum_list.names[j] == "branching_ratio":
+                elif errnum_list.names[j] == "branching_ratio" and justfd is not True:
                     #Uncorrelated, but usually not plotted in boxes, so pass
                     pass
-                else:
-                    get_logger().fatal("Unknown systematic name: %s", errnum_list.names[j])
         j = j + 1
     tot_list = np.sqrt(tot_list)
     return tot_list
 
-def calc_systematic_mesondoubleratio(errnum_list1, errnum_list2, errden_list1, errden_list2, n_bins):
+def calc_systematic_mesondoubleratio(errnum_list1, errnum_list2, errden_list1, errden_list2, n_bins, justfd=-99):
     """
     """
     tot_list = [[0., 0., 0., 0.] for _ in range(n_bins)]
@@ -692,57 +713,61 @@ def calc_systematic_mesondoubleratio(errnum_list1, errnum_list2, errden_list1, e
         get_logger().fatal("Number of bins and number of errors mismatch, %i vs. %i vs. %i", \
                             n_bins, len(errnum_list1.errors[0]), len(errden_list1.errors[0]))
 
+    listimpl = ["yield", "cut", "pid", "feeddown_mult", "feeddown_mult_spectra", "trigger", \
+                "multiplicity_interval", "multiplicity_weights", "track", "ptshape", "feeddown_NB", \
+                "sigmav0", "branching_ratio"]
+
     j = 0
     for (_, errnum1), (_, errnum2), (_, errden1), (_, errden2) in zip(errnum_list1.errors.items(), errnum_list2.errors.items(), errden_list1.errors.items(), errden_list2.errors.items()):
         for i in range(n_bins):
 
+            if errnum_list1.names[j] not in listimpl:
+                get_logger().fatal("Unknown systematic name: %s", errnum_list1.names[j])
             if errnum_list1.names[j] != errden_list2.names[j]:
                 get_logger().fatal("Names not in same order: %s vs %s", \
                                    errnum_list1.names[j], errden_list2.names[j])
 
             for nb in range(len(tot_list[i])):
-                if errnum_list1.names[j] == "yield":
+                if errnum_list1.names[j] == "yield" and justfd is not True:
                     #Uncorrelated
                     tot_list[i][nb] += errnum1[i][nb] * errnum1[i][nb] + errnum2[i][nb] * errnum2[i][nb] + errden1[i][nb] * errden1[i][nb] + errden2[i][nb] * errden2[i][nb]
-                elif errnum_list1.names[j] == "cut":
+                elif errnum_list1.names[j] == "cut" and justfd is not True:
                     #Uncorrelated
                     tot_list[i][nb] += errnum1[i][nb] * errnum1[i][nb] + errnum2[i][nb] * errnum2[i][nb] + errden1[i][nb] * errden1[i][nb] + errden2[i][nb] * errden2[i][nb]
-                elif errnum_list1.names[j] == "pid":
+                elif errnum_list1.names[j] == "pid" and justfd is not True:
                     #Correlated, do nothing
                     pass
-                elif errnum_list1.names[j] == "feeddown_mult_spectra":
+                elif errnum_list1.names[j] == "feeddown_mult_spectra" and justfd is not False:
                     #Correlated, do nothing
                     pass
-                elif errnum_list1.names[j] == "feeddown_mult":
+                elif errnum_list1.names[j] == "feeddown_mult" and justfd is not False:
                     #Correlated, do nothing
                     pass
-                elif errnum_list1.names[j] == "trigger":
+                elif errnum_list1.names[j] == "trigger" and justfd is not True:
                     #Correlated, do nothing
                     pass
-                elif errnum_list1.names[j] == "feeddown_NB":
+                elif errnum_list1.names[j] == "feeddown_NB" and justfd is not False:
                     #Correlated, do nothing
                     pass
-                elif errnum_list1.names[j] == "multiplicity_weights":
+                elif errnum_list1.names[j] == "multiplicity_weights" and justfd is not True:
                     #Correlated, do nothing
                     pass
-                elif errnum_list1.names[j] == "track":
+                elif errnum_list1.names[j] == "track" and justfd is not True:
                     #Correlated, do nothing
                     pass
-                elif errnum_list1.names[j] == "ptshape":
+                elif errnum_list1.names[j] == "ptshape" and justfd is not True:
                     #Uncorrelated
                     tot_list[i][nb] += errnum1[i][nb] * errnum1[i][nb] + errnum2[i][nb] * errnum2[i][nb] + errden1[i][nb] * errden1[i][nb] + errden2[i][nb] * errden2[i][nb]
-                elif errnum_list1.names[j] == "multiplicity_interval":
+                elif errnum_list1.names[j] == "multiplicity_interval" and justfd is not True:
                     #NB: Assuming ratio: 3prongs over 2prongs here! 2prong part cancels
                     #We use 1/3 of systematic of numerator
                     tot_list[i][nb] += errden1[i][nb] * errden1[i][nb] / 9
-                elif errnum_list1.names[j] == "sigmav0":
+                elif errnum_list1.names[j] == "sigmav0" and justfd is not True:
                     #Correlated and usually not plotted in boxes, do nothing
                     pass
-                elif errnum_list1.names[j] == "branching_ratio":
+                elif errnum_list1.names[j] == "branching_ratio" and justfd is not True:
                     #Uncorrelated, but usually not plotted in boxes, so pass
                     pass
-                else:
-                    get_logger().fatal("Unknown systematic name: %s", errnum_list1.names[j])
         j = j + 1
     tot_list = np.sqrt(tot_list)
     return tot_list
@@ -939,7 +964,7 @@ class Errors:
         tot_list = np.sqrt(tot_list)
         return tot_list
 
-    def get_total_for_spectra_plot(self):
+    def get_total_for_spectra_plot(self, justfd=-99):
         """
         Returns a list of total errors
         For now only add in quadrature and take sqrt
@@ -950,6 +975,19 @@ class Errors:
                 for nb in range(len(tot_list[i])):
                     if self.names[j] != "branching_ratio" and self.names[j] != "sigmav0" \
                       and self.names[j] != "feeddown_mult":
-                        tot_list[i][nb] += (errors[i][nb] * errors[i][nb])
+
+                        if justfd == -99:
+                            tot_list[i][nb] += (errors[i][nb] * errors[i][nb])
+                        elif justfd is True:
+                            if self.names[j] == "feeddown_NB" \
+                              or self.names[j] == "feeddown_mult_spectra":
+                                tot_list[i][nb] += (errors[i][nb] * errors[i][nb])
+                        elif justfd is False:
+                            if self.names[j] != "feeddown_NB" \
+                              and self.names[j] != "feeddown_mult_spectra":
+                                tot_list[i][nb] += (errors[i][nb] * errors[i][nb])
+                        else:
+                            get_logger().fatal("Option for spectra systematic not valid")
+
         tot_list = np.sqrt(tot_list)
         return tot_list

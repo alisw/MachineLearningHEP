@@ -272,11 +272,13 @@ Dspp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
-      corrEffMult: true
+      corrEffMult: [false,true,true,true,true]
       sel_binmin2: [0,1,10,30,60] #list of var2 splittng nbins
       sel_binmax2: [9999,10,30,60,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
       var_binning2_gen: n_tracklets_corr
+      triggereff: [1,0.862,1,1,1]
+      triggereffunc: [0,0.018,0,0,0]
       triggerbit: INT7
 
       sel_an_binmin: [2,4,6,8,12]  # [1,2,4,6,8,12] #list of pt nbins

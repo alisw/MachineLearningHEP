@@ -171,6 +171,9 @@ class Analyzer:
         self.p_fd_method = datap["analysis"]["fd_method"]
         self.p_cctype = datap["analysis"]["cctype"]
         self.p_sigmav0 = datap["analysis"]["sigmav0"]
+        self.p_triggereff = datap["analysis"][self.typean].get("triggereff", [1] * 10)
+        self.p_triggereffunc = datap["analysis"][self.typean].get("triggereffunc", [0] * 10)
+
         self.apply_weights = datap["analysis"][self.typean]["triggersel"]["weighttrig"]
         self.root_objects = []
 
@@ -1791,7 +1794,8 @@ class Analyzer:
                                    (self.d_resultsallpdata, self.case, self.typean)
                     self.logger.info("Calculating spectra using fPrompt from MB. "\
                                      "Assuming MB is bin 0: %s", filecrossmb)
-                HFPtSpectrum2(filecrossmb, fileouteff, namehistoeffprompt, namehistoefffeed, \
+                HFPtSpectrum2(filecrossmb, self.p_triggereff[imult], self.p_triggereffunc[imult], \
+                              fileouteff, namehistoeffprompt, namehistoefffeed, \
                               yield_filename, nameyield, fileoutcrossmult, norm, \
                               self.p_sigmav0 * 1e12)
 
