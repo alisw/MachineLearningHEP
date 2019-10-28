@@ -91,8 +91,12 @@ class Analyzer:
         self.powheg_prompt_variations = datap["analysis"][self.typean].get("powheg_prompt_variations", None)
         self.powheg_prompt_variations_path = datap["analysis"][self.typean].get("powheg_prompt_variations_path", None)
 
+        self.powheg_nonprompt_variations = datap["analysis"][self.typean].get("powheg_nonprompt_variations", None)
+        self.powheg_nonprompt_variations_path = datap["analysis"][self.typean].get("powheg_nonprompt_variations_path", None)
+
         self.pythia8_prompt_variations = datap["analysis"][self.typean].get("pythia8_prompt_variations", None)
         self.pythia8_prompt_variations_path = datap["analysis"][self.typean].get("pythia8_prompt_variations_path", None)
+        self.pythia8_prompt_variations_legend = datap["analysis"][self.typean].get("pythia8_prompt_variations_legend", None)
 
         self.systematic_catagories = datap["analysis"][self.typean].get("systematic_catagories", None)
         self.systematic_variations = datap["analysis"][self.typean].get("systematic_variations", None)
@@ -1455,19 +1459,31 @@ class Analyzer:
             setup_pad(peff)
             ceff.SetCanvasSize(1900, 1500)
             ceff.SetWindowSize(500, 500)
-            leg_eff = TLegend(.65, .5, .8, .7, "")
+            leg_eff = TLegend(.65, .55, .8, .7, "")
             setup_legend(leg_eff)
             setup_histogram(heff_pr_list[ibin2],2)
             leg_eff.AddEntry(heff_pr_list[ibin2],"prompt","LEP")
-            heff_pr_list[ibin2].SetXTitle("p_{T,Lc}")
-            heff_pr_list[ibin2].SetYTitle("Efficiency")
+            heff_pr_list[ibin2].SetXTitle("p_{T,#Lambda_{c}} (GeV/#it{c})")
+            heff_pr_list[ibin2].SetYTitle("Efficiency #times Acceptance ")
+            heff_pr_list[ibin2].SetTitleOffset(1.2,"Y")
+            heff_pr_list[ibin2].SetTitle("")
             heff_pr_list[ibin2].Draw()
             setup_histogram(heff_fd_list[ibin2],4)
             leg_eff.AddEntry(heff_fd_list[ibin2],"non-prompt","LEP")
             heff_fd_list[ibin2].Draw("same")
             leg_eff.Draw("same")
-            latex = TLatex(0.6,0.3,"%.2f < p_{T,jet} < %.2f GeV/c" % (self.lvar2_binmin_gen[ibin2],self.lvar2_binmax_gen[ibin2]))
+            latex = TLatex(0.52,0.45,"ALICE Preliminary")
             draw_latex(latex)
+            latex2 = TLatex(0.52,0.4,"PYTHIA 6, pp #sqrt{s}=13 TeV")
+            draw_latex(latex2)
+            latex3 = TLatex(0.52,0.35,"#Lambda_{c} #rightarrow p k_{s}^{0}")
+            draw_latex(latex3)
+            latex4 = TLatex(0.52,0.3,"Charged Jets, Anti-k_{T}, R=0.4")
+            draw_latex(latex4)
+            latex5 = TLatex(0.52,0.25,"%.0f < p_{#rm{T},jet}^{ch} < %.0f GeV/c" % (self.lvar2_binmin_reco[ibin2],self.lvar2_binmax_reco[ibin2]))
+            draw_latex(latex5)
+            latex6 = TLatex(0.52,0.2,"#left|#eta_{lab}#right|  < 0.5")
+            draw_latex(latex6)
             ceff.SaveAs("%s/ceff_prompt_nonprompt_%s.eps" % (self.d_resultsallpdata, suffix))
 
         cjetpt_fracdiff = TCanvas('cjetpt_fracdiff ', 'non-prompt jetpt response fractional differences')
@@ -1600,6 +1616,7 @@ class Analyzer:
             leg_feeddown.AddEntry(sideband_input_data_z[ibin2],"prompt+non-prompt","LEP")
             sideband_input_data_z[ibin2].GetYaxis().SetRangeUser(0.1,sideband_input_data_z[ibin2].GetMaximum()*3)
             sideband_input_data_z[ibin2].SetXTitle("z")
+            sideband_input_data_z[ibin2].SetYTitle("Yeild")
             sideband_input_data_z[ibin2].Draw()
             setup_histogram(sideband_input_data_subtracted_z[ibin2],3)
             leg_feeddown.AddEntry(sideband_input_data_subtracted_z[ibin2],"subtracted (prompt)","LEP")
@@ -1610,15 +1627,16 @@ class Analyzer:
             leg_feeddown.Draw("same")
             if ibin2 is not 2:
                 latex = TLatex(0.6,0.3,"%.2f < p_{T,jet} < %.2f GeV/c" % (self.lvar2_binmin_reco[ibin2],self.lvar2_binmax_reco[ibin2]))
+                latex = TLatex(0.6,0.3,"%.2f < p_{T,jet} < %.2f GeV/c" % (self.lvar2_binmin_reco[ibin2],self.lvar2_binmax_reco[ibin2]))
             else:
                 latex = TLatex(0.6,0.75,"%.2f < p_{T,jet} < %.2f GeV/c" % (self.lvar2_binmin_reco[ibin2],self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex)
             cfeeddown.SaveAs("%s/cfeeddown_subtraction_%s.eps" % (self.d_resultsallpdata, suffix))
             
             feeddown_fraction = folded_z_list[ibin2].Clone("feeddown_fraction"+suffix)
-            feeddown_fraction_denominator = folded_z_list[ibin2].Clone("feeddown_denominator"+suffix)
-            feeddown_fraction_denominator.Add(sideband_input_data_z[ibin2])
+            feeddown_fraction_denominator = sideband_input_data_z[ibin2].Clone("feeddown_denominator"+suffix)
             feeddown_fraction.Divide(feeddown_fraction_denominator)
+            feeddown_fraction.Write()
             
             cfeeddown_fraction = TCanvas('cfeeddown_fraction'+suffix, 'cfeeddown_fraction'+suffix)
             pfeeddown_fraction = TPad('pfeeddown_fraction'+suffix, 'cfeeddown_fraction'+suffix,0.0,0.001,1.0,1.0)
@@ -1633,6 +1651,7 @@ class Analyzer:
             feeddown_fraction.SetYTitle("b-feeddown fraction")
             feeddown_fraction.Draw()
             latex = TLatex(0.6,0.75,"%.2f < p_{T,jet} < %.2f GeV/c" % (self.lvar2_binmin_reco[ibin2],self.lvar2_binmax_reco[ibin2]))
+            latex = TLatex(0.6,0.7,"powheg based estimation")
             draw_latex(latex)
             cfeeddown_fraction.SaveAs("%s/cfeeddown_fraction_%s.eps" % (self.d_resultsallpdata, suffix))
             
@@ -1759,26 +1778,37 @@ class Analyzer:
                 setup_pad(psigbkgsubz)
                 csigbkgsubz.SetCanvasSize(1900, 1500)
                 csigbkgsubz.SetWindowSize(500, 500)
-                legsigbkgsubz = TLegend(.2, .65, .35, .85)
+                legsigbkgsubz = TLegend(.2, .70, .35, .85)
                 setup_legend(legsigbkgsubz)
                 setup_histogram(hzsig,2)
-                legsigbkgsubz.AddEntry(hzsig, "signal", "LEP")
+                legsigbkgsubz.AddEntry(hzsig, "signal region", "LEP")
                 hzsig.GetYaxis().SetRangeUser(0.0, max(hzsig.GetBinContent(hzsig.GetMaximumBin()), \
                     hzbkg_scaled.GetBinContent(hzbkg_scaled.GetMaximumBin()), \
-                    hzsub_noteffscaled.GetBinContent(hzsub_noteffscaled.GetMaximumBin()))*1.4)
+                    hzsub_noteffscaled.GetBinContent(hzsub_noteffscaled.GetMaximumBin()))*1.8)
+                hzsig.GetXaxis().SetRangeUser(self.lvarshape_binmin_reco[0]+0.01,self.lvarshape_binmax_reco[-1]-0.01)
                 hzsig.SetXTitle("z")
+                hzsig.SetYTitle("Yield")
+                hzsig.SetTitle("")
+                hzsig.GetYaxis().SetTitleOffset(1.4)
+                hzsig.GetYaxis().SetMaxDigits(3)
                 hzsig.Draw()
                 setup_histogram(hzbkg_scaled,3)
-                legsigbkgsubz.AddEntry(hzbkg_scaled, "side-band", "LEP")
+                legsigbkgsubz.AddEntry(hzbkg_scaled, "side-band region", "LEP")
                 hzbkg_scaled.Draw("same")
                 setup_histogram(hzsub_noteffscaled,4)
                 legsigbkgsubz.AddEntry(hzsub_noteffscaled, "subtracted", "LEP")
                 hzsub_noteffscaled.Draw("same")
                 legsigbkgsubz.Draw("same")
-                latex = TLatex(0.6,0.85,"%.2f < p_{T,jet} < %.2f GeV/c" % (self.lvar2_binmin_reco[imult],self.lvar2_binmax_reco[imult]))
+                latex = TLatex(0.46,0.85,"ALICE Preliminary")
                 draw_latex(latex)
-                latex2 = TLatex(0.6,0.8,"%.2f < p_{T,Lc} < %.2f GeV/c" % (self.lpt_finbinmin[ipt],self.lpt_finbinmax[ipt]))
+                latex1 = TLatex(0.46,0.8,"charged jets, anti-k_{T}, R=0.4 #left|#eta_{lab}#right|  < 0.5")
+                draw_latex(latex1)
+                latex2 = TLatex(0.46,0.75,"%.0f < p_{T,jet}^{ch} < %.0f GeV/c" % (self.lvar2_binmin_reco[imult],self.lvar2_binmax_reco[imult]))
                 draw_latex(latex2)
+                latex3 = TLatex(0.46,0.7,"with #Lambda_{c}, %.2f < p_{T,#Lambda_{c}} < %.2f GeV/#it{c}" % (self.lpt_finbinmin[ipt],self.lpt_finbinmax[ipt]))
+                draw_latex(latex3)
+                latex4 = TLatex(0.46,0.65,"pp #sqrt{s}=13 TeV")
+                draw_latex(latex4)
                 csigbkgsubz.SaveAs("%s/side_band_%s%s_%s.eps" % \
                              (self.d_resultsallpdata, self.case, self.typean, suffix))
                              
@@ -2445,6 +2475,7 @@ class Analyzer:
                 input_powheg_sys_z_iter.append(input_powheg_sys[i_powheg].ProjectionX("input_powheg_sys_z"+self.powheg_prompt_variations[i_powheg]+suffix,ibin2+1,ibin2+1,"e"))
                 input_powheg_sys_z_iter[i_powheg].Scale(1.0/input_powheg_sys_z_iter[i_powheg].Integral(input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[0]),input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[-1])),"width")
                 input_powheg_xsection_sys_z_iter.append(input_powheg_xsection_sys[i_powheg].ProjectionX("input_powheg_xsection_sys_z"+self.powheg_prompt_variations[i_powheg]+suffix,ibin2+1,ibin2+1,"e"))
+                input_powheg_xsection_sys_z_iter[i_powheg].Scale(1.0,"width")
             input_powheg_sys_z.append(input_powheg_sys_z_iter)
             input_powheg_xsection_sys_z.append(input_powheg_xsection_sys_z_iter)
             tg_powheg.append(tg_sys(input_powheg_z[ibin2], input_powheg_sys_z[ibin2]))
@@ -2707,7 +2738,7 @@ class Analyzer:
             unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2].SetYTitle("xsection dN/dz")
             unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2].Draw()
             setup_histogram(input_powheg_xsection_z[ibin2],3)
-            leg_input_mc_gen_z.AddEntry(input_powheg_xsection_z[ibin2], "POWHEG + PYTHIA", "LEP")
+            leg_input_mc_gen_z_xsection.AddEntry(input_powheg_xsection_z[ibin2], "POWHEG + PYTHIA", "LEP")
             input_powheg_xsection_z[ibin2].Draw("same")
             setup_tgraph(tg_powheg_xsection[ibin2],30,0.3)
             tg_powheg_xsection[ibin2].Draw("5")
@@ -3000,6 +3031,48 @@ class Analyzer:
         input_file_default=TFile.Open("%s/unfolding_results%s%s.root" % \
                               (self.d_resultsallpdata, self.case, self.typean), "update")
 
+        input_powheg_file = TFile.Open(self.powheg_path_prompt)
+        input_powheg = input_powheg_file.Get("fh2_powheg_prompt")
+        input_powheg_xsection = input_powheg_file.Get("fh2_powheg_prompt_xsection")
+        input_powheg_file_sys = []
+        input_powheg_sys=[]
+        input_powheg_xsection_sys=[]
+        for i_powheg in range(len(self.powheg_prompt_variations)):
+            input_powheg_file_sys.append(TFile.Open("%s%s.root" % (self.powheg_prompt_variations_path,self.powheg_prompt_variations[i_powheg])))
+            input_powheg_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_powheg_prompt"))
+            input_powheg_xsection_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_powheg_prompt_xsection"))
+        input_powheg_z=[]
+        input_powheg_xsection_z=[]
+        input_powheg_sys_z=[]
+        input_powheg_xsection_sys_z=[]
+        tg_powheg=[]
+        tg_powheg_xsection=[]
+
+
+        for ibin2 in range(self.p_nbin2_gen):
+            suffix = "%s_%.2f_%.2f" % \
+                     (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+            input_powheg_z.append(input_powheg.ProjectionX("input_powheg_z"+suffix,ibin2+1,ibin2+1,"e"))
+            input_powheg_z[ibin2].Scale(1.0/input_powheg_z[ibin2].Integral(input_powheg_z[ibin2].FindBin(self.lvarshape_binmin_reco[0]),input_powheg_z[ibin2].FindBin(self.lvarshape_binmin_reco[-1])),"width")
+            input_powheg_xsection_z.append(input_powheg_xsection.ProjectionX("input_powheg_xsection_z"+suffix,ibin2+1,ibin2+1,"e"))
+            input_powheg_xsection_z[ibin2].Scale(1.0,"width")
+            input_powheg_sys_z_iter=[]
+            input_powheg_xsection_sys_z_iter=[]
+            for i_powheg in range(len(self.powheg_prompt_variations)):
+                input_powheg_sys_z_iter.append(input_powheg_sys[i_powheg].ProjectionX("input_powheg_sys_z"+self.powheg_prompt_variations[i_powheg]+suffix,ibin2+1,ibin2+1,"e"))
+                input_powheg_sys_z_iter[i_powheg].Scale(1.0/input_powheg_sys_z_iter[i_powheg].Integral(input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[0]),input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[-1])),"width")
+                input_powheg_xsection_sys_z_iter.append(input_powheg_xsection_sys[i_powheg].ProjectionX("input_powheg_xsection_sys_z"+self.powheg_prompt_variations[i_powheg]+suffix,ibin2+1,ibin2+1,"e"))
+            input_powheg_sys_z.append(input_powheg_sys_z_iter)
+            input_powheg_xsection_sys_z.append(input_powheg_xsection_sys_z_iter)
+            tg_powheg.append(tg_sys(input_powheg_z[ibin2], input_powheg_sys_z[ibin2]))
+            tg_powheg_xsection.append(tg_sys(input_powheg_xsection_z[ibin2], input_powheg_xsection_sys_z[ibin2]))
+
+
+
+
+
+        
+
         input_hisotgrams_default=[]
         for ibin2 in range(self.p_nbin2_gen):
                 suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
@@ -3028,7 +3101,7 @@ class Analyzer:
                             input_histograms_syscatvar.append(input_file_default.Get("unfolded_z_%d_%s" % (self.niterunfoldingregup,suffix)))
                     else:
                         input_histograms_syscatvar.append(input_files_sys[sys_cat][sys_var].Get("unfolded_z_%d_%s" % (self.choice_iter_unfolding,suffix)))
-                        input_histograms_syscatvar[sys_var].Scale(1.0,"width") #remove these later and put normlaisation directly in systematics
+                        #input_histograms_syscatvar[sys_var].Scale(1.0,"width") #remove these later and put normlaisation directly in systematics
                 input_histograms_syscat.append(input_histograms_syscatvar)
             input_histograms_sys.append(input_histograms_syscat)
 
@@ -3243,20 +3316,29 @@ class Analyzer:
             setup_pad(pfinalwsys)
             cfinalwsys.SetCanvasSize(1900, 1500)
             cfinalwsys.SetWindowSize(500, 500)
-            leg_finalwsys = TLegend(.65, .6, .85, .8, "")
+            leg_finalwsys = TLegend(.65, .75, .85, .85, "")
             setup_legend(leg_finalwsys)
             leg_finalwsys.AddEntry(input_hisotgrams_default[ibin2],"ALICE Data","LEP")
             setup_histogram(input_hisotgrams_default[ibin2],4)
-            input_hisotgrams_default[ibin2].GetYaxis().SetRangeUser(0.0,input_hisotgrams_default[ibin2].GetMaximum()/2.5)
+            input_hisotgrams_default[ibin2].GetYaxis().SetRangeUser(0.0,input_hisotgrams_default[ibin2].GetMaximum()*1.2/2.5)
             input_hisotgrams_default[ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_gen[0]+0.01,self.lvarshape_binmax_gen[-1]-0.001)
             input_hisotgrams_default[ibin2].SetXTitle("z")
             input_hisotgrams_default[ibin2].SetYTitle("1/n_{jets} dN/dz")
+            input_hisotgrams_default[ibin2].SetTitleOffset(1.2,"Y")
+            input_hisotgrams_default[ibin2].SetTitle("")
             input_hisotgrams_default[ibin2].Draw()
-            leg_finalwsys.AddEntry(tgsys[ibin2],"systematic error","LEP")
             setup_tgraph(tgsys[ibin2],17,0.3)
             tgsys[ibin2].Draw("5")
-            latex = TLatex(0.2,0.8,'%.2f < p_{T,jet} < %.2f GeV/c' % (self.lvar2_binmin_gen[ibin2],self.lvar2_binmax_gen[ibin2]))
+            latex = TLatex(0.18,0.85,"ALICE Preliminary")
             draw_latex(latex)
+            latex1 = TLatex(0.18,0.8,"charged jets, anti-k_{T}, R=0.4 #left|#eta_{lab}#right|  < 0.5")
+            draw_latex(latex1)
+            latex2 = TLatex(0.18,0.75,"%.0f < p_{T,jet}^{ch} < %.0f GeV/c" % (self.lvar2_binmin_reco[ibin2],self.lvar2_binmax_reco[ibin2]))
+            draw_latex(latex2)
+            latex3 = TLatex(0.18,0.7,"%.1f < z < %.1f" % (self.lvarshape_binmin_reco[0],self.lvarshape_binmax_reco[-1]))
+            draw_latex(latex3)
+            latex4 = TLatex(0.18,0.65,"pp #sqrt{s}=13 TeV")
+            draw_latex(latex4)
             leg_finalwsys.Draw("same")
             cfinalwsys.SaveAs("%s/finalwsys_%s.pdf" % (self.d_resultsallpdata, suffix))
 
@@ -3266,24 +3348,37 @@ class Analyzer:
             setup_pad(pfinalwsys_wmodels)
             cfinalwsys_wmodels.SetCanvasSize(1900, 1500)
             cfinalwsys_wmodels.SetWindowSize(500, 500)
-            leg_finalwsys_wmodels = TLegend(.6, .6, .8, .8, "")
+            leg_finalwsys_wmodels = TLegend(.53, .55, .63, .75, "")
             setup_legend(leg_finalwsys_wmodels)
             leg_finalwsys_wmodels.AddEntry(input_hisotgrams_default[ibin2],"ALICE Data","LEP")
-            setup_histogram(input_hisotgrams_default[ibin2],1)
+            setup_histogram(input_hisotgrams_default[ibin2],4)
             input_hisotgrams_default[ibin2].GetYaxis().SetRangeUser(0.0,input_hisotgrams_default[ibin2].GetMaximum())
             input_hisotgrams_default[ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_gen[0]+0.01,self.lvarshape_binmax_gen[-1]-0.001)
             input_hisotgrams_default[ibin2].SetXTitle("z")
             input_hisotgrams_default[ibin2].SetYTitle("1/n_{jets} dN/dz")
+            input_hisotgrams_default[ibin2].SetTitle("")
             input_hisotgrams_default[ibin2].Draw()
-            leg_finalwsys_wmodels.AddEntry(tgsys[ibin2],"systematic error","LEP")
             setup_tgraph(tgsys[ibin2],17,0.3)
             tgsys[ibin2].Draw("5")
+            setup_histogram(input_powheg_z[ibin2],418)
+            leg_finalwsys_wmodels.AddEntry(input_powheg_z[ibin2], "POWHEG + PYTHIA 6", "LEP")
+            input_powheg_z[ibin2].Draw("same")
+            setup_tgraph(tg_powheg[ibin2],418,0.3)
+            tg_powheg[ibin2].Draw("5")
             for i_pythia8 in range(len(self.pythia8_prompt_variations)):
-                setup_histogram(input_pythia8_z[i_pythia8][ibin2],i_pythia8+2)
-                leg_finalwsys_wmodels.AddEntry(input_pythia8_z[i_pythia8][ibin2],self.pythia8_prompt_variations[i_pythia8],"LEP")
+                setup_histogram(input_pythia8_z[i_pythia8][ibin2],i_pythia8+1)
+                leg_finalwsys_wmodels.AddEntry(input_pythia8_z[i_pythia8][ibin2],self.pythia8_prompt_variations_legend[i_pythia8],"LEP")
                 input_pythia8_z[i_pythia8][ibin2].Draw("same")         
-            latex = TLatex(0.2,0.8,'%.2f < p_{T,jet} < %.2f GeV/c' % (self.lvar2_binmin_gen[ibin2],self.lvar2_binmax_gen[ibin2]))
+            latex = TLatex(0.18,0.85,"ALICE Preliminary")
             draw_latex(latex)
+            latex1 = TLatex(0.18,0.8,"charged jets, anti-k_{T}, R=0.4 #left|#eta_{lab}#right|  < 0.5")
+            draw_latex(latex1)
+            latex2 = TLatex(0.18,0.75,"%.0f < p_{T,jet}^{ch} < %.0f GeV/c" % (self.lvar2_binmin_reco[ibin2],self.lvar2_binmax_reco[ibin2]))
+            draw_latex(latex2)
+            latex3 = TLatex(0.18,0.7,"%.1f < z < %.1f" % (self.lvarshape_binmin_reco[0],self.lvarshape_binmax_reco[-1]))
+            draw_latex(latex3)
+            latex4 = TLatex(0.18,0.65,"pp #sqrt{s}=13 TeV")
+            draw_latex(latex4)
             leg_finalwsys_wmodels.Draw("same")
             cfinalwsys_wmodels.SaveAs("%s/finalwsys_wmodels_%s.pdf" % (self.d_resultsallpdata, suffix))
 
@@ -3312,6 +3407,59 @@ class Analyzer:
             draw_latex(latex)
             leg_relativesys.Draw("same")
             crelativesys.SaveAs("%s/relativesys_%s.pdf" % (self.d_resultsallpdata, suffix))
+
+
+        file_feeddown = TFile.Open("%s/feeddown%s%s.root" % \
+                              (self.d_resultsallpdata, self.case, self.typean))
+        file_feeddown_variations=[]
+        for i_powheg in range(len(self.powheg_nonprompt_variations)):
+            file_feeddown_variations.append(TFile.Open("/data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/systematics/powheg/sys_%d/pp_data/resultsMBjetvspt/feeddown%s%s.root" % (i_powheg+1, self.case, self.typean),"update"))
+        h_feeddown_fraction=[]
+        h_feeddown_fraction_variations=[]
+        tg_feeddown_fraction=[]
+        for ibin2 in range(self.p_nbin2_reco):
+            suffix = "%s_%.2f_%.2f" % \
+              (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
+            h_feeddown_fraction_variations_niter=[]
+            h_feeddown_fraction.append(file_feeddown.Get("feeddown_fraction"+suffix))
+            for i_powheg in range(len(self.powheg_nonprompt_variations)):
+                h_feeddown_fraction_variations_niter.append(file_feeddown_variations[i_powheg].Get("feeddown_fraction"+suffix))
+            
+            h_feeddown_fraction_variations.append(h_feeddown_fraction_variations_niter)
+            tg_feeddown_fraction.append(tg_sys(h_feeddown_fraction[ibin2], h_feeddown_fraction_variations[ibin2]))
+
+            cfeeddown_fraction = TCanvas('cfeeddown_fraction '+suffix, 'feeddown fraction'+suffix)
+            pfeeddown_fraction = TPad('pfeeddown_fraction'+suffix, "feeddown fraction"+suffix,0.0,0.001,1.0,1.0)
+            setup_pad(pfeeddown_fraction)
+            cfeeddown_fraction.SetCanvasSize(1900, 1500)
+            cfeeddown_fraction.SetWindowSize(500, 500)
+            setup_histogram(h_feeddown_fraction[ibin2],4)
+            h_feeddown_fraction[ibin2].GetYaxis().SetRangeUser(0.0,0.15)
+            h_feeddown_fraction[ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_reco[0]+0.01,self.lvarshape_binmax_reco[-1]-0.001)
+            h_feeddown_fraction[ibin2].GetXaxis().SetTitle("z")
+            h_feeddown_fraction[ibin2].GetYaxis().SetTitle("#Lambda_{b} feed-down fraction")
+            h_feeddown_fraction[ibin2].GetYaxis().SetTitleOffset(1.4)
+            h_feeddown_fraction[ibin2].SetTitle("")
+            h_feeddown_fraction[ibin2].Draw("same")
+            setup_tgraph(tg_feeddown_fraction[ibin2],4,0.3)
+            tg_feeddown_fraction[ibin2].Draw("5")
+            latex = TLatex(0.18,0.85,"ALICE Preliminary")
+            draw_latex(latex)
+            latex1 = TLatex(0.18,0.8,"charged jets, anti-k_{T}, R=0.4 #left|#eta_{lab}#right|  < 0.5")
+            draw_latex(latex1)
+            latex2 = TLatex(0.18,0.75,"%.0f < p_{T,jet}^{ch} < %.0f GeV/c" % (self.lvar2_binmin_reco[ibin2],self.lvar2_binmax_reco[ibin2]))
+            draw_latex(latex2)
+            latex3 = TLatex(0.18,0.7,"pp #sqrt{s}=13 TeV")
+            draw_latex(latex3)
+            latex4 = TLatex(0.65,0.85,"stat error from data")
+            draw_latex(latex4)
+            latex5 = TLatex(0.65,0.8,"sys error theoretical")
+            draw_latex(latex5)
+            latex6 = TLatex(0.65,0.75,"POWHEG based")
+            draw_latex(latex6)
+            cfeeddown_fraction.SaveAs("%s/feeddown_fraction_werros_%s.pdf" % (self.d_resultsallpdata, suffix))
+
+            
                 
 
 

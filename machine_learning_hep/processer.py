@@ -439,10 +439,16 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 myfile.cd()
                 h_invmass.Write()
                 h_invmass_weight.Write()
+                massarray=[]
+                for i in range(5001):
+                  massarray.append(1.0 + (i*(5.0/5000.0)))  
+                massarray_reco=array.array('d',massarray)
+                zarray_reco=array.array('d',self.varshaperanges_reco)
+                
                 if "pt_jet" in df_bin.columns:
                     zarray = z_calc(df_bin.pt_jet, df_bin.phi_jet, df_bin.eta_jet,
                                     df_bin.pt_cand, df_bin.phi_cand, df_bin.eta_cand)
-                    h_zvsinvmass = TH2F("hzvsmass" + suffix, "", 5000, 1.00, 6.00, self.p_nbinshape_reco, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
+                    h_zvsinvmass = TH2F("hzvsmass" + suffix, "", 5000, massarray_reco, self.p_nbinshape_reco, zarray_reco)
                     h_zvsinvmass.Sumw2()
                     zvsinvmass = np.vstack((df_bin.inv_mass, zarray)).T
                     fill_hist(h_zvsinvmass, zvsinvmass)
