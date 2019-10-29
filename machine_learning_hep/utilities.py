@@ -222,7 +222,7 @@ def folding(h_input, response_matrix, h_output):
             h_folded.SetBinError(a+1, b+1, math.sqrt(val_err))
     return h_folded
 
-def setup_histogram(hist, colour=1, markerstyle=25):
+def setup_histogram(hist, colour=1, markerstyle=25, size=1.5):
     hist.SetStats(0)
     hist.SetTitleSize(0.04,"X")
     hist.SetTitleOffset(1.0,"X")
@@ -230,7 +230,7 @@ def setup_histogram(hist, colour=1, markerstyle=25):
     hist.SetTitleOffset(1.0,"Y")
     hist.SetLineWidth(2)
     hist.SetLineColor(colour)
-    hist.SetMarkerSize(1.0)
+    hist.SetMarkerSize(size)
     hist.SetMarkerStyle(markerstyle)
     hist.SetMarkerColor(colour)
 
@@ -256,7 +256,7 @@ def setup_tgraph(tg, colour=46, alphastyle=0.3, fillstyle=1001):
     tg.SetLineColor(colour)
     tg.SetFillStyle(fillstyle)
     tg.SetMarkerSize(0)
-  
+
 def draw_latex(latex,colour=1,textsize=0.03):
     latex.SetNDC()
     latex.SetTextSize(textsize)
@@ -295,5 +295,4 @@ def tg_sys(central, variations):
     shapebins_error_down_array = array('d',shapebins_error_down)
     tg = TGraphAsymmErrors(central.GetNbinsX(),shapebins_centres_array,shapebins_contents_array,shapebins_widths_down_array,shapebins_widths_up_array,shapebins_error_down_array,shapebins_error_up_array)
     return tg
-               
-           
+
