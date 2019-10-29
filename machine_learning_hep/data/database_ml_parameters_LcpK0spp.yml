@@ -542,7 +542,7 @@ LcpK0spp:
 
     MBjetvspt:
       useperiod: [1,1,1,1]
-      normalizecross: true      
+      normalizecross: true
 
       plotbin: [1,1,1,1]
       usesinglebineff: null
@@ -617,7 +617,7 @@ LcpK0spp:
 
       pythia8_prompt_variations_path : /data/PYTHIA8/LckINT7HighMultwithJets/prompt/pythia_lc_charm_
       pythia8_prompt_variations : ["default","coloursoft_mode0"]
-      pythia8_prompt_variations_legend : ["PYTHIA 8","PYTHIA 8 Colour Soft (Mode 0)"]
+      pythia8_prompt_variations_legend : ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
 
 
       systematic_catagories: ["fitting", "cutvar", "powheg", "unfolding_prior", "regularisation"] #sideband 20
