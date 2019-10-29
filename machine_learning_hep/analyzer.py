@@ -24,7 +24,7 @@ from subprocess import Popen
 import numpy as np
 # pylint: disable=import-error, no-name-in-module, unused-import
 from root_numpy import hist2array, array2hist
-from ROOT import TFile, TH1F, TH2F, TCanvas, TPad, TF1, TLatex, TGraphAsymmErrors
+from ROOT import TFile, TH1F, TH2F, TCanvas, TPad, TF1, TLatex, TGraphAsymmErrors, Double
 from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
 from ROOT import gROOT, TDirectory, TPaveLabel
 from ROOT import TStyle, kBlue, kGreen, kBlack, kRed
@@ -573,9 +573,21 @@ class Analyzer:
 
 
                 canvas = TCanvas("fit_canvas", suffix, 700, 700)
+                canvas.SetMargin(0.15,0.9,0.1,0.9)
+                canvas.SetTicks(1,1)
                 his_mass = mass_fitter[ifit].GetHistoClone()
                 fun_mass_bg = mass_fitter[ifit].GetBackgroundRecalcFunc()
                 fun_mass_tot = mass_fitter[ifit].GetMassFunc()
+                signif, err_signif = Double(0.), Double(0.)
+                mass_fitter[ifit].Significance(self.p_nsigma_signal,signif,err_signif)
+                his_mass.SetTitle(";#it{M}_{inv} (GeV/#it{c}^{2});Entries")
+                hm_min = his_mass.GetMinimum(1)
+                hm_max = his_mass.GetMaximum()
+                hm_margin_max = 0.3
+                hm_margin_min = 0.1
+                his_mass.GetYaxis().SetRangeUser(hm_min - hm_margin_min * (hm_max - hm_min),  hm_max + hm_margin_max * (hm_max - hm_min))
+                his_mass.GetYaxis().SetTitleOffset(2.)
+                his_mass.GetXaxis().SetTitleOffset(1.2)
                 his_mass.SetMarkerStyle(20)
                 his_mass.Draw("PE")
                 if fun_mass_bg:
@@ -583,6 +595,21 @@ class Analyzer:
                 if fun_mass_tot:
                     fun_mass_tot.Draw("same")
 #                mass_fitter[ifit].DrawHere(canvas, self.p_nsigma_signal)
+                latex = TLatex(0.43,0.84,"ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV")
+                draw_latex(latex)
+                latex1 = TLatex(0.58,0.8,"#Lambda_{c}^{#plus} (and charge conj.)")
+                draw_latex(latex1)
+                latex10 = TLatex(0.58,0.76,"in charged jets, anti-#it{k}_{T},")
+                draw_latex(latex10)
+                latex11 = TLatex(0.58,0.72,"#it{R} = 0.4, #left|#it{#eta}_{jet}#right| < 0.5")
+                draw_latex(latex11)
+                latex2 = TLatex(0.58,0.67,"%.0f < #it{p}_{T, jet}^{ch} < %.0f GeV/#it{c}" % (self.lvar2_binmin[imult],self.lvar2_binmax[imult]))
+                draw_latex(latex2)
+#                latex3 = TLatex(0.18,0.7,"%.1f < #it{z}_{#parallel}^{ch} #leq %.1f" % (self.lvarshape_binmin_reco[0],self.lvarshape_binmax_reco[-1]))
+                latex3 = TLatex(0.58,0.63,"%.0f < #it{p}_{T, #Lambda_{c}^{#plus}} < %.0f GeV/#it{c}" % (self.lpt_finbinmin[ipt],min(self.lpt_finbinmax[ipt],self.lvar2_binmax[imult])))
+                draw_latex(latex3)
+                latex5 = TLatex(0.58,0.58,"signif. (%.g#it{#sigma}) = %.1f #pm %.1f" % (self.p_nsigma_signal,signif,err_signif))
+                draw_latex(latex5)
                 if self.apply_weights is False:
                     canvas.SaveAs(self.make_file_path(self.d_resultsallpdata, "fittedplot", "eps",
                                                       None, suffix_write))
@@ -1476,6 +1503,7 @@ class Analyzer:
             heff_pr_list[ibin2].SetXTitle("#it{p}_{T, #Lambda_{c}^{#plus}} (GeV/#it{c})")
             heff_pr_list[ibin2].SetYTitle("Efficiency #times Acceptance ")
             heff_pr_list[ibin2].SetTitleOffset(1.2,"Y")
+            heff_pr_list[ibin2].SetTitleOffset(1.2,"X")
             heff_pr_list[ibin2].SetTitle("")
             heff_pr_list[ibin2].Draw()
             setup_histogram(heff_fd_list[ibin2],4,24)
