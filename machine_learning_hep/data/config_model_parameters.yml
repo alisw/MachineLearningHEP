@@ -37,7 +37,6 @@ BinaryClassification:
       activate: False
       max_depth: 5
 
-# Parameters tuned via random search
   xgboost:
     xgboost_classifier:
       activate: True

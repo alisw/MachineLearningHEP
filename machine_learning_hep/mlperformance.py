@@ -14,6 +14,12 @@
 
 """
 Methods to: model performance evaluation
+TODO Optimisation: In each function model is retrained by calling fit again. 
+Avoid this retraining by saving the trained model in optimiser.py and passing
+that saved model to the functions defined in this script. Of course if do_train
+is disabled, this means no trained models would be available for evaluating...so
+we could add an if condition to check for that case and handle it accordingly.
+
 """
 from io import BytesIO
 import pandas as pd
@@ -24,6 +30,8 @@ from sklearn.model_selection import cross_val_score, cross_val_predict, \
     train_test_split, StratifiedKFold
 from sklearn.metrics import roc_curve, auc, confusion_matrix, precision_recall_curve, \
     mean_squared_error
+import itertools # to be removed
+
 
 
 def cross_validation_mse(names_, classifiers_, x_train, y_train, cv_, ncores):
@@ -118,42 +126,16 @@ def plotscattertarget(names_, testset, myvariablesy, suffix_, folder):
     return img_scatt_reg
 
 
-def confusion(names_, classifiers_, suffix_, x_train, y_train, cvgen, folder):
+def confusion(names_, classifiers_, suffix_, x_train, y_train, x_test, y_test, cvgen, folder):
     figure1 = plt.figure(figsize=(25, 15))  # pylint: disable=unused-variable
     plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.4, hspace=0.2)
-
     i = 1
     for name, clf in zip(names_, classifiers_):
         ax = plt.subplot(2, (len(names_)+1)/2, i)
-        y_train_pred = cross_val_predict(clf, x_train, y_train, cv=cvgen)
+        y_train_pred = cross_val_predict(clf, x_train, y_train, cv=cvgen, n_jobs=-1)
         conf_mx = confusion_matrix(y_train, y_train_pred)
-        row_sums = conf_mx.sum(axis=1, keepdims=True)
-        norm_conf_mx = conf_mx / row_sums
-        np.fill_diagonal(norm_conf_mx, 0)
-        df_cm = pd.DataFrame(norm_conf_mx, range(2), range(2))
-        sn.set(font_scale=1.4)  # for label size
-        ax.set_title(name+"tot diag=0")
-        sn.heatmap(df_cm, annot=True, annot_kws={"size": 16})  # font size
-        ax.set_xlabel('Predicted labels')
-        ax.set_ylabel('True labels')
-        ax.xaxis.set_ticklabels(['signal', 'background'])
-        ax.yaxis.set_ticklabels(['signal', 'background'])
-
-        i += 1
-    plotname = folder+'/confusion_matrix%s_Diag0.png' % (suffix_)
-    plt.savefig(plotname)
-    img_confmatrix_dg0 = BytesIO()
-    plt.savefig(img_confmatrix_dg0, format='png')
-    img_confmatrix_dg0.seek(0)
-
-    figure2 = plt.figure(figsize=(20, 15))  # pylint: disable=unused-variable
-    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.4, hspace=0.2)
-
-    i = 1
-    for name, clf in zip(names_, classifiers_):
-        ax = plt.subplot(2, (len(names_)+1)/2, i)
-        y_train_pred = cross_val_predict(clf, x_train, y_train, cv=cvgen)
-        conf_mx = confusion_matrix(y_train, y_train_pred)
+        print("Confusion matrix on training data:") # to be removed
+        print(conf_mx) # to be removed        
         row_sums = conf_mx.sum(axis=1, keepdims=True)
         norm_conf_mx = conf_mx / row_sums
         df_cm = pd.DataFrame(norm_conf_mx, range(2), range(2))
@@ -162,16 +144,42 @@ def confusion(names_, classifiers_, suffix_, x_train, y_train, cvgen, folder):
         sn.heatmap(df_cm, annot=True, annot_kws={"size": 16})  # font size
         ax.set_xlabel('Predicted labels')
         ax.set_ylabel('True labels')
-        ax.xaxis.set_ticklabels(['signal', 'background'])
-        ax.yaxis.set_ticklabels(['signal', 'background'])
-
+        ax.xaxis.set_ticklabels(['background', 'signal'])
+        ax.yaxis.set_ticklabels(['background', 'signal'])
         i += 1
-    plotname = folder+'/confusion_matrix%s.png' % (suffix_)
+    plotname = folder+'/confusion_matrix%s_train.png' % (suffix_)
     plt.savefig(plotname)
-    img_confmatrix = BytesIO()
-    plt.savefig(img_confmatrix, format='png')
-    img_confmatrix.seek(0)
-    return img_confmatrix_dg0, img_confmatrix
+    img_confmatrix_train = BytesIO()
+    plt.savefig(img_confmatrix_train, format='png')
+    img_confmatrix_train.seek(0)
+
+    figure2 = plt.figure(figsize=(25, 15))  # pylint: disable=unused-variable
+    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.4, hspace=0.2)
+    i = 1
+    for name, clf in zip(names_, classifiers_):
+        ax = plt.subplot(2, (len(names_)+1)/2, i)
+        y_test_pred = clf.predict(x_test)
+        conf_mx = confusion_matrix(y_test, y_test_pred)
+        print("Confusion matrix on test data:") # to be removed
+        print(conf_mx) # to be removed
+        row_sums = conf_mx.sum(axis=1, keepdims=True)
+        norm_conf_mx = conf_mx / row_sums
+        df_cm = pd.DataFrame(norm_conf_mx, range(2), range(2))
+        sn.set(font_scale=1.4)  # for label size
+        ax.set_title(name)
+        sn.heatmap(df_cm, annot=True, annot_kws={"size": 16})  # font size
+        ax.set_xlabel('Predicted labels')
+        ax.set_ylabel('True labels')
+        ax.xaxis.set_ticklabels(['background', 'signal'])
+        ax.yaxis.set_ticklabels(['background', 'signal'])
+        i += 1
+    plotname = folder+'/confusion_matrix%s_test.png' % (suffix_)
+    plt.savefig(plotname)
+    img_confmatrix_test = BytesIO()
+    plt.savefig(img_confmatrix_test, format='png')
+    img_confmatrix_test.seek(0)    
+
+    return img_confmatrix_train, img_confmatrix_test 
 
 
 def precision_recall(names_, classifiers_, suffix_, x_train, y_train, cvgen, folder):
@@ -305,3 +313,32 @@ def plot_overtraining(names_, classifiers_, suffix_, folder, \
         img_overtrain_array += img_overtrain
         plt.clf()
     return img_overtrain_array
+
+# new confusion matrix function (to be deleted later on)
+def plot_confusion_matrix(cm, classes,
+                          normalize=False,
+                          title='Confusion matrix',
+                          cmap=plt.cm.Blues):
+    """
+    This function prints and plots the confusion matrix.
+    Normalization can be applied by setting `normalize=True`.
+    """
+    plt.imshow(cm, interpolation='nearest', cmap=cmap)
+    plt.title(title)
+    plt.colorbar()
+    tick_marks = np.arange(len(classes))
+    plt.xticks(tick_marks, classes, rotation=45)
+    plt.yticks(tick_marks, classes)
+
+    if normalize:
+        cm = cm.astype('float') / cm.sum(axis=1)[:, np.newaxis]
+    thresh = cm.max() / 2.
+    for i, j in itertools.product(range(cm.shape[0]), range(cm.shape[1])):
+        plt.text(j, i, cm[i, j],
+                 horizontalalignment="center",
+                 color="white" if cm[i, j] > thresh else "black")
+
+    plt.tight_layout()
+    plt.ylabel('True label')
+    plt.xlabel('Predicted label')
+    plt.show()

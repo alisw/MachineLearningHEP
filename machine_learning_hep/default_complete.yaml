@@ -36,10 +36,10 @@ ml_study:
   dopca: false
   dosignifopt: false
   doefficiency: false
-  dotesting: false
-  dotraining: false
+  dotesting: true
+  dotraining: true
   dogridsearch: false
-  doconfusion: false
+  doconfusion: true
 
 analysis:
   data:

@@ -251,11 +251,8 @@ class Optimiser:
     def do_train(self):
         t0 = time.time()
         print("training")
- 
-	    # actual training
         self.p_trainedmod = fit(self.p_classname, self.p_class, self.df_xtrain, self.df_ytrain)
         savemodels(self.p_classname, self.p_trainedmod, self.dirmlout, self.s_suffix)
-     
         print("training over")
         print("time elapsed=", time.time() -t0)
 
@@ -281,8 +278,14 @@ class Optimiser:
 
 
     def do_confusion(self):
+        #x_test_ = self.df_mltest[self.v_train]
+        #y_test_ = self.df_mltest[self.v_sig].values.reshape(len(x_test_),)
+        #confusion(self.p_classname, self.p_class, self.s_suffix, x_test_,
+        #          y_test_, self.p_nkfolds, self.dirmlplot)
         confusion(self.p_classname, self.p_class, self.s_suffix, self.df_xtrain,
-                 self.df_ytrain, self.p_nkfolds, self.dirmlplot)
+                  self.df_ytrain, self.df_xtest, self.df_ytest, self.p_nkfolds, self.dirmlplot)
+        #confusion(self.p_classname, self.p_class, self.s_suffix, self.df_xtest,
+        #          self.df_ytest, self.p_nkfolds, self.dirmlplot)
     
 
     def do_crossval(self):
