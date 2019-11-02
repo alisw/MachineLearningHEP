@@ -230,6 +230,7 @@ class Analyzer:
 
 
     # pylint: disable=too-many-branches, too-many-locals, too-many-nested-blocks
+    # pylint: disable=import-outside-toplevel
     def fitter(self):
         # Test if we are in AliPhysics env
         #self.test_aliphysics()
@@ -814,6 +815,7 @@ class Analyzer:
         gROOT.SetBatch(tmp_is_root_batch)
 
     # pylint: disable=too-many-locals, too-many-nested-blocks, too-many-branches
+    # pylint: disable=import-outside-toplevel
     def yield_syst(self):
         if self.mt_syst_dict is None:
             self.logger.warning("Could not find parameters for doing systemtics. Skip...")
@@ -1014,6 +1016,7 @@ class Analyzer:
         # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
 
+    # pylint: disable=import-outside-toplevel
     def plot_multi_trial(self):
 
         if not os.path.exists(self.d_mt_results_path):
@@ -1721,6 +1724,7 @@ class Analyzer:
                 norm = (n_sel + n_novtx) - n_novtx * n_vtxout / (n_sel + n_vtxout)
         return norm
 
+    # pylint: disable=import-outside-toplevel
     def makenormyields(self):
         gROOT.SetBatch(True)
         self.loadstyle()
