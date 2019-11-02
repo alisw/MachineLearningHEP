@@ -373,6 +373,15 @@ def make_file_path(directory, filename, extension, prefix=None, suffix=None):
     extension = extension.replace(".", "")
     return os.path.join(directory, filename + "." + extension)
 
-#EXAMPLE HOW TO USE plot_hfmassfitter
-#  ---> Combines and plots the output of AliHFInvMassFitter in nice way
-#plot_hfmassfitter("Dspp", ["MBvspt_ntrkl", "SPDvspt"])
+#plot_hfmassfitter("LcpK0spp", ["MBvspt_ntrkl", "SPDvspt"])
+#plot_hfmassfitter("LcpK0spp", ["MBvspt_v0m", "V0mvspt"])
+#plot_hfmassfitter("LcpK0spp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
+#plot_hfmassfitter("D0pp", ["MBvspt_ntrkl", "SPDvspt"])
+#plot_hfmassfitter("D0pp", ["MBvspt_v0m", "V0mvspt"])
+#plot_hfmassfitter("D0pp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
+plot_hfmassfitter("Dspp", ["MBvspt_ntrkl", "SPDvspt"])
+#plot_hfmassfitter("Dspp", ["MBvspt_v0m", "V0mvspt"])
+#plot_hfmassfitter("Dspp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
+#plot_hfmassfitter("LcpKpipp", ["MBvspt_ntrkl", "SPDvspt"])
+#plot_hfmassfitter("LcpKpipp", ["MBvspt_v0m", "V0mvspt"])
+#plot_hfmassfitter("LcpKpipp", ["MBvspt_perc", "V0mvspt_perc_v0m"])
