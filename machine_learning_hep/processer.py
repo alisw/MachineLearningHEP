@@ -331,9 +331,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 probvar = "y_test_prob" + self.p_modelname
                 dfrecoskml = dfrecoskml.loc[dfrecoskml[probvar] > self.lpt_probcutpre[ipt]]
             else:
-                #print("DOING STD")
                 dfrecoskml = dfrecosk.query("isstd == 1")
-                #print("FINISHED STD")
             pickle.dump(dfrecoskml, openfile(self.mptfiles_recoskmldec[ipt][file_index], "wb"),
                         protocol=4)
 
@@ -402,7 +400,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
             dfevtorig = dfevtorig.query(self.s_trigger)
         dfevtorig = selectdfrunlist(dfevtorig, \
                          self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
-        print("select runlist", self.runlistrigger[self.triggerbit])
         for ibin2 in range(len(self.lvar2_binmin)):
             mybindfevtorig = seldf_singlevar(dfevtorig, self.v_var2_binning_gen, \
                                         self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
@@ -435,9 +432,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
             df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
             if self.doml is True:
                 df = df.query(self.l_selml[bin_id])
-                print("doing ml analysis")
-            else:
-                print("no extra selection neeeded since we are doing std analysis")
             if self.s_evtsel is not None:
                 df = df.query(self.s_evtsel)
             if self.s_trigger is not None:
@@ -455,8 +449,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                         self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 df_bin = seldf_singlevar(df, self.v_var2_binning,
                                          self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
-                #print("Using run selection for mass histo",
-                #      self.runlistrigger[self.triggerbit], "for period", self.period)
                 df_bin = selectdfrunlist(df_bin, \
                          self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
                 fill_hist(h_invmass, df_bin.inv_mass)
@@ -507,7 +499,14 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     h_invmass_refl.Write()
 
     def process_histomass(self):
-        print("doing masshisto", self.mcordata, self.period)
+        print("Doing masshisto", self.mcordata, self.period)
+        print("Using run selection for mass histo", \
+               self.runlistrigger[self.triggerbit], "for period", self.period)
+        if self.doml is True:
+            print("Doing ml analysis")
+        else:
+            print("No extra selection needed since we are doing std analysis")
+
         create_folder_struc(self.d_results, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
         self.parallelizer(self.process_histomass_single, arguments, self.p_chunksizeunp)
@@ -524,8 +523,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
              dfsel[self.v_var2_binning_gen]]
         val = sum(w)
         err = math.sqrt(sum(map(lambda i: i * i, w)))
-        print('reweighting sum: {:.1f} +- {:.1f} -> {:.1f} +- {:.1f} (zeroes: {})' \
-              .format(len(dfsel), math.sqrt(len(dfsel)), val, err, w.count(0.)))
+        #print('reweighting sum: {:.1f} +- {:.1f} -> {:.1f} +- {:.1f} (zeroes: {})' \
+        #      .format(len(dfsel), math.sqrt(len(dfsel)), val, err, w.count(0.)))
         return val, err
 
     # pylint: disable=line-too-long
@@ -535,7 +534,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
             stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen, \
                                         self.lvar2_binmin[ibin2], \
                                         self.lvar2_binmax[ibin2])
-            print(stringbin2)
             n_bins = len(self.lpt_finbinmin)
             analysis_bin_lims_temp = self.lpt_finbinmin.copy()
             analysis_bin_lims_temp.append(self.lpt_finbinmax[n_bins-1])
@@ -561,8 +559,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_trigger is not None:
                     df_mc_reco = df_mc_reco.query(self.s_trigger)
-                print("Using run selection for eff histo",
-                      self.runlistrigger[self.triggerbit], "for period", self.period)
                 df_mc_reco = selectdfrunlist(df_mc_reco, \
                          self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
                 df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[bin_id][index], "rb"))
@@ -584,7 +580,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     df_reco_sel_pr = df_reco_presel_pr.query(self.l_selml[bin_id])
                 else:
                     df_reco_sel_pr = df_reco_presel_pr.copy()
-                    print("doing std analysis")
                 df_gen_sel_fd = df_mc_gen[df_mc_gen.ismcfd == 1]
                 df_reco_presel_fd = df_mc_reco[df_mc_reco.ismcfd == 1]
                 df_reco_sel_fd = None
@@ -592,7 +587,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     df_reco_sel_fd = df_reco_presel_fd.query(self.l_selml[bin_id])
                 else:
                     df_reco_sel_fd = df_reco_presel_fd.copy()
-                    print("doing std analysis")
 
                 if self.corr_eff_mult[ibin2] is True:
                     val, err = self.get_reweighted_count(df_gen_sel_pr)
@@ -656,7 +650,19 @@ class Processer: # pylint: disable=too-many-instance-attributes
             h_sel_fd.Write()
 
     def process_efficiency(self):
-        print("doing efficiencies", self.mcordata, self.period)
+        print("Doing efficiencies", self.mcordata, self.period)
+        print("Using run selection for eff histo", \
+               self.runlistrigger[self.triggerbit], "for period", self.period)
+        if self.doml is True:
+            print("Doing ml analysis")
+        else:
+            print("No extra selection needed since we are doing std analysis")
+        for ibin2 in range(len(self.lvar2_binmin)):
+            if self.corr_eff_mult[ibin2] is True:
+                print("Reweighting efficiencies for bin", ibin2)
+            else:
+                print("Not reweighting efficiencies for bin", ibin2)
+
         create_folder_struc(self.d_results, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
         self.parallelizer(self.process_efficiency_single, arguments, self.p_chunksizeunp)
