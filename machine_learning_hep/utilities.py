@@ -13,7 +13,11 @@
 #############################################################################
 
 """
-main script for doing data processing, machine learning and analysis
+Script containing all helper functions, e.g. processing files, creating objects,
+calculating physical quantities.
+
+Script also contains the "class Errors", used for systematic uncertainties (to
+replace AliHFSystErr from AliPhysics).
 """
 # pylint: disable=too-many-lines
 from array import array
@@ -36,7 +40,11 @@ from ROOT import gStyle
 from machine_learning_hep.selectionutils import select_runs
 from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
 from machine_learning_hep.logger import get_logger
+
 def openfile(filename, attr):
+    """
+    Open file with different compression types
+    """
     if filename.lower().endswith('.bz2'):
         return bz2.BZ2File(filename, attr)
     if filename.lower().endswith('.xz'):
@@ -48,17 +56,26 @@ def openfile(filename, attr):
     return open(filename, attr)
 
 def selectdfquery(dfr, selection):
+    """
+    Query on dataframe
+    """
     if selection is not None:
         dfr = dfr.query(selection)
     return dfr
 
 def selectdfrunlist(dfr, runlist, runvar):
+    """
+    Select smaller runlist on dataframe
+    """
     if runlist is not None:
         isgoodrun = select_runs(runlist, dfr[runvar].values)
         dfr = dfr[np.array(isgoodrun, dtype=bool)]
     return dfr
 
 def merge_method(listfiles, namemerged):
+    """
+    Merge list of dataframes into one
+    """
     dflist = []
     for myfilename in listfiles:
         myfile = openfile(myfilename, "rb")
@@ -69,6 +86,9 @@ def merge_method(listfiles, namemerged):
 
 # pylint: disable=too-many-nested-blocks
 def list_folders(main_dir, filenameinput, maxfiles):
+    """
+    List all files in a subdirectory structure
+    """
     if not os.path.isdir(main_dir):
         print("the input directory =", main_dir, "doesnt exist")
     list_subdir0 = os.listdir(main_dir)
@@ -91,6 +111,9 @@ def list_folders(main_dir, filenameinput, maxfiles):
     return  listfolders
 
 def create_folder_struc(maindir, listpath):
+    """
+    Reproduce the folder structure as input
+    """
     for path in listpath:
         path = path.split("/")
 
@@ -102,6 +125,9 @@ def create_folder_struc(maindir, listpath):
             os.makedirs(folder)
 
 def checkdirlist(dirlist):
+    """
+    Checks if list of folder already exist, to not overwrite by accident
+    """
     exfolders = 0
     for _, mydir in enumerate(dirlist):
         if os.path.exists(mydir):
@@ -110,6 +136,9 @@ def checkdirlist(dirlist):
     return exfolders
 
 def checkdir(mydir):
+    """
+    Checks if folder already exist, to not overwrite by accident
+    """
     exfolders = 0
     if os.path.exists(mydir):
         print("rm -rf ", mydir)
@@ -117,11 +146,17 @@ def checkdir(mydir):
     return exfolders
 
 def checkmakedirlist(dirlist):
+    """
+    Makes directories from list using 'mkdir'
+    """
     for _, mydir in enumerate(dirlist):
         print("creating folder ", mydir)
         os.makedirs(mydir)
 
 def checkmakedir(mydir):
+    """
+    Makes directory using 'mkdir'
+    """
     print("creating folder ", mydir)
     os.makedirs(mydir)
 
@@ -395,9 +430,6 @@ def divide_all_by_first_multovermb(histos):
     Divides all histograms in the list by the first one in the list and returns the
     divided histograms in the same order
     """
-
-#    for h in histos:
-#        h.Scale(1./h.Integral())
 
     histos_ratio = []
     err = []

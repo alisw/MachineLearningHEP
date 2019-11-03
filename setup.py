@@ -86,24 +86,24 @@ setup(
   # installed, specify them here. Note that you need to specify those files in
   # MANIFEST.in as well, since Python tools behave inconsistently
   include_package_data=True,
-  package_data={ "machine_learning_hep": [ "default_complete.yaml" ],
-                 "machine_learning_hep.data": [ "database_ml_parameters_D0pp.yml",
-                                                "database_ml_parameters_D0pp_multiplicity.yml",
-                                                "database_ml_parameters_Dspp_mult.yml",
-                                                "database_ml_parameters_Dspp_pt.yml",
-                                                "database_ml_parameters_DstoKKpiPbPbCen3050.yml",
-                                                "database_ml_parameters_LcpK0s_test.yml",
+  package_data={ "machine_learning_hep": [ "default_complete.yaml",
+                                           "default_ana.yml",
+                                           "default_apply.yml",
+                                           "default_pre.yml",
+                                           "default_train.yml" ],
+                 "machine_learning_hep.data": [ "database_ml_parameters_Bs.yml",
+                                                "database_ml_parameters_D0pp.yml",
+                                                "database_ml_parameters_DsPbPb010.yml",
+                                                "database_ml_parameters_DsPbPb3050.yml",
+                                                "database_ml_parameters_Dspp.yml",
+                                                "database_ml_parameters_Dstarpp.yml",
+                                                "database_ml_parameters_LbITS2.yml",
+                                                "database_ml_parameters_LbITS3.yml",
                                                 "database_ml_parameters_LcpK0spp.yml",
-                                                "database_ml_parameters_LcpK0spp_oldmc.yml",
                                                 "database_ml_parameters_LcpKpipp.yml",
                                                 "database_ml_gridsearch.yml",
                                                 "config_model_parameters.yml",
-                                                "database_run_list.yml"],
-                 "machine_learning_hep.webapp.templates": [ "display.html",
-                                                            "index.html",
-                                                            "test.html" ],
-                 "machine_learning_hep.webapp.static": [ "script.js",
-                                                         "style.css" ] },
+                                                "database_run_list.yml" ] },
 
   # Although 'package_data' is the preferred approach, in some case you may
   # need to place data files outside of your packages. See:
@@ -118,7 +118,6 @@ setup(
   entry_points={
       "console_scripts": [ "ml-get-data = machine_learning_hep.ml_get_data:main",
                            "ml-analysis = " \
-                           "machine_learning_hep.steer_analysis:main",
-                           "ml-webapp = machine_learning_hep.webapp:main" ]
+                           "machine_learning_hep.steer_analysis:main" ]
   }
 )
