@@ -171,6 +171,9 @@ class Analyzer:
         self.p_fd_method = datap["analysis"]["fd_method"]
         self.p_cctype = datap["analysis"]["cctype"]
         self.p_sigmav0 = datap["analysis"]["sigmav0"]
+        self.p_triggereff = datap["analysis"][self.typean].get("triggereff", [1] * 10)
+        self.p_triggereffunc = datap["analysis"][self.typean].get("triggereffunc", [0] * 10)
+
         self.apply_weights = datap["analysis"][self.typean]["triggersel"]["weighttrig"]
         self.root_objects = []
 
@@ -227,6 +230,7 @@ class Analyzer:
 
 
     # pylint: disable=too-many-branches, too-many-locals, too-many-nested-blocks
+    # pylint: disable=import-outside-toplevel
     def fitter(self):
         # Test if we are in AliPhysics env
         #self.test_aliphysics()
@@ -811,6 +815,7 @@ class Analyzer:
         gROOT.SetBatch(tmp_is_root_batch)
 
     # pylint: disable=too-many-locals, too-many-nested-blocks, too-many-branches
+    # pylint: disable=import-outside-toplevel
     def yield_syst(self):
         if self.mt_syst_dict is None:
             self.logger.warning("Could not find parameters for doing systemtics. Skip...")
@@ -1011,6 +1016,7 @@ class Analyzer:
         # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
 
+    # pylint: disable=import-outside-toplevel
     def plot_multi_trial(self):
 
         if not os.path.exists(self.d_mt_results_path):
@@ -1718,6 +1724,7 @@ class Analyzer:
                 norm = (n_sel + n_novtx) - n_novtx * n_vtxout / (n_sel + n_vtxout)
         return norm
 
+    # pylint: disable=import-outside-toplevel
     def makenormyields(self):
         gROOT.SetBatch(True)
         self.loadstyle()
@@ -1791,7 +1798,8 @@ class Analyzer:
                                    (self.d_resultsallpdata, self.case, self.typean)
                     self.logger.info("Calculating spectra using fPrompt from MB. "\
                                      "Assuming MB is bin 0: %s", filecrossmb)
-                HFPtSpectrum2(filecrossmb, fileouteff, namehistoeffprompt, namehistoefffeed, \
+                HFPtSpectrum2(filecrossmb, self.p_triggereff[imult], self.p_triggereffunc[imult], \
+                              fileouteff, namehistoeffprompt, namehistoefffeed, \
                               yield_filename, nameyield, fileoutcrossmult, norm, \
                               self.p_sigmav0 * 1e12)
 

@@ -594,7 +594,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     df_reco_sel_fd = df_reco_presel_fd.copy()
                     print("doing std analysis")
 
-                if self.corr_eff_mult is True:
+                if self.corr_eff_mult[ibin2] is True:
                     val, err = self.get_reweighted_count(df_gen_sel_pr)
                     h_gen_pr.SetBinContent(bincounter + 1, val)
                     h_gen_pr.SetBinError(bincounter + 1, err)

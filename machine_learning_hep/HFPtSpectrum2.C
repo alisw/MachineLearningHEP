@@ -25,7 +25,9 @@
 // NB: So far only works for pp, using Nb method.
 //
 
-void HFPtSpectrum2 (const char *inputCrossSection, 
+void HFPtSpectrum2 (const char *inputCrossSection,
+                    Double_t triggereff = 1,
+                    Double_t triggereffunc = 0,
                     const char *efffilename="Efficiencies.root",
                     const char *nameeffprompt= "eff",
                     const char *nameefffeed = "effB",
@@ -199,7 +201,7 @@ void HFPtSpectrum2 (const char *inputCrossSection,
   // NB: Don't care for the moment about histoSigmaCorrMin/Max and gSigmaCorrExtreme/Conservative
   // 
   Double_t fLuminosity[2] = {nevents / sigma, 0.04 * nevents / sigma};
-  Double_t fTrigEfficiency[2] = {1.0, 0};
+  Double_t fTrigEfficiency[2] = {triggereff, triggereffunc};
   Double_t fGlobalEfficiencyUncertainties[2] = {0.05, 0.05};
   Double_t deltaY = 1.0;
   Double_t branchingRatioC = 1.0;

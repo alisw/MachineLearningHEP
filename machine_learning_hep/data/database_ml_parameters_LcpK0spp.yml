@@ -262,7 +262,9 @@ LcpK0spp:
                                  /data/Derived/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodLcpK0s/261_20191004-0007/pklskml] #list of periods
       pkl_skimmed_merge_for_ml_all: /data/Derived/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pklskMLallperiods
       pkl_evtcounter_all: /data/Derived/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pklevtppallperiod
-      mcreweights: [reweighting/prodD2H_16, reweighting/prodD2H_17, reweighting/prodD2H_18]
+      mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_16,
+                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_17,
+                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_18]
   ml:
     evtsel: is_ev_rej==0
     triggersel:
