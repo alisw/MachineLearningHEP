@@ -212,6 +212,7 @@ LbITS3:
     fd_method: -1 #knone=0, kfc=1, kNb=2
     cctype: -1 #kpp7
     sigmav0: -1
+    inputfonllpred: null
     dir_general_plots: analysis_plots
 
     MBvspt:

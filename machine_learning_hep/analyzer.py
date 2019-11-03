@@ -171,6 +171,7 @@ class Analyzer:
         self.p_fd_method = datap["analysis"]["fd_method"]
         self.p_cctype = datap["analysis"]["cctype"]
         self.p_sigmav0 = datap["analysis"]["sigmav0"]
+        self.p_inputfonllpred = datap["analysis"]["inputfonllpred"]
         self.p_triggereff = datap["analysis"][self.typean].get("triggereff", [1] * 10)
         self.p_triggereffunc = datap["analysis"][self.typean].get("triggereffunc", [0] * 10)
 
@@ -1788,8 +1789,7 @@ class Analyzer:
 
             if self.p_fprompt_from_mb is None or self.p_fd_method != 2 or \
               (imult == 0 and self.p_corrmb_typean is None):
-                HFPtSpectrum(self.p_indexhpt, \
-                 "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
+                HFPtSpectrum(self.p_indexhpt, self.p_inputfonllpred, \
                  fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
                  fileoutcrossmult, norm, self.p_sigmav0 * 1e12, self.p_fd_method, self.p_cctype)
             else:
