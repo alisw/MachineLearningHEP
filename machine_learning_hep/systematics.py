@@ -460,6 +460,7 @@ class Systematics:
             h_gen_fd[i].Write()
             h_sel_fd[i].Write()
 
+    # pylint: disable=import-outside-toplevel
     # pylint: disable=too-many-branches, too-many-locals, too-many-nested-blocks
     def cutvariation_fitter(self, min_cv_cut, max_cv_cut):
 
@@ -648,6 +649,7 @@ class Systematics:
 
             fileout.Close()
 
+    # pylint: disable=import-outside-toplevel
     def cutvariation_makenormyields(self):
         #self.test_aliphysics()
 
