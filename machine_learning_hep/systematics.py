@@ -134,6 +134,7 @@ class Systematics:
         self.p_fprompt_from_mb = datap["analysis"][self.typean]["fprompt_from_mb"]
         self.p_triggereff = datap["analysis"][self.typean].get("triggereff", [1] * 10)
         self.p_triggereffunc = datap["analysis"][self.typean].get("triggereffunc", [0] * 10)
+        self.p_inputfonllpred = datap["analysis"]["inputfonllpred"]
 
         #Variables for the systematic variations
         self.p_cutvar_minrange = datap["systematics"]["probvariation"]["cutvarminrange"]
@@ -463,6 +464,7 @@ class Systematics:
             h_gen_fd[i].Write()
             h_sel_fd[i].Write()
 
+    # pylint: disable=import-outside-toplevel
     def cutvariation_fitter(self, min_cv_cut, max_cv_cut):
         """
         Cut Variation: Fit invariant mass histograms with AliHFInvMassFitter
@@ -659,6 +661,7 @@ class Systematics:
 
             fileout.Close()
 
+    # pylint: disable=import-outside-toplevel
     def cutvariation_makenormyields(self):
         """
         Cut Variation: Calculate cross section/corrected yield. NB: Not the full
@@ -707,8 +710,7 @@ class Systematics:
 
                 #Keep it simple, don't correct HM with MB fprompt, but with HM mult-int
                 if self.p_fprompt_from_mb is None or imult == 0 or self.p_fd_method != 2:
-                    HFPtSpectrum(self.p_indexhpt, \
-                     "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
+                    HFPtSpectrum(self.p_indexhpt, self.p_inputfonllpred, \
                      fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
                      fileoutcrossmult, norm, self.p_sigmav0 * 1e12, self.p_fd_method, self.p_cctype)
                     filecrossmb = fileoutcrossmult
