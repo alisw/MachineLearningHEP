@@ -137,7 +137,6 @@ Dspp:
     namefile_gen: AnalysisResultsGen.pkl.lz4
     namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl.lz4
     namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl.lz4
-    namefile_reco: AnalysisResultsReco.pkl.lz4
     namefile_mcweights: mcweights.root
     treeoriginreco: 'PWGHF_TreeCreator/tree_Ds'
     treeorigingen: 'PWGHF_TreeCreator/tree_Ds_gen'

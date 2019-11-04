@@ -26,9 +26,35 @@ from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-modu
 # pylint: disable=import-error, no-name-in-module
 from ROOT import TH2F, TFile, TH1, TGraphAsymmErrors
 from ROOT import TPad, TCanvas, TLegend, kBlack, kGreen, kRed, kBlue, kWhite
-from ROOT import gStyle
+from ROOT import gStyle, gROOT
 from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
 from machine_learning_hep.logger import get_logger
+
+def load_root_style_simple():
+    """
+    Set basic ROOT style for histograms
+    """
+    gStyle.SetOptStat(0)
+    gStyle.SetPalette(0)
+    gStyle.SetCanvasColor(0)
+    gStyle.SetFrameFillColor(0)
+
+def load_root_style():
+    """
+    Set more advanced ROOT style for histograms
+    """
+    gROOT.SetStyle("Plain")
+    gStyle.SetOptStat(0)
+    gStyle.SetPalette(0)
+    gStyle.SetCanvasColor(0)
+    gStyle.SetFrameFillColor(0)
+    gStyle.SetTitleOffset(1.15, "y")
+    gStyle.SetTitleFont(42, "xy")
+    gStyle.SetLabelFont(42, "xy")
+    gStyle.SetTitleSize(0.042, "xy")
+    gStyle.SetLabelSize(0.035, "xy")
+    gStyle.SetPadTickX(1)
+    gStyle.SetPadTickY(1)
 
 def scatterplotroot(dfevt, nvar1, nvar2, nbins1, min1, max1, nbins2, min2, max2):
     """

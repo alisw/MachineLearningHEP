@@ -104,7 +104,6 @@ Bspp:
     namefile_gen: AnalysisResultsGen.pkl
     namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl
     namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl
-    namefile_reco: AnalysisResultsReco.pkl
     treeoriginreco: 'PWGHF_TreeCreator/tree_Bs'
     treeorigingen: 'PWGHF_TreeCreator/tree_Bs_gen'
     treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'

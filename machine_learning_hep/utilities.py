@@ -266,6 +266,30 @@ def make_latex_table(column_names, row_names, rows, caption=None, save_path="./t
         f.write("\\end{sidewaystable}\n")
         f.write("\\end{document}\n")
 
+def make_file_path(directory, filename, extension, prefix=None, suffix=None):
+    """
+    Construct a common path+filename+suffix from args
+    """
+    if prefix is not None:
+        filename = make_pre_suffix(prefix) + "_" + filename
+    if suffix is not None:
+        filename = filename + "_" + make_pre_suffix(suffix)
+    extension = extension.replace(".", "")
+    return os.path.join(directory, filename + "." + extension)
+
+def make_pre_suffix(args):
+    """
+    Construct a common file suffix from args
+    """
+    try:
+        _ = iter(args)
+    except TypeError:
+        args = [args]
+    else:
+        if isinstance(args, str):
+            args = [args]
+    return "_".join(args)
+
 # Jet related functions, to comment
 
 def z_calc(pt_1, phi_1, eta_1, pt_2, phi_2, eta_2):

@@ -110,7 +110,6 @@ LbITS3:
     namefile_gen: AnalysisResultsGen.pkl
     namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl
     namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl
-    namefile_reco: AnalysisResultsReco.pkl
     treeoriginreco: 'PWGHF_TreeCreatorITS3/tree_Lb'
     treeorigingen: 'PWGHF_TreeCreatorITS3/tree_Lb_gen'
     treeoriginevt: 'PWGHF_TreeCreatorITS3/tree_event_char'
