@@ -181,6 +181,7 @@ class Systematics:
         self.p_indexhpt = datap["analysis"]["indexhptspectrum"]
         self.p_fd_method = datap["analysis"]["fd_method"]
         self.p_cctype = datap["analysis"]["cctype"]
+        self.p_inputfonllpred = datap["analysis"]["inputfonllpred"]
 
         self.p_cutvar_minrange = datap["systematics"]["probvariation"]["cutvarminrange"]
         self.p_cutvar_maxrange = datap["systematics"]["probvariation"]["cutvarmaxrange"]
@@ -693,8 +694,7 @@ class Systematics:
 
                 #Keep it simple, don't correct HM with MB fprompt, but with HM mult-int
                 if self.p_fprompt_from_mb is None or imult == 0 or self.p_fd_method != 2:
-                    HFPtSpectrum(self.p_indexhpt, \
-                     "inputsCross/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root", \
+                    HFPtSpectrum(self.p_indexhpt, self.p_inputfonllpred, \
                      fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
                      fileoutcrossmult, norm, self.p_sigmav0 * 1e12, self.p_fd_method, self.p_cctype)
                     filecrossmb = fileoutcrossmult
