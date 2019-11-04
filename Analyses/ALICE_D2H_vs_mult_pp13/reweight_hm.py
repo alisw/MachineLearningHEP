@@ -18,7 +18,6 @@ main script for doing final stage analysis
 # pylint: disable=import-error, no-name-in-module, unused-import
 import yaml
 from ROOT import gROOT, TFile, TCanvas, TF1, TH1F
-from machine_learning_hep.utilities import plot_histograms
 
 def reweight_hm():
     filespd = TFile.Open("/data/DerivedVal/mcvalspdhm_18_d2h/AnalysisResultsROOTEvtVal.root", \

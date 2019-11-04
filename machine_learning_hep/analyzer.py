@@ -31,10 +31,10 @@ from ROOT import TLatex
 from ROOT import gInterpreter, gPad
 # HF specific imports
 from machine_learning_hep.globalfitter import Fitter
-from  machine_learning_hep.logger import get_logger
-from  machine_learning_hep.io import dump_yaml_from_dict
-from machine_learning_hep.utilities import folding, get_bins, plot_histograms, make_latex_table, \
-                                           parallelizer
+from machine_learning_hep.logger import get_logger
+from machine_learning_hep.io import dump_yaml_from_dict
+from machine_learning_hep.utilities import folding, get_bins, make_latex_table, parallelizer
+from machine_learning_hep.utilities_plot import plot_histograms
 #from ROOT import RooUnfoldResponse
 #from ROOT import RooUnfold
 #from ROOT import RooUnfoldBayes

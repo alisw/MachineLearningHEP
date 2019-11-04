@@ -21,11 +21,11 @@ import yaml
 from ROOT import TFile, gStyle, gROOT, TH1F, TGraphAsymmErrors, TH1
 from ROOT import kBlue, kAzure, kOrange, kGreen, kBlack, kRed, kWhite
 from ROOT import Double
-from machine_learning_hep.utilities import plot_histograms, save_histograms, Errors
-from machine_learning_hep.utilities import calc_systematic_multovermb
-from machine_learning_hep.utilities import divide_all_by_first_multovermb
-from machine_learning_hep.utilities import divide_by_eachother
-from machine_learning_hep.utilities import calc_systematic_mesonratio
+from machine_learning_hep.utilities_plot import plot_histograms, save_histograms, Errors
+from machine_learning_hep.utilities_plot import calc_systematic_multovermb
+from machine_learning_hep.utilities_plot import divide_all_by_first_multovermb
+from machine_learning_hep.utilities_plot import divide_by_eachother
+from machine_learning_hep.utilities_plot import calc_systematic_mesonratio
 
 def results(histos_central, systematics, title, legend_titles, x_label, y_label,
             save_path, ratio, **kwargs):
