@@ -68,7 +68,6 @@ class Systematics:
         self.lvar2_binmax = datap["analysis"][self.typean]["sel_binmax2"]
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
         self.v_var2_binning_gen = datap["analysis"][self.typean]["var_binning2_gen"]
-        self.use_var2_bin = 0 #TODO: HARDCODED ZERO, WHAT IS THIS?
 
         #ML model variables
         self.p_modelname = datap["mlapplication"]["modelname"]
@@ -133,6 +132,8 @@ class Systematics:
         self.p_sigmav0 = datap["analysis"]["sigmav0"]
         self.p_bineff = datap["analysis"][self.typean]["usesinglebineff"]
         self.p_fprompt_from_mb = datap["analysis"][self.typean]["fprompt_from_mb"]
+        self.p_triggereff = datap["analysis"][self.typean].get("triggereff", [1] * 10)
+        self.p_triggereffunc = datap["analysis"][self.typean].get("triggereffunc", [0] * 10)
 
         #Variables for the systematic variations
         self.p_cutvar_minrange = datap["systematics"]["probvariation"]["cutvarminrange"]
@@ -147,57 +148,52 @@ class Systematics:
         self.p_weights_bins = datap["systematics"]["mcptshape"]["weights_bins"]
 
         #For fitting
-        #TODO: Check what can be removed + orden
+        #For mass histos
         self.p_mass_fit_lim = datap["analysis"][self.typean]["mass_fit_lim"]
         self.p_bin_width = datap["analysis"][self.typean]["bin_width"]
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
                                     self.p_bin_width))
-        #parameter fitter
-        self.sig_fmap = {"kGaus": 0, "k2Gaus": 1, "kGausSigmaRatioPar": 2}
-        self.bkg_fmap = {"kExpo": 0, "kLin": 1, "Pol2": 2, "kNoBk": 3, "kPow": 4, "kPowEx": 5}
-        # For initial fit in integrated mult bin
-        self.p_sgnfunc = datap["analysis"][self.typean]["sgnfunc"]
-        self.p_bkgfunc = datap["analysis"][self.typean]["bkgfunc"]
-        self.p_massmin = datap["analysis"][self.typean]["massmin"]
-        self.p_massmax = datap["analysis"][self.typean]["massmax"]
-        # Enable rebinning per pT and multiplicity
-        # Note that this is not a deepcopy in case it's already a list of lists
+        #For rebinning mass and yield histos
         self.rebins = datap["analysis"][self.typean]["rebin"].copy()
         if not isinstance(self.rebins[0], list):
             self.rebins = [self.rebins for _ in range(len(self.lvar2_binmin))]
-        self.p_masspeak = datap["analysis"][self.typean]["masspeak"]
-        self.p_sigmaarray = datap["analysis"][self.typean]["sigmaarray"]
-
-        self.p_includesecpeaks = datap["analysis"][self.typean].get("includesecpeak", None)
-        if self.p_includesecpeaks is None:
-            self.p_includesecpeaks = [False for ipt in range(self.p_nptbins)]
-        # Now we have a list, either the one given by the user or the default one just filled above
-        self.p_includesecpeaks = self.p_includesecpeaks.copy()
-        if not isinstance(self.p_includesecpeaks[0], list):
-            self.p_inculdesecpeaks = [self.p_includesecpeaks for _ in range(len(self.lvar2_binmin))]
-
-        self.p_masssecpeak = datap["analysis"][self.typean]["masssecpeak"] \
-                if self.p_includesecpeaks else None
-
-        self.p_fix_masssecpeaks = datap["analysis"][self.typean].get("fix_masssecpeak", None)
-        if self.p_fix_masssecpeaks is None:
-            self.p_fix_masssecpeaks = [False for ipt in range(self.p_nptbins)]
-        # Now we have a list, either the one given by the user or the default one just filled above
-        self.p_fix_masssecpeaks = self.p_fix_masssecpeaks.copy()
-        if not isinstance(self.p_fix_masssecpeaks[0], list):
-            self.p_fix_masssecpeaks = [self.p_fix_masssecpeaks \
-                                       for _ in range(len(self.lvar2_binmin))]
-
-        self.p_widthsecpeak = datap["analysis"][self.typean]["widthsecpeak"] \
-                if self.p_includesecpeaks else None
-        self.p_fix_widthsecpeak = datap["analysis"][self.typean]["fix_widthsecpeak"] \
-                if self.p_includesecpeaks else None
-        self.p_exclude_nsigma_sideband = datap["analysis"][self.typean]["exclude_nsigma_sideband"]
-        self.p_nsigma_signal = datap["analysis"][self.typean]["nsigma_signal"]
-        self.p_dolike = datap["analysis"][self.typean]["dolikelihood"]
         self.ptranges = self.lpt_finbinmin.copy()
         self.ptranges.append(self.lpt_finbinmax[-1])
-        self.include_reflection = datap["analysis"][self.typean].get("include_reflection", False)
+        #For AliHFInvMassFitter
+        self.p_sgnfunc = datap["analysis"][self.typean]["sgnfunc"]
+        self.p_bkgfunc = datap["analysis"][self.typean]["bkgfunc"]
+        self.sig_fmap = {"kGaus": 0, "k2Gaus": 1, "kGausSigmaRatioPar": 2}
+        self.bkg_fmap = {"kExpo": 0, "kLin": 1, "Pol2": 2, "kNoBk": 3, "kPow": 4, "kPowEx": 5}
+        self.p_massmin = datap["analysis"][self.typean]["massmin"]
+        self.p_massmax = datap["analysis"][self.typean]["massmax"]
+        #Extra AliHFInvMassFitter settings
+        self.p_dolike = datap["analysis"][self.typean]["dolikelihood"]
+        self.p_masspeak = datap["analysis"][self.typean]["masspeak"]
+        self.p_sigmaarray = datap["analysis"][self.typean]["sigmaarray"]
+        self.p_exclude_nsigma_sideband = datap["analysis"][self.typean]["exclude_nsigma_sideband"]
+        self.p_nsigma_signal = datap["analysis"][self.typean]["nsigma_signal"]
+        #Options for reflections (e.g. D0)
+        self.p_include_reflection = datap["analysis"][self.typean].get("include_reflection", False)
+        #Options for second peak of Ds
+        self.p_includesecpeaks = datap["analysis"][self.typean].get("includesecpeak", None)
+        self.p_widthsecpeak = datap["analysis"][self.typean].get("widthsecpeak", None)
+        self.p_masssecpeak = datap["analysis"][self.typean].get("masssecpeak", None)
+        self.p_fix_masssecpeaks = datap["analysis"][self.typean].get("fix_masssecpeak", None)
+        self.p_fix_widthsecpeak = datap["analysis"][self.typean].get("fix_widthsecpeak", None)
+        #Some safety for p_fix_masssecpeaks that is checked with [i][j]
+        if self.p_includesecpeaks is not None:
+            if self.p_fix_masssecpeaks is None:
+                self.p_fix_masssecpeaks = [False for ipt in range(self.p_nptbins)]
+            self.p_fix_masssecpeaks = self.p_fix_masssecpeaks.copy()
+            if not isinstance(self.p_fix_masssecpeaks[0], list):
+                self.p_fix_masssecpeaks = [self.p_fix_masssecpeaks \
+                                           for _ in range(len(self.lvar2_binmin))]
+        #Some safety for p_includesecpeaks that is checked with [i][j]
+        if self.p_includesecpeaks is None:
+            self.p_includesecpeaks = [False for ipt in range(self.p_nptbins)]
+        self.p_includesecpeaks = self.p_includesecpeaks.copy()
+        if not isinstance(self.p_includesecpeaks[0], list):
+            self.p_includesecpeaks = [self.p_includesecpeaks for _ in range(len(self.lvar2_binmin))]
 
     def define_cutvariation_limits(self):
         """
@@ -205,6 +201,7 @@ class Systematics:
         Produces N (set in DB) tighter and N looser probability cuts
         """
         min_cv_cut = []
+        cent_cv_cut = []
         max_cv_cut = []
         ncutvar_temp = self.p_ncutvar * 2
         for ipt in range(self.p_nptfinbins):
@@ -225,11 +222,11 @@ class Systematics:
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
 
             df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning_gen, \
-                                         self.lvar2_binmin[self.use_var2_bin], \
-                                         self.lvar2_binmax[self.use_var2_bin])
+                                         self.lvar2_binmin[0], \
+                                         self.lvar2_binmax[0])
             df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning_gen, \
-                                        self.lvar2_binmin[self.use_var2_bin], \
-                                        self.lvar2_binmax[self.use_var2_bin])
+                                        self.lvar2_binmin[0], \
+                                        self.lvar2_binmax[0])
 
             df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
             df_reco_presel_pr = df_mc_reco[df_mc_reco.ismcprompt == 1]
@@ -242,6 +239,7 @@ class Systematics:
             stepsmin = \
               (self.lpt_probcutfin[bin_id] - self.p_cutvar_minrange[bin_id]) / ncutvar_temp
             min_cv_cut.append(self.lpt_probcutfin[bin_id])
+            cent_cv_cut.append(self.lpt_probcutfin[bin_id])
             df_reco_cvmin_pr = df_reco_presel_pr
             for icv in range(ncutvar_temp):
                 min_cv_cut[ipt] = self.p_cutvar_minrange[bin_id] + icv * stepsmin
@@ -273,7 +271,7 @@ class Systematics:
 
         print("Limits for cut variation defined, based on eff %-var of: ", self.p_maxperccutvar)
         print("--Cut variation minimum: ", min_cv_cut)
-        print("--Central probability cut: ", self.lpt_probcutfin)
+        print("--Central probability cut: ", cent_cv_cut)
         print("--Cut variation maximum: ", max_cv_cut)
 
         return min_cv_cut, max_cv_cut
@@ -287,6 +285,8 @@ class Systematics:
         """
         myfile = TFile.Open(self.n_filemass_cutvar, "recreate")
 
+        print("Using run selection for mass histo", self.runlistrigger[self.triggerbit], \
+              "for period", self.period)
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.lpt_recodecmerged_data[bin_id], "rb"))
@@ -302,11 +302,10 @@ class Systematics:
                 df = df.query(self.s_trigger_data)
             df = seldf_singlevar(df, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-            print("Using run selection for mass histo", self.runlistrigger[self.triggerbit], \
-                  "for period", self.period)
             df = selectdfrunlist(df, self.run_param[self.runlistrigger[self.triggerbit]], \
                                  "run_number")
 
+            arr_selml_cv = []
             for icv in range(ntrials):
                 if icv < self.p_ncutvar:
                     selml_cvval = min_cv_cut[ipt] + icv * stepsmin
@@ -317,7 +316,7 @@ class Systematics:
                     icvmax = icvmax + 1
                 selml_cv = "y_test_prob%s>%s" % (self.p_modelname, selml_cvval)
 
-                print("Cutting on: ", selml_cv)
+                arr_selml_cv.append(selml_cvval)
                 df = df.query(selml_cv)
 
                 for ibin2 in range(len(self.lvar2_binmin)):
@@ -349,6 +348,9 @@ class Systematics:
                     h_invmass.Write()
                     h_invmass_weight.Write()
 
+            print(" Selection variations for [", self.lpt_finbinmin[ipt], "-", \
+                  self.lpt_finbinmax[ipt], "]:  \n   ", arr_selml_cv)
+
     def cutvariation_efficiencies(self, min_cv_cut, max_cv_cut):
         """
         Cut Variation: Create ROOT file with efficiencies
@@ -363,6 +365,8 @@ class Systematics:
         h_gen_fd = []
         h_sel_fd = []
 
+        print("Using run selection for eff histo", self.runlistrigger[self.triggerbit], \
+              "for period", self.period)
         idx = 0
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
@@ -372,8 +376,6 @@ class Systematics:
                 df = df.query(self.s_evtsel)
             if self.s_trigger_mc is not None:
                 df = df.query(self.s_trigger_mc)
-            print("Using run selection for eff histo", self.runlistrigger[self.triggerbit], \
-                  "for period", self.period)
             df = selectdfrunlist(df, \
                                  self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
             df = seldf_singlevar(df, self.v_var_binning, self.lpt_finbinmin[ipt], \
@@ -391,6 +393,7 @@ class Systematics:
             ntrials = 2 * self.p_ncutvar + 1
             icvmax = 1
 
+            arr_selml_cv = []
             idx = 0
             for icv in range(ntrials):
                 if icv < self.p_ncutvar:
@@ -402,7 +405,7 @@ class Systematics:
                     icvmax = icvmax + 1
                 selml_cv = "y_test_prob%s>%s" % (self.p_modelname, selml_cvval)
 
-                print("Cutting on: ", selml_cv)
+                arr_selml_cv.append(selml_cvval)
                 df = df.query(selml_cv)
 
                 for ibin2 in range(len(self.lvar2_binmin)):
@@ -449,6 +452,9 @@ class Systematics:
                     h_sel_fd[idx].SetBinContent(ipt + 1, len(df_sel_fd))
                     h_sel_fd[idx].SetBinError(ipt + 1, math.sqrt(len(df_sel_fd)))
                     idx = idx + 1
+
+            print(" Selection variations for [", self.lpt_finbinmin[ipt], "-", \
+                  self.lpt_finbinmax[ipt], "]:  \n   ", arr_selml_cv)
 
         myfile.cd()
         for i in range(idx):
@@ -568,6 +574,8 @@ class Systematics:
                     mass_fitter[ifit].SetCheckSignalCountsAfterFirstFit(False)
 
                     #Reflections to be included
+                    if self.p_include_reflection:
+                        self.logger.info("Reflections not yet included in cut variation fitter!")
 
                     if self.p_includesecpeaks[imult][ipt]:
                         secpeakwidth = self.p_widthsecpeak * sigma_for_data[ipt]
@@ -625,7 +633,6 @@ class Systematics:
 
         ntrials = 2 * self.p_ncutvar + 1
         for icv in range(ntrials):
-            print("Making efficiency for cutvariation: ", icv)
             fileout_name = make_file_path(self.d_results_cv, self.efficiency_filename, "root", \
                                           None, [self.typean, str(icv)])
             fileout = TFile(fileout_name, "RECREATE")
@@ -710,7 +717,9 @@ class Systematics:
                                          "Assuming mult-int is bin 0: %s", filecrossmb)
                     self.logger.info("HM mult classes take fprompt from HM mult-integrated.  " \
                                      "Result may differ from central where MB mult-int is taken.")
-                    HFPtSpectrum2(filecrossmb, fileouteff, namehistoeffprompt, namehistoefffeed, \
+                    HFPtSpectrum2(filecrossmb, self.p_triggereff[imult], \
+                                  self.p_triggereffunc[imult], fileouteff, \
+                                  namehistoeffprompt, namehistoefffeed, \
                                   yield_filename, nameyield, fileoutcrossmult, norm, \
                                   self.p_sigmav0 * 1e12)
 

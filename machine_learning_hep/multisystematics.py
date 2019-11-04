@@ -96,7 +96,7 @@ class MultiSystematics: # pylint: disable=too-many-instance-attributes, too-many
         if domass is True or doeff is True or dofit is True:
             for indexp in range(self.prodnumber):
                 if self.p_useperiodforlimits[indexp] == 1:
-                    print("Processing systematics period: ", indexp)
+                    print("Defining systematic variations for period: ", indexp)
                     min_cv_cut, max_cv_cut = \
                           self.process_listsample[indexp].define_cutvariation_limits()
 
