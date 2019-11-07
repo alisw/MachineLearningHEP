@@ -18,11 +18,15 @@ main script for doing data processing, machine learning and analysis
 import os
 from machine_learning_hep.systematics import Systematics
 from machine_learning_hep.utilities import mergerootfiles, get_timestamp_string
-class MultiSystematics: # pylint: disable=too-many-instance-attributes, too-many-statements, too-few-public-methods
+from machine_learning_hep.logger import get_logger
+# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-branches
+class MultiSystematics:
     species = "multisystematic"
     def __init__(self, case, datap, typean, run_param):
 
         #General
+        self.logger = get_logger()
         self.case = case
         self.datap = datap
         self.typean = typean
@@ -52,6 +56,8 @@ class MultiSystematics: # pylint: disable=too-many-instance-attributes, too-many
         if not os.path.exists(self.d_resultsallp_cv):
             print("creating folder ", self.d_resultsallp_cv)
             os.makedirs(self.d_resultsallp_cv)
+        self.p_useperiodforlimits = datap["systematics"]["probvariation"]["useperiod"]
+        self.p_useperiod = datap["analysis"][self.typean]["useperiod"]
 
         #File names
         self.n_filemass = datap["files_names"]["histofilename"]
@@ -62,9 +68,6 @@ class MultiSystematics: # pylint: disable=too-many-instance-attributes, too-many
         self.filemass_cutvar_mergedall = os.path.join(self.d_resultsallp_cv, self.n_filemass_cutvar)
         self.fileeff_cutvar_mergedall = os.path.join(self.d_resultsallp_cv, self.n_fileeff_cutvar)
         self.fileeff_ptshape_mergedall = os.path.join(self.d_resultsallp, self.n_fileeff_mcptshape)
-
-        self.p_useperiodforlimits = datap["systematics"]["probvariation"]["useperiod"]
-        self.p_useperiod = datap["analysis"][self.typean]["useperiod"]
 
         self.lper_filemass_cutvar = []
         self.lper_fileeff_cutvar = []
@@ -90,13 +93,17 @@ class MultiSystematics: # pylint: disable=too-many-instance-attributes, too-many
                                         "", "", self.d_resultsallp, self.dlper_valevtroottot,
                                         None, None)
 
-    #pylint: disable=too-many-branches
     def multi_cutvariation(self, domass, doeff, dofit, docross):
-
+        """
+        Goes through the full cut-variation systematic chain, based on what
+        is set in databases.
+        """
+        self.logger.info("Processing cut variation systematic")
         if domass is True or doeff is True or dofit is True:
             for indexp in range(self.prodnumber):
                 if self.p_useperiodforlimits[indexp] == 1:
-                    print("Defining systematic variations for period: ", indexp)
+                    self.logger.info("Defining systematic cut variations for period: %s", \
+                                     self.p_period[indexp])
                     min_cv_cut, max_cv_cut = \
                           self.process_listsample[indexp].define_cutvariation_limits()
 
@@ -146,15 +153,19 @@ class MultiSystematics: # pylint: disable=too-many-instance-attributes, too-many
                 else:
                     self.myprocesstot.cutvariation_makeplots(name, None, None)
 
-    #pylint: disable=too-many-branches
     def multimcptshape(self):
-
+        """
+        Goes through the full MC pT-shape systematic chain, based on what
+        is set in databases.
+        """
+        self.logger.info("Processing MC pT shape systematic")
         for indexp in range(self.prodnumber):
-            print("Processing MC pT shape systematics period: ", indexp)
             self.process_listsample[indexp].mcptshape_get_generated()
             self.process_listsample[indexp].mcptshape_build_efficiencies()
             self.process_listsample[indexp].mcptshape_efficiency()
+            self.process_listsample[indexp].mcptshape_makeplots()
         tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/mcptshape_eff/" \
                       f"{get_timestamp_string()}/"
         mergerootfiles(self.lper_fileeff_mcptshape, self.fileeff_ptshape_mergedall, tmp_merged)
         self.myprocesstot.mcptshape_efficiency()
+        self.myprocesstot.mcptshape_makeplots()

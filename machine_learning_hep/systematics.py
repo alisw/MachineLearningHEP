@@ -20,6 +20,7 @@ The raw yield systematic is done within analyzer.py
 """
 # pylint: disable=unused-wildcard-import, wildcard-import
 # pylint: disable=no-name-in-module
+# pylint: disable=import-error
 import os
 import math
 from array import *
@@ -688,10 +689,10 @@ class Systematics:
                 bineff = -1
                 if self.p_bineff is None:
                     bineff = imult
-                    print("Using efficiency for each var2 bin")
+                    self.logger.info("Using efficiency for each var2 bin")
                 else:
                     bineff = self.p_bineff
-                    print("Using efficiency always from bin=", bineff)
+                    self.logger.info("Using efficiency always from bin = %f", bineff)
 
                 namehistoeffprompt = "eff_mult%d" % bineff
                 namehistoefffeed = "eff_fd_mult%d" % bineff
@@ -703,7 +704,6 @@ class Systematics:
                 norm = self.calculate_norm(self.f_evtnorm, self.triggerbit, \
                              self.v_var2_binning_gen, self.lvar2_binmin[imult], \
                              self.lvar2_binmax[imult], self.apply_weights)
-                print(self.apply_weights, self.lvar2_binmin[imult], self.lvar2_binmax[imult], norm)
                 self.logger.info("Not full normalisation is applied. " \
                                  "Result may differ from central.")
                 #Keep it simple, don't apply full normalisation
@@ -715,9 +715,9 @@ class Systematics:
                      fileoutcrossmult, norm, self.p_sigmav0 * 1e12, self.p_fd_method, self.p_cctype)
                     filecrossmb = fileoutcrossmult
                 else:
-                    self.logger.info("Calculating spectra using fPrompt from mult-int. "\
-                                         "Assuming mult-int is bin 0: %s", filecrossmb)
-                    self.logger.info("HM mult classes take fprompt from HM mult-integrated.  " \
+                    self.logger.info("Calculating spectra using fPrompt from mult-int.\n  "\
+                                         "Assuming mult-int is bin 0:   \n%s", filecrossmb)
+                    self.logger.info("HM mult classes take fprompt from HM mult-integrated.\n  " \
                                      "Result may differ from central where MB mult-int is taken.")
                     HFPtSpectrum2(filecrossmb, self.p_triggereff[imult], \
                                   self.p_triggereffunc[imult], fileouteff, \
@@ -768,7 +768,8 @@ class Systematics:
             diffratio = 2 * self.p_maxperccutvar
             if plotname == "histoSigmaCorr":
                 diffratio = self.p_maxperccutvar + 0.15
-            canv.cd(1).DrawFrame(0, 1 - diffratio, 25, 1 + diffratio, \
+            ptmax = self.lpt_finbinmax[-1] + 1
+            canv.cd(1).DrawFrame(0, 1 - diffratio, ptmax, 1 + diffratio, \
                                  "%s %.2f < %s < %.2f;#it{p}_{T} (GeV/#it{c});Ratio %s" % \
                                  (self.typean, self.lvar2_binmin[imult], self.v_var2_binning, \
                                   self.lvar2_binmax[imult], plotname))
@@ -943,7 +944,6 @@ class Systematics:
         """
         func_filename_std = make_file_path(self.d_results, self.yields_filename_std, \
                                            "root", None, [self.case, self.typean])
-        print(func_filename_std)
         massfile_std = TFile.Open(func_filename_std, "READ")
         means_histo = massfile_std.Get("hmeanss%d" % (imult))
         sigmas_histo = massfile_std.Get("hsigmas%d" % (imult))
@@ -959,6 +959,9 @@ class Systematics:
         return mean_for_data, sigma_for_data
 
     def mcptshape_get_generated(self):
+        """
+        MC pT-shape: Get generated pT spectra from MC to define weights
+        """
         fileout_name = make_file_path(self.d_results, self.ptspectra_filename, \
                                       "root", None, [self.typean, self.case])
         myfile = TFile(fileout_name, "RECREATE")
@@ -997,8 +1000,16 @@ class Systematics:
         myfile.Close()
 
     def mcptshape_build_efficiencies(self):
+        """
+        MC pT-shape: Create ROOT file with unweighted and weighted efficiencies
+        Histogram for (un)weighted, for each 2nd binning bin
+
+        Similar as process_efficiency_single(self, index) in processor.py
+        """
         myfile = TFile.Open(self.n_fileeff_ptshape, "recreate")
 
+        print("Using run selection for eff histo", self.runlistrigger[self.triggerbit], \
+              "for period", self.period)
         for ibin2 in range(len(self.lvar2_binmin)):
             stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen, \
                                         self.lvar2_binmin[ibin2], \
@@ -1038,8 +1049,6 @@ class Systematics:
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_trigger_mc is not None:
                     df_mc_reco = df_mc_reco.query(self.s_trigger_mc)
-                print("Using run selection for eff histo",
-                      self.runlistrigger[self.triggerbit], "for period", self.period)
                 df_mc_reco = selectdfrunlist(df_mc_reco, \
                          self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
 
@@ -1123,8 +1132,6 @@ class Systematics:
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_trigger_mc is not None:
                     df_mc_reco = df_mc_reco.query(self.s_trigger_mc)
-                print("Using run selection for eff histo",
-                      self.runlistrigger[self.triggerbit], "for period", self.period)
                 df_mc_reco = selectdfrunlist(df_mc_reco, \
                          self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
 
@@ -1199,7 +1206,10 @@ class Systematics:
         myfile.Close()
 
     def mcptshape_efficiency(self):
-
+        """
+        MC pT-shape: Extract prompt and feeddown efficiencies
+        Systematic = difference wrt 1 for ratio unweighted / weighted
+        """
         load_root_style_simple()
 
         lfileeff = TFile.Open(self.n_fileeff_ptshape, "READ")
@@ -1241,24 +1251,96 @@ class Systematics:
             hw_sel_fd.Write()
         fileout.Close()
 
-    def get_reweighted_count(self, arraypt):
+    def mcptshape_makeplots(self):
+        """
+        MC pT shape: Make final plots.
+        For the moment, value should be assigned by analyser
+        """
+        load_root_style()
 
+        leg = TLegend(.15, .65, .85, .85)
+        leg.SetBorderSize(0)
+        leg.SetFillColor(0)
+        leg.SetFillStyle(0)
+        leg.SetTextFont(42)
+        leg.SetTextSize(0.024)
+        colours = [kBlack, kRed]
+        markers = [20, 21]
+
+        fileout_name = make_file_path(self.d_results, self.efficiency_filename_pt, \
+                                      "root", None, [self.typean, self.case])
+
+        f_fileout = TFile.Open(fileout_name)
+
+        hweights = []
+        hnoweights = []
+        hfdweights = []
+        hfdnoweights = []
+        for imult in range(len(self.lvar2_binmin)):
+
+            canv = TCanvas("systmcptshape_%d" % imult, '', 400, 400)
+            plotname = "No weights / Weights"
+            ptmax = self.lpt_finbinmax[-1] + 1
+            canv.cd(1).DrawFrame(0, 0.85, ptmax, 1.15, \
+                                 "%s %.2f < %s < %.2f;#it{p}_{T} (GeV/#it{c});Ratio %s" % \
+                                 (self.typean, self.lvar2_binmin[imult], self.v_var2_binning, \
+                                  self.lvar2_binmax[imult], plotname))
+
+            hweights.append(f_fileout.Get("eff_weight_mult%d" % imult))
+            hweights[imult].SetDirectory(0)
+            hnoweights.append(f_fileout.Get("eff_mult%d" % imult))
+            hnoweights[imult].SetDirectory(0)
+            hfdweights.append(f_fileout.Get("eff_weight_fd_mult%d" % imult))
+            hfdweights[imult].SetDirectory(0)
+            hfdnoweights.append(f_fileout.Get("eff_fd_mult%d" % imult))
+            hfdnoweights[imult].SetDirectory(0)
+
+            hnoweights[imult].Divide(hnoweights[imult], hweights[imult], 1.0, 1.0, "B")
+            hfdnoweights[imult].Divide(hfdnoweights[imult], hfdweights[imult], 1.0, 1.0, "B")
+
+            hnoweights[imult].SetLineColor(colours[0])
+            hnoweights[imult].SetMarkerColor(colours[0])
+            hnoweights[imult].SetMarkerStyle(markers[0])
+            hnoweights[imult].SetMarkerSize(0.8)
+            hnoweights[imult].Draw("same")
+
+            hfdnoweights[imult].SetLineColor(colours[1])
+            hfdnoweights[imult].SetMarkerColor(colours[1])
+            hfdnoweights[imult].SetMarkerStyle(markers[1])
+            hfdnoweights[imult].SetMarkerSize(0.8)
+            hfdnoweights[imult].Draw("same")
+
+            if imult == 0:
+                leg.AddEntry(hnoweights[imult], "Prompt", "LEP")
+                leg.AddEntry(hfdnoweights[imult], "Feed-down", "LEP")
+
+            leg.Draw()
+            canv.SaveAs("%s/MCpTshape_Syst_mult%d.eps" % (self.d_results, imult))
+        f_fileout.Close()
+
+    def get_reweighted_count(self, arraypt):
+        """
+        MC pT-shape: Reweight array of pTs from dataframe based on pT weights
+        """
         weights = arraypt.copy()
         binwidth = (self.p_weights_max_pt - self.p_weights_min_pt)/self.p_weights_bins
         for j in range(weights.shape[0]):
             pt = arraypt[j]
             if pt - self.p_weights_min_pt < 0:
-                print("Warning: pT_gen < minimum pT of weights!")
+                self.logger.warning("pT_gen < minimum pT of weights!")
             ptbin_weights = int((pt - self.p_weights_min_pt)/binwidth)
-            #print("Following pt (",pt,") matched to ptbin = ",ptbin_weights)
-            #idea: make linear extrapolation with bins next to it
+            #improvement: make linear extrapolation with bins next to it
             weights[j] = self.p_weights[ptbin_weights]
         val = sum(weights)
         err = math.sqrt(val)
         return val, err
 
-    @staticmethod
-    def calculate_norm(filename, trigger, var, multmin, multmax, doweight):
+    def calculate_norm(self, filename, trigger, var, multmin, multmax, doweight):
+        """
+        General: Calculates number of events used to normalise
+        NB: Uncorrected for simplicity as systematic variations, see
+        calculate_norm in analyzer.py for full function
+        """
         fileout = TFile.Open(filename, "read")
         if not fileout:
             return -1
@@ -1269,7 +1351,7 @@ class Systematics:
             namehistomulti = "hmult%svs%s" % (trigger, var)
         hmult = fileout.Get(namehistomulti)
         if not hmult:
-            print("MISSING NORMALIZATION MULTIPLICITY")
+            self.logger.fatal("MISSING NORMALIZATION MULTIPLICITY")
         binminv = hmult.GetXaxis().FindBin(multmin)
         binmaxv = hmult.GetXaxis().FindBin(multmax)
         norm = hmult.Integral(binminv, binmaxv)
