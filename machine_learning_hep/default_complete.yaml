@@ -1,4 +1,4 @@
-case: Dspp_HMSPDD2H
+case: LcpK0spp
 download:
   alice:
     activate: false
@@ -24,15 +24,15 @@ mergingperiods:
     activate: false
 
 ml_study:
-  activate: false
+  activate: true
   dopca: false
   docorrelation: false
   dotraining: true
-  dotesting: false
+  dotesting: true
   doapplytodatamc: false
   docrossvalidation: false
   dolearningcurve: false
-  doroc: false
+  doroc: true
   doroctraintest: false
   doimportance: false
   dogridsearch: false
@@ -52,7 +52,7 @@ mlapplication:
     docontinueafterstop: false
 
 analysis:
-  type: SPDvspt #V0mvspt_perc_v0m
+  type: MBvspt_ntrkl #V0mvspt_perc_v0m
   # Do each period separately including merged (true)
   # Do only merged (false)
   doperperiod: true
@@ -84,5 +84,5 @@ validation:
   data:
     docreatehisto: false
   mc:
-    docreatehisto: true
-  plotevents: true
+    docreatehisto: false
+  plotevents: false
