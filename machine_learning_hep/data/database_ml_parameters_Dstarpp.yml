@@ -99,7 +99,6 @@ Dstarpp:
     namefile_gen: AnalysisResultsGen.pkl.lz4
     namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl.lz4
     namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl.lz4
-    namefile_reco: AnalysisResultsReco.pkl.lz4
     treeoriginreco: 'PWGHF_TreeCreator/tree_Dstar'
     treeorigingen: 'PWGHF_TreeCreator/tree_Dstar_gen'
     treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'

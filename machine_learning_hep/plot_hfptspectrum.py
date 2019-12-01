@@ -26,7 +26,7 @@ from ROOT import TFile, TH1F, TCanvas
 from ROOT import gStyle, TLegend, TLatex
 from ROOT import gROOT, kRed, kGreen, kBlack, kBlue, kOrange, kViolet, kAzure
 from ROOT import TStyle, gPad
-from machine_learning_hep.utilities import plot_histograms
+from machine_learning_hep.utilities_plot import plot_histograms, load_root_style
 
 FILES_NOT_FOUND = []
 # One single particle ratio
@@ -121,20 +121,7 @@ def plot_hfptspectrum_ml_over_std(case_ml, ana_type_ml, period_number, filepath_
 # pylint: disable=too-many-locals
 def plot_hfptspectrum_comb(case, arraytype):
 
-    gROOT.SetStyle("Plain")
-    gStyle.SetOptStat(0)
-    gStyle.SetOptStat(0000)
-    gStyle.SetPalette(0)
-    gStyle.SetCanvasColor(0)
-    gStyle.SetFrameFillColor(0)
-    gStyle.SetOptTitle(0)
-    gStyle.SetTitleOffset(1.15, "y")
-    gStyle.SetTitleFont(42, "xy")
-    gStyle.SetLabelFont(42, "xy")
-    gStyle.SetTitleSize(0.042, "xy")
-    gStyle.SetLabelSize(0.035, "xy")
-    gStyle.SetPadTickX(1)
-    gStyle.SetPadTickY(1)
+    load_root_style()
 
     with open("data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
@@ -474,20 +461,7 @@ def plot_hfptspectrum_comb(case, arraytype):
 # pylint: disable=too-many-locals
 def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype):
 
-    gROOT.SetStyle("Plain")
-    gStyle.SetOptStat(0)
-    gStyle.SetOptStat(0000)
-    gStyle.SetPalette(0)
-    gStyle.SetCanvasColor(0)
-    gStyle.SetFrameFillColor(0)
-    gStyle.SetOptTitle(0)
-    gStyle.SetTitleOffset(1.15, "y")
-    gStyle.SetTitleFont(42, "xy")
-    gStyle.SetLabelFont(42, "xy")
-    gStyle.SetTitleSize(0.042, "xy")
-    gStyle.SetLabelSize(0.035, "xy")
-    gStyle.SetPadTickX(1)
-    gStyle.SetPadTickY(1)
+    load_root_style()
 
     with open("data/database_ml_parameters_%s.yml" % case_num, 'r') as param_config_num:
         data_param_num = yaml.load(param_config_num, Loader=yaml.FullLoader)

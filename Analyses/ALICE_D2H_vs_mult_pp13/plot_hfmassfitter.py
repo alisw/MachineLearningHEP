@@ -25,6 +25,8 @@ from ROOT import gStyle, TLegend, TLatex
 from ROOT import Double
 from ROOT import gROOT, kRed, kGreen, kBlack, kBlue, kOrange, kViolet, kAzure
 from ROOT import TStyle, gPad
+from machine_learning_hep.utilities import make_file_path
+from machine_learning_hep.utilities_plot import load_root_style
 
 # pylint: disable=import-error, no-name-in-module, unused-import
 # pylint: disable=too-many-statements
@@ -32,20 +34,7 @@ from ROOT import TStyle, gPad
 # pylint: disable=too-many-locals
 def plot_hfmassfitter(case, arraytype):
 
-    gROOT.SetStyle("Plain")
-    gStyle.SetOptStat(0)
-    gStyle.SetOptStat(0000)
-    gStyle.SetPalette(0)
-    gStyle.SetCanvasColor(0)
-    gStyle.SetFrameFillColor(0)
-    gStyle.SetOptTitle(0)
-    gStyle.SetTitleOffset(1.15, "y")
-    gStyle.SetTitleFont(42, "xy")
-    gStyle.SetLabelFont(42, "xy")
-    gStyle.SetTitleSize(0.042, "xy")
-    gStyle.SetLabelSize(0.035, "xy")
-    gStyle.SetPadTickX(1)
-    gStyle.SetPadTickY(1)
+    load_root_style()
 
     with open("data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
@@ -351,27 +340,6 @@ def plot_hfmassfitter(case, arraytype):
     leg.Draw()
     cback.SaveAs("%s/MassFit_Background_%s_%scombined%s.eps" % \
                  (folder_plots, case, arraytype[0], arraytype[1]))
-
-def make_pre_suffix(args):
-    """
-    Construct a common file suffix from args
-    """
-    try:
-        _ = iter(args)
-    except TypeError:
-        args = [args]
-    else:
-        if isinstance(args, str):
-            args = [args]
-    return "_".join(args)
-
-def make_file_path(directory, filename, extension, prefix=None, suffix=None):
-    if prefix is not None:
-        filename = make_pre_suffix(prefix) + "_" + filename
-    if suffix is not None:
-        filename = filename + "_" + make_pre_suffix(suffix)
-    extension = extension.replace(".", "")
-    return os.path.join(directory, filename + "." + extension)
 
 #plot_hfmassfitter("LcpK0spp", ["MBvspt_ntrkl", "SPDvspt"])
 #plot_hfmassfitter("LcpK0spp", ["MBvspt_v0m", "V0mvspt"])
