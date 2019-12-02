@@ -93,6 +93,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     doefficiencyml = data_config["ml_study"]['doefficiency']
     dosignifopt = data_config["ml_study"]['dosignifopt']
     doscancuts = data_config["ml_study"]["doscancuts"]
+    doplotdistr = data_config["ml_study"]["doplotdistr"]
     doapplydata = data_config["mlapplication"]["data"]["doapply"]
     doapplymc = data_config["mlapplication"]["mc"]["doapply"]
     domergeapplydata = data_config["mlapplication"]["data"]["domergeapply"]
@@ -347,6 +348,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
                 myopt.do_roc()
             if doroctraintest is True:
                 myopt.do_roc_train_test()
+            if doplotdistr is True:
+                myopt.do_plot_model_pred()
             if doimportance is True:
                 myopt.do_importance()
             if dogridsearch is True:
