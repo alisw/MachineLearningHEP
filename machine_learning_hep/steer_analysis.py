@@ -90,6 +90,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     doboundary = data_config["ml_study"]['doboundary']
     doimportance = data_config["ml_study"]['doimportance']
     dogridsearch = data_config["ml_study"]['dogridsearch']
+    doefficiencyml = data_config["ml_study"]['doefficiency']
     dosignifopt = data_config["ml_study"]['dosignifopt']
     doscancuts = data_config["ml_study"]["doscancuts"]
     doapplydata = data_config["mlapplication"]["data"]["doapply"]
@@ -352,6 +353,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
                 myopt.do_grid()
             if doboundary is True:
                 myopt.do_boundary()
+            if doefficiencyml is True:
+                myopt.do_efficiency()
             if dosignifopt is True:
                 myopt.do_significance()
             if doscancuts is True:
