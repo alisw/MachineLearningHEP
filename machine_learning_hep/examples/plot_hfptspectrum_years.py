@@ -29,10 +29,10 @@ FILES_NOT_FOUND = []
 def plot_hfspectrum_years_ratios(case_1, case_2, ana_type, mult_bins=None):
 
 
-    with open("data/database_ml_parameters_%s.yml" % case_1, 'r') as param_config:
+    with open("../data/database_ml_parameters_%s.yml" % case_1, 'r') as param_config:
         data_param_1 = yaml.load(param_config, Loader=yaml.FullLoader)
 
-    with open("data/database_ml_parameters_%s.yml" % case_2, 'r') as param_config:
+    with open("../data/database_ml_parameters_%s.yml" % case_2, 'r') as param_config:
         data_param_2 = yaml.load(param_config, Loader=yaml.FullLoader)
 
     folder_plots_1 = data_param_1[case_1]["analysis"]["dir_general_plots"]
@@ -129,7 +129,7 @@ def plot_hfspectrum_years_ratios(case_1, case_2, ana_type, mult_bins=None):
 # pylint: disable=too-many-branches, too-many-locals
 def plot_hfspectrum_years(case, ana_type, mult_bins=None):
 
-    with open("data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
+    with open("../data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
 
     folder_plots = data_param[case]["analysis"]["dir_general_plots"]
@@ -217,59 +217,11 @@ def plot_hfspectrum_years(case, ana_type, mult_bins=None):
 
 gROOT.SetBatch(True)
 
-plot_hfspectrum_years("LcpK0spp", "MBvspt_ntrkl")
-#plot_hfspectrum_years("LcpK0spp", "MBvspt_v0m")
-plot_hfspectrum_years("LcpK0spp", "MBvspt_perc")
-#plot_hfspectrum_years("LcpK0spp", "V0mvspt")
-#plot_hfspectrum_years("LcpK0spp", "V0mvspt_perc_v0m")
-plot_hfspectrum_years("LcpK0spp", "SPDvspt")
+#EXAMPLE HOW TO USE plot_hfptspectrum_years
+#  ---> Makes comparison plots+ratios (for whatever histogram) between different years/periods.
+#plot_hfspectrum_years("Dspp", "MBvspt_ntrkl")
+#plot_hfspectrum_years_ratios("Dspp", "D0pp", "MBvspt_ntrkl")
 
-plot_hfspectrum_years("D0pp", "MBvspt_ntrkl")
-#plot_hfspectrum_years("D0pp", "MBvspt_v0m")
-plot_hfspectrum_years("D0pp", "MBvspt_perc")
-#plot_hfspectrum_years("D0pp", "V0mvspt")
-#plot_hfspectrum_years("D0pp", "V0mvspt_perc_v0m")
-plot_hfspectrum_years("D0pp", "SPDvspt")
-
-plot_hfspectrum_years("Dspp", "MBvspt_ntrkl")
-#plot_hfspectrum_years("Dspp", "MBvspt_v0m")
-plot_hfspectrum_years("Dspp", "MBvspt_perc")
-#plot_hfspectrum_years("Dspp", "V0mvspt")
-#plot_hfspectrum_years("Dspp", "V0mvspt_perc_v0m")
-plot_hfspectrum_years("Dspp", "SPDvspt")
-
-# pylint: disable=pointless-string-statement
-"""
-plot_hfspectrum_years("LcpKpipp", "MBvspt_ntrkl")
-plot_hfspectrum_years("LcpKpipp", "MBvspt_v0m")
-plot_hfspectrum_years("LcpKpipp", "MBvspt_perc")
-plot_hfspectrum_years("LcpKpipp", "V0mvspt")
-plot_hfspectrum_years("LcpKpipp", "V0mvspt_perc_v0m")
-plot_hfspectrum_years("LcpKpipp", "SPDvspt")
-"""
-print("RATIOS over D0")
-"""
-plot_hfspectrum_years_ratios("Dspp", "D0pp", "MBvspt_ntrkl")
-plot_hfspectrum_years_ratios("Dspp", "D0pp", "MBvspt_v0m")
-plot_hfspectrum_years_ratios("Dspp", "D0pp", "MBvspt_perc")
-plot_hfspectrum_years_ratios("Dspp", "D0pp", "V0mvspt")
-plot_hfspectrum_years_ratios("Dspp", "D0pp", "V0mvspt_perc_v0m")
-plot_hfspectrum_years_ratios("Dspp", "D0pp", "SPDvspt")
-
-plot_hfspectrum_years_ratios("LcpK0spp", "D0pp", "MBvspt_ntrkl")
-plot_hfspectrum_years_ratios("LcpK0spp", "D0pp", "MBvspt_v0m")
-plot_hfspectrum_years_ratios("LcpK0spp", "D0pp", "MBvspt_perc")
-plot_hfspectrum_years_ratios("LcpK0spp", "D0pp", "V0mvspt")
-plot_hfspectrum_years_ratios("LcpK0spp", "D0pp", "V0mvspt_perc_v0m")
-plot_hfspectrum_years_ratios("LcpK0spp", "D0pp", "SPDvspt")
-
-plot_hfspectrum_years_ratios("LcpKpipp", "D0pp", "MBvspt_ntrkl")
-plot_hfspectrum_years_ratios("LcpKpipp", "D0pp", "MBvspt_v0m")
-plot_hfspectrum_years_ratios("LcpKpipp", "D0pp", "MBvspt_perc")
-plot_hfspectrum_years_ratios("LcpKpipp", "D0pp", "V0mvspt")
-plot_hfspectrum_years_ratios("LcpKpipp", "D0pp", "V0mvspt_perc_v0m")
-plot_hfspectrum_years_ratios("LcpKpipp", "D0pp", "SPDvspt")
-"""
 if FILES_NOT_FOUND:
     print("FILES NOT FOUND:")
     for f in FILES_NOT_FOUND:

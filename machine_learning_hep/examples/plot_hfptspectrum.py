@@ -35,7 +35,7 @@ def plot_hfptspectrum_ml_over_std(case_ml, ana_type_ml, period_number, filepath_
                                   scale_std=None, map_std_bins=None, mult_bin=None,
                                   ml_histo_names=None, std_histo_names=None, suffix=""):
 
-    with open("data/database_ml_parameters_%s.yml" % case_ml, 'r') as param_config:
+    with open("../data/database_ml_parameters_%s.yml" % case_ml, 'r') as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
     if period_number < 0:
         filepath_ml = data_param[case_ml]["analysis"][ana_type_ml]["data"]["resultsallp"]
@@ -121,9 +121,9 @@ def compare_ml_std_ratio(case_ml_1, case_ml_2, ana_type_ml, period_number, filep
                          mult_bin=None, ml_histo_names=None, std_histo_names_1=None,
                          std_histo_names_2=None, suffix=""):
 
-    with open("data/database_ml_parameters_%s.yml" % case_ml_1, 'r') as param_config:
+    with open("../data/database_ml_parameters_%s.yml" % case_ml_1, 'r') as param_config:
         data_param_1 = yaml.load(param_config, Loader=yaml.FullLoader)
-    with open("data/database_ml_parameters_%s.yml" % case_ml_2, 'r') as param_config:
+    with open("../data/database_ml_parameters_%s.yml" % case_ml_2, 'r') as param_config:
         data_param_2 = yaml.load(param_config, Loader=yaml.FullLoader)
     if period_number < 0:
         filepath_ml_1 = data_param_1[case_ml_1]["analysis"][ana_type_ml]["data"]["resultsallp"]
@@ -266,7 +266,7 @@ def plot_hfptspectrum_comb(case, arraytype):
 
     load_root_style()
 
-    with open("data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
+    with open("../data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
 
     folder_plots = data_param[case]["analysis"]["dir_general_plots"]
@@ -606,10 +606,10 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype):
 
     load_root_style()
 
-    with open("data/database_ml_parameters_%s.yml" % case_num, 'r') as param_config_num:
+    with open("../data/database_ml_parameters_%s.yml" % case_num, 'r') as param_config_num:
         data_param_num = yaml.load(param_config_num, Loader=yaml.FullLoader)
 
-    with open("data/database_ml_parameters_%s.yml" % case_den, 'r') as param_config_den:
+    with open("../data/database_ml_parameters_%s.yml" % case_den, 'r') as param_config_den:
         data_param_den = yaml.load(param_config_den, Loader=yaml.FullLoader)
 
     folder_plots_num = data_param_num[case_num]["analysis"]["dir_general_plots"]
@@ -742,6 +742,8 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype):
     copyfile(rootfilename, rootfilenameden)
     print("---Output stored in:", rootfilename, "and", rootfilenameden, "---")
 
+#####################################
+
 gROOT.SetBatch(True)
 
 #EXAMPLE HOW TO USE plot_hfptspectrum_comb
@@ -764,40 +766,8 @@ gROOT.SetBatch(True)
 #                              0, ["histoSigmaCorr"], ["histoSigmaCorr"],
 #                              "_prelim_5tev")
 
-
-
-
-# RATIOS ML / STD
-###########
-# Lc / D0 #
-###########
-#compare_ml_std_ratio("LcpK0spp", "D0pp", "MBvspt_ntrkl", -1,
-#                     "data/std_results/HFPtSpectrum_LcpKpi_merged_20191010.root",
-#                     "data/std_results/HFPtSpectrum_D0_merged_20191010.root", 1./5.75, None, None,
-#                     0, ["histoSigmaCorr"], ["histoSigmaCorr"], ["histoSigmaCorr"])
-###compare_ml_std_ratio("LcpK0spp", "D0pp", "MBvspt_ntrkl", -1,
-###                     "data/std_results/Lc_19_corryield.root",
-###                     "data/std_results/D0_19_corryield.root", 1./5.75 / SIGMA0, 1. / SIGMA0,
-###                     None, 1, ["histoYieldCorr"], ["corrYield_19"], ["corrYield_19"])
-###compare_ml_std_ratio("LcpK0spp", "D0pp", "MBvspt_ntrkl", -1,
-###                     "data/std_results/Lc_1029_corryield.root",
-###                     "data/std_results/D0_1029_corryield.root", 1./5.75 / SIGMA0, 1. / SIGMA0,
-###                     None, 2, ["histoYieldCorr"], ["corrYield_1029"], ["corrYield_1029"])
-###compare_ml_std_ratio("LcpK0spp", "D0pp", "MBvspt_ntrkl", -1,
-###                     "data/std_results/Lc_3059_corryield.root",
-###                     "data/std_results/D0_3059_corryield.root", 1./5.75 / SIGMA0, 1. / SIGMA0,
-###                     None, 3, ["histoYieldCorr"], ["corrYield_3059"], ["corrYield_3059"])
-# PRELIM RESULTS
-#compare_ml_std_ratio("LcpK0spp", "D0pp", "MBvspt_ntrkl", -1,
-#                     "data/std_results/HFPtSpectrum_LcpKpi_2016_prel_20191010.root",
-#                     "data/std_results/HFPtSpectrum_D0_2016_prel_20191010.root", 1./5.75,
-#                     None, [(1, [1]), (2, [2, 3]), (3, [4, 5]), (4, [6]), (5, [7]), (6, [8])], 0,
-#                     ["histoSigmaCorr"], ["histoSigmaCorr"], ["histoSigmaCorr"], "_prelim")
-
-###########
-# Ds / D0 #
-###########
-
+#EXAMPLES HOW TO USE compare_ml_std_ratio
+#  ---> Not sure what this does, to be checked
 #compare_ml_std_ratio("Dspp", "D0pp", "MBvspt_ntrkl", -1,
 #                     "data/std_results/HFPtSpectrum_Ds_merged_20191010.root",
 #                     "data/std_results/HFPtSpectrum_D0_merged_20191010.root", None, None, None,
