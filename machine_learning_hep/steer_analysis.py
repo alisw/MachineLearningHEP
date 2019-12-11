@@ -454,7 +454,7 @@ def main():
 
     # Extract which database and run config to be used
     pkg_data = "machine_learning_hep.data"
-    pkg_data_run_config = "machine_learning_hep"
+    pkg_data_run_config = "machine_learning_hep.submission"
     run_config = load_config(args.run_config, (pkg_data_run_config, "default_complete.yaml"))
     case = run_config["case"]
     if args.type_ana is not None:
