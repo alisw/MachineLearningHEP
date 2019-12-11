@@ -1736,7 +1736,6 @@ class Analyzer:
         yield_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                              None, [self.case, self.typean])
         gROOT.LoadMacro("HFPtSpectrum.C")
-        gROOT.LoadMacro("HFPtSpectrum2.C")
         from ROOT import HFPtSpectrum, HFPtSpectrum2
         for imult in range(self.p_nbin2):
             bineff = -1

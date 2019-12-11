@@ -673,7 +673,6 @@ class Systematics:
         gROOT.SetBatch(True)
         load_root_style_simple()
         gROOT.LoadMacro("HFPtSpectrum.C")
-        gROOT.LoadMacro("HFPtSpectrum2.C")
         from ROOT import HFPtSpectrum, HFPtSpectrum2
 
         ntrials = 2 * self.p_ncutvar + 1
