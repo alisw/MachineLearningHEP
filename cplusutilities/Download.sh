@@ -458,6 +458,29 @@ elif [ "$dataset" == "LHC14j5_new" ]; then
               /alice/sim/2014/LHC14j5_new/138197/PWGHF/HF_TreeCreator)
   datasetwithchilds=0
   dataset_short="ITS2_14j5new"
+elif [ "$dataset" == "LHC15o" ]; then
+  #Data: PbPb 5.02 TeV, all passes together (2015)
+  inputpaths=(/alice/data/2015/LHC15o/000246222/pass1/AOD194/PWGHF/HF_TreeCreator
+              /alice/data/2015/LHC15o/000245454/pass1_pidfix/AOD194/PWGHF/HF_TreeCreator
+              /alice/data/2015/LHC15o/000245064/pass3_lowIR_pidfix/AOD194/PWGHF/HF_TreeCreator
+              /alice/data/2015/LHC15o/000245829/pass1/AOD194/PWGHF/HF_TreeCreator
+              /alice/data/2015/LHC15o/000246804/pass1/AOD194/PWGHF/HF_TreeCreator
+              /alice/data/2015/LHC15o/000246087/pass1/AOD194/PWGHF/HF_TreeCreator
+              /alice/data/2015/LHC15o/000246042/pass1/AOD194/PWGHF/HF_TreeCreator
+              /alice/data/2015/LHC15o/000246272/pass1/AOD194/PWGHF/HF_TreeCreator
+              /alice/data/2015/LHC15o/000246805/pass1/AOD194/PWGHF/HF_TreeCreator
+              /alice/data/2015/LHC15o/000245439/pass1_pidfix/AOD194/PWGHF/HF_TreeCreator
+              /alice/data/2015/LHC15o/000245349/pass1_pidfix/AOD194/PWGHF/HF_TreeCreator
+              /alice/data/2015/LHC15o/000245407/pass1_pidfix/AOD194/PWGHF/HF_TreeCreator
+              /alice/data/2015/LHC15o/000245501/pass1_pidfix/AOD194/PWGHF/HF_TreeCreator)
+  childdownloadpath=(1 2 3 1 1 1 1 1 1 2 2 2 2)
+  datasetwithchilds=1
+  dataset_short="LHC15o"
+elif [ "$dataset" == "LHC19h1b2" ]; then
+  #MC ITS2 Upgrade 2019: PbPb, heavily enriched with HF (charm and beauty signal)
+  inputpaths=(/alice/sim/2019/LHC19h1b2/280235/PWGHF/HF_TreeCreator)
+  datasetwithchilds=0
+  dataset_short="ITS2_19h1b2"
 else
   printf "\e[1;31mError: Dataset not yet implemented. Returning...\e[0m\n\n"
   exit
