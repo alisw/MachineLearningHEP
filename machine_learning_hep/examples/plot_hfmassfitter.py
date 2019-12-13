@@ -36,7 +36,7 @@ def plot_hfmassfitter(case, arraytype):
 
     load_root_style()
 
-    with open("data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
+    with open("../data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
 
     folder_plots = data_param[case]["analysis"]["dir_general_plots"]
@@ -340,6 +340,10 @@ def plot_hfmassfitter(case, arraytype):
     leg.Draw()
     cback.SaveAs("%s/MassFit_Background_%s_%scombined%s.eps" % \
                  (folder_plots, case, arraytype[0], arraytype[1]))
+
+#####################################
+
+gROOT.SetBatch(True)
 
 #EXAMPLE HOW TO USE plot_hfmassfitter
 #  ---> Combines and plots the output of AliHFInvMassFitter in nice way

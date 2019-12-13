@@ -24,21 +24,23 @@ mergingperiods:
     activate: false
 
 ml_study:
-  activate: false
-  doscancuts: false
-  applytodatamc: false
-  doroc: false
-  doboundary: false
-  docorrelation: false
-  docrossvalidation: false
-  dogridsearch: false
-  doimportance: false
-  dolearningcurve: false
+  activate: true
   dopca: false
-  dosignifopt: false
-  doefficiency: false
-  dotesting: false
+  docorrelation: true
   dotraining: true
+  dotesting: true
+  doapplytodatamc: true
+  docrossvalidation: true
+  dolearningcurve: true
+  doroc: true
+  doroctraintest: true
+  doplotdistr: false
+  doimportance: true
+  dogridsearch: false
+  doboundary: false
+  doefficiency: true
+  dosignifopt: true
+  doscancuts: false
 
 mlapplication:
   data:
@@ -51,23 +53,23 @@ mlapplication:
     docontinueafterstop: false
 
 analysis:
-  type: MBvspt_v0m #MBvspt_ntrk, MBvspt_v0ml, SPDvspt, V0mvspt
+  type: MBvspt_ntrkl
   # Do each period separately including merged (true)
   # Do only merged (false)
   doperperiod: true
   data:
-    histomass: true
+    histomass: false
   mc:
-    histomass: true
-    efficiency: true
+    histomass: false
+    efficiency: false
     feeddown: false
-  dofit: true
+  dofit: false
   # Control the yield systemaitc uncertainty
   dosyst: false
   dojetstudies: false
-  doeff: true
-  docross: true
-  doplots: true
+  doeff: false
+  docross: false
+  doplots: false
 
 systematics:
   cutvar:
