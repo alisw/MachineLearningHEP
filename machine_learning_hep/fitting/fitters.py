@@ -22,7 +22,8 @@ from array import array
 
 # pylint: disable=import-error, no-name-in-module, unused-import
 from ROOT import AliHFInvMassFitter, AliVertexingHFUtils, AliHFInvMassMultiTrialFit
-from ROOT import TH1F, TF1, kBlue
+from ROOT import TH1F, TF1, TPaveText, Double
+from ROOT import kBlue, kRed, kGreen, kMagenta
 
 from machine_learning_hep.logger import get_logger
 
@@ -141,9 +142,27 @@ class FitBase:
                          y_axis_label=y_axis_label, **draw_args)
 
 
-    # pylint: disable=unused-argument
-    def draw_kernel(self, root_pad, **draw_args):
+    # pylint: disable=unused-argument, dangerous-default-value
+    def draw_kernel(self, root_pad, root_objects=[], **draw_args):
         self.logger.debug("Draw kernel")
+
+
+    @staticmethod
+    def add_text_helper_(pave, line, color=None):
+        text = pave.AddText(line)
+        text.SetTextAlign(11)
+        text.SetTextSize(0.024)
+        text.SetTextFont(42)
+        if color:
+            text.SetTextColor(color)
+
+    @staticmethod
+    def add_pave_helper_(x_min, y_min, x_max, y_max, opt="NDC"):
+        pave = TPaveText(x_min, y_min, x_max, y_max, opt)
+        pave.SetBorderSize(0)
+        pave.SetFillStyle(0)
+        pave.SetMargin(0.)
+        return pave
 
 # pylint: enable=too-many-instance-attributes
 
@@ -318,27 +337,126 @@ class FitAliHF(FitROOT):
         self.fit_pars["sigma"] = self.kernel.GetSigma()
 
 
-    def draw_kernel(self, root_pad, **draw_args):
+    #pylint: disable=too-many-locals, too-many-statements, dangerous-default-value
+    def draw_kernel(self, root_pad, root_objects=[], **draw_args):
 
-        title = draw_args.pop("title", "")
-        x_axis_label = draw_args.pop("x_axis_label", "")
-        y_axis_label = draw_args.pop("y_axis_label", "")
-        sigma_signal = draw_args.pop("sigma_signal", 3)
+        n_sigma_signal = draw_args.pop("sigma_signal", 3)
+        mean_dim = draw_args.pop("mean_dim", "GeV/#it{c}^{2}")
+        mean_scale = draw_args.pop("mean_scale", 1.)
+        sigma_dim = draw_args.pop("sigma_dim", "MeV/#it{c}^{2}")
+        sigma_scale = draw_args.pop("sigma_scale", 1000.)
 
         add_root_objects = draw_args.pop("add_root_objects", None)
 
+        draw_objects = [self.histo]
+        draw_options = ["PE"] + [""] * 3
+        sig_func = self.kernel.GetMassFunc()
+        draw_objects.append(sig_func)
+        bkg_func = self.kernel.GetBackgroundFullRangeFunc()
+        draw_objects.append(bkg_func)
+        bkg_refit_func = self.kernel.GetBackgroundRecalcFunc()
+        draw_objects.append(bkg_refit_func)
+        refl_func = self.kernel.GetReflFunc() if self.init_pars["include_reflections"] else None
+        if refl_func:
+            draw_objects.append(refl_func)
+            draw_options.append("")
+        sec_peak_func = self.kernel.GetSecondPeakFunc() \
+                if self.init_pars["include_sec_peak"] else None
+        if sec_peak_func:
+            draw_objects.append(sec_peak_func)
+            draw_options.append("")
 
-        if draw_args:
-            self.logger.warning("There are unknown draw arguments")
+        y_max = self.histo.GetMaximum()
+        for do in draw_objects:
+            y_max = max(y_max, do.GetMaximum())
+        # Leave some space for putting info
+        y_max *= 1.8
 
-        self.histo.SetTitle(title)
-        self.histo.GetXaxis().SetTitle(x_axis_label)
-        self.histo.GetYaxis().SetTitle(y_axis_label)
+        # Now comes some styling
+        color_sig = kBlue - 3
+        color_bkg_refit = kRed + 2
+        color_refl = kGreen + 2
+        color_sec_peak = kMagenta + 3
+        self.histo.SetMarkerStyle(20)
+        bkg_refit_func.SetLineColor(color_bkg_refit)
+        sig_func.SetLineColor(color_sig)
 
-        self.histo.GetYaxis().SetTitleOffset(1.1)
+        root_pad.SetLeftMargin(0.12)
+        frame = root_pad.cd().DrawFrame(self.init_pars["fit_range_low"], 0.,
+                                        self.init_pars["fit_range_up"], y_max,
+                                        f"{draw_args.pop('title', '')} ; " \
+                                        f"{draw_args.pop('x_axis_label', '')} ; " \
+                                        f"{draw_args.pop('y_axis_label', '')}")
 
-        self.kernel.DrawHere(root_pad, sigma_signal)
-        root_pad.cd()
+        frame.GetYaxis().SetTitleOffset(1.7)
+        frame.GetYaxis().SetMaxDigits(4)
+
+
+        sig = self.kernel.GetRawYield()
+        sig_err = self.kernel.GetRawYieldError()
+        bkg = Double()
+        bkg_err = Double()
+        self.kernel.Background(n_sigma_signal, bkg, bkg_err)
+        signif = Double()
+        signif_err = Double()
+        self.kernel.Significance(n_sigma_signal, signif, signif_err)
+        sig_o_bkg = sig / bkg if bkg > 0. else -1.
+
+        root_objects.append(self.add_pave_helper_(0.15, 0.7, 0.48, 0.89, "NDC"))
+        self.add_text_helper_(root_objects[-1], f"S = {sig:.0f} #pm {sig_err:.0f}")
+        self.add_text_helper_(root_objects[-1],
+                              f"B({n_sigma_signal}#sigma) = {bkg:.0f} " \
+                              f"#pm {bkg_err:.0f}")
+        self.add_text_helper_(root_objects[-1], f"S/B({n_sigma_signal}#sigma) = {sig_o_bkg:.4f}")
+        self.add_text_helper_(root_objects[-1],
+                              f"Signif({n_sigma_signal}#sigma) = " \
+                              f"{signif:.1f} #pm {signif_err:.1f}")
+        root_objects[-1].Draw()
+
+        root_objects.append(self.add_pave_helper_(0.55, 0.75, 0.89, 0.89, "NDC"))
+        self.add_text_helper_(root_objects[-1],
+                              f"#chi/ndf = {self.kernel.GetReducedChiSquare():.4f}", color_sig)
+        self.add_text_helper_(root_objects[-1],
+                              f"#mu = {self.kernel.GetMean()*mean_scale:.4f} " \
+                              f"#pm " \
+                              f"{self.kernel.GetMeanUncertainty()*mean_scale:.4f} " \
+                              f"{mean_dim}", color_sig)
+        self.add_text_helper_(root_objects[-1],
+                              f"#sigma = " \
+                              f"{self.kernel.GetSigma()*sigma_scale:.4f} " \
+                              f"#pm " \
+                              f"{self.kernel.GetSigmaUncertainty()*sigma_scale:.4f} " \
+                              f"{sigma_dim}", color_sig)
+        root_objects[-1].Draw()
+
+        x_min_add = 0.45
+        y_min_tmp = 0.11
+        y_delta = 0.05
+        if sec_peak_func:
+            sec_peak_func.SetLineColor(color_sec_peak)
+            sec_mean = sec_peak_func.GetParameter(1)
+            sec_sigma = sec_peak_func.GetParameter(2)
+            root_objects.append(self.add_pave_helper_(x_min_add, y_min_tmp, 0.89,
+                                                      y_min_tmp + y_delta, "NDC"))
+            self.add_text_helper_(root_objects[-1], f"#mu_{{sec}} = {sec_mean*mean_scale:.4f} " \
+                                                    f"{mean_dim}, #sigma_{{sec}} = " \
+                                                    f"{sec_sigma*sigma_scale:.4f} " \
+                                                    f"{sigma_dim}", color_sec_peak)
+            root_objects[-1].Draw()
+            y_min_tmp += y_delta
+        if refl_func:
+            refl_func.SetLineColor(color_refl)
+            refl = self.kernel.GetReflOverSig()
+            refl_err = self.kernel.GetReflOverSigUncertainty()
+            root_objects.append(self.add_pave_helper_(x_min_add, y_min_tmp, 0.89,
+                                                      y_min_tmp + y_delta, "NDC"))
+            self.add_text_helper_(root_objects[-1], f"Refl/S = {refl:.4f} #pm {refl_err:.4f}",
+                                  color_refl)
+            root_objects[-1].Draw()
+            y_min_tmp += y_delta
+
+        for dob, dop in zip(draw_objects, draw_options):
+            dob.Draw(f"same {dop}")
 
         if add_root_objects:
             for aro in add_root_objects:
@@ -443,11 +561,43 @@ class FitROOTGauss(FitROOT):
         self.fit_pars["sigma"] = self.kernel.GetParameter(2)
 
 
-    def draw_kernel(self, root_pad, **draw_args):
+    #pylint: disable=dangerous-default-value
+    def draw_kernel(self, root_pad, root_objects=[], **draw_args):
 
         title = draw_args.pop("title", "")
         x_axis_label = draw_args.pop("x_axis_label", "")
         y_axis_label = draw_args.pop("y_axis_label", "")
+        mean_dim = draw_args.pop("mean_dim", "GeV/#it{c}^{2}")
+        mean_scale = draw_args.pop("mean_scale", 1.)
+        sigma_dim = draw_args.pop("sigma_dim", "MeV/#it{c}^{2}")
+        sigma_scale = draw_args.pop("sigma_scale", 1000.)
+
+        add_root_objects = draw_args.pop("add_root_objects", None)
+
+
+        if draw_args:
+            self.logger.warning("There are unknown draw arguments")
+
+        root_pad.cd()
+
+        draw_objects = [self.histo, self.kernel]
+
+        x_min = self.init_pars["fit_range_low"]
+        x_max = self.init_pars["fit_range_up"]
+        y_min = 0.
+        y_max = self.histo.GetMaximum() * 1.8
+
+        # Now comes the styling
+        color_sig = kBlue - 3
+        self.histo.SetMarkerStyle(20)
+        self.kernel.SetLineColor(color_sig)
+
+        root_pad.SetLeftMargin(0.12)
+        frame = root_pad.cd().DrawFrame(x_min, y_min, x_max, y_max,
+                                        f"{title} ; {x_axis_label} ; {y_axis_label}")
+
+        frame.GetYaxis().SetTitleOffset(1.7)
+        frame.GetYaxis().SetMaxDigits(4)
 
         if draw_args:
             self.logger.warning("There are unknown draw arguments")
@@ -456,14 +606,29 @@ class FitROOTGauss(FitROOT):
         self.histo.GetXaxis().SetTitle(x_axis_label)
         self.histo.GetYaxis().SetTitle(y_axis_label)
 
-        self.histo.GetYaxis().SetTitleOffset(1.1)
+        red_chisqu = self.kernel.GetNDF()
+        red_chisqu = self.kernel.GetChisquare() / red_chisqu if red_chisqu > 0. else 0.
+        mean = self.kernel.GetParameter(1) * mean_scale
+        mean_err = self.kernel.GetParError(1) * mean_scale
+        sigma = self.kernel.GetParameter(2) * sigma_scale
+        sigma_err = self.kernel.GetParError(2) * sigma_scale
 
-        root_pad.cd()
+        root_objects.append(self.add_pave_helper_(0.55, 0.75, 0.89, 0.89, "NDC"))
+        self.add_text_helper_(root_objects[-1],
+                              f"#chi/ndf = {red_chisqu:.4f}", color_sig)
+        self.add_text_helper_(root_objects[-1],
+                              f"#mu = {mean:.4f} #pm {mean_err:.4f} {mean_dim}", color_sig)
+        self.add_text_helper_(root_objects[-1],
+                              f"#sigma = {sigma:.4f} #pm {sigma_err:.4f} {sigma_dim}", color_sig)
+        root_objects[-1].Draw()
 
-        self.kernel.SetLineColor(kBlue)
-        self.histo.Draw()
-        self.kernel.Draw("same")
 
+        for dob in draw_objects:
+            dob.Draw("same")
+
+        if add_root_objects:
+            for aro in add_root_objects:
+                aro.Draw("same")
 
 # pylint: disable=too-many-instance-attributes
 class FitSystAliHF(FitROOT):
@@ -608,7 +773,8 @@ class FitSystAliHF(FitROOT):
         self.fit_pars["sigma"] = self.kernel.GetSigma()
 
 
-    def draw_kernel(self, root_pad, **draw_args):
+    #pylint: disable=dangerous-default-value
+    def draw_kernel(self, root_pad, root_objects=[], **draw_args):
 
         title = draw_args.pop("title", "")
         x_axis_label = draw_args.pop("x_axis_label", "")
