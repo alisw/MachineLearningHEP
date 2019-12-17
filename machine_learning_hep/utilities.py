@@ -214,6 +214,28 @@ def mergerootfiles(listfiles, mergedfile, tmp_dir):
     outstring = " ".join(tmp_files)
     os.system("hadd -f -j 30 %s  %s " % (mergedfile, outstring))
 
+def make_pre_suffix(args):
+    """
+    Construct a common file suffix from args
+    """
+    try:
+        iter(args)
+    except TypeError:
+        args = [args]
+    else:
+        if isinstance(args, str):
+            args = [args]
+    args = [str(a) for a in args]
+    return "_".join(args)
+
+def make_file_path(directory, filename, extension, prefix=None, suffix=None):
+    if prefix is not None:
+        filename = make_pre_suffix(prefix) + "_" + filename
+    if suffix is not None:
+        filename = filename + "_" + make_pre_suffix(suffix)
+    extension = extension.replace(".", "")
+    return os.path.join(directory, filename + "." + extension)
+
 def parallelizer(function, argument_list, maxperchunk, max_n_procs=2):
     """
     A centralized version for quickly parallelizing basically identical to what can found in
