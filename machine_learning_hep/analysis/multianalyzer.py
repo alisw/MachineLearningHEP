@@ -63,11 +63,7 @@ class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-st
         self.f_normmerged = os.path.join(self.d_resultsallpdata, \
                                                     "correctionsweights.root")
 
-    def analyze(self, ana_steps):
-        try:
-            iter(ana_steps)
-        except TypeError:
-            ana_steps = [ana_steps]
+    def analyze(self, *ana_steps):
         for step in ana_steps:
             if self.doperiodbyperiod is True:
                 for indexp in range(self.prodnumber):

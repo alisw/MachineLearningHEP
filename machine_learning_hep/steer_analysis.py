@@ -409,7 +409,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         analyze_steps.append("plotternormyields")
 
     # Now do the analysis
-    myan.analyze(analyze_steps)
+    myan.analyze(*analyze_steps)
 
 
     if dosystprob is True:
