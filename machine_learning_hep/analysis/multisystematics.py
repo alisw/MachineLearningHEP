@@ -16,7 +16,7 @@
 main script for doing data processing, machine learning and analysis
 """
 import os
-from machine_learning_hep.systematics import Systematics
+from machine_learning_hep.analysis.systematics import Systematics
 from machine_learning_hep.utilities import mergerootfiles, get_timestamp_string
 from machine_learning_hep.logger import get_logger
 # pylint: disable=too-many-instance-attributes
