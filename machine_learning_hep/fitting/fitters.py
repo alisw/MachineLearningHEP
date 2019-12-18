@@ -138,6 +138,14 @@ class FitBase:
         if not self.has_attempt:
             self.logger.info("Fit not done yet, nothing to draw. Skip...")
             return
+        if not self.success:
+            pinfos = self.add_pave_helper_(0.12, 0.7, 0.47, 0.89, "NDC")
+            self.add_text_helper_(pinfos, "FIT FAILED", kRed + 2)
+            if "add_root_objects" in draw_args:
+                draw_args["add_root_objects"].append(pinfos)
+            else:
+                draw_args["add_root_objects"] = [pinfos]
+
         self.draw_kernel(root_pad, title=title, x_axis_label=x_axis_label,
                          y_axis_label=y_axis_label, **draw_args)
 
@@ -460,7 +468,8 @@ class FitAliHF(FitROOT):
 
         if add_root_objects:
             for aro in add_root_objects:
-                aro.Draw()
+                root_objects.append(aro)
+                aro.Draw("same")
 
 
 class FitROOTGauss(FitROOT):
@@ -574,7 +583,6 @@ class FitROOTGauss(FitROOT):
 
         add_root_objects = draw_args.pop("add_root_objects", None)
 
-
         if draw_args:
             self.logger.warning("There are unknown draw arguments")
 
@@ -622,12 +630,12 @@ class FitROOTGauss(FitROOT):
                               f"#sigma = {sigma:.4f} #pm {sigma_err:.4f} {sigma_dim}", color_sig)
         root_objects[-1].Draw()
 
-
         for dob in draw_objects:
             dob.Draw("same")
 
         if add_root_objects:
             for aro in add_root_objects:
+                root_objects.append(aro)
                 aro.Draw("same")
 
 # pylint: disable=too-many-instance-attributes
@@ -781,7 +789,7 @@ class FitSystAliHF(FitROOT):
         y_axis_label = draw_args.pop("y_axis_label", "")
         sigma_signal = draw_args.pop("sigma_signal", 3)
 
-        add_root_objects = draw_args.pop("add_objects", None)
+        add_root_objects = draw_args.pop("add_root_objects", None)
 
 
         if draw_args:
