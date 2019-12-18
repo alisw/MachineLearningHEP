@@ -33,8 +33,10 @@ from  machine_learning_hep.utilities import checkmakedirlist, checkmakedir
 from  machine_learning_hep.utilities import checkdirlist, checkdir
 from  machine_learning_hep.logger import configure_logger, get_logger
 from machine_learning_hep.optimiser import Optimiser
-from machine_learning_hep.multianalyzer import MultiAnalyzer
-from machine_learning_hep.multisystematics import MultiSystematics
+from machine_learning_hep.analysis.analyzer import Analyzer
+from machine_learning_hep.analysis.analyzer_jet import AnalyzerJet
+from machine_learning_hep.analysis.multianalyzer import MultiAnalyzer
+from machine_learning_hep.analysis.multisystematics import MultiSystematics
 
 try:
 # FIXME(https://github.com/abseil/abseil-py/issues/99) # pylint: disable=fixme
@@ -288,7 +290,10 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
 
     mymultiprocessmc = MultiProcesser(case, data_param[case], typean, run_param, "mc")
     mymultiprocessdata = MultiProcesser(case, data_param[case], typean, run_param, "data")
-    myan = MultiAnalyzer(data_param[case], case, typean, doanaperperiod)
+    ana_class = Analyzer
+    if dojetstudies:
+        ana_class = AnalyzerJet
+    myan = MultiAnalyzer(ana_class, data_param[case], case, typean, doanaperperiod)
     mysis = MultiSystematics(case, data_param[case], typean, run_param)
 
     #perform the analysis flow
@@ -324,7 +329,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     if dovalhistodata is True:
         mymultiprocessdata.multi_valevents()
     if dovalplots:
-        myan.multi_studyevents()
+        myan.analyze("studyevents")
 
     if doml is True:
         index = 0
@@ -378,28 +383,35 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         mymultiprocessdata.multi_histomass()
     if doefficiency is True:
         mymultiprocessmc.multi_efficiency()
+
+    analyze_steps = []
     if dofit is True:
-        myan.multi_fitter()
+        analyze_steps.append("fit")
     if dosyst is True:
-        myan.multi_yield_syst()
+        analyze_steps.append("yield_syst")
     if doeff is True:
-        myan.multi_efficiency()
+        analyze_steps.append("efficiency")
     if dojetstudies is True:
         if dofit is False:
-            myan.multi_fitter()
+            analyze_steps.append("fit")
         if doeff is False:
-            myan.multi_efficiency()
-        myan.multi_side_band_sub()
+            analyze_steps.append("efficiency")
+        analyze_steps.append("side_band_sub")
     if dofeeddown is True:
-        myan.multi_feeddown()
+        analyze_steps.append("feeddown")
     if docross is True:
         myan.multi_preparenorm()
         if normalizecross is True:
-            myan.multi_plotter()
+            analyze_steps.append("plotter")
         if normalizecross is False:
-            myan.multi_makenormyields()
+            analyze_steps.append("makenormyields")
     if doplots is True:
-        myan.multi_plotternormyields()
+        analyze_steps.append("plotternormyields")
+
+    # Now do the analysis
+    myan.analyze(analyze_steps)
+
+
     if dosystprob is True:
         mysis.multi_cutvariation(dosystprobmass, dosystprobeff, dosystprobfit, dosystprobcross)
     if dosystptshape is True:

@@ -16,11 +16,12 @@
 main script for doing data processing, machine learning and analysis
 """
 import os
-from machine_learning_hep.analyzer import Analyzer
 from machine_learning_hep.utilities import mergerootfiles, get_timestamp_string
+from machine_learning_hep.logger import get_logger
 class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-statements
     species = "multianalyzer"
-    def __init__(self, datap, case, typean, doperiodbyperiod):
+    def __init__(self, analyzer_class, datap, case, typean, doperiodbyperiod):
+        self.logger = get_logger()
         self.datap = datap
         self.typean = typean
         self.case = case
@@ -38,15 +39,18 @@ class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-st
         self.p_useperiod = datap["analysis"][self.typean]["useperiod"]
         self.doperiodbyperiod = doperiodbyperiod
         for indexp in range(self.prodnumber):
-            myanalyzer = Analyzer(self.datap, case, typean,
-                                  self.d_resultsdata[indexp], self.d_resultsmc[indexp],
-                                  self.d_valevtdata[indexp],
-                                  self.d_valevtmc[indexp])
+            myanalyzer = analyzer_class(self.datap, case, typean,
+                                        self.d_resultsdata[indexp],
+                                        self.d_resultsmc[indexp],
+                                        self.d_valevtdata[indexp],
+                                        self.d_valevtmc[indexp])
             self.process_listsample.append(myanalyzer)
 
-        self.myanalyzertot = Analyzer(self.datap, case, typean,
-                                      self.d_resultsallpdata, self.d_resultsallpmc,
-                                      self.d_valevtallpdata, self.d_valevtallpmc)
+        self.myanalyzertot = analyzer_class(self.datap, case, typean,
+                                            self.d_resultsallpdata,
+                                            self.d_resultsallpmc,
+                                            self.d_valevtallpdata,
+                                            self.d_valevtallpmc)
 
         self.lper_normfilesorig = []
         self.lper_normfiles = []
@@ -59,60 +63,26 @@ class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-st
         self.f_normmerged = os.path.join(self.d_resultsallpdata, \
                                                     "correctionsweights.root")
 
-    def multi_fitter(self):
-        if self.doperiodbyperiod is True:
-            for indexp in range(self.prodnumber):
-                if self.p_useperiod[indexp] == 1:
-                    self.process_listsample[indexp].fit()
-        self.myanalyzertot.fit()
+    def analyze(self, ana_steps):
+        try:
+            iter(ana_steps)
+        except TypeError:
+            ana_steps = [ana_steps]
+        for step in ana_steps:
+            if self.doperiodbyperiod is True:
+                for indexp in range(self.prodnumber):
+                    if self.p_useperiod[indexp] == 1:
+                        try:
+                            getattr(self.process_listsample[indexp], step)()
+                        except AttributeError:
+                            self.logger.fatal("Your analyzer does not support the " \
+                                              "analysis method %s", step)
+            try:
+                getattr(self.myanalyzertot, step)()
+            except AttributeError:
+                self.logger.fatal("Your analyzer does not support the " \
+                                  "analysis method %s", step)
 
-    def multi_yield_syst(self):
-        if self.doperiodbyperiod is True:
-            for indexp in range(self.prodnumber):
-                self.process_listsample[indexp].yield_syst()
-        self.myanalyzertot.yield_syst()
-
-    def multi_efficiency(self):
-        if self.doperiodbyperiod is True:
-            for indexp in range(self.prodnumber):
-                if self.p_useperiod[indexp] == 1:
-                    self.process_listsample[indexp].efficiency()
-        self.myanalyzertot.efficiency()
-
-    def multi_feeddown(self):
-        if self.doperiodbyperiod is True:
-            for indexp in range(self.prodnumber):
-                if self.p_useperiod[indexp] == 1:
-                    self.process_listsample[indexp].feeddown()
-        self.myanalyzertot.feeddown()
-
-    def multi_side_band_sub(self):
-        if self.doperiodbyperiod is True:
-            for indexp in range(self.prodnumber):
-                if self.p_useperiod[indexp] == 1:
-                    self.process_listsample[indexp].side_band_sub()
-        self.myanalyzertot.side_band_sub()
-
-    def multi_plotter(self):
-        if self.doperiodbyperiod is True:
-            for indexp in range(self.prodnumber):
-                if self.p_useperiod[indexp] == 1:
-                    self.process_listsample[indexp].plotter()
-        self.myanalyzertot.plotter()
-
-    def multi_plotternormyields(self):
-        if self.doperiodbyperiod is True:
-            for indexp in range(self.prodnumber):
-                if self.p_useperiod[indexp] == 1:
-                    self.process_listsample[indexp].plotternormyields()
-        self.myanalyzertot.plotternormyields()
-
-    def multi_makenormyields(self):
-        if self.doperiodbyperiod is True:
-            for indexp in range(self.prodnumber):
-                if self.p_useperiod[indexp] == 1:
-                    self.process_listsample[indexp].makenormyields()
-        self.myanalyzertot.makenormyields()
 
     def multi_preparenorm(self):
         listempty = []
@@ -126,9 +96,3 @@ class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-st
                 if self.p_useperiod[indexp] == 1:
                     listempty.append(self.lper_normfiles[indexp])
         mergerootfiles(listempty, self.f_normmerged, tmp_merged)
-
-    def multi_studyevents(self):
-        if self.doperiodbyperiod is True:
-            for indexp in range(self.prodnumber):
-                self.process_listsample[indexp].studyevents()
-        self.myanalyzertot.studyevents()
