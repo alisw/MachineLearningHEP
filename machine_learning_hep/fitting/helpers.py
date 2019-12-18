@@ -18,7 +18,7 @@ from glob import glob
 from array import array
 
 #pylint: disable=no-name-in-module
-from ROOT import TFile, TH1F, TCanvas, TPaveText, gStyle, kRed
+from ROOT import TFile, TH1F, TCanvas, gStyle
 #pylint: enable=no-name-in-module
 
 from machine_learning_hep.logger import get_logger
@@ -524,7 +524,6 @@ class MLFitter:
             c.Divide(nx, ny)
 
         # Need to cache some object for which the canvas is only written after the loop...
-        keep_root_objects = []
         for (ibin1, ibin2), fit in self.central_fits.items():
             bin_id_match = self.pars_factory.bin_matching[ibin1]
 
@@ -566,25 +565,11 @@ class MLFitter:
                 c_res.SaveAs(make_file_path(save_dir, "residual", "eps", None, suffix_write))
                 c_res.Close()
 
-            add_root_objects = []
-            if not fit.success:
-                print(f"Add FIT FAILED label for {suffix_write}")
-                pinfos = TPaveText(0.12, 0.7, 0.47, 0.89, "NDC")
-                pinfos.SetBorderSize(0)
-                pinfos.SetFillStyle(0)
-                pinfos.SetTextAlign(11)
-                pinfos.SetTextSize(0.03)
-                text = pinfos.AddText("FIT FAILED")
-                text.SetTextColor(kRed)
-                add_root_objects.append(pinfos)
-                keep_root_objects.append(pinfos)
-
             y_axis_label = \
                     f"Entries/({histo.GetBinWidth(1) * 1000:.0f} MeV/#it{{c}}^{{2}})"
             canvas = TCanvas("fit_canvas", suffix_write, 700, 700)
             fit.draw(canvas, sigma_signal=n_sigma_signal, x_axis_label=x_axis_label,
-                     y_axis_label=y_axis_label, title=title,
-                     add_root_objects=add_root_objects)
+                     y_axis_label=y_axis_label, title=title)
             if self.pars_factory.apply_weights is False:
                 canvas.SaveAs(make_file_path(save_dir, "fittedplot", "eps", None,
                                              suffix_write))
@@ -593,8 +578,7 @@ class MLFitter:
                                              suffix_write))
             canvas.Close()
             fit.draw(canvas_data[ibin2].cd(ibin1+1), sigma_signal=n_sigma_signal,
-                     x_axis_label=x_axis_label, y_axis_label=y_axis_label,
-                     title=title, add_root_objects=add_root_objects)
+                     x_axis_label=x_axis_label, y_axis_label=y_axis_label, title=title)
 
 
             if ibin1 in have_summary_pt_bins:
