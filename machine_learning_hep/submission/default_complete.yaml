@@ -1,4 +1,4 @@
-case: Dspp
+case: Dspp_test
 download:
   alice:
     activate: false
@@ -46,38 +46,34 @@ mlapplication:
   data:
     doapply: false
     domergeapply: false
-    docontinueafterstop: false
+    docontinueafterstop: true
   mc:
     doapply: false
     domergeapply: false
-    docontinueafterstop: false
+    docontinueafterstop: true
 
 analysis:
-  type: MBvspt_ntrkl #V0mvspt_perc_v0m
+  type: MBvspt_ntrkl #MBvspt_ntrkl, MBjetvspt
   # Do each period separately including merged (true)
   # Do only merged (false)
   doperperiod: true
   data:
-    histomass: false
+    histomass: true
   mc:
-    histomass: false
-    efficiency: false
+    histomass: true
+    efficiency: true
     feeddown: false
-  dofit: false
+  dofit: true
   # Control the yield systemaitc uncertainty
   dosyst: false
   dojetstudies: false
-  doeff: false
-  docross: false
+  doeff: true
+  docross: true
   doplots: false
 
 systematics:
   cutvar:
     activate: false
-    probvariationmass: false
-    probvariationeff: false
-    probvariationfit: false
-    probvariationcross: false
   mcptshape:
     activate: false
 

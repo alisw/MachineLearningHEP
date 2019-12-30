@@ -17,10 +17,11 @@ main script for doing data processing, machine learning and analysis
 """
 import os
 from machine_learning_hep.processer import Processer
+from machine_learning_hep.processerDhadrons import ProcesserDhadrons
 from machine_learning_hep.utilities import merge_method, mergerootfiles, get_timestamp_string
 class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-statements
     species = "multiprocesser"
-    def __init__(self, case, datap, typean, run_param, mcordata):
+    def __init__(self, case, proc_class, datap, typean, run_param, mcordata):
         self.case = case
         self.datap = datap
         self.typean = typean
@@ -107,7 +108,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
 
         self.process_listsample = []
         for indexp in range(self.prodnumber):
-            myprocess = Processer(self.case, self.datap, self.run_param, self.mcordata,
+            myprocess = proc_class(self.case, self.datap, self.run_param, self.mcordata,
                                   self.p_maxfiles[indexp], self.dlper_root[indexp],
                                   self.dlper_pkl[indexp], self.dlper_pklsk[indexp],
                                   self.dlper_pklml[indexp],

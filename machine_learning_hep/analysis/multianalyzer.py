@@ -68,16 +68,18 @@ class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-st
             if self.doperiodbyperiod is True:
                 for indexp in range(self.prodnumber):
                     if self.p_useperiod[indexp] == 1:
-                        try:
-                            getattr(self.process_listsample[indexp], step)()
-                        except AttributeError:
-                            self.logger.fatal("Your analyzer does not support the " \
-                                              "analysis method %s", step)
-            try:
-                getattr(self.myanalyzertot, step)()
-            except AttributeError:
-                self.logger.fatal("Your analyzer does not support the " \
-                                  "analysis method %s", step)
+                        if step == "fit":
+                            self.process_listsample[indexp].fit()
+                        if step == "efficiency":
+                            self.process_listsample[indexp].efficiency()
+                        if step == "makenormyields":
+                            self.process_listsample[indexp].makenormyields()
+            if step == "fit":
+                self.myanalyzertot.fit()
+            if step == "efficiency":
+                    self.process_listsample[indexp].efficiency()
+            if step =="makenormyields":
+                    self.process_listsample[indexp].makenormyields()
 
 
     def multi_preparenorm(self):
