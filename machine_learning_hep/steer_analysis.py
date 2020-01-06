@@ -26,6 +26,7 @@ from pkg_resources import resource_stream
 from machine_learning_hep.multiprocesser import MultiProcesser
 from machine_learning_hep.processer import Processer
 from machine_learning_hep.processerDhadrons import ProcesserDhadrons
+from machine_learning_hep.processerDDbar import ProcesserDDbar
 from machine_learning_hep.processerDhadrons_mult import ProcesserDhadrons_mult
 from machine_learning_hep.processerDhadrons_jet import ProcesserDhadrons_jet
 #from machine_learning_hep.doskimming import conversion, merging, merging_period, skim
@@ -43,7 +44,7 @@ from machine_learning_hep.analysis.analyzer_Dhadrons import AnalyzerDhadrons
 from machine_learning_hep.analysis.analyzer_Dhadrons_mult import AnalyzerDhadrons_mult
 from machine_learning_hep.analysis.multianalyzer import MultiAnalyzer
 from machine_learning_hep.analysis.multisystematics import MultiSystematics
-from machine_learning_hep.analysis.systematics_Dhadrons import SystematicsDhadrons
+#from machine_learning_hep.analysis.systematics_Dhadrons_mult import SystematicsDhadrons_mult
 
 try:
 # FIXME(https://github.com/abseil/abseil-py/issues/99) # pylint: disable=fixme
@@ -297,17 +298,22 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         print("Using new feature for Dhadrons")
         proc_class = ProcesserDhadrons
         ana_class = AnalyzerDhadrons
-        syst_class = SystematicsDhadrons
+ #       syst_class = SystematicsDhadrons
     if proc_type  == "Dhadrons_mult":
         print("Using new feature for Dhadrons_mult")
         proc_class = ProcesserDhadrons_mult
         ana_class = AnalyzerDhadrons_mult
-        syst_class = SystematicsDhadrons
+ #       syst_class = SystematicsDhadrons
     if proc_type  == "Dhadrons_jet":
         print("Using new feature for Dhadrons_jet")
         proc_class = ProcesserDhadrons_jet
         ana_class = AnalyzerJet
-        syst_class = SystematicsDhadrons
+#        syst_class = SystematicsDhadrons
+    if proc_type  == "DDbar":
+        print("Using new feature for DDbar")
+        proc_class = ProcesserDDbar
+        ana_class = AnalyzerDhadrons
+ #       syst_class = SystematicsDhadrons
 
     mymultiprocessmc = MultiProcesser(case, proc_class, data_param[case], typean, run_param, "mc")
     mymultiprocessdata = MultiProcesser(case, proc_class, data_param[case], typean, run_param, "data")

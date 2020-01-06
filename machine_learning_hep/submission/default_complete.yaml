@@ -1,4 +1,4 @@
-case: Dspp_test
+case: D0pp_DDBar
 download:
   alice:
     activate: false
@@ -53,7 +53,7 @@ mlapplication:
     docontinueafterstop: true
 
 analysis:
-  type: MBvspt_ntrkl #MBvspt_ntrkl, MBjetvspt
+  type: MBvspt_DDbar #MBvspt_ntrkl, MBjetvspt
   # Do each period separately including merged (true)
   # Do only merged (false)
   doperperiod: true
@@ -61,14 +61,14 @@ analysis:
     histomass: true
   mc:
     histomass: true
-    efficiency: true
+    efficiency: false
     feeddown: false
-  dofit: true
+  dofit: false
   # Control the yield systemaitc uncertainty
   dosyst: false
   dojetstudies: false
-  doeff: true
-  docross: true
+  doeff: false
+  docross: false
   doplots: false
 
 systematics:
