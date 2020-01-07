@@ -346,6 +346,7 @@ LcpK0spp:
       sel_binmin2: [5.0,7.0,15.0] #list of nbins
       sel_binmax2: [7.0,15.0,35.0] #list of nbins
       var_binning2: pt_jet
+      corrEffMult: [false,false,false]
       sel_binmin2_reco: [5.0,7.0,15.0] #list of nbins
       sel_binmax2_reco: [7.0,15.0,35.0] #list of nbins
       sel_binmin2_gen: [5.0,7.0,15.0] #list of nbins
@@ -371,13 +372,11 @@ LcpK0spp:
         weighttrig: false
       data:
         results: [/data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/211_20190909-2119/resultsMBjetvspt,
-                  /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_data/212_20190909-2119/resultsMBjetvspt,
                   /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2017_data/210_20190909-2119/resultsMBjetvspt,
                   /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2018_data/209_20190909-2118/resultsMBjetvspt] #list of periods
         resultsallp: /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_data/resultsMBjetvspt
       mc:
         results: [/data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_mc_prodLcpK0s/213_20190909-2123/resultsMBjetvspt,
-                  /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2016_mc_prodLcpK0s/217_20190909-2124/resultsMBjetvspt,
                   /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2017_mc_prodLcpK0s/218_20190909-2124/resultsMBjetvspt,
                   /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_2018_mc_prodLcpK0s/219_20190909-2125/resultsMBjetvspt] #list of periods
         resultsallp: /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_mc_prodLcpK0s/resultsMBjetvspt
@@ -477,6 +476,7 @@ LcpK0spp:
       weights_max_pt: 40
       weights_bins: 400
 
+
   validation:
     runlisttrigger: 
       LHC16pp:
@@ -492,9 +492,8 @@ LcpK0spp:
         HighMultSPD: HighMultSPD2018
         HighMultV0: nosel
     data:
-      dir: [/data/DerivedVal/dataval_16, /data/DerivedVal/dataval_17, /data/DerivedVal/dataval_18] #list of periods
-      dirmerged: /data/DerivedVal/datavaltot
+      dir: [/data/Derived_testVal/dataval_16, /data/Derived_testVal/dataval_17, /data/Derived_testVal/dataval_18] #list of periods
+      dirmerged: /data/Derived_testVal/datavaltot
     mc:
-      dir: [/data/DerivedVal/mcval_16, /data/DerivedVal/mcval_17, /data/DerivedVal/mcval_18] #list of periods
-      dirmerged: /data/DerivedVal/mcvaltot
-
+      dir: [/data/Derived_testVal/mcval_16, /data/Derived_testVal/mcval_17, /data/Derived_testVal/mcval_18] #list of periods
+      dirmerged: /data/Derived_testVal/mcvaltot

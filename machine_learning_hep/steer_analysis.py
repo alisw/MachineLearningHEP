@@ -43,7 +43,7 @@ from machine_learning_hep.analysis.analyzer_Dhadrons import AnalyzerDhadrons
 from machine_learning_hep.analysis.analyzer_Dhadrons_mult import AnalyzerDhadrons_mult
 from machine_learning_hep.analysis.multianalyzer import MultiAnalyzer
 from machine_learning_hep.analysis.multisystematics import MultiSystematics
-from machine_learning_hep.analysis.systematics_Dhadrons import SystematicsDhadrons
+#from machine_learning_hep.analysis.systematics_Dhadrons import SystematicsDhadrons
 
 try:
 # FIXME(https://github.com/abseil/abseil-py/issues/99) # pylint: disable=fixme
@@ -297,17 +297,17 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         print("Using new feature for Dhadrons")
         proc_class = ProcesserDhadrons
         ana_class = AnalyzerDhadrons
-        syst_class = SystematicsDhadrons
+        #syst_class = SystematicsDhadrons
     if proc_type  == "Dhadrons_mult":
         print("Using new feature for Dhadrons_mult")
         proc_class = ProcesserDhadrons_mult
         ana_class = AnalyzerDhadrons_mult
-        syst_class = SystematicsDhadrons
+        #syst_class = SystematicsDhadrons
     if proc_type  == "Dhadrons_jet":
         print("Using new feature for Dhadrons_jet")
         proc_class = ProcesserDhadrons_jet
         ana_class = AnalyzerJet
-        syst_class = SystematicsDhadrons
+        #syst_class = SystematicsDhadrons
 
     mymultiprocessmc = MultiProcesser(case, proc_class, data_param[case], typean, run_param, "mc")
     mymultiprocessdata = MultiProcesser(case, proc_class, data_param[case], typean, run_param, "data")

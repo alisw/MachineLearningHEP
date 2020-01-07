@@ -67,7 +67,6 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         self.lvar2_binmin = datap["analysis"][self.typean]["sel_binmin2"]
         self.lvar2_binmax = datap["analysis"][self.typean]["sel_binmax2"]
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
-        self.v_var2_binning_gen = datap["analysis"][self.typean]["var_binning2_gen"]
         self.corr_eff_mult = datap["analysis"][self.typean]["corrEffMult"]
 
         self.lvar2_binmin_reco = datap["analysis"][self.typean].get("sel_binmin2_reco", None)
