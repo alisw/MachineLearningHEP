@@ -25,13 +25,13 @@ import uproot
 import pandas as pd
 import numpy as np
 from root_numpy import fill_hist, evaluate # pylint: disable=import-error, no-name-in-module
-from ROOT import TFile, TH1F, TH2F, TH3F, RooUnfoldResponse # pylint: disable=import-error, no-name-in-module
+from ROOT import TFile, TH1F, TH2F, TH3F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge_method
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
-from machine_learning_hep.utilities import mergerootfiles, z_calc, z_gen_calc
+from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.utilities import get_timestamp_string
 from machine_learning_hep.utilities_plot import scatterplotroot
 from machine_learning_hep.models import apply # pylint: disable=import-error
