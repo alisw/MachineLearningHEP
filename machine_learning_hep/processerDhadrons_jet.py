@@ -64,10 +64,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                        for ipt in range(self.p_nptbins)]
         self.s_presel_gen_eff = datap["analysis"][self.typean]['presel_gen_eff']
 
-        self.lvar2_binmin = datap["analysis"][self.typean]["sel_binmin2"]
-        self.lvar2_binmax = datap["analysis"][self.typean]["sel_binmax2"]
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
-        self.corr_eff_mult = datap["analysis"][self.typean]["corrEffMult"]
 
         self.lvar2_binmin_reco = datap["analysis"][self.typean].get("sel_binmin2_reco", None)
         self.lvar2_binmax_reco = datap["analysis"][self.typean].get("sel_binmax2_reco", None)
@@ -87,8 +84,6 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         
         self.closure_frac = datap["analysis"][self.typean].get("sel_closure_frac", None)
 
-        self.var2ranges = self.lvar2_binmin.copy()
-        self.var2ranges.append(self.lvar2_binmax[-1])
         self.var2ranges_reco = self.lvar2_binmin_reco.copy()
         self.var2ranges_reco.append(self.lvar2_binmax_reco[-1])
         self.var2ranges_gen = self.lvar2_binmin_gen.copy()
@@ -119,9 +114,9 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
             dfevtorig = dfevtorig.query(self.s_trigger)
         dfevtorig = selectdfrunlist(dfevtorig, \
                          self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
-        for ibin2 in range(len(self.lvar2_binmin)):
+        for ibin2 in range(len(self.lvar2_binmin_reco)):
             mybindfevtorig = seldf_singlevar(dfevtorig, self.v_var2_binning_gen, \
-                                        self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                                        self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
             hNorm = TH1F("hEvForNorm_mult%d" % ibin2, "hEvForNorm_mult%d" % ibin2, 2, 0.5, 2.5)
             hNorm.GetXaxis().SetBinLabel(1, "normsalisation factor")
             hNorm.GetXaxis().SetBinLabel(2, "selected events")
@@ -157,15 +152,15 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                 df = df.query(self.s_trigger)
             df = seldf_singlevar(df, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-            for ibin2 in range(len(self.lvar2_binmin)):
+            for ibin2 in range(len(self.lvar2_binmin_reco)):
                 suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
-                          self.v_var2_binning, self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                          self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
                 h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
                                  self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 df_bin = seldf_singlevar(df, self.v_var2_binning,
-                                         self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                                         self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
                 df_bin = selectdfrunlist(df_bin, \
                          self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
                 fill_hist(h_invmass, df_bin.inv_mass)
@@ -199,10 +194,10 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
     # pylint: disable=line-too-long
     def process_efficiency_single(self, index):
         out_file = TFile.Open(self.l_histoeff[index], "recreate")
-        for ibin2 in range(len(self.lvar2_binmin)):
+        for ibin2 in range(len(self.lvar2_binmin_reco)):
             stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen, \
-                                        self.lvar2_binmin[ibin2], \
-                                        self.lvar2_binmax[ibin2])
+                                        self.lvar2_binmin_reco[ibin2], \
+                                        self.lvar2_binmax_reco[ibin2])
             n_bins = len(self.lpt_finbinmin)
             analysis_bin_lims_temp = self.lpt_finbinmin.copy()
             analysis_bin_lims_temp.append(self.lpt_finbinmax[n_bins-1])
@@ -239,9 +234,9 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                 df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
                 df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning_gen, \
-                                             self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                                             self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
                 df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning_gen, \
-                                            self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                                            self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
                 df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
                 df_reco_presel_pr = df_mc_reco[df_mc_reco.ismcprompt == 1]
                 df_reco_sel_pr = None
@@ -257,56 +252,32 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                 else:
                     df_reco_sel_fd = df_reco_presel_fd.copy()
 
-                if self.corr_eff_mult[ibin2] is True:
-                    val, err = self.get_reweighted_count(df_gen_sel_pr)
-                    h_gen_pr.SetBinContent(bincounter + 1, val)
-                    h_gen_pr.SetBinError(bincounter + 1, err)
-                    val, err = self.get_reweighted_count(df_reco_presel_pr)
-                    h_presel_pr.SetBinContent(bincounter + 1, val)
-                    h_presel_pr.SetBinError(bincounter + 1, err)
-                    val, err = self.get_reweighted_count(df_reco_sel_pr)
-                    h_sel_pr.SetBinContent(bincounter + 1, val)
-                    h_sel_pr.SetBinError(bincounter + 1, err)
-                    #print("prompt efficiency tot ptbin=", bincounter, ", value = ",
-                    #      len(df_reco_sel_pr)/len(df_gen_sel_pr))
-
-                    val, err = self.get_reweighted_count(df_gen_sel_fd)
-                    h_gen_fd.SetBinContent(bincounter + 1, val)
-                    h_gen_fd.SetBinError(bincounter + 1, err)
-                    val, err = self.get_reweighted_count(df_reco_presel_fd)
-                    h_presel_fd.SetBinContent(bincounter + 1, val)
-                    h_presel_fd.SetBinError(bincounter + 1, err)
-                    val, err = self.get_reweighted_count(df_reco_sel_fd)
-                    h_sel_fd.SetBinContent(bincounter + 1, val)
-                    h_sel_fd.SetBinError(bincounter + 1, err)
-                    #print("fd efficiency tot ptbin=", bincounter, ", value = ",
-                    #      len(df_reco_sel_fd)/len(df_gen_sel_fd))
-                else:
-                    val = len(df_gen_sel_pr)
-                    err = math.sqrt(val)
-                    h_gen_pr.SetBinContent(bincounter + 1, val)
-                    h_gen_pr.SetBinError(bincounter + 1, err)
-                    val = len(df_reco_presel_pr)
-                    err = math.sqrt(val)
-                    h_presel_pr.SetBinContent(bincounter + 1, val)
-                    h_presel_pr.SetBinError(bincounter + 1, err)
-                    val = len(df_reco_sel_pr)
-                    err = math.sqrt(val)
-                    h_sel_pr.SetBinContent(bincounter + 1, val)
-                    h_sel_pr.SetBinError(bincounter + 1, err)
-
-                    val = len(df_gen_sel_fd)
-                    err = math.sqrt(val)
-                    h_gen_fd.SetBinContent(bincounter + 1, val)
-                    h_gen_fd.SetBinError(bincounter + 1, err)
-                    val = len(df_reco_presel_fd)
-                    err = math.sqrt(val)
-                    h_presel_fd.SetBinContent(bincounter + 1, val)
-                    h_presel_fd.SetBinError(bincounter + 1, err)
-                    val = len(df_reco_sel_fd)
-                    err = math.sqrt(val)
-                    h_sel_fd.SetBinContent(bincounter + 1, val)
-                    h_sel_fd.SetBinError(bincounter + 1, err)
+               
+                val = len(df_gen_sel_pr)
+                err = math.sqrt(val)
+                h_gen_pr.SetBinContent(bincounter + 1, val)
+                h_gen_pr.SetBinError(bincounter + 1, err)
+                val = len(df_reco_presel_pr)
+                err = math.sqrt(val)
+                h_presel_pr.SetBinContent(bincounter + 1, val)
+                h_presel_pr.SetBinError(bincounter + 1, err)
+                val = len(df_reco_sel_pr)
+                err = math.sqrt(val)
+                h_sel_pr.SetBinContent(bincounter + 1, val)
+                h_sel_pr.SetBinError(bincounter + 1, err)
+                
+                val = len(df_gen_sel_fd)
+                err = math.sqrt(val)
+                h_gen_fd.SetBinContent(bincounter + 1, val)
+                h_gen_fd.SetBinError(bincounter + 1, err)
+                val = len(df_reco_presel_fd)
+                err = math.sqrt(val)
+                h_presel_fd.SetBinContent(bincounter + 1, val)
+                h_presel_fd.SetBinError(bincounter + 1, err)
+                val = len(df_reco_sel_fd)
+                err = math.sqrt(val)
+                h_sel_fd.SetBinContent(bincounter + 1, val)
+                h_sel_fd.SetBinError(bincounter + 1, err)
 
                 bincounter = bincounter + 1
 
