@@ -118,9 +118,6 @@ class AnalyzerJet(Analyzer):
 
         self.d_resultsallpmc = resultsmc
         self.d_resultsallpdata = resultsdata
-        self.p_corrmb_typean = datap["analysis"][self.typean]["corresp_mb_typean"]
-        if self.p_corrmb_typean is not None:
-            self.results_mb = datap["analysis"][self.p_corrmb_typean]["data"]["resultsallp"]
 
         n_filemass_name = datap["files_names"]["histofilename"]
         self.n_filemass = os.path.join(self.d_resultsallpdata, n_filemass_name)
