@@ -58,10 +58,10 @@ EOF
 
 if [[ $TRAVIS_PULL_REQUEST != "false" && $TRAVIS_COMMIT_RANGE ]]; then
   # Only check changed Python files (snappier)
-  CHANGED_FILES=($(git diff --name-only $TRAVIS_COMMIT_RANGE | grep -E '\.py$' | grep -vE '^setup\.py$' || true))
+  CHANGED_FILES=($(git diff --name-only $TRAVIS_COMMIT_RANGE | grep -E '\.py$' | grep -vE '^setup\.py$' | grep -vE 'analyzer\_jet\.py$|processerDhadrons\_jet\.py$' || true))
 else
   # Check all Python files
-  CHANGED_FILES=($(find . -name '*.py' -a -not -name setup.py))
+  CHANGED_FILES=($(find . -name '*.py' -a -not -name setup.py | grep -vE 'analyzer\_jet\.py|processerDhadrons\_jet\.py'))
 fi
 
 ERRCHECK=
