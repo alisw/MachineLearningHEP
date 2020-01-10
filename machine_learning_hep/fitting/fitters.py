@@ -93,16 +93,16 @@ class FitBase:
         self.init_pars = self.make_default_init_pars()
 
         # Collect key which haven't changed
-        pars_not_changed = []
+        #pars_not_changed = []
         for k in list(self.init_pars.keys()):
             if k in self.user_init_pars:
                 self.init_pars[k] = self.user_init_pars.pop(k)
-                continue
-            pars_not_changed.append(k)
+        #        continue
+        #    pars_not_changed.append(k)
 
-        self.logger.debug("Following default parameters are used")
-        for p in pars_not_changed:
-            print(p)
+        #self.logger.debug("Following default parameters are used")
+        #for p in pars_not_changed:
+            #print(p)
 
         return True
 
