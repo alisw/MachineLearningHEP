@@ -35,7 +35,7 @@ from machine_learning_hep.mlperformance import cross_validation_mse, plot_cross_
 from machine_learning_hep.mlperformance import plot_learning_curves, precision_recall
 from machine_learning_hep.mlperformance import roc_train_test, plot_overtraining
 from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perform_plot_gridsearch
-from machine_learning_hep.models import importanceplotall
+from machine_learning_hep.models import importanceplotall, shap_study
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.optimization import calc_bkg, calc_signif, calc_eff, calc_sigeff_steps
 from machine_learning_hep.correlations import vardistplot_probscan, efficiency_cutscan
@@ -326,6 +326,10 @@ class Optimiser:
     def do_importance(self):
         importanceplotall(self.v_train, self.p_classname, self.p_class,
                           self.s_suffix, self.dirmlplot)
+
+    def do_shap(self):
+        shap_study(self.p_classname, self.p_class, self.df_xtrain, self.s_suffix, self.dirmlplot)
+
     def do_grid(self):
         analysisdb = self.c_gridconfig[self.p_mltype]
         names_cv, clf_cv, par_grid_cv, refit_cv, var_param, \

@@ -25,6 +25,8 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 
 from sklearn.feature_extraction import DictVectorizer
+# Interpreting the data
+import shap
 
 from keras.wrappers.scikit_learn import KerasClassifier
 from machine_learning_hep.logger import get_logger
@@ -182,23 +184,18 @@ def readmodels(names_, folder_, suffix_):
 
 def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder):
 
-    if len(names_) == 1:
-        plt.figure(figsize=(18, 15))
-    else:
-        plt.figure(figsize=(25, 15))
 
-    i = 1
-    for name, model in zip(names_, trainedmodels_):
+    x_size = 18 if len(names_) == 1 else 25
+    figure = plt.figure(figsize=(x_size, 15))
+    for i, (name, model) in enumerate(zip(names_, trainedmodels_)):
         if "SVC" in name:
             continue
         if "Logistic" in name:
             continue
         if "Keras" in name:
             continue
-        if len(names_) > 1:
-            ax1 = plt.subplot(2, (len(names_)+1)/2, i)
-        else:
-            ax1 = plt.subplot(1, 1, i)
+        nrows, ncols = (2, (len(names_) + 1) / 2) if len(names_) > 1 else (1, 1)
+        ax1 = figure.add_subplot(nrows, ncols, i + 1)
         #plt.subplots_adjust(left=0.3, right=0.9)
         feature_importances_ = model.feature_importances_
         y_pos = np.arange(len(mylistvariables_))
@@ -209,15 +206,36 @@ def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder)
         ax1.set_xlabel('Importance', fontsize=17)
         ax1.set_title('Importance features '+name, fontsize=17)
         ax1.xaxis.set_tick_params(labelsize=17)
-        plt.xlim(0, 0.7)
-        i += 1
-    plt.subplots_adjust(wspace=0.5)
+        ax1.set_xlim(0, 0.7)
+    figure.subplots_adjust(wspace=0.5)
     plotname = folder+'/importanceplotall%s.png' % (suffix_)
-    plt.savefig(plotname)
+    figure.savefig(plotname)
     img_import = BytesIO()
     plt.savefig(img_import, format='png')
     img_import.seek(0)
     return img_import
+
+def shap_study(names_, trainedmodels_, x_train_, suffix_, folder):
+
+    x_size = 18 if len(names_) == 1 else 25
+    figure = plt.figure(figsize=(x_size, 15))
+    shap_ax_size = (x_size / len(names_), 15 / len(names_))
+    for i, (name, model) in enumerate(zip(names_, trainedmodels_)):
+        if "SVC" in name:
+            continue
+        if "Logistic" in name:
+            continue
+        if "Keras" in name:
+            continue
+        nrows, ncols = (2, (len(names_) + 1) / 2) if len(names_) > 1 else (1, 1)
+        ax = figure.add_subplot(nrows, ncols, i + 1)
+        plt.sca(ax)
+        explainer = shap.TreeExplainer(model)
+        shap_values = explainer.shap_values(x_train_)
+        shap.summary_plot(shap_values, x_train_, show=False, plot_size=shap_ax_size)
+    plotname = folder+'/importanceplotall_shap_%s.png' % (suffix_)
+    figure.savefig(plotname)
+    plt.close(figure)
 
 
 def decisionboundaries(names_, trainedmodels_, suffix_, x_train_, y_train_, folder):

@@ -98,6 +98,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     doroctraintest = data_config["ml_study"]['doroctraintest']
     doboundary = data_config["ml_study"]['doboundary']
     doimportance = data_config["ml_study"]['doimportance']
+    doshap = data_config["ml_study"]['doshap']
     dogridsearch = data_config["ml_study"]['dogridsearch']
     doefficiencyml = data_config["ml_study"]['doefficiency']
     dosignifopt = data_config["ml_study"]['dosignifopt']
@@ -163,7 +164,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     mlout = data_param[case]["ml"]["mlout"]
     mlplot = data_param[case]["ml"]["mlplot"]
 
-    proc_type = data_param[case]["analysis"][typean]["proc_type"]
+    proc_type = data_param[case]["analysis"][typean].get("proc_type", None)
 
     #creating folder if not present
     counter = 0
@@ -293,17 +294,17 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
 
     proc_class = Processer
     ana_class = Analyzer
-    if proc_type  == "Dhadrons":
+    if proc_type == "Dhadrons":
         print("Using new feature for Dhadrons")
         proc_class = ProcesserDhadrons
         ana_class = AnalyzerDhadrons
         #syst_class = SystematicsDhadrons
-    if proc_type  == "Dhadrons_mult":
+    if proc_type == "Dhadrons_mult":
         print("Using new feature for Dhadrons_mult")
         proc_class = ProcesserDhadrons_mult
         ana_class = AnalyzerDhadrons_mult
         #syst_class = SystematicsDhadrons
-    if proc_type  == "Dhadrons_jet":
+    if proc_type == "Dhadrons_jet":
         print("Using new feature for Dhadrons_jet")
         proc_class = ProcesserDhadrons_jet
         ana_class = AnalyzerJet
@@ -375,6 +376,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
                 myopt.do_plot_model_pred()
             if doimportance is True:
                 myopt.do_importance()
+            if doshap is True:
+                myopt.do_shap()
             if dogridsearch is True:
                 myopt.do_grid()
             if doboundary is True:

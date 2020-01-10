@@ -24,23 +24,24 @@ mergingperiods:
     activate: false
 
 ml_study:
-  activate: false
-  dopca: false
-  docorrelation: false
-  dotraining: false
-  dotesting: false
+  activate: false # gloablly en/disable the ML section
+  dopca: false # principal component analysis
+  docorrelation: false # plot correlations of feature distributions
+  dotraining: false # training...
+  dotesting: false # testing...
   doapplytodatamc: false
-  docrossvalidation: false
-  dolearningcurve: false
-  doroc: false
-  doroctraintest: false
-  doplotdistr: false
-  doimportance: false
-  dogridsearch: false
-  doboundary: false
-  doefficiency: false
-  dosignifopt: false
-  doscancuts: false
+  docrossvalidation: false # cross validation...
+  dolearningcurve: false # learning curve...
+  doroc: false # plot only training ROC
+  doroctraintest: false # plot both training and test ROC
+  doplotdistr: false # plot feature distributions
+  doimportance: false # basic feature importance plot (only available for decision trees)
+  doshap: false # advanced feature importance plot (only available for decision trees at the moment, more metrics might be implemented)
+  dogridsearch: false # hyper-parameter grid search
+  doboundary: false # decision boundary plot
+  doefficiency: false # efficiency for ML working point
+  dosignifopt: false # optimise the significance varying the ML working point
+  doscancuts: false # plot feature distributions varying the ML working point
 
 mlapplication:
   data:
@@ -56,20 +57,20 @@ analysis:
   type: MBjetvspt #MBvspt_ntrkl, MBjetvspt
   # Do each period separately including merged (true)
   # Do only merged (false)
-  doperperiod: true
+  doperperiod: true # do analyses for all data-taking periods seperately in addition to the analysis with all periods merged
   data:
-    histomass: true
+    histomass: true # derive mass distribution for data
   mc:
-    histomass: false
-    efficiency: false
-    feeddown: false
-  dofit: false
+    histomass: false # derive mass distribution for MC
+    efficiency: false # derive efficiencies from MC
+    feeddown: false # derive feeddown from MC
+  dofit: false # fit to mass distributions extracting fit parameters
   # Control the yield systemaitc uncertainty
-  dosyst: false
-  dojetstudies: false
-  doeff: false
-  docross: false
-  doplots: false
+  dosyst: false # yield systematic uncertainties (not implemented at the moment)
+  dojetstudies: false # additional treatment and studies focussing on jets
+  doeff: false # final derivation of efficiencies
+  docross: false # final derivation of cross sections
+  doplots: false # final plotting
 
 systematics:
   cutvar:
