@@ -565,20 +565,20 @@ class MLFitter:
                 c_res.SaveAs(make_file_path(save_dir, "residual", "eps", None, suffix_write))
                 c_res.Close()
 
-            y_axis_label = \
-                    f"Entries/({histo.GetBinWidth(1) * 1000:.0f} MeV/#it{{c}}^{{2}})"
-            canvas = TCanvas("fit_canvas", suffix_write, 700, 700)
-            fit.draw(canvas, sigma_signal=n_sigma_signal, x_axis_label=x_axis_label,
-                     y_axis_label=y_axis_label, title=title)
-            if self.pars_factory.apply_weights is False:
-                canvas.SaveAs(make_file_path(save_dir, "fittedplot", "eps", None,
-                                             suffix_write))
-            else:
-                canvas.SaveAs(make_file_path(save_dir, "fittedplotweights", "eps", None,
-                                             suffix_write))
-            canvas.Close()
-            fit.draw(canvas_data[ibin2].cd(ibin1+1), sigma_signal=n_sigma_signal,
-                     x_axis_label=x_axis_label, y_axis_label=y_axis_label, title=title)
+                y_axis_label = \
+                        f"Entries/({histo.GetBinWidth(1) * 1000:.0f} MeV/#it{{c}}^{{2}})"
+                canvas = TCanvas("fit_canvas", suffix_write, 700, 700)
+                fit.draw(canvas, sigma_signal=n_sigma_signal, x_axis_label=x_axis_label,
+                         y_axis_label=y_axis_label, title=title)
+                if self.pars_factory.apply_weights is False:
+                    canvas.SaveAs(make_file_path(save_dir, "fittedplot", "eps", None,
+                                                 suffix_write))
+                else:
+                    canvas.SaveAs(make_file_path(save_dir, "fittedplotweights", "eps", None,
+                                                 suffix_write))
+                canvas.Close()
+                fit.draw(canvas_data[ibin2].cd(ibin1+1), sigma_signal=n_sigma_signal,
+                         x_axis_label=x_axis_label, y_axis_label=y_axis_label, title=title)
 
 
             if ibin1 in have_summary_pt_bins:

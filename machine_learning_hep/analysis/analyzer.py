@@ -126,3 +126,16 @@ class Analyzer:
         extension = extension.replace(".", "")
         return os.path.join(directory, filename + "." + extension)
 
+
+    def analysis_step(self, step: str):
+        """
+        Given an analysis steps as string, find the corresponding method and call it.
+        Args:
+            step: analysis step as string
+        Returns:
+            True if the analysis step was found and executed, False otherwise
+        """
+        if not hasattr(self, step):
+            return False
+        getattr(self, step)()
+        return True

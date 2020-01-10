@@ -35,22 +35,24 @@ class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-st
         self.d_valevtallpmc = datap["validation"]["mc"]["dirmerged"]
         self.n_evtvalroot = datap["files_names"]["namefile_evtvalroot"]
         self.prodnumber = len(self.d_resultsmc)
-        self.process_listsample = []
+        # Prepare a list of analyzers. The last entry is the analyzer for all periods merged.
+        self.process_listsample = [None] * (self.prodnumber + 1)
         self.p_useperiod = datap["analysis"][self.typean]["useperiod"]
         self.doperiodbyperiod = doperiodbyperiod
+        # Add period-wise analyzers if given period is enabled
         for indexp in range(self.prodnumber):
-            myanalyzer = analyzer_class(self.datap, case, typean,
-                                        self.d_resultsdata[indexp],
-                                        self.d_resultsmc[indexp],
-                                        self.d_valevtdata[indexp],
-                                        self.d_valevtmc[indexp])
-            self.process_listsample.append(myanalyzer)
-
-        self.myanalyzertot = analyzer_class(self.datap, case, typean,
-                                            self.d_resultsallpdata,
-                                            self.d_resultsallpmc,
-                                            self.d_valevtallpdata,
-                                            self.d_valevtallpmc)
+            if doperiodbyperiod and self.p_useperiod[indexp]:
+                self.process_listsample[indexp] = analyzer_class(self.datap, case, typean,
+                                                                 self.d_resultsdata[indexp],
+                                                                 self.d_resultsmc[indexp],
+                                                                 self.d_valevtdata[indexp],
+                                                                 self.d_valevtmc[indexp])
+        # Add the periods-merged analyzer
+        self.process_listsample[self.prodnumber] = analyzer_class(self.datap, case, typean,
+                                                                  self.d_resultsallpdata,
+                                                                  self.d_resultsallpmc,
+                                                                  self.d_valevtallpdata,
+                                                                  self.d_valevtallpmc)
 
         self.lper_normfilesorig = []
         self.lper_normfiles = []
@@ -64,23 +66,18 @@ class MultiAnalyzer: # pylint: disable=too-many-instance-attributes, too-many-st
                                                     "correctionsweights.root")
 
     def analyze(self, *ana_steps):
+        # Collect potentially failed analysis steps
+        failed_steps = []
         for step in ana_steps:
-            if self.doperiodbyperiod is True:
-                for indexp in range(self.prodnumber):
-                    if self.p_useperiod[indexp] == 1:
-                        if step == "fit":
-                            self.process_listsample[indexp].fit()
-                        if step == "efficiency":
-                            self.process_listsample[indexp].efficiency()
-                        if step == "makenormyields":
-                            self.process_listsample[indexp].makenormyields()
-            if step == "fit":
-                self.myanalyzertot.fit()
-            if step == "efficiency":
-                    self.process_listsample[indexp].efficiency()
-            if step =="makenormyields":
-                    self.process_listsample[indexp].makenormyields()
-
+            for analyzer in self.process_listsample:
+                if not analyzer:
+                    continue
+                if not analyzer.analysis_step(step):
+                    failed_steps.append((analyzer.__class__.__name__, step))
+        if failed_steps:
+            self.logger.error("Following analysis steps could not be found:")
+            for fs in failed_steps:
+                print(f"Analyzer class: {fs[0]}, anqalysis step: {fs[1]}")
 
     def multi_preparenorm(self):
         listempty = []
