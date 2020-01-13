@@ -89,7 +89,7 @@ class MLFitParsFactory:
         try:
             iter(self.include_sec_peak[0])
         except TypeError:
-            self.inculde_sec_peak = [self.include_sec_peak for _ in range(self.n_bins2)]
+            self.include_sec_peak = [self.include_sec_peak for _ in range(self.n_bins2)]
 
         self.sec_mean = ana_config["masssecpeak"] if self.include_sec_peak else None
         self.fix_sec_mean = ana_config.get("fix_masssecpeak", [False] * self.n_bins1)
