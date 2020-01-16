@@ -29,11 +29,23 @@ from machine_learning_hep.fitting.fitters import FitAliHF, FitROOTGauss, FitSyst
 
 # pylint: disable=too-many-instance-attributes, too-many-statements
 class MLFitParsFactory:
+    """
+    Managing MLHEP specific fit parameters and is used to collect and retrieve all information
+    required to initialise a (systematic) fit
+    """
 
     SIG_FUNC_MAP = {"kGaus": 0, "k2Gaus": 1, "kGausSigmaRatioPar": 2}
     BKG_FUNC_MAP = {"kExpo": 0, "kLin": 1, "Pol2": 2, "kNoBk": 3, "kPow": 4, "kPowEx": 5}
 
     def __init__(self, database: dict, ana_type: str, file_data_name: str, file_mc_name: str):
+        """
+        Initialize MLFitParsFactory
+        Args:
+            database: dictionary of the entire analysis database
+            ana_type: specifying the analysis within the database to be done
+            file_data_name: file path where to find data histograms to fit
+            file_mc_name: file path where to find MC histograms to fit
+        """
 
         self.logger = get_logger()
 
@@ -122,6 +134,14 @@ class MLFitParsFactory:
 
 
     def make_ali_hf_fit_pars(self, ibin1, ibin2):
+        """
+        Making fit paramaters for AliHF mass fitter
+        Args:
+            ibin1: Number of bin of first binning variable
+            ibin2: Number of bin of second binning variable
+        Returns:
+            dictionary of fit parameters
+        """
 
         fit_pars = {"sig_func_name": MLFitParsFactory.SIG_FUNC_MAP[self.sig_func_name[ibin1]],
                     "bkg_func_name": MLFitParsFactory.BKG_FUNC_MAP[self.bkg_func_name[ibin1]],
@@ -154,6 +174,14 @@ class MLFitParsFactory:
 
 
     def make_ali_hf_syst_pars(self, ibin1, ibin2):
+        """
+        Making fit systematic paramaters for AliHF mass fitter
+        Args:
+            ibin1: Number of bin of first binning variable
+            ibin2: Number of bin of second binning variable
+        Returns:
+            dictionary of systematic fit parameters
+        """
 
         fit_pars = {"bkg_func_names": self.syst_pars.get("bkg_funcs", None),
                     "rebin": self.syst_pars.get("rebin", None),
@@ -188,6 +216,14 @@ class MLFitParsFactory:
 
 
     def make_suffix(self, ibin1, ibin2):
+        """
+        Build name suffix to find histograms in ROOT file
+        Args:
+            ibin1: Number of bin of first binning variable
+            ibin2: Number of bin of second binning variable
+        Returns:
+            Suffix string
+        """
         bin_id_match = self.bin_matching[ibin1]
         return "%s%d_%d_%.2f%s_%.2f_%.2f" % \
                (self.bin1_name, self.bins1_edges_low[ibin1],
@@ -197,6 +233,17 @@ class MLFitParsFactory:
 
 
     def get_histograms(self, ibin1, ibin2, get_data=True, get_mc=False, get_reflections=False):
+        """
+        Get histograms according to specified bins
+        Args:
+            ibin1: Number of bin of first binning variable
+            ibin2: Number of bin of second binning variable
+            get_data: get the data histogram
+            get_mc: get the MC histogram
+            get_reflections: get the MC reflections histogram
+        Returns:
+            histograms as requested. None for each that was not requested
+        """
         suffix = self.make_suffix(ibin1, ibin2)
 
         histo_data = None
@@ -223,6 +270,15 @@ class MLFitParsFactory:
 
 
     def get_fit_pars(self, ibin1, ibin2):
+        """
+        Collect histograms, fit paramaters and the information whether this fit should be
+        initialised from another one.
+        Args:
+            ibin1: Number of bin of first binning variable
+            ibin2: Number of bin of second binning variable
+        Returns:
+            dictionary with all required information to initialise a fit
+        """
 
         fit_pars = self.make_ali_hf_fit_pars(ibin1, ibin2)
         histo_data, histo_mc, histo_reflections = self.get_histograms(ibin1, ibin2, \
@@ -240,6 +296,15 @@ class MLFitParsFactory:
 
 
     def get_syst_pars(self, ibin1, ibin2):
+        """
+        Collect histograms, fit paramaters and the information whether this systematic fit should
+        be initialised from another one.
+        Args:
+            ibin1: Number of bin of first binning variable
+            ibin2: Number of bin of second binning variable
+        Returns:
+            dictionary with all required information to initialise a systematic fit
+        """
 
         if not self.syst_pars:
             self.logger.warning("There are no systematics parameters defined. Skip...")
@@ -258,12 +323,18 @@ class MLFitParsFactory:
 
 
     def yield_fit_pars(self):
+        """
+        Yield bin numbers and corresponding fit parameters one-by-one
+        """
         for ibin2 in range(self.n_bins2):
             for ibin1 in range(self.n_bins1):
                 yield ibin1, ibin2, self.get_fit_pars(ibin1, ibin2)
 
 
     def yield_syst_pars(self):
+        """
+        Yield bin numbers and corresponding systematic fit parameters one-by-one
+        """
         for ibin2 in range(self.n_bins2):
             for ibin1 in range(self.n_bins1):
                 yield ibin1, ibin2, self.get_syst_pars(ibin1, ibin2)
@@ -273,9 +344,20 @@ class MLFitParsFactory:
 
 # pylint: disable=too-many-instance-attributes
 class MLFitter:
+    """
+    Wrapper around all available fits insatntiated and used in an MLHEP analysis run.
+    """
 
 
     def __init__(self, database: dict, ana_type: str, data_out_dir: str, mc_out_dir: str):
+        """
+        Initialize MLFitter
+        Args:
+            database: dictionary of the entire analysis database
+            ana_type: specifying the analysis within the database to be done
+            file_data_name: file path where to find data histograms to fit
+            file_mc_name: file path where to find MC histograms to fit
+        """
 
         self.logger = get_logger()
 
@@ -302,6 +384,11 @@ class MLFitter:
 
 
     def initialize_fits(self):
+        """
+        Initialize all fits required in an MLHEP analysis run. Using MLFitParsFactory to retrieve
+        fit parameters.
+        """
+
         if self.is_initialized_fits:
             self.logger.warning("Fits already initialized. Skip...")
             return
@@ -336,6 +423,10 @@ class MLFitter:
 
 
     def perform_pre_fits(self):
+        """
+        Perform all pre-fits whose fitted parameters might be used to initialize central fits.
+        """
+
         if self.done_pre_fits:
             self.logger.warning("Pre-fits already done. Skip...")
             return
@@ -353,6 +444,10 @@ class MLFitter:
 
 
     def perform_central_fits(self):
+        """
+        Perform all central fits and initialize from pre-fits if requested.
+        """
+
         if self.done_central_fits:
             self.logger.warning("Central fits already done. Skip...")
             return
@@ -384,10 +479,27 @@ class MLFitter:
 
 
     def get_central_fit(self, ibin1, ibin2):
+        """
+        Retrieve a central fit based on specified bin numbers
+        initialised from another one.
+        Args:
+            ibin1: Number of bin of first binning variable
+            ibin2: Number of bin of second binning variable
+        Returns:
+            Fit, if valid bin numbers given, None otherwise
+        """
+
         return self.central_fits.get((ibin1, ibin2), None)
 
 
     def print_fits(self):
+        """
+        Print pre-fits and central  fits
+            - bin numbers
+            - fit name (e.g. its class name)
+            - fit parameters
+        """
+
         self.logger.info("Print all fits")
         print("Pre-fits for data")
         for ibin1, fit in self.pre_fits_data.items():
@@ -407,6 +519,11 @@ class MLFitter:
 
 
     def initialize_syst(self):
+        """
+        Initialize all systematic fits required in an MLHEP analysis run. Using MLFitParsFactory
+        to retrieve systematic fit parameters.
+        """
+
         if self.is_initialized_syst:
             self.logger.warning("Syst already initialized. Skip...")
             return
@@ -429,6 +546,10 @@ class MLFitter:
 
 
     def perform_syst(self):
+        """
+        Perform all systematic fits and initialize from central-fits if requested.
+        """
+
         if self.done_syst:
             self.logger.warning("Syst already fitted. Skip...")
             return
@@ -477,6 +598,12 @@ class MLFitter:
 
     # pylint: disable=too-many-branches, too-many-statements, too-many-locals
     def draw_fits(self, save_dir, root_dir=None):
+        """
+        Draw all fits one-by-one
+        Args:
+            save_dir: directory where to save plots
+            root_dir: TDirectory where to save summary plots
+        """
         gStyle.SetOptStat(0)
         gStyle.SetOptStat(0000)
         gStyle.SetPalette(1)
@@ -689,6 +816,13 @@ class MLFitter:
 
     @staticmethod
     def save_all_(fits, save_dir):
+        """
+        Write dictionary of fits to disk together with its parameters
+        Args:
+            fits: key->fit dictionary of fist
+            save_dir: directory where to write
+        """
+
         for i, (key, fit) in enumerate(fits.items()):
             save_dir_fit = join(save_dir, f"fit_{i}")
             annotations = {"key": key}
@@ -696,6 +830,13 @@ class MLFitter:
 
 
     def save_fits(self, top_save_dir):
+        """
+        Write all fits there are
+        Args:
+            top_save_dir: parent directory where sub-directory for pre-fits and central fits
+                          are created within
+        """
+
         self.save_all_(self.pre_fits_mc, join(top_save_dir, "pre_fits_mc"))
         self.save_all_(self.pre_fits_data, join(top_save_dir, "pre_fits_data"))
         self.save_all_(self.central_fits, join(top_save_dir, "central_fits"))
@@ -703,6 +844,14 @@ class MLFitter:
 
     @staticmethod
     def load_all_(fits, save_dir):
+        """
+        Read back a given class of fits (central or pre) from disk
+        Args:
+            save_dir: directory where they have been written to previously
+        Returns:
+            Success status: True if fits could be read back, False otherwise
+        """
+
         fit_dirs = [d for d in glob(join(save_dir, "*")) if "fit_" in d]
         if not fit_dirs:
             return False
@@ -719,6 +868,14 @@ class MLFitter:
 
 
     def load_fits(self, top_save_dir):
+        """
+        Read back all fits written to disk
+        Args:
+            top_save_dir: directory where they have been written to previously
+        Returns:
+            Success status: True if fits could be read back, False otherwise
+        """
+
         if self.pre_fits_mc or self.pre_fits_data or self.central_fits:
             self.logger.warning("Overriding fits")
         self.pre_fits_mc = {}

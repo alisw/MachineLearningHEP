@@ -63,18 +63,20 @@ class FitBase:
     def make_default_init_pars(self):
         """
         Small wrapper for constructing default inititalisation parameters
-        # Returns:
+        Returns:
             Dictionary of default initialisation parameters
         """
+
         return deepcopy(self.default_init_pars)
 
 
     def get_fit_pars(self):
         """
         Small wrapper providing deep copy of fit parameters
-        # Returns:
+        Returns:
             Dictionary of fitted parameters
         """
+
         return deepcopy(self.fit_pars)
 
     def override_init_pars(self, **init_pars):
@@ -85,8 +87,11 @@ class FitBase:
 
     def init_fit(self):
         """
-        Few common things, but core to be implemented in deriving classes
+        Common initialisation steps
+        Returns:
+            Success status
         """
+
         self.logger.info("Init fit")
 
         # Potentially found a fit to initialise from
@@ -108,20 +113,36 @@ class FitBase:
 
 
     def init_kernel(self):
+        """
+        Initialize the fit kernel. To be overwritten by the deriving class
+        """
+
         self.logger.debug("Init kernel")
         return True
 
 
     def fit_kernel(self):
+        """
+        Fit the fit kernel. To be overwritten by the deriving class
+        """
+
         self.logger.debug("Fit kernel")
         return True
 
 
     def set_fit_pars(self):
+        """
+        Set final fitted parameters. To be overwritten by the deriving class
+        """
+
         pass
 
 
     def fit(self):
+        """
+        Initialize and fit. This is common and not to be overwritten by a deriving class
+        """
+
         if self.has_attempt:
             self.logger.info("Was already fitted. Skip...")
             return
@@ -134,6 +155,17 @@ class FitBase:
 
 
     def draw(self, root_pad, title=None, x_axis_label=None, y_axis_label=None, **draw_args):
+        """
+        Draw this fit. This is common and not to be overwritten by a deriving class. Arguments
+        are forwarded to draw_kernel after common sanity checks
+        Args:
+            root_pad: a TVirtualPad to draw the fit in
+            title: title in the root_pad
+            x_axis_label: ...
+            y_axis_label: ...
+            draw_args: dictionary for further arguments used for drawing.
+        """
+
         # Keep like this to be able to insert common draw procedure here
         if not self.has_attempt:
             self.logger.info("Fit not done yet, nothing to draw. Skip...")
@@ -152,11 +184,28 @@ class FitBase:
 
     # pylint: disable=unused-argument, dangerous-default-value
     def draw_kernel(self, root_pad, root_objects=[], **draw_args):
+        """
+        Draw method specific to the used kernel. To be overwritten by the derivin class
+        Args:
+            root_pad: a TVirtualPad to draw the fit in
+            root_objects: list to collect further internally created ROOT objects such that they
+                          would not be deleted before the fit has been saved
+            draw_args: dictionary for further arguments used for drawing.
+        """
+
         self.logger.debug("Draw kernel")
 
 
     @staticmethod
     def add_text_helper_(pave, line, color=None):
+        """
+        Helper to put a text line into a TPave object
+        Args:
+            pave: ROOT TPave object
+            line: string to be added
+            color (optional): Color of the text
+        """
+
         text = pave.AddText(line)
         text.SetTextAlign(11)
         text.SetTextSize(0.024)
@@ -166,6 +215,15 @@ class FitBase:
 
     @staticmethod
     def add_pave_helper_(x_min, y_min, x_max, y_max, opt="NDC"):
+        """
+        Helper to create a TPave object
+        Args:
+            x_min, ...: Relative coordinates within the ROOT TVirtualPad
+            opt: further options passed to the constructor of TPave
+        Returns:
+            A TPave object
+        """
+
         pave = TPaveText(x_min, y_min, x_max, y_max, opt)
         pave.SetBorderSize(0)
         pave.SetFillStyle(0)
