@@ -33,3 +33,71 @@ This class builds an abstraction layer and is responsible to understand the fit 
 
 **MLFitter**
 All fits used in an analysis run are handled here.
+
+
+## Example usage
+
+Here is a small example (as it actually looks like in the package but with some further comments)
+
+```python
+
+"""
+Create an MLFitter object given
+1. config_database: the configuration dictionary where the fit parameters can be found. This is forwarded to an MLFitParsFactory object internally.
+2. analysis_type: the specified analysis-section to be lookd up in the config_database where the fit parameters for the specified analysis are defined
+3. histogram_filepath_data, histogram_filepath_mc: file paths to ROOT files where histograms can be found which should be fitted.
+"""
+fitter = MLFitter(config_database, analysis_type, histogram_filepath_data, histogram_filepath_mc)
+
+"""
+This performs fits in inclusive bins of the second binning variable defined in the analysis section
+of the database. These pre-fits are usedto initialise the central fit. How to do that is derived
+from the database parameters and handled by the MLFitter and MLFitParsFactory objects.
+"""
+fitter.perform_pre_fits()
+
+# Central fits are performed.
+fitter.perform_central_fits()
+
+# Specify a file where fit summary plots will be saved.
+fileout_name = "summary_fit_plots.root"
+fileout = TFile(fileout_name, "RECREATE")
+
+"""
+Fit plots are saved in the directory fit_plots_save_dir and summary plots are also saved in the
+specified ROOT file (can also be an abstract TDirectory) given that it is not None.
+"""
+fitter.draw_fits(fit_plots_save_dir, fileout)
+fileout.Close()
+
+# Serialize all fits to the directory fit_save_dir
+self.fitter.save_fits(fit_save_dir)
+
+# ... do something in the meantime or re-start the analysis workflow ...
+
+# Look for the fitter
+if not fitter:
+    fitter = MLFitter(config_database, analysis_type, histogram_filepath_data, histogram_filepath_mc)
+    # Read back fits serialised to fit_save_dir if possible
+    if not fitter.load_fits(fit_save_dir):
+        print(f"FATAL: Cannot load fits from dir {fit_save_dir}")
+        return
+
+# Get a fit passing the bins ibin1 and ibin2 of the fit variables the fits where done in differentially
+fit = fitter.get_central_fit(ibin1, ibin2)
+
+# If the fit could not be loaded or was not successful back then, return (or do something else...)
+if not fit:
+    print(f"FATAL: Cannot access fit in bins ({ibin1}, {ibin2})")
+    return
+if not fit.success:
+    print(f"Fit in bins ({ibin1}, {ibin2}) not successful, skip...")
+    return
+```
+    
+
+
+
+
+
+
