@@ -113,6 +113,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     dohistomassdata = data_config["analysis"]["data"]["histomass"]
     doefficiency = data_config["analysis"]["mc"]["efficiency"]
     dofeeddown = data_config["analysis"]["mc"]["feeddown"]
+    dounfolding = data_config["analysis"]["mc"]["dounfolding"]
+    dojetsystematics = data_config["analysis"]["data"]["dojetsystematics"]
     dofit = data_config["analysis"]["dofit"]
     doeff = data_config["analysis"]["doeff"]
     docross = data_config["analysis"]["docross"]
@@ -417,6 +419,11 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         analyze_steps.append("side_band_sub")
     if dofeeddown is True:
         analyze_steps.append("feeddown")
+    if dounfolding is True:
+        analyze_steps.append("unfolding")
+        analyze_steps.append("unfolding_closure")
+    if dojetsystematics is True:
+        analyze_steps.append("jetsystematics")
     if docross is True:
         #myan.multi_preparenorm()
         analyze_steps.append("makenormyields")

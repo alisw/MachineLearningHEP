@@ -62,7 +62,6 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                                     self.p_bin_width))
         self.l_selml = ["y_test_prob%s>%s" % (self.p_modelname, self.lpt_probcutfin[ipt]) \
                        for ipt in range(self.p_nptbins)]
-        self.s_presel_gen_eff = datap["analysis"][self.typean]['presel_gen_eff']
 
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
 
@@ -81,7 +80,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         self.lvarshape_binmin_gen = datap["analysis"][self.typean].get("sel_binminshape_gen", None)
         self.lvarshape_binmax_gen = datap["analysis"][self.typean].get("sel_binmaxshape_gen", None)
         self.p_nbinshape_gen = len(self.lvarshape_binmin_gen)
-        
+
         self.closure_frac = datap["analysis"][self.typean].get("sel_closure_frac", None)
 
         self.var2ranges_reco = self.lvar2_binmin_reco.copy()
@@ -101,6 +100,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
         #self.sel_final_fineptbins = datap["analysis"][self.typean]["sel_final_fineptbins"]
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
+        self.s_jetsel_gen = datap["analysis"][self.typean]["jetsel_gen"]
+        self.s_jetsel_reco = datap["analysis"][self.typean]["jetsel_reco"]
         self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
@@ -109,38 +110,6 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
     # pylint: disable=too-many-branches
     def process_histomass_single(self, index):
         myfile = TFile.Open(self.l_histomass[index], "recreate")
-        dfevtorig = pickle.load(openfile(self.l_evtorig[index], "rb"))
-        if self.s_trigger is not None:
-            dfevtorig = dfevtorig.query(self.s_trigger)
-        dfevtorig = selectdfrunlist(dfevtorig, \
-                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
-        for ibin2 in range(len(self.lvar2_binmin_reco)):
-            mybindfevtorig = seldf_singlevar(dfevtorig, self.v_var2_binning_gen, \
-                                        self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
-            hNorm = TH1F("hEvForNorm_mult%d" % ibin2, "hEvForNorm_mult%d" % ibin2, 2, 0.5, 2.5)
-            hNorm.GetXaxis().SetBinLabel(1, "normsalisation factor")
-            hNorm.GetXaxis().SetBinLabel(2, "selected events")
-            nselevt = 0
-            norm = 0
-            if not mybindfevtorig.empty:
-                nselevt = len(mybindfevtorig.query("is_ev_rej==0"))
-                norm = getnormforselevt(mybindfevtorig)
-            hNorm.SetBinContent(1, norm)
-            hNorm.SetBinContent(2, nselevt)
-            hNorm.Write()
-#            histmultevt = TH1F("hmultevtmult%d" % ibin2,
-#                               "hmultevtmult%d"  % ibin2, 100, 0, 100)
-            mybindfevtorig = mybindfevtorig.query("is_ev_rej==0")
-#            fill_hist(histmultevt, mybindfevtorig.n_tracklets_corr)
-#            histmultevt.Write()
-#            h_v0m_ntracklets = TH2F("h_v0m_ntracklets%d" % ibin2,
-#                                    "h_v0m_ntracklets%d" % ibin2,
-#                                    200, 0, 200, 200, -0.5, 1999.5)
-#            v_v0m_ntracklets = np.vstack((mybindfevtorig.n_tracklets_corr,
-#                                          mybindfevtorig.v0m_corr)).T
-#            fill_hist(h_v0m_ntracklets, v_v0m_ntracklets)
-#            h_v0m_ntracklets.Write()
-
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
@@ -148,8 +117,17 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                 df = df.query(self.l_selml[bin_id])
             if self.s_evtsel is not None:
                 df = df.query(self.s_evtsel)
+            if self.s_jetsel_reco is not None:
+                df = df.query(self.s_jetsel_reco)
             if self.s_trigger is not None:
                 df = df.query(self.s_trigger)
+
+            h_invmass_all = TH1F("hmass_%d" % ipt, "", self.p_num_bins,
+                                 self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+            fill_hist(h_invmass_all, df.inv_mass)
+            myfile.cd()
+            h_invmass_all.Write()
+
             df = seldf_singlevar(df, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
             for ibin2 in range(len(self.lvar2_binmin_reco)):
@@ -188,17 +166,17 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                     myfile.cd()
                     h_invmass_sig.Write()
                     h_invmass_refl.Write()
-                    print("FINISHED")
+                    #print("FINISHED")
 
 
     # pylint: disable=line-too-long
     def process_efficiency_single(self, index):
         out_file = TFile.Open(self.l_histoeff[index], "recreate")
         for ibin2 in range(len(self.lvar2_binmin_reco)):
-            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen, \
+            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
                                         self.lvar2_binmin_reco[ibin2], \
                                         self.lvar2_binmax_reco[ibin2])
-            n_bins = len(self.lpt_finbinmin)
+            n_bins = self.p_nptfinbins
             analysis_bin_lims_temp = self.lpt_finbinmin.copy()
             analysis_bin_lims_temp.append(self.lpt_finbinmax[n_bins-1])
             analysis_bin_lims = array.array('f', analysis_bin_lims_temp)
@@ -221,21 +199,23 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                 df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
                 if self.s_evtsel is not None:
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
+                if self.s_jetsel_reco is not None:
+                    df_mc_reco = df_mc_reco.query(self.s_jetsel_reco)
                 if self.s_trigger is not None:
                     df_mc_reco = df_mc_reco.query(self.s_trigger)
                 df_mc_reco = selectdfrunlist(df_mc_reco, \
                          self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
                 df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[bin_id][index], "rb"))
-                df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
+                df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
                 df_mc_gen = selectdfrunlist(df_mc_gen, \
                          self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
                 df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var_binning, \
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
                 df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-                df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning_gen, \
+                df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning, \
                                              self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
-                df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning_gen, \
+                df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning, \
                                             self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
                 df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
                 df_reco_presel_pr = df_mc_reco[df_mc_reco.ismcprompt == 1]
@@ -252,7 +232,6 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                 else:
                     df_reco_sel_fd = df_reco_presel_fd.copy()
 
-               
                 val = len(df_gen_sel_pr)
                 err = math.sqrt(val)
                 h_gen_pr.SetBinContent(bincounter + 1, val)
@@ -265,7 +244,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                 err = math.sqrt(val)
                 h_sel_pr.SetBinContent(bincounter + 1, val)
                 h_sel_pr.SetBinError(bincounter + 1, err)
-                
+
                 val = len(df_gen_sel_fd)
                 err = math.sqrt(val)
                 h_gen_fd.SetBinContent(bincounter + 1, val)
@@ -299,15 +278,17 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
             df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[iptskim], "rb"))
             df_mc_gen = selectdfrunlist(df_mc_gen, \
                     self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
-            df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
+            df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
             list_df_mc_gen.append(df_mc_gen)
-            
+
             df_mc_reco = pickle.load(openfile(self.lpt_recodecmerged[iptskim], "rb"))
             if "pt_jet" not in df_mc_reco.columns:
                 print("Jet variables not found in the dataframe. Skipping process_response.")
                 return
             if self.s_evtsel is not None:
                 df_mc_reco = df_mc_reco.query(self.s_evtsel)
+            if self.s_jetsel_reco is not None:
+                df_mc_reco = df_mc_reco.query(self.s_jetsel_reco)
             if self.s_trigger is not None:
                 df_mc_reco = df_mc_reco.query(self.s_trigger)
             df_mc_reco = df_mc_reco.query(self.l_selml[iptskim])
@@ -322,7 +303,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         nzbin_gen=self.p_nbinshape_gen
         zbin_gen = self.varshaperanges_gen
         zbinarray_gen=array.array('d',zbin_gen)
-        
+
         jetptbin_reco =[]
         njetptbin_reco=self.p_nbin2_reco
         jetptbin_reco = self.var2ranges_reco
@@ -338,11 +319,11 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         candptbin=self.lpt_finbinmin.copy()
         candptbin.append(self.lpt_finbinmax[-1])
         candptbinarray=array.array('d',candptbin)
-        
-        df_gen = pd.concat(list_df_mc_gen)
-        df_gen_nonprompt = df_gen[df_gen.ismcfd == 1] # reconstructed & selected non-prompt jets  
 
-        
+        df_gen = pd.concat(list_df_mc_gen)
+        df_gen_nonprompt = df_gen[df_gen.ismcfd == 1] # reconstructed & selected non-prompt jets
+
+
         z_array_gen_unmatched = z_calc(df_gen_nonprompt.pt_jet, df_gen_nonprompt.phi_jet, df_gen_nonprompt.eta_jet,
                                df_gen_nonprompt.pt_cand, df_gen_nonprompt.phi_cand, df_gen_nonprompt.eta_cand)
         df_gen_nonprompt["z"] = z_array_gen_unmatched
@@ -351,10 +332,10 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         for row in df_gen_nonprompt.itertuples():
             hzvsjetptvscandpt_gen_nonprompt.Fill(row.z,row.pt_jet,row.pt_cand)
 
-        
+
         df_mc_reco_merged = pd.concat(list_df_mc_reco)
 
-        
+
         df_mc_reco_merged_nonprompt = df_mc_reco_merged[df_mc_reco_merged.ismcfd == 1] # reconstructed & selected non-prompt jets
 
         zarray_reco = z_calc(df_mc_reco_merged_nonprompt.pt_jet, df_mc_reco_merged_nonprompt.phi_jet, df_mc_reco_merged_nonprompt.eta_jet,
@@ -366,15 +347,15 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         df_mc_reco_merged_nonprompt['z_reco'] = zarray_reco
         df_mc_reco_merged_nonprompt['z_gen'] = zarray_gen
 
-        
+
         hzvsjetpt_reco=TH2F("hzvsjetpt_reco_nonprompt","hzvsjetpt_reco_nonprompt",nzbin_reco,zbinarray_reco,njetptbin_reco,jetptbinarray_reco)
         hzvsjetpt_reco.Sumw2()
         hzvsjetpt_gen=TH2F("hzvsjetpt_genv","hzvsjetpt_gen_nonprompt",nzbin_gen,zbinarray_gen,njetptbin_gen,jetptbinarray_gen)
         hzvsjetpt_gen.Sumw2()
-        
+
         response_matrix = RooUnfoldResponse(hzvsjetpt_reco, hzvsjetpt_gen)
 
-        
+
         hz_gen_nocuts_list=[]
         hz_gen_cuts_list=[]
         for ibin2 in range(len(self.lvar2_binmin_gen)):
@@ -410,7 +391,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
             hz_genvsreco_list.append(hz_genvsreco)
 
 
-            
+
 
         hjetpt_fracdiff_list=[]
         hz_fracdiff_list=[]
@@ -444,13 +425,13 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                 hzvsjetpt_reco_nocuts.Fill(row.z_reco,row.pt_jet)
                 if row.pt_gen_jet >= self.lvar2_binmin_gen[0] and row.pt_gen_jet < self.lvar2_binmax_gen[-1] and row.z_gen >= self.lvarshape_binmin_gen[0] and row.z_gen < self.lvarshape_binmax_gen[-1]:
                     hzvsjetpt_reco_cuts.Fill(row.z_reco,row.pt_jet)
-                
+
             if row.pt_gen_jet >= self.lvar2_binmin_gen[0] and row.pt_gen_jet < self.lvar2_binmax_gen[-1] and row.z_gen >= self.lvarshape_binmin_gen[0] and row.z_gen < self.lvarshape_binmax_gen[-1]:
                 hzvsjetpt_gen.Fill(row.z_gen,row.pt_gen_jet)
                 hzvsjetpt_gen_nocuts.Fill(row.z_gen,row.pt_gen_jet)
                 if row.pt_jet >= self.lvar2_binmin_reco[0] and row.pt_jet < self.lvar2_binmax_reco[-1] and row.z_reco >= self.lvarshape_binmin_reco[0] and row.z_reco < self.lvarshape_binmax_reco[-1]:
                     hzvsjetpt_gen_cuts.Fill(row.z_gen,row.pt_gen_jet)
-                    
+
             if row.pt_gen_jet >= self.lvar2_binmin_gen[0] and row.pt_gen_jet < self.lvar2_binmax_gen[-1] and row.z_gen >= self.lvarshape_binmin_gen[0] and row.z_gen < self.lvarshape_binmax_gen[-1]:
                 if row.pt_jet >= self.lvar2_binmin_reco[0] and row.pt_jet < self.lvar2_binmax_reco[-1] and row.z_reco >= self.lvarshape_binmin_reco[0] and row.z_reco < self.lvarshape_binmax_reco[-1]:
                     response_matrix.Fill(row.z_reco,row.pt_jet,row.z_gen,row.pt_gen_jet)
@@ -471,7 +452,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                 if row.z_gen >= self.lvarshape_binmin_gen[ibinshape] and row.z_gen < self.lvarshape_binmax_gen[ibinshape]:
                     hz_fracdiff_list[ibinshape].Fill((row.z_reco-row.z_gen)/row.z_gen)
 
-            for ibin2 in range(len(self.lvar2_binmin_gen)): 
+            for ibin2 in range(len(self.lvar2_binmin_gen)):
                 if row.pt_gen_jet >= self.lvar2_binmin_gen[ibin2] and row.pt_gen_jet < self.lvar2_binmax_gen[ibin2] and row.z_gen >= self.lvarshape_binmin_gen[0] and row.z_gen < self.lvarshape_binmax_gen[-1] :
                     hz_gen_nocuts_list[ibin2].Fill(row.z_gen)
                     if row.pt_jet >= self.lvar2_binmin_reco[0] and row.pt_jet < self.lvar2_binmax_reco[-1] and row.z_reco >= self.lvarshape_binmin_reco[0] and row.z_reco < self.lvarshape_binmax_reco[-1] :
@@ -515,15 +496,17 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
             df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[iptskim], "rb"))
             df_mc_gen = selectdfrunlist(df_mc_gen, \
                     self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
-            df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
+            df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
             list_df_mc_gen.append(df_mc_gen)
-            
+
             df_mc_reco = pickle.load(openfile(self.lpt_recodecmerged[iptskim], "rb"))
             if "pt_jet" not in df_mc_reco.columns:
                 print("Jet variables not found in the dataframe. Skipping process_response.")
                 return
             if self.s_evtsel is not None:
                 df_mc_reco = df_mc_reco.query(self.s_evtsel)
+            if self.s_jetsel_reco is not None:
+                df_mc_reco = df_mc_reco.query(self.s_jetsel_reco)
             if self.s_trigger is not None:
                 df_mc_reco = df_mc_reco.query(self.s_trigger)
             df_mc_reco = df_mc_reco.query(self.l_selml[iptskim])
@@ -538,7 +521,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         nzbin_gen=self.p_nbinshape_gen
         zbin_gen = self.varshaperanges_gen
         zbinarray_gen=array.array('d',zbin_gen)
-        
+
         jetptbin_reco =[]
         njetptbin_reco=self.p_nbin2_reco
         jetptbin_reco = self.var2ranges_reco
@@ -549,11 +532,11 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         jetptbin_gen = self.var2ranges_gen
         jetptbinarray_gen=array.array('d',jetptbin_gen)
 
-        
-        df_gen = pd.concat(list_df_mc_gen)
-        df_gen_prompt = df_gen[df_gen.ismcprompt == 1] # reconstructed & selected non-prompt jets  
 
-        
+        df_gen = pd.concat(list_df_mc_gen)
+        df_gen_prompt = df_gen[df_gen.ismcprompt == 1] # reconstructed & selected non-prompt jets
+
+
         z_array_gen_unmatched = z_calc(df_gen_prompt.pt_jet, df_gen_prompt.phi_jet, df_gen_prompt.eta_jet,
                                df_gen_prompt.pt_cand, df_gen_prompt.phi_cand, df_gen_prompt.eta_cand)
         df_gen_prompt["z_gen"] = z_array_gen_unmatched
@@ -562,10 +545,10 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         fill_hist(hzvsjetpt_gen_unmatched, df_zvsjetpt_gen_unmatched)
 
 
-        
+
         df_mc_reco_merged = pd.concat(list_df_mc_reco)
 
-        
+
         df_mc_reco_merged_prompt = df_mc_reco_merged[df_mc_reco_merged.ismcprompt == 1] # reconstructed & selected non-prompt jets
 
         zarray_reco = z_calc(df_mc_reco_merged_prompt.pt_jet, df_mc_reco_merged_prompt.phi_jet, df_mc_reco_merged_prompt.eta_jet,
@@ -577,21 +560,21 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         df_mc_reco_merged_prompt['z_reco'] = zarray_reco
         df_mc_reco_merged_prompt['z_gen'] = zarray_gen
 
-                
+
         hzvsjetpt_reco_closure=TH2F("hzvsjetpt_reco_closure","hzvsjetpt_reco_closure",nzbin_reco,zbinarray_reco,njetptbin_reco,jetptbinarray_reco)
         hzvsjetpt_reco_closure.Sumw2()
         hzvsjetpt_gen_closure=TH2F("hzvsjetpt_gen_closure","hzvsjetpt_gen_closure",nzbin_gen,zbinarray_gen,njetptbin_gen,jetptbinarray_gen)
         hzvsjetpt_gen_closure.Sumw2()
-        
+
         hzvsjetpt_reco=TH2F("hzvsjetpt_reco","hzvsjetpt_reco",nzbin_reco,zbinarray_reco,njetptbin_reco,jetptbinarray_reco)
         hzvsjetpt_reco.Sumw2()
         hzvsjetpt_gen=TH2F("hzvsjetpt_gen","hzvsjetpt_gen",nzbin_gen,zbinarray_gen,njetptbin_gen,jetptbinarray_gen)
         hzvsjetpt_gen.Sumw2()
-        
+
         response_matrix = RooUnfoldResponse(hzvsjetpt_reco, hzvsjetpt_gen)
         response_matrix_closure = RooUnfoldResponse(hzvsjetpt_reco, hzvsjetpt_gen)
 
-        
+
         hz_gen_nocuts_list=[]
         hz_gen_cuts_list=[]
         hz_gen_nocuts_list_closure=[]
@@ -615,21 +598,21 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
             hz_gen_cuts_list_closure.append(hz_gen_cuts_closure)
 
 
-        
+
         hjetpt_gen_nocuts=TH1F("hjetpt_gen_nocuts","hjetpt_gen_nocuts",njetptbin_gen, jetptbinarray_gen)
         hjetpt_gen_nocuts.Sumw2()
         hjetpt_gen_cuts=TH1F("hjetpt_gen_cuts","hjetpt_gen_cuts",njetptbin_gen,jetptbinarray_gen)
         hjetpt_gen_cuts.Sumw2()
-                    
+
         hjetpt_gen_nocuts_closure=TH1F("hjetpt_gen_nocuts_closure","hjetpt_gen_nocuts_closure",njetptbin_gen, jetptbinarray_gen)
         hjetpt_gen_nocuts_closure.Sumw2()
         hjetpt_gen_cuts_closure=TH1F("hjetpt_gen_cuts_closure","hjetpt_gen_cuts_closure",njetptbin_gen,jetptbinarray_gen)
         hjetpt_gen_cuts_closure.Sumw2()
-        
 
 
-            
-        	
+
+
+
         hzvsjetpt_reco_nocuts=TH2F("hzvsjetpt_reco_nocuts","hzvsjetpt_reco_nocuts",nzbin_reco, zbinarray_reco,njetptbin_reco,jetptbinarray_reco)
         hzvsjetpt_reco_nocuts.Sumw2()
         hzvsjetpt_reco_cuts=TH2F("hzvsjetpt_reco_cuts","hzvsjetpt_reco_cuts",nzbin_reco, zbinarray_reco,njetptbin_reco,jetptbinarray_reco)
@@ -661,10 +644,10 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
             hz_genvsreco=TH2F("hz_genvsreco"+suffix,"hz_genvsreco"+suffix,nzbin_gen*100,self.lvarshape_binmin_gen[0],self.lvarshape_binmax_gen[-1],nzbin_reco*100,self.lvarshape_binmin_reco[0],self.lvarshape_binmax_reco[-1])
             hz_genvsreco_list.append(hz_genvsreco)
 
-        
+
         hjetpt_fracdiff_list=[]
         hz_fracdiff_list=[]
-        
+
         for ibin2 in range(len(self.lvar2_binmin_gen)):
             suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
@@ -678,7 +661,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
             hz_fracdiff_list.append(hz_fracdiff)
 
 
-            
+
         hzvsjetpt_prior_weights=TH2F("hzvsjetpt_prior_weights","hzvsjetpt_prior_weights",nzbin_gen,zbinarray_gen,njetptbin_gen,jetptbinarray_gen)
         hzvsjetpt_prior_weights.Sumw2()
         if self.doprior is True:
@@ -686,7 +669,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                 if row.pt_gen_jet >= self.lvar2_binmin_gen[0] and row.pt_gen_jet < self.lvar2_binmax_gen[-1] and row.z_gen >= self.lvarshape_binmin_gen[0] and row.z_gen < self.lvarshape_binmax_gen[-1]:
                     if row.pt_jet >= self.lvar2_binmin_reco[0] and row.pt_jet < self.lvar2_binmax_reco[-1] and row.z_reco >= self.lvarshape_binmin_reco[0] and row.z_reco < self.lvarshape_binmax_reco[-1]:
                         hzvsjetpt_prior_weights.Fill(row.z_gen,row.pt_gen_jet)
-            
+
         random_number = TRandom3(0)
         random_number_result=0.0
         response_matrix_weight = 1.0
@@ -721,16 +704,16 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                         if row.z_reco >= self.lvarshape_binmin_reco[ibinshape] and row.z_reco < self.lvarshape_binmax_reco[ibinshape]:
                             hjetpt_genvsreco_list[ibinshape].Fill(row.pt_gen_jet,row.pt_jet)
 
-            
+
             for ibin2 in range(len(self.lvar2_binmin_gen)):
                 if row.pt_gen_jet >= self.lvar2_binmin_gen[ibin2] and row.pt_gen_jet < self.lvar2_binmax_gen[ibin2]:
                     hjetpt_fracdiff_list[ibin2].Fill((row.pt_jet-row.pt_gen_jet)/row.pt_gen_jet)
-                    
+
             for ibinshape in range(len(self.lvarshape_binmin_gen)):
                 if row.z_gen >= self.lvarshape_binmin_gen[ibinshape] and row.z_gen < self.lvarshape_binmax_gen[ibinshape]:
                     hz_fracdiff_list[ibinshape].Fill((row.z_reco-row.z_gen)/row.z_gen)
-                    
-            for ibin2 in range(len(self.lvar2_binmin_gen)): 
+
+            for ibin2 in range(len(self.lvar2_binmin_gen)):
                 if row.pt_gen_jet >= self.lvar2_binmin_gen[ibin2] and row.pt_gen_jet < self.lvar2_binmax_gen[ibin2] and row.z_gen >= self.lvarshape_binmin_gen[0] and row.z_gen < self.lvarshape_binmax_gen[-1] :
                     hz_gen_nocuts_list[ibin2].Fill(row.z_gen)
                     if random_number_result < self.closure_frac :
@@ -748,7 +731,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                     hjetpt_gen_cuts.Fill(row.pt_gen_jet)
                     if random_number_result < self.closure_frac :
                         hjetpt_gen_cuts_closure.Fill(row.pt_gen_jet)
-                            
+
             if random_number_result < self.closure_frac :
                 hzvsjetpt_reco_closure.Fill(row.z_reco,row.pt_jet)
                 hzvsjetpt_gen_closure.Fill(row.z_gen,row.pt_gen_jet)

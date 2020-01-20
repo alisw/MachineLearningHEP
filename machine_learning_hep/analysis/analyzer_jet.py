@@ -55,9 +55,28 @@ class AnalyzerJet(Analyzer):
         self.v_var_binning = datap["var_binning"]
         self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
         self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
+        self.p_nptfinbins = len(self.lpt_finbinmin)
         self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
-        self.p_nptbins = len(self.lpt_finbinmin)
         self.lpt_probcutfin = datap["mlapplication"]["probcutoptimal"]
+
+        self.p_sgnfunc = datap["analysis"][self.typean]["sgnfunc"]
+        self.p_bkgfunc = datap["analysis"][self.typean]["bkgfunc"]
+        self.p_masspeak = datap["analysis"][self.typean]["masspeak"]
+        self.p_massmin = datap["analysis"][self.typean]["massmin"]
+        self.p_massmax = datap["analysis"][self.typean]["massmax"]
+        self.p_rebin = datap["analysis"][self.typean]["rebin"]
+        self.p_fix_mean = datap["analysis"][self.typean]["fix_mean"]
+        self.p_fix_sigma = datap["analysis"][self.typean]["fix_sigma"]
+
+        self.p_masspeaksec = None
+        self.p_fix_sigmasec = None
+        self.p_sigmaarraysec = None
+        if self.p_sgnfunc[0] == 1:
+            self.p_masspeaksec = datap["analysis"][self.typean]["masspeaksec"]
+            self.p_fix_sigmasec = datap["analysis"][self.typean]["fix_sigmasec"]
+            self.p_sigmaarraysec = datap["analysis"][self.typean]["sigmaarraysec"]
+
+        self.fitter = None
 
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
         self.lvar2_binmin_reco = datap["analysis"][self.typean].get("sel_binmin2_reco", None)
@@ -108,8 +127,7 @@ class AnalyzerJet(Analyzer):
         self.branching_ratio = datap["analysis"][self.typean].get("branching_ratio", None)
         self.xsection_inel = datap["analysis"][self.typean].get("xsection_inel", None)
 
-        
-        self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
+
         self.p_nbin2_reco = len(self.lvar2_binmin_reco)
         self.p_nbin2_gen = len(self.lvar2_binmin_gen)
         self.p_nbinshape_reco = len(self.lvarshape_binmin_reco)
@@ -189,7 +207,6 @@ class AnalyzerJet(Analyzer):
         # Enable ROOT batch mode and reset in the end
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
-
         self.fitter = MLFitter(self.datap, self.typean, self.n_filemass, self.n_filemass_mc)
         self.fitter.perform_pre_fits()
         self.fitter.perform_central_fits()
@@ -203,7 +220,6 @@ class AnalyzerJet(Analyzer):
         self.fitter.save_fits(fileout_name)
         # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
-
 
     def efficiency(self):
         self.loadstyle()
@@ -223,7 +239,7 @@ class AnalyzerJet(Analyzer):
         legeff.SetTextSize(0.035)
 
         for imult in range(self.p_nbin2_reco):
-            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen, \
+            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
                                             self.lvar2_binmin_reco[imult], \
                                             self.lvar2_binmax_reco[imult])
             h_gen_pr = lfileeff.Get("h_gen_pr" + stringbin2)
@@ -258,7 +274,7 @@ class AnalyzerJet(Analyzer):
         legeffFD.SetTextSize(0.035)
 
         for imult in range(self.p_nbin2_reco):
-            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen, \
+            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
                                             self.lvar2_binmin_gen[imult], \
                                             self.lvar2_binmax_gen[imult])
             h_gen_fd = lfileeff.Get("h_gen_fd" + stringbin2)
@@ -280,8 +296,8 @@ class AnalyzerJet(Analyzer):
         legeffFD.Draw()
         cEffFD.SaveAs("%s/EffFD%s%s.eps" % (self.d_resultsallpmc,
                                             self.case, self.typean))
+
     def feeddown(self):
-        # TODO: Propagate uncertainties.
         self.loadstyle()
         feeddown_input_file = TFile.Open(self.n_fileff)
         file_eff = TFile.Open("%s/efficiencies%s%s.root" % (self.d_resultsallpmc, \
@@ -493,7 +509,7 @@ class AnalyzerJet(Analyzer):
         cz_fracdiff.SaveAs("%s/cz_fracdiff_nonprompt.eps" % (self.d_resultsallpdata))
 
 
-        for ipt in range(len(self.lpt_finbinmin)):
+        for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             suffix = "%s%d_%d_%.2f" % \
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
@@ -629,13 +645,20 @@ class AnalyzerJet(Analyzer):
         sideband_input_data_subtracted.Draw("text")
         cfeeddown_output.SaveAs("%s/cfeeddown_output.eps" % (self.d_resultsallpdata))
         print("end of folding")
+
     # pylint: disable=too-many-locals
     def side_band_sub(self):
         self.loadstyle()
         lfile = TFile.Open(self.n_filemass)
-        func_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
-                                            None, [self.case, self.typean])
-        func_file = TFile.Open(func_filename, "READ")
+        # Load the fitter if not already present
+        if not self.fitter:
+            fileout_name = os.path.join(self.d_resultsallpdata,
+                                        f"{self.fits_dirname}_{self.case}_{self.typean}")
+            self.fitter = MLFitter(self.datap, self.typean, self.n_filemass, self.n_filemass_mc)
+            if not self.fitter.load_fits(fileout_name):
+                self.logger.error("Cannot load fits from dir %s", fileout_name)
+                return
+
         eff_file = TFile.Open("%s/efficiencies%s%s.root" % \
                               (self.d_resultsallpmc, self.case, self.typean))
         fileouts = TFile.Open("%s/sideband_sub%s%s.root" % \
@@ -658,17 +681,27 @@ class AnalyzerJet(Analyzer):
             heff = eff_file.Get("eff_mult%d" % imult)
             hz = None
             first_fit = 0
-            for ipt in range(self.p_nptbins):
+            for ipt in range(self.p_nptfinbins):
                 bin_id = self.bin_matching[ipt]
                 suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin_reco[imult], self.lvar2_binmax_reco[imult])
+                # Try to recover the fit, if not possible throw fatal.
+                # Otherwise, if fit not successful, issue warning and continue
+                fit = self.fitter.get_central_fit(ipt, imult)
+                if not fit:
+                    self.logger.fatal("Cannot access fit in bins (%i, %i)", ipt, imult)
+                if not fit.success:
+                    self.logger.warning("Fit in bins (%i, %i) not successful, skip...", ipt, imult)
+                    continue
+                # Get the actual AliHF mass fitter
+                ali_hf_fit = fit.kernel
+                mean = ali_hf_fit.GetMean() # 2.2864
+                sigma = ali_hf_fit.GetSigma() # 0.074
+                bkg_fit = ali_hf_fit.GetBackgroundRecalcFunc()
+
                 hzvsmass = lfile.Get("hzvsmass" + suffix)
-                load_dir = func_file.GetDirectory(suffix)
-                mass_fitter = load_dir.Get("fitter%d" % (ipt))
-                mean = mass_fitter.GetMean()
-                sigma = mass_fitter.GetSigma()
                 binmasslow2sig = hzvsmass.GetXaxis().FindBin(mean - self.signal_sigma*sigma)
                 masslow2sig = mean - self.signal_sigma*sigma
                 binmasshigh2sig = hzvsmass.GetXaxis().FindBin(mean + self.signal_sigma*sigma)
@@ -692,14 +725,13 @@ class AnalyzerJet(Analyzer):
                 if self.sidebandleftonly is False :
                     hzbkg.Add(hzbkgright)
                 hzbkg_scaled = hzbkg.Clone("hzbkg_scaled" + suffix)
-                bkg_fit = mass_fitter.GetBackgroundRecalcFunc()
 
                 area_scale_denominator = -1
                 if not bkg_fit:
                     continue
                 area_scale_denominator = bkg_fit.Integral(masslow9sig, masslow4sig) + \
                 bkg_fit.Integral(masshigh4sig, masshigh9sig)
-                area_scale = bkg_fit.Integral(masslow2sig, masshigh2sig)/area_scale_denominator
+                area_scale = bkg_fit.Integral(masslow2sig, masshigh2sig)/area_scale_denominator # 0.4
                 hzsub = hzsig.Clone("hzsub" + suffix)
                 hzsub.Add(hzbkg, -1*area_scale)
                 hzsub_noteffscaled = hzsub.Clone("hzsub_noteffscaled" + suffix)
@@ -792,7 +824,7 @@ class AnalyzerJet(Analyzer):
             draw_latex(latex)
             cz.SaveAs("%s/efficiencycorrected_fullsub%s%s_%s_%.2f_%.2f.eps" % \
                       (self.d_resultsallpdata, self.case, self.typean, self.v_var2_binning, \
-                       self.lvar2_binmin[imult], self.lvar2_binmax[imult]))
+                       self.lvar2_binmin_reco[imult], self.lvar2_binmax_reco[imult]))
 
             for zbins in range(nzbin_reco):
                 hzvsjetpt.SetBinContent(zbins+1,imult+1,hz.GetBinContent(zbins+1))
@@ -819,7 +851,6 @@ class AnalyzerJet(Analyzer):
         hzvsjetpt.Draw("text")
         czvsjetpt.SaveAs("%s/czvsjetpt.eps" % self.d_resultsallpdata)
         fileouts.Close()
-
 
     def unfolding(self):
         print("unfolding starts")
@@ -1117,8 +1148,11 @@ class AnalyzerJet(Analyzer):
                 unfolded_z_scaled = unfolded_z.Clone("unfolded_z_scaled_%d_%s" % (i+1,suffix))
                 unfolded_z_scaled.Divide(kinematic_eff[ibin2])
                 unfolded_z_xsection = unfolded_z_scaled.Clone("unfolded_z_xsection_%d_%s" % (i+1,suffix))
-                unfolded_z_xsection.Scale((self.xsection_inel)/(self.p_nevents*self.branching_ratio),"width")
-                unfolded_z_scaled.Scale(1.0/unfolded_z_scaled.Integral(unfolded_z_scaled.FindBin(self.lvarshape_binmin_reco[0]),unfolded_z_scaled.FindBin(self.lvarshape_binmin_reco[-1])),"width")
+                try:
+                    unfolded_z_xsection.Scale((self.xsection_inel)/(self.p_nevents*self.branching_ratio),"width")
+                    unfolded_z_scaled.Scale(1.0/unfolded_z_scaled.Integral(unfolded_z_scaled.FindBin(self.lvarshape_binmin_reco[0]),unfolded_z_scaled.FindBin(self.lvarshape_binmin_reco[-1])),"width")
+                except ZeroDivisionError:
+                    print("ERROR: Division by zero while scaling unfolded_z!\nSkipping scaling!")
                 unfolded_z_scaled.Write("unfolded_z_%d_%s" % (i+1,suffix))
                 unfolded_z_xsection.Write("unfolded_z_xsection_%d_%s" % (i+1,suffix))
                 unfolded_z_scaled_list_iter.append(unfolded_z_scaled)
@@ -1144,7 +1178,10 @@ class AnalyzerJet(Analyzer):
             unfolded_jetpt.Sumw2()
             unfolded_jetpt_scaled = unfolded_jetpt.Clone("unfolded_jetpt_scaled_%d" % (i+1))
             unfolded_jetpt_scaled.Divide(kinematic_eff_jetpt)
-            unfolded_jetpt_scaled.Scale(1.0/unfolded_jetpt_scaled.Integral(unfolded_jetpt_scaled.FindBin(self.lvar2_binmin_reco[0]),unfolded_jetpt_scaled.FindBin(self.lvar2_binmin_reco[-1])),"width")
+            try:
+                unfolded_jetpt_scaled.Scale(1.0/unfolded_jetpt_scaled.Integral(unfolded_jetpt_scaled.FindBin(self.lvar2_binmin_reco[0]),unfolded_jetpt_scaled.FindBin(self.lvar2_binmin_reco[-1])),"width")
+            except ZeroDivisionError:
+                print("ERROR: Division by zero while scaling unfolded_jetpt_scaled!\nSkipping scaling!")
             unfolded_jetpt_scaled.Write("unfolded_jetpt_%d" % (i+1))
             unfolded_jetpt_scaled_list.append(unfolded_jetpt_scaled)
             cunfolded_jetpt = TCanvas('cunfolded_jetpt', '1D output of unfolding')
@@ -1223,7 +1260,7 @@ class AnalyzerJet(Analyzer):
             cconvergence_z.SetWindowSize(500, 500)
             leg_z = TLegend(.7, .45, .85, .85, "iterations")
             setup_legend(leg_z)
-            for i in range(self.niter_unfolding) :
+            for i in range(self.niter_unfolding):
                 setup_histogram(unfolded_z_scaled_list[i][ibin2],i+1)
                 leg_z.AddEntry(unfolded_z_scaled_list[i][ibin2],("%d" % (i+1)),"LEP")
                 if i==0 :
@@ -1316,8 +1353,10 @@ class AnalyzerJet(Analyzer):
 
 
             input_data_z_scaled=input_data_z[ibin2].Clone("input_data_z_scaled_%s" % suffix)
-            input_data_z_scaled.Scale(1.0/input_data_z_scaled.Integral(1,-1),"width")
-
+            try:
+                input_data_z_scaled.Scale(1.0/input_data_z_scaled.Integral(1,-1),"width")
+            except ZeroDivisionError:
+                print("ERROR: Division by zero while scaling input_data_z_scaled!\nSkipping scaling!")
             cunfolded_not_z = TCanvas('cunfolded_not_z '+suffix, 'Unfolded vs not Unfolded'+suffix)
             punfolded_not_z = TPad('punfolded_not_z'+suffix, "Unfolded vs not Unfolded"+suffix,0.0,0.001,1.0,1.0)
             setup_pad(punfolded_not_z)
@@ -1519,8 +1558,10 @@ class AnalyzerJet(Analyzer):
             suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
             input_data_z.append(input_data.ProjectionX("input_data_z"+suffix,ibin2+1,ibin2+1,"e"))
-            input_data_z[ibin2].Scale(1.0/input_data_z[ibin2].Integral(1,-1))
-
+            try:
+                input_data_z[ibin2].Scale(1.0/input_data_z[ibin2].Integral(1,-1))
+            except ZeroDivisionError:
+                print("ERROR: Division by zero while scaling input_data_z!\nSkipping scaling!")
 
 
         for ibin2 in range(self.p_nbin2_gen):
