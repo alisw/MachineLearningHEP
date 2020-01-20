@@ -1,7 +1,5 @@
 # Analysis and systematics
 
-**NOTE** This README is not yet valid but already here to highlight the ideas and workflows.
-
 ## Overview
 
 First of all, everything in here is basically an **Analyzer**. These objects can be handled by an `AnalysisManager`. 
