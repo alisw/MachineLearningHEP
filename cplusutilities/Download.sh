@@ -122,7 +122,7 @@ elif [ "$dataset" == "LHC2018_pp" ] || [  "$dataset" == "LHC2018_AOD208_bdefghij
               /alice/data/2018/LHC18j/000288943/pass1/AOD208/PWGHF/HF_TreeCreator
               /alice/data/2018/LHC18k/000289177/pass1/AOD208/PWGHF/HF_TreeCreator
               /alice/data/2018/LHC18l/000289444/pass1/AOD208/PWGHF/HF_TreeCreator
-              /alice/data/2018/LHC18m/000291397/pass1_withTRDtracking/AOD208/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18m/000292460/pass1_withTRDtracking/AOD208/PWGHF/HF_TreeCreator
               /alice/data/2018/LHC18n/000293359/pass1/AOD208/PWGHF/HF_TreeCreator
               /alice/data/2018/LHC18o/000293741/pass1/AOD208/PWGHF/HF_TreeCreator
               /alice/data/2018/LHC18p/000294925/pass1/AOD208/PWGHF/HF_TreeCreator
@@ -230,15 +230,15 @@ elif [ "$dataset" == "MCpp13TeV_MB_all" ]; then
               /alice/sim/2018/LHC18f4a/257630/PWGHF/HF_TreeCreator
               /alice/sim/2018/LHC18l4a/272123/PWGHF/HF_TreeCreator
               /alice/sim/2018/LHC18l4b/288908/PWGHF/HF_TreeCreator
-              /alice/sim/2019/LHC19h4c1/257630/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h4c1/253529/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19h4b1/272123/PWGHF/HF_TreeCreator
-              /alice/sim/2019/LHC19h4a1/293386/PWGHF/HF_TreeCreator
-              /alice/sim/2019/LHC19h4c2/257630/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h4a1/288908/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h4c2/253529/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19h4b2/272123/PWGHF/HF_TreeCreator
-              /alice/sim/2019/LHC19h4a2/293386/PWGHF/HF_TreeCreator
-              /alice/sim/2019/LHC19h4c3/257630/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h4a2/288908/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h4c3/253529/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19h4b3/272123/PWGHF/HF_TreeCreator
-              /alice/sim/2019/LHC19h4a3/293386/PWGHF/HF_TreeCreator)
+              /alice/sim/2019/LHC19h4a3/288908/PWGHF/HF_TreeCreator)
   datasetwithchilds=1
   splitchildsdifferentpaths=1
   dataset_short_arr=("pp_2016_mc_prodD2H"
