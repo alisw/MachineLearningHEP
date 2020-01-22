@@ -182,8 +182,13 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         for indexp in range(self.prodnumber):
             if self.p_useperiod[indexp] == 1:
                 self.process_listsample[indexp].process_efficiency()
-                self.process_listsample[indexp].process_response()
-                self.process_listsample[indexp].process_unfolding()
+                # pylint: disable=fixme
+                # FIXME This is a quick fix avoiding to call these for analyzers
+                #       other than AnalyzerJet
+                if hasattr(self.process_listsample[indexp], "process_response"):
+                    self.process_listsample[indexp].process_response()
+                if hasattr(self.process_listsample[indexp], "process_unfolding"):
+                    self.process_listsample[indexp].process_unfolding()
         tmp_merged = \
                 f"/data/tmp/hadd/{self.case}_{self.typean}/efficiency/{get_timestamp_string()}/"
         mergerootfiles(self.lper_fileeff, self.fileeff_mergedall, tmp_merged)
