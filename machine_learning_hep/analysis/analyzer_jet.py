@@ -23,6 +23,7 @@ import numpy as np
 # pylint: disable=import-error, no-name-in-module, unused-import
 from root_numpy import hist2array, array2hist
 from ROOT import TFile, TH1F, TH2F, TCanvas, TPad, TF1, TH1D, TLatex, TGraphAsymmErrors
+from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
 from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
 from ROOT import gROOT, TDirectory, TPaveLabel
 from ROOT import TStyle, kBlue, kGreen, kBlack, kRed, kOrange
@@ -207,17 +208,85 @@ class AnalyzerJet(Analyzer):
         # Enable ROOT batch mode and reset in the end
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
-        self.fitter = MLFitter(self.datap, self.typean, self.n_filemass, self.n_filemass_mc)
-        self.fitter.perform_pre_fits()
-        self.fitter.perform_central_fits()
+
+        # Simple fitter START
+        #hyields = TH1F("hyields", "hyields", self.p_nptbins, self.analysis_bin_lims)
         fileout_name = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                            None, [self.case, self.typean])
+        #print("Fit output file: %s" % fileout_name)
         fileout = TFile(fileout_name, "RECREATE")
-        self.fitter.draw_fits(self.d_resultsallpdata, fileout)
+        #print("Mass histogram file: %s" % self.n_filemass)
+        #print("Mass MC histogram file: %s" % self.n_filemass_mc)
+        myfilemc = TFile(self.n_filemass_mc, "read")
+        myfile = TFile(self.n_filemass, "read")
+        for ipt in range(self.p_nptfinbins):
+            bin_id = self.bin_matching[ipt]
+            for ibin2 in range(self.p_nbin2_reco):
+                #print("bins: %d-%d" % (ipt, ibin2))
+                suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
+                         (self.v_var_binning, self.lpt_finbinmin[ipt],
+                          self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
+                          self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
+                histomassmc = myfilemc.Get("hmass_sig" + suffix)
+                histomassmc_reb = AliVertexingHFUtils.RebinHisto(histomassmc, \
+                                            self.p_rebin[ipt], -1)
+                histomassmc_reb_f = TH1F()
+                histomassmc_reb.Copy(histomassmc_reb_f)
+                #print("Histo limits: %g-%g" % (histomassmc_reb_f.GetXaxis().GetXmin(), histomassmc_reb_f.GetXaxis().GetXmax()))
+                fittermc = AliHFInvMassFitter(histomassmc_reb_f, self.p_massmin[ipt], self.p_massmax[ipt],
+                                            self.p_bkgfunc[ipt], 1)
+                fittermc.SetInitialGaussianMean(self.p_masspeak)
+                #print("Before: mean %g, sigma %g, minmass %g, maxmass %g" % (fittermc.GetMean(), fittermc.GetSigma(), self.p_massmin[ipt], self.p_massmax[ipt]))
+                out = fittermc.MassFitter(1)
+                #print("After: mean %g, sigma %g" % (fittermc.GetMean(), fittermc.GetSigma()))
+                print("I have made MC fit for sigma initialization, status: %d" % out)
+                histomass = myfile.Get("hmass" + suffix)
+                histomass_reb = AliVertexingHFUtils.RebinHisto(histomass, \
+                                            self.p_rebin[ipt], -1)
+                histomass_reb_f = TH1F()
+                histomass_reb.Copy(histomass_reb_f)
+                fitter = AliHFInvMassFitter(histomass_reb_f, self.p_massmin[ipt], self.p_massmax[ipt],
+                                            self.p_bkgfunc[ipt], self.p_sgnfunc[ipt])
+                #print("Second fitter: mean %g, sigma %g" % (fitter.GetMean(), fitter.GetSigma()))
+                fitter.SetInitialGaussianSigma(fittermc.GetSigma())
+                fitter.SetInitialGaussianMean(fittermc.GetMean())
+                if self.p_fix_sigma[ipt] is True:
+                    fitter.SetFixGaussianSigma(fittermc.GetSigma())
+                if self.p_sgnfunc[ipt] == 1:
+                    if self.p_fix_sigmasec[ipt] is True:
+                        fitter.SetFixSecondGaussianSigma(self.p_sigmaarraysec[ipt])
+                out = fitter.MassFitter(1)
+                #print("I have made data fit, status: %d" % out)
+                fit_dir = fileout.mkdir(suffix)
+                fit_dir.WriteObject(fitter, "fitter%d" % (ipt))
+                #ry=fitter.GetRawYield()
+                #ery=fitter.GetRawYieldError()
+                #hyields.SetBinContent(ipt+1, ry)
+                #hyields.SetBinError(ipt+1, ery)
+        myfilemc.Close()
+        myfile.Close()
+        #fileout_name = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
+        #                                   None, [self.case, self.typean])
+        #print(fileout_name)
+        #fileout = TFile(fileout_name, "RECREATE")
+        #hyields.Write()
         fileout.Close()
-        fileout_name = os.path.join(self.d_resultsallpdata,
-                                    f"{self.fits_dirname}_{self.case}_{self.typean}")
-        self.fitter.save_fits(fileout_name)
+        # Simple fitter END
+
+        # Wrapper fitter START
+        #self.fitter = MLFitter(self.datap, self.typean, self.n_filemass, self.n_filemass_mc)
+        #self.fitter.perform_pre_fits()
+        #self.fitter.perform_central_fits()
+        #fileout_name = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
+        #                                   None, [self.case, self.typean])
+        #fileout = TFile(fileout_name, "RECREATE")
+        #self.fitter.draw_fits(self.d_resultsallpdata, fileout)
+        #fileout.Close()
+        #fileout_name = os.path.join(self.d_resultsallpdata,
+        #                            f"{self.fits_dirname}_{self.case}_{self.typean}")
+        #self.fitter.save_fits(fileout_name)
+        # Wrapper fitter END
+
         # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
 
@@ -650,14 +719,23 @@ class AnalyzerJet(Analyzer):
     def side_band_sub(self):
         self.loadstyle()
         lfile = TFile.Open(self.n_filemass)
+
+        # Simple fitter START
+        func_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
+                                            None, [self.case, self.typean])
+        func_file = TFile.Open(func_filename, "READ")
+        # Simple fitter END
+
+        # Wrapper fitter START
         # Load the fitter if not already present
-        if not self.fitter:
-            fileout_name = os.path.join(self.d_resultsallpdata,
-                                        f"{self.fits_dirname}_{self.case}_{self.typean}")
-            self.fitter = MLFitter(self.datap, self.typean, self.n_filemass, self.n_filemass_mc)
-            if not self.fitter.load_fits(fileout_name):
-                self.logger.error("Cannot load fits from dir %s", fileout_name)
-                return
+        #if not self.fitter:
+        #    fileout_name = os.path.join(self.d_resultsallpdata,
+        #                                f"{self.fits_dirname}_{self.case}_{self.typean}")
+        #    self.fitter = MLFitter(self.datap, self.typean, self.n_filemass, self.n_filemass_mc)
+        #    if not self.fitter.load_fits(fileout_name):
+        #        self.logger.error("Cannot load fits from dir %s", fileout_name)
+        #        return
+        # Wrapper fitter END
 
         eff_file = TFile.Open("%s/efficiencies%s%s.root" % \
                               (self.d_resultsallpmc, self.case, self.typean))
@@ -687,19 +765,31 @@ class AnalyzerJet(Analyzer):
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin_reco[imult], self.lvar2_binmax_reco[imult])
+
+                # Wrapper fitter START
                 # Try to recover the fit, if not possible throw fatal.
                 # Otherwise, if fit not successful, issue warning and continue
-                fit = self.fitter.get_central_fit(ipt, imult)
-                if not fit:
-                    self.logger.fatal("Cannot access fit in bins (%i, %i)", ipt, imult)
-                if not fit.success:
-                    self.logger.warning("Fit in bins (%i, %i) not successful, skip...", ipt, imult)
-                    continue
+                #fit = self.fitter.get_central_fit(ipt, imult)
+                #if not fit:
+                #    self.logger.fatal("Cannot access fit in bins (%i, %i)", ipt, imult)
+                #if not fit.success:
+                #    self.logger.warning("Fit in bins (%i, %i) not successful, skip...", ipt, imult)
+                #    continue
                 # Get the actual AliHF mass fitter
-                ali_hf_fit = fit.kernel
-                mean = ali_hf_fit.GetMean() # 2.2864
-                sigma = ali_hf_fit.GetSigma() # 0.074
-                bkg_fit = ali_hf_fit.GetBackgroundRecalcFunc()
+                #ali_hf_fit = fit.kernel
+                #mean = ali_hf_fit.GetMean() # 2.2864
+                #sigma = ali_hf_fit.GetSigma() # 0.074
+                #bkg_fit = ali_hf_fit.GetBackgroundRecalcFunc()
+                # Wrapper fitter END
+
+                # Simple fitter START
+                load_dir = func_file.GetDirectory(suffix)
+                mass_fitter = load_dir.Get("fitter%d" % (ipt))
+                mean = mass_fitter.GetMean()
+                sigma = mass_fitter.GetSigma()
+                bkg_fit = mass_fitter.GetBackgroundRecalcFunc()
+                # Simple fitter END
+                #print("Got fit values: mean = %g, sigma = %g" % (mean, sigma))
 
                 hzvsmass = lfile.Get("hzvsmass" + suffix)
                 binmasslow2sig = hzvsmass.GetXaxis().FindBin(mean - self.signal_sigma*sigma)
@@ -731,6 +821,8 @@ class AnalyzerJet(Analyzer):
                     continue
                 area_scale_denominator = bkg_fit.Integral(masslow9sig, masslow4sig) + \
                 bkg_fit.Integral(masshigh4sig, masshigh9sig)
+                if area_scale_denominator == 0:
+                    continue
                 area_scale = bkg_fit.Integral(masslow2sig, masshigh2sig)/area_scale_denominator # 0.4
                 hzsub = hzsig.Clone("hzsub" + suffix)
                 hzsub.Add(hzbkg, -1*area_scale)
