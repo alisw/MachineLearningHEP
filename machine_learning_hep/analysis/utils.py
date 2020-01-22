@@ -16,7 +16,7 @@ from os.path import join
 
 from machine_learning_hep.utilities import mergerootfiles, get_timestamp_string
 
-def multi_prepare_norm(database, case, typean, doperiodbyperiod):
+def multi_preparenorm(database, case, typean, doperiodbyperiod):
 
     lper_normfilesorig = []
     lper_normfiles = []

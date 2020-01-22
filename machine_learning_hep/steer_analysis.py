@@ -44,6 +44,8 @@ from machine_learning_hep.analysis.analyzer_jet import AnalyzerJet
 from machine_learning_hep.analysis.analyzer_Dhadrons import AnalyzerDhadrons
 from machine_learning_hep.analysis.analyzer_Dhadrons_mult import AnalyzerDhadrons_mult
 
+from machine_learning_hep.analysis.utils import multi_preparenorm
+
 try:
 # FIXME(https://github.com/abseil/abseil-py/issues/99) # pylint: disable=fixme
 # FIXME(https://github.com/abseil/abseil-py/issues/102) #pylint: disable=fixme
@@ -347,6 +349,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         mymultiprocessmc.multi_valevents()
     if dovalhistodata is True:
         mymultiprocessdata.multi_valevents()
+
     if dovalplots:
         ana_mgr.analyze("studyevents")
 
@@ -403,6 +406,11 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     if doefficiency is True:
         mymultiprocessmc.multi_efficiency()
 
+    # After-burner in case of a mult analysis to obtain "correctionsweight.root"
+    # for merged-period data
+    if "mult" in proc_type:
+        multi_preparenorm(data_param[case], case, typean, doanaperperiod)
+
     # Collect all desired analysis steps
     analyze_steps = []
     if dofit is True:
@@ -425,8 +433,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     if dojetsystematics is True:
         analyze_steps.append("jetsystematics")
     if docross is True:
-        #myan.multi_preparenorm()
-        # TODO Ask GM whether we need the preparenorm here
         analyze_steps.append("makenormyields")
     if doplots is True:
         analyze_steps.append("plotternormyields")
