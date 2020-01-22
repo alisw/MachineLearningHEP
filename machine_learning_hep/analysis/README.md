@@ -1,7 +1,5 @@
 # Analysis and systematics
 
-**NOTE** This README is not yet valid but already here to highlight the ideas and workflows.
-
 ## Overview
 
 First of all, everything in here is basically an **Analyzer**. These objects can be handled by an `AnalysisManager`. 
@@ -63,4 +61,38 @@ Classes deriving from `AnalyzerAfterBurner` have access to all per-period `Analy
 2. To be meaningful, the after-burner method has to have the same name as the individual analysis step done before.
 
 One use-case of the after-burner is for example the class `Systematics` in `systematics.py` which at that moment does systematic studies of the ML working point (basically a variation) and of the MC pT shape.
+
+## Implementing an Analyzer
+
+Any analyzer or systematic class derived from `Analyzer`. That means, you start off like this
+
+```python
+from machine_learning_hep.analysis.analyzer import Analyzer
+
+class AwesomeAnalyzer(Analyzer):
+    def __init__(self, datap, case, typean, period, few, more, arguments):
+        super().__init__(datap, case, typean, period)
+
+    # awesome implementations
+```
+
+It is required hat the base class gets the database dictionary, the analysis type, the particle case and the period. Hence, these four arguments need to correspond to the first four arguments of your `AwesomeAnalyzer`. After the base classe's `__init__` has been called these are automatically available in your `AwesomeAnalyzer` as class members
+
+* `self.datap`
+* `self.case`
+* `self.typean`
+* `self.period`
+
+In addition there is also a logger in `self.logger` you can use to issue more important output for the user.
+
+`self.period` will have the period number ranging from `0` to `n_period - 1`. It is `None` is this an analyzer has to expect merged period input. This info can be used if, for instance, a method should only be executed for a certain pariod or a period-merged analysis. At the beginning of such a method you might write
+
+```python
+    def my_analysis_step(self):
+        if self.period is None:
+            return
+        # Following implementation only run for per-period run
+```
+
+
 

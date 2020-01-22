@@ -30,24 +30,16 @@ from ROOT import TStyle, kBlue, kGreen, kBlack, kRed, kOrange
 from ROOT import TLatex
 from ROOT import gInterpreter, gPad
 # HF specific imports
-from machine_learning_hep.fitting.helpers import MLFitter
-from machine_learning_hep.logger import get_logger
 from machine_learning_hep.io import dump_yaml_from_dict
 from machine_learning_hep.utilities import folding, get_bins, make_latex_table, parallelizer
 from machine_learning_hep.utilities_plot import plot_histograms
 from machine_learning_hep.analysis.analyzer import Analyzer
 
-#from ROOT import RooUnfoldResponse
-#from ROOT import RooUnfold
-#from ROOT import RooUnfoldBayes
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
 class AnalyzerDhadrons(Analyzer):
     species = "analyzer"
-    def __init__(self, datap, case, typean,
-                 resultsdata, resultsmc, valdata, valmc):
-        super().__init__(datap, case, typean,
-                 resultsdata, resultsmc, valdata, valmc)
-        self.logger = get_logger()
+    def __init__(self, datap, case, typean, period):
+        super().__init__(datap, case, typean, period)
 
         self.p_sgnfunc = datap["analysis"][self.typean]["sgnfunc"]
         self.p_bkgfunc = datap["analysis"][self.typean]["bkgfunc"]
@@ -70,38 +62,6 @@ class AnalyzerDhadrons(Analyzer):
         self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
         self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
         self.p_nptfinbins = len(self.lpt_finbinmin)
-
-    @staticmethod
-    def loadstyle():
-        gStyle.SetOptStat(0)
-        gStyle.SetOptStat(0000)
-        gStyle.SetPalette(1)
-        gStyle.SetCanvasColor(0)
-        gStyle.SetFrameFillColor(0)
-
-    @staticmethod
-    def make_pre_suffix(args):
-        """
-        Construct a common file suffix from args
-        """
-        try:
-            _ = iter(args)
-        except TypeError:
-            args = [args]
-        else:
-            if isinstance(args, str):
-                args = [args]
-        args = [str(a) for a in args]
-        return "_".join(args)
-
-    @staticmethod
-    def make_file_path(directory, filename, extension, prefix=None, suffix=None):
-        if prefix is not None:
-            filename = Analyzer.make_pre_suffix(prefix) + "_" + filename
-        if suffix is not None:
-            filename = filename + "_" + Analyzer.make_pre_suffix(suffix)
-        extension = extension.replace(".", "")
-        return os.path.join(directory, filename + "." + extension)
 
 
     # pylint: disable=import-outside-toplevel

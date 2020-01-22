@@ -44,15 +44,9 @@ from machine_learning_hep.utilities import folding, setup_histogram, setup_pad, 
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
 class AnalyzerJet(Analyzer):
     species = "analyzer"
-    def __init__(self, datap, case, typean,
-                 resultsdata, resultsmc, valdata, valmc):
-        super().__init__(datap, case, typean,
-                        resultsdata, resultsmc, valdata, valmc)
-        self.logger = get_logger()
-        #namefiles pkl
-        self.case = case
-        self.typean = typean
-        self.datap = datap
+    def __init__(self, datap, case, typean, period):
+        super().__init__(datap, case, typean, period)
+
         self.v_var_binning = datap["var_binning"]
         self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
         self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
@@ -135,8 +129,10 @@ class AnalyzerJet(Analyzer):
         self.p_nbinshape_gen = len(self.lvarshape_binmin_gen)
 
 
-        self.d_resultsallpmc = resultsmc
-        self.d_resultsallpdata = resultsdata
+        self.d_resultsallpmc = datap["analysis"][typean]["mc"]["results"][period] \
+                if period is not None else datap["analysis"][typean]["mc"]["resultsallp"]
+        self.d_resultsallpdata = datap["analysis"][typean]["data"]["results"][period] \
+                if period is not None else datap["analysis"][typean]["data"]["resultsallp"]
 
         n_filemass_name = datap["files_names"]["histofilename"]
         self.n_filemass = os.path.join(self.d_resultsallpdata, n_filemass_name)
@@ -171,37 +167,6 @@ class AnalyzerJet(Analyzer):
         # Fitting
         self.fitter = None
 
-    @staticmethod
-    def loadstyle():
-        gStyle.SetOptStat(0)
-        gStyle.SetOptStat(0000)
-        gStyle.SetPalette(1)
-        gStyle.SetCanvasColor(0)
-        gStyle.SetFrameFillColor(0)
-
-    @staticmethod
-    def make_pre_suffix(args):
-        """
-        Construct a common file suffix from args
-        """
-        try:
-            _ = iter(args)
-        except TypeError:
-            args = [args]
-        else:
-            if isinstance(args, str):
-                args = [args]
-        args = [str(a) for a in args]
-        return "_".join(args)
-
-    @staticmethod
-    def make_file_path(directory, filename, extension, prefix=None, suffix=None):
-        if prefix is not None:
-            filename = Analyzer.make_pre_suffix(prefix) + "_" + filename
-        if suffix is not None:
-            filename = filename + "_" + Analyzer.make_pre_suffix(suffix)
-        extension = extension.replace(".", "")
-        return os.path.join(directory, filename + "." + extension)
 
     # pylint: disable=import-outside-toplevel
     def fit(self):

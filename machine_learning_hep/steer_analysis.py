@@ -37,13 +37,14 @@ from  machine_learning_hep.utilities import checkmakedirlist, checkmakedir
 from  machine_learning_hep.utilities import checkdirlist, checkdir
 from  machine_learning_hep.logger import configure_logger, get_logger
 from machine_learning_hep.optimiser import Optimiser
+
+from machine_learning_hep.analysis.analyzer_manager import AnalyzerManager
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.analysis.analyzer_jet import AnalyzerJet
 from machine_learning_hep.analysis.analyzer_Dhadrons import AnalyzerDhadrons
 from machine_learning_hep.analysis.analyzer_Dhadrons_mult import AnalyzerDhadrons_mult
-from machine_learning_hep.analysis.multianalyzer import MultiAnalyzer
-from machine_learning_hep.analysis.multisystematics import MultiSystematics
-#from machine_learning_hep.analysis.systematics_Dhadrons import SystematicsDhadrons
+
+from machine_learning_hep.analysis.utils import multi_preparenorm
 
 try:
 # FIXME(https://github.com/abseil/abseil-py/issues/99) # pylint: disable=fixme
@@ -295,26 +296,26 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
 
     proc_class = Processer
     ana_class = Analyzer
-    if proc_type  == "Dhadrons":
+    if proc_type == "Dhadrons":
         print("Using new feature for Dhadrons")
         proc_class = ProcesserDhadrons
         ana_class = AnalyzerDhadrons
         #syst_class = SystematicsDhadrons
-    if proc_type  == "Dhadrons_mult":
+    if proc_type == "Dhadrons_mult":
         print("Using new feature for Dhadrons_mult")
         proc_class = ProcesserDhadrons_mult
         ana_class = AnalyzerDhadrons_mult
         #syst_class = SystematicsDhadrons
-    if proc_type  == "Dhadrons_jet":
+    if proc_type == "Dhadrons_jet":
         print("Using new feature for Dhadrons_jet")
         proc_class = ProcesserDhadrons_jet
         ana_class = AnalyzerJet
         #syst_class = SystematicsDhadrons
 
     mymultiprocessmc = MultiProcesser(case, proc_class, data_param[case], typean, run_param, "mc")
-    mymultiprocessdata = MultiProcesser(case, proc_class, data_param[case], typean, run_param, "data")
-    myan = MultiAnalyzer(ana_class, data_param[case], case, typean, doanaperperiod)
-    #mysist = MultiSystematics(syst_class, data_param[case], case, typean, doanaperperiod)
+    mymultiprocessdata = MultiProcesser(case, proc_class, data_param[case], typean, run_param,\
+                                        "data")
+    ana_mgr = AnalyzerManager(ana_class, data_param[case], case, typean, doanaperperiod)
 
     #perform the analysis flow
     if dodownloadalice == 1:
@@ -348,8 +349,9 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         mymultiprocessmc.multi_valevents()
     if dovalhistodata is True:
         mymultiprocessdata.multi_valevents()
+
     if dovalplots:
-        myan.analyze("studyevents")
+        ana_mgr.analyze("studyevents")
 
     if doml is True:
         index = 0
@@ -404,6 +406,12 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     if doefficiency is True:
         mymultiprocessmc.multi_efficiency()
 
+    # After-burner in case of a mult analysis to obtain "correctionsweight.root"
+    # for merged-period data
+    if "mult" in proc_type:
+        multi_preparenorm(data_param[case], case, typean, doanaperperiod)
+
+    # Collect all desired analysis steps
     analyze_steps = []
     if dofit is True:
         analyze_steps.append("fit")
@@ -425,19 +433,14 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     if dojetsystematics is True:
         analyze_steps.append("jetsystematics")
     if docross is True:
-        #myan.multi_preparenorm()
         analyze_steps.append("makenormyields")
     if doplots is True:
         analyze_steps.append("plotternormyields")
 
     # Now do the analysis
-    myan.analyze(*analyze_steps)
+    ana_mgr.analyze(*analyze_steps)
 
 
-    #if dosystprob is True:
-    #    mysist.multi_cutvariation()
-    #if dosystptshape is True:
-    #    mysis.multimcptshape()
 
 def load_config(user_path: str, default_path: tuple) -> dict:
     """
