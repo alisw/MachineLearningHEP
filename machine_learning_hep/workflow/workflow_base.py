@@ -77,7 +77,10 @@ class WorkflowBase:
             True if the step was found and executed, False otherwise
         """
         if not hasattr(self, step):
+            self.logger.error("Could not run workflow step %s for workflow %s", step,
+                              self.__class__.__name__)
             return False
+        self.logger.info("Run workflow step %s for workflow %s", step, self.__class__.__name__)
         getattr(self, step)()
         return True
 
