@@ -47,6 +47,8 @@ class AnalyzerManager:
         if self.is_initialized:
             return
 
+        self.logger.info("Initialize analyzer manager for analyzer %s", self.ana_class.__name__)
+
         useperiod = self.database["analysis"][self.typean]["useperiod"]
 
         for ip, period in enumerate(useperiod):
@@ -73,10 +75,16 @@ class AnalyzerManager:
         """
 
         if not ana_steps:
-            self.logger.info("No analysis steps to be done. Return...")
+            self.logger.info("No analysis steps to be done for Analyzer class %s. Return...",
+                             self.ana_class.__name__)
             return
 
         self.initialize()
+
+        self.logger.info("Run all registered analyzers of type %s for following analysis steps",
+                         self.ana_class.__name__)
+        for step in ana_steps:
+            print(f"  -> {step}")
 
         # Collect potentially failed systematic steps
         failed_steps = []
@@ -87,12 +95,15 @@ class AnalyzerManager:
                     if not analyzer.step(step):
                         failed_steps.append((analyzer.__class__.__name__, step))
                         # If analysis step could not be found here,
-                        # we don't need to go on trying this steps
+                        # we don't need to go on trying this steps since all analyzers are of the
+                        # same class
                         break
 
+                # Run after-burner if one was provided by the analyzer object
                 if self.after_burner and not self.after_burner.step(step):
                     failed_steps_after_burner.append((self.after_burner.__class__.__name__, step))
 
+            # Do analysis step for period-merged analyzer
             self.analyzers[-1].step(step)
 
         if failed_steps:
