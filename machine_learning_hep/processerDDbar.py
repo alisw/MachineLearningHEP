@@ -80,58 +80,64 @@ class ProcesserDDbar(Processer): # pylint: disable=too-many-instance-attributes
         myfile = TFile.Open(self.l_histomass[index], "recreate")
         dfevtorig = pickle.load(openfile(self.l_evtorig[index], "rb"))
         print("I AM RUNNING  process_histomass_single for DDbar")
-#        if self.s_trigger is not None:
-#            dfevtorig = dfevtorig.query(self.s_trigger)
-#        dfevtorig = selectdfrunlist(dfevtorig, \
-#                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
-#        hNorm = TH1F("hEvForNorm", "hEvForNorm", 2, 0.5, 2.5)
-#        hNorm.GetXaxis().SetBinLabel(1, "normsalisation factor")
-#        hNorm.GetXaxis().SetBinLabel(2, "selected events")
-#        nselevt = 0
-#        norm = 0
-#        if not dfevtorig.empty:
-#            nselevt = len(dfevtorig.query("is_ev_rej==0"))
-#            norm = getnormforselevt(dfevtorig)
-#        hNorm.SetBinContent(1, norm)
-#        hNorm.SetBinContent(2, nselevt)
-#        hNorm.Write()
-#        dfevtorig = dfevtorig.query("is_ev_rej==0")
-#        for ipt in range(self.p_nptfinbins):
-#            bin_id = self.bin_matching[ipt]
-#            df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
-#            if self.doml is True:
-#                df = df.query(self.l_selml[bin_id])
-#            if self.s_evtsel is not None:
-#                df = df.query(self.s_evtsel)
-#            if self.s_trigger is not None:
-#                df = df.query(self.s_trigger)
-#            df = seldf_singlevar(df, self.v_var_binning, \
-#                                 self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-#            suffix = "%s%d_%d" % \
-#                     (self.v_var_binning, self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-#            h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
-#                             self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-#            df = selectdfrunlist(df, \
-#                     self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
-#            fill_hist(h_invmass, df.inv_mass)
-#            myfile.cd()
-#            h_invmass.Write()
-#            if self.mcordata == "mc":
-#                df[self.v_ismcrefl] = np.array(tag_bit_df(df, self.v_bitvar,
-#                                                          self.b_mcrefl), dtype=int)
-#                df_sig = df[df[self.v_ismcsignal] == 1]
-#                df_refl = df[df[self.v_ismcrefl] == 1]
-#                h_invmass_sig = TH1F("hmass_sig" + suffix, "", self.p_num_bins,
-#                                     self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-#                h_invmass_refl = TH1F("hmass_refl" + suffix, "", self.p_num_bins,
-#                                      self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-#                fill_hist(h_invmass_sig, df_sig.inv_mass)
-#                fill_hist(h_invmass_refl, df_refl.inv_mass)
-#                myfile.cd()
-#                h_invmass_sig.Write()
-#                h_invmass_refl.Write()
-#            print("FINISHED")
-#
+        if self.s_trigger is not None:
+            dfevtorig = dfevtorig.query(self.s_trigger)
+        dfevtorig = selectdfrunlist(dfevtorig, \
+                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
+        hNorm = TH1F("hEvForNorm", "hEvForNorm", 2, 0.5, 2.5)
+        hNorm.GetXaxis().SetBinLabel(1, "normsalisation factor")
+        hNorm.GetXaxis().SetBinLabel(2, "selected events")
+        nselevt = 0
+        norm = 0
+        if not dfevtorig.empty:
+            nselevt = len(dfevtorig.query("is_ev_rej==0"))
+            norm = getnormforselevt(dfevtorig)
+        hNorm.SetBinContent(1, norm)
+        hNorm.SetBinContent(2, nselevt)
+        hNorm.Write()
+        dfevtorig = dfevtorig.query("is_ev_rej==0")
+        for ipt in range(self.p_nptfinbins):
+            print("pt_range", ipt)
+            bin_id = self.bin_matching[ipt]
+            df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
+            print("data loaded")
+            #function below should cause error but it just break the loop and
+            #continue with the loading next df
+            df = df.apply(function_that_doesnt_even_exist)
+            print("here should be error!!!")
+            if self.doml is True:
+                df = df.query(self.l_selml[bin_id])
+            if self.s_evtsel is not None:
+                df = df.query(self.s_evtsel)
+            if self.s_trigger is not None:
+                df = df.query(self.s_trigger)
+            df = seldf_singlevar(df, self.v_var_binning, \
+                                 self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+            suffix = "%s%d_%d" % \
+                     (self.v_var_binning, self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+            h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
+                             self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+            df = selectdfrunlist(df, \
+                     self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
+            fill_hist(h_invmass, df.inv_mass)
+            myfile.cd()
+            h_invmass.Write()
+            if self.mcordata == "mc":
+                df[self.v_ismcrefl] = np.array(tag_bit_df(df, self.v_bitvar,
+                                                          self.b_mcrefl), dtype=int)
+                df_sig = df[df[self.v_ismcsignal] == 1]
+                df_refl = df[df[self.v_ismcrefl] == 1]
+                h_invmass_sig = TH1F("hmass_sig" + suffix, "", self.p_num_bins,
+                                     self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+                h_invmass_refl = TH1F("hmass_refl" + suffix, "", self.p_num_bins,
+                                      self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+                fill_hist(h_invmass_sig, df_sig.inv_mass)
+                fill_hist(h_invmass_refl, df_refl.inv_mass)
+                myfile.cd()
+                h_invmass_sig.Write()
+                h_invmass_refl.Write()
+            print("FINISHED")
+
     # pylint: disable=line-too-long
 #    def process_efficiency_single(self, index):
 #        print("step1")
