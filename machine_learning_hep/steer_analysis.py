@@ -40,9 +40,11 @@ from machine_learning_hep.optimiser import Optimiser
 
 from machine_learning_hep.analysis.analyzer_manager import AnalyzerManager
 from machine_learning_hep.analysis.analyzer import Analyzer
-from machine_learning_hep.analysis.analyzer_jet import AnalyzerJet
 from machine_learning_hep.analysis.analyzer_Dhadrons import AnalyzerDhadrons
 from machine_learning_hep.analysis.analyzer_Dhadrons_mult import AnalyzerDhadrons_mult
+from machine_learning_hep.analysis.analyzer_jet import AnalyzerJet
+
+from machine_learning_hep.analysis.systematics import Systematics
 
 from machine_learning_hep.analysis.utils import multi_preparenorm
 
@@ -122,6 +124,10 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     doplots = data_config["analysis"]["doplots"]
     dosyst = data_config["analysis"]["dosyst"]
     dosystprob = data_config["systematics"]["cutvar"]["activate"]
+    do_syst_prob_mass = data_config["systematics"]["cutvar"]["probvariationmass"]
+    do_syst_prob_eff = data_config["systematics"]["cutvar"]["probvariationeff"]
+    do_syst_prob_fit = data_config["systematics"]["cutvar"]["probvariationfit"]
+    do_syst_prob_cross = data_config["systematics"]["cutvar"]["probvariationcross"]
     dosystptshape = data_config["systematics"]["mcptshape"]["activate"]
     doanaperperiod = data_config["analysis"]["doperperiod"]
 
@@ -296,26 +302,26 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
 
     proc_class = Processer
     ana_class = Analyzer
+    syst_class = Systematics
     if proc_type == "Dhadrons":
         print("Using new feature for Dhadrons")
         proc_class = ProcesserDhadrons
         ana_class = AnalyzerDhadrons
-        #syst_class = SystematicsDhadrons
     if proc_type == "Dhadrons_mult":
         print("Using new feature for Dhadrons_mult")
         proc_class = ProcesserDhadrons_mult
         ana_class = AnalyzerDhadrons_mult
-        #syst_class = SystematicsDhadrons
     if proc_type == "Dhadrons_jet":
         print("Using new feature for Dhadrons_jet")
         proc_class = ProcesserDhadrons_jet
         ana_class = AnalyzerJet
-        #syst_class = SystematicsDhadrons
 
     mymultiprocessmc = MultiProcesser(case, proc_class, data_param[case], typean, run_param, "mc")
     mymultiprocessdata = MultiProcesser(case, proc_class, data_param[case], typean, run_param,\
                                         "data")
     ana_mgr = AnalyzerManager(ana_class, data_param[case], case, typean, doanaperperiod)
+    # Has to be done always period-by-period
+    syst_mgr = AnalyzerManager(syst_class, data_param[case], case, typean, True, run_param)
 
     #perform the analysis flow
     if dodownloadalice == 1:
@@ -440,6 +446,19 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     # Now do the analysis
     ana_mgr.analyze(*analyze_steps)
 
+    ml_syst_steps = []
+    if dosystprob is True:
+        if do_syst_prob_mass:
+            ml_syst_steps.append("ml_cutvar_mass")
+        if do_syst_prob_eff:
+            ml_syst_steps.append("ml_cutvar_eff")
+        if do_syst_prob_fit:
+            ml_syst_steps.append("ml_cutvar_fit")
+        if do_syst_prob_cross:
+            ml_syst_steps.append("ml_cutvar_cross")
+    if dosystptshape is True:
+        ml_syst_steps.append("mcptshape")
+    syst_mgr.analyze(*ml_syst_steps)
 
 
 def load_config(user_path: str, default_path: tuple) -> dict:
