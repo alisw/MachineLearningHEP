@@ -76,6 +76,10 @@ analysis:
 systematics:
   cutvar:
     activate: false
+    probvariationmass: false
+    probvariationeff: false
+    probvariationfit: false
+    probvariationcross: false
   mcptshape:
     activate: false
 
