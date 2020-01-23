@@ -1205,11 +1205,8 @@ class AnalyzerJet(Analyzer):
                 unfolded_z_scaled = unfolded_z.Clone("unfolded_z_scaled_%d_%s" % (i+1,suffix))
                 unfolded_z_scaled.Divide(kinematic_eff[ibin2])
                 unfolded_z_xsection = unfolded_z_scaled.Clone("unfolded_z_xsection_%d_%s" % (i+1,suffix))
-                try:
-                    unfolded_z_xsection.Scale((self.xsection_inel)/(self.p_nevents*self.branching_ratio),"width")
-                    unfolded_z_scaled.Scale(1.0/unfolded_z_scaled.Integral(unfolded_z_scaled.FindBin(self.lvarshape_binmin_reco[0]),unfolded_z_scaled.FindBin(self.lvarshape_binmin_reco[-1])),"width")
-                except ZeroDivisionError:
-                    print("ERROR: Division by zero while scaling unfolded_z!\nSkipping scaling!")
+                unfolded_z_xsection.Scale((self.xsection_inel)/(self.p_nevents*self.branching_ratio),"width")
+                unfolded_z_scaled.Scale(1.0/unfolded_z_scaled.Integral(unfolded_z_scaled.FindBin(self.lvarshape_binmin_reco[0]),unfolded_z_scaled.FindBin(self.lvarshape_binmin_reco[-1])),"width")
                 unfolded_z_scaled.Write("unfolded_z_%d_%s" % (i+1,suffix))
                 unfolded_z_xsection.Write("unfolded_z_xsection_%d_%s" % (i+1,suffix))
                 unfolded_z_scaled_list_iter.append(unfolded_z_scaled)
@@ -1235,10 +1232,7 @@ class AnalyzerJet(Analyzer):
             unfolded_jetpt.Sumw2()
             unfolded_jetpt_scaled = unfolded_jetpt.Clone("unfolded_jetpt_scaled_%d" % (i+1))
             unfolded_jetpt_scaled.Divide(kinematic_eff_jetpt)
-            try:
-                unfolded_jetpt_scaled.Scale(1.0/unfolded_jetpt_scaled.Integral(unfolded_jetpt_scaled.FindBin(self.lvar2_binmin_reco[0]),unfolded_jetpt_scaled.FindBin(self.lvar2_binmin_reco[-1])),"width")
-            except ZeroDivisionError:
-                print("ERROR: Division by zero while scaling unfolded_jetpt_scaled!\nSkipping scaling!")
+            unfolded_jetpt_scaled.Scale(1.0/unfolded_jetpt_scaled.Integral(unfolded_jetpt_scaled.FindBin(self.lvar2_binmin_reco[0]),unfolded_jetpt_scaled.FindBin(self.lvar2_binmin_reco[-1])),"width")
             unfolded_jetpt_scaled.Write("unfolded_jetpt_%d" % (i+1))
             unfolded_jetpt_scaled_list.append(unfolded_jetpt_scaled)
             cunfolded_jetpt = TCanvas('cunfolded_jetpt', '1D output of unfolding')
@@ -1410,10 +1404,7 @@ class AnalyzerJet(Analyzer):
 
 
             input_data_z_scaled=input_data_z[ibin2].Clone("input_data_z_scaled_%s" % suffix)
-            try:
-                input_data_z_scaled.Scale(1.0/input_data_z_scaled.Integral(1,-1),"width")
-            except ZeroDivisionError:
-                print("ERROR: Division by zero while scaling input_data_z_scaled!\nSkipping scaling!")
+            input_data_z_scaled.Scale(1.0/input_data_z_scaled.Integral(1,-1),"width")
             cunfolded_not_z = TCanvas('cunfolded_not_z '+suffix, 'Unfolded vs not Unfolded'+suffix)
             punfolded_not_z = TPad('punfolded_not_z'+suffix, "Unfolded vs not Unfolded"+suffix,0.0,0.001,1.0,1.0)
             setup_pad(punfolded_not_z)
@@ -1615,11 +1606,7 @@ class AnalyzerJet(Analyzer):
             suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
             input_data_z.append(input_data.ProjectionX("input_data_z"+suffix,ibin2+1,ibin2+1,"e"))
-            try:
-                input_data_z[ibin2].Scale(1.0/input_data_z[ibin2].Integral(1,-1))
-            except ZeroDivisionError:
-                print("ERROR: Division by zero while scaling input_data_z!\nSkipping scaling!")
-
+            input_data_z[ibin2].Scale(1.0/input_data_z[ibin2].Integral(1,-1))
 
         for ibin2 in range(self.p_nbin2_gen):
             suffix = "%s_%.2f_%.2f" % \
