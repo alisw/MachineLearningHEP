@@ -408,14 +408,17 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     if dohistomassmc is True:
         mymultiprocessmc.multi_histomass()
     if dohistomassdata is True:
+        # After-burner in case of a mult analysis to obtain "correctionsweight.root"
+        # for merged-period data
+        # pylint: disable=fixme
+        # FIXME Can only be run here because result directories are constructed when histomass
+        #       is run. If this step was independent, histomass would always complain that the
+        #       result directory already exists.
+        if "mult" in proc_type:
+            multi_preparenorm(data_param[case], case, typean, doanaperperiod)
         mymultiprocessdata.multi_histomass()
     if doefficiency is True:
         mymultiprocessmc.multi_efficiency()
-
-    # After-burner in case of a mult analysis to obtain "correctionsweight.root"
-    # for merged-period data
-    if "mult" in proc_type:
-        multi_preparenorm(data_param[case], case, typean, doanaperperiod)
 
     # Collect all desired analysis steps
     analyze_steps = []

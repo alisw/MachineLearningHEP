@@ -15,8 +15,11 @@
 from os.path import join
 
 from machine_learning_hep.utilities import mergerootfiles, get_timestamp_string
+from machine_learning_hep.logger import get_logger
 
 def multi_preparenorm(database, case, typean, doperiodbyperiod):
+
+    logger = get_logger()
 
     lper_normfilesorig = []
     lper_normfiles = []
@@ -35,6 +38,8 @@ def multi_preparenorm(database, case, typean, doperiodbyperiod):
     useperiod = database["analysis"][typean]["useperiod"]
 
     for indexp in range(len(resultsdata)):
+        logger.info("Origin path: %s, target path: %s", lper_normfilesorig[indexp],
+                    lper_normfiles[indexp])
         mergerootfiles([lper_normfilesorig[indexp]], lper_normfiles[indexp], tmp_merged)
         if doperiodbyperiod and useperiod[indexp]:
             listempty.append(lper_normfiles[indexp])
