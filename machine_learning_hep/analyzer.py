@@ -2816,7 +2816,8 @@ class Analyzer:
 
 
             input_data_z_scaled=input_data_z[ibin2].Clone("input_data_z_scaled_%s" % suffix)
-            input_data_z_scaled.Scale(1.0/input_data_z_scaled.Integral(1,-1),"width")
+            if input_data_z_scaled.Integral(1,-1) != 0:
+                input_data_z_scaled.Scale(1.0/input_data_z_scaled.Integral(1,-1),"width")
 
             cunfolded_not_z = TCanvas('cunfolded_not_z '+suffix, 'Unfolded vs not Unfolded'+suffix)
             punfolded_not_z = TPad('punfolded_not_z'+suffix, "Unfolded vs not Unfolded"+suffix,0.0,0.001,1.0,1.0)
