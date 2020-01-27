@@ -135,8 +135,6 @@ class FitBase:
         Set final fitted parameters. To be overwritten by the deriving class
         """
 
-        pass
-
 
     def fit(self):
         """
@@ -329,8 +327,8 @@ class FitAliHF(FitROOT):
         self.kernel = AliHFInvMassFitter(self.histo,
                                          self.init_pars["fit_range_low"],
                                          self.init_pars["fit_range_up"],
-                                         self.init_pars["sig_func_name"],
-                                         self.init_pars["bkg_func_name"])
+                                         self.init_pars["bkg_func_name"],
+                                         self.init_pars["sig_func_name"])
         self.kernel.SetCheckSignalCountsAfterFirstFit(False)
         if self.init_pars["likelihood"]:
             self.kernel.SetUseLikelihoodFit()
@@ -609,7 +607,7 @@ class FitROOTGauss(FitROOT):
                                                     self.init_pars["fit_range_up"])
             return success
 
-        for r in range(2, 8):
+        for r in range(1, 8):
             guess_fit_range_low = guess_mean - r * guess_sigma
             guess_fit_range_up = guess_mean + r * guess_sigma
             guess_int = self.histo.Integral(self.histo.FindBin(guess_fit_range_low),
