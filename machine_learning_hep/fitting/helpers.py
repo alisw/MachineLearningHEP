@@ -434,9 +434,11 @@ class MLFitter:
         if not self.is_initialized_fits:
             self.initialize_fits()
 
+        self.logger.info("Perform pre-fits on MC")
         for fit in self.pre_fits_mc.values():
             fit.override_init_pars(fix_mean=False, fix_sigma=False)
             fit.fit()
+        self.logger.info("Perform pre-fits on data")
         for fit in self.pre_fits_data.values():
             fit.override_init_pars(fix_mean=False, fix_sigma=False)
             fit.fit()
@@ -472,6 +474,7 @@ class MLFitter:
                 for name in self.lock_override_init[(ibin1, ibin2)]:
                     _ = override_init_pars.pop(name, None)
 
+            self.logger.info("Perform central fit in bin (%i, %i)", ibin1, ibin2)
             fit.override_init_pars(**override_init_pars)
             fit.fit()
 
@@ -663,11 +666,28 @@ class MLFitter:
             n_sigma_signal = self.pars_factory.n_sigma_signal
 
             suffix_write = self.pars_factory.make_suffix(ibin1, ibin2)
+
+            kernel = fit.kernel
+            histo = fit.histo
+
+            # Central fits
+            y_axis_label = \
+                    f"Entries/({histo.GetBinWidth(1) * 1000:.0f} MeV/#it{{c}}^{{2}})"
+            canvas = TCanvas("fit_canvas", suffix_write, 700, 700)
+            fit.draw(canvas, sigma_signal=n_sigma_signal, x_axis_label=x_axis_label,
+                     y_axis_label=y_axis_label, title=title)
+            if self.pars_factory.apply_weights is False:
+                canvas.SaveAs(make_file_path(save_dir, "fittedplot", "eps", None,
+                                             suffix_write))
+            else:
+                canvas.SaveAs(make_file_path(save_dir, "fittedplotweights", "eps", None,
+                                             suffix_write))
+            canvas.Close()
+            fit.draw(canvas_data[ibin2].cd(ibin1+1), sigma_signal=n_sigma_signal,
+                     x_axis_label=x_axis_label, y_axis_label=y_axis_label, title=title)
+
             if fit.success:
-
-                kernel = fit.kernel
-                histo = fit.histo
-
+                # Only fill these summary plots in case of success
                 yieldshistos[ibin2].SetBinContent(ibin1 + 1, kernel.GetRawYield())
                 yieldshistos[ibin2].SetBinError(ibin1 + 1, kernel.GetRawYieldError())
 
@@ -676,7 +696,6 @@ class MLFitter:
 
                 sigmas_histos[ibin2].SetBinContent(ibin1 + 1, kernel.GetSigma())
                 sigmas_histos[ibin2].SetBinError(ibin1 + 1, kernel.GetSigmaUncertainty())
-
 
                 # Residual plot
                 c_res = TCanvas('cRes', 'The Fit Canvas', 800, 800)
@@ -692,72 +711,64 @@ class MLFitter:
                 c_res.SaveAs(make_file_path(save_dir, "residual", "eps", None, suffix_write))
                 c_res.Close()
 
-                y_axis_label = \
-                        f"Entries/({histo.GetBinWidth(1) * 1000:.0f} MeV/#it{{c}}^{{2}})"
-                canvas = TCanvas("fit_canvas", suffix_write, 700, 700)
-                fit.draw(canvas, sigma_signal=n_sigma_signal, x_axis_label=x_axis_label,
-                         y_axis_label=y_axis_label, title=title)
-                if self.pars_factory.apply_weights is False:
-                    canvas.SaveAs(make_file_path(save_dir, "fittedplot", "eps", None,
-                                                 suffix_write))
-                else:
-                    canvas.SaveAs(make_file_path(save_dir, "fittedplotweights", "eps", None,
-                                                 suffix_write))
-                canvas.Close()
-                fit.draw(canvas_data[ibin2].cd(ibin1+1), sigma_signal=n_sigma_signal,
-                         x_axis_label=x_axis_label, y_axis_label=y_axis_label, title=title)
 
-
+            # Summary plots to be done only once per pT bin
             if ibin1 in have_summary_pt_bins:
                 continue
 
             have_summary_pt_bins.append(ibin1)
 
+            # Pre-fit MC
             suffix_write = self.pars_factory.make_suffix(ibin1, self.pars_factory.bins2_int_bin)
 
             pre_fit_mc = self.pre_fits_mc[ibin1]
-            if pre_fit_mc.success:
-                kernel = pre_fit_mc.kernel
-                histo = pre_fit_mc.histo
+            kernel = pre_fit_mc.kernel
+            histo = pre_fit_mc.histo
+            y_axis_label = \
+                    f"Entries/({histo.GetBinWidth(1) * 1000:.0f} MeV/#it{{c}}^{{2}})"
+            canvas = TCanvas("fit_canvas_mc_init", suffix_write, 700, 700)
+            pre_fit_mc.draw(canvas, x_axis_label=x_axis_label, y_axis_label=y_axis_label,
+                            title=title)
 
+            canvas.SaveAs(make_file_path(save_dir, "fittedplot_integrated_mc", "eps", None,
+                                         suffix_write))
+            canvas.Close()
+            pre_fit_mc.draw(canvas_init_mc.cd(ibin1+1), x_axis_label=x_axis_label,
+                            y_axis_label=y_axis_label, title=title)
+
+
+            if pre_fit_mc.success:
+                # Only fill these summary plots in case of success
                 means_init_mc_histos.SetBinContent(ibin1 + 1, kernel.GetParameter(1))
                 means_init_mc_histos.SetBinError(ibin1 + 1, kernel.GetParError(1))
                 sigmas_init_mc_histos.SetBinContent(ibin1 + 1, kernel.GetParameter(2))
                 sigmas_init_mc_histos.SetBinError(ibin1 + 1, kernel.GetParError(2))
 
-                y_axis_label = \
-                        f"Entries/({histo.GetBinWidth(1) * 1000:.0f} MeV/#it{{c}}^{{2}})"
-                canvas = TCanvas("fit_canvas_mc_init", suffix_write, 700, 700)
-                pre_fit_mc.draw(canvas, x_axis_label=x_axis_label, y_axis_label=y_axis_label,
-                                title=title)
-
-                canvas.SaveAs(make_file_path(save_dir, "fittedplot_integrated_mc", "eps", None,
-                                             suffix_write))
-                canvas.Close()
-                pre_fit_mc.draw(canvas_init_mc.cd(ibin1+1), x_axis_label=x_axis_label,
-                                y_axis_label=y_axis_label, title=title)
 
             pre_fit_data = self.pre_fits_data[ibin1]
-            if pre_fit_data.success:
-                kernel = pre_fit_data.kernel
-                histo = pre_fit_data.histo
+            kernel = pre_fit_data.kernel
+            histo = pre_fit_data.histo
 
+
+            # Pre-fit data
+            y_axis_label = \
+                    f"Entries/({histo.GetBinWidth(1) * 1000:.0f} MeV/#it{{c}}^{{2}})"
+            canvas = TCanvas("fit_canvas_data_init", suffix_write, 700, 700)
+            pre_fit_data.draw(canvas, sigma_signal=n_sigma_signal, x_axis_label=x_axis_label,
+                              y_axis_label=y_axis_label, title=title)
+            canvas.SaveAs(make_file_path(save_dir, "fittedplot_integrated", "eps", None,
+                                         suffix_write))
+            canvas.Close()
+            pre_fit_data.draw(canvas_init_data.cd(ibin1+1), sigma_signal=n_sigma_signal,
+                              x_axis_label=x_axis_label, y_axis_label=y_axis_label,
+                              title=title)
+
+            if pre_fit_data.success:
+                # Only fill these summary plots in case of success
                 means_init_data_histos.SetBinContent(ibin1 + 1, kernel.GetMean())
                 means_init_data_histos.SetBinError(ibin1 + 1, kernel.GetMeanUncertainty())
                 sigmas_init_data_histos.SetBinContent(ibin1 + 1, kernel.GetSigma())
                 sigmas_init_data_histos.SetBinError(ibin1 + 1, kernel.GetSigmaUncertainty())
-
-                y_axis_label = \
-                        f"Entries/({histo.GetBinWidth(1) * 1000:.0f} MeV/#it{{c}}^{{2}})"
-                canvas = TCanvas("fit_canvas_data_init", suffix_write, 700, 700)
-                pre_fit_data.draw(canvas, sigma_signal=n_sigma_signal, x_axis_label=x_axis_label,
-                                  y_axis_label=y_axis_label, title=title)
-                canvas.SaveAs(make_file_path(save_dir, "fittedplot_integrated", "eps", None,
-                                             suffix_write))
-                canvas.Close()
-                pre_fit_data.draw(canvas_init_data.cd(ibin1+1), sigma_signal=n_sigma_signal,
-                                  x_axis_label=x_axis_label, y_axis_label=y_axis_label,
-                                  title=title)
 
 
         canvas_init_mc.SaveAs(make_file_path(save_dir, "canvas_InitMC", "eps"))
