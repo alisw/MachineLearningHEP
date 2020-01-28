@@ -412,21 +412,40 @@ class FitAliHF(FitROOT):
 
         add_root_objects = draw_args.pop("add_root_objects", None)
 
+        # Now comes some styling
+        color_sig = kBlue - 3
+        color_bkg_refit = kRed + 2
+        color_refl = kGreen + 2
+        color_sec_peak = kMagenta + 3
+        self.histo.SetMarkerStyle(20)
+
         draw_objects = [self.histo]
         draw_options = ["PE"] + [""] * 3
         sig_func = self.kernel.GetMassFunc()
-        draw_objects.append(sig_func)
+        if sig_func:
+            # Might be nullptr
+            sig_func.SetLineColor(color_sig)
+            draw_objects.append(sig_func)
+
         bkg_func = self.kernel.GetBackgroundFullRangeFunc()
-        draw_objects.append(bkg_func)
+        if bkg_func:
+            # Might be nullptr
+            draw_objects.append(bkg_func)
+
         bkg_refit_func = self.kernel.GetBackgroundRecalcFunc()
-        draw_objects.append(bkg_refit_func)
+        if bkg_refit_func:
+            # Might be nullptr
+            draw_objects.append(bkg_refit_func)
+            bkg_refit_func.SetLineColor(color_bkg_refit)
         refl_func = self.kernel.GetReflFunc() if self.init_pars["include_reflections"] else None
         if refl_func:
+            # Could either be None or a nullptr
             draw_objects.append(refl_func)
             draw_options.append("")
         sec_peak_func = self.kernel.GetSecondPeakFunc() \
                 if self.init_pars["include_sec_peak"] else None
         if sec_peak_func:
+            # Could either be None or a nullptr
             draw_objects.append(sec_peak_func)
             draw_options.append("")
 
@@ -436,14 +455,6 @@ class FitAliHF(FitROOT):
         # Leave some space for putting info
         y_max *= 1.8
 
-        # Now comes some styling
-        color_sig = kBlue - 3
-        color_bkg_refit = kRed + 2
-        color_refl = kGreen + 2
-        color_sec_peak = kMagenta + 3
-        self.histo.SetMarkerStyle(20)
-        bkg_refit_func.SetLineColor(color_bkg_refit)
-        sig_func.SetLineColor(color_sig)
 
         root_pad.SetLeftMargin(0.12)
         frame = root_pad.cd().DrawFrame(self.init_pars["fit_range_low"], 0.,
