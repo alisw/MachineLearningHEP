@@ -58,13 +58,13 @@ analysis:
   # Do only merged (false)
   doperperiod: true
   data:
-    histomass: true
+    histomass: false
     dojetsystematics: false
   mc:
-    histomass: true
-    efficiency: true
-    feeddown: true
-    dounfolding: true
+    histomass: false
+    efficiency: false
+    feeddown: false
+    dounfolding: false
   dofit: true
   # Control the yield systemaitc uncertainty
   dosyst: false
