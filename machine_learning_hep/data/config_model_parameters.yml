@@ -37,25 +37,23 @@ BinaryClassification:
       activate: False
       max_depth: 5
 
+#not default parameters
   xgboost:
     xgboost_classifier:
       activate: True
-      min_child_weight: 3
-      #max_depth: #18
-      #booster: 'gbtree' 
-      #subsample: #0.8500000000000003
-      #colsample_bytree: #0.30000000000000004
       max_depth: 3
-      gamma: 0
-      subsample: 0.8
-      colsample_bytree: 0.8
-      colsample_bynode: 1
-      random_state: 0
       learning_rate: 0.1
       n_estimators: 850
+      objective: 'binary:logistic'
+      n_jobs: 10
+      gamma: 0.
+      min_child_weight: 3
+      subsample: 0.8
+      colsample_bytree: 0.8 
+      colsample_bynode: 1
+      random_state: 0
       tree_method: 'hist'
-      objective : 'binary:logistic'
-
+      #      early_stopping_rounds: 10
 Regression:
 
   scikit:

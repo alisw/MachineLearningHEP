@@ -14,12 +14,6 @@
 
 """
 Methods to: model performance evaluation
-TODO Optimisation: In each function model is retrained by calling fit again. 
-Avoid this retraining by saving the trained model in optimiser.py and passing
-that saved model to the functions defined in this script. Of course if do_train
-is disabled, this means no trained models would be available for evaluating...so
-we could add an if condition to check for that case and handle it accordingly.
-
 """
 from io import BytesIO
 import pandas as pd
@@ -30,8 +24,6 @@ from sklearn.model_selection import cross_val_score, cross_val_predict, \
     train_test_split, StratifiedKFold
 from sklearn.metrics import roc_curve, auc, confusion_matrix, precision_recall_curve, \
     mean_squared_error
-import itertools # to be removed
-
 
 
 def cross_validation_mse(names_, classifiers_, x_train, y_train, cv_, ncores):
@@ -41,7 +33,7 @@ def cross_validation_mse(names_, classifiers_, x_train, y_train, cv_, ncores):
             ncores = 1
         kfold = StratifiedKFold(n_splits=cv_, shuffle=True, random_state=1)
         scores = cross_val_score(clf, x_train, y_train, cv=kfold,
-                                 scoring="neg_mean_squared_error", n_jobs=ncores)
+                                 scoring="neg_mean_squared_error", n_jobs=-1)
         tree_rmse_scores = np.sqrt(-scores)
         df_scores[name] = tree_rmse_scores
     return df_scores
@@ -53,7 +45,7 @@ def cross_validation_mse_continuous(names_, classifiers_, x_train, y_train, cv_,
         if "Keras" in name:
             ncores = 1
         scores = cross_val_score(clf, x_train, y_train, cv=cv_,
-                                 scoring="neg_mean_squared_error", n_jobs=ncores)
+                                 scoring="neg_mean_squared_error", n_jobs=-1)
         tree_rmse_scores = np.sqrt(-scores)
         df_scores[name] = tree_rmse_scores
     return df_scores
@@ -135,7 +127,9 @@ def confusion(names_, classifiers_, suffix_, x_train, y_train, x_test, y_test, c
         y_train_pred = cross_val_predict(clf, x_train, y_train, cv=cvgen, n_jobs=-1)
         conf_mx = confusion_matrix(y_train, y_train_pred)
         print("Confusion matrix on training data:") # to be removed
-        print(conf_mx) # to be removed        
+        print(conf_mx) # to be removed
+        print("Training data model summary:") # to be removed
+        model_summary(conf_mx) # to be removed        
         row_sums = conf_mx.sum(axis=1, keepdims=True)
         norm_conf_mx = conf_mx / row_sums
         df_cm = pd.DataFrame(norm_conf_mx, range(2), range(2))
@@ -162,6 +156,8 @@ def confusion(names_, classifiers_, suffix_, x_train, y_train, x_test, y_test, c
         conf_mx = confusion_matrix(y_test, y_test_pred)
         print("Confusion matrix on test data:") # to be removed
         print(conf_mx) # to be removed
+        print("Test data model summary:") # to be removed
+        model_summary(conf_mx) # to be removed   
         row_sums = conf_mx.sum(axis=1, keepdims=True)
         norm_conf_mx = conf_mx / row_sums
         df_cm = pd.DataFrame(norm_conf_mx, range(2), range(2))
@@ -189,7 +185,7 @@ def precision_recall(names_, classifiers_, suffix_, x_train, y_train, cvgen, fol
     i = 1
     for name, clf in zip(names_, classifiers_):
         ax = plt.subplot(2, (len(names_)+1)/2, i)
-        y_proba = cross_val_predict(clf, x_train, y_train, cv=cvgen, method="predict_proba")
+        y_proba = cross_val_predict(clf, x_train, y_train, cv=cvgen, method="predict_proba", n_jobs=-1)
         y_scores = y_proba[:, 1]
         precisions, recalls, thresholds = precision_recall_curve(y_train, y_scores)
         plt.plot(thresholds, precisions[:-1], "b--", label="Precision=TP/(TP+FP)")
@@ -206,11 +202,11 @@ def precision_recall(names_, classifiers_, suffix_, x_train, y_train, cvgen, fol
     img_precision_recall.seek(0)
 
     figure2 = plt.figure(figsize=(20, 15))  # pylint: disable=unused-variable
+    
     i = 1
     aucs = []
-
     for name, clf in zip(names_, classifiers_):
-        y_proba = cross_val_predict(clf, x_train, y_train, cv=cvgen, method="predict_proba")
+        y_proba = cross_val_predict(clf, x_train, y_train, cv=cvgen, method="predict_proba", n_jobs=-1)
         y_scores = y_proba[:, 1]
         fpr, tpr, _ = roc_curve(y_train, y_scores)
         roc_auc = auc(fpr, tpr)
@@ -313,3 +309,17 @@ def plot_overtraining(names_, classifiers_, suffix_, folder, \
         img_overtrain_array += img_overtrain
         plt.clf()
     return img_overtrain_array
+
+def model_summary(cm):
+    tp = cm[1,1]
+    fn = cm[1,0]
+    fp = cm[0,1]
+    tn = cm[0,0]
+    precision = tp / (tp + fp)
+    recall = tp / (tp + fn)
+    fallout = fp / (fp + tn)
+    f1_score = 2 * (precision * recall) / (precision + recall)
+    print('Precision =     {:.3f}'.format(precision))
+    print('Recall (TPR) =  {:.3f}'.format(recall))
+    print('Fallout (FPR) = {:.3f}'.format(fallout))
+    print('F1 Score  = {:.3f}'.format(f1_score))

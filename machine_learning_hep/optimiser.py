@@ -40,6 +40,11 @@ from machine_learning_hep.logger import get_logger
 from machine_learning_hep.optimization import calc_bkg, calc_signif
 from machine_learning_hep.correlations import vardistplot_probscan, efficiency_cutscan
 
+# to be removed
+import xgboost as xgb
+from sklearn.model_selection import StratifiedKFold, GridSearchCV
+from sklearn.metrics import confusion_matrix, roc_curve, roc_auc_score, f1_score, precision_recall_curve
+
 # pylint: disable=too-many-instance-attributes, too-many-statements, too-few-public-methods
 class Optimiser:
     #Class Attribute
@@ -281,7 +286,6 @@ class Optimiser:
         confusion(self.p_classname, self.p_class, self.s_suffix, self.df_xtrain,
                   self.df_ytrain, self.df_xtest, self.df_ytest, self.p_nkfolds, self.dirmlplot)
 
-    
 
     def do_crossval(self):
         df_scores = cross_validation_mse(self.p_classname, self.p_class,
@@ -302,7 +306,15 @@ class Optimiser:
         importanceplotall(self.v_train, self.p_classname, self.p_class,
                           self.s_suffix, self.dirmlplot)
         
-
+    def do_grid(self):
+        analysisdb = self.c_gridconfig[self.p_mltype]
+        names_cv, clf_cv, par_grid_cv, refit_cv, var_param, \
+        par_grid_cv_keys = read_grid_dict(analysisdb)
+        _, _, dfscore = do_gridsearch(names_cv, clf_cv, par_grid_cv, refit_cv, self.df_xtrain,
+            self.df_ytrain, self.p_nkfolds, self.p_ncorescross)
+        perform_plot_gridsearch(names_cv, dfscore, par_grid_cv, par_grid_cv_keys,
+            var_param, self.dirmlplot, self.s_suffix, 0.1)
+    
     def do_boundary(self):
         classifiers_scikit_2var, names_2var = getclf_scikit(self.db_model)
         classifiers_keras_2var, names_keras_2var = getclf_keras(self.db_model, 2)
@@ -474,7 +486,8 @@ class Optimiser:
         efficiency_cutscan(dfdata, self.v_cuts, "xgboost_classifier", 0.9,
                            self.dirmlplot, "data", self.p_plot_options)
 
-    
+        
+
 
 
 
