@@ -40,10 +40,6 @@ from machine_learning_hep.logger import get_logger
 from machine_learning_hep.optimization import calc_bkg, calc_signif
 from machine_learning_hep.correlations import vardistplot_probscan, efficiency_cutscan
 
-# to be removed
-import xgboost as xgb
-from sklearn.model_selection import StratifiedKFold, GridSearchCV
-from sklearn.metrics import confusion_matrix, roc_curve, roc_auc_score, f1_score, precision_recall_curve
 
 # pylint: disable=too-many-instance-attributes, too-many-statements, too-few-public-methods
 class Optimiser:
