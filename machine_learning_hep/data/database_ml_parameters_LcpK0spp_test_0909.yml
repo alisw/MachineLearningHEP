@@ -406,8 +406,8 @@ LcpK0spp:
       usefit: true
 
       # simple fitter START
-      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus] # [0,0,0,0,0]
-      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2] # [2,2,2,2,2]
+      sgnfunc: [0,0,0,0,0] # [kGaus,kGaus,kGaus,kGaus,kGaus] # [0,0,0,0,0]
+      bkgfunc: [2,2,2,2,2] # [Pol2,Pol2,Pol2,Pol2,Pol2] # [2,2,2,2,2]
       masspeak: 2.2864
       massmin: [2.14,2.14,2.14,2.14,2.14]
       massmax: [2.436,2.436,2.436,2.436,2.436]
