@@ -63,6 +63,7 @@ class AnalyzerJet(Analyzer):
         self.p_fix_mean = datap["analysis"][self.typean]["fix_mean"]
         self.p_fix_sigma = datap["analysis"][self.typean]["fix_sigma"]
 
+        self.p_sigmaarray = datap["analysis"][self.typean]["sigmaarray"]
         self.p_masspeaksec = None
         self.p_fix_sigmasec = None
         self.p_sigmaarraysec = None
@@ -224,6 +225,27 @@ class AnalyzerJet(Analyzer):
                 #print("I have made data fit, status: %d" % out)
                 fit_dir = fileout.mkdir(suffix)
                 fit_dir.WriteObject(fitter, "fitter%d" % (ipt))
+                c_fitted_result = TCanvas('c_fitted_result '+suffix, 'Fitted Result')
+                p_fitted_result = TPad('p_fitted_result'+suffix, 'p_fitted_result'+suffix,0.0,0.001,1.0,1.0)
+                bkg_func = fitter.GetBackgroundRecalcFunc()
+                sgn_func = fitter.GetMassFunc()
+                setup_pad(p_fitted_result)
+                c_fitted_result.SetCanvasSize(1900, 1500)
+                c_fitted_result.SetWindowSize(500, 500)
+                setup_histogram(histomass_reb)
+                histomass_reb.SetXTitle("mass")
+                histomass_reb.SetYTitle("counts")
+                histomass_reb.Draw("same")
+                if out == 1:
+                    bkg_func.SetLineColor(kGreen)
+                    sgn_func.SetLineColor(kRed)
+                    sgn_func.Draw("same")
+                    bkg_func.Draw("same")
+                latex = TLatex(0.2,0.85,'%.2f < #it{p}_{T, jet} < %.2f GeV/#it{c}' % (self.lvar2_binmin_reco[ibin2],self.lvar2_binmax_reco[ibin2]))
+                draw_latex(latex)
+                latex2 = TLatex(0.2,0.8,'%.2f < #it{p}_{T, Lc} < %.2f GeV/#it{c}' % (self.lpt_finbinmin[ipt],self.lpt_finbinmax[ipt]))
+                draw_latex(latex2)
+                c_fitted_result.SaveAs("%s/fitted_result_%s.eps" % (self.d_resultsallpdata, suffix))
                 #ry=fitter.GetRawYield()
                 #ery=fitter.GetRawYieldError()
                 #hyields.SetBinContent(ipt+1, ry)
@@ -750,8 +772,11 @@ class AnalyzerJet(Analyzer):
                 # Simple fitter START
                 load_dir = func_file.GetDirectory(suffix)
                 mass_fitter = load_dir.Get("fitter%d" % (ipt))
-                mean = mass_fitter.GetMean()
-                sigma = mass_fitter.GetSigma()
+                sigma = self.p_sigmaarray[ipt]
+                mean = self.p_masspeak
+                if mass_fitter:
+                    mean = mass_fitter.GetMean()
+                    sigma = mass_fitter.GetSigma()
                 bkg_fit = mass_fitter.GetBackgroundRecalcFunc()
                 # Simple fitter END
                 #print("Got fit values: mean = %g, sigma = %g" % (mean, sigma))
