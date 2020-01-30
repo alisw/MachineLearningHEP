@@ -826,6 +826,7 @@ class AnalyzerJet(Analyzer):
                     first_fit=1
                 else:
                     hz.Add(hzsub)
+                fileouts.cd()
                 hzsig.Write("hzsig" + suffix)
                 hzbkgleft.Write("hzbkgleft" + suffix)
                 hzbkgright.Write("hzbkgright" + suffix)
@@ -894,6 +895,11 @@ class AnalyzerJet(Analyzer):
                 csigbkgsubz.SaveAs("%s/side_band_%s%s_%s.eps" % \
                              (self.d_resultsallpdata, self.case, self.typean, suffix))
 
+            suffix = "_%s_%.2f_%.2f" % \
+                         (self.v_var2_binning, self.lvar2_binmin_reco[imult], self.lvar2_binmax_reco[imult])
+            if first_fit == 0:
+                self.logger.error("No successful fits for: %s" % suffix)
+                continue
             cz = TCanvas('cz' + suffix, 'The Efficiency Corrected Signal Yield Canvas'+suffix)
             pz = TPad('pz'+suffix, 'The Efficiency Corrected Signal Yield Canvas'+suffix,0.0,0.001,1.0,1.0)
             setup_pad(pz)
@@ -918,9 +924,10 @@ class AnalyzerJet(Analyzer):
                 #    hzvsjetpt.SetBinContent(zbins+1,imult+1,0.0)
                  #   hzvsjetpt.SetBinError(zbins+1,imult+1,0.0)
             hz.Scale(1.0/hz.Integral(1,-1))
+            fileouts.cd()
             hz.Write("hz" + suffix)
 
-
+        fileouts.cd()
         hzvsjetpt.Write("hzvsjetpt")
         czvsjetpt = TCanvas('czvsjetpt', '2D input to unfolding')
         pzvsjetpt = TPad('pzvsjetpt', '2D input to unfolding',0.0,0.001,1.0,1.0)
