@@ -200,7 +200,7 @@ class AnalyzerJet(Analyzer):
                 histomassmc_reb.Copy(histomassmc_reb_f)
                 #print("Histo limits: %g-%g" % (histomassmc_reb_f.GetXaxis().GetXmin(), histomassmc_reb_f.GetXaxis().GetXmax()))
                 fittermc = AliHFInvMassFitter(histomassmc_reb_f, self.p_massmin[ipt], self.p_massmax[ipt],
-                                            self.p_bkgfunc[ipt], 1)
+                                            self.p_bkgfunc[ipt], 0)
                 fittermc.SetInitialGaussianMean(self.p_masspeak)
                 #print("Before: mean %g, sigma %g, minmass %g, maxmass %g" % (fittermc.GetMean(), fittermc.GetSigma(), self.p_massmin[ipt], self.p_massmax[ipt]))
                 out = fittermc.MassFitter(1)
@@ -772,11 +772,8 @@ class AnalyzerJet(Analyzer):
                 # Simple fitter START
                 load_dir = func_file.GetDirectory(suffix)
                 mass_fitter = load_dir.Get("fitter%d" % (ipt))
-                sigma = self.p_sigmaarray[ipt]
-                mean = self.p_masspeak
-                if mass_fitter:
-                    mean = mass_fitter.GetMean()
-                    sigma = mass_fitter.GetSigma()
+                mean = mass_fitter.GetMean()
+                sigma = mass_fitter.GetSigma()
                 bkg_fit = mass_fitter.GetBackgroundRecalcFunc()
                 # Simple fitter END
                 #print("Got fit values: mean = %g, sigma = %g" % (mean, sigma))
