@@ -27,6 +27,10 @@ def xgboost_classifier(model_config): # pylint: disable=W0613
                          #early_stopping_rounds=model_config['early_stopping_rounds'],
                          subsample=model_config['subsample'],
                          colsample_bytree=model_config['colsample_bytree'],
-                         colsample_bynode=model_config['colsample_bynode'],
-                         random_state=model_config['random_state']
+                         max_delta_step=model_config['max_delta_step'],
+                         reg_alpha=model_config['reg_alpha'],
+                         reg_lambda=model_config['reg_lambda'],
+                         scale_pos_weight=model_config['scale_pos_weight']
+                         #colsample_bynode=model_config['colsample_bynode'],
+                         #random_state=model_config['random_state']
                          )

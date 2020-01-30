@@ -41,19 +41,23 @@ BinaryClassification:
   xgboost:
     xgboost_classifier:
       activate: True
-      max_depth: 3
-      learning_rate: 0.1
-      n_estimators: 850
+      max_depth: 6
+      learning_rate: 0.16622991659624908
+      n_estimators: 1000
       objective: 'binary:logistic'
-      n_jobs: 10
-      gamma: 0.
+      n_jobs: -1
+      gamma:  0.1323546213071915
       min_child_weight: 3
-      subsample: 0.8
-      colsample_bytree: 0.8 
-      colsample_bynode: 1
-      random_state: 0
+      subsample: 0.7618590745545739
+      colsample_bytree: 0.8922603334699887 
+      max_delta_step: 6
+      reg_alpha: 0.11978345402062528
+      reg_lambda: 0.7692750943600575
+      scale_pos_weight: 1
+      #colsample_bynode: 1
+      #random_state: 0
       tree_method: 'hist'
-      #      early_stopping_rounds: 10
+      #early_stopping_rounds: 10
 Regression:
 
   scikit:
