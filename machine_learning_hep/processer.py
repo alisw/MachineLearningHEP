@@ -381,6 +381,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         create_folder_struc(self.d_results, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
+        print("call process_histomass_single")
         self.parallelizer(self.process_histomass_single, arguments, self.p_chunksizeunp)
         tmp_merged = \
         f"/data/tmp/hadd/{self.case}_{self.typean}/mass_{self.period}/{get_timestamp_string()}/"

@@ -72,7 +72,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
                        run_param: dict):
 
     logger = get_logger()
-    logger.info("Do analysis chain")
+    logger.debug("Do analysis chain")
 
     # If we are here we are interested in the very first key in the parameters database
     for k in data_param.keys():
@@ -321,33 +321,43 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     #mysist = MultiSystematics(syst_class, data_param[case], case, typean, doanaperperiod)
 
     #perform the analysis flow
+    #false
     if dodownloadalice == 1:
         subprocess.call("../cplusutilities/Download.sh")
 
+    #false
     if doconversionmc == 1:
         mymultiprocessmc.multi_unpack_allperiods()
 
+    #false
     if doconversiondata == 1:
         mymultiprocessdata.multi_unpack_allperiods()
 
+    #false
     if doskimmingmc == 1:
         mymultiprocessmc.multi_skim_allperiods()
 
+    #false
     if doskimmingdata == 1:
         mymultiprocessdata.multi_skim_allperiods()
 
+    #false
     if domergingmc == 1:
         mymultiprocessmc.multi_mergeml_allperiods()
 
+    #false
     if domergingdata == 1:
         mymultiprocessdata.multi_mergeml_allperiods()
 
+    #false
     if domergingperiodsmc == 1:
         mymultiprocessmc.multi_mergeml_allinone()
 
+    #false
     if domergingperiodsdata == 1:
         mymultiprocessdata.multi_mergeml_allinone()
 
+    #false
     if dovalhistomc is True:
         mymultiprocessmc.multi_valevents()
     if dovalhistodata is True:
@@ -393,39 +403,53 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
                 myopt.do_scancuts()
             index = index + 1
 
+    #false
     if doapplydata is True:
         mymultiprocessdata.multi_apply_allperiods()
+    #false
     if doapplymc is True:
         mymultiprocessmc.multi_apply_allperiods()
+    #false
     if domergeapplydata is True:
         mymultiprocessdata.multi_mergeapply_allperiods()
+    #false
     if domergeapplymc is True:
         mymultiprocessmc.multi_mergeapply_allperiods()
+    #true
     if dohistomassmc is True:
         mymultiprocessmc.multi_histomass()
+    #true
     if dohistomassdata is True:
         mymultiprocessdata.multi_histomass()
+    #false
     if doefficiency is True:
         mymultiprocessmc.multi_efficiency()
 
     analyze_steps = []
+    #false
     if dofit is True:
         analyze_steps.append("fit")
+    #false
     if dosyst is True:
         analyze_steps.append("yield_syst")
+    #false
     if doeff is True:
         analyze_steps.append("efficiency")
+    #false
     if dojetstudies is True:
         if dofit is False:
             analyze_steps.append("fit")
         if doeff is False:
             analyze_steps.append("efficiency")
         analyze_steps.append("side_band_sub")
+    #false
     if dofeeddown is True:
         analyze_steps.append("feeddown")
+    #false
     if docross is True:
         #myan.multi_preparenorm()
         analyze_steps.append("makenormyields")
+    #false
     if doplots is True:
         analyze_steps.append("plotternormyields")
 

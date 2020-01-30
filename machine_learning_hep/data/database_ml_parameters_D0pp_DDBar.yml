@@ -17,7 +17,7 @@
 
 D0pp:
   nprongs: 2
-  doml: true 
+  doml: True 
   mass: 1.864
   sel_reco_unp: "pt_cand>1"
   sel_reco_singletrac_unp : null
@@ -33,7 +33,7 @@ D0pp:
   sel_skim_binmin: [1,2,4,6,8] #list of nbins
   sel_skim_binmax: [2,4,6,8,24] #list of nbins
   var_binning: pt_cand
-  dofullevtmerge: false
+  dofullevtmerge: True
   bitmap_sel:
     use: True
     var_name: cand_type
@@ -132,7 +132,7 @@ D0pp:
   multi:
     data:
       nperiods: 3
-      nprocessesparallel: 50
+      nprocessesparallel: 10
       maxfiles : [-1,-1,-1] #list of periods
       chunksizeunp : [100,100,100] #list of periods
       chunksizeskim: [100,100,100] #list of periods
@@ -155,7 +155,7 @@ D0pp:
       pkl_evtcounter_all: /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data_evttot
     mc:
       nperiods: 3
-      nprocessesparallel: 50
+      nprocessesparallel: 10 
       maxfiles : [-1,-1,-1] #list of periods
       chunksizeunp : [100,100,100] #list of periods
       chunksizeskim: [1000,1000,1000] #list of periods
