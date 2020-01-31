@@ -21,7 +21,8 @@ The raw yield systematic is done within analyzer.py
 # pylint: disable=unused-wildcard-import, wildcard-import
 # pylint: disable=no-name-in-module
 # pylint: disable=import-error
-import os
+from os.path import join, exists
+from os import makedirs
 import math
 from array import *
 import pickle
@@ -32,27 +33,78 @@ from ROOT import kRed, kGreen, kBlack, kBlue, kOrange, kViolet, kAzure, kYellow
 from machine_learning_hep.utilities import selectdfrunlist
 from machine_learning_hep.utilities import seldf_singlevar, openfile, make_file_path
 from machine_learning_hep.utilities_plot import load_root_style_simple, load_root_style
-from machine_learning_hep.logger import get_logger
+from machine_learning_hep.utilities import mergerootfiles, get_timestamp_string
+from machine_learning_hep.analysis.analyzer import Analyzer, AnalyzerAfterBurner
+
+class SystematicsAfterBurner(AnalyzerAfterBurner):
+    # pylint: disable=useless-super-delegation
+    def __init__(self, database, case, typean):
+        super().__init__(database, case, typean)
+
+    def ml_cutvar_mass(self):
+
+        tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/cutvar_mass/" \
+                     f"{get_timestamp_string()}/"
+        # pylint: disable=not-an-iterable
+        files_mass_cutvar = [syst.n_filemass_cutvar for syst in self.analyzers]
+
+        filename_mass = self.datap["files_names"]["histofilename"].replace(".root", "_cutvar.root")
+        merged_file = join(self.datap["analysis"][self.typean]["data"]["resultsallp"], "cutvar")
+        merged_file = join(merged_file, filename_mass)
+
+        mergerootfiles(files_mass_cutvar, merged_file, tmp_merged)
+
+
+    def ml_cutvar_eff(self):
+
+        tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/cutvar_eff/" \
+                     f"{get_timestamp_string()}/"
+        # pylint: disable=not-an-iterable
+        files_eff_cutvar = [syst.n_fileeff_cutvar for syst in self.analyzers]
+
+        filename_eff = self.datap["files_names"]["efffilename"].replace(".root", "_cutvar.root")
+        merged_file = join(self.datap["analysis"][self.typean]["data"]["resultsallp"], "cutvar")
+        merged_file = join(merged_file, filename_eff)
+
+        mergerootfiles(files_eff_cutvar, merged_file, tmp_merged)
+
+    def mcptshape(self):
+
+        tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/mcptshape_eff/" \
+                     f"{get_timestamp_string()}/"
+        # pylint: disable=not-an-iterable
+        files_eff_cutvar = [syst.n_fileeff_ptshape for syst in self.analyzers]
+
+        filename_eff = self.datap["files_names"]["efffilename"].replace(".root", "_ptshape.root")
+        merged_file = join(self.datap["analysis"][self.typean]["data"]["resultsallp"],
+                           filename_eff)
+
+        mergerootfiles(files_eff_cutvar, merged_file, tmp_merged)
+
 
 # pylint: disable=too-many-lines
 # pylint: disable=too-many-instance-attributes, too-many-statements, too-many-arguments
 # pylint: disable=too-many-branches, too-many-nested-blocks
-class Systematics:
+class Systematics(Analyzer):
     species = "systematics"
-    def __init__(self, case, datap, typean, run_param, d_pkl_decmerged_mc, \
-                 d_pkl_decmerged_data, d_results, d_val, p_period, runlisttrigger):
+    def __init__(self, datap, case, typean, period, run_param):
+        super().__init__(datap, case, typean, period)
 
-        self.logger = get_logger()
-
-        self.case = case
-        self.typean = typean
         self.run_param = run_param
-        self.d_pkl_decmerged_mc = d_pkl_decmerged_mc
-        self.d_pkl_decmerged_data = d_pkl_decmerged_data
-        self.d_results = d_results
-        self.d_val = d_val
-        self.period = p_period
-        self.runlistrigger = runlisttrigger
+        self.p_period = datap["multi"]["data"]["period"][period] if period is not None \
+                else "merged"
+        self.d_pkl_decmerged_mc = datap["mlapplication"]["mc"]["pkl_skimmed_decmerged"][period] \
+                if period is not None else ""
+        self.d_pkl_decmerged_data = \
+                datap["mlapplication"]["data"]["pkl_skimmed_decmerged"][period] \
+                if period is not None else ""
+        self.d_results = datap["analysis"][typean]["data"]["results"][period] \
+                if period is not None else datap["analysis"][typean]["data"]["resultsallp"]
+        self.d_val = datap["validation"]["data"]["dir"][period] \
+                if period is not None else datap["validation"]["data"]["dirmerged"]
+        self.runlistrigger = datap["validation"]["runlisttrigger"][self.p_period] \
+                if period is not None else None
+
 
         self.v_var_binning = datap["var_binning"]
         #Binning used when skimming/training
@@ -93,14 +145,14 @@ class Systematics:
         self.lpt_recodec_data = [self.n_reco.replace(".pkl", "%d_%d_%.2f.pkl" % \
                                 (self.lpt_anbinmin[i], self.lpt_anbinmax[i], \
                                  self.lpt_probcutpre_data[i])) for i in range(self.p_nptbins)]
-        self.lpt_recodecmerged_mc = [os.path.join(self.d_pkl_decmerged_mc, self.lpt_recodec_mc[ipt])
+        self.lpt_recodecmerged_mc = [join(self.d_pkl_decmerged_mc, self.lpt_recodec_mc[ipt])
                                      for ipt in range(self.p_nptbins)]
-        self.lpt_recodecmerged_data = [os.path.join(self.d_pkl_decmerged_data, \
+        self.lpt_recodecmerged_data = [join(self.d_pkl_decmerged_data, \
                                        self.lpt_recodec_data[ipt]) for ipt in range(self.p_nptbins)]
         self.lpt_gensk = [self.n_gen.replace(".pkl", "_%s%d_%d.pkl" % \
                           (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
                           for i in range(self.p_nptbins)]
-        self.lpt_gendecmerged = [os.path.join(self.d_pkl_decmerged_mc, self.lpt_gensk[ipt]) \
+        self.lpt_gendecmerged = [join(self.d_pkl_decmerged_mc, self.lpt_gensk[ipt]) \
                                  for ipt in range(self.p_nptbins)]
 
         #Build names for intermediate output ROOT files
@@ -110,10 +162,12 @@ class Systematics:
         self.n_fileeff_cutvar = self.n_fileeff.replace(".root", "_cutvar.root")
         self.n_fileeff_ptshape = self.n_fileeff.replace(".root", "_ptshape.root")
         #Build directories for intermediate output ROOT files
-        self.d_results_cv = self.d_results + "/cutvar"
-        self.n_filemass_cutvar = os.path.join(self.d_results_cv, self.n_filemass_cutvar)
-        self.n_fileeff_cutvar = os.path.join(self.d_results_cv, self.n_fileeff_cutvar)
-        self.n_fileeff_ptshape = os.path.join(self.d_results, self.n_fileeff_ptshape)
+        self.d_results_cv = join(self.d_results, "cutvar")
+        if not exists(self.d_results_cv):
+            makedirs(self.d_results_cv)
+        self.n_filemass_cutvar = join(self.d_results_cv, self.n_filemass_cutvar)
+        self.n_fileeff_cutvar = join(self.d_results_cv, self.n_fileeff_cutvar)
+        self.n_fileeff_ptshape = join(self.d_results, self.n_fileeff_ptshape)
         #Final file names for analyzer.py
         self.yields_filename_std = "yields"
         self.efficiency_filename_std = "efficiencies"
@@ -126,7 +180,7 @@ class Systematics:
         self.ptspectra_filename = "ptspectra_for_weights"
 
         #Variables for cross section/corrected yield calculation (NB: not all corr are applied)
-        self.f_evtnorm = os.path.join(self.d_results, "correctionsweights.root")
+        self.f_evtnorm = join(self.d_results, "correctionsweights.root")
         self.p_indexhpt = datap["analysis"]["indexhptspectrum"]
         self.p_fd_method = datap["analysis"]["fd_method"]
         self.p_cctype = datap["analysis"]["cctype"]
@@ -197,14 +251,40 @@ class Systematics:
         if not isinstance(self.p_includesecpeaks[0], list):
             self.p_includesecpeaks = [self.p_includesecpeaks for _ in range(len(self.lvar2_binmin))]
 
+        self.min_cv_cut = None
+        self.max_cv_cut = None
+
+        # Flag whether some internals methods have been executed
+        self.done_mass = False
+        self.done_eff = False
+        self.done_fit = False
+
+    def get_after_burner(self):
+        return SystematicsAfterBurner(self.datap, self.case, self.typean)
+
+
     def define_cutvariation_limits(self):
         """
         Cut Variation: Defines the probability cuts based on a max percentage variation (set in DB)
         Produces N (set in DB) tighter and N looser probability cuts
         """
-        min_cv_cut = []
+
+        # Check if that has been run already
+        if self.min_cv_cut:
+            return
+
+        # Also all periods merged need to define ML cut limits
+        if self.period is None:
+            self.min_cv_cut = [0.] * self.p_nptfinbins
+            self.max_cv_cut = [1.] * self.p_nptfinbins
+            return
+
+        self.logger.info("Defining systematic cut variations for period: %s", \
+                         self.p_period)
+
+        self.min_cv_cut = []
+        self.max_cv_cut = []
         cent_cv_cut = []
-        max_cv_cut = []
         ncutvar_temp = self.p_ncutvar * 2
         for ipt in range(self.p_nptfinbins):
 
@@ -240,12 +320,12 @@ class Systematics:
 
             stepsmin = \
               (self.lpt_probcutfin[bin_id] - self.p_cutvar_minrange[bin_id]) / ncutvar_temp
-            min_cv_cut.append(self.lpt_probcutfin[bin_id])
+            self.min_cv_cut.append(self.lpt_probcutfin[bin_id])
             cent_cv_cut.append(self.lpt_probcutfin[bin_id])
             df_reco_cvmin_pr = df_reco_presel_pr
             for icv in range(ncutvar_temp):
-                min_cv_cut[ipt] = self.p_cutvar_minrange[bin_id] + icv * stepsmin
-                selml_min = "y_test_prob%s>%s" % (self.p_modelname, min_cv_cut[ipt])
+                self.min_cv_cut[ipt] = self.p_cutvar_minrange[bin_id] + icv * stepsmin
+                selml_min = "y_test_prob%s>%s" % (self.p_modelname, self.min_cv_cut[ipt])
                 df_reco_cvmin_pr = df_reco_cvmin_pr.query(selml_min)
                 eff_min = len(df_reco_cvmin_pr)/len_gen_pr
                 if eff_cent == 0:
@@ -257,11 +337,11 @@ class Systematics:
 
             stepsmax = \
               (self.p_cutvar_maxrange[bin_id] - self.lpt_probcutfin[bin_id]) / ncutvar_temp
-            max_cv_cut.append(self.lpt_probcutfin[bin_id])
+            self.max_cv_cut.append(self.lpt_probcutfin[bin_id])
             df_reco_cvmax_pr = df_reco_sel_pr
             for icv in range(ncutvar_temp):
-                max_cv_cut[ipt] = self.lpt_probcutfin[bin_id] + icv * stepsmax
-                selml_max = "y_test_prob%s>%s" % (self.p_modelname, max_cv_cut[ipt])
+                self.max_cv_cut[ipt] = self.lpt_probcutfin[bin_id] + icv * stepsmax
+                selml_max = "y_test_prob%s>%s" % (self.p_modelname, self.max_cv_cut[ipt])
                 df_reco_cvmax_pr = df_reco_cvmax_pr.query(selml_max)
                 eff_max = len(df_reco_cvmax_pr)/len_gen_pr
                 if eff_cent == 0:
@@ -272,29 +352,36 @@ class Systematics:
             eff_max = len(df_reco_cvmax_pr)/len_gen_pr
 
         print("Limits for cut variation defined, based on eff %-var of: ", self.p_maxperccutvar)
-        print("--Cut variation minimum: ", min_cv_cut)
+        print("--Cut variation minimum: ", self.min_cv_cut)
         print("--Central probability cut: ", cent_cv_cut)
-        print("--Cut variation maximum: ", max_cv_cut)
+        print("--Cut variation maximum: ", self.max_cv_cut)
 
-        return min_cv_cut, max_cv_cut
 
-    def cutvariation_masshistos(self, min_cv_cut, max_cv_cut):
+    def ml_cutvar_mass(self):
         """
         Cut Variation: Create ROOT file with mass histograms
         Histogram for each variation, for each pT bin, for each 2nd binning bin
 
         Similar as process_histomass_single(self, index) in processor.py
         """
+
+        # Do this only for a single period
+        if self.period is None:
+            return
+
+        # Define limits first
+        self.define_cutvariation_limits()
+
         myfile = TFile.Open(self.n_filemass_cutvar, "recreate")
 
         print("Using run selection for mass histo", self.runlistrigger[self.triggerbit], \
-              "for period", self.period)
+              "for period", self.p_period)
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.lpt_recodecmerged_data[bin_id], "rb"))
 
-            stepsmin = (self.lpt_probcutfin[bin_id] - min_cv_cut[ipt]) / self.p_ncutvar
-            stepsmax = (max_cv_cut[ipt] - self.lpt_probcutfin[bin_id]) / self.p_ncutvar
+            stepsmin = (self.lpt_probcutfin[bin_id] - self.min_cv_cut[ipt]) / self.p_ncutvar
+            stepsmax = (self.max_cv_cut[ipt] - self.lpt_probcutfin[bin_id]) / self.p_ncutvar
             ntrials = 2 * self.p_ncutvar + 1
             icvmax = 1
 
@@ -310,7 +397,7 @@ class Systematics:
             arr_selml_cv = []
             for icv in range(ntrials):
                 if icv < self.p_ncutvar:
-                    selml_cvval = min_cv_cut[ipt] + icv * stepsmin
+                    selml_cvval = self.min_cv_cut[ipt] + icv * stepsmin
                 elif icv == self.p_ncutvar:
                     selml_cvval = self.lpt_probcutfin[bin_id]
                 else:
@@ -353,13 +440,24 @@ class Systematics:
             print(" Selection variations for [", self.lpt_finbinmin[ipt], "-", \
                   self.lpt_finbinmax[ipt], "]:  \n   ", arr_selml_cv)
 
-    def cutvariation_efficiencies(self, min_cv_cut, max_cv_cut):
+        self.done_mass = True
+
+
+    def ml_cutvar_eff(self):
         """
         Cut Variation: Create ROOT file with efficiencies
         Histogram for each variation, for each 2nd binning bin
 
         Similar as process_efficiency_single(self, index) in processor.py
         """
+
+        # Do this only for a single period
+        if self.period is None:
+            return
+
+        # Define limits first
+        self.define_cutvariation_limits()
+
         myfile = TFile.Open(self.n_fileeff_cutvar, "recreate")
 
         h_gen_pr = []
@@ -368,7 +466,7 @@ class Systematics:
         h_sel_fd = []
 
         print("Using run selection for eff histo", self.runlistrigger[self.triggerbit], \
-              "for period", self.period)
+              "for period", self.p_period)
         idx = 0
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
@@ -390,8 +488,8 @@ class Systematics:
             df_gen = seldf_singlevar(df_gen, self.v_var_binning, self.lpt_finbinmin[ipt], \
                                      self.lpt_finbinmax[ipt])
 
-            stepsmin = (self.lpt_probcutfin[bin_id] - min_cv_cut[ipt]) / self.p_ncutvar
-            stepsmax = (max_cv_cut[ipt] - self.lpt_probcutfin[bin_id]) / self.p_ncutvar
+            stepsmin = (self.lpt_probcutfin[bin_id] - self.min_cv_cut[ipt]) / self.p_ncutvar
+            stepsmax = (self.max_cv_cut[ipt] - self.lpt_probcutfin[bin_id]) / self.p_ncutvar
             ntrials = 2 * self.p_ncutvar + 1
             icvmax = 1
 
@@ -399,7 +497,7 @@ class Systematics:
             idx = 0
             for icv in range(ntrials):
                 if icv < self.p_ncutvar:
-                    selml_cvval = min_cv_cut[ipt] + icv * stepsmin
+                    selml_cvval = self.min_cv_cut[ipt] + icv * stepsmin
                 elif icv == self.p_ncutvar:
                     selml_cvval = self.lpt_probcutfin[bin_id]
                 else:
@@ -465,14 +563,20 @@ class Systematics:
             h_gen_fd[i].Write()
             h_sel_fd[i].Write()
 
+        self.done_eff = True
+
+
     # pylint: disable=import-outside-toplevel
-    def cutvariation_fitter(self, min_cv_cut, max_cv_cut):
+    def ml_cutvar_fit(self):
         """
         Cut Variation: Fit invariant mass histograms with AliHFInvMassFitter
         If requested, sigma+mean can be fixed to central fit
 
         Similar as fitter(self) in analyzer.py
         """
+
+        # Define limits first
+        self.define_cutvariation_limits()
 
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
@@ -488,6 +592,7 @@ class Systematics:
 
         mass_fitter = []
         ifit = 0
+
         for icv in range(ntrials):
 
             fileout_name = make_file_path(self.d_results_cv, self.yields_filename, "root", \
@@ -512,6 +617,7 @@ class Systematics:
 
             canvas_data = [TCanvas("canvas_cutvar%d_%d" % (icv, imult), "Data", 1000, canvy) \
                            for imult in range(len(self.lvar2_binmin))]
+
             for imult in range(len(self.lvar2_binmin)):
                 canvas_data[imult].Divide(nx, ny)
 
@@ -528,13 +634,13 @@ class Systematics:
                               self.v_var2_binning, self.lvar2_binmin[imult],
                               self.lvar2_binmax[imult])
 
-                    stepsmin = (self.lpt_probcutfin[bin_id] - min_cv_cut[ipt]) / self.p_ncutvar
-                    stepsmax = (max_cv_cut[ipt] - self.lpt_probcutfin[bin_id]) / self.p_ncutvar
+                    stepsmin = (self.lpt_probcutfin[bin_id] - self.min_cv_cut[ipt]) / self.p_ncutvar
+                    stepsmax = (self.max_cv_cut[ipt] - self.lpt_probcutfin[bin_id]) / self.p_ncutvar
                     ntrials = 2 * self.p_ncutvar + 1
 
                     selml_cvval = 0
                     if icv < self.p_ncutvar:
-                        selml_cvval = min_cv_cut[ipt] + icv * stepsmin
+                        selml_cvval = self.min_cv_cut[ipt] + icv * stepsmin
                     elif icv == self.p_ncutvar:
                         selml_cvval = self.lpt_probcutfin[bin_id]
                     else:
@@ -624,7 +730,12 @@ class Systematics:
         # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
 
-    def cutvariation_efficiency(self):
+        # Conclude fitting with efficiencies
+        self.ml_cutvar_efficiency_after_fit()
+
+        self.done_fit = True
+
+    def ml_cutvar_efficiency_after_fit(self):
         """
         Cut Variation: Extract prompt and feeddown efficiencies
 
@@ -673,7 +784,6 @@ class Systematics:
         gROOT.SetBatch(True)
         load_root_style_simple()
         gROOT.LoadMacro("HFPtSpectrum.C")
-        gROOT.LoadMacro("HFPtSpectrum2.C")
         from ROOT import HFPtSpectrum, HFPtSpectrum2
 
         ntrials = 2 * self.p_ncutvar + 1
@@ -743,11 +853,16 @@ class Systematics:
                 f_fileoutcrossmult.Close()
             fileoutcrosstot.Close()
 
-    def cutvariation_makeplots(self, plotname, min_cv_cut, max_cv_cut):
+
+    def ml_cutvar_makeplots(self, plotname):
         """
         Cut Variation: Make final plots.
         For the moment, value should be assigned by analyser
         """
+
+        local_min_cv_cut, local_max_cv_cut = (self.min_cv_cut, self.max_cv_cut) \
+                if self.done_mass or self.done_eff or self.done_fit else (None, None)
+
         load_root_style()
 
         leg = TLegend(.15, .65, .85, .85)
@@ -861,21 +976,23 @@ class Systematics:
                 canv[imult].SaveAs("%s/Cutvar_CorrYieldvsSet_mult%d.eps" % (self.d_results_cv, \
                                                                             imult))
 
-            if min_cv_cut is not None and max_cv_cut is not None:
+            if local_min_cv_cut is not None and local_max_cv_cut is not None:
 
                 probcuts = [None for ipt in range(self.p_nptfinbins)]
                 probarr = [None for icv in range(2 + 2 * ntrials)]
                 for ipt in range(self.p_nptfinbins):
                     bin_id = self.bin_matching[ipt]
-                    stepsmin = (self.lpt_probcutfin[bin_id] - min_cv_cut[ipt]) / self.p_ncutvar
-                    stepsmax = (max_cv_cut[ipt] - self.lpt_probcutfin[bin_id]) / self.p_ncutvar
+                    stepsmin = (self.lpt_probcutfin[bin_id] - local_min_cv_cut[ipt]) / \
+                            self.p_ncutvar
+                    stepsmax = (local_max_cv_cut[ipt] - self.lpt_probcutfin[bin_id]) / \
+                            self.p_ncutvar
 
                     probarr[0] = 0
                     icvmax = 1
                     for icv in range(ntrials):
                         if icv < self.p_ncutvar:
-                            probarr[2 * icv + 1] = min_cv_cut[ipt] + (icv - 0.1) * stepsmin
-                            probarr[2 * icv + 2] = min_cv_cut[ipt] + (icv + 0.1) * stepsmin
+                            probarr[2 * icv + 1] = local_min_cv_cut[ipt] + (icv - 0.1) * stepsmin
+                            probarr[2 * icv + 2] = local_min_cv_cut[ipt] + (icv + 0.1) * stepsmin
                         elif icv == self.p_ncutvar:
                             probarr[2 * icv + 1] = self.lpt_probcutfin[bin_id] - 0.1 * stepsmax
                             probarr[2 * icv + 2] = self.lpt_probcutfin[bin_id] + 0.1 * stepsmax
@@ -910,13 +1027,13 @@ class Systematics:
 
                         for ipt in range(self.p_nptfinbins):
                             bin_id = self.bin_matching[ipt]
-                            stepsmin = (self.lpt_probcutfin[bin_id] - min_cv_cut[ipt]) / \
+                            stepsmin = (self.lpt_probcutfin[bin_id] - local_min_cv_cut[ipt]) / \
                                        self.p_ncutvar
-                            stepsmax = (max_cv_cut[ipt] - self.lpt_probcutfin[bin_id]) / \
+                            stepsmax = (local_max_cv_cut[ipt] - self.lpt_probcutfin[bin_id]) / \
                                        self.p_ncutvar
                             selml_cvval = 0
                             if icv < self.p_ncutvar:
-                                selml_cvval = min_cv_cut[ipt] + icv * stepsmin
+                                selml_cvval = local_min_cv_cut[ipt] + icv * stepsmin
                             elif icv == self.p_ncutvar:
                                 selml_cvval = self.lpt_probcutfin[bin_id]
                             else:
@@ -938,12 +1055,23 @@ class Systematics:
                     canv2[imult].SaveAs("%s/Cutvar_CorrYieldvsProb_mult%d.eps" % \
                                         (self.d_results_cv, imult))
 
+
+    def ml_cutvar_cross(self):
+
+        # Make normalized yields first
+        self.cutvariation_makenormyields()
+        # Then plot for each of these
+        for name in ["histoSigmaCorr", "hDirectEffpt", "hFeedDownEffpt", "hRECpt"]:
+            self.ml_cutvar_makeplots(name)
+
+
     def load_central_meansigma(self, imult):
         """
         Cut Variation: Get parameters (mean and sigma) from central fit
         """
         func_filename_std = make_file_path(self.d_results, self.yields_filename_std, \
                                            "root", None, [self.case, self.typean])
+
         massfile_std = TFile.Open(func_filename_std, "READ")
         means_histo = massfile_std.Get("hmeanss%d" % (imult))
         sigmas_histo = massfile_std.Get("hsigmas%d" % (imult))
@@ -957,6 +1085,7 @@ class Systematics:
 
         massfile_std.Close()
         return mean_for_data, sigma_for_data
+
 
     def mcptshape_get_generated(self):
         """
@@ -999,6 +1128,7 @@ class Systematics:
             h_gen_fd.Write()
         myfile.Close()
 
+
     def mcptshape_build_efficiencies(self):
         """
         MC pT-shape: Create ROOT file with unweighted and weighted efficiencies
@@ -1009,7 +1139,7 @@ class Systematics:
         myfile = TFile.Open(self.n_fileeff_ptshape, "recreate")
 
         print("Using run selection for eff histo", self.runlistrigger[self.triggerbit], \
-              "for period", self.period)
+              "for period", self.p_period)
         for ibin2 in range(len(self.lvar2_binmin)):
             stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen, \
                                         self.lvar2_binmin[ibin2], \
@@ -1317,6 +1447,19 @@ class Systematics:
             leg.Draw()
             canv.SaveAs("%s/MCpTshape_Syst_mult%d.eps" % (self.d_results, imult))
         f_fileout.Close()
+
+
+    def mcptshape(self):
+
+        # Do only per period
+        if self.period is not None:
+            self.mcptshape_get_generated()
+            self.mcptshape_build_efficiencies()
+
+        # Do for all
+        self.mcptshape_efficiency()
+        self.mcptshape_makeplots()
+
 
     def get_reweighted_count(self, arraypt):
         """

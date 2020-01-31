@@ -337,13 +337,14 @@ LcpK0spp:
     dir_general_plots: /data/DerivedResults/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/analysis_plots
 
     MBvspt_ntrkl:
+      proc_type: Dhadrons_mult 
       useperiod: [1,1,1]
       normalizecross: false
       plotbin: [1,1,1,1,0]
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
-      corrEffMult: true
+      corrEffMult: [false, true, true, true, true]
       sel_binmin2:  [0,1,10,30] #list of var2 splittng nbins
       sel_binmax2: [9999,10,30,60] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
@@ -375,7 +376,7 @@ LcpK0spp:
       usefit: true
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
-      init_fits_from: mc # data # data or mc
+      init_fits_from: [mc, mc, mc, mc, mc, mc] # data # data or mc
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.2864
@@ -396,7 +397,7 @@ LcpK0spp:
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
-      SetInitialGaussianSigma: true
+      SetInitialGaussianSigma: [true, false, false, false, false, false]
       # Max percentage deviation in sigma (from init) to be considered as a good fit
       MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit

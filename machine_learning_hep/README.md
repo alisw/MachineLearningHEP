@@ -1,9 +1,8 @@
-# Processing
+# Instructions
 
-## batch submission
+To run the package: Set your preferences in `submission/default_complete.yml` and run:
+```
+python do_entire_analysis.py -r submission/default_complete.yml -d data/database_ml_parameters_[CASE].yml
+```
 
-```
-sbatch run.sh pre D0pp
-sbatch run.sh train D0pp
-sbatch run.sh apply D0pp
-```
+..Instructions to be completed..

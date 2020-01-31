@@ -35,7 +35,7 @@ def plot_hfptspectrum_ml_over_std(case_ml, ana_type_ml, period_number, filepath_
                                   scale_std=None, map_std_bins=None, mult_bin=None,
                                   ml_histo_names=None, std_histo_names=None, suffix=""):
 
-    with open("data/database_ml_parameters_%s.yml" % case_ml, 'r') as param_config:
+    with open("../data/database_ml_parameters_%s.yml" % case_ml, 'r') as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
     if period_number < 0:
         filepath_ml = data_param[case_ml]["analysis"][ana_type_ml]["data"]["resultsallp"]
@@ -115,6 +115,149 @@ def plot_hfptspectrum_ml_over_std(case_ml, ana_type_ml, period_number, filepath_
                         "#it{p}_{T} (GeV/#it{c}", f"{name} / {case_std}", "",
                         save_path)
 
+# pylint: disable=too-many-locals, too-many-branches, too-many-statements, too-many-arguments
+def compare_ml_std_ratio(case_ml_1, case_ml_2, ana_type_ml, period_number, filepath_std_1,
+                         filepath_std_2, scale_std_1=None, scale_std_2=None, map_std_bins=None,
+                         mult_bin=None, ml_histo_names=None, std_histo_names_1=None,
+                         std_histo_names_2=None, suffix=""):
+
+    with open("../data/database_ml_parameters_%s.yml" % case_ml_1, 'r') as param_config:
+        data_param_1 = yaml.load(param_config, Loader=yaml.FullLoader)
+    with open("../data/database_ml_parameters_%s.yml" % case_ml_2, 'r') as param_config:
+        data_param_2 = yaml.load(param_config, Loader=yaml.FullLoader)
+    if period_number < 0:
+        filepath_ml_1 = data_param_1[case_ml_1]["analysis"][ana_type_ml]["data"]["resultsallp"]
+        filepath_ml_2 = data_param_2[case_ml_2]["analysis"][ana_type_ml]["data"]["resultsallp"]
+    else:
+        filepath_ml_1 = \
+                data_param_1[case_ml_1]["analysis"][ana_type_ml]["data"]["results"][period_number]
+        filepath_ml_2 = \
+                data_param_2[case_ml_2]["analysis"][ana_type_ml]["data"]["results"][period_number]
+
+    name_1 = data_param_1[case_ml_1]["analysis"][ana_type_ml]["latexnamemeson"]
+    name_2 = data_param_2[case_ml_2]["analysis"][ana_type_ml]["latexnamemeson"]
+    # Get pt spectrum files
+    if mult_bin is None:
+        mult_bin = 0
+    path_ml_1 = f"{filepath_ml_1}/finalcross{case_ml_1}{ana_type_ml}mult{mult_bin}.root"
+    path_ml_2 = f"{filepath_ml_2}/finalcross{case_ml_2}{ana_type_ml}mult{mult_bin}.root"
+    if not os.path.exists(path_ml_1):
+        FILES_NOT_FOUND.append(path_ml_1)
+        return
+    if not os.path.exists(path_ml_2):
+        FILES_NOT_FOUND.append(path_ml_2)
+        return
+
+    file_ml_1 = TFile.Open(path_ml_1, "READ")
+    file_ml_2 = TFile.Open(path_ml_2, "READ")
+    file_std_1 = TFile.Open(filepath_std_1, "READ")
+    file_std_2 = TFile.Open(filepath_std_2, "READ")
+
+    # Collect histo names to quickly loop later
+    histo_names = ["hDirectMCpt", "hFeedDownMCpt", "hDirectMCptMax", "hDirectMCptMin",
+                   "hFeedDownMCptMax", "hFeedDownMCptMin", "hDirectEffpt", "hFeedDownEffpt",
+                   "hRECpt", "histoYieldCorr", "histoYieldCorrMax", "histoYieldCorrMin",
+                   "histoSigmaCorr", "histoSigmaCorrMax", "histoSigmaCorrMin"]
+
+    if ml_histo_names is None:
+        ml_histo_names = histo_names
+    if std_histo_names_1 is None:
+        std_histo_names_1 = histo_names
+    if std_histo_names_2 is None:
+        std_histo_names_2 = histo_names
+
+    for hn_ml, hn_std_1, hn_std_2 in zip(ml_histo_names, std_histo_names_1, std_histo_names_2):
+        histo_ml_1 = file_ml_1.Get(hn_ml)
+        histo_ml_2 = file_ml_2.Get(hn_ml)
+        histo_std_tmp_1 = file_std_1.Get(hn_std_1)
+        histo_std_tmp_2 = file_std_2.Get(hn_std_2)
+        histo_std_1 = None
+        histo_std_2 = None
+
+        if not histo_ml_1:
+            print(f"Could not find histogram {hn_ml}, continue...")
+            continue
+        if not histo_ml_2:
+            print(f"Could not find histogram {hn_ml}, continue...")
+            continue
+        if not histo_std_tmp_1:
+            print(f"Could not find histogram {hn_std_1}, continue...")
+            continue
+        if not histo_std_tmp_2:
+            print(f"Could not find histogram {hn_std_2}, continue...")
+            continue
+
+        if "MC" not in hn_ml and map_std_bins is not None:
+            histo_std_1 = histo_ml_1.Clone("std_rebin_1")
+            histo_std_1.Reset("ICESM")
+            histo_std_2 = histo_ml_2.Clone("std_rebin_2")
+            histo_std_2.Reset("ICESM")
+
+            contents = [0] * histo_ml_1.GetNbinsX()
+            errors = [0] * histo_ml_1.GetNbinsX()
+
+            for ml_bin, std_bins in map_std_bins:
+                for b in std_bins:
+                    contents[ml_bin-1] += histo_std_tmp_1.GetBinContent(b) / len(std_bins)
+                    errors[ml_bin-1] += \
+                            histo_std_tmp_1.GetBinError(b) * histo_std_tmp_1.GetBinError(b)
+
+            for b in range(histo_std_1.GetNbinsX()):
+                histo_std_1.SetBinContent(b+1, contents[b])
+                histo_std_1.SetBinError(b+1, sqrt(errors[b]))
+
+            contents = [0] * histo_ml_2.GetNbinsX()
+            errors = [0] * histo_ml_2.GetNbinsX()
+
+            for ml_bin, std_bins in map_std_bins:
+                for b in std_bins:
+                    contents[ml_bin-1] += histo_std_tmp_2.GetBinContent(b) / len(std_bins)
+                    errors[ml_bin-1] += \
+                            histo_std_tmp_2.GetBinError(b) * histo_std_tmp_2.GetBinError(b)
+
+            for b in range(histo_std_2.GetNbinsX()):
+                histo_std_2.SetBinContent(b+1, contents[b])
+                histo_std_2.SetBinError(b+1, sqrt(errors[b]))
+
+        else:
+            histo_std_1 = histo_std_tmp_1.Clone("std_cloned_1")
+            histo_std_2 = histo_std_tmp_2.Clone("std_cloned_2")
+
+        if scale_std_1 is not None:
+            histo_std_1.Scale(scale_std_1)
+        if scale_std_2 is not None:
+            histo_std_2.Scale(scale_std_2)
+
+        histo_ratio_ml = histo_ml_1.Clone("{histo_ml_1.GetName()}_ratio")
+        histo_ratio_ml.Divide(histo_ml_2)
+        histo_ratio_std = histo_std_1.Clone("{histo_std_1.GetName()}_ratio")
+        histo_ratio_std.Divide(histo_std_2)
+
+        folder_plots = data_param_1[case_ml_1]["analysis"]["dir_general_plots"]
+        if not os.path.exists(folder_plots):
+            print("creating folder ", folder_plots)
+            os.makedirs(folder_plots)
+
+        save_path = f"{folder_plots}/ratio_{case_ml_1}_{case_ml_2}_{hn_ml}_ml_std_mult_" \
+                    f"{mult_bin}_period_{period_number}{suffix}.eps"
+
+        plot_histograms([histo_ratio_std, histo_ratio_ml], True, True, ["STD", "ML"], "Ratio",
+                        "#it{p}_{T} (GeV/#it{c}", f"{name_1} / {name_2}", "ML / STD",
+                        save_path)
+
+        folder_plots = data_param_2[case_ml_2]["analysis"]["dir_general_plots"]
+        if not os.path.exists(folder_plots):
+            print("creating folder ", folder_plots)
+            os.makedirs(folder_plots)
+
+        save_path = f"{folder_plots}/ratio_{case_ml_1}_{case_ml_2}_{hn_ml}_ml_std_mult_" \
+                    f"{mult_bin}_period_{period_number}{suffix}.eps"
+
+        plot_histograms([histo_ratio_std, histo_ratio_ml], True, True, ["STD", "ML"], "Ratio",
+                        "#it{p}_{T} (GeV/#it{c}", f"{name_1} / {name_2}", "ML / STD",
+                        save_path)
+
+
 # pylint: disable=import-error, no-name-in-module, unused-import
 # pylint: disable=too-many-statements
 # pylint: disable=too-many-branches
@@ -123,7 +266,7 @@ def plot_hfptspectrum_comb(case, arraytype):
 
     load_root_style()
 
-    with open("data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
+    with open("../data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
         data_param = yaml.load(param_config, Loader=yaml.FullLoader)
 
     folder_plots = data_param[case]["analysis"]["dir_general_plots"]
@@ -463,10 +606,10 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype):
 
     load_root_style()
 
-    with open("data/database_ml_parameters_%s.yml" % case_num, 'r') as param_config_num:
+    with open("../data/database_ml_parameters_%s.yml" % case_num, 'r') as param_config_num:
         data_param_num = yaml.load(param_config_num, Loader=yaml.FullLoader)
 
-    with open("data/database_ml_parameters_%s.yml" % case_den, 'r') as param_config_den:
+    with open("../data/database_ml_parameters_%s.yml" % case_den, 'r') as param_config_den:
         data_param_den = yaml.load(param_config_den, Loader=yaml.FullLoader)
 
     folder_plots_num = data_param_num[case_num]["analysis"]["dir_general_plots"]
@@ -599,6 +742,8 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype):
     copyfile(rootfilename, rootfilenameden)
     print("---Output stored in:", rootfilename, "and", rootfilenameden, "---")
 
+#####################################
+
 gROOT.SetBatch(True)
 
 #EXAMPLE HOW TO USE plot_hfptspectrum_comb
@@ -620,3 +765,15 @@ gROOT.SetBatch(True)
 #                              [(1, [1]), (2, [2, 3]), (3, [4, 5]), (4, [6]), (5, [7]), (6, [8])],
 #                              0, ["histoSigmaCorr"], ["histoSigmaCorr"],
 #                              "_prelim_5tev")
+
+#EXAMPLES HOW TO USE compare_ml_std_ratio
+#  ---> Not sure what this does, to be checked
+#compare_ml_std_ratio("Dspp", "D0pp", "MBvspt_ntrkl", -1,
+#                     "data/std_results/HFPtSpectrum_Ds_merged_20191010.root",
+#                     "data/std_results/HFPtSpectrum_D0_merged_20191010.root", None, None, None,
+#                     0, ["histoSigmaCorr"], ["hCrossSectionStatisticError"], ["histoSigmaCorr"])
+
+if FILES_NOT_FOUND:
+    print("FILES NOT FOUND:")
+    for f in FILES_NOT_FOUND:
+        print(f)

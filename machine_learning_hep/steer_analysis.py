@@ -24,6 +24,10 @@ from os.path import exists
 import yaml
 from pkg_resources import resource_stream
 from machine_learning_hep.multiprocesser import MultiProcesser
+from machine_learning_hep.processer import Processer
+from machine_learning_hep.processerdhadrons import ProcesserDhadrons
+from machine_learning_hep.processerdhadrons_mult import ProcesserDhadrons_mult
+from machine_learning_hep.processerdhadrons_jet import ProcesserDhadrons_jet
 #from machine_learning_hep.doskimming import conversion, merging, merging_period, skim
 #from machine_learning_hep.doclassification_regression import doclassification_regression
 #from machine_learning_hep.doanalysis import doanalysis
@@ -33,8 +37,16 @@ from  machine_learning_hep.utilities import checkmakedirlist, checkmakedir
 from  machine_learning_hep.utilities import checkdirlist, checkdir
 from  machine_learning_hep.logger import configure_logger, get_logger
 from machine_learning_hep.optimiser import Optimiser
-from machine_learning_hep.multianalyzer import MultiAnalyzer
-from machine_learning_hep.multisystematics import MultiSystematics
+
+from machine_learning_hep.analysis.analyzer_manager import AnalyzerManager
+from machine_learning_hep.analysis.analyzer import Analyzer
+from machine_learning_hep.analysis.analyzer_Dhadrons import AnalyzerDhadrons
+from machine_learning_hep.analysis.analyzer_Dhadrons_mult import AnalyzerDhadrons_mult
+from machine_learning_hep.analysis.analyzer_jet import AnalyzerJet
+
+from machine_learning_hep.analysis.systematics import Systematics
+
+from machine_learning_hep.analysis.utils import multi_preparenorm
 
 try:
 # FIXME(https://github.com/abseil/abseil-py/issues/99) # pylint: disable=fixme
@@ -104,16 +116,18 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     dohistomassdata = data_config["analysis"]["data"]["histomass"]
     doefficiency = data_config["analysis"]["mc"]["efficiency"]
     dofeeddown = data_config["analysis"]["mc"]["feeddown"]
+    dounfolding = data_config["analysis"]["mc"]["dounfolding"]
+    dojetsystematics = data_config["analysis"]["data"]["dojetsystematics"]
     dofit = data_config["analysis"]["dofit"]
     doeff = data_config["analysis"]["doeff"]
     docross = data_config["analysis"]["docross"]
     doplots = data_config["analysis"]["doplots"]
     dosyst = data_config["analysis"]["dosyst"]
     dosystprob = data_config["systematics"]["cutvar"]["activate"]
-    dosystprobmass = data_config["systematics"]["cutvar"]["probvariationmass"]
-    dosystprobeff = data_config["systematics"]["cutvar"]["probvariationeff"]
-    dosystprobfit = data_config["systematics"]["cutvar"]["probvariationfit"]
-    dosystprobcross = data_config["systematics"]["cutvar"]["probvariationcross"]
+    do_syst_prob_mass = data_config["systematics"]["cutvar"]["probvariationmass"]
+    do_syst_prob_eff = data_config["systematics"]["cutvar"]["probvariationeff"]
+    do_syst_prob_fit = data_config["systematics"]["cutvar"]["probvariationfit"]
+    do_syst_prob_cross = data_config["systematics"]["cutvar"]["probvariationcross"]
     dosystptshape = data_config["systematics"]["mcptshape"]["activate"]
     doanaperperiod = data_config["analysis"]["doperperiod"]
 
@@ -158,7 +172,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     mlout = data_param[case]["ml"]["mlout"]
     mlplot = data_param[case]["ml"]["mlplot"]
 
-    normalizecross = data_param[case]["analysis"][typean]["normalizecross"]
+    proc_type = data_param[case]["analysis"][typean]["proc_type"]
 
     #creating folder if not present
     counter = 0
@@ -286,10 +300,28 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         checkmakedirlist(dirvaldata)
         checkmakedir(dirvaldatamerged)
 
-    mymultiprocessmc = MultiProcesser(case, data_param[case], typean, run_param, "mc")
-    mymultiprocessdata = MultiProcesser(case, data_param[case], typean, run_param, "data")
-    myan = MultiAnalyzer(data_param[case], case, typean, doanaperperiod)
-    mysis = MultiSystematics(case, data_param[case], typean, run_param)
+    proc_class = Processer
+    ana_class = Analyzer
+    syst_class = Systematics
+    if proc_type == "Dhadrons":
+        print("Using new feature for Dhadrons")
+        proc_class = ProcesserDhadrons
+        ana_class = AnalyzerDhadrons
+    if proc_type == "Dhadrons_mult":
+        print("Using new feature for Dhadrons_mult")
+        proc_class = ProcesserDhadrons_mult
+        ana_class = AnalyzerDhadrons_mult
+    if proc_type == "Dhadrons_jet":
+        print("Using new feature for Dhadrons_jet")
+        proc_class = ProcesserDhadrons_jet
+        ana_class = AnalyzerJet
+
+    mymultiprocessmc = MultiProcesser(case, proc_class, data_param[case], typean, run_param, "mc")
+    mymultiprocessdata = MultiProcesser(case, proc_class, data_param[case], typean, run_param,\
+                                        "data")
+    ana_mgr = AnalyzerManager(ana_class, data_param[case], case, typean, doanaperperiod)
+    # Has to be done always period-by-period
+    syst_mgr = AnalyzerManager(syst_class, data_param[case], case, typean, True, run_param)
 
     #perform the analysis flow
     if dodownloadalice == 1:
@@ -323,8 +355,9 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         mymultiprocessmc.multi_valevents()
     if dovalhistodata is True:
         mymultiprocessdata.multi_valevents()
+
     if dovalplots:
-        myan.multi_studyevents()
+        ana_mgr.analyze("studyevents")
 
     if doml is True:
         index = 0
@@ -375,35 +408,61 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     if dohistomassmc is True:
         mymultiprocessmc.multi_histomass()
     if dohistomassdata is True:
+        # After-burner in case of a mult analysis to obtain "correctionsweight.root"
+        # for merged-period data
+        # pylint: disable=fixme
+        # FIXME Can only be run here because result directories are constructed when histomass
+        #       is run. If this step was independent, histomass would always complain that the
+        #       result directory already exists.
+        if "mult" in proc_type:
+            multi_preparenorm(data_param[case], case, typean, doanaperperiod)
         mymultiprocessdata.multi_histomass()
     if doefficiency is True:
         mymultiprocessmc.multi_efficiency()
+
+    # Collect all desired analysis steps
+    analyze_steps = []
     if dofit is True:
-        myan.multi_fitter()
+        analyze_steps.append("fit")
     if dosyst is True:
-        myan.multi_yield_syst()
+        analyze_steps.append("yield_syst")
     if doeff is True:
-        myan.multi_efficiency()
+        analyze_steps.append("efficiency")
     if dojetstudies is True:
         if dofit is False:
-            myan.multi_fitter()
+            analyze_steps.append("fit")
         if doeff is False:
-            myan.multi_efficiency()
-        myan.multi_side_band_sub()
+            analyze_steps.append("efficiency")
+        analyze_steps.append("side_band_sub")
     if dofeeddown is True:
-        myan.multi_feeddown()
+        analyze_steps.append("feeddown")
+    if dounfolding is True:
+        analyze_steps.append("unfolding")
+        analyze_steps.append("unfolding_closure")
+    if dojetsystematics is True:
+        analyze_steps.append("jetsystematics")
     if docross is True:
-        myan.multi_preparenorm()
-        if normalizecross is True:
-            myan.multi_plotter()
-        if normalizecross is False:
-            myan.multi_makenormyields()
+        analyze_steps.append("makenormyields")
     if doplots is True:
-        myan.multi_plotternormyields()
+        analyze_steps.append("plotternormyields")
+
+    # Now do the analysis
+    ana_mgr.analyze(*analyze_steps)
+
+    ml_syst_steps = []
     if dosystprob is True:
-        mysis.multi_cutvariation(dosystprobmass, dosystprobeff, dosystprobfit, dosystprobcross)
+        if do_syst_prob_mass:
+            ml_syst_steps.append("ml_cutvar_mass")
+        if do_syst_prob_eff:
+            ml_syst_steps.append("ml_cutvar_eff")
+        if do_syst_prob_fit:
+            ml_syst_steps.append("ml_cutvar_fit")
+        if do_syst_prob_cross:
+            ml_syst_steps.append("ml_cutvar_cross")
     if dosystptshape is True:
-        mysis.multimcptshape()
+        ml_syst_steps.append("mcptshape")
+    syst_mgr.analyze(*ml_syst_steps)
+
 
 def load_config(user_path: str, default_path: tuple) -> dict:
     """
@@ -454,7 +513,7 @@ def main():
 
     # Extract which database and run config to be used
     pkg_data = "machine_learning_hep.data"
-    pkg_data_run_config = "machine_learning_hep"
+    pkg_data_run_config = "machine_learning_hep.submission"
     run_config = load_config(args.run_config, (pkg_data_run_config, "default_complete.yaml"))
     case = run_config["case"]
     if args.type_ana is not None:

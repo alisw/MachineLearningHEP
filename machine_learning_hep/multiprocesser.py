@@ -16,11 +16,11 @@
 main script for doing data processing, machine learning and analysis
 """
 import os
-from machine_learning_hep.processer import Processer
+from machine_learning_hep.processer import Processer # pylint: disable=unused-import
 from machine_learning_hep.utilities import merge_method, mergerootfiles, get_timestamp_string
 class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-statements
     species = "multiprocesser"
-    def __init__(self, case, datap, typean, run_param, mcordata):
+    def __init__(self, case, proc_class, datap, typean, run_param, mcordata):
         self.case = case
         self.datap = datap
         self.typean = typean
@@ -107,19 +107,19 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
 
         self.process_listsample = []
         for indexp in range(self.prodnumber):
-            myprocess = Processer(self.case, self.datap, self.run_param, self.mcordata,
-                                  self.p_maxfiles[indexp], self.dlper_root[indexp],
-                                  self.dlper_pkl[indexp], self.dlper_pklsk[indexp],
-                                  self.dlper_pklml[indexp],
-                                  self.p_period[indexp], self.p_chunksizeunp[indexp],
-                                  self.p_chunksizeskim[indexp], self.p_nparall,
-                                  self.p_fracmerge[indexp], self.p_seedmerge[indexp],
-                                  self.dlper_reco_modapp[indexp],
-                                  self.dlper_reco_modappmerged[indexp],
-                                  self.d_results[indexp],
-                                  self.dlper_valevtroot[indexp], self.typean,
-                                  self.lper_runlistrigger[self.p_period[indexp]],
-                                  self.dlper_mcreweights[indexp] if self.mcordata == "mc" else None)
+            myprocess = proc_class(self.case, self.datap, self.run_param, self.mcordata,
+                                   self.p_maxfiles[indexp], self.dlper_root[indexp],
+                                   self.dlper_pkl[indexp], self.dlper_pklsk[indexp],
+                                   self.dlper_pklml[indexp],
+                                   self.p_period[indexp], self.p_chunksizeunp[indexp],
+                                   self.p_chunksizeskim[indexp], self.p_nparall,
+                                   self.p_fracmerge[indexp], self.p_seedmerge[indexp],
+                                   self.dlper_reco_modapp[indexp],
+                                   self.dlper_reco_modappmerged[indexp],
+                                   self.d_results[indexp],
+                                   self.dlper_valevtroot[indexp], self.typean,
+                                   self.lper_runlistrigger[self.p_period[indexp]], \
+                    self.dlper_mcreweights[indexp] if self.mcordata == "mc" else None)
             self.process_listsample.append(myprocess)
 
         self.f_evtorigroot_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evtvalroot)
@@ -181,7 +181,13 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         for indexp in range(self.prodnumber):
             if self.p_useperiod[indexp] == 1:
                 self.process_listsample[indexp].process_efficiency()
-#                self.process_listsample[indexp].process_response()
+                # pylint: disable=fixme
+                # FIXME This is a quick fix avoiding to call these for analyzers
+                #       other than AnalyzerJet
+                if hasattr(self.process_listsample[indexp], "process_response"):
+                    self.process_listsample[indexp].process_response()
+                if hasattr(self.process_listsample[indexp], "process_unfolding"):
+                    self.process_listsample[indexp].process_unfolding()
         tmp_merged = \
                 f"/data/tmp/hadd/{self.case}_{self.typean}/efficiency/{get_timestamp_string()}/"
         mergerootfiles(self.lper_fileeff, self.fileeff_mergedall, tmp_merged)

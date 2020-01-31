@@ -19,7 +19,6 @@ main script for doing final stage analysis
 import os
 # pylint: disable=unused-wildcard-import, wildcard-import
 from array import *
-from subprocess import Popen
 import numpy as np
 # pylint: disable=import-error, no-name-in-module, unused-import
 from root_numpy import hist2array, array2hist
@@ -30,7 +29,7 @@ from ROOT import TStyle, kBlue, kGreen, kBlack, kRed, kOrange
 from ROOT import TLatex
 from ROOT import gInterpreter, gPad
 # HF specific imports
-from machine_learning_hep.globalfitter import Fitter
+from machine_learning_hep.fitting.helpers import MLFitter
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.io import dump_yaml_from_dict
 from machine_learning_hep.utilities import folding, get_bins, make_latex_table, parallelizer
@@ -48,6 +47,7 @@ class Analyzer:
         #namefiles pkl
         self.case = case
         self.typean = typean
+        self.datap = datap
         self.v_var_binning = datap["var_binning"]
         self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
         self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
@@ -76,6 +76,7 @@ class Analyzer:
 
         # Output directories and filenames
         self.yields_filename = "yields"
+        self.fits_dirname = "fits"
         self.yields_syst_filename = "yields_syst"
         self.efficiency_filename = "efficiencies"
         self.sideband_subtracted_filename = "sideband_subtracted"
@@ -182,6 +183,9 @@ class Analyzer:
                                                                         None)
         self.path_for_crossmb = datap["analysis"][self.typean].get("path_for_crossmb", None)
 
+        # Fitting
+        self.fitter = None
+
     @staticmethod
     def loadstyle():
         gStyle.SetOptStat(0)
@@ -214,805 +218,44 @@ class Analyzer:
         extension = extension.replace(".", "")
         return os.path.join(directory, filename + "." + extension)
 
-    def test_aliphysics(self):
-        test_macro = "/tmp/aliphysics_test.C"
-        with open(test_macro, "w") as m:
-            m.write("void aliphysics_test()\n{\n")
-            m.write("TH1F* h = new TH1F(\"name\", \"\", 2, 1., 2.);\n \
-                    auto fitter = new AliHFInvMassFitter(h, 1., 2., 1, 1);\n \
-                    if(fitter) { std::cerr << \" Success \"; \n \
-                    delete fitter; }\n \
-                    else { std::cerr << \"Fail\"; }\n \
-                    std::cerr << std::endl; }")
-        proc = Popen(["root", "-l", "-b", "-q", test_macro])
-        success = proc.wait()
-        if success != 0:
-            self.logger.fatal("You are not in the AliPhysics env")
-
-
-    # pylint: disable=too-many-branches, too-many-locals, too-many-nested-blocks
     # pylint: disable=import-outside-toplevel
-    def fitter(self):
-        # Test if we are in AliPhysics env
-        #self.test_aliphysics()
+    def fit(self):
+        # Enable ROOT batch mode and reset in the end
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
-        from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
-        # Enable ROOT batch mode and reset in the end
 
-        self.loadstyle()
-
-        # Immediately fail if something weird was chosen for fit init
-        if self.init_fits_from[0] not in  ["mc", "data"]:
-            self.logger.fatal("Fit can only be initialized from \"data\" or \"mc\"")
-
-        lfile = TFile.Open(self.n_filemass, "READ")
-        lfile_mc = TFile.Open(self.n_filemass_mc, "READ")
-
+        self.fitter = MLFitter(self.datap, self.typean, self.n_filemass, self.n_filemass_mc)
+        self.fitter.perform_pre_fits()
+        self.fitter.perform_central_fits()
         fileout_name = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                            None, [self.case, self.typean])
         fileout = TFile(fileout_name, "RECREATE")
-        # Summarize in mult histograms in pT bins
-        yieldshistos = [TH1F("hyields%d" % (imult), "", \
-                self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
-        means_histos = [TH1F("hmeanss%d" % (imult), "", \
-                self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
-        sigmas_histos = [TH1F("hsigmas%d" % (imult), "", \
-                self.p_nptbins, array("d", self.ptranges)) for imult in range(self.p_nbin2)]
-        have_summary_pt_bins = []
-        means_init_mc_histos = TH1F("hmeans_init_mc", "",
-                                    self.p_nptbins, array("d", self.ptranges))
-        sigmas_init_mc_histos = TH1F("hsigmas_init_mc", "",
-                                     self.p_nptbins, array("d", self.ptranges))
-        means_init_data_histos = TH1F("hmeans_init_data", "",
-                                      self.p_nptbins, array("d", self.ptranges))
-        sigmas_init_data_histos = TH1F("hsigmas_init_data", "",
-                                       self.p_nptbins, array("d", self.ptranges))
-
-        if self.p_nptbins < 9:
-            nx = 4
-            ny = 2
-            canvy = 533
-        elif self.p_nptbins < 13:
-            nx = 4
-            ny = 3
-            canvy = 800
-        else:
-            nx = 5
-            ny = 4
-            canvy = 1200
-        canvas_init_mc = TCanvas("canvas_init_mc", "MC", 1000, canvy)
-        canvas_init_data = TCanvas("canvas_init_data", "Data", 1000, canvy)
-        canvas_data = [TCanvas("canvas_data%d" % (imult), "Data", 1000, canvy) \
-                       for imult in range(self.p_nbin2)]
-        canvas_init_mc.Divide(nx, ny)
-        canvas_init_data.Divide(nx, ny)
-        for imult in range(self.p_nbin2):
-            canvas_data[imult].Divide(nx, ny)
-
-        # Fit mult integrated MC and data in integrated multiplicity bin for all pT bins
-        # Hence, extract respective bin of second variable
-        bin_mult_int = self.p_bineff if self.p_bineff is not None else 0
-        mult_int_min = self.lvar2_binmin[bin_mult_int]
-        mult_int_max = self.lvar2_binmax[bin_mult_int]
-
-        fit_status = {}
-        mean_min = 9999.
-        mean_max = 0.
-        sigma_min = 9999.
-        sigma_max = 0.
-        minperc = 1 - self.p_max_perc_sigma_diff
-        maxperc = 1 + self.p_max_perc_sigma_diff
-        mass_fitter = []
-        ifit = -1
-
-        # Start fitting...
-        for imult in range(self.p_nbin2):
-            if imult not in fit_status:
-                fit_status[imult] = {}
-            mass_fitter_mc_init = []
-            mass_fitter_data_init = []
-            # Collect additional objects to be drawn outside of pT loop
-            add_draw_objects = []
-            for ipt in range(self.p_nptbins):
-                if ipt not in fit_status[imult]:
-                    fit_status[imult][ipt] = {}
-                bin_id = self.bin_matching[ipt]
-
-                # Initialize mean and sigma with user seeds. This is also the fallback if initial
-                # MC and data fits fail
-                mean_for_data = self.p_masspeak
-                sigma_for_data = self.p_sigmaarray[ipt]
-                means_sigmas_init = [(3, mean_for_data, sigma_for_data)]
-
-                # Store mean, sigma asked to be used by user
-                mean_case_user = None
-                sigma_case_user = None
-
-                ########################
-                # START initialize fit #
-                ########################
-                # Get integrated histograms
-                fit_status[imult][ipt]["init_MC"] = {}
-                suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
-                         (self.v_var_binning, self.lpt_finbinmin[ipt],
-                          self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
-                          self.v_var2_binning, mult_int_min, mult_int_max)
-
-                suffix_write = "%s%d_%d_%s_%.2f_%.2f" % \
-                               (self.v_var_binning, self.lpt_finbinmin[ipt],
-                                self.lpt_finbinmax[ipt],
-                                self.v_var2_binning, mult_int_min, mult_int_max)
-                h_invmass_mc_init = lfile_mc.Get("hmass_sig" + suffix)
-
-                h_mc_init_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_mc_init,
-                                                                  self.rebins[bin_mult_int][ipt],
-                                                                  -1)
-                h_mc_init_rebin = TH1F()
-                h_mc_init_rebin_.Copy(h_mc_init_rebin)
-                h_mc_init_rebin.SetTitle("%.1f < #it{p}_{T} < %.1f (prob > %.2f)" \
-                                         % (self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt], \
-                                            self.lpt_probcutfin[bin_id]))
-                h_mc_init_rebin.GetXaxis().SetTitle("#it{M}_{inv} (GeV/#it{c}^{2})")
-                h_mc_init_rebin.GetYaxis().SetTitle("Entries/(%.0f MeV/#it{c}^{2})" \
-                                                    % (h_mc_init_rebin.GetBinWidth(1) * 1000))
-                h_mc_init_rebin.GetYaxis().SetTitleOffset(1.1)
-
-                #mass_fitter_mc_init.append(AliHFInvMassFitter(h_mc_init_rebin, self.p_massmin[ipt],
-                #                                              self.p_massmax[ipt],
-                #                                              self.bkg_fmap[self.p_bkgfunc[ipt]],
-                #                                              self.sig_fmap[self.p_sgnfunc[ipt]]))
-
-                # Force to go on with final fit although there is no estimated signal
-                #mass_fitter_mc_init[ipt].SetCheckSignalCountsAfterFirstFit(False)
-                #if self.p_dolike:
-                #    mass_fitter_mc_init[ipt].SetUseLikelihoodFit()
-                #mass_fitter_mc_init[ipt].SetInitialGaussianMean(mean_for_data)
-                #mass_fitter_mc_init[ipt].SetInitialGaussianSigma(sigma_for_data)
-                #mass_fitter_mc_init[ipt].SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
-                #success = mass_fitter_mc_init[ipt].MassFitter(False)
-                success = False
-                user_init_success = False
-                for r in [2., 3., 4., 5., 6., 7.]:
-                    guess_mean = h_mc_init_rebin.GetMean()
-                    guess_sigma = h_mc_init_rebin.GetRMS()
-                    guess_low_range = guess_mean - r * guess_sigma
-                    guess_up_range = guess_mean + r * guess_sigma
-                    guess_int = h_mc_init_rebin.Integral(h_mc_init_rebin.FindBin(guess_low_range),
-                                                         h_mc_init_rebin.FindBin(guess_up_range),
-                                                         "width")
-                    gaus_func = TF1("mc_init_gaus", "gaus", guess_low_range, guess_up_range)
-                    gaus_func.SetParameter(0, guess_int)
-                    gaus_func.SetParameter(1, guess_mean)
-                    gaus_func.SetParameter(2, guess_sigma)
-                    h_mc_init_rebin.Fit(gaus_func, "BEL0+", "", guess_low_range, guess_up_range)
-                    int_tmp = gaus_func.GetParameter(0)
-                    mean_tmp = gaus_func.GetParameter(1)
-                    mean_err_tmp = gaus_func.GetParError(1)
-                    sigma_tmp = gaus_func.GetParameter(2)
-                    sigma_err_tmp = gaus_func.GetParError(2)
-                    ndf = gaus_func.GetNDF()
-                    chi2 = gaus_func.GetChisquare()
-                    chi2ndf = chi2 / ndf if ndf > 0 else 0
-                    print("########################")
-                    print(f"Fit n RMS {r}")
-                    print(f"Guessed sigma: {guess_sigma}")
-                    print(f"fit range: {guess_low_range} - {guess_up_range}")
-                    print(f"fitted sigma {sigma_tmp}")
-                    print(f"chi2 / NDF {chi2ndf}")
-
-                    if int_tmp * sigma_tmp > 0 and \
-                            guess_mean - guess_sigma < mean_tmp < guess_mean + guess_sigma and \
-                            sigma_tmp < 1.1 * guess_sigma and chi2ndf > 0:
-                        success = True
-                        mass_fitter_mc_init.append(gaus_func)
-                        break
-
-
-                fit_status[imult][ipt]["init_MC"]["sigma"] = -1.
-                fit_status[imult][ipt]["init_MC"]["success"] = success
-                if not success:
-                    self.logger.error("Could not do initial fit on MC")
-
-                else:
-                    mean_for_data = mass_fitter_mc_init[-1].GetParameter(1)
-                    sigma_for_data = mass_fitter_mc_init[-1].GetParameter(2)
-                    mean_err_tmp = mass_fitter_mc_init[-1].GetParError(1)
-                    sigma_err_tmp = mass_fitter_mc_init[-1].GetParError(2)
-                    means_sigmas_init.insert(0, (2, mean_for_data, sigma_for_data))
-                    fit_status[imult][ipt]["init_MC"]["sigma"] = sigma_for_data
-                    if ipt not in have_summary_pt_bins:
-                        means_init_mc_histos.SetBinContent(ipt + 1, mean_for_data)
-                        means_init_mc_histos.SetBinError(ipt + 1, mean_err_tmp)
-                        sigmas_init_mc_histos.SetBinContent(ipt + 1, sigma_for_data)
-                        sigmas_init_mc_histos.SetBinError(ipt + 1, sigma_err_tmp)
-
-                    if self.init_fits_from[ipt] == "mc":
-                        user_init_success = True
-                        mean_case_user = mean_for_data
-                        sigma_case_user = sigma_for_data
-                canvas = TCanvas("fit_canvas_mc_init", suffix_write, 700, 700)
-                canvas.cd()
-                h_mc_init_rebin.Draw()
-                mass_fitter_mc_init[-1].SetLineColor(kBlue)
-                mass_fitter_mc_init[-1].Draw("same")
-
-                #mass_fitter_mc_init[ipt].DrawHere(canvas, self.p_nsigma_signal)
-                canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
-                                                  "fittedplot_integrated_mc", "eps",
-                                                  None, suffix_write))
-                canvas.Close()
-                canvas_init_mc.cd(ipt+1)
-                h_mc_init_rebin.Draw()
-                mass_fitter_mc_init[-1].Draw("same")
-                mass_fitter_mc_init.append(h_mc_init_rebin)
-                #mass_fitter_mc_init[ipt].DrawHere(gPad, self.p_nsigma_signal)
-
-                # Now, try also for data
-                fit_status[imult][ipt]["init_data"] = {}
-                histname = "hmass"
-                if self.apply_weights is True:
-                    histname = "h_invmass_weight"
-                    self.logger.info("*********** I AM USING WEIGHTED HISTOGRAMS")
-                # Weighted histograms onnly for data at the moment
-                h_invmass_init = lfile.Get(histname + suffix)
-                h_data_init_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_init,
-                                                                    self.rebins[bin_mult_int][ipt],
-                                                                    -1)
-                h_data_init_rebin = TH1F()
-                h_data_init_rebin_.Copy(h_data_init_rebin)
-                h_data_init_rebin.SetTitle("%.1f < #it{p}_{T} < %.1f (prob > %.2f)" \
-                                           % (self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt], \
-                                              self.lpt_probcutfin[bin_id]))
-                h_data_init_rebin.GetXaxis().SetTitle("#it{M}_{inv} (GeV/#it{c}^{2})")
-                h_data_init_rebin.GetYaxis().SetTitle("Entries/(%.0f MeV/#it{c}^{2})" \
-                                                      % (h_data_init_rebin.GetBinWidth(1) * 1000))
-                h_data_init_rebin.GetYaxis().SetTitleOffset(1.1)
-
-                mass_fitter_data_init.append(AliHFInvMassFitter(h_data_init_rebin,
-                                                                self.p_massmin[ipt],
-                                                                self.p_massmax[ipt],
-                                                                self.bkg_fmap[self.p_bkgfunc[ipt]],
-                                                                self.sig_fmap[self.p_sgnfunc[ipt]]))
-
-                # Force to go on with final fit although there is no estimated signal
-                mass_fitter_data_init[ipt].SetCheckSignalCountsAfterFirstFit(False)
-                if self.p_dolike:
-                    mass_fitter_data_init[ipt].SetUseLikelihoodFit()
-                mass_fitter_data_init[ipt].SetInitialGaussianMean(mean_for_data)
-                mass_fitter_data_init[ipt].SetInitialGaussianSigma(sigma_for_data)
-                mass_fitter_data_init[ipt].SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
-                # Second peak?
-                if self.p_includesecpeaks[bin_mult_int][ipt]:
-                    secpeakwidth = self.p_widthsecpeak * sigma_for_data
-                    mass_fitter_data_init[ipt].IncludeSecondGausPeak(self.p_masssecpeak, \
-                                               self.p_fix_masssecpeaks[bin_mult_int][ipt], \
-                                               secpeakwidth, \
-                                               self.p_fix_widthsecpeak)
-                success = mass_fitter_data_init[ipt].MassFitter(False)
-                fit_status[imult][ipt]["init_data"]["success"] = False
-                fit_status[imult][ipt]["init_data"]["sigma"] = -1.
-                if success == 1:
-                    if ipt not in have_summary_pt_bins:
-                        means_init_data_histos.SetBinContent(ipt + 1, \
-                                mass_fitter_data_init[ipt].GetMean())
-                        means_init_data_histos.SetBinError(ipt + 1, \
-                                mass_fitter_data_init[ipt].GetMeanUncertainty())
-                        sigmas_init_data_histos.SetBinContent(ipt + 1, \
-                                mass_fitter_data_init[ipt].GetSigma())
-                        sigmas_init_data_histos.SetBinError(ipt + 1, \
-                                mass_fitter_data_init[ipt].GetSigmaUncertainty())
-
-                    sigmafit = mass_fitter_data_init[ipt].GetSigma()
-                    if minperc * sigma_for_data < sigmafit < maxperc * sigma_for_data:
-                        means_sigmas_init.insert(0, (1, mass_fitter_data_init[ipt].GetMean(),
-                                                     mass_fitter_data_init[ipt].GetSigma()))
-                        fit_status[imult][ipt]["init_data"]["success"] = True
-                        fit_status[imult][ipt]["init_data"]["sigma"] = \
-                                mass_fitter_data_init[ipt].GetSigma()
-                        if self.init_fits_from[ipt] == "data":
-                            mean_case_user = mass_fitter_data_init[ipt].GetMean()
-                            sigma_case_user = mass_fitter_data_init[ipt].GetSigma()
-                            user_init_success = True
-
-                canvas = TCanvas("fit_canvas_data_init", suffix_write, 700, 700)
-                mass_fitter_data_init[ipt].DrawHere(canvas, self.p_nsigma_signal)
-                canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
-                                                  "fittedplot_integrated", "eps",
-                                                  None, suffix_write))
-                canvas.Close()
-                canvas_init_data.cd(ipt+1)
-                mass_fitter_data_init[ipt].DrawHere(gPad, self.p_nsigma_signal)
-
-                # Initialize mean and sigma with user seeds.
-                if self.p_use_user_gauss_sigma[ipt] is True:
-                    mean_for_data = self.p_masspeak
-                    sigma_for_data = self.p_sigmaarray[ipt]
-                    means_sigmas_init.insert(0, (3, mean_for_data, sigma_for_data))
-
-                # Remember that we have filled this pT bin
-                have_summary_pt_bins.append(ipt)
-                ######################
-                # END initialize fit #
-                ######################
-
-                # Collect all possible fit cases
-                fit_cases = []
-                for fix in [False, True]:
-                    for ms in means_sigmas_init:
-                        fit_cases.append((ms[0], ms[1], ms[2], fix))
-                if user_init_success and self.p_use_user_gauss_sigma[ipt] is False:
-                    fit_cases.insert(0, (0, mean_case_user, sigma_case_user,
-                                         self.p_fixingaussigma[ipt]))
-                elif self.p_use_user_gauss_sigma[ipt] is True:
-                    fit_cases.insert(0, (0, self.p_masspeak, self.p_sigmaarray[ipt], \
-                                         self.p_fixingaussigma[ipt]))
-                else:
-                    self.logger.error("Cannot initialise fit with what is requested by the " \
-                                      "user... Try fallback options")
-
-                # Now comes the actual fit
-                suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
-                         (self.v_var_binning, self.lpt_finbinmin[ipt],
-                          self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
-                          self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
-                suffix_write = "%s%d_%d_%s_%.2f_%.2f" % \
-                               (self.v_var_binning, self.lpt_finbinmin[ipt],
-                                self.lpt_finbinmax[ipt],
-                                self.v_var2_binning, self.lvar2_binmin[imult],
-                                self.lvar2_binmax[imult])
-                histname = "hmass"
-                if self.apply_weights is True:
-                    histname = "h_invmass_weight"
-                    self.logger.info("*********** I AM USING WEIGHTED HISTOGRAMS")
-                # Weighted histograms onnly for data at the moment
-                h_invmass = lfile.Get(histname + suffix)
-                h_invmass_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass,
-                                                                  self.rebins[imult][ipt], -1)
-                h_invmass_rebin = TH1F()
-                h_invmass_rebin_.Copy(h_invmass_rebin)
-                h_invmass_rebin.SetTitle("%.1f < #it{p}_{T} < %.1f (prob > %.2f)" \
-                                         % (self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt], \
-                                            self.lpt_probcutfin[bin_id]))
-                h_invmass_rebin.GetXaxis().SetTitle("#it{M}_{inv} (GeV/#it{c}^{2})")
-                h_invmass_rebin.GetYaxis().SetTitle("Entries/(%.0f MeV/#it{c}^{2})" \
-                                                    % (h_invmass_rebin.GetBinWidth(1) * 1000))
-                h_invmass_rebin.GetYaxis().SetTitleOffset(1.1)
-
-                h_invmass_mc = lfile_mc.Get("hmass" + suffix)
-                h_invmass_mc_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_mc,
-                                                                     self.rebins[imult][ipt], -1)
-                h_invmass_mc_rebin = TH1F()
-                h_invmass_mc_rebin_.Copy(h_invmass_mc_rebin)
-                success = 0
-
-                fit_status[imult][ipt]["data"] = {}
-
-                # First try not fixing sigma for all cases (mean always floating)
-                user_case_success = True
-                for case, mean, sigma, fix in fit_cases:
-
-                    ifit = ifit + 1
-                    mass_fitter.append(AliHFInvMassFitter(h_invmass_rebin, self.p_massmin[ipt],
-                                                          self.p_massmax[ipt],
-                                                          self.bkg_fmap[self.p_bkgfunc[ipt]],
-                                                          self.sig_fmap[self.p_sgnfunc[ipt]]))
-
-                    # Force to go on with final fit although there is no estimated signal
-                    mass_fitter[ifit].SetCheckSignalCountsAfterFirstFit(False)
-                    if self.p_dolike:
-                        mass_fitter[ifit].SetUseLikelihoodFit()
-                    # At this point *_for_data is either
-                    # -> the seed value extracted from integrated data pre-fit if successful
-                    # -> the seed value extracted from integrated MC pre-fit if successful
-                    #    and data pre-fit failed
-                    # -> the seed value set by the user in the database if both
-                    #    data and MC pre-fit fail
-                    mass_fitter[ifit].SetInitialGaussianMean(mean)
-                    mass_fitter[ifit].SetInitialGaussianSigma(sigma)
-                    #if self.p_fixedmean:
-                    #    mass_fitter[ifit].SetFixGaussianMean(mean_for_data)
-                    if fix:
-                        mass_fitter[ifit].SetFixGaussianSigma(sigma)
-
-                    mass_fitter[ifit].SetNSigma4SideBands(self.p_exclude_nsigma_sideband)
-
-                    if self.include_reflection:
-                        h_invmass_refl = AliVertexingHFUtils.AdaptTemplateRangeAndBinning(
-                            lfile_mc.Get("hmass_refl" + suffix), h_invmass_rebin,
-                            self.p_massmin[ipt], self.p_massmax[ipt])
-
-                        if h_invmass_refl.Integral() > 0.:
-                            mass_fitter[ifit].SetTemplateReflections(h_invmass_refl, "1gaus",
-                                                                     self.p_massmin[ipt],
-                                                                     self.p_massmax[ipt])
-                            r_over_s = h_invmass_mc_rebin.Integral(
-                                h_invmass_mc_rebin.FindBin(self.p_massmin[ipt]),
-                                h_invmass_mc_rebin.FindBin(self.p_massmax[ipt]))
-                            if r_over_s > 0.:
-                                r_over_s = h_invmass_refl.Integral(
-                                    h_invmass_refl.FindBin(self.p_massmin[ipt]),
-                                    h_invmass_refl.FindBin(self.p_massmax[ipt])) / r_over_s
-                                mass_fitter[ifit].SetFixReflOverS(r_over_s)
-                        else:
-                            self.logger.warning("Reflection requested but template empty")
-                    if self.p_includesecpeaks[imult][ipt]:
-                        secpeakwidth = self.p_widthsecpeak * sigma
-                        mass_fitter[ifit].IncludeSecondGausPeak(self.p_masssecpeak,
-                                                                self.p_fix_masssecpeaks[imult][ipt],
-                                                                secpeakwidth,
-                                                                self.p_fix_widthsecpeak)
-                    fit_status[imult][ipt]["data"]["fix"] = fix
-                    fit_status[imult][ipt]["data"]["case"] = case
-                    success = mass_fitter[ifit].MassFitter(False)
-                    if success == 1:
-                        sigma_final = mass_fitter[ifit].GetSigma()
-                        if minperc * sigma < sigma_final < maxperc * sigma:
-                            break
-                        self.logger.warning("Free fit succesful, but bad sigma. Skipped!")
-                    if case == 0:
-                        user_case_success = False
-
-                fit_status[imult][ipt]["data"]["success"] = success
-
-                pinfos = TPaveText(0.12, 0.7, 0.47, 0.89, "NDC")
-                pinfos.SetBorderSize(0)
-                pinfos.SetFillStyle(0)
-                pinfos.SetTextAlign(11)
-                pinfos.SetTextSize(0.03)
-                add_draw_objects.append(pinfos)
-                if not user_init_success:
-                    text = pinfos.AddText(f"USER INIT CASE FAILED ({self.init_fits_from[ipt]}, " \
-                            f"sigma fixed {self.p_fixingaussigma[ipt]})")
-                    text.SetTextColor(kRed)
-
-                if not user_case_success:
-                    text = pinfos.AddText(f"FIT WITH USER INIT CASE FAILED " \
-                            f"({self.init_fits_from[ipt]}, " \
-                            f"sigma fixed {self.p_fixingaussigma[ipt]})")
-                    text.SetTextColor(kRed)
-                if not success:
-                    text = pinfos.AddText("FIT FAILED")
-                    text.SetTextColor(kRed)
-
-                canvas = TCanvas("fit_canvas", suffix, 700, 700)
-                mass_fitter[ifit].DrawHere(canvas, self.p_nsigma_signal)
-                canvas.cd()
-                pinfos.Draw()
-                if self.apply_weights is False:
-                    canvas.SaveAs(self.make_file_path(self.d_resultsallpdata, "fittedplot", "eps",
-                                                      None, suffix_write))
-                else:
-                    canvas.SaveAs(self.make_file_path(self.d_resultsallpdata,
-                                                      "fittedplotweights",
-                                                      "eps", None, suffix_write))
-                canvas.Close()
-                canvas_data[imult].cd(ipt+1)
-                mass_fitter[ifit].DrawHere(gPad, self.p_nsigma_signal)
-                pinfos.Draw()
-
-                if success == 1:
-                    # In case of success == 2, no signal was found, in case of 0, fit failed
-                    rawYield = mass_fitter[ifit].GetRawYield()
-                    rawYieldErr = mass_fitter[ifit].GetRawYieldError()
-                    yieldshistos[imult].SetBinContent(ipt + 1, rawYield)
-                    yieldshistos[imult].SetBinError(ipt + 1, rawYieldErr)
-
-                    mean_fit = mass_fitter[ifit].GetMean()
-                    mean_min = min(mean_fit, mean_min)
-                    mean_max = max(mean_fit, mean_max)
-
-                    means_histos[imult].SetBinContent(ipt + 1, mean_fit)
-                    means_histos[imult].SetBinError(ipt + 1, mass_fitter[ifit].GetMeanUncertainty())
-
-                    sigma_fit = mass_fitter[ifit].GetSigma()
-                    sigma_min = min(sigma_fit, sigma_min)
-                    sigma_max = max(sigma_fit, sigma_max)
-                    fit_status[imult][ipt]["data"]["sigma"] = sigma_fit
-
-                    sigmas_histos[imult].SetBinContent(ipt + 1, sigma_fit)
-                    sigmas_histos[imult].SetBinError(ipt + 1, \
-                                                     mass_fitter[ifit].GetSigmaUncertainty())
-
-                    # Residual plot
-                    c_res = TCanvas('cRes', 'The Fit Canvas', 800, 800)
-                    c_res.cd()
-                    h_pulls = h_invmass_rebin.Clone(f"{h_invmass_rebin.GetName()}_pull")
-                    h_residual_trend = \
-                            h_invmass_rebin.Clone(f"{h_invmass_rebin.GetName()}_residual_trend")
-                    h_pulls_trend = \
-                            h_invmass_rebin.Clone(f"{h_invmass_rebin.GetName()}_pulls_trend")
-                    _ = mass_fitter[ifit].GetOverBackgroundResidualsAndPulls( \
-                            h_pulls, h_residual_trend, h_pulls_trend, self.p_massmin[ipt],
-                            self.p_massmax[ipt])
-
-                    h_residual_trend.Draw()
-                    c_res.SaveAs(self.make_file_path(self.d_resultsallpdata, "residual", "eps",
-                                                     None, suffix_write))
-                    c_res.Close()
-
-                else:
-                    self.logger.error("Fit failed for suffix %s", suffix_write)
-
-                # Write fitters to file
-                fit_root_dir = fileout.mkdir(suffix)
-                fit_root_dir.WriteObject(mass_fitter_mc_init[ipt], "gaus_mc_init")
-                fit_root_dir.WriteObject(mass_fitter_data_init[ipt], "fitter_data_init")
-                fit_root_dir.WriteObject(mass_fitter[ifit], "fitter")
-
-            #####################
-            # Back in mult loop #
-            #####################
-
-            suffix2 = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin[imult], \
-                                        self.lvar2_binmax[imult])
-            if imult == 0:
-                canvas_init_mc.SaveAs(self.make_file_path(self.d_resultsallpdata,
-                                                          "canvas_InitMC",
-                                                          "eps", None, suffix2))
-                canvas_init_mc.Close()
-                canvas_init_data.SaveAs(self.make_file_path(self.d_resultsallpdata,
-                                                            "canvas_InitData",
-                                                            "eps", None, suffix2))
-                canvas_init_data.Close()
-            canvas_data[imult].SaveAs(self.make_file_path(self.d_resultsallpdata,
-                                                          "canvas_FinalData",
-                                                          "eps", None, suffix2))
-            #canvas_data[imult].Close()
-            fileout.cd()
-            yieldshistos[imult].Write()
-            means_histos[imult].Write()
-            sigmas_histos[imult].Write()
-
-            del mass_fitter_mc_init[:]
-            del mass_fitter_data_init[:]
-
-        del mass_fitter[:]
-
-        # Write the fit status dict
-        dump_yaml_from_dict(fit_status, self.make_file_path(self.d_resultsallpdata, "fit_status",
-                                                            "yaml"))
-
-        # Plot some summary historgrams
-        leg_strings = [f"{self.lvar2_binmin[imult]} #leq {self.p_latexbin2var} < " \
-                       f"{self.lvar2_binmax[imult]}" for imult in range(self.p_nbin2)]
-        save_name = self.make_file_path(self.d_resultsallpdata, "Yields", "eps", None,
-                                        [self.case, self.typean])
-        # Yields summary plot
-        plot_histograms(yieldshistos, True, True, leg_strings, "uncorrected yields",
-                        "#it{p}_{T} (GeV/#it{c})",
-                        f"Uncorrected yields {self.p_latexnmeson} {self.typean}", "mult. / int.",
-                        save_name)
-        save_name = self.make_file_path(self.d_resultsallpdata, "Means", "eps", None,
-                                        [self.case, self.typean])
-        # Means summary plot
-        plot_histograms(means_histos, False, True, leg_strings, "Means",
-                        "#it{p}_{T} (GeV/#it{c})",
-                        "#mu_{fit} " + f"{self.p_latexnmeson} {self.typean}", "mult. / int.",
-                        save_name)
-        save_name = self.make_file_path(self.d_resultsallpdata, "Sigmas", "eps", None,
-                                        [self.case, self.typean])
-        #Sigmas summary plot
-        plot_histograms(sigmas_histos, False, True, leg_strings, "Sigmas",
-                        "#it{p}_{T} (GeV/#it{c})",
-                        "#sigma_{fit} " + f"{self.p_latexnmeson} {self.typean}", "mult. / int.",
-                        save_name)
-
-        # Plot the initialized means and sigma for MC and data
-        save_name = self.make_file_path(self.d_resultsallpdata, "Means_mult_int", "eps", None,
-                                        [self.case, self.typean])
-        plot_histograms([means_init_mc_histos, means_init_data_histos], False, False,
-                        ["MC", "data"], "Means of int. mult.", "#it{p}_{T} (GeV/#it{c})",
-                        "#mu_{fit} " + f"{self.p_latexnmeson} {self.typean}", "", save_name)
-
-        save_name = self.make_file_path(self.d_resultsallpdata, "Sigmas_mult_int", "eps", None,
-                                        [self.case, self.typean])
-        plot_histograms([sigmas_init_mc_histos, sigmas_init_data_histos], False, False,
-                        ["MC", "data"], "Sigmas of int. mult.", "#it{p}_{T} (GeV/#it{c})",
-                        "#sigma_{fit} " + f"{self.p_latexnmeson} {self.typean}", "", save_name)
-
+        self.fitter.draw_fits(self.d_resultsallpdata, fileout)
         fileout.Close()
+        fileout_name = os.path.join(self.d_resultsallpdata,
+                                    f"{self.fits_dirname}_{self.case}_{self.typean}")
+        self.fitter.save_fits(fileout_name)
         # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
+
 
     # pylint: disable=too-many-locals, too-many-nested-blocks, too-many-branches
     # pylint: disable=import-outside-toplevel
     def yield_syst(self):
-        if self.mt_syst_dict is None:
-            self.logger.warning("Could not find parameters for doing systemtics. Skip...")
-            return
         # Enable ROOT batch mode and reset in the end
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
+        if not self.fitter:
+            fileout_name = os.path.join(self.d_resultsallpdata,
+                                        f"{self.fits_dirname}_{self.case}_{self.typean}")
+            self.fitter = MLFitter(self.datap, self.typean, self.n_filemass, self.n_filemass_mc)
+            if not self.fitter.load_fits(fileout_name):
+                self.logger.error("Cannot load fits from dir %s", fileout_name)
+                return
 
-        # Load configurable multi trial variations
-        rebin = self.mt_syst_dict.get("rebin", None)
-        fit_ranges_low = self.mt_syst_dict.get("massmin", None)
-        fit_ranges_up = self.mt_syst_dict.get("massmax", None)
-        bincount_sigma = self.mt_syst_dict.get("bincount_sigma", None)
-        bkg_funcs = self.mt_syst_dict.get("bkg_funcs", None)
-        # Sigma of MT can either be initialized from MC ("mc"), data ("data")
-        # or central ("central" ==> default)
-        initialize_sigma_from = self.mt_syst_dict.get("init_sigma_from", "central")
-        if not isinstance(initialize_sigma_from, list):
-            initialize_sigma_from = [initialize_sigma_from] * self.p_nptbins
-        if not isinstance(initialize_sigma_from[0], list):
-            initialize_sigma_from = [initialize_sigma_from] * self.p_nbin2
-
-        if not bkg_funcs:
-            self.logger.error("You need to choose at least one background function for " \
-                              "the multi trial")
-            return
-
-        from ROOT import AliHFInvMassMultiTrialFit, AliVertexingHFUtils
-
-        if not os.path.exists(self.d_mt_results_path):
-            os.makedirs(self.d_mt_results_path)
-
-        lfile = TFile.Open(self.n_filemass, "READ")
-        lfile_mc = TFile.Open(self.n_filemass_mc, "READ")
-
-        file_fits_name = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
-                                             None, [self.case, self.typean])
-        file_fits = TFile(file_fits_name, "READ")
-
-        # Collect arguments for parallelized multi trial run
-        for imult in range(self.p_nbin2):
-            for ipt in range(self.p_nptbins):
-                bin_id = self.bin_matching[ipt]
-
-                suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
-                         (self.v_var_binning, self.lpt_finbinmin[ipt],
-                          self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
-                          self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
-
-                suffix_write = "%s%d_%d_%s_%.2f_%.2f" % \
-                         (self.v_var_binning, self.lpt_finbinmin[ipt],
-                          self.lpt_finbinmax[ipt],
-                          self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
-
-
-                # That we need to obtain the yield of the central fit and the initial mean
-                # set to the multi trial
-                mass_fitter_nominal = file_fits.GetDirectory(suffix).Get("fitter")
-                histname = "hmass"
-                if self.apply_weights is True:
-                    histname = "h_invmass_weight"
-                    self.logger.info("*********** I AM USING WEIGHTED HISTOGRAMS")
-                # Weighted histograms onnly for data at the moment
-                h_invmass_ = lfile.Get(histname + suffix)
-
-                h_invmass = TH1D()
-                h_invmass_.Copy(h_invmass)
-
-                # Next we need the sigma to be used for the multi trial
-                sigma_init = mass_fitter_nominal.GetSigma()
-
-                if initialize_sigma_from[imult][ipt] == "user":
-                    sigma_init = self.p_sigmaarray[ipt]
-                elif initialize_sigma_from[imult][ipt] == "mc":
-                    fit = file_fits.GetDirectory(suffix).Get("gaus_mc_init")
-                    sigma_init = fit.GetParameter(2)
-                elif initialize_sigma_from[imult][ipt] == "data":
-                    fit = file_fits.GetDirectory(suffix).Get("fitter_data_init")
-                    sigma_init = fit.GetSigma()
-
-                # Initialize the multi trial
-                multi_trial = AliHFInvMassMultiTrialFit()
-
-                multi_trial.SetSuffixForHistoNames("")
-                multi_trial.SetDrawIndividualFits(False)
-                # This is always the mean of the central fit
-                multi_trial.SetMass(mass_fitter_nominal.GetMean())
-                multi_trial.SetSigmaGaussMC(sigma_init)
-
-                # First, disable all
-                multi_trial.SetUseExpoBackground(False)
-                multi_trial.SetUseLinBackground(False)
-                multi_trial.SetUsePol2Background(False)
-                multi_trial.SetUsePol3Background(False)
-                multi_trial.SetUsePol4Background(False)
-                multi_trial.SetUsePol5Background(False)
-                multi_trial.SetUsePowerLawBackground(False)
-                multi_trial.SetUsePowerLawTimesExpoBackground(False)
-
-
-                for bkg in bkg_funcs:
-                    if bkg == "kExpo":
-                        multi_trial.SetUseExpoBackground(True)
-                        continue
-                    if bkg == "kLin":
-                        multi_trial.SetUseLinBackground(True)
-                        continue
-                    if bkg == "Pol2":
-                        multi_trial.SetUsePol2Background(True)
-                        continue
-                    if bkg == "Pol3":
-                        multi_trial.SetUsePol3Background(True)
-                        continue
-                    if bkg == "Pol4":
-                        multi_trial.SetUsePol4Background(True)
-                        continue
-                    if bkg == "Pol5":
-                        multi_trial.SetUsePol5Background(True)
-                        continue
-
-                    self.logger.fatal("Unknown background %s for multi trial", bkg)
-
-                if rebin:
-                    rebin_steps = [self.rebins[imult][ipt] + rel_rb \
-                            if self.rebins[imult][ipt] + rel_rb > 0 else 1 for rel_rb in rebin]
-                    # To only have unique values and we don't care about the order we can just do
-                    rebin_steps = list(set(rebin_steps))
-                    rebin_steps = array("i", rebin_steps)
-                    multi_trial.ConfigureRebinSteps(len(rebin_steps), rebin_steps)
-                if fit_ranges_low:
-                    low_lim_steps = array("d", fit_ranges_low)
-                    multi_trial.ConfigureLowLimFitSteps(len(fit_ranges_low),
-                                                        low_lim_steps)
-                if fit_ranges_up:
-                    up_lim_steps = array("d", fit_ranges_up)
-                    multi_trial.ConfigureUpLimFitSteps(len(fit_ranges_up), up_lim_steps)
-
-                if bincount_sigma:
-                    multi_trial.ConfigurenSigmaBinCSteps(len(bincount_sigma),
-                                                         array("d", bincount_sigma))
-
-                # Prepare for reflections if requested
-                h_invmass_mc = None
-                h_invmass_mc_refl = None
-                if self.include_reflection:
-                    h_invmass_mc_ = lfile_mc.Get("hmass" + suffix)
-                    h_invmass_mc_rebin_ = AliVertexingHFUtils.RebinHisto(h_invmass_mc_,
-                                                                         self.rebins[imult][ipt],
-                                                                         -1)
-                    h_invmass_mc = TH1F()
-                    h_invmass_mc_rebin_.Copy(h_invmass_mc)
-                    h_invmass_mc_refl_ = lfile_mc.Get("hmass_refl" + suffix)
-                    h_invmass_mc_refl = AliVertexingHFUtils.AdaptTemplateRangeAndBinning(
-                        h_invmass_mc_refl_, h_invmass,
-                        self.p_massmin[ipt], self.p_massmax[ipt])
-                    if h_invmass_mc_refl.Integral() > 0.:
-                        multi_trial.SetTemplatesForReflections(h_invmass_mc_refl, h_invmass_mc_)
-                        r_over_s = h_invmass_mc.Integral(
-                            h_invmass_mc.FindBin(self.p_massmin[ipt]),
-                            h_invmass_mc.FindBin(self.p_massmax[ipt]))
-                        if r_over_s > 0.:
-                            r_over_s = h_invmass_mc_refl.Integral(
-                                h_invmass_mc_refl.FindBin(self.p_massmin[ipt]),
-                                h_invmass_mc_refl.FindBin(self.p_massmax[ipt])) / r_over_s
-                            multi_trial.SetFixRefoS(r_over_s)
-                    else:
-                        self.logger.warning("Reflection requested but template empty")
-
-                if self.p_includesecpeaks[imult][ipt]:
-                    # To init the second peak we need to know what the user has chosen to be the
-                    # initialisation for the central fit since from that the sec. peak width was
-                    # derived
-                    sigma_sec = None
-                    if self.p_use_user_gauss_sigma[ipt] is True:
-                        sigma_sec = self.p_sigmaarray[ipt] * self.p_widthsecpeak
-                    elif self.init_fits_from[ipt] == "data":
-                        fit = file_fits.GetDirectory(suffix).Get("fitter_data_init")
-                        sigma_sec = fit.GetSigma() * self.p_widthsecpeak
-                    else:
-                        fit = file_fits.GetDirectory(suffix).Get("gaus_mc_init")
-                        sigma_sec = fit.GetParameter(2) * self.p_widthsecpeak
-                    #p_widthsecpeak to be fixed
-                    multi_trial.IncludeSecondGausPeak(self.p_masssecpeak,
-                                                      self.p_fix_masssecpeaks[imult][ipt],
-                                                      sigma_sec,
-                                                      self.p_fix_widthsecpeak)
-
-                # Just make sure it's kept until the workflow is done
-                self.root_objects.append(multi_trial)
-                mt_filename = self.make_file_path(self.d_mt_results_path, "multi_trial",
-                                                  "root", None, suffix_write)
-
-                if multi_trial.DoMultiTrials(h_invmass):
-                    multi_trial.SaveToRoot(mt_filename)
-
-        self.plot_multi_trial()
+        self.fitter.print_fits()
+        #self.fitter.perform_syst()
+        #self.plot_multi_trial()
 
         # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
@@ -1430,27 +673,36 @@ class Analyzer:
     def side_band_sub(self):
         self.loadstyle()
         lfile = TFile.Open(self.n_filemass)
-        func_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
-                                            None, [self.case, self.typean])
-        func_file = TFile.Open(func_filename, "READ")
         eff_file = TFile.Open("%s/efficiencies%s%s.root" % \
                               (self.d_resultsallpmc, self.case, self.typean))
         fileouts = TFile.Open("%s/side_band_sub%s%s.root" % \
                               (self.d_resultsallpdata, self.case, self.typean), "recreate")
+
+        # Try to recover fitter and hence all fits which are assumed to be done in a previous run
+        if not self.fitter:
+            fileout_name = os.path.join(self.d_resultsallpdata,
+                                        f"{self.fits_dirname}_{self.case}_{self.typean}")
+            self.fitter = MLFitter(self.datap, self.typean, self.n_filemass, self.n_filemass_mc)
+            if not self.fitter.load_fits(fileout_name):
+                self.logger.error("Cannot load fits from dir %s", fileout_name)
+                return
+
         for imult in range(self.p_nbin2):
             heff = eff_file.Get("eff_mult%d" % imult)
             hz = None
             for ipt in range(self.p_nptbins):
+                fit = self.fitter.get_central_fit(ipt, imult)
+                if not fit:
+                    self.logger.fatal("Cannot access fit in bins (%i, %i)", ipt, imult)
+                ali_hf_fit = fit.kernel
                 bin_id = self.bin_matching[ipt]
                 suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
                 hzvsmass = lfile.Get("hzvsmass" + suffix)
-                load_dir = func_file.GetDirectory(suffix)
-                mass_fitter = load_dir.Get("fitter")
-                mean = mass_fitter.GetMean()
-                sigma = mass_fitter.GetSigma()
+                mean = ali_hf_fit.GetMean()
+                sigma = ali_hf_fit.GetSigma()
                 binmasslow2sig = hzvsmass.GetXaxis().FindBin(mean - 2*sigma)
                 masslow2sig = mean - 2*sigma
                 binmasshigh2sig = hzvsmass.GetXaxis().FindBin(mean + 2*sigma)
@@ -1476,7 +728,7 @@ class Analyzer:
                 hzbkg = hzbkgleft.Clone("hzbkg" + suffix)
                 hzbkg.Add(hzbkgright)
                 hzbkg_scaled = hzbkg.Clone("hzbkg_scaled" + suffix)
-                bkg_fit = mass_fitter.GetBackgroundRecalcFunc()
+                bkg_fit = ali_hf_fit.GetBackgroundRecalcFunc()
                 area_scale_denominator = bkg_fit.Integral(masslow9sig, masslow4sig) + \
                 bkg_fit.Integral(masshigh4sig, masshigh9sig)
                 area_scale = bkg_fit.Integral(masslow2sig, masshigh2sig)/area_scale_denominator
@@ -1736,7 +988,6 @@ class Analyzer:
         yield_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                              None, [self.case, self.typean])
         gROOT.LoadMacro("HFPtSpectrum.C")
-        gROOT.LoadMacro("HFPtSpectrum2.C")
         from ROOT import HFPtSpectrum, HFPtSpectrum2
         for imult in range(self.p_nbin2):
             bineff = -1

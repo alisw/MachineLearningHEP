@@ -24,12 +24,51 @@ import math
 import numpy as np
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
 # pylint: disable=import-error, no-name-in-module
-from ROOT import TH2F, TFile, TH1, TGraphAsymmErrors
+from ROOT import TH2F, TFile, TH1, TH3F, TGraphAsymmErrors
 from ROOT import TPad, TCanvas, TLegend, kBlack, kGreen, kRed, kBlue, kWhite
 from ROOT import gStyle, gROOT
 from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
 from machine_learning_hep.logger import get_logger
 
+def buildarray(listnumber):
+    arraynumber = array('d', listnumber)
+    return arraynumber
+
+def make3dplot(df_, titlehist, arrayx, arrayy, arrayz, nvar1, nvar2, nvar3):
+    """
+    Make TH3F scatterplot between two variables from dataframe
+    """
+    lenx = len(arrayx) - 1
+    leny = len(arrayy) - 1
+    lenz = len(arrayz) - 1
+
+    histo = TH3F(titlehist, titlehist, lenx, arrayx, leny, arrayy, lenz, arrayz)
+    histo.Sumw2()
+    df_rd = df_[[nvar1, nvar2, nvar3]]
+    arr3 = df_rd.values
+    fill_hist(histo, arr3)
+    return histo
+
+def build2dhisto(titlehist, arrayx, arrayy):
+    """
+    Make TH3F scatterplot between two variables from dataframe
+    """
+    lenx = len(arrayx) - 1
+    leny = len(arrayy) - 1
+
+    histo = TH2F(titlehist, titlehist, lenx, arrayx, leny, arrayy)
+    histo.Sumw2()
+    return histo
+
+
+def make2dplot(df_, histo, nvar1, nvar2):
+    """
+    Make TH3F scatterplot between two variables from dataframe
+    """
+    df_rd = df_[[nvar1, nvar2]]
+    arr2 = df_rd.values
+    fill_hist(histo, arr2)
+    return histo
 def load_root_style_simple():
     """
     Set basic ROOT style for histograms

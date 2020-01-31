@@ -1,4 +1,4 @@
-case: D0pp
+case: Dspp
 download:
   alice:
     activate: false
@@ -24,36 +24,36 @@ mergingperiods:
     activate: false
 
 ml_study:
-  activate: true
+  activate: false
   dopca: false
-  docorrelation: true
-  dotraining: true
-  dotesting: true
-  doapplytodatamc: true
-  docrossvalidation: true
-  dolearningcurve: true
-  doroc: true
+  docorrelation: false
+  dotraining: false
+  dotesting: false
+  doapplytodatamc: false
+  docrossvalidation: false
+  dolearningcurve: false
+  doroc: false
   doroctraintest: false
   doplotdistr: false
-  doimportance: true
+  doimportance: false
   dogridsearch: false
   doboundary: false
-  doefficiency: true
-  dosignifopt: true
+  doefficiency: false
+  dosignifopt: false
   doscancuts: false
 
 mlapplication:
   data:
-    doapply: false
-    domergeapply: false
+    doapply: true
+    domergeapply: true
     docontinueafterstop: false
   mc:
-    doapply: false
-    domergeapply: false
+    doapply: true
+    domergeapply: true
     docontinueafterstop: false
 
 analysis:
-  type: SPDvspt
+  type: MBvspt_ntrkl
   # Do each period separately including merged (true)
   # Do only merged (false)
   doperperiod: true

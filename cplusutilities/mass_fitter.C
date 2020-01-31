@@ -42,7 +42,7 @@ void DivideCanvas(TCanvas* c, int nptbins);
 void mass_fitter(TString mcordata, TString useml) {
 
     //load config
-    YAML::Node config = YAML::LoadFile("../machine_learning_hep/default_complete.yaml");
+    YAML::Node config = YAML::LoadFile("../machine_learning_hep/submission/default_complete.yaml");
     bool uselikelihood = config["analysis"]["uselikelihood"].as<int>();
     vector<double> ptmin = config["analysis"]["binmin"].as<vector<double>>();
     vector<double> ptmax = config["analysis"]["binmax"].as<vector<double>>();

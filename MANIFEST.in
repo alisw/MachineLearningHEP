@@ -1,8 +1,8 @@
-include machine_learning_hep/default_complete.yaml
-include machine_learning_hep/default_pre.yml
-include machine_learning_hep/default_train.yml
-include machine_learning_hep/default_apply.yml
-include machine_learning_hep/default_ana.yml
+include machine_learning_hep/submission/default_complete.yaml
+include machine_learning_hep/submission/default_pre.yml
+include machine_learning_hep/submission/default_train.yml
+include machine_learning_hep/submission/default_apply.yml
+include machine_learning_hep/submission/default_ana.yml
 include machine_learning_hep/data/database_ml_parameters_Bs.yml
 include machine_learning_hep/data/database_ml_parameters_D0pp.yml
 include machine_learning_hep/data/database_ml_parameters_DsPbPb010.yml
