@@ -17,25 +17,13 @@ main script for doing data processing, machine learning and analysis
 """
 import math
 import array
-import multiprocessing as mp
 import pickle
-import os
-import random as rd
-import uproot
-import pandas as pd
 import numpy as np
-from root_numpy import fill_hist, evaluate # pylint: disable=import-error, no-name-in-module
-from ROOT import TFile, TH1F, TH2F, TH3F, RooUnfoldResponse # pylint: disable=import-error, no-name-in-module
-from machine_learning_hep.selectionutils import selectfidacc
-from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
-from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge_method
-from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
-from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
-from machine_learning_hep.utilities import mergerootfiles, z_calc, z_gen_calc
-from machine_learning_hep.utilities import get_timestamp_string
-from machine_learning_hep.utilities_plot import scatterplotroot
-from machine_learning_hep.models import apply # pylint: disable=import-error
-#from machine_learning_hep.globalfitter import fitter
+from root_numpy import fill_hist  # pylint: disable=import-error, no-name-in-module
+from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
+from machine_learning_hep.bitwise import tag_bit_df
+from machine_learning_hep.utilities import selectdfrunlist
+from machine_learning_hep.utilities import seldf_singlevar, openfile
 from machine_learning_hep.selectionutils import getnormforselevt
 from machine_learning_hep.processer import Processer
 
@@ -51,10 +39,10 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
                  d_results, d_val, typean, runlisttrigger, d_mcreweights):
         super().__init__(case, datap, run_param, mcordata, p_maxfiles,
-                 d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
-                 p_chunksizeunp, p_chunksizeskim, p_maxprocess,
-                 p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
-                 d_results, d_val, typean, runlisttrigger, d_mcreweights)
+                         d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
+                         p_chunksizeunp, p_chunksizeskim, p_maxprocess,
+                         p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
+                         d_results, d_val, typean, runlisttrigger, d_mcreweights)
 
         self.p_mass_fit_lim = datap["analysis"][self.typean]['mass_fit_lim']
         self.p_bin_width = datap["analysis"][self.typean]['bin_width']
