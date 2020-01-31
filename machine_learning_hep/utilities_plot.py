@@ -31,7 +31,8 @@ from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
 from machine_learning_hep.logger import get_logger
 
 def buildarray(listnumber):
-    arraynumber = array.array('d', listnumber)
+    arraynumber = array('d', listnumber)
+    return arraynumber
 
 def make3dplot(df_, titlehist, arrayx, arrayy, arrayz, nvar1, nvar2, nvar3):
     """
