@@ -35,7 +35,7 @@ from machine_learning_hep.utilities import folding, get_bins, make_latex_table, 
 from machine_learning_hep.utilities_plot import plot_histograms
 from machine_learning_hep.analysis.analyzer import Analyzer
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
-class AnalyzerDhadrons_mult(Analyzer):
+class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
     species = "analyzer"
     def __init__(self, datap, case, typean, period):
         super().__init__(datap, case, typean, period)
