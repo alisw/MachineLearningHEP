@@ -15,8 +15,6 @@
 """
 main script for doing data processing, machine learning and analysis
 """
-import math
-import array
 import multiprocessing as mp
 import pickle
 import os
@@ -24,8 +22,6 @@ import random as rd
 import uproot
 import pandas as pd
 import numpy as np
-from root_numpy import fill_hist, evaluate # pylint: disable=import-error, no-name-in-module
-from ROOT import TFile, TH1F, TH2F, TH3F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge_method
@@ -33,10 +29,7 @@ from machine_learning_hep.utilities import list_folders, createlist, appendmainf
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
 from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.utilities import get_timestamp_string
-from machine_learning_hep.utilities_plot import scatterplotroot
 from machine_learning_hep.models import apply # pylint: disable=import-error
-#from machine_learning_hep.globalfitter import fitter
-from machine_learning_hep.selectionutils import getnormforselevt
 
 class Processer: # pylint: disable=too-many-instance-attributes
     # Class Attribute
@@ -202,6 +195,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                     self.lpt_gensk[ipt]) for ipt in range(self.p_nptbins)]
             self.lpt_gendecmerged = [os.path.join(self.d_pkl_decmerged, self.lpt_gensk[ipt])
                                      for ipt in range(self.p_nptbins)]
+        self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
+        self.runlistrigger = runlisttrigger
 
 
     def unpack(self, file_index):
@@ -369,7 +364,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             merge_method(self.mptfiles_recoskmldec[ipt], self.lpt_recodecmerged[ipt])
             if self.mcordata == "mc":
                 merge_method(self.mptfiles_gensk[ipt], self.lpt_gendecmerged[ipt])
-
+    # pylint: disable=no-member
     def process_histomass(self):
         print("Doing masshisto", self.mcordata, self.period)
         print("Using run selection for mass histo", \
@@ -385,7 +380,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         tmp_merged = \
         f"/data/tmp/hadd/{self.case}_{self.typean}/mass_{self.period}/{get_timestamp_string()}/"
         mergerootfiles(self.l_histomass, self.n_filemass, tmp_merged)
-
+    # pylint: disable=no-member
     def process_efficiency(self):
         print("Doing efficiencies", self.mcordata, self.period)
         print("Using run selection for eff histo", \
@@ -398,105 +393,5 @@ class Processer: # pylint: disable=too-many-instance-attributes
         create_folder_struc(self.d_results, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
         self.parallelizer(self.process_efficiency_single, arguments, self.p_chunksizeunp)
-        tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/histoeff_{self.period}/{get_timestamp_string()}/"
+        tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/histoeff_{self.period}/{get_timestamp_string()}/" # pylint: disable=line-too-long
         mergerootfiles(self.l_histoeff, self.n_fileeff, tmp_merged)
-    # pylint: disable=too-many-locals
-
-    def get_reweighted_count(self, dfsel):
-        filename = os.path.join(self.d_mcreweights, self.n_mcreweights)
-        weight_file = TFile.Open(filename, "read")
-        weights = weight_file.Get("Weights0")
-        w = [weights.GetBinContent(weights.FindBin(v)) for v in
-             dfsel[self.v_var2_binning_gen]]
-        val = sum(w)
-        err = math.sqrt(sum(map(lambda i: i * i, w)))
-        #print('reweighting sum: {:.1f} +- {:.1f} -> {:.1f} +- {:.1f} (zeroes: {})' \
-        #      .format(len(dfsel), math.sqrt(len(dfsel)), val, err, w.count(0.)))
-        return val, err
-
-    def process_valevents(self, file_index):
-        dfevt = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
-        dfevt = dfevt.query("is_ev_rej==0")
-        dfevtmb = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
-        dfevtmb = dfevtmb.query("is_ev_rej==0")
-        myrunlisttrigmb = self.runlistrigger["INT7"]
-        dfevtselmb = selectdfrunlist(dfevtmb, self.run_param[myrunlisttrigmb], "run_number")
-        triggerlist = ["INT7", "HighMultV0", "HighMultSPD"]
-        varlist = ["v0m_corr", "n_tracklets_corr", "perc_v0m"]
-        nbinsvar = [100, 200, 200]
-        minrvar = [0, 0, 0]
-        maxrvar = [1500, 200, .5]
-        fileevtroot = TFile.Open(self.l_evtvalroot[file_index], "recreate")
-        hv0mvsperc = scatterplotroot(dfevt, "perc_v0m", "v0m_corr", 50000, 0, 100, 200, 0., 2000.)
-        hv0mvsperc.SetName("hv0mvsperc")
-        hv0mvsperc.Write()
-        dfevtnorm = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
-        hntrklsperc = scatterplotroot(dfevt, "perc_v0m", "n_tracklets_corr", 50000, 0, 100, 200, 0., 2000.)
-        hntrklsperc.SetName("hntrklsperc")
-        hntrklsperc.Write()
-        for ivar, var in enumerate(varlist):
-            label = "hbitINT7vs%s" % (var)
-            histoMB = TH1F(label, label, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
-            fill_hist(histoMB, dfevtselmb.query("trigger_hasbit_INT7==1")[var])
-            histoMB.Sumw2()
-            histoMB.Write()
-            for trigger in triggerlist:
-                triggerbit = "trigger_hasbit_%s==1" % trigger
-                labeltriggerANDMB = "hbit%sANDINT7vs%s" % (trigger, var)
-                labeltrigger = "hbit%svs%s" % (trigger, var)
-                histotrigANDMB = TH1F(labeltriggerANDMB, labeltriggerANDMB, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
-                histotrig = TH1F(labeltrigger, labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
-                myrunlisttrig = self.runlistrigger[trigger]
-                ev = len(dfevt)
-                dfevtsel = selectdfrunlist(dfevt, self.run_param[myrunlisttrig], "run_number")
-                if len(dfevtsel) < ev:
-                    print("Reduced number of events in trigger", trigger)
-                    print(ev, len(dfevtsel))
-                fill_hist(histotrigANDMB, dfevtsel.query(triggerbit + " and trigger_hasbit_INT7==1")[var])
-                fill_hist(histotrig, dfevtsel.query(triggerbit)[var])
-                histotrigANDMB.Sumw2()
-                histotrig.Sumw2()
-                histotrigANDMB.Write()
-                histotrig.Write()
-                hSelMult = TH1F('sel_' + labeltrigger, 'sel_' + labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
-                hNoVtxMult = TH1F('novtx_' + labeltrigger, 'novtx_' + labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
-                hVtxOutMult = TH1F('vtxout_' + labeltrigger, 'vtxout_' + labeltrigger, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
-
-                # multiplicity dependent normalisation
-                dftrg = dfevtnorm.query(triggerbit)
-                dfsel = dftrg.query('is_ev_rej == 0')
-                df_to_keep = filter_bit_df(dftrg, 'is_ev_rej', [[], [0, 5, 6, 10, 11]])
-                # events with reco vtx after previous selection
-                tag_vtx = tag_bit_df(df_to_keep, 'is_ev_rej', [[], [1, 2, 7, 12]])
-                df_no_vtx = df_to_keep[~tag_vtx.values]
-                # events with reco zvtx > 10 cm after previous selection
-                df_bit_zvtx_gr10 = filter_bit_df(df_to_keep, 'is_ev_rej', [[3], [1, 2, 7, 12]])
-
-                fill_hist(hSelMult, dfsel[var])
-                fill_hist(hNoVtxMult, df_no_vtx[var])
-                fill_hist(hVtxOutMult, df_bit_zvtx_gr10[var])
-
-                hSelMult.Write()
-                hNoVtxMult.Write()
-                hVtxOutMult.Write()
-
-        hNorm = TH1F("hEvForNorm", ";;Normalisation", 2, 0.5, 2.5)
-        hNorm.GetXaxis().SetBinLabel(1, "normsalisation factor")
-        hNorm.GetXaxis().SetBinLabel(2, "selected events")
-        nselevt = 0
-        norm = 0
-        if not dfevtnorm.empty:
-            nselevt = len(dfevtnorm.query("is_ev_rej==0"))
-            norm = getnormforselevt(dfevtnorm)
-        hNorm.SetBinContent(1, norm)
-        hNorm.SetBinContent(2, nselevt)
-        hNorm.Write()
-        fileevtroot.Close()
-
-    def process_valevents_par(self):
-        print("doing event validation", self.mcordata, self.period)
-        create_folder_struc(self.d_val, self.l_path)
-        tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/val_{self.period}/{get_timestamp_string()}/"
-        arguments = [(i,) for i in range(len(self.l_evtorig))]
-        self.parallelizer(self.process_valevents, arguments, self.p_chunksizeskim)
-        mergerootfiles(self.l_evtvalroot, self.f_totevtvalroot, tmp_merged)
