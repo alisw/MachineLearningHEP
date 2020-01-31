@@ -349,15 +349,15 @@ class AnalyzerJet(Analyzer):
         cEffFD.SaveAs("%s/EffFD%s%s.eps" % (self.d_resultsallpmc,
                                             self.case, self.typean))
 
+    # pylint: disable=too-many-locals
     def side_band_sub(self):
-        """ This function perform side band subtraction of the histograms.
-        The input files for this function are coming from:
-            - root file containing the histograms of mass vs z called here
-            "hzvsmass". There is one for each bin of HF pt and jet pt.
-            - fit function performed in the fit function above fit() called in
-            this function "func_file"
-            - several histograms coming from the efficiency ROOT file
-        """
+        #This function perform side band subtraction of the histograms.
+        #The input files for this function are coming from:
+        #    - root file containing the histograms of mass vs z called here
+        #     "hzvsmass". There is one for each bin of HF pt and jet pt.
+        #    - fit function performed in the fit function above fit() called in
+        #    this function "func_file"
+        #    - several histograms coming from the efficiency ROOT file
 
         self.loadstyle()
         lfile = TFile.Open(self.n_filemass)
@@ -371,26 +371,27 @@ class AnalyzerJet(Analyzer):
                               (self.d_resultsallpdata, self.case, self.typean), "RECREATE")
         fileouts.cd()
 
-        "These are the reconstructed level bins for jet pt and z values"
+        # These are the reconstructed level bins for jet pt and z values
 
-        zbin_reco=[]
-        nzbin_reco=self.p_nbinshape_reco
-        zbin_reco =self.varshaperanges_reco
-        zbinarray_reco=array('d', zbin_reco)
+        zbin_reco = []
+        nzbin_reco = self.p_nbinshape_reco
+        zbin_reco = self.varshaperanges_reco
+        zbinarray_reco = array('d', zbin_reco)
 
-        jetptbin_reco =[]
-        njetptbin_reco=self.p_nbin2_reco
+        jetptbin_reco = []
+        njetptbin_reco = self.p_nbin2_reco
         jetptbin_reco = self.var2ranges_reco
-        jetptbinarray_reco=array('d', jetptbin_reco)
+        jetptbinarray_reco = array('d', jetptbin_reco)
 
-        """ hzvsjetpt is going to be the side-band subtracted histogram of z vs
-        jet that is going to be filled after subtraction """
+        # hzvsjetpt is going to be the side-band subtracted histogram of z vs
+        # jet that is going to be filled after subtraction
 
-        hzvsjetpt = TH2F("hzvsjetpt","",nzbin_reco, zbinarray_reco,
+        hzvsjetpt = TH2F("hzvsjetpt", "", nzbin_reco, zbinarray_reco,
                          njetptbin_reco, jetptbinarray_reco)
         hzvsjetpt.Sumw2()
 
-        """ This is a loop over jet pt and over HF candidate pT """
+        # This is a loop over jet pt and over HF candidate pT
+
         for imult in range(self.p_nbin2_reco):
             heff = eff_file.Get("eff_mult%d" % imult)
             hz = None
@@ -403,10 +404,10 @@ class AnalyzerJet(Analyzer):
                           self.v_var2_binning, self.lvar2_binmin_reco[imult],
                           self.lvar2_binmax_reco[imult])
 
-                """ In this part of the code we extract for each bin of jet pt
-                and HF pT the fit function of the data fit to extract mean and
-                sigma. IF THERE IS NO GOOD FIT THE GIVEN BIN IS DISCARDED AND
-                WILL NOT ENTER THE FINAL RESULT"""
+                # In this part of the code we extract for each bin of jet pt
+                # and HF pT the fit function of the data fit to extract mean and
+                # sigma. IF THERE IS NO GOOD FIT THE GIVEN BIN IS DISCARDED AND
+                # WILL NOT ENTER THE FINAL RESULT
 
                 load_dir = func_file.GetDirectory(suffix)
                 mass_fitter = load_dir.Get("fitter%d" % (ipt))
@@ -414,9 +415,9 @@ class AnalyzerJet(Analyzer):
                 sigma = mass_fitter.GetSigma()
                 bkg_fit = mass_fitter.GetBackgroundRecalcFunc()
 
-                """ Here I define the boundaries for the side-band subtractions
-                based on the results of the fit. We get usually 4-9 sigma from
-                the mean in both sides to extract the side band distributions """
+                # Here I define the boundaries for the side-band subtractions
+                # based on the results of the fit. We get usually 4-9 sigma from
+                # the mean in both sides to extract the side band distributions
 
                 hzvsmass = lfile.Get("hzvsmass" + suffix)
                 binmasslow2sig = \
@@ -442,8 +443,8 @@ class AnalyzerJet(Analyzer):
                 masshigh9sig = \
                     mean + self.sideband_sigma_2_right*sigma
 
-                """ here we project over the z-axis the 2d distributions in the
-                three regions = signal region, left and right side-band """
+                # here we project over the z-axis the 2d distributions in the
+                # three regions = signal region, left and right side-band
 
                 hzsig = hzvsmass.ProjectionY("hzsig" + suffix, \
                              binmasslow2sig, binmasshigh2sig, "e")
@@ -452,34 +453,34 @@ class AnalyzerJet(Analyzer):
                 hzbkgright = hzvsmass.ProjectionY("hzbkgright" + suffix, \
                              binmasshigh4sig, binmasshigh9sig, "e")
 
-                """ the background histogram is made by adding the left and
-                right side band in general. self.sidebandleftonly = True is
-                just made for systematic studies"""
+                # the background histogram is made by adding the left and
+                # right side band in general. self.sidebandleftonly = True is
+                # just made for systematic studies
 
                 hzbkg = hzbkgleft.Clone("hzbkg" + suffix)
-                if self.sidebandleftonly is False :
+                if self.sidebandleftonly is False:
                     hzbkg.Add(hzbkgright)
                 hzbkg_scaled = hzbkg.Clone("hzbkg_scaled" + suffix)
 
                 area_scale_denominator = -1
-                if not bkg_fit:
-                    """ if there is no background fit it continues"""
+                if not bkg_fit: # if there is no background fit it continues
                     continue
                 area_scale_denominator = bkg_fit.Integral(masslow9sig, masslow4sig) + \
                 bkg_fit.Integral(masshigh4sig, masshigh9sig)
                 if area_scale_denominator == 0:
                     continue
-                area_scale = bkg_fit.Integral(masslow2sig, masshigh2sig)/area_scale_denominator # 0.4
+                area_scale = \
+                    bkg_fit.Integral(masslow2sig, masshigh2sig)/area_scale_denominator # 0.4
                 hzsub = hzsig.Clone("hzsub" + suffix)
                 hzsub.Add(hzbkg, -1*area_scale)
                 hzsub_noteffscaled = hzsub.Clone("hzsub_noteffscaled" + suffix)
                 hzbkg_scaled.Scale(area_scale)
                 eff = heff.GetBinContent(ipt+1)
-                if eff > 0.0 :
+                if eff > 0.0:
                     hzsub.Scale(1.0/(eff*self.sigma_scale))
                 if first_fit == 0:
                     hz = hzsub.Clone("hz")
-                    first_fit=1
+                    first_fit = 1
                 else:
                     hz.Add(hzsub)
                 fileouts.cd()
@@ -491,7 +492,7 @@ class AnalyzerJet(Analyzer):
 
                 csubz = TCanvas('csubz' + suffix, 'The Side-Band Sub Canvas'+suffix)
                 hzsub.SetXTitle("#it{z}_{#parallel}^{ch}")
-                hzsub.GetYaxis().SetRangeUser(hzsub.GetMinimum(),hzsub.GetMaximum()*1.2)
+                hzsub.GetYaxis().SetRangeUser(hzsub.GetMinimum(), hzsub.GetMaximum()*1.2)
                 csubz.SaveAs("%s/side_band_subtracted%s%s_%s.eps" % \
                              (self.d_resultsallpdata, self.case, self.typean, suffix))
 
@@ -510,21 +511,25 @@ class AnalyzerJet(Analyzer):
                              (self.d_resultsallpdata, self.case, self.typean, suffix))
 
             suffix = "_%s_%.2f_%.2f" % \
-                         (self.v_var2_binning, self.lvar2_binmin_reco[imult], self.lvar2_binmax_reco[imult])
+                (self.v_var2_binning,
+                 self.lvar2_binmin_reco[imult],
+                 self.lvar2_binmax_reco[imult])
+
             if first_fit == 0:
-                self.logger.error("No successful fits for: %s" % suffix)
+                print("No successful fits for: %s" % suffix)
                 continue
-            cz = TCanvas('cz' + suffix, 'The Efficiency Corrected Signal Yield Canvas'+suffix)
+            cz = TCanvas('cz' + suffix,
+                         'The Efficiency Corrected Signal Yield Canvas'+suffix)
             hz.Draw()
             cz.SaveAs("%s/efficiencycorrected_fullsub%s%s_%s_%.2f_%.2f.eps" % \
                       (self.d_resultsallpdata, self.case, self.typean, self.v_var2_binning, \
                        self.lvar2_binmin_reco[imult], self.lvar2_binmax_reco[imult]))
 
             for zbins in range(nzbin_reco):
-                hzvsjetpt.SetBinContent(zbins+1,imult+1,hz.GetBinContent(zbins+1))
-                hzvsjetpt.SetBinError(zbins+1,imult+1,hz.GetBinError(zbins+1))
+                hzvsjetpt.SetBinContent(zbins+1, imult+1, hz.GetBinContent(zbins+1))
+                hzvsjetpt.SetBinError(zbins+1, imult+1, hz.GetBinError(zbins+1))
 
-            hz.Scale(1.0/hz.Integral(1,-1))
+            hz.Scale(1.0/hz.Integral(1, -1))
             fileouts.cd()
             hz.Write("hz" + suffix)
 
@@ -536,4 +541,3 @@ class AnalyzerJet(Analyzer):
         hzvsjetpt.Draw("text")
         czvsjetpt.SaveAs("%s/czvsjetpt.eps" % self.d_resultsallpdata)
         fileouts.Close()
-
