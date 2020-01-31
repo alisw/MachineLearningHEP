@@ -22,14 +22,13 @@ import pickle
 import pandas as pd
 import numpy as np
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
+from sklearn.model_selection import train_test_split
 from ROOT import TFile, TH1F, TH2F, RooUnfoldResponse # pylint: disable=import-error, no-name-in-module
-from ROOT import RooUnfold, TRandom3
 from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utilities import selectdfrunlist, seldf_singlevar, openfile
 from machine_learning_hep.utilities import z_calc, z_gen_calc
 from machine_learning_hep.utilities_plot import build2dhisto, make2dplot, make3dplot
 from machine_learning_hep.processer import Processer
-from sklearn.model_selection import train_test_split
 
 
 class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attributes
@@ -145,11 +144,12 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                     massarray = []
                     for i in range(5001):
                         massarray.append(1.0 + (i*(5.0/5000.0)))
-                    massarray_reco=array.array('d',massarray)
-                    zarray_reco=array.array('d',self.varshaperanges_reco)
+                    massarray_reco = array.array('d', massarray)
+                    zarray_reco = array.array('d', self.varshaperanges_reco)
                     zarray = z_calc(df_bin.pt_jet, df_bin.phi_jet, df_bin.eta_jet,
                                     df_bin.pt_cand, df_bin.phi_cand, df_bin.eta_cand)
-                    h_zvsinvmass = TH2F("hzvsmass" + suffix, "", 5000, massarray_reco, self.p_nbinshape_reco, zarray_reco)
+                    h_zvsinvmass = TH2F("hzvsmass" + suffix, "", \
+                        5000, massarray_reco, self.p_nbinshape_reco, zarray_reco)
                     h_zvsinvmass.Sumw2()
                     zvsinvmass = np.vstack((df_bin.inv_mass, zarray)).T
                     fill_hist(h_zvsinvmass, zvsinvmass)
@@ -384,7 +384,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         subtraction, currently is obsolete"""
 
         hzvsjetpt_gen_unmatched = TH2F("hzvsjetpt_gen_unmatched", "hzvsjetpt_gen_unmatched", \
-            nzbin_gen,zbinarray_gen,njetptbin_gen,jetptbinarray_gen)
+            nzbin_gen, zbinarray_gen, njetptbin_gen, jetptbinarray_gen)
         df_zvsjetpt_gen_unmatched = df_gen_prompt.loc[:, ["z", "pt_jet"]]
         fill_hist(hzvsjetpt_gen_unmatched, df_zvsjetpt_gen_unmatched)
         hzvsjetpt_gen_unmatched.Write()
@@ -686,8 +686,6 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
 
         df_mc_reco_merged_prompt_train, df_mc_reco_merged_prompt_test = \
                 train_test_split(df_mc_reco_merged_prompt, test_size=self.closure_frac)
-        df_tmp_selgen_train, df_tmp_selreco_train, df_tmp_selrecogen_train = \
-                self.create_df_closure(df_mc_reco_merged_prompt_train)
         df_tmp_selgen_pr_test, df_tmp_selreco_pr_test, df_tmp_selrecogen_pr_test = \
                 self.create_df_closure(df_mc_reco_merged_prompt_test)
 
@@ -698,17 +696,15 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
 
 
         for ibin2 in range(len(self.lvar2_binmin_gen)):
-            dtmp = seldf_singlevar(df_mc_reco_merged_nonprompt, \
-                "pt_gen_jet", self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             suffix = "%s_%.2f_%.2f" % \
                 (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             hz_gen_nocuts_closure = TH1F("hz_gen_nocuts_closure" + suffix,
                                          "hz_gen_nocuts_closure" + suffix,
                                          nzbin_gen, zbinarray_gen)
             hz_gen_nocuts_closure.Sumw2()
-            hz_gen_cuts_closure=TH1F("hz_gen_cuts_closure" + suffix,
-                                     "hz_gen_cuts_closure" + suffix,
-                                     nzbin_gen, zbinarray_gen)
+            hz_gen_cuts_closure = TH1F("hz_gen_cuts_closure" + suffix,
+                                       "hz_gen_cuts_closure" + suffix,
+                                       nzbin_gen, zbinarray_gen)
             hz_gen_cuts_closure.Sumw2()
             df_tmp_selgen_pr_test_bin = seldf_singlevar(df_tmp_selgen_pr_test, \
                 "pt_gen_jet", self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
@@ -732,7 +728,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         hzvsjetpt_reco_cuts_closure = TH2F("hzvsjetpt_reco_cuts_closure",
                                            "hzvsjetpt_reco_cuts_closure",
                                            nzbin_reco, zbinarray_reco,
-                                           njetptbin_reco,jetptbinarray_reco)
+                                           njetptbin_reco, jetptbinarray_reco)
         hzvsjetpt_reco_cuts_closure.Sumw2()
 
         make2dplot(df_tmp_selreco_pr_test, hzvsjetpt_reco_nocuts_closure, "z", "pt_jet")
@@ -741,7 +737,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         hzvsjetpt_reco_cuts_closure.Write()
 
         for row in df_mc_reco_merged_prompt.itertuples():
-            response_matrix_weight=1.0
+            response_matrix_weight = 1.0
             if self.doprior is True:
                 binx = hzvsjetpt_prior_weights.GetXaxis().FindBin(row.z_gen)
                 biny = hzvsjetpt_prior_weights.GetYaxis().FindBin(row.pt_gen_jet)
@@ -749,10 +745,10 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
 
                 if weight > 0.0:
                     response_matrix_weight = 1.0/weight
-            response_matrix_pr.Fill(row.z,row.pt_jet,\
-                row.z_gen,row.pt_gen_jet,response_matrix_weight)
+            response_matrix_pr.Fill(row.z, row.pt_jet,\
+                row.z_gen, row.pt_gen_jet, response_matrix_weight)
         for row in df_mc_reco_merged_prompt_train.itertuples():
-            response_matrix_weight=1.0
+            response_matrix_weight = 1.0
             if self.doprior is True:
                 binx = hzvsjetpt_prior_weights.GetXaxis().FindBin(row.z_gen)
                 biny = hzvsjetpt_prior_weights.GetYaxis().FindBin(row.pt_gen_jet)
@@ -760,8 +756,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
 
                 if weight > 0.0:
                     response_matrix_weight = 1.0/weight
-            response_matrix_closure_pr.Fill(row.z,row.pt_jet,\
-                row.z_gen,row.pt_gen_jet,response_matrix_weight)
+            response_matrix_closure_pr.Fill(row.z, row.pt_jet,\
+                row.z_gen, row.pt_gen_jet, response_matrix_weight)
         response_matrix_pr.Write("response_matrix")
         response_matrix_closure_pr.Write("response_matrix_closure")
 
