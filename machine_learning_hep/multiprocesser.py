@@ -16,8 +16,8 @@
 main script for doing data processing, machine learning and analysis
 """
 import os
-from machine_learning_hep.processer import Processer
-from machine_learning_hep.processerDhadrons import ProcesserDhadrons
+from machine_learning_hep.processer import Processer # pylint: disable=unused-import
+from machine_learning_hep.processerDhadrons import ProcesserDhadrons # pylint: disable=unused-import
 from machine_learning_hep.utilities import merge_method, mergerootfiles, get_timestamp_string
 class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-statements
     species = "multiprocesser"
@@ -109,18 +109,18 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.process_listsample = []
         for indexp in range(self.prodnumber):
             myprocess = proc_class(self.case, self.datap, self.run_param, self.mcordata,
-                                  self.p_maxfiles[indexp], self.dlper_root[indexp],
-                                  self.dlper_pkl[indexp], self.dlper_pklsk[indexp],
-                                  self.dlper_pklml[indexp],
-                                  self.p_period[indexp], self.p_chunksizeunp[indexp],
-                                  self.p_chunksizeskim[indexp], self.p_nparall,
-                                  self.p_fracmerge[indexp], self.p_seedmerge[indexp],
-                                  self.dlper_reco_modapp[indexp],
-                                  self.dlper_reco_modappmerged[indexp],
-                                  self.d_results[indexp],
-                                  self.dlper_valevtroot[indexp], self.typean,
-                                  self.lper_runlistrigger[self.p_period[indexp]],
-                                  self.dlper_mcreweights[indexp] if self.mcordata == "mc" else None)
+                                   self.p_maxfiles[indexp], self.dlper_root[indexp],
+                                   self.dlper_pkl[indexp], self.dlper_pklsk[indexp],
+                                   self.dlper_pklml[indexp],
+                                   self.p_period[indexp], self.p_chunksizeunp[indexp],
+                                   self.p_chunksizeskim[indexp], self.p_nparall,
+                                   self.p_fracmerge[indexp], self.p_seedmerge[indexp],
+                                   self.dlper_reco_modapp[indexp],
+                                   self.dlper_reco_modappmerged[indexp],
+                                   self.d_results[indexp],
+                                   self.dlper_valevtroot[indexp], self.typean,
+                                   self.lper_runlistrigger[self.p_period[indexp]], \
+                    self.dlper_mcreweights[indexp] if self.mcordata == "mc" else None)
             self.process_listsample.append(myprocess)
 
         self.f_evtorigroot_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evtvalroot)
