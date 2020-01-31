@@ -196,3 +196,77 @@ class AnalyzerJet(Analyzer):
 
         # Fitting
         self.fitter = None
+
+    # pylint: disable=import-outside-toplevel
+    def fit(self):
+        tmp_is_root_batch = gROOT.IsBatch()
+        gROOT.SetBatch(True)
+        fileout_name = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
+                                           None, [self.case, self.typean])
+        fileout = TFile(fileout_name, "RECREATE")
+        myfilemc = TFile(self.n_filemass_mc, "read")
+        myfile = TFile(self.n_filemass, "read")
+        for ipt in range(self.p_nptfinbins):
+            bin_id = self.bin_matching[ipt]
+            for ibin2 in range(self.p_nbin2_reco):
+                suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
+                         (self.v_var_binning, self.lpt_finbinmin[ipt],
+                          self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
+                          self.v_var2_binning, self.lvar2_binmin_reco[ibin2],
+                          self.lvar2_binmax_reco[ibin2])
+                histomassmc = myfilemc.Get("hmass_sig" + suffix)
+                histomassmc_reb = AliVertexingHFUtils.RebinHisto(histomassmc, \
+                                            self.p_rebin[ipt], -1)
+                histomassmc_reb_f = TH1F()
+                histomassmc_reb.Copy(histomassmc_reb_f)
+                fittermc = AliHFInvMassFitter(histomassmc_reb_f, \
+                    self.p_massmin[ipt], self.p_massmax[ipt], self.p_bkgfunc[ipt], 0)
+                fittermc.SetInitialGaussianMean(self.p_masspeak)
+                out = fittermc.MassFitter(1)
+                print("I have made MC fit for sigma initialization, status: %d" % out)
+                histomass = myfile.Get("hmass" + suffix)
+                histomass_reb = AliVertexingHFUtils.RebinHisto(histomass, \
+                                            self.p_rebin[ipt], -1)
+                histomass_reb_f = TH1F()
+                histomass_reb.Copy(histomass_reb_f)
+                fitter = AliHFInvMassFitter(histomass_reb_f, self.p_massmin[ipt], \
+                    self.p_massmax[ipt], self.p_bkgfunc[ipt], self.p_sgnfunc[ipt])
+                fitter.SetInitialGaussianSigma(fittermc.GetSigma())
+                fitter.SetInitialGaussianMean(fittermc.GetMean())
+                if self.p_fix_sigma[ipt] is True:
+                    fitter.SetFixGaussianSigma(fittermc.GetSigma())
+                if self.p_sgnfunc[ipt] == 1:
+                    if self.p_fix_sigmasec[ipt] is True:
+                        fitter.SetFixSecondGaussianSigma(self.p_sigmaarraysec[ipt])
+                out = fitter.MassFitter(1)
+                fit_dir = fileout.mkdir(suffix)
+                fit_dir.WriteObject(fitter, "fitter%d" % (ipt))
+                c_fitted_result = TCanvas('c_fitted_result ' + suffix, 'Fitted Result')
+                p_fitted_result = TPad('p_fitted_result' + suffix,
+                                       'p_fitted_result' + suffix, 0.0, 0.001, 1.0, 1.0)
+                bkg_func = fitter.GetBackgroundRecalcFunc()
+                sgn_func = fitter.GetMassFunc()
+                setup_pad(p_fitted_result)
+                c_fitted_result.SetCanvasSize(1900, 1500)
+                c_fitted_result.SetWindowSize(500, 500)
+                setup_histogram(histomass_reb)
+                histomass_reb.SetXTitle("mass")
+                histomass_reb.SetYTitle("counts")
+                histomass_reb.Draw("same")
+                if out == 1:
+                    bkg_func.SetLineColor(kGreen)
+                    sgn_func.SetLineColor(kRed)
+                    sgn_func.Draw("same")
+                    bkg_func.Draw("same")
+                latex = TLatex(0.2, 0.85, '%.2f < #it{p}_{T, jet} < %.2f GeV/#it{c}' \
+                    % (self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2]))
+                draw_latex(latex)
+                latex2 = TLatex(0.2, 0.8, '%.2f < #it{p}_{T, Lc} < %.2f GeV/#it{c}' % \
+                    (self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt]))
+                draw_latex(latex2)
+                c_fitted_result.SaveAs("%s/fitted_result_%s.eps" % \
+                    (self.d_resultsallpdata, suffix))
+        myfilemc.Close()
+        myfile.Close()
+        fileout.Close()
+        gROOT.SetBatch(tmp_is_root_batch)
