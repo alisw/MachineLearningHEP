@@ -58,10 +58,10 @@ analysis:
   # Do only merged (false)
   doperperiod: false
   data:
-    histomass: false
+    histomass: true
     dojetsystematics: false
   mc:
-    histomass: false
+    histomass: true
     efficiency: true
     feeddown: true
     dounfolding: true
@@ -71,7 +71,7 @@ analysis:
   dojetstudies: true
   doeff: true
   docross: false
-  doplots: false
+  doplots: true
 
 systematics:
   cutvar:
