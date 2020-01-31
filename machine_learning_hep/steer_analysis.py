@@ -25,9 +25,9 @@ import yaml
 from pkg_resources import resource_stream
 from machine_learning_hep.multiprocesser import MultiProcesser
 from machine_learning_hep.processer import Processer
-from machine_learning_hep.processerDhadrons import ProcesserDhadrons
-from machine_learning_hep.processerDhadrons_mult import ProcesserDhadrons_mult
-from machine_learning_hep.processerDhadrons_jet import ProcesserDhadrons_jet
+from machine_learning_hep.processerdhadrons import ProcesserDhadrons
+from machine_learning_hep.processerdhadrons_mult import ProcesserDhadrons_mult
+from machine_learning_hep.processerdhadrons_jet import ProcesserDhadrons_jet
 #from machine_learning_hep.doskimming import conversion, merging, merging_period, skim
 #from machine_learning_hep.doclassification_regression import doclassification_regression
 #from machine_learning_hep.doanalysis import doanalysis

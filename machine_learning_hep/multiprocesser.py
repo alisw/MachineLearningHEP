@@ -17,7 +17,6 @@ main script for doing data processing, machine learning and analysis
 """
 import os
 from machine_learning_hep.processer import Processer # pylint: disable=unused-import
-from machine_learning_hep.processerDhadrons import ProcesserDhadrons # pylint: disable=unused-import
 from machine_learning_hep.utilities import merge_method, mergerootfiles, get_timestamp_string
 class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-statements
     species = "multiprocesser"
