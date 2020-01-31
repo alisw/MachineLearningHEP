@@ -522,7 +522,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         hjetpt_gen_nocuts_closure.Sumw2()
         hjetpt_gen_nocuts_closure.Sumw2()
 
-        fill_hist(hjetpt_gen_nocuts_pr, df_tmp_selreco_pr["pt_gen_jet"])
+        fill_hist(hjetpt_gen_nocuts_pr, df_tmp_selgen_pr["pt_gen_jet"])
         fill_hist(hjetpt_gen_cuts_pr, df_tmp_selrecogen_pr["pt_gen_jet"])
         hjetpt_gen_nocuts_pr.Write()
         hjetpt_gen_cuts_pr.Write()
