@@ -457,6 +457,16 @@ class AnalyzerJet(Analyzer):
                 # right side band in general. self.sidebandleftonly = True is
                 # just made for systematic studies
 
+                # Below a list of histrograms are defined:
+                #    - hzsig is as discussed before the distribution of z in
+                #      the signal region not background subtracted
+                #    - hzsub is the z-distribution after background subtraction
+                #      using sidebands, efficiency corrected.
+                #    - hzsub_noteffscaled is the z-distribution after background
+                #      subtraction not corrected for efficiency
+                #    - hzbkg_scaled is the bkg distribution scaled for the
+                #      factor used to perform the background subtraction
+
                 hzbkg = hzbkgleft.Clone("hzbkg" + suffix)
                 if self.sidebandleftonly is False:
                     hzbkg.Add(hzbkgright)
@@ -513,86 +523,97 @@ class AnalyzerJet(Analyzer):
                 csubz.SaveAs("%s/step1_side_band_subtracted_effcorrected_%s%s_%s.eps" % \
                              (self.d_resultsallpdata, self.case, self.typean, suffix))
 
-                # 
-                # 
-                csigbkgsubz = TCanvas('csigbkgsubz' + suffix, 'The Side-Band Canvas'+suffix)
-                psigbkgsubz = TPad('psigbkgsubz'+suffix, 'psigbkgsubz'+suffix,0.0,0.001,1.0,1.0)
+                # csigbkgsubz
+                # This canvas contains the hzsig distributions of z in the signal
+                # region (signal+bkg), the hzbkg_scaled distribution of
+                # background rescaled, hzsub_noteffscaled the signal subtracted
+                # distribution without efficiency corrections.
+
+                csigbkgsubz = TCanvas('csigbkgsubz' + suffix, 'The Side-Band Canvas' + suffix)
+                psigbkgsubz = TPad('psigbkgsubz' + suffix, 'psigbkgsubz' + suffix,
+                                   0.0, 0.001, 1.0, 1.0)
                 setup_pad(psigbkgsubz)
                 csigbkgsubz.SetCanvasSize(1900, 1500)
                 csigbkgsubz.SetWindowSize(500, 500)
                 legsigbkgsubz = TLegend(.18, .70, .35, .85)
                 setup_legend(legsigbkgsubz)
-                setup_histogram(hzsig,2)
+                setup_histogram(hzsig, 2)
                 legsigbkgsubz.AddEntry(hzsig, "signal region", "LEP")
-                hz_min = min(hzsig.GetMinimum(0.1), hzbkg_scaled.GetMinimum(0.1), hzsub_noteffscaled.GetMinimum(0.1))
-                hz_max = max(hzsig.GetMaximum(), hzbkg_scaled.GetMaximum(), hzsub_noteffscaled.GetMaximum())
+                hz_min = min(hzsig.GetMinimum(0.1), hzbkg_scaled.GetMinimum(0.1),
+                             hzsub_noteffscaled.GetMinimum(0.1))
+                hz_max = max(hzsig.GetMaximum(), hzbkg_scaled.GetMaximum(),
+                             hzsub_noteffscaled.GetMaximum())
                 hz_ratio = hz_max / hz_min
                 hz_margin_max = 0.5
                 hz_margin_min = 0.1
-                hzsig.GetYaxis().SetRangeUser(hz_min / (1. if hz_ratio == 0 else pow(hz_ratio, hz_margin_min)), hz_max * pow(hz_ratio, hz_margin_max))
-                hzsig.GetXaxis().SetRangeUser(self.lvarshape_binmin_reco[0]+0.01,self.lvarshape_binmax_reco[-1]-0.001)
+                hzsig.GetYaxis().SetRangeUser(hz_min / (1. if hz_ratio == 0 \
+                    else pow(hz_ratio, hz_margin_min)), hz_max * pow(hz_ratio, hz_margin_max))
+                hzsig.GetXaxis().SetRangeUser(self.lvarshape_binmin_reco[0] + 0.01, \
+                                              self.lvarshape_binmax_reco[-1] - 0.001)
                 hzsig.SetXTitle("#it{z}_{#parallel}^{ch}")
                 hzsig.SetYTitle("Yield")
                 hzsig.SetTitle("")
                 hzsig.GetYaxis().SetTitleOffset(1.4)
                 hzsig.GetYaxis().SetMaxDigits(3)
                 hzsig.Draw()
-                setup_histogram(hzbkg_scaled,3,24)
+                setup_histogram(hzbkg_scaled, 3, 24)
                 legsigbkgsubz.AddEntry(hzbkg_scaled, "side-band region", "LEP")
                 hzbkg_scaled.Draw("same")
-                setup_histogram(hzsub_noteffscaled,4,28)
+                setup_histogram(hzsub_noteffscaled, 4, 28)
                 legsigbkgsubz.AddEntry(hzsub_noteffscaled, "subtracted", "LEP")
                 hzsub_noteffscaled.Draw("same")
                 legsigbkgsubz.Draw("same")
-                latex = TLatex(0.42,0.85,"ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV")
+                latex = TLatex(0.42, 0.85, "ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV")
                 draw_latex(latex)
-                latex1 = TLatex(0.42,0.8,"charged jets, anti-#it{k}_{T}, #it{R} = 0.4, #left|#it{#eta}_{jet}#right| < 0.5")
+                latex1 = TLatex(0.42, 0.8, "charged jets, anti-#it{k}_{T}, \
+                                #it{R} = 0.4, #left|#it{#eta}_{jet}#right| < 0.5")
                 draw_latex(latex1)
-                latex2 = TLatex(0.42,0.75,"%.0f < #it{p}_{T, jet}^{ch} < %.0f GeV/#it{c}" % (self.lvar2_binmin_reco[imult],self.lvar2_binmax_reco[imult]))
+                latex2 = TLatex(0.42, 0.75, "%.0f < #it{p}_{T, jet}^{ch} < %.0f GeV/#it{c}" \
+                                % (self.lvar2_binmin_reco[imult], self.lvar2_binmax_reco[imult]))
                 draw_latex(latex2)
-                latex3 = TLatex(0.42,0.7,"with #Lambda_{c}^{#plus} (& cc), %.0f < #it{p}_{T, #Lambda_{c}^{#plus}} < %.0f GeV/#it{c}" % (self.lpt_finbinmin[ipt],self.lpt_finbinmax[ipt]))
+                latex3 = TLatex(0.42, 0.7, "with #Lambda_{c}^{#plus} (& cc), %.0f < \
+                                #it{p}_{T, #Lambda_{c}^{#plus}} < %.0f GeV/#it{c}"
+                                % (self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt]))
                 draw_latex(latex3)
                 if hz_ratio != 0:
                     psigbkgsubz.SetLogy()
-                csigbkgsubz.SaveAs("%s/side_band_%s%s_%s.eps" % \
+                csigbkgsubz.SaveAs("%s/step1_side_band_sigbkg%s%s_%s.eps" % \
                              (self.d_resultsallpdata, self.case, self.typean, suffix))
 
             suffix = "_%s_%.2f_%.2f" % \
-                         (self.v_var2_binning, self.lvar2_binmin_reco[imult], self.lvar2_binmax_reco[imult])
+                         (self.v_var2_binning, self.lvar2_binmin_reco[imult],
+                          self.lvar2_binmax_reco[imult])
             if first_fit == 0:
-                self.logger.error("No successful fits for: %s" % suffix)
+                print("No successful fits for: %s" % suffix)
                 continue
-            cz = TCanvas('cz' + suffix, 'The Efficiency Corrected Signal Yield Canvas'+suffix)
-            pz = TPad('pz'+suffix, 'The Efficiency Corrected Signal Yield Canvas'+suffix,0.0,0.001,1.0,1.0)
+            cz = TCanvas('cz' + suffix,
+                         'The Efficiency Corrected Signal Yield Canvas' + suffix)
+            pz = TPad('pz' + suffix, 'The Efficiency Corrected Signal Yield Canvas' + suffix,
+                      0.0, 0.001, 1.0, 1.0)
             setup_pad(pz)
             cz.SetCanvasSize(1900, 1500)
             cz.SetWindowSize(500, 500)
-            setup_histogram(hz,4)
+            setup_histogram(hz, 4)
             hz.SetXTitle("#it{z}_{#parallel}^{ch}")
             hz.Draw()
-            latex = TLatex(0.6,0.85,"%.2f < #it{p}_{T, jet} < %.2f GeV/#it{c}" % (self.lvar2_binmin_reco[imult],self.lvar2_binmax_reco[imult]))
+            latex = TLatex(0.6, 0.85, "%.2f < #it{p}_{T, jet} < %.2f GeV/#it{c}" %
+                           (self.lvar2_binmin_reco[imult], self.lvar2_binmax_reco[imult]))
             draw_latex(latex)
             cz.SaveAs("%s/efficiencycorrected_fullsub%s%s_%s_%.2f_%.2f.eps" % \
                       (self.d_resultsallpdata, self.case, self.typean, self.v_var2_binning, \
                        self.lvar2_binmin_reco[imult], self.lvar2_binmax_reco[imult]))
 
             for zbins in range(nzbin_reco):
-                hzvsjetpt.SetBinContent(zbins+1,imult+1,hz.GetBinContent(zbins+1))
-                hzvsjetpt.SetBinError(zbins+1,imult+1,hz.GetBinError(zbins+1))
-            #    if hz.GetBinContent(zbins+1) >= 0.0 :
-             #       hzvsjetpt.SetBinContent(zbins+1,imult+1,hz.GetBinContent(zbins+1))
-              #      hzvsjetpt.SetBinError(zbins+1,imult+1,hz.GetBinError(zbins+1))
-               # else:
-                #    hzvsjetpt.SetBinContent(zbins+1,imult+1,0.0)
-                 #   hzvsjetpt.SetBinError(zbins+1,imult+1,0.0)
-            hz.Scale(1.0/hz.Integral(1,-1))
+                hzvsjetpt.SetBinContent(zbins+1, imult+1, hz.GetBinContent(zbins+1))
+                hzvsjetpt.SetBinError(zbins+1, imult+1, hz.GetBinError(zbins+1))
+            hz.Scale(1.0/hz.Integral(1, -1))
             fileouts.cd()
             hz.Write("hz" + suffix)
 
         fileouts.cd()
         hzvsjetpt.Write("hzvsjetpt")
         czvsjetpt = TCanvas('czvsjetpt', '2D input to unfolding')
-        pzvsjetpt = TPad('pzvsjetpt', '2D input to unfolding',0.0,0.001,1.0,1.0)
+        pzvsjetpt = TPad('pzvsjetpt', '2D input to unfolding', 0.0, 0.001, 1.0, 1.0)
         setup_pad(pzvsjetpt)
         czvsjetpt.SetCanvasSize(1900, 1500)
         czvsjetpt.SetWindowSize(500, 500)
