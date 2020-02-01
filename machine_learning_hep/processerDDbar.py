@@ -40,46 +40,35 @@ from machine_learning_hep.models import apply # pylint: disable=import-error
 from machine_learning_hep.selectionutils import getnormforselevt
 from machine_learning_hep.processer import Processer
 
-#def filter_phi(df):
-#    print("inside the function")
-#    delta_phi_all = []
-#    grouped = df.groupby(["run_number", "ev_id"], sort = False)
-#    print("groupby is done")
-#    df["is_d"] = 0
-#    for name, group in grouped:
-#        pt_max = group["pt_cand"].idxmax()
-#        phi_max = df.loc[pt_max, "phi_cand"]
-#        mass_max = df.loc[pt_max, "inv_mass"]
-#        group["inv_cand_max"] = mass_max
-#        df.loc[pt_max, "is_d"] = 1
-#        delta_phi = phi_max - group["phi_cand"]
-#        delta_phi_all.extend(delta_phi)
-#    df["delta_phi"] = delta_phi_all
-#    print("AFTER GROUPBY")
-#    print("delta_phi column added", len(max_cand), len(delta_phi_all))
-#    return df
-
 def filter_phi(df):
-    delta_phi_all = []
-    max_cand = []
-    df["inv_cand_max"] = 0
+    #print("inside the function")
     df["is_d"] = 0
-    grouped = df.groupby(["run_number", "ev_id"], sort = False)
-    for name, group in grouped:
+    i = 0
+    for name, group in df.groupby(["run_number", "ev_id"], sort = False):
+        #print("group")
+        #print(group.index, df.shape)
         pt_max = group["pt_cand"].idxmax()
         phi_max = df.loc[pt_max, "phi_cand"]
         df.loc[pt_max, "is_d"] = 1
-        delta_phi = phi_max - group["phi_cand"]
-        delta_phi_all.extend(delta_phi)
+        delta_phi_group = phi_max - group["phi_cand"]
+        df.loc[group.index, "delta_phi"] = delta_phi_group
         mass_max = df.loc[pt_max, "inv_mass"]
-        mass_max_new = mass_max + group["inv_cand_max"]
-        max_cand.extend(mass_max_new)
-    df["delta_phi"] = delta_phi_all
-    df["inv_cand_max"] = max_cand
+        df.loc[group.index, "inv_cand_max"] = mass_max
+        i+=1
+    print("filterphi done")
     return df
 
+def split_df(df, num_part):
+    split_indices = (df.shape[0] // num_part) * np.arange(1, num_part, dtype=np.int)
+    for i in range (0, num_part-1):
+        while ( df.iloc[split_indices[i]][["run_number", "ev_id"]] ==
+                df.iloc[split_indices[i]-1][["run_number", "ev_id"]]).all():
+            split_indices[i] += 1
+    df_split = np.split(df, split_indices)
+    return df_split
 
-class ProcesserDDbar(Processer): # pylint: disable=too-many-instance-attributes
+class ProcesserDDbar(Processer):
+    # pylint: disable=too-many-instance-attributes
     # Class Attribute
     species = 'processer'
 
@@ -101,15 +90,11 @@ class ProcesserDDbar(Processer): # pylint: disable=too-many-instance-attributes
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
                                     self.p_bin_width))
         self.l_selml = ["y_test_prob%s>%s" % (self.p_modelname, self.lpt_probcutfin[ipt]) \
-                       for ipt in range(self.p_nptbins)] # don't really see what it does
+                       for ipt in range(self.p_nptbins)]
         self.s_presel_gen_eff = datap["analysis"][self.typean]['presel_gen_eff']
 
-
         self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
-        #set binlimits?
-        #self.lpt_finbinmin_ap = datap["analysis"][self.typean]["sel_an_binmin"]
         self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
-        #self.lpt_finbinmax_ap = datap["analysis"][self.typean]["sel_an_binmax"]
         self.p_nptfinbins = len(self.lpt_finbinmin)
         self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
@@ -138,11 +123,11 @@ class ProcesserDDbar(Processer): # pylint: disable=too-many-instance-attributes
         hNorm.SetBinContent(2, nselevt)
         hNorm.Write()
         dfevtorig = dfevtorig.query("is_ev_rej==0")
+        df_tot = pd.DataFrame()
         for ipt in range(self.p_nptfinbins):
             print("ipt iteration", ipt)
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
-            #df = df[:1000]
             print(self.mptfiles_recoskmldec[bin_id][index])
             if self.doml is True:
                df = df.query(self.l_selml[bin_id])
@@ -154,27 +139,13 @@ class ProcesserDDbar(Processer): # pylint: disable=too-many-instance-attributes
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
             suffix = "%s%d_%d" % \
                      (self.v_var_binning, self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-            h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-            h_invmass_tot = TH1F("hmass_tot" + suffix, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-            h_invmass_tot_max = TH1F("hmass_max" + suffix, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-            h_DDbar_mass_tot = TH2F("hmass DDbar" + suffix, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1], self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
             df = selectdfrunlist(df, \
                      self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
-            df = filter_phi(df)
+            print("df inside loop", df.shape)
+            h_invmass = TH1F("hmass" + suffix  , "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
             fill_hist(h_invmass, df.inv_mass)
-            df = df[df["delta_phi"]!=0]
-            inv_mass_tot = df["inv_mass"].tolist()
-            inv_mass_tot_max = df["inv_cand_max"].tolist()
-            for i in range (0, len(inv_mass_tot)-1):
-                        h_invmass_tot.Fill(inv_mass_tot[i])
-                        h_invmass_tot_max.Fill(inv_mass_tot_max[i])
-                        h_DDbar_mass_tot.Fill(inv_mass_tot[i], inv_mass_tot_max[i])
-            h_DDbar_mass_tot.SetOption("lego2z")
             myfile.cd()
             h_invmass.Write()
-            h_invmass_tot.Write()
-            h_invmass_tot_max.Write()
-            h_DDbar_mass_tot.Write()
             if self.mcordata == "mc":
                 df[self.v_ismcrefl] = np.array(tag_bit_df(df, self.v_bitvar,
                                                           self.b_mcrefl), dtype=int)
@@ -189,6 +160,40 @@ class ProcesserDDbar(Processer): # pylint: disable=too-many-instance-attributes
                 myfile.cd()
                 h_invmass_sig.Write()
                 h_invmass_refl.Write()
+            df_tot = df_tot.append(df)
+        print(df_tot.shape)
+        df_tot = df_tot.reset_index(drop = True)
+        # df_tot = df_tot.sample(n = 1000)
+        df_work = df_tot[["run_number", "ev_id", "pt_cand", "inv_mass", "phi_cand",
+                    "eta_cand"]]
+        split_const = int(df_work.shape[0]/1000)
+        df_work.sort_values(["run_number", "ev_id"], inplace=True)
+        print("working_df_created")
+        df_tmp = []
+        for i ,working_df in enumerate(split_df(df_work, split_const)):
+            print("process working_df", i, split_const, working_df.shape)
+            df_tmp.append(filter_phi(working_df))
+            print(len(df_tmp))
+        print("function passed", df_tmp.shape)
+        df_new = pd.concat(df_tmp)
+        df_new = df_new[df_new["delta_phi"]!=0]
+        print(df_new.shape)
+        inv_mass_tot = df_new["inv_mass"].tolist()
+        inv_mass_tot_max = df_new["inv_cand_max"].tolist()
+        h_invmass_tot = TH1F("hmass_tot" + index, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+        h_invmass_tot_max = TH1F("hmass_max" + index, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+        # h_DDbar_mass_tot = TH2F("hmass DDbar" + suffix, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1], self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+        h_DDbar_mass_tot = TH2F("hmass DDbar" + suffix, "", 50, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1], 50, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+        for i in range (0, len(inv_mass_tot)-1):
+            h_invmass_tot.Fill(inv_mass_tot[i])
+            h_invmass_tot_max.Fill(inv_mass_tot_max[i])
+            h_DDbar_mass_tot.Fill(inv_mass_tot[i], inv_mass_tot_max[i])
+        h_DDbar_mass_tot.SetOption("lego2z")
+        myfile.cd()
+        h_invmass_tot.Write()
+        h_invmass_tot_max.Write()
+        h_DDbar_mass_tot.Write()
+        print("all passed")
 #
     # pylint: disable=line-too-long
 #    def process_efficiency_single(self, index):
