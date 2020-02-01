@@ -636,16 +636,16 @@ class AnalyzerJet(Analyzer):
 # pylint: disable=line-too-long
 
     def feeddown(self):
-        """
-        In this function we compute the feeddown fraction to be subtracted to
-        extract the prompt z distributions of HF tagged jets.
 
-        The ingredients are the efficiency file that contains prompt and
-        non-prompt efficiency for HF meson reconstruction as a function of pT
-        in bins of jet pt (file_eff) and the output file of the jet processer that
-        contains all the response matrix and jet efficiencies (feeddown_input_file).
+        #In this function we compute the feeddown fraction to be subtracted to
+        #extract the prompt z distributions of HF tagged jets.
 
-        """
+        #The ingredients are the efficiency file that contains prompt and
+        #non-prompt efficiency for HF meson reconstruction as a function of pT
+        #in bins of jet pt (file_eff) and the output file of the jet processer that
+        #contains all the response matrix and jet efficiencies (feeddown_input_file).
+
+
         self.loadstyle()
         feeddown_input_file = TFile.Open(self.n_fileff)
         file_eff = TFile.Open("%s/efficiencies%s%s.root" % (self.d_resultsallpmc, \
@@ -653,23 +653,34 @@ class AnalyzerJet(Analyzer):
         fileouts = TFile.Open("%s/feeddown%s%s.root" % \
                               (self.d_resultsallpdata, self.case, self.typean), "recreate")
 
-        """
-        The response matrix for non prompt HF meson response_matrix is taken
-        from the feeddown_input_file file and it is calculated as the 4D
-        scatter plots of reco and gen z and jet pt for D-jet candidates in the
-        range of min-max for both reco and gen variables.
+        #The response matrix for non prompt HF meson response_matrix is taken
+        #from the feeddown_input_file file and it is calculated as the 4D
+        #scatter plots of reco and gen z and jet pt for D-jet candidates in the
+        #range of min-max for both reco and gen variables.
 
-        """
 
         response_matrix = feeddown_input_file.Get("response_matrix_nonprompt")
+
+        # fh3_feeddown is 3d histogram from powheg+pythia prediction that
+        # contains z vs jet_pt vs HF pt.
+
         powheg_input_file = TFile.Open(self.powheg_path_nonprompt)
         input_data = powheg_input_file.Get("fh3_feeddown")
+
+        # output_template is the reco jet pt vs z for candidates in the reco
+        # min-max region
         output_template = feeddown_input_file.Get("hzvsjetpt_reco")
 
+        # hzvsjetpt_gen_nocuts_nonprompt is the 2d plot of gen z vs gen jet pt
+        # for events in the gen min-max range
         hzvsjetpt_gen_nocuts = feeddown_input_file.Get("hzvsjetpt_gen_nocuts_nonprompt")
+        # hzvsjetpt_gen_cuts_nonprompt is the 2d plot of gen z vs gen jet pt
+        # for events in the gen min-max range
         hzvsjetpt_gen_eff = feeddown_input_file.Get("hzvsjetpt_gen_cuts_nonprompt")
         hzvsjetpt_gen_eff.Divide(hzvsjetpt_gen_nocuts)
 
+        # hzvsjetpt_gen_cuts_nonprompt is the 2d plot of gen z vs gen jet pt
+        # for events in the gen and reco min-max range
         hzvsjetpt_reco_nocuts = feeddown_input_file.Get("hzvsjetpt_reco_nocuts_nonprompt")
         hzvsjetpt_reco_eff = feeddown_input_file.Get("hzvsjetpt_reco_cuts_nonprompt")
         hzvsjetpt_reco_eff.Divide(hzvsjetpt_reco_nocuts)
