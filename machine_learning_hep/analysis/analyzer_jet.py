@@ -633,8 +633,7 @@ class AnalyzerJet(Analyzer):
         czvsjetpt.SaveAs("%s/step1_czvsjetpt_inputunfolding.eps" % self.d_resultsallpdata)
         fileouts.Close()
 
-# pylint: disable=line-too-long
-
+    # pylint: disable=too-many-branches
     def feeddown(self):
 
         #In this function we compute the feeddown fraction to be subtracted to
@@ -861,185 +860,227 @@ class AnalyzerJet(Analyzer):
             latex6 = TLatex(0.52, 0.2, "#left|#it{#eta}_{jet}#right| < 0.5")
             draw_latex(latex6)
             ceff.SaveAs("%s/ceff_prompt_nonprompt_%s.eps" % (self.d_resultsallpdata, suffix))
-#
-#        cjetpt_fracdiff = TCanvas('cjetpt_fracdiff ', 'non-prompt jetpt response fractional differences')
-#        pjetpt_fracdiff = TPad('pjetpt_fracdiff', 'non-prompt jetpt response fractional differences',0.0,0.001,1.0,1.0)
-#        setup_pad(pjetpt_fracdiff)
-#        cjetpt_fracdiff.SetLogy()
-#        pjetpt_fracdiff.SetLogy()
-#        cjetpt_fracdiff.SetCanvasSize(1900, 1500)
-#        cjetpt_fracdiff.SetWindowSize(500, 500)
-#        leg_jetpt_fracdiff = TLegend(.65, .5, .8, .8, "#it{p}_{T, jet}^{gen}")
-#        setup_legend(leg_jetpt_fracdiff)
-#        for ibin2 in range(self.p_nbin2_gen):
-#            setup_histogram(hjetpt_fracdiff_list[ibin2],ibin2+1)
-#            leg_jetpt_fracdiff.AddEntry(hjetpt_fracdiff_list[ibin2],"%d-%d GeV/#it{c}" %(self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2]),"LEP")
-#            if ibin2 ==0 :
-#                hjetpt_fracdiff_list[ibin2].SetXTitle("(#it{p}_{T, jet}^{reco} #minus #it{p}_{T, jet}^{gen})/#it{p}_{T, jet}^{gen}")
-#                hjetpt_fracdiff_list[ibin2].GetYaxis().SetRangeUser(0.001,hjetpt_fracdiff_list[ibin2].GetMaximum()*3)
-#            hjetpt_fracdiff_list[ibin2].Draw("same")
-#        leg_jetpt_fracdiff.Draw("same")
-#        cjetpt_fracdiff.SaveAs("%s/cjetpt_fracdiff_nonprompt.eps" % (self.d_resultsallpdata))
-#
-#        for ibinshape in range(self.p_nbinshape_gen):
-#            suffix = "z_%.2f_%.2f" % \
-#                     (self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape])
-#            hz_fracdiff_list.append(feeddown_input_file.Get("hz_fracdiff_nonprompt"+suffix))
-#
-#        cz_fracdiff = TCanvas('cz_fracdiff ', 'non-prompt z response fractional differences')
-#        pz_fracdiff = TPad('pz_fracdiff', 'non-prompt z response fractional differences',0.0,0.001,1.0,1.0)
-#        setup_pad(pz_fracdiff)
-#        cz_fracdiff.SetLogy()
-#        pz_fracdiff.SetLogy()
-#        cz_fracdiff.SetCanvasSize(1900, 1500)
-#        cz_fracdiff.SetWindowSize(500, 500)
-#        leg_z_fracdiff = TLegend(.2, .5, .4, .85, "z")
-#        setup_legend(leg_z_fracdiff)
-#        for ibinshape in range(self.p_nbinshape_gen):
-#            setup_histogram(hz_fracdiff_list[ibinshape],ibinshape+1)
-#            leg_z_fracdiff.AddEntry(hz_fracdiff_list[ibinshape],"%.4f-%.4f" %(self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape]),"LEP")
-#            if ibin2==0:
-#                hz_fracdiff_list[ibin2].SetXTitle("(z}^{reco}-z^{gen})/z^{gen}")
-#                hz_fracdiff_list[ibin2].GetYaxis().SetRangeUser(0.001,hz_fracdiff_list[ibin2].GetMaximum()*3)
-#            hz_fracdiff_list[ibinshape].Draw("same")
-#        leg_z_fracdiff.Draw("same")
-#        cz_fracdiff.SaveAs("%s/cz_fracdiff_nonprompt.eps" % (self.d_resultsallpdata))
-#
-#
-#        for ipt in range(self.p_nptfinbins):
-#            bin_id = self.bin_matching[ipt]
-#            suffix = "%s%d_%d_%.2f" % \
-#                         (self.v_var_binning, self.lpt_finbinmin[ipt],
-#                          self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id])
-#            input_data.GetZaxis().SetRange(ipt+1,ipt+1)
-#            input_data_zvsjetpt_list.append(input_data.Project3D("input_data_zvsjetpt"+suffix+"_yxe"))
-#            for ibin2 in range(self.p_nbin2_gen):
-#                for ibinshape in range(self.p_nbinshape_gen):
-#                    if(heff_pr_list[ibin2].GetBinContent(ipt+1)==0 or heff_fd_list[ibin2].GetBinContent(ipt+1)==0):
-#                        input_data_zvsjetpt_list[ipt].SetBinContent(ibinshape+1,ibin2+1,0.0)
-#                    else:
-#                        input_data_zvsjetpt_list[ipt].SetBinContent(ibinshape+1,ibin2+1,input_data_zvsjetpt_list[ipt].GetBinContent(ibinshape+1,ibin2+1)*(heff_fd_list[ibin2].GetBinContent(ipt+1)/heff_pr_list[ibin2].GetBinContent(ipt+1)))
-#            if ipt==0:
-#                input_data_scaled = input_data_zvsjetpt_list[ipt].Clone("input_data_scaled")
-#            else:
-#                input_data_scaled.Add(input_data_zvsjetpt_list[ipt])
-#        input_data_scaled.Multiply(hzvsjetpt_gen_eff)
-#        input_data_scaled.Scale(self.p_nevents*self.branching_ratio/self.xsection_inel)
-#        folded = folding(input_data_scaled, response_matrix, output_template)
-#        folded.Sumw2()
-#        folded.Divide(hzvsjetpt_reco_eff)
-#
-#        folded_z_list=[]
-#        input_data_scaled_z_list=[]
-#        for ibin2 in range(self.p_nbin2_reco):
-#            suffix = "%s_%.2f_%.2f" % \
-#                             (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-#
-#            folded_z_list.append(folded.ProjectionX("folded_z_nonprompt_"+suffix,ibin2+1,ibin2+1,"e"))
-#            input_data_scaled_z_list.append(input_data_scaled.ProjectionX("Powheg_scaled_nonprompt_"+suffix,input_data_scaled.GetYaxis().FindBin(self.lvar2_binmin_gen[ibin2]),input_data_scaled.GetYaxis().FindBin(self.lvar2_binmin_gen[ibin2]),"e"))
-#            c_fd_fold = TCanvas('c_fd_fold '+suffix, 'Powheg and folded'+suffix)
-#            p_fd_fold = TPad('p_fd_fold'+suffix, 'Powheg and folded'+suffix,0.0,0.001,1.0,1.0)
-#            setup_pad(p_fd_fold)
-#            c_fd_fold.SetCanvasSize(1900, 1500)
-#            c_fd_fold.SetWindowSize(500, 500)
-#            leg_fd_fold = TLegend(.2, .75, .4, .85, "")
-#            setup_legend(leg_fd_fold)
-#            setup_histogram(input_data_scaled_z_list[ibin2],2)
-#            leg_fd_fold.AddEntry(input_data_scaled_z_list[ibin2],"Powheg eff corrected","LEP")
-#            input_data_scaled_z_list[ibin2].GetYaxis().SetRangeUser(0.0,input_data_scaled_z_list[ibin2].GetMaximum()*1.5)
-#            input_data_scaled_z_list[ibin2].SetXTitle("#it{z}_{#parallel}^{ch}")
-#            input_data_scaled_z_list[ibin2].Draw()
-#            setup_histogram(folded_z_list[ibin2],4)
-#            leg_fd_fold.AddEntry(folded_z_list[ibin2],"folded","LEP")
-#            folded_z_list[ibin2].Draw("same")
-#            leg_fd_fold.Draw("same")
-#            latex = TLatex(0.4,0.25,"%.2f < #it{p}_{T, jet} < %.2f GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2],self.lvar2_binmax_reco[ibin2]))
-#            draw_latex(latex)
-#            c_fd_fold.SaveAs("%s/cfolded_Powheg_%s.eps" % (self.d_resultsallpdata, suffix))
-#        fileouts.cd()
-#        sideband_input_data_subtracted = sideband_input_data.Clone("sideband_input_data_subtracted")
-#        sideband_input_data_subtracted.Add(folded,-1)
-#        for ibin2 in range(self.p_nbin2_reco):
-#            for ibinshape in range(self.p_nbinshape_reco):
-#                if sideband_input_data_subtracted.GetBinContent(sideband_input_data_subtracted.FindBin(self.lvarshape_binmin_reco[ibinshape],self.lvar2_binmin_reco[ibin2])) < 0.0:
-#                    sideband_input_data_subtracted.SetBinContent(sideband_input_data_subtracted.FindBin(self.lvarshape_binmin_reco[ibinshape],self.lvar2_binmin_reco[ibin2]),0.0)
-#        sideband_input_data_subtracted.Write()
-#
-#        sideband_input_data_z=[]
-#        sideband_input_data_subtracted_z=[]
-#
-#        for ibin2 in range(self.p_nbin2_reco):
-#            suffix = "%s_%.2f_%.2f" % \
-#                     (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
-#            sideband_input_data_z.append(sideband_input_data.ProjectionX("sideband_input_data_z"+suffix,ibin2+1,ibin2+1,"e"))
-#            sideband_input_data_subtracted_z.append(sideband_input_data_subtracted.ProjectionX("sideband_input_data_subtracted_z"+suffix,ibin2+1,ibin2+1,"e"))
-#            cfeeddown = TCanvas('cfeeddown'+suffix, 'cfeeddown'+suffix)
-#            pfeeddown = TPad('pfeeddown'+suffix, 'cfeeddown'+suffix,0.0,0.001,1.0,1.0)
-#            setup_pad(pfeeddown)
-#            if ibin2 is not 2:
-#                cfeeddown.SetLogy()
-#                pfeeddown.SetLogy()
-#            cfeeddown.SetCanvasSize(1900, 1500)
-#            cfeeddown.SetWindowSize(500, 500)
-#            legmin =.2
-#            legmax =.4
-#            if ibin2 == 2:
-#                legmin =.7
-#                legmax =.85
-#            leg_feeddown = TLegend(.2, legmin, .4, legmax, "")
-#            setup_legend(leg_feeddown)
-#            setup_histogram(sideband_input_data_z[ibin2],2)
-#            leg_feeddown.AddEntry(sideband_input_data_z[ibin2],"prompt+non-prompt","LEP")
-#            sideband_input_data_z[ibin2].GetYaxis().SetRangeUser(0.1,sideband_input_data_z[ibin2].GetMaximum()*3)
-#            sideband_input_data_z[ibin2].SetXTitle("#it{z}_{#parallel}^{ch}")
-#            sideband_input_data_z[ibin2].SetYTitle("Yeild")
-#            sideband_input_data_z[ibin2].Draw()
-#            setup_histogram(sideband_input_data_subtracted_z[ibin2],3)
-#            leg_feeddown.AddEntry(sideband_input_data_subtracted_z[ibin2],"subtracted (prompt)","LEP")
-#            sideband_input_data_subtracted_z[ibin2].Draw("same")
-#            setup_histogram(folded_z_list[ibin2],4)
-#            leg_feeddown.AddEntry(folded_z_list[ibin2],"non-prompt powheg","LEP")
-#            folded_z_list[ibin2].Draw("same")
-#            leg_feeddown.Draw("same")
-#            if ibin2 is not 2:
-#                latex = TLatex(0.6,0.3,"%.2f < #it{p}_{T, jet} < %.2f GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2],self.lvar2_binmax_reco[ibin2]))
-#                latex = TLatex(0.6,0.3,"%.2f < #it{p}_{T, jet} < %.2f GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2],self.lvar2_binmax_reco[ibin2]))
-#            else:
-#                latex = TLatex(0.6,0.75,"%.2f < #it{p}_{T, jet} < %.2f GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2],self.lvar2_binmax_reco[ibin2]))
-#            draw_latex(latex)
-#            cfeeddown.SaveAs("%s/cfeeddown_subtraction_%s.eps" % (self.d_resultsallpdata, suffix))
-#
-#            feeddown_fraction = folded_z_list[ibin2].Clone("feeddown_fraction"+suffix)
-#            feeddown_fraction_denominator = sideband_input_data_z[ibin2].Clone("feeddown_denominator"+suffix)
-#            feeddown_fraction.Divide(feeddown_fraction_denominator)
-#            feeddown_fraction.Write()
-#
-#            cfeeddown_fraction = TCanvas('cfeeddown_fraction'+suffix, 'cfeeddown_fraction'+suffix)
-#            pfeeddown_fraction = TPad('pfeeddown_fraction'+suffix, 'cfeeddown_fraction'+suffix,0.0,0.001,1.0,1.0)
-#            setup_pad(pfeeddown_fraction)
-#            if ibin2 is not 2:
-#                cfeeddown_fraction.SetLogy()
-#                pfeeddown_fraction.SetLogy()
-#            cfeeddown_fraction.SetCanvasSize(1900, 1500)
-#            cfeeddown_fraction.SetWindowSize(500, 500)
-#            setup_histogram(feeddown_fraction,4)
-#            feeddown_fraction.SetXTitle("#it{z}_{#parallel}^{ch}")
-#            feeddown_fraction.SetYTitle("b-feeddown fraction")
-#            feeddown_fraction.Draw()
-#            latex = TLatex(0.6,0.75,"%.2f < #it{p}_{T, jet} < %.2f GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2],self.lvar2_binmax_reco[ibin2]))
-#            latex = TLatex(0.6,0.7,"powheg based estimation")
-#            draw_latex(latex)
-#            cfeeddown_fraction.SaveAs("%s/cfeeddown_fraction_%s.eps" % (self.d_resultsallpdata, suffix))
-#
-#
-#
-#        cfeeddown_output = TCanvas('cfeeddown_output', 'cfeeddown_output')
-#        pfeeddown_output = TPad('pfeeddown_output', 'pfeeddown_output',0.0,0.001,1.0,1.0)
-#        setup_pad(pfeeddown_output)
-#        cfeeddown_output.SetCanvasSize(1900, 1500)
-#        cfeeddown_output.SetWindowSize(500, 500)
-#        setup_histogram(sideband_input_data_subtracted)
-#        sideband_input_data_subtracted.Draw("text")
-#        cfeeddown_output.SaveAs("%s/cfeeddown_output.eps" % (self.d_resultsallpdata))
-#        print("end of folding")
-#
+
+        cjetpt_fracdiff = TCanvas('cjetpt_fracdiff ',
+                                  'non-prompt jetpt response fractional differences')
+        pjetpt_fracdiff = TPad('pjetpt_fracdiff', \
+            'non-prompt jetpt response fractional differences', 0.0, 0.001, 1.0, 1.0)
+        setup_pad(pjetpt_fracdiff)
+        cjetpt_fracdiff.SetLogy()
+        pjetpt_fracdiff.SetLogy()
+        cjetpt_fracdiff.SetCanvasSize(1900, 1500)
+        cjetpt_fracdiff.SetWindowSize(500, 500)
+        leg_jetpt_fracdiff = TLegend(.65, .5, .8, .8, "#it{p}_{T, jet}^{gen}")
+        setup_legend(leg_jetpt_fracdiff)
+        for ibin2 in range(self.p_nbin2_gen):
+            setup_histogram(hjetpt_fracdiff_list[ibin2], ibin2+1)
+            leg_jetpt_fracdiff.AddEntry(hjetpt_fracdiff_list[ibin2], \
+                "%d-%d GeV/#it{c}" %(self.lvar2_binmin_gen[ibin2], \
+                self.lvar2_binmax_gen[ibin2]), "LEP")
+            if ibin2 == 0:
+                hjetpt_fracdiff_list[ibin2].SetXTitle(\
+                    "(#it{p}_{T, jet}^{reco} #minus #it{p}_{T, jet}^{gen})/#it{p}_{T, jet}^{gen}")
+                hjetpt_fracdiff_list[ibin2].GetYaxis().SetRangeUser(0.001, \
+                    hjetpt_fracdiff_list[ibin2].GetMaximum()*3)
+            hjetpt_fracdiff_list[ibin2].Draw("same")
+        leg_jetpt_fracdiff.Draw("same")
+        cjetpt_fracdiff.SaveAs("%s/cjetpt_fracdiff_nonprompt.eps" % (self.d_resultsallpdata))
+
+        for ibinshape in range(self.p_nbinshape_gen):
+            suffix = "z_%.2f_%.2f" % \
+                     (self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape])
+            hz_fracdiff_list.append(feeddown_input_file.Get("hz_fracdiff_nonprompt" + suffix))
+
+        cz_fracdiff = TCanvas('cz_fracdiff ', 'non-prompt z response fractional differences')
+        pz_fracdiff = TPad('pz_fracdiff', 'non-prompt z response fractional differences',
+                           0.0, 0.001, 1.0, 1.0)
+        setup_pad(pz_fracdiff)
+        cz_fracdiff.SetLogy()
+        pz_fracdiff.SetLogy()
+        cz_fracdiff.SetCanvasSize(1900, 1500)
+        cz_fracdiff.SetWindowSize(500, 500)
+        leg_z_fracdiff = TLegend(.2, .5, .4, .85, "z")
+        setup_legend(leg_z_fracdiff)
+        for ibinshape in range(self.p_nbinshape_gen):
+            setup_histogram(hz_fracdiff_list[ibinshape], ibinshape+1)
+            leg_z_fracdiff.AddEntry(hz_fracdiff_list[ibinshape], \
+                "%.4f-%.4f" %(self.lvarshape_binmin_gen[ibinshape], \
+                self.lvarshape_binmax_gen[ibinshape]), "LEP")
+            if ibin2 == 0:
+                hz_fracdiff_list[ibin2].SetXTitle("(z}^{reco}-z^{gen})/z^{gen}")
+                hz_fracdiff_list[ibin2].GetYaxis().SetRangeUser(0.001, \
+                    hz_fracdiff_list[ibin2].GetMaximum()*3)
+            hz_fracdiff_list[ibinshape].Draw("same")
+        leg_z_fracdiff.Draw("same")
+        cz_fracdiff.SaveAs("%s/cz_fracdiff_nonprompt.eps" % (self.d_resultsallpdata))
+
+
+        for ipt in range(self.p_nptfinbins):
+            bin_id = self.bin_matching[ipt]
+            suffix = "%s%d_%d_%.2f" % \
+                         (self.v_var_binning, self.lpt_finbinmin[ipt],
+                          self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id])
+            input_data.GetZaxis().SetRange(ipt+1, ipt+1)
+            input_data_zvsjetpt_list.append( \
+                input_data.Project3D("input_data_zvsjetpt" + suffix + "_yxe"))
+            for ibin2 in range(self.p_nbin2_gen):
+                for ibinshape in range(self.p_nbinshape_gen):
+                    if(heff_pr_list[ibin2].GetBinContent(ipt+1) == 0 or \
+                       heff_fd_list[ibin2].GetBinContent(ipt+1) == 0):
+                        input_data_zvsjetpt_list[ipt].SetBinContent(ibinshape+1, ibin2 + 1, 0.0)
+                    else:
+                        input_data_zvsjetpt_list[ipt].SetBinContent(ibinshape+1, ibin2+1, \
+                            input_data_zvsjetpt_list[ipt].GetBinContent(ibinshape+1, ibin2+1)* \
+                            (heff_fd_list[ibin2].GetBinContent(ipt + 1)/ \
+                             heff_pr_list[ibin2].GetBinContent(ipt+1)))
+            if ipt == 0:
+                input_data_scaled = input_data_zvsjetpt_list[ipt].Clone("input_data_scaled")
+            else:
+                input_data_scaled.Add(input_data_zvsjetpt_list[ipt])
+        input_data_scaled.Multiply(hzvsjetpt_gen_eff)
+        input_data_scaled.Scale(self.p_nevents*self.branching_ratio/self.xsection_inel)
+        folded = folding(input_data_scaled, response_matrix, output_template)
+        folded.Sumw2()
+        folded.Divide(hzvsjetpt_reco_eff)
+
+        folded_z_list = []
+        input_data_scaled_z_list = []
+        for ibin2 in range(self.p_nbin2_reco):
+            suffix = "%s_%.2f_%.2f" % \
+                (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+
+            folded_z_list.append(folded.ProjectionX("folded_z_nonprompt_" + suffix,
+                                                    ibin2+1, ibin2+1, "e"))
+            input_data_scaled_z_list.append( \
+                input_data_scaled.ProjectionX("Powheg_scaled_nonprompt_" + suffix, \
+                    input_data_scaled.GetYaxis().FindBin(self.lvar2_binmin_gen[ibin2]), \
+                    input_data_scaled.GetYaxis().FindBin(self.lvar2_binmin_gen[ibin2]), "e"))
+            c_fd_fold = TCanvas('c_fd_fold ' + suffix, 'Powheg and folded' + suffix)
+            p_fd_fold = TPad('p_fd_fold' + suffix,
+                             'Powheg and folded' + suffix, 0.0, 0.001, 1.0, 1.0)
+            setup_pad(p_fd_fold)
+            c_fd_fold.SetCanvasSize(1900, 1500)
+            c_fd_fold.SetWindowSize(500, 500)
+            leg_fd_fold = TLegend(.2, .75, .4, .85, "")
+            setup_legend(leg_fd_fold)
+            setup_histogram(input_data_scaled_z_list[ibin2], 2)
+            leg_fd_fold.AddEntry(input_data_scaled_z_list[ibin2], "Powheg eff corrected", "LEP")
+            input_data_scaled_z_list[ibin2].GetYaxis().SetRangeUser(0.0, \
+                    input_data_scaled_z_list[ibin2].GetMaximum()*1.5)
+            input_data_scaled_z_list[ibin2].SetXTitle("#it{z}_{#parallel}^{ch}")
+            input_data_scaled_z_list[ibin2].Draw()
+            setup_histogram(folded_z_list[ibin2], 4)
+            leg_fd_fold.AddEntry(folded_z_list[ibin2], "folded", "LEP")
+            folded_z_list[ibin2].Draw("same")
+            leg_fd_fold.Draw("same")
+            latex = TLatex(0.4, 0.25, "%.2f < #it{p}_{T, jet} < %.2f GeV/#it{c}" % \
+                    (self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2]))
+            draw_latex(latex)
+            c_fd_fold.SaveAs("%s/cfolded_Powheg_%s.eps" % (self.d_resultsallpdata, suffix))
+        fileouts.cd()
+        sideband_input_data_subtracted = \
+            sideband_input_data.Clone("sideband_input_data_subtracted")
+        sideband_input_data_subtracted.Add(folded, -1)
+        for ibin2 in range(self.p_nbin2_reco):
+            for ibinshape in range(self.p_nbinshape_reco):
+                if sideband_input_data_subtracted.GetBinContent( \
+                sideband_input_data_subtracted.FindBin(self.lvarshape_binmin_reco[ibinshape], \
+                self.lvar2_binmin_reco[ibin2])) < 0.0:
+                    sideband_input_data_subtracted.SetBinContent( \
+                        sideband_input_data_subtracted.FindBin( \
+                            self.lvarshape_binmin_reco[ibinshape], \
+                            self.lvar2_binmin_reco[ibin2]), 0.0)
+        sideband_input_data_subtracted.Write()
+
+        sideband_input_data_z = []
+        sideband_input_data_subtracted_z = []
+
+        for ibin2 in range(self.p_nbin2_reco):
+            suffix = "%s_%.2f_%.2f" % \
+                     (self.v_var2_binning, self.lvar2_binmin_reco[ibin2],
+                      self.lvar2_binmax_reco[ibin2])
+            sideband_input_data_z.append( \
+                sideband_input_data.ProjectionX("sideband_input_data_z" + suffix,
+                                                ibin2+1, ibin2+1, "e"))
+            sideband_input_data_subtracted_z.append( \
+                sideband_input_data_subtracted.ProjectionX( \
+                    "sideband_input_data_subtracted_z" + suffix, ibin2 + 1, ibin2 + 1, "e"))
+            cfeeddown = TCanvas('cfeeddown' + suffix, 'cfeeddown' + suffix)
+            pfeeddown = TPad('pfeeddown' + suffix, 'cfeeddown' + suffix, 0.0, 0.001, 1.0, 1.0)
+            setup_pad(pfeeddown)
+            if ibin2 != 2:
+                cfeeddown.SetLogy()
+                pfeeddown.SetLogy()
+            cfeeddown.SetCanvasSize(1900, 1500)
+            cfeeddown.SetWindowSize(500, 500)
+            legmin = .2
+            legmax = .4
+            if ibin2 == 2:
+                legmin = .7
+                legmax = .85
+            leg_feeddown = TLegend(.2, legmin, .4, legmax, "")
+            setup_legend(leg_feeddown)
+            setup_histogram(sideband_input_data_z[ibin2], 2)
+            leg_feeddown.AddEntry(sideband_input_data_z[ibin2], "prompt+non-prompt", "LEP")
+            sideband_input_data_z[ibin2].GetYaxis().SetRangeUser(0.1, \
+                    sideband_input_data_z[ibin2].GetMaximum()*3)
+            sideband_input_data_z[ibin2].SetXTitle("#it{z}_{#parallel}^{ch}")
+            sideband_input_data_z[ibin2].SetYTitle("Yeild")
+            sideband_input_data_z[ibin2].Draw()
+            setup_histogram(sideband_input_data_subtracted_z[ibin2], 3)
+            leg_feeddown.AddEntry(sideband_input_data_subtracted_z[ibin2],
+                                  "subtracted (prompt)", "LEP")
+            sideband_input_data_subtracted_z[ibin2].Draw("same")
+            setup_histogram(folded_z_list[ibin2], 4)
+            leg_feeddown.AddEntry(folded_z_list[ibin2], "non-prompt powheg", "LEP")
+            folded_z_list[ibin2].Draw("same")
+            leg_feeddown.Draw("same")
+            if ibin2 != 2:
+                latex = TLatex(0.6, 0.3, "%.2f < #it{p}_{T, jet} < %.2f GeV/#it{c}" \
+                    % (self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2]))
+                latex = TLatex(0.6, 0.3, "%.2f < #it{p}_{T, jet} < %.2f GeV/#it{c}" % \
+                    (self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2]))
+            else:
+                latex = TLatex(0.6, 0.75, "%.2f < #it{p}_{T, jet} < %.2f GeV/#it{c}" % \
+                    (self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2]))
+            draw_latex(latex)
+            cfeeddown.SaveAs("%s/cfeeddown_subtraction_%s.eps" % \
+                             (self.d_resultsallpdata, suffix))
+
+            feeddown_fraction = folded_z_list[ibin2].Clone("feeddown_fraction" + suffix)
+            feeddown_fraction_denominator = \
+                sideband_input_data_z[ibin2].Clone("feeddown_denominator" + suffix)
+            feeddown_fraction.Divide(feeddown_fraction_denominator)
+            feeddown_fraction.Write()
+
+            cfeeddown_fraction = TCanvas('cfeeddown_fraction' + suffix,
+                                         'cfeeddown_fraction' + suffix)
+            pfeeddown_fraction = TPad('pfeeddown_fraction' + suffix,
+                                      'cfeeddown_fraction' + suffix, 0.0, 0.001, 1.0, 1.0)
+            setup_pad(pfeeddown_fraction)
+            if ibin2 != 2:
+                cfeeddown_fraction.SetLogy()
+                pfeeddown_fraction.SetLogy()
+            cfeeddown_fraction.SetCanvasSize(1900, 1500)
+            cfeeddown_fraction.SetWindowSize(500, 500)
+            setup_histogram(feeddown_fraction, 4)
+            feeddown_fraction.SetXTitle("#it{z}_{#parallel}^{ch}")
+            feeddown_fraction.SetYTitle("b-feeddown fraction")
+            feeddown_fraction.Draw()
+            latex = TLatex(0.6, 0.75, "%.2f < #it{p}_{T, jet} < %.2f GeV/#it{c}" % \
+                           (self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2]))
+            latex = TLatex(0.6, 0.7, "powheg based estimation")
+            draw_latex(latex)
+            cfeeddown_fraction.SaveAs("%s/cfeeddown_fraction_%s.eps" % \
+                                      (self.d_resultsallpdata, suffix))
+
+        cfeeddown_output = TCanvas('cfeeddown_output', 'cfeeddown_output')
+        pfeeddown_output = TPad('pfeeddown_output', 'pfeeddown_output',
+                                0.0, 0.001, 1.0, 1.0)
+        setup_pad(pfeeddown_output)
+        cfeeddown_output.SetCanvasSize(1900, 1500)
+        cfeeddown_output.SetWindowSize(500, 500)
+        setup_histogram(sideband_input_data_subtracted)
+        sideband_input_data_subtracted.Draw("text")
+        cfeeddown_output.SaveAs("%s/cfeeddown_output.eps" % (self.d_resultsallpdata))
+        print("end of folding")
