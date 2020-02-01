@@ -635,42 +635,59 @@ class AnalyzerJet(Analyzer):
 
 # pylint: disable=line-too-long
 
-#    def feeddown(self):
-#        self.loadstyle()
-#        feeddown_input_file = TFile.Open(self.n_fileff)
-#        file_eff = TFile.Open("%s/efficiencies%s%s.root" % (self.d_resultsallpmc, \
-#                              self.case, self.typean))
-#        fileouts = TFile.Open("%s/feeddown%s%s.root" % \
-#                              (self.d_resultsallpdata, self.case, self.typean), "recreate")
-#
-#        response_matrix = feeddown_input_file.Get("response_matrix_nonprompt")
-#        powheg_input_file = TFile.Open(self.powheg_path_nonprompt)
-#        input_data = powheg_input_file.Get("fh3_feeddown")
-#        output_template = feeddown_input_file.Get("hzvsjetpt_reco")
-#
-#        hzvsjetpt_gen_nocuts = feeddown_input_file.Get("hzvsjetpt_gen_nocuts_nonprompt")
-#        hzvsjetpt_gen_eff = feeddown_input_file.Get("hzvsjetpt_gen_cuts_nonprompt")
-#        hzvsjetpt_gen_eff.Divide(hzvsjetpt_gen_nocuts)
-#
-#        hzvsjetpt_reco_nocuts = feeddown_input_file.Get("hzvsjetpt_reco_nocuts_nonprompt")
-#        hzvsjetpt_reco_eff = feeddown_input_file.Get("hzvsjetpt_reco_cuts_nonprompt")
-#        hzvsjetpt_reco_eff.Divide(hzvsjetpt_reco_nocuts)
-#
-#        sideband_input_data_file = TFile.Open("%s/sideband_sub%s%s.root" % \
-#                                               (self.d_resultsallpdata, self.case, self.typean))
-#        sideband_input_data = sideband_input_data_file.Get("hzvsjetpt")
-#
-#        hz_genvsreco_list=[]
-#        hjetpt_genvsreco_list=[]
-#
-#        hjetpt_fracdiff_list=[]
-#        hz_fracdiff_list=[]
-#        heff_pr_list=[]
-#        heff_fd_list=[]
-#        input_data_zvsjetpt_list=[]
-#        input_data_scaled = TH2F()
-#
-#
+    def feeddown(self):
+        """
+        In this function we compute the feeddown fraction to be subtracted to
+        extract the prompt z distributions of HF tagged jets.
+
+        The ingredients are the efficiency file that contains prompt and
+        non-prompt efficiency for HF meson reconstruction as a function of pT
+        in bins of jet pt (file_eff) and the output file of the jet processer that
+        contains all the response matrix and jet efficiencies (feeddown_input_file).
+
+        """
+        self.loadstyle()
+        feeddown_input_file = TFile.Open(self.n_fileff)
+        file_eff = TFile.Open("%s/efficiencies%s%s.root" % (self.d_resultsallpmc, \
+                              self.case, self.typean))
+        fileouts = TFile.Open("%s/feeddown%s%s.root" % \
+                              (self.d_resultsallpdata, self.case, self.typean), "recreate")
+
+        """
+        The response matrix for non prompt HF meson response_matrix is taken
+        from the feeddown_input_file file and it is calculated as the 4D
+        scatter plots of reco and gen z and jet pt for D-jet candidates in the
+        range of min-max for both reco and gen variables.
+
+        """
+
+        response_matrix = feeddown_input_file.Get("response_matrix_nonprompt")
+        powheg_input_file = TFile.Open(self.powheg_path_nonprompt)
+        input_data = powheg_input_file.Get("fh3_feeddown")
+        output_template = feeddown_input_file.Get("hzvsjetpt_reco")
+
+        hzvsjetpt_gen_nocuts = feeddown_input_file.Get("hzvsjetpt_gen_nocuts_nonprompt")
+        hzvsjetpt_gen_eff = feeddown_input_file.Get("hzvsjetpt_gen_cuts_nonprompt")
+        hzvsjetpt_gen_eff.Divide(hzvsjetpt_gen_nocuts)
+
+        hzvsjetpt_reco_nocuts = feeddown_input_file.Get("hzvsjetpt_reco_nocuts_nonprompt")
+        hzvsjetpt_reco_eff = feeddown_input_file.Get("hzvsjetpt_reco_cuts_nonprompt")
+        hzvsjetpt_reco_eff.Divide(hzvsjetpt_reco_nocuts)
+
+        sideband_input_data_file = TFile.Open("%s/sideband_sub%s%s.root" % \
+                                               (self.d_resultsallpdata, self.case, self.typean))
+        sideband_input_data = sideband_input_data_file.Get("hzvsjetpt")
+
+        hz_genvsreco_list = []
+        hjetpt_genvsreco_list = []
+
+        hjetpt_fracdiff_list = []
+        hz_fracdiff_list = []
+        heff_pr_list = []
+        heff_fd_list = []
+        input_data_zvsjetpt_list = []
+        input_data_scaled = TH2F()
+
 #        cgen_eff = TCanvas('cgen_eff_nonprompt ', 'gen efficiency applied to feedown')
 #        pgen_eff = TPad('pgen_eff_nonprompt ', 'gen efficiency applied to feedown',0.0,0.0,1.0,1.0)
 #        setup_pad(pgen_eff)
