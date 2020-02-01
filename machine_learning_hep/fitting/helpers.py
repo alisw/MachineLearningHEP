@@ -18,7 +18,7 @@ from glob import glob
 from array import array
 
 #pylint: disable=no-name-in-module
-from ROOT import TFile, TH1F, TCanvas, gStyle
+from ROOT import TFile, TH1F, TCanvas, gStyle  #pylint: disable=import-error
 #pylint: enable=no-name-in-module
 
 from machine_learning_hep.logger import get_logger
