@@ -586,6 +586,15 @@ class AnalyzerJet(Analyzer):
             if first_fit == 0:
                 print("No successful fits for: %s" % suffix)
                 continue
+
+
+            # We are now outside of the loop of HF candidate pt. We are going now
+            # to plot the "hz" histogram, which contains the Add of all the
+            # bkg-subtracted efficiency corrected distributions of all the HF
+            # candidate pt bins put together. Each "hz" distribution made for each
+            # jet pt is normalized by its own area. We also fill a 2D histogram
+            # called "hzvsjetpt" that contains all the z distributions of all jet pt.
+
             cz = TCanvas('cz' + suffix,
                          'The Efficiency Corrected Signal Yield Canvas' + suffix)
             pz = TPad('pz' + suffix, 'The Efficiency Corrected Signal Yield Canvas' + suffix,
@@ -599,7 +608,7 @@ class AnalyzerJet(Analyzer):
             latex = TLatex(0.6, 0.85, "%.2f < #it{p}_{T, jet} < %.2f GeV/#it{c}" %
                            (self.lvar2_binmin_reco[imult], self.lvar2_binmax_reco[imult]))
             draw_latex(latex)
-            cz.SaveAs("%s/efficiencycorrected_fullsub%s%s_%s_%.2f_%.2f.eps" % \
+            cz.SaveAs("%s/step1_effcorr_bkgsub_HFptintegrated_sub%s%s_%s_%.2f_%.2f.eps" % \
                       (self.d_resultsallpdata, self.case, self.typean, self.v_var2_binning, \
                        self.lvar2_binmin_reco[imult], self.lvar2_binmax_reco[imult]))
 
@@ -612,7 +621,7 @@ class AnalyzerJet(Analyzer):
 
         fileouts.cd()
         hzvsjetpt.Write("hzvsjetpt")
-        czvsjetpt = TCanvas('czvsjetpt', '2D input to unfolding')
+        czvsjetpt = TCanvas('czvsjetpt', '2D input to unfolding (not normalized)')
         pzvsjetpt = TPad('pzvsjetpt', '2D input to unfolding', 0.0, 0.001, 1.0, 1.0)
         setup_pad(pzvsjetpt)
         czvsjetpt.SetCanvasSize(1900, 1500)
@@ -621,7 +630,7 @@ class AnalyzerJet(Analyzer):
         hzvsjetpt.SetXTitle("#it{z}_{#parallel}^{ch}")
         hzvsjetpt.SetYTitle("#it{p}_{T, jet}")
         hzvsjetpt.Draw("text")
-        czvsjetpt.SaveAs("%s/czvsjetpt.eps" % self.d_resultsallpdata)
+        czvsjetpt.SaveAs("%s/step1_czvsjetpt_inputunfolding.eps" % self.d_resultsallpdata)
         fileouts.Close()
 
 # pylint: disable=line-too-long
