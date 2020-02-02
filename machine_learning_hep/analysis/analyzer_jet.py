@@ -346,7 +346,7 @@ class AnalyzerJet(Analyzer):
             h_sel_fd.SetMinimum(0.)
             h_sel_fd.SetMaximum(1.5)
         legeffFD.Draw()
-        cEffFD.SaveAs("%s/step0_EffFD%s%s.eps" % (self.d_resultsallpmc,
+        cEffFD.SaveAs("%s/step0_EffFD%s%s.eps" % (self.d_resultsallpmc, \
                                             self.case, self.typean))
 
     # pylint: disable=too-many-locals
@@ -652,12 +652,6 @@ class AnalyzerJet(Analyzer):
         fileouts = TFile.Open("%s/feeddown%s%s.root" % \
                               (self.d_resultsallpdata, self.case, self.typean), "recreate")
 
-        #The response matrix for non prompt HF meson response_matrix is taken
-        #from the feeddown_input_file file and it is calculated as the 4D
-        #scatter plots of reco and gen z and jet pt for D-jet candidates in the
-        #range of min-max for both reco and gen variables.
-
-
         response_matrix = feeddown_input_file.Get("response_matrix_nonprompt")
 
         # fh3_feeddown is 3d histogram from powheg+pythia prediction that
@@ -713,7 +707,7 @@ class AnalyzerJet(Analyzer):
         hzvsjetpt_gen_eff.SetXTitle("z^{gen}")
         hzvsjetpt_gen_eff.SetYTitle("#it{p}_{T, jet}^{gen}")
         hzvsjetpt_gen_eff.Draw("text")
-        cgen_eff.SaveAs("%s/cgen_kineeff_nonprompt.eps" % (self.d_resultsallpdata))
+        cgen_eff.SaveAs("%s/step2_cgen_kineeff_nonprompt.eps" % (self.d_resultsallpdata))
 
         # creco_eff is the kinematic efficiency that a candidate in reco limits
         # limits has gen values in the gen limits
@@ -728,7 +722,7 @@ class AnalyzerJet(Analyzer):
         hzvsjetpt_reco_eff.SetXTitle("z^{reco}")
         hzvsjetpt_reco_eff.SetYTitle("#it{p}_{T, jet}^{reco}")
         hzvsjetpt_reco_eff.Draw("text")
-        creco_eff.SaveAs("%s/creco_kineeff_nonprompt.eps" % (self.d_resultsallpdata))
+        creco_eff.SaveAs("%s/step2_creco_kineeff_nonprompt.eps" % (self.d_resultsallpdata))
 
         for ibin2 in range(self.p_nbin2_reco):
             suffix = "%s_%.2f_%.2f" % \
@@ -752,7 +746,7 @@ class AnalyzerJet(Analyzer):
             latex = TLatex(0.2, 0.85, '%.2f < #it{p}_{T, jet} < %.2f GeV/#it{c}' \
                            % (self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex)
-            cz_genvsreco.SaveAs("%s/cz_genvsreco_nonprompt_%s.eps" % \
+            cz_genvsreco.SaveAs("%s/step2_c_response_z_genvsreco_nonprompt_%s.eps" % \
                                 (self.d_resultsallpdata, suffix))
 
         for ibinshape in range(self.p_nbinshape_reco):
@@ -778,7 +772,7 @@ class AnalyzerJet(Analyzer):
             latex = TLatex(0.2, 0.8, "%.2f < #it{z}_{#parallel}^{ch} < %.2f" % \
                 (self.lvarshape_binmin_reco[ibinshape], self.lvarshape_binmax_reco[ibinshape]))
             draw_latex(latex)
-            cjetpt_genvsreco.SaveAs("%s/cjetpt_genvsreco_nonprompt_%s.eps" % \
+            cjetpt_genvsreco.SaveAs("%s/step_2_c_response_jetpt_genvsreco_nonprompt_%s.eps" % \
                                     (self.d_resultsallpdata, suffix))
 
         hz_genvsreco_full = feeddown_input_file.Get("hz_genvsreco_full_nonprompt")
@@ -796,7 +790,8 @@ class AnalyzerJet(Analyzer):
         hz_genvsreco_full.SetXTitle("z^{gen}")
         hz_genvsreco_full.SetYTitle("z^{reco}")
         hz_genvsreco_full.Draw("colz")
-        cz_genvsreco.SaveAs("%s/cz_genvsreco_full_nonprompt.eps" % (self.d_resultsallpdata))
+        cz_genvsreco.SaveAs("%s/step2_c_response_z_genvsreco_full_nonprompt.eps" % \
+                            (self.d_resultsallpdata))
 
         cjetpt_genvsreco = TCanvas('cjetpt_genvsreco_full_nonprompt',
                                    'response matrix 2D projection')
@@ -811,7 +806,7 @@ class AnalyzerJet(Analyzer):
         hjetpt_genvsreco_full.SetXTitle("#it{p}_{T, jet}^{gen}")
         hjetpt_genvsreco_full.SetYTitle("#it{p}_{T, jet}^{reco}")
         hjetpt_genvsreco_full.Draw("colz")
-        cjetpt_genvsreco.SaveAs("%s/cjetpt_genvsreco_full_nonprompt.eps" % \
+        cjetpt_genvsreco.SaveAs("%s/step_2_c_response_jetpt_genvsreco_full_nonprompt.eps" % \
                                 (self.d_resultsallpdata))
 
         for ibin2 in range(self.p_nbin2_gen):
@@ -859,7 +854,7 @@ class AnalyzerJet(Analyzer):
             draw_latex(latex5)
             latex6 = TLatex(0.52, 0.2, "#left|#it{#eta}_{jet}#right| < 0.5")
             draw_latex(latex6)
-            ceff.SaveAs("%s/ceff_prompt_nonprompt_%s.eps" % (self.d_resultsallpdata, suffix))
+            ceff.SaveAs("%s/step2_ceff_prompt_nonprompt_%s.eps" % (self.d_resultsallpdata, suffix))
 
         cjetpt_fracdiff = TCanvas('cjetpt_fracdiff ',
                                   'non-prompt jetpt response fractional differences')
