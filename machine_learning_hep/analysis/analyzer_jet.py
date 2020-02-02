@@ -264,7 +264,7 @@ class AnalyzerJet(Analyzer):
                 latex2 = TLatex(0.2, 0.8, '%.2f < #it{p}_{T, Lc} < %.2f GeV/#it{c}' % \
                     (self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt]))
                 draw_latex(latex2)
-                c_fitted_result.SaveAs("%s/fitted_result_%s.eps" % \
+                c_fitted_result.SaveAs("%s/step0_fitted_result_%s.eps" % \
                     (self.d_resultsallpdata, suffix))
         myfilemc.Close()
         myfile.Close()
@@ -346,7 +346,7 @@ class AnalyzerJet(Analyzer):
             h_sel_fd.SetMinimum(0.)
             h_sel_fd.SetMaximum(1.5)
         legeffFD.Draw()
-        cEffFD.SaveAs("%s/EffFD%s%s.eps" % (self.d_resultsallpmc,
+        cEffFD.SaveAs("%s/step0_EffFD%s%s.eps" % (self.d_resultsallpmc,
                                             self.case, self.typean))
 
     # pylint: disable=too-many-locals
