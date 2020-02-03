@@ -163,7 +163,7 @@ class ProcesserDDbar(Processer):
             df_tot = df_tot.append(df)
         print(df_tot.shape)
         df_tot = df_tot.reset_index(drop = True)
-        # df_tot = df_tot.sample(n = 1000)
+        #df_tot = df_tot.sample(n = 1000)
         df_work = df_tot[["run_number", "ev_id", "pt_cand", "inv_mass", "phi_cand",
                     "eta_cand"]]
         split_const = int(df_work.shape[0]/1000)
@@ -174,16 +174,17 @@ class ProcesserDDbar(Processer):
             print("process working_df", i, split_const, working_df.shape)
             df_tmp.append(filter_phi(working_df))
             print(len(df_tmp))
-        print("function passed", df_tmp.shape)
+        print("function passed")
         df_new = pd.concat(df_tmp)
-        df_new = df_new[df_new["delta_phi"]!=0]
-        print(df_new.shape)
+        print("concatation is done")
+        #df_new = df_new[df_new["delta_phi"]!=0]
+        print("final df", df_new.shape)
         inv_mass_tot = df_new["inv_mass"].tolist()
         inv_mass_tot_max = df_new["inv_cand_max"].tolist()
-        h_invmass_tot = TH1F("hmass_tot" + index, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-        h_invmass_tot_max = TH1F("hmass_max" + index, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+        h_invmass_tot = TH1F("hmass_tot", "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+        h_invmass_tot_max = TH1F("hmass_max", "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
         # h_DDbar_mass_tot = TH2F("hmass DDbar" + suffix, "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1], self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-        h_DDbar_mass_tot = TH2F("hmass DDbar" + suffix, "", 50, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1], 50, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+        h_DDbar_mass_tot = TH2F("hmass DDbar", "", 50, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1], 50, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
         for i in range (0, len(inv_mass_tot)-1):
             h_invmass_tot.Fill(inv_mass_tot[i])
             h_invmass_tot_max.Fill(inv_mass_tot_max[i])
