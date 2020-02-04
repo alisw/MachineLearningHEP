@@ -38,7 +38,7 @@ ml_study:
   dosignifopt: false
   doefficiency: false
   dotesting: false
-  dotraining: false
+  dotraining: true
 
 mlapplication:
   data:
@@ -54,21 +54,20 @@ analysis:
   type: MBjetvspt
   # Do each period separately including merged (true)
   # Do only merged (false)
-  doperperiod: false
+  doperperiod: true
   data:
-    dojetsystematics : true #
-    histomass: false #
+    dojetsystematics: false
+    histomass: true
   mc:
-    histomass: false #
-    efficiency: true #
-    feeddown: true #
-    dounfolding: true #
-    
-  dofit: true #
+    histomass: true
+    efficiency: true
+    feeddown: true
+    dounfolding: true
+  dofit: true
   # Control the yield systemaitc uncertainty
   dosyst: false
   dojetstudies: true
-  doeff: true #
+  doeff: true
   docross: false
   doplots: false
 
