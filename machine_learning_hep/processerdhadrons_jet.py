@@ -689,7 +689,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         df_tmp_selgen_pr_test, df_tmp_selreco_pr_test, df_tmp_selrecogen_pr_test = \
                 self.create_df_closure(df_mc_reco_merged_prompt_test)
 
-        make2dplot(df_tmp_selgen_pr_test, hzvsjetpt_reco_closure_pr, "z", "pt_jet")
+        make2dplot(df_tmp_selreco_pr_test, hzvsjetpt_reco_closure_pr, "z", "pt_jet")
         make2dplot(df_tmp_selgen_pr_test, hzvsjetpt_gen_closure_pr, "z_gen", "pt_gen_jet")
         hzvsjetpt_reco_closure_pr.Write("input_closure_reco")
         hzvsjetpt_gen_closure_pr.Write("input_closure_gen")
