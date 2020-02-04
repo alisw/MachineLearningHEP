@@ -688,8 +688,10 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                 train_test_split(df_mc_reco_merged_prompt, test_size=self.closure_frac)
         df_tmp_selgen_pr_test, df_tmp_selreco_pr_test, df_tmp_selrecogen_pr_test = \
                 self.create_df_closure(df_mc_reco_merged_prompt_test)
+        _, _, df_tmp_selrecogen_pr_train = \
+                self.create_df_closure(df_mc_reco_merged_prompt_train)
 
-        make2dplot(df_tmp_selgen_pr_test, hzvsjetpt_reco_closure_pr, "z", "pt_jet")
+        make2dplot(df_tmp_selreco_pr_test, hzvsjetpt_reco_closure_pr, "z", "pt_jet")
         make2dplot(df_tmp_selgen_pr_test, hzvsjetpt_gen_closure_pr, "z_gen", "pt_gen_jet")
         hzvsjetpt_reco_closure_pr.Write("input_closure_reco")
         hzvsjetpt_gen_closure_pr.Write("input_closure_gen")
@@ -747,7 +749,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                     response_matrix_weight = 1.0/weight
             response_matrix_pr.Fill(row.z, row.pt_jet,\
                 row.z_gen, row.pt_gen_jet, response_matrix_weight)
-        for row in df_mc_reco_merged_prompt_train.itertuples():
+        for row in df_tmp_selrecogen_pr_train.itertuples():
             response_matrix_weight = 1.0
             if self.doprior is True:
                 binx = hzvsjetpt_prior_weights.GetXaxis().FindBin(row.z_gen)
