@@ -40,13 +40,9 @@ from machine_learning_hep.models import apply # pylint: disable=import-error
 from machine_learning_hep.selectionutils import getnormforselevt
 from machine_learning_hep.processer import Processer
 
-def filter_phi(df):
-    #print("inside the function")
+def filter_phi(df): #
     df["is_d"] = 0
-    i = 0
     for name, group in df.groupby(["run_number", "ev_id"], sort = False):
-        #print("group")
-        #print(group.index, df.shape)
         pt_max = group["pt_cand"].idxmax()
         phi_max = df.loc[pt_max, "phi_cand"]
         df.loc[pt_max, "is_d"] = 1
@@ -54,7 +50,6 @@ def filter_phi(df):
         df.loc[group.index, "delta_phi"] = delta_phi_group
         mass_max = df.loc[pt_max, "inv_mass"]
         df.loc[group.index, "inv_cand_max"] = mass_max
-        i+=1
     print("filterphi done")
     return df
 
@@ -142,9 +137,7 @@ class ProcesserDDbar(Processer):
                      (self.v_var_binning, self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
             df = selectdfrunlist(df, \
                      self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
-            print("df inside loop", df.shape)
             h_invmass = TH1F("hmass" + suffix  , "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-            print ("dataframe while making inv_mass_plot", df.shape)
             fill_hist(h_invmass, df.inv_mass)
             myfile.cd()
             h_invmass.Write()
@@ -164,7 +157,6 @@ class ProcesserDDbar(Processer):
                 h_invmass_refl.Write()
 #            df_tot = df_tot.append(df)
             df_tot = df_tot.append(df_no_cut)
-        print("dataframe before filtering", df_tot.shape)
         df_tot = df_tot.reset_index(drop = True)
         #df_tot = df_tot.sample(n = 1000)
         df_work = df_tot[["run_number", "ev_id", "pt_cand", "inv_mass", "phi_cand",
