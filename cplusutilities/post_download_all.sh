@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Run the merging script for all "unmerged" directories in the input path.
+
 path="$1"
 if [ ! -d "$path" ]
 then
