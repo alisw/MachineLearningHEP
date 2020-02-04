@@ -736,7 +736,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         hzvsjetpt_reco_nocuts_closure.Write()
         hzvsjetpt_reco_cuts_closure.Write()
 
-        for row in df_mc_reco_merged_prompt.itertuples():
+        for row in df_tmp_selrecogen_pr.itertuples():
             response_matrix_weight = 1.0
             if self.doprior is True:
                 binx = hzvsjetpt_prior_weights.GetXaxis().FindBin(row.z_gen)
