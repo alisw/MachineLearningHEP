@@ -28,6 +28,7 @@ from machine_learning_hep.processer import Processer
 from machine_learning_hep.processerdhadrons import ProcesserDhadrons
 from machine_learning_hep.processerdhadrons_mult import ProcesserDhadrons_mult
 from machine_learning_hep.processerdhadrons_jet import ProcesserDhadrons_jet
+from machine_learning_hep.processerdhadrons_hfcorr import ProcesserDhadrons_hfcorr
 #from machine_learning_hep.doskimming import conversion, merging, merging_period, skim
 #from machine_learning_hep.doclassification_regression import doclassification_regression
 #from machine_learning_hep.doanalysis import doanalysis
@@ -315,6 +316,10 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         print("Using new feature for Dhadrons_jet")
         proc_class = ProcesserDhadrons_jet
         ana_class = AnalyzerJet
+    if proc_type == "Dhadrons_hfcorr":
+        print("Using new feature for Dhadrons_hfcorr")
+        proc_class = ProcesserDhadrons_hfcorr
+        ana_class = Analyzer
 
     mymultiprocessmc = MultiProcesser(case, proc_class, data_param[case], typean, run_param, "mc")
     mymultiprocessdata = MultiProcesser(case, proc_class, data_param[case], typean, run_param,\

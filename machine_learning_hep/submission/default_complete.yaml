@@ -53,7 +53,7 @@ mlapplication:
     docontinueafterstop: false
 
 analysis:
-  type: MBjetvspt #MBvspt_ntrkl, MBjetvspt
+  type: MBvspt_hfcorr #MBvspt_ntrkl, MBjetvspt
   # Do each period separately including merged (true)
   # Do only merged (false)
   doperperiod: false
@@ -62,16 +62,16 @@ analysis:
     dojetsystematics: false # analyzer: jetsystematics
   mc:
     histomass: true # processer: process_histomass
-    efficiency: true # processer: process_efficiency, process_response, process_unfolding
-    feeddown: true # analyzer: feeddown
-    dounfolding: true # analyzer: unfolding, unfolding_closure
-  dofit: true # analyzer: fit
+    efficiency: false # processer: process_efficiency, process_response, process_unfolding
+    feeddown: false # analyzer: feeddown
+    dounfolding: false # analyzer: unfolding, unfolding_closure
+  dofit: false # analyzer: fit
   # Control the yield systematic uncertainty
   dosyst: false # analyzer: yield_syst
-  dojetstudies: true # analyzer: efficiency, fit, side_band_sub
-  doeff: true # analyzer: efficiency
+  dojetstudies: false # analyzer: efficiency, fit, side_band_sub
+  doeff: false # analyzer: efficiency
   docross: false # analyzer: makenormyields
-  doplots: true # analyzer: plotternormyields
+  doplots: false # analyzer: plotternormyields
 
 systematics:
   cutvar:
