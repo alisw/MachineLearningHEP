@@ -51,3 +51,6 @@ setup.cfg
 
 # macOS
 .DS_Store
+
+# pylint
+machine_learning_hep/ci/*

@@ -15,6 +15,7 @@
 """
 main script for doing data processing, machine learning and analysis
 """
+#import array
 #import multiprocessing as mp
 import pickle
 #import os
@@ -22,13 +23,13 @@ import pickle
 #import uproot
 import pandas as pd
 import numpy as np
-from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
-from ROOT import TFile, TH1F, TH2F # pylint: disable=import-error, no-name-in-module
+from root_numpy import fill_hist #, evaluate # pylint: disable=import-error, no-name-in-module
+from ROOT import TFile, TH1F, TH2F #, TH3F, RooUnfoldResponse # pylint: disable=import-error, no-name-in-module
 #from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utilities import selectdfrunlist
 #from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
-from machine_learning_hep.utilities import seldf_singlevar, openfile
+from machine_learning_hep.utilities import  seldf_singlevar, openfile
 #from machine_learning_hep.utilities import mergerootfiles, z_calc, z_gen_calc
 #from machine_learning_hep.utilities import get_timestamp_string
 #from machine_learning_hep.utilities_plot import scatterplotroot
@@ -39,7 +40,7 @@ from machine_learning_hep.processer import Processer
 
 def filter_phi(dfreco):
     dfreco["is_d"] = 0
-    for name, group in dfreco.groupby(["run_number", "ev_id"], sort=False):
+    for _, group in dfreco.groupby(["run_number", "ev_id"], sort=False):
         pt_max = group["pt_cand"].idxmax()
         phi_max = dfreco.loc[pt_max, "phi_cand"]
         dfreco.loc[pt_max, "is_d"] = 1
@@ -58,7 +59,9 @@ def split_df(dfreco, num_part):
     dfreco_split = np.split(dfreco, split_indices)
     return dfreco_split
 
+
 class ProcesserDhadrons_hfcorr(Processer):
+    # pylint: disable=invalid-name
     # pylint: disable=too-many-instance-attributes
     # Class Attribute
     species = 'processer'
@@ -92,6 +95,27 @@ class ProcesserDhadrons_hfcorr(Processer):
         self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
+
+    def histos(self, name1, name2, dfreco):
+        dfreco = dfreco.groupby(["run_number", "ev_id"]).filter(lambda x: len(x) > 1)
+        dfreco = dfreco[dfreco["delta_phi"] != 0]
+        inv_mass_tot = dfreco["inv_mass"].tolist()
+        inv_mass_tot_max = dfreco["inv_cand_max"].tolist()
+        h_invmass_tot = TH1F("hmass_d" + name2, "", self.p_num_bins, self.p_mass_fit_lim[0],
+                             self.p_mass_fit_lim[1])
+        h_invmass_tot_max = TH1F("hmass_nd" + name1, "", self.p_num_bins, self.p_mass_fit_lim[0],
+                                 self.p_mass_fit_lim[1])
+        h_DDbar_mass_tot = TH2F("hmass DDbar" + name1 + name2, "", 50,
+                                self.p_mass_fit_lim[0], self.p_mass_fit_lim[1], 50,
+                                self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+        for i in range(0, len(inv_mass_tot)-1):
+            h_invmass_tot.Fill(inv_mass_tot[i])
+            h_invmass_tot_max.Fill(inv_mass_tot_max[i])
+            h_DDbar_mass_tot.Fill(inv_mass_tot[i], inv_mass_tot_max[i])
+        h_DDbar_mass_tot.SetOption("lego2z")
+        h_invmass_tot.Write()
+        h_invmass_tot_max.Write()
+        h_DDbar_mass_tot.Write()
 
     # pylint: disable=too-many-branches
     def process_histomass_single(self, index):
@@ -152,46 +176,54 @@ class ProcesserDhadrons_hfcorr(Processer):
                 myfile.cd()
                 h_invmass_sig.Write()
                 h_invmass_refl.Write()
-#            df_tot = df_tot.append(df)
+            #df_tot = df_tot.append(df)
             df_tot = df_tot.append(df_no_cut)
         df_tot = df_tot.reset_index(drop=True)
-        #df_tot = df_tot.sample(n=1000)
-        df_work = df_tot[["run_number", "ev_id", "pt_cand", "inv_mass", "phi_cand",
-                          "eta_cand"]]
+        # df_tot = df_tot.sample(n=5000)
+        if self.mcordata == "mc":
+            df_work = df_tot[["run_number", "ev_id", "pt_cand", "inv_mass",
+                              "phi_cand", "eta_cand", "ismcsignal"]]
+        else:
+            df_work = df_tot[["run_number", "ev_id", "pt_cand", "inv_mass",
+                              "phi_cand", "eta_cand"]]
         if df_work.shape[0] > 1000:
             split_const = int(df_work.shape[0]/1000)
             df_work.sort_values(["run_number", "ev_id"], inplace=True)
-            print("working_df_created")
             df_tmp = []
             for i, working_df in enumerate(split_df(df_work, split_const)):
-                print("process working_df", i, split_const, working_df.shape)
+                print("processing working df", i, split_const, "total size of df",
+                      df_work.shape)
                 df_tmp.append(filter_phi(working_df))
-            print("function passed")
-            df_new = pd.concat(df_tmp)
+            df_filt = pd.concat(df_tmp)
         else:
-            df_new = filter_phi(df_work)
-        print("processing is done")
-        df_new = df_new[df_new["delta_phi"] != 0]
-        print("final df", df_new.shape)
-        inv_mass_tot = df_new["inv_mass"].tolist()
-        inv_mass_tot_max = df_new["inv_cand_max"].tolist()
-        h_invmass_tot = TH1F("hmass_tot", "", self.p_num_bins,
-                             self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-        h_invmass_tot_max = TH1F("hmass_max", "", self.p_num_bins,
-                                 self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-        h_DDbar_mass_tot = TH2F("hmass DDbar", "", 50, self.p_mass_fit_lim[0],
-                                self.p_mass_fit_lim[1], 50, self.p_mass_fit_lim[0],
-                                self.p_mass_fit_lim[1])
-        for i in range(0, len(inv_mass_tot)-1):
-            h_invmass_tot.Fill(inv_mass_tot[i])
-            h_invmass_tot_max.Fill(inv_mass_tot_max[i])
-            h_DDbar_mass_tot.Fill(inv_mass_tot[i], inv_mass_tot_max[i])
-        h_DDbar_mass_tot.SetOption("lego2z")
-        myfile.cd()
-        h_invmass_tot.Write()
-        h_invmass_tot_max.Write()
-        h_DDbar_mass_tot.Write()
-        print("all passed")
+            df_filt = filter_phi(df_work)
+        name1 = " Full data D "
+        name2 = " Full data Dbar "
+        self.histos(name1, name2, df_filt)
+        # sig_fake studies for mc_df
+        if self.mcordata == "mc":
+            name1 = " signal "
+            name2 = " background "
+            df_d = df_filt[df_filt["is_d"] == 1] # only with max_pt in the event (consider as d)
+            df_dbar = df_filt[df_filt["is_d"] == 0] # everything else (not d)
+            df_d_sig = df_d[df_d["ismcsignal"] == 1] # only d signal
+            df_d_fake = df_d[df_d["ismcsignal"] == 0] # only d background
+            df_dbar_sig = df_dbar[df_dbar["ismcsignal"] == 1] # only not d signal
+            df_dbar_fake = df_dbar[df_dbar["ismcsignal"] == 0] # only not d background
+            frames = [df_d_sig, df_dbar_sig]
+            sig_sig = pd.concat(frames)
+            self.histos(name1, name1, sig_sig)
+            frames = [df_d_sig, df_dbar_fake]
+            sig_fake = pd.concat(frames)
+            self.histos(name1, name2, sig_fake)
+            frames = [df_d_fake, df_dbar_sig]
+            fake_sig = pd.concat(frames)
+            self.histos(name2, name1, fake_sig)
+            frames = [df_d_fake, df_dbar_fake]
+            fake_fake = pd.concat(frames)
+            self.histos(name2, name2, fake_fake)
+        print("FINISHED")
+
 #
     # pylint: disable=line-too-long
 #    def process_efficiency_single(self, index):
