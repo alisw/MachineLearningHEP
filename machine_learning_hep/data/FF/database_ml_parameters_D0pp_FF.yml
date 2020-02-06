@@ -355,7 +355,7 @@ D0pp_FF:
       pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
 
 
-      systematic_catagories: ["fitting", "cutvar", "powheg", "unfolding_prior", "regularisation"] #sideband 20
+      systematic_categories: ["fitting", "cutvar", "powheg", "unfolding_prior", "regularisation"] #sideband 20
       systematic_variations: [8, 17, 9, 1, 2]
       systematic_correlation: ["corr", "corr", "corr", "corr", "corr", "corr"]
       systematic_rms: [true,  true, true, true , true, true]
