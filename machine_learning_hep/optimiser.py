@@ -24,7 +24,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
-from ROOT import TH1F, TF1, gROOT  # pylint: disable=import-error,no-name-in-module
+from ROOT import TFile, TCanvas, TH1F, TF1, gROOT  # pylint: disable=import-error,no-name-in-module
 from machine_learning_hep.utilities import seldf_singlevar, split_df_sigbkg, createstringselection
 from machine_learning_hep.utilities import openfile, selectdfquery
 from machine_learning_hep.correlations import vardistplot, scatterplot, correlationmatrix
@@ -142,7 +142,9 @@ class Optimiser:
         self.c_gridconfig = grid_config
 
         #significance
+        self.p_isfonll = data_param["ml"]["opt"]["isFONLLfromROOT"]
         self.f_fonll = data_param["ml"]["opt"]["filename_fonll"]
+        self.p_fonllparticle = data_param["ml"]["opt"]["fonll_particle"]
         self.p_fonllband = data_param["ml"]["opt"]["fonll_pred"]
         self.p_fragf = data_param["ml"]["opt"]["FF"]
         self.p_sigmamb = data_param["ml"]["opt"]["sigma_MB"]
@@ -366,7 +368,7 @@ class Optimiser:
         with open(f'{self.dirmlplot}/Efficiency_{self.s_suffix}.pickle', 'wb') as out:
             pickle.dump(fig_eff, out)
 
-    # pylint: disable=too-many-locals
+    #pylint: disable=too-many-locals
     def do_significance(self):
         self.logger.info("Doing significance optimization")
         gROOT.SetBatch(True)
@@ -391,27 +393,47 @@ class Optimiser:
         acc, acc_err = calc_eff(numacc, denacc)
         self.logger.debug("Acceptance: %.3e +/- %.3e", acc, acc_err)
         #calculation of the expected fonll signals
-        df_fonll = pd.read_csv(self.f_fonll)
-        ptmin = self.p_binmin
-        ptmax = self.p_binmax
-        df_fonll_in_pt = df_fonll.query('(pt >= @ptmin) and (pt < @ptmax)')[self.p_fonllband]
-        prod_cross = df_fonll_in_pt.sum() * self.p_fragf * 1e-12 / len(df_fonll_in_pt)
-        delta_pt = ptmax - ptmin
-        signal_yield = 2. * prod_cross * delta_pt * self.p_br * acc * self.p_taa \
-                       / (self.p_sigmamb * self.p_fprompt)
-        self.logger.debug("Expected signal yield: %.3e", signal_yield)
-        signal_yield = self.p_raahp * signal_yield
-        self.logger.debug("Expected signal yield x RAA hp: %.3e", signal_yield)
 
-        #now we plot the fonll expectation
-        plt.figure(figsize=(20, 15))
-        plt.subplot(111)
-        plt.plot(df_fonll['pt'], df_fonll[self.p_fonllband] * self.p_fragf, linewidth=4.0)
-        plt.xlabel('P_t [GeV/c]', fontsize=20)
-        plt.ylabel('Cross Section [pb/GeV]', fontsize=20)
-        plt.title("FONLL cross section " + self.p_case, fontsize=20)
-        plt.semilogy()
-        plt.savefig(f'{self.dirmlplot}/FONLL_curve_{self.s_suffix}.png')
+        if self.p_isfonll:
+            df_fonll = TFile.Open(self.f_fonll)
+            df_fonll_Lc = df_fonll.Get(self.p_fonllparticle+"pred_"+self.p_fonllband)
+            ptmin = self.p_binmin
+            ptmax = self.p_binmax
+            delta_pt = ptmax - ptmin
+            prod_cross = df_fonll_Lc.Integral(ptmin*20, ptmax*20)* self.p_fragf * 1e-12 / delta_pt
+            signal_yield = 2. * prod_cross * delta_pt * acc * self.p_taa \
+                           / (self.p_sigmamb * self.p_fprompt)
+            self.logger.debug("Expected signal yield: %.3e", signal_yield)
+            signal_yield = self.p_raahp * signal_yield
+            self.logger.debug("Expected signal yield x RAA hp: %.3e", signal_yield)
+
+            #now we plot the fonll expectation
+            cFONLL = TCanvas('cFONLL', 'The FONLL expectation')
+            df_fonll_Lc.GetXaxis().SetRangeUser(0, 16)
+            df_fonll_Lc.Draw("")
+            cFONLL.SaveAs("%s/FONLL_curve_%s.png" % (self.dirmlplot, self.s_suffix))
+        else:
+            df_fonll = pd.read_csv(self.f_fonll)
+            ptmin = self.p_binmin
+            ptmax = self.p_binmax
+            delta_pt = ptmax - ptmin
+            df_fonll_in_pt = df_fonll.query('(pt >= @ptmin) and (pt < @ptmax)')[self.p_fonllband]
+            prod_cross = df_fonll_in_pt.sum() * self.p_fragf * 1e-12 / delta_pt
+            signal_yield = 2. * prod_cross * delta_pt * self.p_br * acc * self.p_taa \
+                           / (self.p_sigmamb * self.p_fprompt)
+            self.logger.debug("Expected signal yield: %.3e", signal_yield)
+            signal_yield = self.p_raahp * signal_yield
+            self.logger.debug("Expected signal yield x RAA hp: %.3e", signal_yield)
+
+            #now we plot the fonll expectation
+            plt.figure(figsize=(20, 15))
+            plt.subplot(111)
+            plt.plot(df_fonll['pt'], df_fonll[self.p_fonllband] * self.p_fragf, linewidth=4.0)
+            plt.xlabel('P_t [GeV/c]', fontsize=20)
+            plt.ylabel('Cross Section [pb/GeV]', fontsize=20)
+            plt.title("FONLL cross section " + self.p_case, fontsize=20)
+            plt.semilogy()
+            plt.savefig(f'{self.dirmlplot}/FONLL_curve_{self.s_suffix}.png')
 
         df_data_sideband = self.df_data.query(self.s_selbkgml)
         df_data_sideband = shuffle(df_data_sideband, random_state=self.rnd_shuffle)
