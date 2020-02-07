@@ -142,7 +142,7 @@ class Optimiser:
         self.c_gridconfig = grid_config
 
         #significance
-        self.p_isfonll = data_param["ml"]["opt"]["isFONLLfromROOT"]
+        self.is_fonll_from_root = data_param["ml"]["opt"]["isFONLLfromROOT"]
         self.f_fonll = data_param["ml"]["opt"]["filename_fonll"]
         self.p_fonllparticle = data_param["ml"]["opt"]["fonll_particle"]
         self.p_fonllband = data_param["ml"]["opt"]["fonll_pred"]
@@ -394,7 +394,7 @@ class Optimiser:
         self.logger.debug("Acceptance: %.3e +/- %.3e", acc, acc_err)
         #calculation of the expected fonll signals
 
-        if self.p_isfonll:
+        if self.is_fonll_from_root:
             df_fonll = TFile.Open(self.f_fonll)
             df_fonll_Lc = df_fonll.Get(self.p_fonllparticle+"pred_"+self.p_fonllband)
             ptmin = self.p_binmin
