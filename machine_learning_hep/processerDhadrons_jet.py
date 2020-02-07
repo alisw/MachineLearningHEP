@@ -761,7 +761,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
             hz_genvsreco_list[ibin2].Scale(1.0/hz_genvsreco_list[ibin2].Integral(1,-1,1,-1))
             hz_genvsreco_list[ibin2].Write()
         for ibinshape in range(len(self.lvarshape_binmin_reco)):
-            hjetpt_genvsreco_list[ibin2].Scale(1.0/hjetpt_genvsreco_list[ibinshape].Integral(1,-1,1,-1))
+            hjetpt_genvsreco_list[ibinshape].Scale(1.0/hjetpt_genvsreco_list[ibinshape].Integral(1,-1,1,-1))
             hjetpt_genvsreco_list[ibinshape].Write()
         hjetpt_gen_nocuts.Write()
         hjetpt_gen_cuts.Write()
