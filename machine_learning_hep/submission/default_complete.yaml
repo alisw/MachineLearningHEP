@@ -56,15 +56,15 @@ analysis:
   type: MBjetvspt #MBvspt_ntrkl, MBjetvspt
   # Do each period separately including merged (true)
   # Do only merged (false)
-  doperperiod: true
+  doperperiod: false
   data:
-    histomass: false
+    histomass: true
     dojetsystematics: false
   mc:
-    histomass: false
-    efficiency: false
-    feeddown: false
-    dounfolding: false
+    histomass: true
+    efficiency: true
+    feeddown: true
+    dounfolding: true
   dofit: true
   # Control the yield systemaitc uncertainty
   dosyst: false
