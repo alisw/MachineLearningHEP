@@ -71,7 +71,7 @@ analysis:
   dojetstudies: true # analyzer: efficiency, fit, side_band_sub
   doeff: true # analyzer: efficiency
   docross: false # analyzer: makenormyields
-  doplots: true # analyzer: plotternormyields
+  doplots: false # analyzer: plotternormyields
 
 systematics:
   cutvar:
