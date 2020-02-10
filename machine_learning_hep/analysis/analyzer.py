@@ -27,3 +27,4 @@ class AnalyzerAfterBurner(WorkflowBase):
         super().__init__(datap, case, typean, None)
 
         self.analyzers = None
+        self.analyzer_merged = None
