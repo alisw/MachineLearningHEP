@@ -63,6 +63,7 @@ class AnalyzerManager:
             self.after_burner = self.analyzers[-1].get_after_burner()
             if self.after_burner:
                 self.after_burner.analyzers = self.analyzers[:-1]
+                self.after_burner.analyzer_merged = self.analyzers[-1]
 
         self.is_initialized = True
 
