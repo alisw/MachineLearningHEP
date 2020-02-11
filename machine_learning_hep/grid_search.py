@@ -15,106 +15,199 @@
 """
 Methods to do hyper-parameters optimization
 """
-from io import BytesIO
 import itertools
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
+from sklearn.metrics import make_scorer, roc_auc_score, accuracy_score
 from sklearn.model_selection import GridSearchCV
 from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier  # pylint: disable=unused-import
 from xgboost import XGBClassifier # pylint: disable=unused-import
 from machine_learning_hep.logger import get_logger
+from machine_learning_hep.io import print_dict
 
 
-def do_gridsearch(names, classifiers, param_grid, refit_arr, x_train, y_train_, cv_, ncores):
+def get_scorers(score_names):
+    """Construct dictionary of scorers
+
+    Args:
+        score_names: tuple of names. Available names see below
+    Returns:
+        dictionary mapping scorers to names
+    """
+
+    scorers = {}
+    for sn in score_names:
+        if sn == "AUC":
+            scorers["AUC"] = make_scorer(roc_auc_score, needs_threshold=True)
+        elif sn == "Accuracy":
+            scorers["Accuracy"] = make_scorer(accuracy_score)
+
+    return scorers
+
+
+def do_gridsearch(names, classifiers, grid_params, x_train, y_train, nkfolds, ncores):
+    """Hyperparameter grid search for a list of classifiers
+
+    Given a list of classifiers, do a hyperparameter grid search based on a corresponding
+    set of parameters
+
+    Args:
+        names: iteratable of classifier names
+        classifiers: iterable of classifiers
+        grid_params: iterable of parameters used to perform the grid search
+        x_train: feature dataframe
+        y_train: targets dataframe
+        nkfolds: int, cross-validation generator or an iterable
+        ncores: number of cores to distribute jobs to
+    Returns:
+        lists of grid search models, the best model and scoring dataframes
+    """
+
     logger = get_logger()
     grid_search_models_ = []
     grid_search_bests_ = []
     list_scores_ = []
-    for _, clf, param_cv, refit in zip(names, classifiers, param_grid, refit_arr):
-        grid_search = GridSearchCV(clf, param_cv, cv=cv_, refit=refit,
-                                   scoring='neg_mean_squared_error', n_jobs=ncores)
-        grid_search_model = grid_search.fit(x_train, y_train_)
-        cvres = grid_search.cv_results_
-        for mean_score, params in zip(cvres["mean_test_score"], cvres["params"]):
-            logger.info(np.sqrt(-mean_score), params)
-        list_scores_.append(pd.DataFrame(cvres))
-        grid_search_best = grid_search.best_estimator_.fit(x_train, y_train_)
-        grid_search_models_.append(grid_search_model)
-        grid_search_bests_.append(grid_search_best)
+
+    # As this may take a long time, accept a keyboard interrupt
+    try:
+        for clf_name, clf, gps in zip(names, classifiers, grid_params):
+            if not gps:
+                logger.info("Nothing to be done for grid search of model %s", clf_name)
+                continue
+            logger.info("Grid search for model %s with following parameters:", clf_name)
+            print_dict(gps)
+
+            # To work for probabilities. This will call model.decision_function or
+            # model.predict_proba as it is done for the nominal ROC curves as well to decide on the
+            # performance
+            scoring = get_scorers(gps["scoring"])
+
+            grid_search = GridSearchCV(clf, gps["params"], cv=nkfolds, refit=gps["refit"],
+                                       scoring=scoring, n_jobs=ncores, verbose=2,
+                                       return_train_score=True)
+            grid_search.fit(x_train, y_train)
+            cvres = grid_search.cv_results_
+            #for mean_score, params in zip(cvres["mean_test_score"], cvres["params"]):
+            #    logger.info(mean_score, params)
+
+            # Add test AUC if test data is available
+            # Tuple of grid search dataframe and test AUC
+            list_scores_.append(pd.DataFrame(cvres))
+            grid_search_models_.append(grid_search)
+            grid_search_bests_.append(grid_search.best_estimator_)
+    except KeyboardInterrupt:
+        # Could be of different length depending on where the KeyboardInterrupt was issued
+        # ==> Trim to the same length
+        logger.warning("Grid search interrupted. Returning what was done.")
+        min_length = min(len(grid_search_models_), len(grid_search_bests_), len(list_scores_))
+        grid_search_models_ = grid_search_models_[:min_length]
+        grid_search_bests_ = grid_search_bests_[:min_length]
+        list_scores_ = list_scores_[:min_length]
     return grid_search_models_, grid_search_bests_, list_scores_
 
 
-def read_grid_dict(grid_dict):
-    names_cv = []
-    clf_cv = []
-    par_grid_cv = []
-    par_grid_cv_keys = []
-    refit_cv = []
-    var_param_cv = []
-
-    for keymodels, _ in grid_dict.items():
-        names_cv.append(grid_dict[keymodels]["name"])
-        clf_cv.append(eval(grid_dict[keymodels]["clf"]))  # pylint: disable=eval-used
-        par_grid_cv.append([grid_dict[keymodels]["param_grid"]])
-        refit_cv.append(grid_dict[keymodels]["refit_grid"])
-        var_param_cv.append(grid_dict[keymodels]["var_param"])
-        par_grid_cv_keys.append(
-            ["param_{}".format(key) for key in grid_dict[keymodels]["param_grid"].keys()])
-    return names_cv, clf_cv, par_grid_cv, refit_cv, var_param_cv, par_grid_cv_keys
-
-
-def perform_plot_gridsearch(names, scores, par_grid, keys, changeparameter, output_,
-                            suffix_, alpha):
+# pylint: disable=too-many-locals, too-many-statements
+def perform_plot_gridsearch(names, scores, grid_params, out_dirs, suffix_):
     '''
     Function for grid scores plotting (working with scikit 0.20)
     '''
     logger = get_logger()
-    fig = plt.figure(figsize=(35, 15))
-    for name, score_obj, pars, key, change in zip(names, scores, par_grid,
-                                                  keys, changeparameter):
-        change_par = "param_" + change
-        if len(key) == 1:
+
+    for name, score_obj, gps, out_dir in zip(names, scores, grid_params, out_dirs):
+        param_keys = [f"param_{key}" for key in gps["params"].keys()]
+        if not param_keys:
             logger.warning("Add at least 1 parameter (even just 1 value)")
             continue
 
-        dict_par = pars[0].copy()
-        dict_par.pop(change)
-        lst_par_values = list(dict_par.values())
-        listcomb = []
-        for comb in itertools.product(*lst_par_values):
-            listcomb.append(comb)
+        # Re-arrange scoring such that the refitted one is always on top
+        score_names = gps["scoring"]
+        refit_score = gps["refit"]
+        del score_names[score_names.index(refit_score)]
+        score_names.insert(0, refit_score)
 
-        # plotting a graph for every combination of paramater different from
-        # change (e.g.: n_estimator in random_forest): score vs. change
-        pad = fig.add_subplot(1, len(names), names.index(name)+1)
-        pad.set_title(name, fontsize=20)
-        plt.ylim(-0.6, 0)
-        plt.xlabel(change_par, fontsize=15)
-        plt.ylabel('neg_mean_squared_error', fontsize=15)
-        pad.get_xaxis().set_tick_params(labelsize=15)
-        pad.get_yaxis().set_tick_params(labelsize=15)
-        key.remove(change_par)
-        for case in listcomb:
+        # Extract scores
+        x_labels = []
+        y_values = {}
+        y_errors = {}
+
+        for sn in score_names:
+            y_values[sn] = {"train": [], "test": []}
+            y_errors[sn] = {"train": [], "test": []}
+
+        # Get indices of values to put on x-axis and identify parameter combination
+        values_indices = [range(len(values)) for values in gps["params"].values()]
+
+        y_axis_mins = {sn: 9999 for sn in score_names}
+        y_axis_maxs = {sn: -9999 for sn in score_names}
+        for indices, case in zip(itertools.product(*values_indices),
+                                 itertools.product(*list(gps["params"].values()))):
             df_case = score_obj.copy()
-            lab = ""
-            for i_case, i_key in zip(case, key):
-                df_case = df_case.loc[df_case[i_key] == float(i_case)]
-                lab = lab + "{0}: {1} \n".format(i_key, i_case)
-            df_case.plot(x=change_par, y='mean_test_score', ax=pad, label=lab,
-                         marker='o', style="-")
-            sample_x = list(df_case[change_par])
-            sample_score_mean = list(df_case["mean_test_score"])
-            sample_score_std = list(df_case["std_test_score"])
-            lst_up = [mean+std for mean, std in zip(sample_score_mean,
-                                                    sample_score_std)]
-            lst_down = [mean-std for mean, std in zip(sample_score_mean,
-                                                      sample_score_std)]
-            plt.fill_between(sample_x, lst_down, lst_up, alpha=alpha)
-        pad.legend(fontsize=10)
-    plotname = output_ + "/GridSearchResults" + suffix_ + ".png"
-    plt.savefig(plotname)
-    img_gridsearch = BytesIO()
-    plt.savefig(img_gridsearch, format='png')
-    img_gridsearch.seek(0)
-    return img_gridsearch
+            for i_case, i_key in zip(case, param_keys):
+                df_case = df_case.loc[df_case[i_key] == df_case[i_key].dtype.type(i_case)]
+
+            x_labels.append(",".join([str(i) for i in indices]))
+            # As we just nailed it down to one value
+            for sn in score_names:
+                for tt in ("train", "test"):
+                    y_values[sn][tt].append(df_case[f"mean_{tt}_{sn}"].values[0])
+                    y_errors[sn][tt].append(df_case[f"std_{tt}_{sn}"].values[0])
+                    y_axis_mins[sn] = min(y_axis_mins[sn], y_values[sn][tt][-1])
+                    y_axis_maxs[sn] = max(y_axis_maxs[sn], y_values[sn][tt][-1])
+
+        # Prepare text for parameters
+        text_parameters = "\n".join([f"{key}: {values}" for key, values in gps["params"].items()])
+
+        # To determine fontsizes later
+        figsize = (35, 18 * len(score_names))
+        fig, axes = plt.subplots(len(score_names), 1, sharex=True, gridspec_kw={"hspace": 0.05},
+                                 figsize=figsize)
+        ax_plot = dict(zip(score_names, axes))
+
+        # The axes to put the parameter list
+        ax_main = axes[-1]
+        # The axes with the title being on top
+        ax_top = axes[0]
+
+        points_per_inch = 72
+        markerstyles = ["o", "+"]
+        markersize = 20
+
+        for sn in score_names:
+            ax = ax_plot[sn]
+            ax_min = y_axis_mins[sn] - (y_axis_maxs[sn] - y_axis_mins[sn]) / 10.
+            ax_max = y_axis_maxs[sn] + (y_axis_maxs[sn] - y_axis_mins[sn]) / 10.
+            ax.set_ylim(ax_min, ax_max)
+            ax.set_ylabel(f"mean {sn}", fontsize=20)
+            ax.get_yaxis().set_tick_params(labelsize=20)
+
+            for j, tt in enumerate(("train", "test")):
+                markerstyle = markerstyles[j % len(markerstyles)]
+
+                ax.errorbar(range(len(x_labels)), y_values[sn][tt], yerr=y_errors[sn][tt],
+                            ls="", marker=markerstyle, markersize=markersize, label=f"{sn} ({tt})")
+
+                # Add values to points
+                ylim = ax.get_ylim()
+                plot_labels_offset = (ylim[1] - ylim[0]) / 40
+                for x, y in enumerate(y_values[sn][tt]):
+                    ax.text(x, y - plot_labels_offset, f"{y:.4f}", fontsize=20)
+
+        ax_main.set_xlabel("parameter indices", fontsize=20)
+        ax_top.set_title(f"Grid search {name}", fontsize=30)
+        ax_main.get_xaxis().set_tick_params(labelsize=20)
+        ax_main.set_xticks(range(len(x_labels)))
+        ax_main.set_xticklabels(x_labels, rotation=45)
+
+        text_point_size = int(4 * fig.dpi / points_per_inch * figsize[1] / len(gps["params"]))
+        xlim = ax_main.get_xlim()
+        ylim = ax_main.get_ylim()
+
+        xlow = xlim[0] + (xlim[1] - xlim[0]) / 100
+        ylow = ylim[0] + (ylim[1] - ylim[0]) / 3
+        ax_main.text(xlow, ylow, text_parameters, fontsize=text_point_size)
+
+        for ax in ax_plot.values():
+            ax.legend(loc="center right", fontsize=20)
+        plotname = f"{out_dir}/GridSearchResults_{suffix_}_{name}.png"
+        plt.savefig(plotname)
+        plt.close(fig)

@@ -34,18 +34,19 @@ from machine_learning_hep.root import write_tree
 from machine_learning_hep.mlperformance import cross_validation_mse, plot_cross_validation_mse
 from machine_learning_hep.mlperformance import plot_learning_curves, precision_recall
 from machine_learning_hep.mlperformance import roc_train_test, plot_overtraining
-from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perform_plot_gridsearch
+from machine_learning_hep.grid_search import do_gridsearch, perform_plot_gridsearch
 from machine_learning_hep.models import importanceplotall
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.optimization import calc_bkg, calc_signif, calc_eff, calc_sigeff_steps
 from machine_learning_hep.correlations import vardistplot_probscan, efficiency_cutscan
+from machine_learning_hep.utilities import checkdirlist, checkmakedirlist
 
-# pylint: disable=too-many-instance-attributes, too-many-statements, too-few-public-methods
+# pylint: disable=too-many-instance-attributes, too-many-statements
 class Optimiser:
     #Class Attribute
     species = "optimiser"
 
-    def __init__(self, data_param, case, typean, model_config, grid_config, binmin,
+    def __init__(self, data_param, case, typean, model_config, binmin,
                  binmax, raahp, training_var):
 
         self.logger = get_logger()
@@ -138,8 +139,6 @@ class Optimiser:
         self.p_classname = None
         self.p_trainedmod = None
         self.s_suffix = None
-        #config files
-        self.c_gridconfig = grid_config
 
         #significance
         self.is_fonll_from_root = data_param["ml"]["opt"]["isFONLLfromROOT"]
@@ -272,9 +271,9 @@ class Optimiser:
                   imageIO_corr_bkg_train
 
     def loadmodels(self):
-        classifiers_scikit, names_scikit = getclf_scikit(self.db_model)
-        classifiers_xgboost, names_xgboost = getclf_xgboost(self.db_model)
-        classifiers_keras, names_keras = getclf_keras(self.db_model, len(self.df_xtrain.columns))
+        classifiers_scikit, names_scikit, _ = getclf_scikit(self.db_model)
+        classifiers_xgboost, names_xgboost, _ = getclf_xgboost(self.db_model)
+        classifiers_keras, names_keras, _ = getclf_keras(self.db_model, len(self.df_xtrain.columns))
         self.p_class = classifiers_scikit+classifiers_xgboost+classifiers_keras
         self.p_classname = names_scikit+names_xgboost+names_keras
 
@@ -329,15 +328,37 @@ class Optimiser:
         importanceplotall(self.v_train, self.p_classname, self.p_class,
                           self.s_suffix, self.dirmlplot)
     def do_grid(self):
-        analysisdb = self.c_gridconfig[self.p_mltype]
-        names_cv, clf_cv, par_grid_cv, refit_cv, var_param, \
-            par_grid_cv_keys = read_grid_dict(analysisdb)
-        _, _, dfscore = do_gridsearch(
-            names_cv, clf_cv, par_grid_cv, refit_cv, self.df_xtrain,
-            self.df_ytrain, self.p_nkfolds, self.p_ncorescross)
-        perform_plot_gridsearch(
-            names_cv, dfscore, par_grid_cv, par_grid_cv_keys,
-            var_param, self.dirmlplot, self.s_suffix, 0.1)
+        self.logger.info("Do grid search")
+        clfs_scikit, names_scikit, grid_params_scikit = getclf_scikit(self.db_model)
+        clfs_xgboost, names_xgboost, grid_params_xgboost = getclf_xgboost(self.db_model)
+        clfs_keras, names_keras, grid_params_keras = getclf_keras(self.db_model,
+                                                                  len(self.df_xtrain.columns))
+        clfs_grid_params_all = grid_params_scikit + grid_params_xgboost + grid_params_keras
+        clfs_all = clfs_scikit + clfs_xgboost + clfs_keras
+        clfs_names_all = names_scikit + names_xgboost + names_keras
+
+        clfs_all = [clf for clf, gps in zip(clfs_all, clfs_grid_params_all) if gps]
+        clfs_names_all = [name for name, gps in zip(clfs_names_all, clfs_grid_params_all) if gps]
+        clfs_grid_params_all = [gps for gps in clfs_grid_params_all if gps]
+
+
+
+        out_dirs = [os.path.join(self.dirmlplot, "grid_search", name, f"{name}{self.s_suffix}") \
+                for name in clfs_names_all]
+        if checkdirlist(out_dirs):
+            self.logger.fatal("Not overwriting anything. Please remove corresponding directories " \
+                    "if you are certain you want do do grid search again")
+        checkmakedirlist(out_dirs)
+
+        _, models_best, dfscore = do_gridsearch(clfs_names_all, clfs_all, clfs_grid_params_all,
+                                                self.df_xtrain, self.df_ytrain, self.p_nkfolds,
+                                                self.p_ncorescross)
+
+        perform_plot_gridsearch(clfs_names_all, dfscore, clfs_grid_params_all, out_dirs,
+                                self.s_suffix)
+        # Save best models
+        for name, clf, out_dir in zip(clfs_names_all, models_best, out_dirs):
+            savemodels((name,), (clf,), out_dir, self.s_suffix)
 
     def do_boundary(self):
         classifiers_scikit_2var, names_2var = getclf_scikit(self.db_model)

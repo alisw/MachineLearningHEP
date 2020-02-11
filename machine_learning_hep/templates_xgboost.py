@@ -15,7 +15,8 @@
 from xgboost import XGBClassifier
 
 def xgboost_classifier(model_config): # pylint: disable=W0613
-    return XGBClassifier(n_gpus=0,
+    return XGBClassifier(verbosity=1,
+                         n_gpus=0,
                          n_jobs=model_config['n_jobs'],
                          tree_method=model_config['tree_method'],
                          max_depth=model_config['max_depth'],

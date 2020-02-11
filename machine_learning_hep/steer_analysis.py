@@ -70,8 +70,7 @@ except Exception as e: # pylint: disable=broad-except
     print("##############################")
 
 
-def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, grid_param: dict, # pylint: disable=too-many-locals, too-many-statements, too-many-branches
-                       run_param: dict):
+def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, run_param: dict): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
 
     logger = get_logger()
     logger.info("Do analysis chain")
@@ -363,7 +362,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         index = 0
         for binmin, binmax in zip(binminarray, binmaxarray):
             myopt = Optimiser(data_param[case], case, typean,
-                              data_model[mltype], grid_param, binmin, binmax,
+                              data_model[mltype], binmin, binmax,
                               raahp[index], training_vars[index])
             if docorrelation is True:
                 myopt.do_corr()
@@ -500,8 +499,6 @@ def main():
                         help="analysis database to be used")
     parser.add_argument("--database-ml-models", dest="database_ml_models",
                         help="ml model database to be used")
-    parser.add_argument("--database-ml-gridsearch", dest="database_ml_gridsearch",
-                        help="ml gridsearch database to be used")
     parser.add_argument("--database-run-list", dest="database_run_list",
                         help="run list database to be used")
     parser.add_argument("--analysis", "-a", dest="type_ana",
@@ -523,9 +520,7 @@ def main():
     print(args.database_analysis)
     db_analysis = load_config(args.database_analysis, (pkg_data, db_analysis_default_name))
     db_ml_models = load_config(args.database_ml_models, (pkg_data, "config_model_parameters.yml"))
-    db_ml_gridsearch = load_config(args.database_ml_gridsearch,
-                                   (pkg_data, "database_ml_gridsearch.yml"))
     db_run_list = load_config(args.database_run_list, (pkg_data, "database_run_list.yml"))
 
     # Run the chain
-    do_entire_analysis(run_config, db_analysis, db_ml_models, db_ml_gridsearch, db_run_list)
+    do_entire_analysis(run_config, db_analysis, db_ml_models, db_run_list)
