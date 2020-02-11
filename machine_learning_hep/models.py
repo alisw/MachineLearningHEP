@@ -44,18 +44,20 @@ def getclf_scikit(model_config):
 
     classifiers = []
     names = []
+    grid_search_params = []
 
     for c in model_config["scikit"]:
         if model_config["scikit"][c]["activate"]:
             try:
-                model = getattr(templates_scikit, c)(model_config["scikit"][c])
+                model = getattr(templates_scikit, c)(model_config["scikit"][c]["central_params"])
                 classifiers.append(model)
                 names.append(c)
+                grid_search_params.append(model_config["scikit"][c].get("grid_search", {}))
                 logger.info("Added scikit model %s", c)
             except AttributeError:
                 logger.critical("Could not load scikit model %s", c)
 
-    return classifiers, names
+    return classifiers, names, grid_search_params
 
 
 def getclf_xgboost(model_config):
@@ -69,18 +71,20 @@ def getclf_xgboost(model_config):
 
     classifiers = []
     names = []
+    grid_search_params = []
 
     for c in model_config["xgboost"]:
         if model_config["xgboost"][c]["activate"]:
             try:
-                model = getattr(templates_xgboost, c)(model_config["xgboost"][c])
+                model = getattr(templates_xgboost, c)(model_config["xgboost"][c]["central_params"])
                 classifiers.append(model)
                 names.append(c)
+                grid_search_params.append(model_config["xgboost"][c].get("grid_search", {}))
                 logger.info("Added xgboost model %s", c)
             except AttributeError:
                 logger.critical("Could not load xgboost model %s", c)
 
-    return classifiers, names
+    return classifiers, names, grid_search_params
 
 
 def getclf_keras(model_config, length_input):
@@ -109,7 +113,7 @@ def getclf_keras(model_config, length_input):
                 logger.critical("Could not load keras model %s", c)
 
     #logger.critical("Some reason")
-    return classifiers, names
+    return classifiers, names, []
 
 
 
