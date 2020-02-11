@@ -137,8 +137,8 @@ class AnalyzerJet(Analyzer):
         self.pythia8_prompt_variations_legend = \
             datap["analysis"][self.typean].get("pythia8_prompt_variations_legend", None)
 
-        self.systematic_catagories = \
-            datap["analysis"][self.typean].get("systematic_catagories", None)
+        self.systematic_categories = \
+            datap["analysis"][self.typean].get("systematic_categories", None)
         self.systematic_variations = \
             datap["analysis"][self.typean].get("systematic_variations", None)
         self.systematic_correlation = \
@@ -457,7 +457,7 @@ class AnalyzerJet(Analyzer):
                 # right side band in general. self.sidebandleftonly = True is
                 # just made for systematic studies
 
-                # Below a list of histrograms are defined:
+                # Below a list of histograms are defined:
                 #    - hzsig is as discussed before the distribution of z in
                 #      the signal region not background subtracted
                 #    - hzsub is the z-distribution after background subtraction
@@ -1872,35 +1872,35 @@ class AnalyzerJet(Analyzer):
 
 
 
-        input_hisotgrams_default=[]
+        input_histograms_default=[]
         for ibin2 in range(self.p_nbin2_gen):
                 suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-                input_hisotgrams_default.append(input_file_default.Get("unfolded_z_%d_%s" % (self.choice_iter_unfolding,suffix)))
+                input_histograms_default.append(input_file_default.Get("unfolded_z_%d_%s" % (self.choice_iter_unfolding,suffix)))
 
         input_files_sys=[]
-        for sys_cat in range(len(self.systematic_catagories)):
-            if self.systematic_catagories[sys_cat]=="regularisation":
+        for sys_cat in range(len(self.systematic_categories)):
+            if self.systematic_categories[sys_cat]=="regularisation":
                 continue
             input_files_sysvar=[]
             for sys_var in range(self.systematic_variations[sys_cat]):
-                input_files_sysvar.append(TFile.Open("/data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/systematics/%s/sys_%d/pp_data/resultsMBjetvspt/unfolding_resultsLcpK0sppMBjetvspt.root" % (self.systematic_catagories[sys_cat],sys_var+1),"update"))
+                input_files_sysvar.append(TFile.Open("/data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/systematics/%s/sys_%d/pp_data/resultsMBjetvspt/unfolding_resultsLcpK0sppMBjetvspt.root" % (self.systematic_categories[sys_cat],sys_var+1),"update"))
             input_files_sys.append(input_files_sysvar)
 
         input_histograms_sys=[]
         for ibin2 in range(self.p_nbin2_gen):
             suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             input_histograms_syscat=[]
-            for sys_cat in range(len(self.systematic_catagories)):
+            for sys_cat in range(len(self.systematic_categories)):
                 input_histograms_syscatvar=[]
                 for sys_var in range(self.systematic_variations[sys_cat]):
-                    if self.systematic_catagories[sys_cat]== "regularisation" :
+                    if self.systematic_categories[sys_cat]== "regularisation" :
                         if sys_var==0:
                             input_histograms_syscatvar.append(input_file_default.Get("unfolded_z_%d_%s" % (self.niterunfoldingregdown,suffix)))
                         else:
                             input_histograms_syscatvar.append(input_file_default.Get("unfolded_z_%d_%s" % (self.niterunfoldingregup,suffix)))
                     else:
                         input_histograms_syscatvar.append(input_files_sys[sys_cat][sys_var].Get("unfolded_z_%d_%s" % (self.choice_iter_unfolding,suffix)))
-                        #input_histograms_syscatvar[sys_var].Scale(1.0,"width") #remove these later and put normlaisation directly in systematics
+                        #input_histograms_syscatvar[sys_var].Scale(1.0,"width") #remove these later and put normalisation directly in systematics
                 input_histograms_syscat.append(input_histograms_syscatvar)
             input_histograms_sys.append(input_histograms_syscat)
 
@@ -1914,17 +1914,17 @@ class AnalyzerJet(Analyzer):
             csysvar.SetWindowSize(500, 500)
             leg_sysvar = TLegend(.7, .5, .85, .9, "systematics")
             setup_legend(leg_sysvar)
-            leg_sysvar.AddEntry(input_hisotgrams_default[ibin2],"default","LEP")
-            setup_histogram(input_hisotgrams_default[ibin2],1)
-            input_hisotgrams_default[ibin2].GetYaxis().SetRangeUser(0.0,input_hisotgrams_default[ibin2].GetMaximum()*1.5)
-            input_hisotgrams_default[ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_gen[0]+0.01,self.lvarshape_binmax_gen[-1]-0.001)
-            input_hisotgrams_default[ibin2].SetXTitle("#it{z}_{#parallel}^{ch}")
-            input_hisotgrams_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d#it{z}_{#parallel}^{ch}")
-            input_hisotgrams_default[ibin2].Draw()
-            for sys_cat in range(len(self.systematic_catagories)):
+            leg_sysvar.AddEntry(input_histograms_default[ibin2],"default","LEP")
+            setup_histogram(input_histograms_default[ibin2],1)
+            input_histograms_default[ibin2].GetYaxis().SetRangeUser(0.0,input_histograms_default[ibin2].GetMaximum()*1.5)
+            input_histograms_default[ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_gen[0]+0.01,self.lvarshape_binmax_gen[-1]-0.001)
+            input_histograms_default[ibin2].SetXTitle("#it{z}_{#parallel}^{ch}")
+            input_histograms_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d#it{z}_{#parallel}^{ch}")
+            input_histograms_default[ibin2].Draw()
+            for sys_cat in range(len(self.systematic_categories)):
                 for sys_var in range(self.systematic_variations[sys_cat]):
                     nsys=nsys+1
-                    leg_sysvar.AddEntry(input_histograms_sys[ibin2][sys_cat][sys_var],("%s_%d" % (self.systematic_catagories[sys_cat],sys_var+1)),"LEP")
+                    leg_sysvar.AddEntry(input_histograms_sys[ibin2][sys_cat][sys_var],("%s_%d" % (self.systematic_categories[sys_cat],sys_var+1)),"LEP")
                     setup_histogram(input_histograms_sys[ibin2][sys_cat][sys_var],nsys+1)
                     input_histograms_sys[ibin2][sys_cat][sys_var].Draw("same")
             latex = TLatex(0.2,0.8,'%.2f < #it{p}_{T, jet} < %.2f GeV/#it{c}' % (self.lvar2_binmin_gen[ibin2],self.lvar2_binmax_gen[ibin2]))
@@ -1933,26 +1933,26 @@ class AnalyzerJet(Analyzer):
             csysvar.SaveAs("%s/ysvar_%s.eps" % (self.d_resultsallpdata, suffix))
 
 
-            for sys_cat in range(len(self.systematic_catagories)):
-                suffix2="_%s" % (self.systematic_catagories[sys_cat])
+            for sys_cat in range(len(self.systematic_categories)):
+                suffix2="_%s" % (self.systematic_categories[sys_cat])
                 nsys=0
                 csysvar_each = TCanvas('csysvar '+suffix2+suffix, 'systematic variations'+suffix2+suffix)
                 psysvar_each = TPad('psysvar'+suffix2+suffix, "systematic variations"+suffix2+suffix,0.0,0.001,1.0,1.0)
                 setup_pad(psysvar_each)
                 csysvar_each.SetCanvasSize(1900, 1500)
                 csysvar_each.SetWindowSize(500, 500)
-                leg_sysvar_each = TLegend(.7, .45, .85, .85, self.systematic_catagories[sys_cat])
+                leg_sysvar_each = TLegend(.7, .45, .85, .85, self.systematic_categories[sys_cat])
                 setup_legend(leg_sysvar_each)
-                leg_sysvar_each.AddEntry(input_hisotgrams_default[ibin2],"default","LEP")
-                setup_histogram(input_hisotgrams_default[ibin2],1)
+                leg_sysvar_each.AddEntry(input_histograms_default[ibin2],"default","LEP")
+                setup_histogram(input_histograms_default[ibin2],1)
                 for sys_var in range(self.systematic_variations[sys_cat]):
                     if sys_var == 0 :
                         if sys_cat == 0:
-                            input_hisotgrams_default[ibin2].GetYaxis().SetRangeUser(0.0,input_hisotgrams_default[ibin2].GetMaximum()*2.5)
-                        input_hisotgrams_default[ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_gen[0]+0.01,self.lvarshape_binmax_gen[-1]-0.001)
-                        input_hisotgrams_default[ibin2].SetXTitle("#it{z}_{#parallel}^{ch}")
-                        input_hisotgrams_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d#it{z}_{#parallel}^{ch}")
-                        input_hisotgrams_default[ibin2].Draw()
+                            input_histograms_default[ibin2].GetYaxis().SetRangeUser(0.0,input_histograms_default[ibin2].GetMaximum()*2.5)
+                        input_histograms_default[ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_gen[0]+0.01,self.lvarshape_binmax_gen[-1]-0.001)
+                        input_histograms_default[ibin2].SetXTitle("#it{z}_{#parallel}^{ch}")
+                        input_histograms_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d#it{z}_{#parallel}^{ch}")
+                        input_histograms_default[ibin2].Draw()
                     nsys=nsys+1
                     leg_sysvar_each.AddEntry(input_histograms_sys[ibin2][sys_cat][sys_var],("%d" % (sys_var+1)),"LEP")
                     setup_histogram(input_histograms_sys[ibin2][sys_cat][sys_var],nsys+1)
@@ -1979,13 +1979,13 @@ class AnalyzerJet(Analyzer):
                 sys_down_z=[]
                 error_full_up=0
                 error_full_down=0
-                for sys_cat in range(len(self.systematic_catagories)):
+                for sys_cat in range(len(self.systematic_categories)):
                     error_var_up=0
                     error_var_down=0
                     count_sys_up=0
                     count_sys_down=0
                     for sys_var in range(self.systematic_variations[sys_cat]):
-                        error = input_histograms_sys[ibin2][sys_cat][sys_var].GetBinContent(ibinshape+1)-input_hisotgrams_default[ibin2].GetBinContent(ibinshape+1)
+                        error = input_histograms_sys[ibin2][sys_cat][sys_var].GetBinContent(ibinshape+1)-input_histograms_default[ibin2].GetBinContent(ibinshape+1)
                         if error >= 0 :
                             if self.systematic_rms[sys_cat] is True:
                                 error_var_up+=error*error
@@ -2050,10 +2050,10 @@ class AnalyzerJet(Analyzer):
             shapebins_error_down=[]
             tgsys_cat_z=[]
             for ibinshape in range(self.p_nbinshape_gen):
-                shapebins_centres.append(input_hisotgrams_default[ibin2].GetBinCenter(ibinshape+1))
-                shapebins_contents.append(input_hisotgrams_default[ibin2].GetBinContent(ibinshape+1))
-                shapebins_widths_up.append(input_hisotgrams_default[ibin2].GetBinWidth(ibinshape+1)*0.5)
-                shapebins_widths_down.append(input_hisotgrams_default[ibin2].GetBinWidth(ibinshape+1)*0.5)
+                shapebins_centres.append(input_histograms_default[ibin2].GetBinCenter(ibinshape+1))
+                shapebins_contents.append(input_histograms_default[ibin2].GetBinContent(ibinshape+1))
+                shapebins_widths_up.append(input_histograms_default[ibin2].GetBinWidth(ibinshape+1)*0.5)
+                shapebins_widths_down.append(input_histograms_default[ibin2].GetBinWidth(ibinshape+1)*0.5)
                 shapebins_error_up.append(sys_up_full[ibin2][ibinshape])
                 shapebins_error_down.append(sys_down_full[ibin2][ibinshape])
             shapebins_centres_array = array('d',shapebins_centres)
@@ -2062,14 +2062,14 @@ class AnalyzerJet(Analyzer):
             shapebins_widths_down_array = array('d',shapebins_widths_down)
             shapebins_error_up_array = array('d',shapebins_error_up)
             shapebins_error_down_array = array('d',shapebins_error_down)
-            for sys_cat in range(len(self.systematic_catagories)):
+            for sys_cat in range(len(self.systematic_categories)):
                 shapebins_contents_cat=[]
                 shapebins_error_up_cat=[]
                 shapebins_error_down_cat=[]
                 for ibinshape in range(self.p_nbinshape_gen):
                     shapebins_contents_cat.append(1.0)
-                    shapebins_error_up_cat.append(sys_up[ibin2][ibinshape][sys_cat]/input_hisotgrams_default[ibin2].GetBinContent(ibinshape+1))
-                    shapebins_error_down_cat.append(sys_down[ibin2][ibinshape][sys_cat]/input_hisotgrams_default[ibin2].GetBinContent(ibinshape+1))
+                    shapebins_error_up_cat.append(sys_up[ibin2][ibinshape][sys_cat]/input_histograms_default[ibin2].GetBinContent(ibinshape+1))
+                    shapebins_error_down_cat.append(sys_down[ibin2][ibinshape][sys_cat]/input_histograms_default[ibin2].GetBinContent(ibinshape+1))
                 shapebins_contents_cat_array = array('d',shapebins_contents_cat)
                 shapebins_error_up_cat_array = array('d',shapebins_error_up_cat)
                 shapebins_error_down_cat_array = array('d',shapebins_error_down_cat)
@@ -2081,10 +2081,10 @@ class AnalyzerJet(Analyzer):
         h_default_stat_err=[]
         for ibin2 in range(self.p_nbin2_gen):
             suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-            h_default_stat_err.append(input_hisotgrams_default[ibin2].Clone("h_default_stat_err"+suffix))
+            h_default_stat_err.append(input_histograms_default[ibin2].Clone("h_default_stat_err"+suffix))
             for i in range(h_default_stat_err[ibin2].GetNbinsX()):
                 h_default_stat_err[ibin2].SetBinContent(i+1,1.0)
-                h_default_stat_err[ibin2].SetBinError(i+1,input_hisotgrams_default[ibin2].GetBinError(i+1)/input_hisotgrams_default[ibin2].GetBinContent(i+1))
+                h_default_stat_err[ibin2].SetBinError(i+1,input_histograms_default[ibin2].GetBinError(i+1)/input_histograms_default[ibin2].GetBinContent(i+1))
 
 
 
@@ -2117,19 +2117,19 @@ class AnalyzerJet(Analyzer):
             cfinalwsys.SetWindowSize(500, 500)
             leg_finalwsys = TLegend(.65, .6, .85, .7, "")
             setup_legend(leg_finalwsys)
-            leg_finalwsys.AddEntry(input_hisotgrams_default[ibin2],"data","LEP")
-            setup_histogram(input_hisotgrams_default[ibin2],4)
-            input_hisotgrams_default[ibin2].GetYaxis().SetRangeUser(0.0,input_hisotgrams_default[ibin2].GetMaximum()*1.2/2.5)
-            input_hisotgrams_default[ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_gen[0]+0.01,self.lvarshape_binmax_gen[-1]-0.001)
-            input_hisotgrams_default[ibin2].SetXTitle("#it{z}_{#parallel}^{ch}")
-            input_hisotgrams_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d#it{z}_{#parallel}^{ch}")
-            #input_hisotgrams_default[ibin2].SetTitleOffset(1.2,"Y")
-            input_hisotgrams_default[ibin2].SetTitle("")
-            input_hisotgrams_default[ibin2].Draw("")
+            leg_finalwsys.AddEntry(input_histograms_default[ibin2],"data","LEP")
+            setup_histogram(input_histograms_default[ibin2],4)
+            input_histograms_default[ibin2].GetYaxis().SetRangeUser(0.0,input_histograms_default[ibin2].GetMaximum()*1.2/2.5)
+            input_histograms_default[ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_gen[0]+0.01,self.lvarshape_binmax_gen[-1]-0.001)
+            input_histograms_default[ibin2].SetXTitle("#it{z}_{#parallel}^{ch}")
+            input_histograms_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d#it{z}_{#parallel}^{ch}")
+            #input_histograms_default[ibin2].SetTitleOffset(1.2,"Y")
+            input_histograms_default[ibin2].SetTitle("")
+            input_histograms_default[ibin2].Draw("")
             setup_tgraph(tgsys[ibin2],17,0.3)
             tgsys[ibin2].Draw("5")
             leg_finalwsys.AddEntry(tgsys[ibin2],"syst. unc.","F")
-            input_hisotgrams_default[ibin2].Draw("AXISSAME")
+            input_histograms_default[ibin2].Draw("AXISSAME")
             latex = TLatex(0.18,0.85,"ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV")
             draw_latex(latex)
             latex1 = TLatex(0.18,0.8,"#Lambda_{c}^{#plus} (& cc) in charged jets, anti-#it{k}_{T}, #it{R} = 0.4, #left|#it{#eta}_{jet}#right| < 0.5")
@@ -2149,14 +2149,14 @@ class AnalyzerJet(Analyzer):
             cfinalwsys_wmodels.SetWindowSize(500, 500)
             leg_finalwsys_wmodels = TLegend(.55, .55, .65, .75, "")
             setup_legend(leg_finalwsys_wmodels)
-            leg_finalwsys_wmodels.AddEntry(input_hisotgrams_default[ibin2],"data","LEP")
-            setup_histogram(input_hisotgrams_default[ibin2],4)
-            input_hisotgrams_default[ibin2].GetYaxis().SetRangeUser(0.0,input_hisotgrams_default[ibin2].GetMaximum())
-            input_hisotgrams_default[ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_gen[0]+0.01,self.lvarshape_binmax_gen[-1]-0.001)
-            input_hisotgrams_default[ibin2].SetXTitle("#it{z}_{#parallel}^{ch}")
-            input_hisotgrams_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d#it{z}_{#parallel}^{ch}")
-            input_hisotgrams_default[ibin2].SetTitle("")
-            input_hisotgrams_default[ibin2].Draw()
+            leg_finalwsys_wmodels.AddEntry(input_histograms_default[ibin2],"data","LEP")
+            setup_histogram(input_histograms_default[ibin2],4)
+            input_histograms_default[ibin2].GetYaxis().SetRangeUser(0.0,input_histograms_default[ibin2].GetMaximum())
+            input_histograms_default[ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_gen[0]+0.01,self.lvarshape_binmax_gen[-1]-0.001)
+            input_histograms_default[ibin2].SetXTitle("#it{z}_{#parallel}^{ch}")
+            input_histograms_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d#it{z}_{#parallel}^{ch}")
+            input_histograms_default[ibin2].SetTitle("")
+            input_histograms_default[ibin2].Draw()
             setup_tgraph(tgsys[ibin2],17,0.3)
             tgsys[ibin2].Draw("5")
             leg_finalwsys_wmodels.AddEntry(tgsys[ibin2],"syst. unc.","F")
@@ -2171,7 +2171,7 @@ class AnalyzerJet(Analyzer):
                 setup_histogram(input_pythia8_z[i_pythia8][ibin2],i_pythia8+1,markers_pythia[i_pythia8],2.)
                 leg_finalwsys_wmodels.AddEntry(input_pythia8_z[i_pythia8][ibin2],self.pythia8_prompt_variations_legend[i_pythia8],"LEP")
                 input_pythia8_z[i_pythia8][ibin2].Draw("same")
-            input_hisotgrams_default[ibin2].Draw("AXISSAME")
+            input_histograms_default[ibin2].Draw("AXISSAME")
             latex = TLatex(0.18,0.85,"ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV")
             draw_latex(latex)
             latex1 = TLatex(0.18,0.8,"#Lambda_{c}^{#plus} (& cc) in charged jets, anti-#it{k}_{T}, #it{R} = 0.4, #left|#it{#eta}_{jet}#right| < 0.5")
@@ -2193,14 +2193,14 @@ class AnalyzerJet(Analyzer):
             crelativesys.SetWindowSize(500, 500)
             leg_relativesys = TLegend(.7, .5, .85, .9, "")
             setup_legend(leg_relativesys)
-            for sys_cat in range(len(self.systematic_catagories)):
+            for sys_cat in range(len(self.systematic_categories)):
                 setup_tgraph(tgsys_cat[ibin2][sys_cat],sys_cat+1,0.3)
                 tgsys_cat[ibin2][sys_cat].SetFillStyle(0)
                 tgsys_cat[ibin2][sys_cat].GetYaxis().SetRangeUser(0.0,2.8)
                 tgsys_cat[ibin2][sys_cat].GetXaxis().SetRangeUser(self.lvarshape_binmin_gen[0]+0.01,self.lvarshape_binmax_gen[-1]-0.001)
                 tgsys_cat[ibin2][sys_cat].GetXaxis().SetTitle("#it{z}_{#parallel}^{ch}")
                 tgsys_cat[ibin2][sys_cat].GetYaxis().SetTitle("relative systematic error")
-                leg_relativesys.AddEntry(tgsys_cat[ibin2][sys_cat],self.systematic_catagories[sys_cat],"LEP")
+                leg_relativesys.AddEntry(tgsys_cat[ibin2][sys_cat],self.systematic_categories[sys_cat],"LEP")
                 if sys_cat == 0:
                     tgsys_cat[ibin2][sys_cat].Draw("A2")
                 else :
