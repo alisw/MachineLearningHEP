@@ -1,29 +1,29 @@
-case: LcpK0spp_test
+case: LcpK0spp_test # used to find the database file unless specified explicitly as do_entire_analysis -d database_analysis
 download:
   alice:
     activate: false
-conversion:
+conversion: # pkl
   mc:
     activate: false
   data:
     activate: false
-skimming:
+skimming: # pkl_skimmed (pklsk), pkl_evtcounter_all
   mc:
     activate: false
   data:
     activate: false
-merging:
+merging: # pkl_skimmed_merge_for_ml (pklskml)
   mc:
     activate: false
   data:
     activate: false
-mergingperiods:
+mergingperiods: # pkl_skimmed_merge_for_ml_all
   mc:
     activate: false
   data:
     activate: false
 
-ml_study:
+ml_study: # mlout, mlplot
   activate: false
   dopca: false
   docorrelation: false
@@ -44,16 +44,16 @@ ml_study:
 
 mlapplication:
   data:
-    doapply: false
-    domergeapply: false
-    docontinueafterstop: false
+    doapply: false # pkl_skimmed_dec (pklskdec)
+    domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged)
+    docontinueafterstop: false # set to true to resume interrupted processing (existing corrupted output will be overwritten)
   mc:
-    doapply: false
-    domergeapply: false
-    docontinueafterstop: false
+    doapply: false # pkl_skimmed_dec (pklskdec)
+    domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged)
+    docontinueafterstop: false # set to true to resume interrupted processing (existing corrupted output will be overwritten)
 
 analysis:
-  type: MBjetvspt #MBvspt_ntrkl, MBjetvspt
+  type: MBjetvspt # used unless specified explicitly as do_entire_analysis -a type_ana
   # Do each period separately including merged (true)
   # Do only merged (false)
   doperperiod: false
