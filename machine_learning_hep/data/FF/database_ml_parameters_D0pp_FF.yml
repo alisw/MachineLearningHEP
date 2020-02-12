@@ -35,7 +35,6 @@ D0pp_FF:
   var_binning: pt_cand
   dofullevtmerge: false
   bitmap_sel:
-    use: True
     var_name: cand_type
     var_isstd: isstd
     var_ismcsignal: ismcsignal
@@ -124,7 +123,6 @@ D0pp_FF:
     treeoriginreco: 'PWGHF_TreeCreator/tree_D0'
     treeorigingen: 'PWGHF_TreeCreator/tree_D0_gen'
     treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
-    namefile_reco_ml_applied: AnalysisResultsRecoML.pkl.lz4
     treeoutput: "D0tree"
     histofilename: "masshisto.root"
     efffilename: "effhisto.root"
@@ -132,7 +130,6 @@ D0pp_FF:
 
   multi:
     data:
-      nperiods: 3
       nprocessesparallel: 50
       maxfiles : [-1,-1,-1] #list of periods
       chunksizeunp : [100,100,100] #list of periods
@@ -155,7 +152,6 @@ D0pp_FF:
       pkl_skimmed_merge_for_ml_all: /data/Derived/D0kINT7withJets/vAN-20200201_ROOT6-1/pp_data_mltot
       pkl_evtcounter_all: /data/Derived/D0kINT7withJets/vAN-20200201_ROOT6-1/pp_data_evttot
     mc:
-      nperiods: 3
       nprocessesparallel: 50
       maxfiles : [-1,-1,-1] #list of periods
       chunksizeunp : [100,100,100] #list of periods
