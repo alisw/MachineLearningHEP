@@ -27,7 +27,6 @@ Bspp:
   var_binning: pt_cand
   dofullevtmerge: false
   bitmap_sel:
-    use: True
     var_name: cand_type
     var_isstd: isstd
     var_ismcsignal: ismcsignal
@@ -41,7 +40,7 @@ Bspp:
     ismcbkg: [[2],[]]
 
   variables:
-    var_all: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, cos_t_star, imp_par_prod, 
+    var_all: [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, cos_t_star, imp_par_prod,
               pt_prong0, pt_prong1, pt_prong2, pt_prong3, imp_par_prong0, imp_par_prong1, imp_par_prong2, imp_par_prong3,
               max_norm_d0d0exp, inv_mass_Ds, pt_Ds, y_Ds, d_len_Ds, d_len_xy_Ds, norm_dl_xy_Ds, cos_p_Ds, cos_p_xy_Ds,
               imp_par_xy_Ds, dca_Ds, sig_vert_Ds, delta_mass_KK_Ds, cos_PiDs_Ds, cos_PiKPhi_3_Ds, max_norm_d0d0exp_Ds,
@@ -63,7 +62,7 @@ Bspp:
                    imp_par_prong0, imp_par_prong1, imp_par_prong2, imp_par_prong3,
                    max_norm_d0d0exp, inv_mass_Ds, d_len_Ds, d_len_xy_Ds, norm_dl_xy_Ds, cos_p_Ds, cos_p_xy_Ds,
                    imp_par_xy_Ds, dca_Ds, sig_vert_Ds, delta_mass_KK_Ds, cos_PiDs_Ds, cos_PiKPhi_3_Ds, max_norm_d0d0exp_Ds,
-                   nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, nsigTPC_Pi_1, nsigTPC_K_1, nsigTOF_Pi_1, nsigTOF_K_1, 
+                   nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, nsigTPC_Pi_1, nsigTPC_K_1, nsigTOF_Pi_1, nsigTOF_K_1,
                    nsigTPC_Pi_2, nsigTPC_K_2, nsigTOF_Pi_2, nsigTOF_K_2, nsigTPC_Pi_3, nsigTPC_K_3, nsigTOF_Pi_3, nsigTOF_K_3]
     var_boundaries: [cos_t_star, pt_prong0]
     var_correlation:
@@ -71,27 +70,27 @@ Bspp:
       - [pt_prong0]
     var_signal: signal
     var_inv_mass: inv_mass
-    var_cuts: 
+    var_cuts:
         - [pt_prong0, lt, null]
         - [pt_prong1, lt, null]
 
     plot_options:
       prob_cut_scan:
         pt_prong0:
-          xlim: 
+          xlim:
             - 0
             - 1
         pt_prong1:
-          xlim: 
+          xlim:
             - 0
             - 1
       eff_cut_scan:
         pt_prong0:
-          xlim: 
+          xlim:
             - 0
             - 1
         pt_prong1:
-          xlim: 
+          xlim:
             - 0
             - 1
 
@@ -107,7 +106,6 @@ Bspp:
     treeoriginreco: 'PWGHF_TreeCreator/tree_Bs'
     treeorigingen: 'PWGHF_TreeCreator/tree_Bs_gen'
     treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
-    namefile_reco_ml_applied: AnalysisResultsRecoML.pkl
     treeoutput: "Bstree"
     histofilename: "masshisto.root"
     efffilename: "effhisto.root"
@@ -115,7 +113,6 @@ Bspp:
 
   multi:
     data:
-      nperiods: 1
       nprocessesparallel: 50
       maxfiles : [-1] #list of periods
       chunksizeunp : [100] #list of periods
@@ -130,7 +127,6 @@ Bspp:
       pkl_skimmed_merge_for_ml_all: /home/lvermunt/ITS3/test_pp5/vAN-20190807_ROOT6-1/pp5_2017_data/128_20190807-2226/pp_data_mltot
       pkl_evtcounter_all: /home/lvermunt/ITS3/test_pp5/vAN-20190807_ROOT6-1/pp5_2017_data/128_20190807-2226/pp_data_evttot
     mc:
-      nperiods: 1
       nprocessesparallel: 50
       maxfiles : [-1] #list of periods
       chunksizeunp : [100] #list of periods
@@ -150,7 +146,7 @@ Bspp:
     sampletagforsignal: 1
     sampletagforbkg: 0
     sel_sigml: ismcprompt == 1
-    sel_bkgml: inv_mass<5.266 or inv_mass>5.466 
+    sel_bkgml: inv_mass<5.266 or inv_mass>5.466
     nkfolds: 5
     rnd_shuffle: 12
     rnd_splt: 12
@@ -158,7 +154,7 @@ Bspp:
     binmin: [0,5,10] #list of nbins
     binmax: [5,10,20] #list of nbins
     mltype: BinaryClassification
-    ncorescrossval: 10 
+    ncorescrossval: 10
     mlplot: /home/lvermunt/ITS3/test_pp5/vAN-20190807_ROOT6-1/mlplot # to be removed
     mlout: /home/lvermunt/ITS3/test_pp5/vAN-20190807_ROOT6-1/mlout # to be removed
 
@@ -176,7 +172,7 @@ Bspp:
       save_fit: True # save bkg fits with the various cuts on ML output
       raahp: [1,1,1] #list of nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
-  
+
   mlapplication:
     data:
       pkl_skimmed_dec: [/home/lvermunt/ITS3/test_pp5/vAN-20190807_ROOT6-1/128_20190807-2226/skpkldec] #list of periods
@@ -188,7 +184,7 @@ Bspp:
     modelsperptbin: [xgboost_classifierBspp_dfselection_pt_cand_0.0_5.0.sav,
                      xgboost_classifierBspp_dfselection_pt_cand_5.0_10.0.sav,
                      xgboost_classifierBspp_dfselection_pt_cand_10.0_20.0.sav]
-    probcutpresel: 
+    probcutpresel:
       data: [0.3,0.3,0.3] #list of nbins
       mc: [0.3,0.3,0.3] #list of nbins
     probcutoptimal: [0.5,0.5,0.5] #list of nbins
@@ -198,9 +194,9 @@ Bspp:
       plotbin: [1]
       usesinglebineff: 0
       sel_binmin2: [0] #list of nbins
-      sel_binmax2: [9999] #list of nbins  
+      sel_binmax2: [9999] #list of nbins
       var_binning2: n_tracklets_corr
-      
+
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
       init_fits_from: mc # data # data or mc
@@ -210,7 +206,7 @@ Bspp:
       binning_matching: [0,1,2]
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
-      triggersel: 
+      triggersel:
         data: null
         mc: null
 
@@ -225,7 +221,6 @@ Bspp:
 
       mass_fit_lim: [5.0, 5.7] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
-      usefit: true
       sgnfunc: [kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2]
       masspeak: 5.366
@@ -254,7 +249,7 @@ Bspp:
       latexbin2var: "n_{trkl}"
       nevents: 1000000.
       dodoublecross: false
-      
+
   systematics:
     probvariation:
       useperiod: [1] #period from where to define prob cuts

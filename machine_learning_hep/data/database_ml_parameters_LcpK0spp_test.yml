@@ -34,7 +34,6 @@ LcpK0spp:
   dofullevtmerge: false
 
   bitmap_sel:
-    use: True
     var_name: cand_type
     var_isstd: isstd
     var_ismcsignal: ismcsignal
@@ -206,7 +205,6 @@ LcpK0spp:
     treeoriginreco: 'PWGHF_TreeCreator/tree_Lc2V0bachelor'
     treeorigingen: 'PWGHF_TreeCreator/tree_Lc2V0bachelor_gen'
     treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
-    namefile_reco_ml_applied: AnalysisResultsRecoML.pkl.lz4
     treeoutput: "Lctree"
     histofilename: "masshisto.root"
     efffilename: "effhisto.root"
@@ -214,10 +212,8 @@ LcpK0spp:
 
   multi:
     data:
-      nperiods: 4
       nprocessesparallel: 20
       maxfiles: [10,10,10,10] #list of periods
-      activate: [1, 1, 1, 1]
       chunksizeunp: [100,100,100,100] #list of periods
       chunksizeskim: [100,100,100,100] #list of periods
       fracmerge: [0.1,0.1,0.1,0.1] #list of periods
@@ -243,7 +239,6 @@ LcpK0spp:
       pkl_skimmed_merge_for_ml_all: /data/Derived/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_data_mltot
       pkl_evtcounter_all: /data/Derived/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/pp_data_evttot
     mc:
-      nperiods: 4
       nprocessesparallel: 20
       maxfiles: [10,10,10,10] #list of periods
       chunksizeunp: [100,100,100,100] #list of periods
@@ -353,8 +348,6 @@ LcpK0spp:
     MBjetvspt:
       proc_type: Dhadrons_jet
       useperiod: [1,1,1,1]
-      normalizecross: true
-
       plotbin: [1,1,1,1]
       usesinglebineff: null
       # Needed by MLFitParsFactory START
@@ -404,7 +397,6 @@ LcpK0spp:
 
       mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
-      usefit: true
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.2864
