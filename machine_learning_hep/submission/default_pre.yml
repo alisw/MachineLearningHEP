@@ -1,4 +1,4 @@
-case: Dspp
+case: XXXX
 download:
   alice:
     activate: false
@@ -53,7 +53,7 @@ mlapplication:
     docontinueafterstop: false
 
 analysis:
-  type: MBvspt_ntrkl
+  type: YYYY
   # Do each period separately including merged (true)
   # Do only merged (false)
   doperperiod: true

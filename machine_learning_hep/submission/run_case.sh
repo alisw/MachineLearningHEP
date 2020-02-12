@@ -15,4 +15,4 @@ export JOBIDX
 
 unset DISPLAY
 export MLPBACKEND=pdf
-python do_entire_analysis.py -r default_${1}.yml -d ../data/database_ml_parameters_${2}.yml
+python do_entire_analysis.py -r default_${1}.yml -d ../data/database_ml_parameters_${2}.yml -a ${3}
