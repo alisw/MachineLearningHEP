@@ -59,12 +59,14 @@ analysis:
   doperperiod: true
   data:
     histomass: false
+    dojetsystematics: false
   mc:
     histomass: false
     efficiency: false
     feeddown: false
+    dounfolding: false
   dofit: false
-  # Control the yield systemaitc uncertainty
+  # Control the yield systematic uncertainty
   dosyst: false
   dojetstudies: false
   doeff: false

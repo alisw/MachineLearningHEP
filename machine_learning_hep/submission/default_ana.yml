@@ -27,20 +27,20 @@ ml_study:
   activate: false
   dopca: false
   docorrelation: false
-  dotraining: true
+  dotraining: false
   dotesting: false
   doapplytodatamc: false
   docrossvalidation: false
   dolearningcurve: false
   doroc: false
   doroctraintest: false
+  doplotdistr: false
   doimportance: false
   dogridsearch: false
   doboundary: false
   doefficiency: false
   dosignifopt: false
   doscancuts: false
-
 
 mlapplication:
   data:
@@ -59,12 +59,14 @@ analysis:
   doperperiod: true
   data:
     histomass: true
+    dojetsystematics: false
   mc:
     histomass: true
     efficiency: true
     feeddown: false
+    dounfolding: false
   dofit: true
-  # Control the yield systemaitc uncertainty
+  # Control the yield systematic uncertainty
   dosyst: false
   dojetstudies: false
   doeff: true
