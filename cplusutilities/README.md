@@ -30,15 +30,15 @@ jalien
 exit
 ```
 > **NB:** If you get the error: "**JBox isn't running, so we won't start JSh.**", your grid certificates probably don't have the right permissions. Correct them in *~/.globus/* using: *"chmod 0440 usercert.pem"* and *"chmod 0400 userkey.pem"*. It seems that JALiEn needs slightly different permissions than usual.
- 
- 
+
+
 The scripts are saved in *~/MachineLearningHEP/cplusutilities. There are three ways to run the Download.sh script:
 1) Enable the "download alice" flag in default_complete.yaml and run the MLHEP package the usual way. The script will ask you for the required input.
 2) Run ./Download.sh **without** arguments. The script will ask you for the required input.
-3) Run ./Download.sh **with** arguments: *./Download.sh trainname outputdirectory gridmergingstage* 
- 
+3) Run ./Download.sh **with** arguments: *./Download.sh trainname outputdirectory gridmergingstage*
+
 The first argument is the trainname, which has the format: *trainnumber_date-time*. With this info, the script automatically loads the correct dataset name and AliPhysics tag. The second argument is the output directory. Please do *not* use your local folder. The last argument is the GRID merging stage, which should be in the format Stage_#. If this argument is empty, JAliEn will download the unmerged files from GRID. If (some of the) arguments are empty, the script will ask for your input.
- 
+
 
 ### a) Hardcoded values
 
@@ -73,9 +73,13 @@ Is the download finished? Exit the *screen* program with **Ctrl-d**. Is the scri
 
 
 ## 3) Post download merging
-[Instructions to be improved] Run the post_download.sh script. One has to be in the AliPhysics environment before starting.
+[Instructions to be improved] Run the `post_download.sh` script. One has to be in the AliPhysics environment before starting.
 ```
 ./post_download.sh --input /path/where/data/is/stored/upto/trainID --target-size 500000 --jobs 50
+```
+To run the merging script for multiple trains in one go, run the `post_download_all.sh` script and pass a path to a parent directory that contains all the unmerged trains.
+```
+./post_download_all.sh /directory/with/all/unmerged/trains
 ```
 
 
@@ -90,8 +94,8 @@ aliBuild build JAliEn --defaults jalien -z jalien
 ```
 > JAliEn is already installed at lxplus. To enter the environment, do '/cvmfs/alice.cern.ch/bin/alienv enter JAliEn'
 
-You may need to edit the hard-coded jalien path (`/opt/jalien/src/jalien/jalien`) in `downloader.sh` to 
-something appropriate for your system, e.g. simply `jalien`. 
+You may need to edit the hard-coded jalien path (`/opt/jalien/src/jalien/jalien`) in `downloader.sh` to
+something appropriate for your system, e.g. simply `jalien`.
 
 ROOT is needed for the merging of the files. If this is not yet installed, please follow the instructions below. **Please note that these instructions don't build against a specific python version, which you might need for ML studies.**
 ```
