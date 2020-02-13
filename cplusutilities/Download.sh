@@ -607,15 +607,15 @@ do
   fi
 done
 
-#Check logs for the comman 'jalien command not found' error. If this is the case, no files where downloaded.
+#Check logs for the comman 'jalien command not found' error. If this is the case, no files were downloaded.
 if grep -q "jalien\|command not found" "$stderrorfile"
 then
-  printf "\e[1;31m  Warning: The 'jalien' command was not found, so no new files where downloaded. Did you already connect to JAliEn? Check log if this was not intended!\e[0m\n\n"
+  printf "\e[1;31m  Warning: The 'jalien' command was not found, so no new files were downloaded. Did you already connect to JAliEn? Check log if this was not intended!\e[0m\n\n"
 fi
-#Check logs for the comman 'JBox agent could not be started' error. If this is the case, no files where downloaded.
+#Check logs for the comman 'JBox agent could not be started' error. If this is the case, no files were downloaded.
 if grep -q "JBox agent\|could not be started" "$stderrorfile"
 then
-printf "\e[1;31m  Warning: The 'JBox agent' could not be started, so no new files where downloaded. Did you already connect to JAliEn? Check log if this was not intended!\e[0m\n\n"
+printf "\e[1;31m  Warning: The 'JBox agent' could not be started, so no new files were downloaded. Did you already connect to JAliEn? Check log if this was not intended!\e[0m\n\n"
 fi
 
 rm HF_TreeCreator_env.sh
