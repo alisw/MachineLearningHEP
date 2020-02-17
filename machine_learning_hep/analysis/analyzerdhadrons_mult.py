@@ -220,160 +220,16 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                 self.logger.error("Cannot load fits from dir %s", fileout_name)
                 return
 
-        self.fitter.print_fits()
-        #self.fitter.perform_syst()
-        #self.plot_multi_trial()
+        # Additional directory needed where the intermediate results of the multi trial are
+        # written to
+        dir_yield_syst = os.path.join(self.d_resultsallpdata, "multi_trial")
+        self.fitter.perform_syst(dir_yield_syst)
+        # Directory of intermediate results and plot output directory are the same here
+        self.fitter.draw_syst(dir_yield_syst, dir_yield_syst)
 
         # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
 
-    # pylint: disable=import-outside-toplevel
-    def plot_multi_trial(self):
-
-        if not os.path.exists(self.d_mt_results_path):
-            self.logger.error("Could not find multi trial results directory %s. Skip...",
-                              self.d_mt_results_path)
-            return
-
-        # Enable ROOT batch mode and reset in the end
-        tmp_is_root_batch = gROOT.IsBatch()
-        gROOT.SetBatch(True)
-
-        gROOT.LoadMacro("PlotMultiTrial.C")
-        from ROOT import PlotMultiTrial
-
-        func_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
-                                            None, [self.case, self.typean])
-        func_file = TFile.Open(func_filename, "READ")
-
-        # Some derived values from multi trial
-        mt_derived_filename = self.make_file_path(self.d_mt_results_path, "multi_trial_summary",
-                                                  "root", None, [self.case, self.typean])
-        mt_derived_file = TFile.Open(mt_derived_filename, "RECREATE")
-
-        max_chisquare_ndf = self.mt_syst_dict.get("max_chisquare_ndf", 2.)
-        # As this plotting function is called right after the actual multi trial,
-        # the background function list could also just be assumed to be there...
-        bkg_funcs = self.mt_syst_dict.get("bkg_funcs", None)
-        consider_free_sigma = self.mt_syst_dict.get("consider_free_sigma",
-                                                    [False for i in range(self.p_nptbins)])
-
-        for imult in range(self.p_nbin2):
-            h_nominal = TH1F("h_nominal_sum", "", self.p_nptbins, array("d", self.ptranges))
-            h_fit_all = TH1F("h_yield_sum", "", self.p_nptbins, array("d", self.ptranges))
-            h_fit_all = TH1F("h_yield_sum", "", self.p_nptbins, array("d", self.ptranges))
-            h_bincount_all0 = TH1F("h_bincount_sum0", "", self.p_nptbins, array("d", self.ptranges))
-            h_bincount_all1 = TH1F("h_bincount_sum1", "", self.p_nptbins, array("d", self.ptranges))
-
-            for ipt in range(self.p_nptbins):
-                bin_id = self.bin_matching[ipt]
-
-                suffix_write = "%s%d_%d_%s_%.2f_%.2f" % \
-                         (self.v_var_binning, self.lpt_finbinmin[ipt],
-                          self.lpt_finbinmax[ipt],
-                          self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
-                suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
-                         (self.v_var_binning, self.lpt_finbinmin[ipt],
-                          self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
-                          self.v_var2_binning, self.lvar2_binmin[imult], self.lvar2_binmax[imult])
-
-                mt_filename = self.make_file_path(self.d_mt_results_path, "multi_trial",
-                                                  "root", None, suffix_write)
-                if not os.path.exists(mt_filename):
-                    self.logger.warning("Multi trial file %s does not exist. MT might have " \
-                                        "failed before. Skipping...", mt_filename)
-                    continue
-                # Get the nominal fit
-                load_dir = func_file.GetDirectory(suffix)
-                mass_fitter = load_dir.Get("fitter")
-
-                rawYield = mass_fitter.GetRawYield()
-                rawYieldError = mass_fitter.GetRawYieldError()
-                mean_fit = mass_fitter.GetMean()
-                sigma_fit = mass_fitter.GetSigma()
-                chisquare_fit = mass_fitter.GetChiSquare()
-
-                self.logger.info("Process file %s", mt_filename)
-                title = f"{self.lpt_finbinmin[ipt]} GeV/c < {self.v_var_binning} < " \
-                        f"{self.lpt_finbinmax[ipt]} GeV/c, {self.lvar2_binmin[imult]} < " \
-                        f"{self.v_var2_binning} < {self.lvar2_binmax[imult]}"
-                derived_dir = mt_derived_file.mkdir(suffix)
-
-                used_bkgs = array("b", ["kExpo" in bkg_funcs,
-                                        "kLin" in bkg_funcs,
-                                        "Pol2" in bkg_funcs,
-                                        "Pol3" in bkg_funcs,
-                                        "Pol4" in bkg_funcs,
-                                        "Pol5" in bkg_funcs])
-
-                n_bins_bincount = len(self.mt_syst_dict.get("bincount_sigma", []))
-                PlotMultiTrial(mt_filename, rawYield, mean_fit, sigma_fit, chisquare_fit,
-                               max_chisquare_ndf, used_bkgs, n_bins_bincount,
-                               consider_free_sigma[ipt], self.d_mt_results_path, suffix,
-                               title, derived_dir)
-
-                h_mt_fit = derived_dir.Get("h_mt_fit")
-                h_mt_bc0 = derived_dir.Get("h_mt_bc0")
-                h_mt_bc1 = derived_dir.Get("h_mt_bc1")
-
-                h_nominal.SetBinContent(ipt + 1, rawYield)
-                h_nominal.SetBinError(ipt + 1, rawYieldError)
-                h_fit_all.SetBinContent(ipt + 1, h_mt_fit.GetMean())
-                h_fit_all.SetBinError(ipt + 1, h_mt_fit.GetRMS())
-                h_bincount_all0.SetBinContent(ipt + 1, h_mt_bc0.GetMean())
-                h_bincount_all0.SetBinError(ipt + 1, h_mt_bc0.GetRMS())
-                h_bincount_all1.SetBinContent(ipt + 1, h_mt_bc1.GetMean())
-                h_bincount_all1.SetBinError(ipt + 1, h_mt_bc1.GetRMS())
-
-            filename_mt_summary = self.make_file_path(self.d_mt_results_path, "multi_trial_summary",
-                                                      "eps", None, [imult])
-
-            plot_histograms([h_nominal, h_fit_all, h_bincount_all0, h_bincount_all1], False, True,
-                            ["central fit", "mean MT fit", "mean MT BC (bkg. fit)",
-                             "mean MT BC (bkg. refit)"],
-                            f"{self.lvar2_binmin[imult]} < {self.v_var2_binning} " \
-                            f"< {self.lvar2_binmax[imult]}", "#it{p}_{T} (GeV/c)", "yield",
-                            "MT / central", filename_mt_summary, colors=[kBlack, kBlue, kGreen+2,
-                                                                         kOrange+5])
-            column_names = ["central fit", "mean MT fit", "mean MT BC (bkg. fit)",
-                            "mean MT BC (bkg. refit)",
-                            "rel.unc. central", "rel. (central -  MT fit)",
-                            "rel. (central - MT BC (bkg. fit))",
-                            "rel. (central -  MT BC (bkg. refit))"]
-            row_names = [f"{self.lpt_finbinmin[ipt]} GeV/c < {self.v_var_binning} < " \
-                         f"{self.lpt_finbinmax[ipt]} GeV/c" for ipt in range(self.p_nptbins)]
-            rows = []
-            for b in range(h_nominal.GetNbinsX()):
-                yield_nominal = h_nominal.GetBinContent(b + 1)
-                yield_nominal_err = h_nominal.GetBinError(b + 1)
-                yield_mt_fit = h_fit_all.GetBinContent(b + 1)
-                yield_mt_bc0 = h_bincount_all0.GetBinContent(b + 1)
-                yield_mt_bc1 = h_bincount_all1.GetBinContent(b + 1)
-                rel_centr_fit = yield_nominal_err / yield_nominal if yield_nominal > 0. \
-                        else 0.
-                rel_mt_fit = (yield_nominal - yield_mt_fit) / yield_nominal if yield_nominal > 0. \
-                        else 0.
-                rel_mt_bc0 = (yield_nominal - yield_mt_bc0) / yield_nominal if yield_nominal > 0. \
-                        else 0.
-                rel_mt_bc1 = (yield_nominal - yield_mt_bc1) / yield_nominal if yield_nominal > 0. \
-                        else 0.
-                rows.append([f"{yield_nominal:.2f} ({yield_nominal_err:.2f})",
-                             f"{yield_mt_fit:.2f} ({h_fit_all.GetBinError(b + 1):.2f})",
-                             f"{yield_mt_bc0:.2f} ({h_bincount_all0.GetBinError(b + 1):.2f})",
-                             f"{yield_mt_bc1:.2f} ({h_bincount_all1.GetBinError(b + 1):.2f})",
-                             f"{rel_centr_fit:.3f}",
-                             f"{rel_mt_fit:.3f}",
-                             f"{rel_mt_bc0:.3f}",
-                             f"{rel_mt_bc1:.3f}"])
-
-            caption = f"{self.lvar2_binmin[imult]} < {self.v_var2_binning} < " \
-                      f"{self.lvar2_binmax[imult]}"
-            filename_mt_summary = self.make_file_path(self.d_mt_results_path, "multi_trial_summary",
-                                                      "tex", None, [imult])
-            make_latex_table(column_names, row_names, rows, caption, filename_mt_summary)
-
-        # Reset to former mode
-        gROOT.SetBatch(tmp_is_root_batch)
 
     def efficiency(self):
         self.loadstyle()

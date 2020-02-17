@@ -14,10 +14,11 @@
 
 
 from os.path import join
+import os
 from glob import glob
 from array import array
 
-#pylint: disable=no-name-in-module
+#pylint: disable=no-name-in-module, too-many-lines
 from ROOT import TFile, TH1F, TCanvas, gStyle  #pylint: disable=import-error
 #pylint: enable=no-name-in-module
 
@@ -119,17 +120,13 @@ class MLFitParsFactory:
         self.apply_weights = ana_config["triggersel"]["weighttrig"]
 
         # Systematics
-        self.syst_pars = ana_config.get("systematics", None)
+        self.syst_pars = ana_config.get("systematics", {})
         self.syst_init_sigma_from = None
         if self.syst_pars:
             self.syst_init_sigma_from = self.syst_pars.get("init_sigma_from", "central")
-            try:
-                iter(self.syst_init_sigma_from)
-            except TypeError:
+            if not isinstance(self.syst_init_sigma_from, list):
                 self.syst_init_sigma_from = [self.syst_init_sigma_from] * self.n_bins1
-            try:
-                iter(self.syst_init_sigma_from[0])
-            except TypeError:
+            if not isinstance(self.syst_init_sigma_from[0], list):
                 self.syst_init_sigma_from = [self.syst_init_sigma_from] * self.n_bins2
 
 
@@ -183,20 +180,25 @@ class MLFitParsFactory:
             dictionary of systematic fit parameters
         """
 
-        fit_pars = {"bkg_func_names": self.syst_pars.get("bkg_funcs", None),
-                    "rebin": self.syst_pars.get("rebin", None),
-                    "fit_range_low": self.syst_pars.get("massmin", None),
-                    "fit_range_up": self.syst_pars.get("massmax", None),
-                    "bin_count_sigma": self.syst_pars.get("bincount_sigma", None),
-                    "n_sigma_sideband": self.n_sigma_sideband,
+        fit_pars = {"mean": None,
+                    "sigma": None,
+                    "rebin": self.rebin[ibin2][ibin1],
+                    "fit_range_low": self.fit_range_low[ibin1],
+                    "fit_range_up": self.fit_range_up[ibin1],
                     "likelihood": self.likelihood,
-                    "mean": self.mean,
-                    "sigma": self.sigma[ibin1],
-                    "fit_range_low_central": self.fit_range_low[ibin1],
-                    "fit_range_up_central": self.fit_range_up[ibin1],
-                    "mean_central": self.mean,
-                    "sigma_central": self.sigma[ibin1],
-                    "rebin_central": self.rebin[ibin2][ibin1]}
+                    "n_sigma_sideband": self.n_sigma_sideband,
+                    "mean_ref": None,
+                    "sigma_ref": None,
+                    "yield_ref": None,
+                    "chi2_ref": None,
+                    "fit_range_low_syst": self.syst_pars.get("massmin", None),
+                    "fit_range_up_syst": self.syst_pars.get("massmax", None),
+                    "bin_count_sigma_syst": self.syst_pars.get("bincount_sigma", None),
+                    "bkg_func_names_syst": self.syst_pars.get("bkg_funcs", None),
+                    "rebin_syst": self.syst_pars.get("rebin", None),
+                    # Check DB
+                    "consider_free_sigma_syst": self.syst_pars.get("consider_free_sigma", True),
+                    "chi2_max_syst": self.syst_pars.get("chi2_max_syst", 2.)}
 
         fit_pars["include_sec_peak"] = self.include_sec_peak[ibin2][ibin1]
         if self.include_sec_peak[ibin2][ibin1]:
@@ -548,7 +550,7 @@ class MLFitter:
         self.is_initialized_syst = True
 
 
-    def perform_syst(self):
+    def perform_syst(self, results_dir):
         """
         Perform all systematic fits and initialize from central-fits if requested.
         """
@@ -557,34 +559,45 @@ class MLFitter:
             self.logger.warning("Syst already fitted. Skip...")
             return
 
+        if not os.path.exists(results_dir):
+            os.makedirs(results_dir)
+
         if not self.is_initialized_syst:
             self.initialize_syst()
 
-        for (ibin1, ibin2), fit in self.syst_fits():
+        for (ibin1, ibin2), fit in self.syst_fits.items():
             if not self.central_fits[(ibin1, ibin2)].success:
                 self.logger.warning("Central fit not successful for bins (%i, %i). Skip...",
                                     ibin1, ibin2)
                 continue
+
+            # Prepare to overwrite some ini parameters
             pre_fit = None
+            central_fit = self.central_fits[(ibin1, ibin2)]
             init_from = self.init_syst_fits_from[(ibin1, ibin2)]
-            if init_from == "mc":
+            if init_from == "pre_fit" and self.init_central_fits_from[(ibin1, ibin2)] == "mc":
                 pre_fit = self.pre_fits_mc[ibin1]
-            elif init_from == "data":
+            elif init_from == "pre_fit" and self.init_central_fits_from[(ibin1, ibin2)] == "data":
                 pre_fit = self.pre_fits_data[ibin1]
             else:
-                pre_fit = self.central_fits[(ibin1, ibin2)]
-            if not pre_fit.success:
-                self.logger.warning("Initial sigma for systematics cannot be set as the pre-fit " \
-                                    "on %s parameters failed for bins (%i, %i). Skip...",
-                                    init_from, ibin1, ibin2)
-                continue
-            central_fit_pars = self.central_fits[(ibin1, ibin2)].get_fit_pars()
-            mean_central = central_fit_pars["mean"]
-            sigma_central = central_fit_pars["sigma"]
-            sigma = pre_fit.get_fit_pars()["sigma"]
+                pre_fit = central_fit
 
-            fit.override_init(mean=mean_central, sigma=sigma, mean_central=mean_central,
-                              sigma_central=sigma_central)
+            # Get reference parameters
+            central_fit_pars = central_fit.get_fit_pars()
+            overwrite_init = {"yield_ref": central_fit.kernel.GetRawYield(),
+                              "mean_ref": central_fit_pars["mean"],
+                              "sigma_ref": central_fit_pars["sigma"],
+                              "chi2_ref": central_fit.kernel.GetReducedChiSquare()}
+            # Get mean and sigma for fit init
+            pre_fit_pars = pre_fit.get_fit_pars()
+            overwrite_init["mean"] = pre_fit_pars["mean"]
+            overwrite_init["sigma"] = pre_fit_pars["sigma"]
+
+            fit.override_init_pars(**overwrite_init)
+
+            # Set the path for intermediate results which are produced by the multi trial fitter
+            fit.results_path = os.path.join(results_dir,
+                                            f"multi_trial_bin1_{ibin1}_bin2_{ibin2}.root")
             fit.fit()
 
         self.done_syst = True
@@ -823,6 +836,56 @@ class MLFitter:
         plot_histograms([sigmas_init_mc_histos, sigmas_init_data_histos], False, False,
                         ["MC", "data"], "Sigmas of int. mult.", "#it{p}_{T} (GeV/#it{c})",
                         "#sigma_{fit} " + f"{latex_meson_name} {self.ana_type}", "", save_name)
+
+
+    # pylint: disable=too-many-branches, too-many-statements, too-many-locals
+    def draw_syst(self, save_dir, results_dir, root_dir=None):
+        """Draw all fits one-by-one
+
+        Args:
+            save_dir: directory where to save plots
+            results_dir: where to find intermediate results of the multi trial
+            root_dir: TDirectory where to save summary plots
+        """
+
+        gStyle.SetOptStat(0)
+        gStyle.SetOptStat(0000)
+        gStyle.SetPalette(1)
+        gStyle.SetCanvasColor(0)
+        gStyle.SetFrameFillColor(0)
+
+        bins1_ranges = self.pars_factory.bins1_edges_low.copy()
+        bins1_ranges.append(self.pars_factory.bins1_edges_up[-1])
+
+        for (ibin1, ibin2), fit in self.syst_fits.items():
+            bin_id_match = self.pars_factory.bin_matching[ibin1]
+
+            # Some variables set for drawing
+            title = f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < " \
+                    f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
+                    f"(prob > {self.pars_factory.prob_cut_fin[bin_id_match]:.2f})"
+
+            suffix_write = self.pars_factory.make_suffix(ibin1, ibin2)
+
+            fit.results_path = os.path.join(results_dir,
+                                            f"multi_trial_bin1_{ibin1}_bin2_{ibin2}.root")
+
+            # Central fits
+            canvas = TCanvas("fit_canvas", suffix_write, 1400, 800)
+            fit.draw(canvas, title=title)
+
+            if self.pars_factory.apply_weights is False:
+                canvas.SaveAs(make_file_path(save_dir, "multi_trial", "eps", None,
+                                             suffix_write))
+            else:
+                canvas.SaveAs(make_file_path(save_dir, "multi_trial_weights", "eps", None,
+                                             suffix_write))
+
+            if root_dir:
+                root_dir.cd()
+                canvas.Write(f"multi_trial_{suffix_write}")
+
+            canvas.Close()
 
 
     @staticmethod
