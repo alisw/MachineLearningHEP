@@ -346,19 +346,17 @@ class Optimiser:
         out_dirs = [os.path.join(self.dirmlplot, "grid_search", name, f"{name}{self.s_suffix}") \
                 for name in clfs_names_all]
         if checkdirlist(out_dirs):
-            self.logger.fatal("Not overwriting anything. Please remove corresponding directories " \
+            # Only draw results if any can be found
+            self.logger.warning("Not overwriting anything, just plotting again what was done " \
+                    "before and returning. Please remove corresponding directories " \
                     "if you are certain you want do do grid search again")
+            perform_plot_gridsearch(clfs_names_all, out_dirs)
+            return
         checkmakedirlist(out_dirs)
 
-        _, models_best, dfscore = do_gridsearch(clfs_names_all, clfs_all, clfs_grid_params_all,
-                                                self.df_xtrain, self.df_ytrain, self.p_nkfolds,
-                                                self.p_ncorescross)
-
-        perform_plot_gridsearch(clfs_names_all, dfscore, clfs_grid_params_all, out_dirs,
-                                self.s_suffix)
-        # Save best models
-        for name, clf, out_dir in zip(clfs_names_all, models_best, out_dirs):
-            savemodels((name,), (clf,), out_dir, self.s_suffix)
+        do_gridsearch(clfs_names_all, clfs_all, clfs_grid_params_all, self.df_xtrain,
+                      self.df_ytrain, self.p_nkfolds, out_dirs, self.p_ncorescross)
+        perform_plot_gridsearch(clfs_names_all, out_dirs)
 
     def do_boundary(self):
         classifiers_scikit_2var, names_2var = getclf_scikit(self.db_model)

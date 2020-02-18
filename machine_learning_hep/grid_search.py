@@ -15,15 +15,18 @@
 """
 Methods to do hyper-parameters optimization
 """
+from os.path import join as osjoin
 import itertools
+import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
 from sklearn.metrics import make_scorer, roc_auc_score, accuracy_score
 from sklearn.model_selection import GridSearchCV
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, AdaBoostClassifier  # pylint: disable=unused-import
 from xgboost import XGBClassifier # pylint: disable=unused-import
 from machine_learning_hep.logger import get_logger
-from machine_learning_hep.io import print_dict
+from machine_learning_hep.utilities import openfile
+from machine_learning_hep.io import print_dict, dump_yaml_from_dict, parse_yaml
+from machine_learning_hep.models import savemodels
 
 
 def get_scorers(score_names):
@@ -45,7 +48,7 @@ def get_scorers(score_names):
     return scorers
 
 
-def do_gridsearch(names, classifiers, grid_params, x_train, y_train, nkfolds, ncores):
+def do_gridsearch(names, classifiers, grid_params, x_train, y_train, nkfolds, out_dirs, ncores=-1):
     """Hyperparameter grid search for a list of classifiers
 
     Given a list of classifiers, do a hyperparameter grid search based on a corresponding
@@ -58,62 +61,54 @@ def do_gridsearch(names, classifiers, grid_params, x_train, y_train, nkfolds, nc
         x_train: feature dataframe
         y_train: targets dataframe
         nkfolds: int, cross-validation generator or an iterable
+        out_dirs: Write parameters and pickle of summary dataframe
         ncores: number of cores to distribute jobs to
     Returns:
         lists of grid search models, the best model and scoring dataframes
     """
 
     logger = get_logger()
-    grid_search_models_ = []
-    grid_search_bests_ = []
-    list_scores_ = []
 
-    # As this may take a long time, accept a keyboard interrupt
-    try:
-        for clf_name, clf, gps in zip(names, classifiers, grid_params):
-            if not gps:
-                logger.info("Nothing to be done for grid search of model %s", clf_name)
-                continue
-            logger.info("Grid search for model %s with following parameters:", clf_name)
-            print_dict(gps)
+    for clf_name, clf, gps, out_dir in zip(names, classifiers, grid_params, out_dirs):
+        if not gps:
+            logger.info("Nothing to be done for grid search of model %s", clf_name)
+            continue
+        logger.info("Grid search for model %s with following parameters:", clf_name)
+        print_dict(gps)
 
-            # To work for probabilities. This will call model.decision_function or
-            # model.predict_proba as it is done for the nominal ROC curves as well to decide on the
-            # performance
-            scoring = get_scorers(gps["scoring"])
+        # To work for probabilities. This will call model.decision_function or
+        # model.predict_proba as it is done for the nominal ROC curves as well to decide on the
+        # performance
+        scoring = get_scorers(gps["scoring"])
 
-            grid_search = GridSearchCV(clf, gps["params"], cv=nkfolds, refit=gps["refit"],
-                                       scoring=scoring, n_jobs=ncores, verbose=2,
-                                       return_train_score=True)
-            grid_search.fit(x_train, y_train)
-            cvres = grid_search.cv_results_
-            #for mean_score, params in zip(cvres["mean_test_score"], cvres["params"]):
-            #    logger.info(mean_score, params)
+        grid_search = GridSearchCV(clf, gps["params"], cv=nkfolds, refit=gps["refit"],
+                                   scoring=scoring, n_jobs=ncores, verbose=2,
+                                   return_train_score=True)
+        grid_search.fit(x_train, y_train)
+        cvres = grid_search.cv_results_
 
-            # Add test AUC if test data is available
-            # Tuple of grid search dataframe and test AUC
-            list_scores_.append(pd.DataFrame(cvres))
-            grid_search_models_.append(grid_search)
-            grid_search_bests_.append(grid_search.best_estimator_)
-    except KeyboardInterrupt:
-        # Could be of different length depending on where the KeyboardInterrupt was issued
-        # ==> Trim to the same length
-        logger.warning("Grid search interrupted. Returning what was done.")
-        min_length = min(len(grid_search_models_), len(grid_search_bests_), len(list_scores_))
-        grid_search_models_ = grid_search_models_[:min_length]
-        grid_search_bests_ = grid_search_bests_[:min_length]
-        list_scores_ = list_scores_[:min_length]
-    return grid_search_models_, grid_search_bests_, list_scores_
+        # Save the results as soon as we have them in case something goes wrong later
+        # (would be quite unfortunate to loose grid search reults...)
+        out_file = osjoin(out_dir, "results.pkl")
+        pickle.dump(pd.DataFrame(cvres), openfile(out_file, "wb"), protocol=4)
+        # Parameters
+        dump_yaml_from_dict(gps, osjoin(out_dir, "parameters.yaml"))
+        savemodels((clf_name,), (grid_search.best_estimator_,), out_dir, "")
 
 
 # pylint: disable=too-many-locals, too-many-statements
-def perform_plot_gridsearch(names, scores, grid_params, out_dirs, suffix_):
+def perform_plot_gridsearch(names, out_dirs):
     '''
     Function for grid scores plotting (working with scikit 0.20)
     '''
     logger = get_logger()
 
-    for name, score_obj, gps, out_dir in zip(names, scores, grid_params, out_dirs):
+    for name, out_dir in zip(names, out_dirs):
+
+        # Read written results
+        gps = parse_yaml(osjoin(out_dir, "parameters.yaml"))
+        score_obj = pickle.load(openfile(osjoin(out_dir, "results.pkl"), "rb"))
+
         param_keys = [f"param_{key}" for key in gps["params"].keys()]
         if not param_keys:
             logger.warning("Add at least 1 parameter (even just 1 value)")
@@ -208,6 +203,6 @@ def perform_plot_gridsearch(names, scores, grid_params, out_dirs, suffix_):
 
         for ax in ax_plot.values():
             ax.legend(loc="center right", fontsize=20)
-        plotname = f"{out_dir}/GridSearchResults_{suffix_}_{name}.png"
+        plotname = osjoin(out_dir, "GridSearchResults.png")
         plt.savefig(plotname)
         plt.close(fig)
