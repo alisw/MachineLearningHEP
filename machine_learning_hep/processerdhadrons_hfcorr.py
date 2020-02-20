@@ -38,16 +38,32 @@ from machine_learning_hep.utilities import  seldf_singlevar, openfile
 from machine_learning_hep.selectionutils import getnormforselevt
 from machine_learning_hep.processer import Processer
 
-def filter_phi(dfreco):
-    dfreco["is_d"] = 0
+def new_df_pairs(dfreco, mc_case):
+    df = []
     for _, group in dfreco.groupby(["run_number", "ev_id"], sort=False):
-        pt_max = group["pt_cand"].idxmax()
-        phi_max = dfreco.loc[pt_max, "phi_cand"]
-        dfreco.loc[pt_max, "is_d"] = 1
-        delta_phi_group = phi_max - group["phi_cand"]
-        dfreco.loc[group.index, "delta_phi"] = delta_phi_group
-        mass_max = dfreco.loc[pt_max, "inv_mass"]
-        dfreco.loc[group.index, "inv_cand_max"] = mass_max
+        i = 0
+        for row_number_1, row_1 in group.iterrows():
+            for row_number_2, row_2 in group.iterrows():
+                if row_number_2 > row_number_1:
+                    df_tmp = pd.DataFrame()
+                    df_tmp.loc[i, "run_number"] = row_2["run_number"]
+                    df_tmp.loc[i, "ev_id"] = row_2["ev_id"]
+                    df_tmp.loc[i, "pt_cand1"] = row_1["pt_cand"]
+                    df_tmp.loc[i, "pt_cand2"] = row_2["pt_cand"]
+                    df_tmp.loc[i, "inv_cand_1"] = row_1["inv_mass"]
+                    df_tmp.loc[i, "inv_cand_2"] = row_2["inv_mass"]
+                    delta_phi = row_1["phi_cand"] - row_2["phi_cand"]
+                    if delta_phi < 0:
+                        df_tmp.loc[i, "delta_phi"] = delta_phi + 2*np.pi
+                    else:
+                        df_tmp.loc[i, "delta_phi"] = (delta_phi)
+                    if mc_case:
+                        df_tmp.loc[i, "ismcsignal_1"] = row_1["ismcsignal"]
+                        df_tmp.loc[i, "ismcsignal_2"] = row_2["ismcsignal"]
+                    df.append(df_tmp)
+                    i += 1
+    dfreco = pd.concat(df)
+    dfreco.reset_index()
     return dfreco
 
 def split_df(dfreco, num_part):
@@ -80,6 +96,7 @@ class ProcesserDhadrons_hfcorr(Processer):
                          d_results, d_val, typean, runlisttrigger, d_mcreweights)
 
         self.p_mass_fit_lim = datap["analysis"][self.typean]['mass_fit_lim']
+        self.p_delta_phi_lim = datap["analysis"][self.typean]['delta_phi_lim']
         self.p_bin_width = datap["analysis"][self.typean]['bin_width']
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
                                     self.p_bin_width))
@@ -99,23 +116,33 @@ class ProcesserDhadrons_hfcorr(Processer):
     def histos(self, name1, name2, dfreco):
         dfreco = dfreco.groupby(["run_number", "ev_id"]).filter(lambda x: len(x) > 1)
         dfreco = dfreco[dfreco["delta_phi"] != 0]
-        inv_mass_tot = dfreco["inv_mass"].tolist()
-        inv_mass_tot_max = dfreco["inv_cand_max"].tolist()
-        h_invmass_tot = TH1F("hmass_d" + name2, "", self.p_num_bins, self.p_mass_fit_lim[0],
-                             self.p_mass_fit_lim[1])
-        h_invmass_tot_max = TH1F("hmass_nd" + name1, "", self.p_num_bins, self.p_mass_fit_lim[0],
-                                 self.p_mass_fit_lim[1])
-        h_DDbar_mass_tot = TH2F("hmass DDbar" + name1 + name2, "", 50,
-                                self.p_mass_fit_lim[0], self.p_mass_fit_lim[1], 50,
+        inv_mass_1 = dfreco["inv_cand_1"].tolist()
+        inv_mass_2 = dfreco["inv_cand_2"].tolist()
+        d_phi = dfreco["delta_phi"].tolist()
+        print("before phi_plot")
+        h_delta_phi = TH1F("delta_phi DD pair" + name1 + name2, "", self.p_num_bins,
+                           self.p_delta_phi_lim[0], self.p_delta_phi_lim[1])
+        print("after phi_plot")
+        h_invmass_cand_1 = TH1F("hmass_cand_1" + name1 + name2, "", self.p_num_bins,
                                 self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-        for i in range(0, len(inv_mass_tot)-1):
-            h_invmass_tot.Fill(inv_mass_tot[i])
-            h_invmass_tot_max.Fill(inv_mass_tot_max[i])
-            h_DDbar_mass_tot.Fill(inv_mass_tot[i], inv_mass_tot_max[i])
+        h_invmass_cand_2 = TH1F("hmass_cand_2" + name2 + name1, "", self.p_num_bins,
+                                self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+        h_DDbar_mass_tot = TH2F("hmass DDbar" + name1 + name2, "", self.p_num_bins,
+                                self.p_mass_fit_lim[0], self.p_mass_fit_lim[1],
+                                self.p_num_bins, self.p_mass_fit_lim[0],
+                                self.p_mass_fit_lim[1])
+        for i in range(0, len(inv_mass_1)-1):
+            h_invmass_cand_1.Fill(inv_mass_1[i])
+            h_invmass_cand_2.Fill(inv_mass_2[i])
+            h_DDbar_mass_tot.Fill(inv_mass_1[i], inv_mass_2[i])
+            h_delta_phi.Fill(d_phi[i])
+        print("after fill")
         h_DDbar_mass_tot.SetOption("lego2z")
-        h_invmass_tot.Write()
-        h_invmass_tot_max.Write()
+        h_delta_phi.Write()
+        h_invmass_cand_1.Write()
+        h_invmass_cand_2.Write()
         h_DDbar_mass_tot.Write()
+        print("histos function - done")
 
     # pylint: disable=too-many-branches
     def process_histomass_single(self, index):
@@ -180,49 +207,67 @@ class ProcesserDhadrons_hfcorr(Processer):
             df_tot = df_tot.append(df_no_cut)
         df_tot = df_tot.reset_index(drop=True)
         # df_tot = df_tot.sample(n=5000)
+        mc_case = False
         if self.mcordata == "mc":
             df_work = df_tot[["run_number", "ev_id", "pt_cand", "inv_mass",
                               "phi_cand", "eta_cand", "ismcsignal"]]
+            mc_case = True
         else:
             df_work = df_tot[["run_number", "ev_id", "pt_cand", "inv_mass",
                               "phi_cand", "eta_cand"]]
-        if df_work.shape[0] > 1000:
-            split_const = int(df_work.shape[0]/1000)
+            mc_case = False
+        if df_work.shape[0] > 10000:
+            split_const = int(df_work.shape[0]/10000)
             df_work.sort_values(["run_number", "ev_id"], inplace=True)
             df_tmp = []
             for i, working_df in enumerate(split_df(df_work, split_const)):
                 print("processing working df", i, split_const, "total size of df",
                       df_work.shape)
-                df_tmp.append(filter_phi(working_df))
+                #df_tmp.append(filter_phi(working_df))
+                df_tmp.append(new_df_pairs(working_df, mc_case))
             df_filt = pd.concat(df_tmp)
         else:
-            df_filt = filter_phi(df_work)
-        name1 = " Full data D "
-        name2 = " Full data Dbar "
+            #df_filt = filter_phi(df_work)
+            df_filt = new_df_pairs(df_work, mc_case)
+        nameoffile = self.d_results + "/" +  self.l_path[index] + "/dframe.pkl"
+        df_filt.to_pickle(nameoffile)
+        print("file", nameoffile, "created")
+        name1 = " Full data cand 1"
+        name2 = " Full data cand 2"
         self.histos(name1, name2, df_filt)
         # sig_fake studies for mc_df
         if self.mcordata == "mc":
-            name1 = " signal "
-            name2 = " background "
-            df_d = df_filt[df_filt["is_d"] == 1] # only with max_pt in the event (consider as d)
-            df_dbar = df_filt[df_filt["is_d"] == 0] # everything else (not d)
-            df_d_sig = df_d[df_d["ismcsignal"] == 1] # only d signal
-            df_d_fake = df_d[df_d["ismcsignal"] == 0] # only d background
-            df_dbar_sig = df_dbar[df_dbar["ismcsignal"] == 1] # only not d signal
-            df_dbar_fake = df_dbar[df_dbar["ismcsignal"] == 0] # only not d background
-            frames = [df_d_sig, df_dbar_sig]
-            sig_sig = pd.concat(frames)
+            name1 = " signal"
+            name2 = " background"
+            sig_1 = df_filt[df_filt["ismcsignal_1"] == 1]
+            h_invmass_sig1 = TH1F("inv mass sig 1", "", self.p_num_bins,
+                                  self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+            fill_hist(h_invmass_sig1, sig_1.inv_cand_1)
+            h_invmass_sig1.Write()
+            sig_2 = df_filt[df_filt["ismcsignal_2"] == 1]
+            h_invmass_sig2 = TH1F("inv mass sig 2", "", self.p_num_bins,
+                                  self.p_mass_fit_lim[0],
+                                  self.p_mass_fit_lim[1])
+            fill_hist(h_invmass_sig2, sig_2.inv_cand_2)
+            h_invmass_sig2.Write()
+            sig_sig = sig_1[sig_1["ismcsignal_2"] == 1]
+            sig_bkg = sig_1[sig_1["ismcsignal_2"] == 0]
+            bkg_1 = df_filt[df_filt["ismcsignal_1"] == 0]
+            h_invmass_bkg1 = TH1F("inv mass bkg 1", "", self.p_num_bins, self.p_mass_fit_lim[0],
+                                  self.p_mass_fit_lim[1])
+            fill_hist(h_invmass_bkg1, bkg_1.inv_cand_1)
+            h_invmass_bkg1.Write()
+            bkg_2 = df_filt[df_filt["ismcsignal_2"] == 0]
+            h_invmass_bkg2 = TH1F("inv mass bkg 2", "", self.p_num_bins, self.p_mass_fit_lim[0],
+                                  self.p_mass_fit_lim[1])
+            fill_hist(h_invmass_bkg2, bkg_2.inv_cand_2)
+            h_invmass_bkg2.Write()
+            bkg_sig = bkg_1[bkg_1["ismcsignal_2"] == 1]
+            bkg_bkg = bkg_1[bkg_1["ismcsignal_2"] == 0]
             self.histos(name1, name1, sig_sig)
-            frames = [df_d_sig, df_dbar_fake]
-            sig_fake = pd.concat(frames)
-            self.histos(name1, name2, sig_fake)
-            frames = [df_d_fake, df_dbar_sig]
-            fake_sig = pd.concat(frames)
-            self.histos(name2, name1, fake_sig)
-            frames = [df_d_fake, df_dbar_fake]
-            fake_fake = pd.concat(frames)
-            self.histos(name2, name2, fake_fake)
-        print("FINISHED")
+            self.histos(name1, name2, sig_bkg)
+            self.histos(name2, name1, bkg_sig)
+            self.histos(name2, name2, bkg_bkg)
 
 #
     # pylint: disable=line-too-long

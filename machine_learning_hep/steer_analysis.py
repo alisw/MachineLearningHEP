@@ -43,6 +43,7 @@ from machine_learning_hep.analysis.analyzer_manager import AnalyzerManager
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.analysis.analyzer_Dhadrons import AnalyzerDhadrons
 from machine_learning_hep.analysis.analyzerdhadrons_mult import AnalyzerDhadrons_mult
+from machine_learning_hep.analysis.analyzerdhadrons_hfcorr import AnalyzerDhadrons_hfcorr
 from machine_learning_hep.analysis.analyzer_jet import AnalyzerJet
 
 from machine_learning_hep.analysis.systematics import Systematics
@@ -319,7 +320,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     if proc_type == "Dhadrons_hfcorr":
         print("Using new feature for Dhadrons_hfcorr")
         proc_class = ProcesserDhadrons_hfcorr
-        ana_class = Analyzer
+        ana_class = AnalyzerDhadrons_hfcorr
 
     mymultiprocessmc = MultiProcesser(case, proc_class, data_param[case], typean, run_param, "mc")
     mymultiprocessdata = MultiProcesser(case, proc_class, data_param[case], typean, run_param,\

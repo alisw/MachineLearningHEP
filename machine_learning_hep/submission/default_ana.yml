@@ -64,6 +64,7 @@ analysis:
     efficiency: true
     feeddown: false
   dofit: true
+  doubfit: false
   # Control the yield systemaitc uncertainty
   dosyst: false
   dojetstudies: false

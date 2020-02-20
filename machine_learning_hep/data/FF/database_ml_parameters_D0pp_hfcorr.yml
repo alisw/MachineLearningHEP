@@ -269,19 +269,21 @@ D0pp_hfcorr:
         mc: null
         weighttrig: false
       mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
+      delta_phi_lim: [0, 6.28]
       bin_width: 0.001 # bin width of the invariant mass histogram
+      num_bins_2d: 50
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       data:      
-        results: [/data/Derived_testResults_gm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_2016_data/258_20191004-0007/resultsMBvspt_DDbar,
-                  /data/Derived_testResults_gm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_2017_data/259_20191004-0008/resultsMBvspt_DDbar,
-                  /data/Derived_testResults_gm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_2018_data/260_20191004-0008/resultsMBvspt_DDbar] #list of periods
-        resultsallp: /data/Derived_testResults_gm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_data/resultsMBvspt_DDbar
+        results: [/data/Derived_testResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_2016_data/258_20191004-0007/resultsMBvspt_DDbar,
+                  /data/Derived_testResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_2017_data/259_20191004-0008/resultsMBvspt_DDbar,
+                  /data/Derived_testResultsm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_2018_data/260_20191004-0008/resultsMBvspt_DDbar] #list of periods
+        resultsallp: /data/Derived_testResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_data/resultsMBvspt_DDbar
       mc:
-        results: [/data/Derived_testResults_gm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_2016_mc_prodDs/261_20191004-0007/resultsMBvspt_DDbar,
-                  /data/Derived_testResults_gm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_2017_mc_prodDs/261_20191004-0007/resultsMBvspt_DDbar,
-                  /data/Derived_testResults_gm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_2018_mc_prodDs/261_20191004-0007/resultsMBvspt_DDbar] #list of periods
-        resultsallp: /data/Derived_testResults_gm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_mc_prodDs/resultsMBvspt_DDbar
+        results: [/data/Derived_testResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_2016_mc_prodDs/261_20191004-0007/resultsMBvspt_DDbar,
+                  /data/Derived_testResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_2017_mc_prodDs/261_20191004-0007/resultsMBvspt_DDbar,
+                  /data/Derived_testResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_2018_mc_prodDs/261_20191004-0007/resultsMBvspt_DDbar] #list of periods
+        resultsallp: /data/Derived_testResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_mc_prodDs/resultsMBvspt_DDbar
       sgnfunc: [1,1,1,1,1] #0=kGaus, 1=kGaus2
       bkgfunc: [0,0,0,0,0] #0=kExpo
       masspeak: 1.969
