@@ -143,7 +143,10 @@ class Optimiser:
         #significance
         self.is_fonll_from_root = data_param["ml"]["opt"]["isFONLLfromROOT"]
         self.f_fonll = data_param["ml"]["opt"]["filename_fonll"]
-        self.p_fonllparticle = data_param["ml"]["opt"]["fonll_particle"]
+        if self.is_fonll_from_root and "fonll_particle" not in data_param["ml"]["opt"]:
+            self.logger.fatal("Attempt to read FONLL from ROOT file but field " \
+                    "\"fonll_particle\" not provided in database")
+        self.p_fonllparticle = data_param["ml"]["opt"].get("fonll_particle", "")
         self.p_fonllband = data_param["ml"]["opt"]["fonll_pred"]
         self.p_fragf = data_param["ml"]["opt"]["FF"]
         self.p_sigmamb = data_param["ml"]["opt"]["sigma_MB"]
