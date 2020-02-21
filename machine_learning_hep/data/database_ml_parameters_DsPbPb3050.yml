@@ -160,6 +160,7 @@ DsPbPb3050:
     mlout: /home/fcatalan/test_QM/mlout3050 # to be removed
 
     opt:
+      isFONLLfromROOT: false
       filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions, corrected with Raa for PbPb 'data/fonll/fo_PbPb_d0meson_5TeV_y0p5_wRaa_ds_3050_min.csv'
       fonll_pred: 'max' # edge of the FONLL prediction
       FF: 0.092 # fragmentation fraction #0.1281

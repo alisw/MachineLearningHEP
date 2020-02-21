@@ -159,6 +159,7 @@ Bspp:
     mlout: /home/lvermunt/ITS3/test_pp5/vAN-20190807_ROOT6-1/mlout # to be removed
 
     opt:
+      isFONLLfromROOT: false
       filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
       fonll_pred: 'max' # edge of the FONLL prediction
       FF: 0.6086 # fragmentation fraction
