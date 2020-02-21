@@ -154,6 +154,7 @@ Dstarpp:
     mlout: /data/Derived/DstarkINT7HighMultwithJets/vAN-20190827_ROOT6-1/mlout # to be removed
 
     opt:
+      isFONLLfromROOT: false
       filename_fonll: 'data/fonll/fo_pp_dstarmeson_13TeV_y0p5.csv' # file with FONLL predictions
       fonll_pred: 'max' # edge of the FONLL prediction
       FF: 0.6086 # fragmentation fraction

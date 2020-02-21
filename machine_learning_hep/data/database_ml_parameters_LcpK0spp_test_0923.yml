@@ -283,6 +283,7 @@ LcpK0spp:
     mlout: /data/Derived/LckINT7HighMultwithJets/vAN-20190923_ROOT6-1/mlout # to be removed
 
     opt:
+      isFONLLfromROOT: false
       filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
       fonll_pred: 'max' # edge of the FONLL prediction
       FF: 0.1281 # fragmentation fraction
