@@ -171,6 +171,7 @@ LbITS2:
 
     #To change!
     opt:
+      isFONLLfromROOT: false
       filename_fonll: 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' # file with FONLL predictions
       fonll_pred: 'max' # edge of the FONLL prediction
       FF: 0.6086 # fragmentation fraction
