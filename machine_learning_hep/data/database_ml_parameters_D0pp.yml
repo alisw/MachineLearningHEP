@@ -35,7 +35,6 @@ D0pp:
   var_binning: pt_cand
   dofullevtmerge: false
   bitmap_sel:
-    use: True
     var_name: cand_type
     var_isstd: isstd
     var_ismcsignal: ismcsignal

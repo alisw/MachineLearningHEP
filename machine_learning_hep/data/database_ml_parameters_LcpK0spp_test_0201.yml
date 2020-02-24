@@ -34,7 +34,6 @@ LcpK0spp:
   dofullevtmerge: false
 
   bitmap_sel:
-    #use: True
     var_name: cand_type
     var_isstd: isstd
     var_ismcsignal: ismcsignal
