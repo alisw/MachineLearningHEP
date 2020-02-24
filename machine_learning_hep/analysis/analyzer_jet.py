@@ -499,6 +499,7 @@ class AnalyzerJet(Analyzer):
                 hzbkgright.Write("hzbkgright" + suffix)
                 hzbkg.Write("hzbkg" + suffix)
                 hzsub.Write("hzsub" + suffix)
+                hzsub_noteffscaled.Write()
 
                 # This canvas will contain the distributions of the side band
                 # subtracted z-distributions in bin of the reco jet pt
@@ -565,14 +566,14 @@ class AnalyzerJet(Analyzer):
                 legsigbkgsubz.Draw("same")
                 latex = TLatex(0.42, 0.85, "ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV")
                 draw_latex(latex)
-                latex1 = TLatex(0.42, 0.8, "charged jets, anti-#it{k}_{T}, \
-                                #it{R} = 0.4, #left|#it{#eta}_{jet}#right| < 0.5")
+                latex1 = TLatex(0.42, 0.8, ("charged jets, anti-#it{k}_{T}, "
+                                "#it{R} = 0.4, #left|#it{#eta}_{jet}#right| < 0.5"))
                 draw_latex(latex1)
                 latex2 = TLatex(0.42, 0.75, "%.0f < #it{p}_{T, jet}^{ch} < %.0f GeV/#it{c}" \
                                 % (self.lvar2_binmin_reco[imult], self.lvar2_binmax_reco[imult]))
                 draw_latex(latex2)
-                latex3 = TLatex(0.42, 0.7, "with #Lambda_{c}^{#plus} (& cc), %.0f < \
-                                #it{p}_{T, #Lambda_{c}^{#plus}} < %.0f GeV/#it{c}"
+                latex3 = TLatex(0.42, 0.7, ("with #Lambda_{c}^{#plus} (& cc), %.0f < "
+                                "#it{p}_{T, #Lambda_{c}^{#plus}} < %.0f GeV/#it{c}")
                                 % (self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt]))
                 draw_latex(latex3)
                 if hz_ratio != 0:
@@ -844,8 +845,8 @@ class AnalyzerJet(Analyzer):
             draw_latex(latex)
             latex2 = TLatex(0.52, 0.4, "PYTHIA 6, pp, #sqrt{#it{s}} = 13 TeV")
             draw_latex(latex2)
-            latex3 = TLatex(0.52, 0.35, "#Lambda_{c}^{#plus} \
-                            #rightarrow p K_{S}^{0} (and charge conj.)")
+            latex3 = TLatex(0.52, 0.35, ("#Lambda_{c}^{#plus} "
+                            "#rightarrow p K_{S}^{0} (and charge conj.)"))
             draw_latex(latex3)
             latex4 = TLatex(0.52, 0.3, "in charged jets, anti-#it{k}_{T}, #it{R} = 0.4")
             draw_latex(latex4)
