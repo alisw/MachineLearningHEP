@@ -20,11 +20,11 @@ import operator
 import pandas as pd
 import numba
 
-@numba.njit
+#@numba.njit
 def selectbiton(array_cand_type, mask):
     return [((cand_type & mask) == mask) for cand_type in array_cand_type]
 
-@numba.njit
+#@numba.njit
 def selectbitoff(array_cand_type, mask):
     return [((cand_type & mask) == 0) for cand_type in array_cand_type]
 
