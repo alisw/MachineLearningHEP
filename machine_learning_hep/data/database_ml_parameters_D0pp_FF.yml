@@ -281,15 +281,15 @@ D0pp_FF:
         mc: null
         weighttrig: false
       data:
-        results: [/data/DerivedResultsJets/D0kINT7withJets/vAN-20200201_ROOT6-1/pp_2016_data/350_20200201-1926/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kINT7withJets/vAN-20200201_ROOT6-1/pp_2017_data/351_20200202-0239/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kINT7withJets/vAN-20200201_ROOT6-1/pp_2018_data/352_20200202-0239/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kINT7withJets/vAN-20200201_ROOT6-1/pp_data/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/D0kINT7withJets/vAN-20200201_ROOT6-1/pp_2016_data/350_20200201-1926/resultsMBjetvspt_FF,
+                  /data/DerivedResultsJets/D0kINT7withJets/vAN-20200201_ROOT6-1/pp_2017_data/351_20200202-0239/resultsMBjetvspt_FF,
+                  /data/DerivedResultsJets/D0kINT7withJets/vAN-20200201_ROOT6-1/pp_2018_data/352_20200202-0239/resultsMBjetvspt_FF] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kINT7withJets/vAN-20200201_ROOT6-1/pp_data/resultsMBjetvspt_FF
       mc:
-        results: [/data/DerivedResultsJets/D0kINT7withJets/vAN-20200201_ROOT6-1/pp_2016_mc_prodD2H/353_20200201-1929/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kINT7withJets/vAN-20200201_ROOT6-1/pp_2017_mc_prodD2H/353_20200201-1929/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kINT7withJets/vAN-20200201_ROOT6-1/pp_2018_mc_prodD2H/353_20200201-1929/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kINT7withJets/vAN-20200201_ROOT6-1/pp_mc_prodD2H/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/D0kINT7withJets/vAN-20200201_ROOT6-1/pp_2016_mc_prodD2H/353_20200201-1929/resultsMBjetvspt_FF,
+                  /data/DerivedResultsJets/D0kINT7withJets/vAN-20200201_ROOT6-1/pp_2017_mc_prodD2H/353_20200201-1929/resultsMBjetvspt_FF,
+                  /data/DerivedResultsJets/D0kINT7withJets/vAN-20200201_ROOT6-1/pp_2018_mc_prodD2H/353_20200201-1929/resultsMBjetvspt_FF] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kINT7withJets/vAN-20200201_ROOT6-1/pp_mc_prodD2H/resultsMBjetvspt_FF
 
       mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
