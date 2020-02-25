@@ -261,12 +261,14 @@ D0pp_FF:
       sel_binmax2_reco: [7.0,15.0,35.0] #list of nbins
       sel_binmin2_gen: [5.0,7.0,15.0] #list of nbins
       sel_binmax2_gen: [7.0,15.0,35.0] #list of nbins
+      var_binningshape: z
+      var_binningshape_gen: z_gen
+      var_shape_latex: "#it{z}_{#parallel}^{ch}"
       sel_binminshape_reco: [0.4001,0.6001,0.7001,0.8001,0.9001]
       sel_binmaxshape_reco: [0.6001,0.7001,0.8001,0.9001,1.0001]
       sel_binminshape_gen: [0.4001,0.6001,0.7001,0.8001,0.9001]
       sel_binmaxshape_gen: [0.6001,0.7001,0.8001,0.9001,1.0001]
       sel_closure_frac: 0.2
-      # needs to be added later var_binningshape: z_jet
       triggerbit: INT7
       sel_an_binmin: [2,4,5,6,8] #list of pt nbins
       sel_an_binmax: [4,5,6,8,12] #list of pt nbins
@@ -385,7 +387,7 @@ D0pp_FF:
         HighMultV0: nosel
     data:
       dir: [/data/DerivedVal/dataval_16, /data/DerivedVal/dataval_17, /data/DerivedVal/dataval_18] #list of periods
-      dirmerged: /data/Derived_testVal/datavaltot
+      dirmerged: /data/DerivedVal/datavaltot
     mc:
       dir: [/data/DerivedVal/mcval_16, /data/DerivedVal/mcval_17, /data/DerivedVal/mcval_18] #list of periods
-      dirmerged: /data/Derived_testVal/mcvaltot
+      dirmerged: /data/DerivedVal/mcvaltot
