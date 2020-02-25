@@ -34,7 +34,7 @@ def buildarray(listnumber):
     arraynumber = array('d', listnumber)
     return arraynumber
 
-def make3dplot(df_, titlehist, arrayx, arrayy, arrayz, nvar1, nvar2, nvar3):
+def makefill3dhist(df_, titlehist, arrayx, arrayy, arrayz, nvar1, nvar2, nvar3):
     """
     Create a TH3F histogram and fill it with three variables from a dataframe.
     """
@@ -60,7 +60,7 @@ def build2dhisto(titlehist, arrayx, arrayy):
     histo.Sumw2()
     return histo
 
-def make2dplot(df_, histo, nvar1, nvar2):
+def fill2dhist(df_, histo, nvar1, nvar2):
     """
     Fill a TH2 histogram with two variables from a dataframe.
     """

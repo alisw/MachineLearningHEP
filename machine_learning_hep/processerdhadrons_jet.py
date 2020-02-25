@@ -27,7 +27,7 @@ from ROOT import TFile, TH1F, TH2F, RooUnfoldResponse # pylint: disable=import-e
 from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utilities import selectdfrunlist, seldf_singlevar, openfile
 from machine_learning_hep.utilities import z_calc, z_gen_calc
-from machine_learning_hep.utilities_plot import build2dhisto, make2dplot, make3dplot
+from machine_learning_hep.utilities_plot import build2dhisto, fill2dhist, makefill3dhist
 from machine_learning_hep.processer import Processer
 
 
@@ -154,7 +154,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                 h_zvsinvmass = TH2F("hzvsmass" + suffix, "", \
                     5000, massarray_reco, self.p_nbinshape_reco, zarray_reco)
                 h_zvsinvmass.Sumw2()
-                make2dplot(df_bin, h_zvsinvmass, "inv_mass", self.v_varshape_binning)
+                fill2dhist(df_bin, h_zvsinvmass, "inv_mass", self.v_varshape_binning)
                 h_zvsinvmass.Write()
 
                 if self.mcordata == "mc":
@@ -384,7 +384,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         fill_hist(hzvsjetpt_gen_unmatched, df_zvsjetpt_gen_unmatched)
         hzvsjetpt_gen_unmatched.Write()
         titlehist = "hzvsjetptvscandpt_gen_nonprompt"
-        hzvsjetptvscandpt_gen_nonprompt = make3dplot(df_gen_nonprompt, titlehist, \
+        hzvsjetptvscandpt_gen_nonprompt = makefill3dhist(df_gen_nonprompt, titlehist, \
             zbinarray_gen, jetptbinarray_gen, candptbinarray, self.v_varshape_binning, "pt_jet", "pt_cand")
         hzvsjetptvscandpt_gen_nonprompt.Write()
 
@@ -459,10 +459,10 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         hzvsjetpt_gen = hzvsjetpt_gen_nocuts.Clone("hzvsjetpt_genv")
         response_matrix = RooUnfoldResponse(hzvsjetpt_reco, hzvsjetpt_gen)
 
-        make2dplot(df_tmp_selreco, hzvsjetpt_reco_nocuts, self.v_varshape_binning, "pt_jet")
-        make2dplot(df_tmp_selgen, hzvsjetpt_gen_nocuts, self.v_varshape_binning_gen, "pt_gen_jet")
-        make2dplot(df_tmp_selrecogen, hzvsjetpt_reco_cuts, self.v_varshape_binning, "pt_jet")
-        make2dplot(df_tmp_selrecogen, hzvsjetpt_gen_cuts, self.v_varshape_binning_gen, "pt_gen_jet")
+        fill2dhist(df_tmp_selreco, hzvsjetpt_reco_nocuts, self.v_varshape_binning, "pt_jet")
+        fill2dhist(df_tmp_selgen, hzvsjetpt_gen_nocuts, self.v_varshape_binning_gen, "pt_gen_jet")
+        fill2dhist(df_tmp_selrecogen, hzvsjetpt_reco_cuts, self.v_varshape_binning, "pt_jet")
+        fill2dhist(df_tmp_selrecogen, hzvsjetpt_gen_cuts, self.v_varshape_binning_gen, "pt_gen_jet")
 
         hzvsjetpt_reco_nocuts.Write()
         hzvsjetpt_gen_nocuts.Write()
@@ -479,10 +479,10 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         hzvsjetpt_gen_cuts_pr = \
             build2dhisto("hzvsjetpt_gen_cuts", zbinarray_gen, jetptbinarray_gen)
 
-        make2dplot(df_tmp_selreco_pr, hzvsjetpt_reco_nocuts_pr, self.v_varshape_binning, "pt_jet")
-        make2dplot(df_tmp_selgen_pr, hzvsjetpt_gen_nocuts_pr, self.v_varshape_binning_gen, "pt_gen_jet")
-        make2dplot(df_tmp_selrecogen_pr, hzvsjetpt_reco_cuts_pr, self.v_varshape_binning, "pt_jet")
-        make2dplot(df_tmp_selrecogen_pr, hzvsjetpt_gen_cuts_pr, self.v_varshape_binning_gen, "pt_gen_jet")
+        fill2dhist(df_tmp_selreco_pr, hzvsjetpt_reco_nocuts_pr, self.v_varshape_binning, "pt_jet")
+        fill2dhist(df_tmp_selgen_pr, hzvsjetpt_gen_nocuts_pr, self.v_varshape_binning_gen, "pt_gen_jet")
+        fill2dhist(df_tmp_selrecogen_pr, hzvsjetpt_reco_cuts_pr, self.v_varshape_binning, "pt_jet")
+        fill2dhist(df_tmp_selrecogen_pr, hzvsjetpt_gen_cuts_pr, self.v_varshape_binning_gen, "pt_gen_jet")
         hzvsjetpt_reco_nocuts_pr.Write()
         hzvsjetpt_gen_nocuts_pr.Write()
         hzvsjetpt_reco_cuts_pr.Write()
@@ -499,8 +499,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         response_matrix_pr = RooUnfoldResponse(hzvsjetpt_reco_pr, hzvsjetpt_gen_pr)
         response_matrix_closure_pr = RooUnfoldResponse(hzvsjetpt_reco_pr, hzvsjetpt_gen_pr)
 
-        make2dplot(df_tmp_selreco_pr, hzvsjetpt_reco_pr, self.v_varshape_binning, "pt_jet")
-        make2dplot(df_tmp_selgen_pr, hzvsjetpt_gen_pr, self.v_varshape_binning_gen, "pt_gen_jet")
+        fill2dhist(df_tmp_selreco_pr, hzvsjetpt_reco_pr, self.v_varshape_binning, "pt_jet")
+        fill2dhist(df_tmp_selgen_pr, hzvsjetpt_gen_pr, self.v_varshape_binning_gen, "pt_gen_jet")
         hzvsjetpt_reco_pr.Write()
         hzvsjetpt_gen_pr.Write()
 
@@ -534,10 +534,10 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                  nzbin_gen * 100, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1],
                  nzbin_reco * 100, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
 
-        make2dplot(df_tmp_selrecogen, hjetpt_genvsreco_full, "pt_gen_jet", "pt_jet")
+        fill2dhist(df_tmp_selrecogen, hjetpt_genvsreco_full, "pt_gen_jet", "pt_jet")
         hjetpt_genvsreco_full.Scale(1.0 / hjetpt_genvsreco_full.Integral(1, -1, 1, -1))
         hjetpt_genvsreco_full.Write()
-        make2dplot(df_tmp_selrecogen, hz_genvsreco_full, self.v_varshape_binning_gen, self.v_varshape_binning)
+        fill2dhist(df_tmp_selrecogen, hz_genvsreco_full, self.v_varshape_binning_gen, self.v_varshape_binning)
         hz_genvsreco_full.Scale(1.0 / hz_genvsreco_full.Integral(1, -1, 1, -1))
         hz_genvsreco_full.Write()
         for row in df_tmp_selrecogen.itertuples():
@@ -554,17 +554,17 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
             TH2F("hz_genvsreco_full", "hz_genvsreco_full", \
                  nzbin_gen * 100, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1],
                  nzbin_reco * 100, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
-        make2dplot(df_tmp_selrecogen_pr, hjetpt_genvsreco_full_pr, "pt_gen_jet", "pt_jet")
+        fill2dhist(df_tmp_selrecogen_pr, hjetpt_genvsreco_full_pr, "pt_gen_jet", "pt_jet")
         hjetpt_genvsreco_full_pr.Scale(1.0 / hjetpt_genvsreco_full_pr.Integral(1, -1, 1, -1))
         hjetpt_genvsreco_full_pr.Write()
-        make2dplot(df_tmp_selrecogen_pr, hz_genvsreco_full_pr, self.v_varshape_binning_gen, self.v_varshape_binning)
+        fill2dhist(df_tmp_selrecogen_pr, hz_genvsreco_full_pr, self.v_varshape_binning_gen, self.v_varshape_binning)
         hz_genvsreco_full_pr.Scale(1.0 / hz_genvsreco_full_pr.Integral(1, -1, 1, -1))
         hz_genvsreco_full_pr.Write()
 
 
         hzvsjetpt_prior_weights = build2dhisto("hzvsjetpt_prior_weights", \
             zbinarray_gen, jetptbinarray_gen)
-        make2dplot(df_tmp_selrecogen_pr, hzvsjetpt_prior_weights, self.v_varshape_binning_gen, "pt_gen_jet")
+        fill2dhist(df_tmp_selrecogen_pr, hzvsjetpt_prior_weights, self.v_varshape_binning_gen, "pt_gen_jet")
 
 
         """ end of histograms for unfolding """
@@ -577,7 +577,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
             hz_genvsreco = TH2F("hz_genvsreco_nonprompt" + suffix, "hz_genvsreco_nonprompt" + suffix, \
                 nzbin_gen * 100, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1], \
                 nzbin_reco*100, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
-            make2dplot(df_tmp_selrecogen_jetbin, hz_genvsreco, self.v_varshape_binning_gen, self.v_varshape_binning)
+            fill2dhist(df_tmp_selrecogen_jetbin, hz_genvsreco, self.v_varshape_binning_gen, self.v_varshape_binning)
             norm = hz_genvsreco.Integral(1, -1, 1, -1)
             if norm > 0:
                 hz_genvsreco.Scale(1.0/norm)
@@ -590,7 +590,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
             hz_genvsreco_pr = TH2F("hz_genvsreco" + suffix, "hz_genvsreco" + suffix, \
                 nzbin_gen * 100, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1], \
                 nzbin_reco*100, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
-            make2dplot(df_tmp_selrecogen_pr_jetbin, hz_genvsreco_pr, self.v_varshape_binning_gen, self.v_varshape_binning)
+            fill2dhist(df_tmp_selrecogen_pr_jetbin, hz_genvsreco_pr, self.v_varshape_binning_gen, self.v_varshape_binning)
             norm_pr = hz_genvsreco_pr.Integral(1, -1, 1, -1)
             if norm_pr > 0:
                 hz_genvsreco_pr.Scale(1.0/norm_pr)
@@ -605,7 +605,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                 "hjetpt_genvsreco_nonprompt" + suffix, njetptbin_gen * 100, self.lvar2_binmin_gen[0], \
                 self.lvar2_binmax_gen[-1], njetptbin_reco * 100, self.lvar2_binmin_reco[0], \
                 self.lvar2_binmax_reco[-1])
-            make2dplot(df_tmp_selrecogen_zbin, hjetpt_genvsreco, "pt_gen_jet", "pt_jet")
+            fill2dhist(df_tmp_selrecogen_zbin, hjetpt_genvsreco, "pt_gen_jet", "pt_jet")
             norm = hjetpt_genvsreco.Integral(1, -1, 1, -1)
             if norm > 0:
                 hjetpt_genvsreco.Scale(1.0/norm)
@@ -619,7 +619,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                 "hjetpt_genvsreco" + suffix, njetptbin_gen * 100, self.lvar2_binmin_gen[0], \
                 self.lvar2_binmax_gen[-1], njetptbin_reco * 100, self.lvar2_binmin_reco[0], \
                 self.lvar2_binmax_reco[-1])
-            make2dplot(df_tmp_selrecogen_pr_zbin, hjetpt_genvsreco_pr, "pt_gen_jet", "pt_jet")
+            fill2dhist(df_tmp_selrecogen_pr_zbin, hjetpt_genvsreco_pr, "pt_gen_jet", "pt_jet")
             norm_pr = hjetpt_genvsreco_pr.Integral(1, -1, 1, -1)
             if norm_pr > 0:
                 hjetpt_genvsreco_pr.Scale(1.0/norm_pr)
@@ -686,8 +686,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         _, _, df_tmp_selrecogen_pr_train = \
                 self.create_df_closure(df_mc_reco_merged_prompt_train)
 
-        make2dplot(df_tmp_selreco_pr_test, hzvsjetpt_reco_closure_pr, self.v_varshape_binning, "pt_jet")
-        make2dplot(df_tmp_selgen_pr_test, hzvsjetpt_gen_closure_pr, self.v_varshape_binning_gen, "pt_gen_jet")
+        fill2dhist(df_tmp_selreco_pr_test, hzvsjetpt_reco_closure_pr, self.v_varshape_binning, "pt_jet")
+        fill2dhist(df_tmp_selgen_pr_test, hzvsjetpt_gen_closure_pr, self.v_varshape_binning_gen, "pt_gen_jet")
         hzvsjetpt_reco_closure_pr.Write("input_closure_reco")
         hzvsjetpt_gen_closure_pr.Write("input_closure_gen")
 
@@ -728,8 +728,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                                            njetptbin_reco, jetptbinarray_reco)
         hzvsjetpt_reco_cuts_closure.Sumw2()
 
-        make2dplot(df_tmp_selreco_pr_test, hzvsjetpt_reco_nocuts_closure, self.v_varshape_binning, "pt_jet")
-        make2dplot(df_tmp_selrecogen_pr_test, hzvsjetpt_reco_cuts_closure, self.v_varshape_binning, "pt_jet")
+        fill2dhist(df_tmp_selreco_pr_test, hzvsjetpt_reco_nocuts_closure, self.v_varshape_binning, "pt_jet")
+        fill2dhist(df_tmp_selrecogen_pr_test, hzvsjetpt_reco_cuts_closure, self.v_varshape_binning, "pt_jet")
         hzvsjetpt_reco_nocuts_closure.Write()
         hzvsjetpt_reco_cuts_closure.Write()
 
