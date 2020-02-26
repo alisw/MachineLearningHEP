@@ -11,14 +11,13 @@
 ##    You should have received a copy of the GNU General Public License    ##
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
-# pylint: disable=invalid-name
+
 """
 main script for doing data processing, machine learning and analysis
 """
 import math
 import array
 import pickle
-#import random as rd
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -30,13 +29,12 @@ from machine_learning_hep.utilities import z_calc, z_gen_calc
 from machine_learning_hep.utilities_plot import build2dhisto, fill2dhist, makefill3dhist
 from machine_learning_hep.processer import Processer
 
-
-class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attributes
+class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many-instance-attributes
     # Class Attribute
     species = 'processer'
 
     # Initializer / Instance Attributes
-    # pylint: disable=too-many-statements, too-many-arguments
+    # pylint: disable=too-many-statements, too-many-arguments, line-too-long
     def __init__(self, case, datap, run_param, mcordata, p_maxfiles,
                  d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
@@ -103,7 +101,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         self.runlistrigger = runlisttrigger
 
 
-    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-branches, pointless-string-statement
     def process_histomass_single(self, index):
         myfile = TFile.Open(self.l_histomass[index], "recreate")
         for ipt in range(self.p_nptfinbins):
@@ -140,7 +138,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
 
                 """ add the z column """
                 df_bin["z"] = z_calc(df_bin.pt_jet, df_bin.phi_jet, df_bin.eta_jet,
-                                df_bin.pt_cand, df_bin.phi_cand, df_bin.eta_cand)
+                                     df_bin.pt_cand, df_bin.phi_cand, df_bin.eta_cand)
 
                 h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
                                  self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
@@ -353,7 +351,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
             list_df_mc_reco.append(df_mc_reco)
 
         """ Here we can merge the dataframes corresponding to different HF pt in a
-        single one. In addition we are here selecting only non prompt HF"""
+        single one. In addition we are here selecting only non prompt HF """
 
         df_gen = pd.concat(list_df_mc_gen)
         df_mc_reco = pd.concat(list_df_mc_reco)
@@ -363,11 +361,11 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
                              df_gen.pt_cand, df_gen.phi_cand, df_gen.eta_cand)
 
         df_mc_reco["z"] = z_calc(df_mc_reco.pt_jet, df_mc_reco.phi_jet, df_mc_reco.eta_jet,
-                             df_mc_reco.pt_cand, df_mc_reco.phi_cand, df_mc_reco.eta_cand)
+                                 df_mc_reco.pt_cand, df_mc_reco.phi_cand, df_mc_reco.eta_cand)
 
         df_mc_reco["z_gen"] = z_gen_calc(df_mc_reco.pt_gen_jet, df_mc_reco.phi_gen_jet,
-                                df_mc_reco.eta_gen_jet, df_mc_reco.pt_gen_cand,
-                                df_mc_reco.delta_phi_gen_jet, df_mc_reco.delta_eta_gen_jet)
+                                         df_mc_reco.eta_gen_jet, df_mc_reco.pt_gen_cand,
+                                         df_mc_reco.delta_phi_gen_jet, df_mc_reco.delta_eta_gen_jet)
 
         df_gen_nonprompt = df_gen[df_gen.ismcfd == 1]
         df_gen_prompt = df_gen[df_gen.ismcprompt == 1]
@@ -376,7 +374,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
 
         """ The following plots are 3d plots all at generated level of z,
         pt_jet and pt_cand. This was used in the first version of the feeddown
-        subtraction, currently is obsolete"""
+        subtraction, currently is obsolete """
 
         hzvsjetpt_gen_unmatched = TH2F("hzvsjetpt_gen_unmatched", "hzvsjetpt_gen_unmatched", \
             nzbin_gen, zbinarray_gen, njetptbin_gen, jetptbinarray_gen)
@@ -392,7 +390,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         bins of gen_jet pt before the reco z and jetpt selection. hz_gen_cuts
         also includes cut on z reco and jet pt reco. These are used for overall
         efficiency correction to estimate the fraction of candidates that are
-        in the reco range but outside the gen range and viceversa"""
+        in the reco range but outside the gen range and viceversa """
 
         for ibin2 in range(len(self.lvar2_binmin_gen)):
             suffix = "%s_%.2f_%.2f" % \
@@ -417,7 +415,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
             hz_gen_cuts.Write()
             hz_gen_nocuts.Write()
 
-            """Addendum for unfolding"""
+            """ Addendum for unfolding """
             hz_gen_nocuts_pr = TH1F("hz_gen_nocuts" + suffix, \
                 "hz_gen_nocuts" + suffix, nzbin_gen, zbinarray_gen)
             hz_gen_nocuts_pr.Sumw2()
@@ -436,7 +434,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
             fill_hist(hz_gen_cuts_pr, df_tmp_pr[self.v_varshape_binning_gen])
             hz_gen_cuts_pr.Write()
             hz_gen_nocuts_pr.Write()
-            """End addendum for unfolding"""
+            """ End addendum for unfolding """
 
 
         df_tmp_selgen, df_tmp_selreco, df_tmp_selrecogen = \
@@ -522,7 +520,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=too-many-instance-attr
         hjetpt_gen_nocuts_pr.Write()
         hjetpt_gen_cuts_pr.Write()
 
-        """ end of histograms for unfolding"""
+        """ end of histograms for unfolding """
 
         hjetpt_genvsreco_full = \
             TH2F("hjetpt_genvsreco_full_nonprompt", "hjetpt_genvsreco_full_nonprompt", \

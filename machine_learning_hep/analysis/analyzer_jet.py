@@ -15,33 +15,24 @@
 """
 main script for doing final stage analysis
 """
-# pylint: disable=too-many-lines
+# pylint: disable=too-many-lines, bad-whitespace, line-too-long
 import os
-# pylint: disable=unused-wildcard-import, wildcard-import
-from array import *
-import numpy as np # pylint: disable=unused-import
-# pylint: disable=import-error, no-name-in-module, unused-import
-from root_numpy import hist2array, array2hist
-from ROOT import TFile, TH1F, TH2F, TCanvas, TPad, TF1, TH1D, TLatex, TGraphAsymmErrors
+from math import sqrt
+from array import array
+# pylint: disable=import-error, no-name-in-module
+from ROOT import TFile, TH1F, TH2F, TCanvas, TPad, TLatex, TGraphAsymmErrors
 from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
-from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
-from ROOT import gROOT, TDirectory, TPaveLabel
-from ROOT import TStyle, kBlue, kGreen, kBlack, kRed, kOrange
-from ROOT import gInterpreter, gPad
-from ROOT import RooUnfoldResponse
-from ROOT import RooUnfold
+from ROOT import TLegend
+from ROOT import gROOT
+from ROOT import kGreen, kRed # kBlue, kBlack, kOrange
 from ROOT import RooUnfoldBayes
 # HF specific imports
-from machine_learning_hep.fitting.helpers import MLFitter
-from machine_learning_hep.logger import get_logger
-from machine_learning_hep.io import dump_yaml_from_dict
-from machine_learning_hep.utilities import folding, get_bins, make_latex_table, parallelizer
-from machine_learning_hep.utilities_plot import plot_histograms
+from machine_learning_hep.utilities import folding
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.utilities import setup_histogram, setup_pad
 from machine_learning_hep.utilities import setup_legend, setup_tgraph, draw_latex, tg_sys
 
-# pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
+# pylint: disable=too-many-instance-attributes, too-many-statements
 class AnalyzerJet(Analyzer):
     species = "analyzer"
     def __init__(self, datap, case, typean, period):
@@ -197,7 +188,6 @@ class AnalyzerJet(Analyzer):
         # Fitting
         self.fitter = None
 
-    # pylint: disable=import-outside-toplevel
     def fit(self):
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
@@ -567,13 +557,13 @@ class AnalyzerJet(Analyzer):
                 latex = TLatex(0.42, 0.85, "ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV")
                 draw_latex(latex)
                 latex1 = TLatex(0.42, 0.8, ("charged jets, anti-#it{k}_{T}, "
-                                "#it{R} = 0.4, #left|#it{#eta}_{jet}#right| < 0.5"))
+                                            "#it{R} = 0.4, #left|#it{#eta}_{jet}#right| < 0.5"))
                 draw_latex(latex1)
                 latex2 = TLatex(0.42, 0.75, "%.0f < #it{p}_{T, jet}^{ch} < %.0f GeV/#it{c}" \
                                 % (self.lvar2_binmin_reco[imult], self.lvar2_binmax_reco[imult]))
                 draw_latex(latex2)
                 latex3 = TLatex(0.42, 0.7, ("with #Lambda_{c}^{#plus} (& cc), %.0f < "
-                                "#it{p}_{T, #Lambda_{c}^{#plus}} < %.0f GeV/#it{c}")
+                                            "#it{p}_{T, #Lambda_{c}^{#plus}} < %.0f GeV/#it{c}")
                                 % (self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt]))
                 draw_latex(latex3)
                 if hz_ratio != 0:
@@ -845,7 +835,7 @@ class AnalyzerJet(Analyzer):
             latex2 = TLatex(0.52, 0.4, "PYTHIA 6, pp, #sqrt{#it{s}} = 13 TeV")
             draw_latex(latex2)
             latex3 = TLatex(0.52, 0.35, ("#Lambda_{c}^{#plus} "
-                            "#rightarrow p K_{S}^{0} (and charge conj.)"))
+                                         "#rightarrow p K_{S}^{0} (and charge conj.)"))
             draw_latex(latex3)
             latex4 = TLatex(0.52, 0.3, "in charged jets, anti-#it{k}_{T}, #it{R} = 0.4")
             draw_latex(latex4)
@@ -1082,7 +1072,6 @@ class AnalyzerJet(Analyzer):
 
     def unfolding(self):
         print("unfolding starts")
-        lfile = TFile.Open(self.n_filemass,"update")
         fileouts = TFile.Open("%s/unfolding_results%s%s.root" % \
                               (self.d_resultsallpdata, self.case, self.typean), "recreate")
 
@@ -1318,7 +1307,7 @@ class AnalyzerJet(Analyzer):
         for ibin2 in range(self.p_nbin2_gen):
             setup_histogram(hjetpt_fracdiff_list[ibin2],ibin2+1)
             leg_jetpt_fracdiff.AddEntry(hjetpt_fracdiff_list[ibin2],"%.2f-%.2f" %(self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2]),"LEP")
-            if ibin2==0:
+            if ibin2 == 0:
                 hjetpt_fracdiff_list[ibin2].GetYaxis().SetRangeUser(0.001,hjetpt_fracdiff_list[ibin2].GetMaximum()*2)
                 hjetpt_fracdiff_list[ibin2].SetXTitle("(#it{p}_{T, jet}^{rec} #minus #it{p}_{T, jet}^{gen})/#it{p}_{T, jet}^{gen}")
             hjetpt_fracdiff_list[ibin2].Draw("same")
@@ -1355,13 +1344,12 @@ class AnalyzerJet(Analyzer):
         cz_fracdiff.SaveAs("%s/cz_fracdiff_prompt.eps" % (self.d_resultsallpdata))
 
         fileouts.cd()
-        h_dummy = TH1F("hdummy","",1,0,1.0)
         unfolded_z_scaled_list=[]
         unfolded_z_xsection_list=[]
         unfolded_jetpt_scaled_list=[]
         refolding_test_list=[]
         refolding_test_jetpt_list=[]
-        for i in range(self.niter_unfolding) :
+        for i in range(self.niter_unfolding):
             unfolded_z_scaled_list_iter=[]
             unfolded_z_xsection_list_iter=[]
             refolding_test_list_iter=[]
@@ -1485,7 +1473,7 @@ class AnalyzerJet(Analyzer):
             for i in range(self.niter_unfolding):
                 setup_histogram(unfolded_z_scaled_list[i][ibin2],i+1)
                 leg_z.AddEntry(unfolded_z_scaled_list[i][ibin2],("%d" % (i+1)),"LEP")
-                if i==0 :
+                if i == 0:
                     unfolded_z_scaled_list[i][ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_reco[0]+0.01,self.lvarshape_binmax_reco[-1]-0.001)
                     unfolded_z_scaled_list[i][ibin2].GetYaxis().SetRangeUser(0,unfolded_z_scaled_list[i][ibin2].GetMaximum()*2.0)
                     unfolded_z_scaled_list[i][ibin2].SetXTitle(self.v_varshape_latex)
@@ -1560,11 +1548,11 @@ class AnalyzerJet(Analyzer):
             cconvergence_refolding_z.SetWindowSize(500, 500)
             leg_refolding_z = TLegend(.7, .5, .85, .9, "iterations")
             setup_legend(leg_refolding_z)
-            for i in range(self.niter_unfolding) :
+            for i in range(self.niter_unfolding):
                 setup_histogram(refolding_test_list[i][ibin2],i+1)
                 leg_refolding_z.AddEntry(refolding_test_list[i][ibin2],("%d" % (i+1)),"LEP")
                 refolding_test_list[i][ibin2].Draw("same")
-                if i==0 :
+                if i == 0:
                     refolding_test_list[i][ibin2].SetXTitle(self.v_varshape_latex)
                     refolding_test_list[i][ibin2].SetYTitle("refolding test")
                     refolding_test_list[i][ibin2].GetYaxis().SetRangeUser(0.5,2.0)
@@ -1604,7 +1592,7 @@ class AnalyzerJet(Analyzer):
                 content_on_unfolded = unfolded_z_scaled_list[self.choice_iter_unfolding][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1].GetBinContent(input_mc_gen.GetXaxis().FindBin(self.lvarshape_binmin_reco[ibinshape]))
                 error_on_input_data = input_data_z_scaled.GetBinError(ibinshape+1)
                 content_on_input_data = input_data_z_scaled.GetBinContent(ibinshape+1)
-                if error_on_input_data is not 0 and content_on_unfolded is not 0 :
+                if error_on_input_data != 0 and content_on_unfolded != 0:
                     h_unfolded_not_stat_error.SetBinContent(ibinshape+1,(error_on_unfolded*content_on_input_data)/(content_on_unfolded*error_on_input_data))
                 else:
                     h_unfolded_not_stat_error.SetBinContent(ibinshape+1,0.0)
@@ -1630,10 +1618,10 @@ class AnalyzerJet(Analyzer):
         cconvergence_jetpt.SetWindowSize(500, 500)
         leg_jetpt = TLegend(.7, .5, .85, .9, "iterations")
         setup_legend(leg_jetpt)
-        for i in range(self.niter_unfolding) :
+        for i in range(self.niter_unfolding):
             setup_histogram(unfolded_jetpt_scaled_list[i],i+1)
             leg_jetpt.AddEntry(unfolded_jetpt_scaled_list[i],("%d" % (i+1)),"LEP")
-            if i==0 :
+            if i == 0:
                 unfolded_jetpt_scaled_list[i].GetXaxis().SetRangeUser(self.lvar2_binmin_reco[0]+0.01,self.lvar2_binmax_reco[-1]-0.001)
                 unfolded_jetpt_scaled_list[i].GetYaxis().SetRangeUser(0,unfolded_jetpt_scaled_list[i].GetMaximum()*2.0)
                 unfolded_jetpt_scaled_list[i].SetXTitle("#it{p}_{T, jet} GeV/#it{c}")
@@ -1651,7 +1639,7 @@ class AnalyzerJet(Analyzer):
         cconvergence_refolding_jetpt.SetWindowSize(500, 500)
         leg_refolding_jetpt = TLegend(.7, .5, .85, .9, "iterations")
         setup_legend(leg_refolding_jetpt)
-        for i in range(self.niter_unfolding) :
+        for i in range(self.niter_unfolding):
             setup_histogram(refolding_test_jetpt_list[i],i+1)
             leg_refolding_jetpt.AddEntry(refolding_test_jetpt_list[i],("%d" % (i+1)),"LEP")
             refolding_test_jetpt_list[i].Draw("same")
@@ -1664,7 +1652,6 @@ class AnalyzerJet(Analyzer):
         cconvergence_refolding_jetpt.SaveAs("%s/convergence_refolding_jetpt.eps" % (self.d_resultsallpdata))
 
     def unfolding_closure(self):
-        lfile = TFile.Open(self.n_filemass,"update")
         fileouts = TFile.Open("%s/unfolding_closure_results%s%s.root" % \
                               (self.d_resultsallpdata, self.case, self.typean), "recreate")
         unfolding_input_file = TFile.Open(self.n_fileff)
@@ -1679,9 +1666,6 @@ class AnalyzerJet(Analyzer):
         hz_gen_nocuts=[]
         input_mc_det_z=[]
         input_mc_gen_z=[]
-
-        hjetpt_fracdiff_list=[]
-        hz_fracdiff_list=[]
 
         kinematic_eff_jetpt = unfolding_input_file.Get("hjetpt_gen_cuts_closure")
         hjetpt_gen_nocuts=unfolding_input_file.Get("hjetpt_gen_nocuts_closure")
@@ -1708,7 +1692,7 @@ class AnalyzerJet(Analyzer):
         unfolded_z_closure_list=[]
         unfolded_jetpt_closure_list=[]
 
-        for i in range(self.niter_unfolding) :
+        for i in range(self.niter_unfolding):
             unfolded_z_closure_list_iter=[]
             unfolding_object = RooUnfoldBayes(response_matrix, input_mc_det, i+1)
             unfolded_zvsjetpt = unfolding_object.Hreco(2)
@@ -1789,7 +1773,7 @@ class AnalyzerJet(Analyzer):
             cconvergence_closure_z.SetWindowSize(500, 500)
             leg_closure = TLegend(.7, .5, .85, .9, "iterations")
             setup_legend(leg_closure)
-            for i in range(self.niter_unfolding) :
+            for i in range(self.niter_unfolding):
                 setup_histogram(unfolded_z_closure_list[i][ibin2],i+1)
                 leg_closure.AddEntry(unfolded_z_closure_list[i][ibin2],("%d" % (i+1)),"LEP")
                 if i == 0:
@@ -1810,7 +1794,7 @@ class AnalyzerJet(Analyzer):
         cconvergence_closure_jetpt.SetWindowSize(500, 500)
         leg_closure_jetpt = TLegend(.7, .5, .85, .9, "iterations")
         setup_legend(leg_closure_jetpt)
-        for i in range(self.niter_unfolding) :
+        for i in range(self.niter_unfolding):
             setup_histogram(unfolded_jetpt_closure_list[i],i+1)
             leg_closure_jetpt.AddEntry(unfolded_jetpt_closure_list[i],("%d" % (i+1)),"LEP")
             if i == 0:
@@ -1824,7 +1808,7 @@ class AnalyzerJet(Analyzer):
         draw_latex(latex)
         cconvergence_closure_jetpt.SaveAs("%s/convergence_closure_jetpt.eps" % (self.d_resultsallpdata))
 
-
+    # pylint: disable=too-many-nested-blocks
     def jetsystematics(self):
 
         input_file_default=TFile.Open("%s/unfolding_results%s%s.root" % \
@@ -1874,8 +1858,8 @@ class AnalyzerJet(Analyzer):
 
         input_histograms_default=[]
         for ibin2 in range(self.p_nbin2_gen):
-                suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-                input_histograms_default.append(input_file_default.Get("unfolded_z_%d_%s" % (self.choice_iter_unfolding,suffix)))
+            suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+            input_histograms_default.append(input_file_default.Get("unfolded_z_%d_%s" % (self.choice_iter_unfolding,suffix)))
 
         input_files_sys=[]
         for sys_cat in range(len(self.systematic_categories)):
@@ -1893,8 +1877,8 @@ class AnalyzerJet(Analyzer):
             for sys_cat in range(len(self.systematic_categories)):
                 input_histograms_syscatvar=[]
                 for sys_var in range(self.systematic_variations[sys_cat]):
-                    if self.systematic_categories[sys_cat]== "regularisation" :
-                        if sys_var==0:
+                    if self.systematic_categories[sys_cat]== "regularisation":
+                        if sys_var == 0:
                             input_histograms_syscatvar.append(input_file_default.Get("unfolded_z_%d_%s" % (self.niterunfoldingregdown,suffix)))
                         else:
                             input_histograms_syscatvar.append(input_file_default.Get("unfolded_z_%d_%s" % (self.niterunfoldingregup,suffix)))
@@ -1906,7 +1890,7 @@ class AnalyzerJet(Analyzer):
 
         for ibin2 in range(self.p_nbin2_gen):
             suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-            nsys=0
+            nsys = 0
             csysvar = TCanvas('csysvar '+suffix, 'systematic variations'+suffix)
             psysvar = TPad('psysvar'+suffix, "systematic variations"+suffix,0.0,0.001,1.0,1.0)
             setup_pad(psysvar)
@@ -1935,7 +1919,7 @@ class AnalyzerJet(Analyzer):
 
             for sys_cat in range(len(self.systematic_categories)):
                 suffix2="_%s" % (self.systematic_categories[sys_cat])
-                nsys=0
+                nsys = 0
                 csysvar_each = TCanvas('csysvar '+suffix2+suffix, 'systematic variations'+suffix2+suffix)
                 psysvar_each = TPad('psysvar'+suffix2+suffix, "systematic variations"+suffix2+suffix,0.0,0.001,1.0,1.0)
                 setup_pad(psysvar_each)
@@ -1946,7 +1930,7 @@ class AnalyzerJet(Analyzer):
                 leg_sysvar_each.AddEntry(input_histograms_default[ibin2],"default","LEP")
                 setup_histogram(input_histograms_default[ibin2],1)
                 for sys_var in range(self.systematic_variations[sys_cat]):
-                    if sys_var == 0 :
+                    if sys_var == 0:
                         if sys_cat == 0:
                             input_histograms_default[ibin2].GetYaxis().SetRangeUser(0.0,input_histograms_default[ibin2].GetMaximum()*2.5)
                         input_histograms_default[ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_gen[0]+0.01,self.lvarshape_binmax_gen[-1]-0.001)
@@ -1977,48 +1961,48 @@ class AnalyzerJet(Analyzer):
             for ibinshape in range(self.p_nbinshape_gen):
                 sys_up_z=[]
                 sys_down_z=[]
-                error_full_up=0
-                error_full_down=0
+                error_full_up = 0
+                error_full_down = 0
                 for sys_cat in range(len(self.systematic_categories)):
-                    error_var_up=0
-                    error_var_down=0
-                    count_sys_up=0
-                    count_sys_down=0
+                    error_var_up = 0
+                    error_var_down = 0
+                    count_sys_up = 0
+                    count_sys_down = 0
                     for sys_var in range(self.systematic_variations[sys_cat]):
                         error = input_histograms_sys[ibin2][sys_cat][sys_var].GetBinContent(ibinshape+1)-input_histograms_default[ibin2].GetBinContent(ibinshape+1)
-                        if error >= 0 :
+                        if error >= 0:
                             if self.systematic_rms[sys_cat] is True:
                                 error_var_up+=error*error
                                 count_sys_up=count_sys_up+1
                             else:
-                                if error > error_var_up :
+                                if error > error_var_up:
                                     error_var_up=error
                         else:
                             if self.systematic_rms[sys_cat] is True:
-                                if self.systematic_rms_both_sides[sys_cat] is True :
+                                if self.systematic_rms_both_sides[sys_cat] is True:
                                     error_var_up+=error*error
                                     count_sys_up=count_sys_up+1
                                 else:
                                     error_var_down+=error*error
                                     count_sys_down=count_sys_down+1
                             else:
-                                if abs(error) > error_var_down :
+                                if abs(error) > error_var_down:
                                     error_var_down = abs(error)
                     if self.systematic_rms[sys_cat]  is True:
-                        if count_sys_up is not 0:
+                        if count_sys_up != 0:
                             error_var_up = error_var_up/count_sys_up
                         else:
-                            error_var_up=0.0
+                            error_var_up = 0.0
                         error_var_up=sqrt(error_var_up)
-                        if count_sys_down is not 0:
+                        if count_sys_down != 0:
                             error_var_down = error_var_down/count_sys_down
                         else:
-                            error_var_down=0.0
-                        if self.systematic_rms_both_sides[sys_cat] is True :
+                            error_var_down = 0.0
+                        if self.systematic_rms_both_sides[sys_cat] is True:
                             error_var_down=error_var_up
                         else:
                             error_var_down=sqrt(error_var_down)
-                    if self.systematic_symmetrise[sys_cat] is True :
+                    if self.systematic_symmetrise[sys_cat] is True:
                         if error_var_up > error_var_down:
                             error_var_down = error_var_up
                         else:
@@ -2099,7 +2083,7 @@ class AnalyzerJet(Analyzer):
             input_pythia8_xsection.append(input_pythia8_file[i_pythia8].Get("fh2_pythia8_prompt_xsection"))
             input_pythia8_z_jetpt=[]
             input_pythia8_xsection_z_jetpt=[]
-            for ibin2 in range(self.p_nbin2_gen) :
+            for ibin2 in range(self.p_nbin2_gen):
                 suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
                 input_pythia8_z_jetpt.append(input_pythia8[i_pythia8].ProjectionX("input_pythia8"+self.pythia8_prompt_variations[i_pythia8]+suffix,ibin2+1,ibin2+1,"e"))
@@ -2265,4 +2249,3 @@ class AnalyzerJet(Analyzer):
             #latex7 = TLatex(0.65,0.75,"POWHEG based")
             #draw_latex(latex7)
             cfeeddown_fraction.SaveAs("%s/feeddown_fraction_werros_%s.pdf" % (self.d_resultsallpdata, suffix))
-
