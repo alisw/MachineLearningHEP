@@ -11,7 +11,7 @@ BinaryClassification:
       batch_size: 50
 
     keras_simple_two_layer_binary_classifier:
-      activate: True
+      activate: False
       layers:
         - {"n_nodes": 64, "activation": "relu"}
         - {"n_nodes": 16, "activation": "relu"}
