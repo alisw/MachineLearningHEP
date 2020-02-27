@@ -16,10 +16,10 @@
 utilities for fiducial acceptance, pid, single topological variable selections and normalization
 """
 
-import numba
+#import numba
 from machine_learning_hep.bitwise import filter_bit_df
 
-@numba.njit
+#@numba.njit
 def selectcandidateml(array_prob, probcut):
     array_is_sel = []
     for prob in array_prob:
@@ -29,7 +29,7 @@ def selectcandidateml(array_prob, probcut):
             array_is_sel.append(False)
     return array_is_sel
 
-@numba.njit
+#@numba.njit
 def select_runs(good_runlist, array_run):
     array_run_sel = []
     for candrun in array_run:
@@ -39,7 +39,7 @@ def select_runs(good_runlist, array_run):
         array_run_sel.append(is_sel)
     return array_run_sel
 
-@numba.njit
+#@numba.njit
 def selectfidacc(array_pt, array_y):
     array_is_sel = []
     for icand, pt in enumerate(array_pt):
@@ -57,7 +57,7 @@ def selectfidacc(array_pt, array_y):
     return array_is_sel
 
 # pylint: disable=too-many-arguments
-@numba.njit
+#@numba.njit
 def selectpid_dstokkpi(array_nsigma_tpc_pi_0, array_nsigma_tpc_k_0, \
     array_nsigma_tof_pi_0, array_nsigma_tof_k_0, \
         array_nsigma_tpc_k_1, array_nsigma_tof_k_1, \
@@ -84,7 +84,7 @@ def selectpid_dstokkpi(array_nsigma_tpc_pi_0, array_nsigma_tpc_k_0, \
             array_is_pid_sel.append(False)
     return array_is_pid_sel
 
-@numba.njit
+#@numba.njit
 def selectpid_dzerotokpi(array_nsigma_tpc_pi_0, array_nsigma_tpc_k_0, \
     array_nsigma_tof_pi_0, array_nsigma_tof_k_0, \
         array_nsigma_tpc_pi_1, array_nsigma_tpc_k_1, \
@@ -107,7 +107,7 @@ def selectpid_dzerotokpi(array_nsigma_tpc_pi_0, array_nsigma_tpc_k_0, \
             array_is_pid_sel.append(False)
     return array_is_pid_sel
 
-@numba.njit
+#@numba.njit
 def selectpid_lctov0bachelor(array_nsigma_tpc, array_nsigma_tof, nsigmacut):
     #nsigma for desired species (i.e. p in case of pK0s or pi in case of piL)
     array_is_pid_sel = []
@@ -121,7 +121,7 @@ def selectpid_lctov0bachelor(array_nsigma_tpc, array_nsigma_tof, nsigmacut):
             array_is_pid_sel.append(False)
     return array_is_pid_sel
 
-@numba.njit
+#@numba.njit
 def selectcand_lincut(array_cut_var, minvalue, maxvalue, isabs):
     array_is_sel = []
     for icand, _ in enumerate(array_cut_var):
