@@ -22,6 +22,8 @@ import random as rd
 import uproot
 import pandas as pd
 import numpy as np
+from root_numpy import fill_hist
+from ROOT import TFile, TH1F# pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge_method
@@ -30,6 +32,7 @@ from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar,
 from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.utilities import get_timestamp_string
 from machine_learning_hep.models import apply # pylint: disable=import-error
+from machine_learning_hep.utilities_plot import scatterplotroot
 
 class Processer: # pylint: disable=too-many-instance-attributes
     # Class Attribute
@@ -307,6 +310,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 dfrecoskml = dfrecosk.query("isstd == 1")
             pickle.dump(dfrecoskml, openfile(self.mptfiles_recoskmldec[ipt][file_index], "wb"),
                         protocol=4)
+    @staticmethod
+    def callback(ex):
+        print(ex)
+
 
     def parallelizer(self, function, argument_list, maxperchunk):
         chunks = [argument_list[x:x+maxperchunk] \
@@ -314,7 +321,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
         for chunk in chunks:
             print("Processing new chunck size=", maxperchunk)
             pool = mp.Pool(self.p_maxprocess)
-            _ = [pool.apply_async(function, args=chunk[i]) for i in range(len(chunk))]
+            _ = [pool.apply_async(function, args=chunk[i],
+                                  error_callback=self.callback) for i in range(len(chunk))]
             pool.close()
             pool.join()
 
@@ -395,3 +403,38 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.parallelizer(self.process_efficiency_single, arguments, self.p_chunksizeunp)
         tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/histoeff_{self.period}/{get_timestamp_string()}/" # pylint: disable=line-too-long
         mergerootfiles(self.l_histoeff, self.n_fileeff, tmp_merged)
+
+    # pylint: disable=too-many-locals
+    def process_valevents(self, file_index):
+        #dfevt = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
+        dfreco = pickle.load(openfile(self.l_reco[file_index], "rb"))
+        fileevtroot = TFile.Open(self.l_evtvalroot[file_index], "recreate")
+        dfreco = dfreco.query("is_ev_rej == 0")
+        h_n_tracklets_corr = TH1F("h_n_tracklets_corr", "h_n_tracklets_corr", 100, -0.5, 99.5)
+        h_run = TH1F("h_run", "h_run", 100000, 200000, 300000)
+        h_trigg = TH1F("h_trigg", "h_trigg", 2, -0.5, 1.5)
+        fill_hist(h_n_tracklets_corr, dfreco["n_tracklets_corr"])
+        fill_hist(h_run, dfreco["run_number"])
+        hmultvsrun = scatterplotroot(dfreco, "n_tracklets_corr",
+                                     "run_number", 100, -0.5, 99.5, 100000,
+                                     200000.5, 300000.5)
+        hmultvsrun.SetName("hmultvsrun")
+        fill_hist(h_trigg, dfreco["is_ev_rej_INT7"])
+        hmultvsrun.Write()
+        h_n_tracklets_corr.Write()
+        hmultvsrun.Write()
+        h_trigg.Write()
+        h_run.Write()
+        prof = hmultvsrun.ProfileY()
+        prof.SetName("prof")
+        prof.Write()
+        fileevtroot.Close()
+
+    def process_valevents_par(self):
+        print("doing event validation", self.mcordata, self.period)
+        create_folder_struc(self.d_val, self.l_path)
+        tmp_merged = \
+            f"/data/tmp/hadd/{self.case}_{self.typean}/val_{self.period}/{get_timestamp_string()}/"
+        arguments = [(i,) for i in range(len(self.l_evtorig))]
+        self.parallelizer(self.process_valevents, arguments, self.p_chunksizeskim)
+        mergerootfiles(self.l_evtvalroot, self.f_totevtvalroot, tmp_merged)

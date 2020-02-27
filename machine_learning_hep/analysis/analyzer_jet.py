@@ -194,6 +194,14 @@ class AnalyzerJet(Analyzer):
         self.varshaperanges_gen.append(self.lvarshape_binmax_gen[-1])
         self.p_nevents = datap["analysis"][self.typean]["nevents"]
 
+        self.n_evtvalroot = datap["files_names"]["namefile_evtvalroot"]
+        self.d_valevtdata = datap["validation"]["data"]["dir"][period] \
+                if period is not None else datap["validation"]["data"]["dirmerged"]
+        self.d_valevtmc = datap["validation"]["mc"]["dir"][period] \
+                if period is not None else datap["validation"]["mc"]["dirmerged"]
+
+        self.f_evtvaldata = os.path.join(self.d_valevtdata, self.n_evtvalroot)
+        self.f_evtvalmc = os.path.join(self.d_valevtmc, self.n_evtvalroot)
         # Fitting
         self.fitter = None
 
@@ -2267,3 +2275,15 @@ class AnalyzerJet(Analyzer):
             #draw_latex(latex7)
             cfeeddown_fraction.SaveAs("%s/feeddown_fraction_werros_%s.pdf" % (self.d_resultsallpdata, suffix))
 
+    def studyevents(self):
+        gROOT.SetBatch(True)
+        self.loadstyle()
+        filedata = TFile.Open(self.f_evtvaldata)
+        print(self.f_evtvaldata)
+        hmultvsrun = filedata.Get("hmultvsrun")
+        c = TCanvas("c", "c", 500, 500)
+        c.cd()
+        prof = hmultvsrun.ProfileY()
+        prof.Draw()
+        c.SaveAs(self.make_file_path(self.d_valevtdata, "cscatter", "eps", \
+                                            None, None))
