@@ -466,8 +466,8 @@ LcpK0spp:
         HighMultSPD: HighMultSPD2018
         HighMultV0: nosel
     data:
-      dir: [/data/DerivedVal/dataval_16, /data/DerivedVal/dataval_17, /data/DerivedVal/dataval_18] #list of periods
-      dirmerged: /data/Derived_testVal/datavaltot
+      dir: [/data/DerivedVal/dataval_16_test, /data/DerivedVal/dataval_17_test, /data/DerivedVal/dataval_18_test] #list of periods
+      dirmerged: /data/Derived_testVal/datavaltot_test
     mc:
-      dir: [/data/DerivedVal/mcval_16, /data/DerivedVal/mcval_17, /data/DerivedVal/mcval_18] #list of periods
-      dirmerged: /data/Derived_testVal/mcvaltot
+      dir: [/data/DerivedVal/mcval_16_test, /data/DerivedVal/mcval_17_test, /data/DerivedVal/mcval_18_test] #list of periods
+      dirmerged: /data/Derived_testVal/mcvaltot_test
