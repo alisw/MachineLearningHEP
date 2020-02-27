@@ -356,12 +356,14 @@ LcpK0spp:
       sel_binmax2_reco: [7.0,15.0,35.0] #list of nbins
       sel_binmin2_gen: [5.0,7.0,15.0] #list of nbins
       sel_binmax2_gen: [7.0,15.0,35.0] #list of nbins
+      var_binningshape: z
+      var_binningshape_gen: z_gen
+      var_shape_latex: "#it{z}_{#parallel}^{ch}"
       sel_binminshape_reco: [0.4001,0.6001,0.7001,0.8001,0.9001]
       sel_binmaxshape_reco: [0.6001,0.7001,0.8001,0.9001,1.0001]
       sel_binminshape_gen: [0.4001,0.6001,0.7001,0.8001,0.9001]
       sel_binmaxshape_gen: [0.6001,0.7001,0.8001,0.9001,1.0001]
       sel_closure_frac: 0.2
-      # needs to be added later var_binningshape: z_jet
       triggerbit: INT7
       sel_an_binmin: [3,4,6,8,12] #list of pt nbins
       sel_an_binmax: [4,6,8,12,24] #list of pt nbins
@@ -417,7 +419,7 @@ LcpK0spp:
       niterunfoldingregdown: 3
       niterunfoldingregup: 7
 
-      branching_ratio: 0.016 #1.09e-2
+      branching_ratio: 1.09e-2
       xsection_inel: 57.8
 
       doprior: false
