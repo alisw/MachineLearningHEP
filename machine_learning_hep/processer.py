@@ -22,7 +22,7 @@ import random as rd
 import uproot
 import pandas as pd
 import numpy as np
-from root_numpy import fill_hist
+from root_numpy import fill_hist # pylint: disable=import-error
 from ROOT import TFile, TH1F# pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
