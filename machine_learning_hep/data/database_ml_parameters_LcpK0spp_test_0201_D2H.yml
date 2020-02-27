@@ -218,9 +218,9 @@ LcpK0spp:
       fracmerge: [0.1,0.1,0.1] #list of periods
       seedmerge: [12,12,12] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
-      unmerged_tree_dir: [/data/TTree/D0DsLckINT7withJets/vAN-20200201_ROOT6-1/pp_2016_data/350_20200201-1926/merged/,
-                          /data/TTree/D0DsLckINT7withJets/vAN-20200201_ROOT6-1/pp_2017_data/351_20200202-0239/merged,
-                          /data/TTree/D0DsLckINT7withJets/vAN-20200201_ROOT6-1/pp_2018_data/352_20200202-0239/merged] #list of periods
+      unmerged_tree_dir: [/data/TTree/D0DsLckINT7withJets/vAN-20200201_ROOT6-1/pp_2016_data/350_20200201-1926/unmerged/,
+                          /data/TTree/D0DsLckINT7withJets/vAN-20200201_ROOT6-1/pp_2017_data/351_20200202-0239/unmerged,
+                          /data/TTree/D0DsLckINT7withJets/vAN-20200201_ROOT6-1/pp_2018_data/352_20200202-0239/unmerged] #list of periods
       pkl: [/data/Derived/LckINT7withJets/vAN-20200201_ROOT6-1/pp_2016_data/350_20200201-1926/pkl,
             /data/Derived/LckINT7withJets/vAN-20200201_ROOT6-1/pp_2017_data/351_20200202-0239/pkl,
             /data/Derived/LckINT7withJets/vAN-20200201_ROOT6-1/pp_2018_data/352_20200202-0239/pkl] #list of periods
@@ -240,9 +240,9 @@ LcpK0spp:
       fracmerge: [1.0,1.0,1.0] #list of periods
       seedmerge: [12,12,12] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
-      unmerged_tree_dir: [/data/TTree/D0DsLckINT7withJets/vAN-20200201_ROOT6-1/pp_2016_mc_prodD2H/353_20200201-1929/merged,
-                          /data/TTree/D0DsLckINT7withJets/vAN-20200201_ROOT6-1/pp_2017_mc_prodD2H/353_20200201-1929/merged,
-                          /data/TTree/D0DsLckINT7withJets/vAN-20200201_ROOT6-1/pp_2018_mc_prodD2H/353_20200201-1929/merged] #list of periods
+      unmerged_tree_dir: [/data/TTree/D0DsLckINT7withJets/vAN-20200201_ROOT6-1/pp_2016_mc_prodD2H/353_20200201-1929/unmerged,
+                          /data/TTree/D0DsLckINT7withJets/vAN-20200201_ROOT6-1/pp_2017_mc_prodD2H/353_20200201-1929/unmerged,
+                          /data/TTree/D0DsLckINT7withJets/vAN-20200201_ROOT6-1/pp_2018_mc_prodD2H/353_20200201-1929/unmerged] #list of periods
       pkl: [/data/Derived/LckINT7withJets/vAN-20200201_ROOT6-1/pp_2016_mc_prodD2H/353_20200201-1929/pkl,
             /data/Derived/LckINT7withJets/vAN-20200201_ROOT6-1/pp_2017_mc_prodD2H/353_20200201-1929/pkl,
             /data/Derived/LckINT7withJets/vAN-20200201_ROOT6-1/pp_2018_mc_prodD2H/353_20200201-1929/pkl] #list of periods
