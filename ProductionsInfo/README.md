@@ -13,4 +13,10 @@ D0, Ds, Lc->pKpi, Lc->pK0s
 
 ### MC productions D2H:
 - trigger selection: None
-- aliceml location: /data/TTree/D0DsLckAnyWithJets_20200301/vAN-20200228_ROOT6-1
+- aliceml location: /data/TTree/D0DsLckAnyWithJets_20200301/vAN-20200228_ROOT6-1/pp_
+
+
+### Data productions D2H:
+- trigger selection: kAny
+- 2017:
+  - aliceml location: /data/TTree/D0DsLckAnyWithJets_20200301/vAN-20200228_ROOT6-1/pp_2017_data
