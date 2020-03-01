@@ -346,7 +346,6 @@ LcpK0spp:
     sigmav0: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
     inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
     dir_general_plots: /data/DerivedResults/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/analysis_plots
-    latexnamemeson: "#Lambda_{c}"
 
     MBjetvspt:
       proc_type: Dhadrons_jet

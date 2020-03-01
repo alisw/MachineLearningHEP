@@ -330,13 +330,16 @@ LcpK0spp:
     sigmav0: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
     inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
     dir_general_plots: /data/DerivedResults/LckINT7withJets/vAN-20200201_ROOT6-1/analysis_plots
-    latexnamemeson: "#Lambda_{c}"
 
     MBjetvspt:
       proc_type: Dhadrons_jet
       useperiod: [1,1,1] #list of periods
 
+      latexnamemeson: "#Lambda_{c}^{#plus}"
+      latexnamedecay: "p K^{0}_{S}"
+
       var_binning2: pt_jet
+      latexbin2var: "#it{p}_{T, jet}^{ch}"
       sel_binmin2_reco: [5.0,7.0,15.0] #list of nbins
       sel_binmax2_reco: [7.0,15.0,35.0] #list of nbins
       sel_binmin2_gen: [5.0,7.0,15.0] #list of nbins
@@ -428,8 +431,6 @@ LcpK0spp:
       systematic_symmetrise: [true,  true, true, true , true, true]
       systematic_rms_both_sides: [true,  true, true, true , true, true]
 
-      latexnamemeson: "#Lambda_{c}^{pK0s}"
-      latexbin2var: "p_{T,jet}"
       nevents: 1590000000.
 
   systematics:
