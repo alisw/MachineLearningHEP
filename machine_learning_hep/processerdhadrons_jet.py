@@ -347,7 +347,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_mc_reco = df_mc_reco.query(self.s_jetsel_reco)
             if self.s_trigger is not None:
                 df_mc_reco = df_mc_reco.query(self.s_trigger)
-            df_mc_reco = df_mc_reco.query(self.l_selml[iptskim])
+            if self.doml is True:
+                df_mc_reco = df_mc_reco.query(self.l_selml[iptskim])
             list_df_mc_reco.append(df_mc_reco)
 
         # Here we can merge the dataframes corresponding to different HF pt in a
@@ -594,8 +595,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         for ibinshape in range(len(self.lvarshape_binmin_reco)):
             df_tmp_selrecogen_zbin = seldf_singlevar(df_tmp_selrecogen, self.v_varshape_binning, \
                 self.lvarshape_binmin_reco[ibinshape], self.lvarshape_binmax_reco[ibinshape])
-            suffix = "z_%.2f_%.2f" % \
-                (self.lvarshape_binmin_reco[ibinshape], self.lvarshape_binmax_reco[ibinshape])
+            suffix = "%s_%.2f_%.2f" % \
+                (self.v_varshape_binning, self.lvarshape_binmin_reco[ibinshape], self.lvarshape_binmax_reco[ibinshape])
             hjetpt_genvsreco = TH2F("hjetpt_genvsreco_nonprompt" + suffix, \
                 "hjetpt_genvsreco_nonprompt" + suffix, njetptbin_gen * 100, self.lvar2_binmin_gen[0], \
                 self.lvar2_binmax_gen[-1], njetptbin_reco * 100, self.lvar2_binmin_reco[0], \
@@ -608,8 +609,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
             df_tmp_selrecogen_pr_zbin = seldf_singlevar(df_tmp_selrecogen_pr, self.v_varshape_binning, \
                 self.lvarshape_binmin_reco[ibinshape], self.lvarshape_binmax_reco[ibinshape])
-            suffix = "z_%.2f_%.2f" % \
-                (self.lvarshape_binmin_reco[ibinshape], self.lvarshape_binmax_reco[ibinshape])
+            suffix = "%s_%.2f_%.2f" % \
+                (self.v_varshape_binning, self.lvarshape_binmin_reco[ibinshape], self.lvarshape_binmax_reco[ibinshape])
             hjetpt_genvsreco_pr = TH2F("hjetpt_genvsreco" + suffix, \
                 "hjetpt_genvsreco" + suffix, njetptbin_gen * 100, self.lvar2_binmin_gen[0], \
                 self.lvar2_binmax_gen[-1], njetptbin_reco * 100, self.lvar2_binmin_reco[0], \
@@ -623,8 +624,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         for ibinshape in range(len(self.lvarshape_binmin_gen)):
             dtmp_nonprompt_zgen = seldf_singlevar(df_mc_reco_merged_nonprompt, \
                 self.v_varshape_binning_gen, self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape])
-            suffix = "z_%.2f_%.2f" % \
-                     (self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape])
+            suffix = "%s_%.2f_%.2f" % \
+                     (self.v_varshape_binning, self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape])
             hz_fracdiff = TH1F("hz_fracdiff_nonprompt" + suffix,
                                "hz_fracdiff_nonprompt" + suffix, 100, -2, 2)
             fill_hist(hz_fracdiff, (dtmp_nonprompt_zgen[self.v_varshape_binning] - \
@@ -636,8 +637,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
             dtmp_prompt_zgen = seldf_singlevar(df_mc_reco_merged_prompt, \
                 self.v_varshape_binning_gen, self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape])
-            suffix = "z_%.2f_%.2f" % \
-                     (self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape])
+            suffix = "%s_%.2f_%.2f" % \
+                     (self.v_varshape_binning, self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape])
             hz_fracdiff_pr = TH1F("hz_fracdiff_prompt" + suffix,
                                   "hz_fracdiff_prompt" + suffix, 100, -2, 2)
             fill_hist(hz_fracdiff_pr, (dtmp_prompt_zgen[self.v_varshape_binning] - \
