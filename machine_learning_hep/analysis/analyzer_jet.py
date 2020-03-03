@@ -662,7 +662,7 @@ class AnalyzerJet(Analyzer):
         # contains z vs jet_pt vs HF pt.
 
         powheg_input_file = TFile.Open(self.powheg_path_nonprompt)
-        input_data = powheg_input_file.Get("fh3_feeddown")
+        input_data = powheg_input_file.Get("fh3_feeddown_%s" % self.v_varshape_binning)
 
         # output_template is the reco jet pt vs z for candidates in the reco
         # min-max region
@@ -1118,15 +1118,15 @@ class AnalyzerJet(Analyzer):
         input_data_jetpt=input_data.ProjectionY("input_data_jetpt",1, self.p_nbinshape_reco,"e")
 
         input_powheg_file = TFile.Open(self.powheg_path_prompt)
-        input_powheg = input_powheg_file.Get("fh2_powheg_prompt")
-        input_powheg_xsection = input_powheg_file.Get("fh2_powheg_prompt_xsection")
+        input_powheg = input_powheg_file.Get("fh2_prompt_%s" % self.v_varshape_binning)
+        input_powheg_xsection = input_powheg_file.Get("fh2_prompt_xsection_%s" % self.v_varshape_binning)
         input_powheg_file_sys = []
         input_powheg_sys=[]
         input_powheg_xsection_sys=[]
         for i_powheg in range(len(self.powheg_prompt_variations)):
             input_powheg_file_sys.append(TFile.Open("%s%s.root" % (self.powheg_prompt_variations_path, self.powheg_prompt_variations[i_powheg])))
-            input_powheg_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_powheg_prompt"))
-            input_powheg_xsection_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_powheg_prompt_xsection"))
+            input_powheg_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_%s" % self.v_varshape_binning))
+            input_powheg_xsection_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_xsection_%s" % self.v_varshape_binning))
         input_powheg_z=[]
         input_powheg_xsection_z=[]
         input_powheg_sys_z=[]
@@ -1270,6 +1270,7 @@ class AnalyzerJet(Analyzer):
             latex = TLatex(0.6,0.25,'%.2f < %s < %.2f GeV/#it{c}' % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex)
             ckinematic_eff.SaveAs("%s/cgen_kineeff_%s.eps" % (self.d_resultsallpdata, suffix))
+
             input_mc_gen_z.append(input_mc_gen.ProjectionX("input_mc_gen_z"+suffix,ibin2+1,ibin2+1,"e"))
             input_mc_gen_z[ibin2].Scale(1.0/input_mc_gen_z[ibin2].Integral(input_mc_gen_z[ibin2].FindBin(self.lvarshape_binmin_reco[0]),input_mc_gen_z[ibin2].FindBin(self.lvarshape_binmin_reco[-1])),"width")
             input_powheg_z.append(input_powheg.ProjectionX("input_powheg_z"+suffix,ibin2+1,ibin2+1,"e"))
@@ -1510,7 +1511,7 @@ class AnalyzerJet(Analyzer):
             leg_input_mc_gen_z = TLegend(.2, .73, .45, .88, "")
             setup_legend(leg_input_mc_gen_z)
             setup_histogram(input_mc_gen_z[ibin2],4)
-            leg_input_mc_gen_z.AddEntry(input_mc_gen_z[ibin2], "PYTHIA", "LEP")
+            leg_input_mc_gen_z.AddEntry(input_mc_gen_z[ibin2], "PYTHIA 6", "LEP")
             input_mc_gen_z[ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_reco[0]+0.01, self.lvarshape_binmax_reco[-1]-0.001)
             input_mc_gen_z[ibin2].GetYaxis().SetRangeUser(0.0,input_mc_gen_z[ibin2].GetMaximum()*2)
             input_mc_gen_z[ibin2].SetXTitle(self.v_varshape_latex)
@@ -1834,15 +1835,15 @@ class AnalyzerJet(Analyzer):
                               (self.d_resultsallpdata, self.case, self.typean), "update")
 
         input_powheg_file = TFile.Open(self.powheg_path_prompt)
-        input_powheg = input_powheg_file.Get("fh2_powheg_prompt")
-        input_powheg_xsection = input_powheg_file.Get("fh2_powheg_prompt_xsection")
+        input_powheg = input_powheg_file.Get("fh2_prompt_%s" % self.v_varshape_binning)
+        input_powheg_xsection = input_powheg_file.Get("fh2_prompt_xsection_%s" % self.v_varshape_binning)
         input_powheg_file_sys = []
         input_powheg_sys=[]
         input_powheg_xsection_sys=[]
         for i_powheg in range(len(self.powheg_prompt_variations)):
             input_powheg_file_sys.append(TFile.Open("%s%s.root" % (self.powheg_prompt_variations_path, self.powheg_prompt_variations[i_powheg])))
-            input_powheg_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_powheg_prompt"))
-            input_powheg_xsection_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_powheg_prompt_xsection"))
+            input_powheg_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_%s" % self.v_varshape_binning))
+            input_powheg_xsection_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_xsection_%s" % self.v_varshape_binning))
         input_powheg_z=[]
         input_powheg_xsection_z=[]
         input_powheg_sys_z=[]
