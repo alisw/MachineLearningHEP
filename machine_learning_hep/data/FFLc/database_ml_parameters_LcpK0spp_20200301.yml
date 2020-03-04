@@ -55,7 +55,8 @@ LcpK0spp:
               run_number, ev_id, ev_id_ext, nsigTPC_Pr_0, nsigTOF_Pr_0,
               spdhits_prong0, spdhits_prong1, spdhits_prong2,
               pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet,
-              pt_gen_jet, eta_gen_jet, phi_gen_jet, delta_eta_gen_jet, delta_phi_gen_jet, delta_r_gen_jet, pt_gen_cand]
+              pt_gen_jet, eta_gen_jet, phi_gen_jet, delta_eta_gen_jet, delta_phi_gen_jet, delta_r_gen_jet, pt_gen_cand, 
+              p_prong0, p_prong1, p_prong2]
     var_evt:
       data: [centrality, z_vtx_reco, n_vtx_contributors, n_tracks, is_ev_rej, run_number,
               ev_id, ev_id_ext, V0Amult, trigger_hasbit_INT7, trigger_hasbit_HighMultSPD,
@@ -77,7 +78,7 @@ LcpK0spp:
                    [dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,
                    imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star],
                    [dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,
-                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star]] #list of nbins (binmin)
+                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star]]
     var_boundaries: [cos_t_star, pt_cand]
     var_correlation:
       - [cos_t_star]
@@ -212,7 +213,7 @@ LcpK0spp:
   multi:
     data:
       nprocessesparallel: 20
-      maxfiles: [0,-1,0] #list of periods
+      maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp: [100,100,100] #list of periods
       chunksizeskim: [100,100,100] #list of periods
       fracmerge: [0.1,0.1,0.1] #list of periods
@@ -234,7 +235,7 @@ LcpK0spp:
       pkl_evtcounter_all: /data/Derived/LckINT7withJets/vAN-20200201_ROOT6-1/pp_data_evttot
     mc:
       nprocessesparallel: 20
-      maxfiles: [0,-1,0] #list of periods
+      maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp: [100,100,100] #list of periods
       chunksizeskim: [1000,1000,1000] #list of periods
       fracmerge: [1.0,1.0,1.0] #list of periods
@@ -321,7 +322,7 @@ LcpK0spp:
     probcutpresel:
       data: [0.3,0.3,0.3,0.3,0.3] #list of nbins
       mc: [0.3,0.3,0.3,0.3,0.3] #list of nbins
-    probcutoptimal: [0.4,0.4,0.4,0.3,0.3] #list of nbins
+    probcutoptimal: [0.6,0.7,0.7,0.7,0.7] #list of nbins
 
   analysis:
     indexhptspectrum: 5 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
@@ -433,6 +434,93 @@ LcpK0spp:
 
       nevents: 1590000000.
 
+    MBvspt_ntrkl:
+      proc_type: Dhadrons_mult
+      useperiod: [1,1,1]
+      plotbin: [1,1,1,1,0]
+      usesinglebineff: null
+      fprompt_from_mb: true
+      corresp_mb_typean: null
+      corrEffMult: [false, true, true, true]
+      sel_binmin2: [0,1,10,30] #list of var2 splittng nbins
+      sel_binmax2: [9999,10,30,60] #list of var2 splitting nbins
+      var_binning2: n_tracklets_corr_sub
+      var_binning2_gen: n_tracklets_corr
+      triggerbit: INT7
+
+      sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
+      sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
+      binning_matching: [0,1,2,2,3,4] #list of pt nbins
+      presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
+      evtsel: is_ev_rej==0
+      triggersel:
+        data: "trigger_hasbit_INT7==1"
+        mc: null
+        weighttrig: false
+      data:
+        results: [/data/DerivedResults/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_data/258_20191004-0007/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_data/259_20191004-0008/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_data/260_20191004-0008/resultsMBvspt_ntrkl] #list of periods
+        resultsallp: /data/DerivedResults/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data/resultsMBvspt_ntrkl
+      mc:
+        results: [/data/DerivedResults/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodLcpK0s/261_20191004-0007/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodLcpK0s/261_20191004-0007/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodLcpK0s/261_20191004-0007/resultsMBvspt_ntrkl] #list of periods
+        resultsallp: /data/DerivedResults/LckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_mc_prodLcpK0s/resultsMBvspt_ntrkl
+
+      mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
+      bin_width: 0.001 # bin width of the invariant mass histogram
+      # To initialize the individual fits in pT bins
+      # Decide whether to take the sigma from MC or data for individual fits
+      init_fits_from: [mc, mc, mc, mc, mc, mc] # data # data or mc
+      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
+      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
+      masspeak: 2.2864
+      massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
+      massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
+      rebin: [6,6,6,6,6,6]
+
+      includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      masssecpeak: 2.2864
+      fix_masssecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      widthsecpeak: 0.01
+      fix_widthsecpeak: true
+
+      # Fix mean and/or sigma
+      FixedMean: false
+      SetFixGaussianSigma: [true,true,true,true,true,true]
+      # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
+      SetInitialGaussianMean: true
+      # Use values set for "sigmaarray" for initializing total fit (per pT bin),
+      # otherwise what is derived from MC fit is used
+      SetInitialGaussianSigma: [true, false, false, false, false, false]
+      # Max percentage deviation in sigma (from init) to be considered as a good fit
+      MaxPercSigmaDeviation: 0.5
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
+      exclude_nsigma_sideband: 4
+      # Sigma around mean where signal is integrated after total fit has been done
+      nsigma_signal: 3
+      dolikelihood: true
+      sigmaarray: [0.0078, 0.0078, 0.0082, 0.0091, 0.0117, 0.0156]
+      FixedSigma: true
+      fitcase: Lc
+      latexnamemeson: "#Lambda_{c}^{pK0s}"
+      latexbin2var: "n_{trkl}"
+      nevents: null
+      dodoublecross: false
+
+      systematics:
+        # For now don't do these things per pT bin
+        max_chisquare_ndf: 2.
+        rebin: [-1,0,1]
+        massmin: [2.14, 2.13, 2.12, 2.15, 2.17]
+        massmax: [2.436, 2.435, 2.434, 2.437, 2.438]
+        bincount_sigma: [3, 5]
+        bkg_funcs: [Pol2, Pol3]
+        # Whether to include the free sigma option in the derivation of raw yield uncertainty in given pT bin
+        consider_free_sigma: [False, False, False, False, False, False]
+  
+        
   systematics:
     probvariation:
       useperiod: [0,0,1] #period from where to define prob cuts
