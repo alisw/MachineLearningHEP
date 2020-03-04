@@ -212,15 +212,15 @@ LcpK0spp:
   multi:
     data:
       nprocessesparallel: 20
-      maxfiles: [-1,-1,-1] #list of periods
+      maxfiles: [0,-1,0] #list of periods
       chunksizeunp: [100,100,100] #list of periods
       chunksizeskim: [100,100,100] #list of periods
       fracmerge: [0.1,0.1,0.1] #list of periods
       seedmerge: [12,12,12] #list of periods
       period: [LHC17pp,LHC17pp,LHC17pp] #list of periods
-      unmerged_tree_dir: [/data/TTree/D0DsLckAnywithJets_20200303/vAN-20200228_ROOT6/pp_2017_data,
-                          /data/TTree/D0DsLckAnywithJets_20200303/vAN-20200228_ROOT6/pp_2017_data,
-                          /data/TTree/D0DsLckAnywithJets_20200303/vAN-20200228_ROOT6/pp_2017_data] #list of periods
+      unmerged_tree_dir: [/data/TTree/D0DsLckAnywithJets_20200303/vAN-20200228_ROOT6/pp_2017_data/pp_2017_data/999-999/merged,
+                          /data/TTree/D0DsLckAnywithJets_20200303/vAN-20200228_ROOT6/pp_2017_data/pp_2017_data/999-999/merged,
+                          /data/TTree/D0DsLckAnywithJets_20200303/vAN-20200228_ROOT6/pp_2017_data/pp_2017_data/999-999/merged] #list of periods
       pkl: [/data/Derived/LckINT7withJets/vAN-20200201_ROOT6-1/pp_2016_data/350_20200201-1926/pkl,
             /data/Derived/LckINT7withJets/vAN-20200201_ROOT6-1/pp_2017_data/351_20200202-0239/pkl,
             /data/Derived/LckINT7withJets/vAN-20200201_ROOT6-1/pp_2018_data/352_20200202-0239/pkl] #list of periods
@@ -234,15 +234,15 @@ LcpK0spp:
       pkl_evtcounter_all: /data/Derived/LckINT7withJets/vAN-20200201_ROOT6-1/pp_data_evttot
     mc:
       nprocessesparallel: 20
-      maxfiles: [-1,-1,-1] #list of periods
+      maxfiles: [0,-1,0] #list of periods
       chunksizeunp: [100,100,100] #list of periods
       chunksizeskim: [1000,1000,1000] #list of periods
       fracmerge: [1.0,1.0,1.0] #list of periods
       seedmerge: [12,12,12] #list of periods
       period: [LHC17pp,LHC17pp,LHC17pp] #list of periods
-      unmerged_tree_dir: [/data/TTree/D0DsLckAnywithJets_20200303/vAN-20200228_ROOT6/pp_2017_mc_prodD2H,
-                          /data/TTree/D0DsLckAnywithJets_20200303/vAN-20200228_ROOT6/pp_2017_mc_prodD2H,
-                          /data/TTree/D0DsLckAnywithJets_20200303/vAN-20200228_ROOT6/pp_2017_mc_prodD2H] #list of periods
+      unmerged_tree_dir: [/data/TTree/D0DsLckAnywithJets_20200303/vAN-20200228_ROOT6/pp_2017_mc_prodLcpK0s/999-999/merged,
+                          /data/TTree/D0DsLckAnywithJets_20200303/vAN-20200228_ROOT6/pp_2017_mc_prodLcpK0s/999-999/merged,
+                          /data/TTree/D0DsLckAnywithJets_20200303/vAN-20200228_ROOT6/pp_2017_mc_prodLcpK0s/999-999/merged] #list of periods
       pkl: [/data/Derived/LckINT7withJets/vAN-20200201_ROOT6-1/pp_2016_mc_prodD2H/353_20200201-1929/pkl,
             /data/Derived/LckINT7withJets/vAN-20200201_ROOT6-1/pp_2017_mc_prodD2H/353_20200201-1929/pkl,
             /data/Derived/LckINT7withJets/vAN-20200201_ROOT6-1/pp_2018_mc_prodD2H/353_20200201-1929/pkl] #list of periods
