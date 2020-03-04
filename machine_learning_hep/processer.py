@@ -15,6 +15,7 @@
 """
 main script for doing data processing, machine learning and analysis
 """
+import sys
 import multiprocessing as mp
 import pickle
 import os
@@ -33,6 +34,7 @@ from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.utilities import get_timestamp_string
 from machine_learning_hep.models import apply # pylint: disable=import-error
 from machine_learning_hep.utilities_plot import scatterplotroot
+#from machine_learning_hep.logger import get_logger
 
 class Processer: # pylint: disable=too-many-instance-attributes
     # Class Attribute
@@ -45,6 +47,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
                  d_results, d_val, typean, runlisttrigger, d_mcreweights):
+        #self.logger = get_logger()
         self.nprongs = datap["nprongs"]
         self.doml = datap["doml"]
         self.case = case
@@ -201,10 +204,19 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
 
+ #       if os.path.exists(self.d_root) is False:
+ #           self.logger.warning("ROOT tree folder is not there. Is it intentional?")
 
     def unpack(self, file_index):
         treeevtorig = uproot.open(self.l_root[file_index])[self.n_treeevt]
-        dfevtorig = treeevtorig.pandas.df(branches=self.v_evt)
+        try:
+            dfevtorig = treeevtorig.pandas.df(branches=self.v_evt)
+        except Exception as e: # pylint: disable=broad-except
+            print('Missing variable in the event root tree', str(e))
+            print('Missing variable in the candidate root tree')
+            print('I am sorry, I am dying ...\n \n \n')
+            sys.exit()
+
         dfevtorig = selectdfrunlist(dfevtorig, self.runlist, "run_number")
         dfevtorig = selectdfquery(dfevtorig, self.s_cen_unp)
         dfevtorig = dfevtorig.reset_index(drop=True)
@@ -215,7 +227,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
 
         treereco = uproot.open(self.l_root[file_index])[self.n_treereco]
-        dfreco = treereco.pandas.df(branches=self.v_all)
+        try:
+            dfreco = treereco.pandas.df(branches=self.v_all)
+        except Exception as e: # pylint: disable=broad-except
+            print('Missing variable in the candidate root tree')
+            print('I am sorry, I am dying ...\n \n \n')
+            sys.exit()
         dfreco = selectdfrunlist(dfreco, self.runlist, "run_number")
         dfreco = selectdfquery(dfreco, self.s_reco_unp)
         dfreco = pd.merge(dfreco, dfevt, on=self.v_evtmatch)
@@ -266,12 +283,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                                         self.b_mcbkg), dtype=int)
             dfgen = dfgen.reset_index(drop=True)
             pickle.dump(dfgen, openfile(self.l_gen[file_index], "wb"), protocol=4)
-
     def skim(self, file_index):
         try:
             dfreco = pickle.load(openfile(self.l_reco[file_index], "rb"))
         except Exception as e: # pylint: disable=broad-except
             print('failed to open file', self.l_reco[file_index], str(e))
+            sys.exit()
         for ipt in range(self.p_nptbins):
             dfrecosk = seldf_singlevar(dfreco, self.v_var_binning,
                                        self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
@@ -406,14 +423,22 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
     # pylint: disable=too-many-locals
     def process_valevents(self, file_index):
-        #dfevt = pickle.load(openfile(self.l_evtorig[file_index], "rb"))
+        dfevt = pickle.load(openfile(self.l_evt[file_index], "rb"))
+        grouped = dfevt.groupby(self.v_evtmatch)
+        for _, group in grouped:
+            if len(group) > 1:
+                print(len(group))
+                print(group)
+                print("WARNING:EVENT DUPLICATION")
         dfreco = pickle.load(openfile(self.l_reco[file_index], "rb"))
         fileevtroot = TFile.Open(self.l_evtvalroot[file_index], "recreate")
         dfreco = dfreco.query("is_ev_rej == 0")
+        h_n_tracklets = TH1F("h_n_tracklets", "h_n_tracklets", 100, -0.5, 99.5)
         h_n_tracklets_corr = TH1F("h_n_tracklets_corr", "h_n_tracklets_corr", 100, -0.5, 99.5)
         h_run = TH1F("h_run", "h_run", 100000, 200000, 300000)
         h_trigg = TH1F("h_trigg", "h_trigg", 2, -0.5, 1.5)
         fill_hist(h_n_tracklets_corr, dfreco["n_tracklets_corr"])
+        fill_hist(h_n_tracklets, dfreco["n_tracklets"])
         fill_hist(h_run, dfreco["run_number"])
         hmultvsrun = scatterplotroot(dfreco, "n_tracklets_corr",
                                      "run_number", 100, -0.5, 99.5, 100000,
@@ -422,6 +447,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         fill_hist(h_trigg, dfreco["is_ev_rej_INT7"])
         hmultvsrun.Write()
         h_n_tracklets_corr.Write()
+        h_n_tracklets.Write()
         hmultvsrun.Write()
         h_trigg.Write()
         h_run.Write()
