@@ -1120,19 +1120,19 @@ class AnalyzerJet(Analyzer):
         input_powheg_file = TFile.Open(self.powheg_path_prompt)
         input_powheg = input_powheg_file.Get("fh2_prompt_%s" % self.v_varshape_binning)
         input_powheg_xsection = input_powheg_file.Get("fh2_prompt_xsection_%s" % self.v_varshape_binning)
-        input_powheg_file_sys = []
-        input_powheg_sys=[]
-        input_powheg_xsection_sys=[]
-        for i_powheg in range(len(self.powheg_prompt_variations)):
-            input_powheg_file_sys.append(TFile.Open("%s%s.root" % (self.powheg_prompt_variations_path, self.powheg_prompt_variations[i_powheg])))
-            input_powheg_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_%s" % self.v_varshape_binning))
-            input_powheg_xsection_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_xsection_%s" % self.v_varshape_binning))
+        #SYS input_powheg_file_sys = []
+        #SYS input_powheg_sys=[]
+        #SYS input_powheg_xsection_sys=[]
+        #SYS for i_powheg in range(len(self.powheg_prompt_variations)):
+        #SYS     input_powheg_file_sys.append(TFile.Open("%s%s.root" % (self.powheg_prompt_variations_path, self.powheg_prompt_variations[i_powheg])))
+        #SYS     input_powheg_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_%s" % self.v_varshape_binning))
+        #SYS     input_powheg_xsection_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_xsection_%s" % self.v_varshape_binning))
         input_powheg_z=[]
         input_powheg_xsection_z=[]
-        input_powheg_sys_z=[]
-        input_powheg_xsection_sys_z=[]
-        tg_powheg=[]
-        tg_powheg_xsection=[]
+        #SYS input_powheg_sys_z=[]
+        #SYS input_powheg_xsection_sys_z=[]
+        #SYS tg_powheg=[]
+        #SYS tg_powheg_xsection=[]
 
 
 
@@ -1277,17 +1277,17 @@ class AnalyzerJet(Analyzer):
             input_powheg_z[ibin2].Scale(1.0/input_powheg_z[ibin2].Integral(input_powheg_z[ibin2].FindBin(self.lvarshape_binmin_reco[0]),input_powheg_z[ibin2].FindBin(self.lvarshape_binmin_reco[-1])),"width")
             input_powheg_xsection_z.append(input_powheg_xsection.ProjectionX("input_powheg_xsection_z"+suffix,ibin2+1,ibin2+1,"e"))
             input_powheg_xsection_z[ibin2].Scale(1.0,"width")
-            input_powheg_sys_z_iter=[]
-            input_powheg_xsection_sys_z_iter=[]
-            for i_powheg in range(len(self.powheg_prompt_variations)):
-                input_powheg_sys_z_iter.append(input_powheg_sys[i_powheg].ProjectionX("input_powheg_sys_z"+self.powheg_prompt_variations[i_powheg]+suffix,ibin2+1,ibin2+1,"e"))
-                input_powheg_sys_z_iter[i_powheg].Scale(1.0/input_powheg_sys_z_iter[i_powheg].Integral(input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[0]),input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[-1])),"width")
-                input_powheg_xsection_sys_z_iter.append(input_powheg_xsection_sys[i_powheg].ProjectionX("input_powheg_xsection_sys_z"+self.powheg_prompt_variations[i_powheg]+suffix,ibin2+1,ibin2+1,"e"))
-                input_powheg_xsection_sys_z_iter[i_powheg].Scale(1.0,"width")
-            input_powheg_sys_z.append(input_powheg_sys_z_iter)
-            input_powheg_xsection_sys_z.append(input_powheg_xsection_sys_z_iter)
-            tg_powheg.append(tg_sys(input_powheg_z[ibin2], input_powheg_sys_z[ibin2]))
-            tg_powheg_xsection.append(tg_sys(input_powheg_xsection_z[ibin2], input_powheg_xsection_sys_z[ibin2]))
+            #SYS input_powheg_sys_z_iter=[]
+            #SYS input_powheg_xsection_sys_z_iter=[]
+            #SYS for i_powheg in range(len(self.powheg_prompt_variations)):
+            #SYS     input_powheg_sys_z_iter.append(input_powheg_sys[i_powheg].ProjectionX("input_powheg_sys_z"+self.powheg_prompt_variations[i_powheg]+suffix,ibin2+1,ibin2+1,"e"))
+            #SYS     input_powheg_sys_z_iter[i_powheg].Scale(1.0/input_powheg_sys_z_iter[i_powheg].Integral(input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[0]),input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[-1])),"width")
+            #SYS     input_powheg_xsection_sys_z_iter.append(input_powheg_xsection_sys[i_powheg].ProjectionX("input_powheg_xsection_sys_z"+self.powheg_prompt_variations[i_powheg]+suffix,ibin2+1,ibin2+1,"e"))
+            #SYS     input_powheg_xsection_sys_z_iter[i_powheg].Scale(1.0,"width")
+            #SYS input_powheg_sys_z.append(input_powheg_sys_z_iter)
+            #SYS input_powheg_xsection_sys_z.append(input_powheg_xsection_sys_z_iter)
+            #SYS tg_powheg.append(tg_sys(input_powheg_z[ibin2], input_powheg_sys_z[ibin2]))
+            #SYS tg_powheg_xsection.append(tg_sys(input_powheg_xsection_z[ibin2], input_powheg_xsection_sys_z[ibin2]))
 
 
         kinematic_eff_jetpt = unfolding_input_file.Get("hjetpt_gen_cuts")
@@ -1523,8 +1523,8 @@ class AnalyzerJet(Analyzer):
             setup_histogram(input_powheg_z[ibin2],3)
             leg_input_mc_gen_z.AddEntry(input_powheg_z[ibin2], "POWHEG + PYTHIA 6", "LEP")
             input_powheg_z[ibin2].Draw("same")
-            setup_tgraph(tg_powheg[ibin2],30,0.3)
-            tg_powheg[ibin2].Draw("5")
+            #SYS setup_tgraph(tg_powheg[ibin2],30,0.3)
+            #SYS tg_powheg[ibin2].Draw("5")
             leg_input_mc_gen_z.Draw("same")
             latex = TLatex(0.6,0.2,'%.2f < %s < %.2f GeV/#it{c}' % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]))
             draw_latex(latex)
@@ -1549,8 +1549,8 @@ class AnalyzerJet(Analyzer):
             setup_histogram(input_powheg_xsection_z[ibin2],3)
             leg_input_mc_gen_z_xsection.AddEntry(input_powheg_xsection_z[ibin2], "POWHEG + PYTHIA 6", "LEP")
             input_powheg_xsection_z[ibin2].Draw("same")
-            setup_tgraph(tg_powheg_xsection[ibin2],30,0.3)
-            tg_powheg_xsection[ibin2].Draw("5")
+            #SYS setup_tgraph(tg_powheg_xsection[ibin2],30,0.3)
+            #SYS tg_powheg_xsection[ibin2].Draw("5")
             latex = TLatex(0.6,0.2,'%.2f < %s < %.2f GeV/#it{c}' % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]))
             draw_latex(latex)
             leg_input_mc_gen_z_xsection.Draw("same")
