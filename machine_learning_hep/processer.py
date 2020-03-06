@@ -123,8 +123,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.v_ismcbkg = datap["bitmap_sel"]["var_ismcbkg"]
         self.v_ismcrefl = datap["bitmap_sel"]["var_ismcrefl"]
         self.v_var_binning = datap["var_binning"]
-        #list of files names
 
+        #list of files names
         self.l_path = None
         if os.path.isdir(self.d_root):
             self.l_path = list_folders(self.d_root, self.n_root, self.p_maxfiles)
@@ -139,7 +139,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.l_histomass = createlist(self.d_results, self.l_path, self.n_filemass)
         self.l_histoeff = createlist(self.d_results, self.l_path, self.n_fileeff)
 
-
         if self.mcordata == "mc":
             self.l_gen = createlist(self.d_pkl, self.l_path, self.n_gen)
 
@@ -150,7 +149,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.p_modelname = datap["mlapplication"]["modelname"]
         self.lpt_anbinmin = datap["sel_skim_binmin"]
         self.lpt_anbinmax = datap["sel_skim_binmax"]
-        self.p_nptbins = len(datap["sel_skim_binmax"])
+        self.p_nptbins = len(self.lpt_anbinmin)
         self.lpt_model = datap["mlapplication"]["modelsperptbin"]
         self.dirmodel = datap["ml"]["mlout"]
         self.lpt_model = appendmainfoldertolist(self.dirmodel, self.lpt_model)

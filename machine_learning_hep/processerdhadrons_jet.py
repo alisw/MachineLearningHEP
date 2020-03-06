@@ -124,7 +124,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
             df = seldf_singlevar(df, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-            for ibin2 in range(len(self.lvar2_binmin_reco)):
+            for ibin2 in range(self.p_nbin2_reco):
                 suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
@@ -174,7 +174,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
     # pylint: disable=line-too-long
     def process_efficiency_single(self, index):
         out_file = TFile.Open(self.l_histoeff[index], "recreate")
-        for ibin2 in range(len(self.lvar2_binmin_reco)):
+        for ibin2 in range(self.p_nbin2_reco):
             stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
                                         self.lvar2_binmin_reco[ibin2], \
                                         self.lvar2_binmax_reco[ibin2])
@@ -393,7 +393,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         # efficiency correction to estimate the fraction of candidates that are
         # in the reco range but outside the gen range and viceversa
 
-        for ibin2 in range(len(self.lvar2_binmin_gen)):
+        for ibin2 in range(self.p_nbin2_gen):
             suffix = "%s_%.2f_%.2f" % \
                 (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             hz_gen_nocuts = TH1F("hz_gen_nocuts_nonprompt" + suffix, \
@@ -565,7 +565,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         fill2dhist(df_tmp_selrecogen_pr, hzvsjetpt_prior_weights, self.v_varshape_binning_gen, "pt_gen_jet")
         # end of histograms for unfolding
 
-        for ibin2 in range(len(self.lvar2_binmin_reco)):
+        for ibin2 in range(self.p_nbin2_reco):
             df_tmp_selrecogen_jetbin = seldf_singlevar(df_tmp_selrecogen, "pt_jet", \
                 self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
             suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, \
@@ -648,7 +648,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 hz_fracdiff_pr.Scale(1.0 / norm_pr)
             hz_fracdiff_pr.Write()
 
-        for ibin2 in range(len(self.lvar2_binmin_gen)):
+        for ibin2 in range(self.p_nbin2_gen):
             dtmp_nonprompt_jetptgen = seldf_singlevar(df_mc_reco_merged_nonprompt, \
                 "pt_gen_jet", self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             suffix = "%s_%.2f_%.2f" % (self.v_var2_binning,
@@ -688,7 +688,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         hzvsjetpt_gen_closure_pr.Write("input_closure_gen")
 
 
-        for ibin2 in range(len(self.lvar2_binmin_gen)):
+        for ibin2 in range(self.p_nbin2_gen):
             suffix = "%s_%.2f_%.2f" % \
                 (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             hz_gen_nocuts_closure = TH1F("hz_gen_nocuts_closure" + suffix,
