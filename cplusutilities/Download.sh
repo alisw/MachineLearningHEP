@@ -229,7 +229,7 @@ elif [ "$dataset" == "MCpp13TeV_MB_all" ]; then
   inputpaths=(/alice/sim/2017/LHC17h8a/253529/PWGHF/HF_TreeCreator
               /alice/sim/2018/LHC18f4a/257630/PWGHF/HF_TreeCreator
               /alice/sim/2018/LHC18l4a/272123/PWGHF/HF_TreeCreator
-              /alice/sim/2018/LHC18l4b/288908/PWGHF/HF_TreeCreator
+              /alice/sim/2018/LHC18l4b/285064/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19h4c1/253529/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19h4b1/272123/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19h4a1/288908/PWGHF/HF_TreeCreator
