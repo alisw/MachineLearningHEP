@@ -9,5 +9,5 @@ rm -rf  /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1-bk
 rm -rf  /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1-bkp/pp_2018_mc_prodLcpK0s/219_20190909-2125/resultsMBjetvspt
 rm -rf  /data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1-bkp/pp_mc_prodLcpK0s/resultsMBjetvspt
 
-DISPLAY="" python do_entire_analysis.py -r submission/default_complete.yaml -d data/database_ml_parameters_LcpK0spp_test_0909.yml
+DISPLAY="" python do_entire_analysis.py -r submission/default_complete.yml -d data/database_ml_parameters_LcpK0spp_test_0909.yml
 
