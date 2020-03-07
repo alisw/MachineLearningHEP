@@ -38,5 +38,5 @@ rm -rf  /data/Derived/LckINT7withJets/vAN-20200201_ROOT6-1/pp_2017_data/351_2020
 rm -rf  /data/Derived/LckINT7withJets/vAN-20200201_ROOT6-1/pp_2018_data/352_20200202-0239/pklskdec
 
 
-DISPLAY="" python do_entire_analysis.py -r submission/default_complete.yml -d data/FFLc/database_ml_parameters_LcpK0spp_20200301.yml
+DISPLAY="" python do_entire_analysis.py -r submission/default_complete.yml -d data/JetAnalysis/database_ml_parameters_LcpK0spp_20200301.yml
 
