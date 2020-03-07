@@ -395,7 +395,7 @@ Dspp:
                   /data/Derived/DskINT7HighMultwithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsMBvspt_v0m] #list of periods
         resultsallp: /data/DerivedResults/DskINT7HighMultwithJets/vAN-20200304_ROOT6-1/pp_data/resultsMBvspt_v0m
       mc:
-        results: [/data/Derived/DskINT7HighMultwithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021resultsMBvspt_v0m,
+        results: [/data/Derived/DskINT7HighMultwithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBvspt_v0m,
                   /data/Derived/DskINT7HighMultwithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBvspt_v0m,
                   /data/Derived/DskINT7HighMultwithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBvspt_v0m] #list of periods
         resultsallp: /data/DerivedResults/DskINT7HighMultwithJets/vAN-20200304_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_v0m
