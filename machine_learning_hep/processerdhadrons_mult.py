@@ -359,7 +359,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         dfevtmb = dfevtmb.query("is_ev_rej==0")
         myrunlisttrigmb = self.runlistrigger["INT7"]
         dfevtselmb = selectdfrunlist(dfevtmb, self.run_param[myrunlisttrigmb], "run_number")
-        triggerlist = ["INT7", "HighMultV0", "HighMultSPD"]
+        triggerlist = ["INT7", "HighMultV0"]
         varlist = ["v0m_corr", "n_tracklets_corr", "perc_v0m"]
         nbinsvar = [100, 200, 200]
         minrvar = [0, 0, 0]
@@ -373,10 +373,9 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         hntrklsperc.SetName("hntrklsperc")
         hntrklsperc.Write()
         for ivar, var in enumerate(varlist):
-            label = "hbitINT7vs%s" % (var)
+            label = "hbitINT7vs%s_test" % (var)
             histoMB = TH1F(label, label, nbinsvar[ivar], minrvar[ivar], maxrvar[ivar])
             fill_hist(histoMB, dfevtselmb.query("trigger_hasbit_INT7==1")[var])
-            histoMB.Sumw2()
             histoMB.Write()
             for trigger in triggerlist:
                 triggerbit = "trigger_hasbit_%s==1" % trigger

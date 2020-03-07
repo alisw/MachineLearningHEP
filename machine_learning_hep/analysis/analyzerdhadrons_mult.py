@@ -39,7 +39,8 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
     species = "analyzer"
     def __init__(self, datap, case, typean, period):
         super().__init__(datap, case, typean, period)
-
+        self.logger = get_logger()
+        self.logger.warning("TEST")
         #namefiles pkl
         self.v_var_binning = datap["var_binning"]
         self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
@@ -160,7 +161,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         self.f_evtvaldata = os.path.join(self.d_valevtdata, self.n_evtvalroot)
         self.f_evtvalmc = os.path.join(self.d_valevtmc, self.n_evtvalroot)
 
-        self.f_evtnorm = os.path.join(self.d_resultsallpdata, "correctionsweights.root")
+        self.f_evtnorm = os.path.join(self.d_valevtdata, "correctionsweights.root")
 
         # Systematics
         self.mt_syst_dict = datap["analysis"][self.typean].get("systematics", None)
@@ -424,7 +425,9 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                 namehistomulti = "hmult%svs%s" % (trigger, var)
             hmult = fileout.Get(namehistomulti)
             if not hmult:
-                print("MISSING NORMALIZATION MULTIPLICITY")
+                # pylint: disable=undefined-variable
+                self.logger.error("The histogram %s is not present in file %s" %
+                                  namehistomulti, filename)
 
             binminv = hmult.GetXaxis().FindBin(multmin)
             binmaxv = hmult.GetXaxis().FindBin(multmax)
@@ -444,22 +447,22 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                 namehsel = 'sel_' + labeltrigger + "weighted"
                 namehnovtx = 'novtx_' + labeltrigger + "weighted"
                 namehvtxout = 'vtxout_' + labeltrigger + "weighted"
-            print(namehsel)
-            print(namehnovtx)
-            print(namehvtxout)
             hsel = fileout.Get(namehsel)
             hnovt = fileout.Get(namehnovtx)
             hvtxout = fileout.Get(namehvtxout)
+            if not hsel:
+                # pylint: disable=undefined-variable
+                self.logger.error("Missing hsel %s", namehsel)
+            if not hnovt:
+                # pylint: disable=undefined-variable
+                self.logger.error("Missing hnovt %s", namehnovtx)
+            if not hvtxout:
+                # pylint: disable=undefined-variable
+                self.logger.error("Missing hvtxout %s", namehvtxout)
 
             binminv = hsel.GetXaxis().FindBin(multmin)
             binmaxv = hsel.GetXaxis().FindBin(multmax)
 
-            if not hsel:
-                print("Missing hsel")
-            if not hnovt:
-                print("Missing hnovt")
-            if not hvtxout:
-                print("Missing hvtxout")
             n_sel = hsel.Integral(binminv, binmaxv)
             n_novtx = hnovt.Integral(binminv, binmaxv)
             n_vtxout = hvtxout.Integral(binminv, binmaxv)
@@ -598,7 +601,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         gROOT.SetBatch(True)
         self.loadstyle()
         filedata = TFile.Open(self.f_evtvaldata)
-        triggerlist = ["HighMultV0", "HighMultSPD", "INT7"]
+        triggerlist = ["HighMultV0", "INT7"]
         varlist = ["v0m_corr", "n_tracklets_corr", "perc_v0m"]
         fileout_name = "%s/correctionsweights.root" % self.d_valevtdata
         fileout = TFile.Open(fileout_name, "recreate")
