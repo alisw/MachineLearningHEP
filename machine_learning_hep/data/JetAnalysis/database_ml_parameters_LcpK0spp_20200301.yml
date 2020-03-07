@@ -22,11 +22,11 @@ LcpK0spp:
   sel_cen_unp: null
   #sel_good_evt_unp: "is_ev_rej == 0"
   sel_good_evt_unp: null
-  sel_reco_skim: ["pt_prong0>0.25 and pt_prong1>0.30 and pt_prong2>0.30",
-                  "pt_prong0>0.25 and pt_prong1>0.30 and pt_prong2>0.30",
-                  "pt_prong0>0.25 and pt_prong1>0.30 and pt_prong2>0.30",
-                  "pt_prong0>0.25 and pt_prong1>0.30 and pt_prong2>0.30",
-                  "pt_prong0>0.25 and pt_prong1>0.30 and pt_prong2>0.30"]
+  sel_reco_skim: ["pt_prong0>0.30 and pt_prong1>0.10 and pt_prong2>0.10",
+                  "pt_prong0>0.30 and pt_prong1>0.30 and pt_prong2>0.30",
+                  "pt_prong0>0.30 and pt_prong1>0.30 and pt_prong2>0.30",
+                  "pt_prong0>0.30 and pt_prong1>0.30 and pt_prong2>0.30",
+                  "pt_prong0>0.30 and pt_prong1>0.30 and pt_prong2>0.30"]
   sel_gen_skim: [null,null,null,null,null]
   sel_skim_binmin: [1,2,4,8,12] #list of nbins
   sel_skim_binmax: [2,4,8,12,24] #list of nbins
