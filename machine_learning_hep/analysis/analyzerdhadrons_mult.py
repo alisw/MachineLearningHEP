@@ -481,7 +481,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         yield_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                              None, [self.case, self.typean])
         gROOT.LoadMacro("HFPtSpectrum.C")
-        from ROOT import HFPtSpectrum, HFPtSpectrum2
+        from ROOT import HFPtSpectrum, HFPtSpectrum2, HFPtSpectrumRescaled
         for imult in range(self.p_nbin2):
             bineff = -1
             if self.p_bineff is None:
@@ -495,6 +495,9 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             nameyield = "hyields%d" % imult
             fileoutcrossmult = "%s/finalcross%s%smult%d.root" % \
                 (self.d_resultsallpdata, self.case, self.typean, imult)
+            if (self.case == "LcpK0spp" and imult == 0):
+                fileoutcrossmultRescaled = "%s/finalcross%s%smult%d_Rescaled.root" % \
+                     (self.d_resultsallpdata, self.case, self.typean, imult)
             #hNorm = lfile.Get("hEvForNorm_mult%d" % imult)
             #norm = hNorm.GetBinContent(1)
             norm = -1
@@ -536,6 +539,11 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                 HFPtSpectrum(self.p_indexhpt, self.p_inputfonllpred, \
                  fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
                  fileoutcrossmult, norm, self.p_sigmav0 * 1e12, self.p_fd_method, self.p_cctype)
+                if self.case == "LcpK0spp":
+                    HFPtSpectrumRescaled(self.p_indexhpt, self.p_inputfonllpred, \
+                    fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
+                    fileoutcrossmultRescaled, norm, self.p_sigmav0 * 1e12, \
+                    self.p_fd_method, self.p_cctype)
             else:
                 if filecrossmb is None:
                     filecrossmb = "%s/finalcross%s%smult0.root" % \
@@ -561,6 +569,16 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             fileoutcrosstot.cd()
             hcross.Write()
         fileoutcrosstot.Close()
+
+        if self.case == "LcpK0spp":
+            gROOT.LoadMacro("CombineFeedDownMCSubtractionMethodsUncertainties.C")
+            from ROOT import CombineFeedDownMCSubtractionMethodsUncertainties
+            fileoutcrossmult0 = "%s/finalcross%s%smult0.root" % \
+                (self.d_resultsallpdata, self.case, self.typean)
+            fileoutFeeddownTot = "%s/FeeddownSyst_NbNbx2_%s%s.root" % \
+                (self.d_resultsallpdata, self.case, self.typean)
+            CombineFeedDownMCSubtractionMethodsUncertainties(fileoutcrossmultRescaled, \
+                fileoutcrossmult0, fileoutFeeddownTot, self.p_inputfonllpred, 6)
 
 
     def plotternormyields(self):
