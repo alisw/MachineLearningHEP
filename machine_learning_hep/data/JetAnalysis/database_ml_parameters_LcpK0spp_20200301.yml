@@ -216,7 +216,9 @@ LcpK0spp:
       maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp: [100,100,100] #list of periods
       chunksizeskim: [100,100,100] #list of periods
-      fracmerge: [0.1,0.1,0.1] #list of periods
+      fracmerge: [[0.1,0.1,0.1,0.1,0.1],
+                  [0.1,0.1,0.1,0.1,0.1],
+                  [0.1,0.1,0.1,0.1,0.1]]
       seedmerge: [12,12,12] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
       unmerged_tree_dir: [/data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/merged,
@@ -238,7 +240,9 @@ LcpK0spp:
       maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp: [100,100,100] #list of periods
       chunksizeskim: [1000,1000,1000] #list of periods
-      fracmerge: [1.0,1.0,1.0] #list of periods
+      fracmerge: [[1.0,1.0,1.0,1.0,1.0],
+                 [1.0,1.0,1.0,1.0,1.0],
+                 [1.0,1.0,1.0,1.0,1.0]]
       seedmerge: [12,12,12] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
       unmerged_tree_dir: [/data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/merged,

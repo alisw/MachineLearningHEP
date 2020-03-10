@@ -368,10 +368,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
         if nfiles == 0:
             print("increase the fraction of merged files or the total number")
             print(" of files you process")
-        ntomerge = (int)(nfiles * self.p_frac_merge)
-        rd.seed(self.p_rd_merge)
-        filesel = rd.sample(range(0, nfiles), ntomerge)
         for ipt in range(self.p_nptbins):
+            ntomerge = (int)(nfiles * self.p_frac_merge[ipt])
+            rd.seed(self.p_rd_merge)
+            filesel = rd.sample(range(0, nfiles), ntomerge)
             list_sel_recosk = [self.mptfiles_recosk[ipt][j] for j in filesel]
             merge_method(list_sel_recosk, self.lpt_reco_ml[ipt])
             if self.mcordata == "mc":
