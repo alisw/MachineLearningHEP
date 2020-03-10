@@ -453,15 +453,29 @@ class FitAliHF(FitROOT):
             draw_objects.append(sec_peak_func)
             draw_options.append("")
 
-        y_max = self.histo.GetMaximum()
-        for do in draw_objects:
-            y_max = max(y_max, do.GetMaximum())
-        # Leave some space for putting info
-        y_max *= 1.8
 
+        y_plot_max = self.histo.GetMaximum()
+        y_plot_min = self.histo.GetMinimum()
+        for i in range(1, self.histo.GetNbinsX() + 1):
+            y_max_tmp = self.histo.GetBinContent(i) + self.histo.GetBinError(i)
+            y_min_tmp = self.histo.GetBinContent(i) - self.histo.GetBinError(i)
+            y_plot_max = max(y_plot_max, y_max_tmp)
+            y_plot_min = min(y_plot_min, y_min_tmp)
+
+        for do in draw_objects:
+            y_plot_max = max(y_plot_max, do.GetMaximum())
+            y_plot_min = min(y_plot_min, do.GetMinimum())
+        # Leave some space for putting info
+        y_rel_plot_range = 0.6
+        y_rel_header_range = 0.3
+        y_rel_footer_range = 0.1
+
+        y_full_range = (y_plot_max - y_plot_min) / y_rel_plot_range
+        y_min = y_plot_min - y_rel_footer_range * y_full_range
+        y_max = y_plot_max + y_rel_header_range * y_full_range
 
         root_pad.SetLeftMargin(0.12)
-        frame = root_pad.cd().DrawFrame(self.init_pars["fit_range_low"], 0.,
+        frame = root_pad.cd().DrawFrame(self.init_pars["fit_range_low"], y_min,
                                         self.init_pars["fit_range_up"], y_max,
                                         f"{draw_args.pop('title', '')} ; " \
                                         f"{draw_args.pop('x_axis_label', '')} ; " \
