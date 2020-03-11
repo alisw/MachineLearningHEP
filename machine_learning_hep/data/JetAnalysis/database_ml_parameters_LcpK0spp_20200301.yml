@@ -447,6 +447,7 @@ LcpK0spp:
       var_binning2: n_tracklets_corr_sub
       var_binning2_gen: n_tracklets_corr
       triggerbit: INT7
+      isNbx2: true    #Estimate the feeddown systematic with Nb and Nbx2 method convolution. Set to true just for Lc vs mult.
 
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
