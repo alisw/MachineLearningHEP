@@ -261,7 +261,7 @@ class AnalyzerJet(Analyzer):
                 latex = TLatex(0.2, 0.85, '%.2f < %s < %.2f GeV/#it{c}' % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
                 draw_latex(latex)
                 latex2 = TLatex(0.2, 0.8, '%.2f < #it{p}_{T, %s} < %.2f GeV/#it{c}' % \
-                    (self.lpt_finbinmin[ipt], self.p_latexnmeson, self.lpt_finbinmax[ipt]))
+                    (self.lpt_finbinmin[ipt], self.p_latexnmeson, min(self.lpt_finbinmax[ipt],self.lvar2_binmax_reco[ibin2])))
                 draw_latex(latex2)
                 c_fitted_result.SaveAs("%s/step0_fitted_result_%s.eps" % \
                     (self.d_resultsallpdata, suffix))
@@ -479,7 +479,7 @@ class AnalyzerJet(Analyzer):
                 if area_scale_denominator == 0:
                     continue
                 area_scale = \
-                    bkg_fit.Integral(masslow2sig, masshigh2sig)/area_scale_denominator # 0.4
+                    bkg_fit.Integral(masslow2sig, masshigh2sig)/area_scale_denominator
                 hzsub = hzsig.Clone("hzsub" + suffix)
                 hzsub.Add(hzbkg, -1*area_scale)
                 hzsub_noteffscaled = hzsub.Clone("hzsub_noteffscaled" + suffix)
@@ -520,7 +520,7 @@ class AnalyzerJet(Analyzer):
                 draw_latex(latex)
                 latex2 = TLatex(0.6, 0.8,
                                 "%.2f < #it{p}_{T, %s} < %.2f GeV/#it{c}" \
-                                % (self.lpt_finbinmin[ipt], self.p_latexnmeson, self.lpt_finbinmax[ipt]))
+                                % (self.lpt_finbinmin[ipt], self.p_latexnmeson, min(self.lpt_finbinmax[ipt],self.lvar2_binmax_reco[imult])))
                 draw_latex(latex2)
                 csubz.SaveAs("%s/step1_side_band_subtracted_effcorrected_%s%s_%s.eps" % \
                              (self.d_resultsallpdata, self.case, self.typean, suffix))
@@ -576,7 +576,7 @@ class AnalyzerJet(Analyzer):
                 draw_latex(latex2)
                 latex3 = TLatex(0.42, 0.7, ("with %s (& cc), %.0f < "
                                             "#it{p}_{T, %s} < %.0f GeV/#it{c}")
-                                % (self.p_latexnmeson, self.lpt_finbinmin[ipt], self.p_latexnmeson, self.lpt_finbinmax[ipt]))
+                                % (self.p_latexnmeson, self.lpt_finbinmin[ipt], self.p_latexnmeson, min(self.lpt_finbinmax[ipt],self.lvar2_binmax_reco[imult])))
                 draw_latex(latex3)
                 if hz_ratio != 0:
                     psigbkgsubz.SetLogy()
@@ -2184,7 +2184,7 @@ class AnalyzerJet(Analyzer):
             draw_latex(latex1)
             latex2 = TLatex(0.18,0.75,"%.0f < %s < %.0f GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex2)
-            latex3 = TLatex(0.18,0.7,"%.0f < #it{p}_{T, %s} < %.0f GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnmeson, self.lpt_finbinmax[-1]))
+            latex3 = TLatex(0.18,0.7,"%.0f < #it{p}_{T, %s} < %.0f GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnmeson, min(self.lpt_finbinmax[-1],self.lvar2_binmax_reco[ibin2])))
             draw_latex(latex3)
             leg_finalwsys.Draw("same")
             cfinalwsys.SaveAs("%s/finalwsys_%s.pdf" % (self.d_resultsallpdata, suffix))
@@ -2228,7 +2228,7 @@ class AnalyzerJet(Analyzer):
             latex2 = TLatex(0.18,0.75,"%.0f < %s < %.0f GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex2)
             #latex3 = TLatex(0.18,0.7,"%.1f < %s #leq %.1f" % (self.lvarshape_binmin_reco[0], self.v_varshape_latex, self.lvarshape_binmax_reco[-1]))
-            latex3 = TLatex(0.18,0.7,"%.0f < #it{p}_{T, %s} < %.0f GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnmeson, self.lpt_finbinmax[-1]))
+            latex3 = TLatex(0.18,0.7,"%.0f < #it{p}_{T, %s} < %.0f GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnmeson, min(self.lpt_finbinmax[-1],self.lvar2_binmax_reco[ibin2])))
             draw_latex(latex3)
             #latex4 = TLatex(0.18,0.65,"pp, #sqrt{#it{s}} = 13 TeV")
             #draw_latex(latex4)
@@ -2304,7 +2304,7 @@ class AnalyzerJet(Analyzer):
             latex2 = TLatex(0.18,0.75,"%.0f < %s < %.0f GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex2)
             #latex3 = TLatex(0.18,0.7,"%.1f < %s #leq %.1f" % (self.lvarshape_binmin_reco[0], self.v_varshape_latex, self.lvarshape_binmax_reco[-1]))
-            latex3 = TLatex(0.18,0.7,"%.0f < #it{p}_{T, %s} < %.0f GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnmeson, self.lpt_finbinmax[-1]))
+            latex3 = TLatex(0.18,0.7,"%.0f < #it{p}_{T, %s} < %.0f GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnmeson, min(self.lpt_finbinmax[-1],self.lvar2_binmax_reco[ibin2])))
             draw_latex(latex3)
             #latex4 = TLatex(0.18,0.65,"pp, #sqrt{#it{s}} = 13 TeV")
             #draw_latex(latex4)
