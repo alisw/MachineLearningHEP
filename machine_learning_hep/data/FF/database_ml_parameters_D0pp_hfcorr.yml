@@ -274,10 +274,11 @@ D0pp_hfcorr:
       num_bins_2d: 50
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
+      fit_path: /home/talazare/MachineLearningHEP/machine_learning_hep/fit_result
       data:      
         results: [/data/Derived_testResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_2016_data/258_20191004-0007/resultsMBvspt_DDbar,
                   /data/Derived_testResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_2017_data/259_20191004-0008/resultsMBvspt_DDbar,
-                  /data/Derived_testResultsm/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_2018_data/260_20191004-0008/resultsMBvspt_DDbar] #list of periods
+                  /data/Derived_testResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_2018_data/260_20191004-0008/resultsMBvspt_DDbar] #list of periods
         resultsallp: /data/Derived_testResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_data/resultsMBvspt_DDbar
       mc:
         results: [/data/Derived_testResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1_opt/pp_2016_mc_prodDs/261_20191004-0007/resultsMBvspt_DDbar,
