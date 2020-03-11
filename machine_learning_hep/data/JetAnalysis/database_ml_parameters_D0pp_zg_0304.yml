@@ -15,7 +15,7 @@
 #ML model optimised at 23-09-2019 using 09-09-2019 trains (Luuk)
 #  cos_t_star removed from training (funky background shape for 1-2)
 
-D0pp_zg:
+D0pp:
   nprongs: 2
   doml: false
   mass: 1.864
@@ -251,7 +251,7 @@ D0pp_zg:
     probcutpresel:
       data:         [0.75,0.75,0.65,0.65,0.45,0.45,0.45] # sel_skim_binmin bins
       mc:           [0.75,0.75,0.65,0.65,0.45,0.45,0.45] # sel_skim_binmin bins
-    probcutoptimal: [0.92,0.90,0.82,0.80,0.60,0.60,0.60] # sel_skim_binmin bins
+    probcutoptimal: probcutoptimal_variable # sel_skim_binmin bins
 
   analysis:
     indexhptspectrum: 0 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
@@ -261,7 +261,7 @@ D0pp_zg:
     inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
     dir_general_plots: /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/analysis_plots
 
-    MBjetvspt:
+    jet_zg:
       proc_type: Dhadrons_jet
       useperiod: [1,1,1] #list of periods
 
@@ -270,17 +270,17 @@ D0pp_zg:
 
       var_binning2: pt_jet
       latexbin2var: "#it{p}_{T, jet}^{ch}"
-      sel_binmin2_reco: [5.0, 7.0,10.0,15.0,35.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmax2_reco:      [7.0,10.0,15.0,35.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmin2_gen:  [5.0, 7.0,10.0,15.0,35.0] # gen jet pt bins (sel_binmin2_gen bins)
-      sel_binmax2_gen:       [7.0,10.0,15.0,35.0,50.0] # gen jet pt bins (sel_binmin2_gen bins)
+      sel_binmin2_reco: [5.0,7.0,15.0,30.0] # rec jet pt bins (sel_binmin2_reco bins)
+      sel_binmax2_reco:     [7.0,15.0,30.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)
+      sel_binmin2_gen:  [5.0,7.0,15.0,30.0] # gen jet pt bins (sel_binmin2_gen bins)
+      sel_binmax2_gen:      [7.0,15.0,30.0,50.0] # gen jet pt bins (sel_binmin2_gen bins)
       var_binningshape: zg_jet
       var_binningshape_gen: zg_gen_jet
       var_shape_latex: "#it{z}_{g}"
-      sel_binminshape_reco: [0.0,0.1,0.2,0.3,0.4,0.5]
-      sel_binmaxshape_reco:     [0.1,0.2,0.3,0.4,0.5,0.6]
-      sel_binminshape_gen:  [0.0,0.1,0.2,0.3,0.4,0.5]
-      sel_binmaxshape_gen:      [0.1,0.2,0.3,0.4,0.5,0.6]
+      sel_binminshape_reco: [0.1,0.2,0.3,0.4]
+      sel_binmaxshape_reco:     [0.2,0.3,0.4,0.5]
+      sel_binminshape_gen:  [0.1,0.2,0.3,0.4]
+      sel_binmaxshape_gen:      [0.2,0.3,0.4,0.5]
       sel_closure_frac: 0.2
       triggerbit: INT7
       sel_an_binmin:    [2,3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
@@ -294,41 +294,41 @@ D0pp_zg:
         mc: null
         weighttrig: false
       data:
-        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsMBjetvspt_zg,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsMBjetvspt_zg,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsMBjetvspt_zg] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_data/resultsMBjetvspt_zg
+        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/central_1/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/central_1/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/central_1/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/central_1/pp_data/resultsMBjetvspt
       mc:
-        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt_zg,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt_zg,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt_zg] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_mc_prodD2H/resultsMBjetvspt_zg
+        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/central_1/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/central_1/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/central_1/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/central_1/pp_mc_prodD2H/resultsMBjetvspt
 
-      mass_fit_lim: [1.64, 2.1] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [massmin_variable, massmax_variable] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
 
       # simple fitter START
       sgnfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
-      bkgfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
-      masspeak: 1.864
-      massmin: [1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72] # sel_an_binmin bins
-      massmax: [2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05] # sel_an_binmin bins
-      rebin: [6,6,6,6,6,6,6,6,6,6,6,6] # sel_an_binmin bins
-      fix_mean: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
-      fix_sigma: [true, true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
+      bkgfunc: [bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
+      masspeak: masspeak_variable
+      massmin: [massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable] # sel_an_binmin bins
+      massmax: [massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable] # sel_an_binmin bins
+      rebin: [rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable] # sel_an_binmin bins
+      fix_mean: [fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable] # sel_an_binmin bins
+      fix_sigma: [fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable] # sel_an_binmin bins
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # initial sigma (sel_an_binmin bins)
-      masspeaksec: 1.864
+      masspeaksec: masspeak_variable
       fix_sigmasec: [true, true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
       sigmaarraysec: [0.007497,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # sel_an_binmin bins
       # simple fitter END
 
-      signal_sigma: 2.0
-      sigma_scale: 0.9545
-      sideband_sigma_1_left: 4
-      sideband_sigma_2_left: 9
-      sideband_sigma_1_right: 4
-      sideband_sigma_2_right: 9
-      sidebandleftonly: false
+      signal_sigma: signalsigma_variable
+      sigma_scale: sigmascale_variable
+      sideband_sigma_1_left: sidebandsigma1left_variable
+      sideband_sigma_2_left: sidebandsigma2left_variable
+      sideband_sigma_1_right: sidebandsigma1right_variable
+      sideband_sigma_2_right: sidebandsigma2right_variable
+      sidebandleftonly: sidebandleftonly_variable
 
       niterunfolding: 15
       niterunfoldingchosen: 4
@@ -338,10 +338,10 @@ D0pp_zg:
       branching_ratio: 3.95e-2
       xsection_inel: 57.8
 
-      doprior: false
+      doprior: doprior_variable
 
       powheg_path_prompt: /data/POWHEG/powheg_pr_histos_D0_central.root
-      powheg_path_nonprompt: /data/POWHEG/powheg_fd_histos_D0_central.root
+      powheg_path_nonprompt: /data/POWHEG/powheg_fd_histos_D0_powhegpathnonprompt_variable.root
 
       powheg_prompt_variations_path: null #/data/POWHEG/LckINT7HighMultwithJets/prompt/powheg_lc_charm_
       powheg_prompt_variations: [] #["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
@@ -362,6 +362,111 @@ D0pp_zg:
       systematic_rms_both_sides: [true,  true, true, true , true, true]
 
       nevents: 1590000000.
+
+
+    jet_rg:
+      proc_type: Dhadrons_jet
+      useperiod: [1,1,1] #list of periods
+
+      latexnamemeson: "D^{0}"
+      latexnamedecay: "K^{#minus} #pi^{#plus}"
+
+      var_binning2: pt_jet
+      latexbin2var: "#it{p}_{T, jet}^{ch}"
+      sel_binmin2_reco: [5.0,7.0,15.0,30.0] # rec jet pt bins (sel_binmin2_reco bins)
+      sel_binmax2_reco:      [7.0,15.0,30.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)
+      sel_binmin2_gen:  [5.0,7.0,15.0,30.0] # gen jet pt bins (sel_binmin2_gen bins)
+      sel_binmax2_gen:       [7.0,15.0,30.0,50.0] # gen jet pt bins (sel_binmin2_gen bins)
+      var_binningshape: rg_jet
+      var_binningshape_gen: rg_gen_jet
+      var_shape_latex: "#it{R}_{g}"
+      sel_binminshape_reco: [0.0,0.1,0.2,0.3,0.4]
+      sel_binmaxshape_reco:     [0.1,0.2,0.3,0.4,0.6]
+      sel_binminshape_gen:  [0.0,0.1,0.2,0.3,0.4]
+      sel_binmaxshape_gen:      [0.1,0.2,0.3,0.4,0.6]
+      sel_closure_frac: 0.2
+      triggerbit: INT7
+      sel_an_binmin:    [2,3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmax:      [3,4,5,6,7,8,10,12,16,24,36,48] # hadron pt bins (sel_an_binmin bins)
+      binning_matching:   [1,1,2,2,3,3, 4, 4, 5, 5, 6, 6] # mapping to skimming pt bins (sel_an_binmin bins)
+      jetsel_gen: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet)<0.5"
+      jetsel_reco: "abs(eta_jet)<0.5"
+      evtsel: is_ev_rej==0
+      triggersel:
+        data: "trigger_hasbit_INT7==1"
+        mc: null
+        weighttrig: false
+      data:
+        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/central_1/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/central_1/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/central_1/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/central_1/pp_data/resultsMBjetvspt
+      mc:
+        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/central_1/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/central_1/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/central_1/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/central_1/pp_mc_prodD2H/resultsMBjetvspt
+
+      mass_fit_lim: [massmin_variable, massmax_variable] # region for the fit of the invariant mass distribution [GeV/c^2]
+      bin_width: 0.001 # bin width of the invariant mass histogram
+
+      # simple fitter START
+      sgnfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
+      bkgfunc: [bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
+      masspeak: masspeak_variable
+      massmin: [massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable] # sel_an_binmin bins
+      massmax: [massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable] # sel_an_binmin bins
+      rebin: [rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable] # sel_an_binmin bins
+      fix_mean: [fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable] # sel_an_binmin bins
+      fix_sigma: [fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable] # sel_an_binmin bins
+      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # initial sigma (sel_an_binmin bins)
+      masspeaksec: masspeak_variable
+      fix_sigmasec: [true, true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
+      sigmaarraysec: [0.007497,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # sel_an_binmin bins
+      # simple fitter END
+
+      signal_sigma: signalsigma_variable
+      sigma_scale: sigmascale_variable
+      sideband_sigma_1_left: sidebandsigma1left_variable
+      sideband_sigma_2_left: sidebandsigma2left_variable
+      sideband_sigma_1_right: sidebandsigma1right_variable
+      sideband_sigma_2_right: sidebandsigma2right_variable
+      sidebandleftonly: sidebandleftonly_variable
+
+      niterunfolding: 15
+      niterunfoldingchosen: 4
+      niterunfoldingregdown: 3
+      niterunfoldingregup: 7
+
+      branching_ratio: 3.95e-2
+      xsection_inel: 57.8
+
+      doprior: doprior_variable
+
+      powheg_path_prompt: /data/POWHEG/powheg_pr_histos_D0_central.root
+      powheg_path_nonprompt: /data/POWHEG/powheg_fd_histos_D0_powhegpathnonprompt_variable.root
+
+      powheg_prompt_variations_path: null #/data/POWHEG/LckINT7HighMultwithJets/prompt/powheg_lc_charm_
+      powheg_prompt_variations: [] #["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
+
+      powheg_nonprompt_variations_path: null #/data/POWHEG/LckINT7HighMultwithJets/nonprompt/powheg_lc_beauty_
+      powheg_nonprompt_variations: [] #["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
+
+      pythia8_prompt_variations_path: null #/data/PYTHIA8/LckINT7HighMultwithJets/prompt/pythia_lc_charm_
+      pythia8_prompt_variations: [] #["default","coloursoft_mode0"]
+      pythia8_prompt_variations_legend: [] #["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
+
+
+      systematic_categories: ["fitting", "cutvar", "powheg", "unfolding_prior", "regularisation"] #sideband 20
+      systematic_variations: [8, 17, 9, 1, 2]
+      systematic_correlation: ["corr", "corr", "corr", "corr", "corr", "corr"]
+      systematic_rms: [true,  true, true, true , true, true]
+      systematic_symmetrise: [true,  true, true, true , true, true]
+      systematic_rms_both_sides: [true,  true, true, true , true, true]
+
+      nevents: 1590000000.
+
+
 
   systematics:
     probvariation:
