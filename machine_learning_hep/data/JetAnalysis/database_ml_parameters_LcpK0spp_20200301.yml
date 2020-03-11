@@ -411,8 +411,8 @@ LcpK0spp:
 
       doprior: false
 
-      powheg_path_prompt: /data/POWHEG/LckINT7HighMultwithJets/prompt/powheg_lc_charm_central.root
-      powheg_path_nonprompt: /data/POWHEG/LckINT7HighMultwithJets/nonprompt/powheg_lc_beauty_central.root
+      powheg_path_prompt: /data/POWHEG/powheg_pr_histos_Lc_central.root
+      powheg_path_nonprompt: /data/POWHEG/powheg_fd_histos_Lc_central.root
 
       powheg_prompt_variations_path: /data/POWHEG/LckINT7HighMultwithJets/prompt/powheg_lc_charm_
       powheg_prompt_variations: ["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
@@ -447,6 +447,7 @@ LcpK0spp:
       var_binning2: n_tracklets_corr_sub
       var_binning2_gen: n_tracklets_corr
       triggerbit: INT7
+      isNbx2: true    #Estimate the feeddown systematic with Nb and Nbx2 method convolution. Set to true just for Lc vs mult.
 
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins

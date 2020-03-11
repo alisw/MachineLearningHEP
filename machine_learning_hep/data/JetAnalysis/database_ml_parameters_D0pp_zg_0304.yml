@@ -340,8 +340,8 @@ D0pp_zg:
 
       doprior: false
 
-      powheg_path_prompt: /home/vkucera/sim-HFjets/download/powheg_prompt_histos_D0_central.root
-      powheg_path_nonprompt: /home/vkucera/sim-HFjets/download/powheg_fd_histos_D0_central.root
+      powheg_path_prompt: /data/POWHEG/powheg_pr_histos_D0_central.root
+      powheg_path_nonprompt: /data/POWHEG/powheg_fd_histos_D0_central.root
 
       powheg_prompt_variations_path: null #/data/POWHEG/LckINT7HighMultwithJets/prompt/powheg_lc_charm_
       powheg_prompt_variations: [] #["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
