@@ -303,13 +303,13 @@ class AnalyzerJet(Analyzer):
                     (self.lvar2_binmin_reco[imult], self.p_latexbin2var,
                      self.lvar2_binmax_reco[imult])
             legeff.AddEntry(h_sel_pr, legeffstring, "LEP")
-            h_sel_pr.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
-            h_sel_pr.GetYaxis().SetTitle("efficiency (prompt) %s" \
-                    % (self.p_latexnmeson))
+            h_sel_pr.SetTitle("")
+            h_sel_pr.GetXaxis().SetTitle("#it{p}_{T}^{%s} (GeV/#it{c})" % self.p_latexnmeson)
+            h_sel_pr.GetYaxis().SetTitle("prompt %s-jet efficiency" % self.p_latexnmeson)
             h_sel_pr.SetMinimum(0.)
             h_sel_pr.SetMaximum(1.5)
         legeff.Draw()
-        cEff.SaveAs("%s/Eff%s%s.eps" % (self.d_resultsallpmc,
+        cEff.SaveAs("%s/Eff%s%s.eps" % (self.d_resultsallpdata,
                                         self.case, self.typean))
 
         cEffFD = TCanvas('cEffFD', 'The Fit Canvas')
@@ -339,13 +339,13 @@ class AnalyzerJet(Analyzer):
                     (self.lvar2_binmin_gen[imult], self.p_latexbin2var,
                      self.lvar2_binmax_gen[imult])
             legeffFD.AddEntry(h_sel_fd, legeffFDstring, "LEP")
-            h_sel_fd.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
-            h_sel_fd.GetYaxis().SetTitle("efficiency (feed-down) %s" \
-                    % (self.p_latexnmeson))
+            h_sel_fd.SetTitle("")
+            h_sel_fd.GetXaxis().SetTitle("#it{p}_{T}^{%s} (GeV/#it{c})" % self.p_latexnmeson)
+            h_sel_fd.GetYaxis().SetTitle("non-prompt %s-jet efficiency" % self.p_latexnmeson)
             h_sel_fd.SetMinimum(0.)
             h_sel_fd.SetMaximum(1.5)
         legeffFD.Draw()
-        cEffFD.SaveAs("%s/step0_EffFD%s%s.eps" % (self.d_resultsallpmc, \
+        cEffFD.SaveAs("%s/EffFD%s%s.eps" % (self.d_resultsallpdata, \
                                             self.case, self.typean))
 
     # pylint: disable=too-many-locals
