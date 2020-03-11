@@ -378,10 +378,16 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 list_sel_gensk = [self.mptfiles_gensk[ipt][j] for j in filesel]
                 merge_method(list_sel_gensk, self.lpt_gen_ml[ipt])
 
-        list_sel_evt = [self.l_evt[j] for j in filesel]
-        list_sel_evtorig = [self.l_evtorig[j] for j in filesel]
-        merge_method(list_sel_evt, self.f_evt_ml)
-        merge_method(list_sel_evtorig, self.f_evtorig_ml)
+        # The following lines potentially produce large files (O(10GB)-O(100GB)) depending
+        # on the chosen merge rfaction (self.p_frac_merge[ipt]).
+        # This can lead to running out of RAM...
+        # As they are apparently only used for significance estimation and are a show-stopper
+        # fot the model optimisation in general, they will not be produced for now.
+        # Therefore, the significance optimisation has to be revised.
+        #list_sel_evt = [self.l_evt[j] for j in filesel]
+        #list_sel_evtorig = [self.l_evtorig[j] for j in filesel]
+        #merge_method(list_sel_evt, self.f_evt_ml)
+        #merge_method(list_sel_evtorig, self.f_evtorig_ml)
 
     def process_mergedec(self):
         for ipt in range(self.p_nptbins):

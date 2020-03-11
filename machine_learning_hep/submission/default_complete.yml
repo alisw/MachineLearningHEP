@@ -39,6 +39,7 @@ ml_study: # mlout, mlplot
   dogridsearch: false
   doboundary: false
   doefficiency: false
+  # This might not work for the moment. See comments in Processer.process_mergeforml
   dosignifopt: false
   doscancuts: false
 
