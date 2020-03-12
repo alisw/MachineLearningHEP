@@ -837,9 +837,16 @@ class Systematics(Analyzer):
                                                   "root", None, [self.typean, "cutvar", str(icv), \
                                                                  "mult", str(imult)])
                 norm = -1
+
+                lvar2_binmincorr = self.lvar2_binmin[imult]
+                lvar2_binmaxcorr = self.lvar2_binmax[imult]
+                if len(self.lvar2_binmin) > 2:
+                    if self.lvar2_binmax[1] == self.lvar2_binmin[2]:
+                        lvar2_binmaxcorr = lvar2_binmaxcorr - 1
+
                 norm = self.calculate_norm(self.f_evtnorm, self.triggerbit, \
-                             self.v_var2_binning_gen, self.lvar2_binmin[imult], \
-                             self.lvar2_binmax[imult], self.apply_weights)
+                             self.v_var2_binning_gen, lvar2_binmincorr, \
+                             lvar2_binmaxcorr, self.apply_weights)
                 self.logger.info("Not full normalisation is applied. " \
                                  "Result may differ from central.")
                 #Keep it simple, don't apply full normalisation
@@ -1521,6 +1528,8 @@ class Systematics(Analyzer):
         hmult = fileout.Get(namehistomulti)
         if not hmult:
             self.logger.fatal("MISSING NORMALIZATION MULTIPLICITY")
+        print("Using following mult binning (be carefull for overlaps!):", multmin, \
+                 "<= mult <=", multmax)
         binminv = hmult.GetXaxis().FindBin(multmin)
         binmaxv = hmult.GetXaxis().FindBin(multmax)
         norm = hmult.Integral(binminv, binmaxv)
