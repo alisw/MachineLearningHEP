@@ -86,7 +86,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
                                     self.p_bin_width))
         self.p_nbx2 = datap["analysis"][self.typean].get("isNbx2", "")
-        if self.p_nbx2 not in datap["analysis"][self.typean]:
+        if "isNbx2" not in datap["analysis"][self.typean]:
             self.p_nbx2 = False
         #parameter fitter
         self.sig_fmap = {"kGaus": 0, "k2Gaus": 1, "kGausSigmaRatioPar": 2}
