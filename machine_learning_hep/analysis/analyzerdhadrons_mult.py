@@ -432,6 +432,8 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                 self.logger.error("The histogram %s is not present in file %s" %
                                   namehistomulti, filename)
 
+            print("Using following mult binning (be carefull for overlaps!):", multmin, \
+                     "<= mult <=", multmax)
             binminv = hmult.GetXaxis().FindBin(multmin)
             binmaxv = hmult.GetXaxis().FindBin(multmax)
             norm = hmult.Integral(binminv, binmaxv)
@@ -463,6 +465,8 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                 # pylint: disable=undefined-variable
                 self.logger.error("Missing hvtxout %s", namehvtxout)
 
+            print("Using following mult binning (be carefull for overlaps!):", multmin, \
+                     "<= mult <=", multmax)
             binminv = hsel.GetXaxis().FindBin(multmin)
             binmaxv = hsel.GetXaxis().FindBin(multmax)
 
@@ -507,12 +511,19 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             lfile = TFile.Open(self.n_filemass)
             hNorm = lfile.Get("hEvForNorm_mult%d" % imult)
             normfromhisto = hNorm.GetBinContent(1)
+
+            lvar2_binmincorr = self.lvar2_binmin[imult]
+            lvar2_binmaxcorr = self.lvar2_binmax[imult]
+            if len(self.p_nbin2) > 2:
+                if self.lvar2_binmax[1] == self.lvar2_binmin[2]:
+                    lvar2_binmaxcorr = lvar2_binmaxcorr - 1
+
             norm = self.calculate_norm(1, self.f_evtnorm, self.triggerbit, \
-                          self.v_var2_binning_gen, self.lvar2_binmin[imult], \
-                          self.lvar2_binmax[imult], self.apply_weights)
+                          self.v_var2_binning_gen, lvar2_binmincorr, \
+                          lvar2_binmaxcorr, self.apply_weights)
             normold = self.calculate_norm(0, self.f_evtnorm, self.triggerbit, \
-                          self.v_var2_binning_gen, self.lvar2_binmin[imult], \
-                          self.lvar2_binmax[imult], self.apply_weights)
+                          self.v_var2_binning_gen, lvar2_binmincorr, \
+                          lvar2_binmaxcorr, self.apply_weights)
             print("--------- NORMALIZATION -----------")
             print(self.triggerbit, self.v_var2_binning,
                   self.lvar2_binmin[imult], self.lvar2_binmax[imult])
