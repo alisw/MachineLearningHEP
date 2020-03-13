@@ -292,6 +292,15 @@ def make_pre_suffix(args):
             args = [args]
     return "_".join(args)
 
+def make_message_notfound(name, location=None):
+    """
+    Return a formatted error message for not found or not properly loaded objects
+    stating the name and optionally the location.
+    """
+    if location is not None:
+        return "Error: Failed to get %s in %s" % (name, location)
+    return "Error: Failed to get %s" % name
+
 # Jet related functions, to comment
 
 def z_calc(pt_1, phi_1, eta_1, pt_2, phi_2, eta_2):
@@ -325,7 +334,40 @@ def z_gen_calc(pt_1, phi_1, eta_1, pt_2, delta_phi, delta_eta):
     return z_calc(pt_1, phi_1, eta_1, pt_2, phi_2, eta_2)
 
 def get_bins(axis):
+    """ Get a numpy array containing bin edges of a histogram axis (TAxis). """
     return np.array([axis.GetBinLowEdge(i) for i in range(1, axis.GetNbins() + 2)])
+
+def equal_axes(axis1, axis2):
+    """ Compare the binning of two histogram axes. """
+    if not np.array_equal(get_bins(axis1), get_bins(axis2)):
+        return False
+    return True
+
+def equal_axis_list(axis1, list2):
+    """ Compare the binning of axis1 with list2. """
+    if not np.array_equal(get_bins(axis1), np.array(list2)):
+        return False
+    return True
+
+def equal_binning(his1, his2):
+    """ Compare binning of axes of two histograms (derived from TH1). """
+    if not equal_axes(his1.GetXaxis(), his2.GetXaxis()):
+        return False
+    if not equal_axes(his1.GetYaxis(), his2.GetYaxis()):
+        return False
+    if not equal_axes(his1.GetZaxis(), his2.GetZaxis()):
+        return False
+    return True
+
+def equal_binning_lists(his, list_x=None, list_y=None, list_z=None):
+    """ Compare binning of axes of a histogram with the respective lists. """
+    if list_x is not None and not equal_axis_list(his.GetXaxis(), list_x):
+        return False
+    if list_y is not None and not equal_axis_list(his.GetYaxis(), list_y):
+        return False
+    if list_z is not None and not equal_axis_list(his.GetZaxis(), list_z):
+        return False
+    return True
 
 def folding(h_input, response_matrix, h_output):
     h_folded = h_output.Clone("h_folded")
