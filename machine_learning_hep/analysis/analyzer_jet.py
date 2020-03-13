@@ -27,7 +27,7 @@ from ROOT import gROOT
 from ROOT import kGreen, kRed # kBlue, kBlack, kOrange
 from ROOT import RooUnfoldBayes
 # HF specific imports
-from machine_learning_hep.utilities import folding
+from machine_learning_hep.utilities import folding, equal_binning_lists, make_message_notfound
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.utilities import setup_histogram, setup_pad
 from machine_learning_hep.utilities import setup_legend, setup_tgraph, draw_latex, tg_sys
@@ -176,6 +176,8 @@ class AnalyzerJet(Analyzer):
         self.p_latexnmeson = datap["analysis"][self.typean]["latexnamemeson"]
         self.p_latexndecay = datap["analysis"][self.typean]["latexnamedecay"]
         self.p_latexbin2var = datap["analysis"][self.typean]["latexbin2var"]
+        self.var1ranges = self.lpt_finbinmin.copy()
+        self.var1ranges.append(self.lpt_finbinmax[-1])
         self.var2ranges_reco = self.lvar2_binmin_reco.copy()
         self.var2ranges_reco.append(self.lvar2_binmax_reco[-1])
         self.var2ranges_gen = self.lvar2_binmin_gen.copy()
@@ -202,9 +204,15 @@ class AnalyzerJet(Analyzer):
         gROOT.SetBatch(True)
         fileout_name = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                            None, [self.case, self.typean])
-        fileout = TFile(fileout_name, "RECREATE")
-        myfilemc = TFile(self.n_filemass_mc, "read")
-        myfile = TFile(self.n_filemass, "read")
+        fileout = TFile.Open(fileout_name, "recreate")
+        if not fileout:
+            self.logger.fatal(make_message_notfound(fileout_name))
+        myfilemc = TFile.Open(self.n_filemass_mc)
+        if not myfilemc:
+            self.logger.fatal(make_message_notfound(self.n_filemass_mc))
+        myfile = TFile.Open(self.n_filemass)
+        if not myfile:
+            self.logger.fatal(make_message_notfound(self.n_filemass))
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             for ibin2 in range(self.p_nbin2_reco):
@@ -214,6 +222,8 @@ class AnalyzerJet(Analyzer):
                           self.v_var2_binning, self.lvar2_binmin_reco[ibin2],
                           self.lvar2_binmax_reco[ibin2])
                 histomassmc = myfilemc.Get("hmass_sig" + suffix)
+                if not histomassmc:
+                    self.logger.fatal(make_message_notfound("hmass_sig" + suffix, self.n_filemass_mc))
                 histomassmc_reb = AliVertexingHFUtils.RebinHisto(histomassmc, \
                                             self.p_rebin[ipt], -1)
                 histomassmc_reb_f = TH1F()
@@ -224,6 +234,8 @@ class AnalyzerJet(Analyzer):
                 out = fittermc.MassFitter(1)
                 print("I have made MC fit for sigma initialization, status: %d" % out)
                 histomass = myfile.Get("hmass" + suffix)
+                if not histomass:
+                    self.logger.fatal(make_message_notfound("hmass" + suffix, self.n_filemass))
                 histomass_reb = AliVertexingHFUtils.RebinHisto(histomass, \
                                             self.p_rebin[ipt], -1)
                 histomass_reb_f = TH1F()
@@ -274,8 +286,13 @@ class AnalyzerJet(Analyzer):
         self.loadstyle()
 
         lfileeff = TFile.Open(self.n_fileff)
-        fileouteff = TFile.Open("%s/efficiencies%s%s.root" % (self.d_resultsallpmc, \
-                                 self.case, self.typean), "recreate")
+        if not lfileeff:
+            self.logger.fatal(make_message_notfound(self.n_fileff))
+        path = "%s/efficiencies%s%s.root" % (self.d_resultsallpmc, self.case, self.typean)
+        fileouteff = TFile.Open(path, "recreate")
+        if not fileouteff:
+            self.logger.fatal(make_message_notfound(path))
+
         cEff = TCanvas('cEff', 'The Fit Canvas')
         cEff.SetCanvasSize(1900, 1500)
         cEff.SetWindowSize(500, 500)
@@ -302,7 +319,7 @@ class AnalyzerJet(Analyzer):
             legeffstring = "%.1f #leq %s < %.1f GeV/#it{c}" % \
                     (self.lvar2_binmin_reco[imult], self.p_latexbin2var,
                      self.lvar2_binmax_reco[imult])
-            legeff.AddEntry(h_sel_pr, legeffstring, "P")
+            legeff.AddEntry(h_sel_pr, legeffstring, "LE")
             h_sel_pr.SetTitle("")
             h_sel_pr.GetXaxis().SetTitle("#it{p}_{T}^{%s} (GeV/#it{c})" % self.p_latexnmeson)
             h_sel_pr.GetYaxis().SetTitle("prompt %s-jet efficiency" % self.p_latexnmeson)
@@ -338,7 +355,7 @@ class AnalyzerJet(Analyzer):
             legeffFDstring = "%.1f #leq %s < %.1f GeV/#it{c}" % \
                     (self.lvar2_binmin_gen[imult], self.p_latexbin2var,
                      self.lvar2_binmax_gen[imult])
-            legeffFD.AddEntry(h_sel_fd, legeffFDstring, "P")
+            legeffFD.AddEntry(h_sel_fd, legeffFDstring, "LE")
             h_sel_fd.SetTitle("")
             h_sel_fd.GetXaxis().SetTitle("#it{p}_{T}^{%s} (GeV/#it{c})" % self.p_latexnmeson)
             h_sel_fd.GetYaxis().SetTitle("non-prompt %s-jet efficiency" % self.p_latexnmeson)
@@ -348,7 +365,7 @@ class AnalyzerJet(Analyzer):
         cEffFD.SaveAs("%s/EffFD%s%s.eps" % (self.d_resultsallpdata, \
                                             self.case, self.typean))
 
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals, too-many-branches
     def side_band_sub(self):
         #This function perform side band subtraction of the histograms.
         #The input files for this function are coming from:
@@ -360,14 +377,21 @@ class AnalyzerJet(Analyzer):
 
         self.loadstyle()
         lfile = TFile.Open(self.n_filemass)
-
+        if not lfile:
+            self.logger.fatal(make_message_notfound(self.n_filemass))
         func_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                             None, [self.case, self.typean])
-        func_file = TFile.Open(func_filename, "READ")
-        eff_file = TFile.Open("%s/efficiencies%s%s.root" % \
-                              (self.d_resultsallpmc, self.case, self.typean))
-        fileouts = TFile.Open("%s/sideband_sub%s%s.root" % \
-                              (self.d_resultsallpdata, self.case, self.typean), "RECREATE")
+        func_file = TFile.Open(func_filename)
+        if not func_file:
+            self.logger.fatal(make_message_notfound(func_filename))
+        path = "%s/efficiencies%s%s.root" % (self.d_resultsallpmc, self.case, self.typean)
+        eff_file = TFile.Open(path)
+        if not eff_file:
+            self.logger.fatal(make_message_notfound(path))
+        path = "%s/sideband_sub%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
+        fileouts = TFile.Open(path, "recreate")
+        if not fileouts:
+            self.logger.fatal(make_message_notfound(path))
         fileouts.cd()
 
         # These are the reconstructed level bins for jet pt and z values
@@ -640,7 +664,6 @@ class AnalyzerJet(Analyzer):
         czvsjetpt.SaveAs("%s/step1_czvsjetpt_inputunfolding.eps" % self.d_resultsallpdata)
         fileouts.Close()
 
-    # pylint: disable=too-many-branches
     def feeddown(self):
 
         #In this function we compute the feeddown fraction to be subtracted to
@@ -654,10 +677,16 @@ class AnalyzerJet(Analyzer):
 
         self.loadstyle()
         feeddown_input_file = TFile.Open(self.n_fileff)
-        file_eff = TFile.Open("%s/efficiencies%s%s.root" % (self.d_resultsallpmc, \
-                              self.case, self.typean))
-        fileouts = TFile.Open("%s/feeddown%s%s.root" % \
-                              (self.d_resultsallpdata, self.case, self.typean), "recreate")
+        if not feeddown_input_file:
+            self.logger.fatal(make_message_notfound(self.n_fileff))
+        path = "%s/efficiencies%s%s.root" % (self.d_resultsallpmc, self.case, self.typean)
+        file_eff = TFile.Open(path)
+        if not file_eff:
+            self.logger.fatal(make_message_notfound(path))
+        path = "%s/feeddown%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
+        fileouts = TFile.Open(path, "recreate")
+        if not fileouts:
+            self.logger.fatal(make_message_notfound(path))
 
         response_matrix = feeddown_input_file.Get("response_matrix_nonprompt")
 
@@ -665,11 +694,27 @@ class AnalyzerJet(Analyzer):
         # contains z vs jet_pt vs HF pt.
 
         powheg_input_file = TFile.Open(self.powheg_path_nonprompt)
+        if not powheg_input_file:
+            self.logger.fatal(make_message_notfound(self.powheg_path_nonprompt))
         input_data = powheg_input_file.Get("fh3_feeddown_%s" % self.v_varshape_binning)
+        if not input_data:
+            self.logger.fatal(make_message_notfound("fh3_feeddown_%s" % self.v_varshape_binning, self.powheg_path_nonprompt))
+        # Ensure correct binning: x - shape, y - jet pt, z - pt hadron
+        if not equal_binning_lists(input_data, list_x = self.varshaperanges_gen):
+            self.logger.fatal("Error: Incorrect binning in x.")
+        if not equal_binning_lists(input_data, list_y = self.var2ranges_gen):
+            self.logger.fatal("Error: Incorrect binning in y.")
+        if not equal_binning_lists(input_data, list_z = self.var1ranges):
+            self.logger.fatal("Error: Incorrect binning in z.")
 
         # output_template is the reco jet pt vs z for candidates in the reco
         # min-max region
         output_template = feeddown_input_file.Get("hzvsjetpt_reco")
+        # Ensure correct binning: x - shape, y - jet pt
+        if not equal_binning_lists(output_template, list_x = self.varshaperanges_gen):
+            self.logger.fatal("Error: Incorrect binning in x.")
+        if not equal_binning_lists(output_template, list_y = self.var2ranges_gen):
+            self.logger.fatal("Error: Incorrect binning in y.")
 
         # hzvsjetpt_gen_nocuts_nonprompt is the 2d plot of gen z vs gen jet pt
         # for events in the gen min-max range
@@ -687,8 +732,10 @@ class AnalyzerJet(Analyzer):
         hzvsjetpt_reco_eff = feeddown_input_file.Get("hzvsjetpt_reco_cuts_nonprompt")
         hzvsjetpt_reco_eff.Divide(hzvsjetpt_reco_nocuts)
 
-        sideband_input_data_file = TFile.Open("%s/sideband_sub%s%s.root" % \
-                                               (self.d_resultsallpdata, self.case, self.typean))
+        path = "%s/sideband_sub%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
+        sideband_input_data_file = TFile.Open(path)
+        if not sideband_input_data_file:
+            self.logger.fatal(make_message_notfound(path))
         sideband_input_data = sideband_input_data_file.Get("hzvsjetpt")
 
         hz_genvsreco_list = []
@@ -1102,24 +1149,48 @@ class AnalyzerJet(Analyzer):
 
     def unfolding(self):
         print("unfolding starts")
-        fileouts = TFile.Open("%s/unfolding_results%s%s.root" % \
-                              (self.d_resultsallpdata, self.case, self.typean), "recreate")
+        path = "%s/unfolding_results%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
+        fileouts = TFile.Open(path, "recreate")
+        if not fileouts:
+            self.logger.fatal(make_message_notfound(path))
 
-        unfolding_input_data_file = TFile.Open("%s/feeddown%s%s.root" % \
-                              (self.d_resultsallpdata, self.case, self.typean))
-        unfolding_input_file = TFile.Open(self.n_fileff)
-        response_matrix = unfolding_input_file.Get("response_matrix")
-        hzvsjetpt_reco_nocuts = unfolding_input_file.Get("hzvsjetpt_reco_nocuts")
-        hzvsjetpt_reco_eff = unfolding_input_file.Get("hzvsjetpt_reco_cuts")
-        hzvsjetpt_reco_eff.Divide(hzvsjetpt_reco_nocuts)
+        path = "%s/feeddown%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
+        unfolding_input_data_file = TFile.Open(path)
+        if not unfolding_input_data_file:
+            self.logger.fatal(make_message_notfound(path))
         input_data = unfolding_input_data_file.Get("sideband_input_data_subtracted")
+        if not input_data:
+            self.logger.fatal(make_message_notfound("sideband_input_data_subtracted", path))
+
+        unfolding_input_file = TFile.Open(self.n_fileff)
+        if not unfolding_input_file:
+            self.logger.fatal(make_message_notfound(self.n_fileff))
+        response_matrix = unfolding_input_file.Get("response_matrix")
+        if not response_matrix:
+            self.logger.fatal(make_message_notfound("response_matrix", self.n_fileff))
+        hzvsjetpt_reco_nocuts = unfolding_input_file.Get("hzvsjetpt_reco_nocuts")
+        if not hzvsjetpt_reco_nocuts:
+            self.logger.fatal(make_message_notfound("hzvsjetpt_reco_nocuts", self.n_fileff))
+        hzvsjetpt_reco_eff = unfolding_input_file.Get("hzvsjetpt_reco_cuts")
+        if not hzvsjetpt_reco_eff:
+            self.logger.fatal(make_message_notfound("hzvsjetpt_reco_cuts", self.n_fileff))
+
+        hzvsjetpt_reco_eff.Divide(hzvsjetpt_reco_nocuts)
         input_data.Multiply(hzvsjetpt_reco_eff)
-        input_data_z=[]
+
         input_mc_gen = unfolding_input_file.Get("hzvsjetpt_gen_unmatched")
-        input_mc_gen_z=[]
+        if not input_mc_gen:
+            self.logger.fatal(make_message_notfound("hzvsjetpt_gen_unmatched", self.n_fileff))
         mc_reco_matched = unfolding_input_file.Get("hzvsjetpt_reco")
-        mc_reco_matched_z=[]
+        if not mc_reco_matched:
+            self.logger.fatal(make_message_notfound("hzvsjetpt_reco", self.n_fileff))
         mc_gen_matched = unfolding_input_file.Get("hzvsjetpt_gen")
+        if not mc_gen_matched:
+            self.logger.fatal(make_message_notfound("hzvsjetpt_gen", self.n_fileff))
+
+        input_data_z=[]
+        input_mc_gen_z=[]
+        mc_reco_matched_z=[]
         mc_gen_matched_z=[]
         mc_reco_gen_matched_z_ratio=[]
         hjetpt_fracdiff_list=[]
@@ -1133,13 +1204,34 @@ class AnalyzerJet(Analyzer):
         input_data_jetpt=input_data.ProjectionY("input_data_jetpt",1, self.p_nbinshape_reco,"e")
 
         input_powheg_file = TFile.Open(self.powheg_path_prompt)
+        if not input_powheg_file:
+            self.logger.fatal(make_message_notfound(self.powheg_path_prompt))
         input_powheg = input_powheg_file.Get("fh2_prompt_%s" % self.v_varshape_binning)
+        if not input_powheg:
+            self.logger.fatal(make_message_notfound("fh2_prompt_%s" % self.v_varshape_binning, self.powheg_path_prompt))
         input_powheg_xsection = input_powheg_file.Get("fh2_prompt_xsection_%s" % self.v_varshape_binning)
+        if not input_powheg_xsection:
+            self.logger.fatal(make_message_notfound("fh2_prompt_xsection_%s" % self.v_varshape_binning, self.powheg_path_prompt))
+
+        # Ensure correct binning: x - shape, y - jet pt
+        if not equal_binning_lists(input_powheg, list_x = self.varshaperanges_gen):
+            self.logger.fatal("Error: Incorrect binning in x.")
+        if not equal_binning_lists(input_powheg, list_y = self.var2ranges_gen):
+            self.logger.fatal("Error: Incorrect binning in y.")
+        # Ensure correct binning: x - shape, y - jet pt
+        if not equal_binning_lists(input_powheg_xsection, list_x = self.varshaperanges_gen):
+            self.logger.fatal("Error: Incorrect binning in x.")
+        if not equal_binning_lists(input_powheg_xsection, list_y = self.var2ranges_gen):
+            self.logger.fatal("Error: Incorrect binning in y.")
+
         #SYS input_powheg_file_sys = []
         #SYS input_powheg_sys=[]
         #SYS input_powheg_xsection_sys=[]
         #SYS for i_powheg in range(len(self.powheg_prompt_variations)):
-        #SYS     input_powheg_file_sys.append(TFile.Open("%s%s.root" % (self.powheg_prompt_variations_path, self.powheg_prompt_variations[i_powheg])))
+        #SYS     path = "%s%s.root" % (self.powheg_prompt_variations_path, self.powheg_prompt_variations[i_powheg])
+        #SYS     input_powheg_file_sys.append(TFile.Open(path))
+        #SYS     if not input_powheg_file_sys[i_powheg]:
+        #SYS         self.logger.fatal(make_message_notfound(path))
         #SYS     input_powheg_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_%s" % self.v_varshape_binning))
         #SYS     input_powheg_xsection_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_xsection_%s" % self.v_varshape_binning))
         input_powheg_z=[]
@@ -1709,9 +1801,13 @@ class AnalyzerJet(Analyzer):
         cconvergence_refolding_jetpt.SaveAs("%s/convergence_refolding_jetpt.eps" % (self.d_resultsallpdata))
 
     def unfolding_closure(self):
-        fileouts = TFile.Open("%s/unfolding_closure_results%s%s.root" % \
-                              (self.d_resultsallpdata, self.case, self.typean), "recreate")
+        path = "%s/unfolding_closure_results%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
+        fileouts = TFile.Open(path, "recreate")
+        if not fileouts:
+            self.logger.fatal(make_message_notfound(path))
         unfolding_input_file = TFile.Open(self.n_fileff)
+        if not unfolding_input_file:
+            self.logger.fatal(make_message_notfound(self.n_fileff))
         response_matrix = unfolding_input_file.Get("response_matrix_closure")
         hzvsjetpt_reco_nocuts = unfolding_input_file.Get("hzvsjetpt_reco_nocuts_closure")
         hzvsjetpt_reco_eff = unfolding_input_file.Get("hzvsjetpt_reco_cuts_closure")
@@ -1811,11 +1907,13 @@ class AnalyzerJet(Analyzer):
 
             unfolded_z_closure_list.append(unfolded_z_closure_list_iter)
 
-        input_data_z=[]
-        unfolding_input_data_file = TFile.Open("%s/sideband_sub%s%s.root" % \
-                                               (self.d_resultsallpdata, self.case, self.typean))
+        path = "%s/sideband_sub%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
+        unfolding_input_data_file = TFile.Open(path)
+        if not unfolding_input_data_file:
+            self.logger.fatal(make_message_notfound(path))
         input_data = unfolding_input_data_file.Get("hzvsjetpt")
 
+        input_data_z=[]
         for ibin2 in range(self.p_nbin2_reco):
             suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
@@ -1869,22 +1967,35 @@ class AnalyzerJet(Analyzer):
         draw_latex(latex)
         cconvergence_closure_jetpt.SaveAs("%s/convergence_closure_jetpt.eps" % (self.d_resultsallpdata))
 
-    # pylint: disable=too-many-nested-blocks
+    # pylint: disable=too-many-nested-blocks, fixme
     def jetsystematics(self):
-
-        input_file_default=TFile.Open("%s/unfolding_results%s%s.root" % \
-                              (self.d_resultsallpdata, self.case, self.typean), "update")
-
+        path = "%s/unfolding_results%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
+        input_file_default = TFile.Open(path, "update")
+        if not input_file_default:
+            self.logger.fatal(make_message_notfound(path))
         input_powheg_file = TFile.Open(self.powheg_path_prompt)
+        if not input_powheg_file:
+            self.logger.fatal(make_message_notfound(self.powheg_path_prompt))
         input_powheg = input_powheg_file.Get("fh2_prompt_%s" % self.v_varshape_binning)
+        if not input_powheg:
+            self.logger.fatal(make_message_notfound("fh2_prompt_%s" % self.v_varshape_binning, self.powheg_path_prompt))
         input_powheg_xsection = input_powheg_file.Get("fh2_prompt_xsection_%s" % self.v_varshape_binning)
+        if not input_powheg_xsection:
+            self.logger.fatal(make_message_notfound("fh2_prompt_xsection_%s" % self.v_varshape_binning, self.powheg_path_prompt))
         input_powheg_file_sys = []
         input_powheg_sys=[]
         input_powheg_xsection_sys=[]
         for i_powheg in range(len(self.powheg_prompt_variations)):
-            input_powheg_file_sys.append(TFile.Open("%s%s.root" % (self.powheg_prompt_variations_path, self.powheg_prompt_variations[i_powheg])))
+            path = "%s%s.root" % (self.powheg_prompt_variations_path, self.powheg_prompt_variations[i_powheg])
+            input_powheg_file_sys.append(TFile.Open(path))
+            if not input_powheg_file_sys[i_powheg]:
+                self.logger.fatal(make_message_notfound(path))
             input_powheg_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_%s" % self.v_varshape_binning))
+            if not input_powheg_sys[i_powheg]:
+                self.logger.fatal(make_message_notfound("fh2_prompt_%s" % self.v_varshape_binning, path))
             input_powheg_xsection_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_xsection_%s" % self.v_varshape_binning))
+            if not input_powheg_xsection_sys[i_powheg]:
+                self.logger.fatal(make_message_notfound("fh2_prompt_xsection_%s" % self.v_varshape_binning, path))
         input_powheg_z=[]
         input_powheg_xsection_z=[]
         input_powheg_sys_z=[]
@@ -1928,7 +2039,11 @@ class AnalyzerJet(Analyzer):
                 continue
             input_files_sysvar=[]
             for sys_var in range(self.systematic_variations[sys_cat]):
-                input_files_sysvar.append(TFile.Open("/data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/systematics/%s/sys_%d/pp_data/resultsMBjetvspt/unfolding_resultsLcpK0sppMBjetvspt.root" % (self.systematic_categories[sys_cat],sys_var+1),"update"))
+                # FIXME
+                path = "/data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/systematics/%s/sys_%d/pp_data/resultsMBjetvspt/unfolding_resultsLcpK0sppMBjetvspt.root" % (self.systematic_categories[sys_cat],sys_var+1)
+                input_files_sysvar.append(TFile.Open(path,"update"))
+                if not input_files_sysvar[sys_var]:
+                    self.logger.fatal(make_message_notfound(path))
             input_files_sys.append(input_files_sysvar)
 
         input_histograms_sys=[]
@@ -2141,9 +2256,27 @@ class AnalyzerJet(Analyzer):
         input_pythia8_z=[]
         input_pythia8_xsection_z=[]
         for i_pythia8 in range(len(self.pythia8_prompt_variations)):
-            input_pythia8_file.append(TFile.Open("%s%s.root" % (self.pythia8_prompt_variations_path, self.pythia8_prompt_variations[i_pythia8])))
+            path = "%s%s.root" % (self.pythia8_prompt_variations_path, self.pythia8_prompt_variations[i_pythia8])
+            input_pythia8_file.append(TFile.Open(path))
+            if not input_pythia8_file[i_pythia8]:
+                self.logger.fatal(make_message_notfound(path))
             input_pythia8.append(input_pythia8_file[i_pythia8].Get("fh2_pythia8_prompt"))
+            if not input_pythia8[i_pythia8]:
+                self.logger.fatal(make_message_notfound("fh2_pythia8_prompt", path))
             input_pythia8_xsection.append(input_pythia8_file[i_pythia8].Get("fh2_pythia8_prompt_xsection"))
+            if not input_pythia8_xsection[i_pythia8]:
+                self.logger.fatal(make_message_notfound("fh2_pythia8_prompt_xsection", path))
+
+            # Ensure correct binning: x - shape, y - jet pt
+            if not equal_binning_lists(input_pythia8[i_pythia8], list_x = self.varshaperanges_gen):
+                self.logger.fatal("Error: Incorrect binning in x.")
+            if not equal_binning_lists(input_pythia8[i_pythia8], list_y = self.var2ranges_gen):
+                self.logger.fatal("Error: Incorrect binning in y.")
+            if not equal_binning_lists(input_pythia8_xsection[i_pythia8], list_x = self.varshaperanges_gen):
+                self.logger.fatal("Error: Incorrect binning in x.")
+            if not equal_binning_lists(input_pythia8_xsection[i_pythia8], list_y = self.var2ranges_gen):
+                self.logger.fatal("Error: Incorrect binning in y.")
+
             input_pythia8_z_jetpt=[]
             input_pythia8_xsection_z_jetpt=[]
             for ibin2 in range(self.p_nbin2_gen):
@@ -2261,12 +2394,17 @@ class AnalyzerJet(Analyzer):
             leg_relativesys.Draw("same")
             crelativesys.SaveAs("%s/relativesys_%s.pdf" % (self.d_resultsallpdata, suffix))
 
-
-        file_feeddown = TFile.Open("%s/feeddown%s%s.root" % \
-                              (self.d_resultsallpdata, self.case, self.typean))
+        path = "%s/feeddown%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
+        file_feeddown = TFile.Open(path)
+        if not file_feeddown:
+            self.logger.fatal(make_message_notfound(path))
         file_feeddown_variations=[]
         for i_powheg in range(len(self.powheg_nonprompt_variations)):
-            file_feeddown_variations.append(TFile.Open("/data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/systematics/powheg/sys_%d/pp_data/resultsMBjetvspt/feeddown%s%s.root" % (i_powheg+1, self.case, self.typean),"update"))
+            # FIXME
+            path = "/data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/systematics/powheg/sys_%d/pp_data/resultsMBjetvspt/feeddown%s%s.root" % (i_powheg+1, self.case, self.typean)
+            file_feeddown_variations.append(TFile.Open(path, "update"))
+            if not file_feeddown_variations[i_powheg]:
+                self.logger.fatal(make_message_notfound(path))
         h_feeddown_fraction=[]
         h_feeddown_fraction_variations=[]
         tg_feeddown_fraction=[]
@@ -2320,11 +2458,12 @@ class AnalyzerJet(Analyzer):
         gROOT.SetBatch(True)
         self.loadstyle()
         filedata = TFile.Open(self.f_evtvaldata)
+        if not filedata:
+            self.logger.fatal(make_message_notfound(self.f_evtvaldata))
         print(self.f_evtvaldata)
         hmultvsrun = filedata.Get("hmultvsrun")
         c = TCanvas("c", "c", 500, 500)
         c.cd()
         prof = hmultvsrun.ProfileY()
         prof.Draw()
-        c.SaveAs(self.make_file_path(self.d_valevtdata, "cscatter", "eps", \
-                                            None, None))
+        c.SaveAs(self.make_file_path(self.d_valevtdata, "cscatter", "eps", None, None))
