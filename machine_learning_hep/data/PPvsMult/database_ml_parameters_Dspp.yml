@@ -278,7 +278,6 @@ Dspp:
       triggereff: [1,0.862,1,1,1]
       triggereffunc: [0,0.018,0,0,0]
       triggerbit: INT7
-
       sel_an_binmin: [2,4,6,8,12]  # [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [4,6,8,12,24]  # [2,4,6,8,12,24] #list of pt nbins
       binning_matching: [0,1,1,2,3]  # [0,1,2,2,3,4] #list of pt nbins
@@ -290,15 +289,17 @@ Dspp:
         weighttrig: false
 
       data:
-        results: [/data/Derived/DskAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsMBvspt_ntrkl,
-                  /data/Derived/DskAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsMBvspt_ntrkl,
-                  /data/Derived/DskAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsMBvspt_ntrkl] #list of periods
-        resultsallp: /data/DerivedResults/DskAnywithJets/vAN-20200304_ROOT6-1/pp_data/resultsMBvspt_ntrkl
+        runselection: [null, null, null]
+        results: [/data/Derived/DskAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsMBvspt_ntrkl_debug,
+                  /data/Derived/DskAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsMBvspt_ntrkl_debug,
+                  /data/Derived/DskAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsMBvspt_ntrkl_debug] #list of periods
+        resultsallp: /data/DerivedResults/DskAnywithJets/vAN-20200304_ROOT6-1/pp_data/resultsMBvspt_ntrkl_debug
       mc:
-        results: [/data/Derived/DskAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021resultsMBvspt_ntrkl,
-                  /data/Derived/DskAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBvspt_ntrkl,
-                  /data/Derived/DskAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBvspt_ntrkl] #list of periods
-        resultsallp: /data/DerivedResults/DskAnywithJets/vAN-20200304_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_ntrkl
+        runselection: [null, null, null]
+        results: [/data/Derived/DskAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021resultsMBvspt_ntrkl_debug,
+                  /data/Derived/DskAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBvspt_ntrkl_debug,
+                  /data/Derived/DskAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBvspt_ntrkl_debug] #list of periods
+        resultsallp: /data/DerivedResults/DskAnywithJets/vAN-20200304_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_ntrkl_debug
 
       # The global mass limits
       mass_fit_lim: [1.69, 2.21] # region for the fit of the invariant mass distribution [GeV/c^2]
@@ -382,23 +383,3 @@ Dspp:
       weights_max_pt: 40
       weights_bins: 400
 
-  validation:
-    runlisttrigger:
-      LHC16pp:
-        INT7: nosel
-        HighMultSPD: nosel
-        HighMultV0: nosel
-      LHC17pp:
-        INT7: nosel
-        HighMultSPD: nosel
-        HighMultV0: nosel
-      LHC18pp:
-        INT7: nosel
-        HighMultSPD: HighMultSPD2018
-        HighMultV0: nosel
-    data:
-      dir: [/data/DerivedVal/dataval_16, /data/DerivedVal/dataval_17, /data/DerivedVal/dataval_18] #list of periods
-      dirmerged: /data/DerivedVal/datavaltot
-    mc:
-      dir: [/data/DerivedVal/mcval_16, /data/DerivedVal/mcval_17, /data/DerivedVal/mcval_18] #list of periods
-      dirmerged: /data/DerivedVal/mcvaltot

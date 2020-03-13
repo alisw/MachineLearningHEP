@@ -46,8 +46,6 @@ from machine_learning_hep.analysis.analyzer_jet import AnalyzerJet
 
 from machine_learning_hep.analysis.systematics import Systematics
 
-from machine_learning_hep.analysis.utils import multi_preparenorm
-
 try:
 # FIXME(https://github.com/abseil/abseil-py/issues/99) # pylint: disable=fixme
 # FIXME(https://github.com/abseil/abseil-py/issues/102) #pylint: disable=fixme
@@ -133,11 +131,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, ru
     typean = data_config["analysis"]["type"]
     dojetstudies = data_config["analysis"]["dojetstudies"]
 
-
-    dovalhistodata = data_config["validation"]["data"]["docreatehisto"]
-    dovalhistomc = data_config["validation"]["mc"]["docreatehisto"]
-    dovalplots = data_config["validation"]["plotevents"]
-
     dirpklmc = data_param[case]["multi"]["mc"]["pkl"]
     dirpklevtcounter_allmc = data_param[case]["multi"]["mc"]["pkl_evtcounter_all"]
     dirpklskmc = data_param[case]["multi"]["mc"]["pkl_skimmed"]
@@ -158,10 +151,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, ru
     dirresultsdatatot = data_param[case]["analysis"][typean]["data"]["resultsallp"]
     dirresultsmctot = data_param[case]["analysis"][typean]["mc"]["resultsallp"]
 
-    dirvalmc = data_param[case]["validation"]["mc"]["dir"]
-    dirvaldata = data_param[case]["validation"]["data"]["dir"]
-    dirvalmcmerged = data_param[case]["validation"]["mc"]["dirmerged"]
-    dirvaldatamerged = data_param[case]["validation"]["data"]["dirmerged"]
     binminarray = data_param[case]["ml"]["binmin"]
     binmaxarray = data_param[case]["ml"]["binmax"]
     raahp = data_param[case]["ml"]["opt"]["raahp"]
@@ -227,14 +216,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, ru
         counter = counter + checkdirlist(dirresultsdata)
         counter = counter + checkdir(dirresultsdatatot)
 
-    if dovalhistodata is True:
-        counter = counter + checkdirlist(dirvaldata)
-        counter = counter + checkdir(dirvaldatamerged)
-
-    if dovalhistomc is True:
-        counter = counter + checkdirlist(dirvalmc)
-        counter = counter + checkdir(dirvalmcmerged)
-
     if counter < 0:
         sys.exit()
     # check and create directories
@@ -291,14 +272,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, ru
         checkmakedirlist(dirresultsdata)
         checkmakedir(dirresultsdatatot)
 
-    if dovalhistomc is True:
-        checkmakedirlist(dirvalmc)
-        checkmakedir(dirvalmcmerged)
-
-    if dovalhistodata is True:
-        checkmakedirlist(dirvaldata)
-        checkmakedir(dirvaldatamerged)
-
     proc_class = Processer
     ana_class = Analyzer
     syst_class = Systematics
@@ -349,14 +322,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, ru
 
     if domergingperiodsdata == 1:
         mymultiprocessdata.multi_mergeml_allinone()
-
-    if dovalhistomc is True:
-        mymultiprocessmc.multi_valevents()
-    if dovalhistodata is True:
-        mymultiprocessdata.multi_valevents()
-
-    if dovalplots:
-        ana_mgr.analyze("studyevents")
 
     if doml is True:
         index = 0
@@ -413,8 +378,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, ru
         # FIXME Can only be run here because result directories are constructed when histomass
         #       is run. If this step was independent, histomass would always complain that the
         #       result directory already exists.
-        if "mult" in proc_type:
-            multi_preparenorm(data_param[case], case, typean, doanaperperiod)
         mymultiprocessdata.multi_histomass()
     if doefficiency is True:
         mymultiprocessmc.multi_efficiency()
