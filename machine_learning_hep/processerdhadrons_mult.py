@@ -29,7 +29,7 @@ from machine_learning_hep.utilities import mergerootfiles, z_calc
 from machine_learning_hep.utilities import get_timestamp_string
 from machine_learning_hep.utilities_plot import scatterplotroot
 #from machine_learning_hep.globalfitter import fitter
-from machine_learning_hep.selectionutils import getnormforselevt, gethistonormforselevt
+from machine_learning_hep.selectionutils import getnormforselevt, gethistonormforselevt_mult
 from machine_learning_hep.processer import Processer
 
 class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-attributes, invalid-name
@@ -88,7 +88,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
 
         myfile.cd()
         hsel, hnovtxmult, hvtxoutmult = \
-            gethistonormforselevt(dfevtorig, dfevtevtsel, labeltrigger, self.v_var2_binning_gen)
+            gethistonormforselevt_mult(dfevtorig, dfevtevtsel, labeltrigger, self.v_var2_binning_gen)
         hsel.Write()
         hnovtxmult.Write()
         hvtxoutmult.Write()
