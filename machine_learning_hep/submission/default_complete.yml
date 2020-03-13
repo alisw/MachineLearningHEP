@@ -53,7 +53,7 @@ mlapplication:
     docontinueafterstop: false # set to true to resume interrupted processing (existing corrupted output will be overwritten)
 
 analysis:
-  type: jet_zg # used unless specified explicitly as do_entire_analysis -a type_ana
+  type: MBjetvspt # used unless specified explicitly as do_entire_analysis -a type_ana
   # Do each period separately including merged (true)
   # Do only merged (false)
   doperperiod: false
