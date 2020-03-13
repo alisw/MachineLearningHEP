@@ -27,7 +27,7 @@ from ROOT import gROOT
 from ROOT import kGreen, kRed # kBlue, kBlack, kOrange
 from ROOT import RooUnfoldBayes
 # HF specific imports
-from machine_learning_hep.utilities import folding
+from machine_learning_hep.utilities import folding, equal_binning_lists, make_message_notfound
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.utilities import setup_histogram, setup_pad
 from machine_learning_hep.utilities import setup_legend, setup_tgraph, draw_latex, tg_sys
@@ -176,6 +176,8 @@ class AnalyzerJet(Analyzer):
         self.p_latexnmeson = datap["analysis"][self.typean]["latexnamemeson"]
         self.p_latexndecay = datap["analysis"][self.typean]["latexnamedecay"]
         self.p_latexbin2var = datap["analysis"][self.typean]["latexbin2var"]
+        self.var1ranges = self.lpt_finbinmin.copy()
+        self.var1ranges.append(self.lpt_finbinmax[-1])
         self.var2ranges_reco = self.lvar2_binmin_reco.copy()
         self.var2ranges_reco.append(self.lvar2_binmax_reco[-1])
         self.var2ranges_gen = self.lvar2_binmin_gen.copy()
@@ -202,9 +204,15 @@ class AnalyzerJet(Analyzer):
         gROOT.SetBatch(True)
         fileout_name = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                            None, [self.case, self.typean])
-        fileout = TFile(fileout_name, "RECREATE")
-        myfilemc = TFile(self.n_filemass_mc, "read")
-        myfile = TFile(self.n_filemass, "read")
+        fileout = TFile.Open(fileout_name, "recreate")
+        if not fileout:
+            self.logger.fatal(make_message_notfound(fileout_name))
+        myfilemc = TFile.Open(self.n_filemass_mc)
+        if not myfilemc:
+            self.logger.fatal(make_message_notfound(self.n_filemass_mc))
+        myfile = TFile.Open(self.n_filemass)
+        if not myfile:
+            self.logger.fatal(make_message_notfound(self.n_filemass))
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             for ibin2 in range(self.p_nbin2_reco):
@@ -214,6 +222,8 @@ class AnalyzerJet(Analyzer):
                           self.v_var2_binning, self.lvar2_binmin_reco[ibin2],
                           self.lvar2_binmax_reco[ibin2])
                 histomassmc = myfilemc.Get("hmass_sig" + suffix)
+                if not histomassmc:
+                    self.logger.fatal(make_message_notfound("hmass_sig" + suffix, self.n_filemass_mc))
                 histomassmc_reb = AliVertexingHFUtils.RebinHisto(histomassmc, \
                                             self.p_rebin[ipt], -1)
                 histomassmc_reb_f = TH1F()
@@ -224,6 +234,8 @@ class AnalyzerJet(Analyzer):
                 out = fittermc.MassFitter(1)
                 print("I have made MC fit for sigma initialization, status: %d" % out)
                 histomass = myfile.Get("hmass" + suffix)
+                if not histomass:
+                    self.logger.fatal(make_message_notfound("hmass" + suffix, self.n_filemass))
                 histomass_reb = AliVertexingHFUtils.RebinHisto(histomass, \
                                             self.p_rebin[ipt], -1)
                 histomass_reb_f = TH1F()
@@ -261,7 +273,7 @@ class AnalyzerJet(Analyzer):
                 latex = TLatex(0.2, 0.85, '%.2f < %s < %.2f GeV/#it{c}' % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
                 draw_latex(latex)
                 latex2 = TLatex(0.2, 0.8, '%.2f < #it{p}_{T, %s} < %.2f GeV/#it{c}' % \
-                    (self.lpt_finbinmin[ipt], self.p_latexnmeson, self.lpt_finbinmax[ipt]))
+                    (self.lpt_finbinmin[ipt], self.p_latexnmeson, min(self.lpt_finbinmax[ipt],self.lvar2_binmax_reco[ibin2])))
                 draw_latex(latex2)
                 c_fitted_result.SaveAs("%s/step0_fitted_result_%s.eps" % \
                     (self.d_resultsallpdata, suffix))
@@ -274,8 +286,13 @@ class AnalyzerJet(Analyzer):
         self.loadstyle()
 
         lfileeff = TFile.Open(self.n_fileff)
-        fileouteff = TFile.Open("%s/efficiencies%s%s.root" % (self.d_resultsallpmc, \
-                                 self.case, self.typean), "recreate")
+        if not lfileeff:
+            self.logger.fatal(make_message_notfound(self.n_fileff))
+        path = "%s/efficiencies%s%s.root" % (self.d_resultsallpmc, self.case, self.typean)
+        fileouteff = TFile.Open(path, "recreate")
+        if not fileouteff:
+            self.logger.fatal(make_message_notfound(path))
+
         cEff = TCanvas('cEff', 'The Fit Canvas')
         cEff.SetCanvasSize(1900, 1500)
         cEff.SetWindowSize(500, 500)
@@ -302,7 +319,7 @@ class AnalyzerJet(Analyzer):
             legeffstring = "%.1f #leq %s < %.1f GeV/#it{c}" % \
                     (self.lvar2_binmin_reco[imult], self.p_latexbin2var,
                      self.lvar2_binmax_reco[imult])
-            legeff.AddEntry(h_sel_pr, legeffstring, "LEP")
+            legeff.AddEntry(h_sel_pr, legeffstring, "LE")
             h_sel_pr.SetTitle("")
             h_sel_pr.GetXaxis().SetTitle("#it{p}_{T}^{%s} (GeV/#it{c})" % self.p_latexnmeson)
             h_sel_pr.GetYaxis().SetTitle("prompt %s-jet efficiency" % self.p_latexnmeson)
@@ -338,7 +355,7 @@ class AnalyzerJet(Analyzer):
             legeffFDstring = "%.1f #leq %s < %.1f GeV/#it{c}" % \
                     (self.lvar2_binmin_gen[imult], self.p_latexbin2var,
                      self.lvar2_binmax_gen[imult])
-            legeffFD.AddEntry(h_sel_fd, legeffFDstring, "LEP")
+            legeffFD.AddEntry(h_sel_fd, legeffFDstring, "LE")
             h_sel_fd.SetTitle("")
             h_sel_fd.GetXaxis().SetTitle("#it{p}_{T}^{%s} (GeV/#it{c})" % self.p_latexnmeson)
             h_sel_fd.GetYaxis().SetTitle("non-prompt %s-jet efficiency" % self.p_latexnmeson)
@@ -348,7 +365,7 @@ class AnalyzerJet(Analyzer):
         cEffFD.SaveAs("%s/EffFD%s%s.eps" % (self.d_resultsallpdata, \
                                             self.case, self.typean))
 
-    # pylint: disable=too-many-locals
+    # pylint: disable=too-many-locals, too-many-branches
     def side_band_sub(self):
         #This function perform side band subtraction of the histograms.
         #The input files for this function are coming from:
@@ -360,14 +377,21 @@ class AnalyzerJet(Analyzer):
 
         self.loadstyle()
         lfile = TFile.Open(self.n_filemass)
-
+        if not lfile:
+            self.logger.fatal(make_message_notfound(self.n_filemass))
         func_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                             None, [self.case, self.typean])
-        func_file = TFile.Open(func_filename, "READ")
-        eff_file = TFile.Open("%s/efficiencies%s%s.root" % \
-                              (self.d_resultsallpmc, self.case, self.typean))
-        fileouts = TFile.Open("%s/sideband_sub%s%s.root" % \
-                              (self.d_resultsallpdata, self.case, self.typean), "RECREATE")
+        func_file = TFile.Open(func_filename)
+        if not func_file:
+            self.logger.fatal(make_message_notfound(func_filename))
+        path = "%s/efficiencies%s%s.root" % (self.d_resultsallpmc, self.case, self.typean)
+        eff_file = TFile.Open(path)
+        if not eff_file:
+            self.logger.fatal(make_message_notfound(path))
+        path = "%s/sideband_sub%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
+        fileouts = TFile.Open(path, "recreate")
+        if not fileouts:
+            self.logger.fatal(make_message_notfound(path))
         fileouts.cd()
 
         # These are the reconstructed level bins for jet pt and z values
@@ -479,7 +503,7 @@ class AnalyzerJet(Analyzer):
                 if area_scale_denominator == 0:
                     continue
                 area_scale = \
-                    bkg_fit.Integral(masslow2sig, masshigh2sig)/area_scale_denominator # 0.4
+                    bkg_fit.Integral(masslow2sig, masshigh2sig)/area_scale_denominator
                 hzsub = hzsig.Clone("hzsub" + suffix)
                 hzsub.Add(hzbkg, -1*area_scale)
                 hzsub_noteffscaled = hzsub.Clone("hzsub_noteffscaled" + suffix)
@@ -520,7 +544,7 @@ class AnalyzerJet(Analyzer):
                 draw_latex(latex)
                 latex2 = TLatex(0.6, 0.8,
                                 "%.2f < #it{p}_{T, %s} < %.2f GeV/#it{c}" \
-                                % (self.lpt_finbinmin[ipt], self.p_latexnmeson, self.lpt_finbinmax[ipt]))
+                                % (self.lpt_finbinmin[ipt], self.p_latexnmeson, min(self.lpt_finbinmax[ipt],self.lvar2_binmax_reco[imult])))
                 draw_latex(latex2)
                 csubz.SaveAs("%s/step1_side_band_subtracted_effcorrected_%s%s_%s.eps" % \
                              (self.d_resultsallpdata, self.case, self.typean, suffix))
@@ -540,7 +564,7 @@ class AnalyzerJet(Analyzer):
                 legsigbkgsubz = TLegend(.18, .70, .35, .85)
                 setup_legend(legsigbkgsubz)
                 setup_histogram(hzsig, 2)
-                legsigbkgsubz.AddEntry(hzsig, "signal region", "LEP")
+                legsigbkgsubz.AddEntry(hzsig, "signal region", "P")
                 hz_min = min(hzsig.GetMinimum(0.1), hzbkg_scaled.GetMinimum(0.1),
                              hzsub_noteffscaled.GetMinimum(0.1))
                 hz_max = max(hzsig.GetMaximum(), hzbkg_scaled.GetMaximum(),
@@ -559,10 +583,10 @@ class AnalyzerJet(Analyzer):
                 hzsig.GetYaxis().SetMaxDigits(3)
                 hzsig.Draw()
                 setup_histogram(hzbkg_scaled, 3, 24)
-                legsigbkgsubz.AddEntry(hzbkg_scaled, "side-band region", "LEP")
+                legsigbkgsubz.AddEntry(hzbkg_scaled, "side-band region", "P")
                 hzbkg_scaled.Draw("same")
                 setup_histogram(hzsub_noteffscaled, 4, 28)
-                legsigbkgsubz.AddEntry(hzsub_noteffscaled, "subtracted", "LEP")
+                legsigbkgsubz.AddEntry(hzsub_noteffscaled, "subtracted", "P")
                 hzsub_noteffscaled.Draw("same")
                 legsigbkgsubz.Draw("same")
                 #PREL latex = TLatex(0.42, 0.85, "ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV")
@@ -576,7 +600,7 @@ class AnalyzerJet(Analyzer):
                 draw_latex(latex2)
                 latex3 = TLatex(0.42, 0.7, ("with %s (& cc), %.0f < "
                                             "#it{p}_{T, %s} < %.0f GeV/#it{c}")
-                                % (self.p_latexnmeson, self.lpt_finbinmin[ipt], self.p_latexnmeson, self.lpt_finbinmax[ipt]))
+                                % (self.p_latexnmeson, self.lpt_finbinmin[ipt], self.p_latexnmeson, min(self.lpt_finbinmax[ipt],self.lvar2_binmax_reco[imult])))
                 draw_latex(latex3)
                 if hz_ratio != 0:
                     psigbkgsubz.SetLogy()
@@ -640,7 +664,6 @@ class AnalyzerJet(Analyzer):
         czvsjetpt.SaveAs("%s/step1_czvsjetpt_inputunfolding.eps" % self.d_resultsallpdata)
         fileouts.Close()
 
-    # pylint: disable=too-many-branches
     def feeddown(self):
 
         #In this function we compute the feeddown fraction to be subtracted to
@@ -654,10 +677,16 @@ class AnalyzerJet(Analyzer):
 
         self.loadstyle()
         feeddown_input_file = TFile.Open(self.n_fileff)
-        file_eff = TFile.Open("%s/efficiencies%s%s.root" % (self.d_resultsallpmc, \
-                              self.case, self.typean))
-        fileouts = TFile.Open("%s/feeddown%s%s.root" % \
-                              (self.d_resultsallpdata, self.case, self.typean), "recreate")
+        if not feeddown_input_file:
+            self.logger.fatal(make_message_notfound(self.n_fileff))
+        path = "%s/efficiencies%s%s.root" % (self.d_resultsallpmc, self.case, self.typean)
+        file_eff = TFile.Open(path)
+        if not file_eff:
+            self.logger.fatal(make_message_notfound(path))
+        path = "%s/feeddown%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
+        fileouts = TFile.Open(path, "recreate")
+        if not fileouts:
+            self.logger.fatal(make_message_notfound(path))
 
         response_matrix = feeddown_input_file.Get("response_matrix_nonprompt")
 
@@ -665,11 +694,27 @@ class AnalyzerJet(Analyzer):
         # contains z vs jet_pt vs HF pt.
 
         powheg_input_file = TFile.Open(self.powheg_path_nonprompt)
+        if not powheg_input_file:
+            self.logger.fatal(make_message_notfound(self.powheg_path_nonprompt))
         input_data = powheg_input_file.Get("fh3_feeddown_%s" % self.v_varshape_binning)
+        if not input_data:
+            self.logger.fatal(make_message_notfound("fh3_feeddown_%s" % self.v_varshape_binning, self.powheg_path_nonprompt))
+        # Ensure correct binning: x - shape, y - jet pt, z - pt hadron
+        if not equal_binning_lists(input_data, list_x = self.varshaperanges_gen):
+            self.logger.fatal("Error: Incorrect binning in x.")
+        if not equal_binning_lists(input_data, list_y = self.var2ranges_gen):
+            self.logger.fatal("Error: Incorrect binning in y.")
+        if not equal_binning_lists(input_data, list_z = self.var1ranges):
+            self.logger.fatal("Error: Incorrect binning in z.")
 
         # output_template is the reco jet pt vs z for candidates in the reco
         # min-max region
         output_template = feeddown_input_file.Get("hzvsjetpt_reco")
+        # Ensure correct binning: x - shape, y - jet pt
+        if not equal_binning_lists(output_template, list_x = self.varshaperanges_gen):
+            self.logger.fatal("Error: Incorrect binning in x.")
+        if not equal_binning_lists(output_template, list_y = self.var2ranges_gen):
+            self.logger.fatal("Error: Incorrect binning in y.")
 
         # hzvsjetpt_gen_nocuts_nonprompt is the 2d plot of gen z vs gen jet pt
         # for events in the gen min-max range
@@ -687,8 +732,10 @@ class AnalyzerJet(Analyzer):
         hzvsjetpt_reco_eff = feeddown_input_file.Get("hzvsjetpt_reco_cuts_nonprompt")
         hzvsjetpt_reco_eff.Divide(hzvsjetpt_reco_nocuts)
 
-        sideband_input_data_file = TFile.Open("%s/sideband_sub%s%s.root" % \
-                                               (self.d_resultsallpdata, self.case, self.typean))
+        path = "%s/sideband_sub%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
+        sideband_input_data_file = TFile.Open(path)
+        if not sideband_input_data_file:
+            self.logger.fatal(make_message_notfound(path))
         sideband_input_data = sideband_input_data_file.Get("hzvsjetpt")
 
         hz_genvsreco_list = []
@@ -838,7 +885,7 @@ class AnalyzerJet(Analyzer):
             leg_eff = TLegend(.65, .55, .8, .7, "")
             setup_legend(leg_eff)
             setup_histogram(heff_pr_list[ibin2], 2)
-            leg_eff.AddEntry(heff_pr_list[ibin2], "prompt", "LEP")
+            leg_eff.AddEntry(heff_pr_list[ibin2], "prompt", "P")
             heff_pr_list[ibin2].GetYaxis().SetRangeUser( \
                 0.5*min(heff_pr_list[ibin2].GetMinimum(), heff_fd_list[ibin2].GetMinimum()), \
                 1.1*max(heff_pr_list[ibin2].GetMaximum(), heff_fd_list[ibin2].GetMaximum()))
@@ -849,7 +896,7 @@ class AnalyzerJet(Analyzer):
             heff_pr_list[ibin2].SetTitle("")
             heff_pr_list[ibin2].Draw()
             setup_histogram(heff_fd_list[ibin2], 4, 24)
-            leg_eff.AddEntry(heff_fd_list[ibin2], "non-prompt", "LEP")
+            leg_eff.AddEntry(heff_fd_list[ibin2], "non-prompt", "P")
             heff_fd_list[ibin2].Draw("same")
             leg_eff.Draw("same")
             #PREL latex = TLatex(0.52, 0.45, "ALICE Preliminary")
@@ -882,7 +929,7 @@ class AnalyzerJet(Analyzer):
             setup_histogram(hjetpt_fracdiff_list[ibin2], ibin2+1)
             leg_jetpt_fracdiff.AddEntry(hjetpt_fracdiff_list[ibin2], \
                 "%g-%g" % (self.lvar2_binmin_gen[ibin2], \
-                self.lvar2_binmax_gen[ibin2]), "LEP")
+                self.lvar2_binmax_gen[ibin2]), "P")
             if ibin2 == 0:
                 hjetpt_fracdiff_list[ibin2].SetTitle("")
                 hjetpt_fracdiff_list[ibin2].SetXTitle(\
@@ -912,7 +959,7 @@ class AnalyzerJet(Analyzer):
             setup_histogram(hz_fracdiff_list[ibinshape], ibinshape+1)
             leg_z_fracdiff.AddEntry(hz_fracdiff_list[ibinshape], \
                 "%.2f-%.2f" % (self.lvarshape_binmin_gen[ibinshape], \
-                self.lvarshape_binmax_gen[ibinshape]), "LEP")
+                self.lvarshape_binmax_gen[ibinshape]), "P")
             if ibinshape == 0:
                 hz_fracdiff_list[ibinshape].SetTitle("")
                 hz_fracdiff_list[ibinshape].SetXTitle("(%s^{rec} #minus %s^{gen})/%s^{gen}" % (self.v_varshape_latex, self.v_varshape_latex, self.v_varshape_latex))
@@ -972,7 +1019,7 @@ class AnalyzerJet(Analyzer):
             leg_fd_fold = TLegend(.2, .75, .4, .85, "")
             setup_legend(leg_fd_fold)
             setup_histogram(input_data_scaled_z_list[ibin2], 2)
-            leg_fd_fold.AddEntry(input_data_scaled_z_list[ibin2], "POWHEG, eff. scaled", "LEP")
+            leg_fd_fold.AddEntry(input_data_scaled_z_list[ibin2], "POWHEG, eff. scaled", "P")
             input_data_scaled_z_list[ibin2].GetYaxis().SetRangeUser(0.0, \
                     input_data_scaled_z_list[ibin2].GetMaximum()*1.5)
             input_data_scaled_z_list[ibin2].SetTitle("")
@@ -980,7 +1027,7 @@ class AnalyzerJet(Analyzer):
             input_data_scaled_z_list[ibin2].SetYTitle("Yield")
             input_data_scaled_z_list[ibin2].Draw()
             setup_histogram(folded_z_list[ibin2], 4)
-            leg_fd_fold.AddEntry(folded_z_list[ibin2], "POWHEG, eff. scaled, folded", "LEP")
+            leg_fd_fold.AddEntry(folded_z_list[ibin2], "POWHEG, eff. scaled, folded", "P")
             folded_z_list[ibin2].Draw("same")
             leg_fd_fold.Draw("same")
             latex = TLatex(0.4, 0.25, "%.2f < %s < %.2f GeV/#it{c}" % \
@@ -1031,7 +1078,7 @@ class AnalyzerJet(Analyzer):
             leg_feeddown = TLegend(.2, legmin, .4, legmax, "")
             setup_legend(leg_feeddown)
             setup_histogram(sideband_input_data_z[ibin2], 2)
-            leg_feeddown.AddEntry(sideband_input_data_z[ibin2], "prompt+non-prompt", "LEP")
+            leg_feeddown.AddEntry(sideband_input_data_z[ibin2], "prompt+non-prompt", "P")
             sideband_input_data_z[ibin2].GetYaxis().SetRangeUser(0.1, \
                     sideband_input_data_z[ibin2].GetMaximum()*3)
             sideband_input_data_z[ibin2].SetTitle("")
@@ -1040,10 +1087,10 @@ class AnalyzerJet(Analyzer):
             sideband_input_data_z[ibin2].Draw()
             setup_histogram(sideband_input_data_subtracted_z[ibin2], 3)
             leg_feeddown.AddEntry(sideband_input_data_subtracted_z[ibin2],
-                                  "subtracted (prompt)", "LEP")
+                                  "subtracted (prompt)", "P")
             sideband_input_data_subtracted_z[ibin2].Draw("same")
             setup_histogram(folded_z_list[ibin2], 4)
-            leg_feeddown.AddEntry(folded_z_list[ibin2], "non-prompt powheg", "LEP")
+            leg_feeddown.AddEntry(folded_z_list[ibin2], "non-prompt powheg", "P")
             folded_z_list[ibin2].Draw("same")
             leg_feeddown.Draw("same")
             if ibin2 != 2:
@@ -1102,24 +1149,48 @@ class AnalyzerJet(Analyzer):
 
     def unfolding(self):
         print("unfolding starts")
-        fileouts = TFile.Open("%s/unfolding_results%s%s.root" % \
-                              (self.d_resultsallpdata, self.case, self.typean), "recreate")
+        path = "%s/unfolding_results%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
+        fileouts = TFile.Open(path, "recreate")
+        if not fileouts:
+            self.logger.fatal(make_message_notfound(path))
 
-        unfolding_input_data_file = TFile.Open("%s/feeddown%s%s.root" % \
-                              (self.d_resultsallpdata, self.case, self.typean))
-        unfolding_input_file = TFile.Open(self.n_fileff)
-        response_matrix = unfolding_input_file.Get("response_matrix")
-        hzvsjetpt_reco_nocuts = unfolding_input_file.Get("hzvsjetpt_reco_nocuts")
-        hzvsjetpt_reco_eff = unfolding_input_file.Get("hzvsjetpt_reco_cuts")
-        hzvsjetpt_reco_eff.Divide(hzvsjetpt_reco_nocuts)
+        path = "%s/feeddown%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
+        unfolding_input_data_file = TFile.Open(path)
+        if not unfolding_input_data_file:
+            self.logger.fatal(make_message_notfound(path))
         input_data = unfolding_input_data_file.Get("sideband_input_data_subtracted")
+        if not input_data:
+            self.logger.fatal(make_message_notfound("sideband_input_data_subtracted", path))
+
+        unfolding_input_file = TFile.Open(self.n_fileff)
+        if not unfolding_input_file:
+            self.logger.fatal(make_message_notfound(self.n_fileff))
+        response_matrix = unfolding_input_file.Get("response_matrix")
+        if not response_matrix:
+            self.logger.fatal(make_message_notfound("response_matrix", self.n_fileff))
+        hzvsjetpt_reco_nocuts = unfolding_input_file.Get("hzvsjetpt_reco_nocuts")
+        if not hzvsjetpt_reco_nocuts:
+            self.logger.fatal(make_message_notfound("hzvsjetpt_reco_nocuts", self.n_fileff))
+        hzvsjetpt_reco_eff = unfolding_input_file.Get("hzvsjetpt_reco_cuts")
+        if not hzvsjetpt_reco_eff:
+            self.logger.fatal(make_message_notfound("hzvsjetpt_reco_cuts", self.n_fileff))
+
+        hzvsjetpt_reco_eff.Divide(hzvsjetpt_reco_nocuts)
         input_data.Multiply(hzvsjetpt_reco_eff)
-        input_data_z=[]
+
         input_mc_gen = unfolding_input_file.Get("hzvsjetpt_gen_unmatched")
-        input_mc_gen_z=[]
+        if not input_mc_gen:
+            self.logger.fatal(make_message_notfound("hzvsjetpt_gen_unmatched", self.n_fileff))
         mc_reco_matched = unfolding_input_file.Get("hzvsjetpt_reco")
-        mc_reco_matched_z=[]
+        if not mc_reco_matched:
+            self.logger.fatal(make_message_notfound("hzvsjetpt_reco", self.n_fileff))
         mc_gen_matched = unfolding_input_file.Get("hzvsjetpt_gen")
+        if not mc_gen_matched:
+            self.logger.fatal(make_message_notfound("hzvsjetpt_gen", self.n_fileff))
+
+        input_data_z=[]
+        input_mc_gen_z=[]
+        mc_reco_matched_z=[]
         mc_gen_matched_z=[]
         mc_reco_gen_matched_z_ratio=[]
         hjetpt_fracdiff_list=[]
@@ -1133,13 +1204,34 @@ class AnalyzerJet(Analyzer):
         input_data_jetpt=input_data.ProjectionY("input_data_jetpt",1, self.p_nbinshape_reco,"e")
 
         input_powheg_file = TFile.Open(self.powheg_path_prompt)
+        if not input_powheg_file:
+            self.logger.fatal(make_message_notfound(self.powheg_path_prompt))
         input_powheg = input_powheg_file.Get("fh2_prompt_%s" % self.v_varshape_binning)
+        if not input_powheg:
+            self.logger.fatal(make_message_notfound("fh2_prompt_%s" % self.v_varshape_binning, self.powheg_path_prompt))
         input_powheg_xsection = input_powheg_file.Get("fh2_prompt_xsection_%s" % self.v_varshape_binning)
+        if not input_powheg_xsection:
+            self.logger.fatal(make_message_notfound("fh2_prompt_xsection_%s" % self.v_varshape_binning, self.powheg_path_prompt))
+
+        # Ensure correct binning: x - shape, y - jet pt
+        if not equal_binning_lists(input_powheg, list_x = self.varshaperanges_gen):
+            self.logger.fatal("Error: Incorrect binning in x.")
+        if not equal_binning_lists(input_powheg, list_y = self.var2ranges_gen):
+            self.logger.fatal("Error: Incorrect binning in y.")
+        # Ensure correct binning: x - shape, y - jet pt
+        if not equal_binning_lists(input_powheg_xsection, list_x = self.varshaperanges_gen):
+            self.logger.fatal("Error: Incorrect binning in x.")
+        if not equal_binning_lists(input_powheg_xsection, list_y = self.var2ranges_gen):
+            self.logger.fatal("Error: Incorrect binning in y.")
+
         #SYS input_powheg_file_sys = []
         #SYS input_powheg_sys=[]
         #SYS input_powheg_xsection_sys=[]
         #SYS for i_powheg in range(len(self.powheg_prompt_variations)):
-        #SYS     input_powheg_file_sys.append(TFile.Open("%s%s.root" % (self.powheg_prompt_variations_path, self.powheg_prompt_variations[i_powheg])))
+        #SYS     path = "%s%s.root" % (self.powheg_prompt_variations_path, self.powheg_prompt_variations[i_powheg])
+        #SYS     input_powheg_file_sys.append(TFile.Open(path))
+        #SYS     if not input_powheg_file_sys[i_powheg]:
+        #SYS         self.logger.fatal(make_message_notfound(path))
         #SYS     input_powheg_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_%s" % self.v_varshape_binning))
         #SYS     input_powheg_xsection_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_xsection_%s" % self.v_varshape_binning))
         input_powheg_z=[]
@@ -1186,7 +1278,7 @@ class AnalyzerJet(Analyzer):
             leg_mc_reco_gen_matched_z = TLegend(.75, .7, .9, .85, "")
             setup_legend(leg_mc_reco_gen_matched_z)
             setup_histogram(mc_reco_matched_z[ibin2],2)
-            leg_mc_reco_gen_matched_z.AddEntry(mc_reco_matched_z[ibin2],"reco","LEP")
+            leg_mc_reco_gen_matched_z.AddEntry(mc_reco_matched_z[ibin2],"reco","P")
             mc_reco_matched_z[ibin2].SetTitle("")
             mc_reco_matched_z[ibin2].SetXTitle(self.v_varshape_latex)
             mc_reco_matched_z[ibin2].SetYTitle("normalised yield")
@@ -1194,7 +1286,7 @@ class AnalyzerJet(Analyzer):
             mc_reco_matched_z[ibin2].GetYaxis().SetRangeUser(0.0,mc_reco_matched_z[ibin2].GetMaximum()*1.5)
             mc_reco_matched_z[ibin2].Draw()
             setup_histogram(mc_gen_matched_z[ibin2],4)
-            leg_mc_reco_gen_matched_z.AddEntry(mc_gen_matched_z[ibin2],"gen","LEP")
+            leg_mc_reco_gen_matched_z.AddEntry(mc_gen_matched_z[ibin2],"gen","P")
             mc_gen_matched_z[ibin2].Draw("same")
             leg_mc_reco_gen_matched_z.Draw("same")
             latex = TLatex(0.2,0.85,'%.2f < %s < %.2f GeV/#it{c}' % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
@@ -1346,7 +1438,7 @@ class AnalyzerJet(Analyzer):
         setup_legend(leg_jetpt_fracdiff)
         for ibin2 in range(self.p_nbin2_gen):
             setup_histogram(hjetpt_fracdiff_list[ibin2],ibin2+1)
-            leg_jetpt_fracdiff.AddEntry(hjetpt_fracdiff_list[ibin2],"%g-%g" % (self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2]),"LEP")
+            leg_jetpt_fracdiff.AddEntry(hjetpt_fracdiff_list[ibin2],"%g-%g" % (self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2]),"P")
             if ibin2 == 0:
                 hjetpt_fracdiff_list[ibin2].GetYaxis().SetRangeUser(0.001,hjetpt_fracdiff_list[ibin2].GetMaximum()*2)
                 hjetpt_fracdiff_list[ibin2].SetTitle("")
@@ -1379,7 +1471,7 @@ class AnalyzerJet(Analyzer):
         setup_legend(leg_z_fracdiff)
         for ibinshape in range(self.p_nbinshape_gen):
             setup_histogram(hz_fracdiff_list[ibinshape],ibinshape+1)
-            leg_z_fracdiff.AddEntry(hz_fracdiff_list[ibinshape],"%.2f-%.2f" % (self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape]),"LEP")
+            leg_z_fracdiff.AddEntry(hz_fracdiff_list[ibinshape],"%.2f-%.2f" % (self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape]),"P")
             if ibinshape == 0:
                 hz_fracdiff_list[ibinshape].GetYaxis().SetRangeUser(0.001,hz_fracdiff_list[ibinshape].GetMaximum()*2)
                 hz_fracdiff_list[ibinshape].SetTitle("")
@@ -1521,7 +1613,7 @@ class AnalyzerJet(Analyzer):
             setup_legend(leg_z)
             for i in range(self.niter_unfolding):
                 setup_histogram(unfolded_z_scaled_list[i][ibin2],i+1)
-                leg_z.AddEntry(unfolded_z_scaled_list[i][ibin2],("%d" % (i+1)),"LEP")
+                leg_z.AddEntry(unfolded_z_scaled_list[i][ibin2],("%d" % (i+1)),"P")
                 if i == 0:
                     unfolded_z_scaled_list[i][ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_reco[0]+0.01, self.lvarshape_binmax_reco[-1]-0.001)
                     unfolded_z_scaled_list[i][ibin2].GetYaxis().SetRangeUser(0,unfolded_z_scaled_list[i][ibin2].GetMaximum()*2.0)
@@ -1542,7 +1634,7 @@ class AnalyzerJet(Analyzer):
             leg_input_mc_gen_z = TLegend(.2, .73, .45, .88, "")
             setup_legend(leg_input_mc_gen_z)
             setup_histogram(input_mc_gen_z[ibin2],4)
-            leg_input_mc_gen_z.AddEntry(input_mc_gen_z[ibin2], "PYTHIA 6", "LEP")
+            leg_input_mc_gen_z.AddEntry(input_mc_gen_z[ibin2], "PYTHIA 6", "P")
             input_mc_gen_z[ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_reco[0]+0.01, self.lvarshape_binmax_reco[-1]-0.001)
             input_mc_gen_z[ibin2].GetYaxis().SetRangeUser(0.0,input_mc_gen_z[ibin2].GetMaximum()*2)
             input_mc_gen_z[ibin2].SetTitle("")
@@ -1550,10 +1642,10 @@ class AnalyzerJet(Analyzer):
             input_mc_gen_z[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
             input_mc_gen_z[ibin2].Draw()
             setup_histogram(unfolded_z_scaled_list[self.choice_iter_unfolding][ibin2],2)
-            leg_input_mc_gen_z.AddEntry(unfolded_z_scaled_list[self.choice_iter_unfolding][ibin2], "unfolded ALICE data", "LEP")
+            leg_input_mc_gen_z.AddEntry(unfolded_z_scaled_list[self.choice_iter_unfolding][ibin2], "unfolded ALICE data", "P")
             unfolded_z_scaled_list[self.choice_iter_unfolding][ibin2].Draw("same")
             setup_histogram(input_powheg_z[ibin2],3)
-            leg_input_mc_gen_z.AddEntry(input_powheg_z[ibin2], "POWHEG + PYTHIA 6", "LEP")
+            leg_input_mc_gen_z.AddEntry(input_powheg_z[ibin2], "POWHEG + PYTHIA 6", "P")
             input_powheg_z[ibin2].Draw("same")
             #SYS setup_tgraph(tg_powheg[ibin2],30,0.3)
             #SYS tg_powheg[ibin2].Draw("5")
@@ -1572,7 +1664,7 @@ class AnalyzerJet(Analyzer):
             leg_input_mc_gen_z_xsection = TLegend(.2, .73, .45, .88, "")
             setup_legend(leg_input_mc_gen_z_xsection)
             setup_histogram(unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2],4)
-            leg_input_mc_gen_z_xsection.AddEntry(unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2], "unfolded ALICE data", "LEP")
+            leg_input_mc_gen_z_xsection.AddEntry(unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2], "unfolded ALICE data", "P")
             unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_reco[0]+0.01, self.lvarshape_binmax_reco[-1]-0.001)
             unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2].GetYaxis().SetRangeUser(0.0,unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2].GetMaximum()*2)
             unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2].SetTitle("")
@@ -1580,7 +1672,7 @@ class AnalyzerJet(Analyzer):
             unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2].SetYTitle("d#it{#sigma}/d%s (mb)" % self.v_varshape_latex)
             unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2].Draw()
             setup_histogram(input_powheg_xsection_z[ibin2],3)
-            leg_input_mc_gen_z_xsection.AddEntry(input_powheg_xsection_z[ibin2], "POWHEG + PYTHIA 6", "LEP")
+            leg_input_mc_gen_z_xsection.AddEntry(input_powheg_xsection_z[ibin2], "POWHEG + PYTHIA 6", "P")
             input_powheg_xsection_z[ibin2].Draw("same")
             #SYS setup_tgraph(tg_powheg_xsection[ibin2],30,0.3)
             #SYS tg_powheg_xsection[ibin2].Draw("5")
@@ -1602,7 +1694,7 @@ class AnalyzerJet(Analyzer):
             setup_legend(leg_refolding_z)
             for i in range(self.niter_unfolding):
                 setup_histogram(refolding_test_list[i][ibin2],i+1)
-                leg_refolding_z.AddEntry(refolding_test_list[i][ibin2],("%d" % (i+1)),"LEP")
+                leg_refolding_z.AddEntry(refolding_test_list[i][ibin2],("%d" % (i+1)),"P")
                 refolding_test_list[i][ibin2].Draw("same")
                 if i == 0:
                     refolding_test_list[i][ibin2].SetTitle("")
@@ -1625,13 +1717,13 @@ class AnalyzerJet(Analyzer):
             leg_cunfolded_not_z = TLegend(.15, .75, .35, .9, "")
             setup_legend(leg_cunfolded_not_z)
             setup_histogram(unfolded_z_scaled_list[self.choice_iter_unfolding][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1],2)
-            leg_cunfolded_not_z.AddEntry(unfolded_z_scaled_list[self.choice_iter_unfolding][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1], "unfolded", "LEP")
+            leg_cunfolded_not_z.AddEntry(unfolded_z_scaled_list[self.choice_iter_unfolding][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1], "unfolded", "P")
             unfolded_z_scaled_list[self.choice_iter_unfolding][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1].GetXaxis().SetRangeUser(self.lvarshape_binmin_reco[0]+0.01, self.lvarshape_binmax_reco[-1]-0.001)
             unfolded_z_scaled_list[self.choice_iter_unfolding][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1].GetYaxis().SetRangeUser(0.0,unfolded_z_scaled_list[self.choice_iter_unfolding][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1].GetMaximum()*1.5)
             unfolded_z_scaled_list[self.choice_iter_unfolding][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1].SetTitle("")
             unfolded_z_scaled_list[self.choice_iter_unfolding][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1].Draw()
             setup_histogram(input_data_z_scaled,4)
-            leg_cunfolded_not_z.AddEntry(input_data_z_scaled, "side-band subtracted, eff. corrected", "LEP")
+            leg_cunfolded_not_z.AddEntry(input_data_z_scaled, "side-band subtracted, eff. corrected", "P")
             input_data_z_scaled.Draw("same")
             leg_cunfolded_not_z.Draw("same")
             latex = TLatex(0.7,0.8,'%.2f < %s < %.2f GeV/#it{c}' % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
@@ -1675,7 +1767,7 @@ class AnalyzerJet(Analyzer):
         setup_legend(leg_jetpt)
         for i in range(self.niter_unfolding):
             setup_histogram(unfolded_jetpt_scaled_list[i],i+1)
-            leg_jetpt.AddEntry(unfolded_jetpt_scaled_list[i],("%d" % (i+1)),"LEP")
+            leg_jetpt.AddEntry(unfolded_jetpt_scaled_list[i],("%d" % (i+1)),"P")
             if i == 0:
                 unfolded_jetpt_scaled_list[i].GetXaxis().SetRangeUser(self.lvar2_binmin_reco[0]+0.01, self.lvar2_binmax_reco[-1]-0.001)
                 unfolded_jetpt_scaled_list[i].GetYaxis().SetRangeUser(0,unfolded_jetpt_scaled_list[i].GetMaximum()*2.0)
@@ -1697,7 +1789,7 @@ class AnalyzerJet(Analyzer):
         setup_legend(leg_refolding_jetpt)
         for i in range(self.niter_unfolding):
             setup_histogram(refolding_test_jetpt_list[i],i+1)
-            leg_refolding_jetpt.AddEntry(refolding_test_jetpt_list[i],("%d" % (i+1)),"LEP")
+            leg_refolding_jetpt.AddEntry(refolding_test_jetpt_list[i],("%d" % (i+1)),"P")
             refolding_test_jetpt_list[i].Draw("same")
             refolding_test_jetpt_list[i].SetTitle("")
             refolding_test_jetpt_list[i].SetXTitle("%s (GeV/#it{c})" % self.p_latexbin2var)
@@ -1709,9 +1801,13 @@ class AnalyzerJet(Analyzer):
         cconvergence_refolding_jetpt.SaveAs("%s/convergence_refolding_jetpt.eps" % (self.d_resultsallpdata))
 
     def unfolding_closure(self):
-        fileouts = TFile.Open("%s/unfolding_closure_results%s%s.root" % \
-                              (self.d_resultsallpdata, self.case, self.typean), "recreate")
+        path = "%s/unfolding_closure_results%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
+        fileouts = TFile.Open(path, "recreate")
+        if not fileouts:
+            self.logger.fatal(make_message_notfound(path))
         unfolding_input_file = TFile.Open(self.n_fileff)
+        if not unfolding_input_file:
+            self.logger.fatal(make_message_notfound(self.n_fileff))
         response_matrix = unfolding_input_file.Get("response_matrix_closure")
         hzvsjetpt_reco_nocuts = unfolding_input_file.Get("hzvsjetpt_reco_nocuts_closure")
         hzvsjetpt_reco_eff = unfolding_input_file.Get("hzvsjetpt_reco_cuts_closure")
@@ -1811,11 +1907,13 @@ class AnalyzerJet(Analyzer):
 
             unfolded_z_closure_list.append(unfolded_z_closure_list_iter)
 
-        input_data_z=[]
-        unfolding_input_data_file = TFile.Open("%s/sideband_sub%s%s.root" % \
-                                               (self.d_resultsallpdata, self.case, self.typean))
+        path = "%s/sideband_sub%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
+        unfolding_input_data_file = TFile.Open(path)
+        if not unfolding_input_data_file:
+            self.logger.fatal(make_message_notfound(path))
         input_data = unfolding_input_data_file.Get("hzvsjetpt")
 
+        input_data_z=[]
         for ibin2 in range(self.p_nbin2_reco):
             suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
@@ -1834,7 +1932,7 @@ class AnalyzerJet(Analyzer):
             setup_legend(leg_closure)
             for i in range(self.niter_unfolding):
                 setup_histogram(unfolded_z_closure_list[i][ibin2],i+1)
-                leg_closure.AddEntry(unfolded_z_closure_list[i][ibin2],("%d" % (i+1)),"LEP")
+                leg_closure.AddEntry(unfolded_z_closure_list[i][ibin2],("%d" % (i+1)),"P")
                 if i == 0:
                     unfolded_z_closure_list[i][ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_gen[0]+0.01, self.lvarshape_binmax_gen[-1]-0.001)
                     unfolded_z_closure_list[i][ibin2].GetYaxis().SetRangeUser(0.6,2.0)
@@ -1856,7 +1954,7 @@ class AnalyzerJet(Analyzer):
         setup_legend(leg_closure_jetpt)
         for i in range(self.niter_unfolding):
             setup_histogram(unfolded_jetpt_closure_list[i],i+1)
-            leg_closure_jetpt.AddEntry(unfolded_jetpt_closure_list[i],("%d" % (i+1)),"LEP")
+            leg_closure_jetpt.AddEntry(unfolded_jetpt_closure_list[i],("%d" % (i+1)),"P")
             if i == 0:
                 unfolded_jetpt_closure_list[i].GetXaxis().SetRangeUser(self.lvar2_binmin_gen[0]+0.01, self.lvar2_binmax_gen[-1]-0.001)
                 unfolded_jetpt_closure_list[i].GetYaxis().SetRangeUser(0.6,2.0)
@@ -1869,22 +1967,35 @@ class AnalyzerJet(Analyzer):
         draw_latex(latex)
         cconvergence_closure_jetpt.SaveAs("%s/convergence_closure_jetpt.eps" % (self.d_resultsallpdata))
 
-    # pylint: disable=too-many-nested-blocks
+    # pylint: disable=too-many-nested-blocks, fixme
     def jetsystematics(self):
-
-        input_file_default=TFile.Open("%s/unfolding_results%s%s.root" % \
-                              (self.d_resultsallpdata, self.case, self.typean), "update")
-
+        path = "%s/unfolding_results%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
+        input_file_default = TFile.Open(path, "update")
+        if not input_file_default:
+            self.logger.fatal(make_message_notfound(path))
         input_powheg_file = TFile.Open(self.powheg_path_prompt)
+        if not input_powheg_file:
+            self.logger.fatal(make_message_notfound(self.powheg_path_prompt))
         input_powheg = input_powheg_file.Get("fh2_prompt_%s" % self.v_varshape_binning)
+        if not input_powheg:
+            self.logger.fatal(make_message_notfound("fh2_prompt_%s" % self.v_varshape_binning, self.powheg_path_prompt))
         input_powheg_xsection = input_powheg_file.Get("fh2_prompt_xsection_%s" % self.v_varshape_binning)
+        if not input_powheg_xsection:
+            self.logger.fatal(make_message_notfound("fh2_prompt_xsection_%s" % self.v_varshape_binning, self.powheg_path_prompt))
         input_powheg_file_sys = []
         input_powheg_sys=[]
         input_powheg_xsection_sys=[]
         for i_powheg in range(len(self.powheg_prompt_variations)):
-            input_powheg_file_sys.append(TFile.Open("%s%s.root" % (self.powheg_prompt_variations_path, self.powheg_prompt_variations[i_powheg])))
+            path = "%s%s.root" % (self.powheg_prompt_variations_path, self.powheg_prompt_variations[i_powheg])
+            input_powheg_file_sys.append(TFile.Open(path))
+            if not input_powheg_file_sys[i_powheg]:
+                self.logger.fatal(make_message_notfound(path))
             input_powheg_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_%s" % self.v_varshape_binning))
+            if not input_powheg_sys[i_powheg]:
+                self.logger.fatal(make_message_notfound("fh2_prompt_%s" % self.v_varshape_binning, path))
             input_powheg_xsection_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_xsection_%s" % self.v_varshape_binning))
+            if not input_powheg_xsection_sys[i_powheg]:
+                self.logger.fatal(make_message_notfound("fh2_prompt_xsection_%s" % self.v_varshape_binning, path))
         input_powheg_z=[]
         input_powheg_xsection_z=[]
         input_powheg_sys_z=[]
@@ -1928,7 +2039,11 @@ class AnalyzerJet(Analyzer):
                 continue
             input_files_sysvar=[]
             for sys_var in range(self.systematic_variations[sys_cat]):
-                input_files_sysvar.append(TFile.Open("/data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/systematics/%s/sys_%d/pp_data/resultsMBjetvspt/unfolding_resultsLcpK0sppMBjetvspt.root" % (self.systematic_categories[sys_cat],sys_var+1),"update"))
+                # FIXME
+                path = "/data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/systematics/%s/sys_%d/pp_data/resultsMBjetvspt/unfolding_resultsLcpK0sppMBjetvspt.root" % (self.systematic_categories[sys_cat],sys_var+1)
+                input_files_sysvar.append(TFile.Open(path,"update"))
+                if not input_files_sysvar[sys_var]:
+                    self.logger.fatal(make_message_notfound(path))
             input_files_sys.append(input_files_sysvar)
 
         input_histograms_sys=[]
@@ -1959,7 +2074,7 @@ class AnalyzerJet(Analyzer):
             csysvar.SetWindowSize(500, 500)
             leg_sysvar = TLegend(.7, .5, .85, .9, "systematics")
             setup_legend(leg_sysvar)
-            leg_sysvar.AddEntry(input_histograms_default[ibin2],"default","LEP")
+            leg_sysvar.AddEntry(input_histograms_default[ibin2],"default","P")
             setup_histogram(input_histograms_default[ibin2],1)
             input_histograms_default[ibin2].GetYaxis().SetRangeUser(0.0,input_histograms_default[ibin2].GetMaximum()*1.5)
             input_histograms_default[ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_gen[0]+0.01, self.lvarshape_binmax_gen[-1]-0.001)
@@ -1970,7 +2085,7 @@ class AnalyzerJet(Analyzer):
             for sys_cat in range(len(self.systematic_categories)):
                 for sys_var in range(self.systematic_variations[sys_cat]):
                     nsys=nsys+1
-                    leg_sysvar.AddEntry(input_histograms_sys[ibin2][sys_cat][sys_var],("%s_%d" % (self.systematic_categories[sys_cat],sys_var+1)),"LEP")
+                    leg_sysvar.AddEntry(input_histograms_sys[ibin2][sys_cat][sys_var],("%s_%d" % (self.systematic_categories[sys_cat],sys_var+1)),"P")
                     setup_histogram(input_histograms_sys[ibin2][sys_cat][sys_var],nsys+1)
                     input_histograms_sys[ibin2][sys_cat][sys_var].Draw("same")
             latex = TLatex(0.2,0.8,'%.2f < %s < %.2f GeV/#it{c}' % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]))
@@ -1989,7 +2104,7 @@ class AnalyzerJet(Analyzer):
                 csysvar_each.SetWindowSize(500, 500)
                 leg_sysvar_each = TLegend(.7, .45, .85, .85, self.systematic_categories[sys_cat])
                 setup_legend(leg_sysvar_each)
-                leg_sysvar_each.AddEntry(input_histograms_default[ibin2],"default","LEP")
+                leg_sysvar_each.AddEntry(input_histograms_default[ibin2],"default","P")
                 setup_histogram(input_histograms_default[ibin2],1)
                 for sys_var in range(self.systematic_variations[sys_cat]):
                     if sys_var == 0:
@@ -2001,7 +2116,7 @@ class AnalyzerJet(Analyzer):
                         input_histograms_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
                         input_histograms_default[ibin2].Draw()
                     nsys=nsys+1
-                    leg_sysvar_each.AddEntry(input_histograms_sys[ibin2][sys_cat][sys_var],("%d" % (sys_var+1)),"LEP")
+                    leg_sysvar_each.AddEntry(input_histograms_sys[ibin2][sys_cat][sys_var],("%d" % (sys_var+1)),"P")
                     setup_histogram(input_histograms_sys[ibin2][sys_cat][sys_var],nsys+1)
                     input_histograms_sys[ibin2][sys_cat][sys_var].Draw("same")
                 latex = TLatex(0.2,0.8,'%.2f < %s < %.2f GeV/#it{c}' % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]))
@@ -2141,9 +2256,27 @@ class AnalyzerJet(Analyzer):
         input_pythia8_z=[]
         input_pythia8_xsection_z=[]
         for i_pythia8 in range(len(self.pythia8_prompt_variations)):
-            input_pythia8_file.append(TFile.Open("%s%s.root" % (self.pythia8_prompt_variations_path, self.pythia8_prompt_variations[i_pythia8])))
+            path = "%s%s.root" % (self.pythia8_prompt_variations_path, self.pythia8_prompt_variations[i_pythia8])
+            input_pythia8_file.append(TFile.Open(path))
+            if not input_pythia8_file[i_pythia8]:
+                self.logger.fatal(make_message_notfound(path))
             input_pythia8.append(input_pythia8_file[i_pythia8].Get("fh2_pythia8_prompt"))
+            if not input_pythia8[i_pythia8]:
+                self.logger.fatal(make_message_notfound("fh2_pythia8_prompt", path))
             input_pythia8_xsection.append(input_pythia8_file[i_pythia8].Get("fh2_pythia8_prompt_xsection"))
+            if not input_pythia8_xsection[i_pythia8]:
+                self.logger.fatal(make_message_notfound("fh2_pythia8_prompt_xsection", path))
+
+            # Ensure correct binning: x - shape, y - jet pt
+            if not equal_binning_lists(input_pythia8[i_pythia8], list_x = self.varshaperanges_gen):
+                self.logger.fatal("Error: Incorrect binning in x.")
+            if not equal_binning_lists(input_pythia8[i_pythia8], list_y = self.var2ranges_gen):
+                self.logger.fatal("Error: Incorrect binning in y.")
+            if not equal_binning_lists(input_pythia8_xsection[i_pythia8], list_x = self.varshaperanges_gen):
+                self.logger.fatal("Error: Incorrect binning in x.")
+            if not equal_binning_lists(input_pythia8_xsection[i_pythia8], list_y = self.var2ranges_gen):
+                self.logger.fatal("Error: Incorrect binning in y.")
+
             input_pythia8_z_jetpt=[]
             input_pythia8_xsection_z_jetpt=[]
             for ibin2 in range(self.p_nbin2_gen):
@@ -2164,7 +2297,7 @@ class AnalyzerJet(Analyzer):
             cfinalwsys.SetWindowSize(500, 500)
             leg_finalwsys = TLegend(.65, .6, .85, .7, "")
             setup_legend(leg_finalwsys)
-            leg_finalwsys.AddEntry(input_histograms_default[ibin2],"data","LEP")
+            leg_finalwsys.AddEntry(input_histograms_default[ibin2],"data","P")
             setup_histogram(input_histograms_default[ibin2],4)
             input_histograms_default[ibin2].GetYaxis().SetRangeUser(0.0,input_histograms_default[ibin2].GetMaximum()*1.2/2.5)
             input_histograms_default[ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_gen[0]+0.01, self.lvarshape_binmax_gen[-1]-0.001)
@@ -2184,7 +2317,7 @@ class AnalyzerJet(Analyzer):
             draw_latex(latex1)
             latex2 = TLatex(0.18,0.75,"%.0f < %s < %.0f GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex2)
-            latex3 = TLatex(0.18,0.7,"%.0f < #it{p}_{T, %s} < %.0f GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnmeson, self.lpt_finbinmax[-1]))
+            latex3 = TLatex(0.18,0.7,"%.0f < #it{p}_{T, %s} < %.0f GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnmeson, min(self.lpt_finbinmax[-1],self.lvar2_binmax_reco[ibin2])))
             draw_latex(latex3)
             leg_finalwsys.Draw("same")
             cfinalwsys.SaveAs("%s/finalwsys_%s.pdf" % (self.d_resultsallpdata, suffix))
@@ -2197,7 +2330,7 @@ class AnalyzerJet(Analyzer):
             cfinalwsys_wmodels.SetWindowSize(500, 500)
             leg_finalwsys_wmodels = TLegend(.55, .55, .65, .75, "")
             setup_legend(leg_finalwsys_wmodels)
-            leg_finalwsys_wmodels.AddEntry(input_histograms_default[ibin2],"data","LEP")
+            leg_finalwsys_wmodels.AddEntry(input_histograms_default[ibin2],"data","P")
             setup_histogram(input_histograms_default[ibin2],4)
             input_histograms_default[ibin2].GetYaxis().SetRangeUser(0.0,input_histograms_default[ibin2].GetMaximum())
             input_histograms_default[ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_gen[0]+0.01, self.lvarshape_binmax_gen[-1]-0.001)
@@ -2210,14 +2343,14 @@ class AnalyzerJet(Analyzer):
             leg_finalwsys_wmodels.AddEntry(tgsys[ibin2],"syst. unc.","F")
             setup_histogram(input_powheg_z[ibin2],418)
             input_powheg_z[ibin2].SetMarkerStyle(24)
-            leg_finalwsys_wmodels.AddEntry(input_powheg_z[ibin2], "POWHEG #plus PYTHIA 6", "LEP")
+            leg_finalwsys_wmodels.AddEntry(input_powheg_z[ibin2], "POWHEG #plus PYTHIA 6", "P")
             input_powheg_z[ibin2].Draw("same")
             setup_tgraph(tg_powheg[ibin2],418,0.3)
             tg_powheg[ibin2].Draw("5")
             markers_pythia = [27, 28]
             for i_pythia8 in range(len(self.pythia8_prompt_variations)):
                 setup_histogram(input_pythia8_z[i_pythia8][ibin2],i_pythia8+1,markers_pythia[i_pythia8],2.)
-                leg_finalwsys_wmodels.AddEntry(input_pythia8_z[i_pythia8][ibin2], self.pythia8_prompt_variations_legend[i_pythia8],"LEP")
+                leg_finalwsys_wmodels.AddEntry(input_pythia8_z[i_pythia8][ibin2], self.pythia8_prompt_variations_legend[i_pythia8],"P")
                 input_pythia8_z[i_pythia8][ibin2].Draw("same")
             input_histograms_default[ibin2].Draw("AXISSAME")
             #PREL latex = TLatex(0.18,0.85,"ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV")
@@ -2228,7 +2361,7 @@ class AnalyzerJet(Analyzer):
             latex2 = TLatex(0.18,0.75,"%.0f < %s < %.0f GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex2)
             #latex3 = TLatex(0.18,0.7,"%.1f < %s #leq %.1f" % (self.lvarshape_binmin_reco[0], self.v_varshape_latex, self.lvarshape_binmax_reco[-1]))
-            latex3 = TLatex(0.18,0.7,"%.0f < #it{p}_{T, %s} < %.0f GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnmeson, self.lpt_finbinmax[-1]))
+            latex3 = TLatex(0.18,0.7,"%.0f < #it{p}_{T, %s} < %.0f GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnmeson, min(self.lpt_finbinmax[-1],self.lvar2_binmax_reco[ibin2])))
             draw_latex(latex3)
             #latex4 = TLatex(0.18,0.65,"pp, #sqrt{#it{s}} = 13 TeV")
             #draw_latex(latex4)
@@ -2249,7 +2382,7 @@ class AnalyzerJet(Analyzer):
                 tgsys_cat[ibin2][sys_cat].GetXaxis().SetRangeUser(self.lvarshape_binmin_gen[0]+0.01, self.lvarshape_binmax_gen[-1]-0.001)
                 tgsys_cat[ibin2][sys_cat].GetXaxis().SetTitle(self.v_varshape_latex)
                 tgsys_cat[ibin2][sys_cat].GetYaxis().SetTitle("relative systematic error")
-                leg_relativesys.AddEntry(tgsys_cat[ibin2][sys_cat], self.systematic_categories[sys_cat],"LEP")
+                leg_relativesys.AddEntry(tgsys_cat[ibin2][sys_cat], self.systematic_categories[sys_cat],"P")
                 if sys_cat == 0:
                     tgsys_cat[ibin2][sys_cat].Draw("A2")
                 else:
@@ -2261,12 +2394,17 @@ class AnalyzerJet(Analyzer):
             leg_relativesys.Draw("same")
             crelativesys.SaveAs("%s/relativesys_%s.pdf" % (self.d_resultsallpdata, suffix))
 
-
-        file_feeddown = TFile.Open("%s/feeddown%s%s.root" % \
-                              (self.d_resultsallpdata, self.case, self.typean))
+        path = "%s/feeddown%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
+        file_feeddown = TFile.Open(path)
+        if not file_feeddown:
+            self.logger.fatal(make_message_notfound(path))
         file_feeddown_variations=[]
         for i_powheg in range(len(self.powheg_nonprompt_variations)):
-            file_feeddown_variations.append(TFile.Open("/data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/systematics/powheg/sys_%d/pp_data/resultsMBjetvspt/feeddown%s%s.root" % (i_powheg+1, self.case, self.typean),"update"))
+            # FIXME
+            path = "/data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/systematics/powheg/sys_%d/pp_data/resultsMBjetvspt/feeddown%s%s.root" % (i_powheg+1, self.case, self.typean)
+            file_feeddown_variations.append(TFile.Open(path, "update"))
+            if not file_feeddown_variations[i_powheg]:
+                self.logger.fatal(make_message_notfound(path))
         h_feeddown_fraction=[]
         h_feeddown_fraction_variations=[]
         tg_feeddown_fraction=[]
@@ -2304,7 +2442,7 @@ class AnalyzerJet(Analyzer):
             latex2 = TLatex(0.18,0.75,"%.0f < %s < %.0f GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex2)
             #latex3 = TLatex(0.18,0.7,"%.1f < %s #leq %.1f" % (self.lvarshape_binmin_reco[0], self.v_varshape_latex, self.lvarshape_binmax_reco[-1]))
-            latex3 = TLatex(0.18,0.7,"%.0f < #it{p}_{T, %s} < %.0f GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnmeson, self.lpt_finbinmax[-1]))
+            latex3 = TLatex(0.18,0.7,"%.0f < #it{p}_{T, %s} < %.0f GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnmeson, min(self.lpt_finbinmax[-1],self.lvar2_binmax_reco[ibin2])))
             draw_latex(latex3)
             #latex4 = TLatex(0.18,0.65,"pp, #sqrt{#it{s}} = 13 TeV")
             #draw_latex(latex4)
@@ -2320,11 +2458,12 @@ class AnalyzerJet(Analyzer):
         gROOT.SetBatch(True)
         self.loadstyle()
         filedata = TFile.Open(self.f_evtvaldata)
+        if not filedata:
+            self.logger.fatal(make_message_notfound(self.f_evtvaldata))
         print(self.f_evtvaldata)
         hmultvsrun = filedata.Get("hmultvsrun")
         c = TCanvas("c", "c", 500, 500)
         c.cd()
         prof = hmultvsrun.ProfileY()
         prof.Draw()
-        c.SaveAs(self.make_file_path(self.d_valevtdata, "cscatter", "eps", \
-                                            None, None))
+        c.SaveAs(self.make_file_path(self.d_valevtdata, "cscatter", "eps", None, None))
