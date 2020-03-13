@@ -177,6 +177,13 @@ def seldf_singlevar(dataframe, var, minval, maxval):
     dataframe = dataframe.loc[(dataframe[var] >= minval) & (dataframe[var] < maxval)]
     return dataframe
 
+def seldf_singlevar_inclusive(dataframe, var, minval, maxval):
+    """
+    Make projection on variable using [X,Y), e.g. pT or multiplicity
+    """
+    dataframe = dataframe.loc[(dataframe[var] >= minval) & (dataframe[var] <= maxval)]
+    return dataframe
+
 def split_df_sigbkg(dataframe_, var_signal_):
     """
     Split dataframe in signal and background dataframes

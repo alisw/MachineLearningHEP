@@ -460,8 +460,8 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             norm = self.calculate_norm(hsel, hnovtx, hvtxout,
                                        self.lvar2_binmin[imult],
                                        self.lvar2_binmax[imult])
-            self.logger.warning("Number of events %d for mult bin %d" %
-                                (norm, imult))
+            # pylint: disable=logging-not-lazy
+            self.logger.warning("Number of events %d for mult bin %d" % (norm, imult))
             filecrossmb = None
             if self.p_fprompt_from_mb is True and self.p_fd_method == 2:
                 if self.p_corrmb_typean is not None:

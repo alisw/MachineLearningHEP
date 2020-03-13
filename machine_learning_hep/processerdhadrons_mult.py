@@ -20,16 +20,15 @@ import array
 import pickle
 import os
 import numpy as np
-from root_numpy import fill_hist, evaluate # pylint: disable=import-error, no-name-in-module
-from ROOT import TFile, TH1F, TH2F # pylint: disable=import-error, no-name-in-module
-from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
+from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
+from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
+from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utilities import selectdfrunlist
-from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
-from machine_learning_hep.utilities import mergerootfiles, z_calc
+from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar_inclusive, openfile
+from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.utilities import get_timestamp_string
-from machine_learning_hep.utilities_plot import scatterplotroot
 #from machine_learning_hep.globalfitter import fitter
-from machine_learning_hep.selectionutils import getnormforselevt, gethistonormforselevt_mult
+from machine_learning_hep.selectionutils import gethistonormforselevt_mult
 from machine_learning_hep.processer import Processer
 
 class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-attributes, invalid-name
@@ -88,14 +87,12 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
 
         myfile.cd()
         hsel, hnovtxmult, hvtxoutmult = \
-            gethistonormforselevt_mult(dfevtorig, dfevtevtsel, labeltrigger, self.v_var2_binning_gen)
+            gethistonormforselevt_mult(dfevtorig, dfevtevtsel,
+                                       labeltrigger, self.v_var2_binning_gen)
         hsel.Write()
         hnovtxmult.Write()
         hvtxoutmult.Write()
 
-        for ibin2 in range(len(self.lvar2_binmin)):
-            mybindfevtorig = seldf_singlevar(dfevtevtsel, self.v_var2_binning_gen, \
-                                        self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
@@ -105,7 +102,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 df = df.query(self.s_evtsel)
             if self.s_trigger is not None:
                 df = df.query(self.s_trigger)
-            df = seldf_singlevar(df, self.v_var_binning, \
+            df = seldf_singlevar_inclusive(df, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
             for ibin2 in range(len(self.lvar2_binmin)):
                 suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
@@ -114,7 +111,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                           self.v_var2_binning, self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
                                  self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-                df_bin = seldf_singlevar(df, self.v_var2_binning,
+                df_bin = seldf_singlevar_inclusive(df, self.v_var2_binning, \
                                          self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 if self.runlistrigger is not None:
                     df_bin = selectdfrunlist(df_bin, \
@@ -207,13 +204,13 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 if self.runlistrigger is not None:
                     df_mc_gen = selectdfrunlist(df_mc_gen, \
                              self.run_param[self.runlistrigger], "run_number")
-                df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var_binning, \
+                df_mc_reco = seldf_singlevar_inclusive(df_mc_reco, self.v_var_binning, \
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-                df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \
+                df_mc_gen = seldf_singlevar_inclusive(df_mc_gen, self.v_var_binning, \
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-                df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning_gen, \
+                df_mc_reco = seldf_singlevar_inclusive(df_mc_reco, self.v_var2_binning_gen, \
                                              self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
-                df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning_gen, \
+                df_mc_gen = seldf_singlevar_inclusive(df_mc_gen, self.v_var2_binning_gen, \
                                             self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
                 df_reco_presel_pr = df_mc_reco[df_mc_reco.ismcprompt == 1]

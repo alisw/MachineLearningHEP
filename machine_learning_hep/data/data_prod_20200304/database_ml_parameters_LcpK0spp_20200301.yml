@@ -445,7 +445,7 @@ LcpK0spp:
       corresp_mb_typean: null
       corrEffMult: [false, true, true, true]
       sel_binmin2: [0,1,10,30] #list of var2 splittng nbins
-      sel_binmax2: [9999,10,30,60] #list of var2 splitting nbins
+      sel_binmax2: [9999,9,29,59] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
       var_binning2_gen: n_tracklets_corr
       triggerbit: INT7
@@ -528,13 +528,13 @@ LcpK0spp:
     MBvspt_perc_v0m:
       proc_type: Dhadrons_mult
       useperiod: [1,1,1]
-      plotbin: [1,1,1,1,0]
+      plotbin: [1,1,1]
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
       corrEffMult: [false, true, true, true]
-      sel_binmin2:  [0,30,0.1,0.] #list of var2 splittng nbins
-      sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
+      sel_binmin2:  [0,30,0.1] #list of var2 splittng nbins
+      sel_binmax2: [100,100,30] #list of var2 splitting nbins
       var_binning2: perc_v0m
       var_binning2_gen: perc_v0m
       triggerbit: INT7
@@ -549,11 +549,13 @@ LcpK0spp:
         mc: null
         weighttrig: false
       data:
+        runselection: [null, null, null]
         results: [/data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsMBvspt_perc_v0m,
                   /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsMBvspt_perc_v0m,
                   /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsMBvspt_perc_v0m] #list of periods
         resultsallp: /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_data/resultsMBvspt_perc_v0m
       mc:
+        runselection: [null, null, null]
         results: [/data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBvspt_perc_v0m,
                   /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBvspt_perc_v0m,
                   /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBvspt_perc_v0m] #list of periods

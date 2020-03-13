@@ -1,4 +1,4 @@
-case: Dspp # used to find the database file unless specified explicitly as do_entire_analysis -d database_analysis
+case: LcpK0spp # used to find the database file unless specified explicitly as do_entire_analysis -d database_analysis
 download:
   alice:
     activate: false
@@ -53,25 +53,25 @@ mlapplication:
     docontinueafterstop: false # set to true to resume interrupted processing (existing corrupted output will be overwritten)
 
 analysis:
-  type: MBvspt_ntrkl # used unless specified explicitly as do_entire_analysis -a type_ana
+  type: MBjetvspt # used unless specified explicitly as do_entire_analysis -a type_ana
   # Do each period separately including merged (true)
   # Do only merged (false)
-  doperperiod: true
+  doperperiod: false
   data:
     histomass: true # processer: process_histomass
     dojetsystematics: false # analyzer: jetsystematics
   mc:
     histomass: true # processer: process_histomass
     efficiency: true # processer: process_efficiency, process_response, process_unfolding
-    feeddown: false # analyzer: feeddown
-    dounfolding: false # analyzer: unfolding, unfolding_closure
+    feeddown: true # analyzer: feeddown
+    dounfolding: true # analyzer: unfolding, unfolding_closure
   dofit: true # analyzer: fit
   # Control the yield systematic uncertainty
   dosyst: false # analyzer: yield_syst
-  dojetstudies: false # analyzer: efficiency, fit, side_band_sub
+  dojetstudies: true # analyzer: efficiency, fit, side_band_sub
   doeff: true # analyzer: efficiency
-  docross: true # analyzer: makenormyields
-  doplots: true # analyzer: plotternormyields
+  docross: false # analyzer: makenormyields
+  doplots: false # analyzer: plotternormyields
 
 systematics:
   cutvar:

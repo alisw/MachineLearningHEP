@@ -18,7 +18,6 @@ utilities for fiducial acceptance, pid, single topological variable selections a
 
 #import numba
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
-from machine_learning_hep.bitwise import filter_bit_df
 from ROOT import TH1F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 
