@@ -282,6 +282,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                                         self.b_mcbkg), dtype=int)
             dfgen = dfgen.reset_index(drop=True)
             pickle.dump(dfgen, openfile(self.l_gen[file_index], "wb"), protocol=4)
+        print("FINISHED")
     def skim(self, file_index):
         try:
             dfreco = pickle.load(openfile(self.l_reco[file_index], "rb"))
@@ -307,6 +308,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 dfgensk = dfgensk.reset_index(drop=True)
                 pickle.dump(dfgensk, openfile(self.mptfiles_gensk[ipt][file_index], "wb"),
                             protocol=4)
+        print("FINISHED SKIM")
 
     def applymodel(self, file_index):
         for ipt in range(self.p_nptbins):
@@ -391,6 +393,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
     # pylint: disable=no-member
     def process_histomass(self):
         print("Doing masshisto", self.mcordata, self.period)
+        print(self.triggerbit)
+        print(self.runlistrigger)
         print("Using run selection for mass histo", \
                self.runlistrigger[self.triggerbit], "for period", self.period)
         if self.doml is True:
@@ -402,6 +406,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         arguments = [(i,) for i in range(len(self.l_root))]
         self.parallelizer(self.process_histomass_single, arguments, self.p_chunksizeunp)
         tmp_merged = \
+        print("FINISHED")
         f"/data/tmp/hadd/{self.case}_{self.typean}/mass_{self.period}/{get_timestamp_string()}/"
         mergerootfiles(self.l_histomass, self.n_filemass, tmp_merged)
     # pylint: disable=no-member

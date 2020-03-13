@@ -49,7 +49,7 @@ LcpKpipp:
     ismcrefl: [[5],[]]
 
   variables:
-    var_all: [run_number, ev_id, cand_type, inv_mass, pt_cand, y_cand,
+    var_all: [run_number, ev_id, ev_id_ext, cand_type, inv_mass, pt_cand, y_cand,
               d_len, d_len_xy, norm_dl_xy, cos_p,
               cos_p_xy, imp_par_xy, dca, dca_prong0, dca_prong1, dca_prong2,resonant_decay_mc,sig_vert, dist_12, dist_23, max_norm_d0d0exp,
               imp_par_prong0, imp_par_prong1, imp_par_prong2, pt_prong0, pt_prong1, pt_prong2, p_prong0, p_prong1, p_prong2,
@@ -57,16 +57,16 @@ LcpKpipp:
               nsigTPC_Pi_0, nsigTPC_Pr_0, nsigTOF_Pi_0, nsigTOF_Pr_0, nsigTPC_K_1, nsigTOF_K_1, nsigTPC_Pi_2, nsigTPC_Pr_2, nsigTOF_Pi_2, nsigTOF_Pr_2]
     var_evt:
       data: [centrality, z_vtx_reco, n_vtx_contributors, n_tracks, is_ev_rej, run_number,
-              ev_id, n_tracklets,V0Amult, trigger_hasbit_INT7, trigger_hasbit_HighMultSPD,
+              ev_id, ev_id_ext, n_tracklets,V0Amult, trigger_hasbit_INT7, trigger_hasbit_HighMultSPD,
               trigger_hasbit_HighMultV0, trigger_hasclass_INT7, trigger_hasclass_HighMultSPD,
               trigger_hasclass_HighMultV0, n_tracklets_corr, v0m, v0m_eq, v0m_corr, v0m_eq_corr,
               perc_v0m]
       mc: [z_vtx_gen, centrality, z_vtx_reco, n_vtx_contributors, n_tracks, is_ev_rej, run_number,
-              ev_id, n_tracklets, V0Amult, trigger_hasbit_INT7, trigger_hasbit_HighMultSPD,
+              ev_id, ev_id_ext, n_tracklets, V0Amult, trigger_hasbit_INT7, trigger_hasbit_HighMultSPD,
               trigger_hasbit_HighMultV0, trigger_hasclass_INT7, trigger_hasclass_HighMultSPD,
               trigger_hasclass_HighMultV0, n_tracklets_corr, n_tracklets, v0m, v0m_eq, v0m_corr, v0m_eq_corr,
               mult_gen, mult_gen_v0a, mult_gen_v0c, perc_v0m]
-    var_gen: [y_cand, pt_cand, eta_cand, phi_cand, cand_type, pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet, run_number, ev_id]
+    var_gen: [y_cand, pt_cand, eta_cand, phi_cand, cand_type, pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet, run_number, ev_id, ev_id_ext]
     var_evt_match: [run_number, ev_id]
     var_training: [[d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, dist_12, dist_23,
                    max_norm_d0d0exp, imp_par_prong0, imp_par_prong1, imp_par_prong2,

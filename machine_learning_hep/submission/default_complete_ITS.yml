@@ -1,4 +1,4 @@
-case: LcpK0spp # used to find the database file unless specified explicitly as do_entire_analysis -d database_analysis
+case: LcpKpipp # used to find the database file unless specified explicitly as do_entire_analysis -d database_analysis
 download:
   alice:
     activate: false
