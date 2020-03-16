@@ -88,7 +88,7 @@ setup(
   # installed, specify them here. Note that you need to specify those files in
   # MANIFEST.in as well, since Python tools behave inconsistently
   include_package_data=True,
-  package_data={ "machine_learning_hep.submission": [ "default_complete.yaml",
+  package_data={ "machine_learning_hep.submission": [ "default_complete.yml",
                                                       "default_ana.yml",
                                                       "default_apply.yml",
                                                       "default_pre.yml",

@@ -42,7 +42,7 @@ void DivideCanvas(TCanvas* c, int nptbins);
 void mass_fitter(TString mcordata, TString useml) {
 
     //load config
-    YAML::Node config = YAML::LoadFile("../machine_learning_hep/submission/default_complete.yaml");
+    YAML::Node config = YAML::LoadFile("../machine_learning_hep/submission/default_complete.yml");
     bool uselikelihood = config["analysis"]["uselikelihood"].as<int>();
     vector<double> ptmin = config["analysis"]["binmin"].as<vector<double>>();
     vector<double> ptmax = config["analysis"]["binmax"].as<vector<double>>();
@@ -61,21 +61,21 @@ void mass_fitter(TString mcordata, TString useml) {
     for(unsigned int ipt=0; ipt<nptbins; ipt++) {
         ptlims[ipt] = ptmin[ipt];
         ptlims[ipt+1] = ptmax[ipt];
-        
-        if(sbkgfunc[ipt] == "kExpo") 
-            bkgfunc[ipt] = AliHFInvMassFitter::kExpo; 
-        else if(sbkgfunc[ipt] == "kLin") 
-            bkgfunc[ipt] = AliHFInvMassFitter::kLin; 
-        else if(sbkgfunc[ipt] == "kPol2") 
-            bkgfunc[ipt] = AliHFInvMassFitter::kPol2; 
+
+        if(sbkgfunc[ipt] == "kExpo")
+            bkgfunc[ipt] = AliHFInvMassFitter::kExpo;
+        else if(sbkgfunc[ipt] == "kLin")
+            bkgfunc[ipt] = AliHFInvMassFitter::kLin;
+        else if(sbkgfunc[ipt] == "kPol2")
+            bkgfunc[ipt] = AliHFInvMassFitter::kPol2;
         else {
             cerr << "Bkg fit function not defined! Exit" << endl;
             return;
         }
-        
-        if(ssgnfunc[ipt] == "kGaus") 
-            sgnfunc[ipt] = AliHFInvMassFitter::kGaus; 
-        else if(ssgnfunc[ipt] == "k2Gaus") 
+
+        if(ssgnfunc[ipt] == "kGaus")
+            sgnfunc[ipt] = AliHFInvMassFitter::kGaus;
+        else if(ssgnfunc[ipt] == "k2Gaus")
             sgnfunc[ipt] = AliHFInvMassFitter::k2Gaus;
         else {
             cerr << "Signal fit function not defined! Exit" << endl;
@@ -85,7 +85,7 @@ void mass_fitter(TString mcordata, TString useml) {
 
     //load inv-mass histos
     auto infile = TFile::Open(Form("roottotal%s%s.root",mcordata.Data(), useml.Data()));
-    if(!infile || !infile->IsOpen()) 
+    if(!infile || !infile->IsOpen())
         return;
     TH1F* hMass[nptbins];
     for(unsigned int ipt=0; ipt<nptbins; ipt++) {
@@ -94,7 +94,7 @@ void mass_fitter(TString mcordata, TString useml) {
     }
     infile->Close();
 
-    //define output histos 
+    //define output histos
     auto hRawYields = new TH1D("hRawYields",";#it{p}_{T} (GeV/#it{c});raw yield",nptbins,ptlims);
     auto hSigma = new TH1D("hSigma",";#it{p}_{T} (GeV/#it{c});width (GeV/#it{c}^{2})",nptbins,ptlims);
     auto hMean = new TH1D("hMean",";#it{p}_{T} (GeV/#it{c});mean (GeV/#it{c}^{2})",nptbins,ptlims);
@@ -103,7 +103,7 @@ void mass_fitter(TString mcordata, TString useml) {
     auto hBkg = new TH1D("hBkg",";#it{p}_{T} (GeV/#it{c});Background (3#sigma)",nptbins,ptlims);
     auto hSignificance = new TH1D("hSignificance",";#it{p}_{T} (GeV/#it{c});Significance (3#sigma)",nptbins,ptlims);
     auto hChiSquare = new TH1D("hChiSquare",";#it{p}_{T} (GeV/#it{c});#chi^{2}/#it{ndf}",nptbins,ptlims);
-  
+
     //fit histos
     TH1F* hMassForFit[nptbins];
     TCanvas* cMass = new TCanvas("cMass","cMass",1920,1080);
@@ -129,11 +129,11 @@ void mass_fitter(TString mcordata, TString useml) {
             }
             else if(sgnfunc[ipt]==AliHFInvMassFitter::k2Gaus){
                 if(!(includesecpeak[ipt])) {
-                    massfunc = new TF1(Form("massfunc%d",ipt),DoubleGaus,massmin[ipt],massmax[ipt],5); 
+                    massfunc = new TF1(Form("massfunc%d",ipt),DoubleGaus,massmin[ipt],massmax[ipt],5);
                     massfunc->SetParameters(hMassForFit[ipt]->Integral()*hMassForFit[ipt]->GetBinWidth(1),massforfit,0.010,0.030,0.9);
                 }
                 else {
-                    massfunc = new TF1(Form("massfunc%d",ipt),DoublePeakDoubleGaus,massmin[ipt],massmax[ipt],8); 
+                    massfunc = new TF1(Form("massfunc%d",ipt),DoublePeakDoubleGaus,massmin[ipt],massmax[ipt],8);
                     massfunc->SetParameters(hMassForFit[ipt]->Integral()*hMassForFit[ipt]->GetBinWidth(1),massforfit,0.010,0.030,0.9,hMassForFit[ipt]->Integral()*hMassForFit[ipt]->GetBinWidth(1),masssecpeak,0.010);
                 }
             }
@@ -142,12 +142,12 @@ void mass_fitter(TString mcordata, TString useml) {
                 return;
             }
 
-            if(nptbins>1) 
+            if(nptbins>1)
                 cMass->cd(ipt+1);
-            else 
+            else
                 cMass->cd();
             hMassForFit[ipt]->Fit(massfunc,"E"); //fit with chi2
-        
+
             hRawYields->SetBinContent(ipt+1,massfunc->GetParameter(parrawyield));
             hRawYields->SetBinError(ipt+1,massfunc->GetParError(parrawyield));
             hSigma->SetBinContent(ipt+1,massfunc->GetParameter(parsigma));
@@ -162,11 +162,11 @@ void mass_fitter(TString mcordata, TString useml) {
             if(uselikelihood) massFitter->SetUseLikelihoodFit();
             massFitter->SetInitialGaussianMean(massforfit);
             massFitter->SetInitialGaussianSigma(0.010);
-        
-            if(includesecpeak[ipt]) 
+
+            if(includesecpeak[ipt])
                 massFitter->IncludeSecondGausPeak(masssecpeak,false,0.008,true);
             bool fitok = massFitter->MassFitter(false);
-        
+
             double rawyield = massFitter->GetRawYield();
             double rawyielderr = massFitter->GetRawYieldError();
             double sigma = massFitter->GetSigma();
@@ -198,11 +198,11 @@ void mass_fitter(TString mcordata, TString useml) {
             hChiSquare->SetBinContent(ipt+1,redchi2);
             hChiSquare->SetBinError(ipt+1,1.e-20);
 
-            if(nptbins>1) 
+            if(nptbins>1)
                 cMass->cd(ipt+1);
-            else 
+            else
                 cMass->cd();
-        
+
             hMassForFit[ipt]->GetYaxis()->SetRangeUser(hMassForFit[ipt]->GetMinimum()*0.95,hMassForFit[ipt]->GetMaximum()*1.2);
             if(!fitok)
                 massFitter->GetHistoClone()->Draw();

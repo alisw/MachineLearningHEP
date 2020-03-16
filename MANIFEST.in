@@ -1,4 +1,4 @@
-include machine_learning_hep/submission/default_complete.yaml
+include machine_learning_hep/submission/default_complete.yml
 include machine_learning_hep/submission/default_pre.yml
 include machine_learning_hep/submission/default_train.yml
 include machine_learning_hep/submission/default_apply.yml
