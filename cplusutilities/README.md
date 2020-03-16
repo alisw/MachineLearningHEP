@@ -33,7 +33,7 @@ exit
 
 
 The scripts are saved in *~/MachineLearningHEP/cplusutilities. There are three ways to run the Download.sh script:
-1) Enable the "download alice" flag in default_complete.yaml and run the MLHEP package the usual way. The script will ask you for the required input.
+1) Enable the "download alice" flag in default_complete.yml and run the MLHEP package the usual way. The script will ask you for the required input.
 2) Run ./Download.sh **without** arguments. The script will ask you for the required input.
 3) Run ./Download.sh **with** arguments: *./Download.sh trainname outputdirectory gridmergingstage*
 
