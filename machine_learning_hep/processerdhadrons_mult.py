@@ -24,7 +24,8 @@ from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-modu
 from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utilities import selectdfrunlist
-from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar_inclusive, openfile
+from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, \
+        seldf_singlevar_inclusive, openfile
 from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.utilities import get_timestamp_string
 #from machine_learning_hep.globalfitter import fitter
@@ -102,7 +103,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 df = df.query(self.s_evtsel)
             if self.s_trigger is not None:
                 df = df.query(self.s_trigger)
-            df = seldf_singlevar_inclusive(df, self.v_var_binning, \
+            df = seldf_singlevar(df, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
             for ibin2 in range(len(self.lvar2_binmin)):
                 suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
@@ -204,9 +205,9 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 if self.runlistrigger is not None:
                     df_mc_gen = selectdfrunlist(df_mc_gen, \
                              self.run_param[self.runlistrigger], "run_number")
-                df_mc_reco = seldf_singlevar_inclusive(df_mc_reco, self.v_var_binning, \
+                df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var_binning, \
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-                df_mc_gen = seldf_singlevar_inclusive(df_mc_gen, self.v_var_binning, \
+                df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
                 df_mc_reco = seldf_singlevar_inclusive(df_mc_reco, self.v_var2_binning_gen, \
                                              self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
