@@ -598,7 +598,7 @@ LcpK0spp:
       FixedSigma: true
       fitcase: Lc
       latexnamemeson: "#Lambda_{c}^{pK0s}"
-      latexbin2var: "n_{trkl}"
+      latexbin2var: "v0m perc"
       nevents: null
       dodoublecross: false
 

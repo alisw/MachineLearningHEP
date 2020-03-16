@@ -23,6 +23,10 @@ import argparse
 from os.path import exists
 import yaml
 from pkg_resources import resource_stream
+
+# To set batch mode immediately
+from ROOT import gROOT # pylint: disable=import-error, no-name-in-module
+
 from machine_learning_hep.multiprocesser import MultiProcesser
 from machine_learning_hep.processer import Processer
 from machine_learning_hep.processerdhadrons import ProcesserDhadrons
@@ -69,6 +73,9 @@ except Exception as e: # pylint: disable=broad-except
 
 
 def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, run_param: dict): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+
+    # Disable any graphical stuff. No TCanvases opened and shown by default
+    gROOT.SetBatch(True)
 
     logger = get_logger()
     logger.info("Do analysis chain")

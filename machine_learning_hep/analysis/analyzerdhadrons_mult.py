@@ -252,7 +252,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             fileouteff.cd()
             h_sel_pr.SetName("eff_mult%d" % imult)
             h_sel_pr.Write()
-            legeffstring = "%.1f #leq %s < %.1f GeV/#it{c}" % \
+            legeffstring = "%.1f #leq %s < %.1f" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legeff.AddEntry(h_sel_pr, legeffstring, "LEP")
             h_sel_pr.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
@@ -287,7 +287,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             fileouteff.cd()
             h_sel_fd.SetName("eff_fd_mult%d" % imult)
             h_sel_fd.Write()
-            legeffFDstring = "%.1f #leq %s < %.1f GeV/#it{c}" % \
+            legeffFDstring = "%.1f #leq %s < %.1f" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legeffFD.AddEntry(h_sel_fd, legeffFDstring, "LEP")
             h_sel_fd.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
@@ -348,7 +348,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                                        (self.p_latexnmeson, self.typean))
             hcross.SetName("hcross%d" % imult)
             hcross.GetYaxis().SetRangeUser(1e1, 1e10)
-            legvsvar1endstring = "%.1f < %s < %.1f GeV/#it{c}" % \
+            legvsvar1endstring = "%.1f < %s < %.1f" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legvsvar1.AddEntry(hcross, legvsvar1endstring, "LEP")
             hcross.Draw("same")
@@ -552,7 +552,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             hcross.GetYaxis().SetTitle("Corrected yield/events (%s) %s" %
                                        (self.p_latexnmeson, self.typean))
             hcross.GetYaxis().SetRangeUser(1e-10, 1)
-            legvsvar1endstring = "%.1f #leq %s < %.1f GeV/#it{c}" % \
+            legvsvar1endstring = "%.1f #leq %s < %.1f" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legvsvar1.AddEntry(hcross, legvsvar1endstring, "LEP")
             hcross.Draw("same")
