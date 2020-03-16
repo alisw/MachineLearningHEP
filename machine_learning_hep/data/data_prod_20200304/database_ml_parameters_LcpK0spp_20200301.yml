@@ -444,10 +444,12 @@ LcpK0spp:
       fprompt_from_mb: true
       corresp_mb_typean: null
       corrEffMult: [false, true, true, true]
-      sel_binmin2: [0,1,10,30] #list of var2 splittng nbins
+      sel_binmin2: [1,1,10,30] #list of var2 splittng nbins
       sel_binmax2: [9999,9,29,59] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
       var_binning2_gen: n_tracklets_corr
+      triggereff: [0.92,0.862,1,1,1]
+      triggereffunc: [0.003,0.018,0,0,0]
       triggerbit: INT7
       isNbx2: true    #Estimate the feeddown systematic with Nb and Nbx2 method convolution. Set to true just for Lc vs mult.
 
