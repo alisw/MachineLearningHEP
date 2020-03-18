@@ -625,6 +625,9 @@ LcpK0spp:
       cutvarmaxrange: [0.80, 0.80, 0.80, 0.80, 0.80] #Max starting point for scan
       fixedmean: True #Fix mean cutvar histo to central fit
       fixedsigma: True #Fix sigma cutvar histo to central fit
+      min_signif_fit: 3.
+      max_red_chi2_fit: 2.
+
     mcptshape:
       #FONLL / generated LHC19h4c1
       weights: [1.000000]
