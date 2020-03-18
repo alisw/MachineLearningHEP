@@ -195,6 +195,27 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
 
+
+        # Allow to select on periods per year
+        self.sub_periods = None
+        self.periods_runlist_merged = []
+        if self.mcordata == "data":
+            self.sub_periods = datap["analysis"][self.typean].get("data_sub_periods", None)
+        if self.sub_periods:
+            self.sub_periods = self.sub_periods.get(self.period, None)
+        if self.sub_periods:
+            for sub_per in self.sub_periods:
+                if sub_per not in self.run_param["data_sub_periods"][self.period]:
+                    # Use simple print for now until issue
+                    # https://github.com/ginnocen/MachineLearningHEP/issues/586
+                    # has been resolved
+                    print(f"ERROR: Unkown sub-period {sub_per}, exit")
+                    sys.exit(1)
+                self.periods_runlist_merged.extend( \
+                        self.run_param["data_sub_periods"][self.period][sub_per])
+        print(f"Period {self.period} with run list:")
+        print(self.periods_runlist_merged)
+
  #       if os.path.exists(self.d_root) is False:
  #           self.logger.warning("ROOT tree folder is not there. Is it intentional?")
 

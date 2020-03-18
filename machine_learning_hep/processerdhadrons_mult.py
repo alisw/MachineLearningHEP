@@ -83,7 +83,12 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         if self.runlistrigger is not None:
             dfevtorig = selectdfrunlist(dfevtorig, \
                              self.run_param[self.runlistrigger], "run_number")
+        # Select periods within year if required by the user
+        if self.periods_runlist_merged:
+            dfevtorig = selectdfrunlist(dfevtorig, self.periods_runlist_merged, "run_number")
+
         dfevtevtsel = dfevtorig.query("is_ev_rej==0")
+
         labeltrigger = "hbit%svs%s" % (self.triggerbit, self.v_var2_binning_gen)
 
         myfile.cd()
@@ -103,6 +108,11 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 df = df.query(self.s_evtsel)
             if self.s_trigger is not None:
                 df = df.query(self.s_trigger)
+
+            # Select periods within year if required by the user
+            if self.periods_runlist_merged:
+                df = selectdfrunlist(df, self.periods_runlist_merged, "run_number")
+
             df = seldf_singlevar(df, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
             for ibin2 in range(len(self.lvar2_binmin)):

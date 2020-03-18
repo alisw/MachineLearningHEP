@@ -28,7 +28,6 @@ from array import array
 import numpy as np
 import pandas as pd
 import lz4
-from machine_learning_hep.selectionutils import select_runs
 from ROOT import TGraphAsymmErrors  # pylint: disable=import-error, no-name-in-module
 
 def openfile(filename, attr):
@@ -58,8 +57,7 @@ def selectdfrunlist(dfr, runlist, runvar):
     Select smaller runlist on dataframe
     """
     if runlist is not None:
-        isgoodrun = select_runs(runlist, dfr[runvar].values)
-        dfr = dfr[np.array(isgoodrun, dtype=bool)]
+        return dfr[dfr[runvar].isin(runlist)]
     return dfr
 
 def merge_method(listfiles, namemerged):
