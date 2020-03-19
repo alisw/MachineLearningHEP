@@ -252,6 +252,7 @@ D0pp:
       data:         [0.75,0.75,0.65,0.65,0.45,0.45,0.45] # sel_skim_binmin bins
       mc:           [0.75,0.75,0.65,0.65,0.45,0.45,0.45] # sel_skim_binmin bins
     probcutoptimal: probcutoptimal_variable # sel_skim_binmin bins
+    #probcutoptimal: [0.75,0.75,0.65,0.65,0.45,0.45,0.45] # sel_skim_binmin bins
 
   analysis:
     indexhptspectrum: 0 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
@@ -466,6 +467,107 @@ D0pp:
 
       nevents: 1590000000.
 
+    MBvspt_ntrkl:
+      proc_type: Dhadrons_mult
+      useperiod: [1,1,1]
+      plotbin: [1,1,1,1,0]
+      usesinglebineff: null
+      fprompt_from_mb: true
+      corresp_mb_typean: null
+      corrEffMult: [false,true,true,true,true]
+      sel_binmin2: [1,1,10,30,60] #list of var2 splittng nbins
+      sel_binmax2: [9999,9,29,59,99] #list of var2 splitting nbins
+      var_binning2: n_tracklets_corr_sub
+      var_binning2_gen: n_tracklets_corr
+      triggereff: [0.92,0.862,1,1,1]
+      triggereffunc: [0.003,0.018,0,0,0]
+      triggerbit: INT7
+      sel_an_binmin: [2,4,6,8,12]  # [1,2,4,6,8,12] #list of pt nbins
+      sel_an_binmax: [4,6,8,12,24]  # [2,4,6,8,12,24] #list of pt nbins
+      binning_matching: [1,2,3,4,5]  # [0,1,2,2,3,4] #list of pt nbins
+      presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
+      evtsel: is_ev_rej==0
+      triggersel:
+        data: "trigger_hasbit_INT7==1"
+        mc: null
+        weighttrig: false
+
+      data:
+        runselection: [null, null, null]
+        results: [/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsMBvspt_ntrkl] #list of periods
+        resultsallp: /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_data/resultsMBvspt_ntrkl
+      mc:
+        runselection: [null, null, null]
+        results: [/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBvspt_ntrkl] #list of periods
+        resultsallp: /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_ntrkl
+
+      # The global mass limits
+      mass_fit_lim: [1.69, 2.21] # region for the fit of the invariant mass distribution [GeV/c^2]
+      bin_width: 0.001 # bin width of the invariant mass histogram
+      # To initialize the individual fits in pT bins
+      # Decide whether to take the sigma from MC or data for individual fits
+      init_fits_from: [data, data, data, data, data] # data or mc
+      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus]
+      bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo]
+      masspeak: 1.864
+      massmin: [1.75,1.75,1.75,1.75,1.75]
+      massmax: [2.1,2.1,2.1,2.1,2.1]
+      rebin: [[6,6,6,6,6], [6,6,6,6,6], [6,6,6,6,6], [6,6,6,6,6], [6,6,6,6,6]]
+      includesecpeak: [[false, false, false, false, false],[false, false, false, false, false],[false, false, false, false, false],[false, false, false, false, false],[false, false, false, false, false]]
+      masssecpeak: -1.0
+      fix_masssecpeak: [[false, false, false, false, false],[false, false, false, false, false],[false, false, false, false, false],[false, false, false, false, false],[false, false, false, false, false]]
+      #Fraction Dplus/Ds (taken from pp5TeV as we don't store it in TTrees)
+      widthsecpeak: -1
+      fix_widthsecpeak: false
+      # Fix mean and/or sigma
+      FixedMean: False
+      SetFixGaussianSigma: [false, false, false, false, false]
+      # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
+      SetInitialGaussianMean: true
+      # Use values set for "sigmaarray" for initializing total fit (per pT bin),
+      # otherwise what is derived from MC fit is used
+      SetInitialGaussianSigma: [false, false, false, false, false]
+      # Max percentage deviation in sigma (from init) to be considered as a good fit
+      MaxPercSigmaDeviation: 0.5
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
+      exclude_nsigma_sideband: 4
+      # Sigma around mean where signal is integrated after total fit has been done
+      nsigma_signal: 3
+      dolikelihood: false
+      sigmaarray: [0.007497,0.01,0.01,0.01,0.01]
+      FixedSigma: false
+      fitcase: D0
+      latexnamemeson: "D^{0}"
+      latexbin2var: "n_{trkl}"
+      nevents: null
+      dodoublecross: false
+
+      systematics:
+        # For now don't do these things per pT bin
+        max_chisquare_ndf: 2.
+        rebin: [-1,0,1]
+        massmin: [1.69, 1.72, 1.75, 1.78, 1.81]
+        massmax: [2.09, 2.12, 2.15, 2.18, 2.21]
+        bincount_sigma: [3.,5.]
+        bkg_funcs: [kExpo, Pol2]
+        # Whether to include the free sigma option in the derivation of raw yield uncertainty in given pT bin
+        consider_free_sigma: [True, True, True, True, True]
+        # Chose which sigma should be taken to initialize the multi trial
+        # If nothing is specified the value of the central fit is taken
+        # can be a sigle value taken for all pT and mult bins
+        #init_sigma_from: "central"
+        # Can be a list covering all pT bins
+        init_sigma_from: ["user", "data", "data", "data", "data"]
+        # Or a 2D list for all mult. and pT bins individually
+        #init_sigma_from:
+        #  - ["mc", "data", "data", "data", "data", "data"]
+        #  - ["mc", "data", "data", "data", "data", "data"]
+        #  - ["mc", "data", "data", "data", "data", "data"]
+        #  - ["mc", "data", "data", "data", "data", "data"]
 
 
   systematics:
@@ -486,24 +588,3 @@ D0pp:
       weights_max_pt: 40
       weights_bins: 400
 
-
-  validation:
-    runlisttrigger:
-      LHC16pp:
-        INT7: nosel
-        HighMultSPD: nosel
-        HighMultV0: nosel
-      LHC17pp:
-        INT7: nosel
-        HighMultSPD: nosel
-        HighMultV0: nosel
-      LHC18pp:
-        INT7: nosel
-        HighMultSPD: HighMultSPD2018
-        HighMultV0: nosel
-    data:
-      dir: [/data/DerivedVal/dataval_16, /data/DerivedVal/dataval_17, /data/DerivedVal/dataval_18] #list of periods
-      dirmerged: /data/DerivedVal/datavaltot
-    mc:
-      dir: [/data/DerivedVal/mcval_16, /data/DerivedVal/mcval_17, /data/DerivedVal/mcval_18] #list of periods
-      dirmerged: /data/DerivedVal/mcvaltot

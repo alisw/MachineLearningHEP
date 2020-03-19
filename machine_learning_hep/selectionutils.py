@@ -17,7 +17,9 @@ utilities for fiducial acceptance, pid, single topological variable selections a
 """
 
 #import numba
-from machine_learning_hep.bitwise import filter_bit_df
+from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
+from ROOT import TH1F # pylint: disable=import-error, no-name-in-module
+from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 
 #@numba.njit
 def selectcandidateml(array_prob, probcut):
@@ -151,3 +153,37 @@ def getnormforselevt(df_evt):
     n_ev_sel = len(df_acc_ev.index)
 
     return (n_ev_sel+n_no_reco_vtx) - n_no_reco_vtx*n_zvtx_gr10 / (n_ev_sel+n_zvtx_gr10)
+
+def gethistonormforselevt_mult(df_evt, dfevtevtsel, label, var):
+    hSelMult = TH1F('sel_' + label, 'sel_' + label, 10000, -0.5, 9999.5)
+    hNoVtxMult = TH1F('novtx_' + label, 'novtx_' + label, 10000, -0.5, 9999.5)
+    hVtxOutMult = TH1F('vtxout_' + label, 'vtxout_' + label, 10000, -0.5, 9999.5)
+
+    df_to_keep = filter_bit_df(df_evt, 'is_ev_rej', [[], [0, 5, 6, 10, 11]])
+    # events with reco vtx after previous selection
+    tag_vtx = tag_bit_df(df_to_keep, 'is_ev_rej', [[], [1, 2, 7, 12]])
+    df_no_vtx = df_to_keep[~tag_vtx.values]
+    # events with reco zvtx > 10 cm after previous selection
+    df_bit_zvtx_gr10 = filter_bit_df(df_to_keep, 'is_ev_rej', [[3], [1, 2, 7, 12]])
+
+    fill_hist(hSelMult, dfevtevtsel[var])
+    fill_hist(hNoVtxMult, df_no_vtx[var])
+    fill_hist(hVtxOutMult, df_bit_zvtx_gr10[var])
+    return hSelMult, hNoVtxMult, hVtxOutMult
+
+def gethistonormforselevt(df_evt, dfevtevtsel, label):
+    hSelMult = TH1F('sel_' + label, 'sel_' + label, 1, -0.5, 0.5)
+    hNoVtxMult = TH1F('novtx_' + label, 'novtx_' + label, 1, -0.5, 0.5)
+    hVtxOutMult = TH1F('vtxout_' + label, 'vtxout_' + label, 1, -0.5, 0.5)
+
+    df_to_keep = filter_bit_df(df_evt, 'is_ev_rej', [[], [0, 5, 6, 10, 11]])
+    # events with reco vtx after previous selection
+    tag_vtx = tag_bit_df(df_to_keep, 'is_ev_rej', [[], [1, 2, 7, 12]])
+    df_no_vtx = df_to_keep[~tag_vtx.values]
+    # events with reco zvtx > 10 cm after previous selection
+    df_bit_zvtx_gr10 = filter_bit_df(df_to_keep, 'is_ev_rej', [[3], [1, 2, 7, 12]])
+
+    hSelMult.SetBinContent(1, len(dfevtevtsel))
+    hNoVtxMult.SetBinContent(1, len(df_no_vtx))
+    hVtxOutMult.SetBinContent(1, len(df_bit_zvtx_gr10))
+    return hSelMult, hNoVtxMult, hVtxOutMult

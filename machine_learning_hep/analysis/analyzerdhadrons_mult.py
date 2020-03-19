@@ -80,8 +80,6 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
 
         self.n_fileff = datap["files_names"]["efffilename"]
         self.n_fileff = os.path.join(self.d_resultsallpmc, self.n_fileff)
-        self.n_evtvalroot = datap["files_names"]["namefile_evtvalroot"]
-
         self.p_bin_width = datap["analysis"][self.typean]['bin_width']
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
                                     self.p_bin_width))
@@ -155,16 +153,6 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         self.p_fprompt_from_mb = datap["analysis"][self.typean]["fprompt_from_mb"]
         self.p_sigmamb = datap["ml"]["opt"]["sigma_MB"]
         self.p_br = datap["ml"]["opt"]["BR"]
-
-        self.d_valevtdata = datap["validation"]["data"]["dir"][period] \
-                if period is not None else datap["validation"]["data"]["dirmerged"]
-        self.d_valevtmc = datap["validation"]["mc"]["dir"][period] \
-                if period is not None else datap["validation"]["mc"]["dirmerged"]
-
-        self.f_evtvaldata = os.path.join(self.d_valevtdata, self.n_evtvalroot)
-        self.f_evtvalmc = os.path.join(self.d_valevtmc, self.n_evtvalroot)
-
-        self.f_evtnorm = os.path.join(self.d_valevtdata, "correctionsweights.root")
 
         # Systematics
         self.mt_syst_dict = datap["analysis"][self.typean].get("systematics", None)
@@ -264,7 +252,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             fileouteff.cd()
             h_sel_pr.SetName("eff_mult%d" % imult)
             h_sel_pr.Write()
-            legeffstring = "%.1f #leq %s < %.1f GeV/#it{c}" % \
+            legeffstring = "%.1f #leq %s < %.1f" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legeff.AddEntry(h_sel_pr, legeffstring, "LEP")
             h_sel_pr.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
@@ -299,7 +287,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             fileouteff.cd()
             h_sel_fd.SetName("eff_fd_mult%d" % imult)
             h_sel_fd.Write()
-            legeffFDstring = "%.1f #leq %s < %.1f GeV/#it{c}" % \
+            legeffFDstring = "%.1f #leq %s < %.1f" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legeffFD.AddEntry(h_sel_fd, legeffFDstring, "LEP")
             h_sel_fd.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
@@ -360,7 +348,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                                        (self.p_latexnmeson, self.typean))
             hcross.SetName("hcross%d" % imult)
             hcross.GetYaxis().SetRangeUser(1e1, 1e10)
-            legvsvar1endstring = "%.1f < %s < %.1f GeV/#it{c}" % \
+            legvsvar1endstring = "%.1f < %s < %.1f" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legvsvar1.AddEntry(hcross, legvsvar1endstring, "LEP")
             hcross.Draw("same")
@@ -413,64 +401,26 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
 
 
     @staticmethod
-    def calculate_norm(mode, filename, trigger, var, multmin, multmax, doweight):
-        fileout = TFile.Open(filename, "read")
-        labeltrigger = "hbit%svs%s" % (trigger, var)
+    def calculate_norm(hsel, hnovt, hvtxout, multmin, multmax):
+        if not hsel:
+            # pylint: disable=undefined-variable
+            self.logger.error("Missing hsel")
+        if not hnovt:
+            # pylint: disable=undefined-variable
+            self.logger.error("Missing hnovt")
+        if not hvtxout:
+            # pylint: disable=undefined-variable
+            self.logger.error("Missing hvtxout")
+
+        binminv = hsel.GetXaxis().FindBin(multmin)
+        binmaxv = hsel.GetXaxis().FindBin(multmax)
+
+        n_sel = hsel.Integral(binminv, binmaxv)
+        n_novtx = hnovt.Integral(binminv, binmaxv)
+        n_vtxout = hvtxout.Integral(binminv, binmaxv)
         norm = -1
-
-        if not fileout:
-            return -1
-        if mode == 0:
-            namehistomulti = None
-            if doweight is True:
-                namehistomulti = "hmultweighted%svs%s" % (trigger, var)
-            else:
-                namehistomulti = "hmult%svs%s" % (trigger, var)
-            hmult = fileout.Get(namehistomulti)
-            if not hmult:
-                # pylint: disable=undefined-variable
-                self.logger.error("The histogram %s is not present in file %s" %
-                                  namehistomulti, filename)
-
-            binminv = hmult.GetXaxis().FindBin(multmin)
-            binmaxv = hmult.GetXaxis().FindBin(multmax)
-            norm = hmult.Integral(binminv, binmaxv)
-
-        if mode == 1:
-            namehsel = None
-            namehnovtx = None
-            namehvtxout = None
-            if doweight is False:
-                print("Counting n.events not corrected for the trigger")
-                namehsel = 'sel_' + labeltrigger
-                namehnovtx = 'novtx_' + labeltrigger
-                namehvtxout = 'vtxout_' + labeltrigger
-            else:
-                print("Counting n.events corrected for the trigger")
-                namehsel = 'sel_' + labeltrigger + "weighted"
-                namehnovtx = 'novtx_' + labeltrigger + "weighted"
-                namehvtxout = 'vtxout_' + labeltrigger + "weighted"
-            hsel = fileout.Get(namehsel)
-            hnovt = fileout.Get(namehnovtx)
-            hvtxout = fileout.Get(namehvtxout)
-            if not hsel:
-                # pylint: disable=undefined-variable
-                self.logger.error("Missing hsel %s", namehsel)
-            if not hnovt:
-                # pylint: disable=undefined-variable
-                self.logger.error("Missing hnovt %s", namehnovtx)
-            if not hvtxout:
-                # pylint: disable=undefined-variable
-                self.logger.error("Missing hvtxout %s", namehvtxout)
-
-            binminv = hsel.GetXaxis().FindBin(multmin)
-            binmaxv = hsel.GetXaxis().FindBin(multmax)
-
-            n_sel = hsel.Integral(binminv, binmaxv)
-            n_novtx = hnovt.Integral(binminv, binmaxv)
-            n_vtxout = hvtxout.Integral(binminv, binmaxv)
-            if n_sel + n_vtxout > 0:
-                norm = (n_sel + n_novtx) - n_novtx * n_vtxout / (n_sel + n_vtxout)
+        if n_sel + n_vtxout > 0:
+            norm = (n_sel + n_novtx) - n_novtx * n_vtxout / (n_sel + n_vtxout)
         return norm
 
     # pylint: disable=import-outside-toplevel
@@ -501,25 +451,17 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             if ((self.p_nbx2) and imult == 0):
                 fileoutcrossmultRescaled = "%s/finalcross%s%smult%d_Rescaled.root" % \
                      (self.d_resultsallpdata, self.case, self.typean, imult)
-            #hNorm = lfile.Get("hEvForNorm_mult%d" % imult)
-            #norm = hNorm.GetBinContent(1)
             norm = -1
-            lfile = TFile.Open(self.n_filemass)
-            hNorm = lfile.Get("hEvForNorm_mult%d" % imult)
-            normfromhisto = hNorm.GetBinContent(1)
-            norm = self.calculate_norm(1, self.f_evtnorm, self.triggerbit, \
-                          self.v_var2_binning_gen, self.lvar2_binmin[imult], \
-                          self.lvar2_binmax[imult], self.apply_weights)
-            normold = self.calculate_norm(0, self.f_evtnorm, self.triggerbit, \
-                          self.v_var2_binning_gen, self.lvar2_binmin[imult], \
-                          self.lvar2_binmax[imult], self.apply_weights)
-            print("--------- NORMALIZATION -----------")
-            print(self.triggerbit, self.v_var2_binning,
-                  self.lvar2_binmin[imult], self.lvar2_binmax[imult])
-            print("N. events selected=", normold, "N. events counter =", norm)
-            if abs(norm - normfromhisto)/norm > 0.05 and self.apply_weights is False:
-                print("inconistent number of events", normfromhisto, norm)
-
+            filemass = TFile.Open(self.n_filemass)
+            labeltrigger = "hbit%svs%s" % (self.triggerbit, self.v_var2_binning_gen)
+            hsel = filemass.Get("sel_%s" % labeltrigger)
+            hnovtx = filemass.Get("novtx_%s" % labeltrigger)
+            hvtxout = filemass.Get("vtxout_%s" % labeltrigger)
+            norm = self.calculate_norm(hsel, hnovtx, hvtxout,
+                                       self.lvar2_binmin[imult],
+                                       self.lvar2_binmax[imult])
+            # pylint: disable=logging-not-lazy
+            self.logger.warning("Number of events %d for mult bin %d" % (norm, imult))
             filecrossmb = None
             if self.p_fprompt_from_mb is True and self.p_fd_method == 2:
                 if self.p_corrmb_typean is not None:
@@ -610,7 +552,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             hcross.GetYaxis().SetTitle("Corrected yield/events (%s) %s" %
                                        (self.p_latexnmeson, self.typean))
             hcross.GetYaxis().SetRangeUser(1e-10, 1)
-            legvsvar1endstring = "%.1f #leq %s < %.1f GeV/#it{c}" % \
+            legvsvar1endstring = "%.1f #leq %s < %.1f" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
             legvsvar1.AddEntry(hcross, legvsvar1endstring, "LEP")
             hcross.Draw("same")
@@ -618,229 +560,3 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         cCrossvsvar1.SaveAs("%s/CorrectedYieldsNorm%s%sVs%s.eps" % (self.d_resultsallpdata,
                                                                     self.case, self.typean,
                                                                     self.v_var_binning))
-    def studyevents(self):
-        gROOT.SetBatch(True)
-        self.loadstyle()
-        filedata = TFile.Open(self.f_evtvaldata)
-        triggerlist = ["HighMultV0", "INT7"]
-        varlist = ["v0m_corr", "n_tracklets_corr", "perc_v0m"]
-        fileout_name = "%s/correctionsweights.root" % self.d_valevtdata
-        fileout = TFile.Open(fileout_name, "recreate")
-        fileout.cd()
-        for ivar, var in enumerate(varlist):
-            labelMB = "hbitINT7vs%s" % (var)
-            hden = filedata.Get(labelMB)
-            hden.SetName("hmultINT7vs%s" % (var))
-            hden.Write()
-            for trigger in triggerlist:
-                labeltriggerANDMB = "hbit%sANDINT7vs%s" % (trigger, var)
-                labeltrigger = "hbit%svs%s" % (trigger, var)
-                heff = filedata.Get(labeltriggerANDMB)
-                if not heff or not hden:
-                    continue
-                heff.Divide(heff, hden, 1.0, 1.0, "B")
-                hratio = filedata.Get(labeltrigger)
-                hmult = hratio.Clone("hmult%svs%s" % (trigger, var))
-                hmultweighted = hratio.Clone("hmultweighted%svs%s" % (trigger, var))
-                if not hratio:
-                    continue
-                hratio.Divide(hratio, hden, 1.0, 1.0, "B")
-
-                ctrigger = TCanvas('ctrigger%s' % trigger, 'The Fit Canvas')
-                ctrigger.SetCanvasSize(3500, 2000)
-                ctrigger.Divide(3, 2)
-
-                ctrigger.cd(1)
-                heff.SetMaximum(2.)
-                heff.GetXaxis().SetTitle("offline %s" % var)
-                heff.SetMinimum(0.)
-                heff.GetYaxis().SetTitle("trigger efficiency from MB events")
-                heff.SetLineColor(1)
-                heff.Draw()
-                heff.Write()
-
-                ctrigger.cd(2)
-                hratio.GetXaxis().SetTitle("offline %s" % var)
-                hratio.GetYaxis().SetTitle("ratio triggered/MB")
-                hratio.GetYaxis().SetTitleOffset(1.3)
-                hratio.Write()
-                hratio.SetLineColor(1)
-                hratio.Draw()
-                func = TF1("func_%s_%s" % (trigger, var), \
-                           "([0]/(1+TMath::Exp(-[1]*(x-[2]))))", 0, 1000)
-                if ivar == 0:
-                    func.SetParameters(300, .1, 570)
-                    func.SetParLimits(1, 0., 10.)
-                    func.SetParLimits(2, 0., 1000.)
-                    func.SetRange(550., 1100.)
-                    func.SetLineWidth(1)
-                    hratio.Fit(func, "L", "", 550, 1100)
-                    func.Draw("same")
-                    func.SetLineColor(ivar+1)
-                if ivar == 1:
-                    func.SetParameters(100, .1, 50)
-                    func.SetParLimits(1, 0., 10.)
-                    func.SetParLimits(2, 0., 200.)
-                    func.SetRange(45., 105)
-                    func.SetLineWidth(1)
-                    hratio.Fit(func, "L", "", 45, 105)
-                    func.SetLineColor(ivar+1)
-                if ivar == 2:
-                    func.SetParameters(315, -30., .2)
-                    func.SetParLimits(1, -100., 0.)
-                    func.SetParLimits(2, 0., .5)
-                    func.SetRange(0., .15)
-                    func.SetLineWidth(1)
-                    hratio.Fit(func, "w", "", 0, .15)
-                    func.SetLineColor(ivar+1)
-                func.Write()
-                funcnorm = func.Clone("funcnorm_%s_%s" % (trigger, var))
-                funcnorm.FixParameter(0, funcnorm.GetParameter(0)/funcnorm.GetMaximum())
-                funcnorm.Write()
-                ctrigger.cd(3)
-                maxhistx = 0
-                if ivar == 0:
-                    minhistx = 300
-                    maxhistx = 1000
-                    fulleffmin = 700
-                    fulleffmax = 800
-                elif ivar == 1:
-                    minhistx = 40
-                    maxhistx = 150
-                    fulleffmin = 80
-                    fulleffmax = 90
-                else:
-                    minhistx = .0
-                    maxhistx = .5
-                    fulleffmin = 0.
-                    fulleffmax = 0.03
-                hempty = TH1F("hempty_%d" % ivar, "hempty", 100, 0, maxhistx)
-                hempty.GetYaxis().SetTitleOffset(1.2)
-                hempty.GetYaxis().SetTitleFont(42)
-                hempty.GetXaxis().SetTitleFont(42)
-                hempty.GetYaxis().SetLabelFont(42)
-                hempty.GetXaxis().SetLabelFont(42)
-                hempty.GetXaxis().SetTitle("offline %s" % var)
-                hempty.GetYaxis().SetTitle("trigger efficiency from effective")
-                hempty.Draw()
-                funcnorm.SetLineColor(1)
-                funcnorm.Draw("same")
-
-                ctrigger.cd(4)
-                gPad.SetLogy()
-                leg1 = TLegend(.2, .75, .4, .85)
-                leg1.SetBorderSize(0)
-                leg1.SetFillColor(0)
-                leg1.SetFillStyle(0)
-                leg1.SetTextFont(42)
-                leg1.SetTextSize(0.035)
-                hmult.GetXaxis().SetTitle("offline %s" % var)
-                hmult.GetYaxis().SetTitle("entries")
-                hmult.SetLineColor(1)
-                hden.SetLineColor(2)
-                hmultweighted.SetLineColor(3)
-                hmult.Draw()
-                hmult.SetMaximum(1e10)
-                hden.Draw("same")
-                for ibin in range(hmult.GetNbinsX()):
-                    myweight = funcnorm.Eval(hmult.GetBinCenter(ibin + 1))
-                    hmultweighted.SetBinContent(ibin + 1, hmult.GetBinContent(ibin+1) / myweight)
-                hmult.Write()
-                hmultweighted.Write()
-                hmultweighted.Draw("same")
-                leg1.AddEntry(hden, "MB distribution", "LEP")
-                leg1.AddEntry(hmult, "triggered uncorr", "LEP")
-                leg1.AddEntry(hmultweighted, "triggered corr.", "LEP")
-                leg1.Draw()
-                print("event before", hmult.GetEntries(), "after",
-                      hmultweighted.Integral())
-                ctrigger.cd(5)
-                leg2 = TLegend(.2, .75, .4, .85)
-                leg2.SetBorderSize(0)
-                leg2.SetFillColor(0)
-                leg2.SetFillStyle(0)
-                leg2.SetTextFont(42)
-                leg2.SetTextSize(0.035)
-                linear = TF1("lin_%s_%s" % (trigger, var), \
-                           "[0]", fulleffmin, fulleffmax)
-                hratioMBcorr = hmultweighted.Clone("hratioMBcorr")
-                hratioMBcorr.Divide(hden)
-                hratioMBuncorr = hmult.Clone("hratioMBuncorr")
-                hratioMBuncorr.Divide(hden)
-                hratioMBuncorr.Fit(linear, "w", "", fulleffmin, fulleffmax)
-                hratioMBuncorr.Scale(1./linear.GetParameter(0))
-                hratioMBcorr.Scale(1./linear.GetParameter(0))
-                hratioMBcorr.SetLineColor(3)
-                hratioMBuncorr.SetLineColor(2)
-                hratioMBcorr.GetXaxis().SetTitle("offline %s" % var)
-                hratioMBcorr.GetYaxis().SetTitle("entries")
-                hratioMBcorr.GetXaxis().SetRangeUser(minhistx, maxhistx)
-                hratioMBcorr.GetYaxis().SetRangeUser(0.8, 1.2)
-                hratioMBcorr.Draw()
-                hratioMBuncorr.Draw("same")
-                leg2.AddEntry(hratioMBcorr, "triggered/MB", "LEP")
-                leg2.AddEntry(hratioMBuncorr, "triggered/MB corr.", "LEP")
-                leg2.Draw()
-                ctrigger.cd(6)
-                ptext = TPaveText(.05, .1, .95, .8)
-                ptext.AddText("%s" % (trigger))
-                ptext.AddText("MB events=%f M" % (float(hden.Integral())/1.e6))
-                ptext.AddText("%s events=%f M" % (trigger, float(hmult.Integral())/1.e6))
-                ptext.Draw()
-
-                hsel = filedata.Get('sel_' + labeltrigger)
-                hnovtx = filedata.Get('novtx_' + labeltrigger)
-                hvtxout = filedata.Get('vtxout_' + labeltrigger)
-                hselweighted = hsel.Clone('sel_' + labeltrigger + "weighted")
-                hnovtxweighted = hnovtx.Clone('novtx_' + labeltrigger + "weighted")
-                hvtxoutweighted = hvtxout.Clone('vtxout_' + labeltrigger + "weighted")
-
-                for ibin in range(hmult.GetNbinsX()):
-                    myweight = funcnorm.Eval(hsel.GetBinCenter(ibin + 1))
-                    hselweighted.SetBinContent(ibin + 1, \
-                        hsel.GetBinContent(ibin+1) / myweight)
-                    hnovtxweighted.SetBinContent(ibin + 1, \
-                        hnovtx.GetBinContent(ibin+1) / myweight)
-                    hvtxoutweighted.SetBinContent(ibin + 1, \
-                        hvtxout.GetBinContent(ibin+1) / myweight)
-                hsel.Write()
-                hnovtx.Write()
-                hvtxout.Write()
-                hselweighted.Write()
-                hnovtxweighted.Write()
-                hvtxoutweighted.Write()
-
-                ctrigger.SaveAs(self.make_file_path(self.d_valevtdata, \
-                        "ctrigger_%s_%s" % (trigger, var), "eps", \
-                        None, None))
-
-        cscatter = TCanvas("cscatter", 'The Fit Canvas')
-        cscatter.SetCanvasSize(2100, 800)
-        cscatter.Divide(3, 1)
-        hv0mvsperc = filedata.Get("hv0mvsperc")
-        hntrklsperc = filedata.Get("hntrklsperc")
-        hntrklsv0m = filedata.Get("hntrklsv0m")
-        if hv0mvsperc:
-            cscatter.cd(1)
-            gPad.SetLogx()
-            hv0mvsperc.GetXaxis().SetTitle("percentile (max value = 100)")
-            hv0mvsperc.GetYaxis().SetTitle("V0M corrected for z")
-            hv0mvsperc.Draw("colz")
-        if hntrklsperc:
-            cscatter.cd(2)
-            gPad.SetLogx()
-            gPad.SetLogz()
-            hntrklsperc.GetYaxis().SetRangeUser(0., 200.)
-            hntrklsperc.GetXaxis().SetTitle("percentile (max value = 100)")
-            hntrklsperc.GetYaxis().SetTitle("SPD ntracklets for z")
-            hntrklsperc.Draw("colz")
-        if hntrklsv0m:
-            cscatter.cd(3)
-            hntrklsv0m.GetYaxis().SetRangeUser(0., 200.)
-            gPad.SetLogx()
-            gPad.SetLogz()
-            hntrklsv0m.GetXaxis().SetTitle("V0M corrected for z")
-            hntrklsv0m.GetYaxis().SetTitle("SPD ntracklets for z")
-            hntrklsv0m.Draw("colz")
-        cscatter.SaveAs(self.make_file_path(self.d_valevtdata, "cscatter", "eps", \
-                                            None, None))

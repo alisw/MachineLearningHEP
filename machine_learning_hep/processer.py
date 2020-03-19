@@ -23,17 +23,14 @@ import random as rd
 import uproot
 import pandas as pd
 import numpy as np
-from root_numpy import fill_hist # pylint: disable=import-error
-from ROOT import TFile, TH1F# pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
-from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge_method
+from machine_learning_hep.utilities import selectdfquery, merge_method
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
 from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.utilities import get_timestamp_string
 from machine_learning_hep.models import apply # pylint: disable=import-error
-from machine_learning_hep.utilities_plot import scatterplotroot
 #from machine_learning_hep.logger import get_logger
 
 class Processer: # pylint: disable=too-many-instance-attributes
@@ -46,7 +43,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                  d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
-                 d_results, d_val, typean, runlisttrigger, d_mcreweights):
+                 d_results, typean, runlisttrigger, d_mcreweights):
         #self.logger = get_logger()
         self.nprongs = datap["nprongs"]
         self.doml = datap["doml"]
@@ -58,14 +55,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.d_pklsk = d_pklsk
         self.d_pkl_ml = d_pkl_ml
         self.d_results = d_results
-        self.d_val = d_val
         self.d_mcreweights = d_mcreweights
         self.datap = datap
         self.mcordata = mcordata
         self.p_frac_merge = p_frac_merge
         self.p_rd_merge = p_rd_merge
         self.period = p_period
-        self.runlist = run_param[self.period]
         self.run_param = run_param
         self.p_maxfiles = p_maxfiles
         self.p_chunksizeunp = p_chunksizeunp
@@ -86,7 +81,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.n_reco = datap["files_names"]["namefile_reco"]
         self.n_evt = datap["files_names"]["namefile_evt"]
         self.n_evtorig = datap["files_names"]["namefile_evtorig"]
-        self.n_evtvalroot = datap["files_names"]["namefile_evtvalroot"]
         self.n_gen = datap["files_names"]["namefile_gen"]
         self.n_filemass = datap["files_names"]["histofilename"]
         self.n_fileeff = datap["files_names"]["efffilename"]
@@ -135,7 +129,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.l_reco = createlist(self.d_pkl, self.l_path, self.n_reco)
         self.l_evt = createlist(self.d_pkl, self.l_path, self.n_evt)
         self.l_evtorig = createlist(self.d_pkl, self.l_path, self.n_evtorig)
-        self.l_evtvalroot = createlist(self.d_val, self.l_path, self.n_evtvalroot)
         self.l_histomass = createlist(self.d_results, self.l_path, self.n_filemass)
         self.l_histoeff = createlist(self.d_results, self.l_path, self.n_fileeff)
 
@@ -144,7 +137,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         self.f_totevt = os.path.join(self.d_pkl, self.n_evt)
         self.f_totevtorig = os.path.join(self.d_pkl, self.n_evtorig)
-        self.f_totevtvalroot = os.path.join(self.d_val, self.n_evtvalroot)
 
         self.p_modelname = datap["mlapplication"]["modelname"]
         self.lpt_anbinmin = datap["sel_skim_binmin"]
@@ -216,7 +208,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
             print('I am sorry, I am dying ...\n \n \n')
             sys.exit()
 
-        dfevtorig = selectdfrunlist(dfevtorig, self.runlist, "run_number")
         dfevtorig = selectdfquery(dfevtorig, self.s_cen_unp)
         dfevtorig = dfevtorig.reset_index(drop=True)
         pickle.dump(dfevtorig, openfile(self.l_evtorig[file_index], "wb"), protocol=4)
@@ -232,7 +223,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
             print('Missing variable in the candidate root tree')
             print('I am sorry, I am dying ...\n \n \n')
             sys.exit()
-        dfreco = selectdfrunlist(dfreco, self.runlist, "run_number")
         dfreco = selectdfquery(dfreco, self.s_reco_unp)
         dfreco = pd.merge(dfreco, dfevt, on=self.v_evtmatch)
         isselacc = selectfidacc(dfreco.pt_cand.values, dfreco.y_cand.values)
@@ -267,7 +257,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         if self.mcordata == "mc":
             treegen = uproot.open(self.l_root[file_index])[self.n_treegen]
             dfgen = treegen.pandas.df(branches=self.v_gen)
-            dfgen = selectdfrunlist(dfgen, self.runlist, "run_number")
             dfgen = pd.merge(dfgen, dfevtorig, on=self.v_evtmatch)
             dfgen = selectdfquery(dfgen, self.s_gen_unp)
             dfgen[self.v_isstd] = np.array(tag_bit_df(dfgen, self.v_bitvar,
@@ -419,47 +408,3 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.parallelizer(self.process_efficiency_single, arguments, self.p_chunksizeunp)
         tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/histoeff_{self.period}/{get_timestamp_string()}/" # pylint: disable=line-too-long
         mergerootfiles(self.l_histoeff, self.n_fileeff, tmp_merged)
-
-    # pylint: disable=too-many-locals
-    def process_valevents(self, file_index):
-        dfevt = pickle.load(openfile(self.l_evt[file_index], "rb"))
-        grouped = dfevt.groupby(self.v_evtmatch)
-        for _, group in grouped:
-            if len(group) > 1:
-                print(len(group))
-                print(group)
-                print("WARNING:EVENT DUPLICATION")
-        dfreco = pickle.load(openfile(self.l_reco[file_index], "rb"))
-        fileevtroot = TFile.Open(self.l_evtvalroot[file_index], "recreate")
-        dfreco = dfreco.query("is_ev_rej == 0")
-        h_n_tracklets = TH1F("h_n_tracklets", "h_n_tracklets", 100, -0.5, 99.5)
-        h_n_tracklets_corr = TH1F("h_n_tracklets_corr", "h_n_tracklets_corr", 100, -0.5, 99.5)
-        h_run = TH1F("h_run", "h_run", 100000, 200000, 300000)
-        h_trigg = TH1F("h_trigg", "h_trigg", 2, -0.5, 1.5)
-        fill_hist(h_n_tracklets_corr, dfreco["n_tracklets_corr"])
-        fill_hist(h_n_tracklets, dfreco["n_tracklets"])
-        fill_hist(h_run, dfreco["run_number"])
-        hmultvsrun = scatterplotroot(dfreco, "n_tracklets_corr",
-                                     "run_number", 100, -0.5, 99.5, 100000,
-                                     200000.5, 300000.5)
-        hmultvsrun.SetName("hmultvsrun")
-        fill_hist(h_trigg, dfreco["is_ev_rej_INT7"])
-        hmultvsrun.Write()
-        h_n_tracklets_corr.Write()
-        h_n_tracklets.Write()
-        hmultvsrun.Write()
-        h_trigg.Write()
-        h_run.Write()
-        prof = hmultvsrun.ProfileY()
-        prof.SetName("prof")
-        prof.Write()
-        fileevtroot.Close()
-
-    def process_valevents_par(self):
-        print("doing event validation", self.mcordata, self.period)
-        create_folder_struc(self.d_val, self.l_path)
-        tmp_merged = \
-            f"/data/tmp/hadd/{self.case}_{self.typean}/val_{self.period}/{get_timestamp_string()}/"
-        arguments = [(i,) for i in range(len(self.l_evtorig))]
-        self.parallelizer(self.process_valevents, arguments, self.p_chunksizeskim)
-        mergerootfiles(self.l_evtvalroot, self.f_totevtvalroot, tmp_merged)

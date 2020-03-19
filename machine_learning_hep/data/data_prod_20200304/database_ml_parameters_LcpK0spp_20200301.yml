@@ -365,11 +365,13 @@ LcpK0spp:
         mc: null
         weighttrig: false
       data:
+        runselection: [null, null, null]
         results: [/data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
                   /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
                   /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
         resultsallp: /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_data/resultsMBjetvspt
       mc:
+        runselection: [null, null, null]
         results: [/data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
                   /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
                   /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
@@ -442,10 +444,12 @@ LcpK0spp:
       fprompt_from_mb: true
       corresp_mb_typean: null
       corrEffMult: [false, true, true, true]
-      sel_binmin2: [0,1,10,30] #list of var2 splittng nbins
-      sel_binmax2: [9999,10,30,60] #list of var2 splitting nbins
+      sel_binmin2: [1,1,10,30] #list of var2 splittng nbins
+      sel_binmax2: [9999,9,29,59] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
       var_binning2_gen: n_tracklets_corr
+      triggereff: [0.92,0.862,1,1,1]
+      triggereffunc: [0.003,0.018,0,0,0]
       triggerbit: INT7
       isNbx2: true    #Estimate the feeddown systematic with Nb and Nbx2 method convolution. Set to true just for Lc vs mult.
 
@@ -459,11 +463,13 @@ LcpK0spp:
         mc: null
         weighttrig: false
       data:
+        runselection: [null, null, null]
         results: [/data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsMBvspt_ntrkl,
                   /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsMBvspt_ntrkl,
                   /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsMBvspt_ntrkl] #list of periods
         resultsallp: /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_data/resultsMBvspt_ntrkl
       mc:
+        runselection: [null, null, null]
         results: [/data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBvspt_ntrkl,
                   /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBvspt_ntrkl,
                   /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBvspt_ntrkl] #list of periods
@@ -524,13 +530,13 @@ LcpK0spp:
     MBvspt_perc_v0m:
       proc_type: Dhadrons_mult
       useperiod: [1,1,1]
-      plotbin: [1,1,1,1,0]
+      plotbin: [1,1,1]
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
       corrEffMult: [false, true, true, true]
-      sel_binmin2:  [0,30,0.1,0.] #list of var2 splittng nbins
-      sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
+      sel_binmin2:  [0,30,0.1] #list of var2 splittng nbins
+      sel_binmax2: [100,100,30] #list of var2 splitting nbins
       var_binning2: perc_v0m
       var_binning2_gen: perc_v0m
       triggerbit: INT7
@@ -545,11 +551,13 @@ LcpK0spp:
         mc: null
         weighttrig: false
       data:
+        runselection: [null, null, null]
         results: [/data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsMBvspt_perc_v0m,
                   /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsMBvspt_perc_v0m,
                   /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsMBvspt_perc_v0m] #list of periods
         resultsallp: /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_data/resultsMBvspt_perc_v0m
       mc:
+        runselection: [null, null, null]
         results: [/data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBvspt_perc_v0m,
                   /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBvspt_perc_v0m,
                   /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBvspt_perc_v0m] #list of periods
@@ -592,7 +600,7 @@ LcpK0spp:
       FixedSigma: true
       fitcase: Lc
       latexnamemeson: "#Lambda_{c}^{pK0s}"
-      latexbin2var: "n_{trkl}"
+      latexbin2var: "v0m perc"
       nevents: null
       dodoublecross: false
 
@@ -617,6 +625,9 @@ LcpK0spp:
       cutvarmaxrange: [0.80, 0.80, 0.80, 0.80, 0.80] #Max starting point for scan
       fixedmean: True #Fix mean cutvar histo to central fit
       fixedsigma: True #Fix sigma cutvar histo to central fit
+      min_signif_fit: 3.
+      max_red_chi2_fit: 2.
+
     mcptshape:
       #FONLL / generated LHC19h4c1
       weights: [1.000000]
@@ -625,26 +636,4 @@ LcpK0spp:
       weights_min_pt: 0
       weights_max_pt: 40
       weights_bins: 400
-
-
-  validation:
-    runlisttrigger:
-      LHC16pp:
-        INT7: nosel
-        HighMultSPD: nosel
-        HighMultV0: nosel
-      LHC17pp:
-        INT7: nosel
-        HighMultSPD: nosel
-        HighMultV0: nosel
-      LHC18pp:
-        INT7: nosel
-        HighMultSPD: HighMultSPD2018
-        HighMultV0: nosel
-    data:
-      dir: [/data/DerivedVal/dataval_16, /data/DerivedVal/dataval_17, /data/DerivedVal/dataval_18] #list of periods
-      dirmerged: /data/DerivedVal/datavaltot
-    mc:
-      dir: [/data/DerivedVal/mcval_16, /data/DerivedVal/mcval_17, /data/DerivedVal/mcval_18] #list of periods
-      dirmerged: /data/DerivedVal/mcvaltot
 
