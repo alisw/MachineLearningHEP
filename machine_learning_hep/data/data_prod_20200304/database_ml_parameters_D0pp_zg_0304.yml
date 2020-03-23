@@ -593,7 +593,7 @@ D0pp:
       sel_an_binmin: [2,4,6,8,12]  # [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [4,6,8,12,24]  # [2,4,6,8,12,24] #list of pt nbins
       binning_matching: [1,2,3,4,5]  # [0,1,2,2,3,4] #list of pt nbins
-      #include_relfection: True
+      include_reflection: True
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel:
