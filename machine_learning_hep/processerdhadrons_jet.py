@@ -39,12 +39,12 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                  d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
-                 d_results, d_val, typean, runlisttrigger, d_mcreweights):
+                 d_results, typean, runlisttrigger, d_mcreweights):
         super().__init__(case, datap, run_param, mcordata, p_maxfiles,
                          d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
                          p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                          p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
-                         d_results, d_val, typean, runlisttrigger, d_mcreweights)
+                         d_results, typean, runlisttrigger, d_mcreweights)
 
         self.p_mass_fit_lim = datap["analysis"][self.typean]['mass_fit_lim']
         self.p_bin_width = datap["analysis"][self.typean]['bin_width']
@@ -133,8 +133,9 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_bin = seldf_singlevar(df, self.v_var2_binning,
                                          self.lvar2_binmin_reco[ibin2],
                                          self.lvar2_binmax_reco[ibin2])
-                df_bin = selectdfrunlist(df_bin, \
-                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
+                if self.runlistrigger is not None:
+                    df_bin = selectdfrunlist(df_bin, \
+                             self.run_param[self.runlistrigger], "run_number")
 
                 # add the z column
                 df_bin["z"] = z_calc(df_bin.pt_jet, df_bin.phi_jet, df_bin.eta_jet,
@@ -205,12 +206,14 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                     df_mc_reco = df_mc_reco.query(self.s_jetsel_reco)
                 if self.s_trigger is not None:
                     df_mc_reco = df_mc_reco.query(self.s_trigger)
-                df_mc_reco = selectdfrunlist(df_mc_reco, \
-                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
+                if self.runlistrigger is not None:
+                    df_mc_reco = selectdfrunlist(df_mc_reco, \
+                             self.run_param[self.runlistrigger], "run_number")
                 df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[bin_id][index], "rb"))
                 df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
-                df_mc_gen = selectdfrunlist(df_mc_gen, \
-                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
+                if self.runlistrigger is not None:
+                    df_mc_gen = selectdfrunlist(df_mc_gen, \
+                             self.run_param[self.runlistrigger], "run_number")
                 df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var_binning, \
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
                 df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \
@@ -335,8 +338,9 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         for iptskim, _ in enumerate(self.lpt_anbinmin):
 
             df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[iptskim], "rb"))
-            df_mc_gen = selectdfrunlist(df_mc_gen, \
-                    self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
+            if self.runlistrigger is not None:
+                df_mc_gen = selectdfrunlist(df_mc_gen, \
+                        self.run_param[self.runlistrigger], "run_number")
             df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
             list_df_mc_gen.append(df_mc_gen)
 

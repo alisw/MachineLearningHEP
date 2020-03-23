@@ -275,6 +275,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                                         self.b_mcbkg), dtype=int)
             dfgen = dfgen.reset_index(drop=True)
             pickle.dump(dfgen, openfile(self.l_gen[file_index], "wb"), protocol=4)
+
     def skim(self, file_index):
         try:
             dfreco = pickle.load(openfile(self.l_reco[file_index], "rb"))
@@ -319,6 +320,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 dfrecoskml = dfrecosk.query("isstd == 1")
             pickle.dump(dfrecoskml, openfile(self.mptfiles_recoskmldec[ipt][file_index], "wb"),
                         protocol=4)
+
     @staticmethod
     def callback(ex):
         print(ex)
@@ -381,11 +383,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
             merge_method(self.mptfiles_recoskmldec[ipt], self.lpt_recodecmerged[ipt])
             if self.mcordata == "mc":
                 merge_method(self.mptfiles_gensk[ipt], self.lpt_gendecmerged[ipt])
+
     # pylint: disable=no-member
     def process_histomass(self):
         print("Doing masshisto", self.mcordata, self.period)
         print("Using run selection for mass histo", \
-               self.runlistrigger[self.triggerbit], "for period", self.period)
+               self.runlistrigger, "for period", self.period)
         if self.doml is True:
             print("Doing ml analysis")
         else:
@@ -397,11 +400,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
         tmp_merged = \
         f"/data/tmp/hadd/{self.case}_{self.typean}/mass_{self.period}/{get_timestamp_string()}/"
         mergerootfiles(self.l_histomass, self.n_filemass, tmp_merged)
+
     # pylint: disable=no-member
     def process_efficiency(self):
         print("Doing efficiencies", self.mcordata, self.period)
         print("Using run selection for eff histo", \
-               self.runlistrigger[self.triggerbit], "for period", self.period)
+               self.runlistrigger, "for period", self.period)
         if self.doml is True:
             print("Doing ml analysis")
         else:

@@ -37,12 +37,12 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
                  d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
-                 d_results, d_val, typean, runlisttrigger, d_mcreweights):
+                 d_results, typean, runlisttrigger, d_mcreweights):
         super().__init__(case, datap, run_param, mcordata, p_maxfiles,
                          d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
                          p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                          p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
-                         d_results, d_val, typean, runlisttrigger, d_mcreweights)
+                         d_results, typean, runlisttrigger, d_mcreweights)
 
         self.p_mass_fit_lim = datap["analysis"][self.typean]['mass_fit_lim']
         self.p_bin_width = datap["analysis"][self.typean]['bin_width']
@@ -69,8 +69,9 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
         dfevtorig = pickle.load(openfile(self.l_evtorig[index], "rb"))
         if self.s_trigger is not None:
             dfevtorig = dfevtorig.query(self.s_trigger)
-        dfevtorig = selectdfrunlist(dfevtorig, \
-                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
+        if self.runlistrigger is not None:
+            dfevtorig = selectdfrunlist(dfevtorig, \
+                             self.run_param[self.runlistrigger], "run_number")
         hNorm = TH1F("hEvForNorm", "hEvForNorm", 2, 0.5, 2.5)
         hNorm.GetXaxis().SetBinLabel(1, "normsalisation factor")
         hNorm.GetXaxis().SetBinLabel(2, "selected events")
@@ -98,8 +99,9 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
                      (self.v_var_binning, self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
             h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
                              self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-            df = selectdfrunlist(df, \
-                     self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
+            if self.runlistrigger is not None:
+                df = selectdfrunlist(df, \
+                         self.run_param[self.runlistrigger], "run_number")
             fill_hist(h_invmass, df.inv_mass)
             myfile.cd()
             h_invmass.Write()
@@ -150,13 +152,15 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
                 df_mc_reco = df_mc_reco.query(self.s_evtsel)
             if self.s_trigger is not None:
                 df_mc_reco = df_mc_reco.query(self.s_trigger)
-            df_mc_reco = selectdfrunlist(df_mc_reco, \
-                     self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
+            if self.runlistrigger is not None:
+                df_mc_reco = selectdfrunlist(df_mc_reco, \
+                         self.run_param[self.runlistrigger], "run_number")
             df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[bin_id][index], "rb"))
             df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
             print("step2b")
-            df_mc_gen = selectdfrunlist(df_mc_gen, \
-                     self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
+            if self.runlistrigger is not None:
+                df_mc_gen = selectdfrunlist(df_mc_gen, \
+                         self.run_param[self.runlistrigger], "run_number")
             df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
             df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \
