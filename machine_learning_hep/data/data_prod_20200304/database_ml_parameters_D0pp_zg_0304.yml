@@ -587,8 +587,8 @@ D0pp:
       sel_binmax2: [100,100,30] #list of var2 splitting nbins
       var_binning2: perc_v0m
       var_binning2_gen: perc_v0m
-      triggereff: [0.92,0.862,1,1,1]
-      triggereffunc: [0.003,0.018,0,0,0]
+      triggereff: [1.0,1.0,1.0] #FIXME
+      triggereffunc: [0.,0.,0.] #FIXME
       triggerbit: INT7
       sel_an_binmin: [2,4,6,8,12]  # [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [4,6,8,12,24]  # [2,4,6,8,12,24] #list of pt nbins
@@ -623,7 +623,7 @@ D0pp:
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.864
-      massmin: [1.75,1.75,1.75,1.75,1.75]
+      massmin: [1.70,1.70,1.70,1.70,1.70]
       massmax: [2.1,2.1,2.1,2.1,2.1]
       rebin: [[6,6,6,6,6], [6,6,6,6,6], [6,6,6,6,6]]
       includesecpeak: [[false, false, false, false, false],[false, false, false, false, false],[false, false, false, false, false]]
