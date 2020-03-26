@@ -376,8 +376,8 @@ Dspp:
       fprompt_from_mb: true
       corresp_mb_typean: MBvspt_ntrkl
       corrEffMult: [true,true]
-      sel_binmin2: [40., 60.] #list of var2 splittng nbins
-      sel_binmax2: [60., 100.] #list of var2 splitting nbins
+      sel_binmin2: [40, 60] #list of var2 splittng nbins
+      sel_binmax2: [60, 100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
       var_binning2_gen: n_tracklets_corr
       triggereff: [1,1]
@@ -394,12 +394,14 @@ Dspp:
         mc: null
         weighttrig: true
 
-      data:      
+      data:  
+        runselection: [null, null, HighMultSPD2018]
         results: [/data/DerivedResults/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsSPDvspt,
                   /data/DerivedResults/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsSPDvspt,
                   /data/DerivedResults/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsSPDvspt] #list of periods
         resultsallp: /data/DerivedResults/vAN-20200304_ROOT6-1/pp_data/resultsSPDvspt
       mc:
+        runselection: [null, null, HighMultSPD2018]
         results: [/data/DerivedResults/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/resultsSPDvspt,
                   /data/DerivedResults/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/resultsSPDvspt,
                   /data/DerivedResults/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/resultsSPDvspt] #list of periods
