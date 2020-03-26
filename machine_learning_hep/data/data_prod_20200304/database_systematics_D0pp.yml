@@ -6,7 +6,7 @@ categories:
             default:
                 activate: true
                 label: "default"
-                diffs:
+                diffs: {}
     fitting:
         activate: true
         label: "fitting"
@@ -131,4 +131,4 @@ categories:
             var0:
                 activate: true
                 label: "var0"
-                diffs:
+                diffs: {}
