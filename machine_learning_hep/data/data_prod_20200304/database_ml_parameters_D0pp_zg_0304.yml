@@ -494,6 +494,7 @@ D0pp:
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
       binning_matching: [0,1,2,3,4,5] #list of pt nbins
+      include_reflection: True
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel:
@@ -596,6 +597,7 @@ D0pp:
       sel_an_binmin: [1,2,4,6,8,12]  # [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24]  # [2,4,6,8,12,24] #list of pt nbins
       binning_matching: [0,1,2,3,4,5]  # [0,1,2,2,3,4] #list of pt nbins
+      include_reflection: True
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel:
@@ -661,7 +663,7 @@ D0pp:
         # For now don't do these things per pT bin
         max_chisquare_ndf: 2.
         rebin: [-1,0,1]
-        massmin: [1.69,1.69, 1.72, 1.75, 1.78, 1.81]
+        massmin: [1.69, 1.72, 1.75, 1.78, 1.81]
         massmax: [2.09,2.09, 2.12, 2.15, 2.18, 2.21]
         bincount_sigma: [3.,5.]
         bkg_funcs: [kExpo, Pol2]
