@@ -376,10 +376,10 @@ LcpK0spp:
         resultsallp: /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_data/resultsMBjetvspt
       mc:
         runselection: [null, null, null]
-        results: [/data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodLcpK0s/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodLcpK0s/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodLcpK0s/373_20200304-2021/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_mc_prodLcpK0s/resultsMBjetvspt
+        results: [/data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_mc_prodD2H/resultsMBjetvspt
 
       mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
