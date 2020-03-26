@@ -1,0 +1,134 @@
+categories:
+    default:
+        activate: true
+        label: "default"
+        variations:
+            default:
+                activate: true
+                label: "default"
+                diffs:
+    fitting:
+        activate: true
+        label: "fitting"
+        variations:
+            bkgfunc:
+                activate: true
+                label: "bkg func"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            bkgfunc: 2
+            masspeak:
+                activate: true
+                label: "mass peak"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            masspeak: 1.822
+                            masspeaksec: 1.822
+            massmin:
+                activate: true
+                label: "mass min"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            massmin: 1.76
+                            mass_fit_lim: [1.76, 2.05]
+            massmax:
+                activate: true
+                label: "mass max"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            massmax: 2.15
+                            mass_fit_lim: [1.72, 2.15]
+            rebin:
+                activate: true
+                label: "rebin"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            rebin: 12
+            fix_mean:
+                activate: true
+                label: "fix mean"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            fix_mean: true
+            fix_sigma:
+                activate: true
+                label: "fix sigma"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            fix_sigma: false
+    sideband:
+        activate: true
+        label: "side bands"
+        variations:
+            sigma:
+                activate: true
+                label: "sigma"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            signal_sigma: 1.6
+                            sigma_scale: 0.890
+            sb0:
+                activate: true
+                label: "sb 0"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            sideband_sigma_1_left: 5
+                            sideband_sigma_2_left: 8
+                            sideband_sigma_1_right: 5
+                            sideband_sigma_2_right: 8
+            sb_left:
+                activate: true
+                label: "sb left only"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            sidebandleftonly: true
+    cutvar:
+        activate: true
+        label: "cuts"
+        variations:
+            var0:
+                activate: true
+                label: "var0"
+                diffs:
+                    mlapplication:
+                        probcutoptimal: [0.82,0.80,0.72,0.70,0.50,0.50,0.50]
+    powheg:
+        activate: true
+        label: "POWHEG"
+        variations:
+            F1_R05:
+                activate: true
+                label: "F1_R05"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            powheg_path_nonprompt: /data/POWHEG/powheg_fd_histos_D0_F1_R05.root
+    unfolding_prior:
+        activate: true
+        label: "unfolding prior"
+        variations:
+            prior_true:
+                activate: true
+                label: "true"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            doprior: true
+    regularisation:
+        activate: false
+        label: "regularisation"
+        variations:
+            var0:
+                activate: true
+                label: "var0"
+                diffs:
