@@ -219,9 +219,7 @@ LcpK0spp:
       maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp: [100,100,100] #list of periods
       chunksizeskim: [100,100,100] #list of periods
-      fracmerge: [[0.1,0.1,0.1,0.4,1.0,1.0],   #list of periods
-                  [0.1,0.1,0.1,0.4,1.0,1.0],
-                  [0.1,0.1,0.1,0.4,1.0,1.0]]
+      fracmerge: [0.1,0.1,0.1]   #list of periods
       seedmerge: [12,12,12] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
       unmerged_tree_dir: [/data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/merged,
@@ -243,9 +241,7 @@ LcpK0spp:
       maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp: [100,100,100] #list of periods
       chunksizeskim: [1000,1000,1000] #list of periods
-      fracmerge: [[1.0,1.0,1.0,1.0,1.0,1.0],   #list of periods
-                  [1.0,1.0,1.0,1.0,1.0,1.0],
-                  [1.0,1.0,1.0,1.0,1.0,1.0]]
+      fracmerge: [1.0,1.0,1.0]  #list of periods       
       seedmerge: [12,12,12] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
       unmerged_tree_dir: [/data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodLcpK0s/373_20200304-2021/merged,
@@ -516,7 +512,7 @@ LcpK0spp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.00745, 0.00746, 0.0087, 0.0101, 0.0118, 0.0148]
+      sigmaarray: [0.00745, 0.0079, 0.0087, 0.0101, 0.0118, 0.0148]
       FixedSigma: false
       fitcase: Lc
       latexnamemeson: "#Lambda_{c}^{pK0s}"
@@ -538,7 +534,7 @@ LcpK0spp:
 
     SPDvspt:
       proc_type: Dhadrons_mult
-      useperiod: [1,1,1]
+      useperiod: [0,0,1]
       plotbin: [0,0,0,0,1]
       usesinglebineff: 3
       fprompt_from_mb: true
@@ -585,7 +581,7 @@ LcpK0spp:
       masspeak: 2.2864
       massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
       massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
-      rebin: [6,6,8,9,10,12]
+      rebin: [7,7,8,9,10,12]
 
       includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
       masssecpeak: 2.2864
@@ -608,7 +604,7 @@ LcpK0spp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.00745, 0.00746, 0.0087, 0.0101, 0.0118, 0.0148]
+      sigmaarray: [0.00745, 0.0079, 0.0087, 0.0101, 0.0118, 0.0148]
       FixedSigma: false
       fitcase: Lc
       latexnamemeson: "#Lambda_{c}^{pK0s}"
