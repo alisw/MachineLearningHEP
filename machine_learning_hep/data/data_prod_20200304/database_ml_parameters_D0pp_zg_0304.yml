@@ -485,7 +485,8 @@ D0pp:
       sel_binmax2: [9999,9,29,59,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
       var_binning2_gen: n_tracklets_corr
-      triggereff: [1.,1.,1.,1.,1.]
+      # here the trigger efficiency is set to 1. Corrections are implemented in the analysis step
+      triggereff: [1.,1.,1.,1.,1.] 
       triggereffunc: [0.,0.,0.,0.,0.]
       triggerbit: HighMultSPD
       isNbx2: False    #Estimate the feeddown systematic with Nb and Nbx2 method convolution.
@@ -501,13 +502,13 @@ D0pp:
         weighttrig: false
 
       data:
-        runselection: [null, null, null]
+        runselection: [null, null, null] #FIXME the last will have to be replaced by HighMultSPD2018
         results: [/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsSPDvspt_ntrkl,
                   /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsSPDvspt_ntrkl,
                   /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsSPDvspt_ntrkl] #list of periods
         resultsallp: /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_data/resultsSPDvspt_ntrkl
       mc:
-        runselection: [null, null, null]
+        runselection: [null, null, null] #FIXME the last will have to be replaced by HighMultSPD2018
         results: [/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/resultsSPDvspt_ntrkl,
                   /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/resultsSPDvspt_ntrkl,
                   /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/resultsSPDvspt_ntrkl] #list of periods
