@@ -23,10 +23,14 @@ import shlex
 from copy import deepcopy
 import yaml
 
+def msg_err(message: str):
+    '''Print an error message.'''
+    print("\x1b[1;31mError: %s\x1b[0m" % message)
+
 def modify_paths(dic: dict, old: str, new: str):
     '''Modify the paths of the results directories'''
     if "analysis" not in dic:
-        print("Error: key \"analysis\" not found.")
+        msg_err("key \"analysis\" not found.")
         return
     for key_a, val_a in dic["analysis"].items():
         if not isinstance(val_a, dict):
@@ -57,46 +61,52 @@ def modify_dictionary(dic: dict, diff: dict):
             else:
                 dic[key] = format_value(dic[key], value)
         else:
-            print("Warning: Key %s was not found and will be ignored." % key)
+            print("\x1b[1;36mWarning:\x1b[0m Key %s was not found and will be ignored." % key)
 
 def healthy_structure(dic_diff: dict): # pylint: disable=too-many-return-statements, too-many-branches
     '''Check correct structure of the variation dictionary.'''
     if not isinstance(dic_diff, dict):
-        print("Error: No dictionary found.")
+        msg_err("No dictionary found.")
         return False
     if "categories" not in dic_diff:
-        print("Error: key \"categories\" not found.")
+        msg_err("key \"categories\" not found.")
         return False
     dic_cats = dic_diff["categories"]
     if not isinstance(dic_cats, dict):
-        print("Error: \"categories\" is not a dictionary.")
+        msg_err("\"categories\" is not a dictionary.")
         return False
     # Categories
     for cat in dic_cats:
         dic_cat_single = dic_cats[cat]
+        if not isinstance(dic_cat_single, dict):
+            msg_err("%s is not a dictionary." % cat)
+            return False
         good = True
         for key in ["activate", "label", "variations"]:
             if key not in dic_cat_single:
-                print("Error: key \"%s\" not found in %s." % (key, cat))
+                msg_err("key \"%s\" not found in %s." % (key, cat))
                 good = False
         if not good:
             return False
         dic_vars = dic_cat_single["variations"]
         if not isinstance(dic_vars, dict):
-            print("Error: \"variations\" is not a dictionary.")
+            msg_err("\"variations\" in category %s is not a dictionary." % cat)
             return False
         # Variations
         for var in dic_vars:
             dic_var_single = dic_vars[var]
             if not isinstance(dic_var_single, dict):
-                print("Error: %s is not a dictionary." % var)
+                msg_err("%s in %s is not a dictionary." % (var, cat))
                 return False
             good = True
             for key in ["activate", "label", "diffs"]:
                 if key not in dic_var_single:
-                    print("Error: key \"%s\" not found in %s." % (key, var))
+                    msg_err("key \"%s\" not found in %s/%s." % (key, cat, var))
                     good = False
             if not good:
+                return False
+            if not isinstance(dic_var_single["diffs"], dict):
+                msg_err("\"diffs\" in %s/%s is not a dictionary." % (cat, var))
                 return False
     return True
 
@@ -117,7 +127,7 @@ def main(yaml_in, yaml_diff, analysis): # pylint: disable=too-many-locals
         yaml.safe_dump(dic_in, file_out, default_flow_style=False)
 
     if not healthy_structure(dic_diff):
-        print("Error: Bad structure.")
+        msg_err("Bad structure.")
         return
 
     dic_cats = dic_diff["categories"]
@@ -126,19 +136,20 @@ def main(yaml_in, yaml_diff, analysis): # pylint: disable=too-many-locals
         dic_cat_single = dic_cats[cat]
         label_cat = dic_cat_single["label"]
         if not dic_cat_single["activate"]:
-            print("\nSkipping category %s (label: %s)" % (cat, label_cat))
+            print("\nSkipping category %s (%s)" % (cat, label_cat))
             continue
-        print("\nProcessing category %s (label: %s)" % (cat, label_cat))
+        print("\nProcessing category %s (\x1b[1;34m%s\x1b[0m)" % (cat, label_cat))
         dic_vars = dic_cat_single["variations"]
         # Loop over variations.
         for var in dic_vars:
             dic_var_single = dic_vars[var]
             label_var = dic_var_single["label"]
             if not dic_var_single["activate"]:
-                print("\nSkipping variation %s/%s (label: %s/%s)" % \
+                print("\nSkipping variation %s/%s (%s: %s)" % \
                     (cat, var, label_cat, label_var))
                 continue
-            print("\nProcessing variation %s/%s (label: %s/%s)" % (cat, var, label_cat, label_var))
+            print("\nProcessing variation %s/%s (\x1b[1;33m%s: %s\x1b[0m)" % \
+                (cat, var, label_cat, label_var))
 
             dic_db = deepcopy(dic_in)
             # Get the database from the first top-level key.
@@ -147,11 +158,10 @@ def main(yaml_in, yaml_diff, analysis): # pylint: disable=too-many-locals
                 break
 
             # Modify the database.
-            if isinstance(dic_var_single["diffs"], dict):
-                modify_dictionary(dic_new, dic_var_single["diffs"])
-                modify_paths(dic_new, "default/default", "%s/%s" % (cat, var))
-            else:
-                print("Warning: Empty diffs. No changes to make.")
+            if not dic_var_single["diffs"]:
+                print("\x1b[1;36mWarning:\x1b[0m Empty diffs. No changes to make.")
+            modify_dictionary(dic_new, dic_var_single["diffs"])
+            modify_paths(dic_new, "default/default", "%s/%s" % (cat, var))
 
             #print(yaml.safe_dump(dic_db, default_flow_style=False))
 
@@ -164,14 +174,14 @@ def main(yaml_in, yaml_diff, analysis): # pylint: disable=too-many-locals
 
             # Start the analysis.
             if analysis:
-                print("Starting the analysis %s for the variation: %s/%s" % \
-                    (analysis, label_cat, label_var))
+                print("Starting the analysis \x1b[1;32m%s\x1b[0m for the variation " \
+                    "\x1b[1;32m%s: %s\x1b[0m" % (analysis, label_cat, label_var))
                 logfile = "stdouterr_%s_%s_%s.log" % (analysis, cat, var)
                 with open(logfile, "w") as ana_out:
                     subprocess.Popen(shlex.split("python do_entire_analysis.py " \
-                    "-r submission/default_complete.yml " \
-                    "-d %s -a %s" % (yaml_out, analysis)), \
-                    stdout=ana_out, stderr=ana_out, universal_newlines=True)
+                        "-r submission/default_complete.yml " \
+                        "-d %s -a %s" % (yaml_out, analysis)), \
+                        stdout=ana_out, stderr=ana_out, universal_newlines=True)
                 print("Logfile: %s" % logfile)
 
 if __name__ == '__main__':
