@@ -249,10 +249,9 @@ D0pp:
                      xgboost_classifierD0pp_FF_dfselection_pt_cand_12.0_24.0.sav,
                      xgboost_classifierD0pp_FF_dfselection_pt_cand_24.0_48.0.sav] # sel_skim_binmin bins
     probcutpresel:
-      mc:         [0.75,0.75,0.65,0.65,0.45,0.45,0.45] # sel_skim_binmin bins
       data:         [0.75,0.75,0.65,0.65,0.45,0.45,0.45] # sel_skim_binmin bins
-    probcutoptimal: probcutoptimal_variable # sel_skim_binmin bins
-    #probcutoptimal: [0.75,0.75,0.65,0.65,0.45,0.45,0.45] # sel_skim_binmin bins
+      mc:           [0.75,0.75,0.65,0.65,0.45,0.45,0.45] # sel_skim_binmin bins
+    probcutoptimal: [0.75,0.75,0.65,0.65,0.45,0.45,0.45] # sel_skim_binmin bins
 
   analysis:
     indexhptspectrum: 0 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
@@ -295,41 +294,41 @@ D0pp:
         mc: null
         weighttrig: false
       data:
-        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/central_1/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/central_1/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/central_1/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/central_1/pp_data/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_data/resultsMBjetvspt
       mc:
-        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/central_1/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/central_1/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/central_1/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/central_1/pp_mc_prodD2H/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_mc_prodD2H/resultsMBjetvspt
 
-      mass_fit_lim: [massmin_variable, massmax_variable] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [1.72, 2.05] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
 
       # simple fitter START
       sgnfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
-      bkgfunc: [bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
-      masspeak: masspeak_variable
-      massmin: [massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable] # sel_an_binmin bins
-      massmax: [massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable] # sel_an_binmin bins
-      rebin: [rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable] # sel_an_binmin bins
-      fix_mean: [fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable] # sel_an_binmin bins
-      fix_sigma: [fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable] # sel_an_binmin bins
+      bkgfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
+      masspeak: 1.864
+      massmin: [1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72] # sel_an_binmin bins
+      massmax: [2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05] # sel_an_binmin bins
+      rebin: [6,6,6,6,6,6,6,6,6,6,6,6] # sel_an_binmin bins
+      fix_mean: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
+      fix_sigma: [true, true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # initial sigma (sel_an_binmin bins)
-      masspeaksec: masspeak_variable
+      masspeaksec: 1.864
       fix_sigmasec: [true, true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
       sigmaarraysec: [0.007497,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # sel_an_binmin bins
       # simple fitter END
 
-      signal_sigma: signalsigma_variable
-      sigma_scale: sigmascale_variable
-      sideband_sigma_1_left: sidebandsigma1left_variable
-      sideband_sigma_2_left: sidebandsigma2left_variable
-      sideband_sigma_1_right: sidebandsigma1right_variable
-      sideband_sigma_2_right: sidebandsigma2right_variable
-      sidebandleftonly: sidebandleftonly_variable
+      signal_sigma: 2.0
+      sigma_scale: 0.9545
+      sideband_sigma_1_left: 4
+      sideband_sigma_2_left: 9
+      sideband_sigma_1_right: 4
+      sideband_sigma_2_right: 9
+      sidebandleftonly: false
 
       niterunfolding: 15
       niterunfoldingchosen: 4
@@ -339,10 +338,10 @@ D0pp:
       branching_ratio: 3.95e-2
       xsection_inel: 57.8
 
-      doprior: doprior_variable
+      doprior: false
 
       powheg_path_prompt: /data/POWHEG/powheg_pr_histos_D0_central.root
-      powheg_path_nonprompt: /data/POWHEG/powheg_fd_histos_D0_powhegpathnonprompt_variable.root
+      powheg_path_nonprompt: /data/POWHEG/powheg_fd_histos_D0_central.root
 
       powheg_prompt_variations_path: null #/data/POWHEG/LckINT7HighMultwithJets/prompt/powheg_lc_charm_
       powheg_prompt_variations: [] #["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
@@ -398,41 +397,41 @@ D0pp:
         mc: null
         weighttrig: false
       data:
-        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/central_1/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/central_1/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/central_1/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/central_1/pp_data/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_data/resultsMBjetvspt
       mc:
-        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/central_1/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/central_1/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/central_1/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/central_1/pp_mc_prodD2H/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_mc_prodD2H/resultsMBjetvspt
 
-      mass_fit_lim: [massmin_variable, massmax_variable] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [1.72, 2.05] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
 
       # simple fitter START
       sgnfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
-      bkgfunc: [bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable,bkgfunc_variable] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
-      masspeak: masspeak_variable
-      massmin: [massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable,massmin_variable] # sel_an_binmin bins
-      massmax: [massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable,massmax_variable] # sel_an_binmin bins
-      rebin: [rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable,rebin_variable] # sel_an_binmin bins
-      fix_mean: [fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable, fixedmean_variable] # sel_an_binmin bins
-      fix_sigma: [fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable, fixedsigma_variable] # sel_an_binmin bins
+      bkgfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
+      masspeak: 1.864
+      massmin: [1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72] # sel_an_binmin bins
+      massmax: [2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05] # sel_an_binmin bins
+      rebin: [6,6,6,6,6,6,6,6,6,6,6,6] # sel_an_binmin bins
+      fix_mean: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
+      fix_sigma: [true, true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # initial sigma (sel_an_binmin bins)
-      masspeaksec: masspeak_variable
+      masspeaksec: 1.864
       fix_sigmasec: [true, true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
       sigmaarraysec: [0.007497,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # sel_an_binmin bins
       # simple fitter END
 
-      signal_sigma: signalsigma_variable
-      sigma_scale: sigmascale_variable
-      sideband_sigma_1_left: sidebandsigma1left_variable
-      sideband_sigma_2_left: sidebandsigma2left_variable
-      sideband_sigma_1_right: sidebandsigma1right_variable
-      sideband_sigma_2_right: sidebandsigma2right_variable
-      sidebandleftonly: sidebandleftonly_variable
+      signal_sigma: 2.0
+      sigma_scale: 0.9545
+      sideband_sigma_1_left: 4
+      sideband_sigma_2_left: 9
+      sideband_sigma_1_right: 4
+      sideband_sigma_2_right: 9
+      sidebandleftonly: false
 
       niterunfolding: 15
       niterunfoldingchosen: 4
@@ -442,10 +441,10 @@ D0pp:
       branching_ratio: 3.95e-2
       xsection_inel: 57.8
 
-      doprior: doprior_variable
+      doprior: false
 
       powheg_path_prompt: /data/POWHEG/powheg_pr_histos_D0_central.root
-      powheg_path_nonprompt: /data/POWHEG/powheg_fd_histos_D0_powhegpathnonprompt_variable.root
+      powheg_path_nonprompt: /data/POWHEG/powheg_fd_histos_D0_central.root
 
       powheg_prompt_variations_path: null #/data/POWHEG/LckINT7HighMultwithJets/prompt/powheg_lc_charm_
       powheg_prompt_variations: [] #["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
@@ -486,7 +485,7 @@ D0pp:
       var_binning2: n_tracklets_corr_sub
       var_binning2_gen: n_tracklets_corr
       # here the trigger efficiency is set to 1. Corrections are implemented in the analysis step
-      triggereff: [1.,1.,1.,1.,1.] 
+      triggereff: [1.,1.,1.,1.,1.]
       triggereffunc: [0.,0.,0.,0.,0.]
       triggerbit: HighMultSPD
       isNbx2: False    #Estimate the feeddown systematic with Nb and Nbx2 method convolution.
@@ -514,7 +513,7 @@ D0pp:
                   /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/resultsSPDvspt_ntrkl,
                   /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/resultsSPDvspt_ntrkl] #list of periods
         resultsallp: /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_mc_prodD2H/resultsSPDvspt_ntrkl
-    
+
       # The global mass limits
       mass_fit_lim: [1.69, 2.21] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
@@ -578,7 +577,7 @@ D0pp:
         #  - ["mc", "data", "data", "data", "data", "data"]
         #  - ["mc", "data", "data", "data", "data", "data"]
         #  - ["mc", "data", "data", "data", "data", "data"]
-          
+
     MBvspt_ntrkl:
       proc_type: Dhadrons_mult
       useperiod: [1,1,1]
