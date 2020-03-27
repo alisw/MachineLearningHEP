@@ -22,14 +22,13 @@ import os
 import numpy as np
 import pandas as pd
 from root_numpy import fill_hist, evaluate # pylint: disable=import-error, no-name-in-module
-from ROOT import TFile, TH1F, TH2F # pylint: disable=import-error, no-name-in-module
+from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utilities import selectdfrunlist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, \
         seldf_singlevar_inclusive, openfile
 from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.utilities import get_timestamp_string
-from machine_learning_hep.utilities_plot import fill2dhist
 #from machine_learning_hep.globalfitter import fitter
 from machine_learning_hep.selectionutils import gethistonormforselevt_mult
 from machine_learning_hep.processer import Processer
@@ -137,7 +136,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
                                  self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 h_invmass_weight = TH1F("h_invmass_weight" + suffix, "", self.p_num_bins,
-                                 self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+                                        self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 df_bin = seldf_singlevar_inclusive(df, self.v_var2_binning, \
                                          self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 if self.runlistrigger is not None:

@@ -1,5 +1,19 @@
-from ROOT import TFile, TH1F, TCanvas, TF1
-from ROOT import gROOT, gStyle, TLegend
+#############################################################################
+##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
+## This program is free software: you can redistribute it and/or modify it ##
+##  under the terms of the GNU General Public License as published by the  ##
+## Free Software Foundation, either version 3 of the License, or (at your  ##
+## option) any later version. This program is distributed in the hope that ##
+##  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  ##
+##     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    ##
+##           See the GNU General Public License for more details.          ##
+##    You should have received a copy of the GNU General Public License    ##
+##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
+#############################################################################
+
+from ROOT import TFile, TH1F, TCanvas, TF1 # pylint: disable=import-error,no-name-in-module, unused-import
+from ROOT import gROOT, gStyle, TLegend # pylint: disable=import-error, no-name-in-module
 gROOT.SetStyle("Plain")
 gStyle.SetOptStat(0)
 gStyle.SetOptStat(0000)
@@ -8,6 +22,7 @@ gStyle.SetCanvasColor(0)
 gStyle.SetFrameFillColor(0)
 gStyle.SetOptTitle(0)
 
+# pylint: disable=line-too-long, invalid-name
 filedatatrg = TFile.Open("/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsSPDvspt_ntrkl/masshisto.root")
 filedatamb = TFile.Open("/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsMBvspt_ntrkl/masshisto.root")
 hden = filedatamb.Get("hn_tracklets_corr")
@@ -32,8 +47,8 @@ leg.SetTextSize(0.035)
 
 hden.GetYaxis().SetTitle("Entries")
 hden.GetXaxis().SetTitle("n_tracklets_corr")
-hden.GetXaxis().SetRangeUser(0.,150.)
-hden.Draw("pe");
+hden.GetXaxis().SetRangeUser(0., 150.)
+hden.Draw("pe")
 hden.SetLineColor(2)
 hnum.Draw("pesame")
 leg.AddEntry(hden, "MB", "LEP")
@@ -42,8 +57,8 @@ leg.Draw()
 ctrigger.cd(2)
 hratio.GetYaxis().SetTitle("SPD/MB (no D required)")
 hratio.GetXaxis().SetTitle("n_tracklets_corr")
-hratio.GetXaxis().SetRangeUser(0.,150.)
-hratio.Draw("pe");
+hratio.GetXaxis().SetRangeUser(0., 150.)
+hratio.Draw("pe")
 func = TF1("func", "([0]/(1+TMath::Exp(-[1]*(x-[2]))))", 0, 140)
 func.SetParameters(300, .1, 570)
 func.SetParLimits(1, 0., 10.)
@@ -55,16 +70,16 @@ func.Draw("same")
 ctrigger.cd(3)
 hnumd.GetYaxis().SetTitle("Entries")
 hnumd.GetXaxis().SetTitle("n_tracklets_corr")
-hnumd.GetXaxis().SetRangeUser(0.,150.)
+hnumd.GetXaxis().SetRangeUser(0., 150.)
 hdend.SetLineColor(2)
 hnumd.Draw("pe")
-hdend.Draw("pesame");
+hdend.Draw("pesame")
 leg.Draw()
 ctrigger.cd(4)
 hratiod.GetYaxis().SetTitle("SPD/MB (D required)")
 hratiod.GetXaxis().SetTitle("n_tracklets_corr")
-hratiod.GetXaxis().SetRangeUser(0.,150.)
-hratiod.Draw("pe");
+hratiod.GetXaxis().SetRangeUser(0., 150.)
+hratiod.Draw("pe")
 funcd = TF1("func", "([0]/(1+TMath::Exp(-[1]*(x-[2]))))", 0, 140)
 funcd.SetParameters(300, .1, 570)
 funcd.SetParLimits(1, 0., 10.)
@@ -77,6 +92,7 @@ func.Draw("same")
 funcd.SetLineColor(4)
 funcd.Draw("same")
 ctrigger.SaveAs("SPDtrigger.pdf")
+# pylint: disable=line-too-long
 foutput = TFile.Open("../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018/triggerSPDvspt_ntrkl.root", "recreate")
 foutput.cd()
 hratio.SetName("hratioSPDvspt_ntrkl")
