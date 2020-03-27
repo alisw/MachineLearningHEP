@@ -454,6 +454,8 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             norm = -1
             filemass = TFile.Open(self.n_filemass)
             labeltrigger = "hbit%svs%s" % (self.triggerbit, self.v_var2_binning_gen)
+            if self.apply_weights is True:
+                labeltrigger = labeltrigger + "_weight"
             hsel = filemass.Get("sel_%s" % labeltrigger)
             hnovtx = filemass.Get("novtx_%s" % labeltrigger)
             hvtxout = filemass.Get("vtxout_%s" % labeltrigger)
