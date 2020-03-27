@@ -39,9 +39,11 @@ def modify_paths(dic: dict, old: str, new: str):
         for data in ["data", "mc"]:
             for key_d, val_d in dic_ana[data].items():
                 if isinstance(val_d, list):
-                    dic_ana[data][key_d] = [v.replace(old, new) for v in val_d]
+                    dic_ana[data][key_d] = [v.replace(old, new) \
+                        if isinstance(v, str) else v for v in val_d]
                 else:
-                    dic_ana[data][key_d] = val_d.replace(old, new)
+                    dic_ana[data][key_d] = val_d.replace(old, new) \
+                        if isinstance(val_d, str) else val_d
 
 def format_value(old, new):
     '''Format the new value based on the format of the old one
