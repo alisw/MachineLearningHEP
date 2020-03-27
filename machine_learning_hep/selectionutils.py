@@ -16,7 +16,8 @@
 utilities for fiducial acceptance, pid, single topological variable selections and normalization
 """
 
-#import numba
+import numba
+import numpy as np
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
 from ROOT import TH1F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
@@ -31,14 +32,14 @@ def selectcandidateml(array_prob, probcut):
             array_is_sel.append(False)
     return array_is_sel
 
-#@numba.njit
+@numba.njit
 def select_runs(good_runlist, array_run):
-    array_run_sel = []
-    for candrun in array_run:
-        is_sel = False
-        if candrun in good_runlist:
-            is_sel = True
-        array_run_sel.append(is_sel)
+    array_run_sel = np.zeros(len(array_run), np.bool_)
+    for i, candrun in np.ndenumerate(array_run):
+        for _, goodrun in np.ndenumerate(good_runlist):
+            if candrun == goodrun:
+                array_run_sel[i] = True
+                break
     return array_run_sel
 
 #@numba.njit

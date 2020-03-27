@@ -20,14 +20,16 @@ import array
 import pickle
 import os
 import numpy as np
+import pandas as pd
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
-from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
+from ROOT import TFile, TH1F, TH2F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utilities import selectdfrunlist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, \
         seldf_singlevar_inclusive, openfile
 from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.utilities import get_timestamp_string
+from machine_learning_hep.utilities_plot import fill2dhist
 #from machine_learning_hep.globalfitter import fitter
 from machine_learning_hep.selectionutils import gethistonormforselevt_mult
 from machine_learning_hep.processer import Processer
@@ -72,7 +74,9 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
-
+        self.performtriggerturn = datap["analysis"][self.typean].get("performtriggerturn", "")
+        if "performtriggerturn" not in datap["analysis"][self.typean]:
+            self.performtriggerturn = False
 
     # pylint: disable=too-many-branches
     def process_histomass_single(self, index):
@@ -94,15 +98,17 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         hnovtxmult.Write()
         hvtxoutmult.Write()
 
+        list_df_recodtrig = []
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
-            if self.doml is True:
-                df = df.query(self.l_selml[bin_id])
             if self.s_evtsel is not None:
                 df = df.query(self.s_evtsel)
             if self.s_trigger is not None:
                 df = df.query(self.s_trigger)
+            list_df_recodtrig.append(df)
+            if self.doml is True:
+                df = df.query(self.l_selml[bin_id])
             df = seldf_singlevar(df, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
             for ibin2 in range(len(self.lvar2_binmin)):
@@ -112,14 +118,19 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                           self.v_var2_binning, self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
                                  self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+                h_invmassvsmult = TH2F("hmassvsmult" + suffix, "", self.p_num_bins,
+                                       self.p_mass_fit_lim[0], self.p_mass_fit_lim[1],
+                                       10000, -0.5, 9999.5)
                 df_bin = seldf_singlevar_inclusive(df, self.v_var2_binning, \
                                          self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 if self.runlistrigger is not None:
                     df_bin = selectdfrunlist(df_bin, \
                              self.run_param[self.runlistrigger], "run_number")
                 fill_hist(h_invmass, df_bin.inv_mass)
+                fill2dhist(df_bin, h_invmassvsmult, "inv_mass", self.v_var2_binning_gen)
                 myfile.cd()
                 h_invmass.Write()
+                h_invmassvsmult.Write()
 
                 if self.mcordata == "mc":
                     df_bin[self.v_ismcrefl] = np.array(tag_bit_df(df_bin, self.v_bitvar,
@@ -135,6 +146,19 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                     myfile.cd()
                     h_invmass_sig.Write()
                     h_invmass_refl.Write()
+
+
+        if self.performtriggerturn is True:
+            df_recodtrig = pd.concat(list_df_recodtrig)
+            dfevtwithd = pd.merge(dfevtevtsel, df_recodtrig, on=self.v_evtmatch)
+            label = "h%s" % self.v_var2_binning_gen
+            histomult = TH1F(label, label, 10000, -0.5, 9999.5)
+            fill_hist(histomult, dfevtevtsel[self.v_var2_binning_gen])
+            histomult.Write()
+            labelwithd = "h%s_withd" % self.v_var2_binning_gen
+            histomultwithd = TH1F(labelwithd, labelwithd, 10000, -0.5, 9999.5)
+            fill_hist(histomultwithd, dfevtwithd["%s_x" % self.v_var2_binning_gen])
+            histomultwithd.Write()
 
     def process_histomass(self):
         print("Doing masshisto", self.mcordata, self.period)

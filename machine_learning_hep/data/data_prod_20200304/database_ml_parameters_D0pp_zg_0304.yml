@@ -489,8 +489,8 @@ D0pp:
       triggereff: [1.,1.,1.,1.,1.] 
       triggereffunc: [0.,0.,0.,0.,0.]
       triggerbit: HighMultSPD
-      isNbx2: False    #Estimate the feeddown systematic with Nb and Nbx2 method convolution.
-
+      isNbx2: False    #Estimate the feeddown systematic with Nb and Nbx2 method convolution
+      performtriggerturn: True
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
       binning_matching: [0,1,2,3,4,5] #list of pt nbins
@@ -503,13 +503,13 @@ D0pp:
         weighttrig: false
 
       data:
-        runselection: [null, null, null] #FIXME the last will have to be replaced by HighMultSPD2018
+        runselection: [null, null, HighMultSPD2018] #FIXME the last will have to be replaced by HighMultSPD2018
         results: [/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsSPDvspt_ntrkl,
                   /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsSPDvspt_ntrkl,
                   /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsSPDvspt_ntrkl] #list of periods
         resultsallp: /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_data/resultsSPDvspt_ntrkl
       mc:
-        runselection: [null, null, null] #FIXME the last will have to be replaced by HighMultSPD2018
+        runselection: [null, null, HighMultSPD2018] #FIXME the last will have to be replaced by HighMultSPD2018
         results: [/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/resultsSPDvspt_ntrkl,
                   /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/resultsSPDvspt_ntrkl,
                   /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/resultsSPDvspt_ntrkl] #list of periods
@@ -594,6 +594,7 @@ D0pp:
       triggereff: [0.92,0.862,1,1,1]
       triggereffunc: [0.003,0.018,0,0,0]
       triggerbit: INT7
+      performtriggerturn: True
       sel_an_binmin: [1,2,4,6,8,12]  # [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24]  # [2,4,6,8,12,24] #list of pt nbins
       binning_matching: [0,1,2,3,4,5]  # [0,1,2,2,3,4] #list of pt nbins
