@@ -159,6 +159,9 @@ D0pp:
                                  /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskml] #list of periods
       pkl_skimmed_merge_for_ml_all: /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_data_mltot
       pkl_evtcounter_all: /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_data_evttot
+      mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2016,
+                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2017,
+                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018] #list of periods
     mc:
       nprocessesparallel: 50
       maxfiles: [-1,-1,-1] #list of periods
@@ -500,7 +503,7 @@ D0pp:
       triggersel:
         data: "trigger_hasbit_HighMultSPD==1"
         mc: null
-        weighttrig: false
+        weighttrig: true
 
       data:
         runselection: [null, null, HighMultSPD2018] #FIXME the last will have to be replaced by HighMultSPD2018

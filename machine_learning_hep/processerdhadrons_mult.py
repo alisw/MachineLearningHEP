@@ -21,7 +21,7 @@ import pickle
 import os
 import numpy as np
 import pandas as pd
-from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
+from root_numpy import fill_hist, evaluate # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TH1F, TH2F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utilities import selectdfrunlist
@@ -77,7 +77,16 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         self.performtriggerturn = datap["analysis"][self.typean].get("performtriggerturn", "")
         if "performtriggerturn" not in datap["analysis"][self.typean]:
             self.performtriggerturn = False
-
+        self.apply_weights = datap["analysis"][self.typean]["triggersel"]["weighttrig"]
+        self.weightfunc = None
+        if self.apply_weights is True and self.mcordata == "data":
+            filename = os.path.join(self.d_mcreweights, "trigger%s.root" % self.typean)
+            if os.path.exists(filename):
+                weight_file = TFile.Open(filename, "read")
+                self.weightfunc = weight_file.Get("func%s_norm" % self.typean)
+                weight_file.Close()
+            else:
+                print("trigger correction file", filename, "doesnt exist")
     # pylint: disable=too-many-branches
     def process_histomass_single(self, index):
         myfile = TFile.Open(self.l_histomass[index], "recreate")
@@ -94,6 +103,15 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         hsel, hnovtxmult, hvtxoutmult = \
             gethistonormforselevt_mult(dfevtorig, dfevtevtsel,
                                        labeltrigger, self.v_var2_binning_gen)
+
+        if self.apply_weights is True and self.mcordata == "data":
+            hselweight, hnovtxmultweight, hvtxoutmultweight = \
+                gethistonormforselevt_mult(dfevtorig, dfevtevtsel,
+                                           labeltrigger, self.v_var2_binning_gen, self.weightfunc)
+            hselweight.Write()
+            hnovtxmultweight.Write()
+            hvtxoutmultweight.Write()
+
         hsel.Write()
         hnovtxmult.Write()
         hvtxoutmult.Write()
@@ -118,19 +136,21 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                           self.v_var2_binning, self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
                                  self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-                h_invmassvsmult = TH2F("hmassvsmult" + suffix, "", self.p_num_bins,
-                                       self.p_mass_fit_lim[0], self.p_mass_fit_lim[1],
-                                       10000, -0.5, 9999.5)
+                h_invmass_weight = TH1F("h_invmass_weight" + suffix, "", self.p_num_bins,
+                                 self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 df_bin = seldf_singlevar_inclusive(df, self.v_var2_binning, \
                                          self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 if self.runlistrigger is not None:
                     df_bin = selectdfrunlist(df_bin, \
                              self.run_param[self.runlistrigger], "run_number")
                 fill_hist(h_invmass, df_bin.inv_mass)
-                fill2dhist(df_bin, h_invmassvsmult, "inv_mass", self.v_var2_binning_gen)
+                if self.apply_weights is True and self.mcordata == "data":
+                    weights = evaluate(self.weightfunc, df_bin[self.v_var2_binning_gen])
+                    weightsinv = [1./weight for weight in weights]
+                    fill_hist(h_invmass_weight, df_bin.inv_mass, weights=weightsinv)
                 myfile.cd()
                 h_invmass.Write()
-                h_invmassvsmult.Write()
+                h_invmass_weight.Write()
 
                 if self.mcordata == "mc":
                     df_bin[self.v_ismcrefl] = np.array(tag_bit_df(df_bin, self.v_bitvar,
@@ -146,7 +166,6 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                     myfile.cd()
                     h_invmass_sig.Write()
                     h_invmass_refl.Write()
-
 
         if self.performtriggerturn is True:
             df_recodtrig = pd.concat(list_df_recodtrig)

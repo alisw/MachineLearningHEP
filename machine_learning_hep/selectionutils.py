@@ -18,7 +18,7 @@ utilities for fiducial acceptance, pid, single topological variable selections a
 
 import numba
 import numpy as np
-from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
+from root_numpy import fill_hist, evaluate # pylint: disable=import-error, no-name-in-module
 from ROOT import TH1F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 
@@ -155,7 +155,10 @@ def getnormforselevt(df_evt):
 
     return (n_ev_sel+n_no_reco_vtx) - n_no_reco_vtx*n_zvtx_gr10 / (n_ev_sel+n_zvtx_gr10)
 
-def gethistonormforselevt_mult(df_evt, dfevtevtsel, label, var):
+def gethistonormforselevt_mult(df_evt, dfevtevtsel, label, var, weightfunc=None):
+    if weightfunc is not None:
+        label = label + "_weight"
+
     hSelMult = TH1F('sel_' + label, 'sel_' + label, 10000, -0.5, 9999.5)
     hNoVtxMult = TH1F('novtx_' + label, 'novtx_' + label, 10000, -0.5, 9999.5)
     hVtxOutMult = TH1F('vtxout_' + label, 'vtxout_' + label, 10000, -0.5, 9999.5)
@@ -166,10 +169,21 @@ def gethistonormforselevt_mult(df_evt, dfevtevtsel, label, var):
     df_no_vtx = df_to_keep[~tag_vtx.values]
     # events with reco zvtx > 10 cm after previous selection
     df_bit_zvtx_gr10 = filter_bit_df(df_to_keep, 'is_ev_rej', [[3], [1, 2, 7, 12]])
+    if weightfunc is not None:
+        weightssel = evaluate(weightfunc, dfevtevtsel[var])
+        weightsinvsel = [1./weight for weight in weightssel]
+        fill_hist(hSelMult, dfevtevtsel[var], weights=weightsinvsel)
+        weightsnovtx = evaluate(weightfunc, df_no_vtx[var])
+        weightsinvnovtx = [1./weight for weight in weightsnovtx]
+        fill_hist(hNoVtxMult, df_no_vtx[var], weights=weightsinvnovtx)
+        weightsgr10 = evaluate(weightfunc, df_bit_zvtx_gr10[var])
+        weightsinvgr10 = [1./weight for weight in weightsgr10]
+        fill_hist(hVtxOutMult, df_bit_zvtx_gr10[var], weights=weightsinvgr10)
+    else:
+        fill_hist(hSelMult, dfevtevtsel[var])
+        fill_hist(hNoVtxMult, df_no_vtx[var])
+        fill_hist(hVtxOutMult, df_bit_zvtx_gr10[var])
 
-    fill_hist(hSelMult, dfevtevtsel[var])
-    fill_hist(hNoVtxMult, df_no_vtx[var])
-    fill_hist(hVtxOutMult, df_bit_zvtx_gr10[var])
     return hSelMult, hNoVtxMult, hVtxOutMult
 
 def gethistonormforselevt(df_evt, dfevtevtsel, label):
