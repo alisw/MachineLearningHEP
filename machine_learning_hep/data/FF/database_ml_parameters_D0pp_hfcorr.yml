@@ -124,7 +124,6 @@ D0pp_hfcorr:
     treeoriginreco: 'PWGHF_TreeCreator/tree_D0'
     treeorigingen: 'PWGHF_TreeCreator/tree_D0_gen'
     treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
-    namefile_reco_ml_applied: AnalysisResultsRecoML.pkl.lz4
     treeoutput: "D0tree"
     histofilename: "masshisto.root"
     efffilename: "effhisto.root"
@@ -133,7 +132,7 @@ D0pp_hfcorr:
   multi:
     data:
       nperiods: 3
-      nprocessesparallel: 20
+      nprocessesparallel: 1
       maxfiles : [-1,-1,-1] #list of periods
       chunksizeunp : [100,100,100] #list of periods
       chunksizeskim: [100,100,100] #list of periods
@@ -156,14 +155,13 @@ D0pp_hfcorr:
       pkl_evtcounter_all: /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_data_evttot
     mc:
       nperiods: 3
-      nprocessesparallel: 20 
+      nprocessesparallel: 1 
       maxfiles : [-1,-1,-1] #list of periods
       chunksizeunp : [100,100,100] #list of periods
       chunksizeskim: [1000,1000,1000] #list of periods
       fracmerge : [1.0,1.0,1.0] #list of periods
       seedmerge: [12,12,12] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
-      
       unmerged_tree_dir: [/data/TTree/D0DsLckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2016_mc_prodD2H/261_20191004-0007/merged,
                           /data/TTree/D0DsLckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/merged,
                           /data/TTree/D0DsLckINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/merged] #list of periods
@@ -236,6 +234,7 @@ D0pp_hfcorr:
                               /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2017_mc_prodD2H/261_20191004-0007/skpkldecmerged,
                               /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/pp_2018_mc_prodD2H/261_20191004-0007/skpkldecmerged] #list of periods
     modelname: xgboost
+    modelname: xgboost
     modelsperptbin: [xgboost_classifierD0pp_hfcorr_dfselection_pt_cand_1.0_2.0.sav,
                      xgboost_classifierD0pp_hfcorr_dfselection_pt_cand_2.0_4.0.sav,
                      xgboost_classifierD0pp_hfcorr_dfselection_pt_cand_4.0_6.0.sav,
@@ -252,7 +251,7 @@ D0pp_hfcorr:
     cctype: 1 #kpp7
     sigmav0: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
     inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
-    dir_general_plots: /data/DerivedResults/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/analysis_plots
+    dir_general_plots: /data/Derived/D0kINT7HighMultwithJets/vAN-20191003_ROOT6-1/analysis_plots
     latexnamemeson: "D_{s}^{+}"
 
     MBvspt_hfcorr:

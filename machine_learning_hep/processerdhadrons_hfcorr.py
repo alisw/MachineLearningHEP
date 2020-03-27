@@ -148,7 +148,6 @@ class ProcesserDhadrons_hfcorr(Processer):
     def process_histomass_single(self, index):
         myfile = TFile.Open(self.l_histomass[index], "recreate")
         dfevtorig = pickle.load(openfile(self.l_evtorig[index], "rb"))
-        print(self.l_evtorig[index])
         if self.s_trigger is not None:
             dfevtorig = dfevtorig.query(self.s_trigger)
         dfevtorig = selectdfrunlist(dfevtorig, \
@@ -170,8 +169,8 @@ class ProcesserDhadrons_hfcorr(Processer):
             print("ipt iteration", ipt)
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
+            print("df loded")
             df_no_cut = df
-            print(self.mptfiles_recoskmldec[bin_id][index])
             if self.doml is True:
                 df = df.query(self.l_selml[bin_id])
             if self.s_evtsel is not None:

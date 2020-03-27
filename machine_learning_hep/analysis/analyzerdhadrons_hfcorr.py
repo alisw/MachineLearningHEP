@@ -17,14 +17,14 @@ main script for doing final stage analysis
 """
 # pylint: disable=too-many-lines
 import os
+#import re
 # pylint: disable=unused-wildcard-import, wildcard-import
-#from array import *
 import pickle
 import numpy as np
 import pandas as pd
 # pylint: disable=import-error, no-name-in-module, unused-import
-from root_numpy import hist2array, array2hist
-from ROOT import TFile, TH1F, TH2F, TCanvas, TPad, TF1, TF2, TH1D
+from root_numpy import hist2array, array2hist, fill_hist
+from ROOT import TFile, TH1F, TH2F, TH3F, TCanvas, TPad, TF1, TF2, TH1D
 from ROOT import AliHFInvMassFitter, AliVertexingHFUtils, AliHFInvMassMultiTrialFit
 from ROOT import RooRealVar, RooArgList, RooArgSet, RooLinkedList
 from ROOT import RooGenericPdf, RooDataSet, RooAbsData, RooFit
@@ -32,7 +32,7 @@ from ROOT import RooKeysPdf, RooWorkspace
 from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
 from ROOT import gROOT, TDirectory, TPaveLabel
 from ROOT import TStyle, kBlue, kGreen, kBlack, kRed, kOrange
-from ROOT import TLatex
+from ROOT import TLatex, TAxis
 from ROOT import gInterpreter, gPad
 # HF specific imports
 from machine_learning_hep.fitting.helpers import MLFitter
@@ -43,9 +43,6 @@ from machine_learning_hep.utilities import parallelizer, openfile
 from machine_learning_hep.utilities_plot import plot_histograms
 from machine_learning_hep.analysis.analyzer import Analyzer
 
-#from ROOT import RooUnfoldResponse
-#from ROOT import RooUnfold
-#from ROOT import RooUnfoldBayes
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
 # pylint: disable=invalid-name, too-many-arguments
 # pylint: disable line-too-long
@@ -139,9 +136,35 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
         extension = extension.replace(".", "")
         return os.path.join(directory, filename + "." + extension)
 
+#    @staticmethod
+#    def fit_func_eval(wspace, x, y):
+#        p0 = float(re.findall("\d+\.\d+", str(wspace.var("mean_1")))[0])
+#        p1 = float(re.findall("\d+\.\d+", str(wspace.var("mean_2")))[0])
+#        p2 = float(re.findall("\d+\.\d+", str(wspace.var("wid_1")))[0])
+#        p3 = float(re.findall("\d+\.\d+", str(wspace.var("wid_2")))[0])
+#        p4 = float(re.findall("\d+\.\d+", str(wspace.var("p1_1")))[0])
+#        p5 = float(re.findall("\d+\.\d+", str(wspace.var("p1_2")))[0])
+#        p6 = float(re.findall("\d+\.\d+", str(wspace.var("p1_3")))[0])
+#        p7 = float(re.findall("\d+\.\d+", str(wspace.var("p2_1")))[0])
+#        p8 = float(re.findall("\d+\.\d+", str(wspace.var("p2_2")))[0])
+#        p9 = float(re.findall("\d+\.\d+", str(wspace.var("p2_3")))[0])
+#        p10 = float(re.findall("\d+\.\d+", str(wspace.var("f0")))[0])
+#        p11 = float(re.findall("\d+\.\d+", str(wspace.var("f1")))[0])
+#        p12 = float(re.findall("\d+\.\d+", str(wspace.var("f2")))[0])
+#        p13 = float(re.findall("\d+\.\d+", str(wspace.var("f3")))[0])
+#        gauss = (np.exp(-0.5*((x - p0)/p2)**2))
+#        pol = (p4 + p5*x + p6*x**2)
+#        gauss_not = (np.exp(-0.5*((y - p1)/p3)**2))
+#        pol_not = (p7 + p8*y + p9*y**2)
+#        fit_func = (p10*gauss*gauss_not +
+#                    p11*gauss*pol_not +
+#                    p12*pol*gauss_not +
+#                    p13*pol*pol_not)
+#        return fit_func
+
 
     def min_par_fit(self, p1_0, p1_1, p1_2, p2_0, p2_1, p2_2, p3_0, p3_1, p3_2, p4_0,
-                    p4_1, p4_2):
+                    p4_1, p4_2): # PDF function for 2d ROOT fit with 4 parameters
         gauss = "(%f*exp(-0.5*((x - %f)/%f)**2))" % (p1_0, p1_1, p1_2)
         pol = "(%f + %f * x + %f * x**2)" % (p2_0, p2_1, p2_2)
         gauss_not = "(%f*exp(-0.5*((y - %f)/%f)**2))" % (p3_0, p3_1, p3_2)
@@ -155,27 +178,12 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
                         self.p_mass_fit_lim[1])
         return total_fit
 
-#    @staticmethod
-#    def roo_pdf(p1_0, p1_1, p1_2, p2_0, p2_1, p2_2, p3_0, p3_1, p3_2, p4_0,
-#                p4_1, p4_2):
-#        gauss = "(%f*exp(-0.5*((@0 - %f)/%f)**2))" % (p1_0, p1_1, p1_2)
-#        pol = "(%f + %f * @0 + %f * @0**2)" %  (p2_0, p2_1, p2_2)
-#        gauss_not = "(%f*exp(-0.5*((@1 - %f)/%f)**2))" %  (p3_0, p3_1, p3_2)
-#        pol_not = "(%f + %f * @1 + %f * @1**2)" % (p4_0, p4_1, p4_2)
-#        fit_func = ("@2*" + gauss + "*" + gauss_not +
-#                    "+@3*" + gauss + "*" + pol_not +
-#                    "+@4*" + pol + "*" + gauss_not +
-#                    "+@5*" + pol + "*" + pol_not)
-#        return fit_func
-
-
-    def fit_tmp(self):
+    def fit_tmp(self): #1d ROOT fits of binned histos after processer
         sig_fun = TF1("signal fit function", "gaus", self.p_mass_fit_lim[0],
                       self.p_mass_fit_lim[1])
         bkg_fun = TF1("background fit function", "pol2", self.p_mass_fit_lim[0],
                       self.p_mass_fit_lim[1])
         myfilemc = TFile(self.n_filemass_mc, "read")
-        print(self.n_filemass_mc)
         histomassmc_1_sig = myfilemc.Get("inv mass sig 1")
         histomassmc_1_bkg = myfilemc.Get("inv mass bkg 1")
         histomassmc_2_sig = myfilemc.Get("inv mass sig 2")
@@ -229,27 +237,30 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
         fit_params = [num_sigsig, num_sigbkg, num_bkgsig, num_bkgbkg]
         return set_params, fit_params
 
-    def ub_model(self, ismc, w):
+# pylint: disable line-too-long
+    def ub_model(self, ismc, w): # RooFit model for unbinned 2d fit
         print("creating UB model, Monte_carlo status:", ismc)
         set_params, fit_params = self.fit_tmp()
         if ismc:
-            par_1 = fit_params[0]
-            par_2 = fit_params[1]
-            par_3 = fit_params[2]
-            par_4 = fit_params[3]
-            lim_1 = 400000
+            par_1 = fit_params[0]/1.5
+            par_2 = fit_params[1]/1.5
+            par_3 = fit_params[2]/1.5
+            par_4 = fit_params[3]/1.5
+            lim_1 = 500000
             lim_2 = 100000
             lim_3 = 100000
             lim_4 = 500000
+            lim_low4 = 5000
         else:
-            par_1 = 2000
-            par_2 = 80000
+            par_1 = 1000
+            par_2 = 100000
             par_3 = 100000
-            par_4 = 1000000
-            lim_1 = 8000
+            par_4 = 100000
+            lim_1 = 20000
             lim_2 = 900000
             lim_3 = 900000
-            lim_4 = 10000000
+            lim_4 = 6000000
+            lim_low4 = 40000
 
         w.factory("Gaussian::sig1(x[%f,%f], mean_1[1.867,1.83, 1.9], wid_1[0.012, 0.01,0.03])" %
                   (self.p_mass_fit_lim[0], self.p_mass_fit_lim[1]))
@@ -263,126 +274,173 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
         w.factory("PROD::sigbkg(sig1, bkg2)")
         w.factory("PROD::bkgsig(bkg1, sig2)")
         w.factory("PROD::bkgbkg(bkg1, bkg2)")
-        model = w.factory("SUM::model(f0[%f, 0., %f]*sigsig, f1[%f, 10000., %f]*sigbkg, f2[%f, 10000., %f]*bkgsig, f3[%f, 800000., %f]*bkgbkg)" %
-                          (par_1, lim_1, par_2, lim_2, par_3, lim_3, par_4, lim_4))
+        model = w.factory("SUM::model(f0[%f, 0., %f]*sigsig, f1[%f, 10000., %f]*sigbkg, f2[%f, 10000., %f]*bkgsig, f3[%f, %f, %f]*bkgbkg)" %
+                          (par_1, lim_1, par_2, lim_2, par_3, lim_3, par_4, lim_low4, lim_4))
         print("model created")
         return model
 
-    def ubfit(self):
-        fitdir = str(self.fitpath)
-        print(fitdir)
-        os.chdir(fitdir)
-        binning = int(self.p_num_bins/self.rebin_const)
-        #dfreco_mc = pd.DataFrame()
-        #for period in range(1, self.nperiods):
-        #    for root, _, files in os.walk(self.resultsmc[period], topdown=False):
-        #        for name in files:
-        #            if name.endswith(".pkl"):
-        #                dfreco = pickle.load(openfile(os.path.join(root, name), "rb"))
-        #                dfreco = dfreco[dfreco["inv_cand_1"] < self.p_mass_fit_lim[1]]
-        #                dfreco = dfreco[dfreco["inv_cand_1"] > self.p_mass_fit_lim[0]]
-        #                dfreco = dfreco[dfreco["inv_cand_2"] < self.p_mass_fit_lim[1]]
-        #                dfreco = dfreco[dfreco["inv_cand_2"] > self.p_mass_fit_lim[0]]
-        #                dfreco = dfreco[dfreco["delta_phi"] > 0]
-        #                dfreco_mc = dfreco_mc.append(dfreco)
-        #print("**********************************************************************")
-        #print("--------------------MONTE CARLO DATA LOADED---------------------------")
-        #print("------------------Data size:", dfreco_mc.shape, "---------------------")
-        #print("**********************************************************************")
-
-        #np.savetxt("testmc.txt", dfreco_mc[["inv_cand_1","inv_cand_2"]].to_numpy())
-        #w = RooWorkspace("w")
-        #ismc = True
-        #model = self.ub_model(ismc, w)
-        #m = w.pdf("model")
-        #x = w.var("x")
-        #y = w.var("y")
-
-        #ds = RooDataSet.read("testmc.txt", RooArgList(x, y))
-        #c_mc_x = TCanvas("c_mc_x", "", 600, 600)
-        #frame = x.frame()
-        #ds.plotOn(frame)
-        #model.plotOn(frame)
-        #frame.Draw()
-
-        #c_mc_x.SaveAs("mc_model_x.png")
-
-        #c_mc_y = TCanvas("c_mc_y", "", 600, 600)
-        #frame = y.frame()
-        #ds.plotOn(frame)
-        #model.plotOn(frame)
-
-        #frame.Draw()
-
-        #c_mc_y.SaveAs("mc_model_y.png")
-
-        #c_mc = TCanvas("c_mc", "", 600, 600)
-        #mc_mod = model.createHistogram("monte-carlo_model", x, RooFit.Binning(binning),
-        #                                RooFit.YVar(y, RooFit.Binning(binning)))
-        #mc_mod.SetOption("surf")
-        #mc_mod.Draw()
-        #fileout = TFile("fits.root", "UPDATE")
-        #mc_mod.Write()
-        #fileout.Close()
-        #c_mc.SaveAs("mc_model.png")
-
-        #m.fitTo(ds)
-
-        #c_mc_fit_x = TCanvas("c_mc_fit_x", "", 600, 600)
-        #frame = x.frame()
-        #ds.plotOn(frame)
-        #model.plotOn(frame)
-        #frame.Draw()
-        #c_mc_fit_x.SaveAs("mc_fit_x.png")
-
-        #c_mc_fit_y = TCanvas("c_mc_fit_y", "", 600, 600)
-        #frame = y.frame()
-        #ds.plotOn(frame)
-        #model.plotOn(frame)
-        #frame.Draw()
-        #c_mc_fit_y.SaveAs("mc_fit_y.png")
-
-        #c_mc_fit = TCanvas("c_mc_fit", "", 600, 600)
-        #mc_fit = model.createHistogram("monte-carlo_fit", x, RooFit.Binning(binning),
-        #                               RooFit.YVar(y, RooFit.Binning(binning)))
-        #mc_fit.SetOption("surf")
-        #mc_fit.Draw()
-        #fileout = TFile("fits.root", "UPDATE")
-        #mc_fit.Write()
-        #fileout.Close()
-        #c_mc_fit.SaveAs("mc_fit.png")
-        #print("end of writing")
-        #w.Delete()
-        dfreco_data = pd.DataFrame()
-        for period in range(0, self.nperiods):
-            for root, _, files in os.walk(self.resultsdata[period], topdown=False):
+    def dataload(self, pathtoresults): #load preprocessed dataframe for unbinned fit
+        dfreco_full = pd.DataFrame()
+        for period in range(1, self.nperiods):
+            for root, _, files in os.walk(pathtoresults[period], topdown=False):
                 for name in files:
                     if name.endswith(".pkl"):
                         dfreco = pickle.load(openfile(os.path.join(root, name), "rb"))
-                        dfreco = dfreco[dfreco["delta_phi"] > 0]
+                        dfreco = dfreco[dfreco["pt_cand1"] > 4]
+                        dfreco = dfreco[dfreco["pt_cand2"] > 4]
                         dfreco = dfreco[dfreco["inv_cand_1"] < self.p_mass_fit_lim[1]]
                         dfreco = dfreco[dfreco["inv_cand_1"] > self.p_mass_fit_lim[0]]
                         dfreco = dfreco[dfreco["inv_cand_2"] < self.p_mass_fit_lim[1]]
                         dfreco = dfreco[dfreco["inv_cand_2"] > self.p_mass_fit_lim[0]]
-                        dfreco_data = dfreco_data.append(dfreco)
-#                    if dfreco_data.shape[0] > 1000000:
-#                        break
+                        dfreco = dfreco[dfreco["delta_phi"] > 0]
+                        dfreco_full = dfreco_full.append(dfreco)
+                    #if dfreco_full.shape[0] > 1000:
+                    #    break
+        return dfreco_full
+
+# pylint: disable too-many-locals
+    def ubfit(self): #unbinned fit processing
+        fitdir = str(self.fitpath)
+        os.chdir(fitdir)
+        binning = int(self.p_num_bins/self.rebin_const)
+
+##################################  MONTE CARLO  ######################################
+
+        dfreco_mc = self.dataload(self.resultsmc)
+        print("**********************************************************************")
+        print("--------------------MONTE CARLO DATA LOADED---------------------------")
+        print("------------------Data size:", dfreco_mc.shape, "---------------------")
+        print("**********************************************************************")
+
+        np.savetxt("testmc.txt", dfreco_mc[["inv_cand_1", "inv_cand_2"]].to_numpy())
+
+        inv_mass_1 = dfreco_mc["inv_cand_1"].tolist()
+        inv_mass_2 = dfreco_mc["inv_cand_2"].tolist()
+        mc_histo = TH2F("DDbar_mc_plot", "", binning, self.p_mass_fit_lim[0],
+                        self.p_mass_fit_lim[1], binning, self.p_mass_fit_lim[0],
+                        self.p_mass_fit_lim[1])
+        for i in range(0, len(inv_mass_1)-1):
+            mc_histo.Fill(inv_mass_1[i], inv_mass_2[i])
+        mc_histo.SetOption("lego2")
+        fileout = TFile("fits.root", "RECREATE")
+        mc_histo.Write()
+
+
+# create workspace, model and dataset
+        w = RooWorkspace("w")
+        ismc = True
+        model = self.ub_model(ismc, w)
+        m = w.pdf("model")
+        x = w.var("x")
+        y = w.var("y")
+        ds = RooDataSet.read("testmc.txt", RooArgList(x, y))
+
+# draw model
+        c_mc_x = TCanvas("c_mc_x", "", 600, 600)
+        frame = x.frame()
+        ds.plotOn(frame)
+        model.plotOn(frame)
+        frame.Draw()
+        c_mc_x.SaveAs("mc_model_x.png")
+
+        c_mc_y = TCanvas("c_mc_y", "", 600, 600)
+        frame = y.frame()
+        ds.plotOn(frame)
+        model.plotOn(frame)
+        frame.Draw()
+        c_mc_y.SaveAs("mc_model_y.png")
+
+        c_mc = TCanvas("c_mc", "", 600, 600)
+        mc_mod = model.createHistogram("monte-carlo_model", x, RooFit.Binning(binning),
+                                       RooFit.YVar(y, RooFit.Binning(binning)))
+        mc_mod.SetOption("surf")
+        mc_mod.Draw()
+        mc_mod.Write()
+        c_mc.SaveAs("mc_model.png")
+
+# make fit
+        m.fitTo(ds)
+
+# plot fit
+        c_mc_fit_x = TCanvas("c_mc_fit_x", "", 600, 600)
+        frame = x.frame()
+        ds.plotOn(frame)
+        model.plotOn(frame)
+        frame.Draw()
+        c_mc_fit_x.SaveAs("mc_fit_x.png")
+
+        c_mc_fit_y = TCanvas("c_mc_fit_y", "", 600, 600)
+        frame = y.frame()
+        ds.plotOn(frame)
+        model.plotOn(frame)
+        frame.Draw()
+        c_mc_fit_y.SaveAs("mc_fit_y.png")
+
+        c_mc_fit = TCanvas("c_mc_fit", "", 600, 600)
+        mc_fit = model.createHistogram("monte-carlo_fit", x, RooFit.Binning(binning),
+                                       RooFit.YVar(y, RooFit.Binning(binning)))
+        mc_fit.SetOption("surf")
+        mc_fit.Draw()
+        mc_fit.Write()
+        c_mc_fit.SaveAs("mc_fit.png")
+
+# plot residuals
+        h_residual = TH3F("DDbar residual plot MC", "", binning, 0, binning,
+                          binning, 0, binning, 1000, -500, 500)
+        Nentries = mc_histo.Integral()
+        for i in range(0, binning):
+            xi = float(mc_histo.GetXaxis().GetBinCenter(i))
+            x.setVal(xi)
+            for j in range(0, binning-1):
+                yj = float(mc_histo.GetYaxis().GetBinCenter(j))
+                y.setVal(yj)
+                bc = mc_histo.GetBinContent(i, j)
+                d_m = self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]
+                fac = Nentries / binning**2 * d_m**2
+                fitv = fac * m.getValV(RooArgSet(x, y))
+                res = bc - fitv
+                h_residual.Fill(i, j, res)
+        cYields_res_mc = TCanvas('cYields_res_mc', 'The Fit Canvas')
+        h_residual.SetOption("lego")
+        h_residual.Draw()
+        cYields_res_mc.SaveAs("h_DDbar_res_mc.png")
+        h_residual.Write()
+        fileout.Write()
+        fileout.Close()
+
+        w.Delete()
+
+#####################################  DATA  ###########################################
+
+        dfreco_data = self.dataload(self.resultsdata)
         print("**********************************************************************")
         print("------------------------- DATA LOADED --------------------------------")
         print("------------------Data size:", dfreco_data.shape, "---------------------")
         print("**********************************************************************")
 
         np.savetxt("testdata.txt", dfreco_data[["inv_cand_1", "inv_cand_2"]].to_numpy())
+        inv_mass_1 = dfreco_data["inv_cand_1"].tolist()
+        inv_mass_2 = dfreco_data["inv_cand_2"].tolist()
+        print("inv mass vect created", len(inv_mass_1))
+        data_histo = TH2F("DDbar_data_plot", "", binning, self.p_mass_fit_lim[0],
+                          self.p_mass_fit_lim[1], binning, self.p_mass_fit_lim[0],
+                          self.p_mass_fit_lim[1])
+        for i in range(0, len(inv_mass_1)-1):
+            data_histo.Fill(inv_mass_1[i], inv_mass_2[i])
+        data_histo.SetOption("lego2")
+        fileout = TFile("fits.root", "UPDATE")
+        data_histo.Write()
 
+# create workspace, model & dataset
         w = RooWorkspace("w")
         ismc = False
         model = self.ub_model(ismc, w)
         d = w.pdf("model")
         x = w.var("x")
         y = w.var("y")
-
         ds = RooDataSet.read("testdata.txt", RooArgList(x, y))
 
+# plot model
         c_data_x = TCanvas("c_data_x", "", 600, 600)
         frame = x.frame()
         ds.plotOn(frame)
@@ -402,14 +460,13 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
                                          RooFit.YVar(y, RooFit.Binning(binning)))
         data_mod.SetOption("surf")
         data_mod.Draw()
-        fileout = TFile("fits.root", "UPDATE")
         data_mod.Write()
-        fileout.Close()
         c_data.SaveAs("data_model.png")
 
-        d.fitTo(ds)
-        d.Print("Data model:")
+# make fit
+        d.fitTo(ds, RooFit.Save())
 
+# plot fit
         c_data_fit_x = TCanvas("c_data_fit_x", "", 600, 600)
         frame = x.frame()
         ds.plotOn(frame)
@@ -430,14 +487,34 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
         data_fit.SetOption("surf")
         data_fit.Draw()
         c_data_fit.SaveAs("data_fit.png")
-        fileout = TFile("fits.root", "UPDATE")
         data_fit.Write()
-        fileout.Close()
-        print("end of writing")
+
+# plot residuals
+        h_residual_data = TH3F("DDbar residual plot data", "", binning, 0, binning,
+                               binning, 0, binning, 2000, -1000, 1000)
+        Nentries = data_histo.Integral()
+        for i in range(0, binning):
+            xi = float(data_histo.GetXaxis().GetBinCenter(i))
+            x.setVal(xi)
+            for j in range(0, binning):
+                yj = float(data_histo.GetYaxis().GetBinCenter(j))
+                y.setVal(yj)
+                bc = data_histo.GetBinContent(i, j)
+                d_m = self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]
+                fac = Nentries / binning**2 * d_m**2
+                fitv = fac * d.getValV(RooArgSet(x, y))
+                res = bc - fitv
+                h_residual_data.Fill(i, j, res)
+        cYields_res_data = TCanvas('cYields_res_data', 'The Fit Canvas')
+        h_residual_data.SetOption("lego")
+        h_residual_data.Draw()
+        cYields_res_data.SaveAs("h_DDbar_res_data.png")
+        h_residual_data.Write()
+
         w.Delete()
 
     # pylint: disable=import-outside-toplevel
-    def fit(self):
+    def fit(self):# main fit: ROOT binned fit + unbinned fit
         # Enable ROOT batch mode and reset in the end
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
@@ -448,10 +525,7 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
                                                "histomass_full")
         histomass_full = histomass_full.RebinY(self.rebin_const,
                                                "histomass_full")
-        print(histomass_full.GetNbinsX())
-        print(histomass_full.GetNbinsY())
         set_params, fit_params = self.fit_tmp()
-        print(set_params, fit_params)
         fit_fun_mc = self.min_par_fit(set_params[0], set_params[1],
                                       set_params[2], set_params[3],
                                       set_params[4], set_params[5],
@@ -461,11 +535,6 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
         fit_fun_mc.SetParameters(fit_params[0], fit_params[1],
                                  fit_params[2], fit_params[3])
         fit_fun_data = fit_fun_mc
-        #fit_fun_data.SetParLimits(0, 5e4, 1e6)
-        #fit_fun_data.SetParLimits(1, 0., 1e6)
-        #fit_fun_data.SetParLimits(2, 0., 1e6)
-        #fit_fun_data.SetParLimits(3, 0., 5e4)
-        #fitter.Config().ParSettings(2).SetLowerLimit(0);
         histomass_full.Fit(fit_fun_mc, "I")
         fin_par = fit_fun_mc.GetParameters()
         print("------------------PARAMETERS MONTE_CARLO--------------------")
@@ -515,7 +584,6 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
         histomass_full_data.Write()
         fit_fun_data.Write()
         fileout.Close()
-        print("fileout is written")
         self.ubfit()
         gROOT.SetBatch(tmp_is_root_batch)
 
@@ -592,24 +660,3 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
 #        HFPtSpectrum(self.p_indexhpt, self.p_inputfonllpred, \
 #        fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
 #        fileoutcross, norm, self.p_sigmav0 * 1e12, self.p_fd_method, self.p_cctype)
-#
-#        cCross = TCanvas('cCross', 'The Fit Canvas')
-#        cCross.SetCanvasSize(1900, 1500)
-#        cCross.SetWindowSize(500, 500)
-#        cCross.SetLogy()
-#
-#        legcross = TLegend(.5, .65, .7, .85)
-#        legcross.SetBorderSize(0)
-#        legcross.SetFillColor(0)
-#        legcross.SetFillStyle(0)
-#        legcross.SetTextFont(42)
-#        legcross.SetTextSize(0.035)
-#
-#        myfile = TFile.Open(fileoutcross, "read")
-#        hcross = myfile.Get("histoSigmaCorr")
-#        hcross.GetXaxis().SetTitle("#it{p}_{T} %s (GeV/#it{c})" % self.p_latexnmeson)
-#        hcross.GetYaxis().SetTitle("d#sigma/d#it{p}_{T} (%s) %s" %
-#                                   (self.p_latexnmeson, self.typean))
-#        legcross.AddEntry(hcross, "cross section", "LEP")
-#        cCross.SaveAs("%s/Cross%s%sVs%s.eps" % (self.d_resultsallpdata,
-#                                                self.case, self.typean, self.v_var_binning))
