@@ -294,11 +294,13 @@ D0pp:
         mc: null
         weighttrig: false
       data:
+        runselection: [null, null, null] #FIXME
         results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
                   /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
                   /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
         resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_data/resultsMBjetvspt
       mc:
+        runselection: [null, null, null] #FIXME
         results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
                   /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
                   /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
@@ -343,16 +345,14 @@ D0pp:
       powheg_path_prompt: /data/POWHEG/powheg_pr_histos_D0_central.root
       powheg_path_nonprompt: /data/POWHEG/powheg_fd_histos_D0_central.root
 
-      powheg_prompt_variations_path: null #/data/POWHEG/LckINT7HighMultwithJets/prompt/powheg_lc_charm_
+      powheg_prompt_variations_path: /data/POWHEG/powheg_pr_histos_D0_
       powheg_prompt_variations: [] #["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
 
-      powheg_nonprompt_variations_path: null #/data/POWHEG/LckINT7HighMultwithJets/nonprompt/powheg_lc_beauty_
-      powheg_nonprompt_variations: [] #["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
+      powheg_nonprompt_variations: ["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow","NoEvtGen"]
 
-      pythia8_prompt_variations_path: null #/data/PYTHIA8/LckINT7HighMultwithJets/prompt/pythia_lc_charm_
+      pythia8_prompt_variations_path: /data/PYTHIA8/pythia8_pr_histos_D0_
       pythia8_prompt_variations: [] #["default","coloursoft_mode0"]
-      pythia8_prompt_variations_legend: [] #["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
-
+      pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
 
       systematic_categories: ["fitting", "cutvar", "powheg", "unfolding_prior", "regularisation"] #sideband 20
       systematic_variations: [8, 17, 9, 1, 2]
@@ -360,6 +360,8 @@ D0pp:
       systematic_rms: [true,  true, true, true , true, true]
       systematic_symmetrise: [true,  true, true, true , true, true]
       systematic_rms_both_sides: [true,  true, true, true , true, true]
+
+      systematics_db: ./data/data_prod_20200304/database_systematics_D0pp.yml
 
       nevents: 1590000000.
 
@@ -397,11 +399,13 @@ D0pp:
         mc: null
         weighttrig: false
       data:
+        runselection: [null, null, null] #FIXME
         results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
                   /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
                   /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
         resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_data/resultsMBjetvspt
       mc:
+        runselection: [null, null, null] #FIXME
         results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
                   /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
                   /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
@@ -446,15 +450,14 @@ D0pp:
       powheg_path_prompt: /data/POWHEG/powheg_pr_histos_D0_central.root
       powheg_path_nonprompt: /data/POWHEG/powheg_fd_histos_D0_central.root
 
-      powheg_prompt_variations_path: null #/data/POWHEG/LckINT7HighMultwithJets/prompt/powheg_lc_charm_
+      powheg_prompt_variations_path: /data/POWHEG/powheg_pr_histos_D0_
       powheg_prompt_variations: [] #["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
 
-      powheg_nonprompt_variations_path: null #/data/POWHEG/LckINT7HighMultwithJets/nonprompt/powheg_lc_beauty_
-      powheg_nonprompt_variations: [] #["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
+      powheg_nonprompt_variations: ["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow","NoEvtGen"]
 
-      pythia8_prompt_variations_path: null #/data/PYTHIA8/LckINT7HighMultwithJets/prompt/pythia_lc_charm_
+      pythia8_prompt_variations_path: /data/PYTHIA8/pythia8_pr_histos_D0_
       pythia8_prompt_variations: [] #["default","coloursoft_mode0"]
-      pythia8_prompt_variations_legend: [] #["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
+      pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
 
 
       systematic_categories: ["fitting", "cutvar", "powheg", "unfolding_prior", "regularisation"] #sideband 20
@@ -463,6 +466,8 @@ D0pp:
       systematic_rms: [true,  true, true, true , true, true]
       systematic_symmetrise: [true,  true, true, true , true, true]
       systematic_rms_both_sides: [true,  true, true, true , true, true]
+
+      systematics_db: ./data/data_prod_20200304/database_systematics_D0pp.yml
 
       nevents: 1590000000.
 
