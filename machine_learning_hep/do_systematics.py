@@ -21,6 +21,7 @@ import argparse
 import subprocess
 import shlex
 from copy import deepcopy
+import datetime
 import yaml
 
 def msg_err(message: str):
@@ -178,13 +179,15 @@ def main(yaml_in, yaml_diff, analysis): # pylint: disable=too-many-locals
             if analysis:
                 print("Starting the analysis \x1b[1;32m%s\x1b[0m for the variation " \
                     "\x1b[1;32m%s: %s\x1b[0m" % (analysis, label_cat, label_var))
-                logfile = "stdouterr_%s_%s_%s.log" % (analysis, cat, var)
+                now = datetime.datetime.now()
+                timestamp = now.strftime("%Y%m%d_%H%M%S")
+                logfile = "stdouterr_%s_%s_%s_%s.log" % (analysis, cat, var, timestamp)
+                print("Logfile: %s" % logfile)
                 with open(logfile, "w") as ana_out:
                     subprocess.Popen(shlex.split("python do_entire_analysis.py " \
                         "-r submission/default_complete.yml " \
                         "-d %s -a %s" % (yaml_out, analysis)), \
                         stdout=ana_out, stderr=ana_out, universal_newlines=True)
-                print("Logfile: %s" % logfile)
 
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(description="Run the analysis with " \
