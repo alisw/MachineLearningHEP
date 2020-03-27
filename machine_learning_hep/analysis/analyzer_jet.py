@@ -1996,16 +1996,18 @@ class AnalyzerJet(Analyzer):
         if string_default not in self.d_resultsallpdata:
             self.logger.fatal("Not a default database! Cannot run systematics.")
 
-        #print(self.systematic_catnames)
-        #print(self.systematic_catlabels)
-        #print(self.systematic_variations)
-        #print(self.systematic_varnames)
-        #print(self.systematic_varlabels)
-        #print(self.systematic_correlation)
-        #print(self.systematic_rms)
-        #print(self.systematic_symmetrise)
-        #print(self.systematic_rms_both_sides)
-        #print(self.powheg_nonprompt_varnames)
+        debug = False
+        if debug:
+            print("Categories: ", self.systematic_catnames)
+            print("Category labels: ", self.systematic_catlabels)
+            print("Numbers of variations: ", self.systematic_variations)
+            print("Variations: ", self.systematic_varnames)
+            print("Variation labels: ", self.systematic_varlabels)
+            print("Correlation: ", self.systematic_correlation)
+            print("RMS: ", self.systematic_rms)
+            print("Symmetrisation: ", self.systematic_symmetrise)
+            print("RMS both sides: ", self.systematic_rms_both_sides)
+            print("Feed-down variations: ", self.powheg_nonprompt_varnames)
 
         path_def = "%s/unfolding_results%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
         input_file_default = TFile.Open(path_def, "update")
@@ -2089,6 +2091,7 @@ class AnalyzerJet(Analyzer):
         input_histograms_sys=[]
         for ibin2 in range(self.p_nbin2_gen):
             suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+            name_his = "unfolded_z_%d_%s" % (self.choice_iter_unfolding, suffix)
             input_histograms_syscat=[]
             for sys_cat in range(self.n_sys_cat):
                 input_histograms_syscatvar=[]
@@ -2106,6 +2109,8 @@ class AnalyzerJet(Analyzer):
                         path_file = path_def.replace(string_default, self.systematic_catnames[sys_cat] + "/" + self.systematic_varnames[sys_cat][sys_var])
                     if not input_histograms_syscatvar[sys_var]:
                         self.logger.fatal(make_message_notfound(name_his, path_file))
+                    if debug:
+                        print("Variation: %s, %s: got histogram %s from file %s" % (self.systematic_catnames[sys_cat], self.systematic_varnames[sys_cat][sys_var], name_his, path_file))
                     #input_histograms_syscatvar[sys_var].Scale(1.0,"width") #remove these later and put normalisation directly in systematics
                 input_histograms_syscat.append(input_histograms_syscatvar)
             input_histograms_sys.append(input_histograms_syscat)
