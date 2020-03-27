@@ -2093,15 +2093,20 @@ class AnalyzerJet(Analyzer):
             for sys_cat in range(self.n_sys_cat):
                 input_histograms_syscatvar=[]
                 for sys_var in range(self.systematic_variations[sys_cat]):
+                    path_file = path_def
                     if self.systematic_catnames[sys_cat] == "regularisation":
                         if sys_var == 0:
-                            input_histograms_syscatvar.append(input_file_default.Get("unfolded_z_%d_%s" % (self.niterunfoldingregdown, suffix)))
+                            name_his = "unfolded_z_%d_%s" % (self.niterunfoldingregdown, suffix)
+                            input_histograms_syscatvar.append(input_file_default.Get(name_his))
                         else:
-                            input_histograms_syscatvar.append(input_file_default.Get("unfolded_z_%d_%s" % (self.niterunfoldingregup, suffix)))
+                            name_his = "unfolded_z_%d_%s" % (self.niterunfoldingregup, suffix)
+                            input_histograms_syscatvar.append(input_file_default.Get(name_his))
                     else:
                         input_histograms_syscatvar.append(input_files_sys[sys_cat][sys_var].Get(name_his))
-                    # FIXME Add histogram check
-                        #input_histograms_syscatvar[sys_var].Scale(1.0,"width") #remove these later and put normalisation directly in systematics
+                        path_file = path_def.replace(string_default, self.systematic_catnames[sys_cat] + "/" + self.systematic_varnames[sys_cat][sys_var])
+                    if not input_histograms_syscatvar[sys_var]:
+                        self.logger.fatal(make_message_notfound(name_his, path_file))
+                    #input_histograms_syscatvar[sys_var].Scale(1.0,"width") #remove these later and put normalisation directly in systematics
                 input_histograms_syscat.append(input_histograms_syscatvar)
             input_histograms_sys.append(input_histograms_syscat)
 
