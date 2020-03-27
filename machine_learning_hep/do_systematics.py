@@ -120,6 +120,10 @@ def main(yaml_in, yaml_diff, analysis): # pylint: disable=too-many-locals
     with open(yaml_diff, 'r') as file_diff:
         dic_diff = yaml.safe_load(file_diff)
 
+    if not healthy_structure(dic_diff):
+        msg_err("Bad structure.")
+        return
+
     #print(yaml.safe_dump(dic_in, default_flow_style=False))
 
     # Save the original database in the same format as the output for debugging.
@@ -128,10 +132,6 @@ def main(yaml_in, yaml_diff, analysis): # pylint: disable=too-many-locals
     print("\nSaving the original database to %s" % yaml_out)
     with open(yaml_out, 'w') as file_out:
         yaml.safe_dump(dic_in, file_out, default_flow_style=False)
-
-    if not healthy_structure(dic_diff):
-        msg_err("Bad structure.")
-        return
 
     dic_cats = dic_diff["categories"]
     # Loop over categories.
