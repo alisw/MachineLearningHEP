@@ -15,9 +15,6 @@
 """
 main script for doing final stage analysis
 """
-import os
-from math import sqrt
-from shutil import copyfile
 # pylint: disable=unused-wildcard-import, wildcard-import
 from array import *
 # pylint: disable=import-error, no-name-in-module, unused-import
@@ -28,7 +25,8 @@ from ROOT import gROOT, kRed, kGreen, kBlack, kBlue, kOrange, kViolet, kAzure
 from ROOT import TStyle, gPad
 from machine_learning_hep.utilities_plot import plot_histograms, load_root_style
 
-def compareD0toQMpreliminary():
+def compared0toqmpreliminary():
+     # pylint: disable=line-too-long
     filembqm = TFile.Open("../ALICE_D2H_vs_mult_pp13/data/PreliminaryQM19/finalcrossD0ppMBvspt_ntrklmult0.root", "READ")
     fileour = TFile.Open("/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_data/resultsMBvspt_perc_v0m/finalcrossD0ppMBvspt_perc_v0mmult0.root", "READ")
     hsigmacorrqm = filembqm.Get("histoSigmaCorr")
@@ -40,4 +38,4 @@ def compareD0toQMpreliminary():
     hsigmacorrour.Draw()
     c.SaveAs("canvas.pdf")
 
-compareD0toQMpreliminary()
+compared0toqmpreliminary()
