@@ -1,0 +1,162 @@
+categories:
+    default:
+        activate: true
+        label: "default"
+        correlation: null
+        rms: false
+        symmetrise: false
+        rms_both_sides: false
+        variations:
+            default:
+                activate: true
+                label: "default"
+                diffs: {}
+    fitting:
+        activate: false
+        label: "fitting"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            bkgfunc:
+                activate: false
+                label: "bkg func"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            bkgfunc: 2
+            masspeak:
+                activate: false
+                label: "mass peak"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            masspeak: 1.822
+                            masspeaksec: 1.822
+            massmin:
+                activate: false
+                label: "mass min"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            massmin: 1.76
+                            mass_fit_lim: [1.76, 2.05]
+            massmax:
+                activate: false
+                label: "mass max"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            massmax: 2.15
+                            mass_fit_lim: [1.72, 2.15]
+            rebin:
+                activate: false
+                label: "rebin"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            rebin: 12
+            fix_mean:
+                activate: false
+                label: "fix mean"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            fix_mean: true
+            fix_sigma:
+                activate: false
+                label: "fix sigma"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            fix_sigma: false
+    sideband:
+        activate: false
+        label: "side bands"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            sigma:
+                activate: false
+                label: "sigma"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            signal_sigma: 1.6
+                            sigma_scale: 0.890
+            sb0:
+                activate: false
+                label: "sb 0"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            sideband_sigma_1_left: 5
+                            sideband_sigma_2_left: 8
+                            sideband_sigma_1_right: 5
+                            sideband_sigma_2_right: 8
+            sb_left:
+                activate: false
+                label: "sb left only"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            sidebandleftonly: true
+    cutvar:
+        activate: false
+        label: "cuts"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            cutvar0:
+                activate: false
+                label: "cutvar0"
+                diffs:
+                    mlapplication:
+                        probcutoptimal: [0.82,0.80,0.72,0.70,0.50,0.50,0.50]
+    powheg:
+        activate: false
+        label: "POWHEG"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            F1_R05:
+                activate: false
+                label: "F1_R05"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            powheg_path_nonprompt: /data/POWHEG/powheg_fd_histos_D0_F1_R05.root
+    unfolding_prior:
+        activate: false
+        label: "unfolding prior"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            prior_true:
+                activate: false
+                label: "true"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            doprior: true
+    regularisation:
+        activate: false
+        label: "regularisation"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            reg0:
+                activate: false
+                label: "reg0"
+                diffs: {}

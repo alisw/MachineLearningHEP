@@ -19,6 +19,7 @@ main script for doing final stage analysis
 import os
 from math import sqrt
 from array import array
+import yaml
 # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TH1F, TH2F, TCanvas, TPad, TLatex, TGraphAsymmErrors
 from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
@@ -123,10 +124,8 @@ class AnalyzerJet(Analyzer):
         self.powheg_prompt_variations_path = \
             datap["analysis"][self.typean].get("powheg_prompt_variations_path", None)
 
-        self.powheg_nonprompt_variations = \
+        self.powheg_nonprompt_varnames = \
             datap["analysis"][self.typean].get("powheg_nonprompt_variations", None)
-        self.powheg_nonprompt_variations_path = \
-            datap["analysis"][self.typean].get("powheg_nonprompt_variations_path", None)
 
         self.pythia8_prompt_variations = \
             datap["analysis"][self.typean].get("pythia8_prompt_variations", None)
@@ -135,7 +134,7 @@ class AnalyzerJet(Analyzer):
         self.pythia8_prompt_variations_legend = \
             datap["analysis"][self.typean].get("pythia8_prompt_variations_legend", None)
 
-        self.systematic_categories = \
+        self.systematic_catnames = \
             datap["analysis"][self.typean].get("systematic_categories", None)
         self.systematic_variations = \
             datap["analysis"][self.typean].get("systematic_variations", None)
@@ -147,6 +146,38 @@ class AnalyzerJet(Analyzer):
             datap["analysis"][self.typean].get("systematic_symmetrise", None)
         self.systematic_rms_both_sides = \
             datap["analysis"][self.typean].get("systematic_rms_both_sides", None)
+        self.n_sys_cat = len(self.systematic_catnames)
+        self.systematic_catlabels = self.systematic_catnames
+        self.systematic_varnames = [["sys_%d" % (var + 1) for var in range(self.systematic_variations[cat])] for cat in range(self.n_sys_cat)]
+        self.systematic_varlabels = self.systematic_varnames
+
+        path_sys_db = datap["analysis"][self.typean].get("systematics_db", None)
+        if path_sys_db:
+            with open(path_sys_db, 'r') as file_sys:
+                db_sys = yaml.safe_load(file_sys)
+            db_sys = db_sys["categories"]
+            self.systematic_catnames = [catname for catname, val in db_sys.items() if val["activate"]]
+            self.n_sys_cat = len(self.systematic_catnames)
+            self.systematic_catlabels = [""] * self.n_sys_cat
+            self.systematic_varnames = [None] * self.n_sys_cat
+            self.systematic_varlabels = [None] * self.n_sys_cat
+            self.systematic_variations = [0] * self.n_sys_cat
+            self.systematic_correlation = [None] * self.n_sys_cat
+            self.systematic_rms = [False] * self.n_sys_cat
+            self.systematic_symmetrise = [False] * self.n_sys_cat
+            self.systematic_rms_both_sides = [False] * self.n_sys_cat
+            for i, catname in enumerate(self.systematic_catnames):
+                self.systematic_catlabels[i] = db_sys[catname]["label"]
+                self.systematic_varnames[i] = [varname for varname, val in db_sys[catname]["variations"].items() if val["activate"]]
+                self.systematic_variations[i] = len(self.systematic_varnames[i])
+                self.systematic_varlabels[i] = [""] * self.systematic_variations[i]
+                for j, varname in enumerate(self.systematic_varnames[i]):
+                    self.systematic_varlabels[i][j] = db_sys[catname]["variations"][varname]["label"]
+                self.systematic_correlation[i] = db_sys[catname]["correlation"]
+                self.systematic_rms[i] = db_sys[catname]["rms"]
+                self.systematic_symmetrise[i] = db_sys[catname]["symmetrise"]
+                self.systematic_rms_both_sides[i] = db_sys[catname]["rms_both_sides"]
+            self.powheg_nonprompt_varnames = [varname for varname, val in db_sys["powheg"]["variations"].items() if val["activate"]]
 
         self.branching_ratio = \
             datap["analysis"][self.typean].get("branching_ratio", None)
@@ -1961,10 +1992,25 @@ class AnalyzerJet(Analyzer):
 
     # pylint: disable=too-many-nested-blocks, fixme
     def jetsystematics(self):
-        path = "%s/unfolding_results%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
-        input_file_default = TFile.Open(path, "update")
+        string_default = "default/default"
+        if string_default not in self.d_resultsallpdata:
+            self.logger.fatal("Not a default database! Cannot run systematics.")
+
+        #print(self.systematic_catnames)
+        #print(self.systematic_catlabels)
+        #print(self.systematic_variations)
+        #print(self.systematic_varnames)
+        #print(self.systematic_varlabels)
+        #print(self.systematic_correlation)
+        #print(self.systematic_rms)
+        #print(self.systematic_symmetrise)
+        #print(self.systematic_rms_both_sides)
+        #print(self.powheg_nonprompt_varnames)
+
+        path_def = "%s/unfolding_results%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
+        input_file_default = TFile.Open(path_def, "update")
         if not input_file_default:
-            self.logger.fatal(make_message_notfound(path))
+            self.logger.fatal(make_message_notfound(path_def))
         input_powheg_file = TFile.Open(self.powheg_path_prompt)
         if not input_powheg_file:
             self.logger.fatal(make_message_notfound(self.powheg_path_prompt))
@@ -2023,16 +2069,18 @@ class AnalyzerJet(Analyzer):
         input_histograms_default=[]
         for ibin2 in range(self.p_nbin2_gen):
             suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-            input_histograms_default.append(input_file_default.Get("unfolded_z_%d_%s" % (self.choice_iter_unfolding, suffix)))
+            name_his = "unfolded_z_%d_%s" % (self.choice_iter_unfolding, suffix)
+            input_histograms_default.append(input_file_default.Get(name_his))
+            if not input_histograms_default[ibin2]:
+                self.logger.fatal(make_message_notfound(name_his, path_def))
 
         input_files_sys=[]
-        for sys_cat in range(len(self.systematic_categories)):
-            if self.systematic_categories[sys_cat]=="regularisation":
+        for sys_cat in range(self.n_sys_cat):
+            if self.systematic_catnames[sys_cat] == "regularisation":
                 continue
             input_files_sysvar=[]
-            for sys_var in range(self.systematic_variations[sys_cat]):
-                # FIXME
-                path = "/data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/systematics/%s/sys_%d/pp_data/resultsMBjetvspt/unfolding_resultsLcpK0sppMBjetvspt.root" % (self.systematic_categories[sys_cat],sys_var+1)
+            for sys_var, varname in enumerate(self.systematic_varnames[sys_cat]):
+                path = path_def.replace(string_default, self.systematic_catnames[sys_cat] + "/" + varname)
                 input_files_sysvar.append(TFile.Open(path,"update"))
                 if not input_files_sysvar[sys_var]:
                     self.logger.fatal(make_message_notfound(path))
@@ -2042,17 +2090,23 @@ class AnalyzerJet(Analyzer):
         for ibin2 in range(self.p_nbin2_gen):
             suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             input_histograms_syscat=[]
-            for sys_cat in range(len(self.systematic_categories)):
+            for sys_cat in range(self.n_sys_cat):
                 input_histograms_syscatvar=[]
                 for sys_var in range(self.systematic_variations[sys_cat]):
-                    if self.systematic_categories[sys_cat]== "regularisation":
+                    path_file = path_def
+                    if self.systematic_catnames[sys_cat] == "regularisation":
                         if sys_var == 0:
-                            input_histograms_syscatvar.append(input_file_default.Get("unfolded_z_%d_%s" % (self.niterunfoldingregdown, suffix)))
+                            name_his = "unfolded_z_%d_%s" % (self.niterunfoldingregdown, suffix)
+                            input_histograms_syscatvar.append(input_file_default.Get(name_his))
                         else:
-                            input_histograms_syscatvar.append(input_file_default.Get("unfolded_z_%d_%s" % (self.niterunfoldingregup, suffix)))
+                            name_his = "unfolded_z_%d_%s" % (self.niterunfoldingregup, suffix)
+                            input_histograms_syscatvar.append(input_file_default.Get(name_his))
                     else:
-                        input_histograms_syscatvar.append(input_files_sys[sys_cat][sys_var].Get("unfolded_z_%d_%s" % (self.choice_iter_unfolding, suffix)))
-                        #input_histograms_syscatvar[sys_var].Scale(1.0,"width") #remove these later and put normalisation directly in systematics
+                        input_histograms_syscatvar.append(input_files_sys[sys_cat][sys_var].Get(name_his))
+                        path_file = path_def.replace(string_default, self.systematic_catnames[sys_cat] + "/" + self.systematic_varnames[sys_cat][sys_var])
+                    if not input_histograms_syscatvar[sys_var]:
+                        self.logger.fatal(make_message_notfound(name_his, path_file))
+                    #input_histograms_syscatvar[sys_var].Scale(1.0,"width") #remove these later and put normalisation directly in systematics
                 input_histograms_syscat.append(input_histograms_syscatvar)
             input_histograms_sys.append(input_histograms_syscat)
 
@@ -2074,10 +2128,10 @@ class AnalyzerJet(Analyzer):
             input_histograms_default[ibin2].SetXTitle(self.v_varshape_latex)
             input_histograms_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
             input_histograms_default[ibin2].Draw()
-            for sys_cat in range(len(self.systematic_categories)):
+            for sys_cat in range(self.n_sys_cat):
                 for sys_var in range(self.systematic_variations[sys_cat]):
                     nsys=nsys+1
-                    leg_sysvar.AddEntry(input_histograms_sys[ibin2][sys_cat][sys_var],("%s_%d" % (self.systematic_categories[sys_cat],sys_var+1)),"P")
+                    leg_sysvar.AddEntry(input_histograms_sys[ibin2][sys_cat][sys_var],("%s, %s" % (self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var])), "P")
                     setup_histogram(input_histograms_sys[ibin2][sys_cat][sys_var],nsys+1)
                     input_histograms_sys[ibin2][sys_cat][sys_var].Draw("same")
             latex = TLatex(0.2,0.8,'%.2f < %s < %.2f GeV/#it{c}' % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]))
@@ -2086,15 +2140,15 @@ class AnalyzerJet(Analyzer):
             csysvar.SaveAs("%s/ysvar_%s.eps" % (self.d_resultsallpdata, suffix))
 
 
-            for sys_cat in range(len(self.systematic_categories)):
-                suffix2="_%s" % (self.systematic_categories[sys_cat])
+            for sys_cat in range(self.n_sys_cat):
+                suffix2="_%s" % (self.systematic_catnames[sys_cat])
                 nsys = 0
                 csysvar_each = TCanvas('csysvar '+suffix2+suffix, 'systematic variations'+suffix2+suffix)
                 psysvar_each = TPad('psysvar'+suffix2+suffix, "systematic variations"+suffix2+suffix,0.0,0.001,1.0,1.0)
                 setup_pad(psysvar_each)
                 csysvar_each.SetCanvasSize(1900, 1500)
                 csysvar_each.SetWindowSize(500, 500)
-                leg_sysvar_each = TLegend(.7, .45, .85, .85, self.systematic_categories[sys_cat])
+                leg_sysvar_each = TLegend(.7, .45, .85, .85, self.systematic_catlabels[sys_cat])
                 setup_legend(leg_sysvar_each)
                 leg_sysvar_each.AddEntry(input_histograms_default[ibin2],"default","P")
                 setup_histogram(input_histograms_default[ibin2],1)
@@ -2108,8 +2162,8 @@ class AnalyzerJet(Analyzer):
                         input_histograms_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
                         input_histograms_default[ibin2].Draw()
                     nsys=nsys+1
-                    leg_sysvar_each.AddEntry(input_histograms_sys[ibin2][sys_cat][sys_var],("%d" % (sys_var+1)),"P")
-                    setup_histogram(input_histograms_sys[ibin2][sys_cat][sys_var],nsys+1)
+                    leg_sysvar_each.AddEntry(input_histograms_sys[ibin2][sys_cat][sys_var], self.systematic_varlabels[sys_cat][sys_var], "P")
+                    setup_histogram(input_histograms_sys[ibin2][sys_cat][sys_var], nsys+1)
                     input_histograms_sys[ibin2][sys_cat][sys_var].Draw("same")
                 latex = TLatex(0.2,0.8,'%.2f < %s < %.2f GeV/#it{c}' % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]))
                 draw_latex(latex)
@@ -2133,7 +2187,7 @@ class AnalyzerJet(Analyzer):
                 sys_down_z=[]
                 error_full_up = 0
                 error_full_down = 0
-                for sys_cat in range(len(self.systematic_categories)):
+                for sys_cat in range(self.n_sys_cat):
                     error_var_up = 0
                     error_var_down = 0
                     count_sys_up = 0
@@ -2216,7 +2270,7 @@ class AnalyzerJet(Analyzer):
             shapebins_widths_down_array = array('d',shapebins_widths_down)
             shapebins_error_up_array = array('d',shapebins_error_up)
             shapebins_error_down_array = array('d',shapebins_error_down)
-            for sys_cat in range(len(self.systematic_categories)):
+            for sys_cat in range(self.n_sys_cat):
                 shapebins_contents_cat=[]
                 shapebins_error_up_cat=[]
                 shapebins_error_down_cat=[]
@@ -2367,14 +2421,14 @@ class AnalyzerJet(Analyzer):
             crelativesys.SetWindowSize(500, 500)
             leg_relativesys = TLegend(.7, .5, .85, .9, "")
             setup_legend(leg_relativesys)
-            for sys_cat in range(len(self.systematic_categories)):
+            for sys_cat in range(self.n_sys_cat):
                 setup_tgraph(tgsys_cat[ibin2][sys_cat],sys_cat+1,0.3)
                 tgsys_cat[ibin2][sys_cat].SetFillStyle(0)
                 tgsys_cat[ibin2][sys_cat].GetYaxis().SetRangeUser(0.0,2.8)
                 tgsys_cat[ibin2][sys_cat].GetXaxis().SetRangeUser(self.lvarshape_binmin_gen[0]+0.01, self.lvarshape_binmax_gen[-1]-0.001)
                 tgsys_cat[ibin2][sys_cat].GetXaxis().SetTitle(self.v_varshape_latex)
                 tgsys_cat[ibin2][sys_cat].GetYaxis().SetTitle("relative systematic error")
-                leg_relativesys.AddEntry(tgsys_cat[ibin2][sys_cat], self.systematic_categories[sys_cat],"P")
+                leg_relativesys.AddEntry(tgsys_cat[ibin2][sys_cat], self.systematic_catlabels[sys_cat],"LEP")
                 if sys_cat == 0:
                     tgsys_cat[ibin2][sys_cat].Draw("A2")
                 else:
@@ -2386,14 +2440,13 @@ class AnalyzerJet(Analyzer):
             leg_relativesys.Draw("same")
             crelativesys.SaveAs("%s/relativesys_%s.pdf" % (self.d_resultsallpdata, suffix))
 
-        path = "%s/feeddown%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
-        file_feeddown = TFile.Open(path)
+        path_fd = "%s/feeddown%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
+        file_feeddown = TFile.Open(path_fd)
         if not file_feeddown:
-            self.logger.fatal(make_message_notfound(path))
+            self.logger.fatal(make_message_notfound(path_fd))
         file_feeddown_variations=[]
-        for i_powheg in range(len(self.powheg_nonprompt_variations)):
-            # FIXME
-            path = "/data/DerivedResultsJets/LckINT7HighMultwithJets/vAN-20190909_ROOT6-1/systematics/powheg/sys_%d/pp_data/resultsMBjetvspt/feeddown%s%s.root" % (i_powheg+1, self.case, self.typean)
+        for i_powheg, varname in enumerate(self.powheg_nonprompt_varnames):
+            path = path_fd.replace(string_default, "powheg/" + varname)
             file_feeddown_variations.append(TFile.Open(path, "update"))
             if not file_feeddown_variations[i_powheg]:
                 self.logger.fatal(make_message_notfound(path))
@@ -2405,7 +2458,7 @@ class AnalyzerJet(Analyzer):
               (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
             h_feeddown_fraction_variations_niter=[]
             h_feeddown_fraction.append(file_feeddown.Get("feeddown_fraction"+suffix))
-            for i_powheg in range(len(self.powheg_nonprompt_variations)):
+            for i_powheg in range(len(self.powheg_nonprompt_varnames)):
                 h_feeddown_fraction_variations_niter.append(file_feeddown_variations[i_powheg].Get("feeddown_fraction"+suffix))
 
             h_feeddown_fraction_variations.append(h_feeddown_fraction_variations_niter)
