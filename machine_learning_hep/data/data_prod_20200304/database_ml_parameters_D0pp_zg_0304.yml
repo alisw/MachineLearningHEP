@@ -159,6 +159,9 @@ D0pp:
                                  /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskml] #list of periods
       pkl_skimmed_merge_for_ml_all: /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_data_mltot
       pkl_evtcounter_all: /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_data_evttot
+      mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2016,
+                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2017,
+                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018] #list of periods
     mc:
       nprocessesparallel: 50
       maxfiles: [-1,-1,-1] #list of periods
@@ -489,12 +492,15 @@ D0pp:
       sel_binmax2: [9999,9,29,59,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
       var_binning2_gen: n_tracklets_corr
+      nbinshisto: 200
+      minvaluehisto: -0.5
+      maxvaluehisto: 199.5
       # here the trigger efficiency is set to 1. Corrections are implemented in the analysis step
       triggereff: [1.,1.,1.,1.,1.]
       triggereffunc: [0.,0.,0.,0.,0.]
       triggerbit: HighMultSPD
-      isNbx2: False    #Estimate the feeddown systematic with Nb and Nbx2 method convolution.
-
+      isNbx2: False    #Estimate the feeddown systematic with Nb and Nbx2 method convolution
+      performtriggerturn: True
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
       binning_matching: [0,1,2,3,4,5] #list of pt nbins
@@ -504,16 +510,16 @@ D0pp:
       triggersel:
         data: "trigger_hasbit_HighMultSPD==1"
         mc: null
-        weighttrig: false
+        weighttrig: true
 
       data:
-        runselection: [null, null, null] #FIXME the last will have to be replaced by HighMultSPD2018
+        runselection: [null, null, HighMultSPD2018] #FIXME the last will have to be replaced by HighMultSPD2018
         results: [/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsSPDvspt_ntrkl,
                   /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsSPDvspt_ntrkl,
                   /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsSPDvspt_ntrkl] #list of periods
         resultsallp: /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_data/resultsSPDvspt_ntrkl
       mc:
-        runselection: [null, null, null] #FIXME the last will have to be replaced by HighMultSPD2018
+        runselection: [null, null, HighMultSPD2018] #FIXME the last will have to be replaced by HighMultSPD2018
         results: [/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/resultsSPDvspt_ntrkl,
                   /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/resultsSPDvspt_ntrkl,
                   /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/resultsSPDvspt_ntrkl] #list of periods
@@ -595,9 +601,13 @@ D0pp:
       sel_binmax2: [9999,9,29,59,99] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
       var_binning2_gen: n_tracklets_corr
+      nbinshisto: 200
+      minvaluehisto: -0.5
+      maxvaluehisto: 199.5
       triggereff: [0.92,0.862,1,1,1]
       triggereffunc: [0.003,0.018,0,0,0]
       triggerbit: INT7
+      performtriggerturn: True
       sel_an_binmin: [1,2,4,6,8,12]  # [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24]  # [2,4,6,8,12,24] #list of pt nbins
       binning_matching: [0,1,2,3,4,5]  # [0,1,2,2,3,4] #list of pt nbins
@@ -698,12 +708,15 @@ D0pp:
       sel_binmax2: [100,100,30] #list of var2 splitting nbins
       var_binning2: perc_v0m
       var_binning2_gen: perc_v0m
-      triggereff: [1.0,1.0,1.0] #FIXME
-      triggereffunc: [0.,0.,0.] #FIXME
+      nbinshisto: 100000
+      minvaluehisto: -0.0005
+      maxvaluehisto: 99.9995
+      triggereff: [0.94,0.862,1] #FIXME
+      triggereffunc: [0.003,0.018,0] #FIXME
       triggerbit: INT7
-      sel_an_binmin: [2,4,6,8,12]  # [1,2,4,6,8,12] #list of pt nbins
-      sel_an_binmax: [4,6,8,12,24]  # [2,4,6,8,12,24] #list of pt nbins
-      binning_matching: [1,2,3,4,5]  # [0,1,2,2,3,4] #list of pt nbins
+      sel_an_binmin: [1,2,4,6,8,12]  # [1,2,4,6,8,12] #list of pt nbins
+      sel_an_binmax: [2,4,6,8,12,24]  # [2,4,6,8,12,24] #list of pt nbins
+      binning_matching: [0,1,2,3,4,5]  # [0,1,2,2,3,4] #list of pt nbins
       include_reflection: True
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
@@ -730,27 +743,27 @@ D0pp:
       bin_width: 0.001 # bin width of the invariant mass histogram
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
-      init_fits_from: [data, data, data, data, data] # data or mc
-      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus]
-      bkgfunc: [kExpo,kExpo,kExpo,kExpo,kExpo]
+      init_fits_from: [data, data, data, data, data, data] # data or mc
+      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
+      bkgfunc: [Pol2,Pol2,kExpo,kExpo,kExpo,kExpo]
       masspeak: 1.864
-      massmin: [1.70,1.70,1.70,1.70,1.70]
-      massmax: [2.1,2.1,2.1,2.1,2.1]
-      rebin: [[6,6,6,6,6], [6,6,6,6,6], [6,6,6,6,6]]
-      includesecpeak: [[false, false, false, false, false],[false, false, false, false, false],[false, false, false, false, false]]
+      massmin: [1.72,1.72,1.72,1.72,1.72,1.72]
+      massmax: [2.03,2.03,2.03,2.03,2.03,2.03]
+      rebin: [[6,6,6,6,6,6], [6,6,6,6,6,6], [6,6,6,6,6,6]]
+      includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
       masssecpeak: -1.0
-      fix_masssecpeak: [[false, false, false, false, false],[false, false, false, false, false],[false, false, false, false, false]]
+      fix_masssecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
       #Fraction Dplus/Ds (taken from pp5TeV as we don't store it in TTrees)
       widthsecpeak: -1
       fix_widthsecpeak: false
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: [false, false, false, false, false]
+      SetFixGaussianSigma: [true, true, true, true, true, true]
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
-      SetInitialGaussianSigma: [false, false, false, false, false]
+      SetInitialGaussianSigma: [true, false, false, false, false, false]
       # Max percentage deviation in sigma (from init) to be considered as a good fit
       MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
@@ -758,7 +771,7 @@ D0pp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: false
-      sigmaarray: [0.011,0.012,0.014,0.016,0.02]
+      sigmaarray: [0.011,0.011,0.012,0.014,0.016,0.02]
       FixedSigma: false
       fitcase: D0
       latexnamemeson: "D^{0}"

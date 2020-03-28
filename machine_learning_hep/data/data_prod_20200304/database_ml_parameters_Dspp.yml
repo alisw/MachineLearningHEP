@@ -167,6 +167,9 @@ Dspp:
                                  /data/Derived/DskAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskml] #list of periods
       pkl_skimmed_merge_for_ml_all: /data/Derived/DskAnywithJets/vAN-20200304_ROOT6-1/pp_data_mltot
       pkl_evtcounter_all: /data/Derived/DskAnywithJets/vAN-20200304_ROOT6-1/pp_data_evttot
+      mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2016,
+                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2017,
+                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018] #list of periods
     mc:
       nprocessesparallel: 50
       maxfiles : [-1,-1,-1] #list of periods
@@ -275,6 +278,9 @@ Dspp:
       sel_binmax2: [9999,9,29,59,99] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
       var_binning2_gen: n_tracklets_corr
+      nbinshisto: 200
+      minvaluehisto: -0.5
+      maxvaluehisto: 199.5
       triggereff: [0.92,0.862,1,1,1]
       triggereffunc: [0.003,0.018,0,0,0]
       triggerbit: INT7
@@ -366,7 +372,7 @@ Dspp:
         #  - ["mc", "data", "data", "data", "data", "data"]
 
 
-    SPDvspt:
+    SPDvspt_ntrkl:
       proc_type: Dhadrons_mult
       useperiod: [0,0,1]
       plotbin: [1,1]
@@ -380,6 +386,9 @@ Dspp:
       sel_binmax2: [60, 100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
       var_binning2_gen: n_tracklets_corr
+      nbinshisto: 200
+      minvaluehisto: -0.5
+      maxvaluehisto: 199.5
       triggereff: [1,1]
       triggereffunc: [0,0]
       triggerbit: HighMultSPD

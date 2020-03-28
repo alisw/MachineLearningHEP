@@ -58,8 +58,10 @@ def selectdfrunlist(dfr, runlist, runvar):
     Select smaller runlist on dataframe
     """
     if runlist is not None:
-        isgoodrun = select_runs(runlist, dfr[runvar].values)
-        dfr = dfr[np.array(isgoodrun, dtype=bool)]
+        runlist_np = np.asarray(runlist)
+        array_run_np = np.asarray(dfr[runvar].values)
+        issel = select_runs(runlist_np, array_run_np)
+        dfr = dfr[issel]
     return dfr
 
 def merge_method(listfiles, namemerged):
