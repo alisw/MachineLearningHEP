@@ -455,6 +455,9 @@ LcpK0spp:
       sel_binmax2: [9999,9,29,59] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
       var_binning2_gen: n_tracklets_corr
+      nbinshisto: 200
+      minvaluehisto: -0.5
+      maxvaluehisto: 199.5
       triggereff: [0.92,0.862,1,1,1]
       triggereffunc: [0.003,0.018,0,0,0]
       triggerbit: INT7
@@ -547,6 +550,9 @@ LcpK0spp:
       sel_binmax2: [9999,9,29,59,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
       var_binning2_gen: n_tracklets_corr
+      nbinshisto: 200
+      minvaluehisto: -0.5
+      maxvaluehisto: 199.5
       triggereff: [0.92,0.862,1,1,1]
       triggereffunc: [0.003,0.018,0,0,0]
       triggerbit: HighMultSPD
@@ -640,6 +646,9 @@ LcpK0spp:
       sel_binmax2: [100,100,30] #list of var2 splitting nbins
       var_binning2: perc_v0m
       var_binning2_gen: perc_v0m
+      nbinshisto: 100000
+      minvaluehisto: -0.0005
+      maxvaluehisto: 99.9995
       triggerbit: INT7
 
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins

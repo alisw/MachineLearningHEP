@@ -23,15 +23,14 @@ import numpy as np
 import pandas as pd
 from root_numpy import fill_hist, evaluate # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
-from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utilities import selectdfrunlist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, \
         seldf_singlevar_inclusive, openfile
 from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.utilities import get_timestamp_string
 #from machine_learning_hep.globalfitter import fitter
-from machine_learning_hep.selectionutils import gethistonormforselevt_mult
 from machine_learning_hep.processer import Processer
+from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 
 class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-attributes, invalid-name
     # Class Attribute
@@ -86,6 +85,42 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 weight_file.Close()
             else:
                 print("trigger correction file", filename, "doesnt exist")
+        self.nbinshisto = datap["analysis"][self.typean]["nbinshisto"]
+        self.minvaluehisto = datap["analysis"][self.typean]["minvaluehisto"]
+        self.maxvaluehisto = datap["analysis"][self.typean]["maxvaluehisto"]
+
+    def gethistonormforselevt_mult(self, df_evt, dfevtevtsel, label, var, weightfunc=None):
+
+        if weightfunc is not None:
+            label = label + "_weight"
+        hSelMult = TH1F('sel_' + label, 'sel_' + label, self.nbinshisto,
+                        self.minvaluehisto, self.maxvaluehisto)
+        hNoVtxMult = TH1F('novtx_' + label, 'novtx_' + label, self.nbinshisto,
+                          self.minvaluehisto, self.maxvaluehisto)
+        hVtxOutMult = TH1F('vtxout_' + label, 'vtxout_' + label, self.nbinshisto,
+                           self.minvaluehisto, self.maxvaluehisto)
+        df_to_keep = filter_bit_df(df_evt, 'is_ev_rej', [[], [0, 5, 6, 10, 11]])
+        # events with reco vtx after previous selection
+        tag_vtx = tag_bit_df(df_to_keep, 'is_ev_rej', [[], [1, 2, 7, 12]])
+        df_no_vtx = df_to_keep[~tag_vtx.values]
+        # events with reco zvtx > 10 cm after previous selection
+        df_bit_zvtx_gr10 = filter_bit_df(df_to_keep, 'is_ev_rej', [[3], [1, 2, 7, 12]])
+        if weightfunc is not None:
+            weightssel = evaluate(weightfunc, dfevtevtsel[var])
+            weightsinvsel = [1./weight for weight in weightssel]
+            fill_hist(hSelMult, dfevtevtsel[var], weights=weightsinvsel)
+            weightsnovtx = evaluate(weightfunc, df_no_vtx[var])
+            weightsinvnovtx = [1./weight for weight in weightsnovtx]
+            fill_hist(hNoVtxMult, df_no_vtx[var], weights=weightsinvnovtx)
+            weightsgr10 = evaluate(weightfunc, df_bit_zvtx_gr10[var])
+            weightsinvgr10 = [1./weight for weight in weightsgr10]
+            fill_hist(hVtxOutMult, df_bit_zvtx_gr10[var], weights=weightsinvgr10)
+        else:
+            fill_hist(hSelMult, dfevtevtsel[var])
+            fill_hist(hNoVtxMult, df_no_vtx[var])
+            fill_hist(hVtxOutMult, df_bit_zvtx_gr10[var])
+
+        return hSelMult, hNoVtxMult, hVtxOutMult
     # pylint: disable=too-many-branches
     def process_histomass_single(self, index):
         myfile = TFile.Open(self.l_histomass[index], "recreate")
@@ -100,13 +135,13 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
 
         myfile.cd()
         hsel, hnovtxmult, hvtxoutmult = \
-            gethistonormforselevt_mult(dfevtorig, dfevtevtsel,
+            self.gethistonormforselevt_mult(dfevtorig, dfevtevtsel, \
                                        labeltrigger, self.v_var2_binning_gen)
 
         if self.apply_weights is True and self.mcordata == "data":
             hselweight, hnovtxmultweight, hvtxoutmultweight = \
-                gethistonormforselevt_mult(dfevtorig, dfevtevtsel,
-                                           labeltrigger, self.v_var2_binning_gen, self.weightfunc)
+                self.gethistonormforselevt_mult(dfevtorig, dfevtevtsel, \
+                    labeltrigger, self.v_var2_binning_gen, self.weightfunc)
             hselweight.Write()
             hnovtxmultweight.Write()
             hvtxoutmultweight.Write()
@@ -170,11 +205,13 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
             df_recodtrig = pd.concat(list_df_recodtrig)
             dfevtwithd = pd.merge(dfevtevtsel, df_recodtrig, on=self.v_evtmatch)
             label = "h%s" % self.v_var2_binning_gen
-            histomult = TH1F(label, label, 10000, -0.5, 9999.5)
+            histomult = TH1F(label, label, self.nbinshisto,
+                             self.minvaluehisto, self.maxvaluehisto)
             fill_hist(histomult, dfevtevtsel[self.v_var2_binning_gen])
             histomult.Write()
             labelwithd = "h%s_withd" % self.v_var2_binning_gen
-            histomultwithd = TH1F(labelwithd, labelwithd, 10000, -0.5, 9999.5)
+            histomultwithd = TH1F(labelwithd, labelwithd, self.nbinshisto,
+                                  self.minvaluehisto, self.maxvaluehisto)
             fill_hist(histomultwithd, dfevtwithd["%s_x" % self.v_var2_binning_gen])
             histomultwithd.Write()
 
