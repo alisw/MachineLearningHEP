@@ -61,9 +61,9 @@ def format_varname(varname: str, index: int, n_var: int):
     '''Format the name of a variation in a variation group. Used in paths of output directories.'''
     return "%s_%d" % (varname, index) if n_var > 1 else varname
 
-def format_varlabel(varlabel: str, index: int, n_var: int):
+def format_varlabel(varlabel: list, index: int, n_var: int):
     '''Format the label of a variation in a variation group.'''
-    return "%s: %d" % (varlabel, index) if n_var > 1 else varlabel
+    return "%s: %d" % (varlabel[0], index) if len(varlabel) != n_var else varlabel[index]
 
 def modify_dictionary(dic: dict, diff: dict):
     '''Modify the dic dictionary using the diff dictionary.'''
@@ -153,6 +153,7 @@ def healthy_structure(dic_diff: dict): # pylint: disable=too-many-return-stateme
                     good = False
             if not good:
                 return False
+            # Activate
             if not isinstance(dic_var_single["activate"], list):
                 msg_err("\"activate\" in %s/%s is not a list." % (cat, var))
                 return False
@@ -160,13 +161,24 @@ def healthy_structure(dic_diff: dict): # pylint: disable=too-many-return-stateme
                 if not isinstance(act, bool):
                     msg_err("Element %d of \"activate\" in %s/%s is not a boolean." % (i, cat, var))
                     return False
-            if not isinstance(dic_var_single["label"], str):
-                msg_err("\"label\" in %s/%s is not a string." % (cat, var))
+            length = len(dic_var_single["activate"])
+            # Label
+            if not isinstance(dic_var_single["label"], list):
+                msg_err("\"label\" in %s/%s is not a list." % (cat, var))
                 return False
+            len_lab = len(dic_var_single["label"])
+            if len_lab not in (length, 1):
+                msg_err("\"label\" in %s/%s does not have correct length: %d (expected: 1%s)." % \
+                    (cat, var, len_lab, " or " + length if length > 1 else ""))
+                return False
+            for i, lab in enumerate(dic_var_single["label"]):
+                if not isinstance(lab, str):
+                    msg_err("Element %d of \"label\" in %s/%s is not a string." % (i, cat, var))
+                    return False
+            # Diffs
             if not isinstance(dic_var_single["diffs"], dict):
                 msg_err("\"diffs\" in %s/%s is not a dictionary." % (cat, var))
                 return False
-            length = len(dic_var_single["activate"])
             if not good_list_length(dic_var_single["diffs"], length, "diffs"):
                 msg_err("\"diffs\" in %s/%s does not contain lists of correct length (%d)." % \
                     (cat, var, length))
@@ -210,10 +222,10 @@ def main(yaml_in, yaml_diff, analysis): # pylint: disable=too-many-locals, too-m
             n_var = len(dic_var_single["activate"])
             if not n_var:
                 print("\nSkipping empty variation group %s/%s (%s: %s)" % \
-                    (cat, var, label_cat, label_var))
+                    (cat, var, label_cat, label_var[0]))
                 continue
             print("\nProcessing variation group %s/%s (\x1b[1;33m%s: %s\x1b[0m)" % \
-                (cat, var, label_cat, label_var))
+                (cat, var, label_cat, label_var[0] if len(label_var) == 1 else var))
             # Loop over list items.
             for index in range(n_var):
 
