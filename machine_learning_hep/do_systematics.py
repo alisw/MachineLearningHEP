@@ -28,6 +28,10 @@ def msg_err(message: str):
     '''Print an error message.'''
     print("\x1b[1;31mError: %s\x1b[0m" % message)
 
+def msg_warn(message: str):
+    '''Print a warning message.'''
+    print("\x1b[1;36mWarning:\x1b[0m %s" % message)
+
 def replace_strings(obj, old: str, new: str, strict=False):
     '''Replace old with new in every string in obj.
     Return None if strict is True and old is not found in every string.'''
@@ -67,15 +71,19 @@ def modify_paths(dic: dict, old: str, new: str):
     return True
 
 def format_value(old, new):
-    '''Format the new value based on the format of the old one.'''
+    '''Format the new value based on the format of the old one.
+    If old is a list and new is not, replace all elements in old with new, recursively.
+    Keep the old value if new is the special character.'''
     spec_char = "#" # Special character: Value will not be changed.
     if new == spec_char:
         return old
     if type(old) is type(new):
         return new
     if isinstance(old, list):
-        return [new] * len(old) # Return a list of the same length filled with the new values.
-    return None
+        # Return a list of the same structure, filled with new.
+        return [format_value(old_i, new) for old_i in old]
+    msg_warn("Change of type: %s -> %s\n\t%s -> %s" % (type(old), type(new), old, new))
+    return new
 
 def format_varname(varname: str, index: int, n_var: int):
     '''Format the name of a variation in a variation group. Used in paths of output directories.'''
@@ -94,7 +102,7 @@ def modify_dictionary(dic: dict, diff: dict):
             else:
                 dic[key] = format_value(dic[key], value)
         else:
-            print("\x1b[1;36mWarning:\x1b[0m Key %s was not found and will be ignored." % key)
+            msg_warn("Key %s was not found and will be ignored." % key)
 
 def good_list_length(obj, length: int, name=None):
     '''Check whether all the values are lists of the correct length.'''
@@ -271,7 +279,7 @@ def main(yaml_in, yaml_diff, analysis): # pylint: disable=too-many-locals, too-m
 
                 # Modify the database.
                 if not dic_var_single_slice:
-                    print("\x1b[1;36mWarning:\x1b[0m Empty diffs. No changes to make.")
+                    msg_warn("Empty diffs. No changes to make.")
                 modify_dictionary(dic_new, dic_var_single_slice)
                 if not modify_paths(dic_new, "default/default", "%s/%s" % \
                     (cat, format_varname(var, index, n_var))):
