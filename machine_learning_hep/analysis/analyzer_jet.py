@@ -32,6 +32,7 @@ from machine_learning_hep.utilities import folding, equal_binning_lists, make_me
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.utilities import setup_histogram, setup_pad
 from machine_learning_hep.utilities import setup_legend, setup_tgraph, draw_latex, tg_sys
+from machine_learning_hep.do_systematics import healthy_structure, format_varname, format_varlabel
 
 # pylint: disable=too-many-instance-attributes, too-many-statements
 class AnalyzerJet(Analyzer):
@@ -152,9 +153,11 @@ class AnalyzerJet(Analyzer):
         self.systematic_varlabels = self.systematic_varnames
 
         path_sys_db = datap["analysis"][self.typean].get("systematics_db", None)
-        if path_sys_db:
+        if path_sys_db: # pylint:disable=too-many-nested-blocks
             with open(path_sys_db, 'r') as file_sys:
                 db_sys = yaml.safe_load(file_sys)
+            if not healthy_structure(db_sys):
+                self.logger.fatal("Bad structure of the variation database.")
             db_sys = db_sys["categories"]
             self.systematic_catnames = [catname for catname, val in db_sys.items() if val["activate"]]
             self.n_sys_cat = len(self.systematic_catnames)
@@ -166,18 +169,26 @@ class AnalyzerJet(Analyzer):
             self.systematic_rms = [False] * self.n_sys_cat
             self.systematic_symmetrise = [False] * self.n_sys_cat
             self.systematic_rms_both_sides = [False] * self.n_sys_cat
-            for i, catname in enumerate(self.systematic_catnames):
-                self.systematic_catlabels[i] = db_sys[catname]["label"]
-                self.systematic_varnames[i] = [varname for varname, val in db_sys[catname]["variations"].items() if val["activate"]]
-                self.systematic_variations[i] = len(self.systematic_varnames[i])
-                self.systematic_varlabels[i] = [""] * self.systematic_variations[i]
-                for j, varname in enumerate(self.systematic_varnames[i]):
-                    self.systematic_varlabels[i][j] = db_sys[catname]["variations"][varname]["label"]
-                self.systematic_correlation[i] = db_sys[catname]["correlation"]
-                self.systematic_rms[i] = db_sys[catname]["rms"]
-                self.systematic_symmetrise[i] = db_sys[catname]["symmetrise"]
-                self.systematic_rms_both_sides[i] = db_sys[catname]["rms_both_sides"]
-            self.powheg_nonprompt_varnames = [varname for varname, val in db_sys["powheg"]["variations"].items() if val["activate"]]
+            self.powheg_nonprompt_varnames = []
+            for c, catname in enumerate(self.systematic_catnames):
+                self.systematic_catlabels[c] = db_sys[catname]["label"]
+                self.systematic_varnames[c] = []
+                self.systematic_varlabels[c] = []
+                for varname, val in db_sys[catname]["variations"].items():
+                    n_var = len(val["activate"])
+                    for a, act in enumerate(val["activate"]):
+                        if act:
+                            varname_i = format_varname(varname, a, n_var)
+                            varlabel_i = format_varlabel(val["label"], a, n_var)
+                            self.systematic_varnames[c].append(varname_i)
+                            self.systematic_varlabels[c].append(varlabel_i)
+                            if catname == "powheg":
+                                self.powheg_nonprompt_varnames.append(varname_i)
+                self.systematic_variations[c] = len(self.systematic_varnames[c])
+                self.systematic_correlation[c] = db_sys[catname]["correlation"]
+                self.systematic_rms[c] = db_sys[catname]["rms"]
+                self.systematic_symmetrise[c] = db_sys[catname]["symmetrise"]
+                self.systematic_rms_both_sides[c] = db_sys[catname]["rms_both_sides"]
 
         self.branching_ratio = \
             datap["analysis"][self.typean].get("branching_ratio", None)
@@ -1996,7 +2007,7 @@ class AnalyzerJet(Analyzer):
         if string_default not in self.d_resultsallpdata:
             self.logger.fatal("Not a default database! Cannot run systematics.")
 
-        debug = False
+        debug = True
         if debug:
             print("Categories: ", self.systematic_catnames)
             print("Category labels: ", self.systematic_catlabels)
@@ -2008,6 +2019,7 @@ class AnalyzerJet(Analyzer):
             print("Symmetrisation: ", self.systematic_symmetrise)
             print("RMS both sides: ", self.systematic_rms_both_sides)
             print("Feed-down variations: ", self.powheg_nonprompt_varnames)
+        #return
 
         path_def = "%s/unfolding_results%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
         input_file_default = TFile.Open(path_def, "update")
