@@ -28,23 +28,43 @@ def msg_err(message: str):
     '''Print an error message.'''
     print("\x1b[1;31mError: %s\x1b[0m" % message)
 
+def replace_strings(obj, old: str, new: str, strict=False):
+    '''Replace old with new in every string in obj.
+    Return None if strict is True and old is not found in every string.'''
+    if isinstance(obj, str):
+        if strict and old not in obj:
+            return None
+        return obj.replace(old, new)
+    if isinstance(obj, list):
+        new_obj = [replace_strings(o, old, new, strict) for o in obj]
+        if strict and None in new_obj:
+            return None
+        return new_obj
+    return obj
+
 def modify_paths(dic: dict, old: str, new: str):
-    '''Modify the paths of the results directories'''
+    '''Modify the paths of the results directories.'''
+    strict = True # If True, require old to be in every string.
     if "analysis" not in dic:
         msg_err("key \"analysis\" not found.")
-        return
+        return False
     for key_a, val_a in dic["analysis"].items():
         if not isinstance(val_a, dict):
+            continue
+        # Skip non-jet analyses.
+        if "jet" not in key_a:
             continue
         dic_ana = dic["analysis"][key_a]
         for data in ["data", "mc"]:
             for key_d, val_d in dic_ana[data].items():
-                if isinstance(val_d, list):
-                    dic_ana[data][key_d] = [v.replace(old, new) \
-                        if isinstance(v, str) else v for v in val_d]
-                else:
-                    dic_ana[data][key_d] = val_d.replace(old, new) \
-                        if isinstance(val_d, str) else val_d
+                if "result" not in key_d:
+                    continue
+                new_val_d = replace_strings(val_d, old, new, strict)
+                if new_val_d is None and val_d is not None:
+                    msg_err("\"%s\" not found in %s/%s/%s" % (old, key_a, data, key_d))
+                    return False
+                dic_ana[data][key_d] = new_val_d
+    return True
 
 def format_value(old, new):
     '''Format the new value based on the format of the old one.'''
@@ -224,7 +244,7 @@ def main(yaml_in, yaml_diff, analysis): # pylint: disable=too-many-locals, too-m
                 print("\nSkipping empty variation group %s/%s (%s: %s)" % \
                     (cat, var, label_cat, label_var[0]))
                 continue
-            print("\nProcessing variation group %s/%s (\x1b[1;33m%s: %s\x1b[0m)" % \
+            print("\nProcessing variation group %s/%s (%s: %s)" % \
                 (cat, var, label_cat, label_var[0] if len(label_var) == 1 else var))
             # Loop over list items.
             for index in range(n_var):
@@ -253,8 +273,9 @@ def main(yaml_in, yaml_diff, analysis): # pylint: disable=too-many-locals, too-m
                 if not dic_var_single_slice:
                     print("\x1b[1;36mWarning:\x1b[0m Empty diffs. No changes to make.")
                 modify_dictionary(dic_new, dic_var_single_slice)
-                modify_paths(dic_new, "default/default", "%s/%s" % \
-                    (cat, format_varname(var, index, n_var)))
+                if not modify_paths(dic_new, "default/default", "%s/%s" % \
+                    (cat, format_varname(var, index, n_var))):
+                    return
 
                 #print(yaml.safe_dump(dic_db, default_flow_style=False))
 
