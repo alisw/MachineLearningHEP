@@ -9,11 +9,11 @@ categories:
         variations:
             default:
                 activate: [no]
-                label: "default"
+                label: ["default"]
                 diffs: {}
             default_2:
-                activate: [yes]
-                label: "default 2"
+                activate: [yes, no]
+                label: ["default 2"]
                 diffs: {}
     fitting:
         activate: no
@@ -25,14 +25,14 @@ categories:
         variations:
             bkgfunc:
                 activate: [no]
-                label: "bkg func"
+                label: ["bkg func"]
                 diffs:
                     analysis:
                         jet_zg:
                             bkgfunc: [2]
             masspeak:
                 activate: [no]
-                label: "mass peak"
+                label: ["mass peak"]
                 diffs:
                     analysis:
                         jet_zg:
@@ -40,7 +40,7 @@ categories:
                             masspeaksec: [1.822]
             massmin:
                 activate: [no]
-                label: "mass min"
+                label: ["mass min"]
                 diffs:
                     analysis:
                         jet_zg:
@@ -48,7 +48,7 @@ categories:
                             mass_fit_lim: [[1.76, 2.05]]
             massmax:
                 activate: [no]
-                label: "mass max"
+                label: ["mass max"]
                 diffs:
                     analysis:
                         jet_zg:
@@ -56,27 +56,27 @@ categories:
                             mass_fit_lim: [[1.72, 2.15]]
             rebin:
                 activate: [no]
-                label: "rebin"
+                label: ["rebin"]
                 diffs:
                     analysis:
                         jet_zg:
                             rebin: [12]
             fix_mean:
                 activate: [no]
-                label: "fix mean"
+                label: ["fix mean"]
                 diffs:
                     analysis:
                         jet_zg:
                             fix_mean: [true]
             fix_sigma:
                 activate: [no]
-                label: "fix sigma"
+                label: ["fix sigma"]
                 diffs:
                     analysis:
                         jet_zg:
                             fix_sigma: [false]
     sideband:
-        activate: no
+        activate: yes
         label: "side bands"
         correlation: "corr"
         rms: true
@@ -85,25 +85,25 @@ categories:
         variations:
             sigma:
                 activate: [no]
-                label: "sigma"
+                label: ["sigma"]
                 diffs:
                     analysis:
                         jet_zg:
                             signal_sigma: [1.6]
                             sigma_scale: [0.890]
             sb0:
-                activate: [no]
-                label: "sb 0"
+                activate: [no, yes]
+                label: ["sb 0"]
                 diffs:
                     analysis:
                         jet_zg:
-                            sideband_sigma_1_left: [5]
-                            sideband_sigma_2_left: [8]
-                            sideband_sigma_1_right: [5]
-                            sideband_sigma_2_right: [8]
+                            sideband_sigma_1_left:  [5, "#"]
+                            sideband_sigma_2_left:  [8, 7]
+                            sideband_sigma_1_right: [5, "#"]
+                            sideband_sigma_2_right: [8, 7]
             sb_left:
-                activate: [no]
-                label: "sb left only"
+                activate: [yes]
+                label: ["sb left only"]
                 diffs:
                     analysis:
                         jet_zg:
@@ -118,27 +118,28 @@ categories:
         variations:
             cutvar0:
                 activate: [no]
-                label: "cutvar0"
+                label: ["cutvar0"]
                 diffs:
                     mlapplication:
                         probcutoptimal:
                             - [0.82,0.80,0.72,0.70,0.50,0.50,0.50]
     powheg:
-        activate: no
+        activate: yes
         label: "POWHEG"
         correlation: "corr"
         rms: true
         symmetrise: true
         rms_both_sides: true
         variations:
-            F1_R05:
-                activate: [no]
-                label: "F1_R05"
+            tune:
+                activate: [yes, no]
+                label: ["F1_R05", "F05_R1"]
                 diffs:
                     analysis:
                         jet_zg:
                             powheg_path_nonprompt:
                                 - /data/POWHEG/powheg_fd_histos_D0_F1_R05.root
+                                - /data/POWHEG/powheg_fd_histos_D0_F05_R1.root
     unfolding_prior:
         activate: no
         label: "unfolding prior"
@@ -149,7 +150,7 @@ categories:
         variations:
             prior_true:
                 activate: [no]
-                label: "true"
+                label: ["true"]
                 diffs:
                     analysis:
                         jet_zg:
@@ -164,5 +165,5 @@ categories:
         variations:
             reg0:
                 activate: [no]
-                label: "reg0"
+                label: ["reg0"]
                 diffs: {}
