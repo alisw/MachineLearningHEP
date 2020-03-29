@@ -47,8 +47,7 @@ def modify_paths(dic: dict, old: str, new: str):
                         if isinstance(val_d, str) else val_d
 
 def format_value(old, new):
-    '''Format the new value based on the format of the old one
-    in case they are not of the same type.'''
+    '''Format the new value based on the format of the old one.'''
     spec_char = "#" # Special character: Value will not be changed.
     if new == spec_char:
         return old
@@ -57,6 +56,14 @@ def format_value(old, new):
     if isinstance(old, list):
         return [new] * len(old) # Return a list of the same length filled with the new values.
     return None
+
+def format_varname(varname: str, index: int, n_var: int):
+    '''Format the name of a variation in a variation group. Used in paths of output directories.'''
+    return "%s_%d" % (varname, index) if n_var > 1 else varname
+
+def format_varlabel(varlabel: str, index: int, n_var: int):
+    '''Format the label of a variation in a variation group.'''
+    return "%s: %d" % (varlabel, index) if n_var > 1 else varlabel
 
 def modify_dictionary(dic: dict, diff: dict):
     '''Modify the dic dictionary using the diff dictionary.'''
@@ -211,11 +218,13 @@ def main(yaml_in, yaml_diff, analysis): # pylint: disable=too-many-locals, too-m
             for index in range(n_var):
 
                 if not dic_var_single["activate"][index]:
-                    print("\nSkipping variation %s/%s_%d (%s: %s: %d)" % \
-                        (cat, var, index, label_cat, label_var, index))
+                    print("\nSkipping variation %s/%s (%s: %s)" % \
+                        (cat, format_varname(var, index, n_var), \
+                        label_cat, format_varlabel(label_var, index, n_var)))
                     continue
-                print("\nProcessing variation %s/%s_%d (\x1b[1;33m%s: %s: %d\x1b[0m)" % \
-                    (cat, var, index, label_cat, label_var, index))
+                print("\nProcessing variation %s/%s (\x1b[1;33m%s: %s\x1b[0m)" % \
+                    (cat, format_varname(var, index, n_var), \
+                    label_cat, format_varlabel(label_var, index, n_var)))
 
                 dic_db = deepcopy(dic_in) # Avoid ovewriting the original database.
                 # Get the database from the first top-level key.
@@ -232,13 +241,15 @@ def main(yaml_in, yaml_diff, analysis): # pylint: disable=too-many-locals, too-m
                 if not dic_var_single_slice:
                     print("\x1b[1;36mWarning:\x1b[0m Empty diffs. No changes to make.")
                 modify_dictionary(dic_new, dic_var_single_slice)
-                modify_paths(dic_new, "default/default", "%s/%s_%d" % (cat, var, index))
+                modify_paths(dic_new, "default/default", "%s/%s" % \
+                    (cat, format_varname(var, index, n_var)))
 
                 #print(yaml.safe_dump(dic_db, default_flow_style=False))
 
                 # Save the new database.
                 i_dot = yaml_in.rfind(".") # Find the position of the suffix.
-                yaml_out = yaml_in[:i_dot] + "_%s_%s_%d" % (cat, var, index) + yaml_in[i_dot:]
+                yaml_out = yaml_in[:i_dot] + "_%s_%s" % \
+                    (cat, format_varname(var, index, n_var)) + yaml_in[i_dot:]
                 print("Saving the new database to %s" % yaml_out)
                 with open(yaml_out, 'w') as file_out:
                     yaml.safe_dump(dic_db, file_out, default_flow_style=False)
@@ -246,11 +257,12 @@ def main(yaml_in, yaml_diff, analysis): # pylint: disable=too-many-locals, too-m
                 # Start the analysis.
                 if analysis:
                     print("Starting the analysis \x1b[1;32m%s\x1b[0m for the variation " \
-                        "\x1b[1;32m%s: %s: %d\x1b[0m" % (analysis, label_cat, label_var, index))
+                        "\x1b[1;32m%s: %s\x1b[0m" % \
+                        (analysis, label_cat, format_varlabel(label_var, index, n_var)))
                     now = datetime.datetime.now()
                     timestamp = now.strftime("%Y%m%d_%H%M%S")
-                    logfile = "stdouterr_%s_%s_%s_%d_%s.log" % \
-                        (analysis, cat, var, index, timestamp)
+                    logfile = "stdouterr_%s_%s_%s_%s.log" % \
+                        (analysis, cat, format_varname(var, index, n_var), timestamp)
                     print("Logfile: %s" % logfile)
                     with open(logfile, "w") as ana_out:
                         subprocess.Popen(shlex.split("python do_entire_analysis.py " \
