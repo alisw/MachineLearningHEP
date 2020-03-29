@@ -198,7 +198,7 @@ def healthy_structure(dic_diff: dict): # pylint: disable=too-many-return-stateme
             len_lab = len(dic_var_single["label"])
             if len_lab not in (length, 1):
                 msg_err("\"label\" in %s/%s does not have correct length: %d (expected: 1%s)." % \
-                    (cat, var, len_lab, " or " + length if length > 1 else ""))
+                    (cat, var, len_lab, " or %d" % length if length > 1 else ""))
                 return False
             for i, lab in enumerate(dic_var_single["label"]):
                 if not isinstance(lab, str):
