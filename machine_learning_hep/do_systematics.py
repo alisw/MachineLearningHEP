@@ -17,6 +17,7 @@ Script to run the analysis with variations of the database parameters
 Author: Vit Kucera <vit.kucera@cern.ch>
 """
 
+import os
 import argparse
 import subprocess
 import shlex
@@ -213,7 +214,7 @@ def healthy_structure(dic_diff: dict): # pylint: disable=too-many-return-stateme
                 return False
     return True
 
-def main(yaml_in, yaml_diff, analysis): # pylint: disable=too-many-locals, too-many-statements
+def main(yaml_in, yaml_diff, analysis, clean): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
     '''Main function'''
     with open(yaml_in, 'r') as file_in:
         dic_in = yaml.safe_load(file_in)
@@ -226,12 +227,15 @@ def main(yaml_in, yaml_diff, analysis): # pylint: disable=too-many-locals, too-m
 
     #print(yaml.safe_dump(dic_in, default_flow_style=False))
 
+    new_files_db = [] # List of created database files.
+
     # Save the original database in the same format as the output for debugging.
     i_dot = yaml_in.rfind(".") # Find the position of the suffix.
     yaml_out = yaml_in[:i_dot] + "_orig" + yaml_in[i_dot:]
     print("\nSaving the original database to %s" % yaml_out)
     with open(yaml_out, 'w') as file_out:
         yaml.safe_dump(dic_in, file_out, default_flow_style=False)
+    new_files_db.append(yaml_out)
 
     dic_cats = dic_diff["categories"]
     # Loop over categories.
@@ -294,6 +298,7 @@ def main(yaml_in, yaml_diff, analysis): # pylint: disable=too-many-locals, too-m
                 print("Saving the new database to %s" % yaml_out)
                 with open(yaml_out, 'w') as file_out:
                     yaml.safe_dump(dic_db, file_out, default_flow_style=False)
+                new_files_db.append(yaml_out)
 
                 # Start the analysis.
                 if analysis:
@@ -311,6 +316,13 @@ def main(yaml_in, yaml_diff, analysis): # pylint: disable=too-many-locals, too-m
                             "-d %s -a %s" % (yaml_out, analysis)), \
                             stdout=ana_out, stderr=ana_out, universal_newlines=True)
 
+    # Delete the created database files.
+    if clean:
+        print("\nDeleting database files:")
+        for fil in new_files_db:
+            print(fil)
+            os.remove(fil)
+
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(description="Run the analysis with " \
                                                  "variations of parameters.")
@@ -318,5 +330,7 @@ if __name__ == '__main__':
     PARSER.add_argument("diff", help="database with variations")
     PARSER.add_argument("-a", dest="analysis", help="analysis type " \
         "(If provided the analysis will be started for all activated variations.)")
+    PARSER.add_argument("-c", "--clean", action="store_true", \
+        help="Delete the created database files at the end.")
     ARGS = PARSER.parse_args()
-    main(ARGS.input, ARGS.diff, ARGS.analysis)
+    main(ARGS.input, ARGS.diff, ARGS.analysis, ARGS.clean)
