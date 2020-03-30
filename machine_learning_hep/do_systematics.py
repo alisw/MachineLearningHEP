@@ -47,8 +47,9 @@ def replace_strings(obj, old: str, new: str, strict=False):
         return new_obj
     return obj
 
-def modify_paths(dic: dict, old: str, new: str):
-    '''Modify the paths of the results directories.'''
+def modify_paths(dic: dict, old: str, new: str, do_proc: bool):
+    '''Modify the paths of the results directories.
+    If do_proc is True, modify also paths of the input directories.'''
     strict = True # If True, require old to be in every string.
     if "analysis" not in dic:
         msg_err("key \"analysis\" not found.")
@@ -60,7 +61,13 @@ def modify_paths(dic: dict, old: str, new: str):
         if "jet" not in key_a:
             continue
         dic_ana = dic["analysis"][key_a]
-        for data in ["data", "mc"]:
+        dirs = ["data", "mc"]
+        dirs_proc = ["data_proc", "mc_proc"]
+        if do_proc:
+            dirs += dirs_proc
+        for data in dirs:
+            if data in dirs_proc and data not in dic_ana:
+                continue
             for key_d, val_d in dic_ana[data].items():
                 if "result" not in key_d:
                     continue
@@ -153,7 +160,7 @@ def healthy_structure(dic_diff: dict): # pylint: disable=too-many-return-stateme
             msg_err("%s is not a dictionary." % cat)
             return False
         good = True
-        for key in ["activate", "label", "variations"]:
+        for key in ["activate", "label", "variations", "processor"]:
             if key not in dic_cat_single:
                 msg_err("Key \"%s\" not found in category %s." % (key, cat))
                 good = False
@@ -161,6 +168,9 @@ def healthy_structure(dic_diff: dict): # pylint: disable=too-many-return-stateme
             return False
         if not isinstance(dic_cat_single["activate"], bool):
             msg_err("\"activate\" in category %s is not a boolean." % cat)
+            return False
+        if not isinstance(dic_cat_single["processor"], bool):
+            msg_err("\"processor\" in category %s is not a boolean." % cat)
             return False
         if not isinstance(dic_cat_single["label"], str):
             msg_err("\"label\" in category %s is not a string." % cat)
@@ -214,7 +224,7 @@ def healthy_structure(dic_diff: dict): # pylint: disable=too-many-return-stateme
                 return False
     return True
 
-def main(yaml_in, yaml_diff, analysis, clean): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
     '''Main function'''
     with open(yaml_in, 'r') as file_in:
         dic_in = yaml.safe_load(file_in)
@@ -237,12 +247,19 @@ def main(yaml_in, yaml_diff, analysis, clean): # pylint: disable=too-many-locals
         yaml.safe_dump(dic_in, file_out, default_flow_style=False)
     new_files_db.append(yaml_out)
 
+    if proc is not None:
+        msg_warn("Only categories that DO%s require running the processor will be processed." % \
+            ("" if proc else " NOT"))
     dic_cats = dic_diff["categories"]
     # Loop over categories.
     for cat in dic_cats:
         dic_cat_single = dic_cats[cat]
         label_cat = dic_cat_single["label"]
-        if not dic_cat_single["activate"]:
+        run = True
+        do_processor = dic_cat_single["processor"]
+        if proc is not None and bool(proc) is not do_processor:
+            run = False
+        if not run or not dic_cat_single["activate"]:
             print("\nSkipping category %s (%s)" % (cat, label_cat))
             continue
         print("\nProcessing category %s (\x1b[1;34m%s\x1b[0m)" % (cat, label_cat))
@@ -286,7 +303,7 @@ def main(yaml_in, yaml_diff, analysis, clean): # pylint: disable=too-many-locals
                     msg_warn("Empty diffs. No changes to make.")
                 modify_dictionary(dic_new, dic_var_single_slice)
                 if not modify_paths(dic_new, "default/default", "%s/%s" % \
-                    (cat, format_varname(var, index, n_var))):
+                    (cat, format_varname(var, index, n_var)), do_processor):
                     return
 
                 #print(yaml.safe_dump(dic_db, default_flow_style=False))
@@ -302,6 +319,8 @@ def main(yaml_in, yaml_diff, analysis, clean): # pylint: disable=too-many-locals
 
                 # Start the analysis.
                 if analysis:
+                    mode = "complete" if do_processor else "analyzer"
+                    config = "submission/default_%s.yml" % mode
                     print("Starting the analysis \x1b[1;32m%s\x1b[0m for the variation " \
                         "\x1b[1;32m%s: %s\x1b[0m" % \
                         (analysis, label_cat, format_varlabel(label_var, index, n_var)))
@@ -312,8 +331,7 @@ def main(yaml_in, yaml_diff, analysis, clean): # pylint: disable=too-many-locals
                     print("Logfile: %s" % logfile)
                     with open(logfile, "w") as ana_out:
                         subprocess.Popen(shlex.split("python do_entire_analysis.py " \
-                            "-r submission/default_complete.yml " \
-                            "-d %s -a %s" % (yaml_out, analysis)), \
+                            "-r %s -d %s -a %s" % (config, yaml_out, analysis)), \
                             stdout=ana_out, stderr=ana_out, universal_newlines=True)
 
     # Delete the created database files.
@@ -329,8 +347,10 @@ if __name__ == '__main__':
     PARSER.add_argument("input", help="database with default parameters")
     PARSER.add_argument("diff", help="database with variations")
     PARSER.add_argument("-a", dest="analysis", help="analysis type " \
-        "(If provided the analysis will be started for all activated variations.)")
+        "(If provided, the analysis will be started for all activated variations.)")
     PARSER.add_argument("-c", "--clean", action="store_true", \
         help="Delete the created database files at the end.")
+    PARSER.add_argument("-p", type=int, choices=[1, 0], dest="proc", help="If 1/0, process only " \
+        "categories that do/don't require running the processor.")
     ARGS = PARSER.parse_args()
-    main(ARGS.input, ARGS.diff, ARGS.analysis, ARGS.clean)
+    main(ARGS.input, ARGS.diff, ARGS.analysis, ARGS.clean, ARGS.proc)

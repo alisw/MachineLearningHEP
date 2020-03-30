@@ -28,7 +28,7 @@ from ROOT import gROOT
 from ROOT import kGreen, kRed # kBlue, kBlack, kOrange
 from ROOT import RooUnfoldBayes
 # HF specific imports
-from machine_learning_hep.utilities import folding, equal_binning_lists, make_message_notfound
+from machine_learning_hep.utilities import folding, equal_binning_lists, make_message_notfound, checkmakedir
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.utilities import setup_histogram, setup_pad
 from machine_learning_hep.utilities import setup_legend, setup_tgraph, draw_latex, tg_sys
@@ -195,24 +195,38 @@ class AnalyzerJet(Analyzer):
         self.xsection_inel = \
             datap["analysis"][self.typean].get("xsection_inel", None)
 
+        # Output directories
         self.d_resultsallpmc = datap["analysis"][typean]["mc"]["results"][period] \
                 if period is not None else datap["analysis"][typean]["mc"]["resultsallp"]
         self.d_resultsallpdata = datap["analysis"][typean]["data"]["results"][period] \
                 if period is not None else datap["analysis"][typean]["data"]["resultsallp"]
+        for dir_out in [self.d_resultsallpmc, self.d_resultsallpdata]:
+            if not os.path.exists(dir_out):
+                checkmakedir(dir_out)
 
+        # Input directories (processor output)
+        self.d_resultsallpmc_proc = self.d_resultsallpmc
+        self.d_resultsallpdata_proc = self.d_resultsallpdata
+        if "data_proc" in datap["analysis"][typean]:
+            self.d_resultsallpdata_proc = datap["analysis"][typean]["data_proc"]["results"][period] \
+                    if period is not None else datap["analysis"][typean]["data_proc"]["resultsallp"]
+        if "mc_proc" in datap["analysis"][typean]:
+            self.d_resultsallpmc_proc = datap["analysis"][typean]["mc_proc"]["results"][period] \
+                if period is not None else datap["analysis"][typean]["mc_proc"]["resultsallp"]
+
+        # Input files
         n_filemass_name = datap["files_names"]["histofilename"]
-        self.n_filemass = os.path.join(self.d_resultsallpdata, n_filemass_name)
-        self.n_filemass_mc = os.path.join(self.d_resultsallpmc, n_filemass_name)
+        self.n_filemass = os.path.join(self.d_resultsallpdata_proc, n_filemass_name)
+        self.n_filemass_mc = os.path.join(self.d_resultsallpmc_proc, n_filemass_name)
+        self.n_fileff = datap["files_names"]["efffilename"]
+        self.n_fileff = os.path.join(self.d_resultsallpmc_proc, self.n_fileff)
 
-        # Output directories and filenames
+        # Output filenames
         self.yields_filename = "yields"
         self.fits_dirname = "fits"
         self.yields_syst_filename = "yields_syst"
         self.efficiency_filename = "efficiencies"
         self.sideband_subtracted_filename = "sideband_subtracted"
-
-        self.n_fileff = datap["files_names"]["efffilename"]
-        self.n_fileff = os.path.join(self.d_resultsallpmc, self.n_fileff)
 
 
         self.p_latexnmeson = datap["analysis"][self.typean]["latexnamemeson"]

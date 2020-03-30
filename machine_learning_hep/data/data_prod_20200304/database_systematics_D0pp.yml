@@ -1,6 +1,7 @@
 categories:
     default:
         activate: yes
+        processor: true
         label: "default"
         correlation: "corr"
         rms: true
@@ -11,12 +12,9 @@ categories:
                 activate: [yes]
                 label: ["default"]
                 diffs: {}
-            default_2:
-                activate: [yes]
-                label: ["default 2"]
-                diffs: {}
     fitting:
-        activate: yes
+        activate: no
+        processor: false
         label: "fitting"
         correlation: "corr"
         rms: true
@@ -74,7 +72,8 @@ categories:
                         jet_zg:
                             fix_sigma: [false]
     sideband:
-        activate: yes
+        activate: no
+        processor: false
         label: "side bands"
         correlation: "corr"
         rms: true
@@ -108,7 +107,8 @@ categories:
                         jet_zg:
                             sidebandleftonly: [true]
     cutvar:
-        activate: yes
+        activate: no
+        processor: true
         label: "cuts"
         correlation: "corr"
         rms: true
@@ -123,7 +123,8 @@ categories:
                         probcutoptimal:
                             - [0.82, 0.80, 0.72, 0.70, 0.50, 0.50, 0.50]
     powheg:
-        activate: yes
+        activate: no
+        processor: false
         label: "POWHEG"
         correlation: "corr"
         rms: true
@@ -147,7 +148,8 @@ categories:
                                 - /data/POWHEG/powheg_fd_histos_D0_Mlow.root
                                 - /data/POWHEG/powheg_fd_histos_D0_NoEvtGen.root
     unfolding:
-        activate: yes
+        activate: no
+        processor: true
         label: "unfolding"
         correlation: "corr"
         rms: true
@@ -162,7 +164,8 @@ categories:
                         jet_zg:
                             doprior: [true]
     regularisation:
-        activate: yes
+        activate: no
+        processor: false
         label: "regularisation"
         correlation: "corr"
         rms: true
