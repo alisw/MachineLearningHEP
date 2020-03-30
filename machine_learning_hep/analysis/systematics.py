@@ -30,6 +30,7 @@ from root_numpy import fill_hist, evaluate
 from ROOT import gROOT, gPad
 from ROOT import TFile, TH1F, TCanvas, TLegend
 from ROOT import kRed, kGreen, kBlack, kBlue, kOrange, kViolet, kAzure, kYellow
+from ROOT import Double
 from machine_learning_hep.utilities import selectdfrunlist
 from machine_learning_hep.utilities import seldf_singlevar, openfile, make_file_path
 from machine_learning_hep.utilities_plot import load_root_style_simple, load_root_style
@@ -45,6 +46,8 @@ class SystematicsAfterBurner(AnalyzerAfterBurner):
 
         tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/cutvar_mass/" \
                      f"{get_timestamp_string()}/"
+        # This warning appears since it is set to None in the AnalyzerAfterBurner constructor
+        # But it will have a meaningful value at this point
         # pylint: disable=not-an-iterable
         files_mass_cutvar = [syst.n_filemass_cutvar for syst in self.analyzers]
 
@@ -54,11 +57,22 @@ class SystematicsAfterBurner(AnalyzerAfterBurner):
 
         mergerootfiles(files_mass_cutvar, merged_file, tmp_merged)
 
+        # pylint: disable=fixme
+        # Get the cut limits of the latest period and set them for the merged analyzer
+        # FIXME This is not the entirely correct way as it does not correctly reflect
+        #       the efficiency boundaries for the merged case
+        # This warning appears since it is set to None in the AnalyzerAfterBurner constructor
+        # But it will have a meaningful value at this point
+        # pylint: disable=unsubscriptable-object
+        self.analyzer_merged.min_cv_cut = self.analyzers[-1].min_cv_cut
+        self.analyzer_merged.max_cv_cut = self.analyzers[-1].max_cv_cut
 
     def ml_cutvar_eff(self):
 
         tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/cutvar_eff/" \
                      f"{get_timestamp_string()}/"
+        # This warning appears since it is set to None in the AnalyzerAfterBurner constructor
+        # But it will have a meaningful value at this point
         # pylint: disable=not-an-iterable
         files_eff_cutvar = [syst.n_fileeff_cutvar for syst in self.analyzers]
 
@@ -72,6 +86,8 @@ class SystematicsAfterBurner(AnalyzerAfterBurner):
 
         tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/mcptshape_eff/" \
                      f"{get_timestamp_string()}/"
+        # This warning appears since it is set to None in the AnalyzerAfterBurner constructor
+        # But it will have a meaningful value at this point
         # pylint: disable=not-an-iterable
         files_eff_cutvar = [syst.n_fileeff_ptshape for syst in self.analyzers]
 
@@ -104,7 +120,6 @@ class Systematics(Analyzer):
                 if period is not None else datap["validation"]["data"]["dirmerged"]
         self.runlistrigger = datap["validation"]["runlisttrigger"][self.p_period] \
                 if period is not None else None
-
 
         self.v_var_binning = datap["var_binning"]
         #Binning used when skimming/training
@@ -149,6 +164,7 @@ class Systematics(Analyzer):
                                      for ipt in range(self.p_nptbins)]
         self.lpt_recodecmerged_data = [join(self.d_pkl_decmerged_data, \
                                        self.lpt_recodec_data[ipt]) for ipt in range(self.p_nptbins)]
+
         self.lpt_gensk = [self.n_gen.replace(".pkl", "_%s%d_%d.pkl" % \
                           (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
                           for i in range(self.p_nptbins)]
@@ -202,6 +218,9 @@ class Systematics(Analyzer):
         self.p_weights_min_pt = datap["systematics"]["mcptshape"]["weights_min_pt"]
         self.p_weights_max_pt = datap["systematics"]["mcptshape"]["weights_max_pt"]
         self.p_weights_bins = datap["systematics"]["mcptshape"]["weights_bins"]
+        # Require a minimum significance or a maximum chi2 for individual fits
+        self.min_signif_fit = datap["systematics"]["probvariation"].get("min_signif_fit", -1.)
+        self.max_red_chi2_fit = datap["systematics"]["probvariation"].get("max_red_chi2_fit", -1.)
 
         #For fitting
         #For mass histos
@@ -270,13 +289,7 @@ class Systematics(Analyzer):
         """
 
         # Check if that has been run already
-        if self.min_cv_cut:
-            return
-
-        # Also all periods merged need to define ML cut limits
-        if self.period is None:
-            self.min_cv_cut = [0.] * self.p_nptfinbins
-            self.max_cv_cut = [1.] * self.p_nptfinbins
+        if self.min_cv_cut or self.period is None:
             return
 
         self.logger.info("Defining systematic cut variations for period: %s", \
@@ -576,7 +589,8 @@ class Systematics(Analyzer):
         """
 
         # Define limits first
-        self.define_cutvariation_limits()
+        if self.period is not None and not self.done_mass:
+            self.logger.fatal("Cannot fit since mass histograms have not been produced yet.")
 
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
@@ -700,6 +714,18 @@ class Systematics(Analyzer):
                         self.logger.error("Fit failed for suffix %s", suffix)
                         ifit = ifit + 1
                         continue
+                    # Now check for min significance and max chi2
+                    signif = Double()
+                    signif_err = Double()
+                    mass_fitter[ifit].Significance(3., signif, signif_err)
+                    red_chi2 = mass_fitter[ifit].GetReducedChiSquare()
+                    if (self.min_signif_fit >= 0. and signif < self.min_signif_fit) or \
+                            (self.max_red_chi2_fit >= 0. and red_chi2 > self.max_red_chi2_fit):
+                        mass_fitter[ifit].GetHistoClone().Draw()
+                        self.logger.error("Fit failed for suffix %s", suffix)
+                        ifit = ifit + 1
+                        continue
+
                     mass_fitter[ifit].DrawHere(gPad, self.p_nsigma_signal)
 
                     # Write fitters to file

@@ -24,7 +24,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
-from ROOT import TH1F, TF1, gROOT  # pylint: disable=import-error,no-name-in-module
+from ROOT import TFile, TCanvas, TH1F, TF1, gROOT  # pylint: disable=import-error,no-name-in-module
 from machine_learning_hep.utilities import seldf_singlevar, split_df_sigbkg, createstringselection
 from machine_learning_hep.utilities import openfile, selectdfquery
 from machine_learning_hep.correlations import vardistplot, scatterplot, correlationmatrix
@@ -34,18 +34,19 @@ from machine_learning_hep.root import write_tree
 from machine_learning_hep.mlperformance import cross_validation_mse, plot_cross_validation_mse
 from machine_learning_hep.mlperformance import plot_learning_curves, precision_recall
 from machine_learning_hep.mlperformance import roc_train_test, plot_overtraining
-from machine_learning_hep.grid_search import do_gridsearch, read_grid_dict, perform_plot_gridsearch
+from machine_learning_hep.grid_search import do_gridsearch, perform_plot_gridsearch
 from machine_learning_hep.models import importanceplotall
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.optimization import calc_bkg, calc_signif, calc_eff, calc_sigeff_steps
 from machine_learning_hep.correlations import vardistplot_probscan, efficiency_cutscan
+from machine_learning_hep.utilities import checkdirlist, checkmakedirlist
 
-# pylint: disable=too-many-instance-attributes, too-many-statements, too-few-public-methods
+# pylint: disable=too-many-instance-attributes, too-many-statements
 class Optimiser:
     #Class Attribute
     species = "optimiser"
 
-    def __init__(self, data_param, case, typean, model_config, grid_config, binmin,
+    def __init__(self, data_param, case, typean, model_config, binmin,
                  binmax, raahp, training_var):
 
         self.logger = get_logger()
@@ -138,11 +139,14 @@ class Optimiser:
         self.p_classname = None
         self.p_trainedmod = None
         self.s_suffix = None
-        #config files
-        self.c_gridconfig = grid_config
 
         #significance
+        self.is_fonll_from_root = data_param["ml"]["opt"]["isFONLLfromROOT"]
         self.f_fonll = data_param["ml"]["opt"]["filename_fonll"]
+        if self.is_fonll_from_root and "fonll_particle" not in data_param["ml"]["opt"]:
+            self.logger.fatal("Attempt to read FONLL from ROOT file but field " \
+                    "\"fonll_particle\" not provided in database")
+        self.p_fonllparticle = data_param["ml"]["opt"].get("fonll_particle", "")
         self.p_fonllband = data_param["ml"]["opt"]["fonll_pred"]
         self.p_fragf = data_param["ml"]["opt"]["FF"]
         self.p_sigmamb = data_param["ml"]["opt"]["sigma_MB"]
@@ -270,9 +274,9 @@ class Optimiser:
                   imageIO_corr_bkg_train
 
     def loadmodels(self):
-        classifiers_scikit, names_scikit = getclf_scikit(self.db_model)
-        classifiers_xgboost, names_xgboost = getclf_xgboost(self.db_model)
-        classifiers_keras, names_keras = getclf_keras(self.db_model, len(self.df_xtrain.columns))
+        classifiers_scikit, names_scikit, _ = getclf_scikit(self.db_model)
+        classifiers_xgboost, names_xgboost, _ = getclf_xgboost(self.db_model)
+        classifiers_keras, names_keras, _ = getclf_keras(self.db_model, len(self.df_xtrain.columns))
         self.p_class = classifiers_scikit+classifiers_xgboost+classifiers_keras
         self.p_classname = names_scikit+names_xgboost+names_keras
 
@@ -327,15 +331,35 @@ class Optimiser:
         importanceplotall(self.v_train, self.p_classname, self.p_class,
                           self.s_suffix, self.dirmlplot)
     def do_grid(self):
-        analysisdb = self.c_gridconfig[self.p_mltype]
-        names_cv, clf_cv, par_grid_cv, refit_cv, var_param, \
-            par_grid_cv_keys = read_grid_dict(analysisdb)
-        _, _, dfscore = do_gridsearch(
-            names_cv, clf_cv, par_grid_cv, refit_cv, self.df_xtrain,
-            self.df_ytrain, self.p_nkfolds, self.p_ncorescross)
-        perform_plot_gridsearch(
-            names_cv, dfscore, par_grid_cv, par_grid_cv_keys,
-            var_param, self.dirmlplot, self.s_suffix, 0.1)
+        self.logger.info("Do grid search")
+        clfs_scikit, names_scikit, grid_params_scikit = getclf_scikit(self.db_model)
+        clfs_xgboost, names_xgboost, grid_params_xgboost = getclf_xgboost(self.db_model)
+        clfs_keras, names_keras, grid_params_keras = getclf_keras(self.db_model,
+                                                                  len(self.df_xtrain.columns))
+        clfs_grid_params_all = grid_params_scikit + grid_params_xgboost + grid_params_keras
+        clfs_all = clfs_scikit + clfs_xgboost + clfs_keras
+        clfs_names_all = names_scikit + names_xgboost + names_keras
+
+        clfs_all = [clf for clf, gps in zip(clfs_all, clfs_grid_params_all) if gps]
+        clfs_names_all = [name for name, gps in zip(clfs_names_all, clfs_grid_params_all) if gps]
+        clfs_grid_params_all = [gps for gps in clfs_grid_params_all if gps]
+
+
+
+        out_dirs = [os.path.join(self.dirmlplot, "grid_search", name, f"{name}{self.s_suffix}") \
+                for name in clfs_names_all]
+        if checkdirlist(out_dirs):
+            # Only draw results if any can be found
+            self.logger.warning("Not overwriting anything, just plotting again what was done " \
+                    "before and returning. Please remove corresponding directories " \
+                    "if you are certain you want do do grid search again")
+            perform_plot_gridsearch(clfs_names_all, out_dirs)
+            return
+        checkmakedirlist(out_dirs)
+
+        do_gridsearch(clfs_names_all, clfs_all, clfs_grid_params_all, self.df_xtrain,
+                      self.df_ytrain, self.p_nkfolds, out_dirs, self.p_ncorescross)
+        perform_plot_gridsearch(clfs_names_all, out_dirs)
 
     def do_boundary(self):
         classifiers_scikit_2var, names_2var = getclf_scikit(self.db_model)
@@ -366,7 +390,7 @@ class Optimiser:
         with open(f'{self.dirmlplot}/Efficiency_{self.s_suffix}.pickle', 'wb') as out:
             pickle.dump(fig_eff, out)
 
-    # pylint: disable=too-many-locals
+    #pylint: disable=too-many-locals
     def do_significance(self):
         self.logger.info("Doing significance optimization")
         gROOT.SetBatch(True)
@@ -391,27 +415,39 @@ class Optimiser:
         acc, acc_err = calc_eff(numacc, denacc)
         self.logger.debug("Acceptance: %.3e +/- %.3e", acc, acc_err)
         #calculation of the expected fonll signals
-        df_fonll = pd.read_csv(self.f_fonll)
         ptmin = self.p_binmin
         ptmax = self.p_binmax
-        df_fonll_in_pt = df_fonll.query('(pt >= @ptmin) and (pt < @ptmax)')[self.p_fonllband]
-        prod_cross = df_fonll_in_pt.sum() * self.p_fragf * 1e-12 / len(df_fonll_in_pt)
         delta_pt = ptmax - ptmin
-        signal_yield = 2. * prod_cross * delta_pt * self.p_br * acc * self.p_taa \
-                       / (self.p_sigmamb * self.p_fprompt)
+        if self.is_fonll_from_root:
+            df_fonll = TFile.Open(self.f_fonll)
+            df_fonll_Lc = df_fonll.Get(self.p_fonllparticle+"pred_"+self.p_fonllband)
+            prod_cross = df_fonll_Lc.Integral(ptmin*20, ptmax*20)* self.p_fragf * 1e-12 / delta_pt
+            signal_yield = 2. * prod_cross * delta_pt * acc * self.p_taa \
+                           / (self.p_sigmamb * self.p_fprompt)
+            #now we plot the fonll expectation
+            cFONLL = TCanvas('cFONLL', 'The FONLL expectation')
+            df_fonll_Lc.GetXaxis().SetRangeUser(0, 16)
+            df_fonll_Lc.Draw("")
+            cFONLL.SaveAs("%s/FONLL_curve_%s.png" % (self.dirmlplot, self.s_suffix))
+        else:
+            df_fonll = pd.read_csv(self.f_fonll)
+            df_fonll_in_pt = df_fonll.query('(pt >= @ptmin) and (pt < @ptmax)')[self.p_fonllband]
+            prod_cross = df_fonll_in_pt.sum() * self.p_fragf * 1e-12 / delta_pt
+            signal_yield = 2. * prod_cross * delta_pt * self.p_br * acc * self.p_taa \
+                           / (self.p_sigmamb * self.p_fprompt)
+            #now we plot the fonll expectation
+            plt.figure(figsize=(20, 15))
+            plt.subplot(111)
+            plt.plot(df_fonll['pt'], df_fonll[self.p_fonllband] * self.p_fragf, linewidth=4.0)
+            plt.xlabel('P_t [GeV/c]', fontsize=20)
+            plt.ylabel('Cross Section [pb/GeV]', fontsize=20)
+            plt.title("FONLL cross section " + self.p_case, fontsize=20)
+            plt.semilogy()
+            plt.savefig(f'{self.dirmlplot}/FONLL_curve_{self.s_suffix}.png')
+
         self.logger.debug("Expected signal yield: %.3e", signal_yield)
         signal_yield = self.p_raahp * signal_yield
         self.logger.debug("Expected signal yield x RAA hp: %.3e", signal_yield)
-
-        #now we plot the fonll expectation
-        plt.figure(figsize=(20, 15))
-        plt.subplot(111)
-        plt.plot(df_fonll['pt'], df_fonll[self.p_fonllband] * self.p_fragf, linewidth=4.0)
-        plt.xlabel('P_t [GeV/c]', fontsize=20)
-        plt.ylabel('Cross Section [pb/GeV]', fontsize=20)
-        plt.title("FONLL cross section " + self.p_case, fontsize=20)
-        plt.semilogy()
-        plt.savefig(f'{self.dirmlplot}/FONLL_curve_{self.s_suffix}.png')
 
         df_data_sideband = self.df_data.query(self.s_selbkgml)
         df_data_sideband = shuffle(df_data_sideband, random_state=self.rnd_shuffle)

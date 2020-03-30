@@ -142,7 +142,7 @@ INPUT_PATH=$(realpath $INPUT_PATH)
 OUTPUT_PATH=${OUTPUT_PATH:-$INPUT_PATH}
 
 check_settings
-                           
+
 echo "#####"
 echo "#####"
 echo "MERGING GRID DATA up to target file size of $TARGET_PACK_SIZE kB"
@@ -255,7 +255,7 @@ do
 done
 
 echo "Wait for all jobs to finish"
-n_job_delay 1 10 
+n_job_delay 1 10
 
 echo "DONE"
 

@@ -1,4 +1,4 @@
-case: Dspp
+case: XXXX
 download:
   alice:
     activate: false
@@ -27,20 +27,20 @@ ml_study:
   activate: false
   dopca: false
   docorrelation: false
-  dotraining: true
+  dotraining: false
   dotesting: false
   doapplytodatamc: false
   docrossvalidation: false
   dolearningcurve: false
   doroc: false
   doroctraintest: false
+  doplotdistr: false
   doimportance: false
   dogridsearch: false
   doboundary: false
   doefficiency: false
   dosignifopt: false
   doscancuts: false
-
 
 mlapplication:
   data:
@@ -53,18 +53,20 @@ mlapplication:
     docontinueafterstop: false
 
 analysis:
-  type: MBvspt_ntrkl
+  type: YYYY
   # Do each period separately including merged (true)
   # Do only merged (false)
   doperperiod: true
   data:
     histomass: true
+    dojetsystematics: false
   mc:
     histomass: true
     efficiency: false
     feeddown: false
-  dofit: false
-  # Control the yield systemaitc uncertainty
+    dounfolding: false
+  dofit: true
+  # Control the yield systematic uncertainty
   dosyst: false
   dojetstudies: false
   doeff: true

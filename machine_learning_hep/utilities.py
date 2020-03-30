@@ -58,8 +58,10 @@ def selectdfrunlist(dfr, runlist, runvar):
     Select smaller runlist on dataframe
     """
     if runlist is not None:
-        isgoodrun = select_runs(runlist, dfr[runvar].values)
-        dfr = dfr[np.array(isgoodrun, dtype=bool)]
+        runlist_np = np.asarray(runlist)
+        array_run_np = np.asarray(dfr[runvar].values)
+        issel = select_runs(runlist_np, array_run_np)
+        dfr = dfr[issel]
     return dfr
 
 def merge_method(listfiles, namemerged):
@@ -177,6 +179,13 @@ def seldf_singlevar(dataframe, var, minval, maxval):
     dataframe = dataframe.loc[(dataframe[var] >= minval) & (dataframe[var] < maxval)]
     return dataframe
 
+def seldf_singlevar_inclusive(dataframe, var, minval, maxval):
+    """
+    Make projection on variable using [X,Y), e.g. pT or multiplicity
+    """
+    dataframe = dataframe.loc[(dataframe[var] >= minval) & (dataframe[var] <= maxval)]
+    return dataframe
+
 def split_df_sigbkg(dataframe_, var_signal_):
     """
     Split dataframe in signal and background dataframes
@@ -292,6 +301,15 @@ def make_pre_suffix(args):
             args = [args]
     return "_".join(args)
 
+def make_message_notfound(name, location=None):
+    """
+    Return a formatted error message for not found or not properly loaded objects
+    stating the name and optionally the location.
+    """
+    if location is not None:
+        return "Error: Failed to get %s in %s" % (name, location)
+    return "Error: Failed to get %s" % name
+
 # Jet related functions, to comment
 
 def z_calc(pt_1, phi_1, eta_1, pt_2, phi_2, eta_2):
@@ -325,7 +343,40 @@ def z_gen_calc(pt_1, phi_1, eta_1, pt_2, delta_phi, delta_eta):
     return z_calc(pt_1, phi_1, eta_1, pt_2, phi_2, eta_2)
 
 def get_bins(axis):
+    """ Get a numpy array containing bin edges of a histogram axis (TAxis). """
     return np.array([axis.GetBinLowEdge(i) for i in range(1, axis.GetNbins() + 2)])
+
+def equal_axes(axis1, axis2):
+    """ Compare the binning of two histogram axes. """
+    if not np.array_equal(get_bins(axis1), get_bins(axis2)):
+        return False
+    return True
+
+def equal_axis_list(axis1, list2):
+    """ Compare the binning of axis1 with list2. """
+    if not np.array_equal(get_bins(axis1), np.array(list2)):
+        return False
+    return True
+
+def equal_binning(his1, his2):
+    """ Compare binning of axes of two histograms (derived from TH1). """
+    if not equal_axes(his1.GetXaxis(), his2.GetXaxis()):
+        return False
+    if not equal_axes(his1.GetYaxis(), his2.GetYaxis()):
+        return False
+    if not equal_axes(his1.GetZaxis(), his2.GetZaxis()):
+        return False
+    return True
+
+def equal_binning_lists(his, list_x=None, list_y=None, list_z=None):
+    """ Compare binning of axes of a histogram with the respective lists. """
+    if list_x is not None and not equal_axis_list(his.GetXaxis(), list_x):
+        return False
+    if list_y is not None and not equal_axis_list(his.GetYaxis(), list_y):
+        return False
+    if list_z is not None and not equal_axis_list(his.GetZaxis(), list_z):
+        return False
+    return True
 
 def folding(h_input, response_matrix, h_output):
     h_folded = h_output.Clone("h_folded")

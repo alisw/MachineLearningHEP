@@ -50,8 +50,8 @@ EOF
 nameoutputlist=$(printf "listfiles_%s_child_%s%s.txt" $TRAINNAME $LOCALCHILD $STAGE)
 find $SAVEDIR/$NFILES/$DWNLDOUTPUTFILE.root -maxdepth 1 -not -type d> $nameoutputlist
 if [ $? -ne 0 ]; then
-  printf "\r                         \e[1;31mWarning: No files where downloaded. Did you enter JAliEn environment before? Are you connected to internet? Did you set the correct path?\e[0m" > /dev/tty
-  printf "$SAVEDIR/printing-line-to-give-a-warning-as-no-files-where-downloaded/$DWNLDOUTPUTFILE.root" >> $nameoutputlist
+  printf "\r                         \e[1;31mWarning: No files were downloaded. Did you enter JAliEn environment before? Are you connected to internet? Did you set the correct path?\e[0m" > /dev/tty
+  printf "$SAVEDIR/printing-line-to-give-a-warning-as-no-files-were-downloaded/$DWNLDOUTPUTFILE.root" >> $nameoutputlist
 else
   NDWNLFILES=$(wc -l < "$nameoutputlist")
   printf "\r                         \e[1;32mSuccessfully. %s files downloaded.\e[0m" $NDWNLFILES > /dev/tty

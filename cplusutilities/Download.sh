@@ -229,7 +229,7 @@ elif [ "$dataset" == "MCpp13TeV_MB_all" ]; then
   inputpaths=(/alice/sim/2017/LHC17h8a/253529/PWGHF/HF_TreeCreator
               /alice/sim/2018/LHC18f4a/257630/PWGHF/HF_TreeCreator
               /alice/sim/2018/LHC18l4a/272123/PWGHF/HF_TreeCreator
-              /alice/sim/2018/LHC18l4b/288908/PWGHF/HF_TreeCreator
+              /alice/sim/2018/LHC18l4b/285064/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19h4c1/253529/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19h4b1/272123/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19h4a1/288908/PWGHF/HF_TreeCreator
@@ -607,15 +607,15 @@ do
   fi
 done
 
-#Check logs for the comman 'jalien command not found' error. If this is the case, no files where downloaded.
+#Check logs for the comman 'jalien command not found' error. If this is the case, no files were downloaded.
 if grep -q "jalien\|command not found" "$stderrorfile"
 then
-  printf "\e[1;31m  Warning: The 'jalien' command was not found, so no new files where downloaded. Did you already connect to JAliEn? Check log if this was not intended!\e[0m\n\n"
+  printf "\e[1;31m  Warning: The 'jalien' command was not found, so no new files were downloaded. Did you already connect to JAliEn? Check log if this was not intended!\e[0m\n\n"
 fi
-#Check logs for the comman 'JBox agent could not be started' error. If this is the case, no files where downloaded.
+#Check logs for the comman 'JBox agent could not be started' error. If this is the case, no files were downloaded.
 if grep -q "JBox agent\|could not be started" "$stderrorfile"
 then
-printf "\e[1;31m  Warning: The 'JBox agent' could not be started, so no new files where downloaded. Did you already connect to JAliEn? Check log if this was not intended!\e[0m\n\n"
+printf "\e[1;31m  Warning: The 'JBox agent' could not be started, so no new files were downloaded. Did you already connect to JAliEn? Check log if this was not intended!\e[0m\n\n"
 fi
 
 rm HF_TreeCreator_env.sh

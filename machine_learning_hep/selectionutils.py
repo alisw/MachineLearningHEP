@@ -17,9 +17,11 @@ utilities for fiducial acceptance, pid, single topological variable selections a
 """
 
 import numba
-from machine_learning_hep.bitwise import filter_bit_df
+import numpy as np
+from ROOT import TH1F # pylint: disable=import-error, no-name-in-module
+from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 
-@numba.njit
+#@numba.njit
 def selectcandidateml(array_prob, probcut):
     array_is_sel = []
     for prob in array_prob:
@@ -31,15 +33,15 @@ def selectcandidateml(array_prob, probcut):
 
 @numba.njit
 def select_runs(good_runlist, array_run):
-    array_run_sel = []
-    for candrun in array_run:
-        is_sel = False
-        if candrun in good_runlist:
-            is_sel = True
-        array_run_sel.append(is_sel)
+    array_run_sel = np.zeros(len(array_run), np.bool_)
+    for i, candrun in np.ndenumerate(array_run):
+        for _, goodrun in np.ndenumerate(good_runlist):
+            if candrun == goodrun:
+                array_run_sel[i] = True
+                break
     return array_run_sel
 
-@numba.njit
+#@numba.njit
 def selectfidacc(array_pt, array_y):
     array_is_sel = []
     for icand, pt in enumerate(array_pt):
@@ -57,7 +59,7 @@ def selectfidacc(array_pt, array_y):
     return array_is_sel
 
 # pylint: disable=too-many-arguments
-@numba.njit
+#@numba.njit
 def selectpid_dstokkpi(array_nsigma_tpc_pi_0, array_nsigma_tpc_k_0, \
     array_nsigma_tof_pi_0, array_nsigma_tof_k_0, \
         array_nsigma_tpc_k_1, array_nsigma_tof_k_1, \
@@ -84,7 +86,7 @@ def selectpid_dstokkpi(array_nsigma_tpc_pi_0, array_nsigma_tpc_k_0, \
             array_is_pid_sel.append(False)
     return array_is_pid_sel
 
-@numba.njit
+#@numba.njit
 def selectpid_dzerotokpi(array_nsigma_tpc_pi_0, array_nsigma_tpc_k_0, \
     array_nsigma_tof_pi_0, array_nsigma_tof_k_0, \
         array_nsigma_tpc_pi_1, array_nsigma_tpc_k_1, \
@@ -107,7 +109,7 @@ def selectpid_dzerotokpi(array_nsigma_tpc_pi_0, array_nsigma_tpc_k_0, \
             array_is_pid_sel.append(False)
     return array_is_pid_sel
 
-@numba.njit
+#@numba.njit
 def selectpid_lctov0bachelor(array_nsigma_tpc, array_nsigma_tof, nsigmacut):
     #nsigma for desired species (i.e. p in case of pK0s or pi in case of piL)
     array_is_pid_sel = []
@@ -121,7 +123,7 @@ def selectpid_lctov0bachelor(array_nsigma_tpc, array_nsigma_tof, nsigmacut):
             array_is_pid_sel.append(False)
     return array_is_pid_sel
 
-@numba.njit
+#@numba.njit
 def selectcand_lincut(array_cut_var, minvalue, maxvalue, isabs):
     array_is_sel = []
     for icand, _ in enumerate(array_cut_var):
@@ -151,3 +153,21 @@ def getnormforselevt(df_evt):
     n_ev_sel = len(df_acc_ev.index)
 
     return (n_ev_sel+n_no_reco_vtx) - n_no_reco_vtx*n_zvtx_gr10 / (n_ev_sel+n_zvtx_gr10)
+
+
+def gethistonormforselevt(df_evt, dfevtevtsel, label):
+    hSelMult = TH1F('sel_' + label, 'sel_' + label, 1, -0.5, 0.5)
+    hNoVtxMult = TH1F('novtx_' + label, 'novtx_' + label, 1, -0.5, 0.5)
+    hVtxOutMult = TH1F('vtxout_' + label, 'vtxout_' + label, 1, -0.5, 0.5)
+
+    df_to_keep = filter_bit_df(df_evt, 'is_ev_rej', [[], [0, 5, 6, 10, 11]])
+    # events with reco vtx after previous selection
+    tag_vtx = tag_bit_df(df_to_keep, 'is_ev_rej', [[], [1, 2, 7, 12]])
+    df_no_vtx = df_to_keep[~tag_vtx.values]
+    # events with reco zvtx > 10 cm after previous selection
+    df_bit_zvtx_gr10 = filter_bit_df(df_to_keep, 'is_ev_rej', [[3], [1, 2, 7, 12]])
+
+    hSelMult.SetBinContent(1, len(dfevtevtsel))
+    hNoVtxMult.SetBinContent(1, len(df_no_vtx))
+    hVtxOutMult.SetBinContent(1, len(df_bit_zvtx_gr10))
+    return hSelMult, hNoVtxMult, hVtxOutMult

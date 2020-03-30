@@ -23,6 +23,10 @@ import argparse
 from os.path import exists
 import yaml
 from pkg_resources import resource_stream
+
+# To set batch mode immediately
+from ROOT import gROOT # pylint: disable=import-error, no-name-in-module
+
 from machine_learning_hep.multiprocesser import MultiProcesser
 from machine_learning_hep.processer import Processer
 from machine_learning_hep.processerdhadrons import ProcesserDhadrons
@@ -48,8 +52,6 @@ from machine_learning_hep.analysis.analyzer_jet import AnalyzerJet
 
 from machine_learning_hep.analysis.systematics import Systematics
 
-from machine_learning_hep.analysis.utils import multi_preparenorm
-
 try:
 # FIXME(https://github.com/abseil/abseil-py/issues/99) # pylint: disable=fixme
 # FIXME(https://github.com/abseil/abseil-py/issues/102) #pylint: disable=fixme
@@ -72,8 +74,10 @@ except Exception as e: # pylint: disable=broad-except
     print("##############################")
 
 
-def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, grid_param: dict, # pylint: disable=too-many-locals, too-many-statements, too-many-branches
-                       run_param: dict):
+def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, run_param: dict): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+
+    # Disable any graphical stuff. No TCanvases opened and shown by default
+    gROOT.SetBatch(True)
 
     logger = get_logger()
     logger.info("Do analysis chain")
@@ -136,11 +140,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     typean = data_config["analysis"]["type"]
     dojetstudies = data_config["analysis"]["dojetstudies"]
 
-
-    dovalhistodata = data_config["validation"]["data"]["docreatehisto"]
-    dovalhistomc = data_config["validation"]["mc"]["docreatehisto"]
-    dovalplots = data_config["validation"]["plotevents"]
-
     dirpklmc = data_param[case]["multi"]["mc"]["pkl"]
     dirpklevtcounter_allmc = data_param[case]["multi"]["mc"]["pkl_evtcounter_all"]
     dirpklskmc = data_param[case]["multi"]["mc"]["pkl_skimmed"]
@@ -161,10 +160,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     dirresultsdatatot = data_param[case]["analysis"][typean]["data"]["resultsallp"]
     dirresultsmctot = data_param[case]["analysis"][typean]["mc"]["resultsallp"]
 
-    dirvalmc = data_param[case]["validation"]["mc"]["dir"]
-    dirvaldata = data_param[case]["validation"]["data"]["dir"]
-    dirvalmcmerged = data_param[case]["validation"]["mc"]["dirmerged"]
-    dirvaldatamerged = data_param[case]["validation"]["data"]["dirmerged"]
     binminarray = data_param[case]["ml"]["binmin"]
     binmaxarray = data_param[case]["ml"]["binmax"]
     raahp = data_param[case]["ml"]["opt"]["raahp"]
@@ -230,14 +225,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         counter = counter + checkdirlist(dirresultsdata)
         counter = counter + checkdir(dirresultsdatatot)
 
-    if dovalhistodata is True:
-        counter = counter + checkdirlist(dirvaldata)
-        counter = counter + checkdir(dirvaldatamerged)
-
-    if dovalhistomc is True:
-        counter = counter + checkdirlist(dirvalmc)
-        counter = counter + checkdir(dirvalmcmerged)
-
     if counter < 0:
         sys.exit()
     # check and create directories
@@ -294,14 +281,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         checkmakedirlist(dirresultsdata)
         checkmakedir(dirresultsdatatot)
 
-    if dovalhistomc is True:
-        checkmakedirlist(dirvalmc)
-        checkmakedir(dirvalmcmerged)
-
-    if dovalhistodata is True:
-        checkmakedirlist(dirvaldata)
-        checkmakedir(dirvaldatamerged)
-
     proc_class = Processer
     ana_class = Analyzer
     syst_class = Systematics
@@ -357,19 +336,11 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
     if domergingperiodsdata == 1:
         mymultiprocessdata.multi_mergeml_allinone()
 
-    if dovalhistomc is True:
-        mymultiprocessmc.multi_valevents()
-    if dovalhistodata is True:
-        mymultiprocessdata.multi_valevents()
-
-    if dovalplots:
-        ana_mgr.analyze("studyevents")
-
     if doml is True:
         index = 0
         for binmin, binmax in zip(binminarray, binmaxarray):
             myopt = Optimiser(data_param[case], case, typean,
-                              data_model[mltype], grid_param, binmin, binmax,
+                              data_model[mltype], binmin, binmax,
                               raahp[index], training_vars[index])
             if docorrelation is True:
                 myopt.do_corr()
@@ -420,8 +391,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, gr
         # FIXME Can only be run here because result directories are constructed when histomass
         #       is run. If this step was independent, histomass would always complain that the
         #       result directory already exists.
-        if "mult" in proc_type:
-            multi_preparenorm(data_param[case], case, typean, doanaperperiod)
         mymultiprocessdata.multi_histomass()
     if doefficiency is True:
         mymultiprocessmc.multi_efficiency()
@@ -506,8 +475,6 @@ def main():
                         help="analysis database to be used")
     parser.add_argument("--database-ml-models", dest="database_ml_models",
                         help="ml model database to be used")
-    parser.add_argument("--database-ml-gridsearch", dest="database_ml_gridsearch",
-                        help="ml gridsearch database to be used")
     parser.add_argument("--database-run-list", dest="database_run_list",
                         help="run list database to be used")
     parser.add_argument("--analysis", "-a", dest="type_ana",
@@ -520,7 +487,7 @@ def main():
     # Extract which database and run config to be used
     pkg_data = "machine_learning_hep.data"
     pkg_data_run_config = "machine_learning_hep.submission"
-    run_config = load_config(args.run_config, (pkg_data_run_config, "default_complete.yaml"))
+    run_config = load_config(args.run_config, (pkg_data_run_config, "default_complete.yml"))
     case = run_config["case"]
     if args.type_ana is not None:
         run_config["analysis"]["type"] = args.type_ana
@@ -529,9 +496,7 @@ def main():
     print(args.database_analysis)
     db_analysis = load_config(args.database_analysis, (pkg_data, db_analysis_default_name))
     db_ml_models = load_config(args.database_ml_models, (pkg_data, "config_model_parameters.yml"))
-    db_ml_gridsearch = load_config(args.database_ml_gridsearch,
-                                   (pkg_data, "database_ml_gridsearch.yml"))
     db_run_list = load_config(args.database_run_list, (pkg_data, "database_run_list.yml"))
 
     # Run the chain
-    do_entire_analysis(run_config, db_analysis, db_ml_models, db_ml_gridsearch, db_run_list)
+    do_entire_analysis(run_config, db_analysis, db_ml_models, db_run_list)

@@ -1,29 +1,29 @@
-case: LcpK0spp_test
+case: XXXX # used to find the database file unless specified explicitly as do_entire_analysis -d database_analysis
 download:
   alice:
     activate: false
-conversion:
+conversion: # pkl
   mc:
     activate: false
   data:
     activate: false
-skimming:
+skimming: # pkl_skimmed (pklsk), pkl_evtcounter_all
   mc:
     activate: false
   data:
     activate: false
-merging:
+merging: # pkl_skimmed_merge_for_ml (pklskml)
   mc:
     activate: false
   data:
     activate: false
-mergingperiods:
+mergingperiods: # pkl_skimmed_merge_for_ml_all
   mc:
     activate: false
   data:
     activate: false
 
-ml_study:
+ml_study: # mlout, mlplot
   activate: false
   dopca: false
   docorrelation: false
@@ -44,16 +44,16 @@ ml_study:
 
 mlapplication:
   data:
-    doapply: false
-    domergeapply: false
-    docontinueafterstop: true
+    doapply: false # pkl_skimmed_dec (pklskdec)
+    domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged)
+    docontinueafterstop: false # set to true to resume interrupted processing (existing corrupted output will be overwritten)
   mc:
-    doapply: false
-    domergeapply: false
-    docontinueafterstop: true
+    doapply: false # pkl_skimmed_dec (pklskdec)
+    domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged)
+    docontinueafterstop: false # set to true to resume interrupted processing (existing corrupted output will be overwritten)
 
 analysis:
-  type: MBvspt_hfcorr #MBvspt_ntrkl, MBjetvspt
+  type: YYYY # used unless specified explicitly as do_entire_analysis -a type_ana
   # Do each period separately including merged (true)
   # Do only merged (false)
   doperperiod: false
@@ -63,12 +63,12 @@ analysis:
   mc:
     histomass: false # processer: process_histomass
     efficiency: false # processer: process_efficiency, process_response, process_unfolding
-    feeddown: false # analyzer: feeddown
-    dounfolding: false # analyzer: unfolding, unfolding_closure
-  dofit: true # analyzer: fit
+    feeddown: true # analyzer: feeddown
+    dounfolding: true # analyzer: unfolding, unfolding_closure
+  dofit: false # analyzer: fit
   # Control the yield systematic uncertainty
   dosyst: false # analyzer: yield_syst
-  dojetstudies: false # analyzer: efficiency, fit, side_band_sub
+  dojetstudies: true # analyzer: fit, efficiency, side_band_sub
   doeff: false # analyzer: efficiency
   docross: false # analyzer: makenormyields
   doplots: false # analyzer: plotternormyields
@@ -82,10 +82,3 @@ systematics:
     probvariationcross: false
   mcptshape:
     activate: false
-
-validation:
-  data:
-    docreatehisto: false
-  mc:
-    docreatehisto: false
-  plotevents: false

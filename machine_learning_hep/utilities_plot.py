@@ -34,9 +34,9 @@ def buildarray(listnumber):
     arraynumber = array('d', listnumber)
     return arraynumber
 
-def make3dplot(df_, titlehist, arrayx, arrayy, arrayz, nvar1, nvar2, nvar3):
+def makefill3dhist(df_, titlehist, arrayx, arrayy, arrayz, nvar1, nvar2, nvar3):
     """
-    Make TH3F scatterplot between two variables from dataframe
+    Create a TH3F histogram and fill it with three variables from a dataframe.
     """
     lenx = len(arrayx) - 1
     leny = len(arrayy) - 1
@@ -51,7 +51,7 @@ def make3dplot(df_, titlehist, arrayx, arrayy, arrayz, nvar1, nvar2, nvar3):
 
 def build2dhisto(titlehist, arrayx, arrayy):
     """
-    Make TH3F scatterplot between two variables from dataframe
+    Create a TH2 histogram from two axis arrays.
     """
     lenx = len(arrayx) - 1
     leny = len(arrayy) - 1
@@ -60,15 +60,15 @@ def build2dhisto(titlehist, arrayx, arrayy):
     histo.Sumw2()
     return histo
 
-
-def make2dplot(df_, histo, nvar1, nvar2):
+def fill2dhist(df_, histo, nvar1, nvar2):
     """
-    Make TH3F scatterplot between two variables from dataframe
+    Fill a TH2 histogram with two variables from a dataframe.
     """
     df_rd = df_[[nvar1, nvar2]]
     arr2 = df_rd.values
     fill_hist(histo, arr2)
     return histo
+
 def load_root_style_simple():
     """
     Set basic ROOT style for histograms

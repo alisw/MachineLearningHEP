@@ -15,6 +15,7 @@
 """
 main script for doing data processing, machine learning and analysis
 """
+import sys
 import multiprocessing as mp
 import pickle
 import os
@@ -24,12 +25,13 @@ import pandas as pd
 import numpy as np
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
-from machine_learning_hep.utilities import selectdfquery, selectdfrunlist, merge_method
+from machine_learning_hep.utilities import selectdfquery, merge_method
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
 from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.utilities import get_timestamp_string
 from machine_learning_hep.models import apply # pylint: disable=import-error
+#from machine_learning_hep.logger import get_logger
 
 class Processer: # pylint: disable=too-many-instance-attributes
     # Class Attribute
@@ -41,7 +43,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                  d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
-                 d_results, d_val, typean, runlisttrigger, d_mcreweights):
+                 d_results, typean, runlisttrigger, d_mcreweights):
+        #self.logger = get_logger()
         self.nprongs = datap["nprongs"]
         self.doml = datap["doml"]
         self.case = case
@@ -52,14 +55,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.d_pklsk = d_pklsk
         self.d_pkl_ml = d_pkl_ml
         self.d_results = d_results
-        self.d_val = d_val
         self.d_mcreweights = d_mcreweights
         self.datap = datap
         self.mcordata = mcordata
         self.p_frac_merge = p_frac_merge
         self.p_rd_merge = p_rd_merge
         self.period = p_period
-        self.runlist = run_param[self.period]
         self.run_param = run_param
         self.p_maxfiles = p_maxfiles
         self.p_chunksizeunp = p_chunksizeunp
@@ -80,7 +81,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.n_reco = datap["files_names"]["namefile_reco"]
         self.n_evt = datap["files_names"]["namefile_evt"]
         self.n_evtorig = datap["files_names"]["namefile_evtorig"]
-        self.n_evtvalroot = datap["files_names"]["namefile_evtvalroot"]
         self.n_gen = datap["files_names"]["namefile_gen"]
         self.n_filemass = datap["files_names"]["histofilename"]
         self.n_fileeff = datap["files_names"]["efffilename"]
@@ -117,8 +117,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.v_ismcbkg = datap["bitmap_sel"]["var_ismcbkg"]
         self.v_ismcrefl = datap["bitmap_sel"]["var_ismcrefl"]
         self.v_var_binning = datap["var_binning"]
-        #list of files names
 
+        #list of files names
         self.l_path = None
         if os.path.isdir(self.d_root):
             self.l_path = list_folders(self.d_root, self.n_root, self.p_maxfiles)
@@ -129,25 +129,26 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.l_reco = createlist(self.d_pkl, self.l_path, self.n_reco)
         self.l_evt = createlist(self.d_pkl, self.l_path, self.n_evt)
         self.l_evtorig = createlist(self.d_pkl, self.l_path, self.n_evtorig)
-        self.l_evtvalroot = createlist(self.d_val, self.l_path, self.n_evtvalroot)
         self.l_histomass = createlist(self.d_results, self.l_path, self.n_filemass)
         self.l_histoeff = createlist(self.d_results, self.l_path, self.n_fileeff)
-
 
         if self.mcordata == "mc":
             self.l_gen = createlist(self.d_pkl, self.l_path, self.n_gen)
 
         self.f_totevt = os.path.join(self.d_pkl, self.n_evt)
         self.f_totevtorig = os.path.join(self.d_pkl, self.n_evtorig)
-        self.f_totevtvalroot = os.path.join(self.d_val, self.n_evtvalroot)
 
         self.p_modelname = datap["mlapplication"]["modelname"]
         self.lpt_anbinmin = datap["sel_skim_binmin"]
         self.lpt_anbinmax = datap["sel_skim_binmax"]
-        self.p_nptbins = len(datap["sel_skim_binmax"])
+        self.p_nptbins = len(self.lpt_anbinmin)
         self.lpt_model = datap["mlapplication"]["modelsperptbin"]
         self.dirmodel = datap["ml"]["mlout"]
         self.lpt_model = appendmainfoldertolist(self.dirmodel, self.lpt_model)
+        if not self.doml:
+            datap["mlapplication"]["probcutpresel"][self.mcordata] = [0 for _ in self.lpt_anbinmin]
+            datap["mlapplication"]["probcutoptimal"] = [0 for _ in self.lpt_anbinmin]
+
         self.lpt_probcutpre = datap["mlapplication"]["probcutpresel"][self.mcordata]
         self.lpt_probcutfin = datap["mlapplication"]["probcutoptimal"]
 
@@ -198,11 +199,19 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
 
+ #       if os.path.exists(self.d_root) is False:
+ #           self.logger.warning("ROOT tree folder is not there. Is it intentional?")
 
     def unpack(self, file_index):
         treeevtorig = uproot.open(self.l_root[file_index])[self.n_treeevt]
-        dfevtorig = treeevtorig.pandas.df(branches=self.v_evt)
-        dfevtorig = selectdfrunlist(dfevtorig, self.runlist, "run_number")
+        try:
+            dfevtorig = treeevtorig.pandas.df(branches=self.v_evt)
+        except Exception as e: # pylint: disable=broad-except
+            print('Missing variable in the event root tree', str(e))
+            print('Missing variable in the candidate root tree')
+            print('I am sorry, I am dying ...\n \n \n')
+            sys.exit()
+
         dfevtorig = selectdfquery(dfevtorig, self.s_cen_unp)
         dfevtorig = dfevtorig.reset_index(drop=True)
         pickle.dump(dfevtorig, openfile(self.l_evtorig[file_index], "wb"), protocol=4)
@@ -212,8 +221,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
 
         treereco = uproot.open(self.l_root[file_index])[self.n_treereco]
-        dfreco = treereco.pandas.df(branches=self.v_all)
-        dfreco = selectdfrunlist(dfreco, self.runlist, "run_number")
+        try:
+            dfreco = treereco.pandas.df(branches=self.v_all)
+        except Exception as e: # pylint: disable=broad-except
+            print('Missing variable in the candidate root tree')
+            print('I am sorry, I am dying ...\n \n \n')
+            sys.exit()
         dfreco = selectdfquery(dfreco, self.s_reco_unp)
         dfreco = pd.merge(dfreco, dfevt, on=self.v_evtmatch)
         isselacc = selectfidacc(dfreco.pt_cand.values, dfreco.y_cand.values)
@@ -248,7 +261,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         if self.mcordata == "mc":
             treegen = uproot.open(self.l_root[file_index])[self.n_treegen]
             dfgen = treegen.pandas.df(branches=self.v_gen)
-            dfgen = selectdfrunlist(dfgen, self.runlist, "run_number")
             dfgen = pd.merge(dfgen, dfevtorig, on=self.v_evtmatch)
             dfgen = selectdfquery(dfgen, self.s_gen_unp)
             dfgen[self.v_isstd] = np.array(tag_bit_df(dfgen, self.v_bitvar,
@@ -269,6 +281,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             dfreco = pickle.load(openfile(self.l_reco[file_index], "rb"))
         except Exception as e: # pylint: disable=broad-except
             print('failed to open file', self.l_reco[file_index], str(e))
+            sys.exit()
         for ipt in range(self.p_nptbins):
             dfrecosk = seldf_singlevar(dfreco, self.v_var_binning,
                                        self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
@@ -308,13 +321,19 @@ class Processer: # pylint: disable=too-many-instance-attributes
             pickle.dump(dfrecoskml, openfile(self.mptfiles_recoskmldec[ipt][file_index], "wb"),
                         protocol=4)
 
+    @staticmethod
+    def callback(ex):
+        print(ex)
+
+
     def parallelizer(self, function, argument_list, maxperchunk):
         chunks = [argument_list[x:x+maxperchunk] \
                   for x in range(0, len(argument_list), maxperchunk)]
         for chunk in chunks:
             print("Processing new chunck size=", maxperchunk)
             pool = mp.Pool(self.p_maxprocess)
-            _ = [pool.apply_async(function, args=chunk[i]) for i in range(len(chunk))]
+            _ = [pool.apply_async(function, args=chunk[i],
+                                  error_callback=self.callback) for i in range(len(chunk))]
             pool.close()
             pool.join()
 
@@ -364,11 +383,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
             merge_method(self.mptfiles_recoskmldec[ipt], self.lpt_recodecmerged[ipt])
             if self.mcordata == "mc":
                 merge_method(self.mptfiles_gensk[ipt], self.lpt_gendecmerged[ipt])
+
     # pylint: disable=no-member
     def process_histomass(self):
         print("Doing masshisto", self.mcordata, self.period)
         print("Using run selection for mass histo", \
-               self.runlistrigger[self.triggerbit], "for period", self.period)
+               self.runlistrigger, "for period", self.period)
         if self.doml is True:
             print("Doing ml analysis")
         else:
@@ -380,11 +400,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
         tmp_merged = \
         f"/data/tmp/hadd/{self.case}_{self.typean}/mass_{self.period}/{get_timestamp_string()}/"
         mergerootfiles(self.l_histomass, self.n_filemass, tmp_merged)
+
     # pylint: disable=no-member
     def process_efficiency(self):
         print("Doing efficiencies", self.mcordata, self.period)
         print("Using run selection for eff histo", \
-               self.runlistrigger[self.triggerbit], "for period", self.period)
+               self.runlistrigger, "for period", self.period)
         if self.doml is True:
             print("Doing ml analysis")
         else:

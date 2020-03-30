@@ -166,6 +166,7 @@ for mb in range(4):
     histo_.Scale(1./BRLC)
     if mb == 0:
         print("NOTE: Scaling MB with 1./0.92 (kINT7 trigger eff.) and 1./0.94 (nEvents for 1-999)")
+        print("Fixes propagated to DBs on 16/03/20. Please be sure this is still needed!")
         histo_.Scale(1./0.92)
         histo_.Scale(1./0.94)
     HISTOS.append(histo_)
