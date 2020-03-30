@@ -228,7 +228,6 @@ class AnalyzerJet(Analyzer):
         self.efficiency_filename = "efficiencies"
         self.sideband_subtracted_filename = "sideband_subtracted"
 
-
         self.p_latexnmeson = datap["analysis"][self.typean]["latexnamemeson"]
         self.p_latexndecay = datap["analysis"][self.typean]["latexnamedecay"]
         self.p_latexbin2var = datap["analysis"][self.typean]["latexbin2var"]
@@ -243,6 +242,11 @@ class AnalyzerJet(Analyzer):
         self.varshaperanges_gen = self.lvarshape_binmin_gen.copy()
         self.varshaperanges_gen.append(self.lvarshape_binmax_gen[-1])
         self.p_nevents = datap["analysis"][self.typean]["nevents"]
+
+        # Save the database in the results directory.
+        path_db_out = os.path.join(self.d_resultsallpdata, "database_%s_%s.yml" % (self.case, self.typean))
+        with open(path_db_out, 'w') as file_db_out:
+            yaml.safe_dump(datap, file_db_out, default_flow_style=False)
 
         # Fitting
         self.fitter = None
