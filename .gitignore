@@ -35,6 +35,7 @@ dist/*
 machine_learning_hep/data/**/*.root
 machine_learning_hep/D0kINT7HighMultwithJets
 machine_learning_hep/LckINT7HighMultwithJets
+machine_learning_hep/fit_result/
 
 dataframes_*
 plots_*

@@ -61,10 +61,9 @@ analysis:
     histomass: true
   mc:
     histomass: true
-    efficiency: true
+    efficiency: false
     feeddown: false
-  dofit: true
-  doubfit: false
+  dofit: false
   # Control the yield systemaitc uncertainty
   dosyst: false
   dojetstudies: false
