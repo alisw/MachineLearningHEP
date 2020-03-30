@@ -58,17 +58,17 @@ analysis:
   # Do only merged (false)
   doperperiod: false
   data:
-    histomass: true # processer: process_histomass
-    dojetsystematics: false # analyzer: jetsystematics
+    histomass: false # processer: process_histomass
+    dojetsystematics: true # analyzer: jetsystematics
   mc:
-    histomass: true # processer: process_histomass
-    efficiency: true # processer: process_efficiency, process_response, process_unfolding
-    feeddown: true # analyzer: feeddown
-    dounfolding: true # analyzer: unfolding, unfolding_closure
+    histomass: false # processer: process_histomass
+    efficiency: false # processer: process_efficiency, process_response, process_unfolding
+    feeddown: false # analyzer: feeddown
+    dounfolding: false # analyzer: unfolding, unfolding_closure
   dofit: false # analyzer: fit
   # Control the yield systematic uncertainty
   dosyst: false # analyzer: yield_syst
-  dojetstudies: true # analyzer: fit, efficiency, side_band_sub
+  dojetstudies: false # analyzer: fit, efficiency, side_band_sub
   doeff: false # analyzer: efficiency
   docross: false # analyzer: makenormyields
   doplots: false # analyzer: plotternormyields
