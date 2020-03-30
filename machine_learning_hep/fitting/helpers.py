@@ -19,7 +19,7 @@ from glob import glob
 from array import array
 
 #pylint: disable=no-name-in-module, too-many-lines
-from ROOT import TFile, TH1F, TCanvas, gStyle  #pylint: disable=import-error
+from ROOT import TFile, TH1F, TCanvas, gStyle, Double  #pylint: disable=import-error
 #pylint: enable=no-name-in-module
 
 from machine_learning_hep.logger import get_logger
@@ -634,9 +634,13 @@ class MLFitter:
         # Summarize in mult histograms in pT bins
         yieldshistos = {ibin2: TH1F("hyields%d" % (ibin2), "", \
                 n_bins1, array("d", bins1_ranges)) for ibin2 in bins2}
+        bkgs_histos = {ibin2: TH1F("hbkgs%d" % (ibin2), "", \
+                n_bins1, array("d", bins1_ranges)) for ibin2 in bins2}
         means_histos = {ibin2:TH1F("hmeanss%d" % (ibin2), "", \
                 n_bins1, array("d", bins1_ranges)) for ibin2 in bins2}
         sigmas_histos = {ibin2: TH1F("hsigmas%d" % (ibin2), "", \
+                n_bins1, array("d", bins1_ranges)) for ibin2 in bins2}
+        signifs_histos = {ibin2: TH1F("hsignifs%d" % (ibin2), "", \
                 n_bins1, array("d", bins1_ranges)) for ibin2 in bins2}
         have_summary_pt_bins = []
         means_init_mc_histos = TH1F("hmeans_init_mc", "", n_bins1, array("d", bins1_ranges))
@@ -666,6 +670,7 @@ class MLFitter:
         for c in canvas_data.values():
             c.Divide(nx, ny)
 
+        n_sigma_signal = self.pars_factory.n_sigma_signal
         # Need to cache some object for which the canvas is only written after the loop...
         for (ibin1, ibin2), fit in self.central_fits.items():
             bin_id_match = self.pars_factory.bin_matching[ibin1]
@@ -676,7 +681,6 @@ class MLFitter:
                     f"(prob > {self.pars_factory.prob_cut_fin[bin_id_match]:.2f})"
 
             x_axis_label = "#it{M}_{inv} (GeV/#it{c}^{2})"
-            n_sigma_signal = self.pars_factory.n_sigma_signal
 
             suffix_write = self.pars_factory.make_suffix(ibin1, ibin2)
 
@@ -704,11 +708,24 @@ class MLFitter:
                 yieldshistos[ibin2].SetBinContent(ibin1 + 1, kernel.GetRawYield())
                 yieldshistos[ibin2].SetBinError(ibin1 + 1, kernel.GetRawYieldError())
 
+                bkg_yield = Double()
+                bkg_yield_err = Double()
+                kernel.Background(n_sigma_signal, bkg_yield, bkg_yield_err)
+
+                bkgs_histos[ibin2].SetBinContent(ibin1 + 1, bkg_yield)
+                bkgs_histos[ibin2].SetBinError(ibin1 + 1, bkg_yield_err)
+
                 means_histos[ibin2].SetBinContent(ibin1 + 1, kernel.GetMean())
                 means_histos[ibin2].SetBinError(ibin1 + 1, kernel.GetMeanUncertainty())
 
                 sigmas_histos[ibin2].SetBinContent(ibin1 + 1, kernel.GetSigma())
                 sigmas_histos[ibin2].SetBinError(ibin1 + 1, kernel.GetSigmaUncertainty())
+
+                signif = Double()
+                signif_err = Double()
+                kernel.Significance(n_sigma_signal, signif, signif_err)
+                signifs_histos[ibin2].SetBinContent(ibin1 + 1, signif)
+                signifs_histos[ibin2].SetBinError(ibin1 + 1, signif_err)
 
                 # Residual plot
                 c_res = TCanvas('cRes', 'The Fit Canvas', 800, 800)
@@ -824,6 +841,19 @@ class MLFitter:
                         "#sigma_{fit} " + f"{latex_meson_name} {self.ana_type}", "mult. / int.",
                         save_name)
 
+        save_name = make_file_path(save_dir, "Significances", "eps", None,
+                                   [self.case, self.ana_type])
+        #Sigmas summary plot
+        plot_histograms([signifs_histos[ibin2] for ibin2 in bins2], False, True, leg_strings,
+                        "Significances", "#it{p}_{T} (GeV/#it{c})",
+                        f"Significance ({n_sigma_signal}#sigma) {latex_meson_name} {self.ana_type}",
+                        "mult. / int.", save_name)
+        save_name = make_file_path(save_dir, "Backgrounds", "eps", None, [self.case, self.ana_type])
+        #Sigmas summary plot
+        plot_histograms([bkgs_histos[ibin2] for ibin2 in bins2], False, True, leg_strings,
+                        "Backgrounds", "#it{p}_{T} (GeV/#it{c})",
+                        f"Background ({n_sigma_signal}#sigma) {latex_meson_name} {self.ana_type}",
+                        "mult. / int.", save_name)
         # Plot the initialized means and sigma for MC and data
         save_name = make_file_path(save_dir, "Means_mult_int", "eps", None,
                                    [self.case, self.ana_type])
