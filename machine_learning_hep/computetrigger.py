@@ -24,7 +24,7 @@ gStyle.SetOptTitle(0)
 
 # pylint: disable=line-too-long, invalid-name
 filedatatrg = TFile.Open("/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsSPDvspt_ntrkl/masshisto.root")
-filedatamb = TFile.Open("/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsMBvspt_ntrkl/masshisto.root")
+filedatamb = TFile.Open("/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_data/resultsMBvspt_ntrkl/masshisto.root")
 hden = filedatamb.Get("hn_tracklets_corr")
 hnum = filedatatrg.Get("hn_tracklets_corr")
 hratio = hnum.Clone("hratio")
