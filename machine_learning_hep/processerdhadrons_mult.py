@@ -130,7 +130,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         if self.runlistrigger is not None:
             dfevtorig = selectdfrunlist(dfevtorig, \
                              self.run_param[self.runlistrigger], "run_number")
-        dfevtevtsel = dfevtorig.query("is_ev_rej==0")
+        dfevtevtsel = dfevtorig.query(self.s_evtsel)
         labeltrigger = "hbit%svs%s" % (self.triggerbit, self.v_var2_binning_gen)
 
         myfile.cd()

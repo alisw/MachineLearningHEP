@@ -13,7 +13,7 @@
 #############################################################################
 
 from ROOT import TFile, TH1F, TCanvas, TF1 # pylint: disable=import-error,no-name-in-module, unused-import
-from ROOT import gROOT, gStyle, TLegend # pylint: disable=import-error, no-name-in-module
+from ROOT import TLine, gROOT, gStyle, TLegend # pylint: disable=import-error, no-name-in-module
 gROOT.SetStyle("Plain")
 gStyle.SetOptStat(0)
 gStyle.SetOptStat(0000)
@@ -36,7 +36,7 @@ hratiod.Divide(hdend)
 
 ctrigger = TCanvas('ctrigger', 'The Fit Canvas')
 ctrigger.SetCanvasSize(2500, 2000)
-ctrigger.Divide(2, 2)
+ctrigger.Divide(3, 2)
 ctrigger.cd(1)
 leg = TLegend(.5, .65, .7, .85)
 leg.SetBorderSize(0)
@@ -91,6 +91,20 @@ func.SetLineColor(1)
 func.Draw("same")
 funcd.SetLineColor(4)
 funcd.Draw("same")
+ctrigger.cd(5)
+hempty = TH1F("hempty", "hempty", 200, 0., 100.)
+hempty.Draw()
+funcnorm = func.Clone("funcSPDvspt_ntrkl_norm")
+funcnorm.FixParameter(0, funcnorm.GetParameter(0)/funcnorm.GetMaximum())
+funcnormd = funcd.Clone("funcdSPDvspt_ntrkl_norm")
+funcnormd.FixParameter(0, funcnormd.GetParameter(0)/funcnormd.GetMaximum())
+hempty.GetXaxis().SetTitle("n_tracklets_corr")
+hempty.GetYaxis().SetTitle("Efficiency")
+funcnorm.Draw("same")
+funcnormd.Draw("same")
+line = TLine(60,0,60,1);
+line.SetLineStyle(2)
+line.Draw("same")
 ctrigger.SaveAs("SPDtrigger.pdf")
 # pylint: disable=line-too-long
 foutput = TFile.Open("../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018/triggerSPDvspt_ntrkl.root", "recreate")
@@ -99,13 +113,10 @@ hratio.SetName("hratioSPDvspt_ntrkl")
 hratio.Write()
 func.SetName("funcSPDvspt_ntrkl")
 func.Write()
-funcnorm = func.Clone("funcSPDvspt_ntrkl_norm")
-funcnorm.FixParameter(0, funcnorm.GetParameter(0)/funcnorm.GetMaximum())
 funcnorm.Write()
 hratiod.SetName("hratiodSPDvspt_ntrkl")
 hratiod.Write()
 funcd.SetName("funcdSPDvspt_ntrkl")
 funcd.Write()
-funcnormd = funcd.Clone("funcdSPDvspt_ntrkl_norm")
-funcnormd.FixParameter(0, funcnormd.GetParameter(0)/funcnormd.GetMaximum())
 funcnormd.Write()
+
