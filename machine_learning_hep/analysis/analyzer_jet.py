@@ -235,10 +235,12 @@ class AnalyzerJet(Analyzer):
         self.var1ranges.append(self.lpt_finbinmax[-1])
         self.var2ranges_reco = self.lvar2_binmin_reco.copy()
         self.var2ranges_reco.append(self.lvar2_binmax_reco[-1])
+        self.var2binarray_reco = array('d', self.var2ranges_reco)
         self.var2ranges_gen = self.lvar2_binmin_gen.copy()
         self.var2ranges_gen.append(self.lvar2_binmax_gen[-1])
         self.varshaperanges_reco = self.lvarshape_binmin_reco.copy()
         self.varshaperanges_reco.append(self.lvarshape_binmax_reco[-1])
+        self.varshapebinarray_reco = array('d', self.varshaperanges_reco)
         self.varshaperanges_gen = self.lvarshape_binmin_gen.copy()
         self.varshaperanges_gen.append(self.lvarshape_binmax_gen[-1])
         self.p_nevents = datap["analysis"][self.typean]["nevents"]
@@ -446,23 +448,11 @@ class AnalyzerJet(Analyzer):
             self.logger.fatal(make_message_notfound(path))
         fileouts.cd()
 
-        # These are the reconstructed level bins for jet pt and z values
-
-        zbin_reco = []
-        nzbin_reco = self.p_nbinshape_reco
-        zbin_reco = self.varshaperanges_reco
-        zbinarray_reco = array('d', zbin_reco)
-
-        jetptbin_reco = []
-        njetptbin_reco = self.p_nbin2_reco
-        jetptbin_reco = self.var2ranges_reco
-        jetptbinarray_reco = array('d', jetptbin_reco)
-
         # hzvsjetpt is going to be the side-band subtracted histogram of z vs
         # jet that is going to be filled after subtraction
 
-        hzvsjetpt = TH2F("hzvsjetpt", "", nzbin_reco, zbinarray_reco,
-                         njetptbin_reco, jetptbinarray_reco)
+        hzvsjetpt = TH2F("hzvsjetpt", "", self.p_nbinshape_reco, self.varshapebinarray_reco,
+                         self.p_nbin2_reco, self.var2binarray_reco)
         hzvsjetpt.Sumw2()
 
         # This is a loop over jet pt and over HF candidate pT
@@ -694,7 +684,7 @@ class AnalyzerJet(Analyzer):
                       (self.d_resultsallpdata, self.case, self.typean, self.v_var2_binning, \
                        self.lvar2_binmin_reco[imult], self.lvar2_binmax_reco[imult]))
 
-            for zbins in range(nzbin_reco):
+            for zbins in range(self.p_nbinshape_reco):
                 hzvsjetpt.SetBinContent(zbins+1, imult+1, hz.GetBinContent(zbins+1))
                 hzvsjetpt.SetBinError(zbins+1, imult+1, hz.GetBinError(zbins+1))
             hz.Scale(1.0/hz.Integral(1, -1))
@@ -748,6 +738,9 @@ class AnalyzerJet(Analyzer):
         powheg_input_file = TFile.Open(self.powheg_path_nonprompt)
         if not powheg_input_file:
             self.logger.fatal(make_message_notfound(self.powheg_path_nonprompt))
+
+        # TODO convert the trees in the input into df, create the histograms and fill them with the df, pylint: disable=fixme
+
         input_data = powheg_input_file.Get("fh3_feeddown_%s" % self.v_varshape_binning)
         if not input_data:
             self.logger.fatal(make_message_notfound("fh3_feeddown_%s" % self.v_varshape_binning, self.powheg_path_nonprompt))
@@ -1782,9 +1775,7 @@ class AnalyzerJet(Analyzer):
             draw_latex(latex)
             cunfolded_not_z.SaveAs("%s/cunfolded_not_z_%s.eps" % (self.d_resultsallpdata, suffix))
 
-            zbin_reco =self.varshaperanges_reco
-            zbinarray_reco=array('d',zbin_reco)
-            h_unfolded_not_stat_error=TH1F("h_unfolded_not_stat_error"+suffix,"h_unfolded_not_stat_error"+suffix, self.p_nbinshape_reco,zbinarray_reco)
+            h_unfolded_not_stat_error = TH1F("h_unfolded_not_stat_error"+suffix, "h_unfolded_not_stat_error"+suffix, self.p_nbinshape_reco, self.varshapebinarray_reco)
             for ibinshape in range(self.p_nbinshape_reco):
                 error_on_unfolded = unfolded_z_scaled_list[self.choice_iter_unfolding][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1].GetBinError(input_mc_gen.GetXaxis().FindBin(self.lvarshape_binmin_reco[ibinshape]))
                 content_on_unfolded = unfolded_z_scaled_list[self.choice_iter_unfolding][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1].GetBinContent(input_mc_gen.GetXaxis().FindBin(self.lvarshape_binmin_reco[ibinshape]))
