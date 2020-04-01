@@ -264,7 +264,7 @@ D0pp:
     inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
     dir_general_plots: /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/analysis_plots
 
-    jet_zg:
+    jet_zg: &jet_default
       proc_type: Dhadrons_jet
       useperiod: [1,1,1] #list of periods
 
@@ -296,22 +296,22 @@ D0pp:
         data: "trigger_hasbit_INT7==1"
         mc: null
         weighttrig: false
-      data: &data_out
+      data: &data_out_zg
         runselection: [null, null, null] #FIXME
         results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
                   /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
                   /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
         resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_data/resultsMBjetvspt
-      mc: &mc_out
+      mc: &mc_out_zg
         runselection: [null, null, null] #FIXME
         results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
                   /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
                   /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
         resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_mc_prodD2H/resultsMBjetvspt
       data_proc: # alternative processor output used as the analyzer input
-        <<: *data_out
+        <<: *data_out_zg
       mc_proc: # alternative processor output used as the analyzer input
-        <<: *mc_out
+        <<: *mc_out_zg
 
       mass_fit_lim: [1.72, 2.05] # histogram range of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
@@ -374,18 +374,7 @@ D0pp:
 
 
     jet_rg:
-      proc_type: Dhadrons_jet
-      useperiod: [1,1,1] #list of periods
-
-      latexnamemeson: "D^{0}"
-      latexnamedecay: "K^{#minus} #pi^{#plus}"
-
-      var_binning2: pt_jet
-      latexbin2var: "#it{p}_{T, jet}^{ch}"
-      sel_binmin2_reco: [5.0,7.0,15.0,30.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmax2_reco:      [7.0,15.0,30.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmin2_gen:  [5.0,7.0,15.0,30.0] # gen jet pt bins (sel_binmin2_gen bins)
-      sel_binmax2_gen:       [7.0,15.0,30.0,50.0] # gen jet pt bins (sel_binmin2_gen bins)
+      <<: *jet_default
       var_binningshape: rg_jet
       var_binningshape_gen: rg_gen_jet
       var_shape_latex: "#it{R}_{g}"
@@ -393,90 +382,22 @@ D0pp:
       sel_binmaxshape_reco:     [0.1,0.2,0.3,0.4,0.6]
       sel_binminshape_gen:  [0.0,0.1,0.2,0.3,0.4]
       sel_binmaxshape_gen:      [0.1,0.2,0.3,0.4,0.6]
-      sel_closure_frac: 0.2
-      triggerbit: INT7
-      sel_an_binmin:    [2,3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:      [3,4,5,6,7,8,10,12,16,24,36,48] # hadron pt bins (sel_an_binmin bins)
-      binning_matching:   [1,1,2,2,3,3, 4, 4, 5, 5, 6, 6] # mapping to skimming pt bins (sel_an_binmin bins)
-      jetsel_gen: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet)<0.5"
-      jetsel_reco: "abs(eta_jet)<0.5"
-      evtsel: is_ev_rej==0
-      triggersel:
-        data: "trigger_hasbit_INT7==1"
-        mc: null
-        weighttrig: false
-      data:
+      data: &data_out_rg
         runselection: [null, null, null] #FIXME
         results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
                   /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
                   /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
         resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_data/resultsMBjetvspt
-      mc:
+      mc: &mc_out_rg
         runselection: [null, null, null] #FIXME
         results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
                   /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
                   /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
         resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_mc_prodD2H/resultsMBjetvspt
-
-      mass_fit_lim: [1.72, 2.05] # histogram range of the invariant mass distribution [GeV/c^2]
-      bin_width: 0.001 # bin width of the invariant mass histogram
-
-      # simple fitter START
-      sgnfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
-      bkgfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
-      masspeak: 1.864
-      massmin: [1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
-      massmax: [2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
-      rebin: [6,6,6,6,6,6,6,6,6,6,6,6] # sel_an_binmin bins
-      fix_mean: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
-      fix_sigma: [true, true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
-      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # initial sigma (sel_an_binmin bins)
-      masspeaksec: 1.864
-      fix_sigmasec: [true, true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
-      sigmaarraysec: [0.007497,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # sel_an_binmin bins
-      # simple fitter END
-
-      signal_sigma: 2.0
-      sigma_scale: 0.9545
-      sideband_sigma_1_left: 4
-      sideband_sigma_2_left: 9
-      sideband_sigma_1_right: 4
-      sideband_sigma_2_right: 9
-      sidebandleftonly: false
-
-      niterunfolding: 15
-      niterunfoldingchosen: 4
-      niterunfoldingregdown: 3
-      niterunfoldingregup: 7
-
-      branching_ratio: 3.95e-2
-      xsection_inel: 57.8
-
-      doprior: false
-
-      powheg_path_prompt: /data/POWHEG/powheg_pr_histos_D0_central.root
-      powheg_path_nonprompt: /data/POWHEG/powheg_fd_histos_D0_central.root
-
-      powheg_prompt_variations_path: /data/POWHEG/powheg_pr_histos_D0_
-      powheg_prompt_variations: [] #["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
-
-      powheg_nonprompt_variations: ["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow","NoEvtGen"]
-
-      pythia8_prompt_variations_path: /data/PYTHIA8/pythia8_pr_histos_D0_
-      pythia8_prompt_variations: [] #["default","coloursoft_mode0"]
-      pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
-
-
-      systematic_categories: ["fitting", "cutvar", "powheg", "unfolding_prior", "regularisation"] #sideband 20
-      systematic_variations: [8, 17, 9, 1, 2]
-      systematic_correlation: ["corr", "corr", "corr", "corr", "corr", "corr"]
-      systematic_rms: [true,  true, true, true , true, true]
-      systematic_symmetrise: [true,  true, true, true , true, true]
-      systematic_rms_both_sides: [true,  true, true, true , true, true]
-
-      systematics_db: ./data/data_prod_20200304/database_systematics_D0pp.yml
-
-      nevents: 1590000000.
+      data_proc: # alternative processor output used as the analyzer input
+        <<: *data_out_rg
+      mc_proc: # alternative processor output used as the analyzer input
+        <<: *mc_out_rg
 
 
     #########################
