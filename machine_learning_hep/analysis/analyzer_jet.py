@@ -40,13 +40,69 @@ class AnalyzerJet(Analyzer):
     def __init__(self, datap, case, typean, period):
         super().__init__(datap, case, typean, period)
 
-        self.v_var_binning = datap["var_binning"]
-        self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
-        self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
-        self.p_nptfinbins = len(self.lpt_finbinmin)
-        self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
+        # machine learning
         self.lpt_probcutfin = datap["mlapplication"]["probcutoptimal"]
 
+        # normalisation
+        self.p_nevents = datap["analysis"][self.typean]["nevents"]
+        self.branching_ratio = \
+            datap["analysis"][self.typean].get("branching_ratio", None)
+        self.xsection_inel = \
+            datap["analysis"][self.typean].get("xsection_inel", None)
+
+        # plotting
+        # LaTeX string
+        self.p_latexnmeson = datap["analysis"][self.typean]["latexnamemeson"]
+        self.p_latexndecay = datap["analysis"][self.typean]["latexnamedecay"]
+        self.p_latexbin2var = datap["analysis"][self.typean]["latexbin2var"]
+        self.v_varshape_latex = datap["analysis"][self.typean]["var_shape_latex"]
+
+        # first variable (hadron pt)
+        self.v_var_binning = datap["var_binning"] # name
+        self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
+        self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
+        self.p_nptfinbins = len(self.lpt_finbinmin) # number of bins
+        self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
+        self.var1ranges = self.lpt_finbinmin.copy()
+        self.var1ranges.append(self.lpt_finbinmax[-1])
+        self.var1binarray = array('d', self.var1ranges) # array of bin edges to use in histogram constructors
+
+        # second variable (jet pt)
+        self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"] # name
+        self.lvar2_binmin_reco = datap["analysis"][self.typean].get("sel_binmin2_reco", None)
+        self.lvar2_binmax_reco = datap["analysis"][self.typean].get("sel_binmax2_reco", None)
+        self.p_nbin2_reco = len(self.lvar2_binmin_reco) # number of reco bins
+        self.lvar2_binmin_gen = datap["analysis"][self.typean].get("sel_binmin2_gen", None)
+        self.lvar2_binmax_gen = datap["analysis"][self.typean].get("sel_binmax2_gen", None)
+        self.p_nbin2_gen = len(self.lvar2_binmin_gen) # number of gen bins
+        self.var2ranges_reco = self.lvar2_binmin_reco.copy()
+        self.var2ranges_reco.append(self.lvar2_binmax_reco[-1])
+        self.var2binarray_reco = array('d', self.var2ranges_reco) # array of bin edges to use in histogram constructors
+        self.var2ranges_gen = self.lvar2_binmin_gen.copy()
+        self.var2ranges_gen.append(self.lvar2_binmax_gen[-1])
+        self.var2binarray_gen = array('d', self.var2ranges_gen) # array of bin edges to use in histogram constructors
+
+        # observable (z, shape,...)
+        self.v_varshape_binning = datap["analysis"][self.typean]["var_binningshape"] # name (reco)
+        self.v_varshape_binning_gen = datap["analysis"][self.typean]["var_binningshape_gen"] # name (gen)
+        self.lvarshape_binmin_reco = \
+            datap["analysis"][self.typean].get("sel_binminshape_reco", None)
+        self.lvarshape_binmax_reco = \
+            datap["analysis"][self.typean].get("sel_binmaxshape_reco", None)
+        self.p_nbinshape_reco = len(self.lvarshape_binmin_reco) # number of reco bins
+        self.lvarshape_binmin_gen = \
+            datap["analysis"][self.typean].get("sel_binminshape_gen", None)
+        self.lvarshape_binmax_gen = \
+            datap["analysis"][self.typean].get("sel_binmaxshape_gen", None)
+        self.p_nbinshape_gen = len(self.lvarshape_binmin_gen) # number of gen bins
+        self.varshaperanges_reco = self.lvarshape_binmin_reco.copy()
+        self.varshaperanges_reco.append(self.lvarshape_binmax_reco[-1])
+        self.varshapebinarray_reco = array('d', self.varshaperanges_reco) # array of bin edges to use in histogram constructors
+        self.varshaperanges_gen = self.lvarshape_binmin_gen.copy()
+        self.varshaperanges_gen.append(self.lvarshape_binmax_gen[-1])
+        self.varshapebinarray_gen = array('d', self.varshaperanges_gen) # array of bin edges to use in histogram constructors
+
+        # fitting
         self.p_sgnfunc = datap["analysis"][self.typean]["sgnfunc"]
         self.p_bkgfunc = datap["analysis"][self.typean]["bkgfunc"]
         self.p_masspeak = datap["analysis"][self.typean]["masspeak"]
@@ -55,7 +111,6 @@ class AnalyzerJet(Analyzer):
         self.p_rebin = datap["analysis"][self.typean]["rebin"]
         self.p_fix_mean = datap["analysis"][self.typean]["fix_mean"]
         self.p_fix_sigma = datap["analysis"][self.typean]["fix_sigma"]
-
         self.p_sigmaarray = datap["analysis"][self.typean]["sigmaarray"]
         self.p_masspeaksec = None
         self.p_fix_sigmasec = None
@@ -65,41 +120,7 @@ class AnalyzerJet(Analyzer):
             self.p_fix_sigmasec = datap["analysis"][self.typean]["fix_sigmasec"]
             self.p_sigmaarraysec = datap["analysis"][self.typean]["sigmaarraysec"]
 
-        self.fitter = None
-
-        # second variable (jet pt)
-        self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"] # name
-        self.lvar2_binmin_reco = datap["analysis"][self.typean].get("sel_binmin2_reco", None)
-        self.lvar2_binmax_reco = datap["analysis"][self.typean].get("sel_binmax2_reco", None)
-        self.p_nbin2_reco = len(self.lvar2_binmin_reco)
-        self.lvar2_binmin_gen = datap["analysis"][self.typean].get("sel_binmin2_gen", None)
-        self.lvar2_binmax_gen = datap["analysis"][self.typean].get("sel_binmax2_gen", None)
-        self.p_nbin2_gen = len(self.lvar2_binmin_gen)
-
-        # observable (z, shape,...)
-        self.v_varshape_binning = datap["analysis"][self.typean]["var_binningshape"] # name (reco)
-        self.v_varshape_binning_gen = datap["analysis"][self.typean]["var_binningshape_gen"] # name (gen)
-        self.v_varshape_latex = datap["analysis"][self.typean]["var_shape_latex"] # LaTeX name
-        self.lvarshape_binmin_reco = \
-            datap["analysis"][self.typean].get("sel_binminshape_reco", None)
-        self.lvarshape_binmax_reco = \
-            datap["analysis"][self.typean].get("sel_binmaxshape_reco", None)
-        self.p_nbinshape_reco = len(self.lvarshape_binmin_reco)
-        self.lvarshape_binmin_gen = \
-            datap["analysis"][self.typean].get("sel_binminshape_gen", None)
-        self.lvarshape_binmax_gen = \
-            datap["analysis"][self.typean].get("sel_binmaxshape_gen", None)
-        self.p_nbinshape_gen = len(self.lvarshape_binmin_gen)
-
-        self.niter_unfolding = \
-            datap["analysis"][self.typean].get("niterunfolding", None)
-        self.choice_iter_unfolding = \
-            datap["analysis"][self.typean].get("niterunfoldingchosen", None)
-        self.niterunfoldingregup = \
-            datap["analysis"][self.typean].get("niterunfoldingregup", None)
-        self.niterunfoldingregdown = \
-            datap["analysis"][self.typean].get("niterunfoldingregdown", None)
-
+        # side-band subtraction
         self.signal_sigma = \
             datap["analysis"][self.typean].get("signal_sigma", None)
         self.sideband_sigma_1_left = \
@@ -115,26 +136,43 @@ class AnalyzerJet(Analyzer):
         self.sidebandleftonly = \
             datap["analysis"][self.typean].get("sidebandleftonly", None)
 
-        self.powheg_path_prompt = \
-            datap["analysis"][self.typean].get("powheg_path_prompt", None)
+        # feed-down
         self.powheg_path_nonprompt = \
             datap["analysis"][self.typean].get("powheg_path_nonprompt", None)
+        # systematics variations
+        # overwritten in case a variation database is present
+        self.powheg_nonprompt_varnames = \
+            datap["analysis"][self.typean].get("powheg_nonprompt_variations", None)
 
+        # models to compare with
+        # POWHEG + PYTHIA 6
+        self.powheg_path_prompt = \
+            datap["analysis"][self.typean].get("powheg_path_prompt", None)
         self.powheg_prompt_variations = \
             datap["analysis"][self.typean].get("powheg_prompt_variations", None)
         self.powheg_prompt_variations_path = \
             datap["analysis"][self.typean].get("powheg_prompt_variations_path", None)
-
-        self.powheg_nonprompt_varnames = \
-            datap["analysis"][self.typean].get("powheg_nonprompt_variations", None)
-
-        self.pythia8_prompt_variations = \
-            datap["analysis"][self.typean].get("pythia8_prompt_variations", None)
+        # PYTHIA 8
         self.pythia8_prompt_variations_path = \
             datap["analysis"][self.typean].get("pythia8_prompt_variations_path", None)
+        self.pythia8_prompt_variations = \
+            datap["analysis"][self.typean].get("pythia8_prompt_variations", None)
         self.pythia8_prompt_variations_legend = \
             datap["analysis"][self.typean].get("pythia8_prompt_variations_legend", None)
 
+        # unfolding
+        self.niter_unfolding = \
+            datap["analysis"][self.typean].get("niterunfolding", None)
+        self.choice_iter_unfolding = \
+            datap["analysis"][self.typean].get("niterunfoldingchosen", None)
+        # regularisation variations
+        self.niterunfoldingregup = \
+            datap["analysis"][self.typean].get("niterunfoldingregup", None)
+        self.niterunfoldingregdown = \
+            datap["analysis"][self.typean].get("niterunfoldingregdown", None)
+
+        # systematics
+        # overwritten in case a variation database is present
         self.systematic_catnames = \
             datap["analysis"][self.typean].get("systematic_categories", None)
         self.systematic_variations = \
@@ -152,6 +190,7 @@ class AnalyzerJet(Analyzer):
         self.systematic_varnames = [["sys_%d" % (var + 1) for var in range(self.systematic_variations[cat])] for cat in range(self.n_sys_cat)]
         self.systematic_varlabels = self.systematic_varnames
 
+        # import parameters of variations from the variation database
         path_sys_db = datap["analysis"][self.typean].get("systematics_db", None)
         if path_sys_db: # pylint:disable=too-many-nested-blocks
             with open(path_sys_db, 'r') as file_sys:
@@ -190,23 +229,20 @@ class AnalyzerJet(Analyzer):
                 self.systematic_symmetrise[c] = db_sys[catname]["symmetrise"]
                 self.systematic_rms_both_sides[c] = db_sys[catname]["rms_both_sides"]
 
-        self.branching_ratio = \
-            datap["analysis"][self.typean].get("branching_ratio", None)
-        self.xsection_inel = \
-            datap["analysis"][self.typean].get("xsection_inel", None)
-
-        # Output directories
+        # output directories
         self.d_resultsallpmc = datap["analysis"][typean]["mc"]["results"][period] \
                 if period is not None else datap["analysis"][typean]["mc"]["resultsallp"]
         self.d_resultsallpdata = datap["analysis"][typean]["data"]["results"][period] \
                 if period is not None else datap["analysis"][typean]["data"]["resultsallp"]
+        # create otput directories in case they do not exist
         for dir_out in [self.d_resultsallpmc, self.d_resultsallpdata]:
             if not os.path.exists(dir_out):
                 checkmakedir(dir_out)
 
-        # Input directories (processor output)
+        # input directories (processor output)
         self.d_resultsallpmc_proc = self.d_resultsallpmc
         self.d_resultsallpdata_proc = self.d_resultsallpdata
+        # use a different processor output
         if "data_proc" in datap["analysis"][typean]:
             self.d_resultsallpdata_proc = datap["analysis"][typean]["data_proc"]["results"][period] \
                     if period is not None else datap["analysis"][typean]["data_proc"]["resultsallp"]
@@ -214,44 +250,24 @@ class AnalyzerJet(Analyzer):
             self.d_resultsallpmc_proc = datap["analysis"][typean]["mc_proc"]["results"][period] \
                 if period is not None else datap["analysis"][typean]["mc_proc"]["resultsallp"]
 
-        # Input files
+        # input files
         n_filemass_name = datap["files_names"]["histofilename"]
         self.n_filemass = os.path.join(self.d_resultsallpdata_proc, n_filemass_name)
         self.n_filemass_mc = os.path.join(self.d_resultsallpmc_proc, n_filemass_name)
         self.n_fileff = datap["files_names"]["efffilename"]
         self.n_fileff = os.path.join(self.d_resultsallpmc_proc, self.n_fileff)
 
-        # Output filenames
+        # output filenames
         self.yields_filename = "yields"
         self.fits_dirname = "fits"
         self.yields_syst_filename = "yields_syst"
         self.efficiency_filename = "efficiencies"
         self.sideband_subtracted_filename = "sideband_subtracted"
 
-        self.p_latexnmeson = datap["analysis"][self.typean]["latexnamemeson"]
-        self.p_latexndecay = datap["analysis"][self.typean]["latexnamedecay"]
-        self.p_latexbin2var = datap["analysis"][self.typean]["latexbin2var"]
-        self.var1ranges = self.lpt_finbinmin.copy()
-        self.var1ranges.append(self.lpt_finbinmax[-1])
-        self.var2ranges_reco = self.lvar2_binmin_reco.copy()
-        self.var2ranges_reco.append(self.lvar2_binmax_reco[-1])
-        self.var2binarray_reco = array('d', self.var2ranges_reco)
-        self.var2ranges_gen = self.lvar2_binmin_gen.copy()
-        self.var2ranges_gen.append(self.lvar2_binmax_gen[-1])
-        self.varshaperanges_reco = self.lvarshape_binmin_reco.copy()
-        self.varshaperanges_reco.append(self.lvarshape_binmax_reco[-1])
-        self.varshapebinarray_reco = array('d', self.varshaperanges_reco)
-        self.varshaperanges_gen = self.lvarshape_binmin_gen.copy()
-        self.varshaperanges_gen.append(self.lvarshape_binmax_gen[-1])
-        self.p_nevents = datap["analysis"][self.typean]["nevents"]
-
         # Save the database in the results directory.
         path_db_out = os.path.join(self.d_resultsallpdata, "database_%s_%s.yml" % (self.case, self.typean))
         with open(path_db_out, 'w') as file_db_out:
             yaml.safe_dump(datap, file_db_out, default_flow_style=False)
-
-        # Fitting
-        self.fitter = None
 
     def fit(self):
         tmp_is_root_batch = gROOT.IsBatch()
