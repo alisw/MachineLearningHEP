@@ -336,10 +336,13 @@ def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-
 
     # Delete the created database files.
     if clean:
-        print("\nDeleting database files:")
-        for fil in new_files_db:
-            print(fil)
-            os.remove(fil)
+        if analysis:
+            print("\nSkipping deleting right after starting the analysis.")
+        else:
+            print("\nDeleting database files:")
+            for fil in new_files_db:
+                print(fil)
+                os.remove(fil)
 
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(description="Run the analysis with " \
