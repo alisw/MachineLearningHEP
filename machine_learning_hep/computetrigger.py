@@ -102,7 +102,7 @@ hempty.GetXaxis().SetTitle("n_tracklets_corr")
 hempty.GetYaxis().SetTitle("Efficiency")
 funcnorm.Draw("same")
 funcnormd.Draw("same")
-line = TLine(60,0,60,1);
+line = TLine(60, 0, 60, 1)
 line.SetLineStyle(2)
 line.Draw("same")
 ctrigger.SaveAs("SPDtrigger.pdf")
@@ -119,4 +119,3 @@ hratiod.Write()
 funcd.SetName("funcdSPDvspt_ntrkl")
 funcd.Write()
 funcnormd.Write()
-
