@@ -435,6 +435,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                                              None, [self.case, self.typean])
         gROOT.LoadMacro("HFPtSpectrum.C")
         from ROOT import HFPtSpectrum, HFPtSpectrum2, HFPtSpectrumRescaled
+        histonorm = TH1F("histonorm", "histonorm", self.p_nbin2, 0, self.p_nbin2)
         for imult in range(self.p_nbin2):
             bineff = -1
             if self.p_bineff is None:
@@ -462,6 +463,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             norm = self.calculate_norm(hsel, hnovtx, hvtxout,
                                        self.lvar2_binmin[imult],
                                        self.lvar2_binmax[imult])
+            histonorm.SetBinContent(imult + 1, norm)
             # pylint: disable=logging-not-lazy
             self.logger.warning("Number of events %d for mult bin %d" % (norm, imult))
             filecrossmb = None
@@ -515,6 +517,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             hcross.SetName("histoSigmaCorr%d" % imult)
             fileoutcrosstot.cd()
             hcross.Write()
+        histonorm.Write()
         fileoutcrosstot.Close()
 
         if self.p_nbx2:

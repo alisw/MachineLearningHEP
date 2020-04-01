@@ -158,9 +158,12 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 df = df.query(self.s_evtsel)
             if self.s_trigger is not None:
                 df = df.query(self.s_trigger)
-            list_df_recodtrig.append(df)
+            if self.runlistrigger is not None:
+                df = selectdfrunlist(df, \
+                    self.run_param[self.runlistrigger], "run_number")
             if self.doml is True:
                 df = df.query(self.l_selml[bin_id])
+            list_df_recodtrig.append(df)
             df = seldf_singlevar(df, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
             for ibin2 in range(len(self.lvar2_binmin)):
@@ -174,9 +177,6 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                                         self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 df_bin = seldf_singlevar_inclusive(df, self.v_var2_binning, \
                                          self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
-                if self.runlistrigger is not None:
-                    df_bin = selectdfrunlist(df_bin, \
-                             self.run_param[self.runlistrigger], "run_number")
                 fill_hist(h_invmass, df_bin.inv_mass)
                 if self.apply_weights is True and self.mcordata == "data":
                     weights = evaluate(self.weightfunc, df_bin[self.v_var2_binning_gen])
@@ -203,6 +203,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
 
         if self.performtriggerturn is True:
             df_recodtrig = pd.concat(list_df_recodtrig)
+            #df_recodtrig = df_recodtrig.query("inv_mass>1.7 and inv_mass<2.05")
             dfevtwithd = pd.merge(dfevtevtsel, df_recodtrig, on=self.v_evtmatch)
             label = "h%s" % self.v_var2_binning_gen
             histomult = TH1F(label, label, self.nbinshisto,
