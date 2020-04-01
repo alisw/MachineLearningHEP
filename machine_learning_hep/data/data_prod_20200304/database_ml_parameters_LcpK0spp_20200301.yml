@@ -538,7 +538,7 @@ LcpK0spp:
         consider_free_sigma: [False, False, False, False, False, False]
 
 
-    SPDvspt_ntrklt:
+    SPDvspt_ntrkl:
       proc_type: Dhadrons_mult
       useperiod: [0,0,1]
       plotbin: [0,0,0,0,1]
