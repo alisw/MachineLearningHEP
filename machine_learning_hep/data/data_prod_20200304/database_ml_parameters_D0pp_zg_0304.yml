@@ -349,16 +349,16 @@ D0pp:
 
       doprior: false
 
-      powheg_path_prompt: /data/POWHEG/powheg_pr_histos_D0_central.root
-      powheg_path_nonprompt: /data/POWHEG/powheg_fd_histos_D0_central.root
+      powheg_path_prompt: /data/POWHEG/trees_powheg_pr_central.root
+      powheg_path_nonprompt: /data/POWHEG/trees_powheg_fd_central.root
 
-      powheg_prompt_variations_path: /data/POWHEG/powheg_pr_histos_D0_
-      powheg_prompt_variations: [] #["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
+      powheg_prompt_variations_path: /data/POWHEG/trees_powheg_pr_
+      powheg_prompt_variations: ["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
 
-      powheg_nonprompt_variations: ["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow","NoEvtGen"]
+      powheg_nonprompt_variations: [] # ["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow","NoEvtGen"]
 
-      pythia8_prompt_variations_path: /data/PYTHIA8/pythia8_pr_histos_D0_
-      pythia8_prompt_variations: [] #["default","coloursoft_mode0"]
+      pythia8_prompt_variations_path: /data/PYTHIA8/trees_pythia8_pr_
+      pythia8_prompt_variations: ["default","coloursoft_mode0"]
       pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
 
       systematic_categories: ["fitting", "cutvar", "powheg", "unfolding_prior", "regularisation"] #sideband 20

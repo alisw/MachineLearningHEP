@@ -138,15 +138,15 @@ categories:
                     analysis:
                         jet_zg:
                             powheg_path_nonprompt:
-                                - /data/POWHEG/powheg_fd_histos_D0_F1_R05.root
-                                - /data/POWHEG/powheg_fd_histos_D0_F05_R1.root
-                                - /data/POWHEG/powheg_fd_histos_D0_F2_R1.root
-                                - /data/POWHEG/powheg_fd_histos_D0_F1_R2.root
-                                - /data/POWHEG/powheg_fd_histos_D0_F2_R2.root
-                                - /data/POWHEG/powheg_fd_histos_D0_F05_R05.root
-                                - /data/POWHEG/powheg_fd_histos_D0_Mhigh.root
-                                - /data/POWHEG/powheg_fd_histos_D0_Mlow.root
-                                - /data/POWHEG/powheg_fd_histos_D0_NoEvtGen.root
+                                - /data/POWHEG/trees_powheg_fd_F1_R05.root
+                                - /data/POWHEG/trees_powheg_fd_F05_R1.root
+                                - /data/POWHEG/trees_powheg_fd_F2_R1.root
+                                - /data/POWHEG/trees_powheg_fd_F1_R2.root
+                                - /data/POWHEG/trees_powheg_fd_F2_R2.root
+                                - /data/POWHEG/trees_powheg_fd_F05_R05.root
+                                - /data/POWHEG/trees_powheg_fd_Mhigh.root
+                                - /data/POWHEG/trees_powheg_fd_Mlow.root
+                                - /data/POWHEG/trees_powheg_fd_NoEvtGen.root
     unfolding:
         activate: no
         processor: true
