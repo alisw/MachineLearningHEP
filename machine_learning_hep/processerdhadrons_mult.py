@@ -31,6 +31,7 @@ from machine_learning_hep.utilities import get_timestamp_string
 #from machine_learning_hep.globalfitter import fitter
 from machine_learning_hep.processer import Processer
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
+from machine_learning_hep.utilities_validation import fillvalidationvsmult
 
 class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-attributes, invalid-name
     # Class Attribute
@@ -56,7 +57,6 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         self.l_selml = ["y_test_prob%s>%s" % (self.p_modelname, self.lpt_probcutfin[ipt]) \
                        for ipt in range(self.p_nptbins)]
         self.s_presel_gen_eff = datap["analysis"][self.typean]['presel_gen_eff']
-
         self.lvar2_binmin = datap["analysis"][self.typean]["sel_binmin2"]
         self.lvar2_binmax = datap["analysis"][self.typean]["sel_binmax2"]
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
@@ -88,6 +88,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         self.nbinshisto = datap["analysis"][self.typean]["nbinshisto"]
         self.minvaluehisto = datap["analysis"][self.typean]["minvaluehisto"]
         self.maxvaluehisto = datap["analysis"][self.typean]["maxvaluehisto"]
+        self.mass = datap["mass"]
 
     def gethistonormforselevt_mult(self, df_evt, dfevtevtsel, label, var, weightfunc=None):
 
@@ -121,16 +122,39 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
             fill_hist(hVtxOutMult, df_bit_zvtx_gr10[var])
 
         return hSelMult, hNoVtxMult, hVtxOutMult
-    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-branches, too-many-locals
     def process_histomass_single(self, index):
         myfile = TFile.Open(self.l_histomass[index], "recreate")
         dfevtorig = pickle.load(openfile(self.l_evtorig[index], "rb"))
+        neventsorig = len(dfevtorig)
         if self.s_trigger is not None:
             dfevtorig = dfevtorig.query(self.s_trigger)
+        neventsaftertrigger = len(dfevtorig)
         if self.runlistrigger is not None:
             dfevtorig = selectdfrunlist(dfevtorig, \
                              self.run_param[self.runlistrigger], "run_number")
+        neventsafterrunsel = len(dfevtorig)
         dfevtevtsel = dfevtorig.query(self.s_evtsel)
+
+        #validation plot for event selection
+        neventsafterevtsel = len(dfevtevtsel)
+        histonorm = TH1F("histonorm", "histonorm", 10, 0, 10)
+        histonorm.SetBinContent(1, neventsorig)
+        histonorm.GetXaxis().SetBinLabel(1, "tot events")
+        histonorm.SetBinContent(2, neventsaftertrigger)
+        histonorm.GetXaxis().SetBinLabel(2, "tot events after trigger")
+        histonorm.SetBinContent(3, neventsafterrunsel)
+        histonorm.GetXaxis().SetBinLabel(3, "tot events after run sel")
+        histonorm.SetBinContent(4, neventsafterevtsel)
+        histonorm.GetXaxis().SetBinLabel(4, "tot events after evt sel")
+        for ibin2 in range(len(self.lvar2_binmin)):
+            binneddf = seldf_singlevar_inclusive(dfevtevtsel, self.v_var2_binning_gen, \
+                self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+            histonorm.SetBinContent(5 + ibin2, len(binneddf))
+            histonorm.GetXaxis().SetBinLabel(5 + ibin2, \
+                        "tot events after mult sel %d - %d" % \
+                        (self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2]))
+        histonorm.Write()
         labeltrigger = "hbit%svs%s" % (self.triggerbit, self.v_var2_binning_gen)
 
         myfile.cd()
@@ -203,7 +227,8 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
 
         if self.performtriggerturn is True:
             df_recodtrig = pd.concat(list_df_recodtrig)
-            #df_recodtrig = df_recodtrig.query("inv_mass>1.7 and inv_mass<2.05")
+            df_recodtrig = df_recodtrig.query("inv_mass>%f and inv_mass<%f" % \
+                                              (self.mass - 0.15, self.mass + 0.15))
             dfevtwithd = pd.merge(dfevtevtsel, df_recodtrig, on=self.v_evtmatch)
             label = "h%s" % self.v_var2_binning_gen
             histomult = TH1F(label, label, self.nbinshisto,
@@ -215,7 +240,9 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                                   self.minvaluehisto, self.maxvaluehisto)
             fill_hist(histomultwithd, dfevtwithd["%s_x" % self.v_var2_binning_gen])
             histomultwithd.Write()
-
+            valhistolist = fillvalidationvsmult(dfevtorig, dfevtevtsel, df_recodtrig)
+            for histo in valhistolist:
+                histo.Write()
     def process_histomass(self):
         print("Doing masshisto", self.mcordata, self.period)
         print("Using run selection for mass histo", \
