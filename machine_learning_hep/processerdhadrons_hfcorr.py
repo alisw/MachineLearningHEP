@@ -88,12 +88,12 @@ class ProcesserDhadrons_hfcorr(Processer):
                  d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
-                 d_results, d_val, typean, runlisttrigger, d_mcreweights):
+                 d_results, typean, runlisttrigger, d_mcreweights):
         super().__init__(case, datap, run_param, mcordata, p_maxfiles,
                          d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
                          p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                          p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
-                         d_results, d_val, typean, runlisttrigger, d_mcreweights)
+                         d_results, typean, runlisttrigger, d_mcreweights)
 
         self.p_mass_fit_lim = datap["analysis"][self.typean]['mass_fit_lim']
         self.p_delta_phi_lim = datap["analysis"][self.typean]['delta_phi_lim']
@@ -150,8 +150,9 @@ class ProcesserDhadrons_hfcorr(Processer):
         dfevtorig = pickle.load(openfile(self.l_evtorig[index], "rb"))
         if self.s_trigger is not None:
             dfevtorig = dfevtorig.query(self.s_trigger)
-        dfevtorig = selectdfrunlist(dfevtorig, \
-                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
+        if self.runlistrigger is not None:
+            dfevtorig = selectdfrunlist(dfevtorig, \
+                             self.run_param[self.runlistrigger], "run_number")
         hNorm = TH1F("hEvForNorm", "hEvForNorm", 2, 0.5, 2.5)
         hNorm.GetXaxis().SetBinLabel(1, "normsalisation factor")
         hNorm.GetXaxis().SetBinLabel(2, "selected events")
@@ -169,7 +170,7 @@ class ProcesserDhadrons_hfcorr(Processer):
             print("ipt iteration", ipt)
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
-            print("df loded")
+            print("df loaded", df.shape)
             df_no_cut = df
             if self.doml is True:
                 df = df.query(self.l_selml[bin_id])
@@ -181,8 +182,9 @@ class ProcesserDhadrons_hfcorr(Processer):
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
             suffix = "%s%d_%d" % \
                      (self.v_var_binning, self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-            df = selectdfrunlist(df, \
-                     self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
+            if self.runlistrigger is not None:
+                df = selectdfrunlist(df, \
+                         self.run_param[self.runlistrigger], "run_number")
             h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins, self.p_mass_fit_lim[0],
                              self.p_mass_fit_lim[1])
             fill_hist(h_invmass, df.inv_mass)

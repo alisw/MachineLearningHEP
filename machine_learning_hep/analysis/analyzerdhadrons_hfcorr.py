@@ -45,7 +45,8 @@ from machine_learning_hep.analysis.analyzer import Analyzer
 
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
 # pylint: disable=invalid-name, too-many-arguments
-# pylint: disable line-too-long
+# pylint: disable=line-too-long, too-many-locals
+
 class AnalyzerDhadrons_hfcorr(Analyzer):
     species = "analyzer"
     def __init__(self, datap, case, typean, period):
@@ -136,33 +137,6 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
         extension = extension.replace(".", "")
         return os.path.join(directory, filename + "." + extension)
 
-#    @staticmethod
-#    def fit_func_eval(wspace, x, y):
-#        p0 = float(re.findall("\d+\.\d+", str(wspace.var("mean_1")))[0])
-#        p1 = float(re.findall("\d+\.\d+", str(wspace.var("mean_2")))[0])
-#        p2 = float(re.findall("\d+\.\d+", str(wspace.var("wid_1")))[0])
-#        p3 = float(re.findall("\d+\.\d+", str(wspace.var("wid_2")))[0])
-#        p4 = float(re.findall("\d+\.\d+", str(wspace.var("p1_1")))[0])
-#        p5 = float(re.findall("\d+\.\d+", str(wspace.var("p1_2")))[0])
-#        p6 = float(re.findall("\d+\.\d+", str(wspace.var("p1_3")))[0])
-#        p7 = float(re.findall("\d+\.\d+", str(wspace.var("p2_1")))[0])
-#        p8 = float(re.findall("\d+\.\d+", str(wspace.var("p2_2")))[0])
-#        p9 = float(re.findall("\d+\.\d+", str(wspace.var("p2_3")))[0])
-#        p10 = float(re.findall("\d+\.\d+", str(wspace.var("f0")))[0])
-#        p11 = float(re.findall("\d+\.\d+", str(wspace.var("f1")))[0])
-#        p12 = float(re.findall("\d+\.\d+", str(wspace.var("f2")))[0])
-#        p13 = float(re.findall("\d+\.\d+", str(wspace.var("f3")))[0])
-#        gauss = (np.exp(-0.5*((x - p0)/p2)**2))
-#        pol = (p4 + p5*x + p6*x**2)
-#        gauss_not = (np.exp(-0.5*((y - p1)/p3)**2))
-#        pol_not = (p7 + p8*y + p9*y**2)
-#        fit_func = (p10*gauss*gauss_not +
-#                    p11*gauss*pol_not +
-#                    p12*pol*gauss_not +
-#                    p13*pol*pol_not)
-#        return fit_func
-
-
     def min_par_fit(self, p1_0, p1_1, p1_2, p2_0, p2_1, p2_2, p3_0, p3_1, p3_2, p4_0,
                     p4_1, p4_2): # PDF function for 2d ROOT fit with 4 parameters
         gauss = "(%f*exp(-0.5*((x - %f)/%f)**2))" % (p1_0, p1_1, p1_2)
@@ -237,7 +211,6 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
         fit_params = [num_sigsig, num_sigbkg, num_bkgsig, num_bkgbkg]
         return set_params, fit_params
 
-# pylint: disable line-too-long
     def ub_model(self, ismc, w): # RooFit model for unbinned 2d fit
         print("creating UB model, Monte_carlo status:", ismc)
         set_params, fit_params = self.fit_tmp()
@@ -253,14 +226,14 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
             lim_low4 = 5000
         else:
             par_1 = 1000
-            par_2 = 100000
-            par_3 = 100000
-            par_4 = 100000
-            lim_1 = 20000
-            lim_2 = 900000
-            lim_3 = 900000
-            lim_4 = 6000000
-            lim_low4 = 40000
+            par_2 = 10000
+            par_3 = 10000
+            par_4 = 10000
+            lim_1 = 10000
+            lim_2 = 100000
+            lim_3 = 100000
+            lim_4 = 800000
+            lim_low4 = 5000
 
         w.factory("Gaussian::sig1(x[%f,%f], mean_1[1.867,1.83, 1.9], wid_1[0.012, 0.01,0.03])" %
                   (self.p_mass_fit_lim[0], self.p_mass_fit_lim[1]))
@@ -298,7 +271,6 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
                     #    break
         return dfreco_full
 
-# pylint: disable too-many-locals
     def ubfit(self): #unbinned fit processing
         fitdir = str(self.fitpath)
         os.chdir(fitdir)

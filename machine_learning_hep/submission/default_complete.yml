@@ -44,17 +44,16 @@ ml_study: # mlout, mlplot
 
 mlapplication:
   data:
-
     doapply: false # pkl_skimmed_dec (pklskdec)
     domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged)
-    docontinueafterstop: false # set to true to resume interrupted processing (existing corrupted output will be overwritten)
+    docontinueafterstop: true # set to true to resume interrupted processing (existing corrupted output will be overwritten)
   mc:
     doapply: false # pkl_skimmed_dec (pklskdec)
     domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged)
-    docontinueafterstop: false # set to true to resume interrupted processing (existing corrupted output will be overwritten)
+    docontinueafterstop: true # set to true to resume interrupted processing (existing corrupted output will be overwritten)
 
 analysis:
-  type: YYYY # used unless specified explicitly as do_entire_analysis -a type_ana
+  type: MBvspt_hfcorr # used unless specified explicitly as do_entire_analysis -a type_ana
   # Do each period separately including merged (true)
   # Do only merged (false)
   doperperiod: false
@@ -62,14 +61,14 @@ analysis:
     histomass: false # processer: process_histomass
     dojetsystematics: false # analyzer: jetsystematics
   mc:
-    histomass: true # processer: process_histomass
-    efficiency: true # processer: process_efficiency, process_response, process_unfolding
-    feeddown: true # analyzer: feeddown
-    dounfolding: true # analyzer: unfolding, unfolding_closure
-  dofit: false # analyzer: fit
+    histomass: false # processer: process_histomass
+    efficiency: false # processer: process_efficiency, process_response, process_unfolding
+    feeddown: false # analyzer: feeddown
+    dounfolding: false # analyzer: unfolding, unfolding_closure
+  dofit: true # analyzer: fit
   # Control the yield systematic uncertainty
   dosyst: false # analyzer: yield_syst
-  dojetstudies: true # analyzer: fit, efficiency, side_band_sub
+  dojetstudies: false # analyzer: fit, efficiency, side_band_sub
   doeff: false # analyzer: efficiency
   docross: false # analyzer: makenormyields
   doplots: false # analyzer: plotternormyields
