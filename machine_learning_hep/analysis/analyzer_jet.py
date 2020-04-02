@@ -19,8 +19,10 @@ main script for doing final stage analysis
 import os
 from math import sqrt
 from array import array
+import numpy as np
 import yaml
 # pylint: disable=import-error, no-name-in-module
+import uproot
 from ROOT import TFile, TH1F, TH2F, TCanvas, TPad, TLatex, TGraphAsymmErrors
 from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
 from ROOT import TLegend
@@ -33,6 +35,9 @@ from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.utilities import setup_histogram, setup_pad
 from machine_learning_hep.utilities import setup_legend, setup_tgraph, draw_latex, tg_sys
 from machine_learning_hep.do_systematics import healthy_structure, format_varname, format_varlabel
+from machine_learning_hep.utilities_plot import makefill2dhist, makefill3dhist
+from machine_learning_hep.selectionutils import selectfidacc
+from machine_learning_hep.utilities import seldf_singlevar
 
 # pylint: disable=too-many-instance-attributes, too-many-statements
 class AnalyzerJet(Analyzer):
@@ -751,15 +756,17 @@ class AnalyzerJet(Analyzer):
         # fh3_feeddown is 3d histogram from powheg+pythia prediction that
         # contains z vs jet_pt vs HF pt.
 
-        powheg_input_file = TFile.Open(self.powheg_path_nonprompt)
-        if not powheg_input_file:
-            self.logger.fatal(make_message_notfound(self.powheg_path_nonprompt))
+        #powheg_input_file = TFile.Open(self.powheg_path_nonprompt)
+        #if not powheg_input_file:
+        #    self.logger.fatal(make_message_notfound(self.powheg_path_nonprompt))
+        #input_data = powheg_input_file.Get("fh3_feeddown_%s" % self.v_varshape_binning)
+        #if not input_data:
+        #    self.logger.fatal(make_message_notfound("fh3_feeddown_%s" % self.v_varshape_binning, self.powheg_path_nonprompt))
 
-        # TODO convert the trees in the input into df, create the histograms and fill them with the df, pylint: disable=fixme
-
-        input_data = powheg_input_file.Get("fh3_feeddown_%s" % self.v_varshape_binning)
+        input_data = self.get_simulated_yields(self.powheg_path_nonprompt, 3, False)
         if not input_data:
-            self.logger.fatal(make_message_notfound("fh3_feeddown_%s" % self.v_varshape_binning, self.powheg_path_nonprompt))
+            self.logger.fatal("Error: Failed to get simulated yields from %s", self.powheg_path_nonprompt)
+
         # Ensure correct binning: x - shape, y - jet pt, z - pt hadron
         if not equal_binning_lists(input_data, list_x = self.varshaperanges_gen):
             self.logger.fatal("Error: Incorrect binning in x.")
@@ -767,6 +774,9 @@ class AnalyzerJet(Analyzer):
             self.logger.fatal("Error: Incorrect binning in y.")
         if not equal_binning_lists(input_data, list_z = self.var1ranges):
             self.logger.fatal("Error: Incorrect binning in z.")
+
+        fileouts.cd()
+        input_data.Write()
 
         # output_template is the reco jet pt vs z for candidates in the reco
         # min-max region
@@ -1264,15 +1274,20 @@ class AnalyzerJet(Analyzer):
 
         input_data_jetpt=input_data.ProjectionY("input_data_jetpt",1, self.p_nbinshape_reco,"e")
 
-        input_powheg_file = TFile.Open(self.powheg_path_prompt)
-        if not input_powheg_file:
-            self.logger.fatal(make_message_notfound(self.powheg_path_prompt))
-        input_powheg = input_powheg_file.Get("fh2_prompt_%s" % self.v_varshape_binning)
+        #input_powheg_file = TFile.Open(self.powheg_path_prompt)
+        #if not input_powheg_file:
+        #    self.logger.fatal(make_message_notfound(self.powheg_path_prompt))
+        #input_powheg = input_powheg_file.Get("fh2_prompt_%s" % self.v_varshape_binning)
+        #if not input_powheg:
+        #    self.logger.fatal(make_message_notfound("fh2_prompt_%s" % self.v_varshape_binning, self.powheg_path_prompt))
+        #input_powheg_xsection = input_powheg_file.Get("fh2_prompt_xsection_%s" % self.v_varshape_binning)
+        #if not input_powheg_xsection:
+        #    self.logger.fatal(make_message_notfound("fh2_prompt_xsection_%s" % self.v_varshape_binning, self.powheg_path_prompt))
+
+        input_powheg = self.get_simulated_yields(self.powheg_path_prompt, 2, True)
         if not input_powheg:
-            self.logger.fatal(make_message_notfound("fh2_prompt_%s" % self.v_varshape_binning, self.powheg_path_prompt))
-        input_powheg_xsection = input_powheg_file.Get("fh2_prompt_xsection_%s" % self.v_varshape_binning)
-        if not input_powheg_xsection:
-            self.logger.fatal(make_message_notfound("fh2_prompt_xsection_%s" % self.v_varshape_binning, self.powheg_path_prompt))
+            self.logger.fatal("Error: Failed to get simulated yields from %s", self.powheg_path_prompt)
+        input_powheg_xsection = input_powheg.Clone(input_powheg.GetName() + "_xsec")
 
         # Ensure correct binning: x - shape, y - jet pt
         if not equal_binning_lists(input_powheg, list_x = self.varshaperanges_gen):
@@ -2050,29 +2065,47 @@ class AnalyzerJet(Analyzer):
         input_file_default = TFile.Open(path_def, "update")
         if not input_file_default:
             self.logger.fatal(make_message_notfound(path_def))
-        input_powheg_file = TFile.Open(self.powheg_path_prompt)
-        if not input_powheg_file:
-            self.logger.fatal(make_message_notfound(self.powheg_path_prompt))
-        input_powheg = input_powheg_file.Get("fh2_prompt_%s" % self.v_varshape_binning)
+
+        #input_powheg_file = TFile.Open(self.powheg_path_prompt)
+        #if not input_powheg_file:
+        #    self.logger.fatal(make_message_notfound(self.powheg_path_prompt))
+        #input_powheg = input_powheg_file.Get("fh2_prompt_%s" % self.v_varshape_binning)
+        #if not input_powheg:
+        #    self.logger.fatal(make_message_notfound("fh2_prompt_%s" % self.v_varshape_binning, self.powheg_path_prompt))
+        #input_powheg_xsection = input_powheg_file.Get("fh2_prompt_xsection_%s" % self.v_varshape_binning)
+        #if not input_powheg_xsection:
+        #    self.logger.fatal(make_message_notfound("fh2_prompt_xsection_%s" % self.v_varshape_binning, self.powheg_path_prompt))
+
+        input_powheg = self.get_simulated_yields(self.powheg_path_prompt, 2, True)
         if not input_powheg:
-            self.logger.fatal(make_message_notfound("fh2_prompt_%s" % self.v_varshape_binning, self.powheg_path_prompt))
-        input_powheg_xsection = input_powheg_file.Get("fh2_prompt_xsection_%s" % self.v_varshape_binning)
-        if not input_powheg_xsection:
-            self.logger.fatal(make_message_notfound("fh2_prompt_xsection_%s" % self.v_varshape_binning, self.powheg_path_prompt))
-        input_powheg_file_sys = []
+            self.logger.fatal("Error: Failed to get simulated yields from %s", self.powheg_path_prompt)
+        input_powheg_xsection = input_powheg.Clone(input_powheg.GetName() + "_xsec")
+
+
+        #input_powheg_file_sys = []
         input_powheg_sys=[]
         input_powheg_xsection_sys=[]
         for i_powheg in range(len(self.powheg_prompt_variations)):
             path = "%s%s.root" % (self.powheg_prompt_variations_path, self.powheg_prompt_variations[i_powheg])
-            input_powheg_file_sys.append(TFile.Open(path))
-            if not input_powheg_file_sys[i_powheg]:
-                self.logger.fatal(make_message_notfound(path))
-            input_powheg_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_%s" % self.v_varshape_binning))
-            if not input_powheg_sys[i_powheg]:
-                self.logger.fatal(make_message_notfound("fh2_prompt_%s" % self.v_varshape_binning, path))
-            input_powheg_xsection_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_xsection_%s" % self.v_varshape_binning))
-            if not input_powheg_xsection_sys[i_powheg]:
-                self.logger.fatal(make_message_notfound("fh2_prompt_xsection_%s" % self.v_varshape_binning, path))
+
+            #input_powheg_file_sys.append(TFile.Open(path))
+            #if not input_powheg_file_sys[i_powheg]:
+            #    self.logger.fatal(make_message_notfound(path))
+            #input_powheg_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_%s" % self.v_varshape_binning))
+            #if not input_powheg_sys[i_powheg]:
+            #    self.logger.fatal(make_message_notfound("fh2_prompt_%s" % self.v_varshape_binning, path))
+            #input_powheg_xsection_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_xsection_%s" % self.v_varshape_binning))
+            #if not input_powheg_xsection_sys[i_powheg]:
+            #    self.logger.fatal(make_message_notfound("fh2_prompt_xsection_%s" % self.v_varshape_binning, path))
+
+            input_powheg_sys_i = self.get_simulated_yields(path, 2, True)
+            if not input_powheg_sys_i:
+                self.logger.fatal("Error: Failed to get simulated yields from %s", path)
+            input_powheg_sys_i.SetName("fh2_prompt_%s_%d" % (self.v_varshape_binning, i_powheg))
+            input_powheg_sys.append(input_powheg_sys_i)
+            input_powheg_xsection_sys_i = input_powheg_sys_i.Clone(input_powheg_sys_i.GetName() + "_xsec")
+            input_powheg_xsection_sys.append(input_powheg_xsection_sys_i)
+
         input_powheg_z=[]
         input_powheg_xsection_z=[]
         input_powheg_sys_z=[]
@@ -2338,22 +2371,31 @@ class AnalyzerJet(Analyzer):
 
 
 
-        input_pythia8_file = []
+        #input_pythia8_file = []
         input_pythia8 = []
         input_pythia8_xsection = []
         input_pythia8_z=[]
         input_pythia8_xsection_z=[]
         for i_pythia8 in range(len(self.pythia8_prompt_variations)):
             path = "%s%s.root" % (self.pythia8_prompt_variations_path, self.pythia8_prompt_variations[i_pythia8])
-            input_pythia8_file.append(TFile.Open(path))
-            if not input_pythia8_file[i_pythia8]:
-                self.logger.fatal(make_message_notfound(path))
-            input_pythia8.append(input_pythia8_file[i_pythia8].Get("fh2_pythia8_prompt"))
-            if not input_pythia8[i_pythia8]:
-                self.logger.fatal(make_message_notfound("fh2_pythia8_prompt", path))
-            input_pythia8_xsection.append(input_pythia8_file[i_pythia8].Get("fh2_pythia8_prompt_xsection"))
-            if not input_pythia8_xsection[i_pythia8]:
-                self.logger.fatal(make_message_notfound("fh2_pythia8_prompt_xsection", path))
+
+            #input_pythia8_file.append(TFile.Open(path))
+            #if not input_pythia8_file[i_pythia8]:
+            #    self.logger.fatal(make_message_notfound(path))
+            #input_pythia8.append(input_pythia8_file[i_pythia8].Get("fh2_pythia8_prompt"))
+            #if not input_pythia8[i_pythia8]:
+            #    self.logger.fatal(make_message_notfound("fh2_pythia8_prompt", path))
+            #input_pythia8_xsection.append(input_pythia8_file[i_pythia8].Get("fh2_pythia8_prompt_xsection"))
+            #if not input_pythia8_xsection[i_pythia8]:
+            #    self.logger.fatal(make_message_notfound("fh2_pythia8_prompt_xsection", path))
+
+            input_pythia8_i = self.get_simulated_yields(path, 2, True)
+            if not input_pythia8_i:
+                self.logger.fatal("Error: Failed to get simulated yields from %s", path)
+            input_pythia8_i.SetName("fh2_pythia_prompt_%s_%d" % (self.v_varshape_binning, i_pythia8))
+            input_pythia8.append(input_pythia8_i)
+            input_pythia8_xsection_i = input_pythia8_i.Clone(input_pythia8_i.GetName() + "_xsec")
+            input_pythia8_xsection.append(input_pythia8_xsection_i)
 
             # Ensure correct binning: x - shape, y - jet pt
             if not equal_binning_lists(input_pythia8[i_pythia8], list_x = self.varshaperanges_gen):
@@ -2540,3 +2582,99 @@ class AnalyzerJet(Analyzer):
             #latex7 = TLatex(0.65,0.75,"POWHEG based")
             #draw_latex(latex7)
             cfeeddown_fraction.SaveAs("%s/feeddown_fraction_werros_%s.pdf" % (self.d_resultsallpdata, suffix))
+
+    def get_simulated_yields(self, file_path:str, dim:int, prompt: bool):
+        '''Create a histogram from a simulation tree.
+        file_path - input file path
+        dim - dimension of the output histogram: 2, 3
+        prompt - prompt or non-prompt: True, False'''
+
+        if dim not in (2, 3):
+            self.logger.fatal("Error: %d is not a supported dimension.")
+
+        # Get the normalisation factor.
+        file_sim = TFile.Open(file_path)
+        if not file_sim:
+            self.logger.fatal(make_message_notfound(file_path))
+        pr_xsec = file_sim.Get("fHistXsection")
+        if not pr_xsec:
+            self.logger.fatal(make_message_notfound("fHistXsection", file_path))
+        scale_factor = pr_xsec.GetBinContent(1)/pr_xsec.GetEntries()
+        file_sim.Close()
+
+        print("Scaling factor: ", scale_factor)
+
+        # Load the tree.
+        if "D0" in self.case:
+            tree_name = "tree_D0"
+            print("Will try to load the D0 tree.")
+        elif "Lc" in self.case:
+            tree_name = "tree_Lc"
+            print("Will try to load the Lc tree.")
+        else:
+            self.logger.fatal(make_message_notfound("the particle name", self.case))
+        tree_sim = uproot.open(file_path)[tree_name]
+        if not tree_sim:
+            self.logger.fatal(make_message_notfound(tree_name, file_path))
+
+        print("Converting")
+        # Convert it into a dataframe.
+        list_branches = ["pt_cand", "eta_cand", "phi_cand", "y_cand", "pdg_parton", "pt_jet", \
+            "eta_jet", "phi_jet", "delta_r_jet", "z", "n_const", "zg_jet", "rg_jet", "nsd_jet", \
+            "Pt_mother_jet", "k0_jet", "k1_jet", "k2_jet", "kT_jet"]
+        try:
+            df_sim = tree_sim.pandas.df(branches=list_branches)
+        except Exception: # pylint: disable=broad-except
+            self.logger.fatal(make_message_notfound("variables", "tree " + tree_name))
+
+        print("Entries: ", len(df_sim))
+        print("Filtering")
+        # Apply the same cuts as in gen MC.
+        # cut on jet pt
+        df_sim = seldf_singlevar(df_sim, self.v_var2_binning, self.lvar2_binmin_gen[0], self.lvar2_binmax_gen[-1])
+        # cut on hadron pt
+        df_sim = seldf_singlevar(df_sim, self.v_var_binning, self.lpt_finbinmin[0], self.lpt_finbinmax[-1])
+        # acceptance cut
+        #sel_jet_gen = "abs(y_cand) < 0.5 and abs(eta_jet) < 0.5"
+        sel_jet_gen = "abs(eta_jet) <= 0.5"
+        df_sim = df_sim.query(sel_jet_gen)
+        # pt-dependent rapidity cut
+        sel_cand_array = selectfidacc(df_sim["pt_cand"].values, df_sim["y_cand"].values)
+        df_sim = df_sim[np.array(sel_cand_array, dtype=bool)]
+        # prompt vs. non-prompt selection
+        pdg_parton_good = 4 if prompt else 5
+        df_sim = df_sim[df_sim["pdg_parton"] == pdg_parton_good]
+
+        # Reject single-track jets.
+        #sel_jet_nconst = "n_const > 1"
+        #df_sim = df_sim.query(sel_jet_nconst)
+
+        print("Entries: ", len(df_sim))
+        print("Filling")
+        # Create, fill and scale the histogram.
+        if dim == 2:
+            print("Dim 2")
+            # Binning: x - shape, y - jet pt
+            his2 = makefill2dhist(df_sim, "h2_yield_sim", \
+                self.varshapebinarray_gen, self.var2binarray_gen, \
+                self.v_varshape_binning, self.v_var2_binning)
+            print("Entries: ", his2.GetEntries())
+            print("Scaling")
+            his2.Scale(scale_factor)
+            print("Returning")
+            print("Entries: ", his2.GetEntries())
+            return his2
+        if dim == 3:
+            print("Dim 3")
+            # Binning: x - shape, y - jet pt, z - pt hadron
+            print(len(df_sim))
+            his3 = makefill3dhist(df_sim, "h3_yield_sim", \
+                self.varshapebinarray_gen, self.var2binarray_gen, self.var1binarray, \
+                self.v_varshape_binning, self.v_var2_binning, self.v_var_binning)
+            print("Entries: ", his3.GetEntries())
+            print("Scaling")
+            his3.Scale(scale_factor)
+            print("Returning")
+            print("Entries: ", his3.GetEntries())
+            return his3
+        return None
