@@ -47,8 +47,7 @@ def fillvalidationvsmult(dfevt, dfevtevtsel, df_reco):
     hntrklcorrpileup = TH1F("hntrklcorrpileup", ' ; ntracklets_corr ; Entries',
                             200, -0.5, 199.5)
     df_pileup = filter_bit_df(dfevt, 'is_ev_rej', [[4], []])
-    df_selevtspd = dfevtevtsel.query("is_ev_rej == 0 and \
-        trigger_hasclass_HighMultSPD == 1 and trigger_hasbit_HighMultSPD == 1")
+    df_selevtspd = dfevtevtsel.query("is_ev_sel_shm == 1")
 
     fill_hist(hntrklcorrsel, dfevtevtsel["n_tracklets_corr"])
     fill_hist(hntrklcorrselevtspd, df_selevtspd["n_tracklets_corr"])
