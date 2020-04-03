@@ -254,7 +254,7 @@ D0pp:
     probcutpresel:
       data:         [0.75,0.75,0.65,0.65,0.45,0.45,0.45] # sel_skim_binmin bins
       mc:           [0.75,0.75,0.65,0.65,0.45,0.45,0.45] # sel_skim_binmin bins
-    probcutoptimal: [0.75,0.75,0.65,0.65,0.45,0.45,0.45] # sel_skim_binmin bins
+    probcutoptimal: [0.92,0.90,0.82,0.80,0.60,0.60,0.60] # sel_skim_binmin bins
 
   analysis:
     indexhptspectrum: 0 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
@@ -383,13 +383,11 @@ D0pp:
       sel_binminshape_gen:  [0.0,0.1,0.2,0.3,0.4]
       sel_binmaxshape_gen:      [0.1,0.2,0.3,0.4,0.6]
       data: &data_out_rg
-        runselection: [null, null, null] #FIXME
         results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
                   /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
                   /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
         resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_data/resultsMBjetvspt
       mc: &mc_out_rg
-        runselection: [null, null, null] #FIXME
         results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
                   /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
                   /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
@@ -398,6 +396,34 @@ D0pp:
         <<: *data_out_rg
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_rg
+
+    jet_FF:
+      <<: *jet_default
+      sel_binmin2_reco: [5.0,7.0,10.0,15.0] # rec jet pt bins (sel_binmin2_reco bins)
+      sel_binmax2_reco:     [7.0,10.0,15.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)
+      sel_binmin2_gen:  [5.0,7.0,10.0,15.0] # gen jet pt bins (sel_binmin2_gen bins)
+      sel_binmax2_gen:      [7.0,10.0,15.0,50.0] # gen jet pt bins (sel_binmin2_gen bins)
+      var_binningshape: z
+      var_binningshape_gen: z_gen
+      var_shape_latex: "#it{z}_{#parallel}^{ch}"
+      sel_binminshape_reco: [0.2001,0.4001,0.5001,0.6001,0.7001,0.8001,0.9001]
+      sel_binmaxshape_reco:        [0.4001,0.5001,0.6001,0.7001,0.8001,0.9001,1.0001]
+      sel_binminshape_gen:  [0.2001,0.4001,0.5001,0.6001,0.7001,0.8001,0.9001]
+      sel_binmaxshape_gen:         [0.4001,0.5001,0.6001,0.7001,0.8001,0.9001,1.0001]
+      data: &data_out_ff
+        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
+      mc: &mc_out_ff
+        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_mc_prodD2H/resultsMBjetvspt
+      data_proc: # alternative processor output used as the analyzer input
+        <<: *data_out_ff
+      mc_proc: # alternative processor output used as the analyzer input
+        <<: *mc_out_ff
 
 
     #########################
