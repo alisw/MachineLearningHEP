@@ -25,8 +25,8 @@ LcpKpi:
   sel_reco_skim: ["pt_prong0>0.40 and pt_prong1>0.40 and pt_prong2>0.40",
                   "pt_prong0>0.40 and pt_prong1>0.40 and pt_prong2>0.40",
                   "pt_prong0>0.40 and pt_prong1>0.40 and pt_prong2>0.40",
-                  "pt_prong0>0.40 and pt_prong1>0.40 and pt_prong2>0.40"]
-  sel_gen_skim: [null,null,null,null]
+                  "pt_prong0>0.40 and pt_prong1>0.40 and pt_prong2>0.40"] #sel_skim_binmin bins
+  sel_gen_skim: [null,null,null,null] #sel_skim_binmin bins
   sel_skim_binmin: [4,6,8,12] #list of nbins
   sel_skim_binmax: [6,8,12,24] #list of nbins
   var_binning: pt_cand
@@ -53,7 +53,7 @@ LcpKpi:
               d_len, d_len_xy, norm_dl_xy, cos_p,
               cos_p_xy, imp_par_xy, dca, dca_prong0, dca_prong1, dca_prong2,resonant_decay_mc,sig_vert, dist_12, dist_23, max_norm_d0d0exp,
               imp_par_prong0, imp_par_prong1, imp_par_prong2, pt_prong0, pt_prong1, pt_prong2, p_prong0, p_prong1, p_prong2,
-              #spdhits_prong0, spdhits_prong1, spdhits_prong2,
+              spdhits_prong0, spdhits_prong1, spdhits_prong2,
               nsigTPC_Pi_0, nsigTPC_Pr_0, nsigTOF_Pi_0, nsigTOF_Pr_0, nsigTPC_K_1, nsigTOF_K_1, nsigTPC_Pi_2, nsigTPC_Pr_2, nsigTOF_Pi_2, nsigTOF_Pr_2]
     var_evt:
       data: [centrality, z_vtx_reco, n_vtx_contributors, n_tracks, is_ev_rej, run_number,
@@ -61,6 +61,7 @@ LcpKpi:
               #n_tracklets,V0Amult, trigger_hasbit_INT7, trigger_hasbit_HighMultSPD,
               #trigger_hasbit_HighMultV0, trigger_hasclass_INT7, trigger_hasclass_HighMultSPD,
               #trigger_hasclass_HighMultV0, n_tracklets_corr, v0m, v0m_eq, v0m_corr, v0m_eq_corr,
+              n_tracklets_corr,
               perc_v0m]
       mc: [z_vtx_gen, centrality, z_vtx_reco, n_vtx_contributors, n_tracks, is_ev_rej, run_number,
               ev_id, 
@@ -68,8 +69,9 @@ LcpKpi:
               #trigger_hasbit_HighMultV0, trigger_hasclass_INT7, trigger_hasclass_HighMultSPD,
               #trigger_hasclass_HighMultV0, n_tracklets_corr, n_tracklets, v0m, v0m_eq, v0m_corr, v0m_eq_corr,
               #mult_gen, mult_gen_v0a, mult_gen_v0c, 
+              n_tracklets_corr,
               perc_v0m]
-    var_gen: [y_cand, pt_cand, eta_cand, phi_cand, cand_type, pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet, run_number, ev_id]
+    var_gen: [y_cand, pt_cand, eta_cand, phi_cand, cand_type, run_number, ev_id]
     var_evt_match: [run_number, ev_id]
     var_training: [[d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, dist_12, dist_23,
                    max_norm_d0d0exp, imp_par_prong0, imp_par_prong1, imp_par_prong2,
@@ -86,9 +88,7 @@ LcpKpi:
                    [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, dist_12, dist_23,
                    max_norm_d0d0exp, imp_par_prong0, imp_par_prong1, imp_par_prong2,
                    nsigTPC_Pi_0, nsigTPC_Pr_0, nsigTOF_Pi_0,  nsigTOF_Pr_0, nsigTPC_K_1,
-                   nsigTOF_K_1, nsigTPC_Pi_2, nsigTPC_Pr_2, nsigTOF_Pi_2, nsigTOF_Pr_2],
-                   [d_len, d_len_xy, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, sig_vert, dist_12, dist_23,
-                   max_norm_d0d0exp, imp_par_prong0, imp_par_prong1, imp_par_prong2]]
+                   nsigTOF_K_1, nsigTPC_Pi_2, nsigTPC_Pr_2, nsigTOF_Pi_2, nsigTOF_Pr_2]]
     var_boundaries: [d_len, pt_cand]
     var_correlation:
       - [d_len, max_norm_d0d0exp, sig_vert, cos_p]
@@ -152,30 +152,49 @@ LcpKpi:
   multi:
     data:
       nprocessesparallel: 40
-      maxfiles : [-1,-1] #list of periods
-      chunksizeunp : [300,300] #list of periods
-      chunksizeskim: [300,300] #list of periods
-      fracmerge : [1.0,1.0] #list of periods
-      seedmerge: [12,12] #list of periods
-      period: [LHC18r, LHC18q] #list of periods
-      unmerged_tree_dir: [/mnt/temp/TTreeLctopKpiPbPb/vAN-20200307_ROOT6-1/PbPb_2018_data/384_20200313-1623/unmerged,
-                          /mnt/temp/TTreeLctopKpiPbPb/vAN-20200305_ROOT6-1/PbPb_2018_data/385_20200316-1024/unmerged] #list of periods
-      pkl: [/mnt/temp/TTreeLctopKpiPbPb/vAN-20200307_ROOT6-1/PbPb_2018_data/384_20200313-1623/pkl,
-            /mnt/temp/TTreeLctopKpiPbPb/vAN-20200305_ROOT6-1/PbPb_2018_data/385_20200316-1024/pkl] #list of periods
-      pkl_skimmed: [/mnt/temp/TTreeLctopKpiPbPb/vAN-20200307_ROOT6-1/PbPb_2018_data/384_20200313-1623/pkl_skimmed,
-                    /mnt/temp/TTreeLctopKpiPbPb/vAN-20200305_ROOT6-1/PbPb_2018_data/385_20200316-1024/pkl_skimmed] #list of periods
-      pkl_skimmed_merge_for_ml: [/mnt/temp/TTreeLctopKpiPbPb/vAN-20200307_ROOT6-1/PbPb_2018_data/384_20200313-1623/pkl_ML,
-                                 /mnt/temp/TTreeLctopKpiPbPb/vAN-20200305_ROOT6-1/PbPb_2018_data/385_20200316-1024/pkl_ML] #list of periods
-      pkl_skimmed_merge_for_ml_all: /mnt/temp/TTreeLctopKpiPbPb/pkl_ML_all
-      pkl_evtcounter_all: /mnt/temp/TTreeLctopKpiPbPb/pkl_evt_all
-      mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2016,
-                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2017]
+      #      maxfiles : [-1,-1] #list of periods
+      #      chunksizeunp : [50,50] #list of periods
+      #      chunksizeskim: [50,50] #list of periods
+      #      fracmerge : [0.02,0.02] #list of periods
+      #      seedmerge: [12,12] #list of periods
+      #      period: [LHC18r, LHC18q] #list of periods
+      #      unmerged_tree_dir: [/mnt/temp/TTreeLctopKpiPbPb/vAN-20200307_ROOT6-1/PbPb_2018_data/384_20200313-1623/unmerged,
+      #                          /mnt/temp/TTreeLctopKpiPbPb/vAN-20200305_ROOT6-1/PbPb_2018_data/385_20200316-1024/unmerged] #list of periods
+      #      pkl: [/mnt/temp/TTreeLctopKpiPbPb/vAN-20200307_ROOT6-1/PbPb_2018_data/384_20200313-1623/pkl,
+      #            /mnt/temp/TTreeLctopKpiPbPb/vAN-20200305_ROOT6-1/PbPb_2018_data/385_20200316-1024/pkl] #list of periods
+      #      pkl_skimmed: [/mnt/temp/TTreeLctopKpiPbPb/vAN-20200307_ROOT6-1/PbPb_2018_data/384_20200313-1623/pkl_skimmed,
+      #                    /mnt/temp/TTreeLctopKpiPbPb/vAN-20200305_ROOT6-1/PbPb_2018_data/385_20200316-1024/pkl_skimmed] #list of periods
+      #      pkl_skimmed_merge_for_ml: [/mnt/temp/TTreeLctopKpiPbPb/vAN-20200307_ROOT6-1/PbPb_2018_data/384_20200313-1623/pkl_ML,
+      #                                 /mnt/temp/TTreeLctopKpiPbPb/vAN-20200305_ROOT6-1/PbPb_2018_data/385_20200316-1024/pkl_ML] #list of periods
+      #      pkl_skimmed_merge_for_ml_all: /mnt/temp/TTreeLctopKpiPbPb/pkl_ML_all
+      #      pkl_evtcounter_all: /mnt/temp/TTreeLctopKpiPbPb/pkl_evt_all
+      #      mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2016,
+      #                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2017]
+
+      maxfiles : [10] #list of periods
+      chunksizeunp : [50] #list of periods
+      chunksizeskim: [50] #list of periods
+      fracmerge : [1.0] #list of periods
+      seedmerge: [12] #list of periods
+      period: [LHC18r] #list of periods
+      unmerged_tree_dir: [/mnt/temp/TTreeLctopKpiPbPb/vAN-20200307_ROOT6-1/PbPb_2018_data/384_20200313-1623/unmerged] #list of periods
+      pkl: [/mnt/temp/TTreeLctopKpiPbPb/vAN-20200307_ROOT6-1/PbPb_2018_data/384_20200313-1623/pkl
+            ] #list of periods
+      pkl_skimmed: [/mnt/temp/TTreeLctopKpiPbPb/vAN-20200307_ROOT6-1/PbPb_2018_data/384_20200313-1623/pkl_skimmed
+                    ] #list of periods
+      pkl_skimmed_merge_for_ml: [/mnt/temp/TTreeLctopKpiPbPb/vAN-20200307_ROOT6-1/PbPb_2018_data/384_20200313-1623/pkl_ML
+                                 ] #list of periods
+      pkl_skimmed_merge_for_ml_all: /mnt/temp/TTreeLctopKpiPbPb/pkl_ML_data_all
+      pkl_evtcounter_all: /mnt/temp/TTreeLctopKpiPbPb/pkl_evt_data_all
+      mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2016
+                    ]
+
 
     mc:
       nprocessesparallel: 40
       maxfiles : [-1,-1] #list of periods
-      chunksizeunp : [300,300] #list of periods
-      chunksizeskim: [300,300] #list of periods
+      chunksizeunp : [50,50] #list of periods
+      chunksizeskim: [50,50] #list of periods
       fracmerge : [1.0,1.0] #list of periods
       seedmerge: [12,12] #list of periods
       period: [LHC19c3a_all_q, LHC19c3a_all_r] #list of periods
@@ -187,10 +206,12 @@ LcpKpi:
                     /mnt/temp/TTreeLctopKpiPbPb/vAN-20200307_ROOT6-1/PbPb010_2018_mc_prodLctopKpi/390_20200317-1257/pKl_skimmed] #list of periods
       pkl_skimmed_merge_for_ml: [/mnt/temp/TTreeLctopKpiPbPb/vAN-20200308_ROOT6-1/PbPb010_2018_mc_prodLctopKpi/391_20200317-1257/pkl_ML,
                                  /mnt/temp/TTreeLctopKpiPbPb/vAN-20200307_ROOT6-1/PbPb010_2018_mc_prodLctopKpi/390_20200317-1257/pKl_ML] #list of periods
-      pkl_skimmed_merge_for_ml_all: /mnt/temp/TTreeLctopKpiPbPb/pkl_ML_D2Hprod
-      pkl_evtcounter_all: /mnt/temp/TTreeLctopKpiPbPb/pkl_ML_D2Hprod
+      pkl_skimmed_merge_for_ml_all: /mnt/temp/TTreeLctopKpiPbPb/pkl_ML_mc_all
+      pkl_evtcounter_all: /mnt/temp/TTreeLctopKpiPbPb/pkl_evt_mc_all
       mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_16,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_17] #Jaime - should be changed
+      #mcreweights: [null,
+      #              null] #Jaime - should be changed
 
   ml:
     evtsel: is_ev_rej==0
@@ -198,22 +219,22 @@ LcpKpi:
       data: null
       mc: null
 
-    nbkg: 5000
-    nsig: 5000
+    nbkg: 50000
+    nsig: 50000
     sampletagforsignal: 1
     sampletagforbkg: 0
     sel_sigml: ismcprompt == 1
-    sel_bkgml: inv_mass<2.2 or inv_mass>2.4 #ensure to set the cuts as multiples of the bin_width, i.e. left_limit + K * bin_width
+    sel_bkgml: inv_mass<2.2 or inv_mass>2.36 #ensure to set the cuts as multiples of the bin_width, i.e. left_limit + K * bin_width
     nkfolds: 5
     rnd_shuffle: 42
     rnd_splt: 42
     test_frac: 0.2
-    binmin: [4] #list of nbins #list of nbins min
-    binmax: [6] #list of nbins
+    binmin: [4,6,8,12] #list of nbins sel_skim_binmin bins
+    binmax: [6,8,12,24] #list of nbins sel_skim_binmin bins
     mltype: BinaryClassification
     ncorescrossval: 24
-    mlplot: /home/jnorman/test_pKpi/mlplot010 # to be removed
-    mlout: /home/jnorman/test_pKpi/mlout010 # to be removed
+    mlplot: /mnt/temp/OngoingAnalysis_LctopKpiPbPb/mlplot010 # to be removed
+    mlout: /mnt/temp/OngoingAnalysis_LctopKpiPbPb/mlout010 # to be removed
 
     opt:
       #pp 
@@ -230,7 +251,7 @@ LcpKpi:
       num_steps: 111 # number of steps used in efficiency and signif. estimation
       bkg_function: pol2 # fit function for bkg (among TH1 predefined fit functions, e.g. expo, pol1, pol2, ...)
       save_fit: True # save bkg fits with the various cuts on ML output
-      raahp: [1,1,1,1,1] #list of nbins
+      raahp: [1,1,1,1] #list of nbins sel_skim_binmin bins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       #PbPb (Ds)
       #isFONLLfromROOT: false
@@ -261,14 +282,17 @@ LcpKpi:
       pkl_skimmed_decmerged: [/mnt/temp/TTreeLctopKpiPbPb/vAN-20200308_ROOT6-1/PbPb010_2018_mc_prodLctopKpi/391_20200317-1257/pklskdecmerged,
                               /mnt/temp/TTreeLctopKpiPbPb/vAN-20200307_ROOT6-1/PbPb010_2018_mc_prodLctopKpi/390_20200317-1257/pklskdecmerged] #list of periods
     modelname: xgboost
-    modelsperptbin: ['','','','']
+    modelsperptbin: [xgboost_classifierLcpKpiPbPb010_dfselection_pt_cand_4.0_6.0.sav,
+                     xgboost_classifierLcpKpiPbPb010_dfselection_pt_cand_6.0_8.0.sav,
+                     xgboost_classifierLcpKpiPbPb010_dfselection_pt_cand_8.0_12.0.sav,
+                     xgboost_classifierLcpKpiPbPb010_dfselection_pt_cand_12.0_24.0.sav]
     probcutpresel:
-      data: [0.,0.,0.,0.] #list of nbins
-      mc: [0.,0.,0.,0.] #list of nbins
-    probcutoptimal: [0.,0.,0.,0.] #list of nbins
+      data: [0.3,0.3,0.3,0.3] #list of nbins  sel_skim_binmin bins
+      mc: [0.3,0.3,0.3,0.3] #list of nbins  sel_skim_binmin bins
+    probcutoptimal: [0.6,0.6,0.6,0.6] #list of nbins  sel_skim_binmin bins
 
   analysis:
-    indexhptspectrum: 5 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
+    indexhptspectrum: 4 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
     fd_method: 2 #knone=0, kfc=1, kNb=2
     cctype: 1 #kpp7
     sigmav0: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
@@ -321,8 +345,8 @@ LcpKpi:
       dolikelihood: null
       sigmaarray: null
       FixedSigma: null
-      fitcase: Ds
-      latexnamemeson: "D_{s}"
+      fitcase: Lc
+      latexnamemeson: "#Lambda_{c}"
       latexbin2var: null
       nevents: null
       dodoublecross: false
