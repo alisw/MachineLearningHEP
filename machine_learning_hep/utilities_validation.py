@@ -42,6 +42,8 @@ def fillvalidationvsmult(dfevt, dfevtevtsel, df_reco):
 
     hntrklcorrsel = TH1F("hntrklcorrsel", ' ; ntracklets_corr ; Entries',
                          200, -0.5, 199.5)
+    hntrklcorrselshm = TH1F("hntrklcorrselshm", ' ; ntracklets_corr_shm ; Entries',
+                            200, -0.5, 199.5)
     hntrklcorrselevtspd = TH1F("hntrklcorrselevtspd", ' ; ntracklets_corr ; Entries',
                                200, -0.5, 199.5)
     hntrklcorrpileup = TH1F("hntrklcorrpileup", ' ; ntracklets_corr ; Entries',
@@ -50,7 +52,8 @@ def fillvalidationvsmult(dfevt, dfevtevtsel, df_reco):
     df_selevtspd = dfevtevtsel.query("is_ev_sel_shm == 1")
 
     fill_hist(hntrklcorrsel, dfevtevtsel["n_tracklets_corr"])
+    fill_hist(hntrklcorrselshm, dfevtevtsel["n_tracklets_corr_shm"])
     fill_hist(hntrklcorrselevtspd, df_selevtspd["n_tracklets_corr"])
     fill_hist(hntrklcorrpileup, df_pileup["n_tracklets_corr"])
     return [hntrklvstrklcorr, hntrklcorrvszvtx, hntrklvszvtx, hntrklcorrsel,
-            hntrklcorrpileup, hntrklcorrselevtspd]
+            hntrklcorrpileup, hntrklcorrselevtspd, hntrklcorrselshm]
