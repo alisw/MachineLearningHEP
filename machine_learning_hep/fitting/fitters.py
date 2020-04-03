@@ -571,7 +571,10 @@ class FitROOTGauss(FitROOT):
                                   "use_user_fit_range": False,
                                   "fit_range_low": None,
                                   "fit_range_up": None,
-                                  "likelihood": True}
+                                  "n_rms_fix": None,
+                                  "n_rms_start": 3,
+                                  "n_rms_stop": 8,
+                                  "likelihood": False}
         # Fitted parameters (to be modified for deriving classes)
         # Only those corresponding to init parameters are here. Specific parameters/values
         # provided by the kernel have to be extracted from that directly.
@@ -595,6 +598,15 @@ class FitROOTGauss(FitROOT):
             histo_rebin_ = AliVertexingHFUtils.RebinHisto(self.histo, self.init_pars["rebin"], -1)
             self.histo = TH1F()
             histo_rebin_.Copy(self.histo)
+
+        # If only a specific number of RMS should be considered for the fit range
+        if self.init_pars["n_rms_fix"]:
+            self.init_pars["n_rms_start"] = self.init_pars["n_rms_fix"]
+            self.init_pars["n_rms_stop"] = self.init_pars["n_rms_fix"]
+
+        if self.init_pars["n_rms_start"] > self.init_pars["n_rms_stop"]:
+            self.logger.fatal("Stop fit range of MC fit is < start, start: %i, stop: %i",
+                              self.init_pars["n_rms_start"], self.init_pars["n_rms_stop"])
         return True
 
 
@@ -636,7 +648,7 @@ class FitROOTGauss(FitROOT):
                                                     self.init_pars["fit_range_up"])
             return success
 
-        for r in range(1, 8):
+        for r in range(self.init_pars["n_rms_start"], self.init_pars["n_rms_stop"] + 1):
             guess_fit_range_low = guess_mean - r * guess_sigma
             guess_fit_range_up = guess_mean + r * guess_sigma
             guess_int = self.histo.Integral(self.histo.FindBin(guess_fit_range_low),
