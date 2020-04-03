@@ -331,6 +331,30 @@ elif [ "$dataset" == "LHC19c2a_all_r" ]; then
               /alice/sim/2019/LHC19c2a2_extra/297481/PWGHF/HF_TreeCreator)
   datasetwithchilds=1
   dataset_short="PbPb010_2018_mc_prodLcpK0s"
+elif [ "$dataset" == "LHC19c1b_all_q" ]; then
+  #Lc->pKpi MC: PbPb 5 TeV 2018 30-50
+  inputpaths=(/alice/sim/2019/LHC19c1b/296433/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c1b2/296244/PWGHF/HF_TreeCreator)
+  datasetwithchilds=1
+  dataset_short="PbPb3050_2018_mc_prodLcpKpi"
+elif [ "$dataset" == "LHC19c1b_all_r" ]; then
+  #Lc->pKpi MC: PbPb 5 TeV 2018 30-50
+  inputpaths=(/alice/sim/2019/LHC19c1b/297481/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c1b2/297481/PWGHF/HF_TreeCreator)
+  datasetwithchilds=1
+  dataset_short="PbPb3050_2018_mc_prodLcpKpi"
+elif [ "$dataset" == "LHC19c1a_all_q" ]; then
+  #Lc->pKpi MC: PbPb 5 TeV 2018 0-10
+  inputpaths=(/alice/sim/2019/LHC19c1a/296433/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c1a2/296244/PWGHF/HF_TreeCreator)
+  datasetwithchilds=1
+  dataset_short="PbPb010_2018_mc_prodLcpKpi"
+elif [ "$dataset" == "LHC19c1a_all_r" ]; then
+  #Lc->pKpi MC: PbPb 5 TeV 2018 0-10
+  inputpaths=(/alice/sim/2019/LHC19c1a/297481/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c1a2/297481/PWGHF/HF_TreeCreator)
+  datasetwithchilds=1
+  dataset_short="PbPb010_2018_mc_prodLcpKpi"
 elif [ "$dataset" == "LHC18l8b2_q" ]; then
   #GP MC: PbPb 5 TeV 2018 0-10
   inputpaths=(/alice/sim/2018/LHC18l8b2/296433/PWGHF/HF_TreeCreator)
