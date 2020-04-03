@@ -68,7 +68,7 @@ def draw(fitter, save_name, **kwargs):
     """
     c = TCanvas("canvas", "", 500, 500)
     try:
-        fitter.draw(c, title="Fit", x_axis_label="", y_axis_label="", **kwargs)
+        fitter.draw(c, **kwargs)
     # NOTE The broad-except is only used to make this script running under
     #      any circumstances and ignore any reason for which a fit could not
     #      be drawn.
@@ -340,7 +340,7 @@ def main():
     parser.add_argument("--database-analysis", "-d", dest="database_analysis",
                         help="analysis database to be used", required=True)
     parser.add_argument("--analysis", "-a", dest="type_ana",
-                        help="choose type of analysis")
+                        help="choose type of analysis", required=True)
     parser.add_argument("--period-number", "-p", dest="period_number", type=int,
                         help="choose type of analysis (0: 2016, 1: 2017, 2: 2018, " \
                              "-1: all merged (default))", default=-1)

@@ -113,7 +113,7 @@ class FitBase:
         #for p in pars_not_changed:
             #print(p)
 
-        return True
+        return self.init_kernel()
 
 
     def init_kernel(self):
@@ -149,14 +149,13 @@ class FitBase:
             self.logger.info("Was already fitted. Skip...")
             return
         if self.init_fit():
-            if self.init_kernel():
-                self.success = self.fit_kernel()
-                if self.success:
-                    self.set_fit_pars()
+            self.success = self.fit_kernel()
+            if self.success:
+                self.set_fit_pars()
         self.has_attempt = True
 
 
-    def draw(self, root_pad, title=None, x_axis_label=None, y_axis_label=None, **draw_args):
+    def draw(self, root_pad, **draw_args):
         """
         Draw this fit. This is common and not to be overwritten by a deriving class. Arguments
         are forwarded to draw_kernel after common sanity checks
@@ -180,8 +179,7 @@ class FitBase:
             else:
                 draw_args["add_root_objects"] = [pinfos]
 
-        self.draw_kernel(root_pad, title=title, x_axis_label=x_axis_label,
-                         y_axis_label=y_axis_label, **draw_args)
+        self.draw_kernel(root_pad, **draw_args)
 
 
     # pylint: disable=unused-argument, dangerous-default-value
@@ -413,6 +411,11 @@ class FitAliHF(FitROOT):
         mean_scale = draw_args.pop("mean_scale", 1.)
         sigma_dim = draw_args.pop("sigma_dim", "MeV/#it{c}^{2}")
         sigma_scale = draw_args.pop("sigma_scale", 1000.)
+        title = draw_args.pop("title", "")
+        x_axis_label = draw_args.pop("x_axis_label", "#it{M}_{inv} (GeV/#it{c}^{2})")
+        y_axis_label = draw_args.pop("y_axis_label",
+                                     f"Entries/({self.histo.GetBinWidth(1) * 1000:.0f} " \
+                                     "MeV/#it{c}^{2})")
 
         add_root_objects = draw_args.pop("add_root_objects", None)
 
@@ -477,9 +480,9 @@ class FitAliHF(FitROOT):
         root_pad.SetLeftMargin(0.12)
         frame = root_pad.cd().DrawFrame(self.init_pars["fit_range_low"], y_min,
                                         self.init_pars["fit_range_up"], y_max,
-                                        f"{draw_args.pop('title', '')} ; " \
-                                        f"{draw_args.pop('x_axis_label', '')} ; " \
-                                        f"{draw_args.pop('y_axis_label', '')}")
+                                        f"{title} ; " \
+                                        f"{x_axis_label} ; " \
+                                        f"{y_axis_label}")
 
         frame.GetYaxis().SetTitleOffset(1.7)
         frame.GetYaxis().SetMaxDigits(4)
@@ -557,6 +560,7 @@ class FitAliHF(FitROOT):
                 aro.Draw("same")
 
 
+# pylint: disable=too-many-instance-attributes
 class FitROOTGauss(FitROOT):
     """
     Class with specific ROOT TF1 as core fitting utility
@@ -580,6 +584,11 @@ class FitROOTGauss(FitROOT):
         # provided by the kernel have to be extracted from that directly.
         self.fit_pars = {"mean": None,
                          "sigma": None}
+
+        # Fit range finally used for MC fit
+        self.fit_range_low = None
+        self.fit_range_up = None
+        self.n_rms = None
 
         self.update_root_objects()
 
@@ -646,6 +655,9 @@ class FitROOTGauss(FitROOT):
             self.kernel, success = self.fit_kernel_(guess_mean, guess_sigma, guess_int,
                                                     self.init_pars["fit_range_low"],
                                                     self.init_pars["fit_range_up"])
+
+            self.fit_range_low = self.init_pars["fit_range_low"]
+            self.fit_range_up = self.init_pars["fit_range_up"]
             return success
 
         for r in range(self.init_pars["n_rms_start"], self.init_pars["n_rms_stop"] + 1):
@@ -656,6 +668,11 @@ class FitROOTGauss(FitROOT):
                                             "width")
             self.kernel, success = self.fit_kernel_(guess_mean, guess_sigma, guess_int,
                                                     guess_fit_range_low, guess_fit_range_up)
+            # Save used fit range
+            self.fit_range_low = guess_fit_range_low
+            self.fit_range_up = guess_fit_range_up
+            self.n_rms = r
+
             if success:
                 return success
 
@@ -671,8 +688,10 @@ class FitROOTGauss(FitROOT):
     def draw_kernel(self, root_pad, root_objects=[], **draw_args):
 
         title = draw_args.pop("title", "")
-        x_axis_label = draw_args.pop("x_axis_label", "")
-        y_axis_label = draw_args.pop("y_axis_label", "")
+        x_axis_label = draw_args.pop("x_axis_label", "#it{M}_{inv} (GeV/#it{c}^{2})")
+        y_axis_label = draw_args.pop("y_axis_label",
+                                     f"Entries/({self.histo.GetBinWidth(1) * 1000:.0f} " \
+                                     "MeV/#it{c}^{2})")
         mean_dim = draw_args.pop("mean_dim", "GeV/#it{c}^{2}")
         mean_scale = draw_args.pop("mean_scale", 1.)
         sigma_dim = draw_args.pop("sigma_dim", "MeV/#it{c}^{2}")
@@ -694,6 +713,7 @@ class FitROOTGauss(FitROOT):
 
         # Now comes the styling
         color_sig = kBlue - 3
+        color_histo = kBlack
         self.histo.SetMarkerStyle(20)
         self.kernel.SetLineColor(color_sig)
 
@@ -718,13 +738,24 @@ class FitROOTGauss(FitROOT):
         sigma = self.kernel.GetParameter(2) * sigma_scale
         sigma_err = self.kernel.GetParError(2) * sigma_scale
 
-        root_objects.append(self.add_pave_helper_(0.55, 0.75, 0.89, 0.89, "NDC"))
+        root_objects.append(self.add_pave_helper_(0.55, 0.65, 0.89, 0.89, "NDC"))
         self.add_text_helper_(root_objects[-1],
                               f"#chi/ndf = {red_chisqu:.4f}", color_sig)
         self.add_text_helper_(root_objects[-1],
                               f"#mu = {mean:.4f} #pm {mean_err:.4f} {mean_dim}", color_sig)
         self.add_text_helper_(root_objects[-1],
                               f"#sigma = {sigma:.4f} #pm {sigma_err:.4f} {sigma_dim}", color_sig)
+        self.add_text_helper_(root_objects[-1],
+                              f"mean_{{histo}} = {self.histo.GetMean():.4f}", color_histo)
+        self.add_text_helper_(root_objects[-1],
+                              f"RMS_{{histo}} = {self.histo.GetRMS():.4f}", color_histo)
+        self.add_text_helper_(root_objects[-1],
+                              f"fit range [{self.fit_range_low:.3f}, {self.fit_range_up:.3f}]",
+                              color_histo)
+        if not self.init_pars["use_user_fit_range"]:
+            self.add_text_helper_(root_objects[-1],
+                                  f"(corr. to {self.n_rms} #times RMS_{{histo}})",
+                                  color_histo)
         root_objects[-1].Draw()
 
         for dob in draw_objects:
