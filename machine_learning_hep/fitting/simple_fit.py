@@ -217,7 +217,10 @@ def do_simple_fit(database, type_ana, period_number=-1, output_dir="simple_fit")
                        "use_user_fit_range": False,
                        "fit_range_low": fit_range_low[ipt],
                        "fit_range_up": fit_range_up[ipt],
-                       "likelihood": likelihood}
+                       "n_rms_fix": None,
+                       "n_rms_start": 3,
+                       "n_rms_stop": 8,
+                       "likelihood": False}
 
         fitter_mc = FitROOTGauss(fit_pars_mc, histo=histo_mc_int)
         mc_fitters.append(fitter_mc)
