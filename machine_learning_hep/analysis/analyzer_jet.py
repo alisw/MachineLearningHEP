@@ -753,16 +753,8 @@ class AnalyzerJet(Analyzer):
 
         response_matrix = feeddown_input_file.Get("response_matrix_nonprompt")
 
-        # fh3_feeddown is 3d histogram from powheg+pythia prediction that
+        # input_data is 3d histogram from powheg+pythia prediction that
         # contains z vs jet_pt vs HF pt.
-
-        #powheg_input_file = TFile.Open(self.powheg_path_nonprompt)
-        #if not powheg_input_file:
-        #    self.logger.fatal(make_message_notfound(self.powheg_path_nonprompt))
-        #input_data = powheg_input_file.Get("fh3_feeddown_%s" % self.v_varshape_binning)
-        #if not input_data:
-        #    self.logger.fatal(make_message_notfound("fh3_feeddown_%s" % self.v_varshape_binning, self.powheg_path_nonprompt))
-
         input_data = self.get_simulated_yields(self.powheg_path_nonprompt, 3, False)
         if not input_data:
             self.logger.fatal(make_message_notfound("simulated yields", self.powheg_path_nonprompt))
@@ -1274,16 +1266,6 @@ class AnalyzerJet(Analyzer):
 
         input_data_jetpt=input_data.ProjectionY("input_data_jetpt",1, self.p_nbinshape_reco,"e")
 
-        #input_powheg_file = TFile.Open(self.powheg_path_prompt)
-        #if not input_powheg_file:
-        #    self.logger.fatal(make_message_notfound(self.powheg_path_prompt))
-        #input_powheg = input_powheg_file.Get("fh2_prompt_%s" % self.v_varshape_binning)
-        #if not input_powheg:
-        #    self.logger.fatal(make_message_notfound("fh2_prompt_%s" % self.v_varshape_binning, self.powheg_path_prompt))
-        #input_powheg_xsection = input_powheg_file.Get("fh2_prompt_xsection_%s" % self.v_varshape_binning)
-        #if not input_powheg_xsection:
-        #    self.logger.fatal(make_message_notfound("fh2_prompt_xsection_%s" % self.v_varshape_binning, self.powheg_path_prompt))
-
         input_powheg = self.get_simulated_yields(self.powheg_path_prompt, 2, True)
         if not input_powheg:
             self.logger.fatal(make_message_notfound("simulated yields", self.powheg_path_prompt))
@@ -1300,18 +1282,10 @@ class AnalyzerJet(Analyzer):
         if not equal_binning_lists(input_powheg_xsection, list_y = self.var2ranges_gen):
             self.logger.fatal("Error: Incorrect binning in y.")
 
-        #input_powheg_file_sys = []
         input_powheg_sys=[]
         input_powheg_xsection_sys=[]
         for i_powheg in range(len(self.powheg_prompt_variations)):
             path = "%s%s.root" % (self.powheg_prompt_variations_path, self.powheg_prompt_variations[i_powheg])
-
-            #input_powheg_file_sys.append(TFile.Open(path))
-            #if not input_powheg_file_sys[i_powheg]:
-            #    self.logger.fatal(make_message_notfound(path))
-            #input_powheg_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_%s" % self.v_varshape_binning))
-            #input_powheg_xsection_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_xsection_%s" % self.v_varshape_binning))
-
             input_powheg_sys_i = self.get_simulated_yields(path, 2, True)
             if not input_powheg_sys_i:
                 self.logger.fatal(make_message_notfound("simulated yields", path))
@@ -1319,7 +1293,6 @@ class AnalyzerJet(Analyzer):
             input_powheg_sys.append(input_powheg_sys_i)
             input_powheg_xsection_sys_i = input_powheg_sys_i.Clone(input_powheg_sys_i.GetName() + "_xsec")
             input_powheg_xsection_sys.append(input_powheg_xsection_sys_i)
-
         input_powheg_z=[]
         input_powheg_xsection_z=[]
         input_powheg_sys_z=[]
@@ -2076,38 +2049,15 @@ class AnalyzerJet(Analyzer):
         if not input_file_default:
             self.logger.fatal(make_message_notfound(path_def))
 
-        #input_powheg_file = TFile.Open(self.powheg_path_prompt)
-        #if not input_powheg_file:
-        #    self.logger.fatal(make_message_notfound(self.powheg_path_prompt))
-        #input_powheg = input_powheg_file.Get("fh2_prompt_%s" % self.v_varshape_binning)
-        #if not input_powheg:
-        #    self.logger.fatal(make_message_notfound("fh2_prompt_%s" % self.v_varshape_binning, self.powheg_path_prompt))
-        #input_powheg_xsection = input_powheg_file.Get("fh2_prompt_xsection_%s" % self.v_varshape_binning)
-        #if not input_powheg_xsection:
-        #    self.logger.fatal(make_message_notfound("fh2_prompt_xsection_%s" % self.v_varshape_binning, self.powheg_path_prompt))
-
         input_powheg = self.get_simulated_yields(self.powheg_path_prompt, 2, True)
         if not input_powheg:
             self.logger.fatal(make_message_notfound("simulated yields", self.powheg_path_prompt))
         input_powheg_xsection = input_powheg.Clone(input_powheg.GetName() + "_xsec")
 
-
-        #input_powheg_file_sys = []
         input_powheg_sys=[]
         input_powheg_xsection_sys=[]
         for i_powheg in range(len(self.powheg_prompt_variations)):
             path = "%s%s.root" % (self.powheg_prompt_variations_path, self.powheg_prompt_variations[i_powheg])
-
-            #input_powheg_file_sys.append(TFile.Open(path))
-            #if not input_powheg_file_sys[i_powheg]:
-            #    self.logger.fatal(make_message_notfound(path))
-            #input_powheg_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_%s" % self.v_varshape_binning))
-            #if not input_powheg_sys[i_powheg]:
-            #    self.logger.fatal(make_message_notfound("fh2_prompt_%s" % self.v_varshape_binning, path))
-            #input_powheg_xsection_sys.append(input_powheg_file_sys[i_powheg].Get("fh2_prompt_xsection_%s" % self.v_varshape_binning))
-            #if not input_powheg_xsection_sys[i_powheg]:
-            #    self.logger.fatal(make_message_notfound("fh2_prompt_xsection_%s" % self.v_varshape_binning, path))
-
             input_powheg_sys_i = self.get_simulated_yields(path, 2, True)
             if not input_powheg_sys_i:
                 self.logger.fatal(make_message_notfound("simulated yields", path))
@@ -2115,7 +2065,6 @@ class AnalyzerJet(Analyzer):
             input_powheg_sys.append(input_powheg_sys_i)
             input_powheg_xsection_sys_i = input_powheg_sys_i.Clone(input_powheg_sys_i.GetName() + "_xsec")
             input_powheg_xsection_sys.append(input_powheg_xsection_sys_i)
-
         input_powheg_z=[]
         input_powheg_xsection_z=[]
         input_powheg_sys_z=[]
@@ -2381,24 +2330,12 @@ class AnalyzerJet(Analyzer):
 
 
 
-        #input_pythia8_file = []
         input_pythia8 = []
         input_pythia8_xsection = []
         input_pythia8_z=[]
         input_pythia8_xsection_z=[]
         for i_pythia8 in range(len(self.pythia8_prompt_variations)):
             path = "%s%s.root" % (self.pythia8_prompt_variations_path, self.pythia8_prompt_variations[i_pythia8])
-
-            #input_pythia8_file.append(TFile.Open(path))
-            #if not input_pythia8_file[i_pythia8]:
-            #    self.logger.fatal(make_message_notfound(path))
-            #input_pythia8.append(input_pythia8_file[i_pythia8].Get("fh2_pythia8_prompt"))
-            #if not input_pythia8[i_pythia8]:
-            #    self.logger.fatal(make_message_notfound("fh2_pythia8_prompt", path))
-            #input_pythia8_xsection.append(input_pythia8_file[i_pythia8].Get("fh2_pythia8_prompt_xsection"))
-            #if not input_pythia8_xsection[i_pythia8]:
-            #    self.logger.fatal(make_message_notfound("fh2_pythia8_prompt_xsection", path))
-
             input_pythia8_i = self.get_simulated_yields(path, 2, True)
             if not input_pythia8_i:
                 self.logger.fatal(make_message_notfound("simulated yields", path))
