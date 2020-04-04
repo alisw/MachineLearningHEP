@@ -206,7 +206,7 @@ def healthy_structure(dic_diff: dict): # pylint: disable=too-many-return-stateme
                 msg_err("\"label\" in %s/%s is not a list." % (cat, var))
                 return False
             len_lab = len(dic_var_single["label"])
-            if len_lab not in (length, 1):
+            if len_lab not in (length, 1) or len_lab == 0:
                 msg_err("\"label\" in %s/%s does not have correct length: %d (expected: 1%s)." % \
                     (cat, var, len_lab, " or %d" % length if length > 1 else ""))
                 return False
@@ -299,12 +299,12 @@ def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-
                 slice_dic(dic_var_single_slice, index)
 
                 # Modify the database.
-                if not dic_var_single_slice:
-                    msg_warn("Empty diffs. No changes to make.")
-                modify_dictionary(dic_new, dic_var_single_slice)
                 if not modify_paths(dic_new, "default/default", "%s/%s" % \
                     (cat, format_varname(var, index, n_var)), do_processor):
                     return
+                if not dic_var_single_slice:
+                    msg_warn("Empty diffs. No changes to make.")
+                modify_dictionary(dic_new, dic_var_single_slice)
 
                 #print(yaml.safe_dump(dic_db, default_flow_style=False))
 
