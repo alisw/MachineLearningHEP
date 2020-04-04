@@ -765,7 +765,7 @@ class AnalyzerJet(Analyzer):
 
         input_data = self.get_simulated_yields(self.powheg_path_nonprompt, 3, False)
         if not input_data:
-            self.logger.fatal("Error: Failed to get simulated yields from %s", self.powheg_path_nonprompt)
+            self.logger.fatal(make_message_notfound("simulated yields", self.powheg_path_nonprompt))
 
         # Ensure correct binning: x - shape, y - jet pt, z - pt hadron
         if not equal_binning_lists(input_data, list_x = self.varshaperanges_gen):
@@ -1286,7 +1286,7 @@ class AnalyzerJet(Analyzer):
 
         input_powheg = self.get_simulated_yields(self.powheg_path_prompt, 2, True)
         if not input_powheg:
-            self.logger.fatal("Error: Failed to get simulated yields from %s", self.powheg_path_prompt)
+            self.logger.fatal(make_message_notfound("simulated yields", self.powheg_path_prompt))
         input_powheg_xsection = input_powheg.Clone(input_powheg.GetName() + "_xsec")
 
         # Ensure correct binning: x - shape, y - jet pt
@@ -1314,7 +1314,7 @@ class AnalyzerJet(Analyzer):
 
             input_powheg_sys_i = self.get_simulated_yields(path, 2, True)
             if not input_powheg_sys_i:
-                self.logger.fatal("Error: Failed to get simulated yields from %s", path)
+                self.logger.fatal(make_message_notfound("simulated yields", path))
             input_powheg_sys_i.SetName("fh2_prompt_%s_%d" % (self.v_varshape_binning, i_powheg))
             input_powheg_sys.append(input_powheg_sys_i)
             input_powheg_xsection_sys_i = input_powheg_sys_i.Clone(input_powheg_sys_i.GetName() + "_xsec")
@@ -2088,7 +2088,7 @@ class AnalyzerJet(Analyzer):
 
         input_powheg = self.get_simulated_yields(self.powheg_path_prompt, 2, True)
         if not input_powheg:
-            self.logger.fatal("Error: Failed to get simulated yields from %s", self.powheg_path_prompt)
+            self.logger.fatal(make_message_notfound("simulated yields", self.powheg_path_prompt))
         input_powheg_xsection = input_powheg.Clone(input_powheg.GetName() + "_xsec")
 
 
@@ -2110,7 +2110,7 @@ class AnalyzerJet(Analyzer):
 
             input_powheg_sys_i = self.get_simulated_yields(path, 2, True)
             if not input_powheg_sys_i:
-                self.logger.fatal("Error: Failed to get simulated yields from %s", path)
+                self.logger.fatal(make_message_notfound("simulated yields", path))
             input_powheg_sys_i.SetName("fh2_prompt_%s_%d" % (self.v_varshape_binning, i_powheg))
             input_powheg_sys.append(input_powheg_sys_i)
             input_powheg_xsection_sys_i = input_powheg_sys_i.Clone(input_powheg_sys_i.GetName() + "_xsec")
@@ -2401,7 +2401,7 @@ class AnalyzerJet(Analyzer):
 
             input_pythia8_i = self.get_simulated_yields(path, 2, True)
             if not input_pythia8_i:
-                self.logger.fatal("Error: Failed to get simulated yields from %s", path)
+                self.logger.fatal(make_message_notfound("simulated yields", path))
             input_pythia8_i.SetName("fh2_pythia_prompt_%s_%d" % (self.v_varshape_binning, i_pythia8))
             input_pythia8.append(input_pythia8_i)
             input_pythia8_xsection_i = input_pythia8_i.Clone(input_pythia8_i.GetName() + "_xsec")
@@ -2599,8 +2599,10 @@ class AnalyzerJet(Analyzer):
         dim - dimension of the output histogram: 2, 3
         prompt - prompt or non-prompt: True, False'''
 
+        print("Starting the histogram extraction from an MC tree\nInput file: %s" % file_path)
+
         if dim not in (2, 3):
-            self.logger.fatal("Error: %d is not a supported dimension.")
+            self.logger.fatal("Error: %d is not a supported dimension.", dim)
 
         # Get the normalisation factor.
         file_sim = TFile.Open(file_path)
@@ -2612,15 +2614,13 @@ class AnalyzerJet(Analyzer):
         scale_factor = pr_xsec.GetBinContent(1)/pr_xsec.GetEntries()
         file_sim.Close()
 
-        print("Scaling factor: ", scale_factor)
-
         # Load the tree.
         if "D0" in self.case:
             tree_name = "tree_D0"
-            print("Will try to load the D0 tree.")
+            print("Loading the D0 tree")
         elif "Lc" in self.case:
             tree_name = "tree_Lc"
-            print("Will try to load the Lc tree.")
+            print("Loading the Lc tree")
         else:
             self.logger.fatal(make_message_notfound("the particle name", self.case))
         tree_sim = uproot.open(file_path)[tree_name]
@@ -2635,10 +2635,10 @@ class AnalyzerJet(Analyzer):
         try:
             df_sim = tree_sim.pandas.df(branches=list_branches)
         except Exception: # pylint: disable=broad-except
-            self.logger.fatal(make_message_notfound("variables", "tree " + tree_name))
+            self.logger.fatal(make_message_notfound("variables", tree_name))
 
-        print("Entries: ", len(df_sim))
-        print("Filtering")
+        print("Entries in the tree:", len(df_sim))
+        print("Filtering %sprompt hadrons" % ("" if prompt else "non-"))
         # Apply the same cuts as in gen MC.
         # cut on jet pt
         df_sim = seldf_singlevar(df_sim, self.v_var2_binning, self.lvar2_binmin_gen[0], self.lvar2_binmax_gen[-1])
@@ -2659,32 +2659,27 @@ class AnalyzerJet(Analyzer):
         #sel_jet_nconst = "n_const > 1"
         #df_sim = df_sim.query(sel_jet_nconst)
 
-        print("Entries: ", len(df_sim))
-        print("Filling")
+        print("Entries after filtering:", len(df_sim))
         # Create, fill and scale the histogram.
+        print("Filling a %dD histogram" % dim)
         if dim == 2:
-            print("Dim 2")
             # Binning: x - shape, y - jet pt
             his2 = makefill2dhist(df_sim, "h2_yield_sim", \
                 self.varshapebinarray_gen, self.var2binarray_gen, \
                 self.v_varshape_binning, self.v_var2_binning)
-            print("Entries: ", his2.GetEntries())
-            print("Scaling")
+            print("Scaling with:", scale_factor)
             his2.Scale(scale_factor)
+            print("Entries in the histogram:", his2.GetEntries())
             print("Returning")
-            print("Entries: ", his2.GetEntries())
             return his2
         if dim == 3:
-            print("Dim 3")
             # Binning: x - shape, y - jet pt, z - pt hadron
-            print(len(df_sim))
             his3 = makefill3dhist(df_sim, "h3_yield_sim", \
                 self.varshapebinarray_gen, self.var2binarray_gen, self.var1binarray, \
                 self.v_varshape_binning, self.v_var2_binning, self.v_var_binning)
-            print("Entries: ", his3.GetEntries())
-            print("Scaling")
+            print("Scaling with:", scale_factor)
             his3.Scale(scale_factor)
+            print("Entries in the histogram:", his3.GetEntries())
             print("Returning")
-            print("Entries: ", his3.GetEntries())
             return his3
         return None
