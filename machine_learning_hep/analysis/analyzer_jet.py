@@ -57,7 +57,7 @@ class AnalyzerJet(Analyzer):
 
         # plotting
         # LaTeX string
-        self.p_latexnmeson = datap["analysis"][self.typean]["latexnamemeson"]
+        self.p_latexnhadron = datap["analysis"][self.typean]["latexnamehadron"]
         self.p_latexndecay = datap["analysis"][self.typean]["latexnamedecay"]
         self.p_latexbin2var = datap["analysis"][self.typean]["latexbin2var"]
         self.v_varshape_latex = datap["analysis"][self.typean]["var_shape_latex"]
@@ -323,7 +323,7 @@ class AnalyzerJet(Analyzer):
                 latex = TLatex(0.2, 0.85, '%.2f < %s < %.2f GeV/#it{c}' % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
                 draw_latex(latex)
                 latex2 = TLatex(0.2, 0.8, '%.2f < #it{p}_{T, %s} < %.2f GeV/#it{c}' % \
-                    (self.lpt_finbinmin[ipt], self.p_latexnmeson, min(self.lpt_finbinmax[ipt],self.lvar2_binmax_reco[ibin2])))
+                    (self.lpt_finbinmin[ipt], self.p_latexnhadron, min(self.lpt_finbinmax[ipt],self.lvar2_binmax_reco[ibin2])))
                 draw_latex(latex2)
                 c_fitted_result.SaveAs("%s/step0_fitted_result_%s.eps" % \
                     (self.d_resultsallpdata, suffix))
@@ -371,8 +371,8 @@ class AnalyzerJet(Analyzer):
                      self.lvar2_binmax_reco[imult])
             legeff.AddEntry(h_sel_pr, legeffstring, "LE")
             h_sel_pr.SetTitle("")
-            h_sel_pr.GetXaxis().SetTitle("#it{p}_{T}^{%s} (GeV/#it{c})" % self.p_latexnmeson)
-            h_sel_pr.GetYaxis().SetTitle("prompt %s-jet efficiency" % self.p_latexnmeson)
+            h_sel_pr.GetXaxis().SetTitle("#it{p}_{T}^{%s} (GeV/#it{c})" % self.p_latexnhadron)
+            h_sel_pr.GetYaxis().SetTitle("prompt %s-jet efficiency" % self.p_latexnhadron)
             h_sel_pr.SetMinimum(0.)
             h_sel_pr.SetMaximum(1.5)
         legeff.Draw()
@@ -407,8 +407,8 @@ class AnalyzerJet(Analyzer):
                      self.lvar2_binmax_gen[imult])
             legeffFD.AddEntry(h_sel_fd, legeffFDstring, "LE")
             h_sel_fd.SetTitle("")
-            h_sel_fd.GetXaxis().SetTitle("#it{p}_{T}^{%s} (GeV/#it{c})" % self.p_latexnmeson)
-            h_sel_fd.GetYaxis().SetTitle("non-prompt %s-jet efficiency" % self.p_latexnmeson)
+            h_sel_fd.GetXaxis().SetTitle("#it{p}_{T}^{%s} (GeV/#it{c})" % self.p_latexnhadron)
+            h_sel_fd.GetYaxis().SetTitle("non-prompt %s-jet efficiency" % self.p_latexnhadron)
             h_sel_fd.SetMinimum(0.)
             h_sel_fd.SetMaximum(1.5)
         legeffFD.Draw()
@@ -582,7 +582,7 @@ class AnalyzerJet(Analyzer):
                 draw_latex(latex)
                 latex2 = TLatex(0.6, 0.8,
                                 "%.2f < #it{p}_{T, %s} < %.2f GeV/#it{c}" \
-                                % (self.lpt_finbinmin[ipt], self.p_latexnmeson, min(self.lpt_finbinmax[ipt],self.lvar2_binmax_reco[imult])))
+                                % (self.lpt_finbinmin[ipt], self.p_latexnhadron, min(self.lpt_finbinmax[ipt],self.lvar2_binmax_reco[imult])))
                 draw_latex(latex2)
                 csubz.SaveAs("%s/step1_side_band_subtracted_effcorrected_%s%s_%s.eps" % \
                              (self.d_resultsallpdata, self.case, self.typean, suffix))
@@ -638,7 +638,7 @@ class AnalyzerJet(Analyzer):
                 draw_latex(latex2)
                 latex3 = TLatex(0.42, 0.7, ("with %s (& cc), %.0f < "
                                             "#it{p}_{T, %s} < %.0f GeV/#it{c}")
-                                % (self.p_latexnmeson, self.lpt_finbinmin[ipt], self.p_latexnmeson, min(self.lpt_finbinmax[ipt],self.lvar2_binmax_reco[imult])))
+                                % (self.p_latexnhadron, self.lpt_finbinmin[ipt], self.p_latexnhadron, min(self.lpt_finbinmax[ipt],self.lvar2_binmax_reco[imult])))
                 draw_latex(latex3)
                 if hz_ratio != 0:
                     psigbkgsubz.SetLogy()
@@ -708,7 +708,7 @@ class AnalyzerJet(Analyzer):
         #extract the prompt z distributions of HF tagged jets.
 
         #The ingredients are the efficiency file that contains prompt and
-        #non-prompt efficiency for HF meson reconstruction as a function of pT
+        #non-prompt efficiency for HF hadron reconstruction as a function of pT
         #in bins of jet pt (file_eff) and the output file of the jet processer that
         #contains all the response matrix and jet efficiencies (feeddown_input_file).
 
@@ -928,7 +928,7 @@ class AnalyzerJet(Analyzer):
                 0.5*min(heff_pr_list[ibin2].GetMinimum(), heff_fd_list[ibin2].GetMinimum()), \
                 1.1*max(heff_pr_list[ibin2].GetMaximum(), heff_fd_list[ibin2].GetMaximum()))
             heff_pr_list[ibin2].SetTitle("")
-            heff_pr_list[ibin2].SetXTitle("#it{p}_{T, %s} (GeV/#it{c})" % self.p_latexnmeson)
+            heff_pr_list[ibin2].SetXTitle("#it{p}_{T, %s} (GeV/#it{c})" % self.p_latexnhadron)
             heff_pr_list[ibin2].SetYTitle("Efficiency #times Acceptance")
             heff_pr_list[ibin2].SetTitleOffset(1.2, "Y")
             heff_pr_list[ibin2].SetTitle("")
@@ -941,7 +941,7 @@ class AnalyzerJet(Analyzer):
             #PREL draw_latex(latex)
             latex2 = TLatex(0.52, 0.4, "PYTHIA 6, pp, #sqrt{#it{s}} = 13 TeV")
             draw_latex(latex2)
-            latex3 = TLatex(0.52, 0.35, ("%s #rightarrow %s (and charge conj.)" % (self.p_latexnmeson, self.p_latexndecay)))
+            latex3 = TLatex(0.52, 0.35, ("%s #rightarrow %s (and charge conj.)" % (self.p_latexnhadron, self.p_latexndecay)))
             draw_latex(latex3)
             latex4 = TLatex(0.52, 0.3, "in charged jets, anti-#it{k}_{T}, #it{R} = 0.4")
             draw_latex(latex4)
@@ -2360,11 +2360,11 @@ class AnalyzerJet(Analyzer):
             #PREL latex = TLatex(0.18,0.85,"ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV")
             latex = TLatex(0.18,0.85,"pp, #sqrt{#it{s}} = 13 TeV")
             draw_latex(latex)
-            latex1 = TLatex(0.18,0.8,"%s (& cc) in charged jets, anti-#it{k}_{T}, #it{R} = 0.4, #left|#it{#eta}_{jet}#right| < 0.5" % self.p_latexnmeson)
+            latex1 = TLatex(0.18,0.8,"%s (& cc) in charged jets, anti-#it{k}_{T}, #it{R} = 0.4, #left|#it{#eta}_{jet}#right| < 0.5" % self.p_latexnhadron)
             draw_latex(latex1)
             latex2 = TLatex(0.18,0.75,"%.0f < %s < %.0f GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex2)
-            latex3 = TLatex(0.18,0.7,"%.0f < #it{p}_{T, %s} < %.0f GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnmeson, min(self.lpt_finbinmax[-1],self.lvar2_binmax_reco[ibin2])))
+            latex3 = TLatex(0.18,0.7,"%.0f < #it{p}_{T, %s} < %.0f GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1],self.lvar2_binmax_reco[ibin2])))
             draw_latex(latex3)
             leg_finalwsys.Draw("same")
             cfinalwsys.SaveAs("%s/finalwsys_%s.pdf" % (self.d_resultsallpdata, suffix))
@@ -2403,12 +2403,12 @@ class AnalyzerJet(Analyzer):
             #PREL latex = TLatex(0.18,0.85,"ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV")
             latex = TLatex(0.18,0.85,"pp, #sqrt{#it{s}} = 13 TeV")
             draw_latex(latex)
-            latex1 = TLatex(0.18,0.8,"%s (& cc) in charged jets, anti-#it{k}_{T}, #it{R} = 0.4, #left|#it{#eta}_{jet}#right| < 0.5" % self.p_latexnmeson)
+            latex1 = TLatex(0.18,0.8,"%s (& cc) in charged jets, anti-#it{k}_{T}, #it{R} = 0.4, #left|#it{#eta}_{jet}#right| < 0.5" % self.p_latexnhadron)
             draw_latex(latex1)
             latex2 = TLatex(0.18,0.75,"%.0f < %s < %.0f GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex2)
             #latex3 = TLatex(0.18,0.7,"%.1f < %s #leq %.1f" % (self.lvarshape_binmin_reco[0], self.v_varshape_latex, self.lvarshape_binmax_reco[-1]))
-            latex3 = TLatex(0.18,0.7,"%.0f < #it{p}_{T, %s} < %.0f GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnmeson, min(self.lpt_finbinmax[-1],self.lvar2_binmax_reco[ibin2])))
+            latex3 = TLatex(0.18,0.7,"%.0f < #it{p}_{T, %s} < %.0f GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1],self.lvar2_binmax_reco[ibin2])))
             draw_latex(latex3)
             #latex4 = TLatex(0.18,0.65,"pp, #sqrt{#it{s}} = 13 TeV")
             #draw_latex(latex4)
@@ -2483,12 +2483,12 @@ class AnalyzerJet(Analyzer):
             #PREL latex = TLatex(0.18,0.85,"ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV")
             latex = TLatex(0.18,0.85,"pp, #sqrt{#it{s}} = 13 TeV")
             draw_latex(latex)
-            latex1 = TLatex(0.18,0.8,"%s (& cc) in charged jets, anti-#it{k}_{T}, #it{R} = 0.4, #left|#it{#eta}_{jet}#right| < 0.5" % self.p_latexnmeson)
+            latex1 = TLatex(0.18,0.8,"%s (& cc) in charged jets, anti-#it{k}_{T}, #it{R} = 0.4, #left|#it{#eta}_{jet}#right| < 0.5" % self.p_latexnhadron)
             draw_latex(latex1)
             latex2 = TLatex(0.18,0.75,"%.0f < %s < %.0f GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex2)
             #latex3 = TLatex(0.18,0.7,"%.1f < %s #leq %.1f" % (self.lvarshape_binmin_reco[0], self.v_varshape_latex, self.lvarshape_binmax_reco[-1]))
-            latex3 = TLatex(0.18,0.7,"%.0f < #it{p}_{T, %s} < %.0f GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnmeson, min(self.lpt_finbinmax[-1],self.lvar2_binmax_reco[ibin2])))
+            latex3 = TLatex(0.18,0.7,"%.0f < #it{p}_{T, %s} < %.0f GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1],self.lvar2_binmax_reco[ibin2])))
             draw_latex(latex3)
             #latex4 = TLatex(0.18,0.65,"pp, #sqrt{#it{s}} = 13 TeV")
             #draw_latex(latex4)

@@ -346,7 +346,7 @@ LcpKpi:
       sigmaarray: null
       FixedSigma: null
       fitcase: Lc
-      latexnamemeson: "#Lambda_{c}"
+      latexnamehadron: "#Lambda_{c}"
       latexbin2var: null
       nevents: null
       dodoublecross: false

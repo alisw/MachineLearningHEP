@@ -350,7 +350,7 @@ LcpK0spp:
       proc_type: Dhadrons_jet
       useperiod: [1,1,1,1]
 
-      latexnamemeson: "#Lambda_{c}^{#plus}"
+      latexnamehadron: "#Lambda_{c}^{#plus}"
       latexnamedecay: "p K^{0}_{S}"
 
       var_binning2: pt_jet

@@ -64,8 +64,8 @@ def plot_hfspectrum_years_ratios(case_1, case_2, ana_type, mult_bins=None):
     binsmin = data_param_1[case_1]["analysis"][ana_type]["sel_binmin2"]
     binsmax = data_param_1[case_1]["analysis"][ana_type]["sel_binmax2"]
 
-    name_1 = data_param_1[case_1]["analysis"][ana_type]["latexnamemeson"]
-    name_2 = data_param_2[case_2]["analysis"][ana_type]["latexnamemeson"]
+    name_1 = data_param_1[case_1]["analysis"][ana_type]["latexnamehadron"]
+    name_2 = data_param_2[case_2]["analysis"][ana_type]["latexnamehadron"]
 
     #br_1 = data_param_1[case_1]["ml"]["opt"]["BR"]
     #br_2 = data_param_2[case_2]["ml"]["opt"]["BR"]
@@ -149,7 +149,7 @@ def plot_hfspectrum_years(case, ana_type, mult_bins=None):
 
     binsmin = data_param[case]["analysis"][ana_type]["sel_binmin2"]
     binsmax = data_param[case]["analysis"][ana_type]["sel_binmax2"]
-    name = data_param[case]["analysis"][ana_type]["latexnamemeson"]
+    name = data_param[case]["analysis"][ana_type]["latexnamehadron"]
     latexbin2var = data_param[case]["analysis"][ana_type]["latexbin2var"]
     #br = data_param[case]["ml"]["opt"]["BR"]
     #sigmav0 = data_param[case]["analysis"]["sigmav0"]

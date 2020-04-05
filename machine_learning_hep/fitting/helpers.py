@@ -801,7 +801,7 @@ class MLFitter:
 
 
         latex_bin2_var = self.ana_config["latexbin2var"]
-        latex_meson_name = self.ana_config["latexnamemeson"]
+        latex_hadron_name = self.ana_config["latexnamehadron"]
         # Plot some summary historgrams
         leg_strings = [f"{self.pars_factory.bins2_edges_low[ibin2]} #leq {latex_bin2_var} < " \
                        f"{self.pars_factory.bins2_edges_up[ibin2]}" for ibin2 in bins2]
@@ -809,19 +809,19 @@ class MLFitter:
         # Yields summary plot
         plot_histograms([yieldshistos[ibin2] for ibin2 in bins2], True, True, leg_strings,
                         "uncorrected yields", "#it{p}_{T} (GeV/#it{c})",
-                        f"Uncorrected yields {latex_meson_name} {self.ana_type}", "mult. / int.",
+                        f"Uncorrected yields {latex_hadron_name} {self.ana_type}", "mult. / int.",
                         save_name)
         save_name = make_file_path(save_dir, "Means", "eps", None, [self.case, self.ana_type])
         # Means summary plot
         plot_histograms([means_histos[ibin2] for ibin2 in bins2], False, True, leg_strings, "Means",
                         "#it{p}_{T} (GeV/#it{c})",
-                        "#mu_{fit} " + f"{latex_meson_name} {self.ana_type}", "mult. / int.",
+                        "#mu_{fit} " + f"{latex_hadron_name} {self.ana_type}", "mult. / int.",
                         save_name)
         save_name = make_file_path(save_dir, "Sigmas", "eps", None, [self.case, self.ana_type])
         #Sigmas summary plot
         plot_histograms([sigmas_histos[ibin2] for ibin2 in bins2], False, True, leg_strings,
                         "Sigmas", "#it{p}_{T} (GeV/#it{c})",
-                        "#sigma_{fit} " + f"{latex_meson_name} {self.ana_type}", "mult. / int.",
+                        "#sigma_{fit} " + f"{latex_hadron_name} {self.ana_type}", "mult. / int.",
                         save_name)
 
         # Plot the initialized means and sigma for MC and data
@@ -829,13 +829,13 @@ class MLFitter:
                                    [self.case, self.ana_type])
         plot_histograms([means_init_mc_histos, means_init_data_histos], False, False,
                         ["MC", "data"], "Means of int. mult.", "#it{p}_{T} (GeV/#it{c})",
-                        "#mu_{fit} " + f"{latex_meson_name} {self.ana_type}", "", save_name)
+                        "#mu_{fit} " + f"{latex_hadron_name} {self.ana_type}", "", save_name)
 
         save_name = make_file_path(save_dir, "Sigmas_mult_int", "eps", None,
                                    [self.case, self.ana_type])
         plot_histograms([sigmas_init_mc_histos, sigmas_init_data_histos], False, False,
                         ["MC", "data"], "Sigmas of int. mult.", "#it{p}_{T} (GeV/#it{c})",
-                        "#sigma_{fit} " + f"{latex_meson_name} {self.ana_type}", "", save_name)
+                        "#sigma_{fit} " + f"{latex_hadron_name} {self.ana_type}", "", save_name)
 
 
     # pylint: disable=too-many-branches, too-many-statements, too-many-locals

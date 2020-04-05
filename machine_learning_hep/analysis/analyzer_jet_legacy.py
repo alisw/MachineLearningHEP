@@ -150,7 +150,7 @@ class AnalyzerJet(Analyzer):
         self.n_fileff = os.path.join(self.d_resultsallpmc, self.n_fileff)
 
 
-        self.p_latexnmeson = datap["analysis"][self.typean]["latexnamemeson"]
+        self.p_latexnhadron = datap["analysis"][self.typean]["latexnamehadron"]
         self.p_latexbin2var = datap["analysis"][self.typean]["latexbin2var"]
         self.var2ranges_reco = self.lvar2_binmin_reco.copy()
         self.var2ranges_reco.append(self.lvar2_binmax_reco[-1])
@@ -311,7 +311,7 @@ class AnalyzerJet(Analyzer):
             legeff.AddEntry(h_sel_pr, legeffstring, "LEP")
             h_sel_pr.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
             h_sel_pr.GetYaxis().SetTitle("Acc x efficiency (prompt) %s %s (1/GeV)" \
-                    % (self.p_latexnmeson, self.typean))
+                    % (self.p_latexnhadron, self.typean))
             h_sel_pr.SetMinimum(0.)
             h_sel_pr.SetMaximum(1.5)
         legeff.Draw()
@@ -346,7 +346,7 @@ class AnalyzerJet(Analyzer):
             legeffFD.AddEntry(h_sel_fd, legeffFDstring, "LEP")
             h_sel_fd.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
             h_sel_fd.GetYaxis().SetTitle("Acc x efficiency feed-down %s %s (1/GeV)" \
-                    % (self.p_latexnmeson, self.typean))
+                    % (self.p_latexnhadron, self.typean))
             h_sel_fd.SetMinimum(0.)
             h_sel_fd.SetMaximum(1.5)
         legeffFD.Draw()

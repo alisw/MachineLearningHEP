@@ -64,7 +64,7 @@ def plot_hfmassfitter(case, arraytype):
     v_var2_binningHM = data_param[case]["analysis"][arraytype[1]]["var_binning2"]
     p_nbin2 = len(lvar2_binminMB)
 
-    name = data_param[case]["analysis"][arraytype[0]]["latexnamemeson"]
+    name = data_param[case]["analysis"][arraytype[0]]["latexnamehadron"]
     latexbin2var = data_param[case]["analysis"][arraytype[0]]["latexbin2var"]
     plotbinMB = data_param[case]["analysis"][arraytype[0]]["plotbin"]
     plotbinHM = data_param[case]["analysis"][arraytype[1]]["plotbin"]

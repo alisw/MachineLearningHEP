@@ -138,7 +138,7 @@ class Analyzer:
         self.p_sigmaarray = datap["analysis"][self.typean]["sigmaarray"]
         self.p_fixedsigma = datap["analysis"][self.typean]["FixedSigma"]
         self.p_casefit = datap["analysis"][self.typean]["fitcase"]
-        self.p_latexnmeson = datap["analysis"][self.typean]["latexnamemeson"]
+        self.p_latexnhadron = datap["analysis"][self.typean]["latexnamehadron"]
         self.p_latexbin2var = datap["analysis"][self.typean]["latexbin2var"]
         self.p_dofullevtmerge = datap["dofullevtmerge"]
         self.p_dodoublecross = datap["analysis"][self.typean]["dodoublecross"]
@@ -442,7 +442,7 @@ class Analyzer:
             legeff.AddEntry(h_sel_pr, legeffstring, "LEP")
             h_sel_pr.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
             h_sel_pr.GetYaxis().SetTitle("Acc x efficiency (prompt) %s %s (1/GeV)" \
-                    % (self.p_latexnmeson, self.typean))
+                    % (self.p_latexnhadron, self.typean))
             h_sel_pr.SetMinimum(0.)
             h_sel_pr.SetMaximum(1.5)
         legeff.Draw()
@@ -477,7 +477,7 @@ class Analyzer:
             legeffFD.AddEntry(h_sel_fd, legeffFDstring, "LEP")
             h_sel_fd.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
             h_sel_fd.GetYaxis().SetTitle("Acc x efficiency feed-down %s %s (1/GeV)" \
-                    % (self.p_latexnmeson, self.typean))
+                    % (self.p_latexnhadron, self.typean))
             h_sel_fd.SetMinimum(0.)
             h_sel_fd.SetMaximum(1.5)
         legeffFD.Draw()
@@ -533,7 +533,7 @@ class Analyzer:
             his_eff_fd.SetLineColor(3)
             his_eff_pr.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
             his_eff_pr.GetYaxis().SetTitle("reconstruction efficiency %s %s" \
-                    % (self.p_latexnmeson, self.typean))
+                    % (self.p_latexnhadron, self.typean))
             his_eff_pr.GetYaxis().SetRangeUser(0, 0.6)
             leg_eff = TLegend(.5, .15, .7, .35)
             leg_eff.SetBorderSize(0)
@@ -861,9 +861,9 @@ class Analyzer:
             norm = 2 * self.p_br * self.p_nevents / (self.p_sigmamb * 1e12)
             hcross.Scale(1./norm)
             fileoutcross.cd()
-            hcross.GetXaxis().SetTitle("#it{p}_{T} %s (GeV/#it{c})" % self.p_latexnmeson)
+            hcross.GetXaxis().SetTitle("#it{p}_{T} %s (GeV/#it{c})" % self.p_latexnhadron)
             hcross.GetYaxis().SetTitle("d#sigma/d#it{p}_{T} (%s) %s" %
-                                       (self.p_latexnmeson, self.typean))
+                                       (self.p_latexnhadron, self.typean))
             hcross.SetName("hcross%d" % imult)
             hcross.GetYaxis().SetRangeUser(1e1, 1e10)
             legvsvar1endstring = "%.1f < %s < %.1f GeV/#it{c}" % \
@@ -899,7 +899,7 @@ class Analyzer:
             for imult in range(self.p_nbin2):
                 hcrossvsvar2[ipt].SetLineColor(ipt+1)
                 hcrossvsvar2[ipt].GetXaxis().SetTitle("%s" % self.p_latexbin2var)
-                hcrossvsvar2[ipt].GetYaxis().SetTitle(self.p_latexnmeson)
+                hcrossvsvar2[ipt].GetYaxis().SetTitle(self.p_latexnhadron)
                 binmulrange = self.var2ranges[imult+1]-self.var2ranges[imult]
                 if self.p_dodoublecross is True:
                     hcrossvsvar2[ipt].SetBinContent(imult+1, listvalues[imult][ipt]/binmulrange)
@@ -1091,10 +1091,10 @@ class Analyzer:
             hcross.Scale(1./(self.p_sigmav0 * 1e12))
             hcross.SetLineColor(imult+1)
             hcross.SetMarkerColor(imult+1)
-            hcross.GetXaxis().SetTitle("#it{p}_{T} %s (GeV/#it{c})" % self.p_latexnmeson)
+            hcross.GetXaxis().SetTitle("#it{p}_{T} %s (GeV/#it{c})" % self.p_latexnhadron)
             hcross.GetYaxis().SetTitleOffset(1.3)
             hcross.GetYaxis().SetTitle("Corrected yield/events (%s) %s" %
-                                       (self.p_latexnmeson, self.typean))
+                                       (self.p_latexnhadron, self.typean))
             hcross.GetYaxis().SetRangeUser(1e-10, 1)
             legvsvar1endstring = "%.1f #leq %s < %.1f GeV/#it{c}" % \
                     (self.lvar2_binmin[imult], self.p_latexbin2var, self.lvar2_binmax[imult])
