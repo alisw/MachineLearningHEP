@@ -289,8 +289,8 @@ D0pp:
       sel_an_binmin:    [2,3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
       sel_an_binmax:      [3,4,5,6,7,8,10,12,16,24,36,48] # hadron pt bins (sel_an_binmin bins)
       binning_matching:   [1,1,2,2,3,3, 4, 4, 5, 5, 6, 6] # mapping to skimming pt bins (sel_an_binmin bins)
-      jetsel_gen: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet)<0.5"
-      jetsel_reco: "abs(eta_jet)<0.5"
+      jetsel_gen: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
+      jetsel_reco: "abs(eta_jet) < 0.5"
       evtsel: is_ev_rej==0
       triggersel:
         data: "trigger_hasbit_INT7==1"
