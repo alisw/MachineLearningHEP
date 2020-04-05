@@ -1545,6 +1545,7 @@ class AnalyzerJet(Analyzer):
         unfolded_jetpt_scaled_list=[]
         refolding_test_list=[]
         refolding_test_jetpt_list=[]
+        i_iter_choice = self.choice_iter_unfolding - 1 # list index of the chosen iteration
         for i in range(self.niter_unfolding):
             unfolded_z_scaled_list_iter=[]
             unfolded_z_xsection_list_iter=[]
@@ -1583,7 +1584,7 @@ class AnalyzerJet(Analyzer):
                 draw_latex(latex2)
                 cunfolded_z.SaveAs("%s/cunfolded_z_%d_%s.eps" % (self.d_resultsallpdata, i+1, suffix))
                 # Save the selected iteration under a special name.
-                if i + 1 == self.choice_iter_unfolding:
+                if i == i_iter_choice:
                     unfolded_z_scaled.Write("unfolded_z_sel_%s" % suffix)
                     unfolded_z_xsection.Write("unfolded_z_xsection_sel_%s" % suffix)
                     cunfolded_z.SaveAs("%s/cunfolded_z_sel_%s.eps" % (self.d_resultsallpdata, suffix))
@@ -1705,9 +1706,9 @@ class AnalyzerJet(Analyzer):
             input_mc_gen_z[ibin2].SetXTitle(self.v_varshape_latex)
             input_mc_gen_z[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
             input_mc_gen_z[ibin2].Draw()
-            setup_histogram(unfolded_z_scaled_list[self.choice_iter_unfolding][ibin2],2)
-            leg_input_mc_gen_z.AddEntry(unfolded_z_scaled_list[self.choice_iter_unfolding][ibin2], "unfolded ALICE data", "P")
-            unfolded_z_scaled_list[self.choice_iter_unfolding][ibin2].Draw("same")
+            setup_histogram(unfolded_z_scaled_list[i_iter_choice][ibin2],2)
+            leg_input_mc_gen_z.AddEntry(unfolded_z_scaled_list[i_iter_choice][ibin2], "unfolded ALICE data", "P")
+            unfolded_z_scaled_list[i_iter_choice][ibin2].Draw("same")
             setup_histogram(input_powheg_z[ibin2],3)
             leg_input_mc_gen_z.AddEntry(input_powheg_z[ibin2], "POWHEG + PYTHIA 6", "P")
             input_powheg_z[ibin2].Draw("same")
@@ -1727,14 +1728,14 @@ class AnalyzerJet(Analyzer):
             cinput_mc_gen_z_xsection.SetWindowSize(500, 500)
             leg_input_mc_gen_z_xsection = TLegend(.2, .73, .45, .88, "")
             setup_legend(leg_input_mc_gen_z_xsection)
-            setup_histogram(unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2],4)
-            leg_input_mc_gen_z_xsection.AddEntry(unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2], "unfolded ALICE data", "P")
-            unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_reco[0]+0.01, self.lvarshape_binmax_reco[-1]-0.001)
-            unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2].GetYaxis().SetRangeUser(0.0,unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2].GetMaximum()*2)
-            unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2].SetTitle("")
-            unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2].SetXTitle(self.v_varshape_latex)
-            unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2].SetYTitle("d#it{#sigma}/d%s (mb)" % self.v_varshape_latex)
-            unfolded_z_xsection_list[self.choice_iter_unfolding][ibin2].Draw()
+            setup_histogram(unfolded_z_xsection_list[i_iter_choice][ibin2],4)
+            leg_input_mc_gen_z_xsection.AddEntry(unfolded_z_xsection_list[i_iter_choice][ibin2], "unfolded ALICE data", "P")
+            unfolded_z_xsection_list[i_iter_choice][ibin2].GetXaxis().SetRangeUser(self.lvarshape_binmin_reco[0]+0.01, self.lvarshape_binmax_reco[-1]-0.001)
+            unfolded_z_xsection_list[i_iter_choice][ibin2].GetYaxis().SetRangeUser(0.0,unfolded_z_xsection_list[i_iter_choice][ibin2].GetMaximum()*2)
+            unfolded_z_xsection_list[i_iter_choice][ibin2].SetTitle("")
+            unfolded_z_xsection_list[i_iter_choice][ibin2].SetXTitle(self.v_varshape_latex)
+            unfolded_z_xsection_list[i_iter_choice][ibin2].SetYTitle("d#it{#sigma}/d%s (mb)" % self.v_varshape_latex)
+            unfolded_z_xsection_list[i_iter_choice][ibin2].Draw()
             setup_histogram(input_powheg_xsection_z[ibin2],3)
             leg_input_mc_gen_z_xsection.AddEntry(input_powheg_xsection_z[ibin2], "POWHEG + PYTHIA 6", "P")
             input_powheg_xsection_z[ibin2].Draw("same")
@@ -1780,12 +1781,12 @@ class AnalyzerJet(Analyzer):
             cunfolded_not_z.SetWindowSize(500, 500)
             leg_cunfolded_not_z = TLegend(.15, .75, .35, .9, "")
             setup_legend(leg_cunfolded_not_z)
-            setup_histogram(unfolded_z_scaled_list[self.choice_iter_unfolding][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1],2)
-            leg_cunfolded_not_z.AddEntry(unfolded_z_scaled_list[self.choice_iter_unfolding][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1], "unfolded", "P")
-            unfolded_z_scaled_list[self.choice_iter_unfolding][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1].GetXaxis().SetRangeUser(self.lvarshape_binmin_reco[0]+0.01, self.lvarshape_binmax_reco[-1]-0.001)
-            unfolded_z_scaled_list[self.choice_iter_unfolding][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1].GetYaxis().SetRangeUser(0.0,unfolded_z_scaled_list[self.choice_iter_unfolding][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1].GetMaximum()*1.5)
-            unfolded_z_scaled_list[self.choice_iter_unfolding][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1].SetTitle("")
-            unfolded_z_scaled_list[self.choice_iter_unfolding][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1].Draw()
+            setup_histogram(unfolded_z_scaled_list[i_iter_choice][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1],2)
+            leg_cunfolded_not_z.AddEntry(unfolded_z_scaled_list[i_iter_choice][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1], "unfolded", "P")
+            unfolded_z_scaled_list[i_iter_choice][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1].GetXaxis().SetRangeUser(self.lvarshape_binmin_reco[0]+0.01, self.lvarshape_binmax_reco[-1]-0.001)
+            unfolded_z_scaled_list[i_iter_choice][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1].GetYaxis().SetRangeUser(0.0,unfolded_z_scaled_list[i_iter_choice][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1].GetMaximum()*1.5)
+            unfolded_z_scaled_list[i_iter_choice][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1].SetTitle("")
+            unfolded_z_scaled_list[i_iter_choice][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1].Draw()
             setup_histogram(input_data_z_scaled,4)
             leg_cunfolded_not_z.AddEntry(input_data_z_scaled, "side-band subtracted, eff. corrected", "P")
             input_data_z_scaled.Draw("same")
@@ -1796,8 +1797,8 @@ class AnalyzerJet(Analyzer):
 
             h_unfolded_not_stat_error = TH1F("h_unfolded_not_stat_error"+suffix, "h_unfolded_not_stat_error"+suffix, self.p_nbinshape_reco, self.varshapebinarray_reco)
             for ibinshape in range(self.p_nbinshape_reco):
-                error_on_unfolded = unfolded_z_scaled_list[self.choice_iter_unfolding][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1].GetBinError(input_mc_gen.GetXaxis().FindBin(self.lvarshape_binmin_reco[ibinshape]))
-                content_on_unfolded = unfolded_z_scaled_list[self.choice_iter_unfolding][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1].GetBinContent(input_mc_gen.GetXaxis().FindBin(self.lvarshape_binmin_reco[ibinshape]))
+                error_on_unfolded = unfolded_z_scaled_list[i_iter_choice][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1].GetBinError(input_mc_gen.GetXaxis().FindBin(self.lvarshape_binmin_reco[ibinshape]))
+                content_on_unfolded = unfolded_z_scaled_list[i_iter_choice][input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2])-1].GetBinContent(input_mc_gen.GetXaxis().FindBin(self.lvarshape_binmin_reco[ibinshape]))
                 error_on_input_data = input_data_z_scaled.GetBinError(ibinshape+1)
                 content_on_input_data = input_data_z_scaled.GetBinContent(ibinshape+1)
                 if error_on_input_data != 0 and content_on_unfolded != 0:
