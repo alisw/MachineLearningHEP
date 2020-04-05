@@ -18,6 +18,7 @@ Author: Vit Kucera <vit.kucera@cern.ch>
 """
 
 import os
+import shutil
 import argparse
 import subprocess
 import shlex
@@ -76,6 +77,56 @@ def modify_paths(dic: dict, old: str, new: str, do_proc: bool):
                     msg_err("\"%s\" not found in %s/%s/%s" % (old, key_a, data, key_d))
                     return False
                 dic_ana[data][key_d] = new_val_d
+    return True
+
+def ask_delete_dir(path: str):
+    '''Check whether the directory exists and delete it if the user approves.'''
+    if isinstance(path, list):
+        for p in path:
+            if not ask_delete_dir(p):
+                return False
+        return True
+    if not isinstance(path, str):
+        msg_err("Not a string input: %s." % path)
+        return False
+    if not os.path.isdir(path):
+        return True
+    msg_warn("This directory already exists:\n%s\nDo you wish to delete it?" % path)
+    answers_yes = ["Y", "y", "Yes", "yes"]
+    answers_no = ["N", "n", "No", "no"]
+    answers_allowed = answers_yes + answers_no
+    print("Allowed answers:", *answers_allowed)
+    answer = input("Your answer: ")
+    while answer not in answers_allowed:
+        print("Not a valid answer.")
+        answer = input("Your answer: ")
+    if answer in answers_yes:
+        print("Deleting the directory %s" % path)
+        try:
+            shutil.rmtree(path)
+        except OSError:
+            msg_err("Failed to delete the directory %s" % path)
+            return False
+    return True
+
+def delete_output_dirs(dic: dict, ana: str):
+    '''Check whether the output directories exist and delete them if the user approves.'''
+    if "analysis" not in dic:
+        msg_err("key \"analysis\" not found.")
+        return False
+    if ana not in dic["analysis"]:
+        msg_err("Analysis \"%s\" not found." % ana)
+        return False
+    dic_ana = dic["analysis"][ana]
+    if not isinstance(dic_ana, dict):
+        msg_err("key \"%s\" is not a dictionary." % ana)
+        return False
+    dirs = ["data", "mc"]
+    results = ["results", "resultsallp"]
+    for data in dirs:
+        for res in results:
+            if not ask_delete_dir(dic_ana[data][res]):
+                return False
     return True
 
 def format_value(old, new):
@@ -319,6 +370,8 @@ def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-
 
                 # Start the analysis.
                 if analysis:
+                    if do_processor and not delete_output_dirs(dic_new, analysis):
+                        return
                     mode = "complete" if do_processor else "analyzer"
                     config = "submission/default_%s.yml" % mode
                     print("Starting the analysis \x1b[1;32m%s\x1b[0m for the variation " \
