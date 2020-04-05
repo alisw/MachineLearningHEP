@@ -66,7 +66,7 @@ categories:
                             fix_mean: [true]
             fix_sigma:
                 activate: [yes]
-                label: ["fix sigma"]
+                label: ["free sigma"]
                 diffs:
                     analysis:
                         jet_zg:
@@ -101,7 +101,7 @@ categories:
 
             sb_left:
                 activate: [yes]
-                label: ["sb left only"]
+                label: ["left sb only"]
                 diffs:
                     analysis:
                         jet_zg:
@@ -172,17 +172,10 @@ categories:
         symmetrise: true
         rms_both_sides: true
         variations:
-            high:
-                activate: [yes]
-                label: ["high"]
+            iter:
+                activate: [yes, yes]
+                label: ["down", "up"]
                 diffs:
                     analysis:
                         jet_zg:
-                            niterunfoldingchosen: [7]
-            low:
-                activate: [yes]
-                label: ["low"]
-                diffs:
-                    analysis:
-                        jet_zg:
-                            niterunfoldingchosen: [3]
+                            niterunfoldingchosen: [3, 7]

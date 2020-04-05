@@ -1582,6 +1582,11 @@ class AnalyzerJet(Analyzer):
                 latex2 = TLatex(0.6,0.2,'iteration %d' % (i+1))
                 draw_latex(latex2)
                 cunfolded_z.SaveAs("%s/cunfolded_z_%d_%s.eps" % (self.d_resultsallpdata, i+1, suffix))
+                # Save the selected iteration under a special name.
+                if i + 1 == self.choice_iter_unfolding:
+                    unfolded_z_scaled.Write("unfolded_z_sel_%s" % suffix)
+                    unfolded_z_xsection.Write("unfolded_z_xsection_sel_%s" % suffix)
+                    cunfolded_z.SaveAs("%s/cunfolded_z_sel_%s.eps" % (self.d_resultsallpdata, suffix))
 
 
             unfolded_jetpt = unfolded_zvsjetpt.ProjectionY("unfolded_jetpt",1, self.p_nbinshape_gen,"e")
@@ -2100,15 +2105,13 @@ class AnalyzerJet(Analyzer):
         input_histograms_default=[]
         for ibin2 in range(self.p_nbin2_gen):
             suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-            name_his = "unfolded_z_%d_%s" % (self.choice_iter_unfolding, suffix)
+            name_his = "unfolded_z_sel_%s" % suffix
             input_histograms_default.append(input_file_default.Get(name_his))
             if not input_histograms_default[ibin2]:
                 self.logger.fatal(make_message_notfound(name_his, path_def))
 
         input_files_sys=[]
         for sys_cat in range(self.n_sys_cat):
-            if self.systematic_catnames[sys_cat] == "regularisation":
-                continue
             input_files_sysvar=[]
             for sys_var, varname in enumerate(self.systematic_varnames[sys_cat]):
                 path = path_def.replace(string_default, self.systematic_catnames[sys_cat] + "/" + varname)
@@ -2120,22 +2123,13 @@ class AnalyzerJet(Analyzer):
         input_histograms_sys=[]
         for ibin2 in range(self.p_nbin2_gen):
             suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-            name_his = "unfolded_z_%d_%s" % (self.choice_iter_unfolding, suffix)
+            name_his = "unfolded_z_sel_%s" % suffix
             input_histograms_syscat=[]
             for sys_cat in range(self.n_sys_cat):
                 input_histograms_syscatvar=[]
                 for sys_var in range(self.systematic_variations[sys_cat]):
-                    path_file = path_def
-                    if self.systematic_catnames[sys_cat] == "regularisation":
-                        if sys_var == 0:
-                            name_his = "unfolded_z_%d_%s" % (self.niterunfoldingregdown, suffix)
-                            input_histograms_syscatvar.append(input_file_default.Get(name_his))
-                        else:
-                            name_his = "unfolded_z_%d_%s" % (self.niterunfoldingregup, suffix)
-                            input_histograms_syscatvar.append(input_file_default.Get(name_his))
-                    else:
-                        input_histograms_syscatvar.append(input_files_sys[sys_cat][sys_var].Get(name_his))
-                        path_file = path_def.replace(string_default, self.systematic_catnames[sys_cat] + "/" + self.systematic_varnames[sys_cat][sys_var])
+                    input_histograms_syscatvar.append(input_files_sys[sys_cat][sys_var].Get(name_his))
+                    path_file = path_def.replace(string_default, self.systematic_catnames[sys_cat] + "/" + self.systematic_varnames[sys_cat][sys_var])
                     if not input_histograms_syscatvar[sys_var]:
                         self.logger.fatal(make_message_notfound(name_his, path_file))
                     if debug:
