@@ -56,7 +56,7 @@ LcpK0spp:
               run_number, ev_id, ev_id_ext, nsigTPC_Pr_0, nsigTOF_Pr_0,
               spdhits_prong0, spdhits_prong1, spdhits_prong2,
               pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet,
-              pt_gen_jet, eta_gen_jet, phi_gen_jet, delta_eta_gen_jet, delta_phi_gen_jet, delta_r_gen_jet, pt_gen_cand, 
+              pt_gen_jet, eta_gen_jet, phi_gen_jet, delta_eta_gen_jet, delta_phi_gen_jet, delta_r_gen_jet, pt_gen_cand,
               p_prong0, p_prong1, p_prong2]
     var_evt:
       data: [centrality, z_vtx_reco, n_vtx_contributors, n_tracks, is_ev_rej, run_number,
@@ -244,7 +244,7 @@ LcpK0spp:
       maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp: [100,100,100] #list of periods
       chunksizeskim: [1000,1000,1000] #list of periods
-      fracmerge: [1.0,1.0,1.0]  #list of periods       
+      fracmerge: [1.0,1.0,1.0]  #list of periods
       seedmerge: [12,12,12] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
       unmerged_tree_dir: [/data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodLcpK0s/373_20200304-2021/merged,
@@ -339,7 +339,7 @@ LcpK0spp:
     inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
     dir_general_plots: /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/analysis_plots
 
-    MBjetvspt:
+    jet_FF:
       proc_type: Dhadrons_jet
       useperiod: [1,1,1] #list of periods
 
@@ -349,40 +349,44 @@ LcpK0spp:
       var_binning2: pt_jet
       latexbin2var: "#it{p}_{T, jet}^{ch}"
       sel_binmin2_reco: [5.0,7.0,15.0] #list of nbins
-      sel_binmax2_reco: [7.0,15.0,35.0] #list of nbins
-      sel_binmin2_gen: [5.0,7.0,15.0] #list of nbins
-      sel_binmax2_gen: [7.0,15.0,35.0] #list of nbins
+      sel_binmax2_reco:     [7.0,15.0,35.0] #list of nbins
+      sel_binmin2_gen:  [5.0,7.0,15.0] #list of nbins
+      sel_binmax2_gen:      [7.0,15.0,35.0] #list of nbins
       var_binningshape: z
       var_binningshape_gen: z_gen
       var_shape_latex: "#it{z}_{#parallel}^{ch}"
       sel_binminshape_reco: [0.4001,0.6001,0.7001,0.8001,0.9001]
-      sel_binmaxshape_reco: [0.6001,0.7001,0.8001,0.9001,1.0001]
-      sel_binminshape_gen: [0.4001,0.6001,0.7001,0.8001,0.9001]
-      sel_binmaxshape_gen: [0.6001,0.7001,0.8001,0.9001,1.0001]
+      sel_binmaxshape_reco:        [0.6001,0.7001,0.8001,0.9001,1.0001]
+      sel_binminshape_gen:  [0.4001,0.6001,0.7001,0.8001,0.9001]
+      sel_binmaxshape_gen:         [0.6001,0.7001,0.8001,0.9001,1.0001]
       sel_closure_frac: 0.2
       triggerbit: INT7
-      sel_an_binmin: [3,4,6,8,12] #list of pt nbins
-      sel_an_binmax: [4,6,8,12,24] #list of pt nbins
-      binning_matching: [1,2,3,4,5] #list of pt nbins
-      jetsel_gen: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet)<0.5"
-      jetsel_reco: "abs(eta_jet)<0.5"
+      sel_an_binmin:    [3,4,6,8,12] #list of pt nbins
+      sel_an_binmax:      [4,6,8,12,24] #list of pt nbins
+      binning_matching:   [1,2,3,4, 5] #list of pt nbins
+      jetsel_gen: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
+      jetsel_reco: "abs(eta_jet) < 0.5"
       evtsel: is_ev_rej==0
       triggersel:
         data: "trigger_hasbit_INT7==1"
         mc: null
         weighttrig: false
-      data:
+      data: &data_out_default
         runselection: [null, null, null]
-        results: [/data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_data/resultsMBjetvspt
-      mc:
+        results: [/data/DerivedResultsJets/LckAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/LckAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/LckAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/LckAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
+      mc: &mc_out_default
         runselection: [null, null, null]
-        results: [/data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_mc_prodD2H/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/LckAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/LckAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/LckAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/LckAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_mc_prodD2H/resultsMBjetvspt
+      data_proc: # alternative processor output used as the analyzer input
+        <<: *data_out_default
+      mc_proc: # alternative processor output used as the analyzer input
+        <<: *mc_out_default
 
       mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
@@ -412,34 +416,23 @@ LcpK0spp:
 
       niterunfolding: 15
       niterunfoldingchosen: 4
-      niterunfoldingregdown: 3
-      niterunfoldingregup: 7
 
       branching_ratio: 1.09e-2
       xsection_inel: 57.8
 
       doprior: false
 
-      powheg_path_prompt: /data/POWHEG/powheg_pr_histos_Lc_central.root
-      powheg_path_nonprompt: /data/POWHEG/powheg_fd_histos_Lc_central.root
+      powheg_path_nonprompt: /data/POWHEG/trees_powheg_fd_central.root
 
-      powheg_prompt_variations_path: /data/POWHEG/LckINT7HighMultwithJets/prompt/powheg_lc_charm_
+      powheg_path_prompt: /data/POWHEG/trees_powheg_pr_central.root
+      powheg_prompt_variations_path: /data/POWHEG/trees_powheg_pr_
       powheg_prompt_variations: ["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
 
-      powheg_nonprompt_variations_path: /data/POWHEG/LckINT7HighMultwithJets/nonprompt/powheg_lc_beauty_
-      powheg_nonprompt_variations: ["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
-
-      pythia8_prompt_variations_path: /data/PYTHIA8/LckINT7HighMultwithJets/prompt/pythia_lc_charm_
+      pythia8_prompt_variations_path: /data/PYTHIA8/trees_pythia8_pr_
       pythia8_prompt_variations: ["default","coloursoft_mode0"]
       pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
 
-
-      systematic_categories: ["fitting", "cutvar", "powheg", "unfolding_prior", "regularisation"] #sideband 20
-      systematic_variations: [8, 17, 9, 1, 2]
-      systematic_correlation: ["corr", "corr", "corr", "corr", "corr", "corr"]
-      systematic_rms: [true,  true, true, true , true, true]
-      systematic_symmetrise: [true,  true, true, true , true, true]
-      systematic_rms_both_sides: [true,  true, true, true , true, true]
+      systematics_db: ./data/data_prod_20200304/database_systematics_LcpK0spp_jet_FF.yml
 
       nevents: 1590000000.
 
@@ -724,7 +717,7 @@ LcpK0spp:
         bkg_funcs: [Pol2, Pol3]
         # Whether to include the free sigma option in the derivation of raw yield uncertainty in given pT bin
         consider_free_sigma: [False, False, False, False, False, False]
-  
+
 
   systematics:
     probvariation:
