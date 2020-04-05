@@ -487,7 +487,7 @@ LcpK0spp:
       #fitcase: Lc
       #dodoublecross: false
 
-      latexnamemeson: "#Lambda_{c}^{pK0s}"
+      latexnamehadron: "#Lambda_{c}^{pK0s}"
       latexbin2var: "p_{T,jet}"
       nevents: 1590000000.
 

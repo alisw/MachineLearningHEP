@@ -270,7 +270,7 @@ LbITS2:
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01]
       FixedSigma: false
       fitcase: Lb0
-      latexnamemeson: "#Lambda^{0}_{b}"
+      latexnamehadron: "#Lambda^{0}_{b}"
       latexbin2var: "n_{trkl}"
       nevents: 1000000.
       dodoublecross: false

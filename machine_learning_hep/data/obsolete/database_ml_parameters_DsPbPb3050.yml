@@ -235,7 +235,7 @@ DsPbPb3050:
       sigmaarray: null
       FixedSigma: null
       fitcase: Ds
-      latexnamemeson: "D_{s}"
+      latexnamehadron: "D_{s}"
       latexbin2var: null
       nevents: null
       dodoublecross: false

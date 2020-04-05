@@ -240,7 +240,7 @@ Dstarpp:
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
       FixedSigma: true
       fitcase: Dstarpp
-      latexnamemeson: "D*"
+      latexnamehadron: "D*"
       latexbin2var: "n_{trkl}"
       nevents: 1700000000.
       dodoublecross: false
@@ -291,7 +291,7 @@ Dstarpp:
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01]
       FixedSigma: true
       fitcase: Dstarpp
-      latexnamemeson: "D*"
+      latexnamehadron: "D*"
       latexbin2var: "p_{T,jet}"
       nevents: 1700000000.
       dodoublecross: false
@@ -339,7 +339,7 @@ Dstarpp:
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
       FixedSigma: true
       fitcase: Dstarpp
-      latexnamemeson: "D*"
+      latexnamehadron: "D*"
       latexbin2var: "n_{trkl}"
       nevents: 1700000000.
       dodoublecross: false
@@ -389,7 +389,7 @@ Dstarpp:
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01]
       FixedSigma: true
       fitcase: Dstarpp
-      latexnamemeson: "D*"
+      latexnamehadron: "D*"
       latexbin2var: "V0M ampl."
       nevents: 1700000000.
       dodoublecross: false

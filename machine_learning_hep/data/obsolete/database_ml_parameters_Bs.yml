@@ -246,7 +246,7 @@ Bspp:
       sigmaarray: [0.01,0.01,0.01]
       FixedSigma: true
       fitcase: Bs0
-      latexnamemeson: "B^{0}_{s}"
+      latexnamehadron: "B^{0}_{s}"
       latexbin2var: "n_{trkl}"
       nevents: 1000000.
       dodoublecross: false

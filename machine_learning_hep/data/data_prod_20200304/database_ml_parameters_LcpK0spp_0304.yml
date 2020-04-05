@@ -343,7 +343,7 @@ LcpK0spp:
       proc_type: Dhadrons_jet
       useperiod: [1,1,1] #list of periods
 
-      latexnamemeson: "#Lambda_{c}^{#plus}"
+      latexnamehadron: "#Lambda_{c}^{#plus}"
       latexnamedecay: "p K^{0}_{S}"
 
       var_binning2: pt_jet
@@ -514,7 +514,7 @@ LcpK0spp:
       sigmaarray: [0.00745, 0.0079, 0.0087, 0.0101, 0.0118, 0.0148]
       FixedSigma: false
       fitcase: Lc
-      latexnamemeson: "#Lambda_{c}^{pK0s}"
+      latexnamehadron: "#Lambda_{c}^{pK0s}"
       latexbin2var: "n_{trkl}"
       nevents: null
       dodoublecross: false
@@ -609,7 +609,7 @@ LcpK0spp:
       sigmaarray: [0.00745, 0.0079, 0.0087, 0.0101, 0.0118, 0.0148]
       FixedSigma: false
       fitcase: Lc
-      latexnamemeson: "#Lambda_{c}^{pK0s}"
+      latexnamehadron: "#Lambda_{c}^{pK0s}"
       latexbin2var: "n_{trkl}"
       nevents: null
       dodoublecross: false
@@ -702,7 +702,7 @@ LcpK0spp:
       sigmaarray: [0.0078, 0.0078, 0.0082, 0.0091, 0.0117, 0.0156]
       FixedSigma: true
       fitcase: Lc
-      latexnamemeson: "#Lambda_{c}^{pK0s}"
+      latexnamehadron: "#Lambda_{c}^{pK0s}"
       latexbin2var: "v0m perc"
       nevents: null
       dodoublecross: false
