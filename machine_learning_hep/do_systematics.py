@@ -109,7 +109,7 @@ def ask_delete_dir(path: str):
             return False
     return True
 
-def delete_output_dirs(dic: dict, ana: str):
+def delete_output_dirs(dic: dict, ana: str, varstring: str):
     '''Check whether the output directories exist and delete them if the user approves.'''
     if "analysis" not in dic:
         msg_err("key \"analysis\" not found.")
@@ -121,12 +121,11 @@ def delete_output_dirs(dic: dict, ana: str):
     if not isinstance(dic_ana, dict):
         msg_err("key \"%s\" is not a dictionary." % ana)
         return False
-    dirs = ["data", "mc"]
-    results = ["results", "resultsallp"]
-    for data in dirs:
-        for res in results:
-            if not ask_delete_dir(dic_ana[data][res]):
-                return False
+    results = dic_ana["data"]["resultsallp"]
+    i_cut = results.rfind(varstring) + len(varstring)
+    rootpath = results[:i_cut]
+    if not ask_delete_dir(rootpath):
+        return False
     return True
 
 def format_value(old, new):
@@ -328,15 +327,14 @@ def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-
                 (cat, var, label_cat, label_var[0] if len(label_var) == 1 else var))
             # Loop over list items.
             for index in range(n_var):
+                varstring = "%s/%s" % (cat, format_varname(var, index, n_var))
 
                 if not dic_var_single["activate"][index]:
-                    print("\nSkipping variation %s/%s (%s: %s)" % \
-                        (cat, format_varname(var, index, n_var), \
-                        label_cat, format_varlabel(label_var, index, n_var)))
+                    print("\nSkipping variation %s (%s: %s)" % \
+                        (varstring, label_cat, format_varlabel(label_var, index, n_var)))
                     continue
-                print("\nProcessing variation %s/%s (\x1b[1;33m%s: %s\x1b[0m)" % \
-                    (cat, format_varname(var, index, n_var), \
-                    label_cat, format_varlabel(label_var, index, n_var)))
+                print("\nProcessing variation %s (\x1b[1;33m%s: %s\x1b[0m)" % \
+                    (varstring, label_cat, format_varlabel(label_var, index, n_var)))
 
                 dic_db = deepcopy(dic_in) # Avoid ovewriting the original database.
                 # Get the database from the first top-level key.
@@ -350,8 +348,7 @@ def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-
                 slice_dic(dic_var_single_slice, index)
 
                 # Modify the database.
-                if not modify_paths(dic_new, "default/default", "%s/%s" % \
-                    (cat, format_varname(var, index, n_var)), do_processor):
+                if not modify_paths(dic_new, "default/default", varstring, do_processor):
                     return
                 if not dic_var_single_slice:
                     msg_warn("Empty diffs. No changes to make.")
@@ -370,7 +367,7 @@ def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-
 
                 # Start the analysis.
                 if analysis:
-                    if do_processor and not delete_output_dirs(dic_new, analysis):
+                    if do_processor and not delete_output_dirs(dic_new, analysis, varstring):
                         return
                     mode = "complete" if do_processor else "analyzer"
                     config = "submission/default_%s.yml" % mode
