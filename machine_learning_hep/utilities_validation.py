@@ -20,40 +20,65 @@ replace AliHFSystErr from AliPhysics).
 """
 # pylint: disable=too-many-lines
 # pylint: disable=import-error, no-name-in-module
-from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
-from ROOT import TH2F, TH1F
-from machine_learning_hep.utilities_plot import fill2dhist
 from machine_learning_hep.bitwise import filter_bit_df
+from utilities_plot import buildarray, buildbinning, makefill1dhist, makefill2dhist
+
 
 def fillvalidationvsmult(dfevt, dfevtevtsel, df_reco):
     """
-    Create a TH3F histogram and fill it with three variables from a dataframe.
+    Create histograms for the validation on the event level as a function of the multiplicity
     """
     _ = len(df_reco)
-    hntrklvstrklcorr = TH2F("hntrklvstrklcorr", " ; n_tracklets ; n_tracklets_corr",
-                            200, -0.5, 199.5, 200, -0.5, 199.5)
-    fill2dhist(dfevtevtsel, hntrklvstrklcorr, "n_tracklets", "n_tracklets_corr")
-    hntrklcorrvszvtx = TH2F("hntrklcorrvszvtx", " ; z_vtx ; n_tracklets_corr",
-                            100, -15., 15, 200, -0.5, 199.5)
-    fill2dhist(dfevtevtsel, hntrklcorrvszvtx, "z_vtx_reco", "n_tracklets_corr")
-    hntrklvszvtx = TH2F("hntrklvszvtx", " ; z_vtx ; n_tracklets",
-                        100, -15., 15, 200, -0.5, 199.5)
-    fill2dhist(dfevtevtsel, hntrklvszvtx, "z_vtx_reco", "n_tracklets")
 
-    hntrklcorrsel = TH1F("hntrklcorrsel", ' ; ntracklets_corr ; Entries',
-                         200, -0.5, 199.5)
-    hntrklcorrselshm = TH1F("hntrklcorrselshm", ' ; ntracklets_corr_shm ; Entries',
-                            200, -0.5, 199.5)
-    hntrklcorrselevtspd = TH1F("hntrklcorrselevtspd", ' ; ntracklets_corr ; Entries',
-                               200, -0.5, 199.5)
-    hntrklcorrpileup = TH1F("hntrklcorrpileup", ' ; ntracklets_corr ; Entries',
-                            200, -0.5, 199.5)
-    df_pileup = filter_bit_df(dfevt, 'is_ev_rej', [[4], []])
-    df_selevtspd = dfevtevtsel.query("is_ev_sel_shm == 1")
+    # Binning definition
+    binning_ntrklt = buildbinning(200, -0.5, 199.5)
+    binning_v0m = buildbinning(1500, -0.5, 1499.5)
+    binning_zvtx = buildbinning(100, -15.0, 15)
+    binning_v0m_perc = [0]
+    while binning_v0m_perc[-1] + 0.1 < 10:
+        binning_v0m_perc.append(binning_v0m_perc[-1] + 0.1)
+    while binning_v0m_perc[-1] + 1 < 100:
+        binning_v0m_perc.append(binning_v0m_perc[-1] + 1)
+    binning_v0m_perc = buildarray(binning_v0m_perc)
 
-    fill_hist(hntrklcorrsel, dfevtevtsel["n_tracklets_corr"])
-    fill_hist(hntrklcorrselshm, dfevtevtsel["n_tracklets_corr_shm"])
-    fill_hist(hntrklcorrselevtspd, df_selevtspd["n_tracklets_corr"])
-    fill_hist(hntrklcorrpileup, df_pileup["n_tracklets_corr"])
-    return [hntrklvstrklcorr, hntrklcorrvszvtx, hntrklvszvtx, hntrklcorrsel,
-            hntrklcorrpileup, hntrklcorrselevtspd, hntrklcorrselshm]
+    # Make and fill histograms
+    hlist = []
+    df_src = None
+
+    def make_and_fill(binx, namex, biny=None, namey=None, tag=""):
+        """
+        Makes histogram and fills them based on their axis titles
+        """
+        if namey:
+            h_name = f"h_{namex}_vs_{namey}{tag}"
+            h_tit = f" ; {namex} ; {namey}"
+            hlist.append(makefill2dhist(df_src, h_name, binx, biny, namex, namey))
+        else:
+            h_name = f"h_{namex}{tag}"
+            h_tit = f" ; {namex} ; Entries"
+            hlist.append(makefill1dhist(df_src, h_name, h_tit, binx, namex))
+
+    df_src = dfevt[dfevt.is_ev_rej_INT7 == 0]
+    # df_src = dfevtevtsel
+    # df_src = dfevt
+    for i in "v0m v0m_eq v0m_corr v0m_eq_corr".split():
+        make_and_fill(binning_ntrklt, "n_tracklets", binning_v0m, i)
+        make_and_fill(binning_v0m, i, binning_v0m_perc, "perc_v0m")
+
+    for i in "n_tracklets n_tracklets_corr n_tracklets_corr_shm".split():
+        make_and_fill(binning_ntrklt, i, binning_v0m_perc, "perc_v0m")
+
+    df_src = dfevtevtsel
+    make_and_fill(binning_ntrklt, "n_tracklets", binning_ntrklt, "n_tracklets_corr")
+    make_and_fill(binning_zvtx, "z_vtx_reco", binning_ntrklt, "n_tracklets_corr")
+    make_and_fill(binning_zvtx, "z_vtx_reco", binning_ntrklt, "n_tracklets")
+
+    make_and_fill(binning_ntrklt, "n_tracklets_corr")
+    make_and_fill(binning_ntrklt, "n_tracklets_corr_shm")
+
+    df_src = filter_bit_df(dfevt, "is_ev_rej", [[4], []])
+    make_and_fill(binning_ntrklt, "n_tracklets_corr", tag="pileup")
+    df_src = dfevtevtsel.query("is_ev_sel_shm == 1")
+    make_and_fill(binning_ntrklt, "n_tracklets_corr", tag="spd")
+
+    return hlist

@@ -24,25 +24,61 @@ import math
 import numpy as np
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
 # pylint: disable=import-error, no-name-in-module
-from ROOT import TH2F, TFile, TH1, TH3F, TGraphAsymmErrors
+from ROOT import TH1F, TH2F, TFile, TH1, TH3F, TGraphAsymmErrors
 from ROOT import TPad, TCanvas, TLegend, kBlack, kGreen, kRed, kBlue, kWhite
 from ROOT import gStyle, gROOT
 from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
 from machine_learning_hep.logger import get_logger
 
 def buildarray(listnumber):
+    """
+    Build an array out of a list, useful for histogram binning
+    """
     arraynumber = array('d', listnumber)
     return arraynumber
+
+def buildbinning(nbinsx, xlow, xup):
+    """
+    Build a list for binning out of bin limits and number of bins
+    """
+    listnumber = [xlow + (xup - xlow) / nbinsx * i for i in range(nbinsx + 1)]
+    return buildarray(listnumber)
+
+def buildhisto(h_name, h_tit, arrayx, arrayy=None, arrayz=None):
+    """
+    Create a histogram of size 1D, 2D, 3D, depending on the number of arguments given
+    """
+    histo = None
+    def binning(binning_array):
+        return len(binning_array) - 1, binning_array
+    if arrayz:
+        histo = TH3F(h_name, h_tit, *binning(arrayx), *binning(arrayy), *binning(arrayz))
+    elif arrayy:
+        histo = TH2F(h_name, h_tit, *binning(arrayx), *binning(arrayy))
+    else:
+        histo = TH1F(h_name, h_tit, *binning(arrayx))
+    histo.Sumw2()
+    return histo
+
+def makefill1dhist(df_, h_name, h_tit, arrayx, nvar1):
+    """
+    Create a TH1F histogram and fill it with one variables from a dataframe.
+    """
+    histo = buildhisto(h_name, h_tit, arrayx)
+    fill_hist(histo, df_[nvar1])
+    return histo
+
+def build2dhisto(titlehist, arrayx, arrayy):
+    """
+    Create a TH2 histogram from two axis arrays.
+    """
+    return buildhisto(titlehist, titlehist, arrayx, arrayy)
 
 def makefill2dhist(df_, titlehist, arrayx, arrayy, nvar1, nvar2):
     """
     Create a TH2F histogram and fill it with two variables from a dataframe.
     """
-    lenx = len(arrayx) - 1
-    leny = len(arrayy) - 1
-
-    histo = TH2F(titlehist, titlehist, lenx, arrayx, leny, arrayy)
-    histo.Sumw2()
+    histo = build2dhisto(titlehist, arrayx, arrayy)
     df_rd = df_[[nvar1, nvar2]]
     arr2 = df_rd.to_numpy()
     fill_hist(histo, arr2)
@@ -52,28 +88,13 @@ def makefill3dhist(df_, titlehist, arrayx, arrayy, arrayz, nvar1, nvar2, nvar3):
     """
     Create a TH3F histogram and fill it with three variables from a dataframe.
     """
-    lenx = len(arrayx) - 1
-    leny = len(arrayy) - 1
-    lenz = len(arrayz) - 1
 
-    histo = TH3F(titlehist, titlehist, lenx, arrayx, leny, arrayy, lenz, arrayz)
-    histo.Sumw2()
+    histo = buildhisto(titlehist, titlehist, arrayx, arrayy, arrayz)
     #df_rd = df_[[nvar1, nvar2, nvar3]]
     #arr3 = df_rd.to_numpy()
     #fill_hist(histo, arr3) # this does not work, gives an empty histogram
     for row in df_.itertuples():
         histo.Fill(getattr(row, nvar1), getattr(row, nvar2), getattr(row, nvar3))
-    return histo
-
-def build2dhisto(titlehist, arrayx, arrayy):
-    """
-    Create a TH2 histogram from two axis arrays.
-    """
-    lenx = len(arrayx) - 1
-    leny = len(arrayy) - 1
-
-    histo = TH2F(titlehist, titlehist, lenx, arrayx, leny, arrayy)
-    histo.Sumw2()
     return histo
 
 def fill2dhist(df_, histo, nvar1, nvar2):
