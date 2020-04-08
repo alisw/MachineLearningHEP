@@ -116,34 +116,26 @@ def create_folder_struc(maindir, listpath):
         if not os.path.exists(folder):
             os.makedirs(folder)
 
+def checkdir(mydir, V=True):
+    """
+    Checks if folder already exist, to not overwrite by accident
+    """
+    exfolders = 0
+    if os.path.exists(mydir):
+        if V:
+          print("Please remove this directory:")
+        print("rm -rf ", mydir)
+        exfolders = -1
+    return exfolders
+
 def checkdirlist(dirlist):
     """
     Checks if list of folder already exist, to not overwrite by accident
     """
     exfolders = 0
     for _, mydir in enumerate(dirlist):
-        if os.path.exists(mydir):
-            print("rm -rf ", mydir)
-            exfolders = exfolders - 1
+      exfolders += checkdir(mydir)
     return exfolders
-
-def checkdir(mydir):
-    """
-    Checks if folder already exist, to not overwrite by accident
-    """
-    exfolders = 0
-    if os.path.exists(mydir):
-        print("rm -rf ", mydir)
-        exfolders = -1
-    return exfolders
-
-def checkmakedirlist(dirlist):
-    """
-    Makes directories from list using 'mkdir'
-    """
-    for _, mydir in enumerate(dirlist):
-        print("creating folder ", mydir)
-        os.makedirs(mydir)
 
 def checkmakedir(mydir):
     """
@@ -151,6 +143,13 @@ def checkmakedir(mydir):
     """
     print("creating folder ", mydir)
     os.makedirs(mydir)
+
+def checkmakedirlist(dirlist):
+    """
+    Makes directories from list using 'mkdir'
+    """
+    for _, mydir in enumerate(dirlist):
+      checkmakedir(mydir)
 
 def appendfiletolist(mylist, namefile):
     """
