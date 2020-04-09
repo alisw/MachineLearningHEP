@@ -5,7 +5,7 @@ python:
 install: |
   set -e
   set -o pipefail
-  pip install -e .
+  pip install --progress-bar off -e .
   pip list
 script: |
   set -e
