@@ -34,6 +34,20 @@ def buildarray(listnumber):
     arraynumber = array('d', listnumber)
     return arraynumber
 
+def makefill2dhist(df_, titlehist, arrayx, arrayy, nvar1, nvar2):
+    """
+    Create a TH2F histogram and fill it with two variables from a dataframe.
+    """
+    lenx = len(arrayx) - 1
+    leny = len(arrayy) - 1
+
+    histo = TH2F(titlehist, titlehist, lenx, arrayx, leny, arrayy)
+    histo.Sumw2()
+    df_rd = df_[[nvar1, nvar2]]
+    arr2 = df_rd.to_numpy()
+    fill_hist(histo, arr2)
+    return histo
+
 def makefill3dhist(df_, titlehist, arrayx, arrayy, arrayz, nvar1, nvar2, nvar3):
     """
     Create a TH3F histogram and fill it with three variables from a dataframe.
@@ -44,9 +58,11 @@ def makefill3dhist(df_, titlehist, arrayx, arrayy, arrayz, nvar1, nvar2, nvar3):
 
     histo = TH3F(titlehist, titlehist, lenx, arrayx, leny, arrayy, lenz, arrayz)
     histo.Sumw2()
-    df_rd = df_[[nvar1, nvar2, nvar3]]
-    arr3 = df_rd.values
-    fill_hist(histo, arr3)
+    #df_rd = df_[[nvar1, nvar2, nvar3]]
+    #arr3 = df_rd.to_numpy()
+    #fill_hist(histo, arr3) # this does not work, gives an empty histogram
+    for row in df_.itertuples():
+        histo.Fill(getattr(row, nvar1), getattr(row, nvar2), getattr(row, nvar3))
     return histo
 
 def build2dhisto(titlehist, arrayx, arrayy):

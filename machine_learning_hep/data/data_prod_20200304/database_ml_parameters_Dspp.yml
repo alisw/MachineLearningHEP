@@ -343,7 +343,7 @@ Dspp:
       sigmaarray: [0.007497,0.01,0.01,0.01,0.01]
       FixedSigma: false
       fitcase: Ds
-      latexnamemeson: "D_{s}^{+}"
+      latexnamehadron: "D_{s}^{+}"
       latexbin2var: "n_{trkl}"
       nevents: null
       dodoublecross: false
@@ -451,7 +451,7 @@ Dspp:
       sigmaarray: [0.01,0.01,0.01,0.01,0.01]
       FixedSigma: false
       fitcase: Ds
-      latexnamemeson: "D_{s}^{+}"
+      latexnamehadron: "D_{s}^{+}"
       latexbin2var: "n_{trkl}"
       nevents: null
       dodoublecross: false

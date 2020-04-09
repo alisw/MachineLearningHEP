@@ -50,7 +50,7 @@ def plot_hfptspectrum_ml_over_std(case_ml, ana_type_ml, period_number, filepath_
         FILES_NOT_FOUND.append(path_ml)
         return
 
-    name = data_param[case_ml]["analysis"][ana_type_ml]["latexnamemeson"]
+    name = data_param[case_ml]["analysis"][ana_type_ml]["latexnamehadron"]
 
     file_ml = TFile.Open(path_ml, "READ")
     file_std = TFile.Open(filepath_std, "READ")
@@ -134,8 +134,8 @@ def compare_ml_std_ratio(case_ml_1, case_ml_2, ana_type_ml, period_number, filep
         filepath_ml_2 = \
                 data_param_2[case_ml_2]["analysis"][ana_type_ml]["data"]["results"][period_number]
 
-    name_1 = data_param_1[case_ml_1]["analysis"][ana_type_ml]["latexnamemeson"]
-    name_2 = data_param_2[case_ml_2]["analysis"][ana_type_ml]["latexnamemeson"]
+    name_1 = data_param_1[case_ml_1]["analysis"][ana_type_ml]["latexnamehadron"]
+    name_2 = data_param_2[case_ml_2]["analysis"][ana_type_ml]["latexnamehadron"]
     # Get pt spectrum files
     if mult_bin is None:
         mult_bin = 0
@@ -279,7 +279,7 @@ def plot_hfptspectrum_comb(case, arraytype):
 
     binsmin = data_param[case]["analysis"][arraytype[0]]["sel_binmin2"]
     binsmax = data_param[case]["analysis"][arraytype[0]]["sel_binmax2"]
-    name = data_param[case]["analysis"][arraytype[0]]["latexnamemeson"]
+    name = data_param[case]["analysis"][arraytype[0]]["latexnamehadron"]
     latexbin2var = data_param[case]["analysis"][arraytype[0]]["latexbin2var"]
     plotbinMB = data_param[case]["analysis"][arraytype[0]]["plotbin"]
     plotbinHM = data_param[case]["analysis"][arraytype[1]]["plotbin"]
@@ -632,8 +632,8 @@ def plot_hfptspectrum_ratios_comb(case_num, case_den, arraytype):
 
     binsmin_num = data_param_num[case_num]["analysis"][arraytype[0]]["sel_binmin2"]
     binsmax_num = data_param_num[case_num]["analysis"][arraytype[0]]["sel_binmax2"]
-    name_num = data_param_num[case_num]["analysis"][arraytype[0]]["latexnamemeson"]
-    name_den = data_param_den[case_den]["analysis"][arraytype[0]]["latexnamemeson"]
+    name_num = data_param_num[case_num]["analysis"][arraytype[0]]["latexnamehadron"]
+    name_den = data_param_den[case_den]["analysis"][arraytype[0]]["latexnamehadron"]
     latexbin2var = data_param_num[case_num]["analysis"][arraytype[0]]["latexbin2var"]
     plotbinMB = data_param_num[case_num]["analysis"][arraytype[0]]["plotbin"]
     plotbinHM = data_param_num[case_num]["analysis"][arraytype[1]]["plotbin"]

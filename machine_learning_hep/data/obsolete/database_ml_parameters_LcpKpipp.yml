@@ -328,7 +328,7 @@ LcpKpipp:
       sigmaarray: [0.0059, 0.0060, 0.0065, 0.0070, 0.0085, 0.0090]
       FixedSigma: true
       fitcase: Lc
-      latexnamemeson: "#Lambda_{c}^{pKpi}"
+      latexnamehadron: "#Lambda_{c}^{pKpi}"
       latexbin2var: "n_{trkl}"
       nevents: null
       dodoublecross: false
@@ -407,7 +407,7 @@ LcpKpipp:
       sigmaarray: [0.0059, 0.0060, 0.0065, 0.0070, 0.0085, 0.0090]
       FixedSigma: true
       fitcase: Lc
-      latexnamemeson: "#Lambda_{c}^{pKpi}"
+      latexnamehadron: "#Lambda_{c}^{pKpi}"
       latexbin2var: "V0M ampl."
       nevents: null
       dodoublecross: false
@@ -475,7 +475,7 @@ LcpKpipp:
       sigmaarray: [0.0059, 0.0060, 0.0065, 0.0070, 0.0085, 0.0090]
       FixedSigma: true
       fitcase: Lc
-      latexnamemeson: "#Lambda_{c}^{pKpi}"
+      latexnamehadron: "#Lambda_{c}^{pKpi}"
       latexbin2var: "V0M perc."
       nevents: null
       dodoublecross: false
@@ -543,7 +543,7 @@ LcpKpipp:
       sigmaarray: [0.0059, 0.0060, 0.0065, 0.0085, 0.0090]
       FixedSigma: true
       fitcase: Lc
-      latexnamemeson: "#Lambda_{c}^{pKpi}"
+      latexnamehadron: "#Lambda_{c}^{pKpi}"
       latexbin2var: "p_{T,jet}"
       nevents: 1700000000.
       dodoublecross: false
@@ -607,7 +607,7 @@ LcpKpipp:
       sigmaarray: [0.0059, 0.0060, 0.0065, 0.0070, 0.0085, 0.0090]
       FixedSigma: true
       fitcase: Lc
-      latexnamemeson: "#Lambda_{c}^{pKpi}"
+      latexnamehadron: "#Lambda_{c}^{pKpi}"
       latexbin2var: "n_{trkl}"
       nevents: null
       dodoublecross: false
@@ -674,7 +674,7 @@ LcpKpipp:
       sigmaarray: [0.0059, 0.0060, 0.0065, 0.0070, 0.0085, 0.0090]
       FixedSigma: true
       fitcase: Lc
-      latexnamemeson: "#Lambda_{c}^{pKpi}"
+      latexnamehadron: "#Lambda_{c}^{pKpi}"
       latexbin2var: "V0M ampl."
       nevents: null
       dodoublecross: false
@@ -741,7 +741,7 @@ LcpKpipp:
       sigmaarray: [0.0059, 0.0060, 0.0065, 0.0070, 0.0085, 0.0090]
       FixedSigma: true
       fitcase: Lc
-      latexnamemeson: "#Lambda_{c}^{pKpi}"
+      latexnamehadron: "#Lambda_{c}^{pKpi}"
       latexbin2var: "V0M perc."
       nevents: null
       dodoublecross: false

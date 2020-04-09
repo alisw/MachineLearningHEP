@@ -18,6 +18,7 @@ Author: Vit Kucera <vit.kucera@cern.ch>
 """
 
 import os
+import shutil
 import argparse
 import subprocess
 import shlex
@@ -76,6 +77,55 @@ def modify_paths(dic: dict, old: str, new: str, do_proc: bool):
                     msg_err("\"%s\" not found in %s/%s/%s" % (old, key_a, data, key_d))
                     return False
                 dic_ana[data][key_d] = new_val_d
+    return True
+
+def ask_delete_dir(path: str):
+    '''Check whether the directory exists and delete it if the user approves.'''
+    if isinstance(path, list):
+        for p in path:
+            if not ask_delete_dir(p):
+                return False
+        return True
+    if not isinstance(path, str):
+        msg_err("Not a string input: %s." % path)
+        return False
+    if not os.path.isdir(path):
+        return True
+    msg_warn("This directory already exists:\n%s\nDo you wish to delete it?" % path)
+    answers_yes = ["Y", "y", "Yes", "yes"]
+    answers_no = ["N", "n", "No", "no"]
+    answers_allowed = answers_yes + answers_no
+    print("Allowed answers:", *answers_allowed)
+    answer = input("Your answer: ")
+    while answer not in answers_allowed:
+        print("Not a valid answer.")
+        answer = input("Your answer: ")
+    if answer in answers_yes:
+        print("Deleting the directory %s" % path)
+        try:
+            shutil.rmtree(path)
+        except OSError:
+            msg_err("Failed to delete the directory %s" % path)
+            return False
+    return True
+
+def delete_output_dirs(dic: dict, ana: str, varstring: str):
+    '''Check whether the output directories exist and delete them if the user approves.'''
+    if "analysis" not in dic:
+        msg_err("key \"analysis\" not found.")
+        return False
+    if ana not in dic["analysis"]:
+        msg_err("Analysis \"%s\" not found." % ana)
+        return False
+    dic_ana = dic["analysis"][ana]
+    if not isinstance(dic_ana, dict):
+        msg_err("key \"%s\" is not a dictionary." % ana)
+        return False
+    results = dic_ana["data"]["resultsallp"]
+    i_cut = results.rfind(varstring) + len(varstring)
+    rootpath = results[:i_cut]
+    if not ask_delete_dir(rootpath):
+        return False
     return True
 
 def format_value(old, new):
@@ -206,7 +256,7 @@ def healthy_structure(dic_diff: dict): # pylint: disable=too-many-return-stateme
                 msg_err("\"label\" in %s/%s is not a list." % (cat, var))
                 return False
             len_lab = len(dic_var_single["label"])
-            if len_lab not in (length, 1):
+            if len_lab not in (length, 1) or len_lab == 0:
                 msg_err("\"label\" in %s/%s does not have correct length: %d (expected: 1%s)." % \
                     (cat, var, len_lab, " or %d" % length if length > 1 else ""))
                 return False
@@ -277,15 +327,14 @@ def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-
                 (cat, var, label_cat, label_var[0] if len(label_var) == 1 else var))
             # Loop over list items.
             for index in range(n_var):
+                varstring = "%s/%s" % (cat, format_varname(var, index, n_var))
 
                 if not dic_var_single["activate"][index]:
-                    print("\nSkipping variation %s/%s (%s: %s)" % \
-                        (cat, format_varname(var, index, n_var), \
-                        label_cat, format_varlabel(label_var, index, n_var)))
+                    print("\nSkipping variation %s (%s: %s)" % \
+                        (varstring, label_cat, format_varlabel(label_var, index, n_var)))
                     continue
-                print("\nProcessing variation %s/%s (\x1b[1;33m%s: %s\x1b[0m)" % \
-                    (cat, format_varname(var, index, n_var), \
-                    label_cat, format_varlabel(label_var, index, n_var)))
+                print("\nProcessing variation %s (\x1b[1;33m%s: %s\x1b[0m)" % \
+                    (varstring, label_cat, format_varlabel(label_var, index, n_var)))
 
                 dic_db = deepcopy(dic_in) # Avoid ovewriting the original database.
                 # Get the database from the first top-level key.
@@ -299,12 +348,11 @@ def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-
                 slice_dic(dic_var_single_slice, index)
 
                 # Modify the database.
+                if not modify_paths(dic_new, "default/default", varstring, do_processor):
+                    return
                 if not dic_var_single_slice:
                     msg_warn("Empty diffs. No changes to make.")
                 modify_dictionary(dic_new, dic_var_single_slice)
-                if not modify_paths(dic_new, "default/default", "%s/%s" % \
-                    (cat, format_varname(var, index, n_var)), do_processor):
-                    return
 
                 #print(yaml.safe_dump(dic_db, default_flow_style=False))
 
@@ -319,6 +367,8 @@ def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-
 
                 # Start the analysis.
                 if analysis:
+                    if do_processor and not delete_output_dirs(dic_new, analysis, varstring):
+                        return
                     mode = "complete" if do_processor else "analyzer"
                     config = "submission/default_%s.yml" % mode
                     print("Starting the analysis \x1b[1;32m%s\x1b[0m for the variation " \
@@ -336,10 +386,13 @@ def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-
 
     # Delete the created database files.
     if clean:
-        print("\nDeleting database files:")
-        for fil in new_files_db:
-            print(fil)
-            os.remove(fil)
+        if analysis:
+            print("\nSkipping deleting right after starting the analysis.")
+        else:
+            print("\nDeleting database files:")
+            for fil in new_files_db:
+                print(fil)
+                os.remove(fil)
 
 if __name__ == '__main__':
     PARSER = argparse.ArgumentParser(description="Run the analysis with " \

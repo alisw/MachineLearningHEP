@@ -143,7 +143,7 @@ class AnalyzerDhadrons(Analyzer):
         legeff.AddEntry(h_sel_pr, "prompt efficiency", "LEP")
         h_sel_pr.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
         h_sel_pr.GetYaxis().SetTitle("Acc x efficiency (prompt) %s %s (1/GeV)" \
-                % (self.p_latexnmeson, self.typean))
+                % (self.p_latexnhadron, self.typean))
 
         h_gen_fd = lfileeff.Get("h_gen_fd")
         h_sel_fd = lfileeff.Get("h_sel_fd")
@@ -200,9 +200,9 @@ class AnalyzerDhadrons(Analyzer):
 
         myfile = TFile.Open(fileoutcross, "read")
         hcross = myfile.Get("histoSigmaCorr")
-        hcross.GetXaxis().SetTitle("#it{p}_{T} %s (GeV/#it{c})" % self.p_latexnmeson)
+        hcross.GetXaxis().SetTitle("#it{p}_{T} %s (GeV/#it{c})" % self.p_latexnhadron)
         hcross.GetYaxis().SetTitle("d#sigma/d#it{p}_{T} (%s) %s" %
-                                   (self.p_latexnmeson, self.typean))
+                                   (self.p_latexnhadron, self.typean))
         legcross.AddEntry(hcross, "cross section", "LEP")
         cCross.SaveAs("%s/Cross%s%sVs%s.eps" % (self.d_resultsallpdata,
                                                 self.case, self.typean, self.v_var_binning))
