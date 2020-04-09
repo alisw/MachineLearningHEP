@@ -590,7 +590,7 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
 #        legeff.AddEntry(h_sel_pr, "prompt efficiency", "LEP")
 #        h_sel_pr.GetXaxis().SetTitle("#it{p}_{T} (GeV/#it{c})")
 #        h_sel_pr.GetYaxis().SetTitle("Acc x efficiency (prompt) %s %s (1/GeV)" \
-#                % (self.p_latexnmeson, self.typean))
+#                % (self.p_latexnhadron, self.typean))
 #
 #        h_gen_fd = lfileeff.Get("h_gen_fd")
 #        h_sel_fd = lfileeff.Get("h_sel_fd")
