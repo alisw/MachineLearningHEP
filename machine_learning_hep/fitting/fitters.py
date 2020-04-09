@@ -760,6 +760,7 @@ class FitSystAliHF(FitROOT):
                                   "bkg_func_names_syst": None,
                                   "rebin_syst": None,
                                   "consider_free_sigma_syst": None,
+                                  "signif_min_syst": None,
                                   "chi2_max_syst": None}
         # Fitted parameters (to be modified for deriving classes)
         # Only those corresponding to init parameters are here. Specific parameters/values
@@ -1124,6 +1125,9 @@ class FitSystAliHF(FitROOT):
             hchi2name = histo_name.replace("RawYield", "Chi2")
             hchi2t6 = input_file.Get(hchi2name)
 
+            hsignifname = histo_name.replace("RawYield", "Signif")
+            hsignift6 = input_file.Get(hsignifname)
+
             hbcname = histo_name.replace("Trial", "TrialBinC0")
             hbc2dt060 = input_file.Get(hbcname)
 
@@ -1141,10 +1145,12 @@ class FitSystAliHF(FitROOT):
                 esig = hsigmat6.GetBinError(ib)
 
                 chi2 = hchi2t6.GetBinContent(ib)
+                signif = hsignift6.GetBinContent(ib)
 
                 # Fill
                 if ry < 0.001 or (0.5 * ry) < ery or ery < (0.01 * ry) \
-                        or chi2 > self.init_pars["chi2_max_syst"]:
+                        or chi2 > self.init_pars["chi2_max_syst"] \
+                        or signif < self.init_pars["signif_min_syst"]:
                     continue
                 successful_trials += 1
                 # Get the right histograms to fill
