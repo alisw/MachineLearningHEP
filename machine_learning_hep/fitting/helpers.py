@@ -198,6 +198,7 @@ class MLFitParsFactory:
                     "rebin_syst": self.syst_pars.get("rebin", None),
                     # Check DB
                     "consider_free_sigma_syst": self.syst_pars.get("consider_free_sigma", True),
+                    "signif_min_syst": self.syst_pars.get("signif_min_syst", 3.),
                     "chi2_max_syst": self.syst_pars.get("chi2_max_syst", 2.)}
 
         fit_pars["include_sec_peak"] = self.include_sec_peak[ibin2][ibin1]
