@@ -817,7 +817,8 @@ D0pp_hfcorr:
       triggerbit: INT7
       sel_an_binmin: [2,4,6,8,12]  # [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [4,6,8,12,24]  # [2,4,6,8,12,24] #list of pt nbins
-      binning_matching: [1,2,2,3,4]  # [0,1,2,2,3,4] #list of pt nbins
+      # binning_matching: [1,2,2,3,4]  # [0,1,2,2,3,4] #list of pt nbins
+      binning_matching: [1,2,3,4,5]  # [0,1,2,2,3,4] #list of pt nbins
       triggersel: 
         data: "trigger_hasbit_INT7==1"
         mc: null

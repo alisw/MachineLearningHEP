@@ -171,7 +171,7 @@ class ProcesserDhadrons_hfcorr(Processer):
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
             print("df loaded", df.shape)
-            df_no_cut = df
+            df_no_cut = df[df["pt_cand">4]]
             if self.doml is True:
                 df = df.query(self.l_selml[bin_id])
             if self.s_evtsel is not None:
@@ -207,6 +207,17 @@ class ProcesserDhadrons_hfcorr(Processer):
             #df_tot = df_tot.append(df)
             df_tot = df_tot.append(df_no_cut)
         df_tot = df_tot.reset_index(drop=True)
+        df_group = df_tot
+        grouped = df_group.groupby(["run_number","ev_id"])
+        grouplen = pd.array(grouped.size())
+        gmin = grouplen.min()
+        gmax = grouplen.max()
+        g_bins = gmax - gmin
+        h_grouplen = TH1F("group_length" , "", int(g_bins), gmin, gmax)
+        fill_hist(h_grouplen, grouplen)
+        h_grouplen.Draw()
+        h_grouplen.Write()
+        df_tot = df_tot[df_tot["pt_cand">4]]
         # df_tot = df_tot.sample(n=5000)
         mc_case = False
         if self.mcordata == "mc":
