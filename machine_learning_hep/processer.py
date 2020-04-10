@@ -46,6 +46,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                  d_results, typean, runlisttrigger, d_mcreweights):
         #self.logger = get_logger()
         self.nprongs = datap["nprongs"]
+        self.prongformultsub = datap["prongformultsub"]
         self.doml = datap["doml"]
         self.case = case
         self.typean = typean
@@ -237,6 +238,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
         n_tracklets_corr_sub = None
         n_tracklets_corr_shm_sub = None
         for iprong in range(self.nprongs):
+            if self.prongformultsub[iprong] == 0:
+                continue
+            #print("considering prong %d for sub" % iprong)
             spdhits_thisprong = dfreco["spdhits_prong%s" % iprong].values
             ntrackletsthisprong = [1 if spdhits_thisprong[index] == 3 else 0 \
                                    for index in range(len(dfreco))]

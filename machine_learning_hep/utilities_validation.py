@@ -81,4 +81,6 @@ def fillvalidationvsmult(dfevt, dfevtevtsel, df_reco):
     df_src = dfevtevtsel.query("is_ev_sel_shm == 1")
     make_and_fill(binning_ntrklt, "n_tracklets_corr", tag="spd")
 
+    df_src = df_reco
+    make_and_fill(binning_ntrklt, "n_tracklets_corr_sub", binning_ntrklt, "n_tracklets_corr")
     return hlist
