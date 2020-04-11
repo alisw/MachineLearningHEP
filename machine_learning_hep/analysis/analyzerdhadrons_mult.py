@@ -175,7 +175,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
 
         # Fitting
         self.fitter = None
-
+        self.p_performval = datap["analysis"].get("performtriggerturn", None)
 
     # pylint: disable=import-outside-toplevel
     def fit(self):
@@ -565,3 +565,16 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         cCrossvsvar1.SaveAs("%s/CorrectedYieldsNorm%s%sVs%s.eps" % (self.d_resultsallpdata,
                                                                     self.case, self.typean,
                                                                     self.v_var_binning))
+    def plottervalidation(self):
+        if self.p_performval is False:
+            self.logger.fatal("The validation step was set to false. You dont \
+                                have produced the histograms you need for the \
+                                validation stage. Please rerun the histomass \
+                                step")
+        self.logger.info("I AM RUNNING THE PLOTTER VALIDATION STEP")
+        # You can find all the input files in the self.n_filemass. At the
+        # moment we dont do tests for the MC file that would be in any case
+        # self.n_filemass_mc. This function will be run on only the single
+        # merged LHC16,LHC17, LHC18 file or also on the separate years
+        # depending on how you set the option doperperiod in the
+        # default_complete.yml database.

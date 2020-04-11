@@ -125,6 +125,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, ru
     dofit = data_config["analysis"]["dofit"]
     doeff = data_config["analysis"]["doeff"]
     docross = data_config["analysis"]["docross"]
+    doplotsval = data_config["analysis"]["doplotsval"]
     doplots = data_config["analysis"]["doplots"]
     dosyst = data_config["analysis"]["dosyst"]
     dosystprob = data_config["systematics"]["cutvar"]["activate"]
@@ -414,6 +415,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, ru
         analyze_steps.append("makenormyields")
     if doplots is True:
         analyze_steps.append("plotternormyields")
+    if doplotsval is True:
+        analyze_steps.append("plottervalidation")
 
     # Now do the analysis
     ana_mgr.analyze(*analyze_steps)
