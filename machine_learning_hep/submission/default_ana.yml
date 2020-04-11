@@ -72,6 +72,7 @@ analysis:
   doeff: true
   docross: true
   doplots: true
+  doplotsval: false # analyzer: plottervalidation
 
 systematics:
   cutvar:
