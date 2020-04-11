@@ -45,11 +45,18 @@ def getclf_scikit(model_config):
     classifiers = []
     names = []
     grid_search_params = []
+    bayesian_opt = []
 
     for c in model_config["scikit"]:
         if model_config["scikit"][c]["activate"]:
             try:
                 model = getattr(templates_scikit, c)(model_config["scikit"][c]["central_params"])
+                c_bayesian = f"{c}_bayesian_opt"
+                bayes_opt = None
+                if hasattr(templates_scikit, c_bayesian):
+                    bayes_opt = getattr(templates_scikit, c_bayesian) \
+                            (model_config["scikit"][c]["central_params"])
+                bayesian_opt.append(bayes_opt)
                 classifiers.append(model)
                 names.append(c)
                 grid_search_params.append(model_config["scikit"][c].get("grid_search", {}))
@@ -57,7 +64,7 @@ def getclf_scikit(model_config):
             except AttributeError:
                 logger.critical("Could not load scikit model %s", c)
 
-    return classifiers, names, grid_search_params
+    return classifiers, names, grid_search_params, bayesian_opt
 
 
 def getclf_xgboost(model_config):
@@ -72,11 +79,18 @@ def getclf_xgboost(model_config):
     classifiers = []
     names = []
     grid_search_params = []
+    bayesian_opt = []
 
     for c in model_config["xgboost"]:
         if model_config["xgboost"][c]["activate"]:
             try:
                 model = getattr(templates_xgboost, c)(model_config["xgboost"][c]["central_params"])
+                c_bayesian = f"{c}_bayesian_opt"
+                bayes_opt = None
+                if hasattr(templates_xgboost, c_bayesian):
+                    bayes_opt = getattr(templates_xgboost, c_bayesian) \
+                            (model_config["xgboost"][c]["central_params"])
+                bayesian_opt.append(bayes_opt)
                 classifiers.append(model)
                 names.append(c)
                 grid_search_params.append(model_config["xgboost"][c].get("grid_search", {}))
@@ -84,7 +98,7 @@ def getclf_xgboost(model_config):
             except AttributeError:
                 logger.critical("Could not load xgboost model %s", c)
 
-    return classifiers, names, grid_search_params
+    return classifiers, names, grid_search_params, bayesian_opt
 
 
 def getclf_keras(model_config, length_input):
@@ -98,6 +112,7 @@ def getclf_keras(model_config, length_input):
 
     classifiers = []
     names = []
+    bayesian_opt = []
 
     for c in model_config["keras"]:
         if model_config["keras"][c]["activate"]:
@@ -107,13 +122,14 @@ def getclf_keras(model_config, length_input):
                                                epochs=model_config["keras"][c]["epochs"], \
                                                batch_size=model_config["keras"][c]["batch_size"], \
                                                verbose=0))
+                bayesian_opt.append(None)
                 names.append(c)
                 logger.info("Added keras model %s", c)
             except AttributeError:
                 logger.critical("Could not load keras model %s", c)
 
     #logger.critical("Some reason")
-    return classifiers, names, []
+    return classifiers, names, [], bayesian_opt
 
 
 

@@ -48,6 +48,22 @@ def get_scorers(score_names):
     return scorers
 
 
+def do_bayesian_opt(names, bayes_optimisers, x_train, y_train, nkfolds, out_dirs, ncores=-1):
+    """Do Bayesian optimisation for all registered models
+    """
+    for clf_name, opt, out_dir in zip(names, bayes_optimisers, out_dirs):
+        opt.x_train = x_train
+        opt.y_train = y_train
+        opt.nkfolds = nkfolds
+        opt.scoring = get_scorers(["AUC", "Accuracy"])
+        opt.scoring_opt = "AUC"
+        opt.low_is_better = False
+        opt.n_trials = 100
+
+        opt.optimise(ncores=ncores)
+        opt.save(out_dir)
+
+
 def do_gridsearch(names, classifiers, grid_params, x_train, y_train, nkfolds, out_dirs, ncores=-1):
     """Hyperparameter grid search for a list of classifiers
 

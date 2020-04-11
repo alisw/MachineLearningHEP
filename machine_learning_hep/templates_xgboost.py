@@ -12,22 +12,52 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
+from os.path import join
+
+import pickle
+
 from xgboost import XGBClassifier
+from hyperopt import hp
+
+from machine_learning_hep.optimisation.bayesian_opt import BayesianOpt
 
 def xgboost_classifier(model_config): # pylint: disable=W0613
     return XGBClassifier(verbosity=1,
                          n_gpus=0,
-                         n_jobs=model_config['n_jobs'],
-                         tree_method=model_config['tree_method'],
-                         max_depth=model_config['max_depth'],
-                         learning_rate=model_config['learning_rate'],
-                         n_estimators=model_config['n_estimators'],
-                         objective=model_config['objective'],
-                         gamma=model_config['gamma'],
-                         min_child_weight=model_config['min_child_weight'],
-                         #early_stopping_rounds=model_config['early_stopping_rounds'],
-                         subsample=model_config['subsample'],
-                         colsample_bytree=model_config['colsample_bytree'],
-                         colsample_bynode=model_config['colsample_bynode'],
-                         random_state=model_config['random_state']
-                         )
+                         **model_config)
+
+
+def xgboost_classifier_bayesian_space():
+    return {"maxdepth": hp.quniform("x_maxdepth", 1, 6, 1),
+            "n_estimators": hp.quniform("x_n_estimators", 600, 1000, 1),
+            "min_child_weight": hp.quniform("x_min_child", 1, 4, 1),
+            "subsample": hp.uniform("x_subsample", 0.5, 0.9),
+            "gamma": hp.uniform("x_gamma", 0.0, 0.2),
+            "colsample_bytree": hp.uniform("x_colsample_bytree", 0.5, 0.9),
+            "reg_lambda": hp.uniform("x_reg_lambda", 0, 1),
+            "reg_alpha": hp.uniform("x_reg_alpha", 0, 1),
+            "learning_rate": hp.uniform("x_learning_rate", 0.05, 0.35),
+            "max_delta_step": hp.quniform("x_max_delta_step", 0, 8, 2)}
+
+
+class XGBoostClassifierBayesianOpt(BayesianOpt):
+
+
+    def yield_clf(self, space):
+        config = self.next_params(space)
+        config["early_stopping_rounds"] = 10
+        # NOTE If that's not really an integer, it will crash!
+        if "n_estimators" in config:
+            config["n_estimators"] = int(config["n_estimators"])
+        return xgboost_classifier(config), config
+
+
+    def save_classifier_(self, clf, out_dir):
+        out_filename = join(out_dir, "xgboost_classifier.sav")
+        pickle.dump(clf, open(out_filename, 'wb'), protocol=4)
+        out_filename = join(out_dir, "xgboost_classifier.model")
+        clf.save_model(out_filename)
+
+
+def xgboost_classifier_bayesian_opt(model_config):
+    return XGBoostClassifierBayesianOpt(model_config, xgboost_classifier_bayesian_space())
