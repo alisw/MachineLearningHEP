@@ -215,8 +215,8 @@ LcpKpi:
     binmax: [6,8,12,24] #list of nbins sel_skim_binmin bins
     mltype: BinaryClassification
     ncorescrossval: 24
-    mlplot: /mnt/temp/OngoingAnalysis_LctopKpiPbPb/mlplot3050 # to be removed
-    mlout: /mnt/temp/OngoingAnalysis_LctopKpiPbPb/mlout3050 # to be removed
+    mlplot: /home/cbartels/Output/3050/mlplot3050 # to be removed
+    mlout: /home/cbartels/Output/3050/mlout3050 # to be removed
 
     opt:
       #pp 
@@ -261,14 +261,14 @@ LcpKpi:
     mc:
 
       pkl_skimmed_dec: [/mnt/temp/TTreeLctopKpiPbPb/vAN-20200219_ROOT6-1/PbPb3050_2018_mc_prodLcpKpi/388_20200316-1739/pklskdec,
-                        /mnt/temp/TTreeLctopKpiPbPb/vAN-20200219_ROOT6-1/PbPb3050_2018_mc_prodLcpKpi/389_20200316-1739/pKlskdec] #list of periods
+                        /mnt/temp/TTreeLctopKpiPbPb/vAN-20200219_ROOT6-1/PbPb3050_2018_mc_prodLcpKpi/389_20200316-1739/pklskdec] #list of periods
       pkl_skimmed_decmerged: [/mnt/temp/TTreeLctopKpiPbPb/vAN-20200219_ROOT6-1/PbPb3050_2018_mc_prodLcpKpi/388_20200316-1739/pklskdecmerged,
-                              /mnt/temp/TTreeLctopKpiPbPb/vAN-20200219_ROOT6-1/PbPb3050_2018_mc_prodLcpKpi/389_20200316-1739/pKlskdecmerged] #list of periods
+                              /mnt/temp/TTreeLctopKpiPbPb/vAN-20200219_ROOT6-1/PbPb3050_2018_mc_prodLcpKpi/389_20200316-1739/pklskdecmerged] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierLcpKpiPbPb3050_dfselection_pt_cand_4.0_6.0.sav,
-                     xgboost_classifierLcpKpiPbPb3050_dfselection_pt_cand_6.0_8.0.sav,
-                     xgboost_classifierLcpKpiPbPb3050_dfselection_pt_cand_8.0_12.0.sav,
-                     xgboost_classifierLcpKpiPbPb3050_dfselection_pt_cand_12.0_24.0.sav]
+    modelsperptbin: [xgboost_classifierLcpKpi_dfselection_pt_cand_4.0_6.0.sav,
+                     xgboost_classifierLcpKpi_dfselection_pt_cand_6.0_8.0.sav,
+                     xgboost_classifierLcpKpi_dfselection_pt_cand_8.0_12.0.sav,
+                     xgboost_classifierLcpKpi_dfselection_pt_cand_12.0_24.0.sav]
     probcutpresel:
       data: [0.3,0.3,0.3,0.3] #list of nbins  sel_skim_binmin bins
       mc: [0.3,0.3,0.3,0.3] #list of nbins  sel_skim_binmin bins
@@ -292,9 +292,9 @@ LcpKpi:
       sel_binmax2: [null] #list of var2 splitting nbins
       var_binning2: null
       triggerbit: ''
-      sel_an_binmin: [2,3] #list of pt nbins
-      sel_an_binmax: [3,4] #list of pt nbins
-      binning_matching: [0,1] #list of pt nbins
+      sel_an_binmin: [4,6,8,12] #list of pt nbins
+      sel_an_binmax: [6,8,12,24] #list of pt nbins
+      binning_matching: [0,1,2,4] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej == 0
       triggersel:
@@ -309,7 +309,7 @@ LcpKpi:
         results: ['LHC19c1b_all_r', 'LHC19c1b_all_q'] #list of periods
         resultsallp: 'LHC19c1b_qr'
 
-      mass_fit_lim: [1.742, 2.194]  # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [2.160, 2.440]  # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.002 # bin width of the invariant mass histogram
       sgnfunc: null
       bkgfunc: null
