@@ -567,10 +567,12 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                                                                     self.v_var_binning))
     def plottervalidation(self):
         if self.p_performval is False:
-            self.logger.fatal("The validation step was set to false. You dont \
+            self.logger.fatal(
+                "The validation step was set to false. You dont \
                                 have produced the histograms you need for the \
                                 validation stage. Please rerun the histomass \
-                                step")
+                                step"
+            )
         self.logger.info("I AM RUNNING THE PLOTTER VALIDATION STEP")
         # You can find all the input files in the self.n_filemass. At the
         # moment we dont do tests for the MC file that would be in any case
@@ -578,3 +580,52 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         # merged LHC16,LHC17, LHC18 file or also on the separate years
         # depending on how you set the option doperperiod in the
         # default_complete.yml database.
+
+        gROOT.SetBatch(True)
+
+        def save_root_object(obj, path, name=None, extension="eps"):
+            name = name if name is not None else obj.GetName()
+            obj.SaveAs(f"{path}/{name}.{extension}")
+
+        def do_plot(file_name, namex, namey=None, tag=""):
+            f = TFile(file_name, "READ")
+            if not f or not f.IsOpen():
+                self.logger.fatal("Did not find file %s", file_name)
+            h_name = f"h_{namex}"
+            if namey:
+                h_name = f"h_{namex}_vs_{namey}"
+            h_name += tag
+            h = f.Get(h_name)
+            if not h:
+                self.logger.fatal("Did not find %s in file %s", h_name, file_name)
+            canvas = TCanvas(h_name, h_name)
+            profile = None
+            h.Draw("COLZ")
+            if "TH2" in h.ClassName():
+                profile = h.ProfileX(h.GetName() + "_profile")
+                profile.SetLineWidth(2)
+                profile.SetLineColor(2)
+                profile.Draw("same")
+            gPad.SetLogz()
+            gPad.Update()
+            save_root_object(canvas, self.d_resultsallpdata)
+            f.Close()
+
+        for i in "v0m v0m_eq v0m_corr v0m_eq_corr".split():
+            do_plot(self.n_filemass, "n_tracklets", i)
+            do_plot(self.n_filemass, i, "perc_v0m")
+
+        for i in "n_tracklets n_tracklets_corr n_tracklets_corr_shm".split():
+            do_plot(self.n_filemass, i, "perc_v0m")
+
+        do_plot(self.n_filemass, "n_tracklets", "n_tracklets_corr")
+        do_plot(self.n_filemass, "z_vtx_reco", "n_tracklets_corr")
+        do_plot(self.n_filemass, "z_vtx_reco", "n_tracklets")
+        do_plot(self.n_filemass, "n_tracklets_corr")
+        do_plot(self.n_filemass, "n_tracklets_corr_shm")
+        do_plot(self.n_filemass, "n_tracklets_corr", tag="pileup")
+        # do_plot(self.n_filemass, "n_tracklets_corr", tag="spd")
+        do_plot(self.n_filemass, "n_tracklets_corr_sub", "n_tracklets_corr")
+
+        do_plot(self.n_filemass, "pt_cand", "nsigTOF_Pi_0")
+        do_plot(self.n_filemass, "pt_cand", "nsigTOF_Pi_1")
