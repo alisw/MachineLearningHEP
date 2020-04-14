@@ -62,6 +62,7 @@ def do_bayesian_opt(bayes_optimisers, x_train, y_train, nkfolds, out_dirs, ncore
 
         opt.optimise(ncores=ncores)
         opt.save(out_dir)
+        opt.plot(out_dir)
 
 
 def do_gridsearch(names, classifiers, grid_params, x_train, y_train, nkfolds, out_dirs, ncores=-1):

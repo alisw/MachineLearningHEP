@@ -14,13 +14,15 @@
 
 from os.path import join
 import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 
 from sklearn.model_selection import cross_validate
 
 from hyperopt import fmin, tpe, STATUS_OK
 
 from machine_learning_hep.logger import get_logger
-from machine_learning_hep.io import dump_yaml_from_dict
+from machine_learning_hep.io import dump_yaml_from_dict, parse_yaml
 
 
 class BayesianOpt: #pylint: disable=too-many-instance-attributes
@@ -154,8 +156,6 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         Returns: dict of score and status
         """
 
-        print("Next trial")
-
         model = None
         params = None
         # Yield model and parameters on the fly or with class method
@@ -227,6 +227,8 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
             space: hyperopt space (optional)
                 On the fly set the hyperopt space for this optimisation to draw parameters
                 from.
+            ncores: int
+                number of cores to be used
         """
 
         if self.params:
@@ -262,7 +264,9 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
                 "params": self.params,
                 "best_index": self.best_index,
                 "best_params": self.best_params,
-                "best_scores": self.best_scores}
+                "best_scores": self.best_scores,
+                "score_names": list(self.scoring.keys()),
+                "score_opt_name": self.scoring_opt}
 
 
     def save_model_(self, model, out_dir): # pylint: disable=unused-argument
@@ -287,10 +291,94 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
             self.save_model_(self.best, out_dir)
 
 
-    def plot(self, out_dir): # pylint: disable=unused-argument
+    def plot(self, out_dir, from_yaml=None): # pylint: disable=unused-argument, too-many-statements
         """Plot results
 
-        Not yet implemented.
+        Results are plotted to out_dir/results.png
+
+        Args:
+            out_dir: str
+                output directory where results.png will be saved
+            from_yaml: str
+                path to YAML file to read and plot results from
 
         """
-        self.logger.info("Plotting not yet implemented...")
+
+        results_tmp = self.results
+        scores_tmp = list(self.scoring.keys())
+        score_opt_tmp = self.scoring_opt
+
+        if from_yaml:
+            read_yaml = parse_yaml(from_yaml)
+            results_tmp = read_yaml["cv"]
+            scores_tmp = read_yaml["score_names"]
+            score_opt_tmp = read_yaml["score_opt_name"]
+
+        # Re-arrange such that always the optimisation score is on top
+        score_names = list(scores_tmp)
+        del score_names[score_names.index(score_opt_tmp)]
+        score_names.insert(0, score_opt_tmp)
+
+        # Prepare figrue and axes
+        figsize = (35, 18 * len(score_names))
+        fig, axes = plt.subplots(len(score_names), 1, sharex=True, gridspec_kw={"hspace": 0.05},
+                                 figsize=figsize)
+        markerstyles = ["o", "+"]
+        markersize = 20
+        for axi, (sn, ax) in enumerate(zip(score_names, axes)):
+            ax.set_ylabel(f"CV mean {sn}", fontsize=20)
+            ax.get_yaxis().set_tick_params(labelsize=20)
+
+            # Get relative deviation of scores
+            means = {}
+            for i, tt in enumerate(("train", "test")):
+                markerstyle = markerstyles[i % len(markerstyles)]
+                means[tt] = [r[f"{tt}_{sn}"] for r in results_tmp]
+                ax.plot(range(len(means[tt])), means[tt], ls="", marker=markerstyle,
+                        markersize=markersize, label=f"{sn} ({tt})")
+            # Relative deviations between test and train
+            index_high_score = means["test"].index(max(means["test"]))
+            dev_high_score = \
+                    abs(means["test"][index_high_score] - means["train"][index_high_score]) \
+                    / means["test"][index_high_score]
+            index_low_score = means["test"].index(min(means["test"]))
+            dev_low_score = \
+                    abs(means["test"][index_low_score] - means["train"][index_low_score]) \
+                    / means["test"][index_low_score]
+            dev_min = [abs(test - train) / test \
+                    for train, test in zip(means["train"], means["test"])]
+            index_min = dev_min.index(min(dev_min))
+            dev_min = min(dev_min)
+
+            ax.axvline(index_high_score, color="red")
+            y_coord = (means["test"][index_high_score] + means["train"][index_high_score]) / 2
+            ax.text(index_high_score, y_coord, f"{dev_high_score:.4f}", color="red", fontsize=20)
+            ax.axvline(index_low_score, color="blue")
+            y_coord = (means["test"][index_low_score] + means["train"][index_low_score]) / 2
+            ax.text(index_low_score, y_coord, f"{dev_low_score:.4f}", color="blue", fontsize=20)
+            ax.axvline(index_min, color="green")
+            y_coord = (means["test"][index_min] + means["train"][index_min]) / 2
+            ax.text(index_min, y_coord, f"{dev_min:.4f}", color="green", fontsize=20)
+
+            leg = ax.legend(loc="upper right", fontsize=20)
+            if axi == 0:
+                # Add another legend for highest, lowest score and min. rel. deviation between
+                # test and train score
+                handles = [Line2D([0], [0], color="red"),
+                           Line2D([0], [0], color="blue"),
+                           Line2D([0], [0], color="green")]
+                labels = ["highest test score", "lowest test score", "min. rel deviation"]
+                ax.legend(handles, labels, bbox_to_anchor=(0., 1.02, 1., .102), loc='lower left',
+                          ncol=3, mode="expand", borderaxespad=0., fontsize=20)
+                # Add back first legend
+                ax.add_artist(leg)
+
+        axes[-1].set_xticks(range(len(results_tmp)))
+        axes[-1].set_xticklabels(range(len(results_tmp)), fontsize=20)
+        axes[-1].set_xlabel("# trial", fontsize=20)
+        fig.suptitle("Bayesian model optimisation", fontsize=35)
+
+        fig.tight_layout()
+        out_file = join(out_dir, "results.png")
+        fig.savefig(out_file)
+        plt.close(fig)
