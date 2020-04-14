@@ -20,11 +20,10 @@ replace AliHFSystErr from AliPhysics).
 """
 # pylint: disable=too-many-lines
 # pylint: disable=import-error, no-name-in-module
-from machine_learning_hep.bitwise import filter_bit_df
-from utilities_plot import buildarray, buildbinning, makefill1dhist, makefill2dhist
+from utilities_plot import buildbinning, makefill1dhist, makefill2dhist
 
 
-def fill_validation_candidates(dfevt, dfevtevtsel, df_reco):
+def fill_validation_candidates(df_reco):
     """
     Create histograms for the validation on the event level as a function of the multiplicity
     """

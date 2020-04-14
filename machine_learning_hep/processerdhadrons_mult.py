@@ -244,7 +244,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
             # Validation histograms
             for histo in fill_validation_multiplicity(dfevtorig, dfevtevtsel, df_recodtrig):
                 histo.Write()
-            for histo in fill_validation_candidates(dfevtorig, dfevtevtsel, df_recodtrig):
+            for histo in fill_validation_candidates(df_recodtrig):
                 histo.Write()
     def process_histomass(self):
         print("Doing masshisto", self.mcordata, self.period)
