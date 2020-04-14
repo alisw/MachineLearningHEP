@@ -13,31 +13,26 @@
 #############################################################################
 
 """
-Script containing validation histograms on the event granularity
-"""
+Script containing all helper functions related to plotting with ROOT
 
+Script also contains the "class Errors", used for systematic uncertainties (to
+replace AliHFSystErr from AliPhysics).
+"""
 # pylint: disable=too-many-lines
 # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.bitwise import filter_bit_df
 from utilities_plot import buildarray, buildbinning, makefill1dhist, makefill2dhist
 
 
-def fill_validation_multiplicity(dfevt, dfevtevtsel, df_reco):
+def fill_validation_candidates(dfevt, dfevtevtsel, df_reco):
     """
     Create histograms for the validation on the event level as a function of the multiplicity
     """
     _ = len(df_reco)
 
     # Binning definition
-    binning_ntrklt = buildbinning(200, -0.5, 199.5)
-    binning_v0m = buildbinning(1500, -0.5, 1499.5)
-    binning_zvtx = buildbinning(100, -15.0, 15)
-    binning_v0m_perc = [0]
-    while binning_v0m_perc[-1] + 0.1 < 10:
-        binning_v0m_perc.append(binning_v0m_perc[-1] + 0.1)
-    while binning_v0m_perc[-1] + 1 < 100:
-        binning_v0m_perc.append(binning_v0m_perc[-1] + 1)
-    binning_v0m_perc = buildarray(binning_v0m_perc)
+    binning_nsigma = buildbinning(2000, -100, 100)
+    binning_pt = buildbinning(100, 0, 100)
 
     # Make and fill histograms
     hlist = []
@@ -57,29 +52,9 @@ def fill_validation_multiplicity(dfevt, dfevtevtsel, df_reco):
             h_tit = f" ; {namex} ; Entries"
             hlist.append(makefill1dhist(df_src, h_name, h_tit, binx, namex))
 
-    df_src = dfevt[dfevt.is_ev_rej_INT7 == 0]
-    # df_src = dfevtevtsel
-    # df_src = dfevt
-    for i in "v0m v0m_eq v0m_corr v0m_eq_corr".split():
-        make_and_fill(binning_ntrklt, "n_tracklets", binning_v0m, i)
-        make_and_fill(binning_v0m, i, binning_v0m_perc, "perc_v0m")
-
-    for i in "n_tracklets n_tracklets_corr n_tracklets_corr_shm".split():
-        make_and_fill(binning_ntrklt, i, binning_v0m_perc, "perc_v0m")
-
-    df_src = dfevtevtsel
-    make_and_fill(binning_ntrklt, "n_tracklets", binning_ntrklt, "n_tracklets_corr")
-    make_and_fill(binning_zvtx, "z_vtx_reco", binning_ntrklt, "n_tracklets_corr")
-    make_and_fill(binning_zvtx, "z_vtx_reco", binning_ntrklt, "n_tracklets")
-
-    make_and_fill(binning_ntrklt, "n_tracklets_corr")
-    make_and_fill(binning_ntrklt, "n_tracklets_corr_shm")
-
-    df_src = filter_bit_df(dfevt, "is_ev_rej", [[4], []])
-    make_and_fill(binning_ntrklt, "n_tracklets_corr", tag="pileup")
-    #df_src = dfevtevtsel.query("is_ev_sel_shm == 1")
-    #make_and_fill(binning_ntrklt, "n_tracklets_corr", tag="spd")
-
     df_src = df_reco
-    make_and_fill(binning_ntrklt, "n_tracklets_corr_sub", binning_ntrklt, "n_tracklets_corr")
+
+    make_and_fill(binning_pt, "pt_cand", binning_nsigma, "nsigTOF_Pi_0")
+    make_and_fill(binning_pt, "pt_cand", binning_nsigma, "nsigTOF_Pi_1")
+
     return hlist
