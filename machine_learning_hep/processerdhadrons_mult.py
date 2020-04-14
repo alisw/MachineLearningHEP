@@ -31,7 +31,8 @@ from machine_learning_hep.utilities import get_timestamp_string
 #from machine_learning_hep.globalfitter import fitter
 from machine_learning_hep.processer import Processer
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
-from machine_learning_hep.utilities_validation import fillvalidationvsmult
+from machine_learning_hep.validation_multiplicity import fill_validation_multiplicity
+from machine_learning_hep.validation_candidates import fill_validation_candidates
 
 class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-attributes, invalid-name
     # Class Attribute
@@ -240,8 +241,10 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                                   self.minvaluehisto, self.maxvaluehisto)
             fill_hist(histomultwithd, dfevtwithd["%s_x" % self.v_var2_binning_gen])
             histomultwithd.Write()
-            valhistolist = fillvalidationvsmult(dfevtorig, dfevtevtsel, df_recodtrig)
-            for histo in valhistolist:
+            # Validation histograms
+            for histo in fill_validation_multiplicity(dfevtorig, dfevtevtsel, df_recodtrig):
+                histo.Write()
+            for histo in fill_validation_candidates(dfevtorig, dfevtevtsel, df_recodtrig):
                 histo.Write()
     def process_histomass(self):
         print("Doing masshisto", self.mcordata, self.period)

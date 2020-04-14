@@ -13,18 +13,16 @@
 #############################################################################
 
 """
-Script containing all helper functions related to plotting with ROOT
-
-Script also contains the "class Errors", used for systematic uncertainties (to
-replace AliHFSystErr from AliPhysics).
+Script containing validation histograms on the event granularity
 """
+
 # pylint: disable=too-many-lines
 # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.bitwise import filter_bit_df
 from utilities_plot import buildarray, buildbinning, makefill1dhist, makefill2dhist
 
 
-def fillvalidationvsmult(dfevt, dfevtevtsel, df_reco):
+def fill_validation_multiplicity(dfevt, dfevtevtsel, df_reco):
     """
     Create histograms for the validation on the event level as a function of the multiplicity
     """
