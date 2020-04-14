@@ -13,10 +13,7 @@
 #############################################################################
 
 """
-Script containing all helper functions related to plotting with ROOT
-
-Script also contains the "class Errors", used for systematic uncertainties (to
-replace AliHFSystErr from AliPhysics).
+Script containing validation histograms on the candidate granularity
 """
 # pylint: disable=too-many-lines
 # pylint: disable=import-error, no-name-in-module
