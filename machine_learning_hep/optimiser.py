@@ -356,8 +356,8 @@ class Optimiser:
             return
         checkmakedirlist(out_dirs)
 
-        do_bayesian_opt(clfs_names_all, clfs_all, self.df_xtrain, self.df_ytrain, self.p_nkfolds,
-                        out_dirs, self.p_ncorescross)
+        do_bayesian_opt(clfs_all, self.df_xtrain, self.df_ytrain, self.p_nkfolds, out_dirs,
+                        self.p_ncorescross)
 
 
     def do_grid(self):

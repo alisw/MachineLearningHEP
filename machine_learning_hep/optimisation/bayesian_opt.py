@@ -24,6 +24,28 @@ from machine_learning_hep.io import dump_yaml_from_dict
 
 
 class BayesianOpt: #pylint: disable=too-many-instance-attributes
+    """Base/utilitiy class for Bayesian model optimisation
+
+        This class utilises the hyperopt package to perform Bayesian model optimisation independent
+        of the concrete ML model.
+        The central method is "optimise" which soleyly relies on getting a model configured with
+        the new parameters. A method method to obtain a new model can either be implemented by
+        deriving this class and overwrite "yield_model_" or by passing a lambda as the
+        "yield_model" argument when calling "optimise".
+        Additionally, the best model is automatically saved when either "save_model_" is
+        overwritten or a lambda is passed to the "save_model" argument in optimise.
+
+        Optimisation is done "self.n_trials" times and for each trial a Cross Validation is done
+        with "self.nkfolds" folds.
+
+        Scoring functions can be freely defined in contained in the dictionary "self.scoring" and
+        the optimisation is done according to the scoring function with key "self.scoring_opt".
+        Note, that the underlying optimisation procedure is a minimisation. Hence, when a maximum
+        score is the best one, "self.low_is_better" must be set to False.
+
+        All parameters and scores can be written to a YAML file and the field "best_index"
+        specifies the best model wrt the best test score.
+    """
 
     def __init__(self, model_config, space):
 
@@ -53,9 +75,9 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         # Current minimum score
         self.min_score = None
 
-        # Lambda to yield a custom classifier on the fly
-        self.yield_clf_custom = None
-        self.save_clf_custom = None
+        # Lambda to yield a custom model on the fly
+        self.yield_model_custom = None
+        self.save_model_custom = None
 
         # Collect...
 
@@ -65,7 +87,7 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         # ...parameters of trial
         self.params = []
 
-        # ...best classifier and index to find score value/parameters etc.
+        # ...best model and index to find score value/parameters etc.
         self.best_index = None
         self.best = None
 
@@ -86,29 +108,29 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         self.best = None
 
 
-    def yield_clf(self, space): # pylint: disable=unused-argument, useless-return
-        """Yield next classifier
+    def yield_model_(self, model_config, space): # pylint: disable=unused-argument, useless-return
+        """Yield next model
 
-        Next classifier constructed from space. To be overwritten for concrete implementation
+        Next model constructed from space. To be overwritten for concrete implementation
 
         Args:
             space: dict of sampled parameters
 
-        Returns: classifier
+        Returns: model
 
         """
         self.logger.error("Not implemented...")
         return None, None
 
 
-    def next_params(self, space):
+    def next_params(self, space_drawn):
         """Yield next set of parameters
 
-        This is a helper function which can be used to construct the next classifier
+        Helper function which can be used to extract parameters for next model
 
         """
         config = {}
-        for key, value in space.items():
+        for key, value in space_drawn.items():
             config[key] = value
         if self.model_config:
             for key, value in self.model_config.items():
@@ -117,32 +139,32 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         return config
 
 
-    def trial(self, space):
+    def trial(self, space_drawn):
         """One trial
 
-        Doing one trial with a next configured classifier
+        Doing one trial with a next configured model
 
         Args:
-            clf: classifier
+            model: model
 
         Returns: dict of score and status
         """
 
         print("Next trial")
 
-        clf = None
+        model = None
         params = None
-        # Yield classifier and parameters on the fly or with class method
-        if self.yield_clf_custom:
-            clf, params = self.yield_clf_custom(self.model_config, space)
+        # Yield model and parameters on the fly or with class method
+        if self.yield_model_custom:
+            model, params = self.yield_model_custom(self.model_config, space_drawn)
         else:
-            clf, params = self.yield_clf(space) # pylint: disable=assignment-from-none
+            model, params = self.yield_model_(self.model_config, space_drawn) # pylint: disable=assignment-from-none
 
         # Collect parameters
         self.params.append(params)
 
-        # Do cross validation for this classifier
-        res = cross_validate(clf, self.x_train, self.y_train, cv=self.nkfolds,
+        # Do cross validation for this model
+        res = cross_validate(model, self.x_train, self.y_train, cv=self.nkfolds,
                              scoring=self.scoring, n_jobs=self.ncores, return_train_score=True)
 
         # Collect results
@@ -158,17 +180,31 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
 
         if self.min_score is None or score < self.min_score:
             self.min_score = score
-            self.best = clf
+            self.best = model
             self.best_index = len(self.params) - 1
 
         return {"loss": score, "status": STATUS_OK}
 
 
-    def optimise(self, yield_clf=None, save_clf=None, ncores=None):
+    def optimise(self, yield_model=None, save_model=None, space=None, ncores=None):
         """Do Bayesian optimisation
 
-        Parent function using
+        Central function to be called for the optimisation. Takes care of running a CV for all
+        trials.
 
+        Args:
+            yield_model: lambda(space) (optional)
+                Hyperopt parameter space to draw parameters from.
+                If not passed, it is assumed that this is called from a derived class implementing
+                self.yield_model_
+            save_model: lambda(model, out_dir) (optional)
+                Procedure to save a model. Since this class does not know the details, it
+                cannot know how to save a model.
+                If not passed, it is assumed that this is called from a derived class implementing
+                self.save_model_
+            space: hyperopt space (optional)
+                On the fly set the hyperopt space for this optimisation to draw parameters
+                from.
         """
 
         if self.params:
@@ -179,11 +215,14 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         if ncores:
             self.ncores = ncores
 
-        # Potentially yield a custom classifier on the fly
-        self.yield_clf_custom = yield_clf
-        self.save_clf_custom = save_clf
-        if yield_clf and save_clf is None:
-            self.logger.fatal("Classifier is created on the fly but no save method was provided")
+        if space:
+            self.space = space
+
+        # Potentially yield a custom model on the fly
+        self.yield_model_custom = yield_model
+        self.save_model_custom = save_model
+        if yield_model and save_model is None:
+            self.logger.fatal("model is created on the fly but no save method was provided")
 
         _ = fmin(fn=self.trial, space=self.space, algo=tpe.suggest, max_evals=self.n_trials)
 
@@ -194,12 +233,15 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
 
 
     def make_results(self):
+        """Helper function to make dictionary of parameters and results
+        """
+
         return {"cv": self.results,
                 "params": self.params,
                 "best_index": self.best_index}
 
 
-    def save_classifier_(self, clf, out_dir): # pylint: disable=unused-argument
+    def save_model_(self, model, out_dir): # pylint: disable=unused-argument
         """Save a model
 
         Routine to save a model, to be implemented for concrete model
@@ -210,13 +252,21 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
 
 
     def save(self, out_dir):
+        """Save paramaters/results and best model
+        """
+
         dump_yaml_from_dict(self.make_results(), join(out_dir, "results.yaml"))
-        self.logger.info("Save best classifier from Bayesian opt at %s", out_dir)
-        if self.yield_clf_custom and self.save_clf_custom:
-            self.save_clf_custom(self.best, out_dir)
+        self.logger.info("Save best model from Bayesian opt at %s", out_dir)
+        if self.yield_model_custom and self.save_model_custom:
+            self.save_model_custom(self.best, out_dir)
         else:
-            self.save_classifier_(self.best, out_dir)
+            self.save_model_(self.best, out_dir)
 
 
     def plot(self, out_dir):
+        """Plot results
+
+        Not yet implemented.
+
+        """
         pass

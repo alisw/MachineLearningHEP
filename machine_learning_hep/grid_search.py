@@ -48,10 +48,10 @@ def get_scorers(score_names):
     return scorers
 
 
-def do_bayesian_opt(names, bayes_optimisers, x_train, y_train, nkfolds, out_dirs, ncores=-1):
+def do_bayesian_opt(bayes_optimisers, x_train, y_train, nkfolds, out_dirs, ncores=-1):
     """Do Bayesian optimisation for all registered models
     """
-    for clf_name, opt, out_dir in zip(names, bayes_optimisers, out_dirs):
+    for opt, out_dir in zip(bayes_optimisers, out_dirs):
         opt.x_train = x_train
         opt.y_train = y_train
         opt.nkfolds = nkfolds

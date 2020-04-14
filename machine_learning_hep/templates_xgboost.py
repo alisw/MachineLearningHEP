@@ -43,7 +43,7 @@ def xgboost_classifier_bayesian_space():
 class XGBoostClassifierBayesianOpt(BayesianOpt):
 
 
-    def yield_clf(self, space):
+    def yield_model_(self, model_config, space):
         config = self.next_params(space)
         config["early_stopping_rounds"] = 10
         # NOTE If that's not really an integer, it will crash!
@@ -52,11 +52,11 @@ class XGBoostClassifierBayesianOpt(BayesianOpt):
         return xgboost_classifier(config), config
 
 
-    def save_classifier_(self, clf, out_dir):
+    def save_model_(self, model, out_dir):
         out_filename = join(out_dir, "xgboost_classifier.sav")
-        pickle.dump(clf, open(out_filename, 'wb'), protocol=4)
+        pickle.dump(model, open(out_filename, 'wb'), protocol=4)
         out_filename = join(out_dir, "xgboost_classifier.model")
-        clf.save_model(out_filename)
+        model.save_model(out_filename)
 
 
 def xgboost_classifier_bayesian_opt(model_config):
