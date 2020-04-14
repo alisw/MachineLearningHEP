@@ -90,6 +90,8 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         # ...best model and index to find score value/parameters etc.
         self.best_index = None
         self.best = None
+        self.best_params = None
+        self.best_scores = None
 
         # Number of parallel jobs
         self.ncores = 20
@@ -106,6 +108,8 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         self.params = []
         self.best_index = None
         self.best = None
+        self.best_params = None
+        self.best_scores = None
 
 
     def yield_model_(self, model_config, space): # pylint: disable=unused-argument, useless-return
@@ -168,7 +172,10 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
                              scoring=self.scoring, n_jobs=self.ncores, return_train_score=True)
 
         # Collect results
-        res_tmp = {f"test_{name}":  float(np.mean(res[f"test_{name}"])) for name in self.scoring} # pylint: disable=not-an-iterable
+        res_tmp = {}
+        for t in ("train", "test"):
+            for sc in self.scoring: # pylint: disable=not-an-iterable
+                res_tmp[f"{t}_{sc}"] = float(np.mean(res[f"{t}_{sc}"]))
         self.results.append(res_tmp)
 
         # Extract mean score from CV
@@ -182,8 +189,23 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
             self.min_score = score
             self.best = model
             self.best_index = len(self.params) - 1
+            self.best_params = params
+            self.best_scores = res_tmp
 
         return {"loss": score, "status": STATUS_OK}
+
+
+    def finalise(self):
+        """Finalising...
+        """
+
+        # Reset number of cores
+        self.ncores = 20
+
+        # Now, train the best model on the full dataset
+        if self.best:
+            self.logger.info("Fit best model to whole dataset")
+            self.best.fit(self.x_train, self.y_train)
 
 
     def optimise(self, yield_model=None, save_model=None, space=None, ncores=None):
@@ -224,12 +246,12 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         if yield_model and save_model is None:
             self.logger.fatal("model is created on the fly but no save method was provided")
 
-        _ = fmin(fn=self.trial, space=self.space, algo=tpe.suggest, max_evals=self.n_trials)
-
-        self.ncores = 20
-
-        # Now, train the best model on the full dataset
-        self.best.fit(self.x_train, self.y_train)
+        try:
+            _ = fmin(fn=self.trial, space=self.space, algo=tpe.suggest, max_evals=self.n_trials)
+        except KeyboardInterrupt:
+            self.finalise()
+        else:
+            self.finalise()
 
 
     def make_results(self):
@@ -238,7 +260,9 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
 
         return {"cv": self.results,
                 "params": self.params,
-                "best_index": self.best_index}
+                "best_index": self.best_index,
+                "best_params": self.best_params,
+                "best_scores": self.best_scores}
 
 
     def save_model_(self, model, out_dir): # pylint: disable=unused-argument
@@ -263,10 +287,10 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
             self.save_model_(self.best, out_dir)
 
 
-    def plot(self, out_dir):
+    def plot(self, out_dir): # pylint: disable=unused-argument
         """Plot results
 
         Not yet implemented.
 
         """
-        pass
+        self.logger.info("Plotting not yet implemented...")

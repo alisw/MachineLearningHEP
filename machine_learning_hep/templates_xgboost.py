@@ -28,7 +28,7 @@ def xgboost_classifier(model_config): # pylint: disable=W0613
 
 
 def xgboost_classifier_bayesian_space():
-    return {"maxdepth": hp.quniform("x_maxdepth", 1, 6, 1),
+    return {"max_depth": hp.quniform("x_max_depth", 1, 6, 1),
             "n_estimators": hp.quniform("x_n_estimators", 600, 1000, 1),
             "min_child_weight": hp.quniform("x_min_child", 1, 4, 1),
             "subsample": hp.uniform("x_subsample", 0.5, 0.9),
@@ -49,6 +49,8 @@ class XGBoostClassifierBayesianOpt(BayesianOpt):
         # NOTE If that's not really an integer, it will crash!
         if "n_estimators" in config:
             config["n_estimators"] = int(config["n_estimators"])
+        if "max_depth" in config:
+            config["max_depth"] = int(config["max_depth"])
         return xgboost_classifier(config), config
 
 
