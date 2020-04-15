@@ -580,52 +580,81 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         # merged LHC16,LHC17, LHC18 file or also on the separate years
         # depending on how you set the option doperperiod in the
         # default_complete.yml database.
+        def do_validation_plots(input_file_name, output_path, ismc=False):
+            gROOT.SetBatch(True)
 
-        gROOT.SetBatch(True)
+            def save_root_object(obj, path=output_path, name=None, extension="eps"):
+                name = name if name is not None else obj.GetName()
+                obj.SaveAs(f"{path}/{name}.{extension}")
 
-        def save_root_object(obj, path, name=None, extension="eps"):
-            name = name if name is not None else obj.GetName()
-            obj.SaveAs(f"{path}/{name}.{extension}")
+            input_file = TFile(input_file_name, "READ")
+            if not input_file or not input_file.IsOpen():
+                self.logger.fatal("Did not find file %s", input_file.GetName())
 
-        def do_plot(file_name, namex, namey=None, tag=""):
-            f = TFile(file_name, "READ")
-            if not f or not f.IsOpen():
-                self.logger.fatal("Did not find file %s", file_name)
-            h_name = f"h_{namex}"
-            if namey:
-                h_name = f"h_{namex}_vs_{namey}"
-            h_name += tag
-            h = f.Get(h_name)
-            if not h:
-                self.logger.fatal("Did not find %s in file %s", h_name, file_name)
-            canvas = TCanvas(h_name, h_name)
-            profile = None
-            h.Draw("COLZ")
-            if "TH2" in h.ClassName():
-                profile = h.ProfileX(h.GetName() + "_profile")
-                profile.SetLineWidth(2)
-                profile.SetLineColor(2)
-                profile.Draw("same")
-            gPad.SetLogz()
-            gPad.Update()
-            save_root_object(canvas, self.d_resultsallpdata)
-            f.Close()
+            def get_histo(namex, namey=None, tag=""):
+                h_name = f"h_{namex}"
+                if namey:
+                    h_name = f"h_{namex}_vs_{namey}"
+                h_name += tag
+                h = input_file.Get(h_name)
+                if not h:
+                    input_file.ls()
+                    self.logger.fatal(
+                        "Did not find %s in file %s", h_name, input_file.GetName()
+                    )
+                return h
 
-        for i in "v0m v0m_eq v0m_corr v0m_eq_corr".split():
-            do_plot(self.n_filemass, "n_tracklets", i)
-            do_plot(self.n_filemass, i, "perc_v0m")
+            def do_plot(histo):
+                canvas = TCanvas(histo.GetName(), histo.GetName())
+                profile = None
+                histo.Draw("COLZ")
+                if "TH2" in histo.ClassName():
+                    profile = histo.ProfileX(histo.GetName() + "_profile")
+                    profile.SetLineWidth(2)
+                    profile.SetLineColor(2)
+                    profile.Draw("same")
+                gPad.SetLogz()
+                gPad.Update()
+                save_root_object(canvas)
 
-        for i in "n_tracklets n_tracklets_corr n_tracklets_corr_shm".split():
-            do_plot(self.n_filemass, i, "perc_v0m")
+            for i in "v0m v0m_eq v0m_corr v0m_eq_corr".split():
+                do_plot(get_histo("n_tracklets", i))
+                do_plot(get_histo(i, "perc_v0m"))
 
-        do_plot(self.n_filemass, "n_tracklets", "n_tracklets_corr")
-        do_plot(self.n_filemass, "z_vtx_reco", "n_tracklets_corr")
-        do_plot(self.n_filemass, "z_vtx_reco", "n_tracklets")
-        do_plot(self.n_filemass, "n_tracklets_corr")
-        do_plot(self.n_filemass, "n_tracklets_corr_shm")
-        do_plot(self.n_filemass, "n_tracklets_corr", tag="pileup")
-        # do_plot(self.n_filemass, "n_tracklets_corr", tag="spd")
-        do_plot(self.n_filemass, "n_tracklets_corr_sub", "n_tracklets_corr")
+            for i in "n_tracklets n_tracklets_corr n_tracklets_corr_shm".split():
+                do_plot(get_histo(i, "perc_v0m"))
 
-        do_plot(self.n_filemass, "pt_cand", "nsigTOF_Pi_0")
-        do_plot(self.n_filemass, "pt_cand", "nsigTOF_Pi_1")
+            do_plot(get_histo("n_tracklets", "n_tracklets_corr"))
+            do_plot(get_histo("z_vtx_reco", "n_tracklets_corr"))
+            do_plot(get_histo("z_vtx_reco", "n_tracklets"))
+            do_plot(get_histo("n_tracklets_corr"))
+            do_plot(get_histo("n_tracklets_corr_shm"))
+            do_plot(get_histo("n_tracklets_corr", tag="pileup"))
+            # do_plot(get_histo("n_tracklets_corr", tag="spd") )
+            do_plot(get_histo("n_tracklets_corr_sub", "n_tracklets_corr"))
+
+            for i in "TPC TOF".split():
+                for j in "Pi K".split():
+                    for k in "0 1".split():
+                        yaxis = [f"nsig{i}_{j}_{k}"]
+                        do_plot(get_histo("pt_cand", *yaxis))
+                        do_plot(get_histo("eta_cand", *yaxis))
+                        do_plot(get_histo("phi_cand", *yaxis))
+
+            # Part dedicated to MC Checks
+            if not ismc:
+                input_file.Close()
+                return
+
+            for i in "TPC TOF".split():
+                for j in "Pi K".split():
+                    for k in "0 1".split():
+                        yaxis = [f"nsig{i}_{j}_{k}", "MC"]
+                        do_plot(get_histo("pt_cand", *yaxis))
+                        do_plot(get_histo("eta_cand", *yaxis))
+                        do_plot(get_histo("phi_cand", *yaxis))
+
+            input_file.Close()
+
+        do_validation_plots(self.n_filemass, self.d_resultsallpdata)
+        do_validation_plots(self.n_filemass_mc, self.d_resultsallpmc, ismc=True)
