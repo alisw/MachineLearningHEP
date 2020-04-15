@@ -247,8 +247,10 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
             fill_validation_multiplicity(dfevtorig, dfevtevtsel, df_recodtrig).write()
             fill_validation_candidates(df_recodtrig).write()
             if self.mcordata == "mc":
-                fill_validation_candidates(df_recodtrig[df_recodtrig[self.v_ismcsignal] == 1], "MC").write()
-        
+                fill_validation_candidates(
+                    df_recodtrig[df_recodtrig[self.v_ismcsignal] == 1], "MC"
+                ).write()
+
     def process_histomass(self):
         print("Doing masshisto", self.mcordata, self.period)
         print("Using run selection for mass histo", \
