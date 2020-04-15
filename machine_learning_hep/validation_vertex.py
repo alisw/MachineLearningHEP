@@ -13,34 +13,31 @@
 #############################################################################
 
 """
-Script containing validation histograms on the candidate granularity
+Script containing validation histograms on the event granularity for the vertex monitoring
 """
+
 # pylint: disable=too-many-lines
 # pylint: disable=import-error, no-name-in-module
+# from machine_learning_hep.bitwise import filter_bit_df
 from utilities_plot import buildbinning
 from validation import ValidationCollection
 
 
-def fill_validation_candidates(df_reco, tag=""):
+def fill_validation_vertex(dfevt, dfevtevtsel, df_reco):
     """
     Create histograms for the validation on the event level as a function of the multiplicity
     """
     _ = len(df_reco)
+    __ = len(dfevtevtsel)
 
     # Binning definition
-    binning_nsigma = buildbinning(2000, -100, 100)
-    binning_pt = buildbinning(100, 0, 100)
-    binning_eta = buildbinning(100, -1, 1)
-    binning_phi = buildbinning(100, 0, 7)
+    # binning_xyvtx = buildbinning(100, -1.0, 1)
+    binning_zvtx = buildbinning(100, -15.0, 15)
 
     # Make and fill histograms
-    val = ValidationCollection(df_reco, tag=tag)
-    for i in "TPC TOF".split():
-        for j in "Pi K".split():
-            for k in "0 1".split():
-                yaxis = [binning_nsigma, f"nsig{i}_{j}_{k}"]
-                val.make_and_fill(binning_pt, "pt_cand", *yaxis)
-                val.make_and_fill(binning_eta, "eta_cand", *yaxis)
-                val.make_and_fill(binning_phi, "phi_cand", *yaxis)
+    val = ValidationCollection(dfevt[dfevt.is_ev_rej_INT7 == 0])
+    # val.make_and_fill(binning_xyvtx, "x_vtx_reco")
+    # val.make_and_fill(binning_xyvtx, "y_vtx_reco")
+    val.make_and_fill(binning_zvtx, "z_vtx_reco")
 
     return val

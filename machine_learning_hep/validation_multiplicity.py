@@ -19,7 +19,8 @@ Script containing validation histograms on the event granularity
 # pylint: disable=too-many-lines
 # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.bitwise import filter_bit_df
-from utilities_plot import buildarray, buildbinning, makefill1dhist, makefill2dhist
+from utilities_plot import buildarray, buildbinning
+from validation import ValidationCollection
 
 
 def fill_validation_multiplicity(dfevt, dfevtevtsel, df_reco):
@@ -40,46 +41,31 @@ def fill_validation_multiplicity(dfevt, dfevtevtsel, df_reco):
     binning_v0m_perc = buildarray(binning_v0m_perc)
 
     # Make and fill histograms
-    hlist = []
-    df_src = None
-
-    def make_and_fill(binx, namex, biny=None, namey=None, tag=""):
-        """
-        Makes histogram and fills them based on their axis titles
-        """
-        if namey:
-            h_name = f"h_{namex}_vs_{namey}{tag}"
-            h_tit = f" ; {namex} ; {namey}"
-            hlist.append(makefill2dhist(df_src, h_name, binx, biny, namex, namey))
-            hlist[-1].SetTitle(h_tit)
-        else:
-            h_name = f"h_{namex}{tag}"
-            h_tit = f" ; {namex} ; Entries"
-            hlist.append(makefill1dhist(df_src, h_name, h_tit, binx, namex))
-
-    df_src = dfevt[dfevt.is_ev_rej_INT7 == 0]
-    # df_src = dfevtevtsel
-    # df_src = dfevt
+    val = ValidationCollection(dfevt[dfevt.is_ev_rej_INT7 == 0])
+    # val = ValidationCollection(dfevt[dfevtevtsel])
+    # val = ValidationCollection(dfevt[dfevt])
     for i in "v0m v0m_eq v0m_corr v0m_eq_corr".split():
-        make_and_fill(binning_ntrklt, "n_tracklets", binning_v0m, i)
-        make_and_fill(binning_v0m, i, binning_v0m_perc, "perc_v0m")
+        val.make_and_fill(binning_ntrklt, "n_tracklets", binning_v0m, i)
+        val.make_and_fill(binning_v0m, i, binning_v0m_perc, "perc_v0m")
 
     for i in "n_tracklets n_tracklets_corr n_tracklets_corr_shm".split():
-        make_and_fill(binning_ntrklt, i, binning_v0m_perc, "perc_v0m")
+        val.make_and_fill(binning_ntrklt, i, binning_v0m_perc, "perc_v0m")
 
-    df_src = dfevtevtsel
-    make_and_fill(binning_ntrklt, "n_tracklets", binning_ntrklt, "n_tracklets_corr")
-    make_and_fill(binning_zvtx, "z_vtx_reco", binning_ntrklt, "n_tracklets_corr")
-    make_and_fill(binning_zvtx, "z_vtx_reco", binning_ntrklt, "n_tracklets")
+    val.reset(dfevtevtsel, "")
+    val.make_and_fill(binning_ntrklt, "n_tracklets", binning_ntrklt, "n_tracklets_corr")
+    val.make_and_fill(binning_zvtx, "z_vtx_reco", binning_ntrklt, "n_tracklets_corr")
+    val.make_and_fill(binning_zvtx, "z_vtx_reco", binning_ntrklt, "n_tracklets")
 
-    make_and_fill(binning_ntrklt, "n_tracklets_corr")
-    make_and_fill(binning_ntrklt, "n_tracklets_corr_shm")
+    val.make_and_fill(binning_ntrklt, "n_tracklets_corr")
+    val.make_and_fill(binning_ntrklt, "n_tracklets_corr_shm")
 
-    df_src = filter_bit_df(dfevt, "is_ev_rej", [[4], []])
-    make_and_fill(binning_ntrklt, "n_tracklets_corr", tag="pileup")
-    #df_src = dfevtevtsel.query("is_ev_sel_shm == 1")
-    #make_and_fill(binning_ntrklt, "n_tracklets_corr", tag="spd")
+    val.reset(filter_bit_df(dfevt, "is_ev_rej", [[4], []]), "pileup")
+    val.make_and_fill(binning_ntrklt, "n_tracklets_corr")
+    # val.reset(dfevtevtsel.query("is_ev_sel_shm == 1"), "spd")
+    # val.make_and_fill(binning_ntrklt, "n_tracklets_corr")
 
-    df_src = df_reco
-    make_and_fill(binning_ntrklt, "n_tracklets_corr_sub", binning_ntrklt, "n_tracklets_corr")
-    return hlist
+    val.reset(df_reco, "")
+    val.make_and_fill(
+        binning_ntrklt, "n_tracklets_corr_sub", binning_ntrklt, "n_tracklets_corr"
+    )
+    return val
