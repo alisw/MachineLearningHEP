@@ -176,6 +176,7 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         for t in ("train", "test"):
             for sc in self.scoring: # pylint: disable=not-an-iterable
                 res_tmp[f"{t}_{sc}"] = float(np.mean(res[f"{t}_{sc}"]))
+                res_tmp[f"{t}_{sc}_std"] = float(np.std(res[f"{t}_{sc}"]))
         self.results.append(res_tmp)
 
         # Extract mean score from CV
@@ -329,13 +330,15 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
             ax.set_ylabel(f"CV mean {sn}", fontsize=20)
             ax.get_yaxis().set_tick_params(labelsize=20)
 
-            # Get relative deviation of scores
+            # Get means of scores and plot with their std
             means = {}
             for i, tt in enumerate(("train", "test")):
                 markerstyle = markerstyles[i % len(markerstyles)]
                 means[tt] = [r[f"{tt}_{sn}"] for r in results_tmp]
-                ax.plot(range(len(means[tt])), means[tt], ls="", marker=markerstyle,
-                        markersize=markersize, label=f"{sn} ({tt})")
+                stds = [r[f"{tt}_{sn}_std"] for r in results_tmp]
+                ax.errorbar(range(len(means[tt])), means[tt], yerr=stds, ls="",
+                            marker=markerstyle, markersize=markersize, label=f"{sn} ({tt})")
+
             # Relative deviations between test and train
             index_high_score = means["test"].index(max(means["test"]))
             dev_high_score = \
