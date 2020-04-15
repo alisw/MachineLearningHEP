@@ -139,7 +139,7 @@ D0pp_hfcorr:
   multi:
     data:
       nperiods: 3
-      nprocessesparallel: 20
+      nprocessesparallel: 20 
       maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp:  [100,100,100] #list of periods
       chunksizeskim: [100,100,100] #list of periods

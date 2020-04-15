@@ -215,24 +215,24 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
         print("creating UB model, Monte_carlo status:", ismc)
         set_params, fit_params = self.fit_tmp()
         if ismc:
-            par_1 = fit_params[0]/1.5
-            par_2 = fit_params[1]/1.5
-            par_3 = fit_params[2]/1.5
-            par_4 = fit_params[3]/1.5
+            par_1 = fit_params[0]
+            par_2 = fit_params[1]
+            par_3 = fit_params[2]
+            par_4 = fit_params[3]
             lim_1 = 500000
             lim_2 = 100000
             lim_3 = 100000
             lim_4 = 500000
-            lim_low4 = 5000
+            lim_low4 = 500
         else:
-            par_1 = 1000
-            par_2 = 10000
-            par_3 = 10000
-            par_4 = 10000
-            lim_1 = 10000
-            lim_2 = 100000
-            lim_3 = 100000
-            lim_4 = 800000
+            par_1 = 500
+            par_2 = 150000
+            par_3 = 7000
+            par_4 = 100000
+            lim_1 = 1500
+            lim_2 = 50000
+            lim_3 = 50000
+            lim_4 = 300000
             lim_low4 = 5000
 
         w.factory("Gaussian::sig1(x[%f,%f], mean_1[1.867,1.83, 1.9], wid_1[0.012, 0.01,0.03])" %
@@ -254,21 +254,13 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
 
     def dataload(self, pathtoresults): #load preprocessed dataframe for unbinned fit
         dfreco_full = pd.DataFrame()
-        for period in range(1, self.nperiods):
+        for period in range(0, self.nperiods):
             for root, _, files in os.walk(pathtoresults[period], topdown=False):
                 for name in files:
                     if name.endswith(".pkl"):
+                        print(os.path.join(root, name))
                         dfreco = pickle.load(openfile(os.path.join(root, name), "rb"))
-                        dfreco = dfreco[dfreco["pt_cand1"] > 4]
-                        dfreco = dfreco[dfreco["pt_cand2"] > 4]
-                        dfreco = dfreco[dfreco["inv_cand_1"] < self.p_mass_fit_lim[1]]
-                        dfreco = dfreco[dfreco["inv_cand_1"] > self.p_mass_fit_lim[0]]
-                        dfreco = dfreco[dfreco["inv_cand_2"] < self.p_mass_fit_lim[1]]
-                        dfreco = dfreco[dfreco["inv_cand_2"] > self.p_mass_fit_lim[0]]
-                        dfreco = dfreco[dfreco["delta_phi"] > 0]
                         dfreco_full = dfreco_full.append(dfreco)
-                    #if dfreco_full.shape[0] > 1000:
-                    #    break
         return dfreco_full
 
     def ubfit(self): #unbinned fit processing
@@ -278,12 +270,16 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
 
 ##################################  MONTE CARLO  ######################################
 
-        dfreco_mc = self.dataload(self.resultsmc)
+        dfreco = self.dataload(self.resultsmc)
         print("**********************************************************************")
         print("--------------------MONTE CARLO DATA LOADED---------------------------")
-        print("------------------Data size:", dfreco_mc.shape, "---------------------")
+        print("------------------Data size:", dfreco.shape, "---------------------")
         print("**********************************************************************")
-
+        dfreco = dfreco[dfreco["inv_cand_1"] < self.p_mass_fit_lim[1]]
+        dfreco = dfreco[dfreco["inv_cand_1"] > self.p_mass_fit_lim[0]]
+        dfreco = dfreco[dfreco["inv_cand_2"] < self.p_mass_fit_lim[1]]
+        dfreco = dfreco[dfreco["inv_cand_2"] > self.p_mass_fit_lim[0]]
+        dfreco_mc = dfreco
         np.savetxt("testmc.txt", dfreco_mc[["inv_cand_1", "inv_cand_2"]].to_numpy())
 
         inv_mass_1 = dfreco_mc["inv_cand_1"].tolist()
@@ -327,6 +323,7 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
                                        RooFit.YVar(y, RooFit.Binning(binning)))
         mc_mod.SetOption("surf")
         mc_mod.Draw()
+        fileout.cd()
         mc_mod.Write()
         c_mc.SaveAs("mc_model.png")
 
@@ -353,6 +350,7 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
                                        RooFit.YVar(y, RooFit.Binning(binning)))
         mc_fit.SetOption("surf")
         mc_fit.Draw()
+        fileout.cd()
         mc_fit.Write()
         c_mc_fit.SaveAs("mc_fit.png")
 
@@ -376,6 +374,7 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
         h_residual.SetOption("lego")
         h_residual.Draw()
         cYields_res_mc.SaveAs("h_DDbar_res_mc.png")
+        fileout.cd()
         h_residual.Write()
         fileout.Write()
         fileout.Close()
@@ -384,12 +383,16 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
 
 #####################################  DATA  ###########################################
 
-        dfreco_data = self.dataload(self.resultsdata)
+        dfreco = self.dataload(self.resultsdata)
         print("**********************************************************************")
         print("------------------------- DATA LOADED --------------------------------")
-        print("------------------Data size:", dfreco_data.shape, "---------------------")
+        print("------------------Data size:", dfreco.shape, "---------------------")
         print("**********************************************************************")
-
+        dfreco = dfreco[dfreco["inv_cand_1"] < self.p_mass_fit_lim[1]]
+        dfreco = dfreco[dfreco["inv_cand_1"] > self.p_mass_fit_lim[0]]
+        dfreco = dfreco[dfreco["inv_cand_2"] < self.p_mass_fit_lim[1]]
+        dfreco = dfreco[dfreco["inv_cand_2"] > self.p_mass_fit_lim[0]]
+        dfreco_data = dfreco
         np.savetxt("testdata.txt", dfreco_data[["inv_cand_1", "inv_cand_2"]].to_numpy())
         inv_mass_1 = dfreco_data["inv_cand_1"].tolist()
         inv_mass_2 = dfreco_data["inv_cand_2"].tolist()
@@ -432,6 +435,7 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
                                          RooFit.YVar(y, RooFit.Binning(binning)))
         data_mod.SetOption("surf")
         data_mod.Draw()
+        fileout.cd()
         data_mod.Write()
         c_data.SaveAs("data_model.png")
 
@@ -459,11 +463,12 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
         data_fit.SetOption("surf")
         data_fit.Draw()
         c_data_fit.SaveAs("data_fit.png")
+        fileout.cd()
         data_fit.Write()
 
 # plot residuals
-        h_residual_data = TH3F("DDbar residual plot data", "", binning, 0, binning,
-                               binning, 0, binning, 2000, -1000, 1000)
+        h_residual_data = TH3F("DDbar residual plot data", "", binning, 1, binning,
+                               binning, 1, binning, 200, -100, 100)
         Nentries = data_histo.Integral()
         for i in range(0, binning):
             xi = float(data_histo.GetXaxis().GetBinCenter(i))
@@ -481,8 +486,9 @@ class AnalyzerDhadrons_hfcorr(Analyzer):
         h_residual_data.SetOption("lego")
         h_residual_data.Draw()
         cYields_res_data.SaveAs("h_DDbar_res_data.png")
+        fileout.cd()
         h_residual_data.Write()
-
+        fileout.Close()
         w.Delete()
 
     # pylint: disable=import-outside-toplevel

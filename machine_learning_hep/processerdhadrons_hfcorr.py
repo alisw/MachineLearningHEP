@@ -40,29 +40,29 @@ from machine_learning_hep.processer import Processer
 
 def new_df_pairs(dfreco, mc_case):
     df = []
+    dfreco = dfreco[dfreco["pt_cand"] > 4]
     for _, group in dfreco.groupby(["run_number", "ev_id"], sort=False):
-        i = 0
         for row_number_1, row_1 in group.iterrows():
             for row_number_2, row_2 in group.iterrows():
                 if row_number_2 > row_number_1:
-                    df_tmp = pd.DataFrame()
-                    df_tmp.loc[i, "run_number"] = row_2["run_number"]
-                    df_tmp.loc[i, "ev_id"] = row_2["ev_id"]
-                    df_tmp.loc[i, "pt_cand1"] = row_1["pt_cand"]
-                    df_tmp.loc[i, "pt_cand2"] = row_2["pt_cand"]
-                    df_tmp.loc[i, "inv_cand_1"] = row_1["inv_mass"]
-                    df_tmp.loc[i, "inv_cand_2"] = row_2["inv_mass"]
+                    df_tmp = {}
+                    df_tmp["run_number"] = row_2["run_number"]
+                    df_tmp["ev_id"] = row_2["ev_id"]
+                    df_tmp["pt_cand1"] = row_1["pt_cand"]
+                    df_tmp["pt_cand2"] = row_2["pt_cand"]
+                    df_tmp["inv_cand_1"] = row_1["inv_mass"]
+                    df_tmp["inv_cand_2"] = row_2["inv_mass"]
                     delta_phi = row_1["phi_cand"] - row_2["phi_cand"]
                     if delta_phi < 0:
-                        df_tmp.loc[i, "delta_phi"] = delta_phi + 2*np.pi
+                        df_tmp["delta_phi"] = delta_phi + 2*np.pi
                     else:
-                        df_tmp.loc[i, "delta_phi"] = (delta_phi)
+                        df_tmp["delta_phi"] = (delta_phi)
                     if mc_case:
-                        df_tmp.loc[i, "ismcsignal_1"] = row_1["ismcsignal"]
-                        df_tmp.loc[i, "ismcsignal_2"] = row_2["ismcsignal"]
+                        df_tmp["ismcsignal_1"] = row_1["ismcsignal"]
+                        df_tmp["ismcsignal_2"] = row_2["ismcsignal"]
                     df.append(df_tmp)
-                    i += 1
-    dfreco = pd.concat(df)
+    dfreco = pd.DataFrame(df)
+    dfreco = dfreco[dfreco["delta_phi"] != 0]
     dfreco.reset_index()
     return dfreco
 
@@ -114,10 +114,9 @@ class ProcesserDhadrons_hfcorr(Processer):
         self.runlistrigger = runlisttrigger
 
     def histos(self, name1, name2, dfreco):
-        dfreco = dfreco.groupby(["run_number", "ev_id"]).filter(lambda x: len(x) > 1)
-        dfreco = dfreco[dfreco["delta_phi"] != 0]
         inv_mass_1 = dfreco["inv_cand_1"].tolist()
         inv_mass_2 = dfreco["inv_cand_2"].tolist()
+        print("in plots", len(inv_mass_1))
         d_phi = dfreco["delta_phi"].tolist()
         print("before phi_plot")
         h_delta_phi = TH1F("delta_phi DD pair" + name1 + name2, "", self.p_num_bins,
@@ -171,7 +170,7 @@ class ProcesserDhadrons_hfcorr(Processer):
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
             print("df loaded", df.shape)
-            df_no_cut = df[df["pt_cand">4]]
+            df_no_cut = df
             if self.doml is True:
                 df = df.query(self.l_selml[bin_id])
             if self.s_evtsel is not None:
@@ -208,16 +207,15 @@ class ProcesserDhadrons_hfcorr(Processer):
             df_tot = df_tot.append(df_no_cut)
         df_tot = df_tot.reset_index(drop=True)
         df_group = df_tot
-        grouped = df_group.groupby(["run_number","ev_id"])
+        grouped = df_group.groupby(["run_number", "ev_id"])
         grouplen = pd.array(grouped.size())
-        gmin = grouplen.min()
-        gmax = grouplen.max()
+        gmin = 0
+        gmax = 20
         g_bins = gmax - gmin
-        h_grouplen = TH1F("group_length" , "", int(g_bins), gmin, gmax)
+        h_grouplen = TH1F("group_length", "", int(g_bins), gmin, gmax)
         fill_hist(h_grouplen, grouplen)
-        h_grouplen.Draw()
+        myfile.cd()
         h_grouplen.Write()
-        df_tot = df_tot[df_tot["pt_cand">4]]
         # df_tot = df_tot.sample(n=5000)
         mc_case = False
         if self.mcordata == "mc":
@@ -228,7 +226,7 @@ class ProcesserDhadrons_hfcorr(Processer):
             df_work = df_tot[["run_number", "ev_id", "pt_cand", "inv_mass",
                               "phi_cand", "eta_cand"]]
             mc_case = False
-        if df_work.shape[0] > 10000:
+        if False and df_work.shape[0] > 10000:
             split_const = int(df_work.shape[0]/10000)
             df_work.sort_values(["run_number", "ev_id"], inplace=True)
             df_tmp = []
@@ -243,6 +241,8 @@ class ProcesserDhadrons_hfcorr(Processer):
             df_filt = new_df_pairs(df_work, mc_case)
         nameoffile = self.d_results + "/" +  self.l_path[index] + "/dframe.pkl"
         df_filt.to_pickle(nameoffile)
+        df_filt_2 = pickle.load(openfile(nameoffile, "rb"))
+        print("pickle", df_filt.shape, df_filt_2.shape)
         print("file", nameoffile, "created")
         name1 = " Full data cand 1"
         name2 = " Full data cand 2"
