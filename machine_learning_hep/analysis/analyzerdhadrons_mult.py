@@ -32,6 +32,7 @@ from machine_learning_hep.fitting.helpers import MLFitter
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.io import dump_yaml_from_dict
 from machine_learning_hep.utilities import folding, get_bins, make_latex_table, parallelizer
+from machine_learning_hep.root import save_root_object
 from machine_learning_hep.utilities_plot import plot_histograms
 from machine_learning_hep.analysis.analyzer import Analyzer
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
@@ -583,10 +584,6 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         def do_validation_plots(input_file_name, output_path, ismc=False):
             gROOT.SetBatch(True)
 
-            def save_root_object(obj, path=output_path, name=None, extension="eps"):
-                name = name if name is not None else obj.GetName()
-                obj.SaveAs(f"{path}/{name}.{extension}")
-
             input_file = TFile(input_file_name, "READ")
             if not input_file or not input_file.IsOpen():
                 self.logger.fatal("Did not find file %s", input_file.GetName())
@@ -615,7 +612,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                     profile.Draw("same")
                 gPad.SetLogz()
                 gPad.Update()
-                save_root_object(canvas)
+                save_root_object(canvas, path=output_path)
 
             for i in "v0m v0m_eq v0m_corr v0m_eq_corr".split():
                 do_plot(get_histo("n_tracklets", i))
