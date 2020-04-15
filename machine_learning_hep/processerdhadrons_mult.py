@@ -73,9 +73,9 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
-        self.performtriggerturn = datap["analysis"][self.typean].get("performtriggerturn", "")
-        if "performtriggerturn" not in datap["analysis"][self.typean]:
-            self.performtriggerturn = False
+        self.event_cand_validation = datap["analysis"][self.typean].get("event_cand_validation", "")
+        if "event_cand_validation" not in datap["analysis"][self.typean]:
+            self.event_cand_validation = False
         self.apply_weights = datap["analysis"][self.typean]["triggersel"]["weighttrig"]
         self.weightfunc = None
         if self.apply_weights is True and self.mcordata == "data":
@@ -226,7 +226,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                     h_invmass_sig.Write()
                     h_invmass_refl.Write()
 
-        if self.performtriggerturn is True:
+        if self.event_cand_validation is True:
             df_recodtrig = pd.concat(list_df_recodtrig)
             df_recodtrig = df_recodtrig.query("inv_mass>%f and inv_mass<%f" % \
                                               (self.mass - 0.15, self.mass + 0.15))

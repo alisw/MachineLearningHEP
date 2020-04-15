@@ -175,7 +175,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
 
         # Fitting
         self.fitter = None
-        self.p_performval = datap["analysis"].get("performtriggerturn", None)
+        self.p_performval = datap["analysis"].get("event_cand_validation", None)
 
     # pylint: disable=import-outside-toplevel
     def fit(self):
