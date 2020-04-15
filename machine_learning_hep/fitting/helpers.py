@@ -122,12 +122,19 @@ class MLFitParsFactory:
         # Systematics
         self.syst_pars = ana_config.get("systematics", {})
         self.syst_init_sigma_from = None
+        self.syst_consider_free_sigma = None
         if self.syst_pars:
             self.syst_init_sigma_from = self.syst_pars.get("init_sigma_from", "central")
             if not isinstance(self.syst_init_sigma_from, list):
                 self.syst_init_sigma_from = [self.syst_init_sigma_from] * self.n_bins1
             if not isinstance(self.syst_init_sigma_from[0], list):
                 self.syst_init_sigma_from = [self.syst_init_sigma_from] * self.n_bins2
+
+            self.syst_consider_free_sigma = self.syst_pars.get("consider_free_sigma", False)
+            try:
+                iter(self.syst_consider_free_sigma)
+            except TypeError:
+                self.syst_consider_free_sigma = [self.syst_consider_free_sigma] * self.n_bins1
 
 
     def make_ali_hf_fit_pars(self, ibin1, ibin2):
@@ -197,7 +204,7 @@ class MLFitParsFactory:
                     "bkg_func_names_syst": self.syst_pars.get("bkg_funcs", None),
                     "rebin_syst": self.syst_pars.get("rebin", None),
                     # Check DB
-                    "consider_free_sigma_syst": self.syst_pars.get("consider_free_sigma", True),
+                    "consider_free_sigma_syst": self.syst_consider_free_sigma[ibin1],
                     "signif_min_syst": self.syst_pars.get("signif_min_syst", 3.),
                     "chi2_max_syst": self.syst_pars.get("chi2_max_syst", 2.)}
 
@@ -541,6 +548,9 @@ class MLFitter:
         self.init_syst_fits_from = {}
 
         for ibin1, ibin2, pars in self.pars_factory.yield_syst_pars():
+            if not pars:
+                self.syst_fits[(ibin1, ibin2)] = None
+                continue
             self.syst_fits[(ibin1, ibin2)] = FitSystAliHF( \
                     pars["init_pars"], \
                     histo=pars["histograms"]["data"], \
@@ -567,6 +577,11 @@ class MLFitter:
             self.initialize_syst()
 
         for (ibin1, ibin2), fit in self.syst_fits.items():
+            if not fit:
+                self.logger.warning("No systematic fit for bins (%i, %i). Skip...",
+                                    ibin1, ibin2)
+                continue
+
             if not self.central_fits[(ibin1, ibin2)].success:
                 self.logger.warning("Central fit not successful for bins (%i, %i). Skip...",
                                     ibin1, ibin2)
@@ -859,6 +874,10 @@ class MLFitter:
         bins1_ranges.append(self.pars_factory.bins1_edges_up[-1])
 
         for (ibin1, ibin2), fit in self.syst_fits.items():
+            if not fit:
+                self.logger.warning("No systematic fit for bins (%i, %i). Skip...",
+                                    ibin1, ibin2)
+                continue
             bin_id_match = self.pars_factory.bin_matching[ibin1]
 
             # Some variables set for drawing
