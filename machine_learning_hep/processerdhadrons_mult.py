@@ -31,6 +31,7 @@ from machine_learning_hep.utilities import get_timestamp_string
 #from machine_learning_hep.globalfitter import fitter
 from machine_learning_hep.processer import Processer
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
+from machine_learning_hep.validation_vertex import fill_validation_vertex
 from machine_learning_hep.validation_multiplicity import fill_validation_multiplicity
 from machine_learning_hep.validation_candidates import fill_validation_candidates
 
@@ -242,10 +243,12 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
             fill_hist(histomultwithd, dfevtwithd["%s_x" % self.v_var2_binning_gen])
             histomultwithd.Write()
             # Validation histograms
-            for histo in fill_validation_multiplicity(dfevtorig, dfevtevtsel, df_recodtrig):
-                histo.Write()
-            for histo in fill_validation_candidates(df_recodtrig):
-                histo.Write()
+            fill_validation_vertex(dfevtorig, dfevtevtsel, df_recodtrig).write()
+            fill_validation_multiplicity(dfevtorig, dfevtevtsel, df_recodtrig).write()
+            fill_validation_candidates(df_recodtrig).write()
+            if self.mcordata == "mc":
+                fill_validation_candidates(df_recodtrig[df_recodtrig[self.v_ismcsignal] == 1], "MC").write()
+        
     def process_histomass(self):
         print("Doing masshisto", self.mcordata, self.period)
         print("Using run selection for mass histo", \
