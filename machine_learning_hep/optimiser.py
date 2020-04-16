@@ -34,8 +34,8 @@ from machine_learning_hep.root import write_tree
 from machine_learning_hep.mlperformance import cross_validation_mse, plot_cross_validation_mse
 from machine_learning_hep.mlperformance import plot_learning_curves, precision_recall
 from machine_learning_hep.mlperformance import roc_train_test, plot_overtraining
-from machine_learning_hep.grid_search import do_gridsearch, perform_plot_gridsearch, \
-        do_bayesian_opt
+from machine_learning_hep.optimisation.grid_search import do_gridsearch, perform_plot_gridsearch
+from machine_learning_hep.optimisation.bayesian_utils import do_bayesian_opt
 from machine_learning_hep.models import importanceplotall
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.optimization import calc_bkg, calc_signif, calc_eff, calc_sigeff_steps
@@ -356,8 +356,7 @@ class Optimiser:
             return
         checkmakedirlist(out_dirs)
 
-        do_bayesian_opt(clfs_all, self.df_xtrain, self.df_ytrain, self.p_nkfolds, out_dirs,
-                        self.p_ncorescross)
+        do_bayesian_opt(clfs_all, self.df_xtrain, self.df_ytrain, out_dirs, self.p_ncorescross)
 
 
     def do_grid(self):

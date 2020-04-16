@@ -13,56 +13,19 @@
 #############################################################################
 
 """
-Methods to do hyper-parameters optimization
+Methods to do grid-search hyper-parameters optimization
 """
 from os.path import join as osjoin
 import itertools
 import pickle
 import pandas as pd
 import matplotlib.pyplot as plt
-from sklearn.metrics import make_scorer, roc_auc_score, accuracy_score
 from sklearn.model_selection import GridSearchCV
-from xgboost import XGBClassifier # pylint: disable=unused-import
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.utilities import openfile
 from machine_learning_hep.io import print_dict, dump_yaml_from_dict, parse_yaml
 from machine_learning_hep.models import savemodels
-
-
-def get_scorers(score_names):
-    """Construct dictionary of scorers
-
-    Args:
-        score_names: tuple of names. Available names see below
-    Returns:
-        dictionary mapping scorers to names
-    """
-
-    scorers = {}
-    for sn in score_names:
-        if sn == "AUC":
-            scorers["AUC"] = make_scorer(roc_auc_score, needs_threshold=True)
-        elif sn == "Accuracy":
-            scorers["Accuracy"] = make_scorer(accuracy_score)
-
-    return scorers
-
-
-def do_bayesian_opt(bayes_optimisers, x_train, y_train, nkfolds, out_dirs, ncores=-1):
-    """Do Bayesian optimisation for all registered models
-    """
-    for opt, out_dir in zip(bayes_optimisers, out_dirs):
-        opt.x_train = x_train
-        opt.y_train = y_train
-        opt.nkfolds = nkfolds
-        opt.scoring = get_scorers(["AUC", "Accuracy"])
-        opt.scoring_opt = "AUC"
-        opt.low_is_better = False
-        opt.n_trials = 100
-
-        opt.optimise(ncores=ncores)
-        opt.save(out_dir)
-        opt.plot(out_dir)
+from machine_learning_hep.optimisation.metrics import get_scorers
 
 
 def do_gridsearch(names, classifiers, grid_params, x_train, y_train, nkfolds, out_dirs, ncores=-1):
