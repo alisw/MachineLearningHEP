@@ -14,6 +14,7 @@
 
 LcpKpi:
   nprongs: 3
+  prongformultsub: [0,0,0]
   doml: true
   mass: 2.2864
   sel_reco_unp: "pt_cand>4"
@@ -152,7 +153,7 @@ LcpKpi:
   multi:
     data:
       nprocessesparallel: 40
-      maxfiles : [100,100] #list of periods
+      maxfiles : [-1,-1] #list of periods
       chunksizeunp : [50,50] #list of periods
       chunksizeskim: [50,50] #list of periods
       fracmerge : [1,1] #list of periods
@@ -201,8 +202,8 @@ LcpKpi:
       data: null
       mc: null
 
-    nbkg: 50000
-    nsig: 50000
+    nbkg: 500000
+    nsig: 500000
     sampletagforsignal: 1
     sampletagforbkg: 0
     sel_sigml: ismcprompt == 1
@@ -215,8 +216,8 @@ LcpKpi:
     binmax: [6,8,12,24] #list of nbins sel_skim_binmin bins
     mltype: BinaryClassification
     ncorescrossval: 24
-    mlplot: /home/cbartels/Output/3050/mlplot3050 # to be removed
-    mlout: /home/cbartels/Output/3050/mlout3050 # to be removed
+    mlplot: /home/cbartels/Output/mlplot3050 # to be removed
+    mlout: /home/cbartels/Output/mlout3050 # to be removed
 
     opt:
       #pp 
@@ -280,7 +281,7 @@ LcpKpi:
     cctype: 1 #kpp7
     sigmav0: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
     inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
-    dir_general_plots: /home/jnorman/test_pKpi
+    dir_general_plots: /home/cbartels/Output/test_pKpi
 
     MBvspt:
       proc_type: Dhadrons
