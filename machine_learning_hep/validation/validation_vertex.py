@@ -20,7 +20,7 @@ Script containing validation histograms on the event granularity for the vertex 
 # pylint: disable=import-error, no-name-in-module
 # from machine_learning_hep.bitwise import filter_bit_df
 from utilities_plot import buildbinning
-from validation import ValidationCollection
+from machine_learning_hep.validation.validation import ValidationCollection
 
 
 def fill_validation_vertex(dfevt, dfevtevtsel, df_reco):
