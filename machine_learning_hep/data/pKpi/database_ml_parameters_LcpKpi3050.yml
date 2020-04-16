@@ -23,13 +23,14 @@ LcpKpi:
   sel_cen_unp: null
   #sel_good_evt_unp: "is_ev_rej == 0"
   sel_good_evt_unp: null
-  sel_reco_skim: ["pt_prong0>0.40 and pt_prong1>0.40 and pt_prong2>0.40",
-                  "pt_prong0>0.40 and pt_prong1>0.40 and pt_prong2>0.40",
-                  "pt_prong0>0.40 and pt_prong1>0.40 and pt_prong2>0.40",
-                  "pt_prong0>0.40 and pt_prong1>0.40 and pt_prong2>0.40"] #sel_skim_binmin bins
-  sel_gen_skim: [null,null,null,null] #sel_skim_binmin bins
-  sel_skim_binmin: [4,6,8,12] #list of nbins
-  sel_skim_binmax: [6,8,12,24] #list of nbins
+  #FIXME you could try to increase this 0.4 cut even up to 0.8 I think without cutting on the signal
+  #FIXME it would speed up the processing.
+  #FIXME are you applying PID prefilters when you create the trees? I would suggest you for the next tree production
+  #to have at least a 4sigma cut on the daughter prongs, if not 3. 
+  sel_reco_skim: ["pt_prong0>0.40 and pt_prong1>0.40 and pt_prong2>0.40"] #sel_skim_binmin bins
+  sel_gen_skim: [null] #sel_skim_binmin bins
+  sel_skim_binmin: [8] #list of nbins
+  sel_skim_binmax: [12] #list of nbins
   var_binning: pt_cand
   dofullevtmerge: false
 
@@ -156,7 +157,10 @@ LcpKpi:
       maxfiles : [-1,-1] #list of periods
       chunksizeunp : [50,50] #list of periods
       chunksizeskim: [50,50] #list of periods
-      fracmerge : [1,1] #list of periods
+      #FIXME I changed the fraction to merge from 1.0 to 0.05. This is probably the reason why it was failing. 
+      #You were trying to merge the entire dataset. The fraction should be small for data and large for MC. 
+      #In this version of the database you have the opposite. 
+      fracmerge : [0.05,0.05] #list of periods
       seedmerge: [12,12] #list of periods
       period: [LHC18r,LHC18q] #list of periods
       unmerged_tree_dir: [/mnt/temp/TTreeLctopKpiPbPb/vAN-20200219_ROOT6-1/PbPb_2018_data/386_20200316-1642/unmerged,
@@ -212,8 +216,10 @@ LcpKpi:
     rnd_shuffle: 42
     rnd_splt: 42
     test_frac: 0.2
-    binmin: [4,6,8,12] #list of nbins sel_skim_binmin bins
-    binmax: [6,8,12,24] #list of nbins sel_skim_binmin bins
+    #FIXME as an example I limited here the bins for the training.
+    #Focusing on the 8-12 interval should let you have a very fast analysis cycle at least for testing 
+    binmin: [8] #list of nbins sel_skim_binmin bins
+    binmax: [12] #list of nbins sel_skim_binmin bins
     mltype: BinaryClassification
     ncorescrossval: 24
     mlplot: /home/cbartels/Output/mlplot3050 # to be removed
@@ -226,6 +232,7 @@ LcpKpi:
       fonll_particle: 'hLcpKpi'
       fonll_pred: 'max' # edge of the FONLL prediction
       FF: 0.1281 # fragmentation fraction
+      #FIXME for the significance remember to fix these values according to the indications
       sigma_MB: 57.8e-3  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
       Taa: 1 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
       BR: 1.09e-2 # branching ratio of the decay BR(Lc -> p K0s) * BR(K0s -> pi+ pi-)
@@ -255,25 +262,25 @@ LcpKpi:
 
   mlapplication:
     data:
-      pkl_skimmed_dec: [/mnt/temp/TTreeLctopKpiPbPb/vAN-20200219_ROOT6-1/PbPb_2018_data/386_20200316-1642/pklskdec,
-                        /mnt/temp/TTreeLctopKpiPbPb/vAN-20200218_ROOT6-1/PbPb_2018_data/387_20200316-1643/pklskdec] #list of periods
-      pkl_skimmed_decmerged: [/mnt/temp/TTreeLctopKpiPbPb/vAN-20200219_ROOT6-1/PbPb_2018_data/386_20200316-1642/pklskdecmerged,
-                              /mnt/temp/TTreeLctopKpiPbPb/vAN-20200218_ROOT6-1/PbPb_2018_data/387_20200316-1643/pklskdecmerged] #list of periods
+      pkl_skimmed_dec: [/mnt/temp/TTreeLctopKpiPbPb_test/vAN-20200219_ROOT6-1/PbPb_2018_data/386_20200316-1642/pklskdec,
+                        /mnt/temp/TTreeLctopKpiPbPb_test/vAN-20200218_ROOT6-1/PbPb_2018_data/387_20200316-1643/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/mnt/temp/TTreeLctopKpiPbPb_test/vAN-20200219_ROOT6-1/PbPb_2018_data/386_20200316-1642/pklskdecmerged,
+                              /mnt/temp/TTreeLctopKpiPbPb_test/vAN-20200218_ROOT6-1/PbPb_2018_data/387_20200316-1643/pklskdecmerged] #list of periods
     mc:
 
-      pkl_skimmed_dec: [/mnt/temp/TTreeLctopKpiPbPb/vAN-20200219_ROOT6-1/PbPb3050_2018_mc_prodLcpKpi/388_20200316-1739/pklskdec,
-                        /mnt/temp/TTreeLctopKpiPbPb/vAN-20200219_ROOT6-1/PbPb3050_2018_mc_prodLcpKpi/389_20200316-1739/pklskdec] #list of periods
-      pkl_skimmed_decmerged: [/mnt/temp/TTreeLctopKpiPbPb/vAN-20200219_ROOT6-1/PbPb3050_2018_mc_prodLcpKpi/388_20200316-1739/pklskdecmerged,
-                              /mnt/temp/TTreeLctopKpiPbPb/vAN-20200219_ROOT6-1/PbPb3050_2018_mc_prodLcpKpi/389_20200316-1739/pklskdecmerged] #list of periods
+      pkl_skimmed_dec: [/mnt/temp/TTreeLctopKpiPbPb_test/vAN-20200219_ROOT6-1/PbPb3050_2018_mc_prodLcpKpi/388_20200316-1739/pklskdec,
+                        /mnt/temp/TTreeLctopKpiPbPb_test/vAN-20200219_ROOT6-1/PbPb3050_2018_mc_prodLcpKpi/389_20200316-1739/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/mnt/temp/TTreeLctopKpiPbPb_test/vAN-20200219_ROOT6-1/PbPb3050_2018_mc_prodLcpKpi/388_20200316-1739/pklskdecmerged,
+                              /mnt/temp/TTreeLctopKpiPbPb_test/vAN-20200219_ROOT6-1/PbPb3050_2018_mc_prodLcpKpi/389_20200316-1739/pklskdecmerged] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierLcpKpi_dfselection_pt_cand_4.0_6.0.sav,
-                     xgboost_classifierLcpKpi_dfselection_pt_cand_6.0_8.0.sav,
-                     xgboost_classifierLcpKpi_dfselection_pt_cand_8.0_12.0.sav,
-                     xgboost_classifierLcpKpi_dfselection_pt_cand_12.0_24.0.sav]
+    #FIXME also here I limited to one bin from 8 to 12 GeV
+    #I also tightened up a bit the cuts both for the prefilters and the optimal selection 
+    #This will need of course some tuning done with the significance optimisation
+    modelsperptbin: [xgboost_classifierLcpKpi_dfselection_pt_cand_8.0_12.0.sav]
     probcutpresel:
-      data: [0.3,0.3,0.3,0.3] #list of nbins  sel_skim_binmin bins
-      mc: [0.3,0.3,0.3,0.3] #list of nbins  sel_skim_binmin bins
-    probcutoptimal: [0.6,0.6,0.6,0.6] #list of nbins  sel_skim_binmin bins
+      data: [0.5] #list of nbins  sel_skim_binmin bins
+      mc: [0.5] #list of nbins  sel_skim_binmin bins
+    probcutoptimal: [0.8] #list of nbins  sel_skim_binmin bins
 
   analysis:
     indexhptspectrum: 4 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
@@ -293,9 +300,10 @@ LcpKpi:
       sel_binmax2: [null] #list of var2 splitting nbins
       var_binning2: null
       triggerbit: ''
-      sel_an_binmin: [4,6,8,12] #list of pt nbins
-      sel_an_binmax: [6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,2,4] #list of pt nbins
+      #FIXME same here below. Now you have only one bin for the applied ML.
+      sel_an_binmin: [8] #list of pt nbins
+      sel_an_binmax: [12] #list of pt nbins
+      binning_matching: [0] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej == 0
       triggersel:
@@ -303,12 +311,14 @@ LcpKpi:
         mc: null
       data:
         runselection: [null, null]
-        results: ['LHC18r','LHC18q'] #list of periods
-        resultsallp: 'LHC18qr'
+        results: [/mnt/temp/TTreeLctopKpiPbPb_test/vAN-20200219_ROOT6-1/PbPb_2018_data/386_20200316-1642/results,
+                  /mnt/temp/TTreeLctopKpiPbPb_test/vAN-20200218_ROOT6-1/PbPb_2018_data/387_20200316-1643/results] #list of periods
+        resultsallp: /mnt/temp/TTreeLctopKpiPbPb_test/vAN-20200218_ROOT6-1/resultsdatatot
       mc:
         runselection: [null, null]
-        results: ['LHC19c1b_all_r', 'LHC19c1b_all_q'] #list of periods
-        resultsallp: 'LHC19c1b_qr'
+        results: [/mnt/temp/TTreeLctopKpiPbPb_test/vAN-20200219_ROOT6-1/PbPb3050_2018_mc_prodLcpKpi/388_20200316-1739/results, 
+                  /mnt/temp/TTreeLctopKpiPbPb_test/vAN-20200219_ROOT6-1/PbPb3050_2018_mc_prodLcpKpi/389_20200316-1739/results] #list of periods
+        resultsallp: /mnt/temp/TTreeLctopKpiPbPb_test/vAN-20200219_ROOT6-1/resultsmctot
 
       mass_fit_lim: [2.160, 2.440]  # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.002 # bin width of the invariant mass histogram
