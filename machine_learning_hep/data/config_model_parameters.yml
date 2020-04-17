@@ -1,20 +1,10 @@
 BinaryClassification:
 
   keras:
-    keras_simple_one_layer_binary_classifier:
-      activate: False
+    keras_classifier:
+      activate: True
       layers:
         - {"n_nodes": 12, "activation": "relu"}
-      optimizer: "adam"
-      loss: "binary_crossentropy"
-      epochs: 30
-      batch_size: 50
-
-    keras_simple_two_layer_binary_classifier:
-      activate: False
-      layers:
-        - {"n_nodes": 64, "activation": "relu"}
-        - {"n_nodes": 16, "activation": "relu"}
       optimizer: "adam"
       loss: "binary_crossentropy"
       epochs: 30
@@ -58,7 +48,7 @@ BinaryClassification:
 #not default parameters
   xgboost:
     xgboost_classifier:
-      activate: True
+      activate: False
       central_params:
         max_depth: 3
         learning_rate: 0.1

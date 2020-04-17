@@ -12,17 +12,22 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
+import sys
 from os.path import join
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
+import matplotlib
 
 from sklearn.model_selection import cross_validate
 
 from hyperopt import fmin, tpe, STATUS_OK
 
-from machine_learning_hep.logger import get_logger
 from machine_learning_hep.io import dump_yaml_from_dict, parse_yaml
+
+# Change to that backend to not have problems with saving fgures
+# when X11 connection got lost
+matplotlib.use("agg")
 
 
 class BayesianOpt: #pylint: disable=too-many-instance-attributes
@@ -98,8 +103,8 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         # Number of parallel jobs
         self.ncores = 20
 
-        # In order to have proper logging output
-        self.logger = get_logger()
+        self.fit_pool = []
+
 
     def reset(self):
         """Reset to default
@@ -114,7 +119,7 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         self.best_scores = None
 
 
-    def yield_model_(self, model_config, space): # pylint: disable=unused-argument, useless-return
+    def yield_model_(self, model_config, space): # pylint: disable=unused-argument, useless-return, no-self-use
         """Yield next model
 
         Next model constructed from space. To be overwritten for concrete implementation
@@ -125,7 +130,7 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         Returns: model
 
         """
-        self.logger.error("Not implemented...")
+        print("yield_model_ not implemented...")
         return None, None
 
 
@@ -145,17 +150,19 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         return config
 
 
-    def trial(self, space_drawn):
-        """One trial
-
-        Doing one trial with a next configured model
+    def trial_(self, space_drawn):
+        """Default single trial
 
         Args:
-            model: model
-
-        Returns: dict of score and status
+            space_drawn: dict
+                sampled new parameters
+        Returns:
+            res: dict
+                dictionary with CV results
+            model: model used in this trial
+            params: dict
+                parameters used in this trial
         """
-
         model = None
         params = None
         # Yield model and parameters on the fly or with class method
@@ -170,6 +177,22 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         # Do cross validation for this model
         res = cross_validate(model, self.x_train, self.y_train, cv=self.nkfolds,
                              scoring=self.scoring, n_jobs=self.ncores, return_train_score=True)
+
+        return res, model, params
+
+
+    def trial(self, space_drawn):
+        """One trial
+
+        Doing one trial with a next configured model
+
+        Args:
+            model: model
+
+        Returns: dict of score and status
+        """
+
+        res, model, params = self.trial_(space_drawn)
 
         # Collect results
         res_tmp = {}
@@ -205,7 +228,7 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
 
         # Now, train the best model on the full dataset
         if self.best:
-            self.logger.info("Fit best model to whole dataset")
+            print("Fit best model to whole dataset")
             self.best.fit(self.x_train, self.y_train)
 
 
@@ -233,9 +256,10 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         """
 
         if self.params:
-            self.logger.warning("Already optimised, call reset() to run again")
+            print("Already optimised, call reset() to run again")
+            return
 
-        self.logger.info("Do Bayesian optimisation")
+        print("Do Bayesian optimisation")
 
         if ncores:
             self.ncores = ncores
@@ -247,7 +271,8 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         self.yield_model_custom = yield_model
         self.save_model_custom = save_model
         if yield_model and save_model is None:
-            self.logger.fatal("model is created on the fly but no save method was provided")
+            print("Model is created on the fly but no save method was provided")
+            sys.exit(1)
 
         try:
             _ = fmin(fn=self.trial, space=self.space, algo=tpe.suggest, max_evals=self.n_trials)
@@ -270,14 +295,13 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
                 "score_opt_name": self.scoring_opt}
 
 
-    def save_model_(self, model, out_dir): # pylint: disable=unused-argument
+    def save_model_(self, model, out_dir): # pylint: disable=unused-argument, no-self-use
         """Save a model
 
         Routine to save a model, to be implemented for concrete model
 
         """
-
-        self.logger.error("Not implemented...")
+        print("save_model_  not implemented")
 
 
     def save(self, out_dir):
@@ -285,7 +309,7 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         """
 
         dump_yaml_from_dict(self.make_results(), join(out_dir, "results.yaml"))
-        self.logger.info("Save best model from Bayesian opt at %s", out_dir)
+        print(f"Save best model from Bayesian opt at {out_dir}")
         if self.yield_model_custom and self.save_model_custom:
             self.save_model_custom(self.best, out_dir)
         else:
