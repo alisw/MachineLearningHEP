@@ -46,7 +46,7 @@ class XGBoostClassifierBayesianOpt(BayesianOpt):
 
     def yield_model_(self, model_config, space):
         config = self.next_params(space)
-        config["early_stopping_rounds"] = 50
+        config["early_stopping_rounds"] = 10
         # NOTE If that's not really an integer, it will crash!
         if "n_estimators" in config:
             config["n_estimators"] = int(config["n_estimators"])
@@ -68,5 +68,5 @@ def xgboost_classifier_bayesian_opt(model_config):
     bayesian_opt.scoring = get_scorers(["AUC", "Accuracy"])
     bayesian_opt.scoring_opt = "AUC"
     bayesian_opt.low_is_better = False
-    bayesian_opt.n_trials = 50
+    bayesian_opt.n_trials = 100
     return bayesian_opt
