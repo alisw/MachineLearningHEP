@@ -106,6 +106,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, ru
     doboundary = data_config["ml_study"]['doboundary']
     doimportance = data_config["ml_study"]['doimportance']
     dogridsearch = data_config["ml_study"]['dogridsearch']
+    dobayesianopt = data_config["ml_study"]['dobayesianopt']
     doefficiencyml = data_config["ml_study"]['doefficiency']
     dosignifopt = data_config["ml_study"]['dosignifopt']
     doscancuts = data_config["ml_study"]["doscancuts"]
@@ -359,6 +360,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, ru
                 myopt.do_importance()
             if dogridsearch is True:
                 myopt.do_grid()
+            if dobayesianopt is True:
+                myopt.do_bayesian_opt()
             if doboundary is True:
                 myopt.do_boundary()
             if doefficiencyml is True:

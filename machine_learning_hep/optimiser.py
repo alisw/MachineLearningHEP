@@ -34,7 +34,8 @@ from machine_learning_hep.root import write_tree
 from machine_learning_hep.mlperformance import cross_validation_mse, plot_cross_validation_mse
 from machine_learning_hep.mlperformance import plot_learning_curves, precision_recall
 from machine_learning_hep.mlperformance import roc_train_test, plot_overtraining
-from machine_learning_hep.grid_search import do_gridsearch, perform_plot_gridsearch
+from machine_learning_hep.optimisation.grid_search import do_gridsearch, perform_plot_gridsearch
+from machine_learning_hep.optimisation.bayesian_utils import do_bayesian_opt
 from machine_learning_hep.models import importanceplotall
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.optimization import calc_bkg, calc_signif, calc_eff, calc_sigeff_steps
@@ -274,9 +275,10 @@ class Optimiser:
                   imageIO_corr_bkg_train
 
     def loadmodels(self):
-        classifiers_scikit, names_scikit, _ = getclf_scikit(self.db_model)
-        classifiers_xgboost, names_xgboost, _ = getclf_xgboost(self.db_model)
-        classifiers_keras, names_keras, _ = getclf_keras(self.db_model, len(self.df_xtrain.columns))
+        classifiers_scikit, names_scikit, _, _ = getclf_scikit(self.db_model)
+        classifiers_xgboost, names_xgboost, _, _ = getclf_xgboost(self.db_model)
+        classifiers_keras, names_keras, _, _ = getclf_keras(self.db_model,
+                                                            len(self.df_xtrain.columns))
         self.p_class = classifiers_scikit+classifiers_xgboost+classifiers_keras
         self.p_classname = names_scikit+names_xgboost+names_keras
 
@@ -330,12 +332,39 @@ class Optimiser:
     def do_importance(self):
         importanceplotall(self.v_train, self.p_classname, self.p_class,
                           self.s_suffix, self.dirmlplot)
+
+    def do_bayesian_opt(self):
+        self.logger.info("Do Bayesian optimisation for all classifiers")
+        _, names_scikit, _, bayes_opt_scikit = getclf_scikit(self.db_model)
+        _, names_xgboost, _, bayes_opt_xgboost = getclf_xgboost(self.db_model)
+        _, names_keras, _, bayes_opt_keras = getclf_keras(self.db_model,
+                                                          len(self.df_xtrain.columns))
+        clfs_all = bayes_opt_scikit + bayes_opt_xgboost + bayes_opt_keras
+        clfs_names_all = names_scikit + names_xgboost + names_keras
+
+
+        clfs_names_all = [name for name, clf in zip(clfs_names_all, clfs_all) if clf]
+        clfs_all = [clf for clf in clfs_all if clf]
+
+        out_dirs = [os.path.join(self.dirmlplot, "bayesian_opt", name, f"{name}{self.s_suffix}") \
+                for name in clfs_names_all]
+        if checkdirlist(out_dirs):
+            # Only draw results if any can be found
+            self.logger.warning("Not overwriting anything, just plotting if possible " \
+                    "Please remove corresponding directories if you are certain you want to do " \
+                    "grid search again")
+            return
+        checkmakedirlist(out_dirs)
+
+        do_bayesian_opt(clfs_all, self.df_xtrain, self.df_ytrain, out_dirs, self.p_ncorescross)
+
+
     def do_grid(self):
         self.logger.info("Do grid search")
-        clfs_scikit, names_scikit, grid_params_scikit = getclf_scikit(self.db_model)
-        clfs_xgboost, names_xgboost, grid_params_xgboost = getclf_xgboost(self.db_model)
-        clfs_keras, names_keras, grid_params_keras = getclf_keras(self.db_model,
-                                                                  len(self.df_xtrain.columns))
+        clfs_scikit, names_scikit, grid_params_scikit, _ = getclf_scikit(self.db_model)
+        clfs_xgboost, names_xgboost, grid_params_xgboost, _ = getclf_xgboost(self.db_model)
+        clfs_keras, names_keras, grid_params_keras, _ = getclf_keras(self.db_model,
+                                                                     len(self.df_xtrain.columns))
         clfs_grid_params_all = grid_params_scikit + grid_params_xgboost + grid_params_keras
         clfs_all = clfs_scikit + clfs_xgboost + clfs_keras
         clfs_names_all = names_scikit + names_xgboost + names_keras
@@ -343,8 +372,6 @@ class Optimiser:
         clfs_all = [clf for clf, gps in zip(clfs_all, clfs_grid_params_all) if gps]
         clfs_names_all = [name for name, gps in zip(clfs_names_all, clfs_grid_params_all) if gps]
         clfs_grid_params_all = [gps for gps in clfs_grid_params_all if gps]
-
-
 
         out_dirs = [os.path.join(self.dirmlplot, "grid_search", name, f"{name}{self.s_suffix}") \
                 for name in clfs_names_all]
