@@ -649,11 +649,14 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                     for i in "Pi K".split():
                         for j in "0 1".split():
                             for k in "p pt".split():
-                                hnname = [f"{k}_prong{j}", f"nsigTOF_{i}_{j}", tag]
-                                hnum = get_histo(*hnname)
-                                hnum = hnum.ProjectionX(hnum.GetName() + "_num", 2, -1)
-                                hden = get_histo(*hnname)
-                                hden = hden.ProjectionX(hden.GetName() + "_den")
+                                hname = [f"{k}_prong{j}",
+                                         f"nsigTOF_{i}_{j}", tag]
+                                hnum = get_histo(*hname)
+                                hnum = hnum.ProjectionX(
+                                    hnum.GetName() + "_num", 2, -1)
+                                hden = get_histo(*hname)
+                                hden = hden.ProjectionX(
+                                    hden.GetName() + "_den")
                                 hnum.Divide(hnum, hden, 1, 1, "B")
                                 hnum.SetName(
                                     hnum.GetName().replace(
@@ -673,4 +676,5 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             input_file.Close()
 
         do_validation_plots(self.n_filemass, self.d_resultsallpdata)
-        do_validation_plots(self.n_filemass_mc, self.d_resultsallpmc, ismc=True)
+        do_validation_plots(self.n_filemass_mc,
+                            self.d_resultsallpmc, ismc=True)
