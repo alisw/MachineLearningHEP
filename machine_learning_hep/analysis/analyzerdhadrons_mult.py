@@ -646,9 +646,9 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             def plot_validation_candidate(tag):
                 # Compute TPC-TOF matching efficiency
                 if tpc_tof_me:
-                    for i in "Pi K".split():
-                        for j in "0 1".split():
-                            for k in "p pt".split():
+                    for i in ["Pi", "K"]:
+                        for j in ["0", "1"]:
+                            for k in ["p", "pt"]:
                                 hname = [f"{k}_prong{j}",
                                          f"nsigTOF_{i}_{j}", tag]
                                 hnum = get_histo(*hname)

@@ -35,9 +35,9 @@ def fill_validation_candidates(df_reco, tag=""):
 
     # Make and fill histograms
     val = ValidationCollection(df_reco, tag=tag)
-    for i in "TPC TOF".split():
-        for j in "Pi K".split():
-            for k in "0 1".split():
+    for i in ["TPC", "TOF"]:
+        for j in ["Pi", "K"]:
+            for k in ["0", "1"]:
                 yaxis = [binning_nsigma, f"nsig{i}_{j}_{k}"]
                 val.make_and_fill(binning_pt, "p_prong0", *yaxis)
                 val.make_and_fill(binning_pt, "p_prong1", *yaxis)

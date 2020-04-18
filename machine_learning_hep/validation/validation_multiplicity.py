@@ -39,11 +39,11 @@ def fill_validation_multiplicity(dfevt, dfevtevtsel, df_reco):
     val = ValidationCollection(dfevt[dfevt.is_ev_rej_INT7 == 0])
     # val = ValidationCollection(dfevt[dfevtevtsel])
     # val = ValidationCollection(dfevt[dfevt])
-    for i in "v0m v0m_eq v0m_corr v0m_eq_corr".split():
+    for i in ["v0m", "v0m_eq", "v0m_corr", "v0m_eq_corr"]:
         val.make_and_fill(binning_ntrklt, "n_tracklets", binning_v0m, i)
         val.make_and_fill(binning_v0m, i, binning_v0m_perc, "perc_v0m")
 
-    for i in "n_tracklets n_tracklets_corr n_tracklets_corr_shm".split():
+    for i in ["n_tracklets", "n_tracklets_corr", "n_tracklets_corr_shm"]:
         val.make_and_fill(binning_ntrklt, i, binning_v0m_perc, "perc_v0m")
         val.make_and_fill(binning_v0m_perc, "perc_v0m", binning_ntrklt, i)
 
