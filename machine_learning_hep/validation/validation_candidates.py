@@ -28,7 +28,7 @@ def fill_validation_candidates(df_reco, tag=""):
     _ = len(df_reco)
 
     # Binning definition
-    binning_nsigma = buildbinning(2000, -100, 100)
+    binning_nsigma = buildbinning(1, -1000, -998) + buildbinning(2000, -100, 100)
     binning_pt = buildbinning(100, 0, 100)
     binning_eta = buildbinning(100, -1, 1)
     binning_phi = buildbinning(100, 0, 7)
@@ -39,6 +39,10 @@ def fill_validation_candidates(df_reco, tag=""):
         for j in "Pi K".split():
             for k in "0 1".split():
                 yaxis = [binning_nsigma, f"nsig{i}_{j}_{k}"]
+                val.make_and_fill(binning_pt, "p_prong0", *yaxis)
+                val.make_and_fill(binning_pt, "p_prong1", *yaxis)
+                val.make_and_fill(binning_pt, "pt_prong0", *yaxis)
+                val.make_and_fill(binning_pt, "pt_prong1", *yaxis)
                 val.make_and_fill(binning_pt, "pt_cand", *yaxis)
                 val.make_and_fill(binning_eta, "eta_cand", *yaxis)
                 val.make_and_fill(binning_phi, "phi_cand", *yaxis)
