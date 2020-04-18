@@ -28,7 +28,8 @@ def fill_validation_candidates(df_reco, tag=""):
     _ = len(df_reco)
 
     # Binning definition
-    binning_nsigma = buildbinning(1, -1000, -998) + buildbinning(2000, -100, 100)
+    binning_nsigma = buildbinning(1, -1000, -998)
+    binning_nsigma += buildbinning(2000, -100, 100)
     binning_pt = buildbinning(100, 0, 100)
     binning_eta = buildbinning(100, -1, 1)
     binning_phi = buildbinning(100, 0, 7)
