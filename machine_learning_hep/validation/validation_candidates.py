@@ -15,9 +15,8 @@
 """
 Script containing validation histograms on the candidate granularity
 """
-# pylint: disable=too-many-lines
-# pylint: disable=import-error, no-name-in-module
-from utilities_plot import buildbinning
+
+from machine_learning_hep.utilities_plot import buildbinning
 from machine_learning_hep.validation.validation import ValidationCollection
 
 

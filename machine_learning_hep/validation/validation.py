@@ -16,9 +16,7 @@
 Script base function for validation histograms
 """
 
-# pylint: disable=too-many-lines
-# pylint: disable=import-error, no-name-in-module
-from utilities_plot import makefill1dhist, makefill2dhist
+from machine_learning_hep.utilities_plot import makefill1dhist, makefill2dhist
 
 
 class ValidationCollection:

@@ -16,10 +16,7 @@
 Script containing validation histograms on the event granularity for the vertex monitoring
 """
 
-# pylint: disable=too-many-lines
-# pylint: disable=import-error, no-name-in-module
-# from machine_learning_hep.bitwise import filter_bit_df
-from utilities_plot import buildbinning
+from machine_learning_hep.utilities_plot import buildbinning
 from machine_learning_hep.validation.validation import ValidationCollection
 
 
