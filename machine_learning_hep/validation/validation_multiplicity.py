@@ -47,7 +47,7 @@ def fill_validation_multiplicity(dfevt, dfevtevtsel, df_reco):
         val.make_and_fill(binning_ntrklt, i, binning_v0m_perc, "perc_v0m")
         val.make_and_fill(binning_v0m_perc, "perc_v0m", binning_ntrklt, i)
 
-    val.reset(dfevtevtsel, "")
+    val.reset_input(dfevtevtsel, "")
     val.make_and_fill(binning_ntrklt, "n_tracklets",
                       binning_ntrklt, "n_tracklets_corr")
     val.make_and_fill(binning_zvtx, "z_vtx_reco",
@@ -58,9 +58,9 @@ def fill_validation_multiplicity(dfevt, dfevtevtsel, df_reco):
     val.make_and_fill(binning_ntrklt, "n_tracklets_corr")
     val.make_and_fill(binning_ntrklt, "n_tracklets_corr_shm")
 
-    val.reset(filter_bit_df(dfevt, "is_ev_rej", [[4], []]), "pileup")
+    val.reset_input(filter_bit_df(dfevt, "is_ev_rej", [[4], []]), "pileup")
     val.make_and_fill(binning_ntrklt, "n_tracklets_corr")
-    # val.reset(dfevtevtsel.query("is_ev_sel_shm == 1"), "spd")
+    # val.reset_input(dfevtevtsel.query("is_ev_sel_shm == 1"), "spd")
     # val.make_and_fill(binning_ntrklt, "n_tracklets_corr")
 
     df_reco["n_tracklets_corr-n_tracklets_corr_sub"] = (
@@ -70,7 +70,7 @@ def fill_validation_multiplicity(dfevt, dfevtevtsel, df_reco):
               [df_reco[df_reco.is_ev_rej_INT7 == 0], "MB"],
               [df_reco.query("is_ev_sel_shm == 1"), "HMSPD"],
               ]:
-        val.reset(*i)
+        val.reset_input(*i)
         val.make_and_fill(
             binning_ntrklt,
             "n_tracklets_corr",

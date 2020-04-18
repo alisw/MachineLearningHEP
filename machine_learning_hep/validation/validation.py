@@ -30,7 +30,7 @@ class ValidationCollection:
         self.histograms = []
         self.verbose = verbose
 
-    def reset(self, dataframe, tag):
+    def reset_input(self, dataframe, tag):
         self.source_dataframe = dataframe
         self.collection_tag = tag
 
