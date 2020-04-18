@@ -1,20 +1,10 @@
 BinaryClassification:
 
   keras:
-    keras_simple_one_layer_binary_classifier:
+    keras_classifier:
       activate: False
       layers:
         - {"n_nodes": 12, "activation": "relu"}
-      optimizer: "adam"
-      loss: "binary_crossentropy"
-      epochs: 30
-      batch_size: 50
-
-    keras_simple_two_layer_binary_classifier:
-      activate: False
-      layers:
-        - {"n_nodes": 64, "activation": "relu"}
-        - {"n_nodes": 16, "activation": "relu"}
       optimizer: "adam"
       loss: "binary_crossentropy"
       epochs: 30

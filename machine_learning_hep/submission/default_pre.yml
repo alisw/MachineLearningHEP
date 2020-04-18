@@ -37,6 +37,7 @@ ml_study:
   doplotdistr: false
   doimportance: false
   dogridsearch: false
+  dobayesianopt: false
   doboundary: false
   doefficiency: false
   dosignifopt: false

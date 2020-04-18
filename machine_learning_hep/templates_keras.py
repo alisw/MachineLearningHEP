@@ -12,15 +12,24 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
+from copy import deepcopy
+
 from keras.layers import Input, Dense
 from keras.models import Model
+from keras.wrappers.scikit_learn import KerasClassifier
 
-def keras_simple_one_layer_binary_classifier(model_config, length_input):
+from hyperopt import hp
+
+from machine_learning_hep.optimisation.bayesian_opt import BayesianOpt
+from machine_learning_hep.optimisation.metrics import get_scorers
+
+
+def keras_classifier_(model_config, input_length):
     """
     NN for binary classification with 1 hidden layers
     """
     # Create layers
-    inputs = Input(shape=(length_input,))
+    inputs = Input(shape=(input_length,))
     layer = Dense(model_config["layers"][0]["n_nodes"],
                   activation=model_config["layers"][0]["activation"])(inputs)
     predictions = Dense(1, activation='sigmoid')(layer)
@@ -30,19 +39,76 @@ def keras_simple_one_layer_binary_classifier(model_config, length_input):
                   metrics=['accuracy'])
     return model
 
-def keras_simple_two_layer_binary_classifier(model_config, length_input):
-    """
-    NN for binary classification with 2 hidden layers
-    """
-    # Create layers
-    inputs = Input(shape=(length_input,))
-    layer = Dense(model_config["layers"][0]["n_nodes"],
-                  activation=model_config["layers"][0]["activation"])(inputs)
-    layer = Dense(model_config["layers"][1]["n_nodes"],
-                  activation=model_config["layers"][1]["activation"])(layer)
-    predictions = Dense(1, activation='sigmoid')(layer)
-    # Build model from layers
-    model = Model(inputs=inputs, outputs=predictions)
-    model.compile(loss=model_config["loss"], optimizer=model_config["optimizer"],
-                  metrics=['accuracy'])
-    return model
+
+def keras_classifier(model_config, input_length):
+    return KerasClassifier(build_fn=lambda: \
+                    keras_classifier_(model_config, input_length), \
+                                      epochs=model_config["epochs"], \
+                                      batch_size=model_config["batch_size"], \
+                                      verbose=1)
+
+
+def keras_classifier_bayesian_space():
+    return {"n_nodes": hp.choice("x_n_nodes", [[12, 64], [12], [12, 64, 16]]),
+            "activation_0": hp.choice("x_activation_0", ["relu", "sigmoid"]),
+            "activation_1": hp.choice("x_activation_1", ["relu", "sigmoid"]),
+            "epochs": hp.quniform("x_epochs", 50, 100, 1),
+            "batch_size": hp.quniform("x_batch_size", 28, 256, 1)}
+
+
+class KerasClassifierBayesianOpt(BayesianOpt): # pylint: disable=too-many-instance-attributes
+
+
+    def __init__(self, model_config, space, input_length):
+        super().__init__(model_config, space)
+        self.input_length = input_length
+        # Cache drawn space and model config to build the model several times in
+        # self.get_scikit_model (should have these available but cannot take arguments
+        self.model_config_tmp = None
+        self.space_tmp = None
+
+
+    def get_scikit_model(self):
+        """Just a helper funtion
+
+        KerasClassifier needs something callable to obtain the model
+
+        """
+        inputs = Input(shape=(self.input_length,))
+        layer = Dense(self.space_tmp["n_nodes"][0],
+                      activation=self.space_tmp["activation_0"])(inputs)
+        for i, n_nodes in enumerate(self.space_tmp["n_nodes"][1:]):
+            layer = Dense(n_nodes,
+                          activation=self.space_tmp[f"activation_{(i+1)%2}"])(layer)
+        predictions = Dense(1, activation='sigmoid')(layer)
+        # Build model from layers
+        model = Model(inputs=inputs, outputs=predictions)
+        model.compile(loss=self.model_config_tmp["loss"],
+                      optimizer=self.model_config_tmp["optimizer"],
+                      metrics=['accuracy'])
+        return model
+
+
+    def yield_model_(self, model_config, space):
+
+        self.space_tmp = deepcopy(space)
+        self.model_config_tmp = deepcopy(model_config)
+
+        return KerasClassifier(build_fn=self.get_scikit_model, epochs=int(space["epochs"]),
+                               batch_size=int(space["batch_size"]), verbose=1), space
+
+
+    def save_model_(self, model, out_dir):
+        """Not implemented yet
+        """
+
+
+def keras_classifier_bayesian_opt(model_config, input_length):
+    bayesian_opt = KerasClassifierBayesianOpt(model_config, keras_classifier_bayesian_space(),
+                                              input_length)
+    bayesian_opt.nkfolds = 3
+    bayesian_opt.scoring = get_scorers(["AUC", "Accuracy"])
+    bayesian_opt.scoring_opt = "AUC"
+    bayesian_opt.low_is_better = False
+    bayesian_opt.n_trials = 30
+    return bayesian_opt
