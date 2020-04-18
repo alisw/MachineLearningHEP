@@ -2,7 +2,7 @@ BinaryClassification:
 
   keras:
     keras_classifier:
-      activate: True
+      activate: False
       layers:
         - {"n_nodes": 12, "activation": "relu"}
       optimizer: "adam"
@@ -48,7 +48,7 @@ BinaryClassification:
 #not default parameters
   xgboost:
     xgboost_classifier:
-      activate: False
+      activate: True
       central_params:
         max_depth: 3
         learning_rate: 0.1
