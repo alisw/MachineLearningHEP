@@ -26,7 +26,6 @@ from matplotlib.colors import ListedColormap
 
 from sklearn.feature_extraction import DictVectorizer
 
-from keras.wrappers.scikit_learn import KerasClassifier
 from machine_learning_hep.logger import get_logger
 import machine_learning_hep.templates_keras as templates_keras
 import machine_learning_hep.templates_xgboost as templates_xgboost
@@ -45,11 +44,18 @@ def getclf_scikit(model_config):
     classifiers = []
     names = []
     grid_search_params = []
+    bayesian_opt = []
 
     for c in model_config["scikit"]:
         if model_config["scikit"][c]["activate"]:
             try:
                 model = getattr(templates_scikit, c)(model_config["scikit"][c]["central_params"])
+                c_bayesian = f"{c}_bayesian_opt"
+                bayes_opt = None
+                if hasattr(templates_scikit, c_bayesian):
+                    bayes_opt = getattr(templates_scikit, c_bayesian) \
+                            (model_config["scikit"][c]["central_params"])
+                bayesian_opt.append(bayes_opt)
                 classifiers.append(model)
                 names.append(c)
                 grid_search_params.append(model_config["scikit"][c].get("grid_search", {}))
@@ -57,7 +63,7 @@ def getclf_scikit(model_config):
             except AttributeError:
                 logger.critical("Could not load scikit model %s", c)
 
-    return classifiers, names, grid_search_params
+    return classifiers, names, grid_search_params, bayesian_opt
 
 
 def getclf_xgboost(model_config):
@@ -72,11 +78,18 @@ def getclf_xgboost(model_config):
     classifiers = []
     names = []
     grid_search_params = []
+    bayesian_opt = []
 
     for c in model_config["xgboost"]:
         if model_config["xgboost"][c]["activate"]:
             try:
                 model = getattr(templates_xgboost, c)(model_config["xgboost"][c]["central_params"])
+                c_bayesian = f"{c}_bayesian_opt"
+                bayes_opt = None
+                if hasattr(templates_xgboost, c_bayesian):
+                    bayes_opt = getattr(templates_xgboost, c_bayesian) \
+                            (model_config["xgboost"][c]["central_params"])
+                bayesian_opt.append(bayes_opt)
                 classifiers.append(model)
                 names.append(c)
                 grid_search_params.append(model_config["xgboost"][c].get("grid_search", {}))
@@ -84,7 +97,7 @@ def getclf_xgboost(model_config):
             except AttributeError:
                 logger.critical("Could not load xgboost model %s", c)
 
-    return classifiers, names, grid_search_params
+    return classifiers, names, grid_search_params, bayesian_opt
 
 
 def getclf_keras(model_config, length_input):
@@ -98,22 +111,27 @@ def getclf_keras(model_config, length_input):
 
     classifiers = []
     names = []
+    bayesian_opt = []
 
     for c in model_config["keras"]:
         if model_config["keras"][c]["activate"]:
             try:
-                classifiers.append(KerasClassifier(build_fn=lambda name=c: \
-                    getattr(templates_keras, name)(model_config["keras"][name], length_input), \
-                                               epochs=model_config["keras"][c]["epochs"], \
-                                               batch_size=model_config["keras"][c]["batch_size"], \
-                                               verbose=0))
+                model = getattr(templates_keras, c)(model_config["keras"][c]["central_params"],
+                                                    length_input)
+                classifiers.append(model)
+                c_bayesian = f"{c}_bayesian_opt"
+                bayes_opt = None
+                if hasattr(templates_keras, c_bayesian):
+                    bayes_opt = getattr(templates_keras, c_bayesian) \
+                            (model_config["keras"][c]["central_params"], length_input)
+                bayesian_opt.append(bayes_opt)
                 names.append(c)
                 logger.info("Added keras model %s", c)
             except AttributeError:
                 logger.critical("Could not load keras model %s", c)
 
     #logger.critical("Some reason")
-    return classifiers, names, []
+    return classifiers, names, [], bayesian_opt
 
 
 
