@@ -30,6 +30,7 @@ def fill_validation_multiplicity(dfevt, dfevtevtsel, df_reco):
     _ = len(df_reco)
     # Binning definition
     binning_ntrklt = buildbinning(200, -0.5, 199.5)
+    binning_ntrklt_diff = buildbinning(10, -0.5, 9.5)
     binning_v0m = buildbinning(1500, -0.5, 1499.5)
     binning_zvtx = buildbinning(100, -15.0, 15)
     binning_v0m_perc = buildbinning(100, 0, 1)
@@ -75,7 +76,7 @@ def fill_validation_multiplicity(dfevt, dfevtevtsel, df_reco):
         val.make_and_fill(
             binning_ntrklt,
             "n_tracklets_corr",
-            binning_ntrklt,
+            binning_ntrklt_diff,
             "n_tracklets_corr-n_tracklets_corr_sub",
         )
         val.make_and_fill(
