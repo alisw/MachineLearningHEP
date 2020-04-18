@@ -42,12 +42,12 @@ class ValidationCollection:
         """
         h = None
         if namey:
-            h_name = f"h_{namex}_vs_{namey}{self.collection_tag}"
+            h_name = f"hVal_{namex}_vs_{namey}{self.collection_tag}"
             h_tit = f" ; {namex} ; {namey}"
             h = makefill2dhist(self.source_dataframe, h_name, binx, biny, namex, namey)
             h.SetTitle(h_tit)
         else:
-            h_name = f"h_{namex}{self.collection_tag}"
+            h_name = f"hVal_{namex}{self.collection_tag}"
             h_tit = f" ; {namex} ; Entries"
             h = makefill1dhist(self.source_dataframe, h_name, h_tit, binx, namex)
         if self.verbose:
