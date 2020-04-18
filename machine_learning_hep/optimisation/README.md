@@ -34,7 +34,7 @@ More explanation is coming soon...
 
 ## How to use it
 
-PREREQUISITES: before running the bayesian optimisation routine please repeat the installation of the required package by running the usual command (see below). By doing this you will make sure that the package hyperopt, used for the optimisation, is included in your virtual environment 
+PREREQUISITES: before running the bayesian optimisation routine please repeat the installation of the required package by running the usual command (see below or check https://github.com/ginnocen/MachineLearningHEP/wiki/Installation). By doing this you will make sure that the package hyperopt, used for the optimisation, is included in your virtual environment 
 ```python
 pip3 install -e .
 ```
