@@ -58,5 +58,6 @@ class ValidationCollection:
 
     def write(self):
         for i in self.histograms:
-            print("Writing histogram", i.GetName())
+            if self.verbose:
+                print("Writing histogram", i.GetName())
             i.Write()
