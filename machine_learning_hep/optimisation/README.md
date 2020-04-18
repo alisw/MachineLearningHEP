@@ -34,6 +34,11 @@ More explanation is coming soon...
 
 ## How to use it
 
+PREREQUISITES: before running the bayesian optimisation routine please repeat the installation of the required package by running the usual command (see below). By doing this you will make sure that the package hyperopt, used for the optimisation, is included in your virtual environment 
+```python
+pip3 install -e .
+```
+
 In order to use Bayesian optimisation for a model, you need to do the following (`templates_xgboost.py` is taken here as an example):
 
 1. Derive a class from `BayesianOpt` (if you are interested, you can find it in `optimisation/bayesian_opt.py` in this package).
