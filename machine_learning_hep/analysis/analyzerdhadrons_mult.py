@@ -581,7 +581,11 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         # merged LHC16,LHC17, LHC18 file or also on the separate years
         # depending on how you set the option doperperiod in the
         # default_complete.yml database.
-        def do_validation_plots(input_file_name, output_path, ismc=False):
+        def do_validation_plots(input_file_name,
+                                output_path,
+                                ismc=False,
+                                pileup_fraction=True,
+                                tpc_tof_me=True):
             gROOT.SetBatch(True)
 
             input_file = TFile(input_file_name, "READ")
@@ -589,9 +593,12 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                 self.logger.fatal("Did not find file %s", input_file.GetName())
 
             def get_histo(namex, namey=None, tag=""):
-                h_name = f"h_{namex}"
+                """
+                Gets a histogram from a file
+                """
+                h_name = f"hVal_{namex}"
                 if namey:
-                    h_name = f"h_{namex}_vs_{namey}"
+                    h_name += f"_vs_{namey}"
                 h_name += tag
                 h = input_file.Get(h_name)
                 if not h:
@@ -602,10 +609,16 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                 return h
 
             def do_plot(histo):
+                """
+                Plots the histogram in a new canvas, if it is a TH2, it also plots the profile.
+                The canvas has the same name as the histogram and it is saved to the output_path
+                """
                 canvas = TCanvas(histo.GetName(), histo.GetName())
                 profile = None
                 histo.Draw("COLZ")
                 if "TH2" in histo.ClassName():
+                    if "nsig" in histo.GetYaxis().GetTitle():
+                        histo.GetYaxis().SetRangeUser(-100, 100)
                     profile = histo.ProfileX(histo.GetName() + "_profile")
                     profile.SetLineWidth(2)
                     profile.SetLineColor(2)
@@ -614,43 +627,49 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                 gPad.Update()
                 save_root_object(canvas, path=output_path)
 
-            for i in "v0m v0m_eq v0m_corr v0m_eq_corr".split():
-                do_plot(get_histo("n_tracklets", i))
-                do_plot(get_histo(i, "perc_v0m"))
+            # Plot all validation histogram
+            for i in range(0, input_file.GetListOfKeys().GetEntries()):
+                key_name = input_file.GetListOfKeys().At(i).GetName()
+                if not key_name.startswith("hVal_"):
+                    continue
+                do_plot(input_file.Get(key_name))
 
-            for i in "n_tracklets n_tracklets_corr n_tracklets_corr_shm".split():
-                do_plot(get_histo(i, "perc_v0m"))
+            # Fraction of pileup events
+            if pileup_fraction:
+                hnum = get_histo("n_tracklets_corr", tag="pileup")
+                hnum.SetName(hnum.GetName() + "_eventfraction")
+                hden = get_histo("n_tracklets_corr")
+                hnum.Divide(hnum, hden)
+                hnum.GetYaxis().SetTitle("Fraction of events")
+                do_plot(hnum)
 
-            do_plot(get_histo("n_tracklets", "n_tracklets_corr"))
-            do_plot(get_histo("z_vtx_reco", "n_tracklets_corr"))
-            do_plot(get_histo("z_vtx_reco", "n_tracklets"))
-            do_plot(get_histo("n_tracklets_corr"))
-            do_plot(get_histo("n_tracklets_corr_shm"))
-            do_plot(get_histo("n_tracklets_corr", tag="pileup"))
-            # do_plot(get_histo("n_tracklets_corr", tag="spd") )
-            do_plot(get_histo("n_tracklets_corr_sub", "n_tracklets_corr"))
+            def plot_validation_candidate(tag):
+                # Compute TPC-TOF matching efficiency
+                if tpc_tof_me:
+                    for i in "Pi K".split():
+                        for j in "0 1".split():
+                            for k in "p pt".split():
+                                hnname = [f"{k}_prong{j}", f"nsigTOF_{i}_{j}", tag]
+                                hnum = get_histo(*hnname)
+                                hnum = hnum.ProjectionX(hnum.GetName() + "_num", 2, -1)
+                                hden = get_histo(*hnname)
+                                hden = hden.ProjectionX(hden.GetName() + "_den")
+                                hnum.Divide(hnum, hden, 1, 1, "B")
+                                hnum.SetName(
+                                    hnum.GetName().replace(
+                                        "_num", "_TPC-TOF_MatchingEfficiency"
+                                    )
+                                )
+                                hnum.GetYaxis().SetTitle("TPC-TOF_MatchingEfficiency")
+                                do_plot(hnum)
 
-            for i in "TPC TOF".split():
-                for j in "Pi K".split():
-                    for k in "0 1".split():
-                        yaxis = [f"nsig{i}_{j}_{k}"]
-                        do_plot(get_histo("pt_cand", *yaxis))
-                        do_plot(get_histo("eta_cand", *yaxis))
-                        do_plot(get_histo("phi_cand", *yaxis))
-
+            plot_validation_candidate(tag="")
             # Part dedicated to MC Checks
             if not ismc:
                 input_file.Close()
                 return
 
-            for i in "TPC TOF".split():
-                for j in "Pi K".split():
-                    for k in "0 1".split():
-                        yaxis = [f"nsig{i}_{j}_{k}", "MC"]
-                        do_plot(get_histo("pt_cand", *yaxis))
-                        do_plot(get_histo("eta_cand", *yaxis))
-                        do_plot(get_histo("phi_cand", *yaxis))
-
+            plot_validation_candidate(tag="MC")
             input_file.Close()
 
         do_validation_plots(self.n_filemass, self.d_resultsallpdata)
