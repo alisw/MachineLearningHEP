@@ -456,7 +456,7 @@ LcpK0spp:
       triggereffunc: [0.003,0.018,0,0,0]
       triggerbit: INT7
       isNbx2: true    #Estimate the feeddown systematic with Nb and Nbx2 method convolution. Set to true just for Lc vs mult.
-      performtriggerturn: True
+      event_cand_validation: True
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
       binning_matching: [0,1,2,3,4,5] #list of pt nbins

@@ -445,7 +445,7 @@ D0pp:
       triggereffunc: [0.,0.,0.,0.,0.]
       triggerbit: HighMultSPD
       isNbx2: False    #Estimate the feeddown systematic with Nb and Nbx2 method convolution
-      performtriggerturn: True
+      event_cand_validation: True
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
       binning_matching: [0,1,2,3,4,5] #list of pt nbins
@@ -552,7 +552,7 @@ D0pp:
       triggereff: [0.92,0.862,1,1,1]
       triggereffunc: [0.003,0.018,0,0,0]
       triggerbit: INT7
-      performtriggerturn: True
+      event_cand_validation: True
       sel_an_binmin: [1,2,4,6,8,12]  # [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24]  # [2,4,6,8,12,24] #list of pt nbins
       binning_matching: [0,1,2,3,4,5]  # [0,1,2,2,3,4] #list of pt nbins
