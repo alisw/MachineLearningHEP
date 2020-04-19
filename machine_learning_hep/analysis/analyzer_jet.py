@@ -549,6 +549,7 @@ class AnalyzerJet(Analyzer):
                 area_scale_denominator = -1
                 if not bkg_fit: # if there is no background fit it continues
                     continue
+                # FIXME if self.sidebandleftonly
                 area_scale_denominator = bkg_fit.Integral(masslow9sig, masslow4sig) + \
                 bkg_fit.Integral(masshigh4sig, masshigh9sig)
                 if area_scale_denominator == 0:
@@ -560,10 +561,17 @@ class AnalyzerJet(Analyzer):
                 # subtract the scaled side-band yields
 
                 hzsub.Add(hzbkg, -1 * area_scale)
+
+                # set negative yields to zero
+
+                for ibinz in range(hzsub.GetNbinsX()):
+                    binz = ibinz + 1
+                    if hzsub.GetBinContent(binz) <= 0:
+                        hzsub.SetBinContent(binz, 0)
+                        hzsub.SetBinError(binz, 0)
+
                 hzsub_noteffscaled = hzsub.Clone("hzsub_noteffscaled" + suffix)
                 hzbkg_scaled.Scale(area_scale)
-
-                # FIXME set negative yields to zero
 
                 # correct for the efficiency
 
@@ -787,7 +795,7 @@ class AnalyzerJet(Analyzer):
         fileouts.cd()
         hzvsjetpt.Write("hzvsjetpt")
 
-        czvsjetpt = TCanvas("czvsjetpt", "2D input to unfolding (not normalized)")
+        czvsjetpt = TCanvas("czvsjetpt", "output of side-band subtraction")
         setup_canvas(czvsjetpt)
         setup_histogram(hzvsjetpt)
         hzvsjetpt.SetTitle("")
