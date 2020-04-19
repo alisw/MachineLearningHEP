@@ -549,13 +549,12 @@ class AnalyzerJet(Analyzer):
                 area_scale_denominator = -1
                 if not bkg_fit: # if there is no background fit it continues
                     continue
-                # FIXME if self.sidebandleftonly
-                area_scale_denominator = bkg_fit.Integral(masslow9sig, masslow4sig) + \
-                bkg_fit.Integral(masshigh4sig, masshigh9sig)
+                area_scale_denominator = bkg_fit.Integral(masslow9sig, masslow4sig)
+                if self.sidebandleftonly is False:
+                    area_scale_denominator += bkg_fit.Integral(masshigh4sig, masshigh9sig)
                 if area_scale_denominator == 0:
                     continue
-                area_scale = \
-                    bkg_fit.Integral(masslow2sig, masshigh2sig)/area_scale_denominator
+                area_scale = bkg_fit.Integral(masslow2sig, masshigh2sig) / area_scale_denominator
                 hzsub = hzsig.Clone("hzsub" + suffix)
 
                 # subtract the scaled side-band yields
