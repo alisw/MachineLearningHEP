@@ -2883,14 +2883,14 @@ class AnalyzerJet(Analyzer):
         if dim not in (2, 3):
             self.logger.fatal("Error: %d is not a supported dimension.", dim)
 
-        # Get the normalisation factor.
+        # Get the normalisation factor (inverse integrated luminosity).
         file_sim = TFile.Open(file_path)
         if not file_sim:
             self.logger.fatal(make_message_notfound(file_path))
         pr_xsec = file_sim.Get("fHistXsection")
         if not pr_xsec:
             self.logger.fatal(make_message_notfound("fHistXsection", file_path))
-        scale_factor = pr_xsec.GetBinContent(1)/pr_xsec.GetEntries()
+        scale_factor = pr_xsec.GetBinContent(1) / pr_xsec.GetEntries()
         file_sim.Close()
 
         # Load the tree.
@@ -2923,8 +2923,8 @@ class AnalyzerJet(Analyzer):
         df_sim = seldf_singlevar(df_sim, self.v_var2_binning, self.lvar2_binmin_gen[0], self.lvar2_binmax_gen[-1])
         # cut on hadron pt
         df_sim = seldf_singlevar(df_sim, self.v_var_binning, self.lpt_finbinmin[0], self.lpt_finbinmax[-1])
-        # TODO cut on shape
-        #df_sim = seldf_singlevar(df_sim, self.v_varshape_binning, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1])
+        # cut on shape
+        df_sim = seldf_singlevar(df_sim, self.v_varshape_binning, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1])
         # acceptance cut
         #sel_jet_gen = "abs(y_cand) < 0.5 and abs(eta_jet) < 0.5"
         sel_jet_gen = "abs(eta_jet) <= 0.5"
@@ -2936,7 +2936,7 @@ class AnalyzerJet(Analyzer):
         pdg_parton_good = 4 if prompt else 5
         df_sim = df_sim[df_sim["pdg_parton"] == pdg_parton_good]
 
-        # Reject single-track jets.
+        # Reject single-constituent jets.
         #sel_jet_nconst = "n_const > 1"
         #df_sim = df_sim.query(sel_jet_nconst)
 
@@ -2953,6 +2953,7 @@ class AnalyzerJet(Analyzer):
             his2 = makefill2dhist(df_sim, "h2_yield_sim", \
                 self.varshapebinarray_gen, self.var2binarray_gen, \
                 self.v_varshape_binning, self.v_var2_binning)
+            print("Integral of the histogram:", his2.Integral())
             print("Scaling with:", scale_factor)
             his2.Scale(scale_factor)
             print("Entries in the histogram:", his2.GetEntries())
@@ -2963,6 +2964,7 @@ class AnalyzerJet(Analyzer):
             his3 = makefill3dhist(df_sim, "h3_yield_sim", \
                 self.varshapebinarray_gen, self.var2binarray_gen, self.var1binarray, \
                 self.v_varshape_binning, self.v_var2_binning, self.v_var_binning)
+            print("Integral of the histogram:", his3.Integral())
             print("Scaling with:", scale_factor)
             his3.Scale(scale_factor)
             print("Entries in the histogram:", his3.GetEntries())
