@@ -106,6 +106,45 @@ def fill2dhist(df_, histo, nvar1, nvar2):
     fill_hist(histo, arr2)
     return histo
 
+
+def rebin_histogram(src_histo, new_histo):
+    """
+    Rebins the content of the histogram src_histo into new_histo.
+    If average is set to True, the bin width is considered when rebinning.
+    """
+    if "TH1" not in src_histo.ClassName() and "TH1" not in new_histo.ClassName():
+        get_logger().fatal("So far, can only work with TH1")
+    x_axis_new = new_histo.GetXaxis()
+    x_axis_src = new_histo.GetXaxis()
+    for i in range(1, x_axis_new.GetNbins() + 1):
+        x_new = [x_axis_new.GetBinLowEdge(i),
+                 x_axis_new.GetBinUpEdge(i),
+                 x_axis_new.GetBinWidth(i),
+                 x_axis_new.GetBinCenter(i)]
+        width_src = []
+        y_src = []
+        ye_src = []
+        for j in range(1, x_axis_src.GetNbins() + 1):
+            x_src = [x_axis_src.GetBinLowEdge(j),
+                     x_axis_src.GetBinUpEdge(j),
+                     x_axis_src.GetBinWidth(j)]
+            if x_src[1] <= x_new[0]:
+                continue
+            if x_src[0] >= x_new[1]:
+                continue
+            if x_src[0] < x_new[0]:
+                get_logger().fatal("For bin %i, bin %i low edge is too low! [%f, %f] vs [%f, %f]", i, j, x_new[0], x_new[1], x_src[0], x_src[1])
+            if x_src[1] > x_new[1]:
+                get_logger().fatal("For bin %i, bin %i up edge is too high! [%f, %f] vs [%f, %f]", i, j, x_new[0], x_new[1], x_src[0], x_src[1])
+            y_src.append(src_histo.GetBinContent(j))
+            ye_src.append(src_histo.GetBinError(j))
+            width_src.append(x_src[-1])
+        if abs(sum(width_src) - x_new[2]) > 0.00001:
+            get_logger().fatal("Width does not match")
+        new_histo.SetBinContent(i, sum(y_src))
+        new_histo.SetBinError(i, np.sqrt(sum(j**2 for j in ye_src)))
+    return new_histo
+
 def load_root_style_simple():
     """
     Set basic ROOT style for histograms
