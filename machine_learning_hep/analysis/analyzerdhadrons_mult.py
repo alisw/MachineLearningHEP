@@ -581,6 +581,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         # merged LHC16,LHC17, LHC18 file or also on the separate years
         # depending on how you set the option doperperiod in the
         # default_complete.yml database.
+
         def do_validation_plots(input_file_name,
                                 output_path,
                                 ismc=False,
@@ -627,13 +628,6 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                 gPad.Update()
                 save_root_object(canvas, path=output_path)
 
-            # Plot all validation histogram
-            for i in range(0, input_file.GetListOfKeys().GetEntries()):
-                key_name = input_file.GetListOfKeys().At(i).GetName()
-                if not key_name.startswith("hVal_"):
-                    continue
-                do_plot(input_file.Get(key_name))
-
             # Fraction of pileup events
             if pileup_fraction:
                 hnum = get_histo("n_tracklets_corr", tag="pileup")
@@ -643,7 +637,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                 hnum.GetYaxis().SetTitle("Fraction of events")
                 do_plot(hnum)
 
-            def plot_validation_candidate(tag):
+            def plot_tpc_tof_me(tag):
                 # Compute TPC-TOF matching efficiency
                 if tpc_tof_me:
                     for i in ["Pi", "K"]:
@@ -666,13 +660,18 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                                 hnum.GetYaxis().SetTitle("TPC-TOF_MatchingEfficiency")
                                 do_plot(hnum)
 
-            plot_validation_candidate(tag="")
+            plot_tpc_tof_me(tag="")
             # Part dedicated to MC Checks
-            if not ismc:
-                input_file.Close()
-                return
+            if ismc:
+                plot_tpc_tof_me(tag="MC")
 
-            plot_validation_candidate(tag="MC")
+            # Plot all other validation histogram
+            for i in range(0, input_file.GetListOfKeys().GetEntries()):
+                key_name = input_file.GetListOfKeys().At(i).GetName()
+                if not key_name.startswith("hVal_"):
+                    continue
+                do_plot(input_file.Get(key_name))
+
             input_file.Close()
 
         do_validation_plots(self.n_filemass, self.d_resultsallpdata)
