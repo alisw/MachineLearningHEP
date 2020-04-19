@@ -367,10 +367,10 @@ D0pp:
       var_binningshape: rg_jet
       var_binningshape_gen: rg_gen_jet
       var_shape_latex: "#it{R}_{g}"
-      sel_binminshape_reco: [0.0,0.1,0.2,0.3,0.4]
-      sel_binmaxshape_reco:     [0.1,0.2,0.3,0.4,0.6]
-      sel_binminshape_gen:  [0.0,0.1,0.2,0.3,0.4]
-      sel_binmaxshape_gen:      [0.1,0.2,0.3,0.4,0.6]
+      sel_binminshape_reco: [0.0,0.1,0.2,0.3]
+      sel_binmaxshape_reco:     [0.1,0.2,0.3,0.4]
+      sel_binminshape_gen:  [0.0,0.1,0.2,0.3]
+      sel_binmaxshape_gen:      [0.1,0.2,0.3,0.4]
       data: &data_out_rg
         <<: *data_out_default
         results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
@@ -387,6 +387,7 @@ D0pp:
         <<: *data_out_rg
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_rg
+      systematics_db: ./data/data_prod_20200304/database_systematics_D0pp_jet_rg.yml
 
     jet_FF:
       <<: *jet_default
