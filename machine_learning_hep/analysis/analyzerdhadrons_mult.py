@@ -593,7 +593,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             if not input_file or not input_file.IsOpen():
                 self.logger.fatal("Did not find file %s", input_file.GetName())
 
-            def get_histo(namex, namey=None, tag=""):
+            def get_histo(namex, namey=None, tag="", strictly_require=True):
                 """
                 Gets a histogram from a file
                 """
@@ -603,10 +603,16 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                 h_name += tag
                 h = input_file.Get(h_name)
                 if not h:
-                    input_file.ls()
-                    self.logger.fatal(
-                        "Did not find %s in file %s", h_name, input_file.GetName()
-                    )
+                    if strictly_require:
+                        input_file.ls()
+                        self.logger.fatal(
+                            "Did not find %s in file %s", h_name, input_file.GetName()
+                        )
+                    else:
+                        self.logger.warning(
+                            "Did not find %s in file %s", h_name, input_file.GetName()
+                        )
+                        return None
                 return h
 
             def do_plot(histo):
@@ -640,12 +646,15 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             def plot_tpc_tof_me(tag):
                 # Compute TPC-TOF matching efficiency
                 if tpc_tof_me:
-                    for i in ["Pi", "K"]:
+                    for i in ["Pi", "K", "P"]:
                         for j in ["0", "1"]:
                             for k in ["p", "pt"]:
                                 hname = [f"{k}_prong{j}",
                                          f"nsigTOF_{i}_{j}", tag]
-                                hnum = get_histo(*hname)
+                                hnum = get_histo(*hname,
+                                                 strictly_require=False)
+                                if hnum is None:
+                                    continue
                                 hnum = hnum.ProjectionX(
                                     hnum.GetName() + "_num", 2, -1)
                                 hden = get_histo(*hname)
