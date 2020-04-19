@@ -636,12 +636,13 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
 
             # Fraction of pileup events
             if pileup_fraction:
-                hnum = get_histo("n_tracklets_corr", tag="pileup")
-                hnum.SetName(hnum.GetName() + "_eventfraction")
-                hden = get_histo("n_tracklets_corr")
-                hnum.Divide(hnum, hden)
-                hnum.GetYaxis().SetTitle("Fraction of events")
-                do_plot(hnum)
+                hnum = get_histo("n_tracklets_corr", tag="pileup", strictly_require=False)
+                if hnum is not None:
+                    hnum.SetName(hnum.GetName() + "_eventfraction")
+                    hden = get_histo("n_tracklets_corr")
+                    hnum.Divide(hnum, hden)
+                    hnum.GetYaxis().SetTitle("Fraction of events")
+                    do_plot(hnum)
 
             def plot_tpc_tof_me(tag):
                 # Compute TPC-TOF matching efficiency
