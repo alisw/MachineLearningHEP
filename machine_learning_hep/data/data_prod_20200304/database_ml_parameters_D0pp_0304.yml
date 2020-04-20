@@ -274,10 +274,10 @@ D0pp:
 
       var_binning2: pt_jet
       latexbin2var: "#it{p}_{T, jet}^{ch}"
-      sel_binmin2_reco: [5.0,7.0,15.0,30.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmax2_reco:     [7.0,15.0,30.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmin2_gen:  [5.0,7.0,15.0,30.0] # gen jet pt bins (sel_binmin2_gen bins)
-      sel_binmax2_gen:      [7.0,15.0,30.0,50.0] # gen jet pt bins (sel_binmin2_gen bins)
+      sel_binmin2_reco: [7.0,15.0,30.0] # rec jet pt bins (sel_binmin2_reco bins)
+      sel_binmax2_reco:     [15.0,30.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)
+      sel_binmin2_gen:  [7.0,15.0,30.0] # gen jet pt bins (sel_binmin2_gen bins)
+      sel_binmax2_gen:      [15.0,30.0,50.0] # gen jet pt bins (sel_binmin2_gen bins)
       var_binningshape: zg_jet
       var_binningshape_gen: zg_gen_jet
       var_shape_latex: "#it{z}_{g}"
@@ -287,9 +287,9 @@ D0pp:
       sel_binmaxshape_gen:      [0.2,0.3,0.4,0.5]
       sel_closure_frac: 0.2
       triggerbit: INT7
-      sel_an_binmin:    [2,3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:      [3,4,5,6,7,8,10,12,16,24,36,48] # hadron pt bins (sel_an_binmin bins)
-      binning_matching:   [1,1,2,2,3,3, 4, 4, 5, 5, 6, 6] # mapping to skimming pt bins (sel_an_binmin bins)
+      sel_an_binmin:    [5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmax:      [6,7,8,10,12,16,24,36,48] # hadron pt bins (sel_an_binmin bins)
+      binning_matching:   [2,3,3, 4, 4, 5, 5, 6, 6] # mapping to skimming pt bins (sel_an_binmin bins)
       jetsel_gen: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
       jetsel_reco: "abs(eta_jet) < 0.5"
       evtsel: is_ev_rej==0
@@ -344,7 +344,7 @@ D0pp:
       niterunfoldingchosen: 4
 
       branching_ratio: 3.95e-2
-      xsection_inel: 57.8
+      xsection_inel: 57.8 # (mb) cross-section of minimum-bias events
 
       doprior: false
 
@@ -388,6 +388,33 @@ D0pp:
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_rg
       systematics_db: ./data/data_prod_20200304/database_systematics_D0pp_jet_rg.yml
+
+    jet_nsd:
+      <<: *jet_default
+      var_binningshape: nsd_jet
+      var_binningshape_gen: nsd_gen_jet
+      var_shape_latex: "#it{n}_{SD}"
+      sel_binminshape_reco: [0, 1, 2, 3, 4, 5]
+      sel_binmaxshape_reco:    [1, 2, 3, 4, 5, 6]
+      sel_binminshape_gen:  [0, 1, 2, 3, 4, 5]
+      sel_binmaxshape_gen:     [1, 2, 3, 4, 5, 6]
+      data: &data_out_nsd
+        <<: *data_out_default
+        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_data/resultsMBjetvspt
+      mc: &mc_out_nsd
+        <<: *mc_out_default
+        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_mc_prodD2H/resultsMBjetvspt
+      data_proc: # alternative processor output used as the analyzer input
+        <<: *data_out_nsd
+      mc_proc: # alternative processor output used as the analyzer input
+        <<: *mc_out_nsd
+      systematics_db: ./data/data_prod_20200304/database_systematics_D0pp_jet_nsd.yml
 
     jet_FF:
       <<: *jet_default
