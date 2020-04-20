@@ -17,6 +17,7 @@
 
 D0pp_hfcorr:
   nprongs: 2
+  prongformultsub: [1,1]
   doml: false
   mass: 1.864
   sel_reco_unp: "pt_cand>1"
