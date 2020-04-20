@@ -17,6 +17,7 @@ Script base function for validation histograms
 """
 
 from machine_learning_hep.utilities_plot import makefill1dhist, makefill2dhist
+from machine_learning_hep.logger import get_logger
 
 
 class ValidationCollection:
@@ -40,22 +41,36 @@ class ValidationCollection:
         """
         h = None
         if namey:
+            # Check that column exists
+            if namex not in self.source_dataframe:
+                get_logger().warning(
+                    "Columns %s for X axis does not exist in dataframe, skipping histogram", namex)
+                return
+            if namey not in self.source_dataframe:
+                get_logger().warning(
+                    "Columns %s for Y axis does not exist in dataframe, skipping histogram", namey)
+                return
             h_name = f"hVal_{namex}_vs_{namey}{self.collection_tag}"
             h_tit = f" ; {namex} ; {namey}"
             h = makefill2dhist(self.source_dataframe, h_name,
                                binx, biny, namex, namey)
             h.SetTitle(h_tit)
         else:
+            # Check that column exists
+            if namex not in self.source_dataframe:
+                get_logger().warning(
+                    "Columns %s for X axis does not exist in dataframe, skipping histogram", namex)
+                return
             h_name = f"hVal_{namex}{self.collection_tag}"
             h_tit = f" ; {namex} ; Entries"
             h = makefill1dhist(self.source_dataframe,
                                h_name, h_tit, binx, namex)
         if self.verbose:
-            print("Filling histogram", h.GetName())
+            get_logger().info("Filling histogram %s", h.GetName())
         self.histograms.append(h)
 
     def write(self):
         for i in self.histograms:
             if self.verbose:
-                print("Writing histogram", i.GetName())
+                get_logger().info("Writing histogram %s", i.GetName())
             i.Write()
