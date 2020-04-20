@@ -639,7 +639,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                 hnum = get_histo("n_tracklets_corr", tag="pileup", strictly_require=False)
                 if hnum is not None:
                     hnum.SetName(hnum.GetName() + "_eventfraction")
-                    hden = get_histo("n_tracklets_corr")
+                    hden = get_histo("n_tracklets_corr", tag="_EvtSel")
                     hnum.Divide(hnum, hden)
                     hnum.GetYaxis().SetTitle("Fraction of events")
                     do_plot(hnum)
