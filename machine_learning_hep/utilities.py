@@ -29,12 +29,12 @@ import numpy as np
 import pandas as pd
 import lz4
 from machine_learning_hep.selectionutils import select_runs
-from ROOT import TGraphAsymmErrors  # pylint: disable=import-error, no-name-in-module
-from ROOT import kBlack, kRed, kGreen, kBlue, kYellow, kOrange, kMagenta, kCyan, kGray
-from ROOT import kOpenCircle, kOpenSquare, kOpenDiamond, kOpenCross, kOpenStar, \
-kOpenThreeTriangles, kOpenFourTrianglesX, kOpenDoubleDiamond, kOpenFourTrianglesPlus, kOpenCrossX, \
-kFullCircle, kFullSquare, kFullDiamond, kFullCross, kFullStar, kFullThreeTriangles, \
-kFullFourTrianglesX, kFullDoubleDiamond, kFullFourTrianglesPlus, kFullCrossX
+from ROOT import TGraphAsymmErrors # pylint: disable=import-error, no-name-in-module
+from ROOT import kBlack, kRed, kGreen, kBlue, kYellow, kOrange, kMagenta, kCyan, kGray # pylint: disable=import-error, no-name-in-module
+from ROOT import kOpenCircle, kOpenSquare, kOpenDiamond, kOpenCross, kOpenStar, kOpenThreeTriangles # pylint: disable=import-error, no-name-in-module
+from ROOT import kOpenFourTrianglesX, kOpenDoubleDiamond, kOpenFourTrianglesPlus, kOpenCrossX # pylint: disable=import-error, no-name-in-module
+from ROOT import kFullCircle, kFullSquare, kFullDiamond, kFullCross, kFullStar, kFullThreeTriangles # pylint: disable=import-error, no-name-in-module
+from ROOT import kFullFourTrianglesX, kFullDoubleDiamond, kFullFourTrianglesPlus, kFullCrossX # pylint: disable=import-error, no-name-in-module
 
 def openfile(filename, attr):
     """
@@ -411,7 +411,7 @@ def get_plot_range(val_min, val_max, margin_min, margin_max, logscale=False):
     k_min = margin_min / k
     k_max = margin_max / k
     if logscale:
-        if val_min <= 0 or val_max <=0:
+        if val_min <= 0 or val_max <= 0:
             print("Error: Cannot plot non-positive values in logscale.")
             return None, None
         val_range = val_max / val_min
