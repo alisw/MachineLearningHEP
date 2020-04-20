@@ -37,6 +37,7 @@ ml_study:
   doplotdistr: false
   doimportance: false
   dogridsearch: false
+  dobayesianopt: false
   doboundary: false
   doefficiency: false
   dosignifopt: false
@@ -72,6 +73,7 @@ analysis:
   doeff: false
   docross: false
   doplots: false
+  doplotsval: false # analyzer: plottervalidation
 
 systematics:
   cutvar:

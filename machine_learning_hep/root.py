@@ -102,3 +102,16 @@ def write_tree(filename, treename, dataframe):
     fout = TFile.Open(filename, "recreate")
     fout.cd()
     fill_ntuple(treename, values, listvar)
+
+
+def save_root_object(obj, path, name=None, extension="pdf"):
+    """
+    Function to save a root object in path with a defined extension
+    If no name is give, the name of the object is taken as output.
+        obj : object to save
+        path : path to save the object in
+        name : name of the output file
+        extension : extension of the output file (e.g. pdf, png, eps)
+    """
+    name = name if name is not None else obj.GetName()
+    obj.SaveAs(f"{path}/{name}.{extension}")

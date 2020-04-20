@@ -31,7 +31,9 @@ from machine_learning_hep.utilities import get_timestamp_string
 #from machine_learning_hep.globalfitter import fitter
 from machine_learning_hep.processer import Processer
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
-from machine_learning_hep.utilities_validation import fillvalidationvsmult
+from machine_learning_hep.validation.validation_vertex import fill_validation_vertex
+from machine_learning_hep.validation.validation_multiplicity import fill_validation_multiplicity
+from machine_learning_hep.validation.validation_candidates import fill_validation_candidates
 
 class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-attributes, invalid-name
     # Class Attribute
@@ -72,9 +74,9 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
-        self.performtriggerturn = datap["analysis"][self.typean].get("performtriggerturn", "")
-        if "performtriggerturn" not in datap["analysis"][self.typean]:
-            self.performtriggerturn = False
+        self.event_cand_validation = datap["analysis"][self.typean].get("event_cand_validation", "")
+        if "event_cand_validation" not in datap["analysis"][self.typean]:
+            self.event_cand_validation = False
         self.apply_weights = datap["analysis"][self.typean]["triggersel"]["weighttrig"]
         self.weightfunc = None
         if self.apply_weights is True and self.mcordata == "data":
@@ -225,7 +227,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                     h_invmass_sig.Write()
                     h_invmass_refl.Write()
 
-        if self.performtriggerturn is True:
+        if self.event_cand_validation is True:
             df_recodtrig = pd.concat(list_df_recodtrig)
             df_recodtrig = df_recodtrig.query("inv_mass>%f and inv_mass<%f" % \
                                               (self.mass - 0.15, self.mass + 0.15))
@@ -240,9 +242,15 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                                   self.minvaluehisto, self.maxvaluehisto)
             fill_hist(histomultwithd, dfevtwithd["%s_x" % self.v_var2_binning_gen])
             histomultwithd.Write()
-            valhistolist = fillvalidationvsmult(dfevtorig, dfevtevtsel, df_recodtrig)
-            for histo in valhistolist:
-                histo.Write()
+            # Validation histograms
+            fill_validation_vertex(dfevtorig, dfevtevtsel, df_recodtrig).write()
+            fill_validation_multiplicity(dfevtorig, dfevtevtsel, df_recodtrig).write()
+            fill_validation_candidates(df_recodtrig).write()
+            if self.mcordata == "mc":
+                fill_validation_candidates(
+                    df_recodtrig[df_recodtrig[self.v_ismcsignal] == 1], "MC"
+                ).write()
+
     def process_histomass(self):
         print("Doing masshisto", self.mcordata, self.period)
         print("Using run selection for mass histo", \

@@ -14,6 +14,7 @@
 
 Dspp:
   nprongs: 3
+  prongformultsub: [1,1,1]
   doml: true
   mass: 1.968
   sel_reco_unp: "pt_cand>1"
