@@ -39,15 +39,21 @@ def fill_validation_multiplicity(dfevt, dfevtevtsel, df_reco):
     val = ValidationCollection(dfevt[dfevt.is_ev_rej_INT7 == 0])
     # val = ValidationCollection(dfevt[dfevtevtsel])
     # val = ValidationCollection(dfevt[dfevt])
-    for i in ["v0m", "v0m_eq", "v0m_corr", "v0m_eq_corr"]:
-        val.make_and_fill(binning_ntrklt, "n_tracklets", binning_v0m, i)
-        val.make_and_fill(binning_v0m, i, binning_v0m_perc, "perc_v0m")
 
-    for i in ["n_tracklets", "n_tracklets_corr", "n_tracklets_corr_shm"]:
-        val.make_and_fill(binning_ntrklt, i, binning_v0m_perc, "perc_v0m")
-        val.make_and_fill(binning_v0m_perc, "perc_v0m", binning_ntrklt, i)
+    def do_mult_plots():
+        for i in ["v0m", "v0m_eq", "v0m_corr", "v0m_eq_corr"]:
+            val.make_and_fill(binning_ntrklt, "n_tracklets", binning_v0m, i)
+            val.make_and_fill(binning_v0m, i, binning_v0m_perc, "perc_v0m")
 
-    val.reset_input(dfevtevtsel, "")
+        for i in ["n_tracklets", "n_tracklets_corr", "n_tracklets_corr_shm"]:
+            val.make_and_fill(binning_ntrklt, i, binning_v0m_perc, "perc_v0m")
+            val.make_and_fill(binning_v0m_perc, "perc_v0m", binning_ntrklt, i)
+
+    do_mult_plots()
+
+    val.reset_input(dfevtevtsel, "_EvtSel")
+    do_mult_plots()
+
     val.make_and_fill(binning_ntrklt, "n_tracklets",
                       binning_ntrklt, "n_tracklets_corr")
     val.make_and_fill(binning_zvtx, "z_vtx_reco",
@@ -66,10 +72,12 @@ def fill_validation_multiplicity(dfevt, dfevtevtsel, df_reco):
     df_reco["n_tracklets_corr-n_tracklets_corr_sub"] = (
         df_reco["n_tracklets_corr"] - df_reco["n_tracklets_corr_sub"]
     )
-    for i in [[df_reco, ""],
-              [df_reco[df_reco.is_ev_rej_INT7 == 0], "MB"],
-              [df_reco.query("is_ev_sel_shm == 1"), "HMSPD"],
-              ]:
+
+    df_reco_list = [[df_reco, ""],
+                    [df_reco[df_reco.is_ev_rej_INT7 == 0], "MB"]]
+    if "is_ev_sel_shm" in df_reco:
+        df_reco_list.append([df_reco.query("is_ev_sel_shm == 1"), "HMSPD"])
+    for i in df_reco_list:
         val.reset_input(*i)
         val.make_and_fill(
             binning_ntrklt,
