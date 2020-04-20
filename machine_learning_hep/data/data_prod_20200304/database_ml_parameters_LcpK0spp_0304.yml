@@ -530,6 +530,12 @@ LcpK0spp:
         bkg_funcs: [kExpo, kLin, Pol2, Pol3, Pol4, Pol5]
         # Whether to include the free sigma option in the derivation of raw yield uncertainty in given pT bin
         consider_free_sigma: [False, False, False, False, False, False]
+        # Put relative variation from central sigma separately for varying up/donw, e.g.
+        # rel_var_sigma_up: [0.1, 0.05, False, 0.2, False, False]
+        # rel_var_sigma_down: [False, 0.1, False, False, 0.1, False]
+        # Whenever it evaluates to False it's not taken into account
+        rel_var_sigma_up: [False, False, False, False, False, False]
+        rel_var_sigma_down: [False, False, False, False, False, False]
 
 
     SPDvspt_ntrkl:
