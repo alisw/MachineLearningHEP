@@ -100,6 +100,13 @@ function check_settings()
     fi
 }
 
+# Check whether ROOT is loaded.
+if [ -z "$ROOTSYS" ]
+then
+    echo "Error: ROOT has not been loaded."
+    exit 1
+fi
+
 # Command line arguments
 while [ "$1" != "" ]
 do
