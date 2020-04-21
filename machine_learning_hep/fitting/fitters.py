@@ -878,17 +878,15 @@ class FitSystAliHF(FitROOT):
             self.kernel.ConfigurenSigmaBinCSteps(len(self.init_pars["bin_count_sigma_syst"]),
                                                  array("d", self.init_pars["bin_count_sigma_syst"]))
 
-        if self.init_pars["include_reflections"]:
-            histo_mc_ = AliVertexingHFUtils.RebinHisto(self.histo_mc,
-                                                       self.init_pars["rebin"],
-                                                       -1)
-            self.histo_mc = TH1F()
-            histo_mc_.Copy(self.histo_mc)
+        if self.init_pars["include_reflections"] and self.histo_reflections.Integral() <= 0.:
+            self.logger.warning("Reflection requested but template is empty")
+        elif self.init_pars["include_reflections"]:
             self.histo_reflections = AliVertexingHFUtils.AdaptTemplateRangeAndBinning(
                 self.histo_reflections, self.histo,
                 self.init_pars["fit_range_low"], self.init_pars["fit_range_up"])
-            if self.histo_reflections.Integral() > 0.:
-                self.kernel.SetTemplatesForReflections(self.histo_reflections, self.histo_mc)
+
+            self.kernel.SetTemplatesForReflections(self.histo_reflections, self.histo_mc)
+            if self.init_pars["fix_reflections_s_over_b"]:
                 r_over_s = self.histo_mc.Integral(
                     self.histo_mc.FindBin(self.init_pars["fit_range_low"]),
                     self.histo_mc.FindBin(self.init_pars["fit_range_up"]))
@@ -898,8 +896,6 @@ class FitSystAliHF(FitROOT):
                         self.histo_reflections.FindBin(self.init_pars["fit_range_up"])) \
                                 / r_over_s
                     self.kernel.SetFixRefoS(r_over_s)
-            else:
-                self.logger.warning("Reflection requested but template empty")
 
         if self.init_pars["include_sec_peak"]:
             #p_widthsecpeak to be fixed
