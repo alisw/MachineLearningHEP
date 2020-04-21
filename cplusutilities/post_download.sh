@@ -42,7 +42,8 @@ INPUT_PATH="$1"
 CURR_DIR=$(pwd)
 
 # To do some logging
-LOG_DIR=/tmp/ML/train_post_download
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+LOG_DIR=$HOME/train_post_download/$TIMESTAMP
 
 # Normal upper bound for merged files
 TARGET_PACK_SIZE="1000000"
@@ -265,4 +266,4 @@ echo "Wait for all jobs to finish"
 n_job_delay 1 10
 
 echo "DONE"
-
+echo "You may want to delete log files in $LOG_DIR"
