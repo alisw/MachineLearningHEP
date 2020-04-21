@@ -737,6 +737,16 @@ D0pp:
       nevents: null
       dodoublecross: false
 
+      # Additional cuts applied before mass histogram is filled
+      use_cuts: False
+      cuts:
+        - Null
+        - Null
+        - Null
+        - Null
+        - Null
+        - Null
+
       systematics:
         # For now don't do these things per pT bin
         max_chisquare_ndf: 2.
