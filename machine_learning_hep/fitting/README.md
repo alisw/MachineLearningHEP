@@ -41,7 +41,8 @@ A full configuration of the raw yield (aka multi trial) systematics in a databas
 ```yaml
 systematics:
   # For now don't do these things per pT bin
-  max_chisquare_ndf: 2.
+  max_chisquare_ndf: 2. # optional, maximum red. chi2 accepted (default: 2.)
+  min_signif: 3. # optional, minimal significance required (default: 3.)
   rebin: [-1,0,1] # required, for no variation just put [0]
   massmin: [2.14, 2.13, 2.12, 2.15, 2.17] # required, for no variation put [<min_value>]
   massmax: [2.436, 2.435, 2.434, 2.437, 2.438] # required, for no variation put [<max_value>]
