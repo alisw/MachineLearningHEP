@@ -221,8 +221,8 @@ class MLFitParsFactory:
                     "consider_free_sigma_syst": self.syst_consider_free_sigma[ibin1],
                     "rel_var_sigma_up_syst": self.syst_rel_var_sigma_up[ibin1],
                     "rel_var_sigma_down_syst": self.syst_rel_var_sigma_down[ibin1],
-                    "signif_min_syst": self.syst_pars.get("signif_min_syst", 3.),
-                    "chi2_max_syst": self.syst_pars.get("chi2_max_syst", 2.)}
+                    "signif_min_syst": self.syst_pars.get("min_signif", 3.),
+                    "chi2_max_syst": self.syst_pars.get("max_chisquare_ndf", 2.)}
 
         fit_pars["include_sec_peak"] = self.include_sec_peak[ibin2][ibin1]
         if self.include_sec_peak[ibin2][ibin1]:
