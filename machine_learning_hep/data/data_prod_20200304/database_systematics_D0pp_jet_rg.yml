@@ -204,3 +204,51 @@ categories:
                     analysis:
                         jet_rg:
                             xsection_inel: [54.91, 60.69]
+    tracking:
+        activate: yes
+        processor: true
+        label: "tracking"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            efficiency:
+                activate: [yes]
+                label: ["eff. down"]
+                diffs:
+                  multi:
+                    mc:
+                      unmerged_tree_dir: [[/data/TTree/D0DsLckAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/merged,
+                                          /data/TTree/D0DsLckAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/merged,
+                                          /data/TTree/D0DsLckAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/merged]]
+                      pkl: [[/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/pkl,
+                            /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/pkl,
+                            /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/pkl]]
+                      pkl_skimmed: [[/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/pklsk,
+                                    /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/pklsk,
+                                    /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/pklsk]]
+                      pkl_skimmed_merge_for_ml: [[/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/pklskml,
+                                                 /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/pklskml,
+                                                 /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/pklskml]]
+                      pkl_skimmed_merge_for_ml_all: [/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_mc_prodD2H_mltot]
+                      pkl_evtcounter_all: [/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_mc_prodD2H_evttot]
+                  ml:
+                    mlplot: [/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/mlplot]
+                    mlout: [/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/mlout]
+                  mlapplication:
+                    data:
+                      pkl_skimmed_dec: [[/data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdec_std_trkeff,
+                                        /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdec_std_trkeff,
+                                        /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdec_std_trkeff]]
+                      pkl_skimmed_decmerged: [[/data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdecmerged_std_trkeff,
+                                              /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdecmerged_std_trkeff,
+                                              /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdecmerged_std_trkeff]]
+                    mc:
+                      pkl_skimmed_dec: [[/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/pklskdec_std,
+                                        /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/pklskdec_std,
+                                        /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/pklskdec_std]]
+                      pkl_skimmed_decmerged: [[/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/pklskdecmerged_std,
+                                              /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/pklskdecmerged_std,
+                                              /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/pklskdecmerged_std]]
+
