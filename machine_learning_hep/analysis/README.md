@@ -5,6 +5,30 @@
 First of all, everything in here is basically an **Analyzer**. These objects can be handled by an `AnalysisManager`. 
 
 
+## Applying additional analysis cuts
+
+In order to place additional cuts before a mass histogram is filled, those have to be set in the corresponding analysis section in the database. There, one cut must be put per analysis pT bin. If no cut should be applied, just put `Null`. The flag `use_cuts` controls whether the cuts should be applied or not. Otherwise, cuts are formulated as strings which are directly used in a `pandas.DataFrame.query` meaning that all names used **must** exist as a column in the dataframe in the analysis. An example implementation in the database could look like
+
+```yaml
+# within an analysis section, assuming 4 pT bins
+  use_cuts: True
+  cuts:
+    - "p_prong0 > 2 or p_prong1 < 1"
+    - Null
+    - "abs(eta_cand) < 1.2"
+    - Null
+```
+
+The cuts can then be accessed in `processer_<type>.process_histomass_single`. The database flag `use_cuts` is translated into the member `self.do_custom_analysis_cuts` and should be checked whether it's `True` in order to not circumvent it's purpose. Then, there is a helper function in `Processer` so if you have a dataframe corresponding to a certain pT bin, you can just do
+
+```python
+if self.do_custom_analysis_cuts:
+    df = self.apply_cuts_ptbin(df, ipt)
+
+```
+
+which would apply the cuts defined for the `ipt`'th bin and returns the skimmed dataframe. Nothing is done when there was no cut defined and you would just get back the dataframe you put in.
+
 ## Analysis and systematic implementation and workflow
 
 A specific analysis or systematics is derived from `Analyzer`. This `AnalyzerDerived` can then implement any analysis step method. Note, that passing arguments to those methods is at the moment not supported. However, as they have access to the entire configuration via the database dictionary, this will probably not be needed as all specifics can be derived from that database.
