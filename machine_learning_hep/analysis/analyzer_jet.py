@@ -265,6 +265,14 @@ class AnalyzerJet(Analyzer):
         myfile = TFile.Open(self.n_filemass)
         if not myfile:
             self.logger.fatal(make_message_notfound(self.n_filemass))
+
+        # Get the number of selected events.
+        histonorm = myfile.Get("histonorm")
+        if not histonorm:
+            self.logger.fatal(make_message_notfound("histonorm", self.n_filemass))
+        self.p_nevents = histonorm.GetBinContent(1)
+        print("Number of selected event: %g" % self.p_nevents)
+
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             for ibin2 in range(self.p_nbin2_reco):
