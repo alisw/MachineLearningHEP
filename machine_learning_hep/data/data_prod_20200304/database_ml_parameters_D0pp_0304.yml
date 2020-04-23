@@ -231,19 +231,19 @@ D0pp:
 
   mlapplication:
     data:
-      pkl_skimmed_dec: [/data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdec_std,
-                        /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdec_std,
-                        /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdec_std] #list of periods
-      pkl_skimmed_decmerged: [/data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdecmerged_std,
-                              /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdecmerged_std,
-                              /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdecmerged_std] #list of periods
+      pkl_skimmed_dec: [/data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdec,
+                        /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdec,
+                        /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdecmerged,
+                              /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdecmerged,
+                              /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdecmerged] #list of periods
     mc:
-      pkl_skimmed_dec: [/data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/pklskdec_std,
-                        /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/pklskdec_std,
-                        /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/pklskdec_std] #list of periods
-      pkl_skimmed_decmerged: [/data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/pklskdecmerged_std,
-                              /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/pklskdecmerged_std,
-                              /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/pklskdecmerged_std] #list of periods
+      pkl_skimmed_dec: [/data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/pklskdec,
+                        /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/pklskdec,
+                        /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/pklskdecmerged,
+                              /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/pklskdecmerged,
+                              /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/pklskdecmerged] #list of periods
     modelname: xgboost
     modelsperptbin: [xgboost_classifierD0pp_FF_dfselection_pt_cand_1.0_2.0.sav,
                      xgboost_classifierD0pp_FF_dfselection_pt_cand_2.0_4.0.sav,

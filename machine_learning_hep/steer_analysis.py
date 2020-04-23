@@ -37,6 +37,7 @@ from machine_learning_hep.processerdhadrons_jet import ProcesserDhadrons_jet
 #from machine_learning_hep.doanalysis import doanalysis
 #from machine_learning_hep.extractmasshisto import extractmasshisto
 #from machine_learning_hep.efficiencyan import analysis_eff
+from machine_learning_hep.config import update_config
 from  machine_learning_hep.utilities import checkmakedirlist, checkmakedir
 from  machine_learning_hep.utilities import checkdirlist, checkdir
 from  machine_learning_hep.logger import configure_logger, get_logger
@@ -81,9 +82,10 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, ru
     logger.info("Do analysis chain")
 
     # If we are here we are interested in the very first key in the parameters database
-    for k in data_param.keys():
-        case = k
-        break
+    case = list(data_param.keys())[0]
+
+    # Update database accordingly if needed
+    update_config(data_param, data_config)
 
     dodownloadalice = data_config["download"]["alice"]["activate"]
     doconversionmc = data_config["conversion"]["mc"]["activate"]
