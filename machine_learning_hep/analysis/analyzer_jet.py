@@ -33,7 +33,7 @@ from machine_learning_hep.utilities import folding, equal_binning_lists, make_me
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.utilities import setup_histogram, setup_canvas, get_colour, get_marker, get_y_window_gr, get_y_window_his, get_plot_range
 from machine_learning_hep.utilities import setup_legend, setup_tgraph, draw_latex, tg_sys
-from machine_learning_hep.do_systematics import healthy_structure, format_varname, format_varlabel
+from machine_learning_hep.do_variations import healthy_structure, format_varname, format_varlabel
 from machine_learning_hep.utilities_plot import makefill2dhist, makefill3dhist
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.utilities import seldf_singlevar
