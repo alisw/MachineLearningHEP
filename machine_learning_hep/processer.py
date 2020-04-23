@@ -151,9 +151,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.lpt_model = datap["mlapplication"]["modelsperptbin"]
         self.dirmodel = datap["ml"]["mlout"]
         self.lpt_model = appendmainfoldertolist(self.dirmodel, self.lpt_model)
-        if not self.doml:
-            datap["mlapplication"]["probcutpresel"][self.mcordata] = [0 for _ in self.lpt_anbinmin]
-            datap["mlapplication"]["probcutoptimal"] = [0 for _ in self.lpt_anbinmin]
 
         self.lpt_probcutpre = datap["mlapplication"]["probcutpresel"][self.mcordata]
         self.lpt_probcutfin = datap["mlapplication"]["probcutoptimal"]
