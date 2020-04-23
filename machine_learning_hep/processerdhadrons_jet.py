@@ -104,6 +104,21 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
     # pylint: disable=too-many-branches
     def process_histomass_single(self, index):
         myfile = TFile.Open(self.l_histomass[index], "recreate")
+
+        # Get number of selected events and save it in the first bin of the histonorm histogram.
+
+        dfevtorig = pickle.load(openfile(self.l_evtorig[index], "rb"))
+        if self.s_trigger is not None:
+            dfevtorig = dfevtorig.query(self.s_trigger)
+        if self.runlistrigger is not None:
+            dfevtorig = selectdfrunlist(dfevtorig, self.run_param[self.runlistrigger], "run_number")
+        dfevtevtsel = dfevtorig.query(self.s_evtsel)
+        neventsafterevtsel = len(dfevtevtsel)
+        histonorm = TH1F("histonorm", "histonorm", 1, 0, 1)
+        histonorm.SetBinContent(1, neventsafterevtsel)
+        myfile.cd()
+        histonorm.Write()
+
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
