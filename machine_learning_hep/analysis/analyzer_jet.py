@@ -169,7 +169,7 @@ class AnalyzerJet(Analyzer):
 
         # systematics
         # import parameters of variations from the variation database
-        path_sys_db = datap["analysis"][self.typean].get("systematics_db", None)
+        path_sys_db = datap["analysis"][self.typean].get("variations_db", None)
         if not path_sys_db:
             self.logger.fatal(make_message_notfound("the variation database"))
         with open(path_sys_db, "r") as file_sys:
