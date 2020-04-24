@@ -29,7 +29,7 @@ from ROOT import TLegend
 from ROOT import gROOT, gStyle
 from ROOT import RooUnfoldBayes
 # HF specific imports
-from machine_learning_hep.utilities import folding, equal_binning_lists, make_message_notfound, checkmakedir
+from machine_learning_hep.utilities import folding, equal_binning_lists, make_message_notfound
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.utilities import setup_histogram, setup_canvas, get_colour, get_marker, get_y_window_gr, get_y_window_his, get_plot_range
 from machine_learning_hep.utilities import setup_legend, setup_tgraph, draw_latex, tg_sys
@@ -215,10 +215,6 @@ class AnalyzerJet(Analyzer):
                 if period is not None else datap["analysis"][typean]["mc"]["resultsallp"]
         self.d_resultsallpdata = datap["analysis"][typean]["data"]["results"][period] \
                 if period is not None else datap["analysis"][typean]["data"]["resultsallp"]
-        # create otput directories in case they do not exist
-        for dir_out in [self.d_resultsallpmc, self.d_resultsallpdata]:
-            if not os.path.exists(dir_out):
-                checkmakedir(dir_out)
 
         # input directories (processor output)
         self.d_resultsallpmc_proc = self.d_resultsallpmc
