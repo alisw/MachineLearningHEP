@@ -456,21 +456,21 @@ D0pp:
     SPDvspt_ntrkl:
       proc_type: Dhadrons_mult
       useperiod: [0,0,1]
-      plotbin: [0,0,0,0,1]
+      plotbin: [0,0,0,0,0,1]
       usesinglebineff: 3
       fprompt_from_mb: true
       corresp_mb_typean: MBvspt_ntrkl
-      corrEffMult: [false, true, true, true, true]
-      sel_binmin2: [1,1,10,30,60] #list of var2 splittng nbins
-      sel_binmax2: [9999,9,29,59,100] #list of var2 splitting nbins
+      corrEffMult: [false, false, true, true, true, true]
+      sel_binmin2: [0,1,1,10,30,60] #list of var2 splittng nbins
+      sel_binmax2: [9999,9999,9,29,59,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
       var_binning2_gen: n_tracklets_corr
       nbinshisto: 200
       minvaluehisto: -0.5
       maxvaluehisto: 199.5
       # here the trigger efficiency is set to 1. Corrections are implemented in the analysis step
-      triggereff: [1.,1.,1.,1.,1.]
-      triggereffunc: [0.,0.,0.,0.,0.]
+      triggereff: [1.,1.,1.,1.,1.,1.]
+      triggereffunc: [0.,0.,0.,0.,0.,0.]
       triggerbit: HighMultSPD
       isNbx2: False    #Estimate the feeddown systematic with Nb and Nbx2 method convolution
       event_cand_validation: True
@@ -509,10 +509,10 @@ D0pp:
       masspeak: 1.864
       massmin: [1.74,1.7,1.7,1.7,1.7,1.7]
       massmax: [2.1,2.1,2.1,2.1,2.1,2.1]
-      rebin: [[6,6,6,6,6,6], [6,6,6,6,6,6], [6,6,6,6,6,6], [6,6,6,6,6,6], [6,6,6,6,6,6]]
-      includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      rebin: [[6,6,6,6,6,6], [6,6,6,6,6,6], [6,6,6,6,6,6], [6,6,6,6,6,6], [6,6,6,6,6,6], [6,6,6,6,6,6]]
+      includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
       masssecpeak: -1.0
-      fix_masssecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      fix_masssecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
       #Fraction Dplus/Ds (taken from pp5TeV as we don't store it in TTrees)
       widthsecpeak: -1
       fix_widthsecpeak: false
@@ -553,20 +553,20 @@ D0pp:
     MBvspt_ntrkl:
       proc_type: Dhadrons_mult
       useperiod: [1,1,1]
-      plotbin: [1,1,1,1,0]
+      plotbin: [1,1,1,1,1,0]
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
-      corrEffMult: [false,true,true,true,true]
-      sel_binmin2: [1,1,10,30,60] #list of var2 splittng nbins
-      sel_binmax2: [9999,9,29,59,99] #list of var2 splitting nbins
+      corrEffMult: [false,false,true,true,true,true]
+      sel_binmin2: [0,1,1,10,30,60] #list of var2 splittng nbins
+      sel_binmax2: [9999,9999,9,29,59,99] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
       var_binning2_gen: n_tracklets_corr
       nbinshisto: 200
       minvaluehisto: -0.5
       maxvaluehisto: 199.5
-      triggereff: [0.92,0.862,1,1,1]
-      triggereffunc: [0.003,0.018,0,0,0]
+      triggereff: [1,0.92,0.862,1,1,1]
+      triggereffunc: [0,0.003,0.018,0,0,0]
       triggerbit: INT7
       event_cand_validation: True
       sel_an_binmin: [1,2,4,6,8,12]  # [1,2,4,6,8,12] #list of pt nbins
@@ -604,10 +604,10 @@ D0pp:
       masspeak: 1.864
       massmin: [1.75,1.7,1.7,1.7,1.7,1.7]
       massmax: [2.1,2.1,2.1,2.1,2.1,2.1]
-      rebin: [[6,6,6,6,6,6], [6,6,6,6,6,6], [6,6,6,6,6,6], [6,6,6,6,6,6], [6,6,6,6,6,6]]
-      includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      rebin: [[6,6,6,6,6,6], [6,6,6,6,6,6], [6,6,6,6,6,6], [6,6,6,6,6,6], [6,6,6,6,6,6], [6,6,6,6,6,6]]
+      includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
       masssecpeak: -1.0
-      fix_masssecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      fix_masssecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
       #Fraction Dplus/Ds (taken from pp5TeV as we don't store it in TTrees)
       widthsecpeak: -1
       fix_widthsecpeak: false
