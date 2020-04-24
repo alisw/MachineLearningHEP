@@ -539,7 +539,7 @@ LcpK0spp:
       usesinglebineff: 3
       fprompt_from_mb: true
       corresp_mb_typean: MBvspt_ntrkl
-      corrEffMult: [false, true, true, true, true]
+      corrEffMult: [false, false, true, true, true, true]
       sel_binmin2: [0,1,1,10,30,60] #list of var2 splittng nbins
       sel_binmax2: [9999,9999,9,29,59,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
