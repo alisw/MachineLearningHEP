@@ -1135,8 +1135,8 @@ void HFPtSpectrum ( Int_t decayChan=kDplusKpipi,
 }
 
 void HFPtSpectrum2 (const char *inputCrossSection,
-                    Double_t triggereff = 1,
-                    Double_t triggereffunc = 0,
+                    Double_t triggereff = 1, //bug fixed 22/04/20
+                    Double_t triggereffunc = 0, //not used in calculation
                     const char *efffilename="Efficiencies.root",
                     const char *nameeffprompt= "eff",
                     const char *nameefffeed = "effB",
@@ -1228,6 +1228,13 @@ void HFPtSpectrum2 (const char *inputCrossSection,
   }else{
     printf("Histogram with number of events for norm not found in raw yiled file\n");
     printf("  nevents = %.0f will be used\n",nevents);
+  }
+  if(triggereff != 1){
+    printf("\nTrigger efficiency set: %.4f!\n",triggereff);
+    printf("Scaling nevents (multiplicity bin convention): nevents_new = nevents / eff_trig");
+    Double_t neventsold = nevents;
+    nevents = nevents / triggereff;
+    printf("  nevents = %.0f will be used (old nevents = %.0f)\n",nevents,neventsold);
   }
 
   Int_t fnPtBins = hRECpt->GetNbinsX();
@@ -1334,9 +1341,9 @@ void HFPtSpectrum2 (const char *inputCrossSection,
     Double_t x = histoYieldCorr->GetBinCenter(ibin);
 
     // Sigma calculation
-    //   Sigma = ( 1. / (lumi * delta_y * BR_c * ParticleAntiPartFactor * eff_trig * eff_c ) ) * spectra (corrected for feed-down)
+    //   Sigma = ( 1. / (lumi * delta_y * BR_c * ParticleAntiPartFactor * eff_c ) ) * spectra (corrected for feed-down)
     if (hDirectEffpt->GetBinContent(ibin) && hDirectEffpt->GetBinContent(ibin)!=0. && hRECpt->GetBinContent(ibin)>0.) {
-      value = histoYieldCorr->GetBinContent(ibin) / ( deltaY * branchingRatioC * fParticleAntiParticle * fLuminosity[0] * fTrigEfficiency[0] * hDirectEffpt->GetBinContent(ibin) );
+      value = histoYieldCorr->GetBinContent(ibin) / ( deltaY * branchingRatioC * fParticleAntiParticle * fLuminosity[0] * hDirectEffpt->GetBinContent(ibin) );
     }
 
     // Sigma statistical uncertainty:
