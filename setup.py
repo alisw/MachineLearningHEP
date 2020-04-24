@@ -21,7 +21,7 @@ setup(
   name='MachineLearningHEP',
 
   # LAST-TAG is a placeholder. Automatically replaced at deploy time with the right tag
-  version='LAST-TAG',
+  version='v0.0.1',
 
   description='Machine Learning package for HEP',
 
@@ -93,18 +93,7 @@ setup(
                                                       "default_apply.yml",
                                                       "default_pre.yml",
                                                       "default_train.yml" ],
-                 "machine_learning_hep.data": [ "database_ml_parameters_Bs.yml",
-                                                "database_ml_parameters_D0pp.yml",
-                                                "database_ml_parameters_DsPbPb010.yml",
-                                                "database_ml_parameters_DsPbPb3050.yml",
-                                                "database_ml_parameters_Dspp.yml",
-                                                "database_ml_parameters_Dstarpp.yml",
-                                                "database_ml_parameters_LbITS2.yml",
-                                                "database_ml_parameters_LbITS3.yml",
-                                                "database_ml_parameters_LcpK0spp.yml",
-                                                "database_ml_parameters_LcpKpipp.yml",
-                                                "database_ml_gridsearch.yml",
-                                                "config_model_parameters.yml",
+                 "machine_learning_hep.data": [ "config_model_parameters.yml",
                                                 "database_run_list.yml" ] },
 
   # Although 'package_data' is the preferred approach, in some case you may
