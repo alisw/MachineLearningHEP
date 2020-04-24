@@ -1,4 +1,3 @@
-case: XXXX
 download:
   alice:
     activate: false

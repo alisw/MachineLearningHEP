@@ -18,6 +18,7 @@ Methods to: update/assert database and run configuration
 
 from itertools import product
 from machine_learning_hep.logger import get_logger
+from machine_learning_hep.do_variations import modify_dictionary
 
 
 # disable pylint unused-argument because this is done already in view of updating the
@@ -41,21 +42,28 @@ def update_config(database: dict, run_config: dict, database_overwrite=None): # 
 
     logger = get_logger()
 
-    # First overwrite as required by the user
-    # To be implemented
-    if database_overwrite:
-        logger.info("Updating database fields with custom user input")
-
-
     # Extract the case
     case = list(database.keys())[0]
     database = database[case]
 
-    # If not an ML analysis, append "_std" to paths where necessary
+    # First overwrite as required by the user
+    # To be implemented
+    if database_overwrite:
+        logger.info("Updating database fields with custom user input")
+        modify_dictionary(database, database_overwrite)
+
+    # If not an ML analysis...
     if not database["doml"]:
-        logger.info("Not an ML analysis, adjust output paths")
+        logger.info("Not an ML analysis, adjust paths and settings accordingly")
+        # ...append "_std" to paths where necessary
         data_mc = ("data", "mc")
         pkl_keys = ("pkl_skimmed_dec", "pkl_skimmed_decmerged")
         for keys in product(data_mc, pkl_keys):
             database["mlapplication"][keys[0]][keys[1]][:] = \
                     [f"{path}_std" for path in database["mlapplication"][keys[0]][keys[1]]]
+        # ...set the ML working point all to 0
+        for k in data_mc:
+            database["mlapplication"]["probcutpresel"][k][:] = \
+                    [0] * len(database["mlapplication"]["probcutpresel"][k])
+        database["mlapplication"]["probcutoptimal"][:] \
+                = [0] * len(database["mlapplication"]["probcutoptimal"])
