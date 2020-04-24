@@ -63,12 +63,12 @@ LcpK0spp:
       data: [centrality, z_vtx_reco, n_vtx_contributors, n_tracks, is_ev_rej, run_number,
               ev_id, ev_id_ext, V0Amult, trigger_hasbit_INT7, trigger_hasbit_HighMultSPD,
               trigger_hasbit_HighMultV0, trigger_hasclass_INT7, trigger_hasclass_HighMultSPD,
-              trigger_hasclass_HighMultV0, n_tracklets_corr, n_tracklets, v0m, v0m_eq, v0m_corr, v0m_eq_corr, perc_v0m, is_ev_rej_INT7]
+              trigger_hasclass_HighMultV0, n_tracklets_corr, n_tracklets, v0m, v0m_eq, v0m_corr, v0m_eq_corr, perc_v0m, is_ev_rej_INT7, n_tracklets_corr_shm]
       mc: [z_vtx_gen, centrality, z_vtx_reco, n_vtx_contributors, n_tracks, is_ev_rej, run_number,
               ev_id, ev_id_ext, n_tracklets, V0Amult, trigger_hasbit_INT7, trigger_hasbit_HighMultSPD,
               trigger_hasbit_HighMultV0, trigger_hasclass_INT7, trigger_hasclass_HighMultSPD,
               trigger_hasclass_HighMultV0, n_tracklets_corr, v0m, v0m_eq, v0m_corr, v0m_eq_corr,
-              mult_gen, mult_gen_v0a, mult_gen_v0c, perc_v0m, is_ev_rej_INT7]
+              mult_gen, mult_gen_v0a, mult_gen_v0c, perc_v0m, is_ev_rej_INT7, n_tracklets_corr_shm]
     var_gen: [y_cand, pt_cand, eta_cand, phi_cand, cand_type, pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet, run_number, ev_id, ev_id_ext]
     var_evt_match: [run_number, ev_id, ev_id_ext]
     var_training: [[dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,
@@ -216,7 +216,7 @@ LcpK0spp:
 
   multi:
     data:
-      nprocessesparallel: 30
+      nprocessesparallel: 40
       maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp: [100,100,100] #list of periods
       chunksizeskim: [100,100,100] #list of periods
@@ -226,22 +226,22 @@ LcpK0spp:
       unmerged_tree_dir: [/data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/merged,
                           /data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/merged,
                           /data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/merged] #list of periods
-      pkl: [/data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pkl,
-            /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pkl,
-            /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pkl] #list of periods
-      pkl_skimmed: [/data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklsk,
-                    /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklsk,
-                    /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [/data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskml,
-                                 /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskml,
-                                 /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_data_mltot
-      pkl_evtcounter_all: /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_data_evttot
+      pkl: [/data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pkl,
+            /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pkl,
+            /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pkl] #list of periods
+      pkl_skimmed: [/data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklsk,
+                    /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklsk,
+                    /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskml,
+                                 /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskml,
+                                 /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_data_mltot
+      pkl_evtcounter_all: /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_data_evttot
       mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2016,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2017,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018] #list of periods
     mc:
-      nprocessesparallel: 30
+      nprocessesparallel: 40
       maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp: [100,100,100] #list of periods
       chunksizeskim: [1000,1000,1000] #list of periods
@@ -251,17 +251,17 @@ LcpK0spp:
       unmerged_tree_dir: [/data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodLcpK0s/373_20200304-2021/merged,
                           /data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodLcpK0s/373_20200304-2021/merged,
                           /data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodLcpK0s/373_20200304-2021/merged] #list of periods
-      pkl: [/data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodLcpK0s/373_20200304-2021/pkl,
-            /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodLcpK0s/373_20200304-2021/pkl,
-            /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodLcpK0s/373_20200304-2021/pkl] #list of periods
-      pkl_skimmed: [/data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodLcpK0s/373_20200304-2021/pklsk,
-                    /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodLcpK0s/373_20200304-2021/pklsk,
-                    /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodLcpK0s/373_20200304-2021/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [/data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodLcpK0s/373_20200304-2021/pklskml,
-                                /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodLcpK0s/373_20200304-2021/pklskml,
-                                /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodLcpK0s/373_20200304-2021/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_mc_prodLcpK0s_mltot
-      pkl_evtcounter_all: /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_mc_prodLcpK0s_evttot
+      pkl: [/data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_mc_prodLcpK0s/373_20200304-2021/pkl,
+            /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_mc_prodLcpK0s/373_20200304-2021/pkl,
+            /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_mc_prodLcpK0s/373_20200304-2021/pkl] #list of periods
+      pkl_skimmed: [/data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_mc_prodLcpK0s/373_20200304-2021/pklsk,
+                    /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_mc_prodLcpK0s/373_20200304-2021/pklsk,
+                    /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_mc_prodLcpK0s/373_20200304-2021/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_mc_prodLcpK0s/373_20200304-2021/pklskml,
+                                /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_mc_prodLcpK0s/373_20200304-2021/pklskml,
+                                /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_mc_prodLcpK0s/373_20200304-2021/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_mc_prodLcpK0s_mltot
+      pkl_evtcounter_all: /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_mc_prodLcpK0s_evttot
       mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_16,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_17,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_18]
@@ -284,8 +284,8 @@ LcpK0spp:
     binmax: [2,4,6,8,12,24] #list of nbins
     mltype: BinaryClassification
     ncorescrossval: 10
-    mlplot: /data/DerivedLuigi/LckAnywithJets/vAN-20200304_ROOT6-1/mlplot # to be removed
-    mlout: /data/DerivedLuigi/LckAnywithJets/vAN-20200304_ROOT6-1/mlout # to be removed
+    mlplot: /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/mlplot # to be removed
+    mlout: /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/mlout # to be removed
 
     opt:
       isFONLLfromROOT: true
@@ -306,19 +306,19 @@ LcpK0spp:
 
   mlapplication:
     data:
-      pkl_skimmed_dec: [/data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdec,
-                        /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdec,
-                        /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdec] #list of periods
-      pkl_skimmed_decmerged: [/data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdecmerged,
-                              /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdecmerged,
-                              /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdecmerged] #list of periods
+      pkl_skimmed_dec: [/data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdec,
+                        /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdec,
+                        /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdecmerged,
+                              /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdecmerged,
+                              /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdecmerged] #list of periods
     mc:
-      pkl_skimmed_dec: [/data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodLcpK0s/373_20200304-2021/pklskdec,
-                        /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodLcpK0s/373_20200304-2021/pklskdec,
-                        /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodLcpK0s/373_20200304-2021/pklskdec] #list of periods
-      pkl_skimmed_decmerged: [/data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodLcpK0s/373_20200304-2021/pklskdecmerged,
-                              /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodLcpK0s/373_20200304-2021/pklskdecmerged,
-                              /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodLcpK0s/373_20200304-2021/pklskdecmerged] #list of periods
+      pkl_skimmed_dec: [/data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_mc_prodLcpK0s/373_20200304-2021/pklskdec,
+                        /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_mc_prodLcpK0s/373_20200304-2021/pklskdec,
+                        /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_mc_prodLcpK0s/373_20200304-2021/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_mc_prodLcpK0s/373_20200304-2021/pklskdecmerged,
+                              /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_mc_prodLcpK0s/373_20200304-2021/pklskdecmerged,
+                              /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_mc_prodLcpK0s/373_20200304-2021/pklskdecmerged] #list of periods
     modelname: xgboost
     modelsperptbin: [xgboost_classifierLcpK0spp_dfselection_pt_cand_1.0_2.0.sav,
                      xgboost_classifierLcpK0spp_dfselection_pt_cand_2.0_4.0.sav,
@@ -338,7 +338,7 @@ LcpK0spp:
     cctype: 1 #kpp7
     sigmav0: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
     inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
-    dir_general_plots: /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/analysis_plots
+    dir_general_plots: /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/analysis_plots
 
     jet_FF:
       proc_type: Dhadrons_jet
@@ -374,16 +374,16 @@ LcpK0spp:
         weighttrig: false
       data: &data_out_default
         runselection: [null, null, null]
-        results: [/data/DerivedResultsJets/LckAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResultsJets/LckAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResultsJets/LckAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/LckAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/LckAnywithJets_sub/vAN-20200304_ROOT6-1/ff/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/LckAnywithJets_sub/vAN-20200304_ROOT6-1/ff/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/LckAnywithJets_sub/vAN-20200304_ROOT6-1/ff/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/LckAnywithJets_sub/vAN-20200304_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
       mc: &mc_out_default
         runselection: [null, null, null]
-        results: [/data/DerivedResultsJets/LckAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResultsJets/LckAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResultsJets/LckAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/LckAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_mc_prodD2H/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/LckAnywithJets_sub/vAN-20200304_ROOT6-1/ff/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/LckAnywithJets_sub/vAN-20200304_ROOT6-1/ff/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/LckAnywithJets_sub/vAN-20200304_ROOT6-1/ff/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/LckAnywithJets_sub/vAN-20200304_ROOT6-1/ff/default/default/pp_mc_prodD2H/resultsMBjetvspt
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input
@@ -440,23 +440,23 @@ LcpK0spp:
     MBvspt_ntrkl:
       proc_type: Dhadrons_mult
       useperiod: [1,1,1]
-      plotbin: [1,1,1,1,0]
+      plotbin: [1,1,1,1,1]
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
-      corrEffMult: [false, true, true, true]
-      sel_binmin2: [1,1,10,30] #list of var2 splittng nbins
-      sel_binmax2: [9999,9,29,59] #list of var2 splitting nbins
+      corrEffMult: [false, true, true, true, true]
+      sel_binmin2: [0,1,1,10,30] #list of var2 splittng nbins
+      sel_binmax2: [9999,9999,9,29,59] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
       var_binning2_gen: n_tracklets_corr
       nbinshisto: 200
       minvaluehisto: -0.5
       maxvaluehisto: 199.5
-      triggereff: [0.92,0.862,1,1,1]
-      triggereffunc: [0.003,0.018,0,0,0]
+      triggereff: [1,0.92,0.862,1,1]
+      triggereffunc: [0,0.003,0.018,0,0]
       triggerbit: INT7
       isNbx2: true    #Estimate the feeddown systematic with Nb and Nbx2 method convolution. Set to true just for Lc vs mult.
-
+      event_cand_validation: True
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
       binning_matching: [0,1,2,3,4,5] #list of pt nbins
@@ -468,16 +468,16 @@ LcpK0spp:
         weighttrig: false
       data:
         runselection: [null, null, null]
-        results: [/data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsMBvspt_ntrkl,
-                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsMBvspt_ntrkl,
-                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsMBvspt_ntrkl] #list of periods
-        resultsallp: /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_data/resultsMBvspt_ntrkl
+        results: [/data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsMBvspt_ntrkl] #list of periods
+        resultsallp: /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_data/resultsMBvspt_ntrkl
       mc:
         runselection: [null, null, null]
-        results: [/data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_ntrkl,
-                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_ntrkl,
-                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_ntrkl] #list of periods
-        resultsallp: /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_mc_prodLcpK0s/resultsMBvspt_ntrkl
+        results: [/data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_ntrkl] #list of periods
+        resultsallp: /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_mc_prodLcpK0s/resultsMBvspt_ntrkl
 
       mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
@@ -489,7 +489,7 @@ LcpK0spp:
       masspeak: 2.2864
       massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
       massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
-      rebin: [6,6,8,9,10,12]
+      rebin: [[6,6,8,9,10,11],[6,6,8,9,10,12],[6,6,8,9,10,12],[6,6,8,9,10,12],[6,6,8,9,10,12]]
 
       includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
       masssecpeak: 2.2864
@@ -512,7 +512,7 @@ LcpK0spp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.00745, 0.0079, 0.0087, 0.0101, 0.0118, 0.0148]
+      sigmaarray: [0.00745, 0.00775, 0.00976, 0.0101, 0.0118, 0.0154]
       FixedSigma: false
       fitcase: Lc
       latexnamehadron: "#Lambda_{c}^{pK0s}"
@@ -523,38 +523,32 @@ LcpK0spp:
       systematics:
         # For now don't do these things per pT bin
         max_chisquare_ndf: 2.
-        rebin: [-1,0,1]
-        massmin: [2.14, 2.13, 2.12, 2.15, 2.17]
-        massmax: [2.436, 2.435, 2.434, 2.437, 2.438]
+        rebin: [0]
+        massmin: [2.14, 2.13, 2.12, 2.15, 2.16]
+        massmax: [2.436, 2.426, 2.416, 2.446, 2.456]
         bincount_sigma: [3, 5]
-        bkg_funcs: [kExpo, kLin, Pol2, Pol3, Pol4, Pol5]
+        bkg_funcs: [kExpo, kLin, Pol2, Pol3]
         # Whether to include the free sigma option in the derivation of raw yield uncertainty in given pT bin
         consider_free_sigma: [False, False, False, False, False, False]
-        # Put relative variation from central sigma separately for varying up/donw, e.g.
-        # rel_var_sigma_up: [0.1, 0.05, False, 0.2, False, False]
-        # rel_var_sigma_down: [False, 0.1, False, False, 0.1, False]
-        # Whenever it evaluates to False it's not taken into account
-        rel_var_sigma_up: [False, False, False, False, False, False]
-        rel_var_sigma_down: [False, False, False, False, False, False]
 
 
     SPDvspt_ntrkl:
       proc_type: Dhadrons_mult
       useperiod: [0,0,1]
-      plotbin: [0,0,0,0,1]
+      plotbin: [0,0,0,0,0,1]
       usesinglebineff: 3
       fprompt_from_mb: true
       corresp_mb_typean: MBvspt_ntrkl
       corrEffMult: [false, true, true, true, true]
-      sel_binmin2: [1,1,10,30,60] #list of var2 splittng nbins
-      sel_binmax2: [9999,9,29,59,100] #list of var2 splitting nbins
+      sel_binmin2: [0,1,1,10,30,60] #list of var2 splittng nbins
+      sel_binmax2: [9999,9999,9,29,59,100] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
       var_binning2_gen: n_tracklets_corr
       nbinshisto: 200
       minvaluehisto: -0.5
       maxvaluehisto: 199.5
-      triggereff: [0.92,0.862,1,1,1]
-      triggereffunc: [0.003,0.018,0,0,0]
+      triggereff: [1,0.92,0.862,1,1,1]
+      triggereffunc: [0,0.003,0.018,0,0,0]
       triggerbit: HighMultSPD
       isNbx2: False    #Estimate the feeddown systematic with Nb and Nbx2 method convolution. Set to true just for Lc vs mult.
 
@@ -569,16 +563,16 @@ LcpK0spp:
         weighttrig: true
       data:
         runselection: [null, null, HighMultSPD2018]
-        results: [/data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsSPDvspt,
-                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsSPDvspt,
-                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsSPDvspt] #list of periods
-        resultsallp: /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_data/resultsSPDvspt
+        results: [/data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsSPDvspt,
+                  /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsSPDvspt,
+                  /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsSPDvspt] #list of periods
+        resultsallp: /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_data/resultsSPDvspt
       mc:
         runselection: [null, null, HighMultSPD2018]
-        results: [/data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodLcpK0s/373_20200304-2021/resultsSPDvspt,
-                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodLcpK0s/373_20200304-2021/resultsSPDvspt,
-                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodLcpK0s/373_20200304-2021/resultsSPDvspt] #list of periods
-        resultsallp: /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_mc_prodLcpK0s/resultsSPDvspt
+        results: [/data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_mc_prodLcpK0s/373_20200304-2021/resultsSPDvspt,
+                  /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_mc_prodLcpK0s/373_20200304-2021/resultsSPDvspt,
+                  /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_mc_prodLcpK0s/373_20200304-2021/resultsSPDvspt] #list of periods
+        resultsallp: /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_mc_prodLcpK0s/resultsSPDvspt
 
       mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
@@ -613,7 +607,7 @@ LcpK0spp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.00745, 0.0079, 0.0087, 0.0101, 0.0118, 0.0148]
+      sigmaarray: [0.00745, 0.00775, 0.00976, 0.0101, 0.0118, 0.0154]
       FixedSigma: false
       fitcase: Lc
       latexnamehadron: "#Lambda_{c}^{pK0s}"
@@ -624,9 +618,9 @@ LcpK0spp:
       systematics:
         # For now don't do these things per pT bin
         max_chisquare_ndf: 2.
-        rebin: [-1,0,1]
-        massmin: [2.14, 2.13, 2.12, 2.15, 2.17]
-        massmax: [2.436, 2.435, 2.434, 2.437, 2.438]
+        rebin: [0]
+        massmin: [2.14, 2.13, 2.12, 2.15, 2.16]
+        massmax: [2.436, 2.426, 2.416, 2.446, 2.456]
         bincount_sigma: [3, 5]
         bkg_funcs: [Pol2, Pol3]
         # Whether to include the free sigma option in the derivation of raw yield uncertainty in given pT bin
@@ -662,16 +656,16 @@ LcpK0spp:
         weighttrig: false
       data:
         runselection: [null, null, null]
-        results: [/data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsMBvspt_perc_v0m,
-                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsMBvspt_perc_v0m,
-                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsMBvspt_perc_v0m] #list of periods
-        resultsallp: /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_data/resultsMBvspt_perc_v0m
+        results: [/data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsMBvspt_perc_v0m,
+                  /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsMBvspt_perc_v0m,
+                  /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsMBvspt_perc_v0m] #list of periods
+        resultsallp: /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_data/resultsMBvspt_perc_v0m
       mc:
         runselection: [null, null, null]
-        results: [/data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m,
-                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m,
-                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m] #list of periods
-        resultsallp: /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1/pp_mc_prodLcpK0s/resultsMBvspt_perc_v0m
+        results: [/data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m,
+                  /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m,
+                  /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m] #list of periods
+        resultsallp: /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_mc_prodLcpK0s/resultsMBvspt_perc_v0m
 
       mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
