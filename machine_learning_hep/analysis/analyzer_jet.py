@@ -245,10 +245,6 @@ class AnalyzerJet(Analyzer):
         self.efficiency_filename = "efficiencies"
         self.sideband_subtracted_filename = "sideband_subtracted"
 
-        # Save the database in the results directory.
-        path_db_out = os.path.join(self.d_resultsallpdata, "database_%s_%s.yml" % (self.case, self.typean))
-        with open(path_db_out, "w") as file_db_out:
-            yaml.safe_dump(datap, file_db_out, default_flow_style=False)
 
     def fit(self):
         self.loadstyle()
