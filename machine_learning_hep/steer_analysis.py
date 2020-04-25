@@ -39,7 +39,7 @@ from machine_learning_hep.processerdhadrons_jet import ProcesserDhadrons_jet
 #from machine_learning_hep.efficiencyan import analysis_eff
 from machine_learning_hep.config import update_config
 from  machine_learning_hep.utilities import checkmakedirlist, checkmakedir
-from  machine_learning_hep.utilities import checkdirlist, checkdir
+from  machine_learning_hep.utilities import checkdirlist, checkdir, delete_dirlist
 from  machine_learning_hep.logger import configure_logger, get_logger
 from machine_learning_hep.optimiser import Optimiser
 
@@ -74,7 +74,7 @@ except Exception as e: # pylint: disable=broad-except
 
 
 def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite: dict, # pylint: disable=too-many-locals, too-many-statements, too-many-branches
-                       data_model: dict, run_param: dict):
+                       data_model: dict, run_param: dict, clean: bool):
 
     # Disable any graphical stuff. No TCanvases opened and shown by default
     gROOT.SetBatch(True)
@@ -444,6 +444,16 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         ml_syst_steps.append("mcptshape")
     syst_mgr.analyze(*ml_syst_steps)
 
+    # Delete per-period results.
+    if clean:
+        print("Cleaning")
+        if doanaperperiod:
+            print("Per-period analysis enabled. Skipping.")
+        else:
+            if not delete_dirlist(dirresultsmc + dirresultsdata):
+                print("Error: Failed to complete cleaning.")
+
+    print("Done")
 
 def load_config(user_path: str, default_path=None) -> dict:
     """
@@ -488,6 +498,8 @@ def main():
                         help="run list database to be used")
     parser.add_argument("--analysis", "-a", dest="type_ana",
                         help="choose type of analysis")
+    parser.add_argument("--clean", "-c", action="store_true",
+                        help="delete per-period results at the end")
 
     args = parser.parse_args()
 
@@ -506,4 +518,5 @@ def main():
     db_run_list = load_config(args.database_run_list, (pkg_data, "database_run_list.yml"))
 
     # Run the chain
-    do_entire_analysis(run_config, db_analysis, db_analysis_overwrite, db_ml_models, db_run_list)
+    do_entire_analysis(run_config, db_analysis, db_analysis_overwrite, db_ml_models, db_run_list,
+                       args.clean)
