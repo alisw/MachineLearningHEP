@@ -361,8 +361,6 @@ D0pp:
 
       variations_db: ./data/data_prod_20200304/database_variations_D0pp_jet_zg.yml
 
-      nevents: 1590000000.
-
     jet_rg:
       <<: *jet_default
       var_binningshape: rg_jet
