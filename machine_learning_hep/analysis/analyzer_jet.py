@@ -231,15 +231,14 @@ class AnalyzerJet(Analyzer):
         n_filemass_name = datap["files_names"]["histofilename"]
         self.n_filemass = os.path.join(self.d_resultsallpdata_proc, n_filemass_name)
         self.n_filemass_mc = os.path.join(self.d_resultsallpmc_proc, n_filemass_name)
-        self.n_fileff = datap["files_names"]["efffilename"]
-        self.n_fileff = os.path.join(self.d_resultsallpmc_proc, self.n_fileff)
+        self.n_fileeff = datap["files_names"]["efffilename"]
+        self.n_fileeff = os.path.join(self.d_resultsallpmc_proc, self.n_fileeff)
         self.n_fileresp = datap["files_names"]["respfilename"]
         self.n_fileresp = os.path.join(self.d_resultsallpmc_proc, self.n_fileresp)
 
         # output filenames
         self.yields_filename = "yields"
         self.fits_dirname = "fits"
-        self.yields_syst_filename = "yields_syst"
         self.efficiency_filename = "efficiencies"
         self.sideband_subtracted_filename = "sideband_subtracted"
 
@@ -343,9 +342,9 @@ class AnalyzerJet(Analyzer):
 
     def efficiency(self):
         self.loadstyle()
-        lfileeff = TFile.Open(self.n_fileff)
+        lfileeff = TFile.Open(self.n_fileeff)
         if not lfileeff:
-            self.logger.fatal(make_message_notfound(self.n_fileff))
+            self.logger.fatal(make_message_notfound(self.n_fileeff))
         path = "%s/efficiencies%s%s.root" % (self.d_resultsallpmc, self.case, self.typean)
         fileouteff = TFile.Open(path, "recreate")
         if not fileouteff:
