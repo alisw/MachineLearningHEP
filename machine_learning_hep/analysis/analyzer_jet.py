@@ -233,6 +233,8 @@ class AnalyzerJet(Analyzer):
         self.n_filemass_mc = os.path.join(self.d_resultsallpmc_proc, n_filemass_name)
         self.n_fileff = datap["files_names"]["efffilename"]
         self.n_fileff = os.path.join(self.d_resultsallpmc_proc, self.n_fileff)
+        self.n_fileresp = datap["files_names"]["respfilename"]
+        self.n_fileresp = os.path.join(self.d_resultsallpmc_proc, self.n_fileresp)
 
         # output filenames
         self.yields_filename = "yields"
@@ -816,9 +818,9 @@ class AnalyzerJet(Analyzer):
 
 
         self.loadstyle()
-        feeddown_input_file = TFile.Open(self.n_fileff)
+        feeddown_input_file = TFile.Open(self.n_fileresp)
         if not feeddown_input_file:
-            self.logger.fatal(make_message_notfound(self.n_fileff))
+            self.logger.fatal(make_message_notfound(self.n_fileresp))
         path = "%s/efficiencies%s%s.root" % (self.d_resultsallpmc, self.case, self.typean)
         file_eff = TFile.Open(path)
         if not file_eff:
@@ -1337,20 +1339,20 @@ class AnalyzerJet(Analyzer):
         if not input_data:
             self.logger.fatal(make_message_notfound("sideband_input_data_subtracted", path))
 
-        unfolding_input_file = TFile.Open(self.n_fileff)
+        unfolding_input_file = TFile.Open(self.n_fileresp)
         if not unfolding_input_file:
-            self.logger.fatal(make_message_notfound(self.n_fileff))
+            self.logger.fatal(make_message_notfound(self.n_fileresp))
         response_matrix = unfolding_input_file.Get("response_matrix")
         if not response_matrix:
-            self.logger.fatal(make_message_notfound("response_matrix", self.n_fileff))
+            self.logger.fatal(make_message_notfound("response_matrix", self.n_fileresp))
         # rec. level cuts only applied
         hzvsjetpt_reco_nocuts = unfolding_input_file.Get("hzvsjetpt_reco_nocuts")
         if not hzvsjetpt_reco_nocuts:
-            self.logger.fatal(make_message_notfound("hzvsjetpt_reco_nocuts", self.n_fileff))
+            self.logger.fatal(make_message_notfound("hzvsjetpt_reco_nocuts", self.n_fileresp))
         # rec. level and gen. level cuts applied
         hzvsjetpt_reco_eff = unfolding_input_file.Get("hzvsjetpt_reco_cuts")
         if not hzvsjetpt_reco_eff:
-            self.logger.fatal(make_message_notfound("hzvsjetpt_reco_cuts", self.n_fileff))
+            self.logger.fatal(make_message_notfound("hzvsjetpt_reco_cuts", self.n_fileresp))
 
         # calculate rec. level kinematic efficiency and apply it to the unfolding input
 
@@ -1366,15 +1368,15 @@ class AnalyzerJet(Analyzer):
         # all gen. level jets
         input_mc_gen = unfolding_input_file.Get("hzvsjetpt_gen_unmatched")
         if not input_mc_gen:
-            self.logger.fatal(make_message_notfound("hzvsjetpt_gen_unmatched", self.n_fileff))
+            self.logger.fatal(make_message_notfound("hzvsjetpt_gen_unmatched", self.n_fileresp))
         # rec. level cuts only applied
         mc_reco_matched = unfolding_input_file.Get("hzvsjetpt_reco")
         if not mc_reco_matched:
-            self.logger.fatal(make_message_notfound("hzvsjetpt_reco", self.n_fileff))
+            self.logger.fatal(make_message_notfound("hzvsjetpt_reco", self.n_fileresp))
         # gen. level cuts only applied
         mc_gen_matched = unfolding_input_file.Get("hzvsjetpt_gen")
         if not mc_gen_matched:
-            self.logger.fatal(make_message_notfound("hzvsjetpt_gen", self.n_fileff))
+            self.logger.fatal(make_message_notfound("hzvsjetpt_gen", self.n_fileresp))
 
         input_data_z = []
 
@@ -1568,10 +1570,10 @@ class AnalyzerJet(Analyzer):
 
         hz_genvsreco_full = unfolding_input_file.Get("hz_genvsreco_full")
         if not hz_genvsreco_full:
-            self.logger.fatal(make_message_notfound("hz_genvsreco_full", self.n_fileff))
+            self.logger.fatal(make_message_notfound("hz_genvsreco_full", self.n_fileresp))
         hjetpt_genvsreco_full = unfolding_input_file.Get("hjetpt_genvsreco_full")
         if not hjetpt_genvsreco_full:
-            self.logger.fatal(make_message_notfound("hjetpt_genvsreco_full", self.n_fileff))
+            self.logger.fatal(make_message_notfound("hjetpt_genvsreco_full", self.n_fileresp))
 
         cz_genvsreco_full = TCanvas("cz_genvsreco_full", "response matrix 2D projection")
         setup_canvas(cz_genvsreco_full)
@@ -2150,9 +2152,9 @@ class AnalyzerJet(Analyzer):
         fileouts = TFile.Open(path, "recreate")
         if not fileouts:
             self.logger.fatal(make_message_notfound(path))
-        unfolding_input_file = TFile.Open(self.n_fileff)
+        unfolding_input_file = TFile.Open(self.n_fileresp)
         if not unfolding_input_file:
-            self.logger.fatal(make_message_notfound(self.n_fileff))
+            self.logger.fatal(make_message_notfound(self.n_fileresp))
         response_matrix = unfolding_input_file.Get("response_matrix_closure")
         hzvsjetpt_reco_nocuts = unfolding_input_file.Get("hzvsjetpt_reco_nocuts_closure")
         hzvsjetpt_reco_eff = unfolding_input_file.Get("hzvsjetpt_reco_cuts_closure")

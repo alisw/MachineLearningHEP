@@ -58,18 +58,18 @@ LcpKpi:
               nsigTPC_Pi_0, nsigTPC_Pr_0, nsigTOF_Pi_0, nsigTOF_Pr_0, nsigTPC_K_1, nsigTOF_K_1, nsigTPC_Pi_2, nsigTPC_Pr_2, nsigTOF_Pi_2, nsigTOF_Pr_2]
     var_evt:
       data: [centrality, z_vtx_reco, n_vtx_contributors, n_tracks, is_ev_rej, run_number,
-              ev_id, 
+              ev_id,
               #n_tracklets,V0Amult, trigger_hasbit_INT7, trigger_hasbit_HighMultSPD,
               #trigger_hasbit_HighMultV0, trigger_hasclass_INT7, trigger_hasclass_HighMultSPD,
               #trigger_hasclass_HighMultV0, n_tracklets_corr, v0m, v0m_eq, v0m_corr, v0m_eq_corr,
               n_tracklets_corr,
               perc_v0m]
       mc: [z_vtx_gen, centrality, z_vtx_reco, n_vtx_contributors, n_tracks, is_ev_rej, run_number,
-              ev_id, 
+              ev_id,
               #n_tracklets, V0Amult, trigger_hasbit_INT7, trigger_hasbit_HighMultSPD,
               #trigger_hasbit_HighMultV0, trigger_hasclass_INT7, trigger_hasclass_HighMultSPD,
               #trigger_hasclass_HighMultV0, n_tracklets_corr, n_tracklets, v0m, v0m_eq, v0m_corr, v0m_eq_corr,
-              #mult_gen, mult_gen_v0a, mult_gen_v0c, 
+              #mult_gen, mult_gen_v0a, mult_gen_v0c,
               n_tracklets_corr,
               perc_v0m]
     var_gen: [y_cand, pt_cand, eta_cand, phi_cand, cand_type, run_number, ev_id]
@@ -148,6 +148,7 @@ LcpKpi:
     treeoutput: "Lctree"
     histofilename: "masshisto.root"
     efffilename: "effhisto.root"
+    respfilename: "resphisto.root"
     crossfilename: "cross_section_tot.root"
 
   multi:
@@ -220,7 +221,7 @@ LcpKpi:
     mlout: /home/cbartels/Output/mlout3050 # to be removed
 
     opt:
-      #pp 
+      #pp
       isFONLLfromROOT: true
       filename_fonll: 'data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root' # 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' file with FONLL predictions
       fonll_particle: 'hLcpKpi'

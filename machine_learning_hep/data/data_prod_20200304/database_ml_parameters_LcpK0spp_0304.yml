@@ -212,6 +212,7 @@ LcpK0spp:
     treeoutput: "Lctree"
     histofilename: "masshisto.root"
     efffilename: "effhisto.root"
+    respfilename: "resphisto.root"
     crossfilename: "cross_section_tot.root"
 
   multi:

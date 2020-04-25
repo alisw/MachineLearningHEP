@@ -114,17 +114,21 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
 
         self.n_filemass = datap["files_names"]["histofilename"]
         self.n_fileeff = datap["files_names"]["efffilename"]
+        self.n_fileresp = datap["files_names"]["respfilename"]
         self.filemass_mergedall = os.path.join(self.d_resulsallp, self.n_filemass)
         self.fileeff_mergedall = os.path.join(self.d_resulsallp, self.n_fileeff)
+        self.fileresp_mergedall = os.path.join(self.d_resulsallp, self.n_fileresp)
 
         self.p_useperiod = datap["analysis"][self.typean]["useperiod"]
         self.lper_filemass = []
         self.lper_fileeff = []
+        self.lper_fileresp = []
         self.lper_normfiles = []
         for i, direc in enumerate(self.d_results):
             if self.p_useperiod[i] == 1:
                 self.lper_filemass.append(os.path.join(direc, self.n_filemass))
                 self.lper_fileeff.append(os.path.join(direc, self.n_fileeff))
+                self.lper_fileresp.append(os.path.join(direc, self.n_fileresp))
 
     def multi_unpack_allperiods(self):
         for indexp in range(self.prodnumber):
@@ -168,14 +172,21 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         for indexp in range(self.prodnumber):
             if self.p_useperiod[indexp] == 1:
                 self.process_listsample[indexp].process_efficiency()
-                # pylint: disable=fixme
-                # FIXME This is a quick fix avoiding to call these for analyzers
-                #       other than AnalyzerJet
-                if hasattr(self.process_listsample[indexp], "process_response"):
-                    self.process_listsample[indexp].process_response()
         tmp_merged = \
                 f"/data/tmp/hadd/{self.case}_{self.typean}/efficiency/{get_timestamp_string()}/"
         mergerootfiles(self.lper_fileeff, self.fileeff_mergedall, tmp_merged)
+
+    def multi_response(self):
+        resp_exists = False
+        for indexp in range(self.prodnumber):
+            if self.p_useperiod[indexp] == 1:
+                if hasattr(self.process_listsample[indexp], "process_response"):
+                    resp_exists = True
+                    self.process_listsample[indexp].process_response()
+        if resp_exists:
+            tmp_merged = \
+                    f"/data/tmp/hadd/{self.case}_{self.typean}/response/{get_timestamp_string()}/"
+            mergerootfiles(self.lper_fileresp, self.fileresp_mergedall, tmp_merged)
 
     def multi_scancuts(self):
         for indexp in range(self.prodnumber):

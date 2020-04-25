@@ -62,7 +62,8 @@ analysis:
     dojetsystematics: false
   mc:
     histomass: true
-    efficiency: true
+    efficiency: true # processer: process_efficiency
+    response: false # processer: process_response
     feeddown: false
     dounfolding: false
   dofit: true
