@@ -236,22 +236,21 @@ class AnalyzerJet(Analyzer):
         self.n_fileresp = datap["files_names"]["respfilename"]
         self.n_fileresp = os.path.join(self.d_resultsallpmc_proc, self.n_fileresp)
 
-        # output filenames
-        self.yields_filename = "yields"
-        self.fits_dirname = "fits"
-        self.efficiency_filename = "efficiencies"
-        self.sideband_subtracted_filename = "sideband_subtracted"
-
+        # output files
+        self.file_yields = os.path.join(self.d_resultsallpdata, "yields.root")
+        self.file_efficiency = os.path.join(self.d_resultsallpmc, "efficiencies.root")
+        self.file_sideband = os.path.join(self.d_resultsallpdata, "sideband_subtracted.root")
+        self.file_feeddown = os.path.join(self.d_resultsallpdata, "feeddown.root")
+        self.file_unfold = os.path.join(self.d_resultsallpdata, "unfolding_results.root")
+        self.file_unfold_closure = os.path.join(self.d_resultsallpdata, "unfolding_closure.root")
 
     def fit(self):
         self.loadstyle()
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
-        fileout_name = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
-                                           None, [self.case, self.typean])
-        fileout = TFile.Open(fileout_name, "recreate")
+        fileout = TFile.Open(self.file_yields, "recreate")
         if not fileout:
-            self.logger.fatal(make_message_notfound(fileout_name))
+            self.logger.fatal(make_message_notfound(self.file_yields))
         myfilemc = TFile.Open(self.n_filemass_mc)
         if not myfilemc:
             self.logger.fatal(make_message_notfound(self.n_filemass_mc))
@@ -345,10 +344,9 @@ class AnalyzerJet(Analyzer):
         lfileeff = TFile.Open(self.n_fileeff)
         if not lfileeff:
             self.logger.fatal(make_message_notfound(self.n_fileeff))
-        path = "%s/efficiencies%s%s.root" % (self.d_resultsallpmc, self.case, self.typean)
-        fileouteff = TFile.Open(path, "recreate")
+        fileouteff = TFile.Open(self.file_efficiency, "recreate")
         if not fileouteff:
-            self.logger.fatal(make_message_notfound(path))
+            self.logger.fatal(make_message_notfound(self.file_efficiency))
 
         cEff = TCanvas("cEff", "The Fit Canvas")
         setup_canvas(cEff)
@@ -440,19 +438,15 @@ class AnalyzerJet(Analyzer):
         lfile = TFile.Open(self.n_filemass)
         if not lfile:
             self.logger.fatal(make_message_notfound(self.n_filemass))
-        func_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
-                                            None, [self.case, self.typean])
-        func_file = TFile.Open(func_filename)
+        func_file = TFile.Open(self.file_yields)
         if not func_file:
-            self.logger.fatal(make_message_notfound(func_filename))
-        path = "%s/efficiencies%s%s.root" % (self.d_resultsallpmc, self.case, self.typean)
-        eff_file = TFile.Open(path)
+            self.logger.fatal(make_message_notfound(self.file_yields))
+        eff_file = TFile.Open(self.file_efficiency)
         if not eff_file:
-            self.logger.fatal(make_message_notfound(path))
-        path = "%s/sideband_sub%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
-        fileouts = TFile.Open(path, "recreate")
+            self.logger.fatal(make_message_notfound(self.file_efficiency))
+        fileouts = TFile.Open(self.file_sideband, "recreate")
         if not fileouts:
-            self.logger.fatal(make_message_notfound(path))
+            self.logger.fatal(make_message_notfound(self.file_sideband))
         fileouts.cd()
 
         # hzvsjetpt is going to be the side-band subtracted histogram of z vs
@@ -820,14 +814,12 @@ class AnalyzerJet(Analyzer):
         feeddown_input_file = TFile.Open(self.n_fileresp)
         if not feeddown_input_file:
             self.logger.fatal(make_message_notfound(self.n_fileresp))
-        path = "%s/efficiencies%s%s.root" % (self.d_resultsallpmc, self.case, self.typean)
-        file_eff = TFile.Open(path)
+        file_eff = TFile.Open(self.file_efficiency)
         if not file_eff:
-            self.logger.fatal(make_message_notfound(path))
-        path = "%s/feeddown%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
-        fileouts = TFile.Open(path, "recreate")
+            self.logger.fatal(make_message_notfound(self.file_efficiency))
+        fileouts = TFile.Open(self.file_feeddown, "recreate")
         if not fileouts:
-            self.logger.fatal(make_message_notfound(path))
+            self.logger.fatal(make_message_notfound(self.file_feeddown))
 
         response_matrix = feeddown_input_file.Get("response_matrix_nonprompt")
 
@@ -874,10 +866,9 @@ class AnalyzerJet(Analyzer):
         hzvsjetpt_reco_eff = feeddown_input_file.Get("hzvsjetpt_reco_cuts_nonprompt")
         hzvsjetpt_reco_eff.Divide(hzvsjetpt_reco_nocuts)
 
-        path = "%s/sideband_sub%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
-        sideband_input_data_file = TFile.Open(path)
+        sideband_input_data_file = TFile.Open(self.file_sideband)
         if not sideband_input_data_file:
-            self.logger.fatal(make_message_notfound(path))
+            self.logger.fatal(make_message_notfound(self.file_sideband))
         sideband_input_data = sideband_input_data_file.Get("hzvsjetpt")
 
         hz_genvsreco_list = []
@@ -1324,19 +1315,17 @@ class AnalyzerJet(Analyzer):
         self.loadstyle()
         print("unfolding starts")
 
-        path = "%s/unfolding_results%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
-        fileouts = TFile.Open(path, "recreate")
+        fileouts = TFile.Open(self.file_unfold, "recreate")
         if not fileouts:
-            self.logger.fatal(make_message_notfound(path))
+            self.logger.fatal(make_message_notfound(self.file_unfold))
 
         # get the feed-down output
-        path = "%s/feeddown%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
-        unfolding_input_data_file = TFile.Open(path)
+        unfolding_input_data_file = TFile.Open(self.file_feeddown)
         if not unfolding_input_data_file:
-            self.logger.fatal(make_message_notfound(path))
+            self.logger.fatal(make_message_notfound(self.file_feeddown))
         input_data = unfolding_input_data_file.Get("sideband_input_data_subtracted")
         if not input_data:
-            self.logger.fatal(make_message_notfound("sideband_input_data_subtracted", path))
+            self.logger.fatal(make_message_notfound("sideband_input_data_subtracted", self.file_feeddown))
 
         unfolding_input_file = TFile.Open(self.n_fileresp)
         if not unfolding_input_file:
@@ -2147,10 +2136,9 @@ class AnalyzerJet(Analyzer):
 
     def unfolding_closure(self):
         self.loadstyle()
-        path = "%s/unfolding_closure_results%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
-        fileouts = TFile.Open(path, "recreate")
+        fileouts = TFile.Open(self.file_unfold_closure, "recreate")
         if not fileouts:
-            self.logger.fatal(make_message_notfound(path))
+            self.logger.fatal(make_message_notfound(self.file_unfold_closure))
         unfolding_input_file = TFile.Open(self.n_fileresp)
         if not unfolding_input_file:
             self.logger.fatal(make_message_notfound(self.n_fileresp))
@@ -2333,8 +2321,8 @@ class AnalyzerJet(Analyzer):
             print("RMS both sides: ", self.systematic_rms_both_sides)
             print("Feed-down variations: ", self.powheg_nonprompt_varnames)
 
-        path_def = "%s/unfolding_results%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
-        input_file_default = TFile.Open(path_def, "update")
+        path_def = self.file_unfold
+        input_file_default = TFile.Open(path_def)
         if not input_file_default:
             self.logger.fatal(make_message_notfound(path_def))
 
@@ -2400,7 +2388,7 @@ class AnalyzerJet(Analyzer):
             input_files_sysvar = []
             for sys_var, varname in enumerate(self.systematic_varnames[sys_cat]):
                 path = path_def.replace(string_default, self.systematic_catnames[sys_cat] + "/" + varname)
-                input_files_sysvar.append(TFile.Open(path, "update"))
+                input_files_sysvar.append(TFile.Open(path))
                 if not input_files_sysvar[sys_var]:
                     self.logger.fatal(make_message_notfound(path))
             input_files_sys.append(input_files_sysvar)
@@ -2824,14 +2812,13 @@ class AnalyzerJet(Analyzer):
 
         # plot the feed-down fraction with systematic uncertainties from POWHEG
 
-        path_fd = "%s/feeddown%s%s.root" % (self.d_resultsallpdata, self.case, self.typean)
-        file_feeddown = TFile.Open(path_fd)
+        file_feeddown = TFile.Open(self.file_feeddown)
         if not file_feeddown:
-            self.logger.fatal(make_message_notfound(path_fd))
+            self.logger.fatal(make_message_notfound(self.file_feeddown))
         file_feeddown_variations = []
         for i_powheg, varname in enumerate(self.powheg_nonprompt_varnames):
-            path = path_fd.replace(string_default, "powheg/" + varname)
-            file_feeddown_variations.append(TFile.Open(path, "update"))
+            path = self.file_feeddown.replace(string_default, "powheg/" + varname)
+            file_feeddown_variations.append(TFile.Open(path))
             if not file_feeddown_variations[i_powheg]:
                 self.logger.fatal(make_message_notfound(path))
         h_feeddown_fraction = [] # list of the central feed-down fractions for all pt_jet bins
