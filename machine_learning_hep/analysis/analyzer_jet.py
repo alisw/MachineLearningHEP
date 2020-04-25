@@ -48,7 +48,7 @@ class AnalyzerJet(Analyzer):
         self.lpt_probcutfin = datap["mlapplication"]["probcutoptimal"]
 
         # normalisation
-        self.p_nevents = datap["analysis"][self.typean]["nevents"]
+        self.p_nevents = 1 # number of selected events, taken from histonorm
         self.branching_ratio = \
             datap["analysis"][self.typean].get("branching_ratio", None)
         self.xsection_inel = \
