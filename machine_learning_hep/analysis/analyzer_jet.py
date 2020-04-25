@@ -23,7 +23,7 @@ import numpy as np
 import yaml
 # pylint: disable=import-error, no-name-in-module
 import uproot
-from ROOT import TFile, TH1F, TH2F, TCanvas, TLatex, TGraphAsymmErrors, TLine
+from ROOT import TFile, TH1F, TH2F, TCanvas, TLatex, TGraphAsymmErrors, TLine, TGaxis
 from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
 from ROOT import TLegend
 from ROOT import gROOT, gStyle
@@ -2736,7 +2736,8 @@ class AnalyzerJet(Analyzer):
             y_max = max(y_max_g, y_max_h)
             y_margin_up = 0.35
             y_margin_down = 0.05
-            input_histograms_default[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min, y_max, y_margin_down, y_margin_up))
+            y_plot_min, y_plot_max = get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
+            input_histograms_default[ibin2].GetYaxis().SetRangeUser(y_plot_min, y_plot_max)
             input_histograms_default[ibin2].GetXaxis().SetRangeUser(round(self.lvarshape_binmin_gen[0], 2), round(self.lvarshape_binmax_gen[-1], 2))
             input_histograms_default[ibin2].SetTitle("")
             input_histograms_default[ibin2].SetXTitle(self.v_varshape_latex)
@@ -2766,6 +2767,24 @@ class AnalyzerJet(Analyzer):
             latex3 = TLatex(0.15, 0.67, "%g #leq #it{p}_{T, %s} < %g GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2])))
             draw_latex(latex3)
             leg_finalwsys_wmodels.Draw("same")
+            if self.typean == "jet_rg":
+                # plot the theta_g axis
+                axis_rg = input_histograms_default[ibin2].GetXaxis()
+                rg_min = axis_rg.GetBinLowEdge(axis_rg.GetFirst())
+                rg_max = axis_rg.GetBinUpEdge(axis_rg.GetLast())
+                radius_jet = 0.4
+                thetag_min = rg_min / radius_jet
+                thetag_max = rg_max / radius_jet
+                y_axis = y_plot_max
+                axis_thetag = TGaxis(rg_min, y_axis, rg_max, y_axis, thetag_min, thetag_max, 510, "-")
+                axis_thetag.SetTitle("#it{#theta}_{g} = #it{R}_{g}/#it{R}_{jet}")
+                axis_thetag.SetTitleSize(0.037)
+                axis_thetag.SetLabelSize(0.037)
+                axis_thetag.SetTitleFont(42)
+                axis_thetag.SetLabelFont(42)
+                axis_thetag.SetLabelOffset(0)
+                cfinalwsys_wmodels.SetTickx(0)
+                axis_thetag.Draw("same")
             cfinalwsys_wmodels.SaveAs("%s/final_wsys_wmodels_%s.pdf" % (self.d_resultsallpdata, suffix))
 
             # plot the relative systematic uncertainties for all categories together
