@@ -23,6 +23,7 @@ import bz2
 import gzip
 import lzma
 import os
+import shutil
 import math
 from array import array
 import numpy as np
@@ -155,6 +156,30 @@ def checkmakedir(mydir):
     """
     print("creating folder ", mydir)
     os.makedirs(mydir)
+
+def delete_dir(path: str):
+    """
+    Delete directory if it exists. Return True if success, False otherwise.
+    """
+    if not os.path.isdir(path):
+        print("Directory %s does not exist." % path)
+        return True
+    print("Deleting directory %s" % path)
+    try:
+        shutil.rmtree(path)
+    except OSError:
+        print("Error: Failed to delete directory %s" % path)
+        return False
+    return True
+
+def delete_dirlist(dirlist: str):
+    """
+    Delete directories from list. Return True if success, False otherwise.
+    """
+    for path in dirlist:
+        if not delete_dir(path):
+            return False
+    return True
 
 def appendfiletolist(mylist, namefile):
     """

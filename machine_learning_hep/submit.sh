@@ -19,14 +19,14 @@ DATABASE="D0pp_0304"
 #DATABASE="LcpKpi010"
 #DATABASE="LcpKpi3050"
 
+#ANALYSIS="MBvspt"
 #ANALYSIS="MBvspt_perc_v0m"
 #ANALYSIS="MBvspt_ntrkl"
 #ANALYSIS="SPDvspt_ntrkl"
-#ANALYSIS="MBjetvspt"
 #ANALYSIS="jet_FF"
 ANALYSIS="jet_zg"
 #ANALYSIS="jet_rg"
 #ANALYSIS="jet_nsd"
 
-python do_entire_analysis.py -r submission/default_${STAGE}.yml -d data/${DBDIR}/database_ml_parameters_${DATABASE}.yml -a ${ANALYSIS}
+python do_entire_analysis.py -r submission/default_${STAGE}.yml -d data/${DBDIR}/database_ml_parameters_${DATABASE}.yml -a ${ANALYSIS} -c
 
