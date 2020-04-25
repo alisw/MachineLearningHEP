@@ -144,6 +144,7 @@ D0pp:
     treeoutput: "D0tree"
     histofilename: "masshisto.root"
     efffilename: "effhisto.root"
+    respfilename: "resphisto.root"
     crossfilename: "cross_section_tot.root"
 
   multi:

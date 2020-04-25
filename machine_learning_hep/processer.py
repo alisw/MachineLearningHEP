@@ -86,6 +86,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.n_gen = datap["files_names"]["namefile_gen"]
         self.n_filemass = datap["files_names"]["histofilename"]
         self.n_fileeff = datap["files_names"]["efffilename"]
+        self.n_fileresp = datap["files_names"]["respfilename"]
         self.n_mcreweights = datap["files_names"]["namefile_mcweights"]
 
         #selections
@@ -133,6 +134,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.l_evtorig = createlist(self.d_pkl, self.l_path, self.n_evtorig)
         self.l_histomass = createlist(self.d_results, self.l_path, self.n_filemass)
         self.l_histoeff = createlist(self.d_results, self.l_path, self.n_fileeff)
+        self.l_historesp = createlist(self.d_results, self.l_path, self.n_fileresp)
 
         if self.mcordata == "mc":
             self.l_gen = createlist(self.d_pkl, self.l_path, self.n_gen)
@@ -165,6 +167,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.d_pkl_decmerged = d_pkl_decmerged
         self.n_filemass = os.path.join(self.d_results, self.n_filemass)
         self.n_fileeff = os.path.join(self.d_results, self.n_fileeff)
+        self.n_fileresp = os.path.join(self.d_results, self.n_fileresp)
 
         self.lpt_recosk = [self.n_reco.replace(".pkl", "_%s%d_%d.pkl" % \
                           (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
@@ -434,7 +437,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         return df_.query(self.analysis_cuts[ipt])
 
 
-    # pylint: disable=no-member
     def process_histomass(self):
         print("Doing masshisto", self.mcordata, self.period)
         print("Using run selection for mass histo", \
@@ -449,12 +451,11 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         create_folder_struc(self.d_results, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
-        self.parallelizer(self.process_histomass_single, arguments, self.p_chunksizeunp)
+        self.parallelizer(self.process_histomass_single, arguments, self.p_chunksizeunp) # pylint: disable=no-member
         tmp_merged = \
-        f"/data/tmp/hadd/{self.case}_{self.typean}/mass_{self.period}/{get_timestamp_string()}/"
+            f"/data/tmp/hadd/{self.case}_{self.typean}/mass_{self.period}/{get_timestamp_string()}/"
         mergerootfiles(self.l_histomass, self.n_filemass, tmp_merged)
 
-    # pylint: disable=no-member
     def process_efficiency(self):
         print("Doing efficiencies", self.mcordata, self.period)
         print("Using run selection for eff histo", \
@@ -466,6 +467,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         create_folder_struc(self.d_results, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
-        self.parallelizer(self.process_efficiency_single, arguments, self.p_chunksizeunp)
+        self.parallelizer(self.process_efficiency_single, arguments, self.p_chunksizeunp) # pylint: disable=no-member
         tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/histoeff_{self.period}/{get_timestamp_string()}/" # pylint: disable=line-too-long
         mergerootfiles(self.l_histoeff, self.n_fileeff, tmp_merged)

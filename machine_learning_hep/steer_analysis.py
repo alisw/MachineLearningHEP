@@ -123,6 +123,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     dohistomassmc = data_config["analysis"]["mc"]["histomass"]
     dohistomassdata = data_config["analysis"]["data"]["histomass"]
     doefficiency = data_config["analysis"]["mc"]["efficiency"]
+    doresponse = data_config["analysis"]["mc"]["response"]
     dofeeddown = data_config["analysis"]["mc"]["feeddown"]
     dounfolding = data_config["analysis"]["mc"]["dounfolding"]
     dojetsystematics = data_config["analysis"]["data"]["dojetsystematics"]
@@ -395,6 +396,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         mymultiprocessdata.multi_histomass()
     if doefficiency is True:
         mymultiprocessmc.multi_efficiency()
+    if doresponse is True:
+        mymultiprocessmc.multi_response()
 
     # Collect all desired analysis steps
     analyze_steps = []

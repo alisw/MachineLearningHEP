@@ -143,6 +143,7 @@ Dspp:
     treeoutput: "Dstree"
     histofilename: "masshisto.root"
     efffilename: "effhisto.root"
+    respfilename: "resphisto.root"
     crossfilename: "cross_section_tot.root"
 
   multi:
@@ -393,18 +394,18 @@ Dspp:
       triggereff: [1,1]
       triggereffunc: [0,0]
       triggerbit: HighMultSPD
-      
+
       sel_an_binmin: [2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [4,6,8,12,24] #list of pt nbins
       binning_matching: [0,1,1,2,3] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
-      triggersel: 
+      triggersel:
         data: "trigger_hasbit_HighMultSPD==1"
         mc: null
         weighttrig: true
 
-      data:  
+      data:
         runselection: [null, null, HighMultSPD2018]
         results: [/data/DerivedResults/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsSPDvspt,
                   /data/DerivedResults/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsSPDvspt,
@@ -508,7 +509,7 @@ Dspp:
 
 
 
-        
+
   systematics:
     probvariation:
       useperiod: [0,0,1] #period from where to define prob cuts
