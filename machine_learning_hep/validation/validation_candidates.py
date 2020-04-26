@@ -29,12 +29,19 @@ def fill_validation_candidates(df_reco, tag=""):
     # Binning definition
     binning_nsigma = buildbinning(1, -1000, -998)
     binning_nsigma += buildbinning(2000, -100, 100)
-    binning_pt = buildbinning(100, 0, 100)
+    binning_pt = buildbinning(400, 0, 100)
     binning_eta = buildbinning(100, -1, 1)
     binning_phi = buildbinning(100, 0, 7)
+    binning_inv_mass = buildbinning(100, 2, 2.5)
+    binning_v0m_perc = buildbinning(100, 0, 1)
+    binning_v0m_perc += buildbinning(89, 1.1, 10)
+    binning_v0m_perc += buildbinning(89, 11, 100)
+    binning_ntrklt = buildbinning(200, -0.5, 199.5)
 
     # Make and fill histograms
     val = ValidationCollection(df_reco, tag=tag)
+
+    # PID information
     for i in ["TPC", "TOF"]:
         for j in ["Pi", "K", "Pr"]:
             for k in ["0", "1"]:
@@ -46,5 +53,9 @@ def fill_validation_candidates(df_reco, tag=""):
                 val.make_and_fill(binning_pt, "pt_cand", *yaxis)
                 val.make_and_fill(binning_eta, "eta_cand", *yaxis)
                 val.make_and_fill(binning_phi, "phi_cand", *yaxis)
+
+    # Invariant mass
+    val.make_and_fill(binning_inv_mass, "inv_mass", binning_v0m_perc, "perc_v0m")
+    val.make_and_fill(binning_inv_mass, "inv_mass", binning_ntrklt, "n_tracklets_corr")
 
     return val
