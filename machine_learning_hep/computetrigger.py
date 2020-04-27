@@ -20,18 +20,14 @@ from machine_learning_hep.utilities_plot import (load_root_style,
                                                  buildbinning,
                                                  buildhisto)
 
-# pylint: disable=line-too-long, too-many-statements
 
-
-def main(input_trg="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsSPDvspt_ntrkl_trigger/masshisto.root",
-         input_mb="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsMBvspt_ntrkl_trigger/masshisto.root",
+def main(input_trg="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/" \
+        "376_20200304-2028/resultsSPDvspt_ntrkl_trigger/masshisto.root", # pylint: disable=too-many-statements
+         input_mb="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/" \
+                  "376_20200304-2028/resultsMBvspt_ntrkl_trigger/masshisto.root",
          output_path="../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018/",
-         min_draw_range=0,
-         max_draw_range=150,
-         min_fit_range=40.,
-         max_fit_range=100.,
-         rebin_histo=True,
-         show_func_ratio=True):
+         min_draw_range=0, max_draw_range=150, min_fit_range=40., max_fit_range=100.,
+         rebin_histo=True, show_func_ratio=True):
 
     draw_range = [min_draw_range,
                   max_draw_range]
@@ -208,19 +204,17 @@ if __name__ == "__main__":
                         help="Maximum fit range",
                         default=100.,
                         type=float)
-    PARSER.add_argument("--rebin_histo",
-                        help="Rebin the histogram",
-                        default=True,
-                        type=bool)
-    PARSER.add_argument("--show_func_ratio",
+    PARSER.add_argument("--no-rebin-histo",
+                        help="Don't rebin the histogram",
+                        dest="no_rebin_histo",
+                        action="store_true")
+    PARSER.add_argument("--no-func-ratio",
                         help="Shows the ratio between the function and the fitted histogram",
-                        default=True,
-                        type=bool)
-    PARSER.add_argument("-b",
+                        dest="no_func_ratio",
+                        action="store_true")
+    PARSER.add_argument("--quiet",
                         help="Quiet mode",
-                        nargs='?',
-                        default=False,
-                        type=bool)
+                        action="store_true")
 
     PARSER.print_help()
     ARGS = PARSER.parse_args()
@@ -232,5 +226,5 @@ if __name__ == "__main__":
          max_draw_range=ARGS.max_draw_range,
          min_fit_range=ARGS.min_fit_range,
          max_fit_range=ARGS.max_fit_range,
-         rebin_histo=ARGS.rebin_histo,
-         show_func_ratio=ARGS.show_func_ratio)
+         rebin_histo=(not ARGS.no_rebin_histo),
+         show_func_ratio=(not ARGS.no_func_ratio))
