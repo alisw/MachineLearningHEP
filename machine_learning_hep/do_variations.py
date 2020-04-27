@@ -381,7 +381,7 @@ def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-
                     print("Logfile: %s" % logfile)
                     with open(logfile, "w") as ana_out:
                         subprocess.Popen(shlex.split("python do_entire_analysis.py " \
-                            "-r %s -d %s -a %s" % (config, yaml_out, analysis)), \
+                            "-r %s -d %s -a %s -c" % (config, yaml_out, analysis)), \
                             stdout=ana_out, stderr=ana_out, universal_newlines=True)
 
     # Delete the created database files.
