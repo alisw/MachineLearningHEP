@@ -149,6 +149,7 @@ def main(input_trg="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_
     funcd.Draw("same")
     # Draw both fitting functions
     ctrigger.cd(6)
+    # pylint: disable=unused-variable
     hframe = gPad.DrawFrame(min_draw_range, 0,
                             max_draw_range, 1,
                             ";n_tracklets_corr;Efficiency")
@@ -162,7 +163,6 @@ def main(input_trg="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_
     line.SetLineStyle(2)
     line.Draw("same")
     ctrigger.SaveAs(output_path + "/SPDtrigger.pdf")
-    # pylint: disable=line-too-long
     foutput = TFile.Open(output_path + "/triggerSPDvspt_ntrkl.root",
                          "recreate")
     foutput.cd()
