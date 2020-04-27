@@ -216,6 +216,11 @@ if __name__ == "__main__":
                         help="Shows the ratio between the function and the fitted histogram",
                         default=True,
                         type=bool)
+    PARSER.add_argument("-b",
+                        help="Quiet mode",
+                        nargs='?',
+                        default=False,
+                        type=bool)
 
     PARSER.print_help()
     ARGS = PARSER.parse_args()
