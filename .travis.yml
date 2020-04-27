@@ -11,8 +11,10 @@ install: |
 script: |
   set -e
   set -o pipefail
-  ci/run-tests.sh
+  #ci/run-tests.sh
+  echo "Travis"
 branches:
   only:
-    - master
-    - /^v\d+\.\d+(\.\d+)?(-rc\d+)?$/
+    # just exclude for now
+    - master-old
+    #- /^v\d+\.\d+(\.\d+)?(-rc\d+)?$/

@@ -1,0 +1,39 @@
+name: Baseline test
+
+on:
+    pull_request:
+        branches:
+            - master
+            - ml-dev
+        paths:
+            - "machine_learning_hep/**/*.py"
+            - "machine_learning_hep/data/**/*"
+    push:
+        branches:
+            - master
+            - ml-dev
+        paths:
+            - "machine_learning_hep/**/*.py"
+            - "machine_learning_hep/data/**/*"
+
+jobs:
+  # A baseline test, independent of OS at the moment
+  baseline:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 6
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Test copyright
+        if: github.event_name == 'push'
+        run: |
+          changed_files="$(find $(pwd -P) -name '*.py' -a -not -name setup.py)"
+          ci/run-test-copyright.sh $changed_files
+
+      - name: Test copyright
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
+          changed_files="$(git diff --name-only origin/${{ github.base_ref }} | grep -E '\.py' | grep -vE 'setup.py')"
+          ci/run-test-copyright.sh $changed_files
