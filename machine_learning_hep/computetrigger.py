@@ -98,7 +98,7 @@ if SHOW_FUNC_RATIO:
     hfunratio = hratio.DrawCopy()
     hfunratio.GetListOfFunctions().Clear()
     hfunratio.GetYaxis().SetTitle(hfunratio.GetYaxis().GetTitle()
-                                + " ratio to fit function")
+                                  + " ratio to fit function")
     for i in range(1, hfunratio.GetNbinsX()+1):
         x = hfunratio.GetXaxis().GetBinCenter(i)
         y = [hfunratio.GetBinContent(i), hfunratio.GetBinError(i)]
