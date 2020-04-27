@@ -14,6 +14,16 @@
 
 from ROOT import TFile, TH1F, TCanvas, TF1 # pylint: disable=import-error,no-name-in-module, unused-import
 from ROOT import TLine, gROOT, gStyle, TLegend # pylint: disable=import-error, no-name-in-module
+from machine_learning_hep.utilities_plot import rebin_histogram, buildbinning, buildhisto
+
+# Configuration variables
+FIT_RANGE = [40., 100.]  # Fit range
+HISTO_RANGE = [0., 150.]  # Histogram plotting range
+REBIN = True  # Rebin histograms
+REBIN_BINNING = buildbinning(100, -.5, 99.5)
+REBIN_BINNING += buildbinning(25, 100.5, 199.5)
+SHOW_FUNC_RATIO = True  # Shows the ratio of the histogram to the fit function
+
 gROOT.SetStyle("Plain")
 gStyle.SetOptStat(0)
 gStyle.SetOptStat(0000)
@@ -27,9 +37,23 @@ filedatatrg = TFile.Open("/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6
 filedatamb = TFile.Open("/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsMBvspt_ntrkl_trigger/masshisto.root")
 hden = filedatamb.Get("hn_tracklets_corr")
 hnum = filedatatrg.Get("hn_tracklets_corr")
+if REBIN:
+    hden_rebin = buildhisto(hden.GetName() + "_den_rebin",
+                            hden.GetTitle(), REBIN_BINNING)
+    hden = rebin_histogram(hden, hden_rebin)
+    hnum_rebin = buildhisto(hnum.GetName() + "_num_rebin",
+                            hnum.GetTitle(), REBIN_BINNING)
+    hnum = rebin_histogram(hnum, hnum_rebin)
 hratio = hnum.Clone("hratio")
 hdend = filedatamb.Get("hn_tracklets_corr_withd")
 hnumd = filedatatrg.Get("hn_tracklets_corr_withd")
+if REBIN:
+    hdend_rebin = buildhisto(hdend.GetName() + "_dend_rebin",
+                             hdend.GetTitle(), REBIN_BINNING)
+    hdend = rebin_histogram(hdend, hdend_rebin)
+    hnumd_rebin = buildhisto(hnumd.GetName() + "_numd_rebin",
+                             hnumd.GetTitle(), REBIN_BINNING)
+    hnumd = rebin_histogram(hnumd, hnumd_rebin)
 hratiod = hnumd.Clone("hratiod")
 hratio.Divide(hden)
 hratiod.Divide(hdend)
@@ -47,51 +71,68 @@ leg.SetTextSize(0.035)
 
 hden.GetYaxis().SetTitle("Entries")
 hden.GetXaxis().SetTitle("n_tracklets_corr")
-hden.GetXaxis().SetRangeUser(0., 150.)
+hden.GetXaxis().SetRangeUser(*HISTO_RANGE)
 hden.Draw("pe")
 hden.SetLineColor(2)
 hnum.Draw("pesame")
 leg.AddEntry(hden, "MB", "LEP")
 leg.AddEntry(hnum, "SPD", "LEP")
 leg.Draw()
+#
 ctrigger.cd(2)
 hratio.GetYaxis().SetTitle("SPD/MB (no D required)")
 hratio.GetXaxis().SetTitle("n_tracklets_corr")
-hratio.GetXaxis().SetRangeUser(0., 150.)
+hratio.GetXaxis().SetRangeUser(*HISTO_RANGE)
 hratio.Draw("pe")
-func = TF1("func", "([0]/(1+TMath::Exp(-[1]*(x-[2]))))", 0, 140)
+func = TF1("func", "([0]/(1+TMath::Exp(-[1]*(x-[2]))))", *HISTO_RANGE)
 func.SetParameters(300, .1, 570)
 func.SetParLimits(1, 0., 10.)
 func.SetParLimits(2, 0., 1000.)
-func.SetRange(40., 100.)
+func.SetRange(*FIT_RANGE)
 func.SetLineWidth(1)
-hratio.Fit(func, "L", "", 40, 100)
+hratio.Fit(func, "L", "", *FIT_RANGE)
 func.Draw("same")
-ctrigger.cd(3)
+# Ratio to fit function
+if SHOW_FUNC_RATIO:
+    ctrigger.cd(3)
+    hfunratio = hratio.DrawCopy()
+    hfunratio.GetListOfFunctions().Clear()
+    hfunratio.GetYaxis().SetTitle(hfunratio.GetYaxis().GetTitle()
+                                + " ratio to fit function")
+    for i in range(1, hfunratio.GetNbinsX()+1):
+        x = hfunratio.GetXaxis().GetBinCenter(i)
+        y = [hfunratio.GetBinContent(i), hfunratio.GetBinError(i)]
+        ratio = y[0]/func.Eval(x)
+        ratio_error = y[1]/func.Eval(x)
+        hfunratio.SetBinContent(i, ratio)
+        hfunratio.SetBinError(i, ratio_error)
+#
+ctrigger.cd(4)
 hnumd.GetYaxis().SetTitle("Entries")
 hnumd.GetXaxis().SetTitle("n_tracklets_corr")
-hnumd.GetXaxis().SetRangeUser(0., 150.)
+hnumd.GetXaxis().SetRangeUser(*HISTO_RANGE)
 hdend.SetLineColor(2)
 hnumd.Draw("pe")
 hdend.Draw("pesame")
 leg.Draw()
-ctrigger.cd(4)
+#
+ctrigger.cd(5)
 hratiod.GetYaxis().SetTitle("SPD/MB (D required)")
 hratiod.GetXaxis().SetTitle("n_tracklets_corr")
-hratiod.GetXaxis().SetRangeUser(0., 150.)
+hratiod.GetXaxis().SetRangeUser(*HISTO_RANGE)
 hratiod.Draw("pe")
-funcd = TF1("func", "([0]/(1+TMath::Exp(-[1]*(x-[2]))))", 0, 100)
+funcd = TF1("func", "([0]/(1+TMath::Exp(-[1]*(x-[2]))))", *HISTO_RANGE)
 funcd.SetParameters(300, .1, 570)
 funcd.SetParLimits(1, 0., 10.)
 funcd.SetParLimits(2, 0., 1000.)
-funcd.SetRange(40., 100.)
+funcd.SetRange(*FIT_RANGE)
 funcd.SetLineWidth(1)
-hratiod.Fit(funcd, "L", "", 40, 100)
+hratiod.Fit(funcd, "L", "", *FIT_RANGE)
 func.SetLineColor(1)
 func.Draw("same")
 funcd.SetLineColor(4)
 funcd.Draw("same")
-ctrigger.cd(5)
+ctrigger.cd(6)
 hempty = TH1F("hempty", "hempty", 200, 0., 100.)
 hempty.Draw()
 funcnorm = func.Clone("funcSPDvspt_ntrkl_norm")
@@ -119,3 +160,6 @@ hratiod.Write()
 funcd.SetName("funcdSPDvspt_ntrkl")
 funcd.Write()
 funcnormd.Write()
+print("Press enter to continue")
+input()
+foutput.Close()
