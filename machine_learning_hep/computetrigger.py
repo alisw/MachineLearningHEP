@@ -13,7 +13,6 @@
 #############################################################################
 
 import argparse
-from sys import argv
 from ROOT import TFile, TCanvas, TF1, gPad, TLine, TLegend  # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.utilities_plot import (load_root_style,
                                                  rebin_histogram,
@@ -21,12 +20,13 @@ from machine_learning_hep.utilities_plot import (load_root_style,
                                                  buildhisto)
 
 
-def main(input_trg="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/" \
-        "376_20200304-2028/resultsSPDvspt_ntrkl_trigger/masshisto.root", # pylint: disable=too-many-statements
+def main(input_trg="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/"
+         "376_20200304-2028/resultsSPDvspt_ntrkl_trigger/masshisto.root",  # pylint: disable=too-many-statements
          input_mb="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/" \
                   "376_20200304-2028/resultsMBvspt_ntrkl_trigger/masshisto.root",
          output_path="../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018/",
-         min_draw_range=0, max_draw_range=150, min_fit_range=40., max_fit_range=100.,
+         min_draw_range=0, max_draw_range=150,
+         min_fit_range=40., max_fit_range=100.,
          rebin_histo=True, show_func_ratio=True):
 
     draw_range = [min_draw_range,
@@ -172,48 +172,51 @@ def main(input_trg="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_
     funcd.SetName("funcdSPDvspt_ntrkl")
     funcd.Write()
     funcnormd.Write()
-    if "-b" not in argv:
-        print("Press enter to continue")
-        input()
+    print("Press enter to continue")
+    input()
     foutput.Close()
 
 
 if __name__ == "__main__":
     # Configuration variables
     PARSER = argparse.ArgumentParser(description="Compute the trigger")
-    PARSER.add_argument("--input_trg",
+    PARSER.add_argument("--input-trg",
+                        dest="input_trg",
                         help="input file for triggered data")
-    PARSER.add_argument("--input_mb",
+    PARSER.add_argument("--input-mb",
+                        dest="input_mb",
                         help="input file for MB data")
-    PARSER.add_argument("--output_path",
+    PARSER.add_argument("--output-path",
+                        dest="output_path",
                         help="output path for pdf and root files",
                         default="/tmp/")
-    PARSER.add_argument("--min_draw_range",
+    PARSER.add_argument("--min-draw-range",
+                        dest="min_draw_range",
                         help="Minimum histogram plotting range",
                         default=0.,
                         type=float)
-    PARSER.add_argument("--max_draw_range",
+    PARSER.add_argument("--max-draw-range",
+                        dest="max_draw_range",
                         help="Maximum histogram plotting range",
                         default=150.,
                         type=float)
-    PARSER.add_argument("--min_fit_range",
+    PARSER.add_argument("--min-fit-range",
+                        dest="min_fit_range",
                         help="Minimum fit range",
                         default=40.,
                         type=float)
-    PARSER.add_argument("--max_fit_range",
+    PARSER.add_argument("--max-fit-range",
+                        dest="max_fit_range",
                         help="Maximum fit range",
                         default=100.,
                         type=float)
-    PARSER.add_argument("--no-rebin-histo",
-                        help="Don't rebin the histogram",
-                        dest="no_rebin_histo",
+    PARSER.add_argument("--rebin-histo",
+                        help="Rebin the histogram",
+                        dest="rebin_histo",
                         action="store_true")
-    PARSER.add_argument("--no-func-ratio",
+    PARSER.add_argument("--func-ratio",
                         help="Shows the ratio between the function and the fitted histogram",
-                        dest="no_func_ratio",
-                        action="store_true")
-    PARSER.add_argument("--quiet",
-                        help="Quiet mode",
+                        dest="func_ratio",
                         action="store_true")
 
     PARSER.print_help()
@@ -226,5 +229,5 @@ if __name__ == "__main__":
          max_draw_range=ARGS.max_draw_range,
          min_fit_range=ARGS.min_fit_range,
          max_fit_range=ARGS.max_fit_range,
-         rebin_histo=(not ARGS.no_rebin_histo),
-         show_func_ratio=(not ARGS.no_func_ratio))
+         rebin_histo=ARGS.rebin_histo,
+         show_func_ratio=ARGS.func_ratio)
