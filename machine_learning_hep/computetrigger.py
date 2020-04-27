@@ -12,17 +12,20 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-from ROOT import TFile, TH1F, TCanvas, TF1, gPad  # pylint: disable=import-error,no-name-in-module, unused-import
-from ROOT import TLine, gROOT, gStyle, TLegend  # pylint: disable=import-error, no-name-in-module
-from machine_learning_hep.utilities_plot import load_root_style, rebin_histogram, buildbinning, buildhisto
 import argparse
 from sys import argv
+from ROOT import TFile, TCanvas, TF1, gPad, TLine, TLegend  # pylint: disable=import-error, no-name-in-module
+from machine_learning_hep.utilities_plot import (load_root_style,
+                                                 rebin_histogram,
+                                                 buildbinning,
+                                                 buildhisto)
+
+# pylint: disable=line-too-long, too-many-statements
 
 
 def main(input_trg="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsSPDvspt_ntrkl_trigger/masshisto.root",
          input_mb="/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsMBvspt_ntrkl_trigger/masshisto.root",
-         #  output_path="../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018/",
-         output_path="/tmp/",
+         output_path="../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018/",
          min_draw_range=0,
          max_draw_range=150,
          min_fit_range=40.,
