@@ -65,9 +65,6 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         self.v_var2_binning_gen = datap["analysis"][self.typean]["var_binning2_gen"]
         self.corr_eff_mult = datap["analysis"][self.typean]["corrEffMult"]
 
-        self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
-        self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
-        self.p_nptfinbins = len(self.lpt_finbinmin)
         self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
         #self.sel_final_fineptbins = datap["analysis"][self.typean]["sel_final_fineptbins"]
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
@@ -177,6 +174,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         hvtxoutmult.Write()
 
         list_df_recodtrig = []
+
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
@@ -192,6 +190,10 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
             list_df_recodtrig.append(df)
             df = seldf_singlevar(df, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+
+            if self.do_custom_analysis_cuts:
+                df = self.apply_cuts_ptbin(df, ipt)
+
             for ibin2 in range(len(self.lvar2_binmin)):
                 suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
@@ -250,23 +252,6 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 fill_validation_candidates(
                     df_recodtrig[df_recodtrig[self.v_ismcsignal] == 1], "MC"
                 ).write()
-
-    def process_histomass(self):
-        print("Doing masshisto", self.mcordata, self.period)
-        print("Using run selection for mass histo", \
-               self.runlistrigger, "for period", self.period)
-        if self.doml is True:
-            print("Doing ml analysis")
-        else:
-            print("No extra selection needed since we are doing std analysis")
-
-        create_folder_struc(self.d_results, self.l_path)
-        arguments = [(i,) for i in range(len(self.l_root))]
-        self.parallelizer(self.process_histomass_single, arguments, self.p_chunksizeunp)
-        tmp_merged = \
-        f"/data/tmp/hadd/{self.case}_{self.typean}/mass_{self.period}/{get_timestamp_string()}/"
-        mergerootfiles(self.l_histomass, self.n_filemass, tmp_merged)
-
 
     def get_reweighted_count(self, dfsel):
         filename = os.path.join(self.d_mcreweights, self.n_mcreweights)

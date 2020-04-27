@@ -1,4 +1,3 @@
-case: XXXX # used to find the database file unless specified explicitly as do_entire_analysis -d database_analysis
 download:
   alice:
     activate: false
@@ -63,7 +62,8 @@ analysis:
     dojetsystematics: true # analyzer: jetsystematics
   mc:
     histomass: false # processer: process_histomass
-    efficiency: false # processer: process_efficiency, process_response, process_unfolding
+    efficiency: false # processer: process_efficiency
+    response: false # processer: process_response
     feeddown: false # analyzer: feeddown
     dounfolding: false # analyzer: unfolding, unfolding_closure
   dofit: false # analyzer: fit

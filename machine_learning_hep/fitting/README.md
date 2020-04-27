@@ -34,6 +34,29 @@ This class builds an abstraction layer and is responsible to understand the fit 
 **MLFitter**
 All fits used in an analysis run are handled here.
 
+## Database settings
+
+A full configuration of the raw yield (aka multi trial) systematics in a database looks like
+
+```yaml
+systematics:
+  # For now don't do these things per pT bin
+  max_chisquare_ndf: 2. # optional, maximum red. chi2 accepted (default: 2.)
+  min_signif: 3. # optional, minimal significance required (default: 3.)
+  rebin: [-1,0,1] # required, for no variation just put [0]
+  massmin: [2.14, 2.13, 2.12, 2.15, 2.17] # required, for no variation put [<min_value>]
+  massmax: [2.436, 2.435, 2.434, 2.437, 2.438] # required, for no variation put [<max_value>]
+  bincount_sigma: [3, 5] # required (at the moment, will be made optional)
+  bkg_funcs: [kExpo, kLin, Pol2, Pol3, Pol4, Pol5] # required
+  # Whether to include the free sigma option in the derivation of raw yield uncertainty in given pT bin
+  consider_free_sigma: [False, False, False, False, False, False] # optional, one value for each pT bin, choose between True or False
+  # Put relative variation from central sigma separately for varying up/donw, e.g.
+  # Whenever it evaluates to False it's not taken into account
+  rel_var_sigma_up: [0.1, 0.05, False, 0.2, False, False] # optional
+  rel_var_sigma_down: [False, 0.1, False, False, 0.1, False] # optional
+```
+
+The bin count is at the moment always taken into account and it should be seen as a cross-check
 
 ## Example usage
 

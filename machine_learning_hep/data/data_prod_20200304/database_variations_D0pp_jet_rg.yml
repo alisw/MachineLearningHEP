@@ -1,0 +1,254 @@
+categories:
+    default:
+        activate: no
+        processor: true
+        label: "default"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            default:
+                activate: [yes]
+                label: ["default"]
+                diffs: {}
+    fitting:
+        activate: yes
+        processor: false
+        label: "fitting"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            bkgfunc:
+                activate: [yes]
+                label: ["bkg. func."]
+                diffs:
+                    analysis:
+                        jet_rg:
+                            bkgfunc: [2]
+            masspeak:
+                activate: [yes]
+                label: ["mass peak"]
+                diffs:
+                    analysis:
+                        jet_rg:
+                            masspeak:    [1.822]
+                            masspeaksec: [1.822]
+            massmin:
+                activate: [no, yes]
+                label: ["mass min."]
+                diffs:
+                    analysis:
+                        jet_rg:
+                            massmin: [1.76, 1.74]
+            massmax:
+                activate: [yes, yes]
+                label: ["mass max."]
+                diffs:
+                    analysis:
+                        jet_rg:
+                            massmax: [2.15, 2.10]
+            rebin:
+                activate: [yes]
+                label: ["rebin"]
+                diffs:
+                    analysis:
+                        jet_rg:
+                            rebin: [12]
+            fix_mean:
+                activate: [yes]
+                label: ["fixed mean"]
+                diffs:
+                    analysis:
+                        jet_rg:
+                            fix_mean: [true]
+            fix_sigma:
+                activate: [no]
+                label: ["free sigma"]
+                diffs:
+                    analysis:
+                        jet_rg:
+                            fix_sigma: [false]
+    sideband:
+        activate: yes
+        processor: false
+        label: "side bands"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            sigma:
+                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes]
+                label: ["sigma"]
+                diffs:
+                    analysis:
+                        jet_rg:
+                            signal_sigma: [1.6  , 1.7  , 1.8  , 1.9  , 2.1  , 2.2  , 2.3  , 2.4  , 2.5  ]
+                            sigma_scale:  [0.890, 0.911, 0.928, 0.943, 0.964, 0.972, 0.979, 0.984, 0.988]
+            ranges:
+                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
+                label: ["ranges"]
+                diffs:
+                    analysis:
+                        jet_rg:
+                            sideband_sigma_2_left:  [ 8 ,  6 , "#",  7 , "#",  8 , "#",  8 , "#", "#", "#", "#", "#"]
+                            sideband_sigma_1_left:  ["#", "#", "#",  5 , "#",  6 , "#",  5 , "#",  7 , "#",  5 , "#"]
+                            sideband_sigma_1_right: ["#", "#", "#", "#",  5 , "#",  6 , "#",  5 , "#",  7 , "#",  5 ]
+                            sideband_sigma_2_right: [ 8 , "#",  6 , "#",  7 , "#",  8 , "#",  8 , "#", "#", "#", "#"]
+
+            sb_left:
+                activate: [no]
+                label: ["left sb only"]
+                diffs:
+                    analysis:
+                        jet_rg:
+                            sidebandleftonly: [true]
+    cutvar:
+        activate: no
+        processor: true
+        label: "cuts"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            cutvar:
+                activate: [yes]
+                label: ["cutvar"]
+                diffs:
+                    mlapplication:
+                        probcutoptimal:
+                            - [0.82, 0.80, 0.72, 0.70, 0.50, 0.50, 0.50]
+    powheg:
+        activate: yes
+        processor: false
+        label: "POWHEG"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            tune:
+                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes]
+                label:
+                    - "#it{f}_{F} = 1, #it{f}_{R} = 0.5"
+                    - "#it{f}_{F} = 0.5, #it{f}_{R} = 1"
+                    - "#it{f}_{F} = 2, #it{f}_{R} = 1"
+                    - "#it{f}_{F} = 1, #it{f}_{R} = 2"
+                    - "#it{f}_{F} = 2, #it{f}_{R} = 2"
+                    - "#it{f}_{F} = 0.5, #it{f}_{R} = 0.5"
+                    - "#it{m}_{b} high"
+                    - "#it{m}_{b} low"
+                    - "no EvtGen"
+                diffs:
+                    analysis:
+                        jet_rg:
+                            powheg_path_nonprompt:
+                                - /data/POWHEG/trees_powheg_fd_F1_R05.root
+                                - /data/POWHEG/trees_powheg_fd_F05_R1.root
+                                - /data/POWHEG/trees_powheg_fd_F2_R1.root
+                                - /data/POWHEG/trees_powheg_fd_F1_R2.root
+                                - /data/POWHEG/trees_powheg_fd_F2_R2.root
+                                - /data/POWHEG/trees_powheg_fd_F05_R05.root
+                                - /data/POWHEG/trees_powheg_fd_Mhigh.root
+                                - /data/POWHEG/trees_powheg_fd_Mlow.root
+                                - /data/POWHEG/trees_powheg_fd_NoEvtGen.root
+    prior:
+        activate: yes
+        processor: true
+        label: "prior"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            prior:
+                activate: [yes]
+                label: ["flat"]
+                diffs:
+                    analysis:
+                        jet_rg:
+                            doprior: [true]
+    regularisation:
+        activate: yes
+        processor: false
+        label: "regularisation"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            iter:
+                activate: [yes, yes]
+                label: ["down", "up"]
+                diffs:
+                    analysis:
+                        jet_rg:
+                            niterunfoldingchosen: [3, 7]
+    normalisation:
+        activate: yes
+        processor: false
+        label: "normalisation"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            crosssection:
+                activate: [yes, yes]
+                label: ["#it{#sigma}_{V0AND} down", "#it{#sigma}_{V0AND} up"]
+                diffs:
+                    analysis:
+                        jet_rg:
+                            xsection_inel: [54.91, 60.69]
+    tracking:
+        activate: yes
+        processor: true
+        label: "tracking"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            efficiency:
+                activate: [yes]
+                label: ["eff. down"]
+                diffs:
+                  multi:
+                    mc:
+                      unmerged_tree_dir: [[/data/TTree/D0DsLckAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/merged,
+                                          /data/TTree/D0DsLckAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/merged,
+                                          /data/TTree/D0DsLckAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/merged]]
+                      pkl: [[/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/pkl,
+                            /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/pkl,
+                            /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/pkl]]
+                      pkl_skimmed: [[/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/pklsk,
+                                    /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/pklsk,
+                                    /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/pklsk]]
+                      pkl_skimmed_merge_for_ml: [[/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/pklskml,
+                                                 /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/pklskml,
+                                                 /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/pklskml]]
+                      pkl_skimmed_merge_for_ml_all: [/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_mc_prodD2H_mltot]
+                      pkl_evtcounter_all: [/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_mc_prodD2H_evttot]
+                  ml:
+                    mlplot: [/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/mlplot]
+                    mlout: [/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/mlout]
+                  mlapplication:
+                    data:
+                      pkl_skimmed_dec: [[/data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdec_std_trkeff,
+                                        /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdec_std_trkeff,
+                                        /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdec_std_trkeff]]
+                      pkl_skimmed_decmerged: [[/data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdecmerged_std_trkeff,
+                                              /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdecmerged_std_trkeff,
+                                              /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdecmerged_std_trkeff]]
+                    mc:
+                      pkl_skimmed_dec: [[/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/pklskdec_std,
+                                        /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/pklskdec_std,
+                                        /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/pklskdec_std]]
+                      pkl_skimmed_decmerged: [[/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/pklskdecmerged_std,
+                                              /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/pklskdecmerged_std,
+                                              /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/pklskdecmerged_std]]
+

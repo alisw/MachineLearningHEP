@@ -42,7 +42,8 @@ INPUT_PATH="$1"
 CURR_DIR=$(pwd)
 
 # To do some logging
-LOG_DIR=/tmp/ML/train_post_download
+TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
+LOG_DIR=$HOME/train_post_download/$TIMESTAMP
 
 # Normal upper bound for merged files
 TARGET_PACK_SIZE="1000000"
@@ -99,6 +100,13 @@ function check_settings()
         fi
     fi
 }
+
+# Check whether ROOT is loaded.
+if [ -z "$ROOTSYS" ]
+then
+    echo "Error: ROOT has not been loaded."
+    exit 1
+fi
 
 # Command line arguments
 while [ "$1" != "" ]
@@ -179,24 +187,24 @@ echo
 # If we are here, things sould be fine
 #mkdir "merged"
 
-# Merge per child so find out childs we have
-childs=$(find unmerged -maxdepth 1 -type d -name "child_*" | sort -u)
+# Merge per child so find out children we have
+children=$(find unmerged -maxdepth 1 -type d -name "child_*" | sort -u)
 
-echo "===> Found childs"
-echo "$childs"
+echo "===> Found children"
+echo "$children"
 echo
 
 # Make the merged dir
 mkdir $MERGED_DIR
-for c in $childs
+for c in $children
 do
     c_stripped=${c##unmerged/}
     echo "===> Process $c_stripped"
     # For each child_i there will be a pack_i
     MERGED_CHILD_DIR=$MERGED_DIR/$c_stripped
     mkdir -p $MERGED_CHILD_DIR
-    root_files_childs=$(find $c -maxdepth 2 -type f -name "AnalysisResults.root")
-    if [[ "$root_files_childs" == "" ]]
+    root_files_children=$(find $c -maxdepth 2 -type f -name "AnalysisResults.root")
+    if [[ "$root_files_children" == "" ]]
     then
         echo -e "${STREAM_START_YELLOW}WARNING${STREAM_END_FORMAT}: No ROOT files found in $c"
         continue
@@ -205,7 +213,7 @@ do
     file_pack=""
     current_size="0"
     n_big_files="0"
-    for rfc in $root_files_childs
+    for rfc in $root_files_children
     do
         next_size=$(du -s $rfc | awk '{print $1}')
         if (( $next_size > $MAX_ACCEPTED_INPUT_SIZE ))
@@ -258,4 +266,4 @@ echo "Wait for all jobs to finish"
 n_job_delay 1 10
 
 echo "DONE"
-
+echo "You may want to delete log files in $LOG_DIR"

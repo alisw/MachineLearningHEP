@@ -1,4 +1,3 @@
-case: XXXX
 download:
   alice:
     activate: false
@@ -63,7 +62,8 @@ analysis:
     dojetsystematics: false
   mc:
     histomass: false
-    efficiency: false
+    efficiency: false # processer: process_efficiency
+    response: false # processer: process_response
     feeddown: false
     dounfolding: false
   dofit: false

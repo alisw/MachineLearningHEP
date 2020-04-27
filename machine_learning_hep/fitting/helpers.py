@@ -123,6 +123,8 @@ class MLFitParsFactory:
         self.syst_pars = ana_config.get("systematics", {})
         self.syst_init_sigma_from = None
         self.syst_consider_free_sigma = None
+        self.syst_rel_var_sigma_up = None
+        self.syst_rel_var_sigma_down = None
         if self.syst_pars:
             self.syst_init_sigma_from = self.syst_pars.get("init_sigma_from", "central")
             if not isinstance(self.syst_init_sigma_from, list):
@@ -135,6 +137,18 @@ class MLFitParsFactory:
                 iter(self.syst_consider_free_sigma)
             except TypeError:
                 self.syst_consider_free_sigma = [self.syst_consider_free_sigma] * self.n_bins1
+
+            self.syst_rel_var_sigma_up = self.syst_pars.get("rel_var_sigma_up", None)
+            try:
+                iter(self.syst_rel_var_sigma_up)
+            except TypeError:
+                self.syst_rel_var_sigma_up = [self.syst_rel_var_sigma_up] * self.n_bins1
+
+            self.syst_rel_var_sigma_down = self.syst_pars.get("rel_var_sigma_down", None)
+            try:
+                iter(self.syst_rel_var_sigma_down)
+            except TypeError:
+                self.syst_rel_var_sigma_down = [self.syst_rel_var_sigma_down] * self.n_bins1
 
 
     def make_ali_hf_fit_pars(self, ibin1, ibin2):
@@ -205,8 +219,10 @@ class MLFitParsFactory:
                     "rebin_syst": self.syst_pars.get("rebin", None),
                     # Check DB
                     "consider_free_sigma_syst": self.syst_consider_free_sigma[ibin1],
-                    "signif_min_syst": self.syst_pars.get("signif_min_syst", 3.),
-                    "chi2_max_syst": self.syst_pars.get("chi2_max_syst", 2.)}
+                    "rel_var_sigma_up_syst": self.syst_rel_var_sigma_up[ibin1],
+                    "rel_var_sigma_down_syst": self.syst_rel_var_sigma_down[ibin1],
+                    "signif_min_syst": self.syst_pars.get("min_signif", 3.),
+                    "chi2_max_syst": self.syst_pars.get("max_chisquare_ndf", 2.)}
 
         fit_pars["include_sec_peak"] = self.include_sec_peak[ibin2][ibin1]
         if self.include_sec_peak[ibin2][ibin1]:

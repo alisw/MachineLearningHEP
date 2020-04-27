@@ -803,6 +803,8 @@ class FitSystAliHF(FitROOT):
                                   "bkg_func_names_syst": None,
                                   "rebin_syst": None,
                                   "consider_free_sigma_syst": None,
+                                  "rel_var_sigma_up_syst": None,
+                                  "rel_var_sigma_down_syst": None,
                                   "signif_min_syst": None,
                                   "chi2_max_syst": None}
         # Fitted parameters (to be modified for deriving classes)
@@ -849,6 +851,13 @@ class FitSystAliHF(FitROOT):
         self.kernel.SetUsePowerLawBackground(False)
         self.kernel.SetUsePowerLawTimesExpoBackground(False)
 
+        # Relative sigma variation wrt nominal
+        rel_sigma_up = self.init_pars["rel_var_sigma_up_syst"] \
+                if self.init_pars["rel_var_sigma_up_syst"] else 0
+        rel_sigma_down = self.init_pars["rel_var_sigma_down_syst"] \
+                if self.init_pars["rel_var_sigma_down_syst"] else 0
+        self.kernel.SetSigmaMCVariation(rel_sigma_up, rel_sigma_down)
+
         if self.init_pars["rebin_syst"]:
             rebin_steps = [self.init_pars["rebin"] + rel_rb \
                     if self.init_pars["rebin"] + rel_rb > 0 \
@@ -869,17 +878,15 @@ class FitSystAliHF(FitROOT):
             self.kernel.ConfigurenSigmaBinCSteps(len(self.init_pars["bin_count_sigma_syst"]),
                                                  array("d", self.init_pars["bin_count_sigma_syst"]))
 
-        if self.init_pars["include_reflections"]:
-            histo_mc_ = AliVertexingHFUtils.RebinHisto(self.histo_mc,
-                                                       self.init_pars["rebin"],
-                                                       -1)
-            self.histo_mc = TH1F()
-            histo_mc_.Copy(self.histo_mc)
+        if self.init_pars["include_reflections"] and self.histo_reflections.Integral() <= 0.:
+            self.logger.warning("Reflection requested but template is empty")
+        elif self.init_pars["include_reflections"]:
             self.histo_reflections = AliVertexingHFUtils.AdaptTemplateRangeAndBinning(
                 self.histo_reflections, self.histo,
                 self.init_pars["fit_range_low"], self.init_pars["fit_range_up"])
-            if self.histo_reflections.Integral() > 0.:
-                self.kernel.SetTemplatesForReflections(self.histo_reflections, self.histo_mc)
+
+            self.kernel.SetTemplatesForReflections(self.histo_reflections, self.histo_mc)
+            if self.init_pars["fix_reflections_s_over_b"]:
                 r_over_s = self.histo_mc.Integral(
                     self.histo_mc.FindBin(self.init_pars["fit_range_low"]),
                     self.histo_mc.FindBin(self.init_pars["fit_range_up"]))
@@ -889,8 +896,6 @@ class FitSystAliHF(FitROOT):
                         self.histo_reflections.FindBin(self.init_pars["fit_range_up"])) \
                                 / r_over_s
                     self.kernel.SetFixRefoS(r_over_s)
-            else:
-                self.logger.warning("Reflection requested but template empty")
 
         if self.init_pars["include_sec_peak"]:
             #p_widthsecpeak to be fixed
@@ -961,8 +966,8 @@ class FitSystAliHF(FitROOT):
         max_bc_range = n_bins_bincount
         n_bc_ranges = n_bins_bincount
         conf_case = ["FixedSigFreeMean",
-                     "FixedSigUp",
-                     "FixedSigDw",
+                     "FixedSigUpFreeMean",
+                     "FixedSigDwFreeMean",
                      "FreeSigFreeMean",
                      "FreeSigFixedMean",
                      "FixedSigFixedMean"]
@@ -989,6 +994,11 @@ class FitSystAliHF(FitROOT):
                 if self.init_pars["consider_free_sigma_syst"]:
                     mask[18+i] = plot_case
                     mask[24+i] = plot_case
+                if self.init_pars["rel_var_sigma_up_syst"]:
+
+                    mask[6+i] = plot_case
+                if self.init_pars["rel_var_sigma_down_syst"]:
+                    mask[12+i] = plot_case
 
         # Extract histograms from file
         histo6 = [None] * tot_cases
@@ -1155,6 +1165,13 @@ class FitSystAliHF(FitROOT):
         ##################
         # Extract yields #
         ##################
+        # Cache min/max values for plotting later
+        sigma_max = 0.
+        sigma_min = 1.
+        mean_max = -1.
+        mean_min = 10000.
+        chi2_max = -1.
+        chi2_min = 10000.
         for nc in range(tot_cases):
             if not mask[nc]:
                 continue
@@ -1224,10 +1241,17 @@ class FitSystAliHF(FitROOT):
                 counts += 1.
                 h_sigma_all_bkgs[bkg_func_name].SetBinContent(first[nc] + ib, sig)
                 h_sigma_all_bkgs[bkg_func_name].SetBinError(first[nc] + ib, esig)
+                # Collect maximum and minimum for plotting later
+                sigma_max = max(sig + esig, sigma_max)
+                sigma_min = min(sig - esig, sigma_min)
                 h_mean_all_bkgs[bkg_func_name].SetBinContent(first[nc] + ib, pos)
                 h_mean_all_bkgs[bkg_func_name].SetBinError(first[nc] + ib, epos)
+                mean_max = max(pos + epos, mean_max)
+                mean_min = min(pos - epos, mean_min)
                 h_chi2_all_bkgs[bkg_func_name].SetBinContent(first[nc] + ib, chi2)
                 h_chi2_all_bkgs[bkg_func_name].SetBinError(first[nc] + ib, 0.000001)
+                chi2_max = max(chi2, chi2_max)
+                chi2_min = min(chi2, chi2_min)
 
                 if mask[nc] == 2:
                     for iy in range(min_bc_range, max_bc_range + 1):
@@ -1299,9 +1323,14 @@ class FitSystAliHF(FitROOT):
         sigma_pad = root_pad.cd(1)
         sigma_pad.SetLeftMargin(0.13)
         sigma_pad.SetRightMargin(0.06)
+        sigma_delta = (sigma_max - sigma_min)
+        sigma_min = sigma_min - 0.1 * sigma_delta
+        sigma_max = sigma_max + 0.1 * sigma_delta
+
         for histo in  h_sigma_all_bkgs.values():
             histo.GetYaxis().SetTitleOffset(1.7)
             histo.Draw("same")
+            histo.GetYaxis().SetRangeUser(sigma_min, sigma_max)
             root_objects.append(histo)
             histo.SetDirectory(0)
 
@@ -1314,8 +1343,12 @@ class FitSystAliHF(FitROOT):
         mean_pad = root_pad.cd(2)
         mean_pad.SetLeftMargin(0.13)
         mean_pad.SetRightMargin(0.06)
+        mean_delta = (mean_max - mean_min)
+        mean_min = mean_min - 1.1 * mean_delta
+        mean_max = mean_max + 0.1 * mean_delta
         for name, histo in  h_mean_all_bkgs.items():
             histo.GetYaxis().SetTitleOffset(1.7)
+            histo.GetYaxis().SetRangeUser(mean_min, mean_max)
             histo.Draw("same")
             root_objects.append(histo)
             histo.SetDirectory(0)
@@ -1325,9 +1358,13 @@ class FitSystAliHF(FitROOT):
         chi2_pad = root_pad.cd(3)
         chi2_pad.SetLeftMargin(0.13)
         chi2_pad.SetRightMargin(0.06)
+        chi2_delta = (chi2_max - chi2_min)
+        chi2_min = chi2_min - 0.1 * chi2_delta
+        chi2_max = chi2_max + 0.1 * chi2_delta
 
         for histo in h_chi2_all_bkgs.values():
             histo.GetYaxis().SetTitleOffset(1.7)
+            histo.GetYaxis().SetRangeUser(chi2_min, chi2_max)
             histo.Draw("same")
             root_objects.append(histo)
             histo.SetDirectory(0)

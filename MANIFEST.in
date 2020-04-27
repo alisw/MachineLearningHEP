@@ -3,16 +3,5 @@ include machine_learning_hep/submission/default_pre.yml
 include machine_learning_hep/submission/default_train.yml
 include machine_learning_hep/submission/default_apply.yml
 include machine_learning_hep/submission/default_ana.yml
-include machine_learning_hep/data/database_ml_parameters_Bs.yml
-include machine_learning_hep/data/database_ml_parameters_D0pp.yml
-include machine_learning_hep/data/database_ml_parameters_DsPbPb010.yml
-include machine_learning_hep/data/database_ml_parameters_DsPbPb3050.yml
-include machine_learning_hep/data/database_ml_parameters_Dspp.yml
-include machine_learning_hep/data/database_ml_parameters_Dstarpp.yml
-include machine_learning_hep/data/database_ml_parameters_LbITS2.yml
-include machine_learning_hep/data/database_ml_parameters_LbITS3.yml
-include machine_learning_hep/data/database_ml_parameters_LcpK0spp.yml
-include machine_learning_hep/data/database_ml_parameters_LcpKpipp.yml
-include machine_learning_hep/data/database_ml_gridsearch.yml
 include machine_learning_hep/data/config_model_parameters.yml
 include machine_learning_hep/data/database_run_list.yml"

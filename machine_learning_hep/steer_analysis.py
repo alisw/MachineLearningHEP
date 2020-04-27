@@ -37,8 +37,9 @@ from machine_learning_hep.processerdhadrons_jet import ProcesserDhadrons_jet
 #from machine_learning_hep.doanalysis import doanalysis
 #from machine_learning_hep.extractmasshisto import extractmasshisto
 #from machine_learning_hep.efficiencyan import analysis_eff
+from machine_learning_hep.config import update_config
 from  machine_learning_hep.utilities import checkmakedirlist, checkmakedir
-from  machine_learning_hep.utilities import checkdirlist, checkdir
+from  machine_learning_hep.utilities import checkdirlist, checkdir, delete_dirlist
 from  machine_learning_hep.logger import configure_logger, get_logger
 from machine_learning_hep.optimiser import Optimiser
 
@@ -72,7 +73,8 @@ except Exception as e: # pylint: disable=broad-except
     print("##############################")
 
 
-def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, run_param: dict): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite: dict, # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+                       data_model: dict, run_param: dict, clean: bool):
 
     # Disable any graphical stuff. No TCanvases opened and shown by default
     gROOT.SetBatch(True)
@@ -81,9 +83,10 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, ru
     logger.info("Do analysis chain")
 
     # If we are here we are interested in the very first key in the parameters database
-    for k in data_param.keys():
-        case = k
-        break
+    case = list(data_param.keys())[0]
+
+    # Update database accordingly if needed
+    update_config(data_param, data_config, data_param_overwrite)
 
     dodownloadalice = data_config["download"]["alice"]["activate"]
     doconversionmc = data_config["conversion"]["mc"]["activate"]
@@ -120,6 +123,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, ru
     dohistomassmc = data_config["analysis"]["mc"]["histomass"]
     dohistomassdata = data_config["analysis"]["data"]["histomass"]
     doefficiency = data_config["analysis"]["mc"]["efficiency"]
+    doresponse = data_config["analysis"]["mc"]["response"]
     dofeeddown = data_config["analysis"]["mc"]["feeddown"]
     dounfolding = data_config["analysis"]["mc"]["dounfolding"]
     dojetsystematics = data_config["analysis"]["data"]["dojetsystematics"]
@@ -136,8 +140,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, ru
     do_syst_prob_cross = data_config["systematics"]["cutvar"]["probvariationcross"]
     dosystptshape = data_config["systematics"]["mcptshape"]["activate"]
     doanaperperiod = data_config["analysis"]["doperperiod"]
-
     typean = data_config["analysis"]["type"]
+
     dojetstudies = data_config["analysis"]["dojetstudies"]
 
     dirpklmc = data_param[case]["multi"]["mc"]["pkl"]
@@ -392,6 +396,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, ru
         mymultiprocessdata.multi_histomass()
     if doefficiency is True:
         mymultiprocessmc.multi_efficiency()
+    if doresponse is True:
+        mymultiprocessmc.multi_response()
 
     # Collect all desired analysis steps
     analyze_steps = []
@@ -438,8 +444,18 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_model: dict, ru
         ml_syst_steps.append("mcptshape")
     syst_mgr.analyze(*ml_syst_steps)
 
+    # Delete per-period results.
+    if clean:
+        print("Cleaning")
+        if doanaperperiod:
+            print("Per-period analysis enabled. Skipping.")
+        else:
+            if not delete_dirlist(dirresultsmc + dirresultsdata):
+                print("Error: Failed to complete cleaning.")
 
-def load_config(user_path: str, default_path: tuple) -> dict:
+    print("Done")
+
+def load_config(user_path: str, default_path=None) -> dict:
     """
     Quickly extract either configuration given by user and fall back to package default if no user
     config given.
@@ -449,15 +465,16 @@ def load_config(user_path: str, default_path: tuple) -> dict:
     Returns:
         dictionary built from YAML
     """
-    logger = get_logger()
+    if not user_path and not default_path:
+        return None
+
     stream = None
-    if user_path is None:
-        stream = resource_stream(default_path[0], default_path[1])
-    else:
+    if user_path:
         if not exists(user_path):
-            logger_string = f"The file {user_path} does not exist."
-            logger.fatal(logger_string)
+            get_logger().fatal("The file %s does not exist", user_path)
         stream = open(user_path)
+    else:
+        stream = resource_stream(default_path[0], default_path[1])
     return yaml.safe_load(stream)
 
 def main():
@@ -472,13 +489,17 @@ def main():
     parser.add_argument("--run-config", "-r", dest="run_config",
                         help="the run configuration to be used")
     parser.add_argument("--database-analysis", "-d", dest="database_analysis",
-                        help="analysis database to be used")
+                        help="analysis database to be used", required=True)
+    parser.add_argument("--database-overwrite", dest="database_overwrite",
+                        help="overwrite fields in analysis database")
     parser.add_argument("--database-ml-models", dest="database_ml_models",
                         help="ml model database to be used")
     parser.add_argument("--database-run-list", dest="database_run_list",
                         help="run list database to be used")
     parser.add_argument("--analysis", "-a", dest="type_ana",
                         help="choose type of analysis")
+    parser.add_argument("--clean", "-c", action="store_true",
+                        help="delete per-period results at the end")
 
     args = parser.parse_args()
 
@@ -488,15 +509,14 @@ def main():
     pkg_data = "machine_learning_hep.data"
     pkg_data_run_config = "machine_learning_hep.submission"
     run_config = load_config(args.run_config, (pkg_data_run_config, "default_complete.yml"))
-    case = run_config["case"]
     if args.type_ana is not None:
         run_config["analysis"]["type"] = args.type_ana
 
-    db_analysis_default_name = f"database_ml_parameters_{case}.yml"
-    print(args.database_analysis)
-    db_analysis = load_config(args.database_analysis, (pkg_data, db_analysis_default_name))
+    db_analysis = load_config(args.database_analysis)
+    db_analysis_overwrite = load_config(args.database_overwrite)
     db_ml_models = load_config(args.database_ml_models, (pkg_data, "config_model_parameters.yml"))
     db_run_list = load_config(args.database_run_list, (pkg_data, "database_run_list.yml"))
 
     # Run the chain
-    do_entire_analysis(run_config, db_analysis, db_ml_models, db_run_list)
+    do_entire_analysis(run_config, db_analysis, db_analysis_overwrite, db_ml_models, db_run_list,
+                       args.clean)

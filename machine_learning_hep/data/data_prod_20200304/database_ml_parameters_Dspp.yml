@@ -143,6 +143,7 @@ Dspp:
     treeoutput: "Dstree"
     histofilename: "masshisto.root"
     efffilename: "effhisto.root"
+    respfilename: "resphisto.root"
     crossfilename: "cross_section_tot.root"
 
   multi:
@@ -270,20 +271,20 @@ Dspp:
     MBvspt_ntrkl:
       proc_type: Dhadrons_mult
       useperiod: [1,1,1]
-      plotbin: [1,1,1,1,0]
+      plotbin: [1,1,1,1,1,0]
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
-      corrEffMult: [false,true,true,true,true]
-      sel_binmin2: [1,1,10,30,60] #list of var2 splittng nbins
-      sel_binmax2: [9999,9,29,59,99] #list of var2 splitting nbins
+      corrEffMult: [false,false,true,true,true,true]
+      sel_binmin2: [0,1,1,10,30,60] #list of var2 splittng nbins
+      sel_binmax2: [9999,9999,9,29,59,99] #list of var2 splitting nbins
       var_binning2: n_tracklets_corr_sub
       var_binning2_gen: n_tracklets_corr
       nbinshisto: 200
       minvaluehisto: -0.5
       maxvaluehisto: 199.5
-      triggereff: [0.92,0.862,1,1,1]
-      triggereffunc: [0.003,0.018,0,0,0]
+      triggereff: [1,0.92,0.862,1,1,1]
+      triggereffunc: [0,0.003,0.018,0,0,0]
       triggerbit: INT7
       sel_an_binmin: [2,4,6,8,12]  # [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [4,6,8,12,24]  # [2,4,6,8,12,24] #list of pt nbins
@@ -319,10 +320,10 @@ Dspp:
       masspeak: 1.969
       massmin: [1.75,1.75,1.75,1.75,1.75]
       massmax: [2.15,2.15,2.15,2.15,2.15]
-      rebin: [[5,8,8,8,12], [6,8,8,8,12], [5,8,8,8,12], [5,8,8,8,12], [8,10,10,10,12]]
-      includesecpeak: [[true, true, true, true, true],[true, true, true, true, true],[true, true, true, true, true],[true, true, true, true, true],[false, false, false, false, false]]
+      rebin: [[5,8,8,8,12], [5,8,8,8,12], [6,8,8,8,12], [5,8,8,8,12], [5,8,8,8,12], [8,10,10,10,12]]
+      includesecpeak: [[true, true, true, true, true],[true, true, true, true, true],[true, true, true, true, true],[true, true, true, true, true],[true, true, true, true, true],[false, false, false, false, false]]
       masssecpeak: 1.869
-      fix_masssecpeak: [[false, false, false, false, false],[true, false, true, false, true],[false, false, false, false, true],[true, false, false, false, true],[true, true, true, true, true]]
+      fix_masssecpeak: [[false, false, false, false, false],[false, false, false, false, false],[true, false, true, false, true],[false, false, false, false, true],[true, false, false, false, true],[true, true, true, true, true]]
       #Fraction Dplus/Ds (taken from pp5TeV as we don't store it in TTrees)
       widthsecpeak: 0.92
       fix_widthsecpeak: true
@@ -393,18 +394,18 @@ Dspp:
       triggereff: [1,1]
       triggereffunc: [0,0]
       triggerbit: HighMultSPD
-      
+
       sel_an_binmin: [2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [4,6,8,12,24] #list of pt nbins
       binning_matching: [0,1,1,2,3] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
-      triggersel: 
+      triggersel:
         data: "trigger_hasbit_HighMultSPD==1"
         mc: null
         weighttrig: true
 
-      data:  
+      data:
         runselection: [null, null, HighMultSPD2018]
         results: [/data/DerivedResults/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsSPDvspt,
                   /data/DerivedResults/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsSPDvspt,
@@ -508,7 +509,7 @@ Dspp:
 
 
 
-        
+
   systematics:
     probvariation:
       useperiod: [0,0,1] #period from where to define prob cuts

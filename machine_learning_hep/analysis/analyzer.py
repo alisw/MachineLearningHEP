@@ -12,14 +12,28 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
+from os.path import exists, join
+from os import makedirs
+
 # HF specific imports
 from machine_learning_hep.workflow.workflow_base import WorkflowBase
+from machine_learning_hep.io import dump_yaml_from_dict
 
 
 class Analyzer(WorkflowBase):
     def __init__(self, datap, case, typean, period):
         super().__init__(datap, case, typean, period)
 
+        # The only thing here is to dump the database in the data analysis directory
+        for mcordata in ("mc", "data"):
+            results_dir = datap["analysis"][typean][mcordata]["results"][period] \
+                    if period is not None else datap["analysis"][typean][mcordata]["resultsallp"]
+            if not exists(results_dir):
+                # create otput directories in case they do not exist
+                makedirs(results_dir)
+            if mcordata == "data":
+                dump_yaml_from_dict({case: datap},
+                                    join(results_dir, f"database_{case}_{typean}.yml"))
 
 
 class AnalyzerAfterBurner(WorkflowBase):

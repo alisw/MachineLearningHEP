@@ -63,7 +63,8 @@ analysis:
     dojetsystematics: false # analyzer: jetsystematics
   mc:
     histomass: true # processer: process_histomass
-    efficiency: true # processer: process_efficiency, process_response, process_unfolding
+    efficiency: true # processer: process_efficiency
+    response: true # processer: process_response
     feeddown: true # analyzer: feeddown
     dounfolding: true # analyzer: unfolding, unfolding_closure
   dofit: false # analyzer: fit
@@ -73,7 +74,8 @@ analysis:
   doeff: false # analyzer: efficiency
   docross: false # analyzer: makenormyields
   doplots: false # analyzer: plotternormyields
-  doplotsval: true # analyzer: plottervalidation
+  doplotsval: false # analyzer: plottervalidation
+
 systematics:
   cutvar:
     activate: false

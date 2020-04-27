@@ -23,13 +23,19 @@ import bz2
 import gzip
 import lzma
 import os
+import shutil
 import math
 from array import array
 import numpy as np
 import pandas as pd
 import lz4
 from machine_learning_hep.selectionutils import select_runs
-from ROOT import TGraphAsymmErrors  # pylint: disable=import-error, no-name-in-module
+from ROOT import TGraphAsymmErrors # pylint: disable=import-error, no-name-in-module
+from ROOT import kBlack, kRed, kGreen, kBlue, kYellow, kOrange, kMagenta, kCyan, kGray # pylint: disable=import-error, no-name-in-module
+from ROOT import kOpenCircle, kOpenSquare, kOpenDiamond, kOpenCross, kOpenStar, kOpenThreeTriangles # pylint: disable=import-error, no-name-in-module
+from ROOT import kOpenFourTrianglesX, kOpenDoubleDiamond, kOpenFourTrianglesPlus, kOpenCrossX # pylint: disable=import-error, no-name-in-module
+from ROOT import kFullCircle, kFullSquare, kFullDiamond, kFullCross, kFullStar, kFullThreeTriangles # pylint: disable=import-error, no-name-in-module
+from ROOT import kFullFourTrianglesX, kFullDoubleDiamond, kFullFourTrianglesPlus, kFullCrossX # pylint: disable=import-error, no-name-in-module
 
 def openfile(filename, attr):
     """
@@ -76,7 +82,6 @@ def merge_method(listfiles, namemerged):
     dftot = pd.concat(dflist)
     pickle.dump(dftot, openfile(namemerged, "wb"), protocol=4)
 
-# pylint: disable=too-many-nested-blocks
 def list_folders(main_dir, filenameinput, maxfiles):
     """
     List all files in a subdirectory structure
@@ -85,7 +90,7 @@ def list_folders(main_dir, filenameinput, maxfiles):
         print("the input directory =", main_dir, "doesnt exist")
     list_subdir0 = os.listdir(main_dir)
     listfolders = list()
-    for subdir0 in list_subdir0:
+    for subdir0 in list_subdir0: # pylint: disable=too-many-nested-blocks
         subdir0full = os.path.join(main_dir, subdir0)
         if os.path.isdir(subdir0full):
             list_subdir1 = os.listdir(subdir0full)
@@ -121,7 +126,7 @@ def checkdirlist(dirlist):
     Checks if list of folder already exist, to not overwrite by accident
     """
     exfolders = 0
-    for _, mydir in enumerate(dirlist):
+    for mydir in dirlist:
         if os.path.exists(mydir):
             print("rm -rf ", mydir)
             exfolders = exfolders - 1
@@ -141,7 +146,7 @@ def checkmakedirlist(dirlist):
     """
     Makes directories from list using 'mkdir'
     """
-    for _, mydir in enumerate(dirlist):
+    for mydir in dirlist:
         print("creating folder ", mydir)
         os.makedirs(mydir)
 
@@ -151,6 +156,30 @@ def checkmakedir(mydir):
     """
     print("creating folder ", mydir)
     os.makedirs(mydir)
+
+def delete_dir(path: str):
+    """
+    Delete directory if it exists. Return True if success, False otherwise.
+    """
+    if not os.path.isdir(path):
+        print("Directory %s does not exist." % path)
+        return True
+    print("Deleting directory %s" % path)
+    try:
+        shutil.rmtree(path)
+    except OSError:
+        print("Error: Failed to delete directory %s" % path)
+        return False
+    return True
+
+def delete_dirlist(dirlist: str):
+    """
+    Delete directories from list. Return True if success, False otherwise.
+    """
+    for path in dirlist:
+        if not delete_dir(path):
+            return False
+    return True
 
 def appendfiletolist(mylist, namefile):
     """
@@ -398,7 +427,68 @@ def folding(h_input, response_matrix, h_output):
             h_folded.SetBinError(a+1, b+1, math.sqrt(val_err))
     return h_folded
 
-def setup_histogram(hist, colour=1, markerstyle=25, size=1.5):
+def get_plot_range(val_min, val_max, margin_min, margin_max, logscale=False):
+    '''Return the minimum and maximum of the plotting range so that there are margins
+    expressed as fractions of the plotting range.'''
+    k = 1 - margin_min - margin_max
+    if k <= 0:
+        return None, None
+    k_min = margin_min / k
+    k_max = margin_max / k
+    if logscale:
+        if val_min <= 0 or val_max <= 0:
+            print("Error: Cannot plot non-positive values in logscale.")
+            return None, None
+        val_range = val_max / val_min
+        val_min_plot = val_min / pow(val_range, k_min)
+        val_max_plot = val_max * pow(val_range, k_max)
+    else:
+        val_range = val_max - val_min
+        val_min_plot = val_min - k_min * val_range
+        val_max_plot = val_max + k_max * val_range
+    return val_min_plot, val_max_plot
+
+def get_y_window_gr(l_gr: list):
+    '''Return the minimum and maximum value so that all the points of the graphs in the list
+    fit in the range including the error bars.'''
+    if not isinstance(l_gr, list):
+        l_gr = [l_gr]
+    y_min = min([min([(gr.GetY())[i] - (gr.GetEYlow())[i] \
+        for i in range(gr.GetN())]) for gr in l_gr])
+    y_max = max([max([(gr.GetY())[i] + (gr.GetEYhigh())[i] \
+        for i in range(gr.GetN())]) for gr in l_gr])
+    return y_min, y_max
+
+def get_y_window_his(l_his: list):
+    '''Return the minimum and maximum value so that all the points of the histograms in the list
+    fit in the range including the error bars.'''
+    if not isinstance(l_his, list):
+        l_his = [l_his]
+    y_min = min([min([his.GetBinContent(i + 1) - his.GetBinError(i + 1) \
+        for i in range(his.GetNbinsX())]) for his in l_his])
+    y_max = max([max([his.GetBinContent(i + 1) + his.GetBinError(i + 1) \
+        for i in range(his.GetNbinsX())]) for his in l_his])
+    return y_min, y_max
+
+def get_colour(i: int):
+    '''Return a colour from the list.'''
+    colours = [kBlack, kBlue, kRed, kGreen + 1, kOrange + 1, kMagenta, kCyan + 1, kGray + 1, \
+        kBlue + 2, kRed - 3, kGreen + 3, kYellow  + 1, kMagenta + 1, kCyan + 2, kRed + 3]
+    return colours[i % len(colours)]
+
+def get_marker(i: int, full=False):
+    '''Return a marker from the list.'''
+    markers_open = [kOpenCircle, kOpenSquare, kOpenCross, kOpenDiamond, kOpenStar,
+                    kOpenThreeTriangles, kOpenFourTrianglesX, kOpenDoubleDiamond,
+                    kOpenFourTrianglesPlus, kOpenCrossX]
+    markers_full = [kFullCircle, kFullSquare, kFullCross, kFullDiamond, kFullStar,
+                    kFullThreeTriangles, kFullFourTrianglesX, kFullDoubleDiamond,
+                    kFullFourTrianglesPlus, kFullCrossX]
+    if full:
+        return markers_full[i % len(markers_full)]
+    return markers_open[i % len(markers_open)]
+
+def setup_histogram(hist, colour=1, markerstyle=kOpenCircle, size=1.5):
     hist.SetStats(0)
     hist.SetTitleSize(0.04, "X")
     hist.SetTitleOffset(1.0, "X")
@@ -410,19 +500,21 @@ def setup_histogram(hist, colour=1, markerstyle=25, size=1.5):
     hist.SetMarkerStyle(markerstyle)
     hist.SetMarkerColor(colour)
 
-def setup_pad(pad):
-    pad.SetFillColor(0)
-    pad.SetMargin(0.15, 0.9, 0.15, 0.9)
-    pad.Draw()
-    pad.SetTicks(1, 1)
-    pad.cd()
+def setup_canvas(can):
+    can.SetCanvasSize(1900, 1500)
+    can.SetWindowSize(500, 500)
+    can.SetFillColor(0)
+    can.SetTicks(1, 1)
+    can.cd()
 
-def setup_legend(legend):
+def setup_legend(legend, textsize=0.03):
     legend.SetBorderSize(0)
-    legend.SetTextSize(0.03)
+    legend.SetFillColor(0)
+    legend.SetFillStyle(0)
+    legend.SetTextSize(textsize)
     legend.SetTextFont(42)
 
-def setup_tgraph(tg_, colour=46, alphastyle=0.3, fillstyle=1001):
+def setup_tgraph(tg_, colour=1, alphastyle=0.3, fillstyle=1001):
     tg_.GetXaxis().SetTitleSize(0.04)
     tg_.GetXaxis().SetTitleOffset(1.0)
     tg_.GetYaxis().SetTitleSize(0.04)

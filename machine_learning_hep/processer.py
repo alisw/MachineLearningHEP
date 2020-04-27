@@ -16,6 +16,7 @@
 main script for doing data processing, machine learning and analysis
 """
 import sys
+from copy import deepcopy
 import multiprocessing as mp
 import pickle
 import os
@@ -85,6 +86,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.n_gen = datap["files_names"]["namefile_gen"]
         self.n_filemass = datap["files_names"]["histofilename"]
         self.n_fileeff = datap["files_names"]["efffilename"]
+        self.n_fileresp = datap["files_names"]["respfilename"]
         self.n_mcreweights = datap["files_names"]["namefile_mcweights"]
 
         #selections
@@ -132,6 +134,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.l_evtorig = createlist(self.d_pkl, self.l_path, self.n_evtorig)
         self.l_histomass = createlist(self.d_results, self.l_path, self.n_filemass)
         self.l_histoeff = createlist(self.d_results, self.l_path, self.n_fileeff)
+        self.l_historesp = createlist(self.d_results, self.l_path, self.n_fileresp)
 
         if self.mcordata == "mc":
             self.l_gen = createlist(self.d_pkl, self.l_path, self.n_gen)
@@ -143,12 +146,13 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.lpt_anbinmin = datap["sel_skim_binmin"]
         self.lpt_anbinmax = datap["sel_skim_binmax"]
         self.p_nptbins = len(self.lpt_anbinmin)
+        # Analysis pT bins
+        self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
+        self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
+        self.p_nptfinbins = len(self.lpt_finbinmin)
         self.lpt_model = datap["mlapplication"]["modelsperptbin"]
         self.dirmodel = datap["ml"]["mlout"]
         self.lpt_model = appendmainfoldertolist(self.dirmodel, self.lpt_model)
-        if not self.doml:
-            datap["mlapplication"]["probcutpresel"][self.mcordata] = [0 for _ in self.lpt_anbinmin]
-            datap["mlapplication"]["probcutoptimal"] = [0 for _ in self.lpt_anbinmin]
 
         self.lpt_probcutpre = datap["mlapplication"]["probcutpresel"][self.mcordata]
         self.lpt_probcutfin = datap["mlapplication"]["probcutoptimal"]
@@ -163,6 +167,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.d_pkl_decmerged = d_pkl_decmerged
         self.n_filemass = os.path.join(self.d_results, self.n_filemass)
         self.n_fileeff = os.path.join(self.d_results, self.n_fileeff)
+        self.n_fileresp = os.path.join(self.d_results, self.n_fileresp)
 
         self.lpt_recosk = [self.n_reco.replace(".pkl", "_%s%d_%d.pkl" % \
                           (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
@@ -202,6 +207,11 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
  #       if os.path.exists(self.d_root) is False:
  #           self.logger.warning("ROOT tree folder is not there. Is it intentional?")
+
+        # Analysis cuts (loaded in self.process_histomass)
+        self.analysis_cuts = None
+        # Flag if they should be used
+        self.do_custom_analysis_cuts = datap["analysis"][self.typean].get("use_cuts", False)
 
     def unpack(self, file_index):
         treeevtorig = uproot.open(self.l_root[file_index])[self.n_treeevt]
@@ -392,7 +402,41 @@ class Processer: # pylint: disable=too-many-instance-attributes
             if self.mcordata == "mc":
                 merge_method(self.mptfiles_gensk[ipt], self.lpt_gendecmerged[ipt])
 
-    # pylint: disable=no-member
+
+    def load_cuts(self):
+        """Load cuts from database
+        """
+
+        # Assume that there is a list with self.p
+        raw_cuts = self.datap["analysis"][self.typean].get("cuts", None)
+        if not raw_cuts:
+            print("No custom cuts given, hence not cutting...")
+            self.analysis_cuts = [None] * self.p_nptfinbins
+            return
+
+        if len(raw_cuts) != self.p_nptfinbins:
+            print(f"You have {self.p_nptfinbins} but you passed {len(raw_cuts)} cuts. Exit...")
+            sys.exit(1)
+
+        self.analysis_cuts = deepcopy(raw_cuts)
+
+
+    def apply_cuts_ptbin(self, df_, ipt):
+        """Helper function to cut dataframe with cuts for given pT bin
+
+        Args:
+            df: dataframe
+            ipt: int
+                i'th pT bin
+        Returns:
+            dataframe
+        """
+        if not self.analysis_cuts[ipt]:
+            return df_
+
+        return df_.query(self.analysis_cuts[ipt])
+
+
     def process_histomass(self):
         print("Doing masshisto", self.mcordata, self.period)
         print("Using run selection for mass histo", \
@@ -402,14 +446,16 @@ class Processer: # pylint: disable=too-many-instance-attributes
         else:
             print("No extra selection needed since we are doing std analysis")
 
+        # Load potential custom cuts
+        self.load_cuts()
+
         create_folder_struc(self.d_results, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
-        self.parallelizer(self.process_histomass_single, arguments, self.p_chunksizeunp)
+        self.parallelizer(self.process_histomass_single, arguments, self.p_chunksizeunp) # pylint: disable=no-member
         tmp_merged = \
-        f"/data/tmp/hadd/{self.case}_{self.typean}/mass_{self.period}/{get_timestamp_string()}/"
+            f"/data/tmp/hadd/{self.case}_{self.typean}/mass_{self.period}/{get_timestamp_string()}/"
         mergerootfiles(self.l_histomass, self.n_filemass, tmp_merged)
 
-    # pylint: disable=no-member
     def process_efficiency(self):
         print("Doing efficiencies", self.mcordata, self.period)
         print("Using run selection for eff histo", \
@@ -421,6 +467,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         create_folder_struc(self.d_results, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
-        self.parallelizer(self.process_efficiency_single, arguments, self.p_chunksizeunp)
+        self.parallelizer(self.process_efficiency_single, arguments, self.p_chunksizeunp) # pylint: disable=no-member
         tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/histoeff_{self.period}/{get_timestamp_string()}/" # pylint: disable=line-too-long
         mergerootfiles(self.l_histoeff, self.n_fileeff, tmp_merged)

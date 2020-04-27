@@ -25,6 +25,7 @@ from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-modu
 from ROOT import TFile, TH1F, TH2F, RooUnfoldResponse # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utilities import selectdfrunlist, seldf_singlevar, openfile
+from machine_learning_hep.utilities import create_folder_struc, mergerootfiles, get_timestamp_string
 from machine_learning_hep.utilities import z_calc, z_gen_calc
 from machine_learning_hep.utilities_plot import build2dhisto, fill2dhist, makefill3dhist
 from machine_learning_hep.processer import Processer
@@ -100,10 +101,24 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
 
-
     # pylint: disable=too-many-branches
     def process_histomass_single(self, index):
         myfile = TFile.Open(self.l_histomass[index], "recreate")
+
+        # Get number of selected events and save it in the first bin of the histonorm histogram.
+
+        dfevtorig = pickle.load(openfile(self.l_evtorig[index], "rb"))
+        if self.s_trigger is not None:
+            dfevtorig = dfevtorig.query(self.s_trigger)
+        if self.runlistrigger is not None:
+            dfevtorig = selectdfrunlist(dfevtorig, self.run_param[self.runlistrigger], "run_number")
+        dfevtevtsel = dfevtorig.query(self.s_evtsel)
+        neventsafterevtsel = len(dfevtevtsel)
+        histonorm = TH1F("histonorm", "histonorm", 1, 0, 1)
+        histonorm.SetBinContent(1, neventsafterevtsel)
+        myfile.cd()
+        histonorm.Write()
+
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
@@ -294,9 +309,22 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
         return df_tmp_selgen, df_tmp_selreco, df_tmp_selrecogen
 
-
-    # pylint: disable=too-many-locals
     def process_response(self):
+        print("Doing response", self.mcordata, self.period)
+        print("Using run selection for resp histo", \
+               self.runlistrigger, "for period", self.period)
+        if self.doml is True:
+            print("Doing ml analysis")
+        else:
+            print("No extra selection needed since we are doing std analysis")
+
+        create_folder_struc(self.d_results, self.l_path)
+        arguments = [(i,) for i in range(len(self.l_root))]
+        self.parallelizer(self.process_response_single, arguments, self.p_chunksizeunp)
+        tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/historesp_{self.period}/{get_timestamp_string()}/" # pylint: disable=line-too-long
+        mergerootfiles(self.l_historesp, self.n_fileresp, tmp_merged)
+
+    def process_response_single(self, index): # pylint: disable=too-many-locals
         """
         First of all, we load all the mc gen and reco files that are skimmed
         in bins of HF candidate ptand we apply the standard selection to all
@@ -306,6 +334,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         zbin_recoand pseudorapidity. Reco candidates according to evt selection, eta
         jets, trigger and ml probability of the HF hadron
         """
+
         zbin_reco = []
         nzbin_reco = self.p_nbinshape_reco
         zbin_reco = self.varshaperanges_reco
@@ -331,20 +360,21 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         candptbin.append(self.lpt_finbinmax[-1])
         candptbinarray = array.array('d', candptbin)
 
-        out_file = TFile.Open(self.n_fileeff, "update")
+        out_file = TFile.Open(self.l_historesp[index], "recreate")
         list_df_mc_reco = []
         list_df_mc_gen = []
 
-        for iptskim, _ in enumerate(self.lpt_anbinmin):
 
-            df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[iptskim], "rb"))
+        for iptskim in range(self.p_nptbins):
+
+            df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[iptskim][index], "rb"))
             if self.runlistrigger is not None:
                 df_mc_gen = selectdfrunlist(df_mc_gen, \
                         self.run_param[self.runlistrigger], "run_number")
             df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
             list_df_mc_gen.append(df_mc_gen)
 
-            df_mc_reco = pickle.load(openfile(self.lpt_recodecmerged[iptskim], "rb"))
+            df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[iptskim][index], "rb"))
             if self.s_evtsel is not None:
                 df_mc_reco = df_mc_reco.query(self.s_evtsel)
             if self.s_jetsel_reco is not None:
@@ -518,7 +548,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         hjetpt_gen_nocuts_pr.Sumw2()
         hjetpt_gen_cuts_pr.Sumw2()
         hjetpt_gen_nocuts_closure.Sumw2()
-        hjetpt_gen_nocuts_closure.Sumw2()
+        hjetpt_gen_cuts_closure.Sumw2()
 
         fill_hist(hjetpt_gen_nocuts_pr, df_tmp_selgen_pr["pt_gen_jet"])
         fill_hist(hjetpt_gen_cuts_pr, df_tmp_selrecogen_pr["pt_gen_jet"])
