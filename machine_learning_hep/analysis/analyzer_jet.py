@@ -1403,24 +1403,24 @@ class AnalyzerJet(Analyzer):
 
         # get the prompt POWHEG variations
 
-        input_powheg_sys = []
-        input_powheg_xsection_sys = []
-        for i_powheg in range(len(self.powheg_prompt_variations)):
-            path = "%s%s.root" % (self.powheg_prompt_variations_path, self.powheg_prompt_variations[i_powheg])
-            input_powheg_sys_i = self.get_simulated_yields(path, 2, True)
-            if not input_powheg_sys_i:
-                self.logger.fatal(make_message_notfound("simulated yields", path))
-            input_powheg_sys_i.SetName("fh2_prompt_%s_%d" % (self.v_varshape_binning, i_powheg))
-            input_powheg_sys.append(input_powheg_sys_i)
-            input_powheg_xsection_sys_i = input_powheg_sys_i.Clone(input_powheg_sys_i.GetName() + "_xsec")
-            input_powheg_xsection_sys.append(input_powheg_xsection_sys_i)
+        #input_powheg_sys = []
+        #input_powheg_xsection_sys = []
+        #for i_powheg in range(len(self.powheg_prompt_variations)):
+            #path = "%s%s.root" % (self.powheg_prompt_variations_path, self.powheg_prompt_variations[i_powheg])
+            #input_powheg_sys_i = self.get_simulated_yields(path, 2, True)
+            #if not input_powheg_sys_i:
+            #    self.logger.fatal(make_message_notfound("simulated yields", path))
+            #input_powheg_sys_i.SetName("fh2_prompt_%s_%d" % (self.v_varshape_binning, i_powheg))
+            #input_powheg_sys.append(input_powheg_sys_i)
+            #input_powheg_xsection_sys_i = input_powheg_sys_i.Clone(input_powheg_sys_i.GetName() + "_xsec")
+            #input_powheg_xsection_sys.append(input_powheg_xsection_sys_i)
 
         input_powheg_z = []
         input_powheg_xsection_z = []
-        input_powheg_sys_z = []
-        input_powheg_xsection_sys_z = []
-        tg_powheg = []
-        tg_powheg_xsection = []
+        #input_powheg_sys_z = []
+        #input_powheg_xsection_sys_z = []
+        #tg_powheg = []
+        #tg_powheg_xsection = []
 
         # get simulated distributions from PYTHIA 6 and POWHEG and calculate their spread
 
@@ -1433,17 +1433,17 @@ class AnalyzerJet(Analyzer):
             input_powheg_z[ibin2].Scale(1.0 / input_powheg_z[ibin2].Integral(input_powheg_z[ibin2].FindBin(self.lvarshape_binmin_reco[0]), input_powheg_z[ibin2].FindBin(self.lvarshape_binmin_reco[-1])), "width")
             input_powheg_xsection_z.append(input_powheg_xsection.ProjectionX("input_powheg_xsection_z" + suffix, ibin2 + 1, ibin2 + 1, "e"))
             input_powheg_xsection_z[ibin2].Scale(1.0, "width")
-            input_powheg_sys_z_iter = []
-            input_powheg_xsection_sys_z_iter = []
-            for i_powheg in range(len(self.powheg_prompt_variations)):
-                input_powheg_sys_z_iter.append(input_powheg_sys[i_powheg].ProjectionX("input_powheg_sys_z"+self.powheg_prompt_variations[i_powheg]+suffix, ibin2 + 1, ibin2 + 1, "e"))
-                input_powheg_sys_z_iter[i_powheg].Scale(1.0 / input_powheg_sys_z_iter[i_powheg].Integral(input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[0]), input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[-1])), "width")
-                input_powheg_xsection_sys_z_iter.append(input_powheg_xsection_sys[i_powheg].ProjectionX("input_powheg_xsection_sys_z"+self.powheg_prompt_variations[i_powheg]+suffix, ibin2 + 1, ibin2 + 1, "e"))
-                input_powheg_xsection_sys_z_iter[i_powheg].Scale(1.0, "width")
-            input_powheg_sys_z.append(input_powheg_sys_z_iter)
-            input_powheg_xsection_sys_z.append(input_powheg_xsection_sys_z_iter)
-            tg_powheg.append(tg_sys(input_powheg_z[ibin2], input_powheg_sys_z[ibin2]))
-            tg_powheg_xsection.append(tg_sys(input_powheg_xsection_z[ibin2], input_powheg_xsection_sys_z[ibin2]))
+            #input_powheg_sys_z_iter = []
+            #input_powheg_xsection_sys_z_iter = []
+            #for i_powheg in range(len(self.powheg_prompt_variations)):
+            #    input_powheg_sys_z_iter.append(input_powheg_sys[i_powheg].ProjectionX("input_powheg_sys_z"+self.powheg_prompt_variations[i_powheg]+suffix, ibin2 + 1, ibin2 + 1, "e"))
+            #    input_powheg_sys_z_iter[i_powheg].Scale(1.0 / input_powheg_sys_z_iter[i_powheg].Integral(input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[0]), input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[-1])), "width")
+            #    input_powheg_xsection_sys_z_iter.append(input_powheg_xsection_sys[i_powheg].ProjectionX("input_powheg_xsection_sys_z"+self.powheg_prompt_variations[i_powheg]+suffix, ibin2 + 1, ibin2 + 1, "e"))
+            #    input_powheg_xsection_sys_z_iter[i_powheg].Scale(1.0, "width")
+            #input_powheg_sys_z.append(input_powheg_sys_z_iter)
+            #input_powheg_xsection_sys_z.append(input_powheg_xsection_sys_z_iter)
+            #tg_powheg.append(tg_sys(input_powheg_z[ibin2], input_powheg_sys_z[ibin2]))
+            #tg_powheg_xsection.append(tg_sys(input_powheg_xsection_z[ibin2], input_powheg_xsection_sys_z[ibin2]))
 
         for ibin2 in range(self.p_nbin2_reco):
             suffix = "%s_%.2f_%.2f" % \
@@ -1930,9 +1930,11 @@ class AnalyzerJet(Analyzer):
             setup_legend(leg_input_mc_gen_z)
             setup_histogram(input_mc_gen_z[ibin2], get_colour(2), get_marker(1))
             y_min_h, y_max_h = get_y_window_his([unfolded_z_scaled_list[i_iter_choice][ibin2], input_mc_gen_z[ibin2], input_powheg_z[ibin2]])
-            y_min_g, y_max_g = get_y_window_gr([tg_powheg[ibin2]])
-            y_min = min(y_min_g, y_min_h)
-            y_max = max(y_max_g, y_max_h)
+            #y_min_g, y_max_g = get_y_window_gr([tg_powheg[ibin2]])
+            #y_min = min(y_min_g, y_min_h)
+            #y_max = max(y_max_g, y_max_h)
+            y_min = y_min_h
+            y_max = y_max_h
             y_margin_up = 0.2
             y_margin_down = 0.05
             input_mc_gen_z[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min, y_max, y_margin_down, y_margin_up))
@@ -1948,13 +1950,13 @@ class AnalyzerJet(Analyzer):
             setup_histogram(input_powheg_z[ibin2], get_colour(3), get_marker(2))
             leg_input_mc_gen_z.AddEntry(input_powheg_z[ibin2], "POWHEG + PYTHIA 6", "P")
             input_powheg_z[ibin2].Draw("same")
-            setup_tgraph(tg_powheg[ibin2], get_colour(3), 0.3)
-            tg_powheg[ibin2].Draw("5")
+            #setup_tgraph(tg_powheg[ibin2], get_colour(3), 0.3)
+            #tg_powheg[ibin2].Draw("5")
             leg_input_mc_gen_z.Draw("same")
             latex = TLatex(0.5, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]))
             draw_latex(latex)
             cinput_mc_gen_z.SaveAs("%s/unfolded_vs_mc_%s_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
-            cinput_mc_gen_z.SaveAs("%s/unfolded_vs_mc_%s_%s.pdf" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
+            #cinput_mc_gen_z.SaveAs("%s/unfolded_vs_mc_%s_%s.pdf" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
 
             # plot the comparison of the final cross-section and POWHEG
 
@@ -1965,9 +1967,11 @@ class AnalyzerJet(Analyzer):
             setup_histogram(unfolded_z_xsection_list[i_iter_choice][ibin2], get_colour(1), get_marker(0))
             leg_input_mc_gen_z_xsection.AddEntry(unfolded_z_xsection_list[i_iter_choice][ibin2], "unfolded data", "P")
             y_min_h, y_max_h = get_y_window_his(unfolded_z_xsection_list[i_iter_choice][ibin2])
-            y_min_g, y_max_g = get_y_window_gr(tg_powheg_xsection[ibin2])
-            y_min = min(y_min_g, y_min_h)
-            y_max = max(y_max_g, y_max_h)
+            #y_min_g, y_max_g = get_y_window_gr(tg_powheg_xsection[ibin2])
+            #y_min = min(y_min_g, y_min_h)
+            #y_max = max(y_max_g, y_max_h)
+            y_min = y_min_h
+            y_max = y_max_h
             y_margin_up = 0.2
             y_margin_down = 0.05
             unfolded_z_xsection_list[i_iter_choice][ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min, y_max, y_margin_down, y_margin_up))
@@ -1980,13 +1984,13 @@ class AnalyzerJet(Analyzer):
             setup_histogram(input_powheg_xsection_z[ibin2], get_colour(3), get_marker(2))
             leg_input_mc_gen_z_xsection.AddEntry(input_powheg_xsection_z[ibin2], "POWHEG + PYTHIA 6", "P")
             input_powheg_xsection_z[ibin2].Draw("same")
-            setup_tgraph(tg_powheg_xsection[ibin2], get_colour(3), 0.3)
-            tg_powheg_xsection[ibin2].Draw("5")
+            #setup_tgraph(tg_powheg_xsection[ibin2], get_colour(3), 0.3)
+            #tg_powheg_xsection[ibin2].Draw("5")
             latex = TLatex(0.5, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]))
             draw_latex(latex)
             leg_input_mc_gen_z_xsection.Draw("same")
             cinput_mc_gen_z_xsection.SaveAs("%s/unfolded_vs_mc_%s_xsection_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
-            cinput_mc_gen_z_xsection.SaveAs("%s/unfolded_vs_mc_%s_xsection_%s.pdf" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
+            #cinput_mc_gen_z_xsection.SaveAs("%s/unfolded_vs_mc_%s_xsection_%s.pdf" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
 
         for ibin2 in range(self.p_nbin2_reco):
             suffix = "%s_%.2f_%.2f" % \
@@ -2467,16 +2471,14 @@ class AnalyzerJet(Analyzer):
                 y_margin_down = 0.05
                 for sys_var in range(self.systematic_variations[sys_cat]):
                     if sys_var == 0:
-                        #if sys_cat == 0:
                         input_histograms_default[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min, y_max, y_margin_down, y_margin_up))
-                        #input_histograms_default[ibin2].GetYaxis().SetRangeUser(0.0, input_histograms_default[ibin2].GetMaximum() * 2.5)
                         input_histograms_default[ibin2].GetXaxis().SetRangeUser(round(self.lvarshape_binmin_gen[0], 2), round(self.lvarshape_binmax_gen[-1], 2))
                         input_histograms_default[ibin2].SetTitle("")
                         input_histograms_default[ibin2].SetXTitle(self.v_varshape_latex)
                         input_histograms_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
                         input_histograms_default[ibin2].Draw()
                     leg_sysvar_each.AddEntry(input_histograms_sys[ibin2][sys_cat][sys_var], self.systematic_varlabels[sys_cat][sys_var], "P")
-                    setup_histogram(input_histograms_sys[ibin2][sys_cat][sys_var], get_colour(nsys + 1))
+                    setup_histogram(input_histograms_sys[ibin2][sys_cat][sys_var], get_colour(nsys + 1), get_marker(nsys + 1))
                     input_histograms_sys[ibin2][sys_cat][sys_var].Draw("same")
                     nsys = nsys + 1
                 latex = TLatex(0.15, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]))
