@@ -28,25 +28,23 @@ from ROOT import TFile, TCanvas, TH1F, TF1, gROOT  # pylint: disable=import-erro
 from machine_learning_hep.utilities import seldf_singlevar, split_df_sigbkg, createstringselection
 from machine_learning_hep.utilities import openfile, selectdfquery
 from machine_learning_hep.correlations import vardistplot, scatterplot, correlationmatrix
-from machine_learning_hep.models import getclf_scikit, getclf_xgboost, getclf_keras
-from machine_learning_hep.models import fit, savemodels, test, apply, decisionboundaries
-from machine_learning_hep.root import write_tree
-from machine_learning_hep.mlperformance import cross_validation_mse, plot_cross_validation_mse
-from machine_learning_hep.mlperformance import plot_learning_curves, precision_recall
-from machine_learning_hep.mlperformance import roc_train_test, plot_overtraining
-from machine_learning_hep.optimisation.grid_search import do_gridsearch, perform_plot_gridsearch
-from machine_learning_hep.models import importanceplotall
 from machine_learning_hep.logger import get_logger
+from machine_learning_hep.root import write_tree
 from machine_learning_hep.optimization import calc_bkg, calc_signif, calc_eff, calc_sigeff_steps
 from machine_learning_hep.correlations import vardistplot_probscan, efficiency_cutscan
-from machine_learning_hep.utilities import checkdirlist, checkmakedirlist
+from machine_learning_hep.utilities import checkdir, checkmakedir
+from .interface import get_model, get_bayesian_opt, savemodels
+from .utils import test, apply_inference, decisionboundaries, importanceplotall
+from .mlperformance import cross_validation_mse, plot_cross_validation_mse
+from .mlperformance import plot_learning_curves, precision_recall
+from .mlperformance import roc_train_test, plot_overtraining
 
 # pylint: disable=too-many-instance-attributes, too-many-statements
 class Optimiser:
     #Class Attribute
     species = "optimiser"
 
-    def __init__(self, data_param, case, typean, model_config, binmin,
+    def __init__(self, data_param, case, typean, binmin,
                  binmax, raahp, training_var):
 
         self.logger = get_logger()
@@ -108,6 +106,10 @@ class Optimiser:
         self.test_frac = data_param["ml"]["test_frac"]
         self.p_plot_options = data_param["variables"].get("plot_options", {})
         self.p_dofullevtmerge = data_param["dofullevtmerge"]
+        #model param
+        self.p_class = None
+        self.p_classname = data_param["ml"]["names"]
+        self.s_suffix = None
 
         self.p_evtsel = data_param["ml"]["evtsel"]
         self.p_triggersel_mc = data_param["ml"]["triggersel"]["mc"]
@@ -133,12 +135,6 @@ class Optimiser:
         #selections
         self.s_selbkgml = data_param["ml"]["sel_bkgml"]
         self.s_selsigml = data_param["ml"]["sel_sigml"]
-        #model param
-        self.db_model = model_config
-        self.p_class = None
-        self.p_classname = None
-        self.p_trainedmod = None
-        self.s_suffix = None
 
         #significance
         self.is_fonll_from_root = data_param["ml"]["opt"]["isFONLLfromROOT"]
@@ -274,23 +270,23 @@ class Optimiser:
                   imageIO_corr_bkg_train
 
     def loadmodels(self):
-        classifiers_scikit, names_scikit, _, _ = getclf_scikit(self.db_model)
-        classifiers_xgboost, names_xgboost, _, _ = getclf_xgboost(self.db_model)
-        classifiers_keras, names_keras, _, _ = getclf_keras(self.db_model,
-                                                            len(self.df_xtrain.columns))
-        self.p_class = classifiers_scikit+classifiers_xgboost+classifiers_keras
-        self.p_classname = names_scikit+names_xgboost+names_keras
+        self.p_class = [get_model(self.p_mltype, name, len(self.df_xtrain.columns)) \
+                for name in self.p_classname]
+        for name, model in zip(self.p_classname, self.p_class):
+            if not model:
+                self.logger.fatal("Model %s (%s) could not be loaded", name, self.p_mltype)
 
     def do_train(self):
         self.logger.info("Training")
         t0 = time.time()
-        self.p_trainedmod = fit(self.p_classname, self.p_class, self.df_xtrain, self.df_ytrain)
-        savemodels(self.p_classname, self.p_trainedmod, self.dirmlout, self.s_suffix)
+        for model in self.p_class:
+            model.fit(self.df_xtrain, self.df_ytrain)
         self.logger.info("Training over")
         self.logger.info("Time elapsed = %.3f", time.time() - t0)
+        savemodels(self.p_classname, self.p_class, self.dirmlout, self.s_suffix)
 
     def do_test(self):
-        df_ml_test = test(self.p_mltype, self.p_classname, self.p_trainedmod,
+        df_ml_test = test(self.p_mltype, self.p_classname, self.p_class,
                           self.df_mltest, self.v_train, self.v_sig)
         df_ml_test_to_df = self.dirmlout+"/testsample_%s_mldecision.pkl" % (self.s_suffix)
         df_ml_test_to_root = self.dirmlout+"/testsample_%s_mldecision.root" % (self.s_suffix)
@@ -298,10 +294,10 @@ class Optimiser:
         write_tree(df_ml_test_to_root, self.n_treetest, df_ml_test)
 
     def do_apply(self):
-        df_data = apply(self.p_mltype, self.p_classname, self.p_trainedmod,
-                        self.df_data, self.v_train)
-        df_mc = apply(self.p_mltype, self.p_classname, self.p_trainedmod,
-                      self.df_mc, self.v_train)
+        df_data = apply_inference(self.p_mltype, self.p_classname, self.p_class,
+                                  self.df_data, self.v_train)
+        df_mc = apply_inference(self.p_mltype, self.p_classname, self.p_class,
+                                self.df_mc, self.v_train)
         pickle.dump(df_data, openfile(self.f_reco_applieddata, "wb"), protocol=4)
         pickle.dump(df_mc, openfile(self.f_reco_appliedmc, "wb"), protocol=4)
 
@@ -334,29 +330,19 @@ class Optimiser:
 
     def do_bayesian_opt(self):
         self.logger.info("Do Bayesian optimisation for all classifiers")
-        _, names_scikit, _, bayes_opt_scikit = getclf_scikit(self.db_model)
-        _, names_xgboost, _, bayes_opt_xgboost = getclf_xgboost(self.db_model)
-        _, names_keras, _, bayes_opt_keras = getclf_keras(self.db_model,
-                                                          len(self.df_xtrain.columns))
-        clfs_all = bayes_opt_scikit + bayes_opt_xgboost + bayes_opt_keras
-        clfs_names_all = names_scikit + names_xgboost + names_keras
-
-
-        clfs_names_all = [name for name, clf in zip(clfs_names_all, clfs_all) if clf]
-        clfs_all = [clf for clf in clfs_all if clf]
-
+        bayes_opts = [get_bayesian_opt(self.p_mltype, name, len(self.df_xtrain.columns)) \
+                for name in self.p_classname]
         out_dirs = [os.path.join(self.dirmlplot, "bayesian_opt", name, f"{name}{self.s_suffix}") \
-                for name in clfs_names_all]
-        if checkdirlist(out_dirs):
-            # Only draw results if any can be found
-            self.logger.warning("Not overwriting anything, just plotting if possible " \
-                    "Please remove corresponding directories if you are certain you want to do " \
-                    "grid search again")
-            return
-        checkmakedirlist(out_dirs)
+                for name in self.p_classname]
 
         # Now, do it
-        for opt, out_dir in zip(clfs_all, out_dirs):
+        for opt, out_dir in zip(bayes_opts, out_dirs):
+            if not opt:
+                continue
+            if checkdir(out_dir):
+                self.logger.warning("Found already an optimisation in %s. Skip...", out_dir)
+                continue
+            checkmakedir(out_dir)
             opt.x_train = self.df_xtrain
             opt.y_train = self.df_ytrain
 
@@ -365,44 +351,17 @@ class Optimiser:
             opt.plot(out_dir)
 
 
-    def do_grid(self):
-        self.logger.info("Do grid search")
-        clfs_scikit, names_scikit, grid_params_scikit, _ = getclf_scikit(self.db_model)
-        clfs_xgboost, names_xgboost, grid_params_xgboost, _ = getclf_xgboost(self.db_model)
-        clfs_keras, names_keras, grid_params_keras, _ = getclf_keras(self.db_model,
-                                                                     len(self.df_xtrain.columns))
-        clfs_grid_params_all = grid_params_scikit + grid_params_xgboost + grid_params_keras
-        clfs_all = clfs_scikit + clfs_xgboost + clfs_keras
-        clfs_names_all = names_scikit + names_xgboost + names_keras
-
-        clfs_all = [clf for clf, gps in zip(clfs_all, clfs_grid_params_all) if gps]
-        clfs_names_all = [name for name, gps in zip(clfs_names_all, clfs_grid_params_all) if gps]
-        clfs_grid_params_all = [gps for gps in clfs_grid_params_all if gps]
-
-        out_dirs = [os.path.join(self.dirmlplot, "grid_search", name, f"{name}{self.s_suffix}") \
-                for name in clfs_names_all]
-        if checkdirlist(out_dirs):
-            # Only draw results if any can be found
-            self.logger.warning("Not overwriting anything, just plotting again what was done " \
-                    "before and returning. Please remove corresponding directories " \
-                    "if you are certain you want do do grid search again")
-            perform_plot_gridsearch(clfs_names_all, out_dirs)
-            return
-        checkmakedirlist(out_dirs)
-
-        do_gridsearch(clfs_names_all, clfs_all, clfs_grid_params_all, self.df_xtrain,
-                      self.df_ytrain, self.p_nkfolds, out_dirs, self.p_ncorescross)
-        perform_plot_gridsearch(clfs_names_all, out_dirs)
-
     def do_boundary(self):
-        classifiers_scikit_2var, names_2var = getclf_scikit(self.db_model)
-        classifiers_keras_2var, names_keras_2var = getclf_keras(self.db_model, 2)
-        classifiers_2var = classifiers_scikit_2var+classifiers_keras_2var
-        names_2var = names_2var+names_keras_2var
+        classifiers = [get_model(self.p_mltype, name, 2) \
+                for name in self.p_classname]
+        for name, model in zip(self.p_classname, classifiers):
+            if not model:
+                self.logger.fatal("Model %s (%s) could not be loaded", name, self.p_mltype)
         x_test_boundary = self.df_xtest[self.v_bound]
-        trainedmodels_2var = fit(names_2var, classifiers_2var, x_test_boundary, self.df_ytest)
+        for model in classifiers:
+            model.fit(x_test_boundary, self.df_ytest)
         decisionboundaries(
-            names_2var, trainedmodels_2var, self.s_suffix+"2var", x_test_boundary,
+            self.p_classname, classifiers, self.s_suffix+"2var", x_test_boundary,
             self.df_ytest, self.dirmlplot)
 
     def do_efficiency(self):

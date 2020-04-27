@@ -18,7 +18,6 @@ Methods to: choose, train and apply ML models
             obtain control plots
 """
 from io import BytesIO
-import pickle
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -26,121 +25,7 @@ from matplotlib.colors import ListedColormap
 
 from sklearn.feature_extraction import DictVectorizer
 
-from machine_learning_hep.logger import get_logger
-import machine_learning_hep.templates_keras as templates_keras
-import machine_learning_hep.templates_xgboost as templates_xgboost
-import machine_learning_hep.templates_scikit as templates_scikit
 pd.options.mode.chained_assignment = None
-
-def getclf_scikit(model_config):
-
-    logger = get_logger()
-    logger.debug("Load scikit models")
-
-    if "scikit" not in model_config:
-        logger.debug("No scikit models found")
-        return [], []
-
-    classifiers = []
-    names = []
-    grid_search_params = []
-    bayesian_opt = []
-
-    for c in model_config["scikit"]:
-        if model_config["scikit"][c]["activate"]:
-            try:
-                model = getattr(templates_scikit, c)(model_config["scikit"][c]["central_params"])
-                c_bayesian = f"{c}_bayesian_opt"
-                bayes_opt = None
-                if hasattr(templates_scikit, c_bayesian):
-                    bayes_opt = getattr(templates_scikit, c_bayesian) \
-                            (model_config["scikit"][c]["central_params"])
-                bayesian_opt.append(bayes_opt)
-                classifiers.append(model)
-                names.append(c)
-                grid_search_params.append(model_config["scikit"][c].get("grid_search", {}))
-                logger.info("Added scikit model %s", c)
-            except AttributeError:
-                logger.critical("Could not load scikit model %s", c)
-
-    return classifiers, names, grid_search_params, bayesian_opt
-
-
-def getclf_xgboost(model_config):
-
-    logger = get_logger()
-    logger.debug("Load xgboost models")
-
-    if "xgboost" not in model_config:
-        logger.debug("No xgboost models found")
-        return [], []
-
-    classifiers = []
-    names = []
-    grid_search_params = []
-    bayesian_opt = []
-
-    for c in model_config["xgboost"]:
-        if model_config["xgboost"][c]["activate"]:
-            try:
-                model = getattr(templates_xgboost, c)(model_config["xgboost"][c]["central_params"])
-                c_bayesian = f"{c}_bayesian_opt"
-                bayes_opt = None
-                if hasattr(templates_xgboost, c_bayesian):
-                    bayes_opt = getattr(templates_xgboost, c_bayesian) \
-                            (model_config["xgboost"][c]["central_params"])
-                bayesian_opt.append(bayes_opt)
-                classifiers.append(model)
-                names.append(c)
-                grid_search_params.append(model_config["xgboost"][c].get("grid_search", {}))
-                logger.info("Added xgboost model %s", c)
-            except AttributeError:
-                logger.critical("Could not load xgboost model %s", c)
-
-    return classifiers, names, grid_search_params, bayesian_opt
-
-
-def getclf_keras(model_config, length_input):
-
-    logger = get_logger()
-    logger.debug("Load keras models")
-
-    if "keras" not in model_config:
-        logger.debug("No keras models found")
-        return [], []
-
-    classifiers = []
-    names = []
-    bayesian_opt = []
-
-    for c in model_config["keras"]:
-        if model_config["keras"][c]["activate"]:
-            try:
-                model = getattr(templates_keras, c)(model_config["keras"][c]["central_params"],
-                                                    length_input)
-                classifiers.append(model)
-                c_bayesian = f"{c}_bayesian_opt"
-                bayes_opt = None
-                if hasattr(templates_keras, c_bayesian):
-                    bayes_opt = getattr(templates_keras, c_bayesian) \
-                            (model_config["keras"][c]["central_params"], length_input)
-                bayesian_opt.append(bayes_opt)
-                names.append(c)
-                logger.info("Added keras model %s", c)
-            except AttributeError:
-                logger.critical("Could not load keras model %s", c)
-
-    #logger.critical("Some reason")
-    return classifiers, names, [], bayesian_opt
-
-
-
-def fit(names_, classifiers_, x_train_, y_train_):
-    trainedmodels_ = []
-    for _, clf in zip(names_, classifiers_):
-        clf.fit(x_train_, y_train_)
-        trainedmodels_.append(clf)
-    return trainedmodels_
 
 
 def test(ml_type, names_, trainedmodels_, test_set_, mylistvariables_, myvariablesy_):
@@ -160,7 +45,7 @@ def test(ml_type, names_, trainedmodels_, test_set_, mylistvariables_, myvariabl
     return test_set_
 
 
-def apply(ml_type, names_, trainedmodels_, test_set_, mylistvariablestraining_):
+def apply_inference(ml_type, names_, trainedmodels_, test_set_, mylistvariablestraining_):
     x_values = test_set_[mylistvariablestraining_]
     for name, model in zip(names_, trainedmodels_):
         y_test_prediction = []
@@ -173,33 +58,6 @@ def apply(ml_type, names_, trainedmodels_, test_set_, mylistvariablestraining_):
             y_test_prob = model.predict_proba(x_values)[:, 1]
             test_set_['y_test_prob'+name] = pd.Series(y_test_prob, index=test_set_.index)
     return test_set_
-
-
-def savemodels(names_, trainedmodels_, folder_, suffix_):
-    for name, model in zip(names_, trainedmodels_):
-        if "keras" in name:
-            architecture_file = folder_+"/"+name+suffix_+"_architecture.json"
-            weights_file = folder_+"/"+name+suffix_+"_weights.h5"
-            arch_json = model.model.to_json()
-            with open(architecture_file, 'w') as json_file:
-                json_file.write(arch_json)
-            model.model.save_weights(weights_file)
-        if "scikit" in name:
-            fileoutmodel = folder_+"/"+name+suffix_+".sav"
-            pickle.dump(model, open(fileoutmodel, 'wb'), protocol=4)
-        if "xgboost" in name:
-            fileoutmodel = folder_+"/"+name+suffix_+".sav"
-            pickle.dump(model, open(fileoutmodel, 'wb'), protocol=4)
-            fileoutmodel = fileoutmodel.replace(".sav", ".model")
-            model.save_model(fileoutmodel)
-
-def readmodels(names_, folder_, suffix_):
-    trainedmodels_ = []
-    for name in names_:
-        fileinput = folder_+"/"+name+suffix_+".sav"
-        model = pickle.load(open(fileinput, 'rb'))
-        trainedmodels_.append(model)
-    return trainedmodels_
 
 
 def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder):

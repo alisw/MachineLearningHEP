@@ -23,7 +23,7 @@ from sklearn.model_selection import cross_validate
 
 from hyperopt import fmin, tpe, STATUS_OK
 
-from machine_learning_hep.io import dump_yaml_from_dict, parse_yaml
+from .utils import dump_yaml_from_dict, parse_yaml
 
 # Change to that backend to not have problems with saving fgures
 # when X11 connection got lost

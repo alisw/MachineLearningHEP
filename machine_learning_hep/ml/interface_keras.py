@@ -20,8 +20,8 @@ from keras.wrappers.scikit_learn import KerasClassifier
 
 from hyperopt import hp
 
-from machine_learning_hep.optimisation.bayesian_opt import BayesianOpt
-from machine_learning_hep.optimisation.metrics import get_scorers
+from machine_learning_hep.mlbase.bayesian_opt import BayesianOpt
+from machine_learning_hep.mlbase.metrics import get_scorers
 
 
 def keras_classifier_(model_config, input_length):
@@ -40,12 +40,22 @@ def keras_classifier_(model_config, input_length):
     return model
 
 
-def keras_classifier(model_config, input_length):
+def keras_classifier(**kwargs):
+    model_config = kwargs["model_config"]
+    input_length = kwargs["n_features"]
     return KerasClassifier(build_fn=lambda: \
                     keras_classifier_(model_config, input_length), \
                                       epochs=model_config["epochs"], \
                                       batch_size=model_config["batch_size"], \
                                       verbose=1)
+
+
+def keras_classifier_config_nominal():
+    return {"layers": [{"n_nodes": 12, "activation": "relu"}],
+            "optimizer": "adam",
+            "loss": "binary_crossentropy",
+            "epochs": 30,
+            "batch_size": 50}
 
 
 def keras_classifier_bayesian_space():
@@ -103,12 +113,21 @@ class KerasClassifierBayesianOpt(BayesianOpt): # pylint: disable=too-many-instan
         """
 
 
-def keras_classifier_bayesian_opt(model_config, input_length):
-    bayesian_opt = KerasClassifierBayesianOpt(model_config, keras_classifier_bayesian_space(),
-                                              input_length)
+def keras_classifier_bayesian_opt(**kwargs):
+    bayesian_opt = KerasClassifierBayesianOpt(kwargs["model_config"], kwargs["space"],
+                                              kwargs["n_features"])
     bayesian_opt.nkfolds = 3
     bayesian_opt.scoring = get_scorers(["AUC", "Accuracy"])
     bayesian_opt.scoring_opt = "AUC"
     bayesian_opt.low_is_better = False
     bayesian_opt.n_trials = 30
     return bayesian_opt
+
+
+MODELS = {"BinaryClassification": {"keras_classifier": {"model_nominal": keras_classifier,
+                                                        "config_nominal": \
+                                                                keras_classifier_config_nominal,
+                                                        "bayesian_space": \
+                                                                keras_classifier_bayesian_space,
+                                                        "bayesian_opt": \
+                                                                keras_classifier_bayesian_opt}}}

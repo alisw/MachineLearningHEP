@@ -284,6 +284,7 @@ LcpK0spp:
     binmin: [1,2,4,6,8,12] #list of nbins
     binmax: [2,4,6,8,12,24] #list of nbins
     mltype: BinaryClassification
+    names: [xgboost_classifier]
     ncorescrossval: 10
     mlplot: /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/mlplot # to be removed
     mlout: /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/mlout # to be removed

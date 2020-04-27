@@ -209,6 +209,7 @@ D0pp:
     binmin: [1,2,4,6,8,12,24] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
     binmax:   [2,4,6,8,12,24,48] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: BinaryClassification
+    names: [xgboost_classifier]
     ncorescrossval: 10
     mlplot: /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/mlplot # to be removed
     mlout: /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/mlout # to be removed
