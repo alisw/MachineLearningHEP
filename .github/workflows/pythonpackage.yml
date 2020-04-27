@@ -1,0 +1,53 @@
+name: Test package
+
+on:
+    pull_request:
+        branches:
+              - master
+              - ml-dev
+        paths:
+            - "machine_learning_hep/**/*.py"
+            - "machine_learning_hep/data/**/*"
+    push:
+        branches:
+              - master
+              - ml-dev
+        paths:
+            - "machine_learning_hep/**/*.py"
+            - "machine_learning_hep/data/**/*"
+
+jobs:
+  build-os-latest:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      max-parallel: 6
+      matrix:
+        os: [ubuntu-latest, macOS-latest]
+        python-version: [3.6]
+        #test-tool: [pylint, flake8, pytest]
+        test-tool: [pylint, pytest]
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v1
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+      - name: Install test tool ${{ matrix.test-tool }}
+        run: |
+          pip install ${{ matrix.test-tool }}
+      - name: Run on pull_request
+        if: github.event_name == 'pull_request'
+        run: |
+          git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
+          changed_files="$(git diff --name-only origin/${{ github.base_ref }} | grep -E '\.py' | grep -vE 'setup.py')"
+          ci/run-tests.sh --tests ${{ matrix.test-tool }} --files $changed_files
+      - name: Run on push
+        if: github.event_name == 'push'
+        run: |
+          changed_files="$(find . -name '*.py' -a -not -name setup.py)"
+          ci/run-tests.sh --tests ${{ matrix.test-tool }} --files $changed_files
