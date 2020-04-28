@@ -50,11 +50,14 @@ function test-pylint()
     local test_files=$@
     echo "run test: pylint"
     type pylint
-    for tf in $test_files; do
-        [[ -e "$tf" ]] || continue
-        echo "File $tf "
-        swallow "linting $tf" pylint $tf || ERR=1
-    done
+    if [[ "$test_files" != "" ]]
+    then
+        for tf in $test_files; do
+            [[ -e "$tf" ]] || continue
+            echo "File $tf "
+            swallow "linting $tf" pylint $tf || ERR=1
+        done
+    fi
 }
 
 
@@ -63,12 +66,15 @@ function test-flake8()
     local test_files=$@
     echo "run test: flake8"
     type flake8
-    for tf in $test_files; do
-        [[ -e "$tf" ]] || continue
-        echo "File $tf "
-        swallow "flaking $tf" flake8  $tf --count --select=E9,F63,F7,F82 --show-source --statistics || ERR=1
-        swallow "flaking (treat as warnings) $tf" flake8  $tf --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    done
+    if [[ "$test_files" != "" ]]
+    then
+        for tf in $test_files; do
+            [[ -e "$tf" ]] || continue
+            echo "File $tf "
+            swallow "flaking $tf" flake8  $tf --count --select=E9,F63,F7,F82 --show-source --statistics || ERR=1
+            swallow "flaking (treat as warnings) $tf" flake8  $tf --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+        done
+    fi
 }
 
 
@@ -165,8 +171,6 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
-
-[[ "$FILES" == "" ]] && { echo "ERROR: No files to test. Exit..."; exit 1; }
 
 if [[ "$TESTS" == "" ]]
 then

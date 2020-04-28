@@ -49,7 +49,10 @@ ERR=0
 
 echo "$FILES_CHANGED"
 
+[[ "$FILES_CHANGED" == "" ]] && exit 0
+
 for PY in $FILES_CHANGED; do
+    [[ -e "$PY" ]] || continue
     check_copyright "$PY" || ERR=1
 done
 exit $ERR
