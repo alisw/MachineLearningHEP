@@ -31,7 +31,7 @@ from machine_learning_hep.utilities import list_folders, createlist, appendmainf
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
 from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.utilities import get_timestamp_string
-from machine_learning_hep.models import apply # pylint: disable=import-error
+from machine_learning_hep.models import infer # pylint: disable=import-error
 #from machine_learning_hep.logger import get_logger
 
 class Processer: # pylint: disable=too-many-instance-attributes
@@ -40,7 +40,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
     # Initializer / Instance Attributes
     # pylint: disable=too-many-statements, too-many-arguments
-    def __init__(self, case, datap, run_param, mcordata, p_maxfiles,
+    def __init__(self, run_config, case, datap, run_param, mcordata, p_maxfiles,
                  d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
@@ -182,19 +182,24 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.f_evt_ml = os.path.join(self.d_pkl_ml, self.n_evt)
         self.f_evtorig_ml = os.path.join(self.d_pkl_ml, self.n_evtorig)
         self.lpt_recodec = None
-        if self.doml is True:
-            self.lpt_recodec = [self.n_reco.replace(".pkl", "%d_%d_%.2f.pkl" % \
-                               (self.lpt_anbinmin[i], self.lpt_anbinmax[i], \
-                                self.lpt_probcutpre[i])) for i in range(self.p_nptbins)]
-        else:
-            self.lpt_recodec = [self.n_reco.replace(".pkl", "%d_%d_std.pkl" % \
-                               (self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
-                                                    for i in range(self.p_nptbins)]
+        if not self.doml:
+            self.p_modelname = "std"
+
+        self.lpt_recodec = [self.n_reco.replace(".pkl", "%d_%d_%s.pkl" % \
+                           (self.lpt_anbinmin[i], self.lpt_anbinmax[i], \
+                            self.p_modelname)) \
+                            for i in range(self.p_nptbins)]
 
         self.mptfiles_recosk = [createlist(self.d_pklsk, self.l_path, \
                                 self.lpt_recosk[ipt]) for ipt in range(self.p_nptbins)]
         self.mptfiles_recoskmldec = [createlist(self.d_pkl_dec, self.l_path, \
                                    self.lpt_recodec[ipt]) for ipt in range(self.p_nptbins)]
+        # Extract force run strings to check if files should just be overwritten later
+        self.force_strings = run_config["force"]
+        # check whether there are already application files
+        self.apply_continue = run_config["mlapplication"][self.mcordata]["docontinueafterstop"]
+
+        # Probably obsolete
         self.lpt_recodecmerged = [os.path.join(self.d_pkl_decmerged, self.lpt_recodec[ipt])
                                   for ipt in range(self.p_nptbins)]
         if self.mcordata == "mc":
@@ -320,24 +325,23 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 pickle.dump(dfgensk, openfile(self.mptfiles_gensk[ipt][file_index], "wb"),
                             protocol=4)
 
+
     def applymodel(self, file_index):
         for ipt in range(self.p_nptbins):
-            if os.path.exists(self.mptfiles_recoskmldec[ipt][file_index]):
-                if os.stat(self.mptfiles_recoskmldec[ipt][file_index]).st_size != 0:
-                    continue
-            dfrecosk = pickle.load(openfile(self.mptfiles_recosk[ipt][file_index], "rb"))
             if self.doml is True:
                 if os.path.isfile(self.lpt_model[ipt]) is False:
                     print("Model file not present in bin %d" % ipt)
+                    sys.exit(1)
+                dfrecosk = pickle.load(openfile(self.mptfiles_recosk[ipt][file_index], "rb"))\
+                        [self.v_train[ipt]]
                 mod = pickle.load(openfile(self.lpt_model[ipt], 'rb'))
-                dfrecoskml = apply("BinaryClassification", [self.p_modelname], [mod],
-                                   dfrecosk, self.v_train[ipt])
-                probvar = "y_test_prob" + self.p_modelname
-                dfrecoskml = dfrecoskml.loc[dfrecoskml[probvar] > self.lpt_probcutpre[ipt]]
+                dfrecoskml = infer([self.p_modelname], [mod], dfrecosk)
             else:
-                dfrecoskml = dfrecosk.query("isstd == 1")
-            pickle.dump(dfrecoskml, openfile(self.mptfiles_recoskmldec[ipt][file_index], "wb"),
+                dfrecoskml = [pickle.load(openfile(self.mptfiles_recosk[ipt][file_index], "rb"))\
+                        [["isstd"]]]
+            pickle.dump(dfrecoskml[0], openfile(self.mptfiles_recoskmldec[ipt][file_index], "wb"),
                         protocol=4)
+
 
     @staticmethod
     def callback(ex):
@@ -374,7 +378,21 @@ class Processer: # pylint: disable=too-many-instance-attributes
         print("doing apply model", self.mcordata, self.period)
         create_folder_struc(self.d_pkl_dec, self.l_path)
         arguments = [(i,) for i in range(len(self.mptfiles_recosk[0]))]
+        # The force string to recognize: Overwrites existing application
+        apply_force_string = f"mlapplication:{self.mcordata}:doapply:{self.p_modelname}"
+        if apply_force_string not in self.force_strings:
+            print("Check paths for potential overwrite")
+            for pt_bin in self.mptfiles_recoskmldec:
+                print(pt_bin)
+                for ind_bin in pt_bin:
+                    print(ind_bin)
+                    if os.path.exists(ind_bin):
+                        print(f"WARNING: Prediction for model {self.p_modelname} already exists. " \
+                              f"To overwrite pass " \
+                              f"'--force {apply_force_string}'")
+                        sys.exit(0)
         self.parallelizer(self.applymodel, arguments, self.p_chunksizeskim)
+
 
     def process_mergeforml(self):
         nfiles = len(self.mptfiles_recosk[0])
@@ -395,6 +413,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         list_sel_evtorig = [self.l_evtorig[j] for j in filesel]
         merge_method(list_sel_evt, self.f_evt_ml)
         merge_method(list_sel_evtorig, self.f_evtorig_ml)
+
 
     def process_mergedec(self):
         for ipt in range(self.p_nptbins):
@@ -435,6 +454,14 @@ class Processer: # pylint: disable=too-many-instance-attributes
             return df_
 
         return df_.query(self.analysis_cuts[ipt])
+
+
+    @staticmethod
+    def select_df_on_other(df_main, df_select, query):
+        """Helper function to select rows in df_main based on selection in df_select
+        """
+        ind = df_select.query(query).index
+        return df_main.reindex(ind).dropna()
 
 
     def process_histomass(self):

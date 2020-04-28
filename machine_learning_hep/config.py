@@ -23,7 +23,7 @@ from machine_learning_hep.do_variations import modify_dictionary
 
 # disable pylint unused-argument because this is done already in view of updating the
 # database depending on info in there
-def update_config(database: dict, run_config: dict, database_overwrite=None): # pylint: disable=unused-argument
+def update_config(database: dict, run_config: dict, database_overwrite=None, run_config_force=None):
     """Update database before usage
 
     1. overwrite with potential additional user configuration
@@ -38,6 +38,9 @@ def update_config(database: dict, run_config: dict, database_overwrite=None): # 
         database_overwrite: dict (optional)
             substructured corresponding to database used to overwrite
             corresponding fields in database
+        run_config_force: list/tuple (optional)
+            list with force strings to be recognized by corresponding
+            processer/analyzer
     """
 
     logger = get_logger()
@@ -52,18 +55,18 @@ def update_config(database: dict, run_config: dict, database_overwrite=None): # 
         logger.info("Updating database fields with custom user input")
         modify_dictionary(database, database_overwrite, True)
 
+
     # If not an ML analysis...
     if not database["doml"]:
-        logger.info("Not an ML analysis, adjust paths and settings accordingly")
-        # ...append "_std" to paths where necessary
+        logger.info("Not an ML analysis, adjust settings accordingly")
         data_mc = ("data", "mc")
-        pkl_keys = ("pkl_skimmed_dec", "pkl_skimmed_decmerged")
-        for keys in product(data_mc, pkl_keys):
-            database["mlapplication"][keys[0]][keys[1]][:] = \
-                    [f"{path}_std" for path in database["mlapplication"][keys[0]][keys[1]]]
+
         # ...set the ML working point all to 0
         for k in data_mc:
             database["mlapplication"]["probcutpresel"][k][:] = \
                     [0] * len(database["mlapplication"]["probcutpresel"][k])
         database["mlapplication"]["probcutoptimal"][:] \
                 = [0] * len(database["mlapplication"]["probcutoptimal"])
+
+    # Add force strings which can be picked up by Analyzer, Processer etc
+    run_config["force"] = tuple((s for s in run_config_force)) if run_config_force else tuple()

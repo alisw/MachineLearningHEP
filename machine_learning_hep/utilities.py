@@ -142,20 +142,21 @@ def checkdir(mydir):
         exfolders = -1
     return exfolders
 
+def checkmakedir(*dirlist):
+    """
+    Makes directory using 'mkdir'
+    """
+    for mydir in dirlist:
+        if os.path.exists(mydir):
+            continue
+        print("creating folder ", mydir)
+        os.makedirs(mydir)
+
 def checkmakedirlist(dirlist):
     """
     Makes directories from list using 'mkdir'
     """
-    for mydir in dirlist:
-        print("creating folder ", mydir)
-        os.makedirs(mydir)
-
-def checkmakedir(mydir):
-    """
-    Makes directory using 'mkdir'
-    """
-    print("creating folder ", mydir)
-    os.makedirs(mydir)
+    checkmakedir(*dirlist)
 
 def delete_dir(path: str):
     """

@@ -35,6 +35,24 @@ import machine_learning_hep.templates_xgboost as templates_xgboost
 import machine_learning_hep.templates_scikit as templates_scikit
 pd.options.mode.chained_assignment = None
 
+
+def make_pred_name(model_name, is_proba=False):
+    """Construct prediction name
+
+    Args:
+        model_name: str
+            model name
+        is_proba: bool
+            whether prediction or prediction probability
+            (using model.predict_proba)
+    Returns: str
+        column name in dataframe where to find model prediction
+    """
+    if is_proba:
+        return f"y_test_prob{model_name}"
+    return f"y_test_prediction{model_name}"
+
+
 def getclf_scikit(model_config):
 
     logger = get_logger()
@@ -155,27 +173,47 @@ def test(ml_type, names_, trainedmodels_, test_set_, mylistvariables_, myvariabl
         y_test_prob = []
         y_test_prediction = model.predict(x_test_)
         y_test_prediction = y_test_prediction.reshape(len(y_test_prediction),)
-        test_set_['y_test_prediction'+name] = pd.Series(y_test_prediction, index=test_set_.index)
+        test_set_[make_pred_name(name)] = pd.Series(y_test_prediction, index=test_set_.index)
 
         if ml_type == "BinaryClassification":
             y_test_prob = model.predict_proba(x_test_)[:, 1]
-            test_set_['y_test_prob'+name] = pd.Series(y_test_prob, index=test_set_.index)
+            test_set_[make_pred_name(name, True)] = pd.Series(y_test_prob, index=test_set_.index)
     return test_set_
 
 
-def apply(ml_type, names_, trainedmodels_, test_set_, mylistvariablestraining_):
-    x_values = test_set_[mylistvariablestraining_]
-    for name, model in zip(names_, trainedmodels_):
-        y_test_prediction = []
-        y_test_prob = []
-        y_test_prediction = model.predict(x_values)
+def infer(model_names, models, df_samples, feature_names=None):
+    """Get dataframe with model predictions
+
+    Args:
+        model_names: iterable
+            iterable of str representing model names
+        models: iertable
+            iterable of fitted models
+        df_samples: pandas.DataFrame
+            dataframe with feature columns
+        feature_names: list
+            list of feature names (optional, default: None)
+            If None, assuming that passed dataframe only contains feature columns
+
+    Returns:
+        dataframe with prediction columns. If model has attribute 'predict_proba' contains both
+        raw prediction and probability
+
+    """
+    if feature_names:
+        df_samples = df_samples[feature_names]
+    infered_dfs = []
+    for name, model in zip(model_names, models):
+        infered_dfs.append(pd.DataFrame(index=df_samples.index))
+        y_test_prediction = model.predict(df_samples)
         y_test_prediction = y_test_prediction.reshape(len(y_test_prediction),)
-        test_set_['y_test_prediction'+name] = pd.Series(y_test_prediction, index=test_set_.index)
-
-        if ml_type == "BinaryClassification":
-            y_test_prob = model.predict_proba(x_values)[:, 1]
-            test_set_['y_test_prob'+name] = pd.Series(y_test_prob, index=test_set_.index)
-    return test_set_
+        infered_dfs[-1][make_pred_name(name)] = pd.Series(y_test_prediction,
+                                                          index=df_samples.index)
+        if hasattr(model, "predict_proba"):
+            y_test_prob = model.predict_proba(df_samples)[:, 1]
+            infered_dfs[-1][make_pred_name(name, True)] = pd.Series(y_test_prob,
+                                                                    index=df_samples.index)
+    return infered_dfs
 
 
 def savemodels(names_, trainedmodels_, folder_, suffix_):

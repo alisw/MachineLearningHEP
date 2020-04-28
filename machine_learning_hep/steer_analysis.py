@@ -74,7 +74,7 @@ except Exception as e: # pylint: disable=broad-except
 
 
 def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite: dict, # pylint: disable=too-many-locals, too-many-statements, too-many-branches
-                       data_model: dict, run_param: dict, clean: bool):
+                       data_model: dict, run_param: dict, clean: bool, force=None):
 
     # Disable any graphical stuff. No TCanvases opened and shown by default
     gROOT.SetBatch(True)
@@ -86,7 +86,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     case = list(data_param.keys())[0]
 
     # Update database accordingly if needed
-    update_config(data_param, data_config, data_param_overwrite)
+    update_config(data_param, data_config, data_param_overwrite, force)
 
     dodownloadalice = data_config["download"]["alice"]["activate"]
     doconversionmc = data_config["conversion"]["mc"]["activate"]
@@ -209,14 +209,16 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         counter = counter + checkdir(mlplot)
 
     if docontinueapplymc is False:
-        if doapplymc is True:
+        # FIXME Change to new ML/STD application # pylint: disable=fixme
+        if doapplymc is True and data_config["mlapplication"]["apply_old"]:
             counter = counter + checkdirlist(dirpklskdecmc)
 
         if domergeapplymc is True:
             counter = counter + checkdirlist(dirpklskdec_mergedmc)
 
     if docontinueapplydata is False:
-        if doapplydata is True:
+        # FIXME Change to new ML/STD application # pylint: disable=fixme
+        if doapplydata is True and data_config["mlapplication"]["apply_old"]:
             counter = counter + checkdirlist(dirpklskdecdata)
 
         if domergeapplydata is True:
@@ -302,9 +304,10 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         proc_class = ProcesserDhadrons_jet
         ana_class = AnalyzerJet
 
-    mymultiprocessmc = MultiProcesser(case, proc_class, data_param[case], typean, run_param, "mc")
+    mymultiprocessmc = MultiProcesser(case, proc_class, data_param[case], typean, run_param, "mc",
+                                      data_config)
     mymultiprocessdata = MultiProcesser(case, proc_class, data_param[case], typean, run_param,\
-                                        "data")
+                                        "data", data_config)
     ana_mgr = AnalyzerManager(ana_class, data_param[case], case, typean, doanaperperiod)
     # Has to be done always period-by-period
     syst_mgr = AnalyzerManager(syst_class, data_param[case], case, typean, True, run_param)
@@ -378,7 +381,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
             if doscancuts is True:
                 myopt.do_scancuts()
             index = index + 1
-
     if doapplydata is True:
         mymultiprocessdata.multi_apply_allperiods()
     if doapplymc is True:
@@ -503,6 +505,8 @@ def main():
                         help="choose type of analysis")
     parser.add_argument("--clean", "-c", action="store_true",
                         help="delete per-period results at the end")
+    parser.add_argument("--force", nargs="*",
+                        help="passing force strings")
 
     args = parser.parse_args()
 
@@ -522,4 +526,4 @@ def main():
 
     # Run the chain
     do_entire_analysis(run_config, db_analysis, db_analysis_overwrite, db_ml_models, db_run_list,
-                       args.clean)
+                       args.clean, args.force)

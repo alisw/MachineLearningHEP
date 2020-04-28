@@ -23,6 +23,7 @@ import numpy as np
 import pandas as pd
 from root_numpy import fill_hist, evaluate # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
+from machine_learning_hep.models import make_pred_name
 from machine_learning_hep.utilities import selectdfrunlist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, \
         seldf_singlevar_inclusive, openfile
@@ -42,12 +43,12 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
 
     # Initializer / Instance Attributes
     # pylint: disable=too-many-statements, too-many-arguments
-    def __init__(self, case, datap, run_param, mcordata, p_maxfiles,
+    def __init__(self, run_config, case, datap, run_param, mcordata, p_maxfiles,
                  d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
                  d_results, typean, runlisttrigger, d_mcreweights):
-        super().__init__(case, datap, run_param, mcordata, p_maxfiles,
+        super().__init__(run_config, case, datap, run_param, mcordata, p_maxfiles,
                          d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
                          p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                          p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
@@ -57,8 +58,8 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         self.p_bin_width = datap["analysis"][self.typean]['bin_width']
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
                                     self.p_bin_width))
-        self.l_selml = ["y_test_prob%s>%s" % (self.p_modelname, self.lpt_probcutfin[ipt]) \
-                       for ipt in range(self.p_nptbins)]
+        self.l_selml = [f"{make_pred_name(self.p_modelname, True)} > {ml_cut}" \
+                for ml_cut in self.lpt_probcutfin]
         self.s_presel_gen_eff = datap["analysis"][self.typean]['presel_gen_eff']
         self.lvar2_binmin = datap["analysis"][self.typean]["sel_binmin2"]
         self.lvar2_binmax = datap["analysis"][self.typean]["sel_binmax2"]
@@ -216,7 +217,8 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
 
         for ipt in range(self.p_nptfinbins): # pylint: disable=too-many-nested-blocks
             bin_id = self.bin_matching[ipt]
-            df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
+            df = pickle.load(openfile(self.mptfiles_recosk[bin_id][index], "rb"))
+            df_pred = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
             if self.s_evtsel is not None:
                 df = df.query(self.s_evtsel)
             if self.s_trigger is not None:
@@ -225,7 +227,9 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 df = selectdfrunlist(df, \
                     self.run_param[self.runlistrigger], "run_number")
             if self.doml is True:
-                df = df.query(self.l_selml[bin_id])
+                df = self.select_df_on_other(df, df_pred, self.l_selml[bin_id])
+            else:
+                df = self.select_df_on_other(df, df_pred, "isstd == 1")
             list_df_recodtrig.append(df)
             df = seldf_singlevar(df, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
@@ -357,7 +361,8 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
             bincounter = 0
             for ipt in range(self.p_nptfinbins):
                 bin_id = self.bin_matching[ipt]
-                df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
+                df_mc_reco = pickle.load(openfile(self.mptfiles_recosk[bin_id][index], "rb"))
+                df_pred = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
                 if self.s_evtsel is not None:
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_trigger is not None:
@@ -381,17 +386,24 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
                 df_reco_presel_pr = df_mc_reco[df_mc_reco.ismcprompt == 1]
                 df_reco_sel_pr = None
+
                 if self.doml is True:
-                    df_reco_sel_pr = df_reco_presel_pr.query(self.l_selml[bin_id])
+                    # Otherwise we select on dataframe with only the predictions
+                    df_reco_sel_pr = self.select_df_on_other(df_reco_presel_pr, df_pred, self.l_selml[bin_id])
                 else:
-                    df_reco_sel_pr = df_reco_presel_pr.copy()
+                    # New style we select based on dataframe with predictions only (STD)
+                    df_reco_sel_pr = self.select_df_on_other(df_reco_presel_pr, df_pred, "isstd == 1")
+
                 df_gen_sel_fd = df_mc_gen[df_mc_gen.ismcfd == 1]
                 df_reco_presel_fd = df_mc_reco[df_mc_reco.ismcfd == 1]
                 df_reco_sel_fd = None
+
                 if self.doml is True:
-                    df_reco_sel_fd = df_reco_presel_fd.query(self.l_selml[bin_id])
+                    # Otherwise we select on dataframe with only the predictions
+                    df_reco_sel_fd = self.select_df_on_other(df_reco_presel_fd, df_pred, self.l_selml[bin_id])
                 else:
-                    df_reco_sel_fd = df_reco_presel_fd.copy()
+                    # New style we select based on dataframe with predictions only (STD)
+                    df_reco_sel_fd = self.select_df_on_other(df_reco_presel_fd, df_pred, "isstd == 1")
 
                 def set_content(df_to_use, histogram,
                                 i_b=ibin2, b_c=bincounter):

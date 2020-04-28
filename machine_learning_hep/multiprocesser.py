@@ -20,7 +20,7 @@ from machine_learning_hep.processer import Processer # pylint: disable=unused-im
 from machine_learning_hep.utilities import merge_method, mergerootfiles, get_timestamp_string
 class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-statements
     species = "multiprocesser"
-    def __init__(self, case, proc_class, datap, typean, run_param, mcordata):
+    def __init__(self, case, proc_class, datap, typean, run_param, mcordata, run_config):
         self.case = case
         self.datap = datap
         self.typean = typean
@@ -98,8 +98,8 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
 
         self.process_listsample = []
         for indexp in range(self.prodnumber):
-            myprocess = proc_class(self.case, self.datap, self.run_param, self.mcordata,
-                                   self.p_maxfiles[indexp], self.dlper_root[indexp],
+            myprocess = proc_class(run_config, self.case, self.datap, self.run_param,
+                                   self.mcordata, self.p_maxfiles[indexp], self.dlper_root[indexp],
                                    self.dlper_pkl[indexp], self.dlper_pklsk[indexp],
                                    self.dlper_pklml[indexp],
                                    self.p_period[indexp], self.p_chunksizeunp[indexp],
