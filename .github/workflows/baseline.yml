@@ -7,14 +7,12 @@ on:
             - ml-dev
         paths:
             - "machine_learning_hep/**/*.py"
-            - "machine_learning_hep/data/**/*"
     push:
         branches:
             - master
             - ml-dev
         paths:
             - "machine_learning_hep/**/*.py"
-            - "machine_learning_hep/data/**/*"
 
 jobs:
   # A baseline test, independent of OS at the moment
