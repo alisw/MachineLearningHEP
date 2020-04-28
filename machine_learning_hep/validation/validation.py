@@ -25,11 +25,12 @@ class ValidationCollection:
     Class for managing histograms of validation
     """
 
-    def __init__(self, dataframe=None, tag="", verbose=False):
+    def __init__(self, dataframe=None, tag="", verbose=False, strictly_require=False):
         self.source_dataframe = dataframe
         self.collection_tag = tag
         self.histograms = []
         self.verbose = verbose
+        self.strictly_require = strictly_require
 
     def reset_input(self, dataframe, tag):
         self.source_dataframe = dataframe
@@ -39,16 +40,22 @@ class ValidationCollection:
         """
         Makes histogram and fills them based on their axis titles
         """
+        def column_exists(col_name, axis_name):
+            if col_name not in self.source_dataframe:
+                msg = f"Columns {col_name} for {axis_name} axis does not exist in dataframe: "
+                msg += f"skipping histogram for tag '{self.collection_tag}'"
+                if self.strictly_require:
+                    get_logger().fatal(msg)
+                get_logger().warning(msg)
+                return False
+            return True
+
         h = None
         if namey:
             # Check that column exists
-            if namex not in self.source_dataframe:
-                get_logger().warning(
-                    "Columns %s for X axis does not exist in dataframe, skipping histogram", namex)
+            if not column_exists(namex, "X"):
                 return
-            if namey not in self.source_dataframe:
-                get_logger().warning(
-                    "Columns %s for Y axis does not exist in dataframe, skipping histogram", namey)
+            if not column_exists(namey, "Y"):
                 return
             h_name = f"hVal_{namex}_vs_{namey}{self.collection_tag}"
             h_tit = f" ; {namex} ; {namey}"
@@ -57,9 +64,7 @@ class ValidationCollection:
             h.SetTitle(h_tit)
         else:
             # Check that column exists
-            if namex not in self.source_dataframe:
-                get_logger().warning(
-                    "Columns %s for X axis does not exist in dataframe, skipping histogram", namex)
+            if not column_exists(namex, "X"):
                 return
             h_name = f"hVal_{namex}{self.collection_tag}"
             h_tit = f" ; {namex} ; Entries"
@@ -74,3 +79,7 @@ class ValidationCollection:
             if self.verbose:
                 get_logger().info("Writing histogram %s", i.GetName())
             i.Write()
+
+    def print_df_content(self):
+        for i, j in enumerate(self.source_dataframe):
+            print("Column", i, ": ", j)
