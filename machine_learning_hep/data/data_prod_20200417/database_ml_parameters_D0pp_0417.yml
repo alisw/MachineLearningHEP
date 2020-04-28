@@ -749,13 +749,13 @@ D0pp:
       systematics:
         # For now don't do these things per pT bin
         max_chisquare_ndf: 2.
-        rebin: [-1,0,1]
-        massmin: [1.69, 1.72, 1.75, 1.78, 1.81]
-        massmax: [2.09, 2.12, 2.15, 2.18, 2.21]
+        rebin: [0]
+        massmin: [1.68,1.70, 1.72, 1.74, 1.76]
+        massmax: [2.07, 2.05, 2.03, 2.01, 1.99]
         bincount_sigma: [3.,5.]
         bkg_funcs: [kExpo, Pol2]
         # Whether to include the free sigma option in the derivation of raw yield uncertainty in given pT bin
-        consider_free_sigma: [True, True, True, True, True]
+        consider_free_sigma: [True,True, True, True, True, True]
 
 
   systematics:
