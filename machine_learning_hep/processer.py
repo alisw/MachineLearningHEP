@@ -31,7 +31,7 @@ from machine_learning_hep.utilities import list_folders, createlist, appendmainf
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
 from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.utilities import get_timestamp_string
-from machine_learning_hep.models import apply # pylint: disable=import-error
+from machine_learning_hep.ml.utils import apply_inference
 #from machine_learning_hep.logger import get_logger
 
 class Processer: # pylint: disable=too-many-instance-attributes
@@ -330,8 +330,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 if os.path.isfile(self.lpt_model[ipt]) is False:
                     print("Model file not present in bin %d" % ipt)
                 mod = pickle.load(openfile(self.lpt_model[ipt], 'rb'))
-                dfrecoskml = apply("BinaryClassification", [self.p_modelname], [mod],
-                                   dfrecosk, self.v_train[ipt])
+                dfrecoskml = apply_inference("BinaryClassification", [self.p_modelname], [mod],
+                                             dfrecosk, self.v_train[ipt])
                 probvar = "y_test_prob" + self.p_modelname
                 dfrecoskml = dfrecoskml.loc[dfrecoskml[probvar] > self.lpt_probcutpre[ipt]]
             else:

@@ -19,16 +19,31 @@ import pickle
 from xgboost import XGBClassifier
 from hyperopt import hp
 
-from machine_learning_hep.optimisation.bayesian_opt import BayesianOpt
-from machine_learning_hep.optimisation.metrics import get_scorers
+from machine_learning_hep.mlbase.bayesian_opt import BayesianOpt
+from machine_learning_hep.mlbase.metrics import get_scorers
 
-def xgboost_classifier(model_config): # pylint: disable=W0613
+def bdt(**kwargs):
     return XGBClassifier(verbosity=1,
                          n_gpus=0,
-                         **model_config)
+                         **kwargs["model_config"])
 
 
-def xgboost_classifier_bayesian_space():
+def bdt_config_nominal():
+    return {"max_depth": 3,
+            "learning_rate": 0.1,
+            "n_estimators": 850,
+            "objective": "binary:logistic",
+            "n_jobs": 10,
+            "gamma": 0.,
+            "min_child_weight": 3,
+            "subsample": 0.8,
+            "colsample_bytree": 0.8,
+            "colsample_bynode": 1,
+            "random_state": 0,
+            "tree_method": "hist"}
+
+
+def bdt_bayesian_space():
     return {"max_depth": hp.quniform("x_max_depth", 1, 6, 1),
             "n_estimators": hp.quniform("x_n_estimators", 600, 1000, 1),
             "min_child_weight": hp.quniform("x_min_child", 1, 4, 1),
@@ -52,7 +67,7 @@ class XGBoostClassifierBayesianOpt(BayesianOpt):
             config["n_estimators"] = int(config["n_estimators"])
         if "max_depth" in config:
             config["max_depth"] = int(config["max_depth"])
-        return xgboost_classifier(config), config
+        return bdt(model_config=config), config
 
 
     def save_model_(self, model, out_dir):
@@ -62,11 +77,17 @@ class XGBoostClassifierBayesianOpt(BayesianOpt):
         model.save_model(out_filename)
 
 
-def xgboost_classifier_bayesian_opt(model_config):
-    bayesian_opt = XGBoostClassifierBayesianOpt(model_config, xgboost_classifier_bayesian_space())
+def bdt_bayesian_opt(**kwargs):
+    bayesian_opt = XGBoostClassifierBayesianOpt(kwargs["model_config"], kwargs["space"])
     bayesian_opt.nkfolds = 3
     bayesian_opt.scoring = get_scorers(["AUC", "Accuracy"])
     bayesian_opt.scoring_opt = "AUC"
     bayesian_opt.low_is_better = False
     bayesian_opt.n_trials = 100
     return bayesian_opt
+
+
+MODELS = {"BinaryClassification": {"xgboost_classifier": {"model_nominal": bdt,
+                                                          "config_nominal": bdt_config_nominal,
+                                                          "bayesian_space": bdt_bayesian_space,
+                                                          "bayesian_opt": bdt_bayesian_opt}}}

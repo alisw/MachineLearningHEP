@@ -215,6 +215,7 @@ Dspp:
     binmin: [2,4,8,12] #list of nbins
     binmax: [4,8,12,24] #list of nbins
     mltype: BinaryClassification
+    names: [xgboost_classifier]
     ncorescrossval: 10
     mlplot: /data/Derived/DskAnywithJets/vAN-20200304_ROOT6-1/mlplot # to be removed
     mlout: /mnt/temp/QM19_Ds_vsMult_Preliminaries/Derived/DskINT7HighMultwithJets/vAN-20191003_ROOT6-1/mlout    # to be removed

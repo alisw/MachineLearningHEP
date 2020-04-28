@@ -41,7 +41,7 @@ from machine_learning_hep.config import update_config
 from  machine_learning_hep.utilities import checkmakedirlist, checkmakedir
 from  machine_learning_hep.utilities import checkdirlist, checkdir, delete_dirlist
 from  machine_learning_hep.logger import configure_logger, get_logger
-from machine_learning_hep.optimiser import Optimiser
+from machine_learning_hep.ml.optimiser import Optimiser
 
 from machine_learning_hep.analysis.analyzer_manager import AnalyzerManager
 from machine_learning_hep.analysis.analyzer import Analyzer
@@ -74,7 +74,7 @@ except Exception as e: # pylint: disable=broad-except
 
 
 def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite: dict, # pylint: disable=too-many-locals, too-many-statements, too-many-branches
-                       data_model: dict, run_param: dict, clean: bool):
+                       run_param: dict, clean: bool):
 
     # Disable any graphical stuff. No TCanvases opened and shown by default
     gROOT.SetBatch(True)
@@ -108,7 +108,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     doroctraintest = data_config["ml_study"]['doroctraintest']
     doboundary = data_config["ml_study"]['doboundary']
     doimportance = data_config["ml_study"]['doimportance']
-    dogridsearch = data_config["ml_study"]['dogridsearch']
     dobayesianopt = data_config["ml_study"]['dobayesianopt']
     doefficiencyml = data_config["ml_study"]['doefficiency']
     dosignifopt = data_config["ml_study"]['dosignifopt']
@@ -167,7 +166,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     binminarray = data_param[case]["ml"]["binmin"]
     binmaxarray = data_param[case]["ml"]["binmax"]
     raahp = data_param[case]["ml"]["opt"]["raahp"]
-    mltype = data_param[case]["ml"]["mltype"]
     training_vars = data_param[case]["variables"]["var_training"]
 
     mlout = data_param[case]["ml"]["mlout"]
@@ -340,7 +338,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         index = 0
         for binmin, binmax in zip(binminarray, binmaxarray):
             myopt = Optimiser(data_param[case], case, typean,
-                              data_model[mltype], binmin, binmax,
+                              binmin, binmax,
                               raahp[index], training_vars[index])
             if docorrelation is True:
                 myopt.do_corr()
@@ -362,8 +360,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
                 myopt.do_plot_model_pred()
             if doimportance is True:
                 myopt.do_importance()
-            if dogridsearch is True:
-                myopt.do_grid()
             if dobayesianopt is True:
                 myopt.do_bayesian_opt()
             if doboundary is True:
@@ -492,8 +488,6 @@ def main():
                         help="analysis database to be used", required=True)
     parser.add_argument("--database-overwrite", dest="database_overwrite",
                         help="overwrite fields in analysis database")
-    parser.add_argument("--database-ml-models", dest="database_ml_models",
-                        help="ml model database to be used")
     parser.add_argument("--database-run-list", dest="database_run_list",
                         help="run list database to be used")
     parser.add_argument("--analysis", "-a", dest="type_ana",
@@ -514,9 +508,7 @@ def main():
 
     db_analysis = load_config(args.database_analysis)
     db_analysis_overwrite = load_config(args.database_overwrite)
-    db_ml_models = load_config(args.database_ml_models, (pkg_data, "config_model_parameters.yml"))
     db_run_list = load_config(args.database_run_list, (pkg_data, "database_run_list.yml"))
 
     # Run the chain
-    do_entire_analysis(run_config, db_analysis, db_analysis_overwrite, db_ml_models, db_run_list,
-                       args.clean)
+    do_entire_analysis(run_config, db_analysis, db_analysis_overwrite, db_run_list, args.clean)

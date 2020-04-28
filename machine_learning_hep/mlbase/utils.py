@@ -12,32 +12,29 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
-from sklearn.tree import DecisionTreeClassifier
-from sklearn.linear_model import LinearRegression, Ridge, Lasso
+"""
+Additional utils for ML
+"""
+
+import sys
+from os.path import isfile, expanduser
+import yaml
 
 
-def scikit_random_forest_classifier(model_config):
-    return RandomForestClassifier(max_depth=model_config["max_depth"],
-                                  n_estimators=model_config["n_estimators"],
-                                  max_features=model_config["max_features"])
+def parse_yaml(filepath):
+    """
+    Parse a YAML file and return dictionary
+    Args:
+        filepath: Path to the YAML file to be parsed.
+    """
+    if not isfile(filepath):
+        print(f"YAML file {filepath} does not exist. Exit...")
+        sys.exit(1)
+    with open(filepath) as f:
+        return yaml.safe_load(f)
 
 
-def scikit_adaboost_classifier(model_config): # pylint: disable=W0613
-    return AdaBoostClassifier()
-
-
-def scikit_decision_tree_classifier(model_config):
-    return DecisionTreeClassifier(max_depth=model_config["max_depth"])
-
-
-def scikit_linear_regression(model_config): # pylint: disable=W0613
-    return LinearRegression()
-
-
-def scikit_ridge_regression(model_config):
-    return Ridge(alpha=model_config["alpha"], solver=model_config["solver"])
-
-
-def scikit_lasso_regression(model_config):
-    return Lasso(alpha=model_config["alpha"])
+def dump_yaml_from_dict(to_yaml, path):
+    path = expanduser(path)
+    with open(path, "w") as stream:
+        yaml.safe_dump(to_yaml, stream, default_flow_style=False, allow_unicode=False)

@@ -36,7 +36,6 @@ ml_study: # mlout, mlplot
   doroctraintest: false
   doplotdistr: false
   doimportance: false
-  dogridsearch: false
   dobayesianopt: false
   doboundary: false
   doefficiency: false
