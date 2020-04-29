@@ -75,12 +75,16 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         if "event_cand_validation" not in datap["analysis"][self.typean]:
             self.event_cand_validation = False
         self.apply_weights = datap["analysis"][self.typean]["triggersel"]["weighttrig"]
+        self.usetriggcorrfunc = datap["analysis"][self.typean]["triggersel"]["usetriggcorrfunc"]
         self.weightfunc = None
+        self.weighthist = None
         if self.apply_weights is True and self.mcordata == "data":
             filename = os.path.join(self.d_mcreweights, "trigger%s.root" % self.typean)
             if os.path.exists(filename):
                 weight_file = TFile.Open(filename, "read")
                 self.weightfunc = weight_file.Get("func%s_norm" % self.typean)
+                self.weighthist = weight_file.Get("hist%s_norm" % self.typean)
+                self.weighthist.SetDirectory(0)
                 weight_file.Close()
             else:
                 print("trigger correction file", filename, "doesnt exist")
@@ -89,9 +93,9 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         self.maxvaluehisto = datap["analysis"][self.typean]["maxvaluehisto"]
         self.mass = datap["mass"]
 
-    def gethistonormforselevt_mult(self, df_evt, dfevtevtsel, label, var, weightfunc=None):
+    def gethistonormforselevt_mult(self, df_evt, dfevtevtsel, label, var, useweightfromfunc=None):
 
-        if weightfunc is not None:
+        if useweightfromfunc is not None:
             label = label + "_weight"
         hSelMult = TH1F('sel_' + label, 'sel_' + label, self.nbinshisto,
                         self.minvaluehisto, self.maxvaluehisto)
@@ -105,14 +109,41 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         df_no_vtx = df_to_keep[~tag_vtx.values]
         # events with reco zvtx > 10 cm after previous selection
         df_bit_zvtx_gr10 = filter_bit_df(df_to_keep, 'is_ev_rej', [[3], [1, 2, 7, 12]])
-        if weightfunc is not None:
-            weightssel = evaluate(weightfunc, dfevtevtsel[var])
+        if useweightfromfunc is not None:
+            weightssel = None
+            weightsnovtx = None
+            weightsgr10 = None
+            if useweightfromfunc == True:
+                weightssel = evaluate(self.weightfunc, dfevtevtsel[var])
+                weightsnovtx = evaluate(self.weightfunc, df_no_vtx[var])
+                weightsgr10 = evaluate(self.weightfunc, df_bit_zvtx_gr10[var])
+            else:
+                weightssel = []
+                weightsnovtx = []
+                weightsgr10 = []
+                for iw in dfevtevtsel[var]:
+                    value = self.weighthist.GetBinContent(self.weighthist.FindBin(iw))
+                    # warning, the histogram has empty bins at high mult.
+                    # (>125 ntrkl) so a check is needed to avoid a 1/0 division
+                    # when computing the inverse of the weight
+                    if value == 0:
+                        value = 1.
+                    weightssel.append(value)
+                for iw in df_no_vtx[var]:
+                    value = self.weighthist.GetBinContent(self.weighthist.FindBin(iw))
+                    if value == 0:
+                        value = 1.
+                    weightsnovtx.append(value)
+                for iw in df_bit_zvtx_gr10[var]:
+                    value = self.weighthist.GetBinContent(self.weighthist.FindBin(iw))
+                    if value == 0:
+                        value = 1.
+                    weightsgr10.append(value)
+
             weightsinvsel = [1./weight for weight in weightssel]
             fill_hist(hSelMult, dfevtevtsel[var], weights=weightsinvsel)
-            weightsnovtx = evaluate(weightfunc, df_no_vtx[var])
             weightsinvnovtx = [1./weight for weight in weightsnovtx]
             fill_hist(hNoVtxMult, df_no_vtx[var], weights=weightsinvnovtx)
-            weightsgr10 = evaluate(weightfunc, df_bit_zvtx_gr10[var])
             weightsinvgr10 = [1./weight for weight in weightsgr10]
             fill_hist(hVtxOutMult, df_bit_zvtx_gr10[var], weights=weightsinvgr10)
         else:
@@ -164,7 +195,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         if self.apply_weights is True and self.mcordata == "data":
             hselweight, hnovtxmultweight, hvtxoutmultweight = \
                 self.gethistonormforselevt_mult(dfevtorig, dfevtevtsel, \
-                    labeltrigger, self.v_var2_binning_gen, self.weightfunc)
+                    labeltrigger, self.v_var2_binning_gen, self.usetriggcorrfunc)
             hselweight.Write()
             hnovtxmultweight.Write()
             hvtxoutmultweight.Write()
@@ -207,7 +238,20 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                                          self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 fill_hist(h_invmass, df_bin.inv_mass)
                 if self.apply_weights is True and self.mcordata == "data":
-                    weights = evaluate(self.weightfunc, df_bin[self.v_var2_binning_gen])
+                    weights = None
+                    if self.usetriggcorrfunc == True:
+                        weights = evaluate(self.weightfunc, df_bin[self.v_var2_binning_gen])
+                    else:
+                        weights = []
+                        for iw in df_bin[self.v_var2_binning_gen]:
+                            value = self.weighthist.GetBinContent(self.weighthist.FindBin(iw))
+                            # warning, here the mult. selection is already applied,
+                            # but still, the check is performed to avoid a 1/0 division
+                            # when computing the inverse of the weight
+                            if value == 0:
+                                value = 1.
+                            weights.append(value)
+
                     weightsinv = [1./weight for weight in weights]
                     fill_hist(h_invmass_weight, df_bin.inv_mass, weights=weightsinv)
                 myfile.cd()

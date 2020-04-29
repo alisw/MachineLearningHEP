@@ -295,6 +295,7 @@ Dspp:
         data: "trigger_hasbit_INT7==1"
         mc: null
         weighttrig: false
+        usetriggcorrfunc: true
 
       data:
         runselection: [null, null, null]
@@ -404,6 +405,7 @@ Dspp:
         data: "trigger_hasbit_HighMultSPD==1"
         mc: null
         weighttrig: true
+        usetriggcorrfunc: true
 
       data:
         runselection: [null, null, HighMultSPD2018]
