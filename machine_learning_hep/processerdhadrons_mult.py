@@ -206,7 +206,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
 
         list_df_recodtrig = []
 
-        for ipt in range(self.p_nptfinbins):
+        for ipt in range(self.p_nptfinbins): # pylint: disable=too-many-nested-blocks
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
             if self.s_evtsel is not None:
@@ -259,7 +259,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 h_invmass_weight.Write()
 
                 if self.mcordata == "mc":
-                    df_bi[self.v_ismcrefl] = np.array(tag_bit_df(df_bin, self.v_bitvar,
+                    df_bin[self.v_ismcrefl] = np.array(tag_bit_df(df_bin, self.v_bitvar,
                                                                   self.b_mcrefl), dtype=int)
                     df_bin_sig = df_bin[df_bin[self.v_ismcsignal] == 1]
                     df_bin_refl = df_bin[df_bin[self.v_ismcrefl] == 1]
