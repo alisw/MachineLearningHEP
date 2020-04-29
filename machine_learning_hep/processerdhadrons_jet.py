@@ -395,12 +395,19 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         df_zvsjetpt_gen_unmatched = df_gen_prompt.loc[:, [self.v_varshape_binning, "pt_jet"]]
         fill_hist(hzvsjetpt_gen_unmatched, df_zvsjetpt_gen_unmatched)
         hzvsjetpt_gen_unmatched.Write()
+
+        # 3D histogram for gen non-prompt
         titlehist = "hzvsjetptvscandpt_gen_nonprompt"
         hzvsjetptvscandpt_gen_nonprompt = makefill3dhist(df_gen_nonprompt, titlehist, \
             self.varshapebinarray_gen, self.var2binarray_gen, self.var1binarray, self.v_varshape_binning, "pt_jet", "pt_cand")
         hzvsjetptvscandpt_gen_nonprompt.Write()
-        # TODO
+
         # 3D histogram for gen prompt
+        titlehist = "hzvsjetptvscandpt_gen_prompt"
+        hzvsjetptvscandpt_gen_prompt = makefill3dhist(df_gen_prompt, titlehist, \
+            self.varshapebinarray_gen, self.var2binarray_gen, self.var1binarray, \
+            self.v_varshape_binning, "pt_jet", "pt_cand")
+        hzvsjetptvscandpt_gen_prompt.Write()
 
         # hz_gen_nocuts is the distribution of generated z values in b in
         # bins of gen_jet pt before the reco z and jetpt selection. hz_gen_cuts
