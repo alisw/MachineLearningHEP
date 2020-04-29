@@ -16,7 +16,7 @@
 main script for doing data processing, machine learning and analysis
 """
 import math
-import array
+from array import array
 import pickle
 import pandas as pd
 import numpy as np
@@ -54,46 +54,55 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         self.l_selml = ["y_test_prob%s>%s" % (self.p_modelname, self.lpt_probcutfin[ipt]) \
                        for ipt in range(self.p_nptbins)]
 
+        # first variable (hadron pt)
+        self.v_var_binning = datap["var_binning"] # name
+        self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
+        self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
+        self.p_nptfinbins = len(self.lpt_finbinmin) # number of bins
+        self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
+        self.var1ranges = self.lpt_finbinmin.copy()
+        self.var1ranges.append(self.lpt_finbinmax[-1])
+        self.var1binarray = array("d", self.var1ranges) # array of bin edges to use in histogram constructors
+
         # second variable (jet pt)
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"] # name
         self.lvar2_binmin_reco = datap["analysis"][self.typean].get("sel_binmin2_reco", None)
         self.lvar2_binmax_reco = datap["analysis"][self.typean].get("sel_binmax2_reco", None)
-        self.p_nbin2_reco = len(self.lvar2_binmin_reco)
+        self.p_nbin2_reco = len(self.lvar2_binmin_reco) # number of reco bins
         self.lvar2_binmin_gen = datap["analysis"][self.typean].get("sel_binmin2_gen", None)
         self.lvar2_binmax_gen = datap["analysis"][self.typean].get("sel_binmax2_gen", None)
-        self.p_nbin2_gen = len(self.lvar2_binmin_gen)
+        self.p_nbin2_gen = len(self.lvar2_binmin_gen) # number of gen bins
+        self.var2ranges_reco = self.lvar2_binmin_reco.copy()
+        self.var2ranges_reco.append(self.lvar2_binmax_reco[-1])
+        self.var2binarray_reco = array("d", self.var2ranges_reco) # array of bin edges to use in histogram constructors
+        self.var2ranges_gen = self.lvar2_binmin_gen.copy()
+        self.var2ranges_gen.append(self.lvar2_binmax_gen[-1])
+        self.var2binarray_gen = array("d", self.var2ranges_gen) # array of bin edges to use in histogram constructors
 
         # observable (z, shape,...)
         self.v_varshape_binning = datap["analysis"][self.typean]["var_binningshape"] # name (reco)
         self.v_varshape_binning_gen = datap["analysis"][self.typean]["var_binningshape_gen"] # name (gen)
-        self.v_varshape_latex = datap["analysis"][self.typean]["var_shape_latex"] # LaTeX name
         self.lvarshape_binmin_reco = \
             datap["analysis"][self.typean].get("sel_binminshape_reco", None)
         self.lvarshape_binmax_reco = \
             datap["analysis"][self.typean].get("sel_binmaxshape_reco", None)
-        self.p_nbinshape_reco = len(self.lvarshape_binmin_reco)
-        self.lvarshape_binmin_gen = datap["analysis"][self.typean].get("sel_binminshape_gen", None)
-        self.lvarshape_binmax_gen = datap["analysis"][self.typean].get("sel_binmaxshape_gen", None)
-        self.p_nbinshape_gen = len(self.lvarshape_binmin_gen)
-
-        self.closure_frac = datap["analysis"][self.typean].get("sel_closure_frac", None)
-
-        self.var2ranges_reco = self.lvar2_binmin_reco.copy()
-        self.var2ranges_reco.append(self.lvar2_binmax_reco[-1])
-        self.var2ranges_gen = self.lvar2_binmin_gen.copy()
-        self.var2ranges_gen.append(self.lvar2_binmax_gen[-1])
+        self.p_nbinshape_reco = len(self.lvarshape_binmin_reco) # number of reco bins
+        self.lvarshape_binmin_gen = \
+            datap["analysis"][self.typean].get("sel_binminshape_gen", None)
+        self.lvarshape_binmax_gen = \
+            datap["analysis"][self.typean].get("sel_binmaxshape_gen", None)
+        self.p_nbinshape_gen = len(self.lvarshape_binmin_gen) # number of gen bins
         self.varshaperanges_reco = self.lvarshape_binmin_reco.copy()
         self.varshaperanges_reco.append(self.lvarshape_binmax_reco[-1])
+        self.varshapebinarray_reco = array("d", self.varshaperanges_reco) # array of bin edges to use in histogram constructors
         self.varshaperanges_gen = self.lvarshape_binmin_gen.copy()
         self.varshaperanges_gen.append(self.lvarshape_binmax_gen[-1])
+        self.varshapebinarray_gen = array("d", self.varshaperanges_gen) # array of bin edges to use in histogram constructors
 
+        self.closure_frac = datap["analysis"][self.typean].get("sel_closure_frac", None)
         self.doprior = datap["analysis"][self.typean]["doprior"]
 
-        self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
-        self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
-        self.p_nptfinbins = len(self.lpt_finbinmin)
-        self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
-        #self.sel_final_fineptbins = datap["analysis"][self.typean]["sel_final_fineptbins"]
+        # selection
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
         self.s_jetsel_gen = datap["analysis"][self.typean]["jetsel_gen"]
         self.s_jetsel_reco = datap["analysis"][self.typean]["jetsel_reco"]
@@ -163,8 +172,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 h_invmass.Write()
 
                 massarray = [1.0 + i * (5.0 / 5000.0) for i in range(5001)] # 5000 bins in range 1.0-6.0
-                massarray_reco = array.array('d', massarray)
-                zarray_reco = array.array('d', self.varshaperanges_reco)
+                massarray_reco = array('d', massarray)
+                zarray_reco = array('d', self.varshaperanges_reco)
                 h_zvsinvmass = TH2F("hzvsmass" + suffix, "", \
                     5000, massarray_reco, self.p_nbinshape_reco, zarray_reco)
                 h_zvsinvmass.Sumw2()
@@ -197,7 +206,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             n_bins = self.p_nptfinbins
             analysis_bin_lims_temp = self.lpt_finbinmin.copy()
             analysis_bin_lims_temp.append(self.lpt_finbinmax[n_bins-1])
-            analysis_bin_lims = array.array('f', analysis_bin_lims_temp)
+            analysis_bin_lims = array('f', analysis_bin_lims_temp)
             h_gen_pr = TH1F("h_gen_pr" + stringbin2, "Prompt Generated in acceptance |y|<0.5", \
                             n_bins, analysis_bin_lims)
             h_presel_pr = TH1F("h_presel_pr" + stringbin2, "Prompt Reco in acc |#eta|<0.8 and sel", \
@@ -338,27 +347,27 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         zbin_reco = []
         nzbin_reco = self.p_nbinshape_reco
         zbin_reco = self.varshaperanges_reco
-        zbinarray_reco = array.array('d', zbin_reco)
+        zbinarray_reco = array('d', zbin_reco)
 
         zbin_gen = []
         nzbin_gen = self.p_nbinshape_gen
         zbin_gen = self.varshaperanges_gen
-        zbinarray_gen = array.array('d', zbin_gen)
+        zbinarray_gen = array('d', zbin_gen)
 
         jetptbin_reco = []
         njetptbin_reco = self.p_nbin2_reco
         jetptbin_reco = self.var2ranges_reco
-        jetptbinarray_reco = array.array('d', jetptbin_reco)
+        jetptbinarray_reco = array('d', jetptbin_reco)
 
         jetptbin_gen = []
         njetptbin_gen = self.p_nbin2_gen
         jetptbin_gen = self.var2ranges_gen
-        jetptbinarray_gen = array.array('d', jetptbin_gen)
+        jetptbinarray_gen = array('d', jetptbin_gen)
 
         candptbin = []
         candptbin = self.lpt_finbinmin.copy()
         candptbin.append(self.lpt_finbinmax[-1])
-        candptbinarray = array.array('d', candptbin)
+        candptbinarray = array('d', candptbin)
 
         out_file = TFile.Open(self.l_historesp[index], "recreate")
         list_df_mc_reco = []
