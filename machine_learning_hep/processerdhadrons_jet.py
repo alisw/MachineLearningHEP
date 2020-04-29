@@ -32,7 +32,7 @@ from machine_learning_hep.processer import Processer
 
 class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many-instance-attributes
     # Class Attribute
-    species = 'processer'
+    species = "processer"
 
     # Initializer / Instance Attributes
     # pylint: disable=too-many-statements, too-many-arguments, line-too-long
@@ -47,8 +47,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                          p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
                          d_results, typean, runlisttrigger, d_mcreweights)
 
-        self.p_mass_fit_lim = datap["analysis"][self.typean]['mass_fit_lim']
-        self.p_bin_width = datap["analysis"][self.typean]['bin_width']
+        self.p_mass_fit_lim = datap["analysis"][self.typean]["mass_fit_lim"]
+        self.p_bin_width = datap["analysis"][self.typean]["bin_width"]
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
                                     self.p_bin_width))
         self.l_selml = ["y_test_prob%s>%s" % (self.p_modelname, self.lpt_probcutfin[ipt]) \
@@ -172,10 +172,9 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 h_invmass.Write()
 
                 massarray = [1.0 + i * (5.0 / 5000.0) for i in range(5001)] # 5000 bins in range 1.0-6.0
-                massarray_reco = array('d', massarray)
-                zarray_reco = array('d', self.varshaperanges_reco)
+                massarray_reco = array("d", massarray)
                 h_zvsinvmass = TH2F("hzvsmass" + suffix, "", \
-                    5000, massarray_reco, self.p_nbinshape_reco, zarray_reco)
+                    5000, massarray_reco, self.p_nbinshape_reco, self.varshapebinarray_reco)
                 h_zvsinvmass.Sumw2()
                 fill2dhist(df_bin, h_zvsinvmass, "inv_mass", self.v_varshape_binning)
                 h_zvsinvmass.Write()
@@ -203,22 +202,19 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
                                         self.lvar2_binmin_reco[ibin2], \
                                         self.lvar2_binmax_reco[ibin2])
-            n_bins = self.p_nptfinbins
-            analysis_bin_lims_temp = self.lpt_finbinmin.copy()
-            analysis_bin_lims_temp.append(self.lpt_finbinmax[n_bins-1])
-            analysis_bin_lims = array('f', analysis_bin_lims_temp)
+
             h_gen_pr = TH1F("h_gen_pr" + stringbin2, "Prompt Generated in acceptance |y|<0.5", \
-                            n_bins, analysis_bin_lims)
+                            self.p_nptfinbins, self.var1binarray)
             h_presel_pr = TH1F("h_presel_pr" + stringbin2, "Prompt Reco in acc |#eta|<0.8 and sel", \
-                               n_bins, analysis_bin_lims)
+                               self.p_nptfinbins, self.var1binarray)
             h_sel_pr = TH1F("h_sel_pr" + stringbin2, "Prompt Reco and sel in acc |#eta|<0.8 and sel", \
-                            n_bins, analysis_bin_lims)
+                            self.p_nptfinbins, self.var1binarray)
             h_gen_fd = TH1F("h_gen_fd" + stringbin2, "FD Generated in acceptance |y|<0.5", \
-                            n_bins, analysis_bin_lims)
+                            self.p_nptfinbins, self.var1binarray)
             h_presel_fd = TH1F("h_presel_fd" + stringbin2, "FD Reco in acc |#eta|<0.8 and sel", \
-                               n_bins, analysis_bin_lims)
+                               self.p_nptfinbins, self.var1binarray)
             h_sel_fd = TH1F("h_sel_fd" + stringbin2, "FD Reco and sel in acc |#eta|<0.8 and sel", \
-                            n_bins, analysis_bin_lims)
+                            self.p_nptfinbins, self.var1binarray)
 
             bincounter = 0
             for ipt in range(self.p_nptfinbins):
@@ -344,35 +340,9 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         jets, trigger and ml probability of the HF hadron
         """
 
-        zbin_reco = []
-        nzbin_reco = self.p_nbinshape_reco
-        zbin_reco = self.varshaperanges_reco
-        zbinarray_reco = array('d', zbin_reco)
-
-        zbin_gen = []
-        nzbin_gen = self.p_nbinshape_gen
-        zbin_gen = self.varshaperanges_gen
-        zbinarray_gen = array('d', zbin_gen)
-
-        jetptbin_reco = []
-        njetptbin_reco = self.p_nbin2_reco
-        jetptbin_reco = self.var2ranges_reco
-        jetptbinarray_reco = array('d', jetptbin_reco)
-
-        jetptbin_gen = []
-        njetptbin_gen = self.p_nbin2_gen
-        jetptbin_gen = self.var2ranges_gen
-        jetptbinarray_gen = array('d', jetptbin_gen)
-
-        candptbin = []
-        candptbin = self.lpt_finbinmin.copy()
-        candptbin.append(self.lpt_finbinmax[-1])
-        candptbinarray = array('d', candptbin)
-
         out_file = TFile.Open(self.l_historesp[index], "recreate")
         list_df_mc_reco = []
         list_df_mc_gen = []
-
 
         for iptskim in range(self.p_nptbins):
 
@@ -421,14 +391,16 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         # subtraction, currently is obsolete
 
         hzvsjetpt_gen_unmatched = TH2F("hzvsjetpt_gen_unmatched", "hzvsjetpt_gen_unmatched", \
-            nzbin_gen, zbinarray_gen, njetptbin_gen, jetptbinarray_gen)
+            self.p_nbinshape_gen, self.varshapebinarray_gen, self.p_nbin2_gen, self.var2binarray_gen)
         df_zvsjetpt_gen_unmatched = df_gen_prompt.loc[:, [self.v_varshape_binning, "pt_jet"]]
         fill_hist(hzvsjetpt_gen_unmatched, df_zvsjetpt_gen_unmatched)
         hzvsjetpt_gen_unmatched.Write()
         titlehist = "hzvsjetptvscandpt_gen_nonprompt"
         hzvsjetptvscandpt_gen_nonprompt = makefill3dhist(df_gen_nonprompt, titlehist, \
-            zbinarray_gen, jetptbinarray_gen, candptbinarray, self.v_varshape_binning, "pt_jet", "pt_cand")
+            self.varshapebinarray_gen, self.var2binarray_gen, self.var1binarray, self.v_varshape_binning, "pt_jet", "pt_cand")
         hzvsjetptvscandpt_gen_nonprompt.Write()
+        # TODO
+        # 3D histogram for gen prompt
 
         # hz_gen_nocuts is the distribution of generated z values in b in
         # bins of gen_jet pt before the reco z and jetpt selection. hz_gen_cuts
@@ -440,10 +412,10 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             suffix = "%s_%.2f_%.2f" % \
                 (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             hz_gen_nocuts = TH1F("hz_gen_nocuts_nonprompt" + suffix, \
-                "hz_gen_nocuts_nonprompt" + suffix, nzbin_gen, zbinarray_gen)
+                "hz_gen_nocuts_nonprompt" + suffix, self.p_nbinshape_gen, self.varshapebinarray_gen)
             hz_gen_nocuts.Sumw2()
             hz_gen_cuts = TH1F("hz_gen_cuts_nonprompt" + suffix,
-                               "hz_gen_cuts_nonprompt" + suffix, nzbin_gen, zbinarray_gen)
+                               "hz_gen_cuts_nonprompt" + suffix, self.p_nbinshape_gen, self.varshapebinarray_gen)
             hz_gen_cuts.Sumw2()
 
             df_tmp = seldf_singlevar(df_mc_reco_merged_nonprompt, "pt_gen_jet", \
@@ -461,10 +433,10 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
             # Addendum for unfolding
             hz_gen_nocuts_pr = TH1F("hz_gen_nocuts" + suffix, \
-                "hz_gen_nocuts" + suffix, nzbin_gen, zbinarray_gen)
+                "hz_gen_nocuts" + suffix, self.p_nbinshape_gen, self.varshapebinarray_gen)
             hz_gen_nocuts_pr.Sumw2()
             hz_gen_cuts_pr = TH1F("hz_gen_cuts" + suffix,
-                                  "hz_gen_cuts" + suffix, nzbin_gen, zbinarray_gen)
+                                  "hz_gen_cuts" + suffix, self.p_nbinshape_gen, self.varshapebinarray_gen)
             hz_gen_cuts_pr.Sumw2()
             df_tmp_pr = seldf_singlevar(df_mc_reco_merged_prompt, "pt_gen_jet", \
                                      self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
@@ -489,13 +461,13 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
         # histograms for response of feeddown
         hzvsjetpt_reco_nocuts = \
-            build2dhisto("hzvsjetpt_reco_nocuts_nonprompt", zbinarray_reco, jetptbinarray_reco)
+            build2dhisto("hzvsjetpt_reco_nocuts_nonprompt", self.varshapebinarray_reco, self.var2binarray_reco)
         hzvsjetpt_reco_cuts = \
-            build2dhisto("hzvsjetpt_reco_cuts_nonprompt", zbinarray_reco, jetptbinarray_reco)
+            build2dhisto("hzvsjetpt_reco_cuts_nonprompt", self.varshapebinarray_reco, self.var2binarray_reco)
         hzvsjetpt_gen_nocuts = \
-            build2dhisto("hzvsjetpt_gen_nocuts_nonprompt", zbinarray_gen, jetptbinarray_gen)
+            build2dhisto("hzvsjetpt_gen_nocuts_nonprompt", self.varshapebinarray_gen, self.var2binarray_gen)
         hzvsjetpt_gen_cuts = \
-            build2dhisto("hzvsjetpt_gen_cuts_nonprompt", zbinarray_gen, jetptbinarray_gen)
+            build2dhisto("hzvsjetpt_gen_cuts_nonprompt", self.varshapebinarray_gen, self.var2binarray_gen)
 
         hzvsjetpt_reco = hzvsjetpt_reco_nocuts.Clone("hzvsjetpt_reco_nonprompt")
         hzvsjetpt_gen = hzvsjetpt_gen_nocuts.Clone("hzvsjetpt_genv")
@@ -513,13 +485,13 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
         # histograms for unfolding
         hzvsjetpt_reco_nocuts_pr = \
-            build2dhisto("hzvsjetpt_reco_nocuts", zbinarray_reco, jetptbinarray_reco)
+            build2dhisto("hzvsjetpt_reco_nocuts", self.varshapebinarray_reco, self.var2binarray_reco)
         hzvsjetpt_reco_cuts_pr = \
-            build2dhisto("hzvsjetpt_reco_cuts", zbinarray_reco, jetptbinarray_reco)
+            build2dhisto("hzvsjetpt_reco_cuts", self.varshapebinarray_reco, self.var2binarray_reco)
         hzvsjetpt_gen_nocuts_pr = \
-            build2dhisto("hzvsjetpt_gen_nocuts", zbinarray_gen, jetptbinarray_gen)
+            build2dhisto("hzvsjetpt_gen_nocuts", self.varshapebinarray_gen, self.var2binarray_gen)
         hzvsjetpt_gen_cuts_pr = \
-            build2dhisto("hzvsjetpt_gen_cuts", zbinarray_gen, jetptbinarray_gen)
+            build2dhisto("hzvsjetpt_gen_cuts", self.varshapebinarray_gen, self.var2binarray_gen)
 
         fill2dhist(df_tmp_selreco_pr, hzvsjetpt_reco_nocuts_pr, self.v_varshape_binning, "pt_jet")
         fill2dhist(df_tmp_selgen_pr, hzvsjetpt_gen_nocuts_pr, self.v_varshape_binning_gen, "pt_gen_jet")
@@ -531,13 +503,13 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         hzvsjetpt_gen_cuts_pr.Write()
 
         hzvsjetpt_reco_closure_pr = \
-            build2dhisto("hzvsjetpt_reco_closure", zbinarray_reco, jetptbinarray_reco)
+            build2dhisto("hzvsjetpt_reco_closure", self.varshapebinarray_reco, self.var2binarray_reco)
         hzvsjetpt_gen_closure_pr = \
-            build2dhisto("hzvsjetpt_gen_closure", zbinarray_reco, jetptbinarray_reco)
+            build2dhisto("hzvsjetpt_gen_closure", self.varshapebinarray_reco, self.var2binarray_reco)
         hzvsjetpt_reco_pr = \
-            build2dhisto("hzvsjetpt_reco", zbinarray_reco, jetptbinarray_reco)
+            build2dhisto("hzvsjetpt_reco", self.varshapebinarray_reco, self.var2binarray_reco)
         hzvsjetpt_gen_pr = \
-            build2dhisto("hzvsjetpt_gen", zbinarray_gen, jetptbinarray_gen)
+            build2dhisto("hzvsjetpt_gen", self.varshapebinarray_gen, self.var2binarray_gen)
         response_matrix_pr = RooUnfoldResponse(hzvsjetpt_reco_pr, hzvsjetpt_gen_pr)
         response_matrix_closure_pr = RooUnfoldResponse(hzvsjetpt_reco_pr, hzvsjetpt_gen_pr)
 
@@ -547,13 +519,13 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         hzvsjetpt_gen_pr.Write()
 
         hjetpt_gen_nocuts_pr = TH1F("hjetpt_gen_nocuts", \
-            "hjetpt_gen_nocuts", njetptbin_gen, jetptbinarray_gen)
+            "hjetpt_gen_nocuts", self.p_nbin2_gen, self.var2binarray_gen)
         hjetpt_gen_cuts_pr = TH1F("hjetpt_gen_cuts", \
-            "hjetpt_gen_cuts", njetptbin_gen, jetptbinarray_gen)
+            "hjetpt_gen_cuts", self.p_nbin2_gen, self.var2binarray_gen)
         hjetpt_gen_nocuts_closure = TH1F("hjetpt_gen_nocuts_closure", \
-            "hjetpt_gen_nocuts_closure", njetptbin_gen, jetptbinarray_gen)
+            "hjetpt_gen_nocuts_closure", self.p_nbin2_gen, self.var2binarray_gen)
         hjetpt_gen_cuts_closure = TH1F("hjetpt_gen_cuts_closure", \
-            "hjetpt_gen_cuts_closure", njetptbin_gen, jetptbinarray_gen)
+            "hjetpt_gen_cuts_closure", self.p_nbin2_gen, self.var2binarray_gen)
         hjetpt_gen_nocuts_pr.Sumw2()
         hjetpt_gen_cuts_pr.Sumw2()
         hjetpt_gen_nocuts_closure.Sumw2()
@@ -567,13 +539,13 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
         hjetpt_genvsreco_full = \
             TH2F("hjetpt_genvsreco_full_nonprompt", "hjetpt_genvsreco_full_nonprompt", \
-            njetptbin_gen * 100, self.lvar2_binmin_gen[0], self.lvar2_binmax_gen[-1], \
-            njetptbin_reco * 100, self.lvar2_binmin_reco[0], self.lvar2_binmax_reco[-1])
+            self.p_nbin2_gen * 100, self.lvar2_binmin_gen[0], self.lvar2_binmax_gen[-1], \
+            self.p_nbin2_reco * 100, self.lvar2_binmin_reco[0], self.lvar2_binmax_reco[-1])
 
         hz_genvsreco_full = \
             TH2F("hz_genvsreco_full_nonprompt", "hz_genvsreco_full_nonprompt", \
-                 nzbin_gen * 100, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1],
-                 nzbin_reco * 100, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
+                 self.p_nbinshape_gen * 100, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1],
+                 self.p_nbinshape_reco * 100, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
 
         fill2dhist(df_tmp_selrecogen, hjetpt_genvsreco_full, "pt_gen_jet", "pt_jet")
         hjetpt_genvsreco_full.Scale(1.0 / hjetpt_genvsreco_full.Integral(1, -1, 1, -1))
@@ -588,13 +560,13 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         # histograms for unfolding
         hjetpt_genvsreco_full_pr = \
             TH2F("hjetpt_genvsreco_full", "hjetpt_genvsreco_full", \
-            njetptbin_gen * 100, self.lvar2_binmin_gen[0], self.lvar2_binmax_gen[-1], \
-            njetptbin_reco * 100, self.lvar2_binmin_reco[0], self.lvar2_binmax_reco[-1])
+            self.p_nbin2_gen * 100, self.lvar2_binmin_gen[0], self.lvar2_binmax_gen[-1], \
+            self.p_nbin2_reco * 100, self.lvar2_binmin_reco[0], self.lvar2_binmax_reco[-1])
 
         hz_genvsreco_full_pr = \
             TH2F("hz_genvsreco_full", "hz_genvsreco_full", \
-                 nzbin_gen * 100, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1],
-                 nzbin_reco * 100, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
+                 self.p_nbinshape_gen * 100, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1],
+                 self.p_nbinshape_reco * 100, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
         fill2dhist(df_tmp_selrecogen_pr, hjetpt_genvsreco_full_pr, "pt_gen_jet", "pt_jet")
         hjetpt_genvsreco_full_pr.Scale(1.0 / hjetpt_genvsreco_full_pr.Integral(1, -1, 1, -1))
         hjetpt_genvsreco_full_pr.Write()
@@ -604,7 +576,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
 
         hzvsjetpt_prior_weights = build2dhisto("hzvsjetpt_prior_weights", \
-            zbinarray_gen, jetptbinarray_gen)
+            self.varshapebinarray_gen, self.var2binarray_gen)
         fill2dhist(df_tmp_selrecogen_pr, hzvsjetpt_prior_weights, self.v_varshape_binning_gen, "pt_gen_jet")
         # end of histograms for unfolding
 
@@ -614,8 +586,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, \
                 self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
             hz_genvsreco = TH2F("hz_genvsreco_nonprompt" + suffix, "hz_genvsreco_nonprompt" + suffix, \
-                nzbin_gen * 100, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1], \
-                nzbin_reco*100, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
+                self.p_nbinshape_gen * 100, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1], \
+                self.p_nbinshape_reco*100, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
             fill2dhist(df_tmp_selrecogen_jetbin, hz_genvsreco, self.v_varshape_binning_gen, self.v_varshape_binning)
             norm = hz_genvsreco.Integral(1, -1, 1, -1)
             if norm > 0:
@@ -627,8 +599,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, \
                 self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
             hz_genvsreco_pr = TH2F("hz_genvsreco" + suffix, "hz_genvsreco" + suffix, \
-                nzbin_gen * 100, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1], \
-                nzbin_reco*100, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
+                self.p_nbinshape_gen * 100, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1], \
+                self.p_nbinshape_reco*100, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
             fill2dhist(df_tmp_selrecogen_pr_jetbin, hz_genvsreco_pr, self.v_varshape_binning_gen, self.v_varshape_binning)
             norm_pr = hz_genvsreco_pr.Integral(1, -1, 1, -1)
             if norm_pr > 0:
@@ -641,8 +613,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             suffix = "%s_%.2f_%.2f" % \
                 (self.v_varshape_binning, self.lvarshape_binmin_reco[ibinshape], self.lvarshape_binmax_reco[ibinshape])
             hjetpt_genvsreco = TH2F("hjetpt_genvsreco_nonprompt" + suffix, \
-                "hjetpt_genvsreco_nonprompt" + suffix, njetptbin_gen * 100, self.lvar2_binmin_gen[0], \
-                self.lvar2_binmax_gen[-1], njetptbin_reco * 100, self.lvar2_binmin_reco[0], \
+                "hjetpt_genvsreco_nonprompt" + suffix, self.p_nbin2_gen * 100, self.lvar2_binmin_gen[0], \
+                self.lvar2_binmax_gen[-1], self.p_nbin2_reco * 100, self.lvar2_binmin_reco[0], \
                 self.lvar2_binmax_reco[-1])
             fill2dhist(df_tmp_selrecogen_zbin, hjetpt_genvsreco, "pt_gen_jet", "pt_jet")
             norm = hjetpt_genvsreco.Integral(1, -1, 1, -1)
@@ -655,8 +627,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             suffix = "%s_%.2f_%.2f" % \
                 (self.v_varshape_binning, self.lvarshape_binmin_reco[ibinshape], self.lvarshape_binmax_reco[ibinshape])
             hjetpt_genvsreco_pr = TH2F("hjetpt_genvsreco" + suffix, \
-                "hjetpt_genvsreco" + suffix, njetptbin_gen * 100, self.lvar2_binmin_gen[0], \
-                self.lvar2_binmax_gen[-1], njetptbin_reco * 100, self.lvar2_binmin_reco[0], \
+                "hjetpt_genvsreco" + suffix, self.p_nbin2_gen * 100, self.lvar2_binmin_gen[0], \
+                self.lvar2_binmax_gen[-1], self.p_nbin2_reco * 100, self.lvar2_binmin_reco[0], \
                 self.lvar2_binmax_reco[-1])
             fill2dhist(df_tmp_selrecogen_pr_zbin, hjetpt_genvsreco_pr, "pt_gen_jet", "pt_jet")
             norm_pr = hjetpt_genvsreco_pr.Integral(1, -1, 1, -1)
@@ -736,11 +708,11 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             hz_gen_nocuts_closure = TH1F("hz_gen_nocuts_closure" + suffix,
                                          "hz_gen_nocuts_closure" + suffix,
-                                         nzbin_gen, zbinarray_gen)
+                                         self.p_nbinshape_gen, self.varshapebinarray_gen)
             hz_gen_nocuts_closure.Sumw2()
             hz_gen_cuts_closure = TH1F("hz_gen_cuts_closure" + suffix,
                                        "hz_gen_cuts_closure" + suffix,
-                                       nzbin_gen, zbinarray_gen)
+                                       self.p_nbinshape_gen, self.varshapebinarray_gen)
             hz_gen_cuts_closure.Sumw2()
             df_tmp_selgen_pr_test_bin = seldf_singlevar(df_tmp_selgen_pr_test, \
                 "pt_gen_jet", self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
@@ -758,13 +730,13 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
         hzvsjetpt_reco_nocuts_closure = TH2F("hzvsjetpt_reco_nocuts_closure",
                                              "hzvsjetpt_reco_nocuts_closure",
-                                             nzbin_reco, zbinarray_reco,
-                                             njetptbin_reco, jetptbinarray_reco)
+                                             self.p_nbinshape_reco, self.varshapebinarray_reco,
+                                             self.p_nbin2_reco, self.var2binarray_reco)
         hzvsjetpt_reco_nocuts_closure.Sumw2()
         hzvsjetpt_reco_cuts_closure = TH2F("hzvsjetpt_reco_cuts_closure",
                                            "hzvsjetpt_reco_cuts_closure",
-                                           nzbin_reco, zbinarray_reco,
-                                           njetptbin_reco, jetptbinarray_reco)
+                                           self.p_nbinshape_reco, self.varshapebinarray_reco,
+                                           self.p_nbin2_reco, self.var2binarray_reco)
         hzvsjetpt_reco_cuts_closure.Sumw2()
 
         fill2dhist(df_tmp_selreco_pr_test, hzvsjetpt_reco_nocuts_closure, self.v_varshape_binning, "pt_jet")
