@@ -113,7 +113,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
             weightssel = None
             weightsnovtx = None
             weightsgr10 = None
-            if useweightfromfunc == True:
+            if useweightfromfunc is True:
                 weightssel = evaluate(self.weightfunc, dfevtevtsel[var])
                 weightsnovtx = evaluate(self.weightfunc, df_no_vtx[var])
                 weightsgr10 = evaluate(self.weightfunc, df_bit_zvtx_gr10[var])
@@ -239,7 +239,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 fill_hist(h_invmass, df_bin.inv_mass)
                 if self.apply_weights is True and self.mcordata == "data":
                     weights = None
-                    if self.usetriggcorrfunc == True:
+                    if self.usetriggcorrfunc is True:
                         weights = evaluate(self.weightfunc, df_bin[self.v_var2_binning_gen])
                     else:
                         weights = []
@@ -259,7 +259,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 h_invmass_weight.Write()
 
                 if self.mcordata == "mc":
-                    df_bin[self.v_ismcrefl] = np.array(tag_bit_df(df_bin, self.v_bitvar,
+                    df_bi[self.v_ismcrefl] = np.array(tag_bit_df(df_bin, self.v_bitvar,
                                                                   self.b_mcrefl), dtype=int)
                     df_bin_sig = df_bin[df_bin[self.v_ismcsignal] == 1]
                     df_bin_refl = df_bin[df_bin[self.v_ismcrefl] == 1]
