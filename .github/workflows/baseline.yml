@@ -6,13 +6,13 @@ on:
             - master
             - ml-dev
         paths:
-            - "*.py"
+            - "**.py"
     push:
         branches:
             - master
             - ml-dev
         paths:
-            - "*.py"
+            - "**.py"
 
 jobs:
   # A baseline test, independent of OS at the moment
