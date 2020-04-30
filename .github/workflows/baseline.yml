@@ -6,13 +6,13 @@ on:
             - master
             - ml-dev
         paths:
-            - "machine_learning_hep/**/*.py"
+            - "*.py"
     push:
         branches:
             - master
             - ml-dev
         paths:
-            - "machine_learning_hep/**/*.py"
+            - "*.py"
 
 jobs:
   # A baseline test, independent of OS at the moment
@@ -26,12 +26,11 @@ jobs:
       - name: Test copyright
         if: github.event_name == 'push'
         run: |
-          changed_files="$(find $(pwd -P) -name '*.py' -a -not -name setup.py)"
-          ci/run-test-copyright.sh $changed_files
+          ci/run-tests.sh --tests copyright
 
       - name: Test copyright
         if: github.event_name == 'pull_request'
         run: |
           git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
-          changed_files="$(git diff --name-only origin/${{ github.base_ref }} | grep -E '\.py' | grep -vE 'setup.py')"
-          ci/run-test-copyright.sh $changed_files
+          changed_files="$(git diff --name-only origin/${{ github.base_ref }})"
+          ci/run-tests.sh --tests copyright --files $changed_files

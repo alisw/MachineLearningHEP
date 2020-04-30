@@ -32,8 +32,12 @@ PYLINT_IGNORE=""
 PYLINT_IGNORE_FILE="ci/pylint-ignore"
 FLAKE8_IGNORE=""
 FLAKE8_IGNORE_FILE="ci/flake8-ignore"
+COPYRIGHT_IGNORE=""
+COPYRIGHT_IGNORE_FILE="ci/copyright-ignore"
 [[ -e $PYLINT_IGNORE_FILE ]] && PYLINT_IGNORE=$(cat $PYLINT_IGNORE_FILE | clean-lines)
 [[ -e $FLAKE8_IGNORE_FILE ]] && FLAKE8_IGNORE=$(cat $FLAKE8_IGNORE_FILE | clean-lines)
+[[ -e $COPYRIGHT_IGNORE_FILE ]] && COPYRIGHT_IGNORE=$(cat $COPYRIGHT_IGNORE_FILE | clean-lines)
+
 
 function install-package()
 {
@@ -119,6 +123,44 @@ function test-pytest()
 }
 
 
+function copyright-single() {
+  local COPYRIGHT="$(cat <<'EOF'
+#############################################################################
+##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
+## This program is free software: you can redistribute it and/or modify it ##
+##  under the terms of the GNU General Public License as published by the  ##
+## Free Software Foundation, either version 3 of the License, or (at your  ##
+## option) any later version. This program is distributed in the hope that ##
+##  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  ##
+##     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    ##
+##           See the GNU General Public License for more details.          ##
+##    You should have received a copy of the GNU General Public License    ##
+##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
+#############################################################################
+EOF
+)"
+  local COPYRIGHT_LINES=$(echo "$COPYRIGHT" | wc -l)
+  [[ "$(head -n$COPYRIGHT_LINES "$1")" == "$COPYRIGHT" ]] || { printf "$1: missing or malformed copyright notice\n"; return 1; }
+  return 0
+}
+
+function test-copyright()
+{
+    local test_files=$@
+    if [[ "$test_files" != "" ]]
+    then
+        for tf in $test_files; do
+            [[ -e "$tf" ]] || continue
+            [[ "$(echo $tf | grep '.py$' || :)" != "" ]] || continue
+            [[ "$(ignore-file $tf $COPYRIGHT_IGNORE)" != "" ]] && { echo "File $tf set to be ignored"; continue; }
+            echo "File $tf "
+            swallow "copyright $tf" copyright-single  $tf || ERR=1
+        done
+    fi
+}
+
+
 function test-case()
 {
     case "$1" in
@@ -134,6 +176,10 @@ function test-case()
             shift
             test-pytest
             ;;
+        copyright)
+            shift
+            test-copyright $@
+            ;;
         *)
             echo "Unknown test case $1"
             ;;
@@ -147,6 +193,7 @@ function test-all()
     test-pylint $@
     test-flake8 $@
     test-pytest
+    test-copyright $@
 }
 
 
@@ -155,7 +202,7 @@ function print-help()
     echo
     echo "run_tests.sh usage to run CI tests"
     echo ""
-    echo "run_tests.sh [  --tests pylint|pytest (all tests if not given)"
+    echo "run_tests.sh [  --tests pylint|pytest|copyright (all tests if not given)"
     echo "              | --files <files> (all tracked Python files if not given) ]  # defaults to all"
     echo ""
     echo "Possible test cases are:"
