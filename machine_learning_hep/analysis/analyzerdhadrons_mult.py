@@ -649,8 +649,8 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                 if tpc_tof_me:
                     for i in ["Pi", "K", "Pr"]:
                         for j in ["0", "1"]:
-                            for k in ["p", "pt"]:
-                                hname = [f"{k}_prong{j}",
+                            for k in ["p_prong0", "pt_prong0", "pt_cand"]:
+                                hname = [f"{k}",
                                          f"nsigTOF_{i}_{j}", tag]
                                 hnum = get_histo(*hname,
                                                  strictly_require=False)
