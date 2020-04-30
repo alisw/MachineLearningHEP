@@ -20,11 +20,32 @@ cd "$(dirname "$0")"/..
 
 ERR=0
 
+# Configure ignore
+PYLINT_IGNORE=""
+PYLINT_IGNORE_FILE="ci/pylint-ignore"
+FLAKE8_IGNORE=""
+FLAKE8_IGNORE_FILE="ci/flake8-ignore"
+[[ -e $PYLINT_IGNORE_FILE ]] && PYLINT_IGNORE=$(cat $PYLINT_IGNORE_FILE)
+[[ -e $FLAKE8_IGNORE_FILE ]] && FLAKE8_IGNORE=$(cat $FLAKE8_IGNORE_FILE)
+
 function install-package()
 {
     pip3 install --upgrade --force-reinstall --no-deps -e .
 }
 
+function ignore-file()
+{
+    local f=$1
+    shift
+    local ignore="$@"
+    local found=""
+    for i in $ignore
+    do
+        found="$(echo $f | grep $i || :)"
+        [[ "$found" != "" ]] && break
+    done
+    echo $found
+}
 
 function swallow() {
     local ERR=0
@@ -54,6 +75,8 @@ function test-pylint()
     then
         for tf in $test_files; do
             [[ -e "$tf" ]] || continue
+            [[ "$(echo $tf | grep '.py$' || :)" != "" ]] || { echo "Testing only .py files, skip $tf"; continue; } 
+            [[ "$(ignore-file $tf $PYLINT_IGNORE)" != "" ]] && { echo "File $tf set to be ignored"; continue; }
             echo "File $tf "
             swallow "linting $tf" pylint $tf || ERR=1
         done
@@ -70,6 +93,8 @@ function test-flake8()
     then
         for tf in $test_files; do
             [[ -e "$tf" ]] || continue
+            [[ "$(echo $tf | grep '.py$' || :)" != "" ]] || { echo "Testing only .py files, skip $tf"; continue; } 
+            [[ "$(ignore-file $tf $FLAKE8_IGNORE)" != "" ]] && { echo "File $tf set to be ignored"; continue; }
             echo "File $tf "
             swallow "flaking $tf" flake8  $tf --count --select=E9,F63,F7,F82 --show-source --statistics || ERR=1
             swallow "flaking (treat as warnings) $tf" flake8  $tf --exit-zero --max-complexity=10 --max-line-length=127 --statistics
@@ -123,12 +148,13 @@ function print-help()
     echo
     echo "run_tests.sh usage to run CI tests"
     echo ""
-    echo "run_tests.sh [<testcase>|all]  # defaults to all"
+    echo "run_tests.sh [  --tests pylint|pytest (all tests if not given)"
+    echo "              | --files <files> (all tracked Python files if not given) ]  # defaults to all"
     echo ""
     echo "Possible test cases are:"
     echo "  pylint                        # run style tests for copyright and pylint"
     echo ""
-    echo "--help|-h                         # Show this message and exit"
+    echo "--help|-h                       # Show this message and exit"
 }
 
 
@@ -171,6 +197,16 @@ while [[ $# -gt 0 ]]; do
     shift
 done
 
+# No files given, take all there is tracked by git
+if [[ "$FILES" == "" ]]
+then
+    # Do it like this because otherwise so that all .py files which are not tracked
+    # are not tested
+    FILES="$(git ls-tree -r HEAD --name-only | grep '.py$')"
+fi
+
+# If there are still no files, nothing to do
+[[ "$FILES" == "" ]] && { echo "Nothing to do..."; exit 0; }
 
 if [[ "$TESTS" == "" ]]
 then

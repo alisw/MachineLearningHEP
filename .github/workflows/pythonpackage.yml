@@ -6,13 +6,13 @@ on:
               - master
               - ml-dev
         paths:
-            - "machine_learning_hep/**/*.py"
+            - "*.py"
     push:
         branches:
               - master
               - ml-dev
         paths:
-            - "machine_learning_hep/**/*.py"
+            - "*.py"
 
 jobs:
   build-os-latest:
@@ -47,5 +47,4 @@ jobs:
       - name: Run on push
         if: github.event_name == 'push'
         run: |
-          changed_files="$(find . -name '*.py' -a -not -name setup.py)"
-          ci/run-tests.sh --tests ${{ matrix.test-tool }} --files $changed_files
+          ci/run-tests.sh --tests ${{ matrix.test-tool }}
