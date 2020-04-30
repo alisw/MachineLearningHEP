@@ -93,6 +93,34 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         self.maxvaluehisto = datap["analysis"][self.typean]["maxvaluehisto"]
         self.mass = datap["mass"]
 
+    @staticmethod
+    def make_weights(col, func, hist, use_func):
+        """Helper function to extract weights
+
+        Args:
+            col: np.array
+                array to evaluate/run over
+            func: ROOT.TF1
+                ROOT function to use for evaluation
+            hist: TH1
+                ROOT histogram used for getting weights
+            use_func: bool
+                whether or not to use func (otherwise hist)
+
+        Returns:
+            iterable
+        """
+
+        if use_func:
+            return evaluate(func, col)
+        def reg(value):
+            # warning, the histogram has empty bins at high mult.
+            # (>125 ntrkl) so a check is needed to avoid a 1/0 division
+            # when computing the inverse of the weight
+            return value if value != 0. else 1.
+        return [reg(hist.GetBinContent(hist.FindBin(iw))) for iw in col]
+
+
     def gethistonormforselevt_mult(self, df_evt, dfevtevtsel, label, var, useweightfromfunc=None):
 
         if useweightfromfunc is not None:
@@ -109,36 +137,15 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         df_no_vtx = df_to_keep[~tag_vtx.values]
         # events with reco zvtx > 10 cm after previous selection
         df_bit_zvtx_gr10 = filter_bit_df(df_to_keep, 'is_ev_rej', [[3], [1, 2, 7, 12]])
+
+
         if useweightfromfunc is not None:
-            weightssel = None
-            weightsnovtx = None
-            weightsgr10 = None
-            if useweightfromfunc is True:
-                weightssel = evaluate(self.weightfunc, dfevtevtsel[var])
-                weightsnovtx = evaluate(self.weightfunc, df_no_vtx[var])
-                weightsgr10 = evaluate(self.weightfunc, df_bit_zvtx_gr10[var])
-            else:
-                weightssel = []
-                weightsnovtx = []
-                weightsgr10 = []
-                for iw in dfevtevtsel[var]:
-                    value = self.weighthist.GetBinContent(self.weighthist.FindBin(iw))
-                    # warning, the histogram has empty bins at high mult.
-                    # (>125 ntrkl) so a check is needed to avoid a 1/0 division
-                    # when computing the inverse of the weight
-                    if value == 0:
-                        value = 1.
-                    weightssel.append(value)
-                for iw in df_no_vtx[var]:
-                    value = self.weighthist.GetBinContent(self.weighthist.FindBin(iw))
-                    if value == 0:
-                        value = 1.
-                    weightsnovtx.append(value)
-                for iw in df_bit_zvtx_gr10[var]:
-                    value = self.weighthist.GetBinContent(self.weighthist.FindBin(iw))
-                    if value == 0:
-                        value = 1.
-                    weightsgr10.append(value)
+            weightssel = self.make_weights(dfevtevtsel[var], self.weightfunc, self.weighthist,
+                                           useweightfromfunc)
+            weightsnovtx = self.make_weights(df_no_vtx[var], self.weightfunc, self.weighthist,
+                                             useweightfromfunc)
+            weightsgr10 = self.make_weights(df_bit_zvtx_gr10[var], self.weightfunc,
+                                            self.weighthist, useweightfromfunc)
 
             weightsinvsel = [1./weight for weight in weightssel]
             fill_hist(hSelMult, dfevtevtsel[var], weights=weightsinvsel)
@@ -238,19 +245,8 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                                          self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 fill_hist(h_invmass, df_bin.inv_mass)
                 if self.apply_weights is True and self.mcordata == "data":
-                    weights = None
-                    if self.usetriggcorrfunc is True:
-                        weights = evaluate(self.weightfunc, df_bin[self.v_var2_binning_gen])
-                    else:
-                        weights = []
-                        for iw in df_bin[self.v_var2_binning_gen]:
-                            value = self.weighthist.GetBinContent(self.weighthist.FindBin(iw))
-                            # warning, here the mult. selection is already applied,
-                            # but still, the check is performed to avoid a 1/0 division
-                            # when computing the inverse of the weight
-                            if value == 0:
-                                value = 1.
-                            weights.append(value)
+                    weights = self.make_weights(df_bin[self.v_var2_binning_gen], self.weightfunc,
+                                                self.weighthist, self.usetriggcorrfunc)
 
                     weightsinv = [1./weight for weight in weights]
                     fill_hist(h_invmass_weight, df_bin.inv_mass, weights=weightsinv)
