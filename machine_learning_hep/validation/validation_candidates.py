@@ -16,7 +16,7 @@
 Script containing validation histograms on the candidate granularity
 """
 
-from machine_learning_hep.utilities_plot import buildbinning
+from machine_learning_hep.utilities_plot import buildbinning, buildarray
 from machine_learning_hep.validation.validation import ValidationCollection
 
 
@@ -30,6 +30,7 @@ def fill_validation_candidates(df_reco, tag=""):
     binning_nsigma = buildbinning(1, -1000, -998)
     binning_nsigma += buildbinning(2000, -100, 100)
     binning_pt = buildbinning(400, 0, 100)
+    binning_pt = buildarray([1, 2, 4, 6, 8, 12, 24])
     binning_eta = buildbinning(100, -1, 1)
     binning_phi = buildbinning(100, 0, 7)
     binning_inv_mass = buildbinning(100, 2, 2.5)
