@@ -268,26 +268,44 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
     # pylint: disable=line-too-long
     def process_efficiency_single(self, index):
         out_file = TFile.Open(self.l_histoeff[index], "recreate")
+        h_list = []
         for ibin2 in range(len(self.lvar2_binmin)):
-            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen, \
-                                        self.lvar2_binmin[ibin2], \
-                                        self.lvar2_binmax[ibin2])
+            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen,
+                                            self.lvar2_binmin[ibin2],
+                                            self.lvar2_binmax[ibin2])
             n_bins = len(self.lpt_finbinmin)
             analysis_bin_lims_temp = self.lpt_finbinmin.copy()
             analysis_bin_lims_temp.append(self.lpt_finbinmax[n_bins-1])
             analysis_bin_lims = array.array('f', analysis_bin_lims_temp)
-            h_gen_pr = TH1F("h_gen_pr" + stringbin2, "Prompt Generated in acceptance |y|<0.5", \
-                            n_bins, analysis_bin_lims)
-            h_presel_pr = TH1F("h_presel_pr" + stringbin2, "Prompt Reco in acc |#eta|<0.8 and sel", \
-                               n_bins, analysis_bin_lims)
-            h_sel_pr = TH1F("h_sel_pr" + stringbin2, "Prompt Reco and sel in acc |#eta|<0.8 and sel", \
-                            n_bins, analysis_bin_lims)
-            h_gen_fd = TH1F("h_gen_fd" + stringbin2, "FD Generated in acceptance |y|<0.5", \
-                            n_bins, analysis_bin_lims)
-            h_presel_fd = TH1F("h_presel_fd" + stringbin2, "FD Reco in acc |#eta|<0.8 and sel", \
-                               n_bins, analysis_bin_lims)
-            h_sel_fd = TH1F("h_sel_fd" + stringbin2, "FD Reco and sel in acc |#eta|<0.8 and sel", \
-                            n_bins, analysis_bin_lims)
+
+            def make_histo(name, title,
+                           name_extra=stringbin2,
+                           bins=n_bins,
+                           binning=analysis_bin_lims):
+                histo = TH1F(name + name_extra, title, bins, binning)
+                h_list.append(histo)
+                return histo
+
+            h_gen_pr = make_histo("h_gen_pr",
+                                  "Prompt Generated in acceptance |y|<0.5")
+            h_gen_pr_wotof = make_histo("h_gen_pr_wotof",
+                                        "Prompt Generated in acceptance woTOF |y|<0.5")
+            h_gen_pr_wtof = make_histo("h_gen_pr_wtof",
+                                       "Prompt Generated in acceptance wTOF |y|<0.5")
+            h_presel_pr = make_histo("h_presel_pr",
+                                     "Prompt Reco in acc |#eta|<0.8 and sel")
+            h_sel_pr = make_histo("h_sel_pr",
+                                  "Prompt Reco and sel in acc |#eta|<0.8 and sel")
+            h_sel_pr_wotof = make_histo("h_sel_pr_wotof",
+                                        "Prompt Reco and sel woTOF in acc |#eta|<0.8")
+            h_sel_pr_wtof = make_histo("h_sel_pr_wtof",
+                                       "Prompt Reco and sel wTOF in acc |#eta|<0.8")
+            h_gen_fd = make_histo("h_gen_fd",
+                                  "FD Generated in acceptance |y|<0.5")
+            h_presel_fd = make_histo("h_presel_fd",
+                                     "FD Reco in acc |#eta|<0.8 and sel")
+            h_sel_fd = make_histo("h_sel_fd",
+                                  "FD Reco and sel in acc |#eta|<0.8 and sel")
 
             bincounter = 0
             for ipt in range(self.p_nptfinbins):
@@ -328,66 +346,36 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 else:
                     df_reco_sel_fd = df_reco_presel_fd.copy()
 
-                if self.corr_eff_mult[ibin2] is True:
-                    val, err = self.get_reweighted_count(df_gen_sel_pr)
-                    h_gen_pr.SetBinContent(bincounter + 1, val)
-                    h_gen_pr.SetBinError(bincounter + 1, err)
-                    val, err = self.get_reweighted_count(df_reco_presel_pr)
-                    h_presel_pr.SetBinContent(bincounter + 1, val)
-                    h_presel_pr.SetBinError(bincounter + 1, err)
-                    val, err = self.get_reweighted_count(df_reco_sel_pr)
-                    h_sel_pr.SetBinContent(bincounter + 1, val)
-                    h_sel_pr.SetBinError(bincounter + 1, err)
-                    #print("prompt efficiency tot ptbin=", bincounter, ", value = ",
-                    #      len(df_reco_sel_pr)/len(df_gen_sel_pr))
+                def set_content(df_to_use, histogram,
+                                i_b=ibin2, b_c=bincounter):
+                    if self.corr_eff_mult[i_b] is True:
+                        val, err = self.get_reweighted_count(df_to_use)
+                        histogram.SetBinContent(b_c + 1, val)
+                        histogram.SetBinError(b_c + 1, err)
+                    else:
+                        val = len(df_to_use)
+                        err = math.sqrt(val)
+                        histogram.SetBinContent(b_c + 1, val)
+                        histogram.SetBinError(b_c + 1, err)
 
-                    val, err = self.get_reweighted_count(df_gen_sel_fd)
-                    h_gen_fd.SetBinContent(bincounter + 1, val)
-                    h_gen_fd.SetBinError(bincounter + 1, err)
-                    val, err = self.get_reweighted_count(df_reco_presel_fd)
-                    h_presel_fd.SetBinContent(bincounter + 1, val)
-                    h_presel_fd.SetBinError(bincounter + 1, err)
-                    val, err = self.get_reweighted_count(df_reco_sel_fd)
-                    h_sel_fd.SetBinContent(bincounter + 1, val)
-                    h_sel_fd.SetBinError(bincounter + 1, err)
-                    #print("fd efficiency tot ptbin=", bincounter, ", value = ",
-                    #      len(df_reco_sel_fd)/len(df_gen_sel_fd))
-                else:
-                    val = len(df_gen_sel_pr)
-                    err = math.sqrt(val)
-                    h_gen_pr.SetBinContent(bincounter + 1, val)
-                    h_gen_pr.SetBinError(bincounter + 1, err)
-                    val = len(df_reco_presel_pr)
-                    err = math.sqrt(val)
-                    h_presel_pr.SetBinContent(bincounter + 1, val)
-                    h_presel_pr.SetBinError(bincounter + 1, err)
-                    val = len(df_reco_sel_pr)
-                    err = math.sqrt(val)
-                    h_sel_pr.SetBinContent(bincounter + 1, val)
-                    h_sel_pr.SetBinError(bincounter + 1, err)
-
-                    val = len(df_gen_sel_fd)
-                    err = math.sqrt(val)
-                    h_gen_fd.SetBinContent(bincounter + 1, val)
-                    h_gen_fd.SetBinError(bincounter + 1, err)
-                    val = len(df_reco_presel_fd)
-                    err = math.sqrt(val)
-                    h_presel_fd.SetBinContent(bincounter + 1, val)
-                    h_presel_fd.SetBinError(bincounter + 1, err)
-                    val = len(df_reco_sel_fd)
-                    err = math.sqrt(val)
-                    h_sel_fd.SetBinContent(bincounter + 1, val)
-                    h_sel_fd.SetBinError(bincounter + 1, err)
+                set_content(df_gen_sel_pr, h_gen_pr)
+                if "nsigTOF_Pr_0" in df_gen_sel_pr:
+                    set_content(df_gen_sel_pr[df_gen_sel_pr.nsigTOF_Pr_0 < -998], h_gen_pr_wotof)
+                    set_content(df_gen_sel_pr[df_gen_sel_pr.nsigTOF_Pr_0 > -998], h_gen_pr_wtof)
+                set_content(df_reco_presel_pr, h_presel_pr)
+                set_content(df_reco_sel_pr, h_sel_pr)
+                set_content(df_reco_sel_pr[df_reco_sel_pr.nsigTOF_Pr_0 < -998], h_sel_pr_wotof)
+                set_content(df_reco_sel_pr[df_reco_sel_pr.nsigTOF_Pr_0 > -998], h_sel_pr_wtof)
+                set_content(df_gen_sel_fd, h_gen_fd)
+                set_content(df_reco_presel_fd, h_presel_fd)
+                set_content(df_reco_sel_fd, h_sel_fd)
 
                 bincounter = bincounter + 1
 
             out_file.cd()
-            h_gen_pr.Write()
-            h_presel_pr.Write()
-            h_sel_pr.Write()
-            h_gen_fd.Write()
-            h_presel_fd.Write()
-            h_sel_fd.Write()
+            for h in h_list:
+                h.Write()
+            h_list = []
 
     def process_efficiency(self):
         print("Doing efficiencies", self.mcordata, self.period)
