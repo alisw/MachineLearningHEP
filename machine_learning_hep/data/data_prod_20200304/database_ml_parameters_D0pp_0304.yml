@@ -297,7 +297,6 @@ D0pp:
       triggersel:
         data: "trigger_hasbit_INT7==1"
         mc: null
-        weighttrig: false
       data: &data_out_default
         runselection: [null, null, null] #FIXME
         results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
@@ -482,7 +481,7 @@ D0pp:
       triggersel:
         data: "trigger_hasbit_HighMultSPD==1"
         mc: null
-        weighttrig: true
+        usetriggcorrfunc: True
 
       data:
         runselection: [null, null, HighMultSPD2018] #FIXME the last will have to be replaced by HighMultSPD2018
@@ -577,7 +576,6 @@ D0pp:
       triggersel:
         data: "trigger_hasbit_INT7==1"
         mc: null
-        weighttrig: false
 
       data:
         runselection: [null, null, null]
@@ -671,7 +669,6 @@ D0pp:
       triggersel:
         data: "trigger_hasbit_INT7==1"
         mc: null
-        weighttrig: false
 
       data:
         runselection: [null, null, null]

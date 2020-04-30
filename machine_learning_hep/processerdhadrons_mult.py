@@ -74,11 +74,11 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         self.event_cand_validation = datap["analysis"][self.typean].get("event_cand_validation", "")
         if "event_cand_validation" not in datap["analysis"][self.typean]:
             self.event_cand_validation = False
-        self.apply_weights = datap["analysis"][self.typean]["triggersel"]["weighttrig"]
-        self.usetriggcorrfunc = datap["analysis"][self.typean]["triggersel"]["usetriggcorrfunc"]
+        self.usetriggcorrfunc = \
+                datap["analysis"][self.typean]["triggersel"].get("usetriggcorrfunc", None)
         self.weightfunc = None
         self.weighthist = None
-        if self.apply_weights is True and self.mcordata == "data":
+        if self.usetriggcorrfunc is not None and self.mcordata == "data":
             filename = os.path.join(self.d_mcreweights, "trigger%s.root" % self.typean)
             if os.path.exists(filename):
                 weight_file = TFile.Open(filename, "read")
@@ -199,7 +199,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
             self.gethistonormforselevt_mult(dfevtorig, dfevtevtsel, \
                                        labeltrigger, self.v_var2_binning_gen)
 
-        if self.apply_weights is True and self.mcordata == "data":
+        if self.usetriggcorrfunc is not None and self.mcordata == "data":
             hselweight, hnovtxmultweight, hvtxoutmultweight = \
                 self.gethistonormforselevt_mult(dfevtorig, dfevtevtsel, \
                     labeltrigger, self.v_var2_binning_gen, self.usetriggcorrfunc)
@@ -244,7 +244,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 df_bin = seldf_singlevar_inclusive(df, self.v_var2_binning, \
                                          self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 fill_hist(h_invmass, df_bin.inv_mass)
-                if self.apply_weights is True and self.mcordata == "data":
+                if self.usetriggcorrfunc is not None and self.mcordata == "data":
                     weights = self.make_weights(df_bin[self.v_var2_binning_gen], self.weightfunc,
                                                 self.weighthist, self.usetriggcorrfunc)
 

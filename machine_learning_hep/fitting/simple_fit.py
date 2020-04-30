@@ -169,7 +169,7 @@ def do_simple_fit(database, type_ana, period_number=-1, output_dir="simple_fit")
     include_reflections = fit_pars.get("include_reflection", False)
 
     # Is this a trigger weighted histogram?
-    apply_weights = fit_pars["triggersel"]["weighttrig"]
+    apply_weights = fit_pars["triggersel"].get("usetriggcorrfunc", None) is not None
 
     # 4) Misc
     # ML WP is needed to build the suffix for extracting the mass histogram
