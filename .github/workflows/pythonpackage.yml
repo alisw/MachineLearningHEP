@@ -6,13 +6,13 @@ on:
               - master
               - ml-dev
         paths:
-            - "machine_learning_hep/**/*.py"
+            - "*.py"
     push:
         branches:
               - master
               - ml-dev
         paths:
-            - "machine_learning_hep/**/*.py"
+            - "*.py"
 
 jobs:
   build-os-latest:
@@ -42,10 +42,9 @@ jobs:
         if: github.event_name == 'pull_request'
         run: |
           git fetch --no-tags --prune --depth=1 origin +refs/heads/*:refs/remotes/origin/*
-          changed_files="$(git diff --name-only origin/${{ github.base_ref }} | grep -E '\.py' | grep -vE 'setup.py')"
+          changed_files="$(git diff --name-only origin/${{ github.base_ref }})"
           ci/run-tests.sh --tests ${{ matrix.test-tool }} --files $changed_files
       - name: Run on push
         if: github.event_name == 'push'
         run: |
-          changed_files="$(find . -name '*.py' -a -not -name setup.py)"
-          ci/run-tests.sh --tests ${{ matrix.test-tool }} --files $changed_files
+          ci/run-tests.sh --tests ${{ matrix.test-tool }}
