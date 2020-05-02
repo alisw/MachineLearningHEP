@@ -30,7 +30,7 @@ import numpy as np
 import pandas as pd
 import lz4
 from machine_learning_hep.selectionutils import select_runs
-from ROOT import TGraphAsymmErrors # pylint: disable=import-error, no-name-in-module
+from ROOT import TObject, TCanvas, TLegend, TH1, TLatex, TGraph, TGraphAsymmErrors # pylint: disable=import-error, no-name-in-module
 from ROOT import kBlack, kRed, kGreen, kBlue, kYellow, kOrange, kMagenta, kCyan, kGray # pylint: disable=import-error, no-name-in-module
 from ROOT import kOpenCircle, kOpenSquare, kOpenDiamond, kOpenCross, kOpenStar, kOpenThreeTriangles # pylint: disable=import-error, no-name-in-module
 from ROOT import kOpenFourTrianglesX, kOpenDoubleDiamond, kOpenFourTrianglesPlus, kOpenCrossX # pylint: disable=import-error, no-name-in-module
@@ -448,26 +448,67 @@ def get_plot_range(val_min, val_max, margin_min, margin_max, logscale=False):
         val_max_plot = val_max + k_max * val_range
     return val_min_plot, val_max_plot
 
-def get_y_window_gr(l_gr: list):
-    '''Return the minimum and maximum value so that all the points of the graphs in the list
-    fit in the range including the error bars.'''
+def get_x_window_gr(l_gr: list, with_errors=True):
+    '''Return the minimum and maximum x value so that all the points of the graphs in the list
+    fit in the range (by default including the error bars).'''
+    def err_low(graph):
+        return graph.GetEXlow if isinstance(graph, TGraphAsymmErrors) else graph.GetEX
+    def err_high(graph):
+        return graph.GetEXhigh if isinstance(graph, TGraphAsymmErrors) else graph.GetEX
+
     if not isinstance(l_gr, list):
         l_gr = [l_gr]
-    y_min = min([min([(gr.GetY())[i] - (gr.GetEYlow())[i] \
-        for i in range(gr.GetN())]) for gr in l_gr])
-    y_max = max([max([(gr.GetY())[i] + (gr.GetEYhigh())[i] \
-        for i in range(gr.GetN())]) for gr in l_gr])
-    return y_min, y_max
+    x_min = float("inf")
+    x_max = float("-inf")
+    for gr in l_gr:
+        for i in range(gr.GetN()):
+            x_min = min(x_min, (gr.GetX())[i] - ((err_low(gr)())[i] if with_errors else 0))
+            x_max = max(x_max, (gr.GetX())[i] + ((err_high(gr)())[i] if with_errors else 0))
+    return x_min, x_max
 
-def get_y_window_his(l_his: list):
-    '''Return the minimum and maximum value so that all the points of the histograms in the list
-    fit in the range including the error bars.'''
+def get_x_window_his(l_his: list):
+    '''Return the minimum and maximum x value so that all the bins of the histograms in the list
+    fit in the range.'''
     if not isinstance(l_his, list):
         l_his = [l_his]
-    y_min = min([min([his.GetBinContent(i + 1) - his.GetBinError(i + 1) \
-        for i in range(his.GetNbinsX())]) for his in l_his])
-    y_max = max([max([his.GetBinContent(i + 1) + his.GetBinError(i + 1) \
-        for i in range(his.GetNbinsX())]) for his in l_his])
+    x_min = float("inf")
+    x_max = float("-inf")
+    for his in l_his:
+        x_min = min(x_min, his.GetXaxis().GetBinLowEdge(1))
+        x_max = max(x_max, his.GetXaxis().GetBinUpEdge(his.GetNbinsX()))
+    return x_min, x_max
+
+def get_y_window_gr(l_gr: list, with_errors=True):
+    '''Return the minimum and maximum y value so that all the points of the graphs in the list
+    fit in the range (by default including the error bars).'''
+    def err_low(graph):
+        return graph.GetEYlow if isinstance(graph, TGraphAsymmErrors) else graph.GetEY
+    def err_high(graph):
+        return graph.GetEYhigh if isinstance(graph, TGraphAsymmErrors) else graph.GetEY
+
+    if not isinstance(l_gr, list):
+        l_gr = [l_gr]
+    y_min = float("inf")
+    y_max = float("-inf")
+    for gr in l_gr:
+        for i in range(gr.GetN()):
+            y_min = min(y_min, (gr.GetY())[i] - ((err_low(gr)())[i] if with_errors else 0))
+            y_max = max(y_max, (gr.GetY())[i] + ((err_high(gr)())[i] if with_errors else 0))
+    return y_min, y_max
+
+def get_y_window_his(l_his: list, with_errors=True):
+    '''Return the minimum and maximum y value so that all the points of the histograms in the list
+    fit in the range (by default including the error bars).'''
+    if not isinstance(l_his, list):
+        l_his = [l_his]
+    y_min = float("inf")
+    y_max = float("-inf")
+    for his in l_his:
+        for i in range(his.GetNbinsX()):
+            cont = his.GetBinContent(i + 1)
+            err = his.GetBinError(i + 1) if with_errors else 0
+            y_min = min(y_min, cont - err)
+            y_max = max(y_max, cont + err)
     return y_min, y_max
 
 def get_colour(i: int):
@@ -514,7 +555,7 @@ def setup_legend(legend, textsize=0.03):
     legend.SetTextSize(textsize)
     legend.SetTextFont(42)
 
-def setup_tgraph(tg_, colour=1, alphastyle=0.3, fillstyle=1001):
+def setup_tgraph(tg_, colour=1, markerstyle=kOpenCircle, size=1.5, alphastyle=0.3, fillstyle=1001):
     tg_.GetXaxis().SetTitleSize(0.04)
     tg_.GetXaxis().SetTitleOffset(1.0)
     tg_.GetYaxis().SetTitleSize(0.04)
@@ -523,7 +564,9 @@ def setup_tgraph(tg_, colour=1, alphastyle=0.3, fillstyle=1001):
     tg_.SetLineWidth(2)
     tg_.SetLineColor(colour)
     tg_.SetFillStyle(fillstyle)
-    tg_.SetMarkerSize(0)
+    tg_.SetMarkerSize(size)
+    tg_.SetMarkerStyle(markerstyle)
+    tg_.SetMarkerColor(colour)
 
 def draw_latex(latex, colour=1, textsize=0.03):
     latex.SetNDC()
@@ -531,6 +574,225 @@ def draw_latex(latex, colour=1, textsize=0.03):
     latex.SetTextColor(colour)
     latex.SetTextFont(42)
     latex.Draw()
+
+def make_plot(name, path=None, suffix="eps", title="", margins_c=None, # pylint: disable=too-many-arguments, too-many-branches, too-many-statements, too-many-locals
+              list_obj=None, labels_obj=None,
+              leg_pos=None, opt_leg_h="P", opt_leg_g="P", opt_plot_h="", opt_plot_g="P0",
+              offsets_xy=None, maxdigits=3, colours=None, markers=None,
+              range_x=None, margins_y=None, with_errors="xy", logscale=None):
+    """
+    Make a plot with objects from a list (list_obj).
+    Returns a TCanvas and a list of other created ROOT objects.
+    Minimum example:
+        make_plot("canvas", list_obj=[histogram], path=".")
+    To have access to the created object, do:
+        canvas, list_can = make_plot("canvas", list_obj=[histogram])
+    Supports:
+    - plotting of histograms (TH??), graphs (TGraph*), text fields (TLatex) and any other objects
+        derived from TObject in any count and order
+    - automatic calculation of plotting ranges (x, y) based on the data (histograms and graphs)
+    - arbitrary x range
+    - automatic style settings
+    - optional plotting of the legend (enabled by providing the coordinates)
+    - automatic adding of legend entries (in the plotting order)
+    - logarithmic scale of x, y, z axes (logscale), (format: string containing any of x, y, z)
+    - saving the canvas to a specified location (path) in a specified format (suffix)
+    - access to created ROOT objects
+    Adjustable parameters:
+    - title and axis titles (title), (format: "title_plot;title_x;title_y")
+    - plotting options for histograms and graphs (opt_plot_h, opt_plot_g),
+        (format: see THistPainter and TGraphPainter, respectively)
+    - legend position (leg_pos), (format: [x_min, y_min, x_max, y_max])
+    - labels of legend entries (labels_obj)
+    - styles of legend entries (opt_leg_h, opt_leg_g), (format: see TLegend::AddEntry)
+    - colours and markers (colours, markers), (format: list of numbers or named values)
+    - canvas margins (margins_c), (format: [bottom, left, top, right])
+    - offsets of axis titles (offsets_xy), (format: [x, y])
+    - maximum number of digits of the axis labels (maxdigits)
+    - x range (range_x), (format: [x_min, x_max])
+    - vertical margins between the horizontal axes and the data (margins_y), (format: [lower, upper]
+        expressed as fractions of the total plotting range)
+    - including the error bars in the range calculations (with_errors),
+        (format: string containing any of x, y)
+    """
+
+    # HELPING FUNCTIONS
+
+    def min0_gr(graph):
+        """ Get the minimum positive y value in the graph. """
+        list_pos = [y for y in graph.GetY() if y > 0]
+        return min(list_pos) if list_pos else float("inf")
+
+    def get_my_colour(i: int):
+        if colours and isinstance(colours, list) and len(colours) > 0:
+            return colours[i % len(colours)]
+        return get_colour(i)
+
+    def get_my_marker(i: int):
+        if markers and isinstance(markers, list) and len(markers) > 0:
+            return markers[i % len(markers)]
+        return get_marker(i)
+
+    def plot_graph(graph):
+        setup_tgraph(graph, get_my_colour(counter_plot), get_my_marker(counter_plot))
+        graph.SetTitle(title)
+        graph.GetXaxis().SetLimits(x_min_plot, x_max_plot)
+        graph.GetYaxis().SetRangeUser(y_min_plot, y_max_plot)
+        graph.GetXaxis().SetMaxDigits(maxdigits)
+        graph.GetYaxis().SetMaxDigits(maxdigits)
+        if offsets_xy:
+            graph.GetXaxis().SetTitleOffset(offsets_xy[0])
+            graph.GetYaxis().SetTitleOffset(offsets_xy[1])
+        if leg and n_labels > counter_plot:
+            leg.AddEntry(graph, labels_obj[counter_plot], opt_leg_g)
+        graph.Draw(opt_plot_g + "A" if counter_plot == 0 else opt_plot_g)
+
+    def plot_histogram(histogram):
+        # If nothing has been plotted yet, plot an empty graph to set the exact ranges.
+        if counter_plot == 0:
+            gr = TGraph(histogram)
+            gr.SetMarkerSize(0)
+            gr.SetTitle(title)
+            gr.GetXaxis().SetLimits(x_min_plot, x_max_plot)
+            gr.GetYaxis().SetRangeUser(y_min_plot, y_max_plot)
+            gr.GetXaxis().SetMaxDigits(maxdigits)
+            gr.GetYaxis().SetMaxDigits(maxdigits)
+            if offsets_xy:
+                gr.GetXaxis().SetTitleOffset(offsets_xy[0])
+                gr.GetYaxis().SetTitleOffset(offsets_xy[1])
+            gr.Draw("AP")
+            list_new.append(gr)
+        setup_histogram(histogram, get_my_colour(counter_plot), get_my_marker(counter_plot))
+        if leg and n_labels > counter_plot:
+            leg.AddEntry(histogram, labels_obj[counter_plot], opt_leg_h)
+        histogram.Draw(opt_plot_h)
+
+    def plot_latex(latex):
+        draw_latex(latex)
+
+    def is_histogram(obj):
+        return isinstance(obj, TH1)
+
+    def is_graph(obj):
+        return isinstance(obj, TGraph)
+
+    def is_latex(obj):
+        return isinstance(obj, TLatex)
+
+    # BODY STARTS HERE
+
+    if not (isinstance(list_obj, list) and len(list_obj) > 0):
+        print("Error: Empty list of objects")
+        return None, None
+
+    list_new = [] # list of created objects that need to exist outside the function
+    if not (isinstance(offsets_xy, list) and len(offsets_xy) == 2):
+        offsets_xy = None
+    if not isinstance(labels_obj, list):
+        labels_obj = []
+    n_labels = len(labels_obj)
+    if margins_y is None:
+        margins_y = [0.05, 0.05]
+
+    # create and set canvas
+    can = TCanvas(name, name)
+    setup_canvas(can)
+    # set canvas margins
+    if isinstance(margins_c, list) and len(margins_c) > 0:
+        for setter, value in zip([can.SetBottomMargin, can.SetLeftMargin,
+                                  can.SetTopMargin, can.SetRightMargin], margins_c):
+            setter(value)
+    # set logarithmic scale for selected axes
+    log_y = False
+    if isinstance(logscale, str) and len(logscale) > 0:
+        for setter, axis in zip([can.SetLogx, can.SetLogy, can.SetLogz], ["x", "y", "z"]):
+            if axis in logscale:
+                setter()
+                if axis == "y":
+                    log_y = True
+
+    # create and set legend
+    leg = None
+    if isinstance(leg_pos, list) and len(leg_pos) == 4:
+        leg = TLegend(*leg_pos)
+        setup_legend(leg)
+        list_new.append(leg)
+
+    # range calculation
+    list_h = [] # list of histograms
+    list_g = [] # list of graphs
+    for obj in list_obj:
+        if is_histogram(obj):
+            list_h.append(obj)
+        elif is_graph(obj):
+            list_g.append(obj)
+    # get x range of histograms
+    x_min_h, x_max_h = float("inf"), float("-inf")
+    if len(list_h) > 0:
+        x_min_h, x_max_h = get_x_window_his(list_h)
+    # get x range of graphs
+    x_min_g, x_max_g = float("inf"), float("-inf")
+    if len(list_g) > 0:
+        x_min_g, x_max_g = get_x_window_gr(list_g, "x" in with_errors)
+    # get total x range
+    x_min = min(x_min_h, x_min_g)
+    x_max = max(x_max_h, x_max_g)
+    # get plotting x range
+    x_min_plot, x_max_plot = x_min, x_max
+    if isinstance(range_x, list) and len(range_x) == 2:
+        x_min_plot, x_max_plot = range_x
+
+    # get y range of histograms
+    y_min_h, y_max_h = float("inf"), float("-inf")
+    if len(list_h) > 0:
+        y_min_h, y_max_h = get_y_window_his(list_h, "y" in with_errors)
+        if log_y and y_min_h <= 0:
+            y_min_h = min([h.GetMinimum(0) for h in list_h])
+    # get y range of graphs
+    y_min_g, y_max_g = float("inf"), float("-inf")
+    if len(list_g) > 0:
+        y_min_g, y_max_g = get_y_window_gr(list_g, "y" in with_errors)
+        if log_y and y_min_g <= 0:
+            y_min_g = min([min0_gr(g) for g in list_g])
+    # get total y range
+    y_min = min(y_min_h, y_min_g)
+    y_max = max(y_max_h, y_max_g)
+    # get plotting y range
+    y_min_plot, y_max_plot = y_min, y_max
+    if isinstance(margins_y, list) and len(margins_y) == 2:
+        y_min_plot, y_max_plot = get_plot_range(y_min, y_max, *margins_y, log_y)
+
+    # append "same" to the histogram plotting option if needed
+    opt_plot_h = opt_plot_h.lower()
+    opt_not_in = all(opt not in opt_plot_h for opt in ("same", "lego", "surf"))
+    if opt_not_in:
+        opt_plot_h += " same"
+
+    # plot objects
+    counter_plot = 0 # counter of plotted histograms and graphs
+    for obj in list_obj:
+        if is_histogram(obj):
+            plot_histogram(obj)
+            counter_plot += 1
+        elif is_graph(obj):
+            plot_graph(obj)
+            counter_plot += 1
+        elif is_latex(obj):
+            plot_latex(obj)
+        elif isinstance(obj, TObject):
+            obj.Draw()
+        else:
+            continue
+
+    # plot legend
+    if leg:
+        leg.Draw()
+
+    # save canvas if necessary info provided
+    if path and name and suffix:
+        can.SaveAs("%s/%s.%s" % (path, name, suffix))
+
+    return can, list_new
 
 def tg_sys(central, variations):
     shapebins_centres = []
