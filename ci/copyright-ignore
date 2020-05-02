@@ -1,0 +1,7 @@
+# Applies anyway only to .py files so no need to put yaml and others
+
+# That's just pytest stuff
+ci/pytest
+
+# And the setup
+setup.py
