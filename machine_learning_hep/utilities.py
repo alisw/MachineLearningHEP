@@ -575,7 +575,7 @@ def draw_latex(latex, colour=1, textsize=0.03):
     latex.SetTextFont(42)
     latex.Draw()
 
-def make_plot(name, path=None, suffix="eps", title="", margins_c=None, # pylint: disable=too-many-arguments, too-many-branches, too-many-statements, too-many-locals
+def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None, # pylint: disable=too-many-arguments, too-many-branches, too-many-statements, too-many-locals
               list_obj=None, labels_obj=None,
               leg_pos=None, opt_leg_h="P", opt_leg_g="P", opt_plot_h="", opt_plot_g="P0",
               offsets_xy=None, maxdigits=3, colours=None, markers=None,
@@ -587,7 +587,7 @@ def make_plot(name, path=None, suffix="eps", title="", margins_c=None, # pylint:
         make_plot("canvas", list_obj=[histogram], path=".")
     To have access to the created object, do:
         canvas, list_can = make_plot("canvas", list_obj=[histogram])
-    Supports:
+    Features:
     - plotting of histograms (TH??), graphs (TGraph*), text fields (TLatex) and any other objects
         derived from TObject in any count and order
     - automatic calculation of plotting ranges (x, y) based on the data (histograms and graphs)
@@ -600,6 +600,7 @@ def make_plot(name, path=None, suffix="eps", title="", margins_c=None, # pylint:
     - access to created ROOT objects
     Adjustable parameters:
     - title and axis titles (title), (format: "title_plot;title_x;title_y")
+    - canvas size (size), (format: [width, height])
     - plotting options for histograms and graphs (opt_plot_h, opt_plot_g),
         (format: see THistPainter and TGraphPainter, respectively)
     - legend position (leg_pos), (format: [x_min, y_min, x_max, y_max])
@@ -697,6 +698,8 @@ def make_plot(name, path=None, suffix="eps", title="", margins_c=None, # pylint:
     # create and set canvas
     can = TCanvas(name, name)
     setup_canvas(can)
+    if isinstance(size, list) and len(size) == 2:
+        can.SetCanvasSize(*size)
     # set canvas margins
     if isinstance(margins_c, list) and len(margins_c) > 0:
         for setter, value in zip([can.SetBottomMargin, can.SetLeftMargin,
