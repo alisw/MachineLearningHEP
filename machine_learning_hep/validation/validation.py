@@ -31,10 +31,14 @@ class ValidationCollection:
         self.histograms = []
         self.verbose = verbose
         self.strictly_require = strictly_require
+        if self.verbose:
+            get_logger().info("Creating ValidationCollection with tag '%s'", self.collection_tag)
 
     def reset_input(self, dataframe, tag):
         self.source_dataframe = dataframe
         self.collection_tag = tag
+        if self.verbose:
+            get_logger().info("Resetting ValidationCollection with tag '%s'", self.collection_tag)
 
     def make_and_fill(self, binx, namex, biny=None, namey=None):
         """
@@ -51,10 +55,10 @@ class ValidationCollection:
             return True
 
         h = None
+        if not column_exists(namex, "X"):
+            return
         if namey:
             # Check that column exists
-            if not column_exists(namex, "X"):
-                return
             if not column_exists(namey, "Y"):
                 return
             h_name = f"hVal_{namex}_vs_{namey}{self.collection_tag}"
@@ -64,8 +68,6 @@ class ValidationCollection:
             h.SetTitle(h_tit)
         else:
             # Check that column exists
-            if not column_exists(namex, "X"):
-                return
             h_name = f"hVal_{namex}{self.collection_tag}"
             h_tit = f" ; {namex} ; Entries"
             h = makefill1dhist(self.source_dataframe,
