@@ -652,8 +652,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                                ["0", "1"],
                                ["p_prong0", "pt_prong0", "pt_cand"]
                                ]
-                    to_plot = list(itertools.product(*to_plot))
-                    for spec, prong, observable in to_plot:
+                    for spec, prong, observable in itertools.product(*to_plot):
                         hname = [f"{observable}",
                                  f"nsigTOF_{spec}_{prong}", tag]
                         hnum = get_histo(*hname,
