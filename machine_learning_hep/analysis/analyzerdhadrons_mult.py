@@ -19,6 +19,7 @@ main script for doing final stage analysis
 import os
 # pylint: disable=unused-wildcard-import, wildcard-import
 from array import array
+import itertools
 # pylint: disable=import-error, no-name-in-module, unused-import
 from root_numpy import hist2array, array2hist
 from ROOT import TFile, TH1F, TH2F, TCanvas, TPad, TF1, TH1D
@@ -647,28 +648,30 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             def plot_tpc_tof_me(tag):
                 # Compute TPC-TOF matching efficiency
                 if tpc_tof_me:
-                    for i in ["Pi", "K", "Pr"]:
-                        for j in ["0", "1"]:
-                            for k in ["p", "pt"]:
-                                hname = [f"{k}_prong{j}",
-                                         f"nsigTOF_{i}_{j}", tag]
-                                hnum = get_histo(*hname,
-                                                 strictly_require=False)
-                                if hnum is None:
-                                    continue
-                                hnum = hnum.ProjectionX(
-                                    hnum.GetName() + "_num", 2, -1)
-                                hden = get_histo(*hname)
-                                hden = hden.ProjectionX(
-                                    hden.GetName() + "_den")
-                                hnum.Divide(hnum, hden, 1, 1, "B")
-                                hnum.SetName(
-                                    hnum.GetName().replace(
-                                        "_num", "_TPC-TOF_MatchingEfficiency"
-                                    )
-                                )
-                                hnum.GetYaxis().SetTitle("TPC-TOF_MatchingEfficiency")
-                                do_plot(hnum)
+                    to_plot = [["Pi", "K", "Pr"],
+                               ["0", "1"],
+                               ["p_prong0", "pt_prong0", "pt_cand"]
+                               ]
+                    for spec, prong, observable in itertools.product(*to_plot):
+                        hname = [f"{observable}",
+                                 f"nsigTOF_{spec}_{prong}", tag]
+                        hnum = get_histo(*hname,
+                                         strictly_require=False)
+                        if hnum is None:
+                            continue
+                        hnum = hnum.ProjectionX(
+                            hnum.GetName() + "_num", 2, -1)
+                        hden = get_histo(*hname)
+                        hden = hden.ProjectionX(
+                            hden.GetName() + "_den")
+                        hnum.Divide(hnum, hden, 1, 1, "B")
+                        hnum.SetName(
+                            hnum.GetName().replace(
+                                "_num", "_TPC-TOF_MatchingEfficiency"
+                            )
+                        )
+                        hnum.GetYaxis().SetTitle("TPC-TOF_MatchingEfficiency")
+                        do_plot(hnum)
 
             plot_tpc_tof_me(tag="")
             # Part dedicated to MC Checks
