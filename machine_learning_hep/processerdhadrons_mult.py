@@ -288,12 +288,12 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
 
             h_gen_pr = make_histo("h_gen_pr",
                                   "Prompt Generated in acceptance |y|<0.5")
-            h_gen_pr_wotof = make_histo("h_gen_pr_wotof",
-                                        "Prompt Generated in acceptance woTOF |y|<0.5")
-            h_gen_pr_wtof = make_histo("h_gen_pr_wtof",
-                                       "Prompt Generated in acceptance wTOF |y|<0.5")
             h_presel_pr = make_histo("h_presel_pr",
                                      "Prompt Reco in acc |#eta|<0.8 and sel")
+            h_presel_pr_wotof = make_histo("h_presel_pr_wotof",
+                                           "Prompt Reco in acc woTOF |#eta|<0.8 and pre-sel")
+            h_presel_pr_wtof = make_histo("h_presel_pr_wtof",
+                                          "Prompt Reco in acc wTOF |#eta|<0.8 and pre-sel")
             h_sel_pr = make_histo("h_sel_pr",
                                   "Prompt Reco and sel in acc |#eta|<0.8 and sel")
             h_sel_pr_wotof = make_histo("h_sel_pr_wotof",
@@ -359,9 +359,11 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                         histogram.SetBinError(b_c + 1, err)
 
                 set_content(df_gen_sel_pr, h_gen_pr)
-                if "nsigTOF_Pr_0" in df_gen_sel_pr:
-                    set_content(df_gen_sel_pr[df_gen_sel_pr.nsigTOF_Pr_0 < -998], h_gen_pr_wotof)
-                    set_content(df_gen_sel_pr[df_gen_sel_pr.nsigTOF_Pr_0 > -998], h_gen_pr_wtof)
+                if "nsigTOF_Pr_0" in df_reco_presel_pr:
+                    set_content(df_reco_presel_pr[df_reco_presel_pr.nsigTOF_Pr_0 < -998],
+                                h_presel_pr_wotof)
+                    set_content(df_reco_presel_pr[df_reco_presel_pr.nsigTOF_Pr_0 > -998],
+                                h_presel_pr_wtof)
                 set_content(df_reco_presel_pr, h_presel_pr)
                 set_content(df_reco_sel_pr, h_sel_pr)
                 set_content(df_reco_sel_pr[df_reco_sel_pr.nsigTOF_Pr_0 < -998], h_sel_pr_wotof)
