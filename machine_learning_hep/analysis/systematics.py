@@ -149,7 +149,9 @@ class Systematics(Analyzer):
         self.s_presel_gen_eff = datap["analysis"][self.typean]["presel_gen_eff"]
         self.s_trigger_mc = datap["analysis"][self.typean]["triggersel"]["mc"]
         self.s_trigger_data = datap["analysis"][self.typean]["triggersel"]["data"]
-        self.apply_weights = datap["analysis"][self.typean]["triggersel"]["weighttrig"]
+        self.apply_weights = \
+                datap["analysis"][self.typean]["triggersel"].get("usetriggcorrfunc", None) \
+                is not None
 
         #Build names for input pickle files (data, mc_reco, mc_gen)
         self.n_reco = datap["files_names"]["namefile_reco"]

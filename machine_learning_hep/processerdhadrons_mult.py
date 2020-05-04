@@ -74,13 +74,17 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         self.event_cand_validation = datap["analysis"][self.typean].get("event_cand_validation", "")
         if "event_cand_validation" not in datap["analysis"][self.typean]:
             self.event_cand_validation = False
-        self.apply_weights = datap["analysis"][self.typean]["triggersel"]["weighttrig"]
+        self.usetriggcorrfunc = \
+                datap["analysis"][self.typean]["triggersel"].get("usetriggcorrfunc", None)
         self.weightfunc = None
-        if self.apply_weights is True and self.mcordata == "data":
+        self.weighthist = None
+        if self.usetriggcorrfunc is not None and self.mcordata == "data":
             filename = os.path.join(self.d_mcreweights, "trigger%s.root" % self.typean)
             if os.path.exists(filename):
                 weight_file = TFile.Open(filename, "read")
                 self.weightfunc = weight_file.Get("func%s_norm" % self.typean)
+                self.weighthist = weight_file.Get("hist%s_norm" % self.typean)
+                self.weighthist.SetDirectory(0)
                 weight_file.Close()
             else:
                 print("trigger correction file", filename, "doesnt exist")
@@ -89,9 +93,37 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         self.maxvaluehisto = datap["analysis"][self.typean]["maxvaluehisto"]
         self.mass = datap["mass"]
 
-    def gethistonormforselevt_mult(self, df_evt, dfevtevtsel, label, var, weightfunc=None):
+    @staticmethod
+    def make_weights(col, func, hist, use_func):
+        """Helper function to extract weights
 
-        if weightfunc is not None:
+        Args:
+            col: np.array
+                array to evaluate/run over
+            func: ROOT.TF1
+                ROOT function to use for evaluation
+            hist: TH1
+                ROOT histogram used for getting weights
+            use_func: bool
+                whether or not to use func (otherwise hist)
+
+        Returns:
+            iterable
+        """
+
+        if use_func:
+            return evaluate(func, col)
+        def reg(value):
+            # warning, the histogram has empty bins at high mult.
+            # (>125 ntrkl) so a check is needed to avoid a 1/0 division
+            # when computing the inverse of the weight
+            return value if value != 0. else 1.
+        return [reg(hist.GetBinContent(hist.FindBin(iw))) for iw in col]
+
+
+    def gethistonormforselevt_mult(self, df_evt, dfevtevtsel, label, var, useweightfromfunc=None):
+
+        if useweightfromfunc is not None:
             label = label + "_weight"
         hSelMult = TH1F('sel_' + label, 'sel_' + label, self.nbinshisto,
                         self.minvaluehisto, self.maxvaluehisto)
@@ -105,14 +137,20 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         df_no_vtx = df_to_keep[~tag_vtx.values]
         # events with reco zvtx > 10 cm after previous selection
         df_bit_zvtx_gr10 = filter_bit_df(df_to_keep, 'is_ev_rej', [[3], [1, 2, 7, 12]])
-        if weightfunc is not None:
-            weightssel = evaluate(weightfunc, dfevtevtsel[var])
+
+
+        if useweightfromfunc is not None:
+            weightssel = self.make_weights(dfevtevtsel[var], self.weightfunc, self.weighthist,
+                                           useweightfromfunc)
+            weightsnovtx = self.make_weights(df_no_vtx[var], self.weightfunc, self.weighthist,
+                                             useweightfromfunc)
+            weightsgr10 = self.make_weights(df_bit_zvtx_gr10[var], self.weightfunc,
+                                            self.weighthist, useweightfromfunc)
+
             weightsinvsel = [1./weight for weight in weightssel]
             fill_hist(hSelMult, dfevtevtsel[var], weights=weightsinvsel)
-            weightsnovtx = evaluate(weightfunc, df_no_vtx[var])
             weightsinvnovtx = [1./weight for weight in weightsnovtx]
             fill_hist(hNoVtxMult, df_no_vtx[var], weights=weightsinvnovtx)
-            weightsgr10 = evaluate(weightfunc, df_bit_zvtx_gr10[var])
             weightsinvgr10 = [1./weight for weight in weightsgr10]
             fill_hist(hVtxOutMult, df_bit_zvtx_gr10[var], weights=weightsinvgr10)
         else:
@@ -161,10 +199,10 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
             self.gethistonormforselevt_mult(dfevtorig, dfevtevtsel, \
                                        labeltrigger, self.v_var2_binning_gen)
 
-        if self.apply_weights is True and self.mcordata == "data":
+        if self.usetriggcorrfunc is not None and self.mcordata == "data":
             hselweight, hnovtxmultweight, hvtxoutmultweight = \
                 self.gethistonormforselevt_mult(dfevtorig, dfevtevtsel, \
-                    labeltrigger, self.v_var2_binning_gen, self.weightfunc)
+                    labeltrigger, self.v_var2_binning_gen, self.usetriggcorrfunc)
             hselweight.Write()
             hnovtxmultweight.Write()
             hvtxoutmultweight.Write()
@@ -175,7 +213,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
 
         list_df_recodtrig = []
 
-        for ipt in range(self.p_nptfinbins):
+        for ipt in range(self.p_nptfinbins): # pylint: disable=too-many-nested-blocks
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
             if self.s_evtsel is not None:
@@ -206,8 +244,10 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 df_bin = seldf_singlevar_inclusive(df, self.v_var2_binning, \
                                          self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 fill_hist(h_invmass, df_bin.inv_mass)
-                if self.apply_weights is True and self.mcordata == "data":
-                    weights = evaluate(self.weightfunc, df_bin[self.v_var2_binning_gen])
+                if self.usetriggcorrfunc is not None and self.mcordata == "data":
+                    weights = self.make_weights(df_bin[self.v_var2_binning_gen], self.weightfunc,
+                                                self.weighthist, self.usetriggcorrfunc)
+
                     weightsinv = [1./weight for weight in weights]
                     fill_hist(h_invmass_weight, df_bin.inv_mass, weights=weightsinv)
                 myfile.cd()
