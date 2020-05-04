@@ -342,7 +342,7 @@ LcpK0spp:
       triggersel:
         data: "trigger_hasbit_INT7==1"
         mc: null
-        weighttrig: false
+        usetriggcorrfunc: Null
       data:
         runselection: [null, null, null]
         results: [/data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsMBvspt_ntrkl,
@@ -444,7 +444,7 @@ LcpK0spp:
       triggersel:
         data: "trigger_hasbit_HighMultSPD==1"
         mc: null
-        weighttrig: True
+        usetriggcorrfunc: True
       data:
         runselection: [HighMultSPD2018]
         results: [/data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsSPDvspt] #list of periods
