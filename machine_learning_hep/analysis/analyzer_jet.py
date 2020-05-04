@@ -382,7 +382,7 @@ class AnalyzerJet(Analyzer):
         # calculate gen. level kinematic efficiency
         hzvsjetpt_gen_eff.Divide(hzvsjetpt_gen_nocuts)
 
-        # get shape vs pt_jet vs pt_cand histogram of matched rec level jets (from processor output)
+        # get pt_cand vs pt_jet histogram of matched rec level jets (from processor output)
         # with overflow entries
         hisname_overflow = "h2_ptcand_ptjet_rec_overflow"
         h2_ptcand_ptjet_rec_overflow = lfileeff.Get(hisname_overflow)
@@ -392,6 +392,18 @@ class AnalyzerJet(Analyzer):
         hisname = "h2_ptcand_ptjet_rec"
         h2_ptcand_ptjet_rec = lfileeff.Get(hisname)
         if not h2_ptcand_ptjet_rec:
+            self.logger.fatal(make_message_notfound(hisname, self.n_fileeff))
+
+        # pt_cand vs pt_gen_jet of matched gen level jets
+        # with overflow entries
+        hisname = "h2_ptcand_ptjet_genmatched_overflow"
+        h2_ptcand_ptjet_genmatched_overflow = lfileeff.Get(hisname)
+        if not h2_ptcand_ptjet_genmatched_overflow:
+            self.logger.fatal(make_message_notfound(hisname, self.n_fileeff))
+        # without overflow entries
+        hisname = "h2_ptcand_ptjet_genmatched"
+        h2_ptcand_ptjet_genmatched = lfileeff.Get(hisname)
+        if not h2_ptcand_ptjet_genmatched:
             self.logger.fatal(make_message_notfound(hisname, self.n_fileeff))
 
         # get shape_gen vs pt_gen_jet vs pt_cand histogram of selected gen level jets (from processor output)
@@ -419,6 +431,8 @@ class AnalyzerJet(Analyzer):
         # create template for the folded gen
         output_template = buildhisto("h2_z_jetpt", "h2_z_jetpt", self.varshapebinarray_reco, self.var2binarray_reco)
 
+        list_ptcand_genmatched_new_overflow = []
+        list_ptcand_genmatched_new = []
         list_ptcand_rec_new_overflow = []
         list_ptcand_rec_new = []
         list_ptcand_gen_new_overflow = []
@@ -429,28 +443,47 @@ class AnalyzerJet(Analyzer):
         list_ptcand_eff_new_overflow_folded = []
         list_ptcand_eff_new = []
         list_ptcand_eff_new_folded = []
+        list_ptcand_effgen_new_overflow = []
+        list_ptcand_effgen_new = []
 
         # calculate gen, rec, eff using the new method without folding
         for ibin2 in range(self.p_nbin2_reco):
             # restrict pt_jet range
             h3_z_ptjet_ptcand_gen.GetYaxis().SetRange(ibin2 + 1, ibin2 + 1)
+
             # shape overflow projection
             h1_ptcand_rec_overflow = h2_ptcand_ptjet_rec_overflow.ProjectionX("h1_ptcand_rec_overflow_%d" % ibin2, ibin2 + 1, ibin2 + 1)
             list_ptcand_rec_new_overflow.append(h1_ptcand_rec_overflow)
             h1_ptcand_gen_overflow = h3_z_ptjet_ptcand_gen.Project3D("h1_ptcand_gen_%d_overflow_ze" % ibin2)
             list_ptcand_gen_new_overflow.append(h1_ptcand_gen_overflow)
+            # rec level efficiency
             h1_ptcand_eff_overflow = h1_ptcand_rec_overflow.Clone("h1_ptcand_eff_overflow_%d" % ibin2)
             h1_ptcand_eff_overflow.Divide(h1_ptcand_gen_overflow)
             list_ptcand_eff_new_overflow.append(h1_ptcand_eff_overflow)
+            # gen level efficiency
+            h1_ptcand_genmatched_overflow = h2_ptcand_ptjet_genmatched_overflow.ProjectionX("h1_ptcand_genmatched_overflow_%d" % ibin2, ibin2 + 1, ibin2 + 1)
+            list_ptcand_genmatched_new_overflow.append(h1_ptcand_genmatched_overflow)
+            h1_ptcand_effgen_overflow = h1_ptcand_genmatched_overflow.Clone("h1_ptcand_effgen_overflow_%d" % ibin2)
+            h1_ptcand_effgen_overflow.Divide(h1_ptcand_gen_overflow)
+            list_ptcand_effgen_new_overflow.append(h1_ptcand_effgen_overflow)
+
             # restrict shape range
             h1_ptcand_rec = h2_ptcand_ptjet_rec.ProjectionX("h1_ptcand_rec_%d" % ibin2, ibin2 + 1, ibin2 + 1)
             list_ptcand_rec_new.append(h1_ptcand_rec)
             h3_z_ptjet_ptcand_gen.GetXaxis().SetRange(1, h3_z_ptjet_ptcand_gen.GetXaxis().GetNbins())
             h1_ptcand_gen = h3_z_ptjet_ptcand_gen.Project3D("h1_ptcand_gen_%d_ze" % ibin2)
             list_ptcand_gen_new.append(h1_ptcand_gen)
+            # rec level efficiency
             h1_ptcand_eff = h1_ptcand_rec.Clone("h1_ptcand_eff_%d" % ibin2)
             h1_ptcand_eff.Divide(h1_ptcand_gen)
             list_ptcand_eff_new.append(h1_ptcand_eff)
+            # gen level efficiency
+            h1_ptcand_genmatched = h2_ptcand_ptjet_genmatched.ProjectionX("h1_ptcand_genmatched_%d" % ibin2, ibin2 + 1, ibin2 + 1)
+            list_ptcand_genmatched_new.append(h1_ptcand_genmatched)
+            h1_ptcand_effgen = h1_ptcand_genmatched.Clone("h1_ptcand_effgen_%d" % ibin2)
+            h1_ptcand_effgen.Divide(h1_ptcand_gen)
+            list_ptcand_effgen_new.append(h1_ptcand_effgen)
+
             # reset ranges
             h3_z_ptjet_ptcand_gen.GetYaxis().SetRange() # reset full pt_jet range
             h3_z_ptjet_ptcand_gen.GetXaxis().SetRange() # reset full shape range
@@ -596,23 +629,30 @@ class AnalyzerJet(Analyzer):
         # compare the old and the new method
         list_eff_diff = []
         list_eff_diff_labels = []
+        list_effgen_diff = []
+        list_effgen_diff_labels = []
         latex_shaperange = TLatex(0.13, 0.8, string_shaperange)
         for ibin2 in range(self.p_nbin2_reco):
             string_ptjet = "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2])
             latex = TLatex(.13, .85, string_ptjet)
             # compare rec for old, new x (w/ overflow, w/o overflow)
-            make_plot("efficiency_pr_rec_%d" % ibin2, path=self.d_resultsallpdata, colours=[get_colour(i) for i in (0, 1, 3)], markers=[get_marker(i) for i in (0, 1, 3)], \
+            make_plot("efficiency_pr_rec_%d" % ibin2, path=self.d_resultsallpdata, \
+                colours=[get_colour(i) for i in (0, 1, 3, 5, 6)], markers=[get_marker(i) for i in (0, 1, 3, 5, 6)], \
                 list_obj=[ \
                     list_ptcand_rec_old[ibin2], \
                     list_ptcand_rec_new_overflow[ibin2], \
                     list_ptcand_rec_new[ibin2], \
+                    list_ptcand_genmatched_new_overflow[ibin2], \
+                    list_ptcand_genmatched_new[ibin2], \
                     latex, \
                     latex_shaperange], \
                 labels_obj=[ \
-                    "old", \
-                    "new %s overflow" % self.v_varshape_latex, \
-                    "new" \
-                ], title="reconstruction level;#it{p}_{T}^{%s} (GeV/#it{c});counts" % self.p_latexnhadron, leg_pos=[0.55, 0.72, 0.8, 0.86], margins_y=[0.05, 0.25], logscale="y")
+                    "rec old", \
+                    "rec new %s overflow" % self.v_varshape_latex, \
+                    "rec new", \
+                    "gen %s overflow" % self.v_varshape_latex, \
+                    "gen" \
+                ], title="matched;#it{p}_{T}^{%s} (GeV/#it{c});counts" % self.p_latexnhadron, leg_pos=[0.55, 0.72, 0.8, 0.86], margins_y=[0.05, 0.25], logscale="y")
             # compare gen for old, new x (w/ overflow, w/o overflow) x (w/o folding, w/ folding)
             make_plot("efficiency_pr_gen_%d" % ibin2, path=self.d_resultsallpdata, \
                 list_obj=[ \
@@ -646,7 +686,20 @@ class AnalyzerJet(Analyzer):
                     "new %s overflow folded" % self.v_varshape_latex, \
                     "new", \
                     "new folded" \
-                ], title="efficiency;#it{p}_{T}^{%s} (GeV/#it{c});efficiency" % self.p_latexnhadron, leg_pos=[0.55, 0.72, 0.8, 0.86], margins_y=[0, 0.25])
+                ], title="reconstruction level efficiency;#it{p}_{T}^{%s} (GeV/#it{c});efficiency" % self.p_latexnhadron, leg_pos=[0.55, 0.72, 0.8, 0.86], margins_y=[0, 0.25])
+            make_plot("efficiency_pr_effgen_%d" % ibin2, path=self.d_resultsallpdata, \
+                colours=[get_colour(i) for i in (0, 5, 6)], markers=[get_marker(i) for i in (0, 5, 6)], \
+                list_obj=[ \
+                    list_ptcand_eff_old[ibin2], \
+                    list_ptcand_effgen_new_overflow[ibin2], \
+                    list_ptcand_effgen_new[ibin2], \
+                    latex, \
+                    latex_shaperange], \
+                labels_obj=[ \
+                    "old", \
+                    "new %s overflow" % self.v_varshape_latex, \
+                    "new", \
+                ], title="generator level efficiency;#it{p}_{T}^{%s} (GeV/#it{c});efficiency" % self.p_latexnhadron, leg_pos=[0.55, 0.72, 0.8, 0.86], margins_y=[0, 0.25])
             # plot the error of old w.r.t. new folded
             eff_new = list_ptcand_eff_new_folded[ibin2].Clone("eff_pr_new_%d" % ibin2)
             eff_diff = list_ptcand_eff_old[ibin2].Clone("eff_pr_diff_%d" % ibin2)
@@ -655,12 +708,25 @@ class AnalyzerJet(Analyzer):
             eff_diff.Scale(100)
             list_eff_diff.append(eff_diff)
             list_eff_diff_labels.append(string_ptjet)
+            # plot the error of old w.r.t. new gen level
+            effgen_new = list_ptcand_effgen_new[ibin2].Clone("effgen_pr_new_%d" % ibin2)
+            effgen_diff = list_ptcand_eff_old[ibin2].Clone("effgen_pr_diff_%d" % ibin2)
+            effgen_diff.Add(effgen_new, -1)
+            effgen_diff.Divide(effgen_new)
+            effgen_diff.Scale(100)
+            list_effgen_diff.append(effgen_diff)
+            list_effgen_diff_labels.append(string_ptjet)
         list_eff_diff.append(latex_shaperange)
+        list_effgen_diff.append(latex_shaperange)
         line_0 = TLine(self.lpt_finbinmin[0], 0, self.lpt_finbinmax[-1], 0)
         list_eff_diff.append(line_0)
+        list_effgen_diff.append(line_0)
         make_plot("efficiency_pr_eff_diff", path=self.d_resultsallpdata, list_obj=list_eff_diff, labels_obj=list_eff_diff_labels, \
-            title="correction of efficiency calculation;#it{p}_{T}^{%s} (GeV/#it{c});error = (wrong #minus right)/right (%%)" % self.p_latexnhadron, \
+            title="correction of efficiency calculation (rec. level);#it{p}_{T}^{%s} (GeV/#it{c});error = (old #minus new)/new (%%)" % self.p_latexnhadron, \
             leg_pos=[0.1, 0.62, 0.4, 0.77], margins_y=[0.05, 0.05])
+        make_plot("efficiency_pr_effgen_diff", path=self.d_resultsallpdata, list_obj=list_effgen_diff, labels_obj=list_effgen_diff_labels, \
+            title="correction of efficiency calculation (gen. level);#it{p}_{T}^{%s} (GeV/#it{c});error = (old #minus new)/new (%%)" % self.p_latexnhadron, \
+            leg_pos=[0.55, 0.15, 0.85, 0.3], margins_y=[0.05, 0.05])
 
         # NON-PROMPT EFFICIENCY
 

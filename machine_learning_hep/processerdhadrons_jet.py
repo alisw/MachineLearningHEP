@@ -66,6 +66,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
         # second variable (jet pt)
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"] # name
+        self.v_var2_binning_gen = datap["analysis"][self.typean]["var_binning2_gen"] # name
         self.lvar2_binmin_reco = datap["analysis"][self.typean].get("sel_binmin2_reco", None)
         self.lvar2_binmax_reco = datap["analysis"][self.typean].get("sel_binmax2_reco", None)
         self.p_nbin2_reco = len(self.lvar2_binmin_reco) # number of reco bins
@@ -202,6 +203,9 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         # matched rec level jets
         h2_ptcand_ptjet_rec_overflow = build2dhisto("h2_ptcand_ptjet_rec_overflow", self.var1binarray, self.var2binarray_reco)
         h2_ptcand_ptjet_rec = build2dhisto("h2_ptcand_ptjet_rec", self.var1binarray, self.var2binarray_reco)
+        # matched gen level jets
+        h2_ptcand_ptjet_genmatched_overflow = build2dhisto("h2_ptcand_ptjet_genmatched_overflow", self.var1binarray, self.var2binarray_gen)
+        h2_ptcand_ptjet_genmatched = build2dhisto("h2_ptcand_ptjet_genmatched", self.var1binarray, self.var2binarray_gen)
 
         # selected gen level jets
         h3_shape_ptjet_ptcand_gen = buildhisto("h3_shape_ptjet_ptcand_gen", "h3_shape_ptjet_ptcand_gen", \
@@ -344,9 +348,54 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             h_gen_fd.Write()
             h_presel_fd.Write()
             h_sel_fd.Write()
+
+        # loop over gen bins
+        for ibin2 in range(self.p_nbin2_gen):
+            for ipt in range(self.p_nptfinbins):
+                bin_id = self.bin_matching[ipt]
+                df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
+                if self.s_evtsel is not None:
+                    df_mc_reco = df_mc_reco.query(self.s_evtsel)
+                if self.s_jetsel_reco is not None:
+                    df_mc_reco = df_mc_reco.query(self.s_jetsel_reco) # FIXME should it be gen here? pylint: disable=fixme
+                if self.s_trigger is not None:
+                    df_mc_reco = df_mc_reco.query(self.s_trigger)
+                if self.runlistrigger is not None:
+                    df_mc_reco = selectdfrunlist(df_mc_reco, \
+                    self.run_param[self.runlistrigger], "run_number")
+                df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var_binning, \
+                    self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+                if self.doml is True:
+                    df_mc_reco = df_mc_reco.query(self.l_selml[bin_id])
+                # select pt_gen_jet bin
+                df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning_gen, \
+                    self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+
+                # restrict gen shape range
+                df_reco_no_overflow = seldf_singlevar(df_mc_reco, \
+                    self.v_varshape_binning_gen, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1])
+
+                # prompt
+                df_reco_pr_overflow = df_mc_reco[df_mc_reco.ismcprompt == 1]
+                df_reco_pr = df_reco_no_overflow[df_reco_no_overflow.ismcprompt == 1]
+                # non-prompt
+                df_reco_fd_overflow = df_mc_reco[df_mc_reco.ismcfd == 1]
+                df_reco_fd = df_reco_no_overflow[df_reco_no_overflow.ismcfd == 1]
+
+                val = len(df_reco_pr_overflow)
+                err = math.sqrt(val)
+                h2_ptcand_ptjet_genmatched_overflow.SetBinContent(ipt + 1, ibin2 + 1, val)
+                h2_ptcand_ptjet_genmatched_overflow.SetBinError(ipt + 1, ibin2 + 1, err)
+                val = len(df_reco_pr)
+                err = math.sqrt(val)
+                h2_ptcand_ptjet_genmatched.SetBinContent(ipt + 1, ibin2 + 1, val)
+                h2_ptcand_ptjet_genmatched.SetBinError(ipt + 1, ibin2 + 1, err)
+
         out_file.cd()
         h2_ptcand_ptjet_rec_overflow.Write()
         h2_ptcand_ptjet_rec.Write()
+        h2_ptcand_ptjet_genmatched_overflow.Write()
+        h2_ptcand_ptjet_genmatched.Write()
 
     def create_df_closure(self, df_):
         df_tmp_selgen = df_.copy()

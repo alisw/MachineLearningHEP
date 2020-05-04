@@ -274,6 +274,7 @@ D0pp:
       latexnamedecay: "K^{#minus} #pi^{#plus}"
 
       var_binning2: pt_jet
+      var_binning2_gen: pt_gen_jet
       latexbin2var: "#it{p}_{T, jet}^{ch}"
       sel_binmin2_reco: [7.0,15.0,30.0] # rec jet pt bins (sel_binmin2_reco bins)
       sel_binmax2_reco:     [15.0,30.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)

@@ -349,6 +349,7 @@ LcpK0spp:
       latexnamedecay: "p K^{0}_{S}"
 
       var_binning2: pt_jet
+      var_binning2_gen: pt_gen_jet
       latexbin2var: "#it{p}_{T, jet}^{ch}"
       sel_binmin2_reco: [5.0,7.0,15.0] #list of nbins
       sel_binmax2_reco:     [7.0,15.0,35.0] #list of nbins
