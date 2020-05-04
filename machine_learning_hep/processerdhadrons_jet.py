@@ -27,7 +27,7 @@ from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utilities import selectdfrunlist, seldf_singlevar, openfile
 from machine_learning_hep.utilities import create_folder_struc, mergerootfiles, get_timestamp_string
 from machine_learning_hep.utilities import z_calc, z_gen_calc
-from machine_learning_hep.utilities_plot import build2dhisto, fill2dhist, makefill3dhist
+from machine_learning_hep.utilities_plot import buildhisto, build2dhisto, fill2dhist, makefill3dhist
 from machine_learning_hep.processer import Processer
 
 class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many-instance-attributes
@@ -198,6 +198,44 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
     # pylint: disable=line-too-long
     def process_efficiency_single(self, index):
         out_file = TFile.Open(self.l_histoeff[index], "recreate")
+
+        # matched rec level jets
+        h2_ptcand_ptjet_rec_overflow = build2dhisto("h2_ptcand_ptjet_rec_overflow", self.var1binarray, self.var2binarray_reco)
+        h2_ptcand_ptjet_rec = build2dhisto("h2_ptcand_ptjet_rec", self.var1binarray, self.var2binarray_reco)
+
+        # selected gen level jets
+        h3_shape_ptjet_ptcand_gen = buildhisto("h3_shape_ptjet_ptcand_gen", "h3_shape_ptjet_ptcand_gen", \
+            self.varshapebinarray_gen, self.var2binarray_gen, self.var1binarray)
+
+        for ibinshape in range(self.p_nbinshape_gen):
+            for ibin2 in range(self.p_nbin2_gen):
+                for ipt in range(self.p_nptfinbins):
+                    bin_id = self.bin_matching[ipt]
+                    df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[bin_id][index], "rb"))
+                    df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
+                    if self.runlistrigger is not None:
+                        df_mc_gen = selectdfrunlist(df_mc_gen, \
+                                 self.run_param[self.runlistrigger], "run_number")
+                    df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \
+                                                self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+                    df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning, \
+                                                self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+                    df_mc_gen = seldf_singlevar(df_mc_gen, self.v_varshape_binning, \
+                                                self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape])
+                    df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
+                    val = len(df_gen_sel_pr)
+                    h3_shape_ptjet_ptcand_gen.SetBinContent(ibinshape + 1, ibin2 + 1, ipt + 1, val)
+                    h3_shape_ptjet_ptcand_gen.SetBinError(ibinshape + 1, ibin2 + 1, ipt + 1, 0)
+                    #for _ in range(val):
+                    #    h3_shape_ptjet_ptcand_gen.Fill(self.lvarshape_binmin_gen[ibinshape],
+                    #                                    self.lvar2_binmin_gen[ibin2],
+                    #                                    self.lpt_finbinmin[ipt])
+
+        out_file.cd()
+        print("h3_shape_ptjet_ptcand_gen Integral:", h3_shape_ptjet_ptcand_gen.Integral())
+        h3_shape_ptjet_ptcand_gen.Write()
+
+        # FIXME Do gen and rec loops separately pylint: disable=fixme
         for ibin2 in range(self.p_nbin2_reco):
             stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
                                         self.lvar2_binmin_reco[ibin2], \
@@ -240,8 +278,10 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
                 df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning, \
                                              self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
+                # FIXME use lvar2_binmin_gen pylint: disable=fixme
                 df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning, \
                                             self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
+                # prompt
                 df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
                 df_reco_presel_pr = df_mc_reco[df_mc_reco.ismcprompt == 1]
                 df_reco_sel_pr = None
@@ -249,6 +289,10 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                     df_reco_sel_pr = df_reco_presel_pr.query(self.l_selml[bin_id])
                 else:
                     df_reco_sel_pr = df_reco_presel_pr.copy()
+                # restrict shape range
+                df_reco_sel_pr_no_overflow = seldf_singlevar(df_reco_sel_pr, \
+                    self.v_varshape_binning, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
+                # non-prompt
                 df_gen_sel_fd = df_mc_gen[df_mc_gen.ismcfd == 1]
                 df_reco_presel_fd = df_mc_reco[df_mc_reco.ismcfd == 1]
                 df_reco_sel_fd = None
@@ -260,6 +304,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 val = len(df_gen_sel_pr)
                 err = math.sqrt(val)
                 h_gen_pr.SetBinContent(bincounter + 1, val)
+                # FIXME Why do we set error for gen? pylint: disable=fixme
                 h_gen_pr.SetBinError(bincounter + 1, err)
                 val = len(df_reco_presel_pr)
                 err = math.sqrt(val)
@@ -269,10 +314,17 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 err = math.sqrt(val)
                 h_sel_pr.SetBinContent(bincounter + 1, val)
                 h_sel_pr.SetBinError(bincounter + 1, err)
+                h2_ptcand_ptjet_rec_overflow.SetBinContent(ipt + 1, ibin2 + 1, val)
+                h2_ptcand_ptjet_rec_overflow.SetBinError(ipt + 1, ibin2 + 1, err)
+                val = len(df_reco_sel_pr_no_overflow)
+                err = math.sqrt(val)
+                h2_ptcand_ptjet_rec.SetBinContent(ipt + 1, ibin2 + 1, val)
+                h2_ptcand_ptjet_rec.SetBinError(ipt + 1, ibin2 + 1, err)
 
                 val = len(df_gen_sel_fd)
                 err = math.sqrt(val)
                 h_gen_fd.SetBinContent(bincounter + 1, val)
+                # FIXME Why do we set error for gen? pylint: disable=fixme
                 h_gen_fd.SetBinError(bincounter + 1, err)
                 val = len(df_reco_presel_fd)
                 err = math.sqrt(val)
@@ -292,6 +344,9 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             h_gen_fd.Write()
             h_presel_fd.Write()
             h_sel_fd.Write()
+        out_file.cd()
+        h2_ptcand_ptjet_rec_overflow.Write()
+        h2_ptcand_ptjet_rec.Write()
 
     def create_df_closure(self, df_):
         df_tmp_selgen = df_.copy()
@@ -404,9 +459,11 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
         # 3D histogram for gen prompt
         titlehist = "hzvsjetptvscandpt_gen_prompt"
+        # FIXME Why do we set error for gen? pylint: disable=fixme
         hzvsjetptvscandpt_gen_prompt = makefill3dhist(df_gen_prompt, titlehist, \
             self.varshapebinarray_gen, self.var2binarray_gen, self.var1binarray, \
             self.v_varshape_binning, "pt_jet", "pt_cand")
+        print("hzvsjetptvscandpt_gen_prompt Integral:", hzvsjetptvscandpt_gen_prompt.Integral())
         hzvsjetptvscandpt_gen_prompt.Write()
 
         # hz_gen_nocuts is the distribution of generated z values in b in
@@ -511,6 +568,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
         hzvsjetpt_reco_closure_pr = \
             build2dhisto("hzvsjetpt_reco_closure", self.varshapebinarray_reco, self.var2binarray_reco)
+        # FIXME use varshapebinarray_gen pylint: disable=fixme
         hzvsjetpt_gen_closure_pr = \
             build2dhisto("hzvsjetpt_gen_closure", self.varshapebinarray_reco, self.var2binarray_reco)
         hzvsjetpt_reco_pr = \
