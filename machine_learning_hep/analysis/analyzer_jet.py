@@ -2985,6 +2985,7 @@ class AnalyzerJet(Analyzer):
 
         # get the prompt PYTHIA histograms
 
+        file_sim_out = TFile.Open("%s/simulations.root" % self.d_resultsallpdata, "recreate")
         input_pythia8 = []
         input_pythia8_xsection = []
         input_pythia8_z = []
@@ -3016,9 +3017,14 @@ class AnalyzerJet(Analyzer):
                      (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
                 input_pythia8_z_jetpt.append(input_pythia8[i_pythia8].ProjectionX("input_pythia8" + self.pythia8_prompt_variations[i_pythia8]+suffix, ibin2 + 1, ibin2 + 1, "e"))
                 input_pythia8_z_jetpt[ibin2].Scale(1.0 / input_pythia8_z_jetpt[ibin2].Integral(1, -1), "width")
+                pythia8_out = input_pythia8_z_jetpt[ibin2]
+                file_sim_out.cd()
+                pythia8_out.Write()
+                pythia8_out.SetDirectory(0)
                 input_pythia8_xsection_z_jetpt.append(input_pythia8_xsection[i_pythia8].ProjectionX("input_pythia8_xsection" + self.pythia8_prompt_variations[i_pythia8] + suffix, ibin2 + 1, ibin2 + 1, "e"))
             input_pythia8_z.append(input_pythia8_z_jetpt)
             input_pythia8_xsection_z.append(input_pythia8_xsection_z_jetpt)
+        file_sim_out.Close()
 
         for ibin2 in range(self.p_nbin2_gen):
 
@@ -3280,7 +3286,8 @@ class AnalyzerJet(Analyzer):
         # Convert it into a dataframe.
         list_branches = ["pt_cand", "eta_cand", "phi_cand", "y_cand", "pdg_parton", "pt_jet", \
             "eta_jet", "phi_jet", "delta_r_jet", "z", "n_const", "zg_jet", "rg_jet", "nsd_jet", \
-            "Pt_mother_jet", "k0_jet", "k1_jet", "k2_jet", "kT_jet"]
+            #"Pt_splitting_jet", "Pt_mother_jet", \
+            "k0_jet", "k1_jet", "k2_jet", "kT_jet"]
         try:
             df_sim = tree_sim.pandas.df(branches=list_branches)
         except Exception: # pylint: disable=broad-except
