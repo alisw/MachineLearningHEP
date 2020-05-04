@@ -117,7 +117,7 @@ class MLFitParsFactory:
         self.include_reflections = ana_config.get("include_reflection", False)
 
         # Is this a trigger weighted histogram?
-        self.apply_weights = ana_config["triggersel"]["weighttrig"]
+        self.apply_weights = ana_config["triggersel"].get("usetriggcorrfunc", None) is not None
 
         # Systematics
         self.syst_pars = ana_config.get("systematics", {})
