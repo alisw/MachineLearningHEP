@@ -136,6 +136,11 @@ def format_value(old, new):
     if new == spec_char:
         return old
     if type(old) is type(new):
+        if isinstance(old, list):
+            len_old, len_new = len(old), len(new)
+            if len_old != len_new:
+                msg_warn("Change of number of elements: %d -> %d\n\t%s -> %s" % \
+                    (len_old, len_new, old, new))
         return new
     if isinstance(old, list):
         # Return a list of the same structure, filled with new.
