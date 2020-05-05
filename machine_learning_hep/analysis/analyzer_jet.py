@@ -1687,6 +1687,14 @@ class AnalyzerJet(Analyzer):
         hzvsjetpt_reco_eff = unfolding_input_file.Get("hzvsjetpt_reco_cuts")
         if not hzvsjetpt_reco_eff:
             self.logger.fatal(make_message_notfound("hzvsjetpt_reco_cuts", self.n_fileresp))
+        # closure test input
+        input_mc_det = unfolding_input_file.Get("input_closure_reco")
+        if not input_mc_det:
+            self.logger.fatal(make_message_notfound("input_closure_reco", self.n_fileresp))
+
+        stat_unfolding = input_data.Integral()
+        stat_closure = input_mc_det.Integral()
+        print("Unfolding: data statistics: %g, closure statistics: %g, ratio: %g" % (stat_unfolding, stat_closure, stat_unfolding/stat_closure))
 
         # calculate rec. level kinematic efficiency and apply it to the unfolding input
 
