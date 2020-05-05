@@ -2328,7 +2328,7 @@ class AnalyzerJet(Analyzer):
             setup_legend(leg_input_mc_gen_z_xsection)
             setup_histogram(unfolded_z_xsection_list[i_iter_choice][ibin2], get_colour(1), get_marker(0))
             leg_input_mc_gen_z_xsection.AddEntry(unfolded_z_xsection_list[i_iter_choice][ibin2], "unfolded data", "P")
-            y_min_h, y_max_h = get_y_window_his(unfolded_z_xsection_list[i_iter_choice][ibin2])
+            y_min_h, y_max_h = get_y_window_his([unfolded_z_xsection_list[i_iter_choice][ibin2], input_powheg_xsection_z[ibin2]])
             #y_min_g, y_max_g = get_y_window_gr(tg_powheg_xsection[ibin2])
             #y_min = min(y_min_g, y_min_h)
             #y_max = max(y_max_g, y_max_h)
