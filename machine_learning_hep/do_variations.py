@@ -383,7 +383,7 @@ def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-
                     now = datetime.datetime.now()
                     timestamp = now.strftime("%Y%m%d_%H%M%S")
                     logfile = "stdouterr_%s_%s_%s_%s.log" % \
-                        (analysis, cat, format_varname(var, index, n_var), timestamp)
+                        (timestamp, analysis, cat, format_varname(var, index, n_var))
                     print("Logfile: %s" % logfile)
                     with open(logfile, "w") as ana_out:
                         prc = subprocess.Popen(shlex.split("python do_entire_analysis.py " \
