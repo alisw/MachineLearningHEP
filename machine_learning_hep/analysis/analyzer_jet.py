@@ -2769,8 +2769,14 @@ class AnalyzerJet(Analyzer):
             for sys_cat in range(self.n_sys_cat):
                 input_histograms_syscatvar = []
                 for sys_var in range(self.systematic_variations[sys_cat]):
+                    string_catvar = self.systematic_catnames[sys_cat] + "/" + self.systematic_varnames[sys_cat][sys_var]
+                    # FIXME exception for different jet pt binning pylint: disable=fixme
+                    name_his_orig = name_his
+                    if ibin2 == 0 and string_catvar == "binning/pt_jet_0":
+                        name_his = "unfolded_z_sel_%s_%.2f_%.2f" % (self.v_var2_binning, 8, self.lvar2_binmax_gen[ibin2])
                     input_histograms_syscatvar.append(input_files_sys[sys_cat][sys_var].Get(name_his))
-                    path_file = path_def.replace(string_default, self.systematic_catnames[sys_cat] + "/" + self.systematic_varnames[sys_cat][sys_var])
+                    name_his = name_his_orig
+                    path_file = path_def.replace(string_default, string_catvar)
                     if not input_histograms_syscatvar[sys_var]:
                         self.logger.fatal(make_message_notfound(name_his, path_file))
                     if debug:
@@ -3294,8 +3300,8 @@ class AnalyzerJet(Analyzer):
         # Convert it into a dataframe.
         list_branches = ["pt_cand", "eta_cand", "phi_cand", "y_cand", "pdg_parton", "pt_jet", \
             "eta_jet", "phi_jet", "delta_r_jet", "z", "n_const", "zg_jet", "rg_jet", "nsd_jet", \
-            #"Pt_splitting_jet", "Pt_mother_jet", \
             "k0_jet", "k1_jet", "k2_jet", "kT_jet"]
+            #"Pt_splitting_jet", "Pt_mother_jet", \
         try:
             df_sim = tree_sim.pandas.df(branches=list_branches)
         except Exception: # pylint: disable=broad-except
@@ -3323,12 +3329,9 @@ class AnalyzerJet(Analyzer):
 
         # Reject single-constituent jets.
         #sel_jet_nconst = "n_const > 1"
-        #df_sim = df_sim.query(sel_jet_nconst)
-
-        # Reject untagged jets.
-        if self.typean == "jet_rg":
-            sel_jet_tagged = "rg_jet > 0"
-            df_sim = df_sim.query(sel_jet_tagged)
+        # FIXME pylint: disable=fixme
+        sel_jet_nconst = "z < 1"
+        df_sim = df_sim.query(sel_jet_nconst)
 
         print("Entries after filtering:", len(df_sim))
         # Create, fill and scale the histogram.
