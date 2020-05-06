@@ -51,6 +51,9 @@ else
     \time -f "time: %E\nCPU: %P" ${CMD_ANA}
 fi
 
+# Exit if error.
+if [ ! $? -eq 0 ]; then echo "Error"; exit 1; fi
+
 echo -e "\n$(date)"
 
 echo -e "\nCleaning ${DIR_RESULTS}"
