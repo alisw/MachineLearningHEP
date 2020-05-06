@@ -46,7 +46,5 @@ while true; do
     esac
 done
 
-echo "Done"
-
 exit 0
 
