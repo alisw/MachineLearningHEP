@@ -24,6 +24,7 @@ import subprocess
 import shlex
 from copy import deepcopy
 import datetime
+from time import sleep
 import yaml
 
 def msg_err(message: str):
@@ -388,6 +389,8 @@ def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-
                         subprocess.Popen(shlex.split("python do_entire_analysis.py " \
                             "-r %s -d %s -a %s -c" % (config, yaml_out, analysis)), \
                             stdout=ana_out, stderr=ana_out, universal_newlines=True)
+                    if do_processor: # Avoid same timestamp for variations that merge output in /data/tmp/hadd/
+                        sleep(2)
 
     # Delete the created database files.
     if clean:
