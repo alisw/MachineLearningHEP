@@ -18,6 +18,7 @@ Author: Vit Kucera <vit.kucera@cern.ch>
 """
 
 import os
+import sys
 import shutil
 import argparse
 import subprocess
@@ -288,7 +289,7 @@ def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-
 
     if not healthy_structure(dic_diff):
         msg_err("Bad structure.")
-        return
+        sys.exit(1)
 
     #print(yaml.safe_dump(dic_in, default_flow_style=False))
 
@@ -354,7 +355,7 @@ def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-
 
                 # Modify the database.
                 if not modify_paths(dic_new, "default/default", varstring, do_processor):
-                    return
+                    sys.exit(1)
                 if not dic_var_single_slice:
                     msg_warn("Empty diffs. No changes to make.")
                 modify_dictionary(dic_new, dic_var_single_slice)
@@ -373,7 +374,7 @@ def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-
                 # Start the analysis.
                 if analysis:
                     if do_processor and not delete_output_dirs(dic_new, analysis, varstring):
-                        return
+                        sys.exit(1)
                     mode = "complete" if do_processor else "analyzer"
                     config = "submission/default_%s.yml" % mode
                     print("Starting the analysis \x1b[1;32m%s\x1b[0m for the variation " \
