@@ -406,8 +406,9 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                                 h_presel_pr_wtof)
                 set_content(df_reco_presel_pr, h_presel_pr)
                 set_content(df_reco_sel_pr, h_sel_pr)
-                set_content(df_reco_sel_pr[df_reco_sel_pr.nsigTOF_Pr_0 < -998], h_sel_pr_wotof)
-                set_content(df_reco_sel_pr[df_reco_sel_pr.nsigTOF_Pr_0 > -998], h_sel_pr_wtof)
+                if "nsigTOF_Pr_0" in df_reco_sel_pr:
+                    set_content(df_reco_sel_pr[df_reco_sel_pr.nsigTOF_Pr_0 < -998], h_sel_pr_wotof)
+                    set_content(df_reco_sel_pr[df_reco_sel_pr.nsigTOF_Pr_0 > -998], h_sel_pr_wtof)
                 set_content(df_gen_sel_fd, h_gen_fd)
                 set_content(df_reco_presel_fd, h_presel_fd)
                 set_content(df_reco_sel_fd, h_sel_fd)
