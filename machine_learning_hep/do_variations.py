@@ -387,7 +387,7 @@ def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-
                     print("Logfile: %s" % logfile)
                     with open(logfile, "w") as ana_out:
                         prc = subprocess.Popen(shlex.split("python do_entire_analysis.py " \
-                            "-r %s -d %s -a %s -c" % (config, yaml_out, analysis)), \
+                            "-a %s -r %s -d %s -c" % (analysis, config, yaml_out)), \
                             stdout=ana_out, stderr=ana_out, universal_newlines=True)
                     # Wait for the running variation to finish to avoid overwriting
                     # its partial output in /data/tmp/hadd/
