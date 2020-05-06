@@ -166,6 +166,11 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_bin["z"] = z_calc(df_bin.pt_jet, df_bin.phi_jet, df_bin.eta_jet,
                                      df_bin.pt_cand, df_bin.phi_cand, df_bin.eta_cand)
 
+                # FIXME pylint: disable=fixme
+                # Reject single-constituent jets, should be "ntracks_jet > 1" if available
+                jetsel_string = "z < 1"
+                df_bin = df_bin.query(jetsel_string)
+
                 h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
                                  self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 fill_hist(h_invmass, df_bin.inv_mass)
@@ -226,7 +231,15 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                                                 self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
                     df_mc_gen = seldf_singlevar(df_mc_gen, self.v_varshape_binning, \
                                                 self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape])
+                    # FIXME pylint: disable=fixme
+                    # Reject single-constituent jets, should be "ntracks_jet > 1" if available
+                    df_mc_gen["z"] = z_calc(df_mc_gen.pt_jet, df_mc_gen.phi_jet, df_mc_gen.eta_jet,
+                                            df_mc_gen.pt_cand, df_mc_gen.phi_cand, df_mc_gen.eta_cand)
+                    jetsel_string = "z < 1"
+                    df_mc_gen = df_mc_gen.query(jetsel_string)
+
                     df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
+
                     val = len(df_gen_sel_pr)
                     h3_shape_ptjet_ptcand_gen.SetBinContent(ibinshape + 1, ibin2 + 1, ipt + 1, val)
                     h3_shape_ptjet_ptcand_gen.SetBinError(ibinshape + 1, ibin2 + 1, ipt + 1, 0)
@@ -285,6 +298,19 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 # FIXME use lvar2_binmin_gen pylint: disable=fixme
                 df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning, \
                                             self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
+
+                df_mc_gen["z"] = z_calc(df_mc_gen.pt_jet, df_mc_gen.phi_jet, df_mc_gen.eta_jet,
+                                        df_mc_gen.pt_cand, df_mc_gen.phi_cand, df_mc_gen.eta_cand)
+
+                df_mc_reco["z"] = z_calc(df_mc_reco.pt_jet, df_mc_reco.phi_jet, df_mc_reco.eta_jet,
+                                         df_mc_reco.pt_cand, df_mc_reco.phi_cand, df_mc_reco.eta_cand)
+
+                # FIXME pylint: disable=fixme
+                # Reject single-constituent jets, should be "ntracks_jet > 1" if available
+                jetsel_string = "z < 1"
+                df_mc_gen = df_mc_gen.query(jetsel_string)
+                df_mc_reco = df_mc_reco.query(jetsel_string)
+
                 # prompt
                 df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
                 df_reco_presel_pr = df_mc_reco[df_mc_reco.ismcprompt == 1]
@@ -371,6 +397,14 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning_gen, \
                     self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
 
+                df_mc_reco["z"] = z_calc(df_mc_reco.pt_jet, df_mc_reco.phi_jet, df_mc_reco.eta_jet,
+                                         df_mc_reco.pt_cand, df_mc_reco.phi_cand, df_mc_reco.eta_cand)
+
+                # FIXME pylint: disable=fixme
+                # Reject single-constituent jets, should be "ntracks_jet > 1" if available
+                jetsel_string = "z < 1"
+                df_mc_reco = df_mc_reco.query(jetsel_string)
+
                 # restrict gen shape range
                 df_reco_no_overflow = seldf_singlevar(df_mc_reco, \
                     self.v_varshape_binning_gen, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1])
@@ -379,8 +413,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_reco_pr_overflow = df_mc_reco[df_mc_reco.ismcprompt == 1]
                 df_reco_pr = df_reco_no_overflow[df_reco_no_overflow.ismcprompt == 1]
                 # non-prompt
-                df_reco_fd_overflow = df_mc_reco[df_mc_reco.ismcfd == 1]
-                df_reco_fd = df_reco_no_overflow[df_reco_no_overflow.ismcfd == 1]
+                #df_reco_fd_overflow = df_mc_reco[df_mc_reco.ismcfd == 1]
+                #df_reco_fd = df_reco_no_overflow[df_reco_no_overflow.ismcfd == 1]
 
                 val = len(df_reco_pr_overflow)
                 err = math.sqrt(val)
@@ -484,6 +518,12 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         df_mc_reco["z_gen"] = z_gen_calc(df_mc_reco.pt_gen_jet, df_mc_reco.phi_gen_jet,
                                          df_mc_reco.eta_gen_jet, df_mc_reco.pt_gen_cand,
                                          df_mc_reco.delta_phi_gen_jet, df_mc_reco.delta_eta_gen_jet)
+
+        # FIXME pylint: disable=fixme
+        # Reject single-constituent jets, should be "ntracks_jet > 1" if available
+        jetsel_string = "z < 1"
+        df_gen = df_gen.query(jetsel_string)
+        df_mc_reco = df_mc_reco.query(jetsel_string)
 
         df_gen_nonprompt = df_gen[df_gen.ismcfd == 1]
         df_gen_prompt = df_gen[df_gen.ismcprompt == 1]
