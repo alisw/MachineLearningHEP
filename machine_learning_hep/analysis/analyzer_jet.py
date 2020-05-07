@@ -1696,6 +1696,9 @@ class AnalyzerJet(Analyzer):
         stat_closure = input_mc_det.Integral()
         print("Unfolding: data statistics: %g, closure statistics: %g, ratio: %g" % (stat_unfolding, stat_closure, stat_unfolding/stat_closure))
 
+        # Ignore the first bin for integration incase of untagged bin
+        bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 else 1
+
         # calculate rec. level kinematic efficiency and apply it to the unfolding input
 
         hzvsjetpt_reco_eff.Divide(hzvsjetpt_reco_nocuts)
@@ -1790,16 +1793,16 @@ class AnalyzerJet(Analyzer):
             suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             input_mc_gen_z.append(input_mc_gen.ProjectionX("input_mc_gen_z" + suffix, ibin2 + 1, ibin2 + 1, "e"))
-            input_mc_gen_z[ibin2].Scale(1.0 / input_mc_gen_z[ibin2].Integral(input_mc_gen_z[ibin2].FindBin(self.lvarshape_binmin_reco[0]), input_mc_gen_z[ibin2].FindBin(self.lvarshape_binmin_reco[-1])), "width")
+            input_mc_gen_z[ibin2].Scale(1.0 / input_mc_gen_z[ibin2].Integral(bin_int_first, input_mc_gen_z[ibin2].FindBin(self.lvarshape_binmin_reco[-1])), "width")
             input_powheg_z.append(input_powheg.ProjectionX("input_powheg_z" + suffix, ibin2 + 1, ibin2 + 1, "e"))
-            input_powheg_z[ibin2].Scale(1.0 / input_powheg_z[ibin2].Integral(input_powheg_z[ibin2].FindBin(self.lvarshape_binmin_reco[0]), input_powheg_z[ibin2].FindBin(self.lvarshape_binmin_reco[-1])), "width")
+            input_powheg_z[ibin2].Scale(1.0 / input_powheg_z[ibin2].Integral(bin_int_first, input_powheg_z[ibin2].FindBin(self.lvarshape_binmin_reco[-1])), "width")
             input_powheg_xsection_z.append(input_powheg_xsection.ProjectionX("input_powheg_xsection_z" + suffix, ibin2 + 1, ibin2 + 1, "e"))
             input_powheg_xsection_z[ibin2].Scale(1.0, "width")
             #input_powheg_sys_z_iter = []
             #input_powheg_xsection_sys_z_iter = []
             #for i_powheg in range(len(self.powheg_prompt_variations)):
             #    input_powheg_sys_z_iter.append(input_powheg_sys[i_powheg].ProjectionX("input_powheg_sys_z"+self.powheg_prompt_variations[i_powheg]+suffix, ibin2 + 1, ibin2 + 1, "e"))
-            #    input_powheg_sys_z_iter[i_powheg].Scale(1.0 / input_powheg_sys_z_iter[i_powheg].Integral(input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[0]), input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[-1])), "width")
+            #    input_powheg_sys_z_iter[i_powheg].Scale(1.0 / input_powheg_sys_z_iter[i_powheg].Integral(bin_int_first, input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[-1])), "width")
             #    input_powheg_xsection_sys_z_iter.append(input_powheg_xsection_sys[i_powheg].ProjectionX("input_powheg_xsection_sys_z"+self.powheg_prompt_variations[i_powheg]+suffix, ibin2 + 1, ibin2 + 1, "e"))
             #    input_powheg_xsection_sys_z_iter[i_powheg].Scale(1.0, "width")
             #input_powheg_sys_z.append(input_powheg_sys_z_iter)
@@ -1818,9 +1821,9 @@ class AnalyzerJet(Analyzer):
             # compare shapes of distributions of reconstructed jets that pass rec. vs. gen. level cuts
 
             mc_reco_matched_z.append(mc_reco_matched.ProjectionX("mc_reco_matched_z" + suffix, ibin2 + 1, ibin2 + 1, "e"))
-            mc_reco_matched_z[ibin2].Scale(1.0 / mc_reco_matched_z[ibin2].Integral(1, -1))
+            mc_reco_matched_z[ibin2].Scale(1.0 / mc_reco_matched_z[ibin2].Integral(bin_int_first, -1))
             mc_gen_matched_z.append(mc_gen_matched.ProjectionX("mc_det_matched_z" + suffix, mc_gen_matched.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2]), mc_gen_matched.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2]), "e"))
-            mc_gen_matched_z[ibin2].Scale(1.0 / mc_gen_matched_z[ibin2].Integral(1, -1))
+            mc_gen_matched_z[ibin2].Scale(1.0 / mc_gen_matched_z[ibin2].Integral(bin_int_first, -1))
             mc_reco_gen_matched_z_ratio.append(mc_reco_matched_z[ibin2].Clone("input_mc_reco_gen_matched_z_ratio" + suffix))
             mc_reco_gen_matched_z_ratio[ibin2].Divide(mc_gen_matched_z[ibin2])
 
@@ -2129,7 +2132,7 @@ class AnalyzerJet(Analyzer):
 
                 # normalise by the number of jets
 
-                unfolded_z_scaled.Scale(1.0 / unfolded_z_scaled.Integral(unfolded_z_scaled.FindBin(self.lvarshape_binmin_reco[0]), unfolded_z_scaled.FindBin(self.lvarshape_binmin_reco[-1])), "width")
+                unfolded_z_scaled.Scale(1.0 / unfolded_z_scaled.Integral(bin_int_first, unfolded_z_scaled.FindBin(self.lvarshape_binmin_reco[-1])), "width")
 
                 unfolded_z_scaled.Write("unfolded_z_%d_%s" % (i + 1, suffix))
                 unfolded_z_xsection.Write("unfolded_z_xsection_%d_%s" % (i + 1, suffix))
@@ -2389,7 +2392,7 @@ class AnalyzerJet(Analyzer):
             # compare the result before unfolding and after
 
             input_data_z_scaled = input_data_z[ibin2].Clone("input_data_z_scaled_%s" % suffix)
-            input_data_z_scaled.Scale(1.0 / input_data_z_scaled.Integral(1, -1), "width")
+            input_data_z_scaled.Scale(1.0 / input_data_z_scaled.Integral(bin_int_first, -1), "width")
             cunfolded_not_z = TCanvas("cunfolded_not_z " + suffix, "Unfolded vs not Unfolded" + suffix)
             setup_canvas(cunfolded_not_z)
             leg_cunfolded_not_z = TLegend(.15, .75, .45, .85)
@@ -2520,6 +2523,9 @@ class AnalyzerJet(Analyzer):
         input_mc_det_z = []
         input_mc_gen_z = []
 
+        # Ignore the first bin for integration incase of untagged bin
+        bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 else 1
+
         kinematic_eff_jetpt = unfolding_input_file.Get("hjetpt_gen_cuts_closure")
         hjetpt_gen_nocuts = unfolding_input_file.Get("hjetpt_gen_nocuts_closure")
         kinematic_eff_jetpt.Divide(hjetpt_gen_nocuts)
@@ -2530,13 +2536,13 @@ class AnalyzerJet(Analyzer):
             suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
             input_mc_det_z.append(input_mc_det.ProjectionX("input_mc_det_z" + suffix, ibin2 + 1, ibin2 + 1, "e"))
-            input_mc_det_z[ibin2].Scale(1.0 / input_mc_det_z[ibin2].Integral(1, -1))
+            input_mc_det_z[ibin2].Scale(1.0 / input_mc_det_z[ibin2].Integral(bin_int_first, -1))
 
         for ibin2 in range(self.p_nbin2_gen):
             suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             input_mc_gen_z.append(input_mc_gen.ProjectionX("input_mc_gen_z" + suffix, ibin2 + 1, ibin2 + 1, "e"))
-            input_mc_gen_z[ibin2].Scale(1.0 / input_mc_gen_z[ibin2].Integral(1, -1))
+            input_mc_gen_z[ibin2].Scale(1.0 / input_mc_gen_z[ibin2].Integral(bin_int_first, -1))
             kinematic_eff.append(unfolding_input_file.Get("hz_gen_cuts_closure" + suffix))
             hz_gen_nocuts.append(unfolding_input_file.Get("hz_gen_nocuts_closure" + suffix))
             kinematic_eff[ibin2].Divide(hz_gen_nocuts[ibin2])
@@ -2561,7 +2567,7 @@ class AnalyzerJet(Analyzer):
                          (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
                 unfolded_z = unfolded_zvsjetpt.ProjectionX("unfolded_z_%d_%s" % (i + 1, suffix), ibin2 + 1, ibin2 + 1, "e")
                 unfolded_z.Divide(kinematic_eff[ibin2])
-                unfolded_z.Scale(1.0 / unfolded_z.Integral(1, -1))
+                unfolded_z.Scale(1.0 / unfolded_z.Integral(bin_int_first, -1))
                 unfolded_z.Divide(input_mc_gen_z[ibin2])
                 fileouts.cd()
                 unfolded_z.Write("closure_test_%d_%s" % (i + 1, suffix))
@@ -2687,6 +2693,9 @@ class AnalyzerJet(Analyzer):
             print("RMS both sides: ", self.systematic_rms_both_sides)
             print("Feed-down variations: ", self.powheg_nonprompt_varnames)
 
+        # Ignore the first bin for integration incase of untagged bin
+        bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 else 1
+
         path_def = self.file_unfold
         input_file_default = TFile.Open(path_def)
         if not input_file_default:
@@ -2723,14 +2732,14 @@ class AnalyzerJet(Analyzer):
             suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             input_powheg_z.append(input_powheg.ProjectionX("input_powheg_z" + suffix, ibin2 + 1, ibin2 + 1, "e"))
-            input_powheg_z[ibin2].Scale(1.0 / input_powheg_z[ibin2].Integral(input_powheg_z[ibin2].FindBin(self.lvarshape_binmin_reco[0]), input_powheg_z[ibin2].FindBin(self.lvarshape_binmin_reco[-1])), "width")
+            input_powheg_z[ibin2].Scale(1.0 / input_powheg_z[ibin2].Integral(bin_int_first, input_powheg_z[ibin2].FindBin(self.lvarshape_binmin_reco[-1])), "width")
             input_powheg_xsection_z.append(input_powheg_xsection.ProjectionX("input_powheg_xsection_z" + suffix, ibin2 + 1, ibin2 + 1, "e"))
             input_powheg_xsection_z[ibin2].Scale(1.0, "width")
             input_powheg_sys_z_iter = []
             input_powheg_xsection_sys_z_iter = []
             for i_powheg in range(len(self.powheg_prompt_variations)):
                 input_powheg_sys_z_iter.append(input_powheg_sys[i_powheg].ProjectionX("input_powheg_sys_z"+self.powheg_prompt_variations[i_powheg]+suffix, ibin2 + 1, ibin2 + 1, "e"))
-                input_powheg_sys_z_iter[i_powheg].Scale(1.0 / input_powheg_sys_z_iter[i_powheg].Integral(input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[0]), input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[-1])), "width")
+                input_powheg_sys_z_iter[i_powheg].Scale(1.0 / input_powheg_sys_z_iter[i_powheg].Integral(bin_int_first, input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[-1])), "width")
                 input_powheg_xsection_sys_z_iter.append(input_powheg_xsection_sys[i_powheg].ProjectionX("input_powheg_xsection_sys_z"+self.powheg_prompt_variations[i_powheg]+suffix, ibin2 + 1, ibin2 + 1, "e"))
             input_powheg_sys_z.append(input_powheg_sys_z_iter)
             input_powheg_xsection_sys_z.append(input_powheg_xsection_sys_z_iter)
@@ -3030,7 +3039,7 @@ class AnalyzerJet(Analyzer):
                 suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
                 input_pythia8_z_jetpt.append(input_pythia8[i_pythia8].ProjectionX("input_pythia8" + self.pythia8_prompt_variations[i_pythia8]+suffix, ibin2 + 1, ibin2 + 1, "e"))
-                input_pythia8_z_jetpt[ibin2].Scale(1.0 / input_pythia8_z_jetpt[ibin2].Integral(1, -1), "width")
+                input_pythia8_z_jetpt[ibin2].Scale(1.0 / input_pythia8_z_jetpt[ibin2].Integral(bin_int_first, -1), "width")
                 pythia8_out = input_pythia8_z_jetpt[ibin2]
                 file_sim_out.cd()
                 pythia8_out.Write()
