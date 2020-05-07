@@ -272,7 +272,7 @@ def get_timestamp_string():
     """
     Get timestamp, used for temporary files (like the 'hadd' ones)
     """
-    return datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    return datetime.now().strftime("%Y-%m-%d_%H-%M-%S_") + f"{os.getpid()}"
 
 def make_latex_table(column_names, row_names, rows, caption=None, save_path="./table.tex"):
     """
