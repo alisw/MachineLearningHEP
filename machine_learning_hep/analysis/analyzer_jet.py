@@ -2693,9 +2693,6 @@ class AnalyzerJet(Analyzer):
             print("RMS both sides: ", self.systematic_rms_both_sides)
             print("Feed-down variations: ", self.powheg_nonprompt_varnames)
 
-        # Ignore the first bin for integration incase of untagged bin
-        bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 else 1
-
         path_def = self.file_unfold
         input_file_default = TFile.Open(path_def)
         if not input_file_default:
@@ -2732,14 +2729,14 @@ class AnalyzerJet(Analyzer):
             suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             input_powheg_z.append(input_powheg.ProjectionX("input_powheg_z" + suffix, ibin2 + 1, ibin2 + 1, "e"))
-            input_powheg_z[ibin2].Scale(1.0 / input_powheg_z[ibin2].Integral(bin_int_first, input_powheg_z[ibin2].FindBin(self.lvarshape_binmin_reco[-1])), "width")
+            input_powheg_z[ibin2].Scale(1.0 / input_powheg_z[ibin2].Integral(input_powheg_z[ibin2].FindBin(self.lvarshape_binmin_reco[0]), input_powheg_z[ibin2].FindBin(self.lvarshape_binmin_reco[-1])), "width")
             input_powheg_xsection_z.append(input_powheg_xsection.ProjectionX("input_powheg_xsection_z" + suffix, ibin2 + 1, ibin2 + 1, "e"))
             input_powheg_xsection_z[ibin2].Scale(1.0, "width")
             input_powheg_sys_z_iter = []
             input_powheg_xsection_sys_z_iter = []
             for i_powheg in range(len(self.powheg_prompt_variations)):
                 input_powheg_sys_z_iter.append(input_powheg_sys[i_powheg].ProjectionX("input_powheg_sys_z"+self.powheg_prompt_variations[i_powheg]+suffix, ibin2 + 1, ibin2 + 1, "e"))
-                input_powheg_sys_z_iter[i_powheg].Scale(1.0 / input_powheg_sys_z_iter[i_powheg].Integral(bin_int_first, input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[-1])), "width")
+                input_powheg_sys_z_iter[i_powheg].Scale(1.0 / input_powheg_sys_z_iter[i_powheg].Integral(input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[0]), input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[-1])), "width")
                 input_powheg_xsection_sys_z_iter.append(input_powheg_xsection_sys[i_powheg].ProjectionX("input_powheg_xsection_sys_z"+self.powheg_prompt_variations[i_powheg]+suffix, ibin2 + 1, ibin2 + 1, "e"))
             input_powheg_sys_z.append(input_powheg_sys_z_iter)
             input_powheg_xsection_sys_z.append(input_powheg_xsection_sys_z_iter)
@@ -2885,7 +2882,9 @@ class AnalyzerJet(Analyzer):
                     count_sys_up = 0
                     count_sys_down = 0
                     for sys_var in range(self.systematic_variations[sys_cat]):
-                        error = input_histograms_sys[ibin2][sys_cat][sys_var].GetBinContent(ibinshape + 1) - input_histograms_default[ibin2].GetBinContent(ibinshape + 1)
+                        # FIXME exception for the untagged bin pylint: disable=fixme
+                        bin_first = 2 if "untagged" in self.systematic_varlabels[sys_cat][sys_var] else 1
+                        error = input_histograms_sys[ibin2][sys_cat][sys_var].GetBinContent(ibinshape + bin_first) - input_histograms_default[ibin2].GetBinContent(ibinshape + 1)
                         if error >= 0:
                             if self.systematic_rms[sys_cat] is True:
                                 error_var_up += error * error
@@ -3039,7 +3038,7 @@ class AnalyzerJet(Analyzer):
                 suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
                 input_pythia8_z_jetpt.append(input_pythia8[i_pythia8].ProjectionX("input_pythia8" + self.pythia8_prompt_variations[i_pythia8]+suffix, ibin2 + 1, ibin2 + 1, "e"))
-                input_pythia8_z_jetpt[ibin2].Scale(1.0 / input_pythia8_z_jetpt[ibin2].Integral(bin_int_first, -1), "width")
+                input_pythia8_z_jetpt[ibin2].Scale(1.0 / input_pythia8_z_jetpt[ibin2].Integral(1, -1), "width")
                 pythia8_out = input_pythia8_z_jetpt[ibin2]
                 file_sim_out.cd()
                 pythia8_out.Write()
