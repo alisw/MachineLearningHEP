@@ -134,6 +134,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             bin_id = self.bin_matching[ipt]
             if self.do_custom_analysis_cuts:
                 df = pickle.load(openfile(self.mptfiles_recosk[bin_id][index], "rb"))
+                df["imp_par_prod"] = df["imp_par_prod"].astype(float) # allow negative cut values
             else:
                 df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
             if self.doml is True:
@@ -281,6 +282,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 bin_id = self.bin_matching[ipt]
                 if self.do_custom_analysis_cuts:
                     df_mc_reco = pickle.load(openfile(self.mptfiles_recosk[bin_id][index], "rb"))
+                    df_mc_reco["imp_par_prod"] = df_mc_reco["imp_par_prod"].astype(float) # allow negative cut values
                 else:
                     df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
                 if self.s_evtsel is not None:
@@ -391,6 +393,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 bin_id = self.bin_matching[ipt]
                 if self.do_custom_analysis_cuts:
                     df_mc_reco = pickle.load(openfile(self.mptfiles_recosk[bin_id][index], "rb"))
+                    df_mc_reco["imp_par_prod"] = df_mc_reco["imp_par_prod"].astype(float) # allow negative cut values
                 else:
                     df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
                 if self.s_evtsel is not None:
@@ -510,6 +513,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
             if self.do_custom_analysis_cuts:
                 df_mc_reco = pickle.load(openfile(self.mptfiles_recosk[iptskim][index], "rb"))
+                df_mc_reco["imp_par_prod"] = df_mc_reco["imp_par_prod"].astype(float) # allow negative cut values
             else:
                 df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[iptskim][index], "rb"))
             if self.s_evtsel is not None:
