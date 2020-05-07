@@ -345,33 +345,26 @@ class FitAliHF(FitROOT):
             self.histo_reflections = AliVertexingHFUtils.AdaptTemplateRangeAndBinning( \
                     self.histo_reflections, self.histo, self.init_pars["fit_range_low"],
                     self.init_pars["fit_range_up"])
+            self.histo_mc = AliVertexingHFUtils.AdaptTemplateRangeAndBinning( \
+                    self.histo_mc, self.histo, self.init_pars["fit_range_low"],
+                    self.init_pars["fit_range_up"])
+            self.histo_mc.SetName(f"{self.histo_mc.GetName()}_fit_histo")
+            self.histo_reflections.SetName(f"{self.histo_reflections.GetName()}_fit_histo")
 
-            if not self.init_pars["fix_reflections_s_over_b"]:
-                self.kernel.SetTemplateReflections(self.histo_reflections, "1gaus",
-                                                   self.init_pars["fit_range_low"],
-                                                   self.init_pars["fit_range_up"])
-            else:
-                if self.init_pars["rebin"]:
-                    histo_mc_rebin_ = AliVertexingHFUtils.RebinHisto(self.histo_mc,
-                                                                     self.init_pars["rebin"], -1)
-
-                    self.histo_mc = TH1F()
-                    histo_mc_rebin_.Copy(self.histo_mc)
-                    self.histo_mc.SetName(f"{self.histo_mc.GetName()}_fit_histo")
-                else:
-                    self.histo_mc = self.histo_mc.Clone(f"{self.histo_mc.GetName()}_fit_histo")
-
+            if self.init_pars["fix_reflections_s_over_b"]:
                 r_over_s = self.histo_mc.Integral(
-                    self.histo_mc.FindBin(self.init_pars["fit_range_low"]),
-                    self.histo_mc.FindBin(self.init_pars["fit_range_up"]))
+                    self.histo_mc.FindBin(self.init_pars["fit_range_low"] * 1.0001),
+                    self.histo_mc.FindBin(self.init_pars["fit_range_up"] * 0.999))
                 if r_over_s > 0.:
                     r_over_s = self.histo_reflections.Integral(
-                        self.histo_reflections.FindBin(self.init_pars["fit_range_low"]),
-                        self.histo_reflections.FindBin(self.init_pars["fit_range_up"])) / r_over_s
-                    self.kernel.SetTemplateReflections(self.histo_reflections, "1gaus",
-                                                       self.init_pars["fit_range_low"],
-                                                       self.init_pars["fit_range_up"])
+                        self.histo_reflections.FindBin(self.init_pars["fit_range_low"] * 1.0001),
+                        self.histo_reflections.FindBin(self.init_pars["fit_range_up"] * 0.999)) \
+                                / r_over_s
                     self.kernel.SetFixReflOverS(r_over_s)
+            if self.histo_reflections.Integral() > 0:
+                self.kernel.SetTemplateReflections(self.histo_reflections, "2gaus",
+                                                   self.init_pars["fit_range_low"],
+                                                   self.init_pars["fit_range_up"])
 
         if self.init_pars["include_sec_peak"]:
             sec_sigma = self.init_pars["sigma"] * self.init_pars["sec_sigma"] \
@@ -884,18 +877,15 @@ class FitSystAliHF(FitROOT):
             self.histo_reflections = AliVertexingHFUtils.AdaptTemplateRangeAndBinning(
                 self.histo_reflections, self.histo,
                 self.init_pars["fit_range_low"], self.init_pars["fit_range_up"])
+            self.histo_mc = AliVertexingHFUtils.AdaptTemplateRangeAndBinning(
+                self.histo_mc, self.histo,
+                self.init_pars["fit_range_low"], self.init_pars["fit_range_up"])
 
             self.kernel.SetTemplatesForReflections(self.histo_reflections, self.histo_mc)
-            if self.init_pars["fix_reflections_s_over_b"]:
-                r_over_s = self.histo_mc.Integral(
-                    self.histo_mc.FindBin(self.init_pars["fit_range_low"]),
-                    self.histo_mc.FindBin(self.init_pars["fit_range_up"]))
-                if r_over_s > 0.:
-                    r_over_s = self.histo_reflections.Integral(
-                        self.histo_reflections.FindBin(self.init_pars["fit_range_low"]),
-                        self.histo_reflections.FindBin(self.init_pars["fit_range_up"])) \
-                                / r_over_s
-                    self.kernel.SetFixRefoS(r_over_s)
+            if not self.init_pars["fix_reflections_s_over_b"]:
+                # Is fixed by default (factor * refl/sig) if passed factor > 0
+                # factor is 1. by default
+                self.kernel.SetFixRefoS(-1)
 
         if self.init_pars["include_sec_peak"]:
             #p_widthsecpeak to be fixed
@@ -952,6 +942,7 @@ class FitSystAliHF(FitROOT):
         mean_ref = self.init_pars["mean_ref"]
         sigma_ref = self.init_pars["sigma_ref"]
         yield_ref = self.init_pars["yield_ref"]
+        chi2_ref = self.init_pars["chi2_ref"]
 
         bkg_treat = ""
         input_file = TFile.Open(self.results_path, "READ")
@@ -1319,6 +1310,21 @@ class FitSystAliHF(FitROOT):
         ll.SetLineColor(kRed)
         ll.SetLineWidth(2)
 
+        ll_sigma = TLine(0., sigma_ref, tot_trials, sigma_ref)
+        ll_sigma.SetLineColor(kRed)
+        ll_sigma.SetLineWidth(2)
+        root_objects.append(ll_sigma)
+
+        ll_mean = TLine(0., mean_ref, tot_trials, mean_ref)
+        ll_mean.SetLineColor(kRed)
+        ll_mean.SetLineWidth(2)
+        root_objects.append(ll_mean)
+
+        ll_chi2 = TLine(0., chi2_ref, tot_trials, chi2)
+        ll_chi2.SetLineColor(kRed)
+        ll_chi2.SetLineWidth(2)
+        root_objects.append(ll_chi2)
+
         root_pad.Divide(3, 2)
         sigma_pad = root_pad.cd(1)
         sigma_pad.SetLeftMargin(0.13)
@@ -1333,6 +1339,7 @@ class FitSystAliHF(FitROOT):
             histo.GetYaxis().SetRangeUser(sigma_min, sigma_max)
             root_objects.append(histo)
             histo.SetDirectory(0)
+        ll_sigma.Draw("same")
 
         bkg_func_legend = TLegend(0.2, 0.2, 0.5, 0.5)
         bkg_func_legend.SetTextSize(0.04)
@@ -1354,6 +1361,7 @@ class FitSystAliHF(FitROOT):
             histo.SetDirectory(0)
             bkg_func_legend.AddEntry(histo, name)
 
+        ll_mean.Draw("same")
         bkg_func_legend.Draw("same")
         chi2_pad = root_pad.cd(3)
         chi2_pad.SetLeftMargin(0.13)
@@ -1368,6 +1376,7 @@ class FitSystAliHF(FitROOT):
             histo.Draw("same")
             root_objects.append(histo)
             histo.SetDirectory(0)
+        ll_chi2.Draw("same")
 
         yield_pad = root_pad.cd(4)
         yield_pad.Divide(1, 2)
