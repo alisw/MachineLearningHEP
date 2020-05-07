@@ -47,6 +47,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                          p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
                          d_results, typean, runlisttrigger, d_mcreweights)
 
+        self.mass = datap["mass"]
         self.p_mass_fit_lim = datap["analysis"][self.typean]["mass_fit_lim"]
         self.p_bin_width = datap["analysis"][self.typean]["bin_width"]
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
@@ -131,9 +132,15 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
-            df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
+            if self.do_custom_analysis_cuts:
+                df = pickle.load(openfile(self.mptfiles_recosk[bin_id][index], "rb"))
+            else:
+                df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
             if self.doml is True:
                 df = df.query(self.l_selml[bin_id])
+            # custom cuts
+            elif self.do_custom_analysis_cuts:
+                df = self.apply_cuts_ptbin(df, ipt)
             if self.s_evtsel is not None:
                 df = df.query(self.s_evtsel)
             if self.s_jetsel_reco is not None:
@@ -166,9 +173,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_bin["z"] = z_calc(df_bin.pt_jet, df_bin.phi_jet, df_bin.eta_jet,
                                      df_bin.pt_cand, df_bin.phi_cand, df_bin.eta_cand)
 
-                # FIXME pylint: disable=fixme
                 # Reject single-constituent jets, should be "ntracks_jet > 1" if available
-                jetsel_string = "z < 1"
+                jetsel_string = "z < 1" # FIXME pylint: disable=fixme
                 df_bin = df_bin.query(jetsel_string)
 
                 h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
@@ -231,10 +237,10 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                                                 self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
                     df_mc_gen = seldf_singlevar(df_mc_gen, self.v_varshape_binning, \
                                                 self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape])
-                    # FIXME pylint: disable=fixme
+
                     # Reject single-constituent jets, should be "ntracks_jet > 1" if available
                     df_mc_gen["z"] = z_calc(df_mc_gen.pt_jet, df_mc_gen.phi_jet, df_mc_gen.eta_jet,
-                                            df_mc_gen.pt_cand, df_mc_gen.phi_cand, df_mc_gen.eta_cand)
+                                            df_mc_gen.pt_cand, df_mc_gen.phi_cand, df_mc_gen.eta_cand) # FIXME pylint: disable=fixme
                     jetsel_string = "z < 1"
                     df_mc_gen = df_mc_gen.query(jetsel_string)
 
@@ -252,8 +258,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         print("h3_shape_ptjet_ptcand_gen Integral:", h3_shape_ptjet_ptcand_gen.Integral())
         h3_shape_ptjet_ptcand_gen.Write()
 
-        # FIXME Do gen and rec loops separately pylint: disable=fixme
-        for ibin2 in range(self.p_nbin2_reco):
+        for ibin2 in range(self.p_nbin2_reco): # FIXME Do gen and rec loops separately pylint: disable=fixme
             stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
                                         self.lvar2_binmin_reco[ibin2], \
                                         self.lvar2_binmax_reco[ibin2])
@@ -274,7 +279,10 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             bincounter = 0
             for ipt in range(self.p_nptfinbins):
                 bin_id = self.bin_matching[ipt]
-                df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
+                if self.do_custom_analysis_cuts:
+                    df_mc_reco = pickle.load(openfile(self.mptfiles_recosk[bin_id][index], "rb"))
+                else:
+                    df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
                 if self.s_evtsel is not None:
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_jetsel_reco is not None:
@@ -295,9 +303,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
                 df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning, \
                                              self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
-                # FIXME use lvar2_binmin_gen pylint: disable=fixme
                 df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning, \
-                                            self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
+                                            self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2]) # FIXME use lvar2_binmin_gen pylint: disable=fixme
 
                 df_mc_gen["z"] = z_calc(df_mc_gen.pt_jet, df_mc_gen.phi_jet, df_mc_gen.eta_jet,
                                         df_mc_gen.pt_cand, df_mc_gen.phi_cand, df_mc_gen.eta_cand)
@@ -305,9 +312,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_mc_reco["z"] = z_calc(df_mc_reco.pt_jet, df_mc_reco.phi_jet, df_mc_reco.eta_jet,
                                          df_mc_reco.pt_cand, df_mc_reco.phi_cand, df_mc_reco.eta_cand)
 
-                # FIXME pylint: disable=fixme
                 # Reject single-constituent jets, should be "ntracks_jet > 1" if available
-                jetsel_string = "z < 1"
+                jetsel_string = "z < 1" # FIXME pylint: disable=fixme
                 df_mc_gen = df_mc_gen.query(jetsel_string)
                 df_mc_reco = df_mc_reco.query(jetsel_string)
 
@@ -317,6 +323,9 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_reco_sel_pr = None
                 if self.doml is True:
                     df_reco_sel_pr = df_reco_presel_pr.query(self.l_selml[bin_id])
+                # custom cuts
+                elif self.do_custom_analysis_cuts:
+                    df_reco_sel_pr = self.apply_cuts_ptbin(df_reco_presel_pr, ipt)
                 else:
                     df_reco_sel_pr = df_reco_presel_pr.copy()
                 # restrict shape range
@@ -328,14 +337,16 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_reco_sel_fd = None
                 if self.doml is True:
                     df_reco_sel_fd = df_reco_presel_fd.query(self.l_selml[bin_id])
+                # custom cuts
+                elif self.do_custom_analysis_cuts:
+                    df_reco_sel_fd = self.apply_cuts_ptbin(df_reco_presel_fd, ipt)
                 else:
                     df_reco_sel_fd = df_reco_presel_fd.copy()
 
                 val = len(df_gen_sel_pr)
                 err = math.sqrt(val)
                 h_gen_pr.SetBinContent(bincounter + 1, val)
-                # FIXME Why do we set error for gen? pylint: disable=fixme
-                h_gen_pr.SetBinError(bincounter + 1, err)
+                h_gen_pr.SetBinError(bincounter + 1, err) # FIXME Why do we set error for gen? pylint: disable=fixme
                 val = len(df_reco_presel_pr)
                 err = math.sqrt(val)
                 h_presel_pr.SetBinContent(bincounter + 1, val)
@@ -354,8 +365,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 val = len(df_gen_sel_fd)
                 err = math.sqrt(val)
                 h_gen_fd.SetBinContent(bincounter + 1, val)
-                # FIXME Why do we set error for gen? pylint: disable=fixme
-                h_gen_fd.SetBinError(bincounter + 1, err)
+                h_gen_fd.SetBinError(bincounter + 1, err) # FIXME Why do we set error for gen? pylint: disable=fixme
                 val = len(df_reco_presel_fd)
                 err = math.sqrt(val)
                 h_presel_fd.SetBinContent(bincounter + 1, val)
@@ -379,7 +389,10 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         for ibin2 in range(self.p_nbin2_gen):
             for ipt in range(self.p_nptfinbins):
                 bin_id = self.bin_matching[ipt]
-                df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
+                if self.do_custom_analysis_cuts:
+                    df_mc_reco = pickle.load(openfile(self.mptfiles_recosk[bin_id][index], "rb"))
+                else:
+                    df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
                 if self.s_evtsel is not None:
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_jetsel_reco is not None:
@@ -393,6 +406,9 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                     self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
                 if self.doml is True:
                     df_mc_reco = df_mc_reco.query(self.l_selml[bin_id])
+                # custom cuts
+                elif self.do_custom_analysis_cuts:
+                    df_mc_reco = self.apply_cuts_ptbin(df_mc_reco, ipt)
                 # select pt_gen_jet bin
                 df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning_gen, \
                     self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
@@ -400,9 +416,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_mc_reco["z"] = z_calc(df_mc_reco.pt_jet, df_mc_reco.phi_jet, df_mc_reco.eta_jet,
                                          df_mc_reco.pt_cand, df_mc_reco.phi_cand, df_mc_reco.eta_cand)
 
-                # FIXME pylint: disable=fixme
                 # Reject single-constituent jets, should be "ntracks_jet > 1" if available
-                jetsel_string = "z < 1"
+                jetsel_string = "z < 1" # FIXME pylint: disable=fixme
                 df_mc_reco = df_mc_reco.query(jetsel_string)
 
                 # restrict gen shape range
@@ -458,6 +473,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                self.runlistrigger, "for period", self.period)
         if self.doml is True:
             print("Doing ml analysis")
+        elif self.do_custom_analysis_cuts:
+            print("Using custom cuts")
         else:
             print("No extra selection needed since we are doing std analysis")
 
@@ -491,7 +508,10 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
             list_df_mc_gen.append(df_mc_gen)
 
-            df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[iptskim][index], "rb"))
+            if self.do_custom_analysis_cuts:
+                df_mc_reco = pickle.load(openfile(self.mptfiles_recosk[iptskim][index], "rb"))
+            else:
+                df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[iptskim][index], "rb"))
             if self.s_evtsel is not None:
                 df_mc_reco = df_mc_reco.query(self.s_evtsel)
             if self.s_jetsel_reco is not None:
@@ -500,6 +520,14 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_mc_reco = df_mc_reco.query(self.s_trigger)
             if self.doml is True:
                 df_mc_reco = df_mc_reco.query(self.l_selml[iptskim])
+            elif self.do_custom_analysis_cuts: # custom cuts, pt bin
+                list_df_mc_reco_ipt = []
+                for ipt in range(self.p_nptfinbins):
+                    df_mc_reco_ipt = seldf_singlevar(df_mc_reco, self.v_var_binning, \
+                        self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+                    df_mc_reco_ipt = self.apply_cuts_ptbin(df_mc_reco_ipt, ipt)
+                    list_df_mc_reco_ipt.append(df_mc_reco_ipt)
+                df_mc_reco = pd.concat(list_df_mc_reco_ipt)
             list_df_mc_reco.append(df_mc_reco)
 
         # Here we can merge the dataframes corresponding to different HF pt in a
@@ -519,9 +547,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                                          df_mc_reco.eta_gen_jet, df_mc_reco.pt_gen_cand,
                                          df_mc_reco.delta_phi_gen_jet, df_mc_reco.delta_eta_gen_jet)
 
-        # FIXME pylint: disable=fixme
         # Reject single-constituent jets, should be "ntracks_jet > 1" if available
-        jetsel_string = "z < 1"
+        jetsel_string = "z < 1" # FIXME pylint: disable=fixme
         df_gen = df_gen.query(jetsel_string)
         df_mc_reco = df_mc_reco.query(jetsel_string)
 
@@ -548,10 +575,9 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
         # 3D histogram for gen prompt
         titlehist = "hzvsjetptvscandpt_gen_prompt"
-        # FIXME Why do we set error for gen? pylint: disable=fixme
         hzvsjetptvscandpt_gen_prompt = makefill3dhist(df_gen_prompt, titlehist, \
             self.varshapebinarray_gen, self.var2binarray_gen, self.var1binarray, \
-            self.v_varshape_binning, "pt_jet", "pt_cand")
+            self.v_varshape_binning, "pt_jet", "pt_cand") # FIXME Why do we set error for gen? pylint: disable=fixme
         print("hzvsjetptvscandpt_gen_prompt Integral:", hzvsjetptvscandpt_gen_prompt.Integral())
         hzvsjetptvscandpt_gen_prompt.Write()
 
@@ -657,9 +683,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
         hzvsjetpt_reco_closure_pr = \
             build2dhisto("hzvsjetpt_reco_closure", self.varshapebinarray_reco, self.var2binarray_reco)
-        # FIXME use varshapebinarray_gen pylint: disable=fixme
         hzvsjetpt_gen_closure_pr = \
-            build2dhisto("hzvsjetpt_gen_closure", self.varshapebinarray_reco, self.var2binarray_reco)
+            build2dhisto("hzvsjetpt_gen_closure", self.varshapebinarray_reco, self.var2binarray_reco) # FIXME use varshapebinarray_gen pylint: disable=fixme
         hzvsjetpt_reco_pr = \
             build2dhisto("hzvsjetpt_reco", self.varshapebinarray_reco, self.var2binarray_reco)
         hzvsjetpt_gen_pr = \
