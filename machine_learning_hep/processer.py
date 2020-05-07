@@ -443,6 +443,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                self.runlistrigger, "for period", self.period)
         if self.doml is True:
             print("Doing ml analysis")
+        elif self.do_custom_analysis_cuts:
+            print("Using custom cuts")
         else:
             print("No extra selection needed since we are doing std analysis")
 
@@ -462,6 +464,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                self.runlistrigger, "for period", self.period)
         if self.doml is True:
             print("Doing ml analysis")
+        elif self.do_custom_analysis_cuts:
+            print("Using custom cuts")
         else:
             print("No extra selection needed since we are doing std analysis")
 
