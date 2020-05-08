@@ -386,13 +386,9 @@ def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-
                         (timestamp, analysis, cat, format_varname(var, index, n_var))
                     print("Logfile: %s" % logfile)
                     with open(logfile, "w") as ana_out:
-                        prc = subprocess.Popen(shlex.split("python do_entire_analysis.py " \
+                        subprocess.Popen(shlex.split("python do_entire_analysis.py " \
                             "-a %s -r %s -d %s -c" % (analysis, config, yaml_out)), \
                             stdout=ana_out, stderr=ana_out, universal_newlines=True)
-                    # Wait for the running variation to finish to avoid overwriting
-                    # its partial output in /data/tmp/hadd/
-                    if do_processor:
-                        prc.communicate() # wait
 
     # Delete the created database files.
     if clean:
