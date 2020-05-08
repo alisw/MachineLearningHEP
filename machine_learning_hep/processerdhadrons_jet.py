@@ -27,8 +27,9 @@ from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utilities import selectdfrunlist, seldf_singlevar, openfile
 from machine_learning_hep.utilities import create_folder_struc, mergerootfiles, get_timestamp_string
 from machine_learning_hep.utilities import z_calc, z_gen_calc
-from machine_learning_hep.utilities_plot import build2dhisto, fill2dhist, makefill3dhist
+from machine_learning_hep.utilities_plot import buildhisto, build2dhisto, fill2dhist, makefill3dhist
 from machine_learning_hep.processer import Processer
+from machine_learning_hep.selectionutils import selectpid_dzerotokpi
 
 class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many-instance-attributes
     # Class Attribute
@@ -47,6 +48,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                          p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
                          d_results, typean, runlisttrigger, d_mcreweights)
 
+        self.mass = datap["mass"]
         self.p_mass_fit_lim = datap["analysis"][self.typean]["mass_fit_lim"]
         self.p_bin_width = datap["analysis"][self.typean]["bin_width"]
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
@@ -66,6 +68,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
         # second variable (jet pt)
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"] # name
+        self.v_var2_binning_gen = datap["analysis"][self.typean]["var_binning2_gen"] # name
         self.lvar2_binmin_reco = datap["analysis"][self.typean].get("sel_binmin2_reco", None)
         self.lvar2_binmax_reco = datap["analysis"][self.typean].get("sel_binmax2_reco", None)
         self.p_nbin2_reco = len(self.lvar2_binmin_reco) # number of reco bins
@@ -130,9 +133,35 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
-            df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
+            if self.do_custom_analysis_cuts:
+                df = pickle.load(openfile(self.mptfiles_recosk[bin_id][index], "rb"))
+                df["imp_par_prod"] = df["imp_par_prod"].astype(float) # allow negative cut values
+                df["nsigTOF_Pi_0"] = df["nsigTOF_Pi_0"].astype(float) # allow negative cut values
+                df["nsigTOF_K_0"] = df["nsigTOF_K_0"].astype(float) # allow negative cut values
+                df["nsigTOF_Pi_1"] = df["nsigTOF_Pi_1"].astype(float) # allow negative cut values
+                df["nsigTOF_K_1"] = df["nsigTOF_K_1"].astype(float) # allow negative cut values
+            else:
+                df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
             if self.doml is True:
                 df = df.query(self.l_selml[bin_id])
+            # custom cuts
+            elif self.do_custom_analysis_cuts:
+                print("Entries before custom cuts:", len(df))
+                df = self.apply_cuts_ptbin(df, ipt)
+                print("Entries after custom cuts:", len(df))
+                # PID cut
+                isselpid = selectpid_dzerotokpi(df["nsigTPC_Pi_0"].values, df["nsigTPC_K_0"].values, \
+                    df["nsigTOF_Pi_0"].values, df["nsigTOF_K_0"].values, \
+                    df["nsigTPC_Pi_1"].values, df["nsigTPC_K_1"].values, \
+                    df["nsigTOF_Pi_1"].values, df["nsigTOF_K_1"].values, 2) # FIXME pylint: disable=fixme
+                df = df[np.array(isselpid, dtype=bool)]
+                print("Entries after PID cut:", len(df))
+                #string_sel_pid = "((abs(nsigTPC_Pi_0) < 3 and abs(nsigTOF_Pi_0) < 3 and nsigTOF_Pi_0 > -999)"
+                #string_sel_pid += " or (abs(nsigTPC_K_0) < 3 and abs(nsigTOF_K_0) < 3 and nsigTOF_K_0 > -999))"
+                #string_sel_pid += " and ((abs(nsigTPC_Pi_1) < 3 and abs(nsigTOF_Pi_1) < 3 and nsigTOF_Pi_1 > -999)"
+                #string_sel_pid += " or (abs(nsigTPC_K_1) < 3 and abs(nsigTOF_K_1) < 3 and nsigTOF_K_1 > -999))"
+                #df = df.query(string_sel_pid)
+                #print("Entries after manual PID cut:", len(df))
             if self.s_evtsel is not None:
                 df = df.query(self.s_evtsel)
             if self.s_jetsel_reco is not None:
@@ -164,6 +193,10 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 # add the z column
                 df_bin["z"] = z_calc(df_bin.pt_jet, df_bin.phi_jet, df_bin.eta_jet,
                                      df_bin.pt_cand, df_bin.phi_cand, df_bin.eta_cand)
+
+                # Reject single-constituent jets, should be "ntracks_jet > 1" if available
+                jetsel_string = "z < 1" # FIXME pylint: disable=fixme
+                df_bin = df_bin.query(jetsel_string)
 
                 h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
                                  self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
@@ -198,7 +231,55 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
     # pylint: disable=line-too-long
     def process_efficiency_single(self, index):
         out_file = TFile.Open(self.l_histoeff[index], "recreate")
-        for ibin2 in range(self.p_nbin2_reco):
+
+        # matched rec level jets
+        h2_ptcand_ptjet_rec_overflow = build2dhisto("h2_ptcand_ptjet_rec_overflow", self.var1binarray, self.var2binarray_reco)
+        h2_ptcand_ptjet_rec = build2dhisto("h2_ptcand_ptjet_rec", self.var1binarray, self.var2binarray_reco)
+        # matched gen level jets
+        h2_ptcand_ptjet_genmatched_overflow = build2dhisto("h2_ptcand_ptjet_genmatched_overflow", self.var1binarray, self.var2binarray_gen)
+        h2_ptcand_ptjet_genmatched = build2dhisto("h2_ptcand_ptjet_genmatched", self.var1binarray, self.var2binarray_gen)
+
+        # selected gen level jets
+        h3_shape_ptjet_ptcand_gen = buildhisto("h3_shape_ptjet_ptcand_gen", "h3_shape_ptjet_ptcand_gen", \
+            self.varshapebinarray_gen, self.var2binarray_gen, self.var1binarray)
+
+        for ibinshape in range(self.p_nbinshape_gen):
+            for ibin2 in range(self.p_nbin2_gen):
+                for ipt in range(self.p_nptfinbins):
+                    bin_id = self.bin_matching[ipt]
+                    df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[bin_id][index], "rb"))
+                    df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
+                    if self.runlistrigger is not None:
+                        df_mc_gen = selectdfrunlist(df_mc_gen, \
+                                 self.run_param[self.runlistrigger], "run_number")
+                    df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \
+                                                self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+                    df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning, \
+                                                self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+                    df_mc_gen = seldf_singlevar(df_mc_gen, self.v_varshape_binning, \
+                                                self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape])
+
+                    # Reject single-constituent jets, should be "ntracks_jet > 1" if available
+                    df_mc_gen["z"] = z_calc(df_mc_gen.pt_jet, df_mc_gen.phi_jet, df_mc_gen.eta_jet,
+                                            df_mc_gen.pt_cand, df_mc_gen.phi_cand, df_mc_gen.eta_cand) # FIXME pylint: disable=fixme
+                    jetsel_string = "z < 1"
+                    df_mc_gen = df_mc_gen.query(jetsel_string)
+
+                    df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
+
+                    val = len(df_gen_sel_pr)
+                    h3_shape_ptjet_ptcand_gen.SetBinContent(ibinshape + 1, ibin2 + 1, ipt + 1, val)
+                    h3_shape_ptjet_ptcand_gen.SetBinError(ibinshape + 1, ibin2 + 1, ipt + 1, 0)
+                    #for _ in range(val):
+                    #    h3_shape_ptjet_ptcand_gen.Fill(self.lvarshape_binmin_gen[ibinshape],
+                    #                                    self.lvar2_binmin_gen[ibin2],
+                    #                                    self.lpt_finbinmin[ipt])
+
+        out_file.cd()
+        print("h3_shape_ptjet_ptcand_gen Integral:", h3_shape_ptjet_ptcand_gen.Integral())
+        h3_shape_ptjet_ptcand_gen.Write()
+
+        for ibin2 in range(self.p_nbin2_reco): # FIXME Do gen and rec loops separately pylint: disable=fixme
             stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
                                         self.lvar2_binmin_reco[ibin2], \
                                         self.lvar2_binmax_reco[ibin2])
@@ -219,7 +300,11 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             bincounter = 0
             for ipt in range(self.p_nptfinbins):
                 bin_id = self.bin_matching[ipt]
-                df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
+                if self.do_custom_analysis_cuts:
+                    df_mc_reco = pickle.load(openfile(self.mptfiles_recosk[bin_id][index], "rb"))
+                    df_mc_reco["imp_par_prod"] = df_mc_reco["imp_par_prod"].astype(float) # allow negative cut values
+                else:
+                    df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
                 if self.s_evtsel is not None:
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_jetsel_reco is not None:
@@ -241,26 +326,49 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning, \
                                              self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
                 df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning, \
-                                            self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
+                                            self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2]) # FIXME use lvar2_binmin_gen pylint: disable=fixme
+
+                df_mc_gen["z"] = z_calc(df_mc_gen.pt_jet, df_mc_gen.phi_jet, df_mc_gen.eta_jet,
+                                        df_mc_gen.pt_cand, df_mc_gen.phi_cand, df_mc_gen.eta_cand)
+
+                df_mc_reco["z"] = z_calc(df_mc_reco.pt_jet, df_mc_reco.phi_jet, df_mc_reco.eta_jet,
+                                         df_mc_reco.pt_cand, df_mc_reco.phi_cand, df_mc_reco.eta_cand)
+
+                # Reject single-constituent jets, should be "ntracks_jet > 1" if available
+                jetsel_string = "z < 1" # FIXME pylint: disable=fixme
+                df_mc_gen = df_mc_gen.query(jetsel_string)
+                df_mc_reco = df_mc_reco.query(jetsel_string)
+
+                # prompt
                 df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
                 df_reco_presel_pr = df_mc_reco[df_mc_reco.ismcprompt == 1]
                 df_reco_sel_pr = None
                 if self.doml is True:
                     df_reco_sel_pr = df_reco_presel_pr.query(self.l_selml[bin_id])
+                # custom cuts
+                elif self.do_custom_analysis_cuts:
+                    df_reco_sel_pr = self.apply_cuts_ptbin(df_reco_presel_pr, ipt)
                 else:
                     df_reco_sel_pr = df_reco_presel_pr.copy()
+                # restrict shape range
+                df_reco_sel_pr_no_overflow = seldf_singlevar(df_reco_sel_pr, \
+                    self.v_varshape_binning, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
+                # non-prompt
                 df_gen_sel_fd = df_mc_gen[df_mc_gen.ismcfd == 1]
                 df_reco_presel_fd = df_mc_reco[df_mc_reco.ismcfd == 1]
                 df_reco_sel_fd = None
                 if self.doml is True:
                     df_reco_sel_fd = df_reco_presel_fd.query(self.l_selml[bin_id])
+                # custom cuts
+                elif self.do_custom_analysis_cuts:
+                    df_reco_sel_fd = self.apply_cuts_ptbin(df_reco_presel_fd, ipt)
                 else:
                     df_reco_sel_fd = df_reco_presel_fd.copy()
 
                 val = len(df_gen_sel_pr)
                 err = math.sqrt(val)
                 h_gen_pr.SetBinContent(bincounter + 1, val)
-                h_gen_pr.SetBinError(bincounter + 1, err)
+                h_gen_pr.SetBinError(bincounter + 1, err) # FIXME Why do we set error for gen? pylint: disable=fixme
                 val = len(df_reco_presel_pr)
                 err = math.sqrt(val)
                 h_presel_pr.SetBinContent(bincounter + 1, val)
@@ -269,11 +377,17 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 err = math.sqrt(val)
                 h_sel_pr.SetBinContent(bincounter + 1, val)
                 h_sel_pr.SetBinError(bincounter + 1, err)
+                h2_ptcand_ptjet_rec_overflow.SetBinContent(ipt + 1, ibin2 + 1, val)
+                h2_ptcand_ptjet_rec_overflow.SetBinError(ipt + 1, ibin2 + 1, err)
+                val = len(df_reco_sel_pr_no_overflow)
+                err = math.sqrt(val)
+                h2_ptcand_ptjet_rec.SetBinContent(ipt + 1, ibin2 + 1, val)
+                h2_ptcand_ptjet_rec.SetBinError(ipt + 1, ibin2 + 1, err)
 
                 val = len(df_gen_sel_fd)
                 err = math.sqrt(val)
                 h_gen_fd.SetBinContent(bincounter + 1, val)
-                h_gen_fd.SetBinError(bincounter + 1, err)
+                h_gen_fd.SetBinError(bincounter + 1, err) # FIXME Why do we set error for gen? pylint: disable=fixme
                 val = len(df_reco_presel_fd)
                 err = math.sqrt(val)
                 h_presel_fd.SetBinContent(bincounter + 1, val)
@@ -292,6 +406,68 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             h_gen_fd.Write()
             h_presel_fd.Write()
             h_sel_fd.Write()
+
+        # loop over gen bins
+        for ibin2 in range(self.p_nbin2_gen):
+            for ipt in range(self.p_nptfinbins):
+                bin_id = self.bin_matching[ipt]
+                if self.do_custom_analysis_cuts:
+                    df_mc_reco = pickle.load(openfile(self.mptfiles_recosk[bin_id][index], "rb"))
+                    df_mc_reco["imp_par_prod"] = df_mc_reco["imp_par_prod"].astype(float) # allow negative cut values
+                else:
+                    df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
+                if self.s_evtsel is not None:
+                    df_mc_reco = df_mc_reco.query(self.s_evtsel)
+                if self.s_jetsel_reco is not None:
+                    df_mc_reco = df_mc_reco.query(self.s_jetsel_reco) # FIXME should it be gen here? pylint: disable=fixme
+                if self.s_trigger is not None:
+                    df_mc_reco = df_mc_reco.query(self.s_trigger)
+                if self.runlistrigger is not None:
+                    df_mc_reco = selectdfrunlist(df_mc_reco, \
+                    self.run_param[self.runlistrigger], "run_number")
+                df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var_binning, \
+                    self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+                if self.doml is True:
+                    df_mc_reco = df_mc_reco.query(self.l_selml[bin_id])
+                # custom cuts
+                elif self.do_custom_analysis_cuts:
+                    df_mc_reco = self.apply_cuts_ptbin(df_mc_reco, ipt)
+                # select pt_gen_jet bin
+                df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning_gen, \
+                    self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+
+                df_mc_reco["z"] = z_calc(df_mc_reco.pt_jet, df_mc_reco.phi_jet, df_mc_reco.eta_jet,
+                                         df_mc_reco.pt_cand, df_mc_reco.phi_cand, df_mc_reco.eta_cand)
+
+                # Reject single-constituent jets, should be "ntracks_jet > 1" if available
+                jetsel_string = "z < 1" # FIXME pylint: disable=fixme
+                df_mc_reco = df_mc_reco.query(jetsel_string)
+
+                # restrict gen shape range
+                df_reco_no_overflow = seldf_singlevar(df_mc_reco, \
+                    self.v_varshape_binning_gen, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1])
+
+                # prompt
+                df_reco_pr_overflow = df_mc_reco[df_mc_reco.ismcprompt == 1]
+                df_reco_pr = df_reco_no_overflow[df_reco_no_overflow.ismcprompt == 1]
+                # non-prompt
+                #df_reco_fd_overflow = df_mc_reco[df_mc_reco.ismcfd == 1]
+                #df_reco_fd = df_reco_no_overflow[df_reco_no_overflow.ismcfd == 1]
+
+                val = len(df_reco_pr_overflow)
+                err = math.sqrt(val)
+                h2_ptcand_ptjet_genmatched_overflow.SetBinContent(ipt + 1, ibin2 + 1, val)
+                h2_ptcand_ptjet_genmatched_overflow.SetBinError(ipt + 1, ibin2 + 1, err)
+                val = len(df_reco_pr)
+                err = math.sqrt(val)
+                h2_ptcand_ptjet_genmatched.SetBinContent(ipt + 1, ibin2 + 1, val)
+                h2_ptcand_ptjet_genmatched.SetBinError(ipt + 1, ibin2 + 1, err)
+
+        out_file.cd()
+        h2_ptcand_ptjet_rec_overflow.Write()
+        h2_ptcand_ptjet_rec.Write()
+        h2_ptcand_ptjet_genmatched_overflow.Write()
+        h2_ptcand_ptjet_genmatched.Write()
 
     def create_df_closure(self, df_):
         df_tmp_selgen = df_.copy()
@@ -320,6 +496,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                self.runlistrigger, "for period", self.period)
         if self.doml is True:
             print("Doing ml analysis")
+        elif self.do_custom_analysis_cuts:
+            print("Using custom cuts")
         else:
             print("No extra selection needed since we are doing std analysis")
 
@@ -353,7 +531,11 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
             list_df_mc_gen.append(df_mc_gen)
 
-            df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[iptskim][index], "rb"))
+            if self.do_custom_analysis_cuts:
+                df_mc_reco = pickle.load(openfile(self.mptfiles_recosk[iptskim][index], "rb"))
+                df_mc_reco["imp_par_prod"] = df_mc_reco["imp_par_prod"].astype(float) # allow negative cut values
+            else:
+                df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[iptskim][index], "rb"))
             if self.s_evtsel is not None:
                 df_mc_reco = df_mc_reco.query(self.s_evtsel)
             if self.s_jetsel_reco is not None:
@@ -362,6 +544,14 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_mc_reco = df_mc_reco.query(self.s_trigger)
             if self.doml is True:
                 df_mc_reco = df_mc_reco.query(self.l_selml[iptskim])
+            elif self.do_custom_analysis_cuts: # custom cuts, pt bin
+                list_df_mc_reco_ipt = []
+                for ipt in range(self.p_nptfinbins):
+                    df_mc_reco_ipt = seldf_singlevar(df_mc_reco, self.v_var_binning, \
+                        self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+                    df_mc_reco_ipt = self.apply_cuts_ptbin(df_mc_reco_ipt, ipt)
+                    list_df_mc_reco_ipt.append(df_mc_reco_ipt)
+                df_mc_reco = pd.concat(list_df_mc_reco_ipt)
             list_df_mc_reco.append(df_mc_reco)
 
         # Here we can merge the dataframes corresponding to different HF pt in a
@@ -380,6 +570,11 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         df_mc_reco["z_gen"] = z_gen_calc(df_mc_reco.pt_gen_jet, df_mc_reco.phi_gen_jet,
                                          df_mc_reco.eta_gen_jet, df_mc_reco.pt_gen_cand,
                                          df_mc_reco.delta_phi_gen_jet, df_mc_reco.delta_eta_gen_jet)
+
+        # Reject single-constituent jets, should be "ntracks_jet > 1" if available
+        jetsel_string = "z < 1" # FIXME pylint: disable=fixme
+        df_gen = df_gen.query(jetsel_string)
+        df_mc_reco = df_mc_reco.query(jetsel_string)
 
         df_gen_nonprompt = df_gen[df_gen.ismcfd == 1]
         df_gen_prompt = df_gen[df_gen.ismcprompt == 1]
@@ -406,7 +601,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         titlehist = "hzvsjetptvscandpt_gen_prompt"
         hzvsjetptvscandpt_gen_prompt = makefill3dhist(df_gen_prompt, titlehist, \
             self.varshapebinarray_gen, self.var2binarray_gen, self.var1binarray, \
-            self.v_varshape_binning, "pt_jet", "pt_cand")
+            self.v_varshape_binning, "pt_jet", "pt_cand") # FIXME Why do we set error for gen? pylint: disable=fixme
+        print("hzvsjetptvscandpt_gen_prompt Integral:", hzvsjetptvscandpt_gen_prompt.Integral())
         hzvsjetptvscandpt_gen_prompt.Write()
 
         # hz_gen_nocuts is the distribution of generated z values in b in
@@ -512,7 +708,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         hzvsjetpt_reco_closure_pr = \
             build2dhisto("hzvsjetpt_reco_closure", self.varshapebinarray_reco, self.var2binarray_reco)
         hzvsjetpt_gen_closure_pr = \
-            build2dhisto("hzvsjetpt_gen_closure", self.varshapebinarray_reco, self.var2binarray_reco)
+            build2dhisto("hzvsjetpt_gen_closure", self.varshapebinarray_reco, self.var2binarray_reco) # FIXME use varshapebinarray_gen pylint: disable=fixme
         hzvsjetpt_reco_pr = \
             build2dhisto("hzvsjetpt_reco", self.varshapebinarray_reco, self.var2binarray_reco)
         hzvsjetpt_gen_pr = \

@@ -272,7 +272,7 @@ def get_timestamp_string():
     """
     Get timestamp, used for temporary files (like the 'hadd' ones)
     """
-    return datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+    return datetime.now().strftime("%Y-%m-%d_%H-%M-%S_") + f"{os.getpid()}"
 
 def make_latex_table(column_names, row_names, rows, caption=None, save_path="./table.tex"):
     """
@@ -381,10 +381,16 @@ def equal_axes(axis1, axis2):
         return False
     return True
 
-def equal_axis_list(axis1, list2):
+def equal_axis_list(axis1, list2, precision=10):
     """ Compare the binning of axis1 with list2. """
-    if not np.array_equal(get_bins(axis1), np.array(list2)):
+#    if not np.array_equal(get_bins(axis1), np.array(list2)):
+#        return False
+    bins = get_bins(axis1)
+    if len(bins) != len(list2):
         return False
+    for i, j in zip(bins, list2):
+        if round(i, precision) != round(j, precision):
+            return False
     return True
 
 def equal_binning(his1, his2):

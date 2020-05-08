@@ -274,6 +274,7 @@ D0pp:
       latexnamedecay: "K^{#minus} #pi^{#plus}"
 
       var_binning2: pt_jet
+      var_binning2_gen: pt_gen_jet
       latexbin2var: "#it{p}_{T, jet}^{ch}"
       sel_binmin2_reco: [7.0,15.0,30.0] # rec jet pt bins (sel_binmin2_reco bins)
       sel_binmax2_reco:     [15.0,30.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)
@@ -288,9 +289,9 @@ D0pp:
       sel_binmaxshape_gen:      [0.2,0.3,0.4,0.5]
       sel_closure_frac: 0.2
       triggerbit: INT7
-      sel_an_binmin:    [5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:      [6,7,8,10,12,16,24,36,48] # hadron pt bins (sel_an_binmin bins)
-      binning_matching:   [2,3,3, 4, 4, 5, 5, 6, 6] # mapping to skimming pt bins (sel_an_binmin bins)
+      sel_an_binmin:    [5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmax:      [6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
+      binning_matching:   [2,3,3, 4, 4, 5, 5, 6] # mapping to skimming pt bins (sel_an_binmin bins)
       jetsel_gen: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
       jetsel_reco: "abs(eta_jet) < 0.5"
       evtsel: is_ev_rej==0
@@ -355,10 +356,22 @@ D0pp:
       powheg_prompt_variations: ["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
 
       pythia8_prompt_variations_path: /data/PYTHIA8/trees_pythia8_pr_
-      pythia8_prompt_variations: ["default","coloursoft_mode0"]
-      pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
+      pythia8_prompt_variations: ["default", "charm_lo"] #["default","coloursoft_mode0"]
+      pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)", "PYTHIA 8 charm LO"] # ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
 
       variations_db: ./data/data_prod_20200304/database_variations_D0pp_jet_zg.yml
+
+      # Additional cuts applied before mass histogram is filled
+      use_cuts: False
+      cuts: # (sel_an_binmin bins)
+      - Null
+      - Null
+      - Null
+      - Null
+      - Null
+      - Null
+      - Null
+      - Null
 
     jet_rg:
       <<: *jet_default
