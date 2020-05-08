@@ -31,17 +31,12 @@ done
 
 if ((RUN))
 then
-    echo -e "\nRunning processor variations"
-    ${CMD_VAR} -p 1 -a ${ANALYSIS}
-
-    echo -e "\nRunning analyzer variations"
-    ${CMD_VAR} -p 0 -a ${ANALYSIS}
-
-    sleep 10
+    echo -e "\nRunning variations"
+    ${CMD_VAR} -a ${ANALYSIS}
+else
+    echo -e "\nCleaning databases"
+    ${CMD_VAR} -c
 fi
-
-echo -e "\nCleaning databases"
-${CMD_VAR} -c
 
 exit 0
 
