@@ -37,7 +37,7 @@ def function_weight(shape, pt, shapemin, shapemax, ptmin, ptmax):
               -0.8 * (ptmax * (shapemax - shapemin) + ptmin * \
               (-shapemax + shapemin)))/(ptmax * (shapemax - shapemin) \
               + ptmin * (-shapemax + shapemin))
-    return value
+    return (int)(value)
 
 def buildarray(listnumber):
     """
