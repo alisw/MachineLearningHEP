@@ -569,8 +569,9 @@ class FitROOTGauss(FitROOT):
                                   "fit_range_low": None,
                                   "fit_range_up": None,
                                   "n_rms_fix": None,
-                                  "n_rms_start": 3,
-                                  "n_rms_stop": 8,
+                                  "n_rms_start": 2.,
+                                  "n_rms_stepping": 0.10,
+                                  "n_rms_steps": 20,
                                   "likelihood": False}
         # Fitted parameters (to be modified for deriving classes)
         # Only those corresponding to init parameters are here. Specific parameters/values
@@ -604,11 +605,8 @@ class FitROOTGauss(FitROOT):
         # If only a specific number of RMS should be considered for the fit range
         if self.init_pars["n_rms_fix"]:
             self.init_pars["n_rms_start"] = self.init_pars["n_rms_fix"]
-            self.init_pars["n_rms_stop"] = self.init_pars["n_rms_fix"]
+            self.init_pars["n_rms_steps"] = 1
 
-        if self.init_pars["n_rms_start"] > self.init_pars["n_rms_stop"]:
-            self.logger.fatal("Stop fit range of MC fit is < start, start: %i, stop: %i",
-                              self.init_pars["n_rms_start"], self.init_pars["n_rms_stop"])
         return True
 
 
@@ -653,18 +651,26 @@ class FitROOTGauss(FitROOT):
             self.fit_range_up = self.init_pars["fit_range_up"]
             return success
 
-        for r in range(self.init_pars["n_rms_start"], self.init_pars["n_rms_stop"] + 1):
+        for r in [self.init_pars["n_rms_start"] + i * self.init_pars["n_rms_stepping"] \
+                for i in range(self.init_pars["n_rms_steps"])]:
             guess_fit_range_low = guess_mean - r * guess_sigma
             guess_fit_range_up = guess_mean + r * guess_sigma
+            guess_sigma_tmp = guess_sigma if guess_sigma else 1.
             guess_int = self.histo.Integral(self.histo.FindBin(guess_fit_range_low),
                                             self.histo.FindBin(guess_fit_range_up),
-                                            "width")
+                                            "width") / guess_sigma_tmp / 2.5
             self.kernel, success = self.fit_kernel_(guess_mean, guess_sigma, guess_int,
                                                     guess_fit_range_low, guess_fit_range_up)
             # Save used fit range
             self.fit_range_low = guess_fit_range_low
             self.fit_range_up = guess_fit_range_up
             self.n_rms = r
+
+            # Require at least 5 points in fit range
+            # Do this here to have at least a kernel which could be drawn later
+            if self.histo.FindBin(guess_fit_range_up) - \
+                    self.histo.FindBin(guess_fit_range_low) < 5:
+                continue
 
             if success:
                 return success
@@ -785,6 +791,7 @@ class FitSystAliHF(FitROOT):
                                   "sigma_ref": None,
                                   "yield_ref": None,
                                   "chi2_ref": None,
+                                  "signif_ref": None,
                                   "rebin": None,
                                   "fit_range_low": None,
                                   "fit_range_up": None,
@@ -943,6 +950,7 @@ class FitSystAliHF(FitROOT):
         sigma_ref = self.init_pars["sigma_ref"]
         yield_ref = self.init_pars["yield_ref"]
         chi2_ref = self.init_pars["chi2_ref"]
+        signif_ref = self.init_pars["signif_ref"]
 
         bkg_treat = ""
         input_file = TFile.Open(self.results_path, "READ")
@@ -1068,6 +1076,7 @@ class FitSystAliHF(FitROOT):
         h_mean_all_bkgs = {}
         h_sigma_all_bkgs = {}
         h_chi2_all_bkgs = {}
+        h_signif_all_bkgs = {}
 
         for nc in range(tot_cases):
             if not mask[nc]:
@@ -1105,11 +1114,19 @@ class FitSystAliHF(FitROOT):
 
                     h_chi2_all_bkgs[bkg_func[i_bkg]] = \
                             TH1F(f"hChi2All_{bkg_func[i_bkg]}",
-                                 " ; Trial # ; Chi2", tot_trials, 0., tot_trials)
+                                 " ; Trial # ; #Chi^{2}/ndf", tot_trials, 0., tot_trials)
                     h_chi2_all_bkgs[bkg_func[i_bkg]].SetLineColor(bkg_colors[i_bkg])
                     h_chi2_all_bkgs[bkg_func[i_bkg]].SetMarkerColor(bkg_colors[i_bkg])
                     h_chi2_all_bkgs[bkg_func[i_bkg]].SetMarkerStyle(7)
                     h_chi2_all_bkgs[bkg_func[i_bkg]].SetStats(0)
+
+                    h_signif_all_bkgs[bkg_func[i_bkg]] = \
+                            TH1F(f"hSignifAll_{bkg_func[i_bkg]}",
+                                 " ; Trial # ; Significance", tot_trials, 0., tot_trials)
+                    h_signif_all_bkgs[bkg_func[i_bkg]].SetLineColor(bkg_colors[i_bkg])
+                    h_signif_all_bkgs[bkg_func[i_bkg]].SetMarkerColor(bkg_colors[i_bkg])
+                    h_signif_all_bkgs[bkg_func[i_bkg]].SetMarkerStyle(7)
+                    h_signif_all_bkgs[bkg_func[i_bkg]].SetStats(0)
 
 
         # Create histograms for fit and bin count yield to be plotted in the end
@@ -1151,7 +1168,6 @@ class FitSystAliHF(FitROOT):
         sumerr = [0.] * 4
         counts = 0.
         wei = [None] * 4
-        max_filled = -1
 
         ##################
         # Extract yields #
@@ -1163,6 +1179,12 @@ class FitSystAliHF(FitROOT):
         mean_min = 10000.
         chi2_max = -1.
         chi2_min = 10000.
+        signif_max = -1.
+        signif_min = 10000.
+        yields_fit_max = -1.
+        yields_fit_min = 10000.
+        yields_bc_max = -1.
+        yields_bc_min = 10000.
         for nc in range(tot_cases):
             if not mask[nc]:
                 continue
@@ -1214,6 +1236,8 @@ class FitSystAliHF(FitROOT):
                 h_raw_yield_dist_all.Fill(ry)
                 h_raw_yield_all_bkgs[bkg_func_name].SetBinContent(first[nc] + ib, ry)
                 h_raw_yield_all_bkgs[bkg_func_name].SetBinError(first[nc] + ib, ery)
+                yields_fit_max = max(ry + ery, yields_fit_max, yield_ref)
+                yields_fit_min = min(ry - ery, yields_fit_min, yield_ref)
                 # NOTE Not used at the moment
                 #hStatErrDistAll->Fill(ery);
                 #hRelStatErrDistAll->Fill(ery/ry);
@@ -1233,16 +1257,20 @@ class FitSystAliHF(FitROOT):
                 h_sigma_all_bkgs[bkg_func_name].SetBinContent(first[nc] + ib, sig)
                 h_sigma_all_bkgs[bkg_func_name].SetBinError(first[nc] + ib, esig)
                 # Collect maximum and minimum for plotting later
-                sigma_max = max(sig + esig, sigma_max)
-                sigma_min = min(sig - esig, sigma_min)
+                sigma_max = max(sig + esig, sigma_max, sigma_ref)
+                sigma_min = min(sig - esig, sigma_min, sigma_ref)
                 h_mean_all_bkgs[bkg_func_name].SetBinContent(first[nc] + ib, pos)
                 h_mean_all_bkgs[bkg_func_name].SetBinError(first[nc] + ib, epos)
-                mean_max = max(pos + epos, mean_max)
-                mean_min = min(pos - epos, mean_min)
+                mean_max = max(pos + epos, mean_max, mean_ref)
+                mean_min = min(pos - epos, mean_min, mean_ref)
                 h_chi2_all_bkgs[bkg_func_name].SetBinContent(first[nc] + ib, chi2)
                 h_chi2_all_bkgs[bkg_func_name].SetBinError(first[nc] + ib, 0.000001)
-                chi2_max = max(chi2, chi2_max)
-                chi2_min = min(chi2, chi2_min)
+                chi2_max = max(chi2, chi2_max, chi2_ref)
+                chi2_min = min(chi2, chi2_min, chi2_ref)
+                h_signif_all_bkgs[bkg_func_name].SetBinContent(first[nc] + ib, signif)
+                h_signif_all_bkgs[bkg_func_name].SetBinError(first[nc] + ib, 0.000001)
+                signif_max = max(signif, signif_max, signif_ref)
+                signif_min = min(signif, signif_min, signif_ref)
 
                 if mask[nc] == 2:
                     for iy in range(min_bc_range, max_bc_range + 1):
@@ -1254,17 +1282,17 @@ class FitSystAliHF(FitROOT):
                         if bc < 0.001:
                             continue
                         the_bin = iy + (first_bc0[nc] + ib - 1) * n_bc_ranges
-                        h_raw_yield_all_bc0.SetBinContent(the_bin - 2, bc)
-                        h_raw_yield_all_bc0.SetBinError(the_bin - 2, ebc)
+                        h_raw_yield_all_bc0.SetBinContent(the_bin, bc)
+                        h_raw_yield_all_bc0.SetBinError(the_bin, ebc)
                         h_raw_yield_dist_all_bc0.Fill(bc)
-                        if h_raw_yield_all_bc0.GetBinCenter(the_bin - 2) > max_filled:
-                            max_filled = h_raw_yield_all_bc0.GetBinCenter(the_bin-2)
+                        yields_bc_max = max(bc + ebc, yields_bc_max, yield_ref)
+                        yields_bc_min = min(bc - ebc, yields_bc_min, yield_ref)
                         the_bin = iy + (first_bc1[nc] + ib - 1) * n_bc_ranges
-                        h_raw_yield_all_bc1.SetBinContent(the_bin - 2, bc_1)
-                        h_raw_yield_all_bc1.SetBinError(the_bin - 2, ebc_1)
+                        h_raw_yield_all_bc1.SetBinContent(the_bin, bc_1)
+                        h_raw_yield_all_bc1.SetBinError(the_bin, ebc_1)
                         h_raw_yield_dist_all_bc1.Fill(bc_1)
-                        if h_raw_yield_all_bc1.GetBinCenter(the_bin - 2) > max_filled:
-                            max_filled = h_raw_yield_all_bc1.GetBinCenter(the_bin - 2)
+                        yields_bc_max = max(bc_1 + ebc_1, yields_bc_max, yield_ref)
+                        yields_bc_min = min(bc_1 - ebc_1, yields_bc_min, yield_ref)
 
 
         weiav = [0.] * 4
@@ -1302,126 +1330,77 @@ class FitSystAliHF(FitROOT):
         h_raw_yield_dist_all.SetStats(0)
         h_raw_yield_dist_all.SetLineWidth(1)
 
-        l = TLine(yield_ref, 0., yield_ref, h_raw_yield_dist_all.GetMaximum())
-        l.SetLineColor(kRed)
-        l.SetLineWidth(2)
 
-        ll = TLine(0., yield_ref, tot_trials, yield_ref)
-        ll.SetLineColor(kRed)
-        ll.SetLineWidth(2)
+        def make_ref_line(x_low, y_low, x_up, y_up):
+            """Making a reference line
+            """
+            line = TLine(x_low, y_low, x_up, y_up)
+            line.SetLineColor(kRed)
+            line.SetLineWidth(2)
+            root_objects.append(line)
+            return line
 
-        ll_sigma = TLine(0., sigma_ref, tot_trials, sigma_ref)
-        ll_sigma.SetLineColor(kRed)
-        ll_sigma.SetLineWidth(2)
-        root_objects.append(ll_sigma)
+        def fill_pad(pad, ylims, histos, ref_line=None):
+            """Filling a pad
+            """
+            pad.cd()
+            pad.SetLeftMargin(0.13)
+            pad.SetRightMargin(0.06)
+            lim_delta = (ylims[1] - ylims[0])
+            lim_min = ylims[0] - 0.1 * lim_delta
+            lim_max = ylims[1] + 0.1 * lim_delta
+            for h in  histos:
+                h.GetYaxis().SetTitleOffset(1.7)
+                h.Draw("same")
+                h.GetYaxis().SetRangeUser(lim_min, lim_max)
+                root_objects.append(h)
+                h.SetDirectory(0)
+            if ref_line:
+                ref_line.Draw("same")
 
-        ll_mean = TLine(0., mean_ref, tot_trials, mean_ref)
-        ll_mean.SetLineColor(kRed)
-        ll_mean.SetLineWidth(2)
-        root_objects.append(ll_mean)
-
-        ll_chi2 = TLine(0., chi2_ref, tot_trials, chi2)
-        ll_chi2.SetLineColor(kRed)
-        ll_chi2.SetLineWidth(2)
-        root_objects.append(ll_chi2)
 
         root_pad.Divide(3, 2)
-        sigma_pad = root_pad.cd(1)
-        sigma_pad.SetLeftMargin(0.13)
-        sigma_pad.SetRightMargin(0.06)
-        sigma_delta = (sigma_max - sigma_min)
-        sigma_min = sigma_min - 0.1 * sigma_delta
-        sigma_max = sigma_max + 0.1 * sigma_delta
 
-        for histo in  h_sigma_all_bkgs.values():
-            histo.GetYaxis().SetTitleOffset(1.7)
-            histo.Draw("same")
-            histo.GetYaxis().SetRangeUser(sigma_min, sigma_max)
-            root_objects.append(histo)
-            histo.SetDirectory(0)
-        ll_sigma.Draw("same")
-
+        # Sigmas
+        fill_pad(root_pad.cd(1), (sigma_min, sigma_max), h_sigma_all_bkgs.values(),
+                 make_ref_line(0., sigma_ref, tot_trials, sigma_ref))
+        # Means
+        mean_pad = root_pad.cd(2)
+        fill_pad(mean_pad, (mean_min, mean_max), h_mean_all_bkgs.values(),
+                 make_ref_line(0., mean_ref, tot_trials, mean_ref))
+        # Legend
         bkg_func_legend = TLegend(0.2, 0.2, 0.5, 0.5)
         bkg_func_legend.SetTextSize(0.04)
         bkg_func_legend.SetBorderSize(0)
         bkg_func_legend.SetFillStyle(0)
         root_objects.append(bkg_func_legend)
-
-        mean_pad = root_pad.cd(2)
-        mean_pad.SetLeftMargin(0.13)
-        mean_pad.SetRightMargin(0.06)
-        mean_delta = (mean_max - mean_min)
-        mean_min = mean_min - 1.1 * mean_delta
-        mean_max = mean_max + 0.1 * mean_delta
         for name, histo in  h_mean_all_bkgs.items():
-            histo.GetYaxis().SetTitleOffset(1.7)
-            histo.GetYaxis().SetRangeUser(mean_min, mean_max)
-            histo.Draw("same")
-            root_objects.append(histo)
-            histo.SetDirectory(0)
             bkg_func_legend.AddEntry(histo, name)
-
-        ll_mean.Draw("same")
         bkg_func_legend.Draw("same")
-        chi2_pad = root_pad.cd(3)
-        chi2_pad.SetLeftMargin(0.13)
-        chi2_pad.SetRightMargin(0.06)
-        chi2_delta = (chi2_max - chi2_min)
-        chi2_min = chi2_min - 0.1 * chi2_delta
-        chi2_max = chi2_max + 0.1 * chi2_delta
 
-        for histo in h_chi2_all_bkgs.values():
-            histo.GetYaxis().SetTitleOffset(1.7)
-            histo.GetYaxis().SetRangeUser(chi2_min, chi2_max)
-            histo.Draw("same")
-            root_objects.append(histo)
-            histo.SetDirectory(0)
-        ll_chi2.Draw("same")
+        # Signif and red. Chi2
+        chi2_signif_pad = root_pad.cd(3)
+        chi2_signif_pad.Divide(1, 2)
 
+        # Chi2
+        fill_pad(chi2_signif_pad.cd(1), (chi2_min, chi2_max), h_chi2_all_bkgs.values(),
+                 make_ref_line(0., chi2_ref, tot_trials, chi2_ref))
+
+        # Significance
+        fill_pad(chi2_signif_pad.cd(2), (signif_min, signif_max), h_signif_all_bkgs.values(),
+                 make_ref_line(0., signif_ref, tot_trials, signif_ref))
+
+        # Fit yields and bin counts
         yield_pad = root_pad.cd(4)
         yield_pad.Divide(1, 2)
-        yield_pad_sub = yield_pad.cd(1)
 
-        yield_pad_sub.SetLeftMargin(0.13)
-        yield_pad_sub.SetRightMargin(0.06)
-        new_max = 0.
-
-        for histo in h_raw_yield_all_bkgs.values():
-            tmp_max = 1.25 * (histo.GetMaximum() + histo.GetBinError(1))
-            new_max = max(new_max, tmp_max)
-            histo.GetYaxis().SetTitleOffset(1.7)
-
-
-        for histo in h_raw_yield_all_bkgs.values():
-            if max_filled > 0:
-                histo.GetXaxis().SetRangeUser(0., max_filled)
-            histo.SetMaximum(new_max)
-            histo.Draw("same")
-            root_objects.append(histo)
-            histo.SetDirectory(0)
-
-        ll.Draw("same")
-        yield_pad_sub = yield_pad.cd(2)
-        yield_pad_sub.SetLeftMargin(0.13)
-        yield_pad_sub.SetRightMargin(0.06)
-        root_objects.append(ll)
-
-        h_raw_yield_all_bc0.GetYaxis().SetTitleOffset(1.7)
-        h_raw_yield_all_bc0.Draw("same")
-        root_objects.append(h_raw_yield_all_bc0)
-        h_raw_yield_all_bc0.SetDirectory(0)
-
-        h_raw_yield_all_bc1.GetYaxis().SetTitleOffset(1.7)
-        h_raw_yield_all_bc1.Draw("same")
-        root_objects.append(h_raw_yield_all_bc1)
-        h_raw_yield_all_bc1.SetDirectory(0)
-
-        ll_bc = TLine(0., yield_ref, tot_trials * n_bc_ranges, yield_ref)
-        ll_bc.SetLineColor(kRed)
-        ll_bc.SetLineWidth(2)
-        ll_bc.Draw("same")
-        root_objects.append(ll_bc)
-
+        # Fit yields
+        fill_pad(yield_pad.cd(1), (yields_fit_min, yields_fit_max), h_raw_yield_all_bkgs.values(),
+                 make_ref_line(0., yield_ref, tot_trials, yield_ref))
+        # BC yields
+        fill_pad(yield_pad.cd(2), (yields_bc_min, yields_bc_max),
+                 (h_raw_yield_all_bc0, h_raw_yield_all_bc1),
+                 make_ref_line(0., yield_ref, tot_trials * n_bc_ranges, yield_ref))
 
         yield_pad = root_pad.cd(5)
         yield_pad.SetLeftMargin(0.14)
@@ -1439,8 +1418,7 @@ class FitSystAliHF(FitROOT):
         h_raw_yield_dist_all_bc1.Draw("sameshist")
         root_objects.append(h_raw_yield_dist_all_bc1)
         h_raw_yield_dist_all_bc1.SetDirectory(0)
-        l.Draw("same")
-        root_objects.append(l)
+        make_ref_line(yield_ref, 0., yield_ref, h_raw_yield_dist_all.GetMaximum()).Draw("same")
         yield_pad.Update()
 
         # This might be taken care of later
@@ -1459,123 +1437,80 @@ class FitSystAliHF(FitROOT):
         #######################
         # Numbers and summary #
         #######################
+
+        def make_latex(pos_x, pos_y, text, color=None, ndc=True):
+            """Helper to make TLatex
+            """
+            tlatex = TLatex(pos_x, pos_y, text)
+            tlatex.SetTextSize(0.04)
+            if ndc:
+                tlatex.SetNDC()
+            if color is not None:
+                tlatex.SetTextColor(color)
+            root_objects.append(tlatex)
+            return tlatex
+
+
         sum_pad = root_pad.cd(6)
         sum_pad.SetLeftMargin(0.14)
         sum_pad.SetRightMargin(0.06)
         aver = h_raw_yield_dist_all.GetMean()
+        yield_fit_color = h_raw_yield_dist_all.GetLineColor()
+        yield_bc0_color = h_raw_yield_dist_all_bc0.GetLineColor()
+        yield_bc1_color = h_raw_yield_dist_all_bc1.GetLineColor()
         rel_succ_trials = successful_trials / tot_trials if tot_trials > 0 else 0.
-        trel_succ_trials = TLatex(0.15, 0.93, f"succ. trials= " \
-                f"{successful_trials} / {tot_trials} " \
-                f"({rel_succ_trials * 100.:.2f}%)")
-        trel_succ_trials.SetTextSize(0.04)
-        trel_succ_trials.SetNDC()
-        trel_succ_trials.Draw("same")
-        root_objects.append(trel_succ_trials)
+        make_latex(0.15, 0.93, f"succ. trials = {successful_trials} / {tot_trials} " \
+                f"({rel_succ_trials * 100.:.2f}%)").Draw("same")
 
-        tmean = TLatex(0.15, 0.87, f"mean={aver:.3f}")
-        tmean.SetTextSize(0.04)
-        tmean.SetNDC()
-        tmean.Draw("same")
-        root_objects.append(tmean)
+        make_latex(0.15, 0.87, f"mean = {aver:.3f}", color=yield_fit_color).Draw("same")
 
-        tmedian = TLatex(0.15, 0.81, f"median={lim70[1]:.3f}")
-        tmedian.SetTextSize(0.04)
-        tmedian.SetNDC()
-        tmedian.Draw("same")
-        root_objects.append(tmedian)
+        make_latex(0.15, 0.81, f"median = {lim70[1]:.3f}", color=yield_fit_color).Draw("same")
 
         aver_bc0 = h_raw_yield_dist_all_bc0.GetMean()
-        tmean_bc0 = TLatex(0.15, 0.75, f"mean(BinCount0)={aver_bc0:.3f}")
-        tmean_bc0.SetTextSize(0.04)
-        tmean_bc0.SetNDC()
-        tmean_bc0.SetTextColor(h_raw_yield_dist_all_bc0.GetLineColor())
-        tmean_bc0.Draw("same")
-        root_objects.append(tmean_bc0)
+        make_latex(0.15, 0.75, f"mean(BinCount0) = {aver_bc0:.3f}",
+                   color=yield_bc0_color).Draw("same")
 
         aver_bc1 = h_raw_yield_dist_all_bc1.GetMean()
-        tmean_bc1 = TLatex(0.15, 0.69, f"mean(BinCount1)={aver_bc1:.3f}")
-        tmean_bc1.SetTextSize(0.04)
-        tmean_bc1.SetNDC()
-        tmean_bc1.SetTextColor(h_raw_yield_dist_all_bc1.GetLineColor())
-        tmean_bc1.Draw("same")
-        root_objects.append(tmean_bc1)
+        make_latex(0.15, 0.69, f"mean(BinCount1) = {aver_bc1:.3f}",
+                   color=yield_bc1_color).Draw("same")
 
         val = h_raw_yield_dist_all.GetRMS()
         val_rel = val / aver if aver != 0 else 0
-        thrms = TLatex(0.15, 0.60, f"rms={val:.3f} ({val_rel:.2f}%)")
-        thrms.SetTextSize(0.04)
-        thrms.SetNDC()
-        thrms.Draw("same")
-        root_objects.append(thrms)
+        make_latex(0.15, 0.60, f"rms = {val:.3f} ({val_rel:.2f}%)",
+                   color=yield_fit_color).Draw("same")
 
         val = h_raw_yield_dist_all_bc0.GetRMS()
         val_rel = val / aver_bc0 * 100. if aver_bc0 != 0 else 0
-        thrms_bc0 = TLatex(0.15, 0.54, f"rms(BinCount0)={val:.3f} ({val_rel:.2f}%)")
-        thrms_bc0.SetTextSize(0.04)
-        thrms_bc0.SetNDC()
-        thrms_bc0.SetTextColor(h_raw_yield_dist_all_bc0.GetLineColor())
-        thrms_bc0.Draw("same")
-        root_objects.append(thrms_bc0)
+        make_latex(0.15, 0.54, f"rms(BinCount0) = {val:.3f} ({val_rel:.2f}%)",
+                   color=yield_bc0_color).Draw("same")
 
         val = h_raw_yield_dist_all_bc1.GetRMS()
         val_rel = val / aver_bc1 * 100. if aver_bc1 != 0 else 0
-        thrms_bc1 = TLatex(0.15, 0.48, f"rms(BinCount1)={val:.3f} ({val_rel:.2f}%)")
-        thrms_bc1.SetTextSize(0.04)
-        thrms_bc1.SetNDC()
-        thrms_bc1.SetTextColor(h_raw_yield_dist_all_bc1.GetLineColor())
-        thrms_bc1.Draw("same")
-        root_objects.append(thrms_bc1)
+        make_latex(0.15, 0.48, f"rms(BinCount1) = {val:.3f} ({val_rel:.2f}%)",
+                   color=yield_bc1_color).Draw("same")
 
-        tmin = TLatex(0.15, 0.39, f"min={min_yield:.2f}      max={max_yield:.2f}")
-        tmin.SetTextSize(0.04)
-        tmin.SetNDC()
-        tmin.Draw("same")
-        root_objects.append(tmin)
+        make_latex(0.15, 0.39, f"min = {min_yield:.2f} ; max = {max_yield:.2f}",
+                   color=yield_fit_color).Draw("same")
 
         val = (max_yield - min_yield) / sqrt(12)
         val_rel = val / aver * 100. if aver != 0 else 0
-        trms = TLatex(0.15, 0.33, f"(max-min)/sqrt(12)={val:.3f} ({val_rel:.2f}%)")
-        trms.SetTextSize(0.04)
-        trms.SetNDC()
-        trms.Draw("same")
-        root_objects.append(trms)
+        make_latex(0.15, 0.33,
+                   f"(max - min) / #sqrt{{12}} = {val:.3f} ({val_rel:.2f}%)",
+                   color=yield_fit_color).Draw("same")
 
-        mean_ref_label = TLatex(0.15, 0.27, f"mean(ref)={yield_ref:.2f}")
-        mean_ref_label.SetTextSize(0.04)
-        mean_ref_label.SetNDC()
-        mean_ref_label.SetTextColor(kRed)
-        mean_ref_label.Draw("same")
-        root_objects.append(mean_ref_label)
+        make_latex(0.15, 0.27, f"ref = {yield_ref:.2f}", color=kRed).Draw("same")
 
         val_rel = 100 * (yield_ref - aver) / yield_ref if yield_ref != 0 else 0
-        mean_ref_diff = TLatex(0.15, 0.21,
-                               f"mean(ref)-mean(fit)={yield_ref - aver:.3f}  " \
-                               f"({val_rel:.2f}%)")
-        mean_ref_diff.SetTextSize(0.04)
-        mean_ref_diff.SetNDC()
-        mean_ref_diff.SetTextColor(kBlack)
-        mean_ref_diff.Draw("same")
-        root_objects.append(mean_ref_diff)
+        make_latex(0.15, 0.21, f"ref - mean(fit) = {yield_ref - aver:.3f}  " \
+                               f"({val_rel:.2f}%)", color=yield_fit_color).Draw("same")
 
         val_rel = 100 * (yield_ref - aver_bc0) / yield_ref if yield_ref != 0 else 0
-        mean_ref_diff_bc0 = TLatex(0.15, 0.15,
-                                   f"mean(ref)-mean(BC0)={yield_ref - aver_bc0:.3f}  " \
-                                   f"({val_rel:.2f}%)")
-        mean_ref_diff_bc0.SetTextSize(0.04)
-        mean_ref_diff_bc0.SetNDC()
-        mean_ref_diff_bc0.SetTextColor(h_raw_yield_dist_all_bc0.GetLineColor())
-        mean_ref_diff_bc0.Draw("same")
-        root_objects.append(mean_ref_diff_bc0)
+        make_latex(0.15, 0.15, f"ref - mean(BC0) = {yield_ref - aver_bc0:.3f}  " \
+                               f"({val_rel:.2f}%)", color=yield_bc0_color).Draw("same")
 
         val_rel = 100 * (yield_ref - aver_bc1) / yield_ref if yield_ref != 0 else 0
-        mean_ref_diff_bc1 = TLatex(0.15, 0.09,
-                                   f"mean(ref)-mean(BC1)={yield_ref - aver_bc1:.3f}  " \
-                                   f"({val_rel:.2f})%")
-        mean_ref_diff_bc1.SetTextSize(0.04)
-        mean_ref_diff_bc1.SetNDC()
-        mean_ref_diff_bc1.SetTextColor(h_raw_yield_dist_all_bc1.GetLineColor())
-        mean_ref_diff_bc1.Draw("same")
-        root_objects.append(mean_ref_diff_bc1)
+        make_latex(0.15, 0.09, f"ref - mean(BC1) = {yield_ref - aver_bc1:.3f}  " \
+                               f"({val_rel:.2f}%)", color=yield_bc1_color).Draw("same")
 
         if draw_args:
             self.logger.warning("There are unknown draw arguments")

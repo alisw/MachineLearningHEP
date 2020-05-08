@@ -633,7 +633,7 @@ LcpK0spp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
-      corrEffMult: [false, true, true, true]
+      corrEffMult: [false, true, true]
       sel_binmin2:  [0,30,0.1] #list of var2 splittng nbins
       sel_binmax2: [100,100,30] #list of var2 splitting nbins
       var_binning2: perc_v0m
@@ -645,7 +645,7 @@ LcpK0spp:
 
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
-      binning_matching: [0,1,2,2,3,4] #list of pt nbins
+      binning_matching: [0,1,2,3,4,5] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
       triggersel:
@@ -664,7 +664,7 @@ LcpK0spp:
                   /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m] #list of periods
         resultsallp: /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_mc_prodLcpK0s/resultsMBvspt_perc_v0m
 
-      mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [2.11, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
@@ -674,11 +674,11 @@ LcpK0spp:
       masspeak: 2.2864
       massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
       massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
-      rebin: [[6,6,6,6,6,6], [6,6,6,6,6,8], [6,6,6,6,6,6], [6,6,6,6,6,6]]
+      rebin: [[6,6,8,9,10,6], [6,6,8,9,10,6], [6,6,8,9,10,6]]
 
-      includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
       masssecpeak: 2.2864
-      fix_masssecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      fix_masssecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
       widthsecpeak: 0.01
       fix_widthsecpeak: true
 
@@ -689,7 +689,7 @@ LcpK0spp:
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
-      SetInitialGaussianSigma: [true, false, false, false, false, false]
+      SetInitialGaussianSigma: [false, false, false, false, false, false]
       # Max percentage deviation in sigma (from init) to be considered as a good fit
       MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
@@ -708,13 +708,15 @@ LcpK0spp:
       systematics:
         # For now don't do these things per pT bin
         max_chisquare_ndf: 2.
-        rebin: [-1,0,1]
-        massmin: [2.14, 2.13, 2.12, 2.15, 2.17]
-        massmax: [2.436, 2.435, 2.434, 2.437, 2.438]
+        rebin: [0]
+        massmin: [2.14, 2.13, 2.12, 2.15, 2.16]
+        massmax: [2.436, 2.416, 2.426, 2.446, 2.456]
         bincount_sigma: [3, 5]
-        bkg_funcs: [Pol2, Pol3]
+        bkg_funcs: [kExpo, kLin, Pol2, Pol3]
         # Whether to include the free sigma option in the derivation of raw yield uncertainty in given pT bin
         consider_free_sigma: [False, False, False, False, False, False]
+        rel_var_sigma_down: 0.05
+        rel_var_sigma_up: 0.05
 
 
   systematics:
