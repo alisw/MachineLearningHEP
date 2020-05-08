@@ -902,25 +902,19 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 self.create_df_closure(df_mc_reco_merged_prompt_train)
 
         shapegen = df_tmp_selgen_pr_test[self.v_varshape_binning_gen].values
-        ptgen = df_tmp_selgen_pr_test[self.v_var2_binning_gen].values
+        ptgen = df_tmp_selgen_pr_test["pt_gen_jet"].values
         shape = df_tmp_selrecogen_pr_test[self.v_varshape_binning_gen].values
-        pt = df_tmp_selrecogen_pr_test[self.v_var2_binning_gen].values
-
-        weightgen = [function_weight(shapegen[i], ptgen[i],
-                                  self.lvarshape_binmin_gen, self.lvarshape_binmax_gen,
-                                  self.lvar2_binmin_gen, self.lvar2_binmax_gen) for i in range(len(shape))]
-        weight = [function_weight(shape[i], pt[i],
-                                  self.lvarshape_binmin_gen,
-                                  self.lvarshape_binmax_gen,
-                                  self.lvar2_binmin_gen, self.lvar2_binmax_gen) for i in range(len(shape))]
+        pt = df_tmp_selrecogen_pr_test["pt_gen_jet"].values
+        weightgen = [function_weight(shapegen[i], ptgen[i], self.lvarshape_binmin_gen[0], \
+            self.lvarshape_binmax_gen[-1], self.lvar2_binmin_gen[0], self.lvar2_binmax_gen[-1]) for i in range(len(shapegen))]
+        weight = [function_weight(shape[i], pt[i], self.lvarshape_binmin_gen[0], \
+            self.lvarshape_binmax_gen[-1], self.lvar2_binmin_gen[0], self.lvar2_binmax_gen[-1]) for i in range(len(shape))]
 
         for index in range(len(weight)):
             hzvsjetpt_reco_closure_pr.Fill(shape[index], pt[index], weight[index])
+
         for index in range(len(weightgen)):
             hzvsjetpt_gen_closure_pr.Fill(shapegen[index], ptgen[index], weightgen[index])
-
-        hzvsjetpt_reco_closure_pr.Write("input_closure_reco")
-        hzvsjetpt_gen_closure_pr.Write("input_closure_gen")
 
 
         for ibin2 in range(self.p_nbin2_gen):
@@ -988,5 +982,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 getattr(row, self.v_varshape_binning_gen), row.pt_gen_jet, response_matrix_weight)
         response_matrix_pr.Write("response_matrix")
         response_matrix_closure_pr.Write("response_matrix_closure")
+        hzvsjetpt_reco_closure_pr.Write("input_closure_reco")
+        hzvsjetpt_gen_closure_pr.Write("input_closure_gen")
 
         out_file.Close()
