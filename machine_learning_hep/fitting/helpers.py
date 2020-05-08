@@ -19,7 +19,7 @@ from glob import glob
 from array import array
 
 #pylint: disable=no-name-in-module, too-many-lines
-from ROOT import TFile, TH1F, TCanvas, gStyle  #pylint: disable=import-error
+from ROOT import TFile, TH1F, TCanvas, gStyle, Double  #pylint: disable=import-error
 #pylint: enable=no-name-in-module
 
 from machine_learning_hep.logger import get_logger
@@ -212,6 +212,7 @@ class MLFitParsFactory:
                     "sigma_ref": None,
                     "yield_ref": None,
                     "chi2_ref": None,
+                    "signif_ref": None,
                     "fit_range_low_syst": self.syst_pars.get("massmin", None),
                     "fit_range_up_syst": self.syst_pars.get("massmax", None),
                     "bin_count_sigma_syst": self.syst_pars.get("bincount_sigma", None),
@@ -462,7 +463,7 @@ class MLFitter:
 
         self.logger.info("Perform pre-fits on MC")
         for fit in self.pre_fits_mc.values():
-            fit.override_init_pars(fix_mean=False, fix_sigma=False)
+            fit.override_init_pars(fix_mean=False, fix_sigma=False, likelihood=False)
             fit.fit()
         self.logger.info("Perform pre-fits on data")
         for fit in self.pre_fits_data.values():
@@ -615,11 +616,15 @@ class MLFitter:
                 pre_fit = central_fit
 
             # Get reference parameters
+            signif = Double()
+            signif_err = Double()
+            central_fit.kernel.Significance(self.pars_factory.n_sigma_signal, signif, signif_err)
             central_fit_pars = central_fit.get_fit_pars()
             overwrite_init = {"yield_ref": central_fit.kernel.GetRawYield(),
                               "mean_ref": central_fit_pars["mean"],
                               "sigma_ref": central_fit_pars["sigma"],
-                              "chi2_ref": central_fit.kernel.GetReducedChiSquare()}
+                              "chi2_ref": central_fit.kernel.GetReducedChiSquare(),
+                              "signif_ref": signif}
             # Get mean and sigma for fit init
             pre_fit_pars = pre_fit.get_fit_pars()
             overwrite_init["mean"] = pre_fit_pars["mean"]
