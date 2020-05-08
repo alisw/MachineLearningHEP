@@ -30,6 +30,7 @@ from machine_learning_hep.utilities import z_calc, z_gen_calc
 from machine_learning_hep.utilities_plot import buildhisto, build2dhisto, fill2dhist, makefill3dhist
 from machine_learning_hep.processer import Processer
 from machine_learning_hep.selectionutils import selectpid_dzerotokpi
+from machine_learning_hep.utilities_plot import function_weight
 
 class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many-instance-attributes
     # Class Attribute
@@ -900,8 +901,19 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         _, _, df_tmp_selrecogen_pr_train = \
                 self.create_df_closure(df_mc_reco_merged_prompt_train)
 
-        fill2dhist(df_tmp_selreco_pr_test, hzvsjetpt_reco_closure_pr, self.v_varshape_binning, "pt_jet")
-        fill2dhist(df_tmp_selgen_pr_test, hzvsjetpt_gen_closure_pr, self.v_varshape_binning_gen, "pt_gen_jet")
+        shapegen = df[self.v_varshape_binning_gen].values
+        ptgen = df[self.var_binning2_gen].values
+        shape = df[self.v_varshape_binning].values
+        pt = df[self.var_binning2].values
+
+        weight = [function_weight(shapegen[i], ptgen[i],
+                                  self.lvarshape_binmin_gen, self.lvarshape_binmax_gen,
+                                  self.lvar2_binmin_gen, self.lvar2_binmax_gen) for i in range(len(shape))]
+
+        for index in range(len(weight)):
+            hzvsjetpt_reco_closure_pr.Fill(shape[index], pt[index], weight[index])
+            hzvsjetpt_gen_closure_pr.Fill(shapegen[index], ptgen[index], weight[index])
+
         hzvsjetpt_reco_closure_pr.Write("input_closure_reco")
         hzvsjetpt_gen_closure_pr.Write("input_closure_gen")
 

@@ -30,6 +30,15 @@ from ROOT import gStyle, gROOT
 from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
 from machine_learning_hep.logger import get_logger
 
+def function_weight(shape, pt, shapemin, shapemax, ptmin, ptmax):
+
+    value =  -1 *((-0.2 * ptmax + 0.2 * ptmin) * (-shape + shapemax) + \
+              (- pt + ptmin) * (0.2 * shapemax - 0.2 * shapemin) + \
+              -0.8 * (ptmax * (shapemax - shapemin) + ptmin * \
+              (-shapemax + shapemin)))/(ptmax * (shapemax - shapemin) \
+              + ptmin * (-shapemax + shapemin))
+    return value
+
 def buildarray(listnumber):
     """
     Build an array out of a list, useful for histogram binning
