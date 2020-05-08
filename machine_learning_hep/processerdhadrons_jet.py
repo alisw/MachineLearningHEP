@@ -29,6 +29,7 @@ from machine_learning_hep.utilities import create_folder_struc, mergerootfiles, 
 from machine_learning_hep.utilities import z_calc, z_gen_calc
 from machine_learning_hep.utilities_plot import buildhisto, build2dhisto, fill2dhist, makefill3dhist
 from machine_learning_hep.processer import Processer
+from machine_learning_hep.selectionutils import selectpid_dzerotokpi
 
 class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many-instance-attributes
     # Class Attribute
@@ -135,13 +136,32 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             if self.do_custom_analysis_cuts:
                 df = pickle.load(openfile(self.mptfiles_recosk[bin_id][index], "rb"))
                 df["imp_par_prod"] = df["imp_par_prod"].astype(float) # allow negative cut values
+                df["nsigTOF_Pi_0"] = df["nsigTOF_Pi_0"].astype(float) # allow negative cut values
+                df["nsigTOF_K_0"] = df["nsigTOF_K_0"].astype(float) # allow negative cut values
+                df["nsigTOF_Pi_1"] = df["nsigTOF_Pi_1"].astype(float) # allow negative cut values
+                df["nsigTOF_K_1"] = df["nsigTOF_K_1"].astype(float) # allow negative cut values
             else:
                 df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
             if self.doml is True:
                 df = df.query(self.l_selml[bin_id])
             # custom cuts
             elif self.do_custom_analysis_cuts:
+                print("Entries before custom cuts:", len(df))
                 df = self.apply_cuts_ptbin(df, ipt)
+                print("Entries after custom cuts:", len(df))
+                # PID cut
+                isselpid = selectpid_dzerotokpi(df["nsigTPC_Pi_0"].values, df["nsigTPC_K_0"].values, \
+                    df["nsigTOF_Pi_0"].values, df["nsigTOF_K_0"].values, \
+                    df["nsigTPC_Pi_1"].values, df["nsigTPC_K_1"].values, \
+                    df["nsigTOF_Pi_1"].values, df["nsigTOF_K_1"].values, 2) # FIXME pylint: disable=fixme
+                df = df[np.array(isselpid, dtype=bool)]
+                print("Entries after PID cut:", len(df))
+                #string_sel_pid = "((abs(nsigTPC_Pi_0) < 3 and abs(nsigTOF_Pi_0) < 3 and nsigTOF_Pi_0 > -999)"
+                #string_sel_pid += " or (abs(nsigTPC_K_0) < 3 and abs(nsigTOF_K_0) < 3 and nsigTOF_K_0 > -999))"
+                #string_sel_pid += " and ((abs(nsigTPC_Pi_1) < 3 and abs(nsigTOF_Pi_1) < 3 and nsigTOF_Pi_1 > -999)"
+                #string_sel_pid += " or (abs(nsigTPC_K_1) < 3 and abs(nsigTOF_K_1) < 3 and nsigTOF_K_1 > -999))"
+                #df = df.query(string_sel_pid)
+                #print("Entries after manual PID cut:", len(df))
             if self.s_evtsel is not None:
                 df = df.query(self.s_evtsel)
             if self.s_jetsel_reco is not None:
