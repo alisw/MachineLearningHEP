@@ -17,28 +17,27 @@ inclusivejets:
   sel_gen_unp: "abs(z_vtx_gen)<10"
   sel_cen_unp: null
   sel_good_evt_unp: "is_ev_rej == 0"
-  sel_reco_skim: null
-  sel_gen_skim: null
 
   variables:
     var_all: [pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet,
               pt_gen_jet, eta_gen_jet, phi_gen_jet, delta_eta_gen_jet, delta_phi_gen_jet,
-              delta_r_gen_jet, pt_gen_cand, zg_jet, zg_gen_jet, rg_jet, rg_gen_jet, nsd_jet,
-              nsd_gen_jet, Pt_mother_jet, Pt_mother_gen_jet, 
-              k0_jet, k0_gen_jet, k1_jet, k1_gen_jet, k2_jet, k2_gen_jet, kT_jet, kT_gen_jet]
+              delta_r_gen_jet, zg_jet, zg_gen_jet, rg_jet, rg_gen_jet, nsd_jet,
+              nsd_gen_jet, k0_jet, k0_gen_jet, k1_jet, k1_gen_jet, k2_jet, 
+              k2_gen_jet, kT_jet, kT_gen_jet, run_number, ev_id,  ev_id_ext]
     var_evt:
       data: [centrality, z_vtx_reco, n_vtx_contributors, n_tracks, is_ev_rej, run_number,
               ev_id,  ev_id_ext, trigger_hasbit_INT7]
       mc: [z_vtx_gen, centrality, z_vtx_reco, n_vtx_contributors, n_tracks, is_ev_rej, run_number,
               ev_id,  ev_id_ext, trigger_hasbit_INT7]
     var_gen: [pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet,
-              zg_jet, rg_jet, nsd_jet, Pt_mother_jet, k0_jet, k1_jet, k2_jet, kT_jet,
+              zg_jet, rg_jet, nsd_jet, k0_jet, k1_jet, k2_jet, kT_jet,
               run_number, ev_id,  ev_id_ext]
     var_evt_match: [run_number, ev_id,  ev_id_ext]
 
   files_names:
     namefile_unmerged_tree: AnalysisResults.root
     namefile_reco: AnalysisResultsReco.pkl.lz4
+    namefile_evt: AnalysisResultsEvt.pkl.lz4
     namefile_evtorig: AnalysisResultsEvtOrig.pkl.lz4
     namefile_gen: AnalysisResultsGen.pkl.lz4
     treeoriginreco: 'PWGHF_TreeCreator/tree_InclusiveJet'
@@ -50,7 +49,6 @@ inclusivejets:
       nprocessesparallel: 50
       maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp:  [100,100,100] #list of periods
-      chunksizeskim: [100,100,100] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
       unmerged_tree_dir: [/data/TTree/D0DsLckAnywithJets_20200303/vAN-20200228_ROOT6/pp_2017_data/pp_2017_data/999-999/merged,
                           /data/TTree/D0DsLckAnywithJets_20200303/vAN-20200228_ROOT6/pp_2017_data/pp_2017_data/999-999/merged,
@@ -58,14 +56,10 @@ inclusivejets:
       pkl: [/data/DerivedInclusive/data2016/pkl,
             /data/DerivedInclusive/data2017/pkl,
             /data/DerivedInclusive/data2018/pkl] #list of periods
-      pkl_skimmed: [/data/DerivedInclusive/data2016/pklskimmed,
-            /data/DerivedInclusive/data2017/pklskimmed,
-            /data/DerivedInclusive/data2018/pklskimmed] #list of periods
     mc:
       nprocessesparallel: 50
       maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp: [100,100,100] #list of periods
-      chunksizeskim: [1000,1000,1000] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
       unmerged_tree_dir: [/data/TTree/D0DsLckAnywithJets_20200303/vAN-20200228_ROOT6/pp_2017_mc_prodLcpK0s/Nima/merged,
                           /data/TTree/D0DsLckAnywithJets_20200303/vAN-20200228_ROOT6/pp_2017_mc_prodLcpK0s/Nima/merged,
@@ -73,6 +67,34 @@ inclusivejets:
       pkl: [/data/DerivedInclusive/mc2016/pkl,
             /data/DerivedInclusive/mc2017/pkl,
             /data/DerivedInclusive/mc2018/pkl] #list of periods
-      pkl_skimmed: [/data/DerivedInclusive/mc2016/pklskimmed,
-                    /data/DerivedInclusive/mc2017/pklskimmed,
-                    /data/DerivedInclusive/mc2018/pklskimmed] #list of periods
+  analysis:
+    indexhptspectrum: 0 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
+    jet_zg: &jet_default
+      proc_type: light
+      useperiod: [1,1,1] #list of periods
+      #      var_binning2: pt_jet
+      #      var_binning2_gen: pt_gen_jet
+      #      latexbin2var: "#it{p}_{T, jet}^{ch}"
+      #      sel_binmin2_reco: [7.0,15.0,30.0] # rec jet pt bins (sel_binmin2_reco bins)
+      #      sel_binmax2_reco:     [15.0,30.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)
+      #      sel_binmin2_gen:  [7.0,15.0,30.0] # gen jet pt bins (sel_binmin2_gen bins)
+      #      sel_binmax2_gen:      [15.0,30.0,50.0] # gen jet pt bins (sel_binmin2_gen bins)
+      #      var_binningshape: zg_jet
+      #      var_binningshape_gen: zg_gen_jet
+      #      var_shape_latex: "#it{z}_{g}"
+      #      sel_binminshape_reco: [0.1,0.2,0.3,0.4]
+      #      sel_binmaxshape_reco:     [0.2,0.3,0.4,0.5]
+      #      sel_binminshape_gen:  [0.1,0.2,0.3,0.4]
+      #      sel_binmaxshape_gen:      [0.2,0.3,0.4,0.5]
+      #      sel_closure_frac: 0.2
+      #      triggerbit: INT7
+      #      jetsel_gen: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
+      #      jetsel_reco: "abs(eta_jet) < 0.5"
+      #      evtsel: is_ev_rej==0
+      #      triggersel:
+      #        data: "trigger_hasbit_INT7==1"
+      #        mc: null
+      data:
+        runselection: [null, null, null] #FIXME
+      mc:
+        runselection: [null, null, null] #FIXME

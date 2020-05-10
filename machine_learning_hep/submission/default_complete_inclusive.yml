@@ -7,11 +7,6 @@ conversion: # pkl
     activate: true
   data:
     activate: true
-skimming: # pkl_skimmed (pklsk), pkl_evtcounter_all
-  mc:
-    activate: true
-  data:
-    activate: true
 
 analysis:
   type: YYYY # used unless specified explicitly as do_entire_analysis -a type_ana

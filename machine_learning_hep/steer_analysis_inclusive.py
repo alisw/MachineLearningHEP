@@ -31,7 +31,8 @@ from machine_learning_hep.config import update_config
 from  machine_learning_hep.utilities import checkmakedirlist, checkmakedir
 from  machine_learning_hep.utilities import checkdirlist, checkdir, delete_dirlist
 from  machine_learning_hep.logger import configure_logger, get_logger
-
+from machine_learning_hep.multiprocesserinclusive import MultiProcesserInclusive
+from machine_learning_hep.processerinclusive import ProcesserInclusive
 
 try:
     import logging
@@ -48,7 +49,6 @@ def do_entire_analysis():
 
     data_config = yaml.safe_load(open("submission/default_complete_inclusive.yml", 'r'))
     data_param = yaml.safe_load(open("data/data_prod_20200304/database_jetinclusive.yml", 'r'))
-    run_param = yaml.safe_load(open("data/config_run_parameters.yml", 'r'))
     # Disable any graphical stuff. No TCanvases opened and shown by default
     gROOT.SetBatch(True)
 
@@ -57,21 +57,16 @@ def do_entire_analysis():
 
     # If we are here we are interested in the very first key in the parameters database
     case = "inclusivejets"
+    proc_class = "light"
+    typean = "jet_zg"
 
     dodownloadalice = data_config["download"]["alice"]["activate"]
     doconversionmc = data_config["conversion"]["mc"]["activate"]
     doconversiondata = data_config["conversion"]["data"]["activate"]
-    doskimmingmc = data_config["skimming"]["mc"]["activate"]
-    doskimmingdata = data_config["skimming"]["data"]["activate"]
     doanaperperiod = data_config["analysis"]["doperperiod"]
-    typean = data_config["analysis"]["type"]
 
     dirpklmc = data_param[case]["multi"]["mc"]["pkl"]
     dirpkldata = data_param[case]["multi"]["data"]["pkl"]
-    dirpklskmc = data_param[case]["multi"]["mc"]["pkl_skimmed"]
-    dirpklskdata = data_param[case]["multi"]["data"]["pkl_skimmed"]
-
-
     #creating folder if not present
     counter = 0
     if doconversionmc is True:
@@ -79,12 +74,6 @@ def do_entire_analysis():
 
     if doconversiondata is True:
         counter = counter + checkdirlist(dirpkldata)
-
-    if doskimmingmc is True:
-        counter = counter + checkdirlist(dirpklskmc)
-
-    if doskimmingdata is True:
-        counter = counter + checkdirlist(dirpklskdata)
 
     if counter < 0:
         sys.exit()
@@ -95,33 +84,17 @@ def do_entire_analysis():
 
     if doconversiondata is True:
         checkmakedirlist(dirpkldata)
+    print(case, proc_class, typean, "mc")
+    mymultiprocessmc = MultiProcesserInclusive(case, proc_class, data_param[case], typean, "mc")
+    mymultiprocessdata = MultiProcesserInclusive(case, proc_class, data_param[case], typean, "data")
+    if dodownloadalice == 1:
+       subprocess.call("../cplusutilities/Download.sh")
 
-    if doskimmingmc is True:
-        checkmakedirlist(dirpklskmc)
+    if doconversionmc == 1:
+        mymultiprocessmc.multi_unpack_allperiods()
 
-    if doskimmingdata is True:
-        checkmakedirlist(dirpklskdata)
-
-    #mymultiprocessmc = MultiProcesser(case, proc_class, data_param[case], typean, run_param, "mc")
-    #mymultiprocessdata = MultiProcesser(case, proc_class, data_param[case], typean, run_param,\
-    #                                    "data")
-    #perform the analysis flow
-#    if dodownloadalice == 1:
-#       subprocess.call("../cplusutilities/Download.sh")
-#
-#    if doconversionmc == 1:
-#        mymultiprocessmc.multi_unpack_allperiods()
-#
-#    if doconversiondata == 1:
-#        mymultiprocessdata.multi_unpack_allperiods()
-#
-#    if doskimmingmc == 1:
-#        mymultiprocessmc.multi_skim_allperiods()
-#
-#    if doskimmingdata == 1:
-#        mymultiprocessdata.multi_skim_allperiods()
-
-
+    if doconversiondata == 1:
+        mymultiprocessdata.multi_unpack_allperiods()
     print("Done")
 
 do_entire_analysis()
