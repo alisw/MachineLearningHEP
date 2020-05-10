@@ -24,6 +24,7 @@ import random as rd
 import uproot
 import pandas as pd
 import numpy as np
+from ROOT import TFile, TH1F, TH2F
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 from machine_learning_hep.utilities import selectdfquery, merge_method
@@ -32,6 +33,7 @@ from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar,
 from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.utilities import get_timestamp_string
 from machine_learning_hep.models import apply # pylint: disable=import-error
+from machine_learning_hep.utilities_plot import buildhisto, build2dhisto, fill2dhist, makefill3dhist
 #from machine_learning_hep.logger import get_logger
 
 class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
@@ -42,7 +44,7 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
     # pylint: disable=too-many-statements, too-many-arguments
     def __init__(self, case, datap, mcordata, p_maxfiles,
                  d_root, d_pkl, p_period,
-                 p_chunksizeunp, p_maxprocess, typean, runlisttrigger):
+                 p_chunksizeunp, p_maxprocess, typean, runlisttrigger, d_results):
         #self.logger = get_logger()
         self.case = case
         self.typean = typean
@@ -54,6 +56,7 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
         self.period = p_period
         self.p_maxfiles = p_maxfiles
         self.p_chunksizeunp = p_chunksizeunp
+        self.d_results = d_results
 
         #parameter names
         self.p_maxprocess = p_maxprocess
@@ -69,6 +72,7 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
         self.n_evt = datap["files_names"]["namefile_evt"]
         self.n_evtorig = datap["files_names"]["namefile_evtorig"]
         self.n_gen = datap["files_names"]["namefile_gen"]
+        self.n_filemass = datap["files_names"]["histofilename"]
 
         #selections
         self.s_reco_unp = datap["sel_reco_unp"]
@@ -93,9 +97,11 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
         self.l_reco = createlist(self.d_pkl, self.l_path, self.n_reco)
         self.l_evt = createlist(self.d_pkl, self.l_path, self.n_evt)
         self.l_evtorig = createlist(self.d_pkl, self.l_path, self.n_evtorig)
+        self.l_histomass = createlist(self.d_results, self.l_path, self.n_filemass)
 
         if self.mcordata == "mc":
             self.l_gen = createlist(self.d_pkl, self.l_path, self.n_gen)
+        self.n_filemass = os.path.join(self.d_results, self.n_filemass)
 
         self.runlistrigger = runlisttrigger
 
@@ -160,3 +166,22 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
         arguments = [(i,) for i in range(len(self.l_root))]
         self.parallelizer(self.unpack, arguments, self.p_chunksizeunp)
 
+    def process_histomass_single(self, index):
+        myfile = TFile.Open(self.l_histomass[index], "recreate")
+        df = pickle.load(openfile(self.l_reco[index], "rb"))
+        hptvszg = TH2F("hptvszg", "hptvszg", 100, 0., 1., 100, 0, 100);
+        fill2dhist(df, hptvszg, "zg_jet", "pt_jet")
+        hptvszg.Write()
+        # Get number of selected events and save it in the first bin of the histonorm histogram.
+
+    def process_histomass(self):
+        print("Doing masshisto", self.mcordata, self.period)
+        print("Using run selection for mass histo", \
+               self.runlistrigger, "for period", self.period)
+
+        create_folder_struc(self.d_results, self.l_path)
+        arguments = [(i,) for i in range(len(self.l_root))]
+        self.parallelizer(self.process_histomass_single, arguments, self.p_chunksizeunp) # pylint: disable=no-member
+        tmp_merged = \
+            f"/data/tmp/hadd/{self.case}_{self.typean}/mass_{self.period}/{get_timestamp_string()}/"
+        mergerootfiles(self.l_histomass, self.n_filemass, tmp_merged)

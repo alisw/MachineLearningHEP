@@ -34,6 +34,8 @@ class MultiProcesserInclusive: # pylint: disable=too-many-instance-attributes, t
         #directories
         self.dlper_root = datap["multi"][self.mcordata]["unmerged_tree_dir"]
         self.dlper_pkl = datap["multi"][self.mcordata]["pkl"]
+        self.d_results = datap["analysis"][self.typean][self.mcordata]["results"]
+        self.d_resulsallp = datap["analysis"][self.typean][self.mcordata]["resultsallp"]
 
         #namefiles pkl
         self.n_reco = datap["files_names"]["namefile_reco"]
@@ -53,9 +55,24 @@ class MultiProcesserInclusive: # pylint: disable=too-many-instance-attributes, t
                                    self.p_maxfiles[indexp], self.dlper_root[indexp],
                                    self.dlper_pkl[indexp], self.p_period[indexp],
                                    self.p_chunksizeunp[indexp], self.p_nparall,
-                                   self.typean, self.lper_runlistrigger[indexp])
+                                   self.typean, self.lper_runlistrigger[indexp],
+                                   self.d_results[indexp])
             self.process_listsample.append(myprocess)
+        self.n_filemass = datap["files_names"]["histofilename"]
+        self.filemass_mergedall = os.path.join(self.d_resulsallp, self.n_filemass)
+        self.p_useperiod = datap["analysis"][self.typean]["useperiod"]
+        self.lper_filemass = []
+        for i, direc in enumerate(self.d_results):
+            if self.p_useperiod[i] == 1:
+                self.lper_filemass.append(os.path.join(direc, self.n_filemass))
 
     def multi_unpack_allperiods(self):
         for indexp in range(self.prodnumber):
             self.process_listsample[indexp].process_unpack_par()
+
+    def multi_histomass(self):
+        for indexp in range(self.prodnumber):
+            if self.p_useperiod[indexp] == 1:
+                self.process_listsample[indexp].process_histomass()
+        tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/mass/{get_timestamp_string()}/"
+        mergerootfiles(self.lper_filemass, self.filemass_mergedall, tmp_merged)

@@ -64,9 +64,16 @@ def do_entire_analysis():
     doconversionmc = data_config["conversion"]["mc"]["activate"]
     doconversiondata = data_config["conversion"]["data"]["activate"]
     doanaperperiod = data_config["analysis"]["doperperiod"]
+    dohistomassmc = data_config["analysis"]["mc"]["histomass"]
+    dohistomassdata = data_config["analysis"]["data"]["histomass"]
 
     dirpklmc = data_param[case]["multi"]["mc"]["pkl"]
     dirpkldata = data_param[case]["multi"]["data"]["pkl"]
+    dirresultsdata = data_param[case]["analysis"][typean]["data"]["results"]
+    dirresultsmc = data_param[case]["analysis"][typean]["mc"]["results"]
+    dirresultsdatatot = data_param[case]["analysis"][typean]["data"]["resultsallp"]
+    dirresultsmctot = data_param[case]["analysis"][typean]["mc"]["resultsallp"]
+
     #creating folder if not present
     counter = 0
     if doconversionmc is True:
@@ -74,6 +81,14 @@ def do_entire_analysis():
 
     if doconversiondata is True:
         counter = counter + checkdirlist(dirpkldata)
+
+    if dohistomassmc is True:
+        counter = counter + checkdirlist(dirresultsmc)
+        counter = counter + checkdir(dirresultsmctot)
+
+    if dohistomassdata is True:
+        counter = counter + checkdirlist(dirresultsdata)
+        counter = counter + checkdir(dirresultsdatatot)
 
     if counter < 0:
         sys.exit()
@@ -84,7 +99,15 @@ def do_entire_analysis():
 
     if doconversiondata is True:
         checkmakedirlist(dirpkldata)
-    print(case, proc_class, typean, "mc")
+
+    if dohistomassmc is True:
+        checkmakedirlist(dirresultsmc)
+        checkmakedir(dirresultsmctot)
+
+    if dohistomassdata is True:
+        checkmakedirlist(dirresultsdata)
+        checkmakedir(dirresultsdatatot)
+
     mymultiprocessmc = MultiProcesserInclusive(case, proc_class, data_param[case], typean, "mc")
     mymultiprocessdata = MultiProcesserInclusive(case, proc_class, data_param[case], typean, "data")
     if dodownloadalice == 1:
@@ -95,6 +118,12 @@ def do_entire_analysis():
 
     if doconversiondata == 1:
         mymultiprocessdata.multi_unpack_allperiods()
+
+    if dohistomassmc is True:
+        mymultiprocessmc.multi_histomass()
+
+    if dohistomassdata is True:
+        mymultiprocessdata.multi_histomass()
     print("Done")
 
 do_entire_analysis()
