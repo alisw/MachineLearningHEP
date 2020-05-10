@@ -7,7 +7,7 @@ maxpt = 10
 minshape = 0.1
 maxshape = 0.5
 
-def function_010(shape, pt, shapemin, shapemax, ptmin, ptmax):
+def function_weight(shape, pt, shapemin, shapemax, ptmin, ptmax):
 
     value =  -1 *((-0.2 * ptmax + 0.2 * ptmin) * (-shape + shapemax) + \
               (- pt + ptmin) * (0.2 * shapemax - 0.2 * shapemin) + \
