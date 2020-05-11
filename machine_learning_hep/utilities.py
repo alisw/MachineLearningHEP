@@ -809,6 +809,9 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
         else:
             continue
 
+    # plot axes on top
+    can.RedrawAxis()
+
     # plot legend
     if leg:
         leg.Draw()
