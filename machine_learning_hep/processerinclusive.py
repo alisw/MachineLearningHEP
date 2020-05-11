@@ -103,6 +103,11 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
             self.l_gen = createlist(self.d_pkl, self.l_path, self.n_gen)
         self.n_filemass = os.path.join(self.d_results, self.n_filemass)
 
+        self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
+        self.s_jetsel_gen = datap["analysis"][self.typean]["jetsel_gen"]
+        self.s_jetsel_reco = datap["analysis"][self.typean]["jetsel_reco"]
+        self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
+        self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
 
     def unpack(self, file_index):
@@ -169,6 +174,16 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
     def process_histomass_single(self, index):
         myfile = TFile.Open(self.l_histomass[index], "recreate")
         df = pickle.load(openfile(self.l_reco[index], "rb"))
+        if self.s_evtsel is not None:
+            df = df.query(self.s_evtsel)
+        if self.s_jetsel_reco is not None:
+            df = df.query(self.s_jetsel_reco)
+        if self.s_trigger is not None:
+            df = df.query(self.s_trigger)
+        if self.runlistrigger is not None:
+            df = selectdfrunlist(df, \
+                self.run_param[self.runlistrigger], "run_number")
+        print(self.s_evtsel, self.s_jetsel_reco, self.s_trigger, self.runlistrigger)
         hptvszg = TH2F("hptvszg", "hptvszg", 100, 0., 1., 100, 0, 100);
         fill2dhist(df, hptvszg, "zg_jet", "pt_jet")
         hptvszg.Write()
