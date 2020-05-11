@@ -15,8 +15,8 @@ analysis:
   doperperiod: false
   data:
     histomass: true # processer: process_histomass
+    dojetsystematics: true
   mc:
     histomass: true # processer: process_histomass
     response: true # processer: response
     dounfolding: true # analyzer: unfolding, unfolding_closure
-
