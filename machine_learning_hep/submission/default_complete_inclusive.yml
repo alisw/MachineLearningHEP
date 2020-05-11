@@ -14,8 +14,9 @@ analysis:
   # Do only merged (false)
   doperperiod: false
   data:
-    histomass: true # processer: process_histomass
+    histomass: false # processer: process_histomass
   mc:
-    histomass: true # processer: process_histomass
-    response: true # processer: response
+    histomass: false # processer: process_histomass
+    response: false # processer: response
+    dounfolding: true # analyzer: unfolding, unfolding_closure
 

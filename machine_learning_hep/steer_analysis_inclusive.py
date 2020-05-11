@@ -33,6 +33,13 @@ from  machine_learning_hep.utilities import checkdirlist, checkdir, delete_dirli
 from  machine_learning_hep.logger import configure_logger, get_logger
 from machine_learning_hep.multiprocesserinclusive import MultiProcesserInclusive
 from machine_learning_hep.processerinclusive import ProcesserInclusive
+from machine_learning_hep.analysis.analyzer_manager import AnalyzerManager
+from machine_learning_hep.analysis.analyzer import Analyzer
+from machine_learning_hep.analysis.analyzer_Dhadrons import AnalyzerDhadrons
+from machine_learning_hep.analysis.analyzerdhadrons_mult import AnalyzerDhadrons_mult
+from machine_learning_hep.analysis.analyzer_jet import AnalyzerJet
+
+from machine_learning_hep.analysis.systematics import Systematics
 
 try:
     import logging
@@ -67,6 +74,7 @@ def do_entire_analysis():
     dohistomassmc = data_config["analysis"]["mc"]["histomass"]
     dohistomassdata = data_config["analysis"]["data"]["histomass"]
     doresponse = data_config["analysis"]["mc"]["response"]
+    dounfolding = data_config["analysis"]["mc"]["dounfolding"]
 
     dirpklmc = data_param[case]["multi"]["mc"]["pkl"]
     dirpkldata = data_param[case]["multi"]["data"]["pkl"]
@@ -111,6 +119,7 @@ def do_entire_analysis():
 
     mymultiprocessmc = MultiProcesserInclusive(case, proc_class, data_param[case], typean, "mc")
     mymultiprocessdata = MultiProcesserInclusive(case, proc_class, data_param[case], typean, "data")
+    ana_mgr = AnalyzerManager(AnalyzerJet, data_param[case], case, typean, doanaperperiod)
     if dodownloadalice == 1:
        subprocess.call("../cplusutilities/Download.sh")
 
@@ -128,6 +137,12 @@ def do_entire_analysis():
 
     if doresponse is True:
         mymultiprocessmc.multi_response()
+    analyze_steps = []
+    if dounfolding is True:
+        analyze_steps.append("unfolding")
+        analyze_steps.append("unfolding_closure")
     print("Done")
+    # Now do the analysis
+    ana_mgr.analyze(*analyze_steps)
 
 do_entire_analysis()
