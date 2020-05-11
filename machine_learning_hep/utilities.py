@@ -535,6 +535,14 @@ def get_marker(i: int, full=False):
         return markers_full[i % len(markers_full)]
     return markers_open[i % len(markers_open)]
 
+def get_markersize(marker: int, size_def=1.5):
+    '''Return a marker size.'''
+    markers_small = [kOpenCross, kOpenDiamond, kOpenStar, kOpenDoubleDiamond,
+                     kOpenFourTrianglesPlus, kOpenCrossX]
+    if marker in markers_small:
+        return size_def * 4 / 3
+    return size_def
+
 def setup_histogram(hist, colour=1, markerstyle=kOpenCircle, size=1.5):
     hist.SetStats(0)
     hist.SetTitleSize(0.04, "X")
@@ -584,7 +592,7 @@ def draw_latex(latex, colour=1, textsize=0.03):
 def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None, # pylint: disable=too-many-arguments, too-many-branches, too-many-statements, too-many-locals
               list_obj=None, labels_obj=None,
               leg_pos=None, opt_leg_h="P", opt_leg_g="P", opt_plot_h="", opt_plot_g="P0",
-              offsets_xy=None, maxdigits=3, colours=None, markers=None,
+              offsets_xy=None, maxdigits=3, colours=None, markers=None, sizes=None,
               range_x=None, margins_y=None, with_errors="xy", logscale=None):
     """
     Make a plot with objects from a list (list_obj).
@@ -612,7 +620,7 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
     - legend position (leg_pos), (format: [x_min, y_min, x_max, y_max])
     - labels of legend entries (labels_obj)
     - styles of legend entries (opt_leg_h, opt_leg_g), (format: see TLegend::AddEntry)
-    - colours and markers (colours, markers), (format: list of numbers or named values)
+    - colours, markers, sizes (colours, markers, sizes), (format: list of numbers or named values)
     - canvas margins (margins_c), (format: [bottom, left, top, right])
     - offsets of axis titles (offsets_xy), (format: [x, y])
     - maximum number of digits of the axis labels (maxdigits)
@@ -640,8 +648,14 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
             return markers[i % len(markers)]
         return get_marker(i)
 
+    def get_my_size(i: int):
+        if sizes and isinstance(sizes, list) and len(sizes) > 0:
+            return sizes[i % len(sizes)]
+        return get_markersize(get_my_marker(i))
+
     def plot_graph(graph):
-        setup_tgraph(graph, get_my_colour(counter_plot), get_my_marker(counter_plot))
+        setup_tgraph(graph, get_my_colour(counter_plot), get_my_marker(counter_plot),
+                     get_my_size(counter_plot))
         graph.SetTitle(title)
         graph.GetXaxis().SetLimits(x_min_plot, x_max_plot)
         graph.GetYaxis().SetRangeUser(y_min_plot, y_max_plot)
@@ -670,7 +684,8 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
                 gr.GetYaxis().SetTitleOffset(offsets_xy[1])
             gr.Draw("AP")
             list_new.append(gr)
-        setup_histogram(histogram, get_my_colour(counter_plot), get_my_marker(counter_plot))
+        setup_histogram(histogram, get_my_colour(counter_plot), get_my_marker(counter_plot),
+                        get_my_size(counter_plot))
         if leg and n_labels > counter_plot and len(labels_obj[counter_plot]) > 0:
             leg.AddEntry(histogram, labels_obj[counter_plot], opt_leg_h)
         histogram.Draw(opt_plot_h)
