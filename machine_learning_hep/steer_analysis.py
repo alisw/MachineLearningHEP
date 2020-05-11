@@ -91,7 +91,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     dohistomassdata = data_config["analysis"]["data"]["histomass"]
     doresponse = data_config["analysis"]["mc"]["response"]
     dounfolding = data_config["analysis"]["mc"]["dounfolding"]
-
+    dojetsystematics = data_config["analysis"]["data"]["dojetsystematics"]
     dirpklmc = data_param[case]["multi"]["mc"]["pkl"]
     dirpkldata = data_param[case]["multi"]["data"]["pkl"]
     dirresultsdata = data_param[case]["analysis"][typean]["data"]["results"]
@@ -158,6 +158,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     if dounfolding is True:
         analyze_steps.append("unfolding")
         analyze_steps.append("unfolding_closure")
+    if dojetsystematics is True:
+        analyze_steps.append("jetsystematics")
     print("Done")
     # Now do the analysis
     ana_mgr.analyze(*analyze_steps)

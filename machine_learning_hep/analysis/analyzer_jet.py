@@ -87,7 +87,7 @@ class AnalyzerJet(Analyzer):
         self.varshaperanges_gen = self.lvarshape_binmin_gen.copy()
         self.varshaperanges_gen.append(self.lvarshape_binmax_gen[-1])
         self.varshapebinarray_gen = array("d", self.varshaperanges_gen) # array of bin edges to use in histogram constructors
-
+        self.p_latexnhadron = ""
 #        # systematics variations
 #
 #        # models to compare with
@@ -1619,8 +1619,8 @@ class AnalyzerJet(Analyzer):
             draw_latex(latex1)
             latex2 = TLatex(0.15, 0.72, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex2)
-            latex3 = TLatex(0.15, 0.67, "%g #leq #it{p}_{T, %s} < %g GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2])))
-            draw_latex(latex3)
+            #latex3 = TLatex(0.15, 0.67, "%g #leq #it{p}_{T, %s} < %g GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2])))
+            #draw_latex(latex3)
             leg_finalwsys.Draw("same")
             cfinalwsys.SaveAs("%s/final_wsys_%s.pdf" % (self.d_resultsallpdata, suffix))
 
@@ -1638,10 +1638,10 @@ class AnalyzerJet(Analyzer):
             leg_finalwsys_wmodels.AddEntry(input_histograms_default[ibin2], "data", "P")
             setup_histogram(input_histograms_default[ibin2], get_colour(0))
             #y_min_g, y_max_g = get_y_window_gr([tgsys[ibin2], tg_powheg[ibin2]])
-            #y_min_h, y_max_h = get_y_window_his([input_histograms_default[ibin2], input_powheg_z[ibin2]] + \
+            y_min_h, y_max_h = get_y_window_his([input_histograms_default[ibin2]])
                 #[input_pythia8_z[i][ibin2] for i in range(len(self.pythia8_prompt_variations))])
-            y_min = min(tgsys[ibin2], input_histograms_default[ibin2])
-            y_max = max(tgsys[ibin2], input_histograms_default[ibin2])
+            y_min = y_min_h #min(tgsys[ibin2], input_histograms_default[ibin2])
+            y_max = y_max_h #max(tgsys[ibin2], input_histograms_default[ibin2])
             y_margin_up = 0.35
             y_margin_down = 0.05
             y_plot_min, y_plot_max = get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
@@ -1672,8 +1672,8 @@ class AnalyzerJet(Analyzer):
             latex2 = TLatex(0.15, 0.72, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex2)
             #latex3 = TLatex(0.15, 0.7, "%g #leq %s < %g" % (round(self.lvarshape_binmin_reco[0], 2), self.v_varshape_latex, round(self.lvarshape_binmax_reco[-1], 2)))
-            latex3 = TLatex(0.15, 0.67, "%g #leq #it{p}_{T, %s} < %g GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2])))
-            draw_latex(latex3)
+            #latex3 = TLatex(0.15, 0.67, "%g #leq #it{p}_{T, %s} < %g GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2])))
+            #draw_latex(latex3)
             leg_finalwsys_wmodels.Draw("same")
             if self.typean == "jet_rg":
                 # plot the theta_g axis

@@ -4,9 +4,9 @@ download:
     activate: false
 conversion: # pkl
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 
 analysis:
   type: YYYY # used unless specified explicitly as do_entire_analysis -a type_ana
