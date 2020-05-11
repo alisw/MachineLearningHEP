@@ -44,32 +44,14 @@ class AnalyzerJet(Analyzer):
     def __init__(self, datap, case, typean, period):
         super().__init__(datap, case, typean, period)
 
-        # machine learning
-#        self.lpt_probcutfin = datap["mlapplication"]["probcutoptimal"]
-
 #        # normalisation
-#        self.p_nevents = 1 # number of selected events, taken from histonorm
-#        self.branching_ratio = \
-#            datap["analysis"][self.typean].get("branching_ratio", None)
-#        self.xsection_inel = \
-#            datap["analysis"][self.typean].get("xsection_inel", None)
-
-        # plotting
-        # LaTeX string
-#        self.p_latexnhadron = datap["analysis"][self.typean]["latexnamehadron"]
-#        self.p_latexndecay = datap["analysis"][self.typean]["latexnamedecay"]
-#        self.p_latexbin2var = datap["analysis"][self.typean]["latexbin2var"]
-#        self.v_varshape_latex = datap["analysis"][self.typean]["var_shape_latex"]
-#
-#        # first variable (hadron pt)
-#        self.v_var_binning = datap["var_binning"] # name
-#        self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
-#        self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
-#        self.p_nptfinbins = len(self.lpt_finbinmin) # number of bins
-#        self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
-#        self.var1ranges = self.lpt_finbinmin.copy()
-#        self.var1ranges.append(self.lpt_finbinmax[-1])
-#        self.var1binarray = array("d", self.var1ranges) # array of bin edges to use in histogram constructors
+        self.p_nevents = 1 # number of selected events, taken from histonorm
+        self.branching_ratio = 1
+        #\ datap["analysis"][self.typean].get("branching_ratio", None)
+        self.xsection_inel = \
+            datap["analysis"][self.typean].get("xsection_inel", None)
+        self.p_latexbin2var = datap["analysis"][self.typean]["latexbin2var"]
+        self.v_varshape_latex = datap["analysis"][self.typean]["var_shape_latex"]
 
         # second variable (jet pt)
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"] # name
@@ -106,43 +88,6 @@ class AnalyzerJet(Analyzer):
         self.varshaperanges_gen.append(self.lvarshape_binmax_gen[-1])
         self.varshapebinarray_gen = array("d", self.varshaperanges_gen) # array of bin edges to use in histogram constructors
 
-#        # fitting
-#        self.p_sgnfunc = datap["analysis"][self.typean]["sgnfunc"]
-#        self.p_bkgfunc = datap["analysis"][self.typean]["bkgfunc"]
-#        self.p_masspeak = datap["analysis"][self.typean]["masspeak"]
-#        self.p_massmin = datap["analysis"][self.typean]["massmin"]
-#        self.p_massmax = datap["analysis"][self.typean]["massmax"]
-#        self.p_rebin = datap["analysis"][self.typean]["rebin"]
-#        self.p_fix_mean = datap["analysis"][self.typean]["fix_mean"]
-#        self.p_fix_sigma = datap["analysis"][self.typean]["fix_sigma"]
-#        self.p_sigmaarray = datap["analysis"][self.typean]["sigmaarray"]
-#        #self.p_masspeaksec = None
-#        self.p_fix_sigmasec = None
-#        self.p_sigmaarraysec = None
-#        if self.p_sgnfunc[0] == 1:
-#            #self.p_masspeaksec = datap["analysis"][self.typean]["masspeaksec"]
-#            self.p_fix_sigmasec = datap["analysis"][self.typean]["fix_sigmasec"]
-#            self.p_sigmaarraysec = datap["analysis"][self.typean]["sigmaarraysec"]
-#
-#        # side-band subtraction
-#        self.signal_sigma = \
-#            datap["analysis"][self.typean].get("signal_sigma", None)
-#        self.sideband_sigma_1_left = \
-#            datap["analysis"][self.typean].get("sideband_sigma_1_left", None)
-#        self.sideband_sigma_1_right = \
-#            datap["analysis"][self.typean].get("sideband_sigma_1_right", None)
-#        self.sideband_sigma_2_left = \
-#            datap["analysis"][self.typean].get("sideband_sigma_2_left", None)
-#        self.sideband_sigma_2_right = \
-#            datap["analysis"][self.typean].get("sideband_sigma_2_right", None)
-#        self.sigma_scale = \
-#            datap["analysis"][self.typean].get("sigma_scale", None)
-#        self.sidebandleftonly = \
-#            datap["analysis"][self.typean].get("sidebandleftonly", None)
-#
-#        # feed-down
-#        self.powheg_path_nonprompt = \
-#            datap["analysis"][self.typean].get("powheg_path_nonprompt", None)
 #        # systematics variations
 #
 #        # models to compare with
@@ -231,16 +176,9 @@ class AnalyzerJet(Analyzer):
         n_filemass_name = datap["files_names"]["histofilename"]
         self.n_filemass = os.path.join(self.d_resultsallpdata_proc, n_filemass_name)
         self.n_filemass_mc = os.path.join(self.d_resultsallpmc_proc, n_filemass_name)
-#        self.n_fileeff = datap["files_names"]["efffilename"]
-#        self.n_fileeff = os.path.join(self.d_resultsallpmc_proc, self.n_fileeff)
         self.n_fileresp = datap["files_names"]["respfilename"]
         self.n_fileresp = os.path.join(self.d_resultsallpmc_proc, self.n_fileresp)
 
-        # output files
-#        self.file_yields = os.path.join(self.d_resultsallpdata, "yields.root")
-#        self.file_efficiency = os.path.join(self.d_resultsallpmc, "efficiencies.root")
-#        self.file_sideband = os.path.join(self.d_resultsallpdata, "sideband_subtracted.root")
-#        self.file_feeddown = os.path.join(self.d_resultsallpdata, "feeddown.root")
         self.file_unfold = os.path.join(self.d_resultsallpdata, "unfolding_results.root")
         self.file_unfold_closure = os.path.join(self.d_resultsallpdata, "unfolding_closure.root")
 
@@ -253,88 +191,88 @@ class AnalyzerJet(Analyzer):
         if not fileouts:
             self.logger.fatal(make_message_notfound(self.file_unfold))
 
-#        # get the feed-down output
-#        unfolding_input_data_file = TFile.Open(self.file_feeddown)
-#        if not unfolding_input_data_file:
-#            self.logger.fatal(make_message_notfound(self.file_feeddown))
-#        input_data = unfolding_input_data_file.Get("sideband_input_data_subtracted")
-#        if not input_data:
-#            self.logger.fatal(make_message_notfound("sideband_input_data_subtracted", self.file_feeddown))
-#
-#        unfolding_input_file = TFile.Open(self.n_fileresp)
-#        if not unfolding_input_file:
-#            self.logger.fatal(make_message_notfound(self.n_fileresp))
-#        response_matrix = unfolding_input_file.Get("response_matrix")
-#        if not response_matrix:
-#            self.logger.fatal(make_message_notfound("response_matrix", self.n_fileresp))
-#        # rec. level cuts only applied
-#        hzvsjetpt_reco_nocuts = unfolding_input_file.Get("hzvsjetpt_reco_nocuts")
-#        if not hzvsjetpt_reco_nocuts:
-#            self.logger.fatal(make_message_notfound("hzvsjetpt_reco_nocuts", self.n_fileresp))
-#        # rec. level and gen. level cuts applied
-#        hzvsjetpt_reco_eff = unfolding_input_file.Get("hzvsjetpt_reco_cuts")
-#        if not hzvsjetpt_reco_eff:
-#            self.logger.fatal(make_message_notfound("hzvsjetpt_reco_cuts", self.n_fileresp))
-#        # closure test input
-#        input_mc_det = unfolding_input_file.Get("input_closure_reco")
-#        if not input_mc_det:
-#            self.logger.fatal(make_message_notfound("input_closure_reco", self.n_fileresp))
-#
-#        stat_unfolding = input_data.Integral()
-#        stat_closure = input_mc_det.Integral()
-#        print("Unfolding: data statistics: %g, closure statistics: %g, ratio: %g" % (stat_unfolding, stat_closure, stat_unfolding/stat_closure))
-#
-#        # Ignore the first bin for integration incase of untagged bin
-#        bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 else 1
-#
-#        # calculate rec. level kinematic efficiency and apply it to the unfolding input
-#
-#        hzvsjetpt_reco_eff.Divide(hzvsjetpt_reco_nocuts)
-#        input_data.Multiply(hzvsjetpt_reco_eff)
-#
-#
-#        # gen. level cuts only applied
-#        hzvsjetpt_gen_nocuts = unfolding_input_file.Get("hzvsjetpt_gen_nocuts")
-#        if not hzvsjetpt_gen_nocuts:
-#            self.logger.fatal(make_message_notfound("hzvsjetpt_gen_nocuts", self.n_fileresp))
-#        # rec. level and gen. level cuts applied
-#        hzvsjetpt_gen_eff = unfolding_input_file.Get("hzvsjetpt_gen_cuts")
-#        if not hzvsjetpt_gen_eff:
-#            self.logger.fatal(make_message_notfound("hzvsjetpt_gen_cuts", self.n_fileresp))
-#
-#        # calculate gen. level kinematic efficiency
-#
-#        hzvsjetpt_gen_eff.Divide(hzvsjetpt_gen_nocuts)
+        # get the feed-down output
+        unfolding_input_data_file = TFile.Open(self.n_filemass)
+        if not unfolding_input_data_file:
+            self.logger.fatal(make_message_notfound(self.n_filemass))
+        input_data = unfolding_input_data_file.Get("h_jetptvsshape")
+        if not input_data:
+            self.logger.fatal(make_message_notfound("h_jetptvsshape", self.n_filemass))
+
+        unfolding_input_file = TFile.Open(self.n_fileresp)
+        if not unfolding_input_file:
+            self.logger.fatal(make_message_notfound(self.n_fileresp))
+        response_matrix = unfolding_input_file.Get("response_matrix")
+        if not response_matrix:
+            self.logger.fatal(make_message_notfound("response_matrix", self.n_fileresp))
+        # rec. level cuts only applied
+        hzvsjetpt_reco_nocuts = unfolding_input_file.Get("hzvsjetpt_reco_nocuts")
+        if not hzvsjetpt_reco_nocuts:
+            self.logger.fatal(make_message_notfound("hzvsjetpt_reco_nocuts", self.n_fileresp))
+        # rec. level and gen. level cuts applied
+        hzvsjetpt_reco_eff = unfolding_input_file.Get("hzvsjetpt_reco_cuts")
+        if not hzvsjetpt_reco_eff:
+            self.logger.fatal(make_message_notfound("hzvsjetpt_reco_cuts", self.n_fileresp))
+        # closure test input
+        input_mc_det = unfolding_input_file.Get("input_closure_reco")
+        if not input_mc_det:
+            self.logger.fatal(make_message_notfound("input_closure_reco", self.n_fileresp))
+
+        stat_unfolding = input_data.Integral()
+        stat_closure = input_mc_det.Integral()
+        print("Unfolding: data statistics: %g, closure statistics: %g, ratio: %g" % (stat_unfolding, stat_closure, stat_unfolding/stat_closure))
+
+        # Ignore the first bin for integration incase of untagged bin
+        bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 else 1
+
+        # calculate rec. level kinematic efficiency and apply it to the unfolding input
+
+        hzvsjetpt_reco_eff.Divide(hzvsjetpt_reco_nocuts)
+        input_data.Multiply(hzvsjetpt_reco_eff)
+
+
+        # gen. level cuts only applied
+        hzvsjetpt_gen_nocuts = unfolding_input_file.Get("hzvsjetpt_gen_nocuts")
+        if not hzvsjetpt_gen_nocuts:
+            self.logger.fatal(make_message_notfound("hzvsjetpt_gen_nocuts", self.n_fileresp))
+        # rec. level and gen. level cuts applied
+        hzvsjetpt_gen_eff = unfolding_input_file.Get("hzvsjetpt_gen_cuts")
+        if not hzvsjetpt_gen_eff:
+            self.logger.fatal(make_message_notfound("hzvsjetpt_gen_cuts", self.n_fileresp))
+
+        # calculate gen. level kinematic efficiency
+
+        hzvsjetpt_gen_eff.Divide(hzvsjetpt_gen_nocuts)
 #
 #        # all gen. level jets
-#        input_mc_gen = unfolding_input_file.Get("hzvsjetpt_gen_unmatched")
-#        if not input_mc_gen:
-#            self.logger.fatal(make_message_notfound("hzvsjetpt_gen_unmatched", self.n_fileresp))
+        input_mc_gen = unfolding_input_file.Get("hzvsjetpt_gen_unmatched")
+        if not input_mc_gen:
+            self.logger.fatal(make_message_notfound("hzvsjetpt_gen_unmatched", self.n_fileresp))
 #        # rec. level cuts only applied
-#        mc_reco_matched = unfolding_input_file.Get("hzvsjetpt_reco")
-#        if not mc_reco_matched:
-#            self.logger.fatal(make_message_notfound("hzvsjetpt_reco", self.n_fileresp))
-#        # gen. level cuts only applied
-#        mc_gen_matched = unfolding_input_file.Get("hzvsjetpt_gen")
-#        if not mc_gen_matched:
-#            self.logger.fatal(make_message_notfound("hzvsjetpt_gen", self.n_fileresp))
-#
-#        input_data_z = []
-#
-#        input_mc_gen_z = []
-#        mc_reco_matched_z = []
-#        mc_gen_matched_z = []
-#        mc_reco_gen_matched_z_ratio = []
-#        hjetpt_fracdiff_list = []
-#        hz_fracdiff_list = []
-#        kinematic_eff = []
-#        hz_gen_nocuts = []
-#
-#        hz_genvsreco_list = []
-#        hjetpt_genvsreco_list = []
-#
-#        # reference for the jet pt refolding test
-#        input_data_jetpt = input_data.ProjectionY("input_data_jetpt", 1, self.p_nbinshape_reco, "e")
+        mc_reco_matched = unfolding_input_file.Get("hzvsjetpt_reco")
+        if not mc_reco_matched:
+            self.logger.fatal(make_message_notfound("hzvsjetpt_reco", self.n_fileresp))
+        # gen. level cuts only applied
+        mc_gen_matched = unfolding_input_file.Get("hzvsjetpt_gen")
+        if not mc_gen_matched:
+            self.logger.fatal(make_message_notfound("hzvsjetpt_gen", self.n_fileresp))
+
+        input_data_z = []
+
+        input_mc_gen_z = []
+        mc_reco_matched_z = []
+        mc_gen_matched_z = []
+        mc_reco_gen_matched_z_ratio = []
+        hjetpt_fracdiff_list = []
+        hz_fracdiff_list = []
+        kinematic_eff = []
+        hz_gen_nocuts = []
+
+        hz_genvsreco_list = []
+        hjetpt_genvsreco_list = []
+
+        # reference for the jet pt refolding test
+        input_data_jetpt = input_data.ProjectionY("input_data_jetpt", 1, self.p_nbinshape_reco, "e")
 #
 #        # get the central prompt POWHEG histogram
 #        input_powheg = self.get_simulated_yields(self.powheg_path_prompt, 2, True)
@@ -398,483 +336,483 @@ class AnalyzerJet(Analyzer):
 #            #tg_powheg.append(tg_sys(input_powheg_z[ibin2], input_powheg_sys_z[ibin2]))
 #            #tg_powheg_xsection.append(tg_sys(input_powheg_xsection_z[ibin2], input_powheg_xsection_sys_z[ibin2]))
 #
-#        for ibin2 in range(self.p_nbin2_reco):
-#            suffix = "%s_%.2f_%.2f" % \
-#                     (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
-#            suffix_plot = "%s_%g_%g" % \
-#                     (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
-#
-#            input_data_z.append(input_data.ProjectionX("input_data_z" + suffix, ibin2 + 1, ibin2 + 1, "e"))
-#
-#            # compare shapes of distributions of reconstructed jets that pass rec. vs. gen. level cuts
-#
-#            mc_reco_matched_z.append(mc_reco_matched.ProjectionX("mc_reco_matched_z" + suffix, ibin2 + 1, ibin2 + 1, "e"))
-#            mc_reco_matched_z[ibin2].Scale(1.0 / mc_reco_matched_z[ibin2].Integral(bin_int_first, -1))
-#            mc_gen_matched_z.append(mc_gen_matched.ProjectionX("mc_det_matched_z" + suffix, mc_gen_matched.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2]), mc_gen_matched.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2]), "e"))
-#            mc_gen_matched_z[ibin2].Scale(1.0 / mc_gen_matched_z[ibin2].Integral(bin_int_first, -1))
-#            mc_reco_gen_matched_z_ratio.append(mc_reco_matched_z[ibin2].Clone("input_mc_reco_gen_matched_z_ratio" + suffix))
-#            mc_reco_gen_matched_z_ratio[ibin2].Divide(mc_gen_matched_z[ibin2])
-#
-#            c_mc_reco_gen_matched_z_ratio = TCanvas("c_mc_reco_gen_matched_z_ratio " + suffix, "Reco/Gen Ratio")
-#            setup_canvas(c_mc_reco_gen_matched_z_ratio)
-#            c_mc_reco_gen_matched_z_ratio.SetLeftMargin(0.13)
-#            setup_histogram(mc_reco_gen_matched_z_ratio[ibin2])
-#            y_min_h, y_max_h = get_y_window_his(mc_reco_gen_matched_z_ratio[ibin2])
-#            y_margin_up = 0.15
-#            y_margin_down = 0.05
-#            mc_reco_gen_matched_z_ratio[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
-#            mc_reco_gen_matched_z_ratio[ibin2].SetTitle("")
-#            mc_reco_gen_matched_z_ratio[ibin2].SetXTitle(self.v_varshape_latex)
-#            mc_reco_gen_matched_z_ratio[ibin2].SetYTitle("reconstructed/generated")
-#            mc_reco_gen_matched_z_ratio[ibin2].SetTitleOffset(1.3, "Y")
-#            mc_reco_gen_matched_z_ratio[ibin2].Draw("same")
-#            latex = TLatex(0.2, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
-#            draw_latex(latex)
-#            c_mc_reco_gen_matched_z_ratio.SaveAs("%s/reco_gen_matched_%s_ratio_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
-#
-#            c_mc_reco_gen_matched_z = TCanvas("c_mc_reco_gen_matched_z " + suffix, "Reco vs Gen")
-#            setup_canvas(c_mc_reco_gen_matched_z)
-#            c_mc_reco_gen_matched_z.SetLeftMargin(0.13)
-#            leg_mc_reco_gen_matched_z = TLegend(.6, .8, .8, .85, "")
-#            setup_legend(leg_mc_reco_gen_matched_z)
-#            setup_histogram(mc_reco_matched_z[ibin2], get_colour(1), get_marker(0))
-#            leg_mc_reco_gen_matched_z.AddEntry(mc_reco_matched_z[ibin2], "reconstructed", "P")
-#            y_min_h, y_max_h = get_y_window_his([mc_reco_matched_z[ibin2], mc_gen_matched_z[ibin2]])
-#            y_margin_up = 0.15
-#            y_margin_down = 0.05
-#            mc_reco_matched_z[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
-#            mc_reco_matched_z[ibin2].SetTitle("")
-#            mc_reco_matched_z[ibin2].SetXTitle(self.v_varshape_latex)
-#            mc_reco_matched_z[ibin2].SetYTitle("normalised yield")
-#            mc_reco_matched_z[ibin2].SetTitleOffset(1.3, "Y")
-#            mc_reco_matched_z[ibin2].GetXaxis().SetRangeUser(round(self.lvarshape_binmin_reco[0], 2), round(self.lvarshape_binmax_reco[-1], 2))
-#            mc_reco_matched_z[ibin2].Draw()
-#            setup_histogram(mc_gen_matched_z[ibin2], get_colour(2), get_marker(1))
-#            leg_mc_reco_gen_matched_z.AddEntry(mc_gen_matched_z[ibin2], "generated", "P")
-#            mc_gen_matched_z[ibin2].Draw("same")
-#            leg_mc_reco_gen_matched_z.Draw("same")
-#            latex = TLatex(0.2, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
-#            draw_latex(latex)
-#            c_mc_reco_gen_matched_z.SaveAs("%s/reco_gen_matched_%s_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
-#
-#            # plot the shape response matrix in jet pt bins
-#
-#            hz_genvsreco_list.append(unfolding_input_file.Get("hz_genvsreco" + suffix))
-#            cz_genvsreco = TCanvas("cz_genvsreco_" + suffix, "response matrix 2D projection")
-#            setup_canvas(cz_genvsreco)
-#            cz_genvsreco.SetRightMargin(0.13)
-#            cz_genvsreco.SetLogz()
-#            setup_histogram(hz_genvsreco_list[ibin2])
-#            hz_genvsreco_list[ibin2].GetZaxis().SetRangeUser(hz_genvsreco_list[ibin2].GetMinimum(0), hz_genvsreco_list[ibin2].GetMaximum())
-#            hz_genvsreco_list[ibin2].SetTitle("%g #leq %s < %g GeV/#it{c}" % \
-#                (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
-#            hz_genvsreco_list[ibin2].SetXTitle("%s^{gen}" % self.v_varshape_latex)
-#            hz_genvsreco_list[ibin2].SetYTitle("%s^{rec}" % self.v_varshape_latex)
-#            hz_genvsreco_list[ibin2].Draw("colz")
-#            cz_genvsreco.SaveAs("%s/response_pr_%s_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
-#
-#        # plot the jet pt response matrix in shape bins
-#
-#        for ibinshape in range(self.p_nbinshape_reco):
-#            suffix = "%s_%.2f_%.2f" % \
-#                     (self.v_varshape_binning, self.lvarshape_binmin_reco[ibinshape], self.lvarshape_binmax_reco[ibinshape])
-#            suffix_plot = "%s_%g_%g" % \
-#                     (self.v_varshape_binning, self.lvarshape_binmin_reco[ibinshape], self.lvarshape_binmax_reco[ibinshape])
-#            hjetpt_genvsreco_list.append(unfolding_input_file.Get("hjetpt_genvsreco" + suffix))
-#
-#            cjetpt_genvsreco = TCanvas("cjetpt_genvsreco" + suffix, "response matrix 2D projection" + suffix)
-#            setup_canvas(cjetpt_genvsreco)
-#            cjetpt_genvsreco.SetRightMargin(0.13)
-#            cjetpt_genvsreco.SetLogz()
-#            setup_histogram(hjetpt_genvsreco_list[ibinshape])
-#            hjetpt_genvsreco_list[ibinshape].GetZaxis().SetRangeUser(hjetpt_genvsreco_list[ibinshape].GetMinimum(0), hjetpt_genvsreco_list[ibinshape].GetMaximum())
-#            hjetpt_genvsreco_list[ibinshape].SetTitle("%g #leq %s < %g" % \
-#                (self.lvarshape_binmin_reco[ibinshape], self.v_varshape_latex, self.lvarshape_binmax_reco[ibinshape]))
-#            hjetpt_genvsreco_list[ibinshape].SetXTitle("#it{p}_{T, jet}^{gen} (GeV/#it{c})")
-#            hjetpt_genvsreco_list[ibinshape].SetYTitle("#it{p}_{T, jet}^{rec} (GeV/#it{c})")
-#            hjetpt_genvsreco_list[ibinshape].Draw("colz")
-#            cjetpt_genvsreco.SaveAs("%s/response_pr_%s_%s.eps" % (self.d_resultsallpdata, self.v_var2_binning, suffix_plot))
-#
-#        # plot the full response matrix
-#
-#        his_response_pr = response_matrix.Hresponse() # linearised response matrix as a TH2
-#        cresponse_pr = TCanvas("cresponse_pr", "prompt response matrix")
-#        setup_canvas(cresponse_pr)
-#        cresponse_pr.SetLogz()
-#        cresponse_pr.SetRightMargin(0.13)
-#        setup_histogram(his_response_pr)
-#        his_response_pr.SetTitle("")
-#        his_response_pr.SetXTitle("(#it{p}_{T, jet}^{rec}, %s^{rec}) bin" % self.v_varshape_latex)
-#        his_response_pr.SetYTitle("(#it{p}_{T, jet}^{gen}, %s^{gen}) bin" % self.v_varshape_latex)
-#        his_response_pr.Draw("colz")
-#        cresponse_pr.SaveAs("%s/response_pr_matrix.eps" % self.d_resultsallpdata)
-#
-#        hz_genvsreco_full = unfolding_input_file.Get("hz_genvsreco_full")
-#        if not hz_genvsreco_full:
-#            self.logger.fatal(make_message_notfound("hz_genvsreco_full", self.n_fileresp))
-#        hjetpt_genvsreco_full = unfolding_input_file.Get("hjetpt_genvsreco_full")
-#        if not hjetpt_genvsreco_full:
-#            self.logger.fatal(make_message_notfound("hjetpt_genvsreco_full", self.n_fileresp))
-#
-#        cz_genvsreco_full = TCanvas("cz_genvsreco_full", "response matrix 2D projection")
-#        setup_canvas(cz_genvsreco_full)
-#        cz_genvsreco_full.SetRightMargin(0.13)
-#        cz_genvsreco_full.SetLogz()
-#        setup_histogram(hz_genvsreco_full)
-#        hz_genvsreco_full.GetZaxis().SetRangeUser(hz_genvsreco_full.GetMinimum(0), hz_genvsreco_full.GetMaximum())
-#        hz_genvsreco_full.SetTitle("")
-#        hz_genvsreco_full.SetXTitle("%s^{gen}" % self.v_varshape_latex)
-#        hz_genvsreco_full.SetYTitle("%s^{rec}" % self.v_varshape_latex)
-#        hz_genvsreco_full.Draw("colz")
-#        cz_genvsreco_full.SaveAs("%s/response_pr_%s_full.eps" % (self.d_resultsallpdata, self.v_varshape_binning))
-#
-#        cjetpt_genvsreco_full = TCanvas("cjetpt_genvsreco_full", "response matrix 2D projection")
-#        setup_canvas(cjetpt_genvsreco_full)
-#        cjetpt_genvsreco_full.SetRightMargin(0.13)
-#        cjetpt_genvsreco_full.SetLogz()
-#        setup_histogram(hjetpt_genvsreco_full)
-#        hjetpt_genvsreco_full.GetZaxis().SetRangeUser(hjetpt_genvsreco_full.GetMinimum(0), hjetpt_genvsreco_full.GetMaximum())
-#        hjetpt_genvsreco_full.SetTitle("")
-#        hjetpt_genvsreco_full.SetXTitle("#it{p}_{T, jet}^{gen} (GeV/#it{c})")
-#        hjetpt_genvsreco_full.SetYTitle("#it{p}_{T, jet}^{rec} (GeV/#it{c})")
-#        hjetpt_genvsreco_full.Draw("colz")
-#        cjetpt_genvsreco_full.SaveAs("%s/response_pr_%s_full.eps" % (self.d_resultsallpdata, self.v_var2_binning))
-#
-#        # plot gen. level kinematic efficiency for shape in jet pt bins
-#
-#        for ibin2 in range(self.p_nbin2_gen):
-#            suffix = "%s_%.2f_%.2f" % \
-#                     (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-#            suffix_plot = "%s_%g_%g" % \
-#                     (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-#            kinematic_eff.append(unfolding_input_file.Get("hz_gen_cuts" + suffix))
-#            hz_gen_nocuts.append(unfolding_input_file.Get("hz_gen_nocuts" + suffix))
-#            kinematic_eff[ibin2].Divide(hz_gen_nocuts[ibin2])
-#            ckinematic_eff = TCanvas("ckinematic_eff " + suffix, "Kinematic Eff" + suffix)
-#            setup_canvas(ckinematic_eff)
-#            ckinematic_eff.SetLeftMargin(0.13)
-#            setup_histogram(kinematic_eff[ibin2], get_colour(1))
-#            y_min_h, y_max_h = get_y_window_his(kinematic_eff[ibin2])
-#            y_margin_up = 0.15
-#            y_margin_down = 0.05
-#            kinematic_eff[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
-#            kinematic_eff[ibin2].GetXaxis().SetRangeUser(round(self.lvarshape_binmin_reco[0], 2), round(self.lvarshape_binmax_reco[-1], 2))
-#            kinematic_eff[ibin2].SetTitle("")
-#            kinematic_eff[ibin2].SetXTitle(self.v_varshape_latex)
-#            kinematic_eff[ibin2].SetYTitle("kinematic efficiency")
-#            kinematic_eff[ibin2].SetTitleOffset(1.5, "Y")
-#            kinematic_eff[ibin2].Draw()
-#            latex = TLatex(0.2, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
-#            draw_latex(latex)
-#            ckinematic_eff.SaveAs("%s/kineff_pr_gen_%s_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
-#
-#        # plot gen. level kinematic efficiency for jet pt
-#
-#        kinematic_eff_jetpt = unfolding_input_file.Get("hjetpt_gen_cuts")
-#        hjetpt_gen_nocuts = unfolding_input_file.Get("hjetpt_gen_nocuts")
-#        kinematic_eff_jetpt.Divide(hjetpt_gen_nocuts)
-#        ckinematic_eff_jetpt = TCanvas("ckinematic_eff_jetpt", "Kinematic Eff_jetpt")
-#        setup_canvas(ckinematic_eff_jetpt)
-#        ckinematic_eff_jetpt.SetLeftMargin(0.13)
-#        setup_histogram(kinematic_eff_jetpt)
-#        y_min_h, y_max_h = get_y_window_his(kinematic_eff_jetpt)
-#        y_margin_up = 0.15
-#        y_margin_down = 0.05
-#        kinematic_eff_jetpt.GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
-#        kinematic_eff_jetpt.GetXaxis().SetRangeUser(round(self.lvar2_binmin_reco[0], 2), round(self.lvar2_binmax_reco[-1], 2))
-#        kinematic_eff_jetpt.SetTitle("")
-#        kinematic_eff_jetpt.SetXTitle("%s (GeV/#it{c})" % self.p_latexbin2var)
-#        kinematic_eff_jetpt.SetYTitle("kinematic efficiency")
-#        kinematic_eff_jetpt.SetTitleOffset(1.5, "Y")
-#        kinematic_eff_jetpt.Draw()
-#        latex = TLatex(0.2, 0.82, "%g #leq %s < %g" % (round(self.lvarshape_binmin_reco[0], 2), self.v_varshape_latex, round(self.lvarshape_binmax_reco[-1], 2)))
-#        draw_latex(latex)
-#        ckinematic_eff_jetpt.SaveAs("%s/kineff_pr_gen_%s.eps" % (self.d_resultsallpdata, self.v_var2_binning))
-#
-#        # plot gen. level kinematic efficiency
-#
-#        cgen_eff = TCanvas("cgen_eff ", "gen efficiency applied to unfolding output")
-#        setup_canvas(cgen_eff)
-#        setup_histogram(hzvsjetpt_gen_eff)
-#        hzvsjetpt_gen_eff.SetTitle("")
-#        hzvsjetpt_gen_eff.SetXTitle("%s^{gen}" % self.v_varshape_latex)
-#        hzvsjetpt_gen_eff.SetYTitle("#it{p}_{T, jet}^{gen} (GeV/#it{c})")
-#        hzvsjetpt_gen_eff.Draw("text")
-#        cgen_eff.SaveAs("%s/kineff_pr_gen.eps" % self.d_resultsallpdata)
-#
-#        # plot rec. level kinematic efficiency
-#
-#        creco_eff = TCanvas("creco_eff ", "reco efficiency applied to input data")
-#        setup_canvas(creco_eff)
-#        setup_histogram(hzvsjetpt_reco_eff)
-#        hzvsjetpt_reco_eff.SetTitle("")
-#        hzvsjetpt_reco_eff.SetXTitle("%s^{rec}" % self.v_varshape_latex)
-#        hzvsjetpt_reco_eff.SetYTitle("#it{p}_{T, jet}^{rec} (GeV/#it{c})")
-#        hzvsjetpt_reco_eff.Draw("text")
-#        creco_eff.SaveAs("%s/kineff_pr_rec.eps" % self.d_resultsallpdata)
-#
-#        # plot relative shift of jet pt
-#
-#        for ibin2 in range(self.p_nbin2_gen):
-#            suffix = "%s_%.2f_%.2f" % \
-#                     (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-#            hjetpt_fracdiff_list.append(unfolding_input_file.Get("hjetpt_fracdiff_prompt" + suffix))
-#
-#        cjetpt_fracdiff = TCanvas("cjetpt_fracdiff", "prompt jetpt response fractional differences")
-#        setup_canvas(cjetpt_fracdiff)
-#        cjetpt_fracdiff.SetLogy()
-#        leg_jetpt_fracdiff = TLegend(.15, .5, .25, .8, "#it{p}_{T, jet}^{gen} (GeV/#it{c})")
-#        setup_legend(leg_jetpt_fracdiff)
-#        for ibin2 in range(self.p_nbin2_gen):
-#            setup_histogram(hjetpt_fracdiff_list[ibin2], get_colour(ibin2), get_marker(ibin2))
-#            leg_jetpt_fracdiff.AddEntry(hjetpt_fracdiff_list[ibin2], "%g#minus%g" % (self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2]), "P")
-#            if ibin2 == 0:
-#                hjetpt_fracdiff_list[ibin2].SetTitle("")
-#                hjetpt_fracdiff_list[ibin2].SetXTitle("(#it{p}_{T, jet}^{rec} #minus #it{p}_{T, jet}^{gen})/#it{p}_{T, jet}^{gen}")
-#                _, y_max_h = get_y_window_his(hjetpt_fracdiff_list)
-#                y_margin_up = 0.15
-#                y_margin_down = 0.05
-#                y_min_0 = min([h.GetMinimum(0) for h in hjetpt_fracdiff_list])
-#                hjetpt_fracdiff_list[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min_0, y_max_h, y_margin_down, y_margin_up, True))
-#            hjetpt_fracdiff_list[ibin2].Draw("same")
-#        leg_jetpt_fracdiff.Draw("same")
-#        cjetpt_fracdiff.SaveAs("%s/response_pr_reldiff_%s.eps" % (self.d_resultsallpdata, self.v_var2_binning))
-#
-#        # plot relative shift of shape
-#
-#        for ibinshape in range(self.p_nbinshape_gen):
-#            suffix = "%s_%.2f_%.2f" % \
-#                     (self.v_varshape_binning, self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape])
-#            hz_fracdiff_list.append(unfolding_input_file.Get("hz_fracdiff_prompt" + suffix))
-#
-#        cz_fracdiff = TCanvas("cz_fracdiff", "prompt z response fractional differences")
-#        setup_canvas(cz_fracdiff)
-#        cz_fracdiff.SetLogy()
-#        leg_z_fracdiff = TLegend(.15, .5, .25, .8, self.v_varshape_latex)
-#        setup_legend(leg_z_fracdiff)
-#        for ibinshape in range(self.p_nbinshape_gen):
-#            setup_histogram(hz_fracdiff_list[ibinshape], get_colour(ibinshape), get_marker(ibinshape))
-#            leg_z_fracdiff.AddEntry(hz_fracdiff_list[ibinshape], "%g#minus%g" % (self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape]), "P")
-#            if ibinshape == 0:
-#                hz_fracdiff_list[ibinshape].SetTitle("")
-#                hz_fracdiff_list[ibinshape].SetXTitle("(%s^{rec} #minus %s^{gen})/%s^{gen}" % (self.v_varshape_latex, self.v_varshape_latex, self.v_varshape_latex))
-#                _, y_max_h = get_y_window_his(hz_fracdiff_list)
-#                y_min_0 = min([h.GetMinimum(0) for h in hz_fracdiff_list])
-#                y_margin_up = 0.15
-#                y_margin_down = 0.05
-#                hz_fracdiff_list[ibinshape].GetYaxis().SetRangeUser(*get_plot_range(y_min_0, y_max_h, y_margin_down, y_margin_up, True))
-#            hz_fracdiff_list[ibinshape].Draw("same")
-#        leg_z_fracdiff.Draw("same")
-#        cz_fracdiff.SaveAs("%s/response_pr_reldiff_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning))
-#
-#        fileouts.cd()
-#        unfolded_z_scaled_list = []
-#        unfolded_z_xsection_list = []
-#        unfolded_jetpt_scaled_list = []
-#        refolding_test_list = []
-#        refolding_test_jetpt_list = []
-#        i_iter_choice = self.choice_iter_unfolding - 1 # list index of the chosen iteration
-#        for i in range(self.niter_unfolding):
-#            unfolded_z_scaled_list_iter = []
-#            unfolded_z_xsection_list_iter = []
-#            refolding_test_list_iter = []
-#
-#            # unfold
-#
-#            unfolding_object = RooUnfoldBayes(response_matrix, input_data, i + 1)
-#            unfolded_zvsjetpt = unfolding_object.Hreco(2)
-#
-#            # plot the final unfolded shape vs jet pt
-#
-#            if i == i_iter_choice:
-#                unfolded_zvsjetpt_final = unfolded_zvsjetpt.Clone("unfolded_zvsjetpt_final")
-#                # apply 2D gen. level kin. eff.
-#                unfolded_zvsjetpt_final.Divide(hzvsjetpt_gen_eff)
-#                cunfolded_output = TCanvas("cunfolded_output", "unfolded_output")
-#                setup_canvas(cunfolded_output)
-#                setup_histogram(unfolded_zvsjetpt_final, get_colour(1))
-#                unfolded_zvsjetpt_final.SetTitle("iteration %d" % (i + 1))
-#                unfolded_zvsjetpt_final.SetXTitle(self.v_varshape_latex)
-#                unfolded_zvsjetpt_final.SetYTitle("%s (GeV/#it{c})" % self.p_latexbin2var)
-#                gStyle.SetPaintTextFormat(".0f")
-#                unfolded_zvsjetpt_final.Draw("texte")
-#                cunfolded_output.SaveAs("%s/unfolded_output.eps" % self.d_resultsallpdata)
-#                gStyle.SetPaintTextFormat("g")
-#
-#            for ibin2 in range(self.p_nbin2_gen):
-#                suffix = "%s_%.2f_%.2f" % \
-#                         (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-#                suffix_plot = "%s_%g_%g" % \
-#                         (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-#                unfolded_z = unfolded_zvsjetpt.ProjectionX("unfolded_z_proj_%d_%s" % (i + 1, suffix), ibin2 + 1, ibin2 + 1, "e")
-#                unfolded_z_scaled = unfolded_z.Clone("unfolded_z_scaled_%d_%s" % (i + 1, suffix))
-#
-#                # apply gen. level kinematic efficiency
-#
-#                unfolded_z_scaled.Divide(kinematic_eff[ibin2])
-#
-#                # normalise by luminosity and divide by the branching ratio to get cross-section
-#
-#                unfolded_z_xsection = unfolded_z_scaled.Clone("unfolded_z_xsection_%d_%s" % (i + 1, suffix))
-#                unfolded_z_xsection.Scale(self.xsection_inel / (self.p_nevents * self.branching_ratio), "width")
-#
-#                # normalise by the number of jets
-#
-#                unfolded_z_scaled.Scale(1.0 / unfolded_z_scaled.Integral(bin_int_first, unfolded_z_scaled.FindBin(self.lvarshape_binmin_reco[-1])), "width")
-#
-#                unfolded_z_scaled.Write("unfolded_z_%d_%s" % (i + 1, suffix))
-#                unfolded_z_xsection.Write("unfolded_z_xsection_%d_%s" % (i + 1, suffix))
-#                unfolded_z_scaled_list_iter.append(unfolded_z_scaled)
-#                unfolded_z_xsection_list_iter.append(unfolded_z_xsection)
-#                cunfolded_z = TCanvas("cunfolded_z_%d_%s" % (i + 1, suffix), "1D output of unfolding" + suffix)
-#                setup_canvas(cunfolded_z)
-#                setup_histogram(unfolded_z_scaled, get_colour(1))
-#                y_min_h, y_max_h = get_y_window_his(unfolded_z_scaled)
-#                y_margin_up = 0.15
-#                y_margin_down = 0.05
-#                unfolded_z_scaled.GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
-#                unfolded_z_scaled.GetXaxis().SetRangeUser(round(self.lvarshape_binmin_reco[0], 2), round(self.lvarshape_binmax_reco[-1], 2))
-#                unfolded_z_scaled.SetTitle("")
-#                unfolded_z_scaled.SetXTitle(self.v_varshape_latex)
-#                unfolded_z_scaled.SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
-#                unfolded_z_scaled.Draw()
-#                latex = TLatex(0.15, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]))
-#                draw_latex(latex)
-#                latex2 = TLatex(0.5, 0.82, "iteration %d" % (i + 1))
-#                draw_latex(latex2)
-#                cunfolded_z.SaveAs("%s/unfolded_%s_%d_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, i + 1, suffix_plot))
-#                # Save the selected iteration under a special name.
-#                if i == i_iter_choice:
-#                    unfolded_z_scaled.Write("unfolded_z_sel_%s" % suffix)
-#                    unfolded_z_xsection.Write("unfolded_z_xsection_sel_%s" % suffix)
-#                    cunfolded_z.SaveAs("%s/unfolded_%s_sel_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
-#
-#            unfolded_z_scaled_list.append(unfolded_z_scaled_list_iter)
-#            unfolded_z_xsection_list.append(unfolded_z_xsection_list_iter)
-#
-#            # get unfolded jet pt
-#
-#            unfolded_jetpt = unfolded_zvsjetpt.ProjectionY("unfolded_jetpt_%d" % (i + 1), 1, self.p_nbinshape_gen, "e")
-#            unfolded_jetpt_scaled = unfolded_jetpt.Clone("unfolded_jetpt_scaled_%d" % (i + 1))
-#
-#            # apply gen. level kinematic efficiency
-#
-#            unfolded_jetpt_scaled.Divide(kinematic_eff_jetpt)
-#
-#            # normalise by number of jets
-#
-#            unfolded_jetpt_scaled.Scale(1.0 / unfolded_jetpt_scaled.Integral(unfolded_jetpt_scaled.FindBin(self.lvar2_binmin_reco[0]), unfolded_jetpt_scaled.FindBin(self.lvar2_binmin_reco[-1])), "width")
-#
-#            unfolded_jetpt_scaled.Write("unfolded_jetpt_%d" % (i + 1))
-#            unfolded_jetpt_scaled_list.append(unfolded_jetpt_scaled)
-#            cunfolded_jetpt = TCanvas("cunfolded_jetpt_%s" % (i + 1), "1D output of unfolding")
-#            setup_canvas(cunfolded_jetpt)
-#            cunfolded_jetpt.SetLogy()
-#            cunfolded_jetpt.SetLeftMargin(0.13)
-#            setup_histogram(unfolded_jetpt_scaled, get_colour(1))
-#            y_min_h, y_max_h = get_y_window_his(unfolded_jetpt_scaled)
-#            y_min_0 = unfolded_jetpt_scaled.GetMinimum(0)
-#            if y_min_h <= 0:
-#                y_min_h = y_min_0
-#            y_margin_up = 0.15
-#            y_margin_down = 0.05
-#            unfolded_jetpt_scaled.GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up, True))
-#            unfolded_jetpt_scaled.GetXaxis().SetRangeUser(self.lvar2_binmin_reco[0], self.lvar2_binmax_reco[-1])
-#            unfolded_jetpt_scaled.SetTitle("")
-#            unfolded_jetpt_scaled.SetXTitle("%s (GeV/#it{c})" % self.p_latexbin2var)
-#            unfolded_jetpt_scaled.SetYTitle("1/#it{N}_{jets} d#it{N}/d%s (#it{c}/GeV)" % self.p_latexbin2var)
-#            unfolded_jetpt_scaled.SetTitleOffset(1.5, "Y")
-#            unfolded_jetpt_scaled.Draw()
-#            latex = TLatex(0.2, 0.82, "%g #leq %s < %g" % (round(self.lvarshape_binmin_reco[0], 2), self.v_varshape_latex, round(self.lvarshape_binmax_reco[-1], 2)))
-#            draw_latex(latex)
-#            latex2 = TLatex(0.55, 0.82, "iteration %d" % (i + 1))
-#            draw_latex(latex2)
-#            cunfolded_jetpt.SaveAs("%s/unfolded_%s_%d.eps" % (self.d_resultsallpdata, self.v_var2_binning, i + 1))
-#
-#            # refolding test for shape in jet pt bins
-#
-#            refolded = folding(unfolded_zvsjetpt, response_matrix, input_data)
-#            for ibin2 in range(self.p_nbin2_reco):
-#                suffix = "%s_%.2f_%.2f" % \
-#                         (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
-#                suffix_plot = "%s_%g_%g" % \
-#                         (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
-#                refolded_z = refolded.ProjectionX("refolded_z", ibin2 + 1, ibin2 + 1, "e")
-#                refolding_test = input_data_z[ibin2].Clone("refolding_test_%d_%s" % (i + 1, suffix))
-#                refolding_test.Divide(refolded_z)
-#                refolding_test_list_iter.append(refolding_test)
-#                cfolded_z = TCanvas("cfolded_z_%d_%s" % (i + 1, suffix), "1D output of folding" + suffix)
-#                setup_canvas(cfolded_z)
-#                setup_histogram(refolding_test, get_colour(1))
-#                line = TLine(round(self.lvarshape_binmin_reco[0], 2), 1, round(self.lvarshape_binmax_reco[-1], 2), 1)
-#                refolding_test.GetYaxis().SetRangeUser(0.5, 1.5)
-#                refolding_test.SetTitle("")
-#                refolding_test.SetXTitle(self.v_varshape_latex)
-#                refolding_test.SetYTitle("refolding test")
-#                refolding_test.Draw()
-#                line.Draw("same")
-#                latex = TLatex(0.15, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]))
-#                draw_latex(latex)
-#                latex2 = TLatex(0.5, 0.82, "iteration %d" % (i + 1))
-#                draw_latex(latex2)
-#                cfolded_z.SaveAs("%s/refolding_%s_%d_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, i + 1, suffix_plot))
-#            refolding_test_list.append(refolding_test_list_iter)
-#
-#            # refolding test for jet pt
-#
-#            refolded_jetpt = refolded.ProjectionY("refolded_jetpt", 1, self.p_nbinshape_gen, "e")
-#            refolding_test_jetpt = input_data_jetpt.Clone("refolding_test_%d" % (i + 1))
-#            refolding_test_jetpt.Divide(refolded_jetpt)
-#            refolding_test_jetpt_list.append(refolding_test_jetpt)
-#            cfolded_jetpt = TCanvas("cfolded_jetpt_%d" % (i + 1), "1D output of folding")
-#            setup_canvas(cfolded_jetpt)
-#            setup_histogram(refolding_test_jetpt, get_colour(1))
-#            line = TLine(round(self.lvar2_binmin_gen[0], 2), 1, round(self.lvar2_binmax_gen[-1], 2), 1)
-#            refolding_test_jetpt.GetYaxis().SetRangeUser(0.5, 1.5)
-#            refolding_test_jetpt.SetTitle("")
-#            refolding_test_jetpt.SetXTitle("%s (GeV/#it{c})" % self.p_latexbin2var)
-#            refolding_test_jetpt.SetYTitle("refolding test")
-#            refolding_test_jetpt.Draw()
-#            line.Draw("same")
-#            latex = TLatex(0.15, 0.82, "%g #leq %s < %g" % (round(self.lvarshape_binmin_gen[0], 2), self.v_varshape_latex, round(self.lvarshape_binmax_gen[-1], 2)))
-#            draw_latex(latex)
-#            latex2 = TLatex(0.5, 0.82, "iteration %d" % (i + 1))
-#            draw_latex(latex2)
-#            cfolded_jetpt.SaveAs("%s/refolding_%s_%d.eps" % (self.d_resultsallpdata, self.v_var2_binning, i + 1))
-#
-#        # end of iteration loop
-#
-#        # plot the unfolded shape distributions for all iterations for each pt jet bin
-#
-#        for ibin2 in range(self.p_nbin2_gen):
-#            suffix = "%s_%.2f_%.2f" % \
-#                     (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-#            suffix_plot = "%s_%g_%g" % \
-#                     (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-#            cconvergence_z = TCanvas("cconvergence_z " + suffix, "1D output of convergence")
-#            setup_canvas(cconvergence_z)
-#            cconvergence_z.SetRightMargin(0.2)
-#            leg_z = TLegend(.85, .45, 0.95, .85, "iteration")
-#            setup_legend(leg_z)
-#            l_his = [unfolded_z_scaled_list[i][ibin2] for i in range(self.niter_unfolding)]
-#            y_min_h, y_max_h = get_y_window_his(l_his)
-#            y_margin_up = 0.15
-#            y_margin_down = 0.05
-#            for i in range(self.niter_unfolding):
-#                setup_histogram(unfolded_z_scaled_list[i][ibin2], get_colour(i))
-#                leg_z.AddEntry(unfolded_z_scaled_list[i][ibin2], ("%d" % (i + 1)), "P")
-#                if i == 0:
-#                    unfolded_z_scaled_list[i][ibin2].GetXaxis().SetRangeUser(round(self.lvarshape_binmin_reco[0], 2), round(self.lvarshape_binmax_reco[-1], 2))
-#                    unfolded_z_scaled_list[i][ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
-#                    unfolded_z_scaled_list[i][ibin2].SetTitle("")
-#                    unfolded_z_scaled_list[i][ibin2].SetXTitle(self.v_varshape_latex)
-#                    unfolded_z_scaled_list[i][ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
-#                unfolded_z_scaled_list[i][ibin2].Draw("same")
-#            leg_z.Draw("same")
-#            latex = TLatex(0.15, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]))
-#            draw_latex(latex)
-#            cconvergence_z.SaveAs("%s/convergence_%s_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
-#
+        for ibin2 in range(self.p_nbin2_reco):
+            suffix = "%s_%.2f_%.2f" % \
+                     (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
+            suffix_plot = "%s_%g_%g" % \
+                     (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
+
+            input_data_z.append(input_data.ProjectionX("input_data_z" + suffix, ibin2 + 1, ibin2 + 1, "e"))
+
+            # compare shapes of distributions of reconstructed jets that pass rec. vs. gen. level cuts
+
+            mc_reco_matched_z.append(mc_reco_matched.ProjectionX("mc_reco_matched_z" + suffix, ibin2 + 1, ibin2 + 1, "e"))
+            mc_reco_matched_z[ibin2].Scale(1.0 / mc_reco_matched_z[ibin2].Integral(bin_int_first, -1))
+            mc_gen_matched_z.append(mc_gen_matched.ProjectionX("mc_det_matched_z" + suffix, mc_gen_matched.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2]), mc_gen_matched.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2]), "e"))
+            mc_gen_matched_z[ibin2].Scale(1.0 / mc_gen_matched_z[ibin2].Integral(bin_int_first, -1))
+            mc_reco_gen_matched_z_ratio.append(mc_reco_matched_z[ibin2].Clone("input_mc_reco_gen_matched_z_ratio" + suffix))
+            mc_reco_gen_matched_z_ratio[ibin2].Divide(mc_gen_matched_z[ibin2])
+
+            c_mc_reco_gen_matched_z_ratio = TCanvas("c_mc_reco_gen_matched_z_ratio " + suffix, "Reco/Gen Ratio")
+            setup_canvas(c_mc_reco_gen_matched_z_ratio)
+            c_mc_reco_gen_matched_z_ratio.SetLeftMargin(0.13)
+            setup_histogram(mc_reco_gen_matched_z_ratio[ibin2])
+            y_min_h, y_max_h = get_y_window_his(mc_reco_gen_matched_z_ratio[ibin2])
+            y_margin_up = 0.15
+            y_margin_down = 0.05
+            mc_reco_gen_matched_z_ratio[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
+            mc_reco_gen_matched_z_ratio[ibin2].SetTitle("")
+            mc_reco_gen_matched_z_ratio[ibin2].SetXTitle(self.v_varshape_latex)
+            mc_reco_gen_matched_z_ratio[ibin2].SetYTitle("reconstructed/generated")
+            mc_reco_gen_matched_z_ratio[ibin2].SetTitleOffset(1.3, "Y")
+            mc_reco_gen_matched_z_ratio[ibin2].Draw("same")
+            latex = TLatex(0.2, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
+            draw_latex(latex)
+            c_mc_reco_gen_matched_z_ratio.SaveAs("%s/reco_gen_matched_%s_ratio_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
+
+            c_mc_reco_gen_matched_z = TCanvas("c_mc_reco_gen_matched_z " + suffix, "Reco vs Gen")
+            setup_canvas(c_mc_reco_gen_matched_z)
+            c_mc_reco_gen_matched_z.SetLeftMargin(0.13)
+            leg_mc_reco_gen_matched_z = TLegend(.6, .8, .8, .85, "")
+            setup_legend(leg_mc_reco_gen_matched_z)
+            setup_histogram(mc_reco_matched_z[ibin2], get_colour(1), get_marker(0))
+            leg_mc_reco_gen_matched_z.AddEntry(mc_reco_matched_z[ibin2], "reconstructed", "P")
+            y_min_h, y_max_h = get_y_window_his([mc_reco_matched_z[ibin2], mc_gen_matched_z[ibin2]])
+            y_margin_up = 0.15
+            y_margin_down = 0.05
+            mc_reco_matched_z[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
+            mc_reco_matched_z[ibin2].SetTitle("")
+            mc_reco_matched_z[ibin2].SetXTitle(self.v_varshape_latex)
+            mc_reco_matched_z[ibin2].SetYTitle("normalised yield")
+            mc_reco_matched_z[ibin2].SetTitleOffset(1.3, "Y")
+            mc_reco_matched_z[ibin2].GetXaxis().SetRangeUser(round(self.lvarshape_binmin_reco[0], 2), round(self.lvarshape_binmax_reco[-1], 2))
+            mc_reco_matched_z[ibin2].Draw()
+            setup_histogram(mc_gen_matched_z[ibin2], get_colour(2), get_marker(1))
+            leg_mc_reco_gen_matched_z.AddEntry(mc_gen_matched_z[ibin2], "generated", "P")
+            mc_gen_matched_z[ibin2].Draw("same")
+            leg_mc_reco_gen_matched_z.Draw("same")
+            latex = TLatex(0.2, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
+            draw_latex(latex)
+            c_mc_reco_gen_matched_z.SaveAs("%s/reco_gen_matched_%s_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
+
+            # plot the shape response matrix in jet pt bins
+
+            hz_genvsreco_list.append(unfolding_input_file.Get("hz_genvsreco" + suffix))
+            cz_genvsreco = TCanvas("cz_genvsreco_" + suffix, "response matrix 2D projection")
+            setup_canvas(cz_genvsreco)
+            cz_genvsreco.SetRightMargin(0.13)
+            cz_genvsreco.SetLogz()
+            setup_histogram(hz_genvsreco_list[ibin2])
+            hz_genvsreco_list[ibin2].GetZaxis().SetRangeUser(hz_genvsreco_list[ibin2].GetMinimum(0), hz_genvsreco_list[ibin2].GetMaximum())
+            hz_genvsreco_list[ibin2].SetTitle("%g #leq %s < %g GeV/#it{c}" % \
+                (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
+            hz_genvsreco_list[ibin2].SetXTitle("%s^{gen}" % self.v_varshape_latex)
+            hz_genvsreco_list[ibin2].SetYTitle("%s^{rec}" % self.v_varshape_latex)
+            hz_genvsreco_list[ibin2].Draw("colz")
+            cz_genvsreco.SaveAs("%s/response_pr_%s_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
+
+        # plot the jet pt response matrix in shape bins
+
+        for ibinshape in range(self.p_nbinshape_reco):
+            suffix = "%s_%.2f_%.2f" % \
+                     (self.v_varshape_binning, self.lvarshape_binmin_reco[ibinshape], self.lvarshape_binmax_reco[ibinshape])
+            suffix_plot = "%s_%g_%g" % \
+                     (self.v_varshape_binning, self.lvarshape_binmin_reco[ibinshape], self.lvarshape_binmax_reco[ibinshape])
+            hjetpt_genvsreco_list.append(unfolding_input_file.Get("hjetpt_genvsreco" + suffix))
+
+            cjetpt_genvsreco = TCanvas("cjetpt_genvsreco" + suffix, "response matrix 2D projection" + suffix)
+            setup_canvas(cjetpt_genvsreco)
+            cjetpt_genvsreco.SetRightMargin(0.13)
+            cjetpt_genvsreco.SetLogz()
+            setup_histogram(hjetpt_genvsreco_list[ibinshape])
+            hjetpt_genvsreco_list[ibinshape].GetZaxis().SetRangeUser(hjetpt_genvsreco_list[ibinshape].GetMinimum(0), hjetpt_genvsreco_list[ibinshape].GetMaximum())
+            hjetpt_genvsreco_list[ibinshape].SetTitle("%g #leq %s < %g" % \
+                (self.lvarshape_binmin_reco[ibinshape], self.v_varshape_latex, self.lvarshape_binmax_reco[ibinshape]))
+            hjetpt_genvsreco_list[ibinshape].SetXTitle("#it{p}_{T, jet}^{gen} (GeV/#it{c})")
+            hjetpt_genvsreco_list[ibinshape].SetYTitle("#it{p}_{T, jet}^{rec} (GeV/#it{c})")
+            hjetpt_genvsreco_list[ibinshape].Draw("colz")
+            cjetpt_genvsreco.SaveAs("%s/response_pr_%s_%s.eps" % (self.d_resultsallpdata, self.v_var2_binning, suffix_plot))
+
+        # plot the full response matrix
+
+        his_response_pr = response_matrix.Hresponse() # linearised response matrix as a TH2
+        cresponse_pr = TCanvas("cresponse_pr", "prompt response matrix")
+        setup_canvas(cresponse_pr)
+        cresponse_pr.SetLogz()
+        cresponse_pr.SetRightMargin(0.13)
+        setup_histogram(his_response_pr)
+        his_response_pr.SetTitle("")
+        his_response_pr.SetXTitle("(#it{p}_{T, jet}^{rec}, %s^{rec}) bin" % self.v_varshape_latex)
+        his_response_pr.SetYTitle("(#it{p}_{T, jet}^{gen}, %s^{gen}) bin" % self.v_varshape_latex)
+        his_response_pr.Draw("colz")
+        cresponse_pr.SaveAs("%s/response_pr_matrix.eps" % self.d_resultsallpdata)
+
+        hz_genvsreco_full = unfolding_input_file.Get("hz_genvsreco_full")
+        if not hz_genvsreco_full:
+            self.logger.fatal(make_message_notfound("hz_genvsreco_full", self.n_fileresp))
+        hjetpt_genvsreco_full = unfolding_input_file.Get("hjetpt_genvsreco_full")
+        if not hjetpt_genvsreco_full:
+            self.logger.fatal(make_message_notfound("hjetpt_genvsreco_full", self.n_fileresp))
+
+        cz_genvsreco_full = TCanvas("cz_genvsreco_full", "response matrix 2D projection")
+        setup_canvas(cz_genvsreco_full)
+        cz_genvsreco_full.SetRightMargin(0.13)
+        cz_genvsreco_full.SetLogz()
+        setup_histogram(hz_genvsreco_full)
+        hz_genvsreco_full.GetZaxis().SetRangeUser(hz_genvsreco_full.GetMinimum(0), hz_genvsreco_full.GetMaximum())
+        hz_genvsreco_full.SetTitle("")
+        hz_genvsreco_full.SetXTitle("%s^{gen}" % self.v_varshape_latex)
+        hz_genvsreco_full.SetYTitle("%s^{rec}" % self.v_varshape_latex)
+        hz_genvsreco_full.Draw("colz")
+        cz_genvsreco_full.SaveAs("%s/response_pr_%s_full.eps" % (self.d_resultsallpdata, self.v_varshape_binning))
+
+        cjetpt_genvsreco_full = TCanvas("cjetpt_genvsreco_full", "response matrix 2D projection")
+        setup_canvas(cjetpt_genvsreco_full)
+        cjetpt_genvsreco_full.SetRightMargin(0.13)
+        cjetpt_genvsreco_full.SetLogz()
+        setup_histogram(hjetpt_genvsreco_full)
+        hjetpt_genvsreco_full.GetZaxis().SetRangeUser(hjetpt_genvsreco_full.GetMinimum(0), hjetpt_genvsreco_full.GetMaximum())
+        hjetpt_genvsreco_full.SetTitle("")
+        hjetpt_genvsreco_full.SetXTitle("#it{p}_{T, jet}^{gen} (GeV/#it{c})")
+        hjetpt_genvsreco_full.SetYTitle("#it{p}_{T, jet}^{rec} (GeV/#it{c})")
+        hjetpt_genvsreco_full.Draw("colz")
+        cjetpt_genvsreco_full.SaveAs("%s/response_pr_%s_full.eps" % (self.d_resultsallpdata, self.v_var2_binning))
+
+        # plot gen. level kinematic efficiency for shape in jet pt bins
+
+        for ibin2 in range(self.p_nbin2_gen):
+            suffix = "%s_%.2f_%.2f" % \
+                     (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+            suffix_plot = "%s_%g_%g" % \
+                     (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+            kinematic_eff.append(unfolding_input_file.Get("hz_gen_cuts" + suffix))
+            hz_gen_nocuts.append(unfolding_input_file.Get("hz_gen_nocuts" + suffix))
+            kinematic_eff[ibin2].Divide(hz_gen_nocuts[ibin2])
+            ckinematic_eff = TCanvas("ckinematic_eff " + suffix, "Kinematic Eff" + suffix)
+            setup_canvas(ckinematic_eff)
+            ckinematic_eff.SetLeftMargin(0.13)
+            setup_histogram(kinematic_eff[ibin2], get_colour(1))
+            y_min_h, y_max_h = get_y_window_his(kinematic_eff[ibin2])
+            y_margin_up = 0.15
+            y_margin_down = 0.05
+            kinematic_eff[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
+            kinematic_eff[ibin2].GetXaxis().SetRangeUser(round(self.lvarshape_binmin_reco[0], 2), round(self.lvarshape_binmax_reco[-1], 2))
+            kinematic_eff[ibin2].SetTitle("")
+            kinematic_eff[ibin2].SetXTitle(self.v_varshape_latex)
+            kinematic_eff[ibin2].SetYTitle("kinematic efficiency")
+            kinematic_eff[ibin2].SetTitleOffset(1.5, "Y")
+            kinematic_eff[ibin2].Draw()
+            latex = TLatex(0.2, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
+            draw_latex(latex)
+            ckinematic_eff.SaveAs("%s/kineff_pr_gen_%s_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
+
+        # plot gen. level kinematic efficiency for jet pt
+
+        kinematic_eff_jetpt = unfolding_input_file.Get("hjetpt_gen_cuts")
+        hjetpt_gen_nocuts = unfolding_input_file.Get("hjetpt_gen_nocuts")
+        kinematic_eff_jetpt.Divide(hjetpt_gen_nocuts)
+        ckinematic_eff_jetpt = TCanvas("ckinematic_eff_jetpt", "Kinematic Eff_jetpt")
+        setup_canvas(ckinematic_eff_jetpt)
+        ckinematic_eff_jetpt.SetLeftMargin(0.13)
+        setup_histogram(kinematic_eff_jetpt)
+        y_min_h, y_max_h = get_y_window_his(kinematic_eff_jetpt)
+        y_margin_up = 0.15
+        y_margin_down = 0.05
+        kinematic_eff_jetpt.GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
+        kinematic_eff_jetpt.GetXaxis().SetRangeUser(round(self.lvar2_binmin_reco[0], 2), round(self.lvar2_binmax_reco[-1], 2))
+        kinematic_eff_jetpt.SetTitle("")
+        kinematic_eff_jetpt.SetXTitle("%s (GeV/#it{c})" % self.p_latexbin2var)
+        kinematic_eff_jetpt.SetYTitle("kinematic efficiency")
+        kinematic_eff_jetpt.SetTitleOffset(1.5, "Y")
+        kinematic_eff_jetpt.Draw()
+        latex = TLatex(0.2, 0.82, "%g #leq %s < %g" % (round(self.lvarshape_binmin_reco[0], 2), self.v_varshape_latex, round(self.lvarshape_binmax_reco[-1], 2)))
+        draw_latex(latex)
+        ckinematic_eff_jetpt.SaveAs("%s/kineff_pr_gen_%s.eps" % (self.d_resultsallpdata, self.v_var2_binning))
+
+        # plot gen. level kinematic efficiency
+
+        cgen_eff = TCanvas("cgen_eff ", "gen efficiency applied to unfolding output")
+        setup_canvas(cgen_eff)
+        setup_histogram(hzvsjetpt_gen_eff)
+        hzvsjetpt_gen_eff.SetTitle("")
+        hzvsjetpt_gen_eff.SetXTitle("%s^{gen}" % self.v_varshape_latex)
+        hzvsjetpt_gen_eff.SetYTitle("#it{p}_{T, jet}^{gen} (GeV/#it{c})")
+        hzvsjetpt_gen_eff.Draw("text")
+        cgen_eff.SaveAs("%s/kineff_pr_gen.eps" % self.d_resultsallpdata)
+
+       # plot rec. level kinematic efficiency
+
+        creco_eff = TCanvas("creco_eff ", "reco efficiency applied to input data")
+        setup_canvas(creco_eff)
+        setup_histogram(hzvsjetpt_reco_eff)
+        hzvsjetpt_reco_eff.SetTitle("")
+        hzvsjetpt_reco_eff.SetXTitle("%s^{rec}" % self.v_varshape_latex)
+        hzvsjetpt_reco_eff.SetYTitle("#it{p}_{T, jet}^{rec} (GeV/#it{c})")
+        hzvsjetpt_reco_eff.Draw("text")
+        creco_eff.SaveAs("%s/kineff_pr_rec.eps" % self.d_resultsallpdata)
+
+        # plot relative shift of jet pt
+
+        for ibin2 in range(self.p_nbin2_gen):
+            suffix = "%s_%.2f_%.2f" % \
+                     (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+            hjetpt_fracdiff_list.append(unfolding_input_file.Get("hjetpt_fracdiff_prompt" + suffix))
+
+        cjetpt_fracdiff = TCanvas("cjetpt_fracdiff", "prompt jetpt response fractional differences")
+        setup_canvas(cjetpt_fracdiff)
+        cjetpt_fracdiff.SetLogy()
+        leg_jetpt_fracdiff = TLegend(.15, .5, .25, .8, "#it{p}_{T, jet}^{gen} (GeV/#it{c})")
+        setup_legend(leg_jetpt_fracdiff)
+        for ibin2 in range(self.p_nbin2_gen):
+            setup_histogram(hjetpt_fracdiff_list[ibin2], get_colour(ibin2), get_marker(ibin2))
+            leg_jetpt_fracdiff.AddEntry(hjetpt_fracdiff_list[ibin2], "%g#minus%g" % (self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2]), "P")
+            if ibin2 == 0:
+                hjetpt_fracdiff_list[ibin2].SetTitle("")
+                hjetpt_fracdiff_list[ibin2].SetXTitle("(#it{p}_{T, jet}^{rec} #minus #it{p}_{T, jet}^{gen})/#it{p}_{T, jet}^{gen}")
+                _, y_max_h = get_y_window_his(hjetpt_fracdiff_list)
+                y_margin_up = 0.15
+                y_margin_down = 0.05
+                y_min_0 = min([h.GetMinimum(0) for h in hjetpt_fracdiff_list])
+                hjetpt_fracdiff_list[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min_0, y_max_h, y_margin_down, y_margin_up, True))
+            hjetpt_fracdiff_list[ibin2].Draw("same")
+        leg_jetpt_fracdiff.Draw("same")
+        cjetpt_fracdiff.SaveAs("%s/response_pr_reldiff_%s.eps" % (self.d_resultsallpdata, self.v_var2_binning))
+
+        # plot relative shift of shape
+
+        for ibinshape in range(self.p_nbinshape_gen):
+            suffix = "%s_%.2f_%.2f" % \
+                     (self.v_varshape_binning, self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape])
+            hz_fracdiff_list.append(unfolding_input_file.Get("hz_fracdiff_prompt" + suffix))
+
+        cz_fracdiff = TCanvas("cz_fracdiff", "prompt z response fractional differences")
+        setup_canvas(cz_fracdiff)
+        cz_fracdiff.SetLogy()
+        leg_z_fracdiff = TLegend(.15, .5, .25, .8, self.v_varshape_latex)
+        setup_legend(leg_z_fracdiff)
+        for ibinshape in range(self.p_nbinshape_gen):
+            setup_histogram(hz_fracdiff_list[ibinshape], get_colour(ibinshape), get_marker(ibinshape))
+            leg_z_fracdiff.AddEntry(hz_fracdiff_list[ibinshape], "%g#minus%g" % (self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape]), "P")
+            if ibinshape == 0:
+                hz_fracdiff_list[ibinshape].SetTitle("")
+                hz_fracdiff_list[ibinshape].SetXTitle("(%s^{rec} #minus %s^{gen})/%s^{gen}" % (self.v_varshape_latex, self.v_varshape_latex, self.v_varshape_latex))
+                _, y_max_h = get_y_window_his(hz_fracdiff_list)
+                y_min_0 = min([h.GetMinimum(0) for h in hz_fracdiff_list])
+                y_margin_up = 0.15
+                y_margin_down = 0.05
+                hz_fracdiff_list[ibinshape].GetYaxis().SetRangeUser(*get_plot_range(y_min_0, y_max_h, y_margin_down, y_margin_up, True))
+            hz_fracdiff_list[ibinshape].Draw("same")
+        leg_z_fracdiff.Draw("same")
+        cz_fracdiff.SaveAs("%s/response_pr_reldiff_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning))
+
+        fileouts.cd()
+        unfolded_z_scaled_list = []
+        unfolded_z_xsection_list = []
+        unfolded_jetpt_scaled_list = []
+        refolding_test_list = []
+        refolding_test_jetpt_list = []
+        i_iter_choice = self.choice_iter_unfolding - 1 # list index of the chosen iteration
+        for i in range(self.niter_unfolding):
+            unfolded_z_scaled_list_iter = []
+            unfolded_z_xsection_list_iter = []
+            refolding_test_list_iter = []
+
+            # unfold
+
+            unfolding_object = RooUnfoldBayes(response_matrix, input_data, i + 1)
+            unfolded_zvsjetpt = unfolding_object.Hreco(2)
+
+            # plot the final unfolded shape vs jet pt
+
+            if i == i_iter_choice:
+                unfolded_zvsjetpt_final = unfolded_zvsjetpt.Clone("unfolded_zvsjetpt_final")
+                # apply 2D gen. level kin. eff.
+                unfolded_zvsjetpt_final.Divide(hzvsjetpt_gen_eff)
+                cunfolded_output = TCanvas("cunfolded_output", "unfolded_output")
+                setup_canvas(cunfolded_output)
+                setup_histogram(unfolded_zvsjetpt_final, get_colour(1))
+                unfolded_zvsjetpt_final.SetTitle("iteration %d" % (i + 1))
+                unfolded_zvsjetpt_final.SetXTitle(self.v_varshape_latex)
+                unfolded_zvsjetpt_final.SetYTitle("%s (GeV/#it{c})" % self.p_latexbin2var)
+                gStyle.SetPaintTextFormat(".0f")
+                unfolded_zvsjetpt_final.Draw("texte")
+                cunfolded_output.SaveAs("%s/unfolded_output.eps" % self.d_resultsallpdata)
+                gStyle.SetPaintTextFormat("g")
+
+            for ibin2 in range(self.p_nbin2_gen):
+                suffix = "%s_%.2f_%.2f" % \
+                         (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+                suffix_plot = "%s_%g_%g" % \
+                         (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+                unfolded_z = unfolded_zvsjetpt.ProjectionX("unfolded_z_proj_%d_%s" % (i + 1, suffix), ibin2 + 1, ibin2 + 1, "e")
+                unfolded_z_scaled = unfolded_z.Clone("unfolded_z_scaled_%d_%s" % (i + 1, suffix))
+
+                # apply gen. level kinematic efficiency
+
+                unfolded_z_scaled.Divide(kinematic_eff[ibin2])
+
+                # normalise by luminosity and divide by the branching ratio to get cross-section
+
+                unfolded_z_xsection = unfolded_z_scaled.Clone("unfolded_z_xsection_%d_%s" % (i + 1, suffix))
+                unfolded_z_xsection.Scale(self.xsection_inel / (self.p_nevents * self.branching_ratio), "width")
+
+                # normalise by the number of jets
+
+                unfolded_z_scaled.Scale(1.0 / unfolded_z_scaled.Integral(bin_int_first, unfolded_z_scaled.FindBin(self.lvarshape_binmin_reco[-1])), "width")
+
+                unfolded_z_scaled.Write("unfolded_z_%d_%s" % (i + 1, suffix))
+                unfolded_z_xsection.Write("unfolded_z_xsection_%d_%s" % (i + 1, suffix))
+                unfolded_z_scaled_list_iter.append(unfolded_z_scaled)
+                unfolded_z_xsection_list_iter.append(unfolded_z_xsection)
+                cunfolded_z = TCanvas("cunfolded_z_%d_%s" % (i + 1, suffix), "1D output of unfolding" + suffix)
+                setup_canvas(cunfolded_z)
+                setup_histogram(unfolded_z_scaled, get_colour(1))
+                y_min_h, y_max_h = get_y_window_his(unfolded_z_scaled)
+                y_margin_up = 0.15
+                y_margin_down = 0.05
+                unfolded_z_scaled.GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
+                unfolded_z_scaled.GetXaxis().SetRangeUser(round(self.lvarshape_binmin_reco[0], 2), round(self.lvarshape_binmax_reco[-1], 2))
+                unfolded_z_scaled.SetTitle("")
+                unfolded_z_scaled.SetXTitle(self.v_varshape_latex)
+                unfolded_z_scaled.SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
+                unfolded_z_scaled.Draw()
+                latex = TLatex(0.15, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]))
+                draw_latex(latex)
+                latex2 = TLatex(0.5, 0.82, "iteration %d" % (i + 1))
+                draw_latex(latex2)
+                cunfolded_z.SaveAs("%s/unfolded_%s_%d_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, i + 1, suffix_plot))
+                # Save the selected iteration under a special name.
+                if i == i_iter_choice:
+                    unfolded_z_scaled.Write("unfolded_z_sel_%s" % suffix)
+                    unfolded_z_xsection.Write("unfolded_z_xsection_sel_%s" % suffix)
+                    cunfolded_z.SaveAs("%s/unfolded_%s_sel_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
+
+            unfolded_z_scaled_list.append(unfolded_z_scaled_list_iter)
+            unfolded_z_xsection_list.append(unfolded_z_xsection_list_iter)
+
+            # get unfolded jet pt
+
+            unfolded_jetpt = unfolded_zvsjetpt.ProjectionY("unfolded_jetpt_%d" % (i + 1), 1, self.p_nbinshape_gen, "e")
+            unfolded_jetpt_scaled = unfolded_jetpt.Clone("unfolded_jetpt_scaled_%d" % (i + 1))
+
+            # apply gen. level kinematic efficiency
+
+            unfolded_jetpt_scaled.Divide(kinematic_eff_jetpt)
+
+            # normalise by number of jets
+
+            unfolded_jetpt_scaled.Scale(1.0 / unfolded_jetpt_scaled.Integral(unfolded_jetpt_scaled.FindBin(self.lvar2_binmin_reco[0]), unfolded_jetpt_scaled.FindBin(self.lvar2_binmin_reco[-1])), "width")
+
+            unfolded_jetpt_scaled.Write("unfolded_jetpt_%d" % (i + 1))
+            unfolded_jetpt_scaled_list.append(unfolded_jetpt_scaled)
+            cunfolded_jetpt = TCanvas("cunfolded_jetpt_%s" % (i + 1), "1D output of unfolding")
+            setup_canvas(cunfolded_jetpt)
+            cunfolded_jetpt.SetLogy()
+            cunfolded_jetpt.SetLeftMargin(0.13)
+            setup_histogram(unfolded_jetpt_scaled, get_colour(1))
+            y_min_h, y_max_h = get_y_window_his(unfolded_jetpt_scaled)
+            y_min_0 = unfolded_jetpt_scaled.GetMinimum(0)
+            if y_min_h <= 0:
+                y_min_h = y_min_0
+            y_margin_up = 0.15
+            y_margin_down = 0.05
+            unfolded_jetpt_scaled.GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up, True))
+            unfolded_jetpt_scaled.GetXaxis().SetRangeUser(self.lvar2_binmin_reco[0], self.lvar2_binmax_reco[-1])
+            unfolded_jetpt_scaled.SetTitle("")
+            unfolded_jetpt_scaled.SetXTitle("%s (GeV/#it{c})" % self.p_latexbin2var)
+            unfolded_jetpt_scaled.SetYTitle("1/#it{N}_{jets} d#it{N}/d%s (#it{c}/GeV)" % self.p_latexbin2var)
+            unfolded_jetpt_scaled.SetTitleOffset(1.5, "Y")
+            unfolded_jetpt_scaled.Draw()
+            latex = TLatex(0.2, 0.82, "%g #leq %s < %g" % (round(self.lvarshape_binmin_reco[0], 2), self.v_varshape_latex, round(self.lvarshape_binmax_reco[-1], 2)))
+            draw_latex(latex)
+            latex2 = TLatex(0.55, 0.82, "iteration %d" % (i + 1))
+            draw_latex(latex2)
+            cunfolded_jetpt.SaveAs("%s/unfolded_%s_%d.eps" % (self.d_resultsallpdata, self.v_var2_binning, i + 1))
+
+            # refolding test for shape in jet pt bins
+
+            refolded = folding(unfolded_zvsjetpt, response_matrix, input_data)
+            for ibin2 in range(self.p_nbin2_reco):
+                suffix = "%s_%.2f_%.2f" % \
+                         (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
+                suffix_plot = "%s_%g_%g" % \
+                         (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
+                refolded_z = refolded.ProjectionX("refolded_z", ibin2 + 1, ibin2 + 1, "e")
+                refolding_test = input_data_z[ibin2].Clone("refolding_test_%d_%s" % (i + 1, suffix))
+                refolding_test.Divide(refolded_z)
+                refolding_test_list_iter.append(refolding_test)
+                cfolded_z = TCanvas("cfolded_z_%d_%s" % (i + 1, suffix), "1D output of folding" + suffix)
+                setup_canvas(cfolded_z)
+                setup_histogram(refolding_test, get_colour(1))
+                line = TLine(round(self.lvarshape_binmin_reco[0], 2), 1, round(self.lvarshape_binmax_reco[-1], 2), 1)
+                refolding_test.GetYaxis().SetRangeUser(0.5, 1.5)
+                refolding_test.SetTitle("")
+                refolding_test.SetXTitle(self.v_varshape_latex)
+                refolding_test.SetYTitle("refolding test")
+                refolding_test.Draw()
+                line.Draw("same")
+                latex = TLatex(0.15, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]))
+                draw_latex(latex)
+                latex2 = TLatex(0.5, 0.82, "iteration %d" % (i + 1))
+                draw_latex(latex2)
+                cfolded_z.SaveAs("%s/refolding_%s_%d_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, i + 1, suffix_plot))
+            refolding_test_list.append(refolding_test_list_iter)
+
+            # refolding test for jet pt
+
+            refolded_jetpt = refolded.ProjectionY("refolded_jetpt", 1, self.p_nbinshape_gen, "e")
+            refolding_test_jetpt = input_data_jetpt.Clone("refolding_test_%d" % (i + 1))
+            refolding_test_jetpt.Divide(refolded_jetpt)
+            refolding_test_jetpt_list.append(refolding_test_jetpt)
+            cfolded_jetpt = TCanvas("cfolded_jetpt_%d" % (i + 1), "1D output of folding")
+            setup_canvas(cfolded_jetpt)
+            setup_histogram(refolding_test_jetpt, get_colour(1))
+            line = TLine(round(self.lvar2_binmin_gen[0], 2), 1, round(self.lvar2_binmax_gen[-1], 2), 1)
+            refolding_test_jetpt.GetYaxis().SetRangeUser(0.5, 1.5)
+            refolding_test_jetpt.SetTitle("")
+            refolding_test_jetpt.SetXTitle("%s (GeV/#it{c})" % self.p_latexbin2var)
+            refolding_test_jetpt.SetYTitle("refolding test")
+            refolding_test_jetpt.Draw()
+            line.Draw("same")
+            latex = TLatex(0.15, 0.82, "%g #leq %s < %g" % (round(self.lvarshape_binmin_gen[0], 2), self.v_varshape_latex, round(self.lvarshape_binmax_gen[-1], 2)))
+            draw_latex(latex)
+            latex2 = TLatex(0.5, 0.82, "iteration %d" % (i + 1))
+            draw_latex(latex2)
+            cfolded_jetpt.SaveAs("%s/refolding_%s_%d.eps" % (self.d_resultsallpdata, self.v_var2_binning, i + 1))
+
+        # end of iteration loop
+
+        # plot the unfolded shape distributions for all iterations for each pt jet bin
+
+        for ibin2 in range(self.p_nbin2_gen):
+            suffix = "%s_%.2f_%.2f" % \
+                     (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+            suffix_plot = "%s_%g_%g" % \
+                     (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+            cconvergence_z = TCanvas("cconvergence_z " + suffix, "1D output of convergence")
+            setup_canvas(cconvergence_z)
+            cconvergence_z.SetRightMargin(0.2)
+            leg_z = TLegend(.85, .45, 0.95, .85, "iteration")
+            setup_legend(leg_z)
+            l_his = [unfolded_z_scaled_list[i][ibin2] for i in range(self.niter_unfolding)]
+            y_min_h, y_max_h = get_y_window_his(l_his)
+            y_margin_up = 0.15
+            y_margin_down = 0.05
+            for i in range(self.niter_unfolding):
+                setup_histogram(unfolded_z_scaled_list[i][ibin2], get_colour(i))
+                leg_z.AddEntry(unfolded_z_scaled_list[i][ibin2], ("%d" % (i + 1)), "P")
+                if i == 0:
+                    unfolded_z_scaled_list[i][ibin2].GetXaxis().SetRangeUser(round(self.lvarshape_binmin_reco[0], 2), round(self.lvarshape_binmax_reco[-1], 2))
+                    unfolded_z_scaled_list[i][ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
+                    unfolded_z_scaled_list[i][ibin2].SetTitle("")
+                    unfolded_z_scaled_list[i][ibin2].SetXTitle(self.v_varshape_latex)
+                    unfolded_z_scaled_list[i][ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
+                unfolded_z_scaled_list[i][ibin2].Draw("same")
+            leg_z.Draw("same")
+            latex = TLatex(0.15, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]))
+            draw_latex(latex)
+            cconvergence_z.SaveAs("%s/convergence_%s_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
+
 #            # plot the comparison of the final shape distribution, PYTHIA 6 and POWHEG
 #
 #            cinput_mc_gen_z = TCanvas("cinput_mc_gen_z " + suffix, "1D gen pythia z")
@@ -944,152 +882,152 @@ class AnalyzerJet(Analyzer):
 #            leg_input_mc_gen_z_xsection.Draw("same")
 #            cinput_mc_gen_z_xsection.SaveAs("%s/unfolded_vs_mc_%s_xsection_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
 #            #cinput_mc_gen_z_xsection.SaveAs("%s/unfolded_vs_mc_%s_xsection_%s.pdf" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
-#
-#        for ibin2 in range(self.p_nbin2_reco):
-#            suffix = "%s_%.2f_%.2f" % \
-#                     (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
-#            suffix_plot = "%s_%g_%g" % \
-#                     (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
-#
-#            # convergence of the refolding test
-#            # plot the refolding test for all iterations together for each jet pt bin
-#
-#            cconvergence_refolding_z = TCanvas("cconvergence_refolding_z " + suffix, "1D output of refolding convergence" + suffix)
-#            setup_canvas(cconvergence_refolding_z)
-#            cconvergence_refolding_z.SetRightMargin(0.2)
-#            leg_refolding_z = TLegend(.85, .45, 0.95, .85, "iteration")
-#            setup_legend(leg_refolding_z)
-#            l_his = [refolding_test_list[i][ibin2] for i in range(self.niter_unfolding)]
-#            y_min_h, y_max_h = get_y_window_his(l_his)
-#            y_margin_up = 0.15
-#            y_margin_down = 0.05
-#            for i in range(self.niter_unfolding):
-#                setup_histogram(refolding_test_list[i][ibin2], get_colour(i))
-#                leg_refolding_z.AddEntry(refolding_test_list[i][ibin2], ("%d" % (i + 1)), "P")
-#                refolding_test_list[i][ibin2].Draw("same")
-#                if i == 0:
-#                    refolding_test_list[i][ibin2].SetTitle("")
-#                    refolding_test_list[i][ibin2].SetXTitle(self.v_varshape_latex)
-#                    refolding_test_list[i][ibin2].SetYTitle("refolding test")
-#                    refolding_test_list[i][ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
-#            leg_refolding_z.Draw("same")
-#            latex = TLatex(0.15, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
-#            draw_latex(latex)
-#            cconvergence_refolding_z.SaveAs("%s/convergence_refolding_%s_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
-#
-#            # compare the result before unfolding and after
-#
-#            input_data_z_scaled = input_data_z[ibin2].Clone("input_data_z_scaled_%s" % suffix)
-#            input_data_z_scaled.Scale(1.0 / input_data_z_scaled.Integral(bin_int_first, -1), "width")
-#            cunfolded_not_z = TCanvas("cunfolded_not_z " + suffix, "Unfolded vs not Unfolded" + suffix)
-#            setup_canvas(cunfolded_not_z)
-#            leg_cunfolded_not_z = TLegend(.15, .75, .45, .85)
-#            setup_legend(leg_cunfolded_not_z)
-#            ibin_jetpt = input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2]) - 1
-#            setup_histogram(unfolded_z_scaled_list[i_iter_choice][ibin_jetpt], get_colour(1))
-#            leg_cunfolded_not_z.AddEntry(unfolded_z_scaled_list[i_iter_choice][ibin_jetpt], "unfolded", "P")
-#            y_min_h, y_max_h = get_y_window_his([unfolded_z_scaled_list[i_iter_choice][ibin_jetpt], input_data_z_scaled])
-#            y_margin_up = 0.2
-#            y_margin_down = 0.05
-#            unfolded_z_scaled_list[i_iter_choice][ibin_jetpt].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
-#            unfolded_z_scaled_list[i_iter_choice][ibin_jetpt].GetXaxis().SetRangeUser(round(self.lvarshape_binmin_reco[0], 2), round(self.lvarshape_binmax_reco[-1], 2))
-#            unfolded_z_scaled_list[i_iter_choice][ibin_jetpt].SetTitle("")
-#            unfolded_z_scaled_list[i_iter_choice][ibin_jetpt].Draw()
-#            setup_histogram(input_data_z_scaled, get_colour(2), get_marker(1))
-#            leg_cunfolded_not_z.AddEntry(input_data_z_scaled, "not unfolded", "P")
-#            input_data_z_scaled.Draw("same")
-#            leg_cunfolded_not_z.Draw("same")
-#            latex = TLatex(0.5, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
-#            draw_latex(latex)
-#            cunfolded_not_z.SaveAs("%s/unfolded_not_%s_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
-#
-#            # compare relative statistical uncertainties before unfolding and after
-#
-#            h_unfolded_not_stat_error = TH1F("h_unfolded_not_stat_error" + suffix, "h_unfolded_not_stat_error" + suffix, self.p_nbinshape_reco, self.varshapebinarray_reco)
-#            for ibinshape in range(self.p_nbinshape_reco):
-#                error_on_unfolded = unfolded_z_scaled_list[i_iter_choice][ibin_jetpt].GetBinError(input_mc_gen.GetXaxis().FindBin(self.lvarshape_binmin_reco[ibinshape]))
-#                content_on_unfolded = unfolded_z_scaled_list[i_iter_choice][ibin_jetpt].GetBinContent(input_mc_gen.GetXaxis().FindBin(self.lvarshape_binmin_reco[ibinshape]))
-#                error_on_input_data = input_data_z_scaled.GetBinError(ibinshape + 1)
-#                content_on_input_data = input_data_z_scaled.GetBinContent(ibinshape + 1)
-#                if error_on_input_data != 0 and content_on_unfolded != 0:
-#                    h_unfolded_not_stat_error.SetBinContent(ibinshape + 1, (error_on_unfolded * content_on_input_data) / (content_on_unfolded * error_on_input_data))
-#                else:
-#                    h_unfolded_not_stat_error.SetBinContent(ibinshape + 1, 0.0)
-#            cunfolded_not_stat_error = TCanvas("cunfolded_not_stat_error " + suffix, "Ratio of stat error after to before unfolding" + suffix)
-#            setup_canvas(cunfolded_not_stat_error)
-#            cunfolded_not_stat_error.SetLeftMargin(0.13)
-#            setup_histogram(h_unfolded_not_stat_error, get_colour(1))
-#            h_unfolded_not_stat_error.SetTitle("Ratio of rel. stat. unc. after to before unfolding")
-#            h_unfolded_not_stat_error.SetXTitle(self.v_varshape_latex)
-#            h_unfolded_not_stat_error.SetYTitle("ratio")
-#            y_min_h = h_unfolded_not_stat_error.GetMinimum(0)
-#            y_max_h = h_unfolded_not_stat_error.GetMaximum()
-#            y_margin_up = 0.2
-#            y_margin_down = 0.05
-#            h_unfolded_not_stat_error.GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
-#            h_unfolded_not_stat_error.GetXaxis().SetRangeUser(round(self.lvarshape_binmin_reco[0], 2), round(self.lvarshape_binmax_reco[-1], 2))
-#            h_unfolded_not_stat_error.SetTitleOffset(1.3, "Y")
-#            h_unfolded_not_stat_error.Draw()
-#            latex = TLatex(0.2, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
-#            draw_latex(latex)
-#            cunfolded_not_stat_error.SaveAs("%s/unfolded_not_stat_error_%s.eps" % (self.d_resultsallpdata, suffix_plot))
-#
-#        # plot the unfolded jet pt distributions for all iterations
-#
-#        cconvergence_jetpt = TCanvas("cconvergence_jetpt ", "1D output of convergence")
-#        setup_canvas(cconvergence_jetpt)
-#        cconvergence_jetpt.SetLogy()
-#        cconvergence_jetpt.SetLeftMargin(0.13)
-#        cconvergence_jetpt.SetRightMargin(0.2)
-#        leg_jetpt = TLegend(.85, .45, 0.95, .85, "iteration")
-#        setup_legend(leg_jetpt)
-#        y_min_h, y_max_h = get_y_window_his(unfolded_jetpt_scaled_list)
-#        y_min_0 = min([h.GetMinimum(0) for h in unfolded_jetpt_scaled_list])
-#        if y_min_h <= 0:
-#            y_min_h = y_min_0
-#        y_margin_up = 0.15
-#        y_margin_down = 0.05
-#        for i in range(self.niter_unfolding):
-#            setup_histogram(unfolded_jetpt_scaled_list[i], get_colour(i))
-#            leg_jetpt.AddEntry(unfolded_jetpt_scaled_list[i], ("%d" % (i + 1)), "P")
-#            if i == 0:
-#                unfolded_jetpt_scaled_list[i].GetXaxis().SetRangeUser(round(self.lvar2_binmin_reco[0], 2), round(self.lvar2_binmax_reco[-1], 2))
-#                unfolded_jetpt_scaled_list[i].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up, True))
-#                unfolded_jetpt_scaled_list[i].SetTitle("")
-#                unfolded_jetpt_scaled_list[i].SetXTitle("%s (GeV/#it{c})" % self.p_latexbin2var)
-#                unfolded_jetpt_scaled_list[i].SetYTitle("1/#it{N}_{jets} d#it{N}/d%s (#it{c}/GeV)" % self.p_latexbin2var)
-#                unfolded_jetpt_scaled_list[i].SetTitleOffset(1.5, "Y")
-#            unfolded_jetpt_scaled_list[i].Draw("same")
-#        leg_jetpt.Draw("same")
-#        latex = TLatex(0.2, 0.82, "%g #leq %s < %g" % (round(self.lvarshape_binmin_gen[0], 2), self.v_varshape_latex, round(self.lvarshape_binmax_gen[-1], 2)))
-#        draw_latex(latex)
-#        cconvergence_jetpt.SaveAs("%s/convergence_%s.eps" % (self.d_resultsallpdata, self.v_var2_binning))
-#
-#        # jet pt convergence refolding test
-#        # plot the refolding test of jet pt for all iterations
-#
-#        cconvergence_refolding_jetpt = TCanvas("cconvergence_refolding_jetpt ", "1D output of refolding convergence")
-#        setup_canvas(cconvergence_refolding_jetpt)
-#        cconvergence_refolding_jetpt.SetRightMargin(0.2)
-#        leg_refolding_jetpt = TLegend(.85, .45, 0.95, .85, "iteration")
-#        setup_legend(leg_refolding_jetpt)
-#        y_min_h, y_max_h = get_y_window_his(refolding_test_jetpt_list)
-#        y_margin_up = 0.15
-#        y_margin_down = 0.05
-#        for i in range(self.niter_unfolding):
-#            setup_histogram(refolding_test_jetpt_list[i], get_colour(i))
-#            leg_refolding_jetpt.AddEntry(refolding_test_jetpt_list[i], ("%d" % (i + 1)), "P")
-#            if i == 0:
-#                refolding_test_jetpt_list[i].SetTitle("")
-#                refolding_test_jetpt_list[i].SetXTitle("%s (GeV/#it{c})" % self.p_latexbin2var)
-#                refolding_test_jetpt_list[i].SetYTitle("refolding test")
-#                refolding_test_jetpt_list[i].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
-#                refolding_test_jetpt_list[i].SetTitleOffset(1.5, "Y")
-#            refolding_test_jetpt_list[i].Draw("same")
-#        leg_refolding_jetpt.Draw("same")
-#        latex = TLatex(0.15, 0.82, "%g #leq %s < %g" % (round(self.lvarshape_binmin_gen[0], 2), self.v_varshape_latex, round(self.lvarshape_binmax_gen[-1], 2)))
-#        draw_latex(latex)
-#        cconvergence_refolding_jetpt.SaveAs("%s/convergence_refolding_%s.eps" % (self.d_resultsallpdata, self.v_var2_binning))
+
+        for ibin2 in range(self.p_nbin2_reco):
+            suffix = "%s_%.2f_%.2f" % \
+                     (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
+            suffix_plot = "%s_%g_%g" % \
+                     (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
+
+            # convergence of the refolding test
+            # plot the refolding test for all iterations together for each jet pt bin
+
+            cconvergence_refolding_z = TCanvas("cconvergence_refolding_z " + suffix, "1D output of refolding convergence" + suffix)
+            setup_canvas(cconvergence_refolding_z)
+            cconvergence_refolding_z.SetRightMargin(0.2)
+            leg_refolding_z = TLegend(.85, .45, 0.95, .85, "iteration")
+            setup_legend(leg_refolding_z)
+            l_his = [refolding_test_list[i][ibin2] for i in range(self.niter_unfolding)]
+            y_min_h, y_max_h = get_y_window_his(l_his)
+            y_margin_up = 0.15
+            y_margin_down = 0.05
+            for i in range(self.niter_unfolding):
+                setup_histogram(refolding_test_list[i][ibin2], get_colour(i))
+                leg_refolding_z.AddEntry(refolding_test_list[i][ibin2], ("%d" % (i + 1)), "P")
+                refolding_test_list[i][ibin2].Draw("same")
+                if i == 0:
+                    refolding_test_list[i][ibin2].SetTitle("")
+                    refolding_test_list[i][ibin2].SetXTitle(self.v_varshape_latex)
+                    refolding_test_list[i][ibin2].SetYTitle("refolding test")
+                    refolding_test_list[i][ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
+            leg_refolding_z.Draw("same")
+            latex = TLatex(0.15, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
+            draw_latex(latex)
+            cconvergence_refolding_z.SaveAs("%s/convergence_refolding_%s_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
+
+            # compare the result before unfolding and after
+
+            input_data_z_scaled = input_data_z[ibin2].Clone("input_data_z_scaled_%s" % suffix)
+            input_data_z_scaled.Scale(1.0 / input_data_z_scaled.Integral(bin_int_first, -1), "width")
+            cunfolded_not_z = TCanvas("cunfolded_not_z " + suffix, "Unfolded vs not Unfolded" + suffix)
+            setup_canvas(cunfolded_not_z)
+            leg_cunfolded_not_z = TLegend(.15, .75, .45, .85)
+            setup_legend(leg_cunfolded_not_z)
+            ibin_jetpt = input_mc_gen.GetYaxis().FindBin(self.lvar2_binmin_reco[ibin2]) - 1
+            setup_histogram(unfolded_z_scaled_list[i_iter_choice][ibin_jetpt], get_colour(1))
+            leg_cunfolded_not_z.AddEntry(unfolded_z_scaled_list[i_iter_choice][ibin_jetpt], "unfolded", "P")
+            y_min_h, y_max_h = get_y_window_his([unfolded_z_scaled_list[i_iter_choice][ibin_jetpt], input_data_z_scaled])
+            y_margin_up = 0.2
+            y_margin_down = 0.05
+            unfolded_z_scaled_list[i_iter_choice][ibin_jetpt].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
+            unfolded_z_scaled_list[i_iter_choice][ibin_jetpt].GetXaxis().SetRangeUser(round(self.lvarshape_binmin_reco[0], 2), round(self.lvarshape_binmax_reco[-1], 2))
+            unfolded_z_scaled_list[i_iter_choice][ibin_jetpt].SetTitle("")
+            unfolded_z_scaled_list[i_iter_choice][ibin_jetpt].Draw()
+            setup_histogram(input_data_z_scaled, get_colour(2), get_marker(1))
+            leg_cunfolded_not_z.AddEntry(input_data_z_scaled, "not unfolded", "P")
+            input_data_z_scaled.Draw("same")
+            leg_cunfolded_not_z.Draw("same")
+            latex = TLatex(0.5, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
+            draw_latex(latex)
+            cunfolded_not_z.SaveAs("%s/unfolded_not_%s_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
+
+            # compare relative statistical uncertainties before unfolding and after
+
+            h_unfolded_not_stat_error = TH1F("h_unfolded_not_stat_error" + suffix, "h_unfolded_not_stat_error" + suffix, self.p_nbinshape_reco, self.varshapebinarray_reco)
+            for ibinshape in range(self.p_nbinshape_reco):
+                error_on_unfolded = unfolded_z_scaled_list[i_iter_choice][ibin_jetpt].GetBinError(input_mc_gen.GetXaxis().FindBin(self.lvarshape_binmin_reco[ibinshape]))
+                content_on_unfolded = unfolded_z_scaled_list[i_iter_choice][ibin_jetpt].GetBinContent(input_mc_gen.GetXaxis().FindBin(self.lvarshape_binmin_reco[ibinshape]))
+                error_on_input_data = input_data_z_scaled.GetBinError(ibinshape + 1)
+                content_on_input_data = input_data_z_scaled.GetBinContent(ibinshape + 1)
+                if error_on_input_data != 0 and content_on_unfolded != 0:
+                    h_unfolded_not_stat_error.SetBinContent(ibinshape + 1, (error_on_unfolded * content_on_input_data) / (content_on_unfolded * error_on_input_data))
+                else:
+                    h_unfolded_not_stat_error.SetBinContent(ibinshape + 1, 0.0)
+            cunfolded_not_stat_error = TCanvas("cunfolded_not_stat_error " + suffix, "Ratio of stat error after to before unfolding" + suffix)
+            setup_canvas(cunfolded_not_stat_error)
+            cunfolded_not_stat_error.SetLeftMargin(0.13)
+            setup_histogram(h_unfolded_not_stat_error, get_colour(1))
+            h_unfolded_not_stat_error.SetTitle("Ratio of rel. stat. unc. after to before unfolding")
+            h_unfolded_not_stat_error.SetXTitle(self.v_varshape_latex)
+            h_unfolded_not_stat_error.SetYTitle("ratio")
+            y_min_h = h_unfolded_not_stat_error.GetMinimum(0)
+            y_max_h = h_unfolded_not_stat_error.GetMaximum()
+            y_margin_up = 0.2
+            y_margin_down = 0.05
+            h_unfolded_not_stat_error.GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
+            h_unfolded_not_stat_error.GetXaxis().SetRangeUser(round(self.lvarshape_binmin_reco[0], 2), round(self.lvarshape_binmax_reco[-1], 2))
+            h_unfolded_not_stat_error.SetTitleOffset(1.3, "Y")
+            h_unfolded_not_stat_error.Draw()
+            latex = TLatex(0.2, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
+            draw_latex(latex)
+            cunfolded_not_stat_error.SaveAs("%s/unfolded_not_stat_error_%s.eps" % (self.d_resultsallpdata, suffix_plot))
+
+        # plot the unfolded jet pt distributions for all iterations
+
+        cconvergence_jetpt = TCanvas("cconvergence_jetpt ", "1D output of convergence")
+        setup_canvas(cconvergence_jetpt)
+        cconvergence_jetpt.SetLogy()
+        cconvergence_jetpt.SetLeftMargin(0.13)
+        cconvergence_jetpt.SetRightMargin(0.2)
+        leg_jetpt = TLegend(.85, .45, 0.95, .85, "iteration")
+        setup_legend(leg_jetpt)
+        y_min_h, y_max_h = get_y_window_his(unfolded_jetpt_scaled_list)
+        y_min_0 = min([h.GetMinimum(0) for h in unfolded_jetpt_scaled_list])
+        if y_min_h <= 0:
+            y_min_h = y_min_0
+        y_margin_up = 0.15
+        y_margin_down = 0.05
+        for i in range(self.niter_unfolding):
+            setup_histogram(unfolded_jetpt_scaled_list[i], get_colour(i))
+            leg_jetpt.AddEntry(unfolded_jetpt_scaled_list[i], ("%d" % (i + 1)), "P")
+            if i == 0:
+                unfolded_jetpt_scaled_list[i].GetXaxis().SetRangeUser(round(self.lvar2_binmin_reco[0], 2), round(self.lvar2_binmax_reco[-1], 2))
+                unfolded_jetpt_scaled_list[i].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up, True))
+                unfolded_jetpt_scaled_list[i].SetTitle("")
+                unfolded_jetpt_scaled_list[i].SetXTitle("%s (GeV/#it{c})" % self.p_latexbin2var)
+                unfolded_jetpt_scaled_list[i].SetYTitle("1/#it{N}_{jets} d#it{N}/d%s (#it{c}/GeV)" % self.p_latexbin2var)
+                unfolded_jetpt_scaled_list[i].SetTitleOffset(1.5, "Y")
+            unfolded_jetpt_scaled_list[i].Draw("same")
+        leg_jetpt.Draw("same")
+        latex = TLatex(0.2, 0.82, "%g #leq %s < %g" % (round(self.lvarshape_binmin_gen[0], 2), self.v_varshape_latex, round(self.lvarshape_binmax_gen[-1], 2)))
+        draw_latex(latex)
+        cconvergence_jetpt.SaveAs("%s/convergence_%s.eps" % (self.d_resultsallpdata, self.v_var2_binning))
+
+        # jet pt convergence refolding test
+        # plot the refolding test of jet pt for all iterations
+
+        cconvergence_refolding_jetpt = TCanvas("cconvergence_refolding_jetpt ", "1D output of refolding convergence")
+        setup_canvas(cconvergence_refolding_jetpt)
+        cconvergence_refolding_jetpt.SetRightMargin(0.2)
+        leg_refolding_jetpt = TLegend(.85, .45, 0.95, .85, "iteration")
+        setup_legend(leg_refolding_jetpt)
+        y_min_h, y_max_h = get_y_window_his(refolding_test_jetpt_list)
+        y_margin_up = 0.15
+        y_margin_down = 0.05
+        for i in range(self.niter_unfolding):
+            setup_histogram(refolding_test_jetpt_list[i], get_colour(i))
+            leg_refolding_jetpt.AddEntry(refolding_test_jetpt_list[i], ("%d" % (i + 1)), "P")
+            if i == 0:
+                refolding_test_jetpt_list[i].SetTitle("")
+                refolding_test_jetpt_list[i].SetXTitle("%s (GeV/#it{c})" % self.p_latexbin2var)
+                refolding_test_jetpt_list[i].SetYTitle("refolding test")
+                refolding_test_jetpt_list[i].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
+                refolding_test_jetpt_list[i].SetTitleOffset(1.5, "Y")
+            refolding_test_jetpt_list[i].Draw("same")
+        leg_refolding_jetpt.Draw("same")
+        latex = TLatex(0.15, 0.82, "%g #leq %s < %g" % (round(self.lvarshape_binmin_gen[0], 2), self.v_varshape_latex, round(self.lvarshape_binmax_gen[-1], 2)))
+        draw_latex(latex)
+        cconvergence_refolding_jetpt.SaveAs("%s/convergence_refolding_%s.eps" % (self.d_resultsallpdata, self.v_var2_binning))
 
     def unfolding_closure(self):
         self.loadstyle()
@@ -1262,696 +1200,3 @@ class AnalyzerJet(Analyzer):
 #        draw_latex(latex)
 #        cconvergence_closure_jetpt.SaveAs("%s/convergence_closure_%s.eps" % (self.d_resultsallpdata, self.v_var2_binning))
 
-#    def jetsystematics(self):
-#        self.loadstyle()
-#        string_default = "default/default"
-#        if string_default not in self.d_resultsallpdata:
-#            self.logger.fatal("Not a default database! Cannot run systematics.")
-#
-#        debug = True
-#        if debug:
-#            print("Categories: ", self.systematic_catnames)
-#            print("Category labels: ", self.systematic_catlabels)
-#            print("Numbers of variations: ", self.systematic_variations)
-#            print("Variations: ", self.systematic_varnames)
-#            print("Variation labels: ", self.systematic_varlabels)
-#            print("Correlation: ", self.systematic_correlation)
-#            print("RMS: ", self.systematic_rms)
-#            print("Symmetrisation: ", self.systematic_symmetrise)
-#            print("RMS both sides: ", self.systematic_rms_both_sides)
-#            print("Feed-down variations: ", self.powheg_nonprompt_varnames)
-#
-#        path_def = self.file_unfold
-#        input_file_default = TFile.Open(path_def)
-#        if not input_file_default:
-#            self.logger.fatal(make_message_notfound(path_def))
-#
-#        # get the central prompt POWHEG histogram
-#
-#        input_powheg = self.get_simulated_yields(self.powheg_path_prompt, 2, True)
-#        if not input_powheg:
-#            self.logger.fatal(make_message_notfound("simulated yields", self.powheg_path_prompt))
-#        input_powheg.SetName("fh2_prompt_%s" % self.v_varshape_binning)
-#        input_powheg_xsection = input_powheg.Clone(input_powheg.GetName() + "_xsec")
-#
-#        # get the prompt POWHEG variations and calculate their spread
-#
-#        input_powheg_sys = []
-#        input_powheg_xsection_sys = []
-#        for i_powheg in range(len(self.powheg_prompt_variations)):
-#            path = "%s%s.root" % (self.powheg_prompt_variations_path, self.powheg_prompt_variations[i_powheg])
-#            input_powheg_sys_i = self.get_simulated_yields(path, 2, True)
-#            if not input_powheg_sys_i:
-#                self.logger.fatal(make_message_notfound("simulated yields", path))
-#            input_powheg_sys_i.SetName("fh2_prompt_%s_%d" % (self.v_varshape_binning, i_powheg))
-#            input_powheg_sys.append(input_powheg_sys_i)
-#            input_powheg_xsection_sys_i = input_powheg_sys_i.Clone(input_powheg_sys_i.GetName() + "_xsec")
-#            input_powheg_xsection_sys.append(input_powheg_xsection_sys_i)
-#        input_powheg_z = []
-#        input_powheg_xsection_z = []
-#        input_powheg_sys_z = []
-#        input_powheg_xsection_sys_z = []
-#        tg_powheg = []
-#        tg_powheg_xsection = []
-#        for ibin2 in range(self.p_nbin2_gen):
-#            suffix = "%s_%.2f_%.2f" % \
-#                     (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-#            input_powheg_z.append(input_powheg.ProjectionX("input_powheg_z" + suffix, ibin2 + 1, ibin2 + 1, "e"))
-#            input_powheg_z[ibin2].Scale(1.0 / input_powheg_z[ibin2].Integral(input_powheg_z[ibin2].FindBin(self.lvarshape_binmin_reco[0]), input_powheg_z[ibin2].FindBin(self.lvarshape_binmin_reco[-1])), "width")
-#            input_powheg_xsection_z.append(input_powheg_xsection.ProjectionX("input_powheg_xsection_z" + suffix, ibin2 + 1, ibin2 + 1, "e"))
-#            input_powheg_xsection_z[ibin2].Scale(1.0, "width")
-#            input_powheg_sys_z_iter = []
-#            input_powheg_xsection_sys_z_iter = []
-#            for i_powheg in range(len(self.powheg_prompt_variations)):
-#                input_powheg_sys_z_iter.append(input_powheg_sys[i_powheg].ProjectionX("input_powheg_sys_z"+self.powheg_prompt_variations[i_powheg]+suffix, ibin2 + 1, ibin2 + 1, "e"))
-#                input_powheg_sys_z_iter[i_powheg].Scale(1.0 / input_powheg_sys_z_iter[i_powheg].Integral(input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[0]), input_powheg_sys_z_iter[i_powheg].FindBin(self.lvarshape_binmin_reco[-1])), "width")
-#                input_powheg_xsection_sys_z_iter.append(input_powheg_xsection_sys[i_powheg].ProjectionX("input_powheg_xsection_sys_z"+self.powheg_prompt_variations[i_powheg]+suffix, ibin2 + 1, ibin2 + 1, "e"))
-#            input_powheg_sys_z.append(input_powheg_sys_z_iter)
-#            input_powheg_xsection_sys_z.append(input_powheg_xsection_sys_z_iter)
-#            tg_powheg.append(tg_sys(input_powheg_z[ibin2], input_powheg_sys_z[ibin2]))
-#            tg_powheg_xsection.append(tg_sys(input_powheg_xsection_z[ibin2], input_powheg_xsection_sys_z[ibin2]))
-#
-#        # get the default (central value) result histograms
-#
-#        input_histograms_default = []
-#        for ibin2 in range(self.p_nbin2_gen):
-#            suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-#            name_his = "unfolded_z_sel_%s" % suffix
-#            input_histograms_default.append(input_file_default.Get(name_his))
-#            if not input_histograms_default[ibin2]:
-#                self.logger.fatal(make_message_notfound(name_his, path_def))
-#
-#        # get the files containing result variations
-#
-#        input_files_sys = []
-#        for sys_cat in range(self.n_sys_cat):
-#            input_files_sysvar = []
-#            for sys_var, varname in enumerate(self.systematic_varnames[sys_cat]):
-#                path = path_def.replace(string_default, self.systematic_catnames[sys_cat] + "/" + varname)
-#                input_files_sysvar.append(TFile.Open(path))
-#                if not input_files_sysvar[sys_var]:
-#                    self.logger.fatal(make_message_notfound(path))
-#            input_files_sys.append(input_files_sysvar)
-#
-#        # get the variation result histograms
-#
-#        input_histograms_sys = []
-#        for ibin2 in range(self.p_nbin2_gen):
-#            suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-#            name_his = "unfolded_z_sel_%s" % suffix
-#            input_histograms_syscat = []
-#            for sys_cat in range(self.n_sys_cat):
-#                input_histograms_syscatvar = []
-#                for sys_var in range(self.systematic_variations[sys_cat]):
-#                    string_catvar = self.systematic_catnames[sys_cat] + "/" + self.systematic_varnames[sys_cat][sys_var]
-#                    # FIXME exception for different jet pt binning pylint: disable=fixme
-#                    name_his_orig = name_his
-#                    if ibin2 == 0 and string_catvar == "binning/pt_jet_0":
-#                        name_his = "unfolded_z_sel_%s_%.2f_%.2f" % (self.v_var2_binning, 8, self.lvar2_binmax_gen[ibin2])
-#                    input_histograms_syscatvar.append(input_files_sys[sys_cat][sys_var].Get(name_his))
-#                    name_his = name_his_orig
-#                    path_file = path_def.replace(string_default, string_catvar)
-#                    if not input_histograms_syscatvar[sys_var]:
-#                        self.logger.fatal(make_message_notfound(name_his, path_file))
-#                    if debug:
-#                        print("Variation: %s, %s: got histogram %s from file %s" % (self.systematic_catnames[sys_cat], self.systematic_varnames[sys_cat][sys_var], name_his, path_file))
-#                    #input_histograms_syscatvar[sys_var].Scale(1.0, "width") #remove these later and put normalisation directly in systematics
-#                input_histograms_syscat.append(input_histograms_syscatvar)
-#            input_histograms_sys.append(input_histograms_syscat)
-#
-#        # plot the variations
-#
-#        for ibin2 in range(self.p_nbin2_gen):
-#
-#            # plot all the variations together
-#
-#            suffix = "%s_%g_%g" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-#            nsys = 0
-#            csysvar = TCanvas("csysvar_%s" % suffix, "systematic variations" + suffix)
-#            setup_canvas(csysvar)
-#            leg_sysvar = TLegend(.75, .15, 0.95, .85, "variation")
-#            setup_legend(leg_sysvar)
-#            leg_sysvar.AddEntry(input_histograms_default[ibin2], "default", "P")
-#            setup_histogram(input_histograms_default[ibin2])
-#            l_his_all = [his_var for l_cat in input_histograms_sys[ibin2] for his_var in l_cat] + [input_histograms_default[ibin2]]
-#            y_min, y_max = get_y_window_his(l_his_all)
-#            y_margin_up = 0.15
-#            y_margin_down = 0.05
-#            input_histograms_default[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min, y_max, y_margin_down, y_margin_up))
-#            #input_histograms_default[ibin2].GetYaxis().SetRangeUser(0.0, input_histograms_default[ibin2].GetMaximum() * 1.5)
-#            input_histograms_default[ibin2].GetXaxis().SetRangeUser(round(self.lvarshape_binmin_gen[0], 2), round(self.lvarshape_binmax_gen[-1], 2))
-#            input_histograms_default[ibin2].SetTitle("")
-#            input_histograms_default[ibin2].SetXTitle(self.v_varshape_latex)
-#            input_histograms_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
-#            input_histograms_default[ibin2].Draw()
-#            for sys_cat in range(self.n_sys_cat):
-#                for sys_var in range(self.systematic_variations[sys_cat]):
-#                    leg_sysvar.AddEntry(input_histograms_sys[ibin2][sys_cat][sys_var], ("%s, %s" % \
-#                        (self.systematic_catlabels[sys_cat], self.systematic_varlabels[sys_cat][sys_var])), "P")
-#                    setup_histogram(input_histograms_sys[ibin2][sys_cat][sys_var], get_colour(nsys + 1))
-#                    input_histograms_sys[ibin2][sys_cat][sys_var].Draw("same")
-#                    nsys = nsys + 1
-#            latex = TLatex(0.15, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]))
-#            draw_latex(latex)
-#            #leg_sysvar.Draw("same")
-#            csysvar.SaveAs("%s/sys_var_all_%s.eps" % (self.d_resultsallpdata, suffix))
-#
-#            # plot the variations for each category separately
-#
-#            for sys_cat in range(self.n_sys_cat):
-#                suffix2 = self.systematic_catnames[sys_cat]
-#                nsys = 0
-#                csysvar_each = TCanvas("csysvar_%s_%s" % (suffix2, suffix), "systematic variations" + suffix2 + suffix)
-#                setup_canvas(csysvar_each)
-#                csysvar_each.SetRightMargin(0.25)
-#                leg_sysvar_each = TLegend(.77, .2, 0.95, .85, self.systematic_catlabels[sys_cat]) # Rg
-#                setup_legend(leg_sysvar_each)
-#                leg_sysvar_each.AddEntry(input_histograms_default[ibin2], "default", "P")
-#                setup_histogram(input_histograms_default[ibin2])
-#                y_min, y_max = get_y_window_his(input_histograms_sys[ibin2][sys_cat] + [input_histograms_default[ibin2]])
-#                y_margin_up = 0.15
-#                y_margin_down = 0.05
-#                for sys_var in range(self.systematic_variations[sys_cat]):
-#                    if sys_var == 0:
-#                        input_histograms_default[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min, y_max, y_margin_down, y_margin_up))
-#                        input_histograms_default[ibin2].GetXaxis().SetRangeUser(round(self.lvarshape_binmin_gen[0], 2), round(self.lvarshape_binmax_gen[-1], 2))
-#                        input_histograms_default[ibin2].SetTitle("")
-#                        input_histograms_default[ibin2].SetXTitle(self.v_varshape_latex)
-#                        input_histograms_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
-#                        input_histograms_default[ibin2].Draw()
-#                    leg_sysvar_each.AddEntry(input_histograms_sys[ibin2][sys_cat][sys_var], self.systematic_varlabels[sys_cat][sys_var], "P")
-#                    setup_histogram(input_histograms_sys[ibin2][sys_cat][sys_var], get_colour(nsys + 1), get_marker(nsys + 1))
-#                    input_histograms_sys[ibin2][sys_cat][sys_var].Draw("same")
-#                    nsys = nsys + 1
-#                latex = TLatex(0.15, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]))
-#                draw_latex(latex)
-#                leg_sysvar_each.Draw("same")
-#                csysvar_each.SaveAs("%s/sys_var_%s_%s.eps" % (self.d_resultsallpdata, suffix2, suffix))
-#
-#        # calculate the systematic uncertainties
-#
-#        sys_up = [] # list of absolute upward uncertainties for all categories, shape bins, pt_jet bins
-#        sys_down = [] # list of absolute downward uncertainties for all categories, shape bins, pt_jet bins
-#        sys_up_full = [] # list of combined absolute upward uncertainties for all shape bins, pt_jet bins
-#        sys_down_full = [] # list of combined absolute downward uncertainties for all shape bins, pt_jet bins
-#        for ibin2 in range(self.p_nbin2_gen): # pylint: disable=too-many-nested-blocks
-#            sys_up_jetpt = [] # list of absolute upward uncertainties for all categories and shape bins in a given pt_jet bin
-#            sys_down_jetpt = [] # list of absolute downward uncertainties for all categories and shape bins in a given pt_jet bin
-#            sys_up_z_full = [] # list of combined absolute upward uncertainties for all shape bins in a given pt_jet bin
-#            sys_down_z_full = [] # list of combined absolute upward uncertainties for all shape bins in a given pt_jet bin
-#            for ibinshape in range(self.p_nbinshape_gen):
-#                sys_up_z = [] # list of absolute upward uncertainties for all categories in a given (pt_jet, shape) bin
-#                sys_down_z = [] # list of absolute downward uncertainties for all categories in a given (pt_jet, shape) bin
-#                error_full_up = 0 # combined absolute upward uncertainty in a given (pt_jet, shape) bin
-#                error_full_down = 0 # combined absolute downward uncertainty in a given (pt_jet, shape) bin
-#                for sys_cat in range(self.n_sys_cat):
-#                    error_var_up = 0 # absolute upward uncertainty for a given category in a given (pt_jet, shape) bin
-#                    error_var_down = 0 # absolute downward uncertainty for a given category in a given (pt_jet, shape) bin
-#                    count_sys_up = 0
-#                    count_sys_down = 0
-#                    for sys_var in range(self.systematic_variations[sys_cat]):
-#                        # FIXME exception for the untagged bin pylint: disable=fixme
-#                        bin_first = 2 if "untagged" in self.systematic_varlabels[sys_cat][sys_var] else 1
-#                        error = input_histograms_sys[ibin2][sys_cat][sys_var].GetBinContent(ibinshape + bin_first) - input_histograms_default[ibin2].GetBinContent(ibinshape + 1)
-#                        if error >= 0:
-#                            if self.systematic_rms[sys_cat] is True:
-#                                error_var_up += error * error
-#                                count_sys_up = count_sys_up + 1
-#                            else:
-#                                if error > error_var_up:
-#                                    error_var_up = error
-#                        else:
-#                            if self.systematic_rms[sys_cat] is True:
-#                                if self.systematic_rms_both_sides[sys_cat] is True:
-#                                    error_var_up += error * error
-#                                    count_sys_up = count_sys_up + 1
-#                                else:
-#                                    error_var_down += error * error
-#                                    count_sys_down = count_sys_down + 1
-#                            else:
-#                                if abs(error) > error_var_down:
-#                                    error_var_down = abs(error)
-#                    if self.systematic_rms[sys_cat] is True:
-#                        if count_sys_up != 0:
-#                            error_var_up = error_var_up/count_sys_up
-#                        else:
-#                            error_var_up = 0.0
-#                        error_var_up = sqrt(error_var_up)
-#                        if count_sys_down != 0:
-#                            error_var_down = error_var_down/count_sys_down
-#                        else:
-#                            error_var_down = 0.0
-#                        if self.systematic_rms_both_sides[sys_cat] is True:
-#                            error_var_down = error_var_up
-#                        else:
-#                            error_var_down = sqrt(error_var_down)
-#                    if self.systematic_symmetrise[sys_cat] is True:
-#                        if error_var_up > error_var_down:
-#                            error_var_down = error_var_up
-#                        else:
-#                            error_var_up = error_var_down
-#                    error_full_up += error_var_up * error_var_up
-#                    error_full_down += error_var_down * error_var_down
-#                    sys_up_z.append(error_var_up)
-#                    sys_down_z.append(error_var_down)
-#                error_full_up = sqrt(error_full_up)
-#                sys_up_z_full.append(error_full_up)
-#                error_full_down = sqrt(error_full_down)
-#                sys_down_z_full.append(error_full_down)
-#                sys_up_jetpt.append(sys_up_z)
-#                sys_down_jetpt.append(sys_down_z)
-#            sys_up_full.append(sys_up_z_full)
-#            sys_down_full.append(sys_down_z_full)
-#            sys_up.append(sys_up_jetpt)
-#            sys_down.append(sys_down_jetpt)
-#
-#        # create graphs to plot the uncertainties
-#
-#        tgsys = [] # list of graphs with combined absolute uncertainties for all pt_jet bins
-#        tgsys_cat = [] # list of graphs with relative uncertainties for all categories, pt_jet bins
-#        for ibin2 in range(self.p_nbin2_gen):
-#
-#            # combined uncertainties
-#
-#            shapebins_centres = []
-#            shapebins_contents = []
-#            shapebins_widths_up = []
-#            shapebins_widths_down = []
-#            shapebins_error_up = []
-#            shapebins_error_down = []
-#            for ibinshape in range(self.p_nbinshape_gen):
-#                shapebins_centres.append(input_histograms_default[ibin2].GetBinCenter(ibinshape + 1))
-#                shapebins_contents.append(input_histograms_default[ibin2].GetBinContent(ibinshape + 1))
-#                shapebins_widths_up.append(input_histograms_default[ibin2].GetBinWidth(ibinshape + 1) * 0.5)
-#                shapebins_widths_down.append(input_histograms_default[ibin2].GetBinWidth(ibinshape + 1) * 0.5)
-#                shapebins_error_up.append(sys_up_full[ibin2][ibinshape])
-#                shapebins_error_down.append(sys_down_full[ibin2][ibinshape])
-#            shapebins_centres_array = array("d", shapebins_centres)
-#            shapebins_contents_array = array("d", shapebins_contents)
-#            shapebins_widths_up_array = array("d", shapebins_widths_up)
-#            shapebins_widths_down_array = array("d", shapebins_widths_down)
-#            shapebins_error_up_array = array("d", shapebins_error_up)
-#            shapebins_error_down_array = array("d", shapebins_error_down)
-#            tgsys.append(TGraphAsymmErrors(self.p_nbinshape_gen, \
-#                                           shapebins_centres_array, \
-#                                           shapebins_contents_array, \
-#                                           shapebins_widths_down_array, \
-#                                           shapebins_widths_up_array, \
-#                                           shapebins_error_down_array, \
-#                                           shapebins_error_up_array))
-#
-#            # relative uncertainties per category
-#
-#            tgsys_cat_z = [] # list of graphs with relative uncertainties for all categories in a given pt_jet bin
-#            for sys_cat in range(self.n_sys_cat):
-#                shapebins_contents_cat = []
-#                shapebins_error_up_cat = []
-#                shapebins_error_down_cat = []
-#                for ibinshape in range(self.p_nbinshape_gen):
-#                    shapebins_contents_cat.append(0)
-#                    shapebins_error_up_cat.append(sys_up[ibin2][ibinshape][sys_cat]/input_histograms_default[ibin2].GetBinContent(ibinshape + 1))
-#                    shapebins_error_down_cat.append(sys_down[ibin2][ibinshape][sys_cat]/input_histograms_default[ibin2].GetBinContent(ibinshape + 1))
-#                shapebins_contents_cat_array = array("d", shapebins_contents_cat)
-#                shapebins_error_up_cat_array = array("d", shapebins_error_up_cat)
-#                shapebins_error_down_cat_array = array("d", shapebins_error_down_cat)
-#                tgsys_cat_z.append(TGraphAsymmErrors(self.p_nbinshape_gen, \
-#                                                     shapebins_centres_array, \
-#                                                     shapebins_contents_cat_array, \
-#                                                     shapebins_widths_down_array, \
-#                                                     shapebins_widths_up_array, \
-#                                                     shapebins_error_down_cat_array, \
-#                                                     shapebins_error_up_cat_array))
-#            tgsys_cat.append(tgsys_cat_z)
-#
-#        # relative statistical uncertainty of the central values
-#
-#        h_default_stat_err = []
-#        for ibin2 in range(self.p_nbin2_gen):
-#            suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-#            h_default_stat_err.append(input_histograms_default[ibin2].Clone("h_default_stat_err" + suffix))
-#            for i in range(h_default_stat_err[ibin2].GetNbinsX()):
-#                h_default_stat_err[ibin2].SetBinContent(i + 1, 0)
-#                h_default_stat_err[ibin2].SetBinError(i + 1, input_histograms_default[ibin2].GetBinError(i + 1) / input_histograms_default[ibin2].GetBinContent(i + 1))
-#
-#        # get the prompt PYTHIA histograms
-#
-#        file_sim_out = TFile.Open("%s/simulations.root" % self.d_resultsallpdata, "recreate")
-#        input_pythia8 = []
-#        input_pythia8_xsection = []
-#        input_pythia8_z = []
-#        input_pythia8_xsection_z = []
-#        for i_pythia8 in range(len(self.pythia8_prompt_variations)):
-#            path = "%s%s.root" % (self.pythia8_prompt_variations_path, self.pythia8_prompt_variations[i_pythia8])
-#            input_pythia8_i = self.get_simulated_yields(path, 2, True)
-#            if not input_pythia8_i:
-#                self.logger.fatal(make_message_notfound("simulated yields", path))
-#            input_pythia8_i.SetName("fh2_pythia_prompt_%s_%d" % (self.v_varshape_binning, i_pythia8))
-#            input_pythia8.append(input_pythia8_i)
-#            input_pythia8_xsection_i = input_pythia8_i.Clone(input_pythia8_i.GetName() + "_xsec")
-#            input_pythia8_xsection.append(input_pythia8_xsection_i)
-#
-#            # Ensure correct binning: x - shape, y - jet pt
-#            if not equal_binning_lists(input_pythia8[i_pythia8], list_x=self.varshaperanges_gen):
-#                self.logger.fatal("Error: Incorrect binning in x.")
-#            if not equal_binning_lists(input_pythia8[i_pythia8], list_y=self.var2ranges_gen):
-#                self.logger.fatal("Error: Incorrect binning in y.")
-#            if not equal_binning_lists(input_pythia8_xsection[i_pythia8], list_x=self.varshaperanges_gen):
-#                self.logger.fatal("Error: Incorrect binning in x.")
-#            if not equal_binning_lists(input_pythia8_xsection[i_pythia8], list_y=self.var2ranges_gen):
-#                self.logger.fatal("Error: Incorrect binning in y.")
-#
-#            input_pythia8_z_jetpt = []
-#            input_pythia8_xsection_z_jetpt = []
-#            for ibin2 in range(self.p_nbin2_gen):
-#                suffix = "%s_%.2f_%.2f" % \
-#                     (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-#                input_pythia8_z_jetpt.append(input_pythia8[i_pythia8].ProjectionX("input_pythia8" + self.pythia8_prompt_variations[i_pythia8]+suffix, ibin2 + 1, ibin2 + 1, "e"))
-#                input_pythia8_z_jetpt[ibin2].Scale(1.0 / input_pythia8_z_jetpt[ibin2].Integral(1, -1), "width")
-#                pythia8_out = input_pythia8_z_jetpt[ibin2]
-#                file_sim_out.cd()
-#                pythia8_out.Write()
-#                pythia8_out.SetDirectory(0)
-#                input_pythia8_xsection_z_jetpt.append(input_pythia8_xsection[i_pythia8].ProjectionX("input_pythia8_xsection" + self.pythia8_prompt_variations[i_pythia8] + suffix, ibin2 + 1, ibin2 + 1, "e"))
-#            input_pythia8_z.append(input_pythia8_z_jetpt)
-#            input_pythia8_xsection_z.append(input_pythia8_xsection_z_jetpt)
-#        file_sim_out.Close()
-#
-#        for ibin2 in range(self.p_nbin2_gen):
-#
-#            # plot the results with systematic uncertainties
-#
-#            suffix = "%s_%g_%g" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-#            cfinalwsys = TCanvas("cfinalwsys " + suffix, "final result with systematic uncertainties" + suffix)
-#            setup_canvas(cfinalwsys)
-#            leg_finalwsys = TLegend(.7, .75, .85, .85)
-#            setup_legend(leg_finalwsys)
-#            leg_finalwsys.AddEntry(input_histograms_default[ibin2], "data", "P")
-#            setup_histogram(input_histograms_default[ibin2], get_colour(0))
-#            y_min_g, y_max_g = get_y_window_gr([tgsys[ibin2]])
-#            y_min_h, y_max_h = get_y_window_his([input_histograms_default[ibin2]])
-#            y_min = min(y_min_g, y_min_h)
-#            y_max = max(y_max_g, y_max_h)
-#            y_margin_up = 0.35
-#            y_margin_down = 0.05
-#            input_histograms_default[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min, y_max, y_margin_down, y_margin_up))
-#            input_histograms_default[ibin2].GetXaxis().SetRangeUser(round(self.lvarshape_binmin_gen[0], 2), round(self.lvarshape_binmax_gen[-1], 2))
-#            input_histograms_default[ibin2].SetTitle("")
-#            input_histograms_default[ibin2].SetXTitle(self.v_varshape_latex)
-#            input_histograms_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
-#            input_histograms_default[ibin2].Draw("")
-#            setup_tgraph(tgsys[ibin2], get_colour(7))
-#            tgsys[ibin2].Draw("5")
-#            leg_finalwsys.AddEntry(tgsys[ibin2], "syst. unc.", "F")
-#            input_histograms_default[ibin2].Draw("AXISSAME")
-#            #PREL latex = TLatex(0.15, 0.85, "ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV")
-#            latex = TLatex(0.15, 0.82, "pp, #sqrt{#it{s}} = 13 TeV")
-#            draw_latex(latex)
-#            latex1 = TLatex(0.15, 0.77, "%s in charged jets, anti-#it{k}_{T}, #it{R} = 0.4, #left|#it{#eta}_{jet}#right| #leq 0.5" % self.p_latexnhadron)
-#            draw_latex(latex1)
-#            latex2 = TLatex(0.15, 0.72, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
-#            draw_latex(latex2)
-#            latex3 = TLatex(0.15, 0.67, "%g #leq #it{p}_{T, %s} < %g GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2])))
-#            draw_latex(latex3)
-#            leg_finalwsys.Draw("same")
-#            cfinalwsys.SaveAs("%s/final_wsys_%s.pdf" % (self.d_resultsallpdata, suffix))
-#
-#            # plot the results with systematic uncertainties and models
-#
-#            cfinalwsys_wmodels = TCanvas("cfinalwsys_wmodels " + suffix, "final result with systematic uncertainties with models" + suffix)
-#            setup_canvas(cfinalwsys_wmodels)
-#            if self.typean == "jet_zg":
-#                leg_finalwsys_wmodels = TLegend(.55, .5, .65, .7)
-#            elif self.typean == "jet_rg":
-#                leg_finalwsys_wmodels = TLegend(.15, .45, .25, .65)
-#            else:
-#                leg_finalwsys_wmodels = TLegend(.55, .5, .65, .7)
-#            setup_legend(leg_finalwsys_wmodels)
-#            leg_finalwsys_wmodels.AddEntry(input_histograms_default[ibin2], "data", "P")
-#            setup_histogram(input_histograms_default[ibin2], get_colour(0))
-#            y_min_g, y_max_g = get_y_window_gr([tgsys[ibin2], tg_powheg[ibin2]])
-#            y_min_h, y_max_h = get_y_window_his([input_histograms_default[ibin2], input_powheg_z[ibin2]] + \
-#                [input_pythia8_z[i][ibin2] for i in range(len(self.pythia8_prompt_variations))])
-#            y_min = min(y_min_g, y_min_h)
-#            y_max = max(y_max_g, y_max_h)
-#            y_margin_up = 0.35
-#            y_margin_down = 0.05
-#            y_plot_min, y_plot_max = get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
-#            input_histograms_default[ibin2].GetYaxis().SetRangeUser(y_plot_min, y_plot_max)
-#            input_histograms_default[ibin2].GetXaxis().SetRangeUser(round(self.lvarshape_binmin_gen[0], 2), round(self.lvarshape_binmax_gen[-1], 2))
-#            input_histograms_default[ibin2].SetTitle("")
-#            input_histograms_default[ibin2].SetXTitle(self.v_varshape_latex)
-#            input_histograms_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
-#            input_histograms_default[ibin2].Draw()
-#            setup_tgraph(tgsys[ibin2], get_colour(7))
-#            tgsys[ibin2].Draw("5")
-#            leg_finalwsys_wmodels.AddEntry(tgsys[ibin2], "syst. unc.", "F")
-#            setup_histogram(input_powheg_z[ibin2], get_colour(1), get_marker(1))
-#            leg_finalwsys_wmodels.AddEntry(input_powheg_z[ibin2], "POWHEG #plus PYTHIA 6", "P")
-#            input_powheg_z[ibin2].Draw("same")
-#            setup_tgraph(tg_powheg[ibin2], get_colour(1))
-#            tg_powheg[ibin2].Draw("5")
-#            for i_pythia8 in range(len(self.pythia8_prompt_variations)):
-#                setup_histogram(input_pythia8_z[i_pythia8][ibin2], get_colour(i_pythia8 + 2), get_marker(i_pythia8 + 2), 2.)
-#                leg_finalwsys_wmodels.AddEntry(input_pythia8_z[i_pythia8][ibin2], self.pythia8_prompt_variations_legend[i_pythia8], "P")
-#                input_pythia8_z[i_pythia8][ibin2].Draw("same")
-#            input_histograms_default[ibin2].Draw("AXISSAME")
-#            #PREL latex = TLatex(0.15, 0.85, "ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV")
-#            latex = TLatex(0.15, 0.82, "pp, #sqrt{#it{s}} = 13 TeV")
-#            draw_latex(latex)
-#            latex1 = TLatex(0.15, 0.77, "%s in charged jets, anti-#it{k}_{T}, #it{R} = 0.4, #left|#it{#eta}_{jet}#right| #leq 0.5" % self.p_latexnhadron)
-#            draw_latex(latex1)
-#            latex2 = TLatex(0.15, 0.72, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
-#            draw_latex(latex2)
-#            #latex3 = TLatex(0.15, 0.7, "%g #leq %s < %g" % (round(self.lvarshape_binmin_reco[0], 2), self.v_varshape_latex, round(self.lvarshape_binmax_reco[-1], 2)))
-#            latex3 = TLatex(0.15, 0.67, "%g #leq #it{p}_{T, %s} < %g GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2])))
-#            draw_latex(latex3)
-#            leg_finalwsys_wmodels.Draw("same")
-#            if self.typean == "jet_rg":
-#                # plot the theta_g axis
-#                axis_rg = input_histograms_default[ibin2].GetXaxis()
-#                rg_min = axis_rg.GetBinLowEdge(axis_rg.GetFirst())
-#                rg_max = axis_rg.GetBinUpEdge(axis_rg.GetLast())
-#                radius_jet = 0.4
-#                thetag_min = rg_min / radius_jet
-#                thetag_max = rg_max / radius_jet
-#                y_axis = y_plot_max
-#                axis_thetag = TGaxis(rg_min, y_axis, rg_max, y_axis, thetag_min, thetag_max, 510, "-")
-#                axis_thetag.SetTitle("#it{#theta}_{g} = #it{R}_{g}/#it{R}_{jet}")
-#                axis_thetag.SetTitleSize(0.037)
-#                axis_thetag.SetLabelSize(0.037)
-#                axis_thetag.SetTitleFont(42)
-#                axis_thetag.SetLabelFont(42)
-#                axis_thetag.SetLabelOffset(0)
-#                cfinalwsys_wmodels.SetTickx(0)
-#                axis_thetag.Draw("same")
-#            cfinalwsys_wmodels.SaveAs("%s/final_wsys_wmodels_%s.pdf" % (self.d_resultsallpdata, suffix))
-#
-#            # plot the relative systematic uncertainties for all categories together
-#
-#            crelativesys = TCanvas("crelativesys " + suffix, "relative systematic uncertainties" + suffix)
-#            setup_canvas(crelativesys)
-#            crelativesys.SetLeftMargin(0.13)
-#            leg_relativesys = TLegend(.65, .72, .85, .85, "")
-#            setup_legend(leg_relativesys)
-#            y_min_g, y_max_g = get_y_window_gr(tgsys_cat[ibin2])
-#            y_min_h, y_max_h = get_y_window_his([h_default_stat_err[ibin2]])
-#            y_min = min(y_min_g, y_min_h)
-#            y_max = max(y_max_g, y_max_h)
-#            y_margin_up = 0.25
-#            y_margin_down = 0.05
-#            for sys_cat in range(self.n_sys_cat):
-#                setup_tgraph(tgsys_cat[ibin2][sys_cat], get_colour(sys_cat + 1))
-#                tgsys_cat[ibin2][sys_cat].SetTitle("")
-#                tgsys_cat[ibin2][sys_cat].SetFillStyle(0)
-#                tgsys_cat[ibin2][sys_cat].GetYaxis().SetRangeUser(*get_plot_range(y_min_g, y_max_g, y_margin_down, y_margin_up))
-#                tgsys_cat[ibin2][sys_cat].GetXaxis().SetLimits(round(self.lvarshape_binmin_gen[0], 2), round(self.lvarshape_binmax_gen[-1], 2))
-#                tgsys_cat[ibin2][sys_cat].GetXaxis().SetTitle(self.v_varshape_latex)
-#                tgsys_cat[ibin2][sys_cat].GetYaxis().SetTitle("relative systematic uncertainty")
-#                tgsys_cat[ibin2][sys_cat].GetYaxis().SetTitleOffset(1.4)
-#                leg_relativesys.AddEntry(tgsys_cat[ibin2][sys_cat], self.systematic_catlabels[sys_cat], "F")
-#                if sys_cat == 0:
-#                    tgsys_cat[ibin2][sys_cat].Draw("A2")
-#                else:
-#                    tgsys_cat[ibin2][sys_cat].Draw("2")
-#            setup_histogram(h_default_stat_err[ibin2])
-#            h_default_stat_err[ibin2].Draw("same")
-#            h_default_stat_err[ibin2].Draw("axissame")
-#            latex = TLatex(0.18, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]))
-#            draw_latex(latex)
-#            leg_relativesys.Draw("same")
-#            crelativesys.SaveAs("%s/sys_unc_%s.eps" % (self.d_resultsallpdata, suffix))
-#            crelativesys.SaveAs("%s/sys_unc_%s.pdf" % (self.d_resultsallpdata, suffix))
-#
-#        # plot the feed-down fraction with systematic uncertainties from POWHEG
-#
-#        file_feeddown = TFile.Open(self.file_feeddown)
-#        if not file_feeddown:
-#            self.logger.fatal(make_message_notfound(self.file_feeddown))
-#        file_feeddown_variations = []
-#        for i_powheg, varname in enumerate(self.powheg_nonprompt_varnames):
-#            path = self.file_feeddown.replace(string_default, "powheg/" + varname)
-#            file_feeddown_variations.append(TFile.Open(path))
-#            if not file_feeddown_variations[i_powheg]:
-#                self.logger.fatal(make_message_notfound(path))
-#        h_feeddown_fraction = [] # list of the central feed-down fractions for all pt_jet bins
-#        h_feeddown_fraction_variations = [] # list of feed-down fractions for all POWHEG variations and all pt_jet bins
-#        tg_feeddown_fraction = [] # list of graphs with the spread of values for all pt_jet bins
-#        for ibin2 in range(self.p_nbin2_reco):
-#            suffix = "%s_%.2f_%.2f" % \
-#              (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
-#            suffix_plot = "%s_%g_%g" % \
-#              (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
-#            h_feeddown_fraction_variations_niter = [] # list of feed-down fractions for all POWHEG variations in a given pt_jet bin
-#            h_feeddown_fraction.append(file_feeddown.Get("feeddown_fraction" + suffix))
-#            for i_powheg in range(len(self.powheg_nonprompt_varnames)):
-#                h_feeddown_fraction_variations_niter.append(file_feeddown_variations[i_powheg].Get("feeddown_fraction" + suffix))
-#
-#            h_feeddown_fraction_variations.append(h_feeddown_fraction_variations_niter)
-#            # get the graph with the spread of values for all the POWHEG variations
-#            tg_feeddown_fraction.append(tg_sys(h_feeddown_fraction[ibin2], h_feeddown_fraction_variations[ibin2]))
-#
-#            cfeeddown_fraction = TCanvas("cfeeddown_fraction " + suffix, "feeddown fraction" + suffix)
-#            setup_canvas(cfeeddown_fraction)
-#            cfeeddown_fraction.SetLeftMargin(0.13)
-#            leg_fd = TLegend(.67, .6, .85, .85)
-#            setup_legend(leg_fd, 0.025)
-#            setup_histogram(h_feeddown_fraction[ibin2], get_colour(0))
-#            y_min_g, y_max_g = get_y_window_gr([tg_feeddown_fraction[ibin2]])
-#            y_min_h, y_max_h = get_y_window_his([h_feeddown_fraction[ibin2]])
-#            y_min = min(y_min_g, y_min_h)
-#            y_max = max(y_max_g, y_max_h)
-#            y_margin_up = 0.45
-#            y_margin_down = 0.05
-#            h_feeddown_fraction[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min, y_max, y_margin_down, y_margin_up))
-#            h_feeddown_fraction[ibin2].GetXaxis().SetRangeUser(round(self.lvarshape_binmin_reco[0], 2), round(self.lvarshape_binmax_reco[-1], 2))
-#            h_feeddown_fraction[ibin2].SetXTitle(self.v_varshape_latex)
-#            h_feeddown_fraction[ibin2].SetYTitle("feed-down fraction")
-#            h_feeddown_fraction[ibin2].SetTitleOffset(1.4, "Y")
-#            h_feeddown_fraction[ibin2].SetTitle("")
-#            h_feeddown_fraction[ibin2].Draw("same")
-#            #tg_feeddown_fraction[ibin2].Draw("5")
-#            leg_fd.AddEntry(h_feeddown_fraction[ibin2], "default", "P")
-#            for i, his in enumerate(h_feeddown_fraction_variations_niter):
-#                setup_histogram(his, get_colour(i + 2), 1)
-#                leg_fd.AddEntry(his, self.powheg_nonprompt_varlabels[i], "L")
-#                his.Draw("samehist")
-#            setup_tgraph(tg_feeddown_fraction[ibin2], get_colour(1))
-#            h_feeddown_fraction[ibin2].Draw("same")
-#            h_feeddown_fraction[ibin2].Draw("axissame")
-#            leg_fd.Draw("same")
-#            #PREL latex = TLatex(0.18, 0.85, "ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV")
-#            latex = TLatex(0.18, 0.82, "pp, #sqrt{#it{s}} = 13 TeV")
-#            draw_latex(latex)
-#            latex1 = TLatex(0.18, 0.77, "%s in charged jets, anti-#it{k}_{T}, #it{R} = 0.4, #left|#it{#eta}_{jet}#right| #leq 0.5" % self.p_latexnhadron)
-#            draw_latex(latex1)
-#            latex2 = TLatex(0.18, 0.72, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
-#            draw_latex(latex2)
-#            #latex3 = TLatex(0.18, 0.7, "%g #leq %s < %g" % (round(self.lvarshape_binmin_reco[0], 2), self.v_varshape_latex, round(self.lvarshape_binmax_reco[-1], 2)))
-#            latex3 = TLatex(0.18, 0.67, "%g #leq #it{p}_{T, %s} < %g GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2])))
-#            draw_latex(latex3)
-#            latex5 = TLatex(0.18, 0.62, "stat. unc. from data")
-#            draw_latex(latex5)
-#            latex6 = TLatex(0.18, 0.57, "syst. unc. from POWHEG #plus PYTHIA 6")
-#            draw_latex(latex6)
-#            #latex7 = TLatex(0.65, 0.75, "POWHEG based")
-#            #draw_latex(latex7)
-#            cfeeddown_fraction.SaveAs("%s/feeddown_fraction_var_%s.eps" % (self.d_resultsallpdata, suffix_plot))
-#            cfeeddown_fraction.SaveAs("%s/feeddown_fraction_var_%s.pdf" % (self.d_resultsallpdata, suffix_plot))
-#
-#    def get_simulated_yields(self, file_path: str, dim: int, prompt: bool):
-#        """Create a histogram from a simulation tree.
-#        file_path - input file path
-#        dim - dimension of the output histogram: 2, 3
-#        prompt - prompt or non-prompt: True, False"""
-#
-#        print("Starting the histogram extraction from an MC tree\nInput file: %s" % file_path)
-#
-#        if dim not in (2, 3):
-#            self.logger.fatal("Error: %d is not a supported dimension.", dim)
-#
-#        # Get the normalisation factor (inverse integrated luminosity).
-#        file_sim = TFile.Open(file_path)
-#        if not file_sim:
-#            self.logger.fatal(make_message_notfound(file_path))
-#        pr_xsec = file_sim.Get("fHistXsection")
-#        if not pr_xsec:
-#            self.logger.fatal(make_message_notfound("fHistXsection", file_path))
-#        scale_factor = pr_xsec.GetBinContent(1) / pr_xsec.GetEntries()
-#        file_sim.Close()
-#
-#        # Load the tree.
-#        if "D0" in self.case:
-#            tree_name = "tree_D0"
-#            print("Loading the D0 tree")
-#        elif "Lc" in self.case:
-#            tree_name = "tree_Lc"
-#            print("Loading the Lc tree")
-#        else:
-#            self.logger.fatal(make_message_notfound("the particle name", self.case))
-#        tree_sim = uproot.open(file_path)[tree_name]
-#        if not tree_sim:
-#            self.logger.fatal(make_message_notfound(tree_name, file_path))
-#
-#        print("Converting")
-#        # Convert it into a dataframe.
-#        list_branches = ["pt_cand", "eta_cand", "phi_cand", "y_cand", "pdg_parton", "pt_jet", \
-#            "eta_jet", "phi_jet", "delta_r_jet", "z", "n_const", "zg_jet", "rg_jet", "nsd_jet", \
-#            "k0_jet", "k1_jet", "k2_jet", "kT_jet"]
-#            #"Pt_splitting_jet", "Pt_mother_jet", \
-#        try:
-#            df_sim = tree_sim.pandas.df(branches=list_branches)
-#        except Exception: # pylint: disable=broad-except
-#            self.logger.fatal(make_message_notfound("variables", tree_name))
-#
-#        print("Entries in the tree:", len(df_sim))
-#        print("Filtering %sprompt hadrons" % ("" if prompt else "non-"))
-#        # Apply the same cuts as in gen MC.
-#        # cut on jet pt
-#        df_sim = seldf_singlevar(df_sim, self.v_var2_binning, self.lvar2_binmin_gen[0], self.lvar2_binmax_gen[-1])
-#        # cut on hadron pt
-#        df_sim = seldf_singlevar(df_sim, self.v_var_binning, self.lpt_finbinmin[0], self.lpt_finbinmax[-1])
-#        # cut on shape
-#        df_sim = seldf_singlevar(df_sim, self.v_varshape_binning, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1])
-#        # acceptance cut
-#        #sel_jet_gen = "abs(y_cand) < 0.5 and abs(eta_jet) < 0.5"
-#        sel_jet_gen = "abs(eta_jet) <= 0.5"
-#        df_sim = df_sim.query(sel_jet_gen)
-#        # pt-dependent rapidity cut
-#        sel_cand_array = selectfidacc(df_sim["pt_cand"].values, df_sim["y_cand"].values)
-#        df_sim = df_sim[np.array(sel_cand_array, dtype=bool)]
-#        # prompt vs. non-prompt selection
-#        pdg_parton_good = 4 if prompt else 5
-#        df_sim = df_sim[df_sim["pdg_parton"] == pdg_parton_good]
-#
-#        # Reject single-constituent jets.
-#        #sel_jet_nconst = "n_const > 1"
-#        # FIXME pylint: disable=fixme
-#        sel_jet_nconst = "z < 1"
-#        df_sim = df_sim.query(sel_jet_nconst)
-#
-#        print("Entries after filtering:", len(df_sim))
-#        # Create, fill and scale the histogram.
-#        print("Filling a %dD histogram" % dim)
-#        if dim == 2:
-#            # Binning: x - shape, y - jet pt
-#            his2 = makefill2dhist(df_sim, "h2_yield_sim", \
-#                self.varshapebinarray_gen, self.var2binarray_gen, \
-#                self.v_varshape_binning, self.v_var2_binning)
-#            print("Integral of the histogram:", his2.Integral())
-#            print("Scaling with:", scale_factor)
-#            his2.Scale(scale_factor)
-#            print("Entries in the histogram:", his2.GetEntries())
-#            print("Returning")
-#            return his2
-#        if dim == 3:
-#            # Binning: x - shape, y - jet pt, z - pt hadron
-#            his3 = makefill3dhist(df_sim, "h3_yield_sim", \
-#                self.varshapebinarray_gen, self.var2binarray_gen, self.var1binarray, \
-#                self.v_varshape_binning, self.v_var2_binning, self.v_var_binning)
-#            print("Integral of the histogram:", his3.Integral())
-#            print("Scaling with:", scale_factor)
-#            his3.Scale(scale_factor)
-#            print("Entries in the histogram:", his3.GetEntries())
-#            print("Returning")
-#            return his3
-#        return None

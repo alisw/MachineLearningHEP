@@ -17,6 +17,6 @@ analysis:
     histomass: false # processer: process_histomass
   mc:
     histomass: false # processer: process_histomass
-    response: false # processer: response
+    response: true # processer: response
     dounfolding: true # analyzer: unfolding, unfolding_closure
 

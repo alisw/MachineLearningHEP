@@ -317,6 +317,12 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
         df_tmp_selgen_pr, df_tmp_selreco_pr, df_tmp_selrecogen_pr = \
                 self.create_df_closure(df_mc_reco)
 
+        hzvsjetpt_gen_unmatched = TH2F("hzvsjetpt_gen_unmatched", "hzvsjetpt_gen_unmatched", \
+            self.p_nbinshape_gen, self.varshapebinarray_gen, self.p_nbin2_gen, self.var2binarray_gen)
+        df_zvsjetpt_gen_unmatched = df_mc_gen.loc[:, [self.v_varshape_binning, "pt_jet"]]
+        fill_hist(hzvsjetpt_gen_unmatched, df_zvsjetpt_gen_unmatched)
+        hzvsjetpt_gen_unmatched.Write()
+
         # histograms for unfolding
         hzvsjetpt_reco_nocuts_pr = \
             build2dhisto("hzvsjetpt_reco_nocuts", self.varshapebinarray_reco, self.var2binarray_reco)

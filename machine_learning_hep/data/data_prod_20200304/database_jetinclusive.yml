@@ -76,6 +76,9 @@ inclusivejets:
       useperiod: [1,1,1] #list of periods
       latexnamehadron: "D^{0}"
       latexnamedecay: "K^{#minus} #pi^{#plus}"
+      niterunfolding: 15
+      niterunfoldingchosen: 4
+      xsection_inel: 57.8 # (mb) cross-section of minimum-bias events
       doprior: false
       var_binning2: pt_jet
       var_binning2_gen: pt_gen_jet
