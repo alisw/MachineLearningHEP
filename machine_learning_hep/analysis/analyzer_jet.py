@@ -1696,7 +1696,7 @@ class AnalyzerJet(Analyzer):
         stat_closure = input_mc_det.Integral()
         print("Unfolding: data statistics: %g, closure statistics: %g, ratio: %g" % (stat_unfolding, stat_closure, stat_unfolding/stat_closure))
 
-        # Ignore the first bin for integration incase of untagged bin
+        # Ignore the first bin for integration in case of untagged bin
         bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 else 1
 
         # calculate rec. level kinematic efficiency and apply it to the unfolding input
@@ -2523,7 +2523,7 @@ class AnalyzerJet(Analyzer):
         input_mc_det_z = []
         input_mc_gen_z = []
 
-        # Ignore the first bin for integration incase of untagged bin
+        # Ignore the first bin for integration in case of untagged bin
         bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 else 1
 
         kinematic_eff_jetpt = unfolding_input_file.Get("hjetpt_gen_cuts_closure")
@@ -3096,7 +3096,7 @@ class AnalyzerJet(Analyzer):
             elif self.typean == "jet_rg":
                 leg_finalwsys_wmodels = TLegend(.15, .45, .25, .65)
             else:
-                leg_finalwsys_wmodels = TLegend(.55, .5, .65, .7)
+                leg_finalwsys_wmodels = TLegend(.55, .52, .65, .72)
             setup_legend(leg_finalwsys_wmodels)
             leg_finalwsys_wmodels.AddEntry(input_histograms_default[ibin2], "data", "P")
             setup_histogram(input_histograms_default[ibin2], get_colour(0))
@@ -3163,13 +3163,13 @@ class AnalyzerJet(Analyzer):
             crelativesys = TCanvas("crelativesys " + suffix, "relative systematic uncertainties" + suffix)
             setup_canvas(crelativesys)
             crelativesys.SetLeftMargin(0.13)
-            leg_relativesys = TLegend(.65, .72, .85, .85, "")
+            leg_relativesys = TLegend(.65, .66, .86, .86, "")
             setup_legend(leg_relativesys)
             y_min_g, y_max_g = get_y_window_gr(tgsys_cat[ibin2])
             y_min_h, y_max_h = get_y_window_his([h_default_stat_err[ibin2]])
             y_min = min(y_min_g, y_min_h)
             y_max = max(y_max_g, y_max_h)
-            y_margin_up = 0.25
+            y_margin_up = 0.32
             y_margin_down = 0.05
             for sys_cat in range(self.n_sys_cat):
                 setup_tgraph(tgsys_cat[ibin2][sys_cat], get_colour(sys_cat + 1))
@@ -3325,8 +3325,8 @@ class AnalyzerJet(Analyzer):
         # cut on shape
         df_sim = seldf_singlevar(df_sim, self.v_varshape_binning, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1])
         # acceptance cut
-        #sel_jet_gen = "abs(y_cand) < 0.5 and abs(eta_jet) < 0.5"
-        sel_jet_gen = "abs(eta_jet) <= 0.5"
+        sel_jet_gen = "abs(y_cand) < 0.5 and abs(eta_jet) < 0.5"
+        #sel_jet_gen = "abs(eta_jet) <= 0.5"
         df_sim = df_sim.query(sel_jet_gen)
         # pt-dependent rapidity cut
         sel_cand_array = selectfidacc(df_sim["pt_cand"].values, df_sim["y_cand"].values)
