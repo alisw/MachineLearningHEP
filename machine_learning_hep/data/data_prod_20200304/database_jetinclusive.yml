@@ -103,9 +103,9 @@ inclusivejets:
         mc: null
       data:
         runselection: [null, null, null] #FIXME
-        results: [resultsdata2016, resultsdata2017, resultsdata2018]
-        resultsallp: resultsdatatot
+        results: [results/resultsdata2016, results/resultsdata2017, results/resultsdata2018]
+        resultsallp: results/resultsdatatot
       mc:
         runselection: [null, null, null] #FIXME
-        results: [resultsmc2016, resultsmc2017, resultsmc2018]
-        resultsallp: resultsmctot
+        results: [results/resultsmc2016, results/resultsmc2017, results/resultsmc2018]
+        resultsallp: results/resultsmctot

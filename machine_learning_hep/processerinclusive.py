@@ -15,6 +15,7 @@
 """
 main script for doing data processing, machine learning and analysis
 """
+from array import array
 import sys
 from copy import deepcopy
 import multiprocessing as mp
@@ -110,6 +111,46 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
 
+        # second variable (jet pt)
+        self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"] # name
+        self.v_var2_binning_gen = datap["analysis"][self.typean]["var_binning2_gen"] # name
+        self.lvar2_binmin_reco = datap["analysis"][self.typean].get("sel_binmin2_reco", None)
+        self.lvar2_binmax_reco = datap["analysis"][self.typean].get("sel_binmax2_reco", None)
+        self.p_nbin2_reco = len(self.lvar2_binmin_reco) # number of reco bins
+        self.lvar2_binmin_gen = datap["analysis"][self.typean].get("sel_binmin2_gen", None)
+        self.lvar2_binmax_gen = datap["analysis"][self.typean].get("sel_binmax2_gen", None)
+        self.p_nbin2_gen = len(self.lvar2_binmin_gen) # number of gen bins
+        self.var2ranges_reco = self.lvar2_binmin_reco.copy()
+        self.var2ranges_reco.append(self.lvar2_binmax_reco[-1])
+        # array of bin edges to use in histogram constructors
+        self.var2binarray_reco = array("d", self.var2ranges_reco)
+        self.var2ranges_gen = self.lvar2_binmin_gen.copy()
+        self.var2ranges_gen.append(self.lvar2_binmax_gen[-1])
+        # array of bin edges to use in histogram constructors
+        self.var2binarray_gen = array("d", self.var2ranges_gen)
+
+        # observable (z, shape,...)
+        self.v_varshape_binning = datap["analysis"][self.typean]["var_binningshape"]
+        self.v_varshape_binning_gen = datap["analysis"][self.typean]["var_binningshape_gen"]
+        self.lvarshape_binmin_reco = \
+            datap["analysis"][self.typean].get("sel_binminshape_reco", None)
+        self.lvarshape_binmax_reco = \
+            datap["analysis"][self.typean].get("sel_binmaxshape_reco", None)
+        self.p_nbinshape_reco = len(self.lvarshape_binmin_reco) # number of reco bins
+        self.lvarshape_binmin_gen = \
+            datap["analysis"][self.typean].get("sel_binminshape_gen", None)
+        self.lvarshape_binmax_gen = \
+            datap["analysis"][self.typean].get("sel_binmaxshape_gen", None)
+        self.p_nbinshape_gen = len(self.lvarshape_binmin_gen) # number of gen bins
+        self.varshaperanges_reco = self.lvarshape_binmin_reco.copy()
+        self.varshaperanges_reco.append(self.lvarshape_binmax_reco[-1])
+        # array of bin edges to use in histogram constructors
+        self.varshapebinarray_reco = array("d", self.varshaperanges_reco)
+        self.varshaperanges_gen = self.lvarshape_binmin_gen.copy()
+        self.varshaperanges_gen.append(self.lvarshape_binmax_gen[-1])
+        # array of bin edges to use in histogram constructors
+        self.varshapebinarray_gen = array("d", self.varshaperanges_gen)
+
     def unpack(self, file_index):
         treeevtorig = uproot.open(self.l_root[file_index])[self.n_treeevt]
         try:
@@ -183,11 +224,24 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
         if self.runlistrigger is not None:
             df = selectdfrunlist(df, \
                 self.run_param[self.runlistrigger], "run_number")
-        print(self.s_evtsel, self.s_jetsel_reco, self.s_trigger, self.runlistrigger)
-        hptvszg = TH2F("hptvszg", "hptvszg", 100, 0., 1., 100, 0, 100);
-        fill2dhist(df, hptvszg, "zg_jet", "pt_jet")
-        hptvszg.Write()
-        # Get number of selected events and save it in the first bin of the histonorm histogram.
+        h_jetptvsshape = TH2F("h_jetptvsshape", "", \
+            self.p_nbinshape_reco, self.varshapebinarray_reco,
+            len(self.lvar2_binmin_reco), self.var2binarray_reco)
+        fill2dhist(df, h_jetptvsshape, self.v_varshape_binning, self.v_var2_binning)
+        h_jetptvsshape.Write()
+
+        for ijet in range(self.p_nbin2_reco):
+            suffix = "%s_%.2f_%.2f" % \
+                     (self.v_var2_binning, self.lvar2_binmin_reco[ijet],
+                      self.lvar2_binmax_reco[ijet])
+            df_bin = seldf_singlevar(df, self.v_var2_binning,
+                                         self.lvar2_binmin_reco[ijet],
+                                         self.lvar2_binmax_reco[ijet])
+            h_jetptvsshape = TH2F("h_jetptvsshape" + suffix, "", \
+                self.p_nbinshape_reco, self.varshapebinarray_reco,
+                len(self.lvar2_binmin_reco), self.var2binarray_reco)
+            fill2dhist(df_bin, h_jetptvsshape, self.v_varshape_binning, self.v_var2_binning)
+            h_jetptvsshape.Write()
 
     def process_histomass(self):
         print("Doing masshisto", self.mcordata, self.period)
