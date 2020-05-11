@@ -71,7 +71,7 @@ inclusivejets:
             /data/DerivedInclusive/mc2017/pkl,
             /data/DerivedInclusive/mc2018/pkl] #list of periods
   analysis:
-    jet_zg:
+    jet_zg: &jet_default
       proc_type: light
       useperiod: [1,1,1] #list of periods
       latexnamehadron: "D^{0}"
@@ -106,11 +106,124 @@ inclusivejets:
       triggersel:
         data: "trigger_hasbit_INT7==1"
         mc: null
-      data:
+      data: &data_out_default
         runselection: [null, null, null] #FIXME
-        results: [results/resultsdata2016, results/resultsdata2017, results/resultsdata2018]
-        resultsallp: results/resultsdatatot
-      mc:
+        results: [results_Nima/zg/default/default/resultsdata2016, results_Nima/zg/default/default/resultsdata2017, results_Nima/zg/default/default/resultsdata2018]
+        resultsallp: results_Nima/zg/default/default/resultsdatatot
+      mc: &mc_out_default
         runselection: [null, null, null] #FIXME
-        results: [results/resultsmc2016, results/resultsmc2017, results/resultsmc2018]
-        resultsallp: results/resultsmctot
+        results: [results_Nima/zg/default/default/resultsmc2016, results_Nima/zg/default/default/resultsmc2017, results_Nima/zg/default/default/resultsmc2018]
+        resultsallp: results_Nima/zg/default/default/resultsmctot
+      data_proc: # alternative processor output used as the analyzer input
+        <<: *data_out_default
+      mc_proc: # alternative processor output used as the analyzer input
+        <<: *mc_out_default
+
+      variations_db: ./data/data_prod_20200304/database_variations_jetinclusive_jet_zg.yml
+
+    jet_rg:
+      #<<: *jet_default
+      proc_type: light
+      useperiod: [1,1,1] #list of periods
+      latexnamehadron: "D^{0}"
+      latexnamedecay: "K^{#minus} #pi^{#plus}"
+      niterunfolding: 15
+      niterunfoldingchosen: 4
+      xsection_inel: 57.8 # (mb) cross-section of minimum-bias events
+      doprior: false
+      var_binning2: pt_jet
+      var_binning2_gen: pt_gen_jet
+      latexbin2var: "#it{p}_{T, jet}^{ch}"
+      sel_binmin2_reco: [7.0,15.0,30.0] # rec jet pt bins (sel_binmin2_reco bins)
+      sel_binmax2_reco:     [15.0,30.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)
+      sel_binmin2_gen:  [7.0,15.0,30.0] # gen jet pt bins (sel_binmin2_gen bins)
+      sel_binmax2_gen:      [15.0,30.0,50.0] # gen jet pt bins (sel_binmin2_gen bins)
+      var_binningshape: rg_jet
+      var_binningshape_gen: rg_gen_jet
+      var_shape_latex: "#it{R}_{g}"
+      sel_binminshape_reco: [0.0,0.1,0.2,0.3,0.4]
+      sel_binmaxshape_reco:     [0.1,0.2,0.3,0.4,0.5]
+      sel_binminshape_gen:  [0.0,0.1,0.2,0.3,0.4]
+      sel_binmaxshape_gen:      [0.1,0.2,0.3,0.4,0.5]
+      sel_closure_frac: 0.2
+      triggerbit: INT7
+      sel_an_binmin:    [5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmax:      [6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
+      binning_matching:   [2,3,3, 4, 4, 5, 5, 6] # mapping to skimming pt bins (sel_an_binmin bins)
+      jetsel_gen: "abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5 and ptleadingtrack_jet > 5.33"
+      jetsel_reco: "abs(eta_jet) < 0.5 and ptleadingtrack_jet > 5.33"
+      jetsel_gen_matched: "abs(eta_gen_jet) < 0.5 and ptleadingtrack_gen_jet > 5.33 and pt_gen_jet > 0.0"
+      evtsel: is_ev_rej==0
+      triggersel:
+        data: "trigger_hasbit_INT7==1"
+        mc: null
+      data: &data_out_rg
+        <<: *data_out_default
+        runselection: [null, null, null] #FIXME
+        results: [results_Nima/rg/default/default/resultsdata2016, results_Nima/rg/default/default/resultsdata2017, results_Nima/rg/default/default/resultsdata2018]
+        resultsallp: results_Nima/rg/default/default/resultsdatatot
+      mc: &mc_out_rg
+        <<: *mc_out_default
+        runselection: [null, null, null] #FIXME
+        results: [results_Nima/rg/default/default/resultsmc2016, results_Nima/rg/default/default/resultsmc2017, results_Nima/rg/default/default/resultsmc2018]
+        resultsallp: results_Nima/rg/default/default/resultsmctot
+      data_proc: # alternative processor output used as the analyzer input
+        <<: *data_out_rg
+      mc_proc: # alternative processor output used as the analyzer input
+        <<: *mc_out_rg
+      variations_db: ./data/data_prod_20200304/database_variations_jetinclusive_jet_rg.yml
+
+
+
+
+    jet_nsd:
+      #<<: *jet_default
+      proc_type: light
+      useperiod: [1,1,1] #list of periods
+      latexnamehadron: "D^{0}"
+      latexnamedecay: "K^{#minus} #pi^{#plus}"
+      niterunfolding: 15
+      niterunfoldingchosen: 4
+      xsection_inel: 57.8 # (mb) cross-section of minimum-bias events
+      doprior: false
+      var_binning2: pt_jet
+      var_binning2_gen: pt_gen_jet
+      latexbin2var: "#it{p}_{T, jet}^{ch}"
+      sel_binmin2_reco: [7.0,15.0,30.0] # rec jet pt bins (sel_binmin2_reco bins)
+      sel_binmax2_reco:     [15.0,30.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)
+      sel_binmin2_gen:  [7.0,15.0,30.0] # gen jet pt bins (sel_binmin2_gen bins)
+      sel_binmax2_gen:      [15.0,30.0,50.0] # gen jet pt bins (sel_binmin2_gen bins)
+      var_binningshape: nsd_jet
+      var_binningshape_gen: nsd_gen_jet
+      var_shape_latex: "#it{n}_{sd}"
+      sel_binminshape_reco: [0.0,1.0,2.0,3.0,4.0]
+      sel_binmaxshape_reco:     [1.0,2.0,3.0,4.0,5.0]
+      sel_binminshape_gen:  [0.0,1.0,2.0,3.0,4.0]
+      sel_binmaxshape_gen:      [1.1,2.0,3.0,4.0,5.0]
+      sel_closure_frac: 0.2
+      triggerbit: INT7
+      sel_an_binmin:    [5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmax:      [6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
+      binning_matching:   [2,3,3, 4, 4, 5, 5, 6] # mapping to skimming pt bins (sel_an_binmin bins)
+      jetsel_gen: "abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5 and ptleadingtrack_jet > 5.33"
+      jetsel_reco: "abs(eta_jet) < 0.5 and ptleadingtrack_jet > 5.33"
+      jetsel_gen_matched: "abs(eta_gen_jet) < 0.5 and ptleadingtrack_gen_jet > 5.33 and pt_gen_jet > 0.0"
+      evtsel: is_ev_rej==0
+      triggersel:
+        data: "trigger_hasbit_INT7==1"
+        mc: null
+      data: &data_out_nsd
+        <<: *data_out_default
+        runselection: [null, null, null] #FIXME
+        results: [results_Nima/nsd/default/default/resultsdata2016, results_Nima/nsd/default/default/resultsdata2017, results_Nima/nsd/default/default/resultsdata2018]
+        resultsallp: results_Nima/nsd/default/default/resultsdatatot
+      mc: &mc_out_nsd
+        <<: *mc_out_default
+        runselection: [null, null, null] #FIXME
+        results: [results_Nima/nsd/default/default/resultsmc2016, results_Nima/nsd/default/default/resultsmc2017, results_Nima/nsd/default/default/resultsmc2018]
+        resultsallp: results_Nima/nsd/default/default/resultsmctot
+        data_proc: # alternative processor output used as the analyzer input
+        <<: *data_out_nsd
+      mc_proc: # alternative processor output used as the analyzer input
+        <<: *mc_out_nsd
+      variations_db: ./data/data_prod_20200304/database_variations_jetinclusive_jet_nsd.yml
