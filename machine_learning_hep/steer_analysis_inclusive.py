@@ -66,6 +66,7 @@ def do_entire_analysis():
     doanaperperiod = data_config["analysis"]["doperperiod"]
     dohistomassmc = data_config["analysis"]["mc"]["histomass"]
     dohistomassdata = data_config["analysis"]["data"]["histomass"]
+    doresponse = data_config["analysis"]["mc"]["response"]
 
     dirpklmc = data_param[case]["multi"]["mc"]["pkl"]
     dirpkldata = data_param[case]["multi"]["data"]["pkl"]
@@ -124,6 +125,9 @@ def do_entire_analysis():
 
     if dohistomassdata is True:
         mymultiprocessdata.multi_histomass()
+
+    if doresponse is True:
+        mymultiprocessmc.multi_response()
     print("Done")
 
 do_entire_analysis()

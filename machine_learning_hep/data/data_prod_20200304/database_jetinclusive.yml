@@ -44,6 +44,7 @@ inclusivejets:
     treeorigingen: 'PWGHF_TreeCreator/tree_InclusiveJet_gen'
     treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
     histofilename: "masshisto.root"
+    respfilename: "resphisto.root"
     
 
   multi:

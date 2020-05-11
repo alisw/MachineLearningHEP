@@ -42,6 +42,8 @@ class MultiProcesserInclusive: # pylint: disable=too-many-instance-attributes, t
         self.n_evt = datap["files_names"]["namefile_evt"]
         self.n_evtorig = datap["files_names"]["namefile_evtorig"]
         self.n_gen = datap["files_names"]["namefile_gen"]
+        self.n_fileresp = datap["files_names"]["respfilename"]
+        self.fileresp_mergedall = os.path.join(self.d_resulsallp, self.n_fileresp)
 
         self.lper_runlistrigger = datap["analysis"][self.typean][self.mcordata]["runselection"]
 
@@ -62,9 +64,11 @@ class MultiProcesserInclusive: # pylint: disable=too-many-instance-attributes, t
         self.filemass_mergedall = os.path.join(self.d_resulsallp, self.n_filemass)
         self.p_useperiod = datap["analysis"][self.typean]["useperiod"]
         self.lper_filemass = []
+        self.lper_fileresp = []
         for i, direc in enumerate(self.d_results):
             if self.p_useperiod[i] == 1:
                 self.lper_filemass.append(os.path.join(direc, self.n_filemass))
+                self.lper_fileresp.append(os.path.join(direc, self.n_fileresp))
 
     def multi_unpack_allperiods(self):
         for indexp in range(self.prodnumber):
@@ -76,3 +80,16 @@ class MultiProcesserInclusive: # pylint: disable=too-many-instance-attributes, t
                 self.process_listsample[indexp].process_histomass()
         tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/mass/{get_timestamp_string()}/"
         mergerootfiles(self.lper_filemass, self.filemass_mergedall, tmp_merged)
+
+    def multi_response(self):
+        resp_exists = False
+        print(self.lper_fileresp)
+        for indexp in range(self.prodnumber):
+            if self.p_useperiod[indexp] == 1:
+                if hasattr(self.process_listsample[indexp], "process_response"):
+                    resp_exists = True
+                    self.process_listsample[indexp].process_response()
+        if resp_exists:
+            tmp_merged = \
+                    f"/data/tmp/hadd/{self.case}_{self.typean}/response/{get_timestamp_string()}/"
+            mergerootfiles(self.lper_fileresp, self.fileresp_mergedall, tmp_merged)

@@ -17,4 +17,5 @@ analysis:
     histomass: true # processer: process_histomass
   mc:
     histomass: true # processer: process_histomass
+    response: true # processer: response
 

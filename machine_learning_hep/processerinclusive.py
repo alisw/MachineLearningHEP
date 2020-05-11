@@ -74,6 +74,7 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
         self.n_evtorig = datap["files_names"]["namefile_evtorig"]
         self.n_gen = datap["files_names"]["namefile_gen"]
         self.n_filemass = datap["files_names"]["histofilename"]
+        self.n_fileresp = datap["files_names"]["respfilename"]
 
         #selections
         self.s_reco_unp = datap["sel_reco_unp"]
@@ -99,10 +100,12 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
         self.l_evt = createlist(self.d_pkl, self.l_path, self.n_evt)
         self.l_evtorig = createlist(self.d_pkl, self.l_path, self.n_evtorig)
         self.l_histomass = createlist(self.d_results, self.l_path, self.n_filemass)
+        self.l_historesp = createlist(self.d_results, self.l_path, self.n_fileresp)
 
         if self.mcordata == "mc":
             self.l_gen = createlist(self.d_pkl, self.l_path, self.n_gen)
         self.n_filemass = os.path.join(self.d_results, self.n_filemass)
+        self.n_fileresp = os.path.join(self.d_results, self.n_fileresp)
 
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
         self.s_jetsel_gen = datap["analysis"][self.typean]["jetsel_gen"]
@@ -254,3 +257,30 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
         tmp_merged = \
             f"/data/tmp/hadd/{self.case}_{self.typean}/mass_{self.period}/{get_timestamp_string()}/"
         mergerootfiles(self.l_histomass, self.n_filemass, tmp_merged)
+
+    def process_response_single(self, index): # pylint: disable=too-many-locals
+        """
+        First of all, we load all the mc gen and reco files that are skimmed
+        in bins of HF candidate ptand we apply the standard selection to all
+        of them. After this, we merged them all to create a single file of gen
+        and reco monte carlo sample with all the HF candidate pt. In particular
+        gen jets are selected according to run trigger, runlist, and gen jet
+        zbin_recoand pseudorapidity. Reco candidates according to evt selection, eta
+        jets, trigger and ml probability of the HF hadron
+        """
+        print("ECCOMI")
+        out_file = TFile.Open(self.l_historesp[index], "recreate")
+        list_df_mc_reco = []
+        list_df_mc_gen = []
+        h = TH1F("h", "h", 100, 0, 100)
+        h.Write()
+    def process_response(self):
+        print("Doing response", self.mcordata, self.period)
+        print("Using run selection for resp histo", \
+               self.runlistrigger, "for period", self.period)
+
+        create_folder_struc(self.d_results, self.l_path)
+        arguments = [(i,) for i in range(len(self.l_root))]
+        self.parallelizer(self.process_response_single, arguments, self.p_chunksizeunp)
+        tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/historesp_{self.period}/{get_timestamp_string()}/" # pylint: disable=line-too-long
+        mergerootfiles(self.l_historesp, self.n_fileresp, tmp_merged)
