@@ -1,0 +1,163 @@
+categories:
+    default:
+        activate: no
+        processor: true
+        label: "default"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            default:
+                activate: [yes]
+                label: ["default"]
+                diffs: {}
+    
+    prior:
+        activate: yes
+        processor: true
+        label: "prior"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            prior:
+                activate: [yes]
+                label: ["flat"]
+                diffs:
+                    analysis:
+                        jet_g:
+                            doprior: [true]
+    regularisation:
+        activate: yes
+        processor: false
+        label: "regularisation"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            iter:
+                activate: [yes, yes]
+                label: ["down", "up"]
+                diffs:
+                    analysis:
+                        jet_rg:
+                            niterunfoldingchosen: [3, 7]
+    normalisation:
+        activate: yes
+        processor: false
+        label: "normalisation"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            crosssection:
+                activate: [yes, yes]
+                label: ["#it{#sigma}_{V0AND} down", "#it{#sigma}_{V0AND} up"]
+                diffs:
+                    analysis:
+                        jet_rg:
+                            xsection_inel: [54.91, 60.69]
+    tracking:
+        activate: yes
+        processor: true
+        label: "tracking"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            efficiency:
+                activate: [yes]
+                label: ["eff. down"]
+                diffs:
+                  multi:
+                    mc:
+                      unmerged_tree_dir: [[/data/TTree/D0DsLckAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/merged,
+                                          /data/TTree/D0DsLckAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/merged,
+                                          /data/TTree/D0DsLckAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/merged]]
+                      pkl: [[/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/pkl,
+                            /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/pkl,
+                            /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/pkl]]
+                      pkl_skimmed: [[/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/pklsk,
+                                    /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/pklsk,
+                                    /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/pklsk]]
+                      pkl_skimmed_merge_for_ml: [[/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/pklskml,
+                                                 /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/pklskml,
+                                                 /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/pklskml]]
+                      pkl_skimmed_merge_for_ml_all: [/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_mc_prodD2H_mltot]
+                      pkl_evtcounter_all: [/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_mc_prodD2H_evttot]
+                  ml:
+                    mlplot: [/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/mlplot]
+                    mlout: [/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/mlout]
+                  mlapplication:
+                    data:
+                      pkl_skimmed_dec: [[/data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdec_trkeff,
+                                        /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdec_trkeff,
+                                        /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdec_trkeff]]
+                      pkl_skimmed_decmerged: [[/data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdecmerged_trkeff,
+                                              /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdecmerged_trkeff,
+                                              /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdecmerged_trkeff]]
+                    mc:
+                      pkl_skimmed_dec: [[/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/pklskdec,
+                                        /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/pklskdec,
+                                        /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/pklskdec]]
+                      pkl_skimmed_decmerged: [[/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/pklskdecmerged,
+                                              /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/pklskdecmerged,
+                                              /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/pklskdecmerged]]
+    binning:
+        activate: yes
+        processor: true
+        label: "binning"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            pt_cand:
+#                activate: [yes, yes, yes, yes, yes, yes]
+                activate: [no, no, no, no, no, no]
+                label:
+                    - "#it{p}_{T}^{D} 4#minus24"
+                    - "#it{p}_{T}^{D} 4#minus36"
+                    - "#it{p}_{T}^{D} 4#minus48"
+                    - "#it{p}_{T}^{D} 5#minus24"
+                    - "#it{p}_{T}^{D} 5#minus36"
+                    - "#it{p}_{T}^{D} 5#minus48"
+                diffs:
+                    analysis:
+                        jet_rg:
+                            sel_an_binmin:
+                                [[4,5,6,7,8,10,12,16],  [4,5,6,7,8,10,12,16,24],  [4,5,6,7,8,10,12,16,24,36],  [5,6,7,8,10,12,16],  [5,6,7,8,10,12,16,24],  [5,6,7,8,10,12,16,24,36]]
+                            sel_an_binmax:
+                                  [[5,6,7,8,10,12,16,24], [5,6,7,8,10,12,16,24,36], [5,6,7,8,10,12,16,24,36,48], [6,7,8,10,12,16,24], [6,7,8,10,12,16,24,36], [6,7,8,10,12,16,24,36,48]]
+                            binning_matching:
+                                  [[2,2,3,3, 4, 4, 5, 5], [2,2,3,3, 4, 4, 5, 5, 6], [2,2,3,3, 4, 4, 5, 5, 6, 6], [2,3,3, 4, 4, 5, 5], [2,3,3, 4, 4, 5, 5, 6], [2,3,3, 4, 4, 5, 5, 6, 6]]
+            pt_jet:
+                activate: [yes, no, no]
+                label:
+                    - "#it{p}_{T}^{jet} 7 #rightarrow 8"
+                    - "add #it{p}_{T}^{jet} 5#minus7"
+                    - "#it{p}_{T}^{jet} 5#minus50"
+                diffs:
+                    analysis:
+                        jet_rg:
+                            sel_binmin2_reco: [[8,15,30], [5,7,15,30],  [5]]
+                            sel_binmax2_reco:    ["#",      [7,15,30,50], [50]]
+                            sel_binmin2_gen:  [[8,15,30], [5,7,15,30],  [5]]
+                            sel_binmax2_gen:     ["#",      [7,15,30,50], [50]]
+            shape:
+                activate: [yes]
+                label:
+                    - "untagged bin"
+                diffs:
+                    analysis:
+                        jet_rg:
+                            sel_binminshape_reco: [[-100,0.0,0.1,0.2,0.3,0.4]]
+                            sel_binmaxshape_reco:    [[0.0,0.1,0.2,0.3,0.4,0.5]]
+                            sel_binminshape_gen:  [[-100,0.0,0.1,0.2,0.3,0.4]]
+                            sel_binmaxshape_gen:     [[0.0,0.1,0.2,0.3,0.4,0.5]]
+   
