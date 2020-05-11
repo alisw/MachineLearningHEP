@@ -650,7 +650,7 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
         if offsets_xy:
             graph.GetXaxis().SetTitleOffset(offsets_xy[0])
             graph.GetYaxis().SetTitleOffset(offsets_xy[1])
-        if leg and n_labels > counter_plot:
+        if leg and n_labels > counter_plot and len(labels_obj[counter_plot]) > 0:
             leg.AddEntry(graph, labels_obj[counter_plot], opt_leg_g)
         graph.Draw(opt_plot_g + "A" if counter_plot == 0 else opt_plot_g)
 
@@ -658,6 +658,7 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
         # If nothing has been plotted yet, plot an empty graph to set the exact ranges.
         if counter_plot == 0:
             gr = TGraph(histogram)
+            setup_tgraph(gr)
             gr.SetMarkerSize(0)
             gr.SetTitle(title)
             gr.GetXaxis().SetLimits(x_min_plot, x_max_plot)
@@ -670,7 +671,7 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
             gr.Draw("AP")
             list_new.append(gr)
         setup_histogram(histogram, get_my_colour(counter_plot), get_my_marker(counter_plot))
-        if leg and n_labels > counter_plot:
+        if leg and n_labels > counter_plot and len(labels_obj[counter_plot]) > 0:
             leg.AddEntry(histogram, labels_obj[counter_plot], opt_leg_h)
         histogram.Draw(opt_plot_h)
 
