@@ -17,6 +17,7 @@ main script for doing data processing, machine learning and analysis
 """
 from array import array
 import sys
+from sklearn.model_selection import train_test_split
 from copy import deepcopy
 import multiprocessing as mp
 import pickle
@@ -25,7 +26,9 @@ import random as rd
 import uproot
 import pandas as pd
 import numpy as np
+from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TH1F, TH2F
+from ROOT import TFile, TH1F, TH2F, RooUnfoldResponse # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 from machine_learning_hep.utilities import selectdfquery, merge_method
@@ -131,6 +134,8 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
         self.var2ranges_gen.append(self.lvar2_binmax_gen[-1])
         # array of bin edges to use in histogram constructors
         self.var2binarray_gen = array("d", self.var2ranges_gen)
+        self.closure_frac = datap["analysis"][self.typean].get("sel_closure_frac", None)
+        self.doprior = datap["analysis"][self.typean]["doprior"]
 
         # observable (z, shape,...)
         self.v_varshape_binning = datap["analysis"][self.typean]["var_binningshape"]
@@ -268,12 +273,284 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
         zbin_recoand pseudorapidity. Reco candidates according to evt selection, eta
         jets, trigger and ml probability of the HF hadron
         """
-        print("ECCOMI")
         out_file = TFile.Open(self.l_historesp[index], "recreate")
-        list_df_mc_reco = []
-        list_df_mc_gen = []
-        h = TH1F("h", "h", 100, 0, 100)
-        h.Write()
+        df_mc_gen = pickle.load(openfile(self.l_gen[index], "rb"))
+        df_mc_reco = pickle.load(openfile(self.l_reco[index], "rb"))
+
+        # selection on gen
+        if self.runlistrigger is not None:
+            df_mc_gen = selectdfrunlist(df_mc_gen, \
+                self.run_param[self.runlistrigger], "run_number")
+        # selection on reco
+        if self.s_evtsel is not None:
+            df_mc_reco = df_mc_reco.query(self.s_evtsel)
+        if self.s_jetsel_reco is not None:
+            df_mc_reco = df_mc_reco.query(self.s_jetsel_reco)
+        if self.s_trigger is not None:
+            df_mc_reco = df_mc_reco.query(self.s_trigger)
+        if self.runlistrigger is not None:
+            df_mc_reco = selectdfrunlist(df_mc_reco, \
+                self.run_param[self.runlistrigger], "run_number")
+        for ibin2 in range(self.p_nbin2_gen):
+            suffix = "%s_%.2f_%.2f" % \
+                (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+            hz_gen_nocuts_pr = TH1F("hz_gen_nocuts" + suffix, \
+                "hz_gen_nocuts" + suffix, self.p_nbinshape_gen, self.varshapebinarray_gen)
+            hz_gen_nocuts_pr.Sumw2()
+            hz_gen_cuts_pr = TH1F("hz_gen_cuts" + suffix,
+                                  "hz_gen_cuts" + suffix, self.p_nbinshape_gen, self.varshapebinarray_gen)
+            hz_gen_cuts_pr.Sumw2()
+            df_tmp_pr = seldf_singlevar(df_mc_reco, "pt_gen_jet", \
+                                     self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+            df_tmp_pr = seldf_singlevar(df_tmp_pr, self.v_varshape_binning_gen, \
+                                     self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1])
+            fill_hist(hz_gen_nocuts_pr, df_tmp_pr[self.v_varshape_binning_gen])
+            df_tmp_pr = seldf_singlevar(df_tmp_pr, "pt_jet",
+                                        self.lvar2_binmin_reco[0], self.lvar2_binmax_reco[-1])
+            df_tmp_pr = seldf_singlevar(df_tmp_pr, self.v_varshape_binning,
+                                        self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
+            fill_hist(hz_gen_cuts_pr, df_tmp_pr[self.v_varshape_binning_gen])
+            hz_gen_cuts_pr.Write()
+            hz_gen_nocuts_pr.Write()
+            # End addendum for unfolding
+
+        df_tmp_selgen_pr, df_tmp_selreco_pr, df_tmp_selrecogen_pr = \
+                self.create_df_closure(df_mc_reco)
+
+        # histograms for unfolding
+        hzvsjetpt_reco_nocuts_pr = \
+            build2dhisto("hzvsjetpt_reco_nocuts", self.varshapebinarray_reco, self.var2binarray_reco)
+        hzvsjetpt_reco_cuts_pr = \
+            build2dhisto("hzvsjetpt_reco_cuts", self.varshapebinarray_reco, self.var2binarray_reco)
+        hzvsjetpt_gen_nocuts_pr = \
+            build2dhisto("hzvsjetpt_gen_nocuts", self.varshapebinarray_gen, self.var2binarray_gen)
+        hzvsjetpt_gen_cuts_pr = \
+            build2dhisto("hzvsjetpt_gen_cuts", self.varshapebinarray_gen, self.var2binarray_gen)
+
+        fill2dhist(df_tmp_selreco_pr, hzvsjetpt_reco_nocuts_pr, self.v_varshape_binning, "pt_jet")
+        fill2dhist(df_tmp_selgen_pr, hzvsjetpt_gen_nocuts_pr, self.v_varshape_binning_gen, "pt_gen_jet")
+        fill2dhist(df_tmp_selrecogen_pr, hzvsjetpt_reco_cuts_pr, self.v_varshape_binning, "pt_jet")
+        fill2dhist(df_tmp_selrecogen_pr, hzvsjetpt_gen_cuts_pr, self.v_varshape_binning_gen, "pt_gen_jet")
+        hzvsjetpt_reco_nocuts_pr.Write()
+        hzvsjetpt_gen_nocuts_pr.Write()
+        hzvsjetpt_reco_cuts_pr.Write()
+        hzvsjetpt_gen_cuts_pr.Write()
+
+        hzvsjetpt_reco_closure_pr = \
+            build2dhisto("hzvsjetpt_reco_closure", self.varshapebinarray_reco, self.var2binarray_reco)
+        # FIXME use varshapebinarray_gen pylint: disable=fixme
+        hzvsjetpt_gen_closure_pr = \
+            build2dhisto("hzvsjetpt_gen_closure", self.varshapebinarray_reco, self.var2binarray_reco)
+        hzvsjetpt_reco_pr = \
+            build2dhisto("hzvsjetpt_reco", self.varshapebinarray_reco, self.var2binarray_reco)
+        hzvsjetpt_gen_pr = \
+            build2dhisto("hzvsjetpt_gen", self.varshapebinarray_gen, self.var2binarray_gen)
+        response_matrix_pr = RooUnfoldResponse(hzvsjetpt_reco_pr, hzvsjetpt_gen_pr)
+        response_matrix_closure_pr = RooUnfoldResponse(hzvsjetpt_reco_pr, hzvsjetpt_gen_pr)
+
+        fill2dhist(df_tmp_selreco_pr, hzvsjetpt_reco_pr, self.v_varshape_binning, "pt_jet")
+        fill2dhist(df_tmp_selgen_pr, hzvsjetpt_gen_pr, self.v_varshape_binning_gen, "pt_gen_jet")
+        hzvsjetpt_reco_pr.Write()
+        hzvsjetpt_gen_pr.Write()
+
+        hjetpt_gen_nocuts_pr = TH1F("hjetpt_gen_nocuts", \
+            "hjetpt_gen_nocuts", self.p_nbin2_gen, self.var2binarray_gen)
+        hjetpt_gen_cuts_pr = TH1F("hjetpt_gen_cuts", \
+            "hjetpt_gen_cuts", self.p_nbin2_gen, self.var2binarray_gen)
+        hjetpt_gen_nocuts_closure = TH1F("hjetpt_gen_nocuts_closure", \
+            "hjetpt_gen_nocuts_closure", self.p_nbin2_gen, self.var2binarray_gen)
+        hjetpt_gen_cuts_closure = TH1F("hjetpt_gen_cuts_closure", \
+            "hjetpt_gen_cuts_closure", self.p_nbin2_gen, self.var2binarray_gen)
+        hjetpt_gen_nocuts_pr.Sumw2()
+        hjetpt_gen_cuts_pr.Sumw2()
+        hjetpt_gen_nocuts_closure.Sumw2()
+        hjetpt_gen_cuts_closure.Sumw2()
+
+        fill_hist(hjetpt_gen_nocuts_pr, df_tmp_selgen_pr["pt_gen_jet"])
+        fill_hist(hjetpt_gen_cuts_pr, df_tmp_selrecogen_pr["pt_gen_jet"])
+        hjetpt_gen_nocuts_pr.Write()
+        hjetpt_gen_cuts_pr.Write()
+
+        hjetpt_genvsreco_full_pr = \
+            TH2F("hjetpt_genvsreco_full", "hjetpt_genvsreco_full", \
+            self.p_nbin2_gen * 100, self.lvar2_binmin_gen[0], self.lvar2_binmax_gen[-1], \
+            self.p_nbin2_reco * 100, self.lvar2_binmin_reco[0], self.lvar2_binmax_reco[-1])
+
+        hz_genvsreco_full_pr = \
+            TH2F("hz_genvsreco_full", "hz_genvsreco_full", \
+                 self.p_nbinshape_gen * 100, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1],
+                 self.p_nbinshape_reco * 100, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
+        fill2dhist(df_tmp_selrecogen_pr, hjetpt_genvsreco_full_pr, "pt_gen_jet", "pt_jet")
+        hjetpt_genvsreco_full_pr.Scale(1.0 / hjetpt_genvsreco_full_pr.Integral(1, -1, 1, -1))
+        hjetpt_genvsreco_full_pr.Write()
+        fill2dhist(df_tmp_selrecogen_pr, hz_genvsreco_full_pr, self.v_varshape_binning_gen, self.v_varshape_binning)
+        hz_genvsreco_full_pr.Scale(1.0 / hz_genvsreco_full_pr.Integral(1, -1, 1, -1))
+        hz_genvsreco_full_pr.Write()
+
+
+        hzvsjetpt_prior_weights = build2dhisto("hzvsjetpt_prior_weights", \
+            self.varshapebinarray_gen, self.var2binarray_gen)
+        fill2dhist(df_tmp_selrecogen_pr, hzvsjetpt_prior_weights, self.v_varshape_binning_gen, "pt_gen_jet")
+        # end of histograms for unfolding
+
+        for ibin2 in range(self.p_nbin2_reco):
+            df_tmp_selrecogen_pr_jetbin = seldf_singlevar(df_tmp_selrecogen_pr, "pt_jet", \
+                self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
+            suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, \
+                self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
+            hz_genvsreco_pr = TH2F("hz_genvsreco" + suffix, "hz_genvsreco" + suffix, \
+                self.p_nbinshape_gen * 100, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1], \
+                self.p_nbinshape_reco*100, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
+            fill2dhist(df_tmp_selrecogen_pr_jetbin, hz_genvsreco_pr, self.v_varshape_binning_gen, self.v_varshape_binning)
+            norm_pr = hz_genvsreco_pr.Integral(1, -1, 1, -1)
+            if norm_pr > 0:
+                hz_genvsreco_pr.Scale(1.0/norm_pr)
+            hz_genvsreco_pr.Write()
+
+        for ibinshape in range(len(self.lvarshape_binmin_reco)):
+            df_tmp_selrecogen_pr_zbin = seldf_singlevar(df_tmp_selrecogen_pr, self.v_varshape_binning, \
+                self.lvarshape_binmin_reco[ibinshape], self.lvarshape_binmax_reco[ibinshape])
+            suffix = "%s_%.2f_%.2f" % \
+                (self.v_varshape_binning, self.lvarshape_binmin_reco[ibinshape], self.lvarshape_binmax_reco[ibinshape])
+            hjetpt_genvsreco_pr = TH2F("hjetpt_genvsreco" + suffix, \
+                "hjetpt_genvsreco" + suffix, self.p_nbin2_gen * 100, self.lvar2_binmin_gen[0], \
+                self.lvar2_binmax_gen[-1], self.p_nbin2_reco * 100, self.lvar2_binmin_reco[0], \
+                self.lvar2_binmax_reco[-1])
+            fill2dhist(df_tmp_selrecogen_pr_zbin, hjetpt_genvsreco_pr, "pt_gen_jet", "pt_jet")
+            norm_pr = hjetpt_genvsreco_pr.Integral(1, -1, 1, -1)
+            if norm_pr > 0:
+                hjetpt_genvsreco_pr.Scale(1.0/norm_pr)
+            hjetpt_genvsreco_pr.Write()
+
+        for ibinshape in range(len(self.lvarshape_binmin_gen)):
+            dtmp_prompt_zgen = seldf_singlevar(df_mc_reco, \
+                self.v_varshape_binning_gen, self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape])
+            suffix = "%s_%.2f_%.2f" % \
+                     (self.v_varshape_binning, self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape])
+            hz_fracdiff_pr = TH1F("hz_fracdiff_prompt" + suffix,
+                                  "hz_fracdiff_prompt" + suffix, 100, -2, 2)
+            fill_hist(hz_fracdiff_pr, (dtmp_prompt_zgen[self.v_varshape_binning] - \
+                    dtmp_prompt_zgen[self.v_varshape_binning_gen])/dtmp_prompt_zgen[self.v_varshape_binning_gen])
+            norm_pr = hz_fracdiff_pr.Integral(1, -1)
+            if norm_pr:
+                hz_fracdiff_pr.Scale(1.0 / norm_pr)
+            hz_fracdiff_pr.Write()
+
+        for ibin2 in range(self.p_nbin2_gen):
+            dtmp_prompt_jetptgen = seldf_singlevar(df_mc_reco, \
+                "pt_gen_jet", self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+            suffix = "%s_%.2f_%.2f" % (self.v_var2_binning,
+                                       self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+            hjetpt_fracdiff_pr = TH1F("hjetpt_fracdiff_prompt" + suffix,
+                                      "hjetpt_fracdiff_prompt" + suffix, 100, -2, 2)
+            fill_hist(hjetpt_fracdiff_pr, (dtmp_prompt_jetptgen["pt_jet"] - \
+                dtmp_prompt_jetptgen["pt_gen_jet"])/dtmp_prompt_jetptgen["pt_gen_jet"])
+            norm_pr = hjetpt_fracdiff_pr.Integral(1, -1)
+            if norm_pr:
+                hjetpt_fracdiff_pr.Scale(1.0 / norm_pr)
+            hjetpt_fracdiff_pr.Write()
+        print("AAAA-1")
+        df_mc_reco_train, df_mc_reco_test = \
+                train_test_split(df_mc_reco, test_size=self.closure_frac)
+        df_tmp_selgen_pr_test, df_tmp_selreco_pr_test, df_tmp_selrecogen_pr_test = \
+                self.create_df_closure(df_mc_reco_test)
+        _, _, df_tmp_selrecogen_pr_train = \
+                self.create_df_closure(df_mc_reco_train)
+
+        fill2dhist(df_tmp_selreco_pr_test, hzvsjetpt_reco_closure_pr, self.v_varshape_binning, "pt_jet")
+        fill2dhist(df_tmp_selgen_pr_test, hzvsjetpt_gen_closure_pr, self.v_varshape_binning_gen, "pt_gen_jet")
+        hzvsjetpt_reco_closure_pr.Write("input_closure_reco")
+        hzvsjetpt_gen_closure_pr.Write("input_closure_gen")
+
+
+        for ibin2 in range(self.p_nbin2_gen):
+            suffix = "%s_%.2f_%.2f" % \
+                (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+            hz_gen_nocuts_closure = TH1F("hz_gen_nocuts_closure" + suffix,
+                                         "hz_gen_nocuts_closure" + suffix,
+                                         self.p_nbinshape_gen, self.varshapebinarray_gen)
+            hz_gen_nocuts_closure.Sumw2()
+            hz_gen_cuts_closure = TH1F("hz_gen_cuts_closure" + suffix,
+                                       "hz_gen_cuts_closure" + suffix,
+                                       self.p_nbinshape_gen, self.varshapebinarray_gen)
+            hz_gen_cuts_closure.Sumw2()
+            df_tmp_selgen_pr_test_bin = seldf_singlevar(df_tmp_selgen_pr_test, \
+                "pt_gen_jet", self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+            df_tmp_selrecogen_pr_test_bin = seldf_singlevar(df_tmp_selrecogen_pr_test, \
+                "pt_gen_jet", self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+            fill_hist(hz_gen_nocuts_closure, df_tmp_selgen_pr_test_bin[self.v_varshape_binning_gen])
+            fill_hist(hz_gen_cuts_closure, df_tmp_selrecogen_pr_test_bin[self.v_varshape_binning_gen])
+            hz_gen_cuts_closure.Write()
+            hz_gen_nocuts_closure.Write()
+
+        fill_hist(hjetpt_gen_nocuts_closure, df_tmp_selgen_pr_test["pt_gen_jet"])
+        fill_hist(hjetpt_gen_cuts_closure, df_tmp_selrecogen_pr_test["pt_gen_jet"])
+        hjetpt_gen_nocuts_closure.Write()
+        hjetpt_gen_cuts_closure.Write()
+
+        hzvsjetpt_reco_nocuts_closure = TH2F("hzvsjetpt_reco_nocuts_closure",
+                                             "hzvsjetpt_reco_nocuts_closure",
+                                             self.p_nbinshape_reco, self.varshapebinarray_reco,
+                                             self.p_nbin2_reco, self.var2binarray_reco)
+        hzvsjetpt_reco_nocuts_closure.Sumw2()
+        hzvsjetpt_reco_cuts_closure = TH2F("hzvsjetpt_reco_cuts_closure",
+                                           "hzvsjetpt_reco_cuts_closure",
+                                           self.p_nbinshape_reco, self.varshapebinarray_reco,
+                                           self.p_nbin2_reco, self.var2binarray_reco)
+        hzvsjetpt_reco_cuts_closure.Sumw2()
+
+        fill2dhist(df_tmp_selreco_pr_test, hzvsjetpt_reco_nocuts_closure, self.v_varshape_binning, "pt_jet")
+        fill2dhist(df_tmp_selrecogen_pr_test, hzvsjetpt_reco_cuts_closure, self.v_varshape_binning, "pt_jet")
+        hzvsjetpt_reco_nocuts_closure.Write()
+        hzvsjetpt_reco_cuts_closure.Write()
+
+        for row in df_tmp_selrecogen_pr.itertuples():
+            response_matrix_weight = 1.0
+            if self.doprior is True:
+                binx = hzvsjetpt_prior_weights.GetXaxis().FindBin(getattr(row, self.v_varshape_binning_gen))
+                biny = hzvsjetpt_prior_weights.GetYaxis().FindBin(row.pt_gen_jet)
+                weight = hzvsjetpt_prior_weights.GetBinContent(binx, biny)
+
+                if weight > 0.0:
+                    response_matrix_weight = 1.0/weight
+            response_matrix_pr.Fill(getattr(row, self.v_varshape_binning), row.pt_jet,\
+                getattr(row, self.v_varshape_binning_gen), row.pt_gen_jet, response_matrix_weight)
+        for row in df_tmp_selrecogen_pr_train.itertuples():
+            response_matrix_weight = 1.0
+            if self.doprior is True:
+                binx = hzvsjetpt_prior_weights.GetXaxis().FindBin(getattr(row, self.v_varshape_binning_gen))
+                biny = hzvsjetpt_prior_weights.GetYaxis().FindBin(row.pt_gen_jet)
+                weight = hzvsjetpt_prior_weights.GetBinContent(binx, biny)
+
+                if weight > 0.0:
+                    response_matrix_weight = 1.0/weight
+            response_matrix_closure_pr.Fill(getattr(row, self.v_varshape_binning), row.pt_jet,\
+                getattr(row, self.v_varshape_binning_gen), row.pt_gen_jet, response_matrix_weight)
+        response_matrix_pr.Write("response_matrix")
+        response_matrix_closure_pr.Write("response_matrix_closure")
+
+        out_file.Close()
+    def create_df_closure(self, df_):
+        df_tmp_selgen = df_.copy()
+        df_tmp_selgen = seldf_singlevar(df_tmp_selgen, self.v_varshape_binning_gen, \
+            self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1])
+        df_tmp_selgen = seldf_singlevar(df_tmp_selgen, "pt_gen_jet", \
+            self.lvar2_binmin_gen[0], self.lvar2_binmax_gen[-1])
+
+        df_tmp_selreco = df_.copy()
+        df_tmp_selreco = seldf_singlevar(df_tmp_selreco, "pt_jet", \
+            self.lvar2_binmin_reco[0], self.lvar2_binmax_reco[-1])
+        df_tmp_selreco = seldf_singlevar(df_tmp_selreco, self.v_varshape_binning, \
+            self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
+
+        df_tmp_selrecogen = df_tmp_selgen.copy()
+        df_tmp_selrecogen = seldf_singlevar(df_tmp_selrecogen, "pt_jet", \
+            self.lvar2_binmin_reco[0], self.lvar2_binmax_reco[-1])
+        df_tmp_selrecogen = seldf_singlevar(df_tmp_selrecogen, self.v_varshape_binning, \
+            self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
+
+        return df_tmp_selgen, df_tmp_selreco, df_tmp_selrecogen
+
     def process_response(self):
         print("Doing response", self.mcordata, self.period)
         print("Using run selection for resp histo", \
