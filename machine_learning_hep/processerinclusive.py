@@ -113,6 +113,7 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
         self.s_jetsel_gen = datap["analysis"][self.typean]["jetsel_gen"]
         self.s_jetsel_reco = datap["analysis"][self.typean]["jetsel_reco"]
+        self.s_jetsel_gen_matched = datap["analysis"][self.typean]["jetsel_gen_matched"]
         self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
@@ -286,6 +287,8 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
             df_mc_reco = df_mc_reco.query(self.s_evtsel)
         if self.s_jetsel_reco is not None:
             df_mc_reco = df_mc_reco.query(self.s_jetsel_reco)
+        if self.s_jetsel_gen_matched is not None:
+            df_mc_reco = df_mc_reco.query(self.s_jetsel_gen_matched)
         if self.s_trigger is not None:
             df_mc_reco = df_mc_reco.query(self.s_trigger)
         if self.runlistrigger is not None:

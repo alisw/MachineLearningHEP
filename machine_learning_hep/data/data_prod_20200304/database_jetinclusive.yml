@@ -23,7 +23,7 @@ inclusivejets:
               pt_gen_jet, eta_gen_jet, phi_gen_jet, delta_eta_gen_jet, delta_phi_gen_jet,
               delta_r_gen_jet, zg_jet, zg_gen_jet, rg_jet, rg_gen_jet, nsd_jet,
               nsd_gen_jet, k0_jet, k0_gen_jet, k1_jet, k1_gen_jet, k2_jet, 
-              k2_gen_jet, kT_jet, kT_gen_jet, run_number, ev_id,  ev_id_ext]
+              k2_gen_jet, kT_jet, kT_gen_jet, run_number, ev_id,  ev_id_ext, ptleadingtrack_jet, ptleadingtrack_gen_jet]
     var_evt:
       data: [centrality, z_vtx_reco, n_vtx_contributors, n_tracks, is_ev_rej, run_number,
               ev_id,  ev_id_ext, trigger_hasbit_INT7]
@@ -31,7 +31,7 @@ inclusivejets:
               ev_id,  ev_id_ext, trigger_hasbit_INT7]
     var_gen: [pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet,
               zg_jet, rg_jet, nsd_jet, k0_jet, k1_jet, k2_jet, kT_jet,
-              run_number, ev_id,  ev_id_ext]
+              run_number, ev_id,  ev_id_ext, ptleadingtrack_jet]
     var_evt_match: [run_number, ev_id,  ev_id_ext]
 
   files_names:
@@ -50,23 +50,23 @@ inclusivejets:
   multi:
     data:
       nprocessesparallel: 50
-      maxfiles: [-1,-1,-1] #list of periods
+      maxfiles: [0,-1,0] #list of periods
       chunksizeunp:  [100,100,100] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
-      unmerged_tree_dir: [/data/TTree/D0DsLckAnywithJets_20200303/vAN-20200228_ROOT6/pp_2017_data/pp_2017_data/999-999/merged,
-                          /data/TTree/D0DsLckAnywithJets_20200303/vAN-20200228_ROOT6/pp_2017_data/pp_2017_data/999-999/merged,
-                          /data/TTree/D0DsLckAnywithJets_20200303/vAN-20200228_ROOT6/pp_2017_data/pp_2017_data/999-999/merged] #list of periods
+      unmerged_tree_dir: [/data/TTree/Nima_MB/merged,
+                          /data/TTree/Nima_MB/merged,
+                          /data/TTree/Nima_MB/merged] #list of periods
       pkl: [/data/DerivedInclusive/data2016/pkl,
             /data/DerivedInclusive/data2017/pkl,
             /data/DerivedInclusive/data2018/pkl] #list of periods
     mc:
       nprocessesparallel: 50
-      maxfiles: [-1,-1,-1] #list of periods
+      maxfiles: [0,-1,0] #list of periods
       chunksizeunp: [100,100,100] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
-      unmerged_tree_dir: [/data/TTree/D0DsLckAnywithJets_20200303/vAN-20200228_ROOT6/pp_2017_mc_prodLcpK0s/Nima/merged,
-                          /data/TTree/D0DsLckAnywithJets_20200303/vAN-20200228_ROOT6/pp_2017_mc_prodLcpK0s/Nima/merged,
-                          /data/TTree/D0DsLckAnywithJets_20200303/vAN-20200228_ROOT6/pp_2017_mc_prodLcpK0s/Nima/merged]
+      unmerged_tree_dir: [/data/TTree/Nima_MB_MC/merged,
+                          /data/TTree/Nima_MB_MC/merged,
+                          /data/TTree/Nima_MB_MC/merged]
       pkl: [/data/DerivedInclusive/mc2016/pkl,
             /data/DerivedInclusive/mc2017/pkl,
             /data/DerivedInclusive/mc2018/pkl] #list of periods
@@ -99,8 +99,9 @@ inclusivejets:
       sel_an_binmin:    [5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
       sel_an_binmax:      [6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
       binning_matching:   [2,3,3, 4, 4, 5, 5, 6] # mapping to skimming pt bins (sel_an_binmin bins)
-      jetsel_gen: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
-      jetsel_reco: "abs(eta_jet) < 0.5"
+      jetsel_gen: "abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5 and ptleadingtrack_jet > 5.33"
+      jetsel_reco: "abs(eta_jet) < 0.5 and ptleadingtrack_jet > 5.33"
+      jetsel_gen_matched: "abs(eta_gen_jet) < 0.5 and ptleadingtrack_gen_jet > 5.33 and pt_gen_jet > 0.0"
       evtsel: is_ev_rej==0
       triggersel:
         data: "trigger_hasbit_INT7==1"
