@@ -15,7 +15,7 @@ analysis:
   doperperiod: false
   data:
     histomass: true # processer: process_histomass
-    dojetsystematics: true
+    dojetsystematics: false
   mc:
     histomass: true # processer: process_histomass
     response: true # processer: response

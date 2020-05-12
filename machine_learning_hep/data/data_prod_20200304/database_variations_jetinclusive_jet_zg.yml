@@ -12,7 +12,6 @@ categories:
                 activate: [yes]
                 label: ["default"]
                 diffs: {}
-    
     prior:
         activate: yes
         processor: true
@@ -62,7 +61,7 @@ categories:
                         jet_zg:
                             xsection_inel: [54.91, 60.69]
     tracking:
-        activate: no
+        activate: yes
         processor: true
         label: "tracking"
         correlation: "corr"
@@ -76,38 +75,12 @@ categories:
                 diffs:
                   multi:
                     mc:
-                      unmerged_tree_dir: [[/data/TTree/D0DsLckAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/merged,
-                                          /data/TTree/D0DsLckAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/merged,
-                                          /data/TTree/D0DsLckAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/merged]]
-                      pkl: [[/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/pkl,
-                            /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/pkl,
-                            /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/pkl]]
-                      pkl_skimmed: [[/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/pklsk,
-                                    /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/pklsk,
-                                    /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/pklsk]]
-                      pkl_skimmed_merge_for_ml: [[/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/pklskml,
-                                                 /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/pklskml,
-                                                 /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/pklskml]]
-                      pkl_skimmed_merge_for_ml_all: [/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_mc_prodD2H_mltot]
-                      pkl_evtcounter_all: [/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_mc_prodD2H_evttot]
-                  ml:
-                    mlplot: [/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/mlplot]
-                    mlout: [/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/mlout]
-                  mlapplication:
-                    data:
-                      pkl_skimmed_dec: [[/data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdec_trkeff,
-                                        /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdec_trkeff,
-                                        /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdec_trkeff]]
-                      pkl_skimmed_decmerged: [[/data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdecmerged_trkeff,
-                                              /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdecmerged_trkeff,
-                                              /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdecmerged_trkeff]]
-                    mc:
-                      pkl_skimmed_dec: [[/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/pklskdec,
-                                        /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/pklskdec,
-                                        /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/pklskdec]]
-                      pkl_skimmed_decmerged: [[/data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2016_mc_prodD2H/408_20200417-1847/pklskdecmerged,
-                                              /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2017_mc_prodD2H/408_20200417-1847/pklskdecmerged,
-                                              /data/Derived/D0kAnywithJets/vAN-20200416_ROOT6-1/pp_2018_mc_prodD2H/408_20200417-1847/pklskdecmerged]]
+                      unmerged_tree_dir: [[/data/TTree/Nima_MB_MC96/merged,
+                                         /data/TTree/Nima_MB_MC96/merged,
+                                         /data/TTree/Nima_MB_MC96/merged]]
+                      pkl: [[/data/DerivedInclusive/mc2016_96/pkl,
+                            /data/DerivedInclusive/mc2017_96/pkl,
+                            /data/DerivedInclusive/mc2018_96/pkl]]                   
     binning:
         activate: yes
         processor: true
@@ -117,25 +90,6 @@ categories:
         symmetrise: true
         rms_both_sides: true
         variations:
-            pt_cand:
-#                activate: [yes, yes, yes, yes, yes, yes]
-                activate: [no, no, no, no, no, no]
-                label:
-                    - "#it{p}_{T}^{D} 4#minus24"
-                    - "#it{p}_{T}^{D} 4#minus36"
-                    - "#it{p}_{T}^{D} 4#minus48"
-                    - "#it{p}_{T}^{D} 5#minus24"
-                    - "#it{p}_{T}^{D} 5#minus36"
-                    - "#it{p}_{T}^{D} 5#minus48"
-                diffs:
-                    analysis:
-                        jet_zg:
-                            sel_an_binmin:
-                                [[4,5,6,7,8,10,12,16],  [4,5,6,7,8,10,12,16,24],  [4,5,6,7,8,10,12,16,24,36],  [5,6,7,8,10,12,16],  [5,6,7,8,10,12,16,24],  [5,6,7,8,10,12,16,24,36]]
-                            sel_an_binmax:
-                                  [[5,6,7,8,10,12,16,24], [5,6,7,8,10,12,16,24,36], [5,6,7,8,10,12,16,24,36,48], [6,7,8,10,12,16,24], [6,7,8,10,12,16,24,36], [6,7,8,10,12,16,24,36,48]]
-                            binning_matching:
-                                  [[2,2,3,3, 4, 4, 5, 5], [2,2,3,3, 4, 4, 5, 5, 6], [2,2,3,3, 4, 4, 5, 5, 6, 6], [2,3,3, 4, 4, 5, 5], [2,3,3, 4, 4, 5, 5, 6], [2,3,3, 4, 4, 5, 5, 6, 6]]
             pt_jet:
                 activate: [yes, no, no]
                 label:
@@ -160,4 +114,29 @@ categories:
                             sel_binmaxshape_reco:    [[0.1,0.2,0.3,0.4,0.5]]
                             sel_binminshape_gen:  [[-100,0.1,0.2,0.3,0.4]]
                             sel_binmaxshape_gen:     [[0.1,0.2,0.3,0.4,0.5]]
-   
+    ptleadingtrack:
+        activate: yes
+        processor: true
+        label: "#it{p}_{T} leading track"
+        correlation: "corr"
+        rms: false
+        symmetrise: false
+        rms_both_sides: false
+        variations:
+            ptleadingtrack_jet:
+                activate: [yes, yes]
+                label:
+                    - " > 5.53"
+                    - " > 5.13"
+                diffs:
+                    analysis:
+                        jet_zg:
+                            jetsel_gen:
+                                - "abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5 and ptleadingtrack_jet > 5.53"
+                                - "abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5 and ptleadingtrack_jet > 5.13"
+                            jetsel_reco:
+                                - "abs(eta_jet) < 0.5 and ptleadingtrack_jet > 5.53"
+                                - "abs(eta_jet) < 0.5 and ptleadingtrack_jet > 5.13"
+                            jetsel_gen_matched:
+                                - "abs(eta_gen_jet) < 0.5 and ptleadingtrack_gen_jet > 5.53 and pt_gen_jet > 0.0"
+                                - "abs(eta_gen_jet) < 0.5 and ptleadingtrack_gen_jet > 5.13 and pt_gen_jet > 0.0"
