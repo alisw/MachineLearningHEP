@@ -45,22 +45,6 @@ categories:
                     analysis:
                         jet_nsd:
                             niterunfoldingchosen: [3, 7]
-    normalisation:
-        activate: yes
-        processor: false
-        label: "normalisation"
-        correlation: "corr"
-        rms: true
-        symmetrise: true
-        rms_both_sides: true
-        variations:
-            crosssection:
-                activate: [yes, yes]
-                label: ["#it{#sigma}_{V0AND} down", "#it{#sigma}_{V0AND} up"]
-                diffs:
-                    analysis:
-                        jet_nsd:
-                            xsection_inel: [54.91, 60.69]
     tracking:
         activate: yes
         processor: true

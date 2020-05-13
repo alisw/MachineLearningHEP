@@ -1584,6 +1584,8 @@ class AnalyzerJet(Analyzer):
             #input_pythia8_z.append(input_pythia8_z_jetpt)
             #input_pythia8_xsection_z.append(input_pythia8_xsection_z_jetpt)
         #file_sim_out.Close()
+        
+        file_sys_out = TFile.Open("%s/systematics_results.root" % self.d_resultsallpdata, "recreate")   
 
         for ibin2 in range(self.p_nbin2_gen):
 
@@ -1623,6 +1625,7 @@ class AnalyzerJet(Analyzer):
             #draw_latex(latex3)
             leg_finalwsys.Draw("same")
             cfinalwsys.SaveAs("%s/final_wsys_%s.pdf" % (self.d_resultsallpdata, suffix))
+            tgsys[ibin2].Write("tgsys_%s" % (suffix))
 
             # plot the results with systematic uncertainties and models
 
