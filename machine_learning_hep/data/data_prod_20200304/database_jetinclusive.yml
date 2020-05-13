@@ -54,8 +54,8 @@ inclusivejets:
       chunksizeunp:  [100,100,100] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
       unmerged_tree_dir: [/data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/pp_2016_data/430_20200512-1920/merged,
-                          /data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/pp_2016_data/430_20200512-1920/merged,
-                          /data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/pp_2016_data/430_20200512-1920/merged]
+                          /data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/pp_2017_data/430_20200512-1921/merged,
+                          /data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/pp_2018_data/430_20200512-1922/merged]
       pkl: [/data/DerivedInclusive/pkldata2016,
             /data/DerivedInclusive/pkldata2017,
             /data/DerivedInclusive/pkldata2018] #list of periods

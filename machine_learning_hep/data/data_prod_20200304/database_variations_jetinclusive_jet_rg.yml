@@ -14,7 +14,7 @@ categories:
                 diffs: {}
     
     prior:
-        activate: yes
+        activate: no
         processor: true
         label: "prior"
         correlation: "corr"
@@ -29,8 +29,9 @@ categories:
                     analysis:
                         jet_rg:
                             doprior: [true]
+                            niterunfoldingchosen: [7]
     regularisation:
-        activate: yes
+        activate: no
         processor: false
         label: "regularisation"
         correlation: "corr"
@@ -60,15 +61,15 @@ categories:
                 diffs:
                   multi:
                     mc:
-                      unmerged_tree_dir: [[/data/TTree/Nima_MB_MC96/merged,
-                                         /data/TTree/Nima_MB_MC96/merged,
-                                         /data/TTree/Nima_MB_MC96/merged]]
-                      pkl: [[/data/DerivedInclusive/mc2016_96/pkl,
-                            /data/DerivedInclusive/mc2017_96/pkl,
-                            /data/DerivedInclusive/mc2018_96/pkl]]
+                      unmerged_tree_dir: [[/data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/Meta_pp_2016_minbias/433_20200512-2201/merged
+                                         /data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/Meta_pp_2017_minbias/433_20200512-2201/merged,
+                                         /data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/Meta_pp_2018_minbias/433_20200512-2201/merged]]
+                      pkl: [[/data/DerivedInclusive/vAN-20200511_ROOT6-1/Meta_pp_2016_minbias/433_20200512-2201/pkl,
+                            /data/DerivedInclusive/vAN-20200511_ROOT6-1/Meta_pp_2017_minbias/433_20200512-2201/pkl,
+                            /data/DerivedInclusive/vAN-20200511_ROOT6-1/Meta_pp_2018_minbias/433_20200512-2201/pkl]]
                       
     binning:
-        activate: yes
+        activate: no
         processor: true
         label: "binning"
         correlation: "corr"
@@ -104,7 +105,7 @@ categories:
 
 
     ptleadingtrack:
-        activate: yes
+        activate: no
         processor: true
         label: "#it{p}_{T} leading track"
         correlation: "corr"
