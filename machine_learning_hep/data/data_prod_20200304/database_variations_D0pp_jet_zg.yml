@@ -13,7 +13,7 @@ categories:
                 label: ["default"]
                 diffs: {}
     fitting:
-        activate: yes
+        activate: no
         processor: false
         label: "fitting"
         correlation: "corr"
@@ -72,7 +72,7 @@ categories:
                         jet_zg:
                             fix_sigma: [false]
     sideband:
-        activate: yes
+        activate: no
         processor: false
         label: "side bands"
         correlation: "corr"
@@ -107,7 +107,7 @@ categories:
                         jet_zg:
                             sidebandleftonly: [true]
     powheg:
-        activate: yes
+        activate: no
         processor: false
         label: "POWHEG"
         correlation: "corr"
@@ -141,7 +141,7 @@ categories:
                                 - /data/POWHEG/trees_powheg_fd_Mlow.root
                                 - /data/POWHEG/trees_powheg_fd_NoEvtGen.root
     prior:
-        activate: yes
+        activate: no
         processor: true
         label: "prior"
         correlation: "corr"
@@ -157,7 +157,7 @@ categories:
                         jet_zg:
                             doprior: [true]
     regularisation:
-        activate: yes
+        activate: no
         processor: false
         label: "regularisation"
         correlation: "corr"
@@ -173,7 +173,7 @@ categories:
                         jet_zg:
                             niterunfoldingchosen: [3, 7]
     normalisation:
-        activate: yes
+        activate: no
         processor: false
         label: "normalisation"
         correlation: "corr"
@@ -189,7 +189,7 @@ categories:
                         jet_zg:
                             xsection_inel: [54.91, 60.69]
     tracking:
-        activate: yes
+        activate: no
         processor: true
         label: "tracking"
         correlation: "corr"
@@ -297,7 +297,7 @@ categories:
         rms_both_sides: true
         variations:
             cuts:
-                activate: [yes, yes, yes, yes, yes, yes]
+                activate: [yes, no, no, no, no, no]
                 label: ["MLHEP", "HF", "T2", "LL1", "LL2", "T3"]
                 diffs:
                     analysis:

@@ -3,9 +3,9 @@
 #STAGE="pre"
 #STAGE="train"
 #STAGE="apply"
-STAGE="complete"
+#STAGE="complete"
 #STAGE="analyzer"
-#STAGE="variations"
+STAGE="variations"
 #STAGE="systematics"
 
 #DBDIR="data_prod_20200417"

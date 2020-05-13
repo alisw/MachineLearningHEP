@@ -29,7 +29,17 @@ from machine_learning_hep.utilities import create_folder_struc, mergerootfiles, 
 from machine_learning_hep.utilities import z_calc, z_gen_calc
 from machine_learning_hep.utilities_plot import buildhisto, build2dhisto, fill2dhist, makefill3dhist
 from machine_learning_hep.processer import Processer
-from machine_learning_hep.selectionutils import selectpid_dzerotokpi
+#from machine_learning_hep.selectionutils import selectpid_dzerotokpi
+
+def apply_cut_selpid(df_):
+    df_["is_selpid"] = np.array(tag_bit_df(df_, "cand_type", [[7], []]), dtype=int)
+    df_sel = df_[df_["is_selpid"] == 1]
+    return df_sel
+
+def apply_cut_selstd(df_):
+    df_["is_selstd"] = np.array(tag_bit_df(df_, "cand_type", [[0], []]), dtype=int)
+    df_sel = df_[df_["is_selstd"] == 1]
+    return df_sel
 
 class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many-instance-attributes
     # Class Attribute
@@ -139,26 +149,41 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             if self.do_custom_analysis_cuts:
                 df = pickle.load(openfile(self.mptfiles_recosk[bin_id][index], "rb"))
                 df["imp_par_prod"] = df["imp_par_prod"].astype(float) # allow negative cut values
-                df["nsigTOF_Pi_0"] = df["nsigTOF_Pi_0"].astype(float) # allow negative cut values
-                df["nsigTOF_K_0"] = df["nsigTOF_K_0"].astype(float) # allow negative cut values
-                df["nsigTOF_Pi_1"] = df["nsigTOF_Pi_1"].astype(float) # allow negative cut values
-                df["nsigTOF_K_1"] = df["nsigTOF_K_1"].astype(float) # allow negative cut values
+                #df["nsigTOF_Pi_0"] = df["nsigTOF_Pi_0"].astype(float) # allow negative cut values
+                #df["nsigTOF_K_0"] = df["nsigTOF_K_0"].astype(float) # allow negative cut values
+                #df["nsigTOF_Pi_1"] = df["nsigTOF_Pi_1"].astype(float) # allow negative cut values
+                #df["nsigTOF_K_1"] = df["nsigTOF_K_1"].astype(float) # allow negative cut values
             else:
                 df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
             if self.doml is True:
                 df = df.query(self.l_selml[bin_id])
             # custom cuts
             elif self.do_custom_analysis_cuts:
-                print("Entries before custom cuts:", len(df))
-                df = self.apply_cuts_ptbin(df, ipt)
-                print("Entries after custom cuts:", len(df))
+                entries_all = len(df)
+                print("Entries before any cuts:", len(df))
                 # PID cut
-                isselpid = selectpid_dzerotokpi(df["nsigTPC_Pi_0"].values, df["nsigTPC_K_0"].values, \
-                    df["nsigTOF_Pi_0"].values, df["nsigTOF_K_0"].values, \
-                    df["nsigTPC_Pi_1"].values, df["nsigTPC_K_1"].values, \
-                    df["nsigTOF_Pi_1"].values, df["nsigTOF_K_1"].values, 2) # FIXME pylint: disable=fixme
-                df = df[np.array(isselpid, dtype=bool)]
+                df = apply_cut_selpid(df)
+                entries_pid = len(df)
                 print("Entries after PID cut:", len(df))
+                # Custom cuts
+                df = self.apply_cuts_ptbin(df, ipt)
+                entries_cuts = len(df)
+                print("Entries after custom cuts:", len(df))
+                # Standard selection
+                df = apply_cut_selstd(df)
+                entries_std = len(df)
+                print("Entries after STD sel cut:", len(df))
+                print("All: %g, PID: %g, Custom: %g, Std: %g" % (entries_all, entries_pid, entries_cuts, entries_std))
+                if entries_cuts != entries_std:
+                    print("Cut effective: %g" % (entries_cuts / entries_std))
+                #df["is_selpid"] = np.array(tag_bit_df(df, "cand_type", [[7], []]), dtype=int)
+                #df = df[df["is_selpid"] == 1]
+                #isselpid = selectpid_dzerotokpi(df["nsigTPC_Pi_0"].values, df["nsigTPC_K_0"].values, \
+                #    df["nsigTOF_Pi_0"].values, df["nsigTOF_K_0"].values, \
+                #    df["nsigTPC_Pi_1"].values, df["nsigTPC_K_1"].values, \
+                #    df["nsigTOF_Pi_1"].values, df["nsigTOF_K_1"].values, 3) # FIXME pylint: disable=fixme
+                #df = df[np.array(isselpid, dtype=bool)]
+                #print("Entries after PID cut:", len(df))
                 #string_sel_pid = "((abs(nsigTPC_Pi_0) < 3 and abs(nsigTOF_Pi_0) < 3 and nsigTOF_Pi_0 > -999)"
                 #string_sel_pid += " or (abs(nsigTPC_K_0) < 3 and abs(nsigTOF_K_0) < 3 and nsigTOF_K_0 > -999))"
                 #string_sel_pid += " and ((abs(nsigTPC_Pi_1) < 3 and abs(nsigTOF_Pi_1) < 3 and nsigTOF_Pi_1 > -999)"
@@ -355,6 +380,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 # custom cuts
                 elif self.do_custom_analysis_cuts:
                     df_reco_sel_pr = self.apply_cuts_ptbin(df_reco_presel_pr, ipt)
+                    df_reco_sel_pr = apply_cut_selpid(df_reco_sel_pr)
                 else:
                     df_reco_sel_pr = df_reco_presel_pr.copy()
                 # restrict shape range
@@ -369,6 +395,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 # custom cuts
                 elif self.do_custom_analysis_cuts:
                     df_reco_sel_fd = self.apply_cuts_ptbin(df_reco_presel_fd, ipt)
+                    df_reco_sel_fd = apply_cut_selpid(df_reco_sel_fd)
                 else:
                     df_reco_sel_fd = df_reco_presel_fd.copy()
 
@@ -439,6 +466,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 # custom cuts
                 elif self.do_custom_analysis_cuts:
                     df_mc_reco = self.apply_cuts_ptbin(df_mc_reco, ipt)
+                    df_mc_reco = apply_cut_selpid(df_mc_reco)
                 # select pt_gen_jet bin
                 df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning_gen, \
                     self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
@@ -559,6 +587,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                     df_mc_reco_ipt = self.apply_cuts_ptbin(df_mc_reco_ipt, ipt)
                     list_df_mc_reco_ipt.append(df_mc_reco_ipt)
                 df_mc_reco = pd.concat(list_df_mc_reco_ipt)
+                df_mc_reco = apply_cut_selpid(df_mc_reco)
             list_df_mc_reco.append(df_mc_reco)
 
         # Here we can merge the dataframes corresponding to different HF pt in a
