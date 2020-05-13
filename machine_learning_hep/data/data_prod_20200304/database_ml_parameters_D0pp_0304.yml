@@ -275,7 +275,7 @@ D0pp:
 
       var_binning2: pt_jet
       var_binning2_gen: pt_gen_jet
-      latexbin2var: "#it{p}_{T, jet}^{ch}"
+      latexbin2var: "#it{p}_{T}^{jet ch}"
       sel_binmin2_reco: [7.0,15.0,30.0] # rec jet pt bins (sel_binmin2_reco bins)
       sel_binmax2_reco:     [15.0,30.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)
       sel_binmin2_gen:  [7.0,15.0,30.0] # gen jet pt bins (sel_binmin2_gen bins)
@@ -292,7 +292,8 @@ D0pp:
       sel_an_binmin:    [5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
       sel_an_binmax:      [6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
       binning_matching:   [2,3,3, 4, 4, 5, 5, 6] # mapping to skimming pt bins (sel_an_binmin bins)
-      jetsel_gen: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
+      jetsel_gen: "abs(y_cand) < 0.8 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
+      jetsel_sim: "abs(y_cand) < 0.8 and abs(eta_jet) < 0.5" # jet selection in simulations
       jetsel_reco: "abs(eta_jet) < 0.5"
       evtsel: is_ev_rej==0
       triggersel:
@@ -405,10 +406,10 @@ D0pp:
       var_binningshape: nsd_jet
       var_binningshape_gen: nsd_gen_jet
       var_shape_latex: "#it{n}_{SD}"
-      sel_binminshape_reco: [0, 1, 2, 3, 4, 5]
-      sel_binmaxshape_reco:    [1, 2, 3, 4, 5, 6]
-      sel_binminshape_gen:  [0, 1, 2, 3, 4, 5]
-      sel_binmaxshape_gen:     [1, 2, 3, 4, 5, 6]
+      sel_binminshape_reco: [0, 1, 2, 3, 4]
+      sel_binmaxshape_reco:    [1, 2, 3, 4, 5]
+      sel_binminshape_gen:  [0, 1, 2, 3, 4]
+      sel_binmaxshape_gen:     [1, 2, 3, 4, 5]
       data: &data_out_nsd
         <<: *data_out_default
         results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
