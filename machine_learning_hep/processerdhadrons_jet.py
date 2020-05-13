@@ -15,6 +15,7 @@
 """
 main script for doing data processing, machine learning and analysis
 """
+# pylint: disable=too-many-lines
 import math
 from array import array
 import pickle
