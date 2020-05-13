@@ -54,6 +54,9 @@ class AnalyzerJet(Analyzer):
         self.xsection_inel = \
             datap["analysis"][self.typean].get("xsection_inel", None)
 
+        # selection
+        self.s_jetsel_sim = datap["analysis"][self.typean]["jetsel_sim"] # simulations
+
         # plotting
         # LaTeX string
         self.p_latexnhadron = datap["analysis"][self.typean]["latexnamehadron"]
@@ -3325,9 +3328,7 @@ class AnalyzerJet(Analyzer):
         # cut on shape
         df_sim = seldf_singlevar(df_sim, self.v_varshape_binning, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1])
         # acceptance cut
-        sel_jet_gen = "abs(y_cand) < 0.5 and abs(eta_jet) < 0.5"
-        #sel_jet_gen = "abs(eta_jet) <= 0.5"
-        df_sim = df_sim.query(sel_jet_gen)
+        df_sim = df_sim.query(self.s_jetsel_sim)
         # pt-dependent rapidity cut
         sel_cand_array = selectfidacc(df_sim["pt_cand"].values, df_sim["y_cand"].values)
         df_sim = df_sim[np.array(sel_cand_array, dtype=bool)]
