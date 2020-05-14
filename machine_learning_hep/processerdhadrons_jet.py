@@ -319,7 +319,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                     df_mc_reco = selectdfrunlist(df_mc_reco, \
                              self.run_param[self.runlistrigger], "run_number")
                 df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[bin_id][index], "rb"))
-                df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
+                if self.p_usejetptbinned_deff is True:
+                    df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
                 if self.runlistrigger is not None:
                     df_mc_gen = selectdfrunlist(df_mc_gen, \
                              self.run_param[self.runlistrigger], "run_number")
