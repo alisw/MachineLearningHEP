@@ -113,6 +113,9 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
 
+        self.p_usejetptbinned_deff = \
+            datap["analysis"][self.typean].get("usejetptbinned_deff", False)
+        print("use jet binned efficiency", self.p_usejetptbinned_deff)
     # pylint: disable=too-many-branches
     def process_histomass_single(self, index):
         myfile = TFile.Open(self.l_histomass[index], "recreate")
@@ -308,7 +311,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 if self.s_evtsel is not None:
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_jetsel_reco is not None:
-                    df_mc_reco = df_mc_reco.query(self.s_jetsel_reco)
+                    if self.p_usejetptbinned_deff is True:
+                        df_mc_reco = df_mc_reco.query(self.s_jetsel_reco)
                 if self.s_trigger is not None:
                     df_mc_reco = df_mc_reco.query(self.s_trigger)
                 if self.runlistrigger is not None:
@@ -323,10 +327,11 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
                 df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-                df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning, \
-                                             self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
-                df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning, \
-                                            self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2]) # FIXME use lvar2_binmin_gen pylint: disable=fixme
+                if self.p_usejetptbinned_deff is True:
+                    df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning, \
+                        self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
+                    df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning, \
+                        self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2]) # FIXME use lvar2_binmin_gen pylint: disable=fixme
 
                 df_mc_gen["z"] = z_calc(df_mc_gen.pt_jet, df_mc_gen.phi_jet, df_mc_gen.eta_jet,
                                         df_mc_gen.pt_cand, df_mc_gen.phi_cand, df_mc_gen.eta_cand)
@@ -336,8 +341,9 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
                 # Reject single-constituent jets, should be "ntracks_jet > 1" if available
                 jetsel_string = "z < 1" # FIXME pylint: disable=fixme
-                df_mc_gen = df_mc_gen.query(jetsel_string)
-                df_mc_reco = df_mc_reco.query(jetsel_string)
+                if self.p_usejetptbinned_deff is True:
+                    df_mc_gen = df_mc_gen.query(jetsel_string)
+                    df_mc_reco = df_mc_reco.query(jetsel_string)
 
                 # prompt
                 df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]

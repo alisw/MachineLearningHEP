@@ -269,7 +269,7 @@ D0pp:
     jet_zg: &jet_default
       proc_type: Dhadrons_jet
       useperiod: [1,1,1] #list of periods
-
+      usejetptbinned_deff: false
       latexnamehadron: "D^{0}"
       latexnamedecay: "K^{#minus} #pi^{#plus}"
 
