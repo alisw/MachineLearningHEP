@@ -37,9 +37,77 @@ def apply_cut_selpid(df_):
     df_sel = df_[df_["is_selpid"] == 1]
     return df_sel
 
+def apply_cut_seltracks(df_):
+    df_["is_seltracks"] = np.array(tag_bit_df(df_, "cand_type", [[8], []]), dtype=int)
+    df_sel = df_[df_["is_seltracks"] == 1]
+    return df_sel
+
 def apply_cut_selstd(df_):
     df_["is_selstd"] = np.array(tag_bit_df(df_, "cand_type", [[0], []]), dtype=int)
     df_sel = df_[df_["is_selstd"] == 1]
+    return df_sel
+
+def special_cuts(row): # FIXME pylint: disable=fixme
+    """ Re-implementation of AliRDHFCutsD0toKpi::IsSelectedSpecialCuts """
+    # normalised prong impact parameter
+    normd0Cut = 0.5
+    for d0norm_prong in (row["imp_par_prong0"]/row["imp_par_err_prong0"],
+                         row["imp_par_prong1"]/row["imp_par_err_prong1"]):
+        if abs(d0norm_prong) < normd0Cut:
+            return 0
+    # decay length
+    p_cand = row["pt_cand"] * math.cosh(row["eta_cand"])
+    decLengthCut = min(p_cand * 0.0066 + 0.01, 0.06)
+    if row["d_len"] < decLengthCut:
+        return 0
+    # normalised decay length
+    normDecLengthCut = 1.
+    if abs(row["norm_dl"]) < normDecLengthCut:
+        return 0
+    return 1
+
+def special_cuts_np(arr_pt_cand, arr_eta_cand, arr_imp_par_prong0, arr_imp_par_prong1, \
+    arr_imp_par_err_prong0, arr_imp_par_err_prong1, arr_d_len, arr_norm_dl):
+    """ Re-implementation of AliRDHFCutsD0toKpi::IsSelectedSpecialCuts """
+    pt_cand = arr_pt_cand.to_numpy()
+    eta_cand = arr_eta_cand.to_numpy()
+    imp_par_prong0 = arr_imp_par_prong0.to_numpy()
+    imp_par_prong1 = arr_imp_par_prong1.to_numpy()
+    imp_par_err_prong0 = arr_imp_par_err_prong0.to_numpy()
+    imp_par_err_prong1 = arr_imp_par_err_prong1.to_numpy()
+    d_len = arr_d_len.to_numpy()
+    norm_dl = arr_norm_dl.to_numpy()
+
+    # normalised prong impact parameter
+    normd0Cut = 0.5
+    d0norm_prong_0 = np.divide(imp_par_prong0, imp_par_err_prong0)
+    d0norm_prong_1 = np.divide(imp_par_prong1, imp_par_err_prong1)
+    sel_d0norm_prong_0 = np.greater_equal(np.abs(d0norm_prong_0), normd0Cut)
+    sel_d0norm_prong_1 = np.greater_equal(np.abs(d0norm_prong_1), normd0Cut)
+
+    # decay length
+    p_cand = np.multiply(pt_cand, np.cosh(eta_cand))
+    decLengthCut = np.minimum(p_cand * 0.0066 + 0.01, 0.06)
+    sel_d_len = np.greater_equal(d_len, decLengthCut)
+
+    # normalised decay length
+    normDecLengthCut = 1.
+    sel_norm_dlen = np.greater_equal(np.abs(norm_dl), normDecLengthCut)
+
+    sel_tot = np.logical_and(sel_d0norm_prong_0, np.logical_and(sel_d0norm_prong_1, \
+        np.logical_and(sel_d_len, sel_norm_dlen)))
+    return sel_tot
+
+def apply_cut_special(df_):
+    df_["is_sel_special"] = df_.apply(special_cuts, axis=1)
+    df_sel = df_[df_["is_sel_special"] == 1]
+    return df_sel
+
+def apply_cut_special_np(df_):
+    df_["is_sel_special"] = special_cuts_np(df_["pt_cand"], df_["eta_cand"], \
+        df_["imp_par_prong0"], df_["imp_par_prong1"], df_["imp_par_err_prong0"], \
+        df_["imp_par_err_prong1"], df_["d_len"], df_["norm_dl"])
+    df_sel = df_[df_["is_sel_special"] == 1]
     return df_sel
 
 class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many-instance-attributes
@@ -150,47 +218,23 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             if self.do_custom_analysis_cuts:
                 df = pickle.load(openfile(self.mptfiles_recosk[bin_id][index], "rb"))
                 df["imp_par_prod"] = df["imp_par_prod"].astype(float) # allow negative cut values
-                #df["nsigTOF_Pi_0"] = df["nsigTOF_Pi_0"].astype(float) # allow negative cut values
-                #df["nsigTOF_K_0"] = df["nsigTOF_K_0"].astype(float) # allow negative cut values
-                #df["nsigTOF_Pi_1"] = df["nsigTOF_Pi_1"].astype(float) # allow negative cut values
-                #df["nsigTOF_K_1"] = df["nsigTOF_K_1"].astype(float) # allow negative cut values
             else:
                 df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
             if self.doml is True:
                 df = df.query(self.l_selml[bin_id])
             # custom cuts
             elif self.do_custom_analysis_cuts:
-                entries_all = len(df)
-                print("Entries before any cuts:", len(df))
                 # PID cut
                 df = apply_cut_selpid(df)
-                entries_pid = len(df)
-                print("Entries after PID cut:", len(df))
                 # Custom cuts
                 df = self.apply_cuts_ptbin(df, ipt)
-                entries_cuts = len(df)
-                print("Entries after custom cuts:", len(df))
+                # Track cuts
+                df = apply_cut_seltracks(df)
+                # Special cuts
+                df = apply_cut_special_np(df)
                 # Standard selection
-                df = apply_cut_selstd(df)
-                entries_std = len(df)
-                print("Entries after STD sel cut:", len(df))
-                print("All: %g, PID: %g, Custom: %g, Std: %g" % (entries_all, entries_pid, entries_cuts, entries_std))
-                if entries_cuts != entries_std:
-                    print("Cut effective: %g" % (entries_cuts / entries_std))
-                #df["is_selpid"] = np.array(tag_bit_df(df, "cand_type", [[7], []]), dtype=int)
-                #df = df[df["is_selpid"] == 1]
-                #isselpid = selectpid_dzerotokpi(df["nsigTPC_Pi_0"].values, df["nsigTPC_K_0"].values, \
-                #    df["nsigTOF_Pi_0"].values, df["nsigTOF_K_0"].values, \
-                #    df["nsigTPC_Pi_1"].values, df["nsigTPC_K_1"].values, \
-                #    df["nsigTOF_Pi_1"].values, df["nsigTOF_K_1"].values, 3) # FIXME pylint: disable=fixme
-                #df = df[np.array(isselpid, dtype=bool)]
-                #print("Entries after PID cut:", len(df))
-                #string_sel_pid = "((abs(nsigTPC_Pi_0) < 3 and abs(nsigTOF_Pi_0) < 3 and nsigTOF_Pi_0 > -999)"
-                #string_sel_pid += " or (abs(nsigTPC_K_0) < 3 and abs(nsigTOF_K_0) < 3 and nsigTOF_K_0 > -999))"
-                #string_sel_pid += " and ((abs(nsigTPC_Pi_1) < 3 and abs(nsigTOF_Pi_1) < 3 and nsigTOF_Pi_1 > -999)"
-                #string_sel_pid += " or (abs(nsigTPC_K_1) < 3 and abs(nsigTOF_K_1) < 3 and nsigTOF_K_1 > -999))"
-                #df = df.query(string_sel_pid)
-                #print("Entries after manual PID cut:", len(df))
+                #df = apply_cut_selstd(df)
+                #entries_std = len(df)
             if self.s_evtsel is not None:
                 df = df.query(self.s_evtsel)
             if self.s_jetsel_reco is not None:
@@ -305,7 +349,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                     #                                    self.lpt_finbinmin[ipt])
 
         out_file.cd()
-        print("h3_shape_ptjet_ptcand_gen Integral:", h3_shape_ptjet_ptcand_gen.Integral())
+        #print("h3_shape_ptjet_ptcand_gen Integral:", h3_shape_ptjet_ptcand_gen.Integral())
         h3_shape_ptjet_ptcand_gen.Write()
 
         for ibin2 in range(self.p_nbin2_reco): # FIXME Do gen and rec loops separately pylint: disable=fixme
@@ -382,6 +426,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 elif self.do_custom_analysis_cuts:
                     df_reco_sel_pr = self.apply_cuts_ptbin(df_reco_presel_pr, ipt)
                     df_reco_sel_pr = apply_cut_selpid(df_reco_sel_pr)
+                    df_reco_sel_pr = apply_cut_seltracks(df_reco_sel_pr)
+                    df_reco_sel_pr = apply_cut_special_np(df_reco_sel_pr)
                 else:
                     df_reco_sel_pr = df_reco_presel_pr.copy()
                 # restrict shape range
@@ -397,6 +443,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 elif self.do_custom_analysis_cuts:
                     df_reco_sel_fd = self.apply_cuts_ptbin(df_reco_presel_fd, ipt)
                     df_reco_sel_fd = apply_cut_selpid(df_reco_sel_fd)
+                    df_reco_sel_fd = apply_cut_seltracks(df_reco_sel_fd)
+                    df_reco_sel_fd = apply_cut_special_np(df_reco_sel_fd)
                 else:
                     df_reco_sel_fd = df_reco_presel_fd.copy()
 
@@ -468,6 +516,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 elif self.do_custom_analysis_cuts:
                     df_mc_reco = self.apply_cuts_ptbin(df_mc_reco, ipt)
                     df_mc_reco = apply_cut_selpid(df_mc_reco)
+                    df_mc_reco = apply_cut_seltracks(df_mc_reco)
+                    df_mc_reco = apply_cut_special_np(df_mc_reco)
                 # select pt_gen_jet bin
                 df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning_gen, \
                     self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
@@ -589,6 +639,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                     list_df_mc_reco_ipt.append(df_mc_reco_ipt)
                 df_mc_reco = pd.concat(list_df_mc_reco_ipt)
                 df_mc_reco = apply_cut_selpid(df_mc_reco)
+                df_mc_reco = apply_cut_seltracks(df_mc_reco)
+                df_mc_reco = apply_cut_special_np(df_mc_reco)
             list_df_mc_reco.append(df_mc_reco)
 
         # Here we can merge the dataframes corresponding to different HF pt in a
@@ -639,7 +691,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         hzvsjetptvscandpt_gen_prompt = makefill3dhist(df_gen_prompt, titlehist, \
             self.varshapebinarray_gen, self.var2binarray_gen, self.var1binarray, \
             self.v_varshape_binning, "pt_jet", "pt_cand") # FIXME Why do we set error for gen? pylint: disable=fixme
-        print("hzvsjetptvscandpt_gen_prompt Integral:", hzvsjetptvscandpt_gen_prompt.Integral())
+        #print("hzvsjetptvscandpt_gen_prompt Integral:", hzvsjetptvscandpt_gen_prompt.Integral())
         hzvsjetptvscandpt_gen_prompt.Write()
 
         # hz_gen_nocuts is the distribution of generated z values in b in
