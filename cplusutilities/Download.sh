@@ -505,6 +505,48 @@ elif [ "$dataset" == "LHC19h1b2" ]; then
   inputpaths=(/alice/sim/2019/LHC19h1b2/280235/PWGHF/HF_TreeCreator)
   datasetwithchilds=0
   dataset_short="ITS2_19h1b2"
+elif [ "$dataset" == "Meta_pp_2016_minbias" ]; then
+  #MC for inclusive jets
+  inputpaths=(/alice/sim/2017/LHC17f6/252317/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2017/LHC17f9/253529/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2017/LHC17d17/254331/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2017/LHC17f5/254608/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2017/LHC17d3/255591/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2017/LHC17e5/256307/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2018/LHC18f1/257630/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2018/LHC18d8/259164/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2017/LHC17d16/263741/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2017/LHC17d18/264076/AOD209/PWGHF/HF_TreeCreator)
+  datasetwithchilds=1
+  dataset_short="Meta_pp_2016_minbias"
+elif [ "$dataset" == "Meta_pp_2017_minbias" ]; then
+  #MC for inclusive jets
+  inputpaths=(/alice/sim/2018/LHC18d3/270667/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2017/LHC17h1/270824/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2018/LHC18c12/272123/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2017/LHC17k4/273654/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2017/LHC17h11/274653/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2018/LHC18c13/274708/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2018/LHC18a8/277117/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2017/LHC17l5/278936/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2018/LHC18a9/281243/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2018/LHC18a1/282573/AOD209/PWGHF/HF_TreeCreator)
+  datasetwithchilds=1
+  dataset_short="Meta_pp_2017_minbias"
+elif [ "$dataset" == "Meta_pp_2018_minbias" ]; then
+  #MC for inclusive jets
+  inputpaths=(/alice/sim/2018/LHC18g4/285064/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2018/LHC18g5/286313/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2018/LHC18g6/286653/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2018/LHC18h2/287480/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2018/LHC18h4/288903/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2018/LHC18j1/289444/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2018/LHC18j4/291397/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2018/LHC18k1/293359/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2018/LHC18k2/293741/AOD209/PWGHF/HF_TreeCreator
+              /alice/sim/2018/LHC18k3/294925/AOD209/PWGHF/HF_TreeCreator)
+  datasetwithchilds=1
+  dataset_short="Meta_pp_2018_minbias"
 else
   printf "\e[1;31mError: Dataset not yet implemented. Returning...\e[0m\n\n"
   exit
