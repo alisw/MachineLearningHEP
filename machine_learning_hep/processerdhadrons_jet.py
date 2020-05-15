@@ -848,17 +848,17 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             self.varshapebinarray_gen, self.varshapebinarray_reco)
 
         fill2dhist(df_tmp_selrecogen, hjetpt_genvsreco_full, "pt_gen_jet", "pt_jet")
-        hjetpt_genvsreco_full.Scale(1.0 / hjetpt_genvsreco_full.Integral(1, -1, 1, -1))
+        hjetpt_genvsreco_full.Scale(1.0 / hjetpt_genvsreco_full.Integral())
         hjetpt_genvsreco_full.Write()
         fill2dhist(df_tmp_selrecogen, hz_genvsreco_full, self.v_varshape_binning_gen, self.v_varshape_binning)
-        hz_genvsreco_full.Scale(1.0 / hz_genvsreco_full.Integral(1, -1, 1, -1))
+        hz_genvsreco_full.Scale(1.0 / hz_genvsreco_full.Integral())
         hz_genvsreco_full.Write()
 
         fill2dhist(df_tmp_selrecogen, hjetpt_genvsreco_full_real, "pt_gen_jet", "pt_jet")
-        hjetpt_genvsreco_full_real.Scale(1.0 / hjetpt_genvsreco_full_real.Integral(1, -1, 1, -1))
+        hjetpt_genvsreco_full_real.Scale(1.0 / hjetpt_genvsreco_full_real.Integral())
         hjetpt_genvsreco_full_real.Write()
         fill2dhist(df_tmp_selrecogen, hz_genvsreco_full_real, self.v_varshape_binning_gen, self.v_varshape_binning)
-        hz_genvsreco_full_real.Scale(1.0 / hz_genvsreco_full_real.Integral(1, -1, 1, -1))
+        hz_genvsreco_full_real.Scale(1.0 / hz_genvsreco_full_real.Integral())
         hz_genvsreco_full_real.Write()
 
         for row in df_tmp_selrecogen.itertuples():
@@ -886,17 +886,17 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             self.varshapebinarray_gen, self.varshapebinarray_reco)
 
         fill2dhist(df_tmp_selrecogen_pr, hjetpt_genvsreco_full_pr, "pt_gen_jet", "pt_jet")
-        hjetpt_genvsreco_full_pr.Scale(1.0 / hjetpt_genvsreco_full_pr.Integral(1, -1, 1, -1))
+        hjetpt_genvsreco_full_pr.Scale(1.0 / hjetpt_genvsreco_full_pr.Integral())
         hjetpt_genvsreco_full_pr.Write()
         fill2dhist(df_tmp_selrecogen_pr, hz_genvsreco_full_pr, self.v_varshape_binning_gen, self.v_varshape_binning)
-        hz_genvsreco_full_pr.Scale(1.0 / hz_genvsreco_full_pr.Integral(1, -1, 1, -1))
+        hz_genvsreco_full_pr.Scale(1.0 / hz_genvsreco_full_pr.Integral())
         hz_genvsreco_full_pr.Write()
 
         fill2dhist(df_tmp_selrecogen_pr, hjetpt_genvsreco_full_pr_real, "pt_gen_jet", "pt_jet")
-        hjetpt_genvsreco_full_pr_real.Scale(1.0 / hjetpt_genvsreco_full_pr_real.Integral(1, -1, 1, -1))
+        hjetpt_genvsreco_full_pr_real.Scale(1.0 / hjetpt_genvsreco_full_pr_real.Integral())
         hjetpt_genvsreco_full_pr_real.Write()
         fill2dhist(df_tmp_selrecogen_pr, hz_genvsreco_full_pr_real, self.v_varshape_binning_gen, self.v_varshape_binning)
-        hz_genvsreco_full_pr_real.Scale(1.0 / hz_genvsreco_full_pr_real.Integral(1, -1, 1, -1))
+        hz_genvsreco_full_pr_real.Scale(1.0 / hz_genvsreco_full_pr_real.Integral())
         hz_genvsreco_full_pr_real.Write()
 
         hzvsjetpt_prior_weights = build2dhisto("hzvsjetpt_prior_weights", \
@@ -913,7 +913,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 self.p_nbinshape_gen * 100, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1], \
                 self.p_nbinshape_reco*100, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
             fill2dhist(df_tmp_selrecogen_jetbin, hz_genvsreco, self.v_varshape_binning_gen, self.v_varshape_binning)
-            norm = hz_genvsreco.Integral(1, -1, 1, -1)
+            norm = hz_genvsreco.Integral()
             if norm > 0:
                 hz_genvsreco.Scale(1.0/norm)
             hz_genvsreco.Write()
@@ -926,7 +926,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 self.p_nbinshape_gen * 100, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1], \
                 self.p_nbinshape_reco*100, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
             fill2dhist(df_tmp_selrecogen_pr_jetbin, hz_genvsreco_pr, self.v_varshape_binning_gen, self.v_varshape_binning)
-            norm_pr = hz_genvsreco_pr.Integral(1, -1, 1, -1)
+            norm_pr = hz_genvsreco_pr.Integral()
             if norm_pr > 0:
                 hz_genvsreco_pr.Scale(1.0/norm_pr)
             hz_genvsreco_pr.Write()
@@ -941,7 +941,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 self.lvar2_binmax_gen[-1], self.p_nbin2_reco * 100, self.lvar2_binmin_reco[0], \
                 self.lvar2_binmax_reco[-1])
             fill2dhist(df_tmp_selrecogen_zbin, hjetpt_genvsreco, "pt_gen_jet", "pt_jet")
-            norm = hjetpt_genvsreco.Integral(1, -1, 1, -1)
+            norm = hjetpt_genvsreco.Integral()
             if norm > 0:
                 hjetpt_genvsreco.Scale(1.0/norm)
             hjetpt_genvsreco.Write()
@@ -955,7 +955,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 self.lvar2_binmax_gen[-1], self.p_nbin2_reco * 100, self.lvar2_binmin_reco[0], \
                 self.lvar2_binmax_reco[-1])
             fill2dhist(df_tmp_selrecogen_pr_zbin, hjetpt_genvsreco_pr, "pt_gen_jet", "pt_jet")
-            norm_pr = hjetpt_genvsreco_pr.Integral(1, -1, 1, -1)
+            norm_pr = hjetpt_genvsreco_pr.Integral()
             if norm_pr > 0:
                 hjetpt_genvsreco_pr.Scale(1.0/norm_pr)
             hjetpt_genvsreco_pr.Write()
@@ -969,7 +969,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                                "hz_fracdiff_nonprompt" + suffix, 100, -2, 2)
             fill_hist(hz_fracdiff, (dtmp_nonprompt_zgen[self.v_varshape_binning] - \
                     dtmp_nonprompt_zgen[self.v_varshape_binning_gen])/dtmp_nonprompt_zgen[self.v_varshape_binning_gen])
-            norm = hz_fracdiff.Integral(1, -1)
+            norm = hz_fracdiff.Integral()
             if norm:
                 hz_fracdiff.Scale(1.0 / norm)
             hz_fracdiff.Write()
@@ -982,7 +982,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                                   "hz_fracdiff_prompt" + suffix, 100, -2, 2)
             fill_hist(hz_fracdiff_pr, (dtmp_prompt_zgen[self.v_varshape_binning] - \
                     dtmp_prompt_zgen[self.v_varshape_binning_gen])/dtmp_prompt_zgen[self.v_varshape_binning_gen])
-            norm_pr = hz_fracdiff_pr.Integral(1, -1)
+            norm_pr = hz_fracdiff_pr.Integral()
             if norm_pr:
                 hz_fracdiff_pr.Scale(1.0 / norm_pr)
             hz_fracdiff_pr.Write()
@@ -996,7 +996,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                                    "hjetpt_fracdiff_nonprompt" + suffix, 100, -2, 2)
             fill_hist(hjetpt_fracdiff, (dtmp_nonprompt_jetptgen["pt_jet"] - \
                 dtmp_nonprompt_jetptgen["pt_gen_jet"])/dtmp_nonprompt_jetptgen["pt_gen_jet"])
-            norm = hjetpt_fracdiff.Integral(1, -1)
+            norm = hjetpt_fracdiff.Integral()
             if norm:
                 hjetpt_fracdiff.Scale(1.0 / norm)
             hjetpt_fracdiff.Write()
@@ -1009,7 +1009,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                                       "hjetpt_fracdiff_prompt" + suffix, 100, -2, 2)
             fill_hist(hjetpt_fracdiff_pr, (dtmp_prompt_jetptgen["pt_jet"] - \
                 dtmp_prompt_jetptgen["pt_gen_jet"])/dtmp_prompt_jetptgen["pt_gen_jet"])
-            norm_pr = hjetpt_fracdiff_pr.Integral(1, -1)
+            norm_pr = hjetpt_fracdiff_pr.Integral()
             if norm_pr:
                 hjetpt_fracdiff_pr.Scale(1.0 / norm_pr)
             hjetpt_fracdiff_pr.Write()
