@@ -301,6 +301,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
     def process_efficiency_single(self, index):
         out_file = TFile.Open(self.l_histoeff[index], "recreate")
 
+        cut_d0y = "abs(y_cand) < 0.8 and abs(z_vtx_gen) < 10" # FIXME Fix this via the database. pylint: disable=fixme
+
         # matched rec level jets
         h2_ptcand_ptjet_rec_overflow = build2dhisto("h2_ptcand_ptjet_rec_overflow", self.var1binarray, self.var2binarray_reco)
         h2_ptcand_ptjet_rec = build2dhisto("h2_ptcand_ptjet_rec", self.var1binarray, self.var2binarray_reco)
@@ -381,6 +383,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[bin_id][index], "rb"))
                 if self.p_usejetptbinned_deff is True:
                     df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
+                df_mc_gen = df_mc_gen.query(cut_d0y)
                 if self.runlistrigger is not None:
                     df_mc_gen = selectdfrunlist(df_mc_gen, \
                              self.run_param[self.runlistrigger], "run_number")
