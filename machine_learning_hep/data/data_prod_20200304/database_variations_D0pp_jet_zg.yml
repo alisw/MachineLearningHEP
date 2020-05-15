@@ -106,14 +106,14 @@ categories:
                     analysis:
                         jet_zg:
                             sidebandleftonly: [true]
-    powheg:
+    feeddown:
         activate: yes
         processor: false
-        label: "POWHEG"
+        label: "feed-down"
         correlation: "corr"
-        rms: true
-        symmetrise: true
-        rms_both_sides: true
+        rms: false
+        symmetrise: false
+        rms_both_sides: false
         variations:
             tune:
                 activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes]
