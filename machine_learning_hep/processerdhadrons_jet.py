@@ -112,12 +112,18 @@ def apply_cut_special_np(df_):
 
 def adjust_nsd(df_):
     """ Replace negative n_{SD} values (single-constituent jets) with zero. """
-    if "nsd_jet_orig" not in df_.columns:
-        listnsd_old = df_["nsd_jet"].values
+    if "nsd_jet" in df_.columns and "nsd_jet_orig" not in df_.columns:
+        listnsd_old = df_["nsd_jet"].to_numpy()
         df_["nsd_jet_orig"] = listnsd_old
         c_new = [0 if nsd_old < 0 else nsd_old for nsd_old in listnsd_old]
         df_ = df_.drop(["nsd_jet"], axis=1)
         df_["nsd_jet"] = c_new
+    if "nsd_gen_jet" in df_.columns and "nsd_gen_jet_orig" not in df_.columns:
+        listnsd_gen_old = df_["nsd_gen_jet"].to_numpy()
+        df_["nsd_gen_jet_orig"] = listnsd_gen_old
+        c_gen_new = [0 if nsd_old < 0 else nsd_old for nsd_old in listnsd_gen_old]
+        df_ = df_.drop(["nsd_gen_jet"], axis=1)
+        df_["nsd_gen_jet"] = c_gen_new
     return df_
 
 class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many-instance-attributes
@@ -212,7 +218,6 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         # Get number of selected events and save it in the first bin of the histonorm histogram.
 
         dfevtorig = pickle.load(openfile(self.l_evtorig[index], "rb"))
-        dfevtorig = adjust_nsd(dfevtorig)
         if self.s_trigger is not None:
             dfevtorig = dfevtorig.query(self.s_trigger)
         if self.runlistrigger is not None:
