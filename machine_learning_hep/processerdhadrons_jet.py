@@ -110,6 +110,16 @@ def apply_cut_special_np(df_):
     df_sel = df_[df_["is_sel_special"] == 1]
     return df_sel
 
+def adjust_nsd(df_):
+    """ Replace negative n_{SD} values (single-constituent jets) with zero. """
+    if "nsd_jet_orig" not in df_.columns:
+        listnsd_old = df_["nsd_jet"].values
+        df_["nsd_jet_orig"] = listnsd_old
+        c_new = [0 if nsd_old < 0 else nsd_old for nsd_old in listnsd_old]
+        df_ = df_.drop(["nsd_jet"], axis=1)
+        df_["nsd_jet"] = c_new
+    return df_
+
 class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many-instance-attributes
     # Class Attribute
     species = "processer"
@@ -202,6 +212,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         # Get number of selected events and save it in the first bin of the histonorm histogram.
 
         dfevtorig = pickle.load(openfile(self.l_evtorig[index], "rb"))
+        dfevtorig = adjust_nsd(dfevtorig)
         if self.s_trigger is not None:
             dfevtorig = dfevtorig.query(self.s_trigger)
         if self.runlistrigger is not None:
@@ -220,6 +231,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df["imp_par_prod"] = df["imp_par_prod"].astype(float) # allow negative cut values
             else:
                 df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
+            df = adjust_nsd(df)
             if self.doml is True:
                 df = df.query(self.l_selml[bin_id])
             # custom cuts
@@ -319,6 +331,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 for ipt in range(self.p_nptfinbins):
                     bin_id = self.bin_matching[ipt]
                     df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[bin_id][index], "rb"))
+                    df_mc_gen = adjust_nsd(df_mc_gen)
                     df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
                     if self.runlistrigger is not None:
                         df_mc_gen = selectdfrunlist(df_mc_gen, \
@@ -370,6 +383,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                     df_mc_reco["imp_par_prod"] = df_mc_reco["imp_par_prod"].astype(float) # allow negative cut values
                 else:
                     df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
+                df_mc_reco = adjust_nsd(df_mc_reco)
                 if self.s_evtsel is not None:
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_jetsel_reco is not None:
@@ -381,6 +395,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                     df_mc_reco = selectdfrunlist(df_mc_reco, \
                              self.run_param[self.runlistrigger], "run_number")
                 df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[bin_id][index], "rb"))
+                df_mc_gen = adjust_nsd(df_mc_gen)
                 if self.p_usejetptbinned_deff is True:
                     df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
                 df_mc_gen = df_mc_gen.query(cut_d0y)
@@ -486,6 +501,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                     df_mc_reco["imp_par_prod"] = df_mc_reco["imp_par_prod"].astype(float) # allow negative cut values
                 else:
                     df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
+                df_mc_reco = adjust_nsd(df_mc_reco)
                 if self.s_evtsel is not None:
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_jetsel_reco is not None:
@@ -594,6 +610,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         for iptskim in range(self.p_nptbins):
 
             df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[iptskim][index], "rb"))
+            df_mc_gen = adjust_nsd(df_mc_gen)
             if self.runlistrigger is not None:
                 df_mc_gen = selectdfrunlist(df_mc_gen, \
                         self.run_param[self.runlistrigger], "run_number")
@@ -605,6 +622,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_mc_reco["imp_par_prod"] = df_mc_reco["imp_par_prod"].astype(float) # allow negative cut values
             else:
                 df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[iptskim][index], "rb"))
+            df_mc_reco = adjust_nsd(df_mc_reco)
             if self.s_evtsel is not None:
                 df_mc_reco = df_mc_reco.query(self.s_evtsel)
             if self.s_jetsel_reco is not None:
