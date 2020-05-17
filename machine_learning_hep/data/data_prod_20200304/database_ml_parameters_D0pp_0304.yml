@@ -406,10 +406,10 @@ D0pp:
       var_binningshape: nsd_jet
       var_binningshape_gen: nsd_gen_jet
       var_shape_latex: "#it{n}_{SD}"
-      sel_binminshape_reco: [0, 1, 2, 3, 4]
-      sel_binmaxshape_reco:    [1, 2, 3, 4, 5]
-      sel_binminshape_gen:  [0, 1, 2, 3, 4]
-      sel_binmaxshape_gen:     [1, 2, 3, 4, 5]
+      sel_binminshape_reco: [-0.5, 0.5, 1.5, 2.5, 3.5]
+      sel_binmaxshape_reco:       [0.5, 1.5, 2.5, 3.5, 4.5]
+      sel_binminshape_gen:  [-0.5, 0.5, 1.5, 2.5, 3.5]
+      sel_binmaxshape_gen:        [0.5, 1.5, 2.5, 3.5, 4.5]
       data: &data_out_nsd
         <<: *data_out_default
         results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
