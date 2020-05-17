@@ -37,6 +37,7 @@ from machine_learning_hep.do_variations import healthy_structure, format_varname
 from machine_learning_hep.utilities_plot import buildhisto, makefill2dhist, makefill3dhist
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.utilities import seldf_singlevar
+from machine_learning_hep.processerdhadrons_jet import adjust_nsd
 
 # pylint: disable=too-many-instance-attributes, too-many-statements
 class AnalyzerJet(Analyzer):
@@ -204,7 +205,7 @@ class AnalyzerJet(Analyzer):
                         varlabel_i = format_varlabel(val["label"], a, n_var)
                         self.systematic_varnames[c].append(varname_i)
                         self.systematic_varlabels[c].append(varlabel_i)
-                        if catname == "powheg":
+                        if catname == "feeddown":
                             self.powheg_nonprompt_varnames.append(varname_i)
                             self.powheg_nonprompt_varlabels.append(varlabel_i)
             self.systematic_variations[c] = len(self.systematic_varnames[c])
@@ -1131,7 +1132,7 @@ class AnalyzerJet(Analyzer):
                 hzvsjetpt.SetBinContent(zbins + 1, ibin2 + 1, hz.GetBinContent(zbins + 1))
                 hzvsjetpt.SetBinError(zbins + 1, ibin2 + 1, hz.GetBinError(zbins + 1))
 
-            hz.Scale(1.0 / hz.Integral(1, -1))
+            hz.Scale(1.0 / hz.Integral())
             fileouts.cd()
             hz.Write("hz" + suffix)
 
@@ -1342,6 +1343,35 @@ class AnalyzerJet(Analyzer):
         hjetpt_genvsreco_full.SetYTitle("#it{p}_{T, jet}^{rec} (GeV/#it{c})")
         hjetpt_genvsreco_full.Draw("colz")
         cjetpt_genvsreco.SaveAs("%s/response_fd_%s_full.eps" % \
+            (self.d_resultsallpdata, self.v_var2_binning))
+
+        hz_genvsreco_full_real = feeddown_input_file.Get("hz_genvsreco_full_nonprompt_real")
+        hjetpt_genvsreco_full_real = feeddown_input_file.Get("hjetpt_genvsreco_full_nonprompt_real")
+
+        cz_genvsreco_real = TCanvas("cz_genvsreco_full_nonprompt_real", "response matrix 2D projection_real")
+        setup_canvas(cz_genvsreco_real)
+        cz_genvsreco_real.SetRightMargin(0.13)
+        cz_genvsreco_real.SetLogz()
+        setup_histogram(hz_genvsreco_full_real)
+        hz_genvsreco_full_real.GetZaxis().SetRangeUser(hz_genvsreco_full_real.GetMinimum(0), hz_genvsreco_full_real.GetMaximum())
+        hz_genvsreco_full_real.SetTitle("")
+        hz_genvsreco_full_real.SetXTitle("%s^{gen}" % self.v_varshape_latex)
+        hz_genvsreco_full_real.SetYTitle("%s^{rec}" % self.v_varshape_latex)
+        hz_genvsreco_full_real.Draw("colz")
+        cz_genvsreco_real.SaveAs("%s/response_fd_%s_full_real.eps" % \
+                            (self.d_resultsallpdata, self.v_varshape_binning))
+
+        cjetpt_genvsreco_real = TCanvas("cjetpt_genvsreco_full_nonprompt_real", "response matrix 2D projection_real")
+        setup_canvas(cjetpt_genvsreco_real)
+        cjetpt_genvsreco_real.SetRightMargin(0.13)
+        cjetpt_genvsreco_real.SetLogz()
+        setup_histogram(hjetpt_genvsreco_full_real)
+        hjetpt_genvsreco_full_real.GetZaxis().SetRangeUser(hjetpt_genvsreco_full_real.GetMinimum(0), hjetpt_genvsreco_full_real.GetMaximum())
+        hjetpt_genvsreco_full_real.SetTitle("")
+        hjetpt_genvsreco_full_real.SetXTitle("#it{p}_{T, jet}^{gen} (GeV/#it{c})")
+        hjetpt_genvsreco_full_real.SetYTitle("#it{p}_{T, jet}^{rec} (GeV/#it{c})")
+        hjetpt_genvsreco_full_real.Draw("colz")
+        cjetpt_genvsreco_real.SaveAs("%s/response_fd_%s_full_real.eps" % \
             (self.d_resultsallpdata, self.v_var2_binning))
 
         # plot promp and non-prompt efficiencies
@@ -1700,7 +1730,7 @@ class AnalyzerJet(Analyzer):
         print("Unfolding: data statistics: %g, closure statistics: %g, ratio: %g" % (stat_unfolding, stat_closure, stat_unfolding/stat_closure))
 
         # Ignore the first bin for integration in case of untagged bin
-        bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 else 1
+        bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 and "nsd" not in self.typean else 1
 
         # calculate rec. level kinematic efficiency and apply it to the unfolding input
 
@@ -1954,6 +1984,37 @@ class AnalyzerJet(Analyzer):
         hjetpt_genvsreco_full.SetYTitle("#it{p}_{T, jet}^{rec} (GeV/#it{c})")
         hjetpt_genvsreco_full.Draw("colz")
         cjetpt_genvsreco_full.SaveAs("%s/response_pr_%s_full.eps" % (self.d_resultsallpdata, self.v_var2_binning))
+
+        hz_genvsreco_full_real = unfolding_input_file.Get("hz_genvsreco_full_real")
+        if not hz_genvsreco_full_real:
+            self.logger.fatal(make_message_notfound("hz_genvsreco_full_real", self.n_fileresp))
+        hjetpt_genvsreco_full_real = unfolding_input_file.Get("hjetpt_genvsreco_full_real")
+        if not hjetpt_genvsreco_full_real:
+            self.logger.fatal(make_message_notfound("hjetpt_genvsreco_full_real", self.n_fileresp))
+
+        cz_genvsreco_full_real = TCanvas("cz_genvsreco_full_real", "response matrix 2D projection_real")
+        setup_canvas(cz_genvsreco_full_real)
+        cz_genvsreco_full_real.SetRightMargin(0.13)
+        cz_genvsreco_full_real.SetLogz()
+        setup_histogram(hz_genvsreco_full_real)
+        hz_genvsreco_full_real.GetZaxis().SetRangeUser(hz_genvsreco_full_real.GetMinimum(0), hz_genvsreco_full_real.GetMaximum())
+        hz_genvsreco_full_real.SetTitle("")
+        hz_genvsreco_full_real.SetXTitle("%s^{gen}" % self.v_varshape_latex)
+        hz_genvsreco_full_real.SetYTitle("%s^{rec}" % self.v_varshape_latex)
+        hz_genvsreco_full_real.Draw("colz")
+        cz_genvsreco_full_real.SaveAs("%s/response_pr_%s_full_real.eps" % (self.d_resultsallpdata, self.v_varshape_binning))
+
+        cjetpt_genvsreco_full_real = TCanvas("cjetpt_genvsreco_full_real", "response matrix 2D projection_real")
+        setup_canvas(cjetpt_genvsreco_full_real)
+        cjetpt_genvsreco_full_real.SetRightMargin(0.13)
+        cjetpt_genvsreco_full_real.SetLogz()
+        setup_histogram(hjetpt_genvsreco_full_real)
+        hjetpt_genvsreco_full_real.GetZaxis().SetRangeUser(hjetpt_genvsreco_full_real.GetMinimum(0), hjetpt_genvsreco_full_real.GetMaximum())
+        hjetpt_genvsreco_full_real.SetTitle("")
+        hjetpt_genvsreco_full_real.SetXTitle("#it{p}_{T, jet}^{gen} (GeV/#it{c})")
+        hjetpt_genvsreco_full_real.SetYTitle("#it{p}_{T, jet}^{rec} (GeV/#it{c})")
+        hjetpt_genvsreco_full_real.Draw("colz")
+        cjetpt_genvsreco_full_real.SaveAs("%s/response_pr_%s_full_real.eps" % (self.d_resultsallpdata, self.v_var2_binning))
 
         # plot gen. level kinematic efficiency for shape in jet pt bins
 
@@ -2527,13 +2588,13 @@ class AnalyzerJet(Analyzer):
         input_mc_gen_z = []
 
         # Ignore the first bin for integration in case of untagged bin
-        bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 else 1
+        bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 and "nsd" not in self.typean else 1
 
         kinematic_eff_jetpt = unfolding_input_file.Get("hjetpt_gen_cuts_closure")
         hjetpt_gen_nocuts = unfolding_input_file.Get("hjetpt_gen_nocuts_closure")
         kinematic_eff_jetpt.Divide(hjetpt_gen_nocuts)
         input_mc_gen_jetpt = input_mc_gen.ProjectionY("input_mc_gen_jetpt", 1, self.p_nbinshape_gen, "e")
-        input_mc_gen_jetpt.Scale(1.0 / input_mc_gen_jetpt.Integral(1, -1))
+        input_mc_gen_jetpt.Scale(1.0 / input_mc_gen_jetpt.Integral())
 
         for ibin2 in range(self.p_nbin2_reco):
             suffix = "%s_%.2f_%.2f" % \
@@ -2597,7 +2658,7 @@ class AnalyzerJet(Analyzer):
 
             unfolded_jetpt = unfolded_zvsjetpt.ProjectionY("unfolded_jetpt_%d" % (i + 1), 1, self.p_nbinshape_gen, "e")
             unfolded_jetpt.Divide(kinematic_eff_jetpt)
-            unfolded_jetpt.Scale(1.0 / unfolded_jetpt.Integral(1, -1))
+            unfolded_jetpt.Scale(1.0 / unfolded_jetpt.Integral())
             unfolded_jetpt.Divide(input_mc_gen_jetpt)
             fileouts.cd()
             unfolded_jetpt.Write("closure_test_jetpt_%d" % (i + 1))
@@ -2998,6 +3059,14 @@ class AnalyzerJet(Analyzer):
                                                      shapebins_error_up_cat_array))
             tgsys_cat.append(tgsys_cat_z)
 
+        # write the combined systematic uncertainties in a file
+
+        file_sys_out = TFile.Open("%s/systematics_results.root" % self.d_resultsallpdata, "recreate")
+        for ibin2 in range(self.p_nbin2_gen):
+            suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+            tgsys[ibin2].Write("tgsys_%s" % suffix)
+        file_sys_out.Close()
+
         # relative statistical uncertainty of the central values
 
         h_default_stat_err = []
@@ -3041,7 +3110,7 @@ class AnalyzerJet(Analyzer):
                 suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
                 input_pythia8_z_jetpt.append(input_pythia8[i_pythia8].ProjectionX("input_pythia8" + self.pythia8_prompt_variations[i_pythia8]+suffix, ibin2 + 1, ibin2 + 1, "e"))
-                input_pythia8_z_jetpt[ibin2].Scale(1.0 / input_pythia8_z_jetpt[ibin2].Integral(1, -1), "width")
+                input_pythia8_z_jetpt[ibin2].Scale(1.0 / input_pythia8_z_jetpt[ibin2].Integral(), "width")
                 pythia8_out = input_pythia8_z_jetpt[ibin2]
                 file_sim_out.cd()
                 pythia8_out.Write()
@@ -3066,7 +3135,7 @@ class AnalyzerJet(Analyzer):
             y_min_h, y_max_h = get_y_window_his([input_histograms_default[ibin2]])
             y_min = min(y_min_g, y_min_h)
             y_max = max(y_max_g, y_max_h)
-            y_margin_up = 0.35
+            y_margin_up = 0.4
             y_margin_down = 0.05
             input_histograms_default[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min, y_max, y_margin_down, y_margin_up))
             input_histograms_default[ibin2].GetXaxis().SetRangeUser(round(self.lvarshape_binmin_gen[0], 2), round(self.lvarshape_binmax_gen[-1], 2))
@@ -3081,25 +3150,29 @@ class AnalyzerJet(Analyzer):
             #PREL latex = TLatex(0.15, 0.85, "ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV")
             latex = TLatex(0.15, 0.82, "pp, #sqrt{#it{s}} = 13 TeV")
             draw_latex(latex)
-            latex1 = TLatex(0.15, 0.77, "%s in charged jets, anti-#it{k}_{T}, #it{R} = 0.4, #left|#it{#eta}_{jet}#right| #leq 0.5" % self.p_latexnhadron)
+            latex1 = TLatex(0.15, 0.77, "%s in charged jets, anti-#it{k}_{T}, #it{R} = 0.4" % self.p_latexnhadron)
             draw_latex(latex1)
-            latex2 = TLatex(0.15, 0.72, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
+            latex2 = TLatex(0.15, 0.72, "%g #leq %s < %g GeV/#it{c}, #left|#it{#eta}_{jet}#right| #leq 0.5" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex2)
-            latex3 = TLatex(0.15, 0.67, "%g #leq #it{p}_{T, %s} < %g GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2])))
+            latex3 = TLatex(0.15, 0.67, "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, #left|#it{y}_{%s}#right| #leq 0.8" % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2]), self.p_latexnhadron))
             draw_latex(latex3)
             leg_finalwsys.Draw("same")
+            latex_SD = TLatex(0.15, 0.62, "Soft Drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)")
+            draw_latex(latex_SD)
             cfinalwsys.SaveAs("%s/final_wsys_%s.pdf" % (self.d_resultsallpdata, suffix))
 
             # plot the results with systematic uncertainties and models
 
+            leg_pos = [.55, .65, .8, .85]
+
             cfinalwsys_wmodels = TCanvas("cfinalwsys_wmodels " + suffix, "final result with systematic uncertainties with models" + suffix)
             setup_canvas(cfinalwsys_wmodels)
-            if self.typean == "jet_zg":
-                leg_finalwsys_wmodels = TLegend(.55, .5, .65, .7)
-            elif self.typean == "jet_rg":
-                leg_finalwsys_wmodels = TLegend(.15, .45, .25, .65)
-            else:
-                leg_finalwsys_wmodels = TLegend(.55, .52, .65, .72)
+#            if self.typean == "jet_zg":
+            leg_finalwsys_wmodels = TLegend(*leg_pos)
+#            elif self.typean == "jet_rg":
+#                leg_finalwsys_wmodels = TLegend(.15, .45, .25, .65)
+#            else:
+#                leg_finalwsys_wmodels = TLegend(.55, .52, .65, .72)
             setup_legend(leg_finalwsys_wmodels)
             leg_finalwsys_wmodels.AddEntry(input_histograms_default[ibin2], "data", "P")
             setup_histogram(input_histograms_default[ibin2], get_colour(0))
@@ -3108,7 +3181,7 @@ class AnalyzerJet(Analyzer):
                 [input_pythia8_z[i][ibin2] for i in range(len(self.pythia8_prompt_variations))])
             y_min = min(y_min_g, y_min_h)
             y_max = max(y_max_g, y_max_h)
-            y_margin_up = 0.35
+            y_margin_up = 0.4
             y_margin_down = 0.05
             y_plot_min, y_plot_max = get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
             input_histograms_default[ibin2].GetYaxis().SetRangeUser(y_plot_min, y_plot_max)
@@ -3130,17 +3203,20 @@ class AnalyzerJet(Analyzer):
                 leg_finalwsys_wmodels.AddEntry(input_pythia8_z[i_pythia8][ibin2], self.pythia8_prompt_variations_legend[i_pythia8], "P")
                 input_pythia8_z[i_pythia8][ibin2].Draw("same")
             input_histograms_default[ibin2].Draw("AXISSAME")
-            #PREL latex = TLatex(0.15, 0.85, "ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV")
-            latex = TLatex(0.15, 0.82, "pp, #sqrt{#it{s}} = 13 TeV")
+
+            latex = TLatex(0.15, 0.82, "ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV")
+            #latex = TLatex(0.15, 0.82, "pp, #sqrt{#it{s}} = 13 TeV")
             draw_latex(latex)
-            latex1 = TLatex(0.15, 0.77, "%s in charged jets, anti-#it{k}_{T}, #it{R} = 0.4, #left|#it{#eta}_{jet}#right| #leq 0.5" % self.p_latexnhadron)
+            latex1 = TLatex(0.15, 0.77, "%s in charged jets, anti-#it{k}_{T}, #it{R} = 0.4" % self.p_latexnhadron)
             draw_latex(latex1)
-            latex2 = TLatex(0.15, 0.72, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
+            latex2 = TLatex(0.15, 0.72, "%g #leq %s < %g GeV/#it{c}, #left|#it{#eta}_{jet}#right| #leq 0.5" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex2)
-            #latex3 = TLatex(0.15, 0.7, "%g #leq %s < %g" % (round(self.lvarshape_binmin_reco[0], 2), self.v_varshape_latex, round(self.lvarshape_binmax_reco[-1], 2)))
-            latex3 = TLatex(0.15, 0.67, "%g #leq #it{p}_{T, %s} < %g GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2])))
+            latex3 = TLatex(0.15, 0.67, "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, #left|#it{y}_{%s}#right| #leq 0.8" % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2]), self.p_latexnhadron))
             draw_latex(latex3)
+            latex_SD = TLatex(0.15, 0.62, "Soft Drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)")
+            draw_latex(latex_SD)
             leg_finalwsys_wmodels.Draw("same")
+
             if self.typean == "jet_rg":
                 # plot the theta_g axis
                 axis_rg = input_histograms_default[ibin2].GetXaxis()
@@ -3160,6 +3236,25 @@ class AnalyzerJet(Analyzer):
                 cfinalwsys_wmodels.SetTickx(0)
                 axis_thetag.Draw("same")
             cfinalwsys_wmodels.SaveAs("%s/final_wsys_wmodels_%s.pdf" % (self.d_resultsallpdata, suffix))
+
+            list_obj = [input_histograms_default[ibin2], tgsys[ibin2], input_powheg_z[ibin2], tg_powheg[ibin2]]
+            labels_obj = ["data", "syst. unc.", "POWHEG #plus PYTHIA 6", ""]
+            colours = [get_colour(i) for i in (0, 7, 1, 1)]
+            markers = [get_marker(i) for i in (0, 7, 1, 1)]
+            for i_pythia8 in range(len(self.pythia8_prompt_variations)):
+                list_obj.append(input_pythia8_z[i_pythia8][ibin2])
+                labels_obj.append(self.pythia8_prompt_variations_legend[i_pythia8])
+                colours.append(get_colour(i_pythia8 + 2))
+                markers.append(get_marker(i_pythia8 + 2))
+            list_obj += [latex, latex1, latex2, latex3, latex_SD]
+            cfinalwsys_wmodels_new, _ = make_plot("cfinalwsys_wmodels_new_" + suffix, \
+                list_obj=list_obj, labels_obj=labels_obj, opt_leg_g="F", opt_plot_g="5", \
+                colours=colours, markers=markers, leg_pos=leg_pos, margins_y=[0.05, 0.4], \
+                title=";%s;1/#it{N}_{jets} d#it{N}/d%s" % (self.v_varshape_latex, self.v_varshape_latex))
+            if self.typean == "jet_rg":
+                cfinalwsys_wmodels_new.SetTickx(0)
+                axis_thetag.Draw("same")
+            cfinalwsys_wmodels_new.SaveAs("%s/final_wsys_wmodels_%s_new.pdf" % (self.d_resultsallpdata, suffix))
 
             # plot the relative systematic uncertainties for all categories together
 
@@ -3204,7 +3299,7 @@ class AnalyzerJet(Analyzer):
             self.logger.fatal(make_message_notfound(self.file_feeddown))
         file_feeddown_variations = []
         for i_powheg, varname in enumerate(self.powheg_nonprompt_varnames):
-            path = self.file_feeddown.replace(string_default, "powheg/" + varname)
+            path = self.file_feeddown.replace(string_default, "feeddown/" + varname)
             file_feeddown_variations.append(TFile.Open(path))
             if not file_feeddown_variations[i_powheg]:
                 self.logger.fatal(make_message_notfound(path))
@@ -3318,6 +3413,9 @@ class AnalyzerJet(Analyzer):
         except Exception: # pylint: disable=broad-except
             self.logger.fatal(make_message_notfound("variables", tree_name))
 
+        # Adjust nSD values.
+        df_sim = adjust_nsd(df_sim)
+
         print("Entries in the tree:", len(df_sim))
         print("Filtering %sprompt hadrons" % ("" if prompt else "non-"))
         # Apply the same cuts as in gen MC.
@@ -3335,12 +3433,6 @@ class AnalyzerJet(Analyzer):
         # prompt vs. non-prompt selection
         pdg_parton_good = 4 if prompt else 5
         df_sim = df_sim[df_sim["pdg_parton"] == pdg_parton_good]
-
-        # Reject single-constituent jets.
-        #sel_jet_nconst = "n_const > 1"
-        # FIXME pylint: disable=fixme
-        sel_jet_nconst = "z < 1"
-        df_sim = df_sim.query(sel_jet_nconst)
 
         print("Entries after filtering:", len(df_sim))
         # Create, fill and scale the histogram.
