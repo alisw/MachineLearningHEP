@@ -192,6 +192,13 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
         c_new = [0 if nsd_old < 0 else nsd_old for nsd_old in listnsd_old]
         dfreco = dfreco.drop(["nsd_jet"], axis=1)
         dfreco["nsd_jet"] = c_new
+        if self.mcordata == "mc":
+            listnsd_old_genmatched = dfreco["nsd_gen_jet"].values
+            dfreco["nsd_gen_jet_orig"] = listnsd_old_genmatched 
+            c_new_genmatched = [0 if nsd_old < 0 else nsd_old for nsd_old in listnsd_old_genmatched]
+            dfreco = dfreco.drop(["nsd_gen_jet"], axis=1)
+            dfreco["nsd_gen_jet"] = c_new_genmatched
+
         dfreco = pd.merge(dfreco, dfevt, on=self.v_evtmatch)
         dfreco = dfreco.reset_index(drop=True)
         pickle.dump(dfreco, openfile(self.l_reco[file_index], "wb"), protocol=4)

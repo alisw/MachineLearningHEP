@@ -54,26 +54,26 @@ inclusivejets:
       chunksizeunp:  [100,100,100] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
       unmerged_tree_dir: [/data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/pp_2016_data/430_20200512-1920/merged,
-                          /data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/pp_2016_data/430_20200512-1920/merged,
-                          /data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/pp_2016_data/430_20200512-1920/merged]
-      pkl: [/data/DerivedInclusive/pkldata2016,
-            /data/DerivedInclusive/pkldata2017,
-            /data/DerivedInclusive/pkldata2018] #list of periods
+                          /data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/pp_2017_data/431_20200512-1921/merged,
+                          /data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/pp_2018_data/432_20200512-1922/merged]
+      pkl: [/data/DerivedInclusive/vAN-20200511_ROOT6-1/pp_2016_data/430_20200512-1920/pkldata2016,
+            /data/DerivedInclusive/vAN-20200511_ROOT6-1/pp_2017_data/431_20200512-1921/pkldata2017,
+            /data/DerivedInclusive/vAN-20200511_ROOT6-1/pp_2018_data/432_20200512-1922/pkldata2018] #list of periods
     mc:
       nprocessesparallel: 50
       maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp: [100,100,100] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
       unmerged_tree_dir: [/data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/Meta_pp_2016_minbias/427_20200512-2158/merged,
-                          /data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/Meta_pp_2016_minbias/427_20200512-2158/merged,
-                          /data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/Meta_pp_2016_minbias/427_20200512-2158/merged] #list of periods
-      pkl: [/data/DerivedInclusive/pklmc2016,
-            /data/DerivedInclusive/pklmc2017,
-            /data/DerivedInclusive/pklmc2018] #list of periods
+                          /data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/Meta_pp_2017_minbias/428_20200512-0210/merged,
+                          /data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/Meta_pp_2016_minbias/429_20200512-2200/merged] #list of periods
+      pkl: [/data/DerivedInclusive/vAN-20200511_ROOT6-1/Meta_pp_2016_minbias/427_20200512-2158/pklmc2016,
+            /data/DerivedInclusive/vAN-20200511_ROOT6-1/Meta_pp_2017_minbias/428_20200512-0210/pklmc2017,
+            /data/DerivedInclusive/vAN-20200511_ROOT6-1/Meta_pp_2016_minbias/429_20200512-2200/pklmc2018] #list of periods
   analysis:
     jet_zg: &jet_default
       proc_type: light
-      useperiod: [1,0,0] #list of periods
+      useperiod: [1,1,1] #list of periods
       latexnamehadron: "D^{0}"
       latexnamedecay: "K^{#minus} #pi^{#plus}"
       niterunfolding: 15
@@ -94,7 +94,7 @@ inclusivejets:
       sel_binmaxshape_reco:     [0.2,0.3,0.4,0.5]
       sel_binminshape_gen:  [0.1,0.2,0.3,0.4]
       sel_binmaxshape_gen:      [0.2,0.3,0.4,0.5]
-      sel_closure_frac: 0.2
+      sel_closure_frac: 0.04
       triggerbit: INT7
       sel_an_binmin:    [5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
       sel_an_binmax:      [6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
@@ -124,7 +124,7 @@ inclusivejets:
     jet_rg:
       #<<: *jet_default
       proc_type: light
-      useperiod: [1,0,0] #list of periods
+      useperiod: [1,1,1] #list of periods
       latexnamehadron: "D^{0}"
       latexnamedecay: "K^{#minus} #pi^{#plus}"
       niterunfolding: 15
@@ -145,7 +145,7 @@ inclusivejets:
       sel_binmaxshape_reco:     [0.1,0.2,0.3,0.4]
       sel_binminshape_gen:  [0.0,0.1,0.2,0.3]
       sel_binmaxshape_gen:      [0.1,0.2,0.3,0.4]
-      sel_closure_frac: 0.2
+      sel_closure_frac: 0.04
       triggerbit: INT7
       sel_an_binmin:    [5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
       sel_an_binmax:      [6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
@@ -179,7 +179,7 @@ inclusivejets:
     jet_nsd:
       #<<: *jet_default
       proc_type: light
-      useperiod: [1,0,0] #list of periods
+      useperiod: [1,1,1] #list of periods
       latexnamehadron: "D^{0}"
       latexnamedecay: "K^{#minus} #pi^{#plus}"
       niterunfolding: 15
@@ -196,11 +196,11 @@ inclusivejets:
       var_binningshape: nsd_jet
       var_binningshape_gen: nsd_gen_jet
       var_shape_latex: "#it{n}_{sd}"
-      sel_binminshape_reco: [0.0,1.0,2.0,3.0,4.0]
-      sel_binmaxshape_reco:     [1.0,2.0,3.0,4.0,5.0]
-      sel_binminshape_gen:  [0.0,1.0,2.0,3.0,4.0]
-      sel_binmaxshape_gen:      [1.0,2.0,3.0,4.0,5.0]
-      sel_closure_frac: 0.2
+      sel_binminshape_reco: [-0.5,0.5,1.5,2.5,3.5]
+      sel_binmaxshape_reco:     [0.5,1.5,2.5,3.5,4.5]
+      sel_binminshape_gen:  [-0.5,0.5,1.5,2.5,3.5]
+      sel_binmaxshape_gen:      [0.5,1.5,2.5,3.5,4.5]
+      sel_closure_frac: 0.04
       triggerbit: INT7
       sel_an_binmin:    [5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
       sel_an_binmax:      [6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
