@@ -13,7 +13,7 @@ categories:
                 label: ["default"]
                 diffs: {}
     prior:
-        activate: no
+        activate: yes
         processor: true
         label: "prior"
         correlation: "corr"
@@ -28,9 +28,9 @@ categories:
                     analysis:
                         jet_zg:
                             doprior: [true]
-                            niterunfoldingchosen: [7]
+                            niterunfoldingchosen: [9]
     regularisation:
-        activate: no
+        activate: yes
         processor: false
         label: "regularisation"
         correlation: "corr"
@@ -60,14 +60,14 @@ categories:
                 diffs:
                   multi:
                     mc:
-                      unmerged_tree_dir: [[/data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/Meta_pp_2016_minbias/433_20200512-2201/merged
-                                         /data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/Meta_pp_2017_minbias/433_20200512-2201/merged,
-                                         /data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/Meta_pp_2018_minbias/433_20200512-2201/merged]]
-                      pkl: [[/data/DerivedInclusive/vAN-20200511_ROOT6-1/Meta_pp_2016_minbias/433_20200512-2201/pkl,
-                            /data/DerivedInclusive/vAN-20200511_ROOT6-1/Meta_pp_2017_minbias/433_20200512-2201/pkl,
-                            /data/DerivedInclusive/vAN-20200511_ROOT6-1/Meta_pp_2018_minbias/433_20200512-2201/pkl]]                   
+                      unmerged_tree_dir: [[/data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/Meta_pp_2016_minbias/433_20200512-2201/merged,
+                                         /data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/Meta_pp_2017_minbias/434_20200512-2202/merged,
+                                         /data/TTree/InclusiveJets/vAN-20200511_ROOT6-1/Meta_pp_2018_minbias/435_20200512-2201/merged]]
+                      pkl: [[/data/DerivedInclusive/vAN-20200511_ROOT6-1/Meta_pp_2016_minbias/433_20200512-2201/pklmc2016,
+                            /data/DerivedInclusive/vAN-20200511_ROOT6-1/Meta_pp_2017_minbias/434_20200512-2202/pklmc2017,
+                            /data/DerivedInclusive/vAN-20200511_ROOT6-1/Meta_pp_2018_minbias/435_20200512-2201/pklmc2018]]                   
     binning:
-        activate: no
+        activate: yes
         processor: true
         label: "binning"
         correlation: "corr"
@@ -100,7 +100,7 @@ categories:
                             sel_binminshape_gen:  [[-100,0.1,0.2,0.3,0.4]]
                             sel_binmaxshape_gen:     [[0.1,0.2,0.3,0.4,0.5]]
     ptleadingtrack:
-        activate: no
+        activate: yes
         processor: true
         label: "#it{p}_{T} leading track"
         correlation: "corr"

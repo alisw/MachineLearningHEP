@@ -223,7 +223,7 @@ class AnalyzerJet(Analyzer):
         print("Unfolding: data statistics: %g, closure statistics: %g, ratio: %g" % (stat_unfolding, stat_closure, stat_unfolding/stat_closure))
 
         # Ignore the first bin for integration incase of untagged bin
-        bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 else 1
+        bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 and "nsd" not in self.typean else 1
 
         # calculate rec. level kinematic efficiency and apply it to the unfolding input
 
@@ -1050,7 +1050,7 @@ class AnalyzerJet(Analyzer):
         input_mc_gen_z = []
 
         # Ignore the first bin for integration incase of untagged bin
-        bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 else 1
+        bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 and "nsd" not in self.typean else 1
 
         kinematic_eff_jetpt = unfolding_input_file.Get("hjetpt_gen_cuts_closure")
         hjetpt_gen_nocuts = unfolding_input_file.Get("hjetpt_gen_nocuts_closure")
