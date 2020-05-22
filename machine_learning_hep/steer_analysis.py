@@ -108,6 +108,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     doroctraintest = data_config["ml_study"]['doroctraintest']
     doboundary = data_config["ml_study"]['doboundary']
     doimportance = data_config["ml_study"]['doimportance']
+    doimportanceshap = data_config["ml_study"]['doimportanceshap']
     dogridsearch = data_config["ml_study"]['dogridsearch']
     dobayesianopt = data_config["ml_study"]['dobayesianopt']
     doefficiencyml = data_config["ml_study"]['doefficiency']
@@ -362,6 +363,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
                 myopt.do_plot_model_pred()
             if doimportance is True:
                 myopt.do_importance()
+            if doimportanceshap is True:
+                myopt.do_importance_shap()
             if dogridsearch is True:
                 myopt.do_grid()
             if dobayesianopt is True:
