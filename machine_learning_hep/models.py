@@ -17,6 +17,7 @@ Methods to: choose, train and apply ML models
             load and save ML models
             obtain control plots
 """
+from os.path import join
 from io import BytesIO
 import pickle
 import pandas as pd
@@ -25,6 +26,8 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
 
 from sklearn.feature_extraction import DictVectorizer
+
+import shap
 
 from machine_learning_hep.logger import get_logger
 import machine_learning_hep.templates_keras as templates_keras
@@ -240,6 +243,43 @@ def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder)
     plt.savefig(img_import, format='png')
     img_import.seek(0)
     return img_import
+
+def shap_study(names_, trainedmodels_, x_train_, suffix_, folder):
+    """Importance via SHAP
+
+    Args:
+        names_: list
+            Names of models to do study for
+        models_: list
+            Models to be studied
+        x_train_: pandas.DataFrame
+            Dataframe with training samples
+        suffix_: str
+        folder: str
+            Where to be saved
+    """
+
+    x_size = 18 if len(names_) == 1 else 25
+    figure = plt.figure(figsize=(x_size, 15))
+    nrows, ncols = (2, (len(names_) + 1) / 2) if len(names_) > 1 else (1, 1)
+    for i, (name, model) in enumerate(zip(names_, trainedmodels_)):
+        # Rely on name to exclude certain models at the moment
+        if "SVC" in name:
+            continue
+        if "Logistic" in name:
+            continue
+        if "Keras" in name:
+            continue
+        ax = figure.add_subplot(nrows, ncols, i + 1)
+        plt.sca(ax)
+        explainer = shap.TreeExplainer(model)
+        shap_values = explainer.shap_values(x_train_)
+        shap.summary_plot(shap_values, x_train_, show=False)
+    plotname = f"importanceplotall_shap_{suffix_}.png"
+    plotname = join(folder, plotname)
+    figure.tight_layout()
+    figure.savefig(plotname)
+    plt.close(figure)
 
 
 def decisionboundaries(names_, trainedmodels_, suffix_, x_train_, y_train_, folder):
