@@ -257,10 +257,10 @@ elif [ "$dataset" == "MCpp13TeV_MB_all" ]; then
 elif [ "$dataset" == "MCpp13TeV_HM_all" ]; then
   #D2H and dedicated HM MC's for 2016-17-18 (V0M) and 18 (SPD). See short names below/LEGO train page for order of childs.
   printf "\e[1;31m  Warning: New dataset, hardcoded paths not yet tested.\e[0m\n\n"
-  inputpaths=(/alice/sim/2019/LHC19h5c/258454/PWGHF/HF_TreeCreator
-              /alice/sim/2019/LHC19h5b/277117/PWGHF/HF_TreeCreator
-              /alice/sim/2019/LHC19h5a/286653/PWGHF/HF_TreeCreator
-              /alice/sim/2019/LHC19h5a2/294925/PWGHF/HF_TreeCreator
+  inputpaths=(/alice/sim/2019/LHC19h5c2/258454/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h5b2/277117/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h5a4/286653/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h5a3/294925/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19h10c1/258454/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19h10b1/277117/PWGHF/HF_TreeCreator
               /alice/sim/2019/LHC19h10a1/286653/PWGHF/HF_TreeCreator
