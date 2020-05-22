@@ -362,7 +362,7 @@ class FitAliHF(FitROOT):
                                 / r_over_s
                     self.kernel.SetFixReflOverS(r_over_s)
             if self.histo_reflections.Integral() > 0:
-                self.kernel.SetTemplateReflections(self.histo_reflections, "2gaus",
+                self.kernel.SetTemplateReflections(self.histo_reflections, "1gaus",
                                                    self.init_pars["fit_range_low"],
                                                    self.init_pars["fit_range_up"])
 
@@ -569,7 +569,7 @@ class FitROOTGauss(FitROOT):
                                   "fit_range_low": None,
                                   "fit_range_up": None,
                                   "n_rms_fix": None,
-                                  "n_rms_start": 2.,
+                                  "n_rms_start": 2.5,
                                   "n_rms_stepping": 0.10,
                                   "n_rms_steps": 20,
                                   "likelihood": False}
