@@ -38,6 +38,7 @@ class WorkflowBase:
         gStyle.SetOptStat(0)
         gStyle.SetOptStat(0000)
         gStyle.SetPalette(1)
+        gStyle.SetNumberContours(100)
         gStyle.SetCanvasColor(0)
         gStyle.SetFrameFillColor(0)
 

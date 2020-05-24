@@ -12,7 +12,7 @@ categories:
                 activate: [yes]
                 label: ["default"]
                 diffs: {}
-    
+
     prior:
         activate: yes
         processor: true
@@ -49,7 +49,7 @@ categories:
     tracking:
         activate: yes
         processor: true
-        label: "tracking"
+        label: "tracking eff."
         correlation: "corr"
         rms: true
         symmetrise: true
@@ -67,7 +67,7 @@ categories:
                       pkl: [[/data/DerivedInclusive/vAN-20200511_ROOT6-1/Meta_pp_2016_minbias/433_20200512-2201/pklmc2016,
                             /data/DerivedInclusive/vAN-20200511_ROOT6-1/Meta_pp_2017_minbias/434_20200512-2202/pklmc2017,
                             /data/DerivedInclusive/vAN-20200511_ROOT6-1/Meta_pp_2018_minbias/435_20200512-2201/pklmc2018]]
-                      
+
     binning:
         activate: yes
         processor: true
@@ -101,13 +101,13 @@ categories:
                             sel_binmaxshape_reco:    [[0.0,0.1,0.2,0.3,0.4]]
                             sel_binminshape_gen:  [[-100,0.0,0.1,0.2,0.3]]
                             sel_binmaxshape_gen:     [[0.0,0.1,0.2,0.3,0.4]]
-   
+
 
 
     ptleadingtrack:
         activate: yes
         processor: true
-        label: "#it{p}_{T} leading track"
+        label: "#it{p}_{T, incl. ch. jet}^{leading track}"
         correlation: "corr"
         rms: false
         symmetrise: false
