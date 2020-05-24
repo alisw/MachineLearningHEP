@@ -22,7 +22,7 @@ inclusivejets:
     var_all: [pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet,
               pt_gen_jet, eta_gen_jet, phi_gen_jet, delta_eta_gen_jet, delta_phi_gen_jet,
               delta_r_gen_jet, zg_jet, zg_gen_jet, rg_jet, rg_gen_jet, nsd_jet,
-              nsd_gen_jet, k0_jet, k0_gen_jet, k1_jet, k1_gen_jet, k2_jet, 
+              nsd_gen_jet, k0_jet, k0_gen_jet, k1_jet, k1_gen_jet, k2_jet,
               k2_gen_jet, kT_jet, kT_gen_jet, run_number, ev_id,  ev_id_ext, ptleadingtrack_jet, ptleadingtrack_gen_jet]
     var_evt:
       data: [centrality, z_vtx_reco, n_vtx_contributors, n_tracks, is_ev_rej, run_number,
@@ -45,7 +45,7 @@ inclusivejets:
     treeoriginevt: 'PWGHF_TreeCreator/tree_event_char'
     histofilename: "masshisto.root"
     respfilename: "resphisto.root"
-    
+
 
   multi:
     data:
@@ -82,7 +82,7 @@ inclusivejets:
       doprior: false
       var_binning2: pt_jet
       var_binning2_gen: pt_gen_jet
-      latexbin2var: "#it{p}_{T, jet}^{ch}"
+      latexbin2var: "#it{p}_{T}^{jet ch}"
       sel_binmin2_reco: [7.0,15.0,30.0] # rec jet pt bins (sel_binmin2_reco bins)
       sel_binmax2_reco:     [15.0,30.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)
       sel_binmin2_gen:  [7.0,15.0,30.0] # gen jet pt bins (sel_binmin2_gen bins)
@@ -122,7 +122,7 @@ inclusivejets:
       variations_db: ./data/data_prod_20200304/database_variations_jetinclusive_jet_zg.yml
 
     jet_rg:
-      #<<: *jet_default
+      <<: *jet_default
       proc_type: light
       useperiod: [1,1,1] #list of periods
       latexnamehadron: "D^{0}"
@@ -133,7 +133,6 @@ inclusivejets:
       doprior: false
       var_binning2: pt_jet
       var_binning2_gen: pt_gen_jet
-      latexbin2var: "#it{p}_{T, jet}^{ch}"
       sel_binmin2_reco: [7.0,15.0,30.0] # rec jet pt bins (sel_binmin2_reco bins)
       sel_binmax2_reco:     [15.0,30.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)
       sel_binmin2_gen:  [7.0,15.0,30.0] # gen jet pt bins (sel_binmin2_gen bins)
@@ -173,11 +172,8 @@ inclusivejets:
         <<: *mc_out_rg
       variations_db: ./data/data_prod_20200304/database_variations_jetinclusive_jet_rg.yml
 
-
-
-
     jet_nsd:
-      #<<: *jet_default
+      <<: *jet_default
       proc_type: light
       useperiod: [1,1,1] #list of periods
       latexnamehadron: "D^{0}"
@@ -188,14 +184,13 @@ inclusivejets:
       doprior: false
       var_binning2: pt_jet
       var_binning2_gen: pt_gen_jet
-      latexbin2var: "#it{p}_{T, jet}^{ch}"
       sel_binmin2_reco: [7.0,15.0,30.0] # rec jet pt bins (sel_binmin2_reco bins)
       sel_binmax2_reco:     [15.0,30.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)
       sel_binmin2_gen:  [7.0,15.0,30.0] # gen jet pt bins (sel_binmin2_gen bins)
       sel_binmax2_gen:      [15.0,30.0,50.0] # gen jet pt bins (sel_binmin2_gen bins)
       var_binningshape: nsd_jet
       var_binningshape_gen: nsd_gen_jet
-      var_shape_latex: "#it{n}_{sd}"
+      var_shape_latex: "#it{n}_{SD}"
       sel_binminshape_reco: [-0.5,0.5,1.5,2.5,3.5]
       sel_binmaxshape_reco:     [0.5,1.5,2.5,3.5,4.5]
       sel_binminshape_gen:  [-0.5,0.5,1.5,2.5,3.5]

@@ -38,6 +38,11 @@ from machine_learning_hep.utilities_plot import buildhisto, makefill2dhist, make
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.utilities import seldf_singlevar
 
+def shrink_err_x(graph, width=0.1):
+    for i in range(graph.GetN()):
+        graph.SetPointEXlow(i, width)
+        graph.SetPointEXhigh(i, width)
+
 # pylint: disable=too-many-instance-attributes, too-many-statements
 class AnalyzerJet(Analyzer):
     species = "analyzer"
@@ -182,6 +187,28 @@ class AnalyzerJet(Analyzer):
         self.file_unfold = os.path.join(self.d_resultsallpdata, "unfolding_results.root")
         self.file_unfold_closure = os.path.join(self.d_resultsallpdata, "unfolding_closure.root")
 
+        # official figures
+        self.shape = typean[len("jet_"):]
+        self.size_can = [800, 800]
+        self.offsets_axes = [0.8, 1.1]
+        self.margins_can = [0.1, 0.13, 0.05, 0.03]
+        self.fontsize = 0.035
+        self.opt_leg_g = "FP" # for systematic uncertanties in the legend
+        self.opt_plot_g = "2"
+        self.x_latex = 0.16
+        self.y_latex_top = 0.88
+        self.y_step = 0.055
+        # axes titles
+        self.title_x = self.v_varshape_latex
+        self.title_y = "(1/#it{N}_{jet}) d#it{N}/d%s" % self.v_varshape_latex
+        self.title_full = ";%s;%s" % (self.title_x, self.title_y)
+        self.title_full_ratio = ";%s;data/MC: ratio of %s" % (self.title_x, self.title_y)
+        # text
+        self.text_alice = "#bf{ALICE} Preliminary, pp, #sqrt{#it{s}} = 13 TeV"
+        self.text_jets = "inclusive charged jets, anti-#it{k}_{T}, #it{R} = 0.4"
+        self.text_ptjet = "%g #leq %s < %g GeV/#it{c}, #left|#it{#eta}_{jet}#right| #leq 0.5"
+        self.text_sd = "Soft Drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)"
+        self.text_ptcut = "#it{p}_{T, incl. ch. jet}^{leading track} #geq 5.33 GeV/#it{c}"
 
     def unfolding(self):
         self.loadstyle()
@@ -454,17 +481,36 @@ class AnalyzerJet(Analyzer):
         if not hjetpt_genvsreco_full:
             self.logger.fatal(make_message_notfound("hjetpt_genvsreco_full", self.n_fileresp))
 
-        cz_genvsreco_full = TCanvas("cz_genvsreco_full", "response matrix 2D projection")
+        hz_genvsreco_full.Scale(1. / hz_genvsreco_full.Integral())
+
+        # preliminary figure
+        text_ptjet_full = self.text_ptjet % (self.lvar2_binmin_reco[0], self.p_latexbin2var, self.lvar2_binmax_reco[-1])
+        cz_genvsreco_full = TCanvas("cz_genvsreco_full", "response matrix 2D projection", 800, 800)
         setup_canvas(cz_genvsreco_full)
-        cz_genvsreco_full.SetRightMargin(0.13)
+        cz_genvsreco_full.SetCanvasSize(900, 800)
+        cz_genvsreco_full.SetLeftMargin(0.12)
+        cz_genvsreco_full.SetRightMargin(0.18)
+        cz_genvsreco_full.SetBottomMargin(0.12)
+        cz_genvsreco_full.SetTopMargin(0.3)
         cz_genvsreco_full.SetLogz()
         setup_histogram(hz_genvsreco_full)
         hz_genvsreco_full.GetZaxis().SetRangeUser(hz_genvsreco_full.GetMinimum(0), hz_genvsreco_full.GetMaximum())
-        hz_genvsreco_full.SetTitle("")
-        hz_genvsreco_full.SetXTitle("%s^{gen}" % self.v_varshape_latex)
-        hz_genvsreco_full.SetYTitle("%s^{rec}" % self.v_varshape_latex)
+        hz_genvsreco_full.GetZaxis().SetTitleOffset(1.5)
+        if self.shape == "nsd":
+            hz_genvsreco_full.GetXaxis().SetNdivisions(5)
+            hz_genvsreco_full.GetYaxis().SetNdivisions(5)
+        hz_genvsreco_full.SetTitle(";%s^{gen};%s^{rec};normalised yield" % (self.v_varshape_latex, self.v_varshape_latex))
         hz_genvsreco_full.Draw("colz")
-        cz_genvsreco_full.SaveAs("%s/response_pr_%s_full.eps" % (self.d_resultsallpdata, self.v_varshape_binning))
+        y_latex = 0.95
+        list_latex = []
+        for text_latex in [self.text_alice, self.text_jets, text_ptjet_full, self.text_ptcut, self.text_sd]:
+            latex = TLatex(self.x_latex, y_latex, text_latex)
+            list_latex.append(latex)
+            draw_latex(latex, textsize=self.fontsize, colour=1)
+            y_latex -= self.y_step
+        cz_genvsreco_full.Update()
+        cz_genvsreco_full.SaveAs("%s/response_pr_%s_full.pdf" % (self.d_resultsallpdata, self.v_varshape_binning))
+        cz_genvsreco_full.SaveAs("%s/%s_resp_pr_full_incl.pdf" % (self.d_resultsallpdata, self.shape))
 
         cjetpt_genvsreco_full = TCanvas("cjetpt_genvsreco_full", "response matrix 2D projection")
         setup_canvas(cjetpt_genvsreco_full)
@@ -477,6 +523,55 @@ class AnalyzerJet(Analyzer):
         hjetpt_genvsreco_full.SetYTitle("#it{p}_{T, jet}^{rec} (GeV/#it{c})")
         hjetpt_genvsreco_full.Draw("colz")
         cjetpt_genvsreco_full.SaveAs("%s/response_pr_%s_full.eps" % (self.d_resultsallpdata, self.v_var2_binning))
+
+        hz_genvsreco_full_real = unfolding_input_file.Get("hz_genvsreco_full_real")
+        if not hz_genvsreco_full_real:
+            self.logger.fatal(make_message_notfound("hz_genvsreco_full_real", self.n_fileresp))
+        hjetpt_genvsreco_full_real = unfolding_input_file.Get("hjetpt_genvsreco_full_real")
+        if not hjetpt_genvsreco_full_real:
+            self.logger.fatal(make_message_notfound("hjetpt_genvsreco_full_real", self.n_fileresp))
+
+        hz_genvsreco_full_real.Scale(1. / hz_genvsreco_full_real.Integral())
+
+        # preliminary figure
+        cz_genvsreco_full_real = TCanvas("cz_genvsreco_full_real", "response matrix 2D projection_real")
+        setup_canvas(cz_genvsreco_full_real)
+        cz_genvsreco_full_real.SetCanvasSize(900, 800)
+        cz_genvsreco_full_real.SetLeftMargin(0.12)
+        cz_genvsreco_full_real.SetRightMargin(0.18)
+        cz_genvsreco_full_real.SetBottomMargin(0.12)
+        cz_genvsreco_full_real.SetTopMargin(0.3)
+        cz_genvsreco_full_real.SetLogz()
+        setup_histogram(hz_genvsreco_full_real)
+        hz_genvsreco_full_real.GetZaxis().SetRangeUser(hz_genvsreco_full_real.GetMinimum(0), hz_genvsreco_full_real.GetMaximum())
+        hz_genvsreco_full_real.GetZaxis().SetTitleOffset(1.5)
+        if self.shape == "nsd":
+            hz_genvsreco_full_real.GetXaxis().SetNdivisions(5)
+            hz_genvsreco_full_real.GetYaxis().SetNdivisions(5)
+        hz_genvsreco_full_real.SetTitle(";%s^{gen};%s^{rec};normalised yield" % (self.v_varshape_latex, self.v_varshape_latex))
+        hz_genvsreco_full_real.Draw("colz")
+        y_latex = 0.95
+        list_latex = []
+        for text_latex in [self.text_alice, self.text_jets, text_ptjet_full, self.text_ptcut, self.text_sd]:
+            latex = TLatex(self.x_latex, y_latex, text_latex)
+            list_latex.append(latex)
+            draw_latex(latex, textsize=self.fontsize, colour=1)
+            y_latex -= self.y_step
+        cz_genvsreco_full_real.Update()
+        cz_genvsreco_full_real.SaveAs("%s/response_pr_%s_full_real.pdf" % (self.d_resultsallpdata, self.v_varshape_binning))
+        cz_genvsreco_full_real.SaveAs("%s/%s_resp_pr_full_real_incl.pdf" % (self.d_resultsallpdata, self.shape))
+
+        cjetpt_genvsreco_full_real = TCanvas("cjetpt_genvsreco_full_real", "response matrix 2D projection_real")
+        setup_canvas(cjetpt_genvsreco_full_real)
+        cjetpt_genvsreco_full_real.SetRightMargin(0.13)
+        cjetpt_genvsreco_full_real.SetLogz()
+        setup_histogram(hjetpt_genvsreco_full_real)
+        hjetpt_genvsreco_full_real.GetZaxis().SetRangeUser(hjetpt_genvsreco_full_real.GetMinimum(0), hjetpt_genvsreco_full_real.GetMaximum())
+        hjetpt_genvsreco_full_real.SetTitle("")
+        hjetpt_genvsreco_full_real.SetXTitle("#it{p}_{T, jet}^{gen} (GeV/#it{c})")
+        hjetpt_genvsreco_full_real.SetYTitle("#it{p}_{T, jet}^{rec} (GeV/#it{c})")
+        hjetpt_genvsreco_full_real.Draw("colz")
+        cjetpt_genvsreco_full_real.SaveAs("%s/response_pr_%s_full_real.eps" % (self.d_resultsallpdata, self.v_var2_binning))
 
         # plot gen. level kinematic efficiency for shape in jet pt bins
 
@@ -659,7 +754,7 @@ class AnalyzerJet(Analyzer):
                 # normalise by the number of jets
 
                 unfolded_z_scaled.Scale(1.0 / unfolded_z_scaled.Integral(bin_int_first, unfolded_z_scaled.FindBin(self.lvarshape_binmin_reco[-1])), "width")
-                
+
                 unfolded_z_scaled.Write("unfolded_z_%d_%s" % (i + 1, suffix))
                 unfolded_z_xsection.Write("unfolded_z_xsection_%d_%s" % (i + 1, suffix))
                 unfolded_z_scaled_list_iter.append(unfolded_z_scaled)
@@ -1584,8 +1679,8 @@ class AnalyzerJet(Analyzer):
             #input_pythia8_z.append(input_pythia8_z_jetpt)
             #input_pythia8_xsection_z.append(input_pythia8_xsection_z_jetpt)
         #file_sim_out.Close()
-        
-        file_sys_out = TFile.Open("%s/systematics_results.root" % self.d_resultsallpdata, "recreate")   
+
+        file_sys_out = TFile.Open("%s/systematics_results.root" % self.d_resultsallpdata, "recreate")
 
         for ibin2 in range(self.p_nbin2_gen):
 
@@ -1700,39 +1795,63 @@ class AnalyzerJet(Analyzer):
 
             # plot the relative systematic uncertainties for all categories together
 
+            text_ptjet_full = self.text_ptjet % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2])
+
+            # preliminary figure
             crelativesys = TCanvas("crelativesys " + suffix, "relative systematic uncertainties" + suffix)
+            gStyle.SetErrorX(0)
             setup_canvas(crelativesys)
-            crelativesys.SetLeftMargin(0.13)
-            leg_relativesys = TLegend(.65, .72, .85, .85, "")
-            setup_legend(leg_relativesys)
+            crelativesys.SetCanvasSize(900, 800)
+            crelativesys.SetBottomMargin(self.margins_can[0])
+            crelativesys.SetLeftMargin(self.margins_can[1])
+            crelativesys.SetTopMargin(self.margins_can[2])
+            crelativesys.SetRightMargin(self.margins_can[3])
+            leg_relativesys = TLegend(.68, .65, .88, .91)
+            setup_legend(leg_relativesys, textsize=self.fontsize)
             y_min_g, y_max_g = get_y_window_gr(tgsys_cat[ibin2])
             y_min_h, y_max_h = get_y_window_his([h_default_stat_err[ibin2]])
             y_min = min(y_min_g, y_min_h)
             y_max = max(y_max_g, y_max_h)
-            y_margin_up = 0.25
+            y_margin_up = 0.38
             y_margin_down = 0.05
+            setup_histogram(h_default_stat_err[ibin2])
+            h_default_stat_err[ibin2].SetMarkerStyle(0)
+            h_default_stat_err[ibin2].SetMarkerSize(0)
+            leg_relativesys.AddEntry(h_default_stat_err[ibin2], "stat. unc.", "E")
             for sys_cat in range(self.n_sys_cat):
-                setup_tgraph(tgsys_cat[ibin2][sys_cat], get_colour(sys_cat + 1))
+                setup_tgraph(tgsys_cat[ibin2][sys_cat], get_colour(sys_cat + 1, 0))
                 tgsys_cat[ibin2][sys_cat].SetTitle("")
+                tgsys_cat[ibin2][sys_cat].SetLineWidth(3)
                 tgsys_cat[ibin2][sys_cat].SetFillStyle(0)
-                tgsys_cat[ibin2][sys_cat].GetYaxis().SetRangeUser(*get_plot_range(y_min_g, y_max_g, y_margin_down, y_margin_up))
+                tgsys_cat[ibin2][sys_cat].GetYaxis().SetRangeUser(*get_plot_range(y_min, y_max, y_margin_down, y_margin_up))
                 tgsys_cat[ibin2][sys_cat].GetXaxis().SetLimits(round(self.lvarshape_binmin_gen[0], 2), round(self.lvarshape_binmax_gen[-1], 2))
+                if self.shape == "nsd":
+                    tgsys_cat[ibin2][sys_cat].GetXaxis().SetNdivisions(5)
+                    shrink_err_x(tgsys_cat[ibin2][sys_cat], 0.2)
                 tgsys_cat[ibin2][sys_cat].GetXaxis().SetTitle(self.v_varshape_latex)
                 tgsys_cat[ibin2][sys_cat].GetYaxis().SetTitle("relative systematic uncertainty")
-                tgsys_cat[ibin2][sys_cat].GetYaxis().SetTitleOffset(1.4)
+                tgsys_cat[ibin2][sys_cat].GetXaxis().SetTitleOffset(self.offsets_axes[0])
+                tgsys_cat[ibin2][sys_cat].GetYaxis().SetTitleOffset(self.offsets_axes[1])
                 leg_relativesys.AddEntry(tgsys_cat[ibin2][sys_cat], self.systematic_catlabels[sys_cat], "F")
                 if sys_cat == 0:
                     tgsys_cat[ibin2][sys_cat].Draw("A2")
                 else:
                     tgsys_cat[ibin2][sys_cat].Draw("2")
-            setup_histogram(h_default_stat_err[ibin2])
             h_default_stat_err[ibin2].Draw("same")
             h_default_stat_err[ibin2].Draw("axissame")
-            latex = TLatex(0.18, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]))
-            draw_latex(latex)
+            # Draw LaTeX
+            y_latex = self.y_latex_top
+            list_latex = []
+            for text_latex in [self.text_alice, self.text_jets, text_ptjet_full, self.text_ptcut, self.text_sd]:
+                latex = TLatex(self.x_latex, y_latex, text_latex)
+                list_latex.append(latex)
+                draw_latex(latex, textsize=self.fontsize)
+                y_latex -= self.y_step
             leg_relativesys.Draw("same")
             crelativesys.SaveAs("%s/sys_unc_%s.eps" % (self.d_resultsallpdata, suffix))
-            crelativesys.SaveAs("%s/sys_unc_%s.pdf" % (self.d_resultsallpdata, suffix))
+            if ibin2 == 1:
+                crelativesys.SaveAs("%s/%s_sys_unc_%s_incl.pdf" % (self.d_resultsallpdata, self.shape, suffix))
+            gStyle.SetErrorX(0.5)
 
         # plot the feed-down fraction with systematic uncertainties from POWHEG
 
@@ -1809,6 +1928,3 @@ class AnalyzerJet(Analyzer):
             ##draw_latex(latex7)
             #cfeeddown_fraction.SaveAs("%s/feeddown_fraction_var_%s.eps" % (self.d_resultsallpdata, suffix_plot))
             #cfeeddown_fraction.SaveAs("%s/feeddown_fraction_var_%s.pdf" % (self.d_resultsallpdata, suffix_plot))
-
-   
-

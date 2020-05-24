@@ -33,7 +33,7 @@ from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 from machine_learning_hep.utilities import selectdfquery, merge_method
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
-from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
+from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile, selectdfrunlist
 from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.utilities import get_timestamp_string
 from machine_learning_hep.models import apply # pylint: disable=import-error
@@ -194,7 +194,7 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
         dfreco["nsd_jet"] = c_new
         if self.mcordata == "mc":
             listnsd_old_genmatched = dfreco["nsd_gen_jet"].values
-            dfreco["nsd_gen_jet_orig"] = listnsd_old_genmatched 
+            dfreco["nsd_gen_jet_orig"] = listnsd_old_genmatched
             c_new_genmatched = [0 if nsd_old < 0 else nsd_old for nsd_old in listnsd_old_genmatched]
             dfreco = dfreco.drop(["nsd_gen_jet"], axis=1)
             dfreco["nsd_gen_jet"] = c_new_genmatched
@@ -247,9 +247,9 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
             df = df.query(self.s_jetsel_reco)
         if self.s_trigger is not None:
             df = df.query(self.s_trigger)
-        if self.runlistrigger is not None:
-            df = selectdfrunlist(df, \
-                self.run_param[self.runlistrigger], "run_number")
+        #if self.runlistrigger is not None:
+        #    df = selectdfrunlist(df, \
+        #        self.run_param[self.runlistrigger], "run_number")
         h_jetptvsshape = TH2F("h_jetptvsshape", "", \
             self.p_nbinshape_reco, self.varshapebinarray_reco,
             len(self.lvar2_binmin_reco), self.var2binarray_reco)
@@ -296,9 +296,9 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
         df_mc_reco = pickle.load(openfile(self.l_reco[index], "rb"))
 
         # selection on gen
-        if self.runlistrigger is not None:
-            df_mc_gen = selectdfrunlist(df_mc_gen, \
-                self.run_param[self.runlistrigger], "run_number")
+        #if self.runlistrigger is not None:
+        #    df_mc_gen = selectdfrunlist(df_mc_gen, \
+        #        self.run_param[self.runlistrigger], "run_number")
         # selection on reco
         if self.s_evtsel is not None:
             df_mc_reco = df_mc_reco.query(self.s_evtsel)
@@ -308,9 +308,9 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
             df_mc_reco = df_mc_reco.query(self.s_jetsel_gen_matched)
         if self.s_trigger is not None:
             df_mc_reco = df_mc_reco.query(self.s_trigger)
-        if self.runlistrigger is not None:
-            df_mc_reco = selectdfrunlist(df_mc_reco, \
-                self.run_param[self.runlistrigger], "run_number")
+        #if self.runlistrigger is not None:
+        #    df_mc_reco = selectdfrunlist(df_mc_reco, \
+        #        self.run_param[self.runlistrigger], "run_number")
         for ibin2 in range(self.p_nbin2_gen):
             suffix = "%s_%.2f_%.2f" % \
                 (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
@@ -397,22 +397,39 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
         hjetpt_gen_nocuts_pr.Write()
         hjetpt_gen_cuts_pr.Write()
 
+        # histograms for unfolding
+
         hjetpt_genvsreco_full_pr = \
             TH2F("hjetpt_genvsreco_full", "hjetpt_genvsreco_full", \
             self.p_nbin2_gen * 100, self.lvar2_binmin_gen[0], self.lvar2_binmax_gen[-1], \
             self.p_nbin2_reco * 100, self.lvar2_binmin_reco[0], self.lvar2_binmax_reco[-1])
 
+        hjetpt_genvsreco_full_pr_real = \
+            buildhisto("hjetpt_genvsreco_full_real", "hjetpt_genvsreco_full_real", \
+            self.var2binarray_gen, self.var2binarray_reco)
+
         hz_genvsreco_full_pr = \
             TH2F("hz_genvsreco_full", "hz_genvsreco_full", \
                  self.p_nbinshape_gen * 100, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1],
                  self.p_nbinshape_reco * 100, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
+
+        hz_genvsreco_full_pr_real = \
+            buildhisto("hz_genvsreco_full_real", "hz_genvsreco_full_real", \
+            self.varshapebinarray_gen, self.varshapebinarray_reco)
+
         fill2dhist(df_tmp_selrecogen_pr, hjetpt_genvsreco_full_pr, "pt_gen_jet", "pt_jet")
-        hjetpt_genvsreco_full_pr.Scale(1.0 / hjetpt_genvsreco_full_pr.Integral(1, -1, 1, -1))
+        hjetpt_genvsreco_full_pr.Scale(1.0 / hjetpt_genvsreco_full_pr.Integral())
         hjetpt_genvsreco_full_pr.Write()
         fill2dhist(df_tmp_selrecogen_pr, hz_genvsreco_full_pr, self.v_varshape_binning_gen, self.v_varshape_binning)
-        hz_genvsreco_full_pr.Scale(1.0 / hz_genvsreco_full_pr.Integral(1, -1, 1, -1))
+        hz_genvsreco_full_pr.Scale(1.0 / hz_genvsreco_full_pr.Integral())
         hz_genvsreco_full_pr.Write()
 
+        fill2dhist(df_tmp_selrecogen_pr, hjetpt_genvsreco_full_pr_real, "pt_gen_jet", "pt_jet")
+        hjetpt_genvsreco_full_pr_real.Scale(1.0 / hjetpt_genvsreco_full_pr_real.Integral())
+        hjetpt_genvsreco_full_pr_real.Write()
+        fill2dhist(df_tmp_selrecogen_pr, hz_genvsreco_full_pr_real, self.v_varshape_binning_gen, self.v_varshape_binning)
+        hz_genvsreco_full_pr_real.Scale(1.0 / hz_genvsreco_full_pr_real.Integral())
+        hz_genvsreco_full_pr_real.Write()
 
         hzvsjetpt_prior_weights = build2dhisto("hzvsjetpt_prior_weights", \
             self.varshapebinarray_gen, self.var2binarray_gen)

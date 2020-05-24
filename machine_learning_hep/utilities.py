@@ -517,31 +517,55 @@ def get_y_window_his(l_his: list, with_errors=True):
             y_max = max(y_max, cont + err)
     return y_min, y_max
 
-def get_colour(i: int):
+def get_colour(i: int, scheme=1):
     '''Return a colour from the list.'''
     colours = [kBlack, kBlue, kRed, kGreen + 1, kOrange + 1, kMagenta, kCyan + 1, kGray + 1, \
         kBlue + 2, kRed - 3, kGreen + 3, kYellow  + 1, kMagenta + 1, kCyan + 2, kRed + 3]
-    return colours[i % len(colours)]
+    colours_alice_point = [kBlack,    kBlue + 1, kRed + 1,  kGreen + 3, kMagenta + 2, kOrange + 4, kCyan + 2, kYellow + 2]
+    colours_alice_syst =  [kGray + 1, kBlue - 7, kRed - 7, kGreen - 6, kMagenta - 4, kOrange - 3, kCyan - 6, kYellow - 7]
+    if scheme == 1:
+        list_col = colours_alice_point
+    elif scheme == 2:
+        list_col = colours_alice_syst
+    else:
+        list_col = colours
+    return list_col[i % len(list_col)]
 
-def get_marker(i: int, full=False):
+def get_marker(i: int, option=0):
     '''Return a marker from the list.'''
-    markers_open = [kOpenCircle, kOpenSquare, kOpenCross, kOpenDiamond, kOpenStar,
-                    kOpenThreeTriangles, kOpenFourTrianglesX, kOpenDoubleDiamond,
-                    kOpenFourTrianglesPlus, kOpenCrossX]
-    markers_full = [kFullCircle, kFullSquare, kFullCross, kFullDiamond, kFullStar,
-                    kFullThreeTriangles, kFullFourTrianglesX, kFullDoubleDiamond,
-                    kFullFourTrianglesPlus, kFullCrossX]
-    if full:
-        return markers_full[i % len(markers_full)]
-    return markers_open[i % len(markers_open)]
+    markers_open = [kOpenCircle, kOpenSquare, kOpenCross, kOpenDiamond, kOpenCrossX,
+                    kOpenFourTrianglesPlus, kOpenStar,
+                    kOpenThreeTriangles, kOpenFourTrianglesX, kOpenDoubleDiamond]
+    markers_full = [kFullCircle, kFullSquare, kFullCross, kFullDiamond, kFullCrossX,
+                    kFullFourTrianglesPlus, kFullStar,
+                    kFullThreeTriangles, kFullFourTrianglesX, kFullDoubleDiamond]
+    markers_thick = [88, 72, 75, 74, 76, 80, 82, 83, 84, 85]
+    if option == 1:
+        list_markers = markers_thick
+    elif option == 2:
+        list_markers = markers_full
+    else:
+        list_markers = markers_open
+    return list_markers[i % len(list_markers)]
+
+def get_markersize(marker: int, size_def=1.5):
+    '''Return a marker size.'''
+    markers_small = [kOpenCross, kOpenDiamond, kOpenStar, kOpenDoubleDiamond,
+                     kOpenFourTrianglesPlus, kOpenCrossX,
+                     kFullCross, kFullDiamond, kFullStar, kFullDoubleDiamond,
+                     kFullFourTrianglesPlus, kFullCrossX,
+                     75, 74, 76, 83, 84, 85]
+    if marker in markers_small:
+        return size_def * 4 / 3
+    return size_def
 
 def setup_histogram(hist, colour=1, markerstyle=kOpenCircle, size=1.5):
     hist.SetStats(0)
-    hist.SetTitleSize(0.04, "X")
+    hist.SetTitleSize(0.05, "X")
     hist.SetTitleOffset(1.0, "X")
-    hist.SetTitleSize(0.04, "Y")
+    hist.SetTitleSize(0.05, "Y")
     hist.SetTitleOffset(1.0, "Y")
-    hist.SetLineWidth(2)
+    hist.SetLineWidth(3)
     hist.SetLineColor(colour)
     hist.SetMarkerSize(size)
     hist.SetMarkerStyle(markerstyle)
@@ -561,13 +585,13 @@ def setup_legend(legend, textsize=0.03):
     legend.SetTextSize(textsize)
     legend.SetTextFont(42)
 
-def setup_tgraph(tg_, colour=1, markerstyle=kOpenCircle, size=1.5, alphastyle=0.3, fillstyle=1001):
-    tg_.GetXaxis().SetTitleSize(0.04)
+def setup_tgraph(tg_, colour=1, markerstyle=kOpenCircle, size=1.5, alphastyle=0.8, fillstyle=1001, textsize=0.05):
+    tg_.GetXaxis().SetTitleSize(textsize)
     tg_.GetXaxis().SetTitleOffset(1.0)
-    tg_.GetYaxis().SetTitleSize(0.04)
+    tg_.GetYaxis().SetTitleSize(textsize)
     tg_.GetYaxis().SetTitleOffset(1.0)
     tg_.SetFillColorAlpha(colour, alphastyle)
-    tg_.SetLineWidth(2)
+    tg_.SetLineWidth(0)
     tg_.SetLineColor(colour)
     tg_.SetFillStyle(fillstyle)
     tg_.SetMarkerSize(size)
@@ -584,7 +608,7 @@ def draw_latex(latex, colour=1, textsize=0.03):
 def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None, # pylint: disable=too-many-arguments, too-many-branches, too-many-statements, too-many-locals
               list_obj=None, labels_obj=None,
               leg_pos=None, opt_leg_h="P", opt_leg_g="P", opt_plot_h="", opt_plot_g="P0",
-              offsets_xy=None, maxdigits=3, colours=None, markers=None,
+              offsets_xy=None, maxdigits=3, colours=None, markers=None, sizes=None,
               range_x=None, margins_y=None, with_errors="xy", logscale=None):
     """
     Make a plot with objects from a list (list_obj).
@@ -612,7 +636,7 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
     - legend position (leg_pos), (format: [x_min, y_min, x_max, y_max])
     - labels of legend entries (labels_obj)
     - styles of legend entries (opt_leg_h, opt_leg_g), (format: see TLegend::AddEntry)
-    - colours and markers (colours, markers), (format: list of numbers or named values)
+    - colours, markers, sizes (colours, markers, sizes), (format: list of numbers or named values)
     - canvas margins (margins_c), (format: [bottom, left, top, right])
     - offsets of axis titles (offsets_xy), (format: [x, y])
     - maximum number of digits of the axis labels (maxdigits)
@@ -640,8 +664,14 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
             return markers[i % len(markers)]
         return get_marker(i)
 
+    def get_my_size(i: int):
+        if sizes and isinstance(sizes, list) and len(sizes) > 0:
+            return sizes[i % len(sizes)]
+        return get_markersize(get_my_marker(i))
+
     def plot_graph(graph):
-        setup_tgraph(graph, get_my_colour(counter_plot), get_my_marker(counter_plot))
+        setup_tgraph(graph, get_my_colour(counter_plot), get_my_marker(counter_plot),
+                     get_my_size(counter_plot))
         graph.SetTitle(title)
         graph.GetXaxis().SetLimits(x_min_plot, x_max_plot)
         graph.GetYaxis().SetRangeUser(y_min_plot, y_max_plot)
@@ -650,7 +680,7 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
         if offsets_xy:
             graph.GetXaxis().SetTitleOffset(offsets_xy[0])
             graph.GetYaxis().SetTitleOffset(offsets_xy[1])
-        if leg and n_labels > counter_plot:
+        if leg and n_labels > counter_plot and len(labels_obj[counter_plot]) > 0:
             leg.AddEntry(graph, labels_obj[counter_plot], opt_leg_g)
         graph.Draw(opt_plot_g + "A" if counter_plot == 0 else opt_plot_g)
 
@@ -658,6 +688,7 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
         # If nothing has been plotted yet, plot an empty graph to set the exact ranges.
         if counter_plot == 0:
             gr = TGraph(histogram)
+            setup_tgraph(gr)
             gr.SetMarkerSize(0)
             gr.SetTitle(title)
             gr.GetXaxis().SetLimits(x_min_plot, x_max_plot)
@@ -669,8 +700,9 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
                 gr.GetYaxis().SetTitleOffset(offsets_xy[1])
             gr.Draw("AP")
             list_new.append(gr)
-        setup_histogram(histogram, get_my_colour(counter_plot), get_my_marker(counter_plot))
-        if leg and n_labels > counter_plot:
+        setup_histogram(histogram, get_my_colour(counter_plot), get_my_marker(counter_plot),
+                        get_my_size(counter_plot))
+        if leg and n_labels > counter_plot and len(labels_obj[counter_plot]) > 0:
             leg.AddEntry(histogram, labels_obj[counter_plot], opt_leg_h)
         histogram.Draw(opt_plot_h)
 
@@ -792,6 +824,9 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
             obj.Draw()
         else:
             continue
+
+    # plot axes on top
+    can.RedrawAxis()
 
     # plot legend
     if leg:
