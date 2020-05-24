@@ -74,7 +74,7 @@ categories:
     sideband:
         activate: yes
         processor: false
-        label: "side bands"
+        label: "side band sub."
         correlation: "corr"
         rms: true
         symmetrise: true
@@ -175,7 +175,7 @@ categories:
     normalisation:
         activate: yes
         processor: false
-        label: "normalisation"
+        label: "#it{#sigma}_{MB}"
         correlation: "corr"
         rms: true
         symmetrise: true
@@ -191,7 +191,7 @@ categories:
     tracking:
         activate: yes
         processor: true
-        label: "tracking"
+        label: "tracking eff."
         correlation: "corr"
         rms: true
         symmetrise: true
@@ -294,7 +294,7 @@ categories:
     cuts:
         activate: yes
         processor: true
-        label: "cuts"
+        label: "topol. cuts"
         correlation: "corr"
         rms: true
         symmetrise: true

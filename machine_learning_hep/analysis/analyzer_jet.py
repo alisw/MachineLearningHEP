@@ -39,6 +39,11 @@ from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.utilities import seldf_singlevar
 from machine_learning_hep.processerdhadrons_jet import adjust_nsd
 
+def shrink_err_x(graph, width=0.1):
+    for i in range(graph.GetN()):
+        graph.SetPointEXlow(i, width)
+        graph.SetPointEXhigh(i, width)
+
 # pylint: disable=too-many-instance-attributes, too-many-statements
 class AnalyzerJet(Analyzer):
     species = "analyzer"
@@ -247,6 +252,30 @@ class AnalyzerJet(Analyzer):
         self.file_feeddown = os.path.join(self.d_resultsallpdata, "feeddown.root")
         self.file_unfold = os.path.join(self.d_resultsallpdata, "unfolding_results.root")
         self.file_unfold_closure = os.path.join(self.d_resultsallpdata, "unfolding_closure.root")
+
+        # official figures
+        self.shape = typean[len("jet_"):]
+        self.size_can = [800, 800]
+        self.offsets_axes = [0.8, 1.1]
+        self.margins_can = [0.1, 0.13, 0.05, 0.03]
+        self.fontsize = 0.035
+        self.opt_leg_g = "FP" # for systematic uncertanties in the legend
+        self.opt_plot_g = "2"
+        self.x_latex = 0.16
+        self.y_latex_top = 0.88
+        self.y_step = 0.055
+        # axes titles
+        self.title_x = self.v_varshape_latex
+        self.title_y = "(1/#it{N}_{jet}) d#it{N}/d%s" % self.v_varshape_latex
+        self.title_full = ";%s;%s" % (self.title_x, self.title_y)
+        self.title_full_ratio = ";%s;data/MC: ratio of %s" % (self.title_x, self.title_y)
+        # text
+        self.text_alice = "#bf{ALICE} Preliminary, pp, #sqrt{#it{s}} = 13 TeV"
+        self.text_jets = "%s-tagged charged jets, anti-#it{k}_{T}, #it{R} = 0.4" % self.p_latexnhadron
+        self.text_ptjet = "%g #leq %s < %g GeV/#it{c}, #left|#it{#eta}_{jet}#right| #leq 0.5"
+        self.text_pth = "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, #left|#it{y}_{%s}#right| #leq 0.8"
+        self.text_sd = "Soft Drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)"
+        self.text_acc_h = "#left|#it{y}_{%s}#right| #leq 0.8" % self.p_latexnhadron
 
     def fit(self):
         self.loadstyle()
@@ -1091,6 +1120,42 @@ class AnalyzerJet(Analyzer):
                 csigbkgsubz.SaveAs("%s/side_band_sub_%s.eps" % \
                     (self.d_resultsallpdata, suffix_plot))
 
+                # preliminary figure
+                if ibin2 in [1] and ipt in [4, 5]:
+                    text_ptjet_full = self.text_ptjet % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2])
+                    text_pth_full = self.text_pth % (self.lpt_finbinmin[ipt], self.p_latexnhadron, min(self.lpt_finbinmax[ipt], self.lvar2_binmax_reco[ibin2]), self.p_latexnhadron)
+                    if self.shape == "zg":
+                        leg_pos = [.15, .15, .30, .30]
+                    elif self.shape == "rg":
+                        leg_pos = [.65, .12, .85, .27]
+                    elif self.shape == "nsd":
+                        leg_pos = [.35, .12, .55, .27]
+                    else:
+                        leg_pos = [.68, .72, .85, .85]
+                    list_obj = [hzsig, hzbkg_scaled, hzsub_noteffscaled]
+                    labels_obj = ["signal region", "side band region", "after subtraction"]
+                    colours = [get_colour(i) for i in [1, 2, 3]]
+                    markers = [get_marker(i) for i in [0, 1, 2]]
+                    y_margin_up = 0.4
+                    y_margin_down = 0.05
+                    c_sb_sub, list_obj_new = make_plot("c_sb_sub_" + suffix, size=self.size_can, \
+                        list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=self.opt_leg_g, opt_plot_g=self.opt_plot_g, offsets_xy=self.offsets_axes, \
+                        colours=colours, markers=markers, leg_pos=leg_pos, margins_y=[y_margin_down, y_margin_up], margins_c=self.margins_can, \
+                        title=";%s;yield" % self.title_x, logscale="y")
+                    list_obj_new[0].SetTextSize(self.fontsize)
+                    if self.shape == "nsd":
+                        list_obj_new[1].GetXaxis().SetNdivisions(5)
+                    # Draw LaTeX
+                    y_latex = self.y_latex_top
+                    list_latex = []
+                    for text_latex in [self.text_alice, self.text_jets, text_ptjet_full, text_pth_full, self.text_sd]:
+                        latex = TLatex(self.x_latex, y_latex, text_latex)
+                        list_latex.append(latex)
+                        draw_latex(latex, textsize=self.fontsize)
+                        y_latex -= self.y_step
+                    c_sb_sub.Update()
+                    c_sb_sub.SaveAs("%s/%s_sb_sub_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix_plot))
+
             suffix = "%s_%g_%g" % \
                          (self.v_var2_binning, self.lvar2_binmin_reco[ibin2],
                           self.lvar2_binmax_reco[ibin2])
@@ -1427,6 +1492,31 @@ class AnalyzerJet(Analyzer):
             latex6 = TLatex(0.15, 0.58, "#left|#it{#eta}_{jet}#right| #leq 0.5")
             draw_latex(latex6)
             ceff.SaveAs("%s/efficiency_pr_fd_%s.eps" % (self.d_resultsallpdata, suffix_plot))
+
+            # preliminary figure
+            if ibin2 in [1]:
+                leg_pos = [.7, .15, .85, .30]
+                list_obj = [heff_pr_list[ibin2], heff_fd_list[ibin2]]
+                labels_obj = ["prompt", "non-prompt"]
+                colours = [get_colour(i) for i in [1, 2]]
+                markers = [get_marker(i) for i in [0, 1]]
+                y_margin_up = 0.3
+                y_margin_down = 0.05
+                c_eff_both, list_obj_new = make_plot("c_eff_both_" + suffix, size=self.size_can, \
+                    list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=self.opt_leg_g, opt_plot_g=self.opt_plot_g, offsets_xy=[1, 1.1], \
+                    colours=colours, markers=markers, leg_pos=leg_pos, margins_y=[y_margin_down, y_margin_up], margins_c=[0.12, 0.13, 0.05, 0.03], \
+                    title=";#it{p}_{T}^{%s} (GeV/#it{c});reconstruction efficiency" % self.p_latexnhadron)
+                list_obj_new[0].SetTextSize(self.fontsize)
+                # Draw LaTeX
+                y_latex = self.y_latex_top
+                list_latex = []
+                for text_latex in [self.text_alice, "%s #rightarrow %s (and charge conj.)" % (self.p_latexnhadron, self.p_latexndecay), self.text_acc_h]:
+                    latex = TLatex(self.x_latex, y_latex, text_latex)
+                    list_latex.append(latex)
+                    draw_latex(latex, textsize=self.fontsize)
+                    y_latex -= self.y_step
+                c_eff_both.Update()
+                c_eff_both.SaveAs("%s/%s_eff_pr_fd_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix_plot))
 
         # plot relative jet pt shift
 
@@ -1961,17 +2051,37 @@ class AnalyzerJet(Analyzer):
         if not hjetpt_genvsreco_full:
             self.logger.fatal(make_message_notfound("hjetpt_genvsreco_full", self.n_fileresp))
 
-        cz_genvsreco_full = TCanvas("cz_genvsreco_full", "response matrix 2D projection")
+        hz_genvsreco_full.Scale(1. / hz_genvsreco_full.Integral())
+
+        # preliminary figure
+        text_ptjet_full = self.text_ptjet % (self.lvar2_binmin_reco[0], self.p_latexbin2var, self.lvar2_binmax_reco[-1])
+        text_pth_full = self.text_pth % (self.lpt_finbinmin[0], self.p_latexnhadron, self.lpt_finbinmax[-1], self.p_latexnhadron)
+        cz_genvsreco_full = TCanvas("cz_genvsreco_full", "response matrix 2D projection", 800, 800)
         setup_canvas(cz_genvsreco_full)
-        cz_genvsreco_full.SetRightMargin(0.13)
+        cz_genvsreco_full.SetCanvasSize(900, 800)
+        cz_genvsreco_full.SetLeftMargin(0.12)
+        cz_genvsreco_full.SetRightMargin(0.18)
+        cz_genvsreco_full.SetBottomMargin(0.12)
+        cz_genvsreco_full.SetTopMargin(0.3)
         cz_genvsreco_full.SetLogz()
         setup_histogram(hz_genvsreco_full)
         hz_genvsreco_full.GetZaxis().SetRangeUser(hz_genvsreco_full.GetMinimum(0), hz_genvsreco_full.GetMaximum())
-        hz_genvsreco_full.SetTitle("")
-        hz_genvsreco_full.SetXTitle("%s^{gen}" % self.v_varshape_latex)
-        hz_genvsreco_full.SetYTitle("%s^{rec}" % self.v_varshape_latex)
+        hz_genvsreco_full.GetZaxis().SetTitleOffset(1.5)
+        if self.shape == "nsd":
+            hz_genvsreco_full.GetXaxis().SetNdivisions(5)
+            hz_genvsreco_full.GetYaxis().SetNdivisions(5)
+        hz_genvsreco_full.SetTitle(";%s^{gen};%s^{rec};normalised yield" % (self.v_varshape_latex, self.v_varshape_latex))
         hz_genvsreco_full.Draw("colz")
-        cz_genvsreco_full.SaveAs("%s/response_pr_%s_full.eps" % (self.d_resultsallpdata, self.v_varshape_binning))
+        y_latex = 0.95
+        list_latex = []
+        for text_latex in [self.text_alice, self.text_jets, text_ptjet_full, text_pth_full, self.text_sd]:
+            latex = TLatex(self.x_latex, y_latex, text_latex)
+            list_latex.append(latex)
+            draw_latex(latex, textsize=self.fontsize, colour=1)
+            y_latex -= self.y_step
+        cz_genvsreco_full.Update()
+        cz_genvsreco_full.SaveAs("%s/response_pr_%s_full.pdf" % (self.d_resultsallpdata, self.v_varshape_binning))
+        cz_genvsreco_full.SaveAs("%s/%s_resp_pr_full.pdf" % (self.d_resultsallpdata, self.shape))
 
         cjetpt_genvsreco_full = TCanvas("cjetpt_genvsreco_full", "response matrix 2D projection")
         setup_canvas(cjetpt_genvsreco_full)
@@ -1992,17 +2102,35 @@ class AnalyzerJet(Analyzer):
         if not hjetpt_genvsreco_full_real:
             self.logger.fatal(make_message_notfound("hjetpt_genvsreco_full_real", self.n_fileresp))
 
+        hz_genvsreco_full_real.Scale(1. / hz_genvsreco_full_real.Integral())
+
+        # preliminary figure
         cz_genvsreco_full_real = TCanvas("cz_genvsreco_full_real", "response matrix 2D projection_real")
         setup_canvas(cz_genvsreco_full_real)
-        cz_genvsreco_full_real.SetRightMargin(0.13)
+        cz_genvsreco_full_real.SetCanvasSize(900, 800)
+        cz_genvsreco_full_real.SetLeftMargin(0.12)
+        cz_genvsreco_full_real.SetRightMargin(0.18)
+        cz_genvsreco_full_real.SetBottomMargin(0.12)
+        cz_genvsreco_full_real.SetTopMargin(0.3)
         cz_genvsreco_full_real.SetLogz()
         setup_histogram(hz_genvsreco_full_real)
         hz_genvsreco_full_real.GetZaxis().SetRangeUser(hz_genvsreco_full_real.GetMinimum(0), hz_genvsreco_full_real.GetMaximum())
-        hz_genvsreco_full_real.SetTitle("")
-        hz_genvsreco_full_real.SetXTitle("%s^{gen}" % self.v_varshape_latex)
-        hz_genvsreco_full_real.SetYTitle("%s^{rec}" % self.v_varshape_latex)
+        hz_genvsreco_full_real.GetZaxis().SetTitleOffset(1.5)
+        if self.shape == "nsd":
+            hz_genvsreco_full_real.GetXaxis().SetNdivisions(5)
+            hz_genvsreco_full_real.GetYaxis().SetNdivisions(5)
+        hz_genvsreco_full_real.SetTitle(";%s^{gen};%s^{rec};normalised yield" % (self.v_varshape_latex, self.v_varshape_latex))
         hz_genvsreco_full_real.Draw("colz")
-        cz_genvsreco_full_real.SaveAs("%s/response_pr_%s_full_real.eps" % (self.d_resultsallpdata, self.v_varshape_binning))
+        y_latex = 0.95
+        list_latex = []
+        for text_latex in [self.text_alice, self.text_jets, text_ptjet_full, text_pth_full, self.text_sd]:
+            latex = TLatex(self.x_latex, y_latex, text_latex)
+            list_latex.append(latex)
+            draw_latex(latex, textsize=self.fontsize, colour=1)
+            y_latex -= self.y_step
+        cz_genvsreco_full_real.Update()
+        cz_genvsreco_full_real.SaveAs("%s/response_pr_%s_full_real.pdf" % (self.d_resultsallpdata, self.v_varshape_binning))
+        cz_genvsreco_full_real.SaveAs("%s/%s_resp_pr_full_real.pdf" % (self.d_resultsallpdata, self.shape))
 
         cjetpt_genvsreco_full_real = TCanvas("cjetpt_genvsreco_full_real", "response matrix 2D projection_real")
         setup_canvas(cjetpt_genvsreco_full_real)
@@ -3130,7 +3258,7 @@ class AnalyzerJet(Analyzer):
             leg_finalwsys = TLegend(.7, .75, .85, .85)
             setup_legend(leg_finalwsys)
             leg_finalwsys.AddEntry(input_histograms_default[ibin2], "data", "P")
-            setup_histogram(input_histograms_default[ibin2], get_colour(0))
+            setup_histogram(input_histograms_default[ibin2], get_colour(0, 0))
             y_min_g, y_max_g = get_y_window_gr([tgsys[ibin2]])
             y_min_h, y_max_h = get_y_window_his([input_histograms_default[ibin2]])
             y_min = min(y_min_g, y_min_h)
@@ -3143,7 +3271,7 @@ class AnalyzerJet(Analyzer):
             input_histograms_default[ibin2].SetXTitle(self.v_varshape_latex)
             input_histograms_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
             input_histograms_default[ibin2].Draw("")
-            setup_tgraph(tgsys[ibin2], get_colour(7))
+            setup_tgraph(tgsys[ibin2], get_colour(7, 0))
             tgsys[ibin2].Draw("5")
             leg_finalwsys.AddEntry(tgsys[ibin2], "syst. unc.", "F")
             input_histograms_default[ibin2].Draw("AXISSAME")
@@ -3190,10 +3318,10 @@ class AnalyzerJet(Analyzer):
             input_histograms_default[ibin2].SetXTitle(self.v_varshape_latex)
             input_histograms_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
             input_histograms_default[ibin2].Draw()
-            setup_tgraph(tgsys[ibin2], get_colour(7))
+            setup_tgraph(tgsys[ibin2], get_colour(7, 0))
             tgsys[ibin2].Draw("5")
             leg_finalwsys_wmodels.AddEntry(tgsys[ibin2], "syst. unc.", "F")
-            setup_histogram(input_powheg_z[ibin2], get_colour(1), get_marker(1))
+            setup_histogram(input_powheg_z[ibin2], get_colour(1, 0), get_marker(1))
             leg_finalwsys_wmodels.AddEntry(input_powheg_z[ibin2], "POWHEG #plus PYTHIA 6", "P")
             input_powheg_z[ibin2].Draw("same")
             setup_tgraph(tg_powheg[ibin2], get_colour(1))
@@ -3239,8 +3367,8 @@ class AnalyzerJet(Analyzer):
 
             list_obj = [input_histograms_default[ibin2], tgsys[ibin2], input_powheg_z[ibin2], tg_powheg[ibin2]]
             labels_obj = ["data", "syst. unc.", "POWHEG #plus PYTHIA 6", ""]
-            colours = [get_colour(i) for i in (0, 7, 1, 1)]
-            markers = [get_marker(i) for i in (0, 7, 1, 1)]
+            colours = [get_colour(i, 0) for i in (0, 7, 1, 1)]
+            markers = [get_marker(i) for i in (0, 0, 1, 1)]
             for i_pythia8 in range(len(self.pythia8_prompt_variations)):
                 list_obj.append(input_pythia8_z[i_pythia8][ibin2])
                 labels_obj.append(self.pythia8_prompt_variations_legend[i_pythia8])
@@ -3258,39 +3386,64 @@ class AnalyzerJet(Analyzer):
 
             # plot the relative systematic uncertainties for all categories together
 
+            text_ptjet_full = self.text_ptjet % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2])
+            text_pth_full = self.text_pth % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2]), self.p_latexnhadron)
+
+            # preliminary figure
             crelativesys = TCanvas("crelativesys " + suffix, "relative systematic uncertainties" + suffix)
+            gStyle.SetErrorX(0)
             setup_canvas(crelativesys)
-            crelativesys.SetLeftMargin(0.13)
-            leg_relativesys = TLegend(.65, .66, .86, .86, "")
-            setup_legend(leg_relativesys)
+            crelativesys.SetCanvasSize(900, 800)
+            crelativesys.SetBottomMargin(self.margins_can[0])
+            crelativesys.SetLeftMargin(self.margins_can[1])
+            crelativesys.SetTopMargin(self.margins_can[2])
+            crelativesys.SetRightMargin(self.margins_can[3])
+            leg_relativesys = TLegend(.68, .6, .88, .91)
+            setup_legend(leg_relativesys, textsize=self.fontsize)
             y_min_g, y_max_g = get_y_window_gr(tgsys_cat[ibin2])
             y_min_h, y_max_h = get_y_window_his([h_default_stat_err[ibin2]])
             y_min = min(y_min_g, y_min_h)
             y_max = max(y_max_g, y_max_h)
-            y_margin_up = 0.32
+            y_margin_up = 0.42
             y_margin_down = 0.05
+            setup_histogram(h_default_stat_err[ibin2])
+            h_default_stat_err[ibin2].SetMarkerStyle(0)
+            h_default_stat_err[ibin2].SetMarkerSize(0)
+            leg_relativesys.AddEntry(h_default_stat_err[ibin2], "stat. unc.", "E")
             for sys_cat in range(self.n_sys_cat):
-                setup_tgraph(tgsys_cat[ibin2][sys_cat], get_colour(sys_cat + 1))
+                setup_tgraph(tgsys_cat[ibin2][sys_cat], get_colour(sys_cat + 1, 0))
                 tgsys_cat[ibin2][sys_cat].SetTitle("")
+                tgsys_cat[ibin2][sys_cat].SetLineWidth(3)
                 tgsys_cat[ibin2][sys_cat].SetFillStyle(0)
-                tgsys_cat[ibin2][sys_cat].GetYaxis().SetRangeUser(*get_plot_range(y_min_g, y_max_g, y_margin_down, y_margin_up))
+                tgsys_cat[ibin2][sys_cat].GetYaxis().SetRangeUser(*get_plot_range(y_min, y_max, y_margin_down, y_margin_up))
                 tgsys_cat[ibin2][sys_cat].GetXaxis().SetLimits(round(self.lvarshape_binmin_gen[0], 2), round(self.lvarshape_binmax_gen[-1], 2))
+                if self.shape == "nsd":
+                    tgsys_cat[ibin2][sys_cat].GetXaxis().SetNdivisions(5)
+                    shrink_err_x(tgsys_cat[ibin2][sys_cat], 0.2)
                 tgsys_cat[ibin2][sys_cat].GetXaxis().SetTitle(self.v_varshape_latex)
                 tgsys_cat[ibin2][sys_cat].GetYaxis().SetTitle("relative systematic uncertainty")
-                tgsys_cat[ibin2][sys_cat].GetYaxis().SetTitleOffset(1.4)
+                tgsys_cat[ibin2][sys_cat].GetXaxis().SetTitleOffset(self.offsets_axes[0])
+                tgsys_cat[ibin2][sys_cat].GetYaxis().SetTitleOffset(self.offsets_axes[1])
                 leg_relativesys.AddEntry(tgsys_cat[ibin2][sys_cat], self.systematic_catlabels[sys_cat], "F")
                 if sys_cat == 0:
                     tgsys_cat[ibin2][sys_cat].Draw("A2")
                 else:
                     tgsys_cat[ibin2][sys_cat].Draw("2")
-            setup_histogram(h_default_stat_err[ibin2])
             h_default_stat_err[ibin2].Draw("same")
             h_default_stat_err[ibin2].Draw("axissame")
-            latex = TLatex(0.18, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]))
-            draw_latex(latex)
+            # Draw LaTeX
+            y_latex = self.y_latex_top
+            list_latex = []
+            for text_latex in [self.text_alice, self.text_jets, text_ptjet_full, text_pth_full, self.text_sd]:
+                latex = TLatex(self.x_latex, y_latex, text_latex)
+                list_latex.append(latex)
+                draw_latex(latex, textsize=self.fontsize)
+                y_latex -= self.y_step
             leg_relativesys.Draw("same")
             crelativesys.SaveAs("%s/sys_unc_%s.eps" % (self.d_resultsallpdata, suffix))
-            crelativesys.SaveAs("%s/sys_unc_%s.pdf" % (self.d_resultsallpdata, suffix))
+            if ibin2 == 1:
+                crelativesys.SaveAs("%s/%s_sys_unc_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix))
+            gStyle.SetErrorX(0.5)
 
         # plot the feed-down fraction with systematic uncertainties from POWHEG
 
@@ -3342,7 +3495,7 @@ class AnalyzerJet(Analyzer):
             #tg_feeddown_fraction[ibin2].Draw("5")
             leg_fd.AddEntry(h_feeddown_fraction[ibin2], "default", "P")
             for i, his in enumerate(h_feeddown_fraction_variations_niter):
-                setup_histogram(his, get_colour(i + 2), 1)
+                setup_histogram(his, get_colour(i + 2, 0), 1)
                 leg_fd.AddEntry(his, self.powheg_nonprompt_varlabels[i], "L")
                 his.Draw("samehist")
             setup_tgraph(tg_feeddown_fraction[ibin2], get_colour(1))
@@ -3367,6 +3520,43 @@ class AnalyzerJet(Analyzer):
             #draw_latex(latex7)
             cfeeddown_fraction.SaveAs("%s/feeddown_fraction_var_%s.eps" % (self.d_resultsallpdata, suffix_plot))
             cfeeddown_fraction.SaveAs("%s/feeddown_fraction_var_%s.pdf" % (self.d_resultsallpdata, suffix_plot))
+
+            text_ptjet_full = self.text_ptjet % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2])
+            text_pth_full = self.text_pth % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2]), self.p_latexnhadron)
+
+            # preliminary figure
+            if ibin2 == 1:
+                gStyle.SetErrorX(0)
+                leg_pos = [.16, .595, .31, .645]
+                list_obj = [tg_feeddown_fraction[ibin2], h_feeddown_fraction[ibin2]]
+                labels_obj = ["POWHEG uncertainty"]
+                colours = [get_colour(i, j) for i, j in zip((0, 0), (2, 1))]
+                markers = [get_marker(0)]
+                y_margin_up = 0.45
+                y_margin_down = 0.05
+                c_fd_fr_sys, list_obj_data_new = make_plot("c_fd_fr_sys_" + suffix, size=self.size_can, \
+                    list_obj=list_obj, labels_obj=labels_obj, opt_leg_g="F", opt_plot_g=self.opt_plot_g, offsets_xy=self.offsets_axes, \
+                    colours=colours, markers=markers, leg_pos=leg_pos, margins_y=[y_margin_down, y_margin_up], margins_c=self.margins_can, \
+                    title=";%s;feed-down fraction" % self.title_x)
+                tg_feeddown_fraction[ibin2].SetMarkerColor(get_colour(0))
+                tg_feeddown_fraction[ibin2].GetYaxis().SetTitleOffset(1.2)
+                list_obj_data_new[0].SetTextSize(self.fontsize)
+                if self.shape == "nsd":
+                    tg_feeddown_fraction[ibin2].GetXaxis().SetNdivisions(5)
+                    shrink_err_x(tg_feeddown_fraction[ibin2])
+                c_fd_fr_sys.Update()
+                # Draw LaTeX
+                y_latex = self.y_latex_top
+                list_latex_data = []
+                for text_latex in [self.text_alice, self.text_jets, text_ptjet_full, text_pth_full, self.text_sd]:
+                    latex = TLatex(self.x_latex, y_latex, text_latex)
+                    list_latex_data.append(latex)
+                    draw_latex(latex, textsize=self.fontsize)
+                    y_latex -= self.y_step
+                c_fd_fr_sys.Update()
+                c_fd_fr_sys.SaveAs("%s/%s_fd_fr_sys_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix_plot))
+                gStyle.SetErrorX(0.5)
+
 
     def get_simulated_yields(self, file_path: str, dim: int, prompt: bool):
         """Create a histogram from a simulation tree.
