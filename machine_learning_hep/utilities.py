@@ -609,7 +609,7 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
               list_obj=None, labels_obj=None,
               leg_pos=None, opt_leg_h="P", opt_leg_g="P", opt_plot_h="", opt_plot_g="P0",
               offsets_xy=None, maxdigits=3, colours=None, markers=None, sizes=None,
-              range_x=None, margins_y=None, with_errors="xy", logscale=None):
+              range_x=None, range_y=None, margins_y=None, with_errors="xy", logscale=None):
     """
     Make a plot with objects from a list (list_obj).
     Returns a TCanvas and a list of other created ROOT objects.
@@ -621,7 +621,7 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
     - plotting of histograms (TH??), graphs (TGraph*), text fields (TLatex) and any other objects
         derived from TObject in any count and order
     - automatic calculation of plotting ranges (x, y) based on the data (histograms and graphs)
-    - arbitrary x range
+    - arbitrary x, y range
     - automatic style settings
     - optional plotting of the legend (enabled by providing the coordinates)
     - automatic adding of legend entries (in the plotting order)
@@ -641,6 +641,7 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
     - offsets of axis titles (offsets_xy), (format: [x, y])
     - maximum number of digits of the axis labels (maxdigits)
     - x range (range_x), (format: [x_min, x_max])
+    - y range (range_y), (format: [y_min, y_max])
     - vertical margins between the horizontal axes and the data (margins_y), (format: [lower, upper]
         expressed as fractions of the total plotting range)
     - including the error bars in the range calculations (with_errors),
@@ -767,6 +768,7 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
             list_h.append(obj)
         elif is_graph(obj):
             list_g.append(obj)
+
     # get x range of histograms
     x_min_h, x_max_h = float("inf"), float("-inf")
     if len(list_h) > 0:
@@ -802,6 +804,8 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
     y_min_plot, y_max_plot = y_min, y_max
     if isinstance(margins_y, list) and len(margins_y) == 2:
         y_min_plot, y_max_plot = get_plot_range(y_min, y_max, *margins_y, log_y)
+    if isinstance(range_y, list) and len(range_y) == 2:
+        y_min_plot, y_max_plot = range_y
 
     # append "same" to the histogram plotting option if needed
     opt_plot_h = opt_plot_h.lower()
