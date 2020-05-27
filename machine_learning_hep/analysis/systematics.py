@@ -433,8 +433,6 @@ class Systematics(Analyzer):
                     fill_hist(h_invmass, df_bin.inv_mass)
 
                     if "INT7" not in self.triggerbit:
-                        fileweight_name = "%s/correctionsweights.root" % self.d_val
-                        fileweight = TFile.Open(fileweight_name, "read")
                         namefunction = "funcnorm_%s_%s" % (self.triggerbit, self.v_var2_binning)
                         funcweighttrig = fileweight.Get(namefunction)
                         if funcweighttrig:
