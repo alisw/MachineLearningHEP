@@ -432,13 +432,6 @@ class Systematics(Analyzer):
 
                     fill_hist(h_invmass, df_bin.inv_mass)
 
-                    if "INT7" not in self.triggerbit:
-                        namefunction = "funcnorm_%s_%s" % (self.triggerbit, self.v_var2_binning)
-                        funcweighttrig = fileweight.Get(namefunction)
-                        if funcweighttrig:
-                            weights = evaluate(funcweighttrig, df_bin[self.v_var2_binning])
-                            weightsinv = [1./weight for weight in weights]
-                            fill_hist(h_invmass_weight, df_bin.inv_mass, weights=weightsinv)
                     myfile.cd()
                     h_invmass.Write()
                     h_invmass_weight.Write()
