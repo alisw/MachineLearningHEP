@@ -26,12 +26,12 @@ from os import makedirs
 import math
 from array import *
 import pickle
-from root_numpy import fill_hist, evaluate
+from root_numpy import fill_hist
 from ROOT import gROOT, gPad
 from ROOT import TFile, TH1F, TCanvas, TLegend
 from ROOT import kRed, kGreen, kBlack, kBlue, kOrange, kViolet, kAzure, kYellow
 from ROOT import Double
-from machine_learning_hep.utilities import selectdfrunlist
+#from machine_learning_hep.utilities import selectdfrunlist
 from machine_learning_hep.utilities import seldf_singlevar, openfile, make_file_path
 from machine_learning_hep.utilities_plot import load_root_style_simple, load_root_style
 from machine_learning_hep.utilities import mergerootfiles, get_timestamp_string
