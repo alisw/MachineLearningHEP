@@ -26,12 +26,12 @@ from os import makedirs
 import math
 from array import *
 import pickle
-from root_numpy import fill_hist, evaluate
+from root_numpy import fill_hist
 from ROOT import gROOT, gPad
 from ROOT import TFile, TH1F, TCanvas, TLegend
 from ROOT import kRed, kGreen, kBlack, kBlue, kOrange, kViolet, kAzure, kYellow
 from ROOT import Double
-from machine_learning_hep.utilities import selectdfrunlist
+#from machine_learning_hep.utilities import selectdfrunlist
 from machine_learning_hep.utilities import seldf_singlevar, openfile, make_file_path
 from machine_learning_hep.utilities_plot import load_root_style_simple, load_root_style
 from machine_learning_hep.utilities import mergerootfiles, get_timestamp_string
@@ -116,10 +116,6 @@ class Systematics(Analyzer):
                 if period is not None else ""
         self.d_results = datap["analysis"][typean]["data"]["results"][period] \
                 if period is not None else datap["analysis"][typean]["data"]["resultsallp"]
-        self.d_val = datap["validation"]["data"]["dir"][period] \
-                if period is not None else datap["validation"]["data"]["dirmerged"]
-        self.runlistrigger = datap["validation"]["runlisttrigger"][self.p_period] \
-                if period is not None else None
 
         self.v_var_binning = datap["var_binning"]
         #Binning used when skimming/training
@@ -389,8 +385,7 @@ class Systematics(Analyzer):
 
         myfile = TFile.Open(self.n_filemass_cutvar, "recreate")
 
-        print("Using run selection for mass histo", self.runlistrigger[self.triggerbit], \
-              "for period", self.p_period)
+        print("Using run selection for mass histo for period", self.p_period)
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.lpt_recodecmerged_data[bin_id], "rb"))
@@ -406,8 +401,6 @@ class Systematics(Analyzer):
                 df = df.query(self.s_trigger_data)
             df = seldf_singlevar(df, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-            df = selectdfrunlist(df, self.run_param[self.runlistrigger[self.triggerbit]], \
-                                 "run_number")
 
             arr_selml_cv = []
             for icv in range(ntrials):
@@ -439,15 +432,6 @@ class Systematics(Analyzer):
 
                     fill_hist(h_invmass, df_bin.inv_mass)
 
-                    if "INT7" not in self.triggerbit:
-                        fileweight_name = "%s/correctionsweights.root" % self.d_val
-                        fileweight = TFile.Open(fileweight_name, "read")
-                        namefunction = "funcnorm_%s_%s" % (self.triggerbit, self.v_var2_binning)
-                        funcweighttrig = fileweight.Get(namefunction)
-                        if funcweighttrig:
-                            weights = evaluate(funcweighttrig, df_bin[self.v_var2_binning])
-                            weightsinv = [1./weight for weight in weights]
-                            fill_hist(h_invmass_weight, df_bin.inv_mass, weights=weightsinv)
                     myfile.cd()
                     h_invmass.Write()
                     h_invmass_weight.Write()
@@ -480,8 +464,7 @@ class Systematics(Analyzer):
         h_gen_fd = []
         h_sel_fd = []
 
-        print("Using run selection for eff histo", self.runlistrigger[self.triggerbit], \
-              "for period", self.p_period)
+        print("Using run selection for eff histo for period", self.p_period)
         idx = 0
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
@@ -491,15 +474,11 @@ class Systematics(Analyzer):
                 df = df.query(self.s_evtsel)
             if self.s_trigger_mc is not None:
                 df = df.query(self.s_trigger_mc)
-            df = selectdfrunlist(df, \
-                                 self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
             df = seldf_singlevar(df, self.v_var_binning, self.lpt_finbinmin[ipt], \
                                  self.lpt_finbinmax[ipt])
 
             df_gen = pickle.load(openfile(self.lpt_gendecmerged[bin_id], "rb"))
             df_gen = df_gen.query(self.s_presel_gen_eff)
-            df_gen = selectdfrunlist(df_gen, \
-                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
             df_gen = seldf_singlevar(df_gen, self.v_var_binning, self.lpt_finbinmin[ipt], \
                                      self.lpt_finbinmax[ipt])
 
@@ -1138,8 +1117,6 @@ class Systematics(Analyzer):
 
                 df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[bin_id], "rb"))
                 df_mc_gen = df_mc_gen.query("abs(y_cand) < 0.5")
-                df_mc_gen = selectdfrunlist(df_mc_gen, \
-                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
 
                 df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
@@ -1166,8 +1143,7 @@ class Systematics(Analyzer):
         """
         myfile = TFile.Open(self.n_fileeff_ptshape, "recreate")
 
-        print("Using run selection for eff histo", self.runlistrigger[self.triggerbit], \
-              "for period", self.p_period)
+        print("Using run selection for eff histo for period", self.p_period)
         for ibin2 in range(len(self.lvar2_binmin)):
             stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen, \
                                         self.lvar2_binmin[ibin2], \
@@ -1207,13 +1183,9 @@ class Systematics(Analyzer):
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_trigger_mc is not None:
                     df_mc_reco = df_mc_reco.query(self.s_trigger_mc)
-                df_mc_reco = selectdfrunlist(df_mc_reco, \
-                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
 
                 df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[bin_id], "rb"))
                 df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
-                df_mc_gen = selectdfrunlist(df_mc_gen, \
-                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
 
                 df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var_binning, \
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
@@ -1290,13 +1262,9 @@ class Systematics(Analyzer):
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_trigger_mc is not None:
                     df_mc_reco = df_mc_reco.query(self.s_trigger_mc)
-                df_mc_reco = selectdfrunlist(df_mc_reco, \
-                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
 
                 df_mc_gen = pickle.load(openfile(self.lpt_gendecmerged[bin_id], "rb"))
                 df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
-                df_mc_gen = selectdfrunlist(df_mc_gen, \
-                         self.run_param[self.runlistrigger[self.triggerbit]], "run_number")
 
                 df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var_binning, \
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
