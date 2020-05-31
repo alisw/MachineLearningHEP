@@ -198,10 +198,12 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     size_thg = 0.05
     offset_thg = 0.85
 
-    gStyle.SetErrorX(0)
+    gStyle.SetErrorX(0) # do not plot horizontal error bars of histograms
     fontsize = 0.035
     opt_leg_g = "FP"
     opt_plot_g = "2"
+
+    list_new = [] # list to avoid loosing objects created in loops
 
     # labels
 
@@ -215,12 +217,14 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     title_full_ratio = ";%s;data/MC: ratio of %s" % (title_x, title_y)
 
     text_alice = "#bf{ALICE} Preliminary, pp, #sqrt{#it{s}} = 13 TeV"
+    text_alice_sim = "#bf{ALICE} Simulation, pp, #sqrt{#it{s}} = 13 TeV"
     text_pythia = "PYTHIA 8 (Monash)"
     text_pythia_split = "#splitline{PYTHIA 8}{(Monash)}"
     text_jets = "charged jets, anti-#it{k}_{T}, #it{R} = 0.4"
     text_ptjet = "%g #leq %s < %g GeV/#it{c}, #left|#it{#eta}_{jet}#right| #leq 0.5" % (lvar2_binmin_reco[ibin2], p_latexbin2var, lvar2_binmax_reco[ibin2])
     text_pth = "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, #left|#it{y}_{%s}#right| #leq 0.8" % (lpt_finbinmin[0], p_latexnhadron, min(lpt_finbinmax[-1], lvar2_binmax_reco[ibin2]), p_latexnhadron)
     text_ptcut = "#it{p}_{T, incl. ch. jet}^{leading track} #geq 5.33 GeV/#it{c}"
+    text_ptcut_sim = "#it{p}_{T, incl. ch. jet}^{leading h^{#pm}} #geq 5.33 GeV/#it{c} (varied)"
     text_sd = "Soft Drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)"
 
     title_thetag = "#it{#theta}_{g} = #it{R}_{g}/#it{R}"
@@ -230,9 +234,17 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     c_hf_data = 0
     c_incl_data = 1
     c_hf_mc = 2
-    c_incl_mc = 3
-    c_quark_mc = 4
-    c_gluon_mc = 5
+    c_incl_mc = 6
+    c_quark_mc = 5
+    c_gluon_mc = 0
+
+    # markers
+    m_hf_data = get_marker(0)
+    m_incl_data = get_marker(1)
+    m_hf_mc = get_marker(0, 2)
+    m_incl_mc = get_marker(1, 2)
+    m_quark_mc = get_marker(2)
+    m_gluon_mc = get_marker(3)
 
     # make the horizontal error bars smaller
     if shape == "nsd":
@@ -249,7 +261,7 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     list_obj = [hf_data_syst, incl_data_syst, hf_data_stat, incl_data_stat]
     labels_obj = ["%s-tagged" % p_latexnhadron, "inclusive", "", ""]
     colours = [get_colour(i, j) for i, j in zip((c_hf_data, c_incl_data, c_hf_data, c_incl_data), (2, 2, 1, 1))]
-    markers = [get_marker(i) for i in (c_hf_data, c_incl_data, c_hf_data, c_incl_data)]
+    markers = [m_hf_data, m_incl_data, m_hf_data, m_incl_data]
     y_margin_up = 0.46
     y_margin_down = 0.05
     cshape_data, list_obj_data_new = make_plot("cshape_data_" + suffix, size=size_can, \
@@ -261,6 +273,13 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     list_obj_data_new[0].SetTextSize(fontsize)
     if shape == "nsd":
         hf_data_syst.GetXaxis().SetNdivisions(5)
+    # Draw a line through the points.
+    if shape == "nsd":
+        for h in (hf_data_stat, incl_data_stat):
+            h_line = h.Clone(h.GetName() + "_line")
+            h_line.SetLineStyle(2)
+            h_line.Draw("l hist same")
+            list_new.append(h_line)
     cshape_data.Update()
     if shape == "rg":
         # plot the theta_g axis
@@ -298,7 +317,7 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     list_obj = [hf_data_syst_cl, hf_data_stat, hf_pythia_stat]
     labels_obj = ["data", "", text_pythia_split]
     colours = [get_colour(i, j) for i, j in zip((c_hf_data, c_hf_data, c_hf_mc), (2, 1, 1))]
-    markers = [get_marker(i) for i in (c_hf_data, c_hf_data, c_hf_mc)]
+    markers = [m_hf_data, m_hf_data, m_hf_mc]
     y_margin_up = 0.4
     y_margin_down = 0.05
     cshape_data_mc_hf, list_obj_data_mc_hf_new = make_plot("cshape_data_mc_hf_" + suffix, size=size_can, \
@@ -355,7 +374,7 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     list_obj = [incl_data_syst, incl_pythia_syst, incl_data_stat, incl_pythia_stat]
     labels_obj = ["data", text_pythia_split]
     colours = [get_colour(i, j) for i, j in zip((c_incl_data, c_incl_mc, c_incl_data, c_incl_mc), (2, 2, 1, 1))]
-    markers = [get_marker(i) for i in (c_incl_data, c_incl_mc, c_incl_data, c_incl_mc)]
+    markers = [m_incl_data, m_incl_mc, m_incl_data, m_incl_mc]
     y_margin_up = 0.4
     y_margin_down = 0.05
     cshape_data_mc_incl, list_obj_data_mc_incl_new = make_plot("cshape_data_mc_incl_" + suffix, size=size_can, \
@@ -411,7 +430,7 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     list_obj = [hf_ratio_syst, line_1, incl_ratio_syst, hf_ratio_stat, incl_ratio_stat]
     labels_obj = ["%s-tagged" % p_latexnhadron, "inclusive"]
     colours = [get_colour(i, j) for i, j in zip((c_hf_data, c_incl_data, c_hf_data, c_incl_data), (2, 2, 1, 1))]
-    markers = [get_marker(i) for i in (c_hf_data, c_incl_data, c_hf_data, c_incl_data)]
+    markers = [m_hf_data, m_incl_data, m_hf_data, m_incl_data]
     y_margin_up = 0.52
     y_margin_down = 0.05
     if shape == "nsd":
@@ -476,14 +495,14 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     list_obj = [incl_pythia_syst, quark_pythia_syst, gluon_pythia_syst, hf_pythia_stat, incl_pythia_stat, quark_pythia_stat, gluon_pythia_stat]
     labels_obj = ["inclusive", "quark", "gluon", "%s-tagged" % p_latexnhadron]
     colours = [get_colour(i, j) for i, j in zip((c_incl_mc, c_quark_mc, c_gluon_mc, c_hf_mc, c_incl_mc, c_quark_mc, c_gluon_mc), (2, 2, 2, 1, 1, 1, 1))]
-    markers = [get_marker(i) for i in (c_incl_mc, c_quark_mc, c_gluon_mc, c_hf_mc, c_incl_mc, c_quark_mc, c_gluon_mc)]
+    markers = [m_incl_mc, m_quark_mc, m_gluon_mc, m_hf_mc, m_incl_mc, m_quark_mc, m_gluon_mc]
     y_margin_up = 0.46
     y_margin_down = 0.05
     cshape_mc, list_obj_mc_new = make_plot("cshape_mc_" + suffix, size=size_can, \
         list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g=opt_plot_g, offsets_xy=offsets_axes, \
         colours=colours, markers=markers, leg_pos=leg_pos, range_y=[y_min_plot, y_max_plot], margins_c=margins_can, \
         title=title_full)
-    cshape_ratio.Update()
+    cshape_mc.Update()
     for gr, c in zip((incl_pythia_syst, quark_pythia_syst, gluon_pythia_syst), (c_incl_mc, c_quark_mc, c_gluon_mc)):
         gr.SetMarkerColor(get_colour(c))
     leg_mc = list_obj_mc_new[0]
@@ -513,7 +532,7 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     # Draw LaTeX
     y_latex = y_latex_top
     list_latex_mc = []
-    for text_latex in [text_alice, text_jets, text_ptjet, text_pth, text_ptcut, text_sd]:
+    for text_latex in [text_alice_sim, text_jets, text_ptjet, text_pth, text_ptcut_sim, text_sd]:
         latex = TLatex(x_latex, y_latex, text_latex)
         list_latex_mc.append(latex)
         draw_latex(latex, textsize=fontsize)
@@ -528,14 +547,14 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     list_obj = [quark_pythia_syst, gluon_pythia_syst, hf_pythia_stat, quark_pythia_stat, gluon_pythia_stat]
     labels_obj = ["quark", "gluon", "%s-tagged" % p_latexnhadron]
     colours = [get_colour(i, j) for i, j in zip((c_quark_mc, c_gluon_mc, c_hf_mc, c_quark_mc, c_gluon_mc), (2, 2, 1, 1, 1))]
-    markers = [get_marker(i) for i in (c_quark_mc, c_gluon_mc, c_hf_mc, c_quark_mc, c_gluon_mc)]
+    markers = [m_quark_mc, m_gluon_mc, m_hf_mc, m_quark_mc, m_gluon_mc]
     y_margin_up = 0.46
     y_margin_down = 0.05
     cshape_mc, list_obj_mc_new = make_plot("cshape_mc_qgd_" + suffix, size=size_can, \
         list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g=opt_plot_g, offsets_xy=offsets_axes, \
         colours=colours, markers=markers, leg_pos=leg_pos, range_y=[y_min_plot, y_max_plot], margins_c=margins_can, \
         title=title_full)
-    cshape_ratio.Update()
+    cshape_mc.Update()
     for gr, c in zip((quark_pythia_syst, gluon_pythia_syst), (c_quark_mc, c_gluon_mc)):
         gr.SetMarkerColor(get_colour(c))
     leg_mc = list_obj_mc_new[0]
@@ -565,7 +584,7 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     # Draw LaTeX
     y_latex = y_latex_top
     list_latex_mc = []
-    for text_latex in [text_alice, text_jets, text_ptjet, text_pth, text_ptcut, text_sd]:
+    for text_latex in [text_alice_sim, text_jets, text_ptjet, text_pth, text_ptcut_sim, text_sd]:
         latex = TLatex(x_latex, y_latex, text_latex)
         list_latex_mc.append(latex)
         draw_latex(latex, textsize=fontsize)
@@ -577,17 +596,24 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
 
     #leg_pos = [.6, .65, .75, .85]
     leg_pos = [.72, .67, .85, .85]
-    list_obj = [incl_pythia_syst_cl, hf_pythia_stat, incl_pythia_stat]
-    labels_obj = ["inclusive", "%s-tagged" % p_latexnhadron]
-    colours = [get_colour(i, j) for i, j in zip((c_incl_mc, c_hf_mc, c_incl_mc), (2, 1, 1))]
-    markers = [get_marker(i) for i in (c_incl_mc, c_hf_mc, c_incl_mc)]
+    list_obj = [incl_pythia_syst_cl, incl_pythia_stat, hf_pythia_stat]
+    labels_obj = ["inclusive", "", "%s-tagged" % p_latexnhadron]
+    colours = [get_colour(i, j) for i, j in zip((c_incl_mc, c_incl_mc, c_hf_mc), (2, 1, 1))]
+    markers = [m_incl_mc, m_incl_mc, m_hf_mc]
     y_margin_up = 0.46
     y_margin_down = 0.05
     cshape_mc, list_obj_mc_new = make_plot("cshape_mc_id_" + suffix, size=size_can, \
         list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g=opt_plot_g, offsets_xy=offsets_axes, \
         colours=colours, markers=markers, leg_pos=leg_pos, range_y=[y_min_plot, y_max_plot], margins_c=margins_can, \
         title=title_full)
-    cshape_ratio.Update()
+    # Draw a line through the points.
+    if shape == "nsd":
+        for h in (incl_pythia_stat, hf_pythia_stat):
+            h_line = h.Clone(h.GetName() + "_line")
+            h_line.SetLineStyle(2)
+            h_line.Draw("l hist same")
+            list_new.append(h_line)
+    cshape_mc.Update()
     incl_pythia_syst_cl.SetMarkerColor(get_colour(c_incl_mc))
     leg_mc = list_obj_mc_new[0]
     leg_mc.SetTextSize(fontsize)
@@ -616,7 +642,7 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     # Draw LaTeX
     y_latex = y_latex_top
     list_latex_mc = []
-    for text_latex in [text_alice, text_jets, text_ptjet, text_pth, text_ptcut, text_sd]:
+    for text_latex in [text_alice_sim, text_jets, text_ptjet, text_pth, text_ptcut_sim, text_sd]:
         latex = TLatex(x_latex, y_latex, text_latex)
         list_latex_mc.append(latex)
         draw_latex(latex, textsize=fontsize)
