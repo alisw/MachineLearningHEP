@@ -410,7 +410,7 @@ class AnalyzerJet(Analyzer):
             mc_reco_matched_z[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
             mc_reco_matched_z[ibin2].SetTitle("")
             mc_reco_matched_z[ibin2].SetXTitle(self.v_varshape_latex)
-            mc_reco_matched_z[ibin2].SetYTitle("normalised yield")
+            mc_reco_matched_z[ibin2].SetYTitle("self-normalised yield")
             mc_reco_matched_z[ibin2].SetTitleOffset(1.3, "Y")
             mc_reco_matched_z[ibin2].GetXaxis().SetRangeUser(round(self.lvarshape_binmin_reco[0], 2), round(self.lvarshape_binmax_reco[-1], 2))
             mc_reco_matched_z[ibin2].Draw()
@@ -499,7 +499,7 @@ class AnalyzerJet(Analyzer):
         if self.shape == "nsd":
             hz_genvsreco_full.GetXaxis().SetNdivisions(5)
             hz_genvsreco_full.GetYaxis().SetNdivisions(5)
-        hz_genvsreco_full.SetTitle(";%s^{gen};%s^{rec};normalised yield" % (self.v_varshape_latex, self.v_varshape_latex))
+        hz_genvsreco_full.SetTitle(";%s^{gen};%s^{rec};self-normalised yield" % (self.v_varshape_latex, self.v_varshape_latex))
         hz_genvsreco_full.Draw("colz")
         y_latex = 0.95
         list_latex = []
@@ -548,7 +548,7 @@ class AnalyzerJet(Analyzer):
         if self.shape == "nsd":
             hz_genvsreco_full_real.GetXaxis().SetNdivisions(5)
             hz_genvsreco_full_real.GetYaxis().SetNdivisions(5)
-        hz_genvsreco_full_real.SetTitle(";%s^{gen};%s^{rec};normalised yield" % (self.v_varshape_latex, self.v_varshape_latex))
+        hz_genvsreco_full_real.SetTitle(";%s^{gen};%s^{rec};self-normalised yield" % (self.v_varshape_latex, self.v_varshape_latex))
         hz_genvsreco_full_real.Draw("colz")
         y_latex = 0.95
         list_latex = []
