@@ -276,6 +276,7 @@ class AnalyzerJet(Analyzer):
         self.text_pth = "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, #left|#it{y}_{%s}#right| #leq 0.8"
         self.text_sd = "Soft Drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)"
         self.text_acc_h = "#left|#it{y}_{%s}#right| #leq 0.8" % self.p_latexnhadron
+        self.text_powheg = "POWHEG + PYTHIA 6 + EvtGen"
 
     def fit(self):
         self.loadstyle()
@@ -805,7 +806,7 @@ class AnalyzerJet(Analyzer):
 
     # pylint: disable=too-many-locals, too-many-branches
     def side_band_sub(self):
-        #This function perform side band subtraction of the histograms.
+        #This function perform sideband subtraction of the histograms.
         #The input files for this function are coming from:
         #    - root file containing the histograms of mass vs z called here
         #     "hzvsmass". There is one for each bin of HF pt and jet pt.
@@ -865,7 +866,7 @@ class AnalyzerJet(Analyzer):
 
                 # Here I define the boundaries for the side-band subtractions
                 # based on the results of the fit. We get usually 4-9 sigma from
-                # the mean in both sides to extract the side band distributions
+                # the mean in both sides to extract the sideband distributions
 
                 hzvsmass = lfile.Get("hzvsmass" + suffix)
                 binmasslow2sig = \
@@ -902,7 +903,7 @@ class AnalyzerJet(Analyzer):
                              binmasshigh4sig, binmasshigh9sig, "e")
 
                 # the background histogram is made by adding the left and
-                # right side band in general. self.sidebandleftonly = True is
+                # right sideband in general. self.sidebandleftonly = True is
                 # just made for systematic studies
 
                 # Below a list of histograms are defined:
@@ -969,7 +970,7 @@ class AnalyzerJet(Analyzer):
                 hzsub_noteffscaled.Write()
                 hzsub.Write("hzsub" + suffix)
 
-                # Canvas to compare the shape of the left and right side bands.
+                # Canvas to compare the shape of the left and right sidebands.
 
                 csblr = TCanvas("csblr" + suffix, "The Side-Band Left-Right Canvas" + suffix)
                 setup_canvas(csblr)
@@ -1043,7 +1044,7 @@ class AnalyzerJet(Analyzer):
                     line.Draw("same")
                 csblr.SaveAs("%s/side_band_left_right_%s.eps" % (self.d_resultsallpdata, suffix_plot))
 
-                # This canvas will contain the distributions of the side band
+                # This canvas will contain the distributions of the sideband
                 # subtracted z-distributions in bin of the reco jet pt
                 # variable, corrected for HF candidate efficiency
 
@@ -1133,8 +1134,8 @@ class AnalyzerJet(Analyzer):
                     else:
                         leg_pos = [.68, .72, .85, .85]
                     list_obj = [hzsig, hzbkg_scaled, hzsub_noteffscaled]
-                    labels_obj = ["signal region", "side band region", "after subtraction"]
-                    colours = [get_colour(i) for i in [1, 2, 3]]
+                    labels_obj = ["signal region", "sideband region", "after subtraction"]
+                    colours = [get_colour(i) for i in [2, 3, 1]]
                     markers = [get_marker(i) for i in [0, 1, 2]]
                     y_margin_up = 0.4
                     y_margin_down = 0.05
@@ -1980,7 +1981,7 @@ class AnalyzerJet(Analyzer):
             mc_reco_matched_z[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
             mc_reco_matched_z[ibin2].SetTitle("")
             mc_reco_matched_z[ibin2].SetXTitle(self.v_varshape_latex)
-            mc_reco_matched_z[ibin2].SetYTitle("normalised yield")
+            mc_reco_matched_z[ibin2].SetYTitle("self-normalised yield")
             mc_reco_matched_z[ibin2].SetTitleOffset(1.3, "Y")
             mc_reco_matched_z[ibin2].GetXaxis().SetRangeUser(round(self.lvarshape_binmin_reco[0], 2), round(self.lvarshape_binmax_reco[-1], 2))
             mc_reco_matched_z[ibin2].Draw()
@@ -2070,7 +2071,7 @@ class AnalyzerJet(Analyzer):
         if self.shape == "nsd":
             hz_genvsreco_full.GetXaxis().SetNdivisions(5)
             hz_genvsreco_full.GetYaxis().SetNdivisions(5)
-        hz_genvsreco_full.SetTitle(";%s^{gen};%s^{rec};normalised yield" % (self.v_varshape_latex, self.v_varshape_latex))
+        hz_genvsreco_full.SetTitle(";%s^{gen};%s^{rec};self-normalised yield" % (self.v_varshape_latex, self.v_varshape_latex))
         hz_genvsreco_full.Draw("colz")
         y_latex = 0.95
         list_latex = []
@@ -2119,7 +2120,7 @@ class AnalyzerJet(Analyzer):
         if self.shape == "nsd":
             hz_genvsreco_full_real.GetXaxis().SetNdivisions(5)
             hz_genvsreco_full_real.GetYaxis().SetNdivisions(5)
-        hz_genvsreco_full_real.SetTitle(";%s^{gen};%s^{rec};normalised yield" % (self.v_varshape_latex, self.v_varshape_latex))
+        hz_genvsreco_full_real.SetTitle(";%s^{gen};%s^{rec};self-normalised yield" % (self.v_varshape_latex, self.v_varshape_latex))
         hz_genvsreco_full_real.Draw("colz")
         y_latex = 0.95
         list_latex = []
@@ -3527,18 +3528,18 @@ class AnalyzerJet(Analyzer):
             # preliminary figure
             if ibin2 == 1:
                 gStyle.SetErrorX(0)
-                leg_pos = [.16, .595, .31, .645]
+                leg_pos = [.16, .545, .31, .595]
                 list_obj = [tg_feeddown_fraction[ibin2], h_feeddown_fraction[ibin2]]
                 labels_obj = ["POWHEG uncertainty"]
-                colours = [get_colour(i, j) for i, j in zip((0, 0), (2, 1))]
+                colours = [get_colour(i, j) for i, j in zip((1, 0), (2, 1))]
                 markers = [get_marker(0)]
-                y_margin_up = 0.45
+                y_margin_up = 0.5
                 y_margin_down = 0.05
                 c_fd_fr_sys, list_obj_data_new = make_plot("c_fd_fr_sys_" + suffix, size=self.size_can, \
                     list_obj=list_obj, labels_obj=labels_obj, opt_leg_g="F", opt_plot_g=self.opt_plot_g, offsets_xy=self.offsets_axes, \
                     colours=colours, markers=markers, leg_pos=leg_pos, margins_y=[y_margin_down, y_margin_up], margins_c=self.margins_can, \
                     title=";%s;feed-down fraction" % self.title_x)
-                tg_feeddown_fraction[ibin2].SetMarkerColor(get_colour(0))
+                tg_feeddown_fraction[ibin2].SetMarkerColor(get_colour(1))
                 tg_feeddown_fraction[ibin2].GetYaxis().SetTitleOffset(1.2)
                 list_obj_data_new[0].SetTextSize(self.fontsize)
                 if self.shape == "nsd":
@@ -3547,16 +3548,15 @@ class AnalyzerJet(Analyzer):
                 c_fd_fr_sys.Update()
                 # Draw LaTeX
                 y_latex = self.y_latex_top
-                list_latex_data = []
-                for text_latex in [self.text_alice, self.text_jets, text_ptjet_full, text_pth_full, self.text_sd]:
+                list_latex = []
+                for text_latex in [self.text_alice, self.text_jets, text_ptjet_full, text_pth_full, self.text_sd, self.text_powheg]:
                     latex = TLatex(self.x_latex, y_latex, text_latex)
-                    list_latex_data.append(latex)
+                    list_latex.append(latex)
                     draw_latex(latex, textsize=self.fontsize)
                     y_latex -= self.y_step
                 c_fd_fr_sys.Update()
                 c_fd_fr_sys.SaveAs("%s/%s_fd_fr_sys_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix_plot))
                 gStyle.SetErrorX(0.5)
-
 
     def get_simulated_yields(self, file_path: str, dim: int, prompt: bool):
         """Create a histogram from a simulation tree.
