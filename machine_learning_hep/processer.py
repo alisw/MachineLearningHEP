@@ -239,11 +239,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
             print('I am sorry, I am dying ...\n \n \n')
             sys.exit()
         dfreco = selectdfquery(dfreco, self.s_reco_unp)
-        listnsd_old = dfreco["nsd_jet"].values
-        dfreco["nsd_jet_orig"] = listnsd_old
-        c_new = [0 if nsd_old < 0 else nsd_old for nsd_old in listnsd_old]
-        dfreco = dfreco.drop(["nsd_jet"], axis=1)
-        dfreco["nsd_jet"] = c_new
         dfreco = pd.merge(dfreco, dfevt, on=self.v_evtmatch)
         isselacc = selectfidacc(dfreco.pt_cand.values, dfreco.y_cand.values)
         dfreco = dfreco[np.array(isselacc, dtype=bool)]
@@ -284,11 +279,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         if self.mcordata == "mc":
             treegen = uproot.open(self.l_root[file_index])[self.n_treegen]
             dfgen = treegen.pandas.df(branches=self.v_gen)
-            listnsd_old_gen = dfgen["nsd_jet"].values
-            dfgen["nsd_jet_orig"] = listnsd_old_gen
-            c_new_gen = [0 if nsd_old < 0 else nsd_old for nsd_old in listnsd_old_gen]
-            dfgen = dfgen.drop(["nsd_jet"], axis=1)
-            dfgen["nsd_jet"] = c_new_gen
             dfgen = pd.merge(dfgen, dfevtorig, on=self.v_evtmatch)
             dfgen = selectdfquery(dfgen, self.s_gen_unp)
             dfgen[self.v_isstd] = np.array(tag_bit_df(dfgen, self.v_bitvar,
