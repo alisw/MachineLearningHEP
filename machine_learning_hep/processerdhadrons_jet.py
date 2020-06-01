@@ -211,6 +211,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         self.p_usejetptbinned_deff = \
             datap["analysis"][self.typean].get("usejetptbinned_deff", False)
         print("use jet binned efficiency", self.p_usejetptbinned_deff)
+
     # pylint: disable=too-many-branches
     def process_histomass_single(self, index):
         myfile = TFile.Open(self.l_histomass[index], "recreate")
@@ -345,6 +346,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                                                 self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
                     df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning, \
                                                 self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
+                    df_mc_gen["z"] = z_calc(df_mc_gen.pt_jet, df_mc_gen.phi_jet, df_mc_gen.eta_jet,
+                                            df_mc_gen.pt_cand, df_mc_gen.phi_cand, df_mc_gen.eta_cand)
                     df_mc_gen = seldf_singlevar(df_mc_gen, self.v_varshape_binning, \
                                                 self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape])
 
@@ -532,6 +535,10 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
                 df_mc_reco["z"] = z_calc(df_mc_reco.pt_jet, df_mc_reco.phi_jet, df_mc_reco.eta_jet,
                                          df_mc_reco.pt_cand, df_mc_reco.phi_cand, df_mc_reco.eta_cand)
+
+                df_mc_reco["z_gen"] = z_gen_calc(df_mc_reco.pt_gen_jet, df_mc_reco.phi_gen_jet,
+                                                 df_mc_reco.eta_gen_jet, df_mc_reco.pt_gen_cand,
+                                                 df_mc_reco.delta_phi_gen_jet, df_mc_reco.delta_eta_gen_jet)
 
                 # restrict gen shape range
                 df_reco_no_overflow = seldf_singlevar(df_mc_reco, \
