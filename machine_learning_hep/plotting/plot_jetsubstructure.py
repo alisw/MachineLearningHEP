@@ -650,4 +650,26 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     cshape_mc.Update()
     cshape_mc.SaveAs("%s/%s_mc_id_%s.pdf" % (rootpath, shape, suffix))
 
+    # data inclusive vs PYTHIA, quark, gluon
+
+    #leg_pos = [.6, .65, .75, .85]
+    #leg_pos = [.72, .55, .85, .85]
+    leg_pos = [.6, .7, .85, .85]
+    list_obj = [incl_data_syst, quark_pythia_syst, gluon_pythia_syst, incl_data_stat, quark_pythia_stat, gluon_pythia_stat]
+    labels_obj = ["inclusive (data)", "quark (PYTHIA 8)", "gluon (PYTHIA 8)"]
+    colours = [get_colour(i, j) for i, j in zip((c_incl_data, c_quark_mc, c_gluon_mc, c_incl_data, c_quark_mc, c_gluon_mc), (2, 2, 2, 1, 1, 1))]
+    markers = [m_incl_data, m_quark_mc, m_gluon_mc, m_incl_data, m_quark_mc, m_gluon_mc]
+    y_margin_up = 0.3
+    y_margin_down = 0.05
+    cshape_mc, list_obj_mc_new = make_plot("cshape_mc_data_iqg" + suffix, size=size_can, \
+        list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g=opt_plot_g, offsets_xy=offsets_axes, \
+        colours=colours, markers=markers, leg_pos=leg_pos, margins_y=[y_margin_down, y_margin_up], margins_c=margins_can, \
+        title=title_full)
+    for gr, c in zip((incl_data_syst, quark_pythia_syst, gluon_pythia_syst), (c_incl_data, c_quark_mc, c_gluon_mc)):
+        gr.SetMarkerColor(get_colour(c))
+    leg_mc = list_obj_mc_new[0]
+    leg_mc.SetTextSize(fontsize)
+    cshape_mc.Update()
+    cshape_mc.SaveAs("%s/%s_data_i_mc_qg_%s.pdf" % (rootpath, shape, suffix))
+
 main()
