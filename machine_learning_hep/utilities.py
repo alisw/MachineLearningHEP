@@ -521,8 +521,10 @@ def get_colour(i: int, scheme=1):
     '''Return a colour from the list.'''
     colours = [kBlack, kBlue, kRed, kGreen + 1, kOrange + 1, kMagenta, kCyan + 1, kGray + 1, \
         kBlue + 2, kRed - 3, kGreen + 3, kYellow  + 1, kMagenta + 1, kCyan + 2, kRed + 3]
-    colours_alice_point = [kBlack,    kBlue + 1, kRed + 1,  kGreen + 3, kMagenta + 2, kOrange + 4, kCyan + 2, kYellow + 2]
-    colours_alice_syst =  [kGray + 1, kBlue - 7, kRed - 7, kGreen - 6, kMagenta - 4, kOrange - 3, kCyan - 6, kYellow - 7]
+    colours_alice_point = [kBlack, kBlue + 1, kRed + 1, kGreen + 3, kMagenta + 2, kOrange + 4, \
+        kCyan + 2, kYellow + 2]
+    colours_alice_syst = [kGray + 1, kBlue - 7, kRed - 7, kGreen - 6, kMagenta - 4, kOrange - 3, \
+        kCyan - 6, kYellow - 7]
     if scheme == 1:
         list_col = colours_alice_point
     elif scheme == 2:
@@ -585,7 +587,8 @@ def setup_legend(legend, textsize=0.03):
     legend.SetTextSize(textsize)
     legend.SetTextFont(42)
 
-def setup_tgraph(tg_, colour=1, markerstyle=kOpenCircle, size=1.5, alphastyle=0.8, fillstyle=1001, textsize=0.05):
+def setup_tgraph(tg_, colour=1, markerstyle=kOpenCircle, size=1.5, alphastyle=0.8,
+                 fillstyle=1001, textsize=0.05):
     tg_.GetXaxis().SetTitleSize(textsize)
     tg_.GetXaxis().SetTitleOffset(1.0)
     tg_.GetYaxis().SetTitleSize(textsize)
