@@ -1088,6 +1088,8 @@ class AnalyzerJet(Analyzer):
                 y_min_0 = min([h.GetMinimum(0) for h in [hzsig, hzbkg_scaled, hzsub_noteffscaled]])
                 if logscale and y_min_h <= 0:
                     y_min_h = y_min_0
+                    if y_max_h <= 0:
+                        logscale = False
                 hzsig.GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up, logscale))
                 hzsig.GetXaxis().SetRangeUser(round(self.lvarshape_binmin_reco[0], 2), \
                                               round(self.lvarshape_binmax_reco[-1], 2))
@@ -1719,6 +1721,8 @@ class AnalyzerJet(Analyzer):
             y_min_0 = min([h.GetMinimum(0) for h in l_his])
             if logscale and y_min_h <= 0:
                 y_min_h = y_min_0
+                if y_max_h <= 0:
+                    logscale = False
             y_margin_up = 0.27
             y_margin_down = 0.05
             sideband_input_data_z[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up, logscale))
