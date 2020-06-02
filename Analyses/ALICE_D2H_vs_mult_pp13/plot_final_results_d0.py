@@ -13,6 +13,8 @@
 #############################################################################
 
 """
+OUTDATED. SEE ANALYSIS NOTE REPOSITORY FOR HP2020 MACROS
+
 main script for doing final stage analysis
 """
 import os
