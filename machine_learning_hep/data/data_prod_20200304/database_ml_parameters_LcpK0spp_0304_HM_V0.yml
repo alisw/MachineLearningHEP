@@ -348,9 +348,9 @@ LcpK0spp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: MBvspt_perc_v0m
-      corrEffMult: [false, false, true, true]
-      sel_binmin2: [0] #list of var2 splittng nbins
-      sel_binmax2: [20] #list of var2 splitting nbins
+      corrEffMult: [false]
+      sel_binmin2: [0,] #list of var2 splittng nbins
+      sel_binmax2: [0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m
       var_binning2_gen: perc_v0m
       nbinshisto: 100000
@@ -370,6 +370,8 @@ LcpK0spp:
         data: "trigger_hasbit_HighMultV0==1"
         mc: null
         usetriggcorrfunc: Null
+      get_crossmb_from_path: True
+      path_for_crossmb: /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_data/resultsMBvspt_perc_v0m/finalcrossLcpK0sppMBvspt_perc_v0mmult3.root
       data:
         runselection: [null, null, null]
         results: [/data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsV0vspt_perc_v0m,

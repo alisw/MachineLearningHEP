@@ -538,9 +538,9 @@ LcpK0spp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
-      corrEffMult: [false, true, true]
-      sel_binmin2:  [0,30,0.1] #list of var2 splittng nbins
-      sel_binmax2: [100,100,30] #list of var2 splitting nbins
+      corrEffMult: [false, false, false, false]
+      sel_binmin2:  [0,30,0.1,0] #list of var2 splittng nbins
+      sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m
       var_binning2_gen: perc_v0m
       nbinshisto: 100000
@@ -579,11 +579,23 @@ LcpK0spp:
       masspeak: 2.2864
       massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
       massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
-      rebin: [[6,6,8,9,10,6], [6,6,8,9,10,6], [6,6,8,9,10,6]]
+      rebin:
+        - [6,6,8,9,10,6]
+        - [6,6,8,9,10,6]
+        - [6,6,8,9,10,6]
+        - [6,6,8,9,10,6]
 
-      includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      includesecpeak:
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
       masssecpeak: 2.2864
-      fix_masssecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      fix_masssecpeak:
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
       widthsecpeak: 0.01
       fix_widthsecpeak: true
 

@@ -485,18 +485,19 @@ class MLFitter:
             self.perform_pre_fits()
 
         for (ibin1, ibin2), fit in self.central_fits.items():
-            override_init_pars = None
             pre_fit = None
             if self.init_central_fits_from[(ibin1, ibin2)] == "mc":
                 pre_fit = self.pre_fits_mc[ibin1]
             else:
                 pre_fit = self.pre_fits_data[ibin1]
-            if not pre_fit.success:
+            if not pre_fit.success and self.lock_override_init[(ibin1, ibin2)] \
+                    and "sigma" not in self.lock_override_init[(ibin1, ibin2)]:
                 self.logger.warning("Requested pre-fit on %s not successful but requested for " \
                                     "central fit in bins (%i, %i). Skip...",
                                     self.init_central_fits_from[(ibin1, ibin2)], ibin1, ibin2)
                 continue
-            override_init_pars = pre_fit.get_fit_pars()
+
+            override_init_pars = pre_fit.get_fit_pars() if pre_fit and pre_fit.success else {}
             if self.lock_override_init[(ibin1, ibin2)]:
                 for name in self.lock_override_init[(ibin1, ibin2)]:
                     _ = override_init_pars.pop(name, None)
