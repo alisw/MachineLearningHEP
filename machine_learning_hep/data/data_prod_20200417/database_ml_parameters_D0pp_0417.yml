@@ -658,9 +658,9 @@ D0pp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
-      corrEffMult: [false,true,true]
-      sel_binmin2:  [0,30,0.1] #list of var2 splittng nbins
-      sel_binmax2: [100,100,30] #list of var2 splitting nbins
+      corrEffMult: [false,false,false,false]
+      sel_binmin2:  [0,30,0.1,0] #list of var2 splittng nbins
+      sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m
       var_binning2_gen: perc_v0m
       nbinshisto: 100000
@@ -701,10 +701,22 @@ D0pp:
       masspeak: 1.864
       massmin: [1.72,1.72,1.72,1.72,1.72,1.72]
       massmax: [2.03,2.03,2.03,2.03,2.03,2.03]
-      rebin: [[6,6,6,6,6,6], [6,6,6,6,6,6], [6,6,6,6,6,6]]
-      includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      rebin:
+        - [6,6,6,6,6,6]
+        - [6,6,6,6,6,6]
+        - [6,6,6,6,6,6]
+        - [6,6,6,6,6,6]
+      includesecpeak:
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
       masssecpeak: -1.0
-      fix_masssecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      fix_masssecpeak:
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
       #Fraction Dplus/Ds (taken from pp5TeV as we don't store it in TTrees)
       widthsecpeak: -1
       fix_widthsecpeak: false
