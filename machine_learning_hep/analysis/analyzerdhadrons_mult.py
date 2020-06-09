@@ -461,7 +461,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             # Choose where efficiencies to take from. Either this mult. bin, another mult. bin
             # in this analysis or another mult. bin from another analysis specified explicitly
             # by the user.
-            fileouteff = "{self.d_resultsallpmc}/efficiencies{self.case}{self.typean}.root" \
+            fileouteff = f"{self.d_resultsallpmc}/efficiencies{self.case}{self.typean}.root" \
                           if not self.path_file_eff[imult]  else self.path_file_eff[imult]
             if not os.path.exists(fileouteff):
                 self.logger.fatal("Efficiency file %s could not be found", fileouteff)
