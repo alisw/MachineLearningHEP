@@ -177,6 +177,25 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                                                                         None)
         self.path_for_crossmb = datap["analysis"][self.typean].get("path_for_crossmb", None)
 
+        # Take efficiencies from another analysis.
+        self.path_file_eff = datap["analysis"][self.typean].get("path_eff", None)
+        self.mult_bin_eff = datap["analysis"][self.typean].get("mult_bin_eff", None)
+
+        if (self.path_file_eff and not self.mult_bin_eff) or \
+                (not self.path_file_eff and self.mult_bin_eff):
+            # That is incoherent
+            self.logger.fatal("Either both or none of the lists \"path_eff\" and \"mult_bin_eff\"" \
+                    "must be specified")
+
+        if not self.path_file_eff:
+            self.path_file_eff = [None] * self.p_nbin2
+            self.mult_bin_eff = [None] * self.p_nbin2
+
+        if len(self.path_file_eff) != self.p_nbin2 or len(self.mult_bin_eff) != self.p_nbin2:
+            self.logger.fatal("Efficiencies are requested to be taken from another analysis. " \
+                              "Make sure lists \"path_eff\" and \"mult_bin_eff\" have the same " \
+                              "length as the number of those bins (%i).", self.p_nbin2)
+
         # Fitting
         self.fitter = None
         self.p_performval = datap["analysis"].get("event_cand_validation", None)
@@ -433,23 +452,32 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         self.loadstyle()
         #self.test_aliphysics()
         #filedataval = TFile.Open(self.f_evtnorm)
-        fileouteff = "%s/efficiencies%s%s.root" % \
-                      (self.d_resultsallpmc, self.case, self.typean)
         yield_filename = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                              None, [self.case, self.typean])
         gROOT.LoadMacro("HFPtSpectrum.C")
         from ROOT import HFPtSpectrum, HFPtSpectrum2, HFPtSpectrumRescaled
         histonorm = TH1F("histonorm", "histonorm", self.p_nbin2, 0, self.p_nbin2)
         for imult in range(self.p_nbin2):
+            # Choose where efficiencies to take from. Either this mult. bin, another mult. bin
+            # in this analysis or another mult. bin from another analysis specified explicitly
+            # by the user.
+            fileouteff = "{self.d_resultsallpmc}/efficiencies{self.case}{self.typean}.root" \
+                          if not self.path_file_eff[imult]  else self.path_file_eff[imult]
+            if not os.path.exists(fileouteff):
+                self.logger.fatal("Efficiency file %s could not be found", fileouteff)
             bineff = -1
-            if self.p_bineff is None:
+            if self.mult_bin_eff[imult] is not None:
+                bineff = self.mult_bin_eff[imult]
+                print(f"Use efficiency from bin {bineff} from file {fileouteff}")
+            elif self.p_bineff is None:
                 bineff = imult
                 print("Using efficiency for each var2 bin")
             else:
                 bineff = self.p_bineff
-                print("Using efficiency always from bin=", bineff)
-            namehistoeffprompt = "eff_mult%d" % bineff
-            namehistoefffeed = "eff_fd_mult%d" % bineff
+                print(f"Using efficiency always from bin={bineff}")
+
+            namehistoeffprompt = f"eff_mult{bineff}"
+            namehistoefffeed = f"eff_fd_mult{bineff}"
             nameyield = "hyields%d" % imult
             fileoutcrossmult = "%s/finalcross%s%smult%d.root" % \
                 (self.d_resultsallpdata, self.case, self.typean, imult)

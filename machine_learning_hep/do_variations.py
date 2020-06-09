@@ -157,14 +157,19 @@ def format_varlabel(varlabel: list, index: int, n_var: int):
     '''Format the label of a variation in a variation group.'''
     return "%s: %d" % (varlabel[0], index) if len(varlabel) != n_var else varlabel[index]
 
-def modify_dictionary(dic: dict, diff: dict):
-    '''Modify the dic dictionary using the diff dictionary.'''
+def modify_dictionary(dic: dict, diff: dict, add_not_present=False):
+    '''Modify the dic dictionary using the diff dictionary.
+
+    Add additional keys if add_not_present is True
+    '''
     for key, value in diff.items():
-        if key in dic: # Do not add keys that are not already in the original dictionary.
+        if key in dic:
             if isinstance(value, dict):
-                modify_dictionary(dic[key], value)
+                modify_dictionary(dic[key], value, add_not_present)
             else:
                 dic[key] = format_value(dic[key], value)
+        elif add_not_present:
+            dic[key] = value
         else:
             msg_warn("Key %s was not found and will be ignored." % key)
 

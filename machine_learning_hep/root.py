@@ -19,8 +19,90 @@ Methods to: read and write a ROOT TNtuple
 import array
 import ast
 import numpy as np
-from ROOT import TNtuple, TFile # pylint: disable=import-error,no-name-in-module
+from ROOT import gROOT, TNtuple, TFile # pylint: disable=import-error,no-name-in-module
 from machine_learning_hep.logger import get_logger
+
+
+META_INFO = "struct MLHEPMetaInfo { \
+               Float_t firstLow; \
+               Float_t firstUp; \
+               Float_t secondLow; \
+               Float_t secondUp; \
+               Float_t MLWorkingPoint; \
+               std::string firstBinName; \
+               std::string secondBinName; \
+             };"
+gROOT.ProcessLine(META_INFO)
+
+META_INFO_NAME = "MLHEPMetaInfo"
+
+from ROOT import MLHEPMetaInfo # pylint: disable=wrong-import-position, import-error, no-name-in-module, ungrouped-imports
+
+def create_meta_info(first_name, first_low, first_up, second_name, second_low, second_up, ml_wp):
+    """Fill MLHEPMetaInfo struct
+
+    Custom MLHEP ROOT struct to store meta info
+
+    Args:
+        first_name: str
+            name of first binning variable
+        first_low: float
+            low bin value of first variable
+        first_up: float
+            up bin value of first variable
+        second_name: str
+            name of second binning variable
+        second_low: float
+            low bin value of second variable
+        second_up: float
+            up bin value of second variable
+        ml_wp: float
+            ML working point used to cut
+
+    Returns:
+        MLHEPMetaInfo
+    """
+
+    meta_info = MLHEPMetaInfo()
+    meta_info.firstBinName = first_name
+    meta_info.firstLow = first_low
+    meta_info.firstUp = first_up
+    meta_info.secondBinName = second_name
+    meta_info.secondLow = second_low
+    meta_info.secondUp = second_up
+    meta_info.MLWorkingPoint = ml_wp
+    return meta_info
+
+
+def write_meta_info(root_dir, meta_info):
+    """Write MLHEPMetaInfo to ROOT directory
+
+    Args:
+        root_dir: inheriting from TDirectory
+            ROOT directory where to write
+        meta_info: MLHEPMetaInfo
+            the meta info to be written
+    """
+    root_dir.WriteObject(meta_info, META_INFO_NAME)
+
+
+def read_meta_info(root_dir, fail_not_found=True):
+    """Read MLHEPMetaInfo
+
+    Args:
+        root_dir: inheriting from TDirectory
+            ROOT directory where to read from
+        fail_not_found: bool
+            if True fail if not found
+    Returns:
+        MLHEPMetaInfo
+    """
+
+
+    meta_info = root_dir.Get(META_INFO_NAME)
+    if not meta_info and fail_not_found:
+        get_logger().fatal("Cannot find %s in directory %s", META_INFO_NAME, root_dir.GetName())
+    return meta_info
 
 
 def read_ntuple(ntuple, variables):

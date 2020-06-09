@@ -28,6 +28,7 @@ from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar,
         seldf_singlevar_inclusive, openfile
 from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.utilities import get_timestamp_string
+from machine_learning_hep.root import create_meta_info, write_meta_info
 #from machine_learning_hep.globalfitter import fitter
 from machine_learning_hep.processer import Processer
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
@@ -237,6 +238,12 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
                           self.v_var2_binning, self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                curr_dir = myfile.mkdir(f"bin1_{ipt}_bin2_{ibin2}")
+                meta_info = create_meta_info(self.v_var_binning, self.lpt_finbinmin[ipt],
+                                             self.lpt_finbinmax[ipt], self.v_var2_binning,
+                                             self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2],
+                                             self.lpt_probcutfin[bin_id])
+                write_meta_info(curr_dir, meta_info)
                 h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
                                  self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 h_invmass_weight = TH1F("h_invmass_weight" + suffix, "", self.p_num_bins,
