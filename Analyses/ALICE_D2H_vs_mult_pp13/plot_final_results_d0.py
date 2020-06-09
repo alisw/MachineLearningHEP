@@ -13,9 +13,10 @@
 #############################################################################
 
 """
-OUTDATED. SEE ANALYSIS NOTE REPOSITORY FOR HP2020 MACROS
-
 main script for doing final stage analysis
+
+NB: Duplicate of macro in AN Note repository. Will not work here!
+Just as an example how functions can be used
 """
 import os
 # pylint: disable=import-error, no-name-in-module, unused-import
@@ -23,63 +24,14 @@ import yaml
 from ROOT import TFile, gStyle, gROOT, TH1F, TGraphAsymmErrors, TH1
 from ROOT import kBlue, kAzure, kOrange, kGreen, kBlack, kRed, kWhite
 from ROOT import Double
-from machine_learning_hep.utilities_plot import plot_histograms, save_histograms, Errors
+from machine_learning_hep.utilities_plot import Errors
 from machine_learning_hep.utilities_plot import calc_systematic_multovermb
 from machine_learning_hep.utilities_plot import divide_all_by_first_multovermb
 from machine_learning_hep.utilities_plot import divide_by_eachother
 from machine_learning_hep.utilities_plot import calc_systematic_mesonratio
+from machine_learning_hep.utilities_plot import plot_histograms, save_histograms
 
-def results(histos_central, systematics, title, legend_titles, x_label, y_label,
-            save_path, ratio, **kwargs):
-
-    if len(histos_central) != len(systematics):
-        print(f"Number of systematics {len(systematics)} differs from number of " \
-              f"histograms {len(histos_central)}")
-        return
-
-    if len(histos_central) != len(legend_titles):
-        print(f"Number of legend titles {len(legend_titles)} differs from number of " \
-              f"histograms {len(histos_central)}")
-        return
-
-    colors = kwargs.get("colors", [kRed - i for i in range(len(histos_central))])
-    if len(histos_central) != len(colors):
-        print(f"Number of colors {len(colors)} differs from number of " \
-              f"histograms {len(histos_central)}")
-        return
-
-    colors = colors * 2
-    markerstyles = [1] * len(histos_central) + [20] * len(histos_central)
-    draw_options = ["E2"] * len(histos_central) + [""] * len(histos_central)
-    legend_titles = [None] * len(histos_central) + legend_titles
-
-    if ratio is False:
-        plot_histograms([*systematics, *histos_central], True, [False, False, [1e-8, 1]],
-                        legend_titles, title, x_label, y_label, "", save_path, linesytles=[1],
-                        markerstyles=markerstyles, colors=colors, linewidths=[1],
-                        draw_options=draw_options, fillstyles=[0])
-    elif ratio is True:
-        plot_histograms([*systematics, *histos_central], True, [False, True, [0.01, 100]],
-                        legend_titles, title, x_label, y_label, "", save_path, linesytles=[1],
-                        markerstyles=markerstyles, colors=colors, linewidths=[1],
-                        draw_options=draw_options, fillstyles=[0])
-    else:
-        plot_histograms([*systematics, *histos_central], False, [False, True, [0, 0.3]],
-                        legend_titles, title, x_label, y_label, "", save_path, linesytles=[1],
-                        markerstyles=markerstyles, colors=colors, linewidths=[1],
-                        draw_options=draw_options, fillstyles=[0])
-
-def get_param(case):
-    with open("data/database_ml_parameters_%s.yml" % case, 'r') as param_config:
-        data_param = yaml.load(param_config, Loader=yaml.FullLoader)
-    return data_param
-
-def extract_histo_or_error(case, ana_type, mult_bin, period_number, histo_name, filepath=None):
-    data_param = get_param(case)
-    if filepath is None:
-        filepath = data_param[case]["analysis"][ana_type]["data"]["resultsallp"]
-    if period_number >= 0:
-        filepath = data_param[case]["analysis"][ana_type]["data"]["results"][period_number]
+def extract_histo(case, ana_type, mult_bin, histo_name, filepath):
 
     path = f"{filepath}/finalcross{case}{ana_type}mult{mult_bin}.root"
     in_file = TFile.Open(path, "READ")
@@ -88,87 +40,86 @@ def extract_histo_or_error(case, ana_type, mult_bin, period_number, histo_name, 
         histo.SetDirectory(0)
     return histo
 
-def make_standard_save_path(case, prefix):
-    data_param = get_param(case)
-    folder_plots = data_param[case]["analysis"]["dir_general_plots"]
-    folder_plots = f"{folder_plots}/final"
+def make_standard_save_path(case, prefix, filepath):
+
+    folder_plots = f"{filepath}"
     if not os.path.exists(folder_plots):
         print("creating folder ", folder_plots)
         os.makedirs(folder_plots)
     return f"{folder_plots}/{prefix}.eps"
 
-#############################################################
-gROOT.SetBatch(True)
+
+#############################################################################
+############################# Input arguments  ##############################
+#############################################################################
 
 CASE = "D0pp"
 ANA_MB = "MBvspt_ntrkl"
 ANA_HM = "SPDvspt"
-YEAR_NUMBER = -1 # -1 refers to all years merged
+NMULTBINS = 5
+SIGMAV0 = 57.8e9 #(already applied in HP files)
+BRD0 = 0.0389
 
-LEGEND_TITLES = ["#kern[1]{0} #kern[-0.05]{#leq} #it{N}_{tracklets} < #infty (MB)",
-                 "#kern[1.6]{1} #kern[0.3]{#leq} #it{N}_{tracklets} < 9 (MB)",
-                 "10 #leq #it{N}_{tracklets} < 29 (MB)", "30 #leq #it{N}_{tracklets} < 59 (MB)"]
-LEGEND_TITLESHM = ["#kern[1]{0} #kern[-0.05]{#leq} #it{N}_{tracklets} < #infty (MB)",
-                   "#kern[1.6]{1} #kern[0.3]{#leq} #it{N}_{tracklets} < 9 (MB)",
-                   "10 #leq #it{N}_{tracklets} < 29 (MB)", "30 #leq #it{N}_{tracklets} < 59 (MB)",
-                   "60 #leq #it{N}_{tracklets} < 99 (HM)"]
-LEGEND_TITLES2 = ["#kern[1.6]{1} #kern[0.3]{#leq} #it{N}_{tracklets} < 9 (MB)",
-                  "10 #leq #it{N}_{tracklets} < 29 (MB)", "30 #leq #it{N}_{tracklets} < 59 (MB)"]
+PATH_IN = "inputfiles_QM19/"
+PATH_IN_HM = "inputfiles_HP20/"
+PATH_OUT = "final_rootfiles/"
+ERROR_FILES = ["syst_QM19/D0pp/errors_histoSigmaCorr_0.yaml",
+               "syst_QM19/D0pp/errors_histoSigmaCorr_1.yaml",
+               "syst_QM19/D0pp/errors_histoSigmaCorr_2.yaml",
+               "syst_QM19/D0pp/errors_histoSigmaCorr_3.yaml",
+               "syst_HP20/D0pp/errors_histoSigmaCorr_4.yaml"]
 
-COLORS = [kBlue, kGreen + 2, kRed - 2, kAzure + 3]
-COLORSHM = [kBlue, kGreen + 2, kRed - 2, kAzure + 3, kOrange + 7]
-COLORS2 = [kGreen + 2, kRed - 2, kAzure + 3]
-
-# Get the ML histogram of the particle case and analysis type
-# Everything available in the HFPtSpetrum can be requested
-# From MB
 HISTOS = []
 ERRS = []
 ERRS_GR_TOT = []
 ERRS_GR_FD = []
 ERRS_GR_WOFD = []
-ERROR_FILES = ["data/errors/D0pp_full/MBvspt_ntrkl/errors_histoSigmaCorr_0.yaml",
-               "data/errors/D0pp_full/MBvspt_ntrkl/errors_histoSigmaCorr_1.yaml",
-               "data/errors/D0pp_full/MBvspt_ntrkl/errors_histoSigmaCorr_2.yaml",
-               "data/errors/D0pp_full/MBvspt_ntrkl/errors_histoSigmaCorr_3.yaml"]
-ERROR_FILESD0 = ["data/errors/LcpKpipp/MBvspt_ntrkl/errors_histoSigmaCorr_0.yaml",
-                 "data/errors/LcpKpipp/MBvspt_ntrkl/errors_histoSigmaCorr_1.yaml",
-                 "data/errors/LcpKpipp/MBvspt_ntrkl/errors_histoSigmaCorr_2.yaml",
-                 "data/errors/LcpKpipp/MBvspt_ntrkl/errors_histoSigmaCorr_3.yaml"]
+gROOT.SetBatch(True)
 
-PATHD0 = "data/PreliminaryQM19/"
 
-SIGMAV0 = 57.8e9
-BRD0 = 0.0389
+#############################################################################
+############################### Plot spectra ################################
+#############################################################################
 
-for mb in range(4):
-    histo_ = extract_histo_or_error(CASE, ANA_MB, mb, YEAR_NUMBER, "histoSigmaCorr", \
-                                    PATHD0)
-    histo_.SetName(f"{histo_.GetName()}_{mb}")
-    print("NOTE: Scaling with 1./57.8e9 (corr Y/ev) and 1./0.0389 (BR D0)")
-    histo_.Scale(1./SIGMAV0)
+for mb in range(NMULTBINS):
+    PATH_MIX = PATH_IN
+    if mb == 4:
+        PATH_MIX = PATH_IN_HM
+
+    histo_ = extract_histo(CASE, ANA_MB, mb, "histoSigmaCorr", PATH_MIX)
+    histo_.SetName(f"histoSigmaCorr_{mb}")
+    print("\nAnalysing multiplicity interval", mb)
+    if PATH_MIX == "inputfiles_QM19/":
+        print("  NOTE: Scaling with 1. /", SIGMAV0, "(corr Y/ev)")
+        histo_.Scale(1./SIGMAV0)
+    else:
+        print("  No scaling for sigmaV0 (", SIGMAV0, "). Should be applied already in file")
     histo_.Scale(1./BRD0)
-    if mb == 0:
-        print("NOTE: Scaling MB with 1./0.92 (kINT7 trigger eff.) and 1./0.94 (nEvents for 1-999)")
-        print("Fixes propagated to DBs on 16/03/20. Please be sure this is still needed!")
-        histo_.Scale(1./0.92)
-        histo_.Scale(1./0.94)
+    print("  NOTE: Scaling with 1. /", BRD0, "(BR D0)")
+
     HISTOS.append(histo_)
 
-    DICTNB = {}
-    GRFD = extract_histo_or_error(CASE, ANA_MB, mb, YEAR_NUMBER, "gFcConservative", \
-                                  PATHD0)
+    DICTEXTRA = {}
+    HISTOEFF = extract_histo(CASE, ANA_MB, mb, "hDirectEffpt", PATH_MIX)
+    ERROREFF = []
+    for i in range(histo_.GetNbinsX()):
+        RELERREFF = HISTOEFF.GetBinError(i+1) / HISTOEFF.GetBinContent(i+1)
+        ERROREFF.append([0, 0, RELERREFF, RELERREFF])
+    DICTEXTRA["statunceff"] = ERROREFF
+
+    GRFD = extract_histo(CASE, ANA_MB, mb, "gFcConservative", PATH_MIX)
     ERRORNB = []
     EYHIGH = GRFD.GetEYhigh()
     EYLOW = GRFD.GetEYlow()
     YVAL = GRFD.GetY()
     for i in range(histo_.GetNbinsX()):
         ERRORNB.append([0, 0, EYLOW[i+1], EYHIGH[i+1], YVAL[i+1]])
-    DICTNB["feeddown_NB"] = ERRORNB
+    DICTEXTRA["feeddown_NB"] = ERRORNB
 
     errs = Errors(histo_.GetNbinsX())
-    errs.read(ERROR_FILES[mb], DICTNB)
+    errs.read(ERROR_FILES[mb], DICTEXTRA)
     ERRS.append(errs)
+
     ERRS_GR_TOT.append(Errors.make_root_asymm(histo_, errs.get_total_for_spectra_plot(), \
                                               const_x_err=0.3))
     ERRS_GR_FD.append(Errors.make_root_asymm(histo_, errs.get_total_for_spectra_plot(True), \
@@ -179,25 +130,19 @@ for mb in range(4):
     ERRS_GR_FD[mb].SetName("gr_FDSyst_%d" % mb)
     ERRS_GR_WOFD[mb].SetName("gr_TotSyst_woFD_%d" % mb)
 
-# Save globally in Ds directory
-SAVE_PATH = make_standard_save_path(CASE, f"CorrectedYieldPerEvent_{ANA_MB}_1999_19_1029_3059")
+# Save histograms + systematics in result directory
+if NMULTBINS == 5:
+    SAVE_PATH = make_standard_save_path(CASE, f"D0CorrectedYieldPerEvent_{ANA_MB}_1999_19_1029_3059_6099", PATH_OUT)
+else:
+    SAVE_PATH = make_standard_save_path(CASE, f"D0CorrectedYieldPerEvent_{ANA_MB}_1999_19_1029_3059", PATH_OUT)
 save_histograms([*HISTOS, *ERRS_GR_TOT, *ERRS_GR_FD, *ERRS_GR_WOFD], SAVE_PATH)
-SAVE_PATH = make_standard_save_path(CASE, f"CorrectedYieldPerEvent_{ANA_MB}_1999_19_1029_" \
-                                          f"3059_MLHEPCanvas")
 
-# As done here one can add an additional TGraphAsymmErrors per histogram. Those values will
-# be added to the list the user has defined here.
-# The list of error objects can contain None and in the end have the same length as number
-# of histograms
-results(HISTOS, ERRS_GR_TOT, "", LEGEND_TITLES, "#it{p}_{T} (GeV/#it{c})",
-        "d#it{N}/(d#it{p}_{T})|_{|y|<0.5} (GeV^{-1} #it{c})",
-        SAVE_PATH, False, colors=COLORS)
 
 #############################################################################
 ##################### Plot spectra mult / spectra MB ########################
 #############################################################################
 
-#Divide by MB
+#Divide multiplicity spectra by MB
 HISTOS_DIV = divide_all_by_first_multovermb(HISTOS)
 #Remove MB one
 HISTOS_DIVMB = HISTOS_DIV[1:]
@@ -205,11 +150,14 @@ ERRS_GR_DIV_TOT = []
 ERRS_GR_DIV_WOFD = []
 ERRS_GR_DIV_FD = []
 for mb, _ in enumerate(HISTOS_DIVMB):
-    tot_mult_over_MB = calc_systematic_multovermb(ERRS[mb+1], ERRS[0], HISTOS[0].GetNbinsX())
+    SAMEMC = True
+    if mb == 3: #HM bin, usually 4, but in this loop 3
+        SAMEMC = False
+    tot_mult_over_MB = calc_systematic_multovermb(ERRS[mb+1], ERRS[0], HISTOS[0].GetNbinsX(), SAMEMC)
     tot_mult_over_MB_FD = calc_systematic_multovermb(ERRS[mb+1], ERRS[0], \
-                                                     HISTOS[0].GetNbinsX(), True)
+                                                     HISTOS[0].GetNbinsX(), SAMEMC, True)
     tot_mult_over_MB_WOFD = calc_systematic_multovermb(ERRS[mb+1], ERRS[0], \
-                                                       HISTOS[0].GetNbinsX(), False)
+                                                       HISTOS[0].GetNbinsX(), SAMEMC, False)
 
     ERRS_GR_DIV_TOT.append(Errors.make_root_asymm(HISTOS_DIVMB[mb], tot_mult_over_MB, \
                                                   const_x_err=0.3))
@@ -221,15 +169,9 @@ for mb, _ in enumerate(HISTOS_DIVMB):
     ERRS_GR_DIV_FD[mb].SetName("gr_FDSyst_%d" % mb)
     ERRS_GR_DIV_WOFD[mb].SetName("gr_TotSyst_woFD_%d" % mb)
 
-# Save globally in Ds directory
-SAVE_PATH = make_standard_save_path(CASE, f"MultOverMB_{ANA_MB}_19_1029_3059")
+# Save histograms + systematics in result directory
+if NMULTBINS == 5:
+    SAVE_PATH = make_standard_save_path(CASE, f"D0MultOverMB_{ANA_MB}_19_1029_3059_6099", PATH_OUT)
+else:
+    SAVE_PATH = make_standard_save_path(CASE, f"D0MultOverMB_{ANA_MB}_19_1029_3059", PATH_OUT)
 save_histograms([*HISTOS_DIVMB, *ERRS_GR_DIV_TOT, *ERRS_GR_DIV_FD, *ERRS_GR_DIV_WOFD], SAVE_PATH)
-SAVE_PATH = make_standard_save_path(CASE, f"MultOverMB_{ANA_MB}_19_1029_3059_MLHEPCanvas")
-
-# As done here one can add an additional TGraphAsymmErrors per histogram. Those values will
-# be added to the list the user has defined here.
-# The list of error objects can contain None and in the end have the same length as number
-# of histograms
-results(HISTOS_DIVMB, ERRS_GR_DIV_TOT, "", LEGEND_TITLES2, "#it{p}_{T} (GeV/#it{c})",
-        "Ratio to d#it{N}/(d#it{p}_{T})|_{|y|<0.5} mult. int.",
-        SAVE_PATH, True, colors=COLORS2)
