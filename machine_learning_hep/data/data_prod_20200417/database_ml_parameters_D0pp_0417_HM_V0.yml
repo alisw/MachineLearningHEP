@@ -288,17 +288,17 @@ D0pp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: MBvspt_perc_v0m
-      corrEffMult: [false, false]
-      sel_binmin2: [0.1, 0.] #list of var2 splittng nbins
-      sel_binmax2: [30, 0.1] #list of var2 splitting nbins
+      corrEffMult: [false]
+      sel_binmin2: [0.] #list of var2 splittng nbins
+      sel_binmax2: [0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m
       var_binning2_gen: perc_v0m
       nbinshisto: 100000
       minvaluehisto: -0.0005
       maxvaluehisto: 99.9995
       # here the trigger efficiency is set to 1. Corrections are implemented in the analysis step
-      triggereff: [1.,1.]
-      triggereffunc: [0.,0.]
+      triggereff: [1.]
+      triggereffunc: [0.]
       triggerbit: HighMultV0
       isNbx2: False    #Estimate the feeddown systematic with Nb and Nbx2 method convolution
       event_cand_validation: False
@@ -337,10 +337,13 @@ D0pp:
       masspeak: 1.864
       massmin: [1.72,1.72,1.72,1.72,1.72,1.72]
       massmax: [2.03,2.03,2.03,2.03,2.03,2.03]
-      rebin: [[6,6,6,6,6,6], [6,6,6,6,6,6]]
-      includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      rebin:
+        - [6,6,6,6,6,6]
+      includesecpeak:
+        - [false, false, false, false, false, false]
       masssecpeak: -1.0
-      fix_masssecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      fix_masssecpeak:
+        - [false, false, false, false, false, false]
       #Fraction Dplus/Ds (taken from pp5TeV as we don't store it in TTrees)
       widthsecpeak: -1
       fix_widthsecpeak: false

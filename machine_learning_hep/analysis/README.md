@@ -21,6 +21,11 @@ In order to place additional cuts before a mass histogram is filled, those have 
 
 The cuts can then be accessed in `processer_<type>.process_histomass_single`. The database flag `use_cuts` is translated into the member `self.do_custom_analysis_cuts` and should be checked whether it's `True` in order to not circumvent it's purpose. Then, there is a helper function in `Processer` so if you have a dataframe corresponding to a certain pT bin, you can just do
 
+## Using efficiencies from another analysis
+
+To use the efficiencies from another analysis for a certain multiplicity bin one can use the fields `path_eff` and `mult_bin_eff` when using the analyzer class `AnalyzerDhadrons_mult`. When using this feature, both fields have to contain a list as long as the number of multiplicity bins. The first list lists the corresponding file to be used and  the second list entries are integers referring to the i'th multiplicity bin histogram inside the file. `null` entries can be used to use the efficiencies of this very analysis multiplicity bin (which is of course the default when none of the lists is present).
+
+
 ```python
 if self.do_custom_analysis_cuts:
     df = self.apply_cuts_ptbin(df, ipt)

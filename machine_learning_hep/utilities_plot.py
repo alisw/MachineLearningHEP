@@ -26,7 +26,7 @@ from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-modu
 # pylint: disable=import-error, no-name-in-module
 from ROOT import TH1F, TH2F, TFile, TH1, TH3F, TGraphAsymmErrors
 from ROOT import TPad, TCanvas, TLegend, kBlack, kGreen, kRed, kBlue, kWhite
-from ROOT import gStyle, gROOT
+from ROOT import gStyle, gROOT, TMatrixD
 from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
 from machine_learning_hep.logger import get_logger
 
@@ -272,6 +272,7 @@ def divide_by_eachother(histos1, histos2, scale=None, rebin2=None):
     histos_ratio = []
     for i, _ in enumerate(histos1):
 
+        origname = histos1[i].GetName()
         if rebin2 is not None:
             rebin = array('d', rebin2)
             histos1[i] = histos1[i].Rebin(len(rebin2)-1, f"{histos1[i].GetName()}_rebin", rebin)
@@ -281,7 +282,7 @@ def divide_by_eachother(histos1, histos2, scale=None, rebin2=None):
             histos1[i].Scale(1./scale[0])
             histos2[i].Scale(1./scale[1])
 
-        histos_ratio.append(histos1[i].Clone(f"{histos1[i].GetName()}_ratio"))
+        histos_ratio.append(histos1[i].Clone(f"{origname}_ratio"))
         histos_ratio[-1].Divide(histos2[i])
 
     return histos_ratio
@@ -299,6 +300,7 @@ def divide_by_eachother_barlow(histos1, histos2, scale=None, rebin2=None):
     histos_ratio = []
     for i, _ in enumerate(histos1):
 
+        origname = histos1[i].GetName()
         if rebin2 is not None:
             rebin = array('d', rebin2)
             histos1[i] = histos1[i].Rebin(len(rebin2)-1, f"{histos1[i].GetName()}_rebin", rebin)
@@ -314,7 +316,7 @@ def divide_by_eachother_barlow(histos1, histos2, scale=None, rebin2=None):
             stat1.append(histos1[i].GetBinError(j+1) / histos1[i].GetBinContent(j+1))
             stat2.append(histos2[i].GetBinError(j+1) / histos2[i].GetBinContent(j+1))
 
-        histos_ratio.append(histos1[i].Clone(f"{histos1[i].GetName()}_ratio"))
+        histos_ratio.append(histos1[i].Clone(f"{origname}_ratio"))
         histos_ratio[-1].Divide(histos2[i])
 
         for j in range(histos_ratio[-1].GetNbinsX()):
@@ -466,7 +468,7 @@ def save_histograms(histos, save_path="./plot.root"):
     root_file.Close()
 
 # pylint: disable=too-many-branches
-def calc_systematic_multovermb(errnum_list, errden_list, n_bins, justfd=-99):
+def calc_systematic_multovermb(errnum_list, errden_list, n_bins, same_mc_used=False, justfd=-99):
     """
     Returns a list of total errors taking into account the defined correlations
     Propagation uncertainties defined for Ds(mult) / Ds(MB). Check if applicable to your situation
@@ -480,7 +482,7 @@ def calc_systematic_multovermb(errnum_list, errden_list, n_bins, justfd=-99):
 
     listimpl = ["yield", "cut", "pid", "feeddown_mult", "feeddown_mult_spectra", "trigger", \
                 "multiplicity_interval", "multiplicity_weights", "track", "ptshape", \
-                "feeddown_NB", "sigmav0", "branching_ratio"]
+                "feeddown_NB", "sigmav0", "branching_ratio", "statunceff"]
 
     j = 0
     for (_, errnum), (_, errden) in zip(errnum_list.errors.items(), errden_list.errors.items()):
@@ -490,7 +492,7 @@ def calc_systematic_multovermb(errnum_list, errden_list, n_bins, justfd=-99):
                 get_logger().fatal("Unknown systematic name: %s", errnum_list.names[j])
             if errnum_list.names[j] != errden_list.names[j]:
                 get_logger().fatal("Names not in same order: %s vs %s", \
-                                   errnum.names[j], errden.names[j])
+                                   errnum_list.names[j], errden_list.names[j])
 
             for nb in range(len(tot_list[i])):
                 if errnum_list.names[j] == "yield" and justfd is not True:
@@ -533,8 +535,17 @@ def calc_systematic_multovermb(errnum_list, errden_list, n_bins, justfd=-99):
                     #Correlated and usually not plotted in boxes, do nothing
                     pass
                 elif errnum_list.names[j] == "branching_ratio" and justfd is not True:
-                    #Correlated and usually not plotted in boxes, do nothing
+                    #Correlated, do nothing
                     pass
+                elif errnum_list.names[j] == "statunceff" and justfd is not True:
+                    #Uncorrelated (new since June 2020, add it in syst boxes)
+                    #Part of stat is in common when same MC is used, so doing Barlow test there
+                    if same_mc_used is False:
+                        tot_list[i][nb] += errnum[i][nb] * errnum[i][nb] + \
+                                           errden[i][nb] * errden[i][nb]
+                    else:
+                        tot_list[i][nb] += abs(errnum[i][nb] * errnum[i][nb] - \
+                                               errden[i][nb] * errden[i][nb])
         j = j + 1
     tot_list = np.sqrt(tot_list)
     return tot_list
@@ -555,7 +566,7 @@ def calc_systematic_mesonratio(errnum_list, errden_list, n_bins, justfd=-99):
 
     listimpl = ["yield", "cut", "pid", "feeddown_mult", "feeddown_mult_spectra", "trigger", \
                 "multiplicity_interval", "multiplicity_weights", "track", "ptshape", \
-                "feeddown_NB", "sigmav0", "branching_ratio"]
+                "feeddown_NB", "sigmav0", "branching_ratio", "statunceff"]
 
     j = 0
     for (_, errnum), (_, errden) in zip(errnum_list.errors.items(), errden_list.errors.items()):
@@ -635,14 +646,18 @@ def calc_systematic_mesonratio(errnum_list, errden_list, n_bins, justfd=-99):
                     #Correlated and usually not plotted in boxes, do nothing
                     pass
                 elif errnum_list.names[j] == "branching_ratio" and justfd is not True:
-                    #Uncorrelated, but usually not plotted in boxes, so pass
-                    pass
+                    #Uncorrelated (new since May 2020, add it in syst boxes)
+                    tot_list[i][nb] += errnum[i][nb] * errnum[i][nb] + errden[i][nb] * errden[i][nb]
+                elif errnum_list.names[j] == "statunceff" and justfd is not True:
+                    #Uncorrelated (new since June 2020, add it in syst boxes)
+                    tot_list[i][nb] += errnum[i][nb] * errnum[i][nb] + errden[i][nb] * errden[i][nb]
         j = j + 1
     tot_list = np.sqrt(tot_list)
     return tot_list
 
 def calc_systematic_mesondoubleratio(errnum_list1, errnum_list2, errden_list1, \
-                                     errden_list2, n_bins, dropbins=None, justfd=-99):
+                                     errden_list2, n_bins, same_mc_used=False, \
+                                     dropbins=None, justfd=-99):
     """
     Returns a list of total errors taking into account the defined correlations
     Propagation uncertainties defined for Lc/D0_mult-i / Lc/D0_mult-j.
@@ -658,7 +673,7 @@ def calc_systematic_mesondoubleratio(errnum_list1, errnum_list2, errden_list1, \
 
     listimpl = ["yield", "cut", "pid", "feeddown_mult", "feeddown_mult_spectra", "trigger", \
                 "multiplicity_interval", "multiplicity_weights", "track", "ptshape", \
-                "feeddown_NB", "sigmav0", "branching_ratio"]
+                "feeddown_NB", "sigmav0", "branching_ratio", "statunceff"]
 
     j = 0
     for (_, errnum1), (_, errnum2), (_, errden1), (_, errden2) in zip(errnum_list1.errors.items(), \
@@ -727,11 +742,250 @@ def calc_systematic_mesondoubleratio(errnum_list1, errnum_list2, errden_list1, \
                     #Correlated and usually not plotted in boxes, do nothing
                     pass
                 elif errnum_list1.names[j] == "branching_ratio" and justfd is not True:
-                    #Uncorrelated, but usually not plotted in boxes, so pass
+                    #Correlated, do nothing
                     pass
+                elif errnum_list1.names[j] == "statunceff" and justfd is not True:
+                    #Uncorrelated (new since June 2020, add it in syst boxes)
+                    #Part of stat is in common when same MC is used, so doing Barlow test there
+                    if same_mc_used is False:
+                        tot_list[i][nb] += errnum1[inum][nb] * errnum1[inum][nb] + \
+                                           errnum2[inum][nb] * errnum2[inum][nb] + \
+                                           errden1[iden][nb] * errden1[iden][nb] + \
+                                           errden2[iden][nb] * errden2[iden][nb]
+                    else:
+                        tot_list[i][nb] += abs(errnum1[inum][nb] * errnum1[inum][nb] - \
+                                               errden1[iden][nb] * errden1[iden][nb]) + \
+                                           abs(errnum2[inum][nb] * errnum2[inum][nb] - \
+                                               errden2[iden][nb] * errden2[iden][nb])
+
         j = j + 1
     tot_list = np.sqrt(tot_list)
     return tot_list
+
+# pylint: disable=too-many-locals
+def average_pkpi_pk0s(histo_pkpi, histo_pk0s, graph_pkpi, graph_pk0s, err_pkpi, err_pk0s,
+                      matchbins_pkpi, matchbins_pk0s, matchbinsgr_pkpi, matchbinsgr_pk0s):
+    """
+    Strategy described in https://alice-notes.web.cern.ch/node/613
+
+    The cross section from each decay channel is given a weight w_{i}^{uncorr} of the
+    quadratic sum of the relative statistical and uncorrelated systematic uncertainties.
+    The different decay channels are then averaged using 1/(w_{i}^{uncorr}) as weights
+
+    The sources assumed to be uncorrelated are the: yield, cut, pid, BR and stat. unc. eff
+    The sources assumed to be correlated   are the: tracking, pT shape, feed-down (both),
+                                                    trigger, multiplicity weights,
+                                                    multiplicity interval, and lumi
+
+    The `matchbins_*' parameters are used when there are different binnings.
+    Example: pK0s has an extra bin [1-2]:
+      matchbins_pk0s = [1,2,3,4,5,6]
+      matchbins_pkpi = [-99,1,2,3,4,5]
+
+    The input error yaml files should have the same length!
+      Preferably add [0,0,99,99] for a missing bin
+
+    Input files need to be scaled with BR!
+    """
+    if len(matchbins_pkpi) != len(matchbins_pk0s):
+        get_logger().fatal("Length matchbins_pkpi != matchbins_pk0s: %d != %d",
+                           len(matchbins_pkpi), len(matchbins_pk0s))
+    nbins = len(matchbins_pkpi)
+
+    arr_errors = [err_pkpi, err_pk0s]
+    arr_histo = [histo_pkpi, histo_pk0s]
+    arr_graph = [graph_pkpi, graph_pk0s]
+    arr_binmatch = [matchbins_pkpi, matchbins_pk0s]
+    arr_binmatchgr = [matchbinsgr_pkpi, matchbinsgr_pk0s]
+
+    average_corryield = [0 for _ in range(nbins)]
+    average_fprompt = [0 for _ in range(nbins)]
+    average_statunc = [0 for _ in range(nbins)]
+    arr_weights = [[-99 for _ in range(nbins)], [-99 for _ in range(nbins)]]
+    arr_weightsum = [-99 for _ in range(nbins)]
+
+    #Fill arrays with corryield and fprompt from pkpi and pk0s
+    stat_unc = [[0 for _ in range(nbins)], [0 for _ in range(nbins)]]
+    corr_yield = [[0 for _ in range(nbins)], [0 for _ in range(nbins)]]
+    fprompt = [[0 for _ in range(nbins)], [0 for _ in range(nbins)]]
+    fpromptlow = [[0 for _ in range(nbins)], [0 for _ in range(nbins)]]
+    fprompthigh = [[0 for _ in range(nbins)], [0 for _ in range(nbins)]]
+    for j in range(2):
+        for ipt in range(nbins):
+            binmatch = arr_binmatch[j][ipt]
+            binmatchgr = arr_binmatchgr[j][ipt]
+            if binmatch < 0:
+                stat_unc[j][ipt] = -99
+                corr_yield[j][ipt] = -99
+                fprompt[j][ipt] = -99
+                fpromptlow[j][ipt] = -99
+                fprompthigh[j][ipt] = -99
+            else:
+                stat_unc[j][ipt] = arr_histo[j].GetBinError(binmatch)
+                corr_yield[j][ipt] = arr_histo[j].GetBinContent(binmatch)
+                fprompt[j][ipt] = arr_graph[j].GetY()[binmatchgr]
+                fpromptlow[j][ipt] = arr_graph[j].GetEYlow()[binmatchgr]
+                fprompthigh[j][ipt] = arr_graph[j].GetEYhigh()[binmatchgr]
+
+    #Get uncorrelated part of the systematics
+    syst_uncorr_pkpi = err_pkpi.get_uncorr_for_lc_average()
+    syst_uncorr_pk0s = err_pk0s.get_uncorr_for_lc_average()
+    syst_uncorr = [syst_uncorr_pkpi, syst_uncorr_pk0s]
+
+    #Partial correlation of BR
+    mbrw = TMatrixD(2, 2)
+    mbrw.Zero()
+    correlationbrpp = [[1, 0.5], [0.5, 1]]
+    lcsystbr = [err_pkpi.get_branching_ratio(), err_pk0s.get_branching_ratio()]
+    for j in range(2):
+        for k in range(2):
+            mbrw[j, k] = correlationbrpp[j][k] * lcsystbr[k]*lcsystbr[j]
+
+    #preperation weights
+    mtotw = TMatrixD(2*nbins, 2*nbins)
+    mtotw.Zero()
+    correlationother = [[1, 0], [0, 1]]
+    for j in range(2):
+        for k in range(2):
+            for ipt in range(nbins):
+                mtotw[ipt*2+j, ipt*2+k] = mbrw[j][k] + correlationother[j][k] * \
+                                          syst_uncorr[j][ipt][2] * syst_uncorr[k][ipt][2]
+    mtotw.Invert()
+
+    lcsystuncorrweights = [[0 for _ in range(nbins)], [0 for _ in range(nbins)]]
+    for ipt in range(nbins):
+        for j in range(2):
+            for k in range(2):
+                lcsystuncorrweights[j][ipt] += mtotw(ipt*2+j, ipt*2+k)
+
+    #applying weights
+    for ipt in range(nbins):
+        if matchbins_pkpi[ipt] < 0:
+            average_corryield[ipt] = corr_yield[1][ipt]
+            average_fprompt[ipt] = fprompt[1][ipt]
+            average_statunc[ipt] = stat_unc[1][ipt]
+            continue
+        if matchbins_pk0s[ipt] < 0:
+            average_corryield[ipt] = corr_yield[0][ipt]
+            average_fprompt[ipt] = fprompt[0][ipt]
+            average_statunc[ipt] = stat_unc[0][ipt]
+            continue
+
+        weightsum = 0
+        for j in range(2):
+            weightsyst = 1/np.sqrt(lcsystuncorrweights[j][ipt])
+            weightstat = stat_unc[j][ipt] / corr_yield[j][ipt]
+            weighttemp = np.sqrt(weightstat * weightstat + weightsyst * weightsyst)
+            weight = 1/(weighttemp * weighttemp)
+
+            average_corryield[ipt] += weight * corr_yield[j][ipt]
+            average_statunc[ipt] += (stat_unc[j][ipt]*weight) * (stat_unc[j][ipt]*weight)
+            average_fprompt[ipt] += weight * fprompt[j][ipt]
+            arr_weights[j][ipt] = weight
+
+            weightsum += weight
+
+        average_corryield[ipt] /= weightsum
+        average_fprompt[ipt] /= weightsum
+        average_statunc[ipt] = np.sqrt(average_statunc[ipt]) / weightsum
+        arr_weightsum[ipt] = weightsum
+
+    #applying weights to the systematics
+    average_err, average_fpromptlow, average_fprompthigh = \
+      weight_systematic_lc_averaging(arr_errors, fprompt, fpromptlow, fprompthigh,
+                                     arr_weights, arr_weightsum)
+
+    average_fpromptlow = [i * j for i, j in zip(average_fpromptlow, average_fprompt)]
+    average_fprompthigh = [i * j for i, j in zip(average_fprompthigh, average_fprompt)]
+
+    for ipt in range(nbins):
+        if matchbins_pkpi[ipt] < 0:
+            average_fpromptlow[ipt] = fpromptlow[1][ipt]
+            average_fprompthigh[ipt] = fprompthigh[1][ipt]
+            continue
+        if matchbins_pk0s[ipt] < 0:
+            average_fpromptlow[ipt] = fpromptlow[0][ipt]
+            average_fprompthigh[ipt] = fprompthigh[0][ipt]
+            continue
+
+    return average_corryield, average_statunc, average_fprompt, \
+           average_fpromptlow, average_fprompthigh, average_err
+
+def weight_systematic_lc_averaging(arr_errors, fprompt, fpromptlow, fprompthigh,
+                                   arr_weights, arr_weightsum):
+    """
+    Propagate weights for Lc averaging to systematic percentages
+    """
+    nbins = len(arr_weightsum)
+    err_new = arr_errors[0]
+
+    listimpl = ["yield", "cut", "pid", "feeddown_mult", "feeddown_mult_spectra", "trigger", \
+                "multiplicity_interval", "multiplicity_weights", "track", "ptshape", \
+                "sigmav0", "branching_ratio", "statunceff"]
+
+    j = 0
+    for (_, errpkpi), (_, errpk0s) in zip(arr_errors[0].errors.items(), \
+                                          arr_errors[1].errors.items()):
+
+        for i in range(nbins):
+
+            if arr_errors[0].names[j] not in listimpl:
+                get_logger().fatal("Unknown systematic name: %s", arr_errors[0].names[j])
+            if arr_errors[0].names[j] != arr_errors[1].names[j]:
+                get_logger().fatal("Names not in same order: %s vs %s", \
+                                   arr_errors[0].names[j], arr_errors[1].names[j])
+
+            syst = arr_errors[0].names[j]
+            for nb in range(4):
+                if syst in ["yield", "cut", "pid", "statunceff"]:
+                    #Uncorrelated
+                    err_new.errors[syst][i][nb] = np.sqrt((errpkpi[i][nb] * arr_weights[0][i]) * \
+                                                          (errpkpi[i][nb] * arr_weights[0][i]) + \
+                                                          (errpk0s[i][nb] * arr_weights[1][i]) * \
+                                                          (errpk0s[i][nb] * arr_weights[1][i])) / \
+                                                          arr_weightsum[i]
+                elif syst in ["feeddown_mult_spectra", "feeddown_mult", "trigger",
+                              "multiplicity_weights", "track", "ptshape",
+                              "multiplicity_interval", "sigmav0"]:
+                    #Correlated
+                    err_new.errors[syst][i][nb] = ((errpkpi[i][nb] * arr_weights[0][i]) + \
+                                                   (errpk0s[i][nb] * arr_weights[1][i])) / \
+                                                   arr_weightsum[i]
+                elif syst == "branching_ratio":
+                    #Uncorrelated
+                    syst_errbr = (errpkpi[i][nb] * arr_weights[0][i]) * \
+                                 (errpkpi[i][nb] * arr_weights[0][i]) + \
+                                 (errpk0s[i][nb] * arr_weights[1][i]) * \
+                                 (errpk0s[i][nb] * arr_weights[1][i])
+                    syst_errbr += 0.5 * errpkpi[i][nb] * arr_weights[0][i] * \
+                                  errpk0s[i][nb] * arr_weights[1][i]
+                    err_new.errors[syst][i][nb] = np.sqrt(syst_errbr) / arr_weightsum[i]
+                else:
+                    print("Error for systematic: ", syst)
+
+                if fprompt[0][i] < 0 or fprompt[1][i] < 0:
+                    if fprompt[0][i] < 0:
+                        err_new.errors[syst][i][nb] = errpk0s[i][nb]
+                    if fprompt[1][i] < 0:
+                        err_new.errors[syst][i][nb] = errpkpi[i][nb]
+
+        j = j + 1
+
+    fpromptlownew = [-99 for _ in range(nbins)]
+    fprompthighnew = [-99 for _ in range(nbins)]
+    fpromptlow[0] = [i / j for i, j in zip(fpromptlow[0], fprompt[0])]
+    fprompthigh[0] = [i / j for i, j in zip(fprompthigh[0], fprompt[0])]
+    fpromptlow[1] = [i / j for i, j in zip(fpromptlow[1], fprompt[1])]
+    fprompthigh[1] = [i / j for i, j in zip(fprompthigh[1], fprompt[1])]
+    for i in range(nbins):
+        fpromptlownew[i] = ((fpromptlow[0][i] * arr_weights[0][i]) + \
+                            (fpromptlow[1][i] * arr_weights[1][i])) / \
+                            arr_weightsum[i]
+        fprompthighnew[i] = ((fprompthigh[0][i] * arr_weights[0][i]) + \
+                             (fprompthigh[1][i] * arr_weights[1][i])) / \
+                             arr_weightsum[i]
+
+    return err_new, fpromptlownew, fprompthighnew
 
 # pylint: disable=too-many-nested-blocks
 class Errors:
@@ -854,6 +1108,18 @@ class Errors:
         """
         dump_yaml_from_dict(self.errors, yaml_path)
 
+    def print(self):
+        """
+        Print everything (to be copied into YAML)
+        """
+        print("\n\n\n\n")
+        print("names: ", self.names)
+        for j, errors in enumerate(self.errors.values()):
+            print("")
+            print(self.names[j] + ":")
+            for i in range(self.n_bins):
+                print("    - ", errors[i])
+
     def define_correlations(self):
         """
         Not yet defined
@@ -879,6 +1145,38 @@ class Errors:
         tot_list = np.sqrt(tot_list)
         return tot_list
 
+    def get_branching_ratio(self):
+        """
+        Returns branching ratio systematic
+        """
+        br_syst = 0
+        for j, errors in enumerate(self.errors.values()):
+            for i in range(self.n_bins):
+                if self.names[j] == "branching_ratio":
+                    br_syst = errors[i][2]
+                    if br_syst == 0:
+                        br_syst = errors[i][3]
+        return br_syst
+
+    def get_uncorr_for_lc_average(self):
+        """
+        The sources assumed to be uncorrelated are the: yield, cut, pid, and BR
+
+        Returns a list of total uncorrelated errors
+        For now only add in quadrature and take sqrt
+        """
+        tot_list = [[0., 0., 0., 0.] for _ in range(self.n_bins)]
+        for j, errors in enumerate(self.errors.values()):
+            for i in range(self.n_bins):
+                for nb in range(len(tot_list[i])):
+
+                    if self.names[j] == "yield" or self.names[j] == "cut" \
+                      or self.names[j] == "pid" or self.names[j] == "branching_ratio" \
+                        or self.names[j] == "statunceff":
+                        tot_list[i][nb] += (errors[i][nb] * errors[i][nb])
+        tot_list = np.sqrt(tot_list)
+        return tot_list
+
     def get_total_for_spectra_plot(self, justfd=-99):
         """
         Returns a list of total errors
@@ -888,8 +1186,8 @@ class Errors:
         for j, errors in enumerate(self.errors.values()):
             for i in range(self.n_bins):
                 for nb in range(len(tot_list[i])):
-                    if self.names[j] != "branching_ratio" and self.names[j] != "sigmav0" \
-                      and self.names[j] != "feeddown_mult":
+                    #New since May 2020, add BR in syst boxes
+                    if self.names[j] != "sigmav0" and self.names[j] != "feeddown_mult":
 
                         if justfd == -99:
                             tot_list[i][nb] += (errors[i][nb] * errors[i][nb])
