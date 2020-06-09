@@ -50,7 +50,7 @@ def update_config(database: dict, run_config: dict, database_overwrite=None): # 
     # To be implemented
     if database_overwrite:
         logger.info("Updating database fields with custom user input")
-        modify_dictionary(database, database_overwrite)
+        modify_dictionary(database, database_overwrite, True)
 
     # If not an ML analysis...
     if not database["doml"]:
