@@ -132,11 +132,11 @@ for mb in range(NMULTBINS):
 
 # Save histograms + systematics in result directory
 if NMULTBINS == 5:
-    namefile = f"D0CorrectedYieldPerEvent_{ANA_MB}_1999_19_1029_3059_6099"
-    SAVE_PATH = make_standard_save_path(namefile, PATH_OUT)
+    FILENAME = f"D0CorrectedYieldPerEvent_{ANA_MB}_1999_19_1029_3059_6099"
+    SAVE_PATH = make_standard_save_path(FILENAME, PATH_OUT)
 else:
-    namefile = f"D0CorrectedYieldPerEvent_{ANA_MB}_1999_19_1029_3059"
-    SAVE_PATH = make_standard_save_path(namefile, PATH_OUT)
+    FILENAME = f"D0CorrectedYieldPerEvent_{ANA_MB}_1999_19_1029_3059"
+    SAVE_PATH = make_standard_save_path(FILENAME, PATH_OUT)
 save_histograms([*HISTOS, *ERRS_GR_TOT, *ERRS_GR_FD, *ERRS_GR_WOFD], SAVE_PATH)
 
 
