@@ -35,7 +35,7 @@ def extract_histo(histo_name, path):
         histo.SetDirectory(0)
     return histo
 
-def make_standard_save_path(case, prefix, filepath):
+def make_standard_save_path(prefix, filepath):
 
     folder_plots = f"{filepath}"
     if not os.path.exists(folder_plots):
@@ -104,13 +104,13 @@ DICTEXTRA_PK0S["statunceff"] = ERROREFF_PK0S
 ERRSPK0S = Errors(PTBINS)
 ERRSPK0S.read(ERROR_PK0S, DICTEXTRA_PK0S)
 
-MATCHPKPI = [-99,1,2,3,4,5]
-MATCHPK0S = [1,2,3,4,5,6]
-MATCHPKPIGR = [-99,2,3,4,5,6] #Empty bin 0-1 still in fprompt tgraph
-MATCHPK0SGR = [1,2,3,4,5,6]
+MATCHPKPI = [-99, 1, 2, 3, 4, 5]
+MATCHPK0S = [1, 2, 3, 4, 5, 6]
+MATCHPKPIGR = [-99, 2, 3, 4, 5, 6] #Empty bin 0-1 still in fprompt tgraph
+MATCHPK0SGR = [1, 2, 3, 4, 5, 6]
 
-avgcorryield, avgstatunc, avgfprompt, \
-  avgfpromptlow, avgfprompthigh, avgerror = average_pkpi_pk0s(HISTO_PKPI, HISTO_PK0S,
+AVGCORRYIELD, AVGSTATUNC, AVGFPROMPT, \
+  AVGFPROMPTLOW, AVGFPROMPTHIGH, AVGERROR = average_pkpi_pk0s(HISTO_PKPI, HISTO_PK0S,
                                                               GRFD_PKPI, GRFD_PK0S,
                                                               ERRSPKPI, ERRSPK0S,
                                                               MATCHPKPI, MATCHPK0S,
@@ -119,17 +119,17 @@ avgcorryield, avgstatunc, avgfprompt, \
 HISTAVG = HISTO_PK0S.Clone("histoSigmaCorr_average")
 GRFDAVG = TGraphAsymmErrors(PTBINS)
 for ipt in range(PTBINS):
-    HISTAVG.SetBinContent(ipt+1, avgcorryield[ipt])
-    HISTAVG.SetBinError(ipt+1, avgstatunc[ipt])
-    GRFDAVG.SetPoint(ipt+1, GRFD_PK0S.GetX()[ipt+1], avgfprompt[ipt])
+    HISTAVG.SetBinContent(ipt+1, AVGCORRYIELD[ipt])
+    HISTAVG.SetBinError(ipt+1, AVGSTATUNC[ipt])
+    GRFDAVG.SetPoint(ipt+1, GRFD_PK0S.GetX()[ipt+1], AVGFPROMPT[ipt])
     GRFDAVG.SetPointError(ipt+1, GRFD_PK0S.GetEXlow()[ipt+1], GRFD_PK0S.GetEXhigh()[ipt+1], \
-                          avgfpromptlow[ipt], avgfprompthigh[ipt])
+                          AVGFPROMPTLOW[ipt], AVGFPROMPTHIGH[ipt])
 
-avgerror.print()
+AVGERROR.print()
 print("\n\n Store above in", ERROR_OUT)
 
 print("\n\n\nStoring ROOT objects in", FILE_OUT)
-FOUT = TFile(FILE_OUT,"RECREATE")
+FOUT = TFile(FILE_OUT, "RECREATE")
 FOUT.cd()
 HISTAVG.Write("histoSigmaCorr_average")
 HISTO_PKPI.Write("histoSigmaCorr_pKpi")

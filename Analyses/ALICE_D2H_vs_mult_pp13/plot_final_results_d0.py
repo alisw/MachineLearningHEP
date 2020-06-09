@@ -40,7 +40,7 @@ def extract_histo(case, ana_type, mult_bin, histo_name, filepath):
         histo.SetDirectory(0)
     return histo
 
-def make_standard_save_path(case, prefix, filepath):
+def make_standard_save_path(prefix, filepath):
 
     folder_plots = f"{filepath}"
     if not os.path.exists(folder_plots):
@@ -132,9 +132,11 @@ for mb in range(NMULTBINS):
 
 # Save histograms + systematics in result directory
 if NMULTBINS == 5:
-    SAVE_PATH = make_standard_save_path(CASE, f"D0CorrectedYieldPerEvent_{ANA_MB}_1999_19_1029_3059_6099", PATH_OUT)
+    namefile = f"D0CorrectedYieldPerEvent_{ANA_MB}_1999_19_1029_3059_6099"
+    SAVE_PATH = make_standard_save_path(namefile, PATH_OUT)
 else:
-    SAVE_PATH = make_standard_save_path(CASE, f"D0CorrectedYieldPerEvent_{ANA_MB}_1999_19_1029_3059", PATH_OUT)
+    namefile = f"D0CorrectedYieldPerEvent_{ANA_MB}_1999_19_1029_3059"
+    SAVE_PATH = make_standard_save_path(namefile, PATH_OUT)
 save_histograms([*HISTOS, *ERRS_GR_TOT, *ERRS_GR_FD, *ERRS_GR_WOFD], SAVE_PATH)
 
 
@@ -153,7 +155,8 @@ for mb, _ in enumerate(HISTOS_DIVMB):
     SAMEMC = True
     if mb == 3: #HM bin, usually 4, but in this loop 3
         SAMEMC = False
-    tot_mult_over_MB = calc_systematic_multovermb(ERRS[mb+1], ERRS[0], HISTOS[0].GetNbinsX(), SAMEMC)
+    tot_mult_over_MB = calc_systematic_multovermb(ERRS[mb+1], ERRS[0], \
+                                                  HISTOS[0].GetNbinsX(), SAMEMC)
     tot_mult_over_MB_FD = calc_systematic_multovermb(ERRS[mb+1], ERRS[0], \
                                                      HISTOS[0].GetNbinsX(), SAMEMC, True)
     tot_mult_over_MB_WOFD = calc_systematic_multovermb(ERRS[mb+1], ERRS[0], \
@@ -171,7 +174,7 @@ for mb, _ in enumerate(HISTOS_DIVMB):
 
 # Save histograms + systematics in result directory
 if NMULTBINS == 5:
-    SAVE_PATH = make_standard_save_path(CASE, f"D0MultOverMB_{ANA_MB}_19_1029_3059_6099", PATH_OUT)
+    SAVE_PATH = make_standard_save_path(f"D0MultOverMB_{ANA_MB}_19_1029_3059_6099", PATH_OUT)
 else:
-    SAVE_PATH = make_standard_save_path(CASE, f"D0MultOverMB_{ANA_MB}_19_1029_3059", PATH_OUT)
+    SAVE_PATH = make_standard_save_path(f"D0MultOverMB_{ANA_MB}_19_1029_3059", PATH_OUT)
 save_histograms([*HISTOS_DIVMB, *ERRS_GR_DIV_TOT, *ERRS_GR_DIV_FD, *ERRS_GR_DIV_WOFD], SAVE_PATH)

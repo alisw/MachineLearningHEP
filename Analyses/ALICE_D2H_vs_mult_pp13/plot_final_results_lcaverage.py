@@ -32,7 +32,7 @@ from support.utilities_plot import calc_systematic_mesonratio
 from support.utilities_plot import calc_systematic_mesondoubleratio
 from support.utilities_plot import plot_histograms, save_histograms
 
-def extract_histo(case, ana_type, mult_bin, histo_name, filepath, filename = None):
+def extract_histo(case, ana_type, mult_bin, histo_name, filepath, filename=None):
 
     path = f"{filepath}/finalcross{case}{ana_type}mult{mult_bin}.root"
     if filename is not None:
@@ -43,7 +43,7 @@ def extract_histo(case, ana_type, mult_bin, histo_name, filepath, filename = Non
         histo.SetDirectory(0)
     return histo
 
-def make_standard_save_path(case, prefix, filepath):
+def make_standard_save_path(prefix, filepath):
 
     folder_plots = f"{filepath}"
     if not os.path.exists(folder_plots):
@@ -69,7 +69,7 @@ BRD0 = 0.0389
 PATH_IN = "inputfiles_QM19/"
 PATH_IN_HM = "inputfiles_HP20/"
 PATH_OUT = "final_rootfiles/"
-FILEMB_LC_ALLHISTOS = "OriginalQM19Inputfiles_withTrigEffbug/finalcrossLcpKpippMBvspt_ntrklmult0_WithoutNbx2_WithAllHistos.root"
+FILEMB_LC_ALLHISTOS = "finalcrossLcpKpippMBvspt_ntrklmult0_WithoutNbx2_WithAllHistos.root"
 
 ERROR_FILESLC = ["syst_QM19/LcpKpipp/errors_histoSigmaCorr_0.yaml",
                  "syst_QM19/LcpKpipp/errors_histoSigmaCorr_1.yaml",
@@ -132,7 +132,8 @@ for mb in range(NMULTBINS):
     DICTEXTRA = {}
     if mb != 4:
         if mb == 0:
-            HISTOEFF = extract_histo(CASE, ANA_MB, mb, "hDirectEffpt", PATH_MIX, FILEMB_LC_ALLHISTOS)
+            HISTOEFF = extract_histo(CASE, ANA_MB, mb, "hDirectEffpt", PATH_MIX, \
+                                     FILEMB_LC_ALLHISTOS)
         else:
             HISTOEFF = extract_histo(CASE, ANA_MB, mb, "hDirectEffpt", PATH_MIX)
         ERROREFF = []
@@ -167,7 +168,8 @@ for mb in range(NMULTBINS):
     ERRS_GR_WOFD[mb].SetName("gr_TotSyst_woFD_%d" % mb)
 
 # Save histograms + systematics in result directory
-SAVE_PATH = make_standard_save_path(CASE, f"LcpKpiAvgCorrectedYieldPerEvent_{ANA_MB}_1999_19_1029_3059_6099", PATH_OUT)
+FILENAME = f"LcpKpiAvgCorrectedYieldPerEvent_{ANA_MB}_1999_19_1029_3059_6099"
+SAVE_PATH = make_standard_save_path(FILENAME, PATH_OUT)
 save_histograms([*HISTOS, *ERRS_GR_TOT, *ERRS_GR_FD, *ERRS_GR_WOFD], SAVE_PATH)
 
 
@@ -214,7 +216,7 @@ print("  NOTE: Scaling with 1. /", SIGMAV0, " and 1. /", BRLC, " (sigmaV0 and BR
 HISTO06099.Scale(1./SIGMAV0)
 HISTO06099.Scale(1./BRLC)
 HISTOS6099.append(HISTO06099)
-    
+
 HISTO46099 = extract_histo(CASEAV, ANA_MB, 4, "histoSigmaCorr_average", PATH_IN_HM)
 HISTO46099.SetName(f"histoSigmaCorr_{4}")
 HISTOS6099.append(HISTO46099)
@@ -353,7 +355,7 @@ ERRS_GR_DIV_FD[3].SetName("gr_FDSyst_%d" % 3)
 ERRS_GR_DIV_WOFD[3].SetName("gr_TotSyst_woFD_%d" % 3)
 
 # Save globally in Lc directory
-SAVE_PATH = make_standard_save_path(CASE, f"LcpKpiAvgMultOverMB_{ANA_MB}_19_1029_3059_6099", PATH_OUT)
+SAVE_PATH = make_standard_save_path(f"LcpKpiAvgMultOverMB_{ANA_MB}_19_1029_3059_6099", PATH_OUT)
 save_histograms([*HISTOS_DIVMB, *ERRS_GR_DIV_TOT, *ERRS_GR_DIV_FD, *ERRS_GR_DIV_WOFD], SAVE_PATH)
 
 
@@ -396,7 +398,8 @@ for mb in range(NMULTBINS):
     DICTEXTRA = {}
     if mb != 4:
         if mb == 0:
-            HISTOEFF = extract_histo(CASE, ANA_MB, mb, "hDirectEffpt", PATH_MIX, FILEMB_LC_ALLHISTOS)
+            HISTOEFF = extract_histo(CASE, ANA_MB, mb, "hDirectEffpt", PATH_MIX, \
+                                     FILEMB_LC_ALLHISTOS)
         else:
             HISTOEFF = extract_histo(CASE, ANA_MB, mb, "hDirectEffpt", PATH_MIX)
         ERROREFF = []
@@ -478,7 +481,7 @@ for mb, _ in enumerate(HISTOS_LCOVERD0):
     ERRS_GR_DIVD0_WOFD[mb].SetName("gr_TotSyst_woFD_%d" % mb)
 
 # Save globally in Lc directory
-SAVE_PATH = make_standard_save_path(CASE, f"LcpKpiAvgOverD0_{ANA_MB}_1999_19_1029_3059_6099", PATH_OUT)
+SAVE_PATH = make_standard_save_path(f"LcpKpiAvgOverD0_{ANA_MB}_1999_19_1029_3059_6099", PATH_OUT)
 save_histograms([*HISTOS_LCOVERD0, *ERRS_GR_DIVD0_TOT, *ERRS_GR_DIVD0_FD, \
                  *ERRS_GR_DIVD0_WOFD], SAVE_PATH)
 
@@ -505,7 +508,7 @@ for mb, _ in enumerate(HISTO_DR_M):
     den = 1
     if mb == 1:
         dropbins = [[0, 1, 2, 3], [1, 2, 3, 4]]
-        num = 3 #BUG in Preliminary plot (syst's 10-20% too large) Before it was called "numb" (24/04/20)
+        num = 3
     if mb == 2:
         num = 4
     tot_Lc_over_D0_DR = calc_systematic_mesondoubleratio(ERRS_LC[num], ERRS_D0[num], \
@@ -531,7 +534,8 @@ for mb, _ in enumerate(HISTO_DR_M):
     ERRS_GR_DR_M_WOFD[mb].SetName("gr_TotSyst_woFD_%d" % mb)
 
 # Save globally in Lc directory
-SAVE_PATH = make_standard_save_path(CASE, f"LcpKpiAvgOverD0_DoubleRatioWith19_{ANA_MB}_1029_3059_6099", PATH_OUT)
+FILENAME = f"LcpKpiAvgOverD0_DoubleRatioWith19_{ANA_MB}_1029_3059_6099"
+SAVE_PATH = make_standard_save_path(FILENAME, PATH_OUT)
 save_histograms([*HISTO_DR_M, *ERRS_GR_DR_M_TOT, *ERRS_GR_DR_M_FD, *ERRS_GR_DR_M_WOFD], SAVE_PATH)
 
 
@@ -560,7 +564,8 @@ for mb, _ in enumerate(HISTO_DR_MB):
         num = 4
     tot_Lc_over_D0_DR = calc_systematic_mesondoubleratio(ERRS_LC[num], ERRS_D0[num], ERRS_LC[den], \
                                                          ERRS_D0[den], \
-                                                         HISTO_DR_MB[mb].GetNbinsX(), SAMEMC, dropbins)
+                                                         HISTO_DR_MB[mb].GetNbinsX(), \
+                                                         SAMEMC, dropbins)
     tot_Lc_over_D0_DR_FD = calc_systematic_mesondoubleratio(ERRS_LC[num], ERRS_D0[num], \
                                                             ERRS_LC[den], ERRS_D0[den], \
                                                             HISTO_DR_MB[mb].GetNbinsX(), \
@@ -580,6 +585,7 @@ for mb, _ in enumerate(HISTO_DR_MB):
     ERRS_GR_DR_MB_WOFD[mb].SetName("gr_TotSyst_woFD_%d" % mb)
 
 # Save globally in Lc directory
-SAVE_PATH = make_standard_save_path(CASE, f"LcpKpiAvgOverD0_DoubleRatioWithMB_{ANA_MB}_19_3059_6099", PATH_OUT)
+FILENAME = f"LcpKpiAvgOverD0_DoubleRatioWithMB_{ANA_MB}_19_3059_6099"
+SAVE_PATH = make_standard_save_path(FILENAME, PATH_OUT)
 save_histograms([*HISTO_DR_MB, *ERRS_GR_DR_MB_TOT, *ERRS_GR_DR_MB_FD, \
                  *ERRS_GR_DR_MB_WOFD], SAVE_PATH)
