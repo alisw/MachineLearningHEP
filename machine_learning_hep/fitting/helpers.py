@@ -28,8 +28,8 @@ from machine_learning_hep.utilities_plot import plot_histograms
 from machine_learning_hep.fitting.utils import save_fit, load_fit
 from machine_learning_hep.fitting.fitters import FitAliHF, FitROOTGauss, FitSystAliHF
 
-# pylint: disable=too-many-instance-attributes, too-many-statements
-class MLFitParsFactory:
+
+class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many-statements
     """
     Managing MLHEP specific fit parameters and is used to collect and retrieve all information
     required to initialise a (systematic) fit
@@ -351,11 +351,8 @@ class MLFitParsFactory:
             for ibin1 in range(self.n_bins1):
                 yield ibin1, ibin2, self.get_syst_pars(ibin1, ibin2)
 
-# pylint: enable=too-many-instance-attributes, too-many-statements
 
-
-# pylint: disable=too-many-instance-attributes
-class MLFitter:
+class MLFitter: # pylint: disable=too-many-instance-attributes
     """
     Wrapper around all available fits insatntiated and used in an MLHEP analysis run.
     """
@@ -989,4 +986,3 @@ class MLFitter:
         self.done_pre_fits = True
         self.done_central_fits = False
         return success
-# pylint: enable=too-many-instance-attributes
