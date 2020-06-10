@@ -17,12 +17,15 @@ from os import makedirs
 
 # HF specific imports
 from machine_learning_hep.workflow.workflow_base import WorkflowBase
+from machine_learning_hep.processing.utils import ProcesserHelper
 from machine_learning_hep.io import dump_yaml_from_dict
 
 
 class Analyzer(WorkflowBase):
     def __init__(self, datap, case, typean, period):
         super().__init__(datap, case, typean, period)
+
+        self.processer_helper = ProcesserHelper(datap, case, typean, period)
 
         # The only thing here is to dump the database in the data analysis directory
         for mcordata in ("mc", "data"):

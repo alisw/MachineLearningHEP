@@ -25,7 +25,7 @@ from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utilities import selectdfrunlist
 from machine_learning_hep.utilities import seldf_singlevar, openfile
 from machine_learning_hep.selectionutils import getnormforselevt
-from machine_learning_hep.processer import Processer
+from machine_learning_hep.processing.processer import Processer
 
 class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attributes
     # Class Attribute
@@ -95,8 +95,7 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
                 df = df.query(self.s_trigger)
             df = seldf_singlevar(df, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-            suffix = "%s%d_%d" % \
-                     (self.v_var_binning, self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+            suffix = self.processer_helper.make_mass_histo_suffix(ipt)
             h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
                              self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
             if self.runlistrigger is not None:

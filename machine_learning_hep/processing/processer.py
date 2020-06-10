@@ -32,6 +32,7 @@ from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar,
 from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.utilities import get_timestamp_string
 from machine_learning_hep.models import apply # pylint: disable=import-error
+from machine_learning_hep.processing.utils import ProcesserHelper
 #from machine_learning_hep.logger import get_logger
 
 class Processer: # pylint: disable=too-many-instance-attributes
@@ -46,6 +47,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
                  d_results, typean, runlisttrigger, d_mcreweights):
         #self.logger = get_logger()
+        self.processer_helper = ProcesserHelper(datap, case, typean, p_period)
         self.nprongs = datap["nprongs"]
         self.prongformultsub = datap["prongformultsub"]
         self.doml = datap["doml"]

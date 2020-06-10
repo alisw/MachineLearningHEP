@@ -37,7 +37,7 @@ from machine_learning_hep.do_variations import healthy_structure, format_varname
 from machine_learning_hep.utilities_plot import buildhisto, makefill2dhist, makefill3dhist
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.utilities import seldf_singlevar
-from machine_learning_hep.processerdhadrons_jet import adjust_nsd
+from machine_learning_hep.processing.processerdhadrons_jet import adjust_nsd
 
 def shrink_err_x(graph, width=0.1):
     for i in range(graph.GetN()):

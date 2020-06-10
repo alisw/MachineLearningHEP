@@ -30,7 +30,7 @@ from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.utilities import get_timestamp_string
 from machine_learning_hep.root import create_meta_info, write_meta_info
 #from machine_learning_hep.globalfitter import fitter
-from machine_learning_hep.processer import Processer
+from machine_learning_hep.processing.processer import Processer
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 from machine_learning_hep.validation.validation_vertex import fill_validation_vertex
 from machine_learning_hep.validation.validation_multiplicity import fill_validation_multiplicity
@@ -234,10 +234,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 df = self.apply_cuts_ptbin(df, ipt)
 
             for ibin2 in range(len(self.lvar2_binmin)):
-                suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
-                         (self.v_var_binning, self.lpt_finbinmin[ipt],
-                          self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
-                          self.v_var2_binning, self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                suffix = self.processer_helper.make_mass_histo_suffix(ipt, ibin2)
                 curr_dir = myfile.mkdir(f"bin1_{ipt}_bin2_{ibin2}")
                 meta_info = create_meta_info(self.v_var_binning, self.lpt_finbinmin[ipt],
                                              self.lpt_finbinmax[ipt], self.v_var2_binning,
