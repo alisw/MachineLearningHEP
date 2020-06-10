@@ -21,7 +21,7 @@ setup(
   name='MachineLearningHEP',
 
   # LAST-TAG is a placeholder. Automatically replaced at deploy time with the right tag
-  version='v0.0.2',
+  version='v0.0.3',
 
   description='Machine Learning package for HEP',
 
