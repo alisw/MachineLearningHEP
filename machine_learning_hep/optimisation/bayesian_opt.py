@@ -14,10 +14,13 @@
 
 import sys
 from os.path import join
+import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 import matplotlib
+
+from yaml.representer import RepresenterError
 
 from sklearn.model_selection import cross_validate
 
@@ -308,7 +311,19 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         """Save paramaters/results and best model
         """
 
-        dump_yaml_from_dict(self.make_results(), join(out_dir, "results.yaml"))
+        results = self.make_results()
+        try:
+            dump_yaml_from_dict(results, join(out_dir, "results.yaml"))
+        except RepresenterError:
+            print("Cannot save optimisation results as YAML")
+
+        try:
+            pickle.dump(results, open(join(out_dir, "results.pkl"), "wb"))
+        except Exception: #pylint: disable=broad-except
+            print("Cannot pickle optimisation results")
+
+
+
         print(f"Save best model from Bayesian opt at {out_dir}")
         if self.yield_model_custom and self.save_model_custom:
             self.save_model_custom(self.best, out_dir)
@@ -316,7 +331,7 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
             self.save_model_(self.best, out_dir)
 
 
-    def plot(self, out_dir, from_yaml=None): # pylint: disable=unused-argument, too-many-statements
+    def plot(self, out_dir, from_yaml=None, from_pickle=None): # pylint: disable=unused-argument, too-many-statements
         """Plot results
 
         Results are plotted to out_dir/results.png
@@ -338,6 +353,12 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
             results_tmp = read_yaml["cv"]
             scores_tmp = read_yaml["score_names"]
             score_opt_tmp = read_yaml["score_opt_name"]
+        elif from_pickle:
+            read_yaml = pickle.load(open(from_pickle, "rb"))
+            results_tmp = read_yaml["cv"]
+            scores_tmp = read_yaml["score_names"]
+            score_opt_tmp = read_yaml["score_opt_name"]
+
 
         # Re-arrange such that always the optimisation score is on top
         score_names = list(scores_tmp)
@@ -348,6 +369,13 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         figsize = (35, 18 * len(score_names))
         fig, axes = plt.subplots(len(score_names), 1, sharex=True, gridspec_kw={"hspace": 0.05},
                                  figsize=figsize)
+
+        # If only one score is given, need to make it iterable
+        try:
+            iter(axes)
+        except TypeError:
+            axes = [axes]
+
         markerstyles = ["o", "+"]
         markersize = 20
         for axi, (sn, ax) in enumerate(zip(score_names, axes)):
