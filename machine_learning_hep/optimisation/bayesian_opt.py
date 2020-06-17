@@ -97,6 +97,9 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         # ...parameters of trial
         self.params = []
 
+        # ...models
+        self.models = []
+
         # ...best model and index to find score value/parameters etc.
         self.best_index = None
         self.best = None
@@ -116,6 +119,7 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         self.min_score = None
         self.results = []
         self.params = []
+        self.models = []
         self.best_index = None
         self.best = None
         self.best_params = None
@@ -204,6 +208,8 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
                 res_tmp[f"{t}_{sc}"] = float(np.mean(res[f"{t}_{sc}"]))
                 res_tmp[f"{t}_{sc}_std"] = float(np.std(res[f"{t}_{sc}"]))
         self.results.append(res_tmp)
+        self.models.append(model)
+        self.params.append(params)
 
         # Extract mean score from CV
         score = np.mean(res[f"test_{self.scoring_opt}"])
@@ -307,7 +313,7 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         print("save_model_  not implemented")
 
 
-    def save(self, out_dir):
+    def save(self, out_dir, best_only=True):
         """Save paramaters/results and best model
         """
 
@@ -323,12 +329,17 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
             print("Cannot pickle optimisation results")
 
 
-
+        save_func = self.save_model_
         print(f"Save best model from Bayesian opt at {out_dir}")
         if self.yield_model_custom and self.save_model_custom:
-            self.save_model_custom(self.best, out_dir)
-        else:
-            self.save_model_(self.best, out_dir)
+            save_func = self.save_model_custom
+        save_func(self.best, out_dir)
+
+        if not best_only:
+            # Save all models
+            for i, m in enumerate(self.models):
+                out_dir_model = join(out_dir, f"model_{i}")
+                save_func(m, out_dir_model)
 
 
     def plot(self, out_dir, from_yaml=None, from_pickle=None): # pylint: disable=unused-argument, too-many-statements
