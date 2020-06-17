@@ -1711,7 +1711,6 @@ class AnalyzerJet(Analyzer):
             logscale = True
             if logscale:
                 cfeeddown.SetLogy()
-            cfeeddown.SetLeftMargin(0.13)
             leg_feeddown = TLegend(.18, .70, .35, .85)
             setup_legend(leg_feeddown)
             setup_histogram(sideband_input_data_z[ibin2], get_colour(1), get_marker(0))
@@ -1729,7 +1728,6 @@ class AnalyzerJet(Analyzer):
             sideband_input_data_z[ibin2].SetTitle("")
             sideband_input_data_z[ibin2].SetXTitle(self.v_varshape_latex)
             sideband_input_data_z[ibin2].SetYTitle("yield")
-            sideband_input_data_z[ibin2].SetTitleOffset(1.5, "Y")
             sideband_input_data_z[ibin2].Draw()
             setup_histogram(folded_z_list[ibin2], get_colour(2), get_marker(1))
             leg_feeddown.AddEntry(folded_z_list[ibin2], "non-prompt (POWHEG)", "P")
@@ -2392,7 +2390,7 @@ class AnalyzerJet(Analyzer):
             unfolded_jetpt_scaled.SetTitle("")
             unfolded_jetpt_scaled.SetXTitle("%s (GeV/#it{c})" % self.p_latexbin2var)
             unfolded_jetpt_scaled.SetYTitle("1/#it{N}_{jets} d#it{N}/d%s (#it{c}/GeV)" % self.p_latexbin2var)
-            unfolded_jetpt_scaled.SetTitleOffset(1.5, "Y")
+            unfolded_jetpt_scaled.SetTitleOffset(1.2, "Y")
             unfolded_jetpt_scaled.Draw()
             latex = TLatex(0.2, 0.82, "%g #leq %s < %g" % (round(self.lvarshape_binmin_reco[0], 2), self.v_varshape_latex, round(self.lvarshape_binmax_reco[-1], 2)))
             draw_latex(latex)
@@ -2667,7 +2665,7 @@ class AnalyzerJet(Analyzer):
                 unfolded_jetpt_scaled_list[i].SetTitle("")
                 unfolded_jetpt_scaled_list[i].SetXTitle("%s (GeV/#it{c})" % self.p_latexbin2var)
                 unfolded_jetpt_scaled_list[i].SetYTitle("1/#it{N}_{jets} d#it{N}/d%s (#it{c}/GeV)" % self.p_latexbin2var)
-                unfolded_jetpt_scaled_list[i].SetTitleOffset(1.5, "Y")
+                unfolded_jetpt_scaled_list[i].SetTitleOffset(1.2, "Y")
             unfolded_jetpt_scaled_list[i].Draw("same")
         leg_jetpt.Draw("same")
         latex = TLatex(0.2, 0.82, "%g #leq %s < %g" % (round(self.lvarshape_binmin_gen[0], 2), self.v_varshape_latex, round(self.lvarshape_binmax_gen[-1], 2)))
@@ -3370,29 +3368,41 @@ class AnalyzerJet(Analyzer):
                 axis_thetag.Draw("same")
             cfinalwsys_wmodels.SaveAs("%s/final_wsys_wmodels_%s.pdf" % (self.d_resultsallpdata, suffix))
 
-            list_obj = [input_histograms_default[ibin2], tgsys[ibin2], input_powheg_z[ibin2], tg_powheg[ibin2]]
-            labels_obj = ["data", "syst. unc.", "POWHEG #plus PYTHIA 6", ""]
-            colours = [get_colour(i, 0) for i in (0, 7, 1, 1)]
-            markers = [get_marker(i) for i in (0, 0, 1, 1)]
+            text_ptjet_full = self.text_ptjet % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2])
+            text_pth_full = self.text_pth % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2]), self.p_latexnhadron)
+
+            list_obj = [tgsys[ibin2], tg_powheg[ibin2], input_histograms_default[ibin2], input_powheg_z[ibin2]]
+            labels_obj = ["data", "POWHEG #plus PYTHIA 6", "", ""]
+            colours = [get_colour(i, j) for i, j in zip((0, 1, 0, 1), (2, 2, 1, 1))]
+            markers = [get_marker(i) for i in (0, 1, 0, 1)]
             for i_pythia8 in range(len(self.pythia8_prompt_variations)):
                 list_obj.append(input_pythia8_z[i_pythia8][ibin2])
                 labels_obj.append(self.pythia8_prompt_variations_legend[i_pythia8])
                 colours.append(get_colour(i_pythia8 + 2))
                 markers.append(get_marker(i_pythia8 + 2))
-            list_obj += [latex, latex1, latex2, latex3, latex_SD]
             cfinalwsys_wmodels_new, _ = make_plot("cfinalwsys_wmodels_new_" + suffix, \
-                list_obj=list_obj, labels_obj=labels_obj, opt_leg_g="F", opt_plot_g="5", \
+                list_obj=list_obj, labels_obj=labels_obj, opt_leg_g="FP", opt_plot_g="2", \
                 colours=colours, markers=markers, leg_pos=leg_pos, margins_y=[0.05, 0.4], \
                 title=";%s;1/#it{N}_{jets} d#it{N}/d%s" % (self.v_varshape_latex, self.v_varshape_latex))
+            for gr, c in zip((tgsys[ibin2], tg_powheg[ibin2]), (0, 1)):
+                gr.SetMarkerColor(get_colour(c))
             if self.typean == "jet_rg":
                 cfinalwsys_wmodels_new.SetTickx(0)
                 axis_thetag.Draw("same")
+            # Draw LaTeX
+            y_latex = 0.83
+            list_text = [self.text_alice, self.text_jets, text_ptjet_full, text_pth_full]
+            if self.shape in ("zg", "rg", "nsd"):
+                list_text.append(self.text_sd)
+            list_latex = []
+            for text_latex in list_text:
+                latex = TLatex(self.x_latex, y_latex, text_latex)
+                list_latex.append(latex)
+                draw_latex(latex, textsize=0.03)
+                y_latex -= self.y_step
             cfinalwsys_wmodels_new.SaveAs("%s/final_wsys_wmodels_%s_new.pdf" % (self.d_resultsallpdata, suffix))
 
             # plot the relative systematic uncertainties for all categories together
-
-            text_ptjet_full = self.text_ptjet % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2])
-            text_pth_full = self.text_pth % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2]), self.p_latexnhadron)
 
             # preliminary figure
             crelativesys = TCanvas("crelativesys " + suffix, "relative systematic uncertainties" + suffix)

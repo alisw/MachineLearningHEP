@@ -554,8 +554,10 @@ def get_markersize(marker: int, size_def=1.5):
     '''Return a marker size.'''
     markers_small = [kOpenCross, kOpenDiamond, kOpenStar, kOpenDoubleDiamond,
                      kOpenFourTrianglesPlus, kOpenCrossX,
+                     kOpenThreeTriangles, kOpenFourTrianglesX,
                      kFullCross, kFullDiamond, kFullStar, kFullDoubleDiamond,
                      kFullFourTrianglesPlus, kFullCrossX,
+                     kFullThreeTriangles, kFullFourTrianglesX,
                      75, 74, 76, 83, 84, 85]
     if marker in markers_small:
         return size_def * 4 / 3
@@ -578,6 +580,10 @@ def setup_canvas(can):
     can.SetWindowSize(500, 500)
     can.SetFillColor(0)
     can.SetTicks(1, 1)
+    can.SetBottomMargin(0.12)
+    can.SetLeftMargin(0.12)
+    can.SetTopMargin(0.1)
+    can.SetRightMargin(0.02)
     can.cd()
 
 def setup_legend(legend, textsize=0.03):
