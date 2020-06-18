@@ -18,6 +18,7 @@ import pickle
 
 from xgboost import XGBClassifier
 from hyperopt import hp
+from hyperopt.pyll import scope
 
 from machine_learning_hep.optimisation.bayesian_opt import BayesianOpt
 from machine_learning_hep.optimisation.metrics import get_scorers
@@ -29,16 +30,16 @@ def xgboost_classifier(model_config): # pylint: disable=W0613
 
 
 def xgboost_classifier_bayesian_space():
-    return {"max_depth": hp.quniform("x_max_depth", 1, 6, 1),
-            "n_estimators": hp.quniform("x_n_estimators", 600, 1000, 1),
-            "min_child_weight": hp.quniform("x_min_child", 1, 4, 1),
+    return {"max_depth": scope.int(hp.quniform("x_max_depth", 1, 6, 1)),
+            "n_estimators": scope.int(hp.quniform("x_n_estimators", 600, 1000, 1)),
+            "min_child_weight": scope.int(hp.quniform("x_min_child", 1, 4, 1)),
             "subsample": hp.uniform("x_subsample", 0.5, 0.9),
             "gamma": hp.uniform("x_gamma", 0.0, 0.2),
             "colsample_bytree": hp.uniform("x_colsample_bytree", 0.5, 0.9),
             "reg_lambda": hp.uniform("x_reg_lambda", 0, 1),
             "reg_alpha": hp.uniform("x_reg_alpha", 0, 1),
             "learning_rate": hp.uniform("x_learning_rate", 0.05, 0.35),
-            "max_delta_step": hp.quniform("x_max_delta_step", 0, 8, 2)}
+            "max_delta_step": scope.int(hp.quniform("x_max_delta_step", 0, 8, 2))}
 
 
 class XGBoostClassifierBayesianOpt(BayesianOpt):
@@ -47,11 +48,6 @@ class XGBoostClassifierBayesianOpt(BayesianOpt):
     def yield_model_(self, model_config, space):
         config = self.next_params(space)
         config["early_stopping_rounds"] = 10
-        # NOTE If that's not really an integer, it will crash!
-        if "n_estimators" in config:
-            config["n_estimators"] = int(config["n_estimators"])
-        if "max_depth" in config:
-            config["max_depth"] = int(config["max_depth"])
         return xgboost_classifier(config), config
 
 
