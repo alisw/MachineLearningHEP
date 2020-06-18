@@ -296,34 +296,6 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         else:
             self.finalise()
 
-    @staticmethod
-    def __params_yamlable(params):
-        """ Turn all params into str
-        Args:
-            params: dict
-                dictionary where values are to be turned to str
-        Returns:
-            dict: all values turned to str
-
-        NOTE Cannot just deepcopy and turn into str because there might be objects which cannot
-             deepcopied
-        """
-        params_seri = {}
-        for k, v in params.items():
-            if isinstance(v, dict):
-                params_seri[k] = BayesianOpt.__params_yamlable(v)
-            else:
-                if isinstance(v, (Number, str, list, tuple)):
-                    # This we can handle with standard PyYAML
-                    params_seri[k] = v
-                elif isclass(v):
-                    params_seri[k] = f"custom:{v.__name__}"
-                else:
-                    params_seri[k] = f"custom:{v.__class__.__name__}"
-        return params_seri
-
-
-
 
     @staticmethod
     def __params_yamlable(params):
