@@ -19,6 +19,7 @@ from keras.models import Model
 from keras.wrappers.scikit_learn import KerasClassifier
 
 from hyperopt import hp
+from hyperopt.pyll import scope
 
 from machine_learning_hep.optimisation.bayesian_opt import BayesianOpt
 from machine_learning_hep.optimisation.metrics import get_scorers
@@ -49,11 +50,15 @@ def keras_classifier(model_config, input_length):
 
 
 def keras_classifier_bayesian_space():
-    return {"n_nodes": hp.choice("x_n_nodes", [[12, 64], [12], [12, 64, 16]]),
+    return {"n_nodes": hp.choice("x_n_nodes", [[scope.int(hp.quniform("x_n_nodes_1", 12, 64, 1)),
+                                                scope.int(hp.quniform("x_n_nodes_2", 12, 64, 1))],
+                                               [scope.int(hp.quniform("x_n_nodes_1", 12, 64, 1)),
+                                                scope.int(hp.quniform("x_n_nodes_2", 12, 64, 1)),
+                                                scope.int(hp.quniform("x_n_nodes_3", 12, 64, 1))]]),
             "activation_0": hp.choice("x_activation_0", ["relu", "sigmoid"]),
             "activation_1": hp.choice("x_activation_1", ["relu", "sigmoid"]),
-            "epochs": hp.quniform("x_epochs", 50, 100, 1),
-            "batch_size": hp.quniform("x_batch_size", 28, 256, 1)}
+            "epochs": scope.int(hp.quniform("x_epochs", 50, 100, 1)),
+            "batch_size": scope.int(hp.quniform("x_batch_size", 28, 256, 1))}
 
 
 class KerasClassifierBayesianOpt(BayesianOpt): # pylint: disable=too-many-instance-attributes
@@ -94,8 +99,8 @@ class KerasClassifierBayesianOpt(BayesianOpt): # pylint: disable=too-many-instan
         self.space_tmp = deepcopy(space)
         self.model_config_tmp = deepcopy(model_config)
 
-        return KerasClassifier(build_fn=self.get_scikit_model, epochs=int(space["epochs"]),
-                               batch_size=int(space["batch_size"]), verbose=1), space
+        return KerasClassifier(build_fn=self.get_scikit_model, epochs=space["epochs"],
+                               batch_size=space["batch_size"], verbose=1), space
 
 
     def save_model_(self, model, out_dir):
