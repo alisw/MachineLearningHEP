@@ -296,6 +296,7 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         else:
             self.finalise()
 
+
     @staticmethod
     def __params_yamlable(params):
         """ Turn all params into str
@@ -321,8 +322,6 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
                 else:
                     params_seri[k] = f"custom:{v.__class__.__name__}"
         return params_seri
-
-
 
 
     def make_results(self):
@@ -405,10 +404,9 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
                 branch_tmp = copy(__branch)
                 branch_tmp.append(k)
                 if isinstance(v, dict):
-                    __extract_branches(v, branch_tmp, branch_list)
-                else:
-                    if k not in branch_list:
-                        branch_list.append(branch_tmp)
+                    __extract_branches(v, branch_list, branch_tmp)
+                elif branch_tmp not in branch_list:
+                    branch_list.append(branch_tmp)
 
         # First, actually collect all parameters
         param_fields = []
