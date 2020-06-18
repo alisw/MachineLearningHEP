@@ -14,6 +14,9 @@
 
 import sys
 from os.path import join
+from numbers import Number
+from inspect import isclass
+from copy import copy
 import pickle
 import numpy as np
 import matplotlib.pyplot as plt
@@ -110,6 +113,7 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         self.ncores = 20
 
         self.fit_pool = []
+        self.trial_id = 0
 
 
     def reset(self):
@@ -124,6 +128,7 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         self.best = None
         self.best_params = None
         self.best_scores = None
+        self.trial_id = 0
 
 
     def yield_model_(self, model_config, space): # pylint: disable=unused-argument, useless-return, no-self-use
@@ -200,6 +205,7 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         """
 
         res, model, params = self.trial_(space_drawn)
+        self.trial_id += 1
 
         # Collect results
         res_tmp = {}
@@ -290,15 +296,43 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         else:
             self.finalise()
 
+    @staticmethod
+    def __params_yamlable(params):
+        """ Turn all params into str
+        Args:
+            params: dict
+                dictionary where values are to be turned to str
+        Returns:
+            dict: all values turned to str
+
+        NOTE Cannot just deepcopy and turn into str because there might be objects which cannot
+             deepcopied
+        """
+        params_seri = {}
+        for k, v in params.items():
+            if isinstance(v, dict):
+                params_seri[k] = BayesianOpt.__params_yamlable(v)
+            else:
+                if isinstance(v, (Number, str, list, tuple)):
+                    # This we can handle with standard PyYAML
+                    params_seri[k] = v
+                elif isclass(v):
+                    params_seri[k] = f"custom:{v.__name__}"
+                else:
+                    params_seri[k] = f"custom:{v.__class__.__name__}"
+        return params_seri
+
+
+
 
     def make_results(self):
         """Helper function to make dictionary of parameters and results
         """
-
+        params_tmp = [self.__params_yamlable(p) for p in self.params]
         return {"cv": self.results,
-                "params": self.params,
+                "params": params_tmp,
                 "best_index": self.best_index,
-                "best_params": self.best_params,
+                "best_params": self.__params_yamlable(self.best_params),
                 "best_scores": self.best_scores,
                 "score_names": list(self.scoring.keys()),
                 "score_opt_name": self.scoring_opt}
@@ -342,7 +376,130 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
                 save_func(m, out_dir_model)
 
 
-    def plot(self, out_dir, from_yaml=None, from_pickle=None): # pylint: disable=unused-argument, too-many-statements
+    def __plot_parameter_evolutions(self, out_dir): # pylint: disable=too-many-branches, too-many-statements
+        """plot evolution of all parameters
+
+        Plotting each hyperparameter value as a function of the iterations
+
+        Args:
+            out_dir: str
+                where to store the plots
+        """
+        print("Plot parameter evolutions")
+
+        def __extract_branches(search, branch_list, __branch=None):
+            """helper function to collect all branches in dictionary
+
+            Args:
+                search: dict
+                    dictionary to be searched
+                branch: list
+                    current list with field names following one branch
+                branch_list: list
+                    list to collect all branches
+            """
+
+            if __branch is None:
+                __branch = []
+            for k, v in search.items():
+                branch_tmp = copy(__branch)
+                branch_tmp.append(k)
+                if isinstance(v, dict):
+                    __extract_branches(v, branch_tmp, branch_list)
+                else:
+                    if k not in branch_list:
+                        branch_list.append(branch_tmp)
+
+        # First, actually collect all parameters
+        param_fields = []
+        for p in self.params:
+            __extract_branches(p, param_fields)
+
+        # And make them at least yamlable for yaml.safe dump so have proper names also for
+        # more complex values
+        params_tmp = [self.__params_yamlable(p) for p in self.params]
+
+        # Go through all branches
+        for pf in param_fields:
+
+            figsize = (30, 30)
+            fig, ax = plt.subplots(1, 1, figsize=figsize)
+
+            markersize = 20
+
+            x_axis_vals = []
+            y_axis_vals = []
+
+            # For one branch go through parameters of all iterations
+            for i, par in enumerate(params_tmp):
+                curr_val = None
+                try:
+                    curr_val = par.get(pf[0], None)
+                except AttributeError:
+                    continue
+                if curr_val is None:
+                    continue
+                for f in pf[1:]:
+                    try:
+                        curr_val = curr_val.get(f, None)
+                    except AttributeError:
+                        break
+                    if curr_val is None:
+                        break
+                if curr_val is None:
+                    continue
+                x_axis_vals.append(i)
+                y_axis_vals.append(curr_val)
+
+            if not x_axis_vals:
+                # Usually, that should not happen and at least one value should have been found
+                # as we constructed the branches to follow from the same dictionary we just ran
+                # over
+                continue
+
+            # Only numbers go on the y-axis so we might need to map other types of values to
+            # numbers and adjust the y-ticks later
+            need_mapping = False
+            for yv in y_axis_vals:
+                if not isinstance(yv, Number):
+                    need_mapping = True
+                    break
+
+            y_axis_map = {}
+            if need_mapping:
+                for i, yv in enumerate(y_axis_vals):
+                    if str(yv) in y_axis_map:
+                        continue
+                    y_axis_map[str(yv)] = i
+
+                y_axis_vals = [y_axis_map[str(yv)] for yv in y_axis_vals]
+
+            # Now, good to plot
+            ax.plot(x_axis_vals, y_axis_vals, ls="", markersize=markersize, marker="o")
+            ax.get_yaxis().set_tick_params(labelsize=20)
+            ax.get_xaxis().set_tick_params(labelsize=20)
+            ax.set_xticks(range(len(params_tmp)))
+            ax.set_xticklabels(range(len(params_tmp)), fontsize=20)
+
+            if need_mapping:
+                # If there were values other than numbers, adjust y-ticks
+                ax.set_yticks(range(max(y_axis_vals) + 1))
+                y_axis_map = dict((v, k) for k, v in y_axis_map.items())
+                yticks_pos = list(y_axis_map.keys())
+                yticks_pos.sort()
+                ax.set_yticklabels([y_axis_map[yp] for yp in yticks_pos], fontsize=20)
+            ax.set_ylabel(":".join(pf), fontsize=20)
+            ax.set_xlabel("iteration", fontsize=20)
+
+            fig.suptitle(f"Parameter evolution {':'.join(pf)}", fontsize=35)
+
+            fig.tight_layout()
+            out_file = join(out_dir, f"par_evol_{'_'.join(pf)}.png")
+            fig.savefig(out_file)
+            plt.close(fig)
+
+
+    def __plot_summary(self, out_dir, from_yaml=None, from_pickle=None): # pylint: disable=unused-argument, too-many-statements
         """Plot results
 
         Results are plotted to out_dir/results.png
@@ -448,3 +605,20 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         out_file = join(out_dir, "results.png")
         fig.savefig(out_file)
         plt.close(fig)
+
+
+
+    def plot(self, out_dir, from_yaml=None, from_pickle=None):
+        """Plot results
+
+        Results are plotted to out_dir/results.png
+
+        Args:
+            out_dir: str
+                output directory where results.png will be saved
+            from_yaml: str
+                path to YAML file to read and plot results from
+
+        """
+        self.__plot_summary(out_dir, from_yaml, from_pickle)
+        self.__plot_parameter_evolutions(out_dir)
