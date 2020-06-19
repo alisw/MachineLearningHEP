@@ -24,6 +24,8 @@ import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 import seaborn as sns
 
+from machine_learning_hep.logger import get_logger
+
 def vardistplot(dataframe_sig_, dataframe_bkg_, mylistvariables_, output_,
                 binmin, binmax):
     figure = plt.figure(figsize=(20, 15)) # pylint: disable=unused-variable
@@ -128,6 +130,9 @@ def efficiency_cutscan(dataframe_, mylistvariables_, modelname_, threshold, # py
     gs = GridSpec(3, int(len(mylistvariables_)/3+1))
     axes = [fig.add_subplot(gs[i]) for i in range(len(mylistvariables_))]
 
+    # Available cut options
+    cut_options = ["lt", "st", "abslt", "absst"]
+
     for i, var_tuple in enumerate(mylistvariables_):
         var = var_tuple[0]
         vardir = var_tuple[1]
@@ -155,13 +160,19 @@ def efficiency_cutscan(dataframe_, mylistvariables_, modelname_, threshold, # py
         center = (bina[:-1] + bina[1:]) / 2
         den = len(values)
         ratios = deque()
+
+        if vardir not in cut_options:
+            get_logger().error("Please choose cut option from %s. " \
+                    "Your current setting for variable %s is %s", str(cut_options), vardir, var)
+            continue
+
         if "lt" in vardir:
             for ibin in range(nbinscan):
                 values = values[values > minv+widthbin*ibin]
                 num = len(values)
                 eff = float(num)/float(den)
                 ratios.append(eff)
-        elif "st" in vardir:
+        else:
             for ibin in range(nbinscan, 0, -1):
                 values = values[values < minv+widthbin*ibin]
                 num = len(values)
