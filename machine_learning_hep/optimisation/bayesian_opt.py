@@ -15,7 +15,6 @@
 import sys
 from os.path import join
 from numbers import Number
-from inspect import isclass
 from copy import copy
 import pickle
 import numpy as np
@@ -29,7 +28,7 @@ from sklearn.model_selection import cross_validate
 
 from hyperopt import fmin, tpe, STATUS_OK
 
-from machine_learning_hep.io import dump_yaml_from_dict, parse_yaml
+from machine_learning_hep.io import dump_yaml_from_dict, parse_yaml, dict_yamlable
 
 # Change to that backend to not have problems with saving fgures
 # when X11 connection got lost
@@ -297,41 +296,14 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
             self.finalise()
 
 
-    @staticmethod
-    def __params_yamlable(params):
-        """ Turn all params into str
-        Args:
-            params: dict
-                dictionary where values are to be turned to str
-        Returns:
-            dict: all values turned to str
-
-        NOTE Cannot just deepcopy and turn into str because there might be objects which cannot
-             deepcopied
-        """
-        params_seri = {}
-        for k, v in params.items():
-            if isinstance(v, dict):
-                params_seri[k] = BayesianOpt.__params_yamlable(v)
-            else:
-                if isinstance(v, (Number, str, list, tuple)):
-                    # This we can handle with standard PyYAML
-                    params_seri[k] = v
-                elif isclass(v):
-                    params_seri[k] = f"custom:{v.__name__}"
-                else:
-                    params_seri[k] = f"custom:{v.__class__.__name__}"
-        return params_seri
-
-
     def make_results(self):
         """Helper function to make dictionary of parameters and results
         """
-        params_tmp = [self.__params_yamlable(p) for p in self.params]
+        params_tmp = [dict_yamlable(p) for p in self.params]
         return {"cv": self.results,
                 "params": params_tmp,
                 "best_index": self.best_index,
-                "best_params": self.__params_yamlable(self.best_params),
+                "best_params": dict_yamlable(self.best_params),
                 "best_scores": self.best_scores,
                 "score_names": list(self.scoring.keys()),
                 "score_opt_name": self.scoring_opt}
@@ -375,16 +347,7 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
                 save_func(m, out_dir_model)
 
 
-    def __plot_parameter_evolutions(self, out_dir): # pylint: disable=too-many-branches, too-many-statements
-        """plot evolution of all parameters
-
-        Plotting each hyperparameter value as a function of the iterations
-
-        Args:
-            out_dir: str
-                where to store the plots
-        """
-        print("Plot parameter evolutions")
+    def __extract_param_evolution(self): # pylint: disable=too-many-branches
 
         def __extract_branches(search, branch_list, __branch=None):
             """helper function to collect all branches in dictionary
@@ -397,7 +360,6 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
                 branch_list: list
                     list to collect all branches
             """
-
             if __branch is None:
                 __branch = []
             for k, v in search.items():
@@ -408,6 +370,7 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
                 elif branch_tmp not in branch_list:
                     branch_list.append(branch_tmp)
 
+
         # First, actually collect all parameters
         param_fields = []
         for p in self.params:
@@ -415,15 +378,15 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
 
         # And make them at least yamlable for yaml.safe dump so have proper names also for
         # more complex values
-        params_tmp = [self.__params_yamlable(p) for p in self.params]
+        params_tmp = [dict_yamlable(p) for p in self.params]
+
+
+        # Collect parameters as
+        # [{"branch": branch, "iterations": iterations, "values": values, "mapping": mapping}, ...]
+        params_extracted = []
 
         # Go through all branches
         for pf in param_fields:
-
-            figsize = (30, 30)
-            fig, ax = plt.subplots(1, 1, figsize=figsize)
-
-            markersize = 20
 
             x_axis_vals = []
             y_axis_vals = []
@@ -449,6 +412,10 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
                 x_axis_vals.append(i)
                 y_axis_vals.append(curr_val)
 
+            params_extracted.append({"branch": pf,
+                                     "iterations": x_axis_vals,
+                                     "values": y_axis_vals})
+
             if not x_axis_vals:
                 # Usually, that should not happen and at least one value should have been found
                 # as we constructed the branches to follow from the same dictionary we just ran
@@ -472,32 +439,133 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
 
                 y_axis_vals = [y_axis_map[str(yv)] for yv in y_axis_vals]
 
-            # Now, good to plot
-            ax.plot(x_axis_vals, y_axis_vals, ls="", markersize=markersize, marker="o")
+                params_extracted[-1]["values"] = y_axis_vals
+                # Now the inverse mapping
+                y_axis_map = dict((v, k) for k, v in y_axis_map.items())
+                params_extracted[-1]["mapping"] = y_axis_map
+
+        return params_extracted
+
+
+    def __plot_parameter_violins(self, out_dir):
+        """plot violin for each parameter
+
+        Args:
+            out_dir: str
+                where to store the plots
+        """
+        print("Plot violins")
+
+        def __adjacent_values(vals, q1_, q3_):
+            vals = np.sort(vals)
+            upper_adjacent_value = q3_ + (q3_ - q1_) * 1.5
+            upper_adjacent_value = np.clip(upper_adjacent_value, q3_, vals[-1])
+
+            lower_adjacent_value = q1_ - (q3_ - q1_) * 1.5
+            lower_adjacent_value = np.clip(lower_adjacent_value, vals[0], q1_)
+            return lower_adjacent_value, upper_adjacent_value
+
+        for p in self.__extract_param_evolution():
+
+            if not p["iterations"]:
+                # nothing to plot
+                continue
+
+            figsize = (15, 15)
+            fig, ax = plt.subplots(1, 1, figsize=figsize)
+
+            y_axis_vals = p["values"]
+            name = ":".join(p["branch"])
+            save_name = "_".join(p["branch"])
+
+            # violin plot, based on
+            # https://matplotlib.org/3.1.0/gallery/statistics/customized_violin.html
+            parts = ax.violinplot([y_axis_vals], showmeans=False, showmedians=False,
+                                  showextrema=False)
+            for pc in parts['bodies']:
+                pc.set_facecolor('#00DDFF')
+                pc.set_edgecolor('#0C00BA')
+                pc.set_alpha(0.2)
+
+            quartile1, medians, quartile3 = np.percentile([y_axis_vals], [25, 50, 75], axis=1)
+            whiskers = np.array([__adjacent_values(vals_array, q1, q3) \
+                    for vals_array, q1, q3 in zip([y_axis_vals], quartile1, quartile3)])
+            whiskers_min, whiskers_max = whiskers[:, 0], whiskers[:, 1]
+
+            inds = np.arange(1, len(medians) + 1)
+            ax.scatter(inds, medians, marker='o', color='white', s=40, zorder=3)
+            ax.vlines(inds, quartile1, quartile3, color='k', linestyle='-', lw=6)
+            ax.vlines(inds, whiskers_min, whiskers_max, color='k', linestyle='-', lw=3)
+
+            ax.set_xlabel(name, fontsize=20)
+            ax.set_ylabel("values", fontsize=20)
             ax.get_yaxis().set_tick_params(labelsize=20)
             ax.get_xaxis().set_tick_params(labelsize=20)
-            ax.set_xticks(range(len(params_tmp)))
-            ax.set_xticklabels(range(len(params_tmp)), fontsize=20)
 
-            if need_mapping:
-                # If there were values other than numbers, adjust y-ticks
-                ax.set_yticks(range(max(y_axis_vals) + 1))
-                y_axis_map = dict((v, k) for k, v in y_axis_map.items())
-                yticks_pos = list(y_axis_map.keys())
-                yticks_pos.sort()
-                ax.set_yticklabels([y_axis_map[yp] for yp in yticks_pos], fontsize=20)
-            ax.set_ylabel(":".join(pf), fontsize=20)
-            ax.set_xlabel("iteration", fontsize=20)
-
-            fig.suptitle(f"Parameter evolution {':'.join(pf)}", fontsize=35)
+            fig.suptitle(f"Parameter violin {name}", fontsize=35)
 
             fig.tight_layout()
-            out_file = join(out_dir, f"par_evol_{'_'.join(pf)}.png")
+            out_file = join(out_dir, f"par_violin_{save_name}.png")
             fig.savefig(out_file)
             plt.close(fig)
 
 
-    def __plot_summary(self, out_dir, from_yaml=None, from_pickle=None): # pylint: disable=unused-argument, too-many-statements
+    def __plot_parameter_evolutions(self, out_dir):
+        """plot evolution of all parameters
+
+        Plotting each hyperparameter value as a function of the iterations
+
+        Args:
+            out_dir: str
+                where to store the plots
+        """
+        print("Plot parameter evolutions")
+
+        params_evolution = self.__extract_param_evolution()
+
+        for p in params_evolution:
+
+            if not p["iterations"]:
+                # nothing to plot
+                continue
+
+            figsize = (15, 15)
+            fig, ax = plt.subplots(1, 1, figsize=figsize)
+
+            markersize = 20
+
+            x_axis_vals = p["iterations"]
+            y_axis_vals = p["values"]
+            name = ":".join(p["branch"])
+            save_name = "_".join(p["branch"])
+
+            # Now, good to plot
+            ax.plot(x_axis_vals, y_axis_vals, ls="", markersize=markersize, marker="o")
+            ax.get_yaxis().set_tick_params(labelsize=20)
+            ax.get_xaxis().set_tick_params(labelsize=20)
+            # Use trial_id to set x-range
+            ax.set_xticks(range(self.trial_id + 1))
+            ax.set_xticklabels(range(self.trial_id + 1), fontsize=20)
+
+            mapping = p.get("mapping", None)
+            if mapping:
+                # If there were values other than numbers, adjust y-ticks
+                ax.set_yticks(range(max(y_axis_vals) + 1))
+                yticks_pos = list(mapping.keys())
+                yticks_pos.sort()
+                ax.set_yticklabels([mapping[yp] for yp in yticks_pos], fontsize=20)
+            ax.set_ylabel(name, fontsize=20)
+            ax.set_xlabel("iteration", fontsize=20)
+
+            fig.suptitle(f"Parameter evolution {name}", fontsize=35)
+
+            fig.tight_layout()
+            out_file = join(out_dir, f"par_evol_{save_name}.png")
+            fig.savefig(out_file)
+            plt.close(fig)
+
+
+    def __plot_summary(self, out_dir, from_yaml=None, from_pickle=None):# pylint: disable=too-many-statements
         """Plot results
 
         Results are plotted to out_dir/results.png
@@ -620,3 +688,4 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         """
         self.__plot_summary(out_dir, from_yaml, from_pickle)
         self.__plot_parameter_evolutions(out_dir)
+        self.__plot_parameter_violins(out_dir)
