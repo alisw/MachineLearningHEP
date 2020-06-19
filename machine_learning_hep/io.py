@@ -17,8 +17,34 @@ Methods to: manage input/output
 """
 
 import os
+from numbers import Number
+from inspect import isclass
 import yaml
 from machine_learning_hep.logger import get_logger
+
+def dict_yamlable(params):
+    """make dictionary ready for yaml.safe_dump
+    Args:
+        params: dict
+            dictionary to modify
+    Returns:
+        dict: modified dictionary which can be used with yaml.safe_dump
+
+    """
+    params_seri = {}
+    for k, v in params.items():
+        if isinstance(v, dict):
+            params_seri[k] = dict_yamlable(v)
+        else:
+            if isinstance(v, (Number, str, list, tuple)):
+                # This we can handle with standard PyYAML
+                params_seri[k] = v
+            elif isclass(v):
+                params_seri[k] = f"custom:{v.__name__}"
+            else:
+                params_seri[k] = f"custom:{v.__class__.__name__}"
+    return params_seri
+
 
 def parse_yaml(filepath):
     """
