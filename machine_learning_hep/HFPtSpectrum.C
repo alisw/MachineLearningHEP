@@ -1160,6 +1160,8 @@ void HFPtSpectrum2 (const char *inputCrossSection,
   TH1D *hFeedDownMCptMin=0;      // Input MC minimum b-->D spectra
   TGraphAsymmErrors * gFcConservative = 0; // Input fPrompt fraction
   AliHFSystErr * systematics = 0;
+  TH1D* hStatUncEffcFD;          //Stat. Unc. prompt efficiency used for fprompt calculation
+  TH1D* hStatUncEffbFD;          //Stat. Unc. feeddown efficiency used for fprompt calculation
 
   TH1D *hDirectEffpt=0;          // c-->D Acceptance and efficiency correction
   TH1D *hFeedDownEffpt=0;        // b-->D Acceptance and efficiency correction
@@ -1186,6 +1188,8 @@ void HFPtSpectrum2 (const char *inputCrossSection,
   hFeedDownMCptMin = (TH1D*)inputcrossfile->Get("hFeedDownMCptMin");
   gFcConservative = (TGraphAsymmErrors*)inputcrossfile->Get("gFcConservative");
   systematics = (AliHFSystErr*)inputcrossfile->Get("AliHFSystErr");
+  hStatUncEffcFD = (TH1D*)inputcrossfile->Get("fhStatUncEffcFD");
+  hStatUncEffbFD = (TH1D*)inputcrossfile->Get("fhStatUncEffbFD");
 
   //
   // Get efficiencies for cross section calculation
@@ -1272,17 +1276,23 @@ void HFPtSpectrum2 (const char *inputCrossSection,
   gSigmaCorrExtreme->SetNameTitle("gSigmaCorrExtreme","Extreme gSigmaCorr (by Nb)");
   gSigmaCorrConservative->SetNameTitle("gSigmaCorrConservative","Conservative gSigmaCorr (by Nb)");
 
-  // NB: Don't care for the moment about fhStatUncEffc/bSigma fhStatUncEffc/bFD
   TH1D *hStatUncEffcSigma = new TH1D("fhStatUncEffcSigma","direct charm stat unc on the cross section",fnPtBins,fPtBinLimits);
   TH1D *hStatUncEffbSigma = new TH1D("fhStatUncEffbSigma","secondary charm stat unc on the cross section",fnPtBins,fPtBinLimits);
-  TH1D *hStatUncEffcFD = new TH1D("fhStatUncEffcFD","direct charm stat unc on the feed-down correction",fnPtBins,fPtBinLimits);
-  TH1D *hStatUncEffbFD = new TH1D("fhStatUncEffbFD","secondary charm stat unc on the feed-down correction",fnPtBins,fPtBinLimits);
+
+  Double_t fLuminosity[2] = {nevents / sigma, 0.04 * nevents / sigma};
+  Double_t fTrigEfficiency[2] = {triggereff, triggereffunc};
+  Double_t fGlobalEfficiencyUncertainties[2] = {0.05, 0.05};
+  Double_t deltaY = 1.0;
+  Double_t branchingRatioC = 1.0;
+  Double_t branchingRatioBintoFinalDecay = 1.0;
+  Bool_t fGlobalEfficiencyPtDependent = setUsePtDependentEffUncertainty;
+  Int_t fParticleAntiParticle = 1;
 
   //
   // Do the corrected yield calculation.
-  // NB: Don't care for the moment about histoYieldCorrMin/Max gYieldCorrExtreme/Conservative
   //
-  Double_t value = 0., errvalue = 0., errvalueMax = 0., errvalueMin = 0.;
+  Double_t value = 0., errvalue = 0., errvalueMax = 0., errvalueMin = 0., kfactor = 0.;
+  Double_t errvalueExtremeMax=0., errvalueExtremeMin=0.;
   for (Int_t ibin=1; ibin<=fnPtBins; ibin++) {
     // Calculate the value
     //    physics =  [ reco  - (lumi * delta_y * BR_b * eff_trig * eff_b * Nb_th) ] / bin-width
@@ -1290,7 +1300,7 @@ void HFPtSpectrum2 (const char *inputCrossSection,
     Double_t frac = 1.0, errfrac =0.;
 
     // Variables initialization
-    value = 0.; errvalue = 0.; errvalueMax = 0.; errvalueMin = 0.;
+    value = 0.; errvalue = 0.; errvalueMax = 0.; errvalueMin = 0.; kfactor = 0.;
 
     // Get fPrompt from input value
     Double_t x = 0., correction = 0;
@@ -1305,25 +1315,47 @@ void HFPtSpectrum2 (const char *inputCrossSection,
     if (value!=0. && hRECpt->GetBinError(ibin) && hRECpt->GetBinError(ibin)!=0.) errvalue = hRECpt->GetBinError(ibin);
     errvalue /= hRECpt->GetBinWidth(ibin);
 
+    //Fill other HFPtSpectrum histograms with info we have access to here (which is not all)
+    if(value > 0.){
+      // Systematic uncertainties
+      //     (syst but feed-down)  delta_physics = sqrt ( (delta_reco_syst)^2 )  / bin-width
+      //         (feed-down syst)  delta_physics = sqrt ( (k*delta_lumi/lumi)^2 + (k*delta_eff_trig/eff_trig)^2
+      //                                                   + (k*delta_Nb/Nb)^2 + (k*delta_eff/eff)^2 + (k*global_eff_ratio)^2 ) / bin-width
+      //                    where k = lumi * delta_y * BR_b * eff_trig * eff_b * Nb_th * bin-width
+      kfactor = frac*deltaY*branchingRatioBintoFinalDecay*fParticleAntiParticle*fTrigEfficiency[0]*hFeedDownEffpt->GetBinContent(ibin)*hFeedDownMCpt->GetBinContent(ibin) * hRECpt->GetBinWidth(ibin) ;
+
+      Double_t nb =  hFeedDownMCpt->GetBinContent(ibin);
+      Double_t nbDmax = hFeedDownMCptMax->GetBinContent(ibin) - hFeedDownMCpt->GetBinContent(ibin);
+      Double_t nbDmin = hFeedDownMCpt->GetBinContent(ibin) - hFeedDownMCptMin->GetBinContent(ibin);
+
+      errvalueMax = 0.; errvalueMin = 0.;
+
+      // Feed-down systematics
+      // min value with the maximum Nb
+      Double_t errCom =  ( (kfactor*errfrac/frac)*(kfactor*errfrac/frac) ) +
+      ( (kfactor*fTrigEfficiency[1]/fTrigEfficiency[0])*(kfactor*fTrigEfficiency[1]/fTrigEfficiency[0]) ) +
+      ( (kfactor*hFeedDownEffpt->GetBinError(ibin)/hFeedDownEffpt->GetBinContent(ibin))*(kfactor*hFeedDownEffpt->GetBinError(ibin)/hFeedDownEffpt->GetBinContent(ibin)) ) +
+      ( (kfactor*fGlobalEfficiencyUncertainties[0])*(kfactor*fGlobalEfficiencyUncertainties[0]) ) ;
+      errvalueExtremeMin = TMath::Sqrt( errCom + ( (kfactor*nbDmax/nb)*(kfactor*nbDmax/nb) ) ) / hRECpt->GetBinWidth(ibin);
+      // max value with the minimum Nb
+      errvalueExtremeMax =  TMath::Sqrt( errCom + ( (kfactor*nbDmin/nb)*(kfactor*nbDmin/nb) ) ) / hRECpt->GetBinWidth(ibin);
+    }
+
     histoYieldCorr->SetBinContent(ibin,value);
     histoYieldCorr->SetBinError(ibin,errvalue);
+    histoYieldCorrMax->SetBinContent(ibin,value+errvalueMax);
+    histoYieldCorrMin->SetBinContent(ibin,value-errvalueMin);
     gYieldCorr->SetPoint(ibin,x,value);
     gYieldCorr->SetPointError(ibin,(fPtBinWidths[ibin-1]/2.),(fPtBinWidths[ibin-1]/2.),errvalueMin,errvalueMax);
-
+    gYieldCorrExtreme->SetPoint(ibin,x,value); // i,x,y
+    gYieldCorrExtreme->SetPointError(ibin,(fPtBinWidths[ibin-1]/2.),(fPtBinWidths[ibin-1]/2.),errvalueExtremeMin,errvalueExtremeMax); // i,xl,xh,yl,yh
+    gYieldCorrConservative->SetPoint(ibin,x,value); // i,x,y
+    gYieldCorrConservative->SetPointError(ibin,(fPtBinWidths[ibin-1]/2.),(fPtBinWidths[ibin-1]/2.),errvalueExtremeMin,errvalueExtremeMax); // i,xl,xh,yl,yh
   }
 
   //
   // Do the corrected sigma calculation.
-  // NB: Don't care for the moment about histoSigmaCorrMin/Max and gSigmaCorrExtreme/Conservative
   //
-  Double_t fLuminosity[2] = {nevents / sigma, 0.04 * nevents / sigma};
-  Double_t fTrigEfficiency[2] = {triggereff, triggereffunc};
-  Double_t fGlobalEfficiencyUncertainties[2] = {0.05, 0.05};
-  Double_t deltaY = 1.0;
-  Double_t branchingRatioC = 1.0;
-  Double_t branchingRatioBintoFinalDecay = 1.0;
-  Bool_t fGlobalEfficiencyPtDependent = setUsePtDependentEffUncertainty;
-  Int_t fParticleAntiParticle = 1;
   if( isParticlePlusAntiParticleYield ) fParticleAntiParticle = 2;
   printf("\n\n     Correcting the spectra with : \n   luminosity = %2.2e +- %2.2e, trigger efficiency = %2.2e +- %2.2e, \n    delta_y = %2.2f, BR_c = %2.2e, BR_b_decay = %2.2e \n    %2.2f percent uncertainty on the efficiencies, and %2.2f percent uncertainty on the b/c efficiencies ratio \n    usage of pt-dependent efficiency uncertainty for Nb uncertainy calculation? %1.0d \n\n",fLuminosity[0],fLuminosity[1],fTrigEfficiency[0],fTrigEfficiency[1],deltaY,branchingRatioC,branchingRatioBintoFinalDecay,fGlobalEfficiencyUncertainties[0],fGlobalEfficiencyUncertainties[1],fGlobalEfficiencyPtDependent);
 
@@ -1333,10 +1365,15 @@ void HFPtSpectrum2 (const char *inputCrossSection,
     return;
   }
 
+  Double_t errvalueConservativeMax=0., errvalueConservativeMin=0.;
+  Double_t errvalueStatUncEffc=0.;
   for (Int_t ibin=1; ibin<=fnPtBins; ibin++) {
 
     // Variables initialization
-    value=0.; errvalue=0.;
+    value=0.; errvalue=0.; errvalueMax=0.; errvalueMin=0.;
+    errvalueExtremeMax=0.; errvalueExtremeMin=0.;
+    errvalueConservativeMax=0.; errvalueConservativeMin=0.;
+    errvalueStatUncEffc=0.;
 
     Double_t x = histoYieldCorr->GetBinCenter(ibin);
 
@@ -1352,10 +1389,50 @@ void HFPtSpectrum2 (const char *inputCrossSection,
       errvalue = value * (histoYieldCorr->GetBinError(ibin)/histoYieldCorr->GetBinContent(ibin));
     }
 
+    //Fill other HFPtSpectrum histograms (which are not all relevant) with info we have access to here (which is not all)
+    if(value > 0.){
+      //  (syst but feed-down) delta_sigma = sigma * sqrt ( (delta_spectra_syst/spectra)^2 +
+      //                                     (delta_lumi/lumi)^2 + (delta_eff_trig/eff_trig)^2 + (delta_eff/eff)^2  + (global_eff)^2 )
+      errvalueMax = value * TMath::Sqrt( (gYieldCorr->GetErrorYhigh(ibin)/histoYieldCorr->GetBinContent(ibin))*(gYieldCorr->GetErrorYhigh(ibin)/histoYieldCorr->GetBinContent(ibin)) +
+                                        (fLuminosity[1]/fLuminosity[0])*(fLuminosity[1]/fLuminosity[0]) +
+                                        (fTrigEfficiency[1]/fTrigEfficiency[0])*(fTrigEfficiency[1]/fTrigEfficiency[0])  +
+                                        (hDirectEffpt->GetBinError(ibin)/hDirectEffpt->GetBinContent(ibin))*(hDirectEffpt->GetBinError(ibin)/hDirectEffpt->GetBinContent(ibin)) +
+                                        fGlobalEfficiencyUncertainties[0]*fGlobalEfficiencyUncertainties[0] );
+      errvalueMin = value * TMath::Sqrt( (gYieldCorr->GetErrorYlow(ibin)/histoYieldCorr->GetBinContent(ibin))*(gYieldCorr->GetErrorYlow(ibin)/histoYieldCorr->GetBinContent(ibin)) +
+                                        (fLuminosity[1]/fLuminosity[0])*(fLuminosity[1]/fLuminosity[0]) +
+                                        (fTrigEfficiency[1]/fTrigEfficiency[0])*(fTrigEfficiency[1]/fTrigEfficiency[0])  +
+                                        (hDirectEffpt->GetBinError(ibin)/hDirectEffpt->GetBinContent(ibin))*(hDirectEffpt->GetBinError(ibin)/hDirectEffpt->GetBinContent(ibin))  +
+                                        fGlobalEfficiencyUncertainties[0]*fGlobalEfficiencyUncertainties[0] );
+
+      // Uncertainties from feed-down
+      //      (feed-down syst) delta_sigma = sigma * sqrt ( (delta_spectra_fd/spectra_fd)^2 )
+      //   extreme case
+      errvalueExtremeMax = value * (gYieldCorrExtreme->GetErrorYhigh(ibin)/histoYieldCorr->GetBinContent(ibin));
+      errvalueExtremeMin =  value * (gYieldCorrExtreme->GetErrorYlow(ibin)/histoYieldCorr->GetBinContent(ibin));
+      //
+      //   conservative case
+      errvalueConservativeMax = value * (gYieldCorrConservative->GetErrorYhigh(ibin)/histoYieldCorr->GetBinContent(ibin));
+      errvalueConservativeMin =  value * (gYieldCorrConservative->GetErrorYlow(ibin)/histoYieldCorr->GetBinContent(ibin));
+
+      // stat unc of the efficiencies, separately
+      errvalueStatUncEffc = value * (hDirectEffpt->GetBinError(ibin)/hDirectEffpt->GetBinContent(ibin)) ;
+    }
+
     histoSigmaCorr->SetBinContent(ibin,value);
     histoSigmaCorr->SetBinError(ibin,errvalue);
+    histoSigmaCorrMax->SetBinContent(ibin,value+errvalueMax);
+    histoSigmaCorrMin->SetBinContent(ibin,value-errvalueMin);
     gSigmaCorr->SetPoint(ibin,x,value); // i,x,y
     gSigmaCorr->SetPointError(ibin,(fPtBinWidths[ibin-1]/2.),(fPtBinWidths[ibin-1]/2.),errvalueMin,errvalueMax); // i,xl,xh,yl,yh
+
+    gSigmaCorrExtreme->SetPoint(ibin,x,value); // i,x,y
+    gSigmaCorrExtreme->SetPointError(ibin,(fPtBinWidths[ibin-1]/2.),(fPtBinWidths[ibin-1]/2.),errvalueExtremeMin,errvalueExtremeMax); // i,xl,xh,yl,yh
+    gSigmaCorrConservative->SetPoint(ibin,x,value); // i,x,y
+    gSigmaCorrConservative->SetPointError(ibin,(fPtBinWidths[ibin-1]/2.),(fPtBinWidths[ibin-1]/2.),errvalueConservativeMin,errvalueConservativeMax); // i,xl,xh,yl,yh
+
+    hStatUncEffcSigma->SetBinContent(ibin,0.);
+    if(value>0.) hStatUncEffcSigma->SetBinError(ibin,((errvalueStatUncEffc/value)*100.));
+    hStatUncEffbSigma->SetBinContent(ibin,0.); hStatUncEffbSigma->SetBinError(ibin,0.);
   }
   
   //
