@@ -29,7 +29,7 @@ from machine_learning_hep.utilities import selectdfrunlist, seldf_singlevar, ope
 from machine_learning_hep.utilities import create_folder_struc, mergerootfiles, get_timestamp_string
 from machine_learning_hep.utilities import z_calc, z_gen_calc
 from machine_learning_hep.utilities_plot import buildhisto, build2dhisto, fill2dhist, makefill3dhist
-from machine_learning_hep.processer import Processer
+from machine_learning_hep.processing.processer import Processer
 #from machine_learning_hep.selectionutils import selectpid_dzerotokpi
 
 def apply_cut_selpid(df_):

@@ -200,13 +200,12 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         self.fitter = None
         self.p_performval = datap["analysis"].get("event_cand_validation", None)
 
-    # pylint: disable=import-outside-toplevel
     def fit(self):
         # Enable ROOT batch mode and reset in the end
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
 
-        self.fitter = MLFitter(self.datap, self.typean, self.n_filemass, self.n_filemass_mc)
+        self.fitter = MLFitter(self.processer_helper, self.n_filemass, self.n_filemass_mc)
         self.fitter.perform_pre_fits()
         self.fitter.perform_central_fits()
         fileout_name = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
@@ -230,7 +229,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         if not self.fitter:
             fileout_name = os.path.join(self.d_resultsallpdata,
                                         f"{self.fits_dirname}_{self.case}_{self.typean}")
-            self.fitter = MLFitter(self.datap, self.typean, self.n_filemass, self.n_filemass_mc)
+            self.fitter = MLFitter(self.processer_helper, self.n_filemass, self.n_filemass_mc)
             if not self.fitter.load_fits(fileout_name):
                 self.logger.error("Cannot load fits from dir %s", fileout_name)
                 return

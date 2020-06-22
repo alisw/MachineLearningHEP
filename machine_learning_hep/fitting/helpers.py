@@ -28,8 +28,8 @@ from machine_learning_hep.utilities_plot import plot_histograms
 from machine_learning_hep.fitting.utils import save_fit, load_fit
 from machine_learning_hep.fitting.fitters import FitAliHF, FitROOTGauss, FitSystAliHF
 
-# pylint: disable=too-many-instance-attributes, too-many-statements
-class MLFitParsFactory:
+
+class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many-statements
     """
     Managing MLHEP specific fit parameters and is used to collect and retrieve all information
     required to initialise a (systematic) fit
@@ -38,40 +38,42 @@ class MLFitParsFactory:
     SIG_FUNC_MAP = {"kGaus": 0, "k2Gaus": 1, "kGausSigmaRatioPar": 2}
     BKG_FUNC_MAP = {"kExpo": 0, "kLin": 1, "Pol2": 2, "kNoBk": 3, "kPow": 4, "kPowEx": 5}
 
-    def __init__(self, database: dict, ana_type: str, file_data_name: str, file_mc_name: str):
+    def __init__(self, processer_helper, file_data_name: str, file_mc_name: str):
         """
         Initialize MLFitParsFactory
         Args:
-            database: dictionary of the entire analysis database
-            ana_type: specifying the analysis within the database to be done
+            processer_helper: ProcesserHelper
+                generic helper for retrieving and handling database info
             file_data_name: file path where to find data histograms to fit
             file_mc_name: file path where to find MC histograms to fit
         """
 
         self.logger = get_logger()
 
-        ana_config = database["analysis"][ana_type]
+        self.processer_helper = processer_helper
 
-        self.prob_cut_fin = database["mlapplication"]["probcutoptimal"]
+        ana_config = processer_helper.analysis
+
+        self.prob_cut_fin = processer_helper.database["mlapplication"]["probcutoptimal"]
 
         # File config
         self.file_data_name = file_data_name
         self.file_mc_name = file_mc_name
 
         # Binning
-        self.bin1_name = database["var_binning"]
+        self.bin1_name = processer_helper.database["var_binning"]
         self.bins1_edges_low = ana_config["sel_an_binmin"]
         self.bins1_edges_up = ana_config["sel_an_binmax"]
         self.n_bins1 = len(self.bins1_edges_low)
-        self.bin2_name = ana_config["var_binning2"]
-        self.bin2_gen_name = ana_config["var_binning2_gen"]
-        self.bins2_edges_low = ana_config["sel_binmin2"]
-        self.bins2_edges_up = ana_config["sel_binmax2"]
-        self.n_bins2 = len(self.bins2_edges_low)
         self.bin_matching = ana_config["binning_matching"]
+        self.bin2_name = ana_config.get("var_binning2", None)
+        self.bin2_gen_name = ana_config.get("var_binning2_gen", None)
+        self.bins2_edges_low = ana_config.get("sel_binmin2", None)
+        self.bins2_edges_up = ana_config.get("sel_binmax2", None)
+        self.n_bins2 = len(self.bins2_edges_low) if self.bins2_edges_low else 1
+        self.has_bin2 = bool(self.bin2_name)
 
-        bineff = ana_config["usesinglebineff"]
-        self.bins2_int_bin = bineff if bineff is not None else 0
+        self.bins2_int_bin = ana_config.get("pre_fit_mult_bin", 0)
         # Fit method flags
         self.init_fits_from = ana_config["init_fits_from"]
         self.sig_func_name = ana_config["sgnfunc"]
@@ -242,23 +244,6 @@ class MLFitParsFactory:
         return fit_pars
 
 
-    def make_suffix(self, ibin1, ibin2):
-        """
-        Build name suffix to find histograms in ROOT file
-        Args:
-            ibin1: Number of bin of first binning variable
-            ibin2: Number of bin of second binning variable
-        Returns:
-            Suffix string
-        """
-        bin_id_match = self.bin_matching[ibin1]
-        return "%s%d_%d_%.2f%s_%.2f_%.2f" % \
-               (self.bin1_name, self.bins1_edges_low[ibin1],
-                self.bins1_edges_up[ibin1], self.prob_cut_fin[bin_id_match],
-                self.bin2_name, self.bins2_edges_low[ibin2],
-                self.bins2_edges_up[ibin2])
-
-
     def get_histograms(self, ibin1, ibin2, get_data=True, get_mc=False, get_reflections=False):
         """
         Get histograms according to specified bins
@@ -271,7 +256,7 @@ class MLFitParsFactory:
         Returns:
             histograms as requested. None for each that was not requested
         """
-        suffix = self.make_suffix(ibin1, ibin2)
+        suffix = self.processer_helper.make_mass_histo_suffix(ibin1, ibin2)
 
         histo_data = None
         if get_data:
@@ -366,33 +351,29 @@ class MLFitParsFactory:
             for ibin1 in range(self.n_bins1):
                 yield ibin1, ibin2, self.get_syst_pars(ibin1, ibin2)
 
-# pylint: enable=too-many-instance-attributes, too-many-statements
 
-
-# pylint: disable=too-many-instance-attributes
-class MLFitter:
+class MLFitter: # pylint: disable=too-many-instance-attributes
     """
     Wrapper around all available fits insatntiated and used in an MLHEP analysis run.
     """
 
 
-    def __init__(self, database: dict, ana_type: str, data_out_dir: str, mc_out_dir: str):
+    def __init__(self, processer_helper, data_out_dir: str, mc_out_dir: str):
         """
         Initialize MLFitter
         Args:
-            database: dictionary of the entire analysis database
-            ana_type: specifying the analysis within the database to be done
+            processer_helper: ProcesserHelper
+                generic helper for retrieving and handling database info
             file_data_name: file path where to find data histograms to fit
             file_mc_name: file path where to find MC histograms to fit
         """
 
         self.logger = get_logger()
 
-        self.case = next(iter(database))
-        self.ana_type = ana_type
-        self.ana_config = database["analysis"][ana_type]
-
-        self.pars_factory = MLFitParsFactory(database, ana_type, data_out_dir, mc_out_dir)
+        self.pars_factory = MLFitParsFactory(processer_helper, data_out_dir, mc_out_dir)
+        self.processer_helper = processer_helper
+        self.ana_config = processer_helper.analysis
+        self.ana_type = processer_helper.ana_type
 
         self.pre_fits_mc = None
         self.pre_fits_data = None
@@ -716,7 +697,7 @@ class MLFitter:
             x_axis_label = "#it{M}_{inv} (GeV/#it{c}^{2})"
             n_sigma_signal = self.pars_factory.n_sigma_signal
 
-            suffix_write = self.pars_factory.make_suffix(ibin1, ibin2)
+            suffix_write = self.processer_helper.make_mass_histo_suffix(ibin1, ibin2)
 
             kernel = fit.kernel
             histo = fit.histo
@@ -770,7 +751,9 @@ class MLFitter:
             have_summary_pt_bins.append(ibin1)
 
             # Pre-fit MC
-            suffix_write = self.pars_factory.make_suffix(ibin1, self.pars_factory.bins2_int_bin)
+            suffix_write = \
+                    self.processer_helper.make_mass_histo_suffix(ibin1,
+                                                                 self.pars_factory.bins2_int_bin)
 
             pre_fit_mc = self.pre_fits_mc[ibin1]
             kernel = pre_fit_mc.kernel
@@ -843,19 +826,19 @@ class MLFitter:
         # Plot some summary historgrams
         leg_strings = [f"{self.pars_factory.bins2_edges_low[ibin2]} #leq {latex_bin2_var} < " \
                        f"{self.pars_factory.bins2_edges_up[ibin2]}" for ibin2 in bins2]
-        save_name = make_file_path(save_dir, "Yields", "eps", None, [self.case, self.ana_type])
+        save_name = make_file_path(save_dir, "Yields", "eps")
         # Yields summary plot
         plot_histograms([yieldshistos[ibin2] for ibin2 in bins2], True, True, leg_strings,
                         "uncorrected yields", "#it{p}_{T} (GeV/#it{c})",
                         f"Uncorrected yields {latex_hadron_name} {self.ana_type}", "mult. / int.",
                         save_name)
-        save_name = make_file_path(save_dir, "Means", "eps", None, [self.case, self.ana_type])
+        save_name = make_file_path(save_dir, "Means", "eps")
         # Means summary plot
         plot_histograms([means_histos[ibin2] for ibin2 in bins2], False, True, leg_strings, "Means",
                         "#it{p}_{T} (GeV/#it{c})",
                         "#mu_{fit} " + f"{latex_hadron_name} {self.ana_type}", "mult. / int.",
                         save_name)
-        save_name = make_file_path(save_dir, "Sigmas", "eps", None, [self.case, self.ana_type])
+        save_name = make_file_path(save_dir, "Sigmas", "eps")
         #Sigmas summary plot
         plot_histograms([sigmas_histos[ibin2] for ibin2 in bins2], False, True, leg_strings,
                         "Sigmas", "#it{p}_{T} (GeV/#it{c})",
@@ -863,14 +846,12 @@ class MLFitter:
                         save_name)
 
         # Plot the initialized means and sigma for MC and data
-        save_name = make_file_path(save_dir, "Means_mult_int", "eps", None,
-                                   [self.case, self.ana_type])
+        save_name = make_file_path(save_dir, "Means_mult_int", "eps")
         plot_histograms([means_init_mc_histos, means_init_data_histos], False, False,
                         ["MC", "data"], "Means of int. mult.", "#it{p}_{T} (GeV/#it{c})",
                         "#mu_{fit} " + f"{latex_hadron_name} {self.ana_type}", "", save_name)
 
-        save_name = make_file_path(save_dir, "Sigmas_mult_int", "eps", None,
-                                   [self.case, self.ana_type])
+        save_name = make_file_path(save_dir, "Sigmas_mult_int", "eps")
         plot_histograms([sigmas_init_mc_histos, sigmas_init_data_histos], False, False,
                         ["MC", "data"], "Sigmas of int. mult.", "#it{p}_{T} (GeV/#it{c})",
                         "#sigma_{fit} " + f"{latex_hadron_name} {self.ana_type}", "", save_name)
@@ -907,7 +888,7 @@ class MLFitter:
                     f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
                     f"(prob > {self.pars_factory.prob_cut_fin[bin_id_match]:.2f})"
 
-            suffix_write = self.pars_factory.make_suffix(ibin1, ibin2)
+            suffix_write = self.processer_helper.make_mass_histo_suffix(ibin1, ibin2)
 
             fit.results_path = os.path.join(results_dir,
                                             f"multi_trial_bin1_{ibin1}_bin2_{ibin2}.root")
@@ -1005,4 +986,3 @@ class MLFitter:
         self.done_pre_fits = True
         self.done_central_fits = False
         return success
-# pylint: enable=too-many-instance-attributes

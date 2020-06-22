@@ -27,11 +27,11 @@ from pkg_resources import resource_stream
 # To set batch mode immediately
 from ROOT import gROOT # pylint: disable=import-error, no-name-in-module
 
-from machine_learning_hep.multiprocesser import MultiProcesser
-from machine_learning_hep.processer import Processer
-from machine_learning_hep.processerdhadrons import ProcesserDhadrons
-from machine_learning_hep.processerdhadrons_mult import ProcesserDhadrons_mult
-from machine_learning_hep.processerdhadrons_jet import ProcesserDhadrons_jet
+from machine_learning_hep.processing.multiprocesser import MultiProcesser
+from machine_learning_hep.processing.processer import Processer
+from machine_learning_hep.processing.processerdhadrons import ProcesserDhadrons
+from machine_learning_hep.processing.processerdhadrons_mult import ProcesserDhadrons_mult
+from machine_learning_hep.processing.processerdhadrons_jet import ProcesserDhadrons_jet
 #from machine_learning_hep.doskimming import conversion, merging, merging_period, skim
 #from machine_learning_hep.doclassification_regression import doclassification_regression
 #from machine_learning_hep.doanalysis import doanalysis

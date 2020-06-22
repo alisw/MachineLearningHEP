@@ -18,8 +18,6 @@ main script for doing final stage analysis
 # pylint: disable=too-many-lines
 import os
 # pylint: disable=unused-wildcard-import, wildcard-import
-#from array import *
-import numpy as np
 # pylint: disable=import-error, no-name-in-module, unused-import
 from root_numpy import hist2array, array2hist
 from ROOT import TFile, TH1F, TH2F, TCanvas, TPad, TF1, TH1D
@@ -30,6 +28,7 @@ from ROOT import TStyle, kBlue, kGreen, kBlack, kRed, kOrange
 from ROOT import TLatex
 from ROOT import gInterpreter, gPad
 # HF specific imports
+from machine_learning_hep.fitting.helpers import MLFitter
 from machine_learning_hep.io import dump_yaml_from_dict
 from machine_learning_hep.utilities import folding, get_bins, make_latex_table, parallelizer
 from machine_learning_hep.utilities_plot import plot_histograms
@@ -41,75 +40,58 @@ class AnalyzerDhadrons(Analyzer):
     def __init__(self, datap, case, typean, period):
         super().__init__(datap, case, typean, period)
 
-        self.p_sgnfunc = datap["analysis"][self.typean]["sgnfunc"]
-        self.p_bkgfunc = datap["analysis"][self.typean]["bkgfunc"]
-        self.p_masspeak = datap["analysis"][self.typean]["masspeak"]
-        self.p_massmin = datap["analysis"][self.typean]["massmin"]
-        self.p_massmax = datap["analysis"][self.typean]["massmax"]
-        self.p_rebin = datap["analysis"][self.typean]["rebin"]
-        self.p_fix_mean = datap["analysis"][self.typean]["fix_mean"]
-        self.p_fix_sigma = datap["analysis"][self.typean]["fix_sigma"]
 
-        self.p_masspeaksec = None
-        self.p_fix_sigmasec = None
-        self.p_sigmaarraysec = None
-        if self.p_sgnfunc[0] == 1:
-            self.p_masspeaksec = datap["analysis"][self.typean]["masspeaksec"]
-            self.p_fix_sigmasec = datap["analysis"][self.typean]["fix_sigmasec"]
-            self.p_sigmaarraysec = datap["analysis"][self.typean]["sigmaarraysec"]
+        # Differential binning
+        self.v_var_binning = datap["var_binning"]
 
+
+        # Directories
+        self.d_resultsallpmc = datap["analysis"][typean]["mc"]["results"][period] \
+                if period is not None else datap["analysis"][typean]["mc"]["resultsallp"]
+        self.d_resultsallpdata = datap["analysis"][typean]["data"]["results"][period] \
+                if period is not None else datap["analysis"][typean]["data"]["resultsallp"]
+
+        n_filemass_name = datap["files_names"]["histofilename"]
+        self.n_filemass = os.path.join(self.d_resultsallpdata, n_filemass_name)
+        self.n_filemass_mc = os.path.join(self.d_resultsallpmc, n_filemass_name)
+
+        self.n_fileff = datap["files_names"]["efffilename"]
+        self.n_fileff = os.path.join(self.d_resultsallpmc, self.n_fileff)
+
+        self.yields_filename = "yields"
+        self.fits_dirname = "fits"
+
+        # Fitting
         self.fitter = None
-        self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
-        self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
-        self.p_nptfinbins = len(self.lpt_finbinmin)
 
 
-    # pylint: disable=import-outside-toplevel
+        # Systematics
+        self.p_indexhpt = datap["analysis"]["indexhptspectrum"]
+        self.p_fd_method = datap["analysis"]["fd_method"]
+        self.p_cctype = datap["analysis"]["cctype"]
+        self.p_sigmav0 = datap["analysis"]["sigmav0"]
+        self.p_inputfonllpred = datap["analysis"]["inputfonllpred"]
+
+        # Names, labels
+        self.p_latexnhadron = datap["analysis"][self.typean]["latexnamehadron"]
+
     def fit(self):
         # Enable ROOT batch mode and reset in the end
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
-        hyields = TH1F("hyields", "hyields", self.p_nptbins, self.analysis_bin_lims)
-        for ipt in range(self.p_nptfinbins):
-            print(self.p_sgnfunc[ipt])
-            suffix = "%s%d_%d" % (self.v_var_binning, self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-            print(self.n_filemass)
-            myfilemc = TFile(self.n_filemass_mc, "read")
-            histomassmc= myfilemc.Get("hmass_sig" + suffix)
-            histomassmc_reb = AliVertexingHFUtils.RebinHisto(histomassmc, \
-                                        self.p_rebin[ipt], -1)
-            histomassmc_reb = TH1F()
-            fittermc = AliHFInvMassFitter(histomassmc_reb, self.p_massmin[ipt], self.p_massmax[ipt],
-                                        self.p_bkgfunc[ipt], 1)
-            fittermc.SetInitialGaussianMean(self.p_masspeak)
-            out=fittermc.MassFitter(0)
-            print("I have made MC fit for sigma initialization")
-            myfile = TFile(self.n_filemass, "read")
-            histomass= myfile.Get("hmass" + suffix)
-            histomass_reb = AliVertexingHFUtils.RebinHisto(histomass, \
-                                        self.p_rebin[ipt], -1)
-            histomass_reb = TH1F()
-            fitter = AliHFInvMassFitter(histomass_reb, self.p_massmin[ipt], self.p_massmax[ipt],
-                                        self.p_bkgfunc[ipt], self.p_sgnfunc[ipt])
-            fitter.SetInitialGaussianSigma(fittermc.GetSigma())
-            if self.p_fix_sigma[ipt] is True:
-                fitter.SetFixGaussianSigma(fittermc.GetSigma())
-            if self.p_sgnfunc[ipt] == 1:
-                if self.p_fix_sigmasec[ipt] is True:
-                    fitter.SetFixSecondGaussianSigma(self.p_sigmaarraysec[ipt])
 
-            out=fitter.MassFitter(0)
-            ry=fitter.GetRawYield()
-            ery=fitter.GetRawYieldError()
-            hyields.SetBinContent(ipt+1, ry)
-            hyields.SetBinError(ipt+1, ery)
-
+        self.fitter = MLFitter(self.processer_helper, self.n_filemass, self.n_filemass_mc)
+        self.fitter.perform_pre_fits()
+        self.fitter.perform_central_fits()
         fileout_name = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
                                            None, [self.case, self.typean])
-        print(fileout_name)
         fileout = TFile(fileout_name, "RECREATE")
-        hyields.Write()
+        self.fitter.draw_fits(self.d_resultsallpdata, fileout)
         fileout.Close()
+        fileout_name = os.path.join(self.d_resultsallpdata,
+                                    f"{self.fits_dirname}_{self.case}_{self.typean}")
+        self.fitter.save_fits(fileout_name)
+        # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
 
     def efficiency(self):
@@ -157,9 +139,10 @@ class AnalyzerDhadrons(Analyzer):
         h_sel_pr.Draw("same")
         legeff.Draw()
         cEff.SaveAs("%s/Eff%s%s.eps" % (self.d_resultsallpmc,
-                                            self.case, self.typean))
+                                        self.case, self.typean))
         print("Efficiency finished")
         fileouteff.Close()
+        gROOT.SetBatch(tmp_is_root_batch)
 
     # pylint: disable=import-outside-toplevel
     def makenormyields(self):
