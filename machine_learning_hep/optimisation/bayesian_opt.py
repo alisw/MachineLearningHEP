@@ -28,6 +28,8 @@ from sklearn.model_selection import cross_validate
 
 from hyperopt import fmin, tpe, STATUS_OK
 
+from shap.plots.colors import red_blue as shap_cmap_red_blue
+
 from machine_learning_hep.io import dump_yaml_from_dict, parse_yaml, dict_yamlable
 
 # Change to that backend to not have problems with saving fgures
@@ -510,6 +512,50 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
             plt.close(fig)
 
 
+    def __plot_parameters_shap_like(self, out_dir):
+        # Compute optimal score average and range
+        test_scores = [r[f"test_{self.scoring_opt}"] for r in self.results]
+
+        figsize = (15, 15)
+        fig, ax = plt.subplots(1, 1, figsize=figsize)
+
+        markersize = 20
+
+        def __map_value(old_value, old_min, old_max, new_min=0, new_max=1):
+            if old_min == old_max:
+                return (new_max - new_min) / 2.
+            return (((old_value - old_min) * (new_max - new_min)) / (old_max - old_min)) + new_min
+
+        param_evolution = self.__extract_param_evolution()
+        for i, pe in enumerate(param_evolution):
+            x_vals = [test_scores[j] for j in pe["iterations"]]
+            val_min = min(pe["values"])
+            val_max = max(pe["values"])
+
+            mapped_vals = [__map_value(v, val_min, val_max) for v in pe["values"]]
+
+            ax.scatter(x_vals, [i] * len(x_vals), s=markersize, alpha=0.5, cmap=shap_cmap_red_blue,
+                       c=mapped_vals, zorder=3, lw=0, rasterized=len(mapped_vals) > 100)
+
+        # draw line for average score
+        ax.axvline(np.mean(test_scores), color="gray")
+
+        ax.get_yaxis().set_tick_params(labelsize=20)
+        ax.get_xaxis().set_tick_params(labelsize=20)
+
+        ax.set_yticks(range(len(param_evolution)))
+        ax.set_yticklabels([":".join(pe["branch"]) for pe in param_evolution], fontsize=20)
+        ax.set_ylabel("parameters", fontsize=20)
+        ax.set_xlabel(self.scoring_opt, fontsize=20)
+
+        fig.suptitle(f"Parameter - Score dependence", fontsize=35)
+
+        fig.tight_layout()
+        out_file = join(out_dir, f"par_score_dependence.png")
+        fig.savefig(out_file)
+        plt.close(fig)
+
+
     def __plot_parameter_evolutions(self, out_dir):
         """plot evolution of all parameters
 
@@ -689,3 +735,4 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         self.__plot_summary(out_dir, from_yaml, from_pickle)
         self.__plot_parameter_evolutions(out_dir)
         self.__plot_parameter_violins(out_dir)
+        self.__plot_parameters_shap_like(out_dir)
