@@ -89,6 +89,15 @@ if [ ! -e "HF_TreeCreator_env.sh" ]; then
 EOF2
 fi
 
+if [ ! -e "HF_TreeCreator_env.sh" ]; then
+  printf "\e[1;31mERROR: Downloading env.sh failed, trying again for child_9\e[0m\n"
+  cmd=$(printf "cp -T 32 /alice/cern.ch/user/a/alitrain/PWGHF/HF_TreeCreator/%s_child_9/env.sh file:%s/HF_TreeCreator_env.sh\n" $trainname $PWD)
+  /opt/jalien/src/jalien/jalien << EOF3
+  $cmd
+  exit
+EOF3
+fi
+
 source HF_TreeCreator_env.sh
 dataset=$PERIOD_NAME
 
@@ -415,6 +424,80 @@ elif [ "$dataset" == "LHC18q_pass1" ]; then
               /alice/data/2018/LHC18q/000295725/pass1/PWGHF/HF_TreeCreator)
   datasetwithchilds=0
   dataset_short="PbPb_2018_data"
+elif [ "$dataset" == "LHC18pq" ]; then
+  #Data: PbPb 5.02 TeV, both periods together, with TPCTimeRangeCut (2018)
+  inputpaths=(/alice/data/2018/LHC18q/000296623/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000297595/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000296549/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000296509/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000296415/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000296379/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000296309/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000296273/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000296244/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000296241/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000296142/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000296063/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000295856/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000295753/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000295788/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18q/000295612/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000297542/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000297481/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000297479/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000297446/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000297415/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000297379/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000297219/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000297194/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000297332/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000296890/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000297196/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000297123/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000296966/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000296849/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000296750/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000296932/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000296848/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000296749/pass1/PWGHF/HF_TreeCreator
+              /alice/data/2018/LHC18r/000296785/pass1/PWGHF/HF_TreeCreator)
+  childdownloadpath=(1 2 1 1 1 1 1 1 1 1 1 1 1 1 1 1 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2)
+  datasetwithchilds=1
+  dataset_short="LHC18pq"
+elif [ "$dataset" == "PbPb18_MC_pK0s" ]; then
+  #MC: PbPb 5.02 TeV (pK0s enriched), all centrality cases together (2018)
+  inputpaths=(/alice/sim/2019/LHC19c2a/296623/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c2b/296623/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c2a2/296623/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c2b2/296623/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c2a_extra/296623/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c2b_extra/296623/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c2a2_extra/296623/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c2b2_extra/296623/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c2a/296749/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c2b/296749/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c2a2/296749/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c2b2/296749/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c2a_extra/296749/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c2b_extra/296749/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c2a2_extra/296749/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c2b2_extra/296749/PWGHF/HF_TreeCreator)
+  childdownloadpath=(1 2 3 4 5 6 7 8 1 2 3 4 5 6 7 8)
+  datasetwithchilds=1
+  dataset_short="PbPb18_MC_pK0s"
+elif [ "$dataset" == "PbPb18_MC_D2H" ]; then
+  #MC: PbPb 5.02 TeV (D2H updated SPD maps), all centrality cases together (2018)
+  inputpaths=(/alice/sim/2019/LHC19c3a3/296246/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c3b3/296623/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c3a3/297544/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c3a3/297123/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c3a3/296623/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c3a3/296749/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c3b3/297118/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19c3b3/296749/PWGHF/HF_TreeCreator)
+  childdownloadpath=(9 10 9 9 9 9 10 10)
+  datasetwithchilds=1
+  dataset_short="PbPb18_MC_D2H"
 elif [ "$dataset" == "LHC19c3a_all_q" ]; then
   #D2H MC: PbPb 5 TeV 2018 0-10
   inputpaths=(/alice/sim/2019/LHC19c3a/296433/PWGHF/HF_TreeCreator
@@ -500,11 +583,26 @@ elif [ "$dataset" == "LHC15o" ]; then
   childdownloadpath=(1 2 3 1 1 1 1 1 1 2 2 2 2)
   datasetwithchilds=1
   dataset_short="LHC15o"
+elif [ "$dataset" == "LHC16i2abc" ]; then
+  #MC: PbPb 5.02 TeV, all centrality cases together (2015)
+  inputpaths=(/alice/sim/2016/LHC16i2a/246087/AOD198/PWGHF/HF_TreeCreator
+              /alice/sim/2016/LHC16i2b/246087/AOD198/PWGHF/HF_TreeCreator
+              /alice/sim/2016/LHC16i2c/246087/AOD198/PWGHF/HF_TreeCreator)
+  datasetwithchilds=1
+  dataset_short="LHC16i2abc"
 elif [ "$dataset" == "LHC19h1b2" ]; then
   #MC ITS2 Upgrade 2019: PbPb, heavily enriched with HF (charm and beauty signal)
   inputpaths=(/alice/sim/2019/LHC19h1b2/280235/PWGHF/HF_TreeCreator)
   datasetwithchilds=0
   dataset_short="ITS2_19h1b2"
+elif [ "$dataset" == "LHC19h1b2_1234" ]; then
+  #MC ITS2 Upgrade 2019 (full stat): PbPb, heavily enriched with HF (charm and beauty signal)
+  inputpaths=(/alice/sim/2019/LHC19h1b2_1/246392/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h1b2_2/280235/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h1b2_3/280235/PWGHF/HF_TreeCreator
+              /alice/sim/2019/LHC19h1b2_4/280235/PWGHF/HF_TreeCreator)
+  datasetwithchilds=1
+  dataset_short="ITS2_19h1b2_full"
 elif [ "$dataset" == "Meta_pp_2016_minbias" ]; then
   #MC for inclusive jets
   inputpaths=(/alice/sim/2017/LHC17f6/252317/AOD209/PWGHF/HF_TreeCreator
