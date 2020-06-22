@@ -136,7 +136,6 @@ def efficiency_cutscan(dataframe_, mylistvariables_, modelname_, threshold, # py
     for i, var_tuple in enumerate(mylistvariables_):
         var = var_tuple[0]
         vardir = var_tuple[1]
-        cen = var_tuple[2]
 
         axes[i].set_xlabel(var, fontsize=30)
         axes[i].set_ylabel("entries (normalised)", fontsize=30)
@@ -144,8 +143,15 @@ def efficiency_cutscan(dataframe_, mylistvariables_, modelname_, threshold, # py
         axes[i].set_yscale('log')
         axes[i].set_ylim(0.1, 1.5)
         values = dataframe_[var].values
+
         if "abs" in  vardir:
+            cen = var_tuple[2] if len(var_tuple) > 2 else None
+            if cen is None:
+                get_logger().error("Absolute cut chosen for %s. " \
+                        "However, no central value provided", var)
+                continue
             values = np.array([abs(v - cen) for v in values])
+
         nbinscan = 100
         minv, maxv = values.min(), values.max()
         if var in plot_options and "xlim" in plot_options[var]:
