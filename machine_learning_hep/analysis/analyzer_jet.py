@@ -24,7 +24,10 @@ import yaml
 # pylint: disable=import-error, no-name-in-module
 import uproot
 from ROOT import TFile, TH1F, TH2F, TCanvas, TLatex, TGraphAsymmErrors, TLine, TGaxis
-from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
+try:
+    from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
+except ImportError:
+    print("\n\033[1mFutureWarning: not in AliPhysics environment. Analyzer will crash!\033[0m\n")
 from ROOT import TLegend
 from ROOT import gROOT, gStyle
 from ROOT import RooUnfoldBayes

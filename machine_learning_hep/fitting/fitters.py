@@ -24,7 +24,10 @@ from array import array
 from math import sqrt
 
 # pylint: disable=import-error, no-name-in-module, unused-import
-from ROOT import AliHFInvMassFitter, AliVertexingHFUtils, AliHFInvMassMultiTrialFit
+try:
+    from ROOT import AliHFInvMassFitter, AliVertexingHFUtils, AliHFInvMassMultiTrialFit
+except ImportError:
+    print("\n\033[1mFutureWarning: not in AliPhysics environment. Analyzer will crash!\033[0m\n")
 from ROOT import TFile, TH1F, TH1D, TF1, TPaveText, TLine, TLegend, Double, TLatex
 from ROOT import kBlue, kRed, kGreen, kMagenta, kOrange, kPink, kCyan, kYellow, kBlack
 

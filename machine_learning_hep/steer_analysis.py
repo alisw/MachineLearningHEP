@@ -45,7 +45,7 @@ from machine_learning_hep.optimiser import Optimiser
 
 from machine_learning_hep.analysis.analyzer_manager import AnalyzerManager
 from machine_learning_hep.analysis.analyzer import Analyzer
-from machine_learning_hep.analysis.analyzer_Dhadrons import AnalyzerDhadrons
+from machine_learning_hep.analysis.analyzerdhadrons import AnalyzerDhadrons
 from machine_learning_hep.analysis.analyzerdhadrons_mult import AnalyzerDhadrons_mult
 from machine_learning_hep.analysis.analyzer_jet import AnalyzerJet
 

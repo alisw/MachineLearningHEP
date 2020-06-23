@@ -21,7 +21,6 @@ import os
 # pylint: disable=import-error, no-name-in-module, unused-import
 from root_numpy import hist2array, array2hist
 from ROOT import TFile, TH1F, TH2F, TCanvas, TPad, TF1, TH1D
-from ROOT import AliHFInvMassFitter, AliVertexingHFUtils, AliHFInvMassMultiTrialFit
 from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
 from ROOT import gROOT, TDirectory, TPaveLabel
 from ROOT import TStyle, kBlue, kGreen, kBlack, kRed, kOrange
@@ -29,6 +28,7 @@ from ROOT import TLatex
 from ROOT import gInterpreter, gPad
 # HF specific imports
 from machine_learning_hep.fitting.helpers import MLFitter
+from machine_learning_hep.logger import get_logger
 from machine_learning_hep.io import dump_yaml_from_dict
 from machine_learning_hep.utilities import folding, get_bins, make_latex_table, parallelizer
 from machine_learning_hep.utilities_plot import plot_histograms
@@ -39,11 +39,10 @@ class AnalyzerDhadrons(Analyzer):
     species = "analyzer"
     def __init__(self, datap, case, typean, period):
         super().__init__(datap, case, typean, period)
-
+        self.logger = get_logger()
 
         # Differential binning
         self.v_var_binning = datap["var_binning"]
-
 
         # Directories
         self.d_resultsallpmc = datap["analysis"][typean]["mc"]["results"][period] \
@@ -164,6 +163,8 @@ class AnalyzerDhadrons(Analyzer):
         lfile = TFile.Open(self.n_filemass)
         hNorm = lfile.Get("hEvForNorm")
         normfromhisto = hNorm.GetBinContent(1)
+        #fix for pylint, function still to be checked
+        norm = normfromhisto
 
         HFPtSpectrum(self.p_indexhpt, self.p_inputfonllpred, \
         fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \

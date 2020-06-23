@@ -46,7 +46,8 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.d_pklml_mergedallp = datap["multi"][self.mcordata]["pkl_skimmed_merge_for_ml_all"]
         self.d_pklevt_mergedallp = datap["multi"][self.mcordata]["pkl_evtcounter_all"]
 
-        self.dlper_mcreweights = datap["multi"][self.mcordata]["mcreweights"]
+        self.dlper_mcreweights = datap["multi"][self.mcordata].get("mcreweights", \
+                                               [None for _ in range(len(self.p_period))])
 
         #namefiles pkl
         self.v_var_binning = datap["var_binning"]
@@ -90,11 +91,6 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
 
         self.lper_runlistrigger = datap["analysis"][self.typean][self.mcordata]["runselection"]
 
-        self.lper_mcreweights = None
-        if self.mcordata == "mc":
-            self.lper_mcreweights = [os.path.join(direc, self.n_mcreweights)
-                                     for direc in self.dlper_mcreweights]
-
         self.process_listsample = []
         for indexp in range(self.prodnumber):
             myprocess = proc_class(self.case, self.datap, self.run_param, self.mcordata,
@@ -113,7 +109,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
 
         self.n_filemass = datap["files_names"]["histofilename"]
         self.n_fileeff = datap["files_names"]["efffilename"]
-        self.n_fileresp = datap["files_names"]["respfilename"]
+        self.n_fileresp = datap["files_names"].get("respfilename", "")
         self.filemass_mergedall = os.path.join(self.d_resulsallp, self.n_filemass)
         self.fileeff_mergedall = os.path.join(self.d_resulsallp, self.n_fileeff)
         self.fileresp_mergedall = os.path.join(self.d_resulsallp, self.n_fileresp)

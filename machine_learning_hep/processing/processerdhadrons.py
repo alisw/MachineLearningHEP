@@ -59,7 +59,6 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
         self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
         self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
-        self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
 
 
