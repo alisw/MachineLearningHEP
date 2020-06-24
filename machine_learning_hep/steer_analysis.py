@@ -415,7 +415,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
             analyze_steps.append("fit")
         if doeff is False:
             analyze_steps.append("efficiency")
-        analyze_steps.append("side_band_sub")
+        analyze_steps.append("sideband_sub")
     if dofeeddown is True:
         analyze_steps.append("feeddown")
     if dounfolding is True:

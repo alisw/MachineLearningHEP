@@ -71,7 +71,7 @@ analysis:
   dofit: false # analyzer: fit
   # Control the yield systematic uncertainty
   dosyst: false # analyzer: yield_syst
-  dojetstudies: true # analyzer: fit, efficiency, side_band_sub
+  dojetstudies: true # analyzer: fit, efficiency, sideband_sub
   doeff: false # analyzer: efficiency
   docross: false # analyzer: makenormyields
   doplots: false # analyzer: plotternormyields
