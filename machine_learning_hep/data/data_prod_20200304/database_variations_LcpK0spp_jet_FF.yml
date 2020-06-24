@@ -74,7 +74,7 @@ categories:
     sideband:
         activate: yes
         processor: false
-        label: "side bands"
+        label: "sidebands"
         correlation: "corr"
         rms: true
         symmetrise: true
@@ -177,5 +177,5 @@ categories:
                 label: ["down", "up"]
                 diffs:
                     analysis:
-                        jet_zg:
+                        jet_FF:
                             niterunfoldingchosen: [3, 7]

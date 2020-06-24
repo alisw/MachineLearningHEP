@@ -133,7 +133,7 @@ class AnalyzerJet(Analyzer):
             self.p_fix_sigmasec = datap["analysis"][self.typean]["fix_sigmasec"]
             self.p_sigmaarraysec = datap["analysis"][self.typean]["sigmaarraysec"]
 
-        # side-band subtraction
+        # sideband subtraction
         self.signal_sigma = \
             datap["analysis"][self.typean].get("signal_sigma", None)
         self.sideband_sigma_1_left = \
@@ -805,7 +805,7 @@ class AnalyzerJet(Analyzer):
         cEffFD.SaveAs("%s/efficiency_fd.eps" % self.d_resultsallpdata)
 
     # pylint: disable=too-many-locals, too-many-branches
-    def side_band_sub(self):
+    def sideband_sub(self):
         #This function perform sideband subtraction of the histograms.
         #The input files for this function are coming from:
         #    - root file containing the histograms of mass vs z called here
@@ -829,7 +829,7 @@ class AnalyzerJet(Analyzer):
             self.logger.fatal(make_message_notfound(self.file_sideband))
         fileouts.cd()
 
-        # hzvsjetpt is going to be the side-band subtracted histogram of z vs
+        # hzvsjetpt is going to be the sideband subtracted histogram of z vs
         # jet that is going to be filled after subtraction
 
         hzvsjetpt = TH2F("hzvsjetpt", "", self.p_nbinshape_reco, self.varshapebinarray_reco,
@@ -864,7 +864,7 @@ class AnalyzerJet(Analyzer):
                 sigma = mass_fitter.GetSigma()
                 bkg_fit = mass_fitter.GetBackgroundRecalcFunc()
 
-                # Here I define the boundaries for the side-band subtractions
+                # Here I define the boundaries for the sideband subtractions
                 # based on the results of the fit. We get usually 4-9 sigma from
                 # the mean in both sides to extract the sideband distributions
 
@@ -893,7 +893,7 @@ class AnalyzerJet(Analyzer):
                     mean + self.sideband_sigma_2_right * sigma
 
                 # here we project over the z-axis the 2d distributions in the
-                # three regions = signal region, left and right side-band
+                # three regions = signal region, left and right sideband
 
                 hzsig = hzvsmass.ProjectionY("hzsig" + suffix, \
                              binmasslow2sig, binmasshigh2sig, "e")
@@ -932,7 +932,7 @@ class AnalyzerJet(Analyzer):
                 area_scale = bkg_fit.Integral(masslow2sig, masshigh2sig) / area_scale_denominator
                 hzsub = hzsig.Clone("hzsub" + suffix)
 
-                # subtract the scaled side-band yields
+                # subtract the scaled sideband yields
 
                 hzsub.Add(hzbkg, -1 * area_scale)
 
@@ -972,7 +972,7 @@ class AnalyzerJet(Analyzer):
 
                 # Canvas to compare the shape of the left and right sidebands.
 
-                csblr = TCanvas("csblr" + suffix, "The Side-Band Left-Right Canvas" + suffix)
+                csblr = TCanvas("csblr" + suffix, "The Sideband Left-Right Canvas" + suffix)
                 setup_canvas(csblr)
                 csblr.Divide(1, 2, 0, 0)
                 psblr_1 = csblr.cd(1)
@@ -991,9 +991,9 @@ class AnalyzerJet(Analyzer):
                 legsigbkgsblr = TLegend(.18, .7, .45, .85)
                 setup_legend(legsigbkgsblr, 0.06)
                 setup_histogram(hzbkgleft, get_colour(1), get_marker(0))
-                legsigbkgsblr.AddEntry(hzbkgleft, "left side-band region", "P")
+                legsigbkgsblr.AddEntry(hzbkgleft, "left sideband region", "P")
                 setup_histogram(hzbkgright, get_colour(2), get_marker(1))
-                legsigbkgsblr.AddEntry(hzbkgright, "right side-band region", "P")
+                legsigbkgsblr.AddEntry(hzbkgright, "right sideband region", "P")
                 #y_min = min(hzbkgleft.GetMinimum(0), hzbkgright.GetMinimum(0))
                 #y_max = max(hzbkgleft.GetMaximum(), hzbkgright.GetMaximum())
                 y_min_h, y_max_h = get_y_window_his([hzbkgleft, hzbkgright])
@@ -1042,7 +1042,7 @@ class AnalyzerJet(Analyzer):
                     hzbkgratio.SetTitleOffset(1.2, "X")
                     hzbkgratio.Draw()
                     line.Draw("same")
-                csblr.SaveAs("%s/side_band_left_right_%s.eps" % (self.d_resultsallpdata, suffix_plot))
+                csblr.SaveAs("%s/sideband_left_right_%s.eps" % (self.d_resultsallpdata, suffix_plot))
 
                 # This canvas will contain the distributions of the sideband
                 # subtracted z-distributions in bin of the reco jet pt
@@ -1067,7 +1067,7 @@ class AnalyzerJet(Analyzer):
                                 "%g #leq #it{p}_{T, %s} < %g GeV/#it{c}" \
                                 % (self.lpt_finbinmin[ipt], self.p_latexnhadron, min(self.lpt_finbinmax[ipt], self.lvar2_binmax_reco[ibin2])))
                 draw_latex(latex2)
-                csubz.SaveAs("%s/side_band_sub_effcorr_%s.eps" % (self.d_resultsallpdata, suffix_plot))
+                csubz.SaveAs("%s/sideband_sub_effcorr_%s.eps" % (self.d_resultsallpdata, suffix_plot))
 
                 # csigbkgsubz
                 # This canvas contains the hzsig distributions of z in the signal
@@ -1100,7 +1100,7 @@ class AnalyzerJet(Analyzer):
                 hzsig.GetYaxis().SetMaxDigits(3)
                 hzsig.Draw()
                 setup_histogram(hzbkg_scaled, get_colour(2), get_marker(1))
-                legsigbkgsubz.AddEntry(hzbkg_scaled, "side-band region", "P")
+                legsigbkgsubz.AddEntry(hzbkg_scaled, "sideband region", "P")
                 hzbkg_scaled.Draw("same")
                 setup_histogram(hzsub_noteffscaled, get_colour(3), get_marker(2))
                 legsigbkgsubz.AddEntry(hzsub_noteffscaled, "subtracted", "P")
@@ -1120,7 +1120,7 @@ class AnalyzerJet(Analyzer):
                 draw_latex(latex3)
                 if logscale:
                     csigbkgsubz.SetLogy()
-                csigbkgsubz.SaveAs("%s/side_band_sub_%s.eps" % \
+                csigbkgsubz.SaveAs("%s/sideband_sub_%s.eps" % \
                     (self.d_resultsallpdata, suffix_plot))
 
                 # preliminary figure
@@ -1182,7 +1182,7 @@ class AnalyzerJet(Analyzer):
             y_margin_up = 0.15
             y_margin_down = 0.05
             hz.GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
-            hz.SetTitle("Signal yield, bg subtracted, efficiency corrected")
+            hz.SetTitle("Signal yield, bg-subtracted, efficiency-corrected")
             hz.SetXTitle(self.v_varshape_latex)
             hz.SetYTitle("yield")
             hz.SetTitleOffset(1.2, "Y")
@@ -1191,7 +1191,7 @@ class AnalyzerJet(Analyzer):
             latex = TLatex(0.2, 0.83, "%g #leq %s < %g GeV/#it{c}" % \
                            (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex)
-            cz.SaveAs("%s/side_band_sub_effcorr_ptint_%s.eps" % \
+            cz.SaveAs("%s/sideband_sub_effcorr_ptint_%s.eps" % \
                       (self.d_resultsallpdata, suffix))
 
             # fill the 2D histogram shape vs jet pt
@@ -1207,14 +1207,14 @@ class AnalyzerJet(Analyzer):
         fileouts.cd()
         hzvsjetpt.Write("hzvsjetpt")
 
-        czvsjetpt = TCanvas("czvsjetpt", "output of side-band subtraction")
+        czvsjetpt = TCanvas("czvsjetpt", "output of sideband subtraction")
         setup_canvas(czvsjetpt)
         setup_histogram(hzvsjetpt)
         hzvsjetpt.SetTitle("")
         hzvsjetpt.SetXTitle(self.v_varshape_latex)
         hzvsjetpt.SetYTitle("%s (GeV/#it{c})" % self.p_latexbin2var)
         hzvsjetpt.Draw("text")
-        czvsjetpt.SaveAs("%s/side_band_output.eps" % self.d_resultsallpdata)
+        czvsjetpt.SaveAs("%s/sideband_output.eps" % self.d_resultsallpdata)
         fileouts.Close()
 
     def feeddown(self):

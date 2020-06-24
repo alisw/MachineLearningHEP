@@ -74,7 +74,7 @@ categories:
     sideband:
         activate: yes
         processor: false
-        label: "side band sub."
+        label: "sideband sub."
         correlation: "corr"
         rms: true
         symmetrise: true
