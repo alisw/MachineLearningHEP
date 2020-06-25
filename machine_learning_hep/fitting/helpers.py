@@ -106,14 +106,14 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
         except TypeError:
             self.include_sec_peak = [self.include_sec_peak for _ in range(self.n_bins2)]
 
-        self.sec_mean = ana_config["masssecpeak"] if self.include_sec_peak else None
+        self.sec_mean = ana_config.get("masssecpeak", None)
         self.fix_sec_mean = ana_config.get("fix_masssecpeak", [False] * self.n_bins1)
         try:
             iter(self.fix_sec_mean[0])
         except TypeError:
             self.fix_sec_mean = [self.fix_sec_mean for _ in range(self.n_bins2)]
-        self.sec_sigma = ana_config["widthsecpeak"] if self.include_sec_peak else None
-        self.fix_sec_sigma = ana_config["fix_widthsecpeak"] if self.include_sec_peak else None
+        self.sec_sigma = ana_config.get("widthsecpeak", None)
+        self.fix_sec_sigma = ana_config.get("fix_widthsecpeak", None)
 
         # Reflections flag
         self.include_reflections = ana_config.get("include_reflection", False)
