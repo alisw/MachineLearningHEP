@@ -52,7 +52,7 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
 
         self.processer_helper = processer_helper
 
-        ana_config = processer_helper.analysis
+        self.ana_config = processer_helper.analysis
 
         self.prob_cut_fin = processer_helper.database["mlapplication"]["probcutoptimal"]
 
@@ -62,67 +62,67 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
 
         # Binning
         self.bin1_name = processer_helper.database["var_binning"]
-        self.bins1_edges_low = ana_config["sel_an_binmin"]
-        self.bins1_edges_up = ana_config["sel_an_binmax"]
+        self.bins1_edges_low = self.ana_config["sel_an_binmin"]
+        self.bins1_edges_up = self.ana_config["sel_an_binmax"]
         self.n_bins1 = len(self.bins1_edges_low)
-        self.bin_matching = ana_config["binning_matching"]
-        self.bin2_name = ana_config.get("var_binning2", None)
-        self.bin2_gen_name = ana_config.get("var_binning2_gen", None)
-        self.bins2_edges_low = ana_config.get("sel_binmin2", None)
-        self.bins2_edges_up = ana_config.get("sel_binmax2", None)
+        self.bin_matching = self.ana_config["binning_matching"]
+        self.bin2_name = self.ana_config.get("var_binning2", None)
+        self.bin2_gen_name = self.ana_config.get("var_binning2_gen", None)
+        self.bins2_edges_low = self.ana_config.get("sel_binmin2", None)
+        self.bins2_edges_up = self.ana_config.get("sel_binmax2", None)
         self.n_bins2 = len(self.bins2_edges_low) if self.bins2_edges_low else 1
         self.has_bin2 = bool(self.bin2_name)
 
-        self.bins2_int_bin = ana_config.get("pre_fit_mult_bin", 0)
+        self.bins2_int_bin = self.ana_config.get("pre_fit_mult_bin", 0) if self.has_bin2 else None
         # Fit method flags
-        self.init_fits_from = ana_config["init_fits_from"]
-        self.sig_func_name = ana_config["sgnfunc"]
-        self.bkg_func_name = ana_config["bkgfunc"]
-        self.fit_range_low = ana_config["massmin"]
-        self.fit_range_up = ana_config["massmax"]
-        self.likelihood = ana_config["dolikelihood"]
-        self.rebin = ana_config["rebin"]
+        self.init_fits_from = self.ana_config["init_fits_from"]
+        self.sig_func_name = self.ana_config["sgnfunc"]
+        self.bkg_func_name = self.ana_config["bkgfunc"]
+        self.fit_range_low = self.ana_config["massmin"]
+        self.fit_range_up = self.ana_config["massmax"]
+        self.likelihood = self.ana_config["dolikelihood"]
+        self.rebin = self.ana_config["rebin"]
         try:
             iter(self.rebin[0])
         except TypeError:
             self.rebin = [self.rebin for _ in range(self.n_bins2)]
 
         # Initial fit parameters
-        self.mean = ana_config["masspeak"]
-        self.fix_mean = ana_config["FixedMean"]
-        self.use_user_mean = ana_config["SetInitialGaussianMean"]
-        self.sigma = ana_config["sigmaarray"]
-        self.fix_sigma = ana_config["SetFixGaussianSigma"]
-        self.use_user_sigma = ana_config["SetInitialGaussianSigma"]
-        self.max_rel_sigma_diff = ana_config["MaxPercSigmaDeviation"]
-        self.n_sigma_sideband = ana_config["exclude_nsigma_sideband"]
-        self.n_sigma_signal = ana_config["nsigma_signal"]
-        self.rel_sigma_bound = ana_config["MaxPercSigmaDeviation"]
+        self.mean = self.ana_config["masspeak"]
+        self.fix_mean = self.ana_config["FixedMean"]
+        self.use_user_mean = self.ana_config["SetInitialGaussianMean"]
+        self.sigma = self.ana_config["sigmaarray"]
+        self.fix_sigma = self.ana_config["SetFixGaussianSigma"]
+        self.use_user_sigma = self.ana_config["SetInitialGaussianSigma"]
+        self.max_rel_sigma_diff = self.ana_config["MaxPercSigmaDeviation"]
+        self.n_sigma_sideband = self.ana_config["exclude_nsigma_sideband"]
+        self.n_sigma_signal = self.ana_config["nsigma_signal"]
+        self.rel_sigma_bound = self.ana_config["MaxPercSigmaDeviation"]
 
         # Second peak flags
-        self.include_sec_peak = ana_config.get("includesecpeak", [False] * self.n_bins1)
+        self.include_sec_peak = self.ana_config.get("includesecpeak", [False] * self.n_bins1)
         try:
             iter(self.include_sec_peak[0])
         except TypeError:
             self.include_sec_peak = [self.include_sec_peak for _ in range(self.n_bins2)]
 
-        self.sec_mean = ana_config.get("masssecpeak", None)
-        self.fix_sec_mean = ana_config.get("fix_masssecpeak", [False] * self.n_bins1)
+        self.sec_mean = self.ana_config.get("masssecpeak", None)
+        self.fix_sec_mean = self.ana_config.get("fix_masssecpeak", [False] * self.n_bins1)
         try:
             iter(self.fix_sec_mean[0])
         except TypeError:
             self.fix_sec_mean = [self.fix_sec_mean for _ in range(self.n_bins2)]
-        self.sec_sigma = ana_config.get("widthsecpeak", None)
-        self.fix_sec_sigma = ana_config.get("fix_widthsecpeak", None)
+        self.sec_sigma = self.ana_config.get("widthsecpeak", None)
+        self.fix_sec_sigma = self.ana_config.get("fix_widthsecpeak", None)
 
         # Reflections flag
-        self.include_reflections = ana_config.get("include_reflection", False)
+        self.include_reflections = self.ana_config.get("include_reflection", False)
 
         # Is this a trigger weighted histogram?
-        self.apply_weights = ana_config["triggersel"].get("usetriggcorrfunc", None) is not None
+        self.apply_weights = self.ana_config["triggersel"].get("usetriggcorrfunc", None) is not None
 
         # Systematics
-        self.syst_pars = ana_config.get("systematics", {})
+        self.syst_pars = self.ana_config.get("systematics", {})
         self.syst_init_sigma_from = None
         self.syst_consider_free_sigma = None
         self.syst_rel_var_sigma_up = None
@@ -151,6 +151,14 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
                 iter(self.syst_rel_var_sigma_down)
             except TypeError:
                 self.syst_rel_var_sigma_down = [self.syst_rel_var_sigma_down] * self.n_bins1
+
+
+    def make_bin2_legend_strings(self):
+        latex_bin2_var = self.ana_config["latexbin2var"]
+        if self.has_bin2:
+            return [f"{self.bins2_edges_low[ibin2]} #leq {latex_bin2_var} < " \
+                    f"{self.bins2_edges_up[ibin2]}" for ibin2 in range(self.n_bins2)]
+        return ["inclusive"]
 
 
     def make_ali_hf_fit_pars(self, ibin1, ibin2):
@@ -256,6 +264,7 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
         Returns:
             histograms as requested. None for each that was not requested
         """
+        ibin2 = None if not self.has_bin2 else ibin2
         suffix = self.processer_helper.make_mass_histo_suffix(ibin1, ibin2)
 
         histo_data = None
@@ -697,7 +706,9 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
             x_axis_label = "#it{M}_{inv} (GeV/#it{c}^{2})"
             n_sigma_signal = self.pars_factory.n_sigma_signal
 
-            suffix_write = self.processer_helper.make_mass_histo_suffix(ibin1, ibin2)
+
+            ibin2_suffix = None if not self.pars_factory.has_bin2 else ibin2
+            suffix_write = self.processer_helper.make_mass_histo_suffix(ibin1, ibin2_suffix)
 
             kernel = fit.kernel
             histo = fit.histo
@@ -752,8 +763,8 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
 
             # Pre-fit MC
             suffix_write = \
-                    self.processer_helper.make_mass_histo_suffix(ibin1,
-                                                                 self.pars_factory.bins2_int_bin)
+                    self.processer_helper.make_mass_histo_suffix(ibin1, \
+                    self.pars_factory.bins2_int_bin)
 
             pre_fit_mc = self.pre_fits_mc[ibin1]
             kernel = pre_fit_mc.kernel
@@ -821,11 +832,9 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
             #canvas_data[ibin2].Close()
 
 
-        latex_bin2_var = self.ana_config["latexbin2var"]
         latex_hadron_name = self.ana_config["latexnamehadron"]
         # Plot some summary historgrams
-        leg_strings = [f"{self.pars_factory.bins2_edges_low[ibin2]} #leq {latex_bin2_var} < " \
-                       f"{self.pars_factory.bins2_edges_up[ibin2]}" for ibin2 in bins2]
+        leg_strings = self.pars_factory.make_bin2_legend_strings()
         save_name = make_file_path(save_dir, "Yields", "eps")
         # Yields summary plot
         plot_histograms([yieldshistos[ibin2] for ibin2 in bins2], True, True, leg_strings,
@@ -888,7 +897,8 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                     f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
                     f"(prob > {self.pars_factory.prob_cut_fin[bin_id_match]:.2f})"
 
-            suffix_write = self.processer_helper.make_mass_histo_suffix(ibin1, ibin2)
+            ibin2_suffix = None if not self.pars_factory.has_bin2 else ibin2
+            suffix_write = self.processer_helper.make_mass_histo_suffix(ibin1, ibin2_suffix)
 
             fit.results_path = os.path.join(results_dir,
                                             f"multi_trial_bin1_{ibin1}_bin2_{ibin2}.root")
