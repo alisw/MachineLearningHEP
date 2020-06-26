@@ -68,6 +68,7 @@ class AnalyzerJet(Analyzer):
         self.p_latexnhadron = datap["analysis"][self.typean]["latexnamehadron"]
         self.p_latexndecay = datap["analysis"][self.typean]["latexnamedecay"]
         self.p_latexbin2var = datap["analysis"][self.typean]["latexbin2var"]
+        self.v_pth_latex = "#it{p}_{T}^{%s}" % self.p_latexnhadron
         self.v_varshape_latex = datap["analysis"][self.typean]["var_shape_latex"]
 
         # first variable (hadron pt)
@@ -842,6 +843,12 @@ class AnalyzerJet(Analyzer):
             heff = eff_file.Get("eff_mult%d" % ibin2)
             hz = None
             first_fit = 0
+            # shape vs. hadron pT histogram with relative contributions to the signal of
+            # the pT-integrated shape bins after the sideband subtraction and efficiency correction
+            hrelsig = buildhisto("hrelsig_%d" % ibin2, "hrelsig_%d" % ibin2, self.varshapebinarray_reco, self.var1binarray)
+            # shape vs. hadron pT histogram with relative contributions to the stat. unc. of
+            # the pT-integrated shape bins after the sideband subtraction and efficiency correction
+            hrelunc = buildhisto("hrelunc_%d" % ibin2, "hrelunc_%d" % ibin2, self.varshapebinarray_reco, self.var1binarray)
             for ipt in range(self.p_nptfinbins):
                 bin_id = self.bin_matching[ipt]
                 suffix = "%s%g_%g_%.2f%s_%.2f_%.2f" % \
@@ -960,6 +967,12 @@ class AnalyzerJet(Analyzer):
                     first_fit = 1
                 else:
                     hz.Add(hzsub)
+
+                for ishape in range(self.p_nbinshape_reco):
+                    sig = hzsub.GetBinContent(ishape + 1)
+                    unc = hzsub.GetBinError(ishape + 1)
+                    hrelsig.SetBinContent(ishape + 1, ipt + 1, sig)
+                    hrelunc.SetBinContent(ishape + 1, ipt + 1, unc * unc)
 
                 fileouts.cd()
                 hzsig.Write("hzsig" + suffix)
@@ -1166,7 +1179,6 @@ class AnalyzerJet(Analyzer):
                 print("No successful fits for: %s" % suffix)
                 continue
 
-
             # We are now outside of the loop of HF candidate pt. We are going now
             # to plot the "hz" histogram, which contains the Add of all the
             # bkg-subtracted efficiency corrected distributions of all the HF
@@ -1199,6 +1211,138 @@ class AnalyzerJet(Analyzer):
             for zbins in range(self.p_nbinshape_reco):
                 hzvsjetpt.SetBinContent(zbins + 1, ibin2 + 1, hz.GetBinContent(zbins + 1))
                 hzvsjetpt.SetBinError(zbins + 1, ibin2 + 1, hz.GetBinError(zbins + 1))
+
+            # Normalise hrelsig and hrelunc and make other test plots.
+
+            # effect of including the bin relative to not including it
+            himpincl = buildhisto("himpincl_%d" % ibin2, "himpincl_%d" % ibin2, self.varshapebinarray_reco, self.var1binarray)
+            # effect of excluding the bin relative to keeping it
+            himpexcl = buildhisto("himpexcl_%d" % ibin2, "himpexcl_%d" % ibin2, self.varshapebinarray_reco, self.var1binarray)
+            # test condition
+            himptest = buildhisto("himptest_%d" % ibin2, "himptest_%d" % ibin2, self.varshapebinarray_reco, self.var1binarray)
+            for ishape in range(self.p_nbinshape_reco):
+                sig_tot = hz.GetBinContent(ishape + 1)
+                unc_tot = hz.GetBinError(ishape + 1)
+                if sig_tot <= 0 or unc_tot <= 0:
+                    continue
+                rel_unc_tot = unc_tot / sig_tot
+                for ipt in range(self.p_nptfinbins):
+                    sig = hrelsig.GetBinContent(ishape + 1, ipt + 1)
+                    if sig <= 0:
+                        continue
+                    unc_sq = hrelunc.GetBinContent(ishape + 1, ipt + 1)
+                    frac_sig = sig / sig_tot
+                    frac_unc = unc_sq / (unc_tot * unc_tot)
+                    hrelsig.SetBinContent(ishape + 1, ipt + 1, 100 * frac_sig)
+                    hrelunc.SetBinContent(ishape + 1, ipt + 1, 100 * frac_unc)
+                    # How much does the bin improve the total relative uncertainty?
+                    if frac_sig < 1 - 1e-7 and frac_unc < 1 - 1e-7: # avoid numerical errors
+                        improve_test = frac_sig + frac_unc / frac_sig # The bin improves the rel. stat. unc. if improve_test < 2.
+                        himptest.SetBinContent(ishape + 1, ipt + 1, improve_test)
+                        sig_tot_without = sig_tot - sig
+                        unc_tot_without = sqrt(unc_tot * unc_tot - unc_sq)
+                        rel_unc_tot_without = unc_tot_without / sig_tot_without
+                        rel_unc_diff_rel_incl = (rel_unc_tot - rel_unc_tot_without) / rel_unc_tot_without # effect of including the bin relative to not including it
+                        rel_unc_diff_rel_excl = (rel_unc_tot_without - rel_unc_tot) / rel_unc_tot # effect of excluding the bin relative to keeping it
+                        # rel_unc_diff_rel_excl = 1 / (1 + rel_unc_diff_rel_incl) - 1
+                        himpincl.SetBinContent(ishape + 1, ipt + 1, 100 * rel_unc_diff_rel_incl)
+                        himpexcl.SetBinContent(ishape + 1, ipt + 1, 100 * rel_unc_diff_rel_excl)
+            hworth = hrelsig.Clone("hworth_%d" % ibin2)
+            hworth.Divide(hrelunc)
+
+            latex = TLatex(0.15, 0.02, "%g #leq %s < %g GeV/#it{c}" % \
+                           (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
+
+            crelsig = TCanvas("crelsig_" + suffix, "crelsig_" + suffix)
+            setup_canvas(crelsig)
+            crelsig.SetRightMargin(0.18)
+            setup_histogram(hrelsig)
+            hrelsig.SetTitle("relative contribution to the signal;%s;%s;fraction #it{f}_{#it{S}} (%%)" % (self.v_varshape_latex, "%s (GeV/#it{c})" % self.v_pth_latex))
+            hrelsig.SetTitleSize(0.05, "Z")
+            hrelsig.SetTitleOffset(1.0, "Z")
+            hrelsig.GetZaxis().SetRangeUser(hrelsig.GetMinimum(0), hrelsig.GetMaximum())
+            hrelsig.Draw("colz")
+            gStyle.SetPaintTextFormat(".2f")
+            hrelsig.Draw("text same")
+            draw_latex(latex, textsize=0.04)
+            crelsig.SaveAs("%s/sideband_relsig_%s.eps" % (self.d_resultsallpdata, suffix))
+
+            crelunc = TCanvas("crelunc_" + suffix, "crelunc_" + suffix)
+            setup_canvas(crelunc)
+            crelunc.SetRightMargin(0.18)
+            setup_histogram(hrelunc)
+            hrelunc.SetTitle("relative contribution to the stat. unc. squared;%s;%s;fraction #it{f}_{#it{#sigma}^{2}} (%%)" % (self.v_varshape_latex, "%s (GeV/#it{c})" % self.v_pth_latex))
+            hrelunc.SetTitleSize(0.05, "Z")
+            hrelunc.SetTitleOffset(1.0, "Z")
+            hrelunc.GetZaxis().SetRangeUser(hrelunc.GetMinimum(0), hrelunc.GetMaximum())
+            hrelunc.Draw("colz")
+            gStyle.SetPaintTextFormat(".2f")
+            hrelunc.Draw("text same")
+            draw_latex(latex, textsize=0.04)
+            crelunc.SaveAs("%s/sideband_relunc_%s.eps" % (self.d_resultsallpdata, suffix))
+
+            cworth = TCanvas("cworth_" + suffix, "cworth_" + suffix)
+            setup_canvas(cworth)
+            cworth.SetRightMargin(0.18)
+            setup_histogram(hworth)
+            hworth.SetTitle("worth = (rel. signal contrib.)/(rel. unc. contrib.);%s;%s;worth #it{w} = #it{f}_{#it{S}}/#it{f}_{#it{#sigma}^{2}}" % (self.v_varshape_latex, "%s (GeV/#it{c})" % self.v_pth_latex))
+            hworth.SetTitleSize(0.05, "Z")
+            hworth.SetTitleOffset(1.0, "Z")
+            hworth.GetZaxis().SetRangeUser(hworth.GetMinimum(0), hworth.GetMaximum())
+            hworth.Draw("colz")
+            gStyle.SetPaintTextFormat(".2f")
+            hworth.Draw("text same")
+            draw_latex(latex, textsize=0.04)
+            cworth.SaveAs("%s/sideband_worth_%s.eps" % (self.d_resultsallpdata, suffix))
+
+            cimpincl = TCanvas("cimpincl_" + suffix, "cimpincl_" + suffix)
+            setup_canvas(cimpincl)
+            cimpincl.SetRightMargin(0.18)
+            setup_histogram(himpincl)
+            himpincl.SetTitle("inclusion impact on the rel. stat. unc.;%s;%s;relative effect (%%)" % (self.v_varshape_latex, "%s (GeV/#it{c})" % self.v_pth_latex))
+            himpincl.SetTitleSize(0.05, "Z")
+            himpincl.SetTitleOffset(1.0, "Z")
+            himpincl.GetZaxis().SetRangeUser(himpincl.GetMinimum(), himpincl.GetMaximum())
+            himpincl.GetZaxis().SetMaxDigits(3)
+            himpincl.Draw("colz")
+            gStyle.SetPaintTextFormat(".2f")
+            himpincl.Draw("text same")
+            draw_latex(latex, textsize=0.04)
+            cimpincl.SaveAs("%s/sideband_impincl_%s.eps" % (self.d_resultsallpdata, suffix))
+
+            cimpexcl = TCanvas("cimpexcl_" + suffix, "cimpexcl_" + suffix)
+            setup_canvas(cimpexcl)
+            cimpexcl.SetRightMargin(0.18)
+            setup_histogram(himpexcl)
+            himpexcl.SetTitle("exclusion impact on the rel. stat. unc.;%s;%s;relative effect (%%)" % (self.v_varshape_latex, "%s (GeV/#it{c})" % self.v_pth_latex))
+            himpexcl.SetTitleSize(0.05, "Z")
+            himpexcl.SetTitleOffset(1.0, "Z")
+            himpexcl.GetZaxis().SetRangeUser(himpexcl.GetMinimum(), himpexcl.GetMaximum())
+            himpexcl.GetZaxis().SetMaxDigits(3)
+            himpexcl.Draw("colz")
+            gStyle.SetPaintTextFormat(".2f")
+            himpexcl.Draw("text same")
+            draw_latex(latex, textsize=0.04)
+            cimpexcl.SaveAs("%s/sideband_impexcl_%s.eps" % (self.d_resultsallpdata, suffix))
+
+            cimptest = TCanvas("cimptest_" + suffix, "cimptest_" + suffix)
+            setup_canvas(cimptest)
+            cimptest.SetRightMargin(0.18)
+            setup_histogram(himptest)
+            himptest.SetTitle("Bin improves the rel. stat. unc. if (test value < 2).;%s;%s;test value" % (self.v_varshape_latex, "%s (GeV/#it{c})" % self.v_pth_latex))
+            himptest.SetTitleSize(0.05, "Z")
+            himptest.SetTitleOffset(1.0, "Z")
+            himptest.GetZaxis().SetRangeUser(0, 2.2)
+            himptest.SetContour(11)
+            himptest.Draw("colz")
+            gStyle.SetPaintTextFormat(".3f")
+            himptest.Draw("text same")
+            draw_latex(latex, textsize=0.04)
+            cimptest.SaveAs("%s/sideband_imptest_%s.eps" % (self.d_resultsallpdata, suffix))
+
+            gStyle.SetPaintTextFormat("g")
+
+            # Normalise pT-integrated yields.
 
             hz.Scale(1.0 / hz.Integral())
             fileouts.cd()
