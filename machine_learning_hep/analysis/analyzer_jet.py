@@ -1068,7 +1068,7 @@ class AnalyzerJet(Analyzer):
                 y_margin_up = 0.15
                 y_margin_down = 0.05
                 hzsub.GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
-                hzsub.SetTitle("Signal yield, bg subtracted, efficiency corrected")
+                hzsub.SetTitle("Signal yield, bg-subtracted, efficiency-corrected")
                 hzsub.SetXTitle(self.v_varshape_latex)
                 hzsub.SetYTitle("yield")
                 hzsub.SetTitleOffset(1.2, "Y")
@@ -1238,7 +1238,7 @@ class AnalyzerJet(Analyzer):
                     # How much does the bin improve the total relative uncertainty?
                     if frac_sig < 1 - 1e-7 and frac_unc < 1 - 1e-7: # avoid numerical errors
                         improve_test = frac_sig + frac_unc / frac_sig # The bin improves the rel. stat. unc. if improve_test < 2.
-                        himptest.SetBinContent(ishape + 1, ipt + 1, improve_test)
+                        himptest.SetBinContent(ishape + 1, ipt + 1, 1 if improve_test < 2 else 2)
                         sig_tot_without = sig_tot - sig
                         unc_tot_without = sqrt(unc_tot * unc_tot - unc_sq)
                         rel_unc_tot_without = unc_tot_without / sig_tot_without
@@ -1329,13 +1329,13 @@ class AnalyzerJet(Analyzer):
             setup_canvas(cimptest)
             cimptest.SetRightMargin(0.18)
             setup_histogram(himptest)
-            himptest.SetTitle("Bin improves the rel. stat. unc. if (test value < 2).;%s;%s;test value" % (self.v_varshape_latex, "%s (GeV/#it{c})" % self.v_pth_latex))
+            himptest.SetTitle("Bin improves the rel. stat. unc. if (test value = 1).;%s;%s;test value" % (self.v_varshape_latex, "%s (GeV/#it{c})" % self.v_pth_latex))
             himptest.SetTitleSize(0.05, "Z")
             himptest.SetTitleOffset(1.0, "Z")
-            himptest.GetZaxis().SetRangeUser(0, 2.2)
-            himptest.SetContour(11)
+            himptest.GetZaxis().SetRangeUser(1, 2)
+            himptest.SetContour(2)
             himptest.Draw("colz")
-            gStyle.SetPaintTextFormat(".3f")
+            gStyle.SetPaintTextFormat("g")
             himptest.Draw("text same")
             draw_latex(latex, textsize=0.04)
             cimptest.SaveAs("%s/sideband_imptest_%s.eps" % (self.d_resultsallpdata, suffix))
