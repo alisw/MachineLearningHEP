@@ -126,6 +126,23 @@ def adjust_nsd(df_):
         df_["nsd_gen_jet"] = c_gen_new
     return df_
 
+def adjust_z(df_):
+    """ Truncate z values to avoid z = 1 overflow. """
+    z_max = 0.99
+    if "z" in df_.columns and "z_orig" not in df_.columns:
+        list_z_old = df_["z"].to_numpy()
+        df_["z_orig"] = list_z_old
+        c_new = [min(z_old, z_max) for z_old in list_z_old]
+        df_ = df_.drop(["z"], axis=1)
+        df_["z"] = c_new
+    if "z_gen" in df_.columns and "z_gen_orig" not in df_.columns:
+        list_z_gen_old = df_["z_gen"].to_numpy()
+        df_["z_gen_orig"] = list_z_gen_old
+        c_gen_new = [min(z_old, z_max) for z_old in list_z_gen_old]
+        df_ = df_.drop(["z_gen"], axis=1)
+        df_["z_gen"] = c_gen_new
+    return df_
+
 class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many-instance-attributes
     # Class Attribute
     species = "processer"
@@ -284,6 +301,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 # add the z column
                 df_bin["z"] = z_calc(df_bin.pt_jet, df_bin.phi_jet, df_bin.eta_jet,
                                      df_bin.pt_cand, df_bin.phi_cand, df_bin.eta_cand)
+                df_bin = adjust_z(df_bin)
 
                 h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
                                  self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
@@ -348,6 +366,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                                                 self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
                     df_mc_gen["z"] = z_calc(df_mc_gen.pt_jet, df_mc_gen.phi_jet, df_mc_gen.eta_jet,
                                             df_mc_gen.pt_cand, df_mc_gen.phi_cand, df_mc_gen.eta_cand)
+                    df_mc_gen = adjust_z(df_mc_gen)
                     df_mc_gen = seldf_singlevar(df_mc_gen, self.v_varshape_binning, \
                                                 self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape])
 
@@ -422,9 +441,11 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
                 df_mc_gen["z"] = z_calc(df_mc_gen.pt_jet, df_mc_gen.phi_jet, df_mc_gen.eta_jet,
                                         df_mc_gen.pt_cand, df_mc_gen.phi_cand, df_mc_gen.eta_cand)
+                df_mc_gen = adjust_z(df_mc_gen)
 
                 df_mc_reco["z"] = z_calc(df_mc_reco.pt_jet, df_mc_reco.phi_jet, df_mc_reco.eta_jet,
                                          df_mc_reco.pt_cand, df_mc_reco.phi_cand, df_mc_reco.eta_cand)
+                df_mc_reco = adjust_z(df_mc_reco)
 
                 # prompt
                 df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
@@ -535,10 +556,10 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
                 df_mc_reco["z"] = z_calc(df_mc_reco.pt_jet, df_mc_reco.phi_jet, df_mc_reco.eta_jet,
                                          df_mc_reco.pt_cand, df_mc_reco.phi_cand, df_mc_reco.eta_cand)
-
                 df_mc_reco["z_gen"] = z_gen_calc(df_mc_reco.pt_gen_jet, df_mc_reco.phi_gen_jet,
                                                  df_mc_reco.eta_gen_jet, df_mc_reco.pt_gen_cand,
                                                  df_mc_reco.delta_phi_gen_jet, df_mc_reco.delta_eta_gen_jet)
+                df_mc_reco = adjust_z(df_mc_reco)
 
                 # restrict gen shape range
                 df_reco_no_overflow = seldf_singlevar(df_mc_reco, \
@@ -665,13 +686,14 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         # add the z columns
         df_gen["z"] = z_calc(df_gen.pt_jet, df_gen.phi_jet, df_gen.eta_jet,
                              df_gen.pt_cand, df_gen.phi_cand, df_gen.eta_cand)
+        df_gen = adjust_z(df_gen)
 
         df_mc_reco["z"] = z_calc(df_mc_reco.pt_jet, df_mc_reco.phi_jet, df_mc_reco.eta_jet,
                                  df_mc_reco.pt_cand, df_mc_reco.phi_cand, df_mc_reco.eta_cand)
-
         df_mc_reco["z_gen"] = z_gen_calc(df_mc_reco.pt_gen_jet, df_mc_reco.phi_gen_jet,
                                          df_mc_reco.eta_gen_jet, df_mc_reco.pt_gen_cand,
                                          df_mc_reco.delta_phi_gen_jet, df_mc_reco.delta_eta_gen_jet)
+        df_mc_reco = adjust_z(df_mc_reco)
 
         df_gen_nonprompt = df_gen[df_gen.ismcfd == 1]
         df_gen_prompt = df_gen[df_gen.ismcprompt == 1]

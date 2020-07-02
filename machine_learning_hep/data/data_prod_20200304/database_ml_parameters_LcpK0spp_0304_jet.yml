@@ -358,10 +358,10 @@ LcpK0spp:
       var_binningshape: z
       var_binningshape_gen: z_gen
       var_shape_latex: "#it{z}_{#parallel}^{ch}"
-      sel_binminshape_reco: [0.4001,0.6001,0.7001,0.8001,0.9001]
-      sel_binmaxshape_reco:        [0.6001,0.7001,0.8001,0.9001,1.0001]
-      sel_binminshape_gen:  [0.4001,0.6001,0.7001,0.8001,0.9001]
-      sel_binmaxshape_gen:         [0.6001,0.7001,0.8001,0.9001,1.0001]
+      sel_binminshape_reco: [0.4,0.6,0.7,0.8,0.9]
+      sel_binmaxshape_reco:     [0.6,0.7,0.8,0.9,1.0]
+      sel_binminshape_gen:  [0.4,0.6,0.7,0.8,0.9]
+      sel_binmaxshape_gen:      [0.6,0.7,0.8,0.9,1.0]
       sel_closure_frac: 0.2
       triggerbit: INT7
       sel_an_binmin:    [3,4,6,8,12] #list of pt nbins
