@@ -37,7 +37,7 @@ from machine_learning_hep.do_variations import healthy_structure, format_varname
 from machine_learning_hep.utilities_plot import buildhisto, makefill2dhist, makefill3dhist
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.utilities import seldf_singlevar
-from machine_learning_hep.processerdhadrons_jet import adjust_nsd
+from machine_learning_hep.processerdhadrons_jet import adjust_nsd, adjust_z
 
 def shrink_err_x(graph, width=0.1):
     for i in range(graph.GetN()):
@@ -3763,6 +3763,8 @@ class AnalyzerJet(Analyzer):
 
         # Adjust nSD values.
         df_sim = adjust_nsd(df_sim)
+        # Adjust z values.
+        df_sim = adjust_z(df_sim)
 
         print("Entries in the tree:", len(df_sim))
         print("Filtering %sprompt hadrons" % ("" if prompt else "non-"))
