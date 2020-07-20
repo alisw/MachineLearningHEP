@@ -69,9 +69,9 @@ setup(
   # your project is installed. For an analysis of "install_requires" vs pip's
   # requirements files see:
   # https://packaging.python.org/en/latest/requirements.html
-  install_requires=[ "numpy==1.17.4", "pandas==0.24.2", "scipy==1.2.1", "matplotlib==3.0.3",
+  install_requires=[ "numpy==1.17.4", "pandas==0.24.2", "scipy==1.4.1", "matplotlib==3.0.3",
                      "seaborn==0.9.0", "uproot==3.4.18", "scikit-learn==0.20.3", "xgboost==0.90",
-                     "keras==2.3.1", "tensorflow==2.1.0", "PyYaml==5.1", "pylint==2.4.3",
+                     "keras==2.3.1", "tensorflow==2.1.0", "PyYaml==5.1", "pylint",
                      "twisted==19.2.0", "klein==17.10.0", "Jinja2==2.10.3", "numba==0.48.0",
                      "pyarrow==0.13.0", "lz4==2.1.10", "hyperopt==0.2.3", "shap==v0.23.0"],
 
