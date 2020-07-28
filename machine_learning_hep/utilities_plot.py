@@ -806,6 +806,7 @@ def average_pkpi_pk0s(histo_pkpi, histo_pk0s, graph_pkpi, graph_pk0s, err_pkpi, 
 
     #Fill arrays with corryield and fprompt from pkpi and pk0s
     stat_unc = [[0 for _ in range(nbins)], [0 for _ in range(nbins)]]
+    rel_stat_unc = [[0 for _ in range(nbins)], [0 for _ in range(nbins)]]
     corr_yield = [[0 for _ in range(nbins)], [0 for _ in range(nbins)]]
     fprompt = [[0 for _ in range(nbins)], [0 for _ in range(nbins)]]
     fpromptlow = [[0 for _ in range(nbins)], [0 for _ in range(nbins)]]
@@ -816,12 +817,15 @@ def average_pkpi_pk0s(histo_pkpi, histo_pk0s, graph_pkpi, graph_pk0s, err_pkpi, 
             binmatchgr = arr_binmatchgr[j][ipt]
             if binmatch < 0:
                 stat_unc[j][ipt] = -99
+                rel_stat_unc[j][ipt] = -99
                 corr_yield[j][ipt] = -99
                 fprompt[j][ipt] = -99
                 fpromptlow[j][ipt] = -99
                 fprompthigh[j][ipt] = -99
             else:
                 stat_unc[j][ipt] = arr_histo[j].GetBinError(binmatch)
+                rel_stat_unc[j][ipt] = arr_histo[j].GetBinError(binmatch) / \
+                                       arr_histo[j].GetBinContent(binmatch)
                 corr_yield[j][ipt] = arr_histo[j].GetBinContent(binmatch)
                 fprompt[j][ipt] = arr_graph[j].GetY()[binmatchgr]
                 fpromptlow[j][ipt] = arr_graph[j].GetEYlow()[binmatchgr]
@@ -839,7 +843,8 @@ def average_pkpi_pk0s(histo_pkpi, histo_pk0s, graph_pkpi, graph_pk0s, err_pkpi, 
     lcsystbr = [err_pkpi.get_branching_ratio(), err_pk0s.get_branching_ratio()]
     for j in range(2):
         for k in range(2):
-            mbrw[j, k] = correlationbrpp[j][k] * lcsystbr[k]*lcsystbr[j]
+            if j != k:
+                mbrw[j, k] = correlationbrpp[j][k] * lcsystbr[k]*lcsystbr[j]
 
     #preperation weights
     mtotw = TMatrixD(2*nbins, 2*nbins)
@@ -849,7 +854,9 @@ def average_pkpi_pk0s(histo_pkpi, histo_pk0s, graph_pkpi, graph_pk0s, err_pkpi, 
         for k in range(2):
             for ipt in range(nbins):
                 mtotw[ipt*2+j, ipt*2+k] = mbrw[j][k] + correlationother[j][k] * \
-                                          syst_uncorr[j][ipt][2] * syst_uncorr[k][ipt][2]
+                                          syst_uncorr[j][ipt][2] * syst_uncorr[k][ipt][2] + \
+                                          correlationother[j][k] * rel_stat_unc[j][ipt] * \
+                                          rel_stat_unc[k][ipt]
     mtotw.Invert()
 
     lcsystuncorrweights = [[0 for _ in range(nbins)], [0 for _ in range(nbins)]]
@@ -959,6 +966,8 @@ def weight_systematic_lc_averaging(arr_errors, fprompt, fpromptlow, fprompthigh,
                                  (errpk0s[i][nb] * arr_weights[1][i])
                     syst_errbr += 0.5 * errpkpi[i][nb] * arr_weights[0][i] * \
                                   errpk0s[i][nb] * arr_weights[1][i]
+                    syst_errbr += 0.5 * errpk0s[i][nb] * arr_weights[1][i] * \
+                                  errpkpi[i][nb] * arr_weights[0][i]
                     err_new.errors[syst][i][nb] = np.sqrt(syst_errbr) / arr_weightsum[i]
                 else:
                     print("Error for systematic: ", syst)
