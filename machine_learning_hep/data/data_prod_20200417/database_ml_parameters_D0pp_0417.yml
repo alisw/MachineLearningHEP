@@ -673,6 +673,39 @@ D0pp:
       include_reflection: True
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
+
+      event_weighting_mc:
+        LHC16pp:
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_data.root
+            histo_name: weights_int_int_LHC16pp
+            according_to: n_tracklets_corr
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_data.root
+            histo_name: weights_perc_v0m_01_30_eq_int_LHC16pp
+            according_to: n_tracklets_corr
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_data.root
+            histo_name: weights_perc_v0m_30_100_eq_int_LHC16pp
+            according_to: n_tracklets_corr
+        LHC17pp:
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_data.root
+            histo_name: weights_int_int_LHC17pp
+            according_to: n_tracklets_corr
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_data.root
+            histo_name: weights_perc_v0m_01_30_eq_int_LHC17pp
+            according_to: n_tracklets_corr
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_data.root
+            histo_name: weights_perc_v0m_30_100_eq_int_LHC17pp
+            according_to: n_tracklets_corr
+        LHC18pp:
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_data.root
+            histo_name: weights_int_int_LHC18pp
+            according_to: n_tracklets_corr
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_data.root
+            histo_name: weights_perc_v0m_01_30_eq_int_LHC18pp
+            according_to: n_tracklets_corr
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_data.root
+            histo_name: weights_perc_v0m_30_100_eq_int_LHC18pp
+            according_to: n_tracklets_corr
+
       triggersel:
         data: "trigger_hasbit_INT7==1"
         mc: null

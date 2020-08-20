@@ -94,6 +94,10 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         self.maxvaluehisto = datap["analysis"][self.typean]["maxvaluehisto"]
         self.mass = datap["mass"]
 
+        # Event re-weighting MC
+        self.event_weighting_mc = datap["analysis"][self.typean].get("event_weighting_mc", {})
+        self.event_weighting_mc = self.event_weighting_mc.get(self.period, {})
+
     @staticmethod
     def make_weights(col, func, hist, use_func):
         """Helper function to extract weights
@@ -300,12 +304,43 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                     df_recodtrig[df_recodtrig[self.v_ismcsignal] == 1], "MC"
                 ).write()
 
-    def get_reweighted_count(self, dfsel):
-        filename = os.path.join(self.d_mcreweights, self.n_mcreweights)
-        weight_file = TFile.Open(filename, "read")
-        weights = weight_file.Get("Weights0")
+    def get_reweighted_count(self, dfsel, ibin=None):
+        """Apply event weights
+
+        Args:
+            dfsel: pandas.DataFrame
+                dataframe with column to apply weights for
+            ibin: int (optional)
+                Try to extract ibin'th entry from what is loaded from the database.
+                By default, ibin corresponds to the multiplcity bin under study
+
+        Returns:
+            float: nominal value,
+            float: error
+
+        """
+        event_weighting_mc = {}
+        if self.event_weighting_mc and ibin is not None and len(self.event_weighting_mc) < ibin:
+            # Check is there is a dictionary with desired info
+            event_weighting_mc = self.event_weighting_mc[ibin]
+
+        # If there were explicit info in the analysis database, assume that all fields exist
+        # If incomplete, there will be a mix-up between these values and default values
+        filepath = event_weighting_mc.get("filepath", os.path.join(self.d_mcreweights,
+                                                                   self.n_mcreweights))
+        if not os.path.exists(filepath):
+            print(f"Could not find filepath {filepath} for MC event weighting." \
+                    "Compute unweighted values...")
+            val = len(dfsel)
+            return val, math.sqrt(val)
+
+        weight_file = TFile.Open(filepath, "read")
+        weights = weight_file.Get(event_weighting_mc.get("histo_name", "Weights0"))
+
+        weight_according_to = event_weighting_mc.get("according_to", self.v_var2_binning_gen)
+
         w = [weights.GetBinContent(weights.FindBin(v)) for v in
-             dfsel[self.v_var2_binning_gen]]
+             dfsel[weight_according_to]]
         val = sum(w)
         err = math.sqrt(sum(map(lambda i: i * i, w)))
         #print('reweighting sum: {:.1f} +- {:.1f} -> {:.1f} +- {:.1f} (zeroes: {})' \
@@ -396,14 +431,12 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 def set_content(df_to_use, histogram,
                                 i_b=ibin2, b_c=bincounter):
                     if self.corr_eff_mult[i_b] is True:
-                        val, err = self.get_reweighted_count(df_to_use)
-                        histogram.SetBinContent(b_c + 1, val)
-                        histogram.SetBinError(b_c + 1, err)
+                        val, err = self.get_reweighted_count(df_to_use, i_b)
                     else:
                         val = len(df_to_use)
                         err = math.sqrt(val)
-                        histogram.SetBinContent(b_c + 1, val)
-                        histogram.SetBinError(b_c + 1, err)
+                    histogram.SetBinContent(b_c + 1, val)
+                    histogram.SetBinError(b_c + 1, err)
 
                 set_content(df_gen_sel_pr, h_gen_pr)
                 if "nsigTOF_Pr_0" in df_reco_presel_pr:
