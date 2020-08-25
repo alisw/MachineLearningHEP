@@ -658,7 +658,7 @@ D0pp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
-      corrEffMult: [false,false,false,false]
+      corrEffMult: [true, true, true, true]
       sel_binmin2:  [0,30,0.1,0] #list of var2 splittng nbins
       sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m

@@ -319,6 +319,11 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
             float: error
 
         """
+
+        def no_weights(df_):
+            val = len(df_)
+            return val, math.sqrt(val)
+
         event_weighting_mc = {}
         if self.event_weighting_mc and ibin is not None and len(self.event_weighting_mc) < ibin:
             # Check is there is a dictionary with desired info
@@ -331,11 +336,16 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         if not os.path.exists(filepath):
             print(f"Could not find filepath {filepath} for MC event weighting." \
                     "Compute unweighted values...")
-            val = len(dfsel)
-            return val, math.sqrt(val)
+            return no_weights(dfsel)
 
         weight_file = TFile.Open(filepath, "read")
-        weights = weight_file.Get(event_weighting_mc.get("histo_name", "Weights0"))
+        histo_name = event_weighting_mc.get("histo_name", "Weights0")
+        weights = weight_file.Get(histo_name)
+
+        if not weights:
+            print(f"Could not find histogram {histo_name} for MC event weighting." \
+                    "Compute unweighted values...")
+            return no_weights(dfsel)
 
         weight_according_to = event_weighting_mc.get("according_to", self.v_var2_binning_gen)
 
