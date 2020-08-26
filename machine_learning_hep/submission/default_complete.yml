@@ -24,11 +24,11 @@ mergingperiods: # pkl_skimmed_merge_for_ml_all
     activate: false
 
 ml_study: # mlout, mlplot
-  activate: false
+  activate: true
   dopca: false
   docorrelation: false
-  dotraining: false
-  dotesting: false
+  dotraining: true
+  dotesting: true
   doapplytodatamc: false
   docrossvalidation: false
   dolearningcurve: false
@@ -46,13 +46,13 @@ ml_study: # mlout, mlplot
 
 mlapplication:
   data:
-    doapply: false # pkl_skimmed_dec (pklskdec)
-    domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged)
-    docontinueafterstop: false # set to true to resume interrupted processing (existing corrupted output will be overwritten)
+    doapply: true # pkl_skimmed_dec (pklskdec)
+    domergeapply: true # pkl_skimmed_decmerged (pklskdecmerged)
+    docontinueafterstop: true # set to true to resume interrupted processing (existing corrupted output will be overwritten)
   mc:
-    doapply: false # pkl_skimmed_dec (pklskdec)
-    domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged)
-    docontinueafterstop: false # set to true to resume interrupted processing (existing corrupted output will be overwritten)
+    doapply: true # pkl_skimmed_dec (pklskdec)
+    domergeapply: true # pkl_skimmed_decmerged (pklskdecmerged)
+    docontinueafterstop: true # set to true to resume interrupted processing (existing corrupted output will be overwritten)
 
 analysis:
   type: YYYY # used unless specified explicitly as do_entire_analysis -a type_ana
@@ -68,7 +68,7 @@ analysis:
     response: true # processer: process_response
     feeddown: true # analyzer: feeddown
     dounfolding: true # analyzer: unfolding, unfolding_closure
-  dofit: false # analyzer: fit
+  dofit: true # analyzer: fit
   # Control the yield systematic uncertainty
   dosyst: false # analyzer: yield_syst
   dojetstudies: true # analyzer: fit, efficiency, sideband_sub

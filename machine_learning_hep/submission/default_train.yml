@@ -44,11 +44,11 @@ ml_study:
 
 mlapplication:
   data:
-    doapply: false
+    doapply: true
     domergeapply: false
     docontinueafterstop: false
   mc:
-    doapply: false
+    doapply: true
     domergeapply: false
     docontinueafterstop: false
 

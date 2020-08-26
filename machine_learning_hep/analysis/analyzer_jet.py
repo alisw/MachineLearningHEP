@@ -1927,6 +1927,11 @@ class AnalyzerJet(Analyzer):
         cfeeddown_output.SaveAs("%s/feeddown_output.eps" % self.d_resultsallpdata)
         print("end of feed-down")
 
+    def append_histo(self, histo_list):
+        histo = TH1F("Empty histo", "", 10, 1, 10)
+        histo.FillRandom("gaus", 100)
+        histo_list.append(histo)
+
     def unfolding(self):
         self.loadstyle()
         print("unfolding starts")
@@ -2060,6 +2065,12 @@ class AnalyzerJet(Analyzer):
         # get simulated distributions from PYTHIA 6 and POWHEG and calculate their spread
 
         for ibin2 in range(self.p_nbin2_gen):
+            if self.lpt_finbinmin[0] > self.lvar2_binmax_reco[ibin2]:
+                print("Warning!!! HF_pt > jet_pt!!! Create random histo")
+                self.append_histo(input_mc_gen_z)
+                self.append_histo(input_powheg_z)
+                self.append_histo(input_powheg_xsection_z)
+                continue
             suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             input_mc_gen_z.append(input_mc_gen.ProjectionX("input_mc_gen_z" + suffix, ibin2 + 1, ibin2 + 1, "e"))
@@ -2081,6 +2092,15 @@ class AnalyzerJet(Analyzer):
             #tg_powheg_xsection.append(tg_sys(input_powheg_xsection_z[ibin2], input_powheg_xsection_sys_z[ibin2]))
 
         for ibin2 in range(self.p_nbin2_reco):
+
+            if self.lpt_finbinmin[0] > self.lvar2_binmax_reco[ibin2]:
+                print("Warning!!! HF_pt > jet_pt!!! Create random histo")
+                self.append_histo(input_data_z)
+                self.append_histo(mc_reco_matched_z)
+                self.append_histo(mc_gen_matched_z)
+                self.append_histo(mc_reco_gen_matched_z_ratio)
+                self.append_histo(hz_genvsreco_list)
+                continue
             suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
             suffix_plot = "%s_%g_%g" % \
@@ -2294,6 +2314,11 @@ class AnalyzerJet(Analyzer):
         # plot gen. level kinematic efficiency for shape in jet pt bins
 
         for ibin2 in range(self.p_nbin2_gen):
+            if self.lpt_finbinmin[0] > self.lvar2_binmax_reco[ibin2]:
+                print("Warning!!! HF_pt > jet_pt!!! Create random histo")
+                self.append_histo(kinematic_eff)
+                self.append_histo(hz_gen_nocuts)
+                continue
             suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             suffix_plot = "%s_%g_%g" % \
@@ -2367,6 +2392,10 @@ class AnalyzerJet(Analyzer):
         # plot relative shift of jet pt
 
         for ibin2 in range(self.p_nbin2_gen):
+            if self.lpt_finbinmin[0] > self.lvar2_binmax_reco[ibin2]:
+                print("Warning!!! HF_pt > jet_pt!!! Create random histo")
+                self.append_histo(hjetpt_fracdiff_list)
+                continue
             suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             hjetpt_fracdiff_list.append(unfolding_input_file.Get("hjetpt_fracdiff_prompt" + suffix))
@@ -2377,6 +2406,9 @@ class AnalyzerJet(Analyzer):
         leg_jetpt_fracdiff = TLegend(.15, .5, .25, .8, "#it{p}_{T, jet}^{gen} (GeV/#it{c})")
         setup_legend(leg_jetpt_fracdiff)
         for ibin2 in range(self.p_nbin2_gen):
+            if self.lpt_finbinmin[0] > self.lvar2_binmax_reco[ibin2]:
+                print("Warning!!! HF_pt > jet_pt!!! Create random histo")
+                continue
             setup_histogram(hjetpt_fracdiff_list[ibin2], get_colour(ibin2), get_marker(ibin2))
             leg_jetpt_fracdiff.AddEntry(hjetpt_fracdiff_list[ibin2], "%g#minus%g" % (self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2]), "P")
             if ibin2 == 0:
@@ -2453,6 +2485,11 @@ class AnalyzerJet(Analyzer):
                 gStyle.SetPaintTextFormat("g")
 
             for ibin2 in range(self.p_nbin2_gen):
+                if self.lpt_finbinmin[0] > self.lvar2_binmax_reco[ibin2]:
+                    print("Warning!!! HF_pt > jet_pt!!! Create random histo")
+                    self.append_histo(unfolded_z_scaled_list_iter)
+                    self.append_histo(unfolded_z_xsection_list_iter)
+                    continue
                 suffix = "%s_%.2f_%.2f" % \
                          (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
                 suffix_plot = "%s_%g_%g" % \
@@ -2546,6 +2583,10 @@ class AnalyzerJet(Analyzer):
 
             refolded = folding(unfolded_zvsjetpt, response_matrix, input_data)
             for ibin2 in range(self.p_nbin2_reco):
+                if self.lpt_finbinmin[0] > self.lvar2_binmax_reco[ibin2]:
+                    print("Warning!!! HF_pt > jet_pt!!! Create random histo")
+                    self.append_histo(refolding_test_list_iter)
+                    continue
                 suffix = "%s_%.2f_%.2f" % \
                          (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
                 suffix_plot = "%s_%g_%g" % \
@@ -2598,6 +2639,11 @@ class AnalyzerJet(Analyzer):
         # plot the unfolded shape distributions for all iterations for each pt jet bin
 
         for ibin2 in range(self.p_nbin2_gen):
+            if self.lpt_finbinmin[0] > self.lvar2_binmax_reco[ibin2]:
+                print("Warning!!! HF_pt > jet_pt!!! Create random histo")
+                self.append_histo(refolding_test_list)
+                self.append_histo(refolding_test_jetpt_list)
+                continue
             suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             suffix_plot = "%s_%g_%g" % \
@@ -2697,6 +2743,9 @@ class AnalyzerJet(Analyzer):
             #cinput_mc_gen_z_xsection.SaveAs("%s/unfolded_vs_mc_%s_xsection_%s.pdf" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
 
         for ibin2 in range(self.p_nbin2_reco):
+            if self.lpt_finbinmin[0] > self.lvar2_binmax_reco[ibin2]:
+                print("Warning!!! HF_pt > jet_pt!!! Create random histo")
+                continue
             suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
             suffix_plot = "%s_%g_%g" % \
