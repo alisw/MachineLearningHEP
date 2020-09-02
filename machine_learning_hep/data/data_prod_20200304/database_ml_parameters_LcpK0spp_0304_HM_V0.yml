@@ -369,9 +369,6 @@ LcpK0spp:
       evtsel: is_ev_rej==0
       mc_cut_on_binning2: False
 
-      get_crossmb_from_path: True
-      path_for_crossmb: /data/DerivedResults/LckAnywithJets/vAN-20200824_ROOT6-1/pp_data/resultsMBvspt_perc_v0m/finalcrossLcpK0sppMBvspt_perc_v0mmult3.root
-
       event_weighting_mc:
         LHC16pp:
           - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_Lc_HM.root
@@ -453,11 +450,13 @@ LcpK0spp:
         max_chisquare_ndf: 2.
         rebin: [0]
         massmin: [2.14, 2.13, 2.12, 2.15, 2.16]
-        massmax: [2.436, 2.426, 2.416, 2.446, 2.456]
+        massmax: [2.436, 2.416, 2.426, 2.446, 2.456]
         bincount_sigma: [3, 5]
-        bkg_funcs: [Pol2, Pol3]
+        bkg_funcs: [kExpo, Pol2, Pol3]
         # Whether to include the free sigma option in the derivation of raw yield uncertainty in given pT bin
         consider_free_sigma: [False, False, False, False, False, False]
+        rel_var_sigma_down: 0.05
+        rel_var_sigma_up: 0.05
 
 
     MBvspt_perc_v0m:
