@@ -82,7 +82,7 @@ def merge_method(listfiles, namemerged):
     dftot = pd.concat(dflist)
     pickle.dump(dftot, openfile(namemerged, "wb"), protocol=4)
 
-def list_folders(main_dir, filenameinput, maxfiles):
+def list_folders(main_dir, filenameinput, maxfiles, select=None):
     """
     List all files in a subdirectory structure
     """
@@ -103,6 +103,14 @@ def list_folders(main_dir, filenameinput, maxfiles):
                         if os.path.isfile(filefull) and \
                         myfile == filenameinput:
                             listfolders.append(os.path.join(subdir0, subdir1))
+
+    if select:
+        # Select only folders with a matching sub-string in their paths
+        list_folders_tmp = []
+        for sel_sub_string in select:
+            list_folders_tmp.extend([folder for folder in listfolders if sel_sub_string in folder])
+        listfolders = list_folders_tmp
+
     if maxfiles is not -1:
         listfolders = listfolders[:maxfiles]
     return  listfolders
