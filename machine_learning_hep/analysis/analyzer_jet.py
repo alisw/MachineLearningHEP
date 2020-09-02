@@ -225,6 +225,8 @@ class AnalyzerJet(Analyzer):
                 if period is not None else datap["analysis"][typean]["mc"]["resultsallp"]
         self.d_resultsallpdata = datap["analysis"][typean]["data"]["results"][period] \
                 if period is not None else datap["analysis"][typean]["data"]["resultsallp"]
+        self.d_resultslc =  datap["analysis"][typean]["data"]["resultslc"]
+
 
         # input directories (processor output)
         self.d_resultsallpmc_proc = self.d_resultsallpmc
@@ -276,8 +278,40 @@ class AnalyzerJet(Analyzer):
         self.text_ptjet = "%g #leq %s < %g GeV/#it{c}, #left|#it{#eta}_{jet}#right| #leq 0.5"
         self.text_pth = "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, #left|#it{y}_{%s}#right| #leq 0.8"
         self.text_sd = "Soft Drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)"
+
         self.text_acc_h = "#left|#it{y}_{%s}#right| #leq 0.8" % self.p_latexnhadron
         self.text_powheg = "POWHEG + PYTHIA 6 + EvtGen"
+
+    def makeratio(self, D0_histo, option, lc_histoname):
+        filename = self.d_resultslc + "/" + option + ".root"
+        print("Open file with Lc results", filename)
+        myfilelc = TFile.Open(filename)
+        Lc_histo = myfilelc.Get(lc_histoname)
+        c_ratio = TCanvas("c_ratio", "Lc to D0 ratio")
+        setup_canvas(c_ratio)
+        leg_ratio = TLegend(.6, .8, .8, .85)
+        setup_legend(leg_ratio)
+        D0_histo.SetTitle("")
+        Lc_histo.SetXTitle("%s" % self.v_varshape_latex)
+        Lc_histo.SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
+        Lc_histo.SetTitle("")
+        setup_histogram(D0_histo, get_colour(1), get_marker(0))
+        setup_histogram(Lc_histo, get_colour(2), get_marker(1))
+        Lc_histo.Draw()
+        D0_histo.Draw("same")
+        leg_ratio.AddEntry(Lc_histo, "Lc %s" %option, "P")
+        leg_ratio.AddEntry(D0_histo, "D0 %s" %option, "P")
+        leg_ratio.Draw("same")
+        #c_ratio.SaveAs("%s/Lc+D0_combined_plot_%s.eps" % (self.d_resultsallpdata , lc_histoname))
+        c_ratio.SaveAs("Lc+D0_combined_plot_%s.png" % (lc_histoname))
+        Lc_histo.Scale(1/Lc_histo.Integral())
+        D0_histo.Scale(1/D0_histo.Integral())
+        Lc_histo.Divide(D0_histo)
+        Lc_histo.SetYTitle("{\Lambda}_{c} / {D}_{0}  ratio")
+        Lc_histo.Draw()
+        #c_ratio.SaveAs("%s/Lc_D0_ratio_%s.eps" % (self.d_resultsallpdata, lc_histoname))
+        c_ratio.SaveAs("Lc_D0_ratio_%s.png" % (lc_histoname))
+        myfilelc.Close()
 
     def fit(self):
         self.loadstyle()
@@ -2638,6 +2672,8 @@ class AnalyzerJet(Analyzer):
 
         # plot the unfolded shape distributions for all iterations for each pt jet bin
 
+        c_pythia = TCanvas("c_pythia_result ", "PYTHIA")
+        setup_canvas(c_pythia)
         for ibin2 in range(self.p_nbin2_gen):
             if self.lpt_finbinmin[0] > self.lvar2_binmax_reco[ibin2]:
                 print("Warning!!! HF_pt > jet_pt!!! Create random histo")
@@ -2678,7 +2714,10 @@ class AnalyzerJet(Analyzer):
             setup_canvas(cinput_mc_gen_z)
             leg_input_mc_gen_z = TLegend(.15, .75, .45, .85)
             setup_legend(leg_input_mc_gen_z)
-            setup_histogram(input_mc_gen_z[ibin2], get_colour(2), get_marker(1))
+            setup_histogram(input_mc_gen_z[ibin2], get_colour(ibin2), get_marker(1))
+            c_pythia.cd()
+            input_mc_gen_z[ibin2].Draw("same")
+            cinput_mc_gen_z.cd()
             y_min_h, y_max_h = get_y_window_his([unfolded_z_scaled_list[i_iter_choice][ibin2], input_mc_gen_z[ibin2], input_powheg_z[ibin2]])
             #y_min_g, y_max_g = get_y_window_gr([tg_powheg[ibin2]])
             #y_min = min(y_min_g, y_min_h)
@@ -2742,6 +2781,7 @@ class AnalyzerJet(Analyzer):
             cinput_mc_gen_z_xsection.SaveAs("%s/unfolded_vs_mc_%s_xsection_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
             #cinput_mc_gen_z_xsection.SaveAs("%s/unfolded_vs_mc_%s_xsection_%s.pdf" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
 
+        c_pythia.SaveAs("pythia.png")
         for ibin2 in range(self.p_nbin2_reco):
             if self.lpt_finbinmin[0] > self.lvar2_binmax_reco[ibin2]:
                 print("Warning!!! HF_pt > jet_pt!!! Create random histo")
@@ -2803,6 +2843,13 @@ class AnalyzerJet(Analyzer):
             draw_latex(latex)
             cunfolded_not_z.SaveAs("%s/unfolded_not_%s_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
 
+            #Lc tot D0 ratio
+
+            option = "unfolding_results"
+            lchistoname = ("unfolded_z_%d_%s" % (i_iter_choice, suffix))
+            print("Making Lc to D0 ratio for", option, lchistoname)
+            self.makeratio(unfolded_z_scaled_list[i_iter_choice][ibin_jetpt],
+                           option, lchistoname)
             # compare relative statistical uncertainties before unfolding and after
 
             h_unfolded_not_stat_error = TH1F("h_unfolded_not_stat_error" + suffix, "h_unfolded_not_stat_error" + suffix, self.p_nbinshape_reco, self.varshapebinarray_reco)
@@ -3437,11 +3484,15 @@ class AnalyzerJet(Analyzer):
                 input_pythia8_z_jetpt[ibin2].Scale(1.0 / input_pythia8_z_jetpt[ibin2].Integral(), "width")
                 pythia8_out = input_pythia8_z_jetpt[ibin2]
                 file_sim_out.cd()
+                setup_histogram(pythia8_out, get_colour(ibin2, ibin2))
+                pythia8_out.Draw("same")
                 pythia8_out.Write()
                 pythia8_out.SetDirectory(0)
                 input_pythia8_xsection_z_jetpt.append(input_pythia8_xsection[i_pythia8].ProjectionX("input_pythia8_xsection" + self.pythia8_prompt_variations[i_pythia8] + suffix, ibin2 + 1, ibin2 + 1, "e"))
             input_pythia8_z.append(input_pythia8_z_jetpt)
             input_pythia8_xsection_z.append(input_pythia8_xsection_z_jetpt)
+            print("PYTHIS SIMULATED YIELDS!!!")
+            c_pythia.SaveAs("./pythia_canv.png")
         file_sim_out.Close()
 
         for ibin2 in range(self.p_nbin2_gen):
