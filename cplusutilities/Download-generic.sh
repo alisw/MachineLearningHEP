@@ -10,14 +10,13 @@
 #   $3 is GRID merging Stage_X (e.g. "" for no merging, or Stage_1)
 #
 #To set in script (find with "#toset"):
-#   NFILES     (/*/ = download all files, /000*/ is 10 files, /00*/ is 100 files, etc)
 #   OUTPUTFILE (name of file to download)
 
 
 
 
 #----THINGS TO SET----#
-nfiles="/*/" #toset   For testing: "0*", "00*", or "000*" (Assuming 1000 < jobs < 9999)
+nfiles=-1 # to be implemented
 outputfile="AnalysisResults.root" #toset
 stage=""
 
@@ -166,12 +165,10 @@ run()
 
     printf "\n\e[1m   Are you okay with these settings [y/n]: \e[0m"
     read answer
-    if [ "$answer" == "y" ]; then
-      printf "   Thanks for confirming. Continuing...\n\n"
-    elif [ "$answer" == "Y" ]; then
+    if [[ "$answer" == "y" || "$answer" == "Y" ]]; then
       printf "   Thanks for confirming. Continuing...\n\n"
     else
-      printf "   \e[1;31mERROR: Please correct in cplusutilities/Download.sh. \e[0m\n\n"
+      printf "   \e[1;31mERROR: Please correct... \e[0m\n\n"
       exit
     fi
 
@@ -214,14 +211,20 @@ run()
 
     # Immediately abort if there is not enough disk space left (meaning less than 1TB)
     local place_to_save_top="$(realpath $placetosave)"
-    echo $place_to_save_top
     place_to_save_top="/$(echo $place_to_save_top | cut -d '/' -f 2)"
-    echo $place_to_save_top
     local free_space="$(df $place_to_save_top | grep '/dev' | awk '{print $4}')"
-    if (( $free_space < 100000000 ))
+    echo "$free_space"
+    if (( $free_space < 10000000000 ))
     then
-        echo "Not enough space, at least 1 TB must be available"
-        exit 1
+        printf "\e[1;34mWARNING\e[0m: Less than 1 TB available on target disk"
+        printf "\n\e[1m   Are you sure that what will be downloaded will fit? [y/n]: \e[0m"
+        read answer
+        if [[ "$answer" == "y" || "$answer" == "Y" ]]; then
+          printf "   Thanks for confirming. Continuing...\n\n"
+        else
+          printf "   \e[1;31mERROR: Check disk space ... \e[0m\n\n"
+          exit
+        fi
     fi
 
     # Try to download train env.sh
@@ -289,11 +292,13 @@ run()
     if [[ "$existing_save_paths" != "" ]]
     then
         echo "At least some of the target dorectories already exist:"
+        echo "If you are sure, it was also created from this script, you can just continue. JAliEn will just add what is not yet there"
+        echo "In case you are not sure how that directory came there, please check first and run again"
         for p in $existing_save_paths
         do
             echo "$p"
         done
-        printf "\n\e[1m   You want to continue? They will be deleted... [y/n]: \e[0m"
+        printf "\n\e[1m   You want to continue?... [y/n]: \e[0m"
         read answer
         if [[ "$answer" == "y" || "$answer" == "Y" ]]; then
           printf "   Thanks for confirming. Continuing...\n\n"
@@ -301,12 +306,6 @@ run()
           printf "   \e[1;31mERROR: Check target directories ... \e[0m\n\n"
           exit
         fi
-
-        for p in $existing_save_paths
-        do
-            rm -rf "$p" 
-        done
-
     fi
 
     
