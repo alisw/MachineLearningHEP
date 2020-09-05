@@ -40,14 +40,18 @@ acc = 1
 p_fprompt = 1
 
 pt_range = [0,2,4,6,8,12,16,20,30]
+eff_range = [0.1,0.2,0.3,0.4,0.5,0.5,0.5,0.5,0.5]
+effAA_range = [0.1,0.2,0.3,0.4,0.5,0.5,0.5,0.5,0.5]
 bins = array( 'f', pt_range)
 
 hfonllc = TH1F("hfonllc", "", len(pt_range) - 1, bins)
 hfonllDtoKpi = TH1F("hfonllDtoKpi", "", len(pt_range) - 1, bins)
 hyieldc = TH1F("hyieldc", "", len(pt_range) - 1, bins)
-hyield = TH1F("hyield", "", len(pt_range) - 1, bins)
+hyieldDtoKpi = TH1F("hyieldDtoKpi", "", len(pt_range) - 1, bins)
+hyieldDtoKpirsel = TH1F("hyieldDtoKpi", "", len(pt_range) - 1, bins)
 hyieldcAA = TH1F("hyieldcAA", "", len(pt_range) - 1, bins)
-hyieldAA = TH1F("hyieldAA", "", len(pt_range) - 1, bins)
+hyieldDtoKpiAA = TH1F("hyieldDtoKpiAA", "", len(pt_range) - 1, bins)
+hyieldDtoKpirselAA = TH1F("hyieldDtoKpirselAA", "", len(pt_range) - 1, bins)
 df_fonll = pd.read_csv(f_fonll)
 
 for i, ptmin in enumerate(pt_range):
@@ -60,76 +64,47 @@ for i, ptmin in enumerate(pt_range):
     cross = df_fonll_in_pt.sum() * p_br * p_fragf * 1e-12 /binwidth
     hfonllc.SetBinContent(i+1, crossc)
     hfonllDtoKpi.SetBinContent(i+1, cross)
-    hyield.SetBinContent(i+1, 2 * cross * binwidth / p_sigmamb)
+    hyieldDtoKpirsel.SetBinContent(i+1, cross * binwidth * eff_range[i] / p_sigmamb)
+    hyieldDtoKpi.SetBinContent(i+1, cross * binwidth / p_sigmamb)
     hyieldc.SetBinContent(i+1, crossc * binwidth / p_sigmamb)
-    hyieldAA.SetBinContent(i+1, 2 * cross * binwidth * p_ncoll / p_sigmamb)
+    hyieldDtoKpiAA.SetBinContent(i+1, cross * binwidth * p_ncoll / p_sigmamb)
+    hyieldDtoKpirselAA.SetBinContent(i+1, cross * binwidth * p_ncoll * effAA_range[i]/ p_sigmamb)
     hyieldcAA.SetBinContent(i+1, crossc * binwidth * p_ncoll/ p_sigmamb)
     print("min,max", ptmin, ptmax, cross)
 
 load_root_style()
+
+histo_list = [hfonllc, hyieldc, hyieldcAA, hfonllDtoKpi,
+              hyieldDtoKpi, hyieldDtoKpirsel, hyieldDtoKpiAA, hyieldDtoKpirselAA]
+min_list = [1e-8, 1e-8, 1e-8, 1e-8, 1e-8, 1e-8, 1e-8, 1e-8]
+max_list = [1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3]
+xaxis_list = ["p_{T} (GeV)", "p_{T} (GeV)", "p_{T} (GeV)", \
+              "p_{T} (GeV)", "p_{T} (GeV)", "p_{T} (GeV)",
+              "p_{T} (GeV)", "p_{T} (GeV)"]
+yaxis_list = ["d#sigma/dp_{T} (b/GeV)", "Counts", "Counts", \
+              "d#sigma/dp_{T} (b/GeV)", "Counts", "Counts",
+              "Counts", "Counts"]
+text_list = ["c-quark production cross section",
+             "Average number of c quarks per event pp",
+             "Average number of c quarks per event PbPb",
+             "D^{0} #rightarrow K#pi (BR included) in pp",
+             "Average number of D^{0} per event pp",
+             "Average number of D^{0} per event pp recosel",
+             "Average number of D^{0} per event PbPb",
+             "Average number of D^{0} per event PbPb recosel"]
+list_latex = []
 c = TCanvas("canvas", "canvas", 2000, 1200);
-c.Divide(3, 2)
-#setup_canvas(c)
-c.cd(1)
-gPad.SetLogy()
-c.SetLogy()
-setup_histogram(hfonllc)
-hfonllDtoKpi.SetMinimum(1e-8);
-hfonllc.SetMaximum(1e3);
-hfonllc.Draw()
-hfonllc.SetXTitle("p_{T} (GeV)")
-hfonllc.SetYTitle("d#sigma/dp_{T} (b/GeV)")
-latexfonllc = TLatex(0.2, 0.83, "c-quark production cross section")
-draw_latex(latexfonllc, 1, 0.04)
-c.cd(2)
-gPad.SetLogy()
-setup_histogram(hyieldc)
-hyieldc.SetMinimum(1e-8);
-hyieldc.SetMaximum(1e3);
-hyieldc.Draw()
-hyieldc.SetXTitle("p_{T} (GeV)")
-latexyieldc = TLatex(0.2, 0.83, "Average number of charm quark per event")
-draw_latex(latexyieldc, 1, 0.04)
-hyieldc.SetYTitle("Counts")
-c.cd(3)
-gPad.SetLogy()
-setup_histogram(hyieldcAA)
-hyieldcAA.SetMinimum(1e-8);
-hyieldcAA.SetMaximum(1e3);
-hyieldcAA.Draw()
-hyieldcAA.SetXTitle("p_{T} (GeV)")
-latexyieldcAA = TLatex(0.2, 0.83, "Average number of charm quark per event in AA")
-draw_latex(latexyieldcAA, 1, 0.04)
-hyieldcAA.SetYTitle("Counts")
-c.cd(4)
-gPad.SetLogy()
-c.SetLogy()
-setup_histogram(hfonllDtoKpi)
-hfonllDtoKpi.SetMinimum(1e-8);
-hfonllDtoKpi.SetMaximum(1e3);
-hfonllDtoKpi.Draw()
-hfonllDtoKpi.SetXTitle("p_{T} (GeV)")
-hfonllDtoKpi.SetYTitle("d#sigma/dp_{T} (b/GeV)")
-latexfonll = TLatex(0.2, 0.83, "FONLL upper band D^{0} #rightarrow K#pi (BR included)")
-draw_latex(latexfonll, 1, 0.04)
-c.cd(5)
-gPad.SetLogy()
-setup_histogram(hyield)
-hyield.SetMinimum(1e-8);
-hyield.SetMaximum(1e3);
-hyield.Draw()
-hyield.SetXTitle("p_{T} (GeV)")
-latexyield = TLatex(0.2, 0.83, "Average number of D^{0} and antiparticles per event")
-draw_latex(latexyield, 1, 0.04)
-hyield.SetYTitle("Counts")
-c.cd(6)
-gPad.SetLogy()
-setup_histogram(hyieldAA)
-hyieldAA.SetMinimum(1e-8);
-hyieldAA.SetMaximum(1e3);
-hyieldAA.Draw()
-hyieldAA.SetXTitle("p_{T} (GeV)")
-latexyieldAA = TLatex(0.2, 0.83, "Average number of D^{0} and antiparticles per event in AA")
-draw_latex(latexyieldAA, 1, 0.04)
-hyieldAA.SetYTitle("Counts")
+c.Divide(3, 3)
+for i in range(len(xaxis_list)):
+    c.cd(i + 1)
+    gPad.SetLogy()
+    setup_histogram(histo_list[i])
+    histo_list[i].SetMinimum(min_list[i])
+    histo_list[i].SetMaximum(max_list[i])
+    histo_list[i].SetXTitle(xaxis_list[i])
+    histo_list[i].SetYTitle(yaxis_list[i])
+    latex = TLatex(0.2, 0.83, text_list[i])
+    list_latex.append(latex)
+    histo_list[i].Draw()
+    draw_latex(list_latex[i], 1, 0.04)
 c.SaveAs("generated_level.png")
