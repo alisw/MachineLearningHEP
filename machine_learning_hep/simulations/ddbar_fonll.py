@@ -15,21 +15,15 @@
 """
 preliminary studies for cross section estimation
 """
-import os
-import time
 from array import array
-from math import sqrt
-import pickle
 import pandas as pd
-import numpy as np
-import matplotlib.pyplot as plt
-from ROOT import TFile, TCanvas, TH1F, TF1, gROOT, TLatex, gPad  # pylint: disable=import-error,no-name-in-module
-from machine_learning_hep.utilities import setup_histogram, setup_canvas, draw_latex
+from ROOT import TCanvas, TH1F, gROOT, TLatex, gPad  # pylint: disable=import-error,no-name-in-module
+from machine_learning_hep.utilities import setup_histogram, draw_latex
 from machine_learning_hep.utilities_plot import load_root_style
 
-p_fonllband='max'
-ptmin=0
-ptmax=30
+p_fonllband = 'max'
+ptmin = 0
+ptmax = 30
 delta_pt = ptmax - ptmin
 p_fragf = 0.6086
 f_fonll = "fo_pp_d0meson_5TeV_y0p5.csv"
@@ -41,11 +35,11 @@ p_fprompt = 1
 
 gROOT.SetBatch(True)
 
-pt_range = [0,2,4,6,8,12,16,20,30]
-eff_range = [0.1,0.2,0.3,0.4,0.5,0.5,0.5,0.5,0.5]
-effAA_range = [0.001,0.003,0.01,0.02,0.06,0.1,0.1,0.1,0.1]
-RAA_range = [0.8,0.7,0.2,0.2,0.2,0.2,0.3,0.3,0.3]
-bins = array( 'f', pt_range)
+pt_range = [0, 2, 4, 6, 8, 12, 16, 20, 30]
+eff_range = [0.1, 0.2, 0.3, 0.4, 0.5, 0.5, 0.5, 0.5, 0.5]
+effAA_range = [0.001, 0.003, 0.01, 0.02, 0.06, 0.1, 0.1, 0.1, 0.1]
+raa_range = [0.8, 0.7, 0.2, 0.2, 0.2, 0.2, 0.3, 0.3, 0.3]
+bins = array('f', pt_range)
 
 hfonllc = TH1F("hfonllc", "", len(pt_range) - 1, bins)
 hfonllDtoKpi = TH1F("hfonllDtoKpi", "", len(pt_range) - 1, bins)
@@ -81,8 +75,8 @@ for i, ptmin in enumerate(pt_range):
     hyieldDtoKpipairrsel.SetBinContent(i+1, cross * binwidth * eff_range[i] *
                                        eff_range[i] * p_br * p_fragf/ p_sigmamb)
     hyieldDtoKpipairrselAA.SetBinContent(i+1, cross * binwidth * effAA_range[i]
-                                         * effAA_range[i] * RAA_range[i] *
-                                         RAA_range[i] * p_br * p_fragf * p_ncoll/ p_sigmamb)
+                                         * effAA_range[i] * raa_range[i] *
+                                         raa_range[i] * p_br * p_fragf * p_ncoll/ p_sigmamb)
     print("min,max", ptmin, ptmax, cross)
 
 load_root_style()
@@ -109,9 +103,9 @@ text_list = ["c-quark production cross section",
              "Average number of D^{0}-D^{0}bar pair per event pp recosel",
              "Average number of D^{0}-D^{0}bar pair per event AA recosel"]
 list_latex = []
-c = TCanvas("canvas", "canvas", 3000, 2000);
+c = TCanvas("canvas", "canvas", 3000, 2000)
 c.Divide(4, 3)
-for i in range(len(xaxis_list)):
+for i, _ in enumerate(xaxis_list):
     c.cd(i + 1)
     gPad.SetLogy()
     setup_histogram(histo_list[i])
@@ -145,15 +139,15 @@ text_list_est = ["D^{0}-D^{0}bar pairs pp recosel 2B",
                  "D^{0}-D^{0}bar pairs pp recosel 100M",
                  "D^{0}-D^{0}bar pairs pp recosel 50B",
                  "D^{0}-D^{0}bar pairs pp recosel 2500B"]
-nevents_list_ext =  [2e9, 200*2e9, 100*1e6, 50*1e9, 2500*1e9]
+nevents_list_ext = [2e9, 200*2e9, 100*1e6, 50*1e9, 2500*1e9]
 
-for ihisto in range(len(histo_list_est)):
+for ihisto, _ in enumerate(histo_list_est):
     histo_list_est[ihisto].Scale(nevents_list_ext[ihisto])
 
 list_est_latex = []
-c_est = TCanvas("canvas", "canvas", 3000, 2000);
+c_est = TCanvas("canvas", "canvas", 3000, 2000)
 c_est.Divide(3, 2)
-for i in range(len(xaxis_list_est)):
+for i, _ in enumerate(xaxis_list_est):
     c_est.cd(i + 1)
     gPad.SetLogy()
     setup_histogram(histo_list_est[i])
