@@ -100,8 +100,8 @@ load_root_style()
 histo_list = [hfonllc, hyieldc, hyieldcAA, hfonllDtoKpi,
               hyieldDtoKpi, hyieldDtoKpirsel, hyieldDtoKpiAA,
               hyieldDtoKpirselAA, hyieldDtoKpipairrsel, hyieldDtoKpipairrselAA]
-min_list = [1e-8, 1e-8, 1e-8, 1e-8, 1e-8, 1e-8, 1e-8, 1e-8, 1e-8, 1e-8]
-max_list = [1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3]
+min_list = [1e-8, 1e-8, 1e-8, 1e-8, 1e-8, 1e-8, 1e-8, 1e-8, 1e-14, 1e-14]
+max_list = [1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e3, 1e-5, 1e-5]
 xaxis_list = ["p_{T} (GeV)", "p_{T} (GeV)", "p_{T} (GeV)", \
               "p_{T} (GeV)", "p_{T} (GeV)", "p_{T} (GeV)",
               "p_{T} (GeV)", "p_{T} (GeV)", "p_{T} (GeV)", "p_{T} (GeV)"]
@@ -136,33 +136,41 @@ for i, _ in enumerate(xaxis_list):
 c.SaveAs("charmstudies_perevent.pdf")
 
 #### estimated predictions ####
+
+hyieldDtoKpirsel2B = hyieldDtoKpirsel.Clone("hyieldDtoKpirsel2B")
+hyieldDtoKpirselAA100M = hyieldDtoKpirsel.Clone("hyieldDtoKpirselAA100M")
 hyieldDtoKpipairrsel2B = hyieldDtoKpipairrsel.Clone("hyieldDtoKpipairrsel2B")
 hyieldDtoKpipairrsel200B = hyieldDtoKpipairrsel.Clone("hyieldDtoKpipairrsel200B")
 hyieldDtoKpipairrselAA100M = hyieldDtoKpipairrselAA.Clone("hyieldDtoKpipairrselAA100M")
 hyieldDtoKpipairrselAA50B = hyieldDtoKpipairrselAA.Clone("hyieldDtoKpipairrselAA50B")
 hyieldDtoKpipairrselAA2500B = hyieldDtoKpipairrselAA.Clone("hyieldDtoKpipairrselAA2500B")
 
-histo_list_est = [hyieldDtoKpipairrsel2B, hyieldDtoKpipairrsel200B,
+histo_list_est = [hyieldDtoKpirsel2B, hyieldDtoKpirselAA100M,
+                  hyieldDtoKpipairrsel2B, hyieldDtoKpipairrsel200B,
                   hyieldDtoKpipairrselAA100M, hyieldDtoKpipairrselAA50B,
                   hyieldDtoKpipairrselAA2500B]
-min_list_est = [1e-8, 1e-8, 1e-8, 1e-8, 1e-8]
-max_list_est = [1e10, 1e10, 1e10, 1e10, 1e10]
+min_list_est = [1e-8, 1e-8, 1e-8, 1e-8, 1e-8, 1e-8, 1e-8]
+max_list_est = [1e10, 1e10, 1e10, 1e10, 1e10, 1e10, 1e10]
 xaxis_list_est = ["p_{T} (GeV)", "p_{T} (GeV)", "p_{T} (GeV)", \
+                  "p_{T} (GeV)", "p_{T} (GeV)",
                   "p_{T} (GeV)", "p_{T} (GeV)"]
-yaxis_list_est = ["Counts", "Counts", "Counts", "Counts", "Counts"]
-text_list_est = ["D^{0}-D^{0}bar pairs pp recosel 2B",
+yaxis_list_est = ["Counts", "Counts", "Counts", "Counts",
+                  "Counts", "Counts", "Counts"]
+text_list_est = ["D^{0} pp recosel 2B",
+                 "D^{0} AA recosel 100M",
+                 "D^{0}-D^{0}bar pairs pp recosel 2B",
                  "D^{0}-D^{0}bar pairs pp recosel 200B",
-                 "D^{0}-D^{0}bar pairs pp recosel 100M",
+                 "D^{0}-D^{0}bar pairs AA recosel 100M",
                  "D^{0}-D^{0}bar pairs AA recosel 50B",
                  "D^{0}-D^{0}bar pairs AA recosel 2500B"]
-nevents_list_ext = [2e9, 200*2e9, 100*1e6, 50*1e9, 2500*1e9]
+nevents_list_ext = [2e9, 100*1e6, 2e9, 200*2e9, 100*1e6, 50*1e9, 2500*1e9]
 
 for ihisto, _ in enumerate(histo_list_est):
     histo_list_est[ihisto].Scale(nevents_list_ext[ihisto])
 
 list_est_latex = []
-c_est = TCanvas("canvas", "canvas", 3000, 2000)
-c_est.Divide(3, 2)
+c_est = TCanvas("canvas", "canvas", 4000, 2000)
+c_est.Divide(4, 2)
 for i, _ in enumerate(xaxis_list_est):
     c_est.cd(i + 1)
     gPad.SetLogy()
