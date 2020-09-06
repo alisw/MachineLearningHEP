@@ -21,6 +21,7 @@ from ROOT import TCanvas, TH1F, gROOT, TLatex, gPad  # pylint: disable=import-er
 from machine_learning_hep.utilities import setup_histogram, draw_latex
 from machine_learning_hep.utilities_plot import load_root_style
 
+# pylint: disable=invalid-name
 p_fonllband = 'max'
 ptmin = 0
 ptmax = 30
