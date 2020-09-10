@@ -1,4 +1,4 @@
-#############################################################################
+############################################################################
 ##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
@@ -225,7 +225,7 @@ class AnalyzerJet(Analyzer):
                 if period is not None else datap["analysis"][typean]["mc"]["resultsallp"]
         self.d_resultsallpdata = datap["analysis"][typean]["data"]["results"][period] \
                 if period is not None else datap["analysis"][typean]["data"]["resultsallp"]
-        self.d_resultslc =  datap["analysis"][typean]["data"]["resultslc"]
+#        self.d_resultslc =  datap["analysis"][typean]["data"]["resultslc"]
 
 
         # input directories (processor output)
@@ -2848,8 +2848,7 @@ class AnalyzerJet(Analyzer):
             option = "unfolding_results"
             lchistoname = ("unfolded_z_%d_%s" % (i_iter_choice, suffix))
             print("Making Lc to D0 ratio for", option, lchistoname)
-            self.makeratio(unfolded_z_scaled_list[i_iter_choice][ibin_jetpt],
-                           option, lchistoname)
+            # self.makeratio(unfolded_z_scaled_list[i_iter_choice][ibin_jetpt], option, lchistoname)
             # compare relative statistical uncertainties before unfolding and after
 
             h_unfolded_not_stat_error = TH1F("h_unfolded_not_stat_error" + suffix, "h_unfolded_not_stat_error" + suffix, self.p_nbinshape_reco, self.varshapebinarray_reco)
