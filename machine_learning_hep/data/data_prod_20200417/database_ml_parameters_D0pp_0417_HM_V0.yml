@@ -309,37 +309,21 @@ D0pp:
       include_reflection: True
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
+
       event_weighting_mc:
         LHC16pp:
-          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_HM_V0.root
-            histo_name: weights_int_int_LHC16pp
-            according_to: n_tracklets
-          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_HM_V0.root
-            histo_name: weights_perc_v0m_01_30_eq_int_LHC16pp
-            according_to: n_tracklets
-          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_HM_V0.root
-            histo_name: weights_perc_v0m_30_100_eq_int_LHC16pp
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_HM.root
+            histo_name: weights_0_01_LHC16pp
             according_to: n_tracklets
         LHC17pp:
-          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_HM_V0.root
-            histo_name: weights_int_int_LHC17pp
-            according_to: n_tracklets
-          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_HM_V0.root
-            histo_name: weights_perc_v0m_01_30_eq_int_LHC17pp
-            according_to: n_tracklets
-          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_HM_V0.root
-            histo_name: weights_perc_v0m_30_100_eq_int_LHC17pp
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_HM.root
+            histo_name: weights_0_01_LHC17pp
             according_to: n_tracklets
         LHC18pp:
-          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_HM_V0.root
-            histo_name: weights_int_int_LHC18pp
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_HM.root
+            histo_name: weights_0_01_LHC18pp
             according_to: n_tracklets
-          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_HM_V0.root
-            histo_name: weights_perc_v0m_01_30_eq_int_LHC18pp
-            according_to: n_tracklets
-          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_HM_V0.root
-            histo_name: weights_perc_v0m_30_100_eq_int_LHC18pp
-            according_to: n_tracklets
+
       triggersel:
         data: "trigger_hasbit_HighMultV0==1"
         mc: null

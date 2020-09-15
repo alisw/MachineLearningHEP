@@ -677,34 +677,34 @@ D0pp:
 
       event_weighting_mc:
         LHC16pp:
-          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0.root
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_MB.root
             histo_name: weights_int_int_LHC16pp
             according_to: n_tracklets
-          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0.root
-            histo_name: weights_perc_v0m_01_30_eq_int_LHC16pp
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_MB.root
+            histo_name: weights_perc_v0m_01_30_LHC16pp
             according_to: n_tracklets
-          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0.root
-            histo_name: weights_perc_v0m_30_100_eq_int_LHC16pp
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_MB.root
+            histo_name: weights_perc_v0m_30_100_LHC16pp
             according_to: n_tracklets
         LHC17pp:
-          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0.root
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_MB.root
             histo_name: weights_int_int_LHC17pp
             according_to: n_tracklets
-          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0.root
-            histo_name: weights_perc_v0m_01_30_eq_int_LHC17pp
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_MB.root
+            histo_name: weights_perc_v0m_01_30_LHC17pp
             according_to: n_tracklets
-          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0.root
-            histo_name: weights_perc_v0m_30_100_eq_int_LHC17pp
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_MB.root
+            histo_name: weights_perc_v0m_30_100_LHC17pp
             according_to: n_tracklets
         LHC18pp:
-          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0.root
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_MB.root
             histo_name: weights_int_int_LHC18pp
             according_to: n_tracklets
-          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0.root
-            histo_name: weights_perc_v0m_01_30_eq_int_LHC18pp
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_MB.root
+            histo_name: weights_perc_v0m_01_30_LHC18pp
             according_to: n_tracklets
-          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0.root
-            histo_name: weights_perc_v0m_30_100_eq_int_LHC18pp
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_MB.root
+            histo_name: weights_perc_v0m_30_100_LHC18pp
             according_to: n_tracklets
 
       triggersel:
