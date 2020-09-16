@@ -112,7 +112,7 @@ get_paths()
     if [[ "$DATASET_WITH_CHILDREN" != "1" ]]
     then
         GENERIC_PATHS="$(make_generic_path $ALIEN_JDL_OUTPUTDIR)"
-        GENERIC_PATHS=("$GENERIC_PATHS/$trainname/*/$outputfile" )
+        GENERIC_PATHS=("$GENERIC_PATHS/$trainname/AOD/*/$outputfile" )
         CHILDREN=("child_0" )
         INTERACTION_TYPES=("$ALIEN_JDL_LPMINTERACTIONTYPE" )
     else
@@ -135,7 +135,7 @@ get_paths()
 
             out_dir_prefix=$(eval "echo $"ALIEN_JDL_${child}"_OUTPUTDIR")
             local out_dir="$(make_generic_path $out_dir_prefix)"
-            out_dir="$out_dir/${trainname}_${child}/*/$outputfile"
+            out_dir="$out_dir/${trainname}_${child}/AOD/*/$outputfile"
             GENERIC_PATHS+=" $out_dir"
             INTERACTION_TYPES+=" $(eval "echo $"ALIEN_JDL_${child}"_LPMINTERACTIONTYPE")"
         done
@@ -214,7 +214,7 @@ run()
     place_to_save_top="/$(echo $place_to_save_top | cut -d '/' -f 2)"
     local free_space="$(df $place_to_save_top | grep '/dev' | awk '{print $4}')"
     echo "$free_space"
-    if (( $free_space < 10000000000 ))
+    if (( $free_space < 1000000000 ))
     then
         printf "\e[1;34mWARNING\e[0m: Less than 1 TB available on target disk"
         printf "\n\e[1m   Are you sure that what will be downloaded will fit? [y/n]: \e[0m"
