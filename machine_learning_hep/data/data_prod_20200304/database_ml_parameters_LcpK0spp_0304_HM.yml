@@ -1,3 +1,5 @@
+
+
 #############################################################################
 ##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
@@ -270,7 +272,7 @@ LcpK0spp:
 
     opt:
       isFONLLfromROOT: true
-      filename_fonll: 'data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root' # 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' file with FONLL predictions
+      filename_fonll: 'data/fonll/DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8.root'  #'data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root'
       fonll_particle: 'hLcK0sp'
       fonll_pred: 'max' # edge of the FONLL prediction
       FF: 0.1281 # fragmentation fraction
@@ -417,11 +419,11 @@ LcpK0spp:
     SPDvspt_ntrkl:
       proc_type: Dhadrons_mult
       useperiod: [1]
-      plotbin: [0,0,0,0,1]
+      plotbin: [1]
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: MBvspt_ntrkl
-      corrEffMult: [false, false, true, true, true, true]
+      corrEffMult: [true]
       # sel_binmin2: [0,1,10,30,60] #list of var2 splittng nbins
       # sel_binmax2: [9999,9999,29,59,100] #list of var2 splitting nbins
       sel_binmin2: [60] #list of var2 splittng nbins
@@ -431,8 +433,10 @@ LcpK0spp:
       nbinshisto: 200
       minvaluehisto: -0.5
       maxvaluehisto: 199.5
-      triggereff: [1,0.92,0.862,1,1,]
-      triggereffunc: [0,0.003,0.018,0,0]
+      # triggereff: [1,0.92,0.862,1,1,]
+      # triggereffunc: [0,0.003,0.018,0,0]
+      triggereff: [1]
+      triggereffunc: [0]
       triggerbit: HighMultSPD
       isNbx2: False    #Estimate the feeddown systematic with Nb and Nbx2 method convolution. Set to true just for Lc vs mult.
       event_cand_validation: False
@@ -444,7 +448,7 @@ LcpK0spp:
       triggersel:
         data: "trigger_hasbit_HighMultSPD==1"
         mc: null
-        usetriggcorrfunc: True
+        usetriggcorrfunc: False
       data:
         runselection: [HighMultSPD2018]
         results: [/data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsSPDvspt] #list of periods
@@ -464,11 +468,11 @@ LcpK0spp:
       masspeak: 2.2864
       massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
       massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
-      rebin: [7,7,8,9,10,12]
+      rebin: [7,7,8,9,10,11]
 
-      includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      includesecpeak: [[false, false, false, false, false, false]]
       masssecpeak: 2.2864
-      fix_masssecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      fix_masssecpeak: [[false, false, false, false, false, false]]
       widthsecpeak: 0.01
       fix_widthsecpeak: true
 
