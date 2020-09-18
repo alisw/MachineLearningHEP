@@ -349,7 +349,7 @@ LcpK0spp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: MBvspt_perc_v0m
-      corrEffMult: [false]
+      corrEffMult: [true]
       sel_binmin2: [0,] #list of var2 splittng nbins
       sel_binmax2: [0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m
@@ -367,29 +367,35 @@ LcpK0spp:
       binning_matching: [0,1,2,3,4,5] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
+      mc_cut_on_binning2: False
+
+      get_crossmb_from_path: True
+      path_for_crossmb: /data/DerivedResults/LckAnywithJets/vAN-20200824_ROOT6-1/pp_data/resultsMBvspt_perc_v0m/finalcrossLcpK0sppMBvspt_perc_v0mmult3.root
 
       event_weighting_mc:
         LHC16pp:
           - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_Lc_HM.root
-            histo_name: weights_0_01_LHC16pp
+            histo_name: weights_perc_v0m_0_01_LHC16pp
             according_to: n_tracklets
         LHC17pp:
           - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_Lc_HM.root
-            histo_name: weights_0_01_LHC17pp
+            histo_name: weights_perc_v0m_0_01_LHC17pp
             according_to: n_tracklets
         LHC18pp:
           - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_Lc_HM.root
-            histo_name: weights_0_01_LHC18pp
+            histo_name: weights_perc_v0m_0_01_LHC18pp
             according_to: n_tracklets
 
       triggersel:
         data: "trigger_hasbit_HighMultV0==1"
         mc: null
         usetriggcorrfunc: Null
+
       get_crossmb_from_path: True
-      #path_for_crossmb: /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_data/resultsMBvspt_perc_v0m/finalcrossLcpK0sppMBvspt_perc_v0mmult3.root
+      path_for_crossmb: /data/DerivedResults/LckAnywithJets/vAN-20200824_ROOT6-1/pp_data/resultsMBvspt_perc_v0m/finalcrossLcpK0sppMBvspt_perc_v0mmult0.root
+
       data:
-        runselection: [null, null, null]
+        runselection: [V0vspt_perc_v0m_2016, null, null]
         results: [/data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/resultsV0vspt_perc_v0m,
                   /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/resultsV0vspt_perc_v0m,
                   /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/resultsV0vspt_perc_v0m] #list of periods
@@ -434,7 +440,7 @@ LcpK0spp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.007556, 0.007514, 0.009046, 0.01050, 0.01215, 0.01568]
+      sigmaarray: [0.007554, 0.0075136, 0.0090460, 0.0105047, 0.0121521, 0.0156810]
       FixedSigma: false
       fitcase: Lc
       latexnamehadron: "#Lambda_{c}^{pK0s}"
@@ -461,9 +467,10 @@ LcpK0spp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
-      corrEffMult: [false, true, true, true]
-      sel_binmin2:  [0,30,0.1] #list of var2 splittng nbins
-      sel_binmax2: [100,100,30] #list of var2 splitting nbins
+      corrEffMult: [true, true, true, true]
+      #corrEffMult: [false, false, false, false]
+      sel_binmin2:  [0,30,0.1,0] #list of var2 splittng nbins
+      sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m
       var_binning2_gen: perc_v0m
       nbinshisto: 100000
@@ -476,23 +483,56 @@ LcpK0spp:
       binning_matching: [0,1,2,3,4,5] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
+
+      event_weighting_mc:
+        LHC16pp:
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_Lc_MB.root
+            histo_name: weights_int_int_LHC16pp
+            according_to: n_tracklets
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_Lc_MB.root
+            histo_name: weights_perc_v0m_01_30_LHC16pp
+            according_to: n_tracklets
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_Lc_MB.root
+            histo_name: weights_perc_v0m_30_100_LHC16pp
+            according_to: n_tracklets
+        LHC17pp:
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_Lc_MB.root
+            histo_name: weights_int_int_LHC17pp
+            according_to: n_tracklets
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_Lc_MB.root
+            histo_name: weights_perc_v0m_01_30_LHC17pp
+            according_to: n_tracklets
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_Lc_MB.root
+            histo_name: weights_perc_v0m_30_100_LHC17pp
+            according_to: n_tracklets
+        LHC18pp:
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_Lc_MB.root
+            histo_name: weights_int_int_LHC18pp
+            according_to: n_tracklets
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_Lc_MB.root
+            histo_name: weights_perc_v0m_01_30_LHC18pp
+            according_to: n_tracklets
+          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_Lc_MB.root
+            histo_name: weights_perc_v0m_30_100_LHC18pp
+            according_to: n_tracklets
+
       triggersel:
         data: "trigger_hasbit_INT7==1"
         mc: null
       data:
-        runselection: [null, null, null]
-        results: [/data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/resultsMBvspt_perc_v0m,
-                  /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/resultsMBvspt_perc_v0m,
-                  /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/resultsMBvspt_perc_v0m] #list of periods
-        resultsallp: /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_data/resultsMBvspt_perc_v0m
+        runselection: [MBvspt_perc_v0m_2016, null, null]
+        results: [/data/DerivedResults/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/resultsMBvspt_perc_v0m,
+                  /data/DerivedResults/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/resultsMBvspt_perc_v0m,
+                  /data/DerivedResults/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/resultsMBvspt_perc_v0m] #list of periods
+        resultsallp: /data/DerivedResults/LckAnywithJets/vAN-20200824_ROOT6-1/pp_data/resultsMBvspt_perc_v0m
       mc:
         runselection: [null, null, null]
-        results: [/data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m,
-                  /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m,
-                  /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m] #list of periods
-        resultsallp: /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_mc_prodLcpK0s/resultsMBvspt_perc_v0m
+        results: [/data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1_new_data/pp_2016_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m,
+                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1_new_data/pp_2017_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m,
+                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1_new_data/pp_2018_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m] #list of periods
+        resultsallp: /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1_new_data/pp_mc_prodLcpK0s/resultsMBvspt_perc_v0m
 
-      mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [2.11, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
@@ -502,11 +542,23 @@ LcpK0spp:
       masspeak: 2.2864
       massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
       massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
-      rebin: [[6,6,6,6,6,8], [6,6,6,6,6,6], [6,6,6,6,6,6]]
+      rebin:
+        - [6,6,8,9,10,6]
+        - [6,6,8,9,10,6]
+        - [6,6,8,9,10,6]
+        - [6,6,8,9,10,6]
 
-      includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      includesecpeak:
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
       masssecpeak: 2.2864
-      fix_masssecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      fix_masssecpeak:
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
       widthsecpeak: 0.01
       fix_widthsecpeak: true
 
@@ -517,10 +569,10 @@ LcpK0spp:
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
-      SetInitialGaussianSigma: [true, false, false, false, false, false]
+      SetInitialGaussianSigma: [false, false, false, false, false, false]
       # Max percentage deviation in sigma (from init) to be considered as a good fit
       MaxPercSigmaDeviation: 0.5
-      # Number of initial signal sigmas around the mean to be excluded for side-band fit
+      # Number of initial signal sigmas around the mean to be excluded for sideband fit
       exclude_nsigma_sideband: 4
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
@@ -529,21 +581,9 @@ LcpK0spp:
       FixedSigma: true
       fitcase: Lc
       latexnamehadron: "#Lambda_{c}^{pK0s}"
-      latexbin2var: "V0M_{perc}"
+      latexbin2var: "v0m perc"
       nevents: null
       dodoublecross: false
-
-      systematics:
-        # For now don't do these things per pT bin
-        max_chisquare_ndf: 2.
-        rebin: [-1,0,1]
-        massmin: [2.14, 2.13, 2.12, 2.15, 2.17]
-        massmax: [2.436, 2.435, 2.434, 2.437, 2.438]
-        bincount_sigma: [3, 5]
-        bkg_funcs: [Pol2, Pol3]
-        # Whether to include the free sigma option in the derivation of raw yield uncertainty in given pT bin
-        consider_free_sigma: [False, False, False, False, False, False]
-
 
   systematics:
     probvariation:

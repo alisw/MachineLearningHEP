@@ -674,6 +674,7 @@ D0pp:
       include_reflection: True
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
+      mc_cut_on_binning2: False
 
       event_weighting_mc:
         LHC16pp:

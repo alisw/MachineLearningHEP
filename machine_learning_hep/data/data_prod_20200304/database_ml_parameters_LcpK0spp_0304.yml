@@ -544,6 +544,7 @@ LcpK0spp:
       sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m
       var_binning2_gen: perc_v0m
+      mc_cut_on_binning2: False
       nbinshisto: 100000
       minvaluehisto: -0.0005
       maxvaluehisto: 99.9995
