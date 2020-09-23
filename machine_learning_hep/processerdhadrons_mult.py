@@ -43,12 +43,12 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
     # Initializer / Instance Attributes
     # pylint: disable=too-many-statements, too-many-arguments
     def __init__(self, case, datap, run_param, mcordata, p_maxfiles,
-                 d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
+                 d_root, d_pkl, d_pklsk, d_pkl_ml, p_period, i_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
                  d_results, typean, runlisttrigger, d_mcreweights):
         super().__init__(case, datap, run_param, mcordata, p_maxfiles,
-                         d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
+                         d_root, d_pkl, d_pklsk, d_pkl_ml, p_period, i_period,
                          p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                          p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
                          d_results, typean, runlisttrigger, d_mcreweights)
@@ -65,6 +65,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
         self.v_var2_binning_gen = datap["analysis"][self.typean]["var_binning2_gen"]
         self.corr_eff_mult = datap["analysis"][self.typean]["corrEffMult"]
+        self.mc_cut_on_binning2 = datap["analysis"][self.typean].get("mc_cut_on_binning2", True)
 
         self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
         #self.sel_final_fineptbins = datap["analysis"][self.typean]["sel_final_fineptbins"]
@@ -325,7 +326,8 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
             return val, math.sqrt(val)
 
         event_weighting_mc = {}
-        if self.event_weighting_mc and ibin is not None and len(self.event_weighting_mc) < ibin:
+        if self.event_weighting_mc and ibin is not None \
+                and len(self.event_weighting_mc) - 1 >= ibin:
             # Check is there is a dictionary with desired info
             event_weighting_mc = self.event_weighting_mc[ibin]
 
@@ -419,10 +421,12 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
                 df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-                df_mc_reco = seldf_singlevar_inclusive(df_mc_reco, self.v_var2_binning_gen, \
-                                             self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
-                df_mc_gen = seldf_singlevar_inclusive(df_mc_gen, self.v_var2_binning_gen, \
-                                            self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                # Whether or not to cut on the 2nd binning variable
+                if self.mc_cut_on_binning2:
+                    df_mc_reco = seldf_singlevar_inclusive(df_mc_reco, self.v_var2_binning_gen, \
+                                                 self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                    df_mc_gen = seldf_singlevar_inclusive(df_mc_gen, self.v_var2_binning_gen, \
+                                                self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
                 df_reco_presel_pr = df_mc_reco[df_mc_reco.ismcprompt == 1]
                 df_reco_sel_pr = None

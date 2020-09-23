@@ -150,12 +150,12 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
     # Initializer / Instance Attributes
     # pylint: disable=too-many-statements, too-many-arguments, line-too-long
     def __init__(self, case, datap, run_param, mcordata, p_maxfiles,
-                 d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
+                 d_root, d_pkl, d_pklsk, d_pkl_ml, p_period, i_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
                  d_results, typean, runlisttrigger, d_mcreweights):
         super().__init__(case, datap, run_param, mcordata, p_maxfiles,
-                         d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
+                         d_root, d_pkl, d_pklsk, d_pkl_ml, p_period, i_period,
                          p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                          p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
                          d_results, typean, runlisttrigger, d_mcreweights)
