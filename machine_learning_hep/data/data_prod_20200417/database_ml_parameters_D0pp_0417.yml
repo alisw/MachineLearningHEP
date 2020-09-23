@@ -662,6 +662,8 @@ D0pp:
       #corrEffMult: [false, false, false, false]
       sel_binmin2:  [0,30,0.1,0] #list of var2 splittng nbins
       sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
+      triggereff: [0.921,0.890,0.997,1]
+      triggereffunc: [0,0,0,0]
       var_binning2: perc_v0m
       var_binning2_gen: perc_v0m
       nbinshisto: 100000
