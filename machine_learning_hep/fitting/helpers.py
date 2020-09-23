@@ -669,12 +669,19 @@ class MLFitter:
         bins1_ranges.append(self.pars_factory.bins1_edges_up[-1])
         n_bins1 = len(bins1_ranges) - 1
 
+        def fill_wrapper(histo, ibin, central, err=None):
+            histo.SetBinContent(ibin, central)
+            if err is not None:
+                histo.SetBinError(ibin, err)
+
         # Summarize in mult histograms in pT bins
         yieldshistos = {ibin2: TH1F("hyields%d" % (ibin2), "", \
                 n_bins1, array("d", bins1_ranges)) for ibin2 in bins2}
-        means_histos = {ibin2:TH1F("hmeanss%d" % (ibin2), "", \
+        means_histos = {ibin2:TH1F("hmeans%d" % (ibin2), "", \
                 n_bins1, array("d", bins1_ranges)) for ibin2 in bins2}
         sigmas_histos = {ibin2: TH1F("hsigmas%d" % (ibin2), "", \
+                n_bins1, array("d", bins1_ranges)) for ibin2 in bins2}
+        signifs_histos = {ibin2: TH1F("hsignifs%d" % (ibin2), "", \
                 n_bins1, array("d", bins1_ranges)) for ibin2 in bins2}
         have_summary_pt_bins = []
         means_init_mc_histos = TH1F("hmeans_init_mc", "", n_bins1, array("d", bins1_ranges))
@@ -738,15 +745,17 @@ class MLFitter:
                      x_axis_label=x_axis_label, y_axis_label=y_axis_label, title=title)
 
             if fit.success:
-                # Only fill these summary plots in case of success
-                yieldshistos[ibin2].SetBinContent(ibin1 + 1, kernel.GetRawYield())
-                yieldshistos[ibin2].SetBinError(ibin1 + 1, kernel.GetRawYieldError())
+                fill_wrapper(yieldshistos[ibin2], ibin1 + 1,
+                             kernel.GetRawYield(), kernel.GetRawYieldError())
+                fill_wrapper(means_histos[ibin2], ibin1 + 1,
+                             kernel.GetMean(), kernel.GetMeanUncertainty())
+                fill_wrapper(sigmas_histos[ibin2], ibin1 + 1,
+                             kernel.GetSigma(), kernel.GetSigmaUncertainty())
 
-                means_histos[ibin2].SetBinContent(ibin1 + 1, kernel.GetMean())
-                means_histos[ibin2].SetBinError(ibin1 + 1, kernel.GetMeanUncertainty())
-
-                sigmas_histos[ibin2].SetBinContent(ibin1 + 1, kernel.GetSigma())
-                sigmas_histos[ibin2].SetBinError(ibin1 + 1, kernel.GetSigmaUncertainty())
+                signif = Double()
+                signif_err = Double()
+                kernel.Significance(n_sigma_signal, signif, signif_err)
+                fill_wrapper(signifs_histos[ibin2], ibin1 + 1, signif, signif_err)
 
                 # Residual plot
                 c_res = TCanvas('cRes', 'The Fit Canvas', 800, 800)
@@ -835,6 +844,7 @@ class MLFitter:
                 yieldshistos[ibin2].Write()
                 means_histos[ibin2].Write()
                 sigmas_histos[ibin2].Write()
+                signifs_histos[ibin2].Write()
             #canvas_data[ibin2].Close()
 
 

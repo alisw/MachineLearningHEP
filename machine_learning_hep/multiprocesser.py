@@ -102,7 +102,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
                                    self.p_maxfiles[indexp], self.dlper_root[indexp],
                                    self.dlper_pkl[indexp], self.dlper_pklsk[indexp],
                                    self.dlper_pklml[indexp],
-                                   self.p_period[indexp], self.p_chunksizeunp[indexp],
+                                   self.p_period[indexp], indexp, self.p_chunksizeunp[indexp],
                                    self.p_chunksizeskim[indexp], self.p_nparall,
                                    self.p_fracmerge[indexp], self.p_seedmerge[indexp],
                                    self.dlper_reco_modapp[indexp],
