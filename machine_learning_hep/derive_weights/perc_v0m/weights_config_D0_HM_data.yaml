@@ -1,0 +1,26 @@
+
+database: /home/bvolkel/HF/MachineLearningHEP/machine_learning_hep/data/data_prod_20200417/database_ml_parameters_D0pp_0417_HM_V0.yml
+
+data_or_mc: data
+
+analysis: V0vspt_perc_v0m
+
+distribution: n_tracklets
+
+x_range:
+    - 100
+    - 0
+    - 100
+
+slice_cuts:
+    - "perc_v0m <= 0.1"
+
+required_columns:
+    - perc_v0m
+
+period_cuts:
+    - "run_number > 256941"
+    - null
+    - null
+
+out_file: n_tracklets_HM_D0_data.root

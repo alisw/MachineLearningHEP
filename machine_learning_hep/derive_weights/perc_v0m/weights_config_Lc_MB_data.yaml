@@ -1,0 +1,23 @@
+
+database: /home/bvolkel/HF/MachineLearningHEP/machine_learning_hep/data/data_prod_20200304/database_ml_parameters_LcpK0spp_0304.yml
+
+data_or_mc: data
+
+analysis: MBvspt_perc_v0m
+
+distribution: n_tracklets
+
+x_range:
+    - 100
+    - 0
+    - 100
+
+slice_cuts:
+    - null
+    - "perc_v0m >= 30"
+    - "perc_v0m <= 30 and perc_v0m >= 0.1"
+
+required_columns:
+    - perc_v0m
+
+out_file: n_tracklets_MB_Lc_data.root
