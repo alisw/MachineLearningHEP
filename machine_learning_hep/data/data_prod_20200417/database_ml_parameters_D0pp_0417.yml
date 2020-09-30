@@ -797,7 +797,7 @@ D0pp:
         massmin: [1.72, 1.70, 1.71, 1.73, 1.74]
         massmax: [2.03, 2.01, 2.02, 2.04, 2.05]
         bincount_sigma: [3.,5.]
-        bkg_funcs: [kExpo, Pol2]
+        bkg_funcs: [kExpo, Pol2, Pol3]
         # Whether to include the free sigma option in the derivation of raw yield uncertainty in given pT bin
         consider_free_sigma: [True,True, True, True, True, True]
 
