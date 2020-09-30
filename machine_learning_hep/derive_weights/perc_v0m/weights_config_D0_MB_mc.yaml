@@ -3,6 +3,10 @@ database: /home/bvolkel/HF/MachineLearningHEP/machine_learning_hep/data/data_pro
 
 data_or_mc: mc
 
+query_all: "is_ev_rej == 0"
+#use_mass_window: false
+#use_ml_selection: false
+
 analysis: MBvspt_perc_v0m
 
 distribution: n_tracklets

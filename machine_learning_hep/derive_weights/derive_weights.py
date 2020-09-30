@@ -25,7 +25,7 @@ from lz4 import frame # pylint: disable=unused-import
 
 from root_numpy import fill_hist # pylint: disable=import-error
 
-from ROOT import TFile, TH1F, TH2F # pylint: disable=import-error
+from ROOT import TFile, TH1F, TH2F # pylint: disable=import-error, no-name-in-module
 
 from machine_learning_hep.utilities import openfile
 from machine_learning_hep.io import parse_yaml
@@ -71,13 +71,9 @@ def summary_histograms_and_write(file_out, histos, histo_names,
         file_out.WriteTObject(h_add)
 
 
-
-def derive_mc(periods, in_top_dirs,
-              gen_file_name,
-              required_columns,
-              distribution_column, distribution_x_range,
-              file_out_name,
-              queries_periods=None, query_all=None, queries_slices=None):
+def derive(periods, in_top_dirs, gen_file_name, required_columns, use_mass_window, # pylint: disable=too-many-arguments, too-many-branches
+           distribution_column, distribution_x_range, file_name_mlwp_map, file_out_name,
+           queries_periods=None, query_all=None, queries_slices=None):
 
     """
 
@@ -95,60 +91,6 @@ def derive_mc(periods, in_top_dirs,
 
     histo_xtitles = [distribution_column] * len(histo_params)
     histo_ytitles = ["entries"] * len(histo_params)
-
-
-    file_out = TFile.Open(file_out_name, "RECREATE")
-
-    for period, dir_applied, query_period in zip(periods, in_top_dirs, queries_periods):
-        query_tmp = None
-        if query_all:
-            query_tmp = query_all
-            if query_period:
-                query_tmp += f" and {query_period}"
-        elif query_period:
-            query_tmp = query_period
-
-        files_all_evt = glob(f"{dir_applied}/**/{gen_file_name}", recursive=True)
-
-        args = [((f_evt,), histo_params, required_columns, \
-                query_tmp, None, None, queries_slices, None) \
-                for f_evt in files_all_evt]
-
-        histos = multi_proc(fill_from_pickles, args, None, 100, 30)
-
-        histo_names_period = [f"{name}_{period}" for name in histo_names]
-        summary_histograms_and_write(file_out, histos, histo_names_period,
-                                     histo_xtitles, histo_ytitles)
-
-    file_out.Close()
-
-def derive_data(periods, in_top_dirs, gen_file_name, required_columns, distribution_column, # pylint: disable=too-many-arguments, too-many-branches
-                distribution_x_range, file_name_mlwp_map, file_out_name,
-                queries_periods=None, query_all=None, queries_slices=None):
-
-    """
-
-    make n_tracklets distributions for all events
-
-    """
-
-    queries_periods = [None] * len(periods) if not queries_periods else queries_periods
-
-    # Prepare histogram parameters
-    queries_slices = [None] if not queries_slices else queries_slices
-    histo_names = [f"{distribution_column}_{i}" for i in range(len(queries_slices))]
-
-    histo_params = [([distribution_column], distribution_x_range) for _ in histo_names]
-
-    histo_xtitles = [distribution_column] * len(histo_params)
-    histo_ytitles = ["entries"] * len(histo_params)
-
-    #print("queries slices", queries_slices)
-    #sys.exit(0)
-    #print(histo_names)
-    #print(histo_params)
-    #print(histo_xtitles)
-    #print(histo_ytitles)
 
     file_out = TFile.Open(file_out_name, "RECREATE")
 
@@ -163,10 +105,11 @@ def derive_data(periods, in_top_dirs, gen_file_name, required_columns, distribut
         elif query_period:
             query_tmp = query_period
 
-        if query_tmp:
-            query_tmp += " and abs(inv_mass - @INV_MASS[0]) <= @INV_MASS_WINDOW[0]"
-        else:
-            query_tmp = "abs(inv_mass - @INV_MASS) <= @INV_MASS_WINDOW"
+        if use_mass_window:
+            if query_tmp:
+                query_tmp += " and abs(inv_mass - @INV_MASS[0]) <= @INV_MASS_WINDOW[0]"
+            else:
+                query_tmp = "abs(inv_mass - @INV_MASS) <= @INV_MASS_WINDOW"
 
         files_all = glob(f"{dir_applied}/**/{gen_file_name}", recursive=True)
 
@@ -221,6 +164,9 @@ def make_distributions(args, inv_mass, inv_mass_window): # pylint: disable=too-m
     period_cuts = config.get("period_cuts", None)
     slice_cuts = config.get("slice_cuts", None)
     required_columns = config.get("required_columns", None)
+    query_all = config.get("query_all", None)
+    use_ml_selection = config.get("use_ml_selection", True)
+    use_mass_window = config.get("use_mass_window", True)
 
     # Now open database
     _, database = read_database(database_path)
@@ -249,22 +195,21 @@ def make_distributions(args, inv_mass, inv_mass_window): # pylint: disable=too-m
     file_names_cut_map = None
 
     # Set where to read data from and set overall selection query
-    if data_or_mc == "mc":
-        query_all = None
-        in_file_name_gen = database["files_names"]["namefile_evt"]
-        in_file_names = [in_file_name_gen]
-        in_top_dirs = database["multi"]["mc"]["pkl"]
-    else:
-        column_names.append("inv_mass")
-        query_all = "is_ev_rej == 0"
-        trigger_sel = analysis_config["triggersel"]["data"]
-        in_top_dirs = database["mlapplication"]["data"]["pkl_skimmed_dec"]
-        if trigger_sel:
+    column_names.append("inv_mass")
+    trigger_sel = analysis_config["triggersel"]["data"]
+    in_top_dirs = database["mlapplication"][data_or_mc]["pkl_skimmed_dec"]
+    if trigger_sel:
+        if query_all:
             query_all += f" and {trigger_sel}"
-        in_file_name_gen = database["files_names"]["namefile_reco"]
-        in_file_name_gen = in_file_name_gen[:in_file_name_gen.find(".")]
+        else:
+            query_all = trigger_sel
 
-        if is_ml:
+    in_file_name_gen = database["files_names"]["namefile_reco"]
+    in_file_name_gen = in_file_name_gen[:in_file_name_gen.find(".")]
+
+    if is_ml:
+        pkl_extension = ""
+        if use_ml_selection:
             model_name = database["mlapplication"]["modelname"]
             ml_sel_column = f"y_test_prob{model_name}"
             column_names.append(ml_sel_column)
@@ -273,41 +218,19 @@ def make_distributions(args, inv_mass, inv_mass_window): # pylint: disable=too-m
             pt_bins_up = database["sel_skim_binmax"]
             in_file_names = [f"{in_file_name_gen}{ptl}_{ptu}" \
                     for ptl, ptu in zip(pt_bins_low, pt_bins_up)]
-            pkl_extension = ""
             file_names_cut_map = {ifn: f"{ml_sel_column} > {cut}" \
                     for ifn, cut in zip(in_file_names, ml_sel_pt)}
-
-        else:
-            pkl_extension = "_std"
-
-        in_file_name_gen = in_file_name_gen + "*"
-
-
-        #file_extension = in_file_name_gen[in_file_name_gen.find("."):]
-        #in_file_names = [f"{fn}{pkl_extension}{file_extension}" for fn in in_file_names]
-
-        # Now make the directory path right
-        in_top_dirs = [f"{itd}{pkl_extension}" for itd in in_top_dirs]
-
-
-
-    if data_or_mc == "mc":
-        derive_mc(periods, in_top_dirs,
-                  in_file_name_gen,
-                  column_names,
-                  distribution, distribution_x_range,
-                  out_file,
-                  period_cuts, query_all, slice_cuts)
-
     else:
-        derive_data(periods, in_top_dirs,
-                    in_file_name_gen,
-                    column_names,
-                    distribution, distribution_x_range,
-                    file_names_cut_map,
-                    out_file,
-                    period_cuts, query_all, slice_cuts)
+        pkl_extension = "_std"
 
+    in_file_name_gen = in_file_name_gen + "*"
+
+    # Now make the directory path right
+    in_top_dirs = [f"{itd}{pkl_extension}" for itd in in_top_dirs]
+
+    derive(periods, in_top_dirs, in_file_name_gen, column_names, use_mass_window,
+           distribution, distribution_x_range, file_names_cut_map, out_file, period_cuts,
+           query_all, slice_cuts)
 
 
 def make_weights(args, *ignore): # pylint: disable=unused-argument
@@ -345,7 +268,7 @@ def make_weights(args, *ignore): # pylint: disable=unused-argument
         period = name[per_pos:]
         mc_histo = get_mc_histo(mc_histos, period)
 
-        dh.Divide(dh, mc_histo, 1., 1., "B")
+        dh.Divide(dh, mc_histo, 1., 1.)
         out_file.cd()
         dh.Write(f"{dh.GetName()}_weights")
 
