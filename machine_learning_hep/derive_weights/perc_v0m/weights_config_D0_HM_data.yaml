@@ -15,7 +15,7 @@ x_range:
     - 100
 
 slice_cuts:
-    - "perc_v0m <= 0.1"
+    - "perc_v0m <= 0.1 and perc_v0m >= 0"
 
 required_columns:
     - perc_v0m
