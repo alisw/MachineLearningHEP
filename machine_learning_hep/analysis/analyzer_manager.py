@@ -20,7 +20,7 @@ class AnalyzerManager:
     Manager class handling analysis and systematic objects
     """
 
-    def __init__(self, ana_class, database, case, typean, doperiodbyperiod, *args):
+    def __init__(self, ana_class, database, case, typean, doperiodbyperiod, *args, **kwargs):
 
         self.ana_class = ana_class
         self.database = database
@@ -30,6 +30,8 @@ class AnalyzerManager:
 
         # Additional arguments to be forwarded to the analyzers
         self.add_args = args
+        self.args_per_period = kwargs.get("args_per_period", None)
+        self.kwargs_per_period = kwargs.get("kwargs_per_period", None)
 
         self.logger = get_logger()
 
@@ -38,6 +40,23 @@ class AnalyzerManager:
 
         self.is_initialized = False
 
+    def __add_args_per_period(self, ip):
+        if self.args_per_period:
+            return self.add_args + self.args_per_period[ip]
+        return self.add_args
+
+    
+    def get_analyzers(self, none_for_unused_period=True):
+        if not none_for_unused_period:
+            return self.analyzers
+
+        useperiod = self.database["analysis"][self.typean]["useperiod"]
+        analyzers = [None] * (len(useperiod) + 1)
+        for a in self.analyzers:
+            if a.period is not None:
+                analyzers[a.period] = a
+        analyzers[-1] = self.analyzers[-1]
+        
 
     def initialize(self):
         """
@@ -53,10 +72,12 @@ class AnalyzerManager:
 
         for ip, period in enumerate(useperiod):
             if self.doperiodbyperiod and period:
+                args = self.__add_args_per_period(ip)
                 self.analyzers.append(self.ana_class(self.database, self.case, self.typean, ip,
-                                                     *self.add_args))
+                                                     *args))
+        args = self.__add_args_per_period(-1)
         self.analyzers.append(self.ana_class(self.database, self.case, self.typean, None,
-                                             *self.add_args))
+                                             *args))
 
         if self.doperiodbyperiod:
             # get after-burner, if any

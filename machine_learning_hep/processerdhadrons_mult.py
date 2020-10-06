@@ -62,16 +62,14 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                                     self.p_bin_width))
         if self.mltype == "MultiClassification":
             self.l_selml = []
-            for ipt in range(self.p_nptbins):
+            for ipt in range(self.p_nptfinbins):
+
                 mlsel_multi0 = "y_test_prob" + self.p_modelname + self.multiclass_labels[0] + \
                                " <= " + str(self.lpt_probcutfin[ipt][0])
                 mlsel_multi1 = "y_test_prob" + self.p_modelname + self.multiclass_labels[1] + \
                                " >= " + str(self.lpt_probcutfin[ipt][1])
                 mlsel_multi = mlsel_multi0 + " and " + mlsel_multi1
                 self.l_selml.append(mlsel_multi)
-        else:
-            self.l_selml = ["y_test_prob%s>%s" % (self.p_modelname, self.lpt_probcutfin[ipt]) \
-                           for ipt in range(self.p_nptbins)]
         self.s_presel_gen_eff = datap["analysis"][self.typean]['presel_gen_eff']
         self.lvar2_binmin = datap["analysis"][self.typean]["sel_binmin2"]
         self.lvar2_binmax = datap["analysis"][self.typean]["sel_binmax2"]
@@ -80,7 +78,6 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         self.corr_eff_mult = datap["analysis"][self.typean]["corrEffMult"]
         self.mc_cut_on_binning2 = datap["analysis"][self.typean].get("mc_cut_on_binning2", True)
 
-        self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
         #self.sel_final_fineptbins = datap["analysis"][self.typean]["sel_final_fineptbins"]
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
         self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
@@ -243,7 +240,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 df = selectdfrunlist(df, \
                     self.run_param[self.runlistrigger], "run_number")
             if self.doml is True:
-                df = df.query(self.l_selml[bin_id])
+                df = df.query(self.l_selml[ipt])
             list_df_recodtrig.append(df)
             df = seldf_singlevar(df, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
@@ -255,18 +252,18 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 if self.mltype == "MultiClassification":
                     suffix = "%s%d_%d_%.2f%.2f%s_%.2f_%.2f" % \
                              (self.v_var_binning, self.lpt_finbinmin[ipt],
-                              self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id][0],
-                              self.lpt_probcutfin[bin_id][1], self.v_var2_binning,
+                              self.lpt_finbinmax[ipt], self.lpt_probcutfin[ipt][0],
+                              self.lpt_probcutfin[ipt][1], self.v_var2_binning,
                               self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
-                    lpt_probcutfin_temp = 1000 * self.lpt_probcutfin[bin_id][0] + \
-                                          self.lpt_probcutfin[bin_id][1]
+                    lpt_probcutfin_temp = 1000 * self.lpt_probcutfin[ipt][0] + \
+                                          self.lpt_probcutfin[ipt][1]
                 else:
                     suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
                              (self.v_var_binning, self.lpt_finbinmin[ipt],
-                              self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
+                              self.lpt_finbinmax[ipt], self.lpt_probcutfin[ipt],
                               self.v_var2_binning,
                               self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
-                    lpt_probcutfin_temp = self.lpt_probcutfin[bin_id]
+                    lpt_probcutfin_temp = self.lpt_probcutfin[ipt]
                 curr_dir = myfile.mkdir(f"bin1_{ipt}_bin2_{ibin2}")
                 meta_info = create_meta_info(self.v_var_binning, self.lpt_finbinmin[ipt],
                                              self.lpt_finbinmax[ipt], self.v_var2_binning,
@@ -455,14 +452,14 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 df_reco_presel_pr = df_mc_reco[df_mc_reco.ismcprompt == 1]
                 df_reco_sel_pr = None
                 if self.doml is True:
-                    df_reco_sel_pr = df_reco_presel_pr.query(self.l_selml[bin_id])
+                    df_reco_sel_pr = df_reco_presel_pr.query(self.l_selml[ipt])
                 else:
                     df_reco_sel_pr = df_reco_presel_pr.copy()
                 df_gen_sel_fd = df_mc_gen[df_mc_gen.ismcfd == 1]
                 df_reco_presel_fd = df_mc_reco[df_mc_reco.ismcfd == 1]
                 df_reco_sel_fd = None
                 if self.doml is True:
-                    df_reco_sel_fd = df_reco_presel_fd.query(self.l_selml[bin_id])
+                    df_reco_sel_fd = df_reco_presel_fd.query(self.l_selml[ipt])
                 else:
                     df_reco_sel_fd = df_reco_presel_fd.copy()
 

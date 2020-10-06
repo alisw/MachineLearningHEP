@@ -77,11 +77,6 @@ analysis:
   doplotsval: false # analyzer: plottervalidation
 
 systematics:
-  cutvar:
-    activate: false
-    probvariationmass: false
-    probvariationeff: false
-    probvariationfit: false
-    probvariationcross: false
+  cutvar: false
   mcptshape:
     activate: false
