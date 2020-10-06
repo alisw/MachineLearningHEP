@@ -313,16 +313,16 @@ D0pp:
 
       event_weighting_mc:
         LHC16pp:
-          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_HM.root
-            histo_name: weights_perc_v0m_0_01_LHC16pp
+          - filepath: data/event_weighting_mc/weights_n_tracklets_HM_D0_data.root
+            histo_name: n_tracklets_0_LHC16pp_weights
             according_to: n_tracklets
         LHC17pp:
-          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_HM.root
-            histo_name: weights_perc_v0m_0_01_LHC17pp
+          - filepath: data/event_weighting_mc/weights_n_tracklets_HM_D0_data.root
+            histo_name: n_tracklets_0_LHC17pp_weights
             according_to: n_tracklets
         LHC18pp:
-          - filepath: data/event_weighting_mc/weights_n_tracklets_1cand_mass_window_20MeV_data_D0_HM.root
-            histo_name: weights_perc_v0m_0_01_LHC18pp
+          - filepath: data/event_weighting_mc/weights_n_tracklets_HM_D0_data.root
+            histo_name: n_tracklets_0_LHC18pp_weights
             according_to: n_tracklets
 
       triggersel:
