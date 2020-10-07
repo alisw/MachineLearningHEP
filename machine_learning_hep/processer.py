@@ -159,13 +159,16 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.p_nptfinbins = len(self.lpt_finbinmin)
         self.lpt_model = datap["mlapplication"]["modelsperptbin"]
         self.dirmodel = datap["ml"]["mlout"]
+        self.mltype = datap["ml"]["mltype"]
+        self.multiclass_labels = datap["ml"].get("multiclass_labels", None)
         self.lpt_model = appendmainfoldertolist(self.dirmodel, self.lpt_model)
 
         self.lpt_probcutpre = datap["mlapplication"]["probcutpresel"][self.mcordata]
         self.lpt_probcutfin = datap["mlapplication"]["probcutoptimal"]
 
-        if self.lpt_probcutfin < self.lpt_probcutpre:
-            print("FATAL error: probability cut final must be tighter!")
+        if self.mltype != "MultiClassification":
+            if self.lpt_probcutfin < self.lpt_probcutpre:
+                print("FATAL error: probability cut final must be tighter!")
 
         self.d_pkl_dec = d_pkl_dec
         self.mptfiles_recosk = []
@@ -190,9 +193,15 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.f_evtorig_ml = os.path.join(self.d_pkl_ml, self.n_evtorig)
         self.lpt_recodec = None
         if self.doml is True:
-            self.lpt_recodec = [self.n_reco.replace(".pkl", "%d_%d_%.2f.pkl" % \
-                               (self.lpt_anbinmin[i], self.lpt_anbinmax[i], \
-                                self.lpt_probcutpre[i])) for i in range(self.p_nptbins)]
+            if self.mltype == "MultiClassification":
+                self.lpt_recodec = [self.n_reco.replace(".pkl", "%d_%d_%.2f%.2f.pkl" % \
+                                   (self.lpt_anbinmin[i], self.lpt_anbinmax[i], \
+                                    self.lpt_probcutpre[i][0], self.lpt_probcutpre[i][1])) \
+                                    for i in range(self.p_nptbins)]
+            else:
+                self.lpt_recodec = [self.n_reco.replace(".pkl", "%d_%d_%.2f.pkl" % \
+                                   (self.lpt_anbinmin[i], self.lpt_anbinmax[i], \
+                                    self.lpt_probcutpre[i])) for i in range(self.p_nptbins)]
         else:
             self.lpt_recodec = [self.n_reco.replace(".pkl", "%d_%d_std.pkl" % \
                                (self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
@@ -337,10 +346,18 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 if os.path.isfile(self.lpt_model[ipt]) is False:
                     print("Model file not present in bin %d" % ipt)
                 mod = pickle.load(openfile(self.lpt_model[ipt], 'rb'))
-                dfrecoskml = apply("BinaryClassification", [self.p_modelname], [mod],
-                                   dfrecosk, self.v_train[ipt])
-                probvar = "y_test_prob" + self.p_modelname
-                dfrecoskml = dfrecoskml.loc[dfrecoskml[probvar] > self.lpt_probcutpre[ipt]]
+                if self.mltype == "MultiClassification":
+                    dfrecoskml = apply(self.mltype, [self.p_modelname], [mod],
+                                       dfrecosk, self.v_train[ipt], self.multiclass_labels)
+                    prob0 = "y_test_prob" + self.p_modelname + self.multiclass_labels[0]
+                    prob1 = "y_test_prob" + self.p_modelname + self.multiclass_labels[1]
+                    dfrecoskml = dfrecoskml.loc[(dfrecoskml[prob0] <= self.lpt_probcutpre[ipt][0]) &
+                                                (dfrecoskml[prob1] >= self.lpt_probcutpre[ipt][1])]
+                else:
+                    dfrecoskml = apply("BinaryClassification", [self.p_modelname], [mod],
+                                       dfrecosk, self.v_train[ipt])
+                    probvar = "y_test_prob" + self.p_modelname
+                    dfrecoskml = dfrecoskml.loc[dfrecoskml[probvar] > self.lpt_probcutpre[ipt]]
             else:
                 dfrecoskml = dfrecosk.query("isstd == 1")
             pickle.dump(dfrecoskml, openfile(self.mptfiles_recoskmldec[ipt][file_index], "wb"),
