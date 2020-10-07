@@ -146,7 +146,9 @@ def fit(names_, classifiers_, x_train_, y_train_):
     return trainedmodels_
 
 
-def test(ml_type, names_, trainedmodels_, test_set_, mylistvariables_, myvariablesy_):
+def test(ml_type, names_, trainedmodels_, test_set_, mylistvariables_, myvariablesy_, labels_=None):
+    logger = get_logger()
+
     x_test_ = test_set_[mylistvariables_]
     y_test_ = test_set_[myvariablesy_].values.reshape(len(x_test_),)
     test_set_[myvariablesy_] = pd.Series(y_test_, index=test_set_.index)
@@ -157,13 +159,21 @@ def test(ml_type, names_, trainedmodels_, test_set_, mylistvariables_, myvariabl
         y_test_prediction = y_test_prediction.reshape(len(y_test_prediction),)
         test_set_['y_test_prediction'+name] = pd.Series(y_test_prediction, index=test_set_.index)
 
+        y_test_prob = model.predict_proba(x_test_)
         if ml_type == "BinaryClassification":
-            y_test_prob = model.predict_proba(x_test_)[:, 1]
-            test_set_['y_test_prob'+name] = pd.Series(y_test_prob, index=test_set_.index)
+            test_set_['y_test_prob'+name] = pd.Series(y_test_prob[:, 1], index=test_set_.index)
+        elif ml_type == "MultiClassification" and labels_ is not None:
+            for pred, lab in enumerate(labels_):
+                test_set_['y_test_prob'+name+lab] = pd.Series(y_test_prob[:, pred],
+                                                              index=test_set_.index)
+        else:
+            logger.fatal("Incorrect settings for chosen mltype")
     return test_set_
 
 
-def apply(ml_type, names_, trainedmodels_, test_set_, mylistvariablestraining_):
+def apply(ml_type, names_, trainedmodels_, test_set_, mylistvariablestraining_, labels_=None):
+    logger = get_logger()
+
     x_values = test_set_[mylistvariablestraining_]
     for name, model in zip(names_, trainedmodels_):
         y_test_prediction = []
@@ -172,9 +182,15 @@ def apply(ml_type, names_, trainedmodels_, test_set_, mylistvariablestraining_):
         y_test_prediction = y_test_prediction.reshape(len(y_test_prediction),)
         test_set_['y_test_prediction'+name] = pd.Series(y_test_prediction, index=test_set_.index)
 
+        y_test_prob = model.predict_proba(x_values)
         if ml_type == "BinaryClassification":
-            y_test_prob = model.predict_proba(x_values)[:, 1]
-            test_set_['y_test_prob'+name] = pd.Series(y_test_prob, index=test_set_.index)
+            test_set_['y_test_prob'+name] = pd.Series(y_test_prob[:, 1], index=test_set_.index)
+        elif ml_type == "MultiClassification" and labels_ is not None:
+            for pred, lab in enumerate(labels_):
+                test_set_['y_test_prob'+name+lab] = pd.Series(y_test_prob[:, pred],
+                                                              index=test_set_.index)
+        else:
+            logger.fatal("Incorrect settings for chosen mltype")
     return test_set_
 
 

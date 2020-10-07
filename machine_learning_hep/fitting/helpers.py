@@ -51,6 +51,7 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
         ana_config = database["analysis"][ana_type]
 
         self.prob_cut_fin = database["mlapplication"]["probcutoptimal"]
+        self.mltype = database["ml"]["mltype"]
 
         # File config
         self.file_data_name = file_data_name
@@ -251,6 +252,12 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
             Suffix string
         """
         bin_id_match = self.bin_matching[ibin1]
+        if self.mltype == "MultiClassification":
+            return "%s%d_%d_%.2f%.2f%s_%.2f_%.2f" % \
+                   (self.bin1_name, self.bins1_edges_low[ibin1],
+                    self.bins1_edges_up[ibin1], self.prob_cut_fin[bin_id_match][0],
+                    self.prob_cut_fin[bin_id_match][1], self.bin2_name,
+                    self.bins2_edges_low[ibin2], self.bins2_edges_up[ibin2])
         return "%s%d_%d_%.2f%s_%.2f_%.2f" % \
                (self.bin1_name, self.bins1_edges_low[ibin1],
                 self.bins1_edges_up[ibin1], self.prob_cut_fin[bin_id_match],
@@ -715,9 +722,15 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
             bin_id_match = self.pars_factory.bin_matching[ibin1]
 
             # Some variables set for drawing
-            title = f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < " \
-                    f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
-                    f"(prob > {self.pars_factory.prob_cut_fin[bin_id_match]:.2f})"
+            if self.pars_factory.mltype == "MultiClassification":
+                title = f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < " \
+                        f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
+                        f"(prob0 <= {self.pars_factory.prob_cut_fin[bin_id_match][0]:.2f} &" \
+                        f"prob1 >= {self.pars_factory.prob_cut_fin[bin_id_match][1]:.2f})"
+            else:
+                title = f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < " \
+                        f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
+                        f"(prob > {self.pars_factory.prob_cut_fin[bin_id_match]:.2f})"
 
             x_axis_label = "#it{M}_{inv} (GeV/#it{c}^{2})"
             n_sigma_signal = self.pars_factory.n_sigma_signal
@@ -920,9 +933,15 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
             bin_id_match = self.pars_factory.bin_matching[ibin1]
 
             # Some variables set for drawing
-            title = f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < " \
-                    f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
-                    f"(prob > {self.pars_factory.prob_cut_fin[bin_id_match]:.2f})"
+            if self.pars_factory.mltype == "MultiClassification":
+                title = f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < " \
+                        f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
+                        f"(prob0 <= {self.pars_factory.prob_cut_fin[bin_id_match][0]:.2f} &" \
+                        f"prob1 >= {self.pars_factory.prob_cut_fin[bin_id_match][1]:.2f})"
+            else:
+                title = f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < " \
+                        f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
+                        f"(prob > {self.pars_factory.prob_cut_fin[bin_id_match]:.2f})"
 
             suffix_write = self.pars_factory.make_suffix(ibin1, ibin2)
 
