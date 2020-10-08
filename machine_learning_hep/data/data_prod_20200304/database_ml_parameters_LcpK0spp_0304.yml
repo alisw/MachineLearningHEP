@@ -263,9 +263,9 @@ LcpK0spp:
                                 /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodLcpK0s/373_20200304-2021/pklskml] #list of periods
       pkl_skimmed_merge_for_ml_all: /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_mc_prodLcpK0s_mltot
       pkl_evtcounter_all: /data/Derived/LckAny_sub_newMC/vAN-20200304_ROOT6-1/pp_mc_prodLcpK0s_evttot
-      mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodLcpK0s_16,
-                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodLcpK0s_17,
-                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodLcpK0s_18]
+      mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_16,
+                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_17,
+                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_18]
   ml:
     evtsel: is_ev_rej==0
     triggersel:
@@ -290,7 +290,7 @@ LcpK0spp:
 
     opt:
       isFONLLfromROOT: true
-      filename_fonll: 'data/fonll/DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8.root'  # 'data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root'
+      filename_fonll: 'data/fonll/DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8.root'  #'data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root'
       fonll_particle: 'hLcK0sppred' #'hLcK0sp'
       fonll_pred: 'max' # edge of the FONLL prediction
       FF: 0.1281 # fragmentation fraction
