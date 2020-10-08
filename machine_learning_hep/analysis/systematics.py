@@ -94,7 +94,7 @@ class Systematics: # pylint: disable=too-few-public-methods
 
     def __read_nominal_fit_values(self):
 
-        if Systematics.NOMINAL_MEANS is not None:
+        if Systematics.NOMINAL_MEANS:
             return
 
         fitter = MLFitter(self.nominal_analyzer_merged.case,
@@ -115,8 +115,8 @@ class Systematics: # pylint: disable=too-few-public-methods
         for ibin1 in range(ana_n_first_binning):
             for ibin2 in range(ana_n_second_binning):
                 fit = fitter.get_central_fit(ibin1, ibin2)
-                Systematics.NOMINAL_MEANS[ibin2][ibin1] = fit.kernel.GetMean() # pylint: disable=unsubscriptable-object
-                Systematics.NOMINAL_SIGMAS[ibin2][ibin1] = fit.kernel.GetSigma() # pylint: disable=unsubscriptable-object
+                Systematics.NOMINAL_MEANS[ibin2][ibin1] = fit.kernel.GetMean()
+                Systematics.NOMINAL_SIGMAS[ibin2][ibin1] = fit.kernel.GetSigma()
 
 
     def __define_cutvariation_limits(self):
@@ -133,7 +133,7 @@ class Systematics: # pylint: disable=too-few-public-methods
         """
 
         # Only do this once for all
-        if Systematics.CENT_CV_CUT is not None:
+        if Systematics.CENT_CV_CUT:
             return
 
         # use multiprocesser here, prepare database

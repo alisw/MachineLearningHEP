@@ -78,6 +78,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         self.corr_eff_mult = datap["analysis"][self.typean]["corrEffMult"]
         self.mc_cut_on_binning2 = datap["analysis"][self.typean].get("mc_cut_on_binning2", True)
 
+        self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
         #self.sel_final_fineptbins = datap["analysis"][self.typean]["sel_final_fineptbins"]
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
         self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
