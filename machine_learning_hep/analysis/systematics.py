@@ -21,6 +21,7 @@ The raw yield systematic is done within analyzer.py
 # pylint: disable=no-name-in-module
 # pylint: disable=import-error
 import sys
+from time import sleep
 from os.path import join, exists
 from os import makedirs
 from copy import deepcopy, copy
@@ -499,15 +500,23 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
         save_path = join(self.nominal_analyzer_merged.d_resultsallpdata, self.syst_out_dir,
                          "successful_trials.yaml")
         if not exists(save_path):
-            print(f"Cannot load working points. File {save_path} doesn't exist")
-            sys.exit(1)
+            print(f"Cannot load working points. File {save_path} doesn't (yet) exist.")
+            print("Do full syst in 10s...")
+            sleep(10)
+            return []
         return parse_yaml(save_path)["successful_trials"]
 
 
-    def ml_systematics(self, do_only_analysis=False):
+    def ml_systematics(self, do_only_analysis=False, resume=False):
         """central method to call for ML WP systematics
         """
 
+        # Make sure the summary directory exists aleady
+        save_path = join(self.nominal_analyzer_merged.d_resultsallpdata, self.syst_out_dir)
+        if not exists(save_path):
+            makedirs(save_path)
+
+        successful = []
         self.processers_mc_syst = [None] * self.n_trials
         self.processers_data_syst = [None] * self.n_trials
         self.analyzers_syst = [None] * self.n_trials
@@ -515,33 +524,45 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
         # This step has to be regardless
         steps = [self.__prepare_trial]
 
-        if do_only_analysis:
+        if do_only_analysis and resume:
+            print("EITHER do only the anaysis step OR resume")
+            sys.exit(1)
+
+        if do_only_analysis or resume:
             # Only analysis part, so attempt to read the working points
             # which were dumped to YAML before.
             self.__load_working_points()
             shuffled = self.__read_successful_trials()
-        else:
+
+        if not resume and not do_only_analysis:
             # Otherwise we go through the entire heavy chain
             self.__define_cutvariation_limits()
             self.__make_working_points()
             # Write working points so we can read them in later
             self.__write_working_points()
+            # Shuffle --> Doing some larger and smaller variations in case of keyboard interrupt
+            shuffled = list(range(self.n_trials))
+
+        if resume or not do_only_analysis:
             steps.append(self.__ml_cutvar_mass)
             steps.append(self.__ml_cutvar_eff)
             # Only when doing the heavy processer part we consider writing a successful
             # trial because the analysis can be done quickly
             steps.append(self.__add_trial_to_save)
-            # Shuffle --> Doing some larger and smaller variations in case of keyboard interrupt
-            shuffled = list(range(self.n_trials))
-            shuffle(shuffled)
+
+        if resume:
+            for s in shuffled:
+                successful.append(s)
+                self.__add_trial_to_save(s)
+            shuffled = [i for i in range(self.n_trials) if i not in shuffled]
+
+        shuffle(shuffled)
 
         # This is always done at the end
         steps.append(self.__ml_cutvar_ana)
 
         # Obtain nominal means and sigmas
         self.__read_nominal_fit_values()
-
-        successful = []
 
         try:
             for i in shuffled:

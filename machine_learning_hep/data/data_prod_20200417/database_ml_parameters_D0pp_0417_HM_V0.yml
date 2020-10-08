@@ -225,7 +225,7 @@ D0pp:
 
     opt:
       isFONLLfromROOT: true
-      filename_fonll: 'data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root' # file with FONLL predictions
+      filename_fonll: 'data/fonll/old_predictions/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root' # file with FONLL predictions
       fonll_particle: 'hD0Kpi'
       fonll_pred: 'max' # edge of the FONLL prediction
       FF: 0.6086 # fragmentation fraction
@@ -273,7 +273,7 @@ D0pp:
     fd_method: 2 #knone=0, kfc=1, kNb=2
     cctype: 1 #kpp7
     sigmav0: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
-    inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
+    inputfonllpred: data/fonll/old_predictions/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
     dir_general_plots: /data/DerivedResults/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/analysis_plots
 
 
@@ -296,7 +296,7 @@ D0pp:
       var_binning2_gen: perc_v0m
       nbinshisto: 100000
       minvaluehisto: -0.0005
-      maxvaluehisto: 99.9995
+      maxvaluehisto: 100.0005
       # here the trigger efficiency is set to 1. Corrections are implemented in the analysis step
       triggereff: [1.]
       triggereffunc: [0.]

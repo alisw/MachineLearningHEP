@@ -549,7 +549,7 @@ LcpK0spp:
       mc_cut_on_binning2: False
       nbinshisto: 100000
       minvaluehisto: -0.0005
-      maxvaluehisto: 99.9995
+      maxvaluehisto: 100.0005
       triggerbit: INT7
 
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins

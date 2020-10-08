@@ -136,6 +136,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     dosyst = data_config["analysis"]["dosyst"]
     do_syst_ml = data_config["systematics"]["cutvar"]["activate"]
     do_syst_ml_only_analysis = data_config["systematics"]["cutvar"]["do_only_analysis"]
+    do_syst_ml_resume = data_config["systematics"]["cutvar"]["resume"]
     doanaperperiod = data_config["analysis"]["doperperiod"]
     typean = data_config["analysis"]["type"]
 
@@ -433,7 +434,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     ana_mgr.analyze(*analyze_steps)
 
     if do_syst_ml:
-        syst_ml_pt.ml_systematics(do_syst_ml_only_analysis)
+        syst_ml_pt.ml_systematics(do_syst_ml_only_analysis, do_syst_ml_resume)
 
     # Delete per-period results.
     if clean:
