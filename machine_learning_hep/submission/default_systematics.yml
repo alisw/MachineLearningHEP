@@ -77,6 +77,8 @@ analysis:
   doplotsval: false # analyzer: plottervalidation
 
 systematics:
-  cutvar: false
+  cutvar:
+      activate: false
+      do_only_analysis: false # This can be done anytime when mass and efficiency histograms have been produced already for a number of trials
   mcptshape:
     activate: false

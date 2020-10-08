@@ -20,6 +20,7 @@ The raw yield systematic is done within analyzer.py
 """
 # pylint: disable=no-name-in-module
 # pylint: disable=import-error
+import sys
 from os.path import join, exists
 from os import makedirs
 from copy import deepcopy, copy
@@ -28,29 +29,16 @@ from random import shuffle
 from ROOT import TFile, TCanvas, TLegend
 from ROOT import kRed, kGreen, kBlack, kBlue, kOrange, kViolet, kAzure, kYellow
 
-#from machine_learning_hep.utilities import selectdfrunlist
 from machine_learning_hep.utilities_plot import load_root_style
 from machine_learning_hep.fitting.helpers import MLFitter
 from machine_learning_hep.multiprocesser import MultiProcesser
+from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
 
 
-# pylint: disable=too-many-lines
-# pylint: disable=too-many-instance-attributes, too-many-statements, too-many-arguments
-# pylint: disable=too-many-branches, too-many-nested-blocks
-class Systematics: # pylint: disable=too-few-public-methods
-    species = "systematics"
+class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instance-attributes
+    species = "systematicsmlwp"
 
-    CENT_CV_CUT = []
-    MIN_CV_CUT = []
-    MAX_CV_CUT = []
-
-    NOMINAL_MEANS = []
-    NOMINAL_SIGMAS = []
-
-    ml_wps = []
-    ml_wps_strings = []
-
-    def __init__(self, datap, case, typean, run_param,
+    def __init__(self, datap, case, typean,
                  analyzers, multiprocesser_mc, multiprocesser_data):
 
         self.datap = datap
@@ -58,13 +46,10 @@ class Systematics: # pylint: disable=too-few-public-methods
         self.typean = typean
 
         self.nominal_analyzer_merged = analyzers[-1]
+        # This is used to read some members from
         self.nominal_processer_mc = multiprocesser_mc.process_listsample[0]
-        self.nominal_processer_data = multiprocesser_data.process_listsample[0]
         self.multiprocesser_mc = multiprocesser_mc
         self.multiprocesser_data = multiprocesser_data
-        self.nominal_analyzer = analyzers[-1]
-
-        self.run_param = run_param
 
         #Variables for the systematic variations
         self.p_cutvar_minrange = datap["systematics"]["probvariation"]["cutvarminrange"]
@@ -73,28 +58,34 @@ class Systematics: # pylint: disable=too-few-public-methods
         self.p_maxperccutvar = datap["systematics"]["probvariation"]["maxperccutvar"]
         self.p_fixedmean = datap["systematics"]["probvariation"]["fixedmean"]
         self.p_fixedsigma = datap["systematics"]["probvariation"]["fixedsigma"]
-        self.p_weights = datap["systematics"]["mcptshape"]["weights"]
-        self.p_weights_min_pt = datap["systematics"]["mcptshape"]["weights_min_pt"]
-        self.p_weights_max_pt = datap["systematics"]["mcptshape"]["weights_max_pt"]
-        self.p_weights_bins = datap["systematics"]["mcptshape"]["weights_bins"]
         # Require a minimum significance or a maximum chi2 for individual fits
         self.min_signif_fit = datap["systematics"]["probvariation"].get("min_signif_fit", -1.)
         self.max_red_chi2_fit = datap["systematics"]["probvariation"].get("max_red_chi2_fit", -1.)
-
 
         self.syst_out_dir = "ML_WP_syst"
         self.processers_mc_syst = None
         self.processers_data_syst = None
         self.analyzers_syst = None
 
-        self.p_modelname = self.nominal_processer_mc.p_modelname
-
         self.n_trials = 2 * self.p_ncutvar
+
+        self.successful_write = None
+
+        # Central WPs as well as lower and upper boundaries according to
+        # efficiency threshold
+        self.cent_cv_cut = []
+        self.min_cv_cut = []
+        self.max_cv_cut = []
+        # Derived working points
+        self.ml_wps = []
+
+        self.nominal_means = []
+        self.nominal_sigmas = []
 
 
     def __read_nominal_fit_values(self):
 
-        if Systematics.NOMINAL_MEANS:
+        if self.nominal_means:
             return
 
         fitter = MLFitter(self.nominal_analyzer_merged.case,
@@ -107,16 +98,16 @@ class Systematics: # pylint: disable=too-few-public-methods
         ana_n_first_binning = self.nominal_analyzer_merged.p_nptbins
         ana_n_second_binning = self.nominal_analyzer_merged.p_nbin2
 
-        Systematics.NOMINAL_MEANS = [[None] * ana_n_first_binning \
+        self.nominal_means = [[None] * ana_n_first_binning \
                 for _ in range(ana_n_second_binning)]
-        Systematics.NOMINAL_SIGMAS = [[None] * ana_n_first_binning \
+        self.nominal_sigmas = [[None] * ana_n_first_binning \
                 for _ in range(ana_n_second_binning)]
 
         for ibin1 in range(ana_n_first_binning):
             for ibin2 in range(ana_n_second_binning):
                 fit = fitter.get_central_fit(ibin1, ibin2)
-                Systematics.NOMINAL_MEANS[ibin2][ibin1] = fit.kernel.GetMean()
-                Systematics.NOMINAL_SIGMAS[ibin2][ibin1] = fit.kernel.GetSigma()
+                self.nominal_means[ibin2][ibin1] = fit.kernel.GetMean()
+                self.nominal_sigmas[ibin2][ibin1] = fit.kernel.GetSigma()
 
 
     def __define_cutvariation_limits(self):
@@ -133,7 +124,7 @@ class Systematics: # pylint: disable=too-few-public-methods
         """
 
         # Only do this once for all
-        if Systematics.CENT_CV_CUT:
+        if self.cent_cv_cut:
             return
 
         # use multiprocesser here, prepare database
@@ -164,7 +155,7 @@ class Systematics: # pylint: disable=too-few-public-methods
 
         n_pt_bins = self.nominal_processer_mc.p_nptfinbins
 
-        Systematics.CENT_CV_CUT = self.nominal_processer_mc.lpt_probcutfin
+        self.cent_cv_cut = self.nominal_processer_mc.lpt_probcutfin
 
         ana_n_first_binning = analyzer_effs.p_nptbins
 
@@ -174,14 +165,15 @@ class Systematics: # pylint: disable=too-few-public-methods
         for ibin1 in range(ana_n_first_binning):
             nominal_effs[ibin1], _ = self.nominal_analyzer_merged.get_efficiency(ibin1, 0)
 
-        Systematics.MIN_CV_CUT = [None] * ana_n_first_binning
-        Systematics.MAX_CV_CUT = [None] * ana_n_first_binning
+        self.min_cv_cut = [None] * ana_n_first_binning
+        self.max_cv_cut = [None] * ana_n_first_binning
 
         ncutvar_temp = self.p_ncutvar * 2
 
         stepsmin = []
         stepsmax = []
 
+        modelname = self.nominal_processer_mc.p_modelname
 
         def found_all_boundaries(boundaries):
             """helper to check whether all boundaries have been fixed
@@ -196,7 +188,7 @@ class Systematics: # pylint: disable=too-few-public-methods
             """
             if found_all_boundaries(boundaries):
                 return
-            wps_strings = ["y_test_prob%s>%s" % (self.p_modelname, wps[ipt]) \
+            wps_strings = ["y_test_prob%s>%s" % (modelname, wps[ipt]) \
                     for ipt in range(n_pt_bins)]
             # update processers and analyzer ML WPs
             for proc in multi_processer_effs.process_listsample:
@@ -219,52 +211,44 @@ class Systematics: # pylint: disable=too-few-public-methods
         for ipt in range(n_pt_bins):
 
             stepsmin.append( \
-              (Systematics.CENT_CV_CUT[ipt] - self.p_cutvar_minrange[ipt]) / ncutvar_temp)
+              (self.cent_cv_cut[ipt] - self.p_cutvar_minrange[ipt]) / ncutvar_temp)
 
             stepsmax.append( \
-              (self.p_cutvar_maxrange[ipt] - Systematics.CENT_CV_CUT[ipt]) / ncutvar_temp)
+              (self.p_cutvar_maxrange[ipt] - self.cent_cv_cut[ipt]) / ncutvar_temp)
 
         # Attempt to find WP variations up and down
         for icv in range(ncutvar_temp):
-            if found_all_boundaries(Systematics.MIN_CV_CUT) \
-                    and found_all_boundaries(Systematics.MAX_CV_CUT):
+            if found_all_boundaries(self.min_cv_cut) \
+                    and found_all_boundaries(self.max_cv_cut):
                 break
 
             wps = [self.p_cutvar_minrange[ipt] + icv * stepsmin[ipt] for ipt in range(n_pt_bins)]
-            compute_new_boundaries(wps, Systematics.MIN_CV_CUT)
+            compute_new_boundaries(wps, self.min_cv_cut)
             wps = [self.p_cutvar_maxrange[ipt] - icv * stepsmax[ipt] for ipt in range(n_pt_bins)]
-            compute_new_boundaries(wps, Systematics.MAX_CV_CUT)
+            compute_new_boundaries(wps, self.max_cv_cut)
 
         print("Limits for cut variation defined, based on eff %-var of: ", self.p_maxperccutvar)
-        print("--Cut variation boundaries minimum: ", Systematics.MIN_CV_CUT)
-        print("--Central probability cut: ", Systematics.CENT_CV_CUT)
-        print("--Cut variation boundaries maximum: ", Systematics.MAX_CV_CUT)
+        print("--Cut variation boundaries minimum: ", self.min_cv_cut)
+        print("--Central probability cut: ", self.cent_cv_cut)
+        print("--Cut variation boundaries maximum: ", self.max_cv_cut)
 
 
 
     def __make_working_points(self):
-        Systematics.ml_wps = [[] for _ in range(self.n_trials)]
-        Systematics.ml_wps_strings = [[] for _ in range(self.n_trials)]
+        self.ml_wps = [[] for _ in range(self.n_trials)]
 
         n_pt_bins = self.nominal_processer_mc.p_nptfinbins
         for ipt in range(n_pt_bins):
 
-            stepsmin = (Systematics.CENT_CV_CUT[ipt] - Systematics.MIN_CV_CUT[ipt]) / self.p_ncutvar
-            stepsmax = (Systematics.MAX_CV_CUT[ipt] - Systematics.CENT_CV_CUT[ipt]) / self.p_ncutvar
+            stepsmin = (self.cent_cv_cut[ipt] - self.min_cv_cut[ipt]) / self.p_ncutvar
+            stepsmax = (self.max_cv_cut[ipt] - self.cent_cv_cut[ipt]) / self.p_ncutvar
 
             for icv in range(self.p_ncutvar):
-                lower_cut = Systematics.MIN_CV_CUT[ipt] + icv * stepsmin
-                upper_cut = Systematics.CENT_CV_CUT[ipt] + (icv + 1) * stepsmax
+                lower_cut = self.min_cv_cut[ipt] + icv * stepsmin
+                upper_cut = self.cent_cv_cut[ipt] + (icv + 1) * stepsmax
 
-                selml_cv_low = "y_test_prob%s>%s" % (self.p_modelname, lower_cut)
-                selml_cv_up = "y_test_prob%s>%s" % (self.p_modelname, upper_cut)
-                Systematics.ml_wps[icv].append(lower_cut)
-                Systematics.ml_wps_strings[icv].append(selml_cv_low)
-                Systematics.ml_wps[self.p_ncutvar + icv].append(upper_cut)
-                Systematics.ml_wps_strings[self.p_ncutvar + icv].append(selml_cv_up)
-
-        print(Systematics.ml_wps)
-        print(Systematics.ml_wps_strings)
+                self.ml_wps[icv].append(lower_cut)
+                self.ml_wps[self.p_ncutvar + icv].append(upper_cut)
 
 
     def __prepare_trial(self, i_trial):
@@ -293,20 +277,20 @@ class Systematics: # pylint: disable=too-few-public-methods
             if not exists(new_dir):
                 makedirs(new_dir)
 
-        datap["analysis"][self.typean]["probcuts"] = Systematics.ml_wps[i_trial]
+        datap["analysis"][self.typean]["probcuts"] = self.ml_wps[i_trial]
 
         # For now take PDG mean
         # However, we could have means and sigmas per pT AND mult, but for that the DB logic
         # has to be changed
         datap["analysis"][self.typean]["FixedMean"] = True
-        datap["analysis"][self.typean]["masspeak"] = Systematics.NOMINAL_MEANS
-        datap["analysis"][self.typean]["sigmaarray"] = Systematics.NOMINAL_SIGMAS[0]
+        datap["analysis"][self.typean]["masspeak"] = self.nominal_means
+        datap["analysis"][self.typean]["sigmaarray"] = self.nominal_sigmas[0]
         datap["analysis"][self.typean]["SetFixGaussianSigma"] = \
-                [True] * len(Systematics.NOMINAL_SIGMAS[0])
+                [True] * len(self.nominal_sigmas[0])
         datap["analysis"][self.typean]["SetInitialGaussianSigma"] = \
-                [True] * len(Systematics.NOMINAL_SIGMAS[0])
+                [True] * len(self.nominal_sigmas[0])
         datap["analysis"][self.typean]["SetInitialGaussianMean"] = \
-                [True] * len(Systematics.NOMINAL_SIGMAS[0])
+                [True] * len(self.nominal_sigmas[0])
 
         # Processers
         self.processers_mc_syst[i_trial] = MultiProcesser(self.case,
@@ -472,8 +456,55 @@ class Systematics: # pylint: disable=too-few-public-methods
             for ibin2 in range(self.nominal_analyzer_merged.p_nbin2):
                 self.__make_single_plot(name, ibin2, successful)
 
+    def __write_working_points(self):
+        write_yaml = {"central": self.cent_cv_cut,
+                      "lower_limits": self.min_cv_cut,
+                      "upper_limits": self.max_cv_cut,
+                      "working_points": self.ml_wps}
+        save_path = join(self.nominal_analyzer_merged.d_resultsallpdata, self.syst_out_dir,
+                         "working_points.yaml")
+        dump_yaml_from_dict(write_yaml, save_path)
 
-    def ml_systematics(self):
+
+    def __load_working_points(self):
+        save_path = join(self.nominal_analyzer_merged.d_resultsallpdata, self.syst_out_dir,
+                         "working_points.yaml")
+        if not exists(save_path):
+            print(f"Cannot load working points. File {save_path} doesn't exist")
+            sys.exit(1)
+        read_yaml = parse_yaml(save_path)
+
+        self.cent_cv_cut = read_yaml["central"]
+        self.min_cv_cut = read_yaml["lower_limits"]
+        self.max_cv_cut = read_yaml["upper_limits"]
+        self.ml_wps = read_yaml["working_points"]
+
+
+    def __add_trial_to_save(self, i_trial):
+        if self.successful_write is None:
+            self.successful_write = []
+        self.successful_write.append(i_trial)
+
+
+    def __write_successful_trials(self):
+        if not self.successful_write:
+            return
+        write_yaml = {"successful_trials": self.successful_write}
+        save_path = join(self.nominal_analyzer_merged.d_resultsallpdata, self.syst_out_dir,
+                         "successful_trials.yaml")
+        dump_yaml_from_dict(write_yaml, save_path)
+
+
+    def __read_successful_trials(self):
+        save_path = join(self.nominal_analyzer_merged.d_resultsallpdata, self.syst_out_dir,
+                         "successful_trials.yaml")
+        if not exists(save_path):
+            print(f"Cannot load working points. File {save_path} doesn't exist")
+            sys.exit(1)
+        return parse_yaml(save_path)["successful_trials"]
+
+
+    def ml_systematics(self, do_only_analysis=False):
         """central method to call for ML WP systematics
         """
 
@@ -481,26 +512,44 @@ class Systematics: # pylint: disable=too-few-public-methods
         self.processers_data_syst = [None] * self.n_trials
         self.analyzers_syst = [None] * self.n_trials
 
-        # Define limits first
-        self.__define_cutvariation_limits()
-        self.__make_working_points()
+        # This step has to be regardless
+        steps = [self.__prepare_trial]
+
+        if do_only_analysis:
+            # Only analysis part, so attempt to read the working points
+            # which were dumped to YAML before.
+            self.__load_working_points()
+            shuffled = self.__read_successful_trials()
+        else:
+            # Otherwise we go through the entire heavy chain
+            self.__define_cutvariation_limits()
+            self.__make_working_points()
+            # Write working points so we can read them in later
+            self.__write_working_points()
+            steps.append(self.__ml_cutvar_mass)
+            steps.append(self.__ml_cutvar_eff)
+            # Only when doing the heavy processer part we consider writing a successful
+            # trial because the analysis can be done quickly
+            steps.append(self.__add_trial_to_save)
+            # Shuffle --> Doing some larger and smaller variations in case of keyboard interrupt
+            shuffled = list(range(self.n_trials))
+            shuffle(shuffled)
+
+        # This is always done at the end
+        steps.append(self.__ml_cutvar_ana)
+
         # Obtain nominal means and sigmas
         self.__read_nominal_fit_values()
-
-        # Shuffle --> Doing some larger and smaller variations in case of keyboard interrupt
-        shuffled = list(range(self.n_trials))
-        shuffle(shuffled)
 
         successful = []
 
         try:
             for i in shuffled:
-                self.__prepare_trial(i)
-                self.__ml_cutvar_mass(i)
-                self.__ml_cutvar_eff(i)
-                self.__ml_cutvar_ana(i)
+                for step in steps:
+                    step(i)
                 successful.append(i)
         except KeyboardInterrupt:
             pass
 
+        self.__write_successful_trials()
         self.__plot(successful)

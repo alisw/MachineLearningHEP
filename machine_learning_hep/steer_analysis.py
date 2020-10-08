@@ -49,7 +49,7 @@ from machine_learning_hep.analysis.analyzer_Dhadrons import AnalyzerDhadrons
 from machine_learning_hep.analysis.analyzerdhadrons_mult import AnalyzerDhadrons_mult
 from machine_learning_hep.analysis.analyzer_jet import AnalyzerJet
 
-from machine_learning_hep.analysis.systematics import Systematics
+from machine_learning_hep.analysis.systematics import SystematicsMLWP
 
 try:
 # FIXME(https://github.com/abseil/abseil-py/issues/99) # pylint: disable=fixme
@@ -134,7 +134,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     doplotsval = data_config["analysis"]["doplotsval"]
     doplots = data_config["analysis"]["doplots"]
     dosyst = data_config["analysis"]["dosyst"]
-    do_syst_ml = data_config["systematics"]["cutvar"]
+    do_syst_ml = data_config["systematics"]["cutvar"]["activate"]
+    do_syst_ml_only_analysis = data_config["systematics"]["cutvar"]["do_only_analysis"]
     doanaperperiod = data_config["analysis"]["doperperiod"]
     typean = data_config["analysis"]["type"]
 
@@ -283,7 +284,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
 
     proc_class = Processer
     ana_class = Analyzer
-    syst_class = Systematics
+    syst_class = SystematicsMLWP
     if proc_type == "Dhadrons":
         print("Using new feature for Dhadrons")
         proc_class = ProcesserDhadrons
@@ -303,8 +304,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     ana_mgr = AnalyzerManager(ana_class, data_param[case], case, typean, doanaperperiod)
 
     analyzers = ana_mgr.get_analyzers()
-    # Has to be done always period-by-period
-    syst_ml_pt = syst_class(data_param[case], case, typean, run_param, analyzers,
+    # For ML WP systematics
+    syst_ml_pt = syst_class(data_param[case], case, typean, analyzers,
                             mymultiprocessmc, mymultiprocessdata)
 
     #perform the analysis flow
@@ -432,7 +433,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     ana_mgr.analyze(*analyze_steps)
 
     if do_syst_ml:
-        syst_ml_pt.ml_systematics()
+        syst_ml_pt.ml_systematics(do_syst_ml_only_analysis)
 
     # Delete per-period results.
     if clean:
