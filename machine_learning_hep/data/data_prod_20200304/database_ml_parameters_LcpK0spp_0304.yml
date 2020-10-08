@@ -291,7 +291,7 @@ LcpK0spp:
     opt:
       isFONLLfromROOT: true
       filename_fonll: 'data/fonll/DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8.root'  #'data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root'
-      fonll_particle: 'hLcK0sp'
+      fonll_particle: 'hLcK0sppred' #'hLcK0sp'
       fonll_pred: 'max' # edge of the FONLL prediction
       FF: 0.1281 # fragmentation fraction
       sigma_MB: 57.8e-3  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
@@ -338,7 +338,7 @@ LcpK0spp:
     fd_method: 2 #knone=0, kfc=1, kNb=2
     cctype: 1 #kpp7
     sigmav0: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
-    inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
+    inputfonllpred: data/fonll/DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8.root
     dir_general_plots: /data/DerivedResults/LckAnywithJets_sub/vAN-20200824_ROOT6-1/analysis_plots
 
     MBvspt_ntrkl:
@@ -359,7 +359,7 @@ LcpK0spp:
       triggereff: [1,0.92,0.862,1,1]
       triggereffunc: [0,0.003,0.018,0,0]
       triggerbit: INT7
-      isNbx2: true    #Estimate the feeddown systematic with Nb and Nbx2 method convolution. Set to true just for Lc vs mult.
+      isNbx2: false    #Estimate the feeddown systematic with Nb and Nbx2 method convolution. Set to true just for Lc vs mult.
       event_cand_validation: False
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
       sel_an_binmax: [2,4,6,8,12,24] #list of pt nbins
@@ -391,8 +391,8 @@ LcpK0spp:
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.2864
       massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
-      massmax: [2.436,2.436,2.436,2.435,2.436,2.436]
-      rebin: [[6,6,8,9,10,11],[6,6,8,9,10,11],[6,6,8,10,10,12],[6,6,8,9,10,12],[6,6,8,9,10,12]]
+      massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
+      rebin: [[6,6,8,9,10,12],[6,6,8,9,10,12],[6,6,8,10,10,12],[6,6,8,9,10,12],[6,6,8,9,10,12]]
 
       includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
       masssecpeak: 2.2864
