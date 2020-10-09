@@ -75,7 +75,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
 
         # Output directories and filenames
         self.yields_filename = "yields"
-        self.fits_dirname = "fits"
+        self.fits_dirname = os.path.join(self.d_resultsallpdata, f"fits_{case}_{typean}")
         self.yields_syst_filename = "yields_syst"
         self.efficiency_filename = "efficiencies"
         self.sideband_subtracted_filename = "sideband_subtracted"
@@ -206,7 +206,8 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
 
-        self.fitter = MLFitter(self.datap, self.typean, self.n_filemass, self.n_filemass_mc)
+        self.fitter = MLFitter(self.case, self.datap, self.typean,
+                               self.n_filemass, self.n_filemass_mc)
         self.fitter.perform_pre_fits()
         self.fitter.perform_central_fits()
         fileout_name = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
@@ -214,25 +215,20 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         fileout = TFile(fileout_name, "RECREATE")
         self.fitter.draw_fits(self.d_resultsallpdata, fileout)
         fileout.Close()
-        fileout_name = os.path.join(self.d_resultsallpdata,
-                                    f"{self.fits_dirname}_{self.case}_{self.typean}")
-        self.fitter.save_fits(fileout_name)
+        self.fitter.save_fits(self.fits_dirname)
         # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
 
 
-    # pylint: disable=too-many-locals, too-many-nested-blocks, too-many-branches
-    # pylint: disable=import-outside-toplevel
     def yield_syst(self):
         # Enable ROOT batch mode and reset in the end
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
         if not self.fitter:
-            fileout_name = os.path.join(self.d_resultsallpdata,
-                                        f"{self.fits_dirname}_{self.case}_{self.typean}")
-            self.fitter = MLFitter(self.datap, self.typean, self.n_filemass, self.n_filemass_mc)
-            if not self.fitter.load_fits(fileout_name):
-                self.logger.error("Cannot load fits from dir %s", fileout_name)
+            self.fitter = MLFitter(self.case, self.datap, self.typean,
+                                   self.n_filemass, self.n_filemass_mc)
+            if not self.fitter.load_fits(self.fits_dirname):
+                self.logger.error("Cannot load fits from dir %s", self.fits_dirname)
                 return
 
         # Additional directory needed where the intermediate results of the multi trial are
@@ -244,6 +240,13 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
 
         # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
+
+
+    def get_efficiency(self, ibin1, ibin2):
+        fileouteff = TFile.Open("%s/efficiencies%s%s.root" % (self.d_resultsallpmc, \
+                                 self.case, self.typean), "read")
+        h = fileouteff.Get(f"eff_mult{ibin2}")
+        return h.GetBinContent(ibin1 + 1), h.GetBinError(ibin1 + 1)
 
 
     def efficiency(self):
@@ -446,8 +449,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             norm = (n_sel + n_novtx) - n_novtx * n_vtxout / (n_sel + n_vtxout)
         return norm
 
-    # pylint: disable=import-outside-toplevel
-    def makenormyields(self):
+    def makenormyields(self): # pylint: disable=import-outside-toplevel, too-many-branches
         gROOT.SetBatch(True)
         self.loadstyle()
         #self.test_aliphysics()
