@@ -40,7 +40,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
     # Initializer / Instance Attributes
     # pylint: disable=too-many-statements, too-many-arguments
-    def __init__(self, case, datap, run_param, mcordata, p_maxfiles,
+    def __init__(self, case, datap, run_param, mcordata, p_maxfiles, # pylint: disable=too-many-branches
                  d_root, d_pkl, d_pklsk, d_pkl_ml, p_period, i_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
@@ -63,6 +63,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.p_frac_merge = p_frac_merge
         self.p_rd_merge = p_rd_merge
         self.period = p_period
+        self.i_period = i_period
         self.select_children = datap["multi"][mcordata].get("select_children", None)
         if self.select_children:
             # Make sure we have "<child>/" instead if <child> only. Cause in the latter case
@@ -164,11 +165,35 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.lpt_model = appendmainfoldertolist(self.dirmodel, self.lpt_model)
 
         self.lpt_probcutpre = datap["mlapplication"]["probcutpresel"][self.mcordata]
-        self.lpt_probcutfin = datap["mlapplication"]["probcutoptimal"]
+        self.lpt_probcutfin = datap["analysis"][self.typean].get("probcuts", None)
+
+        # Make it backwards-compatible
+        if not self.lpt_probcutfin:
+            bin_matching = datap["analysis"][self.typean]["binning_matching"]
+            lpt_probcutfin_tmp = datap["mlapplication"]["probcutoptimal"]
+            self.lpt_probcutfin = []
+            for i in range(self.p_nptfinbins):
+                bin_id = bin_matching[i]
+                self.lpt_probcutfin.append(lpt_probcutfin_tmp[bin_id])
 
         if self.mltype != "MultiClassification":
             if self.lpt_probcutfin < self.lpt_probcutpre:
                 print("FATAL error: probability cut final must be tighter!")
+
+        if self.mltype == "MultiClassification":
+            self.l_selml = []
+            for ipt in range(self.p_nptfinbins):
+
+                mlsel_multi0 = "y_test_prob" + self.p_modelname + self.multiclass_labels[0] + \
+                               " <= " + str(self.lpt_probcutfin[ipt][0])
+                mlsel_multi1 = "y_test_prob" + self.p_modelname + self.multiclass_labels[1] + \
+                               " >= " + str(self.lpt_probcutfin[ipt][1])
+                mlsel_multi = mlsel_multi0 + " and " + mlsel_multi1
+                self.l_selml.append(mlsel_multi)
+
+        else:
+            self.l_selml = ["y_test_prob%s>%s" % (self.p_modelname, self.lpt_probcutfin[ipt]) \
+                           for ipt in range(self.p_nptfinbins)]
 
         self.d_pkl_dec = d_pkl_dec
         self.mptfiles_recosk = []
