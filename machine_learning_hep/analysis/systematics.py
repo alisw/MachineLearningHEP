@@ -553,6 +553,7 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
         if resume:
             for s in shuffled:
                 successful.append(s)
+                self.__prepare_trial(s)
                 self.__add_trial_to_save(s)
             shuffled = [i for i in range(self.n_trials) if i not in shuffled]
 
