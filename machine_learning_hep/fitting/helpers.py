@@ -36,7 +36,7 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
     SIG_FUNC_MAP = {"kGaus": 0, "k2Gaus": 1, "kGausSigmaRatioPar": 2}
     BKG_FUNC_MAP = {"kExpo": 0, "kLin": 1, "Pol2": 2, "kNoBk": 3, "kPow": 4, "kPowEx": 5}
 
-    def __init__(self, database: dict, ana_type: str, file_data_name: str, file_mc_name: str):
+    def __init__(self, database: dict, ana_type: str, file_data_name: str, file_mc_name: str): # pylint: disable=too-many-branches
         """
         Initialize MLFitParsFactory
         Args:
@@ -50,7 +50,6 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
 
         ana_config = database["analysis"][ana_type]
 
-        self.prob_cut_fin = database["mlapplication"]["probcutoptimal"]
         self.mltype = database["ml"]["mltype"]
 
         # File config
@@ -67,10 +66,20 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
         self.bins2_edges_low = ana_config["sel_binmin2"]
         self.bins2_edges_up = ana_config["sel_binmax2"]
         self.n_bins2 = len(self.bins2_edges_low)
-        self.bin_matching = ana_config["binning_matching"]
 
         bineff = ana_config["usesinglebineff"]
         self.bins2_int_bin = bineff if bineff is not None else 0
+
+        self.prob_cut_fin = database["analysis"][ana_type].get("probcuts", None)
+        # Make it backwards-compatible
+        if not self.prob_cut_fin:
+            bin_matching = database["analysis"][ana_type]["binning_matching"]
+            prob_cut_fin_tmp = database["mlapplication"]["probcutoptimal"]
+            self.prob_cut_fin = []
+            for i in range(self.n_bins1):
+                bin_id = bin_matching[i]
+                self.prob_cut_fin.append(prob_cut_fin_tmp[bin_id])
+
         # Fit method flags
         self.init_fits_from = ana_config["init_fits_from"]
         self.pre_fit_class_mc = ana_config.get("pre_fits_mc", ["kGaus"] * len(self.init_fits_from))
@@ -87,11 +96,25 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
 
         # Initial fit parameters
         self.mean = ana_config["masspeak"]
+        try:
+            iter(self.mean)
+        except TypeError:
+            self.mean = [self.mean] * self.n_bins1
+        try:
+            iter(self.mean[0])
+        except TypeError:
+            self.mean = [self.mean] * self.n_bins2
+
         self.fix_mean = ana_config["FixedMean"]
         self.use_user_mean = ana_config["SetInitialGaussianMean"]
         self.sigma = ana_config["sigmaarray"]
         self.fix_sigma = ana_config["SetFixGaussianSigma"]
         self.use_user_sigma = ana_config["SetInitialGaussianSigma"]
+        self.use_user_mean = ana_config["SetInitialGaussianMean"]
+        try:
+            iter(self.use_user_mean)
+        except TypeError:
+            self.use_user_mean = [self.use_user_mean] * self.n_bins1
         self.max_rel_sigma_diff = ana_config["MaxPercSigmaDeviation"]
         self.n_sigma_sideband = ana_config["exclude_nsigma_sideband"]
         self.n_sigma_signal = ana_config["nsigma_signal"]
@@ -169,7 +192,7 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
                     "fit_range_up": self.fit_range_up[ibin1],
                     "n_sigma_sideband": self.n_sigma_sideband,
                     "rel_sigma_bound": self.rel_sigma_bound,
-                    "mean": self.mean,
+                    "mean": self.mean[ibin2][ibin1],
                     "sigma": self.sigma[ibin1],
                     "fix_mean": self.fix_mean,
                     "fix_sigma": self.fix_sigma[ibin1]}
@@ -251,16 +274,15 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
         Returns:
             Suffix string
         """
-        bin_id_match = self.bin_matching[ibin1]
         if self.mltype == "MultiClassification":
             return "%s%d_%d_%.2f%.2f%s_%.2f_%.2f" % \
                    (self.bin1_name, self.bins1_edges_low[ibin1],
-                    self.bins1_edges_up[ibin1], self.prob_cut_fin[bin_id_match][0],
-                    self.prob_cut_fin[bin_id_match][1], self.bin2_name,
+                    self.bins1_edges_up[ibin1], self.prob_cut_fin[ibin1][0],
+                    self.prob_cut_fin[ibin1][1], self.bin2_name,
                     self.bins2_edges_low[ibin2], self.bins2_edges_up[ibin2])
         return "%s%d_%d_%.2f%s_%.2f_%.2f" % \
                (self.bin1_name, self.bins1_edges_low[ibin1],
-                self.bins1_edges_up[ibin1], self.prob_cut_fin[bin_id_match],
+                self.bins1_edges_up[ibin1], self.prob_cut_fin[ibin1],
                 self.bin2_name, self.bins2_edges_low[ibin2],
                 self.bins2_edges_up[ibin2])
 
@@ -318,7 +340,9 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
                 get_data=True, get_mc=True, \
                 get_reflections=fit_pars["include_reflections"])
 
-        lock_override_init = ["sigma"] if self.use_user_sigma[ibin1] else None
+        lock_override_init = ["sigma"] if self.use_user_sigma[ibin1] else []
+        if self.use_user_mean[ibin1]:
+            lock_override_init.append("mean")
 
         return {"histograms": {"data": histo_data,
                                "mc": histo_mc,
@@ -380,7 +404,8 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
     """
 
 
-    def __init__(self, database: dict, ana_type: str, data_out_dir: str, mc_out_dir: str):
+    def __init__(self, case: str, database: dict, ana_type: str,
+                 data_out_dir: str, mc_out_dir: str):
         """
         Initialize MLFitter
         Args:
@@ -392,7 +417,7 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
 
         self.logger = get_logger()
 
-        self.case = next(iter(database))
+        self.case = case
         self.ana_type = ana_type
         self.ana_config = database["analysis"][ana_type]
 
@@ -719,18 +744,17 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
 
         # Need to cache some object for which the canvas is only written after the loop...
         for (ibin1, ibin2), fit in self.central_fits.items():
-            bin_id_match = self.pars_factory.bin_matching[ibin1]
 
             # Some variables set for drawing
             if self.pars_factory.mltype == "MultiClassification":
                 title = f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < " \
                         f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
-                        f"(prob0 <= {self.pars_factory.prob_cut_fin[bin_id_match][0]:.2f} &" \
-                        f"prob1 >= {self.pars_factory.prob_cut_fin[bin_id_match][1]:.2f})"
+                        f"(prob0 <= {self.pars_factory.prob_cut_fin[ibin1][0]:.2f} &" \
+                        f"prob1 >= {self.pars_factory.prob_cut_fin[ibin1][1]:.2f})"
             else:
                 title = f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < " \
                         f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
-                        f"(prob > {self.pars_factory.prob_cut_fin[bin_id_match]:.2f})"
+                        f"(prob > {self.pars_factory.prob_cut_fin[ibin1]:.2f})"
 
             x_axis_label = "#it{M}_{inv} (GeV/#it{c}^{2})"
             n_sigma_signal = self.pars_factory.n_sigma_signal
@@ -930,18 +954,17 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                 self.logger.warning("No systematic fit for bins (%i, %i). Skip...",
                                     ibin1, ibin2)
                 continue
-            bin_id_match = self.pars_factory.bin_matching[ibin1]
 
             # Some variables set for drawing
             if self.pars_factory.mltype == "MultiClassification":
                 title = f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < " \
                         f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
-                        f"(prob0 <= {self.pars_factory.prob_cut_fin[bin_id_match][0]:.2f} &" \
-                        f"prob1 >= {self.pars_factory.prob_cut_fin[bin_id_match][1]:.2f})"
+                        f"(prob0 <= {self.pars_factory.prob_cut_fin[ibin1][0]:.2f} &" \
+                        f"prob1 >= {self.pars_factory.prob_cut_fin[ibin1][1]:.2f})"
             else:
                 title = f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < " \
                         f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
-                        f"(prob > {self.pars_factory.prob_cut_fin[bin_id_match]:.2f})"
+                        f"(prob > {self.pars_factory.prob_cut_fin[ibin1]:.2f})"
 
             suffix_write = self.pars_factory.make_suffix(ibin1, ibin2)
 
