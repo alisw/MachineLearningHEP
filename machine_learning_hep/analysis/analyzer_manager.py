@@ -39,6 +39,20 @@ class AnalyzerManager:
         self.is_initialized = False
 
 
+    def get_analyzers(self, none_for_unused_period=True):
+        self.initialize()
+        if not none_for_unused_period:
+            return self.analyzers
+
+        useperiod = self.database["analysis"][self.typean]["useperiod"]
+        analyzers = [None] * (len(useperiod) + 1)
+        for a in self.analyzers:
+            if a.period is not None:
+                analyzers[a.period] = a
+        analyzers[-1] = self.analyzers[-1]
+        return analyzers
+
+
     def initialize(self):
         """
         Collect all analyzer objects required in a list and initialises the after_burner if present

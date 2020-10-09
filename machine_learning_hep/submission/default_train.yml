@@ -77,11 +77,9 @@ analysis:
 
 systematics:
   cutvar:
-    activate: false
-    probvariationmass: false
-    probvariationeff: false
-    probvariationfit: false
-    probvariationcross: false
+      activate: false
+      do_only_analysis: false # This can be done anytime when mass and efficiency histograms have been produced already for a number of trials
+      resume: false # already done mass and efficiency histograms will not be done again, continue with left trials
   mcptshape:
     activate: false
 
