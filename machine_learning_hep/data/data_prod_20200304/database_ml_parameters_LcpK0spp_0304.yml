@@ -404,7 +404,7 @@ LcpK0spp:
       FixedMean: false
       SetFixGaussianSigma: [true,true,true,true,true,true]
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
-      SetInitialGaussianMean: true
+      SetInitialGaussianMean: false
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: [true, true, true, true, true, true]
@@ -549,7 +549,7 @@ LcpK0spp:
       mc_cut_on_binning2: False
       nbinshisto: 100000
       minvaluehisto: -0.0005
-      maxvaluehisto: 99.9995
+      maxvaluehisto: 100.0005
       triggerbit: INT7
 
       sel_an_binmin: [1,2,4,6,8,12] #list of pt nbins
@@ -594,7 +594,7 @@ LcpK0spp:
         data: "trigger_hasbit_INT7==1"
         mc: null
       data:
-        runselection: [MBvspt_perc_v0m_2016, null, null]
+        runselection: [null, null, null]
         results: [/data/DerivedResults/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/resultsMBvspt_perc_v0m,
                   /data/DerivedResults/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/resultsMBvspt_perc_v0m,
                   /data/DerivedResults/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/resultsMBvspt_perc_v0m] #list of periods
@@ -641,7 +641,7 @@ LcpK0spp:
       FixedMean: false
       SetFixGaussianSigma: [true,true,true,true,true,true]
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
-      SetInitialGaussianMean: true
+      SetInitialGaussianMean: false
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: [false, false, false, false, false, false]
@@ -680,7 +680,7 @@ LcpK0spp:
       ncutvar: 10 #number of looser and tighter variations
       maxperccutvar: 0.25 #max diff in efficiency for loosest/tightest var
       cutvarminrange: [0.30, 0.30, 0.30, 0.30, 0.30, 0.30] #Min starting point for scan
-      cutvarmaxrange: [0.80, 0.80, 0.80, 0.80, 0.80, 0.80] #Max starting point for scan
+      cutvarmaxrange: [0.90, 0.90, 0.90, 0.90, 0.90, 0.90] #Max starting point for scan
       fixedmean: True #Fix mean cutvar histo to central fit
       fixedsigma: True #Fix sigma cutvar histo to central fit
       min_signif_fit: 3.
