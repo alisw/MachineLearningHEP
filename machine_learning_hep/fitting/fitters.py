@@ -338,6 +338,8 @@ class FitAliHF(FitROOT):
         self.kernel.SetInitialGaussianSigma(self.init_pars["sigma"])
 
         self.kernel.SetNSigma4SideBands(self.init_pars["n_sigma_sideband"])
+        if self.init_pars["fix_mean"]:
+            self.kernel.SetFixGaussianMean(self.init_pars["mean"])
         if self.init_pars["fix_sigma"]:
             self.kernel.SetFixGaussianSigma(self.init_pars["sigma"])
 
