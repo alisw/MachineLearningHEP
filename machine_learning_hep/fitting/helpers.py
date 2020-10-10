@@ -307,6 +307,7 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
             histo_name = "h_invmass_weight" if self.apply_weights else "hmass"
             histo_data = file_data.Get(histo_name + suffix)
             histo_data.SetDirectory(0)
+            file_data.Close()
 
         if not (get_mc or get_reflections):
             return histo_data, None, None
@@ -320,6 +321,7 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
         if get_reflections:
             histo_reflections = file_mc.Get("hmass_refl" + suffix)
             histo_reflections.SetDirectory(0)
+        file_mc.Close()
 
         return histo_data, histo_mc, histo_reflections
 
