@@ -115,7 +115,8 @@ class FitBase: # pylint: disable=too-many-instance-attributes
         #self.logger.debug("Following default parameters are used")
         #for p in pars_not_changed:
             #print(p)
-
+        if self.success:
+            return True
         return self.init_kernel()
 
 
