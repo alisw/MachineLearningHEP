@@ -45,6 +45,7 @@ def save_fit(fit, save_dir, annotations=None):
         if root_object:
             root_object.Write(name)
     fit.kernel.Write("kernel")
+    root_file.Close()
 
     yaml_path = join(save_dir, "init_pars.yaml")
     dump_yaml_from_dict(fit.init_pars, yaml_path)
@@ -96,10 +97,11 @@ def load_fit(save_dir):
         obj = k.ReadObj()
         obj.SetDirectory(0)
         root_objects[k.GetName()] = obj
+    root_file.Close()
 
     fit.set_root_objects(root_objects)
-    fit.init_fit()
     fit.success = meta_info["success"]
+    fit.init_fit()
 
     if "annotations" not in meta_info:
         return fit

@@ -89,12 +89,19 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
         if self.nominal_means:
             return
 
-        fitter = MLFitter(self.nominal_analyzer_merged.case,
-                          self.nominal_analyzer_merged.datap,
-                          self.nominal_analyzer_merged.typean,
-                          self.nominal_analyzer_merged.n_filemass,
-                          self.nominal_analyzer_merged.n_filemass_mc)
-        fitter.load_fits(self.nominal_analyzer_merged.fits_dirname)
+        # An analyzer has it only if the fitting procedure was done
+        # so if the nominal analyzer was run in the same process,
+        # we can just obtain everything from it already
+        fitter = self.nominal_analyzer_merged.fitter
+
+        if fitter is None:
+
+            fitter = MLFitter(self.nominal_analyzer_merged.case,
+                              self.nominal_analyzer_merged.datap,
+                              self.nominal_analyzer_merged.typean,
+                              self.nominal_analyzer_merged.n_filemass,
+                              self.nominal_analyzer_merged.n_filemass_mc)
+            fitter.load_fits(self.nominal_analyzer_merged.fits_dirname)
 
         ana_n_first_binning = self.nominal_analyzer_merged.p_nptbins
         ana_n_second_binning = self.nominal_analyzer_merged.p_nbin2
