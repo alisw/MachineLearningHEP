@@ -306,8 +306,14 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
 
     analyzers = ana_mgr.get_analyzers()
     # For ML WP systematics
-    syst_ml_pt = syst_class(data_param[case], case, typean, analyzers,
-                            mymultiprocessmc, mymultiprocessdata)
+    if mltype == "MultiClassification":
+        syst_ml_pt_cl0 = syst_class(data_param[case], case, typean, analyzers,
+                                    mymultiprocessmc, mymultiprocessdata, 0)
+        syst_ml_pt_cl1 = syst_class(data_param[case], case, typean, analyzers,
+                                    mymultiprocessmc, mymultiprocessdata, 1)
+    else:
+        syst_ml_pt = syst_class(data_param[case], case, typean, analyzers,
+                                mymultiprocessmc, mymultiprocessdata)
 
     #perform the analysis flow
     if dodownloadalice == 1:
@@ -434,7 +440,11 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     ana_mgr.analyze(*analyze_steps)
 
     if do_syst_ml:
-        syst_ml_pt.ml_systematics(do_syst_ml_only_analysis, do_syst_ml_resume)
+        if mltype == "MultiClassification":
+            syst_ml_pt_cl0.ml_systematics(do_syst_ml_only_analysis, do_syst_ml_resume)
+            syst_ml_pt_cl1.ml_systematics(do_syst_ml_only_analysis, do_syst_ml_resume)
+        else:
+            syst_ml_pt.ml_systematics(do_syst_ml_only_analysis, do_syst_ml_resume)
 
     # Delete per-period results.
     if clean:
