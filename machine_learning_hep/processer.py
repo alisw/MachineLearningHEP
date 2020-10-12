@@ -461,29 +461,39 @@ class Processer: # pylint: disable=too-many-instance-attributes
         if not raw_cuts:
             print("No custom cuts given, hence not cutting...")
             self.analysis_cuts = [None] * self.p_nptfinbins
-            return
 
-        if len(raw_cuts) != self.p_nptfinbins:
-            print(f"You have {self.p_nptfinbins} but you passed {len(raw_cuts)} cuts. Exit...")
-            sys.exit(1)
-
+        # Check if we only have it per pT and if so make 2D list
         self.analysis_cuts = deepcopy(raw_cuts)
+        n_bins2 = len(self.datap["analysis"][self.typean].get("sel_binmin2", []))
+        if isinstance(raw_cuts[0], str) and n_bins2:
+            if len(raw_cuts) != self.p_nptfinbins:
+                print(f"You have {self.p_nptfinbins} but you passed {len(raw_cuts)} cuts. Exit...")
+                sys.exit(1)
+            self.analysis_cuts = [self.analysis_cuts for _ in range(n_bins2)]
 
 
-    def apply_cuts_ptbin(self, df_, ipt):
-        """Helper function to cut dataframe with cuts for given pT bin
+    def apply_analysis_cuts(self, df_, ipt, imult=None):
+        """Helper function to cut dataframe with cuts for given pT and mult bin
 
         Args:
             df: dataframe
             ipt: int
                 i'th pT bin
+            imult: int (optional)
+                i'th mult bin
         Returns:
             dataframe
         """
+
         if not self.analysis_cuts[ipt]:
             return df_
+        if imult is None:
+            return df_.query(self.analysis_cuts[ipt])
+        return df_.query(self.analysis_cuts[imult][ipt])
 
-        return df_.query(self.analysis_cuts[ipt])
+
+    def apply_cuts_ptbin(self, df_, ipt):
+        return self.apply_analysis_cuts(df_, ipt)
 
 
     def process_histomass(self):

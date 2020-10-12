@@ -383,6 +383,9 @@ LcpK0spp:
             histo_name: n_tracklets_0_LHC18pp_weights
             according_to: n_tracklets
 
+      cuts:
+        - ["n_tracklets > 0", "n_tracklets > 0", "n_tracklets > 0", "n_tracklets > 0", "n_tracklets > 0", "n_tracklets > 0"] 
+
       triggersel:
         data: "trigger_hasbit_HighMultV0==1"
         mc: null

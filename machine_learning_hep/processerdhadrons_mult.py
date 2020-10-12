@@ -230,13 +230,13 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
             if self.doml is True:
                 df = df.query(self.l_selml[ipt])
             list_df_recodtrig.append(df)
-            df = seldf_singlevar(df, self.v_var_binning, \
+            df_pt = seldf_singlevar(df, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
 
-            if self.do_custom_analysis_cuts:
-                df = self.apply_cuts_ptbin(df, ipt)
 
             for ibin2 in range(len(self.lvar2_binmin)):
+                df = self.apply_analysis_cuts(df_pt, ipt, ibin2)
+
                 if self.mltype == "MultiClassification":
                     suffix = "%s%d_%d_%.2f%.2f%s_%.2f_%.2f" % \
                              (self.v_var_binning, self.lpt_finbinmin[ipt],
@@ -414,6 +414,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
             for ipt in range(self.p_nptfinbins):
                 bin_id = self.bin_matching[ipt]
                 df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
+                df_mc_reco = self.apply_analysis_cuts(df_mc_reco, ipt, ibin2)
                 if self.s_evtsel is not None:
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_trigger is not None:

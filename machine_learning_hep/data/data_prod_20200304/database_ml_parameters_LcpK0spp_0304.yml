@@ -590,6 +590,13 @@ LcpK0spp:
             histo_name: n_tracklets_2_LHC18pp_weights
             according_to: n_tracklets
 
+      cuts:
+        - [null, null, null, null, null, null]
+        - ["n_tracklets > 0", "n_tracklets > 0", "n_tracklets > 0", "n_tracklets > 0", "n_tracklets > 0", "n_tracklets > 0"] 
+        - ["n_tracklets > 0", "n_tracklets > 0", "n_tracklets > 0", "n_tracklets > 0", "n_tracklets > 0", "n_tracklets > 0"] 
+        - ["n_tracklets > 0", "n_tracklets > 0", "n_tracklets > 0", "n_tracklets > 0", "n_tracklets > 0", "n_tracklets > 0"] 
+
+
       triggersel:
         data: "trigger_hasbit_INT7==1"
         mc: null
