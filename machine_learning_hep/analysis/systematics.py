@@ -24,24 +24,29 @@ import sys
 from time import sleep
 from os.path import join, exists
 from os import makedirs
+from operator import itemgetter
 from copy import deepcopy, copy
 from random import shuffle
 
 from ROOT import TFile, TCanvas, TLegend
 from ROOT import kRed, kGreen, kBlack, kBlue, kOrange, kViolet, kAzure, kYellow
+from ROOT import TGraphErrors
 
 from machine_learning_hep.utilities_plot import load_root_style
 from machine_learning_hep.fitting.helpers import MLFitter
 from machine_learning_hep.multiprocesser import MultiProcesser
 from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
+from machine_learning_hep.logger import get_logger
 
 
 class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instance-attributes
     species = "systematicsmlwp"
 
     def __init__(self, datap, case, typean,
-                 analyzers, multiprocesser_mc, multiprocesser_data):
+                 analyzers, multiprocesser_mc, multiprocesser_data,
+                 multi_class_opt=None):
 
+        self.logger = get_logger()
         self.datap = datap
         self.case = case
         self.typean = typean
@@ -75,6 +80,7 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
         # Central WPs as well as lower and upper boundaries according to
         # efficiency threshold
         self.cent_cv_cut = []
+        self.cent_cv_cut_orig = []
         self.min_cv_cut = []
         self.max_cv_cut = []
         # Derived working points
@@ -82,6 +88,15 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
 
         self.nominal_means = []
         self.nominal_sigmas = []
+
+        #For multiclassification. Combined variations not yet implemented
+        self.mcopt = multi_class_opt
+        if self.mcopt is not None:
+            if self.mcopt > len(self.p_cutvar_minrange[0]) - 1:
+                self.logger.fatal("Multitrial option for systematic not valid")
+            self.p_cutvar_minrange = list(map(itemgetter(self.mcopt), self.p_cutvar_minrange))
+            self.p_cutvar_maxrange = list(map(itemgetter(self.mcopt), self.p_cutvar_maxrange))
+            self.syst_out_dir = f"ML_WP_syst_MultiClass{self.mcopt}"
 
 
     def __read_nominal_fit_values(self):
@@ -118,7 +133,7 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
                 self.nominal_sigmas[ibin2][ibin1] = fit.kernel.GetSigma()
 
 
-    def __define_cutvariation_limits(self):
+    def __define_cutvariation_limits(self): #pylint: disable=too-many-statements
         """obtain ML WP limits (lower/upper) keeping required efficiency variation
 
         This runs a MultiProcesser and an Analyzer both derived from the nominal
@@ -164,6 +179,9 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
         n_pt_bins = self.nominal_processer_mc.p_nptfinbins
 
         self.cent_cv_cut = self.nominal_processer_mc.lpt_probcutfin
+        self.cent_cv_cut_orig = self.nominal_processer_mc.lpt_probcutfin
+        if self.mcopt is not None:
+            self.cent_cv_cut = list(map(itemgetter(self.mcopt), self.cent_cv_cut))
 
         ana_n_first_binning = analyzer_effs.p_nptbins
 
@@ -182,6 +200,7 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
         stepsmax = []
 
         modelname = self.nominal_processer_mc.p_modelname
+        multiclasslabels = self.nominal_processer_mc.multiclass_labels
 
         def found_all_boundaries(boundaries):
             """helper to check whether all boundaries have been fixed
@@ -198,10 +217,23 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
                 return
             wps_strings = ["y_test_prob%s>%s" % (modelname, wps[ipt]) \
                     for ipt in range(n_pt_bins)]
+            probvar0 = 'y_test_prob' + modelname + multiclasslabels[0]
+            probvar1 = 'y_test_prob' + modelname + multiclasslabels[1]
+            if self.mcopt == 0:
+                wps_strings = ["%s<=%s and %s>=%s" % (probvar0, wps[ipt], probvar1, \
+                               self.cent_cv_cut_orig[ipt][1]) for ipt in range(n_pt_bins)]
+                wps_multi = [[wps[ipt], self.cent_cv_cut_orig[ipt][1]] for ipt in range(n_pt_bins)]
+            elif self.mcopt == 1:
+                wps_strings = ["%s<=%s and %s>=%s" % (probvar0, self.cent_cv_cut_orig[ipt][0], \
+                               probvar1, wps[ipt]) for ipt in range(n_pt_bins)]
+                wps_multi = [[self.cent_cv_cut_orig[ipt][0], wps[ipt]] for ipt in range(n_pt_bins)]
+
             # update processers and analyzer ML WPs
             for proc in multi_processer_effs.process_listsample:
                 proc.l_selml = wps_strings
             analyzer_effs.lpt_probcutfin = wps
+            if self.mcopt is not None:
+                analyzer_effs.lpt_probcutfin = wps_multi
 
             # Run both
             multi_processer_effs.multi_efficiency()
@@ -255,9 +287,17 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
                 lower_cut = self.min_cv_cut[ipt] + icv * stepsmin
                 upper_cut = self.cent_cv_cut[ipt] + (icv + 1) * stepsmax
 
-                self.ml_wps[icv].append(lower_cut)
-                self.ml_wps[self.p_ncutvar + icv].append(upper_cut)
-
+                if self.mcopt == 0:
+                    self.ml_wps[icv].append([lower_cut, self.cent_cv_cut_orig[ipt][1]])
+                    self.ml_wps[self.p_ncutvar + icv].append([upper_cut, \
+                                                              self.cent_cv_cut_orig[ipt][1]])
+                elif self.mcopt == 1:
+                    self.ml_wps[icv].append([self.cent_cv_cut_orig[ipt][0], lower_cut])
+                    self.ml_wps[self.p_ncutvar + icv].append([self.cent_cv_cut_orig[ipt][0], \
+                                                              upper_cut])
+                else:
+                    self.ml_wps[icv].append(lower_cut)
+                    self.ml_wps[self.p_ncutvar + icv].append(upper_cut)
 
     def __prepare_trial(self, i_trial):
 
@@ -386,7 +426,7 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
         delta = h_max - h_min
 
         h_min = h_min - 0.1 * delta
-        h_max = h_max + delta
+        h_max = h_max + 0.75 * delta
 
         for h in histos:
             h.GetYaxis().SetRangeUser(h_min, h_max)
@@ -453,6 +493,50 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
         canvas.SaveAs(save_path)
         canvas.Close()
 
+    def __make_summary_plot(self, name, ibin2, successful):
+
+        # Nominal histogram
+        successful_tmp = copy(successful)
+        successful_tmp.sort()
+
+        filename = f"finalcross{self.case}{self.typean}mult{ibin2}.root"
+        filepath = join(self.nominal_analyzer_merged.d_resultsallpdata, filename)
+        nominal_histo = self.__get_histogram(filepath, name)
+
+        histos = []
+        ml_trials = []
+        for succ in successful_tmp:
+            filename = f"finalcross{self.case}{self.typean}mult{ibin2}.root"
+            filepath = join(self.analyzers_syst[succ].d_resultsallpdata, filename)
+            histos.append(self.__get_histogram(filepath, name))
+            ml_trials.append(list(map(itemgetter(self.mcopt), self.ml_wps[succ])))
+
+        nptbins = self.nominal_processer_mc.p_nptfinbins
+        gr = [TGraphErrors(0) for _ in range(nptbins)]
+        for ipt in range(nptbins):
+            gr[ipt].SetTitle("pT bin %d" % ipt)
+            gr[ipt].SetPoint(0, self.cent_cv_cut[ipt], nominal_histo.GetBinContent(ipt+1))
+            gr[ipt].SetPointError(0, 0.0001, nominal_histo.GetBinError(ipt+1))
+            for iml, succ in enumerate(successful_tmp):
+                gr[ipt].SetPoint(iml + 1, ml_trials[succ][ipt],
+                                 histos[succ].GetBinContent(ipt+1))
+                gr[ipt].SetPointError(iml + 1, 0.0001, histos[succ].GetBinError(ipt+1))
+
+        canvas = TCanvas("cvsml%d" % ibin2, "", 1200, 800)
+        if len(gr) <= 6:
+            canvas.Divide(3, 2)
+        elif len(gr) <= 12:
+            canvas.Divide(4, 3)
+        else:
+            canvas.Divide(5, 4)
+        for i, graph in enumerate(gr):
+            canvas.cd(i+1)
+            graph.Draw("a*")
+
+        save_path = join(self.nominal_analyzer_merged.d_resultsallpdata, self.syst_out_dir,
+                         f"ml_wp_syst_{name}_vs_MLcut_ibin2_{ibin2}.eps")
+        canvas.SaveAs(save_path)
+        canvas.Close()
 
     def __plot(self, successful):
         """summary plots
@@ -463,6 +547,8 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
         for name in ["histoSigmaCorr", "hDirectEffpt", "hFeedDownEffpt", "hRECpt"]:
             for ibin2 in range(self.nominal_analyzer_merged.p_nbin2):
                 self.__make_single_plot(name, ibin2, successful)
+        for ibin2 in range(self.nominal_analyzer_merged.p_nbin2):
+            self.__make_summary_plot("histoSigmaCorr", ibin2, successful)
 
     def __write_working_points(self):
         write_yaml = {"central": self.cent_cv_cut,
@@ -557,6 +643,9 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
             # trial because the analysis can be done quickly
             steps.append(self.__add_trial_to_save)
 
+        # Obtain nominal means and sigmas
+        self.__read_nominal_fit_values()
+
         if resume:
             for s in shuffled:
                 successful.append(s)
@@ -568,9 +657,6 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
 
         # This is always done at the end
         steps.append(self.__ml_cutvar_ana)
-
-        # Obtain nominal means and sigmas
-        self.__read_nominal_fit_values()
 
         try:
             for i in shuffled:
