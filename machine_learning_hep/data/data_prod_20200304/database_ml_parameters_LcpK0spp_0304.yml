@@ -617,11 +617,14 @@ LcpK0spp:
       masspeak: 2.2864
       massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
       massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
+      dynamic_rebinning: True
       rebin:
-        - [6,6,8,9,10,6]
-        - [6,6,8,9,10,6]
-        - [6,6,8,9,10,6]
-        - [6,6,8,9,10,6]
+        - [null, 100000, 12]
+        - [null, 100000, 12]
+        - [null, 100000, 12]
+        - [null, 100000, 12]
+        - [null, 100000, 14]
+        - [null, 100000, 12]
 
       includesecpeak:
         - [false, false, false, false, false, false]
@@ -679,7 +682,7 @@ LcpK0spp:
       useperiod: [0,0,1] #period from where to define prob cuts
       ncutvar: 10 #number of looser and tighter variations
       maxperccutvar: 0.25 #max diff in efficiency for loosest/tightest var
-      cutvarminrange: [0.30, 0.30, 0.30, 0.30, 0.30, 0.30] #Min starting point for scan
+      cutvarminrange: [0.50, 0.50, 0.50, 0.50, 0.50, 0.50] #Min starting point for scan
       cutvarmaxrange: [0.90, 0.90, 0.90, 0.90, 0.90, 0.90] #Max starting point for scan
       fixedmean: True #Fix mean cutvar histo to central fit
       fixedsigma: True #Fix sigma cutvar histo to central fit

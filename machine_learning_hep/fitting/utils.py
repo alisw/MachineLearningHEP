@@ -21,6 +21,7 @@ Interfacing with
 Providing and storing fitters
 """
 from os.path import join
+from math import ceil
 import inspect
 
 # pylint: disable=import-error, no-name-in-module, unused-import
@@ -28,6 +29,27 @@ from ROOT import TFile
 
 from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict, checkdir
 from machine_learning_hep.logger import get_logger
+
+
+def construct_rebinning(histo, rebin):
+
+    try:
+        iter(rebin)
+        min_rebin = rebin[0]
+        rebin_min_entries_per_bin = rebin[1]
+        max_rebin = rebin[2]
+        entries_per_bin = histo.Integral() / histo.GetNbinsX()
+        rebin = rebin_min_entries_per_bin / entries_per_bin
+        if rebin > max_rebin:
+            return max_rebin
+        if min_rebin and min_rebin < rebin:
+            return min_rebin
+        if rebin < 1:
+            return None
+        return ceil(rebin)
+    except TypeError:
+        return rebin
+
 
 def save_fit(fit, save_dir, annotations=None):
 
