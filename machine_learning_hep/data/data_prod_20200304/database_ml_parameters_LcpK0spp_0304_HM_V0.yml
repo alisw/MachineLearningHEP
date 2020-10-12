@@ -414,7 +414,14 @@ LcpK0spp:
       masspeak: 2.2864
       massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
       massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
-      rebin: [7,7,8,9,10,12]
+      dynamic_rebinning: True
+      rebin:
+        - [null, 100000, 12]
+        - [null, 100000, 12]
+        - [null, 100000, 12]
+        - [null, 100000, 12]
+        - [null, 100000, 12]
+        - [null, 100000, 12]
 
       includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
       masssecpeak: 2.2864
@@ -437,7 +444,7 @@ LcpK0spp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.0076963, 0.0076704, 0.0091708, 0.0105636, 0.0122558, 0.0157140]
+      sigmaarray: [0.0082597, 0.0082934, 0.0095738, 0.0108313, 0.0126099, 0.0158315]
       FixedSigma: false # not used
       fitcase: Lc
       latexnamehadron: "#Lambda_{c}^{pK0s}"

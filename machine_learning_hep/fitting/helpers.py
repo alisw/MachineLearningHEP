@@ -89,10 +89,15 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
         self.fit_range_up = ana_config["massmax"]
         self.likelihood = ana_config["dolikelihood"]
         self.rebin = ana_config["rebin"]
+        dynamic_rebinning = ana_config.get("dynamic_rebinning", False)
         try:
-            iter(self.rebin[0])
-        except TypeError:
+            if not dynamic_rebinning:
+                iter(self.rebin[0])
+            else:
+                _ = self.rebin[0][0][0]
+        except (TypeError, KeyError):
             self.rebin = [self.rebin for _ in range(self.n_bins2)]
+
 
         # Initial fit parameters
         self.mean = ana_config["masspeak"]
