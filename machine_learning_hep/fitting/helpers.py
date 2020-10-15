@@ -470,6 +470,12 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                     histo_reflections=pars["histograms"]["reflections"])
             self.init_central_fits_from[(ibin1, ibin2)] = pars["init_from"]
             self.lock_override_init[(ibin1, ibin2)] = pars["lock_override_init"]
+
+        #Weights only make sense in HM bin, not in mult. integrated where we initialise.
+        #If weights are used, the initialised width doesn't make sense anymore
+        apply_weights_temp = self.pars_factory.apply_weights
+        self.pars_factory.apply_weights = False
+        for ibin1, ibin2, pars in self.pars_factory.yield_fit_pars():
             if ibin1 in pre_fits_bins1:
                 continue
 
@@ -483,6 +489,7 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                     histo=pars["histograms"]["data"], \
                     histo_mc=pars["histograms"]["mc"], \
                     histo_reflections=pars["histograms"]["reflections"])
+        self.pars_factory.apply_weights = apply_weights_temp
         self.is_initialized_fits = True
 
 
