@@ -249,7 +249,7 @@ Dspp:
       nbinshisto: 100001
       minvaluehisto: -0.0005
       maxvaluehisto: 100.0005
-      triggereff: [1,0.921,0.890,0.997,1]
+      triggereff: [1,0.920,0.897,0.998,1]
       triggereffunc: [0,0,0,0,0]    #To be added/checked if interesting
       triggerbit: HighMultV0
       isNbx2: False    #Estimate the feeddown systematic with Nb and Nbx2 method convolution
@@ -403,7 +403,7 @@ Dspp:
       nbinshisto: 100001
       minvaluehisto: -0.0005
       maxvaluehisto: 100.0005
-      triggereff: [1,0.921,0.890,0.997,1]
+      triggereff: [1,0.920,0.897,0.998,1]
       triggereffunc: [0,0,0,0,0]    #To be added/checked if interesting
       triggerbit: INT7
       event_cand_validation: False
