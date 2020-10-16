@@ -49,7 +49,7 @@ from machine_learning_hep.analysis.analyzer_Dhadrons import AnalyzerDhadrons
 from machine_learning_hep.analysis.analyzerdhadrons_mult import AnalyzerDhadrons_mult
 from machine_learning_hep.analysis.analyzer_jet import AnalyzerJet
 
-from machine_learning_hep.analysis.systematics import Systematics
+from machine_learning_hep.analysis.systematics import SystematicsMLWP
 
 try:
 # FIXME(https://github.com/abseil/abseil-py/issues/99) # pylint: disable=fixme
@@ -134,12 +134,9 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     doplotsval = data_config["analysis"]["doplotsval"]
     doplots = data_config["analysis"]["doplots"]
     dosyst = data_config["analysis"]["dosyst"]
-    dosystprob = data_config["systematics"]["cutvar"]["activate"]
-    do_syst_prob_mass = data_config["systematics"]["cutvar"]["probvariationmass"]
-    do_syst_prob_eff = data_config["systematics"]["cutvar"]["probvariationeff"]
-    do_syst_prob_fit = data_config["systematics"]["cutvar"]["probvariationfit"]
-    do_syst_prob_cross = data_config["systematics"]["cutvar"]["probvariationcross"]
-    dosystptshape = data_config["systematics"]["mcptshape"]["activate"]
+    do_syst_ml = data_config["systematics"]["cutvar"]["activate"]
+    do_syst_ml_only_analysis = data_config["systematics"]["cutvar"]["do_only_analysis"]
+    do_syst_ml_resume = data_config["systematics"]["cutvar"]["resume"]
     doanaperperiod = data_config["analysis"]["doperperiod"]
     typean = data_config["analysis"]["type"]
 
@@ -288,7 +285,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
 
     proc_class = Processer
     ana_class = Analyzer
-    syst_class = Systematics
+    syst_class = SystematicsMLWP
     if proc_type == "Dhadrons":
         print("Using new feature for Dhadrons")
         proc_class = ProcesserDhadrons
@@ -306,8 +303,17 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     mymultiprocessdata = MultiProcesser(case, proc_class, data_param[case], typean, run_param,\
                                         "data")
     ana_mgr = AnalyzerManager(ana_class, data_param[case], case, typean, doanaperperiod)
-    # Has to be done always period-by-period
-    syst_mgr = AnalyzerManager(syst_class, data_param[case], case, typean, True, run_param)
+
+    analyzers = ana_mgr.get_analyzers()
+    # For ML WP systematics
+    if mltype == "MultiClassification":
+        syst_ml_pt_cl0 = syst_class(data_param[case], case, typean, analyzers,
+                                    mymultiprocessmc, mymultiprocessdata, 0)
+        syst_ml_pt_cl1 = syst_class(data_param[case], case, typean, analyzers,
+                                    mymultiprocessmc, mymultiprocessdata, 1)
+    else:
+        syst_ml_pt = syst_class(data_param[case], case, typean, analyzers,
+                                mymultiprocessmc, mymultiprocessdata)
 
     #perform the analysis flow
     if dodownloadalice == 1:
@@ -433,19 +439,12 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     # Now do the analysis
     ana_mgr.analyze(*analyze_steps)
 
-    ml_syst_steps = []
-    if dosystprob is True:
-        if do_syst_prob_mass:
-            ml_syst_steps.append("ml_cutvar_mass")
-        if do_syst_prob_eff:
-            ml_syst_steps.append("ml_cutvar_eff")
-        if do_syst_prob_fit:
-            ml_syst_steps.append("ml_cutvar_fit")
-        if do_syst_prob_cross:
-            ml_syst_steps.append("ml_cutvar_cross")
-    if dosystptshape is True:
-        ml_syst_steps.append("mcptshape")
-    syst_mgr.analyze(*ml_syst_steps)
+    if do_syst_ml:
+        if mltype == "MultiClassification":
+            syst_ml_pt_cl0.ml_systematics(do_syst_ml_only_analysis, do_syst_ml_resume)
+            syst_ml_pt_cl1.ml_systematics(do_syst_ml_only_analysis, do_syst_ml_resume)
+        else:
+            syst_ml_pt.ml_systematics(do_syst_ml_only_analysis, do_syst_ml_resume)
 
     # Delete per-period results.
     if clean:

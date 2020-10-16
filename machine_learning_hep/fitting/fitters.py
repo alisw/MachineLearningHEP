@@ -29,6 +29,8 @@ from ROOT import TFile, TH1F, TH1D, TF1, TPaveText, TLine, TLegend, Double, TLat
 from ROOT import kBlue, kRed, kGreen, kMagenta, kOrange, kPink, kCyan, kYellow, kBlack
 
 from machine_learning_hep.logger import get_logger
+from machine_learning_hep.fitting.utils import construct_rebinning
+
 
 
 # single or double Gaussian
@@ -115,7 +117,8 @@ class FitBase: # pylint: disable=too-many-instance-attributes
         #self.logger.debug("Following default parameters are used")
         #for p in pars_not_changed:
             #print(p)
-
+        if self.success:
+            return True
         return self.init_kernel()
 
 
@@ -317,11 +320,13 @@ class FitAliHF(FitROOT):
 
         self.update_root_objects()
 
-        if self.init_pars["rebin"]:
-            histo_rebin_ = AliVertexingHFUtils.RebinHisto(self.histo, self.init_pars["rebin"], -1)
+        rebin = construct_rebinning(self.histo, self.init_pars["rebin"])
+        if rebin:
+            histo_rebin_ = AliVertexingHFUtils.RebinHisto(self.histo, rebin, -1)
             self.histo = TH1F()
             histo_rebin_.Copy(self.histo)
             self.histo.SetName(f"{self.histo.GetName()}_fit_histo")
+
         else:
             self.histo = self.histo.Clone(f"{self.histo.GetName()}_fit_histo")
 
@@ -338,6 +343,8 @@ class FitAliHF(FitROOT):
         self.kernel.SetInitialGaussianSigma(self.init_pars["sigma"])
 
         self.kernel.SetNSigma4SideBands(self.init_pars["n_sigma_sideband"])
+        if self.init_pars["fix_mean"]:
+            self.kernel.SetFixGaussianMean(self.init_pars["mean"])
         if self.init_pars["fix_sigma"]:
             self.kernel.SetFixGaussianSigma(self.init_pars["sigma"])
 
@@ -598,8 +605,9 @@ class FitROOTGauss(FitROOT): # pylint: disable=too-many-instance-attributes
 
         self.update_root_objects()
 
-        if self.init_pars["rebin"]:
-            histo_rebin_ = AliVertexingHFUtils.RebinHisto(self.histo, self.init_pars["rebin"], -1)
+        rebin = construct_rebinning(self.histo, self.init_pars["rebin"])
+        if rebin:
+            histo_rebin_ = AliVertexingHFUtils.RebinHisto(self.histo, rebin, -1)
             self.histo = TH1F()
             histo_rebin_.Copy(self.histo)
 
@@ -902,9 +910,10 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
                 if self.init_pars["rel_var_sigma_down_syst"] else 0
         self.kernel.SetSigmaMCVariation(rel_sigma_up, rel_sigma_down)
 
-        if self.init_pars["rebin_syst"]:
-            rebin_steps = [self.init_pars["rebin"] + rel_rb \
-                    if self.init_pars["rebin"] + rel_rb > 0 \
+        rebin = construct_rebinning(self.histo, self.init_pars["rebin"])
+        if rebin:
+            rebin_steps = [rebin + rel_rb \
+                    if rebin + rel_rb > 0 \
                     else 1 for rel_rb in self.init_pars["rebin_syst"]]
             # To only have unique values and we don't care about the order we can just do
             rebin_steps = array("i", list(set(rebin_steps)))
