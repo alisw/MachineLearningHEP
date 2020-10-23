@@ -415,11 +415,10 @@ Dspp:
       include_reflection: False
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
-      #INEL>0 requirement. Takes a long time, do this once and copy masshistograms when rerunning is better (disable for cut variation)
-      #A different implementation will be pushed to master, then this has to be changed
-      evtsel_array: [null, "n_tracklets_corr > 0", "n_tracklets_corr > 0", "n_tracklets_corr > 0", "n_tracklets_corr > 0"]
-      #evtsel_array: [null, "n_tracklets > 0", "n_tracklets > 0", "n_tracklets > 0", "n_tracklets > 0"] #negligible differencce with n_tracklets_corr
       mc_cut_on_binning2: False
+      #INEL>0 requirement. Takes a long time, do this once and copy masshistograms when rerunning is better (disable for cut variation)
+      apply_inel0_sel: [false, true, true, true, true]
+      inel0_var: n_tracklets_corr
 
       event_weighting_mc:
         LHC16pp_Ds:
