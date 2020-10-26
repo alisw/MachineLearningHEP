@@ -29,15 +29,20 @@ from ROOT import TFile, TH1F, TH1D, TF1, TPaveText, TLine, TLegend, Double, TLat
 from ROOT import kBlue, kRed, kGreen, kMagenta, kOrange, kPink, kCyan, kYellow, kBlack
 
 from machine_learning_hep.logger import get_logger
+from machine_learning_hep.fitting.utils import construct_rebinning
 
-# pylint: disable=too-many-instance-attributes
-class FitBase:
+
+
+# single or double Gaussian
+TYPE_GAUSS_1 = "kGaus"
+TYPE_GAUSS_2 = "k2Gaus"
+
+class FitBase: # pylint: disable=too-many-instance-attributes
     """
     Common base class for FitAliHF and FitROOT.
     """
 
-    # pylint: disable=unused-argument
-    def __init__(self, init_pars, **kwargs):
+    def __init__(self, init_pars, **kwargs): # pylint: disable=unused-argument
         self.logger = get_logger()
         # If nit/fitting attempt was made
         self.has_attempt = False
@@ -112,7 +117,8 @@ class FitBase:
         #self.logger.debug("Following default parameters are used")
         #for p in pars_not_changed:
             #print(p)
-
+        if self.success:
+            return True
         return self.init_kernel()
 
 
@@ -182,8 +188,7 @@ class FitBase:
         self.draw_kernel(root_pad, **draw_args)
 
 
-    # pylint: disable=unused-argument, dangerous-default-value
-    def draw_kernel(self, root_pad, root_objects=[], **draw_args):
+    def draw_kernel(self, root_pad, root_objects=[], **draw_args): # pylint: disable=unused-argument, dangerous-default-value
         """
         Draw method specific to the used kernel. To be overwritten by the derivin class
         Args:
@@ -230,10 +235,8 @@ class FitBase:
         pave.SetMargin(0.)
         return pave
 
-# pylint: enable=too-many-instance-attributes
 
-
-class FitROOT(FitBase):
+class FitROOT(FitBase): # pylint: enable=too-many-instance-attributes
 
 
     def __init__(self, *args, **kwargs):
@@ -317,11 +320,13 @@ class FitAliHF(FitROOT):
 
         self.update_root_objects()
 
-        if self.init_pars["rebin"]:
-            histo_rebin_ = AliVertexingHFUtils.RebinHisto(self.histo, self.init_pars["rebin"], -1)
+        rebin = construct_rebinning(self.histo, self.init_pars["rebin"])
+        if rebin:
+            histo_rebin_ = AliVertexingHFUtils.RebinHisto(self.histo, rebin, -1)
             self.histo = TH1F()
             histo_rebin_.Copy(self.histo)
             self.histo.SetName(f"{self.histo.GetName()}_fit_histo")
+
         else:
             self.histo = self.histo.Clone(f"{self.histo.GetName()}_fit_histo")
 
@@ -336,7 +341,10 @@ class FitAliHF(FitROOT):
             self.kernel.SetUseLikelihoodFit()
         self.kernel.SetInitialGaussianMean(self.init_pars["mean"])
         self.kernel.SetInitialGaussianSigma(self.init_pars["sigma"])
+
         self.kernel.SetNSigma4SideBands(self.init_pars["n_sigma_sideband"])
+        if self.init_pars["fix_mean"]:
+            self.kernel.SetFixGaussianMean(self.init_pars["mean"])
         if self.init_pars["fix_sigma"]:
             self.kernel.SetFixGaussianSigma(self.init_pars["sigma"])
 
@@ -396,8 +404,7 @@ class FitAliHF(FitROOT):
         self.fit_pars["sigma"] = self.kernel.GetSigma()
 
 
-    #pylint: disable=too-many-locals, too-many-statements, dangerous-default-value
-    def draw_kernel(self, root_pad, root_objects=[], **draw_args):
+    def draw_kernel(self, root_pad, root_objects=[], **draw_args): # pylint: disable=too-many-locals, too-many-statements, dangerous-default-value
 
         n_sigma_signal = draw_args.pop("sigma_signal", 3)
         mean_dim = draw_args.pop("mean_dim", "GeV/#it{c}^{2}")
@@ -553,23 +560,23 @@ class FitAliHF(FitROOT):
                 aro.Draw("same")
 
 
-# pylint: disable=too-many-instance-attributes
-class FitROOTGauss(FitROOT):
+class FitROOTGauss(FitROOT): # pylint: disable=too-many-instance-attributes
     """
     Class with specific ROOT TF1 as core fitting utility
     """
-    def __init__(self, *args, histo=None, **base_args):
-        super().__init__(*args, **base_args)
-        self.histo = histo
 
-        self.default_init_pars = {"mean": None,
-                                  "sigma": None,
-                                  "rebin": None,
+    def __init__(self, pars, histo=None, type_gauss=TYPE_GAUSS_1,
+                 **base_args):
+        super().__init__(pars, **base_args)
+        self.histo = histo
+        self.type_gauss = type_gauss
+
+        self.default_init_pars = {"rebin": None,
                                   "use_user_fit_range": False,
                                   "fit_range_low": None,
                                   "fit_range_up": None,
                                   "n_rms_fix": None,
-                                  "n_rms_start": 2.5,
+                                  "n_rms_start": 3.,
                                   "n_rms_stepping": 0.10,
                                   "n_rms_steps": 20,
                                   "likelihood": False}
@@ -577,7 +584,8 @@ class FitROOTGauss(FitROOT):
         # Only those corresponding to init parameters are here. Specific parameters/values
         # provided by the kernel have to be extracted from that directly.
         self.fit_pars = {"mean": None,
-                         "sigma": None}
+                         "sigma": None,
+                         "second_sigma": None}
 
         # Fit range finally used for MC fit
         self.fit_range_low = None
@@ -597,24 +605,42 @@ class FitROOTGauss(FitROOT):
 
         self.update_root_objects()
 
-        if self.init_pars["rebin"]:
-            histo_rebin_ = AliVertexingHFUtils.RebinHisto(self.histo, self.init_pars["rebin"], -1)
+        rebin = construct_rebinning(self.histo, self.init_pars["rebin"])
+        if rebin:
+            histo_rebin_ = AliVertexingHFUtils.RebinHisto(self.histo, rebin, -1)
             self.histo = TH1F()
             histo_rebin_.Copy(self.histo)
 
         # If only a specific number of RMS should be considered for the fit range
-        if self.init_pars["n_rms_fix"]:
+        if self.init_pars["n_rms_fix"] or self.type_gauss == TYPE_GAUSS_2:
             self.init_pars["n_rms_start"] = self.init_pars["n_rms_fix"]
             self.init_pars["n_rms_steps"] = 1
 
         return True
 
 
-    def fit_kernel_(self, mean_init, sigma_init, int_init, fit_range_low, fit_range_up):
-        fit_func = TF1("fit_func", "gaus", fit_range_low, fit_range_up)
-        fit_func.SetParameter(0, int_init)
+    def __fit_kernel(self, mean_init, sigma_init, int_init, fit_range_low, fit_range_up):
+
+
+        func_string = "[0]/TMath::Sqrt(2.*TMath::Pi())/[2]*TMath::Exp(-(x-[1])*(x-[1])/2./[2]/[2])"
+        if self.type_gauss == TYPE_GAUSS_2:
+            func_string = "(1.-[3])/TMath::Sqrt(2.*TMath::Pi()) / " \
+                    "[2]*TMath::Exp(-(x-[1])*(x-[1])/2./[2]/[2])"
+            func_string = f"[0] * ({func_string} + " \
+                    "[3]/TMath::Sqrt(2.*TMath::Pi())/[4]*TMath::Exp(-(x-[1])*(x-[1])/2./[4]/[4]))"
+
+        fit_func = TF1("fit_func", func_string, fit_range_low, fit_range_up)
+
+        fit_func.SetParameter(0, int_init * sqrt(6) * sigma_init)
         fit_func.SetParameter(1, mean_init)
         fit_func.SetParameter(2, sigma_init)
+
+
+        if self.type_gauss == TYPE_GAUSS_2:
+            fit_func.SetParameter(3, 0.5)
+            # That's a guess...
+            fit_func.SetParameter(4, 2 * sigma_init)
+
         fit_string = "BE0+"
         if self.init_pars["likelihood"]:
             fit_string += "L"
@@ -622,7 +648,7 @@ class FitROOTGauss(FitROOT):
 
         int_fit = fit_func.GetParameter(0)
         mean_fit = fit_func.GetParameter(1)
-        sigma_fit = fit_func.GetParameter(2)
+        sigma_fit = abs(fit_func.GetParameter(2))
         chi2ndf = fit_func.GetNDF()
         chi2ndf = fit_func.GetChisquare() / chi2ndf if chi2ndf > 0. else 0.
 
@@ -639,13 +665,13 @@ class FitROOTGauss(FitROOT):
         guess_mean = self.histo.GetMean()
         guess_sigma = self.histo.GetRMS()
 
-        if self.init_pars["use_user_fit_range"]:
+        if self.init_pars["use_user_fit_range"] and self.type_gauss == TYPE_GAUSS_1:
             guess_int = self.histo.Integral(self.histo.FindBin(self.init_pars["fit_range_low"]),
                                             self.histo.FindBin(self.init_pars["fit_range_up"]),
                                             "width")
-            self.kernel, success = self.fit_kernel_(guess_mean, guess_sigma, guess_int,
-                                                    self.init_pars["fit_range_low"],
-                                                    self.init_pars["fit_range_up"])
+            self.kernel, success = self.__fit_kernel(guess_mean, guess_sigma, guess_int,
+                                                     self.init_pars["fit_range_low"],
+                                                     self.init_pars["fit_range_up"])
 
             self.fit_range_low = self.init_pars["fit_range_low"]
             self.fit_range_up = self.init_pars["fit_range_up"]
@@ -653,14 +679,16 @@ class FitROOTGauss(FitROOT):
 
         for r in [self.init_pars["n_rms_start"] + i * self.init_pars["n_rms_stepping"] \
                 for i in range(self.init_pars["n_rms_steps"])]:
-            guess_fit_range_low = guess_mean - r * guess_sigma
-            guess_fit_range_up = guess_mean + r * guess_sigma
+            guess_fit_range_low = guess_mean - r * guess_sigma \
+                    if self.type_gauss == TYPE_GAUSS_1 else self.init_pars["fit_range_low"]
+            guess_fit_range_up = guess_mean + r * guess_sigma \
+                    if self.type_gauss == TYPE_GAUSS_1 else self.init_pars["fit_range_up"]
             guess_sigma_tmp = guess_sigma if guess_sigma else 1.
             guess_int = self.histo.Integral(self.histo.FindBin(guess_fit_range_low),
                                             self.histo.FindBin(guess_fit_range_up),
                                             "width") / guess_sigma_tmp / 2.5
-            self.kernel, success = self.fit_kernel_(guess_mean, guess_sigma, guess_int,
-                                                    guess_fit_range_low, guess_fit_range_up)
+            self.kernel, success = self.__fit_kernel(guess_mean, guess_sigma, guess_int,
+                                                     guess_fit_range_low, guess_fit_range_up)
             # Save used fit range
             self.fit_range_low = guess_fit_range_low
             self.fit_range_up = guess_fit_range_up
@@ -681,10 +709,11 @@ class FitROOTGauss(FitROOT):
     def set_fit_pars(self):
         self.fit_pars["mean"] = self.kernel.GetParameter(1)
         self.fit_pars["sigma"] = self.kernel.GetParameter(2)
+        if self.type_gauss == TYPE_GAUSS_2:
+            self.fit_pars["second_sigma"] = self.kernel.GetParameter(4)
 
 
-    #pylint: disable=dangerous-default-value
-    def draw_kernel(self, root_pad, root_objects=[], **draw_args):
+    def draw_kernel(self, root_pad, root_objects=[], **draw_args): # pylint: disable=too-many-statements, dangerous-default-value
 
         title = draw_args.pop("title", "")
         x_axis_label = draw_args.pop("x_axis_label", "#it{M}_{inv} (GeV/#it{c}^{2})")
@@ -703,12 +732,15 @@ class FitROOTGauss(FitROOT):
 
         root_pad.cd()
 
+        # Better to see double Gaussian
+        root_pad.SetLogy()
+
         draw_objects = [self.histo, self.kernel]
 
         x_min = self.init_pars["fit_range_low"]
         x_max = self.init_pars["fit_range_up"]
-        y_min = 0.
-        y_max = self.histo.GetMaximum() * 1.8
+        y_min = self.histo.GetMinimum(0)
+        y_max = self.histo.GetMaximum() * 10000
 
         # Now comes the styling
         color_sig = kBlue - 3
@@ -737,25 +769,45 @@ class FitROOTGauss(FitROOT):
         sigma = self.kernel.GetParameter(2) * sigma_scale
         sigma_err = self.kernel.GetParError(2) * sigma_scale
 
-        root_objects.append(self.add_pave_helper_(0.55, 0.65, 0.89, 0.89, "NDC"))
+        root_objects.append(self.add_pave_helper_(0.55, 0.7, 0.89, 0.89, "NDC"))
         self.add_text_helper_(root_objects[-1],
-                              f"#chi/ndf = {red_chisqu:.4f}", color_sig)
+                              f"mean_{{histo}} = {self.histo.GetMean() * mean_scale:.4f}",
+                              color_histo)
+        self.add_text_helper_(root_objects[-1],
+                              f"RMS_{{histo}} = {self.histo.GetRMS() * sigma_scale:.4f}",
+                              color_histo)
+        self.add_text_helper_(root_objects[-1],
+                              f"fit range [{self.fit_range_low:.3f}, {self.fit_range_up:.3f}]",
+                              color_histo)
+        if not self.init_pars["use_user_fit_range"] and self.type_gauss == TYPE_GAUSS_1:
+            self.add_text_helper_(root_objects[-1],
+                                  f"(corr. to {self.n_rms} #times RMS_{{histo}})",
+                                  color_histo)
+        else:
+            self.add_text_helper_(root_objects[-1],
+                                  " ",
+                                  color_histo)
+
+        root_objects[-1].Draw()
+        root_objects.append(self.add_pave_helper_(0.2, 0.7, 0.59, 0.89, "NDC"))
         self.add_text_helper_(root_objects[-1],
                               f"#mu = {mean:.4f} #pm {mean_err:.4f} {mean_dim}", color_sig)
         self.add_text_helper_(root_objects[-1],
                               f"#sigma = {sigma:.4f} #pm {sigma_err:.4f} {sigma_dim}", color_sig)
-        self.add_text_helper_(root_objects[-1],
-                              f"mean_{{histo}} = {self.histo.GetMean():.4f}", color_histo)
-        self.add_text_helper_(root_objects[-1],
-                              f"RMS_{{histo}} = {self.histo.GetRMS():.4f}", color_histo)
-        self.add_text_helper_(root_objects[-1],
-                              f"fit range [{self.fit_range_low:.3f}, {self.fit_range_up:.3f}]",
-                              color_histo)
-        if not self.init_pars["use_user_fit_range"]:
+        if self.type_gauss == TYPE_GAUSS_2:
+            # quote second sigma
+            sigma = abs(self.kernel.GetParameter(4) * sigma_scale)
+            sigma_err = self.kernel.GetParError(4) * sigma_scale
             self.add_text_helper_(root_objects[-1],
-                                  f"(corr. to {self.n_rms} #times RMS_{{histo}})",
-                                  color_histo)
+                                  f"#sigma_{{2}} = {sigma:.4f} #pm {sigma_err:.4f} {sigma_dim}",
+                                  color_sig)
+        else:
+            self.add_text_helper_(root_objects[-1],
+                                  " ", color_sig)
+        self.add_text_helper_(root_objects[-1],
+                              f"#chi/ndf = {red_chisqu:.4f}", color_sig)
         root_objects[-1].Draw()
+
 
         for dob in draw_objects:
             dob.Draw("same")
@@ -765,8 +817,7 @@ class FitROOTGauss(FitROOT):
                 root_objects.append(aro)
                 aro.Draw("same")
 
-# pylint: disable=too-many-instance-attributes
-class FitSystAliHF(FitROOT):
+class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
     """
     Class with AliHFMassFitter as core fitting utility
     """
@@ -779,6 +830,7 @@ class FitSystAliHF(FitROOT):
 
         self.default_init_pars = {"mean": None,
                                   "sigma": None,
+                                  "second_sigma": None,
                                   "include_sec_peak": False,
                                   "sec_mean": None,
                                   "fix_sec_mean": False,
@@ -858,9 +910,10 @@ class FitSystAliHF(FitROOT):
                 if self.init_pars["rel_var_sigma_down_syst"] else 0
         self.kernel.SetSigmaMCVariation(rel_sigma_up, rel_sigma_down)
 
-        if self.init_pars["rebin_syst"]:
-            rebin_steps = [self.init_pars["rebin"] + rel_rb \
-                    if self.init_pars["rebin"] + rel_rb > 0 \
+        rebin = construct_rebinning(self.histo, self.init_pars["rebin"])
+        if rebin:
+            rebin_steps = [rebin + rel_rb \
+                    if rebin + rel_rb > 0 \
                     else 1 for rel_rb in self.init_pars["rebin_syst"]]
             # To only have unique values and we don't care about the order we can just do
             rebin_steps = array("i", list(set(rebin_steps)))
@@ -922,8 +975,7 @@ class FitSystAliHF(FitROOT):
         #self.fit_pars["sigma"] = self.kernel.GetSigma()
 
 
-    #pylint: disable=dangerous-default-value, too-many-branches, too-many-statements, too-many-locals
-    def draw_kernel(self, root_pad, root_objects=[], **draw_args):
+    def draw_kernel(self, root_pad, root_objects=[], **draw_args): #pylint: disable=dangerous-default-value, too-many-branches, too-many-statements, too-many-locals
 
         if not self.results_path:
             self.logger.warning("Don't have a result file so cannot draw. Skip...")
@@ -1514,4 +1566,3 @@ class FitSystAliHF(FitROOT):
 
         if draw_args:
             self.logger.warning("There are unknown draw arguments")
-# pylint: enable=too-many-instance-attributes

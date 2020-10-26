@@ -43,12 +43,12 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
     # Initializer / Instance Attributes
     # pylint: disable=too-many-statements, too-many-arguments
     def __init__(self, case, datap, run_param, mcordata, p_maxfiles,
-                 d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
+                 d_root, d_pkl, d_pklsk, d_pkl_ml, p_period, i_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
                  d_results, typean, runlisttrigger, d_mcreweights):
         super().__init__(case, datap, run_param, mcordata, p_maxfiles,
-                         d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
+                         d_root, d_pkl, d_pklsk, d_pkl_ml, p_period, i_period,
                          p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                          p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
                          d_results, typean, runlisttrigger, d_mcreweights)
@@ -57,18 +57,20 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         self.p_bin_width = datap["analysis"][self.typean]['bin_width']
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
                                     self.p_bin_width))
-        self.l_selml = ["y_test_prob%s>%s" % (self.p_modelname, self.lpt_probcutfin[ipt]) \
-                       for ipt in range(self.p_nptbins)]
         self.s_presel_gen_eff = datap["analysis"][self.typean]['presel_gen_eff']
         self.lvar2_binmin = datap["analysis"][self.typean]["sel_binmin2"]
         self.lvar2_binmax = datap["analysis"][self.typean]["sel_binmax2"]
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
         self.v_var2_binning_gen = datap["analysis"][self.typean]["var_binning2_gen"]
         self.corr_eff_mult = datap["analysis"][self.typean]["corrEffMult"]
+        self.mc_cut_on_binning2 = datap["analysis"][self.typean].get("mc_cut_on_binning2", True)
 
         self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
         #self.sel_final_fineptbins = datap["analysis"][self.typean]["sel_final_fineptbins"]
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
+        self.do_inel0 = datap["analysis"][self.typean].get("apply_inel0_sel", \
+                                  [None for _ in range(len(self.lvar2_binmin))])
+        self.inel0_var = datap["analysis"][self.typean].get("inel0_var", "n_tracklets")
         self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
@@ -93,6 +95,10 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         self.minvaluehisto = datap["analysis"][self.typean]["minvaluehisto"]
         self.maxvaluehisto = datap["analysis"][self.typean]["maxvaluehisto"]
         self.mass = datap["mass"]
+
+        # Event re-weighting MC
+        self.event_weighting_mc = datap["analysis"][self.typean].get("event_weighting_mc", {})
+        self.event_weighting_mc = self.event_weighting_mc.get(self.period, {})
 
     @staticmethod
     def make_weights(col, func, hist, use_func):
@@ -212,6 +218,28 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         hnovtxmult.Write()
         hvtxoutmult.Write()
 
+        for ibin2 in range(len(self.lvar2_binmin)):
+            if self.do_inel0[ibin2] is not None:
+                dfevtevtsel_inel0 = seldf_singlevar_inclusive(dfevtevtsel, \
+                    self.v_var2_binning_gen, self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                dfevtorig_inel0 = seldf_singlevar_inclusive(dfevtorig, self.v_var2_binning_gen, \
+                    self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                labeltrigger_inel0 = "hbit%svs%s_ibin2_%d" % (self.triggerbit, \
+                                                              self.inel0_var, ibin2)
+                hsel_inel0, hnovtxmult_inel0, hvtxoutmult_inel0 = \
+                    self.gethistonormforselevt_mult(dfevtorig_inel0, dfevtevtsel_inel0, \
+                                               labeltrigger_inel0, self.inel0_var)
+                if self.usetriggcorrfunc is not None and self.mcordata == "data":
+                    hselweight_inel0, hnovtxmultweight_inel0, hvtxoutmultweight_inel0 = \
+                        self.gethistonormforselevt_mult(dfevtorig_inel0, dfevtevtsel_inel0, \
+                            labeltrigger_inel0, self.inel0_var, self.usetriggcorrfunc)
+                    hselweight_inel0.Write()
+                    hnovtxmultweight_inel0.Write()
+                    hvtxoutmultweight_inel0.Write()
+                hsel_inel0.Write()
+                hnovtxmult_inel0.Write()
+                hvtxoutmult_inel0.Write()
+
         list_df_recodtrig = []
 
         for ipt in range(self.p_nptfinbins): # pylint: disable=too-many-nested-blocks
@@ -225,7 +253,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 df = selectdfrunlist(df, \
                     self.run_param[self.runlistrigger], "run_number")
             if self.doml is True:
-                df = df.query(self.l_selml[bin_id])
+                df = df.query(self.l_selml[ipt])
             list_df_recodtrig.append(df)
             df = seldf_singlevar(df, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
@@ -233,16 +261,34 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
             if self.do_custom_analysis_cuts:
                 df = self.apply_cuts_ptbin(df, ipt)
 
+            df_temp = pd.DataFrame()
+            if self.do_inel0[-1] is not None:
+                df_temp = df
             for ibin2 in range(len(self.lvar2_binmin)):
-                suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
-                         (self.v_var_binning, self.lpt_finbinmin[ipt],
-                          self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
-                          self.v_var2_binning, self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                if self.do_inel0[ibin2] is not None:
+                    df = df_temp
+                    df = df.query("%s > 0" % self.inel0_var)
+
+                if self.mltype == "MultiClassification":
+                    suffix = "%s%d_%d_%.2f%.2f%s_%.2f_%.2f" % \
+                             (self.v_var_binning, self.lpt_finbinmin[ipt],
+                              self.lpt_finbinmax[ipt], self.lpt_probcutfin[ipt][0],
+                              self.lpt_probcutfin[ipt][1], self.v_var2_binning,
+                              self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                    lpt_probcutfin_temp = 1000 * self.lpt_probcutfin[ipt][0] + \
+                                          self.lpt_probcutfin[ipt][1]
+                else:
+                    suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
+                             (self.v_var_binning, self.lpt_finbinmin[ipt],
+                              self.lpt_finbinmax[ipt], self.lpt_probcutfin[ipt],
+                              self.v_var2_binning,
+                              self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                    lpt_probcutfin_temp = self.lpt_probcutfin[ipt]
                 curr_dir = myfile.mkdir(f"bin1_{ipt}_bin2_{ibin2}")
                 meta_info = create_meta_info(self.v_var_binning, self.lpt_finbinmin[ipt],
                                              self.lpt_finbinmax[ipt], self.v_var2_binning,
                                              self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2],
-                                             self.lpt_probcutfin[bin_id])
+                                             lpt_probcutfin_temp)
                 write_meta_info(curr_dir, meta_info)
                 h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
                                  self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
@@ -300,12 +346,54 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                     df_recodtrig[df_recodtrig[self.v_ismcsignal] == 1], "MC"
                 ).write()
 
-    def get_reweighted_count(self, dfsel):
-        filename = os.path.join(self.d_mcreweights, self.n_mcreweights)
-        weight_file = TFile.Open(filename, "read")
-        weights = weight_file.Get("Weights0")
+    def get_reweighted_count(self, dfsel, ibin=None):
+        """Apply event weights
+
+        Args:
+            dfsel: pandas.DataFrame
+                dataframe with column to apply weights for
+            ibin: int (optional)
+                Try to extract ibin'th entry from what is loaded from the database.
+                By default, ibin corresponds to the multiplcity bin under study
+
+        Returns:
+            float: nominal value,
+            float: error
+
+        """
+
+        def no_weights(df_):
+            val = len(df_)
+            return val, math.sqrt(val)
+
+        event_weighting_mc = {}
+        if self.event_weighting_mc and ibin is not None \
+                and len(self.event_weighting_mc) - 1 >= ibin:
+            # Check is there is a dictionary with desired info
+            event_weighting_mc = self.event_weighting_mc[ibin]
+
+        # If there were explicit info in the analysis database, assume that all fields exist
+        # If incomplete, there will be a mix-up between these values and default values
+        filepath = event_weighting_mc.get("filepath", os.path.join(self.d_mcreweights,
+                                                                   self.n_mcreweights))
+        if not os.path.exists(filepath):
+            print(f"Could not find filepath {filepath} for MC event weighting." \
+                    "Compute unweighted values...")
+            return no_weights(dfsel)
+
+        weight_file = TFile.Open(filepath, "read")
+        histo_name = event_weighting_mc.get("histo_name", "Weights0")
+        weights = weight_file.Get(histo_name)
+
+        if not weights:
+            print(f"Could not find histogram {histo_name} for MC event weighting." \
+                    "Compute unweighted values...")
+            return no_weights(dfsel)
+
+        weight_according_to = event_weighting_mc.get("according_to", self.v_var2_binning_gen)
+
         w = [weights.GetBinContent(weights.FindBin(v)) for v in
-             dfsel[self.v_var2_binning_gen]]
+             dfsel[weight_according_to]]
         val = sum(w)
         err = math.sqrt(sum(map(lambda i: i * i, w)))
         #print('reweighting sum: {:.1f} +- {:.1f} -> {:.1f} +- {:.1f} (zeroes: {})' \
@@ -362,11 +450,17 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_trigger is not None:
                     df_mc_reco = df_mc_reco.query(self.s_trigger)
+                if self.do_inel0[ibin2] is not None:
+                    df_mc_reco = df_mc_reco.query("%s > 0" % self.inel0_var)
                 if self.runlistrigger is not None:
                     df_mc_reco = selectdfrunlist(df_mc_reco, \
                          self.run_param[self.runlistrigger], "run_number")
                 df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[bin_id][index], "rb"))
                 df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
+                if self.s_evtsel is not None:
+                    df_mc_gen = df_mc_gen.query(self.s_evtsel)
+                if self.do_inel0[ibin2] is not None:
+                    df_mc_gen = df_mc_gen.query("%s > 0" % self.inel0_var)
                 if self.runlistrigger is not None:
                     df_mc_gen = selectdfrunlist(df_mc_gen, \
                              self.run_param[self.runlistrigger], "run_number")
@@ -374,36 +468,36 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
                 df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var_binning, \
                                      self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-                df_mc_reco = seldf_singlevar_inclusive(df_mc_reco, self.v_var2_binning_gen, \
-                                             self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
-                df_mc_gen = seldf_singlevar_inclusive(df_mc_gen, self.v_var2_binning_gen, \
-                                            self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                # Whether or not to cut on the 2nd binning variable
+                if self.mc_cut_on_binning2:
+                    df_mc_reco = seldf_singlevar_inclusive(df_mc_reco, self.v_var2_binning_gen, \
+                                                 self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                    df_mc_gen = seldf_singlevar_inclusive(df_mc_gen, self.v_var2_binning_gen, \
+                                                self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
                 df_reco_presel_pr = df_mc_reco[df_mc_reco.ismcprompt == 1]
                 df_reco_sel_pr = None
                 if self.doml is True:
-                    df_reco_sel_pr = df_reco_presel_pr.query(self.l_selml[bin_id])
+                    df_reco_sel_pr = df_reco_presel_pr.query(self.l_selml[ipt])
                 else:
                     df_reco_sel_pr = df_reco_presel_pr.copy()
                 df_gen_sel_fd = df_mc_gen[df_mc_gen.ismcfd == 1]
                 df_reco_presel_fd = df_mc_reco[df_mc_reco.ismcfd == 1]
                 df_reco_sel_fd = None
                 if self.doml is True:
-                    df_reco_sel_fd = df_reco_presel_fd.query(self.l_selml[bin_id])
+                    df_reco_sel_fd = df_reco_presel_fd.query(self.l_selml[ipt])
                 else:
                     df_reco_sel_fd = df_reco_presel_fd.copy()
 
                 def set_content(df_to_use, histogram,
                                 i_b=ibin2, b_c=bincounter):
                     if self.corr_eff_mult[i_b] is True:
-                        val, err = self.get_reweighted_count(df_to_use)
-                        histogram.SetBinContent(b_c + 1, val)
-                        histogram.SetBinError(b_c + 1, err)
+                        val, err = self.get_reweighted_count(df_to_use, i_b)
                     else:
                         val = len(df_to_use)
                         err = math.sqrt(val)
-                        histogram.SetBinContent(b_c + 1, val)
-                        histogram.SetBinError(b_c + 1, err)
+                    histogram.SetBinContent(b_c + 1, val)
+                    histogram.SetBinError(b_c + 1, err)
 
                 set_content(df_gen_sel_pr, h_gen_pr)
                 if "nsigTOF_Pr_0" in df_reco_presel_pr:

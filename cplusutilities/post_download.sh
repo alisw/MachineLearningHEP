@@ -58,6 +58,8 @@ N_PACKING_JOBS=20
 
 MERGED_DIR="merged"
 
+MAX_SEARCH_DEPTH="2"
+
 FORCE=false
 
 function print_usage()
@@ -129,6 +131,9 @@ do
                                     ;;
         -j | --jobs )               shift
                                     N_PACKING_JOBS="$1"
+                                    ;;
+        -d | --max-search-depth )   shift
+                                    MAX_SEARCH_DEPTH="$1"
                                     ;;
         -f | --force )              FORCE=true
                                     ;;
@@ -203,7 +208,15 @@ do
     # For each child_i there will be a pack_i
     MERGED_CHILD_DIR=$MERGED_DIR/$c_stripped
     mkdir -p $MERGED_CHILD_DIR
-    root_files_children=$(find $c -maxdepth 2 -type f -name "AnalysisResults.root")
+    root_files_children=""
+    # Search down to certain depth if requested, standard is 2
+    if [[ "$MAX_SEARCH_DEPTH" != "-1" ]]
+    then
+        root_files_children=$(find $c -maxdepth $MAX_SEARCH_DEPTH -type f -name "AnalysisResults.root")
+    else
+        root_files_children=$(find $c -type f -name "AnalysisResults.root")
+    fi
+
     if [[ "$root_files_children" == "" ]]
     then
         echo -e "${STREAM_START_YELLOW}WARNING${STREAM_END_FORMAT}: No ROOT files found in $c"

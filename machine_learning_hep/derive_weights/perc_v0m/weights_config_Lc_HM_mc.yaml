@@ -1,0 +1,19 @@
+
+database: /home/bvolkel/HF/MachineLearningHEP/machine_learning_hep/data/data_prod_20200304/database_ml_parameters_LcpK0spp_0304_HM_V0_effs.yml
+
+data_or_mc: mc
+
+query_all: "is_ev_rej == 0"
+#use_mass_window: false
+#use_ml_selection: false
+
+analysis: V0vspt_perc_v0m
+
+distribution: n_tracklets
+
+x_range:
+    - 100
+    - 0
+    - 100
+
+out_file: n_tracklets_HM_Lc_mc.root

@@ -18,9 +18,8 @@ import os
 from glob import glob
 from array import array
 
-#pylint: disable=no-name-in-module, too-many-lines
-from ROOT import TFile, TH1F, TCanvas, gStyle, Double  #pylint: disable=import-error
-#pylint: enable=no-name-in-module
+#pylint: disable=too-many-lines
+from ROOT import TFile, TH1F, TCanvas, gStyle, Double  #pylint: disable=import-error, no-name-in-module
 
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.utilities import make_file_path
@@ -28,8 +27,7 @@ from machine_learning_hep.utilities_plot import plot_histograms
 from machine_learning_hep.fitting.utils import save_fit, load_fit
 from machine_learning_hep.fitting.fitters import FitAliHF, FitROOTGauss, FitSystAliHF
 
-# pylint: disable=too-many-instance-attributes, too-many-statements
-class MLFitParsFactory:
+class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many-statements
     """
     Managing MLHEP specific fit parameters and is used to collect and retrieve all information
     required to initialise a (systematic) fit
@@ -38,7 +36,7 @@ class MLFitParsFactory:
     SIG_FUNC_MAP = {"kGaus": 0, "k2Gaus": 1, "kGausSigmaRatioPar": 2}
     BKG_FUNC_MAP = {"kExpo": 0, "kLin": 1, "Pol2": 2, "kNoBk": 3, "kPow": 4, "kPowEx": 5}
 
-    def __init__(self, database: dict, ana_type: str, file_data_name: str, file_mc_name: str):
+    def __init__(self, database: dict, ana_type: str, file_data_name: str, file_mc_name: str): # pylint: disable=too-many-branches
         """
         Initialize MLFitParsFactory
         Args:
@@ -52,7 +50,7 @@ class MLFitParsFactory:
 
         ana_config = database["analysis"][ana_type]
 
-        self.prob_cut_fin = database["mlapplication"]["probcutoptimal"]
+        self.mltype = database["ml"]["mltype"]
 
         # File config
         self.file_data_name = file_data_name
@@ -68,30 +66,60 @@ class MLFitParsFactory:
         self.bins2_edges_low = ana_config["sel_binmin2"]
         self.bins2_edges_up = ana_config["sel_binmax2"]
         self.n_bins2 = len(self.bins2_edges_low)
-        self.bin_matching = ana_config["binning_matching"]
 
         bineff = ana_config["usesinglebineff"]
         self.bins2_int_bin = bineff if bineff is not None else 0
+
+        self.prob_cut_fin = database["analysis"][ana_type].get("probcuts", None)
+        # Make it backwards-compatible
+        if not self.prob_cut_fin:
+            bin_matching = database["analysis"][ana_type]["binning_matching"]
+            prob_cut_fin_tmp = database["mlapplication"]["probcutoptimal"]
+            self.prob_cut_fin = []
+            for i in range(self.n_bins1):
+                bin_id = bin_matching[i]
+                self.prob_cut_fin.append(prob_cut_fin_tmp[bin_id])
+
         # Fit method flags
         self.init_fits_from = ana_config["init_fits_from"]
+        self.pre_fit_class_mc = ana_config.get("pre_fits_mc", ["kGaus"] * len(self.init_fits_from))
         self.sig_func_name = ana_config["sgnfunc"]
         self.bkg_func_name = ana_config["bkgfunc"]
         self.fit_range_low = ana_config["massmin"]
         self.fit_range_up = ana_config["massmax"]
         self.likelihood = ana_config["dolikelihood"]
         self.rebin = ana_config["rebin"]
+        dynamic_rebinning = ana_config.get("dynamic_rebinning", False)
         try:
-            iter(self.rebin[0])
-        except TypeError:
+            if not dynamic_rebinning:
+                iter(self.rebin[0])
+            else:
+                _ = self.rebin[0][0][0]
+        except (TypeError, KeyError):
             self.rebin = [self.rebin for _ in range(self.n_bins2)]
+
 
         # Initial fit parameters
         self.mean = ana_config["masspeak"]
+        try:
+            iter(self.mean)
+        except TypeError:
+            self.mean = [self.mean] * self.n_bins1
+        try:
+            iter(self.mean[0])
+        except TypeError:
+            self.mean = [self.mean] * self.n_bins2
+
         self.fix_mean = ana_config["FixedMean"]
         self.use_user_mean = ana_config["SetInitialGaussianMean"]
         self.sigma = ana_config["sigmaarray"]
         self.fix_sigma = ana_config["SetFixGaussianSigma"]
         self.use_user_sigma = ana_config["SetInitialGaussianSigma"]
+        self.use_user_mean = ana_config["SetInitialGaussianMean"]
+        try:
+            iter(self.use_user_mean)
+        except TypeError:
+            self.use_user_mean = [self.use_user_mean] * self.n_bins1
         self.max_rel_sigma_diff = ana_config["MaxPercSigmaDeviation"]
         self.n_sigma_sideband = ana_config["exclude_nsigma_sideband"]
         self.n_sigma_signal = ana_config["nsigma_signal"]
@@ -169,7 +197,7 @@ class MLFitParsFactory:
                     "fit_range_up": self.fit_range_up[ibin1],
                     "n_sigma_sideband": self.n_sigma_sideband,
                     "rel_sigma_bound": self.rel_sigma_bound,
-                    "mean": self.mean,
+                    "mean": self.mean[ibin2][ibin1],
                     "sigma": self.sigma[ibin1],
                     "fix_mean": self.fix_mean,
                     "fix_sigma": self.fix_sigma[ibin1]}
@@ -251,10 +279,15 @@ class MLFitParsFactory:
         Returns:
             Suffix string
         """
-        bin_id_match = self.bin_matching[ibin1]
+        if self.mltype == "MultiClassification":
+            return "%s%d_%d_%.2f%.2f%s_%.2f_%.2f" % \
+                   (self.bin1_name, self.bins1_edges_low[ibin1],
+                    self.bins1_edges_up[ibin1], self.prob_cut_fin[ibin1][0],
+                    self.prob_cut_fin[ibin1][1], self.bin2_name,
+                    self.bins2_edges_low[ibin2], self.bins2_edges_up[ibin2])
         return "%s%d_%d_%.2f%s_%.2f_%.2f" % \
                (self.bin1_name, self.bins1_edges_low[ibin1],
-                self.bins1_edges_up[ibin1], self.prob_cut_fin[bin_id_match],
+                self.bins1_edges_up[ibin1], self.prob_cut_fin[ibin1],
                 self.bin2_name, self.bins2_edges_low[ibin2],
                 self.bins2_edges_up[ibin2])
 
@@ -279,6 +312,7 @@ class MLFitParsFactory:
             histo_name = "h_invmass_weight" if self.apply_weights else "hmass"
             histo_data = file_data.Get(histo_name + suffix)
             histo_data.SetDirectory(0)
+            file_data.Close()
 
         if not (get_mc or get_reflections):
             return histo_data, None, None
@@ -292,6 +326,7 @@ class MLFitParsFactory:
         if get_reflections:
             histo_reflections = file_mc.Get("hmass_refl" + suffix)
             histo_reflections.SetDirectory(0)
+        file_mc.Close()
 
         return histo_data, histo_mc, histo_reflections
 
@@ -312,14 +347,17 @@ class MLFitParsFactory:
                 get_data=True, get_mc=True, \
                 get_reflections=fit_pars["include_reflections"])
 
-        lock_override_init = ["sigma"] if self.use_user_sigma[ibin1] else None
+        lock_override_init = ["sigma"] if self.use_user_sigma[ibin1] else []
+        if self.use_user_mean[ibin1]:
+            lock_override_init.append("mean")
 
         return {"histograms": {"data": histo_data,
                                "mc": histo_mc,
                                "reflections": histo_reflections},
                 "init_from": self.init_fits_from[ibin1],
                 "lock_override_init": lock_override_init,
-                "init_pars": fit_pars}
+                "init_pars": fit_pars,
+                "pre_fit_mc": {"type_gauss": self.pre_fit_class_mc[ibin1]}}
 
 
     def get_syst_pars(self, ibin1, ibin2):
@@ -366,17 +404,15 @@ class MLFitParsFactory:
             for ibin1 in range(self.n_bins1):
                 yield ibin1, ibin2, self.get_syst_pars(ibin1, ibin2)
 
-# pylint: enable=too-many-instance-attributes, too-many-statements
 
-
-# pylint: disable=too-many-instance-attributes
-class MLFitter:
+class MLFitter: # pylint: disable=too-many-instance-attributes
     """
     Wrapper around all available fits insatntiated and used in an MLHEP analysis run.
     """
 
 
-    def __init__(self, database: dict, ana_type: str, data_out_dir: str, mc_out_dir: str):
+    def __init__(self, case: str, database: dict, ana_type: str,
+                 data_out_dir: str, mc_out_dir: str):
         """
         Initialize MLFitter
         Args:
@@ -388,7 +424,7 @@ class MLFitter:
 
         self.logger = get_logger()
 
-        self.case = next(iter(database))
+        self.case = case
         self.ana_type = ana_type
         self.ana_config = database["analysis"][ana_type]
 
@@ -434,18 +470,26 @@ class MLFitter:
                     histo_reflections=pars["histograms"]["reflections"])
             self.init_central_fits_from[(ibin1, ibin2)] = pars["init_from"]
             self.lock_override_init[(ibin1, ibin2)] = pars["lock_override_init"]
+
+        #Weights only make sense in HM bin, not in mult. integrated where we initialise.
+        #If weights are used, the initialised width doesn't make sense anymore
+        apply_weights_temp = self.pars_factory.apply_weights
+        self.pars_factory.apply_weights = False
+        for ibin1, ibin2, pars in self.pars_factory.yield_fit_pars():
             if ibin1 in pre_fits_bins1:
                 continue
 
             pre_fits_bins1.append(ibin1)
 
             self.pre_fits_mc[ibin1] = FitROOTGauss(pars["init_pars"],
-                                                   histo=pars["histograms"]["mc"])
+                                                   histo=pars["histograms"]["mc"],
+                                                   **pars["pre_fit_mc"])
             self.pre_fits_data[ibin1] = FitAliHF( \
                     pars["init_pars"], \
                     histo=pars["histograms"]["data"], \
                     histo_mc=pars["histograms"]["mc"], \
                     histo_reflections=pars["histograms"]["reflections"])
+        self.pars_factory.apply_weights = apply_weights_temp
         self.is_initialized_fits = True
 
 
@@ -650,8 +694,7 @@ class MLFitter:
         return bins2
 
 
-    # pylint: disable=too-many-branches, too-many-statements, too-many-locals
-    def draw_fits(self, save_dir, root_dir=None):
+    def draw_fits(self, save_dir, root_dir=None): # pylint: disable=too-many-branches, too-many-statements, too-many-locals
         """
         Draw all fits one-by-one
         Args:
@@ -669,12 +712,21 @@ class MLFitter:
         bins1_ranges.append(self.pars_factory.bins1_edges_up[-1])
         n_bins1 = len(bins1_ranges) - 1
 
+        def fill_wrapper(histo, ibin, central, err=None):
+            histo.SetBinContent(ibin, central)
+            if err is not None:
+                histo.SetBinError(ibin, err)
+
         # Summarize in mult histograms in pT bins
         yieldshistos = {ibin2: TH1F("hyields%d" % (ibin2), "", \
                 n_bins1, array("d", bins1_ranges)) for ibin2 in bins2}
-        means_histos = {ibin2:TH1F("hmeanss%d" % (ibin2), "", \
+        means_histos = {ibin2:TH1F("hmeans%d" % (ibin2), "", \
                 n_bins1, array("d", bins1_ranges)) for ibin2 in bins2}
         sigmas_histos = {ibin2: TH1F("hsigmas%d" % (ibin2), "", \
+                n_bins1, array("d", bins1_ranges)) for ibin2 in bins2}
+        signifs_histos = {ibin2: TH1F("hsignifs%d" % (ibin2), "", \
+                n_bins1, array("d", bins1_ranges)) for ibin2 in bins2}
+        refls_histos = {ibin2: TH1F("hrefl%d" % (ibin2), "", \
                 n_bins1, array("d", bins1_ranges)) for ibin2 in bins2}
         have_summary_pt_bins = []
         means_init_mc_histos = TH1F("hmeans_init_mc", "", n_bins1, array("d", bins1_ranges))
@@ -706,12 +758,17 @@ class MLFitter:
 
         # Need to cache some object for which the canvas is only written after the loop...
         for (ibin1, ibin2), fit in self.central_fits.items():
-            bin_id_match = self.pars_factory.bin_matching[ibin1]
 
             # Some variables set for drawing
-            title = f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < " \
-                    f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
-                    f"(prob > {self.pars_factory.prob_cut_fin[bin_id_match]:.2f})"
+            if self.pars_factory.mltype == "MultiClassification":
+                title = f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < " \
+                        f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
+                        f"(prob0 <= {self.pars_factory.prob_cut_fin[ibin1][0]:.2f} &" \
+                        f"prob1 >= {self.pars_factory.prob_cut_fin[ibin1][1]:.2f})"
+            else:
+                title = f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < " \
+                        f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
+                        f"(prob > {self.pars_factory.prob_cut_fin[ibin1]:.2f})"
 
             x_axis_label = "#it{M}_{inv} (GeV/#it{c}^{2})"
             n_sigma_signal = self.pars_factory.n_sigma_signal
@@ -738,15 +795,19 @@ class MLFitter:
                      x_axis_label=x_axis_label, y_axis_label=y_axis_label, title=title)
 
             if fit.success:
-                # Only fill these summary plots in case of success
-                yieldshistos[ibin2].SetBinContent(ibin1 + 1, kernel.GetRawYield())
-                yieldshistos[ibin2].SetBinError(ibin1 + 1, kernel.GetRawYieldError())
+                fill_wrapper(yieldshistos[ibin2], ibin1 + 1,
+                             kernel.GetRawYield(), kernel.GetRawYieldError())
+                fill_wrapper(means_histos[ibin2], ibin1 + 1,
+                             kernel.GetMean(), kernel.GetMeanUncertainty())
+                fill_wrapper(sigmas_histos[ibin2], ibin1 + 1,
+                             kernel.GetSigma(), kernel.GetSigmaUncertainty())
+                fill_wrapper(refls_histos[ibin2], ibin1 + 1,
+                             kernel.GetReflOverSig(), kernel.GetReflOverSigUncertainty())
 
-                means_histos[ibin2].SetBinContent(ibin1 + 1, kernel.GetMean())
-                means_histos[ibin2].SetBinError(ibin1 + 1, kernel.GetMeanUncertainty())
-
-                sigmas_histos[ibin2].SetBinContent(ibin1 + 1, kernel.GetSigma())
-                sigmas_histos[ibin2].SetBinError(ibin1 + 1, kernel.GetSigmaUncertainty())
+                signif = Double()
+                signif_err = Double()
+                kernel.Significance(n_sigma_signal, signif, signif_err)
+                fill_wrapper(signifs_histos[ibin2], ibin1 + 1, signif, signif_err)
 
                 # Residual plot
                 c_res = TCanvas('cRes', 'The Fit Canvas', 800, 800)
@@ -754,10 +815,16 @@ class MLFitter:
                 h_pulls = histo.Clone(f"{histo.GetName()}_pull")
                 h_residual_trend = histo.Clone(f"{histo.GetName()}_residual_trend")
                 h_pulls_trend = histo.Clone(f"{histo.GetName()}_pulls_trend")
-                _ = kernel.GetOverBackgroundResidualsAndPulls( \
-                        h_pulls, h_residual_trend, h_pulls_trend, \
-                        self.pars_factory.fit_range_low[ibin1], \
-                        self.pars_factory.fit_range_up[ibin1])
+                if self.pars_factory.include_reflections:
+                    _ = kernel.GetOverBackgroundPlusReflResidualsAndPulls( \
+                            h_pulls, h_residual_trend, h_pulls_trend, \
+                            self.pars_factory.fit_range_low[ibin1], \
+                            self.pars_factory.fit_range_up[ibin1])
+                else:
+                    _ = kernel.GetOverBackgroundResidualsAndPulls( \
+                            h_pulls, h_residual_trend, h_pulls_trend, \
+                            self.pars_factory.fit_range_low[ibin1], \
+                            self.pars_factory.fit_range_up[ibin1])
                 h_residual_trend.Draw()
                 c_res.SaveAs(make_file_path(save_dir, "residual", "eps", None, suffix_write))
                 c_res.Close()
@@ -835,6 +902,8 @@ class MLFitter:
                 yieldshistos[ibin2].Write()
                 means_histos[ibin2].Write()
                 sigmas_histos[ibin2].Write()
+                signifs_histos[ibin2].Write()
+                refls_histos[ibin2].Write()
             #canvas_data[ibin2].Close()
 
 
@@ -876,8 +945,7 @@ class MLFitter:
                         "#sigma_{fit} " + f"{latex_hadron_name} {self.ana_type}", "", save_name)
 
 
-    # pylint: disable=too-many-branches, too-many-statements, too-many-locals
-    def draw_syst(self, save_dir, results_dir, root_dir=None):
+    def draw_syst(self, save_dir, results_dir, root_dir=None): # pylint: disable=too-many-branches, too-many-statements, too-many-locals
         """Draw all fits one-by-one
 
         Args:
@@ -900,12 +968,17 @@ class MLFitter:
                 self.logger.warning("No systematic fit for bins (%i, %i). Skip...",
                                     ibin1, ibin2)
                 continue
-            bin_id_match = self.pars_factory.bin_matching[ibin1]
 
             # Some variables set for drawing
-            title = f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < " \
-                    f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
-                    f"(prob > {self.pars_factory.prob_cut_fin[bin_id_match]:.2f})"
+            if self.pars_factory.mltype == "MultiClassification":
+                title = f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < " \
+                        f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
+                        f"(prob0 <= {self.pars_factory.prob_cut_fin[ibin1][0]:.2f} &" \
+                        f"prob1 >= {self.pars_factory.prob_cut_fin[ibin1][1]:.2f})"
+            else:
+                title = f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < " \
+                        f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
+                        f"(prob > {self.pars_factory.prob_cut_fin[ibin1]:.2f})"
 
             suffix_write = self.pars_factory.make_suffix(ibin1, ibin2)
 
@@ -1005,4 +1078,3 @@ class MLFitter:
         self.done_pre_fits = True
         self.done_central_fits = False
         return success
-# pylint: enable=too-many-instance-attributes

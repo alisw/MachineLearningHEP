@@ -224,20 +224,20 @@ LcpK0spp:
       fracmerge: [0.1,0.1,0.1]   #list of periods
       seedmerge: [12,12,12] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
-      unmerged_tree_dir: [/data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/merged,
-                          /data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/merged,
-                          /data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/merged] #list of periods
-      pkl: [/data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pkl,
-            /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pkl,
-            /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pkl] #list of periods
-      pkl_skimmed: [/data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklsk,
-                    /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklsk,
-                    /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [/data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskml,
-                                 /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskml,
-                                 /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_data_mltot
-      pkl_evtcounter_all: /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_data_evttot
+      unmerged_tree_dir: [/data/TTree/D0LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_data/490_20200825-1716/merged,
+                          /data/TTree/D0LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_data/489_20200825-1716/merged,
+                          /data/TTree/D0LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_data/488_20200825-1716/merged] #list of periods
+      pkl: [/data/Derived/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/pkl,
+            /data/Derived/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/pkl,
+            /data/Derived/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/pkl] #list of periods
+      pkl_skimmed: [/data/Derived/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/pklsk,
+                    /data/Derived/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/pklsk,
+                    /data/Derived/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/Derived/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/pklskml,
+                                 /data/Derived/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/pklskml,
+                                 /data/Derived/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/Derived/LckAnywithJets/vAN-20200824_ROOT6-1/pp_data_mltot
+      pkl_evtcounter_all: /data/Derived/LckAnywithJets/vAN-20200824_ROOT6-1/pp_data_evttot
       mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2016,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2017,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018] #list of periods
@@ -249,23 +249,24 @@ LcpK0spp:
       fracmerge: [1.0,1.0,1.0]  #list of periods
       seedmerge: [12,12,12] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
-      unmerged_tree_dir: [/data/TTree/D0DsLckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_2016_mc_prodHMV0MD2H/416_20200506-1454/merged,
-                          /data/TTree/D0DsLckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_2017_mc_prodHMV0MD2H/416_20200506-1454/merged,
-                          /data/TTree/D0DsLckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_2018_mc_prodHMV0MD2H/416_20200506-1454/merged] #list of periods
-      pkl: [/data/Derived/LckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_2016_mc_prodHMV0MD2H/416_20200506-1454/pkl,
-            /data/Derived/LckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_2017_mc_prodHMV0MD2H/416_20200506-1454/pkl,
-            /data/Derived/LckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_2018_mc_prodHMV0MD2H/416_20200506-1454/pkl] #list of periods
-      pkl_skimmed: [/data/Derived/LckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_2016_mc_prodHMV0MD2H/416_20200506-1454/pklsk,
-                    /data/Derived/LckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_2017_mc_prodHMV0MD2H/416_20200506-1454/pklsk,
-                    /data/Derived/LckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_2018_mc_prodHMV0MD2H/416_20200506-1454/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [/data/Derived/LckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_2016_mc_prodHMV0MD2H/416_20200506-1454/pklskml,
-                                 /data/Derived/LckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_2017_mc_prodHMV0MD2H/416_20200506-1454/pklskml,
-                                 /data/Derived/LckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_2018_mc_prodHMV0MD2H/416_20200506-1454/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data/Derived/LckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_mc_prodHMV0MD2H_mltot
-      pkl_evtcounter_all: /data/Derived/LckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_mc_prodHMV0MD2H_evttot
+      select_children: [["child_1"], ["child_2"], ["child_3"]] # select children explicitly corresponding to each year
+      unmerged_tree_dir: [/data/TTree/MCpp13TeV_HM_Dedicated/vAN-20200824_ROOT6-1/pp_sim/492_20200901-1528/merged,
+                          /data/TTree/MCpp13TeV_HM_Dedicated/vAN-20200824_ROOT6-1/pp_sim/492_20200901-1528/merged,
+                          /data/TTree/MCpp13TeV_HM_Dedicated/vAN-20200824_ROOT6-1/pp_sim/492_20200901-1528/merged] #list of periods
+      pkl: [/data/Derived/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_mc_prodHMV0MD2H/492_20200901-1528/pkl,
+            /data/Derived/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_mc_prodHMV0MD2H/492_20200901-1528/pkl,
+            /data/Derived/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_mc_prodHMV0MD2H/492_20200901-1528/pkl] #list of periods
+      pkl_skimmed: [/data/Derived/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_mc_prodHMV0MD2H/492_20200901-1528/pklsk,
+                    /data/Derived/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_mc_prodHMV0MD2H/492_20200901-1528/pklsk,
+                    /data/Derived/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_mc_prodHMV0MD2H/492_20200901-1528/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/Derived/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_mc_prodHMV0MD2H/492_20200901-1528/pklskml,
+                                 /data/Derived/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_mc_prodHMV0MD2H/492_20200901-1528/pklskml,
+                                 /data/Derived/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_mc_prodHMV0MD2H/492_20200901-1528/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/Derived/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_mc_prodHMV0MD2H_mltot
+      pkl_evtcounter_all: /data/Derived/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_mc_prodHMV0MD2H_evttot
       mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_16,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_17,
-                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_18]
+                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_18] #list of periods
   ml:
     evtsel: is_ev_rej==0
     triggersel:
@@ -290,7 +291,7 @@ LcpK0spp:
 
     opt:
       isFONLLfromROOT: true
-      filename_fonll: 'data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root' # 'data/fonll/fo_pp_d0meson_5TeV_y0p5.csv' file with FONLL predictions
+      filename_fonll: 'data/fonll/DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8.root'  #'data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root'
       fonll_particle: 'hLcK0sp'
       fonll_pred: 'max' # edge of the FONLL prediction
       FF: 0.1281 # fragmentation fraction
@@ -307,19 +308,19 @@ LcpK0spp:
 
   mlapplication:
     data:
-      pkl_skimmed_dec: [/data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdec,
-                        /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdec,
-                        /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdec] #list of periods
-      pkl_skimmed_decmerged: [/data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdecmerged,
-                              /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdecmerged,
-                              /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdecmerged] #list of periods
+      pkl_skimmed_dec: [/data/Derived/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/pklskdec,
+                        /data/Derived/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/pklskdec,
+                        /data/Derived/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/data/Derived/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/pklskdecmerged,
+                              /data/Derived/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/pklskdecmerged,
+                              /data/Derived/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/pklskdecmerged] #list of periods
     mc:
-      pkl_skimmed_dec: [/data/Derived/LckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_2016_mc_prodHMV0MD2H/416_20200506-1454/pklskdec,
-                        /data/Derived/LckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_2017_mc_prodHMV0MD2H/416_20200506-1454/pklskdec,
-                        /data/Derived/LckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_2018_mc_prodHMV0MD2H/416_20200506-1454/pklskdec] #list of periods
-      pkl_skimmed_decmerged: [/data/Derived/LckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_2016_mc_prodHMV0MD2H/416_20200506-1454/pklskdecmerged,
-                              /data/Derived/LckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_2017_mc_prodHMV0MD2H/416_20200506-1454/pklskdecmerged,
-                              /data/Derived/LckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_2018_mc_prodHMV0MD2H/416_20200506-1454/pklskdecmerged] #list of periods
+      pkl_skimmed_dec: [/data/Derived/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_mc_prodHMV0MpK0s/492_20200901-1528/pklskdec,
+                        /data/Derived/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_mc_prodHMV0MpK0s/492_20200901-1528/pklskdec,
+                        /data/Derived/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_mc_prodHMV0MpK0s/492_20200901-1528/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/data/Derived/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_mc_prodHMV0MpK0s/492_20200901-1528/pklskdecmerged,
+                              /data/Derived/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_mc_prodHMV0MpK0s/492_20200901-1528/pklskdecmerged,
+                              /data/Derived/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_mc_prodHMV0MpK0s/492_20200901-1528/pklskdecmerged] #list of periods
     modelname: xgboost
     modelsperptbin: [xgboost_classifierLcpK0spp_dfselection_pt_cand_1.0_2.0.sav,
                      xgboost_classifierLcpK0spp_dfselection_pt_cand_2.0_4.0.sav,
@@ -338,7 +339,7 @@ LcpK0spp:
     fd_method: 2 #knone=0, kfc=1, kNb=2
     cctype: 1 #kpp7
     sigmav0: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
-    inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
+    inputfonllpred: data/fonll/DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8.root
     dir_general_plots: /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/analysis_plots
 
     V0vspt_perc_v0m:
@@ -348,14 +349,14 @@ LcpK0spp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: MBvspt_perc_v0m
-      corrEffMult: [false]
+      corrEffMult: [true]
       sel_binmin2: [0,] #list of var2 splittng nbins
       sel_binmax2: [0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m
       var_binning2_gen: perc_v0m
       nbinshisto: 100000
       minvaluehisto: -0.0005
-      maxvaluehisto: 99.9995
+      maxvaluehisto: 100.0005
       triggereff: [1]
       triggereffunc: [0]
       triggerbit: HighMultV0
@@ -366,24 +367,45 @@ LcpK0spp:
       binning_matching: [0,1,2,3,4,5] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
+      mc_cut_on_binning2: False
+      #INEL>0 requirement. Takes a long time, do this once and copy masshistograms when rerunning is better (disable for cut variation)
+      apply_inel0_sel: [false, true, true, true, true]
+      inel0_var: n_tracklets_corr
+
+      event_weighting_mc:
+        LHC16pp:
+          - filepath: data/event_weighting_mc/weights_n_tracklets_HM_Lc_data.root
+            histo_name: n_tracklets_0_LHC16pp_weights
+            according_to: n_tracklets
+        LHC17pp:
+          - filepath: data/event_weighting_mc/weights_n_tracklets_HM_Lc_data.root
+            histo_name: n_tracklets_0_LHC17pp_weights
+            according_to: n_tracklets
+        LHC18pp:
+          - filepath: data/event_weighting_mc/weights_n_tracklets_HM_Lc_data.root
+            histo_name: n_tracklets_0_LHC18pp_weights
+            according_to: n_tracklets
+
       triggersel:
         data: "trigger_hasbit_HighMultV0==1"
         mc: null
         usetriggcorrfunc: Null
+
       get_crossmb_from_path: True
-      path_for_crossmb: /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_data/resultsMBvspt_perc_v0m/finalcrossLcpK0sppMBvspt_perc_v0mmult3.root
+      path_for_crossmb: /data/DerivedResults/LckAnywithJets/vAN-20200824_ROOT6-1/pp_data/resultsMBvspt_perc_v0m/finalcrossLcpK0sppMBvspt_perc_v0mmult0.root
+
       data:
-        runselection: [null, null, null]
-        results: [/data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsV0vspt_perc_v0m,
-                  /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsV0vspt_perc_v0m,
-                  /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsV0vspt_perc_v0m] #list of periods
-        resultsallp: /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_data/resultsV0vspt_perc_v0m
+        runselection: [V0vspt_perc_v0m_2016, null, null]
+        results: [/data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/resultsV0vspt_perc_v0m,
+                  /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/resultsV0vspt_perc_v0m,
+                  /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/resultsV0vspt_perc_v0m] #list of periods
+        resultsallp: /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_data/resultsV0vspt_perc_v0m
       mc:
         runselection: [null, null, null]
-        results: [/data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_2016_mc_prodHMV0MD2H/416_20200506-1454/resultsV0vspt_perc_v0m,
-                  /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_2017_mc_prodHMV0MD2H/416_20200506-1454/resultsV0vspt_perc_v0m,
-                  /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_2018_mc_prodHMV0MD2H/416_20200506-1454/resultsV0vspt_perc_v0m] #list of periods
-        resultsallp: /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200505_ROOT6-1/pp_mc_prodHMV0MD2H/resultsV0vspt_perc_v0m
+        results: [/data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_mc_prodHMV0MpK0s/492_20200901-1528/resultsV0vspt_perc_v0m,
+                  /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_mc_prodHMV0MpK0s/492_20200901-1528/resultsV0vspt_perc_v0m,
+                  /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_mc_prodHMV0MpK0s/492_20200901-1528/resultsV0vspt_perc_v0m] #list of periods
+        resultsallp: /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_mc_prodHMV0MpK0s/resultsV0vspt_perc_v0m
 
       mass_fit_lim: [2.11, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
@@ -395,7 +417,14 @@ LcpK0spp:
       masspeak: 2.2864
       massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
       massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
-      rebin: [7,7,8,9,10,12]
+      dynamic_rebinning: True
+      rebin:
+        - [null, 100000, 12]
+        - [null, 100000, 12]
+        - [null, 100000, 12]
+        - [null, 100000, 12]
+        - [null, 100000, 12]
+        - [null, 100000, 12]
 
       includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
       masssecpeak: 2.2864
@@ -407,7 +436,7 @@ LcpK0spp:
       FixedMean: false
       SetFixGaussianSigma: [true,true,true,true,true,true]
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
-      SetInitialGaussianMean: true
+      SetInitialGaussianMean: False
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: [true, true, true, true, true, true]
@@ -418,8 +447,8 @@ LcpK0spp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.007556, 0.007514, 0.009046, 0.01050, 0.01215, 0.01568]
-      FixedSigma: false
+      sigmaarray: [0.0082597, 0.0082934, 0.0095738, 0.0108313, 0.0126099, 0.0158315]
+      FixedSigma: false # not used
       fitcase: Lc
       latexnamehadron: "#Lambda_{c}^{pK0s}"
       latexbin2var: "V0M_{perc}"
@@ -431,11 +460,13 @@ LcpK0spp:
         max_chisquare_ndf: 2.
         rebin: [0]
         massmin: [2.14, 2.13, 2.12, 2.15, 2.16]
-        massmax: [2.436, 2.426, 2.416, 2.446, 2.456]
+        massmax: [2.436, 2.416, 2.426, 2.446, 2.456]
         bincount_sigma: [3, 5]
-        bkg_funcs: [Pol2, Pol3]
+        bkg_funcs: [kExpo, Pol2, Pol3]
         # Whether to include the free sigma option in the derivation of raw yield uncertainty in given pT bin
         consider_free_sigma: [False, False, False, False, False, False]
+        rel_var_sigma_down: 0.05
+        rel_var_sigma_up: 0.05
 
 
     MBvspt_perc_v0m:
@@ -445,9 +476,10 @@ LcpK0spp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
-      corrEffMult: [false, true, true, true]
-      sel_binmin2:  [0,30,0.1] #list of var2 splittng nbins
-      sel_binmax2: [100,100,30] #list of var2 splitting nbins
+      corrEffMult: [true, true, true, true]
+      #corrEffMult: [false, false, false, false]
+      sel_binmin2:  [0,30,0.1,0] #list of var2 splittng nbins
+      sel_binmax2: [100,100,30,0.1] #list of var2 splitting nbins
       var_binning2: perc_v0m
       var_binning2_gen: perc_v0m
       nbinshisto: 100000
@@ -460,23 +492,60 @@ LcpK0spp:
       binning_matching: [0,1,2,3,4,5] #list of pt nbins
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
+      mc_cut_on_binning2: False
+      #INEL>0 requirement. Takes a long time, do this once and copy masshistograms when rerunning is better (disable for cut variation)
+      apply_inel0_sel: [false, true, true, true, true]
+      inel0_var: n_tracklets_corr
+
+      event_weighting_mc:
+        LHC16pp:
+          - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data.root
+            histo_name: n_tracklets_0_LHC16pp_weights
+            according_to: n_tracklets
+          - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data.root
+            histo_name: n_tracklets_1_LHC16pp_weights
+            according_to: n_tracklets
+          - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data.root
+            histo_name: n_tracklets_2_LHC16pp_weights
+            according_to: n_tracklets
+        LHC17pp:
+          - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data.root
+            histo_name: n_tracklets_0_LHC17pp_weights
+            according_to: n_tracklets
+          - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data.root
+            histo_name: n_tracklets_1_LHC17pp_weights
+            according_to: n_tracklets
+          - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data.root
+            histo_name: n_tracklets_2_LHC17pp_weights
+            according_to: n_tracklets
+        LHC18pp:
+          - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data.root
+            histo_name: n_tracklets_0_LHC18pp_weights
+            according_to: n_tracklets
+          - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data.root
+            histo_name: n_tracklets_1_LHC18pp_weights
+            according_to: n_tracklets
+          - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data.root
+            histo_name: n_tracklets_2_LHC18pp_weights
+            according_to: n_tracklets
+
       triggersel:
         data: "trigger_hasbit_INT7==1"
         mc: null
       data:
-        runselection: [null, null, null]
-        results: [/data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsMBvspt_perc_v0m,
-                  /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsMBvspt_perc_v0m,
-                  /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsMBvspt_perc_v0m] #list of periods
-        resultsallp: /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_data/resultsMBvspt_perc_v0m
+        runselection: [MBvspt_perc_v0m_2016, null, null]
+        results: [/data/DerivedResults/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/resultsMBvspt_perc_v0m,
+                  /data/DerivedResults/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/resultsMBvspt_perc_v0m,
+                  /data/DerivedResults/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/resultsMBvspt_perc_v0m] #list of periods
+        resultsallp: /data/DerivedResults/LckAnywithJets/vAN-20200824_ROOT6-1/pp_data/resultsMBvspt_perc_v0m
       mc:
         runselection: [null, null, null]
-        results: [/data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m,
-                  /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m,
-                  /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m] #list of periods
-        resultsallp: /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_mc_prodLcpK0s/resultsMBvspt_perc_v0m
+        results: [/data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1_new_data/pp_2016_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m,
+                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1_new_data/pp_2017_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m,
+                  /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1_new_data/pp_2018_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m] #list of periods
+        resultsallp: /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1_new_data/pp_mc_prodLcpK0s/resultsMBvspt_perc_v0m
 
-      mass_fit_lim: [2.14, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [2.11, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
@@ -486,11 +555,23 @@ LcpK0spp:
       masspeak: 2.2864
       massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
       massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
-      rebin: [[6,6,6,6,6,8], [6,6,6,6,6,6], [6,6,6,6,6,6]]
+      rebin:
+        - [6,6,8,9,10,6]
+        - [6,6,8,9,10,6]
+        - [6,6,8,9,10,6]
+        - [6,6,8,9,10,6]
 
-      includesecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      includesecpeak:
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
       masssecpeak: 2.2864
-      fix_masssecpeak: [[false, false, false, false, false, false],[false, false, false, false, false, false],[false, false, false, false, false, false]]
+      fix_masssecpeak:
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
+        - [false, false, false, false, false, false]
       widthsecpeak: 0.01
       fix_widthsecpeak: true
 
@@ -498,13 +579,13 @@ LcpK0spp:
       FixedMean: false
       SetFixGaussianSigma: [true,true,true,true,true,true]
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
-      SetInitialGaussianMean: true
+      SetInitialGaussianMean: False
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
-      SetInitialGaussianSigma: [true, false, false, false, false, false]
+      SetInitialGaussianSigma: [false, false, false, false, false, false]
       # Max percentage deviation in sigma (from init) to be considered as a good fit
       MaxPercSigmaDeviation: 0.5
-      # Number of initial signal sigmas around the mean to be excluded for side-band fit
+      # Number of initial signal sigmas around the mean to be excluded for sideband fit
       exclude_nsigma_sideband: 4
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
@@ -513,21 +594,9 @@ LcpK0spp:
       FixedSigma: true
       fitcase: Lc
       latexnamehadron: "#Lambda_{c}^{pK0s}"
-      latexbin2var: "V0M_{perc}"
+      latexbin2var: "v0m perc"
       nevents: null
       dodoublecross: false
-
-      systematics:
-        # For now don't do these things per pT bin
-        max_chisquare_ndf: 2.
-        rebin: [-1,0,1]
-        massmin: [2.14, 2.13, 2.12, 2.15, 2.17]
-        massmax: [2.436, 2.435, 2.434, 2.437, 2.438]
-        bincount_sigma: [3, 5]
-        bkg_funcs: [Pol2, Pol3]
-        # Whether to include the free sigma option in the derivation of raw yield uncertainty in given pT bin
-        consider_free_sigma: [False, False, False, False, False, False]
-
 
   systematics:
     probvariation:

@@ -150,12 +150,12 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
     # Initializer / Instance Attributes
     # pylint: disable=too-many-statements, too-many-arguments, line-too-long
     def __init__(self, case, datap, run_param, mcordata, p_maxfiles,
-                 d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
+                 d_root, d_pkl, d_pklsk, d_pkl_ml, p_period, i_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
                  d_results, typean, runlisttrigger, d_mcreweights):
         super().__init__(case, datap, run_param, mcordata, p_maxfiles,
-                         d_root, d_pkl, d_pklsk, d_pkl_ml, p_period,
+                         d_root, d_pkl, d_pklsk, d_pkl_ml, p_period, i_period,
                          p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                          p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
                          d_results, typean, runlisttrigger, d_mcreweights)
@@ -165,8 +165,6 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         self.p_bin_width = datap["analysis"][self.typean]["bin_width"]
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
                                     self.p_bin_width))
-        self.l_selml = ["y_test_prob%s>%s" % (self.p_modelname, self.lpt_probcutfin[ipt]) \
-                       for ipt in range(self.p_nptbins)]
 
         # first variable (hadron pt)
         self.v_var_binning = datap["var_binning"] # name
@@ -256,7 +254,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
             df = adjust_nsd(df)
             if self.doml is True:
-                df = df.query(self.l_selml[bin_id])
+                df = df.query(self.l_selml[ipt])
             # custom cuts
             elif self.do_custom_analysis_cuts:
                 # PID cut
@@ -288,7 +286,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             for ibin2 in range(self.p_nbin2_reco):
                 suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
-                          self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
+                          self.lpt_finbinmax[ipt], self.lpt_probcutfin[ipt],
                           self.v_var2_binning, self.lvar2_binmin_reco[ibin2],
                           self.lvar2_binmax_reco[ibin2])
                 df_bin = seldf_singlevar(df, self.v_var2_binning,
@@ -452,7 +450,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_reco_presel_pr = df_mc_reco[df_mc_reco.ismcprompt == 1]
                 df_reco_sel_pr = None
                 if self.doml is True:
-                    df_reco_sel_pr = df_reco_presel_pr.query(self.l_selml[bin_id])
+                    df_reco_sel_pr = df_reco_presel_pr.query(self.l_selml[ipt])
                 # custom cuts
                 elif self.do_custom_analysis_cuts:
                     df_reco_sel_pr = self.apply_cuts_ptbin(df_reco_presel_pr, ipt)
@@ -469,7 +467,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_reco_presel_fd = df_mc_reco[df_mc_reco.ismcfd == 1]
                 df_reco_sel_fd = None
                 if self.doml is True:
-                    df_reco_sel_fd = df_reco_presel_fd.query(self.l_selml[bin_id])
+                    df_reco_sel_fd = df_reco_presel_fd.query(self.l_selml[ipt])
                 # custom cuts
                 elif self.do_custom_analysis_cuts:
                     df_reco_sel_fd = self.apply_cuts_ptbin(df_reco_presel_fd, ipt)
@@ -543,7 +541,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var_binning, \
                     self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
                 if self.doml is True:
-                    df_mc_reco = df_mc_reco.query(self.l_selml[bin_id])
+                    df_mc_reco = df_mc_reco.query(self.l_selml[ipt])
                 # custom cuts
                 elif self.do_custom_analysis_cuts:
                     df_mc_reco = self.apply_cuts_ptbin(df_mc_reco, ipt)

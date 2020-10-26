@@ -58,6 +58,10 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.p_nbin2 = len(self.lvar2_binmin)
 
+        self.do_inel0 = datap["analysis"][self.typean].get("apply_inel0_sel", \
+                                  [None for _ in range(len(self.lvar2_binmin))])
+        self.inel0_var = datap["analysis"][self.typean].get("inel0_var", "n_tracklets")
+
         self.d_resultsallpmc = datap["analysis"][typean]["mc"]["results"][period] \
                 if period is not None else datap["analysis"][typean]["mc"]["resultsallp"]
         self.d_resultsallpdata = datap["analysis"][typean]["data"]["results"][period] \
@@ -75,7 +79,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
 
         # Output directories and filenames
         self.yields_filename = "yields"
-        self.fits_dirname = "fits"
+        self.fits_dirname = os.path.join(self.d_resultsallpdata, f"fits_{case}_{typean}")
         self.yields_syst_filename = "yields_syst"
         self.efficiency_filename = "efficiencies"
         self.sideband_subtracted_filename = "sideband_subtracted"
@@ -206,7 +210,8 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
 
-        self.fitter = MLFitter(self.datap, self.typean, self.n_filemass, self.n_filemass_mc)
+        self.fitter = MLFitter(self.case, self.datap, self.typean,
+                               self.n_filemass, self.n_filemass_mc)
         self.fitter.perform_pre_fits()
         self.fitter.perform_central_fits()
         fileout_name = self.make_file_path(self.d_resultsallpdata, self.yields_filename, "root",
@@ -214,25 +219,20 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         fileout = TFile(fileout_name, "RECREATE")
         self.fitter.draw_fits(self.d_resultsallpdata, fileout)
         fileout.Close()
-        fileout_name = os.path.join(self.d_resultsallpdata,
-                                    f"{self.fits_dirname}_{self.case}_{self.typean}")
-        self.fitter.save_fits(fileout_name)
+        self.fitter.save_fits(self.fits_dirname)
         # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
 
 
-    # pylint: disable=too-many-locals, too-many-nested-blocks, too-many-branches
-    # pylint: disable=import-outside-toplevel
     def yield_syst(self):
         # Enable ROOT batch mode and reset in the end
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
         if not self.fitter:
-            fileout_name = os.path.join(self.d_resultsallpdata,
-                                        f"{self.fits_dirname}_{self.case}_{self.typean}")
-            self.fitter = MLFitter(self.datap, self.typean, self.n_filemass, self.n_filemass_mc)
-            if not self.fitter.load_fits(fileout_name):
-                self.logger.error("Cannot load fits from dir %s", fileout_name)
+            self.fitter = MLFitter(self.case, self.datap, self.typean,
+                                   self.n_filemass, self.n_filemass_mc)
+            if not self.fitter.load_fits(self.fits_dirname):
+                self.logger.error("Cannot load fits from dir %s", self.fits_dirname)
                 return
 
         # Additional directory needed where the intermediate results of the multi trial are
@@ -244,6 +244,13 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
 
         # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
+
+
+    def get_efficiency(self, ibin1, ibin2):
+        fileouteff = TFile.Open("%s/efficiencies%s%s.root" % (self.d_resultsallpmc, \
+                                 self.case, self.typean), "read")
+        h = fileouteff.Get(f"eff_mult{ibin2}")
+        return h.GetBinContent(ibin1 + 1), h.GetBinError(ibin1 + 1)
 
 
     def efficiency(self):
@@ -446,8 +453,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             norm = (n_sel + n_novtx) - n_novtx * n_vtxout / (n_sel + n_vtxout)
         return norm
 
-    # pylint: disable=import-outside-toplevel
-    def makenormyields(self):
+    def makenormyields(self): # pylint: disable=import-outside-toplevel, too-many-branches
         gROOT.SetBatch(True)
         self.loadstyle()
         #self.test_aliphysics()
@@ -495,6 +501,15 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             norm = self.calculate_norm(hsel, hnovtx, hvtxout,
                                        self.lvar2_binmin[imult],
                                        self.lvar2_binmax[imult])
+            if self.do_inel0[imult] is not None:
+                labeltrigger_inel0 = "hbit%svs%s_ibin2_%d" % (self.triggerbit, self.inel0_var, \
+                                                              imult)
+                if self.apply_weights is True:
+                    labeltrigger_inel0 = labeltrigger_inel0 + "_weight"
+                hsel_inel0 = filemass.Get("sel_%s" % labeltrigger_inel0)
+                hnovtx_inel0 = filemass.Get("novtx_%s" % labeltrigger_inel0)
+                hvtxout_inel0 = filemass.Get("vtxout_%s" % labeltrigger_inel0)
+                norm = self.calculate_norm(hsel_inel0, hnovtx_inel0, hvtxout_inel0, 1, 999)
             histonorm.SetBinContent(imult + 1, norm)
             # pylint: disable=logging-not-lazy
             self.logger.warning("Number of events %d for mult bin %d" % (norm, imult))

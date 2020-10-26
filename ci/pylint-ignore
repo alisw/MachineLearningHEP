@@ -1,6 +1,7 @@
 # Legacy code
 machine_learning_hep/analysis/analyzer_jet_legacy.py
 machine_learning_hep/analysis/analyzer_Dhadrons.py
+machine_learning_hep/analysis/analyzer_back.py
 
 # Don't pylint setup
 setup.py

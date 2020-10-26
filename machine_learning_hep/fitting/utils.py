@@ -21,6 +21,7 @@ Interfacing with
 Providing and storing fitters
 """
 from os.path import join
+from math import ceil
 import inspect
 
 # pylint: disable=import-error, no-name-in-module, unused-import
@@ -28,6 +29,27 @@ from ROOT import TFile
 
 from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict, checkdir
 from machine_learning_hep.logger import get_logger
+
+
+def construct_rebinning(histo, rebin):
+
+    try:
+        iter(rebin)
+        min_rebin = rebin[0]
+        rebin_min_entries_per_bin = rebin[1]
+        max_rebin = rebin[2]
+        entries_per_bin = histo.Integral() / histo.GetNbinsX()
+        rebin = rebin_min_entries_per_bin / entries_per_bin
+        if rebin > max_rebin:
+            return max_rebin
+        if min_rebin and min_rebin < rebin:
+            return min_rebin
+        if rebin < 1:
+            return None
+        return ceil(rebin)
+    except TypeError:
+        return rebin
+
 
 def save_fit(fit, save_dir, annotations=None):
 
@@ -45,6 +67,7 @@ def save_fit(fit, save_dir, annotations=None):
         if root_object:
             root_object.Write(name)
     fit.kernel.Write("kernel")
+    root_file.Close()
 
     yaml_path = join(save_dir, "init_pars.yaml")
     dump_yaml_from_dict(fit.init_pars, yaml_path)
@@ -96,10 +119,11 @@ def load_fit(save_dir):
         obj = k.ReadObj()
         obj.SetDirectory(0)
         root_objects[k.GetName()] = obj
+    root_file.Close()
 
     fit.set_root_objects(root_objects)
-    fit.init_fit()
     fit.success = meta_info["success"]
+    fit.init_fit()
 
     if "annotations" not in meta_info:
         return fit
