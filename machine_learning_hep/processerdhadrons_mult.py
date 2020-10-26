@@ -68,6 +68,9 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
         #self.sel_final_fineptbins = datap["analysis"][self.typean]["sel_final_fineptbins"]
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
+        self.do_inel0 = datap["analysis"][self.typean].get("apply_inel0_sel", \
+                                  [None for _ in range(len(self.lvar2_binmin))])
+        self.inel0_var = datap["analysis"][self.typean].get("inel0_var", "n_tracklets")
         self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
@@ -215,6 +218,28 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         hnovtxmult.Write()
         hvtxoutmult.Write()
 
+        for ibin2 in range(len(self.lvar2_binmin)):
+            if self.do_inel0[ibin2] is not None:
+                dfevtevtsel_inel0 = seldf_singlevar_inclusive(dfevtevtsel, \
+                    self.v_var2_binning_gen, self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                dfevtorig_inel0 = seldf_singlevar_inclusive(dfevtorig, self.v_var2_binning_gen, \
+                    self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
+                labeltrigger_inel0 = "hbit%svs%s_ibin2_%d" % (self.triggerbit, \
+                                                              self.inel0_var, ibin2)
+                hsel_inel0, hnovtxmult_inel0, hvtxoutmult_inel0 = \
+                    self.gethistonormforselevt_mult(dfevtorig_inel0, dfevtevtsel_inel0, \
+                                               labeltrigger_inel0, self.inel0_var)
+                if self.usetriggcorrfunc is not None and self.mcordata == "data":
+                    hselweight_inel0, hnovtxmultweight_inel0, hvtxoutmultweight_inel0 = \
+                        self.gethistonormforselevt_mult(dfevtorig_inel0, dfevtevtsel_inel0, \
+                            labeltrigger_inel0, self.inel0_var, self.usetriggcorrfunc)
+                    hselweight_inel0.Write()
+                    hnovtxmultweight_inel0.Write()
+                    hvtxoutmultweight_inel0.Write()
+                hsel_inel0.Write()
+                hnovtxmult_inel0.Write()
+                hvtxoutmult_inel0.Write()
+
         list_df_recodtrig = []
 
         for ipt in range(self.p_nptfinbins): # pylint: disable=too-many-nested-blocks
@@ -236,7 +261,14 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
             if self.do_custom_analysis_cuts:
                 df = self.apply_cuts_ptbin(df, ipt)
 
+            df_temp = pd.DataFrame()
+            if self.do_inel0[-1] is not None:
+                df_temp = df
             for ibin2 in range(len(self.lvar2_binmin)):
+                if self.do_inel0[ibin2] is not None:
+                    df = df_temp
+                    df = df.query("%s > 0" % self.inel0_var)
+
                 if self.mltype == "MultiClassification":
                     suffix = "%s%d_%d_%.2f%.2f%s_%.2f_%.2f" % \
                              (self.v_var_binning, self.lpt_finbinmin[ipt],
@@ -418,11 +450,17 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_trigger is not None:
                     df_mc_reco = df_mc_reco.query(self.s_trigger)
+                if self.do_inel0[ibin2] is not None:
+                    df_mc_reco = df_mc_reco.query("%s > 0" % self.inel0_var)
                 if self.runlistrigger is not None:
                     df_mc_reco = selectdfrunlist(df_mc_reco, \
                          self.run_param[self.runlistrigger], "run_number")
                 df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[bin_id][index], "rb"))
                 df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
+                if self.s_evtsel is not None:
+                    df_mc_gen = df_mc_gen.query(self.s_evtsel)
+                if self.do_inel0[ibin2] is not None:
+                    df_mc_gen = df_mc_gen.query("%s > 0" % self.inel0_var)
                 if self.runlistrigger is not None:
                     df_mc_gen = selectdfrunlist(df_mc_gen, \
                              self.run_param[self.runlistrigger], "run_number")
