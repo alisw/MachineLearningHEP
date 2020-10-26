@@ -159,8 +159,8 @@ D0pp:
       pkl_skimmed_merge_for_ml: [/data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/pklskml,
                                  /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/pklskml,
                                  /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200304_ROOT6-1/pp_data_mltot
-      pkl_evtcounter_all: /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200304_ROOT6-1/pp_data_evttot
+      pkl_skimmed_merge_for_ml_all: /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_data_mltot
+      pkl_evtcounter_all: /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_data_evttot
       mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2016,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2017,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018] #list of periods
@@ -172,9 +172,9 @@ D0pp:
       fracmerge: [1.0,1.0,1.0] #list of periods
       seedmerge: [12,12,12] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
-      unmerged_tree_dir: [/data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/merged,
-                          /data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/merged,
-                          /data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/merged] #list of periods
+      unmerged_tree_dir: [/data/TTree/MC_LcpK0spp_MB/vAN-20200824_ROOT6-1/pp_2016_mc_prodD2H/491_20200825-1716/merged,
+                          /data/TTree/MC_LcpK0spp_MB/vAN-20200824_ROOT6-1/pp_2017_mc_prodD2H/491_20200825-1716/merged,
+                          /data/TTree/MC_LcpK0spp_MB/vAN-20200824_ROOT6-1/pp_2018_mc_prodD2H/491_20200825-1716/merged] #list of periods
       pkl: [/data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_mc_prodHMV0MD2H/492_20200901-1528/pkl,
             /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_mc_prodHMV0MD2H/492_20200901-1528/pkl,
             /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_mc_prodHMV0MD2H/492_20200901-1528/pkl] #list of periods
@@ -184,8 +184,8 @@ D0pp:
       pkl_skimmed_merge_for_ml: [/data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_mc_prodHMV0MD2H/492_20200901-1528/pklskml,
                                  /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_mc_prodHMV0MD2H/492_20200901-1528/pklskml,
                                  /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_mc_prodHMV0MD2H/492_20200901-1528/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200304_ROOT6-1/pp_mc_prodD2H_mltot
-      pkl_evtcounter_all: /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200304_ROOT6-1/pp_mc_prodD2H_evttot
+      pkl_skimmed_merge_for_ml_all: /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_mc_prodD2H_mltot
+      pkl_evtcounter_all: /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_mc_prodD2H_evttot
       mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_16,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_17,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_18] #list of periods
@@ -239,7 +239,7 @@ D0pp:
                               /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/pklskdecmerged,
                               /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/pklskdecmerged] #list of periods
     mc:
-      pkl_skimmed_dec: [/data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_mc_prodHMV0MD2H/492_20200901-1528/pklskdec,
+      pkl_skimmed_dec: [:vAN-20200824_ROOT6-1/pp_2016_mc_prodHMV0MD2H/492_20200901-1528/pklskdec,
                         /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_mc_prodHMV0MD2H/492_20200901-1528/pklskdec,
                         /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_mc_prodHMV0MD2H/492_20200901-1528/pklskdec] #list of periods
       pkl_skimmed_decmerged: [/data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_mc_prodHMV0MD2H/492_20200901-1528/pklskdecmerged,
