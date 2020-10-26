@@ -680,6 +680,11 @@ D0pp:
       include_reflection: True
       presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
       evtsel: is_ev_rej==0
+      mc_cut_on_binning2: False
+      #INEL>0 requirement. Takes a long time, do this once and copy masshistograms when rerunning is better (disable for cut variation)
+      apply_inel0_sel: [false, true, true, true, true]
+      inel0_var: n_tracklets_corr
+
       triggersel:
         data: "trigger_hasbit_INT7==1"
         mc: null

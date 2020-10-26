@@ -491,6 +491,14 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
         save_path = join(self.nominal_analyzer_merged.d_resultsallpdata, self.syst_out_dir,
                          f"ml_wp_syst_{name}_ibin2_{ibin2}.eps")
         canvas.SaveAs(save_path)
+        save_path = join(self.nominal_analyzer_merged.d_resultsallpdata, self.syst_out_dir,
+                         f"ml_wp_syst_{name}_ibin2_{ibin2}.root")
+        file_out = TFile.Open(save_path, "RECREATE")
+        file_out.cd()
+        for i, h in enumerate(histos):
+            h.Write("%s%d" % (h.GetName(), i))
+        canvas.Write()
+        file_out.Close()
         canvas.Close()
 
     def __make_summary_plot(self, name, ibin2, successful):
@@ -536,6 +544,14 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
         save_path = join(self.nominal_analyzer_merged.d_resultsallpdata, self.syst_out_dir,
                          f"ml_wp_syst_{name}_vs_MLcut_ibin2_{ibin2}.eps")
         canvas.SaveAs(save_path)
+        save_path = join(self.nominal_analyzer_merged.d_resultsallpdata, self.syst_out_dir,
+                         f"ml_wp_syst_{name}_vs_MLcut_ibin2_{ibin2}.root")
+        file_out = TFile.Open(save_path, "RECREATE")
+        file_out.cd()
+        for i, graph in enumerate(gr):
+            graph.Write("%s%d" % (graph.GetName(), i))
+        canvas.Write()
+        file_out.Close()
         canvas.Close()
 
     def __plot(self, successful):
