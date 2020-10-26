@@ -501,7 +501,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             norm = self.calculate_norm(hsel, hnovtx, hvtxout,
                                        self.lvar2_binmin[imult],
                                        self.lvar2_binmax[imult])
-            if self.do_inel0[imult] is not None:
+            if self.do_inel0[imult]:
                 labeltrigger_inel0 = "hbit%svs%s_ibin2_%d" % (self.triggerbit, self.inel0_var, \
                                                               imult)
                 if self.apply_weights is True:
