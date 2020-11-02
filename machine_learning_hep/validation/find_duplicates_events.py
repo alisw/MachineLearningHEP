@@ -90,8 +90,12 @@ SUMMARY_FILE = "duplicates_summary.yaml"
 # To actually extract the duplicated ev_id, ev_id_ext and run_number columns
 EXTRACT_DUPL_INFO = True
 
+# Columns in which the dataframe SHOULD be unique. You can add any other event variable which
+# present in the event pkl AnalysisResultsEvtOrig
+UNIQUE_COLS = ["ev_id", "ev_id_ext", "run_number"]
+
 # Run over mc and/or data, like this automatically over data and MC
-DATA_MC = ("mc", "data") # ("mc",)  ("data",)
+DATA_MC = ("mc",) # "data") # ("mc",)  ("data",)
 
 
 #################################
@@ -125,7 +129,7 @@ for dm in DATA_MC:
             files_child = [f for f in files_all if f"/{child}/" in f]
             args = []
             for f in  files_child:
-                args.append((f, ["ev_id", "ev_id_ext", "run_number"]))
+                args.append((f, UNIQUE_COLS))
 
             duplicates = multi_proc(check_duplicates, args, None, 500, 40)
             duplicates_ratio = [d[1] / d[0] * 100 if d[0] > 0 else 0. for d in duplicates]
@@ -133,11 +137,11 @@ for dm in DATA_MC:
             if EXTRACT_DUPL_INFO:
                 duplicates_cols = []
                 for d in duplicates:
-                    duplicates_cols.append([[float(ev_id), float(ev_id_ext), float(run_number)] \
-                            for ev_id, ev_id_ext, run_number \
-                            in zip(d[2]["ev_id"].values,
-                                   d[2]["ev_id_ext"].values,
-                                   d[2]["run_number"])])
+                    duplicates_cols_this_df = []
+                    for _, row in d[2].iterrows():
+                        duplicates_cols_this_df.append([float(row[col_name]) \
+                                for col_name in UNIQUE_COLS])
+                    duplicates_cols.append(duplicates_cols_this_df)
             else:
                 duplicates_cols = [None] * len(duplicates)
 
