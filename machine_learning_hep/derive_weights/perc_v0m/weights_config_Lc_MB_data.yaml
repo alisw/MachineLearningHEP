@@ -10,9 +10,9 @@ analysis: MBvspt_perc_v0m
 distribution: n_tracklets
 
 x_range:
-    - 100
-    - 0
-    - 100
+    - 101
+    - -0.5
+    - 100.5
 
 slice_cuts:
     - "perc_v0m >= 0 and perc_v0m <= 100"
