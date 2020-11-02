@@ -1,5 +1,5 @@
 
-database: /home/bvolkel/HF/MachineLearningHEP/machine_learning_hep/data/data_prod_20200304/database_ml_parameters_LcpK0spp_0304_HM_V0_effs.yml
+database: /home/bvolkel/HF/MachineLearningHEP/machine_learning_hep/data/data_prod_20200304/database_ml_parameters_LcpK0spp_0304_HMV0M.yml
 
 data_or_mc: mc
 
@@ -12,8 +12,8 @@ analysis: V0vspt_perc_v0m
 distribution: n_tracklets
 
 x_range:
-    - 100
-    - 0
-    - 100
+    - 101
+    - -0.5
+    - 100.5
 
 out_file: n_tracklets_HM_Lc_mc.root
