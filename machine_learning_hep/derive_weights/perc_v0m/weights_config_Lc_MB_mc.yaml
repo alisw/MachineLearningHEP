@@ -12,8 +12,8 @@ analysis: MBvspt_perc_v0m
 distribution: n_tracklets
 
 x_range:
-    - 100
-    - 0
-    - 100
+    - 101
+    - -0.5
+    - 100.5
 
 out_file: n_tracklets_MB_Lc_mc.root
