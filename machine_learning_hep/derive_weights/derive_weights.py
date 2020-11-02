@@ -196,7 +196,7 @@ def make_distributions(args, inv_mass, inv_mass_window): # pylint: disable=too-m
 
     # Set where to read data from and set overall selection query
     column_names.append("inv_mass")
-    trigger_sel = analysis_config["triggersel"]["data"]
+    trigger_sel = analysis_config["triggersel"][data_or_mc]
     in_top_dirs = database["mlapplication"][data_or_mc]["pkl_skimmed_dec"]
     if trigger_sel:
         if query_all:
