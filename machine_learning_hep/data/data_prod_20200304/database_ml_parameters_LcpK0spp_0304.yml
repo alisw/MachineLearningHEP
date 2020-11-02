@@ -550,7 +550,7 @@ LcpK0spp:
       masspeak: 2.2864
       massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
       massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
-      dynamic_rebinning: True
+      #dynamic_rebinning: True
       rebin:
         - [6,6,8,9,10,12]
         - [6,6,8,9,10,12]
