@@ -71,7 +71,7 @@ def check_duplicates(file_path, cols):
 
     df = pickle.load(openfile(file_path, "rb"))[cols]
     len_orig = len(df)
-    df_dupl = df[df.duplicated()]
+    df_dupl = df[df.duplicated(keep=False)]
     len_dupl = len(df_dupl)
 
     return len_orig, len_dupl, df_dupl
