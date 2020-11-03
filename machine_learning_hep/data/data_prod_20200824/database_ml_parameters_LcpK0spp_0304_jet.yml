@@ -339,7 +339,7 @@ LcpK0spp:
     cctype: 1 #kpp7
     sigmav0: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
     inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
-    dir_general_plots: /data/DerivedResults/LckINTHighMultCALOwithJets_sub/vAN-20200304_ROOT6-1/analysis_plots
+    dir_general_plots: /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/analysis_plots
 
     jet_FF:
       proc_type: Dhadrons_jet
