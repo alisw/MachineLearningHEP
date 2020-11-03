@@ -280,7 +280,6 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             fill_hist(h_invmass_all, df.inv_mass)
             myfile.cd()
             h_invmass_all.Write()
-
             df = seldf_singlevar(df, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
             for ibin2 in range(self.p_nbin2_reco):
@@ -638,8 +637,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         list_df_mc_reco = []
         list_df_mc_gen = []
 
-        for iptskim in range(self.p_nptbins):
-
+        for iptskim in range(self.p_nptfinbins):
             df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[iptskim][index], "rb"))
             df_mc_gen = adjust_nsd(df_mc_gen)
             if self.runlistrigger is not None:
@@ -661,6 +659,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             if self.s_trigger is not None:
                 df_mc_reco = df_mc_reco.query(self.s_trigger)
             if self.doml is True:
+                print(self.l_selml)
                 df_mc_reco = df_mc_reco.query(self.l_selml[iptskim])
             elif self.do_custom_analysis_cuts: # custom cuts, pt bin
                 list_df_mc_reco_ipt = []
@@ -674,10 +673,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_mc_reco = apply_cut_seltracks(df_mc_reco)
                 df_mc_reco = apply_cut_special_np(df_mc_reco)
             list_df_mc_reco.append(df_mc_reco)
-
         # Here we can merge the dataframes corresponding to different HF pt in a
         # single one. In addition we are here selecting only non prompt HF
-
         df_gen = pd.concat(list_df_mc_gen)
         df_mc_reco = pd.concat(list_df_mc_reco)
 
@@ -685,19 +682,16 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         df_gen["z"] = z_calc(df_gen.pt_jet, df_gen.phi_jet, df_gen.eta_jet,
                              df_gen.pt_cand, df_gen.phi_cand, df_gen.eta_cand)
         df_gen = adjust_z(df_gen)
-
         df_mc_reco["z"] = z_calc(df_mc_reco.pt_jet, df_mc_reco.phi_jet, df_mc_reco.eta_jet,
                                  df_mc_reco.pt_cand, df_mc_reco.phi_cand, df_mc_reco.eta_cand)
         df_mc_reco["z_gen"] = z_gen_calc(df_mc_reco.pt_gen_jet, df_mc_reco.phi_gen_jet,
                                          df_mc_reco.eta_gen_jet, df_mc_reco.pt_gen_cand,
                                          df_mc_reco.delta_phi_gen_jet, df_mc_reco.delta_eta_gen_jet)
         df_mc_reco = adjust_z(df_mc_reco)
-
         df_gen_nonprompt = df_gen[df_gen.ismcfd == 1]
         df_gen_prompt = df_gen[df_gen.ismcprompt == 1]
         df_mc_reco_merged_nonprompt = df_mc_reco[df_mc_reco.ismcfd == 1]
         df_mc_reco_merged_prompt = df_mc_reco[df_mc_reco.ismcprompt == 1]
-
         # The following plots are 3d plots all at generated level of z,
         # pt_jet and pt_cand. This was used in the first version of the feeddown
         # subtraction, currently is obsolete
@@ -707,7 +701,6 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         df_zvsjetpt_gen_unmatched = df_gen_prompt.loc[:, [self.v_varshape_binning, "pt_jet"]]
         fill_hist(hzvsjetpt_gen_unmatched, df_zvsjetpt_gen_unmatched)
         hzvsjetpt_gen_unmatched.Write()
-
         # 3D histogram for gen non-prompt
         titlehist = "hzvsjetptvscandpt_gen_nonprompt"
         hzvsjetptvscandpt_gen_nonprompt = makefill3dhist(df_gen_nonprompt, titlehist, \
@@ -750,7 +743,6 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             fill_hist(hz_gen_cuts, df_tmp[self.v_varshape_binning_gen])
             hz_gen_cuts.Write()
             hz_gen_nocuts.Write()
-
             # Addendum for unfolding
             hz_gen_nocuts_pr = TH1F("hz_gen_nocuts" + suffix, \
                 "hz_gen_nocuts" + suffix, self.p_nbinshape_gen, self.varshapebinarray_gen)
@@ -792,7 +784,6 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         hzvsjetpt_reco = hzvsjetpt_reco_nocuts.Clone("hzvsjetpt_reco_nonprompt")
         hzvsjetpt_gen = hzvsjetpt_gen_nocuts.Clone("hzvsjetpt_genv")
         response_matrix = RooUnfoldResponse(hzvsjetpt_reco, hzvsjetpt_gen)
-
         fill2dhist(df_tmp_selreco, hzvsjetpt_reco_nocuts, self.v_varshape_binning, "pt_jet")
         fill2dhist(df_tmp_selgen, hzvsjetpt_gen_nocuts, self.v_varshape_binning_gen, "pt_gen_jet")
         fill2dhist(df_tmp_selrecogen, hzvsjetpt_reco_cuts, self.v_varshape_binning, "pt_jet")
@@ -802,7 +793,6 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         hzvsjetpt_gen_nocuts.Write()
         hzvsjetpt_reco_cuts.Write()
         hzvsjetpt_gen_cuts.Write()
-
         # histograms for unfolding
         hzvsjetpt_reco_nocuts_pr = \
             build2dhisto("hzvsjetpt_reco_nocuts", self.varshapebinarray_reco, self.var2binarray_reco)
@@ -1120,5 +1110,4 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 getattr(row, self.v_varshape_binning_gen), row.pt_gen_jet, response_matrix_weight)
         response_matrix_pr.Write("response_matrix")
         response_matrix_closure_pr.Write("response_matrix_closure")
-
         out_file.Close()
