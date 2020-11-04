@@ -1,0 +1,25 @@
+analysis:
+  MBvspt_perc_v0m:
+    apply_inel0_sel: [false, false, false, false, false]
+    data:
+      results: [/data/DerivedResults/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/resultsMBvspt_perc_v0m_syst_ml,
+                /data/DerivedResults/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/resultsMBvspt_perc_v0m_syst_ml,
+                /data/DerivedResults/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/resultsMBvspt_perc_v0m_syst_ml] #list of periods
+      resultsallp: /data/DerivedResults/LckAnywithJets/vAN-20200824_ROOT6-1/pp_data/resultsMBvspt_perc_v0m_syst_ml
+    mc:
+      results: [/data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1_new_data/pp_2016_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m_syst_ml,
+                /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1_new_data/pp_2017_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m_syst_ml,
+                /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1_new_data/pp_2018_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m_syst_ml] #list of periods
+      resultsallp: /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1_new_data/pp_mc_prodLcpK0s/resultsMBvspt_perc_v0m_syst_ml
+  V0vspt_perc_v0m:
+    apply_inel0_sel: [false]
+    data:
+      results: [/data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/resultsV0vspt_perc_v0m_syst_ml,
+                /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/resultsV0vspt_perc_v0m_syst_ml,
+                /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/resultsV0vspt_perc_v0m_syst_ml] #list of periods
+      resultsallp: /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_data/resultsV0vspt_perc_v0m_syst_ml
+    mc:
+      results: [/data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_mc_prodHMV0MpK0s/492_20200901-1528/resultsV0vspt_perc_v0m_syst_ml,
+                /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_mc_prodHMV0MpK0s/492_20200901-1528/resultsV0vspt_perc_v0m_syst_ml,
+                /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_mc_prodHMV0MpK0s/492_20200901-1528/resultsV0vspt_perc_v0m_syst_ml] #list of periods
+      resultsallp: /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_mc_prodHMV0MpK0s/resultsV0vspt_perc_v0m_syst_ml
