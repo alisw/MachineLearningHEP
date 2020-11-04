@@ -223,11 +223,13 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
                 if self.mcopt == 0:
                     wps_strings = ["%s<=%s and %s>=%s" % (probvar0, wps[ipt], probvar1, \
                                    self.cent_cv_cut_orig[ipt][1]) for ipt in range(n_pt_bins)]
-                    wps_multi = [[wps[ipt], self.cent_cv_cut_orig[ipt][1]] for ipt in range(n_pt_bins)]
+                    wps_multi = [[wps[ipt], self.cent_cv_cut_orig[ipt][1]] \
+                            for ipt in range(n_pt_bins)]
                 elif self.mcopt == 1:
                     wps_strings = ["%s<=%s and %s>=%s" % (probvar0, self.cent_cv_cut_orig[ipt][0], \
                                    probvar1, wps[ipt]) for ipt in range(n_pt_bins)]
-                    wps_multi = [[self.cent_cv_cut_orig[ipt][0], wps[ipt]] for ipt in range(n_pt_bins)]
+                    wps_multi = [[self.cent_cv_cut_orig[ipt][0], wps[ipt]] \
+                            for ipt in range(n_pt_bins)]
                 else:
                     print(f"Unknown mcopt value {self.mcopt}")
                     sys.exit(1)
