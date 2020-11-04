@@ -575,7 +575,7 @@ LcpK0spp:
       masspeak: 2.2864
       massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
       massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
-      rebin: [7, 7, 8, 9, 10, 11]
+      rebin: [6, 6, 8, 9, 10, 12]
 
       includesecpeak: [false, false, false, false, false, false]
       masssecpeak: 2.2864
