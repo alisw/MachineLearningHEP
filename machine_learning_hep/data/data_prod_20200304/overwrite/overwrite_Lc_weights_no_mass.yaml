@@ -1,0 +1,85 @@
+analysis:
+  MBvspt_perc_v0m:
+    event_weighting_mc:
+      LHC16pp:
+        - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data_no_mass.root
+          histo_name: n_tracklets_0_LHC16pp_weights
+          according_to: n_tracklets
+        - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data_no_mass.root
+          histo_name: n_tracklets_0_LHC16pp_weights
+          according_to: n_tracklets
+        - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data_no_mass.root
+          histo_name: n_tracklets_1_LHC16pp_weights
+          according_to: n_tracklets
+        - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data_no_mass.root
+          histo_name: n_tracklets_2_LHC16pp_weights
+          according_to: n_tracklets
+        - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data_no_mass.root
+          histo_name: n_tracklets_0_LHC16pp_weights
+          according_to: n_tracklets
+      LHC17pp:
+        - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data_no_mass.root
+          histo_name: n_tracklets_0_LHC17pp_weights
+          according_to: n_tracklets
+        - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data_no_mass.root
+          histo_name: n_tracklets_0_LHC17pp_weights
+          according_to: n_tracklets
+        - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data_no_mass.root
+          histo_name: n_tracklets_1_LHC17pp_weights
+          according_to: n_tracklets
+        - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data_no_mass.root
+          histo_name: n_tracklets_2_LHC17pp_weights
+          according_to: n_tracklets
+        - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data_no_mass.root
+          histo_name: n_tracklets_0_LHC17pp_weights
+          according_to: n_tracklets
+      LHC18pp:
+        - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data_no_mass.root
+          histo_name: n_tracklets_0_LHC18pp_weights
+          according_to: n_tracklets
+        - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data_no_mass.root
+          histo_name: n_tracklets_0_LHC18pp_weights
+          according_to: n_tracklets
+        - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data_no_mass.root
+          histo_name: n_tracklets_1_LHC18pp_weights
+          according_to: n_tracklets
+        - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data_no_mass.root
+          histo_name: n_tracklets_2_LHC18pp_weights
+          according_to: n_tracklets
+        - filepath: data/event_weighting_mc/weights_n_tracklets_MB_Lc_data_no_mass.root
+          histo_name: n_tracklets_0_LHC18pp_weights
+          according_to: n_tracklets
+    data:
+      results: [/data/DerivedResults/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/resultsMBvspt_perc_v0m_weights_no_mass_window,
+                /data/DerivedResults/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/resultsMBvspt_perc_v0m_weights_no_mass_window,
+                /data/DerivedResults/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/resultsMBvspt_perc_v0m_weights_no_mass_window] #list of periods
+      resultsallp: /data/DerivedResults/LckAnywithJets/vAN-20200824_ROOT6-1/pp_data/resultsMBvspt_perc_v0m_weights_no_mass_window
+    mc:
+      results: [/data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1_new_data/pp_2016_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m_weights_no_mass_window,
+                /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1_new_data/pp_2017_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m_weights_no_mass_window,
+                /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1_new_data/pp_2018_mc_prodLcpK0s/373_20200304-2021/resultsMBvspt_perc_v0m_weights_no_mass_window] #list of periods
+      resultsallp: /data/DerivedResults/LckAnywithJets/vAN-20200304_ROOT6-1_new_data/pp_mc_prodLcpK0s/resultsMBvspt_perc_v0m_weights_no_mass_window
+  V0vspt_perc_v0m:
+    event_weighting_mc:
+      LHC16pp:
+        - filepath: data/event_weighting_mc/weights_n_tracklets_HM_Lc_data_no_mass.root
+          histo_name: n_tracklets_0_LHC16pp_weights
+          according_to: n_tracklets
+      LHC17pp:
+        - filepath: data/event_weighting_mc/weights_n_tracklets_HM_Lc_data_no_mass.root
+          histo_name: n_tracklets_0_LHC17pp_weights
+          according_to: n_tracklets
+      LHC18pp:
+        - filepath: data/event_weighting_mc/weights_n_tracklets_HM_Lc_data_no_mass.root
+          histo_name: n_tracklets_0_LHC18pp_weights
+          according_to: n_tracklets
+    data:
+      results: [/data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/resultsV0vspt_perc_v0m_weights_no_mass_window,
+                /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/resultsV0vspt_perc_v0m_weights_no_mass_window,
+                /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/resultsV0vspt_perc_v0m_weights_no_mass_window] #list of periods
+      resultsallp: /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_data/resultsV0vspt_perc_v0m_weights_no_mass_window
+    mc:
+      results: [/data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_mc_prodHMV0MpK0s/492_20200901-1528/resultsV0vspt_perc_v0m_weights_no_mass_window,
+                /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_mc_prodHMV0MpK0s/492_20200901-1528/resultsV0vspt_perc_v0m_weights_no_mass_window,
+                /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_mc_prodHMV0MpK0s/492_20200901-1528/resultsV0vspt_perc_v0m_weights_no_mass_window] #list of periods
+      resultsallp: /data/DerivedResults/LckINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_mc_prodHMV0MpK0s/resultsV0vspt_perc_v0m_weights_no_mass_window
