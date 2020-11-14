@@ -1527,7 +1527,7 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
                    color=yield_bc1_color).Draw("same")
 
         val = h_raw_yield_dist_all.GetRMS()
-        val_rel = val / aver if aver != 0 else 0
+        val_rel = val / aver * 100 if aver != 0 else 0
         make_latex(0.15, 0.60, f"rms = {val:.3f} ({val_rel:.2f}%)",
                    color=yield_fit_color).Draw("same")
 

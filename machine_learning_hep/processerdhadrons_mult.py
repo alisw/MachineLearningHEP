@@ -219,7 +219,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         hvtxoutmult.Write()
 
         for ibin2 in range(len(self.lvar2_binmin)):
-            if self.do_inel0[ibin2] is not None:
+            if self.do_inel0[ibin2]:
                 dfevtevtsel_inel0 = seldf_singlevar_inclusive(dfevtevtsel, \
                     self.v_var2_binning_gen, self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                 dfevtorig_inel0 = seldf_singlevar_inclusive(dfevtorig, self.v_var2_binning_gen, \
@@ -262,10 +262,10 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 df = self.apply_cuts_ptbin(df, ipt)
 
             df_temp = pd.DataFrame()
-            if self.do_inel0[-1] is not None:
+            if self.do_inel0[-1]:
                 df_temp = df
             for ibin2 in range(len(self.lvar2_binmin)):
-                if self.do_inel0[ibin2] is not None:
+                if self.do_inel0[ibin2]:
                     df = df_temp
                     df = df.query("%s > 0" % self.inel0_var)
 
@@ -450,7 +450,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_trigger is not None:
                     df_mc_reco = df_mc_reco.query(self.s_trigger)
-                if self.do_inel0[ibin2] is not None:
+                if self.do_inel0[ibin2]:
                     df_mc_reco = df_mc_reco.query("%s > 0" % self.inel0_var)
                 if self.runlistrigger is not None:
                     df_mc_reco = selectdfrunlist(df_mc_reco, \
@@ -459,7 +459,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
                 if self.s_evtsel is not None:
                     df_mc_gen = df_mc_gen.query(self.s_evtsel)
-                if self.do_inel0[ibin2] is not None:
+                if self.do_inel0[ibin2]:
                     df_mc_gen = df_mc_gen.query("%s > 0" % self.inel0_var)
                 if self.runlistrigger is not None:
                     df_mc_gen = selectdfrunlist(df_mc_gen, \
