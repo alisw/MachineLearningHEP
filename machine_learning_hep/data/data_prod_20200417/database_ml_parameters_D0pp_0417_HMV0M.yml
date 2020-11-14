@@ -311,7 +311,7 @@ D0pp:
       evtsel: is_ev_rej==0
       mc_cut_on_binning2: False
       #INEL>0 requirement. Takes a long time, do this once and copy masshistograms when rerunning is better (disable for cut variation)
-      apply_inel0_sel: [false, true, true, true, true]
+      apply_inel0_sel: [true]
       inel0_var: n_tracklets_corr
 
       event_weighting_mc:
@@ -340,7 +340,7 @@ D0pp:
                   /data/DerivedResults/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/resultsV0vspt_perc_v0m] #list of periods
         resultsallp: /data/DerivedResults/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_data/resultsV0vspt_perc_v0m
       mc:
-        runselection: [null, null, null]
+        runselection: [V0vspt_perc_v0m_2016, null, null]
         results: [/data/DerivedResults/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_mc_prodHMV0MD2H/492_20200901-1528/resultsV0vspt_perc_v0m,
                   /data/DerivedResults/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_mc_prodHMV0MD2H/492_20200901-1528/resultsV0vspt_perc_v0m,
                   /data/DerivedResults/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_mc_prodHMV0MD2H/492_20200901-1528/resultsV0vspt_perc_v0m] #list of periods
@@ -357,13 +357,10 @@ D0pp:
       masspeak: 1.864
       massmin: [1.72,1.72,1.72,1.72,1.72,1.72]
       massmax: [2.03,2.03,2.03,2.03,2.03,2.03]
-      rebin:
-        - [6,6,6,6,6,6]
-      includesecpeak:
-        - [false, false, false, false, false, false]
+      rebin: [6,6,6,6,6,6]
+      includesecpeak: [false, false, false, false, false, false]
       masssecpeak: -1.0
-      fix_masssecpeak:
-        - [false, false, false, false, false, false]
+      fix_masssecpeak: [false, false, false, false, false, false]
       #Fraction Dplus/Ds (taken from pp5TeV as we don't store it in TTrees)
       widthsecpeak: -1
       fix_widthsecpeak: false
