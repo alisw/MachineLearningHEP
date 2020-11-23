@@ -35,6 +35,8 @@ LcpK0spp:
   var_binning: pt_cand
   dofullevtmerge: false
 
+
+
   bitmap_sel:
     var_name: cand_type
     var_isstd: isstd
@@ -216,6 +218,7 @@ LcpK0spp:
     crossfilename: "cross_section_tot.root"
 
   multi:
+    feeddown_db: false
     data:
       nprocessesparallel: 20
       maxfiles: [-1,-1,-1] #list of periods

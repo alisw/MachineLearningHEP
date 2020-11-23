@@ -216,6 +216,7 @@ LcpK0spp:
     crossfilename: "cross_section_tot.root"
 
   multi:
+    feeddown_db: false
     data:
       nprocessesparallel: 20
       maxfiles: [-1,-1,-1] #list of periods

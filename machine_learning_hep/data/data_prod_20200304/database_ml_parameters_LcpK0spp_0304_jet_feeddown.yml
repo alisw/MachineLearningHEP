@@ -216,6 +216,7 @@ LcpK0spp:
     crossfilename: "cross_section_tot.root"
 
   multi:
+    feeddown_db: false
     data:
       nprocessesparallel: 20
       maxfiles: [-1,-1,-1] #list of periods
@@ -364,9 +365,9 @@ LcpK0spp:
       sel_binmaxshape_gen:         [0.05, 0.1, 0.15, 0.3]
       sel_closure_frac: 0.2
       triggerbit: INT7
-      sel_an_binmin:    [2, 4] #list of pt nbins
-      sel_an_binmax:      [4, 6] #list of pt nbins
-      binning_matching:   [1, 2] #list of pt nbins
+      sel_an_binmin:    [6, 8] #list of pt nbins
+      sel_an_binmax:      [8, 12] #list of pt nbins
+      binning_matching:   [3, 4] #list of pt nbins
       jetsel_gen: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
       jetsel_sim: "abs(y_cand) < 0.5 and abs(eta_jet) < 0.5" # jet selection in simulations
       jetsel_reco: "abs(eta_jet) < 0.5"
@@ -403,10 +404,10 @@ LcpK0spp:
       rebin: [6, 6]
       fix_mean: [false, false]
       fix_sigma: [true, true]
-      sigmaarray: [0.0078, 0.0095] # initial sigma
+      sigmaarray: [0.0109, 0.0117] # initial sigma
       masspeaksec: 2.2864
       fix_sigmasec: [true, true]
-      sigmaarraysec: [0.07497, 0.01]
+      sigmaarraysec: [0.01, 0.01]
       # simple fitter END
 
       signal_sigma: 2.0

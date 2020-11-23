@@ -139,6 +139,7 @@ D0pp:
     crossfilename: "cross_section_tot.root"
 
   multi:
+    feeddown_db: false
     data:
       nprocessesparallel: 20
       maxfiles: [-1,-1,-1] #list of periods
@@ -206,8 +207,8 @@ D0pp:
     rnd_shuffle: 12
     rnd_splt: 12
     test_frac: 0.2
-    binmin: [1,2,4,6,8,12,24] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
-    binmax:   [2,4,6,8,12,24,48] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
+    binmin: [2,4,6,8,12] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
+    binmax:   [4,6,8,12,24] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: BinaryClassification
     ncorescrossval: 10
     mlplot: /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/mlplot # to be removed

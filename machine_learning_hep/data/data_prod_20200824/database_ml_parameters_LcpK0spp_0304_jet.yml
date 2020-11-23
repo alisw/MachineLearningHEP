@@ -435,7 +435,7 @@ LcpK0spp:
       pythia8_prompt_variations: ["default","coloursoft_mode0"]
       pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
 
-      variations_db: ./data/data_prod_20200824/database_variations_LcpK0spp_jet_FF.yml
+      variations_db: ./data/data_prod_20200304/database_variations_LcpK0spp_jet_FF.yml
 
   systematics:
     probvariation:

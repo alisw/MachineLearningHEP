@@ -139,6 +139,7 @@ D0pp:
     crossfilename: "cross_section_tot.root"
 
   multi:
+    feeddown_db: false
     data:
       nprocessesparallel: 20
       maxfiles: [-1,-1,-1] #list of periods
@@ -289,9 +290,9 @@ D0pp:
       sel_binmaxshape_gen:      [0.2,0.3,0.4,0.5]
       sel_closure_frac: 0.2
       triggerbit: INT7
-      sel_an_binmin:      [2, 4, 6, 8, 12] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:      [4, 6, 8, 12, 24] # hadron pt bins (sel_an_binmin bins)
-      binning_matching:   [1, 2, 3, 4, 5] # mapping to skimming pt bins (sel_an_binmin bins)
+      sel_an_binmin:      [1, 2, 4, 6, 8, 12, 24] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmax:      [2, 4, 6, 8, 12, 24, 48] # hadron pt bins (sel_an_binmin bins)
+      binning_matching:   [0, 1, 2, 3, 4, 5, 6] # mapping to skimming pt bins (sel_an_binmin bins)
       jetsel_gen: "abs(y_cand) < 0.8 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
       jetsel_sim: "abs(y_cand) < 0.8 and abs(eta_jet) < 0.5" # jet selection in simulations
       jetsel_reco: "abs(eta_jet) < 0.5"

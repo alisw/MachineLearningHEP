@@ -1,4 +1,4 @@
-############################################################################
+#############################################################################
 ##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
@@ -226,9 +226,12 @@ class AnalyzerJet(Analyzer):
         self.d_resultsallpdata = datap["analysis"][typean]["data"]["results"][period] \
                 if period is not None else datap["analysis"][typean]["data"]["resultsallp"]
         print("SELF TYPEAN", self.typean)
-        #if self.typean == "jet_r_shape":
-        #    self.d_resultslc =  datap["analysis"][typean]["data"]["resultslc"]
-        # self.d_resultsold =  datap["analysis"][typean]["data"]["resultsold"]
+        self.feeddown_db = datap["multi"]["feeddown_db"]
+        if self.feeddown_db:
+            self.d_resultsold =  datap["analysis"][typean]["data"]["resultsold"]
+            if self.typean == "jet_r_shape":
+                self.d_resultslc =  datap["analysis"][typean]["data"]["resultslc"]
+
 
         # input directories (processor output)
         self.d_resultsallpmc_proc = self.d_resultsallpmc
@@ -284,60 +287,63 @@ class AnalyzerJet(Analyzer):
         self.text_acc_h = "#left|#it{y}_{%s}#right| #leq 0.8" % self.p_latexnhadron
         self.text_powheg = "POWHEG + PYTHIA 6 + EvtGen"
 
-        self.feeddown = datap["feeddown"]
-
-    def createCanvasPads(self):
-        c = TCanvas("c", "canvas", 800, 800)
-        # Upper histogram plot is pad1
-        pad1 = TPad("pad1", "absolute yields", 0, 0.3, 0.5, 1.0)
-        pad1.SetBottomMargin(0)  # joins upper and lower plot
-        pad1.Draw()
-        # Lower ratio plot is pad2
-        c.cd()
-        pad2 = TPad("pad2", "self-normalized yields", 0.5, 0.3, 1, 1.0)
-        pad2.SetBottomMargin(0)  # joins upper and lower plot
-        pad2.Draw()
-        c.cd()  # returns to main canvas before defining pad2
-        pad3 = TPad("pad3", "ratio", 0, 0.05, 1, 0.3)
-        pad3.SetTopMargin(0)  # joins upper and lower plot
-        pad3.Draw()
-
-        return c, pad1, pad2, pad3
 
     def makeratio_onedim(self, origin_histo, option, histo_to_compare, xtitle, ytitle):
         filename = self.d_resultsold + "/" + option + ".root"
         print("Open file with results to compare", filename)
+        c_ratio = TCanvas("c_ratio", "histos ratio")
+        setup_canvas(c_ratio)
+        c_ratio.Divide(2,2)
+        c_ratio.cd(1)
         myfild_old = TFile.Open(filename)
-        c_ratio, pad1, pad2, pad3 = self.createCanvasPads()
         first_histo = origin_histo.Clone("first_histo")
         second_histo = myfild_old.Get(histo_to_compare)
-        print(histo_to_compare)
-        leg_ratio = TLegend(.6, .8, .8, .85)
-        setup_legend(leg_ratio)
-        second_histo.SetXTitle(xtitle)
-        second_histo.SetYTitle(ytitle)
-        second_histo.SetTitle(histo_to_compare)
-        setup_histogram(first_histo, get_colour(1), get_marker(0))
-        setup_histogram(second_histo, get_colour(2), get_marker(1))
-        leg_ratio.AddEntry(second_histo, "old_data %s" %option, "P")
-        leg_ratio.AddEntry(first_histo, "new_data %s" %option, "P")
-        pad1.cd()
-        second_histo.Draw()
-        first_histo.Draw("same")
-        leg_ratio.Draw("same")
-        pad2.cd()
-        second_histo.Scale(1/second_histo.Integral())
-        second_histo.Draw()
-        first_histo.Scale(1/first_histo.Integral())
-        first_histo.Draw("same")
-        leg_ratio.Draw("same")
-        pad3.cd()
-        second_histo.Divide(first_histo)
-        second_histo.SetYTitle("old data to new data ratio")
-        setup_histogram(second_histo, get_colour(0))
-        second_histo.Draw()
-        c_ratio.SaveAs("%s/old_new_%s.png" % (self.d_resultsallpdata, histo_to_compare))
-        myfild_old.Close()
+        if not second_histo:
+            print("No old histo!", histo_to_compare)
+        else:
+            print("BIN CONTENT", first_histo.GetBinContent(1),
+                    second_histo.GetBinContent(1))
+            print(histo_to_compare)
+            leg_ratio = TLegend(.6, .8, .8, .85)
+            setup_legend(leg_ratio)
+            setup_histogram(first_histo, get_colour(1), get_marker(0))
+            setup_histogram(second_histo, get_colour(2), get_marker(1))
+            print("BIN CONTENT", first_histo.GetBinContent(1),
+                    second_histo.GetBinContent(1))
+            leg_ratio.AddEntry(second_histo, "old_data %s" %option, "P")
+            leg_ratio.AddEntry(first_histo, "new_data %s" %option, "P")
+            #second_histo.SetYTitle(ytitle)
+            second_histo.SetTitle(histo_to_compare)
+            second_histo.Draw()
+            first_histo.Draw("same")
+            leg_ratio.Draw("same")
+            scaled_1 = first_histo.Clone("scaled_1")
+            scaled_2 = second_histo.Clone("scaled_2")
+            c_ratio.cd(3)
+            ratio = second_histo.Clone("ratio")
+            ratio.Divide(first_histo)
+            ratio.SetTitle("old data to new data ratio")
+            setup_histogram(ratio, get_colour(0))
+            ratio.Draw()
+            if ((scaled_1.Integral()!=0) and (scaled_2.Integral()!=0)):
+                scaled_2.Scale(1/scaled_2.Integral())
+                scaled_1.Scale(1/scaled_1.Integral())
+                #scaled_1.SetXTitle(xtitle)
+                #scaled_2.SetYTitle(ytitle)
+                c_ratio.cd(2)
+                scaled_2.SetTitle("self normalized")
+                scaled_2.Draw()
+                scaled_1.Draw("same")
+                leg_ratio.Draw("same")
+                c_ratio.cd(4)
+                norm_ratio = scaled_2.Clone("ratio")
+                norm_ratio.Divide(scaled_1)
+                norm_ratio.SetTitle("old data to new data (norm) ratio")
+                setup_histogram(norm_ratio, get_colour(0))
+                norm_ratio.Draw()
+                #c_ratio.SaveAs("%s/old_new_%s.png" % (self.d_resultsallpdata, histo_to_compare))
+                c_ratio.SaveAs("compare/old_new_%s.png" % (histo_to_compare))
+            myfild_old.Close()
 
     def makeratio_twodim(self, origin_histo, option, histo_to_compare):
         filename = self.d_resultsold + "/" + option + ".root"
@@ -345,23 +351,28 @@ class AnalyzerJet(Analyzer):
         myfild_old = TFile.Open(filename)
         first_histo = origin_histo.Clone("first_histo")
         second_histo = myfild_old.Get(histo_to_compare)
-        print(histo_to_compare)
-        c_ratio = TCanvas("c_ratio", "histos ratio")
-        setup_canvas(c_ratio)
-        leg_ratio = TLegend(.6, .8, .8, .85)
-        setup_legend(leg_ratio)
-        sub1 = first_histo.Clone("sub1")
-        sub1.Add(second_histo, -1)
-        setup_histogram(sub1)
-        sub1.SetTitle(histo_to_compare)
-        sub1.Draw("text")
-        c_ratio.SaveAs("%s/new-old_%s.png" % (self.d_resultsallpdata , histo_to_compare))
-        second_histo.Scale(1/second_histo.Integral())
-        first_histo.Scale(1/first_histo.Integral())
-        second_histo.Divide(first_histo)
-        second_histo.Draw("text")
-        c_ratio.SaveAs("%s/old_new_ratio_%s.png" % (self.d_resultsallpdata, histo_to_compare))
-        #c_ratio.SaveAs("Lc_D0_ratio_%s.png" % (histo_to_compare))
+        if not second_histo:
+            print("No old histo!", histo_to_compare)
+        else:
+            print(histo_to_compare)
+            c_ratio = TCanvas("c_ratio", "histos ratio")
+            setup_canvas(c_ratio)
+            leg_ratio = TLegend(.6, .8, .8, .85)
+            setup_legend(leg_ratio)
+            sub1 = first_histo.Clone("sub1")
+            sub1.Add(second_histo, -1)
+            setup_histogram(sub1)
+            sub1.SetTitle("%s %s" % (histo_to_compare, option))
+            sub1.Draw("text")
+            #c_ratio.SaveAs("%s/new-old_%s.png" % (self.d_resultsallpdata , histo_to_compare))
+            c_ratio.SaveAs("compare/new-old_diff_%s.png" % (histo_to_compare))
+            second_histo.Scale(1/second_histo.Integral())
+            first_histo.Scale(1/first_histo.Integral())
+            second_histo.Divide(first_histo)
+            second_histo.SetTitle("%s %s" % (histo_to_compare, option))
+            second_histo.Draw("text")
+            # c_ratio.SaveAs("%s/old_new_ratio_%s.png" % (self.d_resultsallpdata, histo_to_compare))
+            c_ratio.SaveAs("compare/new_old_ratio_%s.png" % (histo_to_compare))
         myfild_old.Close()
 
     def makeratio(self, origin_histo, option, lc_histoname):
@@ -416,12 +427,13 @@ class AnalyzerJet(Analyzer):
             self.logger.fatal(make_message_notfound("histonorm", self.n_filemass))
         self.p_nevents = histonorm.GetBinContent(1)
         print("Number of selected event: %g" % self.p_nevents)
-        option = "masshisto"
-        histo_to_compare = ("histonorm")
-        print("Making ratio for", option, histo_to_compare)
-        xtitle = ""
-        ytitle = ""
-        self.makeratio_onedim(histomass, option, histo_to_compare, xtitle, ytitle)
+        if self.feeddown_db:
+            option = "masshisto"
+            histo_to_compare = ("histonorm")
+            print("Making ratio for", option, histo_to_compare)
+            xtitle = ""
+            ytitle = ""
+            self.makeratio_onedim(histonorm, option, histo_to_compare, xtitle, ytitle)
 
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
@@ -448,16 +460,13 @@ class AnalyzerJet(Analyzer):
                 print("I have made MC fit for sigma initialization, status: %d" % out)
                 histomass = myfile.Get("hmass" + suffix)
 
-                suffix_old = "%s%d_%d_0.00%s_%.2f_%.2f" % \
-                         (self.v_var_binning, self.lpt_finbinmin[ipt],
-                          self.lpt_finbinmax[ipt], self.v_var2_binning, self.lvar2_binmin_reco[ibin2],
-                          self.lvar2_binmax_reco[ibin2])
-                option = "masshisto"
-                histo_to_compare = ("hmass%s" % (suffix_old))
-                print("Making ratio for", option, histo_to_compare)
-                xtitle = "Inv mass, GeV/c"
-                ytitle = ""
-                self.makeratio_onedim(histomass, option, histo_to_compare, xtitle, ytitle )
+                if self.feeddown_db:
+                    option = "masshisto"
+                    histo_to_compare = ("hmass%s" % (suffix))
+                    print("Making ratio for", option, histo_to_compare)
+                    xtitle = "Inv mass, GeV/c"
+                    ytitle = ""
+                    self.makeratio_onedim(histomass, option, histo_to_compare, xtitle, ytitle )
 
                 if not histomass:
                     self.logger.fatal(make_message_notfound("hmass" + suffix, self.n_filemass))
@@ -1133,17 +1142,13 @@ class AnalyzerJet(Analyzer):
                 hzsub_noteffscaled.Write()
                 hzsub.Write("hzsub" + suffix)
 
-                suffix_old = "%s%g_%g_0.00%s_%.2f_%.2f" % \
-                         (self.v_var_binning, self.lpt_finbinmin[ipt],
-                          self.lpt_finbinmax[ipt],
-                          self.v_var2_binning, self.lvar2_binmin_reco[ibin2],
-                          self.lvar2_binmax_reco[ibin2])
-                option = "sideband_subtracted"
-                histo_to_compare = ("hzsub_noteffscaled%s" % (suffix_old))
-                print("Making ratio for", option, histo_to_compare )
-                xtitle = self.v_var_binning
-                ytitle = "yield not effcor"
-                self.makeratio_onedim(hzsub_noteffscaled, option, histo_to_compare, xtitle, ytitle)
+                if self.feeddown_db:
+                    option = "sideband_subtracted"
+                    histo_to_compare = ("hzsub_noteffscaled%s" % (suffix))
+                    print("Making ratio for", option, histo_to_compare )
+                    xtitle = self.v_var_binning
+                    ytitle = "yield not effcor"
+                    self.makeratio_onedim(hzsub_noteffscaled, option, histo_to_compare, xtitle, ytitle)
 
                 csblr = TCanvas("csblr" + suffix, "The Sideband Left-Right Canvas" + suffix)
                 setup_canvas(csblr)
@@ -1242,11 +1247,12 @@ class AnalyzerJet(Analyzer):
                 draw_latex(latex2)
                 csubz.SaveAs("%s/sideband_sub_effcorr_%s.eps" % (self.d_resultsallpdata, suffix_plot))
 
-                histo_to_compare = ("hzsub%s" % (suffix_old))
-                print("Making ratio for", option, histo_to_compare )
-                xtitle = self.v_var_binning
-                ytitle = "yield effcor"
-                self.makeratio_onedim(hzsub_noteffscaled, option, histo_to_compare, xtitle, ytitle)
+                if self.feeddown_db:
+                    histo_to_compare = ("hzsub%s" % (suffix))
+                    print("Making ratio for", option, histo_to_compare )
+                    xtitle = self.v_var_binning
+                    ytitle = "yield effcor"
+                    self.makeratio_onedim(hzsub_noteffscaled, option, histo_to_compare, xtitle, ytitle)
                 # csigbkgsubz
                 # This canvas contains the hzsig distributions of z in the signal
                 # region (signal+bkg), the hzbkg_scaled distribution of
@@ -1518,13 +1524,9 @@ class AnalyzerJet(Analyzer):
             fileouts.cd()
             hz.Write("hz" + suffix)
 
+
         fileouts.cd()
         hzvsjetpt.Write("hzvsjetpt")
-
-        option = "sideband_subtracted"
-        histo_to_compare = ("hzvsjetpt")
-        print("Making ratio for", option, histo_to_compare )
-        self.makeratio_twodim(hzvsjetpt, option, histo_to_compare)
         czvsjetpt = TCanvas("czvsjetpt", "output of sideband subtraction")
         setup_canvas(czvsjetpt)
         setup_histogram(hzvsjetpt)
@@ -1533,6 +1535,11 @@ class AnalyzerJet(Analyzer):
         hzvsjetpt.SetYTitle("%s (GeV/#it{c})" % self.p_latexbin2var)
         hzvsjetpt.Draw("text")
         czvsjetpt.SaveAs("%s/sideband_output.eps" % self.d_resultsallpdata)
+        if self.feeddown_db:
+            option = "sideband_subtracted"
+            histo_to_compare = ("hzvsjetpt")
+            print("Making ratio for", option, histo_to_compare )
+            self.makeratio_twodim(hzvsjetpt, option, histo_to_compare)
         csigvsjetpt = TCanvas("csigvsjetpt", "output of sideband subtraction")
         setup_canvas(csigvsjetpt)
         setup_histogram(sigvsjetpt)
@@ -1560,7 +1567,7 @@ class AnalyzerJet(Analyzer):
         #non-prompt efficiency for HF hadron reconstruction as a function of pT
         #in bins of jet pt (file_eff) and the output file of the jet processer that
         #contains all the response matrix and jet efficiencies (feeddown_input_file).
-
+        print("HERE")
 
         self.loadstyle()
         feeddown_input_file = TFile.Open(self.n_fileresp)
@@ -1572,16 +1579,19 @@ class AnalyzerJet(Analyzer):
         fileouts = TFile.Open(self.file_feeddown, "recreate")
         if not fileouts:
             self.logger.fatal(make_message_notfound(self.file_feeddown))
-
+        print("HERE 2")
         response_matrix = feeddown_input_file.Get("response_matrix_nonprompt")
-
+        print("HERE 3")
+        print(self.powheg_path_nonprompt)
         # input_data is 3d histogram from powheg+pythia prediction that
         # contains z vs jet_pt vs HF pt.
         input_data = self.get_simulated_yields(self.powheg_path_nonprompt, 3, False)
+        print("HERE 4")
         if not input_data:
             self.logger.fatal(make_message_notfound("simulated yields", self.powheg_path_nonprompt))
+        print(self.v_varshape_binning)
         input_data.SetName("fh3_feeddown_%s" % self.v_varshape_binning)
-
+        print("HEEERRREEE!!!!")
         # Ensure correct binning: x - shape, y - jet pt, z - pt hadron
         if not equal_binning_lists(input_data, list_x=self.varshaperanges_gen):
             self.logger.fatal("Error: Incorrect binning in x.")
@@ -2072,17 +2082,28 @@ class AnalyzerJet(Analyzer):
             leg_feeddown.AddEntry(sideband_input_data_subtracted_z[ibin2],
                                   "subtracted (prompt)", "P")
             sideband_input_data_subtracted_z[ibin2].Draw("same")
+            fileouts.cd()
+            sideband_input_data_subtracted_z[ibin2].Write()
+            print("AAAAAAAAAAAAAAAAAAA",
+                    sideband_input_data_subtracted_z[ibin2], fileouts)
             leg_feeddown.Draw("same")
             latex = TLatex(0.6, 0.8, "%g #leq %s < %g GeV/#it{c}" % \
                 (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex)
             cfeeddown.SaveAs("%s/feeddown_subtraction_%s.eps" % \
                              (self.d_resultsallpdata, suffix_plot))
-
+            if self.feeddown_db:
+                option = "feeddown"
+                histo_to_compare = ("sideband_input_data_subtracted_z%s" % (suffix))
+                print("Making ratio for", option, histo_to_compare)
+                xtitle = "feeddown subtracted"
+                ytitle = self.v_var_binning
+                self.makeratio_onedim(sideband_input_data_subtracted_z[ibin2], option, histo_to_compare, xtitle, ytitle )
             feeddown_fraction = folded_z_list[ibin2].Clone("feeddown_fraction" + suffix)
             feeddown_fraction_denominator = \
                 sideband_input_data_z[ibin2].Clone("feeddown_denominator" + suffix)
             feeddown_fraction.Divide(feeddown_fraction_denominator)
+            fileouts.cd()
             feeddown_fraction.Write()
 
             cfeeddown_fraction = TCanvas("cfeeddown_fraction" + suffix,
@@ -2118,6 +2139,12 @@ class AnalyzerJet(Analyzer):
         sideband_input_data_subtracted.Draw("text")
         cfeeddown_output.SaveAs("%s/feeddown_output.eps" % self.d_resultsallpdata)
         print("end of feed-down")
+
+        if self.feeddown_db:
+            option = "feeddown"
+            histo_to_compare = ("sideband_input_data_subtracted")
+            print("Making ratio for", option, histo_to_compare )
+            self.makeratio_twodim(sideband_input_data_subtracted, option, histo_to_compare)
 
     def append_histo(self, histo_list):
         histo = TH1F("Empty histo", "", 10, 1, 10)
@@ -2673,8 +2700,15 @@ class AnalyzerJet(Analyzer):
                 unfolded_zvsjetpt_final.SetYTitle("%s (GeV/#it{c})" % self.p_latexbin2var)
                 gStyle.SetPaintTextFormat(".0f")
                 unfolded_zvsjetpt_final.Draw("texte")
+                unfolded_zvsjetpt_final.Write()
                 cunfolded_output.SaveAs("%s/unfolded_output.eps" % self.d_resultsallpdata)
                 gStyle.SetPaintTextFormat("g")
+
+                if self.feeddown_db:
+                    option = "unfolding_results"
+                    histo_to_compare = ("unfolded_zvsjetpt_final")
+                    print("Making ratio for", option, histo_to_compare )
+                    self.makeratio_twodim(unfolded_zvsjetpt_final, option, histo_to_compare)
 
             for ibin2 in range(self.p_nbin2_gen):
                 if self.lpt_finbinmin[0] > self.lvar2_binmax_reco[ibin2]:
@@ -3005,13 +3039,21 @@ class AnalyzerJet(Analyzer):
             draw_latex(latex)
             cunfolded_not_z.SaveAs("%s/unfolded_not_%s_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
 
-            #Lc tot D0 ratio
+            if self.feeddown_db:
+                option = "unfolding_results"
+                histo_to_compare = ("unfolded_z_%d_%s" % (i_iter_choice, suffix))
+                print("Making ratio for", option, histo_to_compare)
+                xtitle = ""
+                ytitle = ""
+                self.makeratio_onedim(unfolded_z_scaled_list[i_iter_choice][ibin_jetpt], option, histo_to_compare, xtitle, ytitle)
+                #Lc tot D0 ratio
 
-            option = "unfolding_results"
-            lchistoname = ("unfolded_z_%d_%s" % (i_iter_choice, suffix))
-            print("Making Lc to D0 ratio for", option, lchistoname)
-            #if self.typean == "jet_r_shape":
-            #   self.makeratio(unfolded_z_scaled_list[i_iter_choice][ibin_jetpt], option, lchistoname)
+           # if self.feeddown_db:
+           #     option = "unfolding_results"
+           #     lchistoname = ("unfolded_z_%d_%s" % (i_iter_choice, suffix))
+           #     print("Making Lc to D0 ratio for", option, lchistoname)
+           #     if self.typean == "jet_r_shape":
+           #        self.makeratio(unfolded_z_scaled_list[i_iter_choice][ibin_jetpt], option, lchistoname)
             # compare relative statistical uncertainties before unfolding and after
 
             h_unfolded_not_stat_error = TH1F("h_unfolded_not_stat_error" + suffix, "h_unfolded_not_stat_error" + suffix, self.p_nbinshape_reco, self.varshapebinarray_reco)
@@ -3983,7 +4025,6 @@ class AnalyzerJet(Analyzer):
         file_path - input file path
         dim - dimension of the output histogram: 2, 3
         prompt - prompt or non-prompt: True, False"""
-
         print("Starting the histogram extraction from an MC tree\nInput file: %s" % file_path)
 
         if dim not in (2, 3):
@@ -3992,13 +4033,19 @@ class AnalyzerJet(Analyzer):
         # Get the normalisation factor (inverse integrated luminosity).
         file_sim = TFile.Open(file_path)
         if not file_sim:
+            print("4010")
             self.logger.fatal(make_message_notfound(file_path))
+            print("4012")
+        print("4013")
         pr_xsec = file_sim.Get("fHistXsection")
+        print("4015")
         if not pr_xsec:
+            print("4017")
             self.logger.fatal(make_message_notfound("fHistXsection", file_path))
+        print("4019")
         scale_factor = pr_xsec.GetBinContent(1) / pr_xsec.GetEntries()
+        print("4021")
         file_sim.Close()
-
         # Load the tree.
         if "D0" in self.case:
             tree_name = "tree_D0"
@@ -4008,6 +4055,7 @@ class AnalyzerJet(Analyzer):
             print("Loading the Lc tree")
         else:
             self.logger.fatal(make_message_notfound("the particle name", self.case))
+        print(file_path, tree_name)
         tree_sim = uproot.open(file_path)[tree_name]
         if not tree_sim:
             self.logger.fatal(make_message_notfound(tree_name, file_path))
