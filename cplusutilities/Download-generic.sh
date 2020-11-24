@@ -212,7 +212,7 @@ run()
     # Immediately abort if there is not enough disk space left (meaning less than 1TB)
     local place_to_save_top="$(realpath $placetosave)"
     place_to_save_top="/$(echo $place_to_save_top | cut -d '/' -f 2)"
-    local free_space="$(df $place_to_save_top | grep '/dev' | awk '{print $4}')"
+    local free_space="$(df $place_to_save_top | sed -n '2 p' | awk '{print $4}')"
     echo "$free_space"
     if (( $free_space < 1000000000 ))
     then
