@@ -281,30 +281,30 @@ class Processer: # pylint: disable=too-many-instance-attributes
             sys.exit()
         dfreco = selectdfquery(dfreco, self.s_reco_unp)
         dfreco = pd.merge(dfreco, dfevt, on=self.v_evtmatch)
-        isselacc = selectfidacc(dfreco.pt_cand.values, dfreco.y_cand.values)
+        isselacc = selectfidacc(dfreco.fPt.values, dfreco.fY.values)
         dfreco = dfreco[np.array(isselacc, dtype=bool)]
         arraysub = [0 for ival in range(len(dfreco))]
-        n_tracklets = dfreco["n_tracklets"].values
-        n_tracklets_corr = dfreco["n_tracklets_corr"].values
-        n_tracklets_corr_shm = dfreco["n_tracklets_corr_shm"].values
-        n_tracklets_sub = None
-        n_tracklets_corr_sub = None
-        n_tracklets_corr_shm_sub = None
-        for iprong in range(self.nprongs):
-            if self.prongformultsub[iprong] == 0:
-                continue
-            #print("considering prong %d for sub" % iprong)
-            spdhits_thisprong = dfreco["spdhits_prong%s" % iprong].values
-            ntrackletsthisprong = [1 if spdhits_thisprong[index] == 3 else 0 \
-                                   for index in range(len(dfreco))]
-            arraysub = np.add(ntrackletsthisprong, arraysub)
-        n_tracklets_sub = np.subtract(n_tracklets, arraysub)
-        n_tracklets_corr_sub = np.subtract(n_tracklets_corr, arraysub)
-        n_tracklets_corr_shm_sub = np.subtract(n_tracklets_corr_shm, arraysub)
+        #n_tracklets = dfreco["n_tracklets"].values
+        #n_tracklets_corr = dfreco["n_tracklets_corr"].values
+        #n_tracklets_corr_shm = dfreco["n_tracklets_corr_shm"].values
+        #n_tracklets_sub = None
+        #n_tracklets_corr_sub = None
+        #n_tracklets_corr_shm_sub = None
+        #for iprong in range(self.nprongs):
+        #    if self.prongformultsub[iprong] == 0:
+        #        continue
+        #    #print("considering prong %d for sub" % iprong)
+        #    spdhits_thisprong = dfreco["spdhits_prong%s" % iprong].values
+        #    ntrackletsthisprong = [1 if spdhits_thisprong[index] == 3 else 0 \
+        #                           for index in range(len(dfreco))]
+        #    arraysub = np.add(ntrackletsthisprong, arraysub)
+        #n_tracklets_sub = np.subtract(n_tracklets, arraysub)
+        #n_tracklets_corr_sub = np.subtract(n_tracklets_corr, arraysub)
+        #n_tracklets_corr_shm_sub = np.subtract(n_tracklets_corr_shm, arraysub)
 
-        dfreco["n_tracklets_sub"] = n_tracklets_sub
-        dfreco["n_tracklets_corr_sub"] = n_tracklets_corr_sub
-        dfreco["n_tracklets_corr_shm_sub"] = n_tracklets_corr_shm_sub
+        #dfreco["n_tracklets_sub"] = n_tracklets_sub
+        #dfreco["n_tracklets_corr_sub"] = n_tracklets_corr_sub
+        #dfreco["n_tracklets_corr_shm_sub"] = n_tracklets_corr_shm_sub
         if self.b_trackcuts is not None:
             dfreco = filter_bit_df(dfreco, self.v_bitvar, self.b_trackcuts)
         dfreco[self.v_isstd] = np.array(tag_bit_df(dfreco, self.v_bitvar,
@@ -326,16 +326,16 @@ class Processer: # pylint: disable=too-many-instance-attributes
             dfgen = treegen.pandas.df(branches=self.v_gen)
             dfgen = pd.merge(dfgen, dfevtorig, on=self.v_evtmatch)
             dfgen = selectdfquery(dfgen, self.s_gen_unp)
-            dfgen[self.v_isstd] = np.array(tag_bit_df(dfgen, self.v_bitvar,
-                                                      self.b_std), dtype=int)
-            dfgen[self.v_ismcsignal] = np.array(tag_bit_df(dfgen, self.v_bitvar,
-                                                           self.b_mcsig), dtype=int)
-            dfgen[self.v_ismcprompt] = np.array(tag_bit_df(dfgen, self.v_bitvar,
-                                                           self.b_mcsigprompt), dtype=int)
-            dfgen[self.v_ismcfd] = np.array(tag_bit_df(dfgen, self.v_bitvar,
-                                                       self.b_mcsigfd), dtype=int)
-            dfgen[self.v_ismcbkg] = np.array(tag_bit_df(dfgen, self.v_bitvar,
-                                                        self.b_mcbkg), dtype=int)
+            #dfgen[self.v_isstd] = np.array(tag_bit_df(dfgen, self.v_bitvar,
+            #                                          self.b_std), dtype=int)
+            #dfgen[self.v_ismcsignal] = np.array(tag_bit_df(dfgen, self.v_bitvar,
+            #                                               self.b_mcsig), dtype=int)
+            #dfgen[self.v_ismcprompt] = np.array(tag_bit_df(dfgen, self.v_bitvar,
+            #                                               self.b_mcsigprompt), dtype=int)
+            #dfgen[self.v_ismcfd] = np.array(tag_bit_df(dfgen, self.v_bitvar,
+            #                                           self.b_mcsigfd), dtype=int)
+            #dfgen[self.v_ismcbkg] = np.array(tag_bit_df(dfgen, self.v_bitvar,
+            #                                            self.b_mcbkg), dtype=int)
             dfgen = dfgen.reset_index(drop=True)
             pickle.dump(dfgen, openfile(self.l_gen[file_index], "wb"), protocol=4)
 
