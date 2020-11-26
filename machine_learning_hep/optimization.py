@@ -50,7 +50,7 @@ def calc_bkg(df_bkg, name, num_steps, fit_region, bkg_func, bin_width, sig_regio
         bkg_err = 0.
         hmass = TH1F(f'hmass_{thr:.5f}', '', num_bins, fit_region[0], fit_region[1])
         bkg_sel_mask = df_bkg['y_test_prob' + name].values >= thr
-        sel_mass_array = df_bkg[bkg_sel_mask]['inv_mass'].values
+        sel_mass_array = df_bkg[bkg_sel_mask]['fM'].values
 
         if len(sel_mass_array) > 5:
             for mass_value in np.nditer(sel_mass_array):
@@ -125,4 +125,3 @@ def calc_sigeff_steps(num_steps, df_sig, name):
         eff_err_array.append(err_eff)
 
     return eff_array, eff_err_array, x_axis
-    

@@ -177,7 +177,6 @@ class Optimiser:
         self.f_reco_appliedmc = \
                 self.f_reco_appliedmc.replace(".pkl", "%s.pkl" % self.s_suffix)
 
-        print(training_var)
 
     def create_suffix(self):
         string_selection = createstringselection(self.v_bin, self.p_binmin, self.p_binmax)
@@ -490,7 +489,7 @@ class Optimiser:
         df_data_sideband = df_data_sideband.tail(round(len(df_data_sideband) * self.p_bkgfracopt))
         hmass = TH1F('hmass', '', self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
         df_mc_signal = self.df_mc[self.df_mc["ismcsignal"] == 1]
-        mass_array = df_mc_signal['inv_mass'].values
+        mass_array = df_mc_signal[self.v_invmass].values
         for mass_value in np.nditer(mass_array):
             hmass.Fill(mass_value)
 

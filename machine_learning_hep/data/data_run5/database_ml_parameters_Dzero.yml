@@ -15,7 +15,7 @@
 Dzero:
   nprongs: 2
   prongformultsub: [0,0]
-  doml: false
+  doml: true
   mass: 1.864
   sel_reco_unp: "fPt>2"
   sel_reco_singletrac_unp : null
@@ -25,7 +25,7 @@ Dzero:
   sel_reco_skim: [null]
   sel_gen_skim: [null]
   sel_skim_binmin: [2] #list of nbins
-  sel_skim_binmax: [4] #list of nbins
+  sel_skim_binmax: [10] #list of nbins
   var_binning: fPt
   dofullevtmerge: false
   bitmap_sel:
@@ -39,24 +39,24 @@ Dzero:
     isstd : [[0],[]]
     ismcsignal: [[0],[]]
     ismcprompt: [[0],[]]
-    ismcfd: [[0],[]]
-    ismcbkg: [[0],[]]
-    ismcrefl: [[0],[]]
+    ismcfd: [[],[0]]
+    ismcbkg: [[],[0]]
+    ismcrefl: [[],[0]]
 
   variables:
-    var_all: [fBCsID, fMCflag, fY, fPt, fCPA, fCPAXY]
+    var_all: [fBCsID, fMCflag, fY, fEta, fPt, fCPA, fCPAXY, fM, fErrorDecayLength, fErrorDecayLengthXY, fChi2PCA, fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fImpactParameterNormalised0, fPtProng0, fImpactParameterNormalised1, fPtProng1, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fImpactParameterProduct, fCosThetaStar, fNSigTOF_Pi_0, fNSigTOF_Ka_0, fNSigTOF_Pi_1, fNSigTOF_Ka_1]
     var_evt:
-       data: [fBCsID, fMultiplicity, fPosZ]
-       mc:   [fBCsID, fMultiplicity, fPosZ]
+       data: [fBCsID, fPosX, fPosY, fPosZ]
+       mc:   [fBCsID, fPosX, fPosY, fPosZ]
     var_gen: [fBCsID, fPt, fY]
     var_evt_match: [fBCsID]
-    var_training: [fCPA, fCPAXY]
+    var_training: [[fCPA, fCPAXY, fChi2PCA, fDecayLengthXY, fDecayLengthXYNormalised, fCosThetaStar]]
     var_boundaries: [fCPA, fCPAXY]
     var_correlation:
       - [fCPA]
       - [fCPAXY]
     var_signal: signal
-    var_inv_mass: inv_mass
+    var_inv_mass: fM
     var_cuts:
         - [fPtProng0, lt, null]
         - [fPtProng1, lt, null]
@@ -142,13 +142,13 @@ Dzero:
     sampletagforsignal: 1
     sampletagforbkg: 0
     sel_sigml: ismcprompt == 1
-    sel_bkgml: inv_mass<1.8 or inv_mass>1.92
+    sel_bkgml: fM<1.8 or fM>1.92
     nkfolds: 5
     rnd_shuffle: 12
     rnd_splt: 12
     test_frac: 0.2
     binmin: [2] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
-    binmax:   [4] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
+    binmax:   [10] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: BinaryClassification
     ncorescrossval: 10
     mlplot: /data/Run5data_mlhep/prod_test/mlplot # to be removed
@@ -156,7 +156,7 @@ Dzero:
 
     opt:
       isFONLLfromROOT: true
-      filename_fonll: 'data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root' # file with FONLL predictions
+      filename_fonll: 'data/fonll/DmesonLcPredictions_502TeV_y05_FFptDepLHCb_BRpythia8.root' # file with FONLL predictions
       fonll_particle: 'hD0Kpi'
       fonll_pred: 'max' # edge of the FONLL prediction
       FF: 0.6086 # fragmentation fraction
@@ -169,7 +169,7 @@ Dzero:
       bkg_function: pol2 # fit function for bkg (among TH1 predefined fit functions, e.g. expo, pol1, pol2, ...)
       save_fit: True # save bkg fits with the various cuts on ML output
       raahp: [1] # sel_skim_binmin bins
-      presel_gen_eff: "abs(fY) < 0.5 and abs(fPosZ) < 10"
+      presel_gen_eff: "abs(fY) < 4.0 and abs(fPosZ) < 10"
 
   mlapplication:
     data:
@@ -179,11 +179,11 @@ Dzero:
       pkl_skimmed_dec: [/data/Run5data_mlhep/prod_test/skpkldecmc] #list of periods
       pkl_skimmed_decmerged: [/data/Run5data_mlhep/prod_test/skpkldecmcmerged] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierD0run5_dfselection_pt_cand_2.0_24.0.sav]
+    modelsperptbin: [xgboost_classifierDzero_dfselection_fPt_2.0_10.0.sav]
     probcutpresel:
-      data: [0.2] #list of nbins
-      mc: [0.2] #list of nbins
-    probcutoptimal: [0.3] #list of nbins
+      data: [0.1] #list of nbins
+      mc: [0.1] #list of nbins
+    probcutoptimal: [0.1] #list of nbins
 
   analysis:
     indexhptspectrum: -1 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
@@ -198,8 +198,8 @@ Dzero:
       useperiod: [1]
       plotbin: [1]
       usesinglebineff: 0
-      sel_binmin2: [0.] #list of nbins
-      sel_binmax2: [9999] #list of nbins
+      sel_binmin2: [2.] #list of nbins
+      sel_binmax2: [10.] #list of nbins
       var_binning2: fPt
       triggerbit: ''
 
@@ -208,7 +208,7 @@ Dzero:
       init_fits_from: mc # data # data or mc
 
       sel_an_binmin: [2]
-      sel_an_binmax: [4]
+      sel_an_binmax: [10]
       binning_matching: [0]
       presel_gen_eff: "abs(y_cand) < 0.5"
       evtsel: null

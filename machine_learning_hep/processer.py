@@ -281,8 +281,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
             sys.exit()
         dfreco = selectdfquery(dfreco, self.s_reco_unp)
         dfreco = pd.merge(dfreco, dfevt, on=self.v_evtmatch)
-        isselacc = selectfidacc(dfreco.fPt.values, dfreco.fY.values)
-        dfreco = dfreco[np.array(isselacc, dtype=bool)]
+        #isselacc = selectfidacc(dfreco.fPt.values, dfreco.fY.values)
+        #dfreco = dfreco[np.array(isselacc, dtype=bool)]
         arraysub = [0 for ival in range(len(dfreco))]
         #n_tracklets = dfreco["n_tracklets"].values
         #n_tracklets_corr = dfreco["n_tracklets_corr"].values
@@ -326,16 +326,16 @@ class Processer: # pylint: disable=too-many-instance-attributes
             dfgen = treegen.pandas.df(branches=self.v_gen)
             dfgen = pd.merge(dfgen, dfevtorig, on=self.v_evtmatch)
             dfgen = selectdfquery(dfgen, self.s_gen_unp)
-            #dfgen[self.v_isstd] = np.array(tag_bit_df(dfgen, self.v_bitvar,
-            #                                          self.b_std), dtype=int)
-            #dfgen[self.v_ismcsignal] = np.array(tag_bit_df(dfgen, self.v_bitvar,
-            #                                               self.b_mcsig), dtype=int)
-            #dfgen[self.v_ismcprompt] = np.array(tag_bit_df(dfgen, self.v_bitvar,
-            #                                               self.b_mcsigprompt), dtype=int)
-            #dfgen[self.v_ismcfd] = np.array(tag_bit_df(dfgen, self.v_bitvar,
-            #                                           self.b_mcsigfd), dtype=int)
-            #dfgen[self.v_ismcbkg] = np.array(tag_bit_df(dfgen, self.v_bitvar,
-            #                                            self.b_mcbkg), dtype=int)
+            dfgen[self.v_isstd] = np.array(tag_bit_df(dfgen, self.v_bitvar,
+                                                      self.b_std), dtype=int)
+            dfgen[self.v_ismcsignal] = np.array(tag_bit_df(dfgen, self.v_bitvar,
+                                                           self.b_mcsig), dtype=int)
+            dfgen[self.v_ismcprompt] = np.array(tag_bit_df(dfgen, self.v_bitvar,
+                                                           self.b_mcsigprompt), dtype=int)
+            dfgen[self.v_ismcfd] = np.array(tag_bit_df(dfgen, self.v_bitvar,
+                                                       self.b_mcsigfd), dtype=int)
+            dfgen[self.v_ismcbkg] = np.array(tag_bit_df(dfgen, self.v_bitvar,
+                                                        self.b_mcbkg), dtype=int)
             dfgen = dfgen.reset_index(drop=True)
             pickle.dump(dfgen, openfile(self.l_gen[file_index], "wb"), protocol=4)
 
