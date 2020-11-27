@@ -281,8 +281,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
             sys.exit()
         dfreco = selectdfquery(dfreco, self.s_reco_unp)
         dfreco = pd.merge(dfreco, dfevt, on=self.v_evtmatch)
-        isselacc = selectfidacc(dfreco.pt_cand.values, dfreco.y_cand.values)
-        dfreco = dfreco[np.array(isselacc, dtype=bool)]
+        #isselacc = selectfidacc(dfreco.fPt.values, dfreco.fY.values)
+        #dfreco = dfreco[np.array(isselacc, dtype=bool)]
 
         arraysub = [0 for ival in range(len(dfreco))]
         for iprong in range(self.nprongs):
