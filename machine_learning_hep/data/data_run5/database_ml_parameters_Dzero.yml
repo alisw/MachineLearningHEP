@@ -17,15 +17,15 @@ Dzero:
   prongformultsub: [0,0]
   doml: true
   mass: 1.864
-  sel_reco_unp: "fPt>2"
+  sel_reco_unp: "fPt>0"
   sel_reco_singletrac_unp : null
-  sel_gen_unp: "fPt>2"
+  sel_gen_unp: "fPt>0"
   sel_cen_unp: null
   sel_good_evt_unp: null
   sel_reco_skim: [null]
   sel_gen_skim: [null]
-  sel_skim_binmin: [2] #list of nbins
-  sel_skim_binmax: [10] #list of nbins
+  sel_skim_binmin: [0] #list of nbins
+  sel_skim_binmax: [3] #list of nbins
   var_binning: fPt
   dofullevtmerge: false
   bitmap_sel:
@@ -48,7 +48,7 @@ Dzero:
     var_evt:
        data: [fBCsID, fPosX, fPosY, fPosZ]
        mc:   [fBCsID, fPosX, fPosY, fPosZ]
-    var_gen: [fBCsID, fPt, fY]
+    var_gen: [fBCsID, fPt, fY, fMCflag]
     var_evt_match: [fBCsID]
     var_training: [[fCPA, fCPAXY, fChi2PCA, fDecayLengthXY, fDecayLengthXYNormalised, fCosThetaStar]]
     var_boundaries: [fCPA, fCPAXY]
@@ -147,12 +147,12 @@ Dzero:
     rnd_shuffle: 12
     rnd_splt: 12
     test_frac: 0.2
-    binmin: [2] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
-    binmax:   [10] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
+    binmin: [0] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
+    binmax:   [3] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: BinaryClassification
     ncorescrossval: 10
-    mlplot: /data/Run5data_mlhep/prod_test/mlplot # to be removed
-    mlout: /data/Run5data_mlhep/prod_test/mlout # to be removed
+    mlplot: mlplot # to be removed
+    mlout: mlout_1 # to be removed
 
     opt:
       isFONLLfromROOT: true
@@ -173,17 +173,17 @@ Dzero:
 
   mlapplication:
     data:
-      pkl_skimmed_dec: [/data/Run5data_mlhep/prod_test/skpkldecdata] #list of periods
-      pkl_skimmed_decmerged: [/data/Run5data_mlhep/prod_test/skpkldecdatamerged] #list of periods
+      pkl_skimmed_dec: [skpkldecdata] #list of periods
+      pkl_skimmed_decmerged: [skpkldecdatamerged] #list of periods
     mc:
-      pkl_skimmed_dec: [/data/Run5data_mlhep/prod_test/skpkldecmc] #list of periods
-      pkl_skimmed_decmerged: [/data/Run5data_mlhep/prod_test/skpkldecmcmerged] #list of periods
+      pkl_skimmed_dec: [skpkldecmc] #list of periods
+      pkl_skimmed_decmerged: [skpkldecmcmerged] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierDzero_dfselection_fPt_2.0_10.0.sav]
+    modelsperptbin: [xgboost_classifierDzero_dfselection_fPt_0.0_3.0.sav]
     probcutpresel:
-      data: [0.1] #list of nbins
-      mc: [0.1] #list of nbins
-    probcutoptimal: [0.1] #list of nbins
+      data: [0.05] #list of nbins
+      mc: [0.05] #list of nbins
+    probcutoptimal: [0.05] #list of nbins
 
   analysis:
     indexhptspectrum: -1 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
@@ -198,8 +198,8 @@ Dzero:
       useperiod: [1]
       plotbin: [1]
       usesinglebineff: 0
-      sel_binmin2: [2.] #list of nbins
-      sel_binmax2: [10.] #list of nbins
+      sel_binmin2: [0.] #list of nbins
+      sel_binmax2: [3.] #list of nbins
       var_binning2: fPt
       triggerbit: ''
 
@@ -207,10 +207,10 @@ Dzero:
       # Decide whether to take the sigma from MC or data for individual fits
       init_fits_from: mc # data # data or mc
 
-      sel_an_binmin: [2]
-      sel_an_binmax: [10]
+      sel_an_binmin: [0]
+      sel_an_binmax: [3.]
       binning_matching: [0]
-      presel_gen_eff: "abs(y_cand) < 0.5"
+      presel_gen_eff: "abs(fY) < 4.0"
       evtsel: null
       triggersel:
         data: null
@@ -219,12 +219,12 @@ Dzero:
 
       data:
         runselection: [null] #FIXME
-        results: [/data/Run5data_mlhep/prod_test/resultsdata] #list of periods
-        resultsallp: /data/Run5data_mlhep/prod_test/resultsdatatot
+        results: [resultsdata] #list of periods
+        resultsallp: resultsdatatot
       mc:
         runselection: [null] #FIXME
-        results: [/data/Run5data_mlhep/prod_test/resultsmc] #list of periods
-        resultsallp: /data/Run5data_mlhep/prod_test/resultsmctot
+        results: [resultsmc] #list of periods
+        resultsallp: resultsmctot
 
       mass_fit_lim: [1.72, 2.05] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
