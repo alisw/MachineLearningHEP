@@ -148,20 +148,20 @@ D0pp:
       fracmerge: [0.08,0.08,0.08] #list of periods
       seedmerge: [12,12,12] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
-      unmerged_tree_dir: [/data/TTree/D0DsLckAnywithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/merged,
-                          /data/TTree/D0DsLckAnywithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/merged,
-                          /data/TTree/D0DsLckAnywithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/merged] #list of periods
-      pkl: [/data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/pkl,
-            /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/pkl,
-            /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/pkl] #list of periods
-      pkl_skimmed: [/data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/pklsk,
-                    /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/pklsk,
-                    /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [/data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/pklskml,
-                                 /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/pklskml,
-                                 /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_data_mltot
-      pkl_evtcounter_all: /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_data_evttot
+      unmerged_tree_dir: [/data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/merged,
+                          /data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/merged,
+                          /data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/merged] #list of periods
+      pkl: [/data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pkl,
+            /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pkl,
+            /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pkl] #list of periods
+      pkl_skimmed: [/data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklsk,
+                    /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklsk,
+                    /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskml,
+                                 /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskml,
+                                 /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_data_mltot
+      pkl_evtcounter_all: /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_data_evttot
       mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2016,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2017,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018] #list of periods
@@ -173,20 +173,20 @@ D0pp:
       fracmerge: [1.0,1.0,1.0] #list of periods
       seedmerge: [12,12,12] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
-      unmerged_tree_dir: [/data/TTree/MC_LcpK0spp_MB/vAN-20200824_ROOT6-1/pp_2016_mc_prodHMV0MD2H/492_20200901-1528/merged,
-                          /data/TTree/MC_LcpK0spp_MB/vAN-20200824_ROOT6-1/pp_2017_mc_prodHMV0MD2H/492_20200901-1528/merged,
-                          /data/TTree/MC_LcpK0spp_MB/vAN-20200824_ROOT6-1/pp_2018_mc_prodHMV0MD2H/492_20200901-1528/merged] #list of periods
-      pkl: [/data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_mc_prodHMV0MD2H/492_20200901-1528/pkl,
-            /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_mc_prodHMV0MD2H/492_20200901-1528/pkl,
-            /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_mc_prodHMV0MD2H/492_20200901-1528/pkl] #list of periods
-      pkl_skimmed: [/data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_mc_prodHMV0MD2H/492_20200901-1528/pklsk,
-                    /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_mc_prodHMV0MD2H/492_20200901-1528/pklsk,
-                    /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_mc_prodHMV0MD2H/492_20200901-1528/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [/data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_mc_prodHMV0MD2H/492_20200901-1528/pklskml,
-                                 /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_mc_prodHMV0MD2H/492_20200901-1528/pklskml,
-                                 /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_mc_prodHMV0MD2H/492_20200901-1528/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_mc_prodD2H_mltot
-      pkl_evtcounter_all: /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_mc_prodD2H_evttot
+      unmerged_tree_dir: [/data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/merged,
+                          /data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/merged,
+                          /data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/merged] #list of periods
+      pkl: [/data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/pkl,
+            /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/pkl,
+            /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/pkl] #list of periods
+      pkl_skimmed: [/data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/pklsk,
+                    /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/pklsk,
+                    /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/pklskml,
+                                 /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/pklskml,
+                                 /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_mc_prodD2H_mltot
+      pkl_evtcounter_all: /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_mc_prodD2H_evttot
       mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_16,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_17,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_18] #list of periods
@@ -207,8 +207,8 @@ D0pp:
     rnd_shuffle: 12
     rnd_splt: 12
     test_frac: 0.2
-    binmin: [2,4,6,8,12] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
-    binmax:   [4,6,8,12,24] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
+    binmin: [1,2,4,6,8,12,24] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
+    binmax:   [2,4,6,8,12,24,48] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: BinaryClassification
     ncorescrossval: 10
     mlplot: /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/mlplot # to be removed
@@ -233,19 +233,19 @@ D0pp:
 
   mlapplication:
     data:
-      pkl_skimmed_dec: [/data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/pklskdec,
-                        /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/pklskdec,
-                        /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/pklskdec] #list of periods
-      pkl_skimmed_decmerged: [/data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/pklskdecmerged,
-                              /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/pklskdecmerged,
-                              /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/pklskdecmerged] #list of periods
+      pkl_skimmed_dec: [/data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdec,
+                        /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdec,
+                        /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdecmerged,
+                              /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdecmerged,
+                              /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdecmerged] #list of periods
     mc:
-      pkl_skimmed_dec: [/data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_mc_prodHMV0MD2H/492_20200901-1528/pklskdec,
-                        /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_mc_prodHMV0MD2H/492_20200901-1528/pklskdec,
-                        /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_mc_prodHMV0MD2H/492_20200901-1528/pklskdec] #list of periods
-      pkl_skimmed_decmerged: [/data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2016_mc_prodHMV0MD2H/492_20200901-1528/pklskdecmerged,
-                              /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_mc_prodHMV0MD2H/492_20200901-1528/pklskdecmerged,
-                              /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_mc_prodHMV0MD2H/492_20200901-1528/pklskdecmerged] #list of periods
+      pkl_skimmed_dec: [/data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/pklskdec,
+                        /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/pklskdec,
+                        /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/pklskdecmerged,
+                              /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/pklskdecmerged,
+                              /data/Derived/D0kAnywithJets_extravar/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/pklskdecmerged] #list of periods
     modelname: xgboost
     modelsperptbin: [xgboost_classifierD0pp_FF_dfselection_pt_cand_1.0_2.0.sav,
                      xgboost_classifierD0pp_FF_dfselection_pt_cand_2.0_4.0.sav,
@@ -290,9 +290,9 @@ D0pp:
       sel_binmaxshape_gen:      [0.2,0.3,0.4,0.5]
       sel_closure_frac: 0.2
       triggerbit: INT7
-      sel_an_binmin:      [2, 4, 6, 8, 12] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:      [4, 6, 8, 12, 24] # hadron pt bins (sel_an_binmin bins)
-      binning_matching:   [1, 2, 3, 4, 5] # mapping to skimming pt bins (sel_an_binmin bins)
+      sel_an_binmin:      [2, 4] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmax:      [4, 6] # hadron pt bins (sel_an_binmin bins)
+      binning_matching:   [1, 2] # mapping to skimming pt bins (sel_an_binmin bins)
       jetsel_gen: "abs(y_cand) < 0.8 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
       jetsel_sim: "abs(y_cand) < 0.8 and abs(eta_jet) < 0.5" # jet selection in simulations
       jetsel_reco: "abs(eta_jet) < 0.5"
@@ -321,18 +321,18 @@ D0pp:
       bin_width: 0.001 # bin width of the invariant mass histogram
 
       # simple fitter START
-      sgnfunc: [0,0,0,0,0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
-      bkgfunc: [0,0,0,0,0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
+      sgnfunc: [0, 0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
+      bkgfunc: [0, 0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
       masspeak: 1.864
-      massmin: [1.72,1.72,1.72,1.72,1.72] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
-      massmax: [2.05,2.05,2.05,2.05,2.05] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
-      rebin: [6,6,6,6,6] # sel_an_binmin bins
-      fix_mean: [false, false, false, false, false] # sel_an_binmin bins
-      fix_sigma: [true, true, true, true, true] # sel_an_binmin bins
-      sigmaarray: [0.01,0.01,0.01,0.01,0.01] # initial sigma (sel_an_binmin bins)
+      massmin: [1.72, 1.72] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
+      massmax: [2.05, 2.05] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
+      rebin: [6, 6] # sel_an_binmin bins
+      fix_mean: [false, false] # sel_an_binmin bins
+      fix_sigma: [true, true] # sel_an_binmin bins
+      sigmaarray: [0.01, 0.01] # initial sigma (sel_an_binmin bins)
       masspeaksec: 1.864
-      fix_sigmasec: [true, true, true, true, true] # sel_an_binmin bins
-      sigmaarraysec: [0.007497,0.01,0.01,0.01,0.01] # sel_an_binmin bins
+      fix_sigmasec: [true, true] # sel_an_binmin bins
+      sigmaarraysec: [0.007947, 0.01] # sel_an_binmin bins
       # simple fitter END
 
       signal_sigma: 2.0
@@ -366,9 +366,6 @@ D0pp:
       # Additional cuts applied before mass histogram is filled
       use_cuts: False
       cuts: # (sel_an_binmin bins)
-      - Null
-      - Null
-      - Null
       - Null
       - Null
 
@@ -468,16 +465,17 @@ D0pp:
       sel_binmaxshape_gen:         [0.05, 0.1, 0.15, 0.3]
       data: &data_out_r_shape
         <<: *data_out_default
-        results: [/data/Derived_testResults/Jets/D0kAnywithJets/vAN-20200824_ROOT6-1/ff/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets/vAN-20200824_ROOT6-1/ff/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets/vAN-20200824_ROOT6-1/ff/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/vAN-20200824_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
+        results: [/data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200304_ROOT6-1/ff/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200304_ROOT6-1/ff/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200304_ROOT6-1/ff/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
+        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200304_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
+        resultslc: /data/Derived_testResults/Jets/Lc/2_6/vAN-20200304_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
       mc: &mc_out_r_shape
         <<: *mc_out_default
-        results: [/data/Derived_testResults/Jets/D0kAnywithJets/vAN-20200824_ROOT6-1/ff/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets/vAN-20200824_ROOT6-1/ff/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets/vAN-20200824_ROOT6-1/ff/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/vAN-20200824_ROOT6-1/ff/default/default/pp_mc_prodD2H/resultsMBjetvspt
+        results: [/data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200304_ROOT6-1/ff/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200304_ROOT6-1/ff/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200304_ROOT6-1/ff/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
+        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200304_ROOT6-1/ff/default/default/pp_mc_prodD2H/resultsMBjetvspt
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_r_shape
       mc_proc: # alternative processor output used as the analyzer input
@@ -524,9 +522,9 @@ D0pp:
 
       data:
         runselection: [null, null, HighMultSPD2018] #FIXME the last will have to be replaced by HighMultSPD2018
-        results: [/data/DerivedResults/D0kAnywithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/resultsSPDvspt_ntrkl,
-                  /data/DerivedResults/D0kAnywithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/resultsSPDvspt_ntrkl,
-                  /data/DerivedResults/D0kAnywithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/resultsSPDvspt_ntrkl] #list of periods
+        results: [/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsSPDvspt_ntrkl,
+                  /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsSPDvspt_ntrkl,
+                  /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsSPDvspt_ntrkl] #list of periods
         resultsallp: /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_data/resultsSPDvspt_ntrkl
       mc:
         runselection: [null, null, HighMultSPD2018] #FIXME the last will have to be replaced by HighMultSPD2018
@@ -618,9 +616,9 @@ D0pp:
 
       data:
         runselection: [null, null, null]
-        results: [/data/DerivedResults/D0kAnywithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/resultsMBvspt_ntrkl,
-                  /data/DerivedResults/D0kAnywithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/resultsMBvspt_ntrkl,
-                  /data/DerivedResults/D0kAnywithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/resultsMBvspt_ntrkl] #list of periods
+        results: [/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsMBvspt_ntrkl,
+                  /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsMBvspt_ntrkl] #list of periods
         resultsallp: /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_data/resultsMBvspt_ntrkl
       mc:
         runselection: [null, null, null]
@@ -716,9 +714,9 @@ D0pp:
 
       data:
         runselection: [null, null, null]
-        results: [/data/DerivedResults/D0kAnywithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/resultsMBvspt_perc_v0m,
-                  /data/DerivedResults/D0kAnywithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/resultsMBvspt_perc_v0m,
-                  /data/DerivedResults/D0kAnywithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/resultsMBvspt_perc_v0m] #list of periods
+        results: [/data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/resultsMBvspt_perc_v0m,
+                  /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/resultsMBvspt_perc_v0m,
+                  /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/resultsMBvspt_perc_v0m] #list of periods
         resultsallp: /data/DerivedResults/D0kAnywithJets/vAN-20200304_ROOT6-1/pp_data/resultsMBvspt_perc_v0m
       mc:
         runselection: [null, null, null]

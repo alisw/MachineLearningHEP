@@ -225,7 +225,6 @@ class AnalyzerJet(Analyzer):
                 if period is not None else datap["analysis"][typean]["mc"]["resultsallp"]
         self.d_resultsallpdata = datap["analysis"][typean]["data"]["results"][period] \
                 if period is not None else datap["analysis"][typean]["data"]["resultsallp"]
-        print("SELF TYPEAN", self.typean)
         self.feeddown_db = datap["multi"]["feeddown_db"]
         if self.feeddown_db:
             self.d_resultsold =  datap["analysis"][typean]["data"]["resultsold"]
@@ -301,15 +300,11 @@ class AnalyzerJet(Analyzer):
         if not second_histo:
             print("No old histo!", histo_to_compare)
         else:
-            print("BIN CONTENT", first_histo.GetBinContent(1),
-                    second_histo.GetBinContent(1))
             print(histo_to_compare)
             leg_ratio = TLegend(.6, .8, .8, .85)
             setup_legend(leg_ratio)
             setup_histogram(first_histo, get_colour(1), get_marker(0))
             setup_histogram(second_histo, get_colour(2), get_marker(1))
-            print("BIN CONTENT", first_histo.GetBinContent(1),
-                    second_histo.GetBinContent(1))
             leg_ratio.AddEntry(second_histo, "old_data %s" %option, "P")
             leg_ratio.AddEntry(first_histo, "new_data %s" %option, "P")
             #second_histo.SetYTitle(ytitle)
@@ -1567,7 +1562,6 @@ class AnalyzerJet(Analyzer):
         #non-prompt efficiency for HF hadron reconstruction as a function of pT
         #in bins of jet pt (file_eff) and the output file of the jet processer that
         #contains all the response matrix and jet efficiencies (feeddown_input_file).
-        print("HERE")
 
         self.loadstyle()
         feeddown_input_file = TFile.Open(self.n_fileresp)
@@ -1579,19 +1573,15 @@ class AnalyzerJet(Analyzer):
         fileouts = TFile.Open(self.file_feeddown, "recreate")
         if not fileouts:
             self.logger.fatal(make_message_notfound(self.file_feeddown))
-        print("HERE 2")
         response_matrix = feeddown_input_file.Get("response_matrix_nonprompt")
-        print("HERE 3")
         print(self.powheg_path_nonprompt)
         # input_data is 3d histogram from powheg+pythia prediction that
         # contains z vs jet_pt vs HF pt.
         input_data = self.get_simulated_yields(self.powheg_path_nonprompt, 3, False)
-        print("HERE 4")
         if not input_data:
             self.logger.fatal(make_message_notfound("simulated yields", self.powheg_path_nonprompt))
         print(self.v_varshape_binning)
         input_data.SetName("fh3_feeddown_%s" % self.v_varshape_binning)
-        print("HEEERRREEE!!!!")
         # Ensure correct binning: x - shape, y - jet pt, z - pt hadron
         if not equal_binning_lists(input_data, list_x=self.varshaperanges_gen):
             self.logger.fatal("Error: Incorrect binning in x.")
@@ -1813,8 +1803,6 @@ class AnalyzerJet(Analyzer):
             y_margin_up = 0.05
             y_margin_down = 0
             bin_pt_max = min(self.p_nptfinbins, heff_pr_list[ibin2].GetXaxis().FindBin(self.lvar2_binmax_gen[ibin2] - 0.01))
-            print("EFFICIENCY HISTO", ibin2, bin_pt_max, self.p_nptfinbins,
-                  heff_pr_list[ibin2].GetXaxis().FindBin(self.lvar2_binmax_gen[ibin2] - 0.01))
             heff_pr_list[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
             heff_pr_list[ibin2].GetXaxis().SetRange(1, 4)
             heff_pr_list[ibin2].SetTitle("")
@@ -2084,8 +2072,6 @@ class AnalyzerJet(Analyzer):
             sideband_input_data_subtracted_z[ibin2].Draw("same")
             fileouts.cd()
             sideband_input_data_subtracted_z[ibin2].Write()
-            print("AAAAAAAAAAAAAAAAAAA",
-                    sideband_input_data_subtracted_z[ibin2], fileouts)
             leg_feeddown.Draw("same")
             latex = TLatex(0.6, 0.8, "%g #leq %s < %g GeV/#it{c}" % \
                 (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
@@ -2095,7 +2081,6 @@ class AnalyzerJet(Analyzer):
             if self.feeddown_db:
                 option = "feeddown"
                 histo_to_compare = ("sideband_input_data_subtracted_z%s" % (suffix))
-                print("Making ratio for", option, histo_to_compare)
                 xtitle = "feeddown subtracted"
                 ytitle = self.v_var_binning
                 self.makeratio_onedim(sideband_input_data_subtracted_z[ibin2], option, histo_to_compare, xtitle, ytitle )
@@ -4033,26 +4018,17 @@ class AnalyzerJet(Analyzer):
         # Get the normalisation factor (inverse integrated luminosity).
         file_sim = TFile.Open(file_path)
         if not file_sim:
-            print("4010")
             self.logger.fatal(make_message_notfound(file_path))
-            print("4012")
-        print("4013")
         pr_xsec = file_sim.Get("fHistXsection")
-        print("4015")
         if not pr_xsec:
-            print("4017")
             self.logger.fatal(make_message_notfound("fHistXsection", file_path))
-        print("4019")
         scale_factor = pr_xsec.GetBinContent(1) / pr_xsec.GetEntries()
-        print("4021")
         file_sim.Close()
         # Load the tree.
         if "D0" in self.case:
             tree_name = "tree_D0"
-            print("Loading the D0 tree")
         elif "Lc" in self.case:
             tree_name = "tree_Lc"
-            print("Loading the Lc tree")
         else:
             self.logger.fatal(make_message_notfound("the particle name", self.case))
         print(file_path, tree_name)
