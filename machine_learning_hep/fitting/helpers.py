@@ -61,13 +61,16 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
         self.bins1_edges_low = ana_config["sel_an_binmin"]
         self.bins1_edges_up = ana_config["sel_an_binmax"]
         self.n_bins1 = len(self.bins1_edges_low)
-        self.bin2_name = ana_config["var_binning2"]
-        self.bin2_gen_name = ana_config["var_binning2_gen"]
-        self.bins2_edges_low = ana_config["sel_binmin2"]
-        self.bins2_edges_up = ana_config["sel_binmax2"]
-        self.n_bins2 = len(self.bins2_edges_low)
+        self.bin2_name = ana_config.get("var_binning2", None)
+        if self.bin2_name is not None:
+            self.bin2_gen_name = ana_config.get("var_binning2_gen")
+            self.bins2_edges_low = ana_config["sel_binmin2"]
+            self.bins2_edges_up = ana_config["sel_binmax2"]
+            self.n_bins2 = len(self.bins2_edges_low)
+        else:
+            self.n_bins2 = 1
 
-        bineff = ana_config["usesinglebineff"]
+        bineff = ana_config.get("usesinglebineff", None)
         self.bins2_int_bin = bineff if bineff is not None else 0
 
         self.prob_cut_fin = database["analysis"][ana_type].get("probcuts", None)
@@ -127,19 +130,22 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
 
         # Second peak flags
         self.include_sec_peak = ana_config.get("includesecpeak", [False] * self.n_bins1)
+        if self.include_sec_peak is None:
+            self.include_sec_peak = [False] * self.n_bins1
         try:
             iter(self.include_sec_peak[0])
         except TypeError:
             self.include_sec_peak = [self.include_sec_peak for _ in range(self.n_bins2)]
 
-        self.sec_mean = ana_config["masssecpeak"] if self.include_sec_peak else None
+        self.sec_mean = ana_config.get("masssecpeak", None) if self.include_sec_peak else None
         self.fix_sec_mean = ana_config.get("fix_masssecpeak", [False] * self.n_bins1)
         try:
             iter(self.fix_sec_mean[0])
         except TypeError:
             self.fix_sec_mean = [self.fix_sec_mean for _ in range(self.n_bins2)]
-        self.sec_sigma = ana_config["widthsecpeak"] if self.include_sec_peak else None
-        self.fix_sec_sigma = ana_config["fix_widthsecpeak"] if self.include_sec_peak else None
+        self.sec_sigma = ana_config.get("widthsecpeak", None) if self.include_sec_peak else None
+        self.fix_sec_sigma = ana_config.get("fix_widthsecpeak", None) \
+                                              if self.include_sec_peak else None
 
         # Reflections flag
         self.include_reflections = ana_config.get("include_reflection", False)
@@ -279,18 +285,27 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
         Returns:
             Suffix string
         """
+        if self.bin2_name is not None:
+            if self.mltype == "MultiClassification":
+                return "%s%d_%d_%.2f%.2f%s_%.2f_%.2f" % \
+                       (self.bin1_name, self.bins1_edges_low[ibin1],
+                        self.bins1_edges_up[ibin1], self.prob_cut_fin[ibin1][0],
+                        self.prob_cut_fin[ibin1][1], self.bin2_name,
+                        self.bins2_edges_low[ibin2], self.bins2_edges_up[ibin2])
+            return "%s%d_%d_%.2f%s_%.2f_%.2f" % \
+                   (self.bin1_name, self.bins1_edges_low[ibin1],
+                    self.bins1_edges_up[ibin1], self.prob_cut_fin[ibin1],
+                    self.bin2_name, self.bins2_edges_low[ibin2],
+                    self.bins2_edges_up[ibin2])
+
         if self.mltype == "MultiClassification":
-            return "%s%d_%d_%.2f%.2f%s_%.2f_%.2f" % \
+            return "%s%d_%d_%.2f%.2f" % \
                    (self.bin1_name, self.bins1_edges_low[ibin1],
                     self.bins1_edges_up[ibin1], self.prob_cut_fin[ibin1][0],
-                    self.prob_cut_fin[ibin1][1], self.bin2_name,
-                    self.bins2_edges_low[ibin2], self.bins2_edges_up[ibin2])
-        return "%s%d_%d_%.2f%s_%.2f_%.2f" % \
+                    self.prob_cut_fin[ibin1][1])
+        return "%s%d_%d_%.2f" % \
                (self.bin1_name, self.bins1_edges_low[ibin1],
-                self.bins1_edges_up[ibin1], self.prob_cut_fin[ibin1],
-                self.bin2_name, self.bins2_edges_low[ibin2],
-                self.bins2_edges_up[ibin2])
-
+                self.bins1_edges_up[ibin1], self.prob_cut_fin[ibin1])
 
     def get_histograms(self, ibin1, ibin2, get_data=True, get_mc=False, get_reflections=False):
         """
@@ -907,11 +922,16 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
             #canvas_data[ibin2].Close()
 
 
-        latex_bin2_var = self.ana_config["latexbin2var"]
         latex_hadron_name = self.ana_config["latexnamehadron"]
-        # Plot some summary historgrams
-        leg_strings = [f"{self.pars_factory.bins2_edges_low[ibin2]} #leq {latex_bin2_var} < " \
-                       f"{self.pars_factory.bins2_edges_up[ibin2]}" for ibin2 in bins2]
+        if self.pars_factory.bin2_name is not None:
+            latex_bin2_var = self.ana_config["latexbin2var"]
+            latex_hadron_name = self.ana_config["latexnamehadron"]
+            # Plot some summary historgrams
+            leg_strings = [f"{self.pars_factory.bins2_edges_low[ibin2]} #leq {latex_bin2_var} < " \
+                           f"{self.pars_factory.bins2_edges_up[ibin2]}" for ibin2 in bins2]
+        else:
+            leg_strings = [""]
+
         save_name = make_file_path(save_dir, "Yields", "eps", None, [self.case, self.ana_type])
         # Yields summary plot
         plot_histograms([yieldshistos[ibin2] for ibin2 in bins2], True, True, leg_strings,
