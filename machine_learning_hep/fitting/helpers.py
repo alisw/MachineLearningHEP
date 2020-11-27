@@ -130,6 +130,8 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
 
         # Second peak flags
         self.include_sec_peak = ana_config.get("includesecpeak", [False] * self.n_bins1)
+        if self.include_sec_peak is None:
+            self.include_sec_peak = [False] * self.n_bins1
         try:
             iter(self.include_sec_peak[0])
         except TypeError:
