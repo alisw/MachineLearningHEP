@@ -50,7 +50,7 @@ Dzero:
        mc:   [fBCsID, fPosX, fPosY, fPosZ]
     var_gen: [fBCsID, fPt, fY, fMCflag]
     var_evt_match: [fBCsID]
-    var_training: [[fCPA, fCPAXY, fChi2PCA, fDecayLengthXY, fDecayLengthXYNormalised, fCosThetaStar]]
+    var_training: [[fPtProng0, fPtProng1, fImpactParameterProduct, fCPA, fCPAXY, fChi2PCA, fDecayLengthXY, fDecayLengthXYNormalised, fCosThetaStar, fNSigTOF_Pi_0, fNSigTOF_Ka_0, fNSigTOF_Pi_1, fNSigTOF_Ka_1]]
     var_boundaries: [fCPA, fCPAXY]
     var_correlation:
       - [fCPA]
@@ -236,7 +236,6 @@ Dzero:
       rebin: [4]
       fix_mean: [false]
       fix_sigma: [false]
-      includesecpeak: Null #[0,0,0,0,0]
       masssecpeak: 0.
       # Fix mean and/or sigma
       FixedMean: False
