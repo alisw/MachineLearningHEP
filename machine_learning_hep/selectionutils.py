@@ -189,3 +189,4 @@ def gethistonormforselevt_varsel(df_evt, dfevtevtsel, label, varsel):
     hNoVtxMult.SetBinContent(1, len(df_no_vtx))
     hVtxOutMult.SetBinContent(1, len(df_bit_zvtx_gr10))
     return hSelMult, hNoVtxMult, hVtxOutMult
+

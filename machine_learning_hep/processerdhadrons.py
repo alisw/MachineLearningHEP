@@ -75,7 +75,7 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
                              self.run_param[self.runlistrigger], "run_number")
         neventsafterrunsel = len(dfevtorig)
         if self.s_evtsel is not None:
-            dfevtevtsel = dfevtorig.query(self.s_evtsel)
+        dfevtevtsel = dfevtorig.query(self.s_evtsel)
         else:
             dfevtevtsel = dfevtorig
         neventsafterevtsel = len(dfevtevtsel)
