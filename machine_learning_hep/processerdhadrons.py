@@ -75,13 +75,13 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
         hNorm.GetXaxis().SetBinLabel(2, "selected events")
         nselevt = 0
         norm = 0
-        if not dfevtorig.empty:
-            nselevt = len(dfevtorig.query("is_ev_rej==0"))
-            norm = getnormforselevt(dfevtorig)
+        #if not dfevtorig.empty:
+        #    nselevt = len(dfevtorig.query("is_ev_rej==0"))
+        #    norm = getnormforselevt(dfevtorig)
         hNorm.SetBinContent(1, norm)
         hNorm.SetBinContent(2, nselevt)
         hNorm.Write()
-        dfevtorig = dfevtorig.query("is_ev_rej==0")
+        #dfevtorig = dfevtorig.query("is_ev_rej==0")
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
@@ -100,7 +100,7 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
             if self.runlistrigger is not None:
                 df = selectdfrunlist(df, \
                          self.run_param[self.runlistrigger], "run_number")
-            fill_hist(h_invmass, df.inv_mass)
+            fill_hist(h_invmass, df.fM)
             myfile.cd()
             h_invmass.Write()
             if self.mcordata == "mc":
@@ -112,8 +112,8 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
                                      self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 h_invmass_refl = TH1F("hmass_refl" + suffix, "", self.p_num_bins,
                                       self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-                fill_hist(h_invmass_sig, df_sig.inv_mass)
-                fill_hist(h_invmass_refl, df_refl.inv_mass)
+                fill_hist(h_invmass_sig, df_sig.fM)
+                fill_hist(h_invmass_refl, df_refl.fM)
                 myfile.cd()
                 h_invmass_sig.Write()
                 h_invmass_refl.Write()
