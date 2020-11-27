@@ -288,7 +288,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         if self.s_apply_yptacccut is True:
             isselacc = selectfidacc(dfreco[self.v_var_binning].values,
                                     dfreco[self.v_rapy].values)
-            dfreco = dfreco[np.array(isselacc, dtype=bool)]
+        dfreco = dfreco[np.array(isselacc, dtype=bool)]
 
         arraysub = [0 for ival in range(len(dfreco))]
         for iprong in range(self.nprongs):
