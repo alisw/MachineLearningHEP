@@ -94,8 +94,8 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
 
         myfile.cd()
         labeltrigger = "hbit%s" % (self.triggerbit)
-        hsel, hnovtxmult, hvtxoutmult = gethistonormforselevt_varsel(dfevtorig, dfevtevtsel, \
-                                                              labeltrigger, self.s_var_evt_sel)
+        hsel, hnovtxmult, hvtxoutmult = gethistonormforselevt(dfevtorig, dfevtevtsel, \
+                                                              labeltrigger)
         hsel.Write()
         hnovtxmult.Write()
         hvtxoutmult.Write()
