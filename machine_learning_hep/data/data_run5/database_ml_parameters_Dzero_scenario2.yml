@@ -12,7 +12,7 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-Dzero:
+Dzero_scenario2:
   nprongs: 2
   prongformultsub: [0,0]
   doml: true
@@ -112,12 +112,12 @@ Dzero:
       fracmerge : [1.0] #list of periods
       seedmerge: [12] #list of periods
       period: [test] #list of periods
-      unmerged_tree_dir: [/data/Run5data_mlhep/prod_test/unmerged] #list of periods
-      pkl: [/data/Run5data_mlhep/prod_test/pkldata] #list of periods
-      pkl_skimmed: [/data/Run5data_mlhep/prod_test/pklskdata] #list of periods
-      pkl_skimmed_merge_for_ml: [/data/Run5data_mlhep/prod_test/pklskmldata] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data/Run5data_mlhep/prod_test/mltotdata
-      pkl_evtcounter_all: /data/Run5data_mlhep/prod_test/evttotdata
+      unmerged_tree_dir: [/data/Run5data_mlhep/prod_test/unmerged_scenario2] #list of periods
+      pkl: [/data/Run5data_mlhep/prod_test/pkldata_scenario2] #list of periods
+      pkl_skimmed: [/data/Run5data_mlhep/prod_test/pklskdata_scenario2] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/Run5data_mlhep/prod_test/pklskmldata_scenario2] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/Run5data_mlhep/prod_test/mltotdata_scenario2
+      pkl_evtcounter_all: /data/Run5data_mlhep/prod_test/evttotdata_scenario2
       mcreweights: [../Analyses]
     mc:
       nprocessesparallel: 50
@@ -128,11 +128,11 @@ Dzero:
       seedmerge: [12] #list of periods
       period: [test] #list of periods
       unmerged_tree_dir: [/data/Run5data_mlhep/prod_test/unmerged] #list of periods
-      pkl: [/data/Run5data_mlhep/prod_test/pklmc] #list of periods
-      pkl_skimmed: [/data/Run5data_mlhep/prod_test/pklskmc] #list of periods
-      pkl_skimmed_merge_for_ml: [/data/Run5data_mlhep/prod_test/pklskmlmc] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data/Run5data_mlhep/prod_test/mltotmc
-      pkl_evtcounter_all: /data/Run5data_mlhep/prod_test/evttotmc
+      pkl: [/data/Run5data_mlhep/prod_test/pklmc_scenario2] #list of periods
+      pkl_skimmed: [/data/Run5data_mlhep/prod_test/pklskmc_scenario2] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/Run5data_mlhep/prod_test/pklskmlmc_scenario2] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/Run5data_mlhep/prod_test/mltotmc_scenario2
+      pkl_evtcounter_all: /data/Run5data_mlhep/prod_test/evttotmc_scenario2
       mcreweights: [../Analyses]
   ml:
     evtsel: null
@@ -154,8 +154,8 @@ Dzero:
     binmax:   [3] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: BinaryClassification
     ncorescrossval: 10
-    mlplot: mlplot # to be removed
-    mlout: mlout_1 # to be removed
+    mlplot: mlplot_scenario2 # to be removed
+    mlout: mlout_scenario2 # to be removed
 
     opt:
       isFONLLfromROOT: true
@@ -176,11 +176,11 @@ Dzero:
 
   mlapplication:
     data:
-      pkl_skimmed_dec: [skpkldecdata] #list of periods
-      pkl_skimmed_decmerged: [skpkldecdatamerged] #list of periods
+      pkl_skimmed_dec: [skpkldecdata_scenario2] #list of periods
+      pkl_skimmed_decmerged: [skpkldecdatamerged_scenario2] #list of periods
     mc:
-      pkl_skimmed_dec: [skpkldecmc] #list of periods
-      pkl_skimmed_decmerged: [skpkldecmcmerged] #list of periods
+      pkl_skimmed_dec: [skpkldecmc_scenario2] #list of periods
+      pkl_skimmed_decmerged: [skpkldecmcmerged_scenario2] #list of periods
     modelname: xgboost
     modelsperptbin: [xgboost_classifierDzero_dfselection_fPt_0.0_3.0.sav]
     probcutpresel:
@@ -222,12 +222,12 @@ Dzero:
 
       data:
         runselection: [null] #FIXME
-        results: [resultsdata] #list of periods
-        resultsallp: resultsdatatot
+        results: [resultsdata_scenario2] #list of periods
+        resultsallp: resultsdatatot_scenario2
       mc:
         runselection: [null] #FIXME
-        results: [resultsmc] #list of periods
-        resultsallp: resultsmctot
+        results: [resultsmc_scenario2] #list of periods
+        resultsallp: resultsmctot_scenario2
 
       mass_fit_lim: [1.72, 2.05] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
