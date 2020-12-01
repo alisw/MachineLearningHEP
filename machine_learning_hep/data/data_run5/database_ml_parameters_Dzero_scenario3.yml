@@ -22,10 +22,10 @@ Dzero_scenario3:
   sel_gen_unp: "fPt>0"
   sel_cen_unp: null
   sel_good_evt_unp: null
-  sel_reco_skim: [null]
-  sel_gen_skim: [null]
-  sel_skim_binmin: [0] #list of nbins
-  sel_skim_binmax: [3] #list of nbins
+  sel_reco_skim: [null,null,null,null]
+  sel_gen_skim: [null,null,null,null]
+  sel_skim_binmin: [1,2,4,8] #list of nbins
+  sel_skim_binmax: [2,4,8,12] #list of nbins
   apply_yptacccut: false
   var_binning: fPt
   dofullevtmerge: false
@@ -51,7 +51,10 @@ Dzero_scenario3:
        mc:   [fBCsID, fPosX, fPosY, fPosZ, fIsEventReject]
     var_gen: [fBCsID, fPt, fY, fMCflag]
     var_evt_match: [fBCsID]
-    var_training: [[fPtProng0, fPtProng1, fImpactParameterProduct, fCPA, fCPAXY, fChi2PCA, fDecayLengthXY, fDecayLengthXYNormalised, fCosThetaStar, fNSigTOF_Pi_0, fNSigTOF_Ka_0, fNSigTOF_Pi_1, fNSigTOF_Ka_1]]
+    var_training: [[fPtProng0, fPtProng1, fCPA, fCPAXY, fCosThetaStar, fDecayLength, fDecayLengthXY],
+                   [fPtProng0, fPtProng1, fCPA, fCPAXY, fCosThetaStar, fDecayLength, fDecayLengthXY],
+                   [fPtProng0, fPtProng1, fCPA, fCPAXY, fCosThetaStar, fDecayLength, fDecayLengthXY],
+                   [fPtProng0, fPtProng1, fCPA, fCPAXY, fCosThetaStar, fDecayLength, fDecayLengthXY]]
     var_boundaries: [fCPA, fCPAXY]
     var_correlation:
       - [fCPA]
@@ -150,8 +153,8 @@ Dzero_scenario3:
     rnd_shuffle: 12
     rnd_splt: 12
     test_frac: 0.2
-    binmin: [0] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
-    binmax:   [3] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
+    binmin: [1,2,4,8] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
+    binmax: [2,4,8,12] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: BinaryClassification
     ncorescrossval: 10
     mlplot: mlplot_scenario3 # to be removed
@@ -171,8 +174,8 @@ Dzero_scenario3:
       num_steps: 111 # number of steps used in efficiency and signif. estimation
       bkg_function: pol2 # fit function for bkg (among TH1 predefined fit functions, e.g. expo, pol1, pol2, ...)
       save_fit: True # save bkg fits with the various cuts on ML output
-      raahp: [1] # sel_skim_binmin bins
-      presel_gen_eff: "abs(fY) < 4.0 and abs(fPosZ) < 10"
+      raahp: [1,1,1,1] # sel_skim_binmin bins
+      presel_gen_eff: "abs(fY) < 1.44 and abs(fPosZ) < 10"
 
   mlapplication:
     data:
@@ -182,11 +185,14 @@ Dzero_scenario3:
       pkl_skimmed_dec: [skpkldecmc_scenario3] #list of periods
       pkl_skimmed_decmerged: [skpkldecmcmerged_scenario3] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierDzero_dfselection_fPt_0.0_3.0.sav]
+    modelsperptbin: [xgboost_classifierDzero_dfselection_fPt_1.0_2.0.sav,
+                     xgboost_classifierDzero_dfselection_fPt_2.0_4.0.sav,
+                     xgboost_classifierDzero_dfselection_fPt_4.0_8.0.sav,
+                     xgboost_classifierDzero_dfselection_fPt_8.0_12.0.sav]
     probcutpresel:
-      data: [0.05] #list of nbins
-      mc: [0.05] #list of nbins
-    probcutoptimal: [0.05] #list of nbins
+      data: [0.05, 0.05, 0.05, 0.05] #list of nbins
+      mc: [0.05, 0.05, 0.05, 0.05] #list of nbins
+    probcutoptimal: [0.05, 0.05, 0.05, 0.05] #list of nbins
 
   analysis:
     indexhptspectrum: -1 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
@@ -201,8 +207,8 @@ Dzero_scenario3:
       useperiod: [1]
       plotbin: [1]
       usesinglebineff: 0
-      sel_binmin2: [0.] #list of nbins
-      sel_binmax2: [3.] #list of nbins
+      sel_binmin2: [1,2,4,8] #list of nbins
+      sel_binmax2: [2,4,8,12] #list of nbins
       var_binning2: null
       triggerbit: ''
 
@@ -210,10 +216,10 @@ Dzero_scenario3:
       # Decide whether to take the sigma from MC or data for individual fits
       init_fits_from: mc # data # data or mc
 
-      sel_an_binmin: [0]
-      sel_an_binmax: [3.]
-      binning_matching: [0]
-      presel_gen_eff: "abs(fY) < 4.0"
+      sel_an_binmin: [1,2,4,8]
+      sel_an_binmax: [2,4,8,12]
+      binning_matching: [0,1,2,3]
+      presel_gen_eff: "abs(fY) < 1.44"
       evtsel: null
       triggersel:
         data: null
