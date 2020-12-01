@@ -185,14 +185,14 @@ Dzero_scenario3:
       pkl_skimmed_dec: [skpkldecmc_scenario3] #list of periods
       pkl_skimmed_decmerged: [skpkldecmcmerged_scenario3] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierDzero_dfselection_fPt_1.0_2.0.sav,
-                     xgboost_classifierDzero_dfselection_fPt_2.0_4.0.sav,
-                     xgboost_classifierDzero_dfselection_fPt_4.0_8.0.sav,
-                     xgboost_classifierDzero_dfselection_fPt_8.0_12.0.sav]
+    modelsperptbin: [xgboost_classifierDzero_scenario3_dfselection_fPt_1.0_2.0.sav,
+                     xgboost_classifierDzero_scenario3_dfselection_fPt_2.0_4.0.sav,
+                     xgboost_classifierDzero_scenario3_dfselection_fPt_4.0_8.0.sav,
+                     xgboost_classifierDzero_scenario3_dfselection_fPt_8.0_12.0.sav]
     probcutpresel:
       data: [0.05, 0.05, 0.05, 0.05] #list of nbins
       mc: [0.05, 0.05, 0.05, 0.05] #list of nbins
-    probcutoptimal: [0.05, 0.05, 0.05, 0.05] #list of nbins
+    probcutoptimal: [0.5, 0.5, 0.5, 0.5] #list of nbins
 
   analysis:
     indexhptspectrum: -1 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
@@ -237,23 +237,24 @@ Dzero_scenario3:
 
       mass_fit_lim: [1.72, 2.05] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
-      sgnfunc: [kGaus]
-      bkgfunc: [Pol2]
+      init_fits_from: [mc,mc,mc,mc] # data or mc
+      sgnfunc: [kGaus,kGaus,kGaus,kGaus]
+      bkgfunc: [Pol2,Pol2,Pol2,Pol2]
       masspeak: 1.864
-      massmin: [1.72]
-      massmax: [2.05]
-      rebin: [4]
-      fix_mean: [false]
-      fix_sigma: [false]
+      massmin: [1.72,1.72,1.72,1.72]
+      massmax: [2.05,2.05,2.05,2.05]
+      rebin: [4,4,4,4]
+      fix_mean: [false,false,false,false]
+      fix_sigma: [false,false,false,false]
       masssecpeak: 0.
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: [false]
+      SetFixGaussianSigma: [false,false,false,false]
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
-      SetInitialGaussianSigma: false
+      SetInitialGaussianSigma: [false,false,false,false]
       # Max percentage deviation in sigma (from init) to be considered as a good fit
       MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
@@ -261,7 +262,7 @@ Dzero_scenario3:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.01]
+      sigmaarray: [0.01,0.01,0.01,0.01]
       FixedSigma: false
       fitcase: D0
       latexnamehadron: "D^{0}"
