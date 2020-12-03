@@ -112,7 +112,7 @@ get_paths()
     if [[ "$DATASET_WITH_CHILDREN" != "1" ]]
     then
         GENERIC_PATHS="$(make_generic_path $ALIEN_JDL_OUTPUTDIR)"
-        GENERIC_PATHS=("$GENERIC_PATHS/$trainname/AOD/*/$outputfile" )
+        GENERIC_PATHS=("$GENERIC_PATHS/$trainname/*/$outputfile" )
         CHILDREN=("child_0" )
         INTERACTION_TYPES=("$ALIEN_JDL_LPMINTERACTIONTYPE" )
     else
@@ -135,7 +135,7 @@ get_paths()
 
             out_dir_prefix=$(eval "echo $"ALIEN_JDL_${child}"_OUTPUTDIR")
             local out_dir="$(make_generic_path $out_dir_prefix)"
-            out_dir="$out_dir/${trainname}_${child}/AOD/*/$outputfile"
+            out_dir="$out_dir/${trainname}_${child}/*/$outputfile"
             GENERIC_PATHS+=" $out_dir"
             INTERACTION_TYPES+=" $(eval "echo $"ALIEN_JDL_${child}"_LPMINTERACTIONTYPE")"
         done
@@ -212,7 +212,7 @@ run()
     # Immediately abort if there is not enough disk space left (meaning less than 1TB)
     local place_to_save_top="$(realpath $placetosave)"
     place_to_save_top="/$(echo $place_to_save_top | cut -d '/' -f 2)"
-    local free_space="$(df $place_to_save_top | grep '/dev' | awk '{print $4}')"
+    local free_space="$(df $place_to_save_top | sed -n '2 p' | awk '{print $4}')"
     echo "$free_space"
     if (( $free_space < 1000000000 ))
     then
