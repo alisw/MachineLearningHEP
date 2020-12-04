@@ -2046,6 +2046,7 @@ class AnalyzerJet(Analyzer):
             draw_latex(latex)
             cfeeddown.SaveAs("%s/feeddown_subtraction_%s.eps" % \
                              (self.d_resultsallpdata, suffix_plot))
+            cfeeddown.SaveAs("feeddown_subtraction_%s.png" % suffix_plot)
             #if self.feeddown_db:
             #    option = "feeddown"
             #    histo_to_compare = ("sideband_input_data_subtracted_z%s" % (suffix))
@@ -2656,11 +2657,11 @@ class AnalyzerJet(Analyzer):
                 cunfolded_output.SaveAs("%s/unfolded_output.eps" % self.d_resultsallpdata)
                 gStyle.SetPaintTextFormat("g")
 
-                if self.feeddown_db:
-                    option = "unfolding_results"
-                    histo_to_compare = ("unfolded_zvsjetpt_final")
-                    print("Making ratio for", option, histo_to_compare )
-                    self.makeratio_twodim(unfolded_zvsjetpt_final, option, histo_to_compare)
+                #if self.feeddown_db:
+                #    option = "unfolding_results"
+                #    histo_to_compare = ("unfolded_zvsjetpt_final")
+                #    print("Making ratio for", option, histo_to_compare )
+                #    self.makeratio_twodim(unfolded_zvsjetpt_final, option, histo_to_compare)
 
             for ibin2 in range(self.p_nbin2_gen):
                 if self.lpt_finbinmin[0] > self.lvar2_binmax_reco[ibin2]:
@@ -2920,15 +2921,6 @@ class AnalyzerJet(Analyzer):
             cinput_mc_gen_z_xsection.SaveAs("%s/unfolded_vs_mc_%s_xsection_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
             #cinput_mc_gen_z_xsection.SaveAs("%s/unfolded_vs_mc_%s_xsection_%s.pdf" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
 
-           for ibin2 in range(self.p_nbin2_reco):
-            if self.lpt_finbinmin[0] > self.lvar2_binmax_reco[ibin2]:
-                print("Warning!!! HF_pt > jet_pt!!! Create random histo")
-                continue
-            suffix = "%s_%.2f_%.2f" % \
-                     (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
-            suffix_plot = "%s_%g_%g" % \
-                     (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
-
             # convergence of the refolding test
             # plot the refolding test for all iterations together for each jet pt bin
 
@@ -2956,7 +2948,6 @@ class AnalyzerJet(Analyzer):
             cconvergence_refolding_z.SaveAs("%s/convergence_refolding_%s_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
 
             # compare the result before unfolding and after
-
             input_data_z_scaled = input_data_z[ibin2].Clone("input_data_z_scaled_%s" % suffix)
             input_data_z_scaled.Scale(1.0 / input_data_z_scaled.Integral(bin_int_first, -1), "width")
             cunfolded_not_z = TCanvas("cunfolded_not_z " + suffix, "Unfolded vs not Unfolded" + suffix)
@@ -2980,6 +2971,7 @@ class AnalyzerJet(Analyzer):
             latex = TLatex(0.5, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex)
             cunfolded_not_z.SaveAs("%s/unfolded_not_%s_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
+            cunfolded_not_z.SaveAs("unfolded_not_%s_%s.png" % (self.v_varshape_binning, suffix_plot))
 
           #  if self.feeddown_db:
           #      option = "unfolding_results"
@@ -2990,12 +2982,11 @@ class AnalyzerJet(Analyzer):
           #      self.makeratio_onedim(unfolded_z_scaled_list[i_iter_choice][ibin_jetpt], option, histo_to_compare, xtitle, ytitle)
           #      #Lc tot D0 ratio
 
-           # if self.feeddown_db:
-           #     option = "unfolding_results"
-           #     lchistoname = ("unfolded_z_%d_%s" % (i_iter_choice, suffix))
-           #     print("Making Lc to D0 ratio for", option, lchistoname)
-           #     if self.typean == "jet_r_shape":
-           #        self.makeratio(unfolded_z_scaled_list[i_iter_choice][ibin_jetpt], option, lchistoname)
+            if self.feeddown_ratio:
+                option = "unfolding_results"
+                lchistoname = ("unfolded_z_%d_%s" % (i_iter_choice, suffix))
+                print("Making Lc to D0 ratio for", option, lchistoname)
+                self.makeratio(unfolded_z_scaled_list[i_iter_choice][ibin_jetpt], option, lchistoname)
             # compare relative statistical uncertainties before unfolding and after
 
             h_unfolded_not_stat_error = TH1F("h_unfolded_not_stat_error" + suffix, "h_unfolded_not_stat_error" + suffix, self.p_nbinshape_reco, self.varshapebinarray_reco)
