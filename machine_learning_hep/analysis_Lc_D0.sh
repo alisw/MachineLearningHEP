@@ -42,7 +42,7 @@ cp -r /data/Derived_testResults/Jets/Lc/vAN-20200824_ROOT6-1 /data/Derived_testR
 nice python do_entire_analysis.py -a jet_FF -r submission/default_feeddown.yml -d data/data_prod_20200824/database_ml_parameters_LcpK0spp_0824_jet_2_6.yml -c
 pkill -9 -u talazare do_entire_analysis
 
-nice python do_entire_analysis.py -a jet_FF -r submission/default_feeddown.yml -d data/data_prod_20200824/database_ml_parameters_LcpK0spp_0824_jet_2_6.yml -c
+nice python do_entire_analysis.py -a jet_FF -r submission/default_feeddown.yml -d data/data_prod_20200824/database_ml_parameters_LcpK0spp_0824_jet_6_12.yml -c
 pkill -9 -u talazare do_entire_analysis
 
 
@@ -91,4 +91,4 @@ nice python do_entire_analysis.py -a jet_r_shape -r submission/default_feeddown.
 pkill -9 -u talazare do_entire_analysis
 
 nice python do_entire_analysis.py -a jet_r_shape -r submission/default_feeddown.yml -d data/data_prod_20200824/database_ml_parameters_D0pp_0304_6_12.yml -c
-pkill -9 -u talazare do_entire_analysis
+pkill -9 -u talazare do_entire_analysis:

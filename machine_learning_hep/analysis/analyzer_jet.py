@@ -225,11 +225,12 @@ class AnalyzerJet(Analyzer):
                 if period is not None else datap["analysis"][typean]["mc"]["resultsallp"]
         self.d_resultsallpdata = datap["analysis"][typean]["data"]["results"][period] \
                 if period is not None else datap["analysis"][typean]["data"]["resultsallp"]
-        self.feeddown_db = datap["multi"]["feeddown_db"]
-        if self.feeddown_db:
-            self.d_resultsold =  datap["analysis"][typean]["data"]["resultsold"]
-            if self.typean == "jet_r_shape":
-                self.d_resultslc =  datap["analysis"][typean]["data"]["resultslc"]
+        # self.feeddown_db = datap["multi"]["feeddown_db"]
+        self.feeddown_ratio = datap["multi"]["feeddown_ratio"]
+        # if self.feeddown_db:
+        #    self.d_resultsold =  datap["analysis"][typean]["data"]["resultsold"]
+        if self.feeddown_ratio:
+            self.d_resultslc =  datap["analysis"][typean]["data"]["resultslc"]
 
 
         # input directories (processor output)
@@ -286,95 +287,96 @@ class AnalyzerJet(Analyzer):
         self.text_powheg = "POWHEG + PYTHIA 6 + EvtGen"
 
 
-    def makeratio_onedim(self, origin_histo, option, histo_to_compare, xtitle, ytitle):
-        filename = self.d_resultsold + "/" + option + ".root"
-        print("Open file with results to compare", filename)
-        c_ratio = TCanvas("c_ratio", "histos ratio")
-        setup_canvas(c_ratio)
-        c_ratio.Divide(2,2)
-        c_ratio.cd(1)
-        myfild_old = TFile.Open(filename)
-        first_histo = origin_histo.Clone("first_histo")
-        second_histo = myfild_old.Get(histo_to_compare)
-        if not second_histo:
-            print("No old histo!", histo_to_compare)
-        else:
-            print(histo_to_compare)
-            leg_ratio = TLegend(.6, .8, .8, .85)
-            setup_legend(leg_ratio)
-            setup_histogram(first_histo, get_colour(1), get_marker(0))
-            setup_histogram(second_histo, get_colour(2), get_marker(1))
-            leg_ratio.AddEntry(second_histo, "old_data %s" %option, "P")
-            leg_ratio.AddEntry(first_histo, "new_data %s" %option, "P")
-            #second_histo.SetYTitle(ytitle)
-            second_histo.SetTitle(histo_to_compare)
-            second_histo.Draw()
-            first_histo.Draw("same")
-            leg_ratio.Draw("same")
-            scaled_1 = first_histo.Clone("scaled_1")
-            scaled_2 = second_histo.Clone("scaled_2")
-            c_ratio.cd(3)
-            ratio = second_histo.Clone("ratio")
-            ratio.Divide(first_histo)
-            ratio.SetTitle("old data to new data ratio")
-            setup_histogram(ratio, get_colour(0))
-            ratio.Draw()
-            if ((scaled_1.Integral()!=0) and (scaled_2.Integral()!=0)):
-                scaled_2.Scale(1/scaled_2.Integral())
-                scaled_1.Scale(1/scaled_1.Integral())
-                #scaled_1.SetXTitle(xtitle)
-                #scaled_2.SetYTitle(ytitle)
-                c_ratio.cd(2)
-                scaled_2.SetTitle("self normalized")
-                scaled_2.Draw()
-                scaled_1.Draw("same")
-                leg_ratio.Draw("same")
-                c_ratio.cd(4)
-                norm_ratio = scaled_2.Clone("ratio")
-                norm_ratio.Divide(scaled_1)
-                norm_ratio.SetTitle("old data to new data (norm) ratio")
-                setup_histogram(norm_ratio, get_colour(0))
-                norm_ratio.Draw()
-                #c_ratio.SaveAs("%s/old_new_%s.png" % (self.d_resultsallpdata, histo_to_compare))
-                c_ratio.SaveAs("compare/old_new_%s.png" % (histo_to_compare))
-            myfild_old.Close()
+    #def makeratio_onedim(self, origin_histo, option, histo_to_compare, xtitle, ytitle):
+    #    filename = self.d_resultsold + "/" + option + ".root"
+    #    print("Open file with results to compare", filename)
+    #    c_ratio = TCanvas("c_ratio", "histos ratio")
+    #    setup_canvas(c_ratio)
+    #    c_ratio.Divide(2,2)
+    #    c_ratio.cd(1)
+    #    myfild_old = TFile.Open(filename)
+    #    first_histo = origin_histo.Clone("first_histo")
+    #    second_histo = myfild_old.Get(histo_to_compare)
+    #    if not second_histo:
+    #        print("No old histo!", histo_to_compare)
+    #    else:
+    #        print(histo_to_compare)
+    #        leg_ratio = TLegend(.6, .8, .8, .85)
+    #        setup_legend(leg_ratio)
+    #        setup_histogram(first_histo, get_colour(1), get_marker(0))
+    #        setup_histogram(second_histo, get_colour(2), get_marker(1))
+    #        leg_ratio.AddEntry(second_histo, "old_data %s" %option, "P")
+    #        leg_ratio.AddEntry(first_histo, "new_data %s" %option, "P")
+    #        #second_histo.SetYTitle(ytitle)
+    #        second_histo.SetTitle(histo_to_compare)
+    #        second_histo.Draw()
+    #        first_histo.Draw("same")
+    #        leg_ratio.Draw("same")
+    #        scaled_1 = first_histo.Clone("scaled_1")
+    #        scaled_2 = second_histo.Clone("scaled_2")
+    #        c_ratio.cd(3)
+    #        ratio = second_histo.Clone("ratio")
+    #        ratio.Divide(first_histo)
+    #        ratio.SetTitle("old data to new data ratio")
+    #        setup_histogram(ratio, get_colour(0))
+    #        ratio.Draw()
+    #        if ((scaled_1.Integral()!=0) and (scaled_2.Integral()!=0)):
+    #            scaled_2.Scale(1/scaled_2.Integral())
+    #            scaled_1.Scale(1/scaled_1.Integral())
+    #            #scaled_1.SetXTitle(xtitle)
+    #            #scaled_2.SetYTitle(ytitle)
+    #            c_ratio.cd(2)
+    #            scaled_2.SetTitle("self normalized")
+    #            scaled_2.Draw()
+    #            scaled_1.Draw("same")
+    #            leg_ratio.Draw("same")
+    #            c_ratio.cd(4)
+    #            norm_ratio = scaled_2.Clone("ratio")
+    #            norm_ratio.Divide(scaled_1)
+    #            norm_ratio.SetTitle("old data to new data (norm) ratio")
+    #            setup_histogram(norm_ratio, get_colour(0))
+    #            norm_ratio.Draw()
+    #            c_ratio.SaveAs("%s/old_new_%s.png" % (self.d_resultsallpdata, histo_to_compare))
+    #            #c_ratio.SaveAs("compare/old_new_%s.png" % (histo_to_compare))
+    #        myfild_old.Close()
 
-    def makeratio_twodim(self, origin_histo, option, histo_to_compare):
-        filename = self.d_resultsold + "/" + option + ".root"
-        print("Open file with results to compare", filename)
-        myfild_old = TFile.Open(filename)
-        first_histo = origin_histo.Clone("first_histo")
-        second_histo = myfild_old.Get(histo_to_compare)
-        if not second_histo:
-            print("No old histo!", histo_to_compare)
-        else:
-            print(histo_to_compare)
-            c_ratio = TCanvas("c_ratio", "histos ratio")
-            setup_canvas(c_ratio)
-            leg_ratio = TLegend(.6, .8, .8, .85)
-            setup_legend(leg_ratio)
-            sub1 = first_histo.Clone("sub1")
-            sub1.Add(second_histo, -1)
-            setup_histogram(sub1)
-            sub1.SetTitle("%s %s" % (histo_to_compare, option))
-            sub1.Draw("text")
-            #c_ratio.SaveAs("%s/new-old_%s.png" % (self.d_resultsallpdata , histo_to_compare))
-            c_ratio.SaveAs("compare/new-old_diff_%s.png" % (histo_to_compare))
-            second_histo.Scale(1/second_histo.Integral())
-            first_histo.Scale(1/first_histo.Integral())
-            second_histo.Divide(first_histo)
-            second_histo.SetTitle("%s %s" % (histo_to_compare, option))
-            second_histo.Draw("text")
-            # c_ratio.SaveAs("%s/old_new_ratio_%s.png" % (self.d_resultsallpdata, histo_to_compare))
-            c_ratio.SaveAs("compare/new_old_ratio_%s.png" % (histo_to_compare))
-        myfild_old.Close()
+    #def makeratio_twodim(self, origin_histo, option, histo_to_compare):
+    #    filename = self.d_resultsold + "/" + option + ".root"
+    #    print("Open file with results to compare", filename)
+    #    myfild_old = TFile.Open(filename)
+    #    first_histo = origin_histo.Clone("first_histo")
+    #    second_histo = myfild_old.Get(histo_to_compare)
+    #    if not second_histo:
+    #        print("No old histo!", histo_to_compare)
+    #    else:
+    #        print(histo_to_compare)
+    #        c_ratio = TCanvas("c_ratio", "histos ratio")
+    #        setup_canvas(c_ratio)
+    #        leg_ratio = TLegend(.6, .8, .8, .85)
+    #        setup_legend(leg_ratio)
+    #        sub1 = first_histo.Clone("sub1")
+    #        sub1.Add(second_histo, -1)
+    #        setup_histogram(sub1)
+    #        sub1.SetTitle("%s %s" % (histo_to_compare, option))
+    #        sub1.Draw("text")
+    #        c_ratio.SaveAs("%s/new-old_%s.png" % (self.d_resultsallpdata , histo_to_compare))
+    #        #c_ratio.SaveAs("compare/new-old_diff_%s.png" % (histo_to_compare))
+    #        second_histo.Scale(1/second_histo.Integral())
+    #        first_histo.Scale(1/first_histo.Integral())
+    #        second_histo.Divide(first_histo)
+    #        second_histo.SetTitle("%s %s" % (histo_to_compare, option))
+    #        second_histo.Draw("text")
+    #        c_ratio.SaveAs("%s/old_new_ratio_%s.png" % (self.d_resultsallpdata, histo_to_compare))
+    #        #c_ratio.SaveAs("compare/new_old_ratio_%s.png" % (histo_to_compare))
+    #    myfild_old.Close()
 
     def makeratio(self, origin_histo, option, lc_histoname):
         D0_histo = origin_histo.Clone("D0_histo")
         filename = self.d_resultslc + "/" + option + ".root"
         print("Open file with Lc results", filename)
         myfilelc = TFile.Open(filename)
-        Lc_histo = myfilelc.Get(lc_histoname)
+        lc_histo = myfilelc.Get(lc_histoname)
+        Lc_histo = lc_histo.Clone("Lc_histo")
         c_ratio = TCanvas("c_ratio", "Lc to D0 ratio")
         setup_canvas(c_ratio)
         leg_ratio = TLegend(.6, .8, .8, .85)
@@ -385,20 +387,27 @@ class AnalyzerJet(Analyzer):
         Lc_histo.SetTitle("")
         setup_histogram(D0_histo, get_colour(1), get_marker(0))
         setup_histogram(Lc_histo, get_colour(2), get_marker(1))
-        Lc_histo.Draw()
-        D0_histo.Draw("same")
+        D0_histo.Draw()
+        Lc_histo.Draw("same")
         leg_ratio.AddEntry(Lc_histo, "Lc %s" %option, "P")
         leg_ratio.AddEntry(D0_histo, "D0 %s" %option, "P")
         leg_ratio.Draw("same")
         c_ratio.SaveAs("%s/Lc+D0_combined_plot_%s.eps" % (self.d_resultsallpdata , lc_histoname))
-        #c_ratio.SaveAs("Lc+D0_combined_plot_%s.png" % (lc_histoname))
-        Lc_histo.Scale(1/Lc_histo.Integral())
-        D0_histo.Scale(1/D0_histo.Integral())
-        Lc_histo.Divide(D0_histo)
-        Lc_histo.SetYTitle("{\Lambda}_{c} / {D}_{0}  ratio")
-        Lc_histo.Draw()
+        c_ratio.SaveAs("Lc+D0_combined_plot_%s.png" % (lc_histoname))
+        Lc_histo_sc = Lc_histo.Clone("Lc_histo_sc")
+        D0_histo_sc = D0_histo.Clone("D0_histo_sc")
+        Lc_histo_sc.Scale(1/Lc_histo_sc.Integral())
+        D0_histo_sc.Scale(1/D0_histo_sc.Integral())
+        Lc_histo_sc.Divide(D0_histo_sc)
+        Lc_histo_sc.SetYTitle("{\Lambda}_{c} / {D}_{0}  ratio")
+        Lc_histo_sc.Draw()
         c_ratio.SaveAs("%s/Lc_D0_ratio_%s.eps" % (self.d_resultsallpdata, lc_histoname))
-        #c_ratio.SaveAs("Lc_D0_ratio_%s.png" % (lc_histoname))
+        c_ratio.SaveAs("Lc_D0_ratio_%s.png" % (lc_histoname))
+        del Lc_histo
+        del D0_histo
+        del lc_histo
+        del Lc_histo_sc
+        del D0_histo_sc
         myfilelc.Close()
 
     def fit(self):
@@ -1516,7 +1525,6 @@ class AnalyzerJet(Analyzer):
         #    histo_to_compare = ("hzvsjetpt")
         #    print("Making ratio for", option, histo_to_compare )
         #    self.makeratio_twodim(hzvsjetpt, option, histo_to_compare)
-        
         fileouts.Close()
 
     def feeddown(self):
@@ -2030,7 +2038,7 @@ class AnalyzerJet(Analyzer):
             sideband_input_data_z[ibin2].SetTitle("")
             sideband_input_data_z[ibin2].SetXTitle(self.v_varshape_latex)
             sideband_input_data_z[ibin2].SetYTitle("yield")
-            sideband_input_data_z[ibin2].Draw()
+            sideband_input_data_z[ibin2].Draw("")
             setup_histogram(folded_z_list[ibin2], get_colour(2), get_marker(1))
             leg_feeddown.AddEntry(folded_z_list[ibin2], "non-prompt (POWHEG)", "P")
             folded_z_list[ibin2].Draw("same")

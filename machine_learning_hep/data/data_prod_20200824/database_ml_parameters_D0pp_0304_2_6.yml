@@ -139,7 +139,8 @@ D0pp:
     crossfilename: "cross_section_tot.root"
 
   multi:
-    feeddown_db: True 
+    feeddown_ratio: true
+    feeddown_db: false
     data:
       nprocessesparallel: 20
       maxfiles: [-1,-1,-1] #list of periods
@@ -469,7 +470,11 @@ D0pp:
                   /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/ff/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
                   /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/ff/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
         resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
+<<<<<<< Updated upstream
         resultslc: /data/Derived_testResults/Jets/Lc/vAN-20200824_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
+=======
+        resultslc: /data/Derived_testResults/Jets/Lc/2_6/vAN-20200824_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
+>>>>>>> Stashed changes
         resultsold: /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200304_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
       mc: &mc_out_r_shape
         <<: *mc_out_default

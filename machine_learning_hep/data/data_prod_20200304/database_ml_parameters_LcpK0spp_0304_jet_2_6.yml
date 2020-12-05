@@ -216,6 +216,7 @@ LcpK0spp:
     crossfilename: "cross_section_tot.root"
 
   multi:
+    feeddown_ratio: false
     feeddown_db: false
     data:
       nprocessesparallel: 20
