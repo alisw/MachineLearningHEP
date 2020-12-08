@@ -20,7 +20,7 @@ from ROOT import TH1F, TFile  # pylint: disable=import-error,no-name-in-module
 from machine_learning_hep.logger import get_logger
 
 def calc_bkg(df_bkg, name, num_steps, fit_region, bkg_func, bin_width, sig_region, save_fit,
-             out_dir, pt_lims):
+             out_dir, pt_lims, invmassvar):
     """
     Estimate the number of background candidates under the signal peak. This is obtained
     from real data with a fit of the sidebands of the invariant mass distribution.
@@ -50,7 +50,7 @@ def calc_bkg(df_bkg, name, num_steps, fit_region, bkg_func, bin_width, sig_regio
         bkg_err = 0.
         hmass = TH1F(f'hmass_{thr:.5f}', '', num_bins, fit_region[0], fit_region[1])
         bkg_sel_mask = df_bkg['y_test_prob' + name].values >= thr
-        sel_mass_array = df_bkg[bkg_sel_mask]['inv_mass'].values
+        sel_mass_array = df_bkg[bkg_sel_mask][invmassvar].values
 
         if len(sel_mass_array) > 5:
             for mass_value in np.nditer(sel_mass_array):

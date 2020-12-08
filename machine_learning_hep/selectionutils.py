@@ -171,3 +171,21 @@ def gethistonormforselevt(df_evt, dfevtevtsel, label):
     hNoVtxMult.SetBinContent(1, len(df_no_vtx))
     hVtxOutMult.SetBinContent(1, len(df_bit_zvtx_gr10))
     return hSelMult, hNoVtxMult, hVtxOutMult
+
+
+def gethistonormforselevt_varsel(df_evt, dfevtevtsel, label, varsel):
+    hSelMult = TH1F('sel_' + label, 'sel_' + label, 1, -0.5, 0.5)
+    hNoVtxMult = TH1F('novtx_' + label, 'novtx_' + label, 1, -0.5, 0.5)
+    hVtxOutMult = TH1F('vtxout_' + label, 'vtxout_' + label, 1, -0.5, 0.5)
+
+    df_to_keep = filter_bit_df(df_evt, varsel, [[], [0, 5, 6, 10, 11]])
+    # events with reco vtx after previous selection
+    tag_vtx = tag_bit_df(df_to_keep, varsel, [[], [1, 2, 7, 12]])
+    df_no_vtx = df_to_keep[~tag_vtx.values]
+    # events with reco zvtx > 10 cm after previous selection
+    df_bit_zvtx_gr10 = filter_bit_df(df_to_keep, varsel, [[3], [1, 2, 7, 12]])
+
+    hSelMult.SetBinContent(1, len(dfevtevtsel))
+    hNoVtxMult.SetBinContent(1, len(df_no_vtx))
+    hVtxOutMult.SetBinContent(1, len(df_bit_zvtx_gr10))
+    return hSelMult, hNoVtxMult, hVtxOutMult
