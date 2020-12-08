@@ -129,7 +129,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.v_ismcrefl = datap["bitmap_sel"]["var_ismcrefl"]
         self.v_var_binning = datap["var_binning"]
         self.v_invmass = datap["variables"].get("var_inv_mass", "inv_mass")
-        self.v_rapy = datap["variables"],get("var_y", "y_cand")
+        self.v_rapy = datap["variables"].get("var_y", "y_cand")
         self.s_var_evt_sel = datap["variables"].get("var_evt_sel", "is_ev_rej")
 
         #list of files names
