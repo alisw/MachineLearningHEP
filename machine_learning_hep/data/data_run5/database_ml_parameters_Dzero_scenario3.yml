@@ -161,8 +161,10 @@ Dzero_scenario3:
     mlout: mlout_scenario3 # to be removed
 
     opt:
-      isFONLLfromROOT: true
-      filename_fonll: 'data/fonll/DmesonLcPredictions_502TeV_y05_FFptDepLHCb_BRpythia8.root' # file with FONLL predictions
+      # isFONLLfromROOT: true
+      # filename_fonll: 'data/fonll/DmesonLcPredictions_502TeV_y05_FFptDepLHCb_BRpythia8.root' # file with FONLL predictions
+      isFONLLfromROOT: false
+      filename_fonll: 'data/fonll/fo_pp_d0meson_14TeV_y1p44.csv' # file with FONLL predictions
       fonll_particle: 'hD0Kpi'
       fonll_pred: 'max' # edge of the FONLL prediction
       FF: 0.6086 # fragmentation fraction
