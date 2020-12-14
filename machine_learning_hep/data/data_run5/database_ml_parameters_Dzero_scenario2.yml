@@ -115,12 +115,12 @@ Dzero_scenario2:
       fracmerge : [1.0] #list of periods
       seedmerge: [12] #list of periods
       period: [test] #list of periods
-      unmerged_tree_dir: [/data/Run5data_mlhep/prod_test/unmerged_scenario2] #list of periods
-      pkl: [/data/Run5data_mlhep/prod_test/pkldata_scenario2] #list of periods
-      pkl_skimmed: [/data/Run5data_mlhep/prod_test/pklskdata_scenario2] #list of periods
-      pkl_skimmed_merge_for_ml: [/data/Run5data_mlhep/prod_test/pklskmldata_scenario2] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data/Run5data_mlhep/prod_test/mltotdata_scenario2
-      pkl_evtcounter_all: /data/Run5data_mlhep/prod_test/evttotdata_scenario2
+      unmerged_tree_dir: [/data/Run5data_mlhep/prod_test_MB/unmerged] #list of periods
+      pkl: [/data/Run5data_mlhep/prod_test_MB/pkldata_scenario2] #list of periods
+      pkl_skimmed: [/data/Run5data_mlhep/prod_test_MB/pklskdata_scenario2] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/Run5data_mlhep/prod_test_MB/pklskmldata_scenario2] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/Run5data_mlhep/prod_test_MB/mltotdata_scenario2
+      pkl_evtcounter_all: /data/Run5data_mlhep/prod_test_MB/evttotdata_scenario2
       mcreweights: [../Analyses]
     mc:
       nprocessesparallel: 50
@@ -130,7 +130,7 @@ Dzero_scenario2:
       fracmerge : [1.0] #list of periods
       seedmerge: [12] #list of periods
       period: [test] #list of periods
-      unmerged_tree_dir: [/data/Run5data_mlhep/prod_test/unmerged_scenario2] #list of periods
+      unmerged_tree_dir: [/data/Run5data_mlhep/prod_test/unmerged] #list of periods
       pkl: [/data/Run5data_mlhep/prod_test/pklmc_scenario2] #list of periods
       pkl_skimmed: [/data/Run5data_mlhep/prod_test/pklskmc_scenario2] #list of periods
       pkl_skimmed_merge_for_ml: [/data/Run5data_mlhep/prod_test/pklskmlmc_scenario2] #list of periods
@@ -161,8 +161,10 @@ Dzero_scenario2:
     mlout: mlout_scenario2 # to be removed
 
     opt:
-      isFONLLfromROOT: true
-      filename_fonll: 'data/fonll/DmesonLcPredictions_502TeV_y05_FFptDepLHCb_BRpythia8.root' # file with FONLL predictions
+      # isFONLLfromROOT: true
+      # filename_fonll: 'data/fonll/DmesonLcPredictions_502TeV_y05_FFptDepLHCb_BRpythia8.root' # file with FONLL predictions
+      isFONLLfromROOT: false
+      filename_fonll: 'data/fonll/fo_pp_d0meson_14TeV_y1p44.csv' # file with FONLL predictions
       fonll_particle: 'hD0Kpi'
       fonll_pred: 'max' # edge of the FONLL prediction
       FF: 0.6086 # fragmentation fraction
