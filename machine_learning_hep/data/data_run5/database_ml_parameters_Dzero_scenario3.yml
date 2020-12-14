@@ -115,7 +115,7 @@ Dzero_scenario3:
       fracmerge : [1.0] #list of periods
       seedmerge: [12] #list of periods
       period: [test] #list of periods
-      unmerged_tree_dir: [/data/Run5data_mlhep/prod_test_MB/unmerged] #list of periods
+      unmerged_tree_dir: [/data/Run5data_mlhep/prod_test_MB/unmerged_scenario3] #list of periods
       pkl: [/data/Run5data_mlhep/prod_test_MB/pkldata_scenario3] #list of periods
       pkl_skimmed: [/data/Run5data_mlhep/prod_test_MB/pklskdata_scenario3] #list of periods
       pkl_skimmed_merge_for_ml: [/data/Run5data_mlhep/prod_test_MB/pklskmldata_scenario3] #list of periods
