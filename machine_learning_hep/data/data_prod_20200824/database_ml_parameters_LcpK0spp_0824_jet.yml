@@ -357,13 +357,20 @@ LcpK0spp:
       sel_binmax2_reco:     [5., 7., 15., 30.] #list of nbins
       sel_binmin2_gen:  [3., 5., 7., 15] #list of nbins
       sel_binmax2_gen:      [5., 7., 15., 30] #list of nbins
+      
       var_binningshape: delta_r_jet
       var_binningshape_gen: delta_r_gen_jet
       var_shape_latex: "#Delta R^{jet}"
-      sel_binminshape_reco: [0.,0.05,0.10,0.15]
-      sel_binmaxshape_reco:        [0.05, 0.1, 0.15, 0.3]
-      sel_binminshape_gen:  [0.,0.05,0.10,0.15]
-      sel_binmaxshape_gen:         [0.05, 0.1, 0.15, 0.3]
+      #sel_binminshape_reco: [0.,0.05,0.10,0.15]
+      #sel_binmaxshape_reco:        [0.05, 0.1, 0.15, 0.3]
+      #sel_binminshape_gen:  [0.,0.05,0.10,0.15]
+      #sel_binmaxshape_gen:         [0.05, 0.1, 0.15, 0.3]
+      
+      sel_binminshape_reco: [0, 0.05, 0.1]
+      sel_binmaxshape_reco:        [0.05, 0.1, 0.2]
+      sel_binminshape_gen:  [0, 0.05, 0.1]
+      sel_binmaxshape_gen:         [0.05, 0.1, 0.2]
+
       sel_closure_frac: 0.2
       triggerbit: INT7
       sel_an_binmin:    [2,4,6,8,12] #list of pt nbins

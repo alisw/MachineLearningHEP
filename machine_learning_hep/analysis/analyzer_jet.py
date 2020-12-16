@@ -227,6 +227,7 @@ class AnalyzerJet(Analyzer):
                 if period is not None else datap["analysis"][typean]["data"]["resultsallp"]
         # self.feeddown_db = datap["multi"]["feeddown_db"]
         self.feeddown_ratio = datap["multi"]["feeddown_ratio"]
+        #self.feeddown_ratio = False
         # if self.feeddown_db:
         #    self.d_resultsold =  datap["analysis"][typean]["data"]["resultsold"]
         if self.feeddown_ratio:
@@ -490,8 +491,45 @@ class AnalyzerJet(Analyzer):
                 fit_dir = fileout.mkdir(suffix)
                 fit_dir.WriteObject(fitter, "fitter%d" % (ipt))
                 bkg_func = fitter.GetBackgroundRecalcFunc()
+                if bkg_func:
+                    print("integral of bkg func",
+                            bkg_func.Integral(self.p_massmin[ipt],self.p_massmax[ipt]))
                 sgn_func = fitter.GetMassFunc()
-
+                if sgn_func:
+                    print("integral of sgn func",
+                            sgn_func.Integral(self.p_massmin[ipt], self.p_massmax[ipt]))
+                sigma = fitter.GetSigma()
+                mean = fitter.GetMean()
+                print("*******************Sigma, mean***************", sigma, mean)
+                bkg_left_1 = (mean - 9*sigma)
+                bkg_left_2 = (mean - 4*sigma)
+                sig_left =  (mean - 2*sigma)
+                sig_right = (mean + 2*sigma)
+                bkg_right_1 = (mean + 4*sigma)
+                bkg_right_2 = (mean + 9*sigma)
+                left_borders = [bkg_left_1, bkg_left_2, sig_left]
+                right_borders = [sig_right, bkg_right_1, bkg_right_2]
+                print(left_borders, right_borders)
+                for brd in left_borders:
+                    if brd < self.p_massmin[ipt]:
+                        brd = self.p_massmin[ipt]
+                for brd in right_borders:
+                    if brd > self.p_massmax[ipt]:
+                        brd = self.p_massmax[ipt]
+                if (sgn_func and bkg_func):
+                    print("signal and background functions exits")
+                    bkg = bkg_func.Integral(sig_left, sig_right)
+                    sig = sgn_func.Integral(sig_left, sig_right)
+                    print("SIGNAL", sig, "BACKGROUND", bkg)
+                    #if (sig)!=0:
+                    #    S_to_B = (sig-bkg)/sqrt(sig)
+                    if (sig+bkg)!=0:
+                        S_to_B = sig/sqrt(sig+bkg)
+                    else:
+                        S_to_B = float("nan")
+                    print("signal over background", S_to_B)
+                else:
+                    S_to_B = float("nan")
                 c_fitted_result = TCanvas("c_fitted_result " + suffix, "Fitted Result")
                 setup_canvas(c_fitted_result)
                 setup_histogram(histomass_reb, get_colour(0), get_marker(0))
@@ -505,17 +543,37 @@ class AnalyzerJet(Analyzer):
                 y_margin_down = 0.05
                 histomass_reb.GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
                 histomass_reb.Draw("same")
+                bkg_left = histomass_reb.Clone("bkg_left")
+                bkg_left.GetXaxis().SetRangeUser(bkg_left_1, bkg_left_2)
+                bkg_left.SetFillColor(38)
+                bkg_left.SetFillStyle(3354)
+                bkg_left.Draw("same hist")
+                bkg_right = histomass_reb.Clone("bkg_right")
+                bkg_right.GetXaxis().SetRangeUser(bkg_right_1, bkg_right_2)
+                bkg_right.SetFillColor(38)
+                bkg_right.SetFillStyle(3345)
+                bkg_right.Draw("same hist")
+                bkg_sig = histomass_reb.Clone("bkg_sig")
+                bkg_sig.SetFillColor(46)
+                bkg_sig.SetFillStyle(3444)
+                bkg_sig.GetXaxis().SetRangeUser(sig_left, sig_right)
+                bkg_sig.Draw("same hist")
                 if out == 1:
                     bkg_func.SetLineColor(get_colour(1))
                     sgn_func.SetLineColor(get_colour(2))
                     sgn_func.Draw("same")
                     bkg_func.Draw("same")
-                latex = TLatex(0.2, 0.83, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
+                latex3 = TLatex(0.5, 0.83, "mean = %s, #sigma  = %s, S/#sqrt{S+B} = %s" % \
+                        (round(mean,3), round(sigma,3), round(S_to_B, 3)))
+                draw_latex(latex3)
+                latex = TLatex(0.7, 0.78, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
                 draw_latex(latex)
-                latex2 = TLatex(0.5, 0.83, "%g #leq #it{p}_{T, %s} < %g GeV/#it{c}" % \
+                latex2 = TLatex(0.7, 0.72, "%g #leq #it{p}_{T, %s} < %g GeV/#it{c}" % \
                     (self.lpt_finbinmin[ipt], self.p_latexnhadron, min(self.lpt_finbinmax[ipt], self.lvar2_binmax_reco[ibin2])))
                 draw_latex(latex2)
+
                 c_fitted_result.SaveAs("%s/fit_%s.eps" % (self.d_resultsallpdata, suffix_plot))
+                c_fitted_result.SaveAs("plots/fit_%s.png" % (suffix_plot))
         myfilemc.Close()
         myfile.Close()
         fileout.Close()
@@ -1085,6 +1143,7 @@ class AnalyzerJet(Analyzer):
                     continue
                 area_scale = bkg_fit.Integral(masslow2sig, masshigh2sig) / area_scale_denominator
                 hzsub = hzsig.Clone("hzsub" + suffix)
+
 
                 # subtract the scaled sideband yields
 
@@ -1709,6 +1768,8 @@ class AnalyzerJet(Analyzer):
         hz_genvsreco_full.Draw("colz")
         cz_genvsreco.SaveAs("%s/response_fd_%s_full.eps" % \
                             (self.d_resultsallpdata, self.v_varshape_binning))
+        cz_genvsreco.SaveAs("plots/response_fd_%s_full.png" % \
+                            (self.v_varshape_binning))
 
         cjetpt_genvsreco = TCanvas("cjetpt_genvsreco_full_nonprompt", "response matrix 2D projection")
         setup_canvas(cjetpt_genvsreco)
@@ -1780,7 +1841,7 @@ class AnalyzerJet(Analyzer):
             y_margin_down = 0
             bin_pt_max = min(self.p_nptfinbins, heff_pr_list[ibin2].GetXaxis().FindBin(self.lvar2_binmax_gen[ibin2] - 0.01))
             heff_pr_list[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
-            heff_pr_list[ibin2].GetXaxis().SetRange(1, bin_pt_max)
+            heff_pr_list[ibin2].GetXaxis().SetRange(1, 6)
             heff_pr_list[ibin2].SetTitle("")
             heff_pr_list[ibin2].SetXTitle("#it{p}_{T, %s} (GeV/#it{c})" % self.p_latexnhadron)
             heff_pr_list[ibin2].SetYTitle("Efficiency #times Acceptance")
@@ -1830,6 +1891,7 @@ class AnalyzerJet(Analyzer):
                     y_latex -= self.y_step
                 c_eff_both.Update()
                 c_eff_both.SaveAs("%s/%s_eff_pr_fd_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix_plot))
+                c_eff_both.SaveAs("plots/%s_eff_pr_fd_%s.png" % (self.shape, suffix_plot))
 
         # plot relative jet pt shift
 
@@ -2954,7 +3016,7 @@ class AnalyzerJet(Analyzer):
             latex = TLatex(0.15, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex)
             cconvergence_refolding_z.SaveAs("%s/convergence_refolding_%s_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
-
+            print("------------------------------", suffix, suffix_plot, ibin2, "-------------------------------")
             # compare the result before unfolding and after
             input_data_z_scaled = input_data_z[ibin2].Clone("input_data_z_scaled_%s" % suffix)
             input_data_z_scaled.Scale(1.0 / input_data_z_scaled.Integral(bin_int_first, -1), "width")

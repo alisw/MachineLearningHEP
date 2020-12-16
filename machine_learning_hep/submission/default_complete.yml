@@ -6,7 +6,7 @@ conversion: # pkl
   mc:
     activate: false
   data:
-    activate: true 
+    activate: true
 skimming: # pkl_skimmed (pklsk), pkl_evtcounter_all
   mc:
     activate: false

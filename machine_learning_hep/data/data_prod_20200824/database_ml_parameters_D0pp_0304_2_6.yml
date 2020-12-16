@@ -460,21 +460,25 @@ D0pp:
       var_binningshape: delta_r_jet
       var_binningshape_gen: delta_r_gen_jet
       var_shape_latex: "#Delta R^{jet}"
-      sel_binminshape_reco: [0, 0.05, 0.1, 0.15]
-      sel_binmaxshape_reco:        [0.05, 0.1, 0.15, 0.3]
-      sel_binminshape_gen:  [0, 0.05, 0.1, 0.15]
-      sel_binmaxshape_gen:         [0.05, 0.1, 0.15, 0.3]
+      #sel_binminshape_reco: [0, 0.05, 0.1, 0.15]
+      #sel_binmaxshape_reco:        [0.05, 0.1, 0.15, 0.3]
+      #sel_binminshape_gen:  [0, 0.05, 0.1, 0.15]
+      #sel_binmaxshape_gen:         [0.05, 0.1, 0.15, 0.3]
+  
+      sel_binminshape_reco: [0, 0.05, 0.1]
+      sel_binmaxshape_reco:        [0.05, 0.1, 0.2]
+      sel_binminshape_gen:  [0, 0.05, 0.1]
+      sel_binmaxshape_gen:         [0.05, 0.1, 0.2]
+
+
       data: &data_out_r_shape
         <<: *data_out_default
         results: [/data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/ff/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
                   /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/ff/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
                   /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/ff/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
         resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
-<<<<<<< Updated upstream
-        resultslc: /data/Derived_testResults/Jets/Lc/vAN-20200824_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
-=======
+
         resultslc: /data/Derived_testResults/Jets/Lc/2_6/vAN-20200824_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
->>>>>>> Stashed changes
         resultsold: /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200304_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
       mc: &mc_out_r_shape
         <<: *mc_out_default
