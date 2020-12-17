@@ -277,16 +277,16 @@ categories:
                             sel_binmin2_gen:  [[8,15,30], [5,7,15,30],  [5]]
                             sel_binmax2_gen:     ["#",      [7,15,30,50], [50]]
             shape:
-                activate: [yes]
+                activate: [no]
                 label:
                     - "untagged bin"
                 diffs:
                     analysis:
                         jet_zg:
                             sel_binminshape_reco: [[-100,0.1,0.2,0.3,0.4]]
-                            sel_binmaxshape_reco:    [[0.1,0.2,0.3,0.4,0.5]]
+                            sel_binmaxshape_reco:      [[0.1,0.2,0.3,0.4,0.5]]
                             sel_binminshape_gen:  [[-100,0.1,0.2,0.3,0.4]]
-                            sel_binmaxshape_gen:     [[0.1,0.2,0.3,0.4,0.5]]
+                            sel_binmaxshape_gen:       [[0.1,0.2,0.3,0.4,0.5]]
     cuts:
         activate: yes
         processor: true

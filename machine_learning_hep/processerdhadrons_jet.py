@@ -128,6 +128,40 @@ def adjust_nsd(df_):
         df_["nsd_gen_jet"] = c_gen_new
     return df_
 
+def adjust_zg(df_):
+    """ Replace negative z_{g} values with zg_neg. """
+    zg_neg = -0.1
+    if "zg_jet" in df_.columns and "zg_jet_orig" not in df_.columns:
+        listzg_old = df_["zg_jet"].to_numpy()
+        df_["zg_jet_orig"] = listzg_old
+        c_new = [zg_neg if zg_old < 0 else zg_old for zg_old in listzg_old]
+        df_ = df_.drop(["zg_jet"], axis=1)
+        df_["zg_jet"] = c_new
+    if "zg_gen_jet" in df_.columns and "zg_gen_jet_orig" not in df_.columns:
+        listzg_gen_old = df_["zg_gen_jet"].to_numpy()
+        df_["zg_gen_jet_orig"] = listzg_gen_old
+        c_gen_new = [zg_neg if zg_old < 0 else zg_old for zg_old in listzg_gen_old]
+        df_ = df_.drop(["zg_gen_jet"], axis=1)
+        df_["zg_gen_jet"] = c_gen_new
+    return df_
+
+def adjust_rg(df_):
+    """ Replace negative R_{g} values with rg_neg. """
+    rg_neg = -0.1
+    if "rg_jet" in df_.columns and "rg_jet_orig" not in df_.columns:
+        listrg_old = df_["rg_jet"].to_numpy()
+        df_["rg_jet_orig"] = listrg_old
+        c_new = [rg_neg if rg_old < 0 else rg_old for rg_old in listrg_old]
+        df_ = df_.drop(["rg_jet"], axis=1)
+        df_["rg_jet"] = c_new
+    if "rg_gen_jet" in df_.columns and "rg_gen_jet_orig" not in df_.columns:
+        listrg_gen_old = df_["rg_gen_jet"].to_numpy()
+        df_["rg_gen_jet_orig"] = listrg_gen_old
+        c_gen_new = [rg_neg if rg_old < 0 else rg_old for rg_old in listrg_gen_old]
+        df_ = df_.drop(["rg_gen_jet"], axis=1)
+        df_["rg_gen_jet"] = c_gen_new
+    return df_
+
 def adjust_z(df_):
     """ Truncate z values to avoid z = 1 overflow. """
     z_max = 0.99
@@ -269,6 +303,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             else:
                 df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
             df = adjust_nsd(df)
+            df = adjust_zg(df)
+            df = adjust_rg(df)
             if self.doml is True:
                 df = df.query(self.l_selml[ipt])
             # custom cuts
@@ -368,6 +404,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                     bin_id = self.bin_matching[ipt]
                     df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[bin_id][index], "rb"))
                     df_mc_gen = adjust_nsd(df_mc_gen)
+                    df_mc_gen = adjust_zg(df_mc_gen)
+                    df_mc_gen = adjust_rg(df_mc_gen)
                     if self.s_jetsel_gen is not None:
                         df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
                     if self.runlistrigger is not None:
@@ -424,6 +462,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 else:
                     df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
                 df_mc_reco = adjust_nsd(df_mc_reco)
+                df_mc_reco = adjust_zg(df_mc_reco)
+                df_mc_reco = adjust_rg(df_mc_reco)
                 if self.s_evtsel is not None:
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_jetsel_reco is not None:
@@ -435,6 +475,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                              self.run_param[self.runlistrigger], "run_number")
                 df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[bin_id][index], "rb"))
                 df_mc_gen = adjust_nsd(df_mc_gen)
+                df_mc_gen = adjust_zg(df_mc_gen)
+                df_mc_gen = adjust_rg(df_mc_gen)
                 if self.s_jetsel_gen is not None:
                     df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
                 if self.runlistrigger is not None:
@@ -547,6 +589,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 else:
                     df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
                 df_mc_reco = adjust_nsd(df_mc_reco)
+                df_mc_reco = adjust_zg(df_mc_reco)
+                df_mc_reco = adjust_rg(df_mc_reco)
                 if self.s_evtsel is not None:
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_jetsel_reco is not None:
@@ -692,6 +736,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
             df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[iptskim][index], "rb"))
             df_mc_gen = adjust_nsd(df_mc_gen)
+            df_mc_gen = adjust_zg(df_mc_gen)
+            df_mc_gen = adjust_rg(df_mc_gen)
             if self.runlistrigger is not None:
                 df_mc_gen = selectdfrunlist(df_mc_gen, \
                         self.run_param[self.runlistrigger], "run_number")
@@ -705,6 +751,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             else:
                 df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[iptskim][index], "rb"))
             df_mc_reco = adjust_nsd(df_mc_reco)
+            df_mc_reco = adjust_zg(df_mc_reco)
+            df_mc_reco = adjust_rg(df_mc_reco)
             if self.s_evtsel is not None:
                 df_mc_reco = df_mc_reco.query(self.s_evtsel)
             if self.s_jetsel_reco is not None:

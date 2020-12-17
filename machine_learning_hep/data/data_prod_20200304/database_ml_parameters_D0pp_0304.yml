@@ -284,10 +284,10 @@ D0pp:
       var_binningshape: zg_jet
       var_binningshape_gen: zg_gen_jet
       var_shape_latex: "#it{z}_{g}"
-      sel_binminshape_reco: [0.1,0.2,0.3,0.4]
-      sel_binmaxshape_reco:     [0.2,0.3,0.4,0.5]
-      sel_binminshape_gen:  [0.1,0.2,0.3,0.4]
-      sel_binmaxshape_gen:      [0.2,0.3,0.4,0.5]
+      sel_binminshape_reco: [-0.1,0.1,0.2,0.3,0.4]
+      sel_binmaxshape_reco:      [0.1,0.2,0.3,0.4,0.5]
+      sel_binminshape_gen:  [-0.1,0.1,0.2,0.3,0.4]
+      sel_binmaxshape_gen:       [0.1,0.2,0.3,0.4,0.5]
       sel_closure_frac: 0.2
       triggerbit: INT7
       sel_an_binmin:    [5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
@@ -387,10 +387,10 @@ D0pp:
       var_binningshape: rg_jet
       var_binningshape_gen: rg_gen_jet
       var_shape_latex: "#it{R}_{g}"
-      sel_binminshape_reco: [0.0,0.1,0.2,0.3]
-      sel_binmaxshape_reco:     [0.1,0.2,0.3,0.4]
-      sel_binminshape_gen:  [0.0,0.1,0.2,0.3]
-      sel_binmaxshape_gen:      [0.1,0.2,0.3,0.4]
+      sel_binminshape_reco: [-0.1,0.0,0.1,0.2,0.3]
+      sel_binmaxshape_reco:      [0.0,0.1,0.2,0.3,0.4]
+      sel_binminshape_gen:  [-0.1,0.0,0.1,0.2,0.3]
+      sel_binmaxshape_gen:       [0.0,0.1,0.2,0.3,0.4]
       data: &data_out_rg
         <<: *data_out_default
         results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,

@@ -40,7 +40,7 @@ from machine_learning_hep.utilities_plot import buildhisto, makefill2dhist, make
 from machine_learning_hep.utilities_plot import makefill2dweighed, makefill3dweighed
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.utilities import seldf_singlevar
-from machine_learning_hep.processerdhadrons_jet import adjust_nsd, adjust_z
+from machine_learning_hep.processerdhadrons_jet import adjust_nsd, adjust_zg, adjust_rg, adjust_z
 
 def shrink_err_x(graph, width=0.1):
     for i in range(graph.GetN()):
@@ -2118,7 +2118,8 @@ class AnalyzerJet(Analyzer):
         print("Unfolding: data statistics: %g, closure statistics: %g, ratio: %g" % (stat_unfolding, stat_closure, stat_unfolding/stat_closure))
 
         # Ignore the first bin for integration in case of untagged bin
-        bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 and "nsd" not in self.typean else 1
+        bin_int_first = 1
+        #bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 and "nsd" not in self.typean else 1
 
         # calculate rec. level kinematic efficiency and apply it to the unfolding input
 
@@ -3034,7 +3035,8 @@ class AnalyzerJet(Analyzer):
         input_mc_gen_z = []
 
         # Ignore the first bin for integration in case of untagged bin
-        bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 and "nsd" not in self.typean else 1
+        bin_int_first = 1
+        #bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 and "nsd" not in self.typean else 1
 
         kinematic_eff_jetpt = unfolding_input_file.Get("hjetpt_gen_cuts_closure")
         hjetpt_gen_nocuts = unfolding_input_file.Get("hjetpt_gen_nocuts_closure")
@@ -3664,7 +3666,8 @@ class AnalyzerJet(Analyzer):
                     for sys_var in range(self.systematic_variations[sys_cat]):
                         out_sys = False
                         # FIXME exception for the untagged bin pylint: disable=fixme
-                        bin_first = 2 if "untagged" in self.systematic_varlabels[sys_cat][sys_var] else 1
+                        bin_first = 1
+                        #bin_first = 2 if "untagged" in self.systematic_varlabels[sys_cat][sys_var] else 1
                         if self.use_inclusive_systematics:
                             if self.systematic_catnames[sys_cat] == "cuts":
                                 #file_inc = TFile.Open(self.inclusive_unc)
@@ -3995,9 +3998,11 @@ class AnalyzerJet(Analyzer):
             input_histograms_default[ibin2].SetTitle("")
             input_histograms_default[ibin2].SetXTitle(self.v_varshape_latex)
             input_histograms_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
-            input_histograms_default[ibin2].Draw("")
+            input_histograms_default[ibin2].Draw("AXIS")
+            #input_histograms_default[ibin2].Draw("")
             setup_tgraph(tgsys[ibin2], get_colour(7, 0))
             tgsys[ibin2].Draw("5")
+            input_histograms_default[ibin2].Draw("SAME")
             leg_finalwsys.AddEntry(tgsys[ibin2], "syst. unc.", "F")
             input_histograms_default[ibin2].Draw("AXISSAME")
             #PREL latex = TLatex(0.15, 0.85, "ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV")
@@ -4012,7 +4017,7 @@ class AnalyzerJet(Analyzer):
             leg_finalwsys.Draw("same")
             latex_SD = TLatex(0.15, 0.62, "Soft Drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)")
             draw_latex(latex_SD)
-            cfinalwsys.SaveAs("%s/final_wsys_%s.pdf" % (self.d_resultsallpdata, suffix))
+            cfinalwsys.SaveAs("%s/%s_final_wsys_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix))
 
             # plot the results with systematic uncertainties and models
 
@@ -4091,7 +4096,7 @@ class AnalyzerJet(Analyzer):
                 axis_thetag.SetLabelOffset(0)
                 cfinalwsys_wmodels.SetTickx(0)
                 axis_thetag.Draw("same")
-            cfinalwsys_wmodels.SaveAs("%s/final_wsys_wmodels_%s.pdf" % (self.d_resultsallpdata, suffix))
+            cfinalwsys_wmodels.SaveAs("%s/%s_final_wsys_wmodels_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix))
 
             text_ptjet_full = self.text_ptjet % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2])
             text_pth_full = self.text_pth % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2]))
@@ -4136,7 +4141,7 @@ class AnalyzerJet(Analyzer):
                 list_latex.append(latex)
                 draw_latex(latex, textsize=0.04)
                 y_latex -= self.y_step
-            cfinalwsys_wmodels_new.SaveAs("%s/final_wsys_wmodels_%s_new.pdf" % (self.d_resultsallpdata, suffix))
+            cfinalwsys_wmodels_new.SaveAs("%s/%s_final_wsys_wmodels_%s_new.pdf" % (self.d_resultsallpdata, self.shape, suffix))
 
             if self.lc_d0_ratio:
                 #list_obj = [rel_sys[ibin2], powheg_ratio_sys[ibin2], histo_ratios[ibin2], powheg_ratio[ibin2]]
@@ -4317,8 +4322,8 @@ class AnalyzerJet(Analyzer):
             draw_latex(latex6)
             #latex7 = TLatex(0.65, 0.75, "POWHEG based")
             #draw_latex(latex7)
-            cfeeddown_fraction.SaveAs("%s/feeddown_fraction_var_%s.eps" % (self.d_resultsallpdata, suffix_plot))
-            cfeeddown_fraction.SaveAs("%s/feeddown_fraction_var_%s.pdf" % (self.d_resultsallpdata, suffix_plot))
+            cfeeddown_fraction.SaveAs("%s/%s_feeddown_fraction_var_%s.eps" % (self.d_resultsallpdata, self.shape, suffix_plot))
+            cfeeddown_fraction.SaveAs("%s/%s_feeddown_fraction_var_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix_plot))
 
             text_ptjet_full = self.text_ptjet % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2])
             text_pth_full = self.text_pth % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2]))
@@ -4400,9 +4405,10 @@ class AnalyzerJet(Analyzer):
         except Exception: # pylint: disable=broad-except
             self.logger.fatal(make_message_notfound("variables", tree_name))
 
-        # Adjust nSD values.
+        # Adjust nSD, zg, Rg, z values.
         df_sim = adjust_nsd(df_sim)
-        # Adjust z values.
+        df_sim = adjust_zg(df_sim)
+        df_sim = adjust_rg(df_sim)
         df_sim = adjust_z(df_sim)
         # pt-dependent rapidity cut
         sel_cand_array = selectfidacc(df_sim["pt_cand"].values, df_sim["y_cand"].values)
