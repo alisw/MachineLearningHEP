@@ -404,8 +404,8 @@ def z_calc(pt_1, phi_1, eta_1, pt_2, phi_2, eta_2):
     np_eta_2 = eta_2.values
 
     cos_phi_1 = np.cos(np_phi_1)
-    cos_phi_2 =	np.cos(np_phi_2)
-    sin_phi_1 =	np.sin(np_phi_1)
+    cos_phi_2 = np.cos(np_phi_2)
+    sin_phi_1 = np.sin(np_phi_1)
     sin_phi_2 = np.sin(np_phi_2)
     sinh_eta_1 = np.sinh(np_eta_1)
     sinh_eta_2 = np.sinh(np_eta_2)
