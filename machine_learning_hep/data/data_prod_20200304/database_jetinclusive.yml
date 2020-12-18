@@ -90,10 +90,10 @@ inclusivejets:
       var_binningshape: zg_jet
       var_binningshape_gen: zg_gen_jet
       var_shape_latex: "#it{z}_{g}"
-      sel_binminshape_reco: [0.1,0.2,0.3,0.4]
-      sel_binmaxshape_reco:     [0.2,0.3,0.4,0.5]
-      sel_binminshape_gen:  [0.1,0.2,0.3,0.4]
-      sel_binmaxshape_gen:      [0.2,0.3,0.4,0.5]
+      sel_binminshape_reco: [-0.1,0.1,0.2,0.3,0.4]
+      sel_binmaxshape_reco:      [0.1,0.2,0.3,0.4,0.5]
+      sel_binminshape_gen:  [-0.1,0.1,0.2,0.3,0.4]
+      sel_binmaxshape_gen:       [0.1,0.2,0.3,0.4,0.5]
       sel_closure_frac: 0.04
       triggerbit: INT7
       sel_an_binmin:    [5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
@@ -108,12 +108,12 @@ inclusivejets:
         mc: null
       data: &data_out_default
         runselection: [null, null, null] #FIXME
-        results: [/data/results_Nima_new/zg/default/default/resultsdata2016, /data/results_Nima_new/zg/default/default/resultsdata2017, /data/results_Nima_new/zg/default/default/resultsdata2018]
-        resultsallp: /data/results_Nima_new/zg/default/default/resultsdatatot
+        results: [/data/results_Vit_incl/zg/default/default/resultsdata2016, /data/results_Vit_incl/zg/default/default/resultsdata2017, /data/results_Vit_incl/zg/default/default/resultsdata2018]
+        resultsallp: /data/results_Vit_incl/zg/default/default/resultsdatatot
       mc: &mc_out_default
         runselection: [null, null, null] #FIXME
-        results: [/data/results_Nima_new/zg/default/default/resultsmc2016, /data/results_Nima_new/zg/default/default/resultsmc2017, /data/results_Nima_new/zg/default/default/resultsmc2018]
-        resultsallp: /data/results_Nima_new/zg/default/default/resultsmctot
+        results: [/data/results_Vit_incl/zg/default/default/resultsmc2016, /data/results_Vit_incl/zg/default/default/resultsmc2017, /data/results_Vit_incl/zg/default/default/resultsmc2018]
+        resultsallp: /data/results_Vit_incl/zg/default/default/resultsmctot
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input
@@ -140,10 +140,10 @@ inclusivejets:
       var_binningshape: rg_jet
       var_binningshape_gen: rg_gen_jet
       var_shape_latex: "#it{R}_{g}"
-      sel_binminshape_reco: [0.0,0.1,0.2,0.3]
-      sel_binmaxshape_reco:     [0.1,0.2,0.3,0.4]
-      sel_binminshape_gen:  [0.0,0.1,0.2,0.3]
-      sel_binmaxshape_gen:      [0.1,0.2,0.3,0.4]
+      sel_binminshape_reco: [-0.1,0.0,0.1,0.2,0.3]
+      sel_binmaxshape_reco:      [0.0,0.1,0.2,0.3,0.4]
+      sel_binminshape_gen:  [-0.1,0.0,0.1,0.2,0.3]
+      sel_binmaxshape_gen:       [0.0,0.1,0.2,0.3,0.4]
       sel_closure_frac: 0.04
       triggerbit: INT7
       sel_an_binmin:    [5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
@@ -159,13 +159,13 @@ inclusivejets:
       data: &data_out_rg
         <<: *data_out_default
         runselection: [null, null, null] #FIXME
-        results: [/data/results_Nima_new/rg/default/default/resultsdata2016, /data/results_Nima_new/rg/default/default/resultsdata2017, /data/results_Nima_new/rg/default/default/resultsdata2018]
-        resultsallp: /data/results_Nima_new/rg/default/default/resultsdatatot
+        results: [/data/results_Vit_incl/rg/default/default/resultsdata2016, /data/results_Vit_incl/rg/default/default/resultsdata2017, /data/results_Vit_incl/rg/default/default/resultsdata2018]
+        resultsallp: /data/results_Vit_incl/rg/default/default/resultsdatatot
       mc: &mc_out_rg
         <<: *mc_out_default
         runselection: [null, null, null] #FIXME
-        results: [/data/results_Nima_new/rg/default/default/resultsmc2016, /data/results_Nima_new/rg/default/default/resultsmc2017, /data/results_Nima_new/rg/default/default/resultsmc2018]
-        resultsallp: /data/results_Nima_new/rg/default/default/resultsmctot
+        results: [/data/results_Vit_incl/rg/default/default/resultsmc2016, /data/results_Vit_incl/rg/default/default/resultsmc2017, /data/results_Vit_incl/rg/default/default/resultsmc2018]
+        resultsallp: /data/results_Vit_incl/rg/default/default/resultsmctot
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_rg
       mc_proc: # alternative processor output used as the analyzer input
@@ -210,13 +210,13 @@ inclusivejets:
       data: &data_out_nsd
         <<: *data_out_default
         runselection: [null, null, null] #FIXME
-        results: [/data/results_Nima_new/nsd/default/default/resultsdata2016, /data/results_Nima_new/nsd/default/default/resultsdata2017, /data/results_Nima_new/nsd/default/default/resultsdata2018]
-        resultsallp: /data/results_Nima_new/nsd/default/default/resultsdatatot
+        results: [/data/results_Vit_incl/nsd/default/default/resultsdata2016, /data/results_Vit_incl/nsd/default/default/resultsdata2017, /data/results_Vit_incl/nsd/default/default/resultsdata2018]
+        resultsallp: /data/results_Vit_incl/nsd/default/default/resultsdatatot
       mc: &mc_out_nsd
         <<: *mc_out_default
         runselection: [null, null, null] #FIXME
-        results: [/data/results_Nima_new/nsd/default/default/resultsmc2016, /data/results_Nima_new/nsd/default/default/resultsmc2017, /data/results_Nima_new/nsd/default/default/resultsmc2018]
-        resultsallp: /data/results_Nima_new/nsd/default/default/resultsmctot
+        results: [/data/results_Vit_incl/nsd/default/default/resultsmc2016, /data/results_Vit_incl/nsd/default/default/resultsmc2017, /data/results_Vit_incl/nsd/default/default/resultsmc2018]
+        resultsallp: /data/results_Vit_incl/nsd/default/default/resultsmctot
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_nsd
       mc_proc: # alternative processor output used as the analyzer input
