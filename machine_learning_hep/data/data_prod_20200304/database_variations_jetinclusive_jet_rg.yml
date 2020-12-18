@@ -12,7 +12,6 @@ categories:
                 activate: [yes]
                 label: ["default"]
                 diffs: {}
-
     prior:
         activate: yes
         processor: true
@@ -67,7 +66,6 @@ categories:
                       pkl: [[/data/DerivedInclusive/vAN-20200511_ROOT6-1/Meta_pp_2016_minbias/433_20200512-2201/pklmc2016,
                             /data/DerivedInclusive/vAN-20200511_ROOT6-1/Meta_pp_2017_minbias/434_20200512-2202/pklmc2017,
                             /data/DerivedInclusive/vAN-20200511_ROOT6-1/Meta_pp_2018_minbias/435_20200512-2201/pklmc2018]]
-
     binning:
         activate: yes
         processor: true
@@ -91,19 +89,16 @@ categories:
                             sel_binmin2_gen:  [[8,15,30], [5,7,15,30],  [5]]
                             sel_binmax2_gen:     ["#",      [7,15,30,50], [50]]
             shape:
-                activate: [yes]
+                activate: [no]
                 label:
                     - "untagged bin"
                 diffs:
                     analysis:
                         jet_rg:
                             sel_binminshape_reco: [[-100,0.0,0.1,0.2,0.3]]
-                            sel_binmaxshape_reco:    [[0.0,0.1,0.2,0.3,0.4]]
+                            sel_binmaxshape_reco:      [[0.0,0.1,0.2,0.3,0.4]]
                             sel_binminshape_gen:  [[-100,0.0,0.1,0.2,0.3]]
-                            sel_binmaxshape_gen:     [[0.0,0.1,0.2,0.3,0.4]]
-
-
-
+                            sel_binmaxshape_gen:       [[0.0,0.1,0.2,0.3,0.4]]
     ptleadingtrack:
         activate: yes
         processor: true

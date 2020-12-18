@@ -250,7 +250,8 @@ class AnalyzerJet(Analyzer):
         print("Unfolding: data statistics: %g, closure statistics: %g, ratio: %g" % (stat_unfolding, stat_closure, stat_unfolding/stat_closure))
 
         # Ignore the first bin for integration incase of untagged bin
-        bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 and "nsd" not in self.typean else 1
+        bin_int_first = 1
+        #bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 and "nsd" not in self.typean else 1
 
         # calculate rec. level kinematic efficiency and apply it to the unfolding input
 
@@ -1145,7 +1146,8 @@ class AnalyzerJet(Analyzer):
         input_mc_gen_z = []
 
         # Ignore the first bin for integration incase of untagged bin
-        bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 and "nsd" not in self.typean else 1
+        bin_int_first = 1
+        #bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 and "nsd" not in self.typean else 1
 
         kinematic_eff_jetpt = unfolding_input_file.Get("hjetpt_gen_cuts_closure")
         hjetpt_gen_nocuts = unfolding_input_file.Get("hjetpt_gen_nocuts_closure")
@@ -1515,7 +1517,8 @@ class AnalyzerJet(Analyzer):
                     count_sys_down = 0
                     for sys_var in range(self.systematic_variations[sys_cat]):
                         # FIXME exception for the untagged bin pylint: disable=fixme
-                        bin_first = 2 if "untagged" in self.systematic_varlabels[sys_cat][sys_var] else 1
+                        bin_first = 1
+                        #bin_first = 2 if "untagged" in self.systematic_varlabels[sys_cat][sys_var] else 1
                         error = input_histograms_sys[ibin2][sys_cat][sys_var].GetBinContent(ibinshape + bin_first) - input_histograms_default[ibin2].GetBinContent(ibinshape + 1)
                         if error >= 0:
                             if self.systematic_rms[sys_cat] is True:
@@ -1721,7 +1724,7 @@ class AnalyzerJet(Analyzer):
             #latex3 = TLatex(0.15, 0.67, "%g #leq #it{p}_{T, %s} < %g GeV/#it{c}" % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2])))
             #draw_latex(latex3)
             leg_finalwsys.Draw("same")
-            cfinalwsys.SaveAs("%s/final_wsys_%s.pdf" % (self.d_resultsallpdata, suffix))
+            cfinalwsys.SaveAs("%s/%s_final_wsys_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix))
             tgsys[ibin2].Write("tgsys_%s" % (suffix))
 
             # plot the results with systematic uncertainties and models
@@ -1793,7 +1796,7 @@ class AnalyzerJet(Analyzer):
                 axis_thetag.SetLabelOffset(0)
                 cfinalwsys_wmodels.SetTickx(0)
                 axis_thetag.Draw("same")
-            cfinalwsys_wmodels.SaveAs("%s/final_wsys_wmodels_%s.pdf" % (self.d_resultsallpdata, suffix))
+            cfinalwsys_wmodels.SaveAs("%s/%s_final_wsys_wmodels_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix))
 
             # plot the relative systematic uncertainties for all categories together
 
