@@ -40,6 +40,73 @@ from machine_learning_hep.models import apply # pylint: disable=import-error
 from machine_learning_hep.utilities_plot import buildhisto, build2dhisto, fill2dhist, makefill3dhist
 #from machine_learning_hep.logger import get_logger
 
+def adjust_nsd(df_):
+    """ Replace negative n_{SD} values (single-constituent jets) with zero. """
+    if "nsd_jet" in df_.columns and "nsd_jet_orig" not in df_.columns:
+        listnsd_old = df_["nsd_jet"].to_numpy()
+        df_["nsd_jet_orig"] = listnsd_old
+        c_new = [0 if nsd_old < 0 else nsd_old for nsd_old in listnsd_old]
+        df_ = df_.drop(["nsd_jet"], axis=1)
+        df_["nsd_jet"] = c_new
+    if "nsd_gen_jet" in df_.columns and "nsd_gen_jet_orig" not in df_.columns:
+        listnsd_gen_old = df_["nsd_gen_jet"].to_numpy()
+        df_["nsd_gen_jet_orig"] = listnsd_gen_old
+        c_gen_new = [0 if nsd_old < 0 else nsd_old for nsd_old in listnsd_gen_old]
+        df_ = df_.drop(["nsd_gen_jet"], axis=1)
+        df_["nsd_gen_jet"] = c_gen_new
+    return df_
+
+def adjust_zg(df_):
+    """ Replace negative z_{g} values with zg_neg. """
+    zg_neg = -0.1
+    if "zg_jet" in df_.columns and "zg_jet_orig" not in df_.columns:
+        listzg_old = df_["zg_jet"].to_numpy()
+        df_["zg_jet_orig"] = listzg_old
+        c_new = [zg_neg if zg_old < 0 else zg_old for zg_old in listzg_old]
+        df_ = df_.drop(["zg_jet"], axis=1)
+        df_["zg_jet"] = c_new
+    if "zg_gen_jet" in df_.columns and "zg_gen_jet_orig" not in df_.columns:
+        listzg_gen_old = df_["zg_gen_jet"].to_numpy()
+        df_["zg_gen_jet_orig"] = listzg_gen_old
+        c_gen_new = [zg_neg if zg_old < 0 else zg_old for zg_old in listzg_gen_old]
+        df_ = df_.drop(["zg_gen_jet"], axis=1)
+        df_["zg_gen_jet"] = c_gen_new
+    return df_
+
+def adjust_rg(df_):
+    """ Replace negative R_{g} values with rg_neg. """
+    rg_neg = -0.1
+    if "rg_jet" in df_.columns and "rg_jet_orig" not in df_.columns:
+        listrg_old = df_["rg_jet"].to_numpy()
+        df_["rg_jet_orig"] = listrg_old
+        c_new = [rg_neg if rg_old < 0 else rg_old for rg_old in listrg_old]
+        df_ = df_.drop(["rg_jet"], axis=1)
+        df_["rg_jet"] = c_new
+    if "rg_gen_jet" in df_.columns and "rg_gen_jet_orig" not in df_.columns:
+        listrg_gen_old = df_["rg_gen_jet"].to_numpy()
+        df_["rg_gen_jet_orig"] = listrg_gen_old
+        c_gen_new = [rg_neg if rg_old < 0 else rg_old for rg_old in listrg_gen_old]
+        df_ = df_.drop(["rg_gen_jet"], axis=1)
+        df_["rg_gen_jet"] = c_gen_new
+    return df_
+
+def adjust_z(df_):
+    """ Truncate z values to avoid z = 1 overflow. """
+    z_max = 0.99
+    if "z" in df_.columns and "z_orig" not in df_.columns:
+        list_z_old = df_["z"].to_numpy()
+        df_["z_orig"] = list_z_old
+        c_new = [min(z_old, z_max) for z_old in list_z_old]
+        df_ = df_.drop(["z"], axis=1)
+        df_["z"] = c_new
+    if "z_gen" in df_.columns and "z_gen_orig" not in df_.columns:
+        list_z_gen_old = df_["z_gen"].to_numpy()
+        df_["z_gen_orig"] = list_z_gen_old
+        c_gen_new = [min(z_old, z_max) for z_old in list_z_gen_old]
+        df_ = df_.drop(["z_gen"], axis=1)
+        df_["z_gen"] = c_gen_new
+    return df_
+
 class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
     # Class Attribute
     species = 'processerinclusive'
@@ -187,18 +254,6 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
             print('I am sorry, I am dying ...\n \n \n')
             sys.exit()
         dfreco = selectdfquery(dfreco, self.s_reco_unp)
-        listnsd_old = dfreco["nsd_jet"].values
-        dfreco["nsd_jet_orig"] = listnsd_old
-        c_new = [0 if nsd_old < 0 else nsd_old for nsd_old in listnsd_old]
-        dfreco = dfreco.drop(["nsd_jet"], axis=1)
-        dfreco["nsd_jet"] = c_new
-        if self.mcordata == "mc":
-            listnsd_old_genmatched = dfreco["nsd_gen_jet"].values
-            dfreco["nsd_gen_jet_orig"] = listnsd_old_genmatched
-            c_new_genmatched = [0 if nsd_old < 0 else nsd_old for nsd_old in listnsd_old_genmatched]
-            dfreco = dfreco.drop(["nsd_gen_jet"], axis=1)
-            dfreco["nsd_gen_jet"] = c_new_genmatched
-
         dfreco = pd.merge(dfreco, dfevt, on=self.v_evtmatch)
         dfreco = dfreco.reset_index(drop=True)
         pickle.dump(dfreco, openfile(self.l_reco[file_index], "wb"), protocol=4)
@@ -206,11 +261,6 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
         if self.mcordata == "mc":
             treegen = uproot.open(self.l_root[file_index])[self.n_treegen]
             dfgen = treegen.pandas.df(branches=self.v_gen)
-            listnsd_old_gen = dfgen["nsd_jet"].values
-            dfgen["nsd_jet_orig"] = listnsd_old_gen
-            c_new_gen = [0 if nsd_old < 0 else nsd_old for nsd_old in listnsd_old_gen]
-            dfgen = dfgen.drop(["nsd_jet"], axis=1)
-            dfgen["nsd_jet"] = c_new_gen
             dfgen = pd.merge(dfgen, dfevtorig, on=self.v_evtmatch)
             dfgen = selectdfquery(dfgen, self.s_gen_unp)
             dfgen = dfgen.reset_index(drop=True)
@@ -241,6 +291,9 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
     def process_histomass_single(self, index):
         myfile = TFile.Open(self.l_histomass[index], "recreate")
         df = pickle.load(openfile(self.l_reco[index], "rb"))
+        df = adjust_nsd(df)
+        df = adjust_zg(df)
+        df = adjust_rg(df)
         if self.s_evtsel is not None:
             df = df.query(self.s_evtsel)
         if self.s_jetsel_reco is not None:
@@ -293,7 +346,13 @@ class ProcesserInclusive: # pylint: disable=too-many-instance-attributes
         """
         out_file = TFile.Open(self.l_historesp[index], "recreate")
         df_mc_gen = pickle.load(openfile(self.l_gen[index], "rb"))
+        df_mc_gen = adjust_nsd(df_mc_gen)
+        df_mc_gen = adjust_zg(df_mc_gen)
+        df_mc_gen = adjust_rg(df_mc_gen)
         df_mc_reco = pickle.load(openfile(self.l_reco[index], "rb"))
+        df_mc_reco = adjust_nsd(df_mc_reco)
+        df_mc_reco = adjust_zg(df_mc_reco)
+        df_mc_reco = adjust_rg(df_mc_reco)
 
         # selection on gen
         #if self.runlistrigger is not None:
