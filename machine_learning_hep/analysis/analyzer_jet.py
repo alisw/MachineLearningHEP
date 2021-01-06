@@ -500,7 +500,8 @@ class AnalyzerJet(Analyzer):
                             sgn_func.Integral(self.p_massmin[ipt], self.p_massmax[ipt]))
                 sigma = fitter.GetSigma()
                 mean = fitter.GetMean()
-                print("*******************Sigma, mean***************", sigma, mean)
+                significance = fitter.Significance()
+                print("*******************Sigma, mean, significance***************", sigma, mean, significance)
                 bkg_left_1 = (mean - 9*sigma)
                 bkg_left_2 = (mean - 4*sigma)
                 sig_left =  (mean - 2*sigma)
@@ -4052,7 +4053,6 @@ class AnalyzerJet(Analyzer):
         if not tree_sim:
             self.logger.fatal(make_message_notfound(tree_name, file_path))
 
-        print("Converting")
         # Convert it into a dataframe.
         list_branches = ["pt_cand", "eta_cand", "phi_cand", "y_cand", "pdg_parton", "pt_jet", \
             "eta_jet", "phi_jet", "delta_r_jet", "z", "n_const", "zg_jet", "rg_jet", "nsd_jet", \
