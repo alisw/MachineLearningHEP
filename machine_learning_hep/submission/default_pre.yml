@@ -3,7 +3,7 @@ download:
     activate: false
 conversion:
   mc:
-    activate: false
+    activate: true 
   data:
     activate: false
 skimming:
