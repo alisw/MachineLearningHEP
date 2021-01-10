@@ -60,19 +60,28 @@ D0pp:
               nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, nsigTPC_Pi_1, nsigTPC_K_1, nsigTOF_Pi_1, nsigTOF_K_1,
               pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet,
               pt_gen_jet, eta_gen_jet, phi_gen_jet, delta_eta_gen_jet, delta_phi_gen_jet, delta_r_gen_jet, pt_gen_cand,
-              zg_jet, zg_gen_jet, rg_jet, rg_gen_jet, nsd_jet, nsd_gen_jet, Pt_mother_jet, Pt_mother_gen_jet, k0_jet, k0_gen_jet, k1_jet, k1_gen_jet, k2_jet, k2_gen_jet, kT_jet, kT_gen_jet]
+              zg_jet, zg_gen_jet, rg_jet, rg_gen_jet, nsd_jet, nsd_gen_jet, pt_splitting_jet, pt_splitting_gen_jet, k0_jet, k0_gen_jet, k1_jet, k1_gen_jet, k2_jet, k2_gen_jet, kT_jet, kT_gen_jet]
     var_evt:
       data: [centrality, z_vtx_reco, n_vtx_contributors, n_tracks, is_ev_rej, run_number,
               ev_id,  ev_id_ext, n_tracklets,V0Amult, trigger_hasbit_INT7, trigger_hasbit_HighMultSPD,
               trigger_hasbit_HighMultV0, trigger_hasclass_INT7, trigger_hasclass_HighMultSPD,
-              trigger_hasclass_HighMultV0, n_tracklets_corr, v0m, v0m_eq, v0m_corr, v0m_eq_corr, perc_v0m, is_ev_rej_INT7, is_ev_rej_HighMultSPD, is_ev_rej_HighMultV0, is_ev_sel_int7, is_ev_sel_shm, is_ev_sel_vhm, n_tracklets_corr_shm]
+              trigger_hasclass_HighMultV0, n_tracklets_corr, v0m, v0m_eq, v0m_corr, v0m_eq_corr,
+              perc_v0m, is_ev_rej_INT7, is_ev_rej_HighMultSPD, is_ev_rej_HighMultV0, is_ev_sel_int7,
+              is_ev_sel_shm, is_ev_sel_vhm, n_tracklets_corr_shm, is_ev_rej_EMCEJE,
+              trigger_online_EMCALEJ1, trigger_online_EMCALEJ2, trigger_online_DCALDJ1,
+              trigger_online_DCALDJ2, trigger_hasbit_EMCEJE, trigger_hasclass_EMCALEJ1, trigger_hasclass_EMCALEJ2,
+              trigger_hasclass_DCALDJ1, trigger_hasclass_DCALDJ2, is_ev_sel_EMCEJE]
       mc: [z_vtx_gen, centrality, z_vtx_reco, n_vtx_contributors, n_tracks, is_ev_rej, run_number,
               ev_id,  ev_id_ext, n_tracklets, V0Amult, trigger_hasbit_INT7, trigger_hasbit_HighMultSPD,
               trigger_hasbit_HighMultV0, trigger_hasclass_INT7, trigger_hasclass_HighMultSPD,
               trigger_hasclass_HighMultV0, n_tracklets_corr, v0m, v0m_eq, v0m_corr, v0m_eq_corr,
-              mult_gen, mult_gen_v0a, mult_gen_v0c, perc_v0m, is_ev_rej_INT7, is_ev_rej_HighMultSPD, is_ev_rej_HighMultV0, is_ev_sel_int7, is_ev_sel_shm, is_ev_sel_vhm, n_tracklets_corr_shm]
+              mult_gen, mult_gen_v0a, mult_gen_v0c, perc_v0m, is_ev_rej_INT7, is_ev_rej_HighMultSPD,
+              is_ev_rej_HighMultV0, is_ev_sel_int7, is_ev_sel_shm, is_ev_sel_vhm, n_tracklets_corr_shm, is_ev_rej_EMCEJE,
+              trigger_online_EMCALEJ1, trigger_online_EMCALEJ2, trigger_online_DCALDJ1,
+              trigger_online_DCALDJ2, trigger_hasbit_EMCEJE, trigger_hasclass_EMCALEJ1, trigger_hasclass_EMCALEJ2,
+              trigger_hasclass_DCALDJ1, trigger_hasclass_DCALDJ2, is_ev_sel_EMCEJE]
     var_gen: [y_cand, pt_cand, eta_cand, phi_cand, cand_type, pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet,
-              zg_jet, rg_jet, nsd_jet, Pt_mother_jet, k0_jet, k1_jet, k2_jet, kT_jet,
+              zg_jet, rg_jet, nsd_jet, pt_splitting_jet, k0_jet, k1_jet, k2_jet, kT_jet,
               run_number, ev_id,  ev_id_ext]
     var_evt_match: [run_number, ev_id,  ev_id_ext]
     var_training: [[d_len, d_len_xy, norm_dl, norm_dl_xy, cos_p, cos_p_xy, imp_par_xy, dca, imp_par_prod, imp_par_prong0, imp_par_prong1, imp_par_err_prong0, imp_par_err_prong1, max_norm_d0d0exp,
@@ -370,6 +379,43 @@ D0pp:
       - Null
       - Null
 
+    jet_r_shape:
+      <<: *jet_default
+      var_binningshape: delta_r_jet
+      var_binningshape_gen: delta_r_gen_jet
+      var_shape_latex: "#Delta R^{jet}"
+      #sel_binminshape_reco: [0, 0.05, 0.1, 0.15]
+      #sel_binmaxshape_reco:        [0.05, 0.1, 0.15, 0.3]
+      #sel_binminshape_gen:  [0, 0.05, 0.1, 0.15]
+      #sel_binmaxshape_gen:         [0.05, 0.1, 0.15, 0.3]
+  
+      sel_binminshape_reco: [0, 0.05, 0.1]
+      sel_binmaxshape_reco:        [0.05, 0.1, 0.2]
+      sel_binminshape_gen:  [0, 0.05, 0.1]
+      sel_binmaxshape_gen:         [0.05, 0.1, 0.2]
+
+      data: &data_out_r_shape
+        <<: *data_out_default
+        results: [/data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/pp_2016_data/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/pp_2017_data/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/pp_2018_data/resultsMBjetvspt] #list of periods
+        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/pp_data/resultsMBjetvspt
+
+        resultslc: /data/Derived_testResults/Jets/Lc/2_6/vAN-20200824_ROOT6-1/pp_data/resultsMBjetvspt
+        resultsold: /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200304_ROOT6-1/pp_data/resultsMBjetvspt
+      mc: &mc_out_r_shape
+        <<: *mc_out_default
+        results: [/data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/pp_2016_mc_prodD2H/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/pp_2017_mc_prodD2H/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/pp_2018_mc_prodD2H/resultsMBjetvspt] #list of periods
+        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/pp_mc_prodD2H/resultsMBjetvspt
+      data_proc: # alternative processor output used as the analyzer input
+        <<: *data_out_r_shape
+      mc_proc: # alternative processor output used as the analyzer input
+        <<: *mc_out_r_shape
+      variations_db: ./data/data_prod_20200304/database_variations_D0pp_jet_r_shape.yml
+
+
     jet_rg:
       <<: *jet_default
       var_binningshape: rg_jet
@@ -454,44 +500,6 @@ D0pp:
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_ff
       variations_db: ./data/data_prod_20200304/database_variations_D0pp_jet_FF.yml
-
-    jet_r_shape:
-      <<: *jet_default
-      var_binningshape: delta_r_jet
-      var_binningshape_gen: delta_r_gen_jet
-      var_shape_latex: "#Delta R^{jet}"
-      #sel_binminshape_reco: [0, 0.05, 0.1, 0.15]
-      #sel_binmaxshape_reco:        [0.05, 0.1, 0.15, 0.3]
-      #sel_binminshape_gen:  [0, 0.05, 0.1, 0.15]
-      #sel_binmaxshape_gen:         [0.05, 0.1, 0.15, 0.3]
-  
-      sel_binminshape_reco: [0, 0.05, 0.1]
-      sel_binmaxshape_reco:        [0.05, 0.1, 0.2]
-      sel_binminshape_gen:  [0, 0.05, 0.1]
-      sel_binmaxshape_gen:         [0.05, 0.1, 0.2]
-
-
-      data: &data_out_r_shape
-        <<: *data_out_default
-        results: [/data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/ff/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/ff/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/ff/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
-
-        resultslc: /data/Derived_testResults/Jets/Lc/2_6/vAN-20200824_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
-        resultsold: /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200304_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
-      mc: &mc_out_r_shape
-        <<: *mc_out_default
-        results: [/data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/ff/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/ff/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/ff/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/ff/default/default/pp_mc_prodD2H/resultsMBjetvspt
-      data_proc: # alternative processor output used as the analyzer input
-        <<: *data_out_r_shape
-      mc_proc: # alternative processor output used as the analyzer input
-        <<: *mc_out_r_shape
-      variations_db: ./data/data_prod_20200304/database_variations_D0pp_jet_r_shape.yml
-
 
     #########################
     #                       #

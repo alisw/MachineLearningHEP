@@ -173,12 +173,12 @@ D0pp:
       fracmerge: [1.0] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC18pp] #list of periods
-      unmerged_tree_dir: [/mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/vAN-20200824_ROOT6-1/pp_sim/552_20210104-2318/merged] #list of periods
-      pkl: [/mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/vAN-20200824_ROOT6-1/pp_sim/552_20210104-2318/pkl] #list of periods
-      pkl_skimmed: [/mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/vAN-20200824_ROOT6-1/pp_sim/552_20210104-2318/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [/mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/vAN-20200824_ROOT6-1/pp_sim/552_20210104-2318/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: /mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/pp_mc_prod_mltot
-      pkl_evtcounter_all: /mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/pp_mc_prod_evttot
+      unmerged_tree_dir: [/mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/D0/vAN-20200824_ROOT6-1/pp_sim/552_20210104-2318/merged] #list of periods
+      pkl: [/mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/D0/vAN-20200824_ROOT6-1/pp_sim/552_20210104-2318/pkl] #list of periods
+      pkl_skimmed: [/mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/D0/vAN-20200824_ROOT6-1/pp_sim/552_20210104-2318/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/D0/vAN-20200824_ROOT6-1/pp_sim/552_20210104-2318/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: /mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/D0/pp_mc_prod_mltot
+      pkl_evtcounter_all: /mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/D0/pp_mc_prod_evttot
       mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_18] #list of periods
 
   ml:
@@ -201,9 +201,11 @@ D0pp:
     binmax:   [4,6,8,12,24] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: BinaryClassification
     ncorescrossval: 10
-    mlplot: /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/mlplot # to be removed
-    mlout: /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/mlout # to be removed
-
+    # mlplot: /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/mlplot # to be removed
+    # mlout: /data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/mlout # to be removed
+    mlplot: /data/Derived/D0kAnywithJets/vAN-20200824_ROOT6-1/mlplot_mc # to be removed
+    mlout: /data/Derived/D0kAnywithJets/vAN-202008244_ROOT6-1/mlout_mc # to be removed
+    
     opt:
       isFONLLfromROOT: true
       filename_fonll: 'data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root' # file with FONLL predictions
@@ -226,8 +228,8 @@ D0pp:
       pkl_skimmed_dec: [/data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/pklskdec] #list of periods
       pkl_skimmed_decmerged: [ /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/pklskdecmerged] #list of periods
     mc:
-      pkl_skimmed_dec: [/mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/vAN-20200824_ROOT6-1/pp_sim/552_20210104-2318/pklskdec] #list of periods
-      pkl_skimmed_decmerged: [/mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/vAN-20200824_ROOT6-1/pp_sim/552_20210104-2318/pklskdecmerged] #list of periods
+      pkl_skimmed_dec: [/mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/D0/vAN-20200824_ROOT6-1/pp_sim/552_20210104-2318/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/D0/vAN-20200824_ROOT6-1/pp_sim/552_20210104-2318/pklskdecmerged] #list of periods
     modelname: xgboost
     modelsperptbin: [xgboost_classifierD0pp_FF_dfselection_pt_cand_1.0_2.0.sav,
                      xgboost_classifierD0pp_FF_dfselection_pt_cand_2.0_4.0.sav,
@@ -354,6 +356,29 @@ D0pp:
       - Null
       - Null
 
+    jet_r_shape:
+      <<: *jet_default
+      var_binningshape: delta_r_jet
+      var_binningshape_gen: delta_r_gen_jet
+      var_shape_latex: "#Delta R^{jet}"
+      sel_binminshape_reco: [0, 0.05, 0.1, 0.15]
+      sel_binmaxshape_reco:        [0.05, 0.1, 0.15, 0.3]
+      sel_binminshape_gen:  [0, 0.05, 0.1, 0.15]
+      sel_binmaxshape_gen:         [0.05, 0.1, 0.15, 0.3]
+      data: &data_out_r_shape
+        <<: *data_out_default
+        results: [/data/Derived_testResults/Jets/D0kAnywithJets/MC_test/vAN-20200824_ROOT6-1/pp_2018_data/resultsMBjetvspt] #list of periods
+        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/MC_test/vAN-20200824_ROOT6-1/pp_data/resultsMBjetvspt
+      mc: &mc_out_r_shape
+        <<: *mc_out_default
+        results: [/data/Derived_testResults/Jets/D0kAnywithJets/MC_test/vAN-20200824_ROOT6-1/pp_2018_mc_prod/resultsMBjetvspt] #list of periods
+        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/MC_test/vAN-20200824_ROOT6-1/pp_mc_prod/resultsMBjetvspt
+      data_proc: # alternative processor output used as the analyzer input
+        <<: *data_out_r_shape
+      mc_proc: # alternative processor output used as the analyzer input
+        <<: *mc_out_r_shape
+      variations_db: ./data/data_prod_20200304/database_variations_D0pp_jet_r_shape.yml
+
     jet_rg:
       <<: *jet_default
       var_binningshape: rg_jet
@@ -438,35 +463,6 @@ D0pp:
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_ff
       variations_db: ./data/data_prod_20200304/database_variations_D0pp_jet_FF.yml
-
-    jet_r_shape:
-      <<: *jet_default
-      var_binningshape: delta_r_jet
-      var_binningshape_gen: delta_r_gen_jet
-      var_shape_latex: "#Delta R^{jet}"
-      #sel_binminshape_reco: [0, 0.05, 0.1, 0.15]
-      #sel_binmaxshape_reco:        [0.05, 0.1, 0.15, 0.3]
-      #sel_binminshape_gen:  [0, 0.05, 0.1, 0.15]
-      #sel_binmaxshape_gen:         [0.05, 0.1, 0.15, 0.3]
-      
-      sel_binminshape_reco: [0, 0.05, 0.1]
-      sel_binmaxshape_reco:        [0.05, 0.1, 0.2]
-      sel_binminshape_gen:  [0, 0.05, 0.1]
-      sel_binmaxshape_gen:         [0.05, 0.1, 0.2]
-      data: &data_out_r_shape
-        <<: *data_out_default
-        results: [/data/Derived_testResults/Jets/D0kAnywithJets/MC_test/vAN-20200824_ROOT6-1/ff/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/MC_test/vAN-20200824_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
-      mc: &mc_out_r_shape
-        <<: *mc_out_default
-        results: [/data/Derived_testResults/Jets/D0kAnywithJets/MC_test/vAN-20200824_ROOT6-1/ff/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/MC_test/vAN-20200824_ROOT6-1/ff/default/default/pp_mc_prodD2H/resultsMBjetvspt
-      data_proc: # alternative processor output used as the analyzer input
-        <<: *data_out_r_shape
-      mc_proc: # alternative processor output used as the analyzer input
-        <<: *mc_out_r_shape
-      variations_db: ./data/data_prod_20200304/database_variations_D0pp_jet_r_shape.yml
-
 
     #########################
     #                       #
