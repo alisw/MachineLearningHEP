@@ -103,6 +103,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.s_gen_unp = datap["sel_gen_unp"]
         self.s_reco_skim = datap["sel_reco_skim"]
         self.s_gen_skim = datap["sel_gen_skim"]
+        self.s_apply_yptacccut = datap.get("apply_yptacccut", True)
 
         #bitmap
         self.b_trackcuts = datap["sel_reco_singletrac_unp"]
@@ -127,6 +128,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.v_ismcbkg = datap["bitmap_sel"]["var_ismcbkg"]
         self.v_ismcrefl = datap["bitmap_sel"]["var_ismcrefl"]
         self.v_var_binning = datap["var_binning"]
+        self.v_invmass = datap["variables"].get("var_inv_mass", "inv_mass")
+        self.v_rapy = datap["variables"].get("var_y", "y_cand")
+        self.s_var_evt_sel = datap["variables"].get("var_evt_sel", "is_ev_rej")
 
         #list of files names
         if os.path.isdir(self.d_root):
@@ -281,15 +285,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
             sys.exit()
         dfreco = selectdfquery(dfreco, self.s_reco_unp)
         dfreco = pd.merge(dfreco, dfevt, on=self.v_evtmatch)
-        isselacc = selectfidacc(dfreco.pt_cand.values, dfreco.y_cand.values)
-        dfreco = dfreco[np.array(isselacc, dtype=bool)]
+        if self.s_apply_yptacccut is True:
+            isselacc = selectfidacc(dfreco[self.v_var_binning].values,
+                                    dfreco[self.v_rapy].values)
+            dfreco = dfreco[np.array(isselacc, dtype=bool)]
+
         arraysub = [0 for ival in range(len(dfreco))]
-        n_tracklets = dfreco["n_tracklets"].values
-        n_tracklets_corr = dfreco["n_tracklets_corr"].values
-        n_tracklets_corr_shm = dfreco["n_tracklets_corr_shm"].values
-        n_tracklets_sub = None
-        n_tracklets_corr_sub = None
-        n_tracklets_corr_shm_sub = None
         for iprong in range(self.nprongs):
             if self.prongformultsub[iprong] == 0:
                 continue
@@ -298,13 +299,22 @@ class Processer: # pylint: disable=too-many-instance-attributes
             ntrackletsthisprong = [1 if spdhits_thisprong[index] == 3 else 0 \
                                    for index in range(len(dfreco))]
             arraysub = np.add(ntrackletsthisprong, arraysub)
-        n_tracklets_sub = np.subtract(n_tracklets, arraysub)
-        n_tracklets_corr_sub = np.subtract(n_tracklets_corr, arraysub)
-        n_tracklets_corr_shm_sub = np.subtract(n_tracklets_corr_shm, arraysub)
+        if "n_tracklets" in self.v_evt:
+            n_tracklets = dfreco["n_tracklets"].values
+            n_tracklets_sub = None
+            n_tracklets_sub = np.subtract(n_tracklets, arraysub)
+            dfreco["n_tracklets_sub"] = n_tracklets_sub
+        if "n_tracklets_corr" in self.v_evt:
+            n_tracklets_corr = dfreco["n_tracklets_corr"].values
+            n_tracklets_corr_sub = None
+            n_tracklets_corr_sub = np.subtract(n_tracklets_corr, arraysub)
+            dfreco["n_tracklets_corr_sub"] = n_tracklets_corr_sub
+        if "n_tracklets_corr_shm" in self.v_evt:
+            n_tracklets_corr_shm = dfreco["n_tracklets_corr_shm"].values
+            n_tracklets_corr_shm_sub = None
+            n_tracklets_corr_shm_sub = np.subtract(n_tracklets_corr_shm, arraysub)
+            dfreco["n_tracklets_corr_shm_sub"] = n_tracklets_corr_shm_sub
 
-        dfreco["n_tracklets_sub"] = n_tracklets_sub
-        dfreco["n_tracklets_corr_sub"] = n_tracklets_corr_sub
-        dfreco["n_tracklets_corr_shm_sub"] = n_tracklets_corr_shm_sub
         if self.b_trackcuts is not None:
             dfreco = filter_bit_df(dfreco, self.v_bitvar, self.b_trackcuts)
         dfreco[self.v_isstd] = np.array(tag_bit_df(dfreco, self.v_bitvar,

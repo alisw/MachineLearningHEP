@@ -490,7 +490,7 @@ class Optimiser:
         df_data_sideband = df_data_sideband.tail(round(len(df_data_sideband) * self.p_bkgfracopt))
         hmass = TH1F('hmass', '', self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
         df_mc_signal = self.df_mc[self.df_mc["ismcsignal"] == 1]
-        mass_array = df_mc_signal['inv_mass'].values
+        mass_array = df_mc_signal[self.v_invmass].values
         for mass_value in np.nditer(mass_array):
             hmass.Fill(mass_value)
 
@@ -529,7 +529,8 @@ class Optimiser:
             bkg_array, bkg_err_array, _ = calc_bkg(df_data_sideband, name, self.p_nstepsign,
                                                    self.p_mass_fit_lim, self.p_bkg_func,
                                                    self.p_bin_width, sig_region, self.p_savefit,
-                                                   self.dirmlplot, [self.p_binmin, self.p_binmax])
+                                                   self.dirmlplot, [self.p_binmin, self.p_binmax],
+                                                   self.v_invmass)
             sig_array = [eff * signal_yield for eff in eff_array]
             sig_err_array = [eff_err * signal_yield for eff_err in eff_err_array]
             bkg_array = [bkg / (self.p_bkgfracopt * self.p_nevtml) for bkg in bkg_array]
