@@ -17,4 +17,11 @@ if [[ -z $Remove ]]; then
     rm -rf /data/Run5data_mlhep/prod_test/mltotdata_$Tag
 fi
 
+rm -rf  resultsdata_scenario3
+rm -rf  resultsdatatot_scenario3
+
+rm -rf  resultsmc_scenario3
+rm -rf  resultsmctot_scenario3
+
+
 DISPLAY="" python do_entire_analysis.py -r submission/default_complete.yml -d data/data_run5/database_ml_parameters_Dzero_$Tag.yml -a $Tag |& tee run5.log
