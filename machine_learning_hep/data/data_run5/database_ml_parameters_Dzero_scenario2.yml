@@ -197,11 +197,11 @@ Dzero_scenario2:
     probcutoptimal: [0.5, 0.5, 0.5, 0.5] #list of nbins
 
   analysis:
-    indexhptspectrum: -1 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
-    fd_method: -1 #knone=0, kfc=1, kNb=2
-    cctype: -1 #kpp7
-    sigmav0: -1
-    inputfonllpred: null
+    indexhptspectrum: 0 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
+    fd_method: 0 #knone=0, kfc=1, kNb=2
+    cctype: 1 #kpp7
+    sigmav0: 57.8e-3
+    inputfonllpred: data/fonll/DmesonLcPredictions_502TeV_y05_FFptDepLHCb_BRpythia8.root
     dir_general_plots: analysis_plots
 
     scenario2:
