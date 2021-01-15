@@ -50,7 +50,7 @@ mlapplication:
     domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged)
     docontinueafterstop: false # set to false to resume interrupted processing (existing corrupted output will be overwritten)
   mc:
-    doapply: true # pkl_skimmed_dec (pklskdec)
+    doapply: false # pkl_skimmed_dec (pklskdec)
     domergeapply: true # pkl_skimmed_decmerged (pklskdecmerged)
     docontinueafterstop: true # set to false to resume interrupted processing (existing corrupted output will be overwritten)
 

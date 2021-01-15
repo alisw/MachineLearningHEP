@@ -4,12 +4,12 @@ download:
     activate: false
 conversion: # pkl
   mc:
-    activate: true
+    activate: false
   data:
     activate: false
 skimming: # pkl_skimmed (pklsk), pkl_evtcounter_all
   mc:
-    activate: true
+    activate: false
   data:
     activate: false
 merging: # pkl_skimmed_merge_for_ml (pklskml)
@@ -50,9 +50,9 @@ mlapplication:
     domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged)
     docontinueafterstop: false # set to false to resume interrupted processing (existing corrupted output will be overwritten)
   mc:
-    doapply: true # pkl_skimmed_dec (pklskdec)
+    doapply: false # pkl_skimmed_dec (pklskdec)
     domergeapply: true # pkl_skimmed_decmerged (pklskdecmerged)
-    docontinueafterstop: true # set to false to resume interrupted processing (existing corrupted output will be overwritten)
+    docontinueafterstop: e # set to false to resume interrupted processing (existing corrupted output will be overwritten)
 
 analysis:
   type: YYYY # used unless specified explicitly as do_entire_analysis -a type_ana

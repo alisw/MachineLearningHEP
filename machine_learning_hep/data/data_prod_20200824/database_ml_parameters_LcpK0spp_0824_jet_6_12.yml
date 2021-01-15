@@ -379,18 +379,18 @@ LcpK0spp:
         mc: null
       data: &data_out_default
         runselection: [null, null, null]
-        results: [/data/Derived_testResults/Jets/Lc/vAN-20200824_ROOT6-1/train_491/6_12/pp_2016_data/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/Lc/vAN-20200824_ROOT6-1/train_491/6_12/pp_2017_data/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/Lc/vAN-20200824_ROOT6-1/train_491/6_12/pp_2018_data/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/Lc/vAN-20200824_ROOT6-1/train_491/6_12/pp_data/resultsMBjetvspt
+        results: [/data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/pp_2016_data/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/pp_2017_data/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/pp_2018_data/resultsMBjetvspt] #list of periods
+        resultsallp: /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/pp_data/resultsMBjetvspt
         resultsold: /data/Derived_testResults/Jets/Lc/6_12/vAN-20200304_ROOT6-1/pp_data/resultsMBjetvspt
 
       mc: &mc_out_default
         runselection: [null, null, null]
-        results: [/data/Derived_testResults/Jets/Lc/vAN-20200824_ROOT6-1/train_491/6_12/pp_2016_mc_prod/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/Lc/vAN-20200824_ROOT6-1/train_491/6_12/pp_2017_mc_prod/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/Lc/vAN-20200824_ROOT6-1/train_491/6_12/pp_2018_mc_prod/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/Lc/vAN-20200824_ROOT6-1/train_491/6_12/pp_mc_prod/resultsMBjetvspt
+        results: [/data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/pp_2016_mc_prod/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/pp_2017_mc_prod/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/pp_2018_mc_prod/resultsMBjetvspt] #list of periods
+        resultsallp: /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/pp_mc_prod/resultsMBjetvspt
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input

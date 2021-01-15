@@ -428,7 +428,8 @@ class AnalyzerJet(Analyzer):
         # Get the number of selected events.
         histonorm = myfile.Get("histonorm")
         if not histonorm:
-            self.logger.fatal(make_message_notfound("histonorm", self.n_filemass))
+            #self.logger.fatal(make_message_notfound("histonorm", self.n_filemass))
+            print("histomass doesn't exist")
         self.p_nevents = histonorm.GetBinContent(1)
         print("Number of selected event: %g" % self.p_nevents)
         #if self.feeddown_db:
@@ -500,8 +501,8 @@ class AnalyzerJet(Analyzer):
                             sgn_func.Integral(self.p_massmin[ipt], self.p_massmax[ipt]))
                 sigma = fitter.GetSigma()
                 mean = fitter.GetMean()
-                significance = fitter.Significance()
-                print("*******************Sigma, mean, significance***************", sigma, mean, significance)
+                #significance = fitter.Significance()
+                #print("*******************Sigma, mean, significance***************", sigma, mean, significance)
                 bkg_left_1 = (mean - 9*sigma)
                 bkg_left_2 = (mean - 4*sigma)
                 sig_left =  (mean - 2*sigma)

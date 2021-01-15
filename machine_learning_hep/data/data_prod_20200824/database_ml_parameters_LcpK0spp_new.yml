@@ -227,37 +227,27 @@ LcpK0spp:
       seedmerge: [12] #list of periods
       period: [LHC18pp] #list of periods
       unmerged_tree_dir: [/data/TTree/D0DsLck_check_2018/vAN-20200824_ROOT6-1/pp_data/537_20201201-1137/merged] #list of periods
-      pkl: [/mnt/temp/Lck_check_2018/vAN-20200824_ROOT6-1/pp_2018_data/537_20201201-1137/pkl] #list of periods
-      pkl_skimmed: [/mnt/temp/Lck_check_2018/vAN-20200824_ROOT6-1/pp_2018_data/537_20201201-1137/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [/mnt/temp/Lck_check_2018/vAN-20200824_ROOT6-1/pp_2018_data/537_20201201-1137/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: /mnt/temp/Lck_check_2018/vAN-20200824_ROOT6-1/pp_data_mltot
-      pkl_evtcounter_all: /mnt/temp/Lck_check_2018/vAN-20200824_ROOT6-1/pp_data_evttot
+      pkl: [/mnt/temp/talazare_vAN-20200824_test/Lck_check_2018/vAN-20200824_ROOT6-1/pp_2018_data/537_20201201-1137/pkl] #list of periods
+      pkl_skimmed: [/mnt/temp/talazare_vAN-20200824_test/Lck_check_2018/vAN-20200824_ROOT6-1/pp_2018_data/537_20201201-1137/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/mnt/temp/talazare_vAN-20200824_test/Lck_check_2018/vAN-20200824_ROOT6-1/pp_2018_data/537_20201201-1137/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: /mnt/temp/talazare_vAN-20200824_test/Lck_check_2018/vAN-20200824_ROOT6-1/pp_data_mltot
+      pkl_evtcounter_all: /mnt/temp/talazare_vAN-20200824_test/Lck_check_2018/vAN-20200824_ROOT6-1/pp_data_evttot
       mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018] #list of periods
     mc:
       nprocessesparallel: 20
-      maxfiles: [-1,-1,-1] #list of periods
-      chunksizeunp: [100,100,100] #list of periods
-      chunksizeskim: [1000,1000,1000] #list of periods
-      fracmerge: [1.0,1.0,1.0]  #list of periods
-      seedmerge: [12,12,12] #list of periods
-      period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
-      unmerged_tree_dir: [/data/TTree/MC_LcpK0spp_MB/vAN-20200824_ROOT6-1/pp_2016_mc_prodLcpK0s/491_20200825-1716/merged,
-                          /data/TTree/MC_LcpK0spp_MB/vAN-20200824_ROOT6-1/pp_2017_mc_prodLcpK0s/491_20200825-1716/merged,
-                          /data/TTree/MC_LcpK0spp_MB/vAN-20200824_ROOT6-1/pp_2018_mc_prodLcpK0s/491_20200825-1716/merged] #list of periods
-      pkl: [/data/Derived/LckAny_sub_newMC/vAN-20200824_ROOT6-1/pp_2016_mc_prodLcpK0s/491_20200825-1716/pkl,
-            /data/Derived/LckAny_sub_newMC/vAN-20200824_ROOT6-1/pp_2017_mc_prodLcpK0s/491_20200825-1716/pkl,
-            /data/Derived/LckAny_sub_newMC/vAN-20200824_ROOT6-1/pp_2018_mc_prodLcpK0s/491_20200825-1716/pkl] #list of periods
-      pkl_skimmed: [/data/Derived/LckAny_sub_newMC/vAN-20200824_ROOT6-1/pp_2016_mc_prodLcpK0s/491_20200825-1716/pklsk,
-                    /data/Derived/LckAny_sub_newMC/vAN-20200824_ROOT6-1/pp_2017_mc_prodLcpK0s/491_20200825-1716/pklsk,
-                    /data/Derived/LckAny_sub_newMC/vAN-20200824_ROOT6-1/pp_2018_mc_prodLcpK0s/491_20200825-1716/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [/mnt/temp/talazare_vAN-20200824_test/Lc_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2016_mc_prodLcpK0s/491_20200825-1716/pklskml,
-                                 /mnt/temp/talazare_vAN-20200824_test/Lc_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2017_mc_prodLcpK0s/491_20200825-1716/pklskml,
-                                 /mnt/temp/talazare_vAN-20200824_test/Lc_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2018_mc_prodLcpK0s/491_20200825-1716/pklskml] #list of periods
+      maxfiles: [-1] #list of periods
+      chunksizeunp: [100] #list of periods
+      chunksizeskim: [1000] #list of periods
+      fracmerge: [1.0]  #list of periods
+      seedmerge: [12] #list of periods
+      period: [LHC18pp] #list of periods
+      unmerged_tree_dir: [/data/TTree/MC_LcpK0spp_MB/vAN-20200824_ROOT6-1/pp_2018_mc_prodLcpK0s/491_20200825-1716/merged] #list of periods
+      pkl: [/data/Derived/LckAny_sub_newMC/vAN-20200824_ROOT6-1/pp_2018_mc_prodLcpK0s/491_20200825-1716/pkl] #list of periods
+      pkl_skimmed: [/data/Derived/LckAny_sub_newMC/vAN-20200824_ROOT6-1/pp_2018_mc_prodLcpK0s/491_20200825-1716/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/mnt/temp/talazare_vAN-20200824_test/Lc_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2018_mc_prodLcpK0s/491_20200825-1716/pklskml] #list of periods
       pkl_skimmed_merge_for_ml_all: /mnt/temp/talazare_vAN-20200824_test/Lc_MC_D2H_check/vAN-20200824_ROOT6-1/pp_mc_prodD2H_mltot
       pkl_evtcounter_all: /mnt/temp/talazare_vAN-20200824_test/Lc_MC_D2H_check/vAN-20200824_ROOT6-1/pp_mc_prodD2H_evttot
-      mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_16,
-                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_17,
-                    ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_18]
+      mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_18]
   ml:
     evtsel: is_ev_rej==0
     triggersel:
@@ -277,7 +267,7 @@ LcpK0spp:
     binmax: [2,4,6,8,12,24] #list of nbins
     mltype: BinaryClassification
     ncorescrossval: 10
-    mlplot: /mnt/temp/Lck_check_2018/vAN-20200824_ROOT6-1/mlplot # to be removed
+    mlplot: /mnt/temp/talazare_vAN-20200824_test/Lck_check_2018/vAN-20200824_ROOT6-1/mlplot # to be removed
     mlout: /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/mlout # to be removed
 
     opt:
@@ -299,15 +289,11 @@ LcpK0spp:
 
   mlapplication:
     data:
-      pkl_skimmed_dec: [/mnt/temp/Lck_check_2018/vAN-20200824_ROOT6-1/pp_2018_data/537_20201201-1137/pklskdec]
-      pkl_skimmed_decmerged: [/mnt/temp/Lck_check_2018/vAN-20200824_ROOT6-1/pp_2018_data/537_20201201-1137/pklskdecmerged]
+      pkl_skimmed_dec: [/mnt/temp/talazare_vAN-20200824_test/Lck_check_2018/vAN-20200824_ROOT6-1/pp_2018_data/537_20201201-1137/pklskdec]
+      pkl_skimmed_decmerged: [/mnt/temp/talazare_vAN-20200824_test/Lck_check_2018/vAN-20200824_ROOT6-1/pp_2018_data/537_20201201-1137/pklskdecmerged]
     mc:
-      pkl_skimmed_dec: [/data/Derived/LckAny_sub_newMC/vAN-20200824_ROOT6-1/pp_2016_mc_prodLcpK0s/491_20200825-1716/pklskdec,
-            /data/Derived/LckAny_sub_newMC/vAN-20200824_ROOT6-1/pp_2017_mc_prodLcpK0s/491_20200825-1716/pklskdec,
-            /data/Derived/LckAny_sub_newMC/vAN-20200824_ROOT6-1/pp_2018_mc_prodLcpK0s/491_20200825-1716/pklskdec] #list of periods
-      pkl_skimmed_decmerged: [/mnt/temp/talazare_vAN-20200824_test/Lc_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2016_mc_prodLcpK0s/491_20200825-1716/pklskdecmerged,
-                    /mnt/temp/talazare_vAN-20200824_test/Lc_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2017_mc_prodLcpK0s/491_20200825-1716/pklskdecmerged,
-                    /mnt/temp/talazare_vAN-20200824_test/Lc_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2018_mc_prodLcpK0s/491_20200825-1716/pklskdecmerged] #list of periods
+      pkl_skimmed_dec: [/data/Derived/LckAny_sub_newMC/vAN-20200824_ROOT6-1/pp_2018_mc_prodLcpK0s/491_20200825-1716/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/mnt/temp/talazare_vAN-20200824_test/Lc_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2018_mc_prodLcpK0s/491_20200825-1716/pklskdecmerged] #list of periods
     modelname: xgboost
     modelsperptbin: [xgboost_classifierLcpK0spp_dfselection_pt_cand_1.0_2.0.sav,
                      xgboost_classifierLcpK0spp_dfselection_pt_cand_2.0_4.0.sav,
@@ -369,8 +355,8 @@ LcpK0spp:
         resultsallp: /data/Derived_testResults/Jets/Lc/2018_new/vAN-20200824_ROOT6-1/pp_data/resultsMBjetvspt
       mc: &mc_out_default
         runselection: [null]
-        results: [/data/Derived_testResults/Jets/Lc/vAN-20200824_ROOT6-1/pp_2018_mc_prod/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/Lc/vAN-20200824_ROOT6-1/pp_mc_prod/resultsMBjetvspt
+        results: [/data/Derived_testResults/Jets/Lc/2018_new/vAN-20200824_ROOT6-1/pp_2018_mc_prod/resultsMBjetvspt] #list of periods
+        resultsallp: /data/Derived_testResults/Jets/Lc/2018_new/vAN-20200824_ROOT6-1/pp_mc_prod/resultsMBjetvspt
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input

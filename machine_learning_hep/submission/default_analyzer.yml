@@ -57,7 +57,7 @@ analysis:
   type: YYYY # used unless specified explicitly as do_entire_analysis -a type_ana
   # Do each period separately including merged (true)
   # Do only merged (false)doperperiod: true
-  doperperiod: false
+  doperperiod: true
   data: 
     histomass: true # processer: process_histomass
     dojetsystematics: false # analyzer: jetsystematics
