@@ -44,10 +44,10 @@ chmod 0400 userkey.pem
 
 In the following, `$MLHEP` is considered to point to the top directory of the **MLHEP** package.
 
-Downloading is done with `$MLHEP/cplusutilities/Download.sh`. **Note** that you have to be in that directory to run it as it uses helper scripts and finds them relatively to its own directory (to be updated):
+Downloading is done with `$MLHEP/cplusutilities/Download-generic.sh`. **Note** that you have to be in that directory to run it as it uses helper scripts and finds them relatively to its own directory (to be updated):
 
 ```bash
-./Download.sh <train_name> <top_save_dir> [<grid_merging_stage>]
+./Download-generic.sh <train_name> <top_save_dir> [<grid_merging_stage>]
 ```
 
 If you steer the script without arguments, they will be asked for. `<train_name>` has the format: `<ID>_<date>-<time>`. This is used to automatically find the data. `<top_save_dir>` is the directory where the output should be saved. Please don't use your personal `/home/<user>/` directory (or anything below) to save grid productions but synchronise with your collaborators and use `/data/TTrees/`. In there, it has become quite usual to call the next directory corresponding to the hadrons taken into account, the used triggers and whether or not jet variables have been filled. So a possible value `<top_save_dir>` might be `/data/TTree/D0DsLckINT7HighMultwithJets/`. Below, the entire structure is created automatically and would be
@@ -65,6 +65,7 @@ A few variables are hardcoded in `Download.sh` in addition, but usually, they do
 1) The number of files to download from GRID. By default all files will be downloaded: `nfiles="/*/"`. For test runs, one can add some zeros (`"/000*/"`, assuming 1000 < jobs < 9999) to download less files.
 2) The file to be downloaded is by default `AnalysisResults.root`.
 3) There are hardcoded paths for the different datasets from where to get the LEGO train output. Unfortunately, it is not possible to automatically get these from the train config, as some of the children are splitted into multiple paths when the output is too big. For debugging purposes, the script will print the hardcoded paths with the ones it can get from the train config.
+Point 1) and 3) are only valid for the old downloader, `Download.sh`.
 
 ### b) The screen program
 
@@ -106,9 +107,10 @@ will print you some options you can set and it is quite explanatory. However, us
 
 ```bash
 ./post_download.sh --input /path/where/data/is/stored/upto/trainID --target-size 500000 --jobs 50
+./post_download.sh --input /path/where/data/is/stored/upto/trainID --target-size 500000 --jobs 50 --max-search-depth 8
 ```
 
-which would try to merge the single `AnalysisResults.root` files to `500,000 kB` files using 50 parallel jobs. In addition, it is very handy to use
+which would try to merge the single `AnalysisResults.root` files to `500,000 kB` files using 50 parallel jobs. The  second line, with the additional `--max-search-depth 8` argument is needed for `Download-generic.sh`.  In addition, it is very handy to use
 
 ```bash
 ./post_download_all.sh <some_top_dir>

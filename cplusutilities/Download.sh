@@ -13,6 +13,16 @@
 #   NFILES     (/*/ = download all files, /000*/ is 10 files, /00*/ is 100 files, etc)
 #   OUTPUTFILE (name of file to download)
 
+
+
+printf "\n\e[1m--This downloader is outdated. Please use Download-generic.sh--\e[0m\n"
+printf "  Exit? [y/n]:  "
+read answer2
+if [ "$answer2" == "y" ]; then
+  exit
+fi
+
+
 printf "\n\n\n\e[1m----RUNNING THE DOWNLOADER----\e[0m\n\n"
 
 
@@ -75,7 +85,7 @@ fi
 #Copy settings of this train
 printf "\nWill now download \e[1m'env.sh'\e[0m using JAliEn to export the train configuration from HF_TreeCreator for train \e[1m$trainname\e[0m \n\n"
 cmd=$(printf "cp -T 32 /alice/cern.ch/user/a/alitrain/PWGHF/HF_TreeCreator/%s/env.sh file:%s/HF_TreeCreator_env.sh\n" $trainname $PWD)
-/opt/jalien/src/jalien/jalien << EOF
+jalien << EOF
 $cmd
 exit
 EOF
@@ -83,7 +93,7 @@ EOF
 if [ ! -e "HF_TreeCreator_env.sh" ]; then
   printf "\e[1;31mERROR: Downloading env.sh failed, trying again for child_2\e[0m\n"
   cmd=$(printf "cp -T 32 /alice/cern.ch/user/a/alitrain/PWGHF/HF_TreeCreator/%s_child_2/env.sh file:%s/HF_TreeCreator_env.sh\n" $trainname $PWD)
-  /opt/jalien/src/jalien/jalien << EOF2
+  jalien << EOF2
   $cmd
   exit
 EOF2
@@ -92,7 +102,7 @@ fi
 if [ ! -e "HF_TreeCreator_env.sh" ]; then
   printf "\e[1;31mERROR: Downloading env.sh failed, trying again for child_9\e[0m\n"
   cmd=$(printf "cp -T 32 /alice/cern.ch/user/a/alitrain/PWGHF/HF_TreeCreator/%s_child_9/env.sh file:%s/HF_TreeCreator_env.sh\n" $trainname $PWD)
-  /opt/jalien/src/jalien/jalien << EOF3
+  jalien << EOF3
   $cmd
   exit
 EOF3
