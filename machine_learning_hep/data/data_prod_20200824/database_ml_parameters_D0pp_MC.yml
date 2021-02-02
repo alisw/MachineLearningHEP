@@ -173,7 +173,9 @@ D0pp:
       fracmerge: [1.0] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC18pp] #list of periods
-      unmerged_tree_dir: [/mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/D0/vAN-20200824_ROOT6-1/pp_sim/552_20210104-2318/merged] #list of periods
+      unmerged_tree_dir: [/mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/D0/vAN-20200824_ROOT6-1/pp_sim/552_20210104-2318/merged, #list of periods
+      /mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/D0/vAN-20200824_ROOT6-1/pp_sim/552_20210104-2318/merged, #list of periods
+      /mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/D0/vAN-20200824_ROOT6-1/pp_sim/552_20210104-2318/merged] #list of periods
       pkl: [/mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/D0/vAN-20200824_ROOT6-1/pp_sim/552_20210104-2318/pkl] #list of periods
       pkl_skimmed: [/mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/D0/vAN-20200824_ROOT6-1/pp_sim/552_20210104-2318/pklsk] #list of periods
       pkl_skimmed_merge_for_ml: [/mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/D0/vAN-20200824_ROOT6-1/pp_sim/552_20210104-2318/pklskml] #list of periods
@@ -371,98 +373,13 @@ D0pp:
         resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/MC_test/vAN-20200824_ROOT6-1/pp_data/resultsMBjetvspt
       mc: &mc_out_r_shape
         <<: *mc_out_default
-        results: [/data/Derived_testResults/Jets/D0kAnywithJets/MC_test/vAN-20200824_ROOT6-1/pp_2018_mc_prod/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/MC_test/vAN-20200824_ROOT6-1/pp_mc_prod/resultsMBjetvspt
+        results: [/data/Derived_testResults/Jets/D0kAnywithJets/MC_test/vAN-20200824_ROOT6-1/pp_2018_mc_prodD2H/resultsMBjetvspt] #list of periods
+        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/MC_test/vAN-20200824_ROOT6-1/pp_mc_prodD2H/resultsMBjetvspt
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_r_shape
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_r_shape
       variations_db: ./data/data_prod_20200304/database_variations_D0pp_jet_r_shape.yml
-
-    jet_rg:
-      <<: *jet_default
-      var_binningshape: rg_jet
-      var_binningshape_gen: rg_gen_jet
-      var_shape_latex: "#it{R}_{g}"
-      sel_binminshape_reco: [0.0,0.1,0.2,0.3]
-      sel_binmaxshape_reco:     [0.1,0.2,0.3,0.4]
-      sel_binminshape_gen:  [0.0,0.1,0.2,0.3]
-      sel_binmaxshape_gen:      [0.1,0.2,0.3,0.4]
-      data: &data_out_rg
-        <<: *data_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_data/resultsMBjetvspt
-      mc: &mc_out_rg
-        <<: *mc_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_mc_prodD2H/resultsMBjetvspt
-      data_proc: # alternative processor output used as the analyzer input
-        <<: *data_out_rg
-      mc_proc: # alternative processor output used as the analyzer input
-        <<: *mc_out_rg
-      variations_db: ./data/data_prod_20200304/database_variations_D0pp_jet_rg.yml
-
-    jet_nsd:
-      <<: *jet_default
-      var_binningshape: nsd_jet
-      var_binningshape_gen: nsd_gen_jet
-      var_shape_latex: "#it{n}_{SD}"
-      sel_binminshape_reco: [-0.5, 0.5, 1.5, 2.5, 3.5]
-      sel_binmaxshape_reco:       [0.5, 1.5, 2.5, 3.5, 4.5]
-      sel_binminshape_gen:  [-0.5, 0.5, 1.5, 2.5, 3.5]
-      sel_binmaxshape_gen:        [0.5, 1.5, 2.5, 3.5, 4.5]
-      data: &data_out_nsd
-        <<: *data_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_data/resultsMBjetvspt
-      mc: &mc_out_nsd
-        <<: *mc_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_mc_prodD2H/resultsMBjetvspt
-      data_proc: # alternative processor output used as the analyzer input
-        <<: *data_out_nsd
-      mc_proc: # alternative processor output used as the analyzer input
-        <<: *mc_out_nsd
-      variations_db: ./data/data_prod_20200304/database_variations_D0pp_jet_nsd.yml
-
-    jet_FF:
-      <<: *jet_default
-      sel_binmin2_reco: [5.0,7.0,10.0,15.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmax2_reco:     [7.0,10.0,15.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmin2_gen:  [5.0,7.0,10.0,15.0] # gen jet pt bins (sel_binmin2_gen bins)
-      sel_binmax2_gen:      [7.0,10.0,15.0,50.0] # gen jet pt bins (sel_binmin2_gen bins)
-      var_binningshape: z
-      var_binningshape_gen: z_gen
-      var_shape_latex: "#it{z}_{#parallel}^{ch}"
-      sel_binminshape_reco: [0.2001,0.4001,0.5001,0.6001,0.7001,0.8001,0.9001]
-      sel_binmaxshape_reco:        [0.4001,0.5001,0.6001,0.7001,0.8001,0.9001,1.0001]
-      sel_binminshape_gen:  [0.2001,0.4001,0.5001,0.6001,0.7001,0.8001,0.9001]
-      sel_binmaxshape_gen:         [0.4001,0.5001,0.6001,0.7001,0.8001,0.9001,1.0001]
-      data: &data_out_ff
-        <<: *data_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
-      mc: &mc_out_ff
-        <<: *mc_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_mc_prodD2H/resultsMBjetvspt
-      data_proc: # alternative processor output used as the analyzer input
-        <<: *data_out_ff
-      mc_proc: # alternative processor output used as the analyzer input
-        <<: *mc_out_ff
-      variations_db: ./data/data_prod_20200304/database_variations_D0pp_jet_FF.yml
 
     #########################
     #                       #

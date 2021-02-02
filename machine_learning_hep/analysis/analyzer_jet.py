@@ -23,7 +23,7 @@ import numpy as np
 import yaml
 # pylint: disable=import-error, no-name-in-module
 import uproot
-from ROOT import TFile, TH1F, TH2F, TCanvas, TLatex, TGraphAsymmErrors, TLine, TGaxis
+from ROOT import TFile, TH1F, TH2F, TCanvas, TLatex, TGraphAsymmErrors, TLine, TGaxis, Double
 from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
 from ROOT import TLegend
 from ROOT import gROOT, gStyle
@@ -491,47 +491,6 @@ class AnalyzerJet(Analyzer):
                 out = fitter.MassFitter(0)
                 fit_dir = fileout.mkdir(suffix)
                 fit_dir.WriteObject(fitter, "fitter%d" % (ipt))
-                bkg_func = fitter.GetBackgroundRecalcFunc()
-                if bkg_func:
-                    print("integral of bkg func",
-                            bkg_func.Integral(self.p_massmin[ipt],self.p_massmax[ipt]))
-                sgn_func = fitter.GetMassFunc()
-                if sgn_func:
-                    print("integral of sgn func",
-                            sgn_func.Integral(self.p_massmin[ipt], self.p_massmax[ipt]))
-                sigma = fitter.GetSigma()
-                mean = fitter.GetMean()
-                #significance = fitter.Significance()
-                #print("*******************Sigma, mean, significance***************", sigma, mean, significance)
-                bkg_left_1 = (mean - 9*sigma)
-                bkg_left_2 = (mean - 4*sigma)
-                sig_left =  (mean - 2*sigma)
-                sig_right = (mean + 2*sigma)
-                bkg_right_1 = (mean + 4*sigma)
-                bkg_right_2 = (mean + 9*sigma)
-                left_borders = [bkg_left_1, bkg_left_2, sig_left]
-                right_borders = [sig_right, bkg_right_1, bkg_right_2]
-                print(left_borders, right_borders)
-                for brd in left_borders:
-                    if brd < self.p_massmin[ipt]:
-                        brd = self.p_massmin[ipt]
-                for brd in right_borders:
-                    if brd > self.p_massmax[ipt]:
-                        brd = self.p_massmax[ipt]
-                if (sgn_func and bkg_func):
-                    print("signal and background functions exits")
-                    bkg = bkg_func.Integral(sig_left, sig_right)
-                    sig = sgn_func.Integral(sig_left, sig_right)
-                    print("SIGNAL", sig, "BACKGROUND", bkg)
-                    #if (sig)!=0:
-                    #    S_to_B = (sig-bkg)/sqrt(sig)
-                    if (sig+bkg)!=0:
-                        S_to_B = sig/sqrt(sig+bkg)
-                    else:
-                        S_to_B = float("nan")
-                    print("signal over background", S_to_B)
-                else:
-                    S_to_B = float("nan")
                 c_fitted_result = TCanvas("c_fitted_result " + suffix, "Fitted Result")
                 setup_canvas(c_fitted_result)
                 setup_histogram(histomass_reb, get_colour(0), get_marker(0))
@@ -545,6 +504,35 @@ class AnalyzerJet(Analyzer):
                 y_margin_down = 0.05
                 histomass_reb.GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
                 histomass_reb.Draw("same")
+                bkg_func = fitter.GetBackgroundRecalcFunc()
+                sgn_func = fitter.GetSignalFunc()
+                sigma = fitter.GetSigma()
+                mean = fitter.GetMean()
+                bkg_left_1 = (mean - 9*sigma)
+                bkg_left_2 = (mean - 4*sigma)
+                sig_left =  (mean - 2*sigma)
+                sig_right = (mean + 2*sigma)
+                bkg_right_1 = (mean + 4*sigma)
+                bkg_right_2 = (mean + 9*sigma)
+                left_borders = [bkg_left_1, bkg_left_2, sig_left]
+                right_borders = [sig_right, bkg_right_1, bkg_right_2]
+                for brd in left_borders:
+                    if brd < self.p_massmin[ipt]:
+                        brd = self.p_massmin[ipt]
+                for brd in right_borders:
+                    if brd > self.p_massmax[ipt]:
+                        brd = self.p_massmax[ipt]
+                if (sgn_func and bkg_func):
+                    print("signal and background functions exits")
+                    bkg = bkg_func.Integral(sig_left, sig_right)
+                    sig = sgn_func.Integral(sig_left, sig_right)
+                    if (sig+bkg) > 0:
+                       S_to_B = sig/sqrt(sig+bkg)
+                    else:
+                        S_to_B = float("nan")
+                else:
+                    S_to_B = float("nan")
+                print("Signal over background", S_to_B)
                 bkg_left = histomass_reb.Clone("bkg_left")
                 bkg_left.GetXaxis().SetRangeUser(bkg_left_1, bkg_left_2)
                 bkg_left.SetFillColor(38)
@@ -958,6 +946,7 @@ class AnalyzerJet(Analyzer):
             effgen_diff.Scale(100)
             list_effgen_diff.append(effgen_diff)
             list_effgen_diff_labels.append(string_ptjet)
+            print("eff something over")
         list_eff_diff.append(latex_shaperange)
         list_effgen_diff.append(latex_shaperange)
         line_0 = TLine(self.lpt_finbinmin[0], 0, self.lpt_finbinmax[-1], 0)
@@ -1010,6 +999,7 @@ class AnalyzerJet(Analyzer):
             h_sel_fd.SetTitleOffset(1.2, "Y")
             h_sel_fd.SetTitleOffset(1.1, "X")
         legeffFD.Draw()
+        print("eff all over")
         cEffFD.SaveAs("%s/efficiency_fd.eps" % self.d_resultsallpdata)
 
     # pylint: disable=too-many-locals, too-many-branches
@@ -1036,6 +1026,7 @@ class AnalyzerJet(Analyzer):
         if not fileouts:
             self.logger.fatal(make_message_notfound(self.file_sideband))
         fileouts.cd()
+        print("sideband sub")
 
         # hzvsjetpt is going to be the sideband subtracted histogram of z vs
         # jet that is going to be filled after subtraction
@@ -3320,7 +3311,7 @@ class AnalyzerJet(Analyzer):
 
     def jetsystematics(self):
         self.loadstyle()
-        string_default = "default/default"
+        string_default = "resultsMBjetvspt"
         if string_default not in self.d_resultsallpdata:
             self.logger.fatal("Not a default database! Cannot run systematics.")
 
@@ -3394,6 +3385,7 @@ class AnalyzerJet(Analyzer):
             suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             name_his = "unfolded_z_sel_%s" % suffix
             input_histograms_default.append(input_file_default.Get(name_his))
+            print(input_histograms_default)
             if not input_histograms_default[ibin2]:
                 self.logger.fatal(make_message_notfound(name_his, path_def))
 
@@ -3402,8 +3394,15 @@ class AnalyzerJet(Analyzer):
         input_files_sys = []
         for sys_cat in range(self.n_sys_cat):
             input_files_sysvar = []
+            print("sys cat !!!!!!", sys_cat)
             for sys_var, varname in enumerate(self.systematic_varnames[sys_cat]):
-                path = path_def.replace(string_default, self.systematic_catnames[sys_cat] + "/" + varname)
+                print("sys var, varname", sys_var, varname)
+                print("aaaaa", path_def)
+                print("hghghghg", self.systematic_catnames)
+                print("bla", sys_cat)
+                #path = path_def.replace(string_default, self.systematic_catnames[sys_cat] + "/" + varname)
+                path = path_def
+                print("bbbbb", path)
                 input_files_sysvar.append(TFile.Open(path))
                 if not input_files_sysvar[sys_var]:
                     self.logger.fatal(make_message_notfound(path))
@@ -3426,7 +3425,8 @@ class AnalyzerJet(Analyzer):
                         name_his = "unfolded_z_sel_%s_%.2f_%.2f" % (self.v_var2_binning, 8, self.lvar2_binmax_gen[ibin2])
                     input_histograms_syscatvar.append(input_files_sys[sys_cat][sys_var].Get(name_his))
                     name_his = name_his_orig
-                    path_file = path_def.replace(string_default, string_catvar)
+                    #path_file = path_def.replace(string_default, string_catvar)
+                    path_file = path_def
                     if not input_histograms_syscatvar[sys_var]:
                         self.logger.fatal(make_message_notfound(name_his, path_file))
                     if debug:

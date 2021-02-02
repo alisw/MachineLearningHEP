@@ -51,8 +51,8 @@ mlapplication:
     docontinueafterstop: false # set to false to resume interrupted processing (existing corrupted output will be overwritten)
   mc:
     doapply: false # pkl_skimmed_dec (pklskdec)
-    domergeapply: true # pkl_skimmed_decmerged (pklskdecmerged)
-    docontinueafterstop: e # set to false to resume interrupted processing (existing corrupted output will be overwritten)
+    domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged)
+    docontinueafterstop: false # set to false to resume interrupted processing (existing corrupted output will be overwritten)
 
 analysis:
   type: YYYY # used unless specified explicitly as do_entire_analysis -a type_ana
@@ -65,7 +65,7 @@ analysis:
   mc:
     histomass: false # processer: process_histomass
     efficiency: false # processer: process_efficiency
-    response: false # processer: process_response
+    response: true # processer: process_response
     feeddown: false # analyzer: feeddown
     dounfolding: false # analyzer: unfolding, unfolding_closure
   dofit: false # analyzer: fit

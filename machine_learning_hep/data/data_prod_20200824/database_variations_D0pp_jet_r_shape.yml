@@ -189,7 +189,7 @@ categories:
                         jet_r_shape:
                             xsection_inel: [54.91, 60.69]
     tracking:
-        activate: yes
+        activate: no
         processor: true
         label: "tracking eff."
         correlation: "corr"
@@ -198,7 +198,7 @@ categories:
         rms_both_sides: true
         variations:
             efficiency:
-                activate: [yes]
+                activate: [no]
                 label: ["eff. down"]
                 diffs:
                   multi:

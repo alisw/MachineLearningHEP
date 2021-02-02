@@ -384,10 +384,14 @@ D0pp:
       var_binningshape: delta_r_jet
       var_binningshape_gen: delta_r_gen_jet
       var_shape_latex: "#Delta R^{jet}"
-      sel_binminshape_reco: [0, 0.05, 0.1, 0.15]
-      sel_binmaxshape_reco:        [0.05, 0.1, 0.15, 0.3]
-      sel_binminshape_gen:  [0, 0.05, 0.1, 0.15]
-      sel_binmaxshape_gen:         [0.05, 0.1, 0.15, 0.3]
+      #sel_binminshape_reco: [0, 0.05, 0.1, 0.15]
+      #sel_binmaxshape_reco:        [0.05, 0.1, 0.15, 0.3]
+      #sel_binminshape_gen:  [0, 0.05, 0.1, 0.15]
+      #sel_binmaxshape_gen:         [0.05, 0.1, 0.15, 0.3]
+      sel_binminshape_reco: [0, 0.05, 0.1]
+      sel_binmaxshape_reco:        [0.05, 0.1, 0.2]
+      sel_binminshape_gen:  [0, 0.05, 0.1]
+      sel_binmaxshape_gen:         [0.05, 0.1, 0.2]
       data: &data_out_r_shape
         <<: *data_out_default
         results: [/data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200824_ROOT6-1/pp_2016_data/resultsMBjetvspt,
@@ -399,10 +403,10 @@ D0pp:
         resultsold: /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/pp_data/resultsMBjetvspt
       mc: &mc_out_r_shape
         <<: *mc_out_default
-        results: [/data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200824_ROOT6-1/pp_2016_mc/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200824_ROOT6-1/pp_2017_mc/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200824_ROOT6-1/pp_2018_mc/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200824_ROOT6-1/pp_mc_prod/resultsMBjetvspt
+        results: [/data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200824_ROOT6-1/pp_2016_mc_prodD2H/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200824_ROOT6-1/pp_2017_mc_prodD2H/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200824_ROOT6-1/pp_2018_mc_prodD2H/resultsMBjetvspt] #list of periods
+        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200824_ROOT6-1/pp_mc_prodD2H/resultsMBjetvspt
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_r_shape
       mc_proc: # alternative processor output used as the analyzer input

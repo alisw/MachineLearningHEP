@@ -332,6 +332,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
     # pylint: disable=line-too-long
     def process_efficiency_single(self, index):
+        print("start process effisiency")
         out_file = TFile.Open(self.l_histoeff[index], "recreate")
 
         cut_d0y = "abs(y_cand) < 0.8 and abs(z_vtx_gen) < 10" # FIXME Fix this via the database. pylint: disable=fixme
@@ -352,6 +353,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 for ipt in range(self.p_nptfinbins):
                     bin_id = self.bin_matching[ipt]
                     df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[bin_id][index], "rb"))
+                    print("pikle loaded:", self.mptfiles_gensk[bin_id][index])
                     df_mc_gen = adjust_nsd(df_mc_gen)
                     df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
                     if self.runlistrigger is not None:
@@ -527,6 +529,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                     df_mc_reco["imp_par_prod"] = df_mc_reco["imp_par_prod"].astype(float) # allow negative cut values
                 else:
                     df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
+                print("df mc loaded", self.mptfiles_recosk[bin_id][index])
                 df_mc_reco = adjust_nsd(df_mc_reco)
                 if self.s_evtsel is not None:
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
@@ -583,6 +586,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         h2_ptcand_ptjet_rec.Write()
         h2_ptcand_ptjet_genmatched_overflow.Write()
         h2_ptcand_ptjet_genmatched.Write()
+        print("eff file crearted")
 
     def create_df_closure(self, df_):
         df_tmp_selgen = df_.copy()
@@ -821,6 +825,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         hzvsjetpt_gen_pr = \
             build2dhisto("hzvsjetpt_gen", self.varshapebinarray_gen, self.var2binarray_gen)
         response_matrix_pr = RooUnfoldResponse(hzvsjetpt_reco_pr, hzvsjetpt_gen_pr)
+        print("Response matrix:", response_matrix_pr)
         response_matrix_closure_pr = RooUnfoldResponse(hzvsjetpt_reco_pr, hzvsjetpt_gen_pr)
 
         fill2dhist(df_tmp_selreco_pr, hzvsjetpt_reco_pr, self.v_varshape_binning, "pt_jet")
@@ -865,6 +870,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             buildhisto("hz_genvsreco_full_nonprompt_real", "hz_genvsreco_full_nonprompt_real", \
             self.varshapebinarray_gen, self.varshapebinarray_reco)
 
+        print("AAAAAAAAAAAAAAA selrecogen", df_tmp_selrecogen)
+        print("AAAAAAAAAAAAAAA genvsreco", hjetpt_genvsreco_full)
         fill2dhist(df_tmp_selrecogen, hjetpt_genvsreco_full, "pt_gen_jet", "pt_jet")
         hjetpt_genvsreco_full.Scale(1.0 / hjetpt_genvsreco_full.Integral())
         hjetpt_genvsreco_full.Write()
