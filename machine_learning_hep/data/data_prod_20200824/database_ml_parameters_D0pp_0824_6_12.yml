@@ -217,8 +217,8 @@ D0pp:
     rnd_shuffle: 12
     rnd_splt: 12
     test_frac: 0.2
-    binmin: [2,4,6,8,12] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
-    binmax:   [4,6,8,12,24] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
+    binmin: [1,2,4,6,8,12,24] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
+    binmax:   [2,4,6,8,12,24,48] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: BinaryClassification
     ncorescrossval: 10
     mlplot: /data/Derived/D0kAnywithJets/vAN-20200824_ROOT6-1/mlplot_491 # to be removed
@@ -250,12 +250,12 @@ D0pp:
                               /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/pklskdecmerged,
                               /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/pklskdecmerged] #list of periods
     mc:
-      pkl_skimmed_dec: [/mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2016_mc_prodD2H/491_20200825-1716/pklskdec_std,
-                        /mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2017_mc_prodD2H/491_20200825-1716/pklskdec_std,
-                        /mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2018_mc_prodD2H/491_20200825-1716/pklskdec_std] #list of periods
-      pkl_skimmed_decmerged: [/mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2016_mc_prodD2H/491_20200825-1716/pklskdecmerged_std,
-                              /mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2017_mc_prodD2H/491_20200825-1716/pklskdecmerged_std,
-                              /mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2018_mc_prodD2H/491_20200825-1716/pklskdecmerged_std] #list of periods
+      pkl_skimmed_dec: [/mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2016_mc_prodD2H/491_20200825-1716/pklskdec,
+                        /mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2017_mc_prodD2H/491_20200825-1716/pklskdec,
+                        /mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2018_mc_prodD2H/491_20200825-1716/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2016_mc_prodD2H/491_20200825-1716/pklskdecmerged,
+                              /mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2017_mc_prodD2H/491_20200825-1716/pklskdecmerged,
+                              /mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2018_mc_prodD2H/491_20200825-1716/pklskdecmerged] #list of periods
     modelname: xgboost
     modelsperptbin: [xgboost_classifierD0pp_FF_dfselection_pt_cand_1.0_2.0.sav,
                      xgboost_classifierD0pp_FF_dfselection_pt_cand_2.0_4.0.sav,
@@ -287,10 +287,10 @@ D0pp:
       var_binning2: pt_jet
       var_binning2_gen: pt_gen_jet
       latexbin2var: "#it{p}_{T}^{jet ch}"
-      sel_binmin2_reco: [3.0, 5.0, 7.0, 15.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmax2_reco:     [5.0, 7., 15.0, 30.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmin2_gen:  [3.0, 5.0, 7.0, 15.0] # gen jet pt bins (sel_binmin2_gen bins)
-      sel_binmax2_gen:      [5.0, 7.0, 15.0, 30.0] # gen jet pt bins (sel_binmin2_gen bins)
+      sel_binmin2_reco: [ 5.0, 7.0, 15.0] # rec jet pt bins (sel_binmin2_reco bins)
+      sel_binmax2_reco:     [ 7.0, 15.0, 30.0] # rec jet pt bins (sel_binmin2_reco bins)
+      sel_binmin2_gen:  [ 5.0, 7.0, 15.0] # gen jet pt bins (sel_binmin2_gen bins)
+      sel_binmax2_gen:      [ 7.0, 15.0, 30.0] # gen jet pt bins (sel_binmin2_gen bins)
       var_binningshape: zg_jet
       var_binningshape_gen: zg_gen_jet
       var_shape_latex: "#it{z}_{g}"
@@ -300,9 +300,9 @@ D0pp:
       sel_binmaxshape_gen:      [0.2,0.3,0.4,0.5]
       sel_closure_frac: 0.2
       triggerbit: INT7
-      sel_an_binmin:      [6, 8] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:      [8, 12] # hadron pt bins (sel_an_binmin bins)
-      binning_matching:   [3, 4] # mapping to skimming pt bins (sel_an_binmin bins)
+      sel_an_binmin:      [6,7,8,10] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmax:      [7,8,10,12] # hadron pt bins (sel_an_binmin bins)
+      binning_matching:   [3,3,4,4] # mapping to skimming pt bins (sel_an_binmin bins)
       jetsel_gen: "abs(y_cand) < 0.8 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
       jetsel_sim: "abs(y_cand) < 0.8 and abs(eta_jet) < 0.5" # jet selection in simulations
       jetsel_reco: "abs(eta_jet) < 0.5"
@@ -331,18 +331,18 @@ D0pp:
       bin_width: 0.001 # bin width of the invariant mass histogram
 
       # simple fitter START
-      sgnfunc: [0, 0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
-      bkgfunc: [0, 0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
+      sgnfunc: [0, 0, 0, 0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
+      bkgfunc: [0, 0, 0, 0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
       masspeak: 1.864
-      massmin: [1.72, 1.72] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
-      massmax: [2.05, 2.05] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
-      rebin: [6, 6] # sel_an_binmin bins
+      massmin: [1.72, 1.72, 1.72, 1.72] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
+      massmax: [2.05, 2.05, 2.05, 2.05] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
+      rebin: [6, 6, 6, 6] # sel_an_binmin bins
       fix_mean: [false, false] # sel_an_binmin bins
       fix_sigma: [true, true] # sel_an_binmin bins
-      sigmaarray: [0.01, 0.01] # initial sigma (sel_an_binmin bins)
+      sigmaarray: [0.01, 0.01, 0.01, 0.01] # initial sigma (sel_an_binmin bins)
       masspeaksec: 1.864
-      fix_sigmasec: [true, true] # sel_an_binmin bins
-      sigmaarraysec: [0.01, 0.01] # sel_an_binmin bins
+      fix_sigmasec: [true, true, true, true] # sel_an_binmin bins
+      sigmaarraysec: [0.01, 0.01, 0.01, 0.01] # sel_an_binmin bins
       # simple fitter END
 
       signal_sigma: 2.0
@@ -371,11 +371,13 @@ D0pp:
       pythia8_prompt_variations: ["default", "charm_lo"] #["default","coloursoft_mode0"]
       pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)", "PYTHIA 8 charm LO"] # ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
 
-      variations_db: ./data/data_prod_20200304/database_variations_D0pp_jet_zg.yml
+      variations_db: ./data/data_prod_20200824/database_variations_D0pp_jet_zg.yml
 
       # Additional cuts applied before mass histogram is filled
       use_cuts: False
       cuts: # (sel_an_binmin bins)
+      - Null
+      - Null
       - Null
       - Null
 
@@ -411,7 +413,7 @@ D0pp:
         <<: *data_out_r_shape
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_r_shape
-      variations_db: ./data/data_prod_20200304/database_variations_D0pp_jet_r_shape.yml
+      variations_db: ./data/data_prod_20200824/database_variations_D0pp_jet_r_shape.yml
 
     jet_rg:
       <<: *jet_default

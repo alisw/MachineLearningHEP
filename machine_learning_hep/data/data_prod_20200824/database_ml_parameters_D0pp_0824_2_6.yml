@@ -217,8 +217,8 @@ D0pp:
     rnd_shuffle: 12
     rnd_splt: 12
     test_frac: 0.2
-    binmin: [2,4,6,8,12] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
-    binmax:   [4,6,8,12,24] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
+    binmin: [1,2,4,6,8,12,24] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
+    binmax:   [2,4,6,8,12,24,48] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: BinaryClassification
     ncorescrossval: 10
     mlplot: /data/Derived/D0kAnywithJets/vAN-20200824_ROOT6-1/mlplot_491 # to be removed
@@ -250,12 +250,12 @@ D0pp:
                               /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/pklskdecmerged,
                               /data/Derived/D0kINTHighMultCALOwithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/pklskdecmerged] #list of periods
     mc:
-      pkl_skimmed_dec: [/mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2016_mc_prodD2H/491_20200825-1716/pklskdec_std,
-                        /mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2017_mc_prodD2H/491_20200825-1716/pklskdec_std,
-                        /mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2018_mc_prodD2H/491_20200825-1716/pklskdec_std] #list of periods
-      pkl_skimmed_decmerged: [/mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2016_mc_prodD2H/491_20200825-1716/pklskdecmerged_std,
-                              /mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2017_mc_prodD2H/491_20200825-1716/pklskdecmerged_std,
-                              /mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2018_mc_prodD2H/491_20200825-1716/pklskdecmerged_std] #list of periods
+      pkl_skimmed_dec: [/mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2016_mc_prodD2H/491_20200825-1716/pklskdec,
+                        /mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2017_mc_prodD2H/491_20200825-1716/pklskdec,
+                        /mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2018_mc_prodD2H/491_20200825-1716/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2016_mc_prodD2H/491_20200825-1716/pklskdecmerged,
+                              /mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2017_mc_prodD2H/491_20200825-1716/pklskdecmerged,
+                              /mnt/temp/talazare_vAN-20200824_test/D0kINT_MC_D2H_check/vAN-20200824_ROOT6-1/pp_2018_mc_prodD2H/491_20200825-1716/pklskdecmerged] #list of periods
     modelname: xgboost
     modelsperptbin: [xgboost_classifierD0pp_FF_dfselection_pt_cand_1.0_2.0.sav,
                      xgboost_classifierD0pp_FF_dfselection_pt_cand_2.0_4.0.sav,
@@ -300,9 +300,9 @@ D0pp:
       sel_binmaxshape_gen:      [0.2,0.3,0.4,0.5]
       sel_closure_frac: 0.2
       triggerbit: INT7
-      sel_an_binmin:      [2, 4] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:      [4, 6] # hadron pt bins (sel_an_binmin bins)
-      binning_matching:   [1, 2] # mapping to skimming pt bins (sel_an_binmin bins)
+      sel_an_binmin:      [2,3,4,5] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmax:      [3,4,5,6] # hadron pt bins (sel_an_binmin bins)
+      binning_matching:   [1,1,2,2] # mapping to skimming pt bins (sel_an_binmin bins)
       jetsel_gen: "abs(y_cand) < 0.8 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
       jetsel_sim: "abs(y_cand) < 0.8 and abs(eta_jet) < 0.5" # jet selection in simulations
       jetsel_reco: "abs(eta_jet) < 0.5"
@@ -331,18 +331,18 @@ D0pp:
       bin_width: 0.001 # bin width of the invariant mass histogram
 
       # simple fitter START
-      sgnfunc: [0, 0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
-      bkgfunc: [0, 0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
+      sgnfunc: [0, 0, 0, 0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
+      bkgfunc: [0, 0, 0, 0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
       masspeak: 1.864
-      massmin: [1.72, 1.72] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
-      massmax: [2.05, 2.05] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
-      rebin: [6, 6] # sel_an_binmin bins
+      massmin: [1.72, 1.72, 1.72, 1.72] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
+      massmax: [2.05, 2.05, 2.05, 2.05] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
+      rebin: [6, 6, 6, 6] # sel_an_binmin bins
       fix_mean: [false, false] # sel_an_binmin bins
       fix_sigma: [true, true] # sel_an_binmin bins
-      sigmaarray: [0.01, 0.01] # initial sigma (sel_an_binmin bins)
+      sigmaarray: [0.01, 0.01, 0.01, 0.01] # initial sigma (sel_an_binmin bins)
       masspeaksec: 1.864
-      fix_sigmasec: [true, true] # sel_an_binmin bins
-      sigmaarraysec: [0.007947, 0.01] # sel_an_binmin bins
+      fix_sigmasec: [true, true, true, true] # sel_an_binmin bins
+      sigmaarraysec: [0.007947, 0.01, 0.01, 0.01] # sel_an_binmin bins
       # simple fitter END
 
       signal_sigma: 2.0
@@ -376,6 +376,8 @@ D0pp:
       # Additional cuts applied before mass histogram is filled
       use_cuts: False
       cuts: # (sel_an_binmin bins)
+      - Null
+      - Null
       - Null
       - Null
 

@@ -287,10 +287,10 @@ D0pp:
       var_binning2: pt_jet
       var_binning2_gen: pt_gen_jet
       latexbin2var: "#it{p}_{T}^{jet ch}"
-      sel_binmin2_reco: [5.0, 7.0, 15.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmax2_reco:     [7., 15.0, 30.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmin2_gen:  [5.0, 7.0, 15.0] # gen jet pt bins (sel_binmin2_gen bins)
-      sel_binmax2_gen:      [ 7.0, 15.0, 30.0] # gen jet pt bins (sel_binmin2_gen bins)
+      sel_binmin2_reco: [3.0, 5.0, 7.0, 15.0] # rec jet pt bins (sel_binmin2_reco bins)
+      sel_binmax2_reco:     [5.0, 7.0, 15.0, 30.0] # rec jet pt bins (sel_binmin2_reco bins)
+      sel_binmin2_gen:  [3.0, 5.0, 7.0, 15.0] # gen jet pt bins (sel_binmin2_gen bins)
+      sel_binmax2_gen:      [5.0, 7.0, 15.0, 30.0] # gen jet pt bins (sel_binmin2_gen bins)
       var_binningshape: zg_jet
       var_binningshape_gen: zg_gen_jet
       var_shape_latex: "#it{z}_{g}"
