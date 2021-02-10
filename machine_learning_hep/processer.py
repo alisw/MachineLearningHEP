@@ -103,6 +103,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.s_gen_unp = datap["sel_gen_unp"]
         self.s_reco_skim = datap["sel_reco_skim"]
         self.s_gen_skim = datap["sel_gen_skim"]
+        self.s_apply_yptacccut = datap.get("apply_yptacccut", True)
 
         #bitmap
         self.b_trackcuts = datap["sel_reco_singletrac_unp"]
@@ -127,6 +128,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.v_ismcbkg = datap["bitmap_sel"]["var_ismcbkg"]
         self.v_ismcrefl = datap["bitmap_sel"]["var_ismcrefl"]
         self.v_var_binning = datap["var_binning"]
+        self.v_invmass = datap["variables"].get("var_inv_mass", "inv_mass")
+        self.v_rapy = datap["variables"].get("var_y", "y_cand")
+        self.s_var_evt_sel = datap["variables"].get("var_evt_sel", "is_ev_rej")
 
         #list of files names
         if os.path.isdir(self.d_root):
@@ -281,8 +285,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
             sys.exit()
         dfreco = selectdfquery(dfreco, self.s_reco_unp)
         dfreco = pd.merge(dfreco, dfevt, on=self.v_evtmatch)
-        isselacc = selectfidacc(dfreco.pt_cand.values, dfreco.y_cand.values)
-        dfreco = dfreco[np.array(isselacc, dtype=bool)]
+        if self.s_apply_yptacccut is True:
+            isselacc = selectfidacc(dfreco[self.v_var_binning].values,
+                                    dfreco[self.v_rapy].values)
+            dfreco = dfreco[np.array(isselacc, dtype=bool)]
 
         arraysub = [0 for ival in range(len(dfreco))]
         for iprong in range(self.nprongs):

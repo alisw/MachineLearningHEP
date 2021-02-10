@@ -323,16 +323,23 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
 
         histo_data = None
         if get_data:
-            file_data = TFile.Open(self.file_data_name, "READ")
+            file_data = TFile(self.file_data_name, "READ")
+            if not file_data.IsOpen():
+                raise ValueError("TFile", file_data.GetName(), "Is not open!")
             histo_name = "h_invmass_weight" if self.apply_weights else "hmass"
             histo_data = file_data.Get(histo_name + suffix)
+            if not histo_data:
+                file_data.ls()
+                raise ValueError("Did not find", histo_name + suffix)
             histo_data.SetDirectory(0)
             file_data.Close()
 
         if not (get_mc or get_reflections):
             return histo_data, None, None
 
-        file_mc = TFile.Open(self.file_mc_name, "READ")
+        file_mc = TFile(self.file_mc_name, "READ")
+        if not file_mc.IsOpen():
+                raise ValueError("TFile", file_mc.GetName(), "Is not open!")
         histo_mc = None
         histo_reflections = None
         if get_mc:

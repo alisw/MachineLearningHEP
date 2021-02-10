@@ -24,7 +24,7 @@ from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utilities import selectdfrunlist
 from machine_learning_hep.utilities import seldf_singlevar, openfile
-from machine_learning_hep.selectionutils import gethistonormforselevt
+from machine_learning_hep.selectionutils import gethistonormforselevt_varsel
 from machine_learning_hep.processer import Processer
 
 class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attributes
@@ -59,7 +59,8 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
         self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
-
+        self.s_var_evt_sel = datap["variables"].get("var_evt_sel", "is_ev_rej")
+        self.v_invmass = datap["variables"].get("var_inv_mass", "inv_mass")
 
     # pylint: disable=too-many-branches
     def process_histomass_single(self, index):
@@ -73,7 +74,10 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
             dfevtorig = selectdfrunlist(dfevtorig, \
                              self.run_param[self.runlistrigger], "run_number")
         neventsafterrunsel = len(dfevtorig)
-        dfevtevtsel = dfevtorig.query(self.s_evtsel)
+        if self.s_evtsel is not None:
+            dfevtevtsel = dfevtorig.query(self.s_evtsel)
+        else:
+            dfevtevtsel = dfevtorig
         neventsafterevtsel = len(dfevtevtsel)
 
         #validation plot for event selection
@@ -90,8 +94,8 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
 
         myfile.cd()
         labeltrigger = "hbit%s" % (self.triggerbit)
-        hsel, hnovtxmult, hvtxoutmult = gethistonormforselevt(dfevtorig, dfevtevtsel, \
-                                                              labeltrigger)
+        hsel, hnovtxmult, hvtxoutmult = gethistonormforselevt_varsel(dfevtorig, dfevtevtsel, \
+                                                              labeltrigger, self.s_var_evt_sel)
         hsel.Write()
         hnovtxmult.Write()
         hvtxoutmult.Write()
@@ -127,7 +131,7 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
 
             h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
                              self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-            fill_hist(h_invmass, df.inv_mass)
+            fill_hist(h_invmass, df[self.v_invmass])
             myfile.cd()
             h_invmass.Write()
 
@@ -143,9 +147,9 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
                                      self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 h_invmass_refl = TH1F("hmass_refl" + suffix, "", self.p_num_bins,
                                       self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-                fill_hist(h_invmass_sig, df_sig.inv_mass)
-                fill_hist(h_invmass_bkg, df_bkg.inv_mass)
-                fill_hist(h_invmass_refl, df_refl.inv_mass)
+                fill_hist(h_invmass_sig, df_sig[self.v_invmass])
+                fill_hist(h_invmass_bkg, df_bkg[self.v_invmass])
+                fill_hist(h_invmass_refl, df_refl[self.v_invmass])
                 myfile.cd()
                 h_invmass_sig.Write()
                 h_invmass_bkg.Write()
