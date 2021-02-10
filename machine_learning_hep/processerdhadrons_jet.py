@@ -663,7 +663,6 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             if self.s_trigger is not None:
                 df_mc_reco = df_mc_reco.query(self.s_trigger)
             if self.doml is True:
-                print(self.l_selml)
                 df_mc_reco = df_mc_reco.query(self.l_selml[iptskim])
             elif self.do_custom_analysis_cuts: # custom cuts, pt bin
                 list_df_mc_reco_ipt = []
@@ -825,7 +824,6 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         hzvsjetpt_gen_pr = \
             build2dhisto("hzvsjetpt_gen", self.varshapebinarray_gen, self.var2binarray_gen)
         response_matrix_pr = RooUnfoldResponse(hzvsjetpt_reco_pr, hzvsjetpt_gen_pr)
-        print("Response matrix:", response_matrix_pr)
         response_matrix_closure_pr = RooUnfoldResponse(hzvsjetpt_reco_pr, hzvsjetpt_gen_pr)
 
         fill2dhist(df_tmp_selreco_pr, hzvsjetpt_reco_pr, self.v_varshape_binning, "pt_jet")
@@ -870,8 +868,6 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             buildhisto("hz_genvsreco_full_nonprompt_real", "hz_genvsreco_full_nonprompt_real", \
             self.varshapebinarray_gen, self.varshapebinarray_reco)
 
-        print("AAAAAAAAAAAAAAA selrecogen", df_tmp_selrecogen)
-        print("AAAAAAAAAAAAAAA genvsreco", hjetpt_genvsreco_full)
         fill2dhist(df_tmp_selrecogen, hjetpt_genvsreco_full, "pt_gen_jet", "pt_jet")
         hjetpt_genvsreco_full.Scale(1.0 / hjetpt_genvsreco_full.Integral())
         hjetpt_genvsreco_full.Write()

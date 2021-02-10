@@ -3,13 +3,13 @@
 #STAGE="pre"
 #STAGE="train"
 #STAGE="apply"
-STAGE="complete"
+#STAGE="complete"
 #STAGE="analyzer"
-#STAGE="variations"
+STAGE="variations"
 #STAGE="systematics"
 
 #DBDIR="data_prod_20200417"
-DBDIR="data_prod_20200304"
+DBDIR="data_prod_20200824"
 #DBDIR="pKpi"
 #DBDIR="JetAnalysis"
 
@@ -19,7 +19,7 @@ DATABASE="D0pp"
 #DATABASE="LcpKpi"
 
 #SUFFIX="_0417"
-SUFFIX="_0304"
+SUFFIX="_0824_2_6"
 #SUFFIX="_0304_jet" # Lc
 #SUFFIX="010"
 #SUFFIX="3050"
@@ -29,7 +29,7 @@ SUFFIX="_0304"
 #ANALYSIS="MBvspt_ntrkl"
 #ANALYSIS="SPDvspt_ntrkl"
 #ANALYSIS="jet_FF"
-ANALYSIS="jet_zg"
+ANALYSIS="jet_r_shape"
 #ANALYSIS="jet_rg"
 #ANALYSIS="jet_nsd"
 
@@ -39,7 +39,7 @@ DATABASE_VARIATION="${DATABASE}_${ANALYSIS}"
 CONFIG="submission/default_${STAGE}.yml"
 DB_DEFAULT="data/${DBDIR}/database_ml_parameters_${DATABASE_DEFAULT}.yml"
 DB_VARIATION="data/${DBDIR}/database_variations_${DATABASE_VARIATION}.yml"
-DIR_RESULTS="/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/"
+DIR_RESULTS="/data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/"
 
 CMD_ANA="python do_entire_analysis.py -a ${ANALYSIS} -r ${CONFIG} -d ${DB_DEFAULT} -c"
 

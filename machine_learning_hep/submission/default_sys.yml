@@ -47,31 +47,31 @@ mlapplication:
   data:
     doapply: false # pkl_skimmed_dec (pklskdec)
     domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged)
-    docontinueafterstop: false # set to true to resume interrupted processing (existing corrupted output will be overwritten)
+    docontinueafterstop: false # set to false to resume interrupted processing (existing corrupted output will be overwritten)
   mc:
     doapply: false # pkl_skimmed_dec (pklskdec)
     domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged)
-    docontinueafterstop: false # set to true to resume interrupted processing (existing corrupted output will be overwritten)
+    docontinueafterstop: false # set to false to resume interrupted processing (existing corrupted output will be overwritten)
 
 analysis:
   type: YYYY # used unless specified explicitly as do_entire_analysis -a type_ana
-  # Do each period separately including merged (true)
+  # Do each period separately including merged (false)
   # Do only merged (false)
   doperperiod: false
   data:
     histomass:  false # processer: process_histomass
-    dojetsystematics: true # analyzer: jetsystematics
+    dojetsystematics: true #analyzer: jetsystematics
   mc:
     histomass: false # processer: process_histomass
     efficiency: false # processer: process_efficiency
     response: false # processer: process_response
-    feeddown: true # analyzer: feeddown
-    dounfolding: true # analyzer: unfolding, unfolding_closure
-  dofit: true # analyzer: fit
+    feeddown: false # analyzer: feeddown
+    dounfolding: false # analyzer: unfolding, unfolding_closure
+  dofit: false # analyzer: fit
   # Control the yield systematic uncertainty
   dosyst: true  # analyzer: yield_syst
-  dojetstudies: true # analyzer: fit, efficiency, sideband_sub
-  doeff: true # analyzer: efficiency
+  dojetstudies: false # analyzer: fit, efficiency, sideband_sub
+  doeff: false # analyzer: efficiency
   docross: false # analyzer: makenormyields
   doplots: false # analyzer: plotternormyields
   doplotsval: false # analyzer: plottervalidation

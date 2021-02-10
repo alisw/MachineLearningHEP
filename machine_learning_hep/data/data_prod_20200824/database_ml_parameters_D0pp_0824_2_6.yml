@@ -411,7 +411,7 @@ D0pp:
         <<: *data_out_r_shape
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_r_shape
-      variations_db: ./data/data_prod_20200304/database_variations_D0pp_jet_r_shape.yml
+      variations_db: ./data/data_prod_20200824/database_variations_D0pp_jet_r_shape.yml
 
     jet_rg:
       <<: *jet_default

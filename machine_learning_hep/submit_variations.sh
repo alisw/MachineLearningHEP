@@ -10,7 +10,7 @@ DB_DEFAULT="$1"
 DB_VARIATION="$2"
 ANALYSIS="$3"
 
-CMD_VAR="python do_variations.py ${DB_DEFAULT} ${DB_VARIATION}"
+CMD_VAR="nice python do_variations.py ${DB_DEFAULT} ${DB_VARIATION}"
 
 ${CMD_VAR}
 
