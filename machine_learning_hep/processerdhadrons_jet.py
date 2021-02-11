@@ -353,7 +353,6 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 for ipt in range(self.p_nptfinbins):
                     bin_id = self.bin_matching[ipt]
                     df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[bin_id][index], "rb"))
-                    print("pikle loaded:", self.mptfiles_gensk[bin_id][index])
                     df_mc_gen = adjust_nsd(df_mc_gen)
                     df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
                     if self.runlistrigger is not None:
@@ -529,7 +528,6 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                     df_mc_reco["imp_par_prod"] = df_mc_reco["imp_par_prod"].astype(float) # allow negative cut values
                 else:
                     df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
-                print("df mc loaded", self.mptfiles_recosk[bin_id][index])
                 df_mc_reco = adjust_nsd(df_mc_reco)
                 if self.s_evtsel is not None:
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
@@ -636,12 +634,13 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         zbin_recoand pseudorapidity. Reco candidates according to evt selection, eta
         jets, trigger and ml probability of the HF hadron
         """
-
         out_file = TFile.Open(self.l_historesp[index], "recreate")
         list_df_mc_reco = []
         list_df_mc_gen = []
 
-        for iptskim in range(self.p_nptfinbins):
+        print("AAAAAAA", self.p_nptbins, self.p_nptfinbins, np.unique(self.bin_matching))
+
+        for iptskim in range(len(np.unique(self.bin_matching))):
             df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[iptskim][index], "rb"))
             df_mc_gen = adjust_nsd(df_mc_gen)
             if self.runlistrigger is not None:

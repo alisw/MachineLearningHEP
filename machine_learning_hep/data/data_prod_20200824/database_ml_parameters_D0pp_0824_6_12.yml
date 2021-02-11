@@ -337,8 +337,8 @@ D0pp:
       massmin: [1.72, 1.72, 1.72, 1.72] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
       massmax: [2.05, 2.05, 2.05, 2.05] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
       rebin: [6, 6, 6, 6] # sel_an_binmin bins
-      fix_mean: [false, false] # sel_an_binmin bins
-      fix_sigma: [true, true] # sel_an_binmin bins
+      fix_mean: [false, false, false, false] # sel_an_binmin bins
+      fix_sigma: [true, true, true, true] # sel_an_binmin bins
       sigmaarray: [0.01, 0.01, 0.01, 0.01] # initial sigma (sel_an_binmin bins)
       masspeaksec: 1.864
       fix_sigmasec: [true, true, true, true] # sel_an_binmin bins

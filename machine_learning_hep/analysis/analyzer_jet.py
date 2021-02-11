@@ -431,7 +431,7 @@ class AnalyzerJet(Analyzer):
             self.logger.fatal(make_message_notfound("histonorm", self.n_filemass))
         self.p_nevents = histonorm.GetBinContent(1)
         print("Number of selected event: %g" % self.p_nevents)
-
+        print(self.p_nptfinbins)
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             for ibin2 in range(self.p_nbin2_reco):
@@ -1811,7 +1811,7 @@ class AnalyzerJet(Analyzer):
             y_margin_down = 0
             bin_pt_max = min(self.p_nptfinbins, heff_pr_list[ibin2].GetXaxis().FindBin(self.lvar2_binmax_gen[ibin2] - 0.01))
             heff_pr_list[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
-            heff_pr_list[ibin2].GetXaxis().SetRange(1, 6)
+            heff_pr_list[ibin2].GetXaxis().SetRange(1, self.p_nptfinbins)
             heff_pr_list[ibin2].SetTitle("")
             heff_pr_list[ibin2].SetXTitle("#it{p}_{T, %s} (GeV/#it{c})" % self.p_latexnhadron)
             heff_pr_list[ibin2].SetYTitle("Efficiency #times Acceptance")

@@ -374,7 +374,7 @@ LcpK0spp:
       triggerbit: INT7
       sel_an_binmin:    [2,4,6,8,12] #list of pt nbins
       sel_an_binmax:      [4,6,8,12,24] #list of pt nbins
-      binning_matching:   [1,2,3,4, 5] #list of pt nbins
+      binning_matching:   [1,2,3,4,5] #list of pt nbins
       jetsel_gen: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
       jetsel_sim: "abs(y_cand) < 0.5 and abs(eta_jet) < 0.5" # jet selection in simulations
       jetsel_reco: "abs(eta_jet) < 0.5"

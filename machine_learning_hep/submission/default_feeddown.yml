@@ -60,7 +60,7 @@ analysis:
   doperperiod: false
   data:
     histomass:  false # processer: process_histomass
-    dojetsystematics: true # analyzer: jetsystematics
+    dojetsystematics: false # analyzer: jetsystematics
   mc:
     histomass: false # processer: process_histomass
     efficiency: false # processer: process_efficiency
@@ -69,7 +69,7 @@ analysis:
     dounfolding: true # analyzer: unfolding, unfolding_closure
   dofit: true # analyzer: fit
   # Control the yield systematic uncertainty
-  dosyst: true  # analyzer: yield_syst
+  dosyst: false  # analyzer: yield_syst
   dojetstudies: true # analyzer: fit, efficiency, sideband_sub
   doeff: true # analyzer: efficiency
   docross: false # analyzer: makenormyields
