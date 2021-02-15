@@ -347,6 +347,8 @@ LcpK0spp:
     jet_FF:
       proc_type: Dhadrons_jet
       useperiod: [1,1,1] #list of periods
+      usejetptbinned_deff: false
+      do_eff_fold: false
 
       latexnamehadron: "#Lambda_{c}^{#plus}"
       latexnamedecay: "p K^{0}_{S}"
@@ -432,7 +434,7 @@ LcpK0spp:
       xsection_inel: 57.8
 
       doprior: false
-
+      doeff_resp: true
       powheg_path_nonprompt: /data/POWHEG/trees_powheg_fd_central.root
 
       powheg_path_prompt: /data/POWHEG/trees_powheg_pr_central.root
