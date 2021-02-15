@@ -354,10 +354,10 @@ LcpK0spp:
       var_binning2: pt_jet
       var_binning2_gen: pt_gen_jet
       latexbin2var: "#it{p}_{T}^{jet ch}"
-      sel_binmin2_reco: [3., 5., 7., 15.] #list of nbins
-      sel_binmax2_reco:     [5., 7., 15., 30.] #list of nbins
-      sel_binmin2_gen:  [3., 5., 7., 15] #list of nbins
-      sel_binmax2_gen:      [5., 7., 15., 30] #list of nbins
+      sel_binmin2_reco: [5., 7., 15.] #list of nbins
+      sel_binmax2_reco:     [7., 15., 30.] #list of nbins
+      sel_binmin2_gen:  [5., 7., 15] #list of nbins
+      sel_binmax2_gen:      [ 7., 15., 30] #list of nbins
       
       var_binningshape: delta_r_jet
       var_binningshape_gen: delta_r_gen_jet
