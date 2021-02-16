@@ -136,6 +136,7 @@ class AnalyzerJet(Analyzer):
 
         # efficiency calculation
         self.do_eff_fold = datap["analysis"][self.typean]["do_eff_fold"]
+        print("EFFICIENCY FOLDING:", self.do_eff_fold)
         self.doeff_resp = datap["analysis"][self.typean]["doeff_resp"]
 
         # sideband subtraction
@@ -570,9 +571,6 @@ class AnalyzerJet(Analyzer):
         lfileeff = TFile.Open(self.n_fileeff)
         if not lfileeff:
             self.logger.fatal(make_message_notfound(self.n_fileeff))
-        lfileresp = TFile.Open(self.n_fileresp)
-        if not lfileresp:
-            self.logger.fatal(make_message_notfound(self.n_fileresp))
         fileouteff = TFile.Open(self.file_efficiency, "recreate")
         if not fileouteff:
             self.logger.fatal(make_message_notfound(self.file_efficiency))
@@ -585,7 +583,10 @@ class AnalyzerJet(Analyzer):
         string_shaperange = "%g #leq %s < %g" % (self.lvarshape_binmin_reco[0], self.v_varshape_latex, self.lvarshape_binmax_reco[-1])
 
         # PROMPT EFFICIENCY
-        if self.do_eff_fold:
+        if self.do_eff_fold is True:
+            lfileresp = TFile.Open(self.n_fileresp)
+            if not lfileresp:
+                self.logger.fatal(make_message_notfound(self.n_fileresp))
             # rec. level cuts only applied
             hzvsjetpt_reco_nocuts = lfileresp.Get("hzvsjetpt_reco_nocuts")
             if not hzvsjetpt_reco_nocuts:
@@ -852,7 +853,7 @@ class AnalyzerJet(Analyzer):
         legeff.Draw()
         cEff.SaveAs("%s/efficiency_pr.eps" % self.d_resultsallpdata)
 
-        if self.do_eff_fold:
+        if self.do_eff_fold is True:
             # compare the old and the new method
             list_eff_diff = []
             list_eff_diff_labels = []
@@ -943,7 +944,6 @@ class AnalyzerJet(Analyzer):
                 effgen_diff.Scale(100)
                 list_effgen_diff.append(effgen_diff)
                 list_effgen_diff_labels.append(string_ptjet)
-                print("eff something over")
             list_eff_diff.append(latex_shaperange)
             list_effgen_diff.append(latex_shaperange)
             line_0 = TLine(self.lpt_finbinmin[0], 0, self.lpt_finbinmax[-1], 0)
@@ -996,7 +996,6 @@ class AnalyzerJet(Analyzer):
             h_sel_fd.SetTitleOffset(1.2, "Y")
             h_sel_fd.SetTitleOffset(1.1, "X")
         legeffFD.Draw()
-        print("eff all over")
         cEffFD.SaveAs("%s/efficiency_fd.eps" % self.d_resultsallpdata)
 
     # pylint: disable=too-many-locals, too-many-branches
@@ -1151,6 +1150,7 @@ class AnalyzerJet(Analyzer):
 
                 # correct for the efficiency
                 if not self.doeff_resp:
+                    print("NO RESPONSE EFF!")
                     eff = heff.GetBinContent(ipt + 1)
                     if eff > 0.0:
                         hzsub.Scale(1.0 / (eff * self.sigma_scale))
@@ -1682,6 +1682,7 @@ class AnalyzerJet(Analyzer):
         his_response_fd.SetYTitle("(#it{p}_{T, jet}^{gen}, %s^{gen}) bin" % self.v_varshape_latex)
         his_response_fd.Draw("colz")
         cresponse_fd.SaveAs("%s/response_fd_matrix.eps" % self.d_resultsallpdata)
+        cresponse_fd.SaveAs("plots/response_fd_matrix.png")
 
         for ibin2 in range(self.p_nbin2_reco):
             suffix = "%s_%.2f_%.2f" % \
@@ -1954,7 +1955,6 @@ class AnalyzerJet(Analyzer):
         # apply gen. level kinematic efficiency
 
         input_data_scaled.Multiply(hzvsjetpt_gen_eff)
-
         # scale with real luminosity and branching ratio
 
         input_data_scaled.Scale(self.p_nevents * self.branching_ratio / self.xsection_inel)
@@ -2006,6 +2006,8 @@ class AnalyzerJet(Analyzer):
                     (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex)
             c_fd_fold.SaveAs("%s/feeddown_folded_%s.eps" % (self.d_resultsallpdata, suffix_plot))
+            c_fd_fold.SaveAs("plots/feeddown_folded_%s.png" % (suffix_plot))
+
 
         # plot the final feed-down shape vs jet pt distribution that is subtracted
 
@@ -2130,6 +2132,7 @@ class AnalyzerJet(Analyzer):
         sideband_input_data_subtracted.SetYTitle("%s (GeV/#it{c})" % self.p_latexbin2var)
         sideband_input_data_subtracted.Draw("text")
         cfeeddown_output.SaveAs("%s/feeddown_output.eps" % self.d_resultsallpdata)
+        cfeeddown_output.SaveAs("plots/feeddown_output.png" )
         print("end of feed-down")
 
 #    def append_histo(self, histo_list):
@@ -2179,10 +2182,6 @@ class AnalyzerJet(Analyzer):
         bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 and "nsd" not in self.typean else 1
 
         # calculate rec. level kinematic efficiency and apply it to the unfolding input
-
-        hzvsjetpt_reco_eff.Divide(hzvsjetpt_reco_nocuts)
-        input_data.Multiply(hzvsjetpt_reco_eff)
-
 
         # gen. level cuts only applied
         hzvsjetpt_gen_nocuts = unfolding_input_file.Get("hzvsjetpt_gen_nocuts")
@@ -2414,6 +2413,7 @@ class AnalyzerJet(Analyzer):
         his_response_pr.SetYTitle("(#it{p}_{T, jet}^{gen}, %s^{gen}) bin" % self.v_varshape_latex)
         his_response_pr.Draw("colz")
         cresponse_pr.SaveAs("%s/response_pr_matrix.eps" % self.d_resultsallpdata)
+        cresponse_pr.SaveAs("plots/response_pr_matrix.png" )
 
         hz_genvsreco_full = unfolding_input_file.Get("hz_genvsreco_full")
         if not hz_genvsreco_full:
@@ -2452,6 +2452,7 @@ class AnalyzerJet(Analyzer):
             y_latex -= self.y_step
         cz_genvsreco_full.Update()
         cz_genvsreco_full.SaveAs("%s/response_pr_%s_full.pdf" % (self.d_resultsallpdata, self.v_varshape_binning))
+        cz_genvsreco_full.SaveAs("plots/response_pr_%s_full.png" % (self.v_varshape_binning))
         cz_genvsreco_full.SaveAs("%s/%s_resp_pr_full.pdf" % (self.d_resultsallpdata, self.shape))
 
         cjetpt_genvsreco_full = TCanvas("cjetpt_genvsreco_full", "response matrix 2D projection")
@@ -2687,6 +2688,7 @@ class AnalyzerJet(Analyzer):
                 unfolded_zvsjetpt_final.Draw("texte")
                 unfolded_zvsjetpt_final.Write()
                 cunfolded_output.SaveAs("%s/unfolded_output.eps" % self.d_resultsallpdata)
+                cunfolded_output.SaveAs("plots/unfolded_output.png")
                 gStyle.SetPaintTextFormat("g")
 
             for ibin2 in range(self.p_nbin2_gen):

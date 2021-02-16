@@ -281,7 +281,7 @@ D0pp:
       proc_type: Dhadrons_jet
       useperiod: [1,1,1] #list of periods
       usejetptbinned_deff: false
-      do_eff_fold: true 
+      do_eff_fold: false 
       latexnamehadron: "D^{0}"
       latexnamedecay: "K^{#minus} #pi^{#plus}"
 
@@ -361,7 +361,7 @@ D0pp:
       xsection_inel: 57.8 # (mb) cross-section of minimum-bias events
 
       doprior: false
-      doeff_resp: false
+      doeff_resp: true
       powheg_path_nonprompt: /data/POWHEG/trees_powheg_fd_central.root
 
       powheg_path_prompt: /data/POWHEG/trees_powheg_pr_central.root
@@ -399,19 +399,19 @@ D0pp:
       sel_binmaxshape_gen:         [0.05, 0.1, 0.2]
       data: &data_out_r_shape
         <<: *data_out_default
-        results: [/data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200824_ROOT6-1/pp_2016_data/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200824_ROOT6-1/pp_2017_data/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200824_ROOT6-1/pp_2018_data/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200824_ROOT6-1/pp_data/resultsMBjetvspt
+        results: [/data/Derived_testResults/Jets/D0kAnywithJets/6_12_ef/vAN-20200824_ROOT6-1/pp_2016_data/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/D0kAnywithJets/6_12_ef/vAN-20200824_ROOT6-1/pp_2017_data/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/D0kAnywithJets/6_12_ef/vAN-20200824_ROOT6-1/pp_2018_data/resultsMBjetvspt] #list of periods
+        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/6_12_ef/vAN-20200824_ROOT6-1/pp_data/resultsMBjetvspt
 
-        resultslc: /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/pp_data/resultsMBjetvspt
-        resultsold: /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/pp_data/resultsMBjetvspt
+        resultslc: /data/Derived_testResults/Jets/Lc/6_12_ef/vAN-20200824_ROOT6-1/pp_data/resultsMBjetvspt
+        resultsold: /data/Derived_testResults/Jets/D0kAnywithJets/6_12_ef/vAN-20200304_ROOT6-1/pp_data/resultsMBjetvspt
       mc: &mc_out_r_shape
         <<: *mc_out_default
-        results: [/data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200824_ROOT6-1/pp_2016_mc_prodD2H/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200824_ROOT6-1/pp_2017_mc_prodD2H/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200824_ROOT6-1/pp_2018_mc_prodD2H/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200824_ROOT6-1/pp_mc_prodD2H/resultsMBjetvspt
+        results: [/data/Derived_testResults/Jets/D0kAnywithJets/6_12_ef/vAN-20200824_ROOT6-1/pp_2016_mc_prodD2H/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/D0kAnywithJets/6_12_ef/vAN-20200824_ROOT6-1/pp_2017_mc_prodD2H/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/D0kAnywithJets/6_12_ef/vAN-20200824_ROOT6-1/pp_2018_mc_prodD2H/resultsMBjetvspt] #list of periods
+        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/6_12_ef/vAN-20200824_ROOT6-1/pp_mc_prodD2H/resultsMBjetvspt
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_r_shape
       mc_proc: # alternative processor output used as the analyzer input

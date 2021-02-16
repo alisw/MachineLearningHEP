@@ -219,7 +219,7 @@ LcpK0spp:
     feeddown_ratio: false
     feeddown_db: false
     data:
-      nprocessesparallel: 20
+      nprocessesparallel: 25
       maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp: [100,100,100] #list of periods
       chunksizeskim: [100,100,100] #list of periods
@@ -245,7 +245,7 @@ LcpK0spp:
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2017,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018] #list of periods
     mc:
-      nprocessesparallel: 20
+      nprocessesparallel: 25
       maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp: [100,100,100] #list of periods
       chunksizeskim: [1000,1000,1000] #list of periods
@@ -348,7 +348,7 @@ LcpK0spp:
       proc_type: Dhadrons_jet
       useperiod: [1,1,1] #list of periods
       usejetptbinned_deff: false
-      do_eff_fold: false
+      do_eff_fold: true
 
       latexnamehadron: "#Lambda_{c}^{#plus}"
       latexnamedecay: "p K^{0}_{S}"
@@ -436,7 +436,7 @@ LcpK0spp:
       xsection_inel: 57.8
 
       doprior: false
-      doeff_resp: true
+      doeff_resp: false
       powheg_path_nonprompt: /data/POWHEG/trees_powheg_fd_central.root
 
       powheg_path_prompt: /data/POWHEG/trees_powheg_pr_central.root
