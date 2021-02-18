@@ -125,6 +125,10 @@ class AnalyzerJet(Analyzer):
         self.p_rebin = datap["analysis"][self.typean]["rebin"]
         self.p_fix_mean = datap["analysis"][self.typean]["fix_mean"]
         self.p_fix_sigma = datap["analysis"][self.typean]["fix_sigma"]
+        self.p_set_fix_sigma= \
+        datap["analysis"][self.typean]["SetFixGaussianSigma"]
+        self.p_set_initial_sigma = \
+        datap["analysis"][self.typean]["SetInitialGaussianSigma"]
         self.p_sigmaarray = datap["analysis"][self.typean]["sigmaarray"]
         #self.p_masspeaksec = None
         self.p_fix_sigmasec = None
@@ -460,6 +464,38 @@ class AnalyzerJet(Analyzer):
                     self.p_massmin[ipt], self.p_massmax[ipt], self.p_bkgfunc[ipt], 0)
                 fittermc.SetInitialGaussianMean(self.p_masspeak)
                 out = fittermc.MassFitter(0)
+                c_mc_fit = TCanvas("c_mc_fit " + suffix, "MC fit")
+                setup_canvas(c_mc_fit)
+                setup_histogram(histomassmc_reb, get_colour(0), get_marker(0))
+                histomassmc_reb.SetTitle("")
+                histomassmc_reb.SetXTitle("invariant mass (GeV/#it{c}^{2})")
+                histomassmc_reb.SetYTitle("counts")
+                histomassmc_reb.SetTitleOffset(1.2, "Y")
+                histomassmc_reb.GetYaxis().SetMaxDigits(3)
+                y_min_h, y_max_h = get_y_window_his(histomassmc_reb)
+                y_margin_up = 0.15
+                y_margin_down = 0.05
+                histomassmc_reb.GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
+                histomassmc_reb.Draw("same")
+                bkg_mc = fittermc.GetBackgroundRecalcFunc()
+                sgn_mc = fittermc.GetMassFunc()
+                sigma_mc = fittermc.GetSigma()
+                mean_mc = fittermc.GetMean()
+                if out == 1:
+                    bkg_mc.SetLineColor(get_colour(1))
+                    sgn_mc.SetLineColor(get_colour(2))
+                    sgn_mc.Draw("same")
+                    bkg_mc.Draw("same")
+                latexmc_1 = TLatex(0.67, 0.78, "mean = %s, #sigma  = %s" % \
+                        (round(mean_mc,3), round(sigma_mc,3)))
+                draw_latex(latexmc_1)
+                latexmc_2 = TLatex(0.71, 0.72, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
+                draw_latex(latexmc_2)
+                latexmc_3 = TLatex(0.71, 0.67, "%g #leq #it{p}_{T, %s} < %g GeV/#it{c}" % \
+                    (self.lpt_finbinmin[ipt], self.p_latexnhadron, min(self.lpt_finbinmax[ipt], self.lvar2_binmax_reco[ibin2])))
+                draw_latex(latexmc_3)
+
+                c_mc_fit.SaveAs("%s/fit_mc_%s.eps" % (self.d_resultsallpdata, suffix_plot))
                 print("I have made MC fit for sigma initialization, status: %d" % out)
                 histomass = myfile.Get("hmass" + suffix)
 
@@ -471,10 +507,21 @@ class AnalyzerJet(Analyzer):
                 histomass_reb.Copy(histomass_reb_f)
                 fitter = AliHFInvMassFitter(histomass_reb_f, self.p_massmin[ipt], \
                     self.p_massmax[ipt], self.p_bkgfunc[ipt], self.p_sgnfunc[ipt])
+                #fitter.SetInitialGaussianSigma(fittermc.GetSigma())
+                #fitter.SetInitialGaussianMean(fittermc.GetMean())
+                #print("p_fix_sigma " , self.p_fix_sigma[ipt], fittermc.GetSigma())
+                #if self.p_fix_sigma[ipt] is True:
+                #    fitter.SetFixGaussianSigma(fittermc.GetSigma())
+
                 fitter.SetInitialGaussianSigma(fittermc.GetSigma())
                 fitter.SetInitialGaussianMean(fittermc.GetMean())
-                if self.p_fix_sigma[ipt] is True:
-                    fitter.SetFixGaussianSigma(fittermc.GetSigma())
+                if self.p_set_initial_sigma[ipt] is True:
+                    if self.p_set_fix_sigma[ipt] is True:
+                        print("****************Fix sigma to sigma array values*****************")
+                        fitter.SetFixGaussianSigma(self.p_sigmaarray[ipt])
+                    else:
+                        print("****************Fix sigma to MC sigma values*****************")
+                        fitter.SetFixGaussianSigma(fittermc.GetSigma())
                 if self.p_sgnfunc[ipt] == 1:
                     if self.p_fix_sigmasec[ipt] is True:
                         fitter.SetFixSecondGaussianSigma(self.p_sigmaarraysec[ipt])
@@ -498,12 +545,12 @@ class AnalyzerJet(Analyzer):
                 sgn_func = fitter.GetMassFunc()
                 sigma = fitter.GetSigma()
                 mean = fitter.GetMean()
-                bkg_left_1 = (mean - 9*sigma)
-                bkg_left_2 = (mean - 4*sigma)
-                sig_left =  (mean - 2*sigma)
-                sig_right = (mean + 2*sigma)
-                bkg_right_1 = (mean + 4*sigma)
-                bkg_right_2 = (mean + 9*sigma)
+                bkg_left_1 = (mean - self.sideband_sigma_2_left*sigma)
+                bkg_left_2 = (mean - self.sideband_sigma_1_left*sigma)
+                sig_left =  (mean - self.signal_sigma*sigma)
+                sig_right = (mean + self.signal_sigma*sigma)
+                bkg_right_1 = (mean + self.sideband_sigma_1_right*sigma)
+                bkg_right_2 = (mean + self.sideband_sigma_2_right*sigma)
                 left_borders = [bkg_left_1, bkg_left_2, sig_left]
                 right_borders = [sig_right, bkg_right_1, bkg_right_2]
                 bkg = 0
@@ -1149,11 +1196,9 @@ class AnalyzerJet(Analyzer):
                 hzbkg_scaled.Scale(area_scale)
 
                 # correct for the efficiency
-                if not self.doeff_resp:
-                    print("NO RESPONSE EFF!")
-                    eff = heff.GetBinContent(ipt + 1)
-                    if eff > 0.0:
-                        hzsub.Scale(1.0 / (eff * self.sigma_scale))
+                eff = heff.GetBinContent(ipt + 1)
+                if eff > 0.0:
+                    hzsub.Scale(1.0 / (eff * self.sigma_scale))
 
                 # add the corrected yield to the sum
 
