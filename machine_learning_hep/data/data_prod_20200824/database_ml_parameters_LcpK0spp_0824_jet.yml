@@ -426,7 +426,7 @@ LcpK0spp:
       sigmaarraysec: [0.007497,0.01,0.01,0.01,0.01]
       # simple fitter END
 
-      signal_sigma: 1.75
+      signal_sigma: 2.0
       sigma_scale: 0.9545
       sideband_sigma_1_left: 4
       sideband_sigma_2_left: 9
