@@ -410,6 +410,7 @@ LcpK0spp:
       masspeak: 2.2864
       massmin: [2.14,2.14,2.14,2.14,2.14]
       massmax: [2.436,2.436,2.436,2.436,2.436]
+      #massmax: [2.4,2.4,2.4,2.4,2.4]
       rebin: [6,6,6,6,6]
       fix_mean: [false, false, false, false, false]
       fix_sigma: [false, false, false, false, false]

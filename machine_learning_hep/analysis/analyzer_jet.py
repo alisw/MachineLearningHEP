@@ -464,6 +464,32 @@ class AnalyzerJet(Analyzer):
                     self.p_massmin[ipt], self.p_massmax[ipt], self.p_bkgfunc[ipt], 0)
                 fittermc.SetInitialGaussianMean(self.p_masspeak)
                 out = fittermc.MassFitter(0)
+                bkg_mc = fittermc.GetBackgroundRecalcFunc()
+                sgn_mc = fittermc.GetMassFunc()
+                sgn_mc_only = fittermc.GetSignalFunc()
+                if bkg_mc and sgn_mc:
+                    print("*****MC fitter %s successfull!*****" % suffix)
+                    print("Sigma: ", fittermc.GetSigma())
+                elif bkg_mc and sgn_mc_only:
+                    print("*****Mass Func Total fitter %s failed. Use only signal*****" % suffix)
+                    sgn_mc = sgn_mc_only
+                else:
+                    print("*****Polynomial background % s failed. Try linear bakcground*****" % suffix)
+                    fittermc = AliHFInvMassFitter(histomassmc_reb_f, \
+                        self.p_massmin[ipt], self.p_massmax[ipt], 1, 0)
+                    fittermc.SetInitialGaussianMean(self.p_masspeak)
+                    out = fittermc.MassFitter(0)
+                    bkg_mc = fittermc.GetBackgroundRecalcFunc()
+                    sgn_mc = fittermc.GetMassFunc()
+                    sgn_mc_only = fittermc.GetSignalFunc()
+                    if bkg_mc and sgn_mc:
+                        print("*****MC fitter %s (lin. bkg) successfull!*****" % suffix)
+                        print("Sigma: ", fittermc.GetSigma())
+                    elif bkg_mc and sgn_mc_only:
+                        print("*****Mass Func Total fitter %s (lin. bkg) failed. Use only signal*****" % suffix)
+                        sgn_mc = sgn_mc_only
+                    else:
+                        print("********WARNING!!!!MC Fit %s FAILED!!!!*********" % suffix)
                 c_mc_fit = TCanvas("c_mc_fit " + suffix, "MC fit")
                 setup_canvas(c_mc_fit)
                 setup_histogram(histomassmc_reb, get_colour(0), get_marker(0))
@@ -477,8 +503,8 @@ class AnalyzerJet(Analyzer):
                 y_margin_down = 0.05
                 histomassmc_reb.GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
                 histomassmc_reb.Draw("same")
-                bkg_mc = fittermc.GetBackgroundRecalcFunc()
-                sgn_mc = fittermc.GetMassFunc()
+                sigma_mc = 0
+                mean_mc = 0
                 sigma_mc = fittermc.GetSigma()
                 mean_mc = fittermc.GetMean()
                 if out == 1:
