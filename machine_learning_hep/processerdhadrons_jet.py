@@ -617,10 +617,10 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         eff_file = TFile.Open(self.file_efficiency)
         print(self.file_efficiency)
         print("prompt = ", prompt)
-	if self.p_usejetptbinned_deff is False:
-        	bin_range = self.p_nbin2_reco
-	else:
-        	bin_range = 1
+        if self.p_usejetptbinned_deff is False:
+            bin_range = self.p_nbin2_reco
+        else:
+            bin_range = 1
         df_effcorr = []
         # loop over pt_jet bins (efficiency is the same for all pt_jet,
         # but histos have pt_jet interval in the title)
@@ -638,9 +638,9 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_tmp = seldf_singlevar(df_noeffcorr, "pt_cand", \
                         self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
                 if self.p_usejetptbinned_deff is False:
-                	df_tmp = seldf_singlevar(df_tmp, "pt_jet", \
+                    df_tmp = seldf_singlevar(df_tmp, "pt_jet", \
                                self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
- 	        df_tmp['eff'] = eff
+                df_tmp['eff'] = eff
                 df_effcorr.append(df_tmp)
         df_effcorr = pd.concat(df_effcorr)
         print("finished sucessfully")

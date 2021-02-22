@@ -233,8 +233,9 @@ class AnalyzerJet(Analyzer):
         self.d_resultsallpdata = datap["analysis"][typean]["data"]["results"][period] \
                 if period is not None else datap["analysis"][typean]["data"]["resultsallp"]
 
+        self.lc_d0_ratio = datap["analysis"][self.typean]["lc_d0_ratio"]
         if self.lc_d0_ratio:
-            self.d_resultslc =  datap["analysis"][self.typean]["resultslc"]
+            self.d_resultslc =  datap["analysis"][typean][data]["resultslc"]
 
 
         # input directories (processor output)
@@ -2150,8 +2151,8 @@ class AnalyzerJet(Analyzer):
 
         # calculate rec. level kinematic efficiency and apply it to the unfolding input
 
-        # hzvsjetpt_reco_eff.Divide(hzvsjetpt_reco_nocuts)
-        # input_data.Multiply(hzvsjetpt_reco_eff)
+        hzvsjetpt_reco_eff.Divide(hzvsjetpt_reco_nocuts)
+        input_data.Multiply(hzvsjetpt_reco_eff)
 
         # gen. level cuts only applied
         hzvsjetpt_gen_nocuts = unfolding_input_file.Get("hzvsjetpt_gen_nocuts")
@@ -2933,7 +2934,7 @@ class AnalyzerJet(Analyzer):
             draw_latex(latex)
             cunfolded_not_z.SaveAs("%s/unfolded_not_%s_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
 
-            if self.feeddown_ratio:
+            if self.lc_d0_ratio:
                 option = "unfolding_results"
                 lchistoname = ("unfolded_z_%d_%s" % (i_iter_choice, suffix))
                 print("Making Lc to D0 ratio for", option, lchistoname)
