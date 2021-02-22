@@ -617,27 +617,33 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         eff_file = TFile.Open(self.file_efficiency)
         print(self.file_efficiency)
         print("prompt = ", prompt)
-        if self.p_usejetptbinned_deff is False:
+        if self.p_usejetptbinned_deff is True:
             bin_range = self.p_nbin2_reco
+            print(bin_range)
         else:
             bin_range = 1
         df_effcorr = []
         # loop over pt_jet bins (efficiency is the same for all pt_jet,
         # but histos have pt_jet interval in the title)
         for ibin2 in range(bin_range):
+            print("effcor pt_jet:", ibin2, bin_range)
             heff_pr = eff_file.Get("eff_mult%d" % ibin2)
             if prompt is False:
                 heff_fd = eff_file.Get("eff_fd_mult%d" % ibin2)
             # get efficiency value for each hf bin
             for ipt in range(self.p_nptfinbins):
                 eff = heff_pr.GetBinContent(ipt+1)
+                print("efficiency:", eff)
                 if prompt is False:
-                    eff = eff/heff_fd.GetBinContent(ipt+1) #to be inverted in response matrix scaling
+                    if eff != 0:
+                        eff = eff/heff_fd.GetBinContent(ipt+1) #to be inverted in response matrix scaling
+                    else:
+                        eff = 0
                 # limit the prompt(nonprompt) df with current bin ranges and
                 # assign corresponding efficiency to each bin as a new df column
                 df_tmp = seldf_singlevar(df_noeffcorr, "pt_cand", \
                         self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-                if self.p_usejetptbinned_deff is False:
+                if self.p_usejetptbinned_deff is True:
                     df_tmp = seldf_singlevar(df_tmp, "pt_jet", \
                                self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
                 df_tmp['eff'] = eff
