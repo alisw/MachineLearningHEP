@@ -418,7 +418,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     if dosyst is True:
         analyze_steps.append("yield_syst")
     if doeff is True:
-        analyze_steps.append("efficiency")
+        analyze_steps.append("efficiency_folded")
     if dojetstudies is True:
         if dofit is False:
             analyze_steps.append("fit")
