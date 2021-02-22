@@ -139,10 +139,8 @@ D0pp:
     crossfilename: "cross_section_tot.root"
 
   multi:
-    feeddown_ratio: true
-    feeddown_db: false
     data:
-      nprocessesparallel: 20
+      nprocessesparallel: 25
       maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp:  [100,100,100] #list of periods
       chunksizeskim: [100,100,100] #list of periods
@@ -167,7 +165,7 @@ D0pp:
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2017,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018] #list of periods
     mc:
-      nprocessesparallel: 20
+      nprocessesparallel: 25
       maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp: [100,100,100] #list of periods
       chunksizeskim: [1000,1000,1000] #list of periods
@@ -272,6 +270,8 @@ D0pp:
       proc_type: Dhadrons_jet
       useperiod: [1,1,1] #list of periods
       usejetptbinned_deff: false
+      do_eff_fold: false
+      lc_d0_ratio: false
       latexnamehadron: "D^{0}"
       latexnamedecay: "K^{#minus} #pi^{#plus}"
 
@@ -303,16 +303,16 @@ D0pp:
         mc: null
       data: &data_out_default
         runselection: [null, null, null] #FIXME
-        results: [/data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/zg/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/zg/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/zg/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/zg/default/default/pp_data/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_data/resultsMBjetvspt
       mc: &mc_out_default
         runselection: [null, null, null] #FIXME
-        results: [/data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/zg/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/zg/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/zg/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/zg/default/default/pp_mc_prodD2H/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/zg/default/default/pp_mc_prodD2H/resultsMBjetvspt
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input
@@ -332,6 +332,13 @@ D0pp:
       fix_sigma: [true, true] # sel_an_binmin bins
       sigmaarray: [0.01, 0.01] # initial sigma (sel_an_binmin bins)
       masspeaksec: 1.864
+
+      SetFixGaussianSigma: [false, false]
+      # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
+      # Use values set for "sigmaarray" for initializing total fit (per pT bin),
+      # otherwise what is derived from MC fit is used
+      SetInitialGaussianSigma: [true, true]
+      
       fix_sigmasec: [true, true] # sel_an_binmin bins
       sigmaarraysec: [0.01, 0.01] # sel_an_binmin bins
       # simple fitter END
@@ -351,6 +358,7 @@ D0pp:
       xsection_inel: 57.8 # (mb) cross-section of minimum-bias events
 
       doprior: false
+      doeff_resp: true
 
       powheg_path_nonprompt: /data/POWHEG/trees_powheg_fd_central.root
 
@@ -370,34 +378,6 @@ D0pp:
       - Null
       - Null
 
-    jet_r_shape:
-      <<: *jet_default
-      var_binningshape: delta_r_jet
-      var_binningshape_gen: delta_r_gen_jet
-      var_shape_latex: "#Delta R^{jet}"
-      sel_binminshape_reco: [0, 0.05, 0.1, 0.15]
-      sel_binmaxshape_reco:        [0.05, 0.1, 0.15, 0.3]
-      sel_binminshape_gen:  [0, 0.05, 0.1, 0.15]
-      sel_binmaxshape_gen:         [0.05, 0.1, 0.15, 0.3]
-      data: &data_out_r_shape
-        <<: *data_out_default
-        results: [/data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/pp_2016_data/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/pp_2017_data/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/pp_2018_data/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/pp_data/resultsMBjetvspt
-        resultslc: /data/Derived_testResults/Jets/Lc/6_12/vAN-20200304_ROOT6-1/pp_data/resultsMBjetvspt
-      mc: &mc_out_r_shape
-        <<: *mc_out_default
-        results: [/data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/pp_mc_prodD2H/resultsMBjetvspt
-      data_proc: # alternative processor output used as the analyzer input
-        <<: *data_out_r_shape
-      mc_proc: # alternative processor output used as the analyzer input
-        <<: *mc_out_r_shape
-      variations_db: ./data/data_prod_20200304/database_variations_D0pp_jet_r_shape.yml
-
     jet_rg:
       <<: *jet_default
       var_binningshape: rg_jet
@@ -409,16 +389,16 @@ D0pp:
       sel_binmaxshape_gen:      [0.1,0.2,0.3,0.4]
       data: &data_out_rg
         <<: *data_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/rg/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/rg/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/rg/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/rg/default/default/pp_data/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_data/resultsMBjetvspt
       mc: &mc_out_rg
         <<: *mc_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/rg/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/rg/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/rg/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/rg/default/default/pp_mc_prodD2H/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/rg/default/default/pp_mc_prodD2H/resultsMBjetvspt
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_rg
       mc_proc: # alternative processor output used as the analyzer input
@@ -436,16 +416,16 @@ D0pp:
       sel_binmaxshape_gen:        [0.5, 1.5, 2.5, 3.5, 4.5]
       data: &data_out_nsd
         <<: *data_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/nsd/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/nsd/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/nsd/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/nsd/default/default/pp_data/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_data/resultsMBjetvspt
       mc: &mc_out_nsd
         <<: *mc_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/nsd/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/nsd/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/nsd/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/nsd/default/default/pp_mc_prodD2H/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/nsd/default/default/pp_mc_prodD2H/resultsMBjetvspt
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_nsd
       mc_proc: # alternative processor output used as the analyzer input
@@ -467,21 +447,49 @@ D0pp:
       sel_binmaxshape_gen:         [0.4001,0.5001,0.6001,0.7001,0.8001,0.9001,1.0001]
       data: &data_out_ff
         <<: *data_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/ff/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/ff/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/ff/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
       mc: &mc_out_ff
         <<: *mc_out_default
-        results: [/data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/ff/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/ff/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/ff/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/ff/default/default/pp_mc_prodD2H/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/ff/default/default/pp_mc_prodD2H/resultsMBjetvspt
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_ff
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_ff
       variations_db: ./data/data_prod_20200304/database_variations_D0pp_jet_FF.yml
+
+    jet_r_shape:
+      <<: *jet_default
+      var_binningshape: delta_r_jet
+      var_binningshape_gen: delta_r_gen_jet
+      var_shape_latex: "#Delta R^{jet}"
+      sel_binminshape_reco: [0, 0.05, 0.1, 0.15]
+      sel_binmaxshape_reco:        [0.05, 0.1, 0.15, 0.3]
+      sel_binminshape_gen:  [0, 0.05, 0.1, 0.15]
+      sel_binmaxshape_gen:         [0.05, 0.1, 0.15, 0.3]
+      data: &data_out_r_shape
+        <<: *data_out_default
+        results: [/data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2016_data/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2017_data/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2018_data/resultsMBjetvspt] #list of periods
+        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/r_shape/default/default/pp_data/resultsMBjetvspt
+        resultslc: /data/Derived_testResults/Jets/Lc/6_12/vAN-20200304_ROOT6-1/r_shape/default/default/pp_data/resultsMBjetvspt
+      mc: &mc_out_r_shape
+        <<: *mc_out_default
+        results: [/data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2016_mc_prodD2H/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2017_mc_prodD2H/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2018_mc_prodD2H/resultsMBjetvspt] #list of periods
+        resultsallp: /data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20200304_ROOT6-1/r_shape/default/default/pp_mc_prodD2H/resultsMBjetvspt
+      data_proc: # alternative processor output used as the analyzer input
+        <<: *data_out_r_shape
+      mc_proc: # alternative processor output used as the analyzer input
+        <<: *mc_out_r_shape
+      variations_db: ./data/data_prod_20200304/database_variations_D0pp_jet_r_shape.yml
 
     #########################
     #                       #

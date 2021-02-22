@@ -408,7 +408,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     analyze_steps = []
     if efficiency_resp is True:
         analyze_steps.append("efficiency")
-    ana_mgr.analyze(*analyze_steps)
+        ana_mgr.analyze(*analyze_steps)
     if doresponse is True:
         mymultiprocessmc.multi_response()
     analyze_steps = []

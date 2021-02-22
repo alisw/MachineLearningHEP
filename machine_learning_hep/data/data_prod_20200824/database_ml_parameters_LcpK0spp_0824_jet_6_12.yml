@@ -216,8 +216,6 @@ LcpK0spp:
     crossfilename: "cross_section_tot.root"
 
   multi:
-    feeddown_ratio: false
-    feeddown_db: false
     data:
       nprocessesparallel: 25
       maxfiles: [-1,-1,-1] #list of periods
@@ -344,11 +342,12 @@ LcpK0spp:
     inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
     dir_general_plots: /data/DerivedResults/LckINTHighMultCALOwithJets_sub/vAN-20200304_ROOT6-1/analysis_plots
 
-    jet_FF:
+    jet_r_shape:
       proc_type: Dhadrons_jet
       useperiod: [1,1,1] #list of periods
       usejetptbinned_deff: false
-      do_eff_fold: true
+      do_eff_fold: false
+      lc_d0_ratio: false
 
       latexnamehadron: "#Lambda_{c}^{#plus}"
       latexnamedecay: "p K^{0}_{S}"
@@ -360,7 +359,7 @@ LcpK0spp:
       sel_binmax2_reco:     [7., 15., 30.] #list of nbins
       sel_binmin2_gen:  [5., 7., 15] #list of nbins
       sel_binmax2_gen:      [ 7., 15., 30] #list of nbins
-      
+
       var_binningshape: delta_r_jet
       var_binningshape_gen: delta_r_gen_jet
       var_shape_latex: "#Delta R^{jet}"
@@ -386,18 +385,17 @@ LcpK0spp:
         mc: null
       data: &data_out_default
         runselection: [null, null, null]
-        results: [/data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/pp_2016_data/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/pp_2017_data/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/pp_2018_data/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/pp_data/resultsMBjetvspt
-        resultsold: /data/Derived_testResults/Jets/Lc/6_12/vAN-20200304_ROOT6-1/pp_data/resultsMBjetvspt
+        results: [/data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape/default/default/pp_2016_data/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape/default/default/pp_2017_data/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape/default/default/pp_2018_data/resultsMBjetvspt] #list of periods
+        resultsallp: /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape/default/default/pp_data/resultsMBjetvspt
 
       mc: &mc_out_default
         runselection: [null, null, null]
-        results: [/data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/pp_2016_mc_prodD2H/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/pp_2017_mc_prodD2H/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/pp_2018_mc_prodD2H/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/pp_mc_prodD2H/resultsMBjetvspt
+        results: [/data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape/default/default/pp_2016_mc_prodD2H/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape/default/default/pp_2017_mc_prodD2H/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape/default/default/pp_2018_mc_prodD2H/resultsMBjetvspt] #list of periods
+        resultsallp: /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape/default/default/pp_mc_prodD2H/resultsMBjetvspt
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input
@@ -417,6 +415,13 @@ LcpK0spp:
       fix_sigma: [true, true]
       sigmaarray: [0.0109, 0.0117] # initial sigma
       masspeaksec: 2.2864
+
+      SetFixGaussianSigma: [false, false]
+      # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
+      # Use values set for "sigmaarray" for initializing total fit (per pT bin),
+      # otherwise what is derived from MC fit is used
+      SetInitialGaussianSigma: [true, true]
+      
       fix_sigmasec: [true, true]
       sigmaarraysec: [0.01, 0.01]
       # simple fitter END
@@ -436,7 +441,8 @@ LcpK0spp:
       xsection_inel: 57.8
 
       doprior: false
-      doeff_resp: false
+      doeff_resp: true
+
       powheg_path_nonprompt: /data/POWHEG/trees_powheg_fd_central.root
 
       powheg_path_prompt: /data/POWHEG/trees_powheg_pr_central.root

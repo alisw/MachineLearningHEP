@@ -23,7 +23,7 @@ import numpy as np
 import yaml
 # pylint: disable=import-error, no-name-in-module
 import uproot
-from ROOT import TFile, TH1F, TH2F, TCanvas, TLatex, TGraphAsymmErrors, TLine, TGaxis, Double
+from ROOT import TFile, TH1F, TH2F, TCanvas, TLatex, TGraphAsymmErrors, TLine, TGaxis
 from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
 from ROOT import TLegend
 from ROOT import gROOT, gStyle
@@ -186,7 +186,6 @@ class AnalyzerJet(Analyzer):
         self.choice_iter_unfolding = \
             datap["analysis"][self.typean].get("niterunfoldingchosen", None)
 
-
         # systematics
         # import parameters of variations from the variation database
         path_sys_db = datap["analysis"][self.typean].get("variations_db", None)
@@ -235,13 +234,9 @@ class AnalyzerJet(Analyzer):
                 if period is not None else datap["analysis"][typean]["mc"]["resultsallp"]
         self.d_resultsallpdata = datap["analysis"][typean]["data"]["results"][period] \
                 if period is not None else datap["analysis"][typean]["data"]["resultsallp"]
-        # self.feeddown_db = datap["multi"]["feeddown_db"]
-        self.feeddown_ratio = datap["multi"]["feeddown_ratio"]
-        #self.feeddown_ratio = False
-        # if self.feeddown_db:
-        #    self.d_resultsold =  datap["analysis"][typean]["data"]["resultsold"]
-        if self.feeddown_ratio:
-            self.d_resultslc =  datap["analysis"][typean]["data"]["resultslc"]
+
+        if self.lc_d0_ratio:
+            self.d_resultslc =  datap["analysis"][self.typean]["resultslc"]
 
 
         # input directories (processor output)
@@ -296,90 +291,6 @@ class AnalyzerJet(Analyzer):
         self.text_sd = "Soft Drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)"
         self.text_acc_h = "#left|#it{y}_{%s}#right| #leq 0.8" % self.p_latexnhadron
         self.text_powheg = "POWHEG + PYTHIA 6 + EvtGen"
-
-
-    #def makeratio_onedim(self, origin_histo, option, histo_to_compare, xtitle, ytitle):
-    #    filename = self.d_resultsold + "/" + option + ".root"
-    #    print("Open file with results to compare", filename)
-    #    c_ratio = TCanvas("c_ratio", "histos ratio")
-    #    setup_canvas(c_ratio)
-    #    c_ratio.Divide(2,2)
-    #    c_ratio.cd(1)
-    #    myfild_old = TFile.Open(filename)
-    #    first_histo = origin_histo.Clone("first_histo")
-    #    second_histo = myfild_old.Get(histo_to_compare)
-    #    if not second_histo:
-    #        print("No old histo!", histo_to_compare)
-    #    else:
-    #        print(histo_to_compare)
-    #        leg_ratio = TLegend(.6, .8, .8, .85)
-    #        setup_legend(leg_ratio)
-    #        setup_histogram(first_histo, get_colour(1), get_marker(0))
-    #        setup_histogram(second_histo, get_colour(2), get_marker(1))
-    #        leg_ratio.AddEntry(second_histo, "old_data %s" %option, "P")
-    #        leg_ratio.AddEntry(first_histo, "new_data %s" %option, "P")
-    #        #second_histo.SetYTitle(ytitle)
-    #        second_histo.SetTitle(histo_to_compare)
-    #        second_histo.Draw()
-    #        first_histo.Draw("same")
-    #        leg_ratio.Draw("same")
-    #        scaled_1 = first_histo.Clone("scaled_1")
-    #        scaled_2 = second_histo.Clone("scaled_2")
-    #        c_ratio.cd(3)
-    #        ratio = second_histo.Clone("ratio")
-    #        ratio.Divide(first_histo)
-    #        ratio.SetTitle("old data to new data ratio")
-    #        setup_histogram(ratio, get_colour(0))
-    #        ratio.Draw()
-    #        if ((scaled_1.Integral()!=0) and (scaled_2.Integral()!=0)):
-    #            scaled_2.Scale(1/scaled_2.Integral())
-    #            scaled_1.Scale(1/scaled_1.Integral())
-    #            #scaled_1.SetXTitle(xtitle)
-    #            #scaled_2.SetYTitle(ytitle)
-    #            c_ratio.cd(2)
-    #            scaled_2.SetTitle("self normalized")
-    #            scaled_2.Draw()
-    #            scaled_1.Draw("same")
-    #            leg_ratio.Draw("same")
-    #            c_ratio.cd(4)
-    #            norm_ratio = scaled_2.Clone("ratio")
-    #            norm_ratio.Divide(scaled_1)
-    #            norm_ratio.SetTitle("old data to new data (norm) ratio")
-    #            setup_histogram(norm_ratio, get_colour(0))
-    #            norm_ratio.Draw()
-    #            c_ratio.SaveAs("%s/old_new_%s.png" % (self.d_resultsallpdata, histo_to_compare))
-    #            #c_ratio.SaveAs("compare/old_new_%s.png" % (histo_to_compare))
-    #        myfild_old.Close()
-
-    #def makeratio_twodim(self, origin_histo, option, histo_to_compare):
-    #    filename = self.d_resultsold + "/" + option + ".root"
-    #    print("Open file with results to compare", filename)
-    #    myfild_old = TFile.Open(filename)
-    #    first_histo = origin_histo.Clone("first_histo")
-    #    second_histo = myfild_old.Get(histo_to_compare)
-    #    if not second_histo:
-    #        print("No old histo!", histo_to_compare)
-    #    else:
-    #        print(histo_to_compare)
-    #        c_ratio = TCanvas("c_ratio", "histos ratio")
-    #        setup_canvas(c_ratio)
-    #        leg_ratio = TLegend(.6, .8, .8, .85)
-    #        setup_legend(leg_ratio)
-    #        sub1 = first_histo.Clone("sub1")
-    #        sub1.Add(second_histo, -1)
-    #        setup_histogram(sub1)
-    #        sub1.SetTitle("%s %s" % (histo_to_compare, option))
-    #        sub1.Draw("text")
-    #        c_ratio.SaveAs("%s/new-old_%s.png" % (self.d_resultsallpdata , histo_to_compare))
-    #        #c_ratio.SaveAs("compare/new-old_diff_%s.png" % (histo_to_compare))
-    #        second_histo.Scale(1/second_histo.Integral())
-    #        first_histo.Scale(1/first_histo.Integral())
-    #        second_histo.Divide(first_histo)
-    #        second_histo.SetTitle("%s %s" % (histo_to_compare, option))
-    #        second_histo.Draw("text")
-    #        c_ratio.SaveAs("%s/old_new_ratio_%s.png" % (self.d_resultsallpdata, histo_to_compare))
-    #        #c_ratio.SaveAs("compare/new_old_ratio_%s.png" % (histo_to_compare))
-    #    myfild_old.Close()
 
     def makeratio(self, origin_histo, option, lc_histoname):
         D0_histo = origin_histo.Clone("D0_histo")
@@ -441,7 +352,7 @@ class AnalyzerJet(Analyzer):
             self.logger.fatal(make_message_notfound("histonorm", self.n_filemass))
         self.p_nevents = histonorm.GetBinContent(1)
         print("Number of selected event: %g" % self.p_nevents)
-        print(self.p_nptfinbins)
+
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
             for ibin2 in range(self.p_nbin2_reco):
@@ -630,16 +541,13 @@ class AnalyzerJet(Analyzer):
                 latex2 = TLatex(0.71, 0.67, "%g #leq #it{p}_{T, %s} < %g GeV/#it{c}" % \
                     (self.lpt_finbinmin[ipt], self.p_latexnhadron, min(self.lpt_finbinmax[ipt], self.lvar2_binmax_reco[ibin2])))
                 draw_latex(latex2)
-
                 c_fitted_result.SaveAs("%s/fit_%s.eps" % (self.d_resultsallpdata, suffix_plot))
-                c_fitted_result.SaveAs("plots/fit_%s.png" % (suffix_plot))
         myfilemc.Close()
         myfile.Close()
         fileout.Close()
         gROOT.SetBatch(tmp_is_root_batch)
 
     def efficiency(self): # pylint: disable=too-many-branches, too-many-locals
-        print("efficiency analysis started")
         self.loadstyle()
         lfileeff = TFile.Open(self.n_fileeff)
         if not lfileeff:
@@ -1205,7 +1113,6 @@ class AnalyzerJet(Analyzer):
                 area_scale = bkg_fit.Integral(masslow2sig, masshigh2sig) / area_scale_denominator
                 hzsub = hzsig.Clone("hzsub" + suffix)
 
-
                 # subtract the scaled sideband yields
 
                 hzsub.Add(hzbkg, -1 * area_scale)
@@ -1222,6 +1129,7 @@ class AnalyzerJet(Analyzer):
                 hzbkg_scaled.Scale(area_scale)
 
                 # correct for the efficiency
+
                 eff = heff.GetBinContent(ipt + 1)
                 if eff > 0.0:
                     hzsub.Scale(1.0 / (eff * self.sigma_scale))
@@ -1249,13 +1157,7 @@ class AnalyzerJet(Analyzer):
                 hzsub_noteffscaled.Write()
                 hzsub.Write("hzsub" + suffix)
 
-                #if self.feeddown_db:
-                #    option = "sideband_subtracted"
-                #    histo_to_compare = ("hzsub_noteffscaled%s" % (suffix))
-                #    print("Making ratio for", option, histo_to_compare )
-                #    xtitle = self.v_var_binning
-                #    ytitle = "yield not effcor"
-                #    self.makeratio_onedim(hzsub_noteffscaled, option, histo_to_compare, xtitle, ytitle)
+                # Canvas to compare the shape of the left and right sidebands.
 
                 csblr = TCanvas("csblr" + suffix, "The Sideband Left-Right Canvas" + suffix)
                 setup_canvas(csblr)
@@ -1408,7 +1310,6 @@ class AnalyzerJet(Analyzer):
                 csigbkgsubz.SaveAs("%s/sideband_sub_%s.eps" % \
                     (self.d_resultsallpdata, suffix_plot))
 
-                # Canvas to compare the shape of the left and right sidebands.
                 # preliminary figure
                 if ibin2 in [1] and ipt in [4, 5]:
                     text_ptjet_full = self.text_ptjet % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2])
@@ -1753,7 +1654,6 @@ class AnalyzerJet(Analyzer):
         his_response_fd.SetYTitle("(#it{p}_{T, jet}^{gen}, %s^{gen}) bin" % self.v_varshape_latex)
         his_response_fd.Draw("colz")
         cresponse_fd.SaveAs("%s/response_fd_matrix.eps" % self.d_resultsallpdata)
-        cresponse_fd.SaveAs("plots/response_fd_matrix.png")
 
         for ibin2 in range(self.p_nbin2_reco):
             suffix = "%s_%.2f_%.2f" % \
@@ -1817,8 +1717,6 @@ class AnalyzerJet(Analyzer):
         hz_genvsreco_full.Draw("colz")
         cz_genvsreco.SaveAs("%s/response_fd_%s_full.eps" % \
                             (self.d_resultsallpdata, self.v_varshape_binning))
-        cz_genvsreco.SaveAs("plots/response_fd_%s_full.png" % \
-                            (self.v_varshape_binning))
 
         cjetpt_genvsreco = TCanvas("cjetpt_genvsreco_full_nonprompt", "response matrix 2D projection")
         setup_canvas(cjetpt_genvsreco)
@@ -1940,7 +1838,6 @@ class AnalyzerJet(Analyzer):
                     y_latex -= self.y_step
                 c_eff_both.Update()
                 c_eff_both.SaveAs("%s/%s_eff_pr_fd_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix_plot))
-                c_eff_both.SaveAs("plots/%s_eff_pr_fd_%s.png" % (self.shape, suffix_plot))
 
         # plot relative jet pt shift
 
@@ -2026,6 +1923,7 @@ class AnalyzerJet(Analyzer):
         # apply gen. level kinematic efficiency
 
         input_data_scaled.Multiply(hzvsjetpt_gen_eff)
+
         # scale with real luminosity and branching ratio
 
         input_data_scaled.Scale(self.p_nevents * self.branching_ratio / self.xsection_inel)
@@ -2077,8 +1975,6 @@ class AnalyzerJet(Analyzer):
                     (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex)
             c_fd_fold.SaveAs("%s/feeddown_folded_%s.eps" % (self.d_resultsallpdata, suffix_plot))
-            c_fd_fold.SaveAs("plots/feeddown_folded_%s.png" % (suffix_plot))
-
 
         # plot the final feed-down shape vs jet pt distribution that is subtracted
 
@@ -2150,7 +2046,7 @@ class AnalyzerJet(Analyzer):
             sideband_input_data_z[ibin2].SetTitle("")
             sideband_input_data_z[ibin2].SetXTitle(self.v_varshape_latex)
             sideband_input_data_z[ibin2].SetYTitle("yield")
-            sideband_input_data_z[ibin2].Draw("")
+            sideband_input_data_z[ibin2].Draw()
             setup_histogram(folded_z_list[ibin2], get_colour(2), get_marker(1))
             leg_feeddown.AddEntry(folded_z_list[ibin2], "non-prompt (POWHEG)", "P")
             folded_z_list[ibin2].Draw("same")
@@ -2164,7 +2060,7 @@ class AnalyzerJet(Analyzer):
             draw_latex(latex)
             cfeeddown.SaveAs("%s/feeddown_subtraction_%s.eps" % \
                              (self.d_resultsallpdata, suffix_plot))
-            cfeeddown.SaveAs("feeddown_subtraction_%s.png" % suffix_plot)
+
             feeddown_fraction = folded_z_list[ibin2].Clone("feeddown_fraction" + suffix)
             feeddown_fraction_denominator = \
                 sideband_input_data_z[ibin2].Clone("feeddown_denominator" + suffix)
@@ -2203,16 +2099,11 @@ class AnalyzerJet(Analyzer):
         sideband_input_data_subtracted.SetYTitle("%s (GeV/#it{c})" % self.p_latexbin2var)
         sideband_input_data_subtracted.Draw("text")
         cfeeddown_output.SaveAs("%s/feeddown_output.eps" % self.d_resultsallpdata)
-        cfeeddown_output.SaveAs("plots/feeddown_output.png" )
         print("end of feed-down")
-
-#    def append_histo(self, histo_list):
-#        histo = TH1F("Empty histo", "", 10, 1, 10)
-#        histo.FillRandom("gaus", 100)
-#        histo_list.append(histo)
 
     def unfolding(self):
         self.loadstyle()
+        print("unfolding starts")
 
         fileouts = TFile.Open(self.file_unfold, "recreate")
         if not fileouts:
@@ -2253,6 +2144,9 @@ class AnalyzerJet(Analyzer):
         bin_int_first = 2 if self.lvarshape_binmin_reco[0] < 0 and "nsd" not in self.typean else 1
 
         # calculate rec. level kinematic efficiency and apply it to the unfolding input
+
+        # hzvsjetpt_reco_eff.Divide(hzvsjetpt_reco_nocuts)
+        # input_data.Multiply(hzvsjetpt_reco_eff)
 
         # gen. level cuts only applied
         hzvsjetpt_gen_nocuts = unfolding_input_file.Get("hzvsjetpt_gen_nocuts")
@@ -2339,12 +2233,6 @@ class AnalyzerJet(Analyzer):
         # get simulated distributions from PYTHIA 6 and POWHEG and calculate their spread
 
         for ibin2 in range(self.p_nbin2_gen):
-#            if self.lpt_finbinmin[0] > self.lvar2_binmax_reco[ibin2]:
-#                print("Warning!!! HF_pt > jet_pt!!! Create random histo")
-#                self.append_histo(input_mc_gen_z)
-#                self.append_histo(input_powheg_z)
-#                self.append_histo(input_powheg_xsection_z)
-#                continue
             suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             input_mc_gen_z.append(input_mc_gen.ProjectionX("input_mc_gen_z" + suffix, ibin2 + 1, ibin2 + 1, "e"))
@@ -2366,15 +2254,6 @@ class AnalyzerJet(Analyzer):
             #tg_powheg_xsection.append(tg_sys(input_powheg_xsection_z[ibin2], input_powheg_xsection_sys_z[ibin2]))
 
         for ibin2 in range(self.p_nbin2_reco):
-
-#            if self.lpt_finbinmin[0] > self.lvar2_binmax_reco[ibin2]:
-#                print("Warning!!! HF_pt > jet_pt!!! Create random histo")
-#                self.append_histo(input_data_z)
-#                self.append_histo(mc_reco_matched_z)
-#                self.append_histo(mc_gen_matched_z)
-#                self.append_histo(mc_reco_gen_matched_z_ratio)
-#                self.append_histo(hz_genvsreco_list)
-#                continue
             suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
             suffix_plot = "%s_%g_%g" % \
@@ -2484,7 +2363,6 @@ class AnalyzerJet(Analyzer):
         his_response_pr.SetYTitle("(#it{p}_{T, jet}^{gen}, %s^{gen}) bin" % self.v_varshape_latex)
         his_response_pr.Draw("colz")
         cresponse_pr.SaveAs("%s/response_pr_matrix.eps" % self.d_resultsallpdata)
-        cresponse_pr.SaveAs("plots/response_pr_matrix.png" )
 
         hz_genvsreco_full = unfolding_input_file.Get("hz_genvsreco_full")
         if not hz_genvsreco_full:
@@ -2523,7 +2401,6 @@ class AnalyzerJet(Analyzer):
             y_latex -= self.y_step
         cz_genvsreco_full.Update()
         cz_genvsreco_full.SaveAs("%s/response_pr_%s_full.pdf" % (self.d_resultsallpdata, self.v_varshape_binning))
-        cz_genvsreco_full.SaveAs("plots/response_pr_%s_full.png" % (self.v_varshape_binning))
         cz_genvsreco_full.SaveAs("%s/%s_resp_pr_full.pdf" % (self.d_resultsallpdata, self.shape))
 
         cjetpt_genvsreco_full = TCanvas("cjetpt_genvsreco_full", "response matrix 2D projection")
@@ -2590,11 +2467,6 @@ class AnalyzerJet(Analyzer):
         # plot gen. level kinematic efficiency for shape in jet pt bins
 
         for ibin2 in range(self.p_nbin2_gen):
-#            if self.lpt_finbinmin[0] > self.lvar2_binmax_reco[ibin2]:
-#                print("Warning!!! HF_pt > jet_pt!!! Create random histo")
-#                self.append_histo(kinematic_eff)
-#                self.append_histo(hz_gen_nocuts)
-#                continue
             suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             suffix_plot = "%s_%g_%g" % \
@@ -2668,10 +2540,6 @@ class AnalyzerJet(Analyzer):
         # plot relative shift of jet pt
 
         for ibin2 in range(self.p_nbin2_gen):
-#            if self.lpt_finbinmin[0] > self.lvar2_binmax_reco[ibin2]:
-#                print("Warning!!! HF_pt > jet_pt!!! Create random histo")
-#                self.append_histo(hjetpt_fracdiff_list)
-#                continue
             suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             hjetpt_fracdiff_list.append(unfolding_input_file.Get("hjetpt_fracdiff_prompt" + suffix))
@@ -2682,9 +2550,6 @@ class AnalyzerJet(Analyzer):
         leg_jetpt_fracdiff = TLegend(.15, .5, .25, .8, "#it{p}_{T, jet}^{gen} (GeV/#it{c})")
         setup_legend(leg_jetpt_fracdiff)
         for ibin2 in range(self.p_nbin2_gen):
-#            if self.lpt_finbinmin[0] > self.lvar2_binmax_reco[ibin2]:
-#                print("Warning!!! HF_pt > jet_pt!!! Create random histo")
-#                continue
             setup_histogram(hjetpt_fracdiff_list[ibin2], get_colour(ibin2), get_marker(ibin2))
             leg_jetpt_fracdiff.AddEntry(hjetpt_fracdiff_list[ibin2], "%g#minus%g" % (self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2]), "P")
             if ibin2 == 0:
@@ -2759,15 +2624,9 @@ class AnalyzerJet(Analyzer):
                 unfolded_zvsjetpt_final.Draw("texte")
                 unfolded_zvsjetpt_final.Write()
                 cunfolded_output.SaveAs("%s/unfolded_output.eps" % self.d_resultsallpdata)
-                cunfolded_output.SaveAs("plots/unfolded_output.png")
                 gStyle.SetPaintTextFormat("g")
 
             for ibin2 in range(self.p_nbin2_gen):
-#                if self.lpt_finbinmin[0] > self.lvar2_binmax_reco[ibin2]:
-#                    print("Warning!!! HF_pt > jet_pt!!! Create random histo")
-#                    self.append_histo(unfolded_z_scaled_list_iter)
-#                    self.append_histo(unfolded_z_xsection_list_iter)
-#                    continue
                 suffix = "%s_%.2f_%.2f" % \
                          (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
                 suffix_plot = "%s_%g_%g" % \
@@ -2861,10 +2720,6 @@ class AnalyzerJet(Analyzer):
 
             refolded = folding(unfolded_zvsjetpt, response_matrix, input_data)
             for ibin2 in range(self.p_nbin2_reco):
-#                if self.lpt_finbinmin[0] > self.lvar2_binmax_reco[ibin2]:
-#                    print("Warning!!! HF_pt > jet_pt!!! Create random histo")
-#                    self.append_histo(refolding_test_list_iter)
-#                    continue
                 suffix = "%s_%.2f_%.2f" % \
                          (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
                 suffix_plot = "%s_%g_%g" % \
@@ -2917,11 +2772,6 @@ class AnalyzerJet(Analyzer):
         # plot the unfolded shape distributions for all iterations for each pt jet bin
 
         for ibin2 in range(self.p_nbin2_gen):
-#            if self.lpt_finbinmin[0] > self.lvar2_binmax_reco[ibin2]:
-#                print("Warning!!! HF_pt > jet_pt!!! Create random histo")
-#                self.append_histo(refolding_test_list)
-#                self.append_histo(refolding_test_jetpt_list)
-#                continue
             suffix = "%s_%.2f_%.2f" % \
                      (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             suffix_plot = "%s_%g_%g" % \
@@ -3020,6 +2870,12 @@ class AnalyzerJet(Analyzer):
             cinput_mc_gen_z_xsection.SaveAs("%s/unfolded_vs_mc_%s_xsection_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
             #cinput_mc_gen_z_xsection.SaveAs("%s/unfolded_vs_mc_%s_xsection_%s.pdf" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
 
+        for ibin2 in range(self.p_nbin2_reco):
+            suffix = "%s_%.2f_%.2f" % \
+                     (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
+            suffix_plot = "%s_%g_%g" % \
+                     (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
+
             # convergence of the refolding test
             # plot the refolding test for all iterations together for each jet pt bin
 
@@ -3045,7 +2901,9 @@ class AnalyzerJet(Analyzer):
             latex = TLatex(0.15, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex)
             cconvergence_refolding_z.SaveAs("%s/convergence_refolding_%s_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
+
             # compare the result before unfolding and after
+
             input_data_z_scaled = input_data_z[ibin2].Clone("input_data_z_scaled_%s" % suffix)
             input_data_z_scaled.Scale(1.0 / input_data_z_scaled.Integral(bin_int_first, -1), "width")
             cunfolded_not_z = TCanvas("cunfolded_not_z " + suffix, "Unfolded vs not Unfolded" + suffix)
@@ -3069,7 +2927,6 @@ class AnalyzerJet(Analyzer):
             latex = TLatex(0.5, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
             draw_latex(latex)
             cunfolded_not_z.SaveAs("%s/unfolded_not_%s_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
-            cunfolded_not_z.SaveAs("unfolded_not_%s_%s.png" % (self.v_varshape_binning, suffix_plot))
 
             if self.feeddown_ratio:
                 option = "unfolding_results"
@@ -3337,7 +3194,7 @@ class AnalyzerJet(Analyzer):
 
     def jetsystematics(self):
         self.loadstyle()
-        string_default = "resultsMBjetvspt"
+        string_default = "default/default"
         if string_default not in self.d_resultsallpdata:
             self.logger.fatal("Not a default database! Cannot run systematics.")
 
@@ -3371,7 +3228,6 @@ class AnalyzerJet(Analyzer):
 
         input_powheg_sys = []
         input_powheg_xsection_sys = []
-        # self.powheg_prompt_variations :powheg F1, F2 ...
         for i_powheg in range(len(self.powheg_prompt_variations)):
             path = "%s%s.root" % (self.powheg_prompt_variations_path, self.powheg_prompt_variations[i_powheg])
             input_powheg_sys_i = self.get_simulated_yields(path, 2, True)
@@ -3421,8 +3277,7 @@ class AnalyzerJet(Analyzer):
         for sys_cat in range(self.n_sys_cat):
             input_files_sysvar = []
             for sys_var, varname in enumerate(self.systematic_varnames[sys_cat]):
-                #path = path_def.replace(string_default, self.systematic_catnames[sys_cat] + "/" + varname)
-                path = path_def
+                path = path_def.replace(string_default, self.systematic_catnames[sys_cat] + "/" + varname)
                 input_files_sysvar.append(TFile.Open(path))
                 if not input_files_sysvar[sys_var]:
                     self.logger.fatal(make_message_notfound(path))
@@ -3445,8 +3300,7 @@ class AnalyzerJet(Analyzer):
                         name_his = "unfolded_z_sel_%s_%.2f_%.2f" % (self.v_var2_binning, 8, self.lvar2_binmax_gen[ibin2])
                     input_histograms_syscatvar.append(input_files_sys[sys_cat][sys_var].Get(name_his))
                     name_his = name_his_orig
-                    #path_file = path_def.replace(string_default, string_catvar)
-                    path_file = path_def
+                    path_file = path_def.replace(string_default, string_catvar)
                     if not input_histograms_syscatvar[sys_var]:
                         self.logger.fatal(make_message_notfound(name_his, path_file))
                     if debug:
@@ -3490,7 +3344,7 @@ class AnalyzerJet(Analyzer):
             latex = TLatex(0.15, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]))
             draw_latex(latex)
             #leg_sysvar.Draw("same")
-            csysvar.SaveAs("%s/systematics/sys_var_all_%s.eps" % (self.d_resultsallpdata, suffix))
+            csysvar.SaveAs("%s/sys_var_all_%s.eps" % (self.d_resultsallpdata, suffix))
 
             # plot the variations for each category separately
 
@@ -3522,7 +3376,7 @@ class AnalyzerJet(Analyzer):
                 latex = TLatex(0.15, 0.82, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var, self.lvar2_binmax_gen[ibin2]))
                 draw_latex(latex)
                 leg_sysvar_each.Draw("same")
-                csysvar_each.SaveAs("%s/systematics/sys_var_%s_%s.eps" % (self.d_resultsallpdata, suffix2, suffix))
+                csysvar_each.SaveAs("%s/sys_var_%s_%s.eps" % (self.d_resultsallpdata, suffix2, suffix))
 
         # calculate the systematic uncertainties
 
@@ -3548,7 +3402,6 @@ class AnalyzerJet(Analyzer):
                     for sys_var in range(self.systematic_variations[sys_cat]):
                         # FIXME exception for the untagged bin pylint: disable=fixme
                         bin_first = 2 if "untagged" in self.systematic_varlabels[sys_cat][sys_var] else 1
-                        print(input_histograms_sys[ibin2][sys_cat][sys_var].GetBinContent(ibinshape + bin_first), input_histograms_default[ibin2].GetBinContent(ibinshape + 1))
                         error = input_histograms_sys[ibin2][sys_cat][sys_var].GetBinContent(ibinshape + bin_first) - input_histograms_default[ibin2].GetBinContent(ibinshape + 1)
                         if error >= 0:
                             if self.systematic_rms[sys_cat] is True:
@@ -3662,7 +3515,7 @@ class AnalyzerJet(Analyzer):
 
         # write the combined systematic uncertainties in a file
 
-        file_sys_out = TFile.Open("%s/systematics/systematics_results.root" % self.d_resultsallpdata, "recreate")
+        file_sys_out = TFile.Open("%s/systematics_results.root" % self.d_resultsallpdata, "recreate")
         for ibin2 in range(self.p_nbin2_gen):
             suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             tgsys[ibin2].Write("tgsys_%s" % suffix)
@@ -3760,7 +3613,7 @@ class AnalyzerJet(Analyzer):
             leg_finalwsys.Draw("same")
             latex_SD = TLatex(0.15, 0.62, "Soft Drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)")
             draw_latex(latex_SD)
-            cfinalwsys.SaveAs("%s/systematics/final_wsys_%s.pdf" % (self.d_resultsallpdata, suffix))
+            cfinalwsys.SaveAs("%s/final_wsys_%s.pdf" % (self.d_resultsallpdata, suffix))
 
             # plot the results with systematic uncertainties and models
 
@@ -3836,7 +3689,7 @@ class AnalyzerJet(Analyzer):
                 axis_thetag.SetLabelOffset(0)
                 cfinalwsys_wmodels.SetTickx(0)
                 axis_thetag.Draw("same")
-            cfinalwsys_wmodels.SaveAs("%s/systematics/final_wsys_wmodels_%s.pdf" % (self.d_resultsallpdata, suffix))
+            cfinalwsys_wmodels.SaveAs("%s/final_wsys_wmodels_%s.pdf" % (self.d_resultsallpdata, suffix))
 
             text_ptjet_full = self.text_ptjet % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2])
             text_pth_full = self.text_pth % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2]), self.p_latexnhadron)
@@ -3870,7 +3723,7 @@ class AnalyzerJet(Analyzer):
                 list_latex.append(latex)
                 draw_latex(latex, textsize=0.03)
                 y_latex -= self.y_step
-            cfinalwsys_wmodels_new.SaveAs("%s/systematics/final_wsys_wmodels_%s_new.pdf" % (self.d_resultsallpdata, suffix))
+            cfinalwsys_wmodels_new.SaveAs("%s/final_wsys_wmodels_%s_new.pdf" % (self.d_resultsallpdata, suffix))
 
             # plot the relative systematic uncertainties for all categories together
 
@@ -3925,9 +3778,9 @@ class AnalyzerJet(Analyzer):
                 draw_latex(latex, textsize=self.fontsize)
                 y_latex -= self.y_step
             leg_relativesys.Draw("same")
-            crelativesys.SaveAs("%s/systematics/sys_unc_%s.eps" % (self.d_resultsallpdata, suffix))
+            crelativesys.SaveAs("%s/sys_unc_%s.eps" % (self.d_resultsallpdata, suffix))
             if ibin2 == 1:
-                crelativesys.SaveAs("%s/systematics/%s_sys_unc_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix))
+                crelativesys.SaveAs("%s/%s_sys_unc_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix))
             gStyle.SetErrorX(0.5)
 
         # plot the feed-down fraction with systematic uncertainties from POWHEG
@@ -4003,8 +3856,8 @@ class AnalyzerJet(Analyzer):
             draw_latex(latex6)
             #latex7 = TLatex(0.65, 0.75, "POWHEG based")
             #draw_latex(latex7)
-            cfeeddown_fraction.SaveAs("%s/systematics/feeddown_fraction_var_%s.eps" % (self.d_resultsallpdata, suffix_plot))
-            cfeeddown_fraction.SaveAs("%s/systematics/feeddown_fraction_var_%s.pdf" % (self.d_resultsallpdata, suffix_plot))
+            cfeeddown_fraction.SaveAs("%s/feeddown_fraction_var_%s.eps" % (self.d_resultsallpdata, suffix_plot))
+            cfeeddown_fraction.SaveAs("%s/feeddown_fraction_var_%s.pdf" % (self.d_resultsallpdata, suffix_plot))
 
             text_ptjet_full = self.text_ptjet % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2])
             text_pth_full = self.text_pth % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2]), self.p_latexnhadron)
@@ -4039,7 +3892,7 @@ class AnalyzerJet(Analyzer):
                     draw_latex(latex, textsize=self.fontsize)
                     y_latex -= self.y_step
                 c_fd_fr_sys.Update()
-                c_fd_fr_sys.SaveAs("%s/systematics/%s_fd_fr_sys_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix_plot))
+                c_fd_fr_sys.SaveAs("%s/%s_fd_fr_sys_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix_plot))
                 gStyle.SetErrorX(0.5)
 
     def get_simulated_yields(self, file_path: str, dim: int, prompt: bool):
@@ -4047,6 +3900,7 @@ class AnalyzerJet(Analyzer):
         file_path - input file path
         dim - dimension of the output histogram: 2, 3
         prompt - prompt or non-prompt: True, False"""
+
         print("Starting the histogram extraction from an MC tree\nInput file: %s" % file_path)
 
         if dim not in (2, 3):
@@ -4075,6 +3929,7 @@ class AnalyzerJet(Analyzer):
         if not tree_sim:
             self.logger.fatal(make_message_notfound(tree_name, file_path))
 
+        print("Converting")
         # Convert it into a dataframe.
         list_branches = ["pt_cand", "eta_cand", "phi_cand", "y_cand", "pdg_parton", "pt_jet", \
             "eta_jet", "phi_jet", "delta_r_jet", "z", "n_const", "zg_jet", "rg_jet", "nsd_jet", \
