@@ -95,10 +95,10 @@ make_generic_path()
 
     local generic_path="/alice/$sim_or_data/$year/$anchor/*"
 
-    # Check now if data cause then we need the pass and potential AOD parts for the path
-    if [[ "$sim_or_data" != "sim" ]]
+    # Check now if we need the pass and potential AOD parts for the path
+    local pass_aod=${out_dir_read##*$run_number/}
+    if [[ "$(echo $pass_aod | grep $run_number)" == "" ]]
     then
-        local pass_aod=${out_dir_read##*$run_number/}
         generic_path="$generic_path/$pass_aod"
     fi
     echo "$generic_path/PWGHF/HF_TreeCreator"
