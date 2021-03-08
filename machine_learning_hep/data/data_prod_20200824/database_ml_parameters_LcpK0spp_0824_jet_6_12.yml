@@ -286,7 +286,7 @@ LcpK0spp:
     binmax: [2,4,6,8,12,24] #list of nbins
     mltype: BinaryClassification
     ncorescrossval: 10
-    mlplot: /mnt/temp/talazare_vAN-20200824_test/MC_old_cuts_test/Lc/vAN-20200824_ROOT6-1/pp_sim/552_20210104-2318/mlplot # to be removed
+    mlplot: /mnt/temp/talazare_vAN-20200824_test/Lc_MC_D2H_check/Lc/vAN-20200824_ROOT6-1/pp_sim/552_20210104-2318/mlplot # to be removed
     mlout: /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/mlout # to be removed
 
     opt:
@@ -340,7 +340,7 @@ LcpK0spp:
     cctype: 1 #kpp7
     sigmav0: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
     inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
-    dir_general_plots: /data/DerivedResults/LckINTHighMultCALOwithJets_sub/vAN-20200304_ROOT6-1/analysis_plots
+    dir_general_plots: /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/analysis_plots
 
     jet_r_shape:
       proc_type: Dhadrons_jet
@@ -367,10 +367,10 @@ LcpK0spp:
       sel_binmaxshape_reco:        [0.05, 0.1, 0.2]
       sel_binminshape_gen:  [0., 0.05, 0.1]
       sel_binmaxshape_gen:         [0.05, 0.1, 0.2]
-      #sel_binminshape_reco: [0, 0.05, 0.1, 0.15]
-      #sel_binmaxshape_reco:        [0.05, 0.1, 0.15, 0.3]
-      #sel_binminshape_gen:  [0., 0.05, 0.1, 0.15]
-      #sel_binmaxshape_gen:         [0.05, 0.1, 0.15, 0.3]
+      #sel_binminshape_reco: [0, 0.05, 0.1, 0.2, 0.3, 0.4]
+      #sel_binmaxshape_reco:        [0.05, 0.1, 0.2, 0.3, 0.4, 0.5]
+      #sel_binminshape_gen:  [0., 0.05, 0.1, 0.2, 0.3, 0.4]
+      #sel_binmaxshape_gen:         [0.05, 0.1, 0.2, 0.3, 0.4, 0.5]
       sel_closure_frac: 0.2
       triggerbit: INT7
       sel_an_binmin:    [6, 8] #list of pt nbins
@@ -385,17 +385,17 @@ LcpK0spp:
         mc: null
       data: &data_out_default
         runselection: [null, null, null]
-        results: [/data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape/default/default/pp_2016_data/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape/default/default/pp_2017_data/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape/default/default/pp_2018_data/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape/default/default/pp_data/resultsMBjetvspt
+        results: [/data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape_lim/default/default/pp_2016_data/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape_lim/default/default/pp_2017_data/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape_lim/default/default/pp_2018_data/resultsMBjetvspt] #list of periods
+        resultsallp: /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape_lim/default/default/pp_data/resultsMBjetvspt
 
       mc: &mc_out_default
         runselection: [null, null, null]
-        results: [/data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape/default/default/pp_2016_mc_prodD2H/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape/default/default/pp_2017_mc_prodD2H/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape/default/default/pp_2018_mc_prodD2H/resultsMBjetvspt] #list of periods
-        resultsallp: /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape/default/default/pp_mc_prodD2H/resultsMBjetvspt
+        results: [/data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape_lim/default/default/pp_2016_mc_prodD2H/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape_lim/default/default/pp_2017_mc_prodD2H/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape_lim/default/default/pp_2018_mc_prodD2H/resultsMBjetvspt] #list of periods
+        resultsallp: /data/Derived_testResults/Jets/Lc/6_12/vAN-20200824_ROOT6-1/r_shape_lim/default/default/pp_mc_prodD2H/resultsMBjetvspt
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input

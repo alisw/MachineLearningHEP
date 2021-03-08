@@ -217,7 +217,7 @@ LcpK0spp:
 
   multi:
     data:
-      nprocessesparallel: 20
+      nprocessesparallel: 25
       maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp: [100,100,100] #list of periods
       chunksizeskim: [100,100,100] #list of periods
@@ -242,7 +242,7 @@ LcpK0spp:
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2017,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018] #list of periods
     mc:
-      nprocessesparallel: 20
+      nprocessesparallel: 25
       maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp: [100,100,100] #list of periods
       chunksizeskim: [1000,1000,1000] #list of periods
@@ -362,10 +362,14 @@ LcpK0spp:
       var_binningshape: delta_r_jet
       var_binningshape_gen: delta_r_gen_jet
       var_shape_latex: "#Delta R^{jet}"
-      sel_binminshape_reco: [0.,0.05,0.10,0.15]
-      sel_binmaxshape_reco:        [0.05, 0.1, 0.15, 0.3]
-      sel_binminshape_gen:  [0.,0.05,0.10,0.15]
-      sel_binmaxshape_gen:         [0.05, 0.1, 0.15, 0.3]
+      sel_binminshape_reco: [0, 0.05, 0.1]
+      sel_binmaxshape_reco:        [0.05, 0.1, 0.2]
+      sel_binminshape_gen:  [0., 0.05, 0.1]
+      sel_binmaxshape_gen:         [0.05, 0.1, 0.2]
+      #sel_binminshape_reco: [0, 0.05, 0.1, 0.2, 0.3, 0.4]
+      #sel_binmaxshape_reco:        [0.05, 0.1, 0.2, 0.3, 0.4, 0.5]
+      #sel_binminshape_gen:  [0., 0.05, 0.1, 0.2, 0.3, 0.4]
+      #sel_binmaxshape_gen:         [0.05, 0.1, 0.2, 0.3, 0.4, 0.5]
       sel_closure_frac: 0.2
       triggerbit: INT7
       sel_an_binmin:    [2, 4] #list of pt nbins

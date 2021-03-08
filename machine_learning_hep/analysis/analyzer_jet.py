@@ -23,7 +23,7 @@ import numpy as np
 import yaml
 # pylint: disable=import-error, no-name-in-module
 import uproot
-from ROOT import TFile, TH1F, TH2F, TCanvas, TLatex, TGraphAsymmErrors, TLine, TGaxis
+from ROOT import TFile, TH1F, TH2F, TCanvas, TLatex, TGraphAsymmErrors, TLine, TGaxis, TF1
 from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
 from ROOT import TLegend
 from ROOT import gROOT, gStyle
@@ -235,7 +235,7 @@ class AnalyzerJet(Analyzer):
 
         self.lc_d0_ratio = datap["analysis"][self.typean]["lc_d0_ratio"]
         if self.lc_d0_ratio:
-            self.d_resultslc =  datap["analysis"][typean][data]["resultslc"]
+            self.d_resultslc =  datap["analysis"][typean]["data"]["resultslc"]
 
 
         # input directories (processor output)
@@ -370,36 +370,14 @@ class AnalyzerJet(Analyzer):
                                             self.p_rebin[ipt], -1)
                 histomassmc_reb_f = TH1F()
                 histomassmc_reb.Copy(histomassmc_reb_f)
-                fittermc = AliHFInvMassFitter(histomassmc_reb_f, \
-                    self.p_massmin[ipt], self.p_massmax[ipt], self.p_bkgfunc[ipt], 0)
-                fittermc.SetInitialGaussianMean(self.p_masspeak)
-                out = fittermc.MassFitter(0)
-                bkg_mc = fittermc.GetBackgroundRecalcFunc()
-                sgn_mc = fittermc.GetMassFunc()
-                sgn_mc_only = fittermc.GetSignalFunc()
-                if bkg_mc and sgn_mc:
+                fittermc = TF1("fittermc", "gaus", self.p_massmin[ipt],
+                        self.p_massmax[ipt])
+                sgn_mc = histomassmc_reb.Fit(fittermc)
+
+                if sgn_mc:
                     print("*****MC fitter %s successfull!*****" % suffix)
-                    print("Sigma: ", fittermc.GetSigma())
-                elif bkg_mc and sgn_mc_only:
-                    print("*****Mass Func Total fitter %s failed. Use only signal*****" % suffix)
-                    sgn_mc = sgn_mc_only
-                else:
-                    print("*****Polynomial background % s failed. Try linear bakcground*****" % suffix)
-                    fittermc = AliHFInvMassFitter(histomassmc_reb_f, \
-                        self.p_massmin[ipt], self.p_massmax[ipt], 1, 0)
-                    fittermc.SetInitialGaussianMean(self.p_masspeak)
-                    out = fittermc.MassFitter(0)
-                    bkg_mc = fittermc.GetBackgroundRecalcFunc()
-                    sgn_mc = fittermc.GetMassFunc()
-                    sgn_mc_only = fittermc.GetSignalFunc()
-                    if bkg_mc and sgn_mc:
-                        print("*****MC fitter %s (lin. bkg) successfull!*****" % suffix)
-                        print("Sigma: ", fittermc.GetSigma())
-                    elif bkg_mc and sgn_mc_only:
-                        print("*****Mass Func Total fitter %s (lin. bkg) failed. Use only signal*****" % suffix)
-                        sgn_mc = sgn_mc_only
-                    else:
-                        print("********WARNING!!!!MC Fit %s FAILED!!!!*********" % suffix)
+                    print("Sigma: ", fittermc.GetParameter(2))
+
                 c_mc_fit = TCanvas("c_mc_fit " + suffix, "MC fit")
                 setup_canvas(c_mc_fit)
                 setup_histogram(histomassmc_reb, get_colour(0), get_marker(0))
@@ -415,13 +393,11 @@ class AnalyzerJet(Analyzer):
                 histomassmc_reb.Draw("same")
                 sigma_mc = 0
                 mean_mc = 0
-                sigma_mc = fittermc.GetSigma()
-                mean_mc = fittermc.GetMean()
-                if out == 1:
-                    bkg_mc.SetLineColor(get_colour(1))
-                    sgn_mc.SetLineColor(get_colour(2))
-                    sgn_mc.Draw("same")
-                    bkg_mc.Draw("same")
+                sigma_mc = fittermc.GetParameter(2)
+                mean_mc = fittermc.GetParameter(1)
+                if sgn_mc:
+                    fittermc.SetLineColor(get_colour(2))
+                    fittermc.Draw("same")
                 latexmc_1 = TLatex(0.67, 0.78, "mean = %s, #sigma  = %s" % \
                         (round(mean_mc,3), round(sigma_mc,3)))
                 draw_latex(latexmc_1)
@@ -432,7 +408,6 @@ class AnalyzerJet(Analyzer):
                 draw_latex(latexmc_3)
 
                 c_mc_fit.SaveAs("%s/fit_mc_%s.eps" % (self.d_resultsallpdata, suffix_plot))
-                print("I have made MC fit for sigma initialization, status: %d" % out)
                 histomass = myfile.Get("hmass" + suffix)
 
                 if not histomass:
@@ -443,21 +418,16 @@ class AnalyzerJet(Analyzer):
                 histomass_reb.Copy(histomass_reb_f)
                 fitter = AliHFInvMassFitter(histomass_reb_f, self.p_massmin[ipt], \
                     self.p_massmax[ipt], self.p_bkgfunc[ipt], self.p_sgnfunc[ipt])
-                #fitter.SetInitialGaussianSigma(fittermc.GetSigma())
-                #fitter.SetInitialGaussianMean(fittermc.GetMean())
-                #print("p_fix_sigma " , self.p_fix_sigma[ipt], fittermc.GetSigma())
-                #if self.p_fix_sigma[ipt] is True:
-                #    fitter.SetFixGaussianSigma(fittermc.GetSigma())
 
-                fitter.SetInitialGaussianSigma(fittermc.GetSigma())
-                fitter.SetInitialGaussianMean(fittermc.GetMean())
+                fitter.SetInitialGaussianSigma(fittermc.GetParameter(2))
+                fitter.SetInitialGaussianMean(fittermc.GetParameter(1))
                 if self.p_set_initial_sigma[ipt] is True:
                     if self.p_set_fix_sigma[ipt] is True:
                         print("****************Fix sigma to sigma array values*****************")
                         fitter.SetFixGaussianSigma(self.p_sigmaarray[ipt])
                     else:
                         print("****************Fix sigma to MC sigma values*****************")
-                        fitter.SetFixGaussianSigma(fittermc.GetSigma())
+                        fitter.SetFixGaussianSigma(fittermc.GetParameter(2))
                 if self.p_sgnfunc[ipt] == 1:
                     if self.p_fix_sigmasec[ipt] is True:
                         fitter.SetFixSecondGaussianSigma(self.p_sigmaarraysec[ipt])
@@ -2517,6 +2487,8 @@ class AnalyzerJet(Analyzer):
         kinematic_eff_jetpt.SetYTitle("kinematic efficiency")
         kinematic_eff_jetpt.SetTitleOffset(1.5, "Y")
         kinematic_eff_jetpt.Draw()
+        fileouts.cd()
+        kinematic_eff_jetpt.Write()
         latex = TLatex(0.2, 0.82, "%g #leq %s < %g" % (round(self.lvarshape_binmin_reco[0], 2), self.v_varshape_latex, round(self.lvarshape_binmax_reco[-1], 2)))
         draw_latex(latex)
         ckinematic_eff_jetpt.SaveAs("%s/kineff_pr_gen_%s.eps" % (self.d_resultsallpdata, self.v_var2_binning))

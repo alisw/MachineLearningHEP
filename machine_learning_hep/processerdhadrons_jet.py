@@ -314,10 +314,10 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 myfile.cd()
                 h_invmass.Write()
 
-                massarray = [1.0 + i * (5.0 / 5000.0) for i in range(5001)] # 5000 bins in range 1.0-6.0
+                massarray = [1.0 + i * (5.0 / 50000.0) for i in range(50001)] # 5000 bins in range 1.0-6.0
                 massarray_reco = array("d", massarray)
                 h_zvsinvmass = TH2F("hzvsmass" + suffix, "", \
-                    5000, massarray_reco, self.p_nbinshape_reco, self.varshapebinarray_reco)
+                    50000, massarray_reco, self.p_nbinshape_reco, self.varshapebinarray_reco)
                 h_zvsinvmass.Sumw2()
                 fill2dhist(df_bin, h_zvsinvmass, "inv_mass", self.v_varshape_binning)
                 h_zvsinvmass.Write()
@@ -475,7 +475,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_reco_sel_fd = None
                 if self.doml is True:
                     df_reco_sel_fd = df_reco_presel_fd.query(self.l_selml[ipt])
-                # custom cuts
+                ## custom cuts
                 elif self.do_custom_analysis_cuts:
                     df_reco_sel_fd = self.apply_cuts_ptbin(df_reco_presel_fd, ipt)
                     df_reco_sel_fd = apply_cut_selpid(df_reco_sel_fd)

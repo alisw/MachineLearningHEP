@@ -63,7 +63,7 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
         self.n_bins1 = len(self.bins1_edges_low)
         self.bin2_name = ana_config.get("var_binning2", None)
         if self.bin2_name is not None:
-            self.bin2_gen_name = ana_config.get("var_binning2_gen")
+            self.bin2_gen_name = ana_config.get("var_binning2")
             self.bins2_edges_low = ana_config["sel_binmin2"]
             self.bins2_edges_up = ana_config["sel_binmax2"]
             self.n_bins2 = len(self.bins2_edges_low)
