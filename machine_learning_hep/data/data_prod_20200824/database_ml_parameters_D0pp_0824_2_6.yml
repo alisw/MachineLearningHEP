@@ -279,7 +279,6 @@ D0pp:
       proc_type: Dhadrons_jet
       useperiod: [1,1,1] #list of periods
       usejetptbinned_deff: false
-      # do_eff_fold: false
       lc_d0_ratio: true
       latexnamehadron: "D^{0}"
       latexnamedecay: "K^{#minus} #pi^{#plus}"
@@ -342,12 +341,13 @@ D0pp:
       sigmaarray: [0.01, 0.01, 0.01, 0.01] # initial sigma (sel_an_binmin bins)
       masspeaksec: 1.864
 
+      # If SetFixGaussianSigma: false & SetInitialGaussianSigma: false, initial sigma value for data fit is taken from MC
+      # If SetFixGaussianSigma: false & SetInitialGaussianSigma: true, sigma value for data fit is fixed to MC sigma
+      # If SetFixGaussianSigma: true & SetInitialGaussianSigma: true, sigma value for data fit is fixed to sigmaarray
+
       SetFixGaussianSigma: [false, false, false, false]
-      # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
-      # Use values set for "sigmaarray" for initializing total fit (per pT bin),
-      # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: [false, false, false, false]
-      
+     
       fix_sigmasec: [true, true, true, true] # sel_an_binmin bins
       sigmaarraysec: [0.007947, 0.01, 0.01, 0.01] # sel_an_binmin bins
       # simple fitter END
