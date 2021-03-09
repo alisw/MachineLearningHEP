@@ -124,6 +124,10 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         self.p_dodoublecross = datap["analysis"][self.typean]["dodoublecross"]
         self.ptranges = self.lpt_finbinmin.copy()
         self.ptranges.append(self.lpt_finbinmax[-1])
+        self.p_dobkgfromsideband = datap["analysis"][self.typean].get(
+            "dobkgfromsideband", None)
+        if self.p_dobkgfromsideband is None:
+            p_dobkgfromsideband = False
         # More specific fit options
         self.include_reflection = datap["analysis"][self.typean].get(
             "include_reflection", False)
@@ -182,6 +186,11 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         fileout = TFile(fileout_name, "RECREATE")
         self.fitter.draw_fits(self.d_resultsallpdata, fileout)
         fileout.Close()
+
+        if (self.p_dobkgfromsideband):
+            self.fitter.background_fromsidebands(self.d_resultsallpdata, self.n_filemass, self.v_var_binning,
+                                                 self.p_mass_fit_lim, self.p_bkgfunc, self.p_masspeak, self.p_bin_width)
+
         self.fitter.save_fits(self.fits_dirname)
         # Reset to former mode
         gROOT.SetBatch(tmp_is_root_batch)
@@ -327,6 +336,18 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         norm = self.calculate_norm(hsel, hnovtx, hvtxout)
         histonorm.SetBinContent(1, norm)
         self.logger.warning("Number of events %d", norm)
+
+        if (self.p_dobkgfromsideband):
+            fileoutbkg = TFile.Open("%s/Background_fromsidebands_%s_%s.root" % \
+                                    (self.d_resultsallpdata, self.case, self.typean))
+            hbkg = fileoutbkg.Get("hbkg_fromsidebands")
+            hbkg.Scale(1./norm)
+            fileoutbkgscaled = TFile.Open("%s/NormBackground_fromsidebands_%s_%s.root" % \
+                                          (self.d_resultsallpdata, self.case, self.typean), "RECREATE")
+            fileoutbkgscaled.cd()
+            hbkg.Write()
+            fileoutbkgscaled.Close()
+
         print(self.p_inputfonllpred)
 
         HFPtSpectrum(self.p_indexhpt,

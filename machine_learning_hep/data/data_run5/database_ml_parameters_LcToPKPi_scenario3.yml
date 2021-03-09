@@ -12,20 +12,20 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-LcpKpiKrKr_scenario3:
+LcpKpi:
   nprongs: 3
   prongformultsub: [0,0,0]
   doml: true
   mass: 2.286
-  sel_reco_unp: "fPt>2"
+  sel_reco_unp: "fPt>0"
   sel_reco_singletrac_unp : null
-  sel_gen_unp: "fPt>2"
+  sel_gen_unp: "fPt>0"
   sel_cen_unp: null
   sel_good_evt_unp: null
-  sel_reco_skim: [null,null,null,null]
-  sel_gen_skim: [null,null,null,null]
-  sel_skim_binmin: [2,4,8,10] #list of nbins
-  sel_skim_binmax: [4,8,10,12] #list of nbins
+  sel_reco_skim: [null,null,null,null,null]
+  sel_gen_skim: [null,null,null,null,null]
+  sel_skim_binmin: [0,1,2,4,8] #list of nbins
+  sel_skim_binmax: [1,2,4,8,12] #list of nbins
   apply_yptacccut: false
   var_binning: fPt
   dofullevtmerge: false
@@ -37,41 +37,33 @@ LcpKpiKrKr_scenario3:
     var_ismcfd: ismcfd
     var_ismcbkg: ismcbkg
     var_ismcrefl: ismcref
-    isstd : [[0],[]]
-    ismcsignal: [[0],[]]
-    ismcprompt: [[0],[]]
-    ismcfd: [[],[0]]
-    ismcbkg: [[],[0]]
-    ismcrefl: [[],[0]]
+    isstd : [[1],[]]
+    ismcsignal: [[1],[]]
+    ismcprompt: [[1],[]]
+    ismcfd: [[1],[1]]
+    ismcbkg: [[],[1]]
+    ismcrefl: [[1],[1]]
 
   variables:
     var_all: [fBCsID, fMCflag, fY, fEta, fPt, fCPA, fCPAXY, fM,
               fErrorDecayLength, fErrorDecayLengthXY, fChi2PCA, fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised,
               fImpactParameterNormalised0, fPtProng0, fImpactParameterNormalised1, fPtProng1, fImpactParameterNormalised2, fPtProng2,
               fImpactParameter0, fImpactParameter1, fImpactParameter2, fErrorImpactParameter0, fErrorImpactParameter1, fErrorImpactParameter2,
-              fNSigTPCPr0, fNSigTPCPi0, fNSigTPCKa0, fNSigTPCPr1, fNSigTPCPi1, fNSigTPCKa1, fNSigTPCPr2, fNSigTPCPi2, fNSigTPCKa2,
               fNSigTOFPr0, fNSigTOFPi0, fNSigTOFKa0, fNSigTOFPr1, fNSigTOFPi1, fNSigTOFKa1, fNSigTOFPr2, fNSigTOFPi2, fNSigTOFKa2]
     var_evt:
        data: [fBCsID, fPosX, fPosY, fPosZ, fIsEventReject]
        mc:   [fBCsID, fPosX, fPosY, fPosZ, fIsEventReject]
     var_gen: [fBCsID, fPt, fY, fMCflag]
     var_evt_match: [fBCsID]
-    var_training: [[fCPA, fCPAXY, fDecayLength, fDecayLengthXY, fDecayLengthXYNormalised, fChi2PCA,
-                   fNSigTPCPr0, fNSigTPCPi0, fNSigTPCKa1, fNSigTPCPr2, fNSigTPCPi2,
-                   fNSigTOFPr0, fNSigTOFPi0, fNSigTOFKa1, fNSigTOFPr2, fNSigTOFPi2],
-                   [fCPA, fCPAXY, fDecayLength, fDecayLengthXY, fDecayLengthXYNormalised, fChi2PCA,
-                   fNSigTPCPr0, fNSigTPCPi0, fNSigTPCKa1, fNSigTPCPr2, fNSigTPCPi2,
-                   fNSigTOFPr0, fNSigTOFPi0, fNSigTOFKa1, fNSigTOFPr2, fNSigTOFPi2],
-                   [fCPA, fCPAXY, fDecayLength, fDecayLengthXY, fDecayLengthXYNormalised, fChi2PCA,
-                   fNSigTPCPr0, fNSigTPCPi0, fNSigTPCKa1, fNSigTPCPr2, fNSigTPCPi2,
-                   fNSigTOFPr0, fNSigTOFPi0, fNSigTOFKa1, fNSigTOFPr2, fNSigTOFPi2],
-                   [fCPA, fCPAXY, fDecayLength, fDecayLengthXY, fDecayLengthXYNormalised, fChi2PCA,
-                   fNSigTPCPr0, fNSigTPCPi0, fNSigTPCKa1, fNSigTPCPr2, fNSigTPCPi2,
-                   fNSigTOFPr0, fNSigTOFPi0, fNSigTOFKa1, fNSigTOFPr2, fNSigTOFPi2]]
+    var_training: [[fCPA, fCPAXY, fDecayLength, fChi2PCA, fImpactParameter0, fImpactParameter1, fImpactParameter2],
+                   [fCPA, fCPAXY, fDecayLength, fChi2PCA, fImpactParameter0, fImpactParameter1, fImpactParameter2],
+                   [fCPA, fCPAXY, fDecayLength, fChi2PCA, fImpactParameter0, fImpactParameter1, fImpactParameter2],
+                   [fCPA, fCPAXY, fDecayLength, fChi2PCA, fImpactParameter0, fImpactParameter1, fImpactParameter2],
+                   [fCPA, fCPAXY, fDecayLength, fChi2PCA, fImpactParameter0, fImpactParameter1, fImpactParameter2]]
     var_boundaries: [fDecayLength, fPt]
     var_correlation:
       - [fDecayLength, fChi2PCA, fCPA]
-      - [fPt]
+      - [fPt, fPt, fPt]
     var_signal: signal
     var_inv_mass: fM
     var_y: fY
@@ -129,28 +121,28 @@ LcpKpiKrKr_scenario3:
 
   multi:
     data:
-      nprocessesparallel: 20
+      nprocessesparallel: 30
       maxfiles : [-1] #list of periods
-      chunksizeunp : [50] #list of periods
-      chunksizeskim: [50] #list of periods
+      chunksizeunp : [100] #list of periods
+      chunksizeskim: [100] #list of periods
       fracmerge : [0.5] #list of periods
       seedmerge: [12] #list of periods
-      period: [test_KrKr] #list of periods
-      unmerged_tree_dir: [/data/Run5data_mlhep/prod_test_KrKr/unmerged] #list of periods
-      pkl: [/data/Run5data_mlhep/prod_test_KrKr/pkldata_scenario3] #list of periods
-      pkl_skimmed: [/data/Run5data_mlhep/prod_test_KrKr/pklskdata_scenario3] #list of periods
-      pkl_skimmed_merge_for_ml: [/data/Run5data_mlhep/prod_test_KrKr/pklskmldata_scenario3] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data/Run5data_mlhep/prod_test_KrKr/mltotdata_scenario3
-      pkl_evtcounter_all: /data/Run5data_mlhep/prod_test_KrKr/evttotdata_scenario3
+      period: [test] #list of periods
+      unmerged_tree_dir: [/data/Run5data_mlhep/prod_test_CCBAR_pp_luigi/unmerged] #list of periods
+      pkl: [/data/Run5data_mlhep/prod_test_CCBAR_pp_luigi/pkldata_scenario3] #list of periods
+      pkl_skimmed: [/data/Run5data_mlhep/prod_test_CCBAR_pp_luigi/pklskdata_scenario3] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/Run5data_mlhep/prod_test_CCBAR_pp_luigi/pklskmldata_scenario3] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/Run5data_mlhep/prod_test_CCBAR_pp_luigi/mltotdata_scenario3
+      pkl_evtcounter_all: /data/Run5data_mlhep/prod_test_CCBAR_pp_luigi/evttotdata_scenario3
       mcreweights: [../Analyses]
     mc:
-      nprocessesparallel: 20
+      nprocessesparallel: 30
       maxfiles : [-1] #list of periods
       chunksizeunp : [100] #list of periods
       chunksizeskim: [100] #list of periods
       fracmerge : [1.0] #list of periods
       seedmerge: [12] #list of periods
-      period: [test_pp] #list of periods
+      period: [test] #list of periods
       unmerged_tree_dir: [/data/Run5data_mlhep/prod_test_CCBAR_pp_luigi/unmerged] #list of periods
       pkl: [/data/Run5data_mlhep/prod_test_CCBAR_pp_luigi/pklmc_scenario3] #list of periods
       pkl_skimmed: [/data/Run5data_mlhep/prod_test_CCBAR_pp_luigi/pklskmc_scenario3] #list of periods
@@ -164,8 +156,8 @@ LcpKpiKrKr_scenario3:
       data: null
       mc: null
 
-    nbkg: 500000
-    nsig: 500000
+    nbkg: 100000
+    nsig: 100000
     sampletagforsignal: 1
     sampletagforbkg: 0
     sel_sigml: ismcprompt == 1
@@ -174,8 +166,8 @@ LcpKpiKrKr_scenario3:
     rnd_shuffle: 12
     rnd_splt: 12
     test_frac: 0.2
-    binmin: [2,4,8,10] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
-    binmax: [4,8,10,12] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
+    binmin: [0,1,2,4,8] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
+    binmax: [1,2,4,8,12] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: BinaryClassification
     ncorescrossval: 10
     mlplot: mlplot_scenario3 # to be removed
@@ -195,7 +187,7 @@ LcpKpiKrKr_scenario3:
       num_steps: 111 # number of steps used in efficiency and signif. estimation
       bkg_function: pol2 # fit function for bkg (among TH1 predefined fit functions, e.g. expo, pol1, pol2, ...)
       save_fit: True # save bkg fits with the various cuts on ML output
-      raahp: [1,1,1,1] # sel_skim_binmin bins
+      raahp: [1,1,1,1,1] # sel_skim_binmin bins
       presel_gen_eff: "abs(fY) < 1.44 and abs(fPosZ) < 10"
 
   mlapplication:
@@ -206,14 +198,15 @@ LcpKpiKrKr_scenario3:
       pkl_skimmed_dec: [skpkldecmc_scenario3] #list of periods
       pkl_skimmed_decmerged: [skpkldecmcmerged_scenario3] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierLcpKpi_scenario3_dfselection_fPt_2.0_4.0.sav,
+    modelsperptbin: [xgboost_classifierLcpKpi_scenario3_dfselection_fPt_0.0_1.0.sav,
+                     xgboost_classifierLcpKpi_scenario3_dfselection_fPt_1.0_2.0.sav,
+                     xgboost_classifierLcpKpi_scenario3_dfselection_fPt_2.0_4.0.sav,
                      xgboost_classifierLcpKpi_scenario3_dfselection_fPt_4.0_8.0.sav,
-                     xgboost_classifierLcpKpi_scenario3_dfselection_fPt_8.0_10.0.sav,
-                     xgboost_classifierLcpKpi_scenario3_dfselection_fPt_10.0_12.0.sav]
+                     xgboost_classifierLcpKpi_scenario3_dfselection_fPt_8.0_12.0.sav]
     probcutpresel:
-      data: [0.05, 0.05, 0.05, 0.05] #list of nbins
-      mc: [0.05, 0.05, 0.05, 0.05] #list of nbins
-    probcutoptimal: [0.5, 0.5, 0.5, 0.5] #list of nbins
+      data: [0.05, 0.05, 0.05, 0.05, 0.05] #list of nbins
+      mc: [0.05, 0.05, 0.05, 0.05, 0.05] #list of nbins
+    probcutoptimal: [0.7, 0.7, 0.7, 0.7, 0.7] #list of nbins
 
   analysis:
     indexhptspectrum: -1 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
@@ -228,8 +221,8 @@ LcpKpiKrKr_scenario3:
       useperiod: [1]
       plotbin: [1]
       usesinglebineff: 0
-      sel_binmin2: [2,4,8,10] #list of nbins
-      sel_binmax2: [4,8,10,12] #list of nbins
+      sel_binmin2: [0,1,2,4,8] #list of nbins
+      sel_binmax2: [1,2,4,8,12] #list of nbins
       var_binning2: null
       triggerbit: ''
 
@@ -237,9 +230,9 @@ LcpKpiKrKr_scenario3:
       # Decide whether to take the sigma from MC or data for individual fits
       init_fits_from: mc # data # data or mc
 
-      sel_an_binmin: [2,4,8,10]
-      sel_an_binmax: [4,8,10,12]
-      binning_matching: [0,1,2,3]
+      sel_an_binmin: [0,1,2,4,8]
+      sel_an_binmax: [1,2,4,8,12]
+      binning_matching: [0,1,2,3,4]
       presel_gen_eff: "abs(fY) < 1.44"
       evtsel: null
       triggersel:
@@ -256,26 +249,26 @@ LcpKpiKrKr_scenario3:
         results: [resultsmc_scenario3] #list of periods
         resultsallp: resultsmctot_scenario3
 
-      mass_fit_lim: [1.72, 2.05] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [2.1, 2.46] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
-      init_fits_from: [mc,mc,mc,mc] # data or mc
-      sgnfunc: [kGaus,kGaus,kGaus,kGaus]
-      bkgfunc: [Pol2,Pol2,Pol2,Pol2]
-      masspeak: 1.864
-      massmin: [1.72,1.72,1.72,1.72]
-      massmax: [2.05,2.05,2.05,2.05]
-      rebin: [4,4,4,4]
-      fix_mean: [false,false,false,false]
-      fix_sigma: [false,false,false,false]
+      init_fits_from: [mc,mc,mc,mc,mc] # data or mc
+      sgnfunc: [kGaus,kGaus,kGaus,kGaus, kGaus]
+      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2]
+      masspeak: 2.286
+      massmin: [2.14,2.14,2.14,2.14,2.14]
+      massmax: [2.436,2.436,2.436,2.436,2.436]
+      rebin: [6,4,4,4,4]
+      fix_mean: [false,false,false,false,false]
+      fix_sigma: [false,false,false,false,false]
       masssecpeak: 0.
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: [false,false,false,false]
+      SetFixGaussianSigma: [true,true,true,true,true]
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
-      SetInitialGaussianSigma: [false,false,false,false]
+      SetInitialGaussianSigma: [false,false,false,false,false]
       # Max percentage deviation in sigma (from init) to be considered as a good fit
       MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
@@ -283,13 +276,14 @@ LcpKpiKrKr_scenario3:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.01,0.01,0.01,0.01]
+      sigmaarray: [0.01,0.01,0.01,0.01,0.01]
       FixedSigma: false
       fitcase: Lc
       latexnamehadron: "#Lambda_{c}^{pK#pi}"
       latexbin2var: "n_{trkl}"
       nevents: null
       dodoublecross: false
+      dobkgfromsideband: true
 
   systematics:
     probvariation:
