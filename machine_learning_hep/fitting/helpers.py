@@ -681,7 +681,6 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
         fileoutbkg_fromsidebands.Close()
 
 
-
     def initialize_syst(self):
         """
         Initialize all systematic fits required in an MLHEP analysis run. Using MLFitParsFactory
