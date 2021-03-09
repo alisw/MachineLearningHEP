@@ -147,8 +147,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         self.p_cctype = datap["analysis"]["cctype"]
         self.p_sigmav0 = datap["analysis"]["sigmav0"]
         self.p_inputfonllpred = datap["analysis"]["inputfonllpred"]
-        self.p_triggereff = datap["analysis"][self.typean].get("triggereff", [
-                                                               1])
+        self.p_triggereff = datap["analysis"][self.typean].get("triggereff", [1])
         self.p_triggereffunc = datap["analysis"][self.typean].get(
             "triggereffunc", [0])
 
@@ -187,9 +186,10 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         self.fitter.draw_fits(self.d_resultsallpdata, fileout)
         fileout.Close()
 
-        if (self.p_dobkgfromsideband):
-            self.fitter.background_fromsidebands(self.d_resultsallpdata, self.n_filemass, self.v_var_binning,
-                                                 self.p_mass_fit_lim, self.p_bkgfunc, self.p_masspeak, self.p_bin_width)
+        if self.p_dobkgfromsideband:
+            self.fitter.bkg_fromsidebands(self.d_resultsallpdata, self.n_filemass,
+                                          self.v_var_binning, self.p_mass_fit_lim,
+                                          self.p_bkgfunc, self.p_masspeak, self.p_bin_width)
 
         self.fitter.save_fits(self.fits_dirname)
         # Reset to former mode
@@ -337,13 +337,14 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         histonorm.SetBinContent(1, norm)
         self.logger.warning("Number of events %d", norm)
 
-        if (self.p_dobkgfromsideband):
+        if self.p_dobkgfromsideband:
             fileoutbkg = TFile.Open("%s/Background_fromsidebands_%s_%s.root" % \
                                     (self.d_resultsallpdata, self.case, self.typean))
             hbkg = fileoutbkg.Get("hbkg_fromsidebands")
             hbkg.Scale(1./norm)
             fileoutbkgscaled = TFile.Open("%s/NormBackground_fromsidebands_%s_%s.root" % \
-                                          (self.d_resultsallpdata, self.case, self.typean), "RECREATE")
+                                          (self.d_resultsallpdata, self.case,
+                                           self.typean),"RECREATE")
             fileoutbkgscaled.cd()
             hbkg.Write()
             fileoutbkgscaled.Close()
@@ -391,3 +392,4 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
 
     # def plottervalidation(self):
     # To be added from dhadron_mult
+

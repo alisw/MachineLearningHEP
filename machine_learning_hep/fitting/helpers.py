@@ -339,7 +339,7 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
 
         file_mc = TFile(self.file_mc_name, "READ")
         if not file_mc.IsOpen():
-                raise ValueError("TFile", file_mc.GetName(), "Is not open!")
+            raise ValueError("TFile", file_mc.GetName(), "Is not open!")
         histo_mc = None
         histo_reflections = None
         if get_mc:
@@ -615,7 +615,7 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
         self.logger.info("Print all fits done")
 
 
-    def background_fromsidebands(self, folder, n_filemass, var_binning, fitlim, fbkg, masspeak, bin_width):
+    def bkg_fromsidebands(self, folder, n_filemass, var_binning, fitlim, fbkg, masspeak, bin_width):
 
         filemass = TFile.Open(n_filemass)
         bins1_ranges = self.pars_factory.bins1_edges_low.copy()
@@ -623,44 +623,46 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
         n_bins1 = len(bins1_ranges) - 1
         hbkg_fromsidebands = TH1F("hbkg_fromsidebands", "", n_bins1, array("d", bins1_ranges))
 
-        i=1
+        i = 1
         for (ibin1, ibin2), fit in self.central_fits.items():
 
             if(fbkg[ibin1] != "kLin" and fbkg[ibin1] != "Pol2" and fbkg[ibin1] != "kExpo"):
                 self.logger.warning("Bkg function not defined. Skipping sideband method...")
-                i=i+1
+                i = i+1
                 continue
 
             hmass = filemass.Get("hmass%s%d_%d_%.2f" %  (var_binning, \
                                                          self.pars_factory.bins1_edges_low[ibin1],
-                                                         self.pars_factory.bins1_edges_up[ibin1], self.pars_factory.prob_cut_fin[ibin1] ))
+                                                         self.pars_factory.bins1_edges_up[ibin1],
+                                                         self.pars_factory.prob_cut_fin[ibin1]))
 
-            sig_region = [masspeak - 3*self.pre_fits_mc[i-1].fit_pars["sigma"], masspeak + 3*self.pre_fits_mc[i-1].fit_pars["sigma"]]
+            sig_region = [masspeak - 3*self.pre_fits_mc[i-1].fit_pars["sigma"],
+                          masspeak + 3*self.pre_fits_mc[i-1].fit_pars["sigma"]]
 
             #introducing my bkg function defined only outside the peak region
             class fit_bkg:
                 def __call__(self, x, par):
                     #excluding signal region from the backgound fitting function
-                    if (x[0]>sig_region[0] and x[0]<sig_region[1]):
+                    if (x[0] > sig_region[0] and x[0] < sig_region[1]):
                         return 0
-                    if (fbkg[ibin1] == "kLin"):
+                    if fbkg[ibin1] == "kLin":
                         return par[0]+x[0]*par[1]
-                    elif (fbkg[ibin1] == "Pol2"):
+                    elif fbkg[ibin1] == "Pol2":
                         return par[0]+x[0]*par[1]+x[0]*x[0]*par[2]
-                    elif (fbkg[ibin1] == "kExpo"):
+                    elif fbkg[ibin1] == "kExpo":
                         return math.exp(par[0]+x[0]*par[1]);
 
-            if (fbkg[ibin1] == "kLin"):
+            if fbkg[ibin1] == "kLin":
                 fit_func = TF1("fit_func", fit_bkg(), fitlim[0], fitlim[1], 2)
                 hmass.Fit(fit_func, '', '', fitlim[0], fitlim[1])
                 pars = fit_func.GetParameters()
                 bkg_func = TF1("fbkg", "pol1", fitlim[0], fitlim[1])
-            elif (fbkg[ibin1] == "Pol2"):
+            elif fbkg[ibin1] == "Pol2":
                 fit_func = TF1("fit_func", fit_bkg(), fitlim[0], fitlim[1], 3)
                 hmass.Fit(fit_func, '', '', fitlim[0], fitlim[1])
                 pars = fit_func.GetParameters()
                 bkg_func = TF1("fbkg", "pol2", fitlim[0], fitlim[1])
-            elif (fbkg[ibin1] == "kExpo"):
+            elif fbkg[ibin1] == "kExpo":
                 fit_func = TF1("fit_func", fit_bkg(), fitlim[0], fitlim[1], 2)
                 hmass.Fit(fit_func, '', '', fitlim[0], fitlim[1])
                 pars = fit_func.GetParameters()
@@ -672,7 +674,7 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
 
             hbkg_fromsidebands.SetBinContent(i, bkg)
             hbkg_fromsidebands.SetBinError(i, bkg_err)
-            i=i+1
+            i = i+1
 
         fileoutbkg_fromsidebands = TFile.Open("%s/Background_fromsidebands_%s_%s.root" % \
             (folder, self.case, self.ana_type), "RECREATE")

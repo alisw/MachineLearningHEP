@@ -294,4 +294,3 @@ LcpKpi:
       cutvarmaxrange: [0.95, 0.90, 0.90, 0.80, 0.80] #Max starting point for scan
       fixedmean: True #Fix mean cutvar histo to central fit
       fixedsigma: True #Fix sigma cutvar histo to central fit
-
