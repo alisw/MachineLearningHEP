@@ -649,11 +649,11 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                         return 0
                     else:
                         if fbkg[ibin1] == "kLin":
-                            return par[0]+x[0]*par[1]
+                            return par[0]+x_var[0]*par[1]
                         elif fbkg[ibin1] == "Pol2":
-                            return par[0]+x[0]*par[1]+x[0]*x[0]*par[2]
+                            return par[0]+x_var[0]*par[1]+x_var[0]*x_var[0]*par[2]
                         elif fbkg[ibin1] == "kExpo":
-                            return math.exp(par[0]+x[0]*par[1]);
+                            return math.exp(par[0]+x_var[0]*par[1]);
 
             if fbkg[ibin1] == "kLin":
                 fit_func = TF1("fit_func", FitBkg(), fitlim[0], fitlim[1], 2)
