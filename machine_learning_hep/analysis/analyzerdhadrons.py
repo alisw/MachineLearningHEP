@@ -127,7 +127,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         self.p_dobkgfromsideband = datap["analysis"][self.typean].get(
             "dobkgfromsideband", None)
         if self.p_dobkgfromsideband is None:
-            p_dobkgfromsideband = False
+            self.p_dobkgfromsideband = False
         # More specific fit options
         self.include_reflection = datap["analysis"][self.typean].get(
             "include_reflection", False)
@@ -187,8 +187,9 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         fileout.Close()
 
         if self.p_dobkgfromsideband:
-            self.fitter.bkg_fromsidebands(self.d_resultsallpdata, self.n_filemass, self.p_mass_fit_lim,
-                                          self.p_bkgfunc, self.p_masspeak, self.p_bin_width)
+            self.fitter.bkg_fromsidebands(self.d_resultsallpdata, self.n_filemass,
+                                          self.p_mass_fit_lim, self.p_bkgfunc,
+                                          self.p_masspeak, self.p_bin_width)
 
         self.fitter.save_fits(self.fits_dirname)
         # Reset to former mode
