@@ -14,7 +14,8 @@
 
 
 from os.path import join
-import os, math
+import os
+import math
 from glob import glob
 from array import array
 
@@ -640,7 +641,7 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                           masspeak + 3*self.pre_fits_mc[i-1].fit_pars["sigma"]]
 
             #introducing my bkg function defined only outside the peak region
-            class fit_bkg:
+            class FitBkg:
                 def __call__(self, x, par):
                     #excluding signal region from the backgound fitting function
                     if (x[0] > sig_region[0] and x[0] < sig_region[1]):
@@ -653,17 +654,17 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                         return math.exp(par[0]+x[0]*par[1]);
 
             if fbkg[ibin1] == "kLin":
-                fit_func = TF1("fit_func", fit_bkg(), fitlim[0], fitlim[1], 2)
+                fit_func = TF1("fit_func", FitBkg(), fitlim[0], fitlim[1], 2)
                 hmass.Fit(fit_func, '', '', fitlim[0], fitlim[1])
                 pars = fit_func.GetParameters()
                 bkg_func = TF1("fbkg", "pol1", fitlim[0], fitlim[1])
             elif fbkg[ibin1] == "Pol2":
-                fit_func = TF1("fit_func", fit_bkg(), fitlim[0], fitlim[1], 3)
+                fit_func = TF1("fit_func", FitBkg(), fitlim[0], fitlim[1], 3)
                 hmass.Fit(fit_func, '', '', fitlim[0], fitlim[1])
                 pars = fit_func.GetParameters()
                 bkg_func = TF1("fbkg", "pol2", fitlim[0], fitlim[1])
             elif fbkg[ibin1] == "kExpo":
-                fit_func = TF1("fit_func", fit_bkg(), fitlim[0], fitlim[1], 2)
+                fit_func = TF1("fit_func", FitBkg(), fitlim[0], fitlim[1], 2)
                 hmass.Fit(fit_func, '', '', fitlim[0], fitlim[1])
                 pars = fit_func.GetParameters()
                 bkg_func = TF1("fbkg", "expo", fitlim[0], fitlim[1])

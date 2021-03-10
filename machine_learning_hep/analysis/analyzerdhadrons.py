@@ -344,7 +344,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
             hbkg.Scale(1./norm)
             fileoutbkgscaled = TFile.Open("%s/NormBackground_fromsidebands_%s_%s.root" % \
                                           (self.d_resultsallpdata, self.case,
-                                           self.typean),"RECREATE")
+                                           self.typean), "RECREATE")
             fileoutbkgscaled.cd()
             hbkg.Write()
             fileoutbkgscaled.Close()
@@ -392,4 +392,3 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
 
     # def plottervalidation(self):
     # To be added from dhadron_mult
-
