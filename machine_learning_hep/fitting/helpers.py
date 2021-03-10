@@ -625,6 +625,7 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
         hbkg_fromsidebands = TH1F("hbkg_fromsidebands", "", n_bins1, array("d", bins1_ranges))
 
         i = 1
+        sig_region = 0
         for (ibin1, ibin2), fit in self.central_fits.items():
 
             if(fbkg[ibin1] != "kLin" and fbkg[ibin1] != "Pol2" and fbkg[ibin1] != "kExpo"):
@@ -642,16 +643,17 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
 
             #introducing my bkg function defined only outside the peak region
             class FitBkg:
-                def __call__(self, x, par):
+                def __call__(self, x_var, par):
                     #excluding signal region from the backgound fitting function
-                    if (x[0] > sig_region[0] and x[0] < sig_region[1]):
+                    if (x_var[0] > sig_region[0] and x_var[0] < sig_region[1]):
                         return 0
-                    if fbkg[ibin1] == "kLin":
-                        return par[0]+x[0]*par[1]
-                    elif fbkg[ibin1] == "Pol2":
-                        return par[0]+x[0]*par[1]+x[0]*x[0]*par[2]
-                    elif fbkg[ibin1] == "kExpo":
-                        return math.exp(par[0]+x[0]*par[1]);
+                    else:
+                        if fbkg[ibin1] == "kLin":
+                            return par[0]+x[0]*par[1]
+                        elif fbkg[ibin1] == "Pol2":
+                            return par[0]+x[0]*par[1]+x[0]*x[0]*par[2]
+                        elif fbkg[ibin1] == "kExpo":
+                            return math.exp(par[0]+x[0]*par[1]);
 
             if fbkg[ibin1] == "kLin":
                 fit_func = TF1("fit_func", FitBkg(), fitlim[0], fitlim[1], 2)
@@ -676,7 +678,7 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
             hbkg_fromsidebands.SetBinContent(i, bkg)
             hbkg_fromsidebands.SetBinError(i, bkg_err)
             i = i+1
-
+            print(bkg)
         fileoutbkg_fromsidebands = TFile.Open("%s/Background_fromsidebands_%s_%s.root" % \
             (folder, self.case, self.ana_type), "RECREATE")
         fileoutbkg_fromsidebands.cd()
