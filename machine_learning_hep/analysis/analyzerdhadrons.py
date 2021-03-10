@@ -187,8 +187,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         fileout.Close()
 
         if self.p_dobkgfromsideband:
-            self.fitter.bkg_fromsidebands(self.d_resultsallpdata, self.n_filemass,
-                                          self.v_var_binning, self.p_mass_fit_lim,
+            self.fitter.bkg_fromsidebands(self.d_resultsallpdata, self.n_filemass, self.p_mass_fit_lim,
                                           self.p_bkgfunc, self.p_masspeak, self.p_bin_width)
 
         self.fitter.save_fits(self.fits_dirname)
