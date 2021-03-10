@@ -450,6 +450,10 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
         self.case = case
         self.ana_type = ana_type
         self.ana_config = database["analysis"][ana_type]
+        self.bin1_name = database["var_binning"]
+        self.bins1_edges_low = self.ana_config["sel_an_binmin"]
+        self.bins1_edges_up = self.ana_config["sel_an_binmax"]
+        self.n_bins1 = len(self.bins1_edges_low)
 
         self.pars_factory = MLFitParsFactory(database, ana_type, data_out_dir, mc_out_dir)
 
@@ -616,7 +620,7 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
         self.logger.info("Print all fits done")
 
 
-    def bkg_fromsidebands(self, folder, n_filemass, var_binning, fitlim, fbkg, masspeak, bin_width):
+    def bkg_fromsidebands(self, folder, n_filemass, fitlim, fbkg, masspeak, bin_width):
 
         filemass = TFile.Open(n_filemass)
         bins1_ranges = self.pars_factory.bins1_edges_low.copy()
@@ -626,14 +630,14 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
 
         i = 1
         sig_region = 0
-        for (ibin1, ibin2), fit in self.central_fits.items():
+        for ibin1 in range(n_bins1):
 
             if(fbkg[ibin1] != "kLin" and fbkg[ibin1] != "Pol2" and fbkg[ibin1] != "kExpo"):
                 self.logger.warning("Bkg function not defined. Skipping sideband method...")
                 i = i+1
                 continue
 
-            hmass = filemass.Get("hmass%s%d_%d_%.2f" %  (var_binning, \
+            hmass = filemass.Get("hmass%s%d_%d_%.2f" %  (self.bin1_name, \
                                                          self.pars_factory.bins1_edges_low[ibin1],
                                                          self.pars_factory.bins1_edges_up[ibin1],
                                                          self.pars_factory.prob_cut_fin[ibin1]))
@@ -642,17 +646,16 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                           masspeak + 3*self.pre_fits_mc[i-1].fit_pars["sigma"]]
 
             #introducing my bkg function defined only outside the peak region
-            pt_bin = ibin1
             class FitBkg:
                 def __call__(self, x_var, par):
                     #excluding signal region from the backgound fitting function
                     if (x_var[0] > sig_region[0] and x_var[0] < sig_region[1]):
                         return 0
-                    if fbkg[pt_bin] == "kLin":
+                    if fbkg[ibin1] == "kLin":
                         return par[0]+x_var[0]*par[1]
-                    elif fbkg[pt_bin] == "Pol2":
+                    elif fbkg[ibin1] == "Pol2":
                         return par[0]+x_var[0]*par[1]+x_var[0]*x_var[0]*par[2]
-                    elif fbkg[pt_bin] == "kExpo":
+                    elif fbkg[ibin1] == "kExpo":
                         return math.exp(par[0]+x_var[0]*par[1]);
 
             if fbkg[ibin1] == "kLin":
@@ -678,6 +681,7 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
             hbkg_fromsidebands.SetBinContent(i, bkg)
             hbkg_fromsidebands.SetBinError(i, bkg_err)
             i = i+1
+            print(bkg)
 
         fileoutbkg_fromsidebands = TFile.Open("%s/Background_fromsidebands_%s_%s.root" % \
             (folder, self.case, self.ana_type), "RECREATE")
