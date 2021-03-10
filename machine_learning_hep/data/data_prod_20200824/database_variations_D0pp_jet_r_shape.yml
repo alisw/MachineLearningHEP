@@ -177,5 +177,5 @@ categories:
                 label: ["down", "up"]
                 diffs:
                     analysis:
-                        jet_zg:
+                        jet_r_shape:
                             niterunfoldingchosen: [3, 7]

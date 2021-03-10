@@ -3172,7 +3172,7 @@ class AnalyzerJet(Analyzer):
 
     def jetsystematics(self):
         self.loadstyle()
-        string_default = "default/default"
+        string_default = "resultsMBjetvspt"
         if string_default not in self.d_resultsallpdata:
             self.logger.fatal("Not a default database! Cannot run systematics.")
 

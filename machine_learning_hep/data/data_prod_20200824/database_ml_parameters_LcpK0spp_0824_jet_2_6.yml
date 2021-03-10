@@ -450,28 +450,8 @@ LcpK0spp:
       powheg_prompt_variations: ["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
 
       pythia8_prompt_variations_path: /data/PYTHIA8/trees_pythia8_pr_
-      pythia8_prompt_variations: ["default","coloursoft_mode0"]
+      pythia8_prompt_variations: ["default","colour0soft"]
       pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
 
       variations_db: ./data/data_prod_20200824/database_variations_LcpK0spp_jet_FF.yml
 
-  systematics:
-    probvariation:
-      useperiod: [0,0,1] #period from where to define prob cuts
-      ncutvar: 10 #number of looser and tighter variations
-      maxperccutvar: 0.25 #max diff in efficiency for loosest/tightest var
-      cutvarminrange: [0.50, 0.50, 0.50, 0.50, 0.50, 0.50] #Min starting point for scan
-      cutvarmaxrange: [0.90, 0.90, 0.90, 0.90, 0.90, 0.90] #Max starting point for scan
-      fixedmean: True #Fix mean cutvar histo to central fit
-      fixedsigma: True #Fix sigma cutvar histo to central fit
-      min_signif_fit: 3.
-      max_red_chi2_fit: 2.
-
-    mcptshape:
-      #FONLL / generated LHC19h4c1
-      weights: [1.000000]
-      #From SetPtWeightsFromFONLL13overLHC17c3a12 in AliPhysics
-      #weights: [1.429770]
-      weights_min_pt: 0
-      weights_max_pt: 40
-      weights_bins: 400

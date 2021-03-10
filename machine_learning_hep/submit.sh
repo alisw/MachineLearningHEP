@@ -13,13 +13,15 @@ DBDIR="data_prod_20200824"
 #DBDIR="pKpi"
 #DBDIR="JetAnalysis"
 
-DATABASE="D0pp"
+#DATABASE="D0pp"
 #DATABASE="Dspp"
-#DATABASE="LcpK0spp"
+DATABASE="LcpK0spp"
 #DATABASE="LcpKpi"
 
 #SUFFIX="_0417"
-SUFFIX="_0824_2_6"
+SUFFIX="_0824_jet_2_6"
+#SUFFIX="_0824_jet_6_12"
+#SUFFIX="_0824_6_12"
 #SUFFIX="_0304_jet" # Lc
 #SUFFIX="010"
 #SUFFIX="3050"
@@ -39,7 +41,7 @@ DATABASE_VARIATION="${DATABASE}_${ANALYSIS}"
 CONFIG="submission/default_${STAGE}.yml"
 DB_DEFAULT="data/${DBDIR}/database_ml_parameters_${DATABASE_DEFAULT}.yml"
 DB_VARIATION="data/${DBDIR}/database_variations_${DATABASE_VARIATION}.yml"
-DIR_RESULTS="/data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20200824_ROOT6-1/"
+DIR_RESULTS="/data/Derived_testResults/Jets/Lc/2_6/vAN-20200824_ROOT6-1/"
 
 CMD_ANA="python do_entire_analysis.py -a ${ANALYSIS} -r ${CONFIG} -d ${DB_DEFAULT} -c"
 
