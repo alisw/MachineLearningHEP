@@ -642,18 +642,18 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                           masspeak + 3*self.pre_fits_mc[i-1].fit_pars["sigma"]]
 
             #introducing my bkg function defined only outside the peak region
+            pt_bin = ibin1
             class FitBkg:
                 def __call__(self, x_var, par):
                     #excluding signal region from the backgound fitting function
                     if (x_var[0] > sig_region[0] and x_var[0] < sig_region[1]):
                         return 0
-                    else:
-                        if fbkg[ibin1] == "kLin":
-                            return par[0]+x_var[0]*par[1]
-                        elif fbkg[ibin1] == "Pol2":
-                            return par[0]+x_var[0]*par[1]+x_var[0]*x_var[0]*par[2]
-                        elif fbkg[ibin1] == "kExpo":
-                            return math.exp(par[0]+x_var[0]*par[1]);
+                    if fbkg[pt_bin] == "kLin":
+                        return par[0]+x_var[0]*par[1]
+                    elif fbkg[pt_bin] == "Pol2":
+                        return par[0]+x_var[0]*par[1]+x_var[0]*x_var[0]*par[2]
+                    elif fbkg[pt_bin] == "kExpo":
+                        return math.exp(par[0]+x_var[0]*par[1]);
 
             if fbkg[ibin1] == "kLin":
                 fit_func = TF1("fit_func", FitBkg(), fitlim[0], fitlim[1], 2)
