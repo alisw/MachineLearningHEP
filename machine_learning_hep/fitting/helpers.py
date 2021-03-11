@@ -630,6 +630,7 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
 
         i = 1
         sig_region = 0
+        pt_bin = 0
         for ibin1 in range(n_bins1):
 
             if(fbkg[ibin1] != "kLin" and fbkg[ibin1] != "Pol2" and fbkg[ibin1] != "kExpo"):
@@ -642,20 +643,26 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                                                          self.pars_factory.bins1_edges_up[ibin1],
                                                          self.pars_factory.prob_cut_fin[ibin1]))
 
+            if self.pre_fits_mc[i-1].fit_pars["sigma"] == None:
+                self.logger.warning("Pre-fit failed. No sigma to initialize the fit. Skipping sideband method...")
+                i = i+1
+                continue
+
             sig_region = [masspeak - 3*self.pre_fits_mc[i-1].fit_pars["sigma"],
                           masspeak + 3*self.pre_fits_mc[i-1].fit_pars["sigma"]]
 
             #introducing my bkg function defined only outside the peak region
+            pt_bin = ibin1
             class FitBkg:
                 def __call__(self, x_var, par):
                     #excluding signal region from the backgound fitting function
                     if (x_var[0] > sig_region[0] and x_var[0] < sig_region[1]):
                         return 0
-                    if fbkg[ibin1] == "kLin":
+                    if fbkg[pt_bin] == "kLin":
                         return par[0]+x_var[0]*par[1]
-                    elif fbkg[ibin1] == "Pol2":
+                    elif fbkg[pt_bin] == "Pol2":
                         return par[0]+x_var[0]*par[1]+x_var[0]*x_var[0]*par[2]
-                    elif fbkg[ibin1] == "kExpo":
+                    elif fbkg[pt_bin] == "kExpo":
                         return math.exp(par[0]+x_var[0]*par[1])
 
             if fbkg[ibin1] == "kLin":
