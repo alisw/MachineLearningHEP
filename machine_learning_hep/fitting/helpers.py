@@ -634,7 +634,7 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
         for ibin1 in range(n_bins1):
 
             if(fbkg[ibin1] != "kLin" and fbkg[ibin1] != "Pol2" and fbkg[ibin1] != "kExpo"):
-                self.logger.warning("Bkg function not defined. Skipping sideband method...")
+                self.logger.warning("Bkg function not defined. Skip...")
                 i = i+1
                 continue
 
@@ -643,8 +643,8 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                                                          self.pars_factory.bins1_edges_up[ibin1],
                                                          self.pars_factory.prob_cut_fin[ibin1]))
 
-            if self.pre_fits_mc[i-1].fit_pars["sigma"] == None:
-                self.logger.warning("Pre-fit failed. No sigma to initialize the fit. Skipping sideband method...")
+            if self.pre_fits_mc[i-1].fit_pars["sigma"] is None:
+                self.logger.warning("Pre-fit failed. No sigma to initialize the fit. Skip...")
                 i = i+1
                 continue
 
