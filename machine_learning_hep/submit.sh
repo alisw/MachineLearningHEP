@@ -37,6 +37,7 @@ ANALYSIS="jet_r_shape"
 
 DATABASE_DEFAULT="${DATABASE}${SUFFIX}"
 DATABASE_VARIATION="${DATABASE}_${ANALYSIS}"
+#DO_PROC=1
 
 CONFIG="submission/default_${STAGE}.yml"
 DB_DEFAULT="data/${DBDIR}/database_ml_parameters_${DATABASE_DEFAULT}.yml"
@@ -48,7 +49,7 @@ CMD_ANA="python do_entire_analysis.py -a ${ANALYSIS} -r ${CONFIG} -d ${DB_DEFAUL
 if [[ "${STAGE}" == "variations" ]]
 then
     echo "Running the variation script for the ${ANALYSIS} analysis of ${DATABASE_DEFAULT}"
-    ./submit_variations.sh ${DB_DEFAULT} ${DB_VARIATION} ${ANALYSIS}
+    ./submit_variations.sh ${DB_DEFAULT} ${DB_VARIATION} ${ANALYSIS} ${DO_PROC}
 else
     echo "Running the ${STAGE} stage of the ${ANALYSIS} analysis of ${DATABASE_DEFAULT}"
     \time -f "time: %E\nCPU: %P" ${CMD_ANA}
@@ -65,4 +66,3 @@ echo -e "\nCleaning ${DIR_RESULTS}"
 echo -e "\nDone"
 
 exit 0
-

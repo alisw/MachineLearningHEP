@@ -385,16 +385,16 @@ LcpK0spp:
         mc: null
       data: &data_out_default
         runselection: [null, null, null]
-        results: [/data/Derived_testResults/Jets/Lc/2_6/vAN-20200824_ROOT6-1/r_shape_lim/default/default/pp_2016_data/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/Lc/2_6/vAN-20200824_ROOT6-1/r_shape_lim/default/default/pp_2017_data/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/Lc/2_6/vAN-20200824_ROOT6-1/r_shape_lim/default/default/pp_2018_data/resultsMBjetvspt] #list of periods
+        results: [/data/Derived_testResults/Jets/Lc/2_6/vAN-20200824_ROOT6-1/r_shape_lim/default/default/pp_2016_data/490_20200825-1716/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/2_6/vAN-20200824_ROOT6-1/r_shape_lim/default/default/pp_2017_data/489_20200825-1716/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/2_6/vAN-20200824_ROOT6-1/r_shape_lim/default/default/pp_2018_data/488_20200825-1716/resultsMBjetvspt] #list of periods
         resultsallp: /data/Derived_testResults/Jets/Lc/2_6/vAN-20200824_ROOT6-1/r_shape_lim/default/default/pp_data/resultsMBjetvspt
 
       mc: &mc_out_default
         runselection: [null, null, null]
-        results: [/data/Derived_testResults/Jets/Lc/2_6/vAN-20200824_ROOT6-1/r_shape_lim/default/default/pp_2016_mc_prodD2H/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/Lc/2_6/vAN-20200824_ROOT6-1/r_shape_lim/default/default/pp_2017_mc_prodD2H/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/Lc/2_6/vAN-20200824_ROOT6-1/r_shape_lim/default/default/pp_2018_mc_prodD2H/resultsMBjetvspt] #list of periods
+        results: [/data/Derived_testResults/Jets/Lc/2_6/vAN-20200824_ROOT6-1/r_shape_lim/default/default/pp_2016_mc_prodD2H/491_20200825-1716/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/2_6/vAN-20200824_ROOT6-1/r_shape_lim/default/default/pp_2017_mc_prodD2H/491_20200825-1716/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/2_6/vAN-20200824_ROOT6-1/r_shape_lim/default/default/pp_2018_mc_prodD2H/491_20200825-1716/resultsMBjetvspt] #list of periods
         resultsallp: /data/Derived_testResults/Jets/Lc/2_6/vAN-20200824_ROOT6-1/r_shape_lim/default/default/pp_mc_prodD2H/resultsMBjetvspt
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
@@ -453,5 +453,25 @@ LcpK0spp:
       pythia8_prompt_variations: ["default","colour0soft"]
       pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
 
-      variations_db: ./data/data_prod_20200824/database_variations_LcpK0spp_jet_FF.yml
+      variations_db: ./data/data_prod_20200824/database_variations_LcpK0spp_jet_r_shape.yml
 
+  systematics:
+    probvariation:
+      useperiod: [0,0,1] #period from where to define prob cuts
+      ncutvar: 10 #number of looser and tighter variations
+      maxperccutvar: 0.25 #max diff in efficiency for loosest/tightest var
+      cutvarminrange: [0.50, 0.50, 0.50, 0.50, 0.50, 0.50] #Min starting point for scan
+      cutvarmaxrange: [0.90, 0.90, 0.90, 0.90, 0.90, 0.90] #Max starting point for scan
+      fixedmean: True #Fix mean cutvar histo to central fit
+      fixedsigma: True #Fix sigma cutvar histo to central fit
+      min_signif_fit: 3.
+      max_red_chi2_fit: 2.
+
+    mcptshape:
+      #FONLL / generated LHC19h4c1
+      weights: [1.000000]
+      #From SetPtWeightsFromFONLL13overLHC17c3a12 in AliPhysics
+      #weights: [1.429770]
+      weights_min_pt: 0
+      weights_max_pt: 40
+      weights_bins: 400

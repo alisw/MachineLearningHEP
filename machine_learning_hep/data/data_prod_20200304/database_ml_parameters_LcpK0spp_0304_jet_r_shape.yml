@@ -383,15 +383,15 @@ LcpK0spp:
         mc: null
       data: &data_out_default
         runselection: [null, null, null]
-        results: [/data/Derived_testResults/Jets/Lc/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2016_data/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/Lc/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2017_data/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/Lc/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2018_data/resultsMBjetvspt] #list of periods
+        results: [/data/Derived_testResults/Jets/Lc/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
         resultsallp: /data/Derived_testResults/Jets/Lc/vAN-20200304_ROOT6-1/r_shape/default/default/pp_data/resultsMBjetvspt
       mc: &mc_out_default
         runselection: [null, null, null]
-        results: [/data/Derived_testResults/Jets/Lc/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2016_mc_prodD2H/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/Lc/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2017_mc_prodD2H/resultsMBjetvspt,
-                  /data/Derived_testResults/Jets/Lc/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2018_mc_prodD2H/resultsMBjetvspt] #list of periods
+        results: [/data/Derived_testResults/Jets/Lc/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2016_mc_prodD2H/373_20200304-2028/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2017_mc_prodD2H/373_20200304-2028/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2018_mc_prodD2H/373_20200304-2028/resultsMBjetvspt] #list of periods
         resultsallp: /data/Derived_testResults/Jets/Lc/vAN-20200304_ROOT6-1/r_shape/default/default/pp_mc_prodD2H/resultsMBjetvspt
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
@@ -450,7 +450,7 @@ LcpK0spp:
       pythia8_prompt_variations: ["default","coloursoft_mode0"]
       pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
 
-      variations_db: ./data/data_prod_20200304/database_variations_LcpK0spp_jet_FF.yml
+      variations_db: ./data/data_prod_20200304/database_variations_LcpK0spp_jet_r_shape.yml
 
   systematics:
     probvariation:

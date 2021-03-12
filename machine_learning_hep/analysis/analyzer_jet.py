@@ -314,7 +314,6 @@ class AnalyzerJet(Analyzer):
         leg_ratio.AddEntry(D0_histo, "D0 %s" %option, "P")
         leg_ratio.Draw("same")
         c_ratio.SaveAs("%s/Lc+D0_combined_plot_%s.eps" % (self.d_resultsallpdata , lc_histoname))
-        c_ratio.SaveAs("Lc+D0_combined_plot_%s.png" % (lc_histoname))
         Lc_histo_sc = Lc_histo.Clone("Lc_histo_sc")
         D0_histo_sc = D0_histo.Clone("D0_histo_sc")
         Lc_histo_sc.Scale(1/Lc_histo_sc.Integral())
@@ -323,7 +322,6 @@ class AnalyzerJet(Analyzer):
         Lc_histo_sc.SetYTitle("{\Lambda}_{c} / {D}_{0}  ratio")
         Lc_histo_sc.Draw()
         c_ratio.SaveAs("%s/Lc_D0_ratio_%s.eps" % (self.d_resultsallpdata, lc_histoname))
-        c_ratio.SaveAs("Lc_D0_ratio_%s.png" % (lc_histoname))
         del Lc_histo
         del D0_histo
         del lc_histo
@@ -3172,7 +3170,7 @@ class AnalyzerJet(Analyzer):
 
     def jetsystematics(self):
         self.loadstyle()
-        string_default = "resultsMBjetvspt"
+        string_default = "default/default"
         if string_default not in self.d_resultsallpdata:
             self.logger.fatal("Not a default database! Cannot run systematics.")
 
