@@ -660,9 +660,9 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                         return 0
                     if fbkg[pt_bin] == "kLin":
                         return par[0]+x_var[0]*par[1]
-                    elif fbkg[pt_bin] == "Pol2":
+                    if fbkg[pt_bin] == "Pol2":
                         return par[0]+x_var[0]*par[1]+x_var[0]*x_var[0]*par[2]
-                    elif fbkg[pt_bin] == "kExpo":
+                    if fbkg[pt_bin] == "kExpo":
                         return math.exp(par[0]+x_var[0]*par[1])
                     else:
                         return 0
