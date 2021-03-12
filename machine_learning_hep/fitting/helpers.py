@@ -666,6 +666,9 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                         return math.exp(par[0]+x_var[0]*par[1])
                     return 0
 
+                def isSucces(ibin):
+                    return true
+
             if fbkg[ibin1] == "kLin":
                 fit_func = TF1("fit_func", FitBkg(), fitlim[0], fitlim[1], 2)
                 hmass.Fit(fit_func, '', '', fitlim[0], fitlim[1])
