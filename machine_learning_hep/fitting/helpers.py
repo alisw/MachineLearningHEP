@@ -660,10 +660,12 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                         return 0
                     if fbkg[pt_bin] == "kLin":
                         return par[0]+x_var[0]*par[1]
-                    if fbkg[pt_bin] == "Pol2":
+                    elif fbkg[pt_bin] == "Pol2":
                         return par[0]+x_var[0]*par[1]+x_var[0]*x_var[0]*par[2]
-                    if fbkg[pt_bin] == "kExpo":
+                    elif fbkg[pt_bin] == "kExpo":
                         return math.exp(par[0]+x_var[0]*par[1])
+                    else:
+                        return 0
 
             if fbkg[ibin1] == "kLin":
                 fit_func = TF1("fit_func", FitBkg(), fitlim[0], fitlim[1], 2)
@@ -688,6 +690,7 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
             hbkg_fromsidebands.SetBinContent(i, bkg)
             hbkg_fromsidebands.SetBinError(i, bkg_err)
             i = i+1
+            print(bkg)
 
         fileoutbkg_fromsidebands = TFile.Open("%s/Background_fromsidebands_%s_%s.root" % \
             (folder, self.case, self.ana_type), "RECREATE")
