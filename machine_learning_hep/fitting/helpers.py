@@ -664,8 +664,7 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                         return par[0]+x_var[0]*par[1]+x_var[0]*x_var[0]*par[2]
                     if fbkg[pt_bin] == "kExpo":
                         return math.exp(par[0]+x_var[0]*par[1])
-                    else:
-                        return 0
+                    return 0
 
             if fbkg[ibin1] == "kLin":
                 fit_func = TF1("fit_func", FitBkg(), fitlim[0], fitlim[1], 2)
