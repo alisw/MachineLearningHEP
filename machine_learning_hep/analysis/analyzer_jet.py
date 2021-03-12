@@ -23,7 +23,7 @@ import numpy as np
 import yaml
 # pylint: disable=import-error, no-name-in-module
 import uproot
-from ROOT import TFile, TH1F, TH2F, TCanvas, TLatex, TGraphAsymmErrors, TLine, TGaxis
+from ROOT import TFile, TH1F, TH2F, TCanvas, TLatex, TGraphAsymmErrors, TLine, TGaxis, TF1
 from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
 from ROOT import TLegend
 from ROOT import gROOT, gStyle
@@ -125,6 +125,10 @@ class AnalyzerJet(Analyzer):
         self.p_rebin = datap["analysis"][self.typean]["rebin"]
         self.p_fix_mean = datap["analysis"][self.typean]["fix_mean"]
         self.p_fix_sigma = datap["analysis"][self.typean]["fix_sigma"]
+        self.p_set_fix_sigma= \
+        datap["analysis"][self.typean]["SetFixGaussianSigma"]
+        self.p_set_initial_sigma = \
+        datap["analysis"][self.typean]["SetInitialGaussianSigma"]
         self.p_sigmaarray = datap["analysis"][self.typean]["sigmaarray"]
         #self.p_masspeaksec = None
         self.p_fix_sigmasec = None
@@ -133,6 +137,9 @@ class AnalyzerJet(Analyzer):
             #self.p_masspeaksec = datap["analysis"][self.typean]["masspeaksec"]
             self.p_fix_sigmasec = datap["analysis"][self.typean]["fix_sigmasec"]
             self.p_sigmaarraysec = datap["analysis"][self.typean]["sigmaarraysec"]
+
+        # efficiency calculation
+        self.doeff_resp = datap["analysis"][self.typean]["doeff_resp"]
 
         # sideband subtraction
         self.signal_sigma = \
@@ -226,6 +233,11 @@ class AnalyzerJet(Analyzer):
         self.d_resultsallpdata = datap["analysis"][typean]["data"]["results"][period] \
                 if period is not None else datap["analysis"][typean]["data"]["resultsallp"]
 
+        self.lc_d0_ratio = datap["analysis"][self.typean]["lc_d0_ratio"]
+        if self.lc_d0_ratio:
+            self.d_resultslc =  datap["analysis"][typean]["data"]["resultslc"]
+
+
         # input directories (processor output)
         self.d_resultsallpmc_proc = self.d_resultsallpmc
         self.d_resultsallpdata_proc = self.d_resultsallpdata
@@ -279,6 +291,44 @@ class AnalyzerJet(Analyzer):
         self.text_acc_h = "#left|#it{y}_{%s}#right| #leq 0.8" % self.p_latexnhadron
         self.text_powheg = "POWHEG + PYTHIA 6 + EvtGen"
 
+    def makeratio(self, origin_histo, option, lc_histoname):
+        D0_histo = origin_histo.Clone("D0_histo")
+        filename = self.d_resultslc + "/" + option + ".root"
+        print("Open file with Lc results", filename)
+        myfilelc = TFile.Open(filename)
+        lc_histo = myfilelc.Get(lc_histoname)
+        Lc_histo = lc_histo.Clone("Lc_histo")
+        c_ratio = TCanvas("c_ratio", "Lc to D0 ratio")
+        setup_canvas(c_ratio)
+        leg_ratio = TLegend(.6, .8, .8, .85)
+        setup_legend(leg_ratio)
+        D0_histo.SetTitle("")
+        Lc_histo.SetXTitle("%s" % self.v_varshape_latex)
+        Lc_histo.SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
+        Lc_histo.SetTitle("")
+        setup_histogram(D0_histo, get_colour(1), get_marker(0))
+        setup_histogram(Lc_histo, get_colour(2), get_marker(1))
+        D0_histo.Draw()
+        Lc_histo.Draw("same")
+        leg_ratio.AddEntry(Lc_histo, "Lc %s" %option, "P")
+        leg_ratio.AddEntry(D0_histo, "D0 %s" %option, "P")
+        leg_ratio.Draw("same")
+        c_ratio.SaveAs("%s/Lc+D0_combined_plot_%s.eps" % (self.d_resultsallpdata , lc_histoname))
+        Lc_histo_sc = Lc_histo.Clone("Lc_histo_sc")
+        D0_histo_sc = D0_histo.Clone("D0_histo_sc")
+        Lc_histo_sc.Scale(1/Lc_histo_sc.Integral())
+        D0_histo_sc.Scale(1/D0_histo_sc.Integral())
+        Lc_histo_sc.Divide(D0_histo_sc)
+        Lc_histo_sc.SetYTitle("{\Lambda}_{c} / {D}_{0}  ratio")
+        Lc_histo_sc.Draw()
+        c_ratio.SaveAs("%s/Lc_D0_ratio_%s.eps" % (self.d_resultsallpdata, lc_histoname))
+        del Lc_histo
+        del D0_histo
+        del lc_histo
+        del Lc_histo_sc
+        del D0_histo_sc
+        myfilelc.Close()
+
     def fit(self):
         self.loadstyle()
         tmp_is_root_batch = gROOT.IsBatch()
@@ -318,12 +368,46 @@ class AnalyzerJet(Analyzer):
                                             self.p_rebin[ipt], -1)
                 histomassmc_reb_f = TH1F()
                 histomassmc_reb.Copy(histomassmc_reb_f)
-                fittermc = AliHFInvMassFitter(histomassmc_reb_f, \
-                    self.p_massmin[ipt], self.p_massmax[ipt], self.p_bkgfunc[ipt], 0)
-                fittermc.SetInitialGaussianMean(self.p_masspeak)
-                out = fittermc.MassFitter(0)
-                print("I have made MC fit for sigma initialization, status: %d" % out)
+                fittermc = TF1("fittermc", "gaus", self.p_massmin[ipt],
+                        self.p_massmax[ipt])
+                sgn_mc = histomassmc_reb.Fit(fittermc)
+
+                if sgn_mc:
+                    print("*****MC fitter %s successfull!*****" % suffix)
+                    print("Sigma: ", fittermc.GetParameter(2))
+
+                c_mc_fit = TCanvas("c_mc_fit " + suffix, "MC fit")
+                setup_canvas(c_mc_fit)
+                setup_histogram(histomassmc_reb, get_colour(0), get_marker(0))
+                histomassmc_reb.SetTitle("")
+                histomassmc_reb.SetXTitle("invariant mass (GeV/#it{c}^{2})")
+                histomassmc_reb.SetYTitle("counts")
+                histomassmc_reb.SetTitleOffset(1.2, "Y")
+                histomassmc_reb.GetYaxis().SetMaxDigits(3)
+                y_min_h, y_max_h = get_y_window_his(histomassmc_reb)
+                y_margin_up = 0.15
+                y_margin_down = 0.05
+                histomassmc_reb.GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
+                histomassmc_reb.Draw("same")
+                sigma_mc = 0
+                mean_mc = 0
+                sigma_mc = fittermc.GetParameter(2)
+                mean_mc = fittermc.GetParameter(1)
+                if sgn_mc:
+                    fittermc.SetLineColor(get_colour(2))
+                    fittermc.Draw("same")
+                latexmc_1 = TLatex(0.67, 0.78, "mean = %s, #sigma  = %s" % \
+                        (round(mean_mc,3), round(sigma_mc,3)))
+                draw_latex(latexmc_1)
+                latexmc_2 = TLatex(0.71, 0.72, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
+                draw_latex(latexmc_2)
+                latexmc_3 = TLatex(0.71, 0.67, "%g #leq #it{p}_{T, %s} < %g GeV/#it{c}" % \
+                    (self.lpt_finbinmin[ipt], self.p_latexnhadron, min(self.lpt_finbinmax[ipt], self.lvar2_binmax_reco[ibin2])))
+                draw_latex(latexmc_3)
+
+                c_mc_fit.SaveAs("%s/fit_mc_%s.eps" % (self.d_resultsallpdata, suffix_plot))
                 histomass = myfile.Get("hmass" + suffix)
+
                 if not histomass:
                     self.logger.fatal(make_message_notfound("hmass" + suffix, self.n_filemass))
                 histomass_reb = AliVertexingHFUtils.RebinHisto(histomass, \
@@ -332,19 +416,22 @@ class AnalyzerJet(Analyzer):
                 histomass_reb.Copy(histomass_reb_f)
                 fitter = AliHFInvMassFitter(histomass_reb_f, self.p_massmin[ipt], \
                     self.p_massmax[ipt], self.p_bkgfunc[ipt], self.p_sgnfunc[ipt])
-                fitter.SetInitialGaussianSigma(fittermc.GetSigma())
-                fitter.SetInitialGaussianMean(fittermc.GetMean())
-                if self.p_fix_sigma[ipt] is True:
-                    fitter.SetFixGaussianSigma(fittermc.GetSigma())
+
+                fitter.SetInitialGaussianSigma(fittermc.GetParameter(2))
+                fitter.SetInitialGaussianMean(fittermc.GetParameter(1))
+                if self.p_set_initial_sigma[ipt] is True:
+                    if self.p_set_fix_sigma[ipt] is True:
+                        print("****************Fix sigma to sigma array values*****************")
+                        fitter.SetFixGaussianSigma(self.p_sigmaarray[ipt])
+                    else:
+                        print("****************Fix sigma to MC sigma values*****************")
+                        fitter.SetFixGaussianSigma(fittermc.GetParameter(2))
                 if self.p_sgnfunc[ipt] == 1:
                     if self.p_fix_sigmasec[ipt] is True:
                         fitter.SetFixSecondGaussianSigma(self.p_sigmaarraysec[ipt])
                 out = fitter.MassFitter(0)
                 fit_dir = fileout.mkdir(suffix)
                 fit_dir.WriteObject(fitter, "fitter%d" % (ipt))
-                bkg_func = fitter.GetBackgroundRecalcFunc()
-                sgn_func = fitter.GetMassFunc()
-
                 c_fitted_result = TCanvas("c_fitted_result " + suffix, "Fitted Result")
                 setup_canvas(c_fitted_result)
                 setup_histogram(histomass_reb, get_colour(0), get_marker(0))
@@ -358,14 +445,67 @@ class AnalyzerJet(Analyzer):
                 y_margin_down = 0.05
                 histomass_reb.GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
                 histomass_reb.Draw("same")
+                bkg_func = fitter.GetBackgroundRecalcFunc()
+                sgn_func = fitter.GetMassFunc()
+                sigma = fitter.GetSigma()
+                mean = fitter.GetMean()
+                bkg_left_1 = (mean - self.sideband_sigma_2_left*sigma)
+                bkg_left_2 = (mean - self.sideband_sigma_1_left*sigma)
+                sig_left =  (mean - self.signal_sigma*sigma)
+                sig_right = (mean + self.signal_sigma*sigma)
+                bkg_right_1 = (mean + self.sideband_sigma_1_right*sigma)
+                bkg_right_2 = (mean + self.sideband_sigma_2_right*sigma)
+                left_borders = [bkg_left_1, bkg_left_2, sig_left]
+                right_borders = [sig_right, bkg_right_1, bkg_right_2]
+                bkg = 0
+                sig = 0
+                for brd in left_borders:
+                    if brd < self.p_massmin[ipt]:
+                        brd = self.p_massmin[ipt]
+                for brd in right_borders:
+                    if brd > self.p_massmax[ipt]:
+                        brd = self.p_massmax[ipt]
+                if (sgn_func and bkg_func):
+                    print("signal and background functions exits")
+                    bin_width = histomass_reb.GetXaxis().GetBinWidth(1)
+                    bkg = bkg_func.Integral(sig_left, sig_right)/bin_width
+                    sig = sgn_func.Integral(sig_left, sig_right)/bin_width - bkg
+                    if (sig+bkg) > 0:
+                       S_to_B = sig/sqrt(sig+bkg)
+                    else:
+                        S_to_B = float("nan")
+                else:
+                    S_to_B = float("nan")
+                print("Signal over background", S_to_B)
+                bkg_left = histomass_reb.Clone("bkg_left")
+                bkg_left.GetXaxis().SetRangeUser(bkg_left_1, bkg_left_2)
+                bkg_left.SetFillColor(38)
+                bkg_left.SetFillStyle(3354)
+                bkg_left.Draw("same hist")
+                bkg_right = histomass_reb.Clone("bkg_right")
+                bkg_right.GetXaxis().SetRangeUser(bkg_right_1, bkg_right_2)
+                bkg_right.SetFillColor(38)
+                bkg_right.SetFillStyle(3345)
+                bkg_right.Draw("same hist")
+                bkg_sig = histomass_reb.Clone("bkg_sig")
+                bkg_sig.SetFillColor(46)
+                bkg_sig.SetFillStyle(3444)
+                bkg_sig.GetXaxis().SetRangeUser(sig_left, sig_right)
+                bkg_sig.Draw("same hist")
                 if out == 1:
                     bkg_func.SetLineColor(get_colour(1))
                     sgn_func.SetLineColor(get_colour(2))
                     sgn_func.Draw("same")
                     bkg_func.Draw("same")
-                latex = TLatex(0.2, 0.83, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
+                latex3 = TLatex(0.67, 0.78, "mean = %s, #sigma  = %s" % \
+                        (round(mean,3), round(sigma,3)))
+                draw_latex(latex3)
+                latex4 = TLatex(0.29, 0.83, "B(mean #pm 2#sigma)= %s, S(mean #pm 2#sigma)  = %s, S/#sqrt{S+B} = %s" % \
+                        (round(bkg), round(sig), round(S_to_B, 3)))
+                draw_latex(latex4)
+                latex = TLatex(0.71, 0.72, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
                 draw_latex(latex)
-                latex2 = TLatex(0.5, 0.83, "%g #leq #it{p}_{T, %s} < %g GeV/#it{c}" % \
+                latex2 = TLatex(0.71, 0.67, "%g #leq #it{p}_{T, %s} < %g GeV/#it{c}" % \
                     (self.lpt_finbinmin[ipt], self.p_latexnhadron, min(self.lpt_finbinmax[ipt], self.lvar2_binmax_reco[ibin2])))
                 draw_latex(latex2)
                 c_fitted_result.SaveAs("%s/fit_%s.eps" % (self.d_resultsallpdata, suffix_plot))
@@ -374,14 +514,112 @@ class AnalyzerJet(Analyzer):
         fileout.Close()
         gROOT.SetBatch(tmp_is_root_batch)
 
-    def efficiency(self): # pylint: disable=too-many-branches, too-many-locals
+    def efficiency(self):
+
         self.loadstyle()
         lfileeff = TFile.Open(self.n_fileeff)
         if not lfileeff:
             self.logger.fatal(make_message_notfound(self.n_fileeff))
-        lfileresp = TFile.Open(self.n_fileresp)
-        if not lfileresp:
-            self.logger.fatal(make_message_notfound(self.n_fileresp))
+        fileouteff = TFile.Open(self.file_efficiency, "recreate")
+        if not fileouteff:
+            self.logger.fatal(make_message_notfound(self.file_efficiency))
+
+        string_shaperange = "%g #leq %s < %g" % (self.lvarshape_binmin_reco[0], self.v_varshape_latex, self.lvarshape_binmax_reco[-1])
+
+        cEff = TCanvas("cEff", "The Fit Canvas")
+        setup_canvas(cEff)
+        legeff = TLegend(.13, .65, .5, .88)
+        setup_legend(legeff)
+        list_his = []
+        list_ptcand_gen_old = []
+        list_ptcand_rec_old = []
+        list_ptcand_eff_old = []
+        for ibin2 in range(self.p_nbin2_reco):
+            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
+                                            self.lvar2_binmin_reco[ibin2], \
+                                            self.lvar2_binmax_reco[ibin2])
+            h_gen_pr = lfileeff.Get("h_gen_pr" + stringbin2)
+            h_gen_pr_old = h_gen_pr.Clone(h_gen_pr.GetName() + "_old")
+            list_ptcand_gen_old.append(h_gen_pr_old)
+
+            h_sel_pr = lfileeff.Get("h_sel_pr" + stringbin2)
+            h_sel_pr_old = h_sel_pr.Clone(h_sel_pr.GetName() + "_old")
+            list_ptcand_rec_old.append(h_sel_pr_old)
+
+            h_sel_pr.Divide(h_sel_pr, h_gen_pr, 1.0, 1.0, "B")
+            list_his.append(h_sel_pr)
+            h_eff_pr_old = h_sel_pr.Clone("h_eff_pr" + stringbin2 + "_old")
+            list_ptcand_eff_old.append(h_eff_pr_old)
+        y_min_h, y_max_h = get_y_window_his(list_his)
+        y_min_h = 0
+        y_margin_up = 0.35
+        y_margin_down = 0
+        y_min, y_max = get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up)
+        for ibin2 in range(self.p_nbin2_reco):
+            h_sel_pr = list_his[ibin2]
+            setup_histogram(h_sel_pr, get_colour(ibin2), 1)
+            h_sel_pr.Draw("same")
+            fileouteff.cd()
+            h_sel_pr.SetName("eff_mult%d" % ibin2)
+            h_sel_pr.Write()
+            legeffstring = "%g #leq %s < %g GeV/#it{c}" % \
+                    (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var,
+                     self.lvar2_binmax_reco[ibin2])
+            legeff.AddEntry(h_sel_pr, legeffstring, "LE")
+            h_sel_pr.SetTitle("")
+            h_sel_pr.SetXTitle("#it{p}_{T}^{%s} (GeV/#it{c})" % self.p_latexnhadron)
+            h_sel_pr.SetYTitle("prompt %s-jet efficiency" % self.p_latexnhadron)
+            h_sel_pr.GetYaxis().SetRangeUser(y_min, y_max)
+            h_sel_pr.SetTitleOffset(1.2, "Y")
+            h_sel_pr.SetTitleOffset(1.1, "X")
+        legeff.Draw()
+        cEff.SaveAs("%s/efficiency_pr.eps" % self.d_resultsallpdata)
+        # NON-PROMPT EFFICIENCY
+
+        cEffFD = TCanvas("cEffFD", "The Fit Canvas")
+        setup_canvas(cEffFD)
+        legeffFD = TLegend(.13, .65, .5, .88)
+        setup_legend(legeffFD)
+        list_his = []
+        for ibin2 in range(self.p_nbin2_reco):
+            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
+                                            self.lvar2_binmin_gen[ibin2], \
+                                            self.lvar2_binmax_gen[ibin2])
+            h_gen_fd = lfileeff.Get("h_gen_fd" + stringbin2)
+            h_sel_fd = lfileeff.Get("h_sel_fd" + stringbin2)
+            h_sel_fd.Divide(h_sel_fd, h_gen_fd, 1.0, 1.0, "B")
+            list_his.append(h_sel_fd)
+        y_min_h, y_max_h = get_y_window_his(list_his)
+        y_min_h = 0
+        y_margin_up = 0.35
+        y_margin_down = 0
+        y_min, y_max = get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up)
+        for ibin2 in range(self.p_nbin2_reco):
+            h_sel_fd = list_his[ibin2]
+            setup_histogram(h_sel_fd, get_colour(ibin2), 1)
+            h_sel_fd.Draw("same")
+            fileouteff.cd()
+            h_sel_fd.SetName("eff_fd_mult%d" % ibin2)
+            h_sel_fd.Write()
+            legeffFDstring = "%g #leq %s < %g GeV/#it{c}" % \
+                    (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var,
+                     self.lvar2_binmax_gen[ibin2])
+            legeffFD.AddEntry(h_sel_fd, legeffFDstring, "LE")
+            h_sel_fd.SetTitle("")
+            h_sel_fd.SetXTitle("#it{p}_{T}^{%s} (GeV/#it{c})" % self.p_latexnhadron)
+            h_sel_fd.SetYTitle("non-prompt %s-jet efficiency" % self.p_latexnhadron)
+            h_sel_fd.GetYaxis().SetRangeUser(y_min, y_max)
+            h_sel_fd.SetTitleOffset(1.2, "Y")
+            h_sel_fd.SetTitleOffset(1.1, "X")
+        legeffFD.Draw()
+        cEffFD.SaveAs("%s/efficiency_fd.eps" % self.d_resultsallpdata)
+        return list_ptcand_gen_old, list_ptcand_rec_old, list_ptcand_eff_old
+
+    def efficiency_folded(self): # pylint: disable=too-many-branches, too-many-locals
+        self.loadstyle()
+        lfileeff = TFile.Open(self.n_fileeff)
+        if not lfileeff:
+            self.logger.fatal(make_message_notfound(self.n_fileeff))
         fileouteff = TFile.Open(self.file_efficiency, "recreate")
         if not fileouteff:
             self.logger.fatal(make_message_notfound(self.file_efficiency))
@@ -393,8 +631,9 @@ class AnalyzerJet(Analyzer):
 
         string_shaperange = "%g #leq %s < %g" % (self.lvarshape_binmin_reco[0], self.v_varshape_latex, self.lvarshape_binmax_reco[-1])
 
-        # PROMPT EFFICIENCY
-
+        lfileresp = TFile.Open(self.n_fileresp)
+        if not lfileresp:
+            self.logger.fatal(make_message_notfound(self.n_fileresp))
         # rec. level cuts only applied
         hzvsjetpt_reco_nocuts = lfileresp.Get("hzvsjetpt_reco_nocuts")
         if not hzvsjetpt_reco_nocuts:
@@ -610,58 +849,8 @@ class AnalyzerJet(Analyzer):
             h1_ptcand_eff_folded = h2_ptcand_ptjet_eff_folded.ProjectionX("h1_ptcand_eff_folded_%d" % ibin2, ibin2 + 1, ibin2 + 1, "e")
             list_ptcand_eff_new_folded.append(h1_ptcand_eff_folded)
 
-        # The old (wrong) method
-
-        cEff = TCanvas("cEff", "The Fit Canvas")
-        setup_canvas(cEff)
-        legeff = TLegend(.13, .65, .5, .88)
-        setup_legend(legeff)
-        list_his = []
-        list_ptcand_gen_old = []
-        list_ptcand_rec_old = []
-        list_ptcand_eff_old = []
-        for ibin2 in range(self.p_nbin2_reco):
-            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
-                                            self.lvar2_binmin_reco[ibin2], \
-                                            self.lvar2_binmax_reco[ibin2])
-            h_gen_pr = lfileeff.Get("h_gen_pr" + stringbin2)
-            h_gen_pr_old = h_gen_pr.Clone(h_gen_pr.GetName() + "_old")
-            list_ptcand_gen_old.append(h_gen_pr_old)
-
-            h_sel_pr = lfileeff.Get("h_sel_pr" + stringbin2)
-            h_sel_pr_old = h_sel_pr.Clone(h_sel_pr.GetName() + "_old")
-            list_ptcand_rec_old.append(h_sel_pr_old)
-
-            h_sel_pr.Divide(h_sel_pr, h_gen_pr, 1.0, 1.0, "B")
-            list_his.append(h_sel_pr)
-            h_eff_pr_old = h_sel_pr.Clone("h_eff_pr" + stringbin2 + "_old")
-            list_ptcand_eff_old.append(h_eff_pr_old)
-        y_min_h, y_max_h = get_y_window_his(list_his)
-        y_min_h = 0
-        y_margin_up = 0.35
-        y_margin_down = 0
-        y_min, y_max = get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up)
-        for ibin2 in range(self.p_nbin2_reco):
-            h_sel_pr = list_his[ibin2]
-            setup_histogram(h_sel_pr, get_colour(ibin2), 1)
-            h_sel_pr.Draw("same")
-            fileouteff.cd()
-            h_sel_pr.SetName("eff_mult%d" % ibin2)
-            h_sel_pr.Write()
-            legeffstring = "%g #leq %s < %g GeV/#it{c}" % \
-                    (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var,
-                     self.lvar2_binmax_reco[ibin2])
-            legeff.AddEntry(h_sel_pr, legeffstring, "LE")
-            h_sel_pr.SetTitle("")
-            h_sel_pr.SetXTitle("#it{p}_{T}^{%s} (GeV/#it{c})" % self.p_latexnhadron)
-            h_sel_pr.SetYTitle("prompt %s-jet efficiency" % self.p_latexnhadron)
-            h_sel_pr.GetYaxis().SetRangeUser(y_min, y_max)
-            h_sel_pr.SetTitleOffset(1.2, "Y")
-            h_sel_pr.SetTitleOffset(1.1, "X")
-        legeff.Draw()
-        cEff.SaveAs("%s/efficiency_pr.eps" % self.d_resultsallpdata)
-
         # compare the old and the new method
+        list_ptcand_gen_old, list_ptcand_rec_old, list_ptcand_eff_old = self.efficiency()
         list_eff_diff = []
         list_eff_diff_labels = []
         list_effgen_diff = []
@@ -763,47 +952,6 @@ class AnalyzerJet(Analyzer):
             title="correction of efficiency calculation (gen. level);#it{p}_{T}^{%s} (GeV/#it{c});error = (old #minus new)/new (%%)" % self.p_latexnhadron, \
             leg_pos=[0.55, 0.15, 0.85, 0.3], margins_y=[0.05, 0.05])
 
-        # NON-PROMPT EFFICIENCY
-
-        # The old (wrong) method
-
-        cEffFD = TCanvas("cEffFD", "The Fit Canvas")
-        setup_canvas(cEffFD)
-        legeffFD = TLegend(.13, .65, .5, .88)
-        setup_legend(legeffFD)
-        list_his = []
-        for ibin2 in range(self.p_nbin2_reco):
-            stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
-                                            self.lvar2_binmin_gen[ibin2], \
-                                            self.lvar2_binmax_gen[ibin2])
-            h_gen_fd = lfileeff.Get("h_gen_fd" + stringbin2)
-            h_sel_fd = lfileeff.Get("h_sel_fd" + stringbin2)
-            h_sel_fd.Divide(h_sel_fd, h_gen_fd, 1.0, 1.0, "B")
-            list_his.append(h_sel_fd)
-        y_min_h, y_max_h = get_y_window_his(list_his)
-        y_min_h = 0
-        y_margin_up = 0.35
-        y_margin_down = 0
-        y_min, y_max = get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up)
-        for ibin2 in range(self.p_nbin2_reco):
-            h_sel_fd = list_his[ibin2]
-            setup_histogram(h_sel_fd, get_colour(ibin2), 1)
-            h_sel_fd.Draw("same")
-            fileouteff.cd()
-            h_sel_fd.SetName("eff_fd_mult%d" % ibin2)
-            h_sel_fd.Write()
-            legeffFDstring = "%g #leq %s < %g GeV/#it{c}" % \
-                    (self.lvar2_binmin_gen[ibin2], self.p_latexbin2var,
-                     self.lvar2_binmax_gen[ibin2])
-            legeffFD.AddEntry(h_sel_fd, legeffFDstring, "LE")
-            h_sel_fd.SetTitle("")
-            h_sel_fd.SetXTitle("#it{p}_{T}^{%s} (GeV/#it{c})" % self.p_latexnhadron)
-            h_sel_fd.SetYTitle("non-prompt %s-jet efficiency" % self.p_latexnhadron)
-            h_sel_fd.GetYaxis().SetRangeUser(y_min, y_max)
-            h_sel_fd.SetTitleOffset(1.2, "Y")
-            h_sel_fd.SetTitleOffset(1.1, "X")
-        legeffFD.Draw()
-        cEffFD.SaveAs("%s/efficiency_fd.eps" % self.d_resultsallpdata)
 
     # pylint: disable=too-many-locals, too-many-branches
     def sideband_sub(self):
@@ -1614,7 +1762,7 @@ class AnalyzerJet(Analyzer):
             y_margin_down = 0
             bin_pt_max = min(self.p_nptfinbins, heff_pr_list[ibin2].GetXaxis().FindBin(self.lvar2_binmax_gen[ibin2] - 0.01))
             heff_pr_list[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
-            heff_pr_list[ibin2].GetXaxis().SetRange(1, bin_pt_max)
+            heff_pr_list[ibin2].GetXaxis().SetRange(1, self.p_nptfinbins)
             heff_pr_list[ibin2].SetTitle("")
             heff_pr_list[ibin2].SetXTitle("#it{p}_{T, %s} (GeV/#it{c})" % self.p_latexnhadron)
             heff_pr_list[ibin2].SetYTitle("Efficiency #times Acceptance")
@@ -1973,7 +2121,6 @@ class AnalyzerJet(Analyzer):
 
         hzvsjetpt_reco_eff.Divide(hzvsjetpt_reco_nocuts)
         input_data.Multiply(hzvsjetpt_reco_eff)
-
 
         # gen. level cuts only applied
         hzvsjetpt_gen_nocuts = unfolding_input_file.Get("hzvsjetpt_gen_nocuts")
@@ -2338,6 +2485,8 @@ class AnalyzerJet(Analyzer):
         kinematic_eff_jetpt.SetYTitle("kinematic efficiency")
         kinematic_eff_jetpt.SetTitleOffset(1.5, "Y")
         kinematic_eff_jetpt.Draw()
+        fileouts.cd()
+        kinematic_eff_jetpt.Write()
         latex = TLatex(0.2, 0.82, "%g #leq %s < %g" % (round(self.lvarshape_binmin_reco[0], 2), self.v_varshape_latex, round(self.lvarshape_binmax_reco[-1], 2)))
         draw_latex(latex)
         ckinematic_eff_jetpt.SaveAs("%s/kineff_pr_gen_%s.eps" % (self.d_resultsallpdata, self.v_var2_binning))
@@ -2449,6 +2598,7 @@ class AnalyzerJet(Analyzer):
                 unfolded_zvsjetpt_final.SetYTitle("%s (GeV/#it{c})" % self.p_latexbin2var)
                 gStyle.SetPaintTextFormat(".0f")
                 unfolded_zvsjetpt_final.Draw("texte")
+                unfolded_zvsjetpt_final.Write()
                 cunfolded_output.SaveAs("%s/unfolded_output.eps" % self.d_resultsallpdata)
                 gStyle.SetPaintTextFormat("g")
 
@@ -2754,6 +2904,11 @@ class AnalyzerJet(Analyzer):
             draw_latex(latex)
             cunfolded_not_z.SaveAs("%s/unfolded_not_%s_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
 
+            if self.lc_d0_ratio:
+                option = "unfolding_results"
+                lchistoname = ("unfolded_z_%d_%s" % (i_iter_choice, suffix))
+                print("Making Lc to D0 ratio for", option, lchistoname)
+                self.makeratio(unfolded_z_scaled_list[i_iter_choice][ibin_jetpt], option, lchistoname)
             # compare relative statistical uncertainties before unfolding and after
 
             h_unfolded_not_stat_error = TH1F("h_unfolded_not_stat_error" + suffix, "h_unfolded_not_stat_error" + suffix, self.p_nbinshape_reco, self.varshapebinarray_reco)

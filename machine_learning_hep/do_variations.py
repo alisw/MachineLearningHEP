@@ -359,7 +359,7 @@ def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-
                 slice_dic(dic_var_single_slice, index)
 
                 # Modify the database.
-                if not modify_paths(dic_new, "default/default", varstring, do_processor):
+                if not modify_paths(dic_new, "resultsMBjetvspt", varstring, do_processor):
                     sys.exit(1)
                 if not dic_var_single_slice:
                     msg_warn("Empty diffs. No changes to make.")

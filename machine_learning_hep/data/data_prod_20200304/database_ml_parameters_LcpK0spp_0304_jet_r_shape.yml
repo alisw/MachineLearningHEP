@@ -9,7 +9,7 @@
 ##     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    ##
 ##           See the GNU General Public License for more details.          ##
 ##    You should have received a copy of the GNU General Public License    ##
-##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
+##   along with this program. if not, see <https:/www.gnu.org/licenses/>. ##
 #############################################################################
 
 LcpK0spp:
@@ -217,7 +217,7 @@ LcpK0spp:
 
   multi:
     data:
-      nprocessesparallel: 40
+      nprocessesparallel: 25
       maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp: [100,100,100] #list of periods
       chunksizeskim: [100,100,100] #list of periods
@@ -233,25 +233,25 @@ LcpK0spp:
       pkl_skimmed: [/data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklsk,
                     /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklsk,
                     /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [/data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskml,
-                                 /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskml,
-                                 /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_data_mltot
+      pkl_skimmed_merge_for_ml: [/data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskml,
+                                 /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskml,
+                                 /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_data_mltot
       pkl_evtcounter_all: /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_data_evttot
       mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2016,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2017,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018] #list of periods
     mc:
-      nprocessesparallel: 40
+      nprocessesparallel: 25
       maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp: [100,100,100] #list of periods
       chunksizeskim: [1000,1000,1000] #list of periods
       fracmerge: [1.0,1.0,1.0]  #list of periods
       seedmerge: [12,12,12] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
-      unmerged_tree_dir: [/data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/merged,
-                          /data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/merged,
-                          /data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/merged] #list of periods
+      unmerged_tree_dir: [/data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/merged,
+                          /data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/merged,
+                          /data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/merged] #list of periods
       pkl: [/data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/pkl,
             /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/pkl,
             /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_mc_prodD2H/373_20200304-2021/pkl] #list of periods
@@ -307,12 +307,12 @@ LcpK0spp:
 
   mlapplication:
     data:
-      pkl_skimmed_dec: [/data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdec_D2H,
-                        /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdec_D2H,
-                        /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdec_D2H] #list of periods
-      pkl_skimmed_decmerged: [/data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdecmerged_D2H,
-                              /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdecmerged_D2H,
-                              /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdecmerged_D2H] #list of periods
+      pkl_skimmed_dec: [/data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdec,
+                        /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdec,
+                        /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/pklskdecmerged,
+                              /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/pklskdecmerged,
+                              /data/Derived/LckAnywithJets_sub/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/pklskdecmerged] #list of periods
     mc:
       pkl_skimmed_dec: [/data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_mc_prodD2H/373_20200304-2021/pklskdec,
                         /data/Derived/LckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_mc_prodD2H/373_20200304-2021/pklskdec,
@@ -341,7 +341,7 @@ LcpK0spp:
     inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
     dir_general_plots: /data/DerivedResults/LckAnywithJets_sub/vAN-20200304_ROOT6-1/analysis_plots
 
-    jet_FF:
+    jet_r_shape:
       proc_type: Dhadrons_jet
       useperiod: [1,1,1] #list of periods
       usejetptbinned_deff: false
@@ -353,22 +353,27 @@ LcpK0spp:
       var_binning2: pt_jet
       var_binning2_gen: pt_gen_jet
       latexbin2var: "#it{p}_{T}^{jet ch}"
-      sel_binmin2_reco: [5.0,7.0,15.0] #list of nbins
-      sel_binmax2_reco:     [7.0,15.0,35.0] #list of nbins
-      sel_binmin2_gen:  [5.0,7.0,15.0] #list of nbins
-      sel_binmax2_gen:      [7.0,15.0,35.0] #list of nbins
-      var_binningshape: z
-      var_binningshape_gen: z_gen
-      var_shape_latex: "#it{z}_{#parallel}^{ch}"
-      sel_binminshape_reco: [0.4,0.6,0.7,0.8,0.9]
-      sel_binmaxshape_reco:     [0.6,0.7,0.8,0.9,1.0]
-      sel_binminshape_gen:  [0.4,0.6,0.7,0.8,0.9]
-      sel_binmaxshape_gen:      [0.6,0.7,0.8,0.9,1.0]
+      sel_binmin2_reco: [3., 5., 7., 15.] #list of nbins
+      sel_binmax2_reco:     [5., 7., 15., 30.] #list of nbins
+      sel_binmin2_gen:  [3., 5., 7., 15.] #list of nbins
+      sel_binmax2_gen:      [5., 7., 15., 30.] #list of nbins
+      
+      var_binningshape: delta_r_jet
+      var_binningshape_gen: delta_r_gen_jet
+      var_shape_latex: "#Delta R^{jet}"
+      sel_binminshape_reco: [0, 0.05, 0.1]
+      sel_binmaxshape_reco:        [0.05, 0.1, 0.2]
+      sel_binminshape_gen:  [0., 0.05, 0.1]
+      sel_binmaxshape_gen:         [0.05, 0.1, 0.2]
+      #sel_binminshape_reco: [0, 0.05, 0.1, 0.15]
+      #sel_binmaxshape_reco:        [0.05, 0.1, 0.15, 0.3]
+      #sel_binminshape_gen:  [0., 0.05, 0.1, 0.15]
+      #sel_binmaxshape_gen:         [0.05, 0.1, 0.15, 0.3]
       sel_closure_frac: 0.2
       triggerbit: INT7
-      sel_an_binmin:    [3,4,6,8,12] #list of pt nbins
+      sel_an_binmin:    [2,4,6,8,12] #list of pt nbins
       sel_an_binmax:      [4,6,8,12,24] #list of pt nbins
-      binning_matching:   [1,2,3,4, 5] #list of pt nbins
+      binning_matching:   [1,2,3,4,5] #list of pt nbins
       jetsel_gen: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
       jetsel_sim: "abs(y_cand) < 0.5 and abs(eta_jet) < 0.5" # jet selection in simulations
       jetsel_reco: "abs(eta_jet) < 0.5"
@@ -378,16 +383,16 @@ LcpK0spp:
         mc: null
       data: &data_out_default
         runselection: [null, null, null]
-        results: [/data/DerivedResultsJets/LcVitTest/vAN-20200304_ROOT6-1/ff/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResultsJets/LcVitTest/vAN-20200304_ROOT6-1/ff/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
-                  /data/DerivedResultsJets/LcVitTest/vAN-20200304_ROOT6-1/ff/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/LcVitTest/vAN-20200304_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
+        results: [/data/Derived_testResults/Jets/Lc/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2016_data/374_20200304-2028/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2017_data/375_20200304-2028/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2018_data/376_20200304-2028/resultsMBjetvspt] #list of periods
+        resultsallp: /data/Derived_testResults/Jets/Lc/vAN-20200304_ROOT6-1/r_shape/default/default/pp_data/resultsMBjetvspt
       mc: &mc_out_default
         runselection: [null, null, null]
-        results: [/data/DerivedResultsJets/LcVitTest/vAN-20200304_ROOT6-1/ff/default/default/pp_2016_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResultsJets/LcVitTest/vAN-20200304_ROOT6-1/ff/default/default/pp_2017_mc_prodD2H/373_20200304-2021/resultsMBjetvspt,
-                  /data/DerivedResultsJets/LcVitTest/vAN-20200304_ROOT6-1/ff/default/default/pp_2018_mc_prodD2H/373_20200304-2021/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/LcVitTest/vAN-20200304_ROOT6-1/ff/default/default/pp_mc_prodD2H/resultsMBjetvspt
+        results: [/data/Derived_testResults/Jets/Lc/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2016_mc_prodD2H/373_20200304-2028/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2017_mc_prodD2H/373_20200304-2028/resultsMBjetvspt,
+                  /data/Derived_testResults/Jets/Lc/vAN-20200304_ROOT6-1/r_shape/default/default/pp_2018_mc_prodD2H/373_20200304-2028/resultsMBjetvspt] #list of periods
+        resultsallp: /data/Derived_testResults/Jets/Lc/vAN-20200304_ROOT6-1/r_shape/default/default/pp_mc_prodD2H/resultsMBjetvspt
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input
@@ -404,7 +409,7 @@ LcpK0spp:
       massmax: [2.436,2.436,2.436,2.436,2.436]
       rebin: [6,6,6,6,6]
       fix_mean: [false, false, false, false, false]
-      fix_sigma: [true, true, true, true, true]
+      fix_sigma: [false, false, false, false, false]
       sigmaarray: [0.0078, 0.0095, 0.0109, 0.0117, 0.0156] # initial sigma
       masspeaksec: 2.2864
 
@@ -445,4 +450,25 @@ LcpK0spp:
       pythia8_prompt_variations: ["default","coloursoft_mode0"]
       pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
 
-      variations_db: ./data/data_prod_20200304/database_variations_LcpK0spp_jet_FF.yml
+      variations_db: ./data/data_prod_20200304/database_variations_LcpK0spp_jet_r_shape.yml
+
+  systematics:
+    probvariation:
+      useperiod: [0,0,1] #period from where to define prob cuts
+      ncutvar: 10 #number of looser and tighter variations
+      maxperccutvar: 0.25 #max diff in efficiency for loosest/tightest var
+      cutvarminrange: [0.50, 0.50, 0.50, 0.50, 0.50, 0.50] #Min starting point for scan
+      cutvarmaxrange: [0.90, 0.90, 0.90, 0.90, 0.90, 0.90] #Max starting point for scan
+      fixedmean: True #Fix mean cutvar histo to central fit
+      fixedsigma: True #Fix sigma cutvar histo to central fit
+      min_signif_fit: 3.
+      max_red_chi2_fit: 2.
+
+    mcptshape:
+      #FONLL / generated LHC19h4c1
+      weights: [1.000000]
+      #From SetPtWeightsFromFONLL13overLHC17c3a12 in AliPhysics
+      #weights: [1.429770]
+      weights_min_pt: 0
+      weights_max_pt: 40
+      weights_bins: 400
