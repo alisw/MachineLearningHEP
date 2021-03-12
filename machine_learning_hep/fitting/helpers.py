@@ -15,11 +15,12 @@
 
 from os.path import join
 import os
+import math
 from glob import glob
 from array import array
 
-#pylint: disable=too-many-lines
-from ROOT import TFile, TH1F, TCanvas, gStyle, Double  #pylint: disable=import-error, no-name-in-module
+#pylint: disable=too-many-lines, too-few-public-methods
+from ROOT import TFile, TH1F, TF1, TCanvas, gStyle, Double #pylint: disable=import-error, no-name-in-module
 
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.utilities import make_file_path
@@ -339,7 +340,7 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
 
         file_mc = TFile(self.file_mc_name, "READ")
         if not file_mc.IsOpen():
-                raise ValueError("TFile", file_mc.GetName(), "Is not open!")
+            raise ValueError("TFile", file_mc.GetName(), "Is not open!")
         histo_mc = None
         histo_reflections = None
         if get_mc:
@@ -449,6 +450,10 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
         self.case = case
         self.ana_type = ana_type
         self.ana_config = database["analysis"][ana_type]
+        self.bin1_name = database["var_binning"]
+        self.bins1_edges_low = self.ana_config["sel_an_binmin"]
+        self.bins1_edges_up = self.ana_config["sel_an_binmax"]
+        self.n_bins1 = len(self.bins1_edges_low)
 
         self.pars_factory = MLFitParsFactory(database, ana_type, data_out_dir, mc_out_dir)
 
@@ -615,6 +620,84 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
         self.logger.info("Print all fits done")
 
 
+    def bkg_fromsidebands(self, folder, n_filemass, fitlim, fbkg, masspeak, bin_width):
+
+        filemass = TFile.Open(n_filemass)
+        bins1_ranges = self.pars_factory.bins1_edges_low.copy()
+        bins1_ranges.append(self.pars_factory.bins1_edges_up[-1])
+        n_bins1 = len(bins1_ranges) - 1
+        hbkg_fromsidebands = TH1F("hbkg_fromsidebands", "", n_bins1, array("d", bins1_ranges))
+
+        i = 1
+        sig_region = 0
+        pt_bin = 0
+        for ibin1 in range(n_bins1):
+
+            if(fbkg[ibin1] != "kLin" and fbkg[ibin1] != "Pol2" and fbkg[ibin1] != "kExpo"):
+                self.logger.warning("Bkg function not defined. Skip...")
+                i = i+1
+                continue
+
+            hmass = filemass.Get("hmass%s%d_%d_%.2f" %  (self.bin1_name, \
+                                                         self.pars_factory.bins1_edges_low[ibin1],
+                                                         self.pars_factory.bins1_edges_up[ibin1],
+                                                         self.pars_factory.prob_cut_fin[ibin1]))
+
+            if self.pre_fits_mc[i-1].fit_pars["sigma"] is None:
+                self.logger.warning("Pre-fit failed. No sigma to initialize the fit. Skip...")
+                i = i+1
+                continue
+
+            sig_region = [masspeak - 3*self.pre_fits_mc[i-1].fit_pars["sigma"],
+                          masspeak + 3*self.pre_fits_mc[i-1].fit_pars["sigma"]]
+
+            #introducing my bkg function defined only outside the peak region
+            pt_bin = ibin1
+            class FitBkg:
+                def __call__(self, x_var, par):
+                    #excluding signal region from the backgound fitting function
+                    if (x_var[0] > sig_region[0] and x_var[0] < sig_region[1]):
+                        return 0
+                    if fbkg[pt_bin] == "kLin":
+                        return par[0]+x_var[0]*par[1]
+                    if fbkg[pt_bin] == "Pol2":
+                        return par[0]+x_var[0]*par[1]+x_var[0]*x_var[0]*par[2]
+                    if fbkg[pt_bin] == "kExpo":
+                        return math.exp(par[0]+x_var[0]*par[1])
+                    return 0
+
+            if fbkg[ibin1] == "kLin":
+                fit_func = TF1("fit_func", FitBkg(), fitlim[0], fitlim[1], 2)
+                hmass.Fit(fit_func, '', '', fitlim[0], fitlim[1])
+                pars = fit_func.GetParameters()
+                bkg_func = TF1("fbkg", "pol1", fitlim[0], fitlim[1])
+            elif fbkg[ibin1] == "Pol2":
+                fit_func = TF1("fit_func", FitBkg(), fitlim[0], fitlim[1], 3)
+                hmass.Fit(fit_func, '', '', fitlim[0], fitlim[1])
+                pars = fit_func.GetParameters()
+                bkg_func = TF1("fbkg", "pol2", fitlim[0], fitlim[1])
+            elif fbkg[ibin1] == "kExpo":
+                fit_func = TF1("fit_func", FitBkg(), fitlim[0], fitlim[1], 2)
+                hmass.Fit(fit_func, '', '', fitlim[0], fitlim[1])
+                pars = fit_func.GetParameters()
+                bkg_func = TF1("fbkg", "expo", fitlim[0], fitlim[1])
+
+            bkg_func.SetParameters(pars)
+            bkg = bkg_func.Integral(sig_region[0], sig_region[1]) / bin_width
+            bkg_err = bkg_func.IntegralError(sig_region[0], sig_region[1]) / bin_width
+
+            hbkg_fromsidebands.SetBinContent(i, bkg)
+            hbkg_fromsidebands.SetBinError(i, bkg_err)
+            i = i+1
+            print(bkg)
+
+        fileoutbkg_fromsidebands = TFile.Open("%s/Background_fromsidebands_%s_%s.root" % \
+            (folder, self.case, self.ana_type), "RECREATE")
+        fileoutbkg_fromsidebands.cd()
+        hbkg_fromsidebands.Write()
+        fileoutbkg_fromsidebands.Close()
+
+
     def initialize_syst(self):
         """
         Initialize all systematic fits required in an MLHEP analysis run. Using MLFitParsFactory
@@ -742,6 +825,8 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
         # Summarize in mult histograms in pT bins
         yieldshistos = {ibin2: TH1F("hyields%d" % (ibin2), "", \
                 n_bins1, array("d", bins1_ranges)) for ibin2 in bins2}
+        backgroundhistos = {ibin2: TH1F("hbackground%d" % (ibin2), "", \
+                n_bins1, array("d", bins1_ranges)) for ibin2 in bins2}
         means_histos = {ibin2:TH1F("hmeans%d" % (ibin2), "", \
                 n_bins1, array("d", bins1_ranges)) for ibin2 in bins2}
         sigmas_histos = {ibin2: TH1F("hsigmas%d" % (ibin2), "", \
@@ -825,6 +910,11 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                              kernel.GetSigma(), kernel.GetSigmaUncertainty())
                 fill_wrapper(refls_histos[ibin2], ibin1 + 1,
                              kernel.GetReflOverSig(), kernel.GetReflOverSigUncertainty())
+
+                bkg = Double()
+                bkg_err = Double()
+                kernel.Background(n_sigma_signal, bkg, bkg_err)
+                fill_wrapper(backgroundhistos[ibin2], ibin1 + 1, bkg, bkg_err)
 
                 signif = Double()
                 signif_err = Double()
@@ -922,6 +1012,7 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
             if root_dir:
                 root_dir.cd()
                 yieldshistos[ibin2].Write()
+                backgroundhistos[ibin2].Write()
                 means_histos[ibin2].Write()
                 sigmas_histos[ibin2].Write()
                 signifs_histos[ibin2].Write()
@@ -944,6 +1035,12 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
         plot_histograms([yieldshistos[ibin2] for ibin2 in bins2], True, True, leg_strings,
                         "uncorrected yields", "#it{p}_{T} (GeV/#it{c})",
                         f"Uncorrected yields {latex_hadron_name} {self.ana_type}", "mult. / int.",
+                        save_name)
+        save_name = make_file_path(save_dir, "Background", "eps", None, [self.case, self.ana_type])
+        # Background summary plot
+        plot_histograms([backgroundhistos[ibin2] for ibin2 in bins2], True, True, leg_strings,
+                        "background", "#it{p}_{T} (GeV/#it{c})",
+                        f"Background {latex_hadron_name} {self.ana_type}", "mult. / int.",
                         save_name)
         save_name = make_file_path(save_dir, "Means", "eps", None, [self.case, self.ana_type])
         # Means summary plot
