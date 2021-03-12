@@ -20,7 +20,7 @@ from glob import glob
 from array import array
 
 #pylint: disable=too-many-lines
-from ROOT import TFile, TH1F, TF1, TCanvas, gStyle, Double #pylint: disable=import-error, no-name-in-module
+from ROOT import TFile, TH1F, TF1, TCanvas, gStyle, Double #pylint: disable=import-error, no-name-in-module, too-few-public-methods
 
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.utilities import make_file_path
