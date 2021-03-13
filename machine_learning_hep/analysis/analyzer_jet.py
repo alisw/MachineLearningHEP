@@ -292,44 +292,44 @@ class AnalyzerJet(Analyzer):
         self.text_powheg = "POWHEG + PYTHIA 6 + EvtGen"
 
     def makeratio(self, origin_histo, option, lc_histoname):
-        D0_histo = origin_histo.Clone("D0_histo")
+        d0_histo = origin_histo.Clone("d0_histo")
         filename = self.d_resultslc + "/" + option + ".root"
         print("Open file with Lc results", filename)
         myfilelc = TFile.Open(filename)
         lc_histo = myfilelc.Get(lc_histoname)
-        Lc_histo = lc_histo.Clone("Lc_histo")
+        lc_histo = lc_histo.Clone("lc_histo")
         c_ratio = TCanvas("c_ratio", "Lc to D0 ratio")
         setup_canvas(c_ratio)
         leg_ratio = TLegend(.6, .8, .8, .85)
         setup_legend(leg_ratio)
-        D0_histo.SetTitle("")
-        Lc_histo.SetXTitle("%s" % self.v_varshape_latex)
-        Lc_histo.SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
-        Lc_histo.SetTitle("")
-        setup_histogram(D0_histo, get_colour(1), get_marker(0))
-        setup_histogram(Lc_histo, get_colour(2), get_marker(1))
-        D0_histo.Draw()
-        Lc_histo.Draw("same")
-        leg_ratio.AddEntry(Lc_histo, "Lc %s" %option, "P")
-        leg_ratio.AddEntry(D0_histo, "D0 %s" %option, "P")
+        d0_histo.SetTitle("")
+        lc_histo.SetXTitle("%s" % self.v_varshape_latex)
+        lc_histo.SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
+        lc_histo.SetTitle("")
+        setup_histogram(d0_histo, get_colour(1), get_marker(0))
+        setup_histogram(lc_histo, get_colour(2), get_marker(1))
+        d0_histo.Draw()
+        lc_histo.Draw("same")
+        leg_ratio.AddEntry(lc_histo, "Lc %s" %option, "P")
+        leg_ratio.AddEntry(d0_histo, "D0 %s" %option, "P")
         leg_ratio.Draw("same")
         c_ratio.SaveAs("%s/Lc+D0_combined_plot_%s.eps" % (self.d_resultsallpdata , lc_histoname))
-        Lc_histo_sc = Lc_histo.Clone("Lc_histo_sc")
-        D0_histo_sc = D0_histo.Clone("D0_histo_sc")
-        Lc_histo_sc.Scale(1/Lc_histo_sc.Integral())
-        D0_histo_sc.Scale(1/D0_histo_sc.Integral())
-        Lc_histo_sc.Divide(D0_histo_sc)
-        Lc_histo_sc.SetYTitle("{\Lambda}_{c} / {D}_{0}  ratio")
-        Lc_histo_sc.Draw()
+        lc_histo_sc = lc_histo.Clone("lc_histo_sc")
+        d0_histo_sc = d0_histo.Clone("d0_histo_sc")
+        lc_histo_sc.Scale(1/lc_histo_sc.Integral())
+        d0_histo_sc.Scale(1/d0_histo_sc.Integral())
+        lc_histo_sc.Divide(d0_histo_sc)
+        lc_histo_sc.SetYTitle("{#Lambda}_{c} / {D}_{0}  ratio")
+        lc_histo_sc.Draw()
         c_ratio.SaveAs("%s/Lc_D0_ratio_%s.eps" % (self.d_resultsallpdata, lc_histoname))
-        del Lc_histo
-        del D0_histo
         del lc_histo
-        del Lc_histo_sc
-        del D0_histo_sc
+        del d0_histo
+        del lc_histo
+        del lc_histo_sc
+        del d0_histo_sc
         myfilelc.Close()
 
-    def fit(self):
+    def fit(self): # pylint: disable=too-many-branches, too-many-locals
         self.loadstyle()
         tmp_is_root_batch = gROOT.IsBatch()
         gROOT.SetBatch(True)
@@ -471,12 +471,12 @@ class AnalyzerJet(Analyzer):
                     bkg = bkg_func.Integral(sig_left, sig_right)/bin_width
                     sig = sgn_func.Integral(sig_left, sig_right)/bin_width - bkg
                     if (sig+bkg) > 0:
-                       S_to_B = sig/sqrt(sig+bkg)
+                        s_to_b = sig/sqrt(sig+bkg)
                     else:
-                        S_to_B = float("nan")
+                        s_to_b = float("nan")
                 else:
-                    S_to_B = float("nan")
-                print("Signal over background", S_to_B)
+                    s_to_b = float("nan")
+                print("Signal over background", s_to_b)
                 bkg_left = histomass_reb.Clone("bkg_left")
                 bkg_left.GetXaxis().SetRangeUser(bkg_left_1, bkg_left_2)
                 bkg_left.SetFillColor(38)
@@ -501,7 +501,7 @@ class AnalyzerJet(Analyzer):
                         (round(mean,3), round(sigma,3)))
                 draw_latex(latex3)
                 latex4 = TLatex(0.29, 0.83, "B(mean #pm 2#sigma)= %s, S(mean #pm 2#sigma)  = %s, S/#sqrt{S+B} = %s" % \
-                        (round(bkg), round(sig), round(S_to_B, 3)))
+                        (round(bkg), round(sig), round(s_to_b, 3)))
                 draw_latex(latex4)
                 latex = TLatex(0.71, 0.72, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
                 draw_latex(latex)
@@ -524,7 +524,7 @@ class AnalyzerJet(Analyzer):
         if not fileouteff:
             self.logger.fatal(make_message_notfound(self.file_efficiency))
 
-        string_shaperange = "%g #leq %s < %g" % (self.lvarshape_binmin_reco[0], self.v_varshape_latex, self.lvarshape_binmax_reco[-1])
+        #string_shaperange = "%g #leq %s < %g" % (self.lvarshape_binmin_reco[0], self.v_varshape_latex, self.lvarshape_binmax_reco[-1])
 
         cEff = TCanvas("cEff", "The Fit Canvas")
         setup_canvas(cEff)
@@ -1760,7 +1760,7 @@ class AnalyzerJet(Analyzer):
             y_min_h = 0
             y_margin_up = 0.05
             y_margin_down = 0
-            bin_pt_max = min(self.p_nptfinbins, heff_pr_list[ibin2].GetXaxis().FindBin(self.lvar2_binmax_gen[ibin2] - 0.01))
+            #bin_pt_max = min(self.p_nptfinbins, heff_pr_list[ibin2].GetXaxis().FindBin(self.lvar2_binmax_gen[ibin2] - 0.01))
             heff_pr_list[ibin2].GetYaxis().SetRangeUser(*get_plot_range(y_min_h, y_max_h, y_margin_down, y_margin_up))
             heff_pr_list[ibin2].GetXaxis().SetRange(1, self.p_nptfinbins)
             heff_pr_list[ibin2].SetTitle("")
