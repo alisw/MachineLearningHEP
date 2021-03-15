@@ -224,7 +224,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
 
-        # efficiency response calculation
+        # efficiency corrections for the response matrix
         self.d_resultsallpmc = datap["analysis"][typean]["mc"]["resultsallp"]
         self.doeff_resp = datap["analysis"][self.typean]["doeff_resp"]
         print("EFFICIENCY RESP:", self.doeff_resp)
@@ -475,7 +475,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_reco_sel_fd = None
                 if self.doml is True:
                     df_reco_sel_fd = df_reco_presel_fd.query(self.l_selml[ipt])
-                ## custom cuts
+                # custom cuts
                 elif self.do_custom_analysis_cuts:
                     df_reco_sel_fd = self.apply_cuts_ptbin(df_reco_presel_fd, ipt)
                     df_reco_sel_fd = apply_cut_selpid(df_reco_sel_fd)

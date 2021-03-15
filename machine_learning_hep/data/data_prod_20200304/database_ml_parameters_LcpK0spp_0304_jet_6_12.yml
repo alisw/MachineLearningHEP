@@ -224,6 +224,7 @@ LcpK0spp:
       fracmerge: [0.1,0.1,0.1]   #list of periods
       seedmerge: [12,12,12] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
+
       unmerged_tree_dir: [/data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2016_data/374_20200304-2028/merged,
                           /data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2017_data/375_20200304-2028/merged,
                           /data/TTree/D0DsLckAnywithJets/vAN-20200304_ROOT6-1/pp_2018_data/376_20200304-2028/merged] #list of periods
@@ -414,12 +415,13 @@ LcpK0spp:
       sigmaarray: [0.0109, 0.0117] # initial sigma
       masspeaksec: 2.2864
 
+      # If SetFixGaussianSigma: false & SetInitialGaussianSigma: false, initial sigma value for data fit is taken from MC
+      # If SetFixGaussianSigma: false & SetInitialGaussianSigma: true, sigma value for data fit is fixed to MC sigma
+      # If SetFixGaussianSigma: true & SetInitialGaussianSigma: true, sigma value for data fit is fixed to sigmaarray
+
       SetFixGaussianSigma: [false, false]
-      # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
-      # Use values set for "sigmaarray" for initializing total fit (per pT bin),
-      # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: [true, true]
-      
+
       fix_sigmasec: [true, true]
       sigmaarraysec: [0.01, 0.01]
       # simple fitter END

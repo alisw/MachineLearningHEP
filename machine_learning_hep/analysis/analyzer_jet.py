@@ -296,8 +296,8 @@ class AnalyzerJet(Analyzer):
         filename = self.d_resultslc + "/" + option + ".root"
         print("Open file with Lc results", filename)
         myfilelc = TFile.Open(filename)
-        lc_histo = myfilelc.Get(lc_histoname)
-        lc_histo = lc_histo.Clone("lc_histo")
+        lc_histo_orig = myfilelc.Get(lc_histoname)
+        lc_histo = lc_histo_orig.Clone("lc_histo")
         c_ratio = TCanvas("c_ratio", "Lc to D0 ratio")
         setup_canvas(c_ratio)
         leg_ratio = TLegend(.6, .8, .8, .85)
@@ -322,7 +322,7 @@ class AnalyzerJet(Analyzer):
         lc_histo_sc.SetYTitle("{#Lambda}_{c} / {D}_{0}  ratio")
         lc_histo_sc.Draw()
         c_ratio.SaveAs("%s/Lc_D0_ratio_%s.eps" % (self.d_resultsallpdata, lc_histoname))
-        del lc_histo
+        del lc_histo_orig
         del d0_histo
         del lc_histo
         del lc_histo_sc
@@ -620,6 +620,9 @@ class AnalyzerJet(Analyzer):
         lfileeff = TFile.Open(self.n_fileeff)
         if not lfileeff:
             self.logger.fatal(make_message_notfound(self.n_fileeff))
+        lfileresp = TFile.Open(self.n_fileresp)
+        if not lfileresp:
+            self.logger.fatal(make_message_notfound(self.n_fileresp))
         fileouteff = TFile.Open(self.file_efficiency, "recreate")
         if not fileouteff:
             self.logger.fatal(make_message_notfound(self.file_efficiency))
@@ -631,9 +634,6 @@ class AnalyzerJet(Analyzer):
 
         string_shaperange = "%g #leq %s < %g" % (self.lvarshape_binmin_reco[0], self.v_varshape_latex, self.lvarshape_binmax_reco[-1])
 
-        lfileresp = TFile.Open(self.n_fileresp)
-        if not lfileresp:
-            self.logger.fatal(make_message_notfound(self.n_fileresp))
         # rec. level cuts only applied
         hzvsjetpt_reco_nocuts = lfileresp.Get("hzvsjetpt_reco_nocuts")
         if not hzvsjetpt_reco_nocuts:
@@ -2881,6 +2881,9 @@ class AnalyzerJet(Analyzer):
             # compare the result before unfolding and after
 
             input_data_z_scaled = input_data_z[ibin2].Clone("input_data_z_scaled_%s" % suffix)
+            if (input_data_z_scaled.Integral(bin_int_first, -1) == 0):
+                print("WARNING!!! No unfolded output for ", suffix)
+                continue
             input_data_z_scaled.Scale(1.0 / input_data_z_scaled.Integral(bin_int_first, -1), "width")
             cunfolded_not_z = TCanvas("cunfolded_not_z " + suffix, "Unfolded vs not Unfolded" + suffix)
             setup_canvas(cunfolded_not_z)
@@ -3475,6 +3478,9 @@ class AnalyzerJet(Analyzer):
                 shapebins_error_down_cat = []
                 for ibinshape in range(self.p_nbinshape_gen):
                     shapebins_contents_cat.append(0)
+                    if (input_histograms_default[ibin2].GetBinContent(ibinshape + 1) == 0):
+                        print ("WARNING!!! Input histogram at bin", ibin2, " equal 0, skip", suffix)
+                        continue
                     shapebins_error_up_cat.append(sys_up[ibin2][ibinshape][sys_cat]/input_histograms_default[ibin2].GetBinContent(ibinshape + 1))
                     shapebins_error_down_cat.append(sys_down[ibin2][ibinshape][sys_cat]/input_histograms_default[ibin2].GetBinContent(ibinshape + 1))
                 shapebins_contents_cat_array = array("d", shapebins_contents_cat)
@@ -3504,6 +3510,9 @@ class AnalyzerJet(Analyzer):
             suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             h_default_stat_err.append(input_histograms_default[ibin2].Clone("h_default_stat_err" + suffix))
             for i in range(h_default_stat_err[ibin2].GetNbinsX()):
+                if (input_histograms_default[ibin2].GetBinContent(ibinshape + 1) == 0):
+                    print ("WARNING!!! Input histogram at bin", ibin2, " equal 0, skip", suffix)
+                    continue
                 h_default_stat_err[ibin2].SetBinContent(i + 1, 0)
                 h_default_stat_err[ibin2].SetBinError(i + 1, input_histograms_default[ibin2].GetBinError(i + 1) / input_histograms_default[ibin2].GetBinContent(i + 1))
 

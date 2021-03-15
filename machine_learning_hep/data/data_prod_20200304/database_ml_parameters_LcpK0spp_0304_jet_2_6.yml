@@ -358,7 +358,7 @@ LcpK0spp:
       sel_binmax2_reco:     [5., 7., 15., 30.] #list of nbins
       sel_binmin2_gen:  [3., 5., 7., 15] #list of nbins
       sel_binmax2_gen:      [5., 7., 15., 30] #list of nbins
-      
+
       var_binningshape: delta_r_jet
       var_binningshape_gen: delta_r_gen_jet
       var_shape_latex: "#Delta R^{jet}"
@@ -414,12 +414,13 @@ LcpK0spp:
       sigmaarray: [0.0078, 0.0095] # initial sigma
       masspeaksec: 2.2864
 
+      # If SetFixGaussianSigma: false & SetInitialGaussianSigma: false, initial sigma value for data fit is taken from MC
+      # If SetFixGaussianSigma: false & SetInitialGaussianSigma: true, sigma value for data fit is fixed to MC sigma
+      # If SetFixGaussianSigma: true & SetInitialGaussianSigma: true, sigma value for data fit is fixed to sigmaarray
+
       SetFixGaussianSigma: [false, false]
-      # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
-      # Use values set for "sigmaarray" for initializing total fit (per pT bin),
-      # otherwise what is derived from MC fit is used
       SetInitialGaussianSigma: [true, true]
-      
+ 
       fix_sigmasec: [true, true]
       sigmaarraysec: [0.007947, 0.01]
       # simple fitter END
