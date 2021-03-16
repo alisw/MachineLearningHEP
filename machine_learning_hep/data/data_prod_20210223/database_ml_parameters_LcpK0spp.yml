@@ -55,9 +55,7 @@ LcpK0spp:
               cos_p_K0s, pt_prong0, pt_prong1, pt_prong2, imp_par_prong0, imp_par_prong1, imp_par_prong2,
               inv_mass, pt_cand, phi_cand, eta_cand, inv_mass_K0s, pt_K0s, cand_type, y_cand,
               run_number, ev_id, ev_id_ext, nsigTPC_Pr_0, nsigTOF_Pr_0,
-              spdhits_prong0, spdhits_prong1, spdhits_prong2,
-              pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet,
-              pt_gen_jet, eta_gen_jet, phi_gen_jet, delta_eta_gen_jet, delta_phi_gen_jet, delta_r_gen_jet, pt_gen_cand,
+              spdhits_prong0, spdhits_prong1, spdhits_prong2, pt_gen_cand,
               p_prong0, p_prong1, p_prong2]
     var_evt:
       data: [centrality, z_vtx_reco, n_vtx_contributors, n_tracks, is_ev_rej, run_number,
@@ -69,7 +67,7 @@ LcpK0spp:
               trigger_hasbit_HighMultV0, trigger_hasclass_INT7, trigger_hasclass_HighMultSPD,
               trigger_hasclass_HighMultV0, n_tracklets_corr, v0m, v0m_eq, v0m_corr, v0m_eq_corr,
               mult_gen, mult_gen_v0a, mult_gen_v0c, perc_v0m, is_ev_rej_INT7, n_tracklets_corr_shm]
-    var_gen: [y_cand, pt_cand, eta_cand, phi_cand, cand_type, pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet, run_number, ev_id, ev_id_ext]
+    var_gen: [y_cand, pt_cand, eta_cand, phi_cand, cand_type, run_number, ev_id, ev_id_ext]
     var_evt_match: [run_number, ev_id, ev_id_ext]
     var_training: [[dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,
                    imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0],
@@ -262,8 +260,8 @@ LcpK0spp:
       pkl_skimmed_merge_for_ml: [/data/Derived/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prodLcpK0s/595_20210224-0854/pklskml,
                                  /data/Derived/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prodLcpK0s/595_20210224-0854/pklskml,
                                  /data/Derived/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prodLcpK0s/595_20210224-0854/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/595_20210224-0854/pp_mc_prodLcpK0s_mltot
-      pkl_evtcounter_all: /data/Derived/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/595_20210224-0854/pp_mc_prodLcpK0s_evttot
+      pkl_skimmed_merge_for_ml_all: /data/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_mc_prodLcpK0s_mltot
+      pkl_evtcounter_all: /data/Derived/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_mc_prodLcpK0s_evttot
       mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_16,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_17,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_18]
