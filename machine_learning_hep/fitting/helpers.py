@@ -454,6 +454,7 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
         self.bins1_edges_low = self.ana_config["sel_an_binmin"]
         self.bins1_edges_up = self.ana_config["sel_an_binmax"]
         self.n_bins1 = len(self.bins1_edges_low)
+        self.rebin = self.ana_config["rebin"]
 
         self.pars_factory = MLFitParsFactory(database, ana_type, data_out_dir, mc_out_dir)
 
@@ -620,7 +621,7 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
         self.logger.info("Print all fits done")
 
 
-    def bkg_fromsidebands(self, folder, n_filemass, fitlim, fbkg, masspeak, bin_width):
+    def bkg_fromsidebands(self, folder, n_filemass, fitlim, fbkg, masspeak):
 
         filemass = TFile.Open(n_filemass)
         bins1_ranges = self.pars_factory.bins1_edges_low.copy()
@@ -643,6 +644,7 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                                                          self.pars_factory.bins1_edges_up[ibin1],
                                                          self.pars_factory.prob_cut_fin[ibin1]))
 
+            hmass.Rebin(self.rebin[ibin1]) 
             if self.pre_fits_mc[i-1].fit_pars["sigma"] is None:
                 self.logger.warning("Pre-fit failed. No sigma to initialize the fit. Skip...")
                 i = i+1
@@ -683,13 +685,12 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                 bkg_func = TF1("fbkg", "expo", fitlim[0], fitlim[1])
 
             bkg_func.SetParameters(pars)
-            bkg = bkg_func.Integral(sig_region[0], sig_region[1]) / bin_width
-            bkg_err = bkg_func.IntegralError(sig_region[0], sig_region[1]) / bin_width
+            bkg = bkg_func.Integral(sig_region[0], sig_region[1]) / hmass.GetBinWidth(ibin1)
+            bkg_err = bkg_func.IntegralError(sig_region[0], sig_region[1]) / hmass.GetBinWidth(ibin1)
 
             hbkg_fromsidebands.SetBinContent(i, bkg)
             hbkg_fromsidebands.SetBinError(i, bkg_err)
             i = i+1
-            print(bkg)
 
         fileoutbkg_fromsidebands = TFile.Open("%s/Background_fromsidebands_%s_%s.root" % \
             (folder, self.case, self.ana_type), "RECREATE")
