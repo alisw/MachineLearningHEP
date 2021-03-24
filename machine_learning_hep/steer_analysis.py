@@ -201,10 +201,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     if domergingperiodsdata is True:
         counter = counter + checkdir(dirpklmltotdata)
 
-    if doml is True:
-        counter = counter + checkdir(mlout)
-        counter = counter + checkdir(mlplot)
-
     if docontinueapplymc is False:
         if doapplymc is True:
             counter = counter + checkdirlist(dirpklskdecmc)
@@ -348,7 +344,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         for binmin, binmax in zip(binminarray, binmaxarray):
             myopt = Optimiser(data_param[case], case, typean,
                               data_model[mltype], binmin, binmax,
-                              raahp[index], training_vars[index])
+                              raahp[index], training_vars[index], index)
             if docorrelation is True:
                 myopt.do_corr()
             if dotraining is True:

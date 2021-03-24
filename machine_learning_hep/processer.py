@@ -26,12 +26,13 @@ import pandas as pd
 import numpy as np
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
-from machine_learning_hep.utilities import selectdfquery, merge_method
+from machine_learning_hep.utilities import selectdfquery, merge_method, mask_df
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
-from machine_learning_hep.utilities import mergerootfiles
+from machine_learning_hep.utilities import mergerootfiles, count_df_length_pkl
 from machine_learning_hep.utilities import get_timestamp_string
 from machine_learning_hep.models import apply # pylint: disable=import-error
+from machine_learning_hep.io import dump_yaml_from_dict
 #from machine_learning_hep.logger import get_logger
 
 class Processer: # pylint: disable=too-many-instance-attributes
@@ -60,7 +61,21 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.d_mcreweights = d_mcreweights
         self.datap = datap
         self.mcordata = mcordata
+
+        self.lpt_anbinmin = datap["sel_skim_binmin"]
+        self.lpt_anbinmax = datap["sel_skim_binmax"]
+        self.p_nptbins = len(self.lpt_anbinmin)
+
         self.p_frac_merge = p_frac_merge
+        try:
+            iter(p_frac_merge)
+        except TypeError:
+            self.p_frac_merge = [p_frac_merge] * self.p_nptbins
+        if len(self.p_frac_merge) != self.p_nptbins:
+            print(f"Length of merge-fraction list != number of pT bins \n" \
+                    f"{len(self.p_frac_merge)} != {self.p_nptbins}")
+            sys.exit(1)
+
         self.p_rd_merge = p_rd_merge
         self.period = p_period
         self.i_period = i_period
@@ -90,6 +105,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.n_reco = datap["files_names"]["namefile_reco"]
         self.n_evt = datap["files_names"]["namefile_evt"]
         self.n_evtorig = datap["files_names"]["namefile_evtorig"]
+        self.n_evt_count_ml = datap["files_names"].get("namefile_evt_count", "evtcount.yaml")
         self.n_gen = datap["files_names"]["namefile_gen"]
         self.n_filemass = datap["files_names"]["histofilename"]
         self.n_fileeff = datap["files_names"]["efffilename"]
@@ -155,9 +171,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.f_totevtorig = os.path.join(self.d_pkl, self.n_evtorig)
 
         self.p_modelname = datap["mlapplication"]["modelname"]
-        self.lpt_anbinmin = datap["sel_skim_binmin"]
-        self.lpt_anbinmax = datap["sel_skim_binmax"]
-        self.p_nptbins = len(self.lpt_anbinmin)
         # Analysis pT bins
         self.lpt_finbinmin = datap["analysis"][self.typean]["sel_an_binmin"]
         self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
@@ -167,6 +180,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.mltype = datap["ml"]["mltype"]
         self.multiclass_labels = datap["ml"].get("multiclass_labels", None)
         self.lpt_model = appendmainfoldertolist(self.dirmodel, self.lpt_model)
+        # Potentially mask certain values (e.g. nsigma TOF of -999)
+        self.p_mask_values = datap["ml"].get("mask_values", None)
 
         self.lpt_probcutpre = datap["mlapplication"]["probcutpresel"][self.mcordata]
         self.lpt_probcutfin = datap["analysis"][self.typean].get("probcuts", None)
@@ -218,8 +233,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                              for ipt in range(self.p_nptbins)]
         self.lpt_gen_ml = [os.path.join(self.d_pkl_ml, self.lpt_gensk[ipt]) \
                             for ipt in range(self.p_nptbins)]
-        self.f_evt_ml = os.path.join(self.d_pkl_ml, self.n_evt)
-        self.f_evtorig_ml = os.path.join(self.d_pkl_ml, self.n_evtorig)
+        self.f_evt_count_ml = os.path.join(self.d_pkl_ml, self.n_evt_count_ml)
         self.lpt_recodec = None
         if self.doml is True:
             if self.mltype == "MultiClassification":
@@ -381,6 +395,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 if os.stat(self.mptfiles_recoskmldec[ipt][file_index]).st_size != 0:
                     continue
             dfrecosk = pickle.load(openfile(self.mptfiles_recosk[ipt][file_index], "rb"))
+            if self.p_mask_values:
+                mask_df(dfrecosk, self.p_mask_values)
             if self.doml is True:
                 if os.path.isfile(self.lpt_model[ipt]) is False:
                     print("Model file not present in bin %d" % ipt)
@@ -440,24 +456,29 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.parallelizer(self.applymodel, arguments, self.p_chunksizeskim)
 
     def process_mergeforml(self):
-        nfiles = len(self.mptfiles_recosk[0])
-        if nfiles == 0:
-            print("increase the fraction of merged files or the total number")
-            print(" of files you process")
-        ntomerge = (int)(nfiles * self.p_frac_merge)
-        rd.seed(self.p_rd_merge)
-        filesel = rd.sample(range(0, nfiles), ntomerge)
+        indices_for_evt = []
         for ipt in range(self.p_nptbins):
+            nfiles = len(self.mptfiles_recosk[ipt])
+            if not nfiles:
+                print("There are no files to be merged")
+                sys.exit(1)
+            print(f"Use merge fraction {self.p_frac_merge[ipt]} for pT bin {ipt}")
+            ntomerge = int(nfiles * self.p_frac_merge[ipt])
+            rd.seed(self.p_rd_merge)
+            filesel = rd.sample(range(0, nfiles), ntomerge)
+            indices_for_evt = list(set(indices_for_evt) | set(filesel))
             list_sel_recosk = [self.mptfiles_recosk[ipt][j] for j in filesel]
             merge_method(list_sel_recosk, self.lpt_reco_ml[ipt])
             if self.mcordata == "mc":
                 list_sel_gensk = [self.mptfiles_gensk[ipt][j] for j in filesel]
                 merge_method(list_sel_gensk, self.lpt_gen_ml[ipt])
 
-        list_sel_evt = [self.l_evt[j] for j in filesel]
-        list_sel_evtorig = [self.l_evtorig[j] for j in filesel]
-        merge_method(list_sel_evt, self.f_evt_ml)
-        merge_method(list_sel_evtorig, self.f_evtorig_ml)
+        print("Count events...")
+        list_sel_evt = [self.l_evt[j] for j in indices_for_evt]
+        list_sel_evtorig = [self.l_evtorig[j] for j in indices_for_evt]
+        count_dict = {"evt": count_df_length_pkl(*list_sel_evt),
+                      "evtorig": count_df_length_pkl(*list_sel_evtorig)}
+        dump_yaml_from_dict(count_dict, self.f_evt_count_ml)
 
     def process_mergedec(self):
         for ipt in range(self.p_nptbins):

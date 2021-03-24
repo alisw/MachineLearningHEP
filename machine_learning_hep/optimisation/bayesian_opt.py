@@ -84,6 +84,9 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
         # Optimise with this score
         self.scoring_opt = None
 
+        # Rel. deviation between test and train score
+        self.score_train_test_diff = None
+
         # Min- or maximise?
         self.low_is_better = True
         # Current minimum score
@@ -185,7 +188,7 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
             model, params = self.yield_model_(self.model_config, space_drawn) # pylint: disable=assignment-from-none
 
         # Collect parameters
-        self.params.append(params)
+        #self.params.append(params)
 
         # Do cross validation for this model
         res = cross_validate(model, self.x_train, self.y_train, cv=self.nkfolds,
@@ -220,17 +223,24 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
 
         # Extract mean score from CV
         score = np.mean(res[f"test_{self.scoring_opt}"])
+        score_train = np.mean(res[f"train_{self.scoring_opt}"])
+        rel_train_test = abs(score - score_train) / score
 
         # Because we minimise always, needs to be
         if not self.low_is_better:
             score = -score
 
+
         if self.min_score is None or score < self.min_score:
-            self.min_score = score
-            self.best = model
-            self.best_index = len(self.params) - 1
-            self.best_params = params
-            self.best_scores = res_tmp
+
+            if self.score_train_test_diff is None or \
+                    (self.score_train_test_diff > 0. and \
+                     rel_train_test < self.score_train_test_diff):
+                self.min_score = score
+                self.best = model
+                self.best_index = len(self.params) - 1
+                self.best_params = params
+                self.best_scores = res_tmp
 
         return {"loss": score, "status": STATUS_OK}
 
@@ -528,6 +538,11 @@ class BayesianOpt: #pylint: disable=too-many-instance-attributes
 
         param_evolution = self.__extract_param_evolution()
         for i, pe in enumerate(param_evolution):
+            print("-#-#-#-#-")
+            print(len(test_scores))
+            print("-#-#-#-#-")
+            print(pe["iterations"])
+            print("-#-#-#-#-")
             x_vals = [test_scores[j] for j in pe["iterations"]]
             val_min = min(pe["values"])
             val_max = max(pe["values"])

@@ -30,16 +30,18 @@ def xgboost_classifier(model_config): # pylint: disable=W0613
 
 
 def xgboost_classifier_bayesian_space():
-    return {"max_depth": scope.int(hp.quniform("x_max_depth", 1, 6, 1)),
-            "n_estimators": scope.int(hp.quniform("x_n_estimators", 600, 1000, 1)),
-            "min_child_weight": scope.int(hp.quniform("x_min_child", 1, 4, 1)),
+    return {"max_depth": scope.int(hp.quniform("x_max_depth", 1, 3, 1)),
+            "n_estimators": scope.int(hp.quniform("x_n_estimators", 100, 1000, 1)),
+            "min_child_weight": scope.int(hp.quniform("x_min_child", 1, 10, 1)),
             "subsample": hp.uniform("x_subsample", 0.5, 0.9),
             "gamma": hp.uniform("x_gamma", 0.0, 0.2),
-            "colsample_bytree": hp.uniform("x_colsample_bytree", 0.5, 0.9),
+            "colsample_bytree": hp.uniform("x_colsample_bytree", 0.5, 1.),
+            "colsample_bylevel": hp.uniform("x_colsample_bylevel", 0.5, 1.),
+            "colsample_bynode": hp.uniform("x_colsample_bynode", 0.5, 1.),
+            #"max_delta_step": scope.int(hp.quniform("x_max_delta_step", 0, 8, 1)),
             "reg_lambda": hp.uniform("x_reg_lambda", 0, 1),
             "reg_alpha": hp.uniform("x_reg_alpha", 0, 1),
-            "learning_rate": hp.uniform("x_learning_rate", 0.05, 0.35),
-            "max_delta_step": scope.int(hp.quniform("x_max_delta_step", 0, 8, 2))}
+            "learning_rate": hp.uniform("x_learning_rate", 0.01, 0.5)}
 
 
 class XGBoostClassifierBayesianOpt(BayesianOpt):
@@ -65,4 +67,5 @@ def xgboost_classifier_bayesian_opt(model_config):
     bayesian_opt.scoring_opt = "AUC"
     bayesian_opt.low_is_better = False
     bayesian_opt.n_trials = 100
+    bayesian_opt.score_train_test_diff = 0.01
     return bayesian_opt

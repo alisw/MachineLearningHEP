@@ -51,6 +51,21 @@ def openfile(filename, attr):
         return lz4.frame.open(filename, attr)
     return open(filename, attr)
 
+def mask_df(df_to_mask, mask_config):
+    """
+    Mask potential values
+    """
+    for mc in mask_config:
+        if mc["name"] not in df_to_mask:
+            print(f"Nothing to mask for {mc['name']}, skip...")
+            continue
+        # find indices to mask which fulfil the query
+        print(f"Mask column {mc['name']} where '{mc['query']} with {mc['value']}")
+        df_to_mask[mc["name"]] = df_to_mask[mc["name"]].astype(float)
+        mask_indices = df_to_mask.query(mc["query"]).index
+        # Mask the at the column name with mask value
+        df_to_mask.loc[mask_indices, [mc["name"]]] = mc["value"]
+
 def selectdfquery(dfr, selection):
     """
     Query on dataframe
@@ -69,6 +84,17 @@ def selectdfrunlist(dfr, runlist, runvar):
         issel = select_runs(runlist_np, array_run_np)
         dfr = dfr[issel]
     return dfr
+
+def count_df_length_pkl(*pkls):
+    """
+    Count all entries in all pkls
+    """
+    count = 0
+    for pkl in pkls:
+        myfile = openfile(pkl, "rb")
+        df = pickle.load(myfile)
+        count += len(df.index)
+    return count
 
 def merge_method(listfiles, namemerged):
     """
@@ -150,20 +176,22 @@ def checkdir(mydir):
         exfolders = -1
     return exfolders
 
+def checkmakedir(mydir):
+    """
+    Makes directory using 'mkdir'
+    """
+    if os.path.exists(mydir):
+        print(f"Using already created folder {mydir}")
+        return
+    print("creating folder ", mydir)
+    os.makedirs(mydir)
+
 def checkmakedirlist(dirlist):
     """
     Makes directories from list using 'mkdir'
     """
     for mydir in dirlist:
-        print("creating folder ", mydir)
-        os.makedirs(mydir)
-
-def checkmakedir(mydir):
-    """
-    Makes directory using 'mkdir'
-    """
-    print("creating folder ", mydir)
-    os.makedirs(mydir)
+        checkmakedir(mydir)
 
 def delete_dir(path: str):
     """
