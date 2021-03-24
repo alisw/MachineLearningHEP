@@ -630,7 +630,7 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
         hbkg_fromsidebands = TH1F("hbkg_fromsidebands", "", n_bins1, array("d", bins1_ranges))
 
         i = 1
-        sig_region = 0
+        sig_limit = 0
         pt_bin = 0
         for ibin1 in range(n_bins1):
 
@@ -644,21 +644,21 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                                                          self.pars_factory.bins1_edges_up[ibin1],
                                                          self.pars_factory.prob_cut_fin[ibin1]))
 
-            hmass.Rebin(self.rebin[ibin1]) 
+            hmass.Rebin(self.rebin[ibin1])
             if self.pre_fits_mc[i-1].fit_pars["sigma"] is None:
                 self.logger.warning("Pre-fit failed. No sigma to initialize the fit. Skip...")
                 i = i+1
                 continue
 
-            sig_region = [masspeak - 3*self.pre_fits_mc[i-1].fit_pars["sigma"],
-                          masspeak + 3*self.pre_fits_mc[i-1].fit_pars["sigma"]]
+            sig_limit = [masspeak - 3*self.pre_fits_mc[i-1].fit_pars["sigma"],
+                         masspeak + 3*self.pre_fits_mc[i-1].fit_pars["sigma"]]
 
             #introducing my bkg function defined only outside the peak region
             pt_bin = ibin1
             class FitBkg:
                 def __call__(self, x_var, par):
                     #excluding signal region from the backgound fitting function
-                    if (x_var[0] > sig_region[0] and x_var[0] < sig_region[1]):
+                    if (x_var[0] > sig_limit[0] and x_var[0] < sig_limit[1]):
                         return 0
                     if fbkg[pt_bin] == "kLin":
                         return par[0]+x_var[0]*par[1]
@@ -685,8 +685,8 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                 bkg_func = TF1("fbkg", "expo", fitlim[0], fitlim[1])
 
             bkg_func.SetParameters(pars)
-            bkg = bkg_func.Integral(sig_region[0], sig_region[1]) / hmass.GetBinWidth(ibin1)
-            bkg_err = bkg_func.IntegralError(sig_region[0], sig_region[1]) / hmass.GetBinWidth(ibin1)
+            bkg = bkg_func.Integral(sig_limit[0], sig_limit[1]) / hmass.GetBinWidth(ibin1)
+            bkg_err = bkg_func.IntegralError(sig_limit[0], sig_limit[1]) / hmass.GetBinWidth(ibin1)
 
             hbkg_fromsidebands.SetBinContent(i, bkg)
             hbkg_fromsidebands.SetBinError(i, bkg_err)
