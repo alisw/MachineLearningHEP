@@ -318,14 +318,15 @@ def roc_train_test(names, classifiers, x_train, y_train, x_test, y_test, suffix,
         roc_auc_test = auc(fpr_test, tpr_test)
         train_line = plt.plot(fpr_train, tpr_train, lw=3, alpha=0.4,
                               label=f'ROC {name} - Train set (AUC = {roc_auc_train:.4f})')
-        plt.plot(fpr_test, tpr_test, lw=3, alpha=0.8, c=train_line[0].get_color(),
+        plt.plot(fpr_test, tpr_test, lw=3, ls="-.", alpha=0.8, c=train_line[0].get_color(),
                  label=f'ROC {name} - Test set (AUC = {roc_auc_test:.4f})')
 
     plt.xlim([-0.05, 1.05])
     plt.ylim([-0.05, 1.05])
-    plt.xlabel('False Positive Rate', fontsize=20)
-    plt.ylabel('True Positive Rate', fontsize=20)
-    plt.legend(loc='lower right', prop={'size': 18})
+    plt.xlabel('False Positive Rate', fontsize=30)
+    plt.ylabel('True Positive Rate', fontsize=30)
+    plt.legend(loc='lower right', prop={'size': 25})
+    plt.tick_params(labelsize=20)
     plot_name = f'{folder}/ROCtraintest{suffix}.png'
     fig.savefig(plot_name)
     plot_name = plot_name.replace('png', 'pickle')

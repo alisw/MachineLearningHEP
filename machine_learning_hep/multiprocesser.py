@@ -18,6 +18,7 @@ main script for doing data processing, machine learning and analysis
 import os
 from machine_learning_hep.processer import Processer # pylint: disable=unused-import
 from machine_learning_hep.utilities import merge_method, mergerootfiles, get_timestamp_string
+from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
 class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-statements
     species = "multiprocesser"
     def __init__(self, case, proc_class, datap, typean, run_param, mcordata):
@@ -54,6 +55,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.n_reco = datap["files_names"]["namefile_reco"]
         self.n_evt = datap["files_names"]["namefile_evt"]
         self.n_evtorig = datap["files_names"]["namefile_evtorig"]
+        self.n_evt_count_ml = datap["files_names"].get("namefile_evt_count", "evtcount.yaml")
         self.n_gen = datap["files_names"]["namefile_gen"]
         self.n_mcreweights = datap["files_names"]["namefile_mcweights"]
         self.lpt_recosk = [self.n_reco.replace(".pkl", "_%s%d_%d.pkl" % \
@@ -65,8 +67,8 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.lptper_recoml = [[os.path.join(direc, self.lpt_recosk[ipt]) \
                                for direc in self.dlper_pklml] \
                                for ipt in range(self.p_nptbins)]
-        self.lper_evtml = [os.path.join(direc, self.n_evt) for direc in self.dlper_pklml]
-        self.lper_evtorigml = [os.path.join(direc, self.n_evtorig) for direc in self.dlper_pklml]
+        self.lper_evt_count_ml = [os.path.join(direc, self.n_evt_count_ml) \
+                for direc in self.dlper_pklml]
         self.lptper_genml = [[os.path.join(direc, self.lpt_gensk[ipt]) \
                               for direc in self.dlper_pklml] \
                               for ipt in range(self.p_nptbins)]
@@ -74,8 +76,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
                                     for ipt in range(self.p_nptbins)]
         self.lpt_genml_mergedallp = [os.path.join(self.d_pklml_mergedallp, self.lpt_gensk[ipt]) \
                                     for ipt in range(self.p_nptbins)]
-        self.f_evtml_mergedallp = os.path.join(self.d_pklml_mergedallp, self.n_evt)
-        self.f_evtorigml_mergedallp = os.path.join(self.d_pklml_mergedallp, self.n_evtorig)
+        self.f_evtml_count = os.path.join(self.d_pklml_mergedallp, self.n_evt_count_ml)
         self.lper_evt = [os.path.join(direc, self.n_evt) for direc in self.dlper_pkl]
         self.lper_evtorig = [os.path.join(direc, self.n_evtorig) for direc in self.dlper_pkl]
 
@@ -150,8 +151,15 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
             merge_method(self.lptper_recoml[ipt], self.lpt_recoml_mergedallp[ipt])
             if self.mcordata == "mc":
                 merge_method(self.lptper_genml[ipt], self.lpt_genml_mergedallp[ipt])
-        merge_method(self.lper_evtml, self.f_evtml_mergedallp)
-        merge_method(self.lper_evtorigml, self.f_evtorigml_mergedallp)
+
+        count_evt = 0
+        count_evtorig = 0
+        for evt_count_file in self.lper_evt_count_ml:
+            count_dict = parse_yaml(evt_count_file)
+            count_evt += count_dict["evt"]
+            count_evtorig += count_dict["evtorig"]
+
+        dump_yaml_from_dict({"evt": count_evt, "evtorig": count_evtorig}, self.f_evtml_count)
 
     def multi_apply_allperiods(self):
         for indexp in range(self.prodnumber):

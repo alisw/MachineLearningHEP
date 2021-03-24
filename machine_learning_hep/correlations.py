@@ -20,24 +20,43 @@ from os.path import join
 from collections import deque
 from io import BytesIO
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
 import seaborn as sns
 
 from machine_learning_hep.logger import get_logger
 
+#mpl.use('Agg')
+
 def vardistplot(dataframe_sig_, dataframe_bkg_, mylistvariables_, output_,
-                binmin, binmax):
+                binmin, binmax, plot_options_):
+    mpl.rcParams.update({"text.usetex": True})
+    plot_type_name = "prob_cut_scan"
+    plot_options = plot_options_.get(plot_type_name, {}) \
+            if isinstance(plot_options_, dict) else {}
+
+
     figure = plt.figure(figsize=(20, 15)) # pylint: disable=unused-variable
     i = 1
     for var in mylistvariables_:
         ax = plt.subplot(3, int(len(mylistvariables_)/3+1), i)
-        plt.xlabel(var, fontsize=11)
-        plt.ylabel("entries", fontsize=11)
         plt.yscale('log')
         kwargs = dict(alpha=0.3, density=True, bins=100)
+        po = plot_options.get(var, {})
+        if "xlim" in po:
+            kwargs["range"] = (po["xlim"][0], po["xlim"][1])
+
         plt.hist(dataframe_sig_[var], facecolor='b', label='signal', **kwargs)
         plt.hist(dataframe_bkg_[var], facecolor='g', label='background', **kwargs)
+
+        var_tex = var.replace("_", ":")
+        if "xlim" in po:
+            plt.xlim(po["xlim"][0], po["xlim"][1])
+        if "xlabel" in po:
+            var_tex = "$" + po["xlabel"] + "$"
+        plt.xlabel(var_tex, fontsize=11)
+        plt.ylabel(po.get("ylabel", "entries"), fontsize=11)
         ax.legend()
         i = i+1
     plotname = output_+'/variablesDistribution_nVar%d_%d%d.png' % \
@@ -46,6 +65,7 @@ def vardistplot(dataframe_sig_, dataframe_bkg_, mylistvariables_, output_,
     imagebytesIO = BytesIO()
     plt.savefig(imagebytesIO, format='png')
     imagebytesIO.seek(0)
+    mpl.rcParams.update({"text.usetex": False})
     return imagebytesIO
 
 def vardistplot_probscan(dataframe_, mylistvariables_, modelname_, thresharray_, # pylint: disable=too-many-statements
@@ -289,17 +309,36 @@ def scatterplot(dataframe_sig_, dataframe_bkg_, mylistvariablesx_,
     return imagebytesIO
 
 
-def correlationmatrix(dataframe, mylistvariables, label, output, binmin, binmax):
+def correlationmatrix(dataframe, mylistvariables, label, output, binmin, binmax,
+                      plot_options_=None):
     corr = dataframe[mylistvariables].corr()
+    # Generate a mask for the upper triangle
+    mask = np.triu(np.ones_like(corr, dtype=bool))
     _, ax = plt.subplots(figsize=(10, 8))
     plt.title(label, fontsize=11)
-    sns.heatmap(corr, mask=np.zeros_like(corr, dtype=np.bool),
+    #sns.heatmap(corr, mask=np.zeros_like(corr, dtype=np.bool),
+    mpl.rcParams.update({"text.usetex": True})
+    plot_type_name = "prob_cut_scan"
+    plot_options = plot_options_.get(plot_type_name, {}) \
+            if isinstance(plot_options_, dict) else {}
+    labels = []
+    for myvar in mylistvariables:
+        if myvar in plot_options and "xlabel" in plot_options[myvar]:
+            tex_var = "$" + plot_options[myvar]["xlabel"] + "$"
+            labels.append(tex_var)
+        else:
+            labels.append(myvar.replace("_", ":"))
+
+    if not labels:
+        labels = "auto"
+    sns.heatmap(corr, mask=mask,
                 cmap=sns.diverging_palette(220, 10, as_cmap=True), vmin=-1, vmax=1,
-                square=True, ax=ax)
+                square=True, ax=ax, xticklabels=labels, yticklabels=labels)
     nVar = len(mylistvariables)
     plotname = f'{output}/CorrMatrix_{label}_nVar{nVar}_{binmin:.1f}_{binmax:.1f}.png'
     plt.savefig(plotname, bbox_inches='tight')
     imagebytesIO = BytesIO()
     plt.savefig(imagebytesIO, format='png')
     imagebytesIO.seek(0)
+    mpl.rcParams.update({"text.usetex": False})
     return imagebytesIO

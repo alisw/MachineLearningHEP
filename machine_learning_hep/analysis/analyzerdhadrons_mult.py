@@ -451,7 +451,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         norm = -1
         if n_sel + n_vtxout > 0:
             norm = (n_sel + n_novtx) - n_novtx * n_vtxout / (n_sel + n_vtxout)
-        return norm
+        return n_sel, norm
 
     def makenormyields(self): # pylint: disable=import-outside-toplevel, too-many-branches
         gROOT.SetBatch(True)
@@ -503,17 +503,18 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                 hsel_inel0 = filemass.Get("sel_%s" % labeltrigger_inel0)
                 hnovtx_inel0 = filemass.Get("novtx_%s" % labeltrigger_inel0)
                 hvtxout_inel0 = filemass.Get("vtxout_%s" % labeltrigger_inel0)
-                norm = self.calculate_norm(hsel_inel0, hnovtx_inel0, hvtxout_inel0, 1, 999)
+                n_sel, norm = self.calculate_norm(hsel_inel0, hnovtx_inel0, hvtxout_inel0, 1, 999)
             else:
                 hsel = filemass.Get("sel_%s" % labeltrigger)
                 hnovtx = filemass.Get("novtx_%s" % labeltrigger)
                 hvtxout = filemass.Get("vtxout_%s" % labeltrigger)
-                norm = self.calculate_norm(hsel, hnovtx, hvtxout,
-                                           self.lvar2_binmin[imult],
-                                           self.lvar2_binmax[imult])
+                n_sel, norm = self.calculate_norm(hsel, hnovtx, hvtxout,
+                                                  self.lvar2_binmin[imult],
+                                                  self.lvar2_binmax[imult])
             histonorm.SetBinContent(imult + 1, norm)
             # pylint: disable=logging-not-lazy
-            self.logger.warning("Number of events %d for mult bin %d" % (norm, imult))
+            self.logger.warning("Number of events %d for mult bin %d" % (n_sel, imult))
+            self.logger.warning("Number of zvtx-corr events %d for mult bin %d" % (norm, imult))
             filecrossmb = None
             if self.p_fprompt_from_mb is True and self.p_fd_method == 2:
                 if self.p_corrmb_typean is not None:

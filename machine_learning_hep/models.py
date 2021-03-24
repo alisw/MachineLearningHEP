@@ -17,13 +17,14 @@ Methods to: choose, train and apply ML models
             load and save ML models
             obtain control plots
 """
-from os.path import join
+from os.path import join, exists
 from io import BytesIO
 import pickle
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
+import matplotlib as mpl
 
 from sklearn.feature_extraction import DictVectorizer
 
@@ -216,6 +217,8 @@ def readmodels(names_, folder_, suffix_):
     trainedmodels_ = []
     for name in names_:
         fileinput = folder_+"/"+name+suffix_+".sav"
+        if not exists(fileinput):
+            return None
         model = pickle.load(open(fileinput, 'rb'))
         trainedmodels_.append(model)
     return trainedmodels_
@@ -260,7 +263,7 @@ def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder)
     img_import.seek(0)
     return img_import
 
-def shap_study(names_, trainedmodels_, x_train_, suffix_, folder):
+def shap_study(names_, trainedmodels_, x_train_, suffix_, folder, plot_options_):
     """Importance via SHAP
 
     Args:
@@ -278,6 +281,17 @@ def shap_study(names_, trainedmodels_, x_train_, suffix_, folder):
     x_size = 18 if len(names_) == 1 else 25
     figure = plt.figure(figsize=(x_size, 15))
     nrows, ncols = (2, (len(names_) + 1) / 2) if len(names_) > 1 else (1, 1)
+    mpl.rcParams.update({"text.usetex": True})
+    plot_type_name = "prob_cut_scan"
+    plot_options = plot_options_.get(plot_type_name, {}) \
+            if isinstance(plot_options_, dict) else {}
+    feature_names = []
+    for fn in x_train_.columns:
+        if fn in plot_options and "xlabel" in plot_options[fn]:
+            feature_names.append("$" + plot_options[fn]["xlabel"] + "$")
+        else:
+            feature_names.append(fn.replace("_", ":"))
+
     for i, (name, model) in enumerate(zip(names_, trainedmodels_)):
         # Rely on name to exclude certain models at the moment
         if "SVC" in name:
@@ -290,12 +304,14 @@ def shap_study(names_, trainedmodels_, x_train_, suffix_, folder):
         plt.sca(ax)
         explainer = shap.TreeExplainer(model)
         shap_values = explainer.shap_values(x_train_)
-        shap.summary_plot(shap_values, x_train_, show=False)
+
+        shap.summary_plot(shap_values, x_train_, show=False, feature_names=feature_names)
     plotname = f"importanceplotall_shap_{suffix_}.png"
     plotname = join(folder, plotname)
     figure.tight_layout()
     figure.savefig(plotname)
     plt.close(figure)
+    mpl.rcParams.update({"text.usetex": False})
 
 
 def decisionboundaries(names_, trainedmodels_, suffix_, x_train_, y_train_, folder):
