@@ -152,6 +152,7 @@ class Optimiser: # pylint: disable=too-many-public-methods
         #selections
         self.s_selbkgml = data_param["ml"]["sel_bkgml"]
         self.s_selsigml = data_param["ml"]["sel_sigml"]
+        self.p_equalise_sig_bkg = data_param["ml"].get("equalise_sig_bkg", False)
         #model param
         self.db_model = model_config
         self.p_class = None
@@ -253,8 +254,9 @@ class Optimiser: # pylint: disable=too-many-public-methods
             self.df_bkg["ismcfd"] = 0
             self.df_bkg["ismcbkg"] = 0
 
-            self.p_nsig = min(len(self.df_sig), self.p_nsig)
-            self.p_nbkg = min(len(self.df_sig), len(self.df_bkg), self.p_nbkg)
+            if self.p_equalise_sig_bkg:
+                self.p_nsig = min(len(self.df_sig), len(self.df_bkg), self.p_nsig)
+                self.p_nbkg = min(len(self.df_sig), len(self.df_bkg), self.p_nbkg)
 
             self.df_ml = pd.DataFrame()
             self.df_sig = shuffle(self.df_sig, random_state=self.rnd_shuffle)

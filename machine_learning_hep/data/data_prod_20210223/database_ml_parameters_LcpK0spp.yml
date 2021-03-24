@@ -286,6 +286,7 @@ LcpK0spp:
       mc: null
     nbkg: 500000
     nsig: 500000
+    equalise_sig_bkg: True
     sampletagforsignal: 1
     sampletagforbkg: 0
     sel_sigml: ismcprompt == 1
