@@ -25,7 +25,7 @@ LcpKpi:
   sel_reco_skim: [null,null,null,null,null]
   sel_gen_skim: [null,null,null,null,null]
   sel_skim_binmin: [0,1,2,4,8] #list of nbins
-  sel_skim_binmax: [1,2,4,8,12] #list of nbins
+  sel_skim_binmax: [1,2,4,8,10] #list of nbins
   apply_yptacccut: false
   var_binning: fPt
   dofullevtmerge: false
@@ -55,11 +55,11 @@ LcpKpi:
        mc:   [fBCsID, fPosX, fPosY, fPosZ, fIsEventReject]
     var_gen: [fBCsID, fPt, fY, fMCflag]
     var_evt_match: [fBCsID]
-    var_training: [[fCPA, fCPAXY, fDecayLength, fChi2PCA, fImpactParameter0, fImpactParameter1, fImpactParameter2],
-                   [fCPA, fCPAXY, fDecayLength, fChi2PCA, fImpactParameter0, fImpactParameter1, fImpactParameter2],
-                   [fCPA, fCPAXY, fDecayLength, fChi2PCA, fImpactParameter0, fImpactParameter1, fImpactParameter2],
-                   [fCPA, fCPAXY, fDecayLength, fChi2PCA, fImpactParameter0, fImpactParameter1, fImpactParameter2],
-                   [fCPA, fCPAXY, fDecayLength, fChi2PCA, fImpactParameter0, fImpactParameter1, fImpactParameter2]]
+    var_training: [[fCPA, fCPAXY, fDecayLength, fImpactParameter0, fImpactParameter1, fImpactParameter2],
+                   [fCPA, fCPAXY, fDecayLength, fImpactParameter0, fImpactParameter1, fImpactParameter2],
+                   [fCPA, fCPAXY, fDecayLength, fImpactParameter0, fImpactParameter1, fImpactParameter2],
+                   [fCPA, fCPAXY, fDecayLength, fImpactParameter0, fImpactParameter1, fImpactParameter2],
+                   [fCPA, fCPAXY, fDecayLength, fImpactParameter0, fImpactParameter1, fImpactParameter2]]
     var_boundaries: [fDecayLength, fPt]
     var_correlation:
       - [fDecayLength, fChi2PCA, fCPA]
@@ -72,34 +72,53 @@ LcpKpi:
         - [fPtProng0, lt, null]
         - [fPtProng1, lt, null]
         - [fPtProng2, lt, null]
+        - [fCPA, lt, null]
+        - [fDecayLength, lt, null]
+        - [fChi2PCA, lt, null]
 
     plot_options:
       prob_cut_scan:
         pt_prong0:
           xlim:
             - 0
-            - 1
+            - 6
         pt_prong1:
           xlim:
             - 0
-            - 1
+            - 6
         pt_prong2:
           xlim:
             - 0
-            - 1
+            - 6
+        fDecayLength:
+          xlim:
+            - 0
+            - 0.05
+        fChi2PCA:
+          xlim:
+            - 0
+            - 0.0001
       eff_cut_scan:
         pt_prong0:
           xlim:
             - 0
-            - 1
+            - 6
         pt_prong1:
           xlim:
             - 0
-            - 1
+            - 6
         pt_prong2:
           xlim:
             - 0
-            - 1
+            - 6
+        fDecayLength:
+          xlim:
+            - 0
+            - 0.05
+        fChi2PCA:
+          xlim:
+            - 0
+            - 0.0001
   files_names:
     namefile_unmerged_tree: AnalysisResults_trees.root
     namefile_reco: AnalysisResultsReco.pkl
@@ -128,12 +147,12 @@ LcpKpi:
       fracmerge : [0.5] #list of periods
       seedmerge: [12] #list of periods
       period: [test] #list of periods
-      unmerged_tree_dir: [/data/Run5data_mlhep/prod_test_CCBAR_pp_luigi/unmerged] #list of periods
-      pkl: [/data/Run5data_mlhep/prod_test_CCBAR_pp_luigi/pkldata_scenario3] #list of periods
-      pkl_skimmed: [/data/Run5data_mlhep/prod_test_CCBAR_pp_luigi/pklskdata_scenario3] #list of periods
-      pkl_skimmed_merge_for_ml: [/data/Run5data_mlhep/prod_test_CCBAR_pp_luigi/pklskmldata_scenario3] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data/Run5data_mlhep/prod_test_CCBAR_pp_luigi/mltotdata_scenario3
-      pkl_evtcounter_all: /data/Run5data_mlhep/prod_test_CCBAR_pp_luigi/evttotdata_scenario3
+      unmerged_tree_dir: [/data/Run5data_mlhep/prod_test_MB_pp_luigi/unmerged] #list of periods
+      pkl: [/data/Run5data_mlhep/prod_test_MB_pp_luigi/pkldata_scenario3] #list of periods
+      pkl_skimmed: [/data/Run5data_mlhep/prod_test_MB_pp_luigi/pklskdata_scenario3] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/Run5data_mlhep/prod_test_MB_pp_luigi/pklskmldata_scenario3] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/Run5data_mlhep/prod_test_MB_pp_luigi/mltotdata_scenario3
+      pkl_evtcounter_all: /data/Run5data_mlhep/prod_test_MB_pp_luigi/evttotdata_scenario3
       mcreweights: [../Analyses]
     mc:
       nprocessesparallel: 30
@@ -143,12 +162,12 @@ LcpKpi:
       fracmerge : [1.0] #list of periods
       seedmerge: [12] #list of periods
       period: [test] #list of periods
-      unmerged_tree_dir: [/data/Run5data_mlhep/prod_test_CCBAR_pp_luigi/unmerged] #list of periods
-      pkl: [/data/Run5data_mlhep/prod_test_CCBAR_pp_luigi/pklmc_scenario3] #list of periods
-      pkl_skimmed: [/data/Run5data_mlhep/prod_test_CCBAR_pp_luigi/pklskmc_scenario3] #list of periods
-      pkl_skimmed_merge_for_ml: [/data/Run5data_mlhep/prod_test_CCBAR_pp_luigi/pklskmlmc_scenario3] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data/Run5data_mlhep/prod_test_CCBAR_pp_luigi/mltotmc_scenario3
-      pkl_evtcounter_all: /data/Run5data_mlhep/prod_test_CCBAR_pp_luigi/evttotmc_scenario3
+      unmerged_tree_dir: [/data/Run5data_mlhep/prod_test_LcpKpi_pp_luigi/unmerged] #list of periods
+      pkl: [/data/Run5data_mlhep/prod_test_LcpKpi_pp_luigi/pklmc_scenario3] #list of periods
+      pkl_skimmed: [/data/Run5data_mlhep/prod_test_LcpKpi_pp_luigi/pklskmc_scenario3] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/Run5data_mlhep/prod_test_LcpKpi_pp_luigi/pklskmlmc_scenario3] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/Run5data_mlhep/prod_test_LcpKpi_pp_luigi/mltotmc_scenario3
+      pkl_evtcounter_all: /data/Run5data_mlhep/prod_test_LcpKpi_pp_luigi/evttotmc_scenario3
       mcreweights: [../Analyses]
   ml:
     evtsel: null
@@ -156,8 +175,8 @@ LcpKpi:
       data: null
       mc: null
 
-    nbkg: 100000
-    nsig: 100000
+    nbkg: 25000
+    nsig: 25000
     sampletagforsignal: 1
     sampletagforbkg: 0
     sel_sigml: ismcprompt == 1
@@ -167,7 +186,7 @@ LcpKpi:
     rnd_splt: 12
     test_frac: 0.2
     binmin: [0,1,2,4,8] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
-    binmax: [1,2,4,8,12] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
+    binmax: [1,2,4,8,10] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: BinaryClassification
     ncorescrossval: 10
     mlplot: mlplot_scenario3 # to be removed
@@ -188,25 +207,25 @@ LcpKpi:
       bkg_function: pol2 # fit function for bkg (among TH1 predefined fit functions, e.g. expo, pol1, pol2, ...)
       save_fit: True # save bkg fits with the various cuts on ML output
       raahp: [1,1,1,1,1] # sel_skim_binmin bins
-      presel_gen_eff: "abs(fY) < 1.44 and abs(fPosZ) < 10"
+      presel_gen_eff: "abs(fY) < 2.0 and abs(fPosZ) < 10"
 
   mlapplication:
     data:
-      pkl_skimmed_dec: [skpkldecdata_scenario3] #list of periods
-      pkl_skimmed_decmerged: [skpkldecdatamerged_scenario3] #list of periods
+      pkl_skimmed_dec: [/data/Run5data_mlhep/prod_test_MB_pp_luigi/skpkldecdata_scenario3] #list of periods
+      pkl_skimmed_decmerged: [/data/Run5data_mlhep/prod_test_MB_pp_luigi/skpkldecdatamerged_scenario3] #list of periods
     mc:
-      pkl_skimmed_dec: [skpkldecmc_scenario3] #list of periods
-      pkl_skimmed_decmerged: [skpkldecmcmerged_scenario3] #list of periods
+      pkl_skimmed_dec: [/data/Run5data_mlhep/prod_test_LcpKpi_pp_luigi/skpkldecmc_scenario3] #list of periods
+      pkl_skimmed_decmerged: [/data/Run5data_mlhep/prod_test_LcpKpi_pp_luigi/skpkldecmcmerged_scenario3] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierLcpKpi_scenario3_dfselection_fPt_0.0_1.0.sav,
-                     xgboost_classifierLcpKpi_scenario3_dfselection_fPt_1.0_2.0.sav,
-                     xgboost_classifierLcpKpi_scenario3_dfselection_fPt_2.0_4.0.sav,
-                     xgboost_classifierLcpKpi_scenario3_dfselection_fPt_4.0_8.0.sav,
-                     xgboost_classifierLcpKpi_scenario3_dfselection_fPt_8.0_12.0.sav]
+    modelsperptbin: [xgboost_classifierLcpKpi_dfselection_fPt_0.0_1.0.sav,
+                     xgboost_classifierLcpKpi_dfselection_fPt_1.0_2.0.sav,
+                     xgboost_classifierLcpKpi_dfselection_fPt_2.0_4.0.sav,
+                     xgboost_classifierLcpKpi_dfselection_fPt_4.0_8.0.sav,
+                     xgboost_classifierLcpKpi_dfselection_fPt_8.0_10.0.sav]
     probcutpresel:
       data: [0.05, 0.05, 0.05, 0.05, 0.05] #list of nbins
       mc: [0.05, 0.05, 0.05, 0.05, 0.05] #list of nbins
-    probcutoptimal: [0.7, 0.7, 0.7, 0.7, 0.7] #list of nbins
+    probcutoptimal: [0.5, 0.5, 0.5, 0.5, 0.5] #list of nbins
 
   analysis:
     indexhptspectrum: -1 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
@@ -221,8 +240,8 @@ LcpKpi:
       useperiod: [1]
       plotbin: [1]
       usesinglebineff: 0
-      sel_binmin2: [0,1,2,4,8] #list of nbins
-      sel_binmax2: [1,2,4,8,12] #list of nbins
+      sel_binmin2: [0,1,2,4,6,8] #list of nbins
+      sel_binmax2: [1,2,4,6,8,10] #list of nbins
       var_binning2: null
       triggerbit: ''
 
@@ -230,10 +249,10 @@ LcpKpi:
       # Decide whether to take the sigma from MC or data for individual fits
       init_fits_from: mc # data # data or mc
 
-      sel_an_binmin: [0,1,2,4,8]
-      sel_an_binmax: [1,2,4,8,12]
-      binning_matching: [0,1,2,3,4]
-      presel_gen_eff: "abs(fY) < 1.44"
+      sel_an_binmin: [0,1,2,4,6,8]
+      sel_an_binmax: [1,2,4,6,8,10]
+      binning_matching: [0,1,2,3,3,4]
+      presel_gen_eff: "abs(fY) < 2.0"
       evtsel: null
       triggersel:
         data: null
@@ -249,26 +268,26 @@ LcpKpi:
         results: [resultsmc_scenario3] #list of periods
         resultsallp: resultsmctot_scenario3
 
-      mass_fit_lim: [2.1, 2.46] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [2.14, 2.436] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
-      init_fits_from: [mc,mc,mc,mc,mc] # data or mc
-      sgnfunc: [kGaus,kGaus,kGaus,kGaus, kGaus]
-      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2]
+      init_fits_from: [mc,mc,mc,mc,mc,mc] # data or mc
+      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
+      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.286
-      massmin: [2.14,2.14,2.14,2.14,2.14]
-      massmax: [2.436,2.436,2.436,2.436,2.436]
-      rebin: [6,4,4,4,4]
-      fix_mean: [false,false,false,false,false]
-      fix_sigma: [false,false,false,false,false]
+      massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
+      massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
+      rebin: [4,4,4,4,4,4]
+      fix_mean: [false,false,false,false,false,false]
+      fix_sigma: [false,false,false,false,false,false]
       masssecpeak: 0.
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: [true,true,true,true,true]
+      SetFixGaussianSigma: [true,true,true,true,true,true]
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
-      SetInitialGaussianSigma: [false,false,false,false,false]
+      SetInitialGaussianSigma: [false,false,false,false,false,false]
       # Max percentage deviation in sigma (from init) to be considered as a good fit
       MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
@@ -276,7 +295,7 @@ LcpKpi:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.01,0.01,0.01,0.01,0.01]
+      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01]
       FixedSigma: false
       fitcase: Lc
       latexnamehadron: "#Lambda_{c}^{pK#pi}"
@@ -290,7 +309,7 @@ LcpKpi:
       useperiod: [1] #period from where to define prob cuts
       ncutvar: 10 #number of looser and tighter variations
       maxperccutvar: 0.25 #max diff in efficiency for loosest/tightest var
-      cutvarminrange: [0.70, 0.50, 0.50, 0.3, 0.3] #Min starting point for scan
-      cutvarmaxrange: [0.95, 0.90, 0.90, 0.80, 0.80] #Max starting point for scan
+      cutvarminrange: [0.70, 0.50, 0.50, 0.3, 0.3, 0.3] #Min starting point for scan
+      cutvarmaxrange: [0.95, 0.90, 0.90, 0.80, 0.80, 0.80] #Max starting point for scan
       fixedmean: True #Fix mean cutvar histo to central fit
       fixedsigma: True #Fix sigma cutvar histo to central fit
