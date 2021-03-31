@@ -20,6 +20,7 @@ import pickle
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 import seaborn as sn
 from sklearn.model_selection import cross_val_score, cross_val_predict, train_test_split
 from sklearn.model_selection import StratifiedKFold
@@ -306,7 +307,8 @@ def plot_overtraining(names, classifiers, suffix, folder, x_train, y_train, x_va
         fig.savefig(plot_name)
         plot_name = plot_name.replace('png', 'pickle')
 
-def roc_train_test(names, classifiers, x_train, y_train, x_test, y_test, suffix, folder):
+def roc_train_test(names, classifiers, x_train, y_train, x_test, y_test, suffix, folder,
+                   binmin, binmax):
     fig = plt.figure(figsize=(20, 15))
 
     for name, clf in zip(names, classifiers):
@@ -316,10 +318,15 @@ def roc_train_test(names, classifiers, x_train, y_train, x_test, y_test, suffix,
         fpr_test, tpr_test, _ = roc_curve(y_test, y_test_pred)
         roc_auc_train = auc(fpr_train, tpr_train)
         roc_auc_test = auc(fpr_test, tpr_test)
+        name_plot = name.replace("_", "\\_")
         train_line = plt.plot(fpr_train, tpr_train, lw=3, alpha=0.4,
-                              label=f'ROC {name} - Train set (AUC = {roc_auc_train:.4f})')
+                              label=f'ROC {name_plot} - Train set (AUC = {roc_auc_train:.4f})')
         plt.plot(fpr_test, tpr_test, lw=3, ls="-.", alpha=0.8, c=train_line[0].get_color(),
                  label=f'ROC {name} - Test set (AUC = {roc_auc_test:.4f})')
+
+    plt.text(0.7, 0.5,
+             f" ${binmin} < p_\\mathrm{{T}}/(\\mathrm{{GeV}}/c) < {binmax}$",
+             verticalalignment="center", transform=fig.gca().transAxes, fontsize=30)
 
     plt.xlim([-0.05, 1.05])
     plt.ylim([-0.05, 1.05])
@@ -328,7 +335,10 @@ def roc_train_test(names, classifiers, x_train, y_train, x_test, y_test, suffix,
     plt.legend(loc='lower right', prop={'size': 25})
     plt.tick_params(labelsize=20)
     plot_name = f'{folder}/ROCtraintest{suffix}.png'
+    mpl.rcParams.update({"text.usetex": True})
     fig.savefig(plot_name)
+    mpl.rcParams.update({"text.usetex": False})
     plot_name = plot_name.replace('png', 'pickle')
     with open(plot_name, 'wb') as out:
         pickle.dump(fig, out)
+    plt.close(fig)

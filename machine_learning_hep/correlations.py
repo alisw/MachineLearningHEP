@@ -38,6 +38,9 @@ def vardistplot(dataframe_sig_, dataframe_bkg_, mylistvariables_, output_,
 
 
     figure = plt.figure(figsize=(20, 15)) # pylint: disable=unused-variable
+
+    figure.suptitle(f"Separation plots for ${binmin} < p_\\mathrm{{T}}/(\\mathrm{{GeV}}/c) < " \
+                    f"{binmax}$", fontsize=30)
     i = 1
     for var in mylistvariables_:
         ax = plt.subplot(3, int(len(mylistvariables_)/3+1), i)
@@ -66,6 +69,7 @@ def vardistplot(dataframe_sig_, dataframe_bkg_, mylistvariables_, output_,
     plt.savefig(imagebytesIO, format='png')
     imagebytesIO.seek(0)
     mpl.rcParams.update({"text.usetex": False})
+    plt.close(figure)
     return imagebytesIO
 
 def vardistplot_probscan(dataframe_, mylistvariables_, modelname_, thresharray_, # pylint: disable=too-many-statements
@@ -306,6 +310,7 @@ def scatterplot(dataframe_sig_, dataframe_bkg_, mylistvariablesx_,
     imagebytesIO = BytesIO()
     plt.savefig(imagebytesIO, format='png')
     imagebytesIO.seek(0)
+    plt.close(figurecorr)
     return imagebytesIO
 
 
@@ -315,7 +320,6 @@ def correlationmatrix(dataframe, mylistvariables, label, output, binmin, binmax,
     # Generate a mask for the upper triangle
     mask = np.triu(np.ones_like(corr, dtype=bool))
     _, ax = plt.subplots(figsize=(10, 8))
-    plt.title(label, fontsize=11)
     #sns.heatmap(corr, mask=np.zeros_like(corr, dtype=np.bool),
     mpl.rcParams.update({"text.usetex": True})
     plot_type_name = "prob_cut_scan"
@@ -334,11 +338,12 @@ def correlationmatrix(dataframe, mylistvariables, label, output, binmin, binmax,
     sns.heatmap(corr, mask=mask,
                 cmap=sns.diverging_palette(220, 10, as_cmap=True), vmin=-1, vmax=1,
                 square=True, ax=ax, xticklabels=labels, yticklabels=labels)
-    nVar = len(mylistvariables)
-    plotname = f'{output}/CorrMatrix_{label}_nVar{nVar}_{binmin:.1f}_{binmax:.1f}.png'
-    plt.savefig(plotname, bbox_inches='tight')
+    ax.text(0.7, 0.9, f"${binmin} < p_\\mathrm{{T}}/(\\mathrm{{GeV}}/c) < {binmax}$\n{label}",
+            verticalalignment='center', transform=ax.transAxes, fontsize=13)
+    plt.savefig(output, bbox_inches='tight')
     imagebytesIO = BytesIO()
     plt.savefig(imagebytesIO, format='png')
     imagebytesIO.seek(0)
     mpl.rcParams.update({"text.usetex": False})
+    plt.close()
     return imagebytesIO

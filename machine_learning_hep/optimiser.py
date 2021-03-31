@@ -22,6 +22,7 @@ import pickle
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 from ROOT import TFile, TCanvas, TH1F, TF1, gROOT  # pylint: disable=import-error,no-name-in-module
@@ -198,6 +199,9 @@ class Optimiser: # pylint: disable=too-many-public-methods
                 self.f_reco_applieddata.replace(".pkl", "%s.pkl" % self.s_suffix)
         self.f_reco_appliedmc = \
                 self.f_reco_appliedmc.replace(".pkl", "%s.pkl" % self.s_suffix)
+        self.f_df_ml_test_to_df = f"{self.dirmlout}/testsample_{self.s_suffix}_mldecision.pkl"
+        self.f_mltest_applied = f"{self.dirmlout}/testsample_{self.s_suffix}_mldecision.pkl"
+        self.df_mltest_applied = None
 
         print(training_var)
 
@@ -206,23 +210,31 @@ class Optimiser: # pylint: disable=too-many-public-methods
         self.s_suffix = f"{self.p_case}_{string_selection}"
 
     def prepare_data_mc_mcgen(self):
-        if self.df_data is None or self.df_mc is None or self.df_mcgen is None:
+
+        self.logger.info("Prepare data reco as well as MC reco and gen")
+        if os.path.exists(self.f_reco_applieddata) \
+                and os.path.exists(self.f_reco_appliedmc) \
+                and self.step_done("preparemlsamples_data_mc_mcgen"):
+            self.df_data = pickle.load(openfile(self.f_reco_applieddata, "rb"))
+            self.df_mc = pickle.load(openfile(self.f_reco_appliedmc, "rb"))
+        else:
             self.df_data = pickle.load(openfile(self.f_reco_data, "rb"))
             self.df_mc = pickle.load(openfile(self.f_reco_mc, "rb"))
-            self.df_mcgen = pickle.load(openfile(self.f_gen_mc, "rb"))
             self.df_data = selectdfquery(self.df_data, self.p_evtsel)
             self.df_mc = selectdfquery(self.df_mc, self.p_evtsel)
-            self.df_mcgen = selectdfquery(self.df_mcgen, self.p_evtsel)
 
             self.df_data = selectdfquery(self.df_data, self.p_triggersel_data)
             self.df_mc = selectdfquery(self.df_mc, self.p_triggersel_mc)
-            self.df_mcgen = selectdfquery(self.df_mcgen, self.p_triggersel_mc)
 
-            self.df_mcgen = self.df_mcgen.query(self.p_presel_gen_eff)
-            self.arraydf = [self.df_data, self.df_mc]
-            self.df_mc = seldf_singlevar(self.df_mc, self.v_bin, self.p_binmin, self.p_binmax)
-            self.df_mcgen = seldf_singlevar(self.df_mcgen, self.v_bin, self.p_binmin, self.p_binmax)
-            self.df_data = seldf_singlevar(self.df_data, self.v_bin, self.p_binmin, self.p_binmax)
+        self.df_mcgen = pickle.load(openfile(self.f_gen_mc, "rb"))
+        self.df_mcgen = selectdfquery(self.df_mcgen, self.p_evtsel)
+        self.df_mcgen = selectdfquery(self.df_mcgen, self.p_triggersel_mc)
+        self.df_mcgen = self.df_mcgen.query(self.p_presel_gen_eff)
+
+        self.arraydf = [self.df_data, self.df_mc]
+        self.df_mc = seldf_singlevar(self.df_mc, self.v_bin, self.p_binmin, self.p_binmax)
+        self.df_mcgen = seldf_singlevar(self.df_mcgen, self.v_bin, self.p_binmin, self.p_binmax)
+        self.df_data = seldf_singlevar(self.df_data, self.v_bin, self.p_binmin, self.p_binmax)
 
 
     def preparesample(self):
@@ -330,32 +342,59 @@ class Optimiser: # pylint: disable=too-many-public-methods
             return
 
         self.logger.info("Make feature distributions and correlation plots")
+
+
+        def make_plot_name(output, label, n_var, binmin, binmax):
+            return f'{output}/CorrMatrix_{label}_nVar{n_var}_{binmin:.1f}_{binmax:.1f}.png'
+
+
         vardistplot(self.df_sigtrain, self.df_bkgtrain,
                     self.v_all, self.dirmlplot,
                     self.p_binmin, self.p_binmax, self.p_plot_options)
+
         if self.v_selected:
             vardistplot(self.df_sigtrain, self.df_bkgtrain,
                         self.v_selected, self.dirmlplot,
                         self.p_binmin, self.p_binmax, self.p_plot_options)
+
         vardistplot(self.df_sigtrain, self.df_bkgtrain,
                     self.v_train, self.dirmlplot,
                     self.p_binmin, self.p_binmax, self.p_plot_options)
+
         scatterplot(self.df_sigtrain, self.df_bkgtrain,
                     self.v_corrx, self.v_corry,
                     self.dirmlplot, self.p_binmin, self.p_binmax)
-        correlationmatrix(self.df_sigtrain, self.v_all, "Signal_all_vars",
-                          self.dirmlplot, self.p_binmin, self.p_binmax, self.p_plot_options)
-        correlationmatrix(self.df_bkgtrain, self.v_all, "Background_all_vars",
-                          self.dirmlplot, self.p_binmin, self.p_binmax, self.p_plot_options)
+
+        output = make_plot_name(self.dirmlplot, "Signal_all_vars", len(self.v_all),
+                                self.p_binmin, self.p_binmax)
+        correlationmatrix(self.df_sigtrain, self.v_all, "Signal", output,
+                          self.p_binmin, self.p_binmax, self.p_plot_options)
+
+        output = make_plot_name(self.dirmlplot, "Background_all_vars", len(self.v_all),
+                                self.p_binmin, self.p_binmax)
+        correlationmatrix(self.df_bkgtrain, self.v_all, "Background", output,
+                          self.p_binmin, self.p_binmax, self.p_plot_options)
+
         if self.v_selected:
-            correlationmatrix(self.df_sigtrain, self.v_selected, "Signal_selected_vars",
-                              self.dirmlplot, self.p_binmin, self.p_binmax, self.p_plot_options)
-            correlationmatrix(self.df_bkgtrain, self.v_selected, "Background_selected_vars",
-                              self.dirmlplot, self.p_binmin, self.p_binmax, self.p_plot_options)
-        correlationmatrix(self.df_sigtrain, self.v_train, "Signal_features",
-                          self.dirmlplot, self.p_binmin, self.p_binmax, self.p_plot_options)
-        correlationmatrix(self.df_bkgtrain, self.v_train, "Background_features",
-                          self.dirmlplot, self.p_binmin, self.p_binmax, self.p_plot_options)
+            output = make_plot_name(self.dirmlplot, "Signal_selected_vars", len(self.v_selected),
+                                    self.p_binmin, self.p_binmax)
+            correlationmatrix(self.df_sigtrain, self.v_selected, "Signal", output,
+                              self.p_binmin, self.p_binmax, self.p_plot_options)
+
+            output = make_plot_name(self.dirmlplot, "Background_selected_vars",
+                                    len(self.v_selected), self.p_binmin, self.p_binmax)
+            correlationmatrix(self.df_bkgtrain, self.v_selected, "Background", output,
+                              self.p_binmin, self.p_binmax, self.p_plot_options)
+
+        output = make_plot_name(self.dirmlplot, "Signal_features", len(self.v_train),
+                                self.p_binmin, self.p_binmax)
+        correlationmatrix(self.df_sigtrain, self.v_train, "Signal", output,
+                          self.p_binmin, self.p_binmax, self.p_plot_options)
+
+        output = make_plot_name(self.dirmlplot, "Background_features", len(self.v_train),
+                                self.p_binmin, self.p_binmax)
+        correlationmatrix(self.df_bkgtrain, self.v_train, "Background", output,
+                          self.p_binmin, self.p_binmax, self.p_plot_options)
 
         # For each plot there was an IO returned. That is not needed and was only important for
         # browser interface version of this package which became completely deprecated
@@ -393,32 +432,27 @@ class Optimiser: # pylint: disable=too-many-public-methods
         self.logger.info("Time elapsed = %.3f", time.time() - t0)
 
     def do_test(self):
-        # Do it everytime it is asked since e.g. the significance depends on havong the targets
-        # self.df_mltest
-        # That needs to be changed
-        #if self.step_done("test"):
-        #    return
 
         self.do_train()
+        if self.step_done("test"):
+            self.df_mltest_applied = pickle.load(openfile(self.f_mltest_applied, "rb"))
+            return
 
         self.logger.info("Testing")
-        df_ml_test = test(self.p_mltype, self.p_classname, self.p_trainedmod,
-                          self.df_mltest, self.v_train, self.v_sig)
-        df_ml_test_to_df = self.dirmlout+"/testsample_%s_mldecision.pkl" % (self.s_suffix)
+        self.df_mltest_applied = test(self.p_mltype, self.p_classname, self.p_trainedmod,
+                                      self.df_mltest, self.v_train, self.v_sig)
         df_ml_test_to_root = self.dirmlout+"/testsample_%s_mldecision.root" % (self.s_suffix)
-        pickle.dump(df_ml_test, openfile(df_ml_test_to_df, "wb"), protocol=4)
-        write_tree(df_ml_test_to_root, self.n_treetest, df_ml_test)
+        pickle.dump(self.df_mltest_applied, openfile(self.f_mltest_applied, "wb"), protocol=4)
+        write_tree(df_ml_test_to_root, self.n_treetest, self.df_mltest_applied)
 
     def do_apply(self):
-        # Do it everytime it is asked since e.g. the significance depends on havong the targets
-        # self.df_mltest
-        # That needs to be changed
-        #if self.step_done("application"):
-        #    return
-
-        self.do_train()
 
         self.prepare_data_mc_mcgen()
+
+        if self.step_done("application"):
+            return
+
+        self.do_train()
 
         self.logger.info("Application")
 
@@ -464,7 +498,8 @@ class Optimiser: # pylint: disable=too-many-public-methods
 
         self.logger.info("Make ROC for train and test")
         roc_train_test(self.p_classname, self.p_class, self.df_xtrain, self.df_ytrain,
-                       self.df_xtest, self.df_ytest, self.s_suffix, self.dirmlplot)
+                       self.df_xtest, self.df_ytest, self.s_suffix, self.dirmlplot,
+                       self.p_binmin, self.p_binmax)
 
     def do_plot_model_pred(self):
         if self.step_done("plot_model_pred"):
@@ -572,6 +607,9 @@ class Optimiser: # pylint: disable=too-many-public-methods
     def do_efficiency(self):
         if self.step_done("efficiency"):
             return
+
+        self.do_test()
+
         self.logger.info("Doing efficiency estimation")
         fig_eff = plt.figure(figsize=(20, 15))
         plt.xlabel('Threshold', fontsize=20)
@@ -594,10 +632,8 @@ class Optimiser: # pylint: disable=too-many-public-methods
         if self.step_done("significance"):
             return
 
-        self.prepare_data_mc_mcgen()
-
-        self.do_test()
         self.do_apply()
+        self.do_test()
 
         self.logger.info("Doing significance optimization")
         gROOT.SetBatch(True)
@@ -622,13 +658,13 @@ class Optimiser: # pylint: disable=too-many-public-methods
         acc, acc_err = calc_eff(numacc, denacc)
         self.logger.debug("Acceptance: %.3e +/- %.3e", acc, acc_err)
         #calculation of the expected fonll signals
-        ptmin = self.p_binmin
-        ptmax = self.p_binmax
-        delta_pt = ptmax - ptmin
+        delta_pt = self.p_binmax - self.p_binmin
         if self.is_fonll_from_root:
             df_fonll = TFile.Open(self.f_fonll)
             df_fonll_Lc = df_fonll.Get(self.p_fonllparticle+"_"+self.p_fonllband)
-            prod_cross = df_fonll_Lc.Integral(ptmin*20, ptmax*20)* self.p_fragf * 1e-12 / delta_pt
+            bin_min = df_fonll_Lc.FindBin(self.p_binmin)
+            bin_max = df_fonll_Lc.FindBin(self.p_binmax)
+            prod_cross = df_fonll_Lc.Integral(bin_min, bin_max)* self.p_fragf * 1e-12 / delta_pt
             signal_yield = 2. * prod_cross * delta_pt * acc * self.p_taa * self.p_br \
                            / (self.p_sigmamb * self.p_fprompt)
             #now we plot the fonll expectation
@@ -638,12 +674,14 @@ class Optimiser: # pylint: disable=too-many-public-methods
             cFONLL.SaveAs("%s/FONLL_curve_%s.png" % (self.dirmlplot, self.s_suffix))
         else:
             df_fonll = pd.read_csv(self.f_fonll)
-            df_fonll_in_pt = df_fonll.query('(pt >= @ptmin) and (pt < @ptmax)')[self.p_fonllband]
+            df_fonll_in_pt = \
+                    df_fonll.query('(pt >= @self.p_binmin) and (pt < @self.p_binmax)')\
+                    [self.p_fonllband]
             prod_cross = df_fonll_in_pt.sum() * self.p_fragf * 1e-12 / delta_pt
             signal_yield = 2. * prod_cross * delta_pt * self.p_br * acc * self.p_taa \
                            / (self.p_sigmamb * self.p_fprompt)
             #now we plot the fonll expectation
-            plt.figure(figsize=(20, 15))
+            fig = plt.figure(figsize=(20, 15))
             plt.subplot(111)
             plt.plot(df_fonll['pt'], df_fonll[self.p_fonllband] * self.p_fragf, linewidth=4.0)
             plt.xlabel('P_t [GeV/c]', fontsize=20)
@@ -651,6 +689,7 @@ class Optimiser: # pylint: disable=too-many-public-methods
             plt.title("FONLL cross section " + self.p_case, fontsize=20)
             plt.semilogy()
             plt.savefig(f'{self.dirmlplot}/FONLL_curve_{self.s_suffix}.png')
+            plt.close(fig)
 
         self.logger.debug("Expected signal yield: %.3e", signal_yield)
         signal_yield = self.p_raahp * signal_yield
@@ -683,13 +722,13 @@ class Optimiser: # pylint: disable=too-many-public-methods
         fig_signif_pevt = plt.figure(figsize=(20, 15))
         plt.xlabel('Threshold', fontsize=20)
         plt.ylabel(r'Significance Per Event ($3 \sigma$)', fontsize=20)
-        plt.title("Significance Per Event vs Threshold", fontsize=20)
+        #plt.title("Significance Per Event vs Threshold", fontsize=20)
         plt.xticks(fontsize=18)
         plt.yticks(fontsize=18)
         fig_signif = plt.figure(figsize=(20, 15))
         plt.xlabel('Threshold', fontsize=20)
         plt.ylabel(r'Significance ($3 \sigma$)', fontsize=20)
-        plt.title("Significance vs Threshold", fontsize=20)
+        #plt.title("Significance vs Threshold", fontsize=20)
         plt.xticks(fontsize=18)
         plt.yticks(fontsize=18)
 
@@ -717,6 +756,9 @@ class Optimiser: # pylint: disable=too-many-public-methods
             plt.figure(fig_signif.number)
             plt.errorbar(x_axis, signif_array_ml, yerr=signif_err_array_ml,
                          label=f'{name}_ML_dataset', elinewidth=2.5, linewidth=5.0)
+            plt.text(0.7, 0.95,
+                     f" ${self.p_binmin} < p_\\mathrm{{T}}/(\\mathrm{{GeV}}/c) < {self.p_binmax}$",
+                     verticalalignment="center", transform=fig_signif.gca().transAxes, fontsize=30)
             #signif_array_tot = [sig * sqrt(self.p_nevttot) for sig in signif_array]
             #signif_err_array_tot = [sig_err * sqrt(self.p_nevttot) for sig_err in signif_err_array]
             #plt.figure(fig_signif.number)
@@ -727,14 +769,22 @@ class Optimiser: # pylint: disable=too-many-public-methods
             plt.savefig(f'{self.dirmlplot}/Significance_PerEvent_{self.s_suffix}.png')
             plt.figure(fig_signif.number)
             plt.legend(loc="upper left", prop={'size': 30})
+            mpl.rcParams.update({"text.usetex": True})
             plt.savefig(f'{self.dirmlplot}/Significance_{self.s_suffix}.png')
+            mpl.rcParams.update({"text.usetex": False})
+
             with open(f'{self.dirmlplot}/Significance_{self.s_suffix}.pickle', 'wb') as out:
                 pickle.dump(fig_signif, out)
+
+            plt.close(fig_signif_pevt)
+            plt.close(fig_signif)
 
     def do_scancuts(self):
         if self.step_done("scancuts"):
             return
         self.logger.info("Scanning cuts")
+
+        self.do_apply()
 
         prob_array = [0.0, 0.2, 0.6, 0.9]
         dfdata = pickle.load(openfile(self.f_reco_applieddata, "rb"))

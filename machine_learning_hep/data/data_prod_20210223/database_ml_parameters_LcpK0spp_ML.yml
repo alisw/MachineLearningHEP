@@ -83,17 +83,17 @@ LcpK0spp:
                    imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star]]
     # Choose some selected variables for which distributions and correlations should be computed and plotted during ML
     var_selected: [[dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,
-                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, inv_mass],
+                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, inv_mass, pt_cand],
                    [dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,
-                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, inv_mass],
+                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, inv_mass, pt_cand],
                    [dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,
-                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star, inv_mass],
+                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star, inv_mass, pt_cand],
                    [dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,
-                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star, inv_mass],
+                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star, inv_mass, pt_cand],
                    [dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,
-                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star, inv_mass],
+                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star, inv_mass, pt_cand],
                    [dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,
-                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star, inv_mass]]
+                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star, inv_mass, pt_cand]]
     var_boundaries: [cos_t_star, pt_cand]
     var_correlation:
       - [cos_t_star]
@@ -298,9 +298,10 @@ LcpK0spp:
     binmin: [1,2,4,6,8,12] #list of nbins
     binmax: [2,4,6,8,12,24] #list of nbins
     mask_values:
-      - name: nsigTOF_Pr_0
-        query: "nsigTOF_Pr_0 <= -999"
-        value: Null
+      - column: nsigTOF_Pr_0
+        find_by_value: -999
+        mask_with: Null
+
     mltype: BinaryClassification
     ncorescrossval: 10
     mlplot: /data/Derived/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/mlplot # to be removed

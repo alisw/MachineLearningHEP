@@ -53,18 +53,36 @@ def openfile(filename, attr):
 
 def mask_df(df_to_mask, mask_config):
     """
-    Mask potential values
+    Potentially mask some column values
     """
+
+    def conv_none(value):
+        if value is None:
+            return np.nan
+        return value
+
+    mask_by_query_list = []
+    mask_by_value_dict = {}
     for mc in mask_config:
-        if mc["name"] not in df_to_mask:
-            print(f"Nothing to mask for {mc['name']}, skip...")
+        if mc["column"] not in df_to_mask:
+            print(f"Nothing to mask for {mc['column']}, skip...")
             continue
+        if "find_by_query" in mc:
+            mask_by_query_list.append(mc)
+            continue
+        mask_by_value_dict[mc["column"]] = {mc["find_by_value"]: conv_none(mc["mask_with"])}
+
+    # Mask all we can do by value
+    df_to_mask.replace(mask_by_value_dict, inplace=True)
+
+    # Now mask all which are searched by query
+    for mc in mask_by_query_list:
         # find indices to mask which fulfil the query
-        print(f"Mask column {mc['name']} where '{mc['query']} with {mc['value']}")
-        df_to_mask[mc["name"]] = df_to_mask[mc["name"]].astype(float)
-        mask_indices = df_to_mask.query(mc["query"]).index
+        # This cast to float should be obsolete as soon as we move to a more recent pandas version
+        df_to_mask[mc["column"]] = df_to_mask[mc["column"]].astype(float)
+        mask_indices = df_to_mask.query(mc["find_by_query"]).index
         # Mask the at the column name with mask value
-        df_to_mask.loc[mask_indices, [mc["name"]]] = mc["value"]
+        df_to_mask.loc[mask_indices, [mc["column"]]] = conv_none(mc["mask_with"])
 
 def selectdfquery(dfr, selection):
     """
