@@ -231,11 +231,14 @@ LcpK0spp:
       chunksizeunp: [100,100,100] #list of periods
       chunksizeskim: [100,100,100] #list of periods
       fracmerge:
-        - [0.02, 0.03, 0.1, 0.4, 0.52, 0.8]  #list of periods
-        - [0.02, 0.03, 0.1, 0.4, 0.52, 0.8]  #list of periods
-        - [0.02, 0.03, 0.1, 0.4, 0.52, 0.8]  #list of periods
+        - [0.02, 0.03, 0.1, 0.8, 1., 1.]  #list of periods
+        - [0.02, 0.03, 0.1, 0.8, 1., 1.]  #list of periods
+        - [0.02, 0.03, 0.1, 0.8, 1., 1.]  #list of periods
       seedmerge: [12,12,12] #list of periods
       period: [LHC16pp,LHC17pp,LHC18pp] #list of periods
+      select_children: [["child_1", "child_2", "child_3", "child_4", "child_5", "child_6", "child_7", "child_8", "child_9", "child_10"],
+                        ["child_12", "child_13", "child_14", "child_15", "child_16", "child_17", "child_18", "child_19", "child_20", "child_21"],
+                        ["child_22", "child_23", "child_24", "child_25", "child_26", "child_27", "child_28", "child_29", "child_30", "child_31", "child_32", "child_33", "child_34", "child_35"]]
       unmerged_tree_dir: [/data/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_data/593_20210223-2051/merged,
                           /data/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_data/593_20210223-2051/merged,
                           /data/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_data/593_20210223-2051/merged] #list of periods
