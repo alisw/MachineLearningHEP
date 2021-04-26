@@ -56,13 +56,15 @@ def vardistplot(dataframe_sig_, dataframe_bkg_, mylistvariables_, output_,
         if "xlim" in po:
             kwargs["range"] = (po["xlim"][0], po["xlim"][1])
 
-        sig_content, sig_edges, _ = plt.hist(dataframe_sig_[var], facecolor='b', label='signal', **kwargs)
-        bkg_content, bkg_edges, _ = plt.hist(dataframe_bkg_[var], facecolor='g', label='background', **kwargs)
+        sig_content, sig_edges, _ = plt.hist(dataframe_sig_[var], facecolor='b', label='signal',
+                                             **kwargs)
+        bkg_content, bkg_edges, _ = plt.hist(dataframe_bkg_[var], facecolor='g', label='background',
+                                             **kwargs)
         sig_content = np.array(sig_content) * (sig_edges[1] - sig_edges[0])
         bkg_content = np.array(bkg_content) * (bkg_edges[1] - bkg_edges[0])
 
         sep_power = sig_content + bkg_content
-        ind = sep_power>0
+        ind = sep_power > 0
         sig_content = sig_content[ind]
         bkg_content = bkg_content[ind]
 
