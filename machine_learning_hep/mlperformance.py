@@ -20,7 +20,7 @@ import pickle
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib as mpl
+from matplotlib.patches import Rectangle
 import seaborn as sn
 from sklearn.model_selection import cross_val_score, cross_val_predict, train_test_split
 from sklearn.model_selection import StratifiedKFold
@@ -307,37 +307,53 @@ def plot_overtraining(names, classifiers, suffix, folder, x_train, y_train, x_va
         fig.savefig(plot_name)
         plot_name = plot_name.replace('png', 'pickle')
 
-def roc_train_test(names, classifiers, x_train, y_train, x_test, y_test, suffix, folder,
-                   binmin, binmax):
+def roc_train_test(names, classifiers, x_train, y_train, x_test, y_test, suffix, folder):
+
+    # First, define some colors and line styles
+    line_styles = ["solid", (0, (1, 1)), (0, (5, 5)), (0, (5, 10))]
+    line_colors = ["tab:blue", "tab:orange", "tab:green", "tab:purple", "tab:brown", "tab:olive",
+                   "tab:cyan"]
+
     fig = plt.figure(figsize=(20, 15))
 
-    for name, clf in zip(names, classifiers):
+    empty_handle = Rectangle((0, 0), 1, 1, fill=False, edgecolor="none", visible=False)
+    offset = len(names)
+    leg_handles = [None] * 4 * offset
+    leg_labels = [None] * 4 * offset
+    offset = 2 * offset
+
+    for i, (name, clf) in enumerate(zip(names, classifiers)):
+        ind = 2*i
         y_train_pred = clf.predict_proba(x_train)[:, 1]
         y_test_pred = clf.predict_proba(x_test)[:, 1]
         fpr_train, tpr_train, _ = roc_curve(y_train, y_train_pred)
         fpr_test, tpr_test, _ = roc_curve(y_test, y_test_pred)
         roc_auc_train = auc(fpr_train, tpr_train)
         roc_auc_test = auc(fpr_test, tpr_test)
-        name_plot = name.replace("_", "\\_")
-        train_line = plt.plot(fpr_train, tpr_train, lw=3, alpha=0.4,
-                              label=f'ROC {name_plot} - Train set (AUC = {roc_auc_train:.4f})')
-        plt.plot(fpr_test, tpr_test, lw=3, ls="-.", alpha=0.8, c=train_line[0].get_color(),
-                 label=f'ROC {name} - Test set (AUC = {roc_auc_test:.4f})')
+        leg_handles[ind] = empty_handle
+        leg_handles[ind+1], = plt.plot(fpr_train, tpr_train, lw=7, alpha=0.8,
+                                       ls=line_styles[i%len(line_styles)],
+                                       c=line_colors[i%len(line_colors)])
 
-    plt.text(0.7, 0.5,
-             f" ${binmin} < p_\\mathrm{{T}}/(\\mathrm{{GeV}}/c) < {binmax}$",
-             verticalalignment="center", transform=fig.gca().transAxes, fontsize=30)
+        leg_handles[ind+offset] = empty_handle
+        leg_handles[ind+1+offset], = plt.plot(fpr_test, tpr_test, lw=7,
+                                              ls=line_styles[(i+1)%len(line_styles)],
+                                              c=line_colors[(i+1)%len(line_colors)], alpha=0.8)
+        leg_labels[ind] = f"{name}(AUC)"
+        leg_labels[ind+1] = f"train({roc_auc_train:.4f})"
+        leg_labels[ind+offset] = ""
+        leg_labels[ind+offset+1] = f"test({roc_auc_test:.4f})"
+
 
     plt.xlim([-0.05, 1.05])
     plt.ylim([-0.05, 1.05])
-    plt.xlabel('False Positive Rate', fontsize=30)
-    plt.ylabel('True Positive Rate', fontsize=30)
-    plt.legend(loc='lower right', prop={'size': 25})
-    plt.tick_params(labelsize=20)
+    plt.xlabel('False Positive Rate', fontsize=60)
+    plt.ylabel('True Positive Rate', fontsize=60)
+    plt.legend(leg_handles, leg_labels, loc='lower left', ncol=2, prop={'size': 40},
+               bbox_to_anchor=(0.2, 0.1), bbox_transform=plt.gca().transAxes, columnspacing=0.1)
+    plt.tick_params(labelsize=60)
     plot_name = f'{folder}/ROCtraintest{suffix}.png'
-    mpl.rcParams.update({"text.usetex": True})
     fig.savefig(plot_name)
-    mpl.rcParams.update({"text.usetex": False})
     plot_name = plot_name.replace('png', 'pickle')
     with open(plot_name, 'wb') as out:
         pickle.dump(fig, out)

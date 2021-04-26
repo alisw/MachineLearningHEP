@@ -160,6 +160,8 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
         self.syst_consider_free_sigma = None
         self.syst_rel_var_sigma_up = None
         self.syst_rel_var_sigma_down = None
+        self.syst_massmin = [None] * self.n_bins1
+        self.syst_massmax = [None] * self.n_bins1
         if self.syst_pars:
             self.syst_init_sigma_from = self.syst_pars.get("init_sigma_from", "central")
             if not isinstance(self.syst_init_sigma_from, list):
@@ -184,6 +186,23 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
                 iter(self.syst_rel_var_sigma_down)
             except TypeError:
                 self.syst_rel_var_sigma_down = [self.syst_rel_var_sigma_down] * self.n_bins1
+
+            syst_massmin = self.syst_pars.get("massmin", None)
+            # either that is a list or a list of lists
+            if syst_massmin is not None:
+                if isinstance(syst_massmin[0], list):
+                    for i, per_pt in enumerate(syst_massmin):
+                        self.syst_massmin[i] = per_pt
+                else:
+                    self.syst_massmin = syst_massmin * self.n_bins1
+            syst_massmax = self.syst_pars.get("massmax", None)
+            # either that is a list or a list of lists
+            if syst_massmax is not None:
+                if isinstance(syst_massmax[0], list):
+                    for i, per_pt in enumerate(syst_massmax):
+                        self.syst_massmax[i] = per_pt
+                else:
+                    self.syst_massmax = syst_massmax * self.n_bins1
 
 
     def make_ali_hf_fit_pars(self, ibin1, ibin2):
@@ -248,8 +267,8 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many
                     "yield_ref": None,
                     "chi2_ref": None,
                     "signif_ref": None,
-                    "fit_range_low_syst": self.syst_pars.get("massmin", None),
-                    "fit_range_up_syst": self.syst_pars.get("massmax", None),
+                    "fit_range_low_syst": self.syst_massmin[ibin1],
+                    "fit_range_up_syst": self.syst_massmax[ibin1],
                     "bin_count_sigma_syst": self.syst_pars.get("bincount_sigma", None),
                     "bkg_func_names_syst": self.syst_pars.get("bkg_funcs", None),
                     "rebin_syst": self.syst_pars.get("rebin", None),
@@ -1111,8 +1130,9 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                                             f"multi_trial_bin1_{ibin1}_bin2_{ibin2}.root")
 
             # Central fits
+            fit_file = TFile(f"{save_dir}/multi_trial_{suffix_write}_results.root", "RECREATE")
             canvas = TCanvas("fit_canvas", suffix_write, 1400, 800)
-            fit.draw(canvas, title=title)
+            fit.draw(canvas, title=title, root_file=fit_file)
 
             if self.pars_factory.apply_weights is False:
                 canvas.SaveAs(make_file_path(save_dir, "multi_trial", "eps", None,
@@ -1126,6 +1146,7 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                 canvas.Write(f"multi_trial_{suffix_write}")
 
             canvas.Close()
+            fit_file.Close()
 
 
     @staticmethod

@@ -27,6 +27,7 @@ from os import makedirs
 from operator import itemgetter
 from copy import deepcopy, copy
 from random import shuffle
+from math import sqrt
 
 from ROOT import TFile, TCanvas, TLegend
 from ROOT import kRed, kGreen, kBlack, kBlue, kOrange, kViolet, kAzure, kYellow
@@ -439,8 +440,43 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
             h.GetYaxis().SetRangeUser(h_min, h_max)
             h.GetYaxis().SetMaxDigits(3)
 
+    @staticmethod
+    def __compute_rms(histos, central, rel_bound=0.5):
+        """compute the RMS around a central value for all variations
 
-    def __make_single_plot(self, name, ibin2, successful):
+        args:
+            histos: list
+                all histograms to be taken into account
+            central: float
+                the central value wrt which to compute the RMS
+            rel_bound: float
+                if relative deviation of variation wrt central is larger than that,
+                don't take it into account
+
+        returns:
+            list: RMS values per histogram bin
+        """
+
+        n_bins = histos[0].GetNbinsX()
+        rms = [0 for _ in range(n_bins)]
+        n_variations = [0 for _ in range(n_bins)]
+
+        central = [central for _ in range(n_bins)]
+
+        for i_bin in range(n_bins):
+            for h in histos:
+                content = h.GetBinContent(i_bin + 1)
+                # exclude deviation greater than 50%
+                if abs(content - central) / central >= rel_bound:
+                    continue
+                rms[i_bin] += (content - central[i_bin])**2
+                n_variations[i_bin] += 1
+            rms[i_bin] = sqrt(rms[i_bin] / n_variations[i_bin])
+
+        return rms
+
+
+    def __make_single_plot(self, name, ibin2, successful): # pylint: disable=too-many-statements
 
         # Nominal histogram
         successful_tmp = copy(successful)
@@ -487,13 +523,20 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
             h.GetYaxis().SetTitle("WP variation / nominal")
         self.__adjust_min_max(histos, )
 
-
         canvas = TCanvas("c", "", 800, 800)
         canvas.cd()
 
         for h in histos:
             h.Draw("same")
         legend.Draw("same")
+
+        # Make the RMS plot
+        rms = self.__compute_rms(histos, 1., 0.5)
+        histo_rms = nominal_histo.Clone(f"{nominal_histo.GetName()}_rms")
+        histo_rms.Reset("ICESM")
+        histo_rms.GetYaxis().SetTitle("RMS wrt. 1")
+        for i, v in enumerate(rms):
+            histo_rms.SetBinContent(i + 1, v)
 
         save_path = join(self.nominal_analyzer_merged.d_resultsallpdata, self.syst_out_dir,
                          f"ml_wp_syst_{name}_ibin2_{ibin2}.eps")
@@ -504,6 +547,7 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
         file_out.cd()
         for i, h in enumerate(histos):
             h.Write("%s%d" % (h.GetName(), i))
+        histo_rms.Write()
         canvas.Write()
         file_out.Close()
         canvas.Close()
@@ -524,18 +568,30 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
             filename = f"finalcross{self.case}{self.typean}mult{ibin2}.root"
             filepath = join(self.analyzers_syst[succ].d_resultsallpdata, filename)
             histos.append(self.__get_histogram(filepath, name))
-            ml_trials.append(list(map(itemgetter(self.mcopt), self.ml_wps[succ])))
+            if self.mcopt is not None:
+                ml_trials.append(list(map(itemgetter(self.mcopt), self.ml_wps[succ])))
+            else:
+                ml_trials.append(self.ml_wps[succ])
 
         nptbins = self.nominal_processer_mc.p_nptfinbins
         gr = [TGraphErrors(0) for _ in range(nptbins)]
         for ipt in range(nptbins):
             gr[ipt].SetTitle("pT bin %d" % ipt)
-            gr[ipt].SetPoint(0, self.cent_cv_cut[ipt], nominal_histo.GetBinContent(ipt+1))
-            gr[ipt].SetPointError(0, 0.0001, nominal_histo.GetBinError(ipt+1))
+            nominal_value = nominal_histo.GetBinContent(ipt+1)
+            nominal_error = nominal_histo.GetBinError(ipt+1)
+            if nominal_value != 0:
+                gr[ipt].SetPoint(0, self.cent_cv_cut[ipt], 1)
+                gr[ipt].SetPointError(0, 0.0001,
+                                      nominal_histo.GetBinError(ipt+1) / nominal_value * sqrt(2))
             for iml, succ in enumerate(successful_tmp):
-                gr[ipt].SetPoint(iml + 1, ml_trials[succ][ipt],
-                                 histos[succ].GetBinContent(ipt+1))
-                gr[ipt].SetPointError(iml + 1, 0.0001, histos[succ].GetBinError(ipt+1))
+                mlwp_value = histos[succ].GetBinContent(ipt+1)
+                if mlwp_value <= 0 or nominal_value <= 0:
+                    continue
+                mlwp_value_rel = mlwp_value / nominal_value
+                mlwp_error = sqrt((nominal_error/nominal_value)**2 + \
+                        (histos[succ].GetBinError(ipt+1) / mlwp_value)**2)
+                gr[ipt].SetPoint(iml + 1, ml_trials[succ][ipt], mlwp_value_rel)
+                gr[ipt].SetPointError(iml + 1, 0.0001, mlwp_error)
 
         canvas = TCanvas("cvsml%d" % ibin2, "", 1200, 800)
         if len(gr) <= 6:

@@ -353,7 +353,7 @@ LcpK0spp:
     probcutpresel:
       data: [0.3,0.3,0.3,0.3,0.3,0.3] #list of nbins
       mc: [0.3,0.3,0.3,0.3,0.3,0.3] #list of nbins
-    probcutoptimal: [0.45,0.45,0.5,0.6,0.75,0.65] #list of nbins
+    probcutoptimal: [0.7, 0.7, 0.7, 0.7, 0.7, 0.7] #list of nbins
 
   analysis:
     indexhptspectrum: 5 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
@@ -404,7 +404,7 @@ LcpK0spp:
                   /data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prodD2H/594_20210301-1015/resultsMBvspt_ntrkl] #list of periods
         resultsallp: /data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_ntrkl
 
-      mass_fit_lim: [2.1, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [2., 2.49] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
@@ -412,15 +412,15 @@ LcpK0spp:
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.2864
-      massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
-      massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
+      massmin: [2.136, 2.136, 2.136, 2.136, 2.106, 2.106]
+      massmax: [2.446,2.446,2.446,2.446,2.476,2.476]
       rebin:
-        - [6,6,8,9,10,12]
-        - [6,6,8,9,10,12]
-        - [6,6,8,9,10,12]
-        - [6,6,8,9,10,12]
-        - [6,6,8,9,10,12]
-        - [6,6,8,9,10,12]
+        - [5, 5, 6, 7, 8, 12]
+        - [5, 5, 6, 7, 8, 12]
+        - [5, 5, 6, 7, 8, 12]
+        - [5, 5, 6, 7, 8, 12]
+        - [5, 5, 6, 7, 8, 12]
+        - [5, 5, 6, 7, 8, 12]
 
       includesecpeak: [false, false, false, false, false, false]
       masssecpeak: 2.2864
@@ -455,8 +455,20 @@ LcpK0spp:
         # For now don't do these things per pT bin
         max_chisquare_ndf: 2.
         rebin: [0]
-        massmin: [2.14, 2.13, 2.12, 2.15, 2.16]
-        massmax: [2.436, 2.426, 2.416, 2.446, 2.456]
+        massmin:
+          - [2.136, 2.116, 2.126, 2.146, 2.156]
+          - [2.136, 2.116, 2.126, 2.146, 2.156]
+          - [2.136, 2.116, 2.126, 2.146, 2.156]
+          - [2.136, 2.116, 2.126, 2.146, 2.156]
+          - [2.106, 2.096, 2.086, 2.116, 2.126]
+          - [2.106, 2.096, 2.086, 2.116, 2.126]
+        massmax:
+          - [2.446, 2.426, 2.436, 2.456, 2.466]
+          - [2.446, 2.426, 2.436, 2.456, 2.466]
+          - [2.446, 2.426, 2.436, 2.456, 2.466]
+          - [2.446, 2.426, 2.436, 2.456, 2.466]
+          - [2.476, 2.456, 2.466, 2.486, 2.496]
+          - [2.476, 2.456, 2.466, 2.486, 2.496]
         bincount_sigma: [3, 5]
         bkg_funcs: [kExpo, kLin, Pol2, Pol3]
         # Whether to include the free sigma option in the derivation of raw yield uncertainty in given pT bin
@@ -566,7 +578,7 @@ LcpK0spp:
                   /data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prodD2H/594_20210301-1015/resultsMBvspt_perc_v0m] #list of periods
         resultsallp: /data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_perc_v0m
 
-      mass_fit_lim: [2.1, 2.48] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [2., 2.49] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
@@ -575,15 +587,15 @@ LcpK0spp:
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.2864
-      massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
-      massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
+      massmin: [2.136, 2.136, 2.136, 2.136, 2.106, 2.106]
+      massmax: [2.446,2.446,2.446,2.446,2.476,2.476]
       #dynamic_rebinning: True
       rebin:
-        - [6,6,8,9,10,12]
-        - [6,6,8,9,10,12]
-        - [6,6,8,9,10,12]
-        - [6,6,8,9,10,12]
-        - [6,6,8,9,10,12]
+        - [5, 5, 6, 7, 8, 12]
+        - [5, 5, 6, 7, 8, 12]
+        - [5, 5, 6, 7, 8, 12]
+        - [5, 5, 6, 7, 8, 12]
+        - [5, 5, 6, 7, 8, 12]
 
       includesecpeak: [false, false, false, false, false, false]
       masssecpeak: 2.2864
@@ -618,8 +630,20 @@ LcpK0spp:
         # For now don't do these things per pT bin
         max_chisquare_ndf: 2.
         rebin: [0]
-        massmin: [2.14, 2.13, 2.12, 2.15, 2.16]
-        massmax: [2.436, 2.416, 2.426, 2.446, 2.456]
+        massmin:
+          - [2.136, 2.116, 2.126, 2.146, 2.156]
+          - [2.136, 2.116, 2.126, 2.146, 2.156]
+          - [2.136, 2.116, 2.126, 2.146, 2.156]
+          - [2.136, 2.116, 2.126, 2.146, 2.156]
+          - [2.106, 2.096, 2.086, 2.116, 2.126]
+          - [2.106, 2.096, 2.086, 2.116, 2.126]
+        massmax:
+          - [2.446, 2.426, 2.436, 2.456, 2.466]
+          - [2.446, 2.426, 2.436, 2.456, 2.466]
+          - [2.446, 2.426, 2.436, 2.456, 2.466]
+          - [2.446, 2.426, 2.436, 2.456, 2.466]
+          - [2.476, 2.456, 2.466, 2.486, 2.496]
+          - [2.476, 2.456, 2.466, 2.486, 2.496]
         bincount_sigma: [3, 5]
         bkg_funcs: [kExpo, kLin, Pol2, Pol3]
         # Whether to include the free sigma option in the derivation of raw yield uncertainty in given pT bin

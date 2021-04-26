@@ -181,6 +181,9 @@ class Optimiser: # pylint: disable=too-many-public-methods
         self.p_nevtml = None
         self.p_nevttot = None
         self.p_presel_gen_eff = data_param["ml"]["opt"]["presel_gen_eff"]
+        dirdatatotsample = data_param["multi"]["data"]["pkl_evtcounter_all"]
+        self.f_evt_data = os.path.join(dirdataml, self.n_evt)
+        self.f_evttotsample_data = os.path.join(dirdatatotsample, self.n_evt)
         # Potentially mask certain values (e.g. nsigma TOF of -999)
         self.p_mask_values = data_param["ml"].get("mask_values", None)
         self.p_mass_fit_lim = data_param["analysis"][self.p_typean]['mass_fit_lim']
@@ -367,34 +370,28 @@ class Optimiser: # pylint: disable=too-many-public-methods
 
         output = make_plot_name(self.dirmlplot, "Signal_all_vars", len(self.v_all),
                                 self.p_binmin, self.p_binmax)
-        correlationmatrix(self.df_sigtrain, self.v_all, "Signal", output,
-                          self.p_binmin, self.p_binmax, self.p_plot_options)
+        correlationmatrix(self.df_sigtrain, self.v_all, output, self.p_plot_options)
 
         output = make_plot_name(self.dirmlplot, "Background_all_vars", len(self.v_all),
                                 self.p_binmin, self.p_binmax)
-        correlationmatrix(self.df_bkgtrain, self.v_all, "Background", output,
-                          self.p_binmin, self.p_binmax, self.p_plot_options)
+        correlationmatrix(self.df_bkgtrain, self.v_all, output, self.p_plot_options)
 
         if self.v_selected:
             output = make_plot_name(self.dirmlplot, "Signal_selected_vars", len(self.v_selected),
                                     self.p_binmin, self.p_binmax)
-            correlationmatrix(self.df_sigtrain, self.v_selected, "Signal", output,
-                              self.p_binmin, self.p_binmax, self.p_plot_options)
+            correlationmatrix(self.df_sigtrain, self.v_selected, output, self.p_plot_options)
 
             output = make_plot_name(self.dirmlplot, "Background_selected_vars",
                                     len(self.v_selected), self.p_binmin, self.p_binmax)
-            correlationmatrix(self.df_bkgtrain, self.v_selected, "Background", output,
-                              self.p_binmin, self.p_binmax, self.p_plot_options)
+            correlationmatrix(self.df_bkgtrain, self.v_selected, output, self.p_plot_options)
 
         output = make_plot_name(self.dirmlplot, "Signal_features", len(self.v_train),
                                 self.p_binmin, self.p_binmax)
-        correlationmatrix(self.df_sigtrain, self.v_train, "Signal", output,
-                          self.p_binmin, self.p_binmax, self.p_plot_options)
+        correlationmatrix(self.df_sigtrain, self.v_train, output, self.p_plot_options)
 
         output = make_plot_name(self.dirmlplot, "Background_features", len(self.v_train),
                                 self.p_binmin, self.p_binmax)
-        correlationmatrix(self.df_bkgtrain, self.v_train, "Background", output,
-                          self.p_binmin, self.p_binmax, self.p_plot_options)
+        correlationmatrix(self.df_bkgtrain, self.v_train, output, self.p_plot_options)
 
         # For each plot there was an IO returned. That is not needed and was only important for
         # browser interface version of this package which became completely deprecated
@@ -456,6 +453,11 @@ class Optimiser: # pylint: disable=too-many-public-methods
 
         self.logger.info("Application")
 
+        if self.p_mask_values:
+            self.logger.info("Maksing values for application")
+            mask_df(self.df_data, self.p_mask_values)
+            mask_df(self.df_mc, self.p_mask_values)
+
         df_data = apply(self.p_mltype, self.p_classname, self.p_trainedmod,
                         self.df_data, self.v_train)
         df_mc = apply(self.p_mltype, self.p_classname, self.p_trainedmod,
@@ -498,8 +500,7 @@ class Optimiser: # pylint: disable=too-many-public-methods
 
         self.logger.info("Make ROC for train and test")
         roc_train_test(self.p_classname, self.p_class, self.df_xtrain, self.df_ytrain,
-                       self.df_xtest, self.df_ytest, self.s_suffix, self.dirmlplot,
-                       self.p_binmin, self.p_binmax)
+                       self.df_xtest, self.df_ytest, self.s_suffix, self.dirmlplot)
 
     def do_plot_model_pred(self):
         if self.step_done("plot_model_pred"):
@@ -519,7 +520,7 @@ class Optimiser: # pylint: disable=too-many-public-methods
 
         self.logger.info("Do simple importance")
         importanceplotall(self.v_train, self.p_classname, self.p_class,
-                          self.s_suffix, self.dirmlplot)
+                          self.s_suffix, self.dirmlplot, self.p_plot_options)
 
     def do_importance_shap(self):
         if self.step_done("importance_shap"):
@@ -638,6 +639,21 @@ class Optimiser: # pylint: disable=too-many-public-methods
         self.logger.info("Doing significance optimization")
         gROOT.SetBatch(True)
         gROOT.ProcessLine("gErrorIgnoreLevel = kWarning;")
+
+
+
+        self.df_evt_data = pickle.load(openfile(self.f_evt_data, 'rb'))
+        if self.p_dofullevtmerge is True:
+            self.df_evttotsample_data = pickle.load(openfile(self.f_evttotsample_data, 'rb'))
+        else:
+            self.logger.warning("The total merged event dataframe was not merged for space limits")
+            self.df_evttotsample_data = pickle.load(openfile(self.f_evt_data, 'rb'))
+            #and the total number of events
+        self.p_nevttot = len(self.df_evttotsample_data)
+        self.p_nevtml = len(self.df_evt_data)
+
+
+
         #first extract the number of data events in the ml sample
         # This might need a revisit, for now just extract the numbers from the ML merged
         # event count (aka from a YAML since the actual events are not needed)
@@ -645,9 +661,9 @@ class Optimiser: # pylint: disable=too-many-public-methods
         # number was taken from the event counter. But the latter is basically not used
         # anymore for a long time cause "dofullevtmerge" is mostly "false" in the DBs
         #and the total number of events
-        count_dict = parse_yaml(self.f_evt_count_ml)
-        self.p_nevttot = count_dict["evtorig"]
-        self.p_nevtml = count_dict["evt"]
+        #count_dict = parse_yaml(self.f_evt_count_ml)
+        #self.p_nevttot = count_dict["evtorig"]
+        #self.p_nevtml = count_dict["evt"]
         self.logger.debug("Number of data events used for ML: %d", self.p_nevtml)
         self.logger.debug("Total number of data events: %d", self.p_nevttot)
         #calculate acceptance correction. we use in this case all
@@ -726,11 +742,11 @@ class Optimiser: # pylint: disable=too-many-public-methods
         plt.xticks(fontsize=18)
         plt.yticks(fontsize=18)
         fig_signif = plt.figure(figsize=(20, 15))
-        plt.xlabel('Threshold', fontsize=20)
-        plt.ylabel(r'Significance ($3 \sigma$)', fontsize=20)
+        plt.xlabel('working point', fontsize=60)
+        plt.ylabel(r'expected significance ($3 \sigma$)', fontsize=60)
         #plt.title("Significance vs Threshold", fontsize=20)
-        plt.xticks(fontsize=18)
-        plt.yticks(fontsize=18)
+        plt.xticks(fontsize=60)
+        plt.yticks(fontsize=60)
 
         df_sig = self.df_mltest[self.df_mltest["ismcprompt"] == 1]
 
@@ -755,10 +771,10 @@ class Optimiser: # pylint: disable=too-many-public-methods
             signif_err_array_ml = [sig_err * sqrt(self.p_nevtml) for sig_err in signif_err_array]
             plt.figure(fig_signif.number)
             plt.errorbar(x_axis, signif_array_ml, yerr=signif_err_array_ml,
-                         label=f'{name}_ML_dataset', elinewidth=2.5, linewidth=5.0)
-            plt.text(0.7, 0.95,
-                     f" ${self.p_binmin} < p_\\mathrm{{T}}/(\\mathrm{{GeV}}/c) < {self.p_binmax}$",
-                     verticalalignment="center", transform=fig_signif.gca().transAxes, fontsize=30)
+                         label=f'{name}', elinewidth=2.5, linewidth=5.0)
+            #plt.text(0.2, 0.2,
+            #         f" ${self.p_binmin} < p_\\mathrm{{T}}/(\\mathrm{{GeV}}/c) < {self.p_binmax}$",
+            #         verticalalignment="center", transform=fig_signif.gca().transAxes, fontsize=30)
             #signif_array_tot = [sig * sqrt(self.p_nevttot) for sig in signif_array]
             #signif_err_array_tot = [sig_err * sqrt(self.p_nevttot) for sig_err in signif_err_array]
             #plt.figure(fig_signif.number)
@@ -768,7 +784,8 @@ class Optimiser: # pylint: disable=too-many-public-methods
             plt.legend(loc="upper left", prop={'size': 30})
             plt.savefig(f'{self.dirmlplot}/Significance_PerEvent_{self.s_suffix}.png')
             plt.figure(fig_signif.number)
-            plt.legend(loc="upper left", prop={'size': 30})
+            plt.tight_layout()
+            #plt.legend(loc="upper left", prop={'size': 30})
             mpl.rcParams.update({"text.usetex": True})
             plt.savefig(f'{self.dirmlplot}/Significance_{self.s_suffix}.png')
             mpl.rcParams.update({"text.usetex": False})

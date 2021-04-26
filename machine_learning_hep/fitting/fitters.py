@@ -983,6 +983,8 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
 
         title = draw_args.pop("title", "")
 
+        root_file = draw_args.pop("root_file", None)
+
         # Which background functions are used?
         used_bkgs = array("b", ["kExpo" in self.init_pars["bkg_func_names_syst"],
                                 "kLin" in self.init_pars["bkg_func_names_syst"],
@@ -1410,16 +1412,24 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
             if ref_line:
                 ref_line.Draw("same")
 
+        def save_histos(out_file, histos):
+            out_file.cd()
+            for h in histos:
+                h.Write()
 
         root_pad.Divide(3, 2)
 
         # Sigmas
         fill_pad(root_pad.cd(1), (sigma_min, sigma_max), h_sigma_all_bkgs.values(),
                  make_ref_line(0., sigma_ref, tot_trials, sigma_ref))
+        if root_file:
+            save_histos(root_file, h_sigma_all_bkgs.values())
         # Means
         mean_pad = root_pad.cd(2)
         fill_pad(mean_pad, (mean_min, mean_max), h_mean_all_bkgs.values(),
                  make_ref_line(0., mean_ref, tot_trials, mean_ref))
+        if root_file:
+            save_histos(root_file, h_mean_all_bkgs.values())
         # Legend
         bkg_func_legend = TLegend(0.2, 0.2, 0.5, 0.5)
         bkg_func_legend.SetTextSize(0.04)
@@ -1437,10 +1447,14 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
         # Chi2
         fill_pad(chi2_signif_pad.cd(1), (chi2_min, chi2_max), h_chi2_all_bkgs.values(),
                  make_ref_line(0., chi2_ref, tot_trials, chi2_ref))
+        if root_file:
+            save_histos(root_file, h_chi2_all_bkgs.values())
 
         # Significance
         fill_pad(chi2_signif_pad.cd(2), (signif_min, signif_max), h_signif_all_bkgs.values(),
                  make_ref_line(0., signif_ref, tot_trials, signif_ref))
+        if root_file:
+            save_histos(root_file, h_signif_all_bkgs.values())
 
         # Fit yields and bin counts
         yield_pad = root_pad.cd(4)
@@ -1449,10 +1463,14 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
         # Fit yields
         fill_pad(yield_pad.cd(1), (yields_fit_min, yields_fit_max), h_raw_yield_all_bkgs.values(),
                  make_ref_line(0., yield_ref, tot_trials, yield_ref))
+        if root_file:
+            save_histos(root_file, h_raw_yield_all_bkgs.values())
         # BC yields
         fill_pad(yield_pad.cd(2), (yields_bc_min, yields_bc_max),
                  (h_raw_yield_all_bc0, h_raw_yield_all_bc1),
                  make_ref_line(0., yield_ref, tot_trials * n_bc_ranges, yield_ref))
+        if root_file:
+            save_histos(root_file, [h_raw_yield_all_bc0, h_raw_yield_all_bc1])
 
         yield_pad = root_pad.cd(5)
         yield_pad.SetLeftMargin(0.14)
@@ -1472,6 +1490,10 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
         h_raw_yield_dist_all_bc1.SetDirectory(0)
         make_ref_line(yield_ref, 0., yield_ref, h_raw_yield_dist_all.GetMaximum()).Draw("same")
         yield_pad.Update()
+        if root_file:
+            save_histos(root_file, [h_raw_yield_dist_all,
+                                    h_raw_yield_dist_all_bc0,
+                                    h_raw_yield_dist_all_bc1])
 
         # This might be taken care of later
         #st = h_raw_yield_dist_all.GetListOfFunctions().FindObject("stats")
@@ -1502,6 +1524,20 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
             root_objects.append(tlatex)
             return tlatex
 
+        # Make a histogram with summary numbers
+        list_summary = ["n_trials", "n_succ_trials", "ref_yield", "mean_yield", "median_yield",
+                        "mean_bc0", "mean_bc1", "rms_yield", "rms_bc0", "rms_bc1", "min_yield",
+                        "max_yield", "ref_mean", "ref_sigma", "ref_signif", "ref_chi2"]
+        h_summary = TH1F("summary", "", len(list_summary), 0, len(list_summary))
+        root_objects.append(h_summary)
+        for i, v in enumerate(list_summary):
+            h_summary.GetXaxis().SetBinLabel(i+1, v)
+
+        h_summary.SetBinContent(13, mean_ref)
+        h_summary.SetBinContent(14, sigma_ref)
+        h_summary.SetBinContent(15, signif_ref)
+        h_summary.SetBinContent(16, chi2_ref)
+
 
         sum_pad = root_pad.cd(6)
         sum_pad.SetLeftMargin(0.14)
@@ -1513,36 +1549,47 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
         rel_succ_trials = successful_trials / tot_trials if tot_trials > 0 else 0.
         make_latex(0.15, 0.93, f"succ. trials = {successful_trials} / {tot_trials} " \
                 f"({rel_succ_trials * 100.:.2f}%)").Draw("same")
+        h_summary.SetBinContent(1, tot_trials)
+        h_summary.SetBinContent(2, successful_trials)
 
         make_latex(0.15, 0.87, f"mean = {aver:.3f}", color=yield_fit_color).Draw("same")
+        h_summary.SetBinContent(4, aver)
 
         make_latex(0.15, 0.81, f"median = {lim70[1]:.3f}", color=yield_fit_color).Draw("same")
+        h_summary.SetBinContent(5, lim70[1])
 
         aver_bc0 = h_raw_yield_dist_all_bc0.GetMean()
         make_latex(0.15, 0.75, f"mean(BinCount0) = {aver_bc0:.3f}",
                    color=yield_bc0_color).Draw("same")
+        h_summary.SetBinContent(6, aver_bc0)
 
         aver_bc1 = h_raw_yield_dist_all_bc1.GetMean()
         make_latex(0.15, 0.69, f"mean(BinCount1) = {aver_bc1:.3f}",
                    color=yield_bc1_color).Draw("same")
+        h_summary.SetBinContent(7, aver_bc1)
 
         val = h_raw_yield_dist_all.GetRMS()
         val_rel = val / aver * 100 if aver != 0 else 0
         make_latex(0.15, 0.60, f"rms = {val:.3f} ({val_rel:.2f}%)",
                    color=yield_fit_color).Draw("same")
+        h_summary.SetBinContent(8, val)
 
         val = h_raw_yield_dist_all_bc0.GetRMS()
         val_rel = val / aver_bc0 * 100. if aver_bc0 != 0 else 0
         make_latex(0.15, 0.54, f"rms(BinCount0) = {val:.3f} ({val_rel:.2f}%)",
                    color=yield_bc0_color).Draw("same")
+        h_summary.SetBinContent(9, val)
 
         val = h_raw_yield_dist_all_bc1.GetRMS()
         val_rel = val / aver_bc1 * 100. if aver_bc1 != 0 else 0
         make_latex(0.15, 0.48, f"rms(BinCount1) = {val:.3f} ({val_rel:.2f}%)",
                    color=yield_bc1_color).Draw("same")
+        h_summary.SetBinContent(10, val)
 
         make_latex(0.15, 0.39, f"min = {min_yield:.2f} ; max = {max_yield:.2f}",
                    color=yield_fit_color).Draw("same")
+        h_summary.SetBinContent(11, min_yield)
+        h_summary.SetBinContent(12, max_yield)
 
         val = (max_yield - min_yield) / sqrt(12)
         val_rel = val / aver * 100. if aver != 0 else 0
@@ -1551,6 +1598,7 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
                    color=yield_fit_color).Draw("same")
 
         make_latex(0.15, 0.27, f"ref = {yield_ref:.2f}", color=kRed).Draw("same")
+        h_summary.SetBinContent(3, yield_ref)
 
         val_rel = 100 * (yield_ref - aver) / yield_ref if yield_ref != 0 else 0
         make_latex(0.15, 0.21, f"ref - mean(fit) = {yield_ref - aver:.3f}  " \
@@ -1563,6 +1611,10 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
         val_rel = 100 * (yield_ref - aver_bc1) / yield_ref if yield_ref != 0 else 0
         make_latex(0.15, 0.09, f"ref - mean(BC1) = {yield_ref - aver_bc1:.3f}  " \
                                f"({val_rel:.2f}%)", color=yield_bc1_color).Draw("same")
+
+        if root_file:
+            save_histos(root_file, [h_summary])
+
 
         if draw_args:
             self.logger.warning("There are unknown draw arguments")

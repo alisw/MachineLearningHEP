@@ -23,6 +23,7 @@ import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.gridspec import GridSpec
+from matplotlib.patches import Patch
 import seaborn as sns
 
 from machine_learning_hep.logger import get_logger
@@ -37,34 +38,60 @@ def vardistplot(dataframe_sig_, dataframe_bkg_, mylistvariables_, output_,
             if isinstance(plot_options_, dict) else {}
 
 
-    figure = plt.figure(figsize=(20, 15)) # pylint: disable=unused-variable
+    n_columns = 5
+    n_rows = int((len(mylistvariables_)) / n_columns) + 1
+    fig_y = 5 * n_rows
 
-    figure.suptitle(f"Separation plots for ${binmin} < p_\\mathrm{{T}}/(\\mathrm{{GeV}}/c) < " \
-                    f"{binmax}$", fontsize=30)
+    figure = plt.figure(figsize=(20, fig_y))
+
     i = 1
+
     for var in mylistvariables_:
-        ax = plt.subplot(3, int(len(mylistvariables_)/3+1), i)
+
+        ax = plt.subplot(n_rows, n_columns, i)
+
         plt.yscale('log')
         kwargs = dict(alpha=0.3, density=True, bins=100)
         po = plot_options.get(var, {})
         if "xlim" in po:
             kwargs["range"] = (po["xlim"][0], po["xlim"][1])
 
-        plt.hist(dataframe_sig_[var], facecolor='b', label='signal', **kwargs)
-        plt.hist(dataframe_bkg_[var], facecolor='g', label='background', **kwargs)
+        sig_content, sig_edges, _ = plt.hist(dataframe_sig_[var], facecolor='b', label='signal', **kwargs)
+        bkg_content, bkg_edges, _ = plt.hist(dataframe_bkg_[var], facecolor='g', label='background', **kwargs)
+        sig_content = np.array(sig_content) * (sig_edges[1] - sig_edges[0])
+        bkg_content = np.array(bkg_content) * (bkg_edges[1] - bkg_edges[0])
+
+        sep_power = sig_content + bkg_content
+        ind = sep_power>0
+        sig_content = sig_content[ind]
+        bkg_content = bkg_content[ind]
+
+        sep_power = 0.5 * np.sum((sig_content - bkg_content)**2 / (sig_content + bkg_content))
 
         var_tex = var.replace("_", ":")
         if "xlim" in po:
             plt.xlim(po["xlim"][0], po["xlim"][1])
         if "xlabel" in po:
             var_tex = "$" + po["xlabel"] + "$"
-        plt.xlabel(var_tex, fontsize=11)
-        plt.ylabel(po.get("ylabel", "entries"), fontsize=11)
-        ax.legend()
+
+        sep_text = "$p_\\mathrm{sep} = " + f"{sep_power * 100:.4f}" + "\\%$"
+        ax.text(0.1, 0.9, sep_text, fontsize=25, transform=ax.transAxes)
+        plt.tick_params(labelsize=20)
+        plt.xlabel(var_tex, fontsize=30)
+
+        if (i-1) % n_columns == 0:
+            plt.ylabel(po.get("ylabel", "entries"), fontsize=30)
         i = i+1
     plotname = output_+'/variablesDistribution_nVar%d_%d%d.png' % \
                             (len(mylistvariables_), binmin, binmax)
-    plt.savefig(plotname, bbox_inches='tight')
+
+    ax = plt.subplot(n_rows, n_columns, i)
+    legend_elements = [Patch(facecolor='b', label='signal', alpha=0.3),
+                       Patch(facecolor='g', label="background", alpha=0.3)]
+    ax.legend(handles=legend_elements, loc="upper left", fontsize=30)
+    ax.axis("off")
+    plt.tight_layout()
+    plt.savefig(plotname)
     imagebytesIO = BytesIO()
     plt.savefig(imagebytesIO, format='png')
     imagebytesIO.seek(0)
@@ -314,13 +341,11 @@ def scatterplot(dataframe_sig_, dataframe_bkg_, mylistvariablesx_,
     return imagebytesIO
 
 
-def correlationmatrix(dataframe, mylistvariables, label, output, binmin, binmax,
-                      plot_options_=None):
+def correlationmatrix(dataframe, mylistvariables, output, plot_options_=None):
     corr = dataframe[mylistvariables].corr()
     # Generate a mask for the upper triangle
     mask = np.triu(np.ones_like(corr, dtype=bool))
     _, ax = plt.subplots(figsize=(10, 8))
-    #sns.heatmap(corr, mask=np.zeros_like(corr, dtype=np.bool),
     mpl.rcParams.update({"text.usetex": True})
     plot_type_name = "prob_cut_scan"
     plot_options = plot_options_.get(plot_type_name, {}) \
@@ -338,8 +363,7 @@ def correlationmatrix(dataframe, mylistvariables, label, output, binmin, binmax,
     sns.heatmap(corr, mask=mask,
                 cmap=sns.diverging_palette(220, 10, as_cmap=True), vmin=-1, vmax=1,
                 square=True, ax=ax, xticklabels=labels, yticklabels=labels)
-    ax.text(0.7, 0.9, f"${binmin} < p_\\mathrm{{T}}/(\\mathrm{{GeV}}/c) < {binmax}$\n{label}",
-            verticalalignment='center', transform=ax.transAxes, fontsize=13)
+    ax.tick_params(labelsize=20)
     plt.savefig(output, bbox_inches='tight')
     imagebytesIO = BytesIO()
     plt.savefig(imagebytesIO, format='png')

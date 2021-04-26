@@ -224,7 +224,11 @@ def readmodels(names_, folder_, suffix_):
     return trainedmodels_
 
 
-def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder):
+def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder, plot_options_):
+    mpl.rcParams.update({"text.usetex": True})
+    plot_type_name = "prob_cut_scan"
+    plot_options = plot_options_.get(plot_type_name, {}) \
+            if isinstance(plot_options_, dict) else {}
 
     if len(names_) == 1:
         plt.figure(figsize=(18, 15))
@@ -232,6 +236,14 @@ def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder)
         plt.figure(figsize=(25, 15))
 
     i = 1
+
+    labels = []
+    for var in mylistvariables_:
+        if var in plot_options and "xlabel" in plot_options[var]:
+            labels.append("$" + plot_options[var]["xlabel"] + "$")
+        else:
+            labels.append(var.replace("_", ":"))
+
     for name, model in zip(names_, trainedmodels_):
         if "SVC" in name:
             continue
@@ -248,19 +260,22 @@ def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder)
         y_pos = np.arange(len(mylistvariables_))
         ax1.barh(y_pos, feature_importances_, align='center', color='green')
         ax1.set_yticks(y_pos)
-        ax1.set_yticklabels(mylistvariables_, fontsize=17)
+        ax1.set_yticklabels(labels, fontsize=60)
         ax1.invert_yaxis()  # labels read top-to-bottom
-        ax1.set_xlabel('Importance', fontsize=17)
-        ax1.set_title('Importance features '+name, fontsize=17)
-        ax1.xaxis.set_tick_params(labelsize=17)
+        ax1.set_xlabel('Importance', fontsize=60)
+        #ax1.set_title('Importance features '+name, fontsize=30)
+        ax1.xaxis.set_tick_params(labelsize=60)
         plt.xlim(0, 0.7)
         i += 1
-    plt.subplots_adjust(wspace=0.5)
+    #plt.subplots_adjust(wspace=0.5)
     plotname = folder+'/importanceplotall%s.png' % (suffix_)
+    plt.tight_layout()
     plt.savefig(plotname)
     img_import = BytesIO()
+    plt.tight_layout()
     plt.savefig(img_import, format='png')
     img_import.seek(0)
+    mpl.rcParams.update({"text.usetex": False})
     return img_import
 
 def shap_study(names_, trainedmodels_, x_train_, suffix_, folder, plot_options_):

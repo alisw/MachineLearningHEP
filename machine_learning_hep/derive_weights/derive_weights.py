@@ -73,7 +73,7 @@ def summary_histograms_and_write(file_out, histos, histo_names,
 
 def derive(periods, in_top_dirs, gen_file_name, required_columns, use_mass_window, # pylint: disable=too-many-arguments, too-many-branches
            distribution_column, distribution_x_range, file_name_mlwp_map, file_out_name,
-           queries_periods=None, query_all=None, queries_slices=None):
+           queries_periods=None, query_all=None, queries_slices=None, remove_duplicates=True):
 
     """
 
@@ -96,6 +96,8 @@ def derive(periods, in_top_dirs, gen_file_name, required_columns, use_mass_windo
 
     merge_on = [required_columns[:3]]
 
+    lambda_for_df = only_one_evt if remove_duplicates else None
+
     for period, dir_applied, query_period in zip(periods, in_top_dirs, queries_periods): # pylint: disable=too-many-nested-blocks
         query_tmp = None
         if query_all:
@@ -109,13 +111,13 @@ def derive(periods, in_top_dirs, gen_file_name, required_columns, use_mass_windo
             if query_tmp:
                 query_tmp += " and abs(inv_mass - @INV_MASS[0]) <= @INV_MASS_WINDOW[0]"
             else:
-                query_tmp = "abs(inv_mass - @INV_MASS) <= @INV_MASS_WINDOW"
+                query_tmp = "abs(inv_mass - @INV_MASS[0]) <= @INV_MASS_WINDOW[0]"
 
         files_all = glob(f"{dir_applied}/**/{gen_file_name}", recursive=True)
 
         if not file_name_mlwp_map:
             args = [((f_reco,), histo_params, required_columns, \
-                    query_tmp, only_one_evt, merge_on[0], queries_slices, None) \
+                    query_tmp, lambda_for_df, merge_on[0], queries_slices, None) \
                     for f_reco in files_all]
 
         else:
@@ -136,7 +138,7 @@ def derive(periods, in_top_dirs, gen_file_name, required_columns, use_mass_windo
                     print(f"ERROR: {file_name}")
                     sys.exit(0)
                 args.append(((file_name,), histo_params, required_columns, \
-                        query_tmp_file, only_one_evt, merge_on[0], queries_slices, None))
+                        query_tmp_file, lambda_for_df, merge_on[0], queries_slices, None))
 
 
         histos = multi_proc(fill_from_pickles, args, None, 100, 30)
@@ -167,6 +169,7 @@ def make_distributions(args, inv_mass, inv_mass_window): # pylint: disable=too-m
     query_all = config.get("query_all", None)
     use_ml_selection = config.get("use_ml_selection", True)
     use_mass_window = config.get("use_mass_window", True)
+    remove_duplicates = config.get("remove_duplicates", True)
 
     # Now open database
     _, database = read_database(database_path)
@@ -195,15 +198,23 @@ def make_distributions(args, inv_mass, inv_mass_window): # pylint: disable=too-m
     file_names_cut_map = None
 
     # Set where to read data from and set overall selection query
-    column_names.append("inv_mass")
+    if use_mass_window:
+        column_names.append("inv_mass")
     trigger_sel = analysis_config["triggersel"][data_or_mc]
     in_top_dirs = database["mlapplication"][data_or_mc]["pkl_skimmed_dec"]
+
+    # If no ML selection, use original pkls instead of applied ones
+    if not use_ml_selection:
+        in_top_dirs = database["multi"][data_or_mc]["pkl_skimmed"]
+        #in_top_dirs = database["multi"][data_or_mc]["pkl"]
+
     if trigger_sel:
         if query_all:
             query_all += f" and {trigger_sel}"
         else:
             query_all = trigger_sel
 
+    #in_file_name_gen = database["files_names"]["namefile_gen"]
     in_file_name_gen = database["files_names"]["namefile_reco"]
     in_file_name_gen = in_file_name_gen[:in_file_name_gen.find(".")]
 
@@ -230,7 +241,7 @@ def make_distributions(args, inv_mass, inv_mass_window): # pylint: disable=too-m
 
     derive(periods, in_top_dirs, in_file_name_gen, column_names, use_mass_window,
            distribution, distribution_x_range, file_names_cut_map, out_file, period_cuts,
-           query_all, slice_cuts)
+           query_all, slice_cuts, remove_duplicates=remove_duplicates)
 
 
 def make_weights(args, *ignore): # pylint: disable=unused-argument
@@ -372,9 +383,6 @@ def fill_from_pickles(file_paths, histo_params, cols=None, query=None, skim_func
         histos.append(histo)
 
     return histos
-
-
-
 
 
 
