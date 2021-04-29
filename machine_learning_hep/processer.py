@@ -276,7 +276,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         treeevtorig = uproot.open(self.l_root[file_index])[self.n_treeevt]
         try:
             dfevtorig = treeevtorig.arrays(expressions=self.v_evt, library="pd")
-            print(dfevtorig)
         except Exception as e: # pylint: disable=broad-except
             print('Missing variable in the event root tree', str(e))
             print('Missing variable in the candidate root tree')
