@@ -275,7 +275,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
     def unpack(self, file_index):
         treeevtorig = uproot.open(self.l_root[file_index])[self.n_treeevt]
         try:
-            dfevtorig = treeevtorig.pandas.df(branches=self.v_evt)
+            dfevtorig = treeevtorig.arrays(expressions=self.v_evt, library="pd")
+            print(dfevtorig)
         except Exception as e: # pylint: disable=broad-except
             print('Missing variable in the event root tree', str(e))
             print('Missing variable in the candidate root tree')
@@ -292,7 +293,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         treereco = uproot.open(self.l_root[file_index])[self.n_treereco]
         try:
-            dfreco = treereco.pandas.df(branches=self.v_all)
+            dfreco = treereco.arrays(expressions=self.v_all, library="pd")
         except Exception as e: # pylint: disable=broad-except
             print('Missing variable in the candidate root tree')
             print('I am sorry, I am dying ...\n \n \n')
@@ -347,7 +348,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         if self.mcordata == "mc":
             treegen = uproot.open(self.l_root[file_index])[self.n_treegen]
-            dfgen = treegen.pandas.df(branches=self.v_gen)
+            dfgen = treegen.arrays(expressions=self.v_gen, library="pd")
             dfgen = pd.merge(dfgen, dfevtorig, on=self.v_evtmatch)
             dfgen = selectdfquery(dfgen, self.s_gen_unp)
             dfgen[self.v_isstd] = np.array(tag_bit_df(dfgen, self.v_bitvar,
