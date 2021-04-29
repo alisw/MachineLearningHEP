@@ -25,6 +25,7 @@ import yaml
 from pkg_resources import resource_stream
 
 # To set batch mode immediately
+import numpy as np
 from ROOT import gROOT # pylint: disable=import-error, no-name-in-module
 
 from machine_learning_hep.multiprocesser import MultiProcesser
