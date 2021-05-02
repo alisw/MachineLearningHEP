@@ -29,13 +29,13 @@ from array import array
 import numpy as np
 import pandas as pd
 import lz4
-from machine_learning_hep.selectionutils import select_runs
 from ROOT import TObject, TCanvas, TLegend, TH1, TLatex, TGraph, TGraphAsymmErrors # pylint: disable=import-error, no-name-in-module
 from ROOT import kBlack, kRed, kGreen, kBlue, kYellow, kOrange, kMagenta, kCyan, kGray # pylint: disable=import-error, no-name-in-module
 from ROOT import kOpenCircle, kOpenSquare, kOpenDiamond, kOpenCross, kOpenStar, kOpenThreeTriangles # pylint: disable=import-error, no-name-in-module
 from ROOT import kOpenFourTrianglesX, kOpenDoubleDiamond, kOpenFourTrianglesPlus, kOpenCrossX # pylint: disable=import-error, no-name-in-module
 from ROOT import kFullCircle, kFullSquare, kFullDiamond, kFullCross, kFullStar, kFullThreeTriangles # pylint: disable=import-error, no-name-in-module
 from ROOT import kFullFourTrianglesX, kFullDoubleDiamond, kFullFourTrianglesPlus, kFullCrossX # pylint: disable=import-error, no-name-in-module
+from machine_learning_hep.selectionutils import select_runs
 
 def openfile(filename, attr):
     """
@@ -296,7 +296,14 @@ def mergerootfiles(listfiles, mergedfile, tmp_dir):
     tmp_files = []
     if len(listfiles) > 500:
         if not os.path.exists(tmp_dir):
-            os.makedirs(tmp_dir)
+            try:
+                os.makedirs(tmp_dir)
+            except PermissionError:
+                tmp_dir_new = os.path.join(os.getcwd(), tmp_dir)
+                print(f"WARNING: Cannot merge files at desired path\n{tmp_dir}")
+                print(f"Use alternative path\n{tmp_dir_new}\ninstead.")
+                tmp_dir = tmp_dir_new
+                os.makedirs(tmp_dir)
 
         for i, split_list in enumerate(divide_chunks(listfiles, 500)):
             tmp_files.append(os.path.join(tmp_dir, f"hadd_tmp_merged{i}.root"))
