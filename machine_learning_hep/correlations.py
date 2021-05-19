@@ -51,8 +51,9 @@ def vardistplot(dataframe_sig_, dataframe_bkg_, mylistvariables_, output_,
         ax = plt.subplot(n_rows, n_columns, i)
 
         plt.yscale('log')
-        kwargs = dict(alpha=0.3, density=True, bins=100)
+
         po = plot_options.get(var, {})
+        kwargs = dict(alpha=0.3, density=True, bins=po.get("bins", 100))
         if "xlim" in po:
             kwargs["range"] = (po["xlim"][0], po["xlim"][1])
 
