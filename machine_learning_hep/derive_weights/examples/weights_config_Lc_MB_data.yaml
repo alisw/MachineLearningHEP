@@ -1,0 +1,30 @@
+
+database: /path/to/database
+
+data_or_mc: data # Use data
+
+query_all: "is_ev_rej == 0" # Apply generic event selection
+use_mass_window: true # Use a 20 MeV mass window
+#mass_window: 0.03 # Explicitly specify the mass window (GeV)
+use_ml_selection: true # Use ML selection
+
+
+analysis: MBvspt_perc_v0m # Specify the analysis to be used in the database. In particular for data, additional selections might be specified there
+
+distribution: n_tracklets # The column in the dataframe to be plotted
+
+x_range: # x-binning and x-range
+    - 101
+    - -0.5
+    - 100.5
+
+slice_cuts: # slice data and plot for each slice separately
+    - "perc_v0m >= 0 and perc_v0m <= 100"
+    - "perc_v0m >= 50 and perc_v0m <= 100"
+    - "perc_v0m >= 30 and perc_v0m <= 100"
+    - "perc_v0m <= 30 and perc_v0m >= 0.1"
+
+required_columns: # specify columns to be used in addition. Others are just dropped to make plotting more performant
+    - perc_v0m
+
+out_file: n_tracklets_MB_Lc_data.root # output file name

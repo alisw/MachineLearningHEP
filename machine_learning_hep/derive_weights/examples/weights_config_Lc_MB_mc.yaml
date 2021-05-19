@@ -1,0 +1,20 @@
+
+database: /path/to/database
+
+data_or_mc: mc # Use reco MC
+
+query_all: "is_ev_rej == 0" # Use generic event selection
+use_mass_window: false # Don't use a 20 MeV mass window
+use_ml_selection: true # Use ML selection
+
+
+analysis: MBvspt_perc_v0m # Specify the analysis to be used in the database. In particular for data, additional selections might be specified there
+
+distribution: n_tracklets # The column in the dataframe to be plotted
+
+x_range: # x-binning and x-range
+    - 101
+    - -0.5
+    - 100.5
+
+out_file: n_tracklets_MB_Lc_mc.root

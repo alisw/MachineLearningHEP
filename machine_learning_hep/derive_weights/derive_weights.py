@@ -72,7 +72,7 @@ def summary_histograms_and_write(file_out, histos, histo_names,
 
 
 def derive(periods, in_top_dirs, gen_file_name, required_columns, use_mass_window, # pylint: disable=too-many-arguments, too-many-branches
-           distribution_column, distribution_x_range, file_name_mlwp_map, file_out_name,
+           distribution_column, distribution_range, file_name_mlwp_map, file_out_name,
            queries_periods=None, query_all=None, queries_slices=None, remove_duplicates=True):
 
     """
@@ -84,13 +84,19 @@ def derive(periods, in_top_dirs, gen_file_name, required_columns, use_mass_windo
     queries_periods = [None] * len(periods) if not queries_periods else queries_periods
 
     # Prepare histogram parameters
+    if not isinstance(distribution_column, list):
+        distribution_column = [distribution_column]
+
+    histo_name_base = "_".join(distribution_column)
     queries_slices = [None] if not queries_slices else queries_slices
-    histo_names = [f"{distribution_column}_{i}" for i in range(len(queries_slices))]
+    histo_names = [f"{histo_name_base}_{i}" for i in range(len(queries_slices))]
 
-    histo_params = [([distribution_column], distribution_x_range) for _ in histo_names]
+    histo_params = [(distribution_column, distribution_range) for _ in histo_names]
 
-    histo_xtitles = [distribution_column] * len(histo_params)
-    histo_ytitles = ["entries"] * len(histo_params)
+    x_title = distribution_column[0]
+    histo_xtitles = [x_title] * len(histo_params)
+    y_title = distribution_column[1] if len(distribution_column) == 2 else "entries"
+    histo_ytitles = [y_title] * len(histo_params)
 
     file_out = TFile.Open(file_out_name, "RECREATE")
 
@@ -152,12 +158,13 @@ def derive(periods, in_top_dirs, gen_file_name, required_columns, use_mass_windo
 
 
 
-def make_distributions(args, inv_mass, inv_mass_window): # pylint: disable=too-many-statements
+def make_distributions(args, inv_mass, inv_mass_window): # pylint: disable=too-many-statements, too-many-branches
 
     config = parse_yaml(args.config)
 
     database_path = config["database"]
-    data_or_mc = config["data_or_mc"]
+    data_or_mc_ = config["data_or_mc"]
+    data_or_mc = "mc" if "mc" in data_or_mc_ else data_or_mc_
     analysis_name = config["analysis"]
     distribution = config["distribution"]
     distribution_x_range = config["x_range"]
@@ -181,7 +188,10 @@ def make_distributions(args, inv_mass, inv_mass_window): # pylint: disable=too-m
 
     # required column names
     column_names = ["ev_id", "ev_id_ext", "run_number"]
-    column_names.append(distribution)
+    if isinstance(distribution, list):
+        column_names.extend(distribution)
+    else:
+        column_names.append(distribution)
 
     # Add column names required by the user
     if required_columns:
@@ -216,6 +226,8 @@ def make_distributions(args, inv_mass, inv_mass_window): # pylint: disable=too-m
 
     #in_file_name_gen = database["files_names"]["namefile_gen"]
     in_file_name_gen = database["files_names"]["namefile_reco"]
+    if data_or_mc_ == "mc_gen":
+        in_file_name_gen = database["files_names"]["namefile_gen"]
     in_file_name_gen = in_file_name_gen[:in_file_name_gen.find(".")]
 
     if is_ml:

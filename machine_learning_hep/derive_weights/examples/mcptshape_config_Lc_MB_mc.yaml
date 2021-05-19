@@ -1,0 +1,22 @@
+
+database: /path/to/database
+
+data_or_mc: mc_gen # Use MC Gen
+
+
+#query_all: "is_ev_rej == 0" # optional, don't use global event selection here, all Gen particles
+use_mass_window: false
+use_ml_selection: false
+
+remove_duplicates: false # Remember: The dataframes have one row per candidate. So if we want to extract an event property, duplicates are removed by default based on run-number etc
+
+analysis: MBvspt_perc_v0m # Specify the analysis to be used in the database. In particular for data, additional selections might be specified there
+
+distribution: pt_cand # The column in the dataframe to be plotted
+
+x_range: # x-binning and x-range
+    - 2001
+    - 0.
+    - 100.05
+
+out_file: mcptshape_MB.root # output file name
