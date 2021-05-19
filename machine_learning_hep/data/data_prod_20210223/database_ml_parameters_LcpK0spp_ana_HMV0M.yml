@@ -284,6 +284,10 @@ LcpK0spp:
     test_frac: 0.2
     binmin: [1,2,4,6,8,12] #list of nbins
     binmax: [2,4,6,8,12,24] #list of nbins
+    mask_values:
+      - column: nsigTOF_Pr_0
+        find_by_value: -999
+        mask_with: Null
     mltype: BinaryClassification
     ncorescrossval: 10
     mlplot: /data/Derived/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/mlplot # to be removed
@@ -308,12 +312,12 @@ LcpK0spp:
 
   mlapplication:
     data:
-      pkl_skimmed_dec: [/data/Derived/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/pklskdec,
-                        /data/Derived/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/pklskdec,
-                        /data/Derived/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/pklskdec] #list of periods
-      pkl_skimmed_decmerged: [/data/Derived/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2016_data/490_20200825-1716/pklskdecmerged,
-                              /data/Derived/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2017_data/489_20200825-1716/pklskdecmerged,
-                              /data/Derived/LckAnywithJets/vAN-20200824_ROOT6-1/pp_2018_data/488_20200825-1716/pklskdecmerged] #list of periods
+      pkl_skimmed_dec: [/data/Derived/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_data/593_20210223-2051/pklskdec,
+                        /data/Derived/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_data/593_20210223-2051/pklskdec,
+                        /data/Derived/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_data/593_20210223-2051/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/data/Derived/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_data/593_20210223-2051/pklskdecmerged,
+                              /data/Derived/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_data/593_20210223-2051/pklskdecmerged,
+                              /data/Derived/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_data/593_20210223-2051/pklskdecmerged] #list of periods
     mc:
       pkl_skimmed_dec: [/data/Derived/LckINT7HighMultCalo_withJets/vAN-20210418_ROOT6-1/pp_2016_mc_prodHMV0MD2H/616_20210419-1239/pklskdec,
                         /data/Derived/LckINT7HighMultCalo_withJets/vAN-20210418_ROOT6-1/pp_2017_mc_prodHMV0MD2H/616_20210419-1239/pklskdec,
@@ -626,7 +630,7 @@ LcpK0spp:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.0075828, 0.0076134, 0.0091317, 0.0105263, 0.0121443, 0.0158048]
+      sigmaarray: [0.0075434, 0.0075974, 0.0088381, 0.0103891, 0.0115556, 0.0148833]
       FixedSigma: false # not used
       fitcase: Lc
       latexnamehadron: "#Lambda_{c}^{pK0s}"

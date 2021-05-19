@@ -485,7 +485,7 @@ LcpK0spp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
-      corrEffMult: [false, true,true,true,true]
+      corrEffMult: [false, false,true,true,true,true]
       #corrEffMult: [false, false, false, false]
       #sel_binmin2:  [0,0,50,30,0.1,0.1,0,0] #list of var2 splittng nbins
       #sel_binmax2: [101,100,100,100,50,30,0.1,0.01] #101 just to have a different histoname, FIXME
@@ -515,12 +515,8 @@ LcpK0spp:
 
       event_weighting_mc:
         LHC16pp:
-          - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data.root
-            histo_name: n_tracklets_0_LHC16pp_weights
-            according_to: n_tracklets
-          - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data.root
-            histo_name: n_tracklets_0_LHC16pp_weights
-            according_to: n_tracklets
+          - null
+          - null
           - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data.root
             histo_name: n_tracklets_1_LHC16pp_weights
             according_to: n_tracklets
@@ -534,12 +530,8 @@ LcpK0spp:
             histo_name: n_tracklets_0_LHC16pp_weights
             according_to: n_tracklets
         LHC17pp:
-          - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data.root
-            histo_name: n_tracklets_0_LHC17pp_weights
-            according_to: n_tracklets
-          - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data.root
-            histo_name: n_tracklets_0_LHC17pp_weights
-            according_to: n_tracklets
+          - null
+          - null
           - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data.root
             histo_name: n_tracklets_1_LHC17pp_weights
             according_to: n_tracklets
@@ -553,12 +545,8 @@ LcpK0spp:
             histo_name: n_tracklets_0_LHC17pp_weights
             according_to: n_tracklets
         LHC18pp:
-          - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data.root
-            histo_name: n_tracklets_0_LHC18pp_weights
-            according_to: n_tracklets
-          - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data.root
-            histo_name: n_tracklets_0_LHC18pp_weights
-            according_to: n_tracklets
+          - null
+          - null
           - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data.root
             histo_name: n_tracklets_1_LHC18pp_weights
             according_to: n_tracklets
@@ -666,14 +654,15 @@ LcpK0spp:
   systematics:
     probvariation:
       useperiod: [0,0,1] #period from where to define prob cuts
-      ncutvar: 10 #number of looser and tighter variations
-      maxperccutvar: 0.25 #max diff in efficiency for loosest/tightest var
+      ncutvar: 20 #number of looser and tighter variations
+      maxperccutvar: 0.5 #max diff in efficiency for loosest/tightest var
       cutvarminrange: [0.50, 0.50, 0.50, 0.50, 0.50, 0.50] #Min starting point for scan
       cutvarmaxrange: [0.90, 0.90, 0.90, 0.90, 0.90, 0.90] #Max starting point for scan
       fixedmean: True #Fix mean cutvar histo to central fit
       fixedsigma: True #Fix sigma cutvar histo to central fit
       min_signif_fit: 3.
       max_red_chi2_fit: 2.
+      estimate_effs_from_mult_bin: 1
 
     mcptshape:
       #FONLL / generated LHC19h4c1

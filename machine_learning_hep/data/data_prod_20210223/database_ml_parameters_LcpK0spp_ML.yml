@@ -83,17 +83,17 @@ LcpK0spp:
                    imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star]]
     # Choose some selected variables for which distributions and correlations should be computed and plotted during ML
     var_selected: [[dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,
-                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, inv_mass, pt_cand],
+                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, inv_mass],
                    [dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,
-                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, inv_mass, pt_cand],
+                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, inv_mass],
                    [dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,
-                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star, inv_mass, pt_cand],
+                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star, inv_mass],
                    [dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,
-                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star, inv_mass, pt_cand],
+                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star, inv_mass],
                    [dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,
-                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star, inv_mass, pt_cand],
+                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star, inv_mass],
                    [dca_K0s, imp_par_K0s, d_len_K0s, armenteros_K0s, ctau_K0s, cos_p_K0s,
-                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star, inv_mass, pt_cand]]
+                   imp_par_prong0, imp_par_prong1, imp_par_prong2, inv_mass_K0s, nsigTOF_Pr_0, nsigTPC_Pr_0, cos_t_star, inv_mass]]
     var_boundaries: [cos_t_star, pt_cand]
     var_correlation:
       - [cos_t_star]
@@ -126,8 +126,9 @@ LcpK0spp:
         pt_prong2:
           xlim: [0, 1]
         armenteros_K0s:
-          xlim: [0, 10000]
+          xlim: [0, 100000]
           xlabel: "\\mathrm{arm}"
+          bins: 1000
         nsigTPC_Pr_0:
           xlim: [-10, 10]
           xlabel: "n\\sigma_\\mathrm{TPC}(p)"

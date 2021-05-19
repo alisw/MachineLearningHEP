@@ -62,6 +62,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         self.v_var2_binning = datap["analysis"][self.typean]["var_binning2"]
         self.v_var2_binning_gen = datap["analysis"][self.typean]["var_binning2_gen"]
         self.corr_eff_mult = datap["analysis"][self.typean]["corrEffMult"]
+        self.corr_pt_mult = datap["analysis"][self.typean]["corrEffMult"]
         self.mc_cut_on_binning2 = datap["analysis"][self.typean].get("mc_cut_on_binning2", True)
 
         self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
@@ -97,7 +98,17 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
 
         # Event re-weighting MC
         self.event_weighting_mc = datap["analysis"][self.typean].get("event_weighting_mc", {})
+        self.event_weighting_mc_activate = self.event_weighting_mc.get("activate", True)
         self.event_weighting_mc = self.event_weighting_mc.get(self.period, {})
+
+        self.event_weighting_mc_pt = datap["analysis"][self.typean].get("event_weighting_mc_pt", {})
+        self.event_weighting_mc_pt_activate = self.event_weighting_mc_pt.get("activate", False)
+        self.event_weighting_mc_pt = self.event_weighting_mc_pt.get(self.period, {})
+
+        self.event_weighting_mc_zvtx = \
+                datap["analysis"][self.typean].get("event_weighting_mc_zvtx", {})
+        self.event_weighting_mc_zvtx_activate = self.event_weighting_mc_zvtx.get("activate", False)
+        self.event_weighting_mc_zvtx = self.event_weighting_mc_zvtx.get(self.period, {})
 
     @staticmethod
     def make_weights(col, func, hist, use_func):
@@ -336,7 +347,41 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                     df_recodtrig[df_recodtrig[self.v_ismcsignal] == 1], "MC"
                 ).write()
 
-    def get_reweighted_count(self, dfsel, ibin=None):
+
+    @staticmethod
+    def __compute_weights(dfsel, weighting_dict):
+        if not weighting_dict:
+            return [1] * len(dfsel)
+
+        filepath = weighting_dict.get("filepath", None)
+        if not filepath or not os.path.exists(filepath):
+            print(f"Could not find filepath {filepath} for MC event weighting." \
+                    "Compute unweighted values...")
+            return [1] * len(dfsel)
+
+        weight_file = TFile.Open(filepath, "read")
+        histo_name = weighting_dict.get("histo_name", "Weights0")
+        weights = weight_file.Get(histo_name)
+
+        if not weights:
+            print(f"Could not find histogram {histo_name} for MC event weighting." \
+                    "Compute unweighted values...")
+            return [1] * len(dfsel)
+
+        weight_according_to = weighting_dict.get("according_to", None)
+        weight_according_to_gen = weighting_dict.get("according_to_gen", None)
+        if not weight_according_to:
+            print(f"Don't know which variable to reweight to")
+            return [1] * len(dfsel)
+
+        if weight_according_to_gen and weight_according_to_gen in dfsel:
+            return [weights.GetBinContent(weights.FindBin(v)) \
+                    for v in dfsel[weight_according_to_gen]]
+
+        return [weights.GetBinContent(weights.FindBin(v)) for v in dfsel[weight_according_to]]
+
+
+    def get_reweighted_count(self, dfsel, ibin):
         """Apply event weights
 
         Args:
@@ -352,42 +397,28 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
 
         """
 
-        def no_weights(df_):
-            val = len(df_)
-            return val, math.sqrt(val)
-
-        event_weighting_mc = {}
-        if self.event_weighting_mc and ibin is not None \
+        weights = []
+        if self.event_weighting_mc_activate and self.event_weighting_mc \
                 and len(self.event_weighting_mc) - 1 >= ibin:
             # Check is there is a dictionary with desired info
-            event_weighting_mc = self.event_weighting_mc[ibin]
-
-        # If there were explicit info in the analysis database, assume that all fields exist
-        # If incomplete, there will be a mix-up between these values and default values
-        filepath = event_weighting_mc.get("filepath", os.path.join(self.d_mcreweights,
-                                                                   self.n_mcreweights))
-        if not os.path.exists(filepath):
-            print(f"Could not find filepath {filepath} for MC event weighting." \
-                    "Compute unweighted values...")
-            return no_weights(dfsel)
-
-        weight_file = TFile.Open(filepath, "read")
-        histo_name = event_weighting_mc.get("histo_name", "Weights0")
-        weights = weight_file.Get(histo_name)
+            weights.append(self.__compute_weights(dfsel, self.event_weighting_mc[ibin]))
+        if self.event_weighting_mc_pt_activate and self.event_weighting_mc_pt \
+                and len(self.event_weighting_mc_pt) - 1 >= ibin:
+            # Check is there is a dictionary with desired info
+            weights.append(self.__compute_weights(dfsel, self.event_weighting_mc_pt[ibin]))
+        if self.event_weighting_mc_zvtx_activate and self.event_weighting_mc_zvtx \
+                and len(self.event_weighting_mc_zvtx) - 1 >= ibin:
+            # Check is there is a dictionary with desired info
+            weights.append(self.__compute_weights(dfsel, self.event_weighting_mc_zvtx[ibin]))
 
         if not weights:
-            print(f"Could not find histogram {histo_name} for MC event weighting." \
-                    "Compute unweighted values...")
-            return no_weights(dfsel)
+            val = len(dfsel)
+            return val, math.sqrt(val)
 
-        weight_according_to = event_weighting_mc.get("according_to", self.v_var2_binning_gen)
-
-        w = [weights.GetBinContent(weights.FindBin(v)) for v in
-             dfsel[weight_according_to]]
+        w = [np.prod(z) for z in zip(*weights)]
         val = sum(w)
         err = math.sqrt(sum(map(lambda i: i * i, w)))
-        #print('reweighting sum: {:.1f} +- {:.1f} -> {:.1f} +- {:.1f} (zeroes: {})' \
-        #      .format(len(dfsel), math.sqrt(len(dfsel)), val, err, w.count(0.)))
+
         return val, err
 
     # pylint: disable=line-too-long
