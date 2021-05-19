@@ -642,15 +642,15 @@ class Optimiser: # pylint: disable=too-many-public-methods
 
 
 
-        self.df_evt_data = pickle.load(openfile(self.f_evt_data, 'rb'))
-        if self.p_dofullevtmerge is True:
-            self.df_evttotsample_data = pickle.load(openfile(self.f_evttotsample_data, 'rb'))
-        else:
-            self.logger.warning("The total merged event dataframe was not merged for space limits")
-            self.df_evttotsample_data = pickle.load(openfile(self.f_evt_data, 'rb'))
-            #and the total number of events
-        self.p_nevttot = len(self.df_evttotsample_data)
-        self.p_nevtml = len(self.df_evt_data)
+        #self.df_evt_data = pickle.load(openfile(self.f_evt_data, 'rb'))
+        #if self.p_dofullevtmerge is True:
+        #    self.df_evttotsample_data = pickle.load(openfile(self.f_evttotsample_data, 'rb'))
+        #else:
+        #    self.logger.warning("The total merged event dataframe was not merged for space limits")
+        #    self.df_evttotsample_data = pickle.load(openfile(self.f_evt_data, 'rb'))
+        #    #and the total number of events
+        #self.p_nevttot = len(self.df_evttotsample_data)
+        #self.p_nevtml = len(self.df_evt_data)
 
 
 
@@ -661,9 +661,9 @@ class Optimiser: # pylint: disable=too-many-public-methods
         # number was taken from the event counter. But the latter is basically not used
         # anymore for a long time cause "dofullevtmerge" is mostly "false" in the DBs
         #and the total number of events
-        #count_dict = parse_yaml(self.f_evt_count_ml)
-        #self.p_nevttot = count_dict["evtorig"]
-        #self.p_nevtml = count_dict["evt"]
+        count_dict = parse_yaml(self.f_evt_count_ml)
+        self.p_nevttot = count_dict["evtorig"]
+        self.p_nevtml = count_dict["evt"]
         self.logger.debug("Number of data events used for ML: %d", self.p_nevtml)
         self.logger.debug("Total number of data events: %d", self.p_nevttot)
         #calculate acceptance correction. we use in this case all
