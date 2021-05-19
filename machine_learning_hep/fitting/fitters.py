@@ -213,7 +213,7 @@ class FitBase: # pylint: disable=too-many-instance-attributes
 
         text = pave.AddText(line)
         text.SetTextAlign(11)
-        text.SetTextSize(0.024)
+        text.SetTextSize(0.04)
         text.SetTextFont(42)
         if color:
             text.SetTextColor(color)
@@ -457,35 +457,51 @@ class FitAliHF(FitROOT):
             draw_options.append("")
 
 
+        low_x_tmp = self.histo.GetXaxis().GetBinLowEdge(1)
+        up_x_tmp = self.histo.GetXaxis().GetBinUpEdge(self.histo.GetNbinsX())
+        self.histo.GetXaxis().SetRangeUser(self.init_pars["fit_range_low"],
+                                           self.init_pars["fit_range_up"])
         y_plot_max = self.histo.GetMaximum()
-        y_plot_min = self.histo.GetMinimum()
-        for i in range(1, self.histo.GetNbinsX() + 1):
+        y_plot_min = self.histo.GetMinimum(0)
+        self.histo.GetXaxis().SetRangeUser(low_x_tmp, up_x_tmp)
+
+        bin_min = self.histo.FindBin(self.init_pars["fit_range_low"])
+        bin_max = self.histo.FindBin(self.init_pars["fit_range_up"])
+        for i in range(bin_min, bin_max + 1):
             y_max_tmp = self.histo.GetBinContent(i) + self.histo.GetBinError(i)
             y_min_tmp = self.histo.GetBinContent(i) - self.histo.GetBinError(i)
             y_plot_max = max(y_plot_max, y_max_tmp)
             y_plot_min = min(y_plot_min, y_min_tmp)
 
-        for do in draw_objects:
+        for do in draw_objects[1:]:
             y_plot_max = max(y_plot_max, do.GetMaximum())
             y_plot_min = min(y_plot_min, do.GetMinimum())
         # Leave some space for putting info
-        y_rel_plot_range = 0.6
-        y_rel_header_range = 0.3
-        y_rel_footer_range = 0.1
+        y_rel_header_range = 0.9
+        y_rel_footer_range = 0.2
 
-        y_full_range = (y_plot_max - y_plot_min) / y_rel_plot_range
+        y_full_range = (y_plot_max - y_plot_min)
         y_min = y_plot_min - y_rel_footer_range * y_full_range
         y_max = y_plot_max + y_rel_header_range * y_full_range
 
-        root_pad.SetLeftMargin(0.12)
+        root_pad.SetLeftMargin(0.17)
+        root_pad.SetBottomMargin(0.11)
         frame = root_pad.cd().DrawFrame(self.init_pars["fit_range_low"], y_min,
                                         self.init_pars["fit_range_up"], y_max,
                                         f"{title} ; " \
                                         f"{x_axis_label} ; " \
                                         f"{y_axis_label}")
 
-        frame.GetYaxis().SetTitleOffset(1.7)
-        frame.GetYaxis().SetMaxDigits(4)
+        root_pad.SetTickx(1)
+        root_pad.SetTicky(1)
+        frame.GetYaxis().SetTitleOffset(1.8)
+        frame.GetYaxis().SetMaxDigits(3)
+        x_axis = frame.GetXaxis()
+        x_axis.SetTitleSize(0.05)
+        x_axis.SetLabelSize(0.05)
+        y_axis = frame.GetYaxis()
+        y_axis.SetTitleSize(0.05)
+        y_axis.SetLabelSize(0.05)
 
 
         sig = self.kernel.GetRawYield()
@@ -498,7 +514,7 @@ class FitAliHF(FitROOT):
         self.kernel.Significance(n_sigma_signal, signif, signif_err)
         sig_o_bkg = sig / bkg if bkg > 0. else -1.
 
-        root_objects.append(self.add_pave_helper_(0.15, 0.7, 0.48, 0.89, "NDC"))
+        root_objects.append(self.add_pave_helper_(0.2, 0.69, 0.7, 0.84, "NDC"))
         self.add_text_helper_(root_objects[-1], f"S = {sig:.0f} #pm {sig_err:.0f}")
         self.add_text_helper_(root_objects[-1],
                               f"B({n_sigma_signal}#sigma) = {bkg:.0f} " \
@@ -509,7 +525,7 @@ class FitAliHF(FitROOT):
                               f"{signif:.1f} #pm {signif_err:.1f}")
         root_objects[-1].Draw()
 
-        root_objects.append(self.add_pave_helper_(0.55, 0.75, 0.89, 0.89, "NDC"))
+        root_objects.append(self.add_pave_helper_(0.2, 0.56, 0.7, 0.66, "NDC"))
         self.add_text_helper_(root_objects[-1],
                               f"#chi/ndf = {self.kernel.GetReducedChiSquare():.4f}", color_sig)
         self.add_text_helper_(root_objects[-1],
@@ -739,8 +755,8 @@ class FitROOTGauss(FitROOT): # pylint: disable=too-many-instance-attributes
 
         x_min = self.init_pars["fit_range_low"]
         x_max = self.init_pars["fit_range_up"]
-        y_min = self.histo.GetMinimum(0)
-        y_max = self.histo.GetMaximum() * 10000
+        y_min = self.histo.GetMinimum(0) / 100000
+        y_max = self.histo.GetMaximum() * 100
 
         # Now comes the styling
         color_sig = kBlue - 3
@@ -748,7 +764,10 @@ class FitROOTGauss(FitROOT): # pylint: disable=too-many-instance-attributes
         self.histo.SetMarkerStyle(20)
         self.kernel.SetLineColor(color_sig)
 
-        root_pad.SetLeftMargin(0.12)
+        root_pad.SetLeftMargin(0.16)
+        root_pad.SetBottomMargin(0.11)
+        root_pad.SetTickx(1)
+        root_pad.SetTicky(1)
         frame = root_pad.cd().DrawFrame(x_min, y_min, x_max, y_max,
                                         f"{title} ; {x_axis_label} ; {y_axis_label}")
 
@@ -762,6 +781,13 @@ class FitROOTGauss(FitROOT): # pylint: disable=too-many-instance-attributes
         self.histo.GetXaxis().SetTitle(x_axis_label)
         self.histo.GetYaxis().SetTitle(y_axis_label)
 
+        x_axis = frame.GetXaxis()
+        x_axis.SetTitleSize(0.05)
+        x_axis.SetLabelSize(0.05)
+        y_axis = frame.GetYaxis()
+        y_axis.SetTitleSize(0.05)
+        y_axis.SetLabelSize(0.05)
+
         red_chisqu = self.kernel.GetNDF()
         red_chisqu = self.kernel.GetChisquare() / red_chisqu if red_chisqu > 0. else 0.
         mean = self.kernel.GetParameter(1) * mean_scale
@@ -769,7 +795,7 @@ class FitROOTGauss(FitROOT): # pylint: disable=too-many-instance-attributes
         sigma = self.kernel.GetParameter(2) * sigma_scale
         sigma_err = self.kernel.GetParError(2) * sigma_scale
 
-        root_objects.append(self.add_pave_helper_(0.55, 0.7, 0.89, 0.89, "NDC"))
+        root_objects.append(self.add_pave_helper_(0.23, 0.25, 0.7, 0.4, "NDC"))
         self.add_text_helper_(root_objects[-1],
                               f"mean_{{histo}} = {self.histo.GetMean() * mean_scale:.4f}",
                               color_histo)
@@ -783,13 +809,13 @@ class FitROOTGauss(FitROOT): # pylint: disable=too-many-instance-attributes
             self.add_text_helper_(root_objects[-1],
                                   f"(corr. to {self.n_rms} #times RMS_{{histo}})",
                                   color_histo)
-        else:
-            self.add_text_helper_(root_objects[-1],
-                                  " ",
-                                  color_histo)
+        #else:
+        #    self.add_text_helper_(root_objects[-1],
+        #                          " ",
+        #                          color_histo)
 
         root_objects[-1].Draw()
-        root_objects.append(self.add_pave_helper_(0.2, 0.7, 0.59, 0.89, "NDC"))
+        root_objects.append(self.add_pave_helper_(0.23, 0.12, 0.7, 0.22, "NDC"))
         self.add_text_helper_(root_objects[-1],
                               f"#mu = {mean:.4f} #pm {mean_err:.4f} {mean_dim}", color_sig)
         self.add_text_helper_(root_objects[-1],
@@ -801,9 +827,9 @@ class FitROOTGauss(FitROOT): # pylint: disable=too-many-instance-attributes
             self.add_text_helper_(root_objects[-1],
                                   f"#sigma_{{2}} = {sigma:.4f} #pm {sigma_err:.4f} {sigma_dim}",
                                   color_sig)
-        else:
-            self.add_text_helper_(root_objects[-1],
-                                  " ", color_sig)
+        #else:
+        #    self.add_text_helper_(root_objects[-1],
+        #                          " ", color_sig)
         self.add_text_helper_(root_objects[-1],
                               f"#chi/ndf = {red_chisqu:.4f}", color_sig)
         root_objects[-1].Draw()
