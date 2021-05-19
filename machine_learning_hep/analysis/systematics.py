@@ -27,7 +27,6 @@ from os import makedirs
 from operator import itemgetter
 from copy import deepcopy, copy
 from random import shuffle
-from math import sqrt
 
 from ROOT import TFile, TCanvas, TLegend
 from ROOT import kRed, kGreen, kBlack, kBlue, kOrange, kViolet, kAzure, kYellow
@@ -68,7 +67,8 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
         # Require a minimum significance or a maximum chi2 for individual fits
         self.min_signif_fit = datap["systematics"]["probvariation"].get("min_signif_fit", -1.)
         self.max_red_chi2_fit = datap["systematics"]["probvariation"].get("max_red_chi2_fit", -1.)
-
+        self.estimate_effs_from_mult_bin = \
+                datap["systematics"]["probvariation"].get("estimate_effs_from_mult_bin", 0)
         self.syst_out_dir = "ML_WP_syst"
         self.processers_mc_syst = None
         self.processers_data_syst = None
@@ -190,7 +190,9 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
 
         nominal_effs = [None] * ana_n_first_binning
         for ibin1 in range(ana_n_first_binning):
-            nominal_effs[ibin1], _ = self.nominal_analyzer_merged.get_efficiency(ibin1, 0)
+            nominal_effs[ibin1], _ = \
+                    self.nominal_analyzer_merged.get_efficiency(ibin1,
+                                                                self.estimate_effs_from_mult_bin)
 
         self.min_cv_cut = [None] * ana_n_first_binning
         self.max_cv_cut = [None] * ana_n_first_binning
@@ -249,7 +251,7 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
 
             # Read and compare efficiencies to nominal ones. Add if not yet found
             for ibin1 in range(ana_n_first_binning):
-                eff_new, _ = analyzer_effs.get_efficiency(ibin1, 0)
+                eff_new, _ = analyzer_effs.get_efficiency(ibin1, self.estimate_effs_from_mult_bin)
                 if abs(eff_new - nominal_effs[ibin1]) / nominal_effs[ibin1] < self.p_maxperccutvar \
                         and boundaries[ibin1] is None:
                     boundaries[ibin1] = wps[bin_matching[ibin1]]
@@ -440,42 +442,6 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
             h.GetYaxis().SetRangeUser(h_min, h_max)
             h.GetYaxis().SetMaxDigits(3)
 
-    @staticmethod
-    def __compute_rms(histos, central, rel_bound=0.5):
-        """compute the RMS around a central value for all variations
-
-        args:
-            histos: list
-                all histograms to be taken into account
-            central: float
-                the central value wrt which to compute the RMS
-            rel_bound: float
-                if relative deviation of variation wrt central is larger than that,
-                don't take it into account
-
-        returns:
-            list: RMS values per histogram bin
-        """
-
-        n_bins = histos[0].GetNbinsX()
-        rms = [0 for _ in range(n_bins)]
-        n_variations = [0 for _ in range(n_bins)]
-
-        central = [central for _ in range(n_bins)]
-
-        for i_bin in range(n_bins):
-            for h in histos:
-                content = h.GetBinContent(i_bin + 1)
-                # exclude deviation greater than 50%
-                if abs(content - central) / central >= rel_bound:
-                    continue
-                rms[i_bin] += (content - central[i_bin])**2
-                n_variations[i_bin] += 1
-            rms[i_bin] = sqrt(rms[i_bin] / n_variations[i_bin])
-
-        return rms
-
-
     def __make_single_plot(self, name, ibin2, successful): # pylint: disable=too-many-statements
 
         # Nominal histogram
@@ -530,14 +496,6 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
             h.Draw("same")
         legend.Draw("same")
 
-        # Make the RMS plot
-        rms = self.__compute_rms(histos, 1., 0.5)
-        histo_rms = nominal_histo.Clone(f"{nominal_histo.GetName()}_rms")
-        histo_rms.Reset("ICESM")
-        histo_rms.GetYaxis().SetTitle("RMS wrt. 1")
-        for i, v in enumerate(rms):
-            histo_rms.SetBinContent(i + 1, v)
-
         save_path = join(self.nominal_analyzer_merged.d_resultsallpdata, self.syst_out_dir,
                          f"ml_wp_syst_{name}_ibin2_{ibin2}.eps")
         canvas.SaveAs(save_path)
@@ -547,7 +505,6 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
         file_out.cd()
         for i, h in enumerate(histos):
             h.Write("%s%d" % (h.GetName(), i))
-        histo_rms.Write()
         canvas.Write()
         file_out.Close()
         canvas.Close()
@@ -580,18 +537,14 @@ class SystematicsMLWP: # pylint: disable=too-few-public-methods, too-many-instan
             nominal_value = nominal_histo.GetBinContent(ipt+1)
             nominal_error = nominal_histo.GetBinError(ipt+1)
             if nominal_value != 0:
-                gr[ipt].SetPoint(0, self.cent_cv_cut[ipt], 1)
-                gr[ipt].SetPointError(0, 0.0001,
-                                      nominal_histo.GetBinError(ipt+1) / nominal_value * sqrt(2))
+                gr[ipt].SetPoint(0, self.cent_cv_cut[ipt], nominal_value)
+                gr[ipt].SetPointError(0, 0.0001, nominal_error)
             for iml, succ in enumerate(successful_tmp):
                 mlwp_value = histos[succ].GetBinContent(ipt+1)
                 if mlwp_value <= 0 or nominal_value <= 0:
                     continue
-                mlwp_value_rel = mlwp_value / nominal_value
-                mlwp_error = sqrt((nominal_error/nominal_value)**2 + \
-                        (histos[succ].GetBinError(ipt+1) / mlwp_value)**2)
-                gr[ipt].SetPoint(iml + 1, ml_trials[succ][ipt], mlwp_value_rel)
-                gr[ipt].SetPointError(iml + 1, 0.0001, mlwp_error)
+                gr[ipt].SetPoint(iml + 1, ml_trials[succ][ipt], mlwp_value)
+                gr[ipt].SetPointError(iml + 1, 0.0001, histos[succ].GetBinError(ipt+1))
 
         canvas = TCanvas("cvsml%d" % ibin2, "", 1200, 800)
         if len(gr) <= 6:
