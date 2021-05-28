@@ -84,6 +84,15 @@ def makefill2dhist(df_, titlehist, arrayx, arrayy, nvar1, nvar2):
     fill_hist(histo, arr2)
     return histo
 
+def makefill2dweighed(df_, titlehist, arrayx, arrayy, nvar1, nvar2, weight):
+    """
+    Create a TH2F histogram and fill it with two variables from a dataframe.
+    """
+    histo = build2dhisto(titlehist, arrayx, arrayy)
+    for row in df_.itertuples():
+        histo.Fill(getattr(row, nvar1), getattr(row, nvar2),  getattr(row, weight))
+    return histo
+
 def makefill3dhist(df_, titlehist, arrayx, arrayy, arrayz, nvar1, nvar2, nvar3):
     """
     Create a TH3F histogram and fill it with three variables from a dataframe.
@@ -97,6 +106,19 @@ def makefill3dhist(df_, titlehist, arrayx, arrayy, arrayz, nvar1, nvar2, nvar3):
         histo.Fill(getattr(row, nvar1), getattr(row, nvar2), getattr(row, nvar3))
     return histo
 
+def makefill3dweighed(df_, titlehist, arrayx, arrayy, arrayz, nvar1, nvar2, nvar3, weight):
+    """
+    Create a TH3F histogram and fill it with three variables from a dataframe.
+    """
+
+    histo = buildhisto(titlehist, titlehist, arrayx, arrayy, arrayz)
+    #df_rd = df_[[nvar1, nvar2, nvar3]]
+    #arr3 = df_rd.to_numpy()
+    #fill_hist(histo, arr3) # this does not work, gives an empty histogram
+    for row in df_.itertuples():
+        histo.Fill(getattr(row, nvar1), getattr(row, nvar2), getattr(row, nvar3), getattr(row, weight))
+    return histo
+
 def fill2dhist(df_, histo, nvar1, nvar2):
     """
     Fill a TH2 histogram with two variables from a dataframe.
@@ -106,6 +128,27 @@ def fill2dhist(df_, histo, nvar1, nvar2):
     fill_hist(histo, arr2)
     return histo
 
+def fill2dweighed(df_, histo, nvar1, nvar2, weight):
+    """
+    Fill a TH2 histogram with two variables from a dataframe.
+    """
+    #df_rd = df_[[nvar1, nvar2]]
+    #arr2 = df_rd.values
+    #fill_hist(histo, arr2)
+    for row in df_.itertuples():
+        histo.Fill(getattr(row, nvar1), getattr(row, nvar2),  getattr(row, weight))
+    return histo
+
+def fillweighed(df_, histo, nvar1, weight):
+    """
+    Fill a TH2 histogram with two variables from a dataframe.
+    """
+    #df_rd = df_[[nvar1, nvar2]]
+    #arr2 = df_rd.values
+    #fill_hist(histo, arr2)
+    for row in df_.itertuples():
+        histo.Fill(getattr(row, nvar1), getattr(row, weight))
+    return histo
 
 def rebin_histogram(src_histo, new_histo):
     """

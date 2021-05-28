@@ -112,7 +112,7 @@ get_paths()
     if [[ "$DATASET_WITH_CHILDREN" != "1" ]]
     then
         GENERIC_PATHS="$(make_generic_path $ALIEN_JDL_OUTPUTDIR)"
-        GENERIC_PATHS=("$GENERIC_PATHS/$trainname/*/$outputfile" )
+        GENERIC_PATHS=("$GENERIC_PATHS/$trainname/AOD/*/$outputfile" )
         CHILDREN=("child_0" )
         INTERACTION_TYPES=("$ALIEN_JDL_LPMINTERACTIONTYPE" )
     else
@@ -135,7 +135,7 @@ get_paths()
 
             out_dir_prefix=$(eval "echo $"ALIEN_JDL_${child}"_OUTPUTDIR")
             local out_dir="$(make_generic_path $out_dir_prefix)"
-            out_dir="$out_dir/${trainname}_${child}/*/$outputfile"
+            out_dir="$out_dir/${trainname}_${child}/AOD/*/$outputfile"
             GENERIC_PATHS+=" $out_dir"
             INTERACTION_TYPES+=" $(eval "echo $"ALIEN_JDL_${child}"_LPMINTERACTIONTYPE")"
         done

@@ -10,6 +10,7 @@ STAGE="complete"
 
 #DBDIR="data_prod_20200417"
 DBDIR="data_prod_20200304"
+#DBDIR="data_prod_20210223"
 #DBDIR="pKpi"
 #DBDIR="JetAnalysis"
 
@@ -30,6 +31,7 @@ SUFFIX="_0304"
 #ANALYSIS="SPDvspt_ntrkl"
 #ANALYSIS="jet_FF"
 ANALYSIS="jet_zg"
+#ANALYSIS="jet_r_shape"
 #ANALYSIS="jet_rg"
 #ANALYSIS="jet_nsd"
 
