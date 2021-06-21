@@ -1,0 +1,116 @@
+#################################################
+# zvtx weights only applied and evaluated in HM #
+#################################################
+analysis:
+  MBvspt_perc_v0m:
+    event_weighting_mc_zvtx:
+      activate: True
+      LHC16pp:
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/zvtx_MB.root
+          histo_name: z_vtx_reco_0_LHC16pp_weights
+          according_to: z_vtx_reco
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/zvtx_MB.root
+          histo_name: z_vtx_reco_0_LHC16pp_weights
+          according_to: z_vtx_reco
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/zvtx_MB.root
+          histo_name: z_vtx_reco_1_LHC16pp_weights
+          according_to: z_vtx_reco
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/zvtx_MB.root
+          histo_name: z_vtx_reco_2_LHC16pp_weights
+          according_to: z_vtx_reco
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/zvtx_MB.root
+          histo_name: z_vtx_reco_3_LHC16pp_weights
+          according_to: z_vtx_reco
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/zvtx_MB.root
+          histo_name: z_vtx_reco_0_LHC16pp_weights
+          according_to: z_vtx_reco
+      LHC17pp:
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/zvtx_MB.root
+          histo_name: z_vtx_reco_0_LHC17pp_weights
+          according_to: z_vtx_reco
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/zvtx_MB.root
+          histo_name: z_vtx_reco_0_LHC17pp_weights
+          according_to: z_vtx_reco
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/zvtx_MB.root
+          histo_name: z_vtx_reco_1_LHC17pp_weights
+          according_to: z_vtx_reco
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/zvtx_MB.root
+          histo_name: z_vtx_reco_2_LHC17pp_weights
+          according_to: z_vtx_reco
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/zvtx_MB.root
+          histo_name: z_vtx_reco_3_LHC17pp_weights
+          according_to: z_vtx_reco
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/zvtx_MB.root
+          histo_name: z_vtx_reco_0_LHC17pp_weights
+          according_to: z_vtx_reco
+      LHC18pp:
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/zvtx_MB.root
+          histo_name: z_vtx_reco_0_LHC18pp_weights
+          according_to: z_vtx_reco
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/zvtx_MB.root
+          histo_name: z_vtx_reco_0_LHC18pp_weights
+          according_to: z_vtx_reco
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/zvtx_MB.root
+          histo_name: z_vtx_reco_1_LHC18pp_weights
+          according_to: z_vtx_reco
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/zvtx_MB.root
+          histo_name: z_vtx_reco_2_LHC18pp_weights
+          according_to: z_vtx_reco
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/zvtx_MB.root
+          histo_name: z_vtx_reco_3_LHC18pp_weights
+          according_to: z_vtx_reco
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/zvtx_MB.root
+          histo_name: z_vtx_reco_0_LHC18pp_weights
+          according_to: z_vtx_reco
+    data:
+      results: [/data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_data/593_20210223-2051/resultsMBvspt_perc_v0m_weights_zvtx,
+                /data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_data/593_20210223-2051/resultsMBvspt_perc_v0m_weights_zvtx,
+                /data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_data/593_20210223-2051/resultsMBvspt_perc_v0m_weights_zvtx] #list of periods
+      resultsallp: /data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_data/resultsMBvspt_perc_v0m_weights_zvtx
+    mc:
+      results: [/data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prodD2H/594_20210301-1015/resultsMBvspt_perc_v0m_weights_zvtx,
+                /data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prodD2H/594_20210301-1015/resultsMBvspt_perc_v0m_weights_zvtx,
+                /data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prodD2H/594_20210301-1015/resultsMBvspt_perc_v0m_weights_zvtx] #list of periods
+      resultsallp: /data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_perc_v0m_weights_zvtx
+  V0vspt_perc_v0m:
+    event_weighting_mc_pt:
+      activate: True
+      LHC16pp:
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+          histo_name: mcptshape_weights_Py8Mode2_16_HM
+          according_to: pt_cand
+          according_to_gen: pt_gen_cand
+      LHC17pp:
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+          histo_name: mcptshape_weights_Py8Mode2_17_HM
+          according_to: pt_cand
+          according_to_gen: pt_gen_cand
+      LHC18pp:
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+          histo_name: mcptshape_weights_Py8Mode2_18_HM
+          according_to: pt_cand
+          according_to_gen: pt_gen_cand
+    event_weighting_mc_zvtx:
+      activate: True
+      LHC16pp:
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/zvtx_HM.root
+          histo_name: z_vtx_reco_0_LHC16pp_weights
+          according_to: z_vtx_reco
+      LHC17pp:
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/zvtx_HM.root
+          histo_name: z_vtx_reco_0_LHC17pp_weights
+          according_to: z_vtx_reco
+      LHC18pp:
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/zvtx_HM.root
+          histo_name: z_vtx_reco_0_LHC18pp_weights
+          according_to: z_vtx_reco
+    data:
+      results: [/data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_data/593_20210223-2051/resultsV0vspt_perc_v0m_weights_zvtx,
+                /data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_data/593_20210223-2051/resultsV0vspt_perc_v0m_weights_zvtx,
+                /data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_data/593_20210223-2051/resultsV0vspt_perc_v0m_weights_zvtx] #list of periods
+      resultsallp: /data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_data/resultsV0vspt_perc_v0m_weights_zvtx
+    mc:
+      results: [/data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210418_ROOT6-1/pp_2016_mc_prodHMV0MD2H/616_20210419-1239/resultsV0vspt_perc_v0m_weights_zvtx,
+                /data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210418_ROOT6-1/pp_2017_mc_prodHMV0MD2H/616_20210419-1239/resultsV0vspt_perc_v0m_weights_zvtx,
+                /data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210418_ROOT6-1/pp_2018_mc_prodHMV0MD2H/616_20210419-1239/resultsV0vspt_perc_v0m_weights_zvtx] #list of periods
+      resultsallp: /data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210418_ROOT6-1/pp_mc_prodHMV0MD2H/resultsV0vspt_perc_v0m_weights_zvtx

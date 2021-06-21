@@ -1,0 +1,117 @@
+analysis:
+  MBvspt_perc_v0m:
+    event_weighting_mc:
+      LHC16pp:
+        - null
+        - null
+        - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data_no_mass.root
+          histo_name: n_tracklets_1_LHC16pp_weights
+          according_to: n_tracklets
+        - null
+        - null
+        - null
+      LHC17pp:
+        - null
+        - null
+        - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data_no_mass.root
+          histo_name: n_tracklets_1_LHC17pp_weights
+          according_to: n_tracklets
+        - null
+        - null
+        - null
+      LHC18pp:
+        - null
+        - null
+        - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data_no_mass.root
+          histo_name: n_tracklets_1_LHC18pp_weights
+          according_to: n_tracklets
+        - null
+        - null
+        - null
+    event_weighting_mc_pt:
+      activate: True
+      LHC16pp:
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+          histo_name: mcptshape_weights_Py8Mode2_16_MB
+          according_to: pt_cand
+          according_to_gen: pt_gen_cand
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+          histo_name: mcptshape_weights_Py8Mode2_16_MB
+          according_to: pt_cand
+          according_to_gen: pt_gen_cand
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+          histo_name: mcptshape_weights_Py8Mode2_16_MB
+          according_to: pt_cand
+          according_to_gen: pt_gen_cand
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+          histo_name: mcptshape_weights_Py8Mode2_16_MB
+          according_to: pt_cand
+          according_to_gen: pt_gen_cand
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+          histo_name: mcptshape_weights_Py8Mode2_16_MB
+          according_to: pt_cand
+          according_to_gen: pt_gen_cand
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+          histo_name: mcptshape_weights_Py8Mode2_16_MB
+          according_to: pt_cand
+          according_to_gen: pt_gen_cand
+      LHC17pp:
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+          histo_name: mcptshape_weights_Py8Mode2_17_MB
+          according_to: pt_cand
+          according_to_gen: pt_gen_cand
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+          histo_name: mcptshape_weights_Py8Mode2_17_MB
+          according_to: pt_cand
+          according_to_gen: pt_gen_cand
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+          histo_name: mcptshape_weights_Py8Mode2_17_MB
+          according_to: pt_cand
+          according_to_gen: pt_gen_cand
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+          histo_name: mcptshape_weights_Py8Mode2_17_MB
+          according_to: pt_cand
+          according_to_gen: pt_gen_cand
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+          histo_name: mcptshape_weights_Py8Mode2_17_MB
+          according_to: pt_cand
+          according_to_gen: pt_gen_cand
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+          histo_name: mcptshape_weights_Py8Mode2_17_MB
+          according_to: pt_cand
+          according_to_gen: pt_gen_cand
+      LHC18pp:
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+          histo_name: mcptshape_weights_Py8Mode2_18_MB
+          according_to: pt_cand
+          according_to_gen: pt_gen_cand
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+          histo_name: mcptshape_weights_Py8Mode2_18_MB
+          according_to: pt_cand
+          according_to_gen: pt_gen_cand
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+          histo_name: mcptshape_weights_Py8Mode2_18_MB
+          according_to: pt_cand
+          according_to_gen: pt_gen_cand
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+          histo_name: mcptshape_weights_Py8Mode2_18_MB
+          according_to: pt_cand
+          according_to_gen: pt_gen_cand
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+          histo_name: mcptshape_weights_Py8Mode2_18_MB
+          according_to: pt_cand
+          according_to_gen: pt_gen_cand
+        - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+          histo_name: mcptshape_weights_Py8Mode2_18_MB
+          according_to: pt_cand
+          according_to_gen: pt_gen_cand
+    data:
+      results: [/data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_data/593_20210223-2051/resultsMBvspt_perc_v0m_weights_ntrkl_no_mass_window,
+                /data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_data/593_20210223-2051/resultsMBvspt_perc_v0m_weights_ntrkl_no_mass_window,
+                /data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_data/593_20210223-2051/resultsMBvspt_perc_v0m_weights_ntrkl_no_mass_window] #list of periods
+      resultsallp: /data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_data/resultsMBvspt_perc_v0m_weights_ntrkl_no_mass_window
+    mc:
+      results: [/data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prodD2H/594_20210301-1015/resultsMBvspt_perc_v0m_weights_ntrkl_no_mass_window,
+                /data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prodD2H/594_20210301-1015/resultsMBvspt_perc_v0m_weights_ntrkl_no_mass_window,
+                /data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prodD2H/594_20210301-1015/resultsMBvspt_perc_v0m_weights_ntrkl_no_mass_window] #list of periods
+      resultsallp: /data/DerivedResults/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_mc_prodD2H/resultsMBvspt_perc_v0m_weights_ntrkl_no_mass_window
