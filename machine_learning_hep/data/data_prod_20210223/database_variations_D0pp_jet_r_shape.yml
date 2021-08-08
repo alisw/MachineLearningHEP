@@ -322,11 +322,11 @@ categories:
         variations:
             cuts:
                 activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
-#               match to: [ 0 ,  1 ,  2 ,  3 ,  4 ,  5 ,  6 ,  7 ,  8 ,  9 , 10 , 11 , 12 , 13 ]
+                #matching: [0 ,  1 ,  2 ,  3 ,  4 ,  5 ,  6 ,  7 ,  8 ,  9 , 10 , 11 , 12 , 13 ]
                 label: ["cut"] 
                 diffs:
                     analysis:
-                        jet_r_shape: 
+                        jet_r_shape_2_6:
                             use_cuts: [True, True, True, True, True, True, True, True, True, True, True, True, True, True] 
                             cuts:
 #cuts LL2 (0) 
@@ -401,7 +401,7 @@ categories:
                                   - "abs(inv_mass - 1.864) <= 0.400 and dca <= 300.e-4 and abs(cos_t_star) <= 0.8 and pt_prong1 >= 0.5 and pt_prong0 >= 0.5 and abs(imp_par_prong1) <= 1000.e-4 and abs(imp_par_prong0) <= 1000.e-4 and imp_par_prod <= -3000.e-8 and cos_p >= 0.85 and abs(cos_p_xy) >= 0. and norm_dl_xy >= 0."
                                   - "abs(inv_mass - 1.864) <= 0.400 and dca <= 300.e-4 and abs(cos_t_star) <= 0.8 and pt_prong1 >= 0.5 and pt_prong0 >= 0.5 and abs(imp_par_prong1) <= 1000.e-4 and abs(imp_par_prong0) <= 1000.e-4 and imp_par_prod <= -3000.e-8 and cos_p >= 0.85 and abs(cos_p_xy) >= 0. and norm_dl_xy >= 0."
                                   - "abs(inv_mass - 1.864) <= 0.400 and dca <= 300.e-4 and abs(cos_t_star) <= 0.9 and pt_prong1 >= 0.7 and pt_prong0 >= 0.7 and abs(imp_par_prong1) <= 1000.e-4 and abs(imp_par_prong0) <= 1000.e-4 and imp_par_prod <= -3000.e-8 and cos_p >= 0.80 and abs(cos_p_xy) >= 0. and norm_dl_xy >= 2."                                                                 
-# cuts 6-12    
+#cuts 6_12:
 #    cuts:
 #        activate: yes # High RAM consumption
 #        processor: true
@@ -418,7 +418,7 @@ categories:
 #                label: ["cut"]
 #                diffs:
 #                    analysis:
-#                        jet_r_shape:
+#                        jet_r_shape_6_12:
 #                            use_cuts: [ True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True, True,True, True, True, True, True, True, True, True]
 #                            cuts:
 ##cut 0

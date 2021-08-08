@@ -36,7 +36,6 @@ from ROOT import kOpenCircle, kOpenSquare, kOpenDiamond, kOpenCross, kOpenStar, 
 from ROOT import kOpenFourTrianglesX, kOpenDoubleDiamond, kOpenFourTrianglesPlus, kOpenCrossX # pylint: disable=import-error, no-name-in-module
 from ROOT import kFullCircle, kFullSquare, kFullDiamond, kFullCross, kFullStar, kFullThreeTriangles # pylint: disable=import-error, no-name-in-module
 from ROOT import kFullFourTrianglesX, kFullDoubleDiamond, kFullFourTrianglesPlus, kFullCrossX # pylint: disable=import-error, no-name-in-module
-from ROOT import RooUnfoldBayes
 
 def openfile(filename, attr):
     """
@@ -488,11 +487,6 @@ def folding(h_input, response_matrix, h_output):
             h_folded.SetBinError(a+1, b+1, math.sqrt(val_err))
     return h_folded
 
-def folding_roounfold(h_input, response_matrix, h_output):
-    h_folded = h_output.Clone("h_folded")
-    h_folded = response_matrix.ApplyToTruth(h_input)
-    return h_folded
-
 def get_plot_range(val_min, val_max, margin_min, margin_max, logscale=False):
     '''Return the minimum and maximum of the plotting range so that there are margins
     expressed as fractions of the plotting range.'''
@@ -583,7 +577,7 @@ def get_colour(i: int, scheme=1):
         kBlue + 2, kRed - 3, kGreen + 3, kYellow  + 1, kMagenta + 1, kCyan + 2, kRed + 3]
     colours_alice_point = [kBlack, kBlue + 1, kRed + 1, kGreen + 3, kMagenta + 2, kOrange + 4, \
         kCyan + 2, kYellow + 2]
-    colours_alice_syst = [17, kBlue - 7, kRed - 7, kGreen - 6, kMagenta - 4, kOrange - 3, \
+    colours_alice_syst = [kGray + 1, kBlue - 7, kRed - 7, kGreen - 6, kMagenta - 4, kOrange - 3, \
         kCyan - 6, kYellow - 7]
     if scheme == 1:
         list_col = colours_alice_point
@@ -676,7 +670,8 @@ def draw_latex(latex, colour=1, textsize=0.03):
 
 def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None, # pylint: disable=too-many-arguments, too-many-branches, too-many-statements, too-many-locals
               list_obj=None, labels_obj=None,
-              leg_pos=None, opt_leg_h="P", opt_leg_g="P", opt_plot_h="same", opt_plot_g="P0",
+              leg_pos=None, opt_leg_h="P", opt_leg_g="P",
+              opt_plot_h="same", opt_plot_g="P0",
               offsets_xy=None, maxdigits=3, colours=None, markers=None, sizes=None,
               range_x=None, range_y=None, margins_y=None, with_errors="xy", logscale=None):
     """
@@ -752,7 +747,7 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
             graph.GetXaxis().SetTitleOffset(offsets_xy[0])
             graph.GetYaxis().SetTitleOffset(offsets_xy[1])
         if leg and n_labels > counter_plot and len(labels_obj[counter_plot]) > 0:
-            leg.AddEntry(list_obj[counter_plot], labels_obj[counter_plot], "P")
+            leg.AddEntry(graph, labels_obj[counter_plot], opt_leg_g)
         graph.Draw(opt_plot_g + "A" if counter_plot == 0 else opt_plot_g)
 
     def plot_histogram(histogram):
@@ -777,13 +772,18 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
             list_new.append(gr)
         setup_histogram(histogram, get_my_colour(counter_plot), get_my_marker(counter_plot),
                         get_my_size(counter_plot))
-        if leg and n_labels > counter_plot and len(labels_obj[counter_plot]) > 0:
-            leg.AddEntry(histogram, labels_obj[counter_plot], opt_leg_h[counter_plot-1])
-        print(opt_plot_h)
         if isinstance(opt_plot_h, str):
-            histogram.Draw("same")
+            opt_plot = [opt_plot_h]*(counter_plot+1)
         else:
-            histogram.Draw(opt_plot_h[counter_plot-1])
+            opt_plot = opt_plot_h
+        if isinstance(opt_leg_h, str):
+            opt_leg = [opt_leg_h]*(counter_plot+1)
+        else:
+            opt_leg = opt_leg_h
+        if leg and n_labels > counter_plot and len(labels_obj[counter_plot]) > 0:
+            leg.AddEntry(histogram, labels_obj[counter_plot], opt_leg[counter_plot])
+        histogram.Draw(opt_plot[counter_plot])
+
     def plot_latex(latex):
         draw_latex(latex)
 
@@ -885,6 +885,11 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
         y_min_plot, y_max_plot = range_y
 
     # append "same" to the histogram plotting option if needed
+    if isinstance(opt_plot_h, str):
+        opt_plot_h = opt_plot_h.lower()
+        opt_not_in = all(opt not in opt_plot_h for opt in ("same", "lego", "surf"))
+        if opt_not_in:
+            opt_plot_h += " same"
     for opt in opt_plot_h:
         opt = opt.lower()
         opt_not_in = all(opt not in opt_plot_h for opt in ("same", "lego", "surf"))

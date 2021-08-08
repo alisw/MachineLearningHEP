@@ -404,7 +404,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         mymultiprocessmc.multi_efficiency()
     analyze_steps = []
     if efficiency_resp is True:
-        analyze_steps.append("efficiency")
+        analyze_steps.append("efficiency_inclusive")
         ana_mgr.analyze(*analyze_steps)
     if doresponse is True:
         mymultiprocessmc.multi_response()
@@ -416,7 +416,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     if dosyst is True:
         analyze_steps.append("yield_syst")
     if doeff is True:
-        analyze_steps.append("efficiency_folded")
+        analyze_steps.append("efficiency")
     if dojetstudies is True:
         if dofit is False:
             analyze_steps.append("fit")

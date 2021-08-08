@@ -120,7 +120,7 @@ categories:
                     - "#it{sb} = [9,4]#cup[7,9]"
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_r_shape_2_6:
                             sideband_sigma_2_left:  [ 8 ,  8 , "#", "#", "#", "#", "#",  8 , "#", "#"]
                             sideband_sigma_1_left:  ["#", "#", "#",  5 , "#",  5 , "#",  5 ,  7 , "#"]
                             sideband_sigma_1_right: ["#", "#", "#",  5 ,  5 , "#",  5 , "#", "#",  7 ]

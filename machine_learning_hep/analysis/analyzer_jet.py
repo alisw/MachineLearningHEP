@@ -62,6 +62,12 @@ class AnalyzerJet(Analyzer):
             datap["analysis"][self.typean].get("branching_ratio", None)
         self.xsection_inel = \
             datap["analysis"][self.typean].get("xsection_inel", None)
+        self.lb_branching_ratio = \
+            datap["analysis"][self.typean].get("lb_branching_ratio", None)
+        self.convert_const = \
+            datap["analysis"][self.typean].get("convert_const", None)
+        self.antipart_count = \
+            datap["analysis"][self.typean].get("antipart_count", None)
 
         # selection
         self.s_jetsel_sim = datap["analysis"][self.typean]["jetsel_sim"] # simulations
@@ -129,9 +135,11 @@ class AnalyzerJet(Analyzer):
         self.p_fix_mean = datap["analysis"][self.typean]["fix_mean"]
         self.p_fix_sigma = datap["analysis"][self.typean].get("fix_sigma", None)
         self.p_set_fix_sigma= \
-        datap["analysis"][self.typean].get("SetFixGaussianSigma", False)
+        datap["analysis"][self.typean].get("SetFixGaussianSigma", [False] * self.p_nptfinbins)
+        self.p_set_mc_sigma= \
+        datap["analysis"][self.typean].get("SetMCGaussianSigma", [False] * self.p_nptfinbins)
         self.p_set_initial_sigma = \
-        datap["analysis"][self.typean].get("SetInitialGaussianSigma", True)
+        datap["analysis"][self.typean].get("SetInitialGaussianSigma", [False] * self.p_nptfinbins)
         self.p_sigmaarray = datap["analysis"][self.typean]["sigmaarray"]
         #self.p_masspeaksec = None
         self.p_fix_sigmasec = None
@@ -166,6 +174,8 @@ class AnalyzerJet(Analyzer):
         self.xsec = datap["analysis"][self.typean].get("xsec", False)
         self.filename_fonll = \
             datap["analysis"]["inputfonllpred"]
+        #closure
+        self.unmatched_gen = datap["analysis"][self.typean].get("unmatched_gen", True)
 
         # systematics variations
 
@@ -236,7 +246,7 @@ class AnalyzerJet(Analyzer):
         self.inclusive_unc = datap["analysis"][self.typean].get("inclusive_unc", None)
         self.use_inclusive_systematics = datap["analysis"][self.typean].get("use_inclusive_systematics", False)
         self.do_check_signif = datap["analysis"][self.typean].get("signif_check", False)
-        self.signif_threshold = datap["analysis"][self.typean].get("signif_thresh", 3)
+        self.signif_threshold = datap["analysis"][self.typean].get("signif_thresh", 0)
 
         # output directories
         self.d_resultsallpmc = datap["analysis"][typean]["mc"]["results"][period] \
@@ -370,10 +380,14 @@ class AnalyzerJet(Analyzer):
                 sigma_mc = fittermc.GetParameter(2)
                 mean_mc = fittermc.GetParameter(1)
                 if sgn_mc:
+                    sigma_mc = fittermc.GetParameter(2)
+                    mean_mc = fittermc.GetParameter(1)
                     fittermc.SetLineColor(get_colour(2))
                     fittermc.Draw("same")
-                latexmc_1 = TLatex(0.67, 0.78, "mean = %s, #sigma  = %s" % \
-                        (round(mean_mc,3), round(sigma_mc,3)))
+                    latexmc_1 = TLatex(0.67, 0.78, "mean = %s, #sigma  = %s" % \
+                            (round(mean_mc,3), round(sigma_mc,3)))
+                else:
+                    latexmc_1 = TLatex(0.67, 0.78, "MC fit failed")
                 draw_latex(latexmc_1)
                 latexmc_2 = TLatex(0.71, 0.72, "%g #leq %s < %g GeV/#it{c}" % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2]))
                 draw_latex(latexmc_2)
@@ -391,15 +405,18 @@ class AnalyzerJet(Analyzer):
                 histomass_reb.Copy(histomass_reb_f)
                 fitter = AliHFInvMassFitter(histomass_reb_f, self.p_massmin[ipt], \
                     self.p_massmax[ipt], self.p_bkgfunc[ipt], self.p_sgnfunc[ipt])
-                fitter.SetInitialGaussianSigma(fittermc.GetParameter(2))
-                fitter.SetInitialGaussianMean(fittermc.GetParameter(1))
-                if self.p_set_initial_sigma[ipt] is True:
-                    if self.p_set_fix_sigma[ipt] is True:
+                if sgn_mc:
+                    if self.p_set_initial_sigma[ipt]:
+                        fitter.SetInitialGaussianSigma(self.p_sigmaarray[ipt])
+                    else:
+                        fitter.SetInitialGaussianSigma(sigma_mc)
+                    fitter.SetInitialGaussianMean(mean_mc)
+                    if self.p_set_fix_sigma[ipt]:
                         print("****************Fix sigma to sigma array values*****************")
                         fitter.SetFixGaussianSigma(self.p_sigmaarray[ipt])
-                    else:
+                    if self.p_set_mc_sigma[ipt]:
                         print("****************Fix sigma to MC sigma values*****************")
-                        fitter.SetFixGaussianSigma(fittermc.GetParameter(2))
+                        fitter.SetFixGaussianSigma(sigma_mc)
                 if self.p_sgnfunc[ipt] == 1:
                     if self.p_fix_sigmasec[ipt] is True:
                         fitter.SetFixSecondGaussianSigma(self.p_sigmaarraysec[ipt])
@@ -491,13 +508,16 @@ class AnalyzerJet(Analyzer):
                     latex2 = TLatex(0.71, 0.67, "%g #leq #it{p}_{T, %s} < %g GeV/#it{c}" % \
                         (self.lpt_finbinmin[ipt], self.p_latexnhadron, min(self.lpt_finbinmax[ipt], self.lvar2_binmax_reco[ibin2])))
                     draw_latex(latex2)
+                    if not sgn_mc:
+                        latex5 =  TLatex(0.67, 0.63, "MC FIT FAILED")
+                        draw_latex(latex5)
                 c_fitted_result.SaveAs("%s/fit_%s.eps" % (self.d_resultsallpdata, suffix_plot))
         myfilemc.Close()
         myfile.Close()
         fileout.Close()
         gROOT.SetBatch(tmp_is_root_batch)
 
-    def efficiency(self):
+    def efficiency_inclusive(self):
 
         self.loadstyle()
         lfileeff = TFile.Open(self.n_fileeff)
@@ -514,25 +534,28 @@ class AnalyzerJet(Analyzer):
         legeff = TLegend(.13, .65, .5, .88)
         setup_legend(legeff)
         list_his = []
-        list_ptcand_gen_old = []
-        list_ptcand_rec_old = []
-        list_ptcand_eff_old = []
+        list_ptcand_gen_inc = []
+        list_ptcand_rec_inc = []
+        list_ptcand_eff_inc = []
         for ibin2 in range(self.p_nbin2_reco):
             stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning, \
                                             self.lvar2_binmin_reco[ibin2], \
                                             self.lvar2_binmax_reco[ibin2])
             h_gen_pr = lfileeff.Get("h_gen_pr" + stringbin2)
-            h_gen_pr_old = h_gen_pr.Clone(h_gen_pr.GetName() + "_old")
-            list_ptcand_gen_old.append(h_gen_pr_old)
+            h_gen_pr_inc = h_gen_pr.Clone(h_gen_pr.GetName() + "_inc")
+            h_gen_pr_inc.SetDirectory(0)
+            list_ptcand_gen_inc.append(h_gen_pr_inc)
 
             h_sel_pr = lfileeff.Get("h_sel_pr" + stringbin2)
-            h_sel_pr_old = h_sel_pr.Clone(h_sel_pr.GetName() + "_old")
-            list_ptcand_rec_old.append(h_sel_pr_old)
+            h_sel_pr_inc = h_sel_pr.Clone(h_sel_pr.GetName() + "_inc")
+            h_sel_pr_inc.SetDirectory(0)
+            list_ptcand_rec_inc.append(h_sel_pr_inc)
 
             h_sel_pr.Divide(h_sel_pr, h_gen_pr, 1.0, 1.0, "B")
             list_his.append(h_sel_pr)
-            h_eff_pr_old = h_sel_pr.Clone("h_eff_pr" + stringbin2 + "_old")
-            list_ptcand_eff_old.append(h_eff_pr_old)
+            h_eff_pr_inc = h_sel_pr.Clone("h_eff_pr" + stringbin2 + "_inc")
+            h_eff_pr_inc.SetDirectory(0)
+            list_ptcand_eff_inc.append(h_eff_pr_inc)
         y_min_h, y_max_h = get_y_window_his(list_his)
         y_min_h = 0
         y_margin_up = 0.35
@@ -597,9 +620,9 @@ class AnalyzerJet(Analyzer):
         legeffFD.Draw()
         cEffFD.SaveAs("%s/efficiency_fd.eps" % self.d_resultsallpdata)
 
-        return list_ptcand_gen_old, list_ptcand_rec_old, list_ptcand_eff_old
+        return list_ptcand_gen_inc, list_ptcand_rec_inc, list_ptcand_eff_inc
 
-    def efficiency_folded(self): # pylint: disable=too-many-branches, too-many-locals
+    def efficiency(self): # pylint: disable=too-many-branches, too-many-locals
         self.loadstyle()
         lfileeff = TFile.Open(self.n_fileeff)
         if not lfileeff:
@@ -834,7 +857,7 @@ class AnalyzerJet(Analyzer):
             list_ptcand_eff_new_folded.append(h1_ptcand_eff_folded)
 
         # compare the old and the new method
-        list_ptcand_gen_old, list_ptcand_rec_old, list_ptcand_eff_old = self.efficiency()
+        list_ptcand_gen_old, list_ptcand_rec_old, list_ptcand_eff_old = self.efficiency_inclusive()
         list_eff_diff = []
         list_eff_diff_labels = []
         list_effgen_diff = []
@@ -3006,9 +3029,11 @@ class AnalyzerJet(Analyzer):
         hzvsjetpt_reco_eff.Divide(hzvsjetpt_reco_nocuts)
         input_mc_det = unfolding_input_file.Get("input_closure_reco")
         input_mc_det.Multiply(hzvsjetpt_reco_eff)
-    # use unmatched gen sample for closure
-        input_mc_gen = unfolding_input_file.Get("sample_closure")
-        #input_mc_gen = unfolding_input_file.Get("input_closure_gen")
+        # use unmatched gen sample for closure
+        if self.unmatched_gen:
+            input_mc_gen = unfolding_input_file.Get("sample_closure")
+        else:
+            input_mc_gen = unfolding_input_file.Get("input_closure_gen")
         kinematic_eff = []
         hz_gen_nocuts = []
         input_mc_det_z = []
@@ -3255,31 +3280,44 @@ class AnalyzerJet(Analyzer):
                 input_powheg_tg_lc = input_file_lc.Get(name_tg)
                 input_powheg_ratio = input_powheg_lc.Clone("input_powheg_ratio")
                 input_powheg_ratio.Divide(input_powheg_z[ibin2])
-                shapebins_error=[]
+                shapebins_error_up=[]
+                shapebins_error_down=[]
                 shapebins_contents=[]
                 shapebins_centres=[]
-                shapebins_widths=[]
+                shapebins_widths_up=[]
+                shapebins_widths_down=[]
                 for ibinshape in range(self.p_nbinshape_gen):
                     if input_powheg_lc.GetBinContent(ibinshape+1)!=0:
-                        tg_error_lc = input_powheg_tg_lc.GetErrorY(ibinshape)/input_powheg_lc.GetBinContent(ibinshape+1)
-                        tg_error = tg_powheg[ibin2].GetErrorY(ibinshape)/input_powheg_z[ibin2].GetBinContent(ibinshape+1)
+                        tg_error_lc_up = input_powheg_tg_lc.GetErrorYhigh(ibinshape)/input_powheg_lc.GetBinContent(ibinshape+1)
+                        tg_error_lc_down = input_powheg_tg_lc.GetErrorYlow(ibinshape)/input_powheg_lc.GetBinContent(ibinshape+1)
+                        tg_error_up = tg_powheg[ibin2].GetErrorYhigh(ibinshape)/input_powheg_z[ibin2].GetBinContent(ibinshape+1)
+                        tg_error_down = tg_powheg[ibin2].GetErrorYlow(ibinshape)/input_powheg_z[ibin2].GetBinContent(ibinshape+1)
                     else:
-                        tg_error_lc = 0
-                        tg_error = 0
-                    abs_err = sqrt(tg_error_lc*tg_error_lc + tg_error*tg_error)*input_powheg_ratio.GetBinContent(ibinshape+1)
-                    shapebins_error.append(abs_err*0.5)
+                        tg_error_lc_up = 0
+                        tg_error_lc_down = 0
+                        tg_error_up = 0
+                        tg_error_down = 0
+                    abs_err_up = sqrt(tg_error_lc_up*tg_error_lc_up + tg_error_up*tg_error_up)*input_powheg_ratio.GetBinContent(ibinshape+1)
+                    abs_err_down = sqrt(tg_error_lc_down*tg_error_lc_down + tg_error_down*tg_error_down)*input_powheg_ratio.GetBinContent(ibinshape+1)
+                    shapebins_error_up.append(abs_err_up)
+                    shapebins_error_down.append(abs_err_down)
                     shapebins_contents.append(input_powheg_ratio.GetBinContent(ibinshape+1))
                     shapebins_centres.append(input_powheg_ratio.GetBinCenter(ibinshape+1))
-                    shapebins_widths.append(input_powheg_ratio.GetBinWidth(ibinshape+1)*0.5)
+                    shapebins_widths_up.append(input_powheg_ratio.GetBinWidth(ibinshape+1)*0.5)
+                    shapebins_widths_down.append(input_powheg_ratio.GetBinWidth(ibinshape+1)*0.5)
                 shapebins_centres_array = array("d", shapebins_centres)
                 shapebins_contents_array = array("d", shapebins_contents)
-                shapebins_widths = array("d", shapebins_widths)
-                shapebins_error = array("d", shapebins_error)
-                powheg_ratio_sys.append(TGraphErrors(self.p_nbinshape_gen,\
+                shapebins_widths_up = array("d", shapebins_widths_up)
+                shapebins_widths_down = array("d", shapebins_widths_down)
+                shapebins_error_up = array("d", shapebins_error_up)
+                shapebins_error_down = array("d", shapebins_error_down)
+                powheg_ratio_sys.append(TGraphAsymmErrors(self.p_nbinshape_gen,\
                                                 shapebins_centres_array, \
                                                shapebins_contents_array, \
-                                               shapebins_widths, \
-                                               shapebins_error))
+                                               shapebins_widths_up, \
+                                               shapebins_widths_down, \
+                                               shapebins_error_up,\
+                                               shapebins_error_down))
                 powheg_ratio.append(input_powheg_ratio)
 
 
@@ -3630,9 +3668,11 @@ class AnalyzerJet(Analyzer):
                     count_sys_down = 0
                     error = 0
                     for sys_var in range(self.systematic_variations[sys_cat]):
+                        out_sys = False
                         # FIXME exception for the untagged bin pylint: disable=fixme
                         bin_first = 2 if "untagged" in self.systematic_varlabels[sys_cat][sys_var] else 1
                         if self.use_inclusive_systematics:
+                            print("use inclusive syst")
                             if self.systematic_catnames[sys_cat] == "cuts":
                                 #file_inc = TFile.Open(self.inclusive_unc)
                                 #unc_hist = file_inc.Get("rms_mult_1")
@@ -3651,18 +3691,22 @@ class AnalyzerJet(Analyzer):
                                 # FIXME exception for the untagged bin pylint: disable=fixme
                                 if input_histograms_sys[ibin2][sys_cat][sys_var].Integral()==0:
                                     error = 0
+                                    out_sys = True
                                 else:
                                     error = input_histograms_sys[ibin2][sys_cat][sys_var].GetBinContent(ibinshape + bin_first) - input_histograms_default[ibin2].GetBinContent(ibinshape + 1)
                         else:
+                            print("no inclusive syst")
                             # FIXME exception for the untagged bin pylint: disable=fixme
                             if input_histograms_sys[ibin2][sys_cat][sys_var].Integral()==0:
                                 error = 0
+                                out_sys = True
                             else:
                                 error = input_histograms_sys[ibin2][sys_cat][sys_var].GetBinContent(ibinshape + bin_first) - input_histograms_default[ibin2].GetBinContent(ibinshape + 1)
                         if error >= 0:
                             if self.systematic_rms[sys_cat] is True:
                                 error_var_up += error * error
-                                count_sys_up = count_sys_up + 1
+                                if not out_sys:
+                                    count_sys_up = count_sys_up + 1
                             else:
                                 if error > error_var_up:
                                     error_var_up = error
@@ -3670,10 +3714,12 @@ class AnalyzerJet(Analyzer):
                             if self.systematic_rms[sys_cat] is True:
                                 if self.systematic_rms_both_sides[sys_cat] is True:
                                     error_var_up += error * error
-                                    count_sys_up = count_sys_up + 1
+                                    if not out_sys:
+                                        count_sys_up = count_sys_up + 1
                                 else:
                                     error_var_down += error * error
-                                    count_sys_down = count_sys_down + 1
+                                    if not out_sys:
+                                        count_sys_down = count_sys_down + 1
                             else:
                                 if abs(error) > error_var_down:
                                     error_var_down = abs(error)
@@ -3881,14 +3927,14 @@ class AnalyzerJet(Analyzer):
         for i_pythia8 in range(len(self.pythia8_prompt_variations)):
             path = "%s%s.root" % (self.pythia8_prompt_variations_path, self.pythia8_prompt_variations[i_pythia8])
             print(path)
-            if "default" in path:
+            if "trees_pythia8_pr_default" in path:
                 path_monash = path
-            elif "2soft" in path:
+            elif "trees_pythia8_pr_colour2soft" in path:
                 path_mode2 = path
         for i_pythia8 in range(len(self.pythia8_prompt_variations)):
             path = "%s%s.root" % (self.pythia8_prompt_variations_path, self.pythia8_prompt_variations[i_pythia8])
             if "scaled" in self.pythia8_prompt_variations_legend[i_pythia8]:
-                input_pythia8_i = self.get_soft_mode_0_weighed(path, path_monash, path_mode2, 2, True)
+                input_pythia8_i = self.mc_model_reweighting(path, path_monash, path_mode2, 2, True)
             else:
                 input_pythia8_i = self.get_simulated_yields(path, 2, True)
             if not input_pythia8_i:
@@ -3926,6 +3972,7 @@ class AnalyzerJet(Analyzer):
                     name_pythia = input_pythia8_z_jetpt[ibin2].GetName()
                     pythia_lc = file_sim_lc.Get(name_pythia)
                     pythia_ratio=pythia_lc.Clone("pythia_ratio")
+                    print(pythia_ratio, input_pythia8_z_jetpt[ibin2])
                     pythia_ratio.Divide(input_pythia8_z_jetpt[ibin2])
                     input_pythia8_ratio_var.append(pythia_ratio)
                 pythia8_out.SetDirectory(0)
@@ -3934,7 +3981,6 @@ class AnalyzerJet(Analyzer):
                 input_pythia8_ratio.append(input_pythia8_ratio_var)
             input_pythia8_z.append(input_pythia8_z_jetpt)
             input_pythia8_xsection_z.append(input_pythia8_xsection_z_jetpt)
-        file_sim_out.Close()
 
         for ibin2 in range(self.p_nbin2_gen):
 
@@ -4064,10 +4110,8 @@ class AnalyzerJet(Analyzer):
             #markers = [get_marker(i, j) for i, j in zip((0, 1, 0, 1), (2, 0, 2, 0))]
             list_obj = [tgsys[ibin2], input_histograms_default[ibin2]]
             labels_obj = ["data, pp, #sqrt{#it{s}} = 13 TeV", ""]
-            opt_plot= []
-            opt_plot.append("same")
-            opt_leg = []
-            opt_leg.append("LEP")
+            opt_plot= ["", "same"]
+            opt_leg = ["", "LEP"]
             colours = [get_colour(i, j) for i, j in zip((0, 0), (2, 1))]
             markers = [get_marker(i, 2) for i in (1, 1)]
             for i_pythia8 in range(len(self.pythia8_prompt_variations)):
@@ -4109,10 +4153,8 @@ class AnalyzerJet(Analyzer):
                 list_obj = [rel_sys[ibin2], histo_ratios[ibin2]]
                 labels_obj = ["data, pp, #sqrt{#it{s}} = 13 TeV",""]
                 colours = [get_colour(i, j) for i, j in zip((0, 0), (2, 1))]
-                opt_leg = []
-                opt_plot= []
-                opt_plot.append("same")
-                opt_leg.append("LEP")
+                opt_leg = ["","LEP"]
+                opt_plot= ["", "same"]
                 markers = [get_marker(i, 2) for i in (1, 1)]
                 for i_pythia8 in range(len(self.pythia8_prompt_variations)):
                     list_obj.append(input_pythia8_ratio[i_pythia8][ibin2])
@@ -4382,9 +4424,10 @@ class AnalyzerJet(Analyzer):
             x_max = fonll_hist.GetXaxis().GetXmax()
             x_min = fonll_hist.GetXaxis().GetXmin()
             nbins = fonll_hist.GetNbinsX()
-            rebin_const = int(nbins/(x_max-x_min))
-            fonll_hist.Rebin(rebin_const)
-            fonll_hist.Scale(2*0.144/1e9)
+            rebin_const = (nbins/(x_max-x_min))
+            if isinstance(rebin_const, int) and rebin_const > 1:
+                fonll_hist.Rebin(rebin_const)
+            fonll_hist.Scale(self.lb_branching_ratio*self.convert_const*self.antipart_count)
             powheg_hist = TH1F("powheg_hist", "", fonll_hist.GetNbinsX(), x_min, x_max)
             fill_hist(powheg_hist, df_sim.pt_cand)
             powheg_hist.Scale(scale_factor)
@@ -4446,44 +4489,27 @@ class AnalyzerJet(Analyzer):
                 his2 = makefill2dweighed(df_sim, "h2_yield_sim", \
                     self.varshapebinarray_gen, self.var2binarray_gen, \
                     self.v_varshape_binning, self.v_var2_binning, "xsec")
-                print("Integral of the histogram:", his2.Integral())
-                print("Scaling with:", scale_factor)
                 his2.Scale(scale_factor)
-                print("Entries in the histogram:", his2.GetEntries())
-                print("Returning")
                 return his2
             if dim == 3:
                 # Binning: x - shape, y - jet pt, z - pt hadron
                 his3 = makefill3dweighed(df_sim, "h3_yield_sim", \
                     self.varshapebinarray_gen, self.var2binarray_gen, self.var1binarray, \
                     self.v_varshape_binning, self.v_var2_binning, self.v_var_binning, "xsec")
-                print("Integral of the histogram:", his3.Integral())
-                print("Scaling with:", scale_factor)
                 his3.Scale(scale_factor)
-                print("Entries in the histogram:", his3.GetEntries())
-                print("Returning")
                 return his3
         if dim == 2:
             # Binning: x - shape, y - jet pt
             his2 = makefill2dhist(df_sim, "h2_yield_sim", \
                 self.varshapebinarray_gen, self.var2binarray_gen, \
                 self.v_varshape_binning, self.v_var2_binning)
-            print("Integral of the histogram:", his2.Integral())
-            print("Scaling with:", scale_factor)
             his2.Scale(scale_factor)
-            print("Entries in the histogram:", his2.GetEntries())
-            print("Returning")
-            return his2
         if dim == 3:
             # Binning: x - shape, y - jet pt, z - pt hadron
             his3 = makefill3dhist(df_sim, "h3_yield_sim", \
                 self.varshapebinarray_gen, self.var2binarray_gen, self.var1binarray, \
                 self.v_varshape_binning, self.v_var2_binning, self.v_var_binning)
-            print("Integral of the histogram:", his3.Integral())
-            print("Scaling with:", scale_factor)
             his3.Scale(scale_factor)
-            print("Entries in the histogram:", his3.GetEntries())
-            print("Returning")
             return his3
 
     def prepare_pt_spectra_sim(self, file_path, prompt):
@@ -4527,7 +4553,7 @@ class AnalyzerJet(Analyzer):
         pt_hist.Scale(1/pt_hist.Integral())
         return pt_hist
 
-    def get_soft_mode_0_weighed(self, file_path: str, file_path_1: str, file_path_2: str, dim: int, prompt: bool):
+    def mc_model_reweighting(self, file_path: str, file_path_1: str, file_path_2: str, dim: int, prompt: bool):
         """Create a histogram from a simulation tree.
         file_path - input file path
         dim - dimension of the output histogram: 2, 3
@@ -4582,9 +4608,7 @@ class AnalyzerJet(Analyzer):
             self.logger.fatal("Error: %d is not a supported dimension.", dim)
 
         monash_pt_spect = self.prepare_pt_spectra_sim(file_path_1, prompt)
-        print("MONASH integral", monash_pt_spect.Integral())
         mode_2_pt_spect = self.prepare_pt_spectra_sim(file_path_2, prompt)
-        print("MODE 2 integral", mode_2_pt_spect.Integral())
         mm_canv = TCanvas("monash+mode2")
         setup_canvas(mm_canv)
         leg_mm = TLegend(.67, .6, .85, .85)
