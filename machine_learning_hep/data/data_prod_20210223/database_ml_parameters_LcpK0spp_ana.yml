@@ -485,12 +485,7 @@ LcpK0spp:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
-      corrEffMult: [false, false,true,true,true,true]
-      #corrEffMult: [false, false, false, false]
-      #sel_binmin2:  [0,0,50,30,0.1,0.1,0,0] #list of var2 splittng nbins
-      #sel_binmax2: [101,100,100,100,50,30,0.1,0.01] #101 just to have a different histoname, FIXME
-      #triggereff: [1,0.920,0.991,0.897,0.853,0.998,1,1]
-      #triggereffunc: [0,0,0,0,0,0,0,0]
+      corrEffMult: [true,true,true,true,true,true]
       sel_binmin2:  [0,0,50,30,0.1,0] #list of var2 splittng nbins
       sel_binmax2: [101,100,100,100,30,0.1] #101 just to have a different histoname, FIXME
       triggereff: [1,0.920,0.854,0.897,0.998,1] # the value for 50-100 has been for now computed as weighted average from 50-70 and 70-100 bins
@@ -517,48 +512,107 @@ LcpK0spp:
         LHC16pp:
           - null
           - null
-          - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data.root
+          - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/weights_n_tracklets_MB_Lc_data.root
             histo_name: n_tracklets_1_LHC16pp_weights
             according_to: n_tracklets
-          - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data.root
-            histo_name: n_tracklets_2_LHC16pp_weights
-            according_to: n_tracklets
-          - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data.root
-            histo_name: n_tracklets_3_LHC16pp_weights
-            according_to: n_tracklets
-          - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data.root
-            histo_name: n_tracklets_0_LHC16pp_weights
-            according_to: n_tracklets
+          - null
+          - null
+          - null
         LHC17pp:
           - null
           - null
-          - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data.root
+          - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/weights_n_tracklets_MB_Lc_data.root
             histo_name: n_tracklets_1_LHC17pp_weights
             according_to: n_tracklets
-          - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data.root
-            histo_name: n_tracklets_2_LHC17pp_weights
-            according_to: n_tracklets
-          - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data.root
-            histo_name: n_tracklets_3_LHC17pp_weights
-            according_to: n_tracklets
-          - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data.root
-            histo_name: n_tracklets_0_LHC17pp_weights
-            according_to: n_tracklets
+          - null
+          - null
+          - null
         LHC18pp:
           - null
           - null
-          - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data.root
+          - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/weights_n_tracklets_MB_Lc_data.root
             histo_name: n_tracklets_1_LHC18pp_weights
             according_to: n_tracklets
-          - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data.root
-            histo_name: n_tracklets_2_LHC18pp_weights
-            according_to: n_tracklets
-          - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data.root
-            histo_name: n_tracklets_3_LHC18pp_weights
-            according_to: n_tracklets
-          - filepath: data/event_weighting_mc/pythia8/weights_n_tracklets_MB_Lc_data.root
-            histo_name: n_tracklets_0_LHC18pp_weights
-            according_to: n_tracklets
+          - null
+          - null
+          - null
+      event_weighting_mc_pt:
+        activate: True
+        LHC16pp:
+          - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+            histo_name: mcptshape_weights_Py8Mode2_16_MB
+            according_to: pt_cand
+            according_to_gen: pt_gen_cand
+          - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+            histo_name: mcptshape_weights_Py8Mode2_16_MB
+            according_to: pt_cand
+            according_to_gen: pt_gen_cand
+          - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+            histo_name: mcptshape_weights_Py8Mode2_16_MB
+            according_to: pt_cand
+            according_to_gen: pt_gen_cand
+          - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+            histo_name: mcptshape_weights_Py8Mode2_16_MB
+            according_to: pt_cand
+            according_to_gen: pt_gen_cand
+          - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+            histo_name: mcptshape_weights_Py8Mode2_16_MB
+            according_to: pt_cand
+            according_to_gen: pt_gen_cand
+          - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+            histo_name: mcptshape_weights_Py8Mode2_16_MB
+            according_to: pt_cand
+            according_to_gen: pt_gen_cand
+        LHC17pp:
+          - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+            histo_name: mcptshape_weights_Py8Mode2_17_MB
+            according_to: pt_cand
+            according_to_gen: pt_gen_cand
+          - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+            histo_name: mcptshape_weights_Py8Mode2_17_MB
+            according_to: pt_cand
+            according_to_gen: pt_gen_cand
+          - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+            histo_name: mcptshape_weights_Py8Mode2_17_MB
+            according_to: pt_cand
+            according_to_gen: pt_gen_cand
+          - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+            histo_name: mcptshape_weights_Py8Mode2_17_MB
+            according_to: pt_cand
+            according_to_gen: pt_gen_cand
+          - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+            histo_name: mcptshape_weights_Py8Mode2_17_MB
+            according_to: pt_cand
+            according_to_gen: pt_gen_cand
+          - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+            histo_name: mcptshape_weights_Py8Mode2_17_MB
+            according_to: pt_cand
+            according_to_gen: pt_gen_cand
+        LHC18pp:
+          - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+            histo_name: mcptshape_weights_Py8Mode2_18_MB
+            according_to: pt_cand
+            according_to_gen: pt_gen_cand
+          - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+            histo_name: mcptshape_weights_Py8Mode2_18_MB
+            according_to: pt_cand
+            according_to_gen: pt_gen_cand
+          - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+            histo_name: mcptshape_weights_Py8Mode2_18_MB
+            according_to: pt_cand
+            according_to_gen: pt_gen_cand
+          - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+            histo_name: mcptshape_weights_Py8Mode2_18_MB
+            according_to: pt_cand
+            according_to_gen: pt_gen_cand
+          - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+            histo_name: mcptshape_weights_Py8Mode2_18_MB
+            according_to: pt_cand
+            according_to_gen: pt_gen_cand
+          - filepath: data/data_prod_20210223/LcpK0s_V0M/weights/mcptshape_mode2.root
+            histo_name: mcptshape_weights_Py8Mode2_18_MB
+            according_to: pt_cand
+            according_to_gen: pt_gen_cand
 
       triggersel:
         data: "trigger_hasbit_INT7==1"
