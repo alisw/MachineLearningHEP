@@ -757,7 +757,6 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         hzvsjetpt_gen_unmatched.Write()
 
         #create an unmatched sample for closure test (NB! not statistically same as reconstructed sample!)
-        print("before sample")
         #sample_closure_unmatched=df_zvsjetpt_gen_unmatched.sample(frac=0.20)
         _, sample_closure_unmatched = \
                  train_test_split(df_zvsjetpt_gen_unmatched, test_size=self.closure_frac)

@@ -436,11 +436,9 @@ LcpK0spp:
       masspeaksec: 2.2864
 
       # If SetInitialGaussianSigma true: initial sigma value taken from sigmaarray
-      # If SetFixGaussianSigma true: sigma value fixed to sigmaarray
-      # If SetMCGaussianSigma true: sigma value for data fixed to MC sigma
+      # If SetFixGaussianSigma true: sigma value fixed to sigmaarray if SetInitialGaussianSigma true, else sigma = sigma mc
       SetInitialGaussianSigma: [false, false, false, false, false] # sel_an_binmin bin
       SetFixGaussianSigma: [false, false, false, false, false] # sel_an_binmin bins
-      SetMCGaussianSigma: [false, false, false, false, false] # sel_an_binmin bins
 
       fix_sigmasec: [true, true, true, true, true]
       sigmaarraysec: [0.007497,0.01,0.01,0.01,0.01]
@@ -518,7 +516,7 @@ LcpK0spp:
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_2_6
 
-      variations_db: ./data/data_prod_20210223/database_variations_LcpK0spp_jet_r_shape.yml
+      variations_db: ./data/data_prod_20210223/database_variations_LcpK0spp_jet_r_shape_2_6.yml
       inclusive_unc: ./data/data_prod_20210223/mlwp_rms_Binned.root
 
     jet_r_shape_6_12:
@@ -560,7 +558,7 @@ LcpK0spp:
         <<: *mc_out_6_12
 
 
-        variations_db: ./data/data_prod_20210223/database_variations_LcpK0spp_jet_r_shape.yml
+        variations_db: ./data/data_prod_20210223/database_variations_LcpK0spp_jet_r_shape_6_12.yml
       inclusive_unc: ./data/data_prod_20210223/mlwp_rms_Binned.root
 
 

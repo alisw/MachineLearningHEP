@@ -26,14 +26,14 @@ categories:
                 label: ["bkg. func."]
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_r_shape_6_12:
                             bkgfunc: [0]
             masspeak:
                 activate: [no]
                 label: ["mass peak"]
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_r_shape_6_12:
                             masspeak:    [2.2864]
                             masspeaksec: [2.2864]
             massmin:
@@ -43,7 +43,7 @@ categories:
                     - "mass min. 2.16"
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_r_shape_6_12:
                             massmin: [2.18, 2.16]
             massmax:
                 activate: [yes, yes]
@@ -52,7 +52,7 @@ categories:
                     - "mass max. 2.456"
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_r_shape_6_12:
                             massmax: [2.460, 2.456]
             rebin:
                 activate: [no, no, no, yes]
@@ -63,21 +63,21 @@ categories:
                     - "rebin 8"
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_r_shape_6_12:
                             rebin: [14, 12, 10, 8]
             fix_mean:
                 activate: [yes]
                 label: ["fix mean"]
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_r_shape_6_12:
                             fix_mean: [true]
             fix_sigma:
                 activate: [no]
                 label: ["free sigma"]
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_r_shape_6_12:
                                 SetInitialGaussianSigma: [false]
                                 SetFixGaussianSigma: [false]
     sideband:
@@ -102,7 +102,7 @@ categories:
                     - "#it{signal} = 2.4 #sigma"
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_r_shape_6_12:
                             signal_sigma: [1.6  , 1.7  , 1.8  , 1.9  , 2.1  , 2.2  , 2.3  , 2.4]
                             sigma_scale:  [0.890, 0.911, 0.928, 0.943, 0.964, 0.972, 0.979, 0.984]
             ranges:
@@ -120,7 +120,7 @@ categories:
                     - "#it{sb} = [9,4]#cup[7,9]"
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_r_shape_2_6:
                             sideband_sigma_2_left:  [ 8 ,  8 , "#", "#", "#", "#", "#",  8 , "#", "#"]
                             sideband_sigma_1_left:  ["#", "#", "#",  5 , "#",  5 , "#",  5 ,  7 , "#"]
                             sideband_sigma_1_right: ["#", "#", "#",  5 ,  5 , "#",  5 , "#", "#",  7 ]
@@ -131,7 +131,7 @@ categories:
                 label: ["left sb only"]
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_r_shape_6_12:
                             sidebandleftonly: [true]
 
     feeddown:
@@ -157,7 +157,7 @@ categories:
                     - "no EvtGen"
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_r_shape_6_12:
                             powheg_path_nonprompt:
                                 - /data/POWHEG/trees_powheg_fd_F1_R05.root
                                 - /data/POWHEG/trees_powheg_fd_F05_R1.root
@@ -174,7 +174,7 @@ categories:
                     - "scaled with fonll"
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_r_shape_6_12:
                             xsec: [true]
     prior:
         activate: yes
@@ -190,7 +190,7 @@ categories:
                 label: ["flat"]
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_r_shape_6_12:
                             doprior: [true]
                             niterunfoldingchosen: [4]
     regularisation:
@@ -207,7 +207,7 @@ categories:
                 label: ["down (3)", "up (7)"]
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_r_shape_6_12:
                             niterunfoldingchosen: [3, 7]
     normalisation:
         activate: no
@@ -223,7 +223,7 @@ categories:
                 label: ["#it{#sigma}_{V0AND} down", "#it{#sigma}_{V0AND} up"]
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_r_shape_6_12:
                             xsection_inel: [54.91, 60.69]
     tracking:
         activate: yes 
@@ -288,7 +288,7 @@ categories:
                     - "#it{p}_{T}^{D} 5#minus48"
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_r_shape_6_12:
                             sel_an_binmin:
                                 [[4,5,6,7,8,10,12,16],  [4,5,6,7,8,10,12,16,24],  [4,5,6,7,8,10,12,16,24,36],  [5,6,7,8,10,12,16],  [5,6,7,8,10,12,16,24],  [5,6,7,8,10,12,16,24,36]]
                             sel_an_binmax:
@@ -303,7 +303,7 @@ categories:
                     - "#it{p}_{T}^{jet} 5#minus50"
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_r_shape_6_12:
                             sel_binmin2_reco: [[8,15,30], [2,3,5,7,15,30],  [5]]
                             sel_binmax2_reco:    ["#",      [3,5,7,15,30,35], [50]]
                             sel_binmin2_gen:  [[8,15,30], [2,3,5,7,15,30],  [5]]
@@ -314,13 +314,13 @@ categories:
                     - "untagged bin"
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_r_shape_6_12:
                             sel_binminshape_reco: [[-100,0.1,0.2,0.3,0.4]]
                             sel_binmaxshape_reco:    [[0.1,0.2,0.3,0.4,0.5]]
                             sel_binminshape_gen:  [[-100,0.1,0.2,0.3,0.4]]
                             sel_binmaxshape_gen:     [[0.1,0.2,0.3,0.4,0.5]]
     cutvar:
-        activate: no  # High RAM consumption
+        activate: yes  # High RAM consumption
         processor: true
         label: "cuts"
         correlation: "corr"
@@ -328,7 +328,7 @@ categories:
         symmetrise: true
         rms_both_sides: true
         variations:
-            cutvar0:
+            cutvar:
                 activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
                 #activate: [no , no , yes, yes, yes, yes, no , yes, yes, yes, yes,  no , no , no , no , no , no , no , no , no , no , no , no]
                #cutvar :  [80 , 79 , 78 , 77 , 76 , 75 , 74 , 73 , 72 , 71 , 69 , 68 , 67 , 66 , 65 , 63 , 60 , 55 , 50 , 45 , 40 , 35 , 30]

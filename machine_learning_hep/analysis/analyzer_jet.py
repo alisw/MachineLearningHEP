@@ -136,8 +136,6 @@ class AnalyzerJet(Analyzer):
         self.p_fix_sigma = datap["analysis"][self.typean].get("fix_sigma", None)
         self.p_set_fix_sigma= \
         datap["analysis"][self.typean].get("SetFixGaussianSigma", [False] * self.p_nptfinbins)
-        self.p_set_mc_sigma= \
-        datap["analysis"][self.typean].get("SetMCGaussianSigma", [False] * self.p_nptfinbins)
         self.p_set_initial_sigma = \
         datap["analysis"][self.typean].get("SetInitialGaussianSigma", [False] * self.p_nptfinbins)
         self.p_sigmaarray = datap["analysis"][self.typean]["sigmaarray"]
@@ -377,8 +375,6 @@ class AnalyzerJet(Analyzer):
                 histomassmc_reb.Draw("same")
                 sigma_mc = 0
                 mean_mc = 0
-                sigma_mc = fittermc.GetParameter(2)
-                mean_mc = fittermc.GetParameter(1)
                 if sgn_mc:
                     sigma_mc = fittermc.GetParameter(2)
                     mean_mc = fittermc.GetParameter(1)
@@ -405,18 +401,19 @@ class AnalyzerJet(Analyzer):
                 histomass_reb.Copy(histomass_reb_f)
                 fitter = AliHFInvMassFitter(histomass_reb_f, self.p_massmin[ipt], \
                     self.p_massmax[ipt], self.p_bkgfunc[ipt], self.p_sgnfunc[ipt])
-                if sgn_mc:
-                    if self.p_set_initial_sigma[ipt]:
-                        fitter.SetInitialGaussianSigma(self.p_sigmaarray[ipt])
-                    else:
+                if self.p_set_initial_sigma[ipt]:
+                    fitter.SetInitialGaussianSigma(self.p_sigmaarray[ipt])
+                else:
+                    if sgn_mc:
                         fitter.SetInitialGaussianSigma(sigma_mc)
-                    fitter.SetInitialGaussianMean(mean_mc)
-                    if self.p_set_fix_sigma[ipt]:
-                        print("****************Fix sigma to sigma array values*****************")
-                        fitter.SetFixGaussianSigma(self.p_sigmaarray[ipt])
-                    if self.p_set_mc_sigma[ipt]:
-                        print("****************Fix sigma to MC sigma values*****************")
-                        fitter.SetFixGaussianSigma(sigma_mc)
+                        fitter.SetInitialGaussianMean(mean_mc)
+                set_sigma = 0
+                if self.p_set_initial_sigma[ipt]:
+                    set_sigma = self.p_sigmaarray[ipt]
+                else:
+                    set_sigma = sigma_mc
+                if self.p_set_fix_sigma[ipt]:
+                    fitter.SetFixGaussianSigma(set_sigma)
                 if self.p_sgnfunc[ipt] == 1:
                     if self.p_fix_sigmasec[ipt] is True:
                         fitter.SetFixSecondGaussianSigma(self.p_sigmaarraysec[ipt])
@@ -3672,7 +3669,6 @@ class AnalyzerJet(Analyzer):
                         # FIXME exception for the untagged bin pylint: disable=fixme
                         bin_first = 2 if "untagged" in self.systematic_varlabels[sys_cat][sys_var] else 1
                         if self.use_inclusive_systematics:
-                            print("use inclusive syst")
                             if self.systematic_catnames[sys_cat] == "cuts":
                                 #file_inc = TFile.Open(self.inclusive_unc)
                                 #unc_hist = file_inc.Get("rms_mult_1")
@@ -3695,7 +3691,6 @@ class AnalyzerJet(Analyzer):
                                 else:
                                     error = input_histograms_sys[ibin2][sys_cat][sys_var].GetBinContent(ibinshape + bin_first) - input_histograms_default[ibin2].GetBinContent(ibinshape + 1)
                         else:
-                            print("no inclusive syst")
                             # FIXME exception for the untagged bin pylint: disable=fixme
                             if input_histograms_sys[ibin2][sys_cat][sys_var].Integral()==0:
                                 error = 0
@@ -3926,7 +3921,6 @@ class AnalyzerJet(Analyzer):
         path_mode2 = None
         for i_pythia8 in range(len(self.pythia8_prompt_variations)):
             path = "%s%s.root" % (self.pythia8_prompt_variations_path, self.pythia8_prompt_variations[i_pythia8])
-            print(path)
             if "trees_pythia8_pr_default" in path:
                 path_monash = path
             elif "trees_pythia8_pr_colour2soft" in path:
@@ -3972,7 +3966,6 @@ class AnalyzerJet(Analyzer):
                     name_pythia = input_pythia8_z_jetpt[ibin2].GetName()
                     pythia_lc = file_sim_lc.Get(name_pythia)
                     pythia_ratio=pythia_lc.Clone("pythia_ratio")
-                    print(pythia_ratio, input_pythia8_z_jetpt[ibin2])
                     pythia_ratio.Divide(input_pythia8_z_jetpt[ibin2])
                     input_pythia8_ratio_var.append(pythia_ratio)
                 pythia8_out.SetDirectory(0)
@@ -4364,7 +4357,6 @@ class AnalyzerJet(Analyzer):
         file_path - input file path
         dim - dimension of the output histogram: 2, 3
         prompt - prompt or non-prompt: True, False"""
-
         print("Starting the histogram extraction from an MC tree\nInput file: %s" % file_path)
 
         if dim not in (2, 3):
@@ -4504,6 +4496,7 @@ class AnalyzerJet(Analyzer):
                 self.varshapebinarray_gen, self.var2binarray_gen, \
                 self.v_varshape_binning, self.v_var2_binning)
             his2.Scale(scale_factor)
+            return his2
         if dim == 3:
             # Binning: x - shape, y - jet pt, z - pt hadron
             his3 = makefill3dhist(df_sim, "h3_yield_sim", \

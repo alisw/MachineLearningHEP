@@ -344,11 +344,9 @@ D0pp:
       masspeaksec: 1.864
 
       # If SetInitialGaussianSigma true: initial sigma value taken from sigmarray
-      # If SetFixGaussianSigma true: sigma value fixed to sigmaarray
-      # If SetMCGaussianSigma true: sigma value for data fixed to MC sigma
+      # If SetFixGaussianSigma true: sigma value fixed to sigmaarray if SetInitialGaussianSigma true, to mc sigma if false
       SetInitialGaussianSigma: [false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
       SetFixGaussianSigma: [false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
-      SetMCGaussianSigma: [false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # initial sigma (sel_an_binmin bins)
 
       fix_sigmasec: [true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
@@ -410,6 +408,11 @@ D0pp:
       sel_binmax2_reco:     [5.0, 7.0, 15.0, 30.0] # rec jet pt bins (sel_binmin2_reco bins)
       sel_binmin2_gen:  [3.0, 5.0, 7.0, 15.0] # gen jet pt bins (sel_binmin2_gen bins)
       sel_binmax2_gen:      [5.0, 7.0, 15.0, 30.0] # gen jet pt bins (sel_binmin2_gen bins)
+      cuts:
+      - Null
+      - Null
+      - Null
+      - Null
       data: &data_out_r_shape_2_6
         <<: *data_out_default
         results: [/data/Derived_testResults/Jets/D0kAnywithJets/2_6/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2016_data/593_20210223-2051/resultsMBjetvspt,
@@ -430,7 +433,7 @@ D0pp:
         <<: *data_out_r_shape_2_6
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_r_shape_2_6
-      variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_r_shape.yml
+      variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_r_shape_2_6.yml
 
     jet_r_shape_6_12:
       <<: *r_shape_default
@@ -442,6 +445,11 @@ D0pp:
       sel_binmax2_reco:     [7.0, 15.0, 30.0] # rec jet pt bins (sel_binmin2_reco bins)
       sel_binmin2_gen:  [5.0, 7.0, 15.0] # gen jet pt bins (sel_binmin2_gen bins)
       sel_binmax2_gen:      [7.0, 15.0, 30.0] # gen jet pt bins (sel_binmin2_gen bins)
+      cuts:
+      - Null
+      - Null
+      - Null
+      - Null
       data: &data_out_r_shape_6_12
         <<: *data_out_default
         results: [/data/Derived_testResults/Jets/D0kAnywithJets/6_12/vAN-20210223_ROOT6-1/r_shape/default/default/pp_2016_data/593_20210223-2051/resultsMBjetvspt,
@@ -462,7 +470,7 @@ D0pp:
         <<: *data_out_r_shape_6_12
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_r_shape_6_12
-      variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_r_shape.yml
+      variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_r_shape_6_12.yml
 
 
   systematics:
