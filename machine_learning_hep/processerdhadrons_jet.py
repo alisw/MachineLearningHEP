@@ -193,8 +193,6 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         self.var2ranges_gen = self.lvar2_binmin_gen.copy()
         self.var2ranges_gen.append(self.lvar2_binmax_gen[-1])
         self.var2binarray_gen = array("d", self.var2ranges_gen) # array of bin edges to use in histogram constructors
-        self.var2_low_inc = datap["analysis"][self.typean].get("var2_low_inc", 5.0) # lower pt edge (efficiency calc.)
-        self.var2_up_inc = datap["analysis"][self.typean].get("var2_up_inc", 30.0) # upper pt edge (efficiency calc.)
 
         # observable (z, shape,...)
         self.v_varshape_binning = datap["analysis"][self.typean]["var_binningshape"] # name (reco)
@@ -230,21 +228,25 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         # efficiency corrections for the response matrix
         self.d_resultsallpmc = datap["analysis"][self.typean]["mc"]["resultsallp"]
         self.doeff_resp = datap["analysis"][self.typean].get("doeff_resp", False)
+        print("efficiency corrections for the response matrix:", self.doeff_resp)
         self.file_efficiency = os.path.join(self.d_resultsallpmc, "efficiencies.root")
 
         self.p_usejetptbinned_deff = \
             datap["analysis"][self.typean].get("usejetptbinned_deff", False)
-        print("use jet binned efficiency", self.p_usejetptbinned_deff)
+        print("use jet binned efficiency:", self.p_usejetptbinned_deff)
 
         self.p_eff_overflow = \
             datap["analysis"][self.typean].get("eff_overflow", True)
-        print("efficiency overflow test", self.p_eff_overflow)
+        self.var2_low_inc = datap["analysis"][self.typean].get("var2_low_inc", 5.0) # lower pt edge (efficiency calc.)
+        self.var2_up_inc = datap["analysis"][self.typean].get("var2_up_inc", 30.0) # upper pt edge (efficiency calc.)
+        print("calculate efficiency pt_jet in range:", self.var2_low_inc, "--", self.var2_up_inc, self.p_eff_overflow)
 
         self.p_effcor_kinematic = \
-                datap["analysis"][self.typean].get("effcor_kinematic", True)
+                datap["analysis"][self.typean].get("effcor_kinematic", True) #corrections for kinematic efficiencies closure test
         self.p_effcor_kinematic_full = \
-                datap["analysis"][self.typean].get("effcor_kinematic_full", True)
-    # pylint: disable=too-many-branches
+                datap["analysis"][self.typean].get("effcor_kinematic_full", True) #corrections for all kinematic efficiencies
+            # pylint: disable=too-many-branches
+
     def process_histomass_single(self, index):
         myfile = TFile.Open(self.l_histomass[index], "recreate")
 
@@ -457,7 +459,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                     df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning, \
                         self.var2_low_inc, self.var2_up_inc)
                     df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning, \
-                        self.var2_low_inc, self.var2_up_inc) # FIXME use lvar2_binmin_gen pylint: disable=fixme
+                        self.var2_low_inc, self.var2_up_inc)
 
                 df_mc_gen["z"] = z_calc(df_mc_gen.pt_jet, df_mc_gen.phi_jet, df_mc_gen.eta_jet,
                                         df_mc_gen.pt_cand, df_mc_gen.phi_cand, df_mc_gen.eta_cand)
@@ -628,29 +630,31 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
         return df_tmp_selgen, df_tmp_selreco, df_tmp_selrecogen
 
-    def effcorr_response(self, df_noeffcorr): #this function is used to provide weights for efficiency corrrections
+    def effcorr_response(self, df_noeffcorr):
         eff_file = TFile.Open(self.file_efficiency)
         if self.p_usejetptbinned_deff is True:
             bin_range = self.p_nbin2_reco
         else:
             bin_range = 1
-        #add efficiency and weight columns to the df
-        df_noeffcorr['eff'] = 1
-        df_noeffcorr['weight'] = 1
+        df_effcorr = []
         # loop over pt_jet bins (efficiency is the same for all pt_jet,
         # but histos have pt_jet interval in the title)
         for ibin2 in range(bin_range):
             heff_pr = eff_file.Get("eff_mult%d" % ibin2)
             for ipt in range(self.p_nptfinbins):
                 eff = heff_pr.GetBinContent(ipt+1)
+                # limit the prompt(nonprompt) df with current bin ranges and
+                # assign corresponding efficiency to each bin as a new df column
+                df_tmp = seldf_singlevar(df_noeffcorr, "pt_cand", \
+                        self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
+                df_tmp['eff'] = eff
                 if eff > 0:
-                    weight = 1/eff
+                    df_tmp['weight'] = 1/eff
                 else:
-                    weight = 0
-                # assign corresponding efficiency to each pt bin
-                df_noeffcorr.loc[(df_noeffcorr['pt_cand'] >= self.lpt_finbinmin[ipt]) & (df_noeffcorr['pt_cand'] < self.lpt_finbinmax[ipt]), 'eff'] = eff
-                df_noeffcorr.loc[(df_noeffcorr['pt_cand'] >= self.lpt_finbinmin[ipt]) & (df_noeffcorr['pt_cand'] < self.lpt_finbinmax[ipt]), 'weight'] = weight
-        return df_noeffcorr
+                    df_tmp['weight'] = 0
+                df_effcorr.append(df_tmp)
+        df_effcorr = pd.concat(df_effcorr)
+        return df_effcorr
 
     def process_response(self):
         print("Doing response", self.mcordata, self.period)
@@ -1243,5 +1247,4 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         out_file.cd()
         response_matrix_pr.Write("response_matrix")
         response_matrix_closure_pr.Write("response_matrix_closure")
-
         out_file.Close()

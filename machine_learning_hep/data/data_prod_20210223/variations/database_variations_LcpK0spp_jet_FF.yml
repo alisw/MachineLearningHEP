@@ -26,14 +26,14 @@ categories:
                 label: ["bkg. func."]
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_FF:
                             bkgfunc: [0]
             masspeak:
-                activate: [no]
+                activate: [yes]
                 label: ["mass peak"]
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_FF:
                             masspeak:    [2.2864]
                             masspeaksec: [2.2864]
             massmin:
@@ -43,8 +43,8 @@ categories:
                     - "mass min. 2.16"
                 diffs:
                     analysis:
-                        jet_r_shape:
-                            massmin: [2.18, 2.16]
+                        jet_FF:
+                            massmin: [1.76, 1.74]
             massmax:
                 activate: [yes, yes]
                 label: 
@@ -52,36 +52,32 @@ categories:
                     - "mass max. 2.456"
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_FF:
                             massmax: [2.460, 2.456]
             rebin:
-                activate: [no, no, no, yes]
-                label:
-                    - "rebin 14"
-                    - "rebin 12"
-                    - "rebin 10"
-                    - "rebin 8"
+                activate: [yes]
+                label: ["rebin"]
                 diffs:
                     analysis:
-                        jet_r_shape:
-                            rebin: [14, 12, 10, 8]
+                        jet_FF:
+                            rebin: [12]
             fix_mean:
                 activate: [yes]
                 label: ["fix mean"]
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_FF:
                             fix_mean: [true]
             fix_sigma:
-                activate: [no]
+                activate: [yes]
                 label: ["free sigma"]
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_FF:
                                 SetInitialGaussianSigma: [false]
                                 SetFixGaussianSigma: [false]
     sideband:
-        activate: yes 
+        activate: yes
         processor: false
         label: "sideband sub."
         correlation: "corr"
@@ -102,7 +98,7 @@ categories:
                     - "#it{signal} = 2.4 #sigma"
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_FF:
                             signal_sigma: [1.6  , 1.7  , 1.8  , 1.9  , 2.1  , 2.2  , 2.3  , 2.4]
                             sigma_scale:  [0.890, 0.911, 0.928, 0.943, 0.964, 0.972, 0.979, 0.984]
             ranges:
@@ -120,7 +116,7 @@ categories:
                     - "#it{sb} = [9,4]#cup[7,9]"
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_FF:
                             sideband_sigma_2_left:  [ 8 ,  8 , "#", "#", "#", "#", "#",  8 , "#", "#"]
                             sideband_sigma_1_left:  ["#", "#", "#",  5 , "#",  5 , "#",  5 ,  7 , "#"]
                             sideband_sigma_1_right: ["#", "#", "#",  5 ,  5 , "#",  5 , "#", "#",  7 ]
@@ -131,7 +127,7 @@ categories:
                 label: ["left sb only"]
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_FF:
                             sidebandleftonly: [true]
 
     feeddown:
@@ -144,7 +140,7 @@ categories:
         rms_both_sides: true
         variations:
             tune:
-                activate: [no, no, no, no, no, no, no, no, no]
+                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes]
                 label:
                     - "#it{f}_{F} = 1, #it{f}_{R} = 0.5"
                     - "#it{f}_{F} = 0.5, #it{f}_{R} = 1"
@@ -157,7 +153,7 @@ categories:
                     - "no EvtGen"
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_FF:
                             powheg_path_nonprompt:
                                 - /data/POWHEG/trees_powheg_fd_F1_R05.root
                                 - /data/POWHEG/trees_powheg_fd_F05_R1.root
@@ -168,14 +164,6 @@ categories:
                                 - /data/POWHEG/trees_powheg_fd_Mhigh.root
                                 - /data/POWHEG/trees_powheg_fd_Mlow.root
                                 - /data/POWHEG/trees_powheg_fd_NoEvtGen.root
-            compare:
-                activate: [no]
-                label:
-                    - "scaled with fonll"
-                diffs:
-                    analysis:
-                        jet_r_shape:
-                            xsec: [true]
     prior:
         activate: yes
         processor: true
@@ -190,7 +178,7 @@ categories:
                 label: ["flat"]
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_FF:
                             doprior: [true]
                             niterunfoldingchosen: [4]
     regularisation:
@@ -207,7 +195,7 @@ categories:
                 label: ["down (3)", "up (7)"]
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_FF:
                             niterunfoldingchosen: [3, 7]
     normalisation:
         activate: no
@@ -223,7 +211,7 @@ categories:
                 label: ["#it{#sigma}_{V0AND} down", "#it{#sigma}_{V0AND} up"]
                 diffs:
                     analysis:
-                        jet_r_shape:
+                        jet_r_shape_2_6:
                             xsection_inel: [54.91, 60.69]
     tracking:
         activate: yes 
@@ -267,60 +255,8 @@ categories:
                                               /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prodD2H_trkeff/619_20210423-1225/pklskdecmerged,
                                               /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prodD2H_trkeff/619_20210423-1225/pklskdecmerged]] #list of periods
 
-    binning:
-        activate: no  # High RAM consumption
-        processor: true
-        label: "binning"
-        correlation: "corr"
-        rms: true
-        symmetrise: true
-        rms_both_sides: true
-        variations:
-            pt_cand:
-                activate: [yes, yes, yes, yes, yes, yes]
-                activate: [no, no, no, no, no, no]
-                label:
-                    - "#it{p}_{T}^{D} 4#minus24"
-                    - "#it{p}_{T}^{D} 4#minus36"
-                    - "#it{p}_{T}^{D} 4#minus48"
-                    - "#it{p}_{T}^{D} 5#minus24"
-                    - "#it{p}_{T}^{D} 5#minus36"
-                    - "#it{p}_{T}^{D} 5#minus48"
-                diffs:
-                    analysis:
-                        jet_r_shape:
-                            sel_an_binmin:
-                                [[4,5,6,7,8,10,12,16],  [4,5,6,7,8,10,12,16,24],  [4,5,6,7,8,10,12,16,24,36],  [5,6,7,8,10,12,16],  [5,6,7,8,10,12,16,24],  [5,6,7,8,10,12,16,24,36]]
-                            sel_an_binmax:
-                                  [[5,6,7,8,10,12,16,24], [5,6,7,8,10,12,16,24,36], [5,6,7,8,10,12,16,24,36,48], [6,7,8,10,12,16,24], [6,7,8,10,12,16,24,36], [6,7,8,10,12,16,24,36,48]]
-                            binning_matching:
-                                  [[2,2,3,3, 4, 4, 5, 5], [2,2,3,3, 4, 4, 5, 5, 6], [2,2,3,3, 4, 4, 5, 5, 6, 6], [2,3,3, 4, 4, 5, 5], [2,3,3, 4, 4, 5, 5, 6], [2,3,3, 4, 4, 5, 5, 6, 6]]
-            pt_jet:
-                activate: [no, yes, no]
-                label:
-                    - "#it{p}_{T}^{jet} 7 #rightarrow 8"
-                    - "#it{p}_{T}^{jet} 30#minus35"
-                    - "#it{p}_{T}^{jet} 5#minus50"
-                diffs:
-                    analysis:
-                        jet_r_shape:
-                            sel_binmin2_reco: [[8,15,30], [2,3,5,7,15,30],  [5]]
-                            sel_binmax2_reco:    ["#",      [3,5,7,15,30,35], [50]]
-                            sel_binmin2_gen:  [[8,15,30], [2,3,5,7,15,30],  [5]]
-                            sel_binmax2_gen:     ["#",      [3,5,7,15,30,35], [50]]
-            shape:
-                activate: [no]
-                label:
-                    - "untagged bin"
-                diffs:
-                    analysis:
-                        jet_r_shape:
-                            sel_binminshape_reco: [[-100,0.1,0.2,0.3,0.4]]
-                            sel_binmaxshape_reco:    [[0.1,0.2,0.3,0.4,0.5]]
-                            sel_binminshape_gen:  [[-100,0.1,0.2,0.3,0.4]]
-                            sel_binmaxshape_gen:     [[0.1,0.2,0.3,0.4,0.5]]
     cutvar:
-        activate: no  # High RAM consumption
+        activate: yes  # High RAM consumption
         processor: true
         label: "cuts"
         correlation: "corr"
@@ -328,8 +264,8 @@ categories:
         symmetrise: true
         rms_both_sides: true
         variations:
-            cutvar0:
-                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
+            cutvar:
+                activate: [yes, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no]
                 #activate: [no , no , yes, yes, yes, yes, no , yes, yes, yes, yes,  no , no , no , no , no , no , no , no , no , no , no , no]
                #cutvar :  [80 , 79 , 78 , 77 , 76 , 75 , 74 , 73 , 72 , 71 , 69 , 68 , 67 , 66 , 65 , 63 , 60 , 55 , 50 , 45 , 40 , 35 , 30]
                 label: 

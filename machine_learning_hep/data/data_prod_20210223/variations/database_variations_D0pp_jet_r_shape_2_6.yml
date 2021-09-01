@@ -167,7 +167,7 @@ categories:
                                 - /data/POWHEG/trees_powheg_fd_Mlow.root
                                 - /data/POWHEG/trees_powheg_fd_NoEvtGen.root
     prior:
-        activate: yes
+        activate: no
         processor: true
         label: "prior"
         correlation: "corr"
@@ -216,7 +216,7 @@ categories:
                         jet_r_shape_2_6:
                             xsection_inel: [54.91, 60.69]
     tracking: 
-        activate: yes
+        activate: no
         processor: true
         label: "tracking eff."
         correlation: "corr"
@@ -321,7 +321,7 @@ categories:
         rms_both_sides: true
         variations:
             cuts:
-                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
+                activate: [yes, no, no, no, no, no, no, no, no, no, no, no, no, no]
                 #matching: [0 ,  1 ,  2 ,  3 ,  4 ,  5 ,  6 ,  7 ,  8 ,  9 , 10 , 11 , 12 , 13 ]
                 label: ["cut"] 
                 diffs:

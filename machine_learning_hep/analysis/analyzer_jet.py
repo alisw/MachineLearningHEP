@@ -133,7 +133,7 @@ class AnalyzerJet(Analyzer):
         self.p_massmax = datap["analysis"][self.typean]["massmax"]
         self.p_rebin = datap["analysis"][self.typean]["rebin"]
         self.p_fix_mean = datap["analysis"][self.typean]["fix_mean"]
-        self.p_fix_sigma = datap["analysis"][self.typean].get("fix_sigma", None)
+        self.p_array_sigma = datap["analysis"][self.typean].get("SetArraySigma", [False] * self.p_nptfinbins)
         self.p_set_fix_sigma= \
         datap["analysis"][self.typean].get("SetFixGaussianSigma", [False] * self.p_nptfinbins)
         self.p_set_initial_sigma = \
@@ -243,8 +243,10 @@ class AnalyzerJet(Analyzer):
             self.systematic_rms_both_sides[c] = db_sys[catname]["rms_both_sides"]
         self.inclusive_unc = datap["analysis"][self.typean].get("inclusive_unc", None)
         self.use_inclusive_systematics = datap["analysis"][self.typean].get("use_inclusive_systematics", False)
+        print("Use inclusive systematics:", self.use_inclusive_systematics)
         self.do_check_signif = datap["analysis"][self.typean].get("signif_check", False)
         self.signif_threshold = datap["analysis"][self.typean].get("signif_thresh", 0)
+        print("Check if significance >", self.signif_threshold ,"for systematic fits:", self.do_check_signif)
 
         # output directories
         self.d_resultsallpmc = datap["analysis"][typean]["mc"]["results"][period] \
@@ -401,18 +403,17 @@ class AnalyzerJet(Analyzer):
                 histomass_reb.Copy(histomass_reb_f)
                 fitter = AliHFInvMassFitter(histomass_reb_f, self.p_massmin[ipt], \
                     self.p_massmax[ipt], self.p_bkgfunc[ipt], self.p_sgnfunc[ipt])
-                if self.p_set_initial_sigma[ipt]:
-                    fitter.SetInitialGaussianSigma(self.p_sigmaarray[ipt])
-                else:
-                    if sgn_mc:
-                        fitter.SetInitialGaussianSigma(sigma_mc)
-                        fitter.SetInitialGaussianMean(mean_mc)
                 set_sigma = 0
-                if self.p_set_initial_sigma[ipt]:
+                if self.p_array_sigma[ipt]:
                     set_sigma = self.p_sigmaarray[ipt]
                 else:
                     set_sigma = sigma_mc
+                if self.p_set_initial_sigma[ipt]:
+                    print("Set Initial Gaussian Sigma:", set_sigma)
+                    fitter.SetInitialGaussianSigma(set_sigma)
+                fitter.SetInitialGaussianMean(mean_mc)
                 if self.p_set_fix_sigma[ipt]:
+                    print("Set Fix Gaussian Sigma:", set_sigma)
                     fitter.SetFixGaussianSigma(set_sigma)
                 if self.p_sgnfunc[ipt] == 1:
                     if self.p_fix_sigmasec[ipt] is True:
