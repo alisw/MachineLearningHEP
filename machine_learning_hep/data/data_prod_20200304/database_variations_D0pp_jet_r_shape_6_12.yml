@@ -215,48 +215,6 @@ categories:
                     analysis:
                         jet_r_shape_6_12:
                             xsection_inel: [54.91, 60.69]
-    tracking: 
-        activate: yes
-        processor: true
-        label: "tracking eff."
-        correlation: "corr"
-        rms: true
-        symmetrise: true
-        rms_both_sides: true
-        variations:
-            efficiency:
-                activate: [yes]
-                label: ["eff. down"]
-                diffs:
-                  multi:
-                    mc:
-                      unmerged_tree_dir: [[/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/TTree/vAN-20210331_ROOT6-1/pp_sim/619_20210423-1225/merged,
-                                          /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/TTree/vAN-20210331_ROOT6-1/pp_sim/619_20210423-1225/merged,
-                                          /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/TTree/vAN-20210331_ROOT6-1/pp_sim/619_20210423-1225/merged]] #list of periods
-                      pkl: [[/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod_trkeff/619_20210423-1225/pkl,
-                            /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod_trkeff/619_20210423-1225/pkl,
-                            /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod_trkeff/619_20210423-1225/pkl]] #list of periods
-                      pkl_skimmed: [[/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod_trkeff/619_20210423-1225/pklsk,
-                                    /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod_trkeff/619_20210423-1225/pklsk,
-                                    /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod_trkeff/619_20210423-1225/pklsk]] #list of periods
-                      pkl_skimmed_merge_for_ml: [[/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod_trkeff/619_20210423-1225/pklskml,
-                                                 /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod_trkeff/619_20210423-1225/pklskml,
-                                                 /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod_trkeff/619_20210423-1225/pklskml]] #list of periods
-                      pkl_skimmed_merge_for_ml_all: [/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_mc_prod_mltot_trkeff]
-                      pkl_evtcounter_all: [/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_mc_prod_evttot_trkeff]
-
-                  ml:
-                    mlplot: [/data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/mlplot] # to be removed
-                    mlout: [/data/Derived/D0kAnywithJets/vAN-20200304_ROOT6-1/mlout] # to be removed
-                  mlapplication:
-                    mc:
-                      pkl_skimmed_dec: [[/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod_trkeff/619_20210423-1225/pklskdec,
-                                        /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod_trkeff/619_20210423-1225/pklskdec,
-                                        /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod_trkeff/619_20210423-1225/pklskdec]] #list of periods
-                      pkl_skimmed_decmerged: [[/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod_trkeff/619_20210423-1225/pklskdecmerged,
-                                              /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod_trkeff/619_20210423-1225/pklskdecmerged,
-                                              /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod_trkeff/619_20210423-1225/pklskdecmerged]] #list of periods
-
     binning:
         activate: no # High RAM consumption
         processor: true
@@ -321,7 +279,7 @@ categories:
         rms_both_sides: true
         variations:
             cuts:
-                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
+                activate: [yes, no, no, no, no, no, no, no, no, no, no, no, no, no]
                 #matching: [0 ,  1 ,  2 ,  3 ,  4 ,  5 ,  6 ,  7 ,  8 ,  9 , 10 , 11 , 12 , 13 ]
                 label: ["cut"] 
                 diffs:

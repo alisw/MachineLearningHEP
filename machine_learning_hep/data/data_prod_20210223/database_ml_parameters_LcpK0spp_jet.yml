@@ -452,9 +452,10 @@ LcpK0spp:
 
       branching_ratio: 1.09e-2
       xsection_inel: 57.8
+      #parameters needed for comparison with fonll (values to be checked)
       lb_branching_ratio: 0.144
-      convert_const: 1.e-9 # pb -> mb
-      antipart_count: 2
+      convert_const: 1.e-9 # convert picobarn to milibarn for fonll crossection
+      antipart_count: 2 # count doble entries for particle and antiparticle
 
       doprior: false
       doeff_resp: false
@@ -469,7 +470,7 @@ LcpK0spp:
       pythia8_prompt_variations: ["default","colour0soft"]
       pythia8_prompt_variations_legend:  ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
 
-      variations_db: ./data/data_prod_20210223/variations/database_variations_LcpK0spp_FF.yml
+      variations_db: ./data/data_prod_20210223/database_variations_LcpK0spp_FF.yml
 
     jet_r_shape_2_6:
       <<: *jet_default
@@ -487,16 +488,16 @@ LcpK0spp:
       var_binningshape_gen: delta_r_gen_jet
       var_shape_latex: "#it{r}"
       sel_binminshape_reco: [0., 0.05, 0.1]
-      sel_binmaxshape_reco:        [0.05, 0.1, 0.2]
+      sel_binmaxshape_reco:     [0.05, 0.1, 0.2]
       sel_binminshape_gen:  [0., 0.05, 0.1]
-      sel_binmaxshape_gen:         [0.05, 0.1, 0.2]
+      sel_binmaxshape_gen:      [0.05, 0.1, 0.2]
       sel_binmin2_reco: [3., 5., 7., 15] #list of nbins
-      sel_binmax2_reco:      [5., 7., 15., 30] #list of nbins
+      sel_binmax2_reco:     [5., 7., 15., 30] #list of nbins
       sel_binmin2_gen:  [3., 5., 7., 15] #list of nbins
       sel_binmax2_gen:      [5., 7., 15., 30] #list of nbins
       sel_an_binmin:    [2, 4] #list of pt nbins
-      sel_an_binmax:      [4, 6] #list of pt nbins
-      binning_matching:   [1, 2] #list of pt nbins
+      sel_an_binmax:       [4, 6] #list of pt nbins
+      binning_matching:    [1, 2] #list of pt nbins
       jetsel_gen: "abs(y_cand) < 0.8 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
       jetsel_sim: "abs(y_cand) < 0.8 and abs(eta_jet) < 0.5" # jet selection in simulations
       jetsel_reco: "abs(eta_jet) < 0.5"
@@ -525,7 +526,7 @@ LcpK0spp:
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_2_6
 
-      variations_db: ./data/data_prod_20210223/variations/database_variations_LcpK0spp_jet_r_shape_2_6.yml
+      variations_db: ./data/data_prod_20210223/database_variations_LcpK0spp_jet_r_shape_2_6.yml
 
     jet_r_shape_6_12:
       <<: *jet_default
@@ -542,17 +543,17 @@ LcpK0spp:
       var_binningshape: delta_r_jet
       var_binningshape_gen: delta_r_gen_jet
       var_shape_latex: "#it{r}"
-      sel_binminshape_reco: [0, 0.05, 0.1]
-      sel_binmaxshape_reco:        [0.05, 0.1, 0.2]
+      sel_binminshape_reco: [0., 0.05, 0.1]
+      sel_binmaxshape_reco:     [0.05, 0.1, 0.2]
       sel_binminshape_gen:  [0., 0.05, 0.1]
-      sel_binmaxshape_gen:         [0.05, 0.1, 0.2]
+      sel_binmaxshape_gen:      [0.05, 0.1, 0.2]
       sel_binmin2_reco: [ 5., 7., 15] #list of nbins
       sel_binmax2_reco:     [ 7., 15., 30] #list of nbins
       sel_binmin2_gen:  [ 5., 7., 15] #list of nbins
       sel_binmax2_gen:      [ 7., 15., 30] #list of nbins
       sel_an_binmin:    [6, 8] #list of pt nbins
-      sel_an_binmax:      [8, 12] #list of pt nbins
-      binning_matching:   [3, 4] #list of pt nbins
+      sel_an_binmax:       [8, 12] #list of pt nbins
+      binning_matching:    [3, 4] #list of pt nbins
       jetsel_gen: "abs(y_cand) < 0.8 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
       jetsel_sim: "abs(y_cand) < 0.8 and abs(eta_jet) < 0.5" # jet selection in simulations
       jetsel_reco: "abs(eta_jet) < 0.5"
@@ -582,7 +583,7 @@ LcpK0spp:
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_6_12
 
-      variations_db: ./data/data_prod_20210223/variations/database_variations_LcpK0spp_jet_r_shape_6_12.yml
+      variations_db: ./data/data_prod_20210223/database_variations_LcpK0spp_jet_r_shape_6_12.yml
 
 
   systematics:

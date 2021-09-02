@@ -146,7 +146,7 @@ D0pp:
 
   multi:
     data:
-      nprocessesparallel: 50
+      nprocessesparallel: 40
       maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp:  [100,100,100] #list of periods
       chunksizeskim: [100,100,100] #list of periods
@@ -174,7 +174,7 @@ D0pp:
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2017,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018] #list of periods
     mc:
-      nprocessesparallel: 50
+      nprocessesparallel: 40
       maxfiles: [-1,-1,-1] #list of periods
       chunksizeunp: [100,100,100] #list of periods
       chunksizeskim: [1000,1000,1000] #list of periods
@@ -377,7 +377,7 @@ D0pp:
       pythia8_prompt_variations: ["default", "charm_lo"] #["default","colour0soft"]
       pythia8_prompt_variations_legend: ["PYTHIA 8 (Monash)", "PYTHIA 8 charm LO"] # ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
 
-      variations_db: ./data/data_prod_20210223/variations/database_variations_D0pp_jet_zg.yml
+      variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_zg.yml
 
       # Additional cuts applied before mass histogram is filled
       use_cuts: False
@@ -416,7 +416,7 @@ D0pp:
         <<: *data_out_rg
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_rg
-      variations_db: ./data/data_prod_20210223/variations/database_variations_D0pp_jet_rg.yml
+      variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_rg.yml
 
     jet_nsd:
       <<: *jet_default
@@ -443,7 +443,7 @@ D0pp:
         <<: *data_out_nsd
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_nsd
-      variations_db: ./data/data_prod_20210223/variations/database_variations_D0pp_jet_nsd.yml
+      variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_nsd.yml
 
     jet_FF:
       <<: *jet_default
@@ -474,7 +474,7 @@ D0pp:
         <<: *data_out_ff
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_ff
-      variations_db: ./data/data_prod_20210223/variations/database_variations_D0pp_jet_FF.yml
+      variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_FF.yml
 
     jet_r_shape_2_6:
       <<: *jet_default
@@ -493,16 +493,16 @@ D0pp:
       var_binningshape_gen: delta_r_gen_jet
       var_shape_latex: "#it{r}"
       sel_binminshape_reco: [0., 0.05, 0.1]
-      sel_binmaxshape_reco:        [0.05, 0.1, 0.2]
+      sel_binmaxshape_reco:     [0.05, 0.1, 0.2]
       sel_binminshape_gen:  [0., 0.05, 0.1]
-      sel_binmaxshape_gen:         [0.05, 0.1, 0.2]
+      sel_binmaxshape_gen:      [0.05, 0.1, 0.2]
       sel_an_binmin:    [2,3,4,5] # hadron pt bins (sel_an_binmin bins)
       sel_an_binmax:      [3,4,5,6] # hadron pt bins (sel_an_binmin bins)
       binning_matching:   [1,1,2,2] # mapping to skimming pt bins (sel_an_binmin bins)
       sel_binmin2_reco: [3.0, 5.0, 7.0, 15.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmax2_reco:     [5.0, 7.0, 15.0, 30.0] # rec jet pt bins (sel_binmin2_reco bins)
+      sel_binmax2_reco:      [5.0, 7.0, 15.0, 30.0] # rec jet pt bins (sel_binmin2_reco bins)
       sel_binmin2_gen:  [3.0, 5.0, 7.0, 15.0] # gen jet pt bins (sel_binmin2_gen bins)
-      sel_binmax2_gen:      [5.0, 7.0, 15.0, 30.0] # gen jet pt bins (sel_binmin2_gen bins)
+      sel_binmax2_gen:       [5.0, 7.0, 15.0, 30.0] # gen jet pt bins (sel_binmin2_gen bins)
       cuts:
       - Null
       - Null
@@ -528,7 +528,7 @@ D0pp:
         <<: *data_out_r_shape_2_6
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_r_shape_2_6
-      variations_db: ./data/data_prod_20210223/variations/database_variations_D0pp_jet_r_shape_2_6.yml
+      variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_r_shape_2_6.yml
 
     jet_r_shape_6_12:
       <<: *jet_default
@@ -546,18 +546,18 @@ D0pp:
       var_binningshape: delta_r_jet
       var_binningshape_gen: delta_r_gen_jet
       var_shape_latex: "#it{r}"
-      sel_binminshape_reco: [0, 0.05, 0.1]
-      sel_binmaxshape_reco:        [0.05, 0.1, 0.2]
+      sel_binminshape_reco: [0., 0.05, 0.1]
+      sel_binmaxshape_reco:     [0.05, 0.1, 0.2]
       sel_binminshape_gen:  [0., 0.05, 0.1]
-      sel_binmaxshape_gen:         [0.05, 0.1, 0.2]
+      sel_binmaxshape_gen:      [0.05, 0.1, 0.2]
 
       sel_an_binmin:    [6,7,8,10] # hadron pt bins (sel_an_binmin bins)
       sel_an_binmax:      [7,8,10,12] # hadron pt bins (sel_an_binmin bins)
       binning_matching:   [3,3,4,4] # mapping to skimming pt bins (sel_an_binmin bins)
       sel_binmin2_reco: [5.0, 7.0, 15.0] # rec jet pt bins (sel_binmin2_reco bins)
-      sel_binmax2_reco:     [7.0, 15.0, 30.0] # rec jet pt bins (sel_binmin2_reco bins)
+      sel_binmax2_reco:      [7.0, 15.0, 30.0] # rec jet pt bins (sel_binmin2_reco bins)
       sel_binmin2_gen:  [5.0, 7.0, 15.0] # gen jet pt bins (sel_binmin2_gen bins)
-      sel_binmax2_gen:      [7.0, 15.0, 30.0] # gen jet pt bins (sel_binmin2_gen bins)
+      sel_binmax2_gen:       [7.0, 15.0, 30.0] # gen jet pt bins (sel_binmin2_gen bins)
       cuts:
       - Null
       - Null
@@ -584,7 +584,7 @@ D0pp:
         <<: *data_out_r_shape_6_12
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_r_shape_6_12
-      variations_db: ./data/data_prod_20210223/variations/database_variations_D0pp_jet_r_shape_6_12.yml
+      variations_db: ./data/data_prod_20210223/database_variations_D0pp_jet_r_shape_6_12.yml
 
 
   systematics:

@@ -1,0 +1,342 @@
+categories:
+    default:
+        activate: no
+        processor: true
+        label: "default"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            default:
+                activate: [yes]
+                label: ["default"]
+                diffs: {}
+    fitting:
+        activate: yes
+        processor: false
+        label: "fitting"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            bkgfunc:
+                activate: [yes]
+                label: ["bkg. func."]
+                diffs:
+                    analysis:
+                        jet_r_shape_6_12:
+                            bkgfunc: [0]
+            masspeak:
+                activate: [no]
+                label: ["mass peak"]
+                diffs:
+                    analysis:
+                        jet_r_shape_6_12:
+                            masspeak:    [2.2864]
+                            masspeaksec: [2.2864]
+            massmin:
+                activate: [no, no]
+                label: 
+                    - "mass min. 2.18"
+                    - "mass min. 2.16"
+                diffs:
+                    analysis:
+                        jet_r_shape_6_12:
+                            massmin: [2.18, 2.16]
+            massmax:
+                activate: [yes, yes]
+                label: 
+                    - "mass max. 2.46"
+                    - "mass max. 2.456"
+                diffs:
+                    analysis:
+                        jet_r_shape_6_12:
+                            massmax: [2.460, 2.456]
+            rebin:
+                activate: [no, no, no, yes]
+                label:
+                    - "rebin 14"
+                    - "rebin 12"
+                    - "rebin 10"
+                    - "rebin 8"
+                diffs:
+                    analysis:
+                        jet_r_shape_6_12:
+                            rebin: [14, 12, 10, 8]
+            fix_mean:
+                activate: [yes]
+                label: ["fix mean"]
+                diffs:
+                    analysis:
+                        jet_r_shape_6_12:
+                            fix_mean: [true]
+            fix_sigma:
+                activate: [no]
+                label: ["free sigma"]
+                diffs:
+                    analysis:
+                        jet_r_shape_6_12:
+                                SetInitialGaussianSigma: [false]
+                                SetFixGaussianSigma: [false]
+    sideband:
+        activate: yes 
+        processor: false
+        label: "sideband sub."
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            sigma:
+                activate: [yes, yes, yes, yes, yes, yes, yes, yes]
+                label:
+                    - "#it{signal} = 1.6 #sigma"
+                    - "#it{signal} = 1.7 #sigma"
+                    - "#it{signal} = 1.8 #sigma"
+                    - "#it{signal} = 1.9 #sigma"
+                    - "#it{signal} = 2.1 #sigma"
+                    - "#it{signal} = 2.2 #sigma"
+                    - "#it{signal} = 2.3 #sigma"
+                    - "#it{signal} = 2.4 #sigma"
+                diffs:
+                    analysis:
+                        jet_r_shape_6_12:
+                            signal_sigma: [1.6  , 1.7  , 1.8  , 1.9  , 2.1  , 2.2  , 2.3  , 2.4]
+                            sigma_scale:  [0.890, 0.911, 0.928, 0.943, 0.964, 0.972, 0.979, 0.984]
+            ranges:
+                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
+                label:
+                    - "#it{sb} = [8,4]#cup[4,8]"
+                    - "#it{sb} = [8,4]#cup[4,9]"
+                    - "#it{sb} = [9,4]#cup[4,8]"
+                    - "#it{sb} = [9,5]#cup[5,9]"
+                    - "#it{sb} = [9,4]#cup[5,9]"
+                    - "#it{sb} = [9,5]#cup[4,9]"
+                    - "#it{sb} = [9,4]#cup[5,8]"
+                    - "#it{sb} = [8,5]#cup[4,9]"
+                    - "#it{sb} = [9,7]#cup[4,9]"
+                    - "#it{sb} = [9,4]#cup[7,9]"
+                diffs:
+                    analysis:
+                        jet_r_shape_2_6:
+                            sideband_sigma_2_left:  [ 8 ,  8 , "#", "#", "#", "#", "#",  8 , "#", "#"]
+                            sideband_sigma_1_left:  ["#", "#", "#",  5 , "#",  5 , "#",  5 ,  7 , "#"]
+                            sideband_sigma_1_right: ["#", "#", "#",  5 ,  5 , "#",  5 , "#", "#",  7 ]
+                            sideband_sigma_2_right: [ 8 , "#",  8 , "#", "#", "#",  8 , "#", "#", "#"]
+
+            sb_left:
+                activate: [no]
+                label: ["left sb only"]
+                diffs:
+                    analysis:
+                        jet_r_shape_6_12:
+                            sidebandleftonly: [true]
+
+    feeddown:
+        activate: yes
+        processor: false
+        label: "feed-down"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            tune:
+                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes]
+                label:
+                    - "#it{f}_{F} = 1, #it{f}_{R} = 0.5"
+                    - "#it{f}_{F} = 0.5, #it{f}_{R} = 1"
+                    - "#it{f}_{F} = 2, #it{f}_{R} = 1"
+                    - "#it{f}_{F} = 1, #it{f}_{R} = 2"
+                    - "#it{f}_{F} = 2, #it{f}_{R} = 2"
+                    - "#it{f}_{F} = 0.5, #it{f}_{R} = 0.5"
+                    - "#it{m}_{b} high"
+                    - "#it{m}_{b} low"
+                    - "no EvtGen"
+                diffs:
+                    analysis:
+                        jet_r_shape_6_12:
+                            powheg_path_nonprompt:
+                                - /data/POWHEG/trees_powheg_fd_F1_R05.root
+                                - /data/POWHEG/trees_powheg_fd_F05_R1.root
+                                - /data/POWHEG/trees_powheg_fd_F2_R1.root
+                                - /data/POWHEG/trees_powheg_fd_F1_R2.root
+                                - /data/POWHEG/trees_powheg_fd_F2_R2.root
+                                - /data/POWHEG/trees_powheg_fd_F05_R05.root
+                                - /data/POWHEG/trees_powheg_fd_Mhigh.root
+                                - /data/POWHEG/trees_powheg_fd_Mlow.root
+                                - /data/POWHEG/trees_powheg_fd_NoEvtGen.root
+            compare:
+                activate: [no]
+                label:
+                    - "scaled with fonll"
+                diffs:
+                    analysis:
+                        jet_r_shape_6_12:
+                            xsec: [true]
+    prior:
+        activate: yes
+        processor: true
+        label: "prior"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            flat:
+                activate: [yes]
+                label: ["flat"]
+                diffs:
+                    analysis:
+                        jet_r_shape_6_12:
+                            doprior: [true]
+                            niterunfoldingchosen: [4]
+    regularisation:
+        activate: yes
+        processor: false
+        label: "regularisation"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            iter:
+                activate: [yes, yes]
+                label: ["down (3)", "up (7)"]
+                diffs:
+                    analysis:
+                        jet_r_shape_6_12:
+                            niterunfoldingchosen: [3, 7]
+    normalisation:
+        activate: no
+        processor: false
+        label: "#it{#sigma}_{MB}"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            crosssection:
+                activate: [yes, yes]
+                label: ["#it{#sigma}_{V0AND} down", "#it{#sigma}_{V0AND} up"]
+                diffs:
+                    analysis:
+                        jet_r_shape_6_12:
+                            xsection_inel: [54.91, 60.69]
+    binning:
+        activate: no  # High RAM consumption
+        processor: true
+        label: "binning"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            pt_cand:
+                activate: [yes, yes, yes, yes, yes, yes]
+                activate: [no, no, no, no, no, no]
+                label:
+                    - "#it{p}_{T}^{D} 4#minus24"
+                    - "#it{p}_{T}^{D} 4#minus36"
+                    - "#it{p}_{T}^{D} 4#minus48"
+                    - "#it{p}_{T}^{D} 5#minus24"
+                    - "#it{p}_{T}^{D} 5#minus36"
+                    - "#it{p}_{T}^{D} 5#minus48"
+                diffs:
+                    analysis:
+                        jet_r_shape_6_12:
+                            sel_an_binmin:
+                                [[4,5,6,7,8,10,12,16],  [4,5,6,7,8,10,12,16,24],  [4,5,6,7,8,10,12,16,24,36],  [5,6,7,8,10,12,16],  [5,6,7,8,10,12,16,24],  [5,6,7,8,10,12,16,24,36]]
+                            sel_an_binmax:
+                                  [[5,6,7,8,10,12,16,24], [5,6,7,8,10,12,16,24,36], [5,6,7,8,10,12,16,24,36,48], [6,7,8,10,12,16,24], [6,7,8,10,12,16,24,36], [6,7,8,10,12,16,24,36,48]]
+                            binning_matching:
+                                  [[2,2,3,3, 4, 4, 5, 5], [2,2,3,3, 4, 4, 5, 5, 6], [2,2,3,3, 4, 4, 5, 5, 6, 6], [2,3,3, 4, 4, 5, 5], [2,3,3, 4, 4, 5, 5, 6], [2,3,3, 4, 4, 5, 5, 6, 6]]
+            pt_jet:
+                activate: [no, yes, no]
+                label:
+                    - "#it{p}_{T}^{jet} 7 #rightarrow 8"
+                    - "#it{p}_{T}^{jet} 30#minus35"
+                    - "#it{p}_{T}^{jet} 5#minus50"
+                diffs:
+                    analysis:
+                        jet_r_shape_6_12:
+                            sel_binmin2_reco: [[8,15,30], [2,3,5,7,15,30],  [5]]
+                            sel_binmax2_reco:    ["#",      [3,5,7,15,30,35], [50]]
+                            sel_binmin2_gen:  [[8,15,30], [2,3,5,7,15,30],  [5]]
+                            sel_binmax2_gen:     ["#",      [3,5,7,15,30,35], [50]]
+            shape:
+                activate: [no]
+                label:
+                    - "untagged bin"
+                diffs:
+                    analysis:
+                        jet_r_shape_6_12:
+                            sel_binminshape_reco: [[-100,0.1,0.2,0.3,0.4]]
+                            sel_binmaxshape_reco:    [[0.1,0.2,0.3,0.4,0.5]]
+                            sel_binminshape_gen:  [[-100,0.1,0.2,0.3,0.4]]
+                            sel_binmaxshape_gen:     [[0.1,0.2,0.3,0.4,0.5]]
+    cutvar:
+        activate: yes  # High RAM consumption
+        processor: true
+        label: "cuts"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            cutvar:
+                activate: [yes, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no]
+                #activate: [no , no , yes, yes, yes, yes, no , yes, yes, yes, yes,  no , no , no , no , no , no , no , no , no , no , no , no]
+               #cutvar :  [80 , 79 , 78 , 77 , 76 , 75 , 74 , 73 , 72 , 71 , 69 , 68 , 67 , 66 , 65 , 63 , 60 , 55 , 50 , 45 , 40 , 35 , 30]
+                label: 
+                    - "prob cut: 0.80"
+                    - "prob cut: 0.79"
+                    - "prob cut: 0.78"
+                    - "prob cut: 0.77"
+                    - "prob cut: 0.76"
+                    - "prob cut: 0.75"
+                    - "prob cut: 0.74"
+                    - "prob cut: 0.73"
+                    - "prob cut: 0.72"
+                    - "prob cut: 0.71"
+                    - "prob cut: 0.69"
+                    - "prob cut: 0.68"
+                    - "prob cut: 0.67"
+                    - "prob cut: 0.66"
+                    - "prob cut: 0.65"
+                    - "prob cut: 0.63"
+                    - "prob cut: 0.60"
+                    - "prob cut: 0.55"
+                    - "prob cut: 0.50"
+                    - "prob cut: 0.45"
+                    - "prob cut: 0.40"
+                    - "prob cut: 0.35"
+                    - "prob cut: 0.30"
+                diffs:
+                    mlapplication:
+                        probcutoptimal:
+                            - [0.80, 0.80, 0.80, 0.80, 0.80, 0.80]
+                            - [0.79, 0.79, 0.79, 0.79, 0.79, 0.79]
+                            - [0.78, 0.78, 0.78, 0.78, 0.78, 0.78]
+                            - [0.77, 0.77, 0.77, 0.77, 0.77, 0.77]
+                            - [0.76, 0.76, 0.76, 0.76, 0.76, 0.76]
+                            - [0.75, 0.75, 0.75, 0.75, 0.75, 0.75]
+                            - [0.74, 0.74, 0.74, 0.74, 0.74, 0.74]
+                            - [0.73, 0.73, 0.73, 0.73, 0.73, 0.73]
+                            - [0.72, 0.72, 0.72, 0.72, 0.72, 0.72]
+                            - [0.71, 0.71, 0.71, 0.71, 0.71, 0.71]
+                            - [0.69, 0.69, 0.69, 0.69, 0.69, 0.69]
+                            - [0.68, 0.68, 0.68, 0.68, 0.68, 0.68]
+                            - [0.67, 0.67, 0.67, 0.67, 0.67, 0.67]
+                            - [0.66, 0.66, 0.66, 0.66, 0.66, 0.66]
+                            - [0.65, 0.65, 0.65, 0.65, 0.65, 0.65]
+                            - [0.63, 0.63, 0.63, 0.63, 0.63, 0.63]
+                            - [0.60, 0.60, 0.60, 0.60, 0.60, 0.60]
+                            - [0.55, 0.55, 0.55, 0.55, 0.55, 0.55]
+                            - [0.50, 0.50, 0.50, 0.50, 0.50, 0.50]
+                            - [0.45, 0.45, 0.45, 0.45, 0.45, 0.45] 
+                            - [0.40, 0.40, 0.40, 0.40, 0.40, 0.40]
+                            - [0.35, 0.35, 0.35, 0.35, 0.35, 0.35]
+                            - [0.30, 0.30, 0.30, 0.30, 0.30, 0.30]

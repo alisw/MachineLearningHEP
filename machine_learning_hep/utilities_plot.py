@@ -116,7 +116,8 @@ def makefill3dweighed(df_, titlehist, arrayx, arrayy, arrayz, nvar1, nvar2, nvar
     #arr3 = df_rd.to_numpy()
     #fill_hist(histo, arr3) # this does not work, gives an empty histogram
     for row in df_.itertuples():
-        histo.Fill(getattr(row, nvar1), getattr(row, nvar2), getattr(row, nvar3), getattr(row, weight))
+        histo.Fill(getattr(row, nvar1), getattr(row, nvar2), \
+                   getattr(row, nvar3), getattr(row, weight))
     return histo
 
 def fill2dhist(df_, histo, nvar1, nvar2):
@@ -135,19 +136,25 @@ def fill2dweighed(df_, histo, nvar1, nvar2, weight):
     #df_rd = df_[[nvar1, nvar2]]
     #arr2 = df_rd.values
     #fill_hist(histo, arr2)
-    for row in df_.itertuples():
-        histo.Fill(getattr(row, nvar1), getattr(row, nvar2),  getattr(row, weight))
+    if isinstance(histo, TH2F):
+        for row in df_.itertuples():
+            histo.Fill(getattr(row, nvar1), getattr(row, nvar2),  getattr(row, weight))
+    else:
+        print("WARNING!Incorrect histogram type (should be TH2F) ")
     return histo
 
 def fillweighed(df_, histo, nvar1, weight):
     """
-    Fill a TH2 histogram with two variables from a dataframe.
+    Fill a TH1 weighted histogram.
     """
     #df_rd = df_[[nvar1, nvar2]]
     #arr2 = df_rd.values
     #fill_hist(histo, arr2)
-    for row in df_.itertuples():
-        histo.Fill(getattr(row, nvar1), getattr(row, weight))
+    if isinstance(histo, TH1F):
+        for row in df_.itertuples():
+            histo.Fill(getattr(row, nvar1), getattr(row, weight))
+    else:
+        print("WARNING!Incorrect histogram type (should be TH1F) ")
     return histo
 
 def rebin_histogram(src_histo, new_histo):

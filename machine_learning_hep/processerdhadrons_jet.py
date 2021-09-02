@@ -29,8 +29,8 @@ from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utilities import selectdfrunlist, seldf_singlevar, openfile
 from machine_learning_hep.utilities import create_folder_struc, mergerootfiles, get_timestamp_string
 from machine_learning_hep.utilities import z_calc, z_gen_calc
-from machine_learning_hep.utilities_plot import buildhisto, build2dhisto, fill2dhist
-from machine_learning_hep.utilities_plot import makefill3dhist, makefill2dhist, fill2dweighed, fillweighed
+from machine_learning_hep.utilities_plot import buildhisto, build2dhisto, fill2dhist, fillweighed
+from machine_learning_hep.utilities_plot import makefill3dhist, makefill2dhist, fill2dweighed
 from machine_learning_hep.processer import Processer
 #from machine_learning_hep.selectionutils import selectpid_dzerotokpi
 

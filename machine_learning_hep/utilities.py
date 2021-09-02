@@ -29,13 +29,13 @@ from array import array
 import numpy as np
 import pandas as pd
 import lz4
-from machine_learning_hep.selectionutils import select_runs
 from ROOT import TObject, TCanvas, TLegend, TH1, TLatex, TGraph, TGraphAsymmErrors # pylint: disable=import-error, no-name-in-module
 from ROOT import kBlack, kRed, kGreen, kBlue, kYellow, kOrange, kMagenta, kCyan, kGray # pylint: disable=import-error, no-name-in-module
 from ROOT import kOpenCircle, kOpenSquare, kOpenDiamond, kOpenCross, kOpenStar, kOpenThreeTriangles # pylint: disable=import-error, no-name-in-module
 from ROOT import kOpenFourTrianglesX, kOpenDoubleDiamond, kOpenFourTrianglesPlus, kOpenCrossX # pylint: disable=import-error, no-name-in-module
 from ROOT import kFullCircle, kFullSquare, kFullDiamond, kFullCross, kFullStar, kFullThreeTriangles # pylint: disable=import-error, no-name-in-module
 from ROOT import kFullFourTrianglesX, kFullDoubleDiamond, kFullFourTrianglesPlus, kFullCrossX # pylint: disable=import-error, no-name-in-module
+from machine_learning_hep.selectionutils import select_runs
 
 def openfile(filename, attr):
     """
@@ -671,7 +671,7 @@ def draw_latex(latex, colour=1, textsize=0.03):
 def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None, # pylint: disable=too-many-arguments, too-many-branches, too-many-statements, too-many-locals
               list_obj=None, labels_obj=None,
               leg_pos=None, opt_leg_h="P", opt_leg_g="P",
-              opt_plot_h="same", opt_plot_g="P0",
+              opt_plot_h="same", opt_plot_g="P",
               offsets_xy=None, maxdigits=3, colours=None, markers=None, sizes=None,
               range_x=None, range_y=None, margins_y=None, with_errors="xy", logscale=None):
     """
@@ -767,19 +767,18 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
             if offsets_xy:
                 gr.GetXaxis().SetTitleOffset(offsets_xy[0])
                 gr.GetYaxis().SetTitleOffset(offsets_xy[1])
-            #gr.GetXaxis().SetNdivisions(504, False)
             gr.Draw("AP")
             list_new.append(gr)
         setup_histogram(histogram, get_my_colour(counter_plot), get_my_marker(counter_plot),
                         get_my_size(counter_plot))
-        if isinstance(opt_plot_h, str):
-            opt_plot = [opt_plot_h]*(counter_plot+1)
-        else:
+        if isinstance(opt_plot_h, list):
             opt_plot = opt_plot_h
-        if isinstance(opt_leg_h, str):
-            opt_leg = [opt_leg_h]*(counter_plot+1)
         else:
+            opt_plot = [opt_plot_h]*(counter_plot+1)
+        if isinstance(opt_leg_h, list):
             opt_leg = opt_leg_h
+        else:
+            opt_leg = [opt_leg_h]*(counter_plot+1)
         if leg and n_labels > counter_plot and len(labels_obj[counter_plot]) > 0:
             leg.AddEntry(histogram, labels_obj[counter_plot], opt_leg[counter_plot])
         histogram.Draw(opt_plot[counter_plot])
@@ -885,16 +884,17 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
         y_min_plot, y_max_plot = range_y
 
     # append "same" to the histogram plotting option if needed
-    if isinstance(opt_plot_h, str):
+    if isinstance(opt_plot_h, list):
+        for opt in opt_plot_h:
+            opt = opt.lower()
+            opt_not_in = all(opt not in opt_plot_h for opt in ("same", "lego", "surf"))
+            if opt_not_in:
+                opt += " same"
+    else:
         opt_plot_h = opt_plot_h.lower()
         opt_not_in = all(opt not in opt_plot_h for opt in ("same", "lego", "surf"))
         if opt_not_in:
             opt_plot_h += " same"
-    for opt in opt_plot_h:
-        opt = opt.lower()
-        opt_not_in = all(opt not in opt_plot_h for opt in ("same", "lego", "surf"))
-        if opt_not_in:
-                opt += " same"
 
     # plot objects
     counter_plot = 0 # counter of plotted histograms and graphs

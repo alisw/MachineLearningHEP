@@ -43,7 +43,6 @@ DATABASE_VARIATION="${DATABASE}_${ANALYSIS}"
 CONFIG="submission/default_${STAGE}.yml"
 DB_DEFAULT="data/${DBDIR}/database_ml_parameters_${DATABASE_DEFAULT}.yml"
 DB_VARIATION="data/${DBDIR}/database_variations_${DATABASE_VARIATION}.yml"
-#DB_VARIATION="data/${DBDIR}/variations/database_variations_${DATABASE_VARIATION}.yml"
 DIR_RESULTS="/data/DerivedResultsJets/D0kAnywithJets/vAN-20200304_ROOT6-1/"
 
 CMD_ANA="python do_entire_analysis.py -a ${ANALYSIS} -r ${CONFIG} -d ${DB_DEFAULT} -c"
