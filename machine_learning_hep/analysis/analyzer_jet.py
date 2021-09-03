@@ -133,7 +133,7 @@ class AnalyzerJet(Analyzer):
         self.p_massmax = datap["analysis"][self.typean]["massmax"]
         self.p_rebin = datap["analysis"][self.typean]["rebin"]
         self.p_fix_mean = datap["analysis"][self.typean]["fix_mean"]
-        self.p_array_sigma = datap["analysis"][self.typean].get("SetArraySigma", [False] * self.p_nptfinbins)
+        self.set_array_sigma = datap["analysis"][self.typean].get("SetArraySigma", [False] * self.p_nptfinbins)
         self.p_set_fix_sigma= \
         datap["analysis"][self.typean].get("SetFixGaussianSigma", [False] * self.p_nptfinbins)
         self.p_sigmaarray = datap["analysis"][self.typean]["sigmaarray"]
@@ -401,16 +401,16 @@ class AnalyzerJet(Analyzer):
                 histomass_reb.Copy(histomass_reb_f)
                 fitter = AliHFInvMassFitter(histomass_reb_f, self.p_massmin[ipt], \
                     self.p_massmax[ipt], self.p_bkgfunc[ipt], self.p_sgnfunc[ipt])
-                set_sigma = 0
-                if self.p_array_sigma[ipt]:
-                    set_sigma = self.p_sigmaarray[ipt]
+                sigma_initial = 0
+                if self.set_array_sigma[ipt]:
+                    sigma_initial = self.p_sigmaarray[ipt]
                 else:
-                    set_sigma = sigma_mc
-                fitter.SetInitialGaussianSigma(set_sigma)
+                    sigma_initial = sigma_mc
+                fitter.SetInitialGaussianSigma(sigma_initial)
                 fitter.SetInitialGaussianMean(mean_mc)
                 if self.p_set_fix_sigma[ipt]:
-                    print("Set Fix Gaussian Sigma:", set_sigma)
-                    fitter.SetFixGaussianSigma(set_sigma)
+                    print("Set Fix Gaussian Sigma:", sigma_initial)
+                    fitter.SetFixGaussianSigma(sigma_initial)
                 if self.p_sgnfunc[ipt] == 1:
                     if self.p_fix_sigmasec[ipt] is True:
                         fitter.SetFixSecondGaussianSigma(self.p_sigmaarraysec[ipt])

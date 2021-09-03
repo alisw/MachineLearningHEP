@@ -337,10 +337,9 @@ D0pp:
       massmax: [2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
       rebin: [6,6,6,6,6,6,6,6,6,6,6,6] # sel_an_binmin bins
       fix_mean: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
-      masspeaksec: 1.864
 
-      # If SetArraySigma true: sigma fixed to sigmaarray
-      # If SetFixGaussianSigma true: sigma fixed (mc - default, sigmaarray if SetArraySigma)
+      # If SetArraySigma true: sigma_initial is taken from sigmaarray; false: sigma_initial is taken from MC
+      # If SetFixGaussianSigma true: sigma fixed to sigma_initialasspeaksec: 1.864
       SetFixGaussianSigma: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
       SetArraySigma: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # initial sigma (sel_an_binmin bins) 
