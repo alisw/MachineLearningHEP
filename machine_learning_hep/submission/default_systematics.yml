@@ -64,6 +64,7 @@ analysis:
   mc:
     histomass: false # processer: process_histomass
     efficiency: false # processer: process_efficiency
+    efficiency_resp: false # analyzer: efficiency
     response: false # processer: process_response
     feeddown: false # analyzer: feeddown
     dounfolding: false # analyzer: unfolding, unfolding_closure

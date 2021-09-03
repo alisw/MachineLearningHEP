@@ -24,7 +24,7 @@ import math
 import numpy as np
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
 # pylint: disable=import-error, no-name-in-module
-from ROOT import TH1F, TH2F, TFile, TH1, TH3F, TGraphAsymmErrors
+from ROOT import TH1F, TH2F, TH2, TFile, TH1, TH3F, TGraphAsymmErrors
 from ROOT import TPad, TCanvas, TLegend, kBlack, kGreen, kRed, kBlue, kWhite
 from ROOT import gStyle, gROOT, TMatrixD
 from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
@@ -84,6 +84,15 @@ def makefill2dhist(df_, titlehist, arrayx, arrayy, nvar1, nvar2):
     fill_hist(histo, arr2)
     return histo
 
+def makefill2dweighed(df_, titlehist, arrayx, arrayy, nvar1, nvar2, weight):
+    """
+    Create a TH2F histogram and fill it with two variables from a dataframe.
+    """
+    histo = build2dhisto(titlehist, arrayx, arrayy)
+    for row in df_.itertuples():
+        histo.Fill(getattr(row, nvar1), getattr(row, nvar2), getattr(row, weight))
+    return histo
+
 def makefill3dhist(df_, titlehist, arrayx, arrayy, arrayz, nvar1, nvar2, nvar3):
     """
     Create a TH3F histogram and fill it with three variables from a dataframe.
@@ -97,6 +106,20 @@ def makefill3dhist(df_, titlehist, arrayx, arrayy, arrayz, nvar1, nvar2, nvar3):
         histo.Fill(getattr(row, nvar1), getattr(row, nvar2), getattr(row, nvar3))
     return histo
 
+def makefill3dweighed(df_, titlehist, arrayx, arrayy, arrayz, nvar1, nvar2, nvar3, weight):
+    """
+    Create a TH3F histogram and fill it with three variables from a dataframe.
+    """
+
+    histo = buildhisto(titlehist, titlehist, arrayx, arrayy, arrayz)
+    #df_rd = df_[[nvar1, nvar2, nvar3]]
+    #arr3 = df_rd.to_numpy()
+    #fill_hist(histo, arr3) # this does not work, gives an empty histogram
+    for row in df_.itertuples():
+        histo.Fill(getattr(row, nvar1), getattr(row, nvar2), \
+                   getattr(row, nvar3), getattr(row, weight))
+    return histo
+
 def fill2dhist(df_, histo, nvar1, nvar2):
     """
     Fill a TH2 histogram with two variables from a dataframe.
@@ -106,6 +129,33 @@ def fill2dhist(df_, histo, nvar1, nvar2):
     fill_hist(histo, arr2)
     return histo
 
+def fill2dweighed(df_, histo, nvar1, nvar2, weight):
+    """
+    Fill a TH2 histogram with two variables from a dataframe.
+    """
+    #df_rd = df_[[nvar1, nvar2]]
+    #arr2 = df_rd.values
+    #fill_hist(histo, arr2)
+    if isinstance(histo, TH2):
+        for row in df_.itertuples():
+            histo.Fill(getattr(row, nvar1), getattr(row, nvar2),  getattr(row, weight))
+    else:
+        print("WARNING!Incorrect histogram type (should be TH2F) ")
+    return histo
+
+def fillweighed(df_, histo, nvar1, weight):
+    """
+    Fill a TH1 weighted histogram.
+    """
+    #df_rd = df_[[nvar1, nvar2]]
+    #arr2 = df_rd.values
+    #fill_hist(histo, arr2)
+    if isinstance(histo, TH1):
+        for row in df_.itertuples():
+            histo.Fill(getattr(row, nvar1), getattr(row, weight))
+    else:
+        print("WARNING!Incorrect histogram type (should be TH1F) ")
+    return histo
 
 def rebin_histogram(src_histo, new_histo):
     """

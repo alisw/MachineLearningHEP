@@ -29,13 +29,13 @@ from array import array
 import numpy as np
 import pandas as pd
 import lz4
-from machine_learning_hep.selectionutils import select_runs
 from ROOT import TObject, TCanvas, TLegend, TH1, TLatex, TGraph, TGraphAsymmErrors # pylint: disable=import-error, no-name-in-module
 from ROOT import kBlack, kRed, kGreen, kBlue, kYellow, kOrange, kMagenta, kCyan, kGray # pylint: disable=import-error, no-name-in-module
 from ROOT import kOpenCircle, kOpenSquare, kOpenDiamond, kOpenCross, kOpenStar, kOpenThreeTriangles # pylint: disable=import-error, no-name-in-module
 from ROOT import kOpenFourTrianglesX, kOpenDoubleDiamond, kOpenFourTrianglesPlus, kOpenCrossX # pylint: disable=import-error, no-name-in-module
 from ROOT import kFullCircle, kFullSquare, kFullDiamond, kFullCross, kFullStar, kFullThreeTriangles # pylint: disable=import-error, no-name-in-module
 from ROOT import kFullFourTrianglesX, kFullDoubleDiamond, kFullFourTrianglesPlus, kFullCrossX # pylint: disable=import-error, no-name-in-module
+from machine_learning_hep.selectionutils import select_runs
 
 def openfile(filename, attr):
     """
@@ -604,7 +604,7 @@ def get_marker(i: int, option=0):
         list_markers = markers_open
     return list_markers[i % len(list_markers)]
 
-def get_markersize(marker: int, size_def=1.5):
+def get_markersize(marker: int, size_def=2.5):
     '''Return a marker size.'''
     markers_small = [kOpenCross, kOpenDiamond, kOpenStar, kOpenDoubleDiamond,
                      kOpenFourTrianglesPlus, kOpenCrossX,
@@ -630,17 +630,17 @@ def setup_histogram(hist, colour=1, markerstyle=kOpenCircle, size=1.5):
     hist.SetMarkerColor(colour)
 
 def setup_canvas(can):
-    can.SetCanvasSize(1900, 1500)
-    can.SetWindowSize(500, 500)
+    can.SetCanvasSize(1970, 1500)
+    can.SetWindowSize(570, 500)
     can.SetFillColor(0)
     can.SetTicks(1, 1)
     can.SetBottomMargin(0.12)
     can.SetLeftMargin(0.12)
     can.SetTopMargin(0.1)
-    can.SetRightMargin(0.02)
+    can.SetRightMargin(0.05)
     can.cd()
 
-def setup_legend(legend, textsize=0.03):
+def setup_legend(legend, textsize=0.035):
     legend.SetBorderSize(0)
     legend.SetFillColor(0)
     legend.SetFillStyle(0)
@@ -670,7 +670,8 @@ def draw_latex(latex, colour=1, textsize=0.03):
 
 def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None, # pylint: disable=too-many-arguments, too-many-branches, too-many-statements, too-many-locals
               list_obj=None, labels_obj=None,
-              leg_pos=None, opt_leg_h="P", opt_leg_g="P", opt_plot_h="", opt_plot_g="P0",
+              leg_pos=None, opt_leg_h="P", opt_leg_g="P",
+              opt_plot_h="", opt_plot_g="P0",
               offsets_xy=None, maxdigits=3, colours=None, markers=None, sizes=None,
               range_x=None, range_y=None, margins_y=None, with_errors="xy", logscale=None):
     """
@@ -741,6 +742,7 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
         graph.GetYaxis().SetRangeUser(y_min_plot, y_max_plot)
         graph.GetXaxis().SetMaxDigits(maxdigits)
         graph.GetYaxis().SetMaxDigits(maxdigits)
+        graph.GetYaxis().SetTitleOffset(1.2)
         if offsets_xy:
             graph.GetXaxis().SetTitleOffset(offsets_xy[0])
             graph.GetYaxis().SetTitleOffset(offsets_xy[1])
@@ -758,7 +760,10 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
             gr.GetXaxis().SetLimits(x_min_plot, x_max_plot)
             gr.GetYaxis().SetRangeUser(y_min_plot, y_max_plot)
             gr.GetXaxis().SetMaxDigits(maxdigits)
+            gr.GetXaxis().SetLabelSize(0.045)
+            gr.GetYaxis().SetLabelSize(0.045)
             gr.GetYaxis().SetMaxDigits(maxdigits)
+            gr.GetYaxis().SetTitleOffset(1.2)
             if offsets_xy:
                 gr.GetXaxis().SetTitleOffset(offsets_xy[0])
                 gr.GetYaxis().SetTitleOffset(offsets_xy[1])
@@ -766,9 +771,17 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
             list_new.append(gr)
         setup_histogram(histogram, get_my_colour(counter_plot), get_my_marker(counter_plot),
                         get_my_size(counter_plot))
+        if isinstance(opt_plot_h, list):
+            opt_plot = opt_plot_h
+        else:
+            opt_plot = [opt_plot_h]*(counter_plot+1)
+        if isinstance(opt_leg_h, list):
+            opt_leg = opt_leg_h
+        else:
+            opt_leg = [opt_leg_h]*(counter_plot+1)
         if leg and n_labels > counter_plot and len(labels_obj[counter_plot]) > 0:
-            leg.AddEntry(histogram, labels_obj[counter_plot], opt_leg_h)
-        histogram.Draw(opt_plot_h)
+            leg.AddEntry(histogram, labels_obj[counter_plot], opt_leg[counter_plot])
+        histogram.Draw(opt_plot[counter_plot])
 
     def plot_latex(latex):
         draw_latex(latex)
@@ -871,10 +884,17 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
         y_min_plot, y_max_plot = range_y
 
     # append "same" to the histogram plotting option if needed
-    opt_plot_h = opt_plot_h.lower()
-    opt_not_in = all(opt not in opt_plot_h for opt in ("same", "lego", "surf"))
-    if opt_not_in:
-        opt_plot_h += " same"
+    if isinstance(opt_plot_h, list):
+        for opt in opt_plot_h:
+            opt = opt.lower()
+            opt_not_in = all(opt not in opt_plot_h for opt in ("same", "lego", "surf"))
+            if opt_not_in:
+                opt += " same"
+    else:
+        opt_plot_h = opt_plot_h.lower()
+        opt_not_in = all(opt not in opt_plot_h for opt in ("same", "lego", "surf"))
+        if opt_not_in:
+            opt_plot_h += " same"
 
     # plot objects
     counter_plot = 0 # counter of plotted histograms and graphs
