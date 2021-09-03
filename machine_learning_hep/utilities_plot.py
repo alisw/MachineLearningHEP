@@ -24,7 +24,7 @@ import math
 import numpy as np
 from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
 # pylint: disable=import-error, no-name-in-module
-from ROOT import TH1F, TH2F, TFile, TH1, TH3F, TGraphAsymmErrors
+from ROOT import TH1F, TH2F, TH2, TFile, TH1, TH3F, TGraphAsymmErrors
 from ROOT import TPad, TCanvas, TLegend, kBlack, kGreen, kRed, kBlue, kWhite
 from ROOT import gStyle, gROOT, TMatrixD
 from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
@@ -90,7 +90,7 @@ def makefill2dweighed(df_, titlehist, arrayx, arrayy, nvar1, nvar2, weight):
     """
     histo = build2dhisto(titlehist, arrayx, arrayy)
     for row in df_.itertuples():
-        histo.Fill(getattr(row, nvar1), getattr(row, nvar2),  getattr(row, weight))
+        histo.Fill(getattr(row, nvar1), getattr(row, nvar2), getattr(row, weight))
     return histo
 
 def makefill3dhist(df_, titlehist, arrayx, arrayy, arrayz, nvar1, nvar2, nvar3):
@@ -136,7 +136,7 @@ def fill2dweighed(df_, histo, nvar1, nvar2, weight):
     #df_rd = df_[[nvar1, nvar2]]
     #arr2 = df_rd.values
     #fill_hist(histo, arr2)
-    if isinstance(histo, TH2F):
+    if isinstance(histo, TH2):
         for row in df_.itertuples():
             histo.Fill(getattr(row, nvar1), getattr(row, nvar2),  getattr(row, weight))
     else:
@@ -150,7 +150,7 @@ def fillweighed(df_, histo, nvar1, weight):
     #df_rd = df_[[nvar1, nvar2]]
     #arr2 = df_rd.values
     #fill_hist(histo, arr2)
-    if isinstance(histo, TH1F):
+    if isinstance(histo, TH1):
         for row in df_.itertuples():
             histo.Fill(getattr(row, nvar1), getattr(row, weight))
     else:

@@ -4501,6 +4501,7 @@ class AnalyzerJet(Analyzer):
                 self.v_varshape_binning, self.v_var2_binning, self.v_var_binning)
             his3.Scale(scale_factor)
             return his3
+        return None
 
     def prepare_pt_spectra_sim(self, file_path, prompt):
         # Get the normalisation factor (inverse integrated luminosity).
