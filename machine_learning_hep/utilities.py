@@ -671,7 +671,7 @@ def draw_latex(latex, colour=1, textsize=0.03):
 def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None, # pylint: disable=too-many-arguments, too-many-branches, too-many-statements, too-many-locals
               list_obj=None, labels_obj=None,
               leg_pos=None, opt_leg_h="P", opt_leg_g="P",
-              opt_plot_h="same", opt_plot_g="P",
+              opt_plot_h="", opt_plot_g="P0",
               offsets_xy=None, maxdigits=3, colours=None, markers=None, sizes=None,
               range_x=None, range_y=None, margins_y=None, with_errors="xy", logscale=None):
     """

@@ -1535,10 +1535,7 @@ class AnalyzerJet(Analyzer):
 
         # input_data is 3d histogram from powheg+pythia prediction that
         # contains z vs jet_pt vs HF pt.
-        if self.xsec:
-            input_data = self.get_simulated_yields(self.powheg_path_nonprompt, 3, False, True)
-        else:
-            input_data = self.get_simulated_yields(self.powheg_path_nonprompt, 3, False)
+        input_data = self.get_simulated_yields(self.powheg_path_nonprompt, 3, False, self.xsec)
         if not input_data:
             self.logger.fatal(make_message_notfound("simulated yields", self.powheg_path_nonprompt))
         input_data.SetName("fh3_feeddown_%s" % self.v_varshape_binning)
@@ -4349,7 +4346,7 @@ class AnalyzerJet(Analyzer):
                 c_fd_fr_sys.SaveAs("%s/%s_fd_fr_sys_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix_plot))
                 gStyle.SetErrorX(0.5)
 
-    def get_simulated_yields(self, file_path: str, dim: int, prompt: bool, xsec = None):
+    def get_simulated_yields(self, file_path: str, dim: int, prompt: bool, xsec = False):
         """Create a histogram from a simulation tree.
         file_path - input file path
         dim - dimension of the output histogram: 2, 3
