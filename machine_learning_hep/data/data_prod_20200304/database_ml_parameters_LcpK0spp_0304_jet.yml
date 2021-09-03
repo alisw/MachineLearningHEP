@@ -405,10 +405,9 @@ LcpK0spp:
       fix_sigma: [true, true, true, true, true]
       masspeaksec: 2.2864
 
-      # If SetInitialGaussianSigma true: initial sigma fixed (mc - default, sigma array id SetArraySigma)
+      # If SetArraySigma true: sigma fixed to sigmaarray
       # If SetFixGaussianSigma true: sigma value fixed to sigmaarray if SetInitialGaussianSigma true, to mc sigma if false
       SetFixGaussianSigma: [true, true, true, true, true]
-      SetInitialGaussianSigma: [true, true, true, true, true]
       SetArraySigma: [false, false, false, false, false]
       sigmaarray: [0.0078, 0.0095, 0.0109, 0.0117, 0.0156] # initial sigma
 

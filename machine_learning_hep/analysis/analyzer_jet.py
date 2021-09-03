@@ -136,8 +136,6 @@ class AnalyzerJet(Analyzer):
         self.p_array_sigma = datap["analysis"][self.typean].get("SetArraySigma", [False] * self.p_nptfinbins)
         self.p_set_fix_sigma= \
         datap["analysis"][self.typean].get("SetFixGaussianSigma", [False] * self.p_nptfinbins)
-        self.p_set_initial_sigma = \
-        datap["analysis"][self.typean].get("SetInitialGaussianSigma", [False] * self.p_nptfinbins)
         self.p_sigmaarray = datap["analysis"][self.typean]["sigmaarray"]
         #self.p_masspeaksec = None
         self.p_fix_sigmasec = None
@@ -408,9 +406,7 @@ class AnalyzerJet(Analyzer):
                     set_sigma = self.p_sigmaarray[ipt]
                 else:
                     set_sigma = sigma_mc
-                if self.p_set_initial_sigma[ipt]:
-                    print("Set Initial Gaussian Sigma:", set_sigma)
-                    fitter.SetInitialGaussianSigma(set_sigma)
+                fitter.SetInitialGaussianSigma(set_sigma)
                 fitter.SetInitialGaussianMean(mean_mc)
                 if self.p_set_fix_sigma[ipt]:
                     print("Set Fix Gaussian Sigma:", set_sigma)
