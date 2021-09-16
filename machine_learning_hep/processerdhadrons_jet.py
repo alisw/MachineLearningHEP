@@ -221,6 +221,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
         self.s_jetsel_gen = datap["analysis"][self.typean]["jetsel_gen"]
         self.s_jetsel_reco = datap["analysis"][self.typean]["jetsel_reco"]
+        self.s_jetsel_gen_matched_reco = datap["analysis"][self.typean]["jetsel_gen_matched_reco"]
         self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
@@ -373,7 +374,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                     bin_id = self.bin_matching[ipt]
                     df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[bin_id][index], "rb"))
                     df_mc_gen = adjust_nsd(df_mc_gen)
-                    df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
+                    if self.s_jetsel_gen is not None:
+                        df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
                     if self.runlistrigger is not None:
                         df_mc_gen = selectdfrunlist(df_mc_gen, \
                                  self.run_param[self.runlistrigger], "run_number")
@@ -431,8 +433,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 if self.s_evtsel is not None:
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_jetsel_reco is not None:
-                    if self.p_usejetptbinned_deff is True:
-                        df_mc_reco = df_mc_reco.query(self.s_jetsel_reco)
+                    df_mc_reco = df_mc_reco.query(self.s_jetsel_reco)
                 if self.s_trigger is not None:
                     df_mc_reco = df_mc_reco.query(self.s_trigger)
                 if self.runlistrigger is not None:
@@ -440,7 +441,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                              self.run_param[self.runlistrigger], "run_number")
                 df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[bin_id][index], "rb"))
                 df_mc_gen = adjust_nsd(df_mc_gen)
-                if self.p_usejetptbinned_deff is True:
+                if self.s_jetsel_gen is not None:
                     df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
                 df_mc_gen = df_mc_gen.query(cut_d0y)
                 if self.runlistrigger is not None:
@@ -455,11 +456,11 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                         self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
                     df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning, \
                         self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2]) # FIXME use lvar2_binmin_gen pylint: disable=fixme
-                if self.p_eff_overflow is True:
+                else:
                     df_mc_reco = seldf_singlevar(df_mc_reco, self.v_var2_binning, \
-                        self.var2_low_inc, self.var2_up_inc)
+                        self.lvar2_binmin_reco[0], self.lvar2_binmax_reco[-1])
                     df_mc_gen = seldf_singlevar(df_mc_gen, self.v_var2_binning, \
-                        self.var2_low_inc, self.var2_up_inc)
+                        self.lvar2_binmin_reco[0], self.lvar2_binmax_reco[-1]) # FIXME use lvar2_binmin_gen pylint: disable=fixme
 
                 df_mc_gen["z"] = z_calc(df_mc_gen.pt_jet, df_mc_gen.phi_jet, df_mc_gen.eta_jet,
                                         df_mc_gen.pt_cand, df_mc_gen.phi_cand, df_mc_gen.eta_cand)
@@ -611,18 +612,24 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
     def create_df_closure(self, df_):
         df_tmp_selgen = df_.copy()
+        if self.jetsel_gen_matched_reco is not None:
+            df_tmp_selgen = df_tmp_selgen.query(self.jetsel_gen_matched_reco)
         df_tmp_selgen = seldf_singlevar(df_tmp_selgen, self.v_varshape_binning_gen, \
             self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1])
         df_tmp_selgen = seldf_singlevar(df_tmp_selgen, "pt_gen_jet", \
             self.lvar2_binmin_gen[0], self.lvar2_binmax_gen[-1])
 
         df_tmp_selreco = df_.copy()
+        if self.jetsel_reco is not None:
+            df_tmp_selreco = df_tmp_selreco.query(self.jetsel_reco)
         df_tmp_selreco = seldf_singlevar(df_tmp_selreco, "pt_jet", \
             self.lvar2_binmin_reco[0], self.lvar2_binmax_reco[-1])
         df_tmp_selreco = seldf_singlevar(df_tmp_selreco, self.v_varshape_binning, \
             self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
 
         df_tmp_selrecogen = df_tmp_selgen.copy()
+        if self.jetsel_reco is not None:
+            df_tmp_selrecogen = df_tmp_selrecogen.query(self.jetsel_reco)
         df_tmp_selrecogen = seldf_singlevar(df_tmp_selrecogen, "pt_jet", \
             self.lvar2_binmin_reco[0], self.lvar2_binmax_reco[-1])
         df_tmp_selrecogen = seldf_singlevar(df_tmp_selrecogen, self.v_varshape_binning, \
@@ -695,7 +702,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             if self.runlistrigger is not None:
                 df_mc_gen = selectdfrunlist(df_mc_gen, \
                         self.run_param[self.runlistrigger], "run_number")
-            df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
+            if self.s_jetsel_gen is not None:
+                df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
             list_df_mc_gen.append(df_mc_gen)
 
             if self.do_custom_analysis_cuts:
@@ -803,11 +811,15 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                                      self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             df_tmp = seldf_singlevar(df_tmp, self.v_varshape_binning_gen, \
                                      self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1])
+            if self.s_jetsel_gen_matched_reco is not None:
+                df_tmp = df_tmp.query(self.s_jetsel_gen_matched_reco)
             fill_hist(hz_gen_nocuts, df_tmp[self.v_varshape_binning_gen])
             df_tmp = seldf_singlevar(df_tmp, "pt_jet",
                                      self.lvar2_binmin_reco[0], self.lvar2_binmax_reco[-1])
             df_tmp = seldf_singlevar(df_tmp, self.v_varshape_binning,
                                      self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
+            if self.s_jetsel_reco is not None:
+                df_tmp = df_tmp.query(self.s_jetsel_reco)
             fill_hist(hz_gen_cuts, df_tmp[self.v_varshape_binning_gen])
             hz_gen_cuts.Write()
             hz_gen_nocuts.Write()
@@ -823,11 +835,15 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                                      self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
             df_tmp_pr = seldf_singlevar(df_tmp_pr, self.v_varshape_binning_gen, \
                                      self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1])
+            if self.s_jetsel_gen_matched_reco is not None:
+                df_tmp_pr = df_tmp_pr.query(self.s_jetsel_gen_matched_reco)
             fill_hist(hz_gen_nocuts_pr, df_tmp_pr[self.v_varshape_binning_gen])
             df_tmp_pr = seldf_singlevar(df_tmp_pr, "pt_jet",
                                         self.lvar2_binmin_reco[0], self.lvar2_binmax_reco[-1])
             df_tmp_pr = seldf_singlevar(df_tmp_pr, self.v_varshape_binning,
                                         self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
+            if self.s_jetsel_reco is not None:
+                df_tmp_pr = df_tmp_pr.query(self.s_jetsel_reco)
             fill_hist(hz_gen_cuts_pr, df_tmp_pr[self.v_varshape_binning_gen])
             hz_gen_cuts_pr.Write()
             hz_gen_nocuts_pr.Write()

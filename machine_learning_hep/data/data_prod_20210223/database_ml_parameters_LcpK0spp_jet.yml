@@ -368,6 +368,9 @@ LcpK0spp:
       proc_type: Dhadrons_jet
       useperiod: [1,1,1] #list of periods
       usejetptbinned_deff: false
+      doeff_resp: true
+      effcor_kinematic: true
+      effcor_kinematic_full: true
 
       latexnamehadron: "#Lambda_{c}^{#plus}"
       latexnamedecay: "p K^{0}_{S}"
@@ -393,23 +396,24 @@ LcpK0spp:
       binning_matching:   [1,2,3,4, 5] #list of pt nbins
       jetsel_gen: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
       jetsel_sim: "abs(y_cand) < 0.5 and abs(eta_jet) < 0.5" # jet selection in simulations
-      jetsel_reco: "abs(eta_jet) < 0.5"
+      jetsel_reco: "abs(y_cand) < 0.5 and abs(z_vtx_reco) < 10 and abs(eta_jet) < 0.5"
+      jetsel_gen_matched_reco: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_gen_jet) < 0.5"
       evtsel: is_ev_rej==0
       triggersel:
         data: "trigger_hasbit_INT7==1"
         mc: null
       data: &data_out_default
         runselection: [null, null, null]
-        results: [/data/DerivedResultsJets/LcVitTest/vAN-20210223_ROOT6-1/ff/default/default/pp_2016_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/DerivedResultsJets/LcVitTest/vAN-20210223_ROOT6-1/ff/default/default/pp_2017_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/DerivedResultsJets/LcVitTest/vAN-20210223_ROOT6-1/ff/default/default/pp_2018_data/593_20210223-2051/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/LcVitTest/vAN-20210223_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/LcNimaTest/vAN-20210223_ROOT6-1/ff/default/default/pp_2016_data/593_20210223-2051/resultsMBjetvspt,
+                  /data/DerivedResultsJets/LcNimaTest/vAN-20210223_ROOT6-1/ff/default/default/pp_2017_data/593_20210223-2051/resultsMBjetvspt,
+                  /data/DerivedResultsJets/LcNimaTest/vAN-20210223_ROOT6-1/ff/default/default/pp_2018_data/593_20210223-2051/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/LcNimaTest/vAN-20210223_ROOT6-1/ff/default/default/pp_data/resultsMBjetvspt
       mc: &mc_out_default
         runselection: [null, null, null]
-        results: [/data/DerivedResultsJets/LcVitTest/vAN-20210223_ROOT6-1/ff/default/default/pp_2016_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/DerivedResultsJets/LcVitTest/vAN-20210223_ROOT6-1/ff/default/default/pp_2017_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/DerivedResultsJets/LcVitTest/vAN-20210223_ROOT6-1/ff/default/default/pp_2018_mc_prodD2H/594_20210301-1015/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/LcVitTest/vAN-20210223_ROOT6-1/ff/default/default/pp_mc_prodD2H/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/LcNimaTest/vAN-20210223_ROOT6-1/ff/default/default/pp_2016_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
+                  /data/DerivedResultsJets/LcNimaTest/vAN-20210223_ROOT6-1/ff/default/default/pp_2017_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
+                  /data/DerivedResultsJets/LcNimaTest/vAN-20210223_ROOT6-1/ff/default/default/pp_2018_mc_prodD2H/594_20210301-1015/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/LcNimaTest/vAN-20210223_ROOT6-1/ff/default/default/pp_mc_prodD2H/resultsMBjetvspt
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input
@@ -466,22 +470,15 @@ LcpK0spp:
       powheg_prompt_variations: ["F1_R05","F05_R1","F2_R1","F1_R2","F2_R2","F05_R05","Mhigh","Mlow"]
 
       pythia8_prompt_variations_path: /data/PYTHIA8/trees_pythia8_pr_
-      pythia8_prompt_variations: ["default","colour0soft"]
-      pythia8_prompt_variations_legend:  ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 0"]
+      pythia8_prompt_variations: ["default","colour2soft"]
+      pythia8_prompt_variations_legend:  ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 2"]
 
-      variations_db: ./data/data_prod_20210223/database_variations_LcpK0spp_FF.yml
+      variations_db: ./data/data_prod_20210223/database_variations_LcpK0spp_jet_FF.yml
 
     jet_r_shape_2_6:
       <<: *jet_default
       xsec: false 
-      doeff_resp: true
       use_inclusive_systematics: true
-
-      pythia8_prompt_variations_path: /data/PYTHIA8/trees_pythia8_pr_
-      pythia8_prompt_variations: ["default","colour2soft"]
-      pythia8_prompt_variations_legend:  ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 2"]
-      #pythia8_prompt_variations: ["default","colour2soft", "colour2soft"]
-      #pythia8_prompt_variations_legend:  ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 2", "SoftQCD, mode 2 (scaled)"]
 
       var_binningshape: delta_r_jet
       var_binningshape_gen: delta_r_gen_jet
@@ -497,9 +494,6 @@ LcpK0spp:
       sel_an_binmin:    [2, 4] #list of pt nbins
       sel_an_binmax:       [4, 6] #list of pt nbins
       binning_matching:    [1, 2] #list of pt nbins
-      jetsel_gen: "abs(y_cand) < 0.8 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
-      jetsel_sim: "abs(y_cand) < 0.8 and abs(eta_jet) < 0.5" # jet selection in simulations
-      jetsel_reco: "abs(eta_jet) < 0.5"
       evtsel: is_ev_rej==0
       triggersel:
         data: "trigger_hasbit_INT7==1"
@@ -530,14 +524,7 @@ LcpK0spp:
     jet_r_shape_6_12:
       <<: *jet_default
       xsec: false
-      doeff_resp: true
       use_inclusive_systematics: true
-
-      pythia8_prompt_variations_path: /data/PYTHIA8/trees_pythia8_pr_
-      pythia8_prompt_variations: ["default","colour2soft"]
-      pythia8_prompt_variations_legend:  ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 2"]
-      #pythia8_prompt_variations: ["default","colour2soft", "colour2soft"]
-      #pythia8_prompt_variations_legend:  ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 2", "SoftQCD, mode 2 (scaled)"]
 
       var_binningshape: delta_r_jet
       var_binningshape_gen: delta_r_gen_jet
@@ -553,9 +540,6 @@ LcpK0spp:
       sel_an_binmin:    [6, 8] #list of pt nbins
       sel_an_binmax:       [8, 12] #list of pt nbins
       binning_matching:    [3, 4] #list of pt nbins
-      jetsel_gen: "abs(y_cand) < 0.8 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
-      jetsel_sim: "abs(y_cand) < 0.8 and abs(eta_jet) < 0.5" # jet selection in simulations
-      jetsel_reco: "abs(eta_jet) < 0.5"
       evtsel: is_ev_rej==0
       triggersel:
         data: "trigger_hasbit_INT7==1"
