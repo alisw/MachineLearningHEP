@@ -29,7 +29,7 @@ ml_study: # mlout, mlplot
   docorrelation: false
   dotraining: true
   dotesting: true
-  doapplytodatamc: true
+  doapplytodatamc: false
   docrossvalidation: false
   dolearningcurve: true
   doroc: true
@@ -40,8 +40,8 @@ ml_study: # mlout, mlplot
   dogridsearch: false
   dobayesianopt: false
   doboundary: false
-  doefficiency: true
-  dosignifopt: true
+  doefficiency: false
+  dosignifopt: false
   doscancuts: false
 
 mlapplication:
