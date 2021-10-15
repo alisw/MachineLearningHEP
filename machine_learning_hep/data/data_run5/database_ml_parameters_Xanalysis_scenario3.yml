@@ -122,9 +122,9 @@ X3872:
     namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl
     namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl
     namefile_mcweights: mcweights.root
-    treeoriginreco: '.0/O2hfcandxfull'
-    treeorigingen: '.0/O2hfcandxfullp'
-    treeoriginevt: '.0/O2hfcandxfulle'
+    treeoriginreco: 'TF_0/O2hfcandxfull'
+    treeorigingen: 'TF_0/O2hfcandxfullp'
+    treeoriginevt: 'TF_0/O2hfcandxfulle'
     treeoutput: "Xtree"
     histofilename: "masshisto.root"
     efffilename: "effhisto.root"
@@ -140,7 +140,7 @@ X3872:
       fracmerge : [0.5] #list of periods
       seedmerge: [12] #list of periods
       period: [test] #list of periods
-      unmerged_tree_dir: [/data/X3872ALICE3/newvariables/data/unmerged] #list of periods
+      unmerged_tree_dir: [/data/X3872ALICE3/newdata20211015/background_files/unmerged] #list of periods
       pkl: [/data/X3872ALICE3/newvariables/data/pkldata_scenario3] #list of periods
       pkl_skimmed: [/data/X3872ALICE3/newvariables/data/pklskdata_scenario3] #list of periods
       pkl_skimmed_merge_for_ml: [/data/X3872ALICE3/newvariables/data/pklskmldata_scenario3] #list of periods
@@ -155,7 +155,7 @@ X3872:
       fracmerge : [1.0] #list of periods
       seedmerge: [12] #list of periods
       period: [test] #list of periods
-      unmerged_tree_dir: [/data/X3872ALICE3/newvariables/mc/unmerged] #list of periods
+      unmerged_tree_dir: [/data/X3872ALICE3/newdata20211015/signal_files/unmerged] #list of periods
       pkl: [/data/X3872ALICE3/newvariables/mc/pkldata_scenario3] #list of periods
       pkl_skimmed: [/data/X3872ALICE3/newvariables/mc/pklskdata_scenario3] #list of periods
       pkl_skimmed_merge_for_ml: [/data/X3872ALICE3/newvariables/mc/pklskmldata_scenario3] #list of periods
