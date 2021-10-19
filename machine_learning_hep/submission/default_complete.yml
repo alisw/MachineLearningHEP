@@ -1,4 +1,4 @@
-case: XXXX # used to find the database file unless specified explicitly as do_entire_analysis -d database_analysis
+case: X3872 # used to find the database file unless specified explicitly as do_entire_analysis -d database_analysis
 download:
   alice:
     activate: false
@@ -24,18 +24,18 @@ mergingperiods: # pkl_skimmed_merge_for_ml_all
     activate: false
 
 ml_study: # mlout, mlplot
-  activate: false
+  activate: true
   dopca: false
   docorrelation: false
-  dotraining: false
-  dotesting: false
+  dotraining: true
+  dotesting: true
   doapplytodatamc: false
   docrossvalidation: false
-  dolearningcurve: false
-  doroc: false
+  dolearningcurve: true
+  doroc: true
   doroctraintest: false
   doplotdistr: false
-  doimportance: false
+  doimportance: true
   doimportanceshap: false
   dogridsearch: false
   dobayesianopt: false
@@ -55,24 +55,24 @@ mlapplication:
     docontinueafterstop: false # set to true to resume interrupted processing (existing corrupted output will be overwritten)
 
 analysis:
-  type: YYYY # used unless specified explicitly as do_entire_analysis -a type_ana
+  type: scenario3 # used unless specified explicitly as do_entire_analysis -a type_ana
   # Do each period separately including merged (true)
   # Do only merged (false)
   doperperiod: false
   data:
-    histomass: true # processer: process_histomass
+    histomass: false # processer: process_histomass
     dojetsystematics: false # analyzer: jetsystematics
   mc:
-    histomass: true # processer: process_histomass
-    efficiency: true # processer: process_efficiency
-    efficiency_resp: true # analyzer: efficiency
-    response: true # processer: process_response
-    feeddown: true # analyzer: feeddown
-    dounfolding: true # analyzer: unfolding, unfolding_closure
+    histomass: false # processer: process_histomass
+    efficiency: false # processer: process_efficiency
+    efficiency_resp: false # analyzer: efficiency
+    response: false # processer: process_response
+    feeddown: false # analyzer: feeddown
+    dounfolding: false # analyzer: unfolding, unfolding_closure
   dofit: false # analyzer: fit
   # Control the yield systematic uncertainty
   dosyst: false # analyzer: yield_syst
-  dojetstudies: true # analyzer: fit, efficiency, sideband_sub
+  dojetstudies: false # analyzer: fit, efficiency, sideband_sub
   doeff: false # analyzer: efficiency
   docross: false # analyzer: makenormyields
   doplots: false # analyzer: plotternormyields

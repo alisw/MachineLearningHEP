@@ -22,10 +22,10 @@ X3872:
   sel_gen_unp: "fPt>0"
   sel_cen_unp: null
   sel_good_evt_unp: null
-  sel_reco_skim: [null]
-  sel_gen_skim: [null]
-  sel_skim_binmin: [2] #list of nbins
-  sel_skim_binmax: [10] #list of nbins
+  sel_reco_skim: [null, null, null]
+  sel_gen_skim: [null, null, null]
+  sel_skim_binmin: [2, 4, 6] #list of nbins
+  sel_skim_binmax: [4, 6, 10] #list of nbins
   apply_yptacccut: false
   var_binning: fPt
   dofullevtmerge: false
@@ -45,14 +45,17 @@ X3872:
     ismcrefl: [[1],[1]]
 
   variables:
-    var_all: [fIndexBCs, fMCflag, fY, fEta, fPt, fCPA, fCPAXY, fM,
+    var_all: [fIndexBCs, fMCflag, fY, fEta, fPt, fCPA, fCPAXY, fM, fQ, fDR1, fDR2, fPiBalance,
               fChi2PCA, fNSigTOFPr1, fNSigTOFPi1, fNSigTOFKa1, fNSigTOFPr2, fNSigTOFPi2, fNSigTOFKa2]
     var_evt:
        data: [fIndexBCs, fPosX, fPosY, fPosZ, fIsEventReject]
        mc:   [fIndexBCs, fPosX, fPosY, fPosZ, fIsEventReject]
     var_gen: [fIndexBCs, fPt, fY, fMCflag]
     var_evt_match: [fIndexBCs]
-    var_training: [[fChi2PCA, fNSigTOFPr1, fNSigTOFPi1, fNSigTOFKa1, fNSigTOFPr2, fNSigTOFPi2, fNSigTOFKa2]]
+    #var_training: [[fChi2PCA, fNSigTOFPr1, fNSigTOFPi1, fNSigTOFKa1, fNSigTOFPr2, fNSigTOFPi2, fNSigTOFKa2]]
+    var_training: [[fChi2PCA, fQ, fDR1, fDR2, fPiBalance],
+                   [fChi2PCA, fQ, fDR1, fDR2, fPiBalance],
+                   [fChi2PCA, fQ, fDR1, fDR2, fPiBalance]]
     var_boundaries: [fChi2PCA, fPt]
     var_correlation:
       - [fChi2PCA, fNSigTOFPr1, fNSigTOFKa1]
@@ -140,7 +143,7 @@ X3872:
       fracmerge : [0.5] #list of periods
       seedmerge: [12] #list of periods
       period: [test] #list of periods
-      unmerged_tree_dir: [/data/X3872ALICE3/newdata20211015/background_files/unmerged] #list of periods
+      unmerged_tree_dir: [/data/X3872ALICE3/newdata20211015/signal_files/unmerged] #list of periods
       pkl: [/data/X3872ALICE3/newvariables/data/pkldata_scenario3] #list of periods
       pkl_skimmed: [/data/X3872ALICE3/newvariables/data/pklskdata_scenario3] #list of periods
       pkl_skimmed_merge_for_ml: [/data/X3872ALICE3/newvariables/data/pklskmldata_scenario3] #list of periods
@@ -167,19 +170,19 @@ X3872:
     triggersel:
       data: null
       mc: null
-
-    nbkg: 25000
-    nsig: 25000
+    nbkg: 100000
+    nsig: 100000
+    equalize_sig_bkg: True
     sampletagforsignal: 1
     sampletagforbkg: 0
     sel_sigml: ismcprompt == 1
-    sel_bkgml: fM<3.2 or fM>4.0
+    sel_bkgml: fM<3.4 or fM>4.2
     nkfolds: 5
     rnd_shuffle: 12
     rnd_splt: 12
     test_frac: 0.2
-    binmin: [2] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
-    binmax: [10] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
+    binmin: [2, 4, 6] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
+    binmax: [4, 6, 10] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: BinaryClassification
     ncorescrossval: 10
     mlplot: mlplot # to be removed
@@ -199,8 +202,8 @@ X3872:
       num_steps: 111 # number of steps used in efficiency and signif. estimation
       bkg_function: pol2 # fit function for bkg (among TH1 predefined fit functions, e.g. expo, pol1, pol2, ...)
       save_fit: True # save bkg fits with the various cuts on ML output
-      raahp: [1] # sel_skim_binmin bins
-      presel_gen_eff: "abs(fY) < 2.0 and abs(fPosZ) < 10"
+      raahp: [1, 1, 1] # sel_skim_binmin bins
+      presel_gen_eff: "abs(fY) < 1.44 and abs(fPosZ) < 10"
 
   mlapplication:
     data:
@@ -212,9 +215,9 @@ X3872:
     modelname: xgboost
     modelsperptbin: [xgboost_classifierLcpKpi_dfselection_fPt_0.0_1.0.sav]
     probcutpresel:
-      data: [0.05] #list of nbins
-      mc: [0.05] #list of nbins
-    probcutoptimal: [0.5] #list of nbins
+      data: [0.05, 0.05, 0.05] #list of nbins
+      mc: [0.05, 0.05, 0.05] #list of nbins
+    probcutoptimal: [0.5, 0.5, 0.5] #list of nbins
 
   analysis:
     indexhptspectrum: -1 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
@@ -229,8 +232,8 @@ X3872:
       useperiod: [1]
       plotbin: [1]
       usesinglebineff: 0
-      sel_binmin2: [2] #list of nbins
-      sel_binmax2: [10] #list of nbins
+      sel_binmin2: [2, 4, 6] #list of nbins
+      sel_binmax2: [4, 6, 10] #list of nbins
       var_binning2: null
       triggerbit: ''
 
@@ -238,10 +241,10 @@ X3872:
       # Decide whether to take the sigma from MC or data for individual fits
       init_fits_from: mc # data # data or mc
 
-      sel_an_binmin: [2]
-      sel_an_binmax: [10]
-      binning_matching: [0]
-      presel_gen_eff: "abs(fY) < 2.0"
+      sel_an_binmin: [2, 4, 6]
+      sel_an_binmax: [4, 6, 10]
+      binning_matching: [0, 1, 2]
+      presel_gen_eff: "abs(fY) < 1.44"
       evtsel: null
       triggersel:
         data: null
@@ -257,26 +260,26 @@ X3872:
         results: [resultsmc_scenario3] #list of periods
         resultsallp: resultsmctot_scenario3
 
-      mass_fit_lim: [2.14, 2.436] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [3.8, 3.9] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
-      init_fits_from: [mc,mc,mc,mc,mc,mc] # data or mc
-      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
-      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
-      masspeak: 2.286
-      massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
-      massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
-      rebin: [4,4,4,4,4,4]
-      fix_mean: [false,false,false,false,false,false]
-      fix_sigma: [false,false,false,false,false,false]
+      init_fits_from: [mc,mc,mc] # data or mc
+      sgnfunc: [kGaus,kGaus,kGaus]
+      bkgfunc: [Pol2,Pol2,Pol2]
+      masspeak: 3.872
+      massmin: [3.8,3.8,3.8]
+      massmax: [3.9,3.9,3.9]
+      rebin: [4,4,4]
+      fix_mean: [false,false,false]
+      fix_sigma: [false,false,false]
       masssecpeak: 0.
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: [true,true,true,true,true,true]
+      SetFixGaussianSigma: [true,true,true]
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
-      SetInitialGaussianSigma: [false,false,false,false,false,false]
+      SetInitialGaussianSigma: [false,false,false]
       # Max percentage deviation in sigma (from init) to be considered as a good fit
       MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
@@ -284,7 +287,7 @@ X3872:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01]
+      sigmaarray: [0.01,0.01,0.01]
       FixedSigma: false
       fitcase: Lc
       latexnamehadron: "#Lambda_{c}^{pK#pi}"
@@ -298,7 +301,7 @@ X3872:
       useperiod: [1] #period from where to define prob cuts
       ncutvar: 10 #number of looser and tighter variations
       maxperccutvar: 0.25 #max diff in efficiency for loosest/tightest var
-      cutvarminrange: [0.70, 0.50, 0.50, 0.3, 0.3, 0.3] #Min starting point for scan
-      cutvarmaxrange: [0.95, 0.90, 0.90, 0.80, 0.80, 0.80] #Max starting point for scan
+      cutvarminrange: [0.70, 0.50, 0.50] #Min starting point for scan
+      cutvarmaxrange: [0.95, 0.90, 0.90] #Max starting point for scan
       fixedmean: True #Fix mean cutvar histo to central fit
       fixedsigma: True #Fix sigma cutvar histo to central fit
