@@ -75,7 +75,7 @@ setup(
                      "twisted==19.2.0", "klein==17.10.0", "Jinja2==2.10.3", "numba==0.48.0",
                      "pyarrow==0.13.0", "lz4==2.1.10", "hyperopt==0.2.3", "shap==v0.23.0"],
 
-  python_requires='>=3.6, <3.7',
+  python_requires='>=3.6, <3.9',
 
   # List additional groups of dependencies here (e.g. development
   # dependencies). You can install these using the following syntax,
