@@ -1,0 +1,304 @@
+#############################################################################
+##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
+## This program is free software: you can redistribute it and/or modify it ##
+##  under the terms of the GNU General Public License as published by the  ##
+## Free Software Foundation, either version 3 of the License, or (at your  ##
+## option) any later version. This program is distributed in the hope that ##
+##  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  ##
+##     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    ##
+##           See the GNU General Public License for more details.          ##
+##    You should have received a copy of the GNU General Public License    ##
+##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
+#############################################################################
+
+chic:
+  nprongs: 3
+  prongformultsub: [0,0,0]
+  doml: true
+  mass: 3.510
+  sel_reco_unp: "fPt>0"
+  sel_reco_singletrac_unp : null
+  sel_gen_unp: "fPt>0"
+  sel_cen_unp: null
+  sel_good_evt_unp: null
+  sel_reco_skim: [null, null, null]
+  sel_gen_skim: [null, null, null]
+  sel_skim_binmin: [2, 4, 6] #list of nbins
+  sel_skim_binmax: [4, 6, 10] #list of nbins
+  apply_yptacccut: false
+  var_binning: fPt
+  dofullevtmerge: false
+  bitmap_sel:
+    var_name: fMCflag
+    var_isstd: isstd
+    var_ismcsignal: ismcsignal
+    var_ismcprompt: ismcprompt
+    var_ismcfd: ismcfd
+    var_ismcbkg: ismcbkg
+    var_ismcrefl: ismcref
+    isstd : [[1],[]]
+    ismcsignal: [[1],[]]
+    ismcprompt: [[1],[]]
+    ismcfd: [[1],[1]]
+    ismcbkg: [[],[1]]
+    ismcrefl: [[1],[1]]
+
+  variables:
+    var_all: [fIndexBCs, fMCflag, fY, fEta, fPt, fCPA, fCPAXY, fM, fPtProng0]
+    var_evt:
+       data: [fIndexBCs, fPosX, fPosY, fPosZ, fIsEventReject]
+       mc:   [fIndexBCs, fPosX, fPosY, fPosZ, fIsEventReject]
+    var_gen: [fIndexBCs, fPt, fY, fMCflag]
+    var_evt_match: [fIndexBCs]
+    var_training: [[fEta, fCPAXY],
+                   [fEta, fCPAXY],
+                   [fEta, fCPAXY]]
+    var_boundaries: [fEta, fPt]
+    var_correlation:
+      - [fEta, fCPAXY]
+    var_signal: signal
+    var_inv_mass: fM
+    var_y: fY
+    var_evt_sel: fIsEventReject
+    var_cuts:
+        - [fPtProng0, lt, null]
+        - [fCPA, lt, null]
+
+    plot_options:
+      prob_cut_scan:
+        pt_prong0:
+          xlim:
+            - 0
+            - 6
+        pt_prong1:
+          xlim:
+            - 0
+            - 6
+        pt_prong2:
+          xlim:
+            - 0
+            - 6
+        fDecayLength:
+          xlim:
+            - 0
+            - 0.05
+        fChi2PCA:
+          xlim:
+            - 0
+            - 0.0001
+      eff_cut_scan:
+        pt_prong0:
+          xlim:
+            - 0
+            - 6
+        pt_prong1:
+          xlim:
+            - 0
+            - 6
+        pt_prong2:
+          xlim:
+            - 0
+            - 6
+        fDecayLength:
+          xlim:
+            - 0
+            - 0.05
+        fChi2PCA:
+          xlim:
+            - 0
+            - 0.0001
+  files_names:
+    namefile_unmerged_tree: AnalysisResults_trees.root
+    namefile_reco: AnalysisResultsReco.pkl
+    namefile_evt: AnalysisResultsEvt.pkl
+    namefile_evtvalroot: AnalysisResultsROOTEvtVal.root
+    namefile_evtorig: AnalysisResultsEvtOrig.pkl
+    namefile_gen: AnalysisResultsGen.pkl
+    namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl
+    namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl
+    namefile_mcweights: mcweights.root
+    treeoriginreco: 'DF_0/O2hfcandchicfull'
+    treeorigingen: 'DF_0/O2hfcandchicfullp'
+    treeoriginevt: 'DF_0/O2hfcandchicfulle'
+    treeoutput: "chictree"
+    histofilename: "masshisto.root"
+    efffilename: "effhisto.root"
+    respfilename: "resphisto.root"
+    crossfilename: "cross_section_tot.root"
+
+  multi:
+    data:
+      nprocessesparallel: 30
+      maxfiles : [-1] #list of periods
+      chunksizeunp : [100] #list of periods
+      chunksizeskim: [100] #list of periods
+      fracmerge : [0.5] #list of periods
+      seedmerge: [12] #list of periods
+      period: [test] #list of periods
+      unmerged_tree_dir: [/data/chicALICE3/background_files/unmerged] #list of periods
+      #unmerged_tree_dir: [/data/chicALICE3/background_files/unmerged] #list of periods
+      pkl: [/data/chicALICE3/background_files/pkldata_scenario3] #list of periods
+      pkl_skimmed: [/data/chicALICE3/background_files/pklskdata_scenario3] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/chicALICE3/background_files/pklskmldata_scenario3] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/chicALICE3/background_files/mltotdata_scenario3
+      pkl_evtcounter_all: /data/chicALICE3/background_files/evttotdata_scenario3
+      mcreweights: [../Analyses]
+    mc:
+      nprocessesparallel: 30
+      maxfiles : [-1] #list of periods
+      chunksizeunp : [100] #list of periods
+      chunksizeskim: [100] #list of periods
+      fracmerge : [1.0] #list of periods
+      seedmerge: [12] #list of periods
+      period: [test] #list of periods
+      unmerged_tree_dir: [/data/chicALICE3/newdata20211020/signal_files/unmerged] #list of periods
+      #unmerged_tree_dir: [/data/chicALICE3/signal_files/unmerged] #list of periods
+      pkl: [/data/chicALICE3/signal_files/pkldata_scenario3] #list of periods
+      pkl_skimmed: [/data/chicALICE3/signal_files/pklskdata_scenario3] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/chicALICE3/signal_files/pklskmldata_scenario3] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/chicALICE3/signal_files/mltotdata_scenario3
+      pkl_evtcounter_all: /data/chicALICE3/signal_files/evttotdata_scenario3
+      mcreweights: [../Analyses]
+  ml:
+    evtsel: null
+    triggersel:
+      data: null
+      mc: null
+    nbkg: 1000000
+    nsig: 1000000
+    equalize_sig_bkg: True
+    sampletagforsignal: 1
+    sampletagforbkg: 0
+    sel_sigml: ismcprompt == 1
+    sel_bkgml: fM<3.2 or fM>3.8
+    nkfolds: 5
+    rnd_shuffle: 12
+    rnd_splt: 12
+    test_frac: 0.2
+    binmin: [2, 4, 6] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
+    binmax: [4, 6, 10] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
+    mltype: BinaryClassification
+    ncorescrossval: 10
+    mlplot: mlplot # to be removed
+    mlout: mlout # to be removed
+
+    opt:
+      isFONLLfromROOT: true
+      filename_fonll: 'data/fonll/DmesonLcPredictions_502TeV_y05_FFptDepLHCb_BRpythia8.root' # file with FONLL predictions
+      fonll_particle: 'hLcpkpipred'
+      fonll_pred: 'max' # edge of the FONLL prediction
+      FF: 0.1281 # fragmentation fraction
+      sigma_MB: 57.8e-3  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
+      Taa: 1 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
+      BR: 6.23e-2 # branching ratio of the decay Lc -> p K- pi+
+      f_prompt: 0.9 # estimated fraction of prompt candidates
+      bkg_data_fraction: 0.1 # fraction of real data used in the estimation
+      num_steps: 111 # number of steps used in efficiency and signif. estimation
+      bkg_function: pol2 # fit function for bkg (among TH1 predefined fit functions, e.g. expo, pol1, pol2, ...)
+      save_fit: True # save bkg fits with the various cuts on ML output
+      raahp: [1, 1, 1] # sel_skim_binmin bins
+      presel_gen_eff: "abs(fY) < 1.44 and abs(fPosZ) < 10"
+
+  mlapplication:
+    data:
+      pkl_skimmed_dec: [/data/chicALICE3/background_files/skpkldecdata_scenario3] #list of periods
+      pkl_skimmed_decmerged: [/data/chicALICE3/background_files/skpkldecdatamerged_scenario3] #list of periods
+    mc:
+      pkl_skimmed_dec: [/data/chicALICE3/signal_files/skpkldecmc_scenario3] #list of periods
+      pkl_skimmed_decmerged: [/data/chicALICE3/signal_files/skpkldecmcmerged_scenario3] #list of periods
+    modelname: xgboost
+    modelsperptbin: [xgboost_classifierchic_dfselection_fPt_2.0_4.0.sav,
+                     xgboost_classifierchic_dfselection_fPt_4.0_6.0.sav,
+                     xgboost_classifierchic_dfselection_fPt_6.0_10.0.sav]
+    probcutpresel:
+      data: [0.05, 0.05, 0.05] #list of nbins
+      mc: [0.05, 0.05, 0.05] #list of nbins
+    probcutoptimal: [0.5, 0.5, 0.5] #list of nbins
+
+  analysis:
+    indexhptspectrum: -1 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
+    fd_method: -1 #knone=0, kfc=1, kNb=2
+    cctype: -1 #kpp7
+    sigmav0: -1
+    inputfonllpred: null
+    dir_general_plots: analysis_plots
+
+    scenario3:
+      proc_type: Dhadrons
+      useperiod: [1]
+      plotbin: [1]
+      usesinglebineff: 0
+      sel_binmin2: [2, 4, 6] #list of nbins
+      sel_binmax2: [4, 6, 10] #list of nbins
+      var_binning2: null
+      triggerbit: ''
+
+      # To initialize the individual fits in pT bins
+      # Decide whether to take the sigma from MC or data for individual fits
+      init_fits_from: mc # data # data or mc
+
+      sel_an_binmin: [2, 4, 6]
+      sel_an_binmax: [4, 6, 10]
+      binning_matching: [0, 1, 2]
+      presel_gen_eff: "abs(fY) < 1.44"
+      evtsel: null
+      triggersel:
+        data: null
+        mc: null
+        weighttrig: false
+
+      data:
+        runselection: [null] #FIXME
+        results: [resultsdata_scenario3] #list of periods
+        resultsallp: resultsdatatot_scenario3
+      mc:
+        runselection: [null] #FIXME
+        results: [resultsmc_scenario3] #list of periods
+        resultsallp: resultsmctot_scenario3
+
+      mass_fit_lim: [3.4, 3.6] # region for the fit of the invariant mass distribution [GeV/c^2]
+      bin_width: 0.001 # bin width of the invariant mass histogram
+      init_fits_from: [mc,mc,mc] # data or mc
+      sgnfunc: [kGaus,kGaus,kGaus]
+      bkgfunc: [Pol2,Pol2,Pol2]
+      masspeak: 3.510
+      massmin: [3.4,3.4,3.4]
+      massmax: [3.6,3.6,3.6]
+      rebin: [4,4,4]
+      fix_mean: [false,false,false]
+      fix_sigma: [false,false,false]
+      masssecpeak: 0.
+      # Fix mean and/or sigma
+      FixedMean: False
+      SetFixGaussianSigma: [true,true,true]
+      # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
+      SetInitialGaussianMean: true
+      # Use values set for "sigmaarray" for initializing total fit (per pT bin),
+      # otherwise what is derived from MC fit is used
+      SetInitialGaussianSigma: [false,false,false]
+      # Max percentage deviation in sigma (from init) to be considered as a good fit
+      MaxPercSigmaDeviation: 0.5
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
+      exclude_nsigma_sideband: 4
+      # Sigma around mean where signal is integrated after total fit has been done
+      nsigma_signal: 3
+      dolikelihood: true
+      sigmaarray: [0.01,0.01,0.01]
+      FixedSigma: false
+      fitcase: Lc
+      latexnamehadron: "#Lambda_{c}^{pK#pi}"
+      latexbin2var: "n_{trkl}"
+      nevents: null
+      dodoublecross: false
+      dobkgfromsideband: true
+
+  systematics:
+    probvariation:
+      useperiod: [1] #period from where to define prob cuts
+      ncutvar: 10 #number of looser and tighter variations
+      maxperccutvar: 0.25 #max diff in efficiency for loosest/tightest var
+      cutvarminrange: [0.70, 0.50, 0.50] #Min starting point for scan
+      cutvarmaxrange: [0.95, 0.90, 0.90] #Max starting point for scan
+      fixedmean: True #Fix mean cutvar histo to central fit
+      fixedsigma: True #Fix sigma cutvar histo to central fit
