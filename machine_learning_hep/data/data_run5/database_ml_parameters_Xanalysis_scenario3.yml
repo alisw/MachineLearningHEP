@@ -145,7 +145,7 @@ X3872:
       fracmerge : [0.5] #list of periods
       seedmerge: [12] #list of periods
       period: [test] #list of periods
-      unmerged_tree_dir: [/data/X3872ALICE3/newdata20211015/signal_files/unmerged] #list of periods
+      unmerged_tree_dir: [/data/X3872ALICE3/newdata20211015/background_files/unmerged] #list of periods
       #unmerged_tree_dir: [/data/X3872ALICE3/newvariables/data/unmerged] #list of periods
       pkl: [/data/X3872ALICE3/newvariables/data/pkldata_scenario3] #list of periods
       pkl_skimmed: [/data/X3872ALICE3/newvariables/data/pklskdata_scenario3] #list of periods
@@ -195,7 +195,7 @@ X3872:
     opt:
       isFONLLfromROOT: true
       filename_fonll: 'data/fonll/DmesonLcPredictions_502TeV_y05_FFptDepLHCb_BRpythia8.root' # file with FONLL predictions
-      fonll_particle: 'hLcpkpi'
+      fonll_particle: 'hLcpkpipred'
       fonll_pred: 'max' # edge of the FONLL prediction
       FF: 0.1281 # fragmentation fraction
       sigma_MB: 57.8e-3  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
@@ -217,11 +217,13 @@ X3872:
       pkl_skimmed_dec: [/data/X3872ALICE3/newvariables/mc/skpkldecmc_scenario3] #list of periods
       pkl_skimmed_decmerged: [/data/X3872ALICE3/newvariables/mc/skpkldecmcmerged_scenario3] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierLcpKpi_dfselection_fPt_0.0_1.0.sav]
+    modelsperptbin: [xgboost_classifierX3872_dfselection_fPt_2.0_4.0.sav,
+                     xgboost_classifierX3872_dfselection_fPt_4.0_6.0.sav,
+                     xgboost_classifierX3872_dfselection_fPt_6.0_10.0.sav]
     probcutpresel:
       data: [0.05, 0.05, 0.05] #list of nbins
       mc: [0.05, 0.05, 0.05] #list of nbins
-    probcutoptimal: [0.5, 0.5, 0.5] #list of nbins
+    probcutoptimal: [0.7, 0.7, 0.7] #list of nbins
 
   analysis:
     indexhptspectrum: -1 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
