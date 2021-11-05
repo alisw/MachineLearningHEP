@@ -22,7 +22,7 @@ chic:
   sel_gen_unp: "fPt>0"
   sel_cen_unp: null
   sel_good_evt_unp: null
-  sel_reco_skim: [null, null, null]
+  sel_reco_skim: ["abs(fJpsiToMuMuMass-3.097)<0.03", null, null]
   sel_gen_skim: [null, null, null]
   sel_skim_binmin: [2, 4, 6] #list of nbins
   sel_skim_binmax: [4, 6, 10] #list of nbins
@@ -45,18 +45,21 @@ chic:
     ismcrefl: [[1],[1]]
 
   variables:
-    var_all: [fIndexBCs, fMCflag, fY, fEta, fPt, fCPA, fCPAXY, fM, fPtProng0]
+#    var_all: [fIndexBCs, fMCflag, fY, fEta, fPt, fCPA, fCPAXY, fM, fPtProng0]
+    var_all: [fIndexBCs, fNumContrib, fPosX, fPosY, fPosZ, fImpactParameterNormalised0, fRSecondaryVertex, fDecayLength, fDecayLengthXY, fPtProng0, fPProng0, fPtProng1, fPProng1, fAlpha, fQt, fChi2PCA, fImpactParameter0, fCandidateSelFlag, fM, fPt, fP, fCPA, fCPAXY, fCt, fEta, fPhi, fY, fJpsiToMuMuMass, fMCflag]
+#    var_all: [fIndexBCs, fNumContrib, fPosX, fPosY, fPosZ, fImpactParameterNormalised0, fRSecondaryVertex, fDecayLength, fDecayLengthXY, fPtJPsi, fPJPsi, fPtGamma, fPGamma, fAlpha, fQt, fChi2PCA, fImpactParameter0, fCandidateSelFlag, fM, fPt, fP, fCPA, fCPAXY, fCt, fEta, fPhi, fY, fJpsiToMuMuMass, fMCflag]
     var_evt:
        data: [fIndexBCs, fPosX, fPosY, fPosZ, fIsEventReject]
        mc:   [fIndexBCs, fPosX, fPosY, fPosZ, fIsEventReject]
     var_gen: [fIndexBCs, fPt, fY, fMCflag]
     var_evt_match: [fIndexBCs]
-    var_training: [[fEta, fCPAXY],
-                   [fEta, fCPAXY],
-                   [fEta, fCPAXY]]
+    var_training: [[fPtProng0, fPProng1, fJpsiToMuMuMass, fChi2PCA, fAlpha, fQt],
+                   [fPtProng0, fPProng1, fJpsiToMuMuMass, fChi2PCA, fAlpha, fQt],
+                   [fPtProng0, fPProng1, fJpsiToMuMuMass, fChi2PCA, fAlpha, fQt]]
     var_boundaries: [fEta, fPt]
     var_correlation:
-      - [fEta, fCPAXY]
+      - [fPt, fM, fJpsiToMuMuMass]
+      - [fPt, fM, fJpsiToMuMuMass]
     var_signal: signal
     var_inv_mass: fM
     var_y: fY
@@ -118,9 +121,9 @@ chic:
     namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl
     namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl
     namefile_mcweights: mcweights.root
-    treeoriginreco: 'DF_0/O2hfcandchicfull'
-    treeorigingen: 'DF_0/O2hfcandchicfullp'
-    treeoriginevt: 'DF_0/O2hfcandchicfulle'
+    treeoriginreco: 'TF_0/O2hfcandchicfull'
+    treeorigingen: 'TF_0/O2hfcandchicfullp'
+    treeoriginevt: 'TF_0/O2hfcandchicfulle'
     treeoutput: "chictree"
     histofilename: "masshisto.root"
     efffilename: "effhisto.root"
@@ -136,8 +139,8 @@ chic:
       fracmerge : [0.5] #list of periods
       seedmerge: [12] #list of periods
       period: [test] #list of periods
-      unmerged_tree_dir: [/data/chicALICE3/background_files/unmerged] #list of periods
-      #unmerged_tree_dir: [/data/chicALICE3/background_files/unmerged] #list of periods
+      unmerged_tree_dir: [/data/ChicALICE3/20211027_chicsample/data/unmerged] #list of periods
+      #unmerged_tree_dir: [/data/ChicALICE3/20211027_chicsample/data/unmerged] #list of periods
       pkl: [/data/chicALICE3/background_files/pkldata_scenario3] #list of periods
       pkl_skimmed: [/data/chicALICE3/background_files/pklskdata_scenario3] #list of periods
       pkl_skimmed_merge_for_ml: [/data/chicALICE3/background_files/pklskmldata_scenario3] #list of periods
@@ -152,7 +155,7 @@ chic:
       fracmerge : [1.0] #list of periods
       seedmerge: [12] #list of periods
       period: [test] #list of periods
-      unmerged_tree_dir: [/data/chicALICE3/newdata20211020/signal_files/unmerged] #list of periods
+      unmerged_tree_dir: [/data/ChicALICE3/20211027_chicsample/data/unmerged] #list of periods
       #unmerged_tree_dir: [/data/chicALICE3/signal_files/unmerged] #list of periods
       pkl: [/data/chicALICE3/signal_files/pkldata_scenario3] #list of periods
       pkl_skimmed: [/data/chicALICE3/signal_files/pklskdata_scenario3] #list of periods
@@ -214,7 +217,7 @@ chic:
     probcutpresel:
       data: [0.05, 0.05, 0.05] #list of nbins
       mc: [0.05, 0.05, 0.05] #list of nbins
-    probcutoptimal: [0.5, 0.5, 0.5] #list of nbins
+    probcutoptimal: [0.8, 0.8, 0.8] #list of nbins
 
   analysis:
     indexhptspectrum: -1 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
