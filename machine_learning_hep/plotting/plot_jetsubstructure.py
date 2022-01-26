@@ -18,12 +18,13 @@ main script for doing final stage analysis
 # pylint: disable=too-many-lines, line-too-long
 import argparse
 from array import array
+from cmath import nan
 import yaml
 # pylint: disable=import-error, no-name-in-module
-from ROOT import TFile, TLatex, TLine, TGaxis, gROOT, gStyle
+from ROOT import TFile, TLatex, TLine, TGaxis, gROOT, gStyle, TCanvas, TGraphAsymmErrors, TGraphErrors, TGraph
 from machine_learning_hep.utilities import make_message_notfound
 from machine_learning_hep.utilities import get_colour, get_marker, draw_latex
-from machine_learning_hep.utilities import make_plot, get_y_window_his, get_y_window_gr, get_plot_range
+from machine_learning_hep.utilities import make_plot, get_y_window_his, get_y_window_gr, get_plot_range, divide_graphs
 from machine_learning_hep.logger import get_logger
 
 def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
@@ -193,8 +194,12 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     # plot the results with systematic uncertainties and models
 
     size_can = [800, 800]
+    size_can_double = [800, 1000]
     offsets_axes = [0.8, 1.1]
+    offsets_axes_double = [0.8, 0.8]
     margins_can = [0.1, 0.13, 0.1, 0.03]
+    margins_can_double = [0.1, 0.1, 0.1, 0.1]
+    margins_can_double = [0., 0., 0., 0.]
     size_thg = 0.05
     offset_thg = 0.85
 
@@ -215,14 +220,16 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     title_y = "(1/#it{N}_{jet}) d#it{N}/d%s" % v_varshape_latex
     title_full = ";%s;%s" % (title_x, title_y)
     title_full_ratio = ";%s;data/MC: ratio of %s" % (title_x, title_y)
+    title_full_ratio_double = f";{title_x};MC/data"
 
-    text_alice = "#bf{ALICE} Preliminary, pp, #sqrt{#it{s}} = 13 TeV"
+    text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13 TeV"
     text_alice_sim = "#bf{ALICE} Simulation, pp, #sqrt{#it{s}} = 13 TeV"
     text_pythia = "PYTHIA 8 (Monash)"
+    text_pythia_short = "PYTHIA 8"
     text_pythia_split = "#splitline{PYTHIA 8}{(Monash)}"
     text_jets = "charged jets, anti-#it{k}_{T}, #it{R} = 0.4"
-    text_ptjet = "%g #leq %s < %g GeV/#it{c}, #left|#it{#eta}_{jet}#right| #leq 0.5" % (lvar2_binmin_reco[ibin2], p_latexbin2var, lvar2_binmax_reco[ibin2])
-    text_pth = "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, #left|#it{y}_{%s}#right| #leq 0.8" % (lpt_finbinmin[0], p_latexnhadron, min(lpt_finbinmax[-1], lvar2_binmax_reco[ibin2]), p_latexnhadron)
+    text_ptjet = "%g #leq %s < %g GeV/#it{c}, |#it{#eta}_{jet}| #leq 0.5" % (lvar2_binmin_reco[ibin2], p_latexbin2var, lvar2_binmax_reco[ibin2])
+    text_pth = "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, |#it{y}_{%s}| #leq 0.8" % (lpt_finbinmin[0], p_latexnhadron, min(lpt_finbinmax[-1], lvar2_binmax_reco[ibin2]), p_latexnhadron)
     text_ptcut = "#it{p}_{T, incl. ch. jet}^{leading track} #geq 5.33 GeV/#it{c}"
     text_ptcut_sim = "#it{p}_{T, incl. ch. jet}^{leading h^{#pm}} #geq 5.33 GeV/#it{c} (varied)"
     text_sd = "Soft Drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)"
@@ -671,5 +678,168 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     leg_mc.SetTextSize(fontsize)
     cshape_mc.Update()
     cshape_mc.SaveAs("%s/%s_data_i_mc_qg_%s.pdf" % (rootpath, shape, suffix))
+
+    # data + MC/data, HF and inclusive
+
+    # print relative syst. unc.
+    for name, gr in zip(("HF", "inclusive"), (hf_data_syst, incl_data_syst)):
+        print(f"Rel. syst. unc. for {name} {shape}")
+        e_plus_min = float("inf")
+        e_minus_min = float("inf")
+        e_plus_max = 0.
+        e_minus_max = 0.
+        for i in range(gr.GetN()):
+            y = gr.GetPointY(i)
+            e_plus = 100 * gr.GetErrorYhigh(i)
+            e_minus = 100 * gr.GetErrorYlow(i)
+            e_plus /= y
+            e_minus /= y
+            e_plus_min = min(e_plus_min, e_plus)
+            e_minus_min = min(e_minus_min, e_minus)
+            e_plus_max = max(e_plus_max, e_plus)
+            e_minus_max = max(e_minus_max, e_minus)
+            # print(f"Point {i}, up {e_plus:.2g} %, down {e_minus:.2g} %")
+        # print(f"Minima: up {e_plus_min:.2g} %, down {e_minus_min:.2g} %")
+        # print(f"Maxima: up {e_plus_max:.2g} %, down {e_minus_max:.2g} %")
+        print(f"Absolutes: min: {min(e_plus_min, e_minus_min):.2g} %, max {max(e_plus_max, e_minus_max):.2g} %")
+
+    # explicit y ranges [zg, rg, nsd]
+    list_range_y = [[0, 9], [0, 6], [0, 0.7]] # data
+    list_range_y_rat = [[0, 2], [0, 2], [0, 2]] # mc/data ratios
+    i_shape = 0 if shape == "zg" else 1 if shape == "rg" else 2
+    print(f"Index {i_shape}")
+
+    # data
+    leg_pos = [.7, .75, .82, .85]
+    list_obj = [hf_data_syst, incl_data_syst, hf_data_stat, incl_data_stat]
+    labels_obj = ["%s-tagged" % p_latexnhadron, "inclusive", "", ""]
+    colours = [get_colour(i, j) for i, j in zip((c_hf_data, c_incl_data, c_hf_data, c_incl_data), (2, 2, 1, 1))]
+    markers = [m_hf_data, m_incl_data, m_hf_data, m_incl_data]
+    y_margin_up = 0.42
+    y_margin_down = 0.05
+    cshape_datamc_all = TCanvas("cshape_datamc_" + suffix, "cshape_datamc_" + suffix)
+    cshape_datamc_all.Divide(1, 2)
+    pad1 = cshape_datamc_all.cd(1)
+    pad2 = cshape_datamc_all.cd(2)
+    pad1.SetPad(0., 0.3, 1, 1)
+    pad2.SetPad(0., 0., 1, 0.3)
+    pad1.SetBottomMargin(0.)
+    pad2.SetBottomMargin(0.25)
+    pad1.SetTopMargin(0.1)
+    pad2.SetTopMargin(0.)
+    pad1.SetLeftMargin(0.12)
+    pad2.SetLeftMargin(0.12)
+    pad1.SetTicks(1, 1)
+    pad2.SetTicks(1, 1)
+    cshape_datamc_all, list_obj_data_new = make_plot("cshape_datamc_" + suffix, size=size_can_double, \
+        can=cshape_datamc_all, pad=1, \
+        list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g=opt_plot_g, offsets_xy=[0.8, 1.1], \
+        colours=colours, markers=markers, leg_pos=leg_pos, margins_c=margins_can_double, \
+        # margins_y=[y_margin_down, y_margin_up], \
+        range_y=list_range_y[i_shape], \
+        title=title_full)
+    for gr, c in zip((hf_data_syst, incl_data_syst), (c_hf_data, c_incl_data)):
+        gr.SetMarkerColor(get_colour(c))
+    list_obj_data_new[0].SetTextSize(fontsize)
+    hf_data_syst.GetYaxis().SetLabelSize(0.1 * 3/7)
+    #hf_data_syst.GetYaxis().SetTitleSize(0.1)
+    if shape == "nsd":
+        hf_data_syst.GetXaxis().SetNdivisions(5)
+    # Draw a line through the points.
+    if shape == "nsd":
+        for h in (hf_data_stat, incl_data_stat):
+            h_line = h.Clone(h.GetName() + "_line")
+            h_line.SetLineStyle(2)
+            h_line.Draw("l hist same")
+            list_new.append(h_line)
+    cshape_datamc_all.Update()
+    if shape == "rg":
+        # plot the theta_g axis
+        gr_frame = hf_data_syst
+        axis_rg = gr_frame.GetXaxis()
+        rg_min = axis_rg.GetBinLowEdge(axis_rg.GetFirst())
+        rg_max = axis_rg.GetBinUpEdge(axis_rg.GetLast())
+        thetag_min = rg_min / radius_jet
+        thetag_max = rg_max / radius_jet
+        y_axis = pad1.GetUymax()
+        axis_thetag = TGaxis(rg_min, y_axis, rg_max, y_axis, thetag_min, thetag_max, 510, "-")
+        axis_thetag.SetTitle(title_thetag)
+        axis_thetag.SetTitleSize(size_thg)
+        axis_thetag.SetLabelSize(0.036)
+        axis_thetag.SetTitleFont(42)
+        axis_thetag.SetLabelFont(42)
+        axis_thetag.SetLabelOffset(0)
+        axis_thetag.SetTitleOffset(offset_thg)
+        cshape_datamc_all.cd(1).SetTickx(0)
+        axis_thetag.Draw("same")
+    # Draw LaTeX
+    y_latex = y_latex_top
+    list_latex_data = []
+    for text_latex in [text_alice, text_jets, text_ptjet, text_pth, text_ptcut, text_sd]:
+        latex = TLatex(x_latex, y_latex, text_latex)
+        list_latex_data.append(latex)
+        draw_latex(latex, textsize=fontsize)
+        y_latex -= y_step
+    cshape_datamc_all.Update()
+
+    # MC/data
+    leg_pos = [.15, .85, .85, .95]
+    hf_ratio_pythia_stat = hf_pythia_stat.Clone(f"{hf_pythia_stat.GetName()}_rat")
+    hf_ratio_pythia_stat.Divide(hf_data_stat)
+    # hf_ratio_pythia_stat = hf_data_stat.Clone(f"{hf_data_stat.GetName()}_rat") # version data/MC
+    # hf_ratio_pythia_stat.Divide(hf_pythia_stat) # version data/MC
+    # create a graph with PYTHIA points and with zero syst. unc.
+    hf_pythia_stat_zero = hf_pythia_stat.Clone(f"{hf_pythia_stat.GetName()}_zero")
+    for i in range(hf_pythia_stat_zero.GetNbinsX()):
+        hf_pythia_stat_zero.SetBinError(i + 1, 0)
+    gStyle.SetErrorX(0.5) # we have to restore the histogram bin width to propagate it to graph
+    hf_pythia_syst = TGraphAsymmErrors(hf_pythia_stat_zero) # convert histogram into a graph
+    gStyle.SetErrorX(0) # set back the intended settings
+    hf_ratio_pythia_syst = divide_graphs(hf_pythia_syst, hf_data_syst)
+    # hf_ratio_pythia_syst = divide_graphs(hf_data_syst, hf_pythia_syst) # version data/MC
+    incl_ratio_pythia_stat = incl_pythia_stat.Clone(f"{incl_pythia_stat.GetName()}_rat")
+    incl_ratio_pythia_stat.Divide(incl_data_stat)
+    incl_ratio_pythia_syst = divide_graphs(incl_pythia_syst, incl_data_syst)
+    # incl_ratio_pythia_stat = incl_data_stat.Clone(f"{incl_data_stat.GetName()}_rat") # version data/MC
+    # incl_ratio_pythia_stat.Divide(incl_pythia_stat) # version data/MC
+    # incl_ratio_pythia_syst = divide_graphs(incl_data_syst, incl_pythia_syst) # version data/MC
+    list_obj = [hf_ratio_pythia_syst, incl_ratio_pythia_syst, hf_ratio_pythia_stat, incl_ratio_pythia_stat, line_1]
+    labels_obj = [f"{p_latexnhadron}-tagged {text_pythia_short}", f"inclusive {text_pythia_short}", "", ""]
+    colours = [get_colour(i, j) for i, j in zip((c_hf_mc, c_incl_mc, c_hf_mc, c_incl_mc), (2, 2, 1, 1))]
+    markers = [m_hf_mc, m_incl_mc, m_hf_mc, m_incl_mc]
+    y_margin_up = 0.2
+    y_margin_down = 0.05
+    cshape_datamc_all, list_obj_data_mc_hf_new = make_plot("cshape_data_mc_hf_" + suffix, size=size_can_double, \
+        can=cshape_datamc_all, pad=2, \
+        list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g=opt_plot_g, offsets_xy=[1, 1.3 * 3/7], \
+        colours=colours, markers=markers, leg_pos=leg_pos, margins_c=margins_can_double, \
+        # margins_y=[y_margin_down, y_margin_up], \
+        range_y=list_range_y_rat[i_shape], \
+        title=title_full_ratio_double)
+    hf_ratio_pythia_syst.GetXaxis().SetLabelSize(0.1)
+    hf_ratio_pythia_syst.GetXaxis().SetTitleSize(0.1)
+    hf_ratio_pythia_syst.GetYaxis().SetLabelSize(0.1)
+    hf_ratio_pythia_syst.GetYaxis().SetTitleSize(0.1)
+    for gr, c in zip([hf_ratio_pythia_syst, incl_ratio_pythia_syst], [c_hf_mc, c_incl_mc]):
+        gr.SetMarkerColor(get_colour(c))
+    leg_data_mc_hf = list_obj_data_mc_hf_new[0]
+    #leg_data_mc_hf.SetHeader("%s-tagged" % p_latexnhadron)
+    leg_data_mc_hf.SetTextSize(fontsize * 7/3)
+    leg_data_mc_hf.SetNColumns(2)
+    if shape == "nsd":
+        hf_ratio_pythia_syst.GetXaxis().SetNdivisions(5)
+    cshape_datamc_all.Update()
+    # Draw LaTeX
+    #y_latex = y_latex_top
+    #list_latex_data_mc_hf = []
+    #for text_latex in [text_alice, text_jets, text_ptjet, text_pth, text_sd]:
+    #    latex = TLatex(x_latex, y_latex, text_latex)
+    #    list_latex_data_mc_hf.append(latex)
+    #    draw_latex(latex, textsize=fontsize)
+    #    y_latex -= y_step
+    #cshape_datamc_all.Update()
+    pad1.RedrawAxis()
+    pad2.RedrawAxis()
+    cshape_datamc_all.SaveAs("%s/%s_datamc_all_%s.pdf" % (rootpath, shape, suffix))
 
 main()

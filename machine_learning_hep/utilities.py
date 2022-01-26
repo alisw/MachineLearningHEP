@@ -638,7 +638,7 @@ def setup_canvas(can):
     can.SetLeftMargin(0.12)
     can.SetTopMargin(0.1)
     can.SetRightMargin(0.05)
-    can.cd()
+    #can.cd()
 
 def setup_legend(legend, textsize=0.035):
     legend.SetBorderSize(0)
@@ -668,7 +668,7 @@ def draw_latex(latex, colour=1, textsize=0.03):
     latex.SetTextFont(42)
     latex.Draw()
 
-def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None, # pylint: disable=too-many-arguments, too-many-branches, too-many-statements, too-many-locals
+def make_plot(name, can=None, pad=0, path=None, suffix="eps", title="", size=None, margins_c=None, # pylint: disable=too-many-arguments, too-many-branches, too-many-statements, too-many-locals
               list_obj=None, labels_obj=None,
               leg_pos=None, opt_leg_h="P", opt_leg_g="P",
               opt_plot_h="", opt_plot_g="P0",
@@ -811,7 +811,12 @@ def make_plot(name, path=None, suffix="eps", title="", size=None, margins_c=None
         margins_y = [0.05, 0.05]
 
     # create and set canvas
-    can = TCanvas(name, name)
+    if can and pad > 0:
+        can.cd(pad)
+        print(f"Entering pad {pad} in canvas {can.GetName()}")
+    else:
+        can = TCanvas(name, name)
+        print(f"Creating new canvas with name {name}")
     setup_canvas(can)
     if isinstance(size, list) and len(size) == 2:
         can.SetCanvasSize(*size)
@@ -959,3 +964,23 @@ def tg_sys(central, variations):
                            shapebins_widths_up_array, shapebins_error_down_array,
                            shapebins_error_up_array)
     return tg
+
+def divide_graphs(gr_num, gr_den):
+    """Divide TGraphAsymmErrors"""
+    n_points = gr_num.GetN()
+    if gr_den.GetN() != n_points:
+        print("Error: numbers of points differ")
+        return None
+    gr_rat = gr_num.Clone(f"{gr_num.GetName()}_ratio")
+    for i in range(n_points):
+        y_a = gr_num.GetPointY(i)
+        e_a_plus = gr_num.GetErrorYhigh(i)
+        e_a_minus = gr_num.GetErrorYlow(i)
+        y_b = gr_den.GetPointY(i)
+        e_b_plus = gr_den.GetErrorYhigh(i)
+        e_b_minus = gr_den.GetErrorYlow(i)
+        r = y_a / y_b
+        gr_rat.SetPointY(i, r)
+        gr_rat.SetPointEYhigh(i, math.sqrt(e_a_plus * e_a_plus + r * r * e_b_minus * e_b_minus) / y_b)
+        gr_rat.SetPointEYlow(i, math.sqrt(e_a_minus * e_a_minus + r * r * e_b_plus * e_b_plus) / y_b)
+    return gr_rat
