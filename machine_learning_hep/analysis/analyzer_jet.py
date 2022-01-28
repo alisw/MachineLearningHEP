@@ -4216,8 +4216,12 @@ class AnalyzerJet(Analyzer):
                 leg_relativesys.AddEntry(tgsys_cat[ibin2][sys_cat], self.systematic_catlabels[sys_cat], "F")
                 if sys_cat == 0:
                     tgsys_cat[ibin2][sys_cat].Draw("A2")
+                    for ibinshape in range(self.p_nbinshape_gen):
+                        print(self.systematic_catlabels[sys_cat]," ",suffix, " ", self.lvar2_binmin_gen[ibin2], " ", self.lvar2_binmax_gen[ibin2], " ",tgsys_cat[ibin2][sys_cat].GetErrorYhigh(ibinshape))
                 else:
                     tgsys_cat[ibin2][sys_cat].Draw("2")
+                    for ibinshape in range(self.p_nbinshape_gen):
+                        print(self.systematic_catlabels[sys_cat]," ",suffix, " ", self.lvar2_binmin_gen[ibin2], " ", self.lvar2_binmax_gen[ibin2], " ",tgsys_cat[ibin2][sys_cat].GetErrorYhigh(ibinshape))
             h_default_stat_err[ibin2].Draw("same")
             h_default_stat_err[ibin2].Draw("axissame")
             # Draw LaTeX
