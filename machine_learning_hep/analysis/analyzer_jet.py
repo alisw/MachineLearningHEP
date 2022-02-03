@@ -146,7 +146,7 @@ class AnalyzerJet(Analyzer):
             self.p_sigmaarraysec = datap["analysis"][self.typean]["sigmaarraysec"]
 
         # efficiency calculation
-        self.doeff_resp = datap["analysis"][self.typean].get("doeff_resp", True)
+        #self.doeff_resp = datap["analysis"][self.typean].get("doeff_resp", False)
 
         # sideband subtraction
         self.signal_sigma = \
@@ -171,7 +171,7 @@ class AnalyzerJet(Analyzer):
         self.filename_fonll = \
             datap["analysis"]["inputfonllpred"]
         #closure
-        self.unmatched_gen = datap["analysis"][self.typean].get("unmatched_gen", True)
+        self.unmatched_gen = datap["analysis"][self.typean].get("unmatched_gen", False)
 
         # systematics variations
 
@@ -572,6 +572,8 @@ class AnalyzerJet(Analyzer):
             h_sel_pr.GetYaxis().SetRangeUser(y_min, y_max)
             h_sel_pr.SetTitleOffset(1.2, "Y")
             h_sel_pr.SetTitleOffset(1.1, "X")
+            for iptH in range(self.p_nptfinbins):
+                print("prompt efficiency :", self.lvar2_binmin_reco[ibin2], " ",self.p_latexbin2var, " ",self.lvar2_binmax_reco[ibin2], " ",self.lpt_finbinmin[iptH], " ",self.lpt_finbinmax[iptH]," ",h_sel_pr.GetBinContent(iptH+1))
         legeff.Draw()
         cEff.SaveAs("%s/efficiency_pr.eps" % self.d_resultsallpdata)
         # NON-PROMPT EFFICIENCY
@@ -1096,6 +1098,7 @@ class AnalyzerJet(Analyzer):
                 for ibinz in range(hzsub.GetNbinsX()):
                     binz = ibinz + 1
                     if hzsub.GetBinContent(binz) <= 0:
+                        print ("there is zero yield added from " ,suffix ," ", hzsub.GetBinCenter(ibinz+1))
                         hzsub.SetBinContent(binz, 0)
                         hzsub.SetBinError(binz, 0)
 
@@ -3777,6 +3780,7 @@ class AnalyzerJet(Analyzer):
                 if val > 0:
                     rel_unc_up.append(err_up/val)
                     rel_unc_down.append(err_down/val)
+                    print("total relative error: ", self.lvar2_binmin_gen[ibin2], " ", self.lvar2_binmax_gen[ibin2], " ", self.lvarshape_binmin_gen[ibinshape], " ", self.lvarshape_binmin_gen[ibinshape] ," ",err_up/val, " ", err_down/val)
                 else:
                     rel_unc_up.append(0.)
                     rel_unc_down.append(0.)
@@ -3834,7 +3838,7 @@ class AnalyzerJet(Analyzer):
             unc_hist_down = TH1F("unc_hist_down%s" % suffix, "", self.p_nbinshape_gen, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1])
             for ibinshape in range(self.p_nbinshape_gen):
                 unc_hist_up.SetBinContent(ibinshape+1, full_unc_up[ibin2][ibinshape])
-                unc_hist_down.SetBinContent(ibinshape+1, full_unc_down[ibin2][ibinshape])
+                unc_hist_down.SetBinContent(ibinshape + 1, full_unc_down[ibin2][ibinshape])
             unc_hist_up.Write()
             unc_hist_down.Write()
             if self.lc_d0_ratio:
@@ -4040,6 +4044,7 @@ class AnalyzerJet(Analyzer):
             input_histograms_default[ibin2].SetXTitle(self.v_varshape_latex)
             input_histograms_default[ibin2].SetYTitle("1/#it{N}_{jets} d#it{N}/d%s" % self.v_varshape_latex)
             input_histograms_default[ibin2].Draw()
+            print(self.lvar2_binmin_reco[ibin2], " ",self.p_latexbin2var," ", self.lvar2_binmax_reco[ibin2], " default distribution mean ", input_histograms_default[ibin2].GetMean(), " ",input_histograms_default[ibin2].GetMeanError())
             setup_tgraph(tgsys[ibin2], get_colour(7, 0))
             tgsys[ibin2].Draw("5")
             leg_finalwsys_wmodels.AddEntry(tgsys[ibin2], "syst. unc.", "F")
@@ -4052,6 +4057,7 @@ class AnalyzerJet(Analyzer):
                 setup_histogram(input_pythia8_z[i_pythia8][ibin2], get_colour(i_pythia8 + 2), get_marker(i_pythia8 + 2), 2.)
                 leg_finalwsys_wmodels.AddEntry(input_pythia8_z[i_pythia8][ibin2], self.pythia8_prompt_variations_legend[i_pythia8], "P")
                 input_pythia8_z[i_pythia8][ibin2].Draw("same")
+                print("Pythia Mean " , self.lvar2_binmin_reco[ibin2], " ",self.p_latexbin2var," ", self.lvar2_binmax_reco[ibin2], " ",self.pythia8_prompt_variations_legend[i_pythia8], " ", input_pythia8_z[i_pythia8][ibin2].GetMean(), " ",input_pythia8_z[i_pythia8][ibin2].GetMeanError())
             input_histograms_default[ibin2].Draw("AXISSAME")
 
             latex = TLatex(0.15, 0.82, "ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV")
@@ -4217,11 +4223,11 @@ class AnalyzerJet(Analyzer):
                 if sys_cat == 0:
                     tgsys_cat[ibin2][sys_cat].Draw("A2")
                     for ibinshape in range(self.p_nbinshape_gen):
-                        print(self.systematic_catlabels[sys_cat]," ",suffix, " ", self.lvar2_binmin_gen[ibin2], " ", self.lvar2_binmax_gen[ibin2], " ",tgsys_cat[ibin2][sys_cat].GetErrorYhigh(ibinshape))
+                        print("relative systematic ",self.systematic_catlabels[sys_cat]," ",suffix, " ", self.lvar2_binmin_gen[ibin2], " ", self.lvar2_binmax_gen[ibin2], " ",tgsys_cat[ibin2][sys_cat].GetErrorYhigh(ibinshape))
                 else:
                     tgsys_cat[ibin2][sys_cat].Draw("2")
                     for ibinshape in range(self.p_nbinshape_gen):
-                        print(self.systematic_catlabels[sys_cat]," ",suffix, " ", self.lvar2_binmin_gen[ibin2], " ", self.lvar2_binmax_gen[ibin2], " ",tgsys_cat[ibin2][sys_cat].GetErrorYhigh(ibinshape))
+                        print("relative systematic ",self.systematic_catlabels[sys_cat]," ",suffix, " ", self.lvar2_binmin_gen[ibin2], " ", self.lvar2_binmax_gen[ibin2], " ",tgsys_cat[ibin2][sys_cat].GetErrorYhigh(ibinshape))
             h_default_stat_err[ibin2].Draw("same")
             h_default_stat_err[ibin2].Draw("axissame")
             # Draw LaTeX

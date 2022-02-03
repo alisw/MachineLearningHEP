@@ -378,6 +378,7 @@ LcpK0spp:
       useperiod: [1,1,1] #list of periods
       usejetptbinned_deff: false
       doeff_resp: true
+      unmatched_gen: true
 
       latexnamehadron: "#Lambda_{c}^{#plus}"
       latexnamedecay: "p K^{0}_{S}"
