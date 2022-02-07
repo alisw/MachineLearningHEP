@@ -144,6 +144,7 @@ class AnalyzerJet(Analyzer):
             #self.p_masspeaksec = datap["analysis"][self.typean]["masspeaksec"]
             self.p_fix_sigmasec = datap["analysis"][self.typean]["fix_sigmasec"]
             self.p_sigmaarraysec = datap["analysis"][self.typean]["sigmaarraysec"]
+        self.use_reflections = datap["analysis"][self.typean].get("use_reflections", False)
 
         # efficiency calculation
         #self.doeff_resp = datap["analysis"][self.typean].get("doeff_resp", False)
@@ -333,8 +334,29 @@ class AnalyzerJet(Analyzer):
         self.p_nevents = histonorm.GetBinContent(1)
         print("Number of selected event: %g" % self.p_nevents)
 
+        # Loop over hadron pT bins
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
+
+            # Reflections (same for all jet pT), integrate over jet pT
+            histomassmc_refl_templ = None
+            integral_refl = [0.] * self.p_nbin2_reco
+            for ibin2 in range(self.p_nbin2_reco):
+                suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
+                         (self.v_var_binning, self.lpt_finbinmin[ipt],
+                          self.lpt_finbinmax[ipt], self.lpt_probcutfin[bin_id],
+                          self.v_var2_binning, self.lvar2_binmin_reco[ibin2],
+                          self.lvar2_binmax_reco[ibin2])
+                histomassmc_refl_ibin2 = myfilemc.Get("hmass_refl" + suffix)
+                if not histomassmc_refl_ibin2:
+                    self.logger.fatal(make_message_notfound("hmass_refl" + suffix, self.n_filemass_mc))
+                integral_refl[ibin2] = histomassmc_refl_ibin2.Integral()
+                if ibin2 == 0:
+                    histomassmc_refl_templ = histomassmc_refl_ibin2.Clone(f"histomassmc_refl_templ_{ipt}")
+                else:
+                    histomassmc_refl_templ.Add(histomassmc_refl_ibin2)
+
+            # Loop over jet pT bins
             for ibin2 in range(self.p_nbin2_reco):
                 suffix = "%s%d_%d_%.2f%s_%.2f_%.2f" % \
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
@@ -345,9 +367,13 @@ class AnalyzerJet(Analyzer):
                     (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2],
                      self.v_var_binning, self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
                 significance_plot = TH1F("signif_%s" % suffix_plot, "", 1, 0, 1)
+
+                # Fit MC
                 histomassmc = myfilemc.Get("hmass_sig" + suffix)
                 if not histomassmc:
                     self.logger.fatal(make_message_notfound("hmass_sig" + suffix, self.n_filemass_mc))
+                integral_signal = histomassmc.Integral()
+                ratio_refl_over_signal = integral_refl[ibin2] / integral_signal if integral_signal > 0. else -1.
                 histomassmc_reb = AliVertexingHFUtils.RebinHisto(histomassmc, \
                                             self.p_rebin[ipt], -1)
                 histomassmc_reb_f = TH1F()
@@ -390,8 +416,9 @@ class AnalyzerJet(Analyzer):
                 latexmc_3 = TLatex(0.71, 0.67, "%g #leq #it{p}_{T, %s} < %g GeV/#it{c}" % \
                     (self.lpt_finbinmin[ipt], self.p_latexnhadron, min(self.lpt_finbinmax[ipt], self.lvar2_binmax_reco[ibin2])))
                 draw_latex(latexmc_3)
-
                 c_mc_fit.SaveAs("%s/fit_mc_%s.eps" % (self.d_resultsallpdata, suffix_plot))
+
+                # Fit real data
                 histomass = myfile.Get("hmass" + suffix)
                 if not histomass:
                     self.logger.fatal(make_message_notfound("hmass" + suffix, self.n_filemass))
@@ -401,6 +428,13 @@ class AnalyzerJet(Analyzer):
                 histomass_reb.Copy(histomass_reb_f)
                 fitter = AliHFInvMassFitter(histomass_reb_f, self.p_massmin[ipt], \
                     self.p_massmax[ipt], self.p_bkgfunc[ipt], self.p_sgnfunc[ipt])
+                # Set use of reflection in fit
+                if self.use_reflections:
+                    his_tmp = fitter.SetTemplateReflections(histomassmc_refl_templ, "2gaus", self.p_massmin[ipt], self.p_massmax[ipt])
+                    if not his_tmp:
+                        self.logger.fatal(f"SetTemplateReflections failed for {suffix}")
+                    if ratio_refl_over_signal > 0.:
+                        fitter.SetFixReflOverS(ratio_refl_over_signal)
                 sigma_initial = 0
                 if self.set_array_sigma[ipt]:
                     sigma_initial = self.p_sigmaarray[ipt]
@@ -435,6 +469,8 @@ class AnalyzerJet(Analyzer):
                 histomass_reb.Draw("same")
                 bkg_func = fitter.GetBackgroundRecalcFunc()
                 sgn_func = fitter.GetMassFunc()
+                ref_func = fitter.GetReflFunc() if self.use_reflections else None
+                sig_func = fitter.GetSignalFunc()
                 sigma = fitter.GetSigma()
                 mean = fitter.GetMean()
                 bkg_left_1 = (mean - self.sideband_sigma_2_left*sigma)
@@ -443,18 +479,15 @@ class AnalyzerJet(Analyzer):
                 sig_right = (mean + self.signal_sigma*sigma)
                 bkg_right_1 = (mean + self.sideband_sigma_1_right*sigma)
                 bkg_right_2 = (mean + self.sideband_sigma_2_right*sigma)
-                left_borders = [bkg_left_1, bkg_left_2, sig_left]
-                right_borders = [sig_right, bkg_right_1, bkg_right_2]
+                print(f"Fit sideband regions for {suffix}: {bkg_left_1}-{bkg_left_2}, {sig_left}-{sig_right}, {bkg_right_1}-{bkg_right_2}")
+                if bkg_left_1 <= self.p_massmin[ipt]:
+                    print(f"Warning: {suffix} Left sideband {'completely' if bkg_left_2 <= self.p_massmin[ipt] else 'partially'} outside histogram range")
+                if bkg_right_2 >= self.p_massmax[ipt]:
+                    print(f"Warning: {suffix} Right sideband {'completely' if bkg_right_1 >= self.p_massmax[ipt] else 'partially'} outside histogram range")
                 bkg = 0
                 sig = 0
-                for brd in left_borders:
-                    if brd < self.p_massmin[ipt]:
-                        brd = self.p_massmin[ipt]
-                for brd in right_borders:
-                    if brd > self.p_massmax[ipt]:
-                        brd = self.p_massmax[ipt]
                 if (sgn_func and bkg_func):
-                    print("signal and background functions exits")
+                    print("signal and background functions exist")
                     bin_width = histomass_reb.GetXaxis().GetBinWidth(1)
                     bkg = bkg_func.Integral(sig_left, sig_right)/bin_width
                     sig = sgn_func.Integral(sig_left, sig_right)/bin_width - bkg
@@ -470,16 +503,18 @@ class AnalyzerJet(Analyzer):
                     significance_plot.SetBinContent(1, s_to_b)
                 fileout.cd()
                 significance_plot.Write()
-                bkg_left = histomass_reb.Clone("bkg_left")
-                bkg_left.GetXaxis().SetRangeUser(bkg_left_1, bkg_left_2)
-                bkg_left.SetFillColor(38)
-                bkg_left.SetFillStyle(3354)
-                bkg_left.Draw("same hist")
-                bkg_right = histomass_reb.Clone("bkg_right")
-                bkg_right.GetXaxis().SetRangeUser(bkg_right_1, bkg_right_2)
-                bkg_right.SetFillColor(38)
-                bkg_right.SetFillStyle(3345)
-                bkg_right.Draw("same hist")
+                if bkg_left_2 > self.p_massmin[ipt]:
+                    bkg_left = histomass_reb.Clone("bkg_left")
+                    bkg_left.GetXaxis().SetRangeUser(bkg_left_1, bkg_left_2)
+                    bkg_left.SetFillColor(38)
+                    bkg_left.SetFillStyle(3354)
+                    bkg_left.Draw("same hist")
+                if bkg_right_1 < self.p_massmax[ipt]:
+                    bkg_right = histomass_reb.Clone("bkg_right")
+                    bkg_right.GetXaxis().SetRangeUser(bkg_right_1, bkg_right_2)
+                    bkg_right.SetFillColor(38)
+                    bkg_right.SetFillStyle(3345)
+                    bkg_right.Draw("same hist")
                 bkg_sig = histomass_reb.Clone("bkg_sig")
                 bkg_sig.SetFillColor(46)
                 bkg_sig.SetFillStyle(3444)
@@ -490,6 +525,9 @@ class AnalyzerJet(Analyzer):
                     sgn_func.SetLineColor(get_colour(2))
                     sgn_func.Draw("same")
                     bkg_func.Draw("same")
+                    if ref_func:
+                        ref_func.SetLineColor(get_colour(3))
+                        ref_func.Draw("same")
                 if (not np.isnan(bkg) and not np.isnan(sig) and not np.isnan(s_to_b)):
                     latex3 = TLatex(0.67, 0.78, "mean = %s, #sigma  = %s" % \
                             (round(mean, 2), round(sigma, 2)))
@@ -506,13 +544,24 @@ class AnalyzerJet(Analyzer):
                         latex5 =  TLatex(0.67, 0.63, "MC FIT FAILED")
                         draw_latex(latex5)
                 c_fitted_result.SaveAs("%s/fit_%s.eps" % (self.d_resultsallpdata, suffix_plot))
+                # Plot reflections
+                if out == 1 and self.use_reflections:
+                    c_fitted_result_refl = TCanvas("c_fitted_result refl" + suffix, "Fitted Result")
+                    setup_canvas(c_fitted_result_refl)
+                    sig_func.SetLineColor(get_colour(2))
+                    sig_func.Draw()
+                    ref_func.SetLineColor(get_colour(3))
+                    ref_func.Draw("same")
+                    c_fitted_result_refl.SaveAs("%s/fit_refl_%s.eps" % (self.d_resultsallpdata, suffix_plot))
+                del fitter # otherwise AliHFInvMassFitter destructor causes segfault
+
         myfilemc.Close()
         myfile.Close()
         fileout.Close()
         gROOT.SetBatch(tmp_is_root_batch)
 
-    def efficiency_inclusive(self):
 
+    def efficiency_inclusive(self):
         self.loadstyle()
         lfileeff = TFile.Open(self.n_fileeff)
         if not lfileeff:
@@ -986,6 +1035,10 @@ class AnalyzerJet(Analyzer):
         hzvsjetpt = TH2F("hzvsjetpt", "", self.p_nbinshape_reco, self.varshapebinarray_reco,
                          self.p_nbin2_reco, self.var2binarray_reco)
         hzvsjetpt.Sumw2()
+        his_refl_2d = None
+        if self.use_reflections:
+            his_refl_2d = buildhisto("his_refl_2d", "reflection correction", self.var1binarray, self.var2binarray_reco)
+            his_refl_2d.SetTitle("reflection correction (%%);%s;#it{p}_{T}^{jet};correction (%%)" % self.v_pth_latex)
 
         # This is a loop over jet pt and over HF candidate pT
 
@@ -993,6 +1046,7 @@ class AnalyzerJet(Analyzer):
             heff = eff_file.Get("eff_mult%d" % ibin2)
             hz = None
             first_fit = 0
+            his_refl = buildhisto(f"reflections_{ibin2}", f"reflections_{ibin2}", self.var1binarray)
             # shape vs. hadron pT histogram with relative contributions to the signal of
             # the pT-integrated shape bins after the sideband subtraction and efficiency correction
             hrelsig = buildhisto("hrelsig_%d" % ibin2, "hrelsig_%d" % ibin2, self.varshapebinarray_reco, self.var1binarray)
@@ -1019,7 +1073,9 @@ class AnalyzerJet(Analyzer):
                 mass_fitter = load_dir.Get("fitter%d" % (ipt))
                 mean = mass_fitter.GetMean()
                 sigma = mass_fitter.GetSigma()
-                bkg_fit = mass_fitter.GetBackgroundRecalcFunc()
+                fun_bkg = mass_fitter.GetBackgroundRecalcFunc()
+                fun_ref = mass_fitter.GetReflFunc() if self.use_reflections else None
+                fun_sig = mass_fitter.GetSignalFunc()
 
                 # Here I define the boundaries for the sideband subtractions
                 # based on the results of the fit. We get usually 4-9 sigma from
@@ -1049,6 +1105,12 @@ class AnalyzerJet(Analyzer):
                 masshigh9sig = \
                     mean + self.sideband_sigma_2_right * sigma
 
+                print(f"Sideband for: {suffix}")
+                print(f"Sideband ranges: {masslow9sig}-{masslow4sig}, {masslow2sig}-{masshigh2sig}, {masshigh4sig}-{masshigh9sig}")
+                print(f"Sideband bins: {binmasslow9sig}-{binmasslow4sig}, {binmasslow2sig}-{binmasshigh2sig}, {binmasshigh4sig}-{binmasshigh9sig}")
+                if min(masslow9sig, masslow4sig, masslow2sig) <= self.p_massmin[ipt] or max(masshigh2sig, masshigh4sig, masshigh9sig) >= self.p_massmax[ipt]:
+                    print(f"Warning: {suffix} Wrong sideband boundaries!")
+
                 # here we project over the z-axis the 2d distributions in the
                 # three regions = signal region, left and right sideband
 
@@ -1074,19 +1136,19 @@ class AnalyzerJet(Analyzer):
                 #      factor used to perform the background subtraction
 
                 hzbkg = hzbkgleft.Clone("hzbkg" + suffix)
-                if self.sidebandleftonly is False:
+                if not self.sidebandleftonly:
                     hzbkg.Add(hzbkgright)
                 hzbkg_scaled = hzbkg.Clone("hzbkg_scaled" + suffix)
 
                 area_scale_denominator = -1
-                if not bkg_fit: # if there is no background fit it continues
+                if not fun_bkg: # if there is no background fit it continues
                     continue
-                area_scale_denominator = bkg_fit.Integral(masslow9sig, masslow4sig)
-                if self.sidebandleftonly is False:
-                    area_scale_denominator += bkg_fit.Integral(masshigh4sig, masshigh9sig)
+                area_scale_denominator = fun_bkg.Integral(masslow9sig, masslow4sig)
+                if not self.sidebandleftonly:
+                    area_scale_denominator += fun_bkg.Integral(masshigh4sig, masshigh9sig)
                 if area_scale_denominator == 0:
                     continue
-                area_scale = bkg_fit.Integral(masslow2sig, masshigh2sig) / area_scale_denominator
+                area_scale = fun_bkg.Integral(masslow2sig, masshigh2sig) / area_scale_denominator
                 hzsub = hzsig.Clone("hzsub" + suffix)
 
                 # subtract the scaled sideband yields
@@ -1101,6 +1163,20 @@ class AnalyzerJet(Analyzer):
                         print ("there is zero yield added from " ,suffix ," ", hzsub.GetBinCenter(ibinz+1))
                         hzsub.SetBinContent(binz, 0)
                         hzsub.SetBinError(binz, 0)
+
+                # correct for reflections
+
+                if self.use_reflections:
+                    ref_in_bkg = fun_ref.Integral(masslow9sig, masslow4sig)
+                    ref_in_sig = fun_ref.Integral(masslow2sig, masshigh2sig)
+                    sig_in_sig = fun_sig.Integral(masslow2sig, masshigh2sig)
+                    if not self.sidebandleftonly:
+                        ref_in_bkg += fun_ref.Integral(masshigh4sig, masshigh9sig)
+                    correction = (ref_in_sig - ref_in_bkg * area_scale) / sig_in_sig
+                    print(f"Correcting signal distribution in {suffix} for reflections with {correction}")
+                    hzsub.Scale(1. / (1. + correction))
+                    his_refl.SetBinContent(ipt + 1, 100 * correction)
+                    his_refl_2d.SetBinContent(ipt + 1, ibin2 + 1, 100 * correction)
 
                 hzsub_noteffscaled = hzsub.Clone("hzsub_noteffscaled" + suffix)
                 hzbkg_scaled.Scale(area_scale)
@@ -1330,6 +1406,10 @@ class AnalyzerJet(Analyzer):
                 print("No successful fits for: %s" % suffix)
                 continue
 
+            if self.use_reflections:
+                make_plot(his_refl.GetName(), list_obj=[his_refl], path=self.d_resultsallpdata,
+                title=f"reflection correction, pT jet bin {ibin2};{self.v_pth_latex};correction (%)")
+
             # We are now outside of the loop of HF candidate pt. We are going now
             # to plot the "hz" histogram, which contains the Add of all the
             # bkg-subtracted efficiency corrected distributions of all the HF
@@ -1501,6 +1581,13 @@ class AnalyzerJet(Analyzer):
 
         fileouts.cd()
         hzvsjetpt.Write("hzvsjetpt")
+
+        if self.use_reflections:
+            can_refl_2d = TCanvas("can_refl_2d", "can_refl_2d")
+            gStyle.SetPaintTextFormat(".1f")
+            setup_canvas(can_refl_2d)
+            his_refl_2d.Draw("text")
+            can_refl_2d.SaveAs(f"{self.d_resultsallpdata}/reflections_2d.eps")
 
         czvsjetpt = TCanvas("czvsjetpt", "output of sideband subtraction")
         setup_canvas(czvsjetpt)
@@ -4542,9 +4629,10 @@ class AnalyzerJet(Analyzer):
         except Exception: # pylint: disable=broad-except
             self.logger.fatal(make_message_notfound("variables", tree_name))
 
-        # Adjust nSD values.
+        # Adjust nSD, zg, Rg, z values.
         df_sim = adjust_nsd(df_sim)
-        # Adjust z values.
+        df_sim = adjust_zg(df_sim)
+        df_sim = adjust_rg(df_sim)
         df_sim = adjust_z(df_sim)
         # pt-dependent rapidity cut
         sel_cand_array = selectfidacc(df_sim["pt_cand"].values, df_sim["y_cand"].values)
@@ -4597,9 +4685,10 @@ class AnalyzerJet(Analyzer):
         except Exception: # pylint: disable=broad-except
             self.logger.fatal(make_message_notfound("variables", tree_name))
 
-        # Adjust nSD values.
+        # Adjust nSD, zg, Rg, z values.
         df_sim = adjust_nsd(df_sim)
-        # Adjust z values.
+        df_sim = adjust_zg(df_sim)
+        df_sim = adjust_rg(df_sim)
         df_sim = adjust_z(df_sim)
         # pt-dependent rapidity cut
         sel_cand_array = selectfidacc(df_sim["pt_cand"].values, df_sim["y_cand"].values)
