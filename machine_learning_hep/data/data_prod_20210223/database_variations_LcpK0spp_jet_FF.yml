@@ -1,6 +1,6 @@
 categories:
     default:
-        activate: yes
+        activate: no
         processor: true
         label: "default"
         correlation: "corr"
@@ -267,6 +267,7 @@ categories:
             cutvar:
                 activate: [yes, no, yes, yes, yes, no, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
                 #activate: [no , no , yes, yes, yes, yes, no , yes, yes, yes, yes,  no , no , no , no , no , no , no , no , no , no , no , no]
+                #activate: [yes, no, yes, yes, yes, no, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
                #cutvar :  [80 , 79 , 78 , 77 , 76 , 75 , 74 , 73 , 72 , 71 , 69 , 68 , 67 , 66 , 65 , 63 , 60 , 55 , 50 , 45 , 40 , 35 , 30]
                 label: 
                     - "prob cut: 0.80"
