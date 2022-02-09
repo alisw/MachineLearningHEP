@@ -159,17 +159,17 @@ D0pp:
       unmerged_tree_dir: [/data/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_data/593_20210223-2051/merged,
                           /data/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_data/593_20210223-2051/merged,
                           /data/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_data/593_20210223-2051/merged] #list of periods
-      pkl: [/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_data/593_20210223-2051/pkl,
-            /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_data/593_20210223-2051/pkl,
-            /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_data/593_20210223-2051/pkl] #list of periods
-      pkl_skimmed: [/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_data/593_20210223-2051/pklsk,
-                    /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_data/593_20210223-2051/pklsk,
-                    /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_data/593_20210223-2051/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_data/593_20210223-2051/pklskml,
-                                 /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_data/593_20210223-2051/pklskml,
-                                 /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_data/593_20210223-2051/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_data_mltot
-      pkl_evtcounter_all: /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_data_evttot
+      pkl: [/data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_data/593_20210223-2051/pkl,
+            /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_data/593_20210223-2051/pkl,
+            /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_data/593_20210223-2051/pkl] #list of periods
+      pkl_skimmed: [/data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_data/593_20210223-2051/pklsk,
+                    /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_data/593_20210223-2051/pklsk,
+                    /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_data/593_20210223-2051/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_data/593_20210223-2051/pklskml,
+                                 /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_data/593_20210223-2051/pklskml,
+                                 /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_data/593_20210223-2051/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_data_mltot
+      pkl_evtcounter_all: /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_data_evttot
       mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2016,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2017,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/data_2018] #list of periods
@@ -185,17 +185,17 @@ D0pp:
       unmerged_tree_dir: [/data/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_sim/594_20210301-1015/merged,
                           /data/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_sim/594_20210301-1015/merged,
                           /data/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_sim/594_20210301-1015/merged] #list of periods
-      pkl: [/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod/594_20210301-1015/pkl,
-            /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod/594_20210301-1015/pkl,
-            /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod/594_20210301-1015/pkl] #list of periods
-      pkl_skimmed: [/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod/594_20210301-1015/pklsk,
-                    /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod/594_20210301-1015/pklsk,
-                    /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod/594_20210301-1015/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod/594_20210301-1015/pklskml,
-                                 /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod/594_20210301-1015/pklskml,
-                                 /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod/594_20210301-1015/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_mc_prod_mltot
-      pkl_evtcounter_all: /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_mc_prod_evttot
+      pkl: [/data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod/594_20210301-1015/pkl,
+            /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod/594_20210301-1015/pkl,
+            /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod/594_20210301-1015/pkl] #list of periods
+      pkl_skimmed: [/data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod/594_20210301-1015/pklsk,
+                    /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod/594_20210301-1015/pklsk,
+                    /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod/594_20210301-1015/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod/594_20210301-1015/pklskml,
+                                 /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod/594_20210301-1015/pklskml,
+                                 /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod/594_20210301-1015/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_mc_prod_mltot
+      pkl_evtcounter_all: /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_mc_prod_evttot
       mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_16,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_17,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_18] #list of periods
@@ -242,19 +242,19 @@ D0pp:
 
   mlapplication:
     data:
-      pkl_skimmed_dec: [/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_data/593_20210223-2051/pklskdec,
-                        /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_data/593_20210223-2051/pklskdec,
-                        /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_data/593_20210223-2051/pklskdec] #list of periods
-      pkl_skimmed_decmerged: [/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_data/593_20210223-2051/pklskdecmerged,
-                              /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_data/593_20210223-2051/pklskdecmerged,
-                              /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_data/593_20210223-2051/pklskdecmerged] #list of periods
+      pkl_skimmed_dec: [/data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_data/593_20210223-2051/pklskdec,
+                        /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_data/593_20210223-2051/pklskdec,
+                        /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_data/593_20210223-2051/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_data/593_20210223-2051/pklskdecmerged,
+                              /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_data/593_20210223-2051/pklskdecmerged,
+                              /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_data/593_20210223-2051/pklskdecmerged] #list of periods
     mc:
-      pkl_skimmed_dec: [/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod/594_20210301-1015/pklskdec,
-                        /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod/594_20210301-1015/pklskdec,
-                        /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod/594_20210301-1015/pklskdec] #list of periods
-      pkl_skimmed_decmerged: [/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod/594_20210301-1015/pklskdecmerged,
-                              /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod/594_20210301-1015/pklskdecmerged,
-                              /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod/594_20210301-1015/pklskdecmerged] #list of periods
+      pkl_skimmed_dec: [/data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod/594_20210301-1015/pklskdec,
+                        /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod/594_20210301-1015/pklskdec,
+                        /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod/594_20210301-1015/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod/594_20210301-1015/pklskdecmerged,
+                              /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod/594_20210301-1015/pklskdecmerged,
+                              /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod/594_20210301-1015/pklskdecmerged] #list of periods
     modelname: xgboost
     modelsperptbin: [xgboost_classifierD0pp_FF_dfselection_pt_cand_1.0_2.0.sav,
                      xgboost_classifierD0pp_FF_dfselection_pt_cand_2.0_4.0.sav,
@@ -280,7 +280,7 @@ D0pp:
       proc_type: Dhadrons_jet
       useperiod: [1,1,1] #list of periods
       usejetptbinned_deff: false
-      doeff_resp: true
+      doeff_resp: true #efficiency correction for the response matrix
       unmatched_gen: true
       latexnamehadron: "D^{0}"
       latexnamedecay: "K^{#minus} #pi^{#plus}"
@@ -295,10 +295,10 @@ D0pp:
       var_binningshape: zg_jet
       var_binningshape_gen: zg_gen_jet
       var_shape_latex: "#it{z}_{g}"
-      sel_binminshape_reco: [0.1,0.2,0.3,0.4]
-      sel_binmaxshape_reco:     [0.2,0.3,0.4,0.5]
-      sel_binminshape_gen:  [0.1,0.2,0.3,0.4]
-      sel_binmaxshape_gen:      [0.2,0.3,0.4,0.5]
+      sel_binminshape_reco: [-0.1,0.1,0.2,0.3,0.4]
+      sel_binmaxshape_reco:      [0.1,0.2,0.3,0.4,0.5]
+      sel_binminshape_gen:  [-0.1,0.1,0.2,0.3,0.4]
+      sel_binmaxshape_gen:       [0.1,0.2,0.3,0.4,0.5]
       sel_closure_frac: 0.2
       triggerbit: INT7
       sel_an_binmin:    [5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
@@ -318,42 +318,44 @@ D0pp:
         mc: null
       data: &data_out_default
         runselection: [null, null, null] #FIXME
-        results: [/data/DerivedResultsJets/D0kAnywithJets_Nima_Test/vAN-20210223_ROOT6-1/zg/default/default/pp_2016_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Nima_Test/vAN-20210223_ROOT6-1/zg/default/default/pp_2017_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Nima_Test/vAN-20210223_ROOT6-1/zg/default/default/pp_2018_data/593_20210223-2051/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets_Nima_Test/vAN-20210223_ROOT6-1/zg/default/default/pp_data/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20210223_ROOT6-1/zg/default/default/pp_2016_data/593_20210223-2051/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20210223_ROOT6-1/zg/default/default/pp_2017_data/593_20210223-2051/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20210223_ROOT6-1/zg/default/default/pp_2018_data/593_20210223-2051/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20210223_ROOT6-1/zg/default/default/pp_data/resultsMBjetvspt
       mc: &mc_out_default
         runselection: [null, null, null] #FIXME
-        results: [/data/DerivedResultsJets/D0kAnywithJets_Nima_Test/vAN-20210223_ROOT6-1/zg/default/default/pp_2016_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Nima_Test/vAN-20210223_ROOT6-1/zg/default/default/pp_2017_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets_Nima_Test/vAN-20210223_ROOT6-1/zg/default/default/pp_2018_mc_prodD2H/594_20210301-1015/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets_Nima_Test/vAN-20210223_ROOT6-1/zg/default/default/pp_mc_prodD2H/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20210223_ROOT6-1/zg/default/default/pp_2016_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20210223_ROOT6-1/zg/default/default/pp_2017_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20210223_ROOT6-1/zg/default/default/pp_2018_mc_prodD2H/594_20210301-1015/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20210223_ROOT6-1/zg/default/default/pp_mc_prodD2H/resultsMBjetvspt
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_default
 
-      mass_fit_lim: [1.72, 2.05] # histogram range of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [1.66, 2.06] # histogram range of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
 
       # simple fitter START
       sgnfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)
       bkgfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kExpo=0, kLin=1, kPol2=2, kNoBk=3, kPow=4, kPowEx=5 (sel_an_binmin bins)
       masspeak: 1.864
-      massmin: [1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72,1.72] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
-      massmax: [2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05,2.05] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
+      massmin: [1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66,1.66] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
+      massmax: [2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06,2.06] # sel_an_binmin bins, fit region of the invariant mass distribution [GeV/c^2]
       rebin: [6,6,6,6,6,6,6,6,6,6,6,6] # sel_an_binmin bins
       fix_mean: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
       masspeaksec: 1.864
 
       # If SetArraySigma true: sigma_initial is taken from sigmaarray; false: sigma_initial is taken from MC
       # If SetFixGaussianSigma true: sigma fixed to sigma_initial
-      SetFixGaussianSigma: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
+      # SetFixGaussianSigma: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
+      SetFixGaussianSigma: [true, true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
       SetArraySigma: [false, false, false, false, false, false, false, false, false, false, false, false] # sel_an_binmin bins
-      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # initial sigma (sel_an_binmin bins) 
+      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # initial sigma (sel_an_binmin bins)
 
       fix_sigmasec: [true, true, true, true, true, true, true, true, true, true, true, true] # sel_an_binmin bins
       sigmaarraysec: [0.007497,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01,0.01] # sel_an_binmin bins
+      use_reflections: true
       # simple fitter END
 
       signal_sigma: 2.0
@@ -401,10 +403,10 @@ D0pp:
       var_binningshape: rg_jet
       var_binningshape_gen: rg_gen_jet
       var_shape_latex: "#it{R}_{g}"
-      sel_binminshape_reco: [0.0,0.1,0.2,0.3]
-      sel_binmaxshape_reco:     [0.1,0.2,0.3,0.4]
-      sel_binminshape_gen:  [0.0,0.1,0.2,0.3]
-      sel_binmaxshape_gen:      [0.1,0.2,0.3,0.4]
+      sel_binminshape_reco: [-0.1,0.0,0.1,0.2,0.3]
+      sel_binmaxshape_reco:      [0.0,0.1,0.2,0.3,0.4]
+      sel_binminshape_gen:  [-0.1,0.0,0.1,0.2,0.3]
+      sel_binmaxshape_gen:       [0.0,0.1,0.2,0.3,0.4]
       data: &data_out_rg
         <<: *data_out_default
         results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20210223_ROOT6-1/rg/default/default/pp_2016_data/593_20210223-2051/resultsMBjetvspt,
@@ -488,7 +490,7 @@ D0pp:
     jet_r_shape_2_6:
       <<: *jet_default
       lc_d0_ratio: true #make ratio of D0 and corresponding Lc analysis
-      xsec: false 
+      xsec: false
       use_inclusive_systematics: true
 
       pythia8_prompt_variations: ["default","colour2soft"]
@@ -605,4 +607,3 @@ D0pp:
       weights_min_pt: 0
       weights_max_pt: 40
       weights_bins: 400
-

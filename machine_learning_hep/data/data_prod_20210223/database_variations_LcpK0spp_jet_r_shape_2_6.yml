@@ -38,7 +38,7 @@ categories:
                             masspeaksec: [2.2864]
             massmin:
                 activate: [no, no]
-                label: 
+                label:
                     - "mass min. 2.18"
                     - "mass min. 2.16"
                 diffs:
@@ -47,7 +47,7 @@ categories:
                             massmin: [2.18, 2.16]
             massmax:
                 activate: [yes, yes]
-                label: 
+                label:
                     - "mass max. 2.46"
                     - "mass max. 2.456"
                 diffs:
@@ -226,7 +226,7 @@ categories:
                         jet_r_shape_2_6:
                             xsection_inel: [54.91, 60.69]
     tracking:
-        activate: yes 
+        activate: yes
         processor: true
         label: "tracking eff."
         correlation: "corr"
@@ -240,32 +240,32 @@ categories:
                 diffs:
                   multi:
                     mc:
-                      unmerged_tree_dir: [[/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/TTree/vAN-20210223_ROOT6-1/pp_sim/619_20210423-1225/merged,
-                                          /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/TTree/vAN-20210223_ROOT6-1/pp_sim/619_20210423-1225/merged,
-                                          /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/TTree/vAN-20210223_ROOT6-1/pp_sim/619_20210423-1225/merged]] #list of periods
-                      pkl: [[/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prodD2H_trkeff/619_20210423-1225/pkl,
-                            /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prodD2H_trkeff/619_20210423-1225/pkl,
-                            /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prodD2H_trkeff/619_20210423-1225/pkl]] #list of periods
-                      pkl_skimmed: [[/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prodD2H_trkeff/619_20210423-1225/pklsk,
-                                    /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prodD2H_trkeff/619_20210423-1225/pklsk,
-                                    /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prodD2H_trkeff/619_20210423-1225/pklsk]] #list of periods
-                      pkl_skimmed_merge_for_ml: [[/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prodD2H_trkeff/619_20210423-1225/pklskml,
-                                                 /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prodD2H_trkeff/619_20210423-1225/pklskml,
-                                                 /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prodD2H_trkeff/619_20210423-1225/pklskml]] #list of periods
-                      pkl_skimmed_merge_for_ml_all: [/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_mc_prodD2H_mltot_trkeff]
-                      pkl_evtcounter_all: [/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_mc_prodD2H_evttot_trkeff]
+                      unmerged_tree_dir: [[/data/Derived_Vit/D0kINT7HighMultCalo_withJets/TTree/vAN-20210223_ROOT6-1/pp_sim/619_20210423-1225/merged,
+                                          /data/Derived_Vit/D0kINT7HighMultCalo_withJets/TTree/vAN-20210223_ROOT6-1/pp_sim/619_20210423-1225/merged,
+                                          /data/Derived_Vit/D0kINT7HighMultCalo_withJets/TTree/vAN-20210223_ROOT6-1/pp_sim/619_20210423-1225/merged]] #list of periods
+                      pkl: [[/data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prodD2H_trkeff/619_20210423-1225/pkl,
+                            /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prodD2H_trkeff/619_20210423-1225/pkl,
+                            /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prodD2H_trkeff/619_20210423-1225/pkl]] #list of periods
+                      pkl_skimmed: [[/data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prodD2H_trkeff/619_20210423-1225/pklsk,
+                                    /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prodD2H_trkeff/619_20210423-1225/pklsk,
+                                    /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prodD2H_trkeff/619_20210423-1225/pklsk]] #list of periods
+                      pkl_skimmed_merge_for_ml: [[/data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prodD2H_trkeff/619_20210423-1225/pklskml,
+                                                 /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prodD2H_trkeff/619_20210423-1225/pklskml,
+                                                 /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prodD2H_trkeff/619_20210423-1225/pklskml]] #list of periods
+                      pkl_skimmed_merge_for_ml_all: [/data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_mc_prodD2H_mltot_trkeff]
+                      pkl_evtcounter_all: [/data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_mc_prodD2H_evttot_trkeff]
 
                   ml:
                     mlplot: [/data/Derived/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/mlplot] # to be removed
                     mlout: [/data/Derived/LckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/mlout] # to be removed
                   mlapplication:
                     mc:
-                      pkl_skimmed_dec: [[/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prodD2H_trkeff/619_20210423-1225/pklskdec,
-                                        /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prodD2H_trkeff/619_20210423-1225/pklskdec,
-                                        /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prodD2H_trkeff/619_20210423-1225/pklskdec]] #list of periods
-                      pkl_skimmed_decmerged: [[/mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prodD2H_trkeff/619_20210423-1225/pklskdecmerged,
-                                              /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prodD2H_trkeff/619_20210423-1225/pklskdecmerged,
-                                              /mnt/temp/talazare_vAN-20210223/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prodD2H_trkeff/619_20210423-1225/pklskdecmerged]] #list of periods
+                      pkl_skimmed_dec: [[/data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prodD2H_trkeff/619_20210423-1225/pklskdec,
+                                        /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prodD2H_trkeff/619_20210423-1225/pklskdec,
+                                        /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prodD2H_trkeff/619_20210423-1225/pklskdec]] #list of periods
+                      pkl_skimmed_decmerged: [[/data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prodD2H_trkeff/619_20210423-1225/pklskdecmerged,
+                                              /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prodD2H_trkeff/619_20210423-1225/pklskdecmerged,
+                                              /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prodD2H_trkeff/619_20210423-1225/pklskdecmerged]] #list of periods
 
     binning:
         activate: no  # High RAM consumption
@@ -277,7 +277,7 @@ categories:
         rms_both_sides: true
         variations:
             pt_cand:
-                activate: [yes, yes, yes, yes, yes, yes]
+                #activate: [yes, yes, yes, yes, yes, yes]
                 activate: [no, no, no, no, no, no]
                 label:
                     - "#it{p}_{T}^{D} 4#minus24"
@@ -308,17 +308,6 @@ categories:
                             sel_binmax2_reco:    ["#",      [3,5,7,15,30,35], [50]]
                             sel_binmin2_gen:  [[8,15,30], [2,3,5,7,15,30],  [5]]
                             sel_binmax2_gen:     ["#",      [3,5,7,15,30,35], [50]]
-            shape:
-                activate: [no]
-                label:
-                    - "untagged bin"
-                diffs:
-                    analysis:
-                        jet_r_shape_2_6:
-                            sel_binminshape_reco: [[-100,0.1,0.2,0.3,0.4]]
-                            sel_binmaxshape_reco:    [[0.1,0.2,0.3,0.4,0.5]]
-                            sel_binminshape_gen:  [[-100,0.1,0.2,0.3,0.4]]
-                            sel_binmaxshape_gen:     [[0.1,0.2,0.3,0.4,0.5]]
     cutvar:
         activate: yes  # High RAM consumption
         processor: true
@@ -332,7 +321,7 @@ categories:
                 activate: [yes, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no]
                 #activate: [no , no , yes, yes, yes, yes, no , yes, yes, yes, yes,  no , no , no , no , no , no , no , no , no , no , no , no]
                #cutvar :  [80 , 79 , 78 , 77 , 76 , 75 , 74 , 73 , 72 , 71 , 69 , 68 , 67 , 66 , 65 , 63 , 60 , 55 , 50 , 45 , 40 , 35 , 30]
-                label: 
+                label:
                     - "prob cut: 0.80"
                     - "prob cut: 0.79"
                     - "prob cut: 0.78"
@@ -378,7 +367,7 @@ categories:
                             - [0.60, 0.60, 0.60, 0.60, 0.60, 0.60]
                             - [0.55, 0.55, 0.55, 0.55, 0.55, 0.55]
                             - [0.50, 0.50, 0.50, 0.50, 0.50, 0.50]
-                            - [0.45, 0.45, 0.45, 0.45, 0.45, 0.45] 
+                            - [0.45, 0.45, 0.45, 0.45, 0.45, 0.45]
                             - [0.40, 0.40, 0.40, 0.40, 0.40, 0.40]
                             - [0.35, 0.35, 0.35, 0.35, 0.35, 0.35]
                             - [0.30, 0.30, 0.30, 0.30, 0.30, 0.30]
