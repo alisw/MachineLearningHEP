@@ -437,7 +437,6 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_mc_gen = adjust_nsd(df_mc_gen)
                 if self.s_jetsel_gen is not None:
                     df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
-                df_mc_gen = df_mc_gen.query(self.s_jetsel_gen)
                 if self.runlistrigger is not None:
                     df_mc_gen = selectdfrunlist(df_mc_gen, \
                              self.run_param[self.runlistrigger], "run_number")
