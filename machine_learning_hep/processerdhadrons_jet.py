@@ -649,7 +649,6 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_tmp = seldf_singlevar(df_noeffcorr, "pt_cand", \
                         self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
                 df_tmp['eff'] = eff
-                df_tmp['unity'] = 1.0
                 if eff > 0.0:
                     df_tmp['weight'] = 1.0/eff
                 else:
