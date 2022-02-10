@@ -280,6 +280,8 @@ D0pp:
       proc_type: Dhadrons_jet
       useperiod: [1,1,1] #list of periods
       usejetptbinned_deff: false
+      doeff_resp: true
+      unmatched_gen: true
       latexnamehadron: "D^{0}"
       latexnamedecay: "K^{#minus} #pi^{#plus}"
 
@@ -302,25 +304,30 @@ D0pp:
       sel_an_binmin:    [5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
       sel_an_binmax:      [6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
       binning_matching:   [2,3,3, 4, 4, 5, 5, 6] # mapping to skimming pt bins (sel_an_binmin bins)
-      jetsel_gen: "abs(y_cand) < 0.8 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
-      jetsel_sim: "abs(y_cand) < 0.8 and abs(eta_jet) < 0.5" # jet selection in simulations
-      jetsel_reco: "abs(eta_jet) < 0.5"
+      #jetsel_gen: "abs(y_cand) < 0.8 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
+      #jetsel_sim: "abs(y_cand) < 0.8 and abs(eta_jet) < 0.5" # jet selection in simulations
+      #jetsel_reco: "abs(y_cand) < 0.8 and abs(z_vtx_reco) < 10 and abs(eta_jet) < 0.5"
+      #jetsel_gen_matched_reco: "abs(eta_gen_jet) < 5.0"
+      jetsel_gen: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
+      jetsel_sim: "abs(y_cand) < 0.5 and abs(eta_jet) < 0.5" # jet selection in simulations
+      jetsel_reco: "abs(y_cand) < 0.5 and abs(z_vtx_reco) < 10 and abs(eta_jet) < 0.5"
+      jetsel_gen_matched_reco: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_gen_jet) < 0.5"
       evtsel: is_ev_rej==0
       triggersel:
         data: "trigger_hasbit_INT7==1"
         mc: null
       data: &data_out_default
         runselection: [null, null, null] #FIXME
-        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20210223_ROOT6-1/zg/default/default/pp_2016_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20210223_ROOT6-1/zg/default/default/pp_2017_data/593_20210223-2051/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20210223_ROOT6-1/zg/default/default/pp_2018_data/593_20210223-2051/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20210223_ROOT6-1/zg/default/default/pp_data/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/D0kAnywithJets_Nima_Test/vAN-20210223_ROOT6-1/zg/default/default/pp_2016_data/593_20210223-2051/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets_Nima_Test/vAN-20210223_ROOT6-1/zg/default/default/pp_2017_data/593_20210223-2051/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets_Nima_Test/vAN-20210223_ROOT6-1/zg/default/default/pp_2018_data/593_20210223-2051/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets_Nima_Test/vAN-20210223_ROOT6-1/zg/default/default/pp_data/resultsMBjetvspt
       mc: &mc_out_default
         runselection: [null, null, null] #FIXME
-        results: [/data/DerivedResultsJets/D0kAnywithJets/vAN-20210223_ROOT6-1/zg/default/default/pp_2016_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20210223_ROOT6-1/zg/default/default/pp_2017_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
-                  /data/DerivedResultsJets/D0kAnywithJets/vAN-20210223_ROOT6-1/zg/default/default/pp_2018_mc_prodD2H/594_20210301-1015/resultsMBjetvspt] #list of periods
-        resultsallp: /data/DerivedResultsJets/D0kAnywithJets/vAN-20210223_ROOT6-1/zg/default/default/pp_mc_prodD2H/resultsMBjetvspt
+        results: [/data/DerivedResultsJets/D0kAnywithJets_Nima_Test/vAN-20210223_ROOT6-1/zg/default/default/pp_2016_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets_Nima_Test/vAN-20210223_ROOT6-1/zg/default/default/pp_2017_mc_prodD2H/594_20210301-1015/resultsMBjetvspt,
+                  /data/DerivedResultsJets/D0kAnywithJets_Nima_Test/vAN-20210223_ROOT6-1/zg/default/default/pp_2018_mc_prodD2H/594_20210301-1015/resultsMBjetvspt] #list of periods
+        resultsallp: /data/DerivedResultsJets/D0kAnywithJets_Nima_Test/vAN-20210223_ROOT6-1/zg/default/default/pp_mc_prodD2H/resultsMBjetvspt
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input
@@ -364,7 +371,6 @@ D0pp:
       xsection_inel: 57.8 # (mb) cross-section of minimum-bias events
 
       doprior: false
-      doeff_resp: false #efficiency correction for the response matrix
 
       powheg_path_nonprompt: /data/POWHEG/trees_powheg_fd_central.root
 
@@ -446,6 +452,10 @@ D0pp:
 
     jet_FF:
       <<: *jet_default
+
+      pythia8_prompt_variations: ["default","colour2soft"]
+      pythia8_prompt_variations_legend:  ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 2"]
+
       sel_binmin2_reco: [5.0,7.0,10.0,15.0] # rec jet pt bins (sel_binmin2_reco bins)
       sel_binmax2_reco:     [7.0,10.0,15.0,50.0] # rec jet pt bins (sel_binmin2_reco bins)
       sel_binmin2_gen:  [5.0,7.0,10.0,15.0] # gen jet pt bins (sel_binmin2_gen bins)
@@ -479,14 +489,10 @@ D0pp:
       <<: *jet_default
       lc_d0_ratio: true #make ratio of D0 and corresponding Lc analysis
       xsec: false 
-      doeff_resp: true
       use_inclusive_systematics: true
 
-      pythia8_prompt_variations_path: /data/PYTHIA8/trees_pythia8_pr_
       pythia8_prompt_variations: ["default","colour2soft"]
       pythia8_prompt_variations_legend:  ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 2"]
-      #pythia8_prompt_variations: ["default","colour2soft", "colour2soft"]
-      #pythia8_prompt_variations_legend:  ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 2", "SoftQCD, mode 2 (scaled)"]
 
       var_binningshape: delta_r_jet
       var_binningshape_gen: delta_r_gen_jet
@@ -533,14 +539,10 @@ D0pp:
       <<: *jet_default
       lc_d0_ratio: true
       xsec: false
-      doeff_resp: true
       use_inclusive_systematics: true
 
-      pythia8_prompt_variations_path: /data/PYTHIA8/trees_pythia8_pr_
       pythia8_prompt_variations: ["default","colour2soft"]
       pythia8_prompt_variations_legend:  ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 2"]
-      #pythia8_prompt_variations: ["default","colour2soft", "colour2soft"]
-      #pythia8_prompt_variations_legend:  ["PYTHIA 8 (Monash)","PYTHIA 8 SoftQCD, mode 2", "SoftQCD, mode 2 (scaled)"]
 
       var_binningshape: delta_r_jet
       var_binningshape_gen: delta_r_gen_jet

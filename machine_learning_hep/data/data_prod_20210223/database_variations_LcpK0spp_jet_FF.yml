@@ -37,7 +37,7 @@ categories:
                             masspeak:    [2.2864]
                             masspeaksec: [2.2864]
             massmin:
-                activate: [no, no]
+                activate: [yes, yes]
                 label: 
                     - "mass min. 2.18"
                     - "mass min. 2.16"
@@ -214,7 +214,7 @@ categories:
                         jet_r_shape_2_6:
                             xsection_inel: [54.91, 60.69]
     tracking:
-        activate: yes 
+        activate: yes
         processor: true
         label: "tracking eff."
         correlation: "corr"
@@ -265,8 +265,9 @@ categories:
         rms_both_sides: true
         variations:
             cutvar:
-                activate: [yes, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no, no]
+                activate: [yes, no, yes, yes, yes, no, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
                 #activate: [no , no , yes, yes, yes, yes, no , yes, yes, yes, yes,  no , no , no , no , no , no , no , no , no , no , no , no]
+                #activate: [yes, no, yes, yes, yes, no, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
                #cutvar :  [80 , 79 , 78 , 77 , 76 , 75 , 74 , 73 , 72 , 71 , 69 , 68 , 67 , 66 , 65 , 63 , 60 , 55 , 50 , 45 , 40 , 35 , 30]
                 label: 
                     - "prob cut: 0.80"
