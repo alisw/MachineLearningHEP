@@ -604,7 +604,7 @@ def get_marker(i: int, option=0):
         list_markers = markers_open
     return list_markers[i % len(list_markers)]
 
-def get_markersize(marker: int, size_def=2.5):
+def get_markersize(marker: int, size_def=1.5):
     '''Return a marker size.'''
     markers_small = [kOpenCross, kOpenDiamond, kOpenStar, kOpenDoubleDiamond,
                      kOpenFourTrianglesPlus, kOpenCrossX,

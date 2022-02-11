@@ -380,7 +380,7 @@ class AnalyzerJet(Analyzer):
                 histomassmc_reb.Copy(histomassmc_reb_f)
                 fittermc = TF1("fittermc", "gaus", self.p_massmin[ipt],
                         self.p_massmax[ipt])
-                sgn_mc = histomassmc_reb.Fit(fittermc)
+                sgn_mc = histomassmc_reb.Fit(fittermc, "R")
 
                 if sgn_mc:
                     print("*****MC fitter %s successfull!*****" % suffix)
@@ -481,9 +481,9 @@ class AnalyzerJet(Analyzer):
                 bkg_right_2 = (mean + self.sideband_sigma_2_right*sigma)
                 print(f"Fit sideband regions for {suffix}: {bkg_left_1}-{bkg_left_2}, {sig_left}-{sig_right}, {bkg_right_1}-{bkg_right_2}")
                 if bkg_left_1 <= self.p_massmin[ipt]:
-                    print(f"Warning: {suffix} Left sideband {'completely' if bkg_left_2 <= self.p_massmin[ipt] else 'partially'} outside histogram range")
+                    print(f"Warning: {suffix} Left sideband {'completely' if bkg_left_2 <= self.p_massmin[ipt] else 'partially'} outside fit range")
                 if bkg_right_2 >= self.p_massmax[ipt]:
-                    print(f"Warning: {suffix} Right sideband {'completely' if bkg_right_1 >= self.p_massmax[ipt] else 'partially'} outside histogram range")
+                    print(f"Warning: {suffix} Right sideband {'completely' if bkg_right_1 >= self.p_massmax[ipt] else 'partially'} outside fit range")
                 bkg = 0
                 sig = 0
                 if (sgn_func and bkg_func):
@@ -1142,11 +1142,13 @@ class AnalyzerJet(Analyzer):
 
                 area_scale_denominator = -1
                 if not fun_bkg: # if there is no background fit it continues
+                    print(f"Warning: {suffix} Skipping sideband subtraction because of unavailable bkg function")
                     continue
                 area_scale_denominator = fun_bkg.Integral(masslow9sig, masslow4sig)
                 if not self.sidebandleftonly:
                     area_scale_denominator += fun_bkg.Integral(masshigh4sig, masshigh9sig)
                 if area_scale_denominator == 0:
+                    print(f"Warning: {suffix} Skipping sideband subtraction because of zero bkg integral")
                     continue
                 area_scale = fun_bkg.Integral(masslow2sig, masshigh2sig) / area_scale_denominator
                 hzsub = hzsig.Clone("hzsub" + suffix)
@@ -1167,16 +1169,22 @@ class AnalyzerJet(Analyzer):
                 # correct for reflections
 
                 if self.use_reflections:
-                    ref_in_bkg = fun_ref.Integral(masslow9sig, masslow4sig)
-                    ref_in_sig = fun_ref.Integral(masslow2sig, masshigh2sig)
-                    sig_in_sig = fun_sig.Integral(masslow2sig, masshigh2sig)
-                    if not self.sidebandleftonly:
-                        ref_in_bkg += fun_ref.Integral(masshigh4sig, masshigh9sig)
-                    correction = (ref_in_sig - ref_in_bkg * area_scale) / sig_in_sig
-                    print(f"Correcting signal distribution in {suffix} for reflections with {correction}")
-                    hzsub.Scale(1. / (1. + correction))
-                    his_refl.SetBinContent(ipt + 1, 100 * correction)
-                    his_refl_2d.SetBinContent(ipt + 1, ibin2 + 1, 100 * correction)
+                    if not (fun_ref and fun_sig):
+                        print(f"Warning: {suffix} Skipping reflection correction because of unavailable fit function(s)")
+                    else:
+                        ref_in_bkg = fun_ref.Integral(masslow9sig, masslow4sig)
+                        if not self.sidebandleftonly:
+                            ref_in_bkg += fun_ref.Integral(masshigh4sig, masshigh9sig)
+                        ref_in_sig = fun_ref.Integral(masslow2sig, masshigh2sig)
+                        sig_in_sig = fun_sig.Integral(masslow2sig, masshigh2sig)
+                        if sig_in_sig <= 0. or ref_in_bkg < 0. or ref_in_sig < 0.:
+                            print(f"Warning: {suffix} Skipping reflection correction because of wrong integral(s)")
+                        else:
+                            correction = (ref_in_sig - ref_in_bkg * area_scale) / sig_in_sig
+                            print(f"Correcting signal distribution in {suffix} for reflections with {correction}")
+                            hzsub.Scale(1. / (1. + correction))
+                            his_refl.SetBinContent(ipt + 1, 100 * correction)
+                            his_refl_2d.SetBinContent(ipt + 1, ibin2 + 1, 100 * correction)
 
                 hzsub_noteffscaled = hzsub.Clone("hzsub_noteffscaled" + suffix)
                 hzbkg_scaled.Scale(area_scale)
@@ -3610,8 +3618,8 @@ class AnalyzerJet(Analyzer):
                     if sys_var == 0:
                         histo_ratio[sys_var].GetYaxis().SetRangeUser(*get_plot_range(y_min, y_max, y_margin_down, y_margin_up))
                         histo_ratio[sys_var].SetTitle("")
-                        histo_ratio[sys_var].SetXTitle("#Delta R")
-                        histo_ratio[sys_var].SetYTitle("Variations/default")
+                        histo_ratio[sys_var].SetXTitle(self.v_varshape_latex)
+                        histo_ratio[sys_var].SetYTitle("variation/default")
                         histo_ratio[sys_var].Draw()
                     if histo_ratio[sys_var].GetBinContent(1) > 0:
                         leg_sysvar_ratio.AddEntry(histo_ratio[sys_var], self.systematic_varlabels[sys_cat][sys_var], "P")
@@ -3679,7 +3687,7 @@ class AnalyzerJet(Analyzer):
                             sys_bin = sys_bin/def_bin
                         sys_array.append(sys_bin)
                         var_histo.SetBinContent(sys_var+1, sys_bin)
-                    label_varhisto = "#Delta R = %s #minus %s" % (self.lvarshape_binmin_gen[r_val], self.lvarshape_binmax_gen[r_val])
+                    label_varhisto = "%s = %s #minus %s" % (self.v_varshape_latex, self.lvarshape_binmin_gen[r_val], self.lvarshape_binmax_gen[r_val])
                     labels.append(label_varhisto)
                     var_histos.append(var_histo)
                 leg_varhisto = TLegend(.77, .2, 0.95, .85 ) # Rg
@@ -3710,7 +3718,7 @@ class AnalyzerJet(Analyzer):
                         histo_ratio[sys_var].GetYaxis().SetRangeUser(*get_plot_range(y_min, y_max, y_margin_down, y_margin_up))
                         histo_ratio[sys_var].SetTitle("")
                         histo_ratio[sys_var].SetXTitle("#it{p}_{T}")
-                        histo_ratio[sys_var].SetYTitle("efficiency (variations/default)")
+                        histo_ratio[sys_var].SetYTitle("efficiency (variation/default)")
                         histo_ratio[sys_var].Draw()
                     if histo_ratio[sys_var].GetBinContent(1) > 0:
                         leg_sysvar_eff_ratio.AddEntry(histo_ratio[sys_var], self.systematic_varlabels[sys_cat][sys_var], "P")
