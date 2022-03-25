@@ -174,7 +174,7 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     # plot the results with systematic uncertainties and models
 
     size_can = [800, 800]
-    size_can_double = [800, 1000]
+    size_can_double = [800, 1200]
     offsets_axes = [0.8, 1.1]
     offsets_axes_double = [0.8, 0.8]
     margins_can = [0.1, 0.13, 0.1, 0.03]
@@ -207,7 +207,7 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     text_pythia = "PYTHIA 8 (Monash)"
     text_pythia_short = "PYTHIA 8"
     text_pythia_split = "#splitline{PYTHIA 8}{(Monash)}"
-    text_powheg = "POWHEG"
+    text_powheg = "POWHEG #plus PYTHIA 6"
     text_jets = "charged jets, anti-#it{k}_{T}, #it{R} = 0.4"
     text_ptjet = "%g #leq %s < %g GeV/#it{c}, |#it{#eta}_{jet}| #leq 0.5" % (lvar2_binmin_reco[ibin2], p_latexbin2var, lvar2_binmax_reco[ibin2])
     text_pth = "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, |#it{y}_{%s}| #leq 0.8" % (lpt_finbinmin[0], p_latexnhadron, min(lpt_finbinmax[-1], lvar2_binmax_reco[ibin2]), p_latexnhadron)
@@ -568,6 +568,9 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
 
     # data
     leg_pos = [.7, .75, .82, .85]
+    fraction_untagged_hf = hf_data_stat.Integral(1, 1, "width")
+    fraction_untagged_incl = incl_data_stat.Integral(1, 1, "width")
+    print(f"Untagged fraction: HF {fraction_untagged_hf}, incl {fraction_untagged_incl}")
     list_obj = [hf_data_syst, incl_data_syst, hf_data_stat, incl_data_stat]
     labels_obj = ["%s-tagged" % p_latexnhadron, "inclusive", "", ""]
     colours = [get_colour(i, j) for i, j in zip((c_hf_data, c_incl_data, c_hf_data, c_incl_data), (2, 2, 1, 1))]
@@ -575,19 +578,25 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     y_margin_up = 0.42
     y_margin_down = 0.05
     cshape_datamc_all = TCanvas("cshape_datamc_" + suffix, "cshape_datamc_" + suffix)
-    cshape_datamc_all.Divide(1, 2)
+    cshape_datamc_all.Divide(1, 3)
     pad1 = cshape_datamc_all.cd(1)
     pad2 = cshape_datamc_all.cd(2)
-    pad1.SetPad(0., 0.3, 1, 1)
-    pad2.SetPad(0., 0., 1, 0.3)
+    pad3 = cshape_datamc_all.cd(3)
+    pad1.SetPad(0., 0.45, 1, 1)
+    pad2.SetPad(0., 0.25, 1, 0.45)
+    pad3.SetPad(0., 0., 1, 0.25)
     pad1.SetBottomMargin(0.)
-    pad2.SetBottomMargin(0.25)
+    pad2.SetBottomMargin(0.)
+    pad3.SetBottomMargin(0.25)
     pad1.SetTopMargin(0.1)
     pad2.SetTopMargin(0.)
+    pad3.SetTopMargin(0.)
     pad1.SetLeftMargin(0.12)
     pad2.SetLeftMargin(0.12)
+    pad3.SetLeftMargin(0.12)
     pad1.SetTicks(1, 1)
     pad2.SetTicks(1, 1)
+    pad3.SetTicks(1, 1)
     cshape_datamc_all, list_obj_data_new = make_plot("cshape_datamc_" + suffix, size=size_can_double, \
         can=cshape_datamc_all, pad=1, \
         list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g=opt_plot_g, offsets_xy=[0.8, 1.1], \
@@ -638,6 +647,12 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
         list_latex_data.append(latex)
         draw_latex(latex, textsize=fontsize)
         y_latex -= y_step
+    y_latex = y_latex_top - 3 * y_step
+    for text_latex in ["SD-untagged jets", f"{p_latexnhadron}-tagged: {100 * fraction_untagged_hf:.2g}%", f"inclusive: {100 * fraction_untagged_incl:.2g}%"]:
+        latex = TLatex(x_latex + 0.45, y_latex, text_latex)
+        list_latex_data.append(latex)
+        draw_latex(latex, textsize=fontsize)
+        y_latex -= y_step
     cshape_datamc_all.Update()
 
     # MC/data
@@ -645,7 +660,7 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     line_1.SetLineStyle(9)
     line_1.SetLineColor(1)
     line_1.SetLineWidth(3)
-    leg_pos = [.15, .8, .85, .95]
+    leg_pos = [.15, .8, .4, .95]
     hf_ratio_powheg_stat = hf_powheg_stat.Clone(f"{hf_powheg_stat.GetName()}_rat")
     hf_ratio_powheg_stat.Divide(hf_data_stat)
     hf_ratio_powheg_syst = divide_graphs(hf_powheg_syst, hf_data_syst)
@@ -661,10 +676,10 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     # incl_ratio_pythia_stat = incl_data_stat.Clone(f"{incl_data_stat.GetName()}_rat") # version data/MC
     # incl_ratio_pythia_stat.Divide(incl_pythia_stat) # version data/MC
     # incl_ratio_pythia_syst = divide_graphs(incl_data_syst, incl_pythia_syst) # version data/MC
-    list_obj = [hf_ratio_powheg_syst, hf_ratio_pythia_syst, incl_ratio_pythia_syst, hf_ratio_powheg_stat, hf_ratio_pythia_stat, incl_ratio_pythia_stat, line_1]
-    labels_obj = [text_powheg, f"{p_latexnhadron}-tagged {text_pythia_short}", f"inclusive {text_pythia_short}", "", "", ""]
-    colours = [get_colour(i, j) for i, j in zip((c_hf_powheg, c_hf_pythia, c_incl_pythia, c_hf_powheg, c_hf_pythia, c_incl_pythia), (2, 2, 2, 1, 1, 1))]
-    markers = [m_hf_powheg, m_hf_pythia, m_incl_pythia, m_hf_powheg, m_hf_pythia, m_incl_pythia]
+    list_obj = [hf_ratio_powheg_syst, hf_ratio_pythia_syst, hf_ratio_powheg_stat, hf_ratio_pythia_stat, line_1]
+    labels_obj = [f"{p_latexnhadron}-tagged {text_powheg}", f"{p_latexnhadron}-tagged {text_pythia_short}", "", ""]
+    colours = [get_colour(i, j) for i, j in zip((c_hf_powheg, c_hf_pythia, c_hf_powheg, c_hf_pythia), (2, 2, 1, 1))]
+    markers = [m_hf_powheg, m_hf_pythia, m_hf_powheg, m_hf_pythia]
     y_margin_up = 0.25
     y_margin_down = 0.05
     cshape_datamc_all, list_obj_data_mc_hf_new = make_plot("cshape_data_mc_hf_" + suffix, size=size_can_double, \
@@ -679,12 +694,43 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     list_obj[0].GetXaxis().SetTitleSize(0.1)
     list_obj[0].GetYaxis().SetLabelSize(0.1)
     list_obj[0].GetYaxis().SetTitleSize(0.1)
-    for gr, c in zip([hf_ratio_powheg_syst, hf_ratio_pythia_syst, incl_ratio_pythia_syst], [c_hf_powheg, c_hf_pythia, c_incl_pythia]):
+    for gr, c in zip([hf_ratio_powheg_syst, hf_ratio_pythia_syst], [c_hf_powheg, c_hf_pythia]):
         gr.SetMarkerColor(get_colour(c))
     leg_data_mc_hf = list_obj_data_mc_hf_new[0]
     #leg_data_mc_hf.SetHeader("%s-tagged" % p_latexnhadron)
     leg_data_mc_hf.SetTextSize(fontsize * 7/3)
-    leg_data_mc_hf.SetNColumns(2)
+    # leg_data_mc_hf.SetNColumns(2)
+    if shape == "nsd":
+        list_obj[0].GetXaxis().SetNdivisions(5)
+    cshape_datamc_all.Update()
+
+    # MC/data panel 2
+    incl_ratio_pythia_syst.SetPointY(0, 1.)
+    incl_ratio_pythia_stat.SetBinContent(1, 1.)
+    list_obj = [incl_ratio_pythia_syst, incl_ratio_pythia_stat, line_1]
+    labels_obj = [f"inclusive {text_pythia_short}", ""]
+    colours = [get_colour(i, j) for i, j in zip((c_incl_pythia, c_incl_pythia), (2, 1))]
+    markers = [m_incl_pythia, m_incl_pythia]
+    y_margin_up = 0.25
+    y_margin_down = 0.05
+    cshape_datamc_all, list_obj_data_mc_hf_new_2 = make_plot("cshape_data_mc_hf_" + suffix, size=size_can_double, \
+        can=cshape_datamc_all, pad=3, \
+        list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g=opt_plot_g, offsets_xy=[1, 1.3 * 3/7], \
+        colours=colours, markers=markers, leg_pos=leg_pos, margins_c=margins_can_double, \
+        range_x=list_range_x[i_shape], \
+        margins_y=[y_margin_down, y_margin_up], \
+        # range_y=list_range_y_rat[i_shape], \
+        title=title_full_ratio_double)
+    list_obj[0].GetXaxis().SetLabelSize(0.1)
+    list_obj[0].GetXaxis().SetTitleSize(0.1)
+    list_obj[0].GetYaxis().SetLabelSize(0.1)
+    list_obj[0].GetYaxis().SetTitleSize(0.1)
+    for gr, c in zip([incl_ratio_pythia_syst], [c_incl_pythia]):
+        gr.SetMarkerColor(get_colour(c))
+    leg_data_mc_hf = list_obj_data_mc_hf_new_2[0]
+    #leg_data_mc_hf.SetHeader("%s-tagged" % p_latexnhadron)
+    leg_data_mc_hf.SetTextSize(fontsize * 7/3)
+    # leg_data_mc_hf.SetNColumns(2)
     if shape == "nsd":
         list_obj[0].GetXaxis().SetNdivisions(5)
     cshape_datamc_all.Update()
@@ -700,6 +746,7 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     #cshape_datamc_all.Update()
     pad1.RedrawAxis()
     pad2.RedrawAxis()
+    pad3.RedrawAxis()
     cshape_datamc_all.SaveAs("%s/%s_datamc_all_%s.pdf" % (rootpath, shape, suffix))
 
 main()
