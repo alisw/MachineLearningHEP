@@ -748,7 +748,11 @@ def make_plot(name, can=None, pad=0, path=None, suffix="eps", title="", size=Non
             graph.GetYaxis().SetTitleOffset(offsets_xy[1])
         if leg and n_labels > counter_plot and len(labels_obj[counter_plot]) > 0:
             leg.AddEntry(graph, labels_obj[counter_plot], opt_leg_g)
-        graph.Draw(opt_plot_g + "A" if counter_plot == 0 else opt_plot_g)
+        if isinstance(opt_plot_g, list):
+            opt_plot = opt_plot_g
+        else:
+            opt_plot = [opt_plot_g] * (counter_plot + 1)
+        graph.Draw(opt_plot[counter_plot] + "A" if counter_plot == 0 else opt_plot[counter_plot])
 
     def plot_histogram(histogram):
         # If nothing has been plotted yet, plot an empty graph to set the exact ranges.
@@ -781,6 +785,7 @@ def make_plot(name, can=None, pad=0, path=None, suffix="eps", title="", size=Non
             opt_leg = [opt_leg_h]*(counter_plot+1)
         if leg and n_labels > counter_plot and len(labels_obj[counter_plot]) > 0:
             leg.AddEntry(histogram, labels_obj[counter_plot], opt_leg[counter_plot])
+        print(f"Plotting {histogram.GetName()} with option {opt_plot[counter_plot]}")
         histogram.Draw(opt_plot[counter_plot])
 
     def plot_latex(latex):
@@ -984,3 +989,13 @@ def divide_graphs(gr_num, gr_den):
         gr_rat.SetPointEYhigh(i, math.sqrt(e_a_plus * e_a_plus + r * r * e_b_minus * e_b_minus) / y_b)
         gr_rat.SetPointEYlow(i, math.sqrt(e_a_minus * e_a_minus + r * r * e_b_plus * e_b_plus) / y_b)
     return gr_rat
+
+
+def scale_graph(gr, number):
+    """
+    Scale TGraphAsymmErrors
+    """
+    for i in range(gr.GetN()):
+        gr.SetPointY(i, gr.GetPointY(i) * number)
+        gr.SetPointEYhigh(i, gr.GetErrorYlow(i) * number)
+        gr.SetPointEYlow(i, gr.GetErrorYhigh(i) * number)

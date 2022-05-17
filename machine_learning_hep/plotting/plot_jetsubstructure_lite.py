@@ -21,17 +21,20 @@ from array import array
 from cmath import nan
 import yaml
 # pylint: disable=import-error, no-name-in-module
-from ROOT import TFile, TLatex, TLine, TGaxis, gROOT, gStyle, TCanvas, TGraphAsymmErrors, TGraphErrors, TGraph
+from ROOT import TFile, TLatex, TLine, TGaxis, gROOT, gStyle, TCanvas, TGraphAsymmErrors, TGraphErrors, TGraph, TLegend
 from machine_learning_hep.utilities import make_message_notfound
 from machine_learning_hep.utilities import get_colour, get_marker, draw_latex
-from machine_learning_hep.utilities import make_plot, get_y_window_his, get_y_window_gr, get_plot_range, divide_graphs
+from machine_learning_hep.utilities import make_plot, get_y_window_his, get_y_window_gr, get_plot_range, divide_graphs, scale_graph, setup_legend
 from machine_learning_hep.logger import get_logger
+
 
 def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
     """
     Main plotting function
     """
     gROOT.SetBatch(True)
+
+    do_ivan = True
 
     # pylint: disable=unused-variable
 
@@ -48,6 +51,8 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     typean = args.type_ana
     shape = typean[len("jet_"):]
     print("Shape:", shape)
+    if shape != "zg":
+        do_ivan = False
 
     file_in = args.input_file
     with open(args.database_analysis, "r") as file_db:
@@ -148,6 +153,17 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     if not hf_powheg_syst:
         logger.fatal(make_message_notfound(nameobj, file_in))
 
+    if do_ivan:
+        # HF Ivan
+        nameobj = "%s_hf_ivan_stat" % shape
+        hf_ivan_stat = file_results.Get(nameobj)
+        if not hf_ivan_stat:
+            logger.fatal(make_message_notfound(nameobj, file_in))
+        nameobj = "%s_hf_ivan_syst" % shape
+        hf_ivan_syst = file_results.Get(nameobj)
+        if not hf_ivan_syst:
+            logger.fatal(make_message_notfound(nameobj, file_in))
+
     # inclusive data
     nameobj = "%s_incl_data_%d_stat" % (shape, ibin2)
     incl_data_stat = file_results.Get(nameobj)
@@ -170,6 +186,17 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     gStyle.SetErrorX(0.5) # we have to restore the histogram bin width to propagate it to graph
     incl_pythia_syst = TGraphAsymmErrors(incl_pythia_stat_zero) # convert histogram into a graph
     gStyle.SetErrorX(0) # set back the intended settings
+
+    if do_ivan:
+        # inclusive Ivan
+        nameobj = "%s_incl_ivan_stat" % shape
+        incl_ivan_stat = file_results.Get(nameobj)
+        if not incl_ivan_stat:
+            logger.fatal(make_message_notfound(nameobj, file_in))
+        nameobj = "%s_incl_ivan_syst" % shape
+        incl_ivan_syst = file_results.Get(nameobj)
+        if not incl_ivan_syst:
+            logger.fatal(make_message_notfound(nameobj, file_in))
 
     # plot the results with systematic uncertainties and models
 
@@ -194,13 +221,14 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
 
     x_latex = 0.16
     y_latex_top = 0.83
-    y_step = 0.055
+    y_step = 0.062
 
     title_x = v_varshape_latex
     title_y = "(1/#it{N}_{jet}) d#it{N}/d%s" % v_varshape_latex
     title_full = ";%s;%s" % (title_x, title_y)
     title_full_ratio = ";%s;data/MC: ratio of %s" % (title_x, title_y)
     title_full_ratio_double = f";{title_x};MC/data"
+    title_full_ratio_theory = f";{title_x};theory/data"
 
     text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13 TeV"
     text_alice_sim = "#bf{ALICE} Simulation, pp, #sqrt{#it{s}} = 13 TeV"
@@ -208,6 +236,7 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     text_pythia_short = "PYTHIA 8"
     text_pythia_split = "#splitline{PYTHIA 8}{(Monash)}"
     text_powheg = "POWHEG #plus PYTHIA 6"
+    text_ivan = "SCET"
     text_jets = "charged jets, anti-#it{k}_{T}, #it{R} = 0.4"
     text_ptjet = "%g #leq %s < %g GeV/#it{c}, |#it{#eta}_{jet}| #leq 0.5" % (lvar2_binmin_reco[ibin2], p_latexbin2var, lvar2_binmax_reco[ibin2])
     text_pth = "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, |#it{y}_{%s}| #leq 0.8" % (lpt_finbinmin[0], p_latexnhadron, min(lpt_finbinmax[-1], lvar2_binmax_reco[ibin2]), p_latexnhadron)
@@ -218,7 +247,7 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     title_thetag = "#it{#theta}_{g} = #it{R}_{g}/#it{R}"
     radius_jet = 0.4
 
-    # colour and marker indeces
+    # colour and marker indices
     c_hf_data = 0
     c_incl_data = 1
     c_hf_pythia = 2
@@ -226,6 +255,8 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     c_incl_pythia = 6
     c_quark_pythia = 5
     c_gluon_pythia = 0
+    c_hf_ivan = 4
+    c_incl_ivan = 5
 
     # markers
     m_hf_data = get_marker(0)
@@ -235,6 +266,8 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     m_incl_pythia = get_marker(1, 2)
     m_quark_pythia = get_marker(2)
     m_gluon_pythia = get_marker(3)
+    m_hf_ivan = get_marker(2)
+    m_incl_ivan = get_marker(3)
 
     # make the horizontal error bars smaller
     if shape == "nsd":
@@ -301,11 +334,11 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     cshape_data.Update()
     cshape_data.SaveAs("%s/%s_data_%s.pdf" % (rootpath, shape, suffix))
 
-    # data and PYTHIA, POWHEG, HF
+    # data and PYTHIA, POWHEG, Ivan, HF
 
     leg_pos = [.72, .65, .85, .85]
     list_obj = [hf_data_syst_cl, hf_powheg_syst, hf_data_stat, hf_pythia_stat, hf_powheg_stat]
-    labels_obj = ["data", text_powheg, "", text_pythia_split, ""]
+    labels_obj = ["data", text_powheg, "", text_pythia_split, "", ""]
     colours = [get_colour(i, j) for i, j in zip((c_hf_data, c_hf_powheg, c_hf_data, c_hf_pythia, c_hf_powheg), (2, 2, 1, 1, 1))]
     markers = [m_hf_data, m_hf_powheg, m_hf_data, m_hf_pythia, m_hf_powheg]
     y_margin_up = 0.4
@@ -545,6 +578,9 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
         e_plus_max = 0.
         e_minus_max = 0.
         for i in range(gr.GetN()):
+            # skip untagged bin for zg and rg
+            if i == 0 and shape in ("zg", "rg"):
+                continue
             y = gr.GetPointY(i)
             e_plus = 100 * gr.GetErrorYhigh(i)
             e_minus = 100 * gr.GetErrorYlow(i)
@@ -560,16 +596,20 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
         print(f"Absolutes: min: {min(e_plus_min, e_minus_min):.2g} %, max {max(e_plus_max, e_minus_max):.2g} %")
 
     # explicit y ranges [zg, rg, nsd]
-    list_range_y = [[0, 9], [0, 6], [0, 0.7]] # data
-    list_range_y_rat = [[0, 2], [0, 2], [0, 2]] # mc/data ratios
+    list_range_y = [[0.01, 9], [0.01, 6.1], [0.001, 0.72]] # data
+    list_range_y_rat = [[0.1, 5.9], [0, 2], [0, 2]] # mc/data ratios
     list_range_x = [[0.1, 0.5], [0, 0.4], [-0.5, 4.5]] # data and mc/data ratios
     i_shape = 0 if shape == "zg" else 1 if shape == "rg" else 2
     print(f"Index {i_shape}")
 
     # data
     leg_pos = [.7, .75, .82, .85]
+    leg_pos = [.65, .7, .82, .85]
     fraction_untagged_hf = hf_data_stat.Integral(1, 1, "width")
     fraction_untagged_incl = incl_data_stat.Integral(1, 1, "width")
+    # hard-coded to values to unify them across zg, rg, nsd
+    fraction_untagged_hf_text = 0.22
+    fraction_untagged_incl_text = 0.028
     print(f"Untagged fraction: HF {fraction_untagged_hf}, incl {fraction_untagged_incl}")
     list_obj = [hf_data_syst, incl_data_syst, hf_data_stat, incl_data_stat]
     labels_obj = ["%s-tagged" % p_latexnhadron, "inclusive", "", ""]
@@ -648,19 +688,20 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
         draw_latex(latex, textsize=fontsize)
         y_latex -= y_step
     y_latex = y_latex_top - 3 * y_step
-    for text_latex in ["SD-untagged jets", f"{p_latexnhadron}-tagged: {100 * fraction_untagged_hf:.2g}%", f"inclusive: {100 * fraction_untagged_incl:.2g}%"]:
-        latex = TLatex(x_latex + 0.45, y_latex, text_latex)
-        list_latex_data.append(latex)
-        draw_latex(latex, textsize=fontsize)
-        y_latex -= y_step
+    if shape != "nsd":
+        for text_latex in ["SD-untagged jets", f"{p_latexnhadron}-tagged: {100 * fraction_untagged_hf_text:.2g}%", f"inclusive: {100 * fraction_untagged_incl_text:.2g}%"]:
+            latex = TLatex(x_latex + 0.45, y_latex, text_latex)
+            list_latex_data.append(latex)
+            draw_latex(latex, textsize=fontsize)
+            y_latex -= y_step
     cshape_datamc_all.Update()
 
-    # MC/data
+    # HF MC/data
     line_1 = TLine(list_range_x[i_shape][0], 1, list_range_x[i_shape][1], 1)
     line_1.SetLineStyle(9)
     line_1.SetLineColor(1)
     line_1.SetLineWidth(3)
-    leg_pos = [.15, .8, .4, .95]
+    leg_pos = [.15, .7, .4, .95]
     hf_ratio_powheg_stat = hf_powheg_stat.Clone(f"{hf_powheg_stat.GetName()}_rat")
     hf_ratio_powheg_stat.Divide(hf_data_stat)
     hf_ratio_powheg_syst = divide_graphs(hf_powheg_syst, hf_data_syst)
@@ -676,11 +717,16 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     # incl_ratio_pythia_stat = incl_data_stat.Clone(f"{incl_data_stat.GetName()}_rat") # version data/MC
     # incl_ratio_pythia_stat.Divide(incl_pythia_stat) # version data/MC
     # incl_ratio_pythia_syst = divide_graphs(incl_data_syst, incl_pythia_syst) # version data/MC
+    if shape != "nsd":
+        for gr in (incl_ratio_pythia_syst, hf_ratio_pythia_syst, hf_ratio_powheg_syst):
+            gr.SetPointY(0, 1.)
+        for his in (incl_ratio_pythia_stat, hf_ratio_pythia_stat, hf_ratio_powheg_stat):
+            his.SetBinContent(1, 1.)
     list_obj = [hf_ratio_powheg_syst, hf_ratio_pythia_syst, hf_ratio_powheg_stat, hf_ratio_pythia_stat, line_1]
     labels_obj = [f"{p_latexnhadron}-tagged {text_powheg}", f"{p_latexnhadron}-tagged {text_pythia_short}", "", ""]
     colours = [get_colour(i, j) for i, j in zip((c_hf_powheg, c_hf_pythia, c_hf_powheg, c_hf_pythia), (2, 2, 1, 1))]
     markers = [m_hf_powheg, m_hf_pythia, m_hf_powheg, m_hf_pythia]
-    y_margin_up = 0.25
+    y_margin_up = 0.29
     y_margin_down = 0.05
     cshape_datamc_all, list_obj_data_mc_hf_new = make_plot("cshape_data_mc_hf_" + suffix, size=size_can_double, \
         can=cshape_datamc_all, pad=2, \
@@ -692,8 +738,9 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
         title=title_full_ratio_double)
     list_obj[0].GetXaxis().SetLabelSize(0.1)
     list_obj[0].GetXaxis().SetTitleSize(0.1)
-    list_obj[0].GetYaxis().SetLabelSize(0.1)
-    list_obj[0].GetYaxis().SetTitleSize(0.1)
+    list_obj[0].GetYaxis().SetLabelSize(0.12)
+    list_obj[0].GetYaxis().SetTitleSize(0.12)
+    list_obj[0].GetYaxis().SetTitleOffset(0.5)
     for gr, c in zip([hf_ratio_powheg_syst, hf_ratio_pythia_syst], [c_hf_powheg, c_hf_pythia]):
         gr.SetMarkerColor(get_colour(c))
     leg_data_mc_hf = list_obj_data_mc_hf_new[0]
@@ -704,14 +751,13 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
         list_obj[0].GetXaxis().SetNdivisions(5)
     cshape_datamc_all.Update()
 
-    # MC/data panel 2
-    incl_ratio_pythia_syst.SetPointY(0, 1.)
-    incl_ratio_pythia_stat.SetBinContent(1, 1.)
+    # inclusive MC/data
+    leg_pos = [.15, .8, .9, .95]
     list_obj = [incl_ratio_pythia_syst, incl_ratio_pythia_stat, line_1]
     labels_obj = [f"inclusive {text_pythia_short}", ""]
     colours = [get_colour(i, j) for i, j in zip((c_incl_pythia, c_incl_pythia), (2, 1))]
     markers = [m_incl_pythia, m_incl_pythia]
-    y_margin_up = 0.25
+    y_margin_up = 0.3
     y_margin_down = 0.05
     cshape_datamc_all, list_obj_data_mc_hf_new_2 = make_plot("cshape_data_mc_hf_" + suffix, size=size_can_double, \
         can=cshape_datamc_all, pad=3, \
@@ -730,7 +776,7 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     leg_data_mc_hf = list_obj_data_mc_hf_new_2[0]
     #leg_data_mc_hf.SetHeader("%s-tagged" % p_latexnhadron)
     leg_data_mc_hf.SetTextSize(fontsize * 7/3)
-    # leg_data_mc_hf.SetNColumns(2)
+    leg_data_mc_hf.SetNColumns(2)
     if shape == "nsd":
         list_obj[0].GetXaxis().SetNdivisions(5)
     cshape_datamc_all.Update()
@@ -748,5 +794,206 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     pad2.RedrawAxis()
     pad3.RedrawAxis()
     cshape_datamc_all.SaveAs("%s/%s_datamc_all_%s.pdf" % (rootpath, shape, suffix))
+
+    # data + MC/data + Ivan, HF and inclusive
+
+    if do_ivan:
+        # Normalise ignoring the untagged bin
+        if shape in ("zg", "rg"):
+            int = 1 - fraction_untagged_hf
+            hf_data_stat.Scale(1. / int)
+            scale_graph(hf_data_syst, 1. / int)
+            int = 1 - fraction_untagged_incl
+            incl_data_stat.Scale(1. / int)
+            scale_graph(incl_data_syst, 1. / int)
+        # data
+        leg_pos = [.65, .7, .82, .85]
+        hf_ivan_syst_plot = hf_ivan_syst.Clone(f"{hf_ivan_syst.GetName()}_plot")
+        hf_ivan_syst_plot.RemovePoint(0) # delete the untagged bin point
+        incl_ivan_syst_plot = incl_ivan_syst.Clone(f"{incl_ivan_syst.GetName()}_plot")
+        incl_ivan_syst_plot.RemovePoint(0) # delete the untagged bin point
+        list_obj = [hf_data_syst, incl_data_syst, hf_ivan_syst_plot, incl_ivan_syst_plot, hf_data_stat, incl_data_stat, hf_ivan_stat, incl_ivan_stat]
+        labels_obj = [f"{p_latexnhadron}-tagged", "inclusive", "", "", "", "", "", ""]
+        colours = [get_colour(i, j) for i, j in zip((c_hf_data, c_incl_data, c_hf_ivan, c_incl_ivan, c_hf_data, c_incl_data, c_hf_ivan, c_incl_ivan), (2, 2, 2, 2, 1, 1, 1, 1))]
+        markers = [m_hf_data, m_incl_data, m_hf_ivan, m_incl_ivan, m_hf_data, m_incl_data, m_hf_ivan, m_incl_ivan]
+        y_margin_up = 0.45
+        y_margin_down = 0.05
+        cshape_datamc_ivan = TCanvas("cshape_datamc_ivan_" + suffix, "cshape_datamc_ivan_" + suffix)
+        cshape_datamc_ivan.Divide(1, 3)
+        pad1 = cshape_datamc_ivan.cd(1)
+        pad2 = cshape_datamc_ivan.cd(2)
+        pad3 = cshape_datamc_ivan.cd(3)
+        pad1.SetPad(0., 0.45, 1, 1)
+        pad2.SetPad(0., 0.25, 1, 0.45)
+        pad3.SetPad(0., 0., 1, 0.25)
+        pad1.SetBottomMargin(0.)
+        pad2.SetBottomMargin(0.)
+        pad3.SetBottomMargin(0.25)
+        pad1.SetTopMargin(0.1)
+        pad2.SetTopMargin(0.)
+        pad3.SetTopMargin(0.)
+        pad1.SetLeftMargin(0.12)
+        pad2.SetLeftMargin(0.12)
+        pad3.SetLeftMargin(0.12)
+        pad1.SetTicks(1, 1)
+        pad2.SetTicks(1, 1)
+        pad3.SetTicks(1, 1)
+        cshape_datamc_ivan, list_obj_data_new = make_plot("cshape_datamc_" + suffix, size=size_can_double, \
+            can=cshape_datamc_ivan, pad=1, \
+            list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g=[opt_plot_g, opt_plot_g, "3", "3"], offsets_xy=[0.8, 1.1], \
+            colours=colours, markers=markers, leg_pos=leg_pos, margins_c=margins_can_double, \
+            range_x=list_range_x[i_shape], \
+            margins_y=[y_margin_down, y_margin_up], \
+            # range_y=list_range_y[i_shape], \
+            title=title_full)
+        for gr, c in zip((hf_data_syst, incl_data_syst, hf_ivan_syst_plot, incl_ivan_syst_plot), (c_hf_data, c_incl_data, c_hf_ivan, c_incl_ivan)):
+            gr.SetMarkerColor(get_colour(c))
+        leg_data_mc = list_obj_data_new[0]
+        leg_data_mc.SetTextSize(fontsize)
+        leg_data_mc.SetHeader("data")
+        leg_data_mc_theory = TLegend(.65, .5, .82, .65)
+        setup_legend(leg_data_mc_theory, fontsize)
+        # leg_data_mc_theory.SetTextSize(fontsize)
+        leg_data_mc_theory.SetHeader(text_ivan)
+        leg_data_mc_theory.AddEntry(hf_ivan_syst_plot, f"{p_latexnhadron}-tagged")
+        leg_data_mc_theory.AddEntry(incl_ivan_syst_plot, "inclusive")
+        leg_data_mc_theory.Draw()
+        hf_data_syst.GetYaxis().SetLabelSize(0.1 * 3/7)
+        #hf_data_syst.GetYaxis().SetTitleSize(0.1)
+        if shape == "nsd":
+            hf_data_syst.GetXaxis().SetNdivisions(5)
+        # Draw a line through the points.
+        if shape == "nsd":
+            for h in (hf_data_stat, incl_data_stat):
+                h_line = h.Clone(h.GetName() + "_line")
+                h_line.SetLineStyle(2)
+                h_line.Draw("l hist same")
+                list_new.append(h_line)
+        cshape_datamc_ivan.Update()
+        if shape == "rg":
+            # plot the theta_g axis
+            gr_frame = hf_data_syst
+            axis_rg = gr_frame.GetXaxis()
+            rg_min = axis_rg.GetBinLowEdge(axis_rg.GetFirst())
+            rg_max = axis_rg.GetBinUpEdge(axis_rg.GetLast())
+            thetag_min = rg_min / radius_jet
+            thetag_max = rg_max / radius_jet
+            y_axis = pad1.GetUymax()
+            axis_thetag = TGaxis(rg_min, y_axis, rg_max, y_axis, thetag_min, thetag_max, 510, "-")
+            axis_thetag.SetTitle(title_thetag)
+            axis_thetag.SetTitleSize(size_thg)
+            axis_thetag.SetLabelSize(0.036)
+            axis_thetag.SetTitleFont(42)
+            axis_thetag.SetLabelFont(42)
+            axis_thetag.SetLabelOffset(0)
+            axis_thetag.SetTitleOffset(offset_thg)
+            cshape_datamc_ivan.cd(1).SetTickx(0)
+            axis_thetag.Draw("same")
+        # Draw LaTeX
+        y_latex = y_latex_top
+        list_latex_data = []
+        for text_latex in [text_alice, text_jets, text_ptjet, text_pth, text_ptcut, text_sd]:
+            latex = TLatex(x_latex, y_latex, text_latex)
+            list_latex_data.append(latex)
+            draw_latex(latex, textsize=fontsize)
+            y_latex -= y_step
+        y_latex = y_latex_top - 3 * y_step
+        # for text_latex in ["SD-untagged jets", f"{p_latexnhadron}-tagged: {100 * fraction_untagged_hf:.2g}%", f"inclusive: {100 * fraction_untagged_incl:.2g}%"]:
+        #     latex = TLatex(x_latex + 0.45, y_latex, text_latex)
+        #     list_latex_data.append(latex)
+        #     draw_latex(latex, textsize=fontsize)
+        #     y_latex -= y_step
+        cshape_datamc_ivan.Update()
+
+        # HF theory/data
+        line_1 = TLine(list_range_x[i_shape][0], 1, list_range_x[i_shape][1], 1)
+        line_1.SetLineStyle(9)
+        line_1.SetLineColor(1)
+        line_1.SetLineWidth(3)
+        hf_ratio_ivan_stat = hf_ivan_stat.Clone(f"{hf_ivan_stat.GetName()}_rat")
+        hf_ratio_ivan_stat.Divide(hf_data_stat)
+        hf_ratio_ivan_stat.SetBinContent(1, 1.)
+        hf_ratio_ivan_syst = divide_graphs(hf_ivan_syst, hf_data_syst)
+        hf_ratio_ivan_syst.RemovePoint(0) # delete the untagged bin point
+        incl_ratio_ivan_stat = incl_ivan_stat.Clone(f"{incl_ivan_stat.GetName()}_rat")
+        incl_ratio_ivan_stat.Divide(incl_data_stat)
+        incl_ratio_ivan_stat.SetBinContent(1, 1.)
+        incl_ratio_ivan_syst = divide_graphs(incl_ivan_syst, incl_data_syst)
+        incl_ratio_ivan_syst.RemovePoint(0) # delete the untagged bin point
+        leg_pos = [.15, .7, .4, .95]
+        list_obj = [hf_ratio_ivan_syst, hf_ratio_ivan_stat, line_1]
+        labels_obj = [f"{p_latexnhadron}-tagged {text_ivan}", "", ""]
+        colours = [get_colour(i, j) for i, j in zip((c_hf_ivan, c_hf_ivan), (2, 1))]
+        markers = [m_hf_ivan, m_hf_ivan]
+        y_margin_up = 0.05
+        y_margin_down = 0.05
+        cshape_datamc_ivan, list_obj_data_mc_hf_new = make_plot("cshape_data_mc_hf_ivan_" + suffix, size=size_can_double, \
+            can=cshape_datamc_ivan, pad=2, \
+            list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g="3", offsets_xy=[1, 1.3 * 3/7], \
+            colours=colours, markers=markers, leg_pos=None, margins_c=margins_can_double, \
+            range_x=list_range_x[i_shape], \
+            margins_y=[y_margin_down, y_margin_up], \
+            # range_y=list_range_y_rat[i_shape], \
+            title=title_full_ratio_theory)
+        list_obj[0].GetXaxis().SetLabelSize(0.1)
+        list_obj[0].GetXaxis().SetTitleSize(0.1)
+        list_obj[0].GetYaxis().SetLabelSize(0.12)
+        list_obj[0].GetYaxis().SetTitleSize(0.12)
+        list_obj[0].GetYaxis().SetTitleOffset(0.5)
+        list_obj[0].GetYaxis().SetNdivisions(4)
+        for gr, c in zip([hf_ratio_ivan_syst], [c_hf_ivan]):
+            gr.SetMarkerColor(get_colour(c))
+        # leg_data_mc_hf = list_obj_data_mc_hf_new[0]
+        #leg_data_mc_hf.SetHeader("%s-tagged" % p_latexnhadron)
+        # leg_data_mc_hf.SetTextSize(fontsize * 7/3)
+        # leg_data_mc_hf.SetNColumns(2)
+        if shape == "nsd":
+            list_obj[0].GetXaxis().SetNdivisions(5)
+        cshape_datamc_ivan.Update()
+
+        # inclusive theory/data
+        leg_pos = [.15, .8, .9, .95]
+        list_obj = [incl_ratio_ivan_syst, incl_ratio_ivan_stat, line_1]
+        labels_obj = [f"inclusive {text_ivan}", ""]
+        colours = [get_colour(i, j) for i, j in zip((c_incl_ivan, c_incl_ivan), (2, 1))]
+        markers = [m_incl_ivan, m_incl_ivan]
+        y_margin_up = 0.05
+        y_margin_down = 0.05
+        cshape_datamc_ivan, list_obj_data_mc_hf_new_2 = make_plot("cshape_data_mc_incl_ivan_" + suffix, size=size_can_double, \
+            can=cshape_datamc_ivan, pad=3, \
+            list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g="3", offsets_xy=[1, 1.3 * 3/7], \
+            colours=colours, markers=markers, leg_pos=None, margins_c=margins_can_double, \
+            range_x=list_range_x[i_shape], \
+            margins_y=[y_margin_down, y_margin_up], \
+            # range_y=list_range_y_rat[i_shape], \
+            title=title_full_ratio_theory)
+        list_obj[0].GetXaxis().SetLabelSize(0.1)
+        list_obj[0].GetXaxis().SetTitleSize(0.1)
+        list_obj[0].GetYaxis().SetLabelSize(0.1)
+        list_obj[0].GetYaxis().SetTitleSize(0.1)
+        list_obj[0].GetYaxis().SetNdivisions(4)
+        for gr, c in zip([incl_ratio_ivan_syst], [c_incl_ivan]):
+            gr.SetMarkerColor(get_colour(c))
+        # leg_data_mc_hf = list_obj_data_mc_hf_new_2[0]
+        #leg_data_mc_hf.SetHeader("%s-tagged" % p_latexnhadron)
+        # leg_data_mc_hf.SetTextSize(fontsize * 7/3)
+        # leg_data_mc_hf.SetNColumns(2)
+        if shape == "nsd":
+            list_obj[0].GetXaxis().SetNdivisions(5)
+        cshape_datamc_ivan.Update()
+
+        # Draw LaTeX
+        #y_latex = y_latex_top
+        #list_latex_data_mc_hf = []
+        #for text_latex in [text_alice, text_jets, text_ptjet, text_pth, text_sd]:
+        #    latex = TLatex(x_latex, y_latex, text_latex)
+        #    list_latex_data_mc_hf.append(latex)
+        #    draw_latex(latex, textsize=fontsize)
+        #    y_latex -= y_step
+        #cshape_datamc_ivan.Update()
+        pad1.RedrawAxis()
+        pad2.RedrawAxis()
+        pad3.RedrawAxis()
+        cshape_datamc_ivan.SaveAs("%s/%s_datamc_ivan_%s.pdf" % (rootpath, shape, suffix))
 
 main()
