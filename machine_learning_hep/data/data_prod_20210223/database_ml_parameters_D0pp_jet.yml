@@ -57,7 +57,7 @@ D0pp:
               nsigTPC_Pi_0, nsigTPC_K_0, nsigTOF_Pi_0, nsigTOF_K_0, nsigTPC_Pi_1, nsigTPC_K_1, nsigTOF_Pi_1, nsigTOF_K_1,
               pt_jet, eta_jet, phi_jet, delta_eta_jet, delta_phi_jet, delta_r_jet,
               pt_gen_jet, eta_gen_jet, phi_gen_jet, delta_eta_gen_jet, delta_phi_gen_jet, delta_r_gen_jet, pt_gen_cand,
-              zg_jet, zg_gen_jet, rg_jet, rg_gen_jet, nsd_jet, nsd_gen_jet, pt_splitting_jet, pt_splitting_gen_jet, k0_jet, k0_gen_jet, k1_jet, k1_gen_jet, k2_jet, k2_gen_jet, kT_jet, kT_gen_jet]
+              zg_jet, zg_gen_jet, rg_jet, rg_gen_jet, nsd_jet, nsd_gen_jet, pt_splitting_jet, pt_splitting_gen_jet, k0_jet, k0_gen_jet, k1_jet, k1_gen_jet, k2_jet, k2_gen_jet, kT_jet, kT_gen_jet, ntracks_jet, ntracks_gen_jet]
     var_evt:
       data: [centrality, z_vtx_reco, n_vtx_contributors, n_tracks, is_ev_rej, run_number,
               ev_id,  ev_id_ext, n_tracklets,V0Amult, trigger_hasbit_INT7, trigger_hasbit_HighMultSPD,
@@ -185,17 +185,17 @@ D0pp:
       unmerged_tree_dir: [/data/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_sim/594_20210301-1015/merged,
                           /data/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_sim/594_20210301-1015/merged,
                           /data/TTree/D0DsLckINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_sim/594_20210301-1015/merged] #list of periods
-      pkl: [/data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod/594_20210301-1015/pkl,
-            /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod/594_20210301-1015/pkl,
-            /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod/594_20210301-1015/pkl] #list of periods
-      pkl_skimmed: [/data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod/594_20210301-1015/pklsk,
-                    /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod/594_20210301-1015/pklsk,
-                    /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod/594_20210301-1015/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [/data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod/594_20210301-1015/pklskml,
-                                 /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod/594_20210301-1015/pklskml,
-                                 /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod/594_20210301-1015/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_mc_prod_mltot
-      pkl_evtcounter_all: /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_mc_prod_evttot
+      pkl: [/data/Derived_Vit_2/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod/594_20210301-1015/pkl,
+            /data/Derived_Vit_2/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod/594_20210301-1015/pkl,
+            /data/Derived_Vit_2/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod/594_20210301-1015/pkl] #list of periods
+      pkl_skimmed: [/data/Derived_Vit_2/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod/594_20210301-1015/pklsk,
+                    /data/Derived_Vit_2/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod/594_20210301-1015/pklsk,
+                    /data/Derived_Vit_2/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod/594_20210301-1015/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [/data/Derived_Vit_2/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod/594_20210301-1015/pklskml,
+                                 /data/Derived_Vit_2/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod/594_20210301-1015/pklskml,
+                                 /data/Derived_Vit_2/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod/594_20210301-1015/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: /data/Derived_Vit_2/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_mc_prod_mltot
+      pkl_evtcounter_all: /data/Derived_Vit_2/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_mc_prod_evttot
       mcreweights: [../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_16,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_17,
                     ../Analyses/ALICE_D2H_vs_mult_pp13/reweighting/prodD2H_18] #list of periods
@@ -249,12 +249,12 @@ D0pp:
                               /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_data/593_20210223-2051/pklskdecmerged,
                               /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_data/593_20210223-2051/pklskdecmerged] #list of periods
     mc:
-      pkl_skimmed_dec: [/data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod/594_20210301-1015/pklskdec,
-                        /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod/594_20210301-1015/pklskdec,
-                        /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod/594_20210301-1015/pklskdec] #list of periods
-      pkl_skimmed_decmerged: [/data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod/594_20210301-1015/pklskdecmerged,
-                              /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod/594_20210301-1015/pklskdecmerged,
-                              /data/Derived_Vit/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod/594_20210301-1015/pklskdecmerged] #list of periods
+      pkl_skimmed_dec: [/data/Derived_Vit_2/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod/594_20210301-1015/pklskdec,
+                        /data/Derived_Vit_2/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod/594_20210301-1015/pklskdec,
+                        /data/Derived_Vit_2/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod/594_20210301-1015/pklskdec] #list of periods
+      pkl_skimmed_decmerged: [/data/Derived_Vit_2/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2016_mc_prod/594_20210301-1015/pklskdecmerged,
+                              /data/Derived_Vit_2/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2017_mc_prod/594_20210301-1015/pklskdecmerged,
+                              /data/Derived_Vit_2/D0kINT7HighMultCalo_withJets/vAN-20210223_ROOT6-1/pp_2018_mc_prod/594_20210301-1015/pklskdecmerged] #list of periods
     modelname: xgboost
     modelsperptbin: [xgboost_classifierD0pp_FF_dfselection_pt_cand_1.0_2.0.sav,
                      xgboost_classifierD0pp_FF_dfselection_pt_cand_2.0_4.0.sav,
@@ -373,6 +373,8 @@ D0pp:
       xsection_inel: 57.8 # (mb) cross-section of minimum-bias events
 
       doprior: false
+      domodeldep: false
+      path_modeldep: /home/nzardosh/PYTHIA_Sim/PYTHIA8_Simulations/Plots/D0_Substructure_Simulations_Output.root
 
       powheg_path_nonprompt: /data/POWHEG/trees_powheg_fd_central.root
 

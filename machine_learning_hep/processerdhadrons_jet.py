@@ -17,6 +17,7 @@ main script for doing data processing, machine learning and analysis
 """
 # pylint: disable=too-many-lines
 import os
+import sys
 import math
 from array import array
 import pickle
@@ -27,7 +28,7 @@ from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-modu
 from ROOT import TFile, TH1F, TH2F, RooUnfoldResponse # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utilities import selectdfrunlist, seldf_singlevar, openfile
-from machine_learning_hep.utilities import create_folder_struc, mergerootfiles, get_timestamp_string
+from machine_learning_hep.utilities import create_folder_struc, mergerootfiles, get_timestamp_string, make_message_notfound
 from machine_learning_hep.utilities import z_calc, z_gen_calc
 from machine_learning_hep.utilities_plot import buildhisto, build2dhisto, fill2dhist, fillweighed
 from machine_learning_hep.utilities_plot import makefill3dhist, makefill2dhist, fill2dweighed
@@ -249,7 +250,9 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         self.varshapebinarray_gen = array("d", self.varshaperanges_gen) # array of bin edges to use in histogram constructors
 
         self.closure_frac = datap["analysis"][self.typean].get("sel_closure_frac", None)
-        self.doprior = datap["analysis"][self.typean]["doprior"]
+        self.doprior = datap["analysis"][self.typean].get("doprior", None)
+        self.domodeldep = datap["analysis"][self.typean].get("domodeldep", None)
+        self.path_modeldep = datap["analysis"][self.typean].get("path_modeldep", None)
 
         # selection
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
@@ -1276,40 +1279,101 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
         hzvsjetpt_reco_nocuts_closure.Write()
         hzvsjetpt_reco_cuts_closure.Write()
 
+        # Get histogram with weights for the model-dependent scaling of the response.
+        hzvsjetpt_modeldep_weights = None
+        shape_weight_name = "ntracks_gen_jet" # variable used for weight estimation
+        if self.domodeldep is True and self.path_modeldep:
+            print("Applying model weights to the response")
+            file_modeldep = TFile.Open(self.path_modeldep)
+            if not file_modeldep:
+                print(make_message_notfound(self.path_modeldep))
+                sys.exit()
+            # if self.typean == "jet_zg":
+            #     analysis = "Zg"
+            # elif self.typean == "jet_rg":
+            #     analysis = "Rg"
+            # elif self.typean == "jet_nsd":
+            #     analysis = "Nsd"
+            # else:
+            #     print(f"Unknown analysis type: {self.typean}")
+            #     sys.exit()
+            # name_hist_model_weights = f"fh2_D0_Monash_{analysis}_JetpT_Weights"
+            name_hist_model_weights = f"fh2_D0_Monash_N_JetpT_Weights"
+            hzvsjetpt_modeldep_weights = file_modeldep.Get(name_hist_model_weights)
+            if not hzvsjetpt_modeldep_weights:
+                print(make_message_notfound(name_hist_model_weights, self.path_modeldep))
+                sys.exit()
+
+        # Fill the response matrix. Apply weights if needed.
+        hz_genvsreco_full_pr_real_weighted = \
+            buildhisto("hz_genvsreco_full_pr_real_weighted", f"{'' if self.domodeldep else 'not '}weighted RM;gen;rec", \
+            self.varshapebinarray_gen, self.varshapebinarray_reco)
+        # print(f"RM 2D will be filled for {self.lvar2_binmin_gen[1]} <= pT jet < {self.lvar2_binmax_gen[1]}")
+        # print(f"Response df columns:")
+        # for i, col in enumerate(df_tmp_selrecogen_pr.columns):
+        #     print(f"{i}: {col}")
         if self.doeff_resp:
             df_tmp_selrecogen_pr = self.effcorr_response(df_tmp_selrecogen_pr)
         for row in df_tmp_selrecogen_pr.itertuples():
             response_matrix_weight = 1.0
-            prior_weight = 1.0
+            rm_weight = 1.0
+            var_shape = getattr(row, self.v_varshape_binning_gen)
+            var_shape_weight = getattr(row, shape_weight_name)
+            var_ptjet = row.pt_gen_jet
             if self.doprior is True:
-                binx = hzvsjetpt_prior_weights.GetXaxis().FindBin(getattr(row, self.v_varshape_binning_gen))
-                biny = hzvsjetpt_prior_weights.GetYaxis().FindBin(row.pt_gen_jet)
-                prior_weight = hzvsjetpt_prior_weights.GetBinContent(binx, biny)
-
-            if self.doeff_resp is True:
-                prior_weight = row.eff * prior_weight
-            if prior_weight > 0.0:
-                response_matrix_weight = 1.0/prior_weight
+                binx = hzvsjetpt_prior_weights.GetXaxis().FindBin(var_shape)
+                biny = hzvsjetpt_prior_weights.GetYaxis().FindBin(var_ptjet)
+                rm_weight *= hzvsjetpt_prior_weights.GetBinContent(binx, biny)
+            if self.domodeldep is True:
+                binx = hzvsjetpt_modeldep_weights.GetXaxis().FindBin(var_shape_weight)
+                biny = hzvsjetpt_modeldep_weights.GetYaxis().FindBin(var_ptjet)
+                weight_model = hzvsjetpt_modeldep_weights.GetBinContent(binx, biny)
+                if weight_model <= 0.:
+                    print(f"WARNING: Wrong value of model weight = {weight_model} for {shape_weight_name} = {var_shape_weight}, jet pT = {var_ptjet}, in bins {binx}, {biny}. Ignoring the weight!")
+                else:
+                    rm_weight /= weight_model
+            if self.doeff_resp:
+                rm_weight *= row.eff
+            if rm_weight > 0.0:
+                response_matrix_weight = 1.0 / rm_weight
             else:
                 print("WARNING! Response matrix is unweighted")
             response_matrix_pr.Fill(getattr(row, self.v_varshape_binning), row.pt_jet,\
-                getattr(row, self.v_varshape_binning_gen), row.pt_gen_jet, response_matrix_weight)
+                var_shape, var_ptjet, response_matrix_weight)
+            # Fill weighted 2D response for shape in the central jet pT bin
+            if self.lvar2_binmin_gen[1] <= var_ptjet < self.lvar2_binmax_gen[1]:
+                hz_genvsreco_full_pr_real_weighted.Fill(var_shape, getattr(row, self.v_varshape_binning), response_matrix_weight)
+        # Closure response matrix
         if self.doeff_resp:
             df_tmp_selrecogen_pr_train = self.effcorr_response(df_tmp_selrecogen_pr_train)
         for row in df_tmp_selrecogen_pr_train.itertuples():
             response_matrix_weight = 1.0
-            prior_weight = 1.0
+            rm_weight = 1.0
+            var_shape = getattr(row, self.v_varshape_binning_gen)
+            var_shape_weight = getattr(row, shape_weight_name)
+            var_ptjet = row.pt_gen_jet
             if self.doprior is True:
-                binx = hzvsjetpt_prior_weights.GetXaxis().FindBin(getattr(row, self.v_varshape_binning_gen))
-                biny = hzvsjetpt_prior_weights.GetYaxis().FindBin(row.pt_gen_jet)
-                prior_weight = hzvsjetpt_prior_weights.GetBinContent(binx, biny)
+                binx = hzvsjetpt_prior_weights.GetXaxis().FindBin(var_shape)
+                biny = hzvsjetpt_prior_weights.GetYaxis().FindBin(var_ptjet)
+                rm_weight *= hzvsjetpt_prior_weights.GetBinContent(binx, biny)
+            if self.domodeldep is True:
+                binx = hzvsjetpt_modeldep_weights.GetXaxis().FindBin(var_shape_weight)
+                biny = hzvsjetpt_modeldep_weights.GetYaxis().FindBin(var_ptjet)
+                weight_model = hzvsjetpt_modeldep_weights.GetBinContent(binx, biny)
+                if weight_model <= 0.:
+                    print(f"WARNING: Wrong value of model weight = {weight_model} for {shape_weight_name} = {var_shape_weight}, jet pT = {var_ptjet}, in bins {binx}, {biny}. Ignoring the weight!")
+                else:
+                    rm_weight /= weight_model
             if self.doeff_resp:
-                prior_weight = row.eff * prior_weight
-            if prior_weight > 0.0:
-                response_matrix_weight = 1.0/prior_weight
+                rm_weight *= row.eff
+            if rm_weight > 0.0:
+                response_matrix_weight = 1.0 / rm_weight
+            else:
+                print("WARNING! Response matrix is unweighted")
             response_matrix_closure_pr.Fill(getattr(row, self.v_varshape_binning), row.pt_jet,\
-                getattr(row, self.v_varshape_binning_gen), row.pt_gen_jet, response_matrix_weight)
+                var_shape, var_ptjet, response_matrix_weight)
         out_file.cd()
         response_matrix_pr.Write("response_matrix")
         response_matrix_closure_pr.Write("response_matrix_closure")
+        hz_genvsreco_full_pr_real_weighted.Write()
         out_file.Close()
