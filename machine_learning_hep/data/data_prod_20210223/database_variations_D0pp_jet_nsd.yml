@@ -159,6 +159,22 @@ categories:
                     analysis:
                         jet_nsd:
                             doprior: [true]
+    modeldep:
+        activate: yes
+        processor: true
+        label: "model dep."
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            inclusive:
+                activate: [yes]
+                label: ["inclusive"]
+                diffs:
+                    analysis:
+                        jet_nsd:
+                            domodeldep: [true]
     regularisation:
         activate: yes
         processor: false

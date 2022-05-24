@@ -2195,6 +2195,9 @@ class AnalyzerJet(Analyzer):
         response_matrix = unfolding_input_file.Get("response_matrix")
         if not response_matrix:
             self.logger.fatal(make_message_notfound("response_matrix", self.n_fileresp))
+        response_matrix_2d = unfolding_input_file.Get("hz_genvsreco_full_pr_real_weighted")
+        if not response_matrix_2d:
+            self.logger.fatal(make_message_notfound("hz_genvsreco_full_pr_real_weighted", self.n_fileresp))
         # rec. level cuts only applied
         hzvsjetpt_reco_nocuts = unfolding_input_file.Get("hzvsjetpt_reco_nocuts")
         if not hzvsjetpt_reco_nocuts:
@@ -2409,6 +2412,11 @@ class AnalyzerJet(Analyzer):
             hz_genvsreco_list[ibin2].SetYTitle("%s^{rec}" % self.v_varshape_latex)
             hz_genvsreco_list[ibin2].Draw("colz")
             cz_genvsreco.SaveAs("%s/response_pr_%s_%s.eps" % (self.d_resultsallpdata, self.v_varshape_binning, suffix_plot))
+
+        cz_genvsreco_weighted = TCanvas("cz_genvsreco_weighted", "response matrix 2D projection")
+        setup_canvas(cz_genvsreco_weighted)
+        response_matrix_2d.Draw("text")
+        cz_genvsreco_weighted.SaveAs("%s/response_pr_weighted.eps" % (self.d_resultsallpdata))
 
         # plot the jet pt response matrix in shape bins
 
