@@ -18,7 +18,7 @@ main script for doing final stage analysis
 # pylint: disable=too-many-lines, line-too-long
 import argparse
 from array import array
-from cmath import nan
+from math import sqrt
 import yaml
 # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TLatex, TLine, TGaxis, gROOT, gStyle, TCanvas, TGraphAsymmErrors, TGraphErrors, TGraph, TLegend
@@ -201,7 +201,7 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     # plot the results with systematic uncertainties and models
 
     size_can = [800, 800]
-    size_can_double = [800, 1200]
+    size_can_double = [800, 800]
     offsets_axes = [0.8, 1.1]
     offsets_axes_double = [0.8, 0.8]
     margins_can = [0.1, 0.13, 0.1, 0.03]
@@ -211,7 +211,10 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     offset_thg = 0.85
 
     gStyle.SetErrorX(0) # do not plot horizontal error bars of histograms
-    fontsize = 0.035
+    fontsize = 0.06
+    fontsize_glob = 0.032 # font size relative to the canvas height
+    scale_title = 1.3 # scaling factor to increase the size of axis titles
+    tick_length = 0.02
     opt_leg_g = "FP"
     opt_plot_g = "2"
 
@@ -220,23 +223,25 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     # labels
 
     x_latex = 0.16
-    y_latex_top = 0.83
-    y_step = 0.062
+    y_latex_top = 0.78
+    y_step = 0.08
 
     title_x = v_varshape_latex
     title_y = "(1/#it{N}_{jet}) d#it{N}/d%s" % v_varshape_latex
+    title_y_ivan = "(1/#it{N}_{SD-tagged jet}) d#it{N}/d%s" % v_varshape_latex
     title_full = ";%s;%s" % (title_x, title_y)
     title_full_ratio = ";%s;data/MC: ratio of %s" % (title_x, title_y)
     title_full_ratio_double = f";{title_x};MC/data"
     title_full_ratio_theory = f";{title_x};theory/data"
 
+    # text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13 TeV"
     text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13 TeV"
     text_alice_sim = "#bf{ALICE} Simulation, pp, #sqrt{#it{s}} = 13 TeV"
     text_pythia = "PYTHIA 8 (Monash)"
     text_pythia_short = "PYTHIA 8"
     text_pythia_split = "#splitline{PYTHIA 8}{(Monash)}"
     text_powheg = "POWHEG #plus PYTHIA 6"
-    text_ivan = "SCET"
+    text_ivan = "SCET MLL"
     text_jets = "charged jets, anti-#it{k}_{T}, #it{R} = 0.4"
     text_ptjet = "%g #leq %s < %g GeV/#it{c}, |#it{#eta}_{jet}| #leq 0.5" % (lvar2_binmin_reco[ibin2], p_latexbin2var, lvar2_binmax_reco[ibin2])
     text_pth = "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, |#it{y}_{%s}| #leq 0.8" % (lpt_finbinmin[0], p_latexnhadron, min(lpt_finbinmax[-1], lvar2_binmax_reco[ibin2]), p_latexnhadron)
@@ -333,6 +338,23 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
         y_latex -= y_step
     cshape_data.Update()
     cshape_data.SaveAs("%s/%s_data_%s.pdf" % (rootpath, shape, suffix))
+
+    # significance HF vs incl
+    if False:
+        hf_data_stat.Divide(incl_data_stat)
+        hf_data_syst = divide_graphs(hf_data_syst, incl_data_syst)
+        for i in range(hf_data_stat.GetNbinsX()):
+            diff = hf_data_stat.GetBinContent(i + 1) - 1
+            err_stat = hf_data_stat.GetBinError(i + 1)
+            err_syst = hf_data_syst.GetErrorYlow(i) if diff > 0 else hf_data_syst.GetErrorYhigh(i)
+            err_tot = sqrt(err_stat * err_stat + err_syst * err_syst)
+            hf_data_stat.SetBinContent(i + 1, abs(diff) / err_tot)
+            hf_data_stat.SetBinError(i + 1, 0)
+        can_compare_data, list_obj_data_new = make_plot("cshape_data_compare_" + suffix, size=size_can, \
+            list_obj=[hf_data_stat], labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g=opt_plot_g, offsets_xy=offsets_axes, \
+            colours=colours, markers=markers, leg_pos=leg_pos, range_y=[0, 5], margins_c=margins_can, \
+            title=title_full)
+        can_compare_data.SaveAs("%s/%s_data_compare_%s.pdf" % (rootpath, shape, suffix))
 
     # data and PYTHIA, POWHEG, Ivan, HF
 
@@ -596,15 +618,17 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
         print(f"Absolutes: min: {min(e_plus_min, e_minus_min):.2g} %, max {max(e_plus_max, e_minus_max):.2g} %")
 
     # explicit y ranges [zg, rg, nsd]
-    list_range_y = [[0.01, 9], [0.01, 6.1], [0.001, 0.72]] # data
-    list_range_y_rat = [[0.1, 5.9], [0, 2], [0, 2]] # mc/data ratios
+    list_range_y = [[0.01, 9], [0.01, 6.1], [0.001, 0.78]] # data
+    list_range_y_rat = [[0.55, 2.99], [0.7, 1.9], [0.1, 2.2]] # mc/data ratios
     list_range_x = [[0.1, 0.5], [0, 0.4], [-0.5, 4.5]] # data and mc/data ratios
+    list_xy_sd = [[x_latex + 0.45, y_latex_top - 4 * y_step], [x_latex + 0.45, y_latex_top - 7 * y_step], [x_latex + 0.45, y_latex_top - 3 * y_step]] # position of the SD legend
     i_shape = 0 if shape == "zg" else 1 if shape == "rg" else 2
     print(f"Index {i_shape}")
 
     # data
-    leg_pos = [.7, .75, .82, .85]
-    leg_pos = [.65, .7, .82, .85]
+    # leg_pos = [.7, .75, .82, .85]
+    # leg_pos = [.65, .63, .82, .78]
+    leg_pos = [.7, .63, .87, .78]
     fraction_untagged_hf = hf_data_stat.Integral(1, 1, "width")
     fraction_untagged_incl = incl_data_stat.Integral(1, 1, "width")
     # hard-coded to values to unify them across zg, rg, nsd
@@ -622,18 +646,34 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     pad1 = cshape_datamc_all.cd(1)
     pad2 = cshape_datamc_all.cd(2)
     pad3 = cshape_datamc_all.cd(3)
-    pad1.SetPad(0., 0.45, 1, 1)
-    pad2.SetPad(0., 0.25, 1, 0.45)
-    pad3.SetPad(0., 0., 1, 0.25)
+    panel_top = 0.5 # height of the top panel (length of y axis) relative to the canvas height
+    margin_top = 0.08 # height of the top margin relative to the canvas height
+    margin_bottom = 0.08 # height of the bottom margin relative to the canvas height
+    panel_bottom = 0.5 * (1 - panel_top - margin_top - margin_bottom) # height of the bottom panel (length of y axis) relative to the canvas height
+    margin_top_rel = margin_top / (margin_top + panel_top) # height of the top margin relative to the top pad height
+    margin_bottom_rel = margin_bottom / (margin_bottom + panel_bottom) # height of the bottom margin relative to the bottom pad height
+    margin_left_rel = 0.12
+    margin_right_rel = 0.05
+    y_min_1 = 1 - margin_top - panel_top # minimum y of the top pad (1)
+    y_min_2 = margin_bottom + panel_bottom # minimum y of the middle pad (2)
+    h_pad1 = panel_top + margin_top # height of pad 1
+    h_pad2 = panel_bottom # height of pad 2
+    h_pad3 = panel_bottom + margin_bottom # height of pad 3
+    pad1.SetPad(0., y_min_1, 1, 1)
+    pad2.SetPad(0., y_min_2, 1, y_min_1)
+    pad3.SetPad(0., 0., 1, y_min_2)
     pad1.SetBottomMargin(0.)
     pad2.SetBottomMargin(0.)
-    pad3.SetBottomMargin(0.25)
-    pad1.SetTopMargin(0.1)
+    pad3.SetBottomMargin(margin_bottom_rel)
+    pad1.SetTopMargin(margin_top_rel)
     pad2.SetTopMargin(0.)
     pad3.SetTopMargin(0.)
-    pad1.SetLeftMargin(0.12)
-    pad2.SetLeftMargin(0.12)
-    pad3.SetLeftMargin(0.12)
+    pad1.SetLeftMargin(margin_left_rel)
+    pad2.SetLeftMargin(margin_left_rel)
+    pad3.SetLeftMargin(margin_left_rel)
+    pad1.SetRightMargin(margin_right_rel)
+    pad2.SetRightMargin(margin_right_rel)
+    pad3.SetRightMargin(margin_right_rel)
     pad1.SetTicks(1, 1)
     pad2.SetTicks(1, 1)
     pad3.SetTicks(1, 1)
@@ -647,11 +687,13 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
         title=title_full)
     for gr, c in zip((hf_data_syst, incl_data_syst), (c_hf_data, c_incl_data)):
         gr.SetMarkerColor(get_colour(c))
-    list_obj_data_new[0].SetTextSize(fontsize)
-    hf_data_syst.GetYaxis().SetLabelSize(0.1 * 3/7)
-    #hf_data_syst.GetYaxis().SetTitleSize(0.1)
+    list_obj_data_new[0].SetTextSize(fontsize_glob / h_pad1)
+    list_obj[0].GetYaxis().SetLabelSize(fontsize_glob / h_pad1)
+    list_obj[0].GetYaxis().SetTitleSize(scale_title * fontsize_glob / h_pad1)
+    list_obj[0].GetYaxis().SetTitleOffset(0.8)
+    list_obj[0].GetXaxis().SetTickLength(tick_length / h_pad1)
     if shape == "nsd":
-        hf_data_syst.GetXaxis().SetNdivisions(5)
+        list_obj[0].GetXaxis().SetNdivisions(5)
     # Draw a line through the points.
     if shape == "nsd":
         for h in (hf_data_stat, incl_data_stat):
@@ -671,28 +713,29 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
         y_axis = pad1.GetUymax()
         axis_thetag = TGaxis(rg_min, y_axis, rg_max, y_axis, thetag_min, thetag_max, 510, "-")
         axis_thetag.SetTitle(title_thetag)
-        axis_thetag.SetTitleSize(size_thg)
-        axis_thetag.SetLabelSize(0.036)
+        axis_thetag.SetTitleSize(scale_title * fontsize_glob / h_pad1)
+        axis_thetag.SetLabelSize(fontsize_glob / h_pad1)
         axis_thetag.SetTitleFont(42)
         axis_thetag.SetLabelFont(42)
-        axis_thetag.SetLabelOffset(0)
         axis_thetag.SetTitleOffset(offset_thg)
+        axis_thetag.SetLabelOffset(0)
         cshape_datamc_all.cd(1).SetTickx(0)
         axis_thetag.Draw("same")
     # Draw LaTeX
     y_latex = y_latex_top
     list_latex_data = []
-    for text_latex in [text_alice, text_jets, text_ptjet, text_pth, text_ptcut, text_sd]:
+    # for text_latex in [text_alice, text_jets, text_ptjet, text_pth, text_ptcut, text_sd]:
+    for text_latex in [text_alice, text_jets, text_ptjet, text_pth, text_sd]: # w/o text_ptcut
         latex = TLatex(x_latex, y_latex, text_latex)
         list_latex_data.append(latex)
-        draw_latex(latex, textsize=fontsize)
+        draw_latex(latex, textsize=(fontsize_glob / h_pad1))
         y_latex -= y_step
-    y_latex = y_latex_top - 3 * y_step
+    y_latex = list_xy_sd[i_shape][1]
     if shape != "nsd":
         for text_latex in ["SD-untagged jets", f"{p_latexnhadron}-tagged: {100 * fraction_untagged_hf_text:.2g}%", f"inclusive: {100 * fraction_untagged_incl_text:.2g}%"]:
-            latex = TLatex(x_latex + 0.45, y_latex, text_latex)
+            latex = TLatex(list_xy_sd[i_shape][0], y_latex, text_latex)
             list_latex_data.append(latex)
-            draw_latex(latex, textsize=fontsize)
+            draw_latex(latex, textsize=(fontsize_glob / h_pad1))
             y_latex -= y_step
     cshape_datamc_all.Update()
 
@@ -701,7 +744,7 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     line_1.SetLineStyle(9)
     line_1.SetLineColor(1)
     line_1.SetLineWidth(3)
-    leg_pos = [.15, .7, .4, .95]
+    leg_pos = [.15, .55, .4, .85]
     hf_ratio_powheg_stat = hf_powheg_stat.Clone(f"{hf_powheg_stat.GetName()}_rat")
     hf_ratio_powheg_stat.Divide(hf_data_stat)
     hf_ratio_powheg_syst = divide_graphs(hf_powheg_syst, hf_data_syst)
@@ -733,26 +776,28 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
         list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g=opt_plot_g, offsets_xy=[1, 1.3 * 3/7], \
         colours=colours, markers=markers, leg_pos=leg_pos, margins_c=margins_can_double, \
         range_x=list_range_x[i_shape], \
-        margins_y=[y_margin_down, y_margin_up], \
-        # range_y=list_range_y_rat[i_shape], \
+        # margins_y=[y_margin_down, y_margin_up], \
+        range_y=list_range_y_rat[i_shape], \
         title=title_full_ratio_double)
     list_obj[0].GetXaxis().SetLabelSize(0.1)
     list_obj[0].GetXaxis().SetTitleSize(0.1)
-    list_obj[0].GetYaxis().SetLabelSize(0.12)
-    list_obj[0].GetYaxis().SetTitleSize(0.12)
-    list_obj[0].GetYaxis().SetTitleOffset(0.5)
+    list_obj[0].GetYaxis().SetLabelSize(fontsize_glob / h_pad2)
+    list_obj[0].GetYaxis().SetTitleSize(scale_title * fontsize_glob / h_pad2)
+    list_obj[0].GetYaxis().SetTitleOffset(0.25)
+    list_obj[0].GetYaxis().SetNdivisions(505)
+    list_obj[0].GetXaxis().SetTickLength(tick_length / h_pad2)
     for gr, c in zip([hf_ratio_powheg_syst, hf_ratio_pythia_syst], [c_hf_powheg, c_hf_pythia]):
         gr.SetMarkerColor(get_colour(c))
     leg_data_mc_hf = list_obj_data_mc_hf_new[0]
     #leg_data_mc_hf.SetHeader("%s-tagged" % p_latexnhadron)
-    leg_data_mc_hf.SetTextSize(fontsize * 7/3)
+    leg_data_mc_hf.SetTextSize(fontsize_glob / h_pad2)
     # leg_data_mc_hf.SetNColumns(2)
     if shape == "nsd":
         list_obj[0].GetXaxis().SetNdivisions(5)
     cshape_datamc_all.Update()
 
     # inclusive MC/data
-    leg_pos = [.15, .8, .9, .95]
+    leg_pos = [.15, .8, .8, .9]
     list_obj = [incl_ratio_pythia_syst, incl_ratio_pythia_stat, line_1]
     labels_obj = [f"inclusive {text_pythia_short}", ""]
     colours = [get_colour(i, j) for i, j in zip((c_incl_pythia, c_incl_pythia), (2, 1))]
@@ -767,15 +812,18 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
         margins_y=[y_margin_down, y_margin_up], \
         # range_y=list_range_y_rat[i_shape], \
         title=title_full_ratio_double)
-    list_obj[0].GetXaxis().SetLabelSize(0.1)
-    list_obj[0].GetXaxis().SetTitleSize(0.1)
-    list_obj[0].GetYaxis().SetLabelSize(0.1)
-    list_obj[0].GetYaxis().SetTitleSize(0.1)
+    list_obj[0].GetXaxis().SetLabelSize(fontsize_glob / h_pad3)
+    list_obj[0].GetXaxis().SetTitleSize(scale_title * fontsize_glob / h_pad3)
+    list_obj[0].GetXaxis().SetTitleOffset(0.8)
+    list_obj[0].GetYaxis().SetLabelSize(fontsize_glob / h_pad3)
+    list_obj[0].GetYaxis().SetTitleSize(scale_title * fontsize_glob / h_pad3)
+    list_obj[0].GetYaxis().SetTitleOffset(0.37)
+    list_obj[0].GetXaxis().SetTickLength(tick_length / h_pad3)
     for gr, c in zip([incl_ratio_pythia_syst], [c_incl_pythia]):
         gr.SetMarkerColor(get_colour(c))
     leg_data_mc_hf = list_obj_data_mc_hf_new_2[0]
     #leg_data_mc_hf.SetHeader("%s-tagged" % p_latexnhadron)
-    leg_data_mc_hf.SetTextSize(fontsize * 7/3)
+    leg_data_mc_hf.SetTextSize(fontsize_glob / h_pad3)
     leg_data_mc_hf.SetNColumns(2)
     if shape == "nsd":
         list_obj[0].GetXaxis().SetNdivisions(5)
@@ -807,7 +855,8 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
             incl_data_stat.Scale(1. / int)
             scale_graph(incl_data_syst, 1. / int)
         # data
-        leg_pos = [.65, .7, .82, .85]
+        # leg_pos = [.65, .6, .82, .8]
+        leg_pos = [.7, .63, .87, .78]
         hf_ivan_syst_plot = hf_ivan_syst.Clone(f"{hf_ivan_syst.GetName()}_plot")
         hf_ivan_syst_plot.RemovePoint(0) # delete the untagged bin point
         incl_ivan_syst_plot = incl_ivan_syst.Clone(f"{incl_ivan_syst.GetName()}_plot")
@@ -816,25 +865,28 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
         labels_obj = [f"{p_latexnhadron}-tagged", "inclusive", "", "", "", "", "", ""]
         colours = [get_colour(i, j) for i, j in zip((c_hf_data, c_incl_data, c_hf_ivan, c_incl_ivan, c_hf_data, c_incl_data, c_hf_ivan, c_incl_ivan), (2, 2, 2, 2, 1, 1, 1, 1))]
         markers = [m_hf_data, m_incl_data, m_hf_ivan, m_incl_ivan, m_hf_data, m_incl_data, m_hf_ivan, m_incl_ivan]
-        y_margin_up = 0.45
+        y_margin_up = 0.5
         y_margin_down = 0.05
         cshape_datamc_ivan = TCanvas("cshape_datamc_ivan_" + suffix, "cshape_datamc_ivan_" + suffix)
         cshape_datamc_ivan.Divide(1, 3)
         pad1 = cshape_datamc_ivan.cd(1)
         pad2 = cshape_datamc_ivan.cd(2)
         pad3 = cshape_datamc_ivan.cd(3)
-        pad1.SetPad(0., 0.45, 1, 1)
-        pad2.SetPad(0., 0.25, 1, 0.45)
-        pad3.SetPad(0., 0., 1, 0.25)
+        pad1.SetPad(0., y_min_1, 1, 1)
+        pad2.SetPad(0., y_min_2, 1, y_min_1)
+        pad3.SetPad(0., 0., 1, y_min_2)
         pad1.SetBottomMargin(0.)
         pad2.SetBottomMargin(0.)
-        pad3.SetBottomMargin(0.25)
-        pad1.SetTopMargin(0.1)
+        pad3.SetBottomMargin(margin_bottom_rel)
+        pad1.SetTopMargin(margin_top_rel)
         pad2.SetTopMargin(0.)
         pad3.SetTopMargin(0.)
-        pad1.SetLeftMargin(0.12)
-        pad2.SetLeftMargin(0.12)
-        pad3.SetLeftMargin(0.12)
+        pad1.SetLeftMargin(margin_left_rel)
+        pad2.SetLeftMargin(margin_left_rel)
+        pad3.SetLeftMargin(margin_left_rel)
+        pad1.SetRightMargin(margin_right_rel)
+        pad2.SetRightMargin(margin_right_rel)
+        pad3.SetRightMargin(margin_right_rel)
         pad1.SetTicks(1, 1)
         pad2.SetTicks(1, 1)
         pad3.SetTicks(1, 1)
@@ -845,21 +897,25 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
             range_x=list_range_x[i_shape], \
             margins_y=[y_margin_down, y_margin_up], \
             # range_y=list_range_y[i_shape], \
-            title=title_full)
+            title=";%s;%s" % (title_x, title_y_ivan))
         for gr, c in zip((hf_data_syst, incl_data_syst, hf_ivan_syst_plot, incl_ivan_syst_plot), (c_hf_data, c_incl_data, c_hf_ivan, c_incl_ivan)):
             gr.SetMarkerColor(get_colour(c))
         leg_data_mc = list_obj_data_new[0]
-        leg_data_mc.SetTextSize(fontsize)
+        leg_data_mc.SetTextSize(fontsize_glob / h_pad1)
         leg_data_mc.SetHeader("data")
-        leg_data_mc_theory = TLegend(.65, .5, .82, .65)
-        setup_legend(leg_data_mc_theory, fontsize)
-        # leg_data_mc_theory.SetTextSize(fontsize)
+        # leg_data_mc_theory = TLegend(.65, .35, .82, .55)
+        leg_data_mc_theory = TLegend(.7, .35, .87, .55)
+        setup_legend(leg_data_mc_theory, fontsize_glob / h_pad1)
+        leg_data_mc_theory.SetTextSize(fontsize_glob / h_pad1)
         leg_data_mc_theory.SetHeader(text_ivan)
         leg_data_mc_theory.AddEntry(hf_ivan_syst_plot, f"{p_latexnhadron}-tagged")
         leg_data_mc_theory.AddEntry(incl_ivan_syst_plot, "inclusive")
         leg_data_mc_theory.Draw()
-        hf_data_syst.GetYaxis().SetLabelSize(0.1 * 3/7)
-        #hf_data_syst.GetYaxis().SetTitleSize(0.1)
+        list_obj_data_new[0].SetTextSize(fontsize_glob / h_pad1)
+        list_obj[0].GetYaxis().SetLabelSize(fontsize_glob / h_pad1)
+        list_obj[0].GetYaxis().SetTitleSize(scale_title * fontsize_glob / h_pad1)
+        list_obj[0].GetYaxis().SetTitleOffset(0.8)
+        list_obj[0].GetXaxis().SetTickLength(tick_length / h_pad1)
         if shape == "nsd":
             hf_data_syst.GetXaxis().SetNdivisions(5)
         # Draw a line through the points.
@@ -881,8 +937,8 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
             y_axis = pad1.GetUymax()
             axis_thetag = TGaxis(rg_min, y_axis, rg_max, y_axis, thetag_min, thetag_max, 510, "-")
             axis_thetag.SetTitle(title_thetag)
-            axis_thetag.SetTitleSize(size_thg)
-            axis_thetag.SetLabelSize(0.036)
+            axis_thetag.SetTitleSize(scale_title * fontsize_glob / h_pad1)
+            axis_thetag.SetLabelSize(fontsize_glob / h_pad1)
             axis_thetag.SetTitleFont(42)
             axis_thetag.SetLabelFont(42)
             axis_thetag.SetLabelOffset(0)
@@ -892,10 +948,11 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
         # Draw LaTeX
         y_latex = y_latex_top
         list_latex_data = []
-        for text_latex in [text_alice, text_jets, text_ptjet, text_pth, text_ptcut, text_sd]:
+        # for text_latex in [text_alice, text_jets, text_ptjet, text_pth, text_ptcut, text_sd]:
+        for text_latex in [text_alice, text_jets, text_ptjet, text_pth, text_sd]: # w/o text_ptcut
             latex = TLatex(x_latex, y_latex, text_latex)
             list_latex_data.append(latex)
-            draw_latex(latex, textsize=fontsize)
+            draw_latex(latex, textsize=(fontsize_glob / h_pad1))
             y_latex -= y_step
         y_latex = y_latex_top - 3 * y_step
         # for text_latex in ["SD-untagged jets", f"{p_latexnhadron}-tagged: {100 * fraction_untagged_hf:.2g}%", f"inclusive: {100 * fraction_untagged_incl:.2g}%"]:
@@ -932,15 +989,16 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
             list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g="3", offsets_xy=[1, 1.3 * 3/7], \
             colours=colours, markers=markers, leg_pos=None, margins_c=margins_can_double, \
             range_x=list_range_x[i_shape], \
-            margins_y=[y_margin_down, y_margin_up], \
-            # range_y=list_range_y_rat[i_shape], \
+            # margins_y=[y_margin_down, y_margin_up], \
+            range_y=[0.2, 4.4], \
             title=title_full_ratio_theory)
         list_obj[0].GetXaxis().SetLabelSize(0.1)
         list_obj[0].GetXaxis().SetTitleSize(0.1)
-        list_obj[0].GetYaxis().SetLabelSize(0.12)
-        list_obj[0].GetYaxis().SetTitleSize(0.12)
-        list_obj[0].GetYaxis().SetTitleOffset(0.5)
-        list_obj[0].GetYaxis().SetNdivisions(4)
+        list_obj[0].GetYaxis().SetLabelSize(fontsize_glob / h_pad2)
+        list_obj[0].GetYaxis().SetTitleSize(fontsize_glob / h_pad2)
+        list_obj[0].GetYaxis().SetTitleOffset(0.25)
+        list_obj[0].GetYaxis().SetNdivisions(505)
+        list_obj[0].GetXaxis().SetTickLength(tick_length / h_pad2)
         for gr, c in zip([hf_ratio_ivan_syst], [c_hf_ivan]):
             gr.SetMarkerColor(get_colour(c))
         # leg_data_mc_hf = list_obj_data_mc_hf_new[0]
@@ -967,11 +1025,14 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
             margins_y=[y_margin_down, y_margin_up], \
             # range_y=list_range_y_rat[i_shape], \
             title=title_full_ratio_theory)
-        list_obj[0].GetXaxis().SetLabelSize(0.1)
-        list_obj[0].GetXaxis().SetTitleSize(0.1)
-        list_obj[0].GetYaxis().SetLabelSize(0.1)
-        list_obj[0].GetYaxis().SetTitleSize(0.1)
-        list_obj[0].GetYaxis().SetNdivisions(4)
+        list_obj[0].GetXaxis().SetLabelSize(fontsize_glob / h_pad3)
+        list_obj[0].GetXaxis().SetTitleSize(scale_title * fontsize_glob / h_pad3)
+        list_obj[0].GetXaxis().SetTitleOffset(0.8)
+        list_obj[0].GetYaxis().SetLabelSize(fontsize_glob / h_pad3)
+        list_obj[0].GetYaxis().SetTitleSize(fontsize_glob / h_pad3)
+        list_obj[0].GetYaxis().SetTitleOffset(0.37)
+        list_obj[0].GetXaxis().SetTickLength(tick_length / h_pad3)
+        list_obj[0].GetYaxis().SetNdivisions(505)
         for gr, c in zip([incl_ratio_ivan_syst], [c_incl_ivan]):
             gr.SetMarkerColor(get_colour(c))
         # leg_data_mc_hf = list_obj_data_mc_hf_new_2[0]
