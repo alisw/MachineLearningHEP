@@ -18,7 +18,7 @@ main script for doing final stage analysis
 # pylint: disable=too-many-lines, line-too-long
 import argparse
 from array import array
-from math import sqrt
+from math import sqrt, floor, log10
 import yaml
 # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TLatex, TLine, TGaxis, gROOT, gStyle, TCanvas, TGraphAsymmErrors, TGraphErrors, TGraph, TLegend
@@ -591,6 +591,25 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     cshape_mc.SaveAs("%s/%s_mc_id_%s.pdf" % (rootpath, shape, suffix))
 
     # data + MC/data, HF and inclusive
+
+    # print values
+    n_sig = 2 # number of significant figures of the errors
+    for name, his, gr in zip(("HF", "inclusive"), (hf_data_stat, incl_data_stat), (hf_data_syst, incl_data_syst)):
+        print(f"Data points for {name} {shape}")
+        for i in range(gr.GetN()):
+            # skip untagged bin for zg and rg
+            if i == 0 and shape in ("zg", "rg"):
+                continue
+            y = gr.GetPointY(i)
+            e = his.GetBinError(i + 1)
+            e_plus = gr.GetErrorYhigh(i)
+            e_minus = gr.GetErrorYlow(i)
+            mag_e_stat = floor(log10(e))
+            mag_e_syst = floor(log10(min(e_plus, e_minus)))
+            mag_y = floor(log10(y))
+            mag_y = min(mag_e_stat, mag_e_syst, mag_y)
+            # print(f"Mag stat {mag_e_stat}, sys {mag_e_syst}")
+            print(f"{y:.{n_sig -1 - mag_y}f} ± {e:.{n_sig}g} (stat) +{e_plus:.{n_sig}g} -{e_minus:.{n_sig}g} (sys)")
 
     # print relative syst. unc.
     for name, gr in zip(("HF", "inclusive"), (hf_data_syst, incl_data_syst)):
