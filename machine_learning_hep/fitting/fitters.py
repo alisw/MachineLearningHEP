@@ -22,10 +22,11 @@ Definition of FitBase, FitAliHF, FitROOT classes
 from copy import deepcopy
 from array import array
 from math import sqrt
+from ctypes import c_double
 
 # pylint: disable=import-error, no-name-in-module, unused-import
 from ROOT import AliHFInvMassFitter, AliVertexingHFUtils, AliHFInvMassMultiTrialFit
-from ROOT import TFile, TH1F, TH1D, TF1, TPaveText, TLine, TLegend, Double, TLatex
+from ROOT import TFile, TH1F, TH1D, TF1, TPaveText, TLine, TLegend, TLatex
 from ROOT import kBlue, kRed, kGreen, kMagenta, kOrange, kPink, kCyan, kYellow, kBlack
 
 from machine_learning_hep.logger import get_logger
@@ -490,11 +491,11 @@ class FitAliHF(FitROOT):
 
         sig = self.kernel.GetRawYield()
         sig_err = self.kernel.GetRawYieldError()
-        bkg = Double()
-        bkg_err = Double()
+        bkg = c_double()
+        bkg_err = c_double()
         self.kernel.Background(n_sigma_signal, bkg, bkg_err)
-        signif = Double()
-        signif_err = Double()
+        signif = c_double()
+        signif_err = c_double()
         self.kernel.Significance(n_sigma_signal, signif, signif_err)
         sig_o_bkg = sig / bkg if bkg > 0. else -1.
 
