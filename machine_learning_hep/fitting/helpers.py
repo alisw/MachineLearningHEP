@@ -18,9 +18,10 @@ import os
 import math
 from glob import glob
 from array import array
+from ctypes import c_double
 
 #pylint: disable=too-many-lines, too-few-public-methods
-from ROOT import TFile, TH1F, TF1, TCanvas, gStyle, Double #pylint: disable=import-error, no-name-in-module
+from ROOT import TFile, TH1F, TF1, TCanvas, gStyle #pylint: disable=import-error, no-name-in-module
 
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.utilities import make_file_path
@@ -767,8 +768,8 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                 pre_fit = central_fit
 
             # Get reference parameters
-            signif = Double()
-            signif_err = Double()
+            signif = c_double()
+            signif_err = c_double()
             central_fit.kernel.Significance(self.pars_factory.n_sigma_signal, signif, signif_err)
             central_fit_pars = central_fit.get_fit_pars()
             overwrite_init = {"yield_ref": central_fit.kernel.GetRawYield(),
@@ -912,13 +913,13 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                 fill_wrapper(refls_histos[ibin2], ibin1 + 1,
                              kernel.GetReflOverSig(), kernel.GetReflOverSigUncertainty())
 
-                bkg = Double()
-                bkg_err = Double()
+                bkg = c_double()
+                bkg_err = c_double()
                 kernel.Background(n_sigma_signal, bkg, bkg_err)
                 fill_wrapper(backgroundhistos[ibin2], ibin1 + 1, bkg, bkg_err)
 
-                signif = Double()
-                signif_err = Double()
+                signif = c_double()
+                signif_err = c_double()
                 kernel.Significance(n_sigma_signal, signif, signif_err)
                 fill_wrapper(signifs_histos[ibin2], ibin1 + 1, signif, signif_err)
 
