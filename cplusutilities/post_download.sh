@@ -58,7 +58,7 @@ N_PACKING_JOBS=20
 
 MERGED_DIR="merged"
 
-MAX_SEARCH_DEPTH="2"
+MAX_SEARCH_DEPTH="-1"
 
 FORCE=false
 
@@ -172,7 +172,7 @@ cd $INPUT_PATH
 # keep the old data savely and produce the merged data as well. This assumes
 # there is nothing but the ROOT data from the grid
 unmerged_size="$(du -s | awk '{print $1}' )"
-free_space="$(df . | grep "/dev" | awk '{print $4}')"
+free_space="$(df . | tail -n 1 | awk '{print $4}')"
 
 if (( $free_space < $unmerged_size ))
 then
