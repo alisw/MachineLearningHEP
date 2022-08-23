@@ -1318,13 +1318,13 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             response_matrix_weight = 1.0
             rm_weight = 1.0
             var_shape = getattr(row, self.v_varshape_binning_gen)
-            var_shape_weight = getattr(row, shape_weight_name)
             var_ptjet = row.pt_gen_jet
             if self.doprior is True:
                 binx = hzvsjetpt_prior_weights.GetXaxis().FindBin(var_shape)
                 biny = hzvsjetpt_prior_weights.GetYaxis().FindBin(var_ptjet)
                 rm_weight *= hzvsjetpt_prior_weights.GetBinContent(binx, biny)
             if self.domodeldep is True:
+                var_shape_weight = getattr(row, shape_weight_name)
                 binx = hzvsjetpt_modeldep_weights.GetXaxis().FindBin(var_shape_weight)
                 biny = hzvsjetpt_modeldep_weights.GetYaxis().FindBin(var_ptjet)
                 weight_model = hzvsjetpt_modeldep_weights.GetBinContent(binx, biny)
@@ -1350,13 +1350,13 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             response_matrix_weight = 1.0
             rm_weight = 1.0
             var_shape = getattr(row, self.v_varshape_binning_gen)
-            var_shape_weight = getattr(row, shape_weight_name)
             var_ptjet = row.pt_gen_jet
             if self.doprior is True:
                 binx = hzvsjetpt_prior_weights.GetXaxis().FindBin(var_shape)
                 biny = hzvsjetpt_prior_weights.GetYaxis().FindBin(var_ptjet)
                 rm_weight *= hzvsjetpt_prior_weights.GetBinContent(binx, biny)
             if self.domodeldep is True:
+                var_shape_weight = getattr(row, shape_weight_name)
                 binx = hzvsjetpt_modeldep_weights.GetXaxis().FindBin(var_shape_weight)
                 biny = hzvsjetpt_modeldep_weights.GetYaxis().FindBin(var_ptjet)
                 weight_model = hzvsjetpt_modeldep_weights.GetBinContent(binx, biny)
