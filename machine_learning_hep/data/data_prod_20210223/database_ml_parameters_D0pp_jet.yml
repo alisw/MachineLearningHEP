@@ -284,7 +284,6 @@ D0pp:
       unmatched_gen: true
       latexnamehadron: "D^{0}"
       latexnamedecay: "K^{#minus} #pi^{#plus}"
-
       var_binning2: pt_jet
       var_binning2_gen: pt_gen_jet
       latexbin2var: "#it{p}_{T}^{jet ch}"
