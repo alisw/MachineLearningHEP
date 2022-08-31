@@ -42,12 +42,11 @@ make_dir_inside()
     local inside_dir=$2
     local create_dir="$top_dir/$inside_dir"
     [[ "$inside_dir" == "" ]] && create_dir="$top_dir"
-    mkdir -p -m 777 $create_dir
-    if [ $? -ne 0 ]; then
-      printf "\n\e[1;31mError: Could not create output directory $create_dir. Is $top_dir writable? Returning... \e[0m\n\n"
+    if ! mkdir -p -m 777 "$create_dir"; then
+      printf "\n\e[1;31mError: Could not create output directory %s. Is $top_dir writable? Returning... \e[0m\n\n" "$create_dir"
       exit
     else
-      printf "Created directory: \e[1m$create_dir\e[0m \n"
+      printf "Created directory: \e[1m%s\e[0m \n" "$create_dir"
     fi
 }
 
@@ -56,12 +55,12 @@ download_env()
     # Download the environmnet settings for this train
 
     echo "Attempt to download $ENV_SH"
-    local children=("" _child_1 _child_2 _child_3 _child_4 _child_5 _child_6 _child_7 _child_8 _child_9 _child_10)
+    local children=(_child_1 _child_2 _child_3 _child_4 _child_5 _child_6 _child_7 _child_8 _child_9 _child_10 "")
     for c in "${children[@]}"
     do
         if [ ! -e "$ENV_SH" ]
         then
-          cmd=$(printf "cp -T 32 /alice/cern.ch/user/a/alitrain/PWGHF/HF_TreeCreator/$trainname$c/env.sh file://%s/%s\n" $PWD $ENV_SH)
+          cmd=$(printf "cp -T 32 /alice/cern.ch/user/a/alitrain/PWGHF/HF_TreeCreator/%s%s/env.sh file://%s/%s\n" "$trainname" "$c" "$PWD" $ENV_SH)
           jalien << EOF
           $cmd
           exit
@@ -70,14 +69,10 @@ EOF
         else
             break
         fi
-        if [ -e "$ENV_SH" ]
-        then
-            break
-        fi
     done
     if [ ! -e "$ENV_SH" ]
     then
-        printf "   \e[1;31mERROR: Downloading $ENV_SH failed \e[0m\n\n"
+        printf "   \e[1;31mERROR: Downloading %s failed \e[0m\n\n" "$ENV_SH"
     fi
 }
 
@@ -88,7 +83,7 @@ make_generic_path()
     local sim_or_data=$(echo $out_dir_read | cut -d '/' -f 3)
     # This is the year
     local year=$(echo $out_dir_read | cut -d '/' -f 4)
-    # That is the ancchoring
+    # That is the anchoring
     local anchor=$(echo $out_dir_read | cut -d '/' -f 5)
 
     local run_number=$(echo $out_dir_read | cut -d '/' -f 6)
@@ -111,11 +106,13 @@ get_paths()
 
     if [[ "$DATASET_WITH_CHILDREN" != "1" ]]
     then
-        GENERIC_PATHS="$(make_generic_path $ALIEN_JDL_OUTPUTDIR)"
+        echo "Data set without children"
+        GENERIC_PATHS="$(make_generic_path "$ALIEN_JDL_OUTPUTDIR")"
         GENERIC_PATHS=("$GENERIC_PATHS/$trainname/AOD/*/$outputfile" )
         CHILDREN=("child_0" )
         INTERACTION_TYPES=("$ALIEN_JDL_LPMINTERACTIONTYPE" )
     else
+        echo "Data set with children"
 
         # Find children, use exported variable TEST_DIR_child_i
         local children_raw=$(env | grep "TEST_DIR_" | cut -d "=" -f 1)
@@ -126,7 +123,7 @@ get_paths()
 
             # Check if that was enabled
             enabled=$(eval "echo $"RUNNO_${child})
-            if [[ "$enabled" == "-1" ]] 
+            if [[ "$enabled" == "-1" ]]
             then
 
                 continue
@@ -134,10 +131,13 @@ get_paths()
             CHILDREN+=" $child"
 
             out_dir_prefix=$(eval "echo $"ALIEN_JDL_${child}"_OUTPUTDIR")
+            echo "out_dir_prefix $out_dir_prefix"
             local out_dir="$(make_generic_path $out_dir_prefix)"
             out_dir="$out_dir/${trainname}_${child}/AOD/*/$outputfile"
             GENERIC_PATHS+=" $out_dir"
             INTERACTION_TYPES+=" $(eval "echo $"ALIEN_JDL_${child}"_LPMINTERACTIONTYPE")"
+            newline=" $(eval "echo $"ALIEN_JDL_${child}"_LPMINTERACTIONTYPE")"
+            echo "Extending INTERACTION_TYPES with $newline"
         done
         # Make arrays
         CHILDREN=($CHILDREN)
@@ -158,8 +158,8 @@ run()
 
     #Confirm with user if hardcoded values are what he/she wants
     printf "\e[1mYou set the following setters in the script. Please check them carefully before continuing.\e[0m\n"
-    printf "   Number of files to download from grid: \e[1m$nfiles\e[0m\n"
-    printf "   Outputfile to be downloaded from grid: \e[1m$outputfile\e[0m\n"
+    printf "   Number of files to download from grid: \e[1m%s\e[0m\n" "$nfiles"
+    printf "   Outputfile to be downloaded from grid: \e[1m%s\e[0m\n" "$outputfile"
     printf "   I will download \e[1mnon-merged files\e[0m from GRID\n"
     printf "   Did you authenticate to \e[1mJAliEn\e[0m before running this script?\n"
 
@@ -178,30 +178,30 @@ run()
     if [ -z "$1" ]; then
       printf "Please enter train name: "
       read trainname
-      printf "  Will download \e[1m$outputfile\e[0m output from train: \e[1m$trainname\e[0m \n\n"
+      printf "  Will download \e[1m%s\e[0m output from train: \e[1m%s\e[0m \n\n" "$outputfile" "$trainname"
     else
       trainname=$1
-      printf "Will download \e[1m$outputfile\e[0m output from train: \e[1m$trainname\e[0m \n\n"
+      printf "Will download \e[1m%s\e[0m output from train: \e[1m%s\e[0m \n\n" "$outputfile" "$trainname"
     fi
 
     #Checking argument 2, output directoy
     if [ -z "$2" ]; then
       printf "Please enter output directory: "
       read placetosave
-      printf "  Output will be saved in: \e[1m$placetosave\e[0m \n\n"
+      printf "  Output will be saved in: \e[1m%s\e[0m \n\n" "$placetosave"
     else
       placetosave=$2
-      printf "\nOutput will be saved in: \e[1m$placetosave\e[0m \n\n"
+      printf "\nOutput will be saved in: \e[1m%s\e[0m \n\n" "$placetosave"
     fi
 
     #Checking argument 3, GRID merging stage
     if [ -z "$3" ] && [ -z "$stage" ] ; then
       printf "No GRID merging stage was entered. I will download non-merged files\n"
     elif [ -n "$stage" ] ; then
-      printf "I will download files from GRID merging: \e[1m$stage\e[0m    (if not in format Stage_#, download will fail)\n\n"
+      printf "I will download files from GRID merging: \e[1m%s\e[0m    (if not in format Stage_#, download will fail)\n\n" "$stage"
     else
       stage=$3
-      printf "I will download files from GRID merging: \e[1m$stage\e[0m    (if not in format Stage_#, download will fail)\n\n"
+      printf "I will download files from GRID merging: \e[1m%s\e[0m    (if not in format Stage_#, download will fail)\n\n" "$stage"
     fi
 
 
@@ -210,11 +210,9 @@ run()
     #####################################
 
     # Immediately abort if there is not enough disk space left (meaning less than 1TB)
-    local place_to_save_top="$(realpath $placetosave)"
-    place_to_save_top="/$(echo $place_to_save_top | cut -d '/' -f 2)"
-    local free_space="$(df $place_to_save_top | sed -n '2 p' | awk '{print $4}')"
+    local free_space="$(df "$placetosave" | sed -n '2 p' | awk '{print $4}')"
     echo "$free_space"
-    if (( $free_space < 1000000000 ))
+    if (( free_space < 1000000000 ))
     then
         printf "\e[1;34mWARNING\e[0m: Less than 1 TB available on target disk"
         printf "\n\e[1m   Are you sure that what will be downloaded will fit? [y/n]: \e[0m"
@@ -252,8 +250,10 @@ run()
 
     for ch_index in ${!CHILDREN[*]}
     do
+        echo "------ INTERACTION_TYPES ${INTERACTION_TYPES[$ch_index]}"
+        echo "------ GENERIC_PATHS ${GENERIC_PATHS[$ch_index]}"
         # Obtain anchoring
-        sim_or_data=$( echo ${GENERIC_PATHS[$ch_index]} | cut -d "/" -f 3)
+        sim_or_data=$( echo "${GENERIC_PATHS[$ch_index]}" | cut -d "/" -f 3)
         dataset_short=${INTERACTION_TYPES[$ch_index]}_${sim_or_data}
         # Now it's $TOP_DIR/ALIROOTTAG/pp_{sim,data}
         placetosavearr[$ch_index]=$OUT_DIR_TOP/$dataset_short
@@ -265,9 +265,9 @@ run()
     echo "The downloads' source and target paths:"
     for sp in ${!save_paths[*]}
     do
-        echo ${GENERIC_PATHS[$sp]}
+        echo "${GENERIC_PATHS[$sp]}"
         echo "to"
-        echo ${save_paths[$sp]}
+        echo "${save_paths[$sp]}"
         echo "-----"
     done
     echo "###########################################"
@@ -277,7 +277,7 @@ run()
     if [[ "$answer" == "y" || "$answer" == "Y" ]]; then
       printf "   Thanks for confirming. Continuing...\n\n"
     else
-      printf "   \e[1;31mERROR: Check train $trainname ... \e[0m\n\n"
+      printf "   \e[1;31mERROR: Check train %s ... \e[0m\n\n" "$trainname"
       exit
     fi
 
@@ -308,23 +308,23 @@ run()
         fi
     fi
 
-    
+
 
 
     #Log files ('D' is for download) + trainID, date, and timestamp
     datestamp="$(date +"%d-%m-%Y")"
     timestamp="$(date +"%H-%M-%S")"
     if [ -z "$4" ]; then
-      stdoutputfile=$(printf "D_stdout_%s_%s-%s.txt" $trainname $datestamp $timestamp)
-      stderrorfile=$(printf "D_stderr_%s_%s-%s.txt" $trainname $datestamp $timestamp)
+      stdoutputfile=$(printf "D_stdout_%s_%s-%s.txt" "$trainname" "$datestamp" "$timestamp")
+      stderrorfile=$(printf "D_stderr_%s_%s-%s.txt" "$trainname" "$datestamp" "$timestamp")
     else
-      stdoutputfile=$(printf "D_stdout_%s_%s_%s-%s.txt" $trainname $stage $datestamp $timestamp)
-      stderrorfile=$(printf "D_stderr_%s_%s_%s-%s.txt" $trainname $stage $datestamp $timestamp)
+      stdoutputfile=$(printf "D_stdout_%s_%s_%s-%s.txt" "$trainname" "$stage" "$datestamp" "$timestamp")
+      stderrorfile=$(printf "D_stderr_%s_%s_%s-%s.txt" "$trainname" "$stage" "$datestamp" "$timestamp")
     fi
 
     #----RUNNING THE DOWNLOADER----#
     printf "\n\n\e[1m----RUNNING THE DOWNLOADER----\e[0m\n\n"
-    printf "  Output of downloaders stored in:            \e[1m%s\e[0m\n  Warnings/Errors of downloader stored in:    \e[1m%s\e[0m\n" $i $stdoutputfile $stderrorfile
+    printf "  Output of downloaders stored in:            \e[1m%s\e[0m\n  Warnings/Errors of downloader stored in:    \e[1m%s\e[0m\n" $i "$stdoutputfile" "$stderrorfile"
     rundownloader="sh ../cplusutilities/downloader-generic.sh"
 
     printf "\n\n\n\nOutput downloading starts here\n\n" > "$stdoutputfile"
@@ -333,9 +333,9 @@ run()
     for ch_index in ${!CHILDREN[*]}
     do
       make_dir_inside "${save_paths[$ch_index]}"
-      cp $ENV_SH ${save_paths[$ch_index]}
+      cp $ENV_SH "${save_paths[$ch_index]}"
 
-      sh ../cplusutilities/run_downloader $rundownloader ${GENERIC_PATHS[$ch_index]} ${save_paths[$ch_index]} $outputfile >> "$stdoutputfile" 2>> "$stderrorfile"
+      sh ../cplusutilities/run_downloader $rundownloader "${GENERIC_PATHS[$ch_index]}" "${save_paths[$ch_index]}" $outputfile >> "$stdoutputfile" 2>> "$stderrorfile"
     done
 
     exit
@@ -368,16 +368,16 @@ run()
     do
       placetosave=${placetosavearr[$input_index]}
       #Saving log files in output directory
-      cp $stdoutputfile $placetosave/$trainname/
-      cp $stderrorfile $placetosave/$trainname/
-      printf "\e[1mMoved log files to $placetosave/$trainname/\e[0m\n"
+      cp "$stdoutputfile" "$placetosave/$trainname/"
+      cp "$stderrorfile" "$placetosave/$trainname/"
+      printf "\e[1mMoved log files to %s/%s/\e[0m\n" "$placetosave" "$trainname"
       printf "\e[1m----DOWNLOADER FINISHED----\e[0m\n\n"
-      if [ $splitchildsdifferentpaths -eq 0 ]; then
+      if [ "$splitchildsdifferentpaths" -eq 0 ]; then
         break
       fi
     done
-    rm $stdoutputfile
-    rm $stderrorfile
+    rm "$stdoutputfile"
+    rm "$stderrorfile"
 
     printf "\n\e[1m<<<Ready downloading? Please kill JAliEn daemons>>>\e[0m\n"
     printf "  killall java\n"
@@ -394,5 +394,3 @@ then
 else
     run $@
 fi
-
-
