@@ -285,7 +285,7 @@ def healthy_structure(dic_diff: dict): # pylint: disable=too-many-return-stateme
                 return False
     return True
 
-def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
+def main(yaml_in, yaml_diff, analysis, clean, proc, script_name): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
     '''Main function'''
     with open(yaml_in, 'r') as file_in:
         dic_in = yaml.safe_load(file_in)
@@ -298,7 +298,8 @@ def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-
 
     #print(yaml.safe_dump(dic_in, default_flow_style=False))
 
-    new_files_db = [] # List of created database files.
+    new_files = [] # List of created database files.
+    script_lines = [] # Execution lines written into a script.
 
     # Save the original database in the same format as the output for debugging.
     i_dot = yaml_in.rfind(".") # Find the position of the suffix.
@@ -306,7 +307,7 @@ def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-
     print("\nSaving the original database to %s" % yaml_out)
     with open(yaml_out, 'w') as file_out:
         yaml.safe_dump(dic_in, file_out, default_flow_style=False)
-    new_files_db.append(yaml_out)
+    new_files.append(yaml_out)
 
     if proc is not None:
         msg_warn("Only categories that DO%s require running the processor will be processed." % \
@@ -374,7 +375,7 @@ def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-
                 print("Saving the new database to %s" % yaml_out)
                 with open(yaml_out, 'w') as file_out:
                     yaml.safe_dump(dic_db, file_out, default_flow_style=False)
-                new_files_db.append(yaml_out)
+                new_files.append(yaml_out)
 
                 # Start the analysis.
                 if analysis:
@@ -390,18 +391,29 @@ def main(yaml_in, yaml_diff, analysis, clean, proc): # pylint: disable=too-many-
                     logfile = "stdouterr_%s_%s_%s_%s.log" % \
                         (timestamp, analysis, cat, format_varname(var, index, n_var))
                     print("Logfile: %s" % logfile)
-                    with open(logfile, "w") as ana_out:
-                        subprocess.Popen(shlex.split("python do_entire_analysis.py " \
-                            "-a %s -r %s -d %s -c" % (analysis, config, yaml_out)), \
-                            stdout=ana_out, stderr=ana_out, universal_newlines=True)
+                    if script_name:
+                        script_lines.append("python do_entire_analysis.py " \
+                            "-a %s -r %s -d %s -c > %s 2>&1\n" % (analysis, config, yaml_out, logfile))
+                    else:
+                        with open(logfile, "w") as ana_out:
+                            subprocess.Popen(shlex.split("python do_entire_analysis.py " \
+                                "-a %s -r %s -d %s -c" % (analysis, config, yaml_out)), \
+                                stdout=ana_out, stderr=ana_out, universal_newlines=True)
+
+    if analysis and script_name:
+        with open(script_name, "w") as script_file:
+            script_file.writelines(script_lines)
+            print(f"\nExecution lines written in {script_name}.")
 
     # Delete the created database files.
     if clean:
         if analysis:
             print("\nSkipping deleting right after starting the analysis.")
         else:
-            print("\nDeleting database files:")
-            for fil in new_files_db:
+            if script_name and os.path.isfile(script_name):
+                new_files.append(script_name)
+            print("\nDeleting created files:")
+            for fil in new_files:
                 print(fil)
                 os.remove(fil)
 
@@ -412,9 +424,11 @@ if __name__ == '__main__':
     PARSER.add_argument("diff", help="database with variations")
     PARSER.add_argument("-a", dest="analysis", help="analysis type " \
         "(If provided, the analysis will be started for all activated variations.)")
+    PARSER.add_argument("-s", dest="script", help="script name " \
+        "(If provided, the analysis execution lines will be written in the script file.)")
     PARSER.add_argument("-c", "--clean", action="store_true", \
         help="Delete the created database files at the end.")
     PARSER.add_argument("-p", type=int, choices=[1, 0], dest="proc", help="If 1/0, process only " \
         "categories that do/don't require running the processor.")
     ARGS = PARSER.parse_args()
-    main(ARGS.input, ARGS.diff, ARGS.analysis, ARGS.clean, ARGS.proc)
+    main(ARGS.input, ARGS.diff, ARGS.analysis, ARGS.clean, ARGS.proc, ARGS.script)
