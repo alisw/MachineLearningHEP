@@ -225,6 +225,23 @@ class AnalyzerJet(Analyzer):
             self.systematic_varnames[c] = []
             self.systematic_varlabels[c] = []
             for varname, val in db_sys[catname]["variations"].items():
+                if catname == "binning" and varname == "pt_jet":
+                    self.lvar2_binmin_gen_sys = val["diffs"]["analysis"][self.typean]["sel_binmin2_gen"]
+                    self.lvar2_binmax_gen_sys = val["diffs"]["analysis"][self.typean]["sel_binmax2_gen"]
+                    for i_var, list_pt in enumerate(self.lvar2_binmin_gen_sys):
+                        if list_pt == "#":
+                            self.lvar2_binmin_gen_sys[i_var] = self.lvar2_binmin_gen
+                    for i_var, list_pt in enumerate(self.lvar2_binmax_gen_sys):
+                        if list_pt == "#":
+                            self.lvar2_binmax_gen_sys[i_var] = self.lvar2_binmax_gen
+                    self.lvar2_binmin_reco_sys = val["diffs"]["analysis"][self.typean]["sel_binmin2_reco"]
+                    self.lvar2_binmax_reco_sys = val["diffs"]["analysis"][self.typean]["sel_binmax2_reco"]
+                    for i_var, list_pt in enumerate(self.lvar2_binmin_reco_sys):
+                        if list_pt == "#":
+                            self.lvar2_binmin_reco_sys[i_var] = self.lvar2_binmin_reco
+                    for i_var, list_pt in enumerate(self.lvar2_binmax_reco_sys):
+                        if list_pt == "#":
+                            self.lvar2_binmax_reco_sys[i_var] = self.lvar2_binmax_reco
                 n_var = len(val["activate"])
                 for a, act in enumerate(val["activate"]):
                     if act:
@@ -3307,6 +3324,10 @@ class AnalyzerJet(Analyzer):
             print("Symmetrisation: ", self.systematic_symmetrise)
             print("RMS both sides: ", self.systematic_rms_both_sides)
             print("Feed-down variations: ", self.powheg_nonprompt_varnames)
+            print("Jet pT rec min variations: ", self.lvar2_binmin_reco_sys)
+            print("Jet pT rec max variations: ", self.lvar2_binmax_reco_sys)
+            print("Jet pT gen min variations: ", self.lvar2_binmin_gen_sys)
+            print("Jet pT gen max variations: ", self.lvar2_binmax_gen_sys)
 
         path_def = self.file_unfold
         path_eff = self.file_efficiency
@@ -3471,8 +3492,6 @@ class AnalyzerJet(Analyzer):
         input_histograms_sys = []
         input_histograms_sys_eff = []
         for ibin2 in range(self.p_nbin2_gen): #pylint: disable=:too-many-nested-blocks
-            suffix = "%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
-            name_his = "unfolded_z_sel_%s" % suffix
             name_eff = "eff_mult%d" % ibin2
             input_histograms_syscat = []
             input_histograms_syscat_eff = []
@@ -3480,13 +3499,17 @@ class AnalyzerJet(Analyzer):
                 input_histograms_syscatvar = []
                 input_histograms_eff = []
                 for sys_var in range(self.systematic_variations[sys_cat]):
+                    print("Variation: %s, %s" % (self.systematic_catnames[sys_cat], self.systematic_varnames[sys_cat][sys_var]))
                     signif_check = True
                     string_catvar = self.systematic_catnames[sys_cat] + "/" + self.systematic_varnames[sys_cat][sys_var]
+                    if string_catvar.startswith("binning/pt_jet"):
+                        suffix_jetpt = "%g_%g" % (self.lvar2_binmin_reco_sys[sys_var][ibin2], self.lvar2_binmax_reco_sys[sys_var][ibin2])
+                    else:
+                        suffix_jetpt = "%g_%g" % (self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2])
                     for ipt in range(self.p_nptfinbins):
-                        suffix_plot = "%s_%g_%g_%s_%g_%g" % \
-                            (self.v_var2_binning, self.lvar2_binmin_reco[ibin2], self.lvar2_binmax_reco[ibin2],
+                        name_signif = "signif_%s_%s_%s_%g_%g" % \
+                            (self.v_var2_binning, suffix_jetpt,
                              self.v_var_binning, self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
-                        name_signif = "signif_%s" % suffix_plot
                         histo_signif = input_files_signif[sys_cat][sys_var].Get(name_signif)
                         if not histo_signif:
                             print("WARNING! No significance histo found! Skipping check")
@@ -3496,12 +3519,12 @@ class AnalyzerJet(Analyzer):
                             if significance < self.signif_threshold:
                                 signif_check = False
                     # FIXME exception for different jet pt binning pylint: disable=fixme
-                    name_his_orig = name_his
-                    if ibin2 == 0 and string_catvar == "binning/pt_jet_0":
-                        name_his = "unfolded_z_sel_%s_%.2f_%.2f" % (self.v_var2_binning, 8, self.lvar2_binmax_gen[ibin2])
+                    if string_catvar.startswith("binning/pt_jet"):
+                        name_his = "unfolded_z_sel_%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen_sys[sys_var][ibin2], self.lvar2_binmax_gen_sys[sys_var][ibin2])
+                    else:
+                        name_his = "unfolded_z_sel_%s_%.2f_%.2f" % (self.v_var2_binning, self.lvar2_binmin_gen[ibin2], self.lvar2_binmax_gen[ibin2])
                     sys_var_histo = input_files_sys[sys_cat][sys_var].Get(name_his)
                     sys_var_histo_eff = input_files_eff[sys_cat][sys_var].Get(name_eff)
-                    name_his = name_his_orig
                     path_file = path_def.replace(string_default, string_catvar)
                     path_eff_file = path_eff.replace(string_default, string_catvar)
                     if not signif_check:
