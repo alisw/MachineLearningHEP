@@ -55,7 +55,7 @@ categories:
                         jet_FF:
                             massmax: [2.460, 2.456]
             rebin:
-                activate: [yes]
+                activate: [no]
                 label: ["rebin"]
                 diffs:
                     analysis:
@@ -69,7 +69,7 @@ categories:
                         jet_FF:
                             fix_mean: [true]
             fix_sigma:
-                activate: [yes]
+                activate: [no]
                 label: ["free sigma"]
                 diffs:
                     analysis:
@@ -134,9 +134,9 @@ categories:
         processor: false
         label: "feed-down"
         correlation: "corr"
-        rms: true
-        symmetrise: true
-        rms_both_sides: true
+        rms: false
+        symmetrise: false
+        rms_both_sides: false
         variations:
             tune:
                 activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes]
@@ -254,6 +254,30 @@ categories:
                                               /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2017_mc_prodD2H/713_20220822-1048/pklskdecmerged,
                                               /data/Derived/LckINT7HighMultCalo_withJets_JetsPaper/vAN-20220820_ROOT6-1/pp_2018_mc_prodD2H/713_20220822-1048/pklskdecmerged]] #list of periods
 
+    binning:
+        activate: yes
+        processor: true
+        label: "binning"
+        correlation: "corr"
+        rms: true
+        symmetrise: true
+        rms_both_sides: true
+        variations:
+            pt_jet:
+                activate: [yes, yes, no, no]
+                label:
+                    - "#it{p}_{T}^{jet} 5#rightarrow4"
+                    - "#it{p}_{T}^{jet} 35#rightarrow40"
+                    - "add #it{p}_{T}^{jet} 4#minus5"
+                    - "#it{p}_{T}^{jet} 5#minus35"
+                diffs:
+                    analysis:
+                        jet_FF:
+                            sel_binmin2_reco: [[4,7,15], "#", [4,5,7,15],  [5]]
+                            sel_binmax2_reco:    ["#", [7,15,40], [5,7,15,35], [35]]
+                            sel_binmin2_gen:  [[4,7,15], "#", [4,5,7,15],  [5]]
+                            sel_binmax2_gen:     ["#", [7,15,40], [5,7,15,35], [35]]
+
     cutvar:
         activate: yes  # High RAM consumption
         processor: true
@@ -264,10 +288,7 @@ categories:
         rms_both_sides: true
         variations:
             cutvar:
-                activate: [yes, no, yes, yes, yes, no, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
-                #activate: [no , no , yes, yes, yes, yes, no , yes, yes, yes, yes,  no , no , no , no , no , no , no , no , no , no , no , no]
-                #activate: [yes, no, yes, yes, yes, no, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
-               #cutvar :  [80 , 79 , 78 , 77 , 76 , 75 , 74 , 73 , 72 , 71 , 69 , 68 , 67 , 66 , 65 , 63 , 60 , 55 , 50 , 45 , 40 , 35 , 30]
+                activate: [yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes, yes]
                 label:
                     - "prob cut: 0.80"
                     - "prob cut: 0.79"

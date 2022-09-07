@@ -484,7 +484,7 @@ LcpK0spp:
       pythia8_prompt_variations: ["default","colour2soft"]
       pythia8_prompt_variations_legend:  ["PYTHIA 8 Monash","PYTHIA 8 CR Mode 2"]
 
-      variations_db: ./data/data_prod_20210223/database_variations_LcpK0spp_jet_FF.yml
+      variations_db: ./data/data_prod_20220820/database_variations_LcpK0spp_jet_FF.yml
 
     jet_r_shape_2_6:
       <<: *jet_default
