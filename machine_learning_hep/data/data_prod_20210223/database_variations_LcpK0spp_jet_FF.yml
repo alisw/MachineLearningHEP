@@ -198,7 +198,7 @@ categories:
                         jet_FF:
                             niterunfoldingchosen: [3, 7]
     normalisation:
-        activate: no
+        activate: yes
         processor: false
         label: "#it{#sigma}_{MB}"
         correlation: "corr"
@@ -211,7 +211,7 @@ categories:
                 label: ["#it{#sigma}_{V0AND} down", "#it{#sigma}_{V0AND} up"]
                 diffs:
                     analysis:
-                        jet_r_shape_2_6:
+                        jet_FF:
                             xsection_inel: [54.91, 60.69]
     tracking:
         activate: yes
