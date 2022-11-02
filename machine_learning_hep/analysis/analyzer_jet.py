@@ -3896,6 +3896,8 @@ class AnalyzerJet(Analyzer):
             shapebins_error_down = []
             rel_unc_up = []
             rel_unc_down = []
+            unc_rel_min = 100.
+            unc_rel_max = 0.
             for ibinshape in range(self.p_nbinshape_gen):
                 shapebins_centres.append(input_histograms_default[ibin2].GetBinCenter(ibinshape + 1))
                 val = input_histograms_default[ibin2].GetBinContent(ibinshape + 1)
@@ -3907,12 +3909,17 @@ class AnalyzerJet(Analyzer):
                 shapebins_error_up.append(err_up)
                 shapebins_error_down.append(err_down)
                 if val > 0:
-                    rel_unc_up.append(err_up/val)
-                    rel_unc_down.append(err_down/val)
-                    print("total relative error: ", self.lvar2_binmin_gen[ibin2], " ", self.lvar2_binmax_gen[ibin2], " ", self.lvarshape_binmin_gen[ibinshape], " ", self.lvarshape_binmin_gen[ibinshape] ," ",err_up/val, " ", err_down/val)
+                    unc_rel_up = err_up/val
+                    unc_rel_down = err_down/val
+                    unc_rel_min = min(unc_rel_min, unc_rel_up, unc_rel_down)
+                    unc_rel_max = max(unc_rel_max, unc_rel_up, unc_rel_down)
+                    rel_unc_up.append(unc_rel_up)
+                    rel_unc_down.append(unc_rel_down)
+                    print("total rel. syst. unc.: ", self.lvar2_binmin_gen[ibin2], " ", self.lvar2_binmax_gen[ibin2], " ", self.lvarshape_binmin_gen[ibinshape], " ", self.lvarshape_binmax_gen[ibinshape] ," ",unc_rel_up, " ", unc_rel_down)
                 else:
                     rel_unc_up.append(0.)
                     rel_unc_down.append(0.)
+            print(f"total rel. syst. unc. (%): min. {(100. * unc_rel_min):.2g}, max. {(100. * unc_rel_max):.2g}")
             shapebins_centres_array = array("d", shapebins_centres)
             shapebins_contents_array = array("d", shapebins_contents)
             shapebins_widths_up_array = array("d", shapebins_widths_up)
@@ -4357,12 +4364,15 @@ class AnalyzerJet(Analyzer):
                 leg_relativesys.AddEntry(tgsys_cat[ibin2][sys_cat], self.systematic_catlabels[sys_cat], "F")
                 if sys_cat == 0:
                     tgsys_cat[ibin2][sys_cat].Draw("A2")
-                    for ibinshape in range(self.p_nbinshape_gen):
-                        print("relative systematic ",self.systematic_catlabels[sys_cat]," ",suffix, " ", self.lvar2_binmin_gen[ibin2], " ", self.lvar2_binmax_gen[ibin2], " ",tgsys_cat[ibin2][sys_cat].GetErrorYhigh(ibinshape))
                 else:
                     tgsys_cat[ibin2][sys_cat].Draw("2")
-                    for ibinshape in range(self.p_nbinshape_gen):
-                        print("relative systematic ",self.systematic_catlabels[sys_cat]," ",suffix, " ", self.lvar2_binmin_gen[ibin2], " ", self.lvar2_binmax_gen[ibin2], " ",tgsys_cat[ibin2][sys_cat].GetErrorYhigh(ibinshape))
+                unc_rel_min = 100.
+                unc_rel_max = 0.
+                for ibinshape in range(self.p_nbinshape_gen):
+                    print("rel. syst. unc. ",self.systematic_catlabels[sys_cat]," ", self.lvar2_binmin_gen[ibin2], " ", self.lvar2_binmax_gen[ibin2], " ",tgsys_cat[ibin2][sys_cat].GetErrorYhigh(ibinshape), " ",tgsys_cat[ibin2][sys_cat].GetErrorYlow(ibinshape))
+                    unc_rel_min = min(unc_rel_min, tgsys_cat[ibin2][sys_cat].GetErrorYhigh(ibinshape), tgsys_cat[ibin2][sys_cat].GetErrorYlow(ibinshape))
+                    unc_rel_max = max(unc_rel_max, tgsys_cat[ibin2][sys_cat].GetErrorYhigh(ibinshape), tgsys_cat[ibin2][sys_cat].GetErrorYlow(ibinshape))
+                print(f"rel. syst. unc. {self.systematic_catlabels[sys_cat]} (%): min. {(100. * unc_rel_min):.2g}, max. {(100. * unc_rel_max):.2g}")
             h_default_stat_err[ibin2].Draw("same")
             h_default_stat_err[ibin2].Draw("axissame")
             # Draw LaTeX
