@@ -243,7 +243,7 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     text_powheg = "POWHEG #plus PYTHIA 6"
     text_ivan = "SCET MLL"
     text_jets = "charged jets, anti-#it{k}_{T}, #it{R} = 0.4"
-    text_ptjet = "%g #leq %s < %g GeV/#it{c}, |#it{#eta}_{jet}| #leq 0.5" % (lvar2_binmin_reco[ibin2], p_latexbin2var, lvar2_binmax_reco[ibin2])
+    text_ptjet = "%g #leq %s < %g GeV/#it{c}, |#it{#eta}_{jet ch}| #leq 0.5" % (lvar2_binmin_reco[ibin2], p_latexbin2var, lvar2_binmax_reco[ibin2])
     text_pth = "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, |#it{y}_{%s}| #leq 0.8" % (lpt_finbinmin[0], p_latexnhadron, min(lpt_finbinmax[-1], lvar2_binmax_reco[ibin2]), p_latexnhadron)
     text_ptcut = "#it{p}_{T, incl. ch. jet}^{leading track} #geq 5.33 GeV/#it{c}"
     text_ptcut_sim = "#it{p}_{T, incl. ch. jet}^{leading h^{#pm}} #geq 5.33 GeV/#it{c} (varied)"
@@ -648,6 +648,7 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     # leg_pos = [.7, .75, .82, .85]
     # leg_pos = [.65, .63, .82, .78]
     leg_pos = [.7, .63, .87, .78]
+    leg_pos = [.7, .55, .87, .78]
     fraction_untagged_hf = hf_data_stat.Integral(1, 1, "width")
     fraction_untagged_incl = incl_data_stat.Integral(1, 1, "width")
     # hard-coded to values to unify them across zg, rg, nsd
@@ -657,6 +658,10 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     list_obj = [hf_data_syst, incl_data_syst, hf_data_stat, incl_data_stat]
     labels_obj = ["%s-tagged" % p_latexnhadron, "inclusive", "", ""]
     colours = [get_colour(i, j) for i, j in zip((c_hf_data, c_incl_data, c_hf_data, c_incl_data), (2, 2, 1, 1))]
+
+    list_obj = [hf_data_syst, incl_data_syst, hf_data_stat, incl_data_stat]
+    labels_obj = ["", "", "%s-tagged" % p_latexnhadron, "inclusive"]
+
     markers = [m_hf_data, m_incl_data, m_hf_data, m_incl_data]
     y_margin_up = 0.42
     y_margin_down = 0.05
@@ -707,6 +712,7 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     for gr, c in zip((hf_data_syst, incl_data_syst), (c_hf_data, c_incl_data)):
         gr.SetMarkerColor(get_colour(c))
     list_obj_data_new[0].SetTextSize(fontsize_glob / h_pad1)
+    list_obj_data_new[0].AddEntry(hf_data_syst, "syst. unc.", "f")
     list_obj[0].GetYaxis().SetLabelSize(fontsize_glob / h_pad1)
     list_obj[0].GetYaxis().SetTitleSize(scale_title * fontsize_glob / h_pad1)
     list_obj[0].GetYaxis().SetTitleOffset(0.8)
@@ -875,13 +881,14 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
             scale_graph(incl_data_syst, 1. / int)
         # data
         # leg_pos = [.65, .6, .82, .8]
-        leg_pos = [.7, .63, .87, .78]
+        leg_pos = [.7, .55, .87, .78]
         hf_ivan_syst_plot = hf_ivan_syst.Clone(f"{hf_ivan_syst.GetName()}_plot")
         hf_ivan_syst_plot.RemovePoint(0) # delete the untagged bin point
         incl_ivan_syst_plot = incl_ivan_syst.Clone(f"{incl_ivan_syst.GetName()}_plot")
         incl_ivan_syst_plot.RemovePoint(0) # delete the untagged bin point
         list_obj = [hf_data_syst, incl_data_syst, hf_ivan_syst_plot, incl_ivan_syst_plot, hf_data_stat, incl_data_stat, hf_ivan_stat, incl_ivan_stat]
         labels_obj = [f"{p_latexnhadron}-tagged", "inclusive", "", "", "", "", "", ""]
+        labels_obj = ["", "", "", "", f"{p_latexnhadron}-tagged", "inclusive", "", ""]
         colours = [get_colour(i, j) for i, j in zip((c_hf_data, c_incl_data, c_hf_ivan, c_incl_ivan, c_hf_data, c_incl_data, c_hf_ivan, c_incl_ivan), (2, 2, 2, 2, 1, 1, 1, 1))]
         markers = [m_hf_data, m_incl_data, m_hf_ivan, m_incl_ivan, m_hf_data, m_incl_data, m_hf_ivan, m_incl_ivan]
         y_margin_up = 0.5
@@ -922,8 +929,9 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
         leg_data_mc = list_obj_data_new[0]
         leg_data_mc.SetTextSize(fontsize_glob / h_pad1)
         leg_data_mc.SetHeader("data")
+        leg_data_mc.AddEntry(hf_data_syst, "syst. unc.", "f")
         # leg_data_mc_theory = TLegend(.65, .35, .82, .55)
-        leg_data_mc_theory = TLegend(.7, .35, .87, .55)
+        leg_data_mc_theory = TLegend(.7, .3, .87, .5)
         setup_legend(leg_data_mc_theory, fontsize_glob / h_pad1)
         leg_data_mc_theory.SetTextSize(fontsize_glob / h_pad1)
         leg_data_mc_theory.SetHeader(text_ivan)
