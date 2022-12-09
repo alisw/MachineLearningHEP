@@ -307,13 +307,13 @@ class AnalyzerJet(Analyzer):
         self.shape = typean[len("jet_"):]
         self.size_can = [800, 800]
         self.offsets_axes = [0.8, 1.1]
-        self.margins_can = [0.08, 0.13, 0.05, 0.03]
+        self.margins_can = [0.1, 0.13, 0.05, 0.03]
         self.fontsize = 0.035
         self.opt_leg_g = "FP" # for systematic uncertanties in the legend
         self.opt_plot_g = "2"
-        self.x_latex = 0.15
+        self.x_latex = 0.18
         self.y_latex_top = 0.88
-        self.y_step = 0.0595
+        self.y_step = 0.05
         # axes titles
         self.title_x = self.v_varshape_latex
         self.title_y = "(1/#it{N}_{jet}) d#it{N}/d%s" % self.v_varshape_latex
@@ -321,11 +321,11 @@ class AnalyzerJet(Analyzer):
         self.title_full_ratio = ";%s;data/MC: ratio of %s" % (self.title_x, self.title_y)
         # text
         #self.text_alice = "ALICE Preliminary, pp, #sqrt{#it{s}} = 13 TeV"
-        self.text_alice = "ALICE Preliminary"
+        self.text_alice = "#bf{ALICE}, pp, #sqrt{#it{s}} = 13 TeV"
         self.text_jets = "%s-tagged charged jets, anti-#it{k}_{T}, #it{R} = 0.4" % self.p_latexnhadron
         self.text_jets_ratio = "#Lambda_{c}^{+}, D^{0} -tagged charged jets, anti-#it{k}_{T}, #it{R} = 0.4"
-        self.text_ptjet = "%g < %s < %g GeV/#it{c}, |#it{#eta}_{jet}| < 0.5"
-        self.text_pth = "%g < #it{p}_{T}^{%s} < %g GeV/#it{c}, |#it{y}| < 0.8"
+        self.text_ptjet = "%g #leq %s < %g GeV/#it{c}, |#it{#eta}_{jet ch}| < 0.5"
+        self.text_pth = "%g #leq #it{p}_{T}^{%s} < %g GeV/#it{c}, |#it{y}_{%s}| < 0.8"
         self.text_sd = "Soft Drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)"
         self.text_acc_h = "|#it{y}| < 0.8"
         self.text_powheg = "POWHEG + PYTHIA 6 + EvtGen"
@@ -1391,7 +1391,7 @@ class AnalyzerJet(Analyzer):
                 # preliminary figure
                 if ibin2 in [1] and ipt in [4, 5]:
                     text_ptjet_full = self.text_ptjet % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2])
-                    text_pth_full = self.text_pth % (self.lpt_finbinmin[ipt], self.p_latexnhadron, min(self.lpt_finbinmax[ipt], self.lvar2_binmax_reco[ibin2]))
+                    text_pth_full = self.text_pth % (self.lpt_finbinmin[ipt], self.p_latexnhadron, min(self.lpt_finbinmax[ipt], self.lvar2_binmax_reco[ibin2]), self.p_latexnhadron)
                     if self.shape == "zg":
                         leg_pos = [.15, .15, .30, .30]
                     elif self.shape == "rg":
@@ -2482,7 +2482,7 @@ class AnalyzerJet(Analyzer):
 
         # preliminary figure
         text_ptjet_full = self.text_ptjet % (self.lvar2_binmin_reco[0], self.p_latexbin2var, self.lvar2_binmax_reco[-1])
-        text_pth_full = self.text_pth % (self.lpt_finbinmin[0], self.p_latexnhadron, self.lpt_finbinmax[-1])
+        text_pth_full = self.text_pth % (self.lpt_finbinmin[0], self.p_latexnhadron, self.lpt_finbinmax[-1], self.p_latexnhadron)
         cz_genvsreco_full = TCanvas("cz_genvsreco_full", "response matrix 2D projection", 800, 800)
         setup_canvas(cz_genvsreco_full)
         cz_genvsreco_full.SetCanvasSize(900, 800)
@@ -4232,8 +4232,8 @@ class AnalyzerJet(Analyzer):
             cfinalwsys_wmodels.SaveAs("%s/%s_final_wsys_wmodels_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix))
 
             text_ptjet_full = self.text_ptjet % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2])
-            text_pth_full = self.text_pth % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2]))
-            text_pth_full_ratio = self.text_pth % (self.lpt_finbinmin[0], "#Lambda_{c}^{+}, D^{0}", min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2]))
+            text_pth_full = self.text_pth % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2]), self.p_latexnhadron)
+            text_pth_full_ratio = self.text_pth % (self.lpt_finbinmin[0], "#Lambda_{c}^{+}, D^{0}", min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2]), self.p_latexnhadron)
 
             list_obj = [tgsys[ibin2], tg_powheg[ibin2], input_histograms_default[ibin2], input_powheg_z[ibin2]]
             labels_obj = ["data, pp, #sqrt{#it{s}} = 13 TeV", "POWHEG #plus PYTHIA 6", "", ""]
@@ -4326,6 +4326,8 @@ class AnalyzerJet(Analyzer):
             # plot the relative systematic uncertainties for all categories together
 
             # preliminary figure
+            i_shape = 0 if self.shape == "zg" else 1 if self.shape == "rg" else 2
+
             crelativesys = TCanvas("crelativesys " + suffix, "relative systematic uncertainties" + suffix)
             gStyle.SetErrorX(0)
             setup_canvas(crelativesys)
@@ -4341,7 +4343,8 @@ class AnalyzerJet(Analyzer):
             y_min_h, y_max_h = get_y_window_his([h_default_stat_err[ibin2]])
             y_min = min(y_min_g, y_min_h)
             y_max = max(y_max_g, y_max_h)
-            y_margin_up = 0.05
+            list_y_margin_up = [0.2, 0.35, 0.2]
+            y_margin_up = list_y_margin_up[i_shape]
             y_margin_down = 0.05
             setup_histogram(h_default_stat_err[ibin2])
             h_default_stat_err[ibin2].SetMarkerStyle(0)
@@ -4353,7 +4356,7 @@ class AnalyzerJet(Analyzer):
                 tgsys_cat[ibin2][sys_cat].SetLineWidth(3)
                 tgsys_cat[ibin2][sys_cat].SetFillStyle(0)
                 tgsys_cat[ibin2][sys_cat].GetYaxis().SetRangeUser(*get_plot_range(y_min, y_max, y_margin_down, y_margin_up))
-                tgsys_cat[ibin2][sys_cat].GetXaxis().SetLimits(round(self.lvarshape_binmin_gen[0], 2), round(self.lvarshape_binmax_gen[-1], 2))
+                tgsys_cat[ibin2][sys_cat].GetXaxis().SetLimits(round(self.lvarshape_binmin_gen[0 if self.shape == "nsd" else 1], 2), round(self.lvarshape_binmax_gen[-1], 2))
                 if self.shape == "nsd":
                     tgsys_cat[ibin2][sys_cat].GetXaxis().SetNdivisions(5)
                     shrink_err_x(tgsys_cat[ibin2][sys_cat], 0.2)
@@ -4376,13 +4379,13 @@ class AnalyzerJet(Analyzer):
             h_default_stat_err[ibin2].Draw("same")
             h_default_stat_err[ibin2].Draw("axissame")
             # Draw LaTeX
-            #y_latex = self.y_latex_top
-            #list_latex = []
-            #for text_latex in [self.text_alice, self.text_jets, text_ptjet_full, text_pth_full, self.text_sd]:
-            #    latex = TLatex(self.x_latex, y_latex, text_latex)
-            #    list_latex.append(latex)
-            #    draw_latex(latex, textsize=self.fontsize)
-            #    y_latex -= self.y_step
+            y_latex = self.y_latex_top
+            list_latex = []
+            for text_latex in [self.text_alice, self.text_jets, text_ptjet_full, text_pth_full, self.text_sd]:
+               latex = TLatex(self.x_latex, y_latex, text_latex)
+               list_latex.append(latex)
+               draw_latex(latex, textsize=self.fontsize)
+               y_latex -= self.y_step
             leg_relativesys.Draw("same")
             crelativesys.SaveAs("%s/sys_unc_%s.eps" % (self.d_resultsallpdata, suffix))
             if ibin2 == 1:
@@ -4466,7 +4469,7 @@ class AnalyzerJet(Analyzer):
             cfeeddown_fraction.SaveAs("%s/%s_feeddown_fraction_var_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix_plot))
 
             text_ptjet_full = self.text_ptjet % (self.lvar2_binmin_reco[ibin2], self.p_latexbin2var, self.lvar2_binmax_reco[ibin2])
-            text_pth_full = self.text_pth % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2]))
+            text_pth_full = self.text_pth % (self.lpt_finbinmin[0], self.p_latexnhadron, min(self.lpt_finbinmax[-1], self.lvar2_binmax_reco[ibin2]), self.p_latexnhadron)
 
             # preliminary figure
             if ibin2 == 1:
