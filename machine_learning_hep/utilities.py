@@ -23,6 +23,7 @@ import bz2
 import gzip
 import lzma
 import os
+import sys
 import shutil
 import math
 from array import array
@@ -999,3 +1000,36 @@ def scale_graph(gr, number):
         gr.SetPointY(i, gr.GetPointY(i) * number)
         gr.SetPointEYhigh(i, gr.GetErrorYlow(i) * number)
         gr.SetPointEYlow(i, gr.GetErrorYhigh(i) * number)
+
+
+def sqrt_sum_sq(numbers):
+    """Return sqrt(n1 * n1 + n2 * n2 + ...)"""
+    from math import sqrt
+    return sqrt(sum(n * n for n in numbers))
+
+
+def combine_graphs(graphs: list):
+    """Combine uncertainties of graphs in quadrature"""
+    if not graphs:
+        print("Error: No graphs given")
+        sys.exit(1)
+    gr_comb = graphs[0].Clone(f"{graphs[0].GetName()}_combined")
+    if len(graphs) > 1:
+        n_points = gr_comb.GetN()
+        for gr in graphs:
+            if gr.GetN() != n_points:
+                print(f"Error: Different number of points: {gr.GetN()} vs {n_points}")
+                sys.exit(1)
+        for i in range(n_points):
+            x_comb = gr_comb.GetPointX(i)
+            y_comb = gr_comb.GetPointY(i)
+            for gr in graphs:
+                if gr.GetPointX(i) != x_comb:
+                    print(f"Error: Different x-value of point {i}: {x_comb} vs {gr.GetPointX(i)}")
+                    sys.exit(1)
+                if gr.GetPointY(i) != y_comb:
+                    print(f"Error: Different y-value of point {i}: {y_comb} vs {gr.GetPointY(i)}")
+                    sys.exit(1)
+            gr_comb.SetPointEYhigh(i, sqrt_sum_sq([gr.GetErrorYhigh(i) for gr in graphs]))
+            gr_comb.SetPointEYlow(i, sqrt_sum_sq([gr.GetErrorYlow(i) for gr in graphs]))
+    return gr_comb

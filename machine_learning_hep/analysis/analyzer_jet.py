@@ -34,7 +34,7 @@ from ROOT import RooUnfoldBayes
 from machine_learning_hep.utilities import folding, equal_binning_lists, make_message_notfound
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.utilities import setup_histogram, setup_canvas, get_colour, get_marker, get_y_window_gr, get_y_window_his, get_plot_range
-from machine_learning_hep.utilities import setup_legend, setup_tgraph, draw_latex, tg_sys, make_plot
+from machine_learning_hep.utilities import setup_legend, setup_tgraph, draw_latex, tg_sys, make_plot, combine_graphs
 from machine_learning_hep.do_variations import healthy_structure, format_varname, format_varlabel
 from machine_learning_hep.utilities_plot import buildhisto, makefill2dhist, makefill3dhist
 from machine_learning_hep.utilities_plot import makefill2dweighed, makefill3dweighed
@@ -211,6 +211,7 @@ class AnalyzerJet(Analyzer):
         self.systematic_catnames = [catname for catname, val in db_sys.items() if val["activate"]]
         self.n_sys_cat = len(self.systematic_catnames)
         self.systematic_catlabels = [""] * self.n_sys_cat
+        self.systematic_catgroups = [""] * self.n_sys_cat
         self.systematic_varnames = [None] * self.n_sys_cat
         self.systematic_varlabels = [None] * self.n_sys_cat
         self.systematic_variations = [0] * self.n_sys_cat
@@ -222,6 +223,7 @@ class AnalyzerJet(Analyzer):
         self.powheg_nonprompt_varlabels = []
         for c, catname in enumerate(self.systematic_catnames):
             self.systematic_catlabels[c] = db_sys[catname]["label"]
+            self.systematic_catgroups[c] = db_sys[catname].get("group", self.systematic_catlabels[c])
             self.systematic_varnames[c] = []
             self.systematic_varlabels[c] = []
             for varname, val in db_sys[catname]["variations"].items():
@@ -257,6 +259,8 @@ class AnalyzerJet(Analyzer):
             self.systematic_rms[c] = db_sys[catname]["rms"]
             self.systematic_symmetrise[c] = db_sys[catname]["symmetrise"]
             self.systematic_rms_both_sides[c] = db_sys[catname]["rms_both_sides"]
+        self.systematic_catgroups_list = list(dict.fromkeys(self.systematic_catgroups))
+        self.n_sys_gr = len(self.systematic_catgroups_list)
         self.inclusive_unc = datap["analysis"][self.typean].get("inclusive_unc", None)
         self.use_inclusive_systematics = datap["analysis"][self.typean].get("use_inclusive_systematics", False)
         print("Use inclusive systematics:", self.use_inclusive_systematics)
@@ -3316,6 +3320,8 @@ class AnalyzerJet(Analyzer):
         if debug:
             print("Categories: ", self.systematic_catnames)
             print("Category labels: ", self.systematic_catlabels)
+            print("Category Groups: ", self.systematic_catgroups)
+            print("Category Groups unique: ", self.systematic_catgroups_list, self.n_sys_gr)
             print("Numbers of variations: ", self.systematic_variations)
             print("Variations: ", self.systematic_varnames)
             print("Variation labels: ", self.systematic_varlabels)
@@ -3882,8 +3888,8 @@ class AnalyzerJet(Analyzer):
 
         tgsys = [] # list of graphs with combined absolute uncertainties for all pt_jet bins
         tgsys_cat = [] # list of graphs with relative uncertainties for all categories, pt_jet bins
-        full_unc_up = [] # list of graphs with relative uncertainties for all categories, pt_jet bins
-        full_unc_down = [] # list of graphs with relative uncertainties for all categories, pt_jet bins
+        full_unc_up = [] # list of relative uncertainties for all categories, pt_jet bins
+        full_unc_down = [] # list of relative uncertainties for all categories, pt_jet bins
         for ibin2 in range(self.p_nbin2_gen):
 
             # combined uncertainties
@@ -3960,6 +3966,20 @@ class AnalyzerJet(Analyzer):
                                                      shapebins_error_down_cat_array, \
                                                      shapebins_error_up_cat_array))
             tgsys_cat.append(tgsys_cat_z)
+
+        # combine uncertainties from categories into groups
+
+        tgsys_gr = [] # list of graphs with relative uncertainties for all groups, pt_jet bins
+        for ibin2 in range(self.p_nbin2_gen):
+            tgsys_gr_z = [] # list of graphs with relative uncertainties for all groups in a given pt_jet bin
+            for gr in self.systematic_catgroups_list:
+                tgsys_gr_z_cat = [] # lists of graphs with relative uncertainties for categories in a given group in a given pt_jet bin
+                for sys_cat, cat in enumerate(self.systematic_catlabels):
+                    if self.systematic_catgroups[sys_cat] == gr:
+                        print(f"Group {gr}: Adding category {cat}")
+                        tgsys_gr_z_cat.append(tgsys_cat[ibin2][sys_cat])
+                tgsys_gr_z.append(combine_graphs(tgsys_gr_z_cat))
+            tgsys_gr.append(tgsys_gr_z)
 
         # write the combined systematic uncertainties in a file
         if self.lc_d0_ratio:
@@ -4390,6 +4410,74 @@ class AnalyzerJet(Analyzer):
             crelativesys.SaveAs("%s/sys_unc_%s.eps" % (self.d_resultsallpdata, suffix))
             if ibin2 == 1:
                 crelativesys.SaveAs("%s/%s_sys_unc_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix))
+            gStyle.SetErrorX(0.5)
+
+            # plot the relative systematic uncertainties for all categories together
+            # same as above but categories combined into groups
+
+            crelativesys_gr = TCanvas("crelativesys_gr " + suffix, "relative systematic uncertainties" + suffix)
+            gStyle.SetErrorX(0)
+            setup_canvas(crelativesys_gr)
+            crelativesys_gr.SetCanvasSize(1000, 800) # original width 900
+            crelativesys_gr.SetBottomMargin(self.margins_can[0])
+            crelativesys_gr.SetLeftMargin(9 / 10 * self.margins_can[1]) # scale for width 900 -> 1000
+            crelativesys_gr.SetTopMargin(self.margins_can[2])
+            # crelativesys_gr.SetRightMargin(0.25)
+            crelativesys_gr.SetRightMargin(1 - 9 / 10 * (1 - 0.25)) # scale for width 900 -> 1000
+            # leg_relativesys_gr = TLegend(.77, .2, 0.95, .85)
+            leg_relativesys_gr = TLegend(0.77 * 9 / 10, .5, 0.95, .85) # scale for width 900 -> 1000
+            setup_legend(leg_relativesys_gr, textsize=self.fontsize)
+            y_min_g, y_max_g = get_y_window_gr(tgsys_gr[ibin2])
+            y_min_h, y_max_h = get_y_window_his([h_default_stat_err[ibin2]])
+            y_min = min(y_min_g, y_min_h)
+            y_max = max(y_max_g, y_max_h)
+            list_y_margin_up = [0.2, 0.35, 0.2]
+            y_margin_up = list_y_margin_up[i_shape]
+            y_margin_down = 0.05
+            setup_histogram(h_default_stat_err[ibin2])
+            h_default_stat_err[ibin2].SetMarkerStyle(0)
+            h_default_stat_err[ibin2].SetMarkerSize(0)
+            leg_relativesys_gr.AddEntry(h_default_stat_err[ibin2], "stat. unc.", "E")
+            for sys_gr, gr in enumerate(self.systematic_catgroups_list):
+                setup_tgraph(tgsys_gr[ibin2][sys_gr], get_colour(sys_gr + 1, 0))
+                tgsys_gr[ibin2][sys_gr].SetTitle("")
+                tgsys_gr[ibin2][sys_gr].SetLineWidth(3)
+                tgsys_gr[ibin2][sys_gr].SetFillStyle(0)
+                tgsys_gr[ibin2][sys_gr].GetYaxis().SetRangeUser(*get_plot_range(y_min, y_max, y_margin_down, y_margin_up))
+                tgsys_gr[ibin2][sys_gr].GetXaxis().SetLimits(round(self.lvarshape_binmin_gen[0 if self.shape == "nsd" else 1], 2), round(self.lvarshape_binmax_gen[-1], 2))
+                if self.shape == "nsd":
+                    tgsys_gr[ibin2][sys_gr].GetXaxis().SetNdivisions(5)
+                    shrink_err_x(tgsys_gr[ibin2][sys_gr], 0.2)
+                tgsys_gr[ibin2][sys_gr].GetXaxis().SetTitle(self.v_varshape_latex)
+                tgsys_gr[ibin2][sys_gr].GetYaxis().SetTitle("relative systematic uncertainty")
+                tgsys_gr[ibin2][sys_gr].GetXaxis().SetTitleOffset(self.offsets_axes[0])
+                tgsys_gr[ibin2][sys_gr].GetYaxis().SetTitleOffset(self.offsets_axes[1])
+                leg_relativesys_gr.AddEntry(tgsys_gr[ibin2][sys_gr], gr, "F")
+                if sys_gr == 0:
+                    tgsys_gr[ibin2][sys_gr].Draw("A2")
+                else:
+                    tgsys_gr[ibin2][sys_gr].Draw("2")
+                unc_rel_min = 100.
+                unc_rel_max = 0.
+                for ibinshape in range(self.p_nbinshape_gen):
+                    print("rel. syst. unc. ", gr, " ", self.lvar2_binmin_gen[ibin2], " ", self.lvar2_binmax_gen[ibin2], " ",tgsys_gr[ibin2][sys_gr].GetErrorYhigh(ibinshape), " ",tgsys_gr[ibin2][sys_gr].GetErrorYlow(ibinshape))
+                    unc_rel_min = min(unc_rel_min, tgsys_gr[ibin2][sys_gr].GetErrorYhigh(ibinshape), tgsys_gr[ibin2][sys_gr].GetErrorYlow(ibinshape))
+                    unc_rel_max = max(unc_rel_max, tgsys_gr[ibin2][sys_gr].GetErrorYhigh(ibinshape), tgsys_gr[ibin2][sys_gr].GetErrorYlow(ibinshape))
+                print(f"rel. syst. unc. {gr} (%): min. {(100. * unc_rel_min):.2g}, max. {(100. * unc_rel_max):.2g}")
+            h_default_stat_err[ibin2].Draw("same")
+            h_default_stat_err[ibin2].Draw("axissame")
+            # Draw LaTeX
+            y_latex = self.y_latex_top
+            list_latex = []
+            for text_latex in [self.text_alice, self.text_jets, text_ptjet_full, text_pth_full, self.text_sd]:
+               latex = TLatex(self.x_latex, y_latex, text_latex)
+               list_latex.append(latex)
+               draw_latex(latex, textsize=self.fontsize)
+               y_latex -= self.y_step
+            leg_relativesys_gr.Draw("same")
+            crelativesys_gr.SaveAs("%s/sys_unc_gr_%s.eps" % (self.d_resultsallpdata, suffix))
+            if ibin2 == 1:
+                crelativesys_gr.SaveAs("%s/%s_sys_unc_gr_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix))
             gStyle.SetErrorX(0.5)
 
         # plot the feed-down fraction with systematic uncertainties from POWHEG
