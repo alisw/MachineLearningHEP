@@ -16,6 +16,7 @@ categories:
         activate: yes
         processor: false
         label: "fitting"
+        group: "signal extraction"
         correlation: "corr"
         rms: true
         symmetrise: true
@@ -79,6 +80,7 @@ categories:
         activate: yes
         processor: false
         label: "sideband sub."
+        group: "signal extraction"
         correlation: "corr"
         rms: true
         symmetrise: true
@@ -147,6 +149,7 @@ categories:
         activate: yes
         processor: true
         label: "prior"
+        group: "unfolding"
         correlation: "corr"
         rms: true
         symmetrise: true
@@ -163,6 +166,7 @@ categories:
         activate: yes
         processor: true
         label: "model dep."
+        group: "unfolding"
         correlation: "corr"
         rms: true
         symmetrise: true
@@ -179,6 +183,7 @@ categories:
         activate: yes
         processor: false
         label: "regularisation"
+        group: "unfolding"
         correlation: "corr"
         rms: true
         symmetrise: true
@@ -192,7 +197,7 @@ categories:
                         jet_nsd:
                             niterunfoldingchosen: [3, 7]
     normalisation:
-        activate: yes
+        activate: no
         processor: false
         label: "#it{#sigma}_{MB}"
         correlation: "corr"
@@ -210,7 +215,7 @@ categories:
     tracking:
         activate: yes
         processor: true
-        label: "tracking eff."
+        label: "JES"
         correlation: "corr"
         rms: true
         symmetrise: true
@@ -252,6 +257,7 @@ categories:
         activate: yes
         processor: true
         label: "binning"
+        group: "unfolding"
         correlation: "corr"
         rms: true
         symmetrise: true
@@ -307,7 +313,7 @@ categories:
     cuts:
         activate: yes
         processor: true
-        label: "topol. cuts"
+        label: "D^{0} selection"
         correlation: "corr"
         rms: true
         symmetrise: true
