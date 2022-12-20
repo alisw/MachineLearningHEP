@@ -34,7 +34,7 @@ from ROOT import RooUnfoldBayes
 from machine_learning_hep.utilities import folding, equal_binning_lists, make_message_notfound
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.utilities import setup_histogram, setup_canvas, get_colour, get_marker, get_y_window_gr, get_y_window_his, get_plot_range
-from machine_learning_hep.utilities import setup_legend, setup_tgraph, draw_latex, tg_sys, make_plot, combine_graphs
+from machine_learning_hep.utilities import setup_legend, setup_tgraph, draw_latex, tg_sys, make_plot, combine_graphs, get_mean_uncertainty, get_mean_hist, format_value_with_unc
 from machine_learning_hep.do_variations import healthy_structure, format_varname, format_varlabel
 from machine_learning_hep.utilities_plot import buildhisto, makefill2dhist, makefill3dhist
 from machine_learning_hep.utilities_plot import makefill2dweighed, makefill3dweighed
@@ -4171,6 +4171,17 @@ class AnalyzerJet(Analyzer):
             latex_SD = TLatex(0.15, 0.62, "Soft Drop (#it{z}_{cut} = 0.1, #it{#beta} = 0)")
             draw_latex(latex_SD)
             cfinalwsys.SaveAs("%s/%s_final_wsys_%s.pdf" % (self.d_resultsallpdata, self.shape, suffix))
+
+            # get the uncertainty of the mean
+            hist_means_stat, hist_means_syst, _ = get_mean_uncertainty(input_histograms_default[ibin2], tgsys[ibin2], combine=False)
+            mean = get_mean_hist(input_histograms_default[ibin2])
+            # mean_stat = hist_means_stat.GetMean()
+            sigma_stat = hist_means_stat.GetStdDev()
+            # mean_syst = hist_means_syst.GetMean()
+            sigma_syst = hist_means_syst.GetStdDev()
+            # make_plot(f"{self.shape}_means_{ibin2}", list_obj=[hist_means], path=self.d_resultsallpdata,
+            # title=f"mean variations {ibin2};{self.v_varshape_latex}")
+            print(f"Mean {self.shape} = {format_value_with_unc(mean, sigma_stat, sigma_syst)}")
 
             # plot the results with systematic uncertainties and models
 

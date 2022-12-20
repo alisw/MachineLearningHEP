@@ -23,7 +23,7 @@ import yaml
 # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TLatex, TLine, TGaxis, gROOT, gStyle, TCanvas, TGraphAsymmErrors, TGraphErrors, TGraph, TLegend
 from machine_learning_hep.utilities import make_message_notfound
-from machine_learning_hep.utilities import get_colour, get_marker, draw_latex
+from machine_learning_hep.utilities import get_colour, get_marker, draw_latex, get_mean_uncertainty, get_mean_hist, get_mean_graph, format_value_with_unc
 from machine_learning_hep.utilities import make_plot, get_y_window_his, get_y_window_gr, get_plot_range, divide_graphs, scale_graph, setup_legend
 from machine_learning_hep.logger import get_logger
 
@@ -197,6 +197,44 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
         incl_ivan_syst = file_results.Get(nameobj)
         if not incl_ivan_syst:
             logger.fatal(make_message_notfound(nameobj, file_in))
+
+    # report means and uncertainties
+
+    # HF
+    mean_z_stat = get_mean_hist(hf_data_stat)
+    mean_z_syst = get_mean_graph(hf_data_syst)
+    hist_means_stat, hist_means_syst, hist_means_comb = get_mean_uncertainty(hf_data_stat, hf_data_syst, 100000)
+    mean_z_var_comb = hist_means_comb.GetMean()
+    sigma_z_var_comb = hist_means_comb.GetStdDev()
+    mean_z_var_stat = hist_means_stat.GetMean()
+    sigma_z_var_stat = hist_means_stat.GetStdDev()
+    mean_z_var_syst = hist_means_syst.GetMean()
+    sigma_z_var_syst = hist_means_syst.GetStdDev()
+    make_plot(f"{shape}_means_hf_comb_{ibin2}", list_obj=[hist_means_comb], path=rootpath, suffix="pdf", title=f"HF mean variations comb {ibin2};{v_varshape_latex}")
+    make_plot(f"{shape}_means_hf_stat_{ibin2}", list_obj=[hist_means_stat], path=rootpath, suffix="pdf", title=f"HF mean variations stat {ibin2};{v_varshape_latex}")
+    make_plot(f"{shape}_means_hf_syst_{ibin2}", list_obj=[hist_means_syst], path=rootpath, suffix="pdf", title=f"HF mean variations syst {ibin2};{v_varshape_latex}")
+    print(f"Mean HF {shape} = stat {mean_z_stat} syst {mean_z_syst} ROOT stat {hf_data_stat.GetMean()}")
+    print(f"Mean HF {shape} = var comb {mean_z_var_comb} +- {sigma_z_var_comb}")
+    print(f"Mean HF {shape} = var stat {mean_z_var_stat} +- {sigma_z_var_stat}")
+    print(f"Mean HF {shape} = var syst {mean_z_var_syst} +- {sigma_z_var_syst}")
+
+    # inclusive
+    mean_z_stat = get_mean_hist(incl_data_stat)
+    mean_z_syst = get_mean_graph(incl_data_syst)
+    hist_means_stat, hist_means_syst, hist_means_comb = get_mean_uncertainty(incl_data_stat, incl_data_syst, 100000)
+    mean_z_var_comb = hist_means_comb.GetMean()
+    sigma_z_var_comb = hist_means_comb.GetStdDev()
+    mean_z_var_stat = hist_means_stat.GetMean()
+    sigma_z_var_stat = hist_means_stat.GetStdDev()
+    mean_z_var_syst = hist_means_syst.GetMean()
+    sigma_z_var_syst = hist_means_syst.GetStdDev()
+    make_plot(f"{shape}_means_incl_comb_{ibin2}", list_obj=[hist_means_comb], path=rootpath, suffix="pdf", title=f"inclusive mean variations comb {ibin2};{v_varshape_latex}")
+    make_plot(f"{shape}_means_incl_stat_{ibin2}", list_obj=[hist_means_stat], path=rootpath, suffix="pdf", title=f"inclusive mean variations stat {ibin2};{v_varshape_latex}")
+    make_plot(f"{shape}_means_incl_syst_{ibin2}", list_obj=[hist_means_syst], path=rootpath, suffix="pdf", title=f"inclusive mean variations syst {ibin2};{v_varshape_latex}")
+    print(f"Mean inclusive {shape} = stat {mean_z_stat} syst {mean_z_syst} ROOT stat {incl_data_stat.GetMean()}")
+    print(f"Mean inclusive {shape} = var comb {mean_z_var_comb} +- {sigma_z_var_comb}")
+    print(f"Mean inclusive {shape} = var stat {mean_z_var_stat} +- {sigma_z_var_stat}")
+    print(f"Mean inclusive {shape} = var syst {mean_z_var_syst} +- {sigma_z_var_syst}")
 
     # plot the results with systematic uncertainties and models
 
@@ -604,12 +642,7 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
             e = his.GetBinError(i + 1)
             e_plus = gr.GetErrorYhigh(i)
             e_minus = gr.GetErrorYlow(i)
-            mag_e_stat = floor(log10(e))
-            mag_e_syst = floor(log10(min(e_plus, e_minus)))
-            mag_y = floor(log10(y))
-            mag_y = min(mag_e_stat, mag_e_syst, mag_y)
-            # print(f"Mag stat {mag_e_stat}, sys {mag_e_syst}")
-            print(f"{y:.{n_sig -1 - mag_y}f} ± {e:.{n_sig}g} (stat) +{e_plus:.{n_sig}g} -{e_minus:.{n_sig}g} (sys)")
+            print(format_value_with_unc(y, e, e_plus, e_minus, n_sig))
 
     # print relative syst. unc.
     for name, gr in zip(("HF", "inclusive"), (hf_data_syst, incl_data_syst)):
