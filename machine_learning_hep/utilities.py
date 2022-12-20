@@ -30,7 +30,7 @@ from array import array
 import numpy as np
 import pandas as pd
 import lz4
-from ROOT import TObject, TCanvas, TLegend, TH1, TLatex, TGraph, TGraphAsymmErrors # pylint: disable=import-error, no-name-in-module
+from ROOT import TObject, TCanvas, TLegend, TH1, TH1F, TLatex, TGraph, TGraphAsymmErrors, TRandom3 # pylint: disable=import-error, no-name-in-module
 from ROOT import kBlack, kRed, kGreen, kBlue, kYellow, kOrange, kMagenta, kCyan, kGray # pylint: disable=import-error, no-name-in-module
 from ROOT import kOpenCircle, kOpenSquare, kOpenDiamond, kOpenCross, kOpenStar, kOpenThreeTriangles # pylint: disable=import-error, no-name-in-module
 from ROOT import kOpenFourTrianglesX, kOpenDoubleDiamond, kOpenFourTrianglesPlus, kOpenCrossX # pylint: disable=import-error, no-name-in-module
@@ -1009,7 +1009,7 @@ def sqrt_sum_sq(numbers):
 
 
 def combine_graphs(graphs: list):
-    """Combine uncertainties of graphs in quadrature"""
+    """Combine uncertainties of TGraphAsymmErrors graphs in quadrature"""
     if not graphs:
         print("Error: No graphs given")
         sys.exit(1)
@@ -1033,3 +1033,109 @@ def combine_graphs(graphs: list):
             gr_comb.SetPointEYhigh(i, sqrt_sum_sq([gr.GetErrorYhigh(i) for gr in graphs]))
             gr_comb.SetPointEYlow(i, sqrt_sum_sq([gr.GetErrorYlow(i) for gr in graphs]))
     return gr_comb
+
+
+def get_mean_hist(hist):
+    """Get the mean x of a histogram."""
+    sum_xy = 0
+    sum_y = 0
+    for i in range(hist.GetNbinsX()):
+        sum_xy += hist.GetBinContent(i + 1) * hist.GetBinCenter(i + 1)
+        sum_y += hist.GetBinContent(i + 1)
+    return sum_xy / sum_y
+
+
+def get_mean_graph(gr):
+    """Get the mean x of a graph."""
+    sum_xy = 0
+    sum_y = 0
+    for i in range(gr.GetN()):
+        sum_xy += gr.GetPointY(i) * gr.GetPointX(i)
+        sum_y += gr.GetPointY(i)
+    return sum_xy / sum_y
+
+
+def get_mean_uncertainty(his_stat, gr_syst=None, n_var=1000, combine=False):
+    """Get the uncertainty of a distribution's mean by varying y-values within their uncertainties.
+    his_stat is the histogram with stat. unc.
+    gr_syst is the graphs with syst. unc.
+    n_var is the number of variations
+    combine is the switch for combining stat and syst uncertainties in quadrature
+    Returns histograms with the distributions of means.
+    """
+    # combine stat. and syst. uncertainties in quadrature
+    gr_stat = TGraphAsymmErrors(his_stat)
+    gr_comb = None
+    if gr_syst and combine:
+        gr_comb = combine_graphs([gr_stat, gr_syst])
+    n_points = gr_stat.GetN()
+    # create a new empty histogram/graph for the variations
+    hist_var_stat = his_stat.Clone(f"{his_stat.GetName()}_var_stat")
+    hist_var_stat.Reset()
+    hist_var_syst = his_stat.Clone(f"{his_stat.GetName()}_var_syst")
+    hist_var_syst.Reset()
+    hist_var_comb = his_stat.Clone(f"{his_stat.GetName()}_var_comb")
+    hist_var_comb.Reset()
+    rnd = TRandom3()
+    # create a histograms for the distribution of means
+    hist_means_stat = TH1F(f"{his_stat.GetName()}_means_stat", "hist_means_stat", 1000, his_stat.GetXaxis().GetXmin(), his_stat.GetXaxis().GetXmax())
+    hist_means_stat.Sumw2()
+    hist_means_syst = TH1F(f"{his_stat.GetName()}_means_syst", "hist_means_syst", 1000, his_stat.GetXaxis().GetXmin(), his_stat.GetXaxis().GetXmax())
+    hist_means_syst.Sumw2()
+    hist_means_comb = TH1F(f"{his_stat.GetName()}_means_comb", "hist_means_comb", 1000, his_stat.GetXaxis().GetXmin(), his_stat.GetXaxis().GetXmax())
+    hist_means_comb.Sumw2()
+    for _ in range(n_var):
+        for i in range(n_points):
+            # vary y with Gaussian of mean = y_central, sigma = err_y_central
+            y_var_stat = rnd.Gaus(gr_stat.GetPointY(i), (gr_stat.GetErrorYhigh(i) + gr_stat.GetErrorYlow(i)) / 2.)
+            hist_var_stat.SetBinContent(i + 1, y_var_stat)
+            if gr_syst:
+                y_var_syst = rnd.Gaus(gr_syst.GetPointY(i), (gr_syst.GetErrorYhigh(i) + gr_syst.GetErrorYlow(i)) / 2.)
+                hist_var_syst.SetBinContent(i + 1, y_var_syst)
+                if gr_comb:
+                    y_var_comb = rnd.Gaus(gr_comb.GetPointY(i), (gr_comb.GetErrorYhigh(i) + gr_comb.GetErrorYlow(i)) / 2.)
+                    hist_var_comb.SetBinContent(i + 1, y_var_comb)
+        # calculate mean of the new histogram
+        # fill the mean in a histogram of means
+        hist_means_stat.Fill(get_mean_hist(hist_var_stat))
+        if gr_syst:
+            hist_means_syst.Fill(get_mean_hist(hist_var_syst))
+            if gr_comb:
+                hist_means_comb.Fill(get_mean_hist(hist_var_comb))
+    return hist_means_stat, hist_means_syst, hist_means_comb
+
+
+def format_number_prec(num, prec):
+    """Format a number with a given decimal precision."""
+    return f"{round(num, prec):.{max(0, prec)}f}"
+
+
+def format_value_with_unc(y, e_stat=None, e_syst_plus=None, e_syst_minus=None, n_sig=2):
+    """Format a value with uncertainties so that the main value is reported with a decimal precision
+    given by the number of significant figures of the smallest uncertainty."""
+    from math import floor, log10
+    mag_y = floor(log10(y))
+    mag_e_stat = mag_y
+    mag_e_syst = mag_y
+    if e_stat:
+        mag_e_stat = floor(log10(e_stat))
+    if e_syst_plus:
+        if not e_syst_minus:
+            e_syst_minus = e_syst_plus
+        mag_e_syst = floor(log10(min(e_syst_plus, e_syst_minus)))
+    mag_y = min(mag_y, mag_e_stat, mag_e_syst)
+    # print(f"Mag stat {mag_e_stat}, sys {mag_e_syst}")
+    prec_y = n_sig - 1 - mag_y
+    prec_stat = n_sig - 1 - mag_e_stat
+    prec_syst = n_sig - 1 - mag_e_syst
+    str_value = format_number_prec(y, prec_y)
+    if e_stat:
+        str_value += f" ± {format_number_prec(e_stat, prec_stat)} (stat.)"
+    if e_syst_plus:
+        str_e_syst_plus = format_number_prec(e_syst_plus, prec_syst)
+        str_e_syst_minus = format_number_prec(e_syst_minus, prec_syst)
+        if str_e_syst_plus == str_e_syst_minus:
+            str_value += f" ± {str_e_syst_plus} (syst.)"
+        else:
+            str_value += f" +{str_e_syst_plus} −{str_e_syst_minus} (syst.)"
+    return str_value
