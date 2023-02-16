@@ -24,7 +24,7 @@ import yaml
 from ROOT import TFile, TLatex, TLine, TGaxis, gROOT, gStyle, TCanvas, TGraphAsymmErrors, TGraphErrors, TGraph
 from machine_learning_hep.utilities import make_message_notfound
 from machine_learning_hep.utilities import get_colour, get_marker, draw_latex
-from machine_learning_hep.utilities import make_plot, get_y_window_his, get_y_window_gr, get_plot_range, divide_graphs
+from machine_learning_hep.utilities import make_plot, get_y_window_his, get_y_window_gr, get_plot_range, divide_graphs, get_x_window_his, get_x_window_gr, scale_graph
 from machine_learning_hep.logger import get_logger
 
 def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-branches
@@ -47,7 +47,9 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
 
     typean = args.type_ana
     shape = typean[len("jet_"):]
-    print("Shape:", shape)
+    print(f"Shape: {shape}")
+    i_shape = 0 if shape == "zg" else 1 if shape == "rg" else 2
+    print(f"Index {i_shape}")
 
     file_in = args.input_file
     with open(args.database_analysis, "r") as file_db:
@@ -272,6 +274,33 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
             for i in range(gr.GetN()):
                 gr.SetPointEXlow(i, 0.1)
                 gr.SetPointEXhigh(i, 0.1)
+
+    # Scale PYTHIA to adjust normalisation for the missing entries in the untagged bin of zg and rg
+
+    for his, name in zip((hf_data_stat, incl_data_stat, hf_pythia_stat, incl_pythia_stat, quark_pythia_stat, gluon_pythia_stat),
+    ("data HF", "data incl.", "MC HF", "MC incl.", "MC quark", "MC gluon")):
+        print(f"Integral of {shape} {name} = {his.Integral(1, his.GetNbinsX(), 'width')}, "
+        f"range: {his.GetXaxis().GetXmin()} - {his.GetXaxis().GetXmax()}, "
+        f"untagged fraction = {his.Integral(1, 1, 'width')}")
+
+    # untagged fractions obtained from the first bin of nsd
+    frac_untag_hf = 0.18552197557279143
+    frac_untag_incl = 0.018500659015657086
+    frac_untag_quark = 0.03313748531139889
+    frac_untag_gluon = 0.014728195998301162
+
+    if shape in ("zg", "rg"):
+        for his, gr, frac in zip((hf_pythia_stat, incl_pythia_stat, quark_pythia_stat, gluon_pythia_stat),
+        (None, incl_pythia_syst, quark_pythia_syst, gluon_pythia_syst),
+        (frac_untag_hf, frac_untag_incl, frac_untag_quark, frac_untag_gluon)):
+            f = 1 - frac
+            his.Scale(f)
+            scale_graph(gr, f)
+        # Check that the integral after scaling is consistent with the missing untagged fraction.
+        for his, name, frac in zip((hf_pythia_stat, incl_pythia_stat, quark_pythia_stat, gluon_pythia_stat),
+        ("MC HF", "MC incl.", "MC quark", "MC gluon"),
+        (frac_untag_hf, frac_untag_incl, frac_untag_quark, frac_untag_gluon)):
+            print(f"Integral of {shape} {name} after scaling + untagged fraction = {his.Integral(1, his.GetNbinsX(), 'width') + frac}")
 
     # data, HF and inclusive
 
@@ -510,6 +539,13 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     y_margin_down = 0.05
     y_min_plot, y_max_plot = get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
 
+    x_min_h, x_max_h = get_x_window_his([hf_pythia_stat, incl_pythia_stat, quark_pythia_stat, gluon_pythia_stat])
+    x_min_g, x_max_g = get_x_window_gr([incl_pythia_syst, quark_pythia_syst, gluon_pythia_syst])
+    x_min = min(x_min_h, x_min_g)
+    x_max = max(x_max_h, x_max_g)
+    # explicit y ranges [zg, rg, nsd]
+    list_range_x = [[0.1, 0.5], [0., 0.4], [-0.5, 4.5]] # data
+
     #leg_pos = [.6, .65, .75, .85]
     leg_pos = [.72, .55, .85, .85]
     list_obj = [incl_pythia_syst, quark_pythia_syst, gluon_pythia_syst, hf_pythia_stat, incl_pythia_stat, quark_pythia_stat, gluon_pythia_stat]
@@ -572,7 +608,7 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     y_margin_down = 0.05
     cshape_mc, list_obj_mc_new = make_plot("cshape_mc_qgd_" + suffix, size=size_can, \
         list_obj=list_obj, labels_obj=labels_obj, opt_leg_g=opt_leg_g, opt_plot_g=opt_plot_g, offsets_xy=offsets_axes, \
-        colours=colours, markers=markers, leg_pos=leg_pos, range_y=[y_min_plot, y_max_plot], margins_c=margins_can, \
+        colours=colours, markers=markers, leg_pos=leg_pos, range_x=list_range_x[i_shape], range_y=[y_min_plot, y_max_plot], margins_c=margins_can, \
         title=title_full)
     cshape_mc.Update()
     for gr, c in zip((quark_pythia_syst, gluon_pythia_syst), (c_quark_pythia, c_gluon_pythia)):
@@ -588,6 +624,8 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
         axis_rg = hf_pythia_stat.GetXaxis()
         rg_min = axis_rg.GetBinLowEdge(axis_rg.GetFirst())
         rg_max = axis_rg.GetBinUpEdge(axis_rg.GetLast())
+        rg_min = list_range_x[i_shape][0]
+        rg_max = list_range_x[i_shape][1]
         thetag_min = rg_min / radius_jet
         thetag_max = rg_max / radius_jet
         y_axis = cshape_mc.GetUymax()
@@ -719,8 +757,6 @@ def main(): # pylint: disable=too-many-locals, too-many-statements, too-many-bra
     # explicit y ranges [zg, rg, nsd]
     list_range_y = [[0, 9], [0, 6], [0, 0.7]] # data
     list_range_y_rat = [[0, 2], [0, 2], [0, 2]] # mc/data ratios
-    i_shape = 0 if shape == "zg" else 1 if shape == "rg" else 2
-    print(f"Index {i_shape}")
 
     # data
     leg_pos = [.7, .75, .82, .85]
