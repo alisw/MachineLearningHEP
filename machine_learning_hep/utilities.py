@@ -996,6 +996,8 @@ def scale_graph(gr, number):
     """
     Scale TGraphAsymmErrors
     """
+    if not gr:
+        return
     for i in range(gr.GetN()):
         gr.SetPointY(i, gr.GetPointY(i) * number)
         gr.SetPointEYhigh(i, gr.GetErrorYlow(i) * number)
