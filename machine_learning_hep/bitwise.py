@@ -22,11 +22,11 @@ import pandas as pd
 
 #@numba.njit
 def selectbiton(array_cand_type, mask):
-    return [((cand_type & mask) == mask) for cand_type in array_cand_type]
+    return [((abs(cand_type) & mask) == mask) for cand_type in array_cand_type]
 
 #@numba.njit
 def selectbitoff(array_cand_type, mask):
-    return [((cand_type & mask) == 0) for cand_type in array_cand_type]
+    return [((abs(cand_type) & mask) == 0) for cand_type in array_cand_type]
 
 def tag_bit_df(dfin, namebitmap, activatedbit):
     bitson = activatedbit[0]
@@ -34,7 +34,7 @@ def tag_bit_df(dfin, namebitmap, activatedbit):
     array_cand_type = dfin.loc[:, namebitmap].values.astype("int")
     res_on = pd.Series([True]*len(array_cand_type))
     res_off = pd.Series([True]*len(array_cand_type))
-    res = pd.Series()
+    res = pd.Series(dtype = 'int')
 
     if bitson:
         mask = reduce(operator.or_, ((1 << bit) for bit in bitson), 0)

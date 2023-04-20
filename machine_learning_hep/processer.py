@@ -137,6 +137,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.v_gen = datap["variables"]["var_gen"]
         self.v_evtmatch = datap["variables"]["var_evt_match"]
         self.v_bitvar = datap["bitmap_sel"]["var_name"]
+        self.v_bitvar_origgen = datap["bitmap_sel"]["var_name_origgen"]
+        self.v_bitvar_origrec = datap["bitmap_sel"]["var_name_origrec"]
+        self.v_candtype = datap["var_cand"]
+        self.v_swap = datap.get("var_swap", None)
         self.v_isstd = datap["bitmap_sel"]["var_isstd"]
         self.v_ismcsignal = datap["bitmap_sel"]["var_ismcsignal"]
         self.v_ismcprompt = datap["bitmap_sel"]["var_ismcprompt"]
@@ -275,7 +279,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
     def unpack(self, file_index):
         treeevtorig = uproot.open(self.l_root[file_index])[self.n_treeevt]
         try:
-            dfevtorig = treeevtorig.pandas.df(branches=self.v_evt)
+            dfevtorig = treeevtorig.arrays(expressions=self.v_evt, library="pd")
         except Exception as e: # pylint: disable=broad-except
             print('Missing variable in the event root tree', str(e))
             print('Missing variable in the candidate root tree')
@@ -292,7 +296,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         treereco = uproot.open(self.l_root[file_index])[self.n_treereco]
         try:
-            dfreco = treereco.pandas.df(branches=self.v_all)
+            dfreco = treereco.arrays(expressions=self.v_all, library="pd")
         except Exception as e: # pylint: disable=broad-except
             print('Missing variable in the candidate root tree')
             print('I am sorry, I am dying ...\n \n \n')
@@ -335,28 +339,66 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                                    self.b_std), dtype=int)
         dfreco = dfreco.reset_index(drop=True)
         if self.mcordata == "mc":
+
             dfreco[self.v_ismcsignal] = np.array(tag_bit_df(dfreco, self.v_bitvar,
                                                             self.b_mcsig), dtype=int)
-            dfreco[self.v_ismcprompt] = np.array(tag_bit_df(dfreco, self.v_bitvar,
+
+            dfreco[self.v_ismcprompt] = np.array(tag_bit_df(dfreco, self.v_bitvar_origrec,
                                                             self.b_mcsigprompt), dtype=int)
-            dfreco[self.v_ismcfd] = np.array(tag_bit_df(dfreco, self.v_bitvar,
+
+            dfreco[self.v_ismcfd] = np.array(tag_bit_df(dfreco, self.v_bitvar_origrec,
                                                         self.b_mcsigfd), dtype=int)
+
+            if self.v_swap:
+                length = len(dfreco)
+                myList = [None for x in range(length)]
+
+                for index in range(length):
+                    candtype = dfreco[self.v_candtype][index]
+                    swap = dfreco[self.v_swap][index]
+                    if (candtype == (swap+1)):
+                        myList[index]=1
+                    else:
+                        myList[index]=0
+
+                for index in range(length):
+                    signalbit = dfreco[self.v_ismcsignal][index]
+                    if (myList[index] == 1 and signalbit == 1):
+                        dfreco[self.v_ismcsignal][index] = 1
+                    else:
+                        dfreco[self.v_ismcsignal][index] = 0
+
+                for index in range(length):
+                    promptbit = dfreco[self.v_ismcprompt][index]
+                    if (myList[index] == 1 and promptbit == 1):
+                        dfreco[self.v_ismcprompt][index] = 1
+                    else:
+                        dfreco[self.v_ismcprompt][index] = 0
+
+                for index in range(length):
+                    fdbit = dfreco[self.v_ismcfd][index]
+                    if (myList[index] == 1 and fdbit == 1):
+                        dfreco[self.v_ismcfd][index] = 1
+                    else:
+                        dfreco[self.v_ismcfd][index] = 0
+
             dfreco[self.v_ismcbkg] = np.array(tag_bit_df(dfreco, self.v_bitvar,
                                                          self.b_mcbkg), dtype=int)
+
         pickle.dump(dfreco, openfile(self.l_reco[file_index], "wb"), protocol=4)
 
         if self.mcordata == "mc":
             treegen = uproot.open(self.l_root[file_index])[self.n_treegen]
-            dfgen = treegen.pandas.df(branches=self.v_gen)
+            dfgen = treegen.arrays(expressions=self.v_gen, library="pd")
             dfgen = pd.merge(dfgen, dfevtorig, on=self.v_evtmatch)
             dfgen = selectdfquery(dfgen, self.s_gen_unp)
             dfgen[self.v_isstd] = np.array(tag_bit_df(dfgen, self.v_bitvar,
                                                       self.b_std), dtype=int)
             dfgen[self.v_ismcsignal] = np.array(tag_bit_df(dfgen, self.v_bitvar,
                                                            self.b_mcsig), dtype=int)
-            dfgen[self.v_ismcprompt] = np.array(tag_bit_df(dfgen, self.v_bitvar,
+            dfgen[self.v_ismcprompt] = np.array(tag_bit_df(dfgen, self.v_bitvar_origgen,
                                                            self.b_mcsigprompt), dtype=int)
-            dfgen[self.v_ismcfd] = np.array(tag_bit_df(dfgen, self.v_bitvar,
+            dfgen[self.v_ismcfd] = np.array(tag_bit_df(dfgen, self.v_bitvar_origgen,
                                                        self.b_mcsigfd), dtype=int)
             dfgen[self.v_ismcbkg] = np.array(tag_bit_df(dfgen, self.v_bitvar,
                                                         self.b_mcbkg), dtype=int)
@@ -539,7 +581,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         arguments = [(i,) for i in range(len(self.l_root))]
         self.parallelizer(self.process_histomass_single, arguments, self.p_chunksizeunp) # pylint: disable=no-member
         tmp_merged = \
-            f"/data/tmp/hadd/{self.case}_{self.typean}/mass_{self.period}/{get_timestamp_string()}/"
+            f"/tmp/hadd/{self.case}_{self.typean}/mass_{self.period}/{get_timestamp_string()}/"
         mergerootfiles(self.l_histomass, self.n_filemass, tmp_merged)
 
     def process_efficiency(self):
@@ -556,5 +598,5 @@ class Processer: # pylint: disable=too-many-instance-attributes
         create_folder_struc(self.d_results, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
         self.parallelizer(self.process_efficiency_single, arguments, self.p_chunksizeunp) # pylint: disable=no-member
-        tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/histoeff_{self.period}/{get_timestamp_string()}/" # pylint: disable=line-too-long
+        tmp_merged = f"/tmp/hadd/{self.case}_{self.typean}/histoeff_{self.period}/{get_timestamp_string()}/" # pylint: disable=line-too-long
         mergerootfiles(self.l_histoeff, self.n_fileeff, tmp_merged)
