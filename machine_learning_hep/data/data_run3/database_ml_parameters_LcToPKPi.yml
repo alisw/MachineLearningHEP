@@ -1,0 +1,364 @@
+#############################################################################
+##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
+## This program is free software: you can redistribute it and/or modify it ##
+##  under the terms of the GNU General Public License as published by the  ##
+## Free Software Foundation, either version 3 of the License, or (at your  ##
+## option) any later version. This program is distributed in the hope that ##
+##  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  ##
+##     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    ##
+##           See the GNU General Public License for more details.          ##
+##    You should have received a copy of the GNU General Public License    ##
+##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
+#############################################################################
+
+LcpKpi:
+  nprongs: 3
+  prongformultsub: [0,0,0]
+  doml: true
+  mass: 2.286
+  sel_reco_unp: "fPt>0"
+  sel_reco_singletrac_unp : null
+  sel_gen_unp: "fPt>0"
+  sel_cen_unp: null
+  sel_good_evt_unp: null
+  sel_reco_skim: [null,null,null,null,null]
+  sel_gen_skim: [null,null,null,null,null]
+  sel_skim_binmin: [0,1,2,4,8] #list of nbins
+  sel_skim_binmax: [1,2,4,8,12] #list of nbins
+  apply_yptacccut: false
+  var_binning: fPt
+  dofullevtmerge: false
+  var_cand: fCandidateSelFlag
+  var_swap: fIsCandidateSwapped
+  bitmap_sel:
+    var_name: fMCflag
+    var_name_origgen: fOriginMcGen
+    var_name_origrec: fOriginMcRec
+    var_isstd: isstd
+    var_ismcsignal: ismcsignal
+    var_ismcprompt: ismcprompt
+    var_ismcfd: ismcfd
+    var_ismcbkg: ismcbkg
+    var_ismcrefl: ismcref
+    isstd : [[1],[]]
+    ismcsignal: [[1],[]]
+    ismcprompt: [[1],[]]
+    ismcfd: [[2],[]]
+    ismcbkg: [[],[1]]
+    ismcrefl: [[1],[1]]
+
+  variables:
+    var_all: [fIndexBCs, fMCflag, fCandidateSelFlag, fOriginMcRec, fIsCandidateSwapped, fY, fEta, fPt, fCPA, fCPAXY, fM,
+              fErrorDecayLength, fErrorDecayLengthXY, fChi2PCA, fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised,
+              fImpactParameterNormalised0, fPtProng0, fImpactParameterNormalised1, fPtProng1, fImpactParameterNormalised2, fPtProng2,
+              fImpactParameter0, fImpactParameter1, fImpactParameter2, fErrorImpactParameter0, fErrorImpactParameter1, fErrorImpactParameter2,
+              fNSigTOFPr0, fNSigTOFPi0, fNSigTOFKa0, fNSigTOFPr1, fNSigTOFPi1, fNSigTOFKa1, fNSigTOFPr2, fNSigTOFPi2, fNSigTOFKa2]
+    var_evt:
+       data: [fIndexBCs, fPosX, fPosY, fPosZ, fIsEventReject]
+       mc:   [fIndexBCs, fPosX, fPosY, fPosZ, fIsEventReject]
+    var_gen: [fIndexBCs, fPt, fY, fMCflag, fOriginMcGen]
+    var_evt_match: [fIndexBCs]
+    var_training: [[fCPA, fCPAXY, fChi2PCA, fDecayLength, fImpactParameter0, fImpactParameter1, fImpactParameter2],
+                   [fCPA, fCPAXY, fChi2PCA, fDecayLength, fImpactParameter0, fImpactParameter1, fImpactParameter2],
+                   [fCPA, fCPAXY, fChi2PCA, fDecayLength, fImpactParameter0, fImpactParameter1, fImpactParameter2],
+                   [fCPA, fCPAXY, fChi2PCA, fDecayLength, fImpactParameter0, fImpactParameter1, fImpactParameter2],
+                   [fCPA, fCPAXY, fChi2PCA, fDecayLength, fImpactParameter0, fImpactParameter1, fImpactParameter2]]
+    var_boundaries: [fDecayLength, fPt]
+    var_correlation:
+      - [fDecayLength, fChi2PCA, fCPA]
+      - [fPt, fPt, fPt]
+    var_signal: signal
+    var_inv_mass: fM
+    var_y: fY
+    var_evt_sel: fIsEventReject
+    var_cuts:
+        - [fPtProng0, lt, null]
+        - [fPtProng1, lt, null]
+        - [fPtProng2, lt, null]
+        - [fCPA, lt, null]
+        - [fDecayLength, lt, null]
+        - [fChi2PCA, lt, null]
+
+    plot_options:
+      prob_cut_scan:
+        pt_prong0:
+          xlim:
+            - 0
+            - 6
+        pt_prong1:
+          xlim:
+            - 0
+            - 6
+        pt_prong2:
+          xlim:
+            - 0
+            - 6
+        fDecayLength:
+          xlim:
+            - 0
+            - 0.05
+        fChi2PCA:
+          xlim:
+            - 0
+            - 0.001
+        fNSigTOFPr0:
+          xlim: [-110, 30]
+          xlabel: "n\\sigma_\\mathrm{TPC}(p)0"
+        fNSigTOFPi0:
+          xlim: [-30, 110]
+          xlabel: "n\\sigma_\\mathrm{TOF}(\\pi)0"
+        fNSigTOFKa0:
+          xlim: [-80, 80]
+          xlabel: "n\\sigma_\\mathrm{TPC}(K)0"
+        fNSigTOFPr1:
+          xlim: [-110, 30]
+          xlabel: "n\\sigma_\\mathrm{TPC}(p)1"
+        fNSigTOFPi1:
+          xlim: [-30, 110]
+          xlabel: "n\\sigma_\\mathrm{TOF}(\\pi)1"
+        fNSigTOFKa1:
+          xlim: [-80, 80]
+          xlabel: "n\\sigma_\\mathrm{TPC}(K)1"
+        fNSigTOFPr2:
+          xlim: [-110, 30]
+          xlabel: "n\\sigma_\\mathrm{TPC}(p)2"
+        fNSigTOFPi2:
+          xlim: [-30, 110]
+          xlabel: "n\\sigma_\\mathrm{TOF}(\\pi)2"
+        fNSigTOFKa2:
+          xlim: [-80, 80]
+          xlabel: "n\\sigma_\\mathrm{TPC}(K)2"
+      eff_cut_scan:
+        pt_prong0:
+          xlim:
+            - 0
+            - 6
+        pt_prong1:
+          xlim:
+            - 0
+            - 6
+        pt_prong2:
+          xlim:
+            - 0
+            - 6
+        fDecayLength:
+          xlim:
+            - 0
+            - 0.05
+        fChi2PCA:
+          xlim:
+            - 0
+            - 0.0001
+  files_names:
+    namefile_unmerged_tree: AnalysisResults_trees.root
+    namefile_reco: AnalysisResultsReco.pkl
+    namefile_evt: AnalysisResultsEvt.pkl
+    namefile_evtvalroot: AnalysisResultsROOTEvtVal.root
+    namefile_evtorig: AnalysisResultsEvtOrig.pkl
+    namefile_gen: AnalysisResultsGen.pkl
+    namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl
+    namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl
+    namefile_mcweights: mcweights.root
+    treeoriginreco: 'DF_0/O2hfcand3pfull'
+    treeorigingen: 'DF_0/O2hfcand3pfullp'
+    treeoriginevt: 'DF_0/O2hfcand3pfulle'
+    treeoutput: "Lbtree"
+    histofilename: "masshisto.root"
+    efffilename: "effhisto.root"
+    respfilename: "resphisto.root"
+    crossfilename: "cross_section_tot.root"
+
+  multi:
+    data:
+      nprocessesparallel: 50
+      maxfiles : [-1] #list of periods
+      chunksizeunp : [100] #list of periods
+      chunksizeskim: [100] #list of periods
+      fracmerge : [0.5] #list of periods
+      seedmerge: [12] #list of periods
+      period: [test] #list of periods
+      unmerged_tree_dir: [/home/ldellost/Run3/DataSample/LHC22o/unmerged] #list of periods
+      pkl: [/home/ldellost/Run3/prod_MB_pp/pkldata] #list of periods
+      pkl_skimmed: [/home/ldellost/Run3/prod_MB_pp/pklskdata] #list of periods
+      pkl_skimmed_merge_for_ml: [/home/ldellost/Run3/prod_MB_pp/pklskmldata] #list of periods
+      pkl_skimmed_merge_for_ml_all: /home/ldellost/Run3/prod_MB_pp/mltotdata
+      pkl_evtcounter_all: /home/ldellost/Run3/prod_MB_pp/evttotdata
+      mcreweights: [../Analyses]
+    mc:
+      nprocessesparallel: 50
+      maxfiles : [-1] #list of periods
+      chunksizeunp : [100] #list of periods
+      chunksizeskim: [100] #list of periods
+      fracmerge : [1.0] #list of periods
+      seedmerge: [12] #list of periods
+      period: [test] #list of periods
+      unmerged_tree_dir: [/home/ldellost/Run3/DataSample/test/unmerged] #list of periods
+      pkl: [/home/ldellost/Run3/test/pklmc] #list of periods
+      pkl_skimmed: [/home/ldellost/Run3/test/pklskmc] #list of periods
+      pkl_skimmed_merge_for_ml: [/home/ldellost/Run3/test/pklskmlmc] #list of periods
+      pkl_skimmed_merge_for_ml_all: /home/ldellost/Run3/test/mltotmc
+      pkl_evtcounter_all: /home/ldellost/Run3/test/evttotmc
+      mcreweights: [../Analyses]
+  ml:
+    evtsel: null
+    triggersel:
+      data: null
+      mc: null
+
+    nbkg: 100000
+    nsig: 100000
+    equalise_sig_bkg: True
+    sampletagforsignal: 1
+    sampletagforbkg: 0
+    sel_sigml: ismcprompt == 1
+    sel_bkgml: fM<2.24 or fM>2.33
+    nkfolds: 5
+    rnd_shuffle: 12
+    rnd_splt: 12
+    test_frac: 0.2
+    binmin: [0,1,2,4,8] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
+    binmax: [1,2,4,8,10] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
+    mltype: BinaryClassification
+    ncorescrossval: 10
+    mlplot: /home/ldellost/Run3/mlplot # to be removed
+    mlout: /home/ldellost/Run3/mlout # to be removed
+
+    opt:
+      isFONLLfromROOT: true
+      filename_fonll: 'data/fonll/DmesonLcPredictions_502TeV_y05_FFptDepLHCb_BRpythia8.root' # file with FONLL predictions
+      fonll_particle: 'hLcpkpi'
+      fonll_pred: 'max' # edge of the FONLL prediction
+      FF: 0.1281 # fragmentation fraction
+      sigma_MB: 57.8e-3  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
+      Taa: 1 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
+      BR: 6.23e-2 # branching ratio of the decay Lc -> p K- pi+
+      f_prompt: 0.9 # estimated fraction of prompt candidates
+      bkg_data_fraction: 0.1 # fraction of real data used in the estimation
+      num_steps: 111 # number of steps used in efficiency and signif. estimation
+      bkg_function: pol2 # fit function for bkg (among TH1 predefined fit functions, e.g. expo, pol1, pol2, ...)
+      save_fit: True # save bkg fits with the various cuts on ML output
+      raahp: [1,1,1,1,1] # sel_skim_binmin bins
+      presel_gen_eff: "abs(fY) < 1.44 and abs(fPosZ) < 10"
+
+  mlapplication:
+    data:
+      pkl_skimmed_dec: [/home/ldellost/Run3/prod_MB_pp/skpkldecdata] #list of periods
+      pkl_skimmed_decmerged: [ /home/ldellost/Run3/prod_MB_pp/skpkldecdatamerged] #list of periods
+    mc:
+      pkl_skimmed_dec: [/home/ldellost/Run3/prod_LcpKpi_pp/skpkldecmc] #list of periods
+      pkl_skimmed_decmerged: [/home/ldellost/Run3/prod_LcpKpi_pp/skpkldecmcmerged] #list of periods
+    modelname: xgboost
+    modelsperptbin: [xgboost_classifierLcpKpi_dfselection_fPt_0.0_1.0.sav,
+                     xgboost_classifierLcpKpi_dfselection_fPt_1.0_2.0.sav,
+                     xgboost_classifierLcpKpi_dfselection_fPt_2.0_4.0.sav,
+                     xgboost_classifierLcpKpi_dfselection_fPt_4.0_8.0.sav,
+                     xgboost_classifierLcpKpi_dfselection_fPt_8.0_10.0.sav]
+    probcutpresel:
+      data: [0.05, 0.05, 0.05, 0.05, 0.05] #list of nbins
+      mc: [0.05, 0.05, 0.05, 0.05, 0.05] #list of nbins
+    probcutoptimal: [0.5, 0.5, 0.5, 0.5, 0.5] #list of nbins
+
+  analysis:
+    indexhptspectrum: -1 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
+    fd_method: -1 #knone=0, kfc=1, kNb=2
+    cctype: -1 #kpp7
+    sigmav0: -1
+    inputfonllpred: null
+    dir_general_plots: analysis_plots
+
+    Run3analysis:
+      proc_type: Dhadrons
+      useperiod: [1]
+      plotbin: [1]
+      usesinglebineff: 0
+      sel_binmin2: [0,1,2,4,6,8] #list of nbins
+      sel_binmax2: [1,2,4,6,8,10] #list of nbins
+      var_binning2: null
+      triggerbit: ''
+      use_cuts: False
+      cuts:
+        - "( ((abs(fNSigTOFPr0)<3 or fNSigTOFPr0==-999) and (abs(fNSigTOFPi2)<3 or fNSigTOFPi2==-999)) or ((abs(fNSigTOFPr2<3) or fNSigTOFPr2==-999) and (abs(fNSigTOFPi0)<3 or fNSigTOFPi0==-999)) ) and (abs(fNSigTOFKa1)<3 or fNSigTOFKa1==-999)"
+        - "( ((abs(fNSigTOFPr0)<3 or fNSigTOFPr0==-999) and (abs(fNSigTOFPi2)<3 or fNSigTOFPi2==-999)) or ((abs(fNSigTOFPr2<3) or fNSigTOFPr2==-999) and (abs(fNSigTOFPi0)<3 or fNSigTOFPi0==-999)) ) and (abs(fNSigTOFKa1)<3 or fNSigTOFKa1==-999)"
+        - "( ((abs(fNSigTOFPr0)<3 or fNSigTOFPr0==-999) and (abs(fNSigTOFPi2)<3 or fNSigTOFPi2==-999)) or ((abs(fNSigTOFPr2<3) or fNSigTOFPr2==-999) and (abs(fNSigTOFPi0)<3 or fNSigTOFPi0==-999)) ) and (abs(fNSigTOFKa1)<3 or fNSigTOFKa1==-999)"
+        - "( ((abs(fNSigTOFPr0)<3 or fNSigTOFPr0==-999) and (abs(fNSigTOFPi2)<3 or fNSigTOFPi2==-999)) or ((abs(fNSigTOFPr2<3) or fNSigTOFPr2==-999) and (abs(fNSigTOFPi0)<3 or fNSigTOFPi0==-999)) ) and (abs(fNSigTOFKa1)<3 or fNSigTOFKa1==-999)"
+        - "( ((abs(fNSigTOFPr0)<3 or fNSigTOFPr0==-999) and (abs(fNSigTOFPi2)<3 or fNSigTOFPi2==-999)) or ((abs(fNSigTOFPr2<3) or fNSigTOFPr2==-999) and (abs(fNSigTOFPi0)<3 or fNSigTOFPi0==-999)) ) and (abs(fNSigTOFKa1)<3 or fNSigTOFKa1==-999)"
+        - "( ((abs(fNSigTOFPr0)<3 or fNSigTOFPr0==-999) and (abs(fNSigTOFPi2)<3 or fNSigTOFPi2==-999)) or ((abs(fNSigTOFPr2<3) or fNSigTOFPr2==-999) and (abs(fNSigTOFPi0)<3 or fNSigTOFPi0==-999)) ) and (abs(fNSigTOFKa1)<3 or fNSigTOFKa1==-999)"
+
+      #  - "( (abs(fNSigTOFPr0)<3 and abs(fNSigTOFPi2)<3) or (abs(fNSigTOFPr2<3) and abs(fNSigTOFPi0)<3) ) and abs(fNSigTOFKa1)<3"
+      #  - "( (abs(fNSigTOFPr0)<3 and abs(fNSigTOFPi2)<3) or (abs(fNSigTOFPr2<3) and abs(fNSigTOFPi0)<3) ) and abs(fNSigTOFKa1)<3"
+      #  - "( (abs(fNSigTOFPr0)<3 and abs(fNSigTOFPi2)<3) or (abs(fNSigTOFPr2<3) and abs(fNSigTOFPi0)<3) ) and abs(fNSigTOFKa1)<3"
+      #  - "( (abs(fNSigTOFPr0)<3 and abs(fNSigTOFPi2)<3) or (abs(fNSigTOFPr2<3) and abs(fNSigTOFPi0)<3) ) and abs(fNSigTOFKa1)<3"
+      #  - "( (abs(fNSigTOFPr0)<3 and abs(fNSigTOFPi2)<3) or (abs(fNSigTOFPr2<3) and abs(fNSigTOFPi0)<3) ) and abs(fNSigTOFKa1)<3"
+      #  - "( (abs(fNSigTOFPr0)<3 and abs(fNSigTOFPi2)<3) or (abs(fNSigTOFPr2<3) and abs(fNSigTOFPi0)<3) ) and abs(fNSigTOFKa1)<3"
+
+       
+
+      # To initialize the individual fits in pT bins
+      # Decide whether to take the sigma from MC or data for individual fits
+      init_fits_from: mc # data # data or mc
+
+      sel_an_binmin: [0,1,2,4,6,8]
+      sel_an_binmax: [1,2,4,6,8,10]
+      binning_matching: [0,1,2,3,3,4]
+      presel_gen_eff: "abs(fY) < 1.44"
+      evtsel: null
+      triggersel:
+        data: null
+        mc: null
+        weighttrig: false
+
+      data:
+        runselection: [null] #FIXME
+        results: [/home/ldellost/Run3/prod_MB_pp/resultsdata] #list of periods
+        resultsallp: /home/ldellost/Run3/prod_MB_pp/resultsdatatot
+      mc:
+        runselection: [null] #FIXME
+        results: [/home/ldellost/Run3/prod_LcpKpi_pp/resultsmc] #list of periods
+        resultsallp: /home/ldellost/Run3/prod_LcpKpi_pp/resultsmctot
+
+      mass_fit_lim: [2.14, 2.436] # region for the fit of the invariant mass distribution [GeV/c^2]
+      bin_width: 0.001 # bin width of the invariant mass histogram
+      init_fits_from: [mc,mc,mc,mc,mc,mc] # data or mc
+      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
+      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
+      masspeak: 2.286
+      massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
+      massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
+      rebin: [4,4,4,4,4,4]
+      fix_mean: [false,false,false,false,false,false]
+      fix_sigma: [false,false,false,false,false,false]
+      masssecpeak: 0.
+      # Fix mean and/or sigma
+      FixedMean: False
+      SetFixGaussianSigma: [true,true,true,true,true,true]
+      # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
+      SetInitialGaussianMean: true
+      # Use values set for "sigmaarray" for initializing total fit (per pT bin),
+      # otherwise what is derived from MC fit is used
+      SetInitialGaussianSigma: [false,false,false,false,false,false]
+      # Max percentage deviation in sigma (from init) to be considered as a good fit
+      MaxPercSigmaDeviation: 0.5
+      # Number of initial signal sigmas around the mean to be excluded for side-band fit
+      exclude_nsigma_sideband: 4
+      # Sigma around mean where signal is integrated after total fit has been done
+      nsigma_signal: 3
+      dolikelihood: true
+      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01]
+      FixedSigma: false
+      fitcase: Lc
+      latexnamehadron: "#Lambda_{c}^{pK#pi}"
+      latexbin2var: "n_{trkl}"
+      nevents: null
+      dodoublecross: false
+      dobkgfromsideband: true
+
+  systematics:
+    probvariation:
+      useperiod: [1] #period from where to define prob cuts
+      ncutvar: 10 #number of looser and tighter variations
+      maxperccutvar: 0.25 #max diff in efficiency for loosest/tightest var
+      cutvarminrange: [0.70, 0.50, 0.50, 0.3, 0.3, 0.3] #Min starting point for scan
+      cutvarmaxrange: [0.95, 0.90, 0.90, 0.80, 0.80, 0.80] #Max starting point for scan
+      fixedmean: True #Fix mean cutvar histo to central fit
+      fixedsigma: True #Fix sigma cutvar histo to central fit
