@@ -4,24 +4,24 @@ download:
     activate: false
 conversion: # pkl
   mc:
-    activate: false
+    activate: true
   data:
-    activate: false
+    activate: true
 skimming: # pkl_skimmed (pklsk), pkl_evtcounter_all
   mc:
-    activate: false
+    activate: true
   data:
-    activate: false
+    activate: true
 merging: # pkl_skimmed_merge_for_ml (pklskml)
   mc:
-    activate: false
+    activate: true
   data:
-    activate: false
+    activate: true
 mergingperiods: # pkl_skimmed_merge_for_ml_all
   mc:
-    activate: false
+    activate: true
   data:
-    activate: false
+    activate: true
 
 ml_study: # mlout, mlplot
   activate: false
@@ -55,7 +55,7 @@ mlapplication:
     docontinueafterstop: false # set to true to resume interrupted processing (existing corrupted output will be overwritten)
 
 analysis:
-  type: YYYY # used unless specified explicitly as do_entire_analysis -a type_ana
+  type: Run3analysis # used unless specified explicitly as do_entire_analysis -a type_ana
   # Do each period separately including merged (true)
   # Do only merged (false)
   doperperiod: false

@@ -100,6 +100,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.n_treereco = datap["files_names"]["treeoriginreco"]
         self.n_treegen = datap["files_names"]["treeorigingen"]
         self.n_treeevt = datap["files_names"]["treeoriginevt"]
+        self.n_treejetreco = datap["files_names"].get("treejetreco", None)
+        self.n_treejetgen = datap["files_names"].get("treejetgen", None)
+        self.n_treejetsubreco = datap["files_names"].get("treejetsubreco", None)
+        self.n_treejetsubgen = datap["files_names"].get("treejetsubgen", None)
 
         #namefiles pkl
         self.n_reco = datap["files_names"]["namefile_reco"]
@@ -132,10 +136,14 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         #variables name
         self.v_all = datap["variables"]["var_all"]
+        self.v_jet = datap["variables"]["var_jet"]
+        self.v_jetsub = datap["variables"]["var_jetsub"]
         self.v_train = datap["variables"]["var_training"]
         self.v_evt = datap["variables"]["var_evt"][self.mcordata]
         self.v_gen = datap["variables"]["var_gen"]
         self.v_evtmatch = datap["variables"]["var_evt_match"]
+        self.v_jetmatch = datap["variables"]["var_jet_match"]
+        self.v_jetsubmatch = datap["variables"]["var_jetsub_match"]
         self.v_bitvar = datap["bitmap_sel"]["var_name"]
         self.v_bitvar_origgen = datap["bitmap_sel"]["var_name_origgen"]
         self.v_bitvar_origrec = datap["bitmap_sel"]["var_name_origrec"]
@@ -293,6 +301,26 @@ class Processer: # pylint: disable=too-many-instance-attributes
         dfevt = dfevt.reset_index(drop=True)
         pickle.dump(dfevt, openfile(self.l_evt[file_index], "wb"), protocol=4)
 
+        if (self.n_treejetsreco):
+            treejetreco = uproot.open(self.l_root[file_index])[self.n_treejetreco]
+            try:
+                dfjetreco = treejetreco.arrays(expressions=self.v_jet, library="pd")
+            except Exception as e: # pylint: disable=broad-except
+                print('Missing variable in the jet tree')
+                print('I am sorry, I am dying ...\n \n \n')
+                sys.exit()
+
+        if (self.n_treejetsubreco):
+            treejetsubreco = uproot.open(self.l_root[file_index])[self.n_treejetsubreco]
+            try:
+                dfjetsubreco = treejetsubreco.arrays(expressions=self.v_jetsub, library="pd")
+            except Exception as e: # pylint: disable=broad-except
+                print('Missing variable in the jets tree')
+                print('I am sorry, I am dying ...\n \n \n')
+                sys.exit()
+
+        if (dfjetreco and dfjetsubreco):
+            dfjetreco = pd.merge(dfjetsreco, dfjetsubreco, on=self.v_jetsubmatch)
 
         treereco = uproot.open(self.l_root[file_index])[self.n_treereco]
         try:
@@ -307,6 +335,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
             isselacc = selectfidacc(dfreco[self.v_var_binning].values,
                                     dfreco[self.v_rapy].values)
             dfreco = dfreco[np.array(isselacc, dtype=bool)]
+
+        if (dfjetreco):
+            dfreco = pd.merge(dfjetreco, dfreco, left_on=self.v_jetmatch, right_on='fGlobalIndex')
 
         arraysub = [0 for ival in range(len(dfreco))]
         for iprong in range(self.nprongs):

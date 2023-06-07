@@ -12,7 +12,7 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-LcpKpi:
+Run3Jets:
   nprongs: 3
   prongformultsub: [0,0,0]
   doml: true
@@ -22,10 +22,10 @@ LcpKpi:
   sel_gen_unp: "fPt>0"
   sel_cen_unp: null
   sel_good_evt_unp: null
-  sel_reco_skim: [null]
-  sel_gen_skim: [null]
-  sel_skim_binmin: [1] #list of nbins
-  sel_skim_binmax: [10] #list of nbins
+  sel_reco_skim: [null,null,null,null,null]
+  sel_gen_skim: [null,null,null,null,null]
+  sel_skim_binmin: [0,1,2,4,8] #list of nbins
+  sel_skim_binmax: [1,2,4,8,12] #list of nbins
   apply_yptacccut: false
   var_binning: fPt
   dofullevtmerge: false
@@ -59,7 +59,11 @@ LcpKpi:
        mc:   [fIndexBCs, fPosX, fPosY, fPosZ, fIsEventReject]
     var_gen: [fIndexBCs, fPt, fY, fMCflag, fOriginMcGen]
     var_evt_match: [fIndexBCs]
-    var_training: [[fImpactParameter0, fImpactParameter1, fImpactParameter2, fPtProng0, fPtProng1, fPtProng2]]
+    var_training: [[fCPA, fCPAXY, fChi2PCA, fDecayLength, fImpactParameter0, fImpactParameter1, fImpactParameter2],
+                   [fCPA, fCPAXY, fChi2PCA, fDecayLength, fImpactParameter0, fImpactParameter1, fImpactParameter2],
+                   [fCPA, fCPAXY, fChi2PCA, fDecayLength, fImpactParameter0, fImpactParameter1, fImpactParameter2],
+                   [fCPA, fCPAXY, fChi2PCA, fDecayLength, fImpactParameter0, fImpactParameter1, fImpactParameter2],
+                   [fCPA, fCPAXY, fChi2PCA, fDecayLength, fImpactParameter0, fImpactParameter1, fImpactParameter2]]
     var_boundaries: [fDecayLength, fPt]
     var_correlation:
       - [fDecayLength, fChi2PCA, fCPA]
@@ -146,7 +150,6 @@ LcpKpi:
           xlim:
             - 0
             - 0.0001
-
   files_names:
     namefile_unmerged_tree: AnalysisResults_trees.root
     namefile_reco: AnalysisResultsReco.pkl
@@ -175,12 +178,12 @@ LcpKpi:
       fracmerge : [0.5] #list of periods
       seedmerge: [12] #list of periods
       period: [test] #list of periods
-      unmerged_tree_dir: [/home/ldellost/Run3/DataSample/LHC22m_pass4_tpc_v1/unmerged] #list of periods
-      pkl: [/data2/MLhep/prod_LHC22m_pp/pkldata] #list of periods
-      pkl_skimmed: [/data2/MLhep/prod_LHC22m_pp/pklskdata] #list of periods
-      pkl_skimmed_merge_for_ml: [/data2/MLhep/prod_LHC22m_pp/pklskmldata] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data2/MLhep/prod_LHC22m_pp/mltotdata
-      pkl_evtcounter_all: /data2/MLhep/prod_LHC22m_pp/evttotdata
+      unmerged_tree_dir: [/home/jklein/data/TestNima] #list of periods
+      pkl: [/home/jklein/data/TestNima/pkldata] #list of periods
+      pkl_skimmed: [/home/jklein/data/TestNima/pklskdata] #list of periods
+      pkl_skimmed_merge_for_ml: [/home/jklein/data/TestNima/pklskmldata] #list of periods
+      pkl_skimmed_merge_for_ml_all: /home/jklein/data/TestNima/mltotdata
+      pkl_evtcounter_all: /home/jklein/data/TestNima/evttotdata
       mcreweights: [../Analyses]
     mc:
       nprocessesparallel: 50
@@ -190,37 +193,36 @@ LcpKpi:
       fracmerge : [1.0] #list of periods
       seedmerge: [12] #list of periods
       period: [test] #list of periods
-      unmerged_tree_dir: [/home/ldellost/Run3/DataSample/LHC22b1b/unmerged] #list of periods
-      pkl: [/data2/MLhep/prod_LHC22b1b_MC/pklmc] #list of periods
-      pkl_skimmed: [/data2/MLhep/prod_LHC22b1b_MC/pklskmc] #list of periods
-      pkl_skimmed_merge_for_ml: [/data2/MLhep/prod_LHC22b1b_MC/pklskmlmc] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data2/MLhep/prod_LHC22b1b_MC/mltotmc
-      pkl_evtcounter_all: /data2/MLhep/prod_LHC22b1b_MC/evttotmc
+      unmerged_tree_dir: [/home/jklein/data/TestNima/unmerged] #list of periods
+      pkl: [/home/jklein/data/TestNima/pklmc] #list of periods
+      pkl_skimmed: [/home/jklein/data/TestNima/pklskmc] #list of periods
+      pkl_skimmed_merge_for_ml: [/home/jklein/data/TestNima/pklskmlmc] #list of periods
+      pkl_skimmed_merge_for_ml_all: /home/jklein/data/TestNima/mltotmc
+      pkl_evtcounter_all: /home/jklein/data/TestNima/evttotmc
       mcreweights: [../Analyses]
-
   ml:
     evtsel: null
     triggersel:
       data: null
       mc: null
 
-    nbkg: 500000
-    nsig: 500000
+    nbkg: 100000
+    nsig: 100000
     equalise_sig_bkg: True
     sampletagforsignal: 1
     sampletagforbkg: 0
     sel_sigml: ismcprompt == 1
-    sel_bkgml: fM<2.22 or fM>2.35
+    sel_bkgml: fM<2.24 or fM>2.33
     nkfolds: 5
     rnd_shuffle: 12
     rnd_splt: 12
     test_frac: 0.2
-    binmin: [1] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
-    binmax: [10] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
+    binmin: [0,1,2,4,8] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
+    binmax: [1,2,4,8,10] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: BinaryClassification
     ncorescrossval: 10
-    mlplot: /data2/MLhep/mlplot # to be removed
-    mlout: /data2/MLhep/mlout # to be removed
+    mlplot: /home/jklein/data/TestNima/mlplot # to be removed
+    mlout: /home/jkelin/data/TestNima/mlout # to be removed
 
     opt:
       isFONLLfromROOT: true
@@ -236,22 +238,26 @@ LcpKpi:
       num_steps: 111 # number of steps used in efficiency and signif. estimation
       bkg_function: pol2 # fit function for bkg (among TH1 predefined fit functions, e.g. expo, pol1, pol2, ...)
       save_fit: True # save bkg fits with the various cuts on ML output
-      raahp: [1] # sel_skim_binmin bins
-      presel_gen_eff: "abs(fY) < 1.0 and abs(fPosZ) < 10"
+      raahp: [1,1,1,1,1] # sel_skim_binmin bins
+      presel_gen_eff: "abs(fY) < 1.44 and abs(fPosZ) < 10"
 
   mlapplication:
     data:
-      pkl_skimmed_dec: [/data2/MLhep/prod_LHC22m_pp/skpkldecdata] #list of periods
-      pkl_skimmed_decmerged: [/data2/MLhep/prod_LHC22m_pp/skpkldecdatamerged] #list of periods
+      pkl_skimmed_dec: [/home/jklein/data/TestNima/skpkldecdata] #list of periods
+      pkl_skimmed_decmerged: [ /home/jklein/data/TestNima/skpkldecdatamerged] #list of periods
     mc:
-      pkl_skimmed_dec: [/data2/MLhep/prod_LHC22b1b_MC/skpkldecmc] #list of periods
-      pkl_skimmed_decmerged: [/data2/MLhep/prod_LHC22b1b_MC/skpkldecmcmerged] #list of periods
+      pkl_skimmed_dec: [/home/jklein/data/TestNima/skpkldecmc] #list of periods
+      pkl_skimmed_decmerged: [/home/jklein/data/TestNima/skpkldecmcmerged] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierLcpKpi_dfselection_fPt_1.0_10.0.sav]
+    modelsperptbin: [xgboost_classifierLcpKpi_dfselection_fPt_0.0_1.0.sav,
+                     xgboost_classifierLcpKpi_dfselection_fPt_1.0_2.0.sav,
+                     xgboost_classifierLcpKpi_dfselection_fPt_2.0_4.0.sav,
+                     xgboost_classifierLcpKpi_dfselection_fPt_4.0_8.0.sav,
+                     xgboost_classifierLcpKpi_dfselection_fPt_8.0_10.0.sav]
     probcutpresel:
-      data: [0.05] #list of nbins
-      mc: [0.05] #list of nbins
-    probcutoptimal: [0.6] #list of nbins
+      data: [0.05, 0.05, 0.05, 0.05, 0.05] #list of nbins
+      mc: [0.05, 0.05, 0.05, 0.05, 0.05] #list of nbins
+    probcutoptimal: [0.5, 0.5, 0.5, 0.5, 0.5] #list of nbins
 
   analysis:
     indexhptspectrum: -1 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
@@ -266,17 +272,25 @@ LcpKpi:
       useperiod: [1]
       plotbin: [1]
       usesinglebineff: 0
-      sel_binmin2: [1] #list of nbins
-      sel_binmax2: [10] #list of nbins
+      sel_binmin2: [0,1,2,4,6,8] #list of nbins
+      sel_binmax2: [1,2,4,6,8,10] #list of nbins
       var_binning2: null
       triggerbit: ''
-      use_cuts: True
+      use_cuts: False
       cuts:
-        - "( ((abs(fNSigTOFPr0)<3 or fNSigTOFPr0==-999) and (abs(fNSigTOFPi2)<3 or fNSigTOFPi2==-999)) or ((abs(fNSigTOFPr2<3) or fNSigTOFPr2==-999) and (abs(fNSigTOFPi0)<3 or fNSigTOFPi0==-999)) ) and (abs(fNSigTOFKa1)<3 or fNSigTOFKa1==-999) and fCPA>0.95 and fDecayLength>0.025"
+        - "( ((abs(fNSigTOFPr0)<3 or fNSigTOFPr0==-999) and (abs(fNSigTOFPi2)<3 or fNSigTOFPi2==-999)) or ((abs(fNSigTOFPr2<3) or fNSigTOFPr2==-999) and (abs(fNSigTOFPi0)<3 or fNSigTOFPi0==-999)) ) and (abs(fNSigTOFKa1)<3 or fNSigTOFKa1==-999)"
+        - "( ((abs(fNSigTOFPr0)<3 or fNSigTOFPr0==-999) and (abs(fNSigTOFPi2)<3 or fNSigTOFPi2==-999)) or ((abs(fNSigTOFPr2<3) or fNSigTOFPr2==-999) and (abs(fNSigTOFPi0)<3 or fNSigTOFPi0==-999)) ) and (abs(fNSigTOFKa1)<3 or fNSigTOFKa1==-999)"
+        - "( ((abs(fNSigTOFPr0)<3 or fNSigTOFPr0==-999) and (abs(fNSigTOFPi2)<3 or fNSigTOFPi2==-999)) or ((abs(fNSigTOFPr2<3) or fNSigTOFPr2==-999) and (abs(fNSigTOFPi0)<3 or fNSigTOFPi0==-999)) ) and (abs(fNSigTOFKa1)<3 or fNSigTOFKa1==-999)"
+        - "( ((abs(fNSigTOFPr0)<3 or fNSigTOFPr0==-999) and (abs(fNSigTOFPi2)<3 or fNSigTOFPi2==-999)) or ((abs(fNSigTOFPr2<3) or fNSigTOFPr2==-999) and (abs(fNSigTOFPi0)<3 or fNSigTOFPi0==-999)) ) and (abs(fNSigTOFKa1)<3 or fNSigTOFKa1==-999)"
+        - "( ((abs(fNSigTOFPr0)<3 or fNSigTOFPr0==-999) and (abs(fNSigTOFPi2)<3 or fNSigTOFPi2==-999)) or ((abs(fNSigTOFPr2<3) or fNSigTOFPr2==-999) and (abs(fNSigTOFPi0)<3 or fNSigTOFPi0==-999)) ) and (abs(fNSigTOFKa1)<3 or fNSigTOFKa1==-999)"
+        - "( ((abs(fNSigTOFPr0)<3 or fNSigTOFPr0==-999) and (abs(fNSigTOFPi2)<3 or fNSigTOFPi2==-999)) or ((abs(fNSigTOFPr2<3) or fNSigTOFPr2==-999) and (abs(fNSigTOFPi0)<3 or fNSigTOFPi0==-999)) ) and (abs(fNSigTOFKa1)<3 or fNSigTOFKa1==-999)"
 
-      #  - "( (abs(fNSigTOFPr0)<4 and abs(fNSigTOFPi2)<4) or (abs(fNSigTOFPr2<4) and abs(fNSigTOFPi0)<4) ) and abs(fNSigTOFKa1)<4 and fCPA>0.9 and fDecayLength>0.025"
       #  - "( (abs(fNSigTOFPr0)<3 and abs(fNSigTOFPi2)<3) or (abs(fNSigTOFPr2<3) and abs(fNSigTOFPi0)<3) ) and abs(fNSigTOFKa1)<3"
-      #  - "( ((abs(fNSigTOFPr0)<3 or fNSigTOFPr0==-999) and (abs(fNSigTOFPi2)<3 or fNSigTOFPi2==-999)) or ((abs(fNSigTOFPr2<3) or fNSigTOFPr2==-999) and (abs(fNSigTOFPi0)<3 or fNSigTOFPi0==-999)) ) and (abs(fNSigTOFKa1)<3 or fNSigTOFKa1==-999)
+      #  - "( (abs(fNSigTOFPr0)<3 and abs(fNSigTOFPi2)<3) or (abs(fNSigTOFPr2<3) and abs(fNSigTOFPi0)<3) ) and abs(fNSigTOFKa1)<3"
+      #  - "( (abs(fNSigTOFPr0)<3 and abs(fNSigTOFPi2)<3) or (abs(fNSigTOFPr2<3) and abs(fNSigTOFPi0)<3) ) and abs(fNSigTOFKa1)<3"
+      #  - "( (abs(fNSigTOFPr0)<3 and abs(fNSigTOFPi2)<3) or (abs(fNSigTOFPr2<3) and abs(fNSigTOFPi0)<3) ) and abs(fNSigTOFKa1)<3"
+      #  - "( (abs(fNSigTOFPr0)<3 and abs(fNSigTOFPi2)<3) or (abs(fNSigTOFPr2<3) and abs(fNSigTOFPi0)<3) ) and abs(fNSigTOFKa1)<3"
+      #  - "( (abs(fNSigTOFPr0)<3 and abs(fNSigTOFPi2)<3) or (abs(fNSigTOFPr2<3) and abs(fNSigTOFPi0)<3) ) and abs(fNSigTOFKa1)<3"
 
        
 
@@ -284,10 +298,10 @@ LcpKpi:
       # Decide whether to take the sigma from MC or data for individual fits
       init_fits_from: mc # data # data or mc
 
-      sel_an_binmin: [1]
-      sel_an_binmax: [10]
-      binning_matching: [0]
-      presel_gen_eff: "abs(fY) < 1.0"
+      sel_an_binmin: [0,1,2,4,6,8]
+      sel_an_binmax: [1,2,4,6,8,10]
+      binning_matching: [0,1,2,3,3,4]
+      presel_gen_eff: "abs(fY) < 1.44"
       evtsel: null
       triggersel:
         data: null
@@ -296,33 +310,33 @@ LcpKpi:
 
       data:
         runselection: [null] #FIXME
-        results: [/data2/MLhep/Results/prod_LHC22m_pp/resultsdata] #list of periods
-        resultsallp: /data2/MLhep/Results/prod_LHC22m_pp/resultsdatatot
+        results: [/home/jklein/data/TestNima/resultsdata] #list of periods
+        resultsallp: /home/jklein/data/TestNima/resultsdatatot
       mc:
         runselection: [null] #FIXME
-        results: [/data2/MLhep/Results/prod_LHC22b1b_MC/resultsmc] #list of periods
-        resultsallp: /data2/MLhep/Results/prod_LHC22b1b_MC/resultsmctot
+        results: [/home/jklein/data/TestNima/resultsmc] #list of periods
+        resultsallp: /home/jklein/data/TestNima/resultsmctot
 
       mass_fit_lim: [2.14, 2.436] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
-      init_fits_from: [mc] # data or mc
-      sgnfunc: [kGaus]
-      bkgfunc: [Pol2]
+      init_fits_from: [mc,mc,mc,mc,mc,mc] # data or mc
+      sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
+      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.286
-      massmin: [2.14]
-      massmax: [2.436]
-      rebin: [4]
-      fix_mean: [false]
-      fix_sigma: [false]
+      massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
+      massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
+      rebin: [4,4,4,4,4,4]
+      fix_mean: [false,false,false,false,false,false]
+      fix_sigma: [false,false,false,false,false,false]
       masssecpeak: 0.
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: [true]
+      SetFixGaussianSigma: [true,true,true,true,true,true]
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
       # otherwise what is derived from MC fit is used
-      SetInitialGaussianSigma: [false]
+      SetInitialGaussianSigma: [false,false,false,false,false,false]
       # Max percentage deviation in sigma (from init) to be considered as a good fit
       MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
@@ -330,7 +344,7 @@ LcpKpi:
       # Sigma around mean where signal is integrated after total fit has been done
       nsigma_signal: 3
       dolikelihood: true
-      sigmaarray: [0.01]
+      sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01]
       FixedSigma: false
       fitcase: Lc
       latexnamehadron: "#Lambda_{c}^{pK#pi}"
@@ -344,7 +358,7 @@ LcpKpi:
       useperiod: [1] #period from where to define prob cuts
       ncutvar: 10 #number of looser and tighter variations
       maxperccutvar: 0.25 #max diff in efficiency for loosest/tightest var
-      cutvarminrange: [0.70] #Min starting point for scan
-      cutvarmaxrange: [0.95] #Max starting point for scan
+      cutvarminrange: [0.70, 0.50, 0.50, 0.3, 0.3, 0.3] #Min starting point for scan
+      cutvarmaxrange: [0.95, 0.90, 0.90, 0.80, 0.80, 0.80] #Max starting point for scan
       fixedmean: True #Fix mean cutvar histo to central fit
       fixedsigma: True #Fix sigma cutvar histo to central fit
