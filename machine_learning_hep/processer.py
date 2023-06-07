@@ -301,7 +301,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         dfevt = dfevt.reset_index(drop=True)
         pickle.dump(dfevt, openfile(self.l_evt[file_index], "wb"), protocol=4)
 
-        if (self.n_treejetsreco):
+        if (self.n_treejetreco):
             treejetreco = uproot.open(self.l_root[file_index])[self.n_treejetreco]
             try:
                 dfjetreco = treejetreco.arrays(expressions=self.v_jet, library="pd")
@@ -419,6 +419,27 @@ class Processer: # pylint: disable=too-many-instance-attributes
         pickle.dump(dfreco, openfile(self.l_reco[file_index], "wb"), protocol=4)
 
         if self.mcordata == "mc":
+            if (self.n_treejetgen):
+                treejetreco = uproot.open(self.l_root[file_index])[self.n_treejetgen]
+                try:
+                    dfjetgen = treejetgen.arrays(expressions=self.v_jet, library="pd")
+                except Exception as e: # pylint: disable=broad-except
+                    print('Missing variable in the jet tree')
+                    print('I am sorry, I am dying ...\n \n \n')
+                    sys.exit()
+
+            if (self.n_treejetsubgen):
+                treejetsubgen = uproot.open(self.l_root[file_index])[self.n_treejetsubgen]
+                try:
+                    dfjetsubgen = treejetsubgen.arrays(expressions=self.v_jetsub, library="pd")
+                except Exception as e: # pylint: disable=broad-except
+                    print('Missing variable in the jets tree')
+                    print('I am sorry, I am dying ...\n \n \n')
+                    sys.exit()
+
+            if (dfjetgen and dfjetsubgen):
+                dfjetgen = pd.merge(dfjetsgen, dfjetsubgen, on=self.v_jetsubmatch)
+
             treegen = uproot.open(self.l_root[file_index])[self.n_treegen]
             dfgen = treegen.arrays(expressions=self.v_gen, library="pd")
             dfgen = pd.merge(dfgen, dfevtorig, on=self.v_evtmatch)
@@ -434,6 +455,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
             dfgen[self.v_ismcbkg] = np.array(tag_bit_df(dfgen, self.v_bitvar,
                                                         self.b_mcbkg), dtype=int)
             dfgen = dfgen.reset_index(drop=True)
+
+            if (dfjetgen):
+                dfgen = pd.merge(dfjetgen, dfgen, left_on=self.v_jetmatch, right_on='fGlobalIndex')
+
             pickle.dump(dfgen, openfile(self.l_gen[file_index], "wb"), protocol=4)
 
     def skim(self, file_index):
