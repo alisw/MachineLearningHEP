@@ -30,7 +30,8 @@ from root_numpy import fill_hist, evaluate
 from ROOT import gROOT, gPad
 from ROOT import TFile, TH1F, TCanvas, TLegend
 from ROOT import kRed, kGreen, kBlack, kBlue, kOrange, kViolet, kAzure, kYellow
-from ROOT import Double
+# from ROOT import Double
+from ctypes import c_double as Double
 from machine_learning_hep.utilities import selectdfrunlist
 from machine_learning_hep.utilities import seldf_singlevar, openfile, make_file_path
 from machine_learning_hep.utilities_plot import load_root_style_simple, load_root_style
