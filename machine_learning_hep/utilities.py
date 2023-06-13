@@ -484,8 +484,8 @@ def get_x_window_his(l_his: list):
         x_max = max(x_max, his.GetXaxis().GetBinUpEdge(his.GetNbinsX()))
     return x_min, x_max
 
-def get_y_window_gr(l_gr: list, with_errors=True):
-    '''Return the minimum and maximum y value so that all the points of the graphs in the list
+def get_y_window_gr(l_gr: list, with_errors=True, l_skip=None):
+    '''Return the minimum and maximum y value so that all the points (except those in l_skip) of the graphs in the list
     fit in the range (by default including the error bars).'''
     def err_low(graph):
         return graph.GetEYlow if isinstance(graph, TGraphAsymmErrors) else graph.GetEY
@@ -498,12 +498,13 @@ def get_y_window_gr(l_gr: list, with_errors=True):
     y_max = float("-inf")
     for gr in l_gr:
         for i in range(gr.GetN()):
-            y_min = min(y_min, (gr.GetY())[i] - ((err_low(gr)())[i] if with_errors else 0))
-            y_max = max(y_max, (gr.GetY())[i] + ((err_high(gr)())[i] if with_errors else 0))
+            if not l_skip or i not in l_skip:
+                y_min = min(y_min, (gr.GetY())[i] - ((err_low(gr)())[i] if with_errors else 0))
+                y_max = max(y_max, (gr.GetY())[i] + ((err_high(gr)())[i] if with_errors else 0))
     return y_min, y_max
 
-def get_y_window_his(l_his: list, with_errors=True):
-    '''Return the minimum and maximum y value so that all the points of the histograms in the list
+def get_y_window_his(l_his: list, with_errors=True, l_skip=None):
+    '''Return the minimum and maximum y value so that all the points (except those in l_skip) of the histograms in the list
     fit in the range (by default including the error bars).'''
     if not isinstance(l_his, list):
         l_his = [l_his]
@@ -511,10 +512,11 @@ def get_y_window_his(l_his: list, with_errors=True):
     y_max = float("-inf")
     for his in l_his:
         for i in range(his.GetNbinsX()):
-            cont = his.GetBinContent(i + 1)
-            err = his.GetBinError(i + 1) if with_errors else 0
-            y_min = min(y_min, cont - err)
-            y_max = max(y_max, cont + err)
+            if not l_skip or i + 1 not in l_skip:
+                cont = his.GetBinContent(i + 1)
+                err = his.GetBinError(i + 1) if with_errors else 0
+                y_min = min(y_min, cont - err)
+                y_max = max(y_max, cont + err)
     return y_min, y_max
 
 def get_colour(i: int, scheme=1):
