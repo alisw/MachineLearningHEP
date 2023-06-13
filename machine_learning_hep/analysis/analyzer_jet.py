@@ -19,28 +19,19 @@ main script for doing final stage analysis
 import os
 from math import sqrt
 from array import array
-import numpy as np
-import pandas as pd
 import yaml
 # pylint: disable=import-error, no-name-in-module
 import uproot
-from root_numpy import fill_hist
-from ROOT import TFile, TH1F, TH2F, TCanvas, TLatex, TGraphAsymmErrors, TLine, TGaxis, TF1
-from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
+from ROOT import TFile, TH1F, TCanvas, TLatex, TGraphAsymmErrors, TLine, TGaxis
 from ROOT import TLegend
-from ROOT import gROOT, gStyle
+from ROOT import gStyle
 from ROOT import RooUnfoldBayes
 # HF specific imports
-from machine_learning_hep.utilities import folding, equal_binning_lists, make_message_notfound
+from machine_learning_hep.utilities import folding, make_message_notfound
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.utilities import setup_histogram, setup_canvas, get_colour, get_marker, get_y_window_gr, get_y_window_his, get_plot_range
-from machine_learning_hep.utilities import setup_legend, setup_tgraph, draw_latex, tg_sys, make_plot, combine_graphs, get_mean_uncertainty, get_mean_hist, format_value_with_unc
+from machine_learning_hep.utilities import setup_legend, setup_tgraph, draw_latex, combine_graphs
 from machine_learning_hep.do_variations import healthy_structure, format_varname, format_varlabel
-from machine_learning_hep.utilities_plot import buildhisto, makefill2dhist, makefill3dhist
-# from machine_learning_hep.utilities_plot import makefill2dweighed, makefill3dweighed
-from machine_learning_hep.selectionutils import selectfidacc
-from machine_learning_hep.utilities import seldf_singlevar
-# from machine_learning_hep.processerdhadrons_jet import adjust_nsd, adjust_zg, adjust_rg, adjust_z
 
 def shrink_err_x(graph, width=0.1):
     for i in range(graph.GetN()):
