@@ -16,6 +16,7 @@ categories:
         activate: yes
         processor: true
         label: "prior"
+        group: "unfolding"
         correlation: "corr"
         rms: true
         symmetrise: true
@@ -33,6 +34,7 @@ categories:
         activate: yes
         processor: false
         label: "regularisation"
+        group: "unfolding"
         correlation: "corr"
         rms: true
         symmetrise: true
@@ -48,7 +50,7 @@ categories:
     tracking:
         activate: yes
         processor: true
-        label: "tracking eff."
+        label: "JES"
         correlation: "corr"
         rms: true
         symmetrise: true
@@ -70,6 +72,7 @@ categories:
         activate: yes
         processor: true
         label: "binning"
+        group: "unfolding"
         correlation: "corr"
         rms: true
         symmetrise: true
@@ -110,7 +113,6 @@ categories:
         variations:
             ptleadingtrack_jet:
                 activate: [yes, yes]
-
                 label:
                     - " > 5.53"
                     - " > 5.13"
