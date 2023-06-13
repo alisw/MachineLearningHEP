@@ -108,12 +108,12 @@ inclusivejets:
         mc: null
       data: &data_out_default
         runselection: [null, null, null] #FIXME
-        results: [/data/results_Vit_incl/zg/default/default/resultsdata2016, /data/results_Vit_incl/zg/default/default/resultsdata2017, /data/results_Vit_incl/zg/default/default/resultsdata2018]
-        resultsallp: /data/results_Vit_incl/zg/default/default/resultsdatatot
+        results: [/data/results_Vit_incl_paper/zg/default/default/resultsdata2016, /data/results_Vit_incl_paper/zg/default/default/resultsdata2017, /data/results_Vit_incl_paper/zg/default/default/resultsdata2018]
+        resultsallp: /data/results_Vit_incl_paper/zg/default/default/resultsdatatot
       mc: &mc_out_default
         runselection: [null, null, null] #FIXME
-        results: [/data/results_Vit_incl/zg/default/default/resultsmc2016, /data/results_Vit_incl/zg/default/default/resultsmc2017, /data/results_Vit_incl/zg/default/default/resultsmc2018]
-        resultsallp: /data/results_Vit_incl/zg/default/default/resultsmctot
+        results: [/data/results_Vit_incl_paper/zg/default/default/resultsmc2016, /data/results_Vit_incl_paper/zg/default/default/resultsmc2017, /data/results_Vit_incl_paper/zg/default/default/resultsmc2018]
+        resultsallp: /data/results_Vit_incl_paper/zg/default/default/resultsmctot
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input
@@ -159,13 +159,13 @@ inclusivejets:
       data: &data_out_rg
         <<: *data_out_default
         runselection: [null, null, null] #FIXME
-        results: [/data/results_Vit_incl/rg/default/default/resultsdata2016, /data/results_Vit_incl/rg/default/default/resultsdata2017, /data/results_Vit_incl/rg/default/default/resultsdata2018]
-        resultsallp: /data/results_Vit_incl/rg/default/default/resultsdatatot
+        results: [/data/results_Vit_incl_paper/rg/default/default/resultsdata2016, /data/results_Vit_incl_paper/rg/default/default/resultsdata2017, /data/results_Vit_incl_paper/rg/default/default/resultsdata2018]
+        resultsallp: /data/results_Vit_incl_paper/rg/default/default/resultsdatatot
       mc: &mc_out_rg
         <<: *mc_out_default
         runselection: [null, null, null] #FIXME
-        results: [/data/results_Vit_incl/rg/default/default/resultsmc2016, /data/results_Vit_incl/rg/default/default/resultsmc2017, /data/results_Vit_incl/rg/default/default/resultsmc2018]
-        resultsallp: /data/results_Vit_incl/rg/default/default/resultsmctot
+        results: [/data/results_Vit_incl_paper/rg/default/default/resultsmc2016, /data/results_Vit_incl_paper/rg/default/default/resultsmc2017, /data/results_Vit_incl_paper/rg/default/default/resultsmc2018]
+        resultsallp: /data/results_Vit_incl_paper/rg/default/default/resultsmctot
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_rg
       mc_proc: # alternative processor output used as the analyzer input
@@ -210,13 +210,13 @@ inclusivejets:
       data: &data_out_nsd
         <<: *data_out_default
         runselection: [null, null, null] #FIXME
-        results: [/data/results_Vit_incl/nsd/default/default/resultsdata2016, /data/results_Vit_incl/nsd/default/default/resultsdata2017, /data/results_Vit_incl/nsd/default/default/resultsdata2018]
-        resultsallp: /data/results_Vit_incl/nsd/default/default/resultsdatatot
+        results: [/data/results_Vit_incl_paper/nsd/default/default/resultsdata2016, /data/results_Vit_incl_paper/nsd/default/default/resultsdata2017, /data/results_Vit_incl_paper/nsd/default/default/resultsdata2018]
+        resultsallp: /data/results_Vit_incl_paper/nsd/default/default/resultsdatatot
       mc: &mc_out_nsd
         <<: *mc_out_default
         runselection: [null, null, null] #FIXME
-        results: [/data/results_Vit_incl/nsd/default/default/resultsmc2016, /data/results_Vit_incl/nsd/default/default/resultsmc2017, /data/results_Vit_incl/nsd/default/default/resultsmc2018]
-        resultsallp: /data/results_Vit_incl/nsd/default/default/resultsmctot
+        results: [/data/results_Vit_incl_paper/nsd/default/default/resultsmc2016, /data/results_Vit_incl_paper/nsd/default/default/resultsmc2017, /data/results_Vit_incl_paper/nsd/default/default/resultsmc2018]
+        resultsallp: /data/results_Vit_incl_paper/nsd/default/default/resultsmctot
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_nsd
       mc_proc: # alternative processor output used as the analyzer input

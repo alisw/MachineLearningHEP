@@ -37,10 +37,10 @@ from machine_learning_hep.utilities import setup_histogram, setup_canvas, get_co
 from machine_learning_hep.utilities import setup_legend, setup_tgraph, draw_latex, tg_sys, make_plot, combine_graphs, get_mean_uncertainty, get_mean_hist, format_value_with_unc
 from machine_learning_hep.do_variations import healthy_structure, format_varname, format_varlabel
 from machine_learning_hep.utilities_plot import buildhisto, makefill2dhist, makefill3dhist
-from machine_learning_hep.utilities_plot import makefill2dweighed, makefill3dweighed
+# from machine_learning_hep.utilities_plot import makefill2dweighed, makefill3dweighed
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.utilities import seldf_singlevar
-from machine_learning_hep.processerdhadrons_jet import adjust_nsd, adjust_zg, adjust_rg, adjust_z
+# from machine_learning_hep.processerdhadrons_jet import adjust_nsd, adjust_zg, adjust_rg, adjust_z
 
 def shrink_err_x(graph, width=0.1):
     for i in range(graph.GetN()):
@@ -1800,12 +1800,12 @@ class AnalyzerJet(Analyzer):
             setup_legend(leg_finalwsys_wmodels)
             leg_finalwsys_wmodels.AddEntry(input_histograms_default[ibin2], "data, pp, #sqrt{#it{s}} = 13 TeV", "P")
             setup_histogram(input_histograms_default[ibin2], get_colour(0))
-            y_min_g, y_max_g = get_y_window_gr([tgsys[ibin2], tg_powheg[ibin2]])
-            y_min_h, y_max_h = get_y_window_his([input_histograms_default[ibin2], input_powheg_z[ibin2]] + \
-                [input_pythia8_z[i][ibin2] for i in range(len(self.pythia8_prompt_variations))])
-            y_min = min(y_min_g, y_min_h)
-            y_max = max(y_max_g, y_max_h)
-            y_margin_up = 0.4
+            #y_min_g, y_max_g = get_y_window_gr([tgsys[ibin2], tg_powheg[ibin2]])
+            y_min_h, y_max_h = get_y_window_his([input_histograms_default[ibin2]])
+                #[input_pythia8_z[i][ibin2] for i in range(len(self.pythia8_prompt_variations))])
+            y_min = y_min_h #min(tgsys[ibin2], input_histograms_default[ibin2])
+            y_max = y_max_h #max(tgsys[ibin2], input_histograms_default[ibin2])
+            y_margin_up = 0.35
             y_margin_down = 0.05
             y_plot_min, y_plot_max = get_plot_range(y_min, y_max, y_margin_down, y_margin_up)
             input_histograms_default[ibin2].GetYaxis().SetRangeUser(y_plot_min, y_plot_max)
@@ -1874,15 +1874,13 @@ class AnalyzerJet(Analyzer):
             crelativesys.SetLeftMargin(self.margins_can[1])
             crelativesys.SetTopMargin(self.margins_can[2])
             crelativesys.SetRightMargin(self.margins_can[3])
-            crelativesys.SetRightMargin(0.25)
-            leg_relativesys = TLegend(.77, .2, 0.95, .85)
+            leg_relativesys = TLegend(.68, .65, .88, .91)
             setup_legend(leg_relativesys, textsize=self.fontsize)
             y_min_g, y_max_g = get_y_window_gr(tgsys_cat[ibin2])
             y_min_h, y_max_h = get_y_window_his([h_default_stat_err[ibin2]])
             y_min = min(y_min_g, y_min_h)
             y_max = max(y_max_g, y_max_h)
-            list_y_margin_up = [0.2, 0.35, 0.2]
-            y_margin_up = list_y_margin_up[i_shape]
+            y_margin_up = 0.38
             y_margin_down = 0.05
             setup_histogram(h_default_stat_err[ibin2])
             h_default_stat_err[ibin2].SetMarkerStyle(0)
@@ -1894,7 +1892,7 @@ class AnalyzerJet(Analyzer):
                 tgsys_cat[ibin2][sys_cat].SetLineWidth(3)
                 tgsys_cat[ibin2][sys_cat].SetFillStyle(0)
                 tgsys_cat[ibin2][sys_cat].GetYaxis().SetRangeUser(*get_plot_range(y_min, y_max, y_margin_down, y_margin_up))
-                tgsys_cat[ibin2][sys_cat].GetXaxis().SetLimits(round(self.lvarshape_binmin_gen[0 if self.shape == "nsd" else 1], 2), round(self.lvarshape_binmax_gen[-1], 2))
+                tgsys_cat[ibin2][sys_cat].GetXaxis().SetLimits(round(self.lvarshape_binmin_gen[0], 2), round(self.lvarshape_binmax_gen[-1], 2))
                 if self.shape == "nsd":
                     tgsys_cat[ibin2][sys_cat].GetXaxis().SetNdivisions(5)
                     shrink_err_x(tgsys_cat[ibin2][sys_cat], 0.2)
@@ -1943,13 +1941,13 @@ class AnalyzerJet(Analyzer):
             # crelativesys_gr.SetRightMargin(0.25)
             crelativesys_gr.SetRightMargin(1 - 9 / 10 * (1 - 0.25)) # scale for width 900 -> 1000
             # leg_relativesys_gr = TLegend(.77, .2, 0.95, .85)
-            leg_relativesys_gr = TLegend(0.77 * 9 / 10, .5, 0.95, .85) # scale for width 900 -> 1000
+            leg_relativesys_gr = TLegend(0.77 * 9 / 10, .6, 0.95, .85) # scale for width 900 -> 1000
             setup_legend(leg_relativesys_gr, textsize=self.fontsize)
-            y_min_g, y_max_g = get_y_window_gr(tgsys_gr[ibin2])
-            y_min_h, y_max_h = get_y_window_his([h_default_stat_err[ibin2]])
+            y_min_g, y_max_g = get_y_window_gr(tgsys_gr[ibin2], l_skip=([0] if i_shape in (0, 1) else None))
+            y_min_h, y_max_h = get_y_window_his([h_default_stat_err[ibin2]], l_skip=([1] if i_shape in (0, 1) else None))
             y_min = min(y_min_g, y_min_h)
             y_max = max(y_max_g, y_max_h)
-            list_y_margin_up = [0.2, 0.35, 0.2]
+            list_y_margin_up = [0.25, 0.3, 0.25]
             y_margin_up = list_y_margin_up[i_shape]
             y_margin_down = 0.05
             setup_histogram(h_default_stat_err[ibin2])
@@ -1987,7 +1985,7 @@ class AnalyzerJet(Analyzer):
             # Draw LaTeX
             y_latex = self.y_latex_top
             list_latex = []
-            for text_latex in [self.text_alice, self.text_jets, text_ptjet_full, text_pth_full, self.text_sd]:
+            for text_latex in [self.text_alice, self.text_jets, text_ptjet_full, self.text_sd]:
                latex = TLatex(self.x_latex, y_latex, text_latex)
                list_latex.append(latex)
                draw_latex(latex, textsize=self.fontsize)
