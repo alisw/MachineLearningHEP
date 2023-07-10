@@ -50,7 +50,7 @@ from machine_learning_hep.analysis.analyzerdhadrons import AnalyzerDhadrons
 from machine_learning_hep.analysis.analyzerdhadrons_mult import AnalyzerDhadrons_mult
 from machine_learning_hep.analysis.analyzer_jet import AnalyzerJet
 from machine_learning_hep.analysis.analyzer_D0jets import AnalyzerD0jets
-from machine_learning_hep.processer_d0jet import ProcesserD0jets
+from machine_learning_hep.processer_jet import ProcesserJets
 
 from machine_learning_hep.analysis.systematics import SystematicsMLWP
 
@@ -298,9 +298,9 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         print("Using new feature for Dhadrons_jet")
         proc_class = ProcesserDhadrons_jet
         ana_class = AnalyzerJet
-    if proc_type == "":
+    if proc_type == "Jets":
         print("Using new feature for D0 jets (Run 3)")
-        proc_class = ProcesserD0jets
+        proc_class = ProcesserJets
         ana_class = AnalyzerD0jets
 
     mymultiprocessmc = MultiProcesser(case, proc_class, data_param[case], typean, run_param, "mc")

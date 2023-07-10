@@ -34,6 +34,8 @@ D0pp_jet:
   sel_skim_binmax:   [2,4,6,8,12,24,48] # skimming pt bins (sel_skim_binmin bins)
   var_binning: pt_cand
   dofullevtmerge: false
+  var_cand: fCandidateSelFlag
+  var_swap: fIsCandidateSwapped
   bitmap_sel:
     var_name: fMCflag
     var_name_origgen: fOriginMcGen
@@ -52,7 +54,7 @@ D0pp_jet:
     ismcrefl: [[1],[1]]
 
   variables:
-    var_all: [fIndexBCs, fGlobalIndex, fMCflag, fCandidateSelFlag, fOriginMcRec, fIsCandidateSwapped, fY, fEta, fPt, fCPA, fCPAXY, fM,
+    var_all: [fIndexCollisions, fIndexBCs, fMCflag, fCandidateSelFlag, fOriginMcRec, fIsCandidateSwapped, fY, fEta, fPt, fCPA, fCPAXY, fM,
               fErrorDecayLength, fErrorDecayLengthXY, fChi2PCA, fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised,
               fImpactParameterNormalised0, fPtProng0, fImpactParameterNormalised1, fPtProng1,
               fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1,
@@ -64,15 +66,16 @@ D0pp_jet:
     var_jetsub: [fZg, fRg, fNsd]
               # zg_gen_jet, rg_gen_jet,  nsd_gen_jet, #TODO: update jet variables
               # pt_splitting_jet, pt_splitting_gen_jet, k0_jet, k0_gen_jet, k1_jet, k1_gen_jet, k2_jet, k2_gen_jet, kT_jet, kT_gen_jet, ntracks_jet, ntracks_gen_jet #TODO: update jet variables
-    var_jet_match: [fIndexHfCand2Prong]
-    var_jetsub_match: [fIndexD0ChargedJets]
+    var_jet_match: [df, fIndexHfCand2Prong]
+    var_jetsub_match: [df, fIndexD0ChargedJets]
     var_evt:
-      data: [fIndexBCs, fPosX, fPosY, fPosZ, fIsEventReject]
-      mc:   [fIndexBCs, fPosX, fPosY, fPosZ, fIsEventReject]
+      data: [fIndexCollisions, fIndexBCs, fPosX, fPosY, fPosZ, fIsEventReject]
+      mc:   [fIndexCollisions, fIndexBCs, fPosX, fPosY, fPosZ, fIsEventReject]
     var_gen: [fIndexBCs, fPt, fY, fMCflag, fOriginMcGen]
-    var_evt_match: [fIndexBCs]
-    var_training: [[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fImpactParameterProduct, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1]*7 #TODO: add new variables for dca, max_norm_d0d0exp
-      ] # sel_skim_binmin bins
+    var_evt_match: [df, fIndexCollisions]
+    var_training: [[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fImpactParameterProduct, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1],[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fImpactParameterProduct, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1],[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fImpactParameterProduct, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1],[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fImpactParameterProduct, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1],[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fImpactParameterProduct, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1],[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fImpactParameterProduct, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1],[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fImpactParameterProduct, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1]] 
+      #TODO: add new variables for dca, max_norm_d0d0exp
+      # sel_skim_binmin bins
     var_boundaries: [fCosThetaStar, fPtProng]
     var_correlation:
       - [fCosThetaStar] # TODO: update
@@ -106,7 +109,7 @@ D0pp_jet:
             - 1
 
   files_names:
-    namefile_unmerged_tree: AnalysisResults_trees.root
+    namefile_unmerged_tree: AO2D.root
     namefile_reco: AnalysisResultsReco.pkl.lz4
     namefile_evt: AnalysisResultsEvt.pkl.lz4
     namefile_evtvalroot: AnalysisResultsROOTEvtVal.root
@@ -115,29 +118,30 @@ D0pp_jet:
     namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl.lz4
     namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl.lz4
     namefile_mcweights: mcweights.root
-    treeoriginreco: 'DF_0/O2hfcand2pfull'
-    treeorigingen: 'DF_0/O2hfcand2pfullp'
-    treeoriginevt: 'DF_0/O2hfcand2pfulle'
-    treejetreco: 'DF_0/O2d0o'
-    treejetgen: 'DF_0/O2d0o'
-    treejetsubreco: 'DF_0/O2d0sso'
-    treejetsubgen: 'DF_0/O2d0sso'
+    treeoriginreco: 'O2hfcand3pfull' # TODO: temp. changed to 3p for testing with Lc sample
+    treeorigingen: 'O2hfcand3pfullp' # TODO: temp. changed to 3p for testing with Lc sample
+    treeoriginevt: 'O2hfcand3pfulle' # TODO: temp. changed to 3p for testing with Lc sample
+    treejetreco: # 'O2d0o'
+    treejetgen: # 'O2d0o'
+    treejetsubreco: # 'O2d0sso'
+    treejetsubgen: #'O2d0sso'
     treeoutput: "D0tree"
     histofilename: "masshisto.root"
     efffilename: "effhisto.root"
     respfilename: "resphisto.root"
     crossfilename: "cross_section_tot.root"
 
+# use data from /data2/MLhep/real/LHC22o_pass4_medium/unmerged/alice/cern.ch/user/a/alihyperloop/jobs/0018/hy_189963/child_7/AnalysisResults_trees.root
   multi:
     data:
-      nprocessesparallel: 40
-      maxfiles: [-1] #list of periods
+      nprocessesparallel: 1
+      maxfiles: [2] #list of periods
       chunksizeunp:  [100] #list of periods
       chunksizeskim: [100] #list of periods
       fracmerge: [0.08] #list of periods
       seedmerge: [12] #list of periods
-      period: [test] #list of periods
-      unmerged_tree_dir: [/home/jklein/data/test] #list of periods
+      period: [LHC22o_pass4] #list of periods
+      unmerged_tree_dir: [/data2/MLhep/real/LHC22o_pass4_medium/unmerged/alice/cern.ch/user/a/alihyperloop/jobs/0018/hy_189963] #list of periods
       pkl: [/home/jklein/data/test/pkl] #list of periods
       pkl_skimmed: [/home/jklein/data/test/pklsk] #list of periods
       pkl_skimmed_merge_for_ml: [/home/jklein/data/test/pklskml] #list of periods
@@ -229,7 +233,7 @@ D0pp_jet:
     dir_general_plots: /home/jklein/data/analysis_plots
 
     jet_zg: &jet_default
-      proc_type: Dhadrons_jet
+      proc_type: Jets
       useperiod: [1] #list of periods
       usejetptbinned_deff: false
       doeff_resp: true #efficiency correction for the response matrix

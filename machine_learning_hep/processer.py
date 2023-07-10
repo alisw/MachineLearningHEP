@@ -21,6 +21,7 @@ import multiprocessing as mp
 import pickle
 import os
 import random as rd
+import re
 import uproot
 import pandas as pd
 import numpy as np
@@ -285,14 +286,72 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.do_custom_analysis_cuts = datap["analysis"][self.typean].get("use_cuts", False)
 
     def unpack(self, file_index):
-        treeevtorig = uproot.open(self.l_root[file_index])[self.n_treeevt]
-        try:
-            dfevtorig = treeevtorig.arrays(expressions=self.v_evt, library="pd")
-        except Exception as e: # pylint: disable=broad-except
-            print('Missing variable in the event root tree', str(e))
-            print('Missing variable in the candidate root tree')
-            print('I am sorry, I am dying ...\n \n \n')
-            sys.exit()
+        print(f'unpacking: {self.l_root[file_index]}')
+        dfevtorig = None
+        dfreco = None
+        dfjetreco = None
+        dfjetsubreco = None
+        with uproot.open(self.l_root[file_index]) as rfile:
+            df_list = []
+            # loop over data frames
+            for (idx, key) in enumerate(rfile.keys()):
+                # TODO: make sure we do not read a DF again (in case of multiple ROOT versions)
+                if not (df_key := re.match('^DF_(\d+);', key)):
+                    continue
+
+                if (df_no := df_key.group(1)) in df_list:
+                    print(f'warning: multiple versions of DF {df_no}')
+                    continue
+                print(f'processing DF {df_no} - {idx} / {len(rfile.keys())}')
+                df_list.append(df_no)
+
+                treeevtorig = rfile[f'{key}/{self.n_treeevt}']
+                try:
+                    df = treeevtorig.arrays(expressions=self.v_evt, library="pd")
+                    df['df'] = df_no
+                    # TODO: merge first, concatenate at the end
+                    dfevtorig = pd.concat([dfevtorig, df])
+                except Exception as e: # pylint: disable=broad-except
+                    print('Missing variable in the event root tree:', str(e))
+                    print('I am sorry, I am dying ...\n \n \n')
+                    sys.exit()
+
+                if self.n_treejetreco:
+                    treejetreco = rfile[self.n_treejetreco]
+                    try:
+                        df = treejetreco.arrays(expressions=self.v_jet, library="pd")
+                        df['df'] = df_no
+                        dfjetreco = pd.concat([dfjetreco, df])
+                    except Exception as e: # pylint: disable=broad-except
+                        print('Missing variable in the jet tree')
+                        print('I am sorry, I am dying ...\n \n \n')
+                        sys.exit()
+
+                if self.n_treejetsubreco:
+                    treejetsubreco = rfile[self.n_treejetsubreco]
+                    try:
+                        df = treejetsubreco.arrays(expressions=self.v_jetsub, library="pd")
+                        df['df'] = df_no
+                        dfjetsubreco = pd.concat([dfjetsubreco, df])
+                    except Exception as e: # pylint: disable=broad-except
+                        print('Missing variable in the jets tree')
+                        print('I am sorry, I am dying ...\n \n \n')
+                        sys.exit()
+
+                treereco = rfile[f'{key}/{self.n_treereco}']
+                try:
+                    # TODO: append
+                    df = treereco.arrays(expressions=self.v_all, library="pd")
+                    df['df'] = df_no
+                    dfreco = pd.concat([dfreco, df])
+                except Exception as e: # pylint: disable=broad-except
+                    print('Missing variable in the candidate root tree:', str(e))
+                    print('I am sorry, I am dying ...\n \n \n')
+                    sys.exit()
+                
+                # TODO: remove, only for faster debugging
+                if idx > 100:
+                    break
 
         dfevtorig = selectdfquery(dfevtorig, self.s_cen_unp)
         dfevtorig = dfevtorig.reset_index(drop=True)
@@ -301,34 +360,14 @@ class Processer: # pylint: disable=too-many-instance-attributes
         dfevt = dfevt.reset_index(drop=True)
         pickle.dump(dfevt, openfile(self.l_evt[file_index], "wb"), protocol=4)
 
-        if (self.n_treejetreco):
-            treejetreco = uproot.open(self.l_root[file_index])[self.n_treejetreco]
-            try:
-                dfjetreco = treejetreco.arrays(expressions=self.v_jet, library="pd")
-            except Exception as e: # pylint: disable=broad-except
-                print('Missing variable in the jet tree')
-                print('I am sorry, I am dying ...\n \n \n')
-                sys.exit()
+        if dfjetreco and dfjetsubreco:
+            # TODO: fix matching
+            dfjetreco = pd.merge(dfjetreco, dfjetsubreco, on=self.v_jetsubmatch)
 
-        if (self.n_treejetsubreco):
-            treejetsubreco = uproot.open(self.l_root[file_index])[self.n_treejetsubreco]
-            try:
-                dfjetsubreco = treejetsubreco.arrays(expressions=self.v_jetsub, library="pd")
-            except Exception as e: # pylint: disable=broad-except
-                print('Missing variable in the jets tree')
-                print('I am sorry, I am dying ...\n \n \n')
-                sys.exit()
+        if dfjetreco:
+            # TODO: fix matching
+            dfreco = pd.merge(dfjetreco, dfreco, left_on=self.v_jetmatch, right_on='fGlobalIndex')
 
-        if (dfjetreco and dfjetsubreco):
-            dfjetreco = pd.merge(dfjetsreco, dfjetsubreco, on=self.v_jetsubmatch)
-
-        treereco = uproot.open(self.l_root[file_index])[self.n_treereco]
-        try:
-            dfreco = treereco.arrays(expressions=self.v_all, library="pd")
-        except Exception as e: # pylint: disable=broad-except
-            print('Missing variable in the candidate root tree')
-            print('I am sorry, I am dying ...\n \n \n')
-            sys.exit()
         dfreco = selectdfquery(dfreco, self.s_reco_unp)
         dfreco = pd.merge(dfreco, dfevt, on=self.v_evtmatch)
         if self.s_apply_yptacccut is True:
@@ -336,10 +375,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                     dfreco[self.v_rapy].values)
             dfreco = dfreco[np.array(isselacc, dtype=bool)]
 
-        if (dfjetreco):
-            dfreco = pd.merge(dfjetreco, dfreco, left_on=self.v_jetmatch, right_on='fGlobalIndex')
-
-        arraysub = [0 for ival in range(len(dfreco))]
+        arraysub = [0]*len(dfreco)
         for iprong in range(self.nprongs):
             if self.prongformultsub[iprong] == 0:
                 continue
@@ -536,6 +572,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         print("doing unpacking", self.mcordata, self.period)
         create_folder_struc(self.d_pkl, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
+        print(arguments)
         self.parallelizer(self.unpack, arguments, self.p_chunksizeunp)
 
     def process_skim_par(self):

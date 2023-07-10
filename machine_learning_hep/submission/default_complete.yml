@@ -4,24 +4,24 @@ download:
     activate: false
 conversion: # pkl
   mc:
-    activate: true
+    activate: false
   data:
     activate: true
 skimming: # pkl_skimmed (pklsk), pkl_evtcounter_all
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 merging: # pkl_skimmed_merge_for_ml (pklskml)
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 mergingperiods: # pkl_skimmed_merge_for_ml_all
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 
 ml_study: # mlout, mlplot
   activate: false
@@ -60,19 +60,19 @@ analysis:
   # Do only merged (false)
   doperperiod: false
   data:
-    histomass: true # processer: process_histomass
+    histomass: false # processer: process_histomass
     dojetsystematics: false # analyzer: jetsystematics
   mc:
-    histomass: true # processer: process_histomass
-    efficiency: true # processer: process_efficiency
-    efficiency_resp: true # analyzer: efficiency
-    response: true # processer: process_response
-    feeddown: true # analyzer: feeddown
-    dounfolding: true # analyzer: unfolding, unfolding_closure
+    histomass: false # processer: process_histomass
+    efficiency: false # processer: process_efficiency
+    efficiency_resp: false # analyzer: efficiency
+    response: false # processer: process_response
+    feeddown: false # analyzer: feeddown
+    dounfolding: false # analyzer: unfolding, unfolding_closure
   dofit: false # analyzer: fit
   # Control the yield systematic uncertainty
   dosyst: false # analyzer: yield_syst
-  dojetstudies: true # analyzer: fit, efficiency, sideband_sub
+  dojetstudies: false # analyzer: fit, efficiency, sideband_sub
   doeff: false # analyzer: efficiency
   docross: false # analyzer: makenormyields
   doplots: false # analyzer: plotternormyields

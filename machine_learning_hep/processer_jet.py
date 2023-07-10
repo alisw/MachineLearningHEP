@@ -1,6 +1,6 @@
 from machine_learning_hep.processer import Processer
 
-class ProcesserD0jets(Processer): # pylint: disable=invalid-name, too-many-instance-attributes
+class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instance-attributes
     # Class Attribute
     species = "processer"
 
