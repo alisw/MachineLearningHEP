@@ -11,17 +11,17 @@ skimming: # pkl_skimmed (pklsk), pkl_evtcounter_all
   mc:
     activate: false
   data:
-    activate: false
+    activate: true
 merging: # pkl_skimmed_merge_for_ml (pklskml)
   mc:
     activate: false
   data:
-    activate: false
+    activate: true
 mergingperiods: # pkl_skimmed_merge_for_ml_all
   mc:
     activate: false
   data:
-    activate: false
+    activate: true
 
 ml_study: # mlout, mlplot
   activate: false

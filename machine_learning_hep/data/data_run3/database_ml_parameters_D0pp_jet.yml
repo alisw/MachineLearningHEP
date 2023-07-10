@@ -22,17 +22,17 @@ D0pp_jet:
   sel_gen_unp: "fPt > 1. and fPt < 10."
   sel_cen_unp: null
   sel_good_evt_unp: "fIsEventReject == 0"
-  sel_reco_skim: ["fPtProng0>0.3 and fPtProng1>0.3 and dca<0.05 and abs(fImpactParameter0) < 0.5 and abs(fImpactParameter1) < 0.5 and fImpactParameterProduct < 0.1 and fCpa > 0.6",
-                  "fPtProng0>0.5 and fPtProng1>0.5 and dca<0.05 and abs(fImpactParameter0) < 0.5 and abs(fImpactParameter1) < 0.5 and fImpactParameterProduct < 0.1 and fCpa > 0.6",
-                  "fPtProng0>0.5 and fPtProng1>0.5 and dca<0.05 and abs(fImpactParameter0) < 0.5 and abs(fImpactParameter1) < 0.5 and fImpactParameterProduct < 0.1 and fCpa > 0.6",
-                  "fPtProng0>0.6 and fPtProng1>0.6 and dca<0.05 and abs(fImpactParameter0) < 0.5 and abs(fImpactParameter1) < 0.5 and fImpactParameterProduct < 0.1 and fCpa > 0.6",
-                  "fPtProng0>0.6 and fPtProng1>0.6 and dca<0.05 and abs(fImpactParameter0) < 0.5 and abs(fImpactParameter1) < 0.5 and fImpactParameterProduct < 0.1 and fCpa > 0.6",
-                  "fPtProng0>0.6 and fPtProng1>0.6 and dca<0.05 and abs(fImpactParameter0) < 0.5 and abs(fImpactParameter1) < 0.5 and fImpactParameterProduct < 0.1 and fCpa > 0.6",
-                  "fPtProng0>0.6 and fPtProng1>0.6 and dca<0.05 and abs(fImpactParameter0) < 0.5 and abs(fImpactParameter1) < 0.5 and fImpactParameterProduct < 0.1 and fCpa > 0.6"] # sel_skim_binmin bins
+  sel_reco_skim: ["fPtProng0>0.3 and fPtProng1>0.3 and abs(fImpactParameter0) < 0.5 and abs(fImpactParameter1) < 0.5 and fCPA > 0.6",
+                  "fPtProng0>0.5 and fPtProng1>0.5 and abs(fImpactParameter0) < 0.5 and abs(fImpactParameter1) < 0.5 and fCPA > 0.6",
+                  "fPtProng0>0.5 and fPtProng1>0.5 and abs(fImpactParameter0) < 0.5 and abs(fImpactParameter1) < 0.5 and fCPA > 0.6",
+                  "fPtProng0>0.6 and fPtProng1>0.6 and abs(fImpactParameter0) < 0.5 and abs(fImpactParameter1) < 0.5 and fCPA > 0.6",
+                  "fPtProng0>0.6 and fPtProng1>0.6 and abs(fImpactParameter0) < 0.5 and abs(fImpactParameter1) < 0.5 and fCPA > 0.6",
+                  "fPtProng0>0.6 and fPtProng1>0.6 and abs(fImpactParameter0) < 0.5 and abs(fImpactParameter1) < 0.5 and fCPA > 0.6",
+                  "fPtProng0>0.6 and fPtProng1>0.6 and abs(fImpactParameter0) < 0.5 and abs(fImpactParameter1) < 0.5 and fCPA > 0.6"] # sel_skim_binmin bins
   sel_gen_skim: [null,null,null,null,null,null,null] # sel_skim_binmin bins
   sel_skim_binmin: [1,2,4,6,8,12,24] # skimming pt bins (sel_skim_binmin bins)
   sel_skim_binmax:   [2,4,6,8,12,24,48] # skimming pt bins (sel_skim_binmin bins)
-  var_binning: pt_cand
+  var_binning: fPt
   dofullevtmerge: false
   var_cand: fCandidateSelFlag
   var_swap: fIsCandidateSwapped
@@ -134,8 +134,8 @@ D0pp_jet:
 # use data from /data2/MLhep/real/LHC22o_pass4_medium/unmerged/alice/cern.ch/user/a/alihyperloop/jobs/0018/hy_189963/child_7/AnalysisResults_trees.root
   multi:
     data:
-      nprocessesparallel: 1
-      maxfiles: [2] #list of periods
+      nprocessesparallel: 10
+      maxfiles: [100] #list of periods
       chunksizeunp:  [100] #list of periods
       chunksizeskim: [100] #list of periods
       fracmerge: [0.08] #list of periods

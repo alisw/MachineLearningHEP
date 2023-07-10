@@ -291,25 +291,34 @@ class Processer: # pylint: disable=too-many-instance-attributes
         dfreco = None
         dfjetreco = None
         dfjetsubreco = None
+
+        def read_df(var, tree):
+            # return tree.arrays(expressions=var, library="pd")
+            return pd.DataFrame(columns=var, data=tree.arrays(expressions=var, library="np"))
+
         with uproot.open(self.l_root[file_index]) as rfile:
             df_list = []
             # loop over data frames
-            for (idx, key) in enumerate(rfile.keys()):
-                # TODO: make sure we do not read a DF again (in case of multiple ROOT versions)
+            keys = rfile.keys()
+            for (idx, key) in enumerate(keys):
+                # TODO: remove, only for faster debugging
+                if idx > 100:
+                    break
+
                 if not (df_key := re.match('^DF_(\d+);', key)):
                     continue
 
                 if (df_no := df_key.group(1)) in df_list:
                     print(f'warning: multiple versions of DF {df_no}')
                     continue
-                print(f'processing DF {df_no} - {idx} / {len(rfile.keys())}')
+                # print(f'processing DF {df_no} - {idx} / {len(keys)}')
                 df_list.append(df_no)
 
                 treeevtorig = rfile[f'{key}/{self.n_treeevt}']
                 try:
-                    df = treeevtorig.arrays(expressions=self.v_evt, library="pd")
+                    # df = treeevtorig.arrays(expressions=self.v_evt, library="pd")
+                    df = read_df(self.v_evt, treeevtorig)
                     df['df'] = df_no
-                    # TODO: merge first, concatenate at the end
                     dfevtorig = pd.concat([dfevtorig, df])
                 except Exception as e: # pylint: disable=broad-except
                     print('Missing variable in the event root tree:', str(e))
@@ -319,7 +328,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 if self.n_treejetreco:
                     treejetreco = rfile[self.n_treejetreco]
                     try:
-                        df = treejetreco.arrays(expressions=self.v_jet, library="pd")
+                        # df = treejetreco.arrays(expressions=self.v_jet, library="pd")
+                        df = read_df(self.v_jet, treejetreco)
                         df['df'] = df_no
                         dfjetreco = pd.concat([dfjetreco, df])
                     except Exception as e: # pylint: disable=broad-except
@@ -330,7 +340,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 if self.n_treejetsubreco:
                     treejetsubreco = rfile[self.n_treejetsubreco]
                     try:
-                        df = treejetsubreco.arrays(expressions=self.v_jetsub, library="pd")
+                        # df = treejetsubreco.arrays(expressions=self.v_jetsub, library="pd")
+                        df = read_df(self.v_jetsub, treejetsubreco)
                         df['df'] = df_no
                         dfjetsubreco = pd.concat([dfjetsubreco, df])
                     except Exception as e: # pylint: disable=broad-except
@@ -341,7 +352,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 treereco = rfile[f'{key}/{self.n_treereco}']
                 try:
                     # TODO: append
-                    df = treereco.arrays(expressions=self.v_all, library="pd")
+                    # df = treereco.arrays(expressions=self.v_all, library="pd")
+                    df = read_df(self.v_all, treereco)
                     df['df'] = df_no
                     dfreco = pd.concat([dfreco, df])
                 except Exception as e: # pylint: disable=broad-except
@@ -349,10 +361,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     print('I am sorry, I am dying ...\n \n \n')
                     sys.exit()
                 
-                # TODO: remove, only for faster debugging
-                if idx > 100:
-                    break
-
         dfevtorig = selectdfquery(dfevtorig, self.s_cen_unp)
         dfevtorig = dfevtorig.reset_index(drop=True)
         pickle.dump(dfevtorig, openfile(self.l_evtorig[file_index], "wb"), protocol=4)
@@ -375,88 +383,88 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                     dfreco[self.v_rapy].values)
             dfreco = dfreco[np.array(isselacc, dtype=bool)]
 
-        arraysub = [0]*len(dfreco)
-        for iprong in range(self.nprongs):
-            if self.prongformultsub[iprong] == 0:
-                continue
-            #print("considering prong %d for sub" % iprong)
-            spdhits_thisprong = dfreco["spdhits_prong%s" % iprong].values
-            ntrackletsthisprong = [1 if spdhits_thisprong[index] == 3 else 0 \
-                                   for index in range(len(dfreco))]
-            arraysub = np.add(ntrackletsthisprong, arraysub)
-        if "n_tracklets" in self.v_evt:
-            n_tracklets = dfreco["n_tracklets"].values
-            n_tracklets_sub = None
-            n_tracklets_sub = np.subtract(n_tracklets, arraysub)
-            dfreco["n_tracklets_sub"] = n_tracklets_sub
-        if "n_tracklets_corr" in self.v_evt:
-            n_tracklets_corr = dfreco["n_tracklets_corr"].values
-            n_tracklets_corr_sub = None
-            n_tracklets_corr_sub = np.subtract(n_tracklets_corr, arraysub)
-            dfreco["n_tracklets_corr_sub"] = n_tracklets_corr_sub
-        if "n_tracklets_corr_shm" in self.v_evt:
-            n_tracklets_corr_shm = dfreco["n_tracklets_corr_shm"].values
-            n_tracklets_corr_shm_sub = None
-            n_tracklets_corr_shm_sub = np.subtract(n_tracklets_corr_shm, arraysub)
-            dfreco["n_tracklets_corr_shm_sub"] = n_tracklets_corr_shm_sub
+        # arraysub = [0]*len(dfreco)
+        # for iprong in range(self.nprongs):
+        #     if self.prongformultsub[iprong] == 0:
+        #         continue
+        #     #print("considering prong %d for sub" % iprong)
+        #     spdhits_thisprong = dfreco["spdhits_prong%s" % iprong].values
+        #     ntrackletsthisprong = [1 if spdhits_thisprong[index] == 3 else 0 \
+        #                            for index in range(len(dfreco))]
+        #     arraysub = np.add(ntrackletsthisprong, arraysub)
+        # if "n_tracklets" in self.v_evt:
+        #     n_tracklets = dfreco["n_tracklets"].values
+        #     n_tracklets_sub = None
+        #     n_tracklets_sub = np.subtract(n_tracklets, arraysub)
+        #     dfreco["n_tracklets_sub"] = n_tracklets_sub
+        # if "n_tracklets_corr" in self.v_evt:
+        #     n_tracklets_corr = dfreco["n_tracklets_corr"].values
+        #     n_tracklets_corr_sub = None
+        #     n_tracklets_corr_sub = np.subtract(n_tracklets_corr, arraysub)
+        #     dfreco["n_tracklets_corr_sub"] = n_tracklets_corr_sub
+        # if "n_tracklets_corr_shm" in self.v_evt:
+        #     n_tracklets_corr_shm = dfreco["n_tracklets_corr_shm"].values
+        #     n_tracklets_corr_shm_sub = None
+        #     n_tracklets_corr_shm_sub = np.subtract(n_tracklets_corr_shm, arraysub)
+        #     dfreco["n_tracklets_corr_shm_sub"] = n_tracklets_corr_shm_sub
 
-        if self.b_trackcuts is not None:
-            dfreco = filter_bit_df(dfreco, self.v_bitvar, self.b_trackcuts)
-        dfreco[self.v_isstd] = np.array(tag_bit_df(dfreco, self.v_bitvar,
-                                                   self.b_std), dtype=int)
-        dfreco = dfreco.reset_index(drop=True)
-        if self.mcordata == "mc":
+        # if self.b_trackcuts is not None:
+        #     dfreco = filter_bit_df(dfreco, self.v_bitvar, self.b_trackcuts)
+        # dfreco[self.v_isstd] = np.array(tag_bit_df(dfreco, self.v_bitvar,
+        #                                            self.b_std), dtype=int)
+        # dfreco = dfreco.reset_index(drop=True)
+        # if self.mcordata == "mc":
 
-            dfreco[self.v_ismcsignal] = np.array(tag_bit_df(dfreco, self.v_bitvar,
-                                                            self.b_mcsig), dtype=int)
+        #     dfreco[self.v_ismcsignal] = np.array(tag_bit_df(dfreco, self.v_bitvar,
+        #                                                     self.b_mcsig), dtype=int)
 
-            dfreco[self.v_ismcprompt] = np.array(tag_bit_df(dfreco, self.v_bitvar_origrec,
-                                                            self.b_mcsigprompt), dtype=int)
+        #     dfreco[self.v_ismcprompt] = np.array(tag_bit_df(dfreco, self.v_bitvar_origrec,
+        #                                                     self.b_mcsigprompt), dtype=int)
 
-            dfreco[self.v_ismcfd] = np.array(tag_bit_df(dfreco, self.v_bitvar_origrec,
-                                                        self.b_mcsigfd), dtype=int)
+        #     dfreco[self.v_ismcfd] = np.array(tag_bit_df(dfreco, self.v_bitvar_origrec,
+        #                                                 self.b_mcsigfd), dtype=int)
 
-            if self.v_swap:
-                length = len(dfreco)
-                myList = [None for x in range(length)]
+        #     if self.v_swap:
+        #         length = len(dfreco)
+        #         myList = [None for x in range(length)]
 
-                for index in range(length):
-                    candtype = dfreco[self.v_candtype][index]
-                    swap = dfreco[self.v_swap][index]
-                    if (candtype == (swap+1)):
-                        myList[index]=1
-                    else:
-                        myList[index]=0
+        #         for index in range(length):
+        #             candtype = dfreco[self.v_candtype][index]
+        #             swap = dfreco[self.v_swap][index]
+        #             if (candtype == (swap+1)):
+        #                 myList[index]=1
+        #             else:
+        #                 myList[index]=0
 
-                for index in range(length):
-                    signalbit = dfreco[self.v_ismcsignal][index]
-                    if (myList[index] == 1 and signalbit == 1):
-                        dfreco[self.v_ismcsignal][index] = 1
-                    else:
-                        dfreco[self.v_ismcsignal][index] = 0
+        #         for index in range(length):
+        #             signalbit = dfreco[self.v_ismcsignal][index]
+        #             if (myList[index] == 1 and signalbit == 1):
+        #                 dfreco[self.v_ismcsignal][index] = 1
+        #             else:
+        #                 dfreco[self.v_ismcsignal][index] = 0
 
-                for index in range(length):
-                    promptbit = dfreco[self.v_ismcprompt][index]
-                    if (myList[index] == 1 and promptbit == 1):
-                        dfreco[self.v_ismcprompt][index] = 1
-                    else:
-                        dfreco[self.v_ismcprompt][index] = 0
+        #         for index in range(length):
+        #             promptbit = dfreco[self.v_ismcprompt][index]
+        #             if (myList[index] == 1 and promptbit == 1):
+        #                 dfreco[self.v_ismcprompt][index] = 1
+        #             else:
+        #                 dfreco[self.v_ismcprompt][index] = 0
 
-                for index in range(length):
-                    fdbit = dfreco[self.v_ismcfd][index]
-                    if (myList[index] == 1 and fdbit == 1):
-                        dfreco[self.v_ismcfd][index] = 1
-                    else:
-                        dfreco[self.v_ismcfd][index] = 0
+        #         for index in range(length):
+        #             fdbit = dfreco[self.v_ismcfd][index]
+        #             if (myList[index] == 1 and fdbit == 1):
+        #                 dfreco[self.v_ismcfd][index] = 1
+        #             else:
+        #                 dfreco[self.v_ismcfd][index] = 0
 
-            dfreco[self.v_ismcbkg] = np.array(tag_bit_df(dfreco, self.v_bitvar,
-                                                         self.b_mcbkg), dtype=int)
+        #     dfreco[self.v_ismcbkg] = np.array(tag_bit_df(dfreco, self.v_bitvar,
+        #                                                  self.b_mcbkg), dtype=int)
 
         pickle.dump(dfreco, openfile(self.l_reco[file_index], "wb"), protocol=4)
 
         if self.mcordata == "mc":
             if (self.n_treejetgen):
-                treejetreco = uproot.open(self.l_root[file_index])[self.n_treejetgen]
+                treejetgen = uproot.open(self.l_root[file_index])[self.n_treejetgen]
                 try:
                     dfjetgen = treejetgen.arrays(expressions=self.v_jet, library="pd")
                 except Exception as e: # pylint: disable=broad-except
@@ -474,7 +482,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     sys.exit()
 
             if (dfjetgen and dfjetsubgen):
-                dfjetgen = pd.merge(dfjetsgen, dfjetsubgen, on=self.v_jetsubmatch)
+                dfjetgen = pd.merge(dfjetgen, dfjetsubgen, on=self.v_jetsubmatch)
 
             treegen = uproot.open(self.l_root[file_index])[self.n_treegen]
             dfgen = treegen.arrays(expressions=self.v_gen, library="pd")
