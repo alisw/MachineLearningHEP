@@ -16,6 +16,21 @@
 main script for doing data processing, machine learning and analysis
 """
 
+# replacements for root_numpy functionality
+# TODO: move to separate file
+def fill_hist(hist, array, weights):
+    assert array.ndim() == 1 and weights.ndim() == 1, 'fill_hist handles 1d histos only'
+    hist.FillN(array.len(), array, weights)
+
+def hist2array(hist):
+    assert hist.GetDimension() == 1
+    return [hist.GetBinContent(x) for x in range(hist.GetNbinsX())]
+
+def array2hist(array, hist):
+    assert array.ndim() == 1 and hist.GetDimension() == array.ndim()
+    for i, x in enumerate(array):
+        hist.SetBinContent(i + 1, x)
+
 from machine_learning_hep.steer_analysis import main
 
 main()

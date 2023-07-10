@@ -28,7 +28,7 @@ from sklearn.model_selection import cross_validate
 
 from hyperopt import fmin, tpe, STATUS_OK
 
-from shap.plots.colors import red_blue as shap_cmap_red_blue
+# from shap.plots.colors import red_blue as shap_cmap_red_blue
 
 from machine_learning_hep.io import dump_yaml_from_dict, parse_yaml, dict_yamlable
 

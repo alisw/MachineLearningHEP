@@ -22,3 +22,14 @@ http://alice-collaboration.web.cern.ch
 
 ## Contacts
 For any questions please contact <ginnocen@cern.ch>
+
+# Installation
+
+## Usage with aliBuild software stack
+
+This package depends on functionality offered by external packages, e.g. RooUnfold and O2Physics.
+In order to use these packages from the aliBuild software stack, you should first install the aliBuild packages, and setup mlhep within the aliBuild environment.
+To install the python dependencies run the following (from within the aliBuild environment) in the root directory of mlehp:
+```
+python3 -m pip install -r requirements.txt
+```

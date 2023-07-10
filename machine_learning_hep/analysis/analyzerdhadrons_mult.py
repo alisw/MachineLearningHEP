@@ -21,7 +21,7 @@ import os
 from array import array
 import itertools
 # pylint: disable=import-error, no-name-in-module, unused-import
-from root_numpy import hist2array, array2hist
+# from root_numpy import hist2array, array2hist
 from ROOT import TFile, TH1F, TH2F, TCanvas, TPad, TF1, TH1D
 from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
 from ROOT import gROOT, TDirectory, TPaveLabel

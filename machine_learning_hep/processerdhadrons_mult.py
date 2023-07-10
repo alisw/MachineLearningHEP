@@ -21,7 +21,7 @@ import pickle
 import os
 import numpy as np
 import pandas as pd
-from root_numpy import fill_hist, evaluate # pylint: disable=import-error, no-name-in-module
+# from root_numpy import fill_hist, evaluate # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.utilities import selectdfrunlist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, \
@@ -118,7 +118,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         """
 
         if use_func:
-            return evaluate(func, col)
+            return [func.Eval(x) for x in col]
         def reg(value):
             # warning, the histogram has empty bins at high mult.
             # (>125 ntrkl) so a check is needed to avoid a 1/0 division

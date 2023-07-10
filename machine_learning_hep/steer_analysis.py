@@ -21,6 +21,7 @@ import sys
 import subprocess
 import argparse
 from os.path import exists
+import shap
 import yaml
 from pkg_resources import resource_stream
 
