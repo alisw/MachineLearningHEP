@@ -363,7 +363,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     sys.exit()
 
                 if self.n_treejetreco:
-                    treejetreco = rfile[self.n_treejetreco]
+                    treejetreco = rfile[f'{key}/{self.n_treejetreco}']
                     try:
                         df = read_df(self.v_jet, treejetreco)
                         df['df'] = df_no
@@ -373,7 +373,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         sys.exit()
 
                 if self.n_treejetsubreco:
-                    treejetsubreco = rfile[self.n_treejetsubreco]
+                    treejetsubreco = rfile[f'{key}/{self.n_treejetsubreco}']
                     try:
                         df = read_df(self.v_jetsub, treejetsubreco)
                         df['df'] = df_no
@@ -398,16 +398,18 @@ class Processer: # pylint: disable=too-many-instance-attributes
         dfevt = dfevt.reset_index(drop=True)
         pickle.dump(dfevt, openfile(self.l_evt[file_index], "wb"), protocol=4)
 
-        if dfjetreco and dfjetsubreco:
-            # TODO: fix matching
+        if dfjetreco is not None and dfjetsubreco is not None:
             dfjetreco = pd.merge(dfjetreco, dfjetsubreco, on=self.v_jetsubmatch)
 
-        if dfjetreco:
-            # TODO: fix matching
-            dfreco = pd.merge(dfjetreco, dfreco, left_on=self.v_jetmatch, right_on='fGlobalIndex')
+        if dfjetreco is not None:
+            dfreco = pd.merge(dfjetreco, dfreco, on=self.v_jetmatch)
 
         dfreco = selectdfquery(dfreco, self.s_reco_unp)
+        # TODO: check how to handle indices here, check if this works with cuts
+        if 'fIndexCollisions' not in dfevt.columns:
+            dfevt.rename_axis('fIndexCollisions', inplace=True)
         dfreco = pd.merge(dfreco, dfevt, on=self.v_evtmatch)
+
         if self.s_apply_yptacccut is True:
             isselacc = selectfidacc(dfreco[self.v_var_binning].values,
                                     dfreco[self.v_rapy].values)
