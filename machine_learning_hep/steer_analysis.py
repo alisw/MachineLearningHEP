@@ -448,7 +448,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         analyze_steps.append("plottervalidation")
 
     # Now do the analysis
-    ana_mgr.analyze(*analyze_steps)
+    ana_mgr.analyze(analyze_steps)
 
     if do_syst_ml:
         if mltype == "MultiClassification":
