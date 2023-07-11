@@ -22,7 +22,7 @@ replace AliHFSystErr from AliPhysics).
 from array import array
 import math
 import numpy as np
-from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
+# from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
 # pylint: disable=import-error, no-name-in-module
 from ROOT import TH1F, TH2F, TH2, TFile, TH1, TH3F, TGraphAsymmErrors
 from ROOT import TPad, TCanvas, TLegend, kBlack, kGreen, kRed, kBlue, kWhite

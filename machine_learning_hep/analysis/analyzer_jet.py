@@ -24,7 +24,7 @@ import pandas as pd
 import yaml
 # pylint: disable=import-error, no-name-in-module
 import uproot
-from root_numpy import fill_hist
+# from root_numpy import fill_hist
 from ROOT import TFile, TH1F, TH2F, TCanvas, TLatex, TGraphAsymmErrors, TLine, TGaxis, TF1
 from ROOT import AliHFInvMassFitter, AliVertexingHFUtils
 from ROOT import TLegend
