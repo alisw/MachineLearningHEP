@@ -351,6 +351,9 @@ D0pp_jet:
       - Null
       - Null
 
+    jet_qa:
+      <<: *jet_default
+
     jet_rg:
       <<: *jet_default
       var_binningshape: rg_jet

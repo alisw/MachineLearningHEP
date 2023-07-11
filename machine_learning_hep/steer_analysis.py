@@ -132,6 +132,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     dofeeddown = data_config["analysis"]["mc"]["feeddown"]
     dounfolding = data_config["analysis"]["mc"]["dounfolding"]
     dojetsystematics = data_config["analysis"]["data"]["dojetsystematics"]
+    doqa = data_config["analysis"]["doqa"]
     dofit = data_config["analysis"]["dofit"]
     doeff = data_config["analysis"]["doeff"]
     docross = data_config["analysis"]["docross"]
@@ -418,6 +419,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
 
     # Collect all desired analysis steps
     analyze_steps = []
+    if doqa:
+        analyze_steps.append("qa")
     if dofit is True:
         analyze_steps.append("fit")
     if dosyst is True:

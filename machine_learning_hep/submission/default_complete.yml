@@ -6,22 +6,22 @@ conversion: # pkl
   mc:
     activate: false
   data:
-    activate: true
+    activate: false
 skimming: # pkl_skimmed (pklsk), pkl_evtcounter_all
   mc:
     activate: false
   data:
-    activate: true
+    activate: false
 merging: # pkl_skimmed_merge_for_ml (pklskml)
   mc:
     activate: false
   data:
-    activate: true
+    activate: false
 mergingperiods: # pkl_skimmed_merge_for_ml_all
   mc:
     activate: false
   data:
-    activate: true
+    activate: false
 
 ml_study: # mlout, mlplot
   activate: false
@@ -69,6 +69,7 @@ analysis:
     response: false # processer: process_response
     feeddown: false # analyzer: feeddown
     dounfolding: false # analyzer: unfolding, unfolding_closure
+  doqa: true
   dofit: false # analyzer: fit
   # Control the yield systematic uncertainty
   dosyst: false # analyzer: yield_syst
