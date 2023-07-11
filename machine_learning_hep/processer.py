@@ -22,6 +22,7 @@ import pickle
 import os
 import random as rd
 import re
+import time
 import uproot
 import pandas as pd
 import numpy as np
@@ -32,13 +33,13 @@ from machine_learning_hep.utilities import list_folders, createlist, appendmainf
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
 from machine_learning_hep.utilities import mergerootfiles, count_df_length_pkl
 from machine_learning_hep.utilities import get_timestamp_string
-from machine_learning_hep.models import apply # pylint: disable=import-error
 from machine_learning_hep.io import dump_yaml_from_dict
-# from machine_learning_hep.logger import get_logger
+from machine_learning_hep.logger import get_logger
 
 class Processer: # pylint: disable=too-many-instance-attributes
     # Class Attribute
     species = 'processer'
+    logger = get_logger()
 
     # Initializer / Instance Attributes
     # pylint: disable=too-many-statements, too-many-arguments
@@ -137,14 +138,14 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         #variables name
         self.v_all = datap["variables"]["var_all"]
-        self.v_jet = datap["variables"]["var_jet"]
-        self.v_jetsub = datap["variables"]["var_jetsub"]
+        self.v_jet = datap["variables"].get("var_jet", None)
+        self.v_jetsub = datap["variables"].get("var_jetsub", None)
         self.v_train = datap["variables"]["var_training"]
         self.v_evt = datap["variables"]["var_evt"][self.mcordata]
         self.v_gen = datap["variables"]["var_gen"]
         self.v_evtmatch = datap["variables"]["var_evt_match"]
-        self.v_jetmatch = datap["variables"]["var_jet_match"]
-        self.v_jetsubmatch = datap["variables"]["var_jetsub_match"]
+        self.v_jetmatch = datap["variables"].get("var_jet_match", None)
+        self.v_jetsubmatch = datap["variables"].get("var_jetsub_match", None)
         self.v_bitvar = datap["bitmap_sel"]["var_name"]
         self.v_bitvar_origgen = datap["bitmap_sel"]["var_name_origgen"]
         self.v_bitvar_origrec = datap["bitmap_sel"]["var_name_origrec"]
@@ -286,17 +287,55 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.do_custom_analysis_cuts = datap["analysis"][self.typean].get("use_cuts", False)
 
     def unpack(self, file_index):
-        print(f'unpacking: {self.l_root[file_index]}')
+        self.logger.info(f'unpacking: {self.l_root[file_index]}')
         dfevtorig = None
         dfreco = None
         dfjetreco = None
         dfjetsubreco = None
 
-        def read_df(var, tree):
-            # return tree.arrays(expressions=var, library="pd")
-            return pd.DataFrame(columns=var, data=tree.arrays(expressions=var, library="np"))
+        # import ROOT
+        # with ROOT.TFile(self.l_root[file_index]) as rfile:
+        #     df_list = []
+        #     keys = rfile.GetListOfKeys()
+
+        #     for idx, key in enumerate(keys):
+        #         key = key.GetName()
+        #         print(key)
+
+        #         if not (df_key := re.match('^DF_(\d+)', key)):
+        #             continue
+
+        #         if (df_no := df_key.group(1)) in df_list:
+        #             self.logger.warning(f'multiple versions of DF {df_no}')
+        #             continue
+        #         self.logger.info(f'processing DF {df_no} - {idx} / {len(keys)}')
+        #         df_list.append(df_no)
+
+        #         print(f'reading rdf with key {key}')
+        #         rdf = ROOT.RDataFrame(f'{key}/{self.n_treeevt}', rfile)
+        #         df = pd.DataFrame(columns=self.v_evt, data=rdf.AsNumpy(columns=self.v_evt))
+        #         df['df'] = df_no
+        #         dfevtorig = pd.concat([dfevtorig, df])
+
+        #         rdf = ROOT.RDataFrame(f'{key}/{self.n_treereco}', rfile)
+        #         df = pd.DataFrame(columns=self.v_all, data=rdf.AsNumpy(columns=self.v_all))
+        #         df['df'] = df_no
+        #         dfreco = pd.concat([dfreco, df])
+
+        def benchmark(func):
+            def inner(*args, **kwargs):
+                t_start = time.time()
+                ret = func(*args, *kwargs)
+                t_end = time.time()
+                self.logger.info("Delta t = %g", t_end - t_start)
+                return ret
+            return inner
 
         with uproot.open(self.l_root[file_index]) as rfile:
+            def read_df(var, tree):                
+                # return tree.arrays(expressions=var, library="pd")
+                return pd.DataFrame(columns=var, data=tree.arrays(expressions=var, library="np"))
+
             df_list = []
             # loop over data frames
             keys = rfile.keys()
@@ -316,49 +355,40 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
                 treeevtorig = rfile[f'{key}/{self.n_treeevt}']
                 try:
-                    # df = treeevtorig.arrays(expressions=self.v_evt, library="pd")
                     df = read_df(self.v_evt, treeevtorig)
                     df['df'] = df_no
                     dfevtorig = pd.concat([dfevtorig, df])
                 except Exception as e: # pylint: disable=broad-except
-                    print('Missing variable in the event root tree:', str(e))
-                    print('I am sorry, I am dying ...\n \n \n')
+                    self.logger.critical('Failed to read event tree:', str(e))
                     sys.exit()
 
                 if self.n_treejetreco:
                     treejetreco = rfile[self.n_treejetreco]
                     try:
-                        # df = treejetreco.arrays(expressions=self.v_jet, library="pd")
                         df = read_df(self.v_jet, treejetreco)
                         df['df'] = df_no
                         dfjetreco = pd.concat([dfjetreco, df])
                     except Exception as e: # pylint: disable=broad-except
-                        print('Missing variable in the jet tree')
-                        print('I am sorry, I am dying ...\n \n \n')
+                        self.logger.critical('Failed to read jet tree', str(e))
                         sys.exit()
 
                 if self.n_treejetsubreco:
                     treejetsubreco = rfile[self.n_treejetsubreco]
                     try:
-                        # df = treejetsubreco.arrays(expressions=self.v_jetsub, library="pd")
                         df = read_df(self.v_jetsub, treejetsubreco)
                         df['df'] = df_no
                         dfjetsubreco = pd.concat([dfjetsubreco, df])
                     except Exception as e: # pylint: disable=broad-except
-                        print('Missing variable in the jets tree')
-                        print('I am sorry, I am dying ...\n \n \n')
+                        self.logger.critical('Failed to read jetsub tree', str(e))
                         sys.exit()
 
                 treereco = rfile[f'{key}/{self.n_treereco}']
                 try:
-                    # TODO: append
-                    # df = treereco.arrays(expressions=self.v_all, library="pd")
                     df = read_df(self.v_all, treereco)
                     df['df'] = df_no
                     dfreco = pd.concat([dfreco, df])
                 except Exception as e: # pylint: disable=broad-except
-                    print('Missing variable in the candidate root tree:', str(e))
-                    print('I am sorry, I am dying ...\n \n \n')
+                    self.logger.critical('Failed to read candidate tree:', str(e))
                     sys.exit()
                 
         dfevtorig = selectdfquery(dfevtorig, self.s_cen_unp)
@@ -532,6 +562,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                             protocol=4)
 
     def applymodel(self, file_index):
+        from machine_learning_hep.models import apply # pylint: disable=import-error
         for ipt in range(self.p_nptbins):
             if os.path.exists(self.mptfiles_recoskmldec[ipt][file_index]):
                 if os.stat(self.mptfiles_recoskmldec[ipt][file_index]).st_size != 0:

@@ -134,8 +134,8 @@ D0pp_jet:
 # use data from /data2/MLhep/real/LHC22o_pass4_medium/unmerged/alice/cern.ch/user/a/alihyperloop/jobs/0018/hy_189963/child_7/AnalysisResults_trees.root
   multi:
     data:
-      nprocessesparallel: 10
-      maxfiles: [100] #list of periods
+      nprocessesparallel: 24
+      maxfiles: [-1] #list of periods
       chunksizeunp:  [100] #list of periods
       chunksizeskim: [100] #list of periods
       fracmerge: [0.08] #list of periods

@@ -42,7 +42,6 @@ from machine_learning_hep.config import update_config
 from  machine_learning_hep.utilities import checkmakedirlist, checkmakedir
 from  machine_learning_hep.utilities import checkdirlist, checkdir, delete_dirlist
 from  machine_learning_hep.logger import configure_logger, get_logger
-from machine_learning_hep.optimiser import Optimiser
 
 from machine_learning_hep.analysis.analyzer_manager import AnalyzerManager
 from machine_learning_hep.analysis.analyzer import Analyzer
@@ -349,6 +348,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         mymultiprocessdata.multi_mergeml_allinone()
 
     if doml is True:
+        from machine_learning_hep.optimiser import Optimiser
         index = 0
         for binmin, binmax in zip(binminarray, binmaxarray):
             myopt = Optimiser(data_param[case], case, typean,
