@@ -398,6 +398,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         mymultiprocessdata.multi_mergeapply_allperiods()
     if domergeapplymc is True:
         mymultiprocessmc.multi_mergeapply_allperiods()
+
     if dohistomassmc is True:
         mymultiprocessmc.multi_histomass()
     if dohistomassdata is True:

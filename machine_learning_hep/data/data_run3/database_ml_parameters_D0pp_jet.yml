@@ -268,18 +268,18 @@ D0pp_jet:
       jetsel_sim: "abs(y_cand) < 0.5 and abs(eta_jet) < 0.5" # jet selection in simulations
       jetsel_reco: "abs(y_cand) < 0.5 and abs(z_vtx_reco) < 10 and abs(eta_jet) < 0.5"
       jetsel_gen_matched_reco: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_gen_jet) < 0.5"
-      evtsel: is_ev_rej==0
+      evtsel: fIsEventReject==0
       triggersel:
         data: "trigger_hasbit_INT7==1"
         mc: null
       data: &data_out_default
         runselection: [null] #FIXME
         results: [/home/jklein/data/test/d0jet/resultsMBjetvspt] #list of periods
-        resultsallp: /home/jklein/data/test/d0jet/resultsMBjetvspt
+        resultsallp: /home/jklein/data/test/d0jet/resultsMBjetvspt_all
       mc: &mc_out_default
         runselection: [null] #FIXME
         results: [/home/jklein/data/mctest/d0jet/resultsMBjetvspt] #list of periods
-        resultsallp: /home/jklein/data/mctest/d0jet/resultsMBjetvspt
+        resultsallp: /home/jklein/data/mctest/d0jet/resultsMBjetvspt_all
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input

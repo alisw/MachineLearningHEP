@@ -290,6 +290,7 @@ def mergerootfiles(listfiles, mergedfile, tmp_dir):
     """
     Using ROOT's 'hadd' utility, to merge output rootfiles from analyses steps
     """
+    print('merging root files', listfiles, mergedfile, tmp_dir)
     def divide_chunks(list_to_split, chunk_size):
         for i in range(0, len(list_to_split), chunk_size):
             yield list_to_split[i:i + chunk_size]

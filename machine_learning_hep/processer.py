@@ -406,6 +406,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         dfreco = selectdfquery(dfreco, self.s_reco_unp)
         # TODO: check how to handle indices here, check if this works with cuts
+        # TODO: probably not compatible with reset_index
         if 'fIndexCollisions' not in dfevt.columns:
             dfevt.rename_axis('fIndexCollisions', inplace=True)
         dfreco = pd.merge(dfreco, dfevt, on=self.v_evtmatch)
@@ -493,6 +494,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         #                                                  self.b_mcbkg), dtype=int)
 
         pickle.dump(dfreco, openfile(self.l_reco[file_index], "wb"), protocol=4)
+        self.logger.debug(f'finished unpacking: {self.l_root[file_index]}')
 
         if self.mcordata == "mc":
             if (self.n_treejetgen):
@@ -602,7 +604,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         chunks = [argument_list[x:x+maxperchunk] \
                   for x in range(0, len(argument_list), maxperchunk)]
         for chunk in chunks:
-            print("Processing new chunck size=", maxperchunk)
+            self.logger.debug("Processing new chunk of size = %i", maxperchunk)
             pool = mp.Pool(self.p_maxprocess)
             _ = [pool.apply_async(function, args=chunk[i],
                                   error_callback=self.callback) for i in range(len(chunk))]
@@ -610,14 +612,14 @@ class Processer: # pylint: disable=too-many-instance-attributes
             pool.join()
 
     def process_unpack_par(self):
-        print("doing unpacking", self.mcordata, self.period)
+        self.logger.info("doing unpacking %s %s", self.mcordata, self.period)
         create_folder_struc(self.d_pkl, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
         print(arguments)
         self.parallelizer(self.unpack, arguments, self.p_chunksizeunp)
 
     def process_skim_par(self):
-        print("doing skimming", self.mcordata, self.period)
+        self.logger.info("doing skimming %s %s", self.mcordata, self.period)
         create_folder_struc(self.d_pklsk, self.l_path)
         arguments = [(i,) for i in range(len(self.l_reco))]
         self.parallelizer(self.skim, arguments, self.p_chunksizeskim)
@@ -698,15 +700,15 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
 
     def process_histomass(self):
-        print("Doing masshisto", self.mcordata, self.period)
-        print("Using run selection for mass histo", \
-               self.runlistrigger, "for period", self.period)
+        self.logger.debug("Doing masshisto %s %s", self.mcordata, self.period)
+        self.logger.debug("Using run selection for mass histo %s %s %s",
+                          self.runlistrigger, "for period", self.period)
         if self.doml is True:
-            print("Doing ml analysis")
+            self.logger.debug("Doing ml analysis")
         elif self.do_custom_analysis_cuts:
-            print("Using custom cuts")
+            self.logger.debug("Using custom cuts")
         else:
-            print("No extra selection needed since we are doing std analysis")
+            self.logger.debug("No extra selection needed since we are doing std analysis")
 
         # Load potential custom cuts
         self.load_cuts()

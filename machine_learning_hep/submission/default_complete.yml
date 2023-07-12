@@ -60,7 +60,7 @@ analysis:
   # Do only merged (false)
   doperperiod: false
   data:
-    histomass: false # processer: process_histomass
+    histomass: true # processer: process_histomass
     dojetsystematics: false # analyzer: jetsystematics
   mc:
     histomass: false # processer: process_histomass

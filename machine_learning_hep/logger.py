@@ -123,5 +123,5 @@ def get_logger():
     """
     Get the global logger for this package and set handler together with formatters.
     """
-    configure_logger(False, None)
+    # configure_logger(False, None)
     return logging.getLogger("MachinelearningHEP")
