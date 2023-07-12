@@ -467,7 +467,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
             if not delete_dirlist(dirresultsmc + dirresultsdata):
                 print("Error: Failed to complete cleaning.")
 
-    print("Done")
+    logger.info("Done")
 
 def load_config(user_path: str, default_path=None) -> dict:
     """
