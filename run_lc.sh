@@ -1,6 +1,6 @@
-rm -rf /home/jklein/data/test/lc/pkl
-rm -rf  /home/jklein/data/test/lc/pklsk
-rm -rf  /home/jklein/data/test/lc/pp_data_evttot
+# rm -rf /home/jklein/data/test/lc/pkl
+# rm -rf  /home/jklein/data/test/lc/pklsk
+# rm -rf  /home/jklein/data/test/lc/pp_data_evttot
 rm -rf  /home/jklein/data/test/lc/pklskml
 rm -rf  /home/jklein/data/test/lc/resultsMBjetvspt
 rm -rf  /home/jklein/data/test/lc/resultsMBjetvspt

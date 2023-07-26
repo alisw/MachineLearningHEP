@@ -341,8 +341,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
             keys = rfile.keys()
             for (idx, key) in enumerate(keys):
                 # TODO: remove, only for faster debugging
-                if idx > 100:
-                    break
 
                 if not (df_key := re.match('^DF_(\d+);', key)):
                     continue
@@ -601,6 +599,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
 
     def parallelizer(self, function, argument_list, maxperchunk):
+        # TODO: consider feeding jobs to avoid idling
         chunks = [argument_list[x:x+maxperchunk] \
                   for x in range(0, len(argument_list), maxperchunk)]
         for chunk in chunks:
