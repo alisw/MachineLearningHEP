@@ -5,12 +5,14 @@ on:
         branches:
             - master
             - ml-dev
+            - run3
         paths:
             - "**.py"
     push:
         branches:
             - master
             - ml-dev
+            - run3
         paths:
             - "**.py"
 

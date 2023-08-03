@@ -5,12 +5,14 @@ on:
         branches:
               - master
               - ml-dev
+              - run3
         paths:
             - "**.py"
     push:
         branches:
               - master
               - ml-dev
+              - run3
         paths:
             - "**.py"
 
@@ -21,7 +23,7 @@ jobs:
       max-parallel: 6
       matrix:
         os: [ubuntu-latest, macOS-latest]
-        python-version: [3.6]
+        python-version: [3.9]
         #test-tool: [pylint, flake8, pytest]
         test-tool: [pylint, pytest]
 
