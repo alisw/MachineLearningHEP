@@ -29,12 +29,20 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
 
     def process_histomass_single(self, index):
         self.logger.info('processing histomass single')
+
         myfile = TFile.Open(self.l_histomass[index], "recreate")
+        myfile.cd()
 
         dfevtorig = pickle.load(openfile(self.l_evtorig[index], "rb"))
         dfevtevtsel = dfevtorig.query(self.s_evtsel)
         neventsafterevtsel = len(dfevtevtsel)
         histonorm = TH1F("histonorm", "histonorm", 1, 0, 1)
         histonorm.SetBinContent(1, neventsafterevtsel)
-        myfile.cd()
         histonorm.Write()
+
+        for ipt in range(self.p_nptfinbins):
+            bin_id = self.bin_matching[ipt]
+            with pickle.load(openfile(self.mptfiles_recosk[bin_id][index], "rb")) as df:
+                h_invmass_all = TH1F(f'hmass_{ipt}', "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+                h_invmass_all.FillN(df.len(), df.inv_mass)
+                h_invmass_all.Write()
