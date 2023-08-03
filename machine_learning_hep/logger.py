@@ -46,16 +46,16 @@ class MLLoggerFormatter(logging.Formatter):
 
     level_map = {
         logging.DEBUG: (None, 'blue', False),
-        logging.INFO: (None, 'black', False),
+        logging.INFO: (None, 'green', False),
         logging.WARNING: (None, 'yellow', False),
-        logging.ERROR: (None, 'red', False),
+        logging.ERROR: (None, 'orange', False),
         logging.CRITICAL: ('red', 'white', True),
     }
     csi = '\x1b['
     reset = '\x1b[0m'
 
     # Define default format string
-    def __init__(self, fmt='%(levelname)s in %(pathname)s:%(lineno)d:\n%(message)s',
+    def __init__(self, fmt='%(levelname)s in %(pathname)s:%(lineno)d:\n ↳ %(message)s',
                  datefmt=None, style='%', color=False):
         logging.Formatter.__init__(self, fmt, datefmt, style)
         self.color = color
@@ -123,5 +123,5 @@ def get_logger():
     """
     Get the global logger for this package and set handler together with formatters.
     """
-    configure_logger(False, None)
+    # configure_logger(False, None)
     return logging.getLogger("MachinelearningHEP")

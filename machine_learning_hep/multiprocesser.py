@@ -19,8 +19,12 @@ import os
 from machine_learning_hep.processer import Processer # pylint: disable=unused-import
 from machine_learning_hep.utilities import merge_method, mergerootfiles, get_timestamp_string
 from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
+from machine_learning_hep.logger import get_logger
+
 class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-statements
     species = "multiprocesser"
+    logger = get_logger()
+
     def __init__(self, case, proc_class, datap, typean, run_param, mcordata):
         self.case = case
         self.datap = datap
@@ -174,6 +178,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
             if self.p_useperiod[indexp] == 1:
                 self.process_listsample[indexp].process_histomass()
         tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/mass/{get_timestamp_string()}/"
+        self.logger.debug('merging all')
         mergerootfiles(self.lper_filemass, self.filemass_mergedall, tmp_merged)
 
     def multi_efficiency(self):

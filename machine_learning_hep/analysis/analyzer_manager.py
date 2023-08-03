@@ -82,7 +82,7 @@ class AnalyzerManager:
         self.is_initialized = True
 
 
-    def analyze(self, *ana_steps):
+    def analyze(self, ana_steps):
         """
         Gives a list of analyzers and analysis steps do each step for each analyzer
         Args:
@@ -96,10 +96,8 @@ class AnalyzerManager:
 
         self.initialize()
 
-        self.logger.info("Run all registered analyzers of type %s for following analysis steps",
-                         self.ana_class.__name__)
-        for step in ana_steps:
-            print(f"  -> {step}")
+        self.logger.info("Run all registered analyzers of type %s for following analysis steps: %s",
+                         self.ana_class.__name__, ana_steps)
 
         # Collect potentially failed systematic steps
         failed_steps = []
