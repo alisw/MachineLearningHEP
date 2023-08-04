@@ -42,13 +42,14 @@ from machine_learning_hep.config import update_config
 from  machine_learning_hep.utilities import checkmakedirlist, checkmakedir
 from  machine_learning_hep.utilities import checkdirlist, checkdir, delete_dirlist
 from  machine_learning_hep.logger import configure_logger, get_logger
-from machine_learning_hep.optimiser import Optimiser
 
 from machine_learning_hep.analysis.analyzer_manager import AnalyzerManager
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.analysis.analyzerdhadrons import AnalyzerDhadrons
 from machine_learning_hep.analysis.analyzerdhadrons_mult import AnalyzerDhadrons_mult
 from machine_learning_hep.analysis.analyzer_jet import AnalyzerJet
+from machine_learning_hep.analysis.analyzer_jets import AnalyzerJets
+from machine_learning_hep.processer_jet import ProcesserJets
 
 from machine_learning_hep.analysis.systematics import SystematicsMLWP
 
@@ -130,6 +131,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     dofeeddown = data_config["analysis"]["mc"]["feeddown"]
     dounfolding = data_config["analysis"]["mc"]["dounfolding"]
     dojetsystematics = data_config["analysis"]["data"]["dojetsystematics"]
+    doqa = data_config["analysis"]["doqa"]
     dofit = data_config["analysis"]["dofit"]
     doeff = data_config["analysis"]["doeff"]
     docross = data_config["analysis"]["docross"]
@@ -296,6 +298,10 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         print("Using new feature for Dhadrons_jet")
         proc_class = ProcesserDhadrons_jet
         ana_class = AnalyzerJet
+    if proc_type == "Jets":
+        print("Using new feature for D0 jets (Run 3)")
+        proc_class = ProcesserJets
+        ana_class = AnalyzerD0jets
 
     mymultiprocessmc = MultiProcesser(case, proc_class, data_param[case], typean, run_param, "mc")
     mymultiprocessdata = MultiProcesser(case, proc_class, data_param[case], typean, run_param,\
@@ -342,6 +348,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         mymultiprocessdata.multi_mergeml_allinone()
 
     if doml is True:
+        from machine_learning_hep.optimiser import Optimiser
         index = 0
         for binmin, binmax in zip(binminarray, binmaxarray):
             myopt = Optimiser(data_param[case], case, typean,
@@ -391,6 +398,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         mymultiprocessdata.multi_mergeapply_allperiods()
     if domergeapplymc is True:
         mymultiprocessmc.multi_mergeapply_allperiods()
+
     if dohistomassmc is True:
         mymultiprocessmc.multi_histomass()
     if dohistomassdata is True:
@@ -412,6 +420,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
 
     # Collect all desired analysis steps
     analyze_steps = []
+    if doqa:
+        analyze_steps.append("qa")
     if dofit is True:
         analyze_steps.append("fit")
     if dosyst is True:
@@ -439,7 +449,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         analyze_steps.append("plottervalidation")
 
     # Now do the analysis
-    ana_mgr.analyze(*analyze_steps)
+    ana_mgr.analyze(analyze_steps)
 
     if do_syst_ml:
         if mltype == "MultiClassification":
@@ -457,7 +467,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
             if not delete_dirlist(dirresultsmc + dirresultsdata):
                 print("Error: Failed to complete cleaning.")
 
-    print("Done")
+    logger.info("Done")
 
 def load_config(user_path: str, default_path=None) -> dict:
     """
