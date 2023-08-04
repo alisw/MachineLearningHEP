@@ -12,10 +12,10 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
+from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
+import pickle
 from machine_learning_hep.processer import Processer
 from machine_learning_hep.utilities import openfile, selectdfrunlist
-from ROOT import TFile, TH1F, TH2F
-import pickle
 
 class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instance-attributes
     species = "processer"

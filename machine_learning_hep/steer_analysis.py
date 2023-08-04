@@ -48,7 +48,7 @@ from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.analysis.analyzerdhadrons import AnalyzerDhadrons
 from machine_learning_hep.analysis.analyzerdhadrons_mult import AnalyzerDhadrons_mult
 from machine_learning_hep.analysis.analyzer_jet import AnalyzerJet
-from machine_learning_hep.analysis.analyzer_D0jets import AnalyzerD0jets
+from machine_learning_hep.analysis.analyzer_jets import AnalyzerJets
 from machine_learning_hep.processer_jet import ProcesserJets
 
 from machine_learning_hep.analysis.systematics import SystematicsMLWP

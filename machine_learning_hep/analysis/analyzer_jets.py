@@ -12,13 +12,13 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
+import os
+import munch # pylint: disable=import-error, no-name-in-module
+from ROOT import TFile # pylint: disable=import-error, no-name-in-module
+
 from machine_learning_hep.analysis.analyzer import Analyzer
 
-import munch
-from ROOT import TFile, TH1F
-import os
-
-class AnalyzerD0jets(Analyzer):
+class AnalyzerJets(Analyzer):
     species = "analyzer"
 
     def __init__(self, datap, case, typean, period):
@@ -53,5 +53,5 @@ class AnalyzerD0jets(Analyzer):
             histonorm = rfile.Get("histonorm")
             if not histonorm:
                 self.logger.critical('histonorm not found')
-            self.p_nevents = histonorm.GetBinContent(1)
-            self.logger.debug("Number of selected event: %g" % self.p_nevents)
+            p_nevents = histonorm.GetBinContent(1)
+            self.logger.debug(f'Number of selected event: {p_nevents}')

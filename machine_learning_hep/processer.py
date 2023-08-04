@@ -322,17 +322,17 @@ class Processer: # pylint: disable=too-many-instance-attributes
         #         df['df'] = df_no
         #         dfreco = pd.concat([dfreco, df])
 
-        def benchmark(func):
-            def inner(*args, **kwargs):
-                t_start = time.time()
-                ret = func(*args, *kwargs)
-                t_end = time.time()
-                self.logger.info("Delta t = %g", t_end - t_start)
-                return ret
-            return inner
+        # def benchmark(func):
+        #     def inner(*args, **kwargs):
+        #         t_start = time.time()
+        #         ret = func(*args, *kwargs)
+        #         t_end = time.time()
+        #         self.logger.info("Delta t = %g", t_end - t_start)
+        #         return ret
+        #     return inner
 
         with uproot.open(self.l_root[file_index]) as rfile:
-            def read_df(var, tree):                
+            def read_df(var, tree):
                 # return tree.arrays(expressions=var, library="pd")
                 return pd.DataFrame(columns=var, data=tree.arrays(expressions=var, library="np"))
 
@@ -357,7 +357,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     df['df'] = df_no
                     dfevtorig = pd.concat([dfevtorig, df])
                 except Exception as e: # pylint: disable=broad-except
-                    self.logger.critical('Failed to read event tree:', str(e))
+                    self.logger.critical(f'Failed to read event tree: {str(e)}')
                     sys.exit()
 
                 if self.n_treejetreco:
@@ -367,7 +367,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         df['df'] = df_no
                         dfjetreco = pd.concat([dfjetreco, df])
                     except Exception as e: # pylint: disable=broad-except
-                        self.logger.critical('Failed to read jet tree', str(e))
+                        self.logger.critical(f'Failed to read jet tree {str(e)}')
                         sys.exit()
 
                 if self.n_treejetsubreco:
@@ -377,7 +377,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         df['df'] = df_no
                         dfjetsubreco = pd.concat([dfjetsubreco, df])
                     except Exception as e: # pylint: disable=broad-except
-                        self.logger.critical('Failed to read jetsub tree', str(e))
+                        self.logger.critical(f'Failed to read jetsub tree {str(e)}')
                         sys.exit()
 
                 treereco = rfile[f'{key}/{self.n_treereco}']
@@ -386,9 +386,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     df['df'] = df_no
                     dfreco = pd.concat([dfreco, df])
                 except Exception as e: # pylint: disable=broad-except
-                    self.logger.critical('Failed to read candidate tree:', str(e))
+                    self.logger.critical(f'Failed to read candidate tree: {str(e)}')
                     sys.exit()
-                
+
         dfevtorig = selectdfquery(dfevtorig, self.s_cen_unp)
         dfevtorig = dfevtorig.reset_index(drop=True)
         pickle.dump(dfevtorig, openfile(self.l_evtorig[file_index], "wb"), protocol=4)
@@ -495,7 +495,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.logger.debug(f'finished unpacking: {self.l_root[file_index]}')
 
         if self.mcordata == "mc":
-            if (self.n_treejetgen):
+            if self.n_treejetgen:
                 treejetgen = uproot.open(self.l_root[file_index])[self.n_treejetgen]
                 try:
                     dfjetgen = treejetgen.arrays(expressions=self.v_jet, library="pd")
@@ -504,7 +504,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     print('I am sorry, I am dying ...\n \n \n')
                     sys.exit()
 
-            if (self.n_treejetsubgen):
+            if self.n_treejetsubgen:
                 treejetsubgen = uproot.open(self.l_root[file_index])[self.n_treejetsubgen]
                 try:
                     dfjetsubgen = treejetsubgen.arrays(expressions=self.v_jetsub, library="pd")
@@ -513,7 +513,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     print('I am sorry, I am dying ...\n \n \n')
                     sys.exit()
 
-            if (dfjetgen and dfjetsubgen):
+            if dfjetgen and dfjetsubgen:
                 dfjetgen = pd.merge(dfjetgen, dfjetsubgen, on=self.v_jetsubmatch)
 
             treegen = uproot.open(self.l_root[file_index])[self.n_treegen]
