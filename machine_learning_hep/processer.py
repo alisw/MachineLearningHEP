@@ -35,6 +35,7 @@ from machine_learning_hep.utilities import mergerootfiles, count_df_length_pkl
 from machine_learning_hep.utilities import get_timestamp_string
 from machine_learning_hep.io import dump_yaml_from_dict
 from machine_learning_hep.logger import get_logger
+pd.options.mode.chained_assignment = None
 
 class Processer: # pylint: disable=too-many-instance-attributes
     # Class Attribute
@@ -339,8 +340,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
             df_list = []
             # loop over data frames
             keys = rfile.keys()
-            for (idx, key) in enumerate(keys):
-                # TODO: remove, only for faster debugging
+
+            for (idx, key) in enumerate(keys):                
 
                 if not (df_key := re.match('^DF_(\d+);', key)):
                     continue
@@ -444,82 +445,116 @@ class Processer: # pylint: disable=too-many-instance-attributes
         # dfreco[self.v_isstd] = np.array(tag_bit_df(dfreco, self.v_bitvar,
         #                                            self.b_std), dtype=int)
         # dfreco = dfreco.reset_index(drop=True)
-        # if self.mcordata == "mc":
 
-        #     dfreco[self.v_ismcsignal] = np.array(tag_bit_df(dfreco, self.v_bitvar,
-        #                                                     self.b_mcsig), dtype=int)
 
-        #     dfreco[self.v_ismcprompt] = np.array(tag_bit_df(dfreco, self.v_bitvar_origrec,
-        #                                                     self.b_mcsigprompt), dtype=int)
+        if self.mcordata == "mc":
 
-        #     dfreco[self.v_ismcfd] = np.array(tag_bit_df(dfreco, self.v_bitvar_origrec,
-        #                                                 self.b_mcsigfd), dtype=int)
+            dfreco[self.v_ismcsignal] = np.array(tag_bit_df(dfreco, self.v_bitvar,
+                                                            self.b_mcsig), dtype=int)
 
-        #     if self.v_swap:
-        #         length = len(dfreco)
-        #         myList = [None for x in range(length)]
+            dfreco[self.v_ismcprompt] = np.array(tag_bit_df(dfreco, self.v_bitvar_origrec,
+                                                            self.b_mcsigprompt), dtype=int)
 
-        #         for index in range(length):
-        #             candtype = dfreco[self.v_candtype][index]
-        #             swap = dfreco[self.v_swap][index]
-        #             if (candtype == (swap+1)):
-        #                 myList[index]=1
-        #             else:
-        #                 myList[index]=0
+            dfreco[self.v_ismcfd] = np.array(tag_bit_df(dfreco, self.v_bitvar_origrec,
+                                                        self.b_mcsigfd), dtype=int)
 
-        #         for index in range(length):
-        #             signalbit = dfreco[self.v_ismcsignal][index]
-        #             if (myList[index] == 1 and signalbit == 1):
-        #                 dfreco[self.v_ismcsignal][index] = 1
-        #             else:
-        #                 dfreco[self.v_ismcsignal][index] = 0
+            if self.v_swap:
+                length = len(dfreco)
+                myList = [None for x in range(length)]
 
-        #         for index in range(length):
-        #             promptbit = dfreco[self.v_ismcprompt][index]
-        #             if (myList[index] == 1 and promptbit == 1):
-        #                 dfreco[self.v_ismcprompt][index] = 1
-        #             else:
-        #                 dfreco[self.v_ismcprompt][index] = 0
+                for index in range(length):
+                    candtype = dfreco[self.v_candtype][index]
+                    swap = dfreco[self.v_swap][index]
+                    if (candtype == (swap+1)):
+                        myList[index]=1
+                    else:
+                        myList[index]=0
 
-        #         for index in range(length):
-        #             fdbit = dfreco[self.v_ismcfd][index]
-        #             if (myList[index] == 1 and fdbit == 1):
-        #                 dfreco[self.v_ismcfd][index] = 1
-        #             else:
-        #                 dfreco[self.v_ismcfd][index] = 0
+                for index in range(length):
+                    signalbit = dfreco[self.v_ismcsignal][index]
+                    if (myList[index] == 1 and signalbit == 1):
+                        dfreco[self.v_ismcsignal][index] = 1
+                    else:
+                        dfreco[self.v_ismcsignal][index] = 0
 
-        #     dfreco[self.v_ismcbkg] = np.array(tag_bit_df(dfreco, self.v_bitvar,
-        #                                                  self.b_mcbkg), dtype=int)
+                for index in range(length):
+                    promptbit = dfreco[self.v_ismcprompt][index]
+                    if (myList[index] == 1 and promptbit == 1):
+                        dfreco[self.v_ismcprompt][index] = 1
+                    else:
+                        dfreco[self.v_ismcprompt][index] = 0
+
+                for index in range(length):
+                    fdbit = dfreco[self.v_ismcfd][index]
+                    if (myList[index] == 1 and fdbit == 1):
+                        dfreco[self.v_ismcfd][index] = 1
+                    else:
+                        dfreco[self.v_ismcfd][index] = 0
+
+            dfreco[self.v_ismcbkg] = np.array(tag_bit_df(dfreco, self.v_bitvar,
+                                                         self.b_mcbkg), dtype=int)
 
         pickle.dump(dfreco, openfile(self.l_reco[file_index], "wb"), protocol=4)
         self.logger.debug(f'finished unpacking: {self.l_root[file_index]}')
 
         if self.mcordata == "mc":
-            if self.n_treejetgen:
-                treejetgen = uproot.open(self.l_root[file_index])[self.n_treejetgen]
-                try:
-                    dfjetgen = treejetgen.arrays(expressions=self.v_jet, library="pd")
-                except Exception as e: # pylint: disable=broad-except
-                    print('Missing variable in the jet tree')
-                    print('I am sorry, I am dying ...\n \n \n')
-                    sys.exit()
+            dfgen = None
+            dfjetgen = None
+            dfjetsubgen = None
 
-            if self.n_treejetsubgen:
-                treejetsubgen = uproot.open(self.l_root[file_index])[self.n_treejetsubgen]
-                try:
-                    dfjetsubgen = treejetsubgen.arrays(expressions=self.v_jetsub, library="pd")
-                except Exception as e: # pylint: disable=broad-except
-                    print('Missing variable in the jets tree')
-                    print('I am sorry, I am dying ...\n \n \n')
-                    sys.exit()
+            with uproot.open(self.l_root[file_index]) as rfile:
+                df_list = []
+                # loop over data frames
+                keys = rfile.keys()
 
-            if dfjetgen and dfjetsubgen:
-                dfjetgen = pd.merge(dfjetgen, dfjetsubgen, on=self.v_jetsubmatch)
+                for (idx, key) in enumerate(keys):
+                    if idx>20:
+                        break
 
-            treegen = uproot.open(self.l_root[file_index])[self.n_treegen]
-            dfgen = treegen.arrays(expressions=self.v_gen, library="pd")
-            dfgen = pd.merge(dfgen, dfevtorig, on=self.v_evtmatch)
+                    if not (df_key := re.match('^DF_(\d+);', key)):
+                        continue
+
+                    if (df_no := df_key.group(1)) in df_list:
+                        print(f'warning: multiple versions of DF {df_no}')
+                        continue
+                    # print(f'processing DF {df_no} - {idx} / {len(keys)}')
+                    df_list.append(df_no)
+
+                    treegen = rfile[f'{key}/{self.n_treegen}']
+                    try:
+                        df = read_df(self.v_gen, treegen)
+                        df['df'] = df_no
+                        dfgen = pd.concat([dfgen, df])
+                    except Exception as e: # pylint: disable=broad-except
+                        print('Missing variable in the candidate root tree:', str(e))
+                        print('I am sorry, I am dying ...\n \n \n')
+                        sys.exit()
+
+                    if self.n_treejetgen:
+                        treejetgen = rfile[f'{key}/{self.n_treejetgen}']
+                        try:
+                            df = read_df(self.v_jet, treejetgen)
+                            df['df'] = df_no
+                            dfjetgen = pd.concat([dfjetgen, df])
+                        except Exception as e: # pylint: disable=broad-except
+                            print('Missing variable in the candidate root tree:', str(e))
+                            print('I am sorry, I am dying ...\n \n \n')
+                            sys.exit()
+
+                    if self.n_treejetsubgen:
+                     treejetsubgen = rfile[f'{key}/{self.n_treejetsubgen}']
+                     try:
+                         df = read_df(self.v_jetsub, treejetsubgen)
+                         df['df'] = df_no
+                         dfjetsubgen = pd.concat([dfjetsubgen, df])
+                     except Exception as e: # pylint: disable=broad-except
+                         print('Missing variable in the candidate root tree:', str(e))
+                         print('I am sorry, I am dying ...\n \n \n')
+                         sys.exit()
+
+            #  dfgen = pd.merge(dfgen, dfevtorig, on=self.v_evtmatch) #TO BE FIXED
             dfgen = selectdfquery(dfgen, self.s_gen_unp)
+
             dfgen[self.v_isstd] = np.array(tag_bit_df(dfgen, self.v_bitvar,
                                                       self.b_std), dtype=int)
             dfgen[self.v_ismcsignal] = np.array(tag_bit_df(dfgen, self.v_bitvar,
