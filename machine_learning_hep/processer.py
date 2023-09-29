@@ -541,15 +541,15 @@ class Processer: # pylint: disable=too-many-instance-attributes
                             sys.exit()
 
                     if self.n_treejetsubgen:
-                     treejetsubgen = rfile[f'{key}/{self.n_treejetsubgen}']
-                     try:
-                         df = read_df(self.v_jetsub, treejetsubgen)
-                         df['df'] = df_no
-                         dfjetsubgen = pd.concat([dfjetsubgen, df])
-                     except Exception as e: # pylint: disable=broad-except
-                         print('Missing variable in the candidate root tree:', str(e))
-                         print('I am sorry, I am dying ...\n \n \n')
-                         sys.exit()
+                        treejetsubgen = rfile[f'{key}/{self.n_treejetsubgen}']
+                        try:
+                            df = read_df(self.v_jetsub, treejetsubgen)
+                            df['df'] = df_no
+                            dfjetsubgen = pd.concat([dfjetsubgen, df])
+                        except Exception as e: # pylint: disable=broad-except
+                            print('Missing variable in the candidate root tree:', str(e))
+                            print('I am sorry, I am dying ...\n \n \n')
+                            sys.exit()
 
             dfgen = pd.merge(dfgen, dfevtorig, on=self.v_evtmatch_mc) #TO BE TESTED
             dfgen = selectdfquery(dfgen, self.s_gen_unp)
