@@ -145,6 +145,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.v_evt = datap["variables"]["var_evt"][self.mcordata]
         self.v_gen = datap["variables"]["var_gen"]
         self.v_evtmatch = datap["variables"]["var_evt_match"]
+        self.v_evtmatch_mc = datap["variables"]["var_evt_match_mc"]
         self.v_jetmatch = datap["variables"].get("var_jet_match", None)
         self.v_jetsubmatch = datap["variables"].get("var_jetsub_match", None)
         self.v_bitvar = datap["bitmap_sel"]["var_name"]
@@ -508,8 +509,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 keys = rfile.keys()
 
                 for (idx, key) in enumerate(keys):
-                    if idx>20:
-                        break
 
                     if not (df_key := re.match('^DF_(\d+);', key)):
                         continue
@@ -552,7 +551,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                          print('I am sorry, I am dying ...\n \n \n')
                          sys.exit()
 
-            #  dfgen = pd.merge(dfgen, dfevtorig, on=self.v_evtmatch) #TO BE FIXED
+            dfgen = pd.merge(dfgen, dfevtorig, on=self.v_evtmatch_mc) #TO BE TESTED
             dfgen = selectdfquery(dfgen, self.s_gen_unp)
 
             dfgen[self.v_isstd] = np.array(tag_bit_df(dfgen, self.v_bitvar,

@@ -64,6 +64,7 @@ LcpKpi:
        mc:   [fIndexCollisions, fIsEventReject, fNumContrib]
     var_gen: [fIndexCollisions, fPt, fY, fFlagMc, fOriginMcGen]
     var_evt_match: [df, fIndexCollisions]
+    var_evt_match_mc: [df, fIndexMcCollisions]
     var_training: [[fImpactParameter0, fImpactParameter1, fImpactParameter2, fPtProng0, fPtProng1, fPtProng2],
                    [fImpactParameter0, fImpactParameter1, fImpactParameter2, fPtProng0, fPtProng1, fPtProng2],
                    [fImpactParameter0, fImpactParameter1, fImpactParameter2, fPtProng0, fPtProng1, fPtProng2],
@@ -292,16 +293,16 @@ LcpKpi:
             /data2/MLhep/prod_LHC22b1b_MC/period_80/pklmc,
             /data2/MLhep/prod_LHC22b1b_MC/period_81/pklmc,
             /data2/MLhep/prod_LHC22b1b_MC/period_82/pklmc] #list of periods
-      pkl_skimmed: [/data2/MLhep/prod_LHC22b1b_MC/perdiod_73/pklskmc,
-                    /data2/MLhep/prod_LHC22b1b_MC/perdiod_74/pklskmc,
-                    /data2/MLhep/prod_LHC22b1b_MC/perdiod_75/pklskmc,
-                    /data2/MLhep/prod_LHC22b1b_MC/perdiod_76/pklskmc,
-                    /data2/MLhep/prod_LHC22b1b_MC/perdiod_77/pklskmc,
-                    /data2/MLhep/prod_LHC22b1b_MC/perdiod_78/pklskmc,
-                    /data2/MLhep/prod_LHC22b1b_MC/perdiod_79/pklskmc,
-                    /data2/MLhep/prod_LHC22b1b_MC/perdiod_80/pklskmc,
-                    /data2/MLhep/prod_LHC22b1b_MC/perdiod_81/pklskmc,
-                    /data2/MLhep/prod_LHC22b1b_MC/perdiod_82/pklskmc] #list of periods
+      pkl_skimmed: [/data2/MLhep/prod_LHC22b1b_MC/period_73/pklskmc,
+                    /data2/MLhep/prod_LHC22b1b_MC/period_74/pklskmc,
+                    /data2/MLhep/prod_LHC22b1b_MC/period_75/pklskmc,
+                    /data2/MLhep/prod_LHC22b1b_MC/period_76/pklskmc,
+                    /data2/MLhep/prod_LHC22b1b_MC/period_77/pklskmc,
+                    /data2/MLhep/prod_LHC22b1b_MC/period_78/pklskmc,
+                    /data2/MLhep/prod_LHC22b1b_MC/period_79/pklskmc,
+                    /data2/MLhep/prod_LHC22b1b_MC/period_80/pklskmc,
+                    /data2/MLhep/prod_LHC22b1b_MC/period_81/pklskmc,
+                    /data2/MLhep/prod_LHC22b1b_MC/period_82/pklskmc] #list of periods
       pkl_skimmed_merge_for_ml: [/data2/MLhep/prod_LHC22b1b_MC/period_73/pklskmlmc,
                                  /data2/MLhep/prod_LHC22b1b_MC/period_74/pklskmlmc,
                                  /data2/MLhep/prod_LHC22b1b_MC/period_75/pklskmlmc,
@@ -407,7 +408,7 @@ LcpKpi:
                         /data2/MLhep/prod_LHC22b1b_MC/period_79/skpkldecmc,
                         /data2/MLhep/prod_LHC22b1b_MC/period_80/skpkldecmc,
                         /data2/MLhep/prod_LHC22b1b_MC/period_81/skpkldecmc,
-                        /data2/MLhep/prod_LHC22b1b_MC/period_82/skpkldecmc,] #list of periods
+                        /data2/MLhep/prod_LHC22b1b_MC/period_82/skpkldecmc] #list of periods
       pkl_skimmed_decmerged: [/data2/MLhep/prod_LHC22b1b_MC/period_73/skpkldecmcmerged,
                               /data2/MLhep/prod_LHC22b1b_MC/period_74/skpkldecmcmerged,
                               /data2/MLhep/prod_LHC22b1b_MC/period_75/skpkldecmcmerged,
@@ -426,9 +427,9 @@ LcpKpi:
                      xgboost_classifierLcpKpi_dfselection_fPt_8.0_12.0.sav,
                      xgboost_classifierLcpKpi_dfselection_fPt_12.0_24.0.sav]
     probcutpresel:
-      data: [0., 0., 0., 0., 0., 0.] #list of nbins
-      mc: [0., 0., 0., 0., 0., 0.] #list of nbins
-    probcutoptimal: [0., 0., 0., 0., 0., 0.] #list of nbins
+      data: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1] #list of nbins
+      mc: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1] #list of nbins
+    probcutoptimal: [0.3, 0.3, 0.3, 0.3, 0.3, 0.3] #list of nbins
 
   analysis:
     indexhptspectrum: -1 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
@@ -447,7 +448,7 @@ LcpKpi:
       sel_binmax2: [2,4,6,8,12,24] #list of nbins
       var_binning2: null
       triggerbit: ''
-      use_cuts: True
+      use_cuts: False
       cuts:
        # - "fImpactParameter0>0.0001 and fImpactParameter1>0.0001 and fImpactParameter2>0.0001"
        # - "fImpactParameter0>0.0001 and fImpactParameter1>0.0001 and fImpactParameter2>0.0001"
