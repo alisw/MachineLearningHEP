@@ -304,7 +304,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             # loop over data frames
             keys = rfile.keys()
 
-            for (key) in enumerate(keys):
+            for key in enumerate(keys):
 
                 if not (df_key := re.match('^DF_(\d+);', key)):
                     continue
@@ -470,7 +470,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 # loop over data frames
                 keys = rfile.keys()
 
-                for (key) in enumerate(keys):
+                for key in enumerate(keys):
 
                     if not (df_key := re.match('^DF_(\d+);', key)):
                         continue
