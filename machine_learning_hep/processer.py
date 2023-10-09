@@ -22,12 +22,12 @@ import pickle
 import os
 import random as rd
 import re
-import time
+#import time
 import uproot
 import pandas as pd
 import numpy as np
 from machine_learning_hep.selectionutils import selectfidacc
-from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
+from machine_learning_hep.bitwise import tag_bit_df #, filter_bit_df
 from machine_learning_hep.utilities import selectdfquery, merge_method, mask_df
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
@@ -43,7 +43,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
     logger = get_logger()
 
     # Initializer / Instance Attributes
-    # pylint: disable=too-many-statements, too-many-arguments, considering-using-f-string
+    # pylint: disable=too-many-statements, too-many-arguments, consider-using-f-string
     def __init__(self, case, datap, run_param, mcordata, p_maxfiles, # pylint: disable=too-many-branches
                  d_root, d_pkl, d_pklsk, d_pkl_ml, p_period, i_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
@@ -306,7 +306,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
             for (_, key) in enumerate(keys):
 
-                if not (df_key := re.match('^DF_(\d+);', key)):
+                if not (df_key := re.match('^DF_(\\d+);', key)):
                     continue
 
                 if (df_no := df_key.group(1)) in df_list:
@@ -367,8 +367,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             dfreco = pd.merge(dfjetreco, dfreco, on=self.v_jetmatch)
 
         dfreco = selectdfquery(dfreco, self.s_reco_unp)
-        # TODO: check how to handle indices here, check if this works with cuts
-        # TODO: probably not compatible with reset_index
+
         if 'fIndexCollisions' not in dfevt.columns:
             dfevt.rename_axis('fIndexCollisions', inplace=True)
         dfreco = pd.merge(dfreco, dfevt, on=self.v_evtmatch)
@@ -472,7 +471,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
                 for (_, key) in enumerate(keys):
 
-                    if not (df_key := re.match('^DF_(\d+);', key)):
+                    if not (df_key := re.match('^DF_(\\d+);', key)):
                         continue
 
                     if (df_no := df_key.group(1)) in df_list:
@@ -595,7 +594,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
 
     def parallelizer(self, function, argument_list, maxperchunk):
-        # TODO: consider feeding jobs to avoid idling
         chunks = [argument_list[x:x+maxperchunk] \
                   for x in range(0, len(argument_list), maxperchunk)]
         for chunk in chunks:
