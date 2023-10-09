@@ -598,7 +598,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                   for x in range(0, len(argument_list), maxperchunk)]
         for chunk in chunks:
             self.logger.debug("Processing new chunk of size = %i", maxperchunk)
-            pool = mp.Pool(self.p_maxprocess)
+            pool = mp.Pool(self.p_maxprocess) # pylint: disable=consider-using-with
             _ = [pool.apply_async(function, args=chunk[i],
                                   error_callback=self.callback) for i in range(len(chunk))]
             pool.close()
