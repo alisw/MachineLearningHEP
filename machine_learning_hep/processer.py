@@ -43,7 +43,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
     logger = get_logger()
 
     # Initializer / Instance Attributes
-    # pylint: disable=too-many-statements, too-many-arguments
+    # pylint: disable=too-many-statements, too-many-arguments, considering-using-f-string
     def __init__(self, case, datap, run_param, mcordata, p_maxfiles, # pylint: disable=too-many-branches
                  d_root, d_pkl, d_pklsk, d_pkl_ml, p_period, i_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
@@ -289,7 +289,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.do_custom_analysis_cuts = datap["analysis"][self.typean].get("use_cuts", False)
 
     def unpack(self, file_index):
-        self.logger.info(f'unpacking: {self.l_root[file_index]}')
+        self.logger.info('unpacking: %s', self.l_root[file_index])
         dfevtorig = None
         dfreco = None
         dfjetreco = None
@@ -304,7 +304,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             # loop over data frames
             keys = rfile.keys()
 
-            for key in enumerate(keys):
+            for (_, key) in enumerate(keys):
 
                 if not (df_key := re.match('^DF_(\d+);', key)):
                     continue
@@ -321,7 +321,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     df['df'] = df_no
                     dfevtorig = pd.concat([dfevtorig, df])
                 except Exception as e: # pylint: disable=broad-except
-                    self.logger.critical(f'Failed to read event tree: {str(e)}')
+                    self.logger.critical('Failed to read event tree: %s', str(e))
                     sys.exit()
 
                 if self.n_treejetreco:
@@ -331,7 +331,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         df['df'] = df_no
                         dfjetreco = pd.concat([dfjetreco, df])
                     except Exception as e: # pylint: disable=broad-except
-                        self.logger.critical(f'Failed to read jet tree {str(e)}')
+                        self.logger.critical('Failed to read jet tree %s', str(e))
                         sys.exit()
 
                 if self.n_treejetsubreco:
@@ -341,7 +341,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         df['df'] = df_no
                         dfjetsubreco = pd.concat([dfjetsubreco, df])
                     except Exception as e: # pylint: disable=broad-except
-                        self.logger.critical(f'Failed to read jetsub tree {str(e)}')
+                        self.logger.critical('Failed to read jetsub tree %s', str(e))
                         sys.exit()
 
                 treereco = rfile[f'{key}/{self.n_treereco}']
@@ -350,7 +350,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     df['df'] = df_no
                     dfreco = pd.concat([dfreco, df])
                 except Exception as e: # pylint: disable=broad-except
-                    self.logger.critical(f'Failed to read candidate tree: {str(e)}')
+                    self.logger.critical('Failed to read candidate tree: %s', str(e))
                     sys.exit()
 
         dfevtorig = selectdfquery(dfevtorig, self.s_cen_unp)
@@ -458,7 +458,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                                          self.b_mcbkg), dtype=int)
 
         pickle.dump(dfreco, openfile(self.l_reco[file_index], "wb"), protocol=4)
-        self.logger.debug(f'finished unpacking: {self.l_root[file_index]}')
+        self.logger.debug('finished unpacking: %s', self.l_root[file_index])
 
         if self.mcordata == "mc":
             dfgen = None
@@ -470,7 +470,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 # loop over data frames
                 keys = rfile.keys()
 
-                for key in enumerate(keys):
+                for (_, key) in enumerate(keys):
 
                     if not (df_key := re.match('^DF_(\d+);', key)):
                         continue
