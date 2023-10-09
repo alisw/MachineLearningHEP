@@ -288,7 +288,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         # Flag if they should be used
         self.do_custom_analysis_cuts = datap["analysis"][self.typean].get("use_cuts", False)
 
-    def unpack(self, file_index):
+    def unpack(self, file_index):  # pylint: disable=too-many-branches
         self.logger.info('unpacking: %s', self.l_root[file_index])
         dfevtorig = None
         dfreco = None
@@ -559,7 +559,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                             protocol=4)
 
     def applymodel(self, file_index):
-        from machine_learning_hep.models import apply # pylint: disable=import-error
+        from machine_learning_hep.models import apply # pylint: disable=import-error, import-outside-toplevel
         for ipt in range(self.p_nptbins):
             if os.path.exists(self.mptfiles_recoskmldec[ipt][file_index]):
                 if os.stat(self.mptfiles_recoskmldec[ipt][file_index]).st_size != 0:
