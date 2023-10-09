@@ -295,44 +295,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         dfjetreco = None
         dfjetsubreco = None
 
-        # import ROOT
-        # with ROOT.TFile(self.l_root[file_index]) as rfile:
-        #     df_list = []
-        #     keys = rfile.GetListOfKeys()
-
-        #     for idx, key in enumerate(keys):
-        #         key = key.GetName()
-        #         print(key)
-
-        #         if not (df_key := re.match('^DF_(\d+)', key)):
-        #             continue
-
-        #         if (df_no := df_key.group(1)) in df_list:
-        #             self.logger.warning(f'multiple versions of DF {df_no}')
-        #             continue
-        #         self.logger.info(f'processing DF {df_no} - {idx} / {len(keys)}')
-        #         df_list.append(df_no)
-
-        #         print(f'reading rdf with key {key}')
-        #         rdf = ROOT.RDataFrame(f'{key}/{self.n_treeevt}', rfile)
-        #         df = pd.DataFrame(columns=self.v_evt, data=rdf.AsNumpy(columns=self.v_evt))
-        #         df['df'] = df_no
-        #         dfevtorig = pd.concat([dfevtorig, df])
-
-        #         rdf = ROOT.RDataFrame(f'{key}/{self.n_treereco}', rfile)
-        #         df = pd.DataFrame(columns=self.v_all, data=rdf.AsNumpy(columns=self.v_all))
-        #         df['df'] = df_no
-        #         dfreco = pd.concat([dfreco, df])
-
-        # def benchmark(func):
-        #     def inner(*args, **kwargs):
-        #         t_start = time.time()
-        #         ret = func(*args, *kwargs)
-        #         t_end = time.time()
-        #         self.logger.info("Delta t = %g", t_end - t_start)
-        #         return ret
-        #     return inner
-
         with uproot.open(self.l_root[file_index]) as rfile:
             def read_df(var, tree):
                 # return tree.arrays(expressions=var, library="pd")
@@ -342,7 +304,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             # loop over data frames
             keys = rfile.keys()
 
-            for (idx, key) in enumerate(keys):
+            for (key) in enumerate(keys):
 
                 if not (df_key := re.match('^DF_(\d+);', key)):
                     continue
@@ -466,7 +428,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 for index in range(length):
                     candtype = dfreco[self.v_candtype][index]
                     swap = dfreco[self.v_swap][index]
-                    if (candtype == (swap+1)):
+                    if candtype == (swap+1):
                         myList[index]=1
                     else:
                         myList[index]=0
@@ -508,7 +470,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 # loop over data frames
                 keys = rfile.keys()
 
-                for (idx, key) in enumerate(keys):
+                for (key) in enumerate(keys):
 
                     if not (df_key := re.match('^DF_(\d+);', key)):
                         continue
@@ -566,7 +528,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                                         self.b_mcbkg), dtype=int)
             dfgen = dfgen.reset_index(drop=True)
 
-            if (dfjetgen):
+            if dfjetgen:
                 dfgen = pd.merge(dfjetgen, dfgen, left_on=self.v_jetmatch, right_on='fGlobalIndex')
 
             pickle.dump(dfgen, openfile(self.l_gen[file_index], "wb"), protocol=4)
