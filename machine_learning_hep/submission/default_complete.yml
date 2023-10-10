@@ -4,22 +4,22 @@ download:
     activate: false
 conversion: # pkl
   mc:
-    activate: false
+    activate: true
   data:
     activate: false
 skimming: # pkl_skimmed (pklsk), pkl_evtcounter_all
   mc:
-    activate: false
+    activate: true
   data:
     activate: false
 merging: # pkl_skimmed_merge_for_ml (pklskml)
   mc:
-    activate: false
+    activate: true
   data:
     activate: false
 mergingperiods: # pkl_skimmed_merge_for_ml_all
   mc:
-    activate: false
+    activate: true
   data:
     activate: false
 
@@ -64,11 +64,12 @@ analysis:
     dojetsystematics: false # analyzer: jetsystematics
   mc:
     histomass: true # processer: process_histomass
-    efficiency: true # processer: process_efficiency
-    efficiency_resp: true # analyzer: efficiency
-    response: true # processer: process_response
-    feeddown: true # analyzer: feeddown
-    dounfolding: true # analyzer: unfolding, unfolding_closure
+    efficiency: false # processer: process_efficiency
+    efficiency_resp: false # analyzer: efficiency
+    response: false # processer: process_response
+    feeddown: false # analyzer: feeddown
+    dounfolding: false # analyzer: unfolding, unfolding_closure
+  doqa: true
   dofit: false # analyzer: fit
   # Control the yield systematic uncertainty
   dosyst: false # analyzer: yield_syst
