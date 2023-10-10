@@ -22,12 +22,12 @@ import pickle
 import os
 import random as rd
 import re
-import time
+#import time
 import uproot
 import pandas as pd
 import numpy as np
 from machine_learning_hep.selectionutils import selectfidacc
-from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
+from machine_learning_hep.bitwise import tag_bit_df #, filter_bit_df
 from machine_learning_hep.utilities import selectdfquery, merge_method, mask_df
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
@@ -35,6 +35,7 @@ from machine_learning_hep.utilities import mergerootfiles, count_df_length_pkl
 from machine_learning_hep.utilities import get_timestamp_string
 from machine_learning_hep.io import dump_yaml_from_dict
 from machine_learning_hep.logger import get_logger
+pd.options.mode.chained_assignment = None
 
 class Processer: # pylint: disable=too-many-instance-attributes
     # Class Attribute
@@ -42,7 +43,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
     logger = get_logger()
 
     # Initializer / Instance Attributes
-    # pylint: disable=too-many-statements, too-many-arguments
+    # pylint: disable=too-many-statements, too-many-arguments, consider-using-f-string
     def __init__(self, case, datap, run_param, mcordata, p_maxfiles, # pylint: disable=too-many-branches
                  d_root, d_pkl, d_pklsk, d_pkl_ml, p_period, i_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
@@ -144,6 +145,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.v_evt = datap["variables"]["var_evt"][self.mcordata]
         self.v_gen = datap["variables"]["var_gen"]
         self.v_evtmatch = datap["variables"]["var_evt_match"]
+        self.v_evtmatch_mc = datap["variables"]["var_evt_match_mc"]
         self.v_jetmatch = datap["variables"].get("var_jet_match", None)
         self.v_jetsubmatch = datap["variables"].get("var_jetsub_match", None)
         self.v_bitvar = datap["bitmap_sel"]["var_name"]
@@ -286,50 +288,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
         # Flag if they should be used
         self.do_custom_analysis_cuts = datap["analysis"][self.typean].get("use_cuts", False)
 
-    def unpack(self, file_index):
-        self.logger.info(f'unpacking: {self.l_root[file_index]}')
+    def unpack(self, file_index):  # pylint: disable=too-many-branches
+        self.logger.info('unpacking: %s', self.l_root[file_index])
         dfevtorig = None
         dfreco = None
         dfjetreco = None
         dfjetsubreco = None
-
-        # import ROOT
-        # with ROOT.TFile(self.l_root[file_index]) as rfile:
-        #     df_list = []
-        #     keys = rfile.GetListOfKeys()
-
-        #     for idx, key in enumerate(keys):
-        #         key = key.GetName()
-        #         print(key)
-
-        #         if not (df_key := re.match('^DF_(\d+)', key)):
-        #             continue
-
-        #         if (df_no := df_key.group(1)) in df_list:
-        #             self.logger.warning(f'multiple versions of DF {df_no}')
-        #             continue
-        #         self.logger.info(f'processing DF {df_no} - {idx} / {len(keys)}')
-        #         df_list.append(df_no)
-
-        #         print(f'reading rdf with key {key}')
-        #         rdf = ROOT.RDataFrame(f'{key}/{self.n_treeevt}', rfile)
-        #         df = pd.DataFrame(columns=self.v_evt, data=rdf.AsNumpy(columns=self.v_evt))
-        #         df['df'] = df_no
-        #         dfevtorig = pd.concat([dfevtorig, df])
-
-        #         rdf = ROOT.RDataFrame(f'{key}/{self.n_treereco}', rfile)
-        #         df = pd.DataFrame(columns=self.v_all, data=rdf.AsNumpy(columns=self.v_all))
-        #         df['df'] = df_no
-        #         dfreco = pd.concat([dfreco, df])
-
-        # def benchmark(func):
-        #     def inner(*args, **kwargs):
-        #         t_start = time.time()
-        #         ret = func(*args, *kwargs)
-        #         t_end = time.time()
-        #         self.logger.info("Delta t = %g", t_end - t_start)
-        #         return ret
-        #     return inner
 
         with uproot.open(self.l_root[file_index]) as rfile:
             def read_df(var, tree):
@@ -339,10 +303,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
             df_list = []
             # loop over data frames
             keys = rfile.keys()
-            for (idx, key) in enumerate(keys):
-                # TODO: remove, only for faster debugging
 
-                if not (df_key := re.match('^DF_(\d+);', key)):
+            for (_, key) in enumerate(keys):
+
+                if not (df_key := re.match('^DF_(\\d+);', key)):
                     continue
 
                 if (df_no := df_key.group(1)) in df_list:
@@ -357,7 +321,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     df['df'] = df_no
                     dfevtorig = pd.concat([dfevtorig, df])
                 except Exception as e: # pylint: disable=broad-except
-                    self.logger.critical(f'Failed to read event tree: {str(e)}')
+                    self.logger.critical('Failed to read event tree: %s', str(e))
                     sys.exit()
 
                 if self.n_treejetreco:
@@ -367,7 +331,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         df['df'] = df_no
                         dfjetreco = pd.concat([dfjetreco, df])
                     except Exception as e: # pylint: disable=broad-except
-                        self.logger.critical(f'Failed to read jet tree {str(e)}')
+                        self.logger.critical('Failed to read jet tree %s', str(e))
                         sys.exit()
 
                 if self.n_treejetsubreco:
@@ -377,7 +341,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         df['df'] = df_no
                         dfjetsubreco = pd.concat([dfjetsubreco, df])
                     except Exception as e: # pylint: disable=broad-except
-                        self.logger.critical(f'Failed to read jetsub tree {str(e)}')
+                        self.logger.critical('Failed to read jetsub tree %s', str(e))
                         sys.exit()
 
                 treereco = rfile[f'{key}/{self.n_treereco}']
@@ -386,7 +350,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     df['df'] = df_no
                     dfreco = pd.concat([dfreco, df])
                 except Exception as e: # pylint: disable=broad-except
-                    self.logger.critical(f'Failed to read candidate tree: {str(e)}')
+                    self.logger.critical('Failed to read candidate tree: %s', str(e))
                     sys.exit()
 
         dfevtorig = selectdfquery(dfevtorig, self.s_cen_unp)
@@ -403,8 +367,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             dfreco = pd.merge(dfjetreco, dfreco, on=self.v_jetmatch)
 
         dfreco = selectdfquery(dfreco, self.s_reco_unp)
-        # TODO: check how to handle indices here, check if this works with cuts
-        # TODO: probably not compatible with reset_index
+
         if 'fIndexCollisions' not in dfevt.columns:
             dfevt.rename_axis('fIndexCollisions', inplace=True)
         dfreco = pd.merge(dfreco, dfevt, on=self.v_evtmatch)
@@ -444,82 +407,114 @@ class Processer: # pylint: disable=too-many-instance-attributes
         # dfreco[self.v_isstd] = np.array(tag_bit_df(dfreco, self.v_bitvar,
         #                                            self.b_std), dtype=int)
         # dfreco = dfreco.reset_index(drop=True)
-        # if self.mcordata == "mc":
 
-        #     dfreco[self.v_ismcsignal] = np.array(tag_bit_df(dfreco, self.v_bitvar,
-        #                                                     self.b_mcsig), dtype=int)
-
-        #     dfreco[self.v_ismcprompt] = np.array(tag_bit_df(dfreco, self.v_bitvar_origrec,
-        #                                                     self.b_mcsigprompt), dtype=int)
-
-        #     dfreco[self.v_ismcfd] = np.array(tag_bit_df(dfreco, self.v_bitvar_origrec,
-        #                                                 self.b_mcsigfd), dtype=int)
-
-        #     if self.v_swap:
-        #         length = len(dfreco)
-        #         myList = [None for x in range(length)]
-
-        #         for index in range(length):
-        #             candtype = dfreco[self.v_candtype][index]
-        #             swap = dfreco[self.v_swap][index]
-        #             if (candtype == (swap+1)):
-        #                 myList[index]=1
-        #             else:
-        #                 myList[index]=0
-
-        #         for index in range(length):
-        #             signalbit = dfreco[self.v_ismcsignal][index]
-        #             if (myList[index] == 1 and signalbit == 1):
-        #                 dfreco[self.v_ismcsignal][index] = 1
-        #             else:
-        #                 dfreco[self.v_ismcsignal][index] = 0
-
-        #         for index in range(length):
-        #             promptbit = dfreco[self.v_ismcprompt][index]
-        #             if (myList[index] == 1 and promptbit == 1):
-        #                 dfreco[self.v_ismcprompt][index] = 1
-        #             else:
-        #                 dfreco[self.v_ismcprompt][index] = 0
-
-        #         for index in range(length):
-        #             fdbit = dfreco[self.v_ismcfd][index]
-        #             if (myList[index] == 1 and fdbit == 1):
-        #                 dfreco[self.v_ismcfd][index] = 1
-        #             else:
-        #                 dfreco[self.v_ismcfd][index] = 0
-
-        #     dfreco[self.v_ismcbkg] = np.array(tag_bit_df(dfreco, self.v_bitvar,
-        #                                                  self.b_mcbkg), dtype=int)
-
-        pickle.dump(dfreco, openfile(self.l_reco[file_index], "wb"), protocol=4)
-        self.logger.debug(f'finished unpacking: {self.l_root[file_index]}')
 
         if self.mcordata == "mc":
-            if self.n_treejetgen:
-                treejetgen = uproot.open(self.l_root[file_index])[self.n_treejetgen]
-                try:
-                    dfjetgen = treejetgen.arrays(expressions=self.v_jet, library="pd")
-                except Exception as e: # pylint: disable=broad-except
-                    print('Missing variable in the jet tree')
-                    print('I am sorry, I am dying ...\n \n \n')
-                    sys.exit()
 
-            if self.n_treejetsubgen:
-                treejetsubgen = uproot.open(self.l_root[file_index])[self.n_treejetsubgen]
-                try:
-                    dfjetsubgen = treejetsubgen.arrays(expressions=self.v_jetsub, library="pd")
-                except Exception as e: # pylint: disable=broad-except
-                    print('Missing variable in the jets tree')
-                    print('I am sorry, I am dying ...\n \n \n')
-                    sys.exit()
+            dfreco[self.v_ismcsignal] = np.array(tag_bit_df(dfreco, self.v_bitvar,
+                                                            self.b_mcsig), dtype=int)
 
-            if dfjetgen and dfjetsubgen:
-                dfjetgen = pd.merge(dfjetgen, dfjetsubgen, on=self.v_jetsubmatch)
+            dfreco[self.v_ismcprompt] = np.array(tag_bit_df(dfreco, self.v_bitvar_origrec,
+                                                            self.b_mcsigprompt), dtype=int)
 
-            treegen = uproot.open(self.l_root[file_index])[self.n_treegen]
-            dfgen = treegen.arrays(expressions=self.v_gen, library="pd")
-            dfgen = pd.merge(dfgen, dfevtorig, on=self.v_evtmatch)
+            dfreco[self.v_ismcfd] = np.array(tag_bit_df(dfreco, self.v_bitvar_origrec,
+                                                        self.b_mcsigfd), dtype=int)
+
+            if self.v_swap:
+                length = len(dfreco)
+                myList = [None for x in range(length)]
+
+                for index in range(length):
+                    candtype = dfreco[self.v_candtype][index]
+                    swap = dfreco[self.v_swap][index]
+                    if candtype == (swap+1):
+                        myList[index]=1
+                    else:
+                        myList[index]=0
+
+                for index in range(length):
+                    signalbit = dfreco[self.v_ismcsignal][index]
+                    if (myList[index] == 1 and signalbit == 1):
+                        dfreco[self.v_ismcsignal][index] = 1
+                    else:
+                        dfreco[self.v_ismcsignal][index] = 0
+
+                for index in range(length):
+                    promptbit = dfreco[self.v_ismcprompt][index]
+                    if (myList[index] == 1 and promptbit == 1):
+                        dfreco[self.v_ismcprompt][index] = 1
+                    else:
+                        dfreco[self.v_ismcprompt][index] = 0
+
+                for index in range(length):
+                    fdbit = dfreco[self.v_ismcfd][index]
+                    if (myList[index] == 1 and fdbit == 1):
+                        dfreco[self.v_ismcfd][index] = 1
+                    else:
+                        dfreco[self.v_ismcfd][index] = 0
+
+            dfreco[self.v_ismcbkg] = np.array(tag_bit_df(dfreco, self.v_bitvar,
+                                                         self.b_mcbkg), dtype=int)
+
+        pickle.dump(dfreco, openfile(self.l_reco[file_index], "wb"), protocol=4)
+        self.logger.debug('finished unpacking: %s', self.l_root[file_index])
+
+        if self.mcordata == "mc":
+            dfgen = None
+            dfjetgen = None
+            dfjetsubgen = None
+
+            with uproot.open(self.l_root[file_index]) as rfile:
+                df_list = []
+                # loop over data frames
+                keys = rfile.keys()
+
+                for (_, key) in enumerate(keys):
+
+                    if not (df_key := re.match('^DF_(\\d+);', key)):
+                        continue
+
+                    if (df_no := df_key.group(1)) in df_list:
+                        print(f'warning: multiple versions of DF {df_no}')
+                        continue
+                    # print(f'processing DF {df_no} - {idx} / {len(keys)}')
+                    df_list.append(df_no)
+
+                    treegen = rfile[f'{key}/{self.n_treegen}']
+                    try:
+                        df = read_df(self.v_gen, treegen)
+                        df['df'] = df_no
+                        dfgen = pd.concat([dfgen, df])
+                    except Exception as e: # pylint: disable=broad-except
+                        print('Missing variable in the candidate root tree:', str(e))
+                        print('I am sorry, I am dying ...\n \n \n')
+                        sys.exit()
+
+                    if self.n_treejetgen:
+                        treejetgen = rfile[f'{key}/{self.n_treejetgen}']
+                        try:
+                            df = read_df(self.v_jet, treejetgen)
+                            df['df'] = df_no
+                            dfjetgen = pd.concat([dfjetgen, df])
+                        except Exception as e: # pylint: disable=broad-except
+                            print('Missing variable in the candidate root tree:', str(e))
+                            print('I am sorry, I am dying ...\n \n \n')
+                            sys.exit()
+
+                    if self.n_treejetsubgen:
+                        treejetsubgen = rfile[f'{key}/{self.n_treejetsubgen}']
+                        try:
+                            df = read_df(self.v_jetsub, treejetsubgen)
+                            df['df'] = df_no
+                            dfjetsubgen = pd.concat([dfjetsubgen, df])
+                        except Exception as e: # pylint: disable=broad-except
+                            print('Missing variable in the candidate root tree:', str(e))
+                            print('I am sorry, I am dying ...\n \n \n')
+                            sys.exit()
+
+            dfgen = pd.merge(dfgen, dfevtorig, on=self.v_evtmatch_mc) #TO BE TESTED
             dfgen = selectdfquery(dfgen, self.s_gen_unp)
+
             dfgen[self.v_isstd] = np.array(tag_bit_df(dfgen, self.v_bitvar,
                                                       self.b_std), dtype=int)
             dfgen[self.v_ismcsignal] = np.array(tag_bit_df(dfgen, self.v_bitvar,
@@ -532,7 +527,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                                         self.b_mcbkg), dtype=int)
             dfgen = dfgen.reset_index(drop=True)
 
-            if (dfjetgen):
+            if dfjetgen:
                 dfgen = pd.merge(dfjetgen, dfgen, left_on=self.v_jetmatch, right_on='fGlobalIndex')
 
             pickle.dump(dfgen, openfile(self.l_gen[file_index], "wb"), protocol=4)
@@ -564,7 +559,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                             protocol=4)
 
     def applymodel(self, file_index):
-        from machine_learning_hep.models import apply # pylint: disable=import-error
+        from machine_learning_hep.models import apply # pylint: disable=import-error, import-outside-toplevel
         for ipt in range(self.p_nptbins):
             if os.path.exists(self.mptfiles_recoskmldec[ipt][file_index]):
                 if os.stat(self.mptfiles_recoskmldec[ipt][file_index]).st_size != 0:
@@ -599,12 +594,11 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
 
     def parallelizer(self, function, argument_list, maxperchunk):
-        # TODO: consider feeding jobs to avoid idling
         chunks = [argument_list[x:x+maxperchunk] \
                   for x in range(0, len(argument_list), maxperchunk)]
         for chunk in chunks:
             self.logger.debug("Processing new chunk of size = %i", maxperchunk)
-            pool = mp.Pool(self.p_maxprocess)
+            pool = mp.Pool(self.p_maxprocess) # pylint: disable=consider-using-with
             _ = [pool.apply_async(function, args=chunk[i],
                                   error_callback=self.callback) for i in range(len(chunk))]
             pool.close()
