@@ -85,7 +85,7 @@ Tubes==0.2.1
 Twisted==22.10.0
 typing-extensions==4.5.0
 uproot==5.0.4
-urllib3==1.26.15
+urllib3==1.26.18
 Werkzeug==2.2.3
 wrapt==1.15.0
 xgboost==1.7.4
