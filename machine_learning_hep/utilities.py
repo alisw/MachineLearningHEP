@@ -38,7 +38,8 @@ from ROOT import kFullCircle, kFullSquare, kFullDiamond, kFullCross, kFullStar, 
 from ROOT import kFullFourTrianglesX, kFullDoubleDiamond, kFullFourTrianglesPlus, kFullCrossX # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.selectionutils import select_runs
 
-# pylint: disable=line-too-long, consider-using-f-string
+# pylint: disable=line-too-long, consider-using-f-string, too-many-lines
+# pylint: disable=unspecified-encoding, consider-using-generator, invalid-name, import-outside-toplevel
 def openfile(filename, attr):
     """
     Open file with different compression types
@@ -135,7 +136,7 @@ def list_folders(main_dir, filenameinput, maxfiles, select=None):
     if not os.path.isdir(main_dir):
         print("the input directory =", main_dir, "does not exist")
     list_subdir0 = os.listdir(main_dir)
-    listfolders = list()
+    listfolders = []
     for subdir0 in list_subdir0: # pylint: disable=too-many-nested-blocks
         subdir0full = os.path.join(main_dir, subdir0)
         if os.path.isdir(subdir0full):
@@ -326,7 +327,7 @@ def parallelizer(function, argument_list, maxperchunk, max_n_procs=2):
               for x in range(0, len(argument_list), maxperchunk)]
     for chunk in chunks:
         print("Processing new chunck size=", maxperchunk)
-        pool = mp.Pool(max_n_procs)
+        pool = mp.Pool(max_n_procs) # pylint: disable=consider-using-with
         _ = [pool.apply_async(function, args=chunk[i]) for i in range(len(chunk))]
         pool.close()
         pool.join()
