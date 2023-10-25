@@ -21,7 +21,7 @@ import sys
 import subprocess
 import argparse
 from os.path import exists
-import shap
+import shap # pylint: disable=unused-import
 import yaml
 from pkg_resources import resource_stream
 
@@ -303,7 +303,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     if proc_type == "Jets":
         print("Using new feature for D0 jets (Run 3)")
         proc_class = ProcesserJets
-        ana_class = AnalyzerD0jets
+        ana_class = AnalyzerJets
 
     mymultiprocessmc = MultiProcesser(case, proc_class, data_param[case], typean, run_param, "mc")
     mymultiprocessdata = MultiProcesser(case, proc_class, data_param[case], typean, run_param,\
@@ -350,7 +350,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         mymultiprocessdata.multi_mergeml_allinone()
 
     if doml is True:
-        from machine_learning_hep.optimiser import Optimiser
+        from machine_learning_hep.optimiser import Optimiser # pylint: disable=import-outside-toplevel
         index = 0
         for binmin, binmax in zip(binminarray, binmaxarray):
             myopt = Optimiser(data_param[case], case, typean,
@@ -416,7 +416,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     analyze_steps = []
     if efficiency_resp is True:
         analyze_steps.append("efficiency_inclusive")
-        ana_mgr.analyze(*analyze_steps)
+        ana_mgr.analyze(*analyze_steps) # pylint: disable=no-value-for-parameter
     if doresponse is True:
         mymultiprocessmc.multi_response()
 
@@ -488,7 +488,7 @@ def load_config(user_path: str, default_path=None) -> dict:
     if user_path:
         if not exists(user_path):
             get_logger().fatal("The file %s does not exist", user_path)
-        stream = open(user_path)
+        with open(user_path, encoding="utf-8") as stream
     else:
         stream = resource_stream(default_path[0], default_path[1])
     return yaml.safe_load(stream)

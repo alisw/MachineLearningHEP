@@ -78,23 +78,29 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.lptper_genml = [[os.path.join(self.d_prefix, direc, self.lpt_gensk[ipt]) \
                               for direc in self.dlper_pklml] \
                               for ipt in range(self.p_nptbins)]
-        self.lpt_recoml_mergedallp = [os.path.join(self.d_prefix, self.d_pklml_mergedallp, self.lpt_recosk[ipt]) \
-                                    for ipt in range(self.p_nptbins)]
-        self.lpt_genml_mergedallp = [os.path.join(self.d_prefix, self.d_pklml_mergedallp, self.lpt_gensk[ipt]) \
-                                    for ipt in range(self.p_nptbins)]
-        self.f_evtml_count = os.path.join(self.d_prefix, self.d_pklml_mergedallp, self.n_evt_count_ml)
+        self.lpt_recoml_mergedallp = \
+                [os.path.join(self.d_prefix, self.d_pklml_mergedallp, self.lpt_recosk[ipt]) \
+                 for ipt in range(self.p_nptbins)]
+        self.lpt_genml_mergedallp = \
+                [os.path.join(self.d_prefix, self.d_pklml_mergedallp, self.lpt_gensk[ipt]) \
+                 for ipt in range(self.p_nptbins)]
+        self.f_evtml_count = \
+                 os.path.join(self.d_prefix, self.d_pklml_mergedallp, self.n_evt_count_ml)
         self.lper_evt = [os.path.join(self.d_prefix, direc, self.n_evt) for direc in self.dlper_pkl]
-        self.lper_evtorig = [os.path.join(self.d_prefix, direc, self.n_evtorig) for direc in self.dlper_pkl]
+        self.lper_evtorig = \
+                [os.path.join(self.d_prefix, direc, self.n_evtorig) for direc in self.dlper_pkl]
 
         self.dlper_reco_modapp = datap["mlapplication"][self.mcordata]["pkl_skimmed_dec"]
         self.dlper_reco_modappmerged = \
                 datap["mlapplication"][self.mcordata]["pkl_skimmed_decmerged"]
         self.d_results = datap["analysis"][self.typean][self.mcordata]["results"]
-        self.d_resultsallp = self.d_prefix + datap["analysis"][self.typean][self.mcordata]["resultsallp"]
+        self.d_resultsallp = \
+                 self.d_prefix + datap["analysis"][self.typean][self.mcordata]["resultsallp"]
         self.lpt_probcutpre = datap["mlapplication"]["probcutpresel"]
         self.lpt_probcut = datap["mlapplication"]["probcutoptimal"]
         self.f_evt_mergedallp = os.path.join(self.d_prefix, self.d_pklevt_mergedallp, self.n_evt)
-        self.f_evtorig_mergedallp = os.path.join(self.d_prefix, self.d_pklevt_mergedallp, self.n_evtorig)
+        self.f_evtorig_mergedallp = \
+                 os.path.join(self.d_prefix, self.d_pklevt_mergedallp, self.n_evtorig)
 
         self.lper_runlistrigger = datap["analysis"][self.typean][self.mcordata]["runselection"]
 
@@ -105,13 +111,14 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
 
         self.process_listsample = []
         for indexp in range(self.prodnumber):
-            if (self.d_prefix):
+            if self.d_prefix:
                 self.dlper_root[indexp] = self.d_prefix + self.dlper_root[indexp]
                 self.dlper_pkl[indexp] = self.d_prefix + self.dlper_pkl[indexp]
                 self.dlper_pklsk[indexp] = self.d_prefix + self.dlper_pklsk[indexp]
                 self.dlper_pklml[indexp] = self.d_prefix + self.dlper_pklml[indexp]
                 self.dlper_reco_modapp[indexp] = self.d_prefix + self.dlper_reco_modapp[indexp]
-                self.dlper_reco_modappmerged[indexp] = self.d_prefix + self.dlper_reco_modappmerged[indexp]
+                self.dlper_reco_modappmerged[indexp] = \
+                        self.d_prefix + self.dlper_reco_modappmerged[indexp]
                 self.d_results[indexp] = self.d_prefix + self.d_results[indexp]
             if (self.select_period[indexp]>0):
                 myprocess = proc_class(self.case, self.datap, self.run_param, self.mcordata,

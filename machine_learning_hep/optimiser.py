@@ -44,8 +44,8 @@ from machine_learning_hep.utilities import checkdirlist, checkmakedirlist
 from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
 
 
-# pylint: disable=too-many-instance-attributes, too-many-statements
-class Optimiser: # pylint: disable=too-many-public-methods
+# pylint: disable=too-many-instance-attributes, too-many-statements, unbalanced-tuple-unpacking
+class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-string
     #Class Attribute
     species = "optimiser"
 
