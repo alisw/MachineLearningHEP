@@ -86,7 +86,7 @@ Twisted==22.10.0
 typing-extensions==4.5.0
 uproot==5.0.4
 urllib3==1.26.15
-Werkzeug==2.2.3
+Werkzeug==3.0.1
 wrapt==1.15.0
 xgboost==1.7.4
 zipp==3.15.0
