@@ -33,6 +33,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.mcordata = mcordata
         self.prodnumber = len(datap["multi"][self.mcordata]["unmerged_tree_dir"])
         self.p_period = datap["multi"][self.mcordata]["period"]
+        self.select_period = datap["multi"][mcordata]["select_period"]
         self.p_seedmerge = datap["multi"][self.mcordata]["seedmerge"]
         self.p_fracmerge = datap["multi"][self.mcordata]["fracmerge"]
         self.p_maxfiles = datap["multi"][self.mcordata]["maxfiles"]
@@ -45,6 +46,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.p_dofullevtmerge = datap["dofullevtmerge"]
 
         #directories
+        self.d_prefix = datap["multi"][self.mcordata].get("prefix_dir", "")
         self.dlper_root = datap["multi"][self.mcordata]["unmerged_tree_dir"]
         self.dlper_pkl = datap["multi"][self.mcordata]["pkl"]
         self.dlper_pklsk = datap["multi"][self.mcordata]["pkl_skimmed"]
@@ -68,31 +70,31 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.lpt_gensk = [self.n_gen.replace(".pkl", "_%s%d_%d.pkl" % \
                           (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
                           for i in range(self.p_nptbins)]
-        self.lptper_recoml = [[os.path.join(direc, self.lpt_recosk[ipt]) \
+        self.lptper_recoml = [[os.path.join(self.d_prefix, direc, self.lpt_recosk[ipt]) \
                                for direc in self.dlper_pklml] \
                                for ipt in range(self.p_nptbins)]
-        self.lper_evt_count_ml = [os.path.join(direc, self.n_evt_count_ml) \
+        self.lper_evt_count_ml = [os.path.join(self.d_prefix, direc, self.n_evt_count_ml) \
                 for direc in self.dlper_pklml]
-        self.lptper_genml = [[os.path.join(direc, self.lpt_gensk[ipt]) \
+        self.lptper_genml = [[os.path.join(self.d_prefix, direc, self.lpt_gensk[ipt]) \
                               for direc in self.dlper_pklml] \
                               for ipt in range(self.p_nptbins)]
-        self.lpt_recoml_mergedallp = [os.path.join(self.d_pklml_mergedallp, self.lpt_recosk[ipt]) \
+        self.lpt_recoml_mergedallp = [os.path.join(self.d_prefix, self.d_pklml_mergedallp, self.lpt_recosk[ipt]) \
                                     for ipt in range(self.p_nptbins)]
-        self.lpt_genml_mergedallp = [os.path.join(self.d_pklml_mergedallp, self.lpt_gensk[ipt]) \
+        self.lpt_genml_mergedallp = [os.path.join(self.d_prefix, self.d_pklml_mergedallp, self.lpt_gensk[ipt]) \
                                     for ipt in range(self.p_nptbins)]
-        self.f_evtml_count = os.path.join(self.d_pklml_mergedallp, self.n_evt_count_ml)
-        self.lper_evt = [os.path.join(direc, self.n_evt) for direc in self.dlper_pkl]
-        self.lper_evtorig = [os.path.join(direc, self.n_evtorig) for direc in self.dlper_pkl]
+        self.f_evtml_count = os.path.join(self.d_prefix, self.d_pklml_mergedallp, self.n_evt_count_ml)
+        self.lper_evt = [os.path.join(self.d_prefix, direc, self.n_evt) for direc in self.dlper_pkl]
+        self.lper_evtorig = [os.path.join(self.d_prefix, direc, self.n_evtorig) for direc in self.dlper_pkl]
 
         self.dlper_reco_modapp = datap["mlapplication"][self.mcordata]["pkl_skimmed_dec"]
         self.dlper_reco_modappmerged = \
                 datap["mlapplication"][self.mcordata]["pkl_skimmed_decmerged"]
         self.d_results = datap["analysis"][self.typean][self.mcordata]["results"]
-        self.d_resulsallp = datap["analysis"][self.typean][self.mcordata]["resultsallp"]
+        self.d_resultsallp = self.d_prefix + datap["analysis"][self.typean][self.mcordata]["resultsallp"]
         self.lpt_probcutpre = datap["mlapplication"]["probcutpresel"]
         self.lpt_probcut = datap["mlapplication"]["probcutoptimal"]
-        self.f_evt_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evt)
-        self.f_evtorig_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evtorig)
+        self.f_evt_mergedallp = os.path.join(self.d_prefix, self.d_pklevt_mergedallp, self.n_evt)
+        self.f_evtorig_mergedallp = os.path.join(self.d_prefix, self.d_pklevt_mergedallp, self.n_evtorig)
 
         self.lper_runlistrigger = datap["analysis"][self.typean][self.mcordata]["runselection"]
 
@@ -103,26 +105,38 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
 
         self.process_listsample = []
         for indexp in range(self.prodnumber):
-            myprocess = proc_class(self.case, self.datap, self.run_param, self.mcordata,
-                                   self.p_maxfiles[indexp], self.dlper_root[indexp],
-                                   self.dlper_pkl[indexp], self.dlper_pklsk[indexp],
-                                   self.dlper_pklml[indexp],
-                                   self.p_period[indexp], indexp, self.p_chunksizeunp[indexp],
-                                   self.p_chunksizeskim[indexp], self.p_nparall,
-                                   self.p_fracmerge[indexp], self.p_seedmerge[indexp],
-                                   self.dlper_reco_modapp[indexp],
-                                   self.dlper_reco_modappmerged[indexp],
-                                   self.d_results[indexp], self.typean,
-                                   self.lper_runlistrigger[indexp], \
-                                   self.dlper_mcreweights[indexp])
-            self.process_listsample.append(myprocess)
+            if (self.d_prefix):
+                self.dlper_root[indexp] = self.d_prefix + self.dlper_root[indexp]
+                self.dlper_pkl[indexp] = self.d_prefix + self.dlper_pkl[indexp]
+                self.dlper_pklsk[indexp] = self.d_prefix + self.dlper_pklsk[indexp]
+                self.dlper_pklml[indexp] = self.d_prefix + self.dlper_pklml[indexp]
+                self.dlper_reco_modapp[indexp] = self.d_prefix + self.dlper_reco_modapp[indexp]
+                self.dlper_reco_modappmerged[indexp] = self.d_prefix + self.dlper_reco_modappmerged[indexp]
+                self.d_results[indexp] = self.d_prefix + self.d_results[indexp]
+            if (self.select_period[indexp]>0):
+                myprocess = proc_class(self.case, self.datap, self.run_param, self.mcordata,
+                                       self.p_maxfiles[indexp], self.dlper_root[indexp],
+                                       self.dlper_pkl[indexp], self.dlper_pklsk[indexp],
+                                       self.dlper_pklml[indexp],
+                                       self.p_period[indexp], indexp, self.p_chunksizeunp[indexp],
+                                       self.p_chunksizeskim[indexp], self.p_nparall,
+                                       self.p_fracmerge[indexp], self.p_seedmerge[indexp],
+                                       self.dlper_reco_modapp[indexp],
+                                       self.dlper_reco_modappmerged[indexp],
+                                       self.d_results[indexp], self.typean,
+                                       self.lper_runlistrigger[indexp], \
+                                       self.dlper_mcreweights[indexp])
+                self.process_listsample.append(myprocess)
+            else:
+                self.logger.info('Period [%s] excluded from the analysis', self.p_period[indexp])
+                continue
 
         self.n_filemass = datap["files_names"]["histofilename"]
         self.n_fileeff = datap["files_names"]["efffilename"]
         self.n_fileresp = datap["files_names"]["respfilename"]
-        self.filemass_mergedall = os.path.join(self.d_resulsallp, self.n_filemass)
-        self.fileeff_mergedall = os.path.join(self.d_resulsallp, self.n_fileeff)
-        self.fileresp_mergedall = os.path.join(self.d_resulsallp, self.n_fileresp)
+        self.filemass_mergedall = os.path.join(self.d_resultsallp, self.n_filemass)
+        self.fileeff_mergedall = os.path.join(self.d_resultsallp, self.n_fileeff)
+        self.fileresp_mergedall = os.path.join(self.d_resultsallp, self.n_fileresp)
 
         self.p_useperiod = datap["analysis"][self.typean]["useperiod"]
         self.lper_filemass = []
@@ -136,28 +150,36 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
                 self.lper_fileresp.append(os.path.join(direc, self.n_fileresp))
 
     def multi_unpack_allperiods(self):
-        for indexp in range(self.prodnumber):
+        for indexp in range(len(self.process_listsample)):
             self.process_listsample[indexp].process_unpack_par()
 
     def multi_skim_allperiods(self):
-        for indexp in range(self.prodnumber):
+        for indexp in range(len(self.process_listsample)):
             self.process_listsample[indexp].process_skim_par()
         if self.p_dofullevtmerge is True:
             merge_method(self.lper_evt, self.f_evt_mergedallp)
             merge_method(self.lper_evtorig, self.f_evtorig_mergedallp)
 
     def multi_mergeml_allperiods(self):
-        for indexp in range(self.prodnumber):
+        for indexp in range(len(self.process_listsample)):
             self.process_listsample[indexp].process_mergeforml()
 
     def multi_mergeml_allinone(self):
         for ipt in range(self.p_nptbins):
+            for indexp in range(self.prodnumber):
+                if (self.select_period[indexp] == 0):
+                    self.lptper_recoml[ipt].remove(self.lptper_recoml[ipt][indexp])
+                    if self.mcordata == "mc":
+                         self.lptper_genml[ipt].remove(self.lptper_genml[ipt][indexp])
             merge_method(self.lptper_recoml[ipt], self.lpt_recoml_mergedallp[ipt])
             if self.mcordata == "mc":
                 merge_method(self.lptper_genml[ipt], self.lpt_genml_mergedallp[ipt])
 
         count_evt = 0
         count_evtorig = 0
+        for indexp in range(self.prodnumber):
+                if (self.select_period[indexp] == 0):
+                    self.lper_evt_count_ml.remove(self.lper_evt_count_ml[indexp])
         for evt_count_file in self.lper_evt_count_ml:
             count_dict = parse_yaml(evt_count_file)
             count_evt += count_dict["evt"]
@@ -166,15 +188,15 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         dump_yaml_from_dict({"evt": count_evt, "evtorig": count_evtorig}, self.f_evtml_count)
 
     def multi_apply_allperiods(self):
-        for indexp in range(self.prodnumber):
+        for indexp in range(len(self.process_listsample)):
             self.process_listsample[indexp].process_applymodel_par()
 
     def multi_mergeapply_allperiods(self):
-        for indexp in range(self.prodnumber):
+        for indexp in range(len(self.process_listsample)):
             self.process_listsample[indexp].process_mergedec()
 
     def multi_histomass(self):
-        for indexp in range(self.prodnumber):
+        for indexp in range(len(self.process_listsample)):
             if self.p_useperiod[indexp] == 1:
                 self.process_listsample[indexp].process_histomass()
         tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/mass/{get_timestamp_string()}/"
@@ -182,7 +204,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         mergerootfiles(self.lper_filemass, self.filemass_mergedall, tmp_merged)
 
     def multi_efficiency(self):
-        for indexp in range(self.prodnumber):
+        for indexp in range(len(self.process_listsample)):
             if self.p_useperiod[indexp] == 1:
                 self.process_listsample[indexp].process_efficiency()
         tmp_merged = \
@@ -191,7 +213,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
 
     def multi_response(self):
         resp_exists = False
-        for indexp in range(self.prodnumber):
+        for indexp in range(len(self.process_listsample)):
             if self.p_useperiod[indexp] == 1:
                 if hasattr(self.process_listsample[indexp], "process_response"):
                     resp_exists = True
@@ -202,5 +224,5 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
             mergerootfiles(self.lper_fileresp, self.fileresp_mergedall, tmp_merged)
 
     def multi_scancuts(self):
-        for indexp in range(self.prodnumber):
+        for indexp in range(len(self.process_listsample)):
             self.process_listsample[indexp].process_scancuts()

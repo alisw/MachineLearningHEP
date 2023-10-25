@@ -56,6 +56,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.case = case
         self.typean = typean
         #directories
+        self.d_prefix = datap["multi"]["data"].get("prefix_dir", "")
         self.d_root = d_root
         self.d_pkl = d_pkl
         self.d_pklsk = d_pklsk
@@ -82,11 +83,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.p_rd_merge = p_rd_merge
         self.period = p_period
         self.i_period = i_period
-        self.select_children = datap["multi"][mcordata].get("select_children", None)
-        if self.select_children:
-            # Make sure we have "<child>/" instead if <child> only. Cause in the latter case
-            # "child_1" might select further children like "child_11"
-            self.select_children = [f"{child}/" for child in self.select_children[i_period]]
+        self.select_period = datap["multi"][mcordata]["select_period"]
+        self.select_jobs = datap["multi"][mcordata].get("select_jobs", None)
+        if self.select_jobs:
+            self.select_jobs = [f"{job}/" for job in self.select_jobs[i_period]]
 
         self.run_param = run_param
         self.p_maxfiles = p_maxfiles
@@ -167,10 +167,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
         #list of files names
         if os.path.isdir(self.d_root):
             self.l_path = list_folders(self.d_root, self.n_root, self.p_maxfiles,
-                                       self.select_children)
+                                       self.select_jobs)
         else:
             self.l_path = list_folders(self.d_pkl, self.n_reco, self.p_maxfiles,
-                                       self.select_children)
+                                       self.select_jobs)
 
         self.l_root = createlist(self.d_root, self.l_path, self.n_root)
         self.l_reco = createlist(self.d_pkl, self.l_path, self.n_reco)
@@ -192,7 +192,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
         self.p_nptfinbins = len(self.lpt_finbinmin)
         self.lpt_model = datap["mlapplication"]["modelsperptbin"]
-        self.dirmodel = datap["ml"]["mlout"]
+        self.dirmodel = self.d_prefix + datap["ml"]["mlout"]
         self.mltype = datap["ml"]["mltype"]
         self.multiclass_labels = datap["ml"].get("multiclass_labels", None)
         self.lpt_model = appendmainfoldertolist(self.dirmodel, self.lpt_model)
@@ -305,7 +305,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
             keys = rfile.keys()
 
             for (_, key) in enumerate(keys):
-
                 if not (df_key := re.match('^DF_(\\d+);', key)):
                     continue
 
@@ -407,7 +406,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         # dfreco[self.v_isstd] = np.array(tag_bit_df(dfreco, self.v_bitvar,
         #                                            self.b_std), dtype=int)
         # dfreco = dfreco.reset_index(drop=True)
-
 
         if self.mcordata == "mc":
 
@@ -627,6 +625,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.parallelizer(self.applymodel, arguments, self.p_chunksizeskim)
 
     def process_mergeforml(self):
+        self.logger.info("doing merging for ml %s %s", self.mcordata, self.period)
         indices_for_evt = []
         for ipt in range(self.p_nptbins):
             nfiles = len(self.mptfiles_recosk[ipt])

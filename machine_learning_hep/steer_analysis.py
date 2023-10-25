@@ -146,11 +146,13 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
 
     dojetstudies = data_config["analysis"]["dojetstudies"]
 
+    dirprefixmc = data_param[case]["multi"]["mc"].get("prefix_dir", "")
     dirpklmc = data_param[case]["multi"]["mc"]["pkl"]
     dirpklevtcounter_allmc = data_param[case]["multi"]["mc"]["pkl_evtcounter_all"]
     dirpklskmc = data_param[case]["multi"]["mc"]["pkl_skimmed"]
     dirpklmlmc = data_param[case]["multi"]["mc"]["pkl_skimmed_merge_for_ml"]
     dirpklmltotmc = data_param[case]["multi"]["mc"]["pkl_skimmed_merge_for_ml_all"]
+    dirprefixdata = data_param[case]["multi"]["data"].get("prefix_dir", "")
     dirpkldata = data_param[case]["multi"]["data"]["pkl"]
     dirpklevtcounter_alldata = data_param[case]["multi"]["data"]["pkl_evtcounter_all"]
     dirpklskdata = data_param[case]["multi"]["data"]["pkl_skimmed"]
@@ -180,108 +182,108 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     #creating folder if not present
     counter = 0
     if doconversionmc is True:
-        counter = counter + checkdirlist(dirpklmc)
+        counter = counter + checkdirlist(dirprefixmc + s for s in dirpklmc)
 
     if doconversiondata is True:
-        counter = counter + checkdirlist(dirpkldata)
+        counter = counter + checkdirlist(dirprefixdata + s for s in dirpkldata)
 
     if doskimmingmc is True:
-        checkdirlist(dirpklskmc)
-        counter = counter + checkdir(dirpklevtcounter_allmc)
+        checkdirlist(dirprefixmc + s for s in dirpklskmc)
+        counter = counter + checkdir(dirprefixmc + dirpklevtcounter_allmc)
 
     if doskimmingdata is True:
-        counter = counter + checkdirlist(dirpklskdata)
-        counter = counter + checkdir(dirpklevtcounter_alldata)
+        counter = counter + checkdirlist(dirprefixdata + s for s in dirpklskdata)
+        counter = counter + checkdir(dirprefixdata + dirpklevtcounter_alldata)
 
     if domergingmc is True:
-        counter = counter + checkdirlist(dirpklmlmc)
+        counter = counter + checkdirlist(dirprefixmc + s for s in dirpklmlmc)
 
     if domergingdata is True:
-        counter = counter + checkdirlist(dirpklmldata)
+        counter = counter + checkdirlist(dirprefixdata + s for s in dirpklmldata)
 
     if domergingperiodsmc is True:
-        counter = counter + checkdir(dirpklmltotmc)
+        counter = counter + checkdir(dirprefixmc + dirpklmltotmc)
 
     if domergingperiodsdata is True:
-        counter = counter + checkdir(dirpklmltotdata)
+        counter = counter + checkdir(dirprefixdata + dirpklmltotdata)
 
     if docontinueapplymc is False:
         if doapplymc is True:
-            counter = counter + checkdirlist(dirpklskdecmc)
+            counter = counter + checkdirlist(dirprefixmc + s for s in dirpklskdecmc)
 
         if domergeapplymc is True:
-            counter = counter + checkdirlist(dirpklskdec_mergedmc)
+            counter = counter + checkdirlist(dirprefixmc + s for s in dirpklskdec_mergedmc)
 
     if docontinueapplydata is False:
         if doapplydata is True:
-            counter = counter + checkdirlist(dirpklskdecdata)
+            counter = counter + checkdirlist(dirprefixdata + s for s in dirpklskdecdata)
 
         if domergeapplydata is True:
-            counter = counter + checkdirlist(dirpklskdec_mergeddata)
+            counter = counter + checkdirlist(dirprefixdata + s for s in dirpklskdec_mergeddata)
 
     if dohistomassmc is True:
-        counter = counter + checkdirlist(dirresultsmc)
-        counter = counter + checkdir(dirresultsmctot)
+        counter = counter + checkdirlist(dirprefixmc + s for s in dirresultsmc)
+        counter = counter + checkdir(dirprefixmc + dirresultsmctot)
 
     if dohistomassdata is True:
-        counter = counter + checkdirlist(dirresultsdata)
-        counter = counter + checkdir(dirresultsdatatot)
+        counter = counter + checkdirlist(dirprefixdata + s for s in dirresultsdata)
+        counter = counter + checkdir(dirprefixdata + dirresultsdatatot)
 
     if counter < 0:
         sys.exit()
     # check and create directories
 
     if doconversionmc is True:
-        checkmakedirlist(dirpklmc)
+        checkmakedirlist(dirprefixmc + s for s in dirpklmc)
 
     if doconversiondata is True:
-        checkmakedirlist(dirpkldata)
+        checkmakedirlist(dirprefixdata + s for s in dirpkldata)
 
     if doskimmingmc is True:
-        checkmakedirlist(dirpklskmc)
-        checkmakedir(dirpklevtcounter_allmc)
+        checkmakedirlist(dirprefixmc + s for s in dirpklskmc)
+        checkmakedir(dirprefixmc + dirpklevtcounter_allmc)
 
     if doskimmingdata is True:
-        checkmakedirlist(dirpklskdata)
-        checkmakedir(dirpklevtcounter_alldata)
+        checkmakedirlist(dirprefixdata + s for s in dirpklskdata)
+        checkmakedir(dirprefixdata + dirpklevtcounter_alldata)
 
     if domergingmc is True:
-        checkmakedirlist(dirpklmlmc)
+        checkmakedirlist(dirprefixmc + s for s in dirpklmlmc)
 
     if domergingdata is True:
-        checkmakedirlist(dirpklmldata)
+        checkmakedirlist(dirprefixdata + s for s in dirpklmldata)
 
     if domergingperiodsmc is True:
-        checkmakedir(dirpklmltotmc)
+        checkmakedir(dirprefixmc + dirpklmltotmc)
 
     if domergingperiodsdata is True:
-        checkmakedir(dirpklmltotdata)
+        checkmakedir(dirprefixdata + dirpklmltotdata)
 
     if doml is True:
-        checkmakedir(mlout)
-        checkmakedir(mlplot)
+        checkmakedir(dirprefixdata + mlout)
+        checkmakedir(dirprefixdata + mlplot)
 
     if docontinueapplymc is False:
         if doapplymc is True:
-            checkmakedirlist(dirpklskdecmc)
+            checkmakedirlist(dirprefixmc + s for s in dirpklskdecmc)
 
         if domergeapplymc is True:
-            checkmakedirlist(dirpklskdec_mergedmc)
+            checkmakedirlist(dirprefixmc + s for s in dirpklskdec_mergedmc)
 
     if docontinueapplydata is False:
         if doapplydata is True:
-            checkmakedirlist(dirpklskdecdata)
+            checkmakedirlist(dirprefixdata + s for s in dirpklskdecdata)
 
         if domergeapplydata is True:
-            checkmakedirlist(dirpklskdec_mergeddata)
+            checkmakedirlist(dirprefixdata + s for s in dirpklskdec_mergeddata)
 
     if dohistomassmc is True:
-        checkmakedirlist(dirresultsmc)
-        checkmakedir(dirresultsmctot)
+        checkmakedirlist(dirprefixmc + s for s in dirresultsmc)
+        checkmakedir(dirprefixmc + dirresultsmctot)
 
     if dohistomassdata is True:
-        checkmakedirlist(dirresultsdata)
-        checkmakedir(dirresultsdatatot)
+        checkmakedirlist(dirprefixdata + s for s in dirresultsdata)
+        checkmakedir(dirprefixdata + dirresultsdatatot)
 
     proc_class = Processer
     ana_class = Analyzer
