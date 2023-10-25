@@ -185,8 +185,8 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         count_evt = 0
         count_evtorig = 0
         for indexp in range(self.prodnumber):
-                if self.select_period[indexp] == 0:
-                    self.lper_evt_count_ml.remove(self.lper_evt_count_ml[indexp])
+            if self.select_period[indexp] == 0:
+                self.lper_evt_count_ml.remove(self.lper_evt_count_ml[indexp])
         for evt_count_file in self.lper_evt_count_ml:
             count_dict = parse_yaml(evt_count_file)
             count_evt += count_dict["evt"]
