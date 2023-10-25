@@ -27,7 +27,7 @@ class Analyzer(WorkflowBase):
         for mcordata in ("mc", "data"):
             prefix_dir = datap["multi"][mcordata].get("prefix_dir", "")
             results_dir = prefix_dir + datap["analysis"][typean][mcordata]["results"][period] \
-                    if period is not None
+                    if period is not None \
                     else prefix_dir + datap["analysis"][typean][mcordata]["resultsallp"]
             if not exists(results_dir):
                 # create otput directories in case they do not exist

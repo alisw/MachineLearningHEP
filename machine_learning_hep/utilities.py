@@ -38,7 +38,7 @@ from ROOT import kFullCircle, kFullSquare, kFullDiamond, kFullCross, kFullStar, 
 from ROOT import kFullFourTrianglesX, kFullDoubleDiamond, kFullFourTrianglesPlus, kFullCrossX # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.selectionutils import select_runs
 
-# pylint: disable=line-too-long, considering-using-f-string
+# pylint: disable=line-too-long, consider-using-f-string
 def openfile(filename, attr):
     """
     Open file with different compression types
