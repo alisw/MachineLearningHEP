@@ -488,7 +488,7 @@ def load_config(user_path: str, default_path=None) -> dict:
     if user_path:
         if not exists(user_path):
             get_logger().fatal("The file %s does not exist", user_path)
-        stream = open(user_path, encoding="utf-8") # pylint: disable=consider-using-with
+        stream = open(user_path) # pylint: disable=consider-using-with, unspecified-encoding
     else:
         stream = resource_stream(default_path[0], default_path[1])
     return yaml.safe_load(stream)

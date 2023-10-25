@@ -157,18 +157,18 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
                 self.lper_fileresp.append(os.path.join(direc, self.n_fileresp))
 
     def multi_unpack_allperiods(self):
-        for indexp, listsample in enumerate(self.process_listsample)):
+        for indexp, listsample in enumerate(self.process_listsample):
             self.process_listsample[indexp].process_unpack_par()
 
     def multi_skim_allperiods(self):
-        for indexp, listsample in enumerate(self.process_listsample)):
+        for indexp, listsample in enumerate(self.process_listsample):
             self.process_listsample[indexp].process_skim_par()
         if self.p_dofullevtmerge is True:
             merge_method(self.lper_evt, self.f_evt_mergedallp)
             merge_method(self.lper_evtorig, self.f_evtorig_mergedallp)
 
     def multi_mergeml_allperiods(self):
-        for indexp, listsample in enumerate(self.process_listsample)):
+        for indexp, listsample in enumerate(self.process_listsample):
             self.process_listsample[indexp].process_mergeforml()
 
     def multi_mergeml_allinone(self):
@@ -195,15 +195,15 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         dump_yaml_from_dict({"evt": count_evt, "evtorig": count_evtorig}, self.f_evtml_count)
 
     def multi_apply_allperiods(self):
-        for indexp, listsample in enumerate(self.process_listsample)):
+        for indexp, listsample in enumerate(self.process_listsample):
             self.process_listsample[indexp].process_applymodel_par()
 
     def multi_mergeapply_allperiods(self):
-        for indexp, listsample in enumerate(self.process_listsample)):
+        for indexp, listsample in enumerate(self.process_listsample):
             self.process_listsample[indexp].process_mergedec()
 
     def multi_histomass(self):
-        for indexp, listsample in enumerate(self.process_listsample)):
+        for indexp, listsample in enumerate(self.process_listsample):
             if self.p_useperiod[indexp] == 1:
                 self.process_listsample[indexp].process_histomass()
         tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/mass/{get_timestamp_string()}/"
@@ -211,7 +211,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         mergerootfiles(self.lper_filemass, self.filemass_mergedall, tmp_merged)
 
     def multi_efficiency(self):
-        for indexp, listsample in enumerate(self.process_listsample)):
+        for indexp, listsample in enumerate(self.process_listsample):
             if self.p_useperiod[indexp] == 1:
                 self.process_listsample[indexp].process_efficiency()
         tmp_merged = \
@@ -220,7 +220,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
 
     def multi_response(self):
         resp_exists = False
-        for indexp, listsample in enumerate(self.process_listsample)):
+        for indexp, listsample in enumerate(self.process_listsample):
             if self.p_useperiod[indexp] == 1:
                 if hasattr(self.process_listsample[indexp], "process_response"):
                     resp_exists = True
@@ -231,5 +231,5 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
             mergerootfiles(self.lper_fileresp, self.fileresp_mergedall, tmp_merged)
 
     def multi_scancuts(self):
-        for indexp, listsample in enumerate(self.process_listsample)):
+        for indexp, listsample in enumerate(self.process_listsample):
             self.process_listsample[indexp].process_scancuts()
