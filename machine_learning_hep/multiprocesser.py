@@ -21,7 +21,7 @@ from machine_learning_hep.utilities import merge_method, mergerootfiles, get_tim
 from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
 from machine_learning_hep.logger import get_logger
 
-class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-statements, consider-using-f-string
+class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-statements, consider-using-f-string, too-many-branches
     species = "multiprocesser"
     logger = get_logger()
 
@@ -59,8 +59,10 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
             self.dlper_pklsk.append(self.d_prefix + s)
         for s in datap["multi"][self.mcordata]["pkl_skimmed_merge_for_ml"]:
             self.dlper_pklml.append(self.d_prefix + s)
-        self.d_pklml_mergedallp = self.d_prefix + datap["multi"][self.mcordata]["pkl_skimmed_merge_for_ml_all"]
-        self.d_pklevt_mergedallp = self.d_prefix + datap["multi"][self.mcordata]["pkl_evtcounter_all"]
+        self.d_pklml_mergedallp = self.d_prefix + \
+            datap["multi"][self.mcordata]["pkl_skimmed_merge_for_ml_all"]
+        self.d_pklevt_mergedallp = self.d_prefix + \
+            datap["multi"][self.mcordata]["pkl_evtcounter_all"]
 
         self.dlper_mcreweights = datap["multi"][self.mcordata]["mcreweights"]
 
@@ -104,7 +106,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
 
         for s in datap["mlapplication"][self.mcordata]["pkl_skimmed_dec"]:
             self.dlper_reco_modapp.append(self.d_prefix + s)
-        for s in datap["mlapplication"][self.mcordata]["pkl_skimmed_decmerged"]: 
+        for s in datap["mlapplication"][self.mcordata]["pkl_skimmed_decmerged"]:
             self.dlper_reco_modappmerged.append(self.d_prefix + s)
         for s in datap["analysis"][self.typean][self.mcordata]["results"]:
             self.d_results.append(self.d_prefix + s)
