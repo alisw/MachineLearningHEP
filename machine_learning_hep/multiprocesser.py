@@ -46,13 +46,21 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.p_dofullevtmerge = datap["dofullevtmerge"]
 
         #directories
+        self.dlper_root = []
+        self.dlper_pkl = []
+        self.dlper_pklsk = []
+        self.dlper_pklml = []
         self.d_prefix = datap["multi"][self.mcordata].get("prefix_dir", "")
-        self.dlper_root = datap["multi"][self.mcordata]["unmerged_tree_dir"]
-        self.dlper_pkl = datap["multi"][self.mcordata]["pkl"]
-        self.dlper_pklsk = datap["multi"][self.mcordata]["pkl_skimmed"]
-        self.dlper_pklml = datap["multi"][self.mcordata]["pkl_skimmed_merge_for_ml"]
-        self.d_pklml_mergedallp = datap["multi"][self.mcordata]["pkl_skimmed_merge_for_ml_all"]
-        self.d_pklevt_mergedallp = datap["multi"][self.mcordata]["pkl_evtcounter_all"]
+        for s in datap["multi"][self.mcordata]["unmerged_tree_dir"]:
+            self.dlper_root.append(self.d_prefix + s)
+        for s in datap["multi"][self.mcordata]["pkl"]:
+            self.dlper_pkl.append(self.d_prefix + s)
+        for s in datap["multi"][self.mcordata]["pkl_skimmed"]:
+            self.dlper_pklsk.append(self.d_prefix + s)
+        for s in datap["multi"][self.mcordata]["pkl_skimmed_merge_for_ml"]:
+            self.dlper_pklml.append(self.d_prefix + s)
+        self.d_pklml_mergedallp = self.d_prefix + datap["multi"][self.mcordata]["pkl_skimmed_merge_for_ml_all"]
+        self.d_pklevt_mergedallp = self.d_prefix + datap["multi"][self.mcordata]["pkl_evtcounter_all"]
 
         self.dlper_mcreweights = datap["multi"][self.mcordata]["mcreweights"]
 
@@ -70,37 +78,43 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.lpt_gensk = [self.n_gen.replace(".pkl", "_%s%d_%d.pkl" % \
                           (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
                           for i in range(self.p_nptbins)]
-        self.lptper_recoml = [[os.path.join(self.d_prefix, direc, self.lpt_recosk[ipt]) \
+        self.lptper_recoml = [[os.path.join(direc, self.lpt_recosk[ipt]) \
                                for direc in self.dlper_pklml] \
                                for ipt in range(self.p_nptbins)]
-        self.lper_evt_count_ml = [os.path.join(self.d_prefix, direc, self.n_evt_count_ml) \
+        self.lper_evt_count_ml = [os.path.join(direc, self.n_evt_count_ml) \
                 for direc in self.dlper_pklml]
-        self.lptper_genml = [[os.path.join(self.d_prefix, direc, self.lpt_gensk[ipt]) \
+        self.lptper_genml = [[os.path.join(direc, self.lpt_gensk[ipt]) \
                               for direc in self.dlper_pklml] \
                               for ipt in range(self.p_nptbins)]
         self.lpt_recoml_mergedallp = \
-                [os.path.join(self.d_prefix, self.d_pklml_mergedallp, self.lpt_recosk[ipt]) \
+                [os.path.join(self.d_pklml_mergedallp, self.lpt_recosk[ipt]) \
                  for ipt in range(self.p_nptbins)]
         self.lpt_genml_mergedallp = \
-                [os.path.join(self.d_prefix, self.d_pklml_mergedallp, self.lpt_gensk[ipt]) \
+                [os.path.join(self.d_pklml_mergedallp, self.lpt_gensk[ipt]) \
                  for ipt in range(self.p_nptbins)]
         self.f_evtml_count = \
-                 os.path.join(self.d_prefix, self.d_pklml_mergedallp, self.n_evt_count_ml)
-        self.lper_evt = [os.path.join(self.d_prefix, direc, self.n_evt) for direc in self.dlper_pkl]
+                 os.path.join(self.d_pklml_mergedallp, self.n_evt_count_ml)
+        self.lper_evt = [os.path.join(direc, self.n_evt) for direc in self.dlper_pkl]
         self.lper_evtorig = \
-                [os.path.join(self.d_prefix, direc, self.n_evtorig) for direc in self.dlper_pkl]
+                [os.path.join(direc, self.n_evtorig) for direc in self.dlper_pkl]
 
-        self.dlper_reco_modapp = datap["mlapplication"][self.mcordata]["pkl_skimmed_dec"]
-        self.dlper_reco_modappmerged = \
-                datap["mlapplication"][self.mcordata]["pkl_skimmed_decmerged"]
-        self.d_results = datap["analysis"][self.typean][self.mcordata]["results"]
+        self.dlper_reco_modapp = []
+        self.dlper_reco_modappmerged = []
+        self.d_results = []
+
+        for s in datap["mlapplication"][self.mcordata]["pkl_skimmed_dec"]:
+            self.dlper_reco_modapp.append(self.d_prefix + s)
+        for s in datap["mlapplication"][self.mcordata]["pkl_skimmed_decmerged"]: 
+            self.dlper_reco_modappmerged.append(self.d_prefix + s)
+        for s in datap["analysis"][self.typean][self.mcordata]["results"]:
+            self.d_results.append(self.d_prefix + s)
         self.d_resultsallp = \
                  self.d_prefix + datap["analysis"][self.typean][self.mcordata]["resultsallp"]
         self.lpt_probcutpre = datap["mlapplication"]["probcutpresel"]
         self.lpt_probcut = datap["mlapplication"]["probcutoptimal"]
-        self.f_evt_mergedallp = os.path.join(self.d_prefix, self.d_pklevt_mergedallp, self.n_evt)
+        self.f_evt_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evt)
         self.f_evtorig_mergedallp = \
-                 os.path.join(self.d_prefix, self.d_pklevt_mergedallp, self.n_evtorig)
+                 os.path.join(self.d_pklevt_mergedallp, self.n_evtorig)
 
         self.lper_runlistrigger = datap["analysis"][self.typean][self.mcordata]["runselection"]
 
@@ -111,15 +125,6 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
 
         self.process_listsample = []
         for indexp in range(self.prodnumber):
-            if self.d_prefix:
-                self.dlper_root[indexp] = self.d_prefix + self.dlper_root[indexp]
-                self.dlper_pkl[indexp] = self.d_prefix + self.dlper_pkl[indexp]
-                self.dlper_pklsk[indexp] = self.d_prefix + self.dlper_pklsk[indexp]
-                self.dlper_pklml[indexp] = self.d_prefix + self.dlper_pklml[indexp]
-                self.dlper_reco_modapp[indexp] = self.d_prefix + self.dlper_reco_modapp[indexp]
-                self.dlper_reco_modappmerged[indexp] = \
-                        self.d_prefix + self.dlper_reco_modappmerged[indexp]
-                self.d_results[indexp] = self.d_prefix + self.d_results[indexp]
             if self.select_period[indexp]>0:
                 myprocess = proc_class(self.case, self.datap, self.run_param, self.mcordata,
                                        self.p_maxfiles[indexp], self.dlper_root[indexp],
