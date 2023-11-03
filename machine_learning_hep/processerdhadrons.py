@@ -19,7 +19,7 @@ import math
 import array
 import pickle
 import numpy as np
-# pylint: disable=import-error, no-name-in-module, consider-using-f-strin
+# pylint: disable=import-error, no-name-in-module, consider-using-f-string
 from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.do_entire_analysis import fill_hist
 from machine_learning_hep.bitwise import tag_bit_df
