@@ -237,8 +237,9 @@ LcpKpi:
     binmax: [2,4,6,8,12,24] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: BinaryClassification
     ncorescrossval: 10
-    mlplot: New/mlplot # to be removed
-    mlout: New/mlout # to be removed
+    prefix_dir_ml: /data2/MLhep/
+    mlplot: mlplot # to be removed
+    mlout: mlout # to be removed
 
     opt:
       isFONLLfromROOT: true
@@ -260,11 +261,13 @@ LcpKpi:
 
   mlapplication:
     data:
+      prefix_dir_res: /data2/MLhep/
       pkl_skimmed_dec: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdata,
                         LHC22pp/MLapplication/prod_LHC22m/skpkldecdata] #list of periods
       pkl_skimmed_decmerged: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdatamerged,
                               LHC22pp/MLapplication/prod_LHC22m/skpkldecdatamerged] #list of periods
     mc:
+      prefix_dir_res: /data2/MLhep/
       pkl_skimmed_dec: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmc] #list of periods
       pkl_skimmed_decmerged: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmcmerged] #list of periods
     modelname: xgboost

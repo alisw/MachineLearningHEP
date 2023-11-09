@@ -40,6 +40,20 @@ from machine_learning_hep.selectionutils import select_runs
 
 # pylint: disable=line-too-long, consider-using-f-string, too-many-lines
 # pylint: disable=unspecified-encoding, consider-using-generator, invalid-name, import-outside-toplevel
+
+def fill_hist(hist, array, weights = 0):
+    assert array.ndim == 1 and weights.ndim == 1, 'fill_hist handles 1d histos only'
+    hist.FillN(len(array), array, weights)
+
+def hist2array(hist):
+    assert hist.GetDimension() == 1
+    return [hist.GetBinContent(x) for x in range(hist.GetNbinsX())]
+
+def array2hist(array, hist):
+    assert array.ndim() == 1 and hist.GetDimension() == array.ndim()
+    for i, x in enumerate(array):
+        hist.SetBinContent(i + 1, x)
+
 def openfile(filename, attr):
     """
     Open file with different compression types

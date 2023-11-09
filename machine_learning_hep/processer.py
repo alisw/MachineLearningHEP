@@ -56,7 +56,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.case = case
         self.typean = typean
         #directories
-        self.d_prefix = datap["multi"]["data"].get("prefix_dir", "")
+        self.d_prefix_ml = datap["ml"].get("prefix_dir_ml", "")
         self.d_root = d_root
         self.d_pkl = d_pkl
         self.d_pklsk = d_pklsk
@@ -192,7 +192,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.lpt_finbinmax = datap["analysis"][self.typean]["sel_an_binmax"]
         self.p_nptfinbins = len(self.lpt_finbinmin)
         self.lpt_model = datap["mlapplication"]["modelsperptbin"]
-        self.dirmodel = self.d_prefix + datap["ml"]["mlout"]
+        self.dirmodel = self.d_prefix_ml + datap["ml"]["mlout"]
         self.mltype = datap["ml"]["mltype"]
         self.multiclass_labels = datap["ml"].get("multiclass_labels", None)
         self.lpt_model = appendmainfoldertolist(self.dirmodel, self.lpt_model)

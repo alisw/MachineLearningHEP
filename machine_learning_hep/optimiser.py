@@ -55,12 +55,13 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.logger = get_logger()
 
         dirprefix = data_param["multi"]["data"].get("prefix_dir", "")
+        dirprefix_ml = data_param["ml"].get("prefix_dir_ml", "")
         dirmcml = dirprefix + data_param["multi"]["mc"]["pkl_skimmed_merge_for_ml_all"]
         dirdataml = dirprefix + data_param["multi"]["data"]["pkl_skimmed_merge_for_ml_all"]
         self.v_bin = data_param["var_binning"]
         #directory
-        self.dirmlout = dirprefix + data_param["ml"]["mlout"]
-        self.dirmlplot = dirprefix + data_param["ml"]["mlplot"]
+        self.dirmlout = dirprefix_ml + data_param["ml"]["mlout"]
+        self.dirmlplot = dirprefix_ml + data_param["ml"]["mlplot"]
 
         # Check here which steps have been done already
         self.steps_done = None

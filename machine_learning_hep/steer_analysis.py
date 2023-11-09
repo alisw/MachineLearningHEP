@@ -146,27 +146,55 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
 
     dojetstudies = data_config["analysis"]["dojetstudies"]
 
+    dirpklmc = []
+    dirpklskmc = []
+    dirpklmlmc = []
     dirprefixmc = data_param[case]["multi"]["mc"].get("prefix_dir", "")
-    dirpklmc = data_param[case]["multi"]["mc"]["pkl"]
-    dirpklevtcounter_allmc = data_param[case]["multi"]["mc"]["pkl_evtcounter_all"]
-    dirpklskmc = data_param[case]["multi"]["mc"]["pkl_skimmed"]
-    dirpklmlmc = data_param[case]["multi"]["mc"]["pkl_skimmed_merge_for_ml"]
-    dirpklmltotmc = data_param[case]["multi"]["mc"]["pkl_skimmed_merge_for_ml_all"]
-    dirprefixdata = data_param[case]["multi"]["data"].get("prefix_dir", "")
-    dirpkldata = data_param[case]["multi"]["data"]["pkl"]
-    dirpklevtcounter_alldata = data_param[case]["multi"]["data"]["pkl_evtcounter_all"]
-    dirpklskdata = data_param[case]["multi"]["data"]["pkl_skimmed"]
-    dirpklmldata = data_param[case]["multi"]["data"]["pkl_skimmed_merge_for_ml"]
-    dirpklmltotdata = data_param[case]["multi"]["data"]["pkl_skimmed_merge_for_ml_all"]
-    dirpklskdecmc = data_param[case]["mlapplication"]["mc"]["pkl_skimmed_dec"]
-    dirpklskdec_mergedmc = data_param[case]["mlapplication"]["mc"]["pkl_skimmed_decmerged"]
-    dirpklskdecdata = data_param[case]["mlapplication"]["data"]["pkl_skimmed_dec"]
-    dirpklskdec_mergeddata = data_param[case]["mlapplication"]["data"]["pkl_skimmed_decmerged"]
+    for s in data_param[case]["multi"]["mc"]["pkl"]:
+        dirpklmc.append(dirprefixmc + s)
+    for s in data_param[case]["multi"]["mc"]["pkl_skimmed"]:
+        dirpklskmc.append(dirprefixmc + s)
+    for s in data_param[case]["multi"]["mc"]["pkl_skimmed_merge_for_ml"]:
+        dirpklmlmc.append(dirprefixmc + s)
+    dirpklevtcounter_allmc = dirprefixmc + data_param[case]["multi"]["mc"]["pkl_evtcounter_all"]
+    dirpklmltotmc = dirprefixmc + data_param[case]["multi"]["mc"]["pkl_skimmed_merge_for_ml_all"]
 
-    dirresultsdata = data_param[case]["analysis"][typean]["data"]["results"]
-    dirresultsmc = data_param[case]["analysis"][typean]["mc"]["results"]
-    dirresultsdatatot = data_param[case]["analysis"][typean]["data"]["resultsallp"]
-    dirresultsmctot = data_param[case]["analysis"][typean]["mc"]["resultsallp"]
+    dirpkldata = []
+    dirpklskdata = []
+    dirpklmldata = []
+    dirprefixdata = data_param[case]["multi"]["data"].get("prefix_dir", "")
+    for s in data_param[case]["multi"]["data"]["pkl"]:
+        dirpkldata.append(dirprefixdata + s)
+    for s in data_param[case]["multi"]["data"]["pkl_skimmed"]:
+        dirpklskdata.append(dirprefixdata + s)
+    for s in data_param[case]["multi"]["data"]["pkl_skimmed_merge_for_ml"]:
+        dirpklmldata.append(dirprefixdata + s)
+    dirpklevtcounter_alldata = dirprefixdata + data_param[case]["multi"]["data"]["pkl_evtcounter_all"]
+    dirpklmltotdata = dirprefixdata + data_param[case]["multi"]["data"]["pkl_skimmed_merge_for_ml_all"]
+
+    dirpklskdecmc = []
+    dirpklskdec_mergedmc = []
+    dirpklskdecdata = []
+    dirpklskdec_mergeddata = []
+    dirprefixmcres = data_param[case]["mlapplication"]["mc"].get("prefix_dir_res", "")
+    for s in data_param[case]["mlapplication"]["mc"]["pkl_skimmed_dec"]:
+        dirpklskdecmc.append(dirprefixmcres + s)
+    for s in data_param[case]["mlapplication"]["mc"]["pkl_skimmed_decmerged"]:
+        dirpklskdec_mergedmc.append(dirprefixmcres + s)
+    dirprefixdatares = data_param[case]["mlapplication"]["data"].get("prefix_dir_res", "")
+    for s in data_param[case]["mlapplication"]["data"]["pkl_skimmed_dec"]:
+        dirpklskdecdata.append(dirprefixdatares + s)
+    for s in data_param[case]["mlapplication"]["data"]["pkl_skimmed_decmerged"]:
+        dirpklskdec_mergeddata.append(dirprefixdatares + s)
+
+    dirresultsdata = []
+    dirresultsmc = []
+    for s in data_param[case]["analysis"][typean]["data"]["results"]:
+        dirresultsdata.append(dirprefixdatares + s)
+    for s in data_param[case]["analysis"][typean]["mc"]["results"]:
+        dirresultsmc.append(dirprefixmcres + s)
+    dirresultsdatatot = dirprefixdatares + data_param[case]["analysis"][typean]["data"]["resultsallp"]
+    dirresultsmctot = dirprefixmcres + data_param[case]["analysis"][typean]["mc"]["resultsallp"]
 
     binminarray = data_param[case]["ml"]["binmin"]
     binmaxarray = data_param[case]["ml"]["binmax"]
@@ -174,116 +202,117 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     mltype = data_param[case]["ml"]["mltype"]
     training_vars = data_param[case]["variables"]["var_training"]
 
-    mlout = data_param[case]["ml"]["mlout"]
-    mlplot = data_param[case]["ml"]["mlplot"]
+    dirprefixml = data_param[case]["ml"].get("prefix_dir_ml", "")
+    mlout = dirprefixml + data_param[case]["ml"]["mlout"]
+    mlplot = dirprefixml + data_param[case]["ml"]["mlplot"]
 
     proc_type = data_param[case]["analysis"][typean]["proc_type"]
 
     #creating folder if not present
     counter = 0
     if doconversionmc is True:
-        counter = counter + checkdirlist(dirprefixmc + s for s in dirpklmc)
+        counter = counter + checkdirlist(dirpklmc)
 
     if doconversiondata is True:
-        counter = counter + checkdirlist(dirprefixdata + s for s in dirpkldata)
+        counter = counter + checkdirlist(dirpkldata)
 
     if doskimmingmc is True:
-        checkdirlist(dirprefixmc + s for s in dirpklskmc)
-        counter = counter + checkdir(dirprefixmc + dirpklevtcounter_allmc)
+        checkdirlist(dirpklskmc)
+        counter = counter + checkdir(dirpklevtcounter_allmc)
 
     if doskimmingdata is True:
-        counter = counter + checkdirlist(dirprefixdata + s for s in dirpklskdata)
-        counter = counter + checkdir(dirprefixdata + dirpklevtcounter_alldata)
+        counter = counter + checkdirlist(dirpklskdata)
+        counter = counter + checkdir(dirpklevtcounter_alldata)
 
     if domergingmc is True:
-        counter = counter + checkdirlist(dirprefixmc + s for s in dirpklmlmc)
+        counter = counter + checkdirlist(dirpklmlmc)
 
     if domergingdata is True:
-        counter = counter + checkdirlist(dirprefixdata + s for s in dirpklmldata)
+        counter = counter + checkdirlist(dirpklmldata)
 
     if domergingperiodsmc is True:
-        counter = counter + checkdir(dirprefixmc + dirpklmltotmc)
+        counter = counter + checkdir(dirpklmltotmc)
 
     if domergingperiodsdata is True:
-        counter = counter + checkdir(dirprefixdata + dirpklmltotdata)
+        counter = counter + checkdir(dirpklmltotdata)
 
     if docontinueapplymc is False:
         if doapplymc is True:
-            counter = counter + checkdirlist(dirprefixmc + s for s in dirpklskdecmc)
+            counter = counter + checkdirlist(dirpklskdecmc)
 
         if domergeapplymc is True:
-            counter = counter + checkdirlist(dirprefixmc + s for s in dirpklskdec_mergedmc)
+            counter = counter + checkdirlist(dirpklskdec_mergedmc)
 
     if docontinueapplydata is False:
         if doapplydata is True:
-            counter = counter + checkdirlist(dirprefixdata + s for s in dirpklskdecdata)
+            counter = counter + checkdirlist(dirpklskdecdata)
 
         if domergeapplydata is True:
-            counter = counter + checkdirlist(dirprefixdata + s for s in dirpklskdec_mergeddata)
+            counter = counter + checkdirlist(dirpklskdec_mergeddata)
 
     if dohistomassmc is True:
-        counter = counter + checkdirlist(dirprefixmc + s for s in dirresultsmc)
-        counter = counter + checkdir(dirprefixmc + dirresultsmctot)
+        counter = counter + checkdirlist(dirresultsmc)
+        counter = counter + checkdir(dirresultsmctot)
 
     if dohistomassdata is True:
-        counter = counter + checkdirlist(dirprefixdata + s for s in dirresultsdata)
-        counter = counter + checkdir(dirprefixdata + dirresultsdatatot)
+        counter = counter + checkdirlist(dirresultsdata)
+        counter = counter + checkdir(dirresultsdatatot)
 
     if counter < 0:
         sys.exit()
     # check and create directories
 
     if doconversionmc is True:
-        checkmakedirlist(dirprefixmc + s for s in dirpklmc)
+        checkmakedirlist(dirpklmc)
 
     if doconversiondata is True:
-        checkmakedirlist(dirprefixdata + s for s in dirpkldata)
+        checkmakedirlist(dirpkldata)
 
     if doskimmingmc is True:
-        checkmakedirlist(dirprefixmc + s for s in dirpklskmc)
-        checkmakedir(dirprefixmc + dirpklevtcounter_allmc)
+        checkmakedirlist(dirpklskmc)
+        checkmakedir(dirpklevtcounter_allmc)
 
     if doskimmingdata is True:
-        checkmakedirlist(dirprefixdata + s for s in dirpklskdata)
-        checkmakedir(dirprefixdata + dirpklevtcounter_alldata)
+        checkmakedirlist(irpklskdata)
+        checkmakedir(dirpklevtcounter_alldata)
 
     if domergingmc is True:
-        checkmakedirlist(dirprefixmc + s for s in dirpklmlmc)
+        checkmakedirlist(dirpklmlmc)
 
     if domergingdata is True:
-        checkmakedirlist(dirprefixdata + s for s in dirpklmldata)
+        checkmakedirlist(dirpklmldata)
 
     if domergingperiodsmc is True:
-        checkmakedir(dirprefixmc + dirpklmltotmc)
+        checkmakedir(dirpklmltotmc)
 
     if domergingperiodsdata is True:
-        checkmakedir(dirprefixdata + dirpklmltotdata)
+        checkmakedir(dirpklmltotdata)
 
     if doml is True:
-        checkmakedir(dirprefixdata + mlout)
-        checkmakedir(dirprefixdata + mlplot)
+        checkmakedir(mlout)
+        checkmakedir(mlplot)
 
     if docontinueapplymc is False:
         if doapplymc is True:
-            checkmakedirlist(dirprefixmc + s for s in dirpklskdecmc)
+            checkmakedirlist(dirpklskdecmc)
 
         if domergeapplymc is True:
-            checkmakedirlist(dirprefixmc + s for s in dirpklskdec_mergedmc)
+            checkmakedirlist(dirpklskdec_mergedmc)
 
     if docontinueapplydata is False:
         if doapplydata is True:
-            checkmakedirlist(dirprefixdata + s for s in dirpklskdecdata)
+            checkmakedirlist(dirpklskdecdata)
 
         if domergeapplydata is True:
-            checkmakedirlist(dirprefixdata + s for s in dirpklskdec_mergeddata)
+            checkmakedirlist(dirpklskdec_mergeddata)
 
     if dohistomassmc is True:
-        checkmakedirlist(dirprefixmc + s for s in dirresultsmc)
-        checkmakedir(dirprefixmc + dirresultsmctot)
+        checkmakedirlist(dirresultsmc)
+        checkmakedir(dirresultsmctot)
 
     if dohistomassdata is True:
-        checkmakedirlist(dirprefixdata + s for s in dirresultsdata)
-        checkmakedir(dirprefixdata + dirresultsdatatot)
+        checkmakedirlist(dirresultsdata)
+        checkmakedir(dirresultsdatatot)
 
     proc_class = Processer
     ana_class = Analyzer

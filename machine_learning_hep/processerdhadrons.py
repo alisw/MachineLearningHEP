@@ -21,8 +21,8 @@ import pickle
 import numpy as np
 # pylint: disable=import-error, no-name-in-module, consider-using-f-string
 from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
-from machine_learning_hep.do_entire_analysis import fill_hist
 from machine_learning_hep.bitwise import tag_bit_df
+from machine_learning_hep.utilities import fill_hist
 from machine_learning_hep.utilities import selectdfrunlist
 from machine_learning_hep.utilities import seldf_singlevar, openfile
 from machine_learning_hep.selectionutils import gethistonormforselevt_varsel
@@ -132,7 +132,8 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
 
             h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
                              self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-            fill_hist(h_invmass, df[self.v_invmass])
+
+            fill_hist(h_invmass, df[self.v_invmass].to_numpy())
             myfile.cd()
             h_invmass.Write()
 
@@ -148,9 +149,9 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
                                      self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 h_invmass_refl = TH1F("hmass_refl" + suffix, "", self.p_num_bins,
                                       self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-                fill_hist(h_invmass_sig, df_sig[self.v_invmass])
-                fill_hist(h_invmass_bkg, df_bkg[self.v_invmass])
-                fill_hist(h_invmass_refl, df_refl[self.v_invmass])
+                fill_hist(h_invmass_sig, df_sig[self.v_invmass].to_numpy())
+                fill_hist(h_invmass_bkg, df_bkg[self.v_invmass].to_numpy())
+                fill_hist(h_invmass_refl, df_refl[self.v_invmass].to_numpy())
                 myfile.cd()
                 h_invmass_sig.Write()
                 h_invmass_bkg.Write()

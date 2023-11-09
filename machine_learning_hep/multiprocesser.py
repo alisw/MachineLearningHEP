@@ -51,6 +51,7 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.dlper_pklsk = []
         self.dlper_pklml = []
         self.d_prefix = datap["multi"][self.mcordata].get("prefix_dir", "")
+        self.d_prefix_res = datap["mlapplication"][self.mcordata].get("prefix_dir_res", "")
         for s in datap["multi"][self.mcordata]["unmerged_tree_dir"]:
             self.dlper_root.append(self.d_prefix + s)
         for s in datap["multi"][self.mcordata]["pkl"]:
@@ -105,13 +106,13 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.d_results = []
 
         for s in datap["mlapplication"][self.mcordata]["pkl_skimmed_dec"]:
-            self.dlper_reco_modapp.append(self.d_prefix + s)
+            self.dlper_reco_modapp.append(self.d_prefix_res + s)
         for s in datap["mlapplication"][self.mcordata]["pkl_skimmed_decmerged"]:
-            self.dlper_reco_modappmerged.append(self.d_prefix + s)
+            self.dlper_reco_modappmerged.append(self.d_prefix_res + s)
         for s in datap["analysis"][self.typean][self.mcordata]["results"]:
-            self.d_results.append(self.d_prefix + s)
+            self.d_results.append(self.d_prefix_res + s)
         self.d_resultsallp = \
-                 self.d_prefix + datap["analysis"][self.typean][self.mcordata]["resultsallp"]
+                 self.d_prefix_res + datap["analysis"][self.typean][self.mcordata]["resultsallp"]
         self.lpt_probcutpre = datap["mlapplication"]["probcutpresel"]
         self.lpt_probcut = datap["mlapplication"]["probcutoptimal"]
         self.f_evt_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evt)
