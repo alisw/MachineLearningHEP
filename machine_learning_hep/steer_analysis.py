@@ -169,8 +169,10 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         dirpklskdata.append(dirprefixdata + s)
     for s in data_param[case]["multi"]["data"]["pkl_skimmed_merge_for_ml"]:
         dirpklmldata.append(dirprefixdata + s)
-    dirpklevtcounter_alldata = dirprefixdata + data_param[case]["multi"]["data"]["pkl_evtcounter_all"]
-    dirpklmltotdata = dirprefixdata + data_param[case]["multi"]["data"]["pkl_skimmed_merge_for_ml_all"]
+    dirpklevtcounter_alldata = dirprefixdata + \
+        data_param[case]["multi"]["data"]["pkl_evtcounter_all"]
+    dirpklmltotdata = dirprefixdata + \
+        data_param[case]["multi"]["data"]["pkl_skimmed_merge_for_ml_all"]
 
     dirpklskdecmc = []
     dirpklskdec_mergedmc = []
@@ -193,7 +195,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         dirresultsdata.append(dirprefixdatares + s)
     for s in data_param[case]["analysis"][typean]["mc"]["results"]:
         dirresultsmc.append(dirprefixmcres + s)
-    dirresultsdatatot = dirprefixdatares + data_param[case]["analysis"][typean]["data"]["resultsallp"]
+    dirresultsdatatot = dirprefixdatares + \
+        data_param[case]["analysis"][typean]["data"]["resultsallp"]
     dirresultsmctot = dirprefixmcres + data_param[case]["analysis"][typean]["mc"]["resultsallp"]
 
     binminarray = data_param[case]["ml"]["binmin"]
@@ -273,7 +276,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         checkmakedir(dirpklevtcounter_allmc)
 
     if doskimmingdata is True:
-        checkmakedirlist(irpklskdata)
+        checkmakedirlist(dirpklskdata)
         checkmakedir(dirpklevtcounter_alldata)
 
     if domergingmc is True:
