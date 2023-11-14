@@ -37,6 +37,11 @@ from ROOT import kOpenFourTrianglesX, kOpenDoubleDiamond, kOpenFourTrianglesPlus
 from ROOT import kFullCircle, kFullSquare, kFullDiamond, kFullCross, kFullStar, kFullThreeTriangles # pylint: disable=import-error, no-name-in-module
 from ROOT import kFullFourTrianglesX, kFullDoubleDiamond, kFullFourTrianglesPlus, kFullCrossX # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.selectionutils import select_runs
+from machine_learning_hep.logger import get_logger
+
+# pylint: disable=too-many-lines
+
+logger = get_logger()
 
 # pylint: disable=line-too-long, consider-using-f-string, too-many-lines
 # pylint: disable=unspecified-encoding, consider-using-generator, invalid-name, import-outside-toplevel
@@ -66,7 +71,7 @@ def openfile(filename, attr):
         return gzip.open(filename, attr)
     if filename.lower().endswith('.lz4'):
         return lz4.frame.open(filename, attr)
-    return open(filename, attr)
+    return open(filename, attr, encoding='utf-8')
 
 def mask_df(df_to_mask, mask_config):
     """
@@ -183,7 +188,7 @@ def list_folders(main_dir, filenameinput, maxfiles, select=None): # pylint: disa
             list_folders_tmp.extend([folder for folder in listfolders if sel_sub_string in folder])
         listfolders = list_folders_tmp
 
-    if maxfiles is not -1:
+    if maxfiles != -1:
         listfolders = listfolders[:maxfiles]
     return  listfolders
 
@@ -225,9 +230,9 @@ def checkmakedir(mydir):
     Makes directory using 'mkdir'
     """
     if os.path.exists(mydir):
-        print(f"Using already created folder {mydir}")
+        logger.warning("Using existing folder %s", mydir)
         return
-    print("creating folder ", mydir)
+    logger.debug("creating folder %s", mydir)
     os.makedirs(mydir)
 
 def checkmakedirlist(dirlist):
@@ -242,13 +247,13 @@ def delete_dir(path: str):
     Delete directory if it exists. Return True if success, False otherwise.
     """
     if not os.path.isdir(path):
-        print("Directory %s does not exist." % path)
+        logger.warning("Directory %s does not exist", path)
         return True
-    print("Deleting directory %s" % path)
+    logger.warning("Deleting directory %s", path)
     try:
         shutil.rmtree(path)
     except OSError:
-        print("Error: Failed to delete directory %s" % path)
+        logger.error("Error: Failed to delete directory %s", path)
         return False
     return True
 
@@ -308,7 +313,7 @@ def createstringselection(var, low, high):
     Create string of main dataframe selection (e.g. pT)
     Used as suffix for storing ML plots
     """
-    string_selection = "dfselection_"+(("%s_%.1f_%.1f") % (var, low, high))
+    string_selection = f"dfselection_{var}_{low:.1f}_{high:.1f}"
     return string_selection
 
 def mergerootfiles(listfiles, mergedfile, tmp_dir):
@@ -327,12 +332,12 @@ def mergerootfiles(listfiles, mergedfile, tmp_dir):
         for i, split_list in enumerate(divide_chunks(listfiles, 500)):
             tmp_files.append(os.path.join(tmp_dir, f"hadd_tmp_merged{i}.root"))
             outstring = " ".join(split_list)
-            os.system("hadd -f -j 30 %s  %s " % (tmp_files[-1], outstring))
+            os.system(f"hadd -f -j 30 {tmp_files[-1]} {outstring}")
     else:
         tmp_files = listfiles
 
     outstring = " ".join(tmp_files)
-    os.system("hadd -f -j 30 %s  %s " % (mergedfile, outstring))
+    os.system(f"hadd -f -j 30 {mergedfile} {outstring}")
 
 def parallelizer(function, argument_list, maxperchunk, max_n_procs=2):
     """
@@ -343,10 +348,10 @@ def parallelizer(function, argument_list, maxperchunk, max_n_procs=2):
               for x in range(0, len(argument_list), maxperchunk)]
     for chunk in chunks:
         print("Processing new chunck size=", maxperchunk)
-        pool = mp.Pool(max_n_procs) # pylint: disable=consider-using-with
-        _ = [pool.apply_async(function, args=chunk[i]) for i in range(len(chunk))]
-        pool.close()
-        pool.join()
+        with mp.Pool(max_n_procs) as pool:
+            _ = [pool.apply_async(function, args=chunk[i]) for i in range(len(chunk))]
+            pool.close()
+            pool.join()
 
 def get_timestamp_string():
     """
@@ -359,7 +364,7 @@ def make_latex_table(column_names, row_names, rows, caption=None, save_path="./t
     Store information in table format in tex file
     """
     caption = caption if caption is not None else "Caption"
-    with open(save_path, "w") as f:
+    with open(save_path, "w", encoding='utf-8') as f:
         f.write("\\documentclass{article}\n\n")
         f.write("\\usepackage[margin=0.7in]{geometry}\n")
         f.write("\\usepackage[parfill]{parskip}\n")
@@ -416,8 +421,8 @@ def make_message_notfound(name, location=None):
     stating the name and optionally the location.
     """
     if location is not None:
-        return "Error: Failed to get %s in %s" % (name, location)
-    return "Error: Failed to get %s" % name
+        return f"Error: Failed to get {name} in {location}"
+    return f"Error: Failed to get {name}"
 
 # Jet related functions, to comment
 
@@ -902,13 +907,13 @@ def make_plot(name, can=None, pad=0, path=None, suffix="eps", title="", size=Non
     if len(list_h) > 0:
         y_min_h, y_max_h = get_y_window_his(list_h, "y" in with_errors)
         if log_y and y_min_h <= 0:
-            y_min_h = min([h.GetMinimum(0) for h in list_h])
+            y_min_h = min((h.GetMinimum(0) for h in list_h))
     # get y range of graphs
     y_min_g, y_max_g = float("inf"), float("-inf")
     if len(list_g) > 0:
         y_min_g, y_max_g = get_y_window_gr(list_g, "y" in with_errors)
         if log_y and y_min_g <= 0:
-            y_min_g = min([min0_gr(g) for g in list_g])
+            y_min_g = min((min0_gr(g) for g in list_g))
     # get total y range
     y_min = min(y_min_h, y_min_g)
     y_max = max(y_max_h, y_max_g)
@@ -957,7 +962,7 @@ def make_plot(name, can=None, pad=0, path=None, suffix="eps", title="", size=Non
 
     # save canvas if necessary info provided
     if path and name and suffix:
-        can.SaveAs("%s/%s.%s" % (path, name, suffix))
+        can.SaveAs("{path}/{name}.{suffix}")
 
     return can, list_new
 
@@ -1012,27 +1017,28 @@ def divide_graphs(gr_num, gr_den):
         e_b_minus = gr_den.GetErrorYlow(i)
         r = y_a / y_b
         gr_rat.SetPointY(i, r)
-        gr_rat.SetPointEYhigh(i, math.sqrt(e_a_plus * e_a_plus + r * r * e_b_minus * e_b_minus) / y_b)
-        gr_rat.SetPointEYlow(i, math.sqrt(e_a_minus * e_a_minus + r * r * e_b_plus * e_b_plus) / y_b)
+        gr_rat.SetPointEYhigh(
+            i, math.sqrt(e_a_plus * e_a_plus + r * r * e_b_minus * e_b_minus) / y_b)
+        gr_rat.SetPointEYlow(
+            i, math.sqrt(e_a_minus * e_a_minus + r * r * e_b_plus * e_b_plus) / y_b)
     return gr_rat
 
 
-def scale_graph(gr, number):
+def scale_graph(graph, number):
     """
     Scale TGraphAsymmErrors
     """
-    if not gr:
+    if not graph:
         return
-    for i in range(gr.GetN()):
-        gr.SetPointY(i, gr.GetPointY(i) * number)
-        gr.SetPointEYhigh(i, gr.GetErrorYlow(i) * number)
-        gr.SetPointEYlow(i, gr.GetErrorYhigh(i) * number)
+    for i in range(graph.GetN()):
+        graph.SetPointY(i, graph.GetPointY(i) * number)
+        graph.SetPointEYhigh(i, graph.GetErrorYlow(i) * number)
+        graph.SetPointEYlow(i, graph.GetErrorYhigh(i) * number)
 
 
 def sqrt_sum_sq(numbers):
     """Return sqrt(n1 * n1 + n2 * n2 + ...)"""
-    from math import sqrt
-    return sqrt(sum(n * n for n in numbers))
+    return math.sqrt(sum(n * n for n in numbers))
 
 
 def combine_graphs(graphs: list):
@@ -1072,13 +1078,13 @@ def get_mean_hist(hist):
     return sum_xy / sum_y
 
 
-def get_mean_graph(gr):
+def get_mean_graph(graph):
     """Get the mean x of a graph."""
     sum_xy = 0
     sum_y = 0
-    for i in range(gr.GetN()):
-        sum_xy += gr.GetPointY(i) * gr.GetPointX(i)
-        sum_y += gr.GetPointY(i)
+    for i in range(graph.GetN()):
+        sum_xy += graph.GetPointY(i) * graph.GetPointX(i)
+        sum_y += graph.GetPointY(i)
     return sum_xy / sum_y
 
 
@@ -1105,22 +1111,34 @@ def get_mean_uncertainty(his_stat, gr_syst=None, n_var=1000, combine=False):
     hist_var_comb.Reset()
     rnd = TRandom3()
     # create a histograms for the distribution of means
-    hist_means_stat = TH1F(f"{his_stat.GetName()}_means_stat", "hist_means_stat", 1000, his_stat.GetXaxis().GetXmin(), his_stat.GetXaxis().GetXmax())
+    hist_means_stat = TH1F(
+        f"{his_stat.GetName()}_means_stat", "hist_means_stat",
+        1000, his_stat.GetXaxis().GetXmin(), his_stat.GetXaxis().GetXmax())
     hist_means_stat.Sumw2()
-    hist_means_syst = TH1F(f"{his_stat.GetName()}_means_syst", "hist_means_syst", 1000, his_stat.GetXaxis().GetXmin(), his_stat.GetXaxis().GetXmax())
+    hist_means_syst = TH1F(
+        f"{his_stat.GetName()}_means_syst", "hist_means_syst",
+        1000, his_stat.GetXaxis().GetXmin(), his_stat.GetXaxis().GetXmax())
     hist_means_syst.Sumw2()
-    hist_means_comb = TH1F(f"{his_stat.GetName()}_means_comb", "hist_means_comb", 1000, his_stat.GetXaxis().GetXmin(), his_stat.GetXaxis().GetXmax())
+    hist_means_comb = TH1F(
+        f"{his_stat.GetName()}_means_comb", "hist_means_comb",
+        1000, his_stat.GetXaxis().GetXmin(), his_stat.GetXaxis().GetXmax())
     hist_means_comb.Sumw2()
     for _ in range(n_var):
         for i in range(n_points):
             # vary y with Gaussian of mean = y_central, sigma = err_y_central
-            y_var_stat = rnd.Gaus(gr_stat.GetPointY(i), (gr_stat.GetErrorYhigh(i) + gr_stat.GetErrorYlow(i)) / 2.)
+            y_var_stat = rnd.Gaus(
+                gr_stat.GetPointY(i),
+                (gr_stat.GetErrorYhigh(i) + gr_stat.GetErrorYlow(i)) / 2.)
             hist_var_stat.SetBinContent(i + 1, y_var_stat)
             if gr_syst:
-                y_var_syst = rnd.Gaus(gr_syst.GetPointY(i), (gr_syst.GetErrorYhigh(i) + gr_syst.GetErrorYlow(i)) / 2.)
+                y_var_syst = rnd.Gaus(
+                    gr_syst.GetPointY(i),
+                    (gr_syst.GetErrorYhigh(i) + gr_syst.GetErrorYlow(i)) / 2.)
                 hist_var_syst.SetBinContent(i + 1, y_var_syst)
                 if gr_comb:
-                    y_var_comb = rnd.Gaus(gr_comb.GetPointY(i), (gr_comb.GetErrorYhigh(i) + gr_comb.GetErrorYlow(i)) / 2.)
+                    y_var_comb = rnd.Gaus(
+                        gr_comb.GetPointY(i),
+                        (gr_comb.GetErrorYhigh(i) + gr_comb.GetErrorYlow(i)) / 2.)
                     hist_var_comb.SetBinContent(i + 1, y_var_comb)
         # calculate mean of the new histogram
         # fill the mean in a histogram of means
@@ -1137,19 +1155,18 @@ def format_number_prec(num, prec):
     return f"{round(num, prec):.{max(0, prec)}f}"
 
 
-def format_value_with_unc(y, e_stat=None, e_syst_plus=None, e_syst_minus=None, n_sig=2):
+def format_value_with_unc(y, e_stat=None, e_syst_plus=None, e_syst_minus=None, n_sig=2): # pylint: disable=invalid-name
     """Format a value with uncertainties so that the main value is reported with a decimal precision
     given by the number of significant figures of the smallest uncertainty."""
-    from math import floor, log10
-    mag_y = floor(log10(y))
+    mag_y = math.floor(math.log10(y))
     mag_e_stat = mag_y
     mag_e_syst = mag_y
     if e_stat:
-        mag_e_stat = floor(log10(e_stat))
+        mag_e_stat = math.floor(math.log10(e_stat))
     if e_syst_plus:
         if not e_syst_minus:
             e_syst_minus = e_syst_plus
-        mag_e_syst = floor(log10(min(e_syst_plus, e_syst_minus)))
+        mag_e_syst = math.floor(math.log10(min(e_syst_plus, e_syst_minus)))
     mag_y = min(mag_y, mag_e_stat, mag_e_syst)
     # print(f"Mag stat {mag_e_stat}, sys {mag_e_syst}")
     prec_y = n_sig - 1 - mag_y
