@@ -143,7 +143,7 @@ def merge_method(listfiles, namemerged):
     dftot = pd.concat(dflist)
     pickle.dump(dftot, openfile(namemerged, "wb"), protocol=4)
 
-def list_folders(main_dir, filenameinput, maxfiles, select=None):
+def list_folders(main_dir, filenameinput, maxfiles, select=None): # pylint: disable=too-many-branches
     """
     List all files in a subdirectory structure
     """
@@ -158,7 +158,7 @@ def list_folders(main_dir, filenameinput, maxfiles, select=None):
             for subdir1 in list_subdir1:
                 subdir1full = os.path.join(subdir0full, subdir1)
                 if os.path.isdir(subdir1full):
-                    if (os.listdir(subdir1full)[0] ==  filenameinput):
+                    if os.listdir(subdir1full)[0] == filenameinput:
                         list_files_ = os.listdir(subdir1full)
                         for myfile in list_files_:
                             filefull = os.path.join(subdir1full, myfile)
@@ -194,7 +194,7 @@ def create_folder_struc(maindir, listpath):
     for path in listpath:
         path = path.split("/")
         folder = maindir
-        for i, element in enumerate(path):
+        for _, element in enumerate(path):
             folder = os.path.join(folder, element)
             if not os.path.exists(folder):
                 os.makedirs(folder)
