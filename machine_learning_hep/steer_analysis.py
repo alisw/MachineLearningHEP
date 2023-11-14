@@ -448,7 +448,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     analyze_steps = []
     if efficiency_resp is True:
         analyze_steps.append("efficiency_inclusive")
-        ana_mgr.analyze(*analyze_steps) # pylint: disable=no-value-for-parameter
+        ana_mgr.analyze(analyze_steps)
     if doresponse is True:
         mymultiprocessmc.multi_response()
 
@@ -516,14 +516,16 @@ def load_config(user_path: str, default_path=None) -> dict:
     if not user_path and not default_path:
         return None
 
-    stream = None
     if user_path:
         if not exists(user_path):
             get_logger().fatal("The file %s does not exist", user_path)
-        stream = open(user_path) # pylint: disable=consider-using-with, unspecified-encoding
+            sys.exit(-1)
+        with open(user_path, 'r', encoding='utf-8') as stream:
+            cfg = yaml.safe_load(stream)
     else:
-        stream = resource_stream(default_path[0], default_path[1])
-    return yaml.safe_load(stream)
+        with resource_stream(default_path[0], default_path[1]) as stream:
+            cfg = yaml.safe_load(stream)
+    return cfg
 
 def main():
     """
