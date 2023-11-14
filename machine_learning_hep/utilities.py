@@ -38,6 +38,22 @@ from ROOT import kFullCircle, kFullSquare, kFullDiamond, kFullCross, kFullStar, 
 from ROOT import kFullFourTrianglesX, kFullDoubleDiamond, kFullFourTrianglesPlus, kFullCrossX # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.selectionutils import select_runs
 
+# pylint: disable=line-too-long, consider-using-f-string, too-many-lines
+# pylint: disable=unspecified-encoding, consider-using-generator, invalid-name, import-outside-toplevel
+
+def fill_hist(hist, arr, weights = 0):
+    assert arr.ndim == 1 and weights.ndim == 1, 'fill_hist handles 1d histos only'
+    hist.FillN(len(arr), arr, weights)
+
+def hist2array(hist):
+    assert hist.GetDimension() == 1
+    return [hist.GetBinContent(x) for x in range(hist.GetNbinsX())]
+
+def array2hist(arr, hist):
+    assert arr.ndim() == 1 and hist.GetDimension() == arr.ndim()
+    for i, x in enumerate(arr):
+        hist.SetBinContent(i + 1, x)
+
 def openfile(filename, attr):
     """
     Open file with different compression types
@@ -127,14 +143,14 @@ def merge_method(listfiles, namemerged):
     dftot = pd.concat(dflist)
     pickle.dump(dftot, openfile(namemerged, "wb"), protocol=4)
 
-def list_folders(main_dir, filenameinput, maxfiles, select=None):
+def list_folders(main_dir, filenameinput, maxfiles, select=None): # pylint: disable=too-many-branches
     """
     List all files in a subdirectory structure
     """
     if not os.path.isdir(main_dir):
         print("the input directory =", main_dir, "does not exist")
     list_subdir0 = os.listdir(main_dir)
-    listfolders = list()
+    listfolders = []
     for subdir0 in list_subdir0: # pylint: disable=too-many-nested-blocks
         subdir0full = os.path.join(main_dir, subdir0)
         if os.path.isdir(subdir0full):
@@ -142,13 +158,24 @@ def list_folders(main_dir, filenameinput, maxfiles, select=None):
             for subdir1 in list_subdir1:
                 subdir1full = os.path.join(subdir0full, subdir1)
                 if os.path.isdir(subdir1full):
-                    list_files_ = os.listdir(subdir1full)
-                    for myfile in list_files_:
-                        filefull = os.path.join(subdir1full, myfile)
-                        if os.path.isfile(filefull) and \
-                        myfile == filenameinput:
-                            listfolders.append(os.path.join(subdir0, subdir1))
-
+                    if os.listdir(subdir1full)[0] == filenameinput:
+                        list_files_ = os.listdir(subdir1full)
+                        for myfile in list_files_:
+                            filefull = os.path.join(subdir1full, myfile)
+                            if os.path.isfile(filefull) and \
+                               myfile == filenameinput:
+                                listfolders.append(os.path.join(subdir0, subdir1))
+                    else:
+                        list_subdir2 = os.listdir(subdir1full)
+                        for subdir2 in list_subdir2:
+                            subdir2full = os.path.join(subdir1full, subdir2)
+                            if os.path.isdir(subdir2full):
+                                list_files_ = os.listdir(subdir2full)
+                                for myfile in list_files_:
+                                    filefull = os.path.join(subdir2full, myfile)
+                                    if os.path.isfile(filefull) and \
+                                       myfile == filenameinput:
+                                        listfolders.append(os.path.join(subdir0, subdir1, subdir2))
     if select:
         # Select only folders with a matching sub-string in their paths
         list_folders_tmp = []
@@ -166,13 +193,11 @@ def create_folder_struc(maindir, listpath):
     """
     for path in listpath:
         path = path.split("/")
-
-        folder = os.path.join(maindir, path[0])
-        if not os.path.exists(folder):
-            os.makedirs(folder)
-        folder = os.path.join(folder, path[1])
-        if not os.path.exists(folder):
-            os.makedirs(folder)
+        folder = maindir
+        for _, element in enumerate(path):
+            folder = os.path.join(folder, element)
+            if not os.path.exists(folder):
+                os.makedirs(folder)
 
 def checkdirlist(dirlist):
     """
@@ -318,7 +343,7 @@ def parallelizer(function, argument_list, maxperchunk, max_n_procs=2):
               for x in range(0, len(argument_list), maxperchunk)]
     for chunk in chunks:
         print("Processing new chunck size=", maxperchunk)
-        pool = mp.Pool(max_n_procs)
+        pool = mp.Pool(max_n_procs) # pylint: disable=consider-using-with
         _ = [pool.apply_async(function, args=chunk[i]) for i in range(len(chunk))]
         pool.close()
         pool.join()

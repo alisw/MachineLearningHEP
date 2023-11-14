@@ -21,7 +21,7 @@ import sys
 import subprocess
 import argparse
 from os.path import exists
-import shap
+import shap # pylint: disable=unused-import
 import yaml
 from pkg_resources import resource_stream
 
@@ -146,25 +146,58 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
 
     dojetstudies = data_config["analysis"]["dojetstudies"]
 
-    dirpklmc = data_param[case]["multi"]["mc"]["pkl"]
-    dirpklevtcounter_allmc = data_param[case]["multi"]["mc"]["pkl_evtcounter_all"]
-    dirpklskmc = data_param[case]["multi"]["mc"]["pkl_skimmed"]
-    dirpklmlmc = data_param[case]["multi"]["mc"]["pkl_skimmed_merge_for_ml"]
-    dirpklmltotmc = data_param[case]["multi"]["mc"]["pkl_skimmed_merge_for_ml_all"]
-    dirpkldata = data_param[case]["multi"]["data"]["pkl"]
-    dirpklevtcounter_alldata = data_param[case]["multi"]["data"]["pkl_evtcounter_all"]
-    dirpklskdata = data_param[case]["multi"]["data"]["pkl_skimmed"]
-    dirpklmldata = data_param[case]["multi"]["data"]["pkl_skimmed_merge_for_ml"]
-    dirpklmltotdata = data_param[case]["multi"]["data"]["pkl_skimmed_merge_for_ml_all"]
-    dirpklskdecmc = data_param[case]["mlapplication"]["mc"]["pkl_skimmed_dec"]
-    dirpklskdec_mergedmc = data_param[case]["mlapplication"]["mc"]["pkl_skimmed_decmerged"]
-    dirpklskdecdata = data_param[case]["mlapplication"]["data"]["pkl_skimmed_dec"]
-    dirpklskdec_mergeddata = data_param[case]["mlapplication"]["data"]["pkl_skimmed_decmerged"]
+    dirpklmc = []
+    dirpklskmc = []
+    dirpklmlmc = []
+    dirprefixmc = data_param[case]["multi"]["mc"].get("prefix_dir", "")
+    for s in data_param[case]["multi"]["mc"]["pkl"]:
+        dirpklmc.append(dirprefixmc + s)
+    for s in data_param[case]["multi"]["mc"]["pkl_skimmed"]:
+        dirpklskmc.append(dirprefixmc + s)
+    for s in data_param[case]["multi"]["mc"]["pkl_skimmed_merge_for_ml"]:
+        dirpklmlmc.append(dirprefixmc + s)
+    dirpklevtcounter_allmc = dirprefixmc + data_param[case]["multi"]["mc"]["pkl_evtcounter_all"]
+    dirpklmltotmc = dirprefixmc + data_param[case]["multi"]["mc"]["pkl_skimmed_merge_for_ml_all"]
 
-    dirresultsdata = data_param[case]["analysis"][typean]["data"]["results"]
-    dirresultsmc = data_param[case]["analysis"][typean]["mc"]["results"]
-    dirresultsdatatot = data_param[case]["analysis"][typean]["data"]["resultsallp"]
-    dirresultsmctot = data_param[case]["analysis"][typean]["mc"]["resultsallp"]
+    dirpkldata = []
+    dirpklskdata = []
+    dirpklmldata = []
+    dirprefixdata = data_param[case]["multi"]["data"].get("prefix_dir", "")
+    for s in data_param[case]["multi"]["data"]["pkl"]:
+        dirpkldata.append(dirprefixdata + s)
+    for s in data_param[case]["multi"]["data"]["pkl_skimmed"]:
+        dirpklskdata.append(dirprefixdata + s)
+    for s in data_param[case]["multi"]["data"]["pkl_skimmed_merge_for_ml"]:
+        dirpklmldata.append(dirprefixdata + s)
+    dirpklevtcounter_alldata = dirprefixdata + \
+        data_param[case]["multi"]["data"]["pkl_evtcounter_all"]
+    dirpklmltotdata = dirprefixdata + \
+        data_param[case]["multi"]["data"]["pkl_skimmed_merge_for_ml_all"]
+
+    dirpklskdecmc = []
+    dirpklskdec_mergedmc = []
+    dirpklskdecdata = []
+    dirpklskdec_mergeddata = []
+    dirprefixmcres = data_param[case]["mlapplication"]["mc"].get("prefix_dir_res", "")
+    for s in data_param[case]["mlapplication"]["mc"]["pkl_skimmed_dec"]:
+        dirpklskdecmc.append(dirprefixmcres + s)
+    for s in data_param[case]["mlapplication"]["mc"]["pkl_skimmed_decmerged"]:
+        dirpklskdec_mergedmc.append(dirprefixmcres + s)
+    dirprefixdatares = data_param[case]["mlapplication"]["data"].get("prefix_dir_res", "")
+    for s in data_param[case]["mlapplication"]["data"]["pkl_skimmed_dec"]:
+        dirpklskdecdata.append(dirprefixdatares + s)
+    for s in data_param[case]["mlapplication"]["data"]["pkl_skimmed_decmerged"]:
+        dirpklskdec_mergeddata.append(dirprefixdatares + s)
+
+    dirresultsdata = []
+    dirresultsmc = []
+    for s in data_param[case]["analysis"][typean]["data"]["results"]:
+        dirresultsdata.append(dirprefixdatares + s)
+    for s in data_param[case]["analysis"][typean]["mc"]["results"]:
+        dirresultsmc.append(dirprefixmcres + s)
+    dirresultsdatatot = dirprefixdatares + \
+        data_param[case]["analysis"][typean]["data"]["resultsallp"]
+    dirresultsmctot = dirprefixmcres + data_param[case]["analysis"][typean]["mc"]["resultsallp"]
 
     binminarray = data_param[case]["ml"]["binmin"]
     binmaxarray = data_param[case]["ml"]["binmax"]
@@ -172,8 +205,9 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     mltype = data_param[case]["ml"]["mltype"]
     training_vars = data_param[case]["variables"]["var_training"]
 
-    mlout = data_param[case]["ml"]["mlout"]
-    mlplot = data_param[case]["ml"]["mlplot"]
+    dirprefixml = data_param[case]["ml"].get("prefix_dir_ml", "")
+    mlout = dirprefixml + data_param[case]["ml"]["mlout"]
+    mlplot = dirprefixml + data_param[case]["ml"]["mlplot"]
 
     proc_type = data_param[case]["analysis"][typean]["proc_type"]
 
@@ -301,7 +335,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     if proc_type == "Jets":
         print("Using new feature for D0 jets (Run 3)")
         proc_class = ProcesserJets
-        ana_class = AnalyzerD0jets
+        ana_class = AnalyzerJets
 
     mymultiprocessmc = MultiProcesser(case, proc_class, data_param[case], typean, run_param, "mc")
     mymultiprocessdata = MultiProcesser(case, proc_class, data_param[case], typean, run_param,\
@@ -348,7 +382,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         mymultiprocessdata.multi_mergeml_allinone()
 
     if doml is True:
-        from machine_learning_hep.optimiser import Optimiser
+        from machine_learning_hep.optimiser import Optimiser # pylint: disable=import-outside-toplevel
         index = 0
         for binmin, binmax in zip(binminarray, binmaxarray):
             myopt = Optimiser(data_param[case], case, typean,
@@ -414,7 +448,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     analyze_steps = []
     if efficiency_resp is True:
         analyze_steps.append("efficiency_inclusive")
-        ana_mgr.analyze(*analyze_steps)
+        ana_mgr.analyze(*analyze_steps) # pylint: disable=no-value-for-parameter
     if doresponse is True:
         mymultiprocessmc.multi_response()
 
@@ -486,7 +520,7 @@ def load_config(user_path: str, default_path=None) -> dict:
     if user_path:
         if not exists(user_path):
             get_logger().fatal("The file %s does not exist", user_path)
-        stream = open(user_path)
+        stream = open(user_path) # pylint: disable=consider-using-with, unspecified-encoding
     else:
         stream = resource_stream(default_path[0], default_path[1])
     return yaml.safe_load(stream)

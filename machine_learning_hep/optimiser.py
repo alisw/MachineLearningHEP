@@ -44,8 +44,8 @@ from machine_learning_hep.utilities import checkdirlist, checkmakedirlist
 from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
 
 
-# pylint: disable=too-many-instance-attributes, too-many-statements
-class Optimiser: # pylint: disable=too-many-public-methods
+# pylint: disable=too-many-instance-attributes, too-many-statements, unbalanced-tuple-unpacking
+class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-string
     #Class Attribute
     species = "optimiser"
 
@@ -54,12 +54,14 @@ class Optimiser: # pylint: disable=too-many-public-methods
 
         self.logger = get_logger()
 
-        dirmcml = data_param["multi"]["mc"]["pkl_skimmed_merge_for_ml_all"]
-        dirdataml = data_param["multi"]["data"]["pkl_skimmed_merge_for_ml_all"]
+        dirprefix = data_param["multi"]["data"].get("prefix_dir", "")
+        dirprefix_ml = data_param["ml"].get("prefix_dir_ml", "")
+        dirmcml = dirprefix + data_param["multi"]["mc"]["pkl_skimmed_merge_for_ml_all"]
+        dirdataml = dirprefix + data_param["multi"]["data"]["pkl_skimmed_merge_for_ml_all"]
         self.v_bin = data_param["var_binning"]
         #directory
-        self.dirmlout = data_param["ml"]["mlout"]
-        self.dirmlplot = data_param["ml"]["mlplot"]
+        self.dirmlout = dirprefix_ml + data_param["ml"]["mlout"]
+        self.dirmlplot = dirprefix_ml + data_param["ml"]["mlplot"]
 
         # Check here which steps have been done already
         self.steps_done = None

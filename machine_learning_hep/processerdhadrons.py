@@ -19,9 +19,10 @@ import math
 import array
 import pickle
 import numpy as np
-# from root_numpy import fill_hist  # pylint: disable=import-error, no-name-in-module
+# pylint: disable=import-error, no-name-in-module, consider-using-f-string
 from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.bitwise import tag_bit_df
+from machine_learning_hep.utilities import fill_hist
 from machine_learning_hep.utilities import selectdfrunlist
 from machine_learning_hep.utilities import seldf_singlevar, openfile
 from machine_learning_hep.selectionutils import gethistonormforselevt_varsel
@@ -131,7 +132,8 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
 
             h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
                              self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-            fill_hist(h_invmass, df[self.v_invmass])
+
+            fill_hist(h_invmass, df[self.v_invmass].to_numpy())
             myfile.cd()
             h_invmass.Write()
 
@@ -147,9 +149,9 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
                                      self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 h_invmass_refl = TH1F("hmass_refl" + suffix, "", self.p_num_bins,
                                       self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-                fill_hist(h_invmass_sig, df_sig[self.v_invmass])
-                fill_hist(h_invmass_bkg, df_bkg[self.v_invmass])
-                fill_hist(h_invmass_refl, df_refl[self.v_invmass])
+                fill_hist(h_invmass_sig, df_sig[self.v_invmass].to_numpy())
+                fill_hist(h_invmass_bkg, df_bkg[self.v_invmass].to_numpy())
+                fill_hist(h_invmass_refl, df_refl[self.v_invmass].to_numpy())
                 myfile.cd()
                 h_invmass_sig.Write()
                 h_invmass_bkg.Write()
@@ -158,7 +160,6 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
     # pylint: disable=line-too-long
     def process_efficiency_single(self, index):
         #TO UPDATE TO DHADRON_MULT VERSION
-        print("step1")
         out_file = TFile.Open(self.l_histoeff[index], "recreate")
         n_bins = len(self.lpt_finbinmin)
         analysis_bin_lims_temp = self.lpt_finbinmin.copy()
@@ -176,11 +177,9 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
                            n_bins, analysis_bin_lims)
         h_sel_fd = TH1F("h_sel_fd", "FD Reco and sel in acc |#eta|<0.8 and sel", \
                         n_bins, analysis_bin_lims)
-        print("step2")
 
         bincounter = 0
         for ipt in range(self.p_nptfinbins):
-            print("step2a")
             bin_id = self.bin_matching[ipt]
             df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
             if self.s_evtsel is not None:
@@ -192,7 +191,6 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
                          self.run_param[self.runlistrigger], "run_number")
             df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[bin_id][index], "rb"))
             df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
-            print("step2b")
             if self.runlistrigger is not None:
                 df_mc_gen = selectdfrunlist(df_mc_gen, \
                          self.run_param[self.runlistrigger], "run_number")
@@ -210,7 +208,6 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
             df_gen_sel_fd = df_mc_gen[df_mc_gen.ismcfd == 1]
             df_reco_presel_fd = df_mc_reco[df_mc_reco.ismcfd == 1]
             df_reco_sel_fd = None
-            print("step2d")
             if self.doml is True:
                 df_reco_sel_fd = df_reco_presel_fd.query(self.l_selml[bin_id])
             else:
@@ -228,7 +225,6 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
             err = math.sqrt(val)
             h_sel_pr.SetBinContent(bincounter + 1, val)
             h_sel_pr.SetBinError(bincounter + 1, err)
-            print("step2e")
 
             val = len(df_gen_sel_fd)
             err = math.sqrt(val)
@@ -243,7 +239,6 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
             h_sel_fd.SetBinContent(bincounter + 1, val)
             h_sel_fd.SetBinError(bincounter + 1, err)
             bincounter = bincounter + 1
-            print("step2f")
 
         out_file.cd()
         h_gen_pr.Write()

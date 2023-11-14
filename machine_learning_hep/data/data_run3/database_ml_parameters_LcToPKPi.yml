@@ -53,16 +53,16 @@ LcpKpi:
               fErrorDecayLength, fErrorDecayLengthXY, fChi2PCA, fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised,
               fImpactParameterNormalised0, fPtProng0, fImpactParameterNormalised1, fPtProng1, fImpactParameterNormalised2, fPtProng2,
               fImpactParameter0, fImpactParameter1, fImpactParameter2, fErrorImpactParameter0, fErrorImpactParameter1, fErrorImpactParameter2,
-              fNSigTofPr0, fNSigTofPi0, fNSigTofKa0, fNSigTofPr1, fNSigTofPi1, fNSigTofKa1, fNSigTofPr2, fNSigTofPi2, fNSigTofKa2,
-              fNSigTpcPr0, fNSigTpcPi0, fNSigTpcKa0, fNSigTpcPr1, fNSigTpcPi1, fNSigTpcKa1, fNSigTpcPr2, fNSigTpcPi2, fNSigTpcKa2]
+              fNSigTpcPi0, fNSigTpcKa0, fNSigTpcPr0, fNSigTpcPi1, fNSigTpcKa1, fNSigTpcPr1, fNSigTpcPi2, fNSigTpcKa2, fNSigTpcPr2,
+              fNSigTofPi0, fNSigTofKa0, fNSigTofPr0, fNSigTofPi1, fNSigTofKa1, fNSigTofPr1, fNSigTofPi2, fNSigTofKa2, fNSigTofPr2]
     var_jet: [fJetPt, fJetEta, fJetPhi]
     var_jetsub: [fZg, fRg, fNsd]
     var_jet_match: [df, fIndexHfCand2Prong]
     var_jetsub_match: [df, fIndexD0ChargedJets]
     var_evt:
-       data: [fIndexCollisions, fIndexBCs, fIsEventReject, fNumContrib]
-       mc:   [fIndexCollisions, fIsEventReject, fNumContrib]
-    var_gen: [fIndexCollisions, fPt, fY, fFlagMc, fOriginMcGen]
+       data: [fIndexCollisions, fIsEventReject, fNumContrib]
+       mc:   [fIndexCollisions, fIndexMcCollisions, fIsEventReject, fNumContrib]
+    var_gen: [fIndexMcCollisions, fPt, fY, fFlagMc, fOriginMcGen]
     var_evt_match: [df, fIndexCollisions]
     var_evt_match_mc: [df, fIndexMcCollisions]
     var_training: [[fImpactParameter0, fImpactParameter1, fImpactParameter2, fPtProng0, fPtProng1, fPtProng2],
@@ -167,9 +167,9 @@ LcpKpi:
     namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl
     namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl
     namefile_mcweights: mcweights.root
-    treeoriginreco: 'O2hfcand3pfull'
-    treeorigingen: 'O2hfcand3pfullp'
-    treeoriginevt: 'O2hfcand3pfulle'
+    treeoriginreco: 'O2hfcandlcfull'
+    treeorigingen: 'O2hfcandlcfullp'
+    treeoriginevt: 'O2hfcandlcfullev'
     treeoutput: "Lctree"
     histofilename: "masshisto.root"
     efffilename: "effhisto.root"
@@ -178,144 +178,40 @@ LcpKpi:
 
   multi:
     data:
-      nprocessesparallel: 50
-      maxfiles : [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1] #list of periods
-      chunksizeunp : [100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100] #list of periods
-      chunksizeskim: [100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100] #list of periods
-      fracmerge : [0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1, 0.1] #list of periods
-      seedmerge: [12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12,12] #list of periods
-      period: [test,test,test,test,test,test,test,test,test,test,test,test,test,test,test,test,test,test,test] #list of periods
-      unmerged_tree_dir: [/data2/MLhep/real/LHC22o_pass4_medium/unmerged/alice/cern.ch/user/a/alihyperloop/jobs/0018/hy_189957,
-                          /data2/MLhep/real/LHC22o_pass4_medium/unmerged/alice/cern.ch/user/a/alihyperloop/jobs/0018/hy_189958,
-                          /data2/MLhep/real/LHC22o_pass4_medium/unmerged/alice/cern.ch/user/a/alihyperloop/jobs/0018/hy_189959,
-                          /data2/MLhep/real/LHC22o_pass4_medium/unmerged/alice/cern.ch/user/a/alihyperloop/jobs/0018/hy_189960,
-                          /data2/MLhep/real/LHC22o_pass4_medium/unmerged/alice/cern.ch/user/a/alihyperloop/jobs/0018/hy_189961,
-                          /data2/MLhep/real/LHC22o_pass4_medium/unmerged/alice/cern.ch/user/a/alihyperloop/jobs/0018/hy_189962,
-                          /data2/MLhep/real/LHC22o_pass4_medium/unmerged/alice/cern.ch/user/a/alihyperloop/jobs/0018/hy_189963,
-                          /data2/MLhep/real/LHC22o_pass4_medium/unmerged/alice/cern.ch/user/a/alihyperloop/jobs/0018/hy_189964,
-                          /data2/MLhep/real/LHC22o_pass4_medium/unmerged/alice/cern.ch/user/a/alihyperloop/jobs/0018/hy_189965,
-                          /data2/MLhep/real/LHC22o_pass4_medium/unmerged/alice/cern.ch/user/a/alihyperloop/jobs/0018/hy_189966,
-                          /data2/MLhep/real/LHC22o_pass4_medium/unmerged/alice/cern.ch/user/a/alihyperloop/jobs/0018/hy_189967,
-                          /data2/MLhep/real/LHC22o_pass4_medium/unmerged/alice/cern.ch/user/a/alihyperloop/jobs/0018/hy_189968,
-                          /data2/MLhep/real/LHC22o_pass4_medium/unmerged/alice/cern.ch/user/a/alihyperloop/jobs/0018/hy_189969,
-                          /data2/MLhep/real/LHC22o_pass4_medium/unmerged/alice/cern.ch/user/a/alihyperloop/jobs/0018/hy_189970,
-                          /data2/MLhep/real/LHC22o_pass4_medium/unmerged/alice/cern.ch/user/a/alihyperloop/jobs/0018/hy_189971,
-                          /data2/MLhep/real/LHC22o_pass4_medium/unmerged/alice/cern.ch/user/a/alihyperloop/jobs/0018/hy_189972,
-                          /data2/MLhep/real/LHC22o_pass4_medium/unmerged/alice/cern.ch/user/a/alihyperloop/jobs/0018/hy_189973,
-                          /data2/MLhep/real/LHC22o_pass4_medium/unmerged/alice/cern.ch/user/a/alihyperloop/jobs/0018/hy_189974,
-                          /data2/MLhep/real/LHC22o_pass4_medium/unmerged/alice/cern.ch/user/a/alihyperloop/jobs/0018/hy_189975] #list of periods
-      pkl: [/data2/MLhep/prod_LHC22o_pp/period_57/pkldata,
-            /data2/MLhep/prod_LHC22o_pp/period_58/pkldata,
-            /data2/MLhep/prod_LHC22o_pp/period_59/pkldata,
-            /data2/MLhep/prod_LHC22o_pp/period_60/pkldata,
-            /data2/MLhep/prod_LHC22o_pp/period_61/pkldata,
-            /data2/MLhep/prod_LHC22o_pp/period_62/pkldata,
-            /data2/MLhep/prod_LHC22o_pp/period_63/pkldata,
-            /data2/MLhep/prod_LHC22o_pp/period_64/pkldata,
-            /data2/MLhep/prod_LHC22o_pp/period_65/pkldata,
-            /data2/MLhep/prod_LHC22o_pp/period_66/pkldata,
-            /data2/MLhep/prod_LHC22o_pp/period_67/pkldata,
-            /data2/MLhep/prod_LHC22o_pp/period_68/pkldata,
-            /data2/MLhep/prod_LHC22o_pp/period_69/pkldata,
-            /data2/MLhep/prod_LHC22o_pp/period_70/pkldata,
-            /data2/MLhep/prod_LHC22o_pp/period_71/pkldata,
-            /data2/MLhep/prod_LHC22o_pp/period_72/pkldata,
-            /data2/MLhep/prod_LHC22o_pp/period_73/pkldata,
-            /data2/MLhep/prod_LHC22o_pp/period_74/pkldata,
-            /data2/MLhep/prod_LHC22o_pp/period_75/pkldata] #list of periods
-      pkl_skimmed: [/data2/MLhep/prod_LHC22o_pp/period_57/pklskdata,
-                    /data2/MLhep/prod_LHC22o_pp/period_58/pklskdata,
-                    /data2/MLhep/prod_LHC22o_pp/period_59/pklskdata,
-                    /data2/MLhep/prod_LHC22o_pp/period_60/pklskdata,
-                    /data2/MLhep/prod_LHC22o_pp/period_61/pklskdata,
-                    /data2/MLhep/prod_LHC22o_pp/period_62/pklskdata,
-                    /data2/MLhep/prod_LHC22o_pp/period_63/pklskdata,
-                    /data2/MLhep/prod_LHC22o_pp/period_64/pklskdata,
-                    /data2/MLhep/prod_LHC22o_pp/period_65/pklskdata,
-                    /data2/MLhep/prod_LHC22o_pp/period_66/pklskdata,
-                    /data2/MLhep/prod_LHC22o_pp/period_67/pklskdata,
-                    /data2/MLhep/prod_LHC22o_pp/period_68/pklskdata,
-                    /data2/MLhep/prod_LHC22o_pp/period_69/pklskdata,
-                    /data2/MLhep/prod_LHC22o_pp/period_70/pklskdata,
-                    /data2/MLhep/prod_LHC22o_pp/period_71/pklskdata,
-                    /data2/MLhep/prod_LHC22o_pp/period_72/pklskdata,
-                    /data2/MLhep/prod_LHC22o_pp/period_73/pklskdata,
-                    /data2/MLhep/prod_LHC22o_pp/period_74/pklskdata,
-                    /data2/MLhep/prod_LHC22o_pp/period_75/pklskdata] #list of periods
-      pkl_skimmed_merge_for_ml: [/data2/MLhep/prod_LHC22o_pp/period_57/pklskmldata,
-                                 /data2/MLhep/prod_LHC22o_pp/period_58/pklskmldata,
-                                 /data2/MLhep/prod_LHC22o_pp/period_59/pklskmldata,
-                                 /data2/MLhep/prod_LHC22o_pp/period_60/pklskmldata,
-                                 /data2/MLhep/prod_LHC22o_pp/period_61/pklskmldata,
-                                 /data2/MLhep/prod_LHC22o_pp/period_62/pklskmldata,
-                                 /data2/MLhep/prod_LHC22o_pp/period_63/pklskmldata,
-                                 /data2/MLhep/prod_LHC22o_pp/period_64/pklskmldata,
-                                 /data2/MLhep/prod_LHC22o_pp/period_65/pklskmldata,
-                                 /data2/MLhep/prod_LHC22o_pp/period_66/pklskmldata,
-                                 /data2/MLhep/prod_LHC22o_pp/period_67/pklskmldata,
-                                 /data2/MLhep/prod_LHC22o_pp/period_68/pklskmldata,
-                                 /data2/MLhep/prod_LHC22o_pp/period_69/pklskmldata,
-                                 /data2/MLhep/prod_LHC22o_pp/period_70/pklskmldata,
-                                 /data2/MLhep/prod_LHC22o_pp/period_71/pklskmldata,
-                                 /data2/MLhep/prod_LHC22o_pp/period_72/pklskmldata,
-                                 /data2/MLhep/prod_LHC22o_pp/period_73/pklskmldata,
-                                 /data2/MLhep/prod_LHC22o_pp/period_74/pklskmldata,
-                                 /data2/MLhep/prod_LHC22o_pp/period_75/pklskmldata] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data2/MLhep/prod_LHC22o_pp/mltotdata
-      pkl_evtcounter_all: /data2/MLhep/prod_LHC22o_pp/evttotdata
-      mcreweights: [../Analyses, ../Analyses, ../Analyses, ../Analyses, ../Analyses, ../Analyses, ../Analyses, ../Analyses, ../Analyses, ../Analyses,
-                    ../Analyses, ../Analyses, ../Analyses, ../Analyses, ../Analyses, ../Analyses, ../Analyses, ../Analyses, ../Analyses]
-    mc:
       nprocessesparallel: 60
-      maxfiles : [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1] #list of periods
-      chunksizeunp : [100,100,100,100,100,100,100,100,100,100] #list of periods
-      chunksizeskim: [100,100,100,100,100,100,100,100,100,100] #list of periods
-      fracmerge : [1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0,1.0] #list of periods
-      seedmerge: [12,12,12,12,12,12,12,12,12,12] #list of periods
-      period: [test,test,test,test,test,test,test,test,test,test] #list of periods
-      unmerged_tree_dir: [/data2/MLhep/sim/alice/cern.ch/user/a/alihyperloop/jobs/0019/hy_195073,
-                          /data2/MLhep/sim/alice/cern.ch/user/a/alihyperloop/jobs/0019/hy_195074,
-                          /data2/MLhep/sim/alice/cern.ch/user/a/alihyperloop/jobs/0019/hy_195075,
-                          /data2/MLhep/sim/alice/cern.ch/user/a/alihyperloop/jobs/0019/hy_195076,
-                          /data2/MLhep/sim/alice/cern.ch/user/a/alihyperloop/jobs/0019/hy_195077,
-                          /data2/MLhep/sim/alice/cern.ch/user/a/alihyperloop/jobs/0019/hy_195078,
-                          /data2/MLhep/sim/alice/cern.ch/user/a/alihyperloop/jobs/0019/hy_195079,
-                          /data2/MLhep/sim/alice/cern.ch/user/a/alihyperloop/jobs/0019/hy_195080,
-                          /data2/MLhep/sim/alice/cern.ch/user/a/alihyperloop/jobs/0019/hy_195081,
-                          /data2/MLhep/sim/alice/cern.ch/user/a/alihyperloop/jobs/0019/hy_195082] #list of periods
-      pkl: [/data2/MLhep/prod_LHC22b1b_MC/period_73/pklmc,
-            /data2/MLhep/prod_LHC22b1b_MC/period_74/pklmc,
-            /data2/MLhep/prod_LHC22b1b_MC/period_75/pklmc,
-            /data2/MLhep/prod_LHC22b1b_MC/period_76/pklmc,
-            /data2/MLhep/prod_LHC22b1b_MC/period_77/pklmc,
-            /data2/MLhep/prod_LHC22b1b_MC/period_78/pklmc,
-            /data2/MLhep/prod_LHC22b1b_MC/period_79/pklmc,
-            /data2/MLhep/prod_LHC22b1b_MC/period_80/pklmc,
-            /data2/MLhep/prod_LHC22b1b_MC/period_81/pklmc,
-            /data2/MLhep/prod_LHC22b1b_MC/period_82/pklmc] #list of periods
-      pkl_skimmed: [/data2/MLhep/prod_LHC22b1b_MC/period_73/pklskmc,
-                    /data2/MLhep/prod_LHC22b1b_MC/period_74/pklskmc,
-                    /data2/MLhep/prod_LHC22b1b_MC/period_75/pklskmc,
-                    /data2/MLhep/prod_LHC22b1b_MC/period_76/pklskmc,
-                    /data2/MLhep/prod_LHC22b1b_MC/period_77/pklskmc,
-                    /data2/MLhep/prod_LHC22b1b_MC/period_78/pklskmc,
-                    /data2/MLhep/prod_LHC22b1b_MC/period_79/pklskmc,
-                    /data2/MLhep/prod_LHC22b1b_MC/period_80/pklskmc,
-                    /data2/MLhep/prod_LHC22b1b_MC/period_81/pklskmc,
-                    /data2/MLhep/prod_LHC22b1b_MC/period_82/pklskmc] #list of periods
-      pkl_skimmed_merge_for_ml: [/data2/MLhep/prod_LHC22b1b_MC/period_73/pklskmlmc,
-                                 /data2/MLhep/prod_LHC22b1b_MC/period_74/pklskmlmc,
-                                 /data2/MLhep/prod_LHC22b1b_MC/period_75/pklskmlmc,
-                                 /data2/MLhep/prod_LHC22b1b_MC/period_76/pklskmlmc,
-                                 /data2/MLhep/prod_LHC22b1b_MC/period_77/pklskmlmc,
-                                 /data2/MLhep/prod_LHC22b1b_MC/period_78/pklskmlmc,
-                                 /data2/MLhep/prod_LHC22b1b_MC/period_79/pklskmlmc,
-                                 /data2/MLhep/prod_LHC22b1b_MC/period_80/pklskmlmc,
-                                 /data2/MLhep/prod_LHC22b1b_MC/period_81/pklskmlmc,
-                                 /data2/MLhep/prod_LHC22b1b_MC/period_82/pklskmlmc] #list of periods
-      pkl_skimmed_merge_for_ml_all: /data2/MLhep/prod_LHC22b1b_MC/mltotmc
-      pkl_evtcounter_all: /data2/MLhep/prod_LHC22b1b_MC/evttotmc
-      mcreweights: [../Analyses, ../Analyses, ../Analyses, ../Analyses, ../Analyses, ../Analyses, ../Analyses, ../Analyses, ../Analyses, ../Analyses]
+      maxfiles : [-1] #list of periods
+      chunksizeunp : [100] #list of periods
+      chunksizeskim: [100] #list of periods
+      fracmerge : [0.05] #list of periods
+      seedmerge: [12] #list of periods
+      period: [LHC22o] #list of periods
+      select_period: [1]
+      prefix_dir: /data2/MLhep/
+      unmerged_tree_dir: [real/LHC22o_pass4_medium/unmerged] #list of periods
+      pkl: [LHC22pp/period_LHC22o/pkldata] #list of periods
+      pkl_skimmed: [LHC22pp/period_LHC22o/pklskdata] #list of periods
+      pkl_skimmed_merge_for_ml: [LHC22pp/period_LHC22o/pklskmldata] #list of periods
+      pkl_skimmed_merge_for_ml_all: LHC22pp/mltotdata
+      pkl_evtcounter_all: LHC22pp/evttotdata
+      #select_jobs: [[hy_189959], [hy_189000]]
+      mcreweights: [../Analyses]
+    mc:
+      nprocessesparallel: 50
+      maxfiles : [-1] #list of periods
+      chunksizeunp : [100] #list of periods
+      chunksizeskim: [100] #list of periods
+      fracmerge : [1.0] #list of periods
+      seedmerge: [12] #list of periods
+      period: [test] #list of periods
+      select_period: [1]
+      prefix_dir: /data2/MLhep/
+      unmerged_tree_dir: [sim/alice/cern.ch/user/a/alihyperloop/jobs/0024] #list of periods
+      pkl: [LHC22pp_mc/prod_LHC22b1b/pklmc] #list of periods
+      pkl_skimmed: [LHC22pp_mc/prod_LHC22b1b/pklskmc] #list of periods
+      pkl_skimmed_merge_for_ml: [LHC22pp_mc/prod_LHC22b1b/pklskmlmc] #list of periods
+      pkl_skimmed_merge_for_ml_all: LHC22pp_mc/prod_LHC22b1b/mltotmc
+      pkl_evtcounter_all: LHC22pp_mc/prod_LHC22b1b/evttotmc
+      mcreweights: [../Analyses]
   ml:
     evtsel: null
     triggersel:
@@ -337,8 +233,9 @@ LcpKpi:
     binmax: [2,4,6,8,12,24] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: BinaryClassification
     ncorescrossval: 10
-    mlplot: /data2/MLhep/mlplot # to be removed
-    mlout: /data2/MLhep/mlout # to be removed
+    prefix_dir_ml: /data2/MLhep/
+    mlplot: mlplot # to be removed
+    mlout: mlout # to be removed
 
     opt:
       isFONLLfromROOT: true
@@ -360,65 +257,13 @@ LcpKpi:
 
   mlapplication:
     data:
-      pkl_skimmed_dec: [/data2/MLhep/prod_LHC22o_pp/period_57/skpkldecdata,
-                        /data2/MLhep/prod_LHC22o_pp/period_58/skpkldecdata,
-                        /data2/MLhep/prod_LHC22o_pp/period_59/skpkldecdata,
-                        /data2/MLhep/prod_LHC22o_pp/period_60/skpkldecdata,
-                        /data2/MLhep/prod_LHC22o_pp/period_61/skpkldecdata,
-                        /data2/MLhep/prod_LHC22o_pp/period_62/skpkldecdata,
-                        /data2/MLhep/prod_LHC22o_pp/period_63/skpkldecdata,
-                        /data2/MLhep/prod_LHC22o_pp/period_64/skpkldecdata,
-                        /data2/MLhep/prod_LHC22o_pp/period_65/skpkldecdata,
-                        /data2/MLhep/prod_LHC22o_pp/period_66/skpkldecdata,
-                        /data2/MLhep/prod_LHC22o_pp/period_67/skpkldecdata,
-                        /data2/MLhep/prod_LHC22o_pp/period_68/skpkldecdata,
-                        /data2/MLhep/prod_LHC22o_pp/period_69/skpkldecdata,
-                        /data2/MLhep/prod_LHC22o_pp/period_70/skpkldecdata,
-                        /data2/MLhep/prod_LHC22o_pp/period_71/skpkldecdata,
-                        /data2/MLhep/prod_LHC22o_pp/period_72/skpkldecdata,
-                        /data2/MLhep/prod_LHC22o_pp/period_73/skpkldecdata,
-                        /data2/MLhep/prod_LHC22o_pp/period_74/skpkldecdata,
-                        /data2/MLhep/prod_LHC22o_pp/period_75/skpkldecdata] #list of periods
-      pkl_skimmed_decmerged: [/data2/MLhep/prod_LHC22o_pp/period_57/skpkldecdatamerged,
-                              /data2/MLhep/prod_LHC22o_pp/period_58/skpkldecdatamerged,
-                              /data2/MLhep/prod_LHC22o_pp/period_59/skpkldecdatamerged,
-                              /data2/MLhep/prod_LHC22o_pp/period_60/skpkldecdatamerged,
-                              /data2/MLhep/prod_LHC22o_pp/period_61/skpkldecdatamerged,
-                              /data2/MLhep/prod_LHC22o_pp/period_62/skpkldecdatamerged,
-                              /data2/MLhep/prod_LHC22o_pp/period_63/skpkldecdatamerged,
-                              /data2/MLhep/prod_LHC22o_pp/period_64/skpkldecdatamerged,
-                              /data2/MLhep/prod_LHC22o_pp/period_65/skpkldecdatamerged,
-                              /data2/MLhep/prod_LHC22o_pp/period_66/skpkldecdatamerged,
-                              /data2/MLhep/prod_LHC22o_pp/period_67/skpkldecdatamerged,
-                              /data2/MLhep/prod_LHC22o_pp/period_68/skpkldecdatamerged,
-                              /data2/MLhep/prod_LHC22o_pp/period_69/skpkldecdatamerged,
-                              /data2/MLhep/prod_LHC22o_pp/period_70/skpkldecdatamerged,
-                              /data2/MLhep/prod_LHC22o_pp/period_71/skpkldecdatamerged,
-                              /data2/MLhep/prod_LHC22o_pp/period_72/skpkldecdatamerged,
-                              /data2/MLhep/prod_LHC22o_pp/period_73/skpkldecdatamerged,
-                              /data2/MLhep/prod_LHC22o_pp/period_74/skpkldecdatamerged,
-                              /data2/MLhep/prod_LHC22o_pp/period_75/skpkldecdatamerged] #list of periods
+      prefix_dir_res: /data2/MLhep/
+      pkl_skimmed_dec: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdata] #list of periods
+      pkl_skimmed_decmerged: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdatamerged] #list of periods
     mc:
-      pkl_skimmed_dec: [/data2/MLhep/prod_LHC22b1b_MC/period_73/skpkldecmc,
-                        /data2/MLhep/prod_LHC22b1b_MC/period_74/skpkldecmc,
-                        /data2/MLhep/prod_LHC22b1b_MC/period_75/skpkldecmc,
-                        /data2/MLhep/prod_LHC22b1b_MC/period_76/skpkldecmc,
-                        /data2/MLhep/prod_LHC22b1b_MC/period_77/skpkldecmc,
-                        /data2/MLhep/prod_LHC22b1b_MC/period_78/skpkldecmc,
-                        /data2/MLhep/prod_LHC22b1b_MC/period_79/skpkldecmc,
-                        /data2/MLhep/prod_LHC22b1b_MC/period_80/skpkldecmc,
-                        /data2/MLhep/prod_LHC22b1b_MC/period_81/skpkldecmc,
-                        /data2/MLhep/prod_LHC22b1b_MC/period_82/skpkldecmc] #list of periods
-      pkl_skimmed_decmerged: [/data2/MLhep/prod_LHC22b1b_MC/period_73/skpkldecmcmerged,
-                              /data2/MLhep/prod_LHC22b1b_MC/period_74/skpkldecmcmerged,
-                              /data2/MLhep/prod_LHC22b1b_MC/period_75/skpkldecmcmerged,
-                              /data2/MLhep/prod_LHC22b1b_MC/period_76/skpkldecmcmerged,
-                              /data2/MLhep/prod_LHC22b1b_MC/period_77/skpkldecmcmerged,
-                              /data2/MLhep/prod_LHC22b1b_MC/period_78/skpkldecmcmerged,
-                              /data2/MLhep/prod_LHC22b1b_MC/period_79/skpkldecmcmerged,
-                              /data2/MLhep/prod_LHC22b1b_MC/period_80/skpkldecmcmerged,
-                              /data2/MLhep/prod_LHC22b1b_MC/period_81/skpkldecmcmerged,
-                              /data2/MLhep/prod_LHC22b1b_MC/period_82/skpkldecmcmerged] #list of periods
+      prefix_dir_res: /data2/MLhep/
+      pkl_skimmed_dec: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmc] #list of periods
+      pkl_skimmed_decmerged: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmcmerged] #list of periods
     modelname: xgboost
     modelsperptbin: [xgboost_classifierLcpKpi_dfselection_fPt_1.0_2.0.sav,
                      xgboost_classifierLcpKpi_dfselection_fPt_2.0_4.0.sav,
@@ -450,12 +295,6 @@ LcpKpi:
       triggerbit: ''
       use_cuts: False
       cuts:
-       # - "fImpactParameter0>0.0001 and fImpactParameter1>0.0001 and fImpactParameter2>0.0001"
-       # - "fImpactParameter0>0.0001 and fImpactParameter1>0.0001 and fImpactParameter2>0.0001"
-       # - "fImpactParameter0>0.0001 and fImpactParameter1>0.0001 and fImpactParameter2>0.0001"
-       # - "fImpactParameter0>0.0001 and fImpactParameter1>0.0001 and fImpactParameter2>0.0001"
-       # - "fImpactParameter0>0.0001 and fImpactParameter1>0.0001 and fImpactParameter2>0.0001"
-       # - "fImpactParameter0>0.0001 and fImpactParameter1>0.0001 and fImpactParameter2>0.0001"
         - "fCPA > 0.95"
         - "fCPA > 0.95"
         - "fCPA > 0.95"
@@ -479,40 +318,13 @@ LcpKpi:
         weighttrig: false
 
       data:
-        runselection: [null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null] #FIXME
-        results: [/data2/MLhep/Results/prod_LHC22o_pp/period_57/resultsdata,
-                  /data2/MLhep/Results/prod_LHC22o_pp/period_58/resultsdata,
-                  /data2/MLhep/Results/prod_LHC22o_pp/period_59/resultsdata,
-                  /data2/MLhep/Results/prod_LHC22o_pp/period_60/resultsdata,
-                  /data2/MLhep/Results/prod_LHC22o_pp/period_61/resultsdata,
-                  /data2/MLhep/Results/prod_LHC22o_pp/period_62/resultsdata,
-                  /data2/MLhep/Results/prod_LHC22o_pp/period_63/resultsdata,
-                  /data2/MLhep/Results/prod_LHC22o_pp/period_64/resultsdata,
-                  /data2/MLhep/Results/prod_LHC22o_pp/period_65/resultsdata,
-                  /data2/MLhep/Results/prod_LHC22o_pp/period_66/resultsdata,
-                  /data2/MLhep/Results/prod_LHC22o_pp/period_67/resultsdata,
-                  /data2/MLhep/Results/prod_LHC22o_pp/period_68/resultsdata,
-                  /data2/MLhep/Results/prod_LHC22o_pp/period_69/resultsdata,
-                  /data2/MLhep/Results/prod_LHC22o_pp/period_70/resultsdata,
-                  /data2/MLhep/Results/prod_LHC22o_pp/period_71/resultsdata,
-                  /data2/MLhep/Results/prod_LHC22o_pp/period_72/resultsdata,
-                  /data2/MLhep/Results/prod_LHC22o_pp/period_73/resultsdata,
-                  /data2/MLhep/Results/prod_LHC22o_pp/period_74/resultsdata,
-                  /data2/MLhep/Results/prod_LHC22o_pp/period_75/resultsdata] #list of periods
-        resultsallp: /data2/MLhep/Results/prod_LHC22o_pp/resultsdatatot
+        runselection: [null, null] #FIXME
+        results: [LHC22pp/Results/prod_LHC22o/resultsdata] #list of periods
+        resultsallp: LHC22pp/Results/resultsdatatot
       mc:
-        runselection: [null,null,null,null,null,null,null,null,null,null] #FIXME
-        results: [/data2/MLhep/Results/prod_LHC22b1b_MC/period_73/resultsmc,
-                  /data2/MLhep/Results/prod_LHC22b1b_MC/period_74/resultsmc,
-                  /data2/MLhep/Results/prod_LHC22b1b_MC/period_75/resultsmc,
-                  /data2/MLhep/Results/prod_LHC22b1b_MC/period_76/resultsmc,
-                  /data2/MLhep/Results/prod_LHC22b1b_MC/period_77/resultsmc,
-                  /data2/MLhep/Results/prod_LHC22b1b_MC/period_78/resultsmc,
-                  /data2/MLhep/Results/prod_LHC22b1b_MC/period_79/resultsmc,
-                  /data2/MLhep/Results/prod_LHC22b1b_MC/period_80/resultsmc,
-                  /data2/MLhep/Results/prod_LHC22b1b_MC/period_81/resultsmc,
-                  /data2/MLhep/Results/prod_LHC22b1b_MC/period_82/resultsmc] #list of periods
-        resultsallp: /data2/MLhep/Results/prod_LHC22b1b_MC/resultsmctot
+        runselection: [null] #FIXME
+        results: [LHC22pp_mc/Results/prod_LHC22b1b/resultsmc] #list of periods
+        resultsallp: LHC22pp_mc/Results/prod_LHC22b1b/resultsmctot
 
       mass_fit_lim: [2.14, 2.436] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
@@ -538,7 +350,7 @@ LcpKpi:
       MaxPercSigmaDeviation: 0.5
       # Number of initial signal sigmas around the mean to be excluded for side-band fit
       exclude_nsigma_sideband: 4
-      # Sigma around mean where signal is integrated after total fit has been done
+      # Sigma around mean where signal is integrated after total fit has been ne
       nsigma_signal: 3
       dolikelihood: true
       sigmaarray: [0.01,0.01,0.01,0.01,0.01,0.01]
