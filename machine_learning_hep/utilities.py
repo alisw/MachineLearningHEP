@@ -158,17 +158,24 @@ def list_folders(main_dir, filenameinput, maxfiles, select=None):
             for subdir1 in list_subdir1:
                 subdir1full = os.path.join(subdir0full, subdir1)
                 if os.path.isdir(subdir1full):
-                    list_subdir2 = os.listdir(subdir1full)
-                    for subdir2 in list_subdir2:
-                        subdir2full = os.path.join(subdir1full, subdir2)
-                        if os.path.isdir(subdir2full):
-                            list_files_ = os.listdir(subdir2full)
-                            for myfile in list_files_:
-                                filefull = os.path.join(subdir2full, myfile)
-                                if os.path.isfile(filefull) and \
-                                   myfile == filenameinput:
-                                    listfolders.append(os.path.join(subdir0, subdir1, subdir2))
-
+                    if (os.listdir(subdir1full)[0] ==  filenameinput):
+                        list_files_ = os.listdir(subdir1full)
+                        for myfile in list_files_:
+                            filefull = os.path.join(subdir1full, myfile)
+                            if os.path.isfile(filefull) and \
+                               myfile == filenameinput:
+                                listfolders.append(os.path.join(subdir0, subdir1))
+                    else:
+                        list_subdir2 = os.listdir(subdir1full)
+                        for subdir2 in list_subdir2:
+                            subdir2full = os.path.join(subdir1full, subdir2)
+                            if os.path.isdir(subdir2full):
+                                list_files_ = os.listdir(subdir2full)
+                                for myfile in list_files_:
+                                    filefull = os.path.join(subdir2full, myfile)
+                                    if os.path.isfile(filefull) and \
+                                       myfile == filenameinput:
+                                        listfolders.append(os.path.join(subdir0, subdir1, subdir2))
     if select:
         # Select only folders with a matching sub-string in their paths
         list_folders_tmp = []
@@ -186,16 +193,11 @@ def create_folder_struc(maindir, listpath):
     """
     for path in listpath:
         path = path.split("/")
-
-        folder = os.path.join(maindir, path[0])
-        if not os.path.exists(folder):
-            os.makedirs(folder)
-        folder = os.path.join(folder, path[1])
-        if not os.path.exists(folder):
-            os.makedirs(folder)
-        folder = os.path.join(folder, path[2])
-        if not os.path.exists(folder):
-            os.makedirs(folder)
+        folder = maindir
+        for i, element in enumerate(path):
+            folder = os.path.join(folder, element)
+            if not os.path.exists(folder):
+                os.makedirs(folder)
 
 def checkdirlist(dirlist):
     """
