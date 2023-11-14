@@ -337,9 +337,11 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         proc_class = ProcesserJets
         ana_class = AnalyzerJets
 
-    mymultiprocessmc = MultiProcesser(case, proc_class, data_param[case], typean, run_param, "mc")
-    mymultiprocessdata = MultiProcesser(case, proc_class, data_param[case], typean, run_param,\
-                                        "data")
+    mymultiprocessmc = MultiProcesser(
+        case, proc_class, data_param[case], typean, run_param, "mc")
+    mymultiprocessdata = MultiProcesser(
+        case, proc_class, data_param[case], typean, run_param, "data")
+
     ana_mgr = AnalyzerManager(ana_class, data_param[case], case, typean, doanaperperiod)
 
     analyzers = ana_mgr.get_analyzers()
