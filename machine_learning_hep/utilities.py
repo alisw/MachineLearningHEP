@@ -153,7 +153,7 @@ def list_folders(main_dir, filenameinput, maxfiles, select=None): # pylint: disa
     List all files in a subdirectory structure
     """
     if not os.path.isdir(main_dir):
-        print("the input directory =", main_dir, "does not exist")
+        logger.error("the input directory = <%s> does not exist", main_dir)
     list_subdir0 = os.listdir(main_dir)
     listfolders = []
     for subdir0 in list_subdir0: # pylint: disable=too-many-nested-blocks

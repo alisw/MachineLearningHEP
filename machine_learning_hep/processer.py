@@ -22,7 +22,6 @@ import pickle
 import os
 import random as rd
 import re
-from tqdm import tqdm
 import uproot
 import pandas as pd
 import numpy as np
@@ -317,7 +316,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
             df_processed = set()
             keys = rfile.keys()
-            for (idx, key) in tqdm(enumerate(keys[:max_no_keys]), total=len(keys)):
+            for (idx, key) in enumerate(keys[:max_no_keys]):
                 if not (df_key := re.match('^DF_(\\d+);', key)):
                     continue
 
