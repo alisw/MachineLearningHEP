@@ -16,7 +16,6 @@
 main script for doing data processing, machine learning and analysis
 """
 
-#import os
 import sys
 import subprocess
 import argparse
@@ -52,28 +51,6 @@ from machine_learning_hep.analysis.analyzer_jets import AnalyzerJets
 from machine_learning_hep.processer_jet import ProcesserJets
 
 from machine_learning_hep.analysis.systematics import SystematicsMLWP
-
-try:
-# FIXME(https://github.com/abseil/abseil-py/issues/99) # pylint: disable=fixme
-# FIXME(https://github.com/abseil/abseil-py/issues/102) #pylint: disable=fixme
-# Unfortunately, many libraries that include absl (including Tensorflow)
-# will get bitten by double-logging due to absl's incorrect use of
-# the python logging library:
-#   2019-07-19 23:47:38,829 my_logger   779 : test
-#   I0719 23:47:38.829330 139904865122112 foo.py:63] test
-#   2019-07-19 23:47:38,829 my_logger   779 : test
-#   I0719 23:47:38.829469 139904865122112 foo.py:63] test
-# The code below fixes this double-logging.  FMI see:
-#   https://github.com/tensorflow/tensorflow/issues/26691#issuecomment-500369493
-    import logging
-    import absl.logging
-    logging.root.removeHandler(absl.logging._absl_handler) # pylint: disable=protected-access
-    absl.logging._warn_preinit_stderr = False # pylint: disable=protected-access
-except Exception as e: # pylint: disable=broad-except
-    print("##############################")
-    print("Failed to fix absl logging bug", e)
-    print("##############################")
-
 
 def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite: dict, # pylint: disable=too-many-locals, too-many-statements, too-many-branches
                        data_model: dict, run_param: dict, clean: bool):
@@ -321,19 +298,15 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     ana_class = Analyzer
     syst_class = SystematicsMLWP
     if proc_type == "Dhadrons":
-        print("Using new feature for Dhadrons")
         proc_class = ProcesserDhadrons
         ana_class = AnalyzerDhadrons
     if proc_type == "Dhadrons_mult":
-        print("Using new feature for Dhadrons_mult")
         proc_class = ProcesserDhadrons_mult
         ana_class = AnalyzerDhadrons_mult
     if proc_type == "Dhadrons_jet":
-        print("Using new feature for Dhadrons_jet")
         proc_class = ProcesserDhadrons_jet
         ana_class = AnalyzerJet
     if proc_type == "Jets":
-        print("Using new feature for D0 jets (Run 3)")
         proc_class = ProcesserJets
         ana_class = AnalyzerJets
 

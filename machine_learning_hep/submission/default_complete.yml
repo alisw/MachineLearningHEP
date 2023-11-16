@@ -6,12 +6,12 @@ conversion: # pkl
   mc:
     activate: true
   data:
-    activate: false
+    activate: true
 skimming: # pkl_skimmed (pklsk), pkl_evtcounter_all
   mc:
     activate: true
   data:
-    activate: false
+    activate: true
 merging: # pkl_skimmed_merge_for_ml (pklskml)
   mc:
     activate: true
@@ -73,7 +73,7 @@ analysis:
   dofit: false # analyzer: fit
   # Control the yield systematic uncertainty
   dosyst: false # analyzer: yield_syst
-  dojetstudies: true # analyzer: fit, efficiency, sideband_sub
+  dojetstudies: false # analyzer: fit, efficiency, sideband_sub
   doeff: false # analyzer: efficiency
   docross: false # analyzer: makenormyields
   doplots: false # analyzer: plotternormyields

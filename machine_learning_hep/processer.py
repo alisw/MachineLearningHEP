@@ -102,9 +102,13 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.n_treereco = datap["files_names"]["treeoriginreco"]
         self.n_treegen = datap["files_names"]["treeorigingen"]
         self.n_treeevt = datap["files_names"]["treeoriginevt"]
-        self.n_treejetreco = datap["files_names"].get("treejetreco", None)
+        if self.mcordata == 'mc':
+            self.n_treejetreco = datap["files_names"].get("treejetdet", None)
+            self.n_treejetsubreco = datap["files_names"].get("treejetsubdet", None)
+        else:
+            self.n_treejetreco = datap["files_names"].get("treejetdata", None)
+            self.n_treejetsubreco = datap["files_names"].get("treejetsubdata", None)
         self.n_treejetgen = datap["files_names"].get("treejetgen", None)
-        self.n_treejetsubreco = datap["files_names"].get("treejetsubreco", None)
         self.n_treejetsubgen = datap["files_names"].get("treejetsubgen", None)
 
         #namefiles pkl
@@ -138,19 +142,25 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         #variables name
         self.v_all = datap["variables"]["var_all"]
-        self.v_jet = datap["variables"].get("var_jet", None)
-        self.v_jet_gen = datap["variables"].get("var_jet_gen", None)
-        self.v_jetsub = datap["variables"].get("var_jetsub", None)
-        self.v_jetsub_gen = datap["variables"].get("var_jetsub_gen", None)
         self.v_train = datap["variables"]["var_training"]
         self.v_evt = datap["variables"]["var_evt"][self.mcordata]
         self.v_gen = datap["variables"]["var_gen"]
         self.v_evtmatch = datap["variables"]["var_evt_match"]
         self.v_evtmatch_mc = datap["variables"]["var_evt_match_mc"]
-        self.v_jetmatch = datap["variables"].get("var_jet_match", None)
+        if self.mcordata == 'mc':
+            self.v_jetmatch = datap["variables"].get("var_jet_match_det", None)
+            self.v_jetsubmatch = datap["variables"].get("var_jetsub_match_det", None)
+            self.v_jet = datap["variables"].get("var_jet_det", None)
+            self.v_jetsub = datap["variables"].get("var_jetsub_det", None)
+        else:
+            self.v_jetmatch = datap["variables"].get("var_jet_match_data", None)
+            self.v_jetsubmatch = datap["variables"].get("var_jetsub_match_data", None)
+            self.v_jet = datap["variables"].get("var_jet_data", None)
+            self.v_jetsub = datap["variables"].get("var_jetsub_data", None)
+        self.v_jet_gen = datap["variables"].get("var_jet_gen", None)
+        self.v_jetsub_gen = datap["variables"].get("var_jetsub_gen", None)
         self.v_jetmatch_mc = datap["variables"].get("var_jet_match_mc", None)
         self.v_jetmatch_mc_hf = datap["variables"].get("var_jet_match_mc_hf", None)
-        self.v_jetsubmatch = datap["variables"].get("var_jetsub_match", None)
         self.v_jetsubmatch_mc = datap["variables"].get("var_jetsub_match_mc", None)
         self.v_bitvar = datap["bitmap_sel"]["var_name"]
         self.v_bitvar_origgen = datap["bitmap_sel"]["var_name_origgen"]
@@ -529,7 +539,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.logger.info("doing unpacking %s %s", self.mcordata, self.period)
         create_folder_struc(self.d_pkl, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
-        print(arguments)
         self.parallelizer(self.unpack, arguments, self.p_chunksizeunp)
 
     def process_skim_par(self):
@@ -555,7 +564,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
             if not nfiles:
                 print("There are no files to be merged")
                 sys.exit(1)
-            print(f"Use merge fraction {self.p_frac_merge[ipt]} for pT bin {ipt}")
+            self.logger.info("Use merge fraction %g for pT bin %d",
+                             self.p_frac_merge[ipt], ipt)
             ntomerge = int(nfiles * self.p_frac_merge[ipt])
             rd.seed(self.p_rd_merge)
             filesel = rd.sample(range(0, nfiles), ntomerge)
@@ -566,7 +576,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 list_sel_gensk = [self.mptfiles_gensk[ipt][j] for j in filesel]
                 merge_method(list_sel_gensk, self.lpt_gen_ml[ipt])
 
-        print("Count events...")
+        self.logger.info("Count events...")
         list_sel_evt = [self.l_evt[j] for j in indices_for_evt]
         list_sel_evtorig = [self.l_evtorig[j] for j in indices_for_evt]
         count_dict = {"evt": count_df_length_pkl(*list_sel_evt),
