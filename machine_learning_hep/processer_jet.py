@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 0238. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
 ##                                                                         ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -12,15 +12,15 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
 import pickle
+from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.processer import Processer
-from machine_learning_hep.utilities import openfile, selectdfrunlist
+from machine_learning_hep.utilities import openfile
 
 class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instance-attributes
     species = "processer"
 
-    def __init__(self, case, datap, run_param, mcordata, p_maxfiles,
+    def __init__(self, case, datap, run_param, mcordata, p_maxfiles, # pylint: disable=too-many-arguments
                 d_root, d_pkl, d_pklsk, d_pkl_ml, p_period, i_period,
                 p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                 p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
@@ -36,10 +36,17 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
         self.s_jetsel_gen = datap["analysis"][self.typean].get("jetsel_gen", None)
         self.s_jetsel_reco = datap["analysis"][self.typean].get("jetsel_reco", None)
-        self.s_jetsel_gen_matched_reco = datap["analysis"][self.typean].get("jetsel_gen_matched_reco", None)
+        self.s_jetsel_gen_matched_reco = \
+            datap["analysis"][self.typean].get("jetsel_gen_matched_reco", None)
         self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
+
+        self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
+        self.p_bin_width = datap["analysis"][self.typean]["bin_width"]
+        self.p_mass_fit_lim = datap["analysis"][self.typean]["mass_fit_lim"]
+        self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) /
+                                    self.p_bin_width))
 
     def process_histomass_single(self, index):
         self.logger.info('processing histomass single')
@@ -56,7 +63,10 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
 
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
-            with pickle.load(openfile(self.mptfiles_recosk[bin_id][index], "rb")) as df:
-                h_invmass_all = TH1F(f'hmass_{ipt}', "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-                h_invmass_all.FillN(df.len(), df.inv_mass)
+            with openfile(self.mptfiles_recosk[bin_id][index], "rb") as file:
+                df = pickle.load(file)
+                h_invmass_all = TH1F(
+                    f'hmass_{ipt}', "", 
+                    self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+                h_invmass_all.FillN(df.size, df.inv_mass)
                 h_invmass_all.Write()

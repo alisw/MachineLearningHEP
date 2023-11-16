@@ -59,15 +59,19 @@ D0pp_jet:
               fImpactParameterNormalised0, fPtProng0, fImpactParameterNormalised1, fPtProng1,
               fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1,
               fNSigTofPi0, fNSigTofKa0, fNSigTofPi1, fNSigTofKa1, fIndexHfCand2Prong_0]
-    var_jet: [fIndexCollisions, fIndexD0ChargedMCDetectorLevelJets, fIndexHfCand2Prong_0, fJetPt, fJetEta, fJetPhi, fJetNConstituents]
+    var_jet_data: [fIndexCollisions, fIndexD0ChargedJets, fIndexHfCand2Prong_0, fJetPt, fJetEta, fJetPhi, fJetNConstituents]
+    var_jet_det: [fIndexCollisions, fIndexD0ChargedMCDetectorLevelJets, fIndexHfCand2Prong_0, fJetPt, fJetEta, fJetPhi, fJetNConstituents]
     var_jet_gen: [fIndexMcCollisions, fIndexD0ChargedMCParticleLevelJets, fIndexMcParticles_0, fJetPt, fJetEta, fJetPhi, fJetNConstituents]
-    var_jetsub: [fIndexD0ChargedMCDetectorLevelJets, fZg, fRg, fNsd]
+    var_jetsub_data: [fIndexD0ChargedJets, fZg, fRg, fNsd]
+    var_jetsub_det: [fIndexD0ChargedMCDetectorLevelJets, fZg, fRg, fNsd]
     var_jetsub_gen: [fIndexD0ChargedMCParticleLevelJets, fZg, fRg, fNsd]
-    var_jet_match: [df, fIndexCollisions, fIndexHfCand2Prong_0]
-    var_jet_match_mc: [df, fIndexMcCollisions, fIndexMcParticles_0]
-    var_jet_match_mc_hf: [df, fIndexCollisions, fIndexHfCand2Prong_0]
-    var_jetsub_match: [df, fIndexD0ChargedMCDetectorLevelJets]
-    var_jetsub_match_mc: [df, fIndexD0ChargedMCParticleLevelJets]
+    var_jet_match_data: [df, fIndexCollisions, fIndexHfCand2Prong_0]
+    var_jet_match_det: [df, fIndexCollisions, fIndexHfCand2Prong_0]
+    var_jet_match_gen: [df, fIndexMcCollisions, fIndexMcParticles_0]
+    var_jet_match_gen_hf: [df, fIndexCollisions, fIndexHfCand2Prong_0]
+    var_jetsub_match_data: [df, fIndexD0ChargedJets]
+    var_jetsub_match_det: [df, fIndexD0ChargedMCDetectorLevelJets]
+    var_jetsub_match_gen: [df, fIndexD0ChargedMCParticleLevelJets]
     var_evt:
       data: [fIndexCollisions, fPosX, fPosY, fPosZ, fIsEventReject]
       mc:   [fIndexCollisions, fPosX, fPosY, fPosZ, fIsEventReject]
@@ -119,33 +123,34 @@ D0pp_jet:
     namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl.lz4
     namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl.lz4
     namefile_mcweights: mcweights.root
-    treeoriginreco: 'O2hfcandd0full'
-    treeorigingen: 'O2hfcandd0fullp'
-    treeoriginevt: 'O2hfcandd0fullev'
-    treejetreco: 'O2d0mcdo'
-    treejetgen: 'O2d0mcpo'
-    treejetsubreco: 'O2d0mcdsso'
-    treejetsubgen: 'O2d0mcpsso'
-    treeoutput: "D0tree"
     histofilename: "masshisto.root"
     efffilename: "effhisto.root"
     respfilename: "resphisto.root"
     crossfilename: "cross_section_tot.root"
 
-# test data from Nima:
-# /home/nzardosh/QARun3/D0/HF_D0_LHC22o_pass4_small/AO2D.root
+    treeoriginreco: 'O2hfcandd0full'
+    treeorigingen: 'O2hfcandd0fullp'
+    treeoriginevt: 'O2hfcandd0fullev'
+    treejetdata: 'O2d0o'
+    treejetdet: 'O2d0mcdo'
+    treejetgen: 'O2d0mcpo'
+    treejetsubdata: 'O2d0sso'
+    treejetsubdet: 'O2d0mcdsso'
+    treejetsubgen: 'O2d0mcpsso'
+    treeoutput: "D0tree"
+
   multi:
     data:
       nprocessesparallel: 1
-      maxfiles: [1] #list of periods
+      maxfiles: [5] #list of periods
       chunksizeunp:  [100] #list of periods
       chunksizeskim: [100] #list of periods
       fracmerge: [0.08] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC22o_pass4] #list of periods
-      select_period: [0]
+      select_period: [1]
       prefix_dir: /home/jklein/
-      unmerged_tree_dir: [QARun3] #list of periods
+      unmerged_tree_dir: [data/alice/cern.ch/user/a/alihyperloop/jobs/0024/hy_240062/] #list of periods
       pkl: [data/test/d0jet/pkl] #list of periods
       pkl_skimmed: [data/test/d0jet/pklsk] #list of periods
       pkl_skimmed_merge_for_ml: [data/test/d0jet/pklskml] #list of periods
