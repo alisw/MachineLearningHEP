@@ -15,7 +15,7 @@
 import pickle
 from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.processer import Processer
-from machine_learning_hep.utilities import openfile
+from machine_learning_hep.utilities import fill_hist, openfile
 
 class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instance-attributes
     species = "processer"
@@ -68,5 +68,6 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
                 h_invmass_all = TH1F(
                     f'hmass_{ipt}', "", 
                     self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-                h_invmass_all.FillN(df.size, df.inv_mass)
+                fill_hist(h_invmass_all, df.fM)
+                h_invmass_all.Print()
                 h_invmass_all.Write()

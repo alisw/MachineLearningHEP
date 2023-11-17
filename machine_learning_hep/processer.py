@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -313,7 +313,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         dfjetsubgen = None
 
         with uproot.open(self.l_root[file_index]) as rfile:
-            def read_tree(tree, df_base, var):
+            def read_df(tree, df_base, var):
                 try:
                     df = pd.DataFrame(
                         columns=var,
@@ -325,40 +325,40 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     sys.exit()
 
             df_processed = set()
-            keys = rfile.keys()
+            keys = rfile.keys(recursive=False, filter_name='DF_*')
             for (idx, key) in enumerate(keys[:max_no_keys]):
                 if not (df_key := re.match('^DF_(\\d+);', key)):
                     continue
-
                 if (df_no := df_key.group(1)) in df_processed:
                     self.logger.warning('multiple versions of DF %d', df_no)
                     continue
-                self.logger.debug('processing DF %d - %d / %d',
-                                  df_no, idx, len(keys))
+                self.logger.debug('processing DF %d - %d / %d', df_no, idx, len(keys))
                 df_processed.add(df_no)
+                rdir = rfile[key]
 
-                dfevtorig = read_tree(rfile[f'{key}/{self.n_treeevt}'], dfevtorig, self.v_evt)
-                dfreco = read_tree(rfile[f'{key}/{self.n_treereco}'], dfreco, self.v_all)
+                tree = rdir[self.n_treereco] # accessing the tree is the slow bit!
+                dfreco = read_df(tree, dfreco, self.v_all)
+                dfevtorig = read_df(rdir[self.n_treeevt], dfevtorig, self.v_evt)
 
                 if self.n_treejetreco:
-                    dfjetreco = read_tree(rfile[f'{key}/{self.n_treejetreco}'],
-                                          dfjetreco, self.v_jet)
+                    dfjetreco = read_df(rdir[self.n_treejetreco],
+                                        dfjetreco, self.v_jet)
 
                 if self.n_treejetsubreco:
-                    dfjetsubreco = read_tree(rfile[f'{key}/{self.n_treejetsubreco}'],
-                                             dfjetsubreco, self.v_jetsub)
+                    dfjetsubreco = read_df(rdir[self.n_treejetsubreco],
+                                            dfjetsubreco, self.v_jetsub)
 
                 if self.mcordata == 'mc':
-                    dfgen = read_tree(rfile[f'{key}/{self.n_treegen}'],
-                                      dfgen, self.v_gen)
+                    dfgen = read_df(rdir[self.n_treegen],
+                                    dfgen, self.v_gen)
 
                     if self.n_treejetgen:
-                        dfjetgen = read_tree(rfile[f'{key}/{self.n_treejetgen}'],
-                                             dfjetgen, self.v_jet_gen)
+                        dfjetgen = read_df(rdir[self.n_treejetgen],
+                                           dfjetgen, self.v_jet_gen)
 
                     if self.n_treejetsubgen:
-                        dfjetsubgen = read_tree(rfile[f'{key}/{self.n_treejetsubgen}'],
-                                                dfjetsubgen, self.v_jetsub_gen)
+                        dfjetsubgen = read_df(rdir[self.n_treejetsubgen],
+                                              dfjetsubgen, self.v_jetsub_gen)
 
         dfevtorig = selectdfquery(dfevtorig, self.s_cen_unp)
         dfevtorig = dfevtorig.reset_index(drop=True)

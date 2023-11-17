@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -123,58 +123,39 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
 
     dojetstudies = data_config["analysis"]["dojetstudies"]
 
-    dirpklmc = []
-    dirpklskmc = []
-    dirpklmlmc = []
-    dirprefixmc = data_param[case]["multi"]["mc"].get("prefix_dir", "")
-    for s in data_param[case]["multi"]["mc"]["pkl"]:
-        dirpklmc.append(dirprefixmc + s)
-    for s in data_param[case]["multi"]["mc"]["pkl_skimmed"]:
-        dirpklskmc.append(dirprefixmc + s)
-    for s in data_param[case]["multi"]["mc"]["pkl_skimmed_merge_for_ml"]:
-        dirpklmlmc.append(dirprefixmc + s)
-    dirpklevtcounter_allmc = dirprefixmc + data_param[case]["multi"]["mc"]["pkl_evtcounter_all"]
-    dirpklmltotmc = dirprefixmc + data_param[case]["multi"]["mc"]["pkl_skimmed_merge_for_ml_all"]
+    dp = data_param[case]["multi"]["mc"]
+    dirprefixmc = dp.get("prefix_dir", "")
+    dirpklmc = [dirprefixmc + p for p in dp["pkl"]]
+    dirpklskmc = [dirprefixmc + p for p in dp["pkl_skimmed"]]
+    dirpklmlmc = [dirprefixmc + p for p in dp["pkl_skimmed_merge_for_ml"]]
+    dirpklevtcounter_allmc = dirprefixmc + dp["pkl_evtcounter_all"]
+    dirpklmltotmc = dirprefixmc + dp["pkl_skimmed_merge_for_ml_all"]
 
-    dirpkldata = []
-    dirpklskdata = []
-    dirpklmldata = []
-    dirprefixdata = data_param[case]["multi"]["data"].get("prefix_dir", "")
-    for s in data_param[case]["multi"]["data"]["pkl"]:
-        dirpkldata.append(dirprefixdata + s)
-    for s in data_param[case]["multi"]["data"]["pkl_skimmed"]:
-        dirpklskdata.append(dirprefixdata + s)
-    for s in data_param[case]["multi"]["data"]["pkl_skimmed_merge_for_ml"]:
-        dirpklmldata.append(dirprefixdata + s)
-    dirpklevtcounter_alldata = dirprefixdata + \
-        data_param[case]["multi"]["data"]["pkl_evtcounter_all"]
-    dirpklmltotdata = dirprefixdata + \
-        data_param[case]["multi"]["data"]["pkl_skimmed_merge_for_ml_all"]
+    dp = data_param[case]["multi"]["data"]
+    dirprefixdata = dp.get("prefix_dir", "")
+    dirpkldata = [dirprefixdata + p for p in dp["pkl"]]
+    dirpklskdata = [dirprefixdata + p for p in dp["pkl_skimmed"]]
+    dirpklmldata = [dirprefixdata + p for p in dp["pkl_skimmed_merge_for_ml"]]
+    dirpklevtcounter_alldata = dirprefixdata + dp["pkl_evtcounter_all"]
+    dirpklmltotdata = dirprefixdata + dp["pkl_skimmed_merge_for_ml_all"]
 
-    dirpklskdecmc = []
-    dirpklskdec_mergedmc = []
-    dirpklskdecdata = []
-    dirpklskdec_mergeddata = []
-    dirprefixmcres = data_param[case]["mlapplication"]["mc"].get("prefix_dir_res", "")
-    for s in data_param[case]["mlapplication"]["mc"]["pkl_skimmed_dec"]:
-        dirpklskdecmc.append(dirprefixmcres + s)
-    for s in data_param[case]["mlapplication"]["mc"]["pkl_skimmed_decmerged"]:
-        dirpklskdec_mergedmc.append(dirprefixmcres + s)
-    dirprefixdatares = data_param[case]["mlapplication"]["data"].get("prefix_dir_res", "")
-    for s in data_param[case]["mlapplication"]["data"]["pkl_skimmed_dec"]:
-        dirpklskdecdata.append(dirprefixdatares + s)
-    for s in data_param[case]["mlapplication"]["data"]["pkl_skimmed_decmerged"]:
-        dirpklskdec_mergeddata.append(dirprefixdatares + s)
+    dp = data_param[case]["mlapplication"]["mc"]
+    dirprefixmcres = dp.get("prefix_dir_res", "")
+    dirpklskdecmc = [dirprefixmcres + p for p in dp["pkl_skimmed_dec"]]
+    dirpklskdec_mergedmc = [dirprefixmcres + p for p in dp["pkl_skimmed_decmerged"]]
 
-    dirresultsdata = []
-    dirresultsmc = []
-    for s in data_param[case]["analysis"][typean]["data"]["results"]:
-        dirresultsdata.append(dirprefixdatares + s)
-    for s in data_param[case]["analysis"][typean]["mc"]["results"]:
-        dirresultsmc.append(dirprefixmcres + s)
-    dirresultsdatatot = dirprefixdatares + \
-        data_param[case]["analysis"][typean]["data"]["resultsallp"]
-    dirresultsmctot = dirprefixmcres + data_param[case]["analysis"][typean]["mc"]["resultsallp"]
+    dp = data_param[case]["mlapplication"]["data"]
+    dirprefixdatares = dp.get("prefix_dir_res", "")
+    dirpklskdecdata = [dirprefixdatares + p for p in dp["pkl_skimmed_dec"]]
+    dirpklskdec_mergeddata = [dirprefixdatares + p for p in dp["pkl_skimmed_decmerged"]]
+
+    dp = data_param[case]["analysis"][typean]["data"]
+    dirresultsdata = [dirprefixdatares + p for p in dp["results"]]
+    dirresultsdatatot = dirprefixdatares + dp["resultsallp"]
+
+    dp = data_param[case]["analysis"][typean]["mc"]
+    dirresultsmc = [dirprefixmcres + p for p in dp["results"]]
+    dirresultsmctot = dirprefixmcres + dp["resultsallp"]
 
     binminarray = data_param[case]["ml"]["binmin"]
     binmaxarray = data_param[case]["ml"]["binmax"]
