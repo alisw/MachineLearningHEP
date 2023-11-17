@@ -47,11 +47,11 @@ D0pp_jet:
     var_ismcbkg: ismcbkg
     var_ismcrefl: ismcrefl
     isstd : [[1],[]]
-    ismcsignal: [[1],[]]
-    ismcprompt: [[1],[]]
-    ismcfd: [[2],[]]
+    ismcsignal: [[0],[]]
+    ismcprompt: [[0],[]]
+    ismcfd: [[1],[]]
     ismcbkg: [[],[1]]
-    ismcrefl: [[1],[1]]
+    ismcrefl: [[1],[1]] # probably missing from tree creator
 
   variables:
     var_all: [fIndexCollisions, fFlagMc, fCandidateSelFlag, fOriginMcRec, fY, fEta, fPt, fCpa, fCpaXY, fM,

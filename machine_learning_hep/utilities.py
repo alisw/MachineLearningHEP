@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -46,9 +46,11 @@ logger = get_logger()
 # pylint: disable=line-too-long, consider-using-f-string, too-many-lines
 # pylint: disable=unspecified-encoding, consider-using-generator, invalid-name, import-outside-toplevel
 
-def fill_hist(hist, arr, weights = 0):
-    assert arr.ndim == 1 and weights.ndim == 1, 'fill_hist handles 1d histos only'
-    hist.FillN(len(arr), arr, weights)
+def fill_hist(hist, arr, weights = None):
+    assert arr.ndim == 1, 'fill_hist handles 1d histos only'
+    if len(arr) == 0:
+        return
+    hist.FillN(len(arr), np.float64(arr), weights or 0)
 
 def hist2array(hist):
     assert hist.GetDimension() == 1
