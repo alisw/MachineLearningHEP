@@ -670,17 +670,20 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                     return 0
 
             if fbkg[ibin1] == "kLin":
-                fit_func = TF1("fit_func", FitBkg(), fitlim[0], fitlim[1], 2)
+                bkgFunc = FitBkg()
+                fit_func = TF1("fit_func", bkgFunc, fitlim[0], fitlim[1], 2)
                 hmass.Fit(fit_func, '', '', fitlim[0], fitlim[1])
                 pars = fit_func.GetParameters()
                 bkg_func = TF1("fbkg", "pol1", fitlim[0], fitlim[1])
             elif fbkg[ibin1] == "Pol2":
-                fit_func = TF1("fit_func", FitBkg(), fitlim[0], fitlim[1], 3)
-                hmass.Fit(fit_func, '', '', fitlim[0], fitlim[1])
+                bkgFunc = FitBkg()
+                fit_func = TF1("fit_func", bkgFunc, fitlim[0], fitlim[1], 3)
+                hmass.Fit("fit_func", '', '', fitlim[0], fitlim[1])
                 pars = fit_func.GetParameters()
                 bkg_func = TF1("fbkg", "pol2", fitlim[0], fitlim[1])
             elif fbkg[ibin1] == "kExpo":
-                fit_func = TF1("fit_func", FitBkg(), fitlim[0], fitlim[1], 2)
+                bkgFunc = FitBkg()
+                fit_func = TF1("fit_func", bkgFunc, fitlim[0], fitlim[1], 2)
                 hmass.Fit(fit_func, '', '', fitlim[0], fitlim[1])
                 pars = fit_func.GetParameters()
                 bkg_func = TF1("fbkg", "expo", fitlim[0], fitlim[1])

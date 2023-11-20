@@ -497,6 +497,10 @@ class FitAliHF(FitROOT):
         signif = c_double()
         signif_err = c_double()
         self.kernel.Significance(n_sigma_signal, signif, signif_err)
+        bkg = bkg.value
+        bkg_err = bkg_err.value
+        signif = signif.value
+        signif_err = signif_err.value
         sig_o_bkg = sig / bkg if bkg > 0. else -1.
 
         root_objects.append(self.add_pave_helper_(0.15, 0.7, 0.48, 0.89, "NDC"))

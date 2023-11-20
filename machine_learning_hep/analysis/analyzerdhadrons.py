@@ -54,10 +54,15 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         self.lpt_probcutfin = datap["mlapplication"]["probcutoptimal"]
         self.triggerbit = datap["analysis"][self.typean].get("triggerbit", "")
 
-        self.d_resultsallpmc = datap["analysis"][typean]["mc"]["results"][period] \
-            if period is not None else datap["analysis"][typean]["mc"]["resultsallp"]
-        self.d_resultsallpdata = datap["analysis"][typean]["data"]["results"][period] \
-            if period is not None else datap["analysis"][typean]["data"]["resultsallp"]
+        dp = datap["analysis"][self.typean]
+        self.d_prefix_mc = dp["mc"].get("prefix_dir_res")
+        self.d_prefix_data = dp["data"].get("prefix_dir_res")
+        self.d_resultsallpmc = self.d_prefix_mc + dp["mc"]["results"][period] \
+            if period is not None \
+            else self.d_prefix_mc + dp["mc"]["resultsallp"]
+        self.d_resultsallpdata =  + dp["data"]["results"][period] \
+            if period is not None \
+            else self.d_prefix_data + dp["data"]["resultsallp"]
 
         n_filemass_name = datap["files_names"]["histofilename"]
         self.n_filemass = os.path.join(self.d_resultsallpdata, n_filemass_name)

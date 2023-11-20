@@ -25,10 +25,11 @@ class Analyzer(WorkflowBase):
 
         # The only thing here is to dump the database in the data analysis directory
         for mcordata in ("mc", "data"):
-            prefix_dir_res = datap["mlapplication"][mcordata].get("prefix_dir_res", "")
-            results_dir = prefix_dir_res + datap["analysis"][typean][mcordata]["results"][period] \
+            dp = datap["analysis"][typean][mcordata]
+            prefix_dir_res = dp.get("prefix_dir_res", "")
+            results_dir = prefix_dir_res + dp["results"][period] \
                     if period is not None \
-                    else prefix_dir_res + datap["analysis"][typean][mcordata]["resultsallp"]
+                    else prefix_dir_res + dp["resultsallp"]
             if not exists(results_dir):
                 # create otput directories in case they do not exist
                 makedirs(results_dir)

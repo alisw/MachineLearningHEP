@@ -133,7 +133,7 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
             h_invmass = TH1F("hmass" + suffix, "", self.p_num_bins,
                              self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
 
-            fill_hist(h_invmass, df[self.v_invmass].to_numpy())
+            fill_hist(h_invmass, df[self.v_invmass])
             myfile.cd()
             h_invmass.Write()
 
@@ -149,9 +149,9 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
                                      self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 h_invmass_refl = TH1F("hmass_refl" + suffix, "", self.p_num_bins,
                                       self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-                fill_hist(h_invmass_sig, df_sig[self.v_invmass].to_numpy())
-                fill_hist(h_invmass_bkg, df_bkg[self.v_invmass].to_numpy())
-                fill_hist(h_invmass_refl, df_refl[self.v_invmass].to_numpy())
+                fill_hist(h_invmass_sig, df_sig[self.v_invmass])
+                fill_hist(h_invmass_bkg, df_bkg[self.v_invmass])
+                fill_hist(h_invmass_refl, df_refl[self.v_invmass])
                 myfile.cd()
                 h_invmass_sig.Write()
                 h_invmass_bkg.Write()

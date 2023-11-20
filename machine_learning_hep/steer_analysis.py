@@ -140,20 +140,22 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     dirpklmltotdata = dirprefixdata + dp["pkl_skimmed_merge_for_ml_all"]
 
     dp = data_param[case]["mlapplication"]["mc"]
-    dirprefixmcres = dp.get("prefix_dir_res", "")
-    dirpklskdecmc = [dirprefixmcres + p for p in dp["pkl_skimmed_dec"]]
-    dirpklskdec_mergedmc = [dirprefixmcres + p for p in dp["pkl_skimmed_decmerged"]]
+    dirprefixmcapp = dp.get("prefix_dir_app", "")
+    dirpklskdecmc = [dirprefixmcapp + p for p in dp["pkl_skimmed_dec"]]
+    dirpklskdec_mergedmc = [dirprefixmcapp + p for p in dp["pkl_skimmed_decmerged"]]
 
     dp = data_param[case]["mlapplication"]["data"]
-    dirprefixdatares = dp.get("prefix_dir_res", "")
-    dirpklskdecdata = [dirprefixdatares + p for p in dp["pkl_skimmed_dec"]]
-    dirpklskdec_mergeddata = [dirprefixdatares + p for p in dp["pkl_skimmed_decmerged"]]
+    dirprefixdataapp = dp.get("prefix_dir_app", "")
+    dirpklskdecdata = [dirprefixdataapp + p for p in dp["pkl_skimmed_dec"]]
+    dirpklskdec_mergeddata = [dirprefixdataapp + p for p in dp["pkl_skimmed_decmerged"]]
 
     dp = data_param[case]["analysis"][typean]["data"]
+    dirprefixdatares = dp.get("prefix_dir_res", "")
     dirresultsdata = [dirprefixdatares + p for p in dp["results"]]
     dirresultsdatatot = dirprefixdatares + dp["resultsallp"]
 
     dp = data_param[case]["analysis"][typean]["mc"]
+    dirprefixmcres = dp.get("prefix_dir_res", "")
     dirresultsmc = [dirprefixmcres + p for p in dp["results"]]
     dirresultsmctot = dirprefixmcres + dp["resultsallp"]
 

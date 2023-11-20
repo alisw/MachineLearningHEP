@@ -257,11 +257,11 @@ LcpKpi:
 
   mlapplication:
     data:
-      prefix_dir_res: /data2/MLhep/
+      prefix_dir_app: /data2/MLhep/
       pkl_skimmed_dec: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdata] #list of periods
       pkl_skimmed_decmerged: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdatamerged] #list of periods
     mc:
-      prefix_dir_res: /data2/MLhep/
+      prefix_dir_app: /data2/MLhep/
       pkl_skimmed_dec: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmc] #list of periods
       pkl_skimmed_decmerged: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmcmerged] #list of periods
     modelname: xgboost
@@ -272,9 +272,9 @@ LcpKpi:
                      xgboost_classifierLcpKpi_dfselection_fPt_8.0_12.0.sav,
                      xgboost_classifierLcpKpi_dfselection_fPt_12.0_24.0.sav]
     probcutpresel:
-      data: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1] #list of nbins
-      mc: [0.1, 0.1, 0.1, 0.1, 0.1, 0.1] #list of nbins
-    probcutoptimal: [0.3, 0.3, 0.3, 0.3, 0.3, 0.3] #list of nbins
+      data: [0.3, 0.3, 0.3, 0.3, 0.3, 0.3] #list of nbins
+      mc: [0.3, 0.3, 0.3, 0.3, 0.3, 0.3] #list of nbins
+    probcutoptimal: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5] #list of nbins
 
   analysis:
     indexhptspectrum: -1 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
@@ -319,10 +319,12 @@ LcpKpi:
 
       data:
         runselection: [null, null] #FIXME
+        prefix_dir_res: /data2/MLhep/
         results: [LHC22pp/Results/prod_LHC22o/resultsdata] #list of periods
         resultsallp: LHC22pp/Results/resultsdatatot
       mc:
         runselection: [null] #FIXME
+        prefix_dir_res: /data2/MLhep/
         results: [LHC22pp_mc/Results/prod_LHC22b1b/resultsmc] #list of periods
         resultsallp: LHC22pp_mc/Results/prod_LHC22b1b/resultsmctot
 
@@ -330,11 +332,11 @@ LcpKpi:
       bin_width: 0.001 # bin width of the invariant mass histogram
       init_fits_from: [mc,mc,mc,mc,mc,mc] # data or mc
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
-      bkgfunc: [Pol2.Pol2,Pol2,Pol2,Pol2,Pol2]
+      bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.286
       massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
       massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
-      rebin: [4,4,4,4,4,4]
+      rebin: [6,6,6,6,6,6]
       fix_mean: [false,false,false,false,false,false]
       fix_sigma: [false,false,false,false,false,false]
       masssecpeak: 0.
@@ -360,7 +362,7 @@ LcpKpi:
       latexbin2var: "n_{trkl}"
       nevents: null
       dodoublecross: false
-      dobkgfromsideband: true
+      dobkgfromsideband: false
 
   systematics:
     probvariation:
