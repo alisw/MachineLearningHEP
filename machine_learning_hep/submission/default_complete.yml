@@ -42,7 +42,6 @@ ml_study: # mlout, mlplot
   docrossvalidation: false	
   dogridsearch: false
   dobayesianopt: false
-  
 
 mlapplication:
   data:
