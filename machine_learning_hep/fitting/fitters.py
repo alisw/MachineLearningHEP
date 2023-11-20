@@ -24,7 +24,7 @@ from array import array
 from math import sqrt
 from ctypes import c_double
 
-# pylint: disable=import-error, no-name-in-module, unused-import
+# pylint: disable=import-error, no-name-in-module, unused-import, f-string-without-interpolation
 from ROOT import AliHFInvMassFitter, AliVertexingHFUtils, AliHFInvMassMultiTrialFit
 from ROOT import TFile, TH1F, TH1D, TF1, TPaveText, TLine, TLegend, TLatex
 from ROOT import kBlue, kRed, kGreen, kMagenta, kOrange, kPink, kCyan, kYellow, kBlack
@@ -1403,7 +1403,7 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
             pad.cd()
             pad.SetLeftMargin(0.13)
             pad.SetRightMargin(0.06)
-            lim_delta = (ylims[1] - ylims[0])
+            lim_delta = ylims[1] - ylims[0]
             lim_min = ylims[0] - 0.1 * lim_delta
             lim_max = ylims[1] + 0.1 * lim_delta
             for h in  histos:

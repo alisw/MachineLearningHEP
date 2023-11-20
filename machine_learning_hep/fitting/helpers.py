@@ -20,7 +20,7 @@ from glob import glob
 from array import array
 from ctypes import c_double
 
-#pylint: disable=too-many-lines, too-few-public-methods
+#pylint: disable=too-many-lines, too-few-public-methods, consider-using-f-string, too-many-statements
 from ROOT import TFile, TH1F, TF1, TCanvas, gStyle #pylint: disable=import-error, no-name-in-module
 
 from machine_learning_hep.logger import get_logger
@@ -29,7 +29,7 @@ from machine_learning_hep.utilities_plot import plot_histograms
 from machine_learning_hep.fitting.utils import save_fit, load_fit
 from machine_learning_hep.fitting.fitters import FitAliHF, FitROOTGauss, FitSystAliHF
 
-class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many-statements
+class MLFitParsFactory: # pylint: disable=too-many-instance-attributes
     """
     Managing MLHEP specific fit parameters and is used to collect and retrieve all information
     required to initialise a (systematic) fit

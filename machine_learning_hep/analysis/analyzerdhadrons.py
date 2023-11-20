@@ -20,7 +20,7 @@ import os
 # pylint: disable=unused-wildcard-import, wildcard-import
 #from array import array
 #import itertools
-# pylint: disable=import-error, no-name-in-module, unused-import
+# pylint: disable=import-error, no-name-in-module, unused-import, consider-using-f-string
 # from root_numpy import hist2array, array2hist
 from ROOT import TFile, TH1F, TH2F, TCanvas, TPad, TF1, TH1D
 from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
