@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -24,7 +24,7 @@ from array import array
 from math import sqrt
 from ctypes import c_double
 
-# pylint: disable=import-error, no-name-in-module, unused-import
+# pylint: disable=import-error, no-name-in-module, unused-import, f-string-without-interpolation
 from ROOT import AliHFInvMassFitter, AliVertexingHFUtils, AliHFInvMassMultiTrialFit
 from ROOT import TFile, TH1F, TH1D, TF1, TPaveText, TLine, TLegend, TLatex
 from ROOT import kBlue, kRed, kGreen, kMagenta, kOrange, kPink, kCyan, kYellow, kBlack
@@ -497,6 +497,10 @@ class FitAliHF(FitROOT):
         signif = c_double()
         signif_err = c_double()
         self.kernel.Significance(n_sigma_signal, signif, signif_err)
+        bkg = bkg.value
+        bkg_err = bkg_err.value
+        signif = signif.value
+        signif_err = signif_err.value
         sig_o_bkg = sig / bkg if bkg > 0. else -1.
 
         root_objects.append(self.add_pave_helper_(0.15, 0.7, 0.48, 0.89, "NDC"))
@@ -1399,7 +1403,7 @@ class FitSystAliHF(FitROOT): # pylint: disable=too-many-instance-attributes
             pad.cd()
             pad.SetLeftMargin(0.13)
             pad.SetRightMargin(0.06)
-            lim_delta = (ylims[1] - ylims[0])
+            lim_delta = ylims[1] - ylims[0]
             lim_min = ylims[0] - 0.1 * lim_delta
             lim_max = ylims[1] + 0.1 * lim_delta
             for h in  histos:

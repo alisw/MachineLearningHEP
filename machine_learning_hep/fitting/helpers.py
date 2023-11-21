@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -20,7 +20,7 @@ from glob import glob
 from array import array
 from ctypes import c_double
 
-#pylint: disable=too-many-lines, too-few-public-methods
+#pylint: disable=too-many-lines, too-few-public-methods, consider-using-f-string, too-many-statements
 from ROOT import TFile, TH1F, TF1, TCanvas, gStyle #pylint: disable=import-error, no-name-in-module
 
 from machine_learning_hep.logger import get_logger
@@ -29,7 +29,7 @@ from machine_learning_hep.utilities_plot import plot_histograms
 from machine_learning_hep.fitting.utils import save_fit, load_fit
 from machine_learning_hep.fitting.fitters import FitAliHF, FitROOTGauss, FitSystAliHF
 
-class MLFitParsFactory: # pylint: disable=too-many-instance-attributes, too-many-statements
+class MLFitParsFactory: # pylint: disable=too-many-instance-attributes
     """
     Managing MLHEP specific fit parameters and is used to collect and retrieve all information
     required to initialise a (systematic) fit
@@ -670,17 +670,20 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
                     return 0
 
             if fbkg[ibin1] == "kLin":
-                fit_func = TF1("fit_func", FitBkg(), fitlim[0], fitlim[1], 2)
+                bkgFunc = FitBkg()
+                fit_func = TF1("fit_func", bkgFunc, fitlim[0], fitlim[1], 2)
                 hmass.Fit(fit_func, '', '', fitlim[0], fitlim[1])
                 pars = fit_func.GetParameters()
                 bkg_func = TF1("fbkg", "pol1", fitlim[0], fitlim[1])
             elif fbkg[ibin1] == "Pol2":
-                fit_func = TF1("fit_func", FitBkg(), fitlim[0], fitlim[1], 3)
-                hmass.Fit(fit_func, '', '', fitlim[0], fitlim[1])
+                bkgFunc = FitBkg()
+                fit_func = TF1("fit_func", bkgFunc, fitlim[0], fitlim[1], 3)
+                hmass.Fit("fit_func", '', '', fitlim[0], fitlim[1])
                 pars = fit_func.GetParameters()
                 bkg_func = TF1("fbkg", "pol2", fitlim[0], fitlim[1])
             elif fbkg[ibin1] == "kExpo":
-                fit_func = TF1("fit_func", FitBkg(), fitlim[0], fitlim[1], 2)
+                bkgFunc = FitBkg()
+                fit_func = TF1("fit_func", bkgFunc, fitlim[0], fitlim[1], 2)
                 hmass.Fit(fit_func, '', '', fitlim[0], fitlim[1])
                 pars = fit_func.GetParameters()
                 bkg_func = TF1("fbkg", "expo", fitlim[0], fitlim[1])

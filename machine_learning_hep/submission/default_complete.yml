@@ -4,44 +4,44 @@ download:
     activate: false
 conversion: # pkl
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 skimming: # pkl_skimmed (pklsk), pkl_evtcounter_all
   mc:
-    activate: true
+    activate: false
   data:
-    activate: true
+    activate: false
 merging: # pkl_skimmed_merge_for_ml (pklskml)
   mc:
-    activate: true
+    activate: false
   data:
     activate: false
 mergingperiods: # pkl_skimmed_merge_for_ml_all
   mc:
-    activate: true
+    activate: false
   data:
     activate: false
 
 ml_study: # mlout, mlplot
   activate: false
-  docorrelation: false
   dotraining: false
   dotesting: false
-  doapplytodatamc: false
-  docrossvalidation: false
-  dolearningcurve: false
+  doplotdistr: false
   doroc: false
   doroctraintest: false
-  doplotdistr: false
   doimportance: false
   doimportanceshap: false
-  dogridsearch: false
-  dobayesianopt: false
-  doboundary: false
+  docorrelation: false
+  dolearningcurve: false
+  doapplytodatamc: false
+  doscancuts: false
   doefficiency: false
   dosignifopt: false
-  doscancuts: false
+  doboundary: false
+  docrossvalidation: false
+  dogridsearch: false
+  dobayesianopt: false
 
 mlapplication:
   data:
@@ -59,16 +59,16 @@ analysis:
   # Do only merged (false)
   doperperiod: false
   data:
-    histomass: true # processer: process_histomass
+    histomass: false # processer: process_histomass
     dojetsystematics: false # analyzer: jetsystematics
   mc:
-    histomass: true # processer: process_histomass
+    histomass: false # processer: process_histomass
     efficiency: false # processer: process_efficiency
     efficiency_resp: false # analyzer: efficiency
     response: false # processer: process_response
     feeddown: false # analyzer: feeddown
     dounfolding: false # analyzer: unfolding, unfolding_closure
-  doqa: true
+  doqa: false
   dofit: false # analyzer: fit
   # Control the yield systematic uncertainty
   dosyst: false # analyzer: yield_syst

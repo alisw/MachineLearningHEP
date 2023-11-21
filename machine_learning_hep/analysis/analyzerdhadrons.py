@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -20,7 +20,7 @@ import os
 # pylint: disable=unused-wildcard-import, wildcard-import
 #from array import array
 #import itertools
-# pylint: disable=import-error, no-name-in-module, unused-import
+# pylint: disable=import-error, no-name-in-module, unused-import, consider-using-f-string
 # from root_numpy import hist2array, array2hist
 from ROOT import TFile, TH1F, TH2F, TCanvas, TPad, TF1, TH1D
 from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
@@ -54,10 +54,15 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         self.lpt_probcutfin = datap["mlapplication"]["probcutoptimal"]
         self.triggerbit = datap["analysis"][self.typean].get("triggerbit", "")
 
-        self.d_resultsallpmc = datap["analysis"][typean]["mc"]["results"][period] \
-            if period is not None else datap["analysis"][typean]["mc"]["resultsallp"]
-        self.d_resultsallpdata = datap["analysis"][typean]["data"]["results"][period] \
-            if period is not None else datap["analysis"][typean]["data"]["resultsallp"]
+        dp = datap["analysis"][self.typean]
+        self.d_prefix_mc = dp["mc"].get("prefix_dir_res")
+        self.d_prefix_data = dp["data"].get("prefix_dir_res")
+        self.d_resultsallpmc = self.d_prefix_mc + dp["mc"]["results"][period] \
+            if period is not None \
+            else self.d_prefix_mc + dp["mc"]["resultsallp"]
+        self.d_resultsallpdata =  + dp["data"]["results"][period] \
+            if period is not None \
+            else self.d_prefix_data + dp["data"]["resultsallp"]
 
         n_filemass_name = datap["files_names"]["histofilename"]
         self.n_filemass = os.path.join(self.d_resultsallpdata, n_filemass_name)
