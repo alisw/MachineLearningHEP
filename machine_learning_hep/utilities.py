@@ -73,6 +73,8 @@ def openfile(filename, attr):
         return gzip.open(filename, attr)
     if filename.lower().endswith('.lz4'):
         return lz4.frame.open(filename, attr)
+    if filename.lower().endswith('.pkl'):
+        return open(filename, attr, encoding='utf-8')
     return open(filename, attr)
 
 def mask_df(df_to_mask, mask_config):
