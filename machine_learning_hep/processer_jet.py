@@ -69,5 +69,4 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
                     f'hmass_{ipt}', "", 
                     self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 fill_hist(h_invmass_all, df.fM)
-                h_invmass_all.Print()
                 h_invmass_all.Write()
