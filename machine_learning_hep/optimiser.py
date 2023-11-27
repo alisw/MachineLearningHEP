@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -31,7 +31,7 @@ from machine_learning_hep.utilities import openfile, selectdfquery, mask_df
 from machine_learning_hep.correlations import vardistplot, scatterplot, correlationmatrix
 from machine_learning_hep.models import getclf_scikit, getclf_xgboost, getclf_keras
 from machine_learning_hep.models import fit, savemodels, readmodels, test, apply, decisionboundaries
-from machine_learning_hep.root import write_tree
+# from machine_learning_hep.root import write_tree
 from machine_learning_hep.mlperformance import cross_validation_mse, plot_cross_validation_mse
 from machine_learning_hep.mlperformance import plot_learning_curves, precision_recall
 from machine_learning_hep.mlperformance import roc_train_test, plot_overtraining
@@ -54,10 +54,11 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
 
         self.logger = get_logger()
 
-        dirprefix = data_param["multi"]["data"].get("prefix_dir", "")
+        dirprefixdata = data_param["multi"]["data"].get("prefix_dir", "")
+        dirprefixmc = data_param["multi"]["mc"].get("prefix_dir", "")
         dirprefix_ml = data_param["ml"].get("prefix_dir_ml", "")
-        dirmcml = dirprefix + data_param["multi"]["mc"]["pkl_skimmed_merge_for_ml_all"]
-        dirdataml = dirprefix + data_param["multi"]["data"]["pkl_skimmed_merge_for_ml_all"]
+        dirmcml = dirprefixmc + data_param["multi"]["mc"]["pkl_skimmed_merge_for_ml_all"]
+        dirdataml = dirprefixdata + data_param["multi"]["data"]["pkl_skimmed_merge_for_ml_all"]
         self.v_bin = data_param["var_binning"]
         #directory
         self.dirmlout = dirprefix_ml + data_param["ml"]["mlout"]
@@ -75,6 +76,8 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
             print(f"rm -r {self.dirmlplot}")
             self.logger.fatal("Please remove above directories as indicated above first and " \
                     "run again")
+        if self.steps_done is None:
+            self.steps_done = []
 
         #ml file names
         self.n_reco = data_param["files_names"]["namefile_reco"]
@@ -205,7 +208,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.f_mltest_applied = f"{self.dirmlout}/testsample_{self.s_suffix}_mldecision.pkl"
         self.df_mltest_applied = None
 
-        print(training_var)
+        self.logger.info('training variables: %s', training_var)
 
     def create_suffix(self):
         string_selection = createstringselection(self.v_bin, self.p_binmin, self.p_binmax)
@@ -320,16 +323,10 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.step_done("preparemlsamples")
 
     def step_done(self, step):
-        if self.steps_done is None:
-            self.steps_done = []
-
         step_name = f"{step}_{self.p_binmin}_{self.p_binmax}"
         if step_name in self.steps_done:
-            print("\n\n")
             self.logger.warning("Done ML step %s already. It's skipped now. Remove the step " \
-                    "from the list in the following file", step_name)
-            print(self.file_steps_done)
-            print("\n\n")
+                    "from the list in %s", step_name, self.file_steps_done)
             return True
 
         # Add this steps and update the corresponsing file
@@ -443,9 +440,9 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.logger.info("Testing")
         self.df_mltest_applied = test(self.p_mltype, self.p_classname, self.p_trainedmod,
                                       self.df_mltest, self.v_train, self.v_sig)
-        df_ml_test_to_root = self.dirmlout+"/testsample_%s_mldecision.root" % (self.s_suffix)
         pickle.dump(self.df_mltest_applied, openfile(self.f_mltest_applied, "wb"), protocol=4)
-        write_tree(df_ml_test_to_root, self.n_treetest, self.df_mltest_applied)
+        # df_ml_test_to_root = self.dirmlout+"/testsample_%s_mldecision.root" % (self.s_suffix)
+        # write_tree(df_ml_test_to_root, self.n_treetest, self.df_mltest_applied)
 
     def do_apply(self):
 

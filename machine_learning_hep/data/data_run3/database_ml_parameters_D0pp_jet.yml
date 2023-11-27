@@ -58,6 +58,7 @@ D0pp_jet:
               fErrorDecayLength, fErrorDecayLengthXY, fChi2PCA, fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised,
               fImpactParameterNormalised0, fPtProng0, fImpactParameterNormalised1, fPtProng1,
               fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1,
+              fNSigTpcPi0, fNSigTpcKa0, fNSigTpcPi1, fNSigTpcKa1,
               fNSigTofPi0, fNSigTofKa0, fNSigTofPi1, fNSigTofKa1, fIndexHfCand2Prong_0]
     var_jet_data: [fIndexCollisions, fIndexD0ChargedJets, fIndexHfCand2Prong_0, fJetPt, fJetEta, fJetPhi, fJetNConstituents]
     var_jet_det: [fIndexCollisions, fIndexD0ChargedMCDetectorLevelJets, fIndexHfCand2Prong_0, fJetPt, fJetEta, fJetPhi, fJetNConstituents]
@@ -78,7 +79,7 @@ D0pp_jet:
     var_gen: [fIndexCollisions, fPt, fY, fFlagMc, fOriginMcGen, fIndexHfCand2Prong_0]
     var_evt_match: [df, fIndexCollisions]
     var_evt_match_mc: [df, fIndexCollisions]
-    var_training: [[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fImpactParameterProduct, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1],[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fImpactParameterProduct, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1],[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fImpactParameterProduct, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1],[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fImpactParameterProduct, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1],[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fImpactParameterProduct, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1],[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fImpactParameterProduct, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1],[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fImpactParameterProduct, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1]] 
+    var_training: [[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1]] 
       #TODO: add new variables for dca, max_norm_d0d0exp
       # sel_skim_binmin bins
     var_boundaries: [fCosThetaStar, fPtProng]
@@ -141,38 +142,38 @@ D0pp_jet:
 
   multi:
     data:
-      nprocessesparallel: 1
-      maxfiles: [5] #list of periods
+      nprocessesparallel: 20
+      maxfiles: [-1] #list of periods
       chunksizeunp:  [100] #list of periods
       chunksizeskim: [100] #list of periods
       fracmerge: [0.08] #list of periods
       seedmerge: [12] #list of periods
-      period: [LHC22o_pass4] #list of periods
+      period: [LHC22o] #list of periods
       select_period: [1]
-      prefix_dir: /home/jklein/
-      unmerged_tree_dir: [data/alice/cern.ch/user/a/alihyperloop/jobs/0024/hy_240062/] #list of periods
-      pkl: [data/test/d0jet/pkl] #list of periods
-      pkl_skimmed: [data/test/d0jet/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [data/test/d0jet/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: data/test/d0jet/pp_data_mltot
-      pkl_evtcounter_all: data/test/d0jet/pp_data_evttot
+      prefix_dir: /data2/MLhep/real/train_131050/
+      unmerged_tree_dir: [alice/cern.ch/user/a/alihyperloop/jobs/0024/] #list of periods
+      pkl: [d0jet/pkl] #list of periods
+      pkl_skimmed: [d0jet/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [d0jet/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: d0jet/pp_data_mltot
+      pkl_evtcounter_all: d0jet/pp_data_evttot
       mcreweights: [../Analyses] #list of periods
     mc:
-      nprocessesparallel: 40
-      maxfiles: [5] #list of periods
+      nprocessesparallel: 20
+      maxfiles: [-1] #list of periods
       chunksizeunp: [100] #list of periods
       chunksizeskim: [1000] #list of periods
       fracmerge: [1.0] #list of periods
       seedmerge: [12] #list of periods
-      period: [mctest] #list of periods
+      period: [LHC22b1b] #list of periods
       select_period: [1]
-      prefix_dir: /home/jklein/
-      unmerged_tree_dir: [data/alice/cern.ch/user/a/alihyperloop/jobs/0024/hy_240092] #list of periods
-      pkl: [data/mctest/d0jet/pkl] #list of periods
-      pkl_skimmed: [data/mctest/d0jet/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [data/mctest/d0jet/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: data/mctest/d0jet/pp_mc_prod_mltot
-      pkl_evtcounter_all: data/mctest/d0jet/pp_mc_prod_evttot
+      prefix_dir: /data2/MLhep/sim/train_131049/
+      unmerged_tree_dir: [alice/cern.ch/user/a/alihyperloop/jobs/0024]
+      pkl: [d0jet/pkl] #list of periods
+      pkl_skimmed: [d0jet/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [d0jet/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: d0jet/pp_mc_prod_mltot
+      pkl_evtcounter_all: d0jet/pp_mc_prod_evttot
       mcreweights: [../Analyses] #list of periods
 
   ml:
@@ -195,8 +196,9 @@ D0pp_jet:
     binmax:   [2,4,6,8,12,24,48] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: BinaryClassification
     ncorescrossval: 10
-    mlplot: /home/jklein/data/mlplot # to be removed
-    mlout: /home/jklein/data/mlout # to be removed
+    prefix_dir_ml: /data2/jklein/MLhep
+    mlplot: mlplot
+    mlout: mlout
 
     opt:
       isFONLLfromROOT: true
@@ -213,15 +215,17 @@ D0pp_jet:
       bkg_function: pol2 # fit function for bkg (among TH1 predefined fit functions, e.g. expo, pol1, pol2, ...)
       save_fit: True # save bkg fits with the various cuts on ML output
       raahp: [1,1,1,1,1,1,1] # sel_skim_binmin bins
-      presel_gen_eff: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10"
+      presel_gen_eff: "abs(fY) < 0.5 and abs(fPosZ) < 10"
 
   mlapplication:
     data:
-      pkl_skimmed_dec: [/home/jklein/data/test/d0jet/pklskdec] #list of periods
-      pkl_skimmed_decmerged: [/home/jklein/data/test/d0jet/pklskdecmerged] #list of periods
+      prefix_dir_res: /data2/jklein/
+      pkl_skimmed_dec: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdata] #list of periods
+      pkl_skimmed_decmerged: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdatamerged] #list of periods
     mc:
-      pkl_skimmed_dec: [/home/jklein/data/mctest/d0jet/pklskdec] #list of periods
-      pkl_skimmed_decmerged: [/home/jklein/mctest/d0jet/pklskdecmerged] #list of periods
+      prefix_dir_res: /data2/jklein/
+      pkl_skimmed_dec: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmc] #list of periods
+      pkl_skimmed_decmerged: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmcmerged] #list of periods
     modelname: xgboost
     modelsperptbin: [xgboost_classifierD0pp_FF_dfselection_pt_cand_1.0_2.0.sav,
                      xgboost_classifierD0pp_FF_dfselection_pt_cand_2.0_4.0.sav,
@@ -241,7 +245,7 @@ D0pp_jet:
     cctype: 1 #kpp7
     sigmav0: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
     inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
-    dir_general_plots: /home/jklein/data/analysis_plots
+    dir_general_plots: /data2/jklein/data/analysis_plots
 
     jet_zg: &jet_default
       proc_type: Jets
@@ -284,12 +288,12 @@ D0pp_jet:
         mc: null
       data: &data_out_default
         runselection: [null] #FIXME
-        results: [/home/jklein/data/test/d0jet/resultsMBjetvspt] #list of periods
-        resultsallp: /home/jklein/data/test/d0jet/resultsMBjetvspt_all
+        results: [/data2/jklein/data/test/d0jet/resultsMBjetvspt] #list of periods
+        resultsallp: /data2/jklein/data/test/d0jet/resultsMBjetvspt_all
       mc: &mc_out_default
         runselection: [null] #FIXME
-        results: [/home/jklein/data/mctest/d0jet/resultsMBjetvspt] #list of periods
-        resultsallp: /home/jklein/data/mctest/d0jet/resultsMBjetvspt_all
+        results: [/data2/jklein/data/mctest/d0jet/resultsMBjetvspt] #list of periods
+        resultsallp: /data2/jklein/data/mctest/d0jet/resultsMBjetvspt_all
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input
