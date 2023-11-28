@@ -21,7 +21,7 @@ import pickle
 import os
 import numpy as np
 import pandas as pd
-# from root_numpy import fill_hist, evaluate # pylint: disable=import-error, no-name-in-module
+#pylint: disable=import-error, no-name-in-module, consider-using-f-string, consider-using-enumerate
 from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.utilities import selectdfrunlist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, \

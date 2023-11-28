@@ -20,7 +20,7 @@ import os
 # pylint: disable=unused-wildcard-import, wildcard-import
 from array import array
 import itertools
-# pylint: disable=import-error, no-name-in-module, unused-import
+# pylint: disable=import-error, no-name-in-module, unused-import, consider-using-f-string
 # from root_numpy import hist2array, array2hist
 from ROOT import TFile, TH1F, TH2F, TCanvas, TPad, TF1, TH1D
 from ROOT import gStyle, TLegend, TLine, TText, TPaveText, TArrow
@@ -62,13 +62,13 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                                   [None for _ in range(len(self.lvar2_binmin))])
         self.inel0_var = datap["analysis"][self.typean].get("inel0_var", "n_tracklets")
 
-        self.dp = datap["analysis"][typean]
-        self.d_prefix_mc = self.dp["mc"].get("prefix_dir_res")
-        self.d_prefix_data = self.dp["data"].get("prefix_dir_res")
-        self.d_resultsallpmc = self.d_prefix_mc + self.dp["mc"]["results"][period] \
-                if period is not None else self.d_prefix_mc + self.dp["mc"]["resultsallp"]
+        dp = datap["analysis"][typean]
+        self.d_prefix_mc = dp["mc"].get("prefix_dir_res")
+        self.d_prefix_data = dp["data"].get("prefix_dir_res")
+        self.d_resultsallpmc = self.d_prefix_mc + dp["mc"]["results"][period] \
+                if period is not None else self.d_prefix_mc + dp["mc"]["resultsallp"]
         self.d_resultsallpdata = self.d_prefix_data + dp["data"]["results"][period] \
-                if period is not None else self.d_prefix_data + self.dp["data"]["resultsallp"]
+                if period is not None else self.d_prefix_data + dp["data"]["resultsallp"]
 
         self.p_corrmb_typean = datap["analysis"][self.typean]["corresp_mb_typean"]
         if self.p_corrmb_typean is not None:
