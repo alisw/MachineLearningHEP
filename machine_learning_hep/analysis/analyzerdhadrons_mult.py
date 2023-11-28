@@ -62,10 +62,13 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
                                   [None for _ in range(len(self.lvar2_binmin))])
         self.inel0_var = datap["analysis"][self.typean].get("inel0_var", "n_tracklets")
 
-        self.d_resultsallpmc = datap["analysis"][typean]["mc"]["results"][period] \
-                if period is not None else datap["analysis"][typean]["mc"]["resultsallp"]
-        self.d_resultsallpdata = datap["analysis"][typean]["data"]["results"][period] \
-                if period is not None else datap["analysis"][typean]["data"]["resultsallp"]
+        self.dp = datap["analysis"][typean]
+        self.d_prefix_mc = self.dp["mc"].get("prefix_dir_res")
+        self.d_prefix_data = self.dp["data"].get("prefix_dir_res")
+        self.d_resultsallpmc = self.d_prefix_mc + self.dp["mc"]["results"][period] \
+                if period is not None else self.d_prefix_mc + self.dp["mc"]["resultsallp"]
+        self.d_resultsallpdata = self.d_prefix_data + dp["data"]["results"][period] \
+                if period is not None else self.d_prefix_data + self.dp["data"]["resultsallp"]
 
         self.p_corrmb_typean = datap["analysis"][self.typean]["corresp_mb_typean"]
         if self.p_corrmb_typean is not None:
@@ -116,8 +119,7 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         if not isinstance(self.p_includesecpeaks[0], list):
             self.p_inculdesecpeaks = [self.p_includesecpeaks for _ in range(self.p_nbin2)]
 
-        self.p_masssecpeak = datap["analysis"][self.typean]["masssecpeak"] \
-                if self.p_includesecpeaks else None
+        self.p_masssecpeak = datap["analysis"][self.typean].get("masssecpeak", None)
 
         self.p_fix_masssecpeaks = datap["analysis"][self.typean].get("fix_masssecpeak", None)
         if self.p_fix_masssecpeaks is None:
@@ -127,10 +129,8 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         if not isinstance(self.p_fix_masssecpeaks[0], list):
             self.p_fix_masssecpeaks = [self.p_fix_masssecpeaks for _ in range(self.p_nbin2)]
 
-        self.p_widthsecpeak = datap["analysis"][self.typean]["widthsecpeak"] \
-                if self.p_includesecpeaks else None
-        self.p_fix_widthsecpeak = datap["analysis"][self.typean]["fix_widthsecpeak"] \
-                if self.p_includesecpeaks else None
+        self.p_widthsecpeak = datap["analysis"][self.typean].get("widthsecpeak", None)
+        self.p_fix_widthsecpeak = datap["analysis"][self.typean].get("fix_widthsecpeak", None)
         self.p_fixedmean = datap["analysis"][self.typean]["FixedMean"]
         self.p_use_user_gauss_sigma = datap["analysis"][self.typean]["SetInitialGaussianSigma"]
         self.p_max_perc_sigma_diff = datap["analysis"][self.typean]["MaxPercSigmaDeviation"]

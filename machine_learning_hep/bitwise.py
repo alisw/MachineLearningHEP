@@ -32,18 +32,18 @@ def tag_bit_df(dfin, namebitmap, activatedbit):
     bitson = activatedbit[0]
     bitsoff = activatedbit[1]
     array_cand_type = dfin.loc[:, namebitmap].values.astype("int")
-    res_on = pd.Series([True]*len(array_cand_type))
-    res_off = pd.Series([True]*len(array_cand_type))
-    res = pd.Series(dtype = 'int')
+    res_on = pd.Series([True]*len(array_cand_type), dtype=int)
+    res_off = pd.Series([True]*len(array_cand_type), dtype=int)
+    res = pd.Series(dtype=int)
 
     if bitson:
         mask = reduce(operator.or_, ((1 << bit) for bit in bitson), 0)
         bitmapon = selectbiton(array_cand_type, mask)
-        res_on = pd.Series(bitmapon)
+        res_on = pd.Series(bitmapon, dtype=int)
     if bitsoff:
         mask = reduce(operator.or_, ((1 << bit) for bit in bitsoff), 0)
         bitmapoff = selectbitoff(array_cand_type, mask)
-        res_off = pd.Series(bitmapoff)
+        res_off = pd.Series(bitmapoff, dtype=object)
     res = res_on & res_off
     return res
 

@@ -28,6 +28,7 @@ from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar,
         seldf_singlevar_inclusive, openfile
 from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.utilities import get_timestamp_string
+from machine_learning_hep.utilities import fill_hist
 #from machine_learning_hep.globalfitter import fitter
 from machine_learning_hep.processer import Processer
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
@@ -52,6 +53,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                          p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
                          d_results, typean, runlisttrigger, d_mcreweights)
 
+        self.v_invmass = datap["variables"].get("var_inv_mass", "fM")
         self.p_mass_fit_lim = datap["analysis"][self.typean]['mass_fit_lim']
         self.p_bin_width = datap["analysis"][self.typean]['bin_width']
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / \
@@ -137,12 +139,12 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                           self.minvaluehisto, self.maxvaluehisto)
         hVtxOutMult = TH1F('vtxout_' + label, 'vtxout_' + label, self.nbinshisto,
                            self.minvaluehisto, self.maxvaluehisto)
-        df_to_keep = filter_bit_df(df_evt, 'is_ev_rej', [[], [0, 5, 6, 10, 11]])
+        df_to_keep = filter_bit_df(df_evt, 'fIsEventReject', [[], [0, 5, 6, 10, 11]])
         # events with reco vtx after previous selection
-        tag_vtx = tag_bit_df(df_to_keep, 'is_ev_rej', [[], [1, 2, 7, 12]])
+        tag_vtx = tag_bit_df(df_to_keep, 'fIsEventReject', [[], [1, 2, 7, 12]])
         df_no_vtx = df_to_keep[~tag_vtx.values]
         # events with reco zvtx > 10 cm after previous selection
-        df_bit_zvtx_gr10 = filter_bit_df(df_to_keep, 'is_ev_rej', [[3], [1, 2, 7, 12]])
+        df_bit_zvtx_gr10 = filter_bit_df(df_to_keep, 'fIsEventReject', [[3], [1, 2, 7, 12]])
 
 
         if useweightfromfunc is not None:
@@ -177,7 +179,10 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
             dfevtorig = selectdfrunlist(dfevtorig, \
                              self.run_param[self.runlistrigger], "run_number")
         neventsafterrunsel = len(dfevtorig)
-        dfevtevtsel = dfevtorig.query(self.s_evtsel)
+        if self.s_evtsel is not None:
+            dfevtevtsel = dfevtorig.query(self.s_evtsel)
+        else:
+            dfevtevtsel = dfevtorig
 
         #validation plot for event selection
         neventsafterevtsel = len(dfevtevtsel)
@@ -286,13 +291,13 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                                         self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 df_bin = seldf_singlevar_inclusive(df, self.v_var2_binning, \
                                          self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
-                fill_hist(h_invmass, df_bin.inv_mass)
+                fill_hist(h_invmass, df_bin[self.v_invmass])
                 if self.usetriggcorrfunc is not None and self.mcordata == "data":
                     weights = self.make_weights(df_bin[self.v_var2_binning_gen], self.weightfunc,
                                                 self.weighthist, self.usetriggcorrfunc)
 
                     weightsinv = [1./weight for weight in weights]
-                    fill_hist(h_invmass_weight, df_bin.inv_mass, weights=weightsinv)
+                    fill_hist(h_invmass_weight, df_bin[self.v_invmass], weights=weightsinv)
                 myfile.cd()
                 h_invmass.Write()
                 h_invmass_weight.Write()
@@ -306,15 +311,15 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                                          self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                     h_invmass_refl = TH1F("hmass_refl" + suffix, "", self.p_num_bins,
                                           self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-                    fill_hist(h_invmass_sig, df_bin_sig.inv_mass)
-                    fill_hist(h_invmass_refl, df_bin_refl.inv_mass)
+                    fill_hist(h_invmass_sig, df_bin_sig[self.v_invmass])
+                    fill_hist(h_invmass_refl, df_bin_refl[self.v_invmass])
                     myfile.cd()
                     h_invmass_sig.Write()
                     h_invmass_refl.Write()
 
         if self.event_cand_validation is True:
             df_recodtrig = pd.concat(list_df_recodtrig)
-            df_recodtrig = df_recodtrig.query("inv_mass>%f and inv_mass<%f" % \
+            df_recodtrig = df_recodtrig.query("self.v_invmass>%f and self.v_invmass<%f" % \
                                               (self.mass - 0.15, self.mass + 0.15))
             dfevtwithd = pd.merge(dfevtevtsel, df_recodtrig, on=self.v_evtmatch)
             label = "h%s" % self.v_var2_binning_gen
