@@ -341,8 +341,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
 
     if doml is True:
         from machine_learning_hep.optimiser import Optimiser # pylint: disable=import-outside-toplevel
-        index = 0
-        for binmin, binmax in zip(binminarray, binmaxarray):
+        for index, (binmin, binmax) in enumerate(zip(binminarray, binmaxarray)):
             myopt = Optimiser(data_param[case], case, typean,
                               data_model[mltype], binmin, binmax,
                               raahp[index], training_vars[index], index)
@@ -380,7 +379,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
                 myopt.do_significance()
             if doscancuts is True:
                 myopt.do_scancuts()
-            index = index + 1
 
     if doapplydata is True:
         mymultiprocessdata.multi_apply_allperiods()
