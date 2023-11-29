@@ -105,10 +105,6 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.d_results = [self.d_prefix_res + p for p in dp["results"]]
         self.d_resultsallp = self.d_prefix_res + dp["resultsallp"]
 
-        # FIXME: They are not used at all in Lc analysis. To be removed?
-        #self.lpt_probcutpre = datap["mlapplication"]["probcutpresel"]
-        #self.lpt_probcut = datap["mlapplication"]["probcutoptimal"]
-
         self.f_evt_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evt)
         self.f_evtorig_mergedallp = \
                  os.path.join(self.d_pklevt_mergedallp, self.n_evtorig)
