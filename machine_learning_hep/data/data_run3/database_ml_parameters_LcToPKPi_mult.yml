@@ -70,6 +70,9 @@ LcpKpi:
                    [fImpactParameter0, fImpactParameter1, fImpactParameter2, fPtProng0, fPtProng1, fPtProng2],
                    [fImpactParameter0, fImpactParameter1, fImpactParameter2, fPtProng0, fPtProng1, fPtProng2],
                    [fImpactParameter0, fImpactParameter1, fImpactParameter2, fPtProng0, fPtProng1, fPtProng2]]
+    var_selected: [fPosX, fPosY, fPosZ, fY, fEta, fPt, fCpa, fCpaXY, fM, fChi2PCA, fDecayLength, fDecayLengthXY,
+                   fNSigTpcPi0, fNSigTpcPr0, fNSigTpcKa1, fNSigTpcPi2, fNSigTpcPr2,
+                   fNSigTofPi0, fNSigTofPr0, fNSigTofKa1, fNSigTofPi2, fNSigTofPr2]
     var_boundaries: [fDecayLength, fPt]
     var_correlation:
       - [fDecayLength, fChi2PCA, fCpa]

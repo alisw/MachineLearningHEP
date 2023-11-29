@@ -101,8 +101,8 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.v_all = data_param["variables"]["var_all"]
         self.v_train = training_var
         self.v_selected = data_param["variables"].get("var_selected", None)
-        if self.v_selected:
-            self.v_selected = self.v_selected[index]
+        #if self.v_selected:
+        #    self.v_selected = self.v_selected[index]
         self.v_bound = data_param["variables"]["var_boundaries"]
         self.v_sig = data_param["variables"]["var_signal"]
         self.v_invmass = data_param["variables"]["var_inv_mass"]
@@ -346,15 +346,14 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         def make_plot_name(output, label, n_var, binmin, binmax):
             return f'{output}/CorrMatrix_{label}_nVar{n_var}_{binmin:.1f}_{binmax:.1f}.png'
 
-
-        vardistplot(self.df_sigtrain, self.df_bkgtrain,
-                    self.v_all, self.dirmlplot,
-                    self.p_binmin, self.p_binmax, self.p_plot_options)
-
         if self.v_selected:
             vardistplot(self.df_sigtrain, self.df_bkgtrain,
                         self.v_selected, self.dirmlplot,
                         self.p_binmin, self.p_binmax, self.p_plot_options)
+        else:
+            vardistplot(self.df_sigtrain, self.df_bkgtrain,
+                    self.v_all, self.dirmlplot,
+                    self.p_binmin, self.p_binmax, self.p_plot_options)
 
         vardistplot(self.df_sigtrain, self.df_bkgtrain,
                     self.v_train, self.dirmlplot,
@@ -364,15 +363,6 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
                     self.v_corrx, self.v_corry,
                     self.dirmlplot, self.p_binmin, self.p_binmax)
 
-        output = make_plot_name(self.dirmlplot, "Signal_all_vars", len(self.v_all),
-                                self.p_binmin, self.p_binmax)
-        correlationmatrix(self.df_sigtrain, self.v_all, "Signal", output,
-                          self.p_binmin, self.p_binmax, self.p_plot_options)
-
-        output = make_plot_name(self.dirmlplot, "Background_all_vars", len(self.v_all),
-                                self.p_binmin, self.p_binmax)
-        correlationmatrix(self.df_bkgtrain, self.v_all, "Background", output,
-                          self.p_binmin, self.p_binmax, self.p_plot_options)
 
         if self.v_selected:
             output = make_plot_name(self.dirmlplot, "Signal_selected_vars", len(self.v_selected),
@@ -383,6 +373,16 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
             output = make_plot_name(self.dirmlplot, "Background_selected_vars",
                                     len(self.v_selected), self.p_binmin, self.p_binmax)
             correlationmatrix(self.df_bkgtrain, self.v_selected, "Background", output,
+                              self.p_binmin, self.p_binmax, self.p_plot_options)
+        else:
+            output = make_plot_name(self.dirmlplot, "Signal_all_vars", len(self.v_all),
+                              self.p_binmin, self.p_binmax)
+            correlationmatrix(self.df_sigtrain, self.v_all, "Signal", output,
+                              self.p_binmin, self.p_binmax, self.p_plot_options)
+
+            output = make_plot_name(self.dirmlplot, "Background_all_vars", len(self.v_all),
+                                    self.p_binmin, self.p_binmax)
+            correlationmatrix(self.df_bkgtrain, self.v_all, "Background", output,
                               self.p_binmin, self.p_binmax, self.p_plot_options)
 
         output = make_plot_name(self.dirmlplot, "Signal_features", len(self.v_train),
