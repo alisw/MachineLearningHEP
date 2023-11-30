@@ -319,7 +319,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
 
         if self.event_cand_validation is True:
             df_recodtrig = pd.concat(list_df_recodtrig)
-            df_recodtrig = df_recodtrig.query("self.v_invmass>%f and self.v_invmass<%f" % \
+            df_recodtrig = df_recodtrig.query("fM>%f and fM<%f" % \
                                               (self.mass - 0.15, self.mass + 0.15))
             dfevtwithd = pd.merge(dfevtevtsel, df_recodtrig, on=self.v_evtmatch)
             label = "h%s" % self.v_var2_binning_gen
