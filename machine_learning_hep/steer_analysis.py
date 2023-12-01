@@ -491,6 +491,7 @@ def main():
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--debug", action="store_true", help="activate debug log level")
+    parser.add_argument("--quiet", '-q', action="store_true", help="quiet logging")
     parser.add_argument("--log-file", dest="log_file", help="file to print the log to")
     parser.add_argument("--run-config", "-r", dest="run_config",
                         help="the run configuration to be used")
@@ -509,7 +510,7 @@ def main():
 
     args = parser.parse_args()
 
-    configure_logger(args.debug, args.log_file)
+    configure_logger(args.debug, args.log_file, args.quiet)
 
     # Extract which database and run config to be used
     pkg_data = "machine_learning_hep.data"

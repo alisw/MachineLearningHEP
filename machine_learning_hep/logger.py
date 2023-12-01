@@ -55,8 +55,9 @@ class MLLoggerFormatter(logging.Formatter):
     reset = '\x1b[0m'
 
     # Define default format string
-    def __init__(self, fmt='%(levelname)s in %(pathname)s:%(lineno)d:\n ↳ %(message)s',
+    def __init__(self, fmt=None,
                  datefmt=None, style='%', color=False):
+        fmt = fmt or '%(levelname)s in %(pathname)s:%(lineno)d:\n ↳ %(message)s'
         logging.Formatter.__init__(self, fmt, datefmt, style)
         self.color = color
 
@@ -86,7 +87,7 @@ class MLLoggerFormatter(logging.Formatter):
         return logging.Formatter.format(self, cached_record)
 
 
-def configure_logger(debug, logfile=None):
+def configure_logger(debug, logfile=None, quiet=False):
     """
     Basic configuration adding a custom formatted StreamHandler and turning on
     debug info if requested.
@@ -95,14 +96,11 @@ def configure_logger(debug, logfile=None):
     if logger.hasHandlers():
         return
 
-    # Turn on debug info only on request
-    if debug:
-        logger.setLevel(logging.DEBUG)
-    else:
-        logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG if debug else logging.INFO)
 
     sh = logging.StreamHandler()
-    formatter = MLLoggerFormatter(color=lambda : getattr(sh.stream, 'isatty', None))
+    formatter = MLLoggerFormatter(color=lambda : getattr(sh.stream, 'isatty', None),
+                                  fmt = '%(levelname)s ➞ %(message)s' if quiet else None)
 
     sh.setFormatter(formatter)
     logger.addHandler(sh)
