@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -16,9 +16,8 @@
 Methods to: perform bitwise operations on dataframes
 """
 from functools import reduce
-import numpy as np
 import operator
-import pandas as pd
+import numpy as np
 
 def tag_bit_df(dfin, namebitmap, activatedbit):
     mask_on = reduce(operator.or_, ((1 << bit) for bit in activatedbit[0]), 0)
