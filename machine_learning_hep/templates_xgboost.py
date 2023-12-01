@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -25,7 +25,7 @@ from machine_learning_hep.optimisation.metrics import get_scorers
 
 def xgboost_classifier(model_config): # pylint: disable=W0613
     return XGBClassifier(verbosity=1,
-                         n_gpus=0,
+                         # n_gpus=0,
                          **model_config)
 
 
@@ -55,7 +55,8 @@ class XGBoostClassifierBayesianOpt(BayesianOpt):
 
     def save_model_(self, model, out_dir):
         out_filename = join(out_dir, "xgboost_classifier.sav")
-        pickle.dump(model, open(out_filename, 'wb'), protocol=4)
+        with open(out_filename, 'wb') as outfile:
+            pickle.dump(model, outfile, protocol=4)
         out_filename = join(out_dir, "xgboost_classifier.model")
         model.save_model(out_filename)
 

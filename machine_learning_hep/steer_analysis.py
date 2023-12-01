@@ -24,9 +24,6 @@ import shap # pylint: disable=unused-import
 import yaml
 from pkg_resources import resource_stream
 
-# To set batch mode immediately
-from ROOT import gROOT # pylint: disable=import-error, no-name-in-module
-
 from machine_learning_hep.multiprocesser import MultiProcesser
 from machine_learning_hep.processer import Processer
 from machine_learning_hep.processerdhadrons import ProcesserDhadrons
@@ -54,9 +51,6 @@ from machine_learning_hep.analysis.systematics import SystematicsMLWP
 
 def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite: dict, # pylint: disable=too-many-locals, too-many-statements, too-many-branches
                        data_model: dict, run_param: dict, clean: bool):
-
-    # Disable any graphical stuff. No TCanvases opened and shown by default
-    gROOT.SetBatch(True)
 
     logger = get_logger()
     logger.info("Do analysis chain")
@@ -527,3 +521,6 @@ def main():
     # Run the chain
     do_entire_analysis(run_config, db_analysis, db_analysis_overwrite, db_ml_models, db_run_list,
                        args.clean)
+
+if __name__ == '__main__':
+    main()
