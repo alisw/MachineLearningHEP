@@ -60,19 +60,6 @@ D0pp_jet:
               fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1,
               fNSigTpcPi0, fNSigTpcKa0, fNSigTpcPi1, fNSigTpcKa1,
               fNSigTofPi0, fNSigTofKa0, fNSigTofPi1, fNSigTofKa1, fIndexHfCand2Prong_0]
-    var_jet_data: [fIndexCollisions, fIndexD0ChargedJets, fIndexHfCand2Prong_0, fJetPt, fJetEta, fJetPhi, fJetNConstituents]
-    var_jet_det: [fIndexCollisions, fIndexD0ChargedMCDetectorLevelJets, fIndexHfCand2Prong_0, fJetPt, fJetEta, fJetPhi, fJetNConstituents]
-    var_jet_gen: [fIndexMcCollisions, fIndexD0ChargedMCParticleLevelJets, fIndexMcParticles_0, fJetPt, fJetEta, fJetPhi, fJetNConstituents]
-    var_jetsub_data: [fIndexD0ChargedJets, fZg, fRg, fNsd]
-    var_jetsub_det: [fIndexD0ChargedMCDetectorLevelJets, fZg, fRg, fNsd]
-    var_jetsub_gen: [fIndexD0ChargedMCParticleLevelJets, fZg, fRg, fNsd]
-    var_jet_match_data: [df, fIndexCollisions, fIndexHfCand2Prong_0]
-    var_jet_match_det: [df, fIndexCollisions, fIndexHfCand2Prong_0]
-    var_jet_match_gen: [df, fIndexMcCollisions, fIndexMcParticles_0]
-    var_jet_match_gen_hf: [df, fIndexCollisions, fIndexHfCand2Prong_0]
-    var_jetsub_match_data: [df, fIndexD0ChargedJets]
-    var_jetsub_match_det: [df, fIndexD0ChargedMCDetectorLevelJets]
-    var_jetsub_match_gen: [df, fIndexD0ChargedMCParticleLevelJets]
     var_evt:
       data: [fIndexCollisions, fPosX, fPosY, fPosZ, fIsEventReject]
       mc:   [fIndexCollisions, fPosX, fPosY, fPosZ, fIsEventReject]
@@ -132,12 +119,6 @@ D0pp_jet:
     treeoriginreco: 'O2hfcandd0full'
     treeorigingen: 'O2hfcandd0fullp'
     treeoriginevt: 'O2hfcandd0fullev'
-    treejetdata: 'O2d0o'
-    treejetdet: 'O2d0mcdo'
-    treejetgen: 'O2d0mcpo'
-    treejetsubdata: 'O2d0sso'
-    treejetsubdet: 'O2d0mcdsso'
-    treejetsubgen: 'O2d0mcpsso'
     treeoutput: "D0tree"
 
   multi:
@@ -152,11 +133,11 @@ D0pp_jet:
       select_period: [1]
       prefix_dir: /data2/MLhep/real/train_131050/
       unmerged_tree_dir: [alice/cern.ch/user/a/alihyperloop/jobs/0024/] #list of periods
-      pkl: [d0jet/pkl] #list of periods
-      pkl_skimmed: [d0jet/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [d0jet/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: d0jet/pp_data_mltot
-      pkl_evtcounter_all: d0jet/pp_data_evttot
+      pkl: [d0/pkl] #list of periods
+      pkl_skimmed: [d0/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [d0/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: d0/pp_data_mltot
+      pkl_evtcounter_all: d0/pp_data_evttot
       mcreweights: [../Analyses] #list of periods
     mc:
       nprocessesparallel: 20
@@ -169,11 +150,11 @@ D0pp_jet:
       select_period: [1]
       prefix_dir: /data2/MLhep/sim/train_131049/
       unmerged_tree_dir: [alice/cern.ch/user/a/alihyperloop/jobs/0024]
-      pkl: [d0jet/pkl] #list of periods
-      pkl_skimmed: [d0jet/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [d0jet/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: d0jet/pp_mc_prod_mltot
-      pkl_evtcounter_all: d0jet/pp_mc_prod_evttot
+      pkl: [d0/pkl] #list of periods
+      pkl_skimmed: [d0/pklsk] #list of periods
+      pkl_skimmed_merge_for_ml: [d0/pklskml] #list of periods
+      pkl_skimmed_merge_for_ml_all: d0/pp_mc_prod_mltot
+      pkl_evtcounter_all: d0/pp_mc_prod_evttot
       mcreweights: [../Analyses] #list of periods
 
   ml:
@@ -289,12 +270,12 @@ D0pp_jet:
         mc: null
       data: &data_out_default
         runselection: [null] #FIXME
-        results: [/data2/jklein/data/test/d0jet/resultsMBjetvspt] #list of periods
-        resultsallp: /data2/jklein/data/test/d0jet/resultsMBjetvspt_all
+        results: [/data2/jklein/data/test/d0/resultsMBjetvspt] #list of periods
+        resultsallp: /data2/jklein/data/test/d0/resultsMBjetvspt_all
       mc: &mc_out_default
         runselection: [null] #FIXME
-        results: [/data2/jklein/data/mctest/d0jet/resultsMBjetvspt] #list of periods
-        resultsallp: /data2/jklein/data/mctest/d0jet/resultsMBjetvspt_all
+        results: [/data2/jklein/data/mctest/d0/resultsMBjetvspt] #list of periods
+        resultsallp: /data2/jklein/data/mctest/d0/resultsMBjetvspt_all
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input

@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -17,37 +17,14 @@ Methods to: perform bitwise operations on dataframes
 """
 from functools import reduce
 import operator
-import pandas as pd
-#import numba
-
-#@numba.njit
-def selectbiton(array_cand_type, mask):
-    return [((abs(cand_type) & mask) == mask) for cand_type in array_cand_type]
-
-#@numba.njit
-def selectbitoff(array_cand_type, mask):
-    return [((abs(cand_type) & mask) == 0) for cand_type in array_cand_type]
+import numpy as np
 
 def tag_bit_df(dfin, namebitmap, activatedbit):
-    bitson = activatedbit[0]
-    bitsoff = activatedbit[1]
-    array_cand_type = dfin.loc[:, namebitmap].values.astype("int")
-    res_on = pd.Series([True]*len(array_cand_type))
-    res_off = pd.Series([True]*len(array_cand_type))
-    res = pd.Series(dtype = 'int')
-
-    if bitson:
-        mask = reduce(operator.or_, ((1 << bit) for bit in bitson), 0)
-        bitmapon = selectbiton(array_cand_type, mask)
-        res_on = pd.Series(bitmapon)
-    if bitsoff:
-        mask = reduce(operator.or_, ((1 << bit) for bit in bitsoff), 0)
-        bitmapoff = selectbitoff(array_cand_type, mask)
-        res_off = pd.Series(bitmapoff)
-    res = res_on & res_off
-    return res
+    mask_on = reduce(operator.or_, ((1 << bit) for bit in activatedbit[0]), 0)
+    mask_off = reduce(operator.or_, ((1 << bit) for bit in activatedbit[1]), 0)
+    ar = dfin[namebitmap].values.astype['int']
+    return np.logical_and(np.bitwise_and(ar, mask_on) == mask_on,
+                          np.bitwise_and(ar, mask_off) == 0)
 
 def filter_bit_df(dfin, namebitmap, activatedbit):
-    res = tag_bit_df(dfin, namebitmap, activatedbit)
-    df_sel = dfin[res.values]
-    return df_sel
+    return dfin[tag_bit_df(dfin, namebitmap, activatedbit)]
