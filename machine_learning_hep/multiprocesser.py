@@ -16,7 +16,6 @@
 main script for doing data processing, machine learning and analysis
 """
 import os
-from machine_learning_hep.processer import Processer # pylint: disable=unused-import
 from machine_learning_hep.utilities import merge_method, mergerootfiles, get_timestamp_string
 from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
 from machine_learning_hep.logger import get_logger

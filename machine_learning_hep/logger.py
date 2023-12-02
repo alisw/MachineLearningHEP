@@ -48,7 +48,7 @@ class MLLoggerFormatter(logging.Formatter):
         logging.DEBUG: (None, 'blue', False),
         logging.INFO: (None, 'green', False),
         logging.WARNING: (None, 'yellow', False),
-        logging.ERROR: (None, 'orange', False),
+        logging.ERROR: (None, 'red', False),
         logging.CRITICAL: ('red', 'white', True),
     }
     csi = '\x1b['

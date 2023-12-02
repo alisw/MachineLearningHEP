@@ -16,38 +16,19 @@
 main script for doing data processing, machine learning and analysis
 """
 
-import sys
-import subprocess
 import argparse
+import importlib
 from os.path import exists
-import shap # pylint: disable=unused-import
-import yaml
+import subprocess
+import sys
+
 from pkg_resources import resource_stream
+import yaml
 
-from machine_learning_hep.multiprocesser import MultiProcesser
-from machine_learning_hep.processer import Processer
-from machine_learning_hep.processerdhadrons import ProcesserDhadrons
-from machine_learning_hep.processerdhadrons_mult import ProcesserDhadrons_mult
-from machine_learning_hep.processerdhadrons_jet import ProcesserDhadrons_jet
-#from machine_learning_hep.doskimming import conversion, merging, merging_period, skim
-#from machine_learning_hep.doclassification_regression import doclassification_regression
-#from machine_learning_hep.doanalysis import doanalysis
-#from machine_learning_hep.extractmasshisto import extractmasshisto
-#from machine_learning_hep.efficiencyan import analysis_eff
-from machine_learning_hep.config import update_config
-from  machine_learning_hep.utilities import checkmakedirlist, checkmakedir
-from  machine_learning_hep.utilities import checkdirlist, checkdir, delete_dirlist
-from  machine_learning_hep.logger import configure_logger, get_logger
-
-from machine_learning_hep.analysis.analyzer_manager import AnalyzerManager
-from machine_learning_hep.analysis.analyzer import Analyzer
-from machine_learning_hep.analysis.analyzerdhadrons import AnalyzerDhadrons
-from machine_learning_hep.analysis.analyzerdhadrons_mult import AnalyzerDhadrons_mult
-from machine_learning_hep.analysis.analyzer_jet import AnalyzerJet
-from machine_learning_hep.analysis.analyzer_jets import AnalyzerJets
-from machine_learning_hep.processer_jet import ProcesserJets
-
-from machine_learning_hep.analysis.systematics import SystematicsMLWP
+from .analysis.analyzer_manager import AnalyzerManager
+from .config import update_config
+from .logger import configure_logger, get_logger
+from .utilities_files import checkmakedirlist, checkmakedir, checkdirlist, checkdir, delete_dirlist
 
 def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite: dict, # pylint: disable=too-many-locals, too-many-statements, too-many-branches
                        data_model: dict, run_param: dict, clean: bool):
@@ -271,21 +252,29 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         checkmakedirlist(dirresultsdata)
         checkmakedir(dirresultsdatatot)
 
-    proc_class = Processer
-    ana_class = Analyzer
-    syst_class = SystematicsMLWP
+    def mlhepmod(name):
+        return importlib.import_module(f"..{name}", __name__)
+
+    from machine_learning_hep.multiprocesser import MultiProcesser
+    # unclear why this needs to be imported from here
+    # segfault when imported from within other modules
+    import shap # pylint: disable=unused-import
+    syst_class = mlhepmod('analysis.systematics').SystematicsMLWP
     if proc_type == "Dhadrons":
-        proc_class = ProcesserDhadrons
-        ana_class = AnalyzerDhadrons
-    if proc_type == "Dhadrons_mult":
-        proc_class = ProcesserDhadrons_mult
-        ana_class = AnalyzerDhadrons_mult
-    if proc_type == "Dhadrons_jet":
-        proc_class = ProcesserDhadrons_jet
-        ana_class = AnalyzerJet
-    if proc_type == "Jets":
-        proc_class = ProcesserJets
-        ana_class = AnalyzerJets
+        proc_class = mlhepmod('processerdhadrons').ProcesserDhadrons
+        ana_class = mlhepmod('analysis.analyzerdhadrons').AnalyzerDhadrons
+    elif proc_type == "Dhadrons_mult":
+        proc_class = mlhepmod('processerdhadrons_mult').ProcesserDhadrons_mult
+        ana_class = mlhepmod('analysis.analyzerdhadrons_mult').AnalyzerDhadrons_mult
+    elif proc_type == "Dhadrons_jet":
+        proc_class = mlhepmod('processerdhadrons_jet').ProcesserDhadrons_jet
+        ana_class = mlhepmod('analysis.analyzer_jet').AnalyzerJet
+    elif proc_type == "Jets":
+        proc_class = mlhepmod("processer_jet").ProcesserJets
+        ana_class = mlhepmod("analysis.analyzer_jets").AnalyzerJets
+    else:
+        proc_class = mlhepmod('processer').Processer
+        ana_class = mlhepmod('analysis.analyzer').Analyzer
 
     mymultiprocessmc = MultiProcesser(
         case, proc_class, data_param[case], typean, run_param, "mc")
@@ -477,13 +466,13 @@ def load_config(user_path: str, default_path=None) -> dict:
             cfg = yaml.safe_load(stream)
     return cfg
 
-def main():
+def main(args=None):
     """
     This is used as the entry point for ml-analysis.
     Read optional command line arguments and launch the analysis.
     """
 
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser('python -m machine_learning_hep')
     parser.add_argument("--debug", action="store_true", help="activate debug log level")
     parser.add_argument("--quiet", '-q', action="store_true", help="quiet logging")
     parser.add_argument("--log-file", dest="log_file", help="file to print the log to")
@@ -502,7 +491,7 @@ def main():
     parser.add_argument("--clean", "-c", action="store_true",
                         help="delete per-period results at the end")
 
-    args = parser.parse_args()
+    args = parser.parse_args(args)
 
     configure_logger(args.debug, args.log_file, args.quiet)
 

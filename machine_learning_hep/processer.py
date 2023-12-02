@@ -301,6 +301,17 @@ class Processer: # pylint: disable=too-many-instance-attributes
         # Flag if they should be used
         self.do_custom_analysis_cuts = datap["analysis"][self.typean].get("use_cuts", False)
 
+    # could be generalised and moved to utilities or alike
+    def merge(self, dfl, dfr, on):
+        """Merge dfl and dfr, print debug info in case of failure"""
+        try:
+            return pd.merge(dfl, dfr, on=on)
+        except Exception as e:
+            self.logger.error('merging failed: %s', str(e))
+            dfl.info()
+            dfr.info()
+            raise e
+
     def unpack(self, file_index, max_no_keys = None):  # pylint: disable=too-many-branches
         self.logger.info('unpacking: %s', self.l_root[file_index])
         dfevtorig = None
@@ -434,7 +445,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         pickle.dump(dfreco, openfile(self.l_reco[file_index], "wb"), protocol=4)
 
         if self.mcordata == "mc":
-            dfgen = pd.merge(dfgen, dfevtorig, on=self.v_evtmatch_mc)
+            dfgen = self.merge(dfgen, dfevtorig, on=self.v_evtmatch_mc)
 
             dfgen[self.v_isstd] = np.array(tag_bit_df(dfgen, self.v_bitvar,
                                                       self.b_std), dtype=int)
@@ -520,24 +531,26 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
     @staticmethod
     def callback(ex):
-        print(ex)
-
+        get_logger().error('Error callback: %s', ex)
+        raise ex
 
     def parallelizer(self, function, argument_list, maxperchunk):
-        chunks = [argument_list[x:x+maxperchunk] \
+        chunks = [argument_list[x:x+maxperchunk]
                   for x in range(0, len(argument_list), maxperchunk)]
         for chunk in chunks:
             self.logger.debug("Processing new chunk of size = %i", maxperchunk)
-            pool = mp.Pool(self.p_maxprocess) # pylint: disable=consider-using-with
-            _ = [pool.apply_async(function, args=chunk[i],
-                                  error_callback=self.callback) for i in range(len(chunk))]
-            pool.close()
-            pool.join()
+            with mp.Pool(self.p_maxprocess) as pool:
+                _ = [pool.apply_async(function, args=chunk[i], error_callback=self.callback)
+                     for i in range(len(chunk))]
+                pool.close()
+                pool.join()
 
     def process_unpack_par(self):
         self.logger.info("doing unpacking %s %s", self.mcordata, self.period)
         create_folder_struc(self.d_pkl, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
+        self.logger.debug('d_pkl: %s, l_path: %s, arguments: %s',
+                          self.d_pkl, str(self.l_path), str(arguments))
         self.parallelizer(self.unpack, arguments, self.p_chunksizeunp)
 
     def process_skim_par(self):
