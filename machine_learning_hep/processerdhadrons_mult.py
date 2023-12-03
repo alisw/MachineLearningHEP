@@ -195,7 +195,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         histonorm.GetXaxis().SetBinLabel(3, "tot events after run sel")
         histonorm.SetBinContent(4, neventsafterevtsel)
         histonorm.GetXaxis().SetBinLabel(4, "tot events after evt sel")
-        for ibin2 in range(len(self.lvar2_binmin)):
+        for ibin2, _ in enumerate(self.lvar2_binmin):
             binneddf = seldf_singlevar_inclusive(dfevtevtsel, self.v_var2_binning_gen, \
                 self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
             histonorm.SetBinContent(5 + ibin2, len(binneddf))
@@ -222,7 +222,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         hnovtxmult.Write()
         hvtxoutmult.Write()
 
-        for ibin2 in range(len(self.lvar2_binmin)):
+        for ibin2, _ in enumerate(self.lvar2_binmin):
             if self.do_inel0[ibin2]:
                 dfevtevtsel_inel0 = seldf_singlevar_inclusive(dfevtevtsel, \
                     self.v_var2_binning_gen, self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
@@ -268,7 +268,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
             df_temp = pd.DataFrame()
             if self.do_inel0[-1]:
                 df_temp = df
-            for ibin2 in range(len(self.lvar2_binmin)):
+            for ibin2, _ in enumerate(self.lvar2_binmin):
                 if self.do_inel0[ibin2]:
                     df = df_temp
                     df = df.query("%s > 0" % self.inel0_var)
@@ -399,7 +399,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
     def process_efficiency_single(self, index):
         out_file = TFile.Open(self.l_histoeff[index], "recreate")
         h_list = []
-        for ibin2 in range(len(self.lvar2_binmin)):
+        for ibin2, _ in enumerate(self.lvar2_binmin):
             stringbin2 = "_%s_%.2f_%.2f" % (self.v_var2_binning_gen,
                                             self.lvar2_binmin[ibin2],
                                             self.lvar2_binmax[ibin2])
