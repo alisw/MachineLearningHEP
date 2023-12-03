@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -32,18 +32,18 @@ def tag_bit_df(dfin, namebitmap, activatedbit):
     bitson = activatedbit[0]
     bitsoff = activatedbit[1]
     array_cand_type = dfin.loc[:, namebitmap].values.astype("int")
-    res_on = pd.Series([True]*len(array_cand_type), dtype=int)
-    res_off = pd.Series([True]*len(array_cand_type), dtype=int)
-    res = pd.Series(dtype=int)
+    res_on = pd.Series([True]*len(array_cand_type))
+    res_off = pd.Series([True]*len(array_cand_type))
+    res = pd.Series(dtype = 'int')
 
     if bitson:
         mask = reduce(operator.or_, ((1 << bit) for bit in bitson), 0)
         bitmapon = selectbiton(array_cand_type, mask)
-        res_on = pd.Series(bitmapon, dtype=int)
+        res_on = pd.Series(bitmapon)
     if bitsoff:
         mask = reduce(operator.or_, ((1 << bit) for bit in bitsoff), 0)
         bitmapoff = selectbitoff(array_cand_type, mask)
-        res_off = pd.Series(bitmapoff, dtype=object)
+        res_off = pd.Series(bitmapoff)
     res = res_on & res_off
     return res
 
