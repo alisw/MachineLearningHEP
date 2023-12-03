@@ -132,7 +132,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.s_apply_yptacccut = datap.get("apply_yptacccut", True)
 
         #bitmap
-        self.b_trackcuts = datap["sel_reco_singletrac_unp"]
         self.b_std = datap["bitmap_sel"]["isstd"]
         self.b_mcsig = datap["bitmap_sel"]["ismcsignal"]
         self.b_mcsigprompt = datap["bitmap_sel"]["ismcprompt"]

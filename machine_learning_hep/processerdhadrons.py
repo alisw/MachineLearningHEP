@@ -60,8 +60,8 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
         self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
-        self.s_var_evt_sel = datap["variables"].get("var_evt_sel", "is_ev_rej")
-        self.v_invmass = datap["variables"].get("var_inv_mass", "inv_mass")
+        self.s_var_evt_sel = datap["variables"].get("var_evt_sel", "fIsEventReject")
+        self.v_invmass = datap["variables"].get("var_inv_mass", "fM")
 
     # pylint: disable=too-many-branches
     def process_histomass_single(self, index):

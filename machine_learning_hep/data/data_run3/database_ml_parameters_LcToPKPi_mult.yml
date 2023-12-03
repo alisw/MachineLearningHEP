@@ -199,21 +199,25 @@ LcpKpi:
       mcreweights: [../Analyses]
     mc:
       nprocessesparallel: 50
-      maxfiles : [-1] #list of periods
-      chunksizeunp : [100] #list of periods
-      chunksizeskim: [100] #list of periods
-      fracmerge : [1.0] #list of periods
-      seedmerge: [12] #list of periods
-      period: [LHC22b1b] #list of periods
-      select_period: [1]
+      maxfiles : [-1, -1] #list of periods
+      chunksizeunp : [100, 100] #list of periods
+      chunksizeskim: [100, 100] #list of periods
+      fracmerge : [1.0, 1.0] #list of periods
+      seedmerge: [12, 12] #list of periods
+      period: [LHC22b1b, LHC22b1a] #list of periods
+      select_period: [1, 1]
       prefix_dir: /data2/MLhep/
-      unmerged_tree_dir: [sim/alice/cern.ch/user/a/alihyperloop/jobs/0024] #list of periods
-      pkl: [LHC22pp_mc/prod_LHC22b1b/pklmc] #list of periods
-      pkl_skimmed: [LHC22pp_mc/prod_LHC22b1b/pklskmc] #list of periods
-      pkl_skimmed_merge_for_ml: [LHC22pp_mc/prod_LHC22b1b/pklskmlmc] #list of periods
-      pkl_skimmed_merge_for_ml_all: LHC22pp_mc/prod_LHC22b1b/mltotmc
-      pkl_evtcounter_all: LHC22pp_mc/prod_LHC22b1b/evttotmc
-      mcreweights: [../Analyses]
+      unmerged_tree_dir: [sim/alice/cern.ch/user/a/alihyperloop/jobs/0024,
+                          sim/LHC22b1a_2P3PDstar/unmerged] #list of periods
+      pkl: [LHC22pp_mc/prod_LHC22b1b/pklmc,
+            LHC22pp_mc/prod_LHC22b1a/pklmc] #list of periods
+      pkl_skimmed: [LHC22pp_mc/prod_LHC22b1b/pklskmc,
+                    LHC22pp_mc/prod_LHC22b1a/pklskmc] #list of periods
+      pkl_skimmed_merge_for_ml: [LHC22pp_mc/prod_LHC22b1b/pklskmlmc,
+                                 LHC22pp_mc/prod_LHC22b1a/pklskmlmc] #list of periods
+      pkl_skimmed_merge_for_ml_all: LHC22pp_mc/prod_LHC22/mltotmc
+      pkl_evtcounter_all: LHC22pp_mc/prod_LHC22/evttotmc
+      mcreweights: [../Analyses, ../Analyses]
   ml:
     evtsel: null
     triggersel:
@@ -264,8 +268,10 @@ LcpKpi:
       pkl_skimmed_decmerged: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdatamerged] #list of periods
     mc:
       prefix_dir_app: /data2/MLhep/
-      pkl_skimmed_dec: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmc] #list of periods
-      pkl_skimmed_decmerged: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmcmerged] #list of periods
+      pkl_skimmed_dec: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmc,
+                        LHC22pp_mc/MLapplication/prod_LHC22b1a/skpkldecmc,] #list of periods
+      pkl_skimmed_decmerged: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmcmerged,
+                              LHC22pp_mc/MLapplication/prod_LHC22b1a/skpkldecmcmerged] #list of periods
     modelname: xgboost
     modelsperptbin: [xgboost_classifierLcpKpi_dfselection_fPt_1.0_2.0.sav,
                      xgboost_classifierLcpKpi_dfselection_fPt_2.0_4.0.sav,
@@ -287,15 +293,22 @@ LcpKpi:
     dir_general_plots: analysis_plots
 
     Run3analysis:
-      proc_type: Dhadrons
-      useperiod: [1]
-      plotbin: [1]
-      usesinglebineff: 0
-      sel_binmin2: [1,2,4,6,8,12] #list of nbins
-      sel_binmax2: [2,4,6,8,12,24] #list of nbins
-      var_binning2: null
+      proc_type: Dhadrons_mult
+      useperiod: [1,1]
+      plotbin: [1,1,1,1,1]
+      usesinglebineff: null
+      fprompt_from_mb: true
+      corresp_mb_typean: null
+      corrEffMult: [false, false, false, false, false]
+      sel_binmin2: [0,1,10,30,60] #list of nbins
+      sel_binmax2: [9999,9,29,59,100] #list of nbins
+      var_binning2: fMultZeqNTracksPV
+      var_binning2_gen: fMultZeqNTracksPV
+      nbinshisto: 200
+      minvaluehisto: -0.5
+      maxvaluehisto: 199.5
       triggerbit: ''
-      use_cuts: False
+      use_cuts: True
       cuts:
         - "fDecayLength > 0.02 and fCpa > 0.9"
         - "fDecayLength > 0.02 and fCpa > 0.9"
@@ -325,10 +338,11 @@ LcpKpi:
         results: [LHC22pp/Results/prod_LHC22o/resultsdata] #list of periods
         resultsallp: LHC22pp/Results/resultsdatatot
       mc:
-        runselection: [null] #FIXME
+        runselection: [null, null] #FIXME
         prefix_dir_res: /data2/MLhep/
-        results: [LHC22pp_mc/Results/prod_LHC22b1b/resultsmc] #list of periods
-        resultsallp: LHC22pp_mc/Results/prod_LHC22b1b/resultsmctot
+        results: [LHC22pp_mc/Results/prod_LHC22b1b/resultsmc,
+                  LHC22pp_mc/Results/prod_LHC22b1a/resultsmc] #list of periods
+        resultsallp: LHC22pp_mc/Results/prod_LHC22/resultsmctot
 
       mass_fit_lim: [2.14, 2.436] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
@@ -336,14 +350,14 @@ LcpKpi:
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.286
-      massmin: [2.14,2.14,2.14,2.14,2.14,2.14]
-      massmax: [2.436,2.436,2.436,2.436,2.436,2.436]
-      rebin: [6,6,6,6,6,6]
+      massmin: [2.16, 2.16, 2.16, 2.16, 2.14, 2.14]
+      massmax: [2.416, 2.416, 2.416, 2.436, 2.436, 2.436]
+      rebin: [6,6,7,8,8,8]
       fix_mean: [false,false,false,false,false,false]
       fix_sigma: [false,false,false,false,false,false]
       # Fix mean and/or sigma
       FixedMean: False
-      SetFixGaussianSigma: [false,false,false,false,false,false]
+      SetFixGaussianSigma: [true,true,true,true,true,true]
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
       # Use values set for "sigmaarray" for initializing total fit (per pT bin),
