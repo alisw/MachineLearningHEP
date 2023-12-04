@@ -301,19 +301,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         # Flag if they should be used
         self.do_custom_analysis_cuts = datap["analysis"][self.typean].get("use_cuts", False)
 
-    # could be generalised and moved to utilities or alike
-    def merge(self, dfl, dfr, on):
-        """Merge dfl and dfr, print debug info in case of failure"""
-        try:
-            return pd.merge(dfl, dfr, on=on)
-        except Exception as e:
-            self.logger.error('merging failed: %s', str(e))
-            dfl.info()
-            dfr.info()
-            raise e
-
     def unpack(self, file_index, max_no_keys = None):  # pylint: disable=too-many-branches
-        self.logger.info('unpacking: %s', self.l_root[file_index])
         dfevtorig = None
         dfreco = None
         dfjetreco = None
@@ -322,18 +310,51 @@ class Processer: # pylint: disable=too-many-instance-attributes
         dfjetgen = None
         dfjetsubgen = None
 
-        with uproot.open(self.l_root[file_index]) as rfile:
-            def read_df(tree, df_base, var):
-                try:
-                    df = pd.DataFrame(
-                        columns=var,
-                        data=tree.arrays(expressions=var, library="np"))
-                    df['df'] = int(df_no)
-                    return pd.concat([df_base, df])
-                except Exception as e: # pylint: disable=broad-except
-                    self.logger.critical('Failed to read data frame from tree %s', str(e))
-                    sys.exit()
+        def dfmerge(dfl, dfr, **kwargs):
+            """Merge dfl and dfr"""
+            try:
+                return pd.merge(dfl, dfr, **kwargs)
+            except Exception as e:
+                self.logger.error('merging failed: %s', str(e))
+                dfl.info()
+                dfr.info()
+                raise e
 
+        def dfread(trees, vars):
+            """Read DF from multiple (joinable) O2 tables"""
+            try:
+                if not isinstance(trees, list):
+                    trees = [trees]
+                    vars = [vars]
+                # if all(type(var) is str for var in vars): vars = [vars]
+                df = None
+                for tree, var in zip(trees, vars):
+                    data = tree.arrays(expressions=var, library='np')
+                    dfnew = pd.DataFrame(columns=var, data=data)
+                    dfnew['df'] = int(df_no)
+                    df = pd.concat([df, dfnew], axis=1)
+                return df
+            except Exception as e:
+                self.logger.exception('Failed to read data from trees: %s', str(e))
+                raise e
+
+        def dfappend(name: str, df):
+            dfs[name] = pd.concat([dfs.get(name, None), df])
+
+        def read_df(tree, df_base, var):
+            try:
+                df = pd.DataFrame(
+                    columns=var,
+                    data=tree.arrays(expressions=var, library="np"))
+                df['df'] = int(df_no)
+                return pd.concat([df_base, df])
+            except Exception as e: # pylint: disable=broad-except
+                self.logger.critical('Failed to read data frame from tree %s', str(e))
+                sys.exit()
+
+        self.logger.info('unpacking: %s', self.l_root[file_index])
+        dfs = {}
+        with uproot.open(self.l_root[file_index]) as rfile:
             df_processed = set()
             keys = rfile.keys(recursive=False, filter_name='DF_*')
             for (idx, key) in enumerate(keys[:max_no_keys]):
@@ -348,6 +369,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
                 tree = rdir[self.n_treereco] # accessing the tree is the slow bit!
                 dfreco = read_df(tree, dfreco, self.v_all)
+                dfappend('reco', dfread(rdir[self.n_treereco], self.v_all))
                 dfevtorig = read_df(rdir[self.n_treeevt], dfevtorig, self.v_evt)
 
                 if self.n_treejetreco:
@@ -380,8 +402,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         if dfjetreco is not None:
             if dfjetsubreco is not None:
-                dfjetreco = pd.merge(dfjetreco, dfjetsubreco, how='inner', on=self.v_jetsubmatch)
-            dfreco = pd.merge(dfjetreco, dfreco, on=self.v_jetmatch)
+                dfjetreco = dfmerge(dfjetreco, dfjetsubreco, how='inner', on=self.v_jetsubmatch)
+            dfreco = dfmerge(dfjetreco, dfreco, on=self.v_jetmatch)
 
         dfreco = selectdfquery(dfreco, self.s_reco_unp)
 
@@ -389,7 +411,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             self.logger.warning('Adding fIndexCollisions retroactively')
             dfevt.rename_axis('fIndexCollisions', inplace=True)
 
-        dfreco = pd.merge(dfreco, dfevt, on=self.v_evtmatch)
+        dfreco = dfmerge(dfreco, dfevt, on=self.v_evtmatch)
 
         if self.s_apply_yptacccut is True:
             isselacc = selectfidacc(dfreco[self.v_var_binning].values,
@@ -409,6 +431,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
             if self.v_swap:
                 length = len(dfreco)
                 myList = [None for x in range(length)]
+
+                # @Luigi: replace with array operations like:
+                # mydf = dfreco[self.v_candtype] == dfreco[self.v_swap] + 1
+                # dfreco[self.v_ismcsignal] = np.logical_and(dfreco[self.v_ismcsignal] == 1, mydf)
+                # dfreco[self.v_ismcprompt] = np.logical_and(dfreco[self.v_ismcprompt] == 1, mydf)
+                # dfreco[self.v_ismcfd] = np.logical_and(dfreco[self.v_ismcfd] == 1, mydf)
 
                 for index in range(length):
                     candtype = dfreco[self.v_candtype][index]
@@ -445,7 +473,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         pickle.dump(dfreco, openfile(self.l_reco[file_index], "wb"), protocol=4)
 
         if self.mcordata == "mc":
-            dfgen = self.merge(dfgen, dfevtorig, on=self.v_evtmatch_mc)
+            dfgen = dfmerge(dfgen, dfevtorig, on=self.v_evtmatch_mc)
 
             dfgen[self.v_isstd] = np.array(tag_bit_df(dfgen, self.v_bitvar,
                                                       self.b_std), dtype=int)
@@ -461,12 +489,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
             if dfjetgen is not None:
                 if dfjetsubgen is not None:
-                    dfjetgen = pd.merge(dfjetgen, dfjetsubgen,
+                    dfjetgen = dfmerge(dfjetgen, dfjetsubgen,
                                         how='inner', on=self.v_jetsubmatch_mc)
                 # Workaround for HF tree creator filling:
                 # McCollisionId -> CollisionId
                 # McParticleId -> HfCand2ProngId
-                dfgen = pd.merge(dfjetgen, dfgen,
+                dfgen = dfmerge(dfjetgen, dfgen,
                                  left_on=self.v_jetmatch_mc,
                                  right_on=self.v_jetmatch_mc_hf)
 
@@ -531,7 +559,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
     @staticmethod
     def callback(ex):
-        get_logger().error('Error callback: %s', ex)
+        get_logger().exception('Error callback: %s', ex)
         raise ex
 
     def parallelizer(self, function, argument_list, maxperchunk):
@@ -546,7 +574,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 pool.join()
 
     def process_unpack_par(self):
-        self.logger.info("doing unpacking %s %s", self.mcordata, self.period)
+        self.logger.info("Unpacking %s period %s", self.mcordata, self.period)
         create_folder_struc(self.d_pkl, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
         self.logger.debug('d_pkl: %s, l_path: %s, arguments: %s',
@@ -554,7 +582,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.parallelizer(self.unpack, arguments, self.p_chunksizeunp)
 
     def process_skim_par(self):
-        self.logger.info("doing skimming %s %s", self.mcordata, self.period)
+        self.logger.info("Skimming %s period %s", self.mcordata, self.period)
         create_folder_struc(self.d_pklsk, self.l_path)
         arguments = [(i,) for i in range(len(self.l_reco))]
         self.parallelizer(self.skim, arguments, self.p_chunksizeskim)
@@ -563,7 +591,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             merge_method(self.l_evtorig, self.f_totevtorig)
 
     def process_applymodel_par(self):
-        print("doing apply model", self.mcordata, self.period)
+        self.logger.info("Applying model to %s period %s", self.mcordata, self.period)
         create_folder_struc(self.d_pkl_dec, self.l_path)
         arguments = [(i,) for i in range(len(self.mptfiles_recosk[0]))]
         self.parallelizer(self.applymodel, arguments, self.p_chunksizeskim)
