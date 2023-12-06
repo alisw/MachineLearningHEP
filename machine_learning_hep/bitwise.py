@@ -19,6 +19,8 @@ from functools import reduce
 import operator
 import numpy as np
 
+from .logger import get_logger
+
 def tag_bit_df(dfin, namebitmap, activatedbit):
     try:
         ar = dfin[namebitmap].to_numpy(dtype='int')
@@ -26,8 +28,8 @@ def tag_bit_df(dfin, namebitmap, activatedbit):
         mask_off = reduce(operator.or_, ((1 << bit) for bit in activatedbit[1]), 0)
         return np.logical_and(np.bitwise_and(ar, mask_on) == mask_on,
                               np.bitwise_and(ar, mask_off) == 0)
-    except Exception as e:
-        e.add_note(f'{dfin}, {namebitmap}')
+    except Exception:
+        get_logger().exception('%s, %s', dfin, namebitmap)
         raise
 
 def filter_bit_df(dfin, namebitmap, activatedbit):
