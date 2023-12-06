@@ -21,14 +21,14 @@ import numpy as np
 
 def tag_bit_df(dfin, namebitmap, activatedbit):
     try:
+        ar = dfin[namebitmap].to_numpy(dtype='int')
         mask_on = reduce(operator.or_, ((1 << bit) for bit in activatedbit[0]), 0)
         mask_off = reduce(operator.or_, ((1 << bit) for bit in activatedbit[1]), 0)
-        ar = dfin[namebitmap].to_numpy(dtype='int')
+        return np.logical_and(np.bitwise_and(ar, mask_on) == mask_on,
+                              np.bitwise_and(ar, mask_off) == 0)
     except Exception as e:
-        print(str(e), type(dfin), dfin.info(), dfin, namebitmap)
+        e.add_note(f'{dfin}, {namebitmap}')
         raise
-    return np.logical_and(np.bitwise_and(ar, mask_on) == mask_on,
-                          np.bitwise_and(ar, mask_off) == 0)
 
 def filter_bit_df(dfin, namebitmap, activatedbit):
     return dfin[tag_bit_df(dfin, namebitmap, activatedbit)]
