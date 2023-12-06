@@ -13,7 +13,7 @@
 #############################################################################
 
 """
-main script for doing ml optisation
+main script for doing ml optimisation
 """
 import os
 import time
@@ -129,6 +129,9 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.p_ncorescross = data_param["ml"]["ncorescrossval"]
         self.rnd_shuffle = data_param["ml"]["rnd_shuffle"]
         self.rnd_splt = data_param["ml"]["rnd_splt"]
+        # All scikit and xgboost algorithms rely on np.random.seed()
+        # unless another seed is provided in function call
+        np.random.seed(data_param["ml"]["rnd_all"])
         self.test_frac = data_param["ml"]["test_frac"]
         self.p_plot_options = data_param["variables"].get("plot_options", {})
         self.p_dofullevtmerge = data_param["dofullevtmerge"]

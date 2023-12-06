@@ -246,6 +246,7 @@ LcpKpi:
     nkfolds: 5
     rnd_shuffle: 12
     rnd_splt: 12
+    rnd_all: 12 # Set to None for pure randomness
     test_frac: 0.2
     binmin: [1,2,4,6,8,12] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
     binmax: [2,4,6,8,12,24] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
