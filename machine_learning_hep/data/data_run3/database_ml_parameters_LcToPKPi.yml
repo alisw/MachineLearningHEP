@@ -83,7 +83,7 @@ LcpKpi:
     var_correlation:
       - [fDecayLength, fChi2PCA, fCpa]
       - [fPt, fPt, fPt]
-    var_signal: signal
+    var_class: class
     var_inv_mass: fM
     var_y: fY
     var_evt_sel: fIsEventReject
@@ -239,10 +239,11 @@ LcpKpi:
     nbkg: 500000
     nsig: 500000
     equalise_sig_bkg: True
-    sampletagforsignal: 1
-    sampletagforbkg: 0
-    sel_sigml: ismcsignal == 1 and ismcprompt == 1
-    sel_bkgml: fM<2.22 or fM>2.35
+    sampletags: [0, 1]
+    sel_bkg: fM < 2.22 or fM > 2.35 # for plotting significance; should agree with bkg selection in sel_ml
+    # best to have non-prompt (the smallest class) last, so the plots won't complain about the middle class missing
+    sel_ml: [fM < 2.22 or fM > 2.35, ismcsignal == 1 and ismcprompt == 1]
+    multiclass_labels: [bkg, prompt]
     nkfolds: 5
     rnd_shuffle: 12
     rnd_splt: 12
@@ -252,7 +253,7 @@ LcpKpi:
     binmax: [2,4,6,8,12,24] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: BinaryClassification
     ncorescrossval: 10
-    prefix_dir_ml: /data2/mkabus/MLHEP/results-myrun3-baseline/
+    prefix_dir_ml: /data2/mkabus/MLHEP/results-refactor-preprocess/
     mlplot: mlplot # to be removed
     mlout: mlout # to be removed
 
@@ -276,11 +277,11 @@ LcpKpi:
 
   mlapplication:
     data:
-      prefix_dir_app: /data2/mkabus/MLHEP/results-myrun3-baseline/
+      prefix_dir_app: /data2/mkabus/MLHEP/results-refactor-preprocess/
       pkl_skimmed_dec: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdata] #list of periods
       pkl_skimmed_decmerged: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdatamerged] #list of periods
     mc:
-      prefix_dir_app: /data2/mkabus/MLHEP/results-myrun3-baseline/
+      prefix_dir_app: /data2/mkabus/MLHEP/results-refactor-preprocess/
       pkl_skimmed_dec: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmc,
                         LHC22pp_mc/MLapplication/prod_LHC22b1a/skpkldecmc,] #list of periods
       pkl_skimmed_decmerged: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmcmerged,
@@ -340,12 +341,12 @@ LcpKpi:
 
       data:
         runselection: [null] #FIXME
-        prefix_dir_res: /data2/mkabus/MLHEP/results-myrun3-baseline/
+        prefix_dir_res: /data2/mkabus/MLHEP/results-refactor-preprocess/
         results: [LHC22pp/Results/prod_LHC22o/resultsdata] #list of periods
         resultsallp: LHC22pp/Results/resultsdatatot
       mc:
         runselection: [null, null] #FIXME
-        prefix_dir_res: /data2/mkabus/MLHEP/results-myrun3-baseline/
+        prefix_dir_res: /data2/mkabus/MLHEP/results-refactor-preprocess/
         results: [LHC22pp_mc/Results/prod_LHC22b1b/resultsmc,
                   LHC22pp_mc/Results/prod_LHC22b1a/resultsmc] #list of periods
         resultsallp: LHC22pp_mc/Results/prod_LHC22/resultsmctot
