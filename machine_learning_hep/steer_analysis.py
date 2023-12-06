@@ -257,7 +257,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     def mlhepmod(name):
         return importlib.import_module(f"..{name}", __name__)
 
-    from machine_learning_hep.multiprocesser import MultiProcesser
+    from machine_learning_hep.multiprocesser import MultiProcesser # pylint: disable=import-outside-toplevel
     syst_class = mlhepmod('analysis.systematics').SystematicsMLWP
     if proc_type == "Dhadrons":
         proc_class = mlhepmod('processerdhadrons').ProcesserDhadrons

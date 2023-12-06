@@ -320,17 +320,17 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 dfr.info()
                 raise e
 
-        def dfread(trees, vars):
+        def dfread(trees, cols):
             """Read DF from multiple (joinable) O2 tables"""
             try:
                 if not isinstance(trees, list):
                     trees = [trees]
-                    vars = [vars]
+                    cols = [cols]
                 # if all(type(var) is str for var in vars): vars = [vars]
                 df = None
-                for tree, var in zip(trees, vars):
-                    data = tree.arrays(expressions=var, library='np')
-                    dfnew = pd.DataFrame(columns=var, data=data)
+                for tree, col in zip(trees, cols):
+                    data = tree.arrays(expressions=col, library='np')
+                    dfnew = pd.DataFrame(columns=col, data=data)
                     dfnew['df'] = int(df_no)
                     df = pd.concat([df, dfnew], axis=1)
                 return df
@@ -338,8 +338,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 self.logger.exception('Failed to read data from trees: %s', str(e))
                 raise e
 
-        def dfappend(name: str, df):
-            dfs[name] = pd.concat([dfs.get(name, None), df])
+        def dfappend(name: str, dfa):
+            dfs[name] = pd.concat([dfs.get(name, None), dfa])
 
         def read_df(tree, df_base, var):
             try:
