@@ -30,10 +30,10 @@ ml_study: # mlout, mlplot
   doplotdistr: true
   doroc: true
   doroctraintest: true
-  doimportance: true
-  doimportanceshap: true
-  docorrelation: true
-  dolearningcurve: true
+  doimportance: false
+  doimportanceshap: false
+  docorrelation: false
+  dolearningcurve: false
   doapplytodatamc: false
   doscancuts: false
   doefficiency: false
