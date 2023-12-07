@@ -274,9 +274,8 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
                                                         self.v_bin, self.p_binmin, self.p_binmax)
                 self.dfs_input[label] = self.dfs_input[label].query(self.s_selml[ind])
 
-            v_to_zero_in_data = ["ismcsignal", "ismcprompt", "ismcfd", "ismcbkg"]
-            for label in bkg_labs:
-                for var_to_zero in v_to_zero_in_data:
+            for var_to_zero in ["ismcsignal", "ismcprompt", "ismcfd", "ismcbkg"]:
+                for label in bkg_labs:
                     self.dfs_input[label][var_to_zero] = 0
 
             # TODO: To be extended to equalize all classes
@@ -286,7 +285,6 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
                 self.p_nsig = min(sigs_count, bkgs_count, self.p_nsig)
                 self.p_nbkg = min(sigs_count, bkgs_count, self.p_nbkg)
 
-            self.df_ml = pd.DataFrame()
             for ind, label in enumerate(self.p_multiclass_labels):
                 self.dfs_input[label] = shuffle(self.dfs_input[label],
                                                 random_state=self.rnd_shuffle)
