@@ -278,14 +278,13 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
                 self.p_nsig = min(len(self.df_sig), len(self.df_bkg), self.p_nsig)
                 self.p_nbkg = min(len(self.df_sig), len(self.df_bkg), self.p_nbkg)
 
-            self.df_ml = pd.DataFrame()
             self.df_sig = shuffle(self.df_sig, random_state=self.rnd_shuffle)
             self.df_bkg = shuffle(self.df_bkg, random_state=self.rnd_shuffle)
             self.df_sig = self.df_sig[:self.p_nsig]
             self.df_bkg = self.df_bkg[:self.p_nbkg]
             self.df_sig[self.v_sig] = 1
             self.df_bkg[self.v_sig] = 0
-            self.df_ml = pd.concat([self.df_sig, self.df_bkg])
+            self.df_ml = pd.concat([self.df_bkg, self.df_sig])
             self.df_mltrain, self.df_mltest = train_test_split(self.df_ml, \
                                                test_size=self.test_frac, random_state=self.rnd_splt)
             self.df_mltrain = self.df_mltrain.reset_index(drop=True)
