@@ -32,9 +32,9 @@ from machine_learning_hep.utilities import fill_hist
 #from machine_learning_hep.globalfitter import fitter
 from machine_learning_hep.processer import Processer
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
-from machine_learning_hep.validation.validation_vertex import fill_validation_vertex
-from machine_learning_hep.validation.validation_multiplicity import fill_validation_multiplicity
-from machine_learning_hep.validation.validation_candidates import fill_validation_candidates
+#from machine_learning_hep.validation.validation_vertex import fill_validation_vertex
+#from machine_learning_hep.validation.validation_multiplicity import fill_validation_multiplicity
+#from machine_learning_hep.validation.validation_candidates import fill_validation_candidates
 
 class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-attributes, invalid-name
     # Class Attribute
