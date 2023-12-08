@@ -66,9 +66,9 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
         self.d_prefix_mc = dp["mc"].get("prefix_dir_res")
         self.d_prefix_data = dp["data"].get("prefix_dir_res")
         self.d_resultsallpmc = (self.d_prefix_mc +
-            dp["mc"]["results"][period] if period is not None else dp["mc"]["resultsallp"])
+            (dp["mc"]["results"][period] if period is not None else dp["mc"]["resultsallp"]))
         self.d_resultsallpdata = (self.d_prefix_data +
-            dp["data"]["results"][period] if period is not None else dp["data"]["resultsallp"])
+            (dp["data"]["results"][period] if period is not None else dp["data"]["resultsallp"]))
 
         self.p_corrmb_typean = datap["analysis"][self.typean]["corresp_mb_typean"]
         if self.p_corrmb_typean is not None:
