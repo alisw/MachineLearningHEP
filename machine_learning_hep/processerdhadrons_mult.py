@@ -142,7 +142,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
         df_to_keep = filter_bit_df(df_evt, 'fIsEventReject', [[], [0, 5, 6, 10, 11]])
         # events with reco vtx after previous selection
         tag_vtx = tag_bit_df(df_to_keep, 'fIsEventReject', [[], [1, 2, 7, 12]])
-        df_no_vtx = df_to_keep[~tag_vtx.values]
+        df_no_vtx = df_to_keep[tag_vtx]
         # events with reco zvtx > 10 cm after previous selection
         df_bit_zvtx_gr10 = filter_bit_df(df_to_keep, 'fIsEventReject', [[3], [1, 2, 7, 12]])
 
@@ -318,28 +318,29 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                     h_invmass_refl.Write()
 
         if self.event_cand_validation is True:
-            df_recodtrig = pd.concat(list_df_recodtrig)
-            df_recodtrig = df_recodtrig.query("fM>%f and fM<%f" % \
-                                              (self.mass - 0.15, self.mass + 0.15))
-            dfevtwithd = pd.merge(dfevtevtsel, df_recodtrig, on=self.v_evtmatch)
             label = "h%s" % self.v_var2_binning_gen
             histomult = TH1F(label, label, self.nbinshisto,
                              self.minvaluehisto, self.maxvaluehisto)
             fill_hist(histomult, dfevtevtsel[self.v_var2_binning_gen])
             histomult.Write()
-            labelwithd = "h%s_withd" % self.v_var2_binning_gen
-            histomultwithd = TH1F(labelwithd, labelwithd, self.nbinshisto,
-                                  self.minvaluehisto, self.maxvaluehisto)
-            fill_hist(histomultwithd, dfevtwithd["%s_x" % self.v_var2_binning_gen])
-            histomultwithd.Write()
+            #df_recodtrig = pd.concat(list_df_recodtrig)
+            #df_recodtrig = df_recodtrig.query("fM>%f and fM<%f" % \
+            #                                  (self.mass - 0.15, self.mass + 0.15))
+            #dfevtwithd = pd.merge(dfevtevtsel, df_recodtrig, on=self.v_evtmatch)
+            #labelwithd = "h%s_withd" % self.v_var2_binning_gen
+            #histomultwithd = TH1F(labelwithd, labelwithd, self.nbinshisto,
+            #                      self.minvaluehisto, self.maxvaluehisto)
+            #fill_hist(histomultwithd, dfevtwithd["%s_x" % self.v_var2_binning_gen])
+            #histomultwithd.Write()
+
             # Validation histograms
-            fill_validation_vertex(dfevtorig, dfevtevtsel, df_recodtrig).write()
-            fill_validation_multiplicity(dfevtorig, dfevtevtsel, df_recodtrig).write()
-            fill_validation_candidates(df_recodtrig).write()
-            if self.mcordata == "mc":
-                fill_validation_candidates(
-                    df_recodtrig[df_recodtrig[self.v_ismcsignal] == 1], "MC"
-                ).write()
+            #fill_validation_vertex(dfevtorig, dfevtevtsel, df_recodtrig).write()
+            #fill_validation_multiplicity(dfevtorig, dfevtevtsel, df_recodtrig).write()
+            #fill_validation_candidates(df_recodtrig).write()
+            #if self.mcordata == "mc":
+            #    fill_validation_candidates(
+            #        df_recodtrig[df_recodtrig[self.v_ismcsignal] == 1], "MC"
+            #    ).write()
 
     def get_reweighted_count(self, dfsel, ibin=None):
         """Apply event weights

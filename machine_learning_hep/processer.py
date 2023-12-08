@@ -429,43 +429,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                                         self.b_mcsigfd), dtype=int)
 
             if self.v_swap:
-                length = len(dfreco)
-                myList = [None for x in range(length)]
-
-                # @Luigi: replace with array operations like:
-                # mydf = dfreco[self.v_candtype] == dfreco[self.v_swap] + 1
-                # dfreco[self.v_ismcsignal] = np.logical_and(dfreco[self.v_ismcsignal] == 1, mydf)
-                # dfreco[self.v_ismcprompt] = np.logical_and(dfreco[self.v_ismcprompt] == 1, mydf)
-                # dfreco[self.v_ismcfd] = np.logical_and(dfreco[self.v_ismcfd] == 1, mydf)
-
-                for index in range(length):
-                    candtype = dfreco[self.v_candtype][index]
-                    swap = dfreco[self.v_swap][index]
-                    if candtype == (swap+1):
-                        myList[index]=1
-                    else:
-                        myList[index]=0
-
-                for index in range(length):
-                    signalbit = dfreco[self.v_ismcsignal][index]
-                    if (myList[index] == 1 and signalbit == 1):
-                        dfreco[self.v_ismcsignal][index] = 1
-                    else:
-                        dfreco[self.v_ismcsignal][index] = 0
-
-                for index in range(length):
-                    promptbit = dfreco[self.v_ismcprompt][index]
-                    if (myList[index] == 1 and promptbit == 1):
-                        dfreco[self.v_ismcprompt][index] = 1
-                    else:
-                        dfreco[self.v_ismcprompt][index] = 0
-
-                for index in range(length):
-                    fdbit = dfreco[self.v_ismcfd][index]
-                    if (myList[index] == 1 and fdbit == 1):
-                        dfreco[self.v_ismcfd][index] = 1
-                    else:
-                        dfreco[self.v_ismcfd][index] = 0
+                mydf = dfreco[self.v_candtype] == dfreco[self.v_swap] + 1
+                dfreco[self.v_ismcsignal] = np.logical_and(dfreco[self.v_ismcsignal] == 1, mydf)
+                dfreco[self.v_ismcprompt] = np.logical_and(dfreco[self.v_ismcprompt] == 1, mydf)
+                dfreco[self.v_ismcfd] = np.logical_and(dfreco[self.v_ismcfd] == 1, mydf)
 
             dfreco[self.v_ismcbkg] = np.array(tag_bit_df(dfreco, self.v_bitvar,
                                                          self.b_mcbkg), dtype=int)
