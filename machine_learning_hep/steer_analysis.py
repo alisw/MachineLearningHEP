@@ -16,38 +16,22 @@
 main script for doing data processing, machine learning and analysis
 """
 
-import sys
-import subprocess
 import argparse
+import importlib
 from os.path import exists
-import shap # pylint: disable=unused-import
-import yaml
+import subprocess
+import sys
+
 from pkg_resources import resource_stream
+import yaml
+# unclear why shap needs to be imported from here,
+# segfaults when imported from within other modules
+import shap # pylint: disable=unused-import
 
-from machine_learning_hep.multiprocesser import MultiProcesser
-from machine_learning_hep.processer import Processer
-from machine_learning_hep.processerdhadrons import ProcesserDhadrons
-from machine_learning_hep.processerdhadrons_mult import ProcesserDhadrons_mult
-from machine_learning_hep.processerdhadrons_jet import ProcesserDhadrons_jet
-#from machine_learning_hep.doskimming import conversion, merging, merging_period, skim
-#from machine_learning_hep.doclassification_regression import doclassification_regression
-#from machine_learning_hep.doanalysis import doanalysis
-#from machine_learning_hep.extractmasshisto import extractmasshisto
-#from machine_learning_hep.efficiencyan import analysis_eff
-from machine_learning_hep.config import update_config
-from  machine_learning_hep.utilities import checkmakedirlist, checkmakedir
-from  machine_learning_hep.utilities import checkdirlist, checkdir, delete_dirlist
-from  machine_learning_hep.logger import configure_logger, get_logger
-
-from machine_learning_hep.analysis.analyzer_manager import AnalyzerManager
-from machine_learning_hep.analysis.analyzer import Analyzer
-from machine_learning_hep.analysis.analyzerdhadrons import AnalyzerDhadrons
-from machine_learning_hep.analysis.analyzerdhadrons_mult import AnalyzerDhadrons_mult
-from machine_learning_hep.analysis.analyzer_jet import AnalyzerJet
-from machine_learning_hep.analysis.analyzer_jets import AnalyzerJets
-from machine_learning_hep.processer_jet import ProcesserJets
-
-from machine_learning_hep.analysis.systematics import SystematicsMLWP
+from .analysis.analyzer_manager import AnalyzerManager
+from .config import update_config
+from .logger import configure_logger, get_logger
+from .utilities_files import checkmakedirlist, checkmakedir, checkdirlist, checkdir, delete_dirlist
 
 def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite: dict, # pylint: disable=too-many-locals, too-many-statements, too-many-branches
                        data_model: dict, run_param: dict, clean: bool):
@@ -165,53 +149,52 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
 
     proc_type = data_param[case]["analysis"][typean]["proc_type"]
 
-    #creating folder if not present
     counter = 0
-    if doconversionmc is True:
+    if doconversionmc:
         counter = counter + checkdirlist(dirpklmc)
 
-    if doconversiondata is True:
+    if doconversiondata:
         counter = counter + checkdirlist(dirpkldata)
 
-    if doskimmingmc is True:
+    if doskimmingmc:
         checkdirlist(dirpklskmc)
         counter = counter + checkdir(dirpklevtcounter_allmc)
 
-    if doskimmingdata is True:
+    if doskimmingdata:
         counter = counter + checkdirlist(dirpklskdata)
         counter = counter + checkdir(dirpklevtcounter_alldata)
 
-    if domergingmc is True:
+    if domergingmc:
         counter = counter + checkdirlist(dirpklmlmc)
 
-    if domergingdata is True:
+    if domergingdata:
         counter = counter + checkdirlist(dirpklmldata)
 
-    if domergingperiodsmc is True:
+    if domergingperiodsmc:
         counter = counter + checkdir(dirpklmltotmc)
 
-    if domergingperiodsdata is True:
+    if domergingperiodsdata:
         counter = counter + checkdir(dirpklmltotdata)
 
-    if docontinueapplymc is False:
-        if doapplymc is True:
+    if not docontinueapplymc:
+        if doapplymc:
             counter = counter + checkdirlist(dirpklskdecmc)
 
-        if domergeapplymc is True:
+        if domergeapplymc:
             counter = counter + checkdirlist(dirpklskdec_mergedmc)
 
-    if docontinueapplydata is False:
-        if doapplydata is True:
+    if not docontinueapplydata:
+        if doapplydata:
             counter = counter + checkdirlist(dirpklskdecdata)
 
-        if domergeapplydata is True:
+        if domergeapplydata:
             counter = counter + checkdirlist(dirpklskdec_mergeddata)
 
-    if dohistomassmc is True:
+    if dohistomassmc:
         counter = counter + checkdirlist(dirresultsmc)
         counter = counter + checkdir(dirresultsmctot)
 
-    if dohistomassdata is True:
+    if dohistomassdata:
         counter = counter + checkdirlist(dirresultsdata)
         counter = counter + checkdir(dirresultsdatatot)
 
@@ -219,73 +202,78 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         sys.exit()
     # check and create directories
 
-    if doconversionmc is True:
+    if doconversionmc:
         checkmakedirlist(dirpklmc)
 
-    if doconversiondata is True:
+    if doconversiondata:
         checkmakedirlist(dirpkldata)
 
-    if doskimmingmc is True:
+    if doskimmingmc:
         checkmakedirlist(dirpklskmc)
         checkmakedir(dirpklevtcounter_allmc)
 
-    if doskimmingdata is True:
+    if doskimmingdata:
         checkmakedirlist(dirpklskdata)
         checkmakedir(dirpklevtcounter_alldata)
 
-    if domergingmc is True:
+    if domergingmc:
         checkmakedirlist(dirpklmlmc)
 
-    if domergingdata is True:
+    if domergingdata:
         checkmakedirlist(dirpklmldata)
 
-    if domergingperiodsmc is True:
+    if domergingperiodsmc:
         checkmakedir(dirpklmltotmc)
 
-    if domergingperiodsdata is True:
+    if domergingperiodsdata:
         checkmakedir(dirpklmltotdata)
 
-    if doml is True:
+    if doml:
         checkmakedir(mlout)
         checkmakedir(mlplot)
 
-    if docontinueapplymc is False:
-        if doapplymc is True:
+    if not docontinueapplymc:
+        if doapplymc:
             checkmakedirlist(dirpklskdecmc)
 
-        if domergeapplymc is True:
+        if domergeapplymc:
             checkmakedirlist(dirpklskdec_mergedmc)
 
-    if docontinueapplydata is False:
-        if doapplydata is True:
+    if not docontinueapplydata:
+        if doapplydata:
             checkmakedirlist(dirpklskdecdata)
 
-        if domergeapplydata is True:
+        if domergeapplydata:
             checkmakedirlist(dirpklskdec_mergeddata)
 
-    if dohistomassmc is True:
+    if dohistomassmc:
         checkmakedirlist(dirresultsmc)
         checkmakedir(dirresultsmctot)
 
-    if dohistomassdata is True:
+    if dohistomassdata:
         checkmakedirlist(dirresultsdata)
         checkmakedir(dirresultsdatatot)
 
-    proc_class = Processer
-    ana_class = Analyzer
-    syst_class = SystematicsMLWP
+    def mlhepmod(name):
+        return importlib.import_module(f"..{name}", __name__)
+
+    from machine_learning_hep.multiprocesser import MultiProcesser # pylint: disable=import-outside-toplevel
+    syst_class = mlhepmod('analysis.systematics').SystematicsMLWP
     if proc_type == "Dhadrons":
-        proc_class = ProcesserDhadrons
-        ana_class = AnalyzerDhadrons
-    if proc_type == "Dhadrons_mult":
-        proc_class = ProcesserDhadrons_mult
-        ana_class = AnalyzerDhadrons_mult
-    if proc_type == "Dhadrons_jet":
-        proc_class = ProcesserDhadrons_jet
-        ana_class = AnalyzerJet
-    if proc_type == "Jets":
-        proc_class = ProcesserJets
-        ana_class = AnalyzerJets
+        proc_class = mlhepmod('processerdhadrons').ProcesserDhadrons
+        ana_class = mlhepmod('analysis.analyzerdhadrons').AnalyzerDhadrons
+    elif proc_type == "Dhadrons_mult":
+        proc_class = mlhepmod('processerdhadrons_mult').ProcesserDhadrons_mult
+        ana_class = mlhepmod('analysis.analyzerdhadrons_mult').AnalyzerDhadrons_mult
+    elif proc_type == "Dhadrons_jet":
+        proc_class = mlhepmod('processerdhadrons_jet').ProcesserDhadrons_jet
+        ana_class = mlhepmod('analysis.analyzer_jet').AnalyzerJet
+    elif proc_type == "Jets":
+        proc_class = mlhepmod("processer_jet").ProcesserJets
+        ana_class = mlhepmod("analysis.analyzer_jets").AnalyzerJets
+    else:
+        proc_class = mlhepmod('processer').Processer
+        ana_class = mlhepmod('analysis.analyzer').Analyzer
 
     mymultiprocessmc = MultiProcesser(
         case, proc_class, data_param[case], typean, run_param, "mc")
@@ -306,86 +294,86 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
                                 mymultiprocessmc, mymultiprocessdata)
 
     #perform the analysis flow
-    if dodownloadalice == 1:
+    if dodownloadalice:
         subprocess.call("../cplusutilities/Download.sh")
 
-    if doconversionmc == 1:
+    if doconversionmc:
         mymultiprocessmc.multi_unpack_allperiods()
 
-    if doconversiondata == 1:
+    if doconversiondata:
         mymultiprocessdata.multi_unpack_allperiods()
 
-    if doskimmingmc == 1:
+    if doskimmingmc:
         mymultiprocessmc.multi_skim_allperiods()
 
-    if doskimmingdata == 1:
+    if doskimmingdata:
         mymultiprocessdata.multi_skim_allperiods()
 
-    if domergingmc == 1:
+    if domergingmc:
         mymultiprocessmc.multi_mergeml_allperiods()
 
-    if domergingdata == 1:
+    if domergingdata:
         mymultiprocessdata.multi_mergeml_allperiods()
 
-    if domergingperiodsmc == 1:
+    if domergingperiodsmc:
         mymultiprocessmc.multi_mergeml_allinone()
 
-    if domergingperiodsdata == 1:
+    if domergingperiodsdata:
         mymultiprocessdata.multi_mergeml_allinone()
 
-    if doml is True:
+    if doml:
         from machine_learning_hep.optimiser import Optimiser # pylint: disable=import-outside-toplevel
         for index, (binmin, binmax) in enumerate(zip(binminarray, binmaxarray)):
             myopt = Optimiser(data_param[case], case, typean,
                               data_model[mltype], binmin, binmax,
                               raahp[index], training_vars[index], index)
-            if docorrelation is True:
+            if docorrelation:
                 myopt.do_corr()
-            if dotraining is True:
+            if dotraining:
                 myopt.do_train()
-            if dotesting is True:
+            if dotesting:
                 myopt.do_test()
-            if doapplytodatamc is True:
+            if doapplytodatamc:
                 myopt.do_apply()
-            if docrossvalidation is True:
+            if docrossvalidation:
                 myopt.do_crossval()
-            if dolearningcurve is True:
+            if dolearningcurve:
                 myopt.do_learningcurve()
-            if doroc is True:
+            if doroc:
                 myopt.do_roc()
-            if doroctraintest is True:
+            if doroctraintest:
                 myopt.do_roc_train_test()
-            if doplotdistr is True:
+            if doplotdistr:
                 myopt.do_plot_model_pred()
-            if doimportance is True:
+            if doimportance:
                 myopt.do_importance()
-            if doimportanceshap is True:
+            if doimportanceshap:
                 myopt.do_importance_shap()
-            if dogridsearch is True:
+            if dogridsearch:
                 myopt.do_grid()
-            if dobayesianopt is True:
+            if dobayesianopt:
                 myopt.do_bayesian_opt()
-            if doboundary is True:
+            if doboundary:
                 myopt.do_boundary()
-            if doefficiencyml is True:
+            if doefficiencyml:
                 myopt.do_efficiency()
-            if dosignifopt is True:
+            if dosignifopt:
                 myopt.do_significance()
-            if doscancuts is True:
+            if doscancuts:
                 myopt.do_scancuts()
 
-    if doapplydata is True:
+    if doapplydata:
         mymultiprocessdata.multi_apply_allperiods()
-    if doapplymc is True:
+    if doapplymc:
         mymultiprocessmc.multi_apply_allperiods()
-    if domergeapplydata is True:
+    if domergeapplydata:
         mymultiprocessdata.multi_mergeapply_allperiods()
-    if domergeapplymc is True:
+    if domergeapplymc:
         mymultiprocessmc.multi_mergeapply_allperiods()
 
-    if dohistomassmc is True:
+    if dohistomassmc:
         mymultiprocessmc.multi_histomass()
-    if dohistomassdata is True:
+    if dohistomassdata:
         # After-burner in case of a mult analysis to obtain "correctionsweight.root"
         # for merged-period data
         # pylint: disable=fixme
@@ -393,43 +381,43 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         #       is run. If this step was independent, histomass would always complain that the
         #       result directory already exists.
         mymultiprocessdata.multi_histomass()
-    if doefficiency is True:
+    if doefficiency:
         mymultiprocessmc.multi_efficiency()
     analyze_steps = []
-    if efficiency_resp is True:
+    if efficiency_resp:
         analyze_steps.append("efficiency_inclusive")
         ana_mgr.analyze(analyze_steps)
-    if doresponse is True:
+    if doresponse:
         mymultiprocessmc.multi_response()
 
     # Collect all desired analysis steps
     analyze_steps = []
     if doqa:
         analyze_steps.append("qa")
-    if dofit is True:
+    if dofit:
         analyze_steps.append("fit")
-    if dosyst is True:
+    if dosyst:
         analyze_steps.append("yield_syst")
-    if doeff is True:
+    if doeff:
         analyze_steps.append("efficiency")
-    if dojetstudies is True:
-        if dofit is False:
+    if dojetstudies:
+        if not dofit:
             analyze_steps.append("fit")
-        if doeff is False:
+        if not doeff:
             analyze_steps.append("efficiency")
         analyze_steps.append("sideband_sub")
-    if dofeeddown is True:
+    if dofeeddown:
         analyze_steps.append("feeddown")
-    if dounfolding is True:
+    if dounfolding:
         analyze_steps.append("unfolding")
         analyze_steps.append("unfolding_closure")
-    if dojetsystematics is True:
+    if dojetsystematics:
         analyze_steps.append("jetsystematics")
-    if docross is True:
+    if docross:
         analyze_steps.append("makenormyields")
-    if doplots is True:
+    if doplots:
         analyze_steps.append("plotternormyields")
-    if doplotsval is True:
+    if doplotsval:
         analyze_steps.append("plottervalidation")
 
     # Now do the analysis
@@ -477,7 +465,7 @@ def load_config(user_path: str, default_path=None) -> dict:
             cfg = yaml.safe_load(stream)
     return cfg
 
-def main():
+def main(args=None):
     """
     This is used as the entry point for ml-analysis.
     Read optional command line arguments and launch the analysis.
@@ -502,7 +490,7 @@ def main():
     parser.add_argument("--clean", "-c", action="store_true",
                         help="delete per-period results at the end")
 
-    args = parser.parse_args()
+    args = parser.parse_args(args)
 
     configure_logger(args.debug, args.log_file, args.quiet)
 
