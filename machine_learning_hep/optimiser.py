@@ -140,7 +140,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.p_triggersel_mc = data_param["ml"]["triggersel"]["mc"]
         self.p_triggersel_data = data_param["ml"]["triggersel"]["data"]
 
-        self.p_multiclass_labels = data_param["ml"]["multiclass_labels"]
+        self.p_class_labels = data_param["ml"]["class_labels"]
 
         #dataframes
         self.df_mc = None
@@ -250,8 +250,8 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
 
         # tag == 0 corresponds to df_data in self.arraydf
         # NOTE: Assuming bkg ~ real data, signal ~ MC
-        sig_labs = [lab for lab, tag in zip(self.p_multiclass_labels, self.p_tags) if tag != 0]
-        bkg_labs = [lab for lab, tag in zip(self.p_multiclass_labels, self.p_tags) if tag == 0]
+        sig_labs = [lab for lab, tag in zip(self.p_class_labels, self.p_tags) if tag != 0]
+        bkg_labs = [lab for lab, tag in zip(self.p_class_labels, self.p_tags) if tag == 0]
 
         filename_train = \
                 os.path.join(self.dirmlout, f"df_train_{self.p_binmin}_{self.p_binmax}.pkl")
@@ -268,7 +268,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
             self.prepare_data_mc_mcgen()
 
             self.dfs_input = {}
-            for ind, label in enumerate(self.p_multiclass_labels):
+            for ind, label in enumerate(self.p_class_labels):
                 self.dfs_input[label] = self.arraydf[self.p_tags[ind]]
                 self.dfs_input[label] = seldf_singlevar(self.dfs_input[label],
                                                         self.v_bin, self.p_binmin, self.p_binmax)
@@ -285,7 +285,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
                 self.p_nsig = min(sigs_count, bkgs_count, self.p_nsig)
                 self.p_nbkg = min(sigs_count, bkgs_count, self.p_nbkg)
 
-            for ind, label in enumerate(self.p_multiclass_labels):
+            for ind, label in enumerate(self.p_class_labels):
                 self.dfs_input[label] = shuffle(self.dfs_input[label],
                                                 random_state=self.rnd_shuffle)
                 if label in sig_labs:
@@ -293,12 +293,12 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
                 else:
                     self.dfs_input[label] = self.dfs_input[label][:self.p_nbkg]
                 self.dfs_input[label][self.v_class] = ind
-            self.df_ml = pd.concat([self.dfs_input[label] for label in self.p_multiclass_labels])
+            self.df_ml = pd.concat([self.dfs_input[label] for label in self.p_class_labels])
 
             if self.p_mltype == "MultiClassification":
                 df_y = label_binarize(self.df_ml[self.v_class],
-                                      classes=[*range(len(self.p_multiclass_labels))])
-                for ind, label in enumerate(self.p_multiclass_labels):
+                                      classes=[*range(len(self.p_class_labels))])
+                for ind, label in enumerate(self.p_class_labels):
                     self.df_ml[f"{self.v_class}_{label}"] = df_y[:, ind]
 
             self.df_mltrain, self.df_mltest = train_test_split(self.df_ml, \
@@ -311,11 +311,11 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
             pickle.dump(self.df_mltest, openfile(filename_test, "wb"), protocol=4)
 
         # Now continue with extracting signal and background stats and report
-        self.dfs_train = split_df_classes(self.df_mltrain, self.v_class, self.p_multiclass_labels)
-        self.dfs_test = split_df_classes(self.df_mltest, self.v_class, self.p_multiclass_labels)
+        self.dfs_train = split_df_classes(self.df_mltrain, self.v_class, self.p_class_labels)
+        self.dfs_test = split_df_classes(self.df_mltest, self.v_class, self.p_class_labels)
         self.logger.info("Total number of candidates: train %d and test %d", len(self.df_mltrain),
                          len(self.df_mltest))
-        for label in self.p_multiclass_labels:
+        for label in self.p_class_labels:
             self.logger.info("Number of %s candidates: train %d and test %d",
                              label, len(self.dfs_train[label]), len(self.dfs_test[label]))
 
@@ -373,17 +373,17 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
                 if self.v_selected else {"all_vars": self.v_all, "features": self.v_train}
 
         for _, variables in var_set.items():
-            vardistplot(self.dfs_train[self.p_multiclass_labels[1]],
-                        self.dfs_train[self.p_multiclass_labels[0]],
+            vardistplot(self.dfs_train[self.p_class_labels[1]],
+                        self.dfs_train[self.p_class_labels[0]],
                         variables, self.dirmlplot,
                         self.p_binmin, self.p_binmax, self.p_plot_options)
 
-        scatterplot(self.dfs_train[self.p_multiclass_labels[1]],
-                    self.dfs_train[self.p_multiclass_labels[0]],
+        scatterplot(self.dfs_train[self.p_class_labels[1]],
+                    self.dfs_train[self.p_class_labels[0]],
                     self.v_corrx, self.v_corry,
                     self.dirmlplot, self.p_binmin, self.p_binmax)
 
-        for label in self.p_multiclass_labels:
+        for label in self.p_class_labels:
             for var_label, variables in var_set.items():
                 output = make_plot_name(self.dirmlplot, f"{label}_{var_label}", len(variables),
                                         self.p_binmin, self.p_binmax)
@@ -423,7 +423,6 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         if self.step_done("test"):
             self.df_mltest_applied = pickle.load(openfile(self.f_mltest_applied, "rb"))
             return
-
 
         self.logger.info("Testing")
         self.df_mltest_applied = test(self.p_mltype, self.p_classname, self.p_trainedmod,

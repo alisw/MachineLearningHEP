@@ -243,7 +243,7 @@ LcpKpi:
     sel_bkg: fM < 2.22 or fM > 2.35 # for plotting significance; should agree with bkg selection in sel_ml
     # best to have non-prompt (the smallest class) last, so the plots won't complain about the middle class missing
     sel_ml: [fM < 2.22 or fM > 2.35, ismcsignal == 1 and ismcprompt == 1]
-    multiclass_labels: [bkg, prompt]
+    class_labels: [bkg, prompt]
     nkfolds: 5
     rnd_shuffle: 12
     rnd_splt: 12
