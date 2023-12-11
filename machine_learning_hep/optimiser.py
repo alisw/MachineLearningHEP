@@ -45,7 +45,7 @@ from machine_learning_hep.utilities import checkdirlist, checkmakedirlist
 from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
 
 
-# pylint: disable=too-many-instance-attributes, too-many-statements, unbalanced-tuple-unpacking
+# pylint: disable=too-many-instance-attributes, too-many-statements, unbalanced-tuple-unpacking, fixme
 class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-string, unused-argument
     #Class Attribute
     species = "optimiser"
@@ -244,8 +244,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.df_data = seldf_singlevar(self.df_data, self.v_bin, self.p_binmin, self.p_binmax)
 
 
-    def preparesample(self):
-
+    def preparesample(self): # pylint: disable=too-many-branches
         self.logger.info("Prepare Sample")
 
         # tag == 0 corresponds to df_data in self.arraydf
