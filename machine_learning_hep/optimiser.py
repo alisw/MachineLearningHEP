@@ -423,7 +423,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
 
         self.logger.info("Testing")
         self.df_mltest_applied = apply(self.p_mltype, self.p_classname, self.p_trainedmod,
-                                       self.df_mltest, self.v_train, self.p_multiclass_labels)
+                                       self.df_mltest, self.v_train, self.p_class_labels)
         pickle.dump(self.df_mltest_applied, openfile(self.f_mltest_applied, "wb"), protocol=4)
         # df_ml_test_to_root = self.dirmlout+"/testsample_%s_mldecision.root" % (self.s_suffix)
         # write_tree(df_ml_test_to_root, self.n_treetest, self.df_mltest_applied)
@@ -440,9 +440,9 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         for df, filename in zip((self.df_data, self.df_mc),
                                 (self.f_reco_applieddata, self.f_reco_appliedmc)):
             df_res = apply(self.p_mltype, self.p_classname, self.p_trainedmod,
-                           df, self.v_train, self.p_multiclass_labels)
+                           df, self.v_train, self.p_class_labels)
             with openfile(filename, "wb") as out_file:
-                pickle.dump(df, out_file, protocol=4)
+                pickle.dump(df_res, out_file, protocol=4)
 
     def do_crossval(self):
         if self.step_done("cross_validation"):
