@@ -17,14 +17,12 @@ Methods to: choose, train and apply ML models
             load and save ML models
             obtain control plots
 """
-from os.path import join, exists
-from io import BytesIO
+from os.path import exists
 import pickle
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.colors import ListedColormap
-import matplotlib as mpl
 
 from sklearn.feature_extraction import DictVectorizer
 
@@ -202,32 +200,27 @@ def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder)
             if not any(mname in name for mname in ("SVC", "Logistic", "Keras"))]
     if len(names_models) == 1:
         plt.figure(figsize=(18, 15))
+        nrows, ncols = (1, 1)
     else:
         plt.figure(figsize=(25, 15))
-
+        nrows, ncols = (2, (len(names_models) + 1) / 2)
     for ind, (name, model) in enumerate(names_models, start=1):
-        if len(names_models) > 1:
-            ax1 = plt.subplot(2, (len(names_models)+1)/2, ind)
-        else:
-            ax1 = plt.subplot(1, 1, ind)
+        ax = plt.subplot(nrows, ncols, ind)
         #plt.subplots_adjust(left=0.3, right=0.9)
         feature_importances_ = model.feature_importances_
         y_pos = np.arange(len(mylistvariables_))
-        ax1.barh(y_pos, feature_importances_, align='center', color='green')
-        ax1.set_yticks(y_pos)
-        ax1.set_yticklabels(mylistvariables_, fontsize=17)
-        ax1.invert_yaxis()  # labels read top-to-bottom
-        ax1.set_xlabel("Importance", fontsize=17)
-        ax1.set_title(f"Importance features {name}", fontsize=17)
-        ax1.xaxis.set_tick_params(labelsize=17)
+        ax.barh(y_pos, feature_importances_, align='center', color='green')
+        ax.set_yticks(y_pos)
+        ax.set_yticklabels(mylistvariables_, fontsize=17)
+        ax.invert_yaxis()  # labels read top-to-bottom
+        ax.set_xlabel("Importance", fontsize=17)
+        ax.set_title(f"Importance features {name}", fontsize=17)
+        ax.xaxis.set_tick_params(labelsize=17)
         plt.xlim(0, 0.7)
     plt.subplots_adjust(wspace=0.5)
     plotname = f"{folder}/importanceplotall{suffix_}.png"
     plt.savefig(plotname)
-    img_import = BytesIO()
-    plt.savefig(img_import, format='png')
-    img_import.seek(0)
-    return img_import
+    plt.close()
 
 def shap_study(names_, trainedmodels_, x_train_, suffix_, folder, plot_options_):
     """Importance via SHAP
@@ -243,11 +236,6 @@ def shap_study(names_, trainedmodels_, x_train_, suffix_, folder, plot_options_)
         folder: str
             Where to be saved
     """
-
-    x_size = 18 if len(names_) == 1 else 25
-    figure = plt.figure(figsize=(x_size, 15))
-    nrows, ncols = (2, (len(names_) + 1) / 2) if len(names_) > 1 else (1, 1)
-    mpl.rcParams.update({"text.usetex": True})
     plot_type_name = "prob_cut_scan"
     plot_options = plot_options_.get(plot_type_name, {}) \
             if isinstance(plot_options_, dict) else {}
@@ -258,26 +246,25 @@ def shap_study(names_, trainedmodels_, x_train_, suffix_, folder, plot_options_)
         else:
             feature_names.append(fn.replace("_", ":"))
 
-    for i, (name, model) in enumerate(zip(names_, trainedmodels_)):
-        # Rely on name to exclude certain models at the moment
-        if "SVC" in name:
-            continue
-        if "Logistic" in name:
-            continue
-        if "Keras" in name:
-            continue
-        ax = figure.add_subplot(nrows, ncols, i + 1)
+    # Rely on name to exclude certain models at the moment
+    names_models = [(name, model) for name, model in zip(names_, trainedmodels_) \
+            if not any(mname in name for mname in ("SVC", "Logistic", "Keras"))]
+    if len(names_models) == 1:
+        figure = plt.figure(figsize=(18, 15))
+        nrows, ncols = (1, 1)
+    else:
+        figure = plt.figure(figsize=(25, 15))
+        nrows, ncols = (2, (len(names_models) + 1) / 2)
+    for ind, (name, model) in enumerate(names_models, start=1):
+        ax = figure.add_subplot(nrows, ncols, ind)
         plt.sca(ax)
         explainer = shap.TreeExplainer(model)
         shap_values = explainer.shap_values(x_train_)
-
         shap.summary_plot(shap_values, x_train_, show=False, feature_names=feature_names)
-    plotname = f"importanceplotall_shap_{suffix_}.png"
-    plotname = join(folder, plotname)
+    plotname = f"{folder}/importanceplotall_shap_{suffix_}.png"
     figure.tight_layout()
     figure.savefig(plotname)
     plt.close(figure)
-    mpl.rcParams.update({"text.usetex": False})
 
 
 def decisionboundaries(names_, trainedmodels_, suffix_, x_train_, y_train_, folder):
@@ -322,7 +309,4 @@ def decisionboundaries(names_, trainedmodels_, suffix_, x_train_, y_train_, fold
         i += 1
     plotname = f"{folder}/decisionboundaries{suffix_}.png"
     plt.savefig(plotname)
-    img_boundary = BytesIO()
-    plt.savefig(img_boundary, format='png')
-    img_boundary.seek(0)
-    return img_boundary
+    plt.close(figure)
