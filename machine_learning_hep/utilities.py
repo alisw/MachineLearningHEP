@@ -302,13 +302,12 @@ def seldf_singlevar_inclusive(dataframe, var, minval, maxval):
     dataframe = dataframe.loc[(dataframe[var] >= minval) & (dataframe[var] <= maxval)]
     return dataframe
 
-def split_df_sigbkg(dataframe_, var_signal_):
+def split_df_classes(dataframe_, var_class_, output_labels_):
     """
-    Split dataframe in signal and background dataframes
+    Split dataframe into dataframes for different output labels
     """
-    dataframe_sig_ = dataframe_.loc[dataframe_[var_signal_] == 1]
-    dataframe_bkg_ = dataframe_.loc[dataframe_[var_signal_] == 0]
-    return dataframe_sig_, dataframe_bkg_
+    return {label: dataframe_.loc[dataframe_[var_class_] == ind]
+            for ind, label in enumerate(output_labels_)}
 
 def createstringselection(var, low, high):
     """
