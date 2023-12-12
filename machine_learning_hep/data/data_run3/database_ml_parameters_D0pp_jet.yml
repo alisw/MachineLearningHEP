@@ -86,7 +86,7 @@ D0pp_jet:
     var_correlation:
       - [fCosThetaStar] # TODO: update
       - [fPtProng0]
-    var_signal: signal
+    var_class: class
     var_inv_mass: fM
     var_y: fY
     var_evt_sel: fIsEventReject
@@ -185,13 +185,15 @@ D0pp_jet:
     nbkg: 500000
     nsig: 500000
     equalise_sig_bkg: True
-    sampletagforsignal: 1
-    sampletagforbkg: 0
-    sel_sigml: ismcprompt == 1
-    sel_bkgml: fM<1.8 or fM>1.92
+    sampletags: [0, 1]
+    sel_bkg: fM < 1.8 or fM > 1.92 # for plotting significance; should agree with bkg selection in sel_ml
+    # best to have non-prompt (the smallest class) last, so the plots won't complain about the middle class missing
+    sel_ml: [fM < 1.8 or fM > 1.92, ismcsignal == 1 and ismcprompt == 1]
+    class_labels: [bkg, prompt]
     nkfolds: 5
     rnd_shuffle: 12
     rnd_splt: 12
+    rnd_all: 12 # Set to None for pure randomness
     test_frac: 0.2
     binmin: [1,2,4,6,8,12,24] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
     binmax:   [2,4,6,8,12,24,48] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
