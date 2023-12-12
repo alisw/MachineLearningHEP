@@ -22,6 +22,7 @@ import pickle
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib as mpl
 from matplotlib.colors import ListedColormap
 
 from sklearn.feature_extraction import DictVectorizer
@@ -199,10 +200,10 @@ def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder)
     names_models = [(name, model) for name, model in zip(names_, trainedmodels_) \
             if not any(mname in name for mname in ("SVC", "Logistic", "Keras"))]
     if len(names_models) == 1:
-        plt.figure(figsize=(18, 15))
+        figure = plt.figure(figsize=(18, 15))
         nrows, ncols = (1, 1)
     else:
-        plt.figure(figsize=(25, 15))
+        figure = plt.figure(figsize=(25, 15))
         nrows, ncols = (2, (len(names_models) + 1) / 2)
     for ind, (name, model) in enumerate(names_models, start=1):
         ax = plt.subplot(nrows, ncols, ind)
@@ -217,9 +218,10 @@ def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder)
         ax.set_title(f"Importance features {name}", fontsize=17)
         ax.xaxis.set_tick_params(labelsize=17)
         plt.xlim(0, 0.7)
-    plt.subplots_adjust(wspace=0.5)
+    if len(names_models) > 1:
+        plt.subplots_adjust(wspace=0.5)
     plotname = f"{folder}/importanceplotall{suffix_}.png"
-    plt.savefig(plotname)
+    figure.savefig(plotname, bbox_inches='tight')
     plt.close()
 
 def shap_study(names_, trainedmodels_, x_train_, suffix_, folder, plot_options_):
@@ -236,6 +238,7 @@ def shap_study(names_, trainedmodels_, x_train_, suffix_, folder, plot_options_)
         folder: str
             Where to be saved
     """
+    mpl.rcParams.update({"text.usetex": True})
     plot_type_name = "prob_cut_scan"
     plot_options = plot_options_.get(plot_type_name, {}) \
             if isinstance(plot_options_, dict) else {}
@@ -263,7 +266,8 @@ def shap_study(names_, trainedmodels_, x_train_, suffix_, folder, plot_options_)
         shap.summary_plot(shap_values, x_train_, show=False, feature_names=feature_names)
     plotname = f"{folder}/importanceplotall_shap_{suffix_}.png"
     figure.tight_layout()
-    figure.savefig(plotname)
+    figure.savefig(plotname, bbox_inches='tight')
+    mpl.rcParams.update({"text.usetex": False})
     plt.close(figure)
 
 
@@ -308,5 +312,5 @@ def decisionboundaries(names_, trainedmodels_, suffix_, x_train_, y_train_, fold
         figure.subplots_adjust(hspace=.5)
         i += 1
     plotname = f"{folder}/decisionboundaries{suffix_}.png"
-    plt.savefig(plotname)
+    figure.savefig(plotname, bbox_inches='tight')
     plt.close(figure)
