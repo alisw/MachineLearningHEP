@@ -30,6 +30,7 @@ from sklearn.feature_extraction import DictVectorizer
 import shap
 
 from machine_learning_hep.logger import get_logger
+from machine_learning_hep.utilities_plot import prepare_fig
 from machine_learning_hep import templates_keras, templates_xgboost, templates_scikit
 pd.options.mode.chained_assignment = None
 
@@ -199,12 +200,7 @@ def readmodels(names_, folder_, suffix_):
 def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder):
     names_models = [(name, model) for name, model in zip(names_, trainedmodels_) \
             if not any(mname in name for mname in ("SVC", "Logistic", "Keras"))]
-    if len(names_models) == 1:
-        figure = plt.figure(figsize=(18, 15))
-        nrows, ncols = (1, 1)
-    else:
-        figure = plt.figure(figsize=(25, 15))
-        nrows, ncols = (2, (len(names_models) + 1) / 2)
+    figure, nrows, ncols = prepare_fig(len(names_models))
     for ind, (name, model) in enumerate(names_models, start=1):
         ax = plt.subplot(nrows, ncols, ind)
         #plt.subplots_adjust(left=0.3, right=0.9)
@@ -218,10 +214,7 @@ def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder)
         ax.set_title(f"Importance features {name}", fontsize=17)
         ax.xaxis.set_tick_params(labelsize=17)
         plt.xlim(0, 0.7)
-    if len(names_models) > 1:
-        plt.subplots_adjust(wspace=0.5)
-    plotname = f"{folder}/importanceplotall{suffix_}.png"
-    figure.savefig(plotname, bbox_inches='tight')
+    figure.savefig(f"{folder}/importanceplotall{suffix_}.png", bbox_inches='tight')
     plt.close()
 
 def shap_study(names_, trainedmodels_, x_train_, suffix_, folder, plot_options_):
@@ -252,21 +245,14 @@ def shap_study(names_, trainedmodels_, x_train_, suffix_, folder, plot_options_)
     # Rely on name to exclude certain models at the moment
     names_models = [(name, model) for name, model in zip(names_, trainedmodels_) \
             if not any(mname in name for mname in ("SVC", "Logistic", "Keras"))]
-    if len(names_models) == 1:
-        figure = plt.figure(figsize=(18, 15))
-        nrows, ncols = (1, 1)
-    else:
-        figure = plt.figure(figsize=(25, 15))
-        nrows, ncols = (2, (len(names_models) + 1) / 2)
+    figure, nrows, ncols = prepare_fig(len(names_models))
     for ind, (name, model) in enumerate(names_models, start=1):
         ax = figure.add_subplot(nrows, ncols, ind)
         plt.sca(ax)
         explainer = shap.TreeExplainer(model)
         shap_values = explainer.shap_values(x_train_)
         shap.summary_plot(shap_values, x_train_, show=False, feature_names=feature_names)
-    plotname = f"{folder}/importanceplotall_shap_{suffix_}.png"
-    figure.tight_layout()
-    figure.savefig(plotname, bbox_inches='tight')
+    figure.savefig(f"{folder}/importanceplotall_shap_{suffix_}.png", bbox_inches='tight')
     mpl.rcParams.update({"text.usetex": False})
     plt.close(figure)
 
@@ -277,8 +263,6 @@ def decisionboundaries(names_, trainedmodels_, suffix_, x_train_, y_train_, fold
     vec = DictVectorizer()
     x_train_array_ = vec.fit_transform(dictionary_train).toarray()
 
-    figure = plt.figure(figsize=(20, 15))
-    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.4, hspace=0.2)
     height = .10
     cm = plt.cm.RdBu
     cm_bright = ListedColormap(['#FF0000', '#0000FF'])
@@ -287,14 +271,13 @@ def decisionboundaries(names_, trainedmodels_, suffix_, x_train_, y_train_, fold
     y_min, y_max = x_train_array_[:, 1].min() - .5, x_train_array_[:, 1].max() + .5
     xx, yy = np.meshgrid(np.arange(x_min, x_max, height), np.arange(y_min, y_max, height))
 
-    i = 1
-    for name, model in zip(names_, trainedmodels_):
+    figure, nrows, ncols = prepare_fig(len(names_))
+    for ind, (name, model) in enumerate(zip(names_, trainedmodels_), start=1):
         if hasattr(model, "decision_function"):
             z_contour = model.decision_function(np.c_[xx.ravel(), yy.ravel()])
         else:
             z_contour = model.predict_proba(np.c_[xx.ravel(), yy.ravel()])[:, 1]
-
-        ax = plt.subplot(2, (len(names_)+1)/2, i)
+        ax = plt.subplot(nrows, ncols, ind)
 
         z_contour = z_contour.reshape(xx.shape)
         ax.contourf(xx, yy, z_contour, cmap=cm, alpha=.8)
@@ -309,8 +292,5 @@ def decisionboundaries(names_, trainedmodels_, suffix_, x_train_, y_train_, fold
         ax.set_title(name, fontsize=17)
         ax.set_ylabel(mylistvariables_[1], fontsize=17)
         ax.set_xlabel(mylistvariables_[0], fontsize=17)
-        figure.subplots_adjust(hspace=.5)
-        i += 1
-    plotname = f"{folder}/decisionboundaries{suffix_}.png"
-    figure.savefig(plotname, bbox_inches='tight')
+    figure.savefig(f"{folder}/decisionboundaries{suffix_}.png", bbox_inches='tight')
     plt.close(figure)
