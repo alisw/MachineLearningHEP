@@ -15,18 +15,19 @@
 """
 Methods to: model performance evaluation
 """
-from io import BytesIO
-import pickle
+import itertools
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib as mpl
 import seaborn as sn
 from sklearn.model_selection import cross_val_score, cross_val_predict, train_test_split
 from sklearn.model_selection import StratifiedKFold
 from sklearn.metrics import roc_curve, auc, confusion_matrix, precision_recall_curve
 from sklearn.metrics import mean_squared_error
 
+from machine_learning_hep.utilities_plot import prepare_fig
+
+HIST_COLORS = ['r', 'b', 'g']
 
 def cross_validation_mse(names_, classifiers_, x_train, y_train, cv_, ncores):
     df_scores = pd.DataFrame()
@@ -54,33 +55,25 @@ def cross_validation_mse_continuous(names_, classifiers_, x_train, y_train, cv_,
 
 
 def plot_cross_validation_mse(names_, df_scores_, suffix_, folder):
-    figure1 = plt.figure(figsize=(20, 15))
-    i = 1
-    for name in names_:
-        ax = plt.subplot(2, (len(names_)+1)/2, i)
+    figure, nrows, ncols = prepare_fig(len(names_))
+    for ind, name in enumerate(names_, start = 1):
+        ax = plt.subplot(nrows, ncols, ind)
         ax.set_xlim([0, (df_scores_[name].mean()*2)])
         plt.hist(df_scores_[name].values, color="blue")
-        mystring = '$\\mu=%8.2f, \\sigma=%8.2f$' % (df_scores_[name].mean(), df_scores_[name].std())
+        mystring = f"$\\mu={df_scores_[name].mean():8.2f}, \\sigma={df_scores_[name].std():8.2f}$"
         plt.text(0.2, 4., mystring, fontsize=16)
         plt.title(name, fontsize=16)
         plt.xlabel("scores RMSE", fontsize=16)
         plt.ylim(0, 5)
         plt.ylabel("Entries", fontsize=16)
-        figure1.subplots_adjust(hspace=.5)
-        i += 1
-    plotname = folder+'/scoresRME%s.png' % (suffix_)
-    plt.savefig(plotname)
-    img_scoresRME = BytesIO()
-    plt.savefig(img_scoresRME, format='png')
-    img_scoresRME.seek(0)
-    return img_scoresRME
+    figure.savefig(f"{folder}/scoresRME{suffix_}.png", bbox_inches='tight')
+    plt.close(figure)
 
 
 def plotdistributiontarget(names_, testset, myvariablesy, suffix_, folder):
-    figure1 = plt.figure(figsize=(20, 15))
-    i = 1
-    for name in names_:
-        _ = plt.subplot(2, (len(names_)+1)/2, i)
+    figure, nrows, ncols = prepare_fig(len(names_))
+    for ind, name in enumerate(names_, start = 1):
+        plt.subplot(nrows, ncols, ind)
         plt.hist(testset[myvariablesy].values, color="blue", bins=100, label="true value")
         plt.hist(
             testset['y_test_prediction'+name].values,
@@ -88,22 +81,15 @@ def plotdistributiontarget(names_, testset, myvariablesy, suffix_, folder):
         plt.title(name, fontsize=16)
         plt.xlabel(myvariablesy, fontsize=16)
         plt.ylabel("Entries", fontsize=16)
-        figure1.subplots_adjust(hspace=.5)
-        i += 1
     plt.legend(loc="center right")
-    plotname = folder+'/distributionregression%s.png' % (suffix_)
-    plt.savefig(plotname)
-    img_dist_reg = BytesIO()
-    plt.savefig(img_dist_reg, format='png')
-    img_dist_reg.seek(0)
-    return img_dist_reg
+    figure.savefig(f"{folder}/distributionregression{suffix_}.png", bbox_inches='tight')
+    plt.close(figure)
 
 
 def plotscattertarget(names_, testset, myvariablesy, suffix_, folder):
-    _ = plt.figure(figsize=(20, 15))
-    i = 1
-    for name in names_:
-        figure1 = plt.subplot(2, (len(names_)+1)/2, i)
+    figure, nrows, ncols = prepare_fig(len(names_))
+    for ind, name in enumerate(names_, start = 1):
+        plt.subplot(nrows, ncols, ind)
         plt.scatter(
             testset[myvariablesy].values,
             testset['y_test_prediction'+name].values, color="blue")
@@ -112,89 +98,51 @@ def plotscattertarget(names_, testset, myvariablesy, suffix_, folder):
         plt.ylabel(myvariablesy + "predicted", fontsize=20)
         plt.xticks(fontsize=18)
         plt.yticks(fontsize=18)
-        figure1.subplots_adjust(hspace=.5)
-        i += 1
-    plotname = folder+'/scatterplotregression%s.png' % (suffix_)
-    plt.savefig(plotname)
-    img_scatt_reg = BytesIO()
-    plt.savefig(img_scatt_reg, format='png')
-    img_scatt_reg.seek(0)
-    return img_scatt_reg
+    figure.savefig(f"{folder}/scatterplotregression{suffix_}.png", bbox_inches='tight')
+    plt.close(figure)
 
 
-def confusion(names_, classifiers_, suffix_, x_train, y_train, cvgen, folder):
-    figure1 = plt.figure(figsize=(25, 15))  # pylint: disable=unused-variable
-    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.4, hspace=0.2)
-
-    i = 1
-    for name, clf in zip(names_, classifiers_):
-        ax = plt.subplot(2, (len(names_)+1)/2, i)
+def confusion(names_, classifiers_, suffix_, x_train, y_train, cvgen, folder, do_diag0):
+    figure, nrows, ncols = prepare_fig(len(names_))
+    if len(names_) > 1:
+        figure.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.4, hspace=0.2)
+    for ind, (name, clf) in enumerate(zip(names_, classifiers_), start = 1):
+        ax = plt.subplot(nrows, ncols, ind)
         y_train_pred = cross_val_predict(clf, x_train, y_train, cv=cvgen)
         conf_mx = confusion_matrix(y_train, y_train_pred)
         row_sums = conf_mx.sum(axis=1, keepdims=True)
         norm_conf_mx = conf_mx / row_sums
-        np.fill_diagonal(norm_conf_mx, 0)
+        if do_diag0:
+            np.fill_diagonal(norm_conf_mx, 0)
         df_cm = pd.DataFrame(norm_conf_mx, range(2), range(2))
         sn.set(font_scale=1.4)  # for label size
-        ax.set_title(name+"tot diag=0")
+        ax_title = f"{name} tot diag = 0" if do_diag0 else name
+        ax.set_title(ax_title)
         sn.heatmap(df_cm, annot=True, annot_kws={"size": 16})  # font size
         ax.set_xlabel('Predicted labels')
         ax.set_ylabel('True labels')
         ax.xaxis.set_ticklabels(['signal', 'background'])
         ax.yaxis.set_ticklabels(['signal', 'background'])
-
-        i += 1
-    plotname = folder+'/confusion_matrix%s_Diag0.png' % (suffix_)
-    plt.savefig(plotname)
-    img_confmatrix_dg0 = BytesIO()
-    plt.savefig(img_confmatrix_dg0, format='png')
-    img_confmatrix_dg0.seek(0)
-
-    figure2 = plt.figure(figsize=(20, 15))  # pylint: disable=unused-variable
-    plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.4, hspace=0.2)
-
-    i = 1
-    for name, clf in zip(names_, classifiers_):
-        ax = plt.subplot(2, (len(names_)+1)/2, i)
-        y_train_pred = cross_val_predict(clf, x_train, y_train, cv=cvgen)
-        conf_mx = confusion_matrix(y_train, y_train_pred)
-        row_sums = conf_mx.sum(axis=1, keepdims=True)
-        norm_conf_mx = conf_mx / row_sums
-        df_cm = pd.DataFrame(norm_conf_mx, range(2), range(2))
-        sn.set(font_scale=1.4)  # for label size
-        ax.set_title(name)
-        sn.heatmap(df_cm, annot=True, annot_kws={"size": 16})  # font size
-        ax.set_xlabel('Predicted labels')
-        ax.set_ylabel('True labels')
-        ax.xaxis.set_ticklabels(['signal', 'background'])
-        ax.yaxis.set_ticklabels(['signal', 'background'])
-
-        i += 1
-    plotname = folder+'/confusion_matrix%s.png' % (suffix_)
-    plt.savefig(plotname)
-    img_confmatrix = BytesIO()
-    plt.savefig(img_confmatrix, format='png')
-    img_confmatrix.seek(0)
-    return img_confmatrix_dg0, img_confmatrix
+    suffix_0 = "_Diag0" if do_diag0 else ""
+    figure.savefig(f"{folder}/confusion_matrix{suffix_}{suffix_0}.png", bbox_inches='tight')
+    plt.close(figure)
 
 
-def precision_recall(names_, classifiers_, suffix_, x_train, y_train, cvgen, folder):
-
-    if len(names_) == 1:
-        figure1 = plt.figure(figsize=(20, 15))  # pylint: disable=unused-variable
-    else:
-        figure1 = plt.figure(figsize=(25, 15))  # pylint: disable=unused-variable
-        plt.subplots_adjust(left=None, bottom=None, right=None, top=None, wspace=0.4, hspace=0.2)
-
-    i = 1
-    for name, clf in zip(names_, classifiers_):
-        if len(names_) > 1:
-            plt.subplot(2, (len(names_)+1)/2, i)
-        y_proba = cross_val_predict(clf, x_train, y_train, cv=cvgen, method="predict_proba")
-        y_scores = y_proba[:, 1]
-        precisions, recalls, thresholds = precision_recall_curve(y_train, y_scores)
-        plt.plot(thresholds, precisions[:-1], "b--", label="Precision=TP/(TP+FP)", linewidth=5.0)
-        plt.plot(thresholds, recalls[:-1], "g-", label="Recall=TP/(TP+FN)", linewidth=5.0)
+def plot_precision_recall(names_, classifiers_, suffix_, x_train, y_train,
+                          nkfolds, folder, class_labels):
+    figure, nrows, ncols = prepare_fig(len(names_))
+    for ind, (name, clf) in enumerate(zip(names_, classifiers_)):
+        plt.subplot(nrows, ncols, ind)
+        y_proba = cross_val_predict(clf, x_train, y_train, cv=nkfolds, method="predict_proba")
+        for cls_hyp, (label_hyp, color) in enumerate(zip(class_labels, HIST_COLORS)):
+            y_scores = y_proba[:, cls_hyp]
+            print(f"y proba:\n{y_proba}\nscores for class {label_hyp}:\n{y_scores}")
+            precisions, recalls, thresholds = precision_recall_curve(y_train == cls_hyp, y_scores)
+            print(f"precisions:\n{precisions}\nrecalls\n{recalls}")
+            plt.plot(thresholds, precisions[:-1], f"{color}--",
+                     label=f"Precision {label_hyp} = TP/(TP+FP)", linewidth=5.0)
+            plt.plot(thresholds, recalls[:-1], f"{color}-", alpha=0.5,
+                     label=f"Recall {label_hyp} = TP/(TP+FN)", linewidth=5.0)
         plt.xlabel('Probability', fontsize=20)
         plt.ylabel('Precision or Recall', fontsize=20)
         plt.title('Precision, Recall '+name, fontsize=20)
@@ -202,49 +150,71 @@ def precision_recall(names_, classifiers_, suffix_, x_train, y_train, cvgen, fol
         plt.ylim([0, 1])
         plt.xticks(fontsize=18)
         plt.yticks(fontsize=18)
-        i += 1
-    plotname = folder+'/precision_recall%s.png' % (suffix_)
-    plt.savefig(plotname)
-    img_precision_recall = BytesIO()
-    plt.savefig(img_precision_recall, format='png')
-    img_precision_recall.seek(0)
+    figure.savefig(f"{folder}/precision_recall{suffix_}.png", bbox_inches='tight')
+    plt.close(figure)
 
-    figure2 = plt.figure(figsize=(20, 15))  # pylint: disable=unused-variable
-    i = 1
-    aucs = []
 
-    for name, clf in zip(names_, classifiers_):
-        y_proba = cross_val_predict(clf, x_train, y_train, cv=cvgen, method="predict_proba")
-        y_scores = y_proba[:, 1]
-        fpr, tpr, _ = roc_curve(y_train, y_scores)
-        roc_auc = auc(fpr, tpr)
-        aucs.append(roc_auc)
-        plt.xlabel('False Positive Rate or (1 - Specifity)', fontsize=20)
-        plt.ylabel('True Positive Rate or (Sensitivity)', fontsize=20)
+def plot_roc(names_, classifiers_, suffix_, x_train, y_train, nkfolds, folder,
+             class_labels):
+    figure, nrows, ncols = prepare_fig(len(names_))
+    for ind, (name, clf) in enumerate(zip(names_, classifiers_)):
+        plt.subplot(nrows, ncols, ind)
+        y_proba = cross_val_predict(clf, x_train, y_train, cv=nkfolds, method="predict_proba")
+        for cls_hyp, (label_hyp, color) in enumerate(zip(class_labels, HIST_COLORS)):
+            fpr, tpr, _ = roc_curve(y_train == cls_hyp, y_proba[:, cls_hyp])
+            roc_auc = auc(fpr, tpr)
+            plt.plot(fpr, tpr, f"{color}-", label=f"ROC {name} {label_hyp} vs rest, "\
+                     f"AUC = {roc_auc:.2f}", linewidth=5.0)
+    plt.xlabel('False Positive Rate or (1 - Specifity)', fontsize=20)
+    plt.ylabel('True Positive Rate or Sensitivity', fontsize=20)
+    plt.title('Receiver Operating Characteristic', fontsize=20)
+    plt.legend(loc="lower center", prop={'size': 30})
+    plt.xticks(fontsize=18)
+    plt.yticks(fontsize=18)
+    figure.savefig(f"{folder}/ROCcurve{suffix_}.png", bbox_inches='tight')
+    plt.close(figure)
+
+
+def plot_two_class_efficiences(names_, classifiers_, suffix_, x_train, y_train, folder,
+                               class_labels):
+    figure, nrows, ncols = prepare_fig(len(names_))
+    for ind, (name, clf) in enumerate(zip(names_, classifiers_)):
+        plt.subplot(nrows, ncols, ind)
+        # Not using cross_val as we do not compare different classifiers
+        y_scores = clf.predict_proba(x_train)
+        #scores_sum = y_scores.sum(axis=1)
+        #non_ones = scores_sum[scores_sum != 1.0]
+        #print(f"sum of scores:\n{scores_sum}\nnot one:\n{non_ones}")
+        figure = plt.figure(figsize=(20, 15))
+        label_pairs = itertools.combinations(class_labels, 2)
+        for label_pair, color in zip(label_pairs, HIST_COLORS):
+            ind_lab1 = class_labels.index(label_pair[0])
+            ind_lab2 = class_labels.index(label_pair[1])
+            mask_or = np.logical_or(y_train == ind_lab1, y_train == ind_lab2)
+            for ind, (ind_lab, alpha) in enumerate(zip((ind_lab1, ind_lab2), (1.0, 0.5))):
+                mask = y_train == ind_lab
+                fpr, tpr, _ = roc_curve(mask[mask_or], y_scores[mask_or, ind_lab])
+                roc_auc = auc(fpr, tpr)
+                #roc_auc_2 = roc_auc_score(y, y_scores, multi_class="ovo")
+                #print(f"ROC by fpr, tpr: {roc_auc} roc from fun: {roc_auc_2}")
+                plt.plot(fpr, tpr, f"{color}-", alpha=alpha, label=f"ROC "\
+                         f"{label_pair[ind]} vs {label_pair[1-ind]} (AUC = {roc_auc:.2f})",
+                         linewidth=5.0)
+        plt.xlabel('First class efficiency', fontsize=20)
+        plt.ylabel('Second class efficiency', fontsize=20)
         plt.title('Receiver Operating Characteristic', fontsize=20)
-        plt.plot(fpr, tpr, "b-", label='ROC %s (AUC = %0.2f)' %
-                 (name, roc_auc), linewidth=5.0)
         plt.legend(loc="lower center", prop={'size': 30})
         plt.xticks(fontsize=18)
         plt.yticks(fontsize=18)
-        i += 1
-    plotname = folder+'/ROCcurve%s.png' % (suffix_)
-    plt.savefig(plotname)
-    img_roc = BytesIO()
-    plt.savefig(img_roc, format='png')
-    img_roc.seek(0)
-
-    return img_precision_recall, img_roc
+        figure.savefig(f"{folder}/Effcurve{name}{suffix_}.png", bbox_inches='tight')
+        plt.close(figure)
 
 
 def plot_learning_curves(names_, classifiers_, suffix_, folder, x_data, y_data, npoints):
-
-    figure1 = plt.figure(figsize=(20, 15))
-    i = 1
     x_train, x_val, y_train, y_val = train_test_split(x_data, y_data, test_size=0.2)
-    for name, clf in zip(names_, classifiers_):
-        if len(names_) > 1:
-            plt.subplot(2, (len(names_)+1)/2, i)
+    figure, nrows, ncols = prepare_fig(len(names_))
+    for ind, (name, clf) in enumerate(zip(names_, classifiers_), start = 1):
+        plt.subplot(nrows, ncols, ind)
         train_errors, val_errors = [], []
         high = len(x_train)
         low = 100
@@ -264,69 +234,59 @@ def plot_learning_curves(names_, classifiers_, suffix_, folder, x_data, y_data, 
         plt.ylabel("RMSE", fontsize=20)
         plt.xticks(fontsize=18)
         plt.yticks(fontsize=18)
-        if len(names_) > 1:
-            figure1.subplots_adjust(hspace=.5)
         plt.legend(loc="best", prop={'size': 30})
-        i += 1
-    plotname = folder+'/learning_curve%s.png' % (suffix_)
-    plt.savefig(plotname)
-    img_learn = BytesIO()
-    plt.savefig(img_learn, format='png')
-    img_learn.seek(0)
-    return img_learn
+    figure.savefig(f"{folder}/learning_curve{suffix_}.png", bbox_inches='tight')
+    plt.close(figure)
 
-def plot_overtraining(names, classifiers, suffix, folder, x_train, y_train, x_val, y_val,
-                      bins=50):
+
+def plot_overtraining(names, classifiers, suffix, x_train, y_train, x_val, y_val, folder,
+                      class_labels, bins=50):
     for name, clf in zip(names, classifiers):
-        fig = plt.figure(figsize=(10, 8))
-        decisions = []
-        for x, y in ((x_train, y_train), (x_val, y_val)):
-            d1 = clf.predict_proba(x[y > 0.5])[:, 1]
-            d2 = clf.predict_proba(x[y < 0.5])[:, 1]
-            decisions += [d1, d2]
+        predict_probs_train = clf.predict_proba(x_train)
+        predict_probs_test = clf.predict_proba(x_val)
+        for cls_hyp, label_hyp in enumerate(class_labels):
+            figure = plt.figure(figsize=(10, 8))
+            for cls, (label, color) in enumerate(zip(class_labels, HIST_COLORS)):
+                plt.hist(predict_probs_train[y_train.iloc[:, cls] == 1, cls_hyp],
+                         color=color, alpha=0.5, range=[0, 1], bins=bins,
+                         histtype='stepfilled', density=True, label=f'{label}, train')
+                predicted_probs = predict_probs_test[y_val.iloc[:, cls] == 1, cls_hyp]
+                hist, bins = np.histogram(predicted_probs, bins=bins, range=[0, 1], density=True)
+                scale = len(predicted_probs) / sum(hist)
+                err = np.sqrt(hist * scale) / scale
+                center = (bins[:-1] + bins[1:]) / 2
+                plt.errorbar(center, hist, yerr=err, fmt='o', c=color, label=f'{label}, test')
+            plt.xlabel(f"ML score for {label_hyp}", fontsize=15)
+            plt.ylabel("Arbitrary units", fontsize=15)
+            plt.legend(loc="best", frameon=False, fontsize=15)
+            plt.yscale("log")
+            figure.savefig(f"{folder}/ModelOutDistr_{label_hyp}_{name}_{suffix}.png",
+                           bbox_inches='tight')
+            plt.close(figure)
 
-        plt.hist(decisions[0], color='r', alpha=0.5, range=[0, 1], bins=bins,
-                 histtype='stepfilled', density=True, label='S, train')
-        plt.hist(decisions[1], color='b', alpha=0.5, range=[0, 1], bins=bins,
-                 histtype='stepfilled', density=True, label='B, train')
-        hist, bins = np.histogram(decisions[2], bins=bins, range=[0, 1], density=True)
-        scale = len(decisions[2]) / sum(hist)
-        err = np.sqrt(hist * scale) / scale
-        center = (bins[:-1] + bins[1:]) / 2
-        plt.errorbar(center, hist, yerr=err, fmt='o', c='r', label='S, test')
-        hist, bins = np.histogram(decisions[3], bins=bins, range=[0, 1], density=True)
-        scale = len(decisions[3]) / sum(hist)
-        err = np.sqrt(hist * scale) / scale
-        plt.errorbar(center, hist, yerr=err, fmt='o', c='b', label='B, test')
-        plt.xlabel("Model output", fontsize=15)
-        plt.ylabel("Arbitrary units", fontsize=15)
-        plt.legend(loc="best", frameon=False, fontsize=15)
-        plt.yscale("log")
 
-        plot_name = f'{folder}/ModelOutDistr_{name}_{suffix}.png'
-        fig.savefig(plot_name)
-        plot_name = plot_name.replace('png', 'pickle')
-
-def roc_train_test(names, classifiers, x_train, y_train, x_test, y_test, suffix, folder,
-                   binmin, binmax):
-    fig = plt.figure(figsize=(20, 15))
-
-    for name, clf in zip(names, classifiers):
-        y_train_pred = clf.predict_proba(x_train)[:, 1]
-        y_test_pred = clf.predict_proba(x_test)[:, 1]
-        fpr_train, tpr_train, _ = roc_curve(y_train, y_train_pred)
-        fpr_test, tpr_test, _ = roc_curve(y_test, y_test_pred)
-        roc_auc_train = auc(fpr_train, tpr_train)
-        roc_auc_test = auc(fpr_test, tpr_test)
-        name_plot = name.replace("_", "\\_")
-        train_line = plt.plot(fpr_train, tpr_train, lw=3, alpha=0.4,
-                              label=f'ROC {name_plot} - Train set (AUC = {roc_auc_train:.4f})')
-        plt.plot(fpr_test, tpr_test, lw=3, ls="-.", alpha=0.8, c=train_line[0].get_color(),
-                 label=f'ROC {name} - Test set (AUC = {roc_auc_test:.4f})')
+def roc_train_test(names_, classifiers_, suffix_, x_train, y_train, x_test, y_test,
+                   folder, class_labels, binlims):
+    binmin, binmax = binlims
+    figure, nrows, ncols = prepare_fig(len(names_))
+    for ind, (name, clf) in enumerate(zip(names_, classifiers_)):
+        plt.subplot(nrows, ncols, ind)
+        for (x, y), set_name in zip(((x_train, y_train), (x_test, y_test)), ("train", "test")):
+            y_pred = clf.predict_proba(x)
+            print(f"y pred:\n{y_pred}\ny:\n{y}")
+            for cls_hyp, (label_hyp, color, ls, alpha) in \
+                    enumerate(zip(class_labels, HIST_COLORS, ("-", "-."), (0.4, 0.8))):
+                print(f"y for {cls_hyp}:\n{y.iloc[:, cls_hyp]}\n" \
+                      f"y pred for {cls_hyp}:\n{y_pred[:, cls_hyp]}")
+                fpr, tpr, _ = roc_curve(y.iloc[:, cls_hyp], y_pred[:, cls_hyp])
+                roc_auc = auc(fpr, tpr)
+                plt.plot(fpr, tpr, f"{color}{ls}", lw=3, alpha=alpha,
+                         label=f"ROC {name} {label_hyp} vs rest, {set_name} set, "\
+                               f"AUC = {roc_auc:.4f}")
 
     plt.text(0.7, 0.5,
              f" ${binmin} < p_\\mathrm{{T}}/(\\mathrm{{GeV}}/c) < {binmax}$",
-             verticalalignment="center", transform=fig.gca().transAxes, fontsize=30)
+             verticalalignment="center", transform=figure.gca().transAxes, fontsize=30)
 
     plt.xlim([-0.05, 1.05])
     plt.ylim([-0.05, 1.05])
@@ -334,11 +294,5 @@ def roc_train_test(names, classifiers, x_train, y_train, x_test, y_test, suffix,
     plt.ylabel('True Positive Rate', fontsize=30)
     plt.legend(loc='lower right', prop={'size': 25})
     plt.tick_params(labelsize=20)
-    plot_name = f'{folder}/ROCtraintest{suffix}.png'
-    mpl.rcParams.update({"text.usetex": True})
-    fig.savefig(plot_name)
-    mpl.rcParams.update({"text.usetex": False})
-    plot_name = plot_name.replace('png', 'pickle')
-    with open(plot_name, 'wb') as out:
-        pickle.dump(fig, out)
-    plt.close(fig)
+    figure.savefig(f"{folder}/ROCtraintest{suffix_}.png", bbox_inches='tight')
+    plt.close(figure)
