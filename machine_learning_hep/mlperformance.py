@@ -130,26 +130,33 @@ def confusion(names_, classifiers_, suffix_, x_train, y_train, cvgen, folder, do
 
 def plot_precision_recall(names_, classifiers_, suffix_, x_train, y_train,
                           nkfolds, folder, class_labels):
+
+    def do_plot_precision_recall(y_truth, y_score, label, color):
+        precisions, recalls, thresholds = precision_recall_curve(y_truth, y_score)
+        plt.plot(thresholds, precisions[:-1], f"{color}--",
+                 label=f"Precision {label} = TP/(TP+FP)", linewidth=5.0)
+        plt.plot(thresholds, recalls[:-1], f"{color}-", alpha=0.5,
+                 label=f"Recall {label} = TP/(TP+FN)", linewidth=5.0)
+
     figure, nrows, ncols = prepare_fig(len(names_))
     for ind, (name, clf) in enumerate(zip(names_, classifiers_)):
-        plt.subplot(nrows, ncols, ind)
-        y_proba = cross_val_predict(clf, x_train, y_train, cv=nkfolds, method="predict_proba")
-        for cls_hyp, (label_hyp, color) in enumerate(zip(class_labels, HIST_COLORS)):
-            y_scores = y_proba[:, cls_hyp]
-            print(f"y proba:\n{y_proba}\nscores for class {label_hyp}:\n{y_scores}")
-            precisions, recalls, thresholds = precision_recall_curve(y_train == cls_hyp, y_scores)
-            print(f"precisions:\n{precisions}\nrecalls\n{recalls}")
-            plt.plot(thresholds, precisions[:-1], f"{color}--",
-                     label=f"Precision {label_hyp} = TP/(TP+FP)", linewidth=5.0)
-            plt.plot(thresholds, recalls[:-1], f"{color}-", alpha=0.5,
-                     label=f"Recall {label_hyp} = TP/(TP+FN)", linewidth=5.0)
-        plt.xlabel('Probability', fontsize=20)
-        plt.ylabel('Precision or Recall', fontsize=20)
-        plt.title('Precision, Recall '+name, fontsize=20)
-        plt.legend(loc="best", prop={'size': 30})
-        plt.ylim([0, 1])
-        plt.xticks(fontsize=18)
-        plt.yticks(fontsize=18)
+        ax = plt.subplot(nrows, ncols, ind)
+        y_score = cross_val_predict(clf, x_train, y_train, cv=nkfolds, method="predict_proba")
+        if len(class_labels) == 2:
+            do_plot_precision_recall(y_train, y_score, "", HIST_COLORS[0])
+        else:
+            for cls_hyp, (label_hyp, color) in enumerate(zip(class_labels, HIST_COLORS)):
+                do_plot_precision_recall(y_train.iloc[:, cls_hyp], y_score[:, cls_hyp],
+                                         label_hyp, color)
+            do_plot_precision_recall(y_train.ravel(), y_score.ravel(), "average", "black")
+
+        ax.set_xlabel('Probability', fontsize=20)
+        ax.set_ylabel('Precision or Recall', fontsize=20)
+        ax.set_title('Precision, Recall', fontsize=20)
+        ax.legend(loc="best", prop={'size': 30})
+        ax.set_ylim([0, 1])
+        ax.set_xticks(fontsize=18)
+        ax.set_yticks(fontsize=18)
     figure.savefig(f"{folder}/precision_recall{suffix_}.png", bbox_inches='tight')
     plt.close(figure)
 
@@ -157,21 +164,21 @@ def plot_precision_recall(names_, classifiers_, suffix_, x_train, y_train,
 def roc_train_test(names_, classifiers_, suffix_, x_train, y_train, x_test, y_test,
                    folder, class_labels, binlims):
     binmin, binmax = binlims
+    fig_test = plot_roc_ovr(_names, classifiers_, suffix_, x_train, y_train, nkfolds,
+                            folder, class_labels, save=False)
+    fig_test = plot_roc_ovr(_names, classifiers_, suffix_, x_test, y_test, nkfolds,
+                            folder, class_labels, save=False)
+
     figure, nrows, ncols = prepare_fig(len(names_))
-    for ind, (name, clf) in enumerate(zip(names_, classifiers_)):
+    for ind, (ax_train, ax_test) in enumerate(zip(fig_train.get_axes(), fig_test.get_axes())):
         plt.subplot(nrows, ncols, ind)
-        for (x, y), set_name in zip(((x_train, y_train), (x_test, y_test)), ("train", "test")):
-            y_pred = clf.predict_proba(x)
-            print(f"y pred:\n{y_pred}\ny:\n{y}")
-            for cls_hyp, (label_hyp, color, ls, alpha) in \
-                    enumerate(zip(class_labels, HIST_COLORS, ("-", "-."), (0.4, 0.8))):
-                print(f"y for {cls_hyp}:\n{y.iloc[:, cls_hyp]}\n" \
-                      f"y pred for {cls_hyp}:\n{y_pred[:, cls_hyp]}")
-                fpr, tpr, _ = roc_curve(y.iloc[:, cls_hyp], y_pred[:, cls_hyp])
-                roc_auc = auc(fpr, tpr)
-                plt.plot(fpr, tpr, f"{color}{ls}", lw=3, alpha=alpha,
-                         label=f"ROC {name} {label_hyp} vs rest, {set_name} set, "\
-                               f"AUC = {roc_auc:.4f}")
+        for roc_test, roc_train in zip(ax_train.lines, ax_test.lines):
+            for roc_t, set_name, alpha, ls in zip((roc_train, roc_test), ("train", "test"),
+                                                  (0.4, 0.8), ("-", "-.")):
+                plt.plot(roc_t.get_xdata(), roc_t.get_ydata(), lw=roc_t.get_lw(), c=roc_t.get_c(),
+                         alpha=roc_t.get_alpha(), marker=roc_t.get_marker(),
+                         linestyle=roc_t.get_linestyle(),
+                         label=f"{roc_t.get_label()}, {set_name} set")
 
     plt.text(0.7, 0.5,
              f" ${binmin} < p_\\mathrm{{T}}/(\\mathrm{{GeV}}/c) < {binmax}$",
@@ -183,64 +190,71 @@ def roc_train_test(names_, classifiers_, suffix_, x_train, y_train, x_test, y_te
     plt.ylabel('True Positive Rate', fontsize=30)
     plt.legend(loc='lower right', prop={'size': 25})
     plt.tick_params(labelsize=20)
-    figure.savefig(f"{folder}/ROCtraintest{suffix_}.png", bbox_inches='tight')
+    figure.savefig(f"{folder}/ROCtraintest_OvR_{suffix_}.png", bbox_inches='tight')
     plt.close(figure)
 
 
-def plot_roc(names_, classifiers_, suffix_, x_train, y_train, nkfolds, folder,
-             class_labels):
+def plot_roc_ovr(names_, classifiers_, suffix_, x_train, y_train, nkfolds, folder,
+                 class_labels, save=True):
+    def plot_roc(y_truth, y_score, name, label, color):
+        fpr, tpr, _ = roc_curve(y_truth.iloc[:, cls_hyp], y_score[:, cls_hyp])
+        roc_auc = auc(fpr, tpr)
+        plt.plot(fpr, tpr, f"{color}-", label=f"ROC {name} {label_hyp} vs rest, "\
+                 f"AUC = {roc_auc:.2f}", linewidth=5.0)
+
     figure, nrows, ncols = prepare_fig(len(names_))
     for ind, (name, clf) in enumerate(zip(names_, classifiers_)):
         plt.subplot(nrows, ncols, ind)
-        y_proba = cross_val_predict(clf, x_train, y_train, cv=nkfolds, method="predict_proba")
-        for cls_hyp, (label_hyp, color) in enumerate(zip(class_labels, HIST_COLORS)):
-            fpr, tpr, _ = roc_curve(y_train == cls_hyp, y_proba[:, cls_hyp])
-            roc_auc = auc(fpr, tpr)
-            plt.plot(fpr, tpr, f"{color}-", label=f"ROC {name} {label_hyp} vs rest, "\
-                     f"AUC = {roc_auc:.2f}", linewidth=5.0)
-    plt.xlabel('False Positive Rate or (1 - Specifity)', fontsize=20)
-    plt.ylabel('True Positive Rate or Sensitivity', fontsize=20)
-    plt.title('Receiver Operating Characteristic', fontsize=20)
-    plt.legend(loc="lower center", prop={'size': 30})
-    plt.xticks(fontsize=18)
-    plt.yticks(fontsize=18)
-    figure.savefig(f"{folder}/ROCcurve{suffix_}.png", bbox_inches='tight')
-    plt.close(figure)
+        y_score = cross_val_predict(clf, x_train, y_train, cv=nkfolds, method="predict_proba")
+        if len(class_labels) == 2:
+            plot_roc(y_train, y_score, name, "", HIST_COLORS[0])
+        else:
+            for cls_hyp, (label_hyp, color) in enumerate(zip(class_labels, HIST_COLORS)):
+                plot_roc(y_train.iloc[:, cls_hyp], y_score[:, cls_hyp], name, label_hyp, color)
+    plt.xlim([-0.05, 1.05])
+    plt.ylim([-0.05, 1.05])
+    plt.xlabel('False Positive Rate', fontsize=30)
+    plt.ylabel('True Positive Rate', fontsize=30)
+    plt.legend(loc='lower right', prop={'size': 25})
+    plt.tick_params(labelsize=20)
+    if save:
+        figure.savefig(f"{folder}/ROC_OvR_{suffix_}.png", bbox_inches='tight')
+        #plt.close(figure)
+    return figure
 
 
-def plot_two_class_efficiences(names_, classifiers_, suffix_, x_train, y_train, folder,
-                               class_labels):
+def plot_roc_ovo():
+    if len(class_labels) <= 2:
+        raise ValueError("ROC OvO cannot be computed for binary classification")
     figure, nrows, ncols = prepare_fig(len(names_))
     for ind, (name, clf) in enumerate(zip(names_, classifiers_)):
         plt.subplot(nrows, ncols, ind)
-        # Not using cross_val as we do not compare different classifiers
-        y_scores = clf.predict_proba(x_train)
-        #scores_sum = y_scores.sum(axis=1)
-        #non_ones = scores_sum[scores_sum != 1.0]
-        #print(f"sum of scores:\n{scores_sum}\nnot one:\n{non_ones}")
-        figure = plt.figure(figsize=(20, 15))
+        y_score = cross_val_predict(clf, x_train, y_train, cv=nkfolds, method="predict_proba")
         label_pairs = itertools.combinations(class_labels, 2)
         for label_pair, color in zip(label_pairs, HIST_COLORS):
             ind_lab1 = class_labels.index(label_pair[0])
             ind_lab2 = class_labels.index(label_pair[1])
-            mask_or = np.logical_or(y_train == ind_lab1, y_train == ind_lab2)
+            mask_or = np.logical_or(y_train.iloc[:, ind_lab1], y_train.iloc[:, ind_lab2])
             for ind, (ind_lab, alpha) in enumerate(zip((ind_lab1, ind_lab2), (1.0, 0.5))):
                 mask = y_train == ind_lab
-                fpr, tpr, _ = roc_curve(mask[mask_or], y_scores[mask_or, ind_lab])
+                fpr, tpr, _ = roc_curve(mask[mask_or], y_score[mask_or, ind_lab])
                 roc_auc = auc(fpr, tpr)
-                #roc_auc_2 = roc_auc_score(y, y_scores, multi_class="ovo")
-                #print(f"ROC by fpr, tpr: {roc_auc} roc from fun: {roc_auc_2}")
                 plt.plot(fpr, tpr, f"{color}-", alpha=alpha, label=f"ROC "\
                          f"{label_pair[ind]} vs {label_pair[1-ind]} (AUC = {roc_auc:.2f})",
                          linewidth=5.0)
-        plt.xlabel('First class efficiency', fontsize=20)
-        plt.ylabel('Second class efficiency', fontsize=20)
-        plt.title('Receiver Operating Characteristic', fontsize=20)
-        plt.legend(loc="lower center", prop={'size': 30})
-        plt.xticks(fontsize=18)
-        plt.yticks(fontsize=18)
-        figure.savefig(f"{folder}/Effcurve{name}{suffix_}.png", bbox_inches='tight')
-        plt.close(figure)
+        global_roc_auc = roc_auc_score(y_train, y_score, average=average, multi_class='ovo')
+        plt.plot([], [], ' ', label=f'Average OvO ROC AUC: {global_roc_auc:.2f}')
+    plt.xlabel('First class efficiency', fontsize=20)
+    plt.ylabel('Second class efficiency', fontsize=20)
+    plt.title('Receiver Operating Characteristic', fontsize=20)
+    plt.xlim([-0.05, 1.05])
+    plt.ylim([-0.05, 1.05])
+    plt.xlabel('False Positive Rate', fontsize=30)
+    plt.ylabel('True Positive Rate', fontsize=30)
+    plt.legend(loc='lower right', prop={'size': 25})
+    plt.tick_params(labelsize=20)
+    figure.savefig(f"{folder}/ROC_OvO_{suffix_}.png", bbox_inches='tight')
+    plt.close(figure)
 
 
 def plot_learning_curves(names_, classifiers_, suffix_, folder, x_data, y_data, npoints):
