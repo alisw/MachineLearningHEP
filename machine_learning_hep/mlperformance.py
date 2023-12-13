@@ -154,6 +154,39 @@ def plot_precision_recall(names_, classifiers_, suffix_, x_train, y_train,
     plt.close(figure)
 
 
+def roc_train_test(names_, classifiers_, suffix_, x_train, y_train, x_test, y_test,
+                   folder, class_labels, binlims):
+    binmin, binmax = binlims
+    figure, nrows, ncols = prepare_fig(len(names_))
+    for ind, (name, clf) in enumerate(zip(names_, classifiers_)):
+        plt.subplot(nrows, ncols, ind)
+        for (x, y), set_name in zip(((x_train, y_train), (x_test, y_test)), ("train", "test")):
+            y_pred = clf.predict_proba(x)
+            print(f"y pred:\n{y_pred}\ny:\n{y}")
+            for cls_hyp, (label_hyp, color, ls, alpha) in \
+                    enumerate(zip(class_labels, HIST_COLORS, ("-", "-."), (0.4, 0.8))):
+                print(f"y for {cls_hyp}:\n{y.iloc[:, cls_hyp]}\n" \
+                      f"y pred for {cls_hyp}:\n{y_pred[:, cls_hyp]}")
+                fpr, tpr, _ = roc_curve(y.iloc[:, cls_hyp], y_pred[:, cls_hyp])
+                roc_auc = auc(fpr, tpr)
+                plt.plot(fpr, tpr, f"{color}{ls}", lw=3, alpha=alpha,
+                         label=f"ROC {name} {label_hyp} vs rest, {set_name} set, "\
+                               f"AUC = {roc_auc:.4f}")
+
+    plt.text(0.7, 0.5,
+             f" ${binmin} < p_\\mathrm{{T}}/(\\mathrm{{GeV}}/c) < {binmax}$",
+             verticalalignment="center", transform=figure.gca().transAxes, fontsize=30)
+
+    plt.xlim([-0.05, 1.05])
+    plt.ylim([-0.05, 1.05])
+    plt.xlabel('False Positive Rate', fontsize=30)
+    plt.ylabel('True Positive Rate', fontsize=30)
+    plt.legend(loc='lower right', prop={'size': 25})
+    plt.tick_params(labelsize=20)
+    figure.savefig(f"{folder}/ROCtraintest{suffix_}.png", bbox_inches='tight')
+    plt.close(figure)
+
+
 def plot_roc(names_, classifiers_, suffix_, x_train, y_train, nkfolds, folder,
              class_labels):
     figure, nrows, ncols = prepare_fig(len(names_))
@@ -263,36 +296,3 @@ def plot_overtraining(names, classifiers, suffix, x_train, y_train, x_val, y_val
             figure.savefig(f"{folder}/ModelOutDistr_{label_hyp}_{name}_{suffix}.png",
                            bbox_inches='tight')
             plt.close(figure)
-
-
-def roc_train_test(names_, classifiers_, suffix_, x_train, y_train, x_test, y_test,
-                   folder, class_labels, binlims):
-    binmin, binmax = binlims
-    figure, nrows, ncols = prepare_fig(len(names_))
-    for ind, (name, clf) in enumerate(zip(names_, classifiers_)):
-        plt.subplot(nrows, ncols, ind)
-        for (x, y), set_name in zip(((x_train, y_train), (x_test, y_test)), ("train", "test")):
-            y_pred = clf.predict_proba(x)
-            print(f"y pred:\n{y_pred}\ny:\n{y}")
-            for cls_hyp, (label_hyp, color, ls, alpha) in \
-                    enumerate(zip(class_labels, HIST_COLORS, ("-", "-."), (0.4, 0.8))):
-                print(f"y for {cls_hyp}:\n{y.iloc[:, cls_hyp]}\n" \
-                      f"y pred for {cls_hyp}:\n{y_pred[:, cls_hyp]}")
-                fpr, tpr, _ = roc_curve(y.iloc[:, cls_hyp], y_pred[:, cls_hyp])
-                roc_auc = auc(fpr, tpr)
-                plt.plot(fpr, tpr, f"{color}{ls}", lw=3, alpha=alpha,
-                         label=f"ROC {name} {label_hyp} vs rest, {set_name} set, "\
-                               f"AUC = {roc_auc:.4f}")
-
-    plt.text(0.7, 0.5,
-             f" ${binmin} < p_\\mathrm{{T}}/(\\mathrm{{GeV}}/c) < {binmax}$",
-             verticalalignment="center", transform=figure.gca().transAxes, fontsize=30)
-
-    plt.xlim([-0.05, 1.05])
-    plt.ylim([-0.05, 1.05])
-    plt.xlabel('False Positive Rate', fontsize=30)
-    plt.ylabel('True Positive Rate', fontsize=30)
-    plt.legend(loc='lower right', prop={'size': 25})
-    plt.tick_params(labelsize=20)
-    figure.savefig(f"{folder}/ROCtraintest{suffix_}.png", bbox_inches='tight')
-    plt.close(figure)
