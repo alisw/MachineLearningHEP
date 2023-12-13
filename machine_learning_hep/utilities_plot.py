@@ -74,13 +74,13 @@ def buildhisto(h_name, h_tit, arrayx, arrayy=None, arrayz=None):
     histo.Sumw2()
     return histo
 
-def makefill1dhist(df_, h_name, h_tit, arrayx, nvar1):
-    """
-    Create a TH1F histogram and fill it with one variables from a dataframe.
-    """
-    histo = buildhisto(h_name, h_tit, arrayx)
-    fill_hist(histo, df_[nvar1])
-    return histo
+#def makefill1dhist(df_, h_name, h_tit, arrayx, nvar1):
+#    """
+#    Create a TH1F histogram and fill it with one variables from a dataframe.
+#    """
+#    histo = buildhisto(h_name, h_tit, arrayx)
+#    fill_hist(histo, df_[nvar1])
+#    return histo
 
 def build2dhisto(titlehist, arrayx, arrayy):
     """
@@ -88,15 +88,15 @@ def build2dhisto(titlehist, arrayx, arrayy):
     """
     return buildhisto(titlehist, titlehist, arrayx, arrayy)
 
-def makefill2dhist(df_, titlehist, arrayx, arrayy, nvar1, nvar2):
-    """
-    Create a TH2F histogram and fill it with two variables from a dataframe.
-    """
-    histo = build2dhisto(titlehist, arrayx, arrayy)
-    df_rd = df_[[nvar1, nvar2]]
-    arr2 = df_rd.to_numpy()
-    fill_hist(histo, arr2)
-    return histo
+#def makefill2dhist(df_, titlehist, arrayx, arrayy, nvar1, nvar2):
+#    """
+#    Create a TH2F histogram and fill it with two variables from a dataframe.
+#    """
+#    histo = build2dhisto(titlehist, arrayx, arrayy)
+#    df_rd = df_[[nvar1, nvar2]]
+#    arr2 = df_rd.to_numpy()
+#    fill_hist(histo, arr2)
+#    return histo
 
 def makefill2dweighed(df_, titlehist, arrayx, arrayy, nvar1, nvar2, weight):
     """
@@ -134,14 +134,14 @@ def makefill3dweighed(df_, titlehist, arrayx, arrayy, arrayz, nvar1, nvar2, nvar
                    getattr(row, nvar3), getattr(row, weight))
     return histo
 
-def fill2dhist(df_, histo, nvar1, nvar2):
-    """
-    Fill a TH2 histogram with two variables from a dataframe.
-    """
-    df_rd = df_[[nvar1, nvar2]]
-    arr2 = df_rd.values
-    fill_hist(histo, arr2)
-    return histo
+#def fill2dhist(df_, histo, nvar1, nvar2):
+#    """
+#    Fill a TH2 histogram with two variables from a dataframe.
+#    """
+#    df_rd = df_[[nvar1, nvar2]]
+#    arr2 = df_rd.values
+#    fill_hist(histo, arr2)
+#    return histo
 
 def fill2dweighed(df_, histo, nvar1, nvar2, weight):
     """
@@ -240,15 +240,15 @@ def load_root_style():
     gStyle.SetPadTickX(1)
     gStyle.SetPadTickY(1)
 
-def scatterplotroot(dfevt, nvar1, nvar2, nbins1, min1, max1, nbins2, min2, max2):
-    """
-    Make TH2F scatterplot between two variables from dataframe
-    """
-    hmult1_mult2 = TH2F(nvar1 + nvar2, nvar1 + nvar2, nbins1, min1, max1, nbins2, min2, max2)
-    dfevt_rd = dfevt[[nvar1, nvar2]]
-    arr2 = dfevt_rd.values
-    fill_hist(hmult1_mult2, arr2)
-    return hmult1_mult2
+#def scatterplotroot(dfevt, nvar1, nvar2, nbins1, min1, max1, nbins2, min2, max2):
+#    """
+#    Make TH2F scatterplot between two variables from dataframe
+#    """
+#    hmult1_mult2 = TH2F(nvar1 + nvar2, nvar1 + nvar2, nbins1, min1, max1, nbins2, min2, max2)
+#    dfevt_rd = dfevt[[nvar1, nvar2]]
+#    arr2 = dfevt_rd.values
+#    fill_hist(hmult1_mult2, arr2)
+#    return hmult1_mult2
 
 def find_axes_limits(histos, use_log_y=False):
     """
@@ -256,26 +256,12 @@ def find_axes_limits(histos, use_log_y=False):
     """
     # That might be considered to be a hack since it now only has a chance to work
     # reasonably well if there is at least one histogram.
-    max_y = min([h.GetMinimum() for h in histos if isinstance(h, TH1)])
-    min_y = min([h.GetMaximum() for h in histos if isinstance(h, TH1)])
+    max_y = max((h.GetMaximum() for h in histos if isinstance(h, TH1)))
+    min_y = min((h.GetMinimum() for h in histos if isinstance(h, TH1)))
     if not min_y > 0. and use_log_y:
         min_y = 10.e-9
-
-    max_x = max([h.GetXaxis().GetXmax() for h in histos])
-    min_x = max([h.GetXaxis().GetXmin() for h in histos])
-
-    for h in histos:
-        if not isinstance(h, TH1):
-            # That might be considered to be a hack since it now only has a chance to work
-            # reasonably well if there is at least one histogram.
-            continue
-        min_x = min(min_x, h.GetXaxis().GetXmin())
-        max_x = max(max_x, h.GetXaxis().GetXmax())
-        min_y_tmp = h.GetBinContent(h.GetMinimumBin())
-        if min_y_tmp > 0. and use_log_y or not use_log_y:
-            min_y = min(min_y, h.GetBinContent(h.GetMinimumBin()))
-        max_y = max(max_y, h.GetBinContent(h.GetMaximumBin()))
-
+    max_x = max((h.GetXaxis().GetXmax() for h in histos))
+    min_x = min((h.GetXaxis().GetXmin() for h in histos))
     return min_x, max_x, min_y, max_y
 
 def style_histograms(histos, linestyles=None, markerstyles=None, colors=None, linewidths=None,
