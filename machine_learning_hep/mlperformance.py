@@ -293,7 +293,7 @@ def plot_overtraining(names, classifiers, suffix, x_train, y_train, x_test, y_te
                       class_labels, bins=50):
     def truth_condition(y_t, cls):
         if len(class_labels) == 2:
-            return ~y_t if cls == 0 else y_t
+            return ~y_t if cls == class_labels.index("bkg") else y_t
         else:
             return y_t.iloc[:, cls]
 
@@ -305,6 +305,8 @@ def plot_overtraining(names, classifiers, suffix, x_train, y_train, x_test, y_te
             for cls, (label, color) in enumerate(zip(class_labels, HIST_COLORS)):
                 truth_train = truth_condition(y_train, cls)
                 truth_test = truth_condition(y_test, cls)
+                # d1 = clf.predict_proba(x[y > 0.5])[:, 1] # signal
+                # d2 = clf.predict_proba(x[y < 0.5])[:, 1] # background
                 plt.hist(predict_probs_train[truth_train, cls_hyp],
                          color=color, alpha=0.5, range=[0, 1], bins=bins,
                          histtype='stepfilled', density=True, label=f'{label}, train')
