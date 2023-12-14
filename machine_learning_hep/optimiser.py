@@ -471,13 +471,15 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
                                          self.df_xtrain, self.df_ytrain,
                                          self.p_nkfolds, self.dirmlplot,
                                          self.p_class_labels)
-        mlhep_plot.plot_roc(self.p_classname, self.p_class, self.s_suffix,
-                            self.df_xtrain, self.df_ytrain,
-                            self.p_nkfolds, self.dirmlplot,
-                            self.p_class_labels)
-        mlhep_plot.plot_two_class_efficiences(self.p_classname, self.p_class, self.s_suffix,
-                                              self.df_xtrain, self.df_ytrain,
-                                              self.dirmlplot, self.p_class_labels)
+        mlhep_plot.plot_roc_ovr(self.p_classname, self.p_class, self.s_suffix,
+                                self.df_xtrain, self.df_ytrain,
+                                self.p_nkfolds, self.dirmlplot,
+                                self.p_class_labels)
+        if self.p_mltype == "MultiClassification":
+            mlhep_plot.plot_roc_ovr(self.p_classname, self.p_class, self.s_suffix,
+                                    self.df_xtrain, self.df_ytrain,
+                                    self.p_nkfolds, self.dirmlplot,
+                                    self.p_class_labels)
 
     def do_roc_train_test(self):
         if self.step_done("roc_train_test"):
@@ -486,11 +488,13 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.do_train()
 
         self.logger.info("Make ROC for train and test")
-        mlhep_plot.roc_train_test(self.p_classname, self.p_class, self.s_suffix,
-                                  self.df_xtrain, self.df_ytrain,
-                                  self.df_xtest, self.df_ytest,
-                                  self.dirmlplot, self.p_class_labels,
-                                  (self.p_binmin, self.p_binmax))
+        for roc_type in ("roc_ovr", "roc_ovo"):
+            mlhep_plot.roc_train_test(self.p_classname, self.p_class, self.s_suffix,
+                                      self.df_xtrain, self.df_ytrain,
+                                      self.df_xtest, self.df_ytest,
+                                      self.p_nkfolds, self.dirmlplot,
+                                      self.p_class_labels,
+                                      (self.p_binmin, self.p_binmax), roc_type)
 
     def do_plot_model_pred(self):
         if self.step_done("plot_model_pred"):
