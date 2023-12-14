@@ -155,8 +155,7 @@ def plot_precision_recall(names_, classifiers_, suffix_, x_train, y_train,
         ax.set_title('Precision, Recall', fontsize=20)
         ax.legend(loc="best", prop={'size': 30})
         ax.set_ylim([0, 1])
-        ax.set_xticks(fontsize=18)
-        ax.set_yticks(fontsize=18)
+        ax.tick_params(labelsize=20)
     figure.savefig(f"{folder}/precision_recall{suffix_}.png", bbox_inches='tight')
     plt.close(figure)
 
@@ -164,14 +163,14 @@ def plot_precision_recall(names_, classifiers_, suffix_, x_train, y_train,
 def roc_train_test(names_, classifiers_, suffix_, x_train, y_train, x_test, y_test,
                    folder, class_labels, binlims):
     binmin, binmax = binlims
-    fig_test = plot_roc_ovr(_names, classifiers_, suffix_, x_train, y_train, nkfolds,
+    fig_train = plot_roc_ovr(_names, classifiers_, suffix_, x_train, y_train, nkfolds,
                             folder, class_labels, save=False)
     fig_test = plot_roc_ovr(_names, classifiers_, suffix_, x_test, y_test, nkfolds,
                             folder, class_labels, save=False)
 
     figure, nrows, ncols = prepare_fig(len(names_))
     for ind, (ax_train, ax_test) in enumerate(zip(fig_train.get_axes(), fig_test.get_axes())):
-        plt.subplot(nrows, ncols, ind)
+        ax = plt.subplot(nrows, ncols, ind)
         for roc_test, roc_train in zip(ax_train.lines, ax_test.lines):
             for roc_t, set_name, alpha, ls in zip((roc_train, roc_test), ("train", "test"),
                                                   (0.4, 0.8), ("-", "-.")):
@@ -179,17 +178,17 @@ def roc_train_test(names_, classifiers_, suffix_, x_train, y_train, x_test, y_te
                          alpha=roc_t.get_alpha(), marker=roc_t.get_marker(),
                          linestyle=roc_t.get_linestyle(),
                          label=f"{roc_t.get_label()}, {set_name} set")
+        ax.set_xlabel('False Positive Rate', fontsize=30)
+        ax.set_ylabel('True Positive Rate', fontsize=30)
+        ax.legend(loc='lower right', prop={'size': 25})
+        ax.set_xlim([-0.05, 1.05])
+        ax.set_ylim([-0.05, 1.05])
+        ax.tick_params(labelsize=20)
 
-    plt.text(0.7, 0.5,
-             f" ${binmin} < p_\\mathrm{{T}}/(\\mathrm{{GeV}}/c) < {binmax}$",
-             verticalalignment="center", transform=figure.gca().transAxes, fontsize=30)
+        ax.text(0.7, 0.5,
+                 f" ${binmin} < p_\\mathrm{{T}}/(\\mathrm{{GeV}}/c) < {binmax}$",
+                 verticalalignment="center", transform=ax.transAxes, fontsize=30)
 
-    plt.xlim([-0.05, 1.05])
-    plt.ylim([-0.05, 1.05])
-    plt.xlabel('False Positive Rate', fontsize=30)
-    plt.ylabel('True Positive Rate', fontsize=30)
-    plt.legend(loc='lower right', prop={'size': 25})
-    plt.tick_params(labelsize=20)
     figure.savefig(f"{folder}/ROCtraintest_OvR_{suffix_}.png", bbox_inches='tight')
     plt.close(figure)
 
@@ -204,19 +203,19 @@ def plot_roc_ovr(names_, classifiers_, suffix_, x_train, y_train, nkfolds, folde
 
     figure, nrows, ncols = prepare_fig(len(names_))
     for ind, (name, clf) in enumerate(zip(names_, classifiers_)):
-        plt.subplot(nrows, ncols, ind)
+        ax = plt.subplot(nrows, ncols, ind)
         y_score = cross_val_predict(clf, x_train, y_train, cv=nkfolds, method="predict_proba")
         if len(class_labels) == 2:
             plot_roc(y_train, y_score, name, "", HIST_COLORS[0])
         else:
             for cls_hyp, (label_hyp, color) in enumerate(zip(class_labels, HIST_COLORS)):
                 plot_roc(y_train.iloc[:, cls_hyp], y_score[:, cls_hyp], name, label_hyp, color)
-    plt.xlim([-0.05, 1.05])
-    plt.ylim([-0.05, 1.05])
-    plt.xlabel('False Positive Rate', fontsize=30)
-    plt.ylabel('True Positive Rate', fontsize=30)
-    plt.legend(loc='lower right', prop={'size': 25})
-    plt.tick_params(labelsize=20)
+        ax.set_xlabel('False Positive Rate', fontsize=30)
+        ax.set_ylabel('True Positive Rate', fontsize=30)
+        ax.legend(loc='lower right', prop={'size': 25})
+        ax.set_xlim([-0.05, 1.05])
+        ax.set_ylim([-0.05, 1.05])
+        ax.tick_params(labelsize=20)
     if save:
         figure.savefig(f"{folder}/ROC_OvR_{suffix_}.png", bbox_inches='tight')
         #plt.close(figure)
@@ -228,7 +227,7 @@ def plot_roc_ovo():
         raise ValueError("ROC OvO cannot be computed for binary classification")
     figure, nrows, ncols = prepare_fig(len(names_))
     for ind, (name, clf) in enumerate(zip(names_, classifiers_)):
-        plt.subplot(nrows, ncols, ind)
+        ax = plt.subplot(nrows, ncols, ind)
         y_score = cross_val_predict(clf, x_train, y_train, cv=nkfolds, method="predict_proba")
         label_pairs = itertools.combinations(class_labels, 2)
         for label_pair, color in zip(label_pairs, HIST_COLORS):
@@ -244,28 +243,26 @@ def plot_roc_ovo():
                          linewidth=5.0)
         global_roc_auc = roc_auc_score(y_train, y_score, average=average, multi_class='ovo')
         plt.plot([], [], ' ', label=f'Average OvO ROC AUC: {global_roc_auc:.2f}')
-    plt.xlabel('First class efficiency', fontsize=20)
-    plt.ylabel('Second class efficiency', fontsize=20)
-    plt.title('Receiver Operating Characteristic', fontsize=20)
-    plt.xlim([-0.05, 1.05])
-    plt.ylim([-0.05, 1.05])
-    plt.xlabel('False Positive Rate', fontsize=30)
-    plt.ylabel('True Positive Rate', fontsize=30)
-    plt.legend(loc='lower right', prop={'size': 25})
-    plt.tick_params(labelsize=20)
+        ax.set_xlabel('First class efficiency', fontsize=20)
+        ax.set_ylabel('Second class efficiency', fontsize=20)
+        ax.set_title('Receiver Operating Characteristic', fontsize=20)
+        ax.legend(loc='lower right', prop={'size': 25})
+        ax.set_xlim([-0.05, 1.05])
+        ax.set_ylim([-0.05, 1.05])
+        ax.tick_params(labelsize=20)
     figure.savefig(f"{folder}/ROC_OvO_{suffix_}.png", bbox_inches='tight')
     plt.close(figure)
 
 
 def plot_learning_curves(names_, classifiers_, suffix_, folder, x_data, y_data, npoints):
+    high = len(x_train)
+    low = 100
+    step_ = int((high-low)/npoints)
     x_train, x_val, y_train, y_val = train_test_split(x_data, y_data, test_size=0.2)
     figure, nrows, ncols = prepare_fig(len(names_))
     for ind, (name, clf) in enumerate(zip(names_, classifiers_), start = 1):
-        plt.subplot(nrows, ncols, ind)
+        ax = plt.subplot(nrows, ncols, ind)
         train_errors, val_errors = [], []
-        high = len(x_train)
-        low = 100
-        step_ = int((high-low)/npoints)
         arrayvalues = np.arange(start=low, stop=high, step=step_)
         for m in arrayvalues:
             clf.fit(x_train[:m], y_train[:m])
@@ -275,13 +272,12 @@ def plot_learning_curves(names_, classifiers_, suffix_, folder, x_data, y_data, 
             val_errors.append(mean_squared_error(y_val_predict, y_val))
         plt.plot(arrayvalues, np.sqrt(train_errors), "r-+", linewidth=5, label="training")
         plt.plot(arrayvalues, np.sqrt(val_errors), "b-", linewidth=5, label="testing")
-        plt.ylim([0, np.amax(np.sqrt(val_errors))*2])
-        plt.title("Learning curve "+name, fontsize=20)
-        plt.xlabel("Training set size", fontsize=20)
-        plt.ylabel("RMSE", fontsize=20)
-        plt.xticks(fontsize=18)
-        plt.yticks(fontsize=18)
-        plt.legend(loc="best", prop={'size': 30})
+        ax.set_xlabel("Training set size", fontsize=30)
+        ax.set_ylabel("MSE", fontsize=30)
+        ax.set_title(f"Learning curve {name}", fontsize=30)
+        ax.legend(loc="best", prop={'size': 30})
+        ax.set_ylim([0, np.amax(np.sqrt(val_errors))*2])
+        ax.tick_params(labelsize=20)
     figure.savefig(f"{folder}/learning_curve{suffix_}.png", bbox_inches='tight')
     plt.close(figure)
 
