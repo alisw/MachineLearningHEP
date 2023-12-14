@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -16,9 +16,7 @@
 Methods for correlation and variable plots
 """
 import pickle
-from os.path import join
 from collections import deque
-from io import BytesIO
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -29,29 +27,28 @@ from machine_learning_hep.logger import get_logger
 
 #mpl.use('Agg')
 
-def vardistplot(dataframe_sig_, dataframe_bkg_, mylistvariables_, output_,
+HIST_COLORS = ['g', 'b', 'r']
+
+def vardistplot(dfs_input_, mylistvariables_, output_,
                 binmin, binmax, plot_options_):
     mpl.rcParams.update({"text.usetex": True})
     plot_type_name = "prob_cut_scan"
     plot_options = plot_options_.get(plot_type_name, {}) \
             if isinstance(plot_options_, dict) else {}
 
-
-    figure = plt.figure(figsize=(20, 15)) # pylint: disable=unused-variable
-
+    figure = plt.figure(figsize=(20, 15))
     figure.suptitle(f"Separation plots for ${binmin} < p_\\mathrm{{T}}/(\\mathrm{{GeV}}/c) < " \
                     f"{binmax}$", fontsize=30)
-    i = 1
-    for var in mylistvariables_:
-        ax = plt.subplot(3, int(len(mylistvariables_)/3+1), i)
+    for ind, var in enumerate(mylistvariables_, start=1):
+        ax = plt.subplot(3, int(len(mylistvariables_)/3+1), ind)
         plt.yscale('log')
-        kwargs = dict(alpha=0.3, density=True, bins=100)
+        kwargs = {"alpha": 0.3, "density": True, "bins": 100}
         po = plot_options.get(var, {})
         if "xlim" in po:
             kwargs["range"] = (po["xlim"][0], po["xlim"][1])
 
-        plt.hist(dataframe_sig_[var], facecolor='b', label='signal', **kwargs)
-        plt.hist(dataframe_bkg_[var], facecolor='g', label='background', **kwargs)
+        for label, color in zip(dfs_input_, HIST_COLORS):
+            plt.hist(dfs_input_[label][var], facecolor=color, label=label, **kwargs)
 
         var_tex = var.replace("_", ":")
         if "xlim" in po:
@@ -61,16 +58,10 @@ def vardistplot(dataframe_sig_, dataframe_bkg_, mylistvariables_, output_,
         plt.xlabel(var_tex, fontsize=11)
         plt.ylabel(po.get("ylabel", "entries"), fontsize=11)
         ax.legend()
-        i = i+1
-    plotname = output_+'/variablesDistribution_nVar%d_%d%d.png' % \
-                            (len(mylistvariables_), binmin, binmax)
-    plt.savefig(plotname, bbox_inches='tight')
-    imagebytesIO = BytesIO()
-    plt.savefig(imagebytesIO, format='png')
-    imagebytesIO.seek(0)
+    plotname = f"{output_}/variablesDistribution_nVar{len(mylistvariables_)}_{binmin}{binmax}.png"
+    figure.savefig(plotname, bbox_inches='tight')
     mpl.rcParams.update({"text.usetex": False})
     plt.close(figure)
-    return imagebytesIO
 
 def vardistplot_probscan(dataframe_, mylistvariables_, modelname_, thresharray_, # pylint: disable=too-many-statements
                          output_, suffix_, opt=1, plot_options_=None):
@@ -81,9 +72,9 @@ def vardistplot_probscan(dataframe_, mylistvariables_, modelname_, thresharray_,
         plot_options = plot_options_.get(plot_type_name, {})
     color = ['C0', 'C1', 'C2', 'C3', 'C4', 'C5', 'C6', 'C7', 'C8', 'C9']
 
-    fig = plt.figure(figsize=(60, 25))
+    figure = plt.figure(figsize=(60, 25))
     gs = GridSpec(3, int(len(mylistvariables_)/3+1))
-    axes = [fig.add_subplot(gs[i]) for i in range(len(mylistvariables_))]
+    axes = [figure.add_subplot(gs[i]) for i in range(len(mylistvariables_))]
 
     # Sort the thresharray_
     thresharray_.sort()
@@ -137,8 +128,9 @@ def vardistplot_probscan(dataframe_, mylistvariables_, modelname_, thresharray_,
                 axes[i].set_ylim(0.001, 1.1)
             axes[i].bar(center, his, align='center', width=width, facecolor=clr, label=lbl)
             axes[i].legend(fontsize=10)
-    plotname = join(output_, f"variables_distribution_{suffix_}_ratio{opt}.png")
-    plt.savefig(plotname, bbox_inches='tight')
+    plotname = f"{output_}/variables_distribution_{suffix_}_ratio{opt}.png"
+    figure.savefig(plotname, bbox_inches='tight')
+    plt.close(figure)
 
 def efficiency_cutscan(dataframe_, mylistvariables_, modelname_, threshold, # pylint: disable=too-many-statements
                        output_, suffix_, plot_options_=None):
@@ -147,12 +139,12 @@ def efficiency_cutscan(dataframe_, mylistvariables_, modelname_, threshold, # py
     plot_options = {}
     if isinstance(plot_options_, dict):
         plot_options = plot_options_.get(plot_type_name, {})
-    selml = "y_test_prob%s>%s" % (modelname_, threshold)
+    selml = f"y_test_prob{modelname_}>{threshold}"
     dataframe_ = dataframe_.query(selml)
 
-    fig = plt.figure(figsize=(60, 25))
+    figure = plt.figure(figsize=(60, 25))
     gs = GridSpec(3, int(len(mylistvariables_)/3+1))
-    axes = [fig.add_subplot(gs[i]) for i in range(len(mylistvariables_))]
+    axes = [figure.add_subplot(gs[i]) for i in range(len(mylistvariables_))]
 
     # Available cut options
     cut_options = ["lt", "st", "abslt", "absst"]
@@ -211,9 +203,9 @@ def efficiency_cutscan(dataframe_, mylistvariables_, modelname_, threshold, # py
         lbl = f'prob > {threshold}'
         axes[i].bar(center, ratios, align='center', width=width, label=lbl)
         axes[i].legend(fontsize=30)
-    plotname = join(output_, f"variables_effscan_prob{threshold}_{suffix_}.png")
-    plt.savefig(plotname, bbox_inches='tight')
-    plt.savefig(plotname, bbox_inches='tight')
+    plotname = f"{output_}/variables_effscan_prob{threshold}_{suffix_}.png"
+    figure.savefig(plotname, bbox_inches='tight')
+    plt.close(figure)
 
 def picklesize_cutscan(dataframe_, mylistvariables_, output_, suffix_, plot_options_=None): # pylint: disable=too-many-statements
 
@@ -222,9 +214,9 @@ def picklesize_cutscan(dataframe_, mylistvariables_, output_, suffix_, plot_opti
     if isinstance(plot_options_, dict):
         plot_options = plot_options_.get(plot_type_name, {})
 
-    fig = plt.figure(figsize=(60, 25))
+    figure = plt.figure(figsize=(60, 25))
     gs = GridSpec(3, int(len(mylistvariables_)/3+1))
-    axes = [fig.add_subplot(gs[i]) for i in range(len(mylistvariables_))]
+    axes = [figure.add_subplot(gs[i]) for i in range(len(mylistvariables_))]
 
     df_reference_pkl_size = len(pickle.dumps(dataframe_, protocol=4))
     df_reference_size = dataframe_.shape[0] * dataframe_.shape[1]
@@ -281,37 +273,29 @@ def picklesize_cutscan(dataframe_, mylistvariables_, output_, suffix_, plot_opti
         axes[i].bar(center, ratios_df_size, align='center', width=width, label="rel. df length",
                     alpha=0.5)
         axes[i].legend(fontsize=30)
-    plotname = join(output_, f"variables_cutscan_picklesize_{suffix_}.png")
-    plt.savefig(plotname, bbox_inches='tight')
+    plotname = f"{output_}/variables_cutscan_picklesize_{suffix_}.png"
+    figure.savefig(plotname, bbox_inches='tight')
+    plt.close(figure)
 
-def scatterplot(dataframe_sig_, dataframe_bkg_, mylistvariablesx_,
+
+def scatterplot(dfs_input_, mylistvariablesx_,
                 mylistvariablesy_, output_, binmin, binmax):
     figurecorr = plt.figure(figsize=(30, 20)) # pylint: disable=unused-variable
-    i = 1
-    for j, _ in enumerate(mylistvariablesx_):
-        axcorr = plt.subplot(3, int(len(mylistvariablesx_)/3+1), i)
-        plt.xlabel(mylistvariablesx_[j], fontsize=11)
-        plt.ylabel(mylistvariablesy_[j], fontsize=11)
-        plt.scatter(
-            dataframe_bkg_[mylistvariablesx_[j]], dataframe_bkg_[mylistvariablesy_[j]],
-            alpha=0.4, c="g", label="background")
-        plt.scatter(
-            dataframe_sig_[mylistvariablesx_[j]], dataframe_sig_[mylistvariablesy_[j]],
-            alpha=0.4, c="b", label="signal")
-        plt.title(
-            'Pearson sgn: %s' %
-            dataframe_sig_.corr().loc[mylistvariablesx_[j]][mylistvariablesy_[j]].round(2)+
-            ',  Pearson bkg: %s' %
-            dataframe_bkg_.corr().loc[mylistvariablesx_[j]][mylistvariablesy_[j]].round(2))
+    for ind, (var_x, var_y) in enumerate(zip(mylistvariablesx_, mylistvariablesy_), start=1):
+        axcorr = plt.subplot(3, int(len(mylistvariablesx_)/3+1), ind)
+        plt.xlabel(var_x, fontsize=11)
+        plt.ylabel(var_y, fontsize=11)
+        title_str = 'Pearson coef. '
+        for label, color in zip(dfs_input_, HIST_COLORS):
+            plt.scatter(dfs_input_[label][var_x], dfs_input_[label][var_y],
+                        alpha=0.4, c=color, label=label)
+            pearson = dfs_input_[label].corr(numeric_only=True)[var_x][var_y].round(2)
+            title_str += f'{label}: {pearson}, '
+        plt.title(title_str[:-2])
         axcorr.legend()
-        i = i+1
-    plotname = output_+'/variablesScatterPlot%d%d.png' % (binmin, binmax)
-    plt.savefig(plotname, bbox_inches='tight')
-    imagebytesIO = BytesIO()
-    plt.savefig(imagebytesIO, format='png')
-    imagebytesIO.seek(0)
+    plotname = f"{output_}/variablesScatterPlot{binmin}{binmax}.png"
+    figurecorr.savefig(plotname, bbox_inches='tight')
     plt.close(figurecorr)
-    return imagebytesIO
 
 
 def correlationmatrix(dataframe, mylistvariables, label, output, binmin, binmax,
@@ -341,9 +325,5 @@ def correlationmatrix(dataframe, mylistvariables, label, output, binmin, binmax,
     ax.text(0.7, 0.9, f"${binmin} < p_\\mathrm{{T}}/(\\mathrm{{GeV}}/c) < {binmax}$\n{label}",
             verticalalignment='center', transform=ax.transAxes, fontsize=13)
     plt.savefig(output, bbox_inches='tight')
-    imagebytesIO = BytesIO()
-    plt.savefig(imagebytesIO, format='png')
-    imagebytesIO.seek(0)
     mpl.rcParams.update({"text.usetex": False})
     plt.close()
-    return imagebytesIO

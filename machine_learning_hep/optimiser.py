@@ -31,7 +31,7 @@ from machine_learning_hep.utilities import seldf_singlevar, split_df_classes, cr
 from machine_learning_hep.utilities import openfile, selectdfquery, mask_df
 from machine_learning_hep.correlations import vardistplot, scatterplot, correlationmatrix
 from machine_learning_hep.models import getclf_scikit, getclf_xgboost, getclf_keras
-from machine_learning_hep.models import fit, savemodels, readmodels, test, apply, decisionboundaries
+from machine_learning_hep.models import fit, savemodels, readmodels, apply, decisionboundaries
 # from machine_learning_hep.root import write_tree
 from machine_learning_hep.mlperformance import cross_validation_mse, plot_cross_validation_mse
 from machine_learning_hep.mlperformance import plot_learning_curves, precision_recall
@@ -372,13 +372,11 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
                 if self.v_selected else {"all_vars": self.v_all, "features": self.v_train}
 
         for _, variables in var_set.items():
-            vardistplot(self.dfs_train[self.p_class_labels[1]],
-                        self.dfs_train[self.p_class_labels[0]],
+            vardistplot(self.dfs_train,
                         variables, self.dirmlplot,
                         self.p_binmin, self.p_binmax, self.p_plot_options)
 
-        scatterplot(self.dfs_train[self.p_class_labels[1]],
-                    self.dfs_train[self.p_class_labels[0]],
+        scatterplot(self.dfs_train,
                     self.v_corrx, self.v_corry,
                     self.dirmlplot, self.p_binmin, self.p_binmax)
 
@@ -424,8 +422,8 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
             return
 
         self.logger.info("Testing")
-        self.df_mltest_applied = test(self.p_mltype, self.p_classname, self.p_trainedmod,
-                                      self.df_mltest, self.v_train, self.v_class)
+        self.df_mltest_applied = apply(self.p_mltype, self.p_classname, self.p_trainedmod,
+                                       self.df_mltest, self.v_train, self.p_class_labels)
         pickle.dump(self.df_mltest_applied, openfile(self.f_mltest_applied, "wb"), protocol=4)
         # df_ml_test_to_root = self.dirmlout+"/testsample_%s_mldecision.root" % (self.s_suffix)
         # write_tree(df_ml_test_to_root, self.n_treetest, self.df_mltest_applied)
@@ -439,15 +437,12 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.do_train()
 
         self.logger.info("Application")
-
-        df_data = apply(self.p_mltype, self.p_classname, self.p_trainedmod,
-                        self.df_data, self.v_train)
-        df_mc = apply(self.p_mltype, self.p_classname, self.p_trainedmod,
-                      self.df_mc, self.v_train)
-        with openfile(self.f_reco_applieddata, "wb") as out_file_data:
-            pickle.dump(df_data, out_file_data, protocol=4)
-        with openfile(self.f_reco_appliedmc, "wb") as out_file_mc:
-            pickle.dump(df_mc, out_file_mc, protocol=4)
+        for df, filename in zip((self.df_data, self.df_mc),
+                                (self.f_reco_applieddata, self.f_reco_appliedmc)):
+            df_res = apply(self.p_mltype, self.p_classname, self.p_trainedmod,
+                           df, self.v_train, self.p_class_labels)
+            with openfile(filename, "wb") as out_file:
+                pickle.dump(df_res, out_file, protocol=4)
 
     def do_crossval(self):
         if self.step_done("cross_validation"):
