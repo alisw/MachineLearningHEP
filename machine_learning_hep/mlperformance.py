@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 import seaborn as sn
 from sklearn.model_selection import cross_val_score, cross_val_predict, train_test_split
 from sklearn.model_selection import StratifiedKFold
-from sklearn.metrics import roc_curve, auc, confusion_matrix, precision_recall_curve
+from sklearn.metrics import roc_curve, auc, roc_auc_score, confusion_matrix, precision_recall_curve
 from sklearn.metrics import mean_squared_error
 
 from machine_learning_hep.utilities_plot import prepare_fig
@@ -143,16 +143,16 @@ def plot_precision_recall(names_, classifiers_, suffix_, x_train, y_train,
         ax = plt.subplot(nrows, ncols, ind)
         y_score = cross_val_predict(clf, x_train, y_train, cv=nkfolds, method="predict_proba")
         if len(class_labels) == 2:
-            do_plot_precision_recall(y_train, y_score, "", HIST_COLORS[0])
+            do_plot_precision_recall(y_train, y_score, "signal", HIST_COLORS[0])
         else:
             for cls_hyp, (label_hyp, color) in enumerate(zip(class_labels, HIST_COLORS)):
                 do_plot_precision_recall(y_train.iloc[:, cls_hyp], y_score[:, cls_hyp],
                                          label_hyp, color)
             do_plot_precision_recall(y_train.ravel(), y_score.ravel(), "average", "black")
 
-        ax.set_xlabel('Probability', fontsize=20)
-        ax.set_ylabel('Precision or Recall', fontsize=20)
-        ax.set_title('Precision, Recall', fontsize=20)
+        ax.set_xlabel("Probability", fontsize=20)
+        ax.set_ylabel("Precision or Recall", fontsize=20)
+        ax.set_title(f"Precision, Recall {name}", fontsize=20)
         ax.legend(loc="best", prop={'size': 30})
         ax.set_ylim([0, 1])
         ax.tick_params(labelsize=20)
@@ -161,11 +161,11 @@ def plot_precision_recall(names_, classifiers_, suffix_, x_train, y_train,
 
 
 def roc_train_test(names_, classifiers_, suffix_, x_train, y_train, x_test, y_test,
-                   folder, class_labels, binlims):
+                   nkfolds, folder, class_labels, binlims):
     binmin, binmax = binlims
-    fig_train = plot_roc_ovr(_names, classifiers_, suffix_, x_train, y_train, nkfolds,
+    fig_train = plot_roc_ovr(names_, classifiers_, suffix_, x_train, y_train, nkfolds,
                             folder, class_labels, save=False)
-    fig_test = plot_roc_ovr(_names, classifiers_, suffix_, x_test, y_test, nkfolds,
+    fig_test = plot_roc_ovr(names_, classifiers_, suffix_, x_test, y_test, nkfolds,
                             folder, class_labels, save=False)
 
     figure, nrows, ncols = prepare_fig(len(names_))
@@ -175,11 +175,10 @@ def roc_train_test(names_, classifiers_, suffix_, x_train, y_train, x_test, y_te
             for roc_t, set_name, alpha, ls in zip((roc_train, roc_test), ("train", "test"),
                                                   (0.4, 0.8), ("-", "-.")):
                 plt.plot(roc_t.get_xdata(), roc_t.get_ydata(), lw=roc_t.get_lw(), c=roc_t.get_c(),
-                         alpha=roc_t.get_alpha(), marker=roc_t.get_marker(),
-                         linestyle=roc_t.get_linestyle(),
+                         alpha=alpha, marker=roc_t.get_marker(), linestyle=ls,
                          label=f"{roc_t.get_label()}, {set_name} set")
-        ax.set_xlabel('False Positive Rate', fontsize=30)
-        ax.set_ylabel('True Positive Rate', fontsize=30)
+        ax.set_xlabel("False Positive Rate", fontsize=30)
+        ax.set_ylabel("True Positive Rate", fontsize=30)
         ax.legend(loc='lower right', prop={'size': 25})
         ax.set_xlim([-0.05, 1.05])
         ax.set_ylim([-0.05, 1.05])
@@ -198,7 +197,7 @@ def plot_roc_ovr(names_, classifiers_, suffix_, x_train, y_train, nkfolds, folde
     def plot_roc(y_truth, y_score, name, label, color):
         fpr, tpr, _ = roc_curve(y_truth.iloc[:, cls_hyp], y_score[:, cls_hyp])
         roc_auc = auc(fpr, tpr)
-        plt.plot(fpr, tpr, f"{color}-", label=f"ROC {name} {label_hyp} vs rest, "\
+        plt.plot(fpr, tpr, f"{color}-", label=f"ROC {name} {label} vs rest, "\
                  f"AUC = {roc_auc:.2f}", linewidth=5.0)
 
     figure, nrows, ncols = prepare_fig(len(names_))
@@ -206,12 +205,13 @@ def plot_roc_ovr(names_, classifiers_, suffix_, x_train, y_train, nkfolds, folde
         ax = plt.subplot(nrows, ncols, ind)
         y_score = cross_val_predict(clf, x_train, y_train, cv=nkfolds, method="predict_proba")
         if len(class_labels) == 2:
-            plot_roc(y_train, y_score, name, "", HIST_COLORS[0])
+            plot_roc(y_train, y_score, name, "signal", HIST_COLORS[0])
         else:
             for cls_hyp, (label_hyp, color) in enumerate(zip(class_labels, HIST_COLORS)):
                 plot_roc(y_train.iloc[:, cls_hyp], y_score[:, cls_hyp], name, label_hyp, color)
-        ax.set_xlabel('False Positive Rate', fontsize=30)
-        ax.set_ylabel('True Positive Rate', fontsize=30)
+        ax.set_xlabel("False Positive Rate", fontsize=30)
+        ax.set_ylabel("True Positive Rate", fontsize=30)
+        ax.set_title(f"ROC one vs. rest {name}", fontsize=30)
         ax.legend(loc='lower right', prop={'size': 25})
         ax.set_xlim([-0.05, 1.05])
         ax.set_ylim([-0.05, 1.05])
@@ -222,7 +222,8 @@ def plot_roc_ovr(names_, classifiers_, suffix_, x_train, y_train, nkfolds, folde
     return figure
 
 
-def plot_roc_ovo():
+def plot_roc_ovo(names_, classifiers_, suffix_, x_train, y_train, nkfolds, folder,
+                 class_labels):
     if len(class_labels) <= 2:
         raise ValueError("ROC OvO cannot be computed for binary classification")
     figure, nrows, ncols = prepare_fig(len(names_))
@@ -241,11 +242,11 @@ def plot_roc_ovo():
                 plt.plot(fpr, tpr, f"{color}-", alpha=alpha, label=f"ROC "\
                          f"{label_pair[ind]} vs {label_pair[1-ind]} (AUC = {roc_auc:.2f})",
                          linewidth=5.0)
-        global_roc_auc = roc_auc_score(y_train, y_score, average=average, multi_class='ovo')
-        plt.plot([], [], ' ', label=f'Average OvO ROC AUC: {global_roc_auc:.2f}')
-        ax.set_xlabel('First class efficiency', fontsize=20)
-        ax.set_ylabel('Second class efficiency', fontsize=20)
-        ax.set_title('Receiver Operating Characteristic', fontsize=20)
+        global_roc_auc = roc_auc_score(y_train, y_score, average="macro", multi_class='ovo')
+        plt.plot([], [], ' ', label=f'Unweighted average OvO ROC AUC: {global_roc_auc:.2f}')
+        ax.set_xlabel("First class efficiency", fontsize=20)
+        ax.set_ylabel("Second class efficiency", fontsize=20)
+        ax.set_title(f"ROC one vs. one {name}", fontsize=30)
         ax.legend(loc='lower right', prop={'size': 25})
         ax.set_xlim([-0.05, 1.05])
         ax.set_ylim([-0.05, 1.05])
@@ -255,10 +256,10 @@ def plot_roc_ovo():
 
 
 def plot_learning_curves(names_, classifiers_, suffix_, folder, x_data, y_data, npoints):
+    x_train, x_val, y_train, y_val = train_test_split(x_data, y_data, test_size=0.2)
     high = len(x_train)
     low = 100
     step_ = int((high-low)/npoints)
-    x_train, x_val, y_train, y_val = train_test_split(x_data, y_data, test_size=0.2)
     figure, nrows, ncols = prepare_fig(len(names_))
     for ind, (name, clf) in enumerate(zip(names_, classifiers_), start = 1):
         ax = plt.subplot(nrows, ncols, ind)
