@@ -240,7 +240,7 @@ def roc_train_test(names_, classifiers_, suffix_, x_train, y_train, x_test, y_te
     for ind, (ax_train, ax_test) in enumerate(zip(fig_train.get_axes(), fig_test.get_axes()),
                                               start = 1):
         ax = plt.subplot(nrows, ncols, ind)
-        for roc_test, roc_train in zip(ax_train.lines, ax_test.lines):
+        for roc_train, roc_test in zip(ax_train.lines, ax_test.lines):
             for roc_t, set_name, alpha, ls in zip((roc_train, roc_test), ("train", "test"),
                                                   (0.4, 0.8), ("-", "-.")):
                 plt.plot(roc_t.get_xdata(), roc_t.get_ydata(), lw=roc_t.get_lw(), c=roc_t.get_c(),
