@@ -289,8 +289,8 @@ def plot_learning_curves(names_, classifiers_, suffix_, folder, x_data, y_data, 
     plt.close(figure)
 
 
-def plot_overtraining(names, classifiers, suffix, x_train, y_train, x_test, y_test, folder,
-                      class_labels, bins=50):
+def plot_model_pred(names, classifiers, suffix, x_train, y_train, x_test, y_test, folder,
+                    class_labels, bins=50):
     def truth_condition(y_t, cls):
         if len(class_labels) == 2:
             return ~y_t if cls == class_labels.index("bkg") else y_t

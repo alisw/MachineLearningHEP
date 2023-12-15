@@ -509,10 +509,10 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.do_train()
 
         self.logger.info("Plot model prediction distribution")
-        mlhep_plot.plot_overtraining(self.p_classname, self.p_class, self.s_suffix,
-                                     self.df_xtrain, self.df_ytrain,
-                                     self.df_xtest, self.df_ytest,
-                                     self.dirmlplot, self.p_class_labels)
+        mlhep_plot.plot_model_pred(self.p_classname, self.p_class, self.s_suffix,
+                                   self.df_xtrain, self.df_ytrain,
+                                   self.df_xtest, self.df_ytest,
+                                   self.dirmlplot, self.p_class_labels)
 
     def do_importance(self):
         if self.step_done("importance"):
