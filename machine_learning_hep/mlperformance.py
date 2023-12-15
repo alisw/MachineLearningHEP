@@ -293,20 +293,18 @@ def plot_model_pred(names, classifiers, suffix, x_train, y_train, x_test, y_test
                     class_labels, bins=50):
     def truth_condition(y_t, cls):
         if len(class_labels) == 2:
-            return ~y_t if cls == class_labels.index("bkg") else y_t
+            return (y_t ^ 1) == 1 if cls == 0 else y_t == 1
         else:
-            return y_t.iloc[:, cls]
+            return y_t.iloc[:, cls] == 1
 
     for name, clf in zip(names, classifiers):
         predict_probs_train = clf.predict_proba(x_train)
         predict_probs_test = clf.predict_proba(x_test)
         for cls_hyp, label_hyp in enumerate(class_labels):
             figure = plt.figure(figsize=(10, 8))
-            for cls, (label, color) in enumerate(zip(class_labels, HIST_COLORS)):
-                truth_train = truth_condition(y_train, cls)
-                truth_test = truth_condition(y_test, cls)
-                # d1 = clf.predict_proba(x[y > 0.5])[:, 1] # signal
-                # d2 = clf.predict_proba(x[y < 0.5])[:, 1] # background
+            for cls_true, (label, color) in enumerate(zip(class_labels, HIST_COLORS)):
+                truth_train = truth_condition(y_train, cls_true)
+                truth_test = truth_condition(y_test, cls_true)
                 plt.hist(predict_probs_train[truth_train, cls_hyp],
                          color=color, alpha=0.5, range=[0, 1], bins=bins,
                          histtype='stepfilled', density=True, label=f'{label}, train')
@@ -317,7 +315,7 @@ def plot_model_pred(names, classifiers, suffix, x_train, y_train, x_test, y_test
                 center = (bins[:-1] + bins[1:]) / 2
                 plt.errorbar(center, hist, yerr=err, fmt='o', c=color, label=f'{label}, test')
             plt.xlabel(f"ML score for {label_hyp}", fontsize=15)
-            plt.ylabel("Arbitrary units", fontsize=15)
+            plt.ylabel("Counts (arb. units)", fontsize=15)
             plt.legend(loc="best", frameon=False, fontsize=15)
             plt.yscale("log")
             figure.savefig(f"{folder}/ModelOutDistr_{label_hyp}_{name}_{suffix}.png",
