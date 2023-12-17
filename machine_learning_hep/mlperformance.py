@@ -29,25 +29,14 @@ from machine_learning_hep.utilities_plot import prepare_fig
 
 HIST_COLORS = ['r', 'b', 'g']
 
-def cross_validation_mse(names_, classifiers_, x_train, y_train, cv_, ncores):
+def cross_validation_mse(names_, classifiers_, x_train, y_train, nkfolds, ncores, continuous=False):
     df_scores = pd.DataFrame()
     for name, clf in zip(names_, classifiers_):
         if "Keras" in name:
             ncores = 1
-        kfold = StratifiedKFold(n_splits=cv_, shuffle=True, random_state=1)
-        scores = cross_val_score(clf, x_train, y_train, cv=kfold,
-                                 scoring="neg_mean_squared_error", n_jobs=ncores)
-        tree_rmse_scores = np.sqrt(-scores)
-        df_scores[name] = tree_rmse_scores
-    return df_scores
-
-
-def cross_validation_mse_continuous(names_, classifiers_, x_train, y_train, cv_, ncores):
-    df_scores = pd.DataFrame()
-    for name, clf in zip(names_, classifiers_):
-        if "Keras" in name:
-            ncores = 1
-        scores = cross_val_score(clf, x_train, y_train, cv=cv_,
+        cv = nkfolds if continuous else StratifiedKFold(n_splits=nkfolds, shuffle=True,
+                                                        random_state=1)
+        scores = cross_val_score(clf, x_train, y_train, cv=cv,
                                  scoring="neg_mean_squared_error", n_jobs=ncores)
         tree_rmse_scores = np.sqrt(-scores)
         df_scores[name] = tree_rmse_scores
@@ -59,45 +48,44 @@ def plot_cross_validation_mse(names_, df_scores_, suffix_, folder):
     for ind, name in enumerate(names_, start = 1):
         ax = plt.subplot(nrows, ncols, ind)
         ax.set_xlim([0, (df_scores_[name].mean()*2)])
-        plt.hist(df_scores_[name].values, color="blue")
+        plt.hist(df_scores_[name].values, color="b")
         mystring = f"$\\mu={df_scores_[name].mean():8.2f}, \\sigma={df_scores_[name].std():8.2f}$"
-        plt.text(0.2, 4., mystring, fontsize=16)
-        plt.title(name, fontsize=16)
-        plt.xlabel("scores RMSE", fontsize=16)
-        plt.ylim(0, 5)
-        plt.ylabel("Entries", fontsize=16)
+        ax.text(0.2, 4., mystring, fontsize=16)
+        ax.set_title(name, fontsize=16)
+        ax.set_xlabel("scores RMSE", fontsize=16)
+        ax.set_ylabel("Entries", fontsize=16)
+        ax.set_ylim(0, 5)
     figure.savefig(f"{folder}/scoresRME{suffix_}.png", bbox_inches='tight')
     plt.close(figure)
 
 
-def plotdistributiontarget(names_, testset, myvariablesy, suffix_, folder):
+def plot_distribution_target(names_, testset, myvariablesy, suffix_, folder):
     figure, nrows, ncols = prepare_fig(len(names_))
     for ind, name in enumerate(names_, start = 1):
-        plt.subplot(nrows, ncols, ind)
-        plt.hist(testset[myvariablesy].values, color="blue", bins=100, label="true value")
-        plt.hist(
-            testset['y_test_prediction'+name].values,
-            color="red", bins=100, label="predicted value")
-        plt.title(name, fontsize=16)
-        plt.xlabel(myvariablesy, fontsize=16)
-        plt.ylabel("Entries", fontsize=16)
+        ax = plt.subplot(nrows, ncols, ind)
+        plt.hist(testset[myvariablesy].values,
+                 color="b", bins=100, label="true value")
+        plt.hist(testset[f"y_test_prediction{name}"].values,
+                 color="r", bins=100, label="predicted value")
+        ax.set_title(name, fontsize=15)
+        ax.set_xlabel(myvariablesy, fontsize=15)
+        ax.set_ylabel("Entries", fontsize=15)
     plt.legend(loc="center right")
     figure.savefig(f"{folder}/distributionregression{suffix_}.png", bbox_inches='tight')
     plt.close(figure)
 
 
-def plotscattertarget(names_, testset, myvariablesy, suffix_, folder):
+def plot_scatter_target(names_, testset, myvariablesy, suffix_, folder):
     figure, nrows, ncols = prepare_fig(len(names_))
     for ind, name in enumerate(names_, start = 1):
-        plt.subplot(nrows, ncols, ind)
+        ax = plt.subplot(nrows, ncols, ind)
         plt.scatter(
             testset[myvariablesy].values,
-            testset['y_test_prediction'+name].values, color="blue")
-        plt.title(name, fontsize=16)
-        plt.xlabel(myvariablesy + "true", fontsize=20)
-        plt.ylabel(myvariablesy + "predicted", fontsize=20)
-        plt.xticks(fontsize=18)
-        plt.yticks(fontsize=18)
+            testset[f"y_test_prediction{name}"].values, color="b")
+        ax.set_title(name, fontsize=15)
+        ax.set_xlabel(f"{myvariablesy} true", fontsize=15)
+        ax.set_ylabel(f"{myvariablesy} predicted", fontsize=15)
+        ax.tick_params(labelsize=20)
     figure.savefig(f"{folder}/scatterplotregression{suffix_}.png", bbox_inches='tight')
     plt.close(figure)
 
@@ -150,10 +138,10 @@ def plot_precision_recall(names_, classifiers_, suffix_, x_train, y_train,
                                          label_hyp, color)
             do_plot_precision_recall(y_train.ravel(), y_score.ravel(), "average", "black")
 
-        ax.set_xlabel("Probability", fontsize=20)
-        ax.set_ylabel("Precision or Recall", fontsize=20)
-        ax.set_title(f"Precision, Recall {name}", fontsize=20)
-        ax.legend(loc="best", prop={'size': 30})
+        ax.set_xlabel("Probability", fontsize=30)
+        ax.set_ylabel("Precision or Recall", fontsize=30)
+        ax.set_title(f"Precision, Recall {name}", fontsize=30)
+        ax.legend(loc="best", frameon=False, fontsize=25)
         ax.set_ylim([0, 1])
         ax.tick_params(labelsize=20)
     figure.savefig(f"{folder}/precision_recall{suffix_}.png", bbox_inches='tight')
@@ -180,13 +168,14 @@ def plot_roc_ovr(names_, classifiers_, suffix_, x_train, y_train, nkfolds, folde
         ax.set_xlabel("False Positive Rate", fontsize=30)
         ax.set_ylabel("True Positive Rate", fontsize=30)
         ax.set_title(f"ROC one vs. rest {name}", fontsize=30)
-        ax.legend(loc='lower right', prop={'size': 25})
+        ax.legend(loc="lower right", frameon=False, fontsize=25)
         ax.set_xlim([-0.05, 1.05])
         ax.set_ylim([-0.05, 1.05])
         ax.tick_params(labelsize=20)
+
     if save:
         figure.savefig(f"{folder}/ROC_OvR_{suffix_}.png", bbox_inches='tight')
-        #plt.close(figure)
+        plt.close(figure)
     return figure
 
 
@@ -215,17 +204,17 @@ def plot_roc_ovo(names_, classifiers_, suffix_, x_train, y_train, nkfolds, folde
         ax.set_xlabel("First class efficiency", fontsize=20)
         ax.set_ylabel("Second class efficiency", fontsize=20)
         ax.set_title(f"ROC one vs. one {name}", fontsize=30)
-        ax.legend(loc='lower right', prop={'size': 25})
+        ax.legend(loc="lower right", frameon=False, fontsize=25)
         ax.set_xlim([-0.05, 1.05])
         ax.set_ylim([-0.05, 1.05])
         ax.tick_params(labelsize=20)
     if save:
         figure.savefig(f"{folder}/ROC_OvO_{suffix_}.png", bbox_inches='tight')
-        #plt.close(figure)
+        plt.close(figure)
     return figure
 
 
-def roc_train_test(names_, classifiers_, suffix_, x_train, y_train, x_test, y_test,
+def roc_train_test(names_, classifiers_, suffix_, x_train, y_train, x_test, y_test, # pylint: disable=too-many-arguments
                    nkfolds, folder, class_labels, binlims, roc_type):
     binmin, binmax = binlims
     if roc_type not in ("roc_ovr", "roc_ovo"):
@@ -248,7 +237,7 @@ def roc_train_test(names_, classifiers_, suffix_, x_train, y_train, x_test, y_te
                          label=f"{roc_t.get_label()}, {set_name} set")
         ax.set_xlabel("False Positive Rate", fontsize=30)
         ax.set_ylabel("True Positive Rate", fontsize=30)
-        ax.legend(loc='lower right', prop={'size': 25})
+        ax.legend(loc="lower right", frameon=False, fontsize=25)
         ax.set_xlim([-0.05, 1.05])
         ax.set_ylim([-0.05, 1.05])
         ax.tick_params(labelsize=20)
@@ -282,7 +271,7 @@ def plot_learning_curves(names_, classifiers_, suffix_, folder, x_data, y_data, 
         ax.set_xlabel("Training set size", fontsize=30)
         ax.set_ylabel("MSE", fontsize=30)
         ax.set_title(f"Learning curve {name}", fontsize=30)
-        ax.legend(loc="best", prop={'size': 30})
+        ax.legend(loc="best", frameon=False, fontsize=25)
         ax.set_ylim([0, np.amax(np.sqrt(val_errors))*2])
         ax.tick_params(labelsize=20)
     figure.savefig(f"{folder}/learning_curve{suffix_}.png", bbox_inches='tight')
@@ -294,8 +283,7 @@ def plot_model_pred(names, classifiers, suffix, x_train, y_train, x_test, y_test
     def truth_condition(y_t, cls):
         if len(class_labels) == 2:
             return (y_t ^ 1) == 1 if cls == 0 else y_t == 1
-        else:
-            return y_t.iloc[:, cls] == 1
+        return y_t.iloc[:, cls] == 1
 
     for name, clf in zip(names, classifiers):
         predict_probs_train = clf.predict_proba(x_train)
