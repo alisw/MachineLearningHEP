@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools >= 61.0", "setuptools-scm>=8.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["machine_learning_hep*"]
+
+[tool.setuptools_scm]
+
+[project]
+name = "MachineLearningHEP"
+dynamic = ["version"]
+dependencies = [
+  "hyperopt>=0.2.3",
+  "Jinja2>=2.10.3",
+  "keras>=2.3.1",
+  "klein>=17.10.0",
+  "lz4>=2.1.10",
+  "matplotlib>=3.0.3",
+  "numba>=0.48.0",
+  "numpy>=1.17.4",
+  "pandas>=0.24.2",
+  "pylint",
+  "PyYaml>=5.1",
+  "scikit-learn>=0.20.3",
+  "scipy>=1.4.1",
+  "seaborn>=0.11.1",
+  "shap>=v0.23.0",
+  "tensorflow>=2.3.1",
+  "twisted>=19.2.0",
+  "uproot>=3.4.18",
+  "xgboost>=0.90",
+]
+requires-python = ">= 3.9"
+authors = [
+  {name = "Gian Michele Innocenti", email = "gian.michele.innocenti@cern.ch"},
+  {name = "Jochen Klein", email = "jochen.klein@cern.ch"},
+]
+maintainers = [
+  {name = "Jochen Klein", email = "jochen.klein@cern.ch"}
+]
+description = "Machine Learning package for HEP"
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords=['HEP', 'Computing', 'MachineLearning']
+classifiers=[
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Education",
+  "Topic :: Scientific/Engineering :: Physics",
+  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+  "Programming Language :: Python",
+]
+
+[project.urls]
+Homepage = "https://github.com/alisw/MachineLearningHEP"
+Repository = "https://github.com/alisw/MachineLearningHEP"
+
+[project.scripts]
+mlhep = "machine_learning_hep.steer_analysis:main"
