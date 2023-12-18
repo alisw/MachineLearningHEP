@@ -22,7 +22,6 @@ from os.path import exists
 import subprocess
 import sys
 
-from pkg_resources import resource_stream
 import yaml
 # unclear why shap needs to be imported from here,
 # segfaults when imported from within other modules
@@ -461,8 +460,8 @@ def load_config(user_path: str, default_path=None) -> dict:
         with open(user_path, 'r', encoding='utf-8') as stream:
             cfg = yaml.safe_load(stream)
     else:
-        with resource_stream(default_path[0], default_path[1]) as stream:
-            cfg = yaml.safe_load(stream)
+        res = importlib.resources.files(default_path[0]).joinpath(default_path[1]).read_bytes()
+        cfg = yaml.safe_load(res)
     return cfg
 
 def main(args=None):
