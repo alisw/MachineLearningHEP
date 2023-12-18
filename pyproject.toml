@@ -2,8 +2,9 @@
 requires = ["setuptools >= 61.0", "setuptools-scm>=8.0"]
 build-backend = "setuptools.build_meta"
 
-[tool.setuptools]
-packages = ["machine_learning_hep"]
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["machine_learning_hep*"]
 
 [tool.setuptools_scm]
 
