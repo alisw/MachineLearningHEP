@@ -24,22 +24,22 @@ mergingperiods: # pkl_skimmed_merge_for_ml_all
     activate: false
 
 ml_study: # mlout, mlplot
-  activate: true
-  dotraining: true
-  dotesting: true
-  doplotdistr: true
-  doroc: true
-  doroctraintest: true
-  doimportance: true
-  doimportanceshap: true
-  docorrelation: true
-  dolearningcurve: true
+  activate: false
+  dotraining: false
+  dotesting: false
+  doplotdistr: false
+  doroc: false
+  doroctraintest: false
+  doimportance: false
+  doimportanceshap: false
+  docorrelation: false
+  dolearningcurve: false
   doapplytodatamc: false
   doscancuts: false
   doefficiency: false
   dosignifopt: false
   doboundary: false
-  docrossvalidation: true
+  docrossvalidation: false
   dogridsearch: false
   dobayesianopt: false
 
@@ -54,7 +54,7 @@ mlapplication:
     docontinueafterstop: false # set to true to resume interrupted processing (existing corrupted output will be overwritten)
 
 analysis:
-  type: "Run3analysis" # used unless specified explicitly as do_entire_analysis -a type_ana
+  type: "YYYY" # used unless specified explicitly as do_entire_analysis -a type_ana
   # Do each period separately including merged (true)
   # Do only merged (false)
   doperperiod: false
