@@ -34,8 +34,7 @@ def cross_validation_mse(names_, classifiers_, x_train, y_train, nkfolds, ncores
     for name, clf in zip(names_, classifiers_):
         if "Keras" in name:
             ncores = 1
-        cv = nkfolds if continuous else StratifiedKFold(n_splits=nkfolds, shuffle=True,
-                                                        random_state=1)
+        cv = nkfolds if continuous else StratifiedKFold(n_splits=nkfolds, shuffle=True)
         scores = cross_val_score(clf, x_train, y_train, cv=cv,
                                  scoring="neg_mean_squared_error", n_jobs=ncores)
         tree_rmse_scores = np.sqrt(-scores)
