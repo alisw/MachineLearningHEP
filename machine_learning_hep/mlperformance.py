@@ -50,7 +50,7 @@ def plot_cross_validation_mse(names_, df_scores_, suffix_, folder):
         ax.set_xlim([0, (df_scores_[name].mean()*2)])
         plt.hist(df_scores_[name].values, color="b")
         mystring = f"$\\mu={df_scores_[name].mean():8.2f}, \\sigma={df_scores_[name].std():8.2f}$"
-        ax.text(0.2, 4., mystring, fontsize=30)
+        ax.text(0.1, 4.0, mystring, fontsize=25)
         ax.set_title(name, fontsize=30)
         ax.set_xlabel("scores RMSE", fontsize=30)
         ax.set_ylabel("Entries", fontsize=30)
