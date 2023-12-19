@@ -39,7 +39,7 @@ ml_study: # mlout, mlplot
   doefficiency: false
   dosignifopt: false
   doboundary: false
-  docrossvalidation: true
+  docrossvalidation: false
   dogridsearch: false
   dobayesianopt: false
 
