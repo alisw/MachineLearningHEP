@@ -132,7 +132,7 @@ MultiClassification:
         max_depth: 3
         learning_rate: 0.1
         n_estimators: 850
-        objective: 'binary:logistic'
+        objective: 'multi:softprob'
         n_jobs: 10
         gamma: 0.
         min_child_weight: 3
@@ -151,7 +151,7 @@ MultiClassification:
           colsample_bytree: [0.8] #[0.6, 0.8, 0.9]
           learning_rate: [0.05, 0.15] #[0.05, 0.1, 0.5]
           n_estimators: [200, 300] #[500, 800, 1000]
-          objective: ["binary:logistic"]
+          objective: ["multi:softprob"]
         refit: AUC
         scoring: ["AUC", "Accuracy"]
 
