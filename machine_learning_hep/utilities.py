@@ -198,7 +198,7 @@ def is_file_indir(main_dir, filenameinput):
     """
     Check if a file is contained in a directory or all its subdirectories
     """
-    for root, dirs, files in os.walk(main_dir):
+    for _, _, files in os.walk(main_dir):
         if filenameinput in files:
             return True
     return False
