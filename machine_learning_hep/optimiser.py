@@ -33,9 +33,7 @@ from machine_learning_hep.correlations import vardistplot, scatterplot, correlat
 from machine_learning_hep.models import getclf_scikit, getclf_xgboost, getclf_keras
 from machine_learning_hep.models import fit, savemodels, readmodels, apply, decisionboundaries
 # from machine_learning_hep.root import write_tree
-from machine_learning_hep.mlperformance import cross_validation_mse, plot_cross_validation_mse
-from machine_learning_hep.mlperformance import plot_learning_curves, precision_recall
-from machine_learning_hep.mlperformance import roc_train_test, plot_overtraining
+import machine_learning_hep.mlperformance as mlhep_plot
 from machine_learning_hep.optimisation.grid_search import do_gridsearch, perform_plot_gridsearch
 from machine_learning_hep.models import importanceplotall, shap_study
 from machine_learning_hep.logger import get_logger
@@ -448,18 +446,19 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         if self.step_done("cross_validation"):
             return
         self.logger.info("Do cross validation")
-        df_scores = cross_validation_mse(self.p_classname, self.p_class,
-                                         self.df_xtrain, self.df_ytrain,
-                                         self.p_nkfolds, self.p_ncorescross)
-        plot_cross_validation_mse(self.p_classname, df_scores, self.s_suffix, self.dirmlplot)
+        df_scores = mlhep_plot.cross_validation_mse(self.p_classname, self.p_class,
+                                                    self.df_xtrain, self.df_ytrain,
+                                                    self.p_nkfolds, self.p_ncorescross)
+        mlhep_plot.plot_cross_validation_mse(self.p_classname, df_scores, self.s_suffix,
+                                             self.dirmlplot)
 
     def do_learningcurve(self):
         if self.step_done("learningcurve"):
             return
         self.logger.info("Make learning curve")
         npoints = 10
-        plot_learning_curves(self.p_classname, self.p_class, self.s_suffix,
-                             self.dirmlplot, self.df_xtrain, self.df_ytrain, npoints)
+        mlhep_plot.plot_learning_curves(self.p_classname, self.p_class, self.s_suffix,
+                                        self.dirmlplot, self.df_xtrain, self.df_ytrain, npoints)
 
     def do_roc(self):
         if self.step_done("roc_simple"):
@@ -468,11 +467,19 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.do_train()
 
         self.logger.info("Make ROC for train")
-        if self.p_mltype == "BinaryClassification":
-            precision_recall(self.p_classname, self.p_class, self.s_suffix,
-                             self.df_xtrain, self.df_ytrain, self.p_nkfolds, self.dirmlplot)
-        else:
-            raise NotImplementedError("ROC for multiclassification not implemented yet")
+        mlhep_plot.plot_precision_recall(self.p_classname, self.p_class, self.s_suffix,
+                                         self.df_xtrain, self.df_ytrain,
+                                         self.p_nkfolds, self.dirmlplot,
+                                         self.p_class_labels)
+        mlhep_plot.plot_roc_ovr(self.p_classname, self.p_class, self.s_suffix,
+                                self.df_xtrain, self.df_ytrain,
+                                self.p_nkfolds, self.dirmlplot,
+                                self.p_class_labels)
+        if self.p_mltype == "MultiClassification":
+            mlhep_plot.plot_roc_ovo(self.p_classname, self.p_class, self.s_suffix,
+                                    self.df_xtrain, self.df_ytrain,
+                                    self.p_nkfolds, self.dirmlplot,
+                                    self.p_class_labels)
 
     def do_roc_train_test(self):
         if self.step_done("roc_train_test"):
@@ -481,12 +488,19 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.do_train()
 
         self.logger.info("Make ROC for train and test")
-        if self.p_mltype == "BinaryClassification":
-            roc_train_test(self.p_classname, self.p_class, self.df_xtrain, self.df_ytrain,
-                           self.df_xtest, self.df_ytest, self.s_suffix, self.dirmlplot,
-                           self.p_binmin, self.p_binmax)
-        else:
-            raise NotImplementedError("ROC for multiclassification not implemented yet")
+        mlhep_plot.roc_train_test(self.p_classname, self.p_class, self.s_suffix,
+                                  self.df_xtrain, self.df_ytrain,
+                                  self.df_xtest, self.df_ytest,
+                                  self.p_nkfolds, self.dirmlplot,
+                                  self.p_class_labels,
+                                  (self.p_binmin, self.p_binmax), "roc_ovr")
+        if self.p_mltype == "MultiClassification":
+            mlhep_plot.roc_train_test(self.p_classname, self.p_class, self.s_suffix,
+                                      self.df_xtrain, self.df_ytrain,
+                                      self.df_xtest, self.df_ytest,
+                                      self.p_nkfolds, self.dirmlplot,
+                                      self.p_class_labels,
+                                      (self.p_binmin, self.p_binmax), "roc_ovo")
 
     def do_plot_model_pred(self):
         if self.step_done("plot_model_pred"):
@@ -495,11 +509,10 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.do_train()
 
         self.logger.info("Plot model prediction distribution")
-        if self.p_mltype == "BinaryClassification":
-            plot_overtraining(self.p_classname, self.p_class, self.s_suffix, self.dirmlplot,
-                              self.df_xtrain, self.df_ytrain, self.df_xtest, self.df_ytest)
-        else:
-            raise NotImplementedError("ROC for multiclassification not implemented yet")
+        mlhep_plot.plot_model_pred(self.p_classname, self.p_class, self.s_suffix,
+                                   self.df_xtrain, self.df_ytrain,
+                                   self.df_xtest, self.df_ytest,
+                                   self.dirmlplot, self.p_class_labels)
 
     def do_importance(self):
         if self.step_done("importance"):
