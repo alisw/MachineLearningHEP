@@ -251,7 +251,7 @@ LcpKpi:
     test_frac: 0.2
     binmin: [1,2,4,6,8,12] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
     binmax: [2,4,6,8,12,24] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
-    mltype: BinaryClassification
+    mltype: MultiClassification
     ncorescrossval: 10
     prefix_dir_ml: /data2/mkabus/MLHEP/results-multiclass/
     mlplot: mlplot # to be removed
