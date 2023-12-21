@@ -194,15 +194,6 @@ def list_folders(main_dir, filenameinput, maxfiles, select=None): # pylint: disa
         listfolders = listfolders[:maxfiles]
     return  listfolders
 
-def is_file_indir(main_dir, filenameinput):
-    """
-    Check if a file is contained in a directory or all its subdirectories
-    """
-    for _, _, files in os.walk(main_dir):
-        if filenameinput in files:
-            return True
-    return False
-
 def create_folder_struc(maindir, listpath):
     """
     Reproduce the folder structure as input

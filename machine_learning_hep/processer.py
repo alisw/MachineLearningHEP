@@ -20,6 +20,7 @@ from copy import deepcopy
 import multiprocessing as mp
 import pickle
 import os
+import glob
 import random as rd
 import re
 import uproot
@@ -28,8 +29,7 @@ import numpy as np
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import tag_bit_df #, filter_bit_df
 from machine_learning_hep.utilities import selectdfquery, merge_method, mask_df
-from machine_learning_hep.utilities import list_folders, is_file_indir
-from machine_learning_hep.utilities import createlist, appendmainfoldertolist
+from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
 from machine_learning_hep.utilities import mergerootfiles, count_df_length_pkl
 from machine_learning_hep.utilities import get_timestamp_string
@@ -182,7 +182,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         if os.path.isdir(self.d_root):
             self.l_path = list_folders(self.d_root, self.n_root, self.p_maxfiles,
                                        self.select_jobs)
-        elif is_file_indir(self.d_pkl, self.n_reco):
+        elif glob.glob(f"{self.d_pkl}/**/{self.n_reco}", recursive=True):
             self.l_path = list_folders(self.d_pkl, self.n_reco, self.p_maxfiles,
                                        self.select_jobs)
         else:
