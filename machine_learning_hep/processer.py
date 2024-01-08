@@ -207,7 +207,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.lpt_model = datap["mlapplication"]["modelsperptbin"]
         self.dirmodel = self.d_prefix_ml + datap["ml"]["mlout"]
         self.mltype = datap["ml"]["mltype"]
-        self.multiclass_labels = datap["ml"].get("multiclass_labels", None)
+        self.class_labels = datap["ml"].get("class_labels", None)
         self.lpt_model = appendmainfoldertolist(self.dirmodel, self.lpt_model)
         # Potentially mask certain values (e.g. nsigma TOF of -999)
         self.p_mask_values = datap["ml"].get("mask_values", None)
@@ -231,16 +231,15 @@ class Processer: # pylint: disable=too-many-instance-attributes
         if self.mltype == "MultiClassification":
             self.l_selml = []
             for ipt in range(self.p_nptfinbins):
-
-                mlsel_multi0 = "y_test_prob" + self.p_modelname + self.multiclass_labels[0] + \
+                mlsel_multi0 = "y_test_prob" + self.p_modelname + self.class_labels[0] + \
                                " <= " + str(self.lpt_probcutfin[ipt][0])
-                mlsel_multi1 = "y_test_prob" + self.p_modelname + self.multiclass_labels[1] + \
+                mlsel_multi1 = "y_test_prob" + self.p_modelname + self.class_labels[1] + \
                                " >= " + str(self.lpt_probcutfin[ipt][1])
                 mlsel_multi = mlsel_multi0 + " and " + mlsel_multi1
                 self.l_selml.append(mlsel_multi)
 
         else:
-            self.l_selml = ["y_test_prob%s>%s" % (self.p_modelname, self.lpt_probcutfin[ipt]) \
+            self.l_selml = [f"y_test_prob {self.p_modelname} > {self.lpt_probcutfin[ipt]}" \
                            for ipt in range(self.p_nptfinbins)]
 
         self.d_pkl_dec = d_pkl_dec
@@ -506,12 +505,13 @@ class Processer: # pylint: disable=too-many-instance-attributes
             if self.doml is True:
                 if os.path.isfile(self.lpt_model[ipt]) is False:
                     print("Model file not present in bin %d" % ipt)
-                mod = pickle.load(openfile(self.lpt_model[ipt], 'rb'))
+                with openfile(self.lpt_model[ipt], 'rb') as mod_file:
+                    mod = pickle.load(mod_file)
                 if self.mltype == "MultiClassification":
                     dfrecoskml = apply(self.mltype, [self.p_modelname], [mod],
-                                       dfrecosk, self.v_train[ipt], self.multiclass_labels)
-                    prob0 = "y_test_prob" + self.p_modelname + self.multiclass_labels[0]
-                    prob1 = "y_test_prob" + self.p_modelname + self.multiclass_labels[1]
+                                       dfrecosk, self.v_train[ipt], self.class_labels)
+                    prob0 = f"y_test_prob{self.p_modelname}{self.class_labels[0]}"
+                    prob1 = f"y_test_prob{self.p_modelname}{self.class_labels[1]}"
                     dfrecoskml = dfrecoskml.loc[(dfrecoskml[prob0] <= self.lpt_probcutpre[ipt][0]) &
                                                 (dfrecoskml[prob1] >= self.lpt_probcutpre[ipt][1])]
                 else:
