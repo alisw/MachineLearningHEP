@@ -236,8 +236,7 @@ LcpKpi:
       data: null
       mc: null
 
-    nbkg: 500000
-    nsig: 500000
+    nclasses: [500000, 500000, 500000]
     equalise_sig_bkg: True
     sampletags: [0, 1]
     sel_bkg: fM < 2.22 or fM > 2.35 # for plotting significance; should agree with bkg selection in sel_ml
