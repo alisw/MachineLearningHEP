@@ -115,14 +115,13 @@ def confusion(names_, classifiers_, suffix_, x_train, y_train, cvgen, folder, do
     plt.close(figure)
 
 
-def plot_precision_recall(names_, classifiers_, suffix_, x_train, y_train,
+def plot_precision_recall(names_, classifiers_, suffix_, x_train, y_train, y_train_onehot,
                           nkfolds, folder, class_labels):
-
     def do_plot_precision_recall(y_truth, y_score, label, color):
         precisions, recalls, thresholds = precision_recall_curve(y_truth, y_score)
-        plt.plot(thresholds, precisions[:-1], f"{color}--",
+        plt.plot(thresholds, precisions[:-1], color=color, ls="--",
                  label=f"Precision {label} = TP/(TP+FP)", linewidth=5.0)
-        plt.plot(thresholds, recalls[:-1], f"{color}-", alpha=0.5,
+        plt.plot(thresholds, recalls[:-1], color=color, ls="-", alpha=0.5,
                  label=f"Recall {label} = TP/(TP+FN)", linewidth=5.0)
 
     figure, nrows, ncols = prepare_fig(len(names_))
@@ -133,9 +132,10 @@ def plot_precision_recall(names_, classifiers_, suffix_, x_train, y_train,
             do_plot_precision_recall(y_train, y_score[:, 1], "signal", HIST_COLORS[0])
         else:
             for cls_hyp, (label_hyp, color) in enumerate(zip(class_labels, HIST_COLORS)):
-                do_plot_precision_recall(y_train.iloc[:, cls_hyp], y_score[:, cls_hyp],
+                do_plot_precision_recall(y_train_onehot.iloc[:, cls_hyp], y_score[:, cls_hyp],
                                          label_hyp, color)
-            do_plot_precision_recall(y_train.ravel(), y_score.ravel(), "average", "black")
+            do_plot_precision_recall(y_train_onehot.to_numpy().ravel(), y_score.ravel(),
+                                     "average", "black")
 
         ax.set_xlabel("Probability", fontsize=30)
         ax.set_ylabel("Precision or Recall", fontsize=30)
@@ -147,8 +147,8 @@ def plot_precision_recall(names_, classifiers_, suffix_, x_train, y_train,
     plt.close(figure)
 
 
-def plot_roc_ovr(names_, classifiers_, suffix_, x_train, y_train, nkfolds, folder,
-                 class_labels, save=True):
+def plot_roc_ovr(names_, classifiers_, suffix_, x_train, y_train,
+                 nkfolds, folder, class_labels, save=True):
     def plot_roc(y_truth, y_score, name, label, color):
         fpr, tpr, _ = roc_curve(y_truth, y_score)
         roc_auc = auc(fpr, tpr)
@@ -163,7 +163,7 @@ def plot_roc_ovr(names_, classifiers_, suffix_, x_train, y_train, nkfolds, folde
             plot_roc(y_train, y_score[:, 1], name, "signal", HIST_COLORS[0])
         else:
             for cls_hyp, (label_hyp, color) in enumerate(zip(class_labels, HIST_COLORS)):
-                plot_roc(y_train.iloc[:, cls_hyp], y_score[:, cls_hyp], name, label_hyp, color)
+                plot_roc(y_train == cls_hyp, y_score[:, cls_hyp], name, label_hyp, color)
         ax.set_xlabel("False Positive Rate", fontsize=30)
         ax.set_ylabel("True Positive Rate", fontsize=30)
         ax.set_title(f"ROC one vs. rest {name}", fontsize=30)
@@ -178,8 +178,8 @@ def plot_roc_ovr(names_, classifiers_, suffix_, x_train, y_train, nkfolds, folde
     return figure
 
 
-def plot_roc_ovo(names_, classifiers_, suffix_, x_train, y_train, nkfolds, folder,
-                 class_labels, save=True):
+def plot_roc_ovo(names_, classifiers_, suffix_, x_train, y_train,
+                 nkfolds, folder, class_labels, save=True):
     if len(class_labels) <= 2:
         raise ValueError("ROC OvO cannot be computed for binary classification")
     figure, nrows, ncols = prepare_fig(len(names_))
@@ -190,7 +190,7 @@ def plot_roc_ovo(names_, classifiers_, suffix_, x_train, y_train, nkfolds, folde
         for label_pair, color in zip(label_pairs, HIST_COLORS):
             ind_lab1 = class_labels.index(label_pair[0])
             ind_lab2 = class_labels.index(label_pair[1])
-            mask_or = np.logical_or(y_train.iloc[:, ind_lab1], y_train.iloc[:, ind_lab2])
+            mask_or = np.logical_or(y_train == ind_lab1, y_train == ind_lab2)
             for ind, (ind_lab, alpha) in enumerate(zip((ind_lab1, ind_lab2), (1.0, 0.5))):
                 mask = y_train == ind_lab
                 fpr, tpr, _ = roc_curve(mask[mask_or], y_score[mask_or, ind_lab])
@@ -219,10 +219,10 @@ def roc_train_test(names_, classifiers_, suffix_, x_train, y_train, x_test, y_te
     if roc_type not in ("roc_ovr", "roc_ovo"):
         raise ValueError("ROC type can be only roc_ovr or roc_ovo")
     roc_fun = plot_roc_ovr if roc_type == "roc_ovr" else plot_roc_ovo
-    fig_train = roc_fun(names_, classifiers_, suffix_, x_train, y_train, nkfolds,
-                        folder, class_labels, save=False)
-    fig_test = roc_fun(names_, classifiers_, suffix_, x_test, y_test, nkfolds,
-                       folder, class_labels, save=False)
+    fig_train = roc_fun(names_, classifiers_, suffix_, x_train, y_train,
+                        nkfolds, folder, class_labels, save=False)
+    fig_test = roc_fun(names_, classifiers_, suffix_, x_test, y_test,
+                       nkfolds, folder, class_labels, save=False)
 
     figure, nrows, ncols = prepare_fig(len(names_))
     for ind, (ax_train, ax_test) in enumerate(zip(fig_train.get_axes(), fig_test.get_axes()),
@@ -279,23 +279,16 @@ def plot_learning_curves(names_, classifiers_, suffix_, folder, x_data, y_data, 
 
 def plot_model_pred(names, classifiers, suffix, x_train, y_train, x_test, y_test, folder,
                     class_labels, bins=50):
-    def truth_condition(y_t, cls):
-        if len(class_labels) == 2:
-            return (y_t ^ 1) == 1 if cls == 0 else y_t == 1
-        return y_t.iloc[:, cls] == 1
-
     for name, clf in zip(names, classifiers):
         predict_probs_train = clf.predict_proba(x_train)
         predict_probs_test = clf.predict_proba(x_test)
         for cls_hyp, label_hyp in enumerate(class_labels):
             figure = plt.figure(figsize=(10, 8))
             for cls_true, (label, color) in enumerate(zip(class_labels, HIST_COLORS)):
-                truth_train = truth_condition(y_train, cls_true)
-                truth_test = truth_condition(y_test, cls_true)
-                plt.hist(predict_probs_train[truth_train, cls_hyp],
+                plt.hist(predict_probs_train[y_train == cls_true, cls_hyp],
                          color=color, alpha=0.5, range=[0, 1], bins=bins,
                          histtype='stepfilled', density=True, label=f'{label}, train')
-                predicted_probs = predict_probs_test[truth_test, cls_hyp]
+                predicted_probs = predict_probs_test[y_test == cls_true, cls_hyp]
                 hist, bins = np.histogram(predicted_probs, bins=bins, range=[0, 1], density=True)
                 scale = len(predicted_probs) / sum(hist)
                 err = np.sqrt(hist * scale) / scale

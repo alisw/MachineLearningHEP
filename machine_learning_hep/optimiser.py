@@ -154,6 +154,8 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.df_ytrain = None
         self.df_xtest = None
         self.df_ytest = None
+        self.df_ytrain_onehot = None
+        self.df_ytest_onehot = None
         #selections
         self.s_selbkg = data_param["ml"]["sel_bkg"] # used only to calculate significance
         self.s_selml = data_param["ml"]["sel_ml"]
@@ -325,12 +327,10 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         # Final preparation of signal and background samples for training and testing
         self.df_xtrain = self.df_mltrain[self.v_train]
         self.df_xtest = self.df_mltest[self.v_train]
-        if self.p_mltype == "MultiClassification":
-            self.df_ytrain = self.df_mltrain.filter(regex=f"{self.v_class}_")
-            self.df_ytest = self.df_mltest.filter(regex=f"{self.v_class}_")
-        else:
-            self.df_ytrain = self.df_mltrain[self.v_class]
-            self.df_ytest = self.df_mltest[self.v_class]
+        self.df_ytrain = self.df_mltrain[self.v_class]
+        self.df_ytest = self.df_mltest[self.v_class]
+        self.df_ytrain_onehot = self.df_mltrain.filter(regex=f"{self.v_class}_")
+        self.df_ytest_onehot = self.df_mltest.filter(regex=f"{self.v_class}_")
 
         self.step_done("preparemlsamples")
 
@@ -459,7 +459,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
 
         self.logger.info("Make ROC for train")
         mlhep_plot.plot_precision_recall(self.p_classname, self.p_class, self.s_suffix,
-                                         self.df_xtrain, self.df_ytrain,
+                                         self.df_xtrain, self.df_ytrain, self.df_ytrain_onehot,
                                          self.p_nkfolds, self.dirmlplot,
                                          self.p_class_labels)
         mlhep_plot.plot_roc_ovr(self.p_classname, self.p_class, self.s_suffix,
