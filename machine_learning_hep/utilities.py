@@ -165,7 +165,7 @@ def list_folders(main_dir, filenameinput, maxfiles, select=None): # pylint: disa
             for subdir1 in list_subdir1:
                 subdir1full = os.path.join(subdir0full, subdir1)
                 if os.path.isdir(subdir1full):
-                    if os.listdir(subdir1full)[0] == filenameinput:
+                    if filenameinput in os.listdir(subdir1full):
                         list_files_ = os.listdir(subdir1full)
                         for myfile in list_files_:
                             filefull = os.path.join(subdir1full, myfile)
