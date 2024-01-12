@@ -33,13 +33,13 @@ ml_study: # mlout, mlplot
   doimportance: true
   doimportanceshap: true
   docorrelation: true
-  dolearningcurve: false
+  dolearningcurve: true
   doapplytodatamc: false
   doscancuts: false
   doefficiency: false
   dosignifopt: false
   doboundary: false
-  docrossvalidation: true
+  docrossvalidation: false
   dogridsearch: false
   dobayesianopt: false
 
