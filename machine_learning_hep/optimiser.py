@@ -15,6 +15,7 @@
 """
 main script for doing ml optimisation
 """
+import copy
 import os
 import time
 from math import sqrt
@@ -116,7 +117,8 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         #parameters
         self.p_case = case
         self.p_typean = typean
-        self.p_nclasses = data_param["ml"]["nclasses"]
+        # deep copy as this is modified for each Optimiser instance separately
+        self.p_nclasses = copy.deepcopy(data_param["ml"]["nclasses"])
         self.p_tags = data_param["ml"]["sampletags"]
         self.p_binmin = binmin
         self.p_binmax = binmax
@@ -266,7 +268,6 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
                 self.dfs_input[label] = seldf_singlevar(self.dfs_input[label],
                                                         self.v_bin, self.p_binmin, self.p_binmax)
                 self.dfs_input[label] = self.dfs_input[label].query(self.s_selml[ind])
-                print(f"Size of dataset for {label}: {len(self.dfs_input[label])}")
 
             bkg_labels = [lab for lab in self.p_class_labels if lab == "bkg"]
             if len(bkg_labels) != 1:
@@ -278,9 +279,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
 
             if self.p_equalise_sig_bkg:
                 min_class_count = min((len(self.dfs_input[label]) for label in self.p_class_labels))
-                print(f"Min size of dataset among labels: {min_class_count}")
                 for ind, label in enumerate(self.p_class_labels):
-                    print(f"Self p_nclasses[{ind}] for {label}: {self.p_nclasses[ind]}")
                     self.p_nclasses[ind] = min(min_class_count, self.p_nclasses[ind])
                     self.logger.info("Max possible number of equalized samples for %s: %d",
                                      label, self.p_nclasses[ind])
