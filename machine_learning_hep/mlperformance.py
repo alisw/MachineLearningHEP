@@ -159,9 +159,6 @@ def plot_roc_ovr(names_, classifiers_, suffix_, x_train, y_train,
     for ind, (name, clf) in enumerate(zip(names_, classifiers_), start = 1):
         ax = plt.subplot(nrows, ncols, ind)
         y_score = cross_val_predict(clf, x_train, y_train, cv=nkfolds, method="predict_proba")
-        #if len(class_labels) == 2:
-        #    plot_roc(y_train, y_score[:, 1], name, "signal", HIST_COLORS[0])
-        #else:
         for cls_hyp, (label_hyp, color) in enumerate(zip(class_labels, HIST_COLORS)):
             plot_roc(y_train == cls_hyp, y_score[:, cls_hyp], name, label_hyp, color)
         ax.set_xlabel("False Positive Rate", fontsize=30)
