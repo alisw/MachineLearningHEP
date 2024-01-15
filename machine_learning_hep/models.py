@@ -203,7 +203,6 @@ def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder)
     figure, nrows, ncols = prepare_fig(len(names_models))
     for ind, (name, model) in enumerate(names_models, start=1):
         ax = plt.subplot(nrows, ncols, ind)
-        #plt.subplots_adjust(left=0.3, right=0.9)
         feature_importances_ = model.feature_importances_
         y_pos = np.arange(len(mylistvariables_))
         ax.barh(y_pos, feature_importances_, align='center', color='green')
@@ -214,10 +213,10 @@ def importanceplotall(mylistvariables_, names_, trainedmodels_, suffix_, folder)
         ax.set_title(f"Importance features {name}", fontsize=17)
         ax.xaxis.set_tick_params(labelsize=17)
         plt.xlim(0, 0.7)
-    figure.savefig(f"{folder}/importanceplotall{suffix_}.png", bbox_inches='tight')
+    figure.savefig(f"{folder}/importance_{suffix_}.png", bbox_inches='tight')
     plt.close()
 
-def shap_study(names_, trainedmodels_, x_train_, suffix_, folder, plot_options_):
+def shap_study(names_, trainedmodels_, suffix_, x_train_, folder, class_labels, plot_options_):
     """Importance via SHAP
 
     Args:
@@ -251,8 +250,17 @@ def shap_study(names_, trainedmodels_, x_train_, suffix_, folder, plot_options_)
         plt.sca(ax)
         explainer = shap.TreeExplainer(model)
         shap_values = explainer.shap_values(x_train_)
-        shap.summary_plot(shap_values, x_train_, show=False, feature_names=feature_names)
-    figure.savefig(f"{folder}/importanceplotall_shap_{suffix_}.png", bbox_inches='tight')
+        shap.summary_plot(shap_values, x_train_, show=False, feature_names=feature_names,
+                          class_names=class_labels, class_inds="original")
+        if len(class_labels) > 2:
+            for ind, label in enumerate(class_labels):
+                fig_class, _, _ = prepare_fig(1)
+                shap.summary_plot(shap_values[ind], x_train_, show=False,
+                                  feature_names=feature_names, class_names=class_labels)
+                fig_class.savefig(f"{folder}/importance_shap_{name}_{label}_{suffix_}.png",
+                                  bbox_inches='tight')
+                plt.close(fig_class)
+    figure.savefig(f"{folder}/importance_shap_{suffix_}.png", bbox_inches='tight')
     mpl.rcParams.update({"text.usetex": False})
     plt.close(figure)
 

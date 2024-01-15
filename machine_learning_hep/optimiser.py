@@ -522,8 +522,8 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.do_train()
 
         self.logger.info("Do SHAP importance")
-        shap_study(self.p_classname, self.p_class, self.df_xtrain, self.s_suffix, self.dirmlplot,
-                   self.p_plot_options)
+        shap_study(self.p_classname, self.p_class, self.s_suffix, self.df_xtrain, self.dirmlplot,
+                   self.p_class_labels, self.p_plot_options)
 
     def do_bayesian_opt(self):
         if self.step_done("bayesian_opt"):
