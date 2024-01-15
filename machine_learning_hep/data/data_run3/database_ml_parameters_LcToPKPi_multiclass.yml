@@ -252,7 +252,7 @@ LcpKpi:
     binmax: [2,4,6,8,12,24] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: MultiClassification
     ncorescrossval: 10
-    prefix_dir_ml: /data2/mkabus/MLHEP/results-multiclass-equalization-fix/
+    prefix_dir_ml: /data2/MLhep/
     mlplot: mlplot # to be removed
     mlout: mlout # to be removed
 
@@ -276,11 +276,11 @@ LcpKpi:
 
   mlapplication:
     data:
-      prefix_dir_app: /data2/mkabus/MLHEP/results-multiclass-equalization-fix/
+      prefix_dir_app: /data2/MLhep/
       pkl_skimmed_dec: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdata] #list of periods
       pkl_skimmed_decmerged: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdatamerged] #list of periods
     mc:
-      prefix_dir_app: /data2/mkabus/MLHEP/results-multiclass-equalization-fix/
+      prefix_dir_app: /data2/MLhep/
       pkl_skimmed_dec: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmc,
                         LHC22pp_mc/MLapplication/prod_LHC22b1a/skpkldecmc,] #list of periods
       pkl_skimmed_decmerged: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmcmerged,
@@ -336,12 +336,12 @@ LcpKpi:
 
       data:
         runselection: [null] #FIXME
-        prefix_dir_res: /data2/mkabus/MLHEP/results-multiclass-equalization-fix/
+        prefix_dir_res: /data2/MLhep/
         results: [LHC22pp/Results/prod_LHC22o/resultsdata] #list of periods
         resultsallp: LHC22pp/Results/resultsdatatot
       mc:
         runselection: [null, null] #FIXME
-        prefix_dir_res: /data2/mkabus/MLHEP/results-multiclass-equalization-fix/
+        prefix_dir_res: /data2/MLhep/
         results: [LHC22pp_mc/Results/prod_LHC22b1b/resultsmc,
                   LHC22pp_mc/Results/prod_LHC22b1a/resultsmc] #list of periods
         resultsallp: LHC22pp_mc/Results/prod_LHC22/resultsmctot
