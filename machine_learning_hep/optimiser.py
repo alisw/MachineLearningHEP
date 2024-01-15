@@ -484,14 +484,14 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
                                   self.df_xtest, self.df_ytest,
                                   self.p_nkfolds, self.dirmlplot,
                                   self.p_class_labels,
-                                  (self.p_binmin, self.p_binmax), "roc_ovr")
+                                  (self.p_binmin, self.p_binmax), "OvR")
         if self.p_mltype == "MultiClassification":
             mlhep_plot.roc_train_test(self.p_classname, self.p_class, self.s_suffix,
                                       self.df_xtrain, self.df_ytrain,
                                       self.df_xtest, self.df_ytest,
                                       self.p_nkfolds, self.dirmlplot,
                                       self.p_class_labels,
-                                      (self.p_binmin, self.p_binmax), "roc_ovo")
+                                      (self.p_binmin, self.p_binmax), "OvO")
 
     def do_plot_model_pred(self):
         if self.step_done("plot_model_pred"):

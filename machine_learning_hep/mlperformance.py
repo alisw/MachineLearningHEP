@@ -159,11 +159,11 @@ def plot_roc_ovr(names_, classifiers_, suffix_, x_train, y_train,
     for ind, (name, clf) in enumerate(zip(names_, classifiers_), start = 1):
         ax = plt.subplot(nrows, ncols, ind)
         y_score = cross_val_predict(clf, x_train, y_train, cv=nkfolds, method="predict_proba")
-        if len(class_labels) == 2:
-            plot_roc(y_train, y_score[:, 1], name, "signal", HIST_COLORS[0])
-        else:
-            for cls_hyp, (label_hyp, color) in enumerate(zip(class_labels, HIST_COLORS)):
-                plot_roc(y_train == cls_hyp, y_score[:, cls_hyp], name, label_hyp, color)
+        #if len(class_labels) == 2:
+        #    plot_roc(y_train, y_score[:, 1], name, "signal", HIST_COLORS[0])
+        #else:
+        for cls_hyp, (label_hyp, color) in enumerate(zip(class_labels, HIST_COLORS)):
+            plot_roc(y_train == cls_hyp, y_score[:, cls_hyp], name, label_hyp, color)
         ax.set_xlabel("False Positive Rate", fontsize=30)
         ax.set_ylabel("True Positive Rate", fontsize=30)
         ax.set_title(f"ROC one vs. rest {name}", fontsize=30)
@@ -216,9 +216,9 @@ def plot_roc_ovo(names_, classifiers_, suffix_, x_train, y_train,
 def roc_train_test(names_, classifiers_, suffix_, x_train, y_train, x_test, y_test, # pylint: disable=too-many-arguments
                    nkfolds, folder, class_labels, binlims, roc_type):
     binmin, binmax = binlims
-    if roc_type not in ("roc_ovr", "roc_ovo"):
-        raise ValueError("ROC type can be only roc_ovr or roc_ovo")
-    roc_fun = plot_roc_ovr if roc_type == "roc_ovr" else plot_roc_ovo
+    if roc_type not in ("OvR", "OvO"):
+        raise ValueError("ROC type can be only OvR or OvO")
+    roc_fun = plot_roc_ovr if roc_type == "OvR" else plot_roc_ovo
     fig_train = roc_fun(names_, classifiers_, suffix_, x_train, y_train,
                         nkfolds, folder, class_labels, save=False)
     fig_test = roc_fun(names_, classifiers_, suffix_, x_test, y_test,
@@ -229,24 +229,29 @@ def roc_train_test(names_, classifiers_, suffix_, x_train, y_train, x_test, y_te
                                               start = 1):
         ax = plt.subplot(nrows, ncols, ind)
         for roc_train, roc_test in zip(ax_train.lines, ax_test.lines):
-            for roc_t, set_name, alpha, ls in zip((roc_train, roc_test), ("train", "test"),
-                                                  (0.4, 0.8), ("-", "-.")):
-                plt.plot(roc_t.get_xdata(), roc_t.get_ydata(), lw=roc_t.get_lw(), c=roc_t.get_c(),
-                         alpha=alpha, marker=roc_t.get_marker(), linestyle=ls,
-                         label=f"{roc_t.get_label()}, {set_name} set")
-        ax.set_xlabel("False Positive Rate", fontsize=30)
-        ax.set_ylabel("True Positive Rate", fontsize=30)
+            for roc_t, set_name, ls in zip((roc_train, roc_test), ("train", "test"),
+                                           ("-", "-.")):
+                if "average" in roc_t.get_label():
+                    plt.plot([], [], ' ', label=f"{roc_t.get_label()}, {set_name} set")
+                else:
+                    plt.plot(roc_t.get_xdata(), roc_t.get_ydata(), lw=roc_t.get_lw(),
+                             c=roc_t.get_c(), alpha=roc_t.get_alpha(), marker=roc_t.get_marker(),
+                             linestyle=ls, label=f"{roc_t.get_label()}, {set_name} set")
+        ax.set_xlabel(ax_train.get_xlabel(), fontsize=30)
+        ax.set_ylabel(ax_train.get_ylabel(), fontsize=30)
         ax.legend(loc="lower right", frameon=False, fontsize=25)
         ax.set_xlim([-0.05, 1.05])
         ax.set_ylim([-0.05, 1.05])
         ax.tick_params(labelsize=20)
 
-        ax.text(0.7, 0.5,
+        ax.text(0.7, 0.8,
                  f" ${binmin} < p_\\mathrm{{T}}/(\\mathrm{{GeV}}/c) < {binmax}$",
                  verticalalignment="center", transform=ax.transAxes, fontsize=30)
 
-    figure.savefig(f"{folder}/ROCtraintest_OvR_{suffix_}.png", bbox_inches='tight')
+    figure.savefig(f"{folder}/ROCtraintest_{roc_type}_{suffix_}.png", bbox_inches='tight')
     plt.close(figure)
+    plt.close(fig_train)
+    plt.close(fig_test)
 
 
 def plot_learning_curves(names_, classifiers_, suffix_, folder, x_data, y_data, npoints):
