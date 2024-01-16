@@ -516,11 +516,11 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 if self.mltype == "MultiClassification":
                     dfrecoskml = apply(self.mltype, [self.p_modelname], [mod],
                                        dfrecosk, self.v_train[ipt], self.class_labels)
-                    comps = (operator.le, operator.ge, operator.ge)
-                    conds = [comp(dfrecoskml[f"y_test_prob{self.p_modelname}{label}"], probcut) \
-                             for label, comp, probcut in zip(self.class_labels, comps,
-                                                             self.lpt_probcutpre[ipt]]
-                    dfrecoskml = dfrecoskml[conds[0] & conds[1] & conds[2]]
+                    probs = [f"y_test_prob{self.p_modelname}{label}" \
+                             for label in self.class_labels]
+                    dfrecoskml = dfrecoskml[(dfrecoskml[probs[0]] <= self.lpt_probcutpre[ipt][0]) &
+                                            (dfrecoskml[probs[1]] >= self.lpt_probcutpre[ipt][1]) &
+                                            (dfrecoskml[probs[2]] >= self.lpt_probcutpre[ipt][2])]
                 else:
                     dfrecoskml = apply("BinaryClassification", [self.p_modelname], [mod],
                                        dfrecosk, self.v_train[ipt])
