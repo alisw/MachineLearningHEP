@@ -24,7 +24,7 @@ mergingperiods: # pkl_skimmed_merge_for_ml_all
     activate: false
 
 ml_study: # mlout, mlplot
-  activate: true
+  activate: false
   dotraining: true
   dotesting: true
   doplotdistr: true
