@@ -236,13 +236,13 @@ LcpKpi:
       data: null
       mc: null
 
-    nclasses: [500000, 500000]
+    nclasses: [500000, 500000, 500000]
     equalise_sig_bkg: True
-    sampletags: [0, 1]
+    sampletags: [0, 1, 1]
     sel_bkg: fM < 2.22 or fM > 2.35 # for plotting significance; should agree with bkg selection in sel_ml
     # best to have non-prompt (the smallest class) last, so the plots won't complain about the middle class missing
-    sel_ml: [fM < 2.22 or fM > 2.35, ismcsignal == 1 and ismcprompt == 1]
-    class_labels: [bkg, prompt]
+    sel_ml: [fM < 2.22 or fM > 2.35, ismcsignal == 1 and ismcprompt == 1, ismcsignal == 1 and ismcfd == 1]
+    class_labels: [bkg, prompt, non-prompt]
     nkfolds: 5
     rnd_shuffle: 12
     rnd_splt: 12
@@ -250,7 +250,7 @@ LcpKpi:
     test_frac: 0.2
     binmin: [1,2,4,6,8,12] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
     binmax: [2,4,6,8,12,24] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
-    mltype: BinaryClassification
+    mltype: MultiClassification
     ncorescrossval: 10
     prefix_dir_ml: /data2/MLhep/
     mlplot: mlplot # to be removed
@@ -293,9 +293,9 @@ LcpKpi:
                      xgboost_classifierLcpKpi_dfselection_fPt_8.0_12.0.sav,
                      xgboost_classifierLcpKpi_dfselection_fPt_12.0_24.0.sav]
     probcutpresel:
-      data: [0.4, 0.4, 0.4, 0.4, 0.4, 0.4] #list of nbins
-      mc: [0.4, 0.4, 0.4, 0.4, 0.4, 0.4] #list of nbins
-    probcutoptimal: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5] #list of nbins
+      data: [[0.3, 0.0], [0.3, 0.0], [0.3, 0.0], [0.3, 0.0], [0.3, 0.0], [0.3, 0.0]] #list of nbins
+      mc: [[0.3, 0.0], [0.3, 0.0], [0.3, 0.0], [0.3, 0.0], [0.3, 0.0], [0.3, 0.0]] #list of nbins
+    probcutoptimal: [[0.5, 0.1], [0.5, 0.1], [0.5, 0.1], [0.5, 0.1], [0.5, 0.1], [0.5, 0.1]] #list of nbins
 
   analysis:
     indexhptspectrum: -1 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
@@ -388,7 +388,7 @@ LcpKpi:
       useperiod: [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1] #period from where to define prob cuts
       ncutvar: 10 #number of looser and tighter variations
       maxperccutvar: 0.25 #max diff in efficiency for loosest/tightest var
-      cutvarminrange: [0.70, 0.50, 0.50, 0.30, 0.30, 0.30] #Min starting point for scan
-      cutvarmaxrange: [0.95, 0.90, 0.90, 0.80, 0.80, 0.80] #Max starting point for scan
+      cutvarminrange: [[0.1, 0.3], [0.1, 0.3], [0.1, 0.3], [0.1, 0.3], [0.1, 0.3], [0.7, 0.9]] #Min starting point for scan
+      cutvarmaxrange: [[0.7, 0.9], [0.7, 0.9], [0.7, 0.9], [0.7, 0.9], [0.7, 0.9], [0.7, 0.9]] #Max starting point for scan
       fixedmean: True #Fix mean cutvar histo to central fit
       fixedsigma: True #Fix sigma cutvar histo to central fit

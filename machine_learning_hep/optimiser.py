@@ -15,6 +15,7 @@
 """
 main script for doing ml optimisation
 """
+import copy
 import os
 import time
 from math import sqrt
@@ -116,8 +117,8 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         #parameters
         self.p_case = case
         self.p_typean = typean
-        self.p_nbkg = data_param["ml"]["nbkg"]
-        self.p_nsig = data_param["ml"]["nsig"]
+        # deep copy as this is modified for each Optimiser instance separately
+        self.p_nclasses = copy.deepcopy(data_param["ml"]["nclasses"])
         self.p_tags = data_param["ml"]["sampletags"]
         self.p_binmin = binmin
         self.p_binmax = binmax
@@ -155,6 +156,8 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.df_ytrain = None
         self.df_xtest = None
         self.df_ytest = None
+        self.df_ytrain_onehot = None
+        self.df_ytest_onehot = None
         #selections
         self.s_selbkg = data_param["ml"]["sel_bkg"] # used only to calculate significance
         self.s_selml = data_param["ml"]["sel_ml"]
@@ -245,11 +248,6 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
     def preparesample(self): # pylint: disable=too-many-branches
         self.logger.info("Prepare Sample")
 
-        # tag == 0 corresponds to df_data in self.arraydf
-        # NOTE: Assuming bkg ~ real data, signal ~ MC
-        sig_labs = [lab for lab, tag in zip(self.p_class_labels, self.p_tags) if tag != 0]
-        bkg_labs = [lab for lab, tag in zip(self.p_class_labels, self.p_tags) if tag == 0]
-
         filename_train = \
                 os.path.join(self.dirmlout, f"df_train_{self.p_binmin}_{self.p_binmax}.pkl")
         filename_test = \
@@ -271,24 +269,25 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
                                                         self.v_bin, self.p_binmin, self.p_binmax)
                 self.dfs_input[label] = self.dfs_input[label].query(self.s_selml[ind])
 
+            bkg_labels = [lab for lab in self.p_class_labels if lab == "bkg"]
+            if len(bkg_labels) != 1:
+                self.logger.fatal('No background class or more than one background class. ' \
+                                  'Make sure you have "bkg" exactly once in your class_labels ' \
+                                  'in your database')
             for var_to_zero in ["ismcsignal", "ismcprompt", "ismcfd", "ismcbkg"]:
-                for label in bkg_labs:
-                    self.dfs_input[label][var_to_zero] = 0
+                self.dfs_input[bkg_labels[0]][var_to_zero] = 0
 
-            # TODO: To be extended to equalize all classes
             if self.p_equalise_sig_bkg:
-                sigs_count = sum(len(self.dfs_input[label]) for label in sig_labs)
-                bkgs_count = sum(len(self.dfs_input[label]) for label in bkg_labs)
-                self.p_nsig = min(sigs_count, bkgs_count, self.p_nsig)
-                self.p_nbkg = min(sigs_count, bkgs_count, self.p_nbkg)
+                min_class_count = min((len(self.dfs_input[label]) for label in self.p_class_labels))
+                for ind, label in enumerate(self.p_class_labels):
+                    self.p_nclasses[ind] = min(min_class_count, self.p_nclasses[ind])
+                    self.logger.info("Max possible number of equalized samples for %s: %d",
+                                     label, self.p_nclasses[ind])
 
-            for ind, label in enumerate(self.p_class_labels):
+            for ind, (label, nclass) in enumerate(zip(self.p_class_labels, self.p_nclasses)):
                 self.dfs_input[label] = shuffle(self.dfs_input[label],
                                                 random_state=self.rnd_shuffle)
-                if label in sig_labs:
-                    self.dfs_input[label] = self.dfs_input[label][:self.p_nsig]
-                else:
-                    self.dfs_input[label] = self.dfs_input[label][:self.p_nbkg]
+                self.dfs_input[label] = self.dfs_input[label][:nclass]
                 self.dfs_input[label][self.v_class] = ind
             self.df_ml = pd.concat([self.dfs_input[label] for label in self.p_class_labels])
 
@@ -316,16 +315,12 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
             self.logger.info("Number of %s candidates: train %d and test %d",
                              label, len(self.dfs_train[label]), len(self.dfs_test[label]))
 
-        self.logger.info("Aim for number of signal events: %d", self.p_nsig)
-        self.logger.info("Aim for number of background events: %d", self.p_nbkg)
+        for label, nclass in zip(self.p_class_labels, self.p_nclasses):
+            self.logger.info("Aim for number of %s events: %d", label, nclass)
 
-        # TODO: To be extended to equalize all classes
-        for lab_set, lab_name, exp_no in zip((sig_labs, bkg_labs), ("signal", "background"),
-                                         (self.p_nsig, self.p_nbkg)):
-            count_train = sum(len(self.dfs_train[label]) for label in lab_set)
-            count_test = sum(len(self.dfs_test[label]) for label in lab_set)
-            if exp_no > (count_train + count_test):
-                self.logger.warning("There are not enough %s events", lab_name)
+        for label, nclass in zip(self.p_class_labels, self.p_nclasses):
+            if nclass > len(self.dfs_train[label]) + len(self.dfs_test[label]):
+                self.logger.warning("There are not enough %s events", label)
 
         if self.p_mask_values:
             self.logger.info("Masking values for training and testing")
@@ -334,12 +329,10 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         # Final preparation of signal and background samples for training and testing
         self.df_xtrain = self.df_mltrain[self.v_train]
         self.df_xtest = self.df_mltest[self.v_train]
-        if self.p_mltype == "MultiClassification":
-            self.df_ytrain = self.df_mltrain.filter(regex=f"{self.v_class}_")
-            self.df_ytest = self.df_mltest.filter(regex=f"{self.v_class}_")
-        else:
-            self.df_ytrain = self.df_mltrain[self.v_class]
-            self.df_ytest = self.df_mltest[self.v_class]
+        self.df_ytrain = self.df_mltrain[self.v_class]
+        self.df_ytest = self.df_mltest[self.v_class]
+        self.df_ytrain_onehot = self.df_mltrain.filter(regex=f"{self.v_class}_")
+        self.df_ytest_onehot = self.df_mltest.filter(regex=f"{self.v_class}_")
 
         self.step_done("preparemlsamples")
 
@@ -468,7 +461,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
 
         self.logger.info("Make ROC for train")
         mlhep_plot.plot_precision_recall(self.p_classname, self.p_class, self.s_suffix,
-                                         self.df_xtrain, self.df_ytrain,
+                                         self.df_xtrain, self.df_ytrain, self.df_ytrain_onehot,
                                          self.p_nkfolds, self.dirmlplot,
                                          self.p_class_labels)
         mlhep_plot.plot_roc_ovr(self.p_classname, self.p_class, self.s_suffix,
@@ -493,14 +486,14 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
                                   self.df_xtest, self.df_ytest,
                                   self.p_nkfolds, self.dirmlplot,
                                   self.p_class_labels,
-                                  (self.p_binmin, self.p_binmax), "roc_ovr")
+                                  (self.p_binmin, self.p_binmax), "OvR")
         if self.p_mltype == "MultiClassification":
             mlhep_plot.roc_train_test(self.p_classname, self.p_class, self.s_suffix,
                                       self.df_xtrain, self.df_ytrain,
                                       self.df_xtest, self.df_ytest,
                                       self.p_nkfolds, self.dirmlplot,
                                       self.p_class_labels,
-                                      (self.p_binmin, self.p_binmax), "roc_ovo")
+                                      (self.p_binmin, self.p_binmax), "OvO")
 
     def do_plot_model_pred(self):
         if self.step_done("plot_model_pred"):
@@ -531,8 +524,8 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.do_train()
 
         self.logger.info("Do SHAP importance")
-        shap_study(self.p_classname, self.p_class, self.df_xtrain, self.s_suffix, self.dirmlplot,
-                   self.p_plot_options)
+        shap_study(self.p_classname, self.p_class, self.s_suffix, self.df_xtrain, self.dirmlplot,
+                   self.p_class_labels, self.p_plot_options)
 
     def do_bayesian_opt(self):
         if self.step_done("bayesian_opt"):
