@@ -200,7 +200,7 @@ LcpKpi:
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
-      prefix_dir: /data2/mkabus/MLHEP/results-multiclass-config/
+      prefix_dir: /data2/MLhep/
       unmerged_tree_dir: [real/LHC22o_pass4_medium/unmerged] #list of periods
       pkl: [LHC22pp/period_LHC22o/pkldata] #list of periods
       pkl_skimmed: [LHC22pp/period_LHC22o/pklskdata] #list of periods
@@ -218,7 +218,7 @@ LcpKpi:
       seedmerge: [12, 12] #list of periods
       period: [LHC22b1b, LHC22b1a] #list of periods
       select_period: [1, 1]
-      prefix_dir: /data2/mkabus/MLHEP/results-multiclass-config/
+      prefix_dir: /data2/MLhep/
       unmerged_tree_dir: [sim/alice/cern.ch/user/a/alihyperloop/jobs/0024,
                           sim/LHC22b1a_2P3PDstar/unmerged] #list of periods
       pkl: [LHC22pp_mc/prod_LHC22b1b/pklmc,
@@ -252,7 +252,7 @@ LcpKpi:
     binmax: [2,4,6,8,12,24] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: MultiClassification
     ncorescrossval: 10
-    prefix_dir_ml: /data2/mkabus/MLHEP/results-multiclass-config/
+    prefix_dir_ml: /data2/mkabus/MLHEP/results-multiclass-equalization-fix/
     mlplot: mlplot # to be removed
     mlout: mlout # to be removed
 
