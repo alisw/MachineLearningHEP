@@ -45,11 +45,11 @@ ml_study: # mlout, mlplot
 
 mlapplication:
   data:
-    doapply: true # pkl_skimmed_dec (pklskdec)
+    doapply: false # pkl_skimmed_dec (pklskdec)
     domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged)
     docontinueafterstop: false # set to true to resume interrupted processing (existing corrupted output will be overwritten)
   mc:
-    doapply: true # pkl_skimmed_dec (pklskdec)
+    doapply: false # pkl_skimmed_dec (pklskdec)
     domergeapply: false # pkl_skimmed_decmerged (pklskdecmerged)
     docontinueafterstop: false # set to true to resume interrupted processing (existing corrupted output will be overwritten)
 
@@ -59,17 +59,17 @@ analysis:
   # Do only merged (false)
   doperperiod: false
   data:
-    histomass: true # processer: process_histomass
+    histomass: false # processer: process_histomass
     dojetsystematics: false # analyzer: jetsystematics
   mc:
-    histomass: true # processer: process_histomass
+    histomass: false # processer: process_histomass
     efficiency: false # processer: process_efficiency
     efficiency_resp: false # analyzer: efficiency
     response: false # processer: process_response
     feeddown: false # analyzer: feeddown
     dounfolding: false # analyzer: unfolding, unfolding_closure
   doqa: false
-  dofit: false # analyzer: fit
+  dofit: true # analyzer: fit
   # Control the yield systematic uncertainty
   dosyst: false # analyzer: yield_syst
   dojetstudies: false # analyzer: fit, efficiency, sideband_sub
