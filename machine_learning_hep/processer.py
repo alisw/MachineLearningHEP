@@ -242,7 +242,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                f'{comp} {probcut}'
                                for label, comp, probcut in zip(self.class_labels, comps,
                                                                self.lpt_probcutfin[ipt])]
-                joined_mlsel = " and ".join(mlsel_multi)
                 self.l_selml.append(" and ".join(mlsel_multi))
 
         else:
