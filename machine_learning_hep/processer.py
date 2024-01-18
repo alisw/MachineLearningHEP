@@ -657,8 +657,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
         create_folder_struc(self.d_results, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
         self.parallelizer(self.process_histomass_single, arguments, self.p_chunksizeunp) # pylint: disable=no-member
-        tmp_merged = \
-            f"/tmp/hadd/{self.case}_{self.typean}/mass_{self.period}/{get_timestamp_string()}/"
+        tmp_merged = os.path.expanduser(f"~/tmp/hadd/{self.case}_{self.typean}/"
+                                        f"mass_{self.period}/{get_timestamp_string()}/")
         mergerootfiles(self.l_histomass, self.n_filemass, tmp_merged)
 
     def process_efficiency(self):
@@ -675,5 +675,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         create_folder_struc(self.d_results, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
         self.parallelizer(self.process_efficiency_single, arguments, self.p_chunksizeunp) # pylint: disable=no-member
-        tmp_merged = f"/tmp/hadd/{self.case}_{self.typean}/histoeff_{self.period}/{get_timestamp_string()}/" # pylint: disable=line-too-long
+        tmp_merged = os.path.expanduser(f"~/tmp/hadd/{self.case}_{self.typean}/"
+                                        f"histoeff_{self.period}/{get_timestamp_string()}/")
         mergerootfiles(self.l_histoeff, self.n_fileeff, tmp_merged)
