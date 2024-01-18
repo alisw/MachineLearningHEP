@@ -289,11 +289,12 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes
         """
         if self.bin2_name is not None:
             if self.mltype == "MultiClassification":
-                return "%s%d_%d_%.2f%.2f%s_%.2f_%.2f" % \
+                return "%s%d_%d_%.2f%.2f%.2f%s_%.2f_%.2f" % \
                        (self.bin1_name, self.bins1_edges_low[ibin1],
                         self.bins1_edges_up[ibin1], self.prob_cut_fin[ibin1][0],
-                        self.prob_cut_fin[ibin1][1], self.bin2_name,
-                        self.bins2_edges_low[ibin2], self.bins2_edges_up[ibin2])
+                        self.prob_cut_fin[ibin1][1], self.prob_cut_fin[ibin1][2],
+                        self.bin2_name, self.bins2_edges_low[ibin2],
+                        self.bins2_edges_up[ibin2])
             return "%s%d_%d_%.2f%s_%.2f_%.2f" % \
                    (self.bin1_name, self.bins1_edges_low[ibin1],
                     self.bins1_edges_up[ibin1], self.prob_cut_fin[ibin1],
@@ -301,10 +302,10 @@ class MLFitParsFactory: # pylint: disable=too-many-instance-attributes
                     self.bins2_edges_up[ibin2])
 
         if self.mltype == "MultiClassification":
-            return "%s%d_%d_%.2f%.2f" % \
+            return "%s%d_%d_%.2f%.2f%.2f" % \
                    (self.bin1_name, self.bins1_edges_low[ibin1],
                     self.bins1_edges_up[ibin1], self.prob_cut_fin[ibin1][0],
-                    self.prob_cut_fin[ibin1][1])
+                    self.prob_cut_fin[ibin1][1], self.prob_cut_fin[ibin1][2])
         return "%s%d_%d_%.2f" % \
                (self.bin1_name, self.bins1_edges_low[ibin1],
                 self.bins1_edges_up[ibin1], self.prob_cut_fin[ibin1])
