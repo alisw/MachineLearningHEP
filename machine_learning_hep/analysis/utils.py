@@ -12,7 +12,7 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-from os.path import join, expanduser
+from os.path import join
 
 from machine_learning_hep.utilities import mergerootfiles, get_timestamp_string
 from machine_learning_hep.logger import get_logger
@@ -34,7 +34,7 @@ def multi_preparenorm(database, case, typean, doperiodbyperiod):
                         "correctionsweights.root")
 
     listempty = []
-    tmp_merged = expanduser(f"~/tmp/hadd/{case}_{typean}/norm_analyzer/{get_timestamp_string()}/")
+    tmp_merged = f"/data/tmp/hadd/{case}_{typean}/norm_analyzer/{get_timestamp_string()}/"
     useperiod = database["analysis"][typean]["useperiod"]
 
     for indexp in range(len(resultsdata)):
