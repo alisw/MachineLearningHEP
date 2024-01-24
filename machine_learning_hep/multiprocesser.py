@@ -16,7 +16,8 @@
 main script for doing data processing, machine learning and analysis
 """
 import os
-from machine_learning_hep.utilities import merge_method, mergerootfiles, get_timestamp_string
+import tempfile
+from machine_learning_hep.utilities import merge_method, mergerootfiles
 from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
 from machine_learning_hep.logger import get_logger
 
@@ -203,17 +204,16 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         for indexp, _ in enumerate(self.process_listsample):
             if self.p_useperiod[indexp] == 1:
                 self.process_listsample[indexp].process_histomass()
-        tmp_merged = f"/data/tmp/hadd/{self.case}_{self.typean}/mass/{get_timestamp_string()}/"
         self.logger.debug('merging all')
-        mergerootfiles(self.lper_filemass, self.filemass_mergedall, tmp_merged)
+        with tempfile.TemporaryDirectory() as tmp_merged_dir:
+            mergerootfiles(self.lper_filemass, self.filemass_mergedall, tmp_merged_dir)
 
     def multi_efficiency(self):
         for indexp, _ in enumerate(self.process_listsample):
             if self.p_useperiod[indexp] == 1:
                 self.process_listsample[indexp].process_efficiency()
-        tmp_merged = \
-                f"/data/tmp/hadd/{self.case}_{self.typean}/efficiency/{get_timestamp_string()}/"
-        mergerootfiles(self.lper_fileeff, self.fileeff_mergedall, tmp_merged)
+        with tempfile.TemporaryDirectory() as tmp_merged_dir:
+            mergerootfiles(self.lper_fileeff, self.fileeff_mergedall, tmp_merged_dir)
 
     def multi_response(self):
         resp_exists = False
@@ -223,9 +223,8 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
                     resp_exists = True
                     self.process_listsample[indexp].process_response()
         if resp_exists:
-            tmp_merged = \
-                    f"/data/tmp/hadd/{self.case}_{self.typean}/response/{get_timestamp_string()}/"
-            mergerootfiles(self.lper_fileresp, self.fileresp_mergedall, tmp_merged)
+            with tempfile.TemporaryDirectory() as tmp_merged_dir:
+                mergerootfiles(self.lper_fileresp, self.fileresp_mergedall, tmp_merged_dir)
 
     def multi_scancuts(self):
         for indexp, _ in enumerate(self.process_listsample):

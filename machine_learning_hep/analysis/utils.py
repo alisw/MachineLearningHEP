@@ -13,11 +13,12 @@
 #############################################################################
 
 from os.path import join
+import tempfile
 
-from machine_learning_hep.utilities import mergerootfiles, get_timestamp_string
+from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.logger import get_logger
 
-def multi_preparenorm(database, case, typean, doperiodbyperiod):
+def multi_preparenorm(database, typean, doperiodbyperiod):
 
     logger = get_logger()
 
@@ -34,14 +35,14 @@ def multi_preparenorm(database, case, typean, doperiodbyperiod):
                         "correctionsweights.root")
 
     listempty = []
-    tmp_merged = f"/data/tmp/hadd/{case}_{typean}/norm_analyzer/{get_timestamp_string()}/"
     useperiod = database["analysis"][typean]["useperiod"]
 
-    for indexp in range(len(resultsdata)):
-        logger.info("Origin path: %s, target path: %s", lper_normfilesorig[indexp],
-                    lper_normfiles[indexp])
-        mergerootfiles([lper_normfilesorig[indexp]], lper_normfiles[indexp], tmp_merged)
-        if doperiodbyperiod and useperiod[indexp]:
-            listempty.append(lper_normfiles[indexp])
+    with tempfile.TemporaryDirectory() as tmp_merged_dir:
+        for indexp in range(len(resultsdata)):
+            logger.info("Origin path: %s, target path: %s", lper_normfilesorig[indexp],
+                        lper_normfiles[indexp])
+            mergerootfiles([lper_normfilesorig[indexp]], lper_normfiles[indexp], tmp_merged_dir)
+            if doperiodbyperiod and useperiod[indexp]:
+                listempty.append(lper_normfiles[indexp])
 
-    mergerootfiles(listempty, f_normmerged, tmp_merged)
+        mergerootfiles(listempty, f_normmerged, tmp_merged_dir)

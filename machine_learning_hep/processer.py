@@ -23,6 +23,7 @@ import os
 import glob
 import random as rd
 import re
+import tempfile
 import uproot
 import pandas as pd
 import numpy as np
@@ -32,7 +33,6 @@ from machine_learning_hep.utilities import selectdfquery, merge_method, mask_df
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
 from machine_learning_hep.utilities import mergerootfiles, count_df_length_pkl
-from machine_learning_hep.utilities import get_timestamp_string
 from machine_learning_hep.io import dump_yaml_from_dict
 from machine_learning_hep.logger import get_logger
 pd.options.mode.chained_assignment = None
@@ -656,9 +656,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
         create_folder_struc(self.d_results, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
         self.parallelizer(self.process_histomass_single, arguments, self.p_chunksizeunp) # pylint: disable=no-member
-        tmp_merged = \
-            f"/tmp/hadd/{self.case}_{self.typean}/mass_{self.period}/{get_timestamp_string()}/"
-        mergerootfiles(self.l_histomass, self.n_filemass, tmp_merged)
+        with tempfile.TemporaryDirectory() as tmp_merged_dir:
+            mergerootfiles(self.l_histomass, self.n_filemass, tmp_merged_dir)
 
     def process_efficiency(self):
         print("Doing efficiencies", self.mcordata, self.period)
@@ -674,5 +673,5 @@ class Processer: # pylint: disable=too-many-instance-attributes
         create_folder_struc(self.d_results, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
         self.parallelizer(self.process_efficiency_single, arguments, self.p_chunksizeunp) # pylint: disable=no-member
-        tmp_merged = f"/tmp/hadd/{self.case}_{self.typean}/histoeff_{self.period}/{get_timestamp_string()}/" # pylint: disable=line-too-long
-        mergerootfiles(self.l_histoeff, self.n_fileeff, tmp_merged)
+        with tempfile.TemporaryDirectory() as tmp_merged_dir:
+            mergerootfiles(self.l_histoeff, self.n_fileeff, tmp_merged_dir)

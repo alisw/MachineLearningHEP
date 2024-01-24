@@ -327,9 +327,6 @@ def mergerootfiles(listfiles, mergedfile, tmp_dir):
 
     tmp_files = []
     if len(listfiles) > 500:
-        if not os.path.exists(tmp_dir):
-            os.makedirs(tmp_dir)
-
         for i, split_list in enumerate(divide_chunks(listfiles, 500)):
             tmp_files.append(os.path.join(tmp_dir, f"hadd_tmp_merged{i}.root"))
             outstring = " ".join(split_list)
