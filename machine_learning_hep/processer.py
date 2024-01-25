@@ -427,7 +427,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         # needs to be revisited for Run 3
         if self.mcordata == "mc":
             dfreco[self.v_ismcsignal] = np.array(tag_bit_df(dfreco, self.v_bitvar,
-                                                            self.b_mcsig), dtype=int)
+                                                            self.b_mcsig, True), dtype=int)
             dfreco[self.v_ismcprompt] = np.array(tag_bit_df(dfreco, self.v_bitvar_origrec,
                                                             self.b_mcsigprompt), dtype=int)
             dfreco[self.v_ismcfd] = np.array(tag_bit_df(dfreco, self.v_bitvar_origrec,
@@ -440,7 +440,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 dfreco[self.v_ismcfd] = np.logical_and(dfreco[self.v_ismcfd] == 1, mydf)
 
             dfreco[self.v_ismcbkg] = np.array(tag_bit_df(dfreco, self.v_bitvar,
-                                                         self.b_mcbkg), dtype=int)
+                                                         self.b_mcbkg, True), dtype=int)
 
         pickle.dump(dfreco, openfile(self.l_reco[file_index], "wb"), protocol=4)
 
@@ -450,13 +450,13 @@ class Processer: # pylint: disable=too-many-instance-attributes
             dfgen[self.v_isstd] = np.array(tag_bit_df(dfgen, self.v_bitvar,
                                                       self.b_std), dtype=int)
             dfgen[self.v_ismcsignal] = np.array(tag_bit_df(dfgen, self.v_bitvar,
-                                                           self.b_mcsig), dtype=int)
+                                                           self.b_mcsig, True), dtype=int)
             dfgen[self.v_ismcprompt] = np.array(tag_bit_df(dfgen, self.v_bitvar_origgen,
                                                            self.b_mcsigprompt), dtype=int)
             dfgen[self.v_ismcfd] = np.array(tag_bit_df(dfgen, self.v_bitvar_origgen,
                                                        self.b_mcsigfd), dtype=int)
             dfgen[self.v_ismcbkg] = np.array(tag_bit_df(dfgen, self.v_bitvar,
-                                                        self.b_mcbkg), dtype=int)
+                                                        self.b_mcbkg, True), dtype=int)
             dfgen = dfgen.reset_index(drop=True)
 
             if dfjetgen is not None:
