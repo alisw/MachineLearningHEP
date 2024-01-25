@@ -238,7 +238,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             self.l_selml = []
             comps = ["<=", ">=", ">="]
             for ipt in range(self.p_nptfinbins):
-                mlsel_multi = [f'y_test_prob{self.p_modelname}{label} ' \
+                mlsel_multi = [f'y_test_prob{self.p_modelname}{label.replace("-", "_")} ' \
                                f'{comp} {probcut}'
                                for label, comp, probcut in zip(self.class_labels, comps,
                                                                self.lpt_probcutfin[ipt])]
@@ -517,7 +517,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 if self.mltype == "MultiClassification":
                     dfrecoskml = apply(self.mltype, [self.p_modelname], [mod],
                                        dfrecosk, self.v_train[ipt], self.class_labels)
-                    probs = [f'y_test_prob{self.p_modelname}{label}' \
+                    probs = [f'y_test_prob{self.p_modelname}{label.replace("-", "_")}' \
                              for label in self.class_labels]
                     dfrecoskml = dfrecoskml[(dfrecoskml[probs[0]] <= self.lpt_probcutpre[ipt][0]) &
                                             (dfrecoskml[probs[1]] >= self.lpt_probcutpre[ipt][1]) &

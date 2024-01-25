@@ -113,12 +113,7 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
                     self.run_param[self.runlistrigger], "run_number")
 
             if self.doml is True:
-                # pandas query() cannot accept '-' in column names
-                df.columns = [col.replace('-', '_') for col in df.columns]
-                self.l_selml[bin_id] = self.l_selml[bin_id].replace('-', '_')
                 df = df.query(self.l_selml[bin_id])
-                df.columns = [col.replace('_', '-') for col in df.columns]
-                self.l_selml[bin_id] = self.l_selml[bin_id].replace('_', '-')
             df = seldf_singlevar(df, self.v_var_binning, \
                                  self.lpt_finbinmin[ipt], self.lpt_finbinmax[ipt])
 
