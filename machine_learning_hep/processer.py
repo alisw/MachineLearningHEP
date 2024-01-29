@@ -23,6 +23,7 @@ import os
 import glob
 import random as rd
 import re
+import tempfile
 import uproot
 import pandas as pd
 import numpy as np
@@ -32,7 +33,6 @@ from machine_learning_hep.utilities import selectdfquery, merge_method, mask_df
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
 from machine_learning_hep.utilities import mergerootfiles, count_df_length_pkl
-from machine_learning_hep.utilities import get_timestamp_string
 from machine_learning_hep.io import dump_yaml_from_dict
 from machine_learning_hep.logger import get_logger
 pd.options.mode.chained_assignment = None
@@ -236,16 +236,16 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         if self.mltype == "MultiClassification":
             self.l_selml = []
+            comps = ["<=", ">=", ">="]
             for ipt in range(self.p_nptfinbins):
-                mlsel_multi0 = "y_test_prob" + self.p_modelname + self.class_labels[0] + \
-                               " <= " + str(self.lpt_probcutfin[ipt][0])
-                mlsel_multi1 = "y_test_prob" + self.p_modelname + self.class_labels[1] + \
-                               " >= " + str(self.lpt_probcutfin[ipt][1])
-                mlsel_multi = mlsel_multi0 + " and " + mlsel_multi1
-                self.l_selml.append(mlsel_multi)
+                mlsel_multi = [f'y_test_prob{self.p_modelname}{label.replace("-", "_")} ' \
+                               f'{comp} {probcut}'
+                               for label, comp, probcut in zip(self.class_labels, comps,
+                                                               self.lpt_probcutfin[ipt])]
+                self.l_selml.append(" and ".join(mlsel_multi))
 
         else:
-            self.l_selml = [f"y_test_prob {self.p_modelname} > {self.lpt_probcutfin[ipt]}" \
+            self.l_selml = [f"y_test_prob{self.p_modelname} > {self.lpt_probcutfin[ipt]}" \
                            for ipt in range(self.p_nptfinbins)]
 
         self.d_pkl_dec = d_pkl_dec
@@ -271,9 +271,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.lpt_recodec = None
         if self.doml is True:
             if self.mltype == "MultiClassification":
-                self.lpt_recodec = [self.n_reco.replace(".pkl", "%d_%d_%.2f%.2f.pkl" % \
-                                   (self.lpt_anbinmin[i], self.lpt_anbinmax[i], \
-                                    self.lpt_probcutpre[i][0], self.lpt_probcutpre[i][1])) \
+                self.lpt_recodec = [self.n_reco.replace(".pkl", "%d_%d_%.2f%.2f%.2f.pkl" % \
+                                   (self.lpt_anbinmin[i], self.lpt_anbinmax[i],
+                                    self.lpt_probcutpre[i][0], self.lpt_probcutpre[i][1],
+                                    self.lpt_probcutpre[i][2])) \
                                     for i in range(self.p_nptbins)]
             else:
                 self.lpt_recodec = [self.n_reco.replace(".pkl", "%d_%d_%.2f.pkl" % \
@@ -516,14 +517,15 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 if self.mltype == "MultiClassification":
                     dfrecoskml = apply(self.mltype, [self.p_modelname], [mod],
                                        dfrecosk, self.v_train[ipt], self.class_labels)
-                    prob0 = f"y_test_prob{self.p_modelname}{self.class_labels[0]}"
-                    prob1 = f"y_test_prob{self.p_modelname}{self.class_labels[1]}"
-                    dfrecoskml = dfrecoskml.loc[(dfrecoskml[prob0] <= self.lpt_probcutpre[ipt][0]) &
-                                                (dfrecoskml[prob1] >= self.lpt_probcutpre[ipt][1])]
+                    probs = [f'y_test_prob{self.p_modelname}{label.replace("-", "_")}' \
+                             for label in self.class_labels]
+                    dfrecoskml = dfrecoskml[(dfrecoskml[probs[0]] <= self.lpt_probcutpre[ipt][0]) &
+                                            (dfrecoskml[probs[1]] >= self.lpt_probcutpre[ipt][1]) &
+                                            (dfrecoskml[probs[2]] >= self.lpt_probcutpre[ipt][2])]
                 else:
                     dfrecoskml = apply("BinaryClassification", [self.p_modelname], [mod],
                                        dfrecosk, self.v_train[ipt])
-                    probvar = "y_test_prob" + self.p_modelname
+                    probvar = f"y_test_prob{self.p_modelname}"
                     dfrecoskml = dfrecoskml.loc[dfrecoskml[probvar] > self.lpt_probcutpre[ipt]]
             else:
                 dfrecoskml = dfrecosk.query("isstd == 1")
@@ -654,9 +656,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
         create_folder_struc(self.d_results, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
         self.parallelizer(self.process_histomass_single, arguments, self.p_chunksizeunp) # pylint: disable=no-member
-        tmp_merged = \
-            f"/tmp/hadd/{self.case}_{self.typean}/mass_{self.period}/{get_timestamp_string()}/"
-        mergerootfiles(self.l_histomass, self.n_filemass, tmp_merged)
+        with tempfile.TemporaryDirectory() as tmp_merged_dir:
+            mergerootfiles(self.l_histomass, self.n_filemass, tmp_merged_dir)
 
     def process_efficiency(self):
         print("Doing efficiencies", self.mcordata, self.period)
@@ -672,5 +673,5 @@ class Processer: # pylint: disable=too-many-instance-attributes
         create_folder_struc(self.d_results, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
         self.parallelizer(self.process_efficiency_single, arguments, self.p_chunksizeunp) # pylint: disable=no-member
-        tmp_merged = f"/tmp/hadd/{self.case}_{self.typean}/histoeff_{self.period}/{get_timestamp_string()}/" # pylint: disable=line-too-long
-        mergerootfiles(self.l_histoeff, self.n_fileeff, tmp_merged)
+        with tempfile.TemporaryDirectory() as tmp_merged_dir:
+            mergerootfiles(self.l_histoeff, self.n_fileeff, tmp_merged_dir)

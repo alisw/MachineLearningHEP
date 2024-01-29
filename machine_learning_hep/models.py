@@ -158,8 +158,10 @@ def apply(ml_type, names_, trainedmodels_, test_set_, mylistvariables_, labels_=
             test_set_[f"y_test_prob{name}"] = pd.Series(y_test_prob[:, 1], index=test_set_.index)
         elif ml_type == "MultiClassification" and labels_ is not None:
             for pred, lab in enumerate(labels_):
-                test_set_[f"y_test_prob{name}{lab}"] = pd.Series(y_test_prob[:, pred],
-                                                                 index=test_set_.index)
+                # pandas query() used in further analysis cannot accept '-' in column names
+                safe_lab = lab.replace('-', '_')
+                test_set_[f"y_test_prob{name}{safe_lab}"] = pd.Series(y_test_prob[:, pred],
+                                                                      index=test_set_.index)
         else:
             logger.fatal("Incorrect settings for chosen mltype")
     return test_set_

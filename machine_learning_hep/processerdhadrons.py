@@ -121,10 +121,10 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
                 df = self.apply_cuts_ptbin(df, ipt)
 
             if self.mltype == "MultiClassification":
-                suffix = "%s%d_%d_%.2f%.2f" % \
+                suffix = "%s%d_%d_%.2f%.2f%.2f" % \
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
                           self.lpt_finbinmax[ipt], self.lpt_probcutfin[ipt][0],
-                          self.lpt_probcutfin[ipt][1])
+                          self.lpt_probcutfin[ipt][1], self.lpt_probcutfin[ipt][2])
             else:
                 suffix = "%s%d_%d_%.2f" % \
                          (self.v_var_binning, self.lpt_finbinmin[ipt],
