@@ -612,7 +612,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         plt.ylabel('Model Efficiency', fontsize=20)
         plt.title("Efficiency vs Threshold", fontsize=20)
         # FIXME: Different future signal selection?
-        df_sig = self.df_mltest[self.df_mltest["ismcprompt"] == 1]
+        df_sig = self.df_mltest_applied[self.df_mltest_applied["ismcprompt"] == 1]
         for name in self.p_classname:
             eff_array, eff_err_array, x_axis = calc_sigeff_steps(self.p_nstepsign, df_sig, name)
             plt.figure(fig_eff.number)
@@ -661,8 +661,8 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
             df_fonll_Lc = df_fonll.Get(self.p_fonllparticle+"_"+self.p_fonllband)
             bin_min = df_fonll_Lc.FindBin(self.p_binmin)
             bin_max = df_fonll_Lc.FindBin(self.p_binmax)
-            prod_cross = df_fonll_Lc.Integral(bin_min, bin_max)* self.p_fragf * 1e-12 / delta_pt
-            signal_yield = 2. * prod_cross * delta_pt * acc * self.p_taa * self.p_br \
+            prod_cross = df_fonll_Lc.Integral(bin_min, bin_max) * self.p_fragf * 1e-12 / delta_pt
+            signal_yield = 2. * prod_cross * delta_pt * acc * self.p_taa \
                            / (self.p_sigmamb * self.p_fprompt)
             #now we plot the fonll expectation
             cFONLL = TCanvas('cFONLL', 'The FONLL expectation')
@@ -675,7 +675,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
                     df_fonll.query('(pt >= @self.p_binmin) and (pt < @self.p_binmax)')\
                     [self.p_fonllband]
             prod_cross = df_fonll_in_pt.sum() * self.p_fragf * 1e-12 / delta_pt
-            signal_yield = 2. * prod_cross * delta_pt * self.p_br * acc * self.p_taa \
+            signal_yield = 2. * prod_cross * delta_pt * acc * self.p_taa \
                            / (self.p_sigmamb * self.p_fprompt)
             #now we plot the fonll expectation
             fig = plt.figure(figsize=(20, 15))
@@ -729,7 +729,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         plt.xticks(fontsize=18)
         plt.yticks(fontsize=18)
 
-        df_sig = self.df_mltest[self.df_mltest["ismcprompt"] == 1]
+        df_sig = self.df_mltest_applied[self.df_mltest_applied["ismcprompt"] == 1]
 
         for name in self.p_classname:
             eff_array, eff_err_array, x_axis = calc_sigeff_steps(self.p_nstepsign, df_sig, name)
