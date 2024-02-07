@@ -108,6 +108,9 @@ def mask_df(df_to_mask, mask_config):
         # Mask the at the column name with mask value
         df_to_mask.loc[mask_indices, [mc["column"]]] = conv_none(mc["mask_with"])
 
+def dfquery(df, selection, **kwargs):
+    return df.query(selection, **kwargs) if selection is not None else df
+
 def selectdfquery(dfr, selection):
     """
     Query on dataframe

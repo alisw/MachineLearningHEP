@@ -29,7 +29,7 @@ import pandas as pd
 import numpy as np
 from machine_learning_hep.selectionutils import selectfidacc
 from machine_learning_hep.bitwise import tag_bit_df #, filter_bit_df
-from machine_learning_hep.utilities import selectdfquery, merge_method, mask_df
+from machine_learning_hep.utilities import dfquery, selectdfquery, merge_method, mask_df
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
 from machine_learning_hep.utilities import mergerootfiles, count_df_length_pkl
@@ -93,26 +93,21 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.p_chunksizeunp = p_chunksizeunp
         self.p_chunksizeskim = p_chunksizeskim
 
+        self.df_read = datap['dfs']['read']
+        self.df_merge = datap['dfs'].get('merge', None)
+        self.df_write = datap['dfs'].get('write', None)
+
         #parameter names
         self.p_maxprocess = p_maxprocess
         self.indexsample = None
         self.p_dofullevtmerge = datap["dofullevtmerge"]
         #namefile root
         self.n_root = datap["files_names"]["namefile_unmerged_tree"]
-        #troot trees names
-        self.n_treereco = datap["files_names"]["treeoriginreco"]
-        self.n_treegen = datap["files_names"]["treeorigingen"]
-        self.n_treeevt = datap["files_names"]["treeoriginevt"]
-        if self.mcordata == 'mc':
-            self.n_treejetreco = datap["files_names"].get("treejetdet", None)
-            self.n_treejetsubreco = datap["files_names"].get("treejetsubdet", None)
-        else:
-            self.n_treejetreco = datap["files_names"].get("treejetdata", None)
-            self.n_treejetsubreco = datap["files_names"].get("treejetsubdata", None)
-        self.n_treejetgen = datap["files_names"].get("treejetgen", None)
-        self.n_treejetsubgen = datap["files_names"].get("treejetsubgen", None)
 
         #namefiles pkl
+        # def nget(d : dict, k : list, dd = None):
+        #     return nget(d.get(k.pop(0), {}), k, dd) if len(k) > 1 else d.get(k.pop(0), dd)
+        # nget(datap, ['dfs', 'write', 'jetsubdet', 'file'])
         self.n_reco = datap["files_names"]["namefile_reco"]
         self.n_evt = datap["files_names"]["namefile_evt"]
         self.n_evtorig = datap["files_names"]["namefile_evtorig"]
@@ -141,28 +136,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.b_mcrefl = datap["bitmap_sel"]["ismcrefl"]
 
         #variables name
-        self.v_all = datap["variables"]["var_all"]
         self.v_train = datap["variables"]["var_training"]
-        self.v_evt = datap["variables"]["var_evt"][self.mcordata]
-        self.v_gen = datap["variables"]["var_gen"]
-        self.v_evtmatch = datap["variables"]["var_evt_match"]
-        self.v_evtmatch_mc = datap["variables"]["var_evt_match_mc"]
-        if self.mcordata == 'mc':
-            self.v_jetmatch = datap["variables"].get("var_jet_match_det", None)
-            self.v_jetsubmatch = datap["variables"].get("var_jetsub_match_det", None)
-            self.v_jet = datap["variables"].get("var_jet_det", None)
-            self.v_jetsub = datap["variables"].get("var_jetsub_det", None)
-        else:
-            self.v_jetmatch = datap["variables"].get("var_jet_match_data", None)
-            self.v_jetsubmatch = datap["variables"].get("var_jetsub_match_data", None)
-            self.v_jet = datap["variables"].get("var_jet_data", None)
-            self.v_jetsub = datap["variables"].get("var_jetsub_data", None)
-        self.v_jet_gen = datap["variables"].get("var_jet_gen", None)
-        self.v_jetsub_gen = datap["variables"].get("var_jetsub_gen", None)
-        self.v_jetmatch_mc = datap["variables"].get("var_jet_match_mc", None)
-        self.v_jetmatch_mc_hf = datap["variables"].get("var_jet_match_mc_hf", None)
-        self.v_jetsubmatch_mc = datap["variables"].get("var_jetsub_match_mc", None)
         self.v_bitvar = datap["bitmap_sel"]["var_name"]
+        self.v_bitvar_gen = datap["bitmap_sel"]["var_name_gen"]
         self.v_bitvar_origgen = datap["bitmap_sel"]["var_name_origgen"]
         self.v_bitvar_origrec = datap["bitmap_sel"]["var_name_origrec"]
         self.v_candtype = datap["var_cand"]
@@ -308,13 +284,35 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.do_custom_analysis_cuts = datap["analysis"][self.typean].get("use_cuts", False)
 
     def unpack(self, file_index, max_no_keys = None):  # pylint: disable=too-many-branches
-        dfevtorig = None
-        dfreco = None
-        dfjetreco = None
-        dfjetsubreco = None
-        dfgen = None
-        dfjetgen = None
-        dfjetsubgen = None
+        def dfread(rdir, trees, cols, idx_name=None):
+            """Read DF from multiple (joinable) O2 tables"""
+            try:
+                if not isinstance(trees, list):
+                    trees = [trees]
+                    cols = [cols]
+                # if all(type(var) is str for var in vars): vars = [vars]
+                df = None
+                for tree, col in zip([rdir[name] for name in trees], cols):
+                    try:
+                        data = tree.arrays(expressions=col, library='np')
+                        dfnew = pd.DataFrame(columns=col, data=data)
+                        df = pd.concat([df, dfnew], axis=1)
+                    except Exception as e: # pylint: disable=broad-except
+                        self.logger.critical('Failed to read data frame from tree %s', str(e))
+                        sys.exit()
+                df['df'] = int(df_no)
+                if idx_name:
+                    # df.rename_axis(idx_name, inplace=True)
+                    df[idx_name] = df.index
+                    df.set_index(['df', idx_name], inplace=True)
+                return df
+            except Exception as e:
+                self.logger.exception('Failed to read data from trees: %s', str(e))
+                raise e
+
+        def dfappend(name: str, dfa):
+            """Append DF row-wise"""
+            dfs[name] = pd.concat([dfs.get(name, None), dfa])
 
         def dfmerge(dfl, dfr, **kwargs):
             """Merge dfl and dfr"""
@@ -326,37 +324,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 dfr.info()
                 raise e
 
-        def dfread(trees, cols):
-            """Read DF from multiple (joinable) O2 tables"""
-            try:
-                if not isinstance(trees, list):
-                    trees = [trees]
-                    cols = [cols]
-                # if all(type(var) is str for var in vars): vars = [vars]
-                df = None
-                for tree, col in zip(trees, cols):
-                    data = tree.arrays(expressions=col, library='np')
-                    dfnew = pd.DataFrame(columns=col, data=data)
-                    dfnew['df'] = int(df_no)
-                    df = pd.concat([df, dfnew], axis=1)
-                return df
-            except Exception as e:
-                self.logger.exception('Failed to read data from trees: %s', str(e))
-                raise e
-
-        def dfappend(name: str, dfa):
-            dfs[name] = pd.concat([dfs.get(name, None), dfa])
-
-        def read_df(tree, df_base, var):
-            try:
-                df = pd.DataFrame(
-                    columns=var,
-                    data=tree.arrays(expressions=var, library="np"))
-                df['df'] = int(df_no)
-                return pd.concat([df_base, df])
-            except Exception as e: # pylint: disable=broad-except
-                self.logger.critical('Failed to read data frame from tree %s', str(e))
-                sys.exit()
+        def dfuse(df_spec):
+            return ((df_spec['level'] == 'all') or
+                    (df_spec['level'] in ('mc', 'gen', 'det') and self.mcordata == 'mc') or
+                    (df_spec['level'] in ('data') and self.mcordata == 'data'))
 
         self.logger.info('unpacking: %s', self.l_root[file_index])
         dfs = {}
@@ -373,105 +344,82 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 df_processed.add(df_no)
                 rdir = rfile[key]
 
-                tree = rdir[self.n_treereco] # accessing the tree is the slow bit!
-                dfreco = read_df(tree, dfreco, self.v_all)
-                dfappend('reco', dfread(rdir[self.n_treereco], self.v_all))
-                dfevtorig = read_df(rdir[self.n_treeevt], dfevtorig, self.v_evt)
+                for df_name, df_spec in self.df_read.items():
+                    if dfuse(df_spec):
+                        df = dfread(rdir, list(df_spec['trees'].keys()),
+                                    list(df_spec['trees'].values()),
+                                    idx_name=df_spec.get('index', None))
+                        dfappend(df_name, df)
 
-                if self.n_treejetreco:
-                    dfjetreco = read_df(rdir[self.n_treejetreco],
-                                        dfjetreco, self.v_jet)
+        for df_name, df_spec in self.df_read.items():
+            if dfuse(df_spec):
+                if 'extra' in df_spec:
+                    for col_name, col_val in df_spec['extra'].items():
+                        dfs[df_name][col_name] = dfs[df_name].eval(col_val)
+                if 'filter' in df_spec:
+                    dfquery(dfs[df_name], df_spec['filter'], inplace=True)
 
-                if self.n_treejetsubreco:
-                    dfjetsubreco = read_df(rdir[self.n_treejetsubreco],
-                                            dfjetsubreco, self.v_jetsub)
-
-                if self.mcordata == 'mc':
-                    dfgen = read_df(rdir[self.n_treegen],
-                                    dfgen, self.v_gen)
-
-                    if self.n_treejetgen:
-                        dfjetgen = read_df(rdir[self.n_treejetgen],
-                                           dfjetgen, self.v_jet_gen)
-
-                    if self.n_treejetsubgen:
-                        dfjetsubgen = read_df(rdir[self.n_treejetsubgen],
-                                              dfjetsubgen, self.v_jetsub_gen)
-
-        dfevtorig = selectdfquery(dfevtorig, self.s_cen_unp)
-        dfevtorig = dfevtorig.reset_index(drop=True)
-        pickle.dump(dfevtorig, openfile(self.l_evtorig[file_index], "wb"), protocol=4)
-
-        dfevt = selectdfquery(dfevtorig, self.s_good_evt_unp)
-        dfevt = dfevt.reset_index(drop=True)
-        pickle.dump(dfevt, openfile(self.l_evt[file_index], "wb"), protocol=4)
-
-        if dfjetreco is not None:
-            if dfjetsubreco is not None:
-                dfjetreco = dfmerge(dfjetreco, dfjetsubreco, how='inner', on=self.v_jetsubmatch)
-            dfreco = dfmerge(dfjetreco, dfreco, on=self.v_jetmatch)
-
-        dfreco = selectdfquery(dfreco, self.s_reco_unp)
-
-        if 'fIndexCollisions' not in dfevt.columns:
-            self.logger.warning('Adding fIndexCollisions retroactively')
-            dfevt.rename_axis('fIndexCollisions', inplace=True)
-
-        dfreco = dfmerge(dfreco, dfevt, on=self.v_evtmatch)
-
+        # extra logic should eventually come from DB
         if self.s_apply_yptacccut is True:
-            isselacc = selectfidacc(dfreco[self.v_var_binning].values,
-                                    dfreco[self.v_rapy].values)
-            dfreco = dfreco[np.array(isselacc, dtype=bool)]
+            isselacc = selectfidacc(dfs['reco'][self.v_var_binning].values,
+                                    dfs['reco'][self.v_rapy].values)
+            dfs['reco'] = dfs['reco'][np.array(isselacc, dtype=bool)]
 
-
-        # needs to be revisited for Run 3
         if self.mcordata == "mc":
-            dfreco[self.v_ismcsignal] = np.array(tag_bit_df(dfreco, self.v_bitvar,
-                                                            self.b_mcsig, True), dtype=int)
-            dfreco[self.v_ismcprompt] = np.array(tag_bit_df(dfreco, self.v_bitvar_origrec,
-                                                            self.b_mcsigprompt), dtype=int)
-            dfreco[self.v_ismcfd] = np.array(tag_bit_df(dfreco, self.v_bitvar_origrec,
-                                                        self.b_mcsigfd), dtype=int)
+            dfs['reco'][self.v_ismcsignal] = np.array(tag_bit_df(dfs['reco'], self.v_bitvar,
+                                                                 self.b_mcsig, True), dtype=int)
+            dfs['reco'][self.v_ismcprompt] = np.array(tag_bit_df(dfs['reco'], self.v_bitvar_origrec,
+                                                                 self.b_mcsigprompt), dtype=int)
+            dfs['reco'][self.v_ismcfd] = np.array(tag_bit_df(dfs['reco'], self.v_bitvar_origrec,
+                                                             self.b_mcsigfd), dtype=int)
+            dfs['reco'][self.v_ismcbkg] = np.array(tag_bit_df(dfs['reco'], self.v_bitvar,
+                                                              self.b_mcbkg, True), dtype=int)
 
             if self.v_swap:
-                mydf = dfreco[self.v_candtype] == dfreco[self.v_swap] + 1
-                dfreco[self.v_ismcsignal] = np.logical_and(dfreco[self.v_ismcsignal] == 1, mydf)
-                dfreco[self.v_ismcprompt] = np.logical_and(dfreco[self.v_ismcprompt] == 1, mydf)
-                dfreco[self.v_ismcfd] = np.logical_and(dfreco[self.v_ismcfd] == 1, mydf)
+                mydf = dfs['reco'][self.v_candtype] == dfs['reco'][self.v_swap] + 1
+                dfs['reco'][self.v_ismcsignal] = \
+                    np.logical_and(dfs['reco'][self.v_ismcsignal] == 1, mydf)
+                dfs['reco'][self.v_ismcprompt] = \
+                    np.logical_and(dfs['reco'][self.v_ismcprompt] == 1, mydf)
+                dfs['reco'][self.v_ismcfd] = np.logical_and(dfs['reco'][self.v_ismcfd] == 1, mydf)
 
-            dfreco[self.v_ismcbkg] = np.array(tag_bit_df(dfreco, self.v_bitvar,
-                                                         self.b_mcbkg, True), dtype=int)
-
-        pickle.dump(dfreco, openfile(self.l_reco[file_index], "wb"), protocol=4)
-
-        if self.mcordata == "mc":
-            dfgen = dfmerge(dfgen, dfevtorig, on=self.v_evtmatch_mc)
-
-            dfgen[self.v_isstd] = np.array(tag_bit_df(dfgen, self.v_bitvar,
+            dfs['gen'][self.v_isstd] = np.array(tag_bit_df(dfs['gen'], self.v_bitvar_gen,
                                                       self.b_std), dtype=int)
-            dfgen[self.v_ismcsignal] = np.array(tag_bit_df(dfgen, self.v_bitvar,
+            dfs['gen'][self.v_ismcsignal] = np.array(tag_bit_df(dfs['gen'], self.v_bitvar_gen,
                                                            self.b_mcsig, True), dtype=int)
-            dfgen[self.v_ismcprompt] = np.array(tag_bit_df(dfgen, self.v_bitvar_origgen,
+            dfs['gen'][self.v_ismcprompt] = np.array(tag_bit_df(dfs['gen'], self.v_bitvar_origgen,
                                                            self.b_mcsigprompt), dtype=int)
-            dfgen[self.v_ismcfd] = np.array(tag_bit_df(dfgen, self.v_bitvar_origgen,
+            dfs['gen'][self.v_ismcfd] = np.array(tag_bit_df(dfs['gen'], self.v_bitvar_origgen,
                                                        self.b_mcsigfd), dtype=int)
-            dfgen[self.v_ismcbkg] = np.array(tag_bit_df(dfgen, self.v_bitvar,
+            dfs['gen'][self.v_ismcbkg] = np.array(tag_bit_df(dfs['gen'], self.v_bitvar_gen,
                                                         self.b_mcbkg, True), dtype=int)
-            dfgen = dfgen.reset_index(drop=True)
 
-            if dfjetgen is not None:
-                if dfjetsubgen is not None:
-                    dfjetgen = dfmerge(dfjetgen, dfjetsubgen,
-                                        how='inner', on=self.v_jetsubmatch_mc)
-                # Workaround for HF tree creator filling:
-                # McCollisionId -> CollisionId
-                # McParticleId -> HfCand2ProngId
-                dfgen = dfmerge(dfjetgen, dfgen,
-                                 left_on=self.v_jetmatch_mc,
-                                 right_on=self.v_jetmatch_mc_hf)
+        if self.df_merge:
+            for m_spec in self.df_merge:
+                base = m_spec['base']
+                ref = m_spec['ref']
+                out = m_spec.get('out', base)
+                if all([dfuse(self.df_read[base]), dfuse(self.df_read[ref])]):
+                    if (on := m_spec.get('use', None)) is not None:
+                        self.logger.info('merging %s with %s on %s into %s', base, ref, on, out)
+                        if not isinstance(on, list) or 'df' not in on:
+                            on = ['df', on]
+                        dfs[out] = dfmerge(dfs[base], dfs[ref], on=on)
+                    else:
+                        var = self.df_read[ref]['index']
+                        self.logger.info('merging %s with %s on %s into %s', base, ref, var, out)
+                        dfs[out] = dfmerge(dfs[base], dfs[ref],
+                                           left_on=['df', var], right_index=True)
 
-            pickle.dump(dfgen, openfile(self.l_gen[file_index], "wb"), protocol=4)
+        if self.df_write:
+            for df_name, df_spec in self.df_write.items():
+                if dfuse(df_spec):
+                    self.logger.info('writing %s to %s', df_name, df_spec['file'])
+                    src = df_spec.get('source', df_name)
+                    dfo = dfquery(dfs[src], df_spec.get('filter', None))
+                    path = os.path.join(self.d_pkl, self.l_path[file_index], df_spec['file'])
+                    with openfile(path, "wb") as file:
+                        pickle.dump(dfo, file, protocol=4)
 
     def skim(self, file_index):
         try:
