@@ -277,7 +277,7 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
     hnorm.Write()
     #gfraction.Write()
 
-    for hist, value in histos.items():
+    for _, value in histos.items():
         if isinstance(value, TH1):
             value.Write()
         #else:
