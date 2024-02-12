@@ -19,7 +19,7 @@ def compute_crosssection(
     delta_y,
     sigma_mb,
     n_events,
-    br,
+    b_ratio,
     method_frac="Nb",
 ):
     """
@@ -37,7 +37,7 @@ def compute_crosssection(
     - delta_y: Y interval
     - sigma_mb: hadronic cross section for MB
     - n_events: number of events
-    - br: branching ratio of the decay channel
+    - b_ratio: branching ratio of the decay channel
     - method_frac: method used to compute frac needed to propoer compute uncertainty
 
     Returns
@@ -50,7 +50,7 @@ def compute_crosssection(
         rawy
         * frac
         * sigma_mb
-        / (2 * delta_pt * delta_y * eff_times_acc * n_events * br)
+        / (2 * delta_pt * delta_y * eff_times_acc * n_events * b_ratio)
     )
     if method_frac == "Nb":
         crosssec_unc = rawy_unc / (rawy * frac) * crosssection
@@ -167,7 +167,7 @@ def compute_fraction_nb(
     crosssection,
     delta_pt,
     delta_y,
-    br,
+    b_ratio,
     n_events,
     sigma_mb,
     raa_ratio=1.0,
@@ -184,7 +184,7 @@ def compute_fraction_nb(
                 D in pp collisions from theory
     - delta_pt: width of pT interval
     - delta_y: width of Y interval
-    - br: branching ratio for the chosen decay channel
+    - b_ratio: branching ratio for the chosen decay channel
     - n_events: number of events corresponding to the raw yields
     - sigma_mb: MB cross section
     - raa_ratio: list of D nuclear modification factor ratios
@@ -214,7 +214,7 @@ def compute_fraction_nb(
                         * delta_pt
                         * delta_y
                         * acc_eff_other
-                        * br
+                        * b_ratio
                         * n_events
                         * 2
                         / rawy
@@ -231,7 +231,7 @@ def compute_fraction_nb(
                             * delta_pt
                             * delta_y
                             * acc_eff_other
-                            * br
+                            * b_ratio
                             * n_events
                             * 2
                         )
@@ -245,7 +245,7 @@ def compute_fraction_nb(
                             / acc_eff_same
                             / delta_pt
                             / delta_y
-                            / br
+                            / b_ratio
                             / n_events
                         )
                         delta_raa = abs((raa_other - raa_other_old) / raa_other)
@@ -257,7 +257,7 @@ def compute_fraction_nb(
                         * delta_pt
                         * delta_y
                         * acc_eff_other
-                        * br
+                        * b_ratio
                         * n_events
                         * 2
                         / rawy
@@ -275,7 +275,7 @@ def compute_fraction_nb(
                             * delta_pt
                             * delta_y
                             * acc_eff_other
-                            * br
+                            * b_ratio
                             * n_events
                             * 2
                         )
@@ -289,7 +289,7 @@ def compute_fraction_nb(
                             / acc_eff_same
                             / delta_pt
                             / delta_y
-                            / br
+                            / b_ratio
                             / n_events
                         )
                         delta_raa = abs((raa_other - raa_other_old) / raa_other)

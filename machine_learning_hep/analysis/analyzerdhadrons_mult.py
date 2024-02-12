@@ -36,6 +36,7 @@ from machine_learning_hep.utilities import folding, get_bins, make_latex_table, 
 from machine_learning_hep.root import save_root_object
 from machine_learning_hep.utilities_plot import plot_histograms
 from machine_learning_hep.analysis.analyzer import Analyzer
+from machine_learning_hep.hf_pt_spectrum import hf_pt_spectrum
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
 class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
     species = "analyzer"
@@ -510,6 +511,10 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             self.logger.warning("Number of events %d for mult bin %d" % (n_sel, imult))
             self.logger.warning("Number of zvtx-corr events %d for mult bin %d" % (norm, imult))
             filecrossmb = None
+
+            fileoutcross = "%s/finalcross%s%s.root" % \
+            (self.d_resultsallpdata, self.case, self.typean)
+
             if self.p_fprompt_from_mb is True and self.p_fd_method == "Nb":
                 if self.p_corrmb_typean is not None:
                     pathtoreplace = os.path.basename(os.path.normpath(self.d_resultsallpdata))

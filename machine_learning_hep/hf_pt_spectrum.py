@@ -1,3 +1,17 @@
+#############################################################################
+##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
+##                 Author: fabrizio.grosa@cern.ch                          ##
+## This program is free software: you can redistribute it and/or modify it ##
+##  under the terms of the GNU General Public License as published by the  ##
+## Free Software Foundation, either version 3 of the License, or (at your  ##
+## option) any later version. This program is distributed in the hope that ##
+##  it will be useful, but WITHOUT ANY WARRANTY; without even the implied  ##
+##     warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.    ##
+##           See the GNU General Public License for more details.          ##
+##    You should have received a copy of the GNU General Public License    ##
+##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
+#############################################################################
+
 #!/usr/bin/env python3
 
 """
@@ -10,7 +24,7 @@ author: Fabrizio Grosa <fabrizio.grosa@cern.ch>, CERN
 import sys
 import numpy as np  # pylint: disable=import-error
 
-from hf_analysis_utils import (
+from hf_analysis_utils import ( # pylint: disable=import-error
     compute_crosssection,
     compute_fraction_fc,
     compute_fraction_nb,
@@ -27,10 +41,10 @@ from ROOT import (  # pylint: disable=import-error,no-name-in-module
     gROOT,
     kAzure,
     kFullCircle,
-)   
+)
 
-def hf_pt_spectrum(channel,
-                   br,
+def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument, too-many-statements, too-many-branches
+                   b_ratio,
                    inputfonllpred,
                    frac_method,
                    eff_filename,
@@ -39,7 +53,7 @@ def hf_pt_spectrum(channel,
                    yield_filename,
                    yield_histoname,
                    norm,
-                   sigmaMB,
+                   sigmamb,
                    output_file):
 
     # final plots style settings
@@ -206,7 +220,7 @@ def hf_pt_spectrum(channel,
                 1.0,
                 1.0,
                 norm,
-                sigmaMB,
+                sigmamb,
             )
         elif frac_method == "fc":
             crosssec_prompt_fonll = [
@@ -231,14 +245,14 @@ def hf_pt_spectrum(channel,
             eff_times_acc_prompt,
             ptmax - ptmin,
             1.0,
-            sigmaMB,
+            sigmamb,
             norm,
             1.0,
             frac_method,
         )
 
-        hptspectrum.SetBinContent(i_pt + 1, crosssec / br)
-        hptspectrum.SetBinError(i_pt + 1, crosssec_unc / br)
+        hptspectrum.SetBinContent(i_pt + 1, crosssec / b_ratio)
+        hptspectrum.SetBinError(i_pt + 1, crosssec_unc / b_ratio)
         hptspectrum_wo_br.SetBinContent(i_pt + 1, crosssec)
         hptspectrum_wo_br.SetBinError(i_pt + 1, crosssec_unc)
         hnorm.SetBinContent(1, norm)
@@ -265,13 +279,11 @@ def hf_pt_spectrum(channel,
     hnorm.Write()
     #gfraction.Write()
 
-    for hist in histos:
-        if isinstance(histos[hist], TH1):
+    for hist, value in histos.items():
+        if isinstance(value, TH1):
             histos[hist].Write()
         #else:
         #    for flav in histos[hist]:
         #        for pred in histos[hist][flav]:
         #            histos[hist][flav][pred].Write()
     output_file.Close()
-
-    return

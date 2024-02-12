@@ -411,7 +411,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                                            left_on=['df', var], right_index=True)
 
         if {'fNProngsContributorsPV','fMultZeqNTracksPV'}.issubset(dfs['reco'].columns):
-            dfs['reco']['fMultZeqNTracksPV_sub'] = dfs['reco']['fMultZeqNTracksPV']-dfs['reco']['fNProngsContributorsPV']
+            dfs['reco']['fMultZeqNTracksPV_sub'] = \
+                dfs['reco']['fMultZeqNTracksPV'] - dfs['reco']['fNProngsContributorsPV']
 
         if self.df_write:
             for df_name, df_spec in self.df_write.items():
