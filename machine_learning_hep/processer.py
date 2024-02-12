@@ -51,7 +51,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
                  d_results, typean, runlisttrigger, d_mcreweights):
         #self.logger = get_logger()
         self.nprongs = datap["nprongs"]
-        self.prongformultsub = datap["prongformultsub"]
         self.doml = datap["doml"]
         self.case = case
         self.typean = typean
@@ -359,8 +358,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 if 'filter' in df_spec:
                     dfquery(dfs[df_name], df_spec['filter'], inplace=True)
 
-        if 'fMultZeqNTracksPV' in self.v_evt:
-            dfreco['fMultZeqNTracksPV_sub'] = dfreco['fMultZeqNTracksPV']-dfreco['fNProngsContributorsPV']
+        if {'fNProngsContributorsPV','fMultZeqNTracksPV'}.issubset(dfs['reco'].columns):
+            dfs['reco']['fMultZeqNTracksPV_sub'] = dfs['reco']['fMultZeqNTracksPV']-dfs['reco']['fNProngsContributorsPV']
 
         # extra logic should eventually come from DB
         if self.s_apply_yptacccut is True:

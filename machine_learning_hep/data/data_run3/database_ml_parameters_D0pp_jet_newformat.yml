@@ -14,7 +14,6 @@
 
 D0pp_jet:
   nprongs: 2
-  prongformultsub: [1,1]
   doml: false
   mass: 1.864
   sel_reco_unp: "fPt > 1."

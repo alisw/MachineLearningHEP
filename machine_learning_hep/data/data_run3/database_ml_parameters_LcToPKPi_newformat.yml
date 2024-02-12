@@ -14,7 +14,6 @@
 
 LcpKpi:
   nprongs: 3
-  prongformultsub: [0,0,0]
   doml: true
   mass: 2.286
   sel_reco_unp: "fPt>0"
@@ -104,8 +103,9 @@ LcpKpi:
         file: AnalysisResultsGen.pkl.lz4
 
   variables:
-    var_all: [fIndexCollisions, fPosX, fPosY, fPosZ, fFlagMc, fCandidateSelFlag, fOriginMcRec, fIsCandidateSwapped, fY, fEta, fPt, fCpa, fCpaXY, fM,
-              fChi2PCA, fDecayLength, fDecayLengthXY, fPtProng0, fPtProng1, fPtProng2, fImpactParameter0, fImpactParameter1, fImpactParameter2,
+    var_all: [fIndexCollisions, fPosX, fPosY, fPosZ, fFlagMc, fCandidateSelFlag, fOriginMcRec, fIsCandidateSwapped, fNProngsContributorsPV,
+              fY, fEta, fPt, fCpa, fCpaXY, fM, fChi2PCA, fDecayLength, fDecayLengthXY,
+              fPtProng0, fPtProng1, fPtProng2, fImpactParameter0, fImpactParameter1, fImpactParameter2,
               fNSigTpcPi0, fNSigTpcPr0, fNSigTpcKa1, fNSigTpcPi2, fNSigTpcPr2,
               fNSigTofPi0, fNSigTofPr0, fNSigTofKa1, fNSigTofPi2, fNSigTofPr2,
               fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
