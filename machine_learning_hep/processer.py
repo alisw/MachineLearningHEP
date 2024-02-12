@@ -358,9 +358,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 if 'filter' in df_spec:
                     dfquery(dfs[df_name], df_spec['filter'], inplace=True)
 
-        if {'fNProngsContributorsPV','fMultZeqNTracksPV'}.issubset(dfs['reco'].columns):
-            dfs['reco']['fMultZeqNTracksPV_sub'] = dfs['reco']['fMultZeqNTracksPV']-dfs['reco']['fNProngsContributorsPV']
-
         # extra logic should eventually come from DB
         if self.s_apply_yptacccut is True:
             isselacc = selectfidacc(dfs['reco'][self.v_var_binning].values,
@@ -412,6 +409,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         self.logger.info('merging %s with %s on %s into %s', base, ref, var, out)
                         dfs[out] = dfmerge(dfs[base], dfs[ref],
                                            left_on=['df', var], right_index=True)
+
+        if {'fNProngsContributorsPV','fMultZeqNTracksPV'}.issubset(dfs['reco'].columns):
+            dfs['reco']['fMultZeqNTracksPV_sub'] = dfs['reco']['fMultZeqNTracksPV']-dfs['reco']['fNProngsContributorsPV']
 
         if self.df_write:
             for df_name, df_spec in self.df_write.items():
