@@ -138,6 +138,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
 
     binminarray = data_param[case]["ml"]["binmin"]
     binmaxarray = data_param[case]["ml"]["binmax"]
+    multbkg = data_param[case]["ml"]["mult_bkg"]
     raahp = data_param[case]["ml"]["opt"]["raahp"]
     mltype = data_param[case]["ml"]["mltype"]
     training_vars = data_param[case]["variables"]["var_training"]
@@ -324,7 +325,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         from machine_learning_hep.optimiser import Optimiser # pylint: disable=import-outside-toplevel
         for index, (binmin, binmax) in enumerate(zip(binminarray, binmaxarray)):
             myopt = Optimiser(data_param[case], case, typean,
-                              data_model[mltype], binmin, binmax,
+                              data_model[mltype], binmin, binmax, multbkg[index],
                               raahp[index], training_vars[index], index)
             if docorrelation:
                 myopt.do_corr()

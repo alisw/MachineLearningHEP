@@ -50,7 +50,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
     species = "optimiser"
 
     def __init__(self, data_param, case, typean, model_config, binmin,
-                 binmax, raahp, training_var, index):
+                 binmax, multbkg, raahp, training_var, index):
 
         self.logger = get_logger()
 
@@ -122,6 +122,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.p_tags = data_param["ml"]["sampletags"]
         self.p_binmin = binmin
         self.p_binmax = binmax
+        self.p_multbkg = multbkg
         self.p_npca = None
         self.p_mltype = data_param["ml"]["mltype"]
         self.p_nkfolds = data_param["ml"]["nkfolds"]
@@ -287,6 +288,8 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
             for ind, (label, nclass) in enumerate(zip(self.p_class_labels, self.p_nclasses)):
                 self.dfs_input[label] = shuffle(self.dfs_input[label],
                                                 random_state=self.rnd_shuffle)
+                if label == "bkg":
+                    nclass = nclass*self.p_multbkg
                 self.dfs_input[label] = self.dfs_input[label][:nclass]
                 self.dfs_input[label][self.v_class] = ind
             self.df_ml = pd.concat([self.dfs_input[label] for label in self.p_class_labels])
@@ -632,6 +635,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.do_apply()
         self.do_test()
 
+        df_data_sidebands = pickle.load(openfile(self.f_reco_applieddata, "rb"))
         self.logger.info("Doing significance optimization")
         gROOT.SetBatch(True)
         gROOT.ProcessLine("gErrorIgnoreLevel = kWarning;")
@@ -692,7 +696,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         signal_yield = self.p_raahp * signal_yield
         self.logger.debug("Expected signal yield x RAA hp: %.3e", signal_yield)
 
-        df_data_sideband = self.df_data.query(self.s_selbkg)
+        df_data_sideband = df_data_sidebands.query(self.s_selbkg)
         df_data_sideband = shuffle(df_data_sideband, random_state=self.rnd_shuffle)
         df_data_sideband = df_data_sideband.tail(round(len(df_data_sideband) * self.p_bkgfracopt))
         hmass = TH1F('hmass', '', self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])

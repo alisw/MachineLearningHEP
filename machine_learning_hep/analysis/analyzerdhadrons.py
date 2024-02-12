@@ -36,6 +36,7 @@ from machine_learning_hep.utilities import folding, get_bins, make_latex_table, 
 from machine_learning_hep.root import save_root_object
 from machine_learning_hep.utilities_plot import plot_histograms
 from machine_learning_hep.analysis.analyzer import Analyzer
+from machine_learning_hep.hf_pt_spectrum import hf_pt_spectrum
 # pylint: disable=too-few-public-methods, too-many-instance-attributes, too-many-statements, fixme
 
 
@@ -138,7 +139,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
             "include_reflection", False)
 
         self.p_nevents = datap["analysis"][self.typean]["nevents"]
-        self.p_sigmamb = datap["ml"]["opt"]["sigma_MB"]
+        self.p_sigmamb = datap["analysis"]["sigmamb"]
         self.p_br = datap["ml"]["opt"]["BR"]
 
         # Systematics
@@ -147,10 +148,9 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         self.d_mt_results_path = os.path.join(
             self.d_resultsallpdata, "multi_trial")
 
-        self.p_indexhpt = datap["analysis"]["indexhptspectrum"]
+        self.p_anahpt = datap["analysis"]["anahptspectrum"]
         self.p_fd_method = datap["analysis"]["fd_method"]
         self.p_cctype = datap["analysis"]["cctype"]
-        self.p_sigmav0 = datap["analysis"]["sigmav0"]
         self.p_inputfonllpred = datap["analysis"]["inputfonllpred"]
         self.p_triggereff = datap["analysis"][self.typean].get("triggereff", [1])
         self.p_triggereffunc = datap["analysis"][self.typean].get(
@@ -162,18 +162,6 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         self.fitter = None
         self.p_performval = datap["analysis"].get(
             "event_cand_validation", None)
-
-        # HFPtSpectrum
-        self.p_year = 7  # "k2018"
-        self.p_energy = 1  # "k5dot023"
-        self.p_raavsep = 0  # "kPhiIntegrated"
-        self.p_epresolfile = ""
-        self.p_pbpbeloss = False
-        self.p_rapslice = 0  # "kdefault"
-        self.p_partantipart = True
-        self.p_analysis = 0  # "kTopological"
-        self.p_ccestimator = 0  # "kV0M"
-        self.p_useptdepeffunc = True
 
     # pylint: disable=import-outside-toplevel
     def fit(self):
@@ -287,7 +275,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
     # To be added from dhadron_mult
 
     @staticmethod
-    def calculate_norm(hsel, hnovt, hvtxout):
+    def calculate_norm(hsel, hnovt, hvtxout): #TO BE FIXED WITH EV SEL
         if not hsel:
             # pylint: disable=undefined-variable
             self.logger.error("Missing hsel")
@@ -299,11 +287,12 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
             self.logger.error("Missing hvtxout")
 
         n_sel = hsel.Integral()
-        n_novtx = hnovt.Integral()
-        n_vtxout = hvtxout.Integral()
-        norm = -1
-        if n_sel + n_vtxout > 0:
-            norm = (n_sel + n_novtx) - n_novtx * n_vtxout / (n_sel + n_vtxout)
+        #n_novtx = hnovt.Integral()
+        #n_vtxout = hvtxout.Integral()
+        #norm = -1
+        norm = n_sel
+        #if n_sel + n_vtxout > 0:
+        #    norm = (n_sel + n_novtx) - n_novtx * n_vtxout / (n_sel + n_vtxout)
         return norm
 
     def makenormyields(self):  # pylint: disable=import-outside-toplevel, too-many-branches
@@ -328,8 +317,6 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         namehistoefffeed = "eff_fd"
         nameyield = "hyields0"
 
-        gROOT.LoadMacro("HFPtSpectrum.C")
-        from ROOT import HFPtSpectrum
         histonorm = TH1F("histonorm", "histonorm", 1, 0, 1)
 
         filemass = TFile.Open(self.n_filemass)
@@ -353,46 +340,26 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
             hbkg.Write()
             fileoutbkgscaled.Close()
 
-        print(self.p_inputfonllpred)
-
-        HFPtSpectrum(self.p_indexhpt,
-                     self.p_inputfonllpred,
-                     fileouteff,
-                     namehistoeffprompt,
-                     namehistoefffeed,
-                     yield_filename,
-                     nameyield,
-                     fileoutcross,
-                     norm,
-                     self.p_sigmav0 * 1e12,
-                     self.p_fd_method,
-                     self.p_cctype,
-                     self.p_year,
-                     self.p_energy,
-                     self.p_raavsep,
-                     self.p_epresolfile,
-                     self.p_pbpbeloss,
-                     self.p_rapslice,
-                     self.p_partantipart,
-                     self.p_analysis,
-                     self.p_ccestimator,
-                     self.p_useptdepeffunc)
+        hf_pt_spectrum(self.p_anahpt,
+                           self.p_br,
+                           self.p_inputfonllpred,
+                           self.p_fd_method,
+                           fileouteff,
+                           namehistoeffprompt,
+                           namehistoefffeed,
+                           yield_filename,
+                           nameyield,
+                           norm,
+                           self.p_sigmamb,
+                           fileoutcross)
 
         fileoutcrosstot = TFile.Open("%s/finalcross%s%stot.root" %
                                      (self.d_resultsallpdata, self.case, self.typean), "recreate")
 
-        fileoutcross = "%s/finalcross%s%s.root" % \
-            (self.d_resultsallpdata, self.case, self.typean)
         f_fileoutcross = TFile.Open(fileoutcross)
         if f_fileoutcross:
-            hcross = f_fileoutcross.Get("histoSigmaCorr")
+            hcross = f_fileoutcross.Get("hptspectrum")
             fileoutcrosstot.cd()
             hcross.Write()
         histonorm.Write()
         fileoutcrosstot.Close()
-
-    # def plotternormyields(self):
-    # To be added from dhadron_mult
-
-    # def plottervalidation(self):
-    # To be added from dhadron_mult

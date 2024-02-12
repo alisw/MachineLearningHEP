@@ -359,6 +359,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 if 'filter' in df_spec:
                     dfquery(dfs[df_name], df_spec['filter'], inplace=True)
 
+        if 'fMultZeqNTracksPV' in self.v_evt:
+            dfreco['fMultZeqNTracksPV_sub'] = dfreco['fMultZeqNTracksPV']-dfreco['fNProngsContributorsPV']
+
         # extra logic should eventually come from DB
         if self.s_apply_yptacccut is True:
             isselacc = selectfidacc(dfs['reco'][self.v_var_binning].values,

@@ -168,10 +168,10 @@ class Analyzer:
         self.mt_syst_dict = datap["analysis"][self.typean].get("systematics", None)
         self.d_mt_results_path = os.path.join(self.d_resultsallpdata, "multi_trial")
 
-        self.p_indexhpt = datap["analysis"]["indexhptspectrum"]
+        self.p_anahpt = datap["analysis"]["anahptspectrum"]
         self.p_fd_method = datap["analysis"]["fd_method"]
         self.p_cctype = datap["analysis"]["cctype"]
-        self.p_sigmav0 = datap["analysis"]["sigmav0"]
+        self.p_sigmamb = datap["analysis"]["sigmamb"]
         self.p_inputfonllpred = datap["analysis"]["inputfonllpred"]
         self.p_triggereff = datap["analysis"][self.typean].get("triggereff", [1] * 10)
         self.p_triggereffunc = datap["analysis"][self.typean].get("triggereffunc", [0] * 10)
@@ -1040,19 +1040,37 @@ class Analyzer:
 
             if self.p_fprompt_from_mb is None or self.p_fd_method != 2 or \
               (imult == 0 and self.p_corrmb_typean is None):
-                HFPtSpectrum(self.p_indexhpt, self.p_inputfonllpred, \
-                 fileouteff, namehistoeffprompt, namehistoefffeed, yield_filename, nameyield, \
-                 fileoutcrossmult, norm, self.p_sigmav0 * 1e12, self.p_fd_method, self.p_cctype)
+                hf_pt_spectrum(self.p_anahpt,
+                               self.p_br,
+                               self.p_inputfonllpred,
+                               self.p_fd_method,
+                               fileouteff,
+                               namehistoeffprompt,
+                               namehistoefffeed,
+                               yield_filename,
+                               nameyield,
+                               norm,
+                               self.p_sigmamb,
+                               fileoutcross)
             else:
                 if filecrossmb is None:
                     filecrossmb = "%s/finalcross%s%smult0.root" % \
                                    (self.d_resultsallpdata, self.case, self.typean)
                     self.logger.info("Calculating spectra using fPrompt from MB. "\
                                      "Assuming MB is bin 0: %s", filecrossmb)
-                HFPtSpectrum2(filecrossmb, self.p_triggereff[imult], self.p_triggereffunc[imult], \
-                              fileouteff, namehistoeffprompt, namehistoefffeed, \
-                              yield_filename, nameyield, fileoutcrossmult, norm, \
-                              self.p_sigmav0 * 1e12)
+                # TO BE FIXED vs MULTIPLICITY
+                hf_pt_spectrum(self.p_anahpt,
+                               self.p_br,
+                               self.p_inputfonllpred,
+                               self.p_fd_method,
+                               fileouteff,
+                               namehistoeffprompt,
+                               namehistoefffeed,
+                               yield_filename,
+                               nameyield,
+                               norm,
+                               self.p_sigmamb,
+                               fileoutcross)
 
         fileoutcrosstot = TFile.Open("%s/finalcross%s%smulttot.root" % \
             (self.d_resultsallpdata, self.case, self.typean), "recreate")
@@ -1088,7 +1106,7 @@ class Analyzer:
 
         for imult in range(self.p_nbin2):
             hcross = fileoutcrosstot.Get("histoSigmaCorr%d" % imult)
-            hcross.Scale(1./(self.p_sigmav0 * 1e12))
+            hcross.Scale(1./(self.p_sigmamb * 1e12))
             hcross.SetLineColor(imult+1)
             hcross.SetMarkerColor(imult+1)
             hcross.GetXaxis().SetTitle("#it{p}_{T} %s (GeV/#it{c})" % self.p_latexnhadron)

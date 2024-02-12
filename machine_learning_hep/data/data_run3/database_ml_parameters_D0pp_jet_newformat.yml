@@ -273,6 +273,7 @@ D0pp_jet:
 
     nbkg: 500000
     nsig: 500000
+    mult_bkg: [1,1,1,1,1,1]
     equalise_sig_bkg: True
     sampletagforsignal: 1
     sampletagforbkg: 0
@@ -293,7 +294,7 @@ D0pp_jet:
     opt:
       isFONLLfromROOT: true
       filename_fonll: 'data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root' # file with FONLL predictions
-      fonll_particle: 'hD0Kpi'
+      fonll_particle: 'hD0Kpipred'
       fonll_pred: 'max' # edge of the FONLL prediction
       FF: 0.6086 # fragmentation fraction
       sigma_MB: 57.8e-3  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
@@ -330,10 +331,10 @@ D0pp_jet:
     probcutoptimal: [0.92,0.90,0.82,0.80,0.60,0.60,0.60] # sel_skim_binmin bins
 
   analysis:
-    indexhptspectrum: 0 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
-    fd_method: 2 #knone=0, kfc=1, kNb=2
-    cctype: 1 #kpp7
-    sigmav0: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
+    anahptspectrum: "D0Kpi" #D0Kpi, DplusKpipi, DstarD0pi, DsKKpi, LctopKpi, LcK0Sp
+    fd_method: "Nb" #fc, Nb
+    cctype: "pp"
+    sigmamb: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
     inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
     dir_general_plots: /data2/jklein/data/analysis_plots
 

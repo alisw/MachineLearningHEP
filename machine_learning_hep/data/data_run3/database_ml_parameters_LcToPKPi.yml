@@ -48,37 +48,40 @@ LcpKpi:
     ismcrefl: [[1],[1]]
 
   variables:
-    var_all: [fIndexCollisions, fPosX, fPosY, fPosZ, fFlagMc, fCandidateSelFlag, fOriginMcRec, fIsCandidateSwapped, fY, fEta, fPt, fCpa, fCpaXY, fM,
-              fErrorDecayLength, fErrorDecayLengthXY, fChi2PCA, fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised,
-              fImpactParameterNormalised0, fPtProng0, fImpactParameterNormalised1, fPtProng1, fImpactParameterNormalised2, fPtProng2,
-              fImpactParameter0, fImpactParameter1, fImpactParameter2, fErrorImpactParameter0, fErrorImpactParameter1, fErrorImpactParameter2,
-              fNSigTpcPi0, fNSigTpcKa0, fNSigTpcPr0, fNSigTpcPi1, fNSigTpcKa1, fNSigTpcPr1, fNSigTpcPi2, fNSigTpcKa2, fNSigTpcPr2,
-              fNSigTofPi0, fNSigTofKa0, fNSigTofPr0, fNSigTofPi1, fNSigTofKa1, fNSigTofPr1, fNSigTofPi2, fNSigTofKa2, fNSigTofPr2]
+    var_all: [fPosX, fPosY, fPosZ, fFlagMc, fCandidateSelFlag, fOriginMcRec, fIsCandidateSwapped, fNProngsContributorsPV,
+              fY, fEta, fPt, fCpa, fCpaXY, fM, fChi2PCA, fDecayLength, fDecayLengthXY,
+              fPtProng0, fPtProng1, fPtProng2, fImpactParameter0, fImpactParameter1, fImpactParameter2,
+              fNSigTpcPi0, fNSigTpcPr0, fNSigTpcKa1, fNSigTpcPi2, fNSigTpcPr2,
+              fNSigTofPi0, fNSigTofPr0, fNSigTofKa1, fNSigTofPi2, fNSigTofPr2,
+              fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
+    var_idx: [fIndexCollisions]
     var_jet: [fJetPt, fJetEta, fJetPhi]
     var_jetsub: [fZg, fRg, fNsd]
-    var_jet_match: [df, fIndexHfCand2Prong]
-    var_jetsub_match: [df, fIndexD0ChargedJets]
+    var_jet_match: [df, fIndexHfCand3Prong]
+    var_jetsub_match: [df, fIndexLcChargedJets]
     var_evt:
        data: [fIndexCollisions, fIsEventReject, fNumContrib, fMultZeqNTracksPV, fMultZeqFT0A, fMultZeqFT0C, fMultFT0M, fMultZeqFV0A]
        mc:   [fIndexCollisions, fIndexMcCollisions, fIsEventReject, fNumContrib, fMultZeqNTracksPV, fMultZeqFT0A, fMultZeqFT0C, fMultFT0M, fMultZeqFV0A]
     var_gen: [fIndexMcCollisions, fPt, fY, fFlagMc, fOriginMcGen]
     var_evt_match: [df, fIndexCollisions]
     var_evt_match_mc: [df, fIndexMcCollisions]
-    var_training: [[fImpactParameter0, fImpactParameter1, fImpactParameter2, fPtProng0, fPtProng1, fPtProng2, fCpa, fChi2PCA,
-                    fNSigTpcPi0, fNSigTpcPr0, fNSigTpcKa1, fNSigTpcPi2, fNSigTpcPr2, fNSigTofPi0, fNSigTofPr0, fNSigTofKa1, fNSigTofPi2, fNSigTofPr2],
-                   [fImpactParameter0, fImpactParameter1, fImpactParameter2, fPtProng0, fPtProng1, fPtProng2, fCpa, fChi2PCA,
-                    fNSigTpcPi0, fNSigTpcPr0, fNSigTpcKa1, fNSigTpcPi2, fNSigTpcPr2, fNSigTofPi0, fNSigTofPr0, fNSigTofKa1, fNSigTofPi2, fNSigTofPr2],
-                   [fImpactParameter0, fImpactParameter1, fImpactParameter2, fPtProng0, fPtProng1, fPtProng2, fCpa, fChi2PCA,
-                    fNSigTpcPi0, fNSigTpcPr0, fNSigTpcKa1, fNSigTpcPi2, fNSigTpcPr2, fNSigTofPi0, fNSigTofPr0, fNSigTofKa1, fNSigTofPi2, fNSigTofPr2],
-                   [fImpactParameter0, fImpactParameter1, fImpactParameter2, fPtProng0, fPtProng1, fPtProng2, fCpa, fChi2PCA,
-                    fNSigTpcPi0, fNSigTpcPr0, fNSigTpcKa1, fNSigTpcPi2, fNSigTpcPr2, fNSigTofPi0, fNSigTofPr0, fNSigTofKa1, fNSigTofPi2, fNSigTofPr2],
-                   [fImpactParameter0, fImpactParameter1, fImpactParameter2, fPtProng0, fPtProng1, fPtProng2, fCpa, fChi2PCA,
-                    fNSigTpcPi0, fNSigTpcPr0, fNSigTpcKa1, fNSigTpcPi2, fNSigTpcPr2, fNSigTofPi0, fNSigTofPr0, fNSigTofKa1, fNSigTofPi2, fNSigTofPr2],
-                   [fImpactParameter0, fImpactParameter1, fImpactParameter2, fPtProng0, fPtProng1, fPtProng2, fCpa, fChi2PCA,
-                    fNSigTpcPi0, fNSigTpcPr0, fNSigTpcKa1, fNSigTpcPi2, fNSigTpcPr2, fNSigTofPi0, fNSigTofPr0, fNSigTofKa1, fNSigTofPi2, fNSigTofPr2]]
-    var_selected: [fPosX, fPosY, fPosZ, fY, fEta, fPt, fCpa, fCpaXY, fM, fChi2PCA, fDecayLength, fDecayLengthXY,
+    var_training: [[fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY,
+                    fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2],
+                   [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY,
+                    fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2],
+                   [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY,
+                    fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2],
+                   [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY,
+                    fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2],
+                   [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY,
+                    fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2],
+                   [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY,
+                    fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]]
+    var_selected: [fM, fY, fEta, fPt, fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY,
+                   fPtProng0, fPtProng1, fPtProng2, fImpactParameter0, fImpactParameter1, fImpactParameter2,
                    fNSigTpcPi0, fNSigTpcPr0, fNSigTpcKa1, fNSigTpcPi2, fNSigTpcPr2,
-                   fNSigTofPi0, fNSigTofPr0, fNSigTofKa1, fNSigTofPi2, fNSigTofPr2]
+                   fNSigTofPi0, fNSigTofPr0, fNSigTofKa1, fNSigTofPi2, fNSigTofPr2,
+                   fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
     var_boundaries: [fDecayLength, fPt]
     var_correlation:
       - [fDecayLength, fChi2PCA, fCpa]
@@ -116,16 +119,13 @@ LcpKpi:
         fChi2PCA:
           xlim:
             - 0
-            - 2.
+            - 20.
         fNSigTofPr0:
           xlim: [-50, 50]
           xlabel: "n\\sigma_\\mathrm{TOF}(p)0"
         fNSigTofPi0:
           xlim: [-50, 50]
           xlabel: "n\\sigma_\\mathrm{TOF}(\\pi)0"
-        fNSigTofPr1:
-          xlim: [-50, 50]
-          xlabel: "n\\sigma_\\mathrm{TOF}(p)1"
         fNSigTofKa1:
           xlim: [-10, 10]
           xlabel: "n\\sigma_\\mathrm{TOF}(K)1"
@@ -170,7 +170,7 @@ LcpKpi:
         fChi2PCA:
           xlim:
             - 0
-            - 2.
+            - 20.
   files_names:
     namefile_unmerged_tree: AO2D.root
     namefile_reco: AnalysisResultsReco.pkl
@@ -181,7 +181,8 @@ LcpKpi:
     namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl
     namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl
     namefile_mcweights: mcweights.root
-    treeoriginreco: 'O2hfcandlcfull'
+    treeoriginreco: 'O2hfcandlclite'
+    treecollidx:  'O2hfcollidlclite'
     treeorigingen: 'O2hfcandlcfullp'
     treeoriginevt: 'O2hfcandlcfullev'
     treeoutput: "Lctree"
@@ -201,7 +202,7 @@ LcpKpi:
       period: [LHC22o] #list of periods
       select_period: [1]
       prefix_dir: /data2/MLhep/
-      unmerged_tree_dir: [real/LHC22o_pass4_medium/unmerged] #list of periods
+      unmerged_tree_dir: [real/train_158254/alice/cern.ch/user/a/alihyperloop/jobs/0029] #list of periods
       pkl: [LHC22pp/period_LHC22o/pkldata] #list of periods
       pkl_skimmed: [LHC22pp/period_LHC22o/pklskdata] #list of periods
       pkl_skimmed_merge_for_ml: [LHC22pp/period_LHC22o/pklskmldata] #list of periods
@@ -210,7 +211,7 @@ LcpKpi:
       #select_jobs: [[hy_189959], [hy_189000]]
       mcreweights: [../Analyses]
     mc:
-      nprocessesparallel: 50
+      nprocessesparallel: 60
       maxfiles : [-1, -1] #list of periods
       chunksizeunp : [100, 100] #list of periods
       chunksizeskim: [100, 100] #list of periods
@@ -219,8 +220,8 @@ LcpKpi:
       period: [LHC22b1b, LHC22b1a] #list of periods
       select_period: [1, 1]
       prefix_dir: /data2/MLhep/
-      unmerged_tree_dir: [sim/alice/cern.ch/user/a/alihyperloop/jobs/0024,
-                          sim/LHC22b1a_2P3PDstar/unmerged] #list of periods
+      unmerged_tree_dir: [sim/train_159856/alice/cern.ch/user/a/alihyperloop/jobs/0029,
+                          sim/train_159854/alice/cern.ch/user/a/alihyperloop/jobs/0029] #list of periods
       pkl: [LHC22pp_mc/prod_LHC22b1b/pklmc,
             LHC22pp_mc/prod_LHC22b1a/pklmc] #list of periods
       pkl_skimmed: [LHC22pp_mc/prod_LHC22b1b/pklskmc,
@@ -236,8 +237,9 @@ LcpKpi:
       data: null
       mc: null
 
-    nclasses: [500000, 500000]
+    nclasses: [20000, 20000]
     equalise_sig_bkg: True
+    mult_bkg: [30,2,2,3,3,5]
     sampletags: [0, 1]
     sel_bkg: fM < 2.22 or fM > 2.35 # for plotting significance; should agree with bkg selection in sel_ml
     # best to have non-prompt (the smallest class) last, so the plots won't complain about the middle class missing
@@ -258,15 +260,15 @@ LcpKpi:
 
     opt:
       isFONLLfromROOT: true
-      filename_fonll: 'data/fonll/DmesonLcPredictions_502TeV_y05_FFptDepLHCb_BRpythia8.root' # file with FONLL predictions
-      fonll_particle: 'hLcpkpi'
+      filename_fonll: 'data/fonll/DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8_PDG2020.root' # file with FONLL predictions
+      fonll_particle: 'hLcpkpipred'
       fonll_pred: 'max' # edge of the FONLL prediction
-      FF: 0.1281 # fragmentation fraction
+      FF: 0.204 # charm fragmentation fraction
       sigma_MB: 57.8e-3  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
       Taa: 1 # 23260 [b^-1] in 0-10% Pb-Pb, 3917 [b^-1] in 30-50% Pb-Pb, 1 for pp
       BR: 6.23e-2 # branching ratio of the decay Lc -> p K- pi+
       f_prompt: 0.9 # estimated fraction of prompt candidates
-      bkg_data_fraction: 0.1 # fraction of real data used in the estimation
+      bkg_data_fraction: 0.05 # fraction of real data used in the estimation
       num_steps: 111 # number of steps used in efficiency and signif. estimation
       bkg_function: pol2 # fit function for bkg (among TH1 predefined fit functions, e.g. expo, pol1, pol2, ...)
       save_fit: True # save bkg fits with the various cuts on ML output
@@ -293,16 +295,16 @@ LcpKpi:
                      xgboost_classifierLcpKpi_dfselection_fPt_8.0_12.0.sav,
                      xgboost_classifierLcpKpi_dfselection_fPt_12.0_24.0.sav]
     probcutpresel:
-      data: [0.4, 0.4, 0.4, 0.4, 0.4, 0.4] #list of nbins
-      mc: [0.4, 0.4, 0.4, 0.4, 0.4, 0.4] #list of nbins
-    probcutoptimal: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5] #list of nbins
+      data: [0.5, 0.5, 0.5, 0.5, 0.3, 0.3] #list of nbins
+      mc: [0.5, 0.5, 0.5, 0.5, 0.3, 0.3] #list of nbins
+    probcutoptimal: [0.7, 0.85, 0.7, 0.7, 0.6, 0.4] #list of nbins
 
   analysis:
-    indexhptspectrum: -1 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
-    fd_method: -1 #knone=0, kfc=1, kNb=2
-    cctype: -1 #kpp7
-    sigmav0: -1
-    inputfonllpred: null
+    anahptspectrum: "LctopKpi" # D0Kpi, DplusKpipi, DstarD0pi, DsKKpi, LctopKpi, LcK0Sp
+    fd_method: "Nb" # fc, Nb
+    cctype: "pp"
+    sigmamb: 57.8e+9 # 50.87e+9 pp5TeV, 57.8e+9 pp13TeV
+    inputfonllpred: data/fonll/DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8_PDG2020.root
     dir_general_plots: analysis_plots
 
     Run3analysis:
@@ -314,7 +316,7 @@ LcpKpi:
       sel_binmax2: [2,4,6,8,12,24] #list of nbins
       var_binning2: null
       triggerbit: ''
-      use_cuts: True
+      use_cuts: False
       cuts:
         - "fDecayLength > 0.02"
         - "fDecayLength > 0.02"
@@ -346,7 +348,7 @@ LcpKpi:
                   LHC22pp_mc/Results/prod_LHC22b1a/resultsmc] #list of periods
         resultsallp: LHC22pp_mc/Results/prod_LHC22/resultsmctot
 
-      mass_fit_lim: [2.14, 2.436] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [2.10, 2.476] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
@@ -354,9 +356,9 @@ LcpKpi:
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.286
-      massmin: [2.16, 2.16, 2.16, 2.14, 2.14, 2.14]
-      massmax: [2.416, 2.416, 2.416, 2.436, 2.436, 2.436]
-      rebin: [6,6,7,8,8,8]
+      massmin: [2.18, 2.18, 2.16, 2.14, 2.13, 2.10]
+      massmax: [2.38, 2.40, 2.42, 2.436, 2.446, 2.476]
+      rebin: [5,5,6,7,8,14]
       fix_mean: [false,false,false,false,false,false]
       fix_sigma: [false,false,false,false,false,false]
       # Fix mean and/or sigma
