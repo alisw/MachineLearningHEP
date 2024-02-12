@@ -12,8 +12,6 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-#!/usr/bin/env python3
-
 """
 file: hf_pt_spectrum.py
 brief: script for computation of pT-differential yields (cross sections)
@@ -43,7 +41,7 @@ from ROOT import (  # pylint: disable=import-error,no-name-in-module
     kFullCircle,
 )
 
-def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument, too-many-statements, too-many-branches
+def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-arguments, too-many-statements, too-many-branches
                    b_ratio,
                    inputfonllpred,
                    frac_method,
@@ -281,7 +279,7 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
 
     for hist, value in histos.items():
         if isinstance(value, TH1):
-            histos[hist].Write()
+            value.Write()
         #else:
         #    for flav in histos[hist]:
         #        for pred in histos[hist][flav]:
