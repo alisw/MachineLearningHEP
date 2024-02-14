@@ -275,8 +275,8 @@ LcpKpi:
       prefix_dir: /data2/MLhep/
       unmerged_tree_dir: [sim/train_159856/alice/cern.ch/user/a/alihyperloop/jobs/0029,
                           sim/train_159854/alice/cern.ch/user/a/alihyperloop/jobs/0029] #list of periods
-      pkl: [LHC22pp_mc_Jochen/prod_LHC22b1b/pklmc,
-            LHC22pp_mc_Jochen/prod_LHC22b1a/pklmc] #list of periods
+      pkl: [LHC22pp_mc/prod_LHC22b1b/pklmc,
+            LHC22pp_mc/prod_LHC22b1a/pklmc] #list of periods
       pkl_skimmed: [LHC22pp_mc/prod_LHC22b1b/pklskmc,
                     LHC22pp_mc/prod_LHC22b1a/pklskmc] #list of periods
       pkl_skimmed_merge_for_ml: [LHC22pp_mc/prod_LHC22b1b/pklskmlmc,
@@ -382,7 +382,7 @@ LcpKpi:
       sel_an_binmin: [1,2,4,6,8,12]
       sel_an_binmax: [2,4,6,8,12,24]
       binning_matching: [0,1,2,3,4,5]
-      presel_gen_eff: "abs(fY) < 0.8"
+      presel_gen_eff: "abs(fY) < 0.5"
       evtsel: null
       triggersel:
         data: null

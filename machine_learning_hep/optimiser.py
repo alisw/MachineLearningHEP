@@ -288,7 +288,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
             for ind, (label, nclass) in enumerate(zip(self.p_class_labels, self.p_nclasses)):
                 self.dfs_input[label] = shuffle(self.dfs_input[label],
                                                 random_state=self.rnd_shuffle)
-                if label == "bkg":
+                if label == "bkg" and self.p_equalise_sig_bkg:
                     nclass = nclass*self.p_multbkg
                 self.dfs_input[label] = self.dfs_input[label][:nclass]
                 self.dfs_input[label][self.v_class] = ind
