@@ -16,7 +16,8 @@
 file: hf_analysis_utils.py
 brief: script with miscellanea utils methods for the HF analyses
 author: Fabrizio Grosa <fabrizio.grosa@cern.ch>, CERN
-Macro committed and manteined in O2Physics: https://github.com/AliceO2Group/O2Physics/tree/master/PWGHF/D2H/Macros
+Macro committed and manteined in O2Physics: 
+https://github.com/AliceO2Group/O2Physics/tree/master/PWGHF/D2H/Macros
 """
 
 import numpy as np
