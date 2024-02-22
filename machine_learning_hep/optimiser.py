@@ -27,6 +27,9 @@ import matplotlib as mpl
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 from sklearn.preprocessing import label_binarize
+import onnx
+from onnxmltools.convert import convert_xgboost
+from onnxconverter_common.data_types import FloatTensorType
 from ROOT import TFile, TCanvas, TH1F, TF1, gROOT  # pylint: disable=import-error,no-name-in-module
 from machine_learning_hep.utilities import seldf_singlevar, split_df_classes, createstringselection
 from machine_learning_hep.utilities import openfile, selectdfquery, mask_df
@@ -404,8 +407,15 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
 
         self.logger.info("Training")
         t0 = time.time()
-        self.p_trainedmod = fit(self.p_classname, self.p_class, self.df_xtrain, self.df_ytrain)
+        self.p_trainedmod = fit(self.p_classname, self.p_class, self.df_xtrain.to_numpy(), self.df_ytrain.to_numpy())
         savemodels(self.p_classname, self.p_trainedmod, self.dirmlout, self.s_suffix)
+
+        # Converting and saving models in onnx format
+        initial_type = [('input', FloatTensorType([None, len(self.df_xtrain.columns)]))]
+        onnx_model = convert_xgboost(self.p_trainedmod[0], initial_types = initial_type)
+        onnx_output = os.path.join(self.dirmlout, self.s_suffix)
+        onnx.save_model(onnx_model, onnx_output + ".onnx")
+
         self.logger.info("Training over")
         self.logger.info("Time elapsed = %.3f", time.time() - t0)
 

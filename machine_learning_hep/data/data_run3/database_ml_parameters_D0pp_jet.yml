@@ -14,7 +14,6 @@
 
 D0pp_jet:
   nprongs: 2
-  prongformultsub: [1,1]
   doml: false
   mass: 1.864
   sel_reco_unp: "fPt > 1."
@@ -37,7 +36,8 @@ D0pp_jet:
   var_cand: fCandidateSelFlag
   # var_swap: fIsCandidateSwapped
   bitmap_sel:
-    var_name: fFlagMc
+    var_name: fFlagMcMatchRec
+    var_name_gen: fFlagMcMatchGen
     var_name_origgen: fOriginMcGen
     var_name_origrec: fOriginMcRec
     var_isstd: isstd
@@ -53,32 +53,130 @@ D0pp_jet:
     ismcbkg: [[],[1]]
     ismcrefl: [[1],[1]] # probably missing from tree creator
 
+  dfs:
+    read:
+      evtorig:
+        level: all
+        index: fIndexD0CollBases
+        trees:
+          O2hfd0collbase: [fNumContrib, fIsEventReject, fRunNumber]
+
+      reco:
+        level: all
+        index: fIndexHfD0Bases_0
+        trees:
+          O2hfd0base: [fIndexHfD0CollBases, fPt, fEta, fPhi, fM]
+          O2hfd0mc: [fFlagMcMatchRec, fOriginMcRec]
+          O2hfd0par: [fCpa, fCpaXY, fChi2PCA,
+                      fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised,
+                      fImpactParameter0, fImpactParameter1,
+                      fImpactParameterNormalised0, fImpactParameterNormalised1,
+                      fPtProng0, fPtProng1,
+                      fNSigTpcPi0, fNSigTpcKa0, fNSigTpcPi1, fNSigTpcKa1,
+                      fNSigTofPi0, fNSigTofKa0, fNSigTofPi1, fNSigTofKa1]
+          O2hfd0pare: [fErrorDecayLength, fErrorDecayLengthXY,
+                      fErrorImpactParameter0, fErrorImpactParameter1]
+          O2hfd0sel: [fCandidateSelFlag]
+        extra:
+          fY: 0.
+        filter: "fPt > 1."
+      gen:
+        level: gen
+        index: fIndexHfD0PBases_0
+        trees:
+          O2hfd0pbase: [fPt, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
+
+      collgen:
+        level: gen
+        index: fIndexD0ChargedMCParticleLevelJetCollisionOutputs
+        trees:
+          O2d0mcpco: [fPosZ, fCentrality, fEventSel]
+      jetgen:
+        level: gen
+        index: fIndexD0ChargedMCParticleLevelJetOutputs
+        trees:
+          O2d0mcpo: [fIndexD0ChargedMCParticleLevelJetCollisionOutputs, fIndexHfD0PBases_0,
+                    fJetPt, fJetPhi, fJetEta, fJetNConstituents]
+      jetsubgen:
+        level: gen
+        index: fIndexD0ChargedMCParticleLevelJetSubstructures
+        trees:
+          # O2d0mcpsso: [fIndexD0ChargedMCParticleLevelJetOutputs, fZg, fRg, fNsd]
+          O2d0mcpsso: [fIndexD0ChargedMCParticleLevelJetOutputs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta]
+
+      colldet:
+        level: det
+        index: fIndexD0ChargedMCDetectorLevelJetCollisionOutputs
+        trees:
+          O2d0mcdco: [fPosZ, fCentrality, fEventSel]
+      jetdet:
+        level: det
+        index: fIndexD0ChargedMCDetectorLevelJetOutputs
+        trees:
+          O2d0mcdo: [fIndexD0ChargedMCDetectorLevelJetCollisionOutputs, fIndexHfD0Bases_0,
+                    fJetPt, fJetPhi, fJetEta, fJetNConstituents]
+      jetsubdet:
+        level: det
+        index: fIndexD0ChargedMCDetectorLevelJetSubstructures
+        trees:
+          # O2d0mcdsso: [fIndexD0ChargedMCDetectorLevelJetOutputs, fZg, fRg, fNsd]
+          O2d0mcdsso: [fIndexD0ChargedMCDetectorLevelJetOutputs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta]
+
+      colldata:
+        level: data
+        index: fIndexD0ChargedJetCollisionOutputs
+        trees:
+          O2d0mcdco: [fPosZ, fCentrality, fEventSel]
+      jetdata:
+        level: data
+        index: fIndexD0JetOutputs
+        trees:
+          O2d0mcdo: [fIndexD0ChargedJetCollisionOutputs, fIndexHfD0Bases_0,
+                    fJetPt, fJetPhi, fJetEta, fJetNConstituents]
+      jetsubdata:
+        level: data
+        index: fIndexD0JetSubstructures
+        trees:
+          O2d0mcdsso: [fIndexD0ChargedJetOutputs, fZg, fRg, fNsd]
+
+    merge:
+      - {base: jetgen, ref: collgen}
+      - {base: jetgen, ref: gen}
+      - {base: jetsubgen, ref: jetgen}
+
+      - {base: jetdet, ref: colldet}
+      - {base: jetdet, ref: reco}
+      - {base: jetsubdet, ref: jetdet}
+
+      - {base: jetdata, ref: colldata}
+      - {base: jetdata, ref: reco}
+      - {base: jetsubdata, ref: jetdata}
+
+#      - {base: gen, ref: evtorig}
+
+    write:
+      jetsubgen:
+        level: gen
+        file: AnalysisResultsGen.pkl.lz4
+      jetsubdet:
+        level: det
+        file: AnalysisResultsReco.pkl.lz4
+      jetsubdata:
+        level: data
+        file: AnalysisResultsReco.pkl.lz4
+      evtorig:
+        level: all
+        file: AnalysisResultsEvtOrig.pkl.lz4
+      evt:
+        level: all
+        source: evtorig
+        file: AnalysisResultsEvt.pkl.lz4
+        filter: "fIsEventReject == 0"
+      gen:
+        level: mc
+        file: AnalysisResultsGen.pkl.lz4
+
   variables:
-    var_all: [fIndexCollisions, fFlagMc, fCandidateSelFlag, fOriginMcRec, fY, fEta, fPt, fCpa, fCpaXY, fM,
-              fErrorDecayLength, fErrorDecayLengthXY, fChi2PCA, fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised,
-              fImpactParameterNormalised0, fPtProng0, fImpactParameterNormalised1, fPtProng1,
-              fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1,
-              fNSigTpcPi0, fNSigTpcKa0, fNSigTpcPi1, fNSigTpcKa1,
-              fNSigTofPi0, fNSigTofKa0, fNSigTofPi1, fNSigTofKa1, fIndexHfCand2Prong_0]
-    var_jet_data: [fIndexCollisions, fIndexD0ChargedJets, fIndexHfCand2Prong_0, fJetPt, fJetEta, fJetPhi, fJetNConstituents]
-    var_jet_det: [fIndexCollisions, fIndexD0ChargedMCDetectorLevelJets, fIndexHfCand2Prong_0, fJetPt, fJetEta, fJetPhi, fJetNConstituents]
-    var_jet_gen: [fIndexMcCollisions, fIndexD0ChargedMCParticleLevelJets, fIndexMcParticles_0, fJetPt, fJetEta, fJetPhi, fJetNConstituents]
-    var_jetsub_data: [fIndexD0ChargedJets, fZg, fRg, fNsd]
-    var_jetsub_det: [fIndexD0ChargedMCDetectorLevelJets, fZg, fRg, fNsd]
-    var_jetsub_gen: [fIndexD0ChargedMCParticleLevelJets, fZg, fRg, fNsd]
-    var_jet_match_data: [df, fIndexCollisions, fIndexHfCand2Prong_0]
-    var_jet_match_det: [df, fIndexCollisions, fIndexHfCand2Prong_0]
-    var_jet_match_gen: [df, fIndexMcCollisions, fIndexMcParticles_0]
-    var_jet_match_gen_hf: [df, fIndexCollisions, fIndexHfCand2Prong_0]
-    var_jetsub_match_data: [df, fIndexD0ChargedJets]
-    var_jetsub_match_det: [df, fIndexD0ChargedMCDetectorLevelJets]
-    var_jetsub_match_gen: [df, fIndexD0ChargedMCParticleLevelJets]
-    var_evt:
-      data: [fIndexCollisions, fPosX, fPosY, fPosZ, fIsEventReject]
-      mc:   [fIndexCollisions, fPosX, fPosY, fPosZ, fIsEventReject]
-    var_gen: [fIndexCollisions, fPt, fY, fFlagMc, fOriginMcGen, fIndexHfCand2Prong_0]
-    var_evt_match: [df, fIndexCollisions]
-    var_evt_match_mc: [df, fIndexCollisions]
     var_training: [[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1]] 
       #TODO: add new variables for dca, max_norm_d0d0exp
       # sel_skim_binmin bins
@@ -86,7 +184,7 @@ D0pp_jet:
     var_correlation:
       - [fCosThetaStar] # TODO: update
       - [fPtProng0]
-    var_class: class
+    var_signal: signal
     var_inv_mass: fM
     var_y: fY
     var_evt_sel: fIsEventReject
@@ -129,17 +227,6 @@ D0pp_jet:
     respfilename: "resphisto.root"
     crossfilename: "cross_section_tot.root"
 
-    treeoriginreco: 'O2hfcandd0full'
-    treeorigingen: 'O2hfcandd0fullp'
-    treeoriginevt: 'O2hfcandd0fullev'
-    treejetdata: 'O2d0o'
-    treejetdet: 'O2d0mcdo'
-    treejetgen: 'O2d0mcpo'
-    treejetsubdata: 'O2d0sso'
-    treejetsubdet: 'O2d0mcdsso'
-    treejetsubgen: 'O2d0mcpsso'
-    treeoutput: "D0tree"
-
   multi:
     data:
       nprocessesparallel: 20
@@ -165,10 +252,11 @@ D0pp_jet:
       chunksizeskim: [1000] #list of periods
       fracmerge: [1.0] #list of periods
       seedmerge: [12] #list of periods
-      period: [LHC22b1b] #list of periods
+      period: [mctest_nima] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/sim/train_131049/
-      unmerged_tree_dir: [alice/cern.ch/user/a/alihyperloop/jobs/0024]
+      # /data2/MLhep/sim/test_jets/2024-xx-xx/local/AOD/001/AO2D.root
+      prefix_dir: /data2/MLhep/sim/test_jets/
+      unmerged_tree_dir: ['2024-01-25']
       pkl: [d0jet/pkl] #list of periods
       pkl_skimmed: [d0jet/pklsk] #list of periods
       pkl_skimmed_merge_for_ml: [d0jet/pklskml] #list of periods
@@ -184,16 +272,15 @@ D0pp_jet:
 
     nbkg: 500000
     nsig: 500000
+    mult_bkg: [1,1,1,1,1,1]
     equalise_sig_bkg: True
-    sampletags: [0, 1]
-    sel_bkg: fM < 1.8 or fM > 1.92 # for plotting significance; should agree with bkg selection in sel_ml
-    # best to have non-prompt (the smallest class) last, so the plots won't complain about the middle class missing
-    sel_ml: [fM < 1.8 or fM > 1.92, ismcsignal == 1 and ismcprompt == 1]
-    class_labels: [bkg, prompt]
+    sampletagforsignal: 1
+    sampletagforbkg: 0
+    sel_sigml: ismcprompt == 1
+    sel_bkgml: fM<1.8 or fM>1.92
     nkfolds: 5
     rnd_shuffle: 12
     rnd_splt: 12
-    rnd_all: 12 # Set to None for pure randomness
     test_frac: 0.2
     binmin: [1,2,4,6,8,12,24] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
     binmax:   [2,4,6,8,12,24,48] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
@@ -206,7 +293,7 @@ D0pp_jet:
     opt:
       isFONLLfromROOT: true
       filename_fonll: 'data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root' # file with FONLL predictions
-      fonll_particle: 'hD0Kpi'
+      fonll_particle: 'hD0Kpipred'
       fonll_pred: 'max' # edge of the FONLL prediction
       FF: 0.6086 # fragmentation fraction
       sigma_MB: 57.8e-3  # Minimum Bias cross section (pp) 50.87e-3 [b], 1 for Pb-Pb
@@ -243,10 +330,10 @@ D0pp_jet:
     probcutoptimal: [0.92,0.90,0.82,0.80,0.60,0.60,0.60] # sel_skim_binmin bins
 
   analysis:
-    indexhptspectrum: 0 #kD0Kpi=0, kDplusKpipi=1, kDstarD0pi=2, kDsKKpi=3, kLctopKpi=4, kLcK0Sp=5
-    fd_method: 2 #knone=0, kfc=1, kNb=2
-    cctype: 1 #kpp7
-    sigmav0: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
+    anahptspectrum: "D0Kpi" #D0Kpi, DplusKpipi, DstarD0pi, DsKKpi, LctopKpi, LcK0Sp
+    fd_method: "Nb" #fc, Nb
+    cctype: "pp"
+    sigmamb: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
     inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
     dir_general_plots: /data2/jklein/data/analysis_plots
 

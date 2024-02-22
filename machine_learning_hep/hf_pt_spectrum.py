@@ -16,7 +16,9 @@
 file: hf_pt_spectrum.py
 brief: script for computation of pT-differential yields (cross sections)
 usage: python3 HfPtSpectrum.py CONFIG
-author: Fabrizio Grosa <fabrizio.grosa@cern.ch>, CERN
+authors: Fabrizio Grosa <fabrizio.grosa@cern.ch>, CERN
+         Luigi Dello Stritto <luigi.dello.stritto@cern.ch>, CERN
+Macro committed and manteined in O2Physics: https://github.com/AliceO2Group/O2Physics/tree/master/PWGHF/D2H/Macros
 """
 
 import sys
