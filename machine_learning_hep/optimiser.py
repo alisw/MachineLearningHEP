@@ -407,7 +407,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
 
         self.logger.info("Training")
         t0 = time.time()
-        self.p_trainedmod = fit(self.p_classname, self.p_class, 
+        self.p_trainedmod = fit(self.p_classname, self.p_class,
                                 self.df_xtrain.to_numpy(), self.df_ytrain.to_numpy())
         savemodels(self.p_classname, self.p_trainedmod, self.dirmlout, self.s_suffix)
 
