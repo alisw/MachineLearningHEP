@@ -456,8 +456,8 @@ LcpKpi:
       event_cand_validation: True
       sel_binmin2: [0, 30, 0.1, 0] #list of var2 splittng nbins
       sel_binmax2: [100, 100, 30, 0.1]
-      var_binning2: fCentFT0C
-      var_binning2_gen: fCentFT0C
+      var_binning2: fCentFT0M
+      var_binning2_gen: fCentFT0M
       mc_cut_on_binning2: False
       nbinshisto: 100
       minvaluehisto: -0.0005
