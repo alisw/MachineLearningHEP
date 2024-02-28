@@ -47,6 +47,9 @@ networkx==3.0
 numba==0.56.4
 numpy==1.23.5
 oauthlib==3.2.2
+onnx==1.12.0
+onnxconverter-common==1.13.0
+onnxmltools==1.12.0
 opt-einsum==3.3.0
 packaging==23.0
 pandas==1.5.3

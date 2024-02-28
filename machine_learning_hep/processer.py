@@ -51,7 +51,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
                  d_results, typean, runlisttrigger, d_mcreweights):
         #self.logger = get_logger()
         self.nprongs = datap["nprongs"]
-        self.prongformultsub = datap["prongformultsub"]
         self.doml = datap["doml"]
         self.case = case
         self.typean = typean
@@ -410,6 +409,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         self.logger.info('merging %s with %s on %s into %s', base, ref, var, out)
                         dfs[out] = dfmerge(dfs[base], dfs[ref],
                                            left_on=['df', var], right_index=True)
+
+        if {'fNProngsContributorsPV','fMultZeqNTracksPV'}.issubset(dfs['reco'].columns):
+            dfs['reco']['fMultZeqNTracksPV_sub'] = \
+                dfs['reco']['fMultZeqNTracksPV'] - dfs['reco']['fNProngsContributorsPV']
 
         if self.df_write:
             for df_name, df_spec in self.df_write.items():
