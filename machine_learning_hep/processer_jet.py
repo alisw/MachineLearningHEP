@@ -70,3 +70,15 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
                     self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 fill_hist(h_invmass_all, df.fM)
                 h_invmass_all.Write()
+
+                h_candpt_all = TH1F(
+                    f'hcandpt_{ipt}', "",
+                    self.p_num_bins, 0., 50.)
+                fill_hist(h_candpt_all, df.fPt)
+                h_candpt_all.Write()
+
+                h_jetpt_all = TH1F(
+                    f'hjetpt_{ipt}', "",
+                    self.p_num_bins, 0., 50.)
+                fill_hist(h_jetpt_all, df.fJetPt)
+                h_jetpt_all.Write()
