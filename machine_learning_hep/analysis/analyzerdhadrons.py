@@ -273,13 +273,13 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
 
 
     @staticmethod
-    def calculate_norm(self, hevents, hselevents): #TO BE FIXED WITH EV SEL
+    def calculate_norm(logger, hevents, hselevents): #TO BE FIXED WITH EV SEL
         if not hevents:
             # pylint: disable=undefined-variable
-            self.logger.error("Missing hevents")
+            logger.error("Missing hevents")
         if not hselevents:
             # pylint: disable=undefined-variable
-            self.logger.error("Missing hselevents")
+            logger.error("Missing hselevents")
 
         n_events = hevents.Integral()
         n_selevents = hselevents.Integral()
@@ -313,7 +313,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         filemass = TFile.Open(self.n_filemass)
         hevents = filemass.Get("all_events")
         hselevents = filemass.Get("sel_events")
-        norm, selnorm = self.calculate_norm(self, hevents, hselevents)
+        norm, selnorm = self.calculate_norm(self.logger, hevents, hselevents)
         histonorm.SetBinContent(1, selnorm)
         self.logger.warning("Number of events %d", norm)
         self.logger.warning("Number of events after event selection %d", selnorm)
