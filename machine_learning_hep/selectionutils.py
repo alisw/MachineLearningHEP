@@ -137,24 +137,6 @@ def selectcand_lincut(array_cut_var, minvalue, maxvalue, isabs):
             array_is_sel.append(False)
     return array_is_sel
 
-def getnormforselevt(df_evt):
-    #accepted events
-    df_acc_ev = df_evt.query('fIsEventReject==0')
-    #rejected events because of trigger / physics selection / centrality
-    df_to_keep = filter_bit_df(df_evt, 'fIsEventReject', [[], [0, 5, 6, 10, 11]])
-
-    #events with reco vtx after previous selection
-    df_bit_recovtx = filter_bit_df(df_to_keep, 'fIsEventReject', [[], [1, 2, 7, 12]])
-    #events with reco zvtx > 10 cm after previous selection
-    df_bit_zvtx_gr10 = filter_bit_df(df_to_keep, 'fIsEventReject', [[3], [1, 2, 7, 12]])
-
-    n_no_reco_vtx = len(df_to_keep.index)-len(df_bit_recovtx.index)
-    n_zvtx_gr10 = len(df_bit_zvtx_gr10.index)
-    n_ev_sel = len(df_acc_ev.index)
-
-    return (n_ev_sel+n_no_reco_vtx) - n_no_reco_vtx*n_zvtx_gr10 / (n_ev_sel+n_zvtx_gr10)
-
-
 def gethistonormforselevt(df_evt, dfevtevtsel, label):
     hSelMult = TH1F('sel_' + label, 'sel_' + label, 1, -0.5, 0.5)
     hNoVtxMult = TH1F('novtx_' + label, 'novtx_' + label, 1, -0.5, 0.5)
@@ -166,24 +148,6 @@ def gethistonormforselevt(df_evt, dfevtevtsel, label):
     df_no_vtx = df_to_keep[tag_vtx]
     # events with reco zvtx > 10 cm after previous selection
     df_bit_zvtx_gr10 = filter_bit_df(df_to_keep, 'fIsEventReject', [[3], [1, 2, 7, 12]])
-
-    hSelMult.SetBinContent(1, len(dfevtevtsel))
-    hNoVtxMult.SetBinContent(1, len(df_no_vtx))
-    hVtxOutMult.SetBinContent(1, len(df_bit_zvtx_gr10))
-    return hSelMult, hNoVtxMult, hVtxOutMult
-
-
-def gethistonormforselevt_varsel(df_evt, dfevtevtsel, label, varsel):
-    hSelMult = TH1F('sel_' + label, 'sel_' + label, 1, -0.5, 0.5)
-    hNoVtxMult = TH1F('novtx_' + label, 'novtx_' + label, 1, -0.5, 0.5)
-    hVtxOutMult = TH1F('vtxout_' + label, 'vtxout_' + label, 1, -0.5, 0.5)
-
-    df_to_keep = filter_bit_df(df_evt, varsel, [[], [0, 5, 6, 10, 11]])
-    # events with reco vtx after previous selection
-    tag_vtx = tag_bit_df(df_to_keep, varsel, [[], [1, 2, 7, 12]])
-    df_no_vtx = df_to_keep[tag_vtx]
-    # events with reco zvtx > 10 cm after previous selection
-    df_bit_zvtx_gr10 = filter_bit_df(df_to_keep, varsel, [[3], [1, 2, 7, 12]])
 
     hSelMult.SetBinContent(1, len(dfevtevtsel))
     hNoVtxMult.SetBinContent(1, len(df_no_vtx))

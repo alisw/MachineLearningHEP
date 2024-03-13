@@ -52,15 +52,15 @@ LcpKpi:
       evtorig:
         level: data
         trees:
-          O2hfcandlcfullev: [fIndexCollisions, fIsEventReject, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
+          O2hfcandlcfullev: [fIndexCollisions, fPosX, fPosY, fPosZ, fIsEventReject, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
       evtorigmc:
         level: mc
         trees:
-          O2hfcandlcfullev: [fIndexCollisions, fIndexMcCollisions, fIsEventReject, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
+          O2hfcandlcfullev: [fIndexCollisions, fIndexMcCollisions, fPosX, fPosY, fPosZ, fIsEventReject, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
       reco:
         level: all
         trees:
-          O2hfcandlclite: [fPosX, fPosY, fPosZ, fFlagMc, fCandidateSelFlag, fOriginMcRec, fIsCandidateSwapped, fNProngsContributorsPV,
+          O2hfcandlclite: [fFlagMc, fCandidateSelFlag, fOriginMcRec, fIsCandidateSwapped, fNProngsContributorsPV,
                            fY, fEta, fPt, fCpa, fCpaXY, fM, fChi2PCA, fDecayLength, fDecayLengthXY,
                            fPtProng0, fPtProng1, fPtProng2, fImpactParameter0, fImpactParameter1, fImpactParameter2,
                            fNSigTpcPi0, fNSigTpcPr0, fNSigTpcKa1, fNSigTpcPi2, fNSigTpcPr2,
@@ -103,7 +103,7 @@ LcpKpi:
         file: AnalysisResultsGen.pkl.lz4
 
   variables:
-    var_all: [fIndexCollisions, fPosX, fPosY, fPosZ, fFlagMc, fCandidateSelFlag, fOriginMcRec, fIsCandidateSwapped, fNProngsContributorsPV,
+    var_all: [fIndexCollisions, fFlagMc, fCandidateSelFlag, fOriginMcRec, fIsCandidateSwapped, fNProngsContributorsPV,
               fY, fEta, fPt, fCpa, fCpaXY, fM, fChi2PCA, fDecayLength, fDecayLengthXY,
               fPtProng0, fPtProng1, fPtProng2, fImpactParameter0, fImpactParameter1, fImpactParameter2,
               fNSigTpcPi0, fNSigTpcPr0, fNSigTpcKa1, fNSigTpcPi2, fNSigTpcPr2,
@@ -114,9 +114,9 @@ LcpKpi:
     var_jet_match: [df, fIndexHfCand2Prong]
     var_jetsub_match: [df, fIndexD0ChargedJets]
     var_evt:
-       data: [fIndexCollisions, fIsEventReject, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
-       mc:   [fIndexCollisions, fIndexMcCollisions, fIsEventReject, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
-    var_gen: [fIndexMcCollisions, fPt, fY, fFlagMc, fOriginMcGen]
+       data: [fIndexCollisions, fPosX, fPosY, fPosZ, fIsEventReject, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
+       mc:   [fIndexCollisions, fPosX, fPosY, fPosZ, fIndexMcCollisions, fIsEventReject, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
+    var_gen: [fIndexMcCollisions, fPosX, fPosY, fPosZ, fPt, fY, fFlagMc, fOriginMcGen]
     var_evt_match: [df, fIndexCollisions]
     var_evt_match_mc: [df, fIndexMcCollisions]
     var_training: [[fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY,
@@ -143,7 +143,6 @@ LcpKpi:
     var_class: class
     var_inv_mass: fM
     var_y: fY
-    var_evt_sel: fIsEventReject
     var_cuts:
         - [fPtProng0, lt, null]
         - [fPtProng1, lt, null]
@@ -255,16 +254,16 @@ LcpKpi:
       period: [LHC22o] #list of periods
       select_period: [1]
       prefix_dir: /data2/MLhep/
-      unmerged_tree_dir: [real/train_158254/alice/cern.ch/user/a/alihyperloop/jobs/0029] #list of periods
-      pkl: [LHC22pp_new/period_LHC22o/pkldata] #list of periods
-      pkl_skimmed: [LHC22pp_new/period_LHC22o/pklskdata] #list of periods
-      pkl_skimmed_merge_for_ml: [LHC22pp_new/period_LHC22o/pklskmldata] #list of periods
-      pkl_skimmed_merge_for_ml_all: LHC22pp_new/mltotdata
-      pkl_evtcounter_all: LHC22pp_new/evttotdata
+      unmerged_tree_dir: [real/train_174499/alice/cern.ch/user/a/alihyperloop/jobs/0032] #list of periods
+      pkl: [LHC22pp_pass6/period_LHC22o/pkldata] #list of periods
+      pkl_skimmed: [LHC22pp_pass6/period_LHC22o/pklskdata] #list of periods
+      pkl_skimmed_merge_for_ml: [LHC22pp_pass6/period_LHC22o/pklskmldata] #list of periods
+      pkl_skimmed_merge_for_ml_all: LHC22pp_pass6/mltotdata
+      pkl_evtcounter_all: LHC22pp_pass6/evttotdata
       #select_jobs: [[hy_189959], [hy_189000]]
       mcreweights: [../Analyses]
     mc:
-      nprocessesparallel: 60
+      nprocessesparallel: 80
       maxfiles : [-1, -1] #list of periods
       chunksizeunp : [100, 100] #list of periods
       chunksizeskim: [100, 100] #list of periods
@@ -273,16 +272,16 @@ LcpKpi:
       period: [LHC22b1b, LHC22b1a] #list of periods
       select_period: [1, 1]
       prefix_dir: /data2/MLhep/
-      unmerged_tree_dir: [sim/train_159856/alice/cern.ch/user/a/alihyperloop/jobs/0029,
-                          sim/train_159854/alice/cern.ch/user/a/alihyperloop/jobs/0029] #list of periods
-      pkl: [LHC22pp_mc_new/prod_LHC22b1b/pklmc,
-            LHC22pp_mc_new/prod_LHC22b1a/pklmc] #list of periods
-      pkl_skimmed: [LHC22pp_mc_new/prod_LHC22b1b/pklskmc,
-                    LHC22pp_mc_new/prod_LHC22b1a/pklskmc] #list of periods
-      pkl_skimmed_merge_for_ml: [LHC22pp_mc_new/prod_LHC22b1b/pklskmlmc,
-                                 LHC22pp_mc_new/prod_LHC22b1a/pklskmlmc] #list of periods
-      pkl_skimmed_merge_for_ml_all: LHC22pp_mc_new/prod_LHC22/mltotmc
-      pkl_evtcounter_all: LHC22pp_mc_new/prod_LHC22/evttotmc
+      unmerged_tree_dir: [sim/train_174465/alice/cern.ch/user/a/alihyperloop/jobs/0032,
+                          sim/train_174466/alice/cern.ch/user/a/alihyperloop/jobs/0032] #list of periods
+      pkl: [LHC22pp_mc_tuner/prod_LHC22b1b/pklmc,
+            LHC22pp_mc_tuner/prod_LHC22b1a/pklmc] #list of periods
+      pkl_skimmed: [LHC22pp_mc_tuner/prod_LHC22b1b/pklskmc,
+                    LHC22pp_mc_tuner/prod_LHC22b1a/pklskmc] #list of periods
+      pkl_skimmed_merge_for_ml: [LHC22pp_mc_tuner/prod_LHC22b1b/pklskmlmc,
+                                 LHC22pp_mc_tuner/prod_LHC22b1a/pklskmlmc] #list of periods
+      pkl_skimmed_merge_for_ml_all: LHC22pp_mc_tuner/prod_LHC22/mltotmc
+      pkl_evtcounter_all: LHC22pp_mc_tuner/prod_LHC22/evttotmc
       mcreweights: [../Analyses, ../Analyses]
   ml:
     evtsel: null
@@ -350,13 +349,13 @@ LcpKpi:
     probcutpresel:
       data: [0.6, 0.6, 0.6, 0.6, 0.3, 0.3] #list of nbins
       mc: [0.6, 0.6, 0.6, 0.6, 0.3, 0.3] #list of nbins
-    probcutoptimal: [0.7, 0.85, 0.7, 0.7, 0.6, 0.4] #list of nbins
+    probcutoptimal: [0.7, 0.85, 0.7, 0.7, 0.6, 0.3] #list of nbins
 
   analysis:
     anahptspectrum: "LctopKpi" #D0Kpi, DplusKpipi, DstarD0pi, DsKKpi, LctopKpi, LcK0Sp
     fd_method: "Nb" # fc, Nb
     cctype: "pp"
-    sigmamb: 57.8e+9 # 50.87e+9 pp5TeV, 57.8e+9 pp13TeV, pb
+    sigmamb: 59.4e+9 # 50.87e+9 pp5TeV, 57.8e+9 pp13TeV, 59.4e+9 pp Run3, pb
     inputfonllpred: data/fonll/DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8_PDG2020.root
     dir_general_plots: analysis_plots
 
@@ -369,7 +368,7 @@ LcpKpi:
       sel_binmax2: [2,4,6,8,12,24] #list of nbins
       var_binning2: null
       triggerbit: ''
-      use_cuts: True
+      use_cuts: False
       cuts:
         - "fDecayLength > 0.02"
         - "fDecayLength > 0.02"
@@ -383,7 +382,7 @@ LcpKpi:
       sel_an_binmax: [2,4,6,8,12,24]
       binning_matching: [0,1,2,3,4,5]
       presel_gen_eff: "abs(fY) < 0.5"
-      evtsel: null
+      evtsel: "fPosZ < 10"
       triggersel:
         data: null
         mc: null
