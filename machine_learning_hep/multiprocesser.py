@@ -55,12 +55,12 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.d_prefix_res = datap["analysis"][self.typean][self.mcordata].get("prefix_dir_res", "")
 
         dp = datap["multi"][self.mcordata]
-        self.dlper_root = [self.d_prefix + p for p in dp["unmerged_tree_dir"]]
-        self.dlper_pkl = [self.d_prefix + p for p in dp["pkl"]]
-        self.dlper_pklsk = [self.d_prefix + p for p in dp["pkl_skimmed"]]
-        self.dlper_pklml = [self.d_prefix + p for p in dp["pkl_skimmed_merge_for_ml"]]
-        self.d_pklml_mergedallp = self.d_prefix + dp["pkl_skimmed_merge_for_ml_all"]
-        self.d_pklevt_mergedallp = self.d_prefix + dp["pkl_evtcounter_all"]
+        self.dlper_root = [self.d_prefix + os.path.expandvars(p) for p in dp["unmerged_tree_dir"]]
+        self.dlper_pkl = [self.d_prefix + os.path.expandvars(p) for p in dp["pkl"]]
+        self.dlper_pklsk = [self.d_prefix + os.path.expandvars(p) for p in dp["pkl_skimmed"]]
+        self.dlper_pklml = [self.d_prefix + os.path.expandvars(p) for p in dp["pkl_skimmed_merge_for_ml"]]
+        self.d_pklml_mergedallp = self.d_prefix + os.path.expandvars(dp["pkl_skimmed_merge_for_ml_all"])
+        self.d_pklevt_mergedallp = self.d_prefix + os.path.expandvars(dp["pkl_evtcounter_all"])
         self.dlper_mcreweights = datap["multi"][self.mcordata]["mcreweights"]
 
         #namefiles pkl

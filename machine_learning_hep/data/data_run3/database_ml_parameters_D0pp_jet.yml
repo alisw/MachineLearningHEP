@@ -67,7 +67,7 @@ D0pp_jet:
         index: fIndexHfD0Bases_0
         trees:
           O2hfd0base: [fIndexHfD0CollBases, fPt, fEta, fPhi, fM]
-          O2hfd0mc: [fFlagMcMatchRec, fOriginMcRec] # TODO: MC only
+          # O2hfd0mc: [fFlagMcMatchRec, fOriginMcRec] # TODO: MC only
           O2hfd0par: [fCpa, fCpaXY, fChi2PCA,
                       fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised,
                       fImpactParameter0, fImpactParameter1,
@@ -238,13 +238,13 @@ D0pp_jet:
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/real/train_172207/
-      unmerged_tree_dir: [alice/cern.ch/user/a/alihyperloop/jobs/0032/] #list of periods
-      pkl: [d0jet/pkl] #list of periods
-      pkl_skimmed: [d0jet/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [d0jet/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: d0jet/pp_data_mltot
-      pkl_evtcounter_all: d0jet/pp_data_evttot
+      prefix_dir: /data2/MLhep/real/train_179752/
+      unmerged_tree_dir: [alice/cern.ch/user/a/alihyperloop/outputs/0017/179752/23474] #list of periods
+      pkl: ['${USER}/d0jet/pkl'] #list of periods
+      pkl_skimmed: ['${USER}/d0jet/pklsk'] #list of periods
+      pkl_skimmed_merge_for_ml: ['${USER}/d0jet/pklskml'] #list of periods
+      pkl_skimmed_merge_for_ml_all: '${USER}/d0jet/pp_data_mltot'
+      pkl_evtcounter_all: '${USER}/d0jet/pp_data_evttot'
       mcreweights: [../Analyses] #list of periods
     mc:
       nprocessesparallel: 20
@@ -257,11 +257,11 @@ D0pp_jet:
       select_period: [1]
       prefix_dir: /data2/MLhep/sim/train_179440/
       unmerged_tree_dir: [alice/cern.ch/user/a/alihyperloop/outputs/0017/179440/23430]
-      pkl: [d0jet/pkl] #list of periods
-      pkl_skimmed: [d0jet/pklsk] #list of periods
-      pkl_skimmed_merge_for_ml: [d0jet/pklskml] #list of periods
-      pkl_skimmed_merge_for_ml_all: d0jet/pp_mc_prod_mltot
-      pkl_evtcounter_all: d0jet/pp_mc_prod_evttot
+      pkl: ['${USER}/d0jet/pkl'] #list of periods
+      pkl_skimmed: ['${USER}/d0jet/pklsk'] #list of periods
+      pkl_skimmed_merge_for_ml: ['${USER}/d0jet/pklskml'] #list of periods
+      pkl_skimmed_merge_for_ml_all: '${USER}/d0jet/pp_mc_prod_mltot'
+      pkl_evtcounter_all: '${USER}/d0jet/pp_mc_prod_evttot'
       mcreweights: [../Analyses] #list of periods
 
   ml:

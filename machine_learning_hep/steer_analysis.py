@@ -18,6 +18,7 @@ main script for doing data processing, machine learning and analysis
 
 import argparse
 import importlib
+import os
 from os.path import exists
 import subprocess
 import sys
@@ -102,19 +103,19 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
 
     dp = data_param[case]["multi"]["mc"]
     dirprefixmc = dp.get("prefix_dir", "")
-    dirpklmc = [dirprefixmc + p for p in dp["pkl"]]
-    dirpklskmc = [dirprefixmc + p for p in dp["pkl_skimmed"]]
-    dirpklmlmc = [dirprefixmc + p for p in dp["pkl_skimmed_merge_for_ml"]]
-    dirpklevtcounter_allmc = dirprefixmc + dp["pkl_evtcounter_all"]
-    dirpklmltotmc = dirprefixmc + dp["pkl_skimmed_merge_for_ml_all"]
+    dirpklmc = [dirprefixmc + os.path.expandvars(p) for p in dp["pkl"]]
+    dirpklskmc = [dirprefixmc + os.path.expandvars(p) for p in dp["pkl_skimmed"]]
+    dirpklmlmc = [dirprefixmc + os.path.expandvars(p) for p in dp["pkl_skimmed_merge_for_ml"]]
+    dirpklevtcounter_allmc = dirprefixmc + os.path.expandvars(dp["pkl_evtcounter_all"])
+    dirpklmltotmc = dirprefixmc + os.path.expandvars(dp["pkl_skimmed_merge_for_ml_all"])
 
     dp = data_param[case]["multi"]["data"]
     dirprefixdata = dp.get("prefix_dir", "")
-    dirpkldata = [dirprefixdata + p for p in dp["pkl"]]
-    dirpklskdata = [dirprefixdata + p for p in dp["pkl_skimmed"]]
-    dirpklmldata = [dirprefixdata + p for p in dp["pkl_skimmed_merge_for_ml"]]
-    dirpklevtcounter_alldata = dirprefixdata + dp["pkl_evtcounter_all"]
-    dirpklmltotdata = dirprefixdata + dp["pkl_skimmed_merge_for_ml_all"]
+    dirpkldata = [dirprefixdata + os.path.expandvars(p) for p in dp["pkl"]]
+    dirpklskdata = [dirprefixdata + os.path.expandvars(p) for p in dp["pkl_skimmed"]]
+    dirpklmldata = [dirprefixdata + os.path.expandvars(p) for p in dp["pkl_skimmed_merge_for_ml"]]
+    dirpklevtcounter_alldata = dirprefixdata + os.path.expandvars(dp["pkl_evtcounter_all"])
+    dirpklmltotdata = dirprefixdata + os.path.expandvars(dp["pkl_skimmed_merge_for_ml_all"])
 
     dp = data_param[case]["mlapplication"]["mc"]
     dirprefixmcapp = dp.get("prefix_dir_app", "")
