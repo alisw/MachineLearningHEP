@@ -67,7 +67,7 @@ D0pp_jet:
         index: fIndexHfD0Bases_0
         trees:
           O2hfd0base: [fIndexHfD0CollBases, fPt, fEta, fPhi, fM]
-            # O2hfd0mc: [fFlagMcMatchRec, fOriginMcRec]
+          O2hfd0mc: [fFlagMcMatchRec, fOriginMcRec] # TODO: MC only
           O2hfd0par: [fCpa, fCpaXY, fChi2PCA,
                       fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised,
                       fImpactParameter0, fImpactParameter1,
@@ -89,39 +89,39 @@ D0pp_jet:
 
       collgen:
         level: gen
-        index: fIndexD0ChargedMCParticleLevelJetCollisionOutputs
+        index: fIndexD0CMCPJetCOs
         trees:
-          O2d0mcpco: [fPosZ, fCentrality, fEventSel]
+          O2d0cmcpjetco: [fPosZ, fCentrality, fEventSel]
       jetgen:
         level: gen
-        index: fIndexD0ChargedMCParticleLevelJetOutputs
+        index: fIndexD0CMCPJetOs
         trees:
-          O2d0mcpo: [fIndexD0ChargedMCParticleLevelJetCollisionOutputs, fIndexHfD0PBases_0,
+          O2d0cmcpjeto: [fIndexD0CMCPJetCOs, fIndexHfD0PBases_0,
                     fJetPt, fJetPhi, fJetEta, fJetNConstituents]
       jetsubgen:
         level: gen
-        index: fIndexD0ChargedMCParticleLevelJetSubstructures
+        index: fIndexD0CMCPJetSSOs
         trees:
           # O2d0mcpsso: [fIndexD0ChargedMCParticleLevelJetOutputs, fZg, fRg, fNsd]
-          O2d0mcpsso: [fIndexD0ChargedMCParticleLevelJetOutputs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta]
+          O2d0cmcpjetsso: [fIndexD0CMCPJetOs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta]
 
       colldet:
         level: det
-        index: fIndexD0ChargedMCDetectorLevelJetCollisionOutputs
+        index: fIndexD0CMCDJetCOs
         trees:
-          O2d0mcdco: [fPosZ, fCentrality, fEventSel]
+          O2d0cmcdjetco: [fPosZ, fCentrality, fEventSel]
       jetdet:
         level: det
-        index: fIndexD0ChargedMCDetectorLevelJetOutputs
+        index: fIndexD0CMCDJetOs
         trees:
-          O2d0mcdo: [fIndexD0ChargedMCDetectorLevelJetCollisionOutputs, fIndexHfD0Bases_0,
+          O2d0cmcdjeto: [fIndexD0CMCDJetCOs, fIndexHfD0Bases_0,
                     fJetPt, fJetPhi, fJetEta, fJetNConstituents]
       jetsubdet:
         level: det
-        index: fIndexD0ChargedMCDetectorLevelJetSubstructures
+        index: fIndexD0CMCDJetSSOs
         trees:
           # O2d0mcdsso: [fIndexD0ChargedMCDetectorLevelJetOutputs, fZg, fRg, fNsd]
-          O2d0mcdsso: [fIndexD0ChargedMCDetectorLevelJetOutputs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta]
+          O2d0cmcdjetsso: [fIndexD0CMCDJetOs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta]
 
       colldata:
         level: data
@@ -234,7 +234,7 @@ D0pp_jet:
       maxfiles: [-1] #list of periods
       chunksizeunp:  [100] #list of periods
       chunksizeskim: [100] #list of periods
-      fracmerge: [0.08] #list of periods
+      fracmerge: [1.] #list of periods
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
@@ -255,9 +255,8 @@ D0pp_jet:
       seedmerge: [12] #list of periods
       period: [mctest_nima] #list of periods
       select_period: [1]
-      # /data2/MLhep/sim/test_jets/2024-xx-xx/local/AOD/001/AO2D.root
-      prefix_dir: /data2/MLhep/sim/test_jets/
-      unmerged_tree_dir: ['2024-01-25']
+      prefix_dir: /data2/MLhep/sim/train_179440/
+      unmerged_tree_dir: [alice/cern.ch/user/a/alihyperloop/outputs/0017/179440/23430]
       pkl: [d0jet/pkl] #list of periods
       pkl_skimmed: [d0jet/pklsk] #list of periods
       pkl_skimmed_merge_for_ml: [d0jet/pklskml] #list of periods
