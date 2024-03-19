@@ -52,15 +52,15 @@ LcpKpi:
       evtorig:
         level: data
         trees:
-          O2hfcandlcfullev: [fIndexCollisions, fIsEventReject, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
+          O2hfcandlcfullev: [fIndexCollisions, fPosX, fPosY, fPosZ, fIsEventReject, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
       evtorigmc:
         level: mc
         trees:
-          O2hfcandlcfullev: [fIndexCollisions, fIndexMcCollisions, fIsEventReject, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
+          O2hfcandlcfullev: [fIndexCollisions, fIndexMcCollisions, fPosX, fPosY, fPosZ, fIsEventReject, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
       reco:
         level: all
         trees:
-          O2hfcandlclite: [fPosX, fPosY, fPosZ, fFlagMc, fCandidateSelFlag, fOriginMcRec, fIsCandidateSwapped, fNProngsContributorsPV,
+          O2hfcandlclite: [fFlagMc, fCandidateSelFlag, fOriginMcRec, fIsCandidateSwapped, fNProngsContributorsPV,
                            fY, fEta, fPt, fCpa, fCpaXY, fM, fChi2PCA, fDecayLength, fDecayLengthXY,
                            fPtProng0, fPtProng1, fPtProng2, fImpactParameter0, fImpactParameter1, fImpactParameter2,
                            fNSigTpcPi0, fNSigTpcPr0, fNSigTpcKa1, fNSigTpcPi2, fNSigTpcPr2,
@@ -143,7 +143,6 @@ LcpKpi:
     var_class: class
     var_inv_mass: fM
     var_y: fY
-    var_evt_sel: fIsEventReject
     var_cuts:
         - [fPtProng0, lt, null]
         - [fPtProng1, lt, null]
@@ -255,16 +254,16 @@ LcpKpi:
       period: [LHC22o] #list of periods
       select_period: [1]
       prefix_dir: /data2/MLhep/
-      unmerged_tree_dir: [real/train_168944/alice/cern.ch/user/a/alihyperloop/jobs/0031] #list of periods
-      pkl: [LHC22pp_fwd/period_LHC22o/pkldata] #list of periods
-      pkl_skimmed: [LHC22pp_fwd/period_LHC22o/pklskdata] #list of periods
-      pkl_skimmed_merge_for_ml: [LHC22pp_fwd/period_LHC22o/pklskmldata] #list of periods
-      pkl_skimmed_merge_for_ml_all: LHC22pp_fwd/mltotdata
-      pkl_evtcounter_all: LHC22pp_fwd/evttotdata
+      unmerged_tree_dir: [real/train_174499/alice/cern.ch/user/a/alihyperloop/jobs/0032] #list of periods
+      pkl: [LHC22pp_pass6/period_LHC22o/pkldata] #list of periods
+      pkl_skimmed: [LHC22pp_pass6/period_LHC22o/pklskdata] #list of periods
+      pkl_skimmed_merge_for_ml: [LHC22pp_pass6/period_LHC22o/pklskmldata] #list of periods
+      pkl_skimmed_merge_for_ml_all: LHC22pp_pass6/mltotdata
+      pkl_evtcounter_all: LHC22pp_pass6/evttotdata
       #select_jobs: [[hy_189959], [hy_189000]]
       mcreweights: [../Analyses]
     mc:
-      nprocessesparallel: 60
+      nprocessesparallel: 80
       maxfiles : [-1, -1] #list of periods
       chunksizeunp : [100, 100] #list of periods
       chunksizeskim: [100, 100] #list of periods
@@ -273,16 +272,16 @@ LcpKpi:
       period: [LHC22b1b, LHC22b1a] #list of periods
       select_period: [1, 1]
       prefix_dir: /data2/MLhep/
-      unmerged_tree_dir: [sim/train_168765/alice/cern.ch/user/a/alihyperloop/jobs/0031,
-                          sim/train_168764/alice/cern.ch/user/a/alihyperloop/jobs/0031] #list of periods
-      pkl: [LHC22pp_mc_fwd/prod_LHC22b1b/pklmc,
-            LHC22pp_mc_fwd/prod_LHC22b1a/pklmc] #list of periods
-      pkl_skimmed: [LHC22pp_mc_fwd/prod_LHC22b1b/pklskmc,
-                    LHC22pp_mc_fwd/prod_LHC22b1a/pklskmc] #list of periods
-      pkl_skimmed_merge_for_ml: [LHC22pp_mc_fwd/prod_LHC22b1b/pklskmlmc,
-                                 LHC22pp_mc_fwd/prod_LHC22b1a/pklskmlmc] #list of periods
-      pkl_skimmed_merge_for_ml_all: LHC22pp_mc_fwd/prod_LHC22/mltotmc
-      pkl_evtcounter_all: LHC22pp_mc_fwd/prod_LHC22/evttotmc
+      unmerged_tree_dir: [sim/train_174465/alice/cern.ch/user/a/alihyperloop/jobs/0032,
+                          sim/train_174466/alice/cern.ch/user/a/alihyperloop/jobs/0032] #list of periods
+      pkl: [LHC22pp_mc_tuner/prod_LHC22b1b/pklmc,
+            LHC22pp_mc_tuner/prod_LHC22b1a/pklmc] #list of periods
+      pkl_skimmed: [LHC22pp_mc_tuner/prod_LHC22b1b/pklskmc,
+                    LHC22pp_mc_tuner/prod_LHC22b1a/pklskmc] #list of periods
+      pkl_skimmed_merge_for_ml: [LHC22pp_mc_tuner/prod_LHC22b1b/pklskmlmc,
+                                 LHC22pp_mc_tuner/prod_LHC22b1a/pklskmlmc] #list of periods
+      pkl_skimmed_merge_for_ml_all: LHC22pp_mc_tuner/prod_LHC22/mltotmc
+      pkl_evtcounter_all: LHC22pp_mc_tuner/prod_LHC22/evttotmc
       mcreweights: [../Analyses, ../Analyses]
   ml:
     evtsel: null
@@ -326,16 +325,16 @@ LcpKpi:
       bkg_function: pol2 # fit function for bkg (among TH1 predefined fit functions, e.g. expo, pol1, pol2, ...)
       save_fit: True # save bkg fits with the various cuts on ML output
       raahp: [1,1,1,1,1,1] # sel_skim_binmin bins
-      presel_gen_eff: "abs(fY) < 0.5"
+      presel_gen_eff: "abs(fY) < 0.8"
       #presel_gen_eff: "abs(fY) < 0.8 and abs(fPosZ) < 10"
 
   mlapplication:
     data:
-      prefix_dir_app: /data2/MLhep_fwd/
+      prefix_dir_app: /data2/MLhep/
       pkl_skimmed_dec: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdata] #list of periods
       pkl_skimmed_decmerged: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdatamerged] #list of periods
     mc:
-      prefix_dir_app: /data2/MLhep_fwd/
+      prefix_dir_app: /data2/MLhep/
       pkl_skimmed_dec: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmc,
                         LHC22pp_mc/MLapplication/prod_LHC22b1a/skpkldecmc,] #list of periods
       pkl_skimmed_decmerged: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmcmerged,
@@ -350,7 +349,7 @@ LcpKpi:
     probcutpresel:
       data: [0.6, 0.6, 0.6, 0.6, 0.3, 0.3] #list of nbins
       mc: [0.6, 0.6, 0.6, 0.6, 0.3, 0.3] #list of nbins
-    probcutoptimal: [0.7, 0.85, 0.7, 0.7, 0.6, 0.4] #list of nbins
+    probcutoptimal: [0.7, 0.85, 0.7, 0.7, 0.6, 0.3] #list of nbins
 
   analysis:
     anahptspectrum: "LctopKpi" #D0Kpi, DplusKpipi, DstarD0pi, DsKKpi, LctopKpi, LcK0Sp
@@ -390,7 +389,7 @@ LcpKpi:
       sel_an_binmax: [2,4,6,8,12,24]
       binning_matching: [0,1,2,3,4,5]
       presel_gen_eff: "abs(fY) < 0.5"
-      evtsel: null
+      evtsel: "abs(fPosZ)<10"
       triggersel:
         data: null
         mc: null
@@ -398,12 +397,12 @@ LcpKpi:
 
       data:
         runselection: [null] #FIXME
-        prefix_dir_res: /data2/MLhep_mult/
+        prefix_dir_res: /data2/MLhep/
         results: [LHC22pp/Results/prod_LHC22o/resultsdata] #list of periods
         resultsallp: LHC22pp/Results/resultsdatatot
       mc:
         runselection: [null, null] #FIXME
-        prefix_dir_res: /data2/MLhep_mult/
+        prefix_dir_res: /data2/MLhep/
         results: [LHC22pp_mc/Results/prod_LHC22b1b/resultsmc,
                   LHC22pp_mc/Results/prod_LHC22b1a/resultsmc] #list of periods
         resultsallp: LHC22pp_mc/Results/prod_LHC22/resultsmctot
@@ -448,16 +447,16 @@ LcpKpi:
     Run3analysis_forward:
       proc_type: Dhadrons_mult
       useperiod: [1,1]
-      plotbin: [1,1,1,1]
+      plotbin: [1,1,1,1,1]
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
-      corrEffMult: [false, false, false, false]
+      corrEffMult: [false, false, false, false, false]
       event_cand_validation: True
-      sel_binmin2: [0, 30, 0.1, 0] #list of var2 splittng nbins
-      sel_binmax2: [100, 100, 30, 0.1]
-      var_binning2: fCentFT0M
-      var_binning2_gen: fCentFT0M
+      sel_binmin2: [0, 70, 30, 1, 0] #list of var2 splittng nbins
+      sel_binmax2: [100, 100, 70, 30, 1]
+      var_binning2: fCentFT0C
+      var_binning2_gen: fCentFT0C
       mc_cut_on_binning2: False
       nbinshisto: 100
       minvaluehisto: -0.0005
@@ -476,7 +475,7 @@ LcpKpi:
       sel_an_binmax: [2,4,6,8,12,24]
       binning_matching: [0,1,2,3,4,5]
       presel_gen_eff: "abs(fY) < 0.5"
-      evtsel: null
+      evtsel: "abs(fPosZ)<10"
       triggersel:
         data: null
         mc: null
@@ -504,7 +503,7 @@ LcpKpi:
       masspeak: 2.286
       massmin: [2.18, 2.18, 2.16, 2.14, 2.13, 2.10]
       massmax: [2.38, 2.40, 2.42, 2.436, 2.446, 2.47]
-      rebin: [5,5,6,7,8,14]
+      rebin: [5,6,6,7,8,14]
       fix_mean: [false,false,false,false,false,false]
       fix_sigma: [false,false,false,false,false,false]
       # Fix mean and/or sigma

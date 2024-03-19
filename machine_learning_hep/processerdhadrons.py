@@ -25,7 +25,6 @@ from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utilities import fill_hist
 from machine_learning_hep.utilities import selectdfrunlist
 from machine_learning_hep.utilities import seldf_singlevar, openfile
-from machine_learning_hep.selectionutils import gethistonormforselevt_varsel
 from machine_learning_hep.processer import Processer
 
 class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attributes
@@ -60,7 +59,6 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
         self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
-        self.s_var_evt_sel = datap["variables"].get("var_evt_sel", "fIsEventReject")
         self.v_invmass = datap["variables"].get("var_inv_mass", "fM")
 
     # pylint: disable=too-many-branches
@@ -94,12 +92,13 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
         histonorm.Write()
 
         myfile.cd()
-        labeltrigger = "hbit%s" % (self.triggerbit)
-        hsel, hnovtxmult, hvtxoutmult = gethistonormforselevt_varsel(dfevtorig, dfevtevtsel, \
-                                                              labeltrigger, self.s_var_evt_sel)
-        hsel.Write()
-        hnovtxmult.Write()
-        hvtxoutmult.Write()
+        hEvents = TH1F('all_events', 'all_events', 1, -0.5, 0.5)
+        hSelEvents = TH1F('sel_events', 'sel_events', 1, -0.5, 0.5)
+        hEvents.SetBinContent(1, len(dfevtorig))
+        hSelEvents.SetBinContent(1, len(dfevtevtsel))
+
+        hEvents.Write()
+        hSelEvents.Write()
 
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
@@ -247,4 +246,3 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
         h_gen_fd.Write()
         h_presel_fd.Write()
         h_sel_fd.Write()
-        print("FINALISED")

@@ -271,29 +271,20 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         cEffFD.SaveAs("%s/EffFD%s%s.eps" % (self.d_resultsallpmc,
                                             self.case, self.typean))
 
-    # def plotter(self):
-    # To be added from dhadron_mult
 
     @staticmethod
-    def calculate_norm(hsel, hnovt, hvtxout): #TO BE FIXED WITH EV SEL
-        if not hsel:
+    def calculate_norm(logger, hevents, hselevents): #TO BE FIXED WITH EV SEL
+        if not hevents:
             # pylint: disable=undefined-variable
-            self.logger.error("Missing hsel")
-        if not hnovt:
+            logger.error("Missing hevents")
+        if not hselevents:
             # pylint: disable=undefined-variable
-            self.logger.error("Missing hnovt")
-        if not hvtxout:
-            # pylint: disable=undefined-variable
-            self.logger.error("Missing hvtxout")
+            logger.error("Missing hselevents")
 
-        n_sel = hsel.Integral()
-        #n_novtx = hnovt.Integral()
-        #n_vtxout = hvtxout.Integral()
-        #norm = -1
-        norm = n_sel
-        #if n_sel + n_vtxout > 0:
-        #    norm = (n_sel + n_novtx) - n_novtx * n_vtxout / (n_sel + n_vtxout)
-        return norm
+        n_events = hevents.Integral()
+        n_selevents = hselevents.Integral()
+
+        return n_events, n_selevents
 
     def makenormyields(self):  # pylint: disable=import-outside-toplevel, too-many-branches
         gROOT.SetBatch(True)
@@ -320,19 +311,18 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
         histonorm = TH1F("histonorm", "histonorm", 1, 0, 1)
 
         filemass = TFile.Open(self.n_filemass)
-        labeltrigger = "hbit%s" % (self.triggerbit)
-        hsel = filemass.Get("sel_%s" % labeltrigger)
-        hnovtx = filemass.Get("novtx_%s" % labeltrigger)
-        hvtxout = filemass.Get("vtxout_%s" % labeltrigger)
-        norm = self.calculate_norm(hsel, hnovtx, hvtxout)
-        histonorm.SetBinContent(1, norm)
+        hevents = filemass.Get("all_events")
+        hselevents = filemass.Get("sel_events")
+        norm, selnorm = self.calculate_norm(self.logger, hevents, hselevents)
+        histonorm.SetBinContent(1, selnorm)
         self.logger.warning("Number of events %d", norm)
+        self.logger.warning("Number of events after event selection %d", selnorm)
 
         if self.p_dobkgfromsideband:
             fileoutbkg = TFile.Open("%s/Background_fromsidebands_%s_%s.root" % \
                                     (self.d_resultsallpdata, self.case, self.typean))
             hbkg = fileoutbkg.Get("hbkg_fromsidebands")
-            hbkg.Scale(1./norm)
+            hbkg.Scale(1./selnorm)
             fileoutbkgscaled = TFile.Open("%s/NormBackground_fromsidebands_%s_%s.root" % \
                                           (self.d_resultsallpdata, self.case,
                                            self.typean), "RECREATE")
@@ -349,7 +339,7 @@ class AnalyzerDhadrons(Analyzer):  # pylint: disable=invalid-name
                            namehistoefffeed,
                            yield_filename,
                            nameyield,
-                           norm,
+                           selnorm,
                            self.p_sigmamb,
                            fileoutcross)
 
