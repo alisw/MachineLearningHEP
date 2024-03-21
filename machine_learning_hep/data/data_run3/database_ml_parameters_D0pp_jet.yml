@@ -378,12 +378,12 @@ D0pp_jet:
         mc: null
       data: &data_out_default
         runselection: [null] #FIXME
-        results: [/data2/jklein/data/test/d0jet/resultsMBjetvspt] #list of periods
-        resultsallp: /data2/jklein/data/test/d0jet/resultsMBjetvspt_all
+        results: [/home/nzardosh/data/test/d0jet/resultsMBjetvspt] #list of periods
+        resultsallp: /home/nzardosh/data/test/d0jet/resultsMBjetvspt_all
       mc: &mc_out_default
         runselection: [null] #FIXME
-        results: [/data2/jklein/data/mctest/d0jet/resultsMBjetvspt] #list of periods
-        resultsallp: /data2/jklein/data/mctest/d0jet/resultsMBjetvspt_all
+        results: [/home/nzardosh/data/mctest/d0jet/resultsMBjetvspt] #list of periods
+        resultsallp: /home/nzardosh/data/mctest/d0jet/resultsMBjetvspt_all
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input

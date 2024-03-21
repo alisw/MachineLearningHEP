@@ -69,7 +69,8 @@ analysis:
     feeddown: false # analyzer: feeddown
     dounfolding: false # analyzer: unfolding, unfolding_closure
   doqa: false
-  dofit: false # analyzer: fit
+  dofit: true # analyzer: fit
+  dosidebandsub: true
   # Control the yield systematic uncertainty
   dosyst: false # analyzer: yield_syst
   dojetstudies: false # analyzer: fit, efficiency, sideband_sub
