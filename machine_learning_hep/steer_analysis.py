@@ -88,6 +88,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     dojetsystematics = data_config["analysis"]["data"]["dojetsystematics"]
     doqa = data_config["analysis"]["doqa"]
     dofit = data_config["analysis"]["dofit"]
+    dosidebandsub = data_config["analysis"]["dosidebandsub"]
     doeff = data_config["analysis"]["doeff"]
     docross = data_config["analysis"]["docross"]
     doplotsval = data_config["analysis"]["doplotsval"]
@@ -397,6 +398,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         analyze_steps.append("qa")
     if dofit:
         analyze_steps.append("fit")
+    if dosidebandsub:
+        analyze_steps.append("sidebandsub")
     if dosyst:
         analyze_steps.append("yield_syst")
     if doeff:

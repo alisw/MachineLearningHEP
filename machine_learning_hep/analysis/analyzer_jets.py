@@ -46,10 +46,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.n_fileresp = datap["files_names"]["respfilename"]
         self.n_fileresp = os.path.join(self.d_resultsallpmc_proc, self.n_fileresp)
 
-        self.fitSigma = {'mc': 7 * [0], 'data': 7 * [0]}
-        self.fitMean = {'mc': 7 * [0], 'data': 7 * [0]}
-        self.fitBkgFunc = {'mc': [], 'data': []}
-
+        self.fit_sigma = {'mc': 7 * [0], 'data': 7 * [0]}
+        self.fit_mean = {'mc': 7 * [0], 'data': 7 * [0]}
+        self.fit_func_bkg = {'mc': [], 'data': []}
 
     def fit(self):
         gStyle.SetOptFit(1111)
@@ -60,22 +59,21 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 for ipt in range(7):
                     c = TCanvas("Candidate mass")
                     h_invmass = rfile.Get(f'hmass_{ipt}')
-                    funcSignal = TF1("funcsignal", "gaus(0)", 1.67, 2.1)
+                    # funcSignal = TF1("funcsignal", "gaus(0)", 1.67, 2.1)
                     funcBkg = TF1("funcBkg", "expo(0)", 1.67, 2.1)
                     funcTotal = TF1("funcTotal", "gaus(0)+expo(3)", 1.67, 2.1)
                     funcTotal.SetParameter(0, h_invmass.GetMaximum())
                     funcTotal.SetParameter(1, 1.86)
                     funcTotal.SetParLimits(2,0.0,0.1)
                     fitResult = h_invmass.Fit(funcTotal, "S", "", 1.67, 2.1)
-                    self.fitSigma[mcordata][ipt] = fitResult.Parameter(2)
-                    self.fitMean[mcordata][ipt] = fitResult.Parameter(1)
+                    self.fit_sigma[mcordata][ipt] = fitResult.Parameter(2)
+                    self.fit_mean[mcordata][ipt] = fitResult.Parameter(1)
                     funcBkg.SetParameter(0, fitResult.Parameter(3))
                     funcBkg.SetParameter(1, fitResult.Parameter(4))
-                    self.fitBkgFunc[mcordata].append(funcBkg)
+                    self.fit_func_bkg[mcordata].append(funcBkg)
                     h_invmass.Draw()
                     c.SaveAs(f'hmass_fitted_{ipt}_{mcordata}.png')
         self.sidebandsub()
-
 
     def sidebandsub(self):
         self.logger.info("Running sideband subtraction")
@@ -87,19 +85,27 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     c = TCanvas("h2jet_invmass_zg")
                     h2_invmass_zg.Draw("colz")
                     c.SaveAs(f'h2jet_invmass_zg_{ipt}_{mcordata}.png')
-                    signalA = self.fitMean[mcordata][ipt] - 2 * self.fitSigma[mcordata][ipt]
-                    signalB = self.fitMean[mcordata][ipt] + 2 * self.fitSigma[mcordata][ipt]
-                    sidebandLeftA = self.fitMean[mcordata][ipt] - 7 * self.fitSigma[mcordata][ipt]
-                    sidebandLeftB = self.fitMean[mcordata][ipt] - 4 * self.fitSigma[mcordata][ipt]
-                    sidebandRightA = self.fitMean[mcordata][ipt] + 4 * self.fitSigma[mcordata][ipt]
-                    sidebandRightB = self.fitMean[mcordata][ipt] + 7 * self.fitSigma[mcordata][ipt]
-                    print (h2_invmass_zg.GetXaxis().FindBin(signalA),h2_invmass_zg.GetXaxis().FindBin(signalB) )
-                    fh_signal = h2_invmass_zg.ProjectionY(f'h2jet_zg_signal_{ipt}_{mcordata}', h2_invmass_zg.GetXaxis().FindBin(signalA), h2_invmass_zg.GetXaxis().FindBin(signalB),"e")
-                    signalArea = self.fitBkgFunc[mcordata][ipt].Integral(signalA,signalB)
-                    fh_sidebandleft = h2_invmass_zg.ProjectionY(f'h2jet_zg_sidebandleft_{ipt}_{mcordata}', h2_invmass_zg.GetXaxis().FindBin(sidebandLeftA), h2_invmass_zg.GetXaxis().FindBin(sidebandLeftB),"e")
-                    sidebandLeftlArea = self.fitBkgFunc[mcordata][ipt].Integral(sidebandLeftA,sidebandLeftB)
-                    fh_sidebandright = h2_invmass_zg.ProjectionY(f'h2jet_zg_sidebandright_{ipt}_{mcordata}', h2_invmass_zg.GetXaxis().FindBin(sidebandRightA), h2_invmass_zg.GetXaxis().FindBin(sidebandRightB),"e")
-                    sidebandRightArea = self.fitBkgFunc[mcordata][ipt].Integral(sidebandRightA,sidebandRightB)
+                    signalA = self.fit_mean[mcordata][ipt] - 2 * self.fit_sigma[mcordata][ipt]
+                    signalB = self.fit_mean[mcordata][ipt] + 2 * self.fit_sigma[mcordata][ipt]
+                    sidebandLeftA = self.fit_mean[mcordata][ipt] - 7 * self.fit_sigma[mcordata][ipt]
+                    sidebandLeftB = self.fit_mean[mcordata][ipt] - 4 * self.fit_sigma[mcordata][ipt]
+                    sidebandRightA = self.fit_mean[mcordata][ipt] + 4 * self.fit_sigma[mcordata][ipt]
+                    sidebandRightB = self.fit_mean[mcordata][ipt] + 7 * self.fit_sigma[mcordata][ipt]
+                    fh_signal = h2_invmass_zg.ProjectionY(f'h2jet_zg_signal_{ipt}_{mcordata}',
+                                                          h2_invmass_zg.GetXaxis().FindBin(signalA),
+                                                          h2_invmass_zg.GetXaxis().FindBin(signalB),
+                                                          "e")
+                    signalArea = self.fit_func_bkg[mcordata][ipt].Integral(signalA,signalB)
+                    fh_sidebandleft = h2_invmass_zg.ProjectionY(f'h2jet_zg_sidebandleft_{ipt}_{mcordata}',
+                                                                h2_invmass_zg.GetXaxis().FindBin(sidebandLeftA),
+                                                                h2_invmass_zg.GetXaxis().FindBin(sidebandLeftB),
+                                                                "e")
+                    sidebandLeftlArea = self.fit_func_bkg[mcordata][ipt].Integral(sidebandLeftA,sidebandLeftB)
+                    fh_sidebandright = h2_invmass_zg.ProjectionY(f'h2jet_zg_sidebandright_{ipt}_{mcordata}',
+                                                                 h2_invmass_zg.GetXaxis().FindBin(sidebandRightA),
+                                                                 h2_invmass_zg.GetXaxis().FindBin(sidebandRightB),
+                                                                 "e")
+                    sidebandRightArea = self.fit_func_bkg[mcordata][ipt].Integral(sidebandRightA,sidebandRightB)
                     c = TCanvas("signal")
                     fh_signal.Draw()
                     c.SaveAs(f'hjet_zg_signal_{ipt}_{mcordata}.png')
@@ -122,8 +128,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     fh_subtracted.Draw()
                     c.SaveAs(f'hjet_zg_subtracted_{ipt}_{mcordata}.png')
 
-                    
-                    
+
+
 
 
 

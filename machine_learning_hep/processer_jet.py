@@ -14,9 +14,9 @@
 
 import pickle
 from ROOT import TFile, TH1F, TH2F # pylint: disable=import-error, no-name-in-module
+import numpy as np
 from machine_learning_hep.processer import Processer
 from machine_learning_hep.utilities import fill_hist, openfile
-import numpy as np
 
 class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instance-attributes
     species = "processer"
@@ -78,11 +78,11 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
                         if zg >= 0.1:
                             df.loc[idx,'zg'] = zg
                             break
-                    
-                        
+
+
 
                 h_invmass_all = TH1F(
-                    f'hmass_{ipt}', "", 
+                    f'hmass_{ipt}', "",
                     self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
                 fill_hist(h_invmass_all, df.fM)
                 h_invmass_all.Write()
@@ -100,17 +100,18 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
                 h_jetpt_all.Write()
 
                 h_zg = TH1F(
-                    f'hjetzg_{ipt}', "", 
+                    f'hjetzg_{ipt}', "",
                     10, 0.0, 1.0)
                 fill_hist(h_zg, df.zg)
                 h_zg.Write()
 
                 h2_invmass_zg=TH2F(
-                    f'h2jet_invmass_zg_{ipt}', "", 
+                    f'h2jet_invmass_zg_{ipt}', "",
                     2000, 1.0, 3.0,
                     10, 0.0, 1.0)
                 print(len(df.fM), np.float64(df.fM), np.float64(df.zg))
-                h2_invmass_zg.FillN(len(df.fM), np.float64(df.fM), np.float64(df.zg),np.float64(len(df.fM)*[1.]))
+                h2_invmass_zg.FillN(len(df.fM), np.float64(df.fM), np.float64(df.zg), 
+                                    np.float64(len(df.fM)*[1.]))
                 h2_invmass_zg.Write()
         print("end of processor")
 
