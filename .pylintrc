@@ -1,6 +1,6 @@
 [FORMAT]
 indent-string='    '
-max-line-length=100
+max-line-length=120
 
 [BASIC]
 variable-rgx=(?:(?P<snake>[a-z_]+))
