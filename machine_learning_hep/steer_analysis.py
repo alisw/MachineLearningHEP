@@ -88,7 +88,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     dojetsystematics = data_config["analysis"]["data"]["dojetsystematics"]
     doqa = data_config["analysis"]["doqa"]
     dofit = data_config["analysis"]["dofit"]
-    dosidebandsub = data_config["analysis"]["dosidebandsub"]
+    dosidebandsub = data_config["analysis"].get("dosidebandsub", False)
     doeff = data_config["analysis"]["doeff"]
     docross = data_config["analysis"]["docross"]
     doplotsval = data_config["analysis"]["doplotsval"]
