@@ -110,7 +110,7 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
                     2000, 1.0, 3.0,
                     10, 0.0, 1.0)
                 print(len(df.fM), np.float64(df.fM), np.float64(df.zg))
-                h2_invmass_zg.FillN(len(df.fM), np.float64(df.fM), np.float64(df.zg), 
+                h2_invmass_zg.FillN(len(df.fM), np.float64(df.fM), np.float64(df.zg),
                                     np.float64(len(df.fM)*[1.]))
                 h2_invmass_zg.Write()
         print("end of processor")
