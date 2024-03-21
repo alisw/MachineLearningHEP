@@ -67,7 +67,7 @@ D0pp_jet:
         index: fIndexHfD0Bases_0
         trees:
           O2hfd0base: [fIndexHfD0CollBases, fPt, fEta, fPhi, fM]
-          # O2hfd0mc: [fFlagMcMatchRec, fOriginMcRec] # TODO: MC only
+          O2hfd0mc: [fFlagMcMatchRec, fOriginMcRec] # TODO: MC only
           O2hfd0par: [fCpa, fCpaXY, fChi2PCA,
                       fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised,
                       fImpactParameter0, fImpactParameter1,
@@ -238,8 +238,8 @@ D0pp_jet:
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/real/train_179752/
-      unmerged_tree_dir: [alice/cern.ch/user/a/alihyperloop/outputs/0017/179752/23474] #list of periods
+      prefix_dir: /data2/MLhep/real/train_183233/
+      unmerged_tree_dir: [alice/cern.ch/user/a/alihyperloop/jobs/0034/hy_348137] #list of periods
       pkl: ['${USER}/d0jet/pkl'] #list of periods
       pkl_skimmed: ['${USER}/d0jet/pklsk'] #list of periods
       pkl_skimmed_merge_for_ml: ['${USER}/d0jet/pklskml'] #list of periods
@@ -255,8 +255,8 @@ D0pp_jet:
       seedmerge: [12] #list of periods
       period: [mctest_nima] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/sim/train_179440/
-      unmerged_tree_dir: [alice/cern.ch/user/a/alihyperloop/outputs/0017/179440/23430]
+      prefix_dir: /data2/MLhep/sim/train_184858/
+      unmerged_tree_dir: [alice/cern.ch/user/a/alihyperloop/outputs/0018/184858/24138]
       pkl: ['${USER}/d0jet/pkl'] #list of periods
       pkl_skimmed: ['${USER}/d0jet/pklsk'] #list of periods
       pkl_skimmed_merge_for_ml: ['${USER}/d0jet/pklskml'] #list of periods

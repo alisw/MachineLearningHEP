@@ -49,35 +49,36 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
     def qa(self): # pylint: disable=too-many-branches, too-many-locals, invalid-name
         self.logger.info("Running D0 jet qa")
 
-        print(self.n_filemass)
-        with TFile(self.n_filemass) as rfile:
-            histonorm = rfile.Get("histonorm")
-            if not histonorm:
-                self.logger.critical('histonorm not found')
-            p_nevents = histonorm.GetBinContent(1)
-            self.logger.debug('Number of selected event: %d', p_nevents)
+        for mcordata in ['mc', 'data']:
+            rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
+            with TFile(rfilename) as rfile:
+                histonorm = rfile.Get("histonorm")
+                if not histonorm:
+                    self.logger.critical('histonorm not found')
+                p_nevents = histonorm.GetBinContent(1)
+                self.logger.debug('Number of selected event: %d', p_nevents)
 
-            for ipt in range(7):
-                c = TCanvas("Candidate mass")
-                h_invmass = rfile.Get(f'hmass_{ipt}')
-                if not h_invmass:
-                    self.logger.critical('hmass not found')
-                h_invmass.Print()
-                h_invmass.Draw()
-                c.SaveAs(f'hmass_{ipt}.png')
+                for ipt in range(7):
+                    c = TCanvas("Candidate mass")
+                    h_invmass = rfile.Get(f'hmass_{ipt}')
+                    if not h_invmass:
+                        self.logger.critical('hmass not found')
+                    h_invmass.Print()
+                    h_invmass.Draw()
+                    c.SaveAs(f'hmass_{ipt}_{mcordata}.png')
 
-                c = TCanvas("Candidate pt")
-                h_candpt = rfile.Get(f'hcandpt_{ipt}')
-                if not h_candpt:
-                    self.logger.critical('hcandpt not found')
-                h_candpt.Print()
-                h_candpt.Draw()
-                c.SaveAs(f'hcandpt_{ipt}.png')
+                    c = TCanvas("Candidate pt")
+                    h_candpt = rfile.Get(f'hcandpt_{ipt}')
+                    if not h_candpt:
+                        self.logger.critical('hcandpt not found')
+                    h_candpt.Print()
+                    h_candpt.Draw()
+                    c.SaveAs(f'hcandpt_{ipt}_{mcordata}.png')
 
-                c = TCanvas("Jet pt")
-                h_jetpt = rfile.Get(f'hjetpt_{ipt}')
-                if not h_jetpt:
-                    self.logger.critical('hjetpt not found')
-                h_jetpt.Print()
-                h_jetpt.Draw()
-                c.SaveAs(f'hjetpt_{ipt}.png')
+                    c = TCanvas("Jet pt")
+                    h_jetpt = rfile.Get(f'hjetpt_{ipt}')
+                    if not h_jetpt:
+                        self.logger.critical('hjetpt not found')
+                    h_jetpt.Print()
+                    h_jetpt.Draw()
+                    c.SaveAs(f'hjetpt_{ipt}_{mcordata}.png')

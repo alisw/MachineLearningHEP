@@ -63,8 +63,11 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
 
         for ipt in range(self.p_nptfinbins):
             bin_id = self.bin_matching[ipt]
+            pt_min = self.lpt_finbinmin[ipt]
+            pt_max = self.lpt_finbinmax[ipt]
             with openfile(self.mptfiles_recosk[bin_id][index], "rb") as file:
                 df = pickle.load(file)
+                df.query(f'fPt > {pt_min} and fPt < {pt_max}', inplace=True)
                 h_invmass_all = TH1F(
                     f'hmass_{ipt}', "", 
                     self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
