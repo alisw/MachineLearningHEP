@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2024. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -15,7 +15,7 @@
 """
 main script for doing data processing, machine learning and analysis
 """
-# pylint: disable=too-many-lines
+# pylint: disable=too-many-lines, fixme, consider-using-f-string
 import os
 import sys
 import math
@@ -24,15 +24,16 @@ import pickle
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
-# from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TH1F, TH2F #, RooUnfoldResponse # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utilities import selectdfrunlist, seldf_singlevar, openfile
-from machine_learning_hep.utilities import create_folder_struc, mergerootfiles, get_timestamp_string, make_message_notfound
+from machine_learning_hep.utilities import create_folder_struc, mergerootfiles
+from machine_learning_hep.utilities import get_timestamp_string, make_message_notfound
 from machine_learning_hep.utilities import z_calc, z_gen_calc
 from machine_learning_hep.utilities_plot import buildhisto, build2dhisto, fill2dhist, fillweighed
 from machine_learning_hep.utilities_plot import makefill3dhist, makefill2dhist, fill2dweighed
 from machine_learning_hep.processer import Processer
+from machine_learning_hep.utilities import fill_hist
 #from machine_learning_hep.selectionutils import selectpid_dzerotokpi
 
 def apply_cut_selpid(df_):
@@ -1299,7 +1300,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             #     print(f"Unknown analysis type: {self.typean}")
             #     sys.exit()
             # name_hist_model_weights = f"fh2_D0_Monash_{analysis}_JetpT_Weights"
-            name_hist_model_weights = f"fh2_D0_Monash_N_JetpT_Weights"
+            name_hist_model_weights = f"{fh2_D0_Monash_N_JetpT_Weights}"
             hzvsjetpt_modeldep_weights = file_modeldep.Get(name_hist_model_weights)
             if not hzvsjetpt_modeldep_weights:
                 print(make_message_notfound(name_hist_model_weights, self.path_modeldep))
