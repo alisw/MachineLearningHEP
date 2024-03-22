@@ -86,21 +86,21 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     dofeeddown = data_config["analysis"]["mc"]["feeddown"]
     dounfolding = data_config["analysis"]["mc"]["dounfolding"]
     dojetsystematics = data_config["analysis"]["data"]["dojetsystematics"]
-    doqa = data_config["analysis"]["doqa"]
-    dofit = data_config["analysis"]["dofit"]
+    doqa = data_config["analysis"].get("doqa", False)
+    dofit = data_config["analysis"].get("dofit", False)
     dosidebandsub = data_config["analysis"].get("dosidebandsub", False)
-    doeff = data_config["analysis"]["doeff"]
-    docross = data_config["analysis"]["docross"]
-    doplotsval = data_config["analysis"]["doplotsval"]
-    doplots = data_config["analysis"]["doplots"]
-    dosyst = data_config["analysis"]["dosyst"]
+    doeff = data_config["analysis"].get("doeff", False)
+    docross = data_config["analysis"].get("docross", False)
+    doplotsval = data_config["analysis"].get("doplotsval", False)
+    doplots = data_config["analysis"].get("doplots", False)
+    dosyst = data_config["analysis"].get("dosyst", False)
     do_syst_ml = data_config["systematics"]["cutvar"]["activate"]
     do_syst_ml_only_analysis = data_config["systematics"]["cutvar"]["do_only_analysis"]
     do_syst_ml_resume = data_config["systematics"]["cutvar"]["resume"]
     doanaperperiod = data_config["analysis"]["doperperiod"]
     typean = data_config["analysis"]["type"]
 
-    dojetstudies = data_config["analysis"]["dojetstudies"]
+    dojetstudies = data_config["analysis"].get("dojetstudies", False)
 
     dp = data_param[case]["multi"]["mc"]
     dirprefixmc = dp.get("prefix_dir", "")
@@ -423,6 +423,10 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         analyze_steps.append("plotternormyields")
     if doplotsval:
         analyze_steps.append("plottervalidation")
+
+    for step in data_config["analysis"].get('steps', []):
+        if step not in analyze_steps:
+            analyze_steps.append(step)
 
     # Now do the analysis
     ana_mgr.analyze(analyze_steps)

@@ -346,8 +346,16 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
                 for df_name, df_spec in self.df_read.items():
                     if dfuse(df_spec):
-                        df = dfread(rdir, list(df_spec['trees'].keys()),
-                                    list(df_spec['trees'].values()),
+                        trees = []
+                        cols = []
+                        for tree, spec in zip(df_spec['trees'].keys(), df_spec['trees'].values()):
+                            if isinstance(spec, list):
+                                trees.append(tree)
+                                cols.append(spec)
+                            elif dfuse(spec):
+                                trees.append(tree)
+                                cols.append(spec['vars'])
+                        df = dfread(rdir, trees, cols,
                                     idx_name=df_spec.get('index', None))
                         dfappend(df_name, df)
 

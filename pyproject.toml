@@ -18,6 +18,7 @@ dependencies = [
   "klein>=17.10.0",
   "lz4>=2.1.10",
   "matplotlib>=3.0.3",
+  "munch>=4.0.0",
   "numba>=0.48.0",
   "numpy>=1.17.4",
   "onnx>=1.12.0",
@@ -34,6 +35,7 @@ dependencies = [
   "twisted>=19.2.0",
   "uproot>=3.4.18",
   "xgboost>=0.90",
+  "zstandard>=0.21.0",
 ]
 requires-python = ">= 3.9"
 authors = [
