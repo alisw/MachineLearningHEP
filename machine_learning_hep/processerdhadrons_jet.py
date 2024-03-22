@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 2024. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -15,7 +15,7 @@
 """
 main script for doing data processing, machine learning and analysis
 """
-# pylint: disable=too-many-lines, fixme, consider-using-f-string
+# pylint: disable=too-many-lines
 import os
 import sys
 import math
@@ -24,16 +24,15 @@ import pickle
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
+# from root_numpy import fill_hist # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TH1F, TH2F #, RooUnfoldResponse # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utilities import selectdfrunlist, seldf_singlevar, openfile
-from machine_learning_hep.utilities import create_folder_struc, mergerootfiles
-from machine_learning_hep.utilities import get_timestamp_string, make_message_notfound
+from machine_learning_hep.utilities import create_folder_struc, mergerootfiles, get_timestamp_string, make_message_notfound
 from machine_learning_hep.utilities import z_calc, z_gen_calc
 from machine_learning_hep.utilities_plot import buildhisto, build2dhisto, fill2dhist, fillweighed
 from machine_learning_hep.utilities_plot import makefill3dhist, makefill2dhist, fill2dweighed
 from machine_learning_hep.processer import Processer
-from machine_learning_hep.utilities import fill_hist
 #from machine_learning_hep.selectionutils import selectpid_dzerotokpi
 
 def apply_cut_selpid(df_):
@@ -425,7 +424,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                     df_mc_gen = seldf_singlevar(df_mc_gen, self.v_varshape_binning, \
                                                 self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape])
 
-                    df_gen_sel_pr = df_mc_gen.loc[(df_mc_gen.ismcprompt == 1) & (df_mc_gen.ismcsignal == 1)]
+                    df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
 
                     val = len(df_gen_sel_pr)
                     h3_shape_ptjet_ptcand_gen.SetBinContent(ibinshape + 1, ibin2 + 1, ipt + 1, val)
@@ -510,8 +509,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_mc_reco = adjust_z(df_mc_reco)
 
                 # prompt
-                df_gen_sel_pr = df_mc_gen.loc[(df_mc_gen.ismcprompt == 1) & (df_mc_gen.ismcsignal == 1)]
-                df_reco_presel_pr = df_mc_reco.loc[(df_mc_reco.ismcprompt == 1) & (df_mc_reco.ismcsignal == 1)]
+                df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
+                df_reco_presel_pr = df_mc_reco[df_mc_reco.ismcprompt == 1]
                 df_reco_sel_pr = None
                 if self.doml is True:
                     df_reco_sel_pr = df_reco_presel_pr.query(self.l_selml[ipt])
@@ -527,8 +526,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_reco_sel_pr_no_overflow = seldf_singlevar(df_reco_sel_pr, \
                     self.v_varshape_binning, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
                 # non-prompt
-                df_gen_sel_fd = df_mc_gen.loc[(df_mc_gen.ismcfd == 1) & (df_mc_gen.ismcsignal == 1)]
-                df_reco_presel_fd = df_mc_reco.loc[(df_mc_reco.ismcfd == 1) & (df_mc_reco.ismcsignal == 1)]
+                df_gen_sel_fd = df_mc_gen[df_mc_gen.ismcfd == 1]
+                df_reco_presel_fd = df_mc_reco[df_mc_reco.ismcfd == 1]
                 df_reco_sel_fd = None
                 if self.doml is True:
                     df_reco_sel_fd = df_reco_presel_fd.query(self.l_selml[ipt])
@@ -630,12 +629,11 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                     self.v_varshape_binning_gen, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1])
 
                 # prompt
-                df_reco_pr_overflow = df_mc_reco.loc[(df_mc_reco.ismcprompt == 1) & (df_mc_reco.ismcsignal == 1)]
-                df_reco_pr = df_reco_no_overflow.loc[(df_reco_no_overflow.ismcprompt == 1) & (df_reco_no_overflow.ismcsignal == 1)]
-
+                df_reco_pr_overflow = df_mc_reco[df_mc_reco.ismcprompt == 1]
+                df_reco_pr = df_reco_no_overflow[df_reco_no_overflow.ismcprompt == 1]
                 # non-prompt
-                #df_reco_fd_overflow = df_mc_reco.loc[(df_mc_reco.ismcfd == 1) & (df_mc_reco.ismcsignal == 1)]
-                #df_reco_fd = df_reco_no_overflow.loc[(df_reco_no_overflow.ismcfd == 1) & (df_reco_no_overflow.ismcsignal == 1)]
+                #df_reco_fd_overflow = df_mc_reco[df_mc_reco.ismcfd == 1]
+                #df_reco_fd = df_reco_no_overflow[df_reco_no_overflow.ismcfd == 1]
 
                 val = len(df_reco_pr_overflow)
                 err = math.sqrt(val)
@@ -1300,7 +1298,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
             #     print(f"Unknown analysis type: {self.typean}")
             #     sys.exit()
             # name_hist_model_weights = f"fh2_D0_Monash_{analysis}_JetpT_Weights"
-            name_hist_model_weights = f"{fh2_D0_Monash_N_JetpT_Weights}"
+            name_hist_model_weights = f"fh2_D0_Monash_N_JetpT_Weights"
             hzvsjetpt_modeldep_weights = file_modeldep.Get(name_hist_model_weights)
             if not hzvsjetpt_modeldep_weights:
                 print(make_message_notfound(name_hist_model_weights, self.path_modeldep))
