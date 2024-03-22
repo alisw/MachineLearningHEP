@@ -130,13 +130,13 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
 
     dp = data_param[case]["analysis"][typean]["data"]
     dirprefixdatares = dp.get("prefix_dir_res", "")
-    dirresultsdata = [dirprefixdatares + p for p in dp["results"]]
-    dirresultsdatatot = dirprefixdatares + dp["resultsallp"]
+    dirresultsdata = [dirprefixdatares + os.path.expandvars(p) for p in dp["results"]]
+    dirresultsdatatot = dirprefixdatares + os.path.expandvars(dp["resultsallp"])
 
     dp = data_param[case]["analysis"][typean]["mc"]
     dirprefixmcres = dp.get("prefix_dir_res", "")
-    dirresultsmc = [dirprefixmcres + p for p in dp["results"]]
-    dirresultsmctot = dirprefixmcres + dp["resultsallp"]
+    dirresultsmc = [dirprefixmcres + os.path.expandvars(p) for p in dp["results"]]
+    dirresultsmctot = dirprefixmcres + os.path.expandvars(dp["resultsallp"])
 
     binminarray = data_param[case]["ml"]["binmin"]
     binmaxarray = data_param[case]["ml"]["binmax"]

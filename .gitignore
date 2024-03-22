@@ -41,6 +41,7 @@ plots_*
 output_*
 *.json
 *.h5
+*.png
 
 # editor backups/cached
 *.swp

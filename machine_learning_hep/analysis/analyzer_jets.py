@@ -73,7 +73,6 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     self.fit_func_bkg[mcordata].append(funcBkg)
                     h_invmass.Draw()
                     c.SaveAs(f'hmass_fitted_{ipt}_{mcordata}.png')
-        self.sidebandsub()
 
     def sidebandsub(self):
         self.logger.info("Running sideband subtraction")

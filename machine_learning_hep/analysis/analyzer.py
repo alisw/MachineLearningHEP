@@ -14,6 +14,7 @@
 
 from os.path import exists, join
 from os import makedirs
+import os
 
 # HF specific imports
 from machine_learning_hep.workflow.workflow_base import WorkflowBase
@@ -27,9 +28,9 @@ class Analyzer(WorkflowBase):
         for mcordata in ("mc", "data"):
             dp = datap["analysis"][typean][mcordata]
             prefix_dir_res = dp.get("prefix_dir_res", "")
-            results_dir = prefix_dir_res + dp["results"][period] \
+            results_dir = prefix_dir_res + os.path.expandvars(dp["results"][period]) \
                     if period is not None \
-                    else prefix_dir_res + dp["resultsallp"]
+                    else prefix_dir_res + os.path.expandvars(dp["resultsallp"])
             if not exists(results_dir):
                 # create otput directories in case they do not exist
                 makedirs(results_dir)
