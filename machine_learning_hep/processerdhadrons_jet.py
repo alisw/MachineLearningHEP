@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2024. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -630,7 +630,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
 
                 # prompt
                 df_reco_pr_overflow = df_mc_reco.loc[(df_mc_reco.ismcprompt == 1) & (df_mc_reco.ismcsignal == 1)]
-                df_reco_pr = df_reco_no_overflow.loc[(df_reco_no_overflow.ismcprompt == 1) & (df_reco_no_overflow.ismcsignal == 1))]
+                df_reco_pr = df_reco_no_overflow.loc[(df_reco_no_overflow.ismcprompt == 1) & (df_reco_no_overflow.ismcsignal == 1)]
 
                 # non-prompt
                 #df_reco_fd_overflow = df_mc_reco.loc[(df_mc_reco.ismcfd == 1) & (df_mc_reco.ismcsignal == 1)]
