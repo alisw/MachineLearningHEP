@@ -424,7 +424,7 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                     df_mc_gen = seldf_singlevar(df_mc_gen, self.v_varshape_binning, \
                                                 self.lvarshape_binmin_gen[ibinshape], self.lvarshape_binmax_gen[ibinshape])
 
-                    df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
+                    df_gen_sel_pr = df_mc_gen.loc[(df_mc_gen.ismcprompt == 1) & (df_mc_gen.ismcsignal == 1)]
 
                     val = len(df_gen_sel_pr)
                     h3_shape_ptjet_ptcand_gen.SetBinContent(ibinshape + 1, ibin2 + 1, ipt + 1, val)
@@ -509,8 +509,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_mc_reco = adjust_z(df_mc_reco)
 
                 # prompt
-                df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
-                df_reco_presel_pr = df_mc_reco[df_mc_reco.ismcprompt == 1]
+                df_gen_sel_pr = df_mc_gen.loc[(df_mc_gen.ismcprompt == 1) & (df_mc_gen.ismcsignal == 1)]
+                df_reco_presel_pr = df_mc_reco.loc[(df_mc_reco.ismcprompt == 1) & (df_mc_reco.ismcsignal == 1)]
                 df_reco_sel_pr = None
                 if self.doml is True:
                     df_reco_sel_pr = df_reco_presel_pr.query(self.l_selml[ipt])
@@ -526,8 +526,8 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                 df_reco_sel_pr_no_overflow = seldf_singlevar(df_reco_sel_pr, \
                     self.v_varshape_binning, self.lvarshape_binmin_reco[0], self.lvarshape_binmax_reco[-1])
                 # non-prompt
-                df_gen_sel_fd = df_mc_gen[df_mc_gen.ismcfd == 1]
-                df_reco_presel_fd = df_mc_reco[df_mc_reco.ismcfd == 1]
+                df_gen_sel_fd = df_mc_gen.loc[(df_mc_gen.ismcfd == 1) & (df_mc_gen.ismcsignal == 1)]
+                df_reco_presel_fd = df_mc_reco.loc[(df_mc_reco.ismcfd == 1) & (df_mc_reco.ismcsignal == 1)]
                 df_reco_sel_fd = None
                 if self.doml is True:
                     df_reco_sel_fd = df_reco_presel_fd.query(self.l_selml[ipt])
@@ -629,11 +629,12 @@ class ProcesserDhadrons_jet(Processer): # pylint: disable=invalid-name, too-many
                     self.v_varshape_binning_gen, self.lvarshape_binmin_gen[0], self.lvarshape_binmax_gen[-1])
 
                 # prompt
-                df_reco_pr_overflow = df_mc_reco[df_mc_reco.ismcprompt == 1]
-                df_reco_pr = df_reco_no_overflow[df_reco_no_overflow.ismcprompt == 1]
+                df_reco_pr_overflow = df_mc_reco.loc[(df_mc_reco.ismcprompt == 1) & (df_mc_reco.ismcsignal == 1)]
+                df_reco_pr = df_reco_no_overflow.loc[(df_reco_no_overflow.ismcprompt == 1) & (df_reco_no_overflow.ismcsignal == 1))]
+
                 # non-prompt
-                #df_reco_fd_overflow = df_mc_reco[df_mc_reco.ismcfd == 1]
-                #df_reco_fd = df_reco_no_overflow[df_reco_no_overflow.ismcfd == 1]
+                #df_reco_fd_overflow = df_mc_reco.loc[(df_mc_reco.ismcfd == 1) & (df_mc_reco.ismcsignal == 1)]
+                #df_reco_fd = df_reco_no_overflow.loc[(df_reco_no_overflow.ismcfd == 1) & (df_reco_no_overflow.ismcsignal == 1)]
 
                 val = len(df_reco_pr_overflow)
                 err = math.sqrt(val)

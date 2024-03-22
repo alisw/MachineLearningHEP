@@ -470,15 +470,15 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                                                  self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
                     df_mc_gen = seldf_singlevar_inclusive(df_mc_gen, self.v_var2_binning_gen, \
                                                 self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
-                df_gen_sel_pr = df_mc_gen[df_mc_gen.ismcprompt == 1]
-                df_reco_presel_pr = df_mc_reco[df_mc_reco.ismcprompt == 1]
+                df_gen_sel_pr = df_mc_gen.loc[(df_mc_gen.ismcprompt == 1) & (df_mc_gen.ismcsignal == 1)]
+                df_reco_presel_pr = df_mc_reco.loc[(df_mc_reco.ismcprompt == 1) & (df_mc_reco.ismcsignal == 1)]
                 df_reco_sel_pr = None
                 if self.doml is True:
                     df_reco_sel_pr = df_reco_presel_pr.query(self.l_selml[ipt])
                 else:
                     df_reco_sel_pr = df_reco_presel_pr.copy()
-                df_gen_sel_fd = df_mc_gen[df_mc_gen.ismcfd == 1]
-                df_reco_presel_fd = df_mc_reco[df_mc_reco.ismcfd == 1]
+                df_gen_sel_fd = df_mc_gen.loc[(df_mc_gen.ismcfd == 1) & (df_mc_gen.ismcsignal == 1)]
+                df_reco_presel_fd = df_mc_reco.loc[(df_mc_reco.ismcfd == 1) & (df_mc_reco.ismcsignal == 1)]
                 df_reco_sel_fd = None
                 if self.doml is True:
                     df_reco_sel_fd = df_reco_presel_fd.query(self.l_selml[ipt])
