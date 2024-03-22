@@ -25,14 +25,15 @@ from math import sqrt
 from ctypes import c_double
 
 # pylint: disable=import-error, no-name-in-module, unused-import, f-string-without-interpolation
-from ROOT import AliHFInvMassFitter, AliVertexingHFUtils, AliHFInvMassMultiTrialFit
+try:
+    from ROOT import AliHFInvMassFitter, AliVertexingHFUtils, AliHFInvMassMultiTrialFit
+except ImportError:
+    pass
 from ROOT import TFile, TH1F, TH1D, TF1, TPaveText, TLine, TLegend, TLatex
 from ROOT import kBlue, kRed, kGreen, kMagenta, kOrange, kPink, kCyan, kYellow, kBlack
 
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.fitting.utils import construct_rebinning
-
-
 
 # single or double Gaussian
 TYPE_GAUSS_1 = "kGaus"

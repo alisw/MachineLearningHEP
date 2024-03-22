@@ -102,8 +102,8 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.dlper_reco_modappmerged = [self.d_prefix_app + p for p in dp["pkl_skimmed_decmerged"]]
 
         dp = datap["analysis"][self.typean][self.mcordata]
-        self.d_results = [self.d_prefix_res + p for p in dp["results"]]
-        self.d_resultsallp = self.d_prefix_res + dp["resultsallp"]
+        self.d_results = [self.d_prefix_res + os.path.expandvars(p) for p in dp["results"]]
+        self.d_resultsallp = self.d_prefix_res + os.path.expandvars(dp["resultsallp"])
 
         self.f_evt_mergedallp = os.path.join(self.d_pklevt_mergedallp, self.n_evt)
         self.f_evtorig_mergedallp = \
