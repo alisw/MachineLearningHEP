@@ -19,10 +19,8 @@ main script for doing data processing, machine learning and analysis
 import argparse
 import importlib
 import os
-from os.path import exists
 import subprocess
 import sys
-
 import yaml
 # unclear why shap needs to be imported from here,
 # segfaults when imported from within other modules
@@ -34,7 +32,7 @@ from .logger import configure_logger, get_logger
 from .utilities_files import checkmakedirlist, checkmakedir, checkdirlist, checkdir, delete_dirlist
 
 def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite: dict, # pylint: disable=too-many-locals, too-many-statements, too-many-branches
-                       data_model: dict, run_param: dict, clean: bool):
+                       data_model: dict, run_param: dict, args):
 
     logger = get_logger()
     logger.info("Do analysis chain")
@@ -259,6 +257,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     def mlhepmod(name):
         return importlib.import_module(f"..{name}", __name__)
 
+    import ROOT # pylint: disable=import-outside-toplevel
+    ROOT.gROOT.SetBatch(args.batch)
     from machine_learning_hep.multiprocesser import MultiProcesser # pylint: disable=import-outside-toplevel
     syst_class = mlhepmod('analysis.systematics').SystematicsMLWP
     if proc_type == "Dhadrons":
@@ -439,7 +439,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
             syst_ml_pt.ml_systematics(do_syst_ml_only_analysis, do_syst_ml_resume)
 
     # Delete per-period results.
-    if clean:
+    if args.clean:
         print("Cleaning")
         if doanaperperiod:
             print("Per-period analysis enabled. Skipping.")
@@ -463,7 +463,7 @@ def load_config(user_path: str, default_path=None) -> dict:
         return None
 
     if user_path:
-        if not exists(user_path):
+        if not os.path.exists(user_path):
             get_logger().fatal("The file %s does not exist", user_path)
             sys.exit(-1)
         with open(user_path, 'r', encoding='utf-8') as stream:
@@ -497,6 +497,7 @@ def main(args=None):
                         help="choose type of analysis")
     parser.add_argument("--clean", "-c", action="store_true",
                         help="delete per-period results at the end")
+    parser.add_argument("--batch", "-b", action="store_true", help="enable ROOT batch mode")
 
     args = parser.parse_args(args)
 
@@ -515,8 +516,7 @@ def main(args=None):
     db_run_list = load_config(args.database_run_list, (pkg_data, "database_run_list.yml"))
 
     # Run the chain
-    do_entire_analysis(run_config, db_analysis, db_analysis_overwrite, db_ml_models, db_run_list,
-                       args.clean)
+    do_entire_analysis(run_config, db_analysis, db_analysis_overwrite, db_ml_models, db_run_list, args)
 
 if __name__ == '__main__':
     main()
