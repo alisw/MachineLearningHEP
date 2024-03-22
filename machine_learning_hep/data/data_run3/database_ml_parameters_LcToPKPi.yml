@@ -382,7 +382,7 @@ LcpKpi:
       sel_an_binmax: [2,4,6,8,12,24]
       binning_matching: [0,1,2,3,4,5]
       presel_gen_eff: "abs(fY) < 0.5"
-      evtsel: "fPosZ < 10"
+      evtsel: "abs(fPosZ < 10)"
       triggersel:
         data: null
         mc: null
