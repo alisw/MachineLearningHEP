@@ -126,7 +126,7 @@ function test-pytest()
 function copyright-single() {
   local COPYRIGHT_GIAN="$(cat <<'EOF'
 #############################################################################
-##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2024. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -142,7 +142,7 @@ EOF
 )"
   local COPYRIGHT="$(cat <<'EOF'
 #############################################################################
-##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2024. All rights not expressly granted are reserved.  ##
 ##                                                                         ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##

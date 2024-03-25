@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2024. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -60,12 +60,12 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         dirprefixdata = data_param["multi"]["data"].get("prefix_dir", "")
         dirprefixmc = data_param["multi"]["mc"].get("prefix_dir", "")
         dirprefix_ml = data_param["ml"].get("prefix_dir_ml", "")
-        dirmcml = dirprefixmc + data_param["multi"]["mc"]["pkl_skimmed_merge_for_ml_all"]
-        dirdataml = dirprefixdata + data_param["multi"]["data"]["pkl_skimmed_merge_for_ml_all"]
+        dirmcml = dirprefixmc + os.path.expandvars(data_param["multi"]["mc"]["pkl_skimmed_merge_for_ml_all"])
+        dirdataml = dirprefixdata + os.path.expandvars(data_param["multi"]["data"]["pkl_skimmed_merge_for_ml_all"])
         self.v_bin = data_param["var_binning"]
         #directory
-        self.dirmlout = dirprefix_ml + data_param["ml"]["mlout"]
-        self.dirmlplot = dirprefix_ml + data_param["ml"]["mlplot"]
+        self.dirmlout = dirprefix_ml + os.path.expandvars(data_param["ml"]["mlout"])
+        self.dirmlplot = dirprefix_ml + os.path.expandvars(data_param["ml"]["mlplot"])
 
         # Check here which steps have been done already
         self.steps_done = None

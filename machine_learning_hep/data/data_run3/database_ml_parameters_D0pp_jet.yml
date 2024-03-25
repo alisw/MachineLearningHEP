@@ -178,6 +178,7 @@ D0pp_jet:
         file: AnalysisResultsGen.pkl.lz4
 
   variables:
+    var_all: [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1]
     var_training: [[fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1], [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1]]
       #TODO: add new variables for dca, max_norm_d0d0exp
       # sel_skim_binmin bins
@@ -186,6 +187,7 @@ D0pp_jet:
       - [fCosThetaStar] # TODO: update
       - [fPtProng0]
     var_signal: signal
+    var_class: class
     var_inv_mass: fM
     var_y: fY
     var_evt_sel: fIsEventReject
@@ -223,6 +225,7 @@ D0pp_jet:
     namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl.lz4
     namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl.lz4
     namefile_mcweights: mcweights.root
+    treeoutput: "D0tree"
     histofilename: "masshisto.root"
     efffilename: "effhisto.root"
     respfilename: "resphisto.root"
@@ -265,7 +268,7 @@ D0pp_jet:
       mcreweights: [../Analyses] #list of periods
 
   ml:
-    evtsel: fIsEventReject == 0
+    evtsel: null # TODO: fIsEventReject == 0
     triggersel:
       data: null
       mc: null
@@ -273,20 +276,24 @@ D0pp_jet:
     nbkg: 500000
     nsig: 500000
     mult_bkg: [1,1,1,1,1,1]
+    nclasses: [20000, 20000]
+    sampletags: [0, 1]
     equalise_sig_bkg: True
-    sampletagforsignal: 1
-    sampletagforbkg: 0
-    sel_sigml: ismcprompt == 1
-    sel_bkgml: fM<1.8 or fM>1.92
+    # sampletagforsignal: 1
+    # sampletagforbkg: 0
+    sel_ml: [fM<1.8 or fM>1.92, ismcprompt == 1]
+    sel_bkg: fM<1.8 or fM>1.92
+    class_labels: [bkg, sig]
     nkfolds: 5
     rnd_shuffle: 12
     rnd_splt: 12
+    rnd_all: 12
     test_frac: 0.2
     binmin: [1,2,4,6,8,12,24] # must be equal to sel_skim_binmin (sel_skim_binmin bins)
     binmax:   [2,4,6,8,12,24,48] # must be equal to sel_skim_binmax (sel_skim_binmin bins)
     mltype: BinaryClassification
     ncorescrossval: 10
-    prefix_dir_ml: /data2/jklein/MLhep
+    prefix_dir_ml: /data2/jklein/MLhep/
     mlplot: mlplot
     mlout: mlout
 
@@ -305,7 +312,8 @@ D0pp_jet:
       bkg_function: pol2 # fit function for bkg (among TH1 predefined fit functions, e.g. expo, pol1, pol2, ...)
       save_fit: True # save bkg fits with the various cuts on ML output
       raahp: [1,1,1,1,1,1,1] # sel_skim_binmin bins
-      presel_gen_eff: "abs(fY) < 0.5 and abs(fPosZ) < 10"
+      # presel_gen_eff: "abs(fY) < 0.5 and abs(fPosZ) < 10"
+      presel_gen_eff: "fPt > 0." # TODO: fix
 
   mlapplication:
     data:
@@ -389,6 +397,10 @@ D0pp_jet:
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_default
 
+      mass_fit:
+        func_sig: 'gaus(0)'
+        func_bkg: 'expo(3)'
+        range: (1.5, 2.2)
       mass_fit_lim: [1.5, 2.2] # histogram range of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
 

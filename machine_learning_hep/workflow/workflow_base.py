@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 2018. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2024. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -12,11 +12,12 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
+from functools import reduce
 from os.path import join
-# HF specific imports
-from machine_learning_hep.logger import get_logger
 # pylint: disable=import-error, no-name-in-module
 from ROOT import gStyle
+# HF specific imports
+from machine_learning_hep.logger import get_logger
 
 # pylint: disable=too-few-public-methods
 class WorkflowBase:
@@ -32,6 +33,9 @@ class WorkflowBase:
         self.typean = typean
         self.period = period
 
+    def cfg(self, param, default = None):
+        return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default,
+                      param.split("."), self.datap['analysis'][self.typean])
 
     @staticmethod
     def loadstyle():
@@ -86,7 +90,6 @@ class WorkflowBase:
         return True
 
 
-    # pylint: disable=no-self-use
     def get_after_burner(self):
         """
         Return an after-burner object to be run after per-period workflow steps, OPTIONAL
