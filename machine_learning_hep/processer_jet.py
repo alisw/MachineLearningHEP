@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2024. All rights not expressly granted are reserved.  ##
 ##                                                                         ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -68,7 +68,7 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
             pt_max = self.lpt_finbinmax[ipt]
             with openfile(self.mptfiles_recosk[bin_id][index], "rb") as file:
                 df = pickle.load(file)
-                df.query(f'fPt > {pt_min} and fPt < {pt_max}', inplace=True)
+                df.query(f'fPt >= {pt_min} and fPt < {pt_max}', inplace=True)
                 df['zg'] = 1.
                 for idx, row in df.iterrows():
                     for ptLeading, ptSubLeading in zip(row['fPtLeading'], row['fPtSubLeading']):
@@ -113,6 +113,13 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
                 h2_invmass_zg.FillN(len(df.fM), np.float64(df.fM), np.float64(df.zg),
                                     np.float64(len(df.fM)*[1.]))
                 h2_invmass_zg.Write()
+                for i in range(1,5,1):
+                    df_zg = df.query(f'zg >= {i*0.1} and zg < {i*0.1+0.1}')
+                    h_invmass_zg = TH1F(
+                        f'hmass_zg_{ipt}_{i}', "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+                    fill_hist(h_invmass_zg, df_zg.fM)
+                    h_invmass_zg.Write()
+
         print("end of processor")
 
 

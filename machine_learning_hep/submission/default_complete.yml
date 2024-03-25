@@ -68,16 +68,11 @@ analysis:
     response: false # processer: process_response
     feeddown: false # analyzer: feeddown
     dounfolding: false # analyzer: unfolding, unfolding_closure
-  doqa: false
-  dofit: false # analyzer: fit
-  dosidebandsub: false
-  # Control the yield systematic uncertainty
-  dosyst: false # analyzer: yield_syst
-  dojetstudies: false # analyzer: fit, efficiency, sideband_sub
-  doeff: false # analyzer: efficiency
-  docross: false # analyzer: makenormyields
-  doplots: false # analyzer: plotternormyields
-  doplotsval: false # analyzer: plottervalidation
+  steps: # list steps (name of method in analyzer) to run
+    # fit:
+    # sideband:
+    # qa:
+    # signalextraction:
 
 systematics:
   cutvar:
