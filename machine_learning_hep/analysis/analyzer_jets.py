@@ -50,9 +50,25 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.fit_mean = {'mc': 7 * [0], 'data': 7 * [0]}
         self.fit_func_bkg = {'mc': [], 'data': []}
 
-    def fit_hist(self, hist, func):
-        fit_result = hist.Fit(func, 'S')
-        return fit_result
+    def _fit_mass(self, hist):
+        fit_range = self.cfg('mass_fit.range')
+        func_sig = TF1('funcSig', self.cfg('mass_fit.func_sig'))
+        func_bkg = TF1('funcBkg', self.cfg('mass_fit.func_bkg'))
+        func_tot = TF1('funcTot', f"{self.cfg('mass_fit.func_sig')} + {self.cfg('mass_fit.func_bkg')}")
+        func_tot.SetParameter(0, hist.GetMaximum())
+        for par, value in self.cfg('mass_fit.par_start', {}).items():
+            self.logger.info('Setting par %i to %g', par, value)
+            func_tot.SetParameter(par, value)
+        for par, value in self.cfg('mass_fit.par_constrain', {}).items():
+            self.logger.info('Constraining par %i to (%g, %g)', par, value[0], value[1])
+            func_tot.SetParLimits(par, value[0], value[1])
+        for par, value in self.cfg('mass_fit.par_fix', {}).items():
+            self.logger.info('Fixing par %i to %g', par, value)
+            func_tot.FixParameter(par, value)
+        fit_res = hist.Fit(func_tot, "S", "", fit_range[0], fit_range[1])
+        func_sig.SetParameters(func_tot.GetParameters())
+        func_bkg.SetParameters(func_tot.GetParameters())
+        return (fit_res, func_sig, func_bkg)
 
     def fit(self):
         self.logger.info("Running fitter")
@@ -63,36 +79,14 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 for ipt in range(7):
                     c = TCanvas("Candidate mass")
                     h_invmass = rfile.Get(f'hmass_{ipt}')
-                    # func_sig = TF1('funcSig', self.cfg('mass_fit.func_sig'))
-                    func_bkg = TF1('funcBkg', self.cfg('mass_fit.func_bkg'))
-                    func_tot = TF1('funcTot', f"{self.cfg('mass_fit.func_sig')} + {self.cfg('mass_fit.func_bkg')}")
-                    fit_res = h_invmass.Fit(func_tot, "S", "", 1.67, 2.1)
-                    print(fit_res)
-                    func_bkg.SetParameters(func_tot.GetParameters())
-
-                    funcBkg = TF1("funcBkg", "expo(0)", 1.67, 2.1)
-                    funcTotal = TF1("funcTotal", "gaus(0)+expo(3)", 1.67, 2.1)
-                    funcTotal.SetParameter(0, h_invmass.GetMaximum())
-                    funcTotal.SetParameter(1, 1.86)
-                    funcTotal.SetParLimits(2,0.0,0.1)
-                    fitResult = h_invmass.Fit(funcTotal, "S", "", 1.67, 2.1)
-                    self.fit_sigma[mcordata][ipt] = fitResult.Parameter(2)
-                    self.fit_mean[mcordata][ipt] = fitResult.Parameter(1)
-                    funcBkg.SetParameter(0, fitResult.Parameter(3))
-                    funcBkg.SetParameter(1, fitResult.Parameter(4))
-                    self.fit_func_bkg[mcordata].append(funcBkg)
+                    fit_res, _, func_bkg = self._fit_mass(h_invmass)
+                    self.fit_sigma[mcordata][ipt] = fit_res.Parameter(2)
+                    self.fit_mean[mcordata][ipt] = fit_res.Parameter(1)
+                    self.fit_func_bkg[mcordata].append(func_bkg)
                     h_invmass.Draw()
                     c.SaveAs(f'hmass_fitted_{ipt}_{mcordata}.png')
 
-        #arguments to take in :
-        # histogram
-        # whether sigma is fixed, whether peak is from MC, whether sigma is from MC and wether peak is fixed.
-        #   if in database you say what param sigma is you can also use in other functions for output
-        #types of signal functions
-        #types of background functions
-        #outputs: fitted functions
-
-    def sidebandsub(self):
+    def subtract_sidebands(self):
         self.logger.info("Running sideband subtraction")
         for mcordata in ['mc', 'data']:
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
@@ -145,12 +139,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     fh_subtracted.Draw()
                     c.SaveAs(f'hjet_zg_subtracted_{ipt}_{mcordata}.png')
 
-    #arguments to take in :
-        # fit results, invmass histogram with shape dimensions
-        # Nsigma for signal and sideband regions
-        #outputs: sideband subtracted shapes in D0Pt bins
-
-    def signalextraction(self):
+    def extract_signal(self):
         self.logger.info("Running signal extraction")
         for mcordata in ['mc', 'data']:
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
@@ -162,28 +151,12 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     for i in range(1,5):
                         h_invmass = rfile.Get(f'hmass_zg_{ipt}_{i}')
                         c = TCanvas("Candidate mass")
-                        funcSignal = TF1("funcsignal", "gaus(0)", 1.67, 2.1)
-                        funcTotal = TF1("funcTotal", "gaus(0)+expo(3)", 1.67, 2.1)
-                        funcTotal.SetParameter(0, h_invmass.GetMaximum())
-                        funcTotal.SetParameter(1, 1.86)
-                        funcTotal.SetParLimits(2,0.0,0.1)
-                        fitResult = h_invmass.Fit(funcTotal, "S", "", 1.67, 2.1)
+                        _, func_sig, _ = self._fit_mass(h_invmass)
                         h_invmass.Draw()
                         c.SaveAs(f'hmass_zg_fitted_{ipt}_{i}_{mcordata}.png')
-                        funcSignal.SetParameter(0, fitResult.Parameter(0))
-                        funcSignal.SetParameter(1, fitResult.Parameter(1))
-                        funcSignal.SetParameter(2, fitResult.Parameter(2))
-                        h_zg.SetBinContent(i + 1, funcSignal.Integral(1.67, 2.1)*(1.0/h_invmass.GetBinWidth(1)))
+                        h_zg.SetBinContent(i + 1, func_sig.Integral(1.67, 2.1)*(1.0/h_invmass.GetBinWidth(1)))
                     h_zg.Draw()
                     c.SaveAs(f'zg_signalextracted_{ipt}_{mcordata}.png')
-
-
-
-
-
-
-
-
 
     def qa(self): # pylint: disable=too-many-branches, too-many-locals, invalid-name
         self.logger.info("Running D0 jet qa")
