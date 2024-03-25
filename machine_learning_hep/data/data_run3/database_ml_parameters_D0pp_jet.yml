@@ -15,7 +15,7 @@
 D0pp_jet:
   nprongs: 2
   prongformultsub: [1,1]
-  doml: false
+  doml: true
   mass: 1.864
   sel_reco_unp: "fPt > 1."
   sel_reco_singletrac_unp: null
@@ -275,7 +275,7 @@ D0pp_jet:
 
     nbkg: 500000
     nsig: 500000
-    mult_bkg: [1,1,1,1,1,1]
+    mult_bkg: [1,1,1,1,1,1,1]
     nclasses: [20000, 20000]
     sampletags: [0, 1]
     equalise_sig_bkg: True
@@ -317,21 +317,21 @@ D0pp_jet:
 
   mlapplication:
     data:
-      prefix_dir_res: /data2/jklein/
+      prefix_dir_app: /data2/jklein/
       pkl_skimmed_dec: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdata] #list of periods
       pkl_skimmed_decmerged: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdatamerged] #list of periods
     mc:
-      prefix_dir_res: /data2/jklein/
+      prefix_dir_app: /data2/jklein/
       pkl_skimmed_dec: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmc] #list of periods
       pkl_skimmed_decmerged: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmcmerged] #list of periods
     modelname: xgboost
-    modelsperptbin: [xgboost_classifierD0pp_FF_dfselection_pt_cand_1.0_2.0.sav,
-                     xgboost_classifierD0pp_FF_dfselection_pt_cand_2.0_4.0.sav,
-                     xgboost_classifierD0pp_FF_dfselection_pt_cand_4.0_6.0.sav,
-                     xgboost_classifierD0pp_FF_dfselection_pt_cand_6.0_8.0.sav,
-                     xgboost_classifierD0pp_FF_dfselection_pt_cand_8.0_12.0.sav,
-                     xgboost_classifierD0pp_FF_dfselection_pt_cand_12.0_24.0.sav,
-                     xgboost_classifierD0pp_FF_dfselection_pt_cand_24.0_48.0.sav] # sel_skim_binmin bins
+    modelsperptbin: [xgboost_classifierD0pp_jet_dfselection_fPt_1.0_2.0.sav,
+                     xgboost_classifierD0pp_jet_dfselection_fPt_2.0_4.0.sav,
+                     xgboost_classifierD0pp_jet_dfselection_fPt_4.0_6.0.sav,
+                     xgboost_classifierD0pp_jet_dfselection_fPt_6.0_8.0.sav,
+                     xgboost_classifierD0pp_jet_dfselection_fPt_8.0_12.0.sav,
+                     xgboost_classifierD0pp_jet_dfselection_fPt_12.0_24.0.sav,
+                     xgboost_classifierD0pp_jet_dfselection_fPt_24.0_48.0.sav] # sel_skim_binmin bins
     probcutpresel:
       data:         [0.75,0.75,0.65,0.65,0.45,0.45,0.45] # sel_skim_binmin bins
       mc:           [0.75,0.75,0.65,0.65,0.45,0.45,0.45] # sel_skim_binmin bins
