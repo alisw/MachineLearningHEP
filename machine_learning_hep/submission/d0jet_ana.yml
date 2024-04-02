@@ -70,7 +70,7 @@ analysis:
     dounfolding: false # analyzer: unfolding, unfolding_closure
   steps:
     fit:
-    subtract_sideband:
+    subtract_sidebands:
     extract_signal:
     qa:
 

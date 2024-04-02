@@ -14,3 +14,6 @@ max-locals=40
 
 [MESSAGES CONTROL]
 disable=missing-docstring
+
+[MISCELLANEOUS]
+notes=FIXME,XXX

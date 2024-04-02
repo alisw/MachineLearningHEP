@@ -50,6 +50,15 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.fit_mean = {'mc': 7 * [0], 'data': 7 * [0]}
         self.fit_func_bkg = {'mc': [], 'data': []}
 
+    def _save_hist(self, hist, filename):
+        if not hist:
+            self.logger.error('no histogram for <%s>', filename)
+            # TODO: remove file if it exists?
+            return
+        c = TCanvas()
+        hist.Draw()
+        c.SaveAs(filename)
+
     def _fit_mass(self, hist):
         fit_range = self.cfg('mass_fit.range')
         func_sig = TF1('funcSig', self.cfg('mass_fit.func_sig'))
@@ -86,58 +95,61 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     h_invmass.Draw()
                     c.SaveAs(f'hmass_fitted_{ipt}_{mcordata}.png')
 
+    def _subtract_sideband(self, hist, var, mcordata, ipt):
+        c = TCanvas(f'{var}')
+        hist.Draw("colz")
+        c.SaveAs(f'h2jet_invmass_{var}_{ipt}_{mcordata}.png')
+
+        mean = self.fit_mean[mcordata][ipt]
+        sigma = self.fit_sigma[mcordata][ipt]
+        region_signal = (mean - 2 * sigma, mean + 2 * sigma)
+        region_sideband_left = (mean - 7 * sigma, mean - 4 * sigma)
+        region_sideband_right = (mean + 4 * sigma, mean + 7 * sigma)
+
+        axis = hist.GetXaxis()
+        bins_signal = tuple(map(axis.FindBin, region_signal))
+        bins_sideband_left = tuple(map(axis.FindBin, region_sideband_left))
+        bins_sideband_right = tuple(map(axis.FindBin, region_sideband_right))
+
+        fh_signal = hist.ProjectionY(f'h2jet_{var}_signal_{ipt}_{mcordata}', bins_signal[0], bins_signal[1], "e")
+        signalArea = self.fit_func_bkg[mcordata][ipt].Integral(region_signal[0], region_signal[1])
+
+        fh_sidebandleft = hist.ProjectionY(f'h2jet_{var}_sidebandleft_{ipt}_{mcordata}',
+                                           bins_sideband_left[0], bins_sideband_left[1], "e")
+        sidebandLeftlArea = self.fit_func_bkg[mcordata][ipt].Integral(region_sideband_left[0], region_sideband_left[1])
+
+        fh_sidebandright = hist.ProjectionY(f'h2jet_{var}_sidebandright_{ipt}_{mcordata}',
+                                            bins_sideband_right[0], bins_sideband_right[1], "e")
+        sidebandRightArea = self.fit_func_bkg[mcordata][ipt].Integral(
+            region_sideband_right[0], region_sideband_right[1])
+
+        self._save_hist(fh_signal, f'hjet_{var}_signal_{ipt}_{mcordata}.png')
+        self._save_hist(fh_sidebandleft, f'hjet_{var}_sidebandleft_{ipt}_{mcordata}.png')
+        self._save_hist(fh_sidebandright, f'hjet_{var}_sidebandright_{ipt}_{mcordata}.png')
+
+        areaNormFactor = signalArea / (sidebandLeftlArea + sidebandRightArea)
+        fh_sideband = fh_sidebandleft.Clone(f'h_sideband_{ipt}_{mcordata}')
+        fh_sideband.Add(fh_sidebandright, 1.0)
+        fh_sideband.Draw()
+        c.SaveAs(f'hjet_{var}_sideband_{ipt}_{mcordata}.png')
+
+        fh_subtracted = fh_signal.Clone(f'h_subtracted_{ipt}_{mcordata}')
+        fh_subtracted.Add(fh_sideband, -1.0 * areaNormFactor)
+        fh_subtracted.Scale(1.0 / 0.954) # TODO: where does this come from?
+        fh_subtracted.Draw()
+        c.SaveAs(f'hjet_{var}_subtracted_{ipt}_{mcordata}.png')
+
     def subtract_sidebands(self):
         self.logger.info("Running sideband subtraction")
         for mcordata in ['mc', 'data']:
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
             with TFile(rfilename) as rfile:
                 for ipt in range(7):
-                    h2_invmass_zg = rfile.Get(f'h2jet_invmass_zg_{ipt}')
-                    c = TCanvas("h2jet_invmass_zg")
-                    h2_invmass_zg.Draw("colz")
-                    c.SaveAs(f'h2jet_invmass_zg_{ipt}_{mcordata}.png')
-                    signalA = self.fit_mean[mcordata][ipt] - 2 * self.fit_sigma[mcordata][ipt]
-                    signalB = self.fit_mean[mcordata][ipt] + 2 * self.fit_sigma[mcordata][ipt]
-                    sidebandLeftA = self.fit_mean[mcordata][ipt] - 7 * self.fit_sigma[mcordata][ipt]
-                    sidebandLeftB = self.fit_mean[mcordata][ipt] - 4 * self.fit_sigma[mcordata][ipt]
-                    sidebandRightA = self.fit_mean[mcordata][ipt] + 4 * self.fit_sigma[mcordata][ipt]
-                    sidebandRightB = self.fit_mean[mcordata][ipt] + 7 * self.fit_sigma[mcordata][ipt]
-                    fh_signal = h2_invmass_zg.ProjectionY(f'h2jet_zg_signal_{ipt}_{mcordata}',
-                                                          h2_invmass_zg.GetXaxis().FindBin(signalA),
-                                                          h2_invmass_zg.GetXaxis().FindBin(signalB),
-                                                          "e")
-                    signalArea = self.fit_func_bkg[mcordata][ipt].Integral(signalA,signalB)
-                    fh_sidebandleft = h2_invmass_zg.ProjectionY(f'h2jet_zg_sidebandleft_{ipt}_{mcordata}',
-                                                                h2_invmass_zg.GetXaxis().FindBin(sidebandLeftA),
-                                                                h2_invmass_zg.GetXaxis().FindBin(sidebandLeftB),
-                                                                "e")
-                    sidebandLeftlArea = self.fit_func_bkg[mcordata][ipt].Integral(sidebandLeftA,sidebandLeftB)
-                    fh_sidebandright = h2_invmass_zg.ProjectionY(f'h2jet_zg_sidebandright_{ipt}_{mcordata}',
-                                                                 h2_invmass_zg.GetXaxis().FindBin(sidebandRightA),
-                                                                 h2_invmass_zg.GetXaxis().FindBin(sidebandRightB),
-                                                                 "e")
-                    sidebandRightArea = self.fit_func_bkg[mcordata][ipt].Integral(sidebandRightA,sidebandRightB)
-                    c = TCanvas("signal")
-                    fh_signal.Draw()
-                    c.SaveAs(f'hjet_zg_signal_{ipt}_{mcordata}.png')
-                    c = TCanvas("sideband left")
-                    fh_sidebandleft.Draw()
-                    c.SaveAs(f'h2jet_zg_sidebandleft_{ipt}_{mcordata}.png')
-                    c = TCanvas("sideband right")
-                    fh_sidebandright.Draw()
-                    c.SaveAs(f'h2jet_zg_sidebandright_{ipt}_{mcordata}.png')
-                    areaNormFactor = signalArea / (sidebandLeftlArea + sidebandRightArea)
-                    fh_sideband = fh_sidebandleft.Clone(f'h_sideband_{ipt}_{mcordata}')
-                    fh_sideband.Add(fh_sidebandright, 1.0)
-                    c = TCanvas("sideband")
-                    fh_sideband.Draw()
-                    c.SaveAs(f'hjet_zg_sideband_{ipt}_{mcordata}.png')
-                    fh_subtracted = fh_signal.Clone(f'h_subtracted_{ipt}_{mcordata}')
-                    fh_subtracted.Add(fh_sideband, -1.0 * areaNormFactor)
-                    fh_subtracted.Scale(1.0 / 0.954)
-                    c = TCanvas("subtracted")
-                    fh_subtracted.Draw()
-                    c.SaveAs(f'hjet_zg_subtracted_{ipt}_{mcordata}.png')
+                    self._subtract_sideband(rfile.Get(f'h2jet_invmass_zg_{ipt}'), 'zg', mcordata, ipt)
+                    self._subtract_sideband(rfile.Get(f'h2jet_invmass_rg_{ipt}'), 'rg', mcordata, ipt)
+                    self._subtract_sideband(rfile.Get(f'h2jet_invmass_nsd_{ipt}'), 'nsd', mcordata, ipt)
+                    self._subtract_sideband(rfile.Get(f'h2jet_invmass_dr_{ipt}'), 'dr', mcordata, ipt)
+                    self._subtract_sideband(rfile.Get(f'h2jet_invmass_zpar_{ipt}'), 'zpar', mcordata, ipt)
 
     def extract_signal(self):
         self.logger.info("Running signal extraction")
@@ -148,15 +160,14 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     h_zg = TH1F(
                     f'hjetzg_{ipt}', "", 10, 0.0, 1.0)
                     h_zg.SetBinContent(1, 0.0)
-                    for i in range(1,5):
-                        h_invmass = rfile.Get(f'hmass_zg_{ipt}_{i}')
-                        c = TCanvas("Candidate mass")
+                    for i in range(5):
+                        h2_invmass_zg = rfile.Get(f'h2jet_invmass_zg_{ipt}')
+                        h_invmass = h2_invmass_zg.ProjectionX(f'h_invmass_zg_{ipt}_proj_{i}')
+                        # h_invmass = rfile.Get(f'hmass_zg_{ipt}_{i}')
                         _, func_sig, _ = self._fit_mass(h_invmass)
-                        h_invmass.Draw()
-                        c.SaveAs(f'hmass_zg_fitted_{ipt}_{i}_{mcordata}.png')
+                        self._save_hist(h_invmass, f'hmass_zg_fitted_{ipt}_{i}_{mcordata}.png')
                         h_zg.SetBinContent(i + 1, func_sig.Integral(1.67, 2.1)*(1.0/h_invmass.GetBinWidth(1)))
-                    h_zg.Draw()
-                    c.SaveAs(f'zg_signalextracted_{ipt}_{mcordata}.png')
+                    self._save_hist(h_zg, f'zg_signalextracted_{ipt}_{mcordata}.png')
 
     def qa(self): # pylint: disable=too-many-branches, too-many-locals, invalid-name
         self.logger.info("Running D0 jet qa")
@@ -171,34 +182,11 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 self.logger.debug('Number of selected event: %d', p_nevents)
 
                 for ipt in range(7):
-                    c = TCanvas("Candidate mass")
-                    h_invmass = rfile.Get(f'hmass_{ipt}')
-                    if not h_invmass:
-                        self.logger.critical('hmass not found')
-                    h_invmass.Print()
-                    h_invmass.Draw()
-                    c.SaveAs(f'hmass_{ipt}_{mcordata}.png')
-
-                    c = TCanvas("Candidate pt")
-                    h_candpt = rfile.Get(f'hcandpt_{ipt}')
-                    if not h_candpt:
-                        self.logger.critical('hcandpt not found')
-                    h_candpt.Print()
-                    h_candpt.Draw()
-                    c.SaveAs(f'hcandpt_{ipt}_{mcordata}.png')
-
-                    c = TCanvas("Jet pt")
-                    h_jetpt = rfile.Get(f'hjetpt_{ipt}')
-                    if not h_jetpt:
-                        self.logger.critical('hjetpt not found')
-                    h_jetpt.Print()
-                    h_jetpt.Draw()
-                    c.SaveAs(f'hjetpt_{ipt}_{mcordata}.png')
-
-                    c = TCanvas("Jet zg")
-                    h_jetzg = rfile.Get(f'hjetzg_{ipt}')
-                    if not h_jetzg:
-                        self.logger.critical('hjetzg not found')
-                    h_jetzg.Print()
-                    h_jetzg.Draw()
-                    c.SaveAs(f'hjetzg_{ipt}_{mcordata}.png')
+                    self._save_hist(rfile.Get(f'hmass_{ipt}'), f'hmass_{ipt}_{mcordata}.png')
+                    self._save_hist(rfile.Get(f'hcandpt_{ipt}'), f'hcandpt_{ipt}_{mcordata}.png')
+                    self._save_hist(rfile.Get(f'hjetpt_{ipt}'), f'hjetpt_{ipt}_{mcordata}.png')
+                    self._save_hist(rfile.Get(f'hjetzg_{ipt}'), f'hjetzg_{ipt}_{mcordata}.png')
+                    self._save_hist(rfile.Get(f'hjetrg_{ipt}'), f'hjetrg_{ipt}_{mcordata}.png')
+                    self._save_hist(rfile.Get(f'hjetnsd_{ipt}'), f'hjetnsd_{ipt}_{mcordata}.png')
+                    self._save_hist(rfile.Get(f'hjetzpar_{ipt}'), f'hjetzpar_{ipt}_{mcordata}.png')
+                    self._save_hist(rfile.Get(f'hjetdr_{ipt}'), f'hjetdr_{ipt}_{mcordata}.png')
