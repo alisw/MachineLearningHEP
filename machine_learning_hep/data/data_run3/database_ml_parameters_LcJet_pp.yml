@@ -53,6 +53,8 @@ Lcpp_jet:
         index: fIndexHf3PCollBases
         trees:
           O2hf3pcollbase: [fNumContrib]
+        extra:
+          fIsEventReject: 0
 
       reco:
         level: all
@@ -162,7 +164,7 @@ Lcpp_jet:
         level: all
         source: evtorig
         file: AnalysisResultsEvt.pkl.lz4
-        # filter: "fIsEventReject == 0"
+        filter: "fIsEventReject == 0"
       gen:
         level: mc
         file: AnalysisResultsGen.pkl.lz4
@@ -231,8 +233,8 @@ Lcpp_jet:
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/real/train_188937/
-      unmerged_tree_dir: [alice/cern.ch/user/a/alihyperloop/jobs/0036/hy_362779] #list of periods
+      prefix_dir: /data2/MLhep/real/train_191669/
+      unmerged_tree_dir: [alice/cern.ch/user/a/alihyperloop/jobs/0037/hy_372089] #list of periods
       pkl: ['${USER}/lcjet/pkl'] #list of periods
       pkl_skimmed: ['${USER}/lcjet/pklsk'] #list of periods
       pkl_skimmed_merge_for_ml: ['${USER}/lcjet/pklskml'] #list of periods
@@ -248,8 +250,8 @@ Lcpp_jet:
       seedmerge: [12] #list of periods
       period: [mctest_nima] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/sim/train_188938/
-      unmerged_tree_dir: [merged]
+      prefix_dir: /data2/MLhep/sim/train_191606/
+      unmerged_tree_dir: [/alice/cern.ch/user/a/alihyperloop/outputs/0019]
       pkl: ['${USER}/lcjet/pkl'] #list of periods
       pkl_skimmed: ['${USER}/lcjet/pklsk'] #list of periods
       pkl_skimmed_merge_for_ml: ['${USER}/lcjet/pklskml'] #list of periods
@@ -258,7 +260,7 @@ Lcpp_jet:
       mcreweights: [../Analyses] #list of periods
 
   ml:
-    evtsel: null # TODO: fIsEventReject == 0
+    evtsel: fIsEventReject == 0
     triggersel:
       data: null
       mc: null
@@ -390,11 +392,11 @@ Lcpp_jet:
       mass_fit:
         func_sig: 'gaus(0)'
         func_bkg: 'expo(3)'
-        par_start: {1: 1.86}
+        par_start: {1: 2.286}
         # par_fix:
         par_constrain: {2: [0, .1]}
-        range: [1.675, 2.1]
-      mass_fit_lim: [1.5, 2.2] # histogram range of the invariant mass distribution [GeV/c^2]
+        range: [1.9, 2.6]
+      mass_fit_lim: [1.9, 2.6] # histogram range of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
 
       # simple fitter START

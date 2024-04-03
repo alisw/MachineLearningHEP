@@ -141,23 +141,28 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
                 h_dr.Write()
 
                 h = TH2F(f'h2jet_invmass_zg_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 1.0)
-                h.FillN(len(df.fM), np.float64(df.fM), np.float64(df.zg), np.float64(len(df.fM)*[1.]))
+                if len(df.fM) > 0:
+                    h.FillN(len(df.fM), np.float64(df.fM), np.float64(df.zg), np.float64(len(df.fM)*[1.]))
                 h.Write()
 
                 h = TH2F(f'h2jet_invmass_nsd_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 10.0)
-                h.FillN(len(df.fM), np.float64(df.fM), np.float64(df.nsd), np.float64(len(df.fM)*[1.]))
+                if len(df.fM) > 0:
+                    h.FillN(len(df.fM), np.float64(df.fM), np.float64(df.nsd), np.float64(len(df.fM)*[1.]))
                 h.Write()
 
                 h = TH2F(f'h2jet_invmass_rg_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 1.0)
-                h.FillN(len(df.fM), np.float64(df.fM), np.float64(df.rg), np.float64(len(df.fM)*[1.]))
+                if len(df.fM) > 0:
+                    h.FillN(len(df.fM), np.float64(df.fM), np.float64(df.rg), np.float64(len(df.fM)*[1.]))
                 h.Write()
 
                 h = TH2F(f'h2jet_invmass_zpar_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 1.0)
-                h.FillN(len(df.fM), np.float64(df.fM), np.float64(df.z_parallel), np.float64(len(df.fM)*[1.]))
+                if len(df.fM) > 0:
+                    h.FillN(len(df.fM), np.float64(df.fM), np.float64(df.z_parallel), np.float64(len(df.fM)*[1.]))
                 h.Write()
 
                 h = TH2F(f'h2jet_invmass_dr_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 1.0)
-                h.FillN(len(df.fM), np.float64(df.fM), np.float64(df.radial_distance), np.float64(len(df.fM)*[1.]))
+                if len(df.fM) > 0:
+                    h.FillN(len(df.fM), np.float64(df.fM), np.float64(df.radial_distance), np.float64(len(df.fM)*[1.]))
                 h.Write()
 
                 # TODO: wouldn't it be better to project in the analyzer?

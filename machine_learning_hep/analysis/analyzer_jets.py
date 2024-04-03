@@ -90,9 +90,10 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     c = TCanvas("Candidate mass")
                     h_invmass = rfile.Get(f'hmass_{ipt}')
                     fit_res, _, func_bkg = self._fit_mass(h_invmass)
-                    self.fit_sigma[mcordata][ipt] = fit_res.Parameter(2)
-                    self.fit_mean[mcordata][ipt] = fit_res.Parameter(1)
-                    self.fit_func_bkg[mcordata].append(func_bkg)
+                    if fit_res is not None:
+                        self.fit_sigma[mcordata][ipt] = fit_res.Parameter(2)
+                        self.fit_mean[mcordata][ipt] = fit_res.Parameter(1)
+                        self.fit_func_bkg[mcordata].append(func_bkg)
                     h_invmass.Draw()
                     c.SaveAs(f'hmass_fitted_{ipt}_{mcordata}.png')
 
@@ -140,12 +141,12 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         fh_subtracted.Draw()
         c.SaveAs(f'hjet_{var}_subtracted_{ipt}_{mcordata}.png')
 
-        fh_signal.SetLineColor(ROOT.kRed)
+        fh_signal.SetLineColor(ROOT.kRed) # pylint: disable=no-member
         fh_signal.Draw()
         fh_sideband.Scale(areaNormFactor)
-        fh_sideband.SetLineColor(ROOT.kBlue)
+        fh_sideband.SetLineColor(ROOT.kBlue) # pylint: disable=no-member
         fh_sideband.Draw("same")
-        fh_subtracted.SetLineColor(ROOT.kOrange)
+        fh_subtracted.SetLineColor(ROOT.kOrange) # pylint: disable=no-member
         fh_subtracted.Draw("same")
         c.SaveAs(f'hjet_{var}_overview_{ipt}_{mcordata}.png')
 
