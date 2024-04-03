@@ -15,6 +15,7 @@
 import os
 import munch # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TCanvas, TF1, TH1F, gStyle # pylint: disable=import-error, no-name-in-module
+import ROOT
 
 from machine_learning_hep.analysis.analyzer import Analyzer
 
@@ -139,6 +140,15 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         fh_subtracted.Draw()
         c.SaveAs(f'hjet_{var}_subtracted_{ipt}_{mcordata}.png')
 
+        fh_signal.SetLineColor(ROOT.kRed)
+        fh_signal.Draw()
+        fh_sideband.Scale(areaNormFactor)
+        fh_sideband.SetLineColor(ROOT.kBlue)
+        fh_sideband.Draw("same")
+        fh_subtracted.SetLineColor(ROOT.kOrange)
+        fh_subtracted.Draw("same")
+        c.SaveAs(f'hjet_{var}_overview_{ipt}_{mcordata}.png')
+
     def subtract_sidebands(self):
         self.logger.info("Running sideband subtraction")
         for mcordata in ['mc', 'data']:
@@ -151,22 +161,24 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     self._subtract_sideband(rfile.Get(f'h2jet_invmass_dr_{ipt}'), 'dr', mcordata, ipt)
                     self._subtract_sideband(rfile.Get(f'h2jet_invmass_zpar_{ipt}'), 'zpar', mcordata, ipt)
 
-    def extract_signal(self):
+    def extract_signals(self):
         self.logger.info("Running signal extraction")
         for mcordata in ['mc', 'data']:
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
             with TFile(rfilename) as rfile:
-                for ipt in range(7):
-                    h_zg = TH1F(
-                    f'hjetzg_{ipt}', "", 10, 0.0, 1.0)
-                    h_zg.SetBinContent(1, 0.0)
-                    for i in range(5):
-                        h2_invmass_zg = rfile.Get(f'h2jet_invmass_zg_{ipt}')
-                        h_invmass = h2_invmass_zg.ProjectionX(f'h_invmass_zg_{ipt}_proj_{i}', i+1, i+2, "e")
-                        _, func_sig, _ = self._fit_mass(h_invmass)
-                        self._save_hist(h_invmass, f'hmass_zg_fitted_{ipt}_{i}_{mcordata}.png')
-                        h_zg.SetBinContent(i + 1, func_sig.Integral(1.67, 2.1)*(1.0/h_invmass.GetBinWidth(1)))
-                    self._save_hist(h_zg, f'zg_signalextracted_{ipt}_{mcordata}.png')
+                for var in ['zg', 'rg', 'nsd', 'zpar', 'dr']:
+                    for ipt in range(7):
+                        hmass2 = rfile.Get(f'h2jet_invmass_{var}_{ipt}')
+                        nbins = hmass2.GetNbinsY()
+                        hrange = (hmass2.GetYaxis().GetXmin(), hmass2.GetYaxis().GetXmax())
+                        hist = TH1F(f'hjet{var}_{ipt}', "", nbins, hrange[0], hrange[1])
+                        # hist.SetBinContent(1, 0.0)
+                        for i in range(nbins):
+                            hmass = hmass2.ProjectionX(f'h_invmass_zg_{ipt}_proj_{i}', i+1, i+2, "e")
+                            _, func_sig, _ = self._fit_mass(hmass)
+                            self._save_hist(hmass, f'hmass_{var}_fitted_{ipt}_{i}_{mcordata}.png')
+                            hist.SetBinContent(i + 1, func_sig.Integral(1.67, 2.1)*(1.0/hmass.GetBinWidth(1)))
+                        self._save_hist(hist, f'{var}_signalextracted_{ipt}_{mcordata}.png')
 
     def qa(self): # pylint: disable=too-many-branches, too-many-locals, invalid-name
         self.logger.info("Running D0 jet qa")

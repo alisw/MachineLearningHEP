@@ -71,7 +71,7 @@ analysis:
   steps:
     fit:
     subtract_sidebands:
-    extract_signal:
+    extract_signals:
     qa:
 
 systematics:
