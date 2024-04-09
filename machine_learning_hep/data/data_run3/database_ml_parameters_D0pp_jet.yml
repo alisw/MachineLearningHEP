@@ -62,33 +62,6 @@ D0pp_jet:
         trees:
           O2hfd0collbase: [fNumContrib, fIsEventReject, fRunNumber]
 
-      reco:
-        level: all
-        index: fIndexHfD0Bases_0
-        trees:
-          O2hfd0base: [fIndexHfD0CollBases, fPt, fEta, fPhi, fM]
-          O2hfd0mc:
-            level: mc
-            vars: [fFlagMcMatchRec, fOriginMcRec]
-          O2hfd0par: [fCpa, fCpaXY, fChi2PCA,
-                      fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised,
-                      fImpactParameter0, fImpactParameter1,
-                      fImpactParameterNormalised0, fImpactParameterNormalised1,
-                      fPtProng0, fPtProng1,
-                      fNSigTpcPi0, fNSigTpcKa0, fNSigTpcPi1, fNSigTpcKa1,
-                      fNSigTofPi0, fNSigTofKa0, fNSigTofPi1, fNSigTofKa1]
-          O2hfd0pare: [fErrorDecayLength, fErrorDecayLengthXY,
-                      fErrorImpactParameter0, fErrorImpactParameter1]
-          O2hfd0sel: [fCandidateSelFlag]
-        extra:
-          fY: 0.
-        filter: "fPt > 1."
-      gen:
-        level: gen
-        index: fIndexHfD0PBases_0
-        trees:
-          O2hfd0pbase: [fPt, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
-
       collgen:
         level: gen
         index: fIndexD0CMCPJetCOs
@@ -98,13 +71,13 @@ D0pp_jet:
         level: gen
         index: fIndexD0CMCPJetOs
         trees:
-          O2d0cmcpjeto: [fIndexD0CMCPJetCOs, fIndexHfD0PBases_0,
-                    fJetPt, fJetPhi, fJetEta, fJetNConstituents]
-      jetsubgen:
-        level: gen
-        index: fIndexD0CMCPJetSSOs
-        trees:
-          O2d0cmcpjetsso: [fIndexD0CMCPJetOs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta]
+          O2hfd0pbase: [fPt, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
+          O2d0cmcpjeto: [fIndexD0CMCPJetCOs, fJetPt, fJetPhi, fJetEta, fJetNConstituents]
+          O2d0cmcpjetmo: [fIndexArrayD0CMCDJetOs_hf, fIndexArrayD0CMCDJetOs_geo, fIndexArrayD0CMCDJetOs_pt]
+          O2d0cmcpjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta]
+        extra:
+          fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
+        filter: "fPt >= 1. and fY <= 0.8"
 
       colldet:
         level: det
@@ -115,13 +88,24 @@ D0pp_jet:
         level: det
         index: fIndexD0CMCDJetOs
         trees:
-          O2d0cmcdjeto: [fIndexD0CMCDJetCOs, fIndexHfD0Bases_0,
-                    fJetPt, fJetPhi, fJetEta, fJetNConstituents]
-      jetsubdet:
-        level: det
-        index: fIndexD0CMCDJetSSOs
-        trees:
-          O2d0cmcdjetsso: [fIndexD0CMCDJetOs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta]
+          O2hfd0base: [fIndexHfD0CollBases, fPt, fEta, fPhi, fM]
+          O2hfd0mc: [fFlagMcMatchRec, fOriginMcRec]
+          O2hfd0par: [fCpa, fCpaXY, fChi2PCA,
+                      fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised,
+                      fImpactParameter0, fImpactParameter1,
+                      fImpactParameterNormalised0, fImpactParameterNormalised1,
+                      fPtProng0, fPtProng1,
+                      fNSigTpcPi0, fNSigTpcKa0, fNSigTpcPi1, fNSigTpcKa1,
+                      fNSigTofPi0, fNSigTofKa0, fNSigTofPi1, fNSigTofKa1]
+          O2hfd0pare: [fErrorDecayLength, fErrorDecayLengthXY,
+                      fErrorImpactParameter0, fErrorImpactParameter1]
+          O2hfd0sel: [fCandidateSelFlag]
+          O2d0cmcdjeto: [fIndexD0CMCDJetCOs, fJetPt, fJetPhi, fJetEta, fJetNConstituents]
+          O2d0cmcdjetmo: [fIndexArrayD0CMCPJetOs_hf, fIndexArrayD0CMCPJetOs_geo, fIndexArrayD0CMCPJetOs_pt]
+          O2d0cmcdjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta]
+        extra:
+          fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
+        filter: "fPt >= 1. and fY <= 0.8"
 
       colldata:
         level: data
@@ -132,37 +116,41 @@ D0pp_jet:
         level: data
         index: fIndexD0CJetOs
         trees:
-          O2d0cjeto: [fIndexD0CJetCOs, fIndexHfD0Bases_0,
-                    fJetPt, fJetPhi, fJetEta, fJetNConstituents]
-      jetsubdata:
-        level: data
-        index: fIndexD0JetSubstructures
-        trees:
-          O2d0cjetsso: [fIndexD0CJetOs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta]
+          O2hfd0base: [fIndexHfD0CollBases, fPt, fEta, fPhi, fM]
+          O2hfd0par: [fCpa, fCpaXY, fChi2PCA,
+                      fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised,
+                      fImpactParameter0, fImpactParameter1,
+                      fImpactParameterNormalised0, fImpactParameterNormalised1,
+                      fPtProng0, fPtProng1,
+                      fNSigTpcPi0, fNSigTpcKa0, fNSigTpcPi1, fNSigTpcKa1,
+                      fNSigTofPi0, fNSigTofKa0, fNSigTofPi1, fNSigTofKa1]
+          O2hfd0pare: [fErrorDecayLength, fErrorDecayLengthXY,
+                      fErrorImpactParameter0, fErrorImpactParameter1]
+          O2hfd0sel: [fCandidateSelFlag]
+          O2d0cjeto: [fIndexD0CJetCOs, fJetPt, fJetPhi, fJetEta, fJetNConstituents]
+          O2d0cjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta]
+        extra:
+          fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
+        filter: "fPt >= 1. and fY <= 0.8"
+
 
     merge:
       - {base: jetgen, ref: collgen}
-      - {base: jetgen, ref: gen}
-      - {base: jetsubgen, ref: jetgen}
 
       - {base: jetdet, ref: colldet}
-      - {base: jetdet, ref: reco}
-      - {base: jetsubdet, ref: jetdet}
 
       - {base: jetdata, ref: colldata}
-      - {base: jetdata, ref: reco}
-      - {base: jetsubdata, ref: jetdata}
 
 #      - {base: gen, ref: evtorig}
 
     write:
-      jetsubgen:
+      jetgen:
         level: gen
         file: AnalysisResultsGen.pkl.lz4
-      jetsubdet:
+      jetdet:
         level: det
         file: AnalysisResultsReco.pkl.lz4
-      jetsubdata:
+      jetdata:
         level: data
         file: AnalysisResultsReco.pkl.lz4
       evtorig:
