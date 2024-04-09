@@ -41,6 +41,7 @@ def select_runs(good_runlist, array_run):
                 break
     return array_run_sel
 
+# (pt > 5 and abs(y) < 0.8) or (pt <= 5 and abs(y) < ...)
 #@numba.njit
 def selectfidacc(array_pt, array_y):
     array_is_sel = []

@@ -67,6 +67,8 @@ LcpKpi:
                            fNSigTofPi0, fNSigTofPr0, fNSigTofKa1, fNSigTofPi2, fNSigTofPr2,
                            fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
           O2hfcollidlclite: [fIndexCollisions]
+        extra:
+          fMultZeqNTracksPV_sub: fMultZeqNTracksPV - fNProngsContributorsPV
         filter: "fPt > 1."
       gen:
         level: mc

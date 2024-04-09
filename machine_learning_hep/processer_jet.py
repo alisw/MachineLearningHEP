@@ -13,8 +13,9 @@
 #############################################################################
 
 import pickle
-import math
+import numba
 import numpy as np
+import pandas as pd
 from ROOT import TFile, TH1F, TH2F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.processer import Processer
 from machine_learning_hep.utilities import fill_hist, openfile
@@ -50,18 +51,19 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) /
                                     self.p_bin_width))
 
-    def process_calculate_variables(self, df): # pylint: disable=invalid-name
-        # TODO: make process step instead of internally called method
+    def calculate_zg(self, df):
         df['zg'] = -1.0
         df['rg'] = -1.0
         df['nsd'] = -1.0
-        df['z_parallel'] = -1.0
-        df['radial_distance'] = -1.0
+        df['zg_array'] = np.array(df.fPtSubLeading / (df.fPtLeading + df.fPtSubLeading))
+        # TODO: check for zg > 0.5
+        # TODO: check for soft drop
+        return
+        # TODO: can we optimize this loop?
         for idx, row in df.iterrows():
             isSoftDropped = False
             nsd = 0
-            for ptLeading, ptSubLeading, theta in zip(row['fPtLeading'], row['fPtSubLeading'], row['fTheta']):
-                zg = ptSubLeading / (ptLeading + ptSubLeading)
+            for zg, theta in zip(row['zg_array'], row['fTheta']):
                 if zg > 0.5:
                     zg = 1.0 - 0.5
                 if zg >= 0.1:  # TODO: make this configurable
@@ -71,17 +73,20 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
                         isSoftDropped = True
                     nsd += 1
             df.loc[idx, 'nsd'] = nsd
-            pxJet = row['fJetPt'] * math.cos(row['fJetPhi'])
-            pyJet = row['fJetPt'] * math.sin(row['fJetPhi'])
-            pzJet = row['fJetPt'] * math.sinh(row['fJetEta'])
-            pxHF = row['fPt'] * math.cos(row['fPhi'])
-            pyHF = row['fPt'] * math.sin(row['fPhi'])
-            pzHF = row['fPt'] * math.sinh(row['fEta'])
-            z_parallel_numerator = pxJet * pxHF + pyJet * pyHF + pzJet * pzHF
-            z_parallel_denominator = pxJet * pxJet + pyJet * pyJet + pzJet * pzJet
-            df.loc[idx, 'z_parallel'] = z_parallel_numerator / z_parallel_denominator
-            df.loc[idx, 'radial_distance'] = math.sqrt(
-                (row['fJetEta'] - row['fEta'])**2 + (row['fJetPhi'] - row['fPhi'])**2) #TODO change eta to y
+
+    def process_calculate_variables(self, df): # pylint: disable=invalid-name
+        # TODO: make process step instead of internally called method
+        df.eval('radial_distance = sqrt((fJetEta - fEta)**2 + (fJetPhi - fPhi)**2)', inplace=True) # TODO: consider periodic phi
+        df.eval('jetPx = fJetPt * cos(fJetPhi)', inplace=True)
+        df.eval('jetPy = fJetPt * sin(fJetPhi)', inplace=True)
+        df.eval('jetPz = fJetPt * sinh(fJetEta)', inplace=True)
+        df.eval('hfPx = fPt * cos(fPhi)', inplace=True)
+        df.eval('hfPy = fPt * sin(fPhi)', inplace=True)
+        df.eval('hfPz = fPt * sinh(fEta)', inplace=True)
+        df.eval('zpar_num = jetPx * hfPx + jetPy * hfPy + jetPz * hfPz', inplace=True)
+        df.eval('zpar_den = jetPx * jetPx + jetPy * jetPy + jetPz * jetPz', inplace=True)
+        df.eval('z_parallel = zpar_num / zpar_den', inplace=True)
+        self.calculate_zg(df)
         return df
 
     def process_histomass_single(self, index): # pylint: disable=too-many-statements
@@ -103,8 +108,9 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
             pt_max = self.lpt_finbinmax[ipt]
             with openfile(self.mptfiles_recosk[bin_id][index], "rb") as file:
                 df = pickle.load(file)
-                df = self.process_calculate_variables(df)
                 df.query(f'fPt >= {pt_min} and fPt < {pt_max}', inplace=True)
+                self.logger.info('calculating')
+                df = self.process_calculate_variables(df)
 
                 h_invmass_all = TH1F(f'hmass_{ipt}', "",
                                      self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
@@ -176,3 +182,14 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
                 #invariant mass with candidatePT intervals (done)
                 #invariant mass with jetPT and candidatePT intervals
                 #invariant mass with jetPT and candidatePT and shape intervals
+
+    def process_efficiency_single(self, index):
+        self.logger.info('Running efficiency')
+        for ipt in range(self.p_nptfinbins):
+            bin_id = self.bin_matching[ipt]
+            # pt_min = self.lpt_finbinmin[ipt]
+            # pt_max = self.lpt_finbinmax[ipt]
+            # TODO: how do we get access to the corresponding MC file?
+            with openfile(self.mptfiles_recosk[bin_id][index], "rb") as file:
+                df = pickle.load(file)
+                df.info()

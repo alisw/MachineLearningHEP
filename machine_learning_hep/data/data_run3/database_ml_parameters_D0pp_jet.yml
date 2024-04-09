@@ -102,10 +102,11 @@ D0pp_jet:
           O2hfd0sel: [fCandidateSelFlag]
           O2d0cmcdjeto: [fIndexD0CMCDJetCOs, fJetPt, fJetPhi, fJetEta, fJetNConstituents]
           O2d0cmcdjetmo: [fIndexArrayD0CMCPJetOs_hf, fIndexArrayD0CMCPJetOs_geo, fIndexArrayD0CMCPJetOs_pt]
-          O2d0cmcdjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta]
+          O2d0cmcdjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta]        
         extra:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
         filter: "fPt >= 1. and fY <= 0.8"
+        # filter: "(fPt > 5 and abs(fY) < 0.8) or (fPt <= 5 and abs(fY) < -0.2/15 * fPt**2 + 1.9/15 * fPt + 0.5)" # TODO: check what we want
 
       colldata:
         level: data
@@ -133,15 +134,10 @@ D0pp_jet:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
         filter: "fPt >= 1. and fY <= 0.8"
 
-
     merge:
       - {base: jetgen, ref: collgen}
-
       - {base: jetdet, ref: colldet}
-
       - {base: jetdata, ref: colldata}
-
-#      - {base: gen, ref: evtorig}
 
     write:
       jetgen:
@@ -161,9 +157,6 @@ D0pp_jet:
         source: evtorig
         file: AnalysisResultsEvt.pkl.lz4
         filter: "fIsEventReject == 0"
-      gen:
-        level: mc
-        file: AnalysisResultsGen.pkl.lz4
 
   variables:
     var_all: [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1]

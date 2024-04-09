@@ -181,6 +181,13 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                             hist.SetBinContent(i + 1, func_sig.Integral(1.67, 2.1)*(1.0/hmass.GetBinWidth(1)))
                         self._save_hist(hist, f'{var}_signalextracted_{ipt}_{mcordata}.png')
 
+    def efficiency(self):
+        self.logger.info("Running efficiency")
+        rfilename = self.n_filemass
+        rfilename_mc = self.n_filemass_mc
+        with TFile(rfilename) as rfile, TFile(rfilename_mc) as rfile_mc:
+            pass
+
     def qa(self): # pylint: disable=too-many-branches, too-many-locals, invalid-name
         self.logger.info("Running D0 jet qa")
 

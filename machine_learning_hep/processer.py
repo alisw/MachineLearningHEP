@@ -367,39 +367,38 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 if 'filter' in df_spec:
                     dfquery(dfs[df_name], df_spec['filter'], inplace=True)
 
-        # extra logic should eventually come from DB
-        if self.s_apply_yptacccut is True:
-            isselacc = selectfidacc(dfs['reco'][self.v_var_binning].values,
-                                    dfs['reco'][self.v_rapy].values)
-            dfs['reco'] = dfs['reco'][np.array(isselacc, dtype=bool)]
+        # TODO: workaround while calculations are still in processer
+        dfname_gen = 'jetgen' if 'jetgen' in dfs else 'gen'
+        dfname_rec = 'jetdata' if 'jetdata' in dfs else 'jetdet' if 'jetdet' in dfs else 'reco'
 
+        # TODO: extra logic should eventually come from DB
         if self.mcordata == "mc":
-            dfs['reco'][self.v_ismcsignal] = np.array(tag_bit_df(dfs['reco'], self.v_bitvar,
+            dfs[dfname_rec][self.v_ismcsignal] = np.array(tag_bit_df(dfs[dfname_rec], self.v_bitvar,
                                                                  self.b_mcsig, True), dtype=int)
-            dfs['reco'][self.v_ismcprompt] = np.array(tag_bit_df(dfs['reco'], self.v_bitvar_origrec,
+            dfs[dfname_rec][self.v_ismcprompt] = np.array(tag_bit_df(dfs[dfname_rec], self.v_bitvar_origrec,
                                                                  self.b_mcsigprompt), dtype=int)
-            dfs['reco'][self.v_ismcfd] = np.array(tag_bit_df(dfs['reco'], self.v_bitvar_origrec,
+            dfs[dfname_rec][self.v_ismcfd] = np.array(tag_bit_df(dfs[dfname_rec], self.v_bitvar_origrec,
                                                              self.b_mcsigfd), dtype=int)
-            dfs['reco'][self.v_ismcbkg] = np.array(tag_bit_df(dfs['reco'], self.v_bitvar,
+            dfs[dfname_rec][self.v_ismcbkg] = np.array(tag_bit_df(dfs[dfname_rec], self.v_bitvar,
                                                               self.b_mcbkg, True), dtype=int)
 
             if self.v_swap:
-                mydf = dfs['reco'][self.v_candtype] == dfs['reco'][self.v_swap] + 1
-                dfs['reco'][self.v_ismcsignal] = \
-                    np.logical_and(dfs['reco'][self.v_ismcsignal] == 1, mydf)
-                dfs['reco'][self.v_ismcprompt] = \
-                    np.logical_and(dfs['reco'][self.v_ismcprompt] == 1, mydf)
-                dfs['reco'][self.v_ismcfd] = np.logical_and(dfs['reco'][self.v_ismcfd] == 1, mydf)
+                mydf = dfs[dfname_rec][self.v_candtype] == dfs[dfname_rec][self.v_swap] + 1
+                dfs[dfname_rec][self.v_ismcsignal] = \
+                    np.logical_and(dfs[dfname_rec][self.v_ismcsignal] == 1, mydf)
+                dfs[dfname_rec][self.v_ismcprompt] = \
+                    np.logical_and(dfs[dfname_rec][self.v_ismcprompt] == 1, mydf)
+                dfs[dfname_rec][self.v_ismcfd] = np.logical_and(dfs[dfname_rec][self.v_ismcfd] == 1, mydf)
 
-            dfs['gen'][self.v_isstd] = np.array(tag_bit_df(dfs['gen'], self.v_bitvar_gen,
+            dfs[dfname_gen][self.v_isstd] = np.array(tag_bit_df(dfs[dfname_gen], self.v_bitvar_gen,
                                                       self.b_std), dtype=int)
-            dfs['gen'][self.v_ismcsignal] = np.array(tag_bit_df(dfs['gen'], self.v_bitvar_gen,
+            dfs[dfname_gen][self.v_ismcsignal] = np.array(tag_bit_df(dfs[dfname_gen], self.v_bitvar_gen,
                                                            self.b_mcsig, True), dtype=int)
-            dfs['gen'][self.v_ismcprompt] = np.array(tag_bit_df(dfs['gen'], self.v_bitvar_origgen,
+            dfs[dfname_gen][self.v_ismcprompt] = np.array(tag_bit_df(dfs[dfname_gen], self.v_bitvar_origgen,
                                                            self.b_mcsigprompt), dtype=int)
-            dfs['gen'][self.v_ismcfd] = np.array(tag_bit_df(dfs['gen'], self.v_bitvar_origgen,
+            dfs[dfname_gen][self.v_ismcfd] = np.array(tag_bit_df(dfs[dfname_gen], self.v_bitvar_origgen,
                                                        self.b_mcsigfd), dtype=int)
-            dfs['gen'][self.v_ismcbkg] = np.array(tag_bit_df(dfs['gen'], self.v_bitvar_gen,
+            dfs[dfname_gen][self.v_ismcbkg] = np.array(tag_bit_df(dfs[dfname_gen], self.v_bitvar_gen,
                                                         self.b_mcbkg, True), dtype=int)
 
         if self.df_merge:
@@ -415,13 +414,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         dfs[out] = dfmerge(dfs[base], dfs[ref], on=on)
                     else:
                         var = self.df_read[ref]['index']
-                        self.logger.info('merging %s with %s on %s into %s', base, ref, var, out)
-                        dfs[out] = dfmerge(dfs[base], dfs[ref],
-                                           left_on=['df', var], right_index=True)
-
-        if {'fNProngsContributorsPV','fMultZeqNTracksPV'}.issubset(dfs['reco'].columns):
-            dfs['reco']['fMultZeqNTracksPV_sub'] = \
-                dfs['reco']['fMultZeqNTracksPV'] - dfs['reco']['fNProngsContributorsPV']
+                        self.logger.info('merging %s with %s on %s (default) into %s', base, ref, var, out)
+                        dfs[out] = dfmerge(dfs[base], dfs[ref], left_on=['df', var], right_index=True)
 
         if self.df_write:
             for df_name, df_spec in self.df_write.items():
@@ -632,6 +626,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         create_folder_struc(self.d_results, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
+        print('eff ', arguments)
         self.parallelizer(self.process_efficiency_single, arguments, self.p_chunksizeunp) # pylint: disable=no-member
         with tempfile.TemporaryDirectory() as tmp_merged_dir:
             mergerootfiles(self.l_histoeff, self.n_fileeff, tmp_merged_dir)
