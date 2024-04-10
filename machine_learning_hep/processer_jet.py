@@ -159,15 +159,16 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
 
     def process_efficiency_single(self, index):
         self.logger.info('Running efficiency')
-        for ipt in range(self.p_nptfinbins):
-            bin_id = self.bin_matching[ipt]
-            # pt_min = self.lpt_finbinmin[ipt]
-            # pt_max = self.lpt_finbinmax[ipt]
-            with (openfile(self.mptfiles_recosk[bin_id][index], "rb") as file,
-              openfile(self.mptfiles_gensk[bin_id][index], "rb") as mcfile):
-                df = pickle.load(file)
-                df.info()
-                print(df.index)
+        myfile = TFile.Open(self.l_histoeff[index], "recreate")
+        myfile.cd()
+        h_gen = TH1F(f'hjetgen', "", self.p_nptfinbins, self.lpt_finbinmin[0], self.lpt_finbinmax[-1])
+        h_det = TH1F(f'hjetdet', "", self.p_nptfinbins, self.lpt_finbinmin[0], self.lpt_finbinmax[-1])
+        for ipt in range(self.p_nptbins):
+            with (openfile(self.mptfiles_recosk[ipt][index], "rb") as file,
+              openfile(self.mptfiles_gensk[ipt][index], "rb") as mcfile):
+                dfdet = pickle.load(file)
+                fill_hist(h_det, dfdet['fPt'])
                 dfgen = pickle.load(mcfile)
-                dfgen.info()
-                print(dfgen.index)
+                fill_hist(h_gen, dfgen['fPt'])
+        h_gen.Write()
+        h_det.Write()

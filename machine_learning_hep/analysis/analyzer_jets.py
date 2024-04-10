@@ -183,10 +183,17 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
     def efficiency(self):
         self.logger.info("Running efficiency")
-        rfilename = self.n_filemass
-        rfilename_mc = self.n_filemass_mc
-        with TFile(rfilename) as rfile, TFile(rfilename_mc) as rfile_mc:
-            pass
+        rfilename = self.n_fileeff
+        with TFile(rfilename) as rfile:
+            h_gen = rfile.Get(f'hjetgen')
+            h_det = rfile.Get(f'hjetdet')
+            heff = h_det.Clone(f'hjeteff')
+            heff.Sumw2()
+            heff.Divide(h_gen)
+            self._save_hist(h_gen, f'hjet_gen.png')
+            self._save_hist(h_det, f'hjet_det.png')
+            self._save_hist(heff, f'hjet_efficiency.png')
+
 
     def qa(self): # pylint: disable=too-many-branches, too-many-locals, invalid-name
         self.logger.info("Running D0 jet qa")
