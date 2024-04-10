@@ -51,14 +51,18 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.fit_mean = {'mc': 7 * [0], 'data': 7 * [0]}
         self.fit_func_bkg = {'mc': [], 'data': []}
 
-    def _save_hist(self, hist, filename):
+    def _save_canvas(self, canvas, filename, mcordata):
+        dir = self.d_resultsallpmc if mcordata == 'mc' else self.resultsallpdata
+        canvas.SaveAs(f'fig/{self.case}_{self.typean}_{filename}')
+
+    def _save_hist(self, hist, filename, mcordata):
         if not hist:
             self.logger.error('no histogram for <%s>', filename)
             # TODO: remove file if it exists?
             return
         c = TCanvas()
         hist.Draw()
-        c.SaveAs(filename)
+        self._save_canvas(c, filename, mcordata)
 
     def _fit_mass(self, hist):
         fit_range = self.cfg('mass_fit.range')
@@ -87,20 +91,16 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
             with TFile(rfilename) as rfile:
                 for ipt in range(7):
-                    c = TCanvas("Candidate mass")
                     h_invmass = rfile.Get(f'hmass_{ipt}')
                     fit_res, _, func_bkg = self._fit_mass(h_invmass)
                     if fit_res is not None:
                         self.fit_sigma[mcordata][ipt] = fit_res.Parameter(2)
                         self.fit_mean[mcordata][ipt] = fit_res.Parameter(1)
                         self.fit_func_bkg[mcordata].append(func_bkg)
-                    h_invmass.Draw()
-                    c.SaveAs(f'hmass_fitted_{ipt}_{mcordata}.png')
+                    self._save_hist(h_invmass, f'hmass_fitted_{ipt}_{mcordata}.png', mcordata)
 
     def _subtract_sideband(self, hist, var, mcordata, ipt):
-        c = TCanvas(f'{var}')
-        hist.Draw("colz")
-        c.SaveAs(f'h2jet_invmass_{var}_{ipt}_{mcordata}.png')
+        self._save_hist(hist, f'h2jet_invmass_{var}_{ipt}_{mcordata}.png', mcordata)
 
         mean = self.fit_mean[mcordata][ipt]
         sigma = self.fit_sigma[mcordata][ipt]
@@ -125,21 +125,19 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         sidebandRightArea = self.fit_func_bkg[mcordata][ipt].Integral(
             region_sideband_right[0], region_sideband_right[1])
 
-        self._save_hist(fh_signal, f'hjet_{var}_signal_{ipt}_{mcordata}.png')
-        self._save_hist(fh_sidebandleft, f'hjet_{var}_sidebandleft_{ipt}_{mcordata}.png')
-        self._save_hist(fh_sidebandright, f'hjet_{var}_sidebandright_{ipt}_{mcordata}.png')
+        self._save_hist(fh_signal, f'hjet_{var}_signal_{ipt}_{mcordata}.png', mcordata)
+        self._save_hist(fh_sidebandleft, f'hjet_{var}_sidebandleft_{ipt}_{mcordata}.png', mcordata)
+        self._save_hist(fh_sidebandright, f'hjet_{var}_sidebandright_{ipt}_{mcordata}.png', mcordata)
 
         areaNormFactor = signalArea / (sidebandLeftlArea + sidebandRightArea)
         fh_sideband = fh_sidebandleft.Clone(f'h_sideband_{ipt}_{mcordata}')
         fh_sideband.Add(fh_sidebandright, 1.0)
-        fh_sideband.Draw()
-        c.SaveAs(f'hjet_{var}_sideband_{ipt}_{mcordata}.png')
+        self._save_hist(fh_sideband, f'hjet_{var}_sideband_{ipt}_{mcordata}.png', mcordata)
 
         fh_subtracted = fh_signal.Clone(f'h_subtracted_{ipt}_{mcordata}')
         fh_subtracted.Add(fh_sideband, -1.0 * areaNormFactor)
-        fh_subtracted.Scale(1.0 / 0.954) # TODO: where does this come from?
-        fh_subtracted.Draw()
-        c.SaveAs(f'hjet_{var}_subtracted_{ipt}_{mcordata}.png')
+        fh_subtracted.Scale(1.0 / 0.954)
+        self._save_hist(fh_subtracted, f'hjet_{var}_subtracted_{ipt}_{mcordata}.png', mcordata)
 
         fh_signal.SetLineColor(ROOT.kRed) # pylint: disable=no-member
         fh_signal.Draw()
@@ -148,7 +146,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         fh_sideband.Draw("same")
         fh_subtracted.SetLineColor(ROOT.kOrange) # pylint: disable=no-member
         fh_subtracted.Draw("same")
-        c.SaveAs(f'hjet_{var}_overview_{ipt}_{mcordata}.png')
+        self._save_canvas(c, f'hjet_{var}_overview_{ipt}_{mcordata}.png', mcordata)
 
     def subtract_sidebands(self):
         self.logger.info("Running sideband subtraction")
@@ -177,9 +175,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         for i in range(nbins):
                             hmass = hmass2.ProjectionX(f'h_invmass_zg_{ipt}_proj_{i}', i+1, i+2, "e")
                             _, func_sig, _ = self._fit_mass(hmass)
-                            self._save_hist(hmass, f'hmass_{var}_fitted_{ipt}_{i}_{mcordata}.png')
+                            self._save_hist(hmass, f'hmass_{var}_fitted_{ipt}_{i}_{mcordata}.png', mcordata)
                             hist.SetBinContent(i + 1, func_sig.Integral(1.67, 2.1)*(1.0/hmass.GetBinWidth(1)))
-                        self._save_hist(hist, f'{var}_signalextracted_{ipt}_{mcordata}.png')
+                        self._save_hist(hist, f'{var}_signalextracted_{ipt}_{mcordata}.png', mcordata)
 
     def efficiency(self):
         self.logger.info("Running efficiency")
@@ -190,9 +188,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             heff = h_det.Clone(f'hjeteff')
             heff.Sumw2()
             heff.Divide(h_gen)
-            self._save_hist(h_gen, f'hjet_gen.png')
-            self._save_hist(h_det, f'hjet_det.png')
-            self._save_hist(heff, f'hjet_efficiency.png')
+            self._save_hist(h_gen, f'hjet_gen.png', 'mc')
+            self._save_hist(h_det, f'hjet_det.png', 'mc')
+            self._save_hist(heff, f'hjet_efficiency.png', 'mc')
 
 
     def qa(self): # pylint: disable=too-many-branches, too-many-locals, invalid-name
@@ -208,11 +206,11 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 self.logger.debug('Number of selected event: %d', p_nevents)
 
                 for ipt in range(7):
-                    self._save_hist(rfile.Get(f'hmass_{ipt}'), f'hmass_{ipt}_{mcordata}.png')
-                    self._save_hist(rfile.Get(f'hcandpt_{ipt}'), f'hcandpt_{ipt}_{mcordata}.png')
-                    self._save_hist(rfile.Get(f'hjetpt_{ipt}'), f'hjetpt_{ipt}_{mcordata}.png')
-                    self._save_hist(rfile.Get(f'hjetzg_{ipt}'), f'hjetzg_{ipt}_{mcordata}.png')
-                    self._save_hist(rfile.Get(f'hjetrg_{ipt}'), f'hjetrg_{ipt}_{mcordata}.png')
-                    self._save_hist(rfile.Get(f'hjetnsd_{ipt}'), f'hjetnsd_{ipt}_{mcordata}.png')
-                    self._save_hist(rfile.Get(f'hjetzpar_{ipt}'), f'hjetzpar_{ipt}_{mcordata}.png')
-                    self._save_hist(rfile.Get(f'hjetdr_{ipt}'), f'hjetdr_{ipt}_{mcordata}.png')
+                    self._save_hist(rfile.Get(f'hmass_{ipt}'), f'hmass_{ipt}_{mcordata}.png', mcordata)
+                    self._save_hist(rfile.Get(f'hcandpt_{ipt}'), f'hcandpt_{ipt}_{mcordata}.png', mcordata)
+                    self._save_hist(rfile.Get(f'hjetpt_{ipt}'), f'hjetpt_{ipt}_{mcordata}.png', mcordata)
+                    self._save_hist(rfile.Get(f'hjetzg_{ipt}'), f'hjetzg_{ipt}_{mcordata}.png', mcordata)
+                    self._save_hist(rfile.Get(f'hjetrg_{ipt}'), f'hjetrg_{ipt}_{mcordata}.png', mcordata)
+                    self._save_hist(rfile.Get(f'hjetnsd_{ipt}'), f'hjetnsd_{ipt}_{mcordata}.png', mcordata)
+                    self._save_hist(rfile.Get(f'hjetzpar_{ipt}'), f'hjetzpar_{ipt}_{mcordata}.png', mcordata)
+                    self._save_hist(rfile.Get(f'hjetdr_{ipt}'), f'hjetdr_{ipt}_{mcordata}.png', mcordata)

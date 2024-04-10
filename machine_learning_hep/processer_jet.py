@@ -108,7 +108,6 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
             with openfile(self.mptfiles_recosk[bin_id][index], "rb") as file:
                 df = pickle.load(file)
                 df.query(f'fPt >= {pt_min} and fPt < {pt_max}', inplace=True)
-                self.logger.info('calculating derived variables')
                 df = self.process_calculate_variables(df)
 
                 self.logger.info('preparing histograms')

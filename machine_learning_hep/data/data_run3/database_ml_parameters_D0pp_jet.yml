@@ -62,11 +62,11 @@ D0pp_jet:
         trees:
           O2hfd0collbase: [fNumContrib, fIsEventReject, fRunNumber]
 
-      collgen:
-        level: gen
-        index: fIndexD0CMCPJetCOs
-        trees:
-          O2d0cmcpjetco: [fPosZ, fCentrality, fEventSel]
+      # collgen:
+      #   level: gen
+      #   index: fIndexD0CMCPJetCOs
+      #   trees:
+      #     O2d0cmcpjetco: [fPosZ, fCentrality, fEventSel]
       jetgen:
         level: gen
         index: fIndexD0CMCPJetOs
@@ -135,7 +135,7 @@ D0pp_jet:
         filter: "fPt >= 1. and fY <= 0.8"
 
     merge:
-      - {base: jetgen, ref: collgen}
+      # - {base: jetgen, ref: collgen}
       - {base: jetdet, ref: colldet}
       - {base: jetdata, ref: colldata}
 

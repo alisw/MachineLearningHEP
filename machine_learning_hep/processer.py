@@ -423,6 +423,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     self.logger.info('writing %s to %s', df_name, df_spec['file'])
                     src = df_spec.get('source', df_name)
                     dfo = dfquery(dfs[src], df_spec.get('filter', None))
+                    # TODO: write out index columns
                     path = os.path.join(self.d_pkl, self.l_path[file_index], df_spec['file'])
                     with openfile(path, "wb") as file:
                         pickle.dump(dfo, file, protocol=4)
