@@ -71,10 +71,10 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         self.n_evt_count_ml = datap["files_names"].get("namefile_evt_count", "evtcount.yaml")
         self.n_gen = datap["files_names"]["namefile_gen"]
         self.n_mcreweights = datap["files_names"]["namefile_mcweights"]
-        self.lpt_recosk = [self.n_reco.replace(".pkl", "_%s%d_%d.pkl" % \
+        self.lpt_recosk = [self.n_reco.replace(".p", "_%s%d_%d.p" % \
                           (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
                           for i in range(self.p_nptbins)]
-        self.lpt_gensk = [self.n_gen.replace(".pkl", "_%s%d_%d.pkl" % \
+        self.lpt_gensk = [self.n_gen.replace(".p", "_%s%d_%d.p" % \
                           (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
                           for i in range(self.p_nptbins)]
         self.lptper_recoml = [[os.path.join(direc, self.lpt_recosk[ipt]) \

@@ -32,6 +32,8 @@ D0pp_jet:
   sel_skim_binmax:   [2,4,6,8,12,24,48] # skimming pt bins (sel_skim_binmin bins)
   var_binning: fPt
   dofullevtmerge: false
+
+  # obsolete, to be removed
   var_cand: fCandidateSelFlag
   # var_swap: fIsCandidateSwapped
   bitmap_sel:
@@ -81,7 +83,7 @@ D0pp_jet:
           ismcbkg: {var: fFlagMcMatchGen, req: [[],[1]], abs: true}
           ismcprompt: {var: fOriginMcGen, req: [[0],[]]}
           ismcfd: {var: fOriginMcGen, req: [[1],[]]}
-        swap: {cand: fCandidateSelFlag, swap: fIsCandidateSwapped, vars: [ismcsignal, ismcprompt, icmcfd]} 
+        # swap: {cand: fCandidateSelFlag, swap: fIsCandidateSwapped, vars: [ismcsignal, ismcprompt, icmcfd]} 
         filter: "fPt >= 1. and fY <= 0.8"
 
       colldet:
@@ -152,20 +154,20 @@ D0pp_jet:
     write:
       jetgen:
         level: gen
-        file: AnalysisResultsGen.pkl.lz4
+        file: AnalysisResultsGen.parquet
       jetdet:
         level: det
-        file: AnalysisResultsReco.pkl.lz4
+        file: AnalysisResultsReco.parquet
       jetdata:
         level: data
-        file: AnalysisResultsReco.pkl.lz4
+        file: AnalysisResultsReco.parquet
       evtorig:
         level: all
-        file: AnalysisResultsEvtOrig.pkl.lz4
+        file: AnalysisResultsEvtOrig.parquet
       evt:
         level: all
         source: evtorig
-        file: AnalysisResultsEvt.pkl.lz4
+        file: AnalysisResultsEvt.parquet
         filter: "fIsEventReject == 0"
 
   variables:
@@ -208,13 +210,13 @@ D0pp_jet:
 
   files_names:
     namefile_unmerged_tree: AO2D.root
-    namefile_reco: AnalysisResultsReco.pkl.lz4
-    namefile_evt: AnalysisResultsEvt.pkl.lz4
+    namefile_reco: AnalysisResultsReco.parquet
+    namefile_evt: AnalysisResultsEvt.parquet
     namefile_evtvalroot: AnalysisResultsROOTEvtVal.root
-    namefile_evtorig: AnalysisResultsEvtOrig.pkl.lz4
-    namefile_gen: AnalysisResultsGen.pkl.lz4
-    namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl.lz4
-    namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl.lz4
+    namefile_evtorig: AnalysisResultsEvtOrig.parquet
+    namefile_gen: AnalysisResultsGen.parquet
+    namefile_reco_applieddata: AnalysisResultsRecoAppliedData.parquet
+    namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.parquet
     namefile_mcweights: mcweights.root
     treeoutput: "D0tree"
     histofilename: "masshisto.root"
@@ -247,7 +249,7 @@ D0pp_jet:
       chunksizeskim: [1000] #list of periods
       fracmerge: [1.0] #list of periods
       seedmerge: [12] #list of periods
-      period: [mctest_nima] #list of periods
+      period: [LHC22b1b] #list of periods
       select_period: [1]
       prefix_dir: /data2/MLhep/sim/train_184858/
       unmerged_tree_dir: [alice/cern.ch/user/a/alihyperloop/outputs/0018/184858/24138]

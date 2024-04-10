@@ -31,7 +31,7 @@ from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utilities import dfquery, selectdfquery, merge_method, mask_df
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
-from machine_learning_hep.utilities import mergerootfiles, count_df_length_pkl
+from machine_learning_hep.utilities import mergerootfiles, count_df_length_pkl, read_df, write_df
 from machine_learning_hep.io import dump_yaml_from_dict
 from machine_learning_hep.logger import get_logger
 pd.options.mode.chained_assignment = None
@@ -157,7 +157,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             self.l_path = list_folders(self.d_pkl, self.n_reco, self.p_maxfiles,
                                        self.select_jobs)
         else:
-            self.n_sk = self.n_reco.replace(".pkl", "_%s%d_%d.pkl" % \
+            self.n_sk = self.n_reco.replace(".p", "_%s%d_%d.p" % \
                           (self.v_var_binning, self.lpt_anbinmin[0], self.lpt_anbinmax[0]))
             self.l_path = list_folders(self.d_pklsk, self.n_sk, self.p_maxfiles,
                                        self.select_jobs)
@@ -228,10 +228,11 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.n_fileeff = os.path.join(self.d_results, self.n_fileeff)
         self.n_fileresp = os.path.join(self.d_results, self.n_fileresp)
 
-        self.lpt_recosk = [self.n_reco.replace(".pkl", "_%s%d_%d.pkl" % \
+        # FIXME: implement properly
+        self.lpt_recosk = [self.n_reco.replace(".p", "_%s%d_%d.p" % \
                           (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
                           for i in range(self.p_nptbins)]
-        self.lpt_gensk = [self.n_gen.replace(".pkl", "_%s%d_%d.pkl" % \
+        self.lpt_gensk = [self.n_gen.replace(".p", "_%s%d_%d.p" % \
                           (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
                           for i in range(self.p_nptbins)]
         self.lpt_reco_ml = [os.path.join(self.d_pkl_ml, self.lpt_recosk[ipt]) \
@@ -242,17 +243,17 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.lpt_recodec = None
         if self.doml is True:
             if self.mltype == "MultiClassification":
-                self.lpt_recodec = [self.n_reco.replace(".pkl", "%d_%d_%.2f%.2f%.2f.pkl" % \
+                self.lpt_recodec = [self.n_reco.replace(".p", "%d_%d_%.2f%.2f%.2f.p" % \
                                    (self.lpt_anbinmin[i], self.lpt_anbinmax[i],
                                     self.lpt_probcutpre[i][0], self.lpt_probcutpre[i][1],
                                     self.lpt_probcutpre[i][2])) \
                                     for i in range(self.p_nptbins)]
             else:
-                self.lpt_recodec = [self.n_reco.replace(".pkl", "%d_%d_%.2f.pkl" % \
+                self.lpt_recodec = [self.n_reco.replace(".p", "%d_%d_%.2f.p" % \
                                    (self.lpt_anbinmin[i], self.lpt_anbinmax[i], \
                                     self.lpt_probcutpre[i])) for i in range(self.p_nptbins)]
         else:
-            self.lpt_recodec = [self.n_reco.replace(".pkl", "%d_%d_std.pkl" % \
+            self.lpt_recodec = [self.n_reco.replace(".p", "%d_%d_std.p" % \
                                (self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
                                                     for i in range(self.p_nptbins)]
 
@@ -331,13 +332,14 @@ class Processer: # pylint: disable=too-many-instance-attributes
         with uproot.open(self.l_root[file_index]) as rfile:
             df_processed = set()
             keys = rfile.keys(recursive=False, filter_name='DF_*')
+            self.logger.info(f'found {len(keys)} dataframes, reading {max_no_keys or "all"}')
             for (idx, key) in enumerate(keys[:max_no_keys]):
                 if not (df_key := re.match('^DF_(\\d+);', key)):
                     continue
-                if (df_no := df_key.group(1)) in df_processed:
+                if (df_no := int(df_key.group(1))) in df_processed:
                     self.logger.warning('multiple versions of DF %d', df_no)
                     continue
-                self.logger.debug('processing DF %d - %d / %d', df_no, idx, len(keys))
+                self.logger.info('processing DF %d - %d / %d', df_no, idx, len(keys))
                 df_processed.add(df_no)
                 rdir = rfile[key]
 
@@ -352,15 +354,14 @@ class Processer: # pylint: disable=too-many-instance-attributes
                             elif dfuse(spec):
                                 trees.append(tree)
                                 cols.append(spec['vars'])
-                        df = dfread(rdir, trees, cols,
-                                    idx_name=df_spec.get('index', None))
+                        df = dfread(rdir, trees, cols, idx_name=df_spec.get('index', None))
                         dfappend(df_name, df)
 
         for df_name, df_spec in self.df_read.items():
             if dfuse(df_spec):
                 if 'extra' in df_spec:
                     for col_name, col_val in df_spec['extra'].items():
-                        df[col_name] = dfs[df_name].eval(col_val)
+                        dfs[df_name][col_name] = dfs[df_name].eval(col_val)
                 if 'filter' in df_spec:
                     dfquery(dfs[df_name], df_spec['filter'], inplace=True)
                 if 'tags' in df_spec:
@@ -396,37 +397,24 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     self.logger.info('writing %s to %s', df_name, df_spec['file'])
                     src = df_spec.get('source', df_name)
                     dfo = dfquery(dfs[src], df_spec.get('filter', None))
-                    # TODO: write out index columns
                     path = os.path.join(self.d_pkl, self.l_path[file_index], df_spec['file'])
-                    with openfile(path, "wb") as file:
-                        pickle.dump(dfo, file, protocol=4)
+                    write_df(dfo, path)
 
     def skim(self, file_index):
-        try:
-            dfreco = pickle.load(openfile(self.l_reco[file_index], "rb"))
-        except Exception as e: # pylint: disable=broad-except
-            self.logger.critical('failed to open file <%s>: %s',
-                                 self.l_reco[file_index], str(e))
-            sys.exit()
+        dfreco = read_df(self.l_reco[file_index])
+        dfgen = read_df(self.l_gen[file_index]) if self.mcordata == 'mc' else None
+
         for ipt in range(self.p_nptbins):
             dfrecosk = seldf_singlevar(dfreco, self.v_var_binning,
                                        self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
             dfrecosk = selectdfquery(dfrecosk, self.s_reco_skim[ipt])
-            dfrecosk = dfrecosk.reset_index(drop=True)
-            f = openfile(self.mptfiles_recosk[ipt][file_index], "wb")
-            pickle.dump(dfrecosk, f, protocol=4)
-            f.close()
-            if self.mcordata == "mc":
-                try:
-                    dfgen = pickle.load(openfile(self.l_gen[file_index], "rb"))
-                except Exception as e: # pylint: disable=broad-except
-                    print('failed to open MC file', self.l_gen[file_index], str(e))
+            write_df(dfrecosk, self.mptfiles_recosk[ipt][file_index])
+
+            if dfgen is not None:
                 dfgensk = seldf_singlevar(dfgen, self.v_var_binning,
                                           self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
                 dfgensk = selectdfquery(dfgensk, self.s_gen_skim[ipt])
-                dfgensk = dfgensk.reset_index(drop=True)
-                pickle.dump(dfgensk, openfile(self.mptfiles_gensk[ipt][file_index], "wb"),
-                            protocol=4)
+                write_df(dfgensk, self.mptfiles_gensk[ipt][file_index])
 
     def applymodel(self, file_index):
         from machine_learning_hep.models import apply # pylint: disable=import-error, import-outside-toplevel
@@ -434,7 +422,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
             if os.path.exists(self.mptfiles_recoskmldec[ipt][file_index]):
                 if os.stat(self.mptfiles_recoskmldec[ipt][file_index]).st_size != 0:
                     continue
-            dfrecosk = pickle.load(openfile(self.mptfiles_recosk[ipt][file_index], "rb"))
+            dfrecosk = read_df(self.mptfiles_recosk[ipt][file_index])
             if self.p_mask_values:
                 mask_df(dfrecosk, self.p_mask_values)
             if self.doml is True:

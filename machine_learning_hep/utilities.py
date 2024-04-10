@@ -22,6 +22,7 @@ import pickle
 import bz2
 import gzip
 import lzma
+import time
 import os
 import sys
 import shutil
@@ -83,6 +84,29 @@ def openfile(filename, attr):
         return lz4.frame.open(filename, attr)
     return open(filename, attr, encoding='utf-8' if 'b' not in attr else None)
 
+def write_df(dfo, path):
+    logger.debug('writing df to <%s>', path)
+    if path.endswith('.parquet'):
+        start = time.time()
+        dfo.to_parquet(path)
+        logger.debug(f'written to parquet in {time.time() - start:.2f} s')
+    else:
+        start = time.time()
+        with openfile(path, "wb") as file:
+            pickle.dump(dfo, file, pickle.HIGHEST_PROTOCOL)
+        logger.debug(f'written to pickle in {time.time() - start:.2f} s')
+
+def read_df(path):
+    try:
+        if path.endswith('.parquet'):
+            df = pd.read_parquet(path)
+        else:
+            df = pickle.load(openfile(path, "rb"))
+    except Exception as e: # pylint: disable=broad-except
+        logger.critical('failed to open file <%s>: %s', path, str(e))
+        sys.exit()
+    return df
+
 def mask_df(df_to_mask, mask_config):
     """
     Potentially mask some column values
@@ -140,8 +164,7 @@ def count_df_length_pkl(*pkls):
     """
     count = 0
     for pkl in pkls:
-        myfile = openfile(pkl, "rb")
-        df = pickle.load(myfile)
+        df = read_df(pkl)
         count += len(df.index)
     return count
 
@@ -151,11 +174,10 @@ def merge_method(listfiles, namemerged):
     """
     dflist = []
     for myfilename in listfiles:
-        myfile = openfile(myfilename, "rb")
-        df = pickle.load(myfile)
+        df = read_df(myfilename)
         dflist.append(df)
     dftot = pd.concat(dflist)
-    pickle.dump(dftot, openfile(namemerged, "wb"), protocol=4)
+    write_df(dftot, namemerged)
 
 def list_folders(main_dir, filenameinput, maxfiles, select=None): # pylint: disable=too-many-branches
     """

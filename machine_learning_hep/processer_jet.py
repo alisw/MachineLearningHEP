@@ -18,7 +18,7 @@ import numpy as np
 import pandas as pd
 from ROOT import TFile, TH1F, TH2F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.processer import Processer
-from machine_learning_hep.utilities import fill_hist, openfile
+from machine_learning_hep.utilities import fill_hist, read_df
 
 class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instance-attributes
     species = "processer"
@@ -94,7 +94,7 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
         myfile = TFile.Open(self.l_histomass[index], "recreate")
         myfile.cd()
 
-        dfevtorig = pickle.load(openfile(self.l_evtorig[index], "rb"))
+        dfevtorig = read_df(self.l_evtorig[index])
         dfevtevtsel = dfevtorig.query(self.s_evtsel)
         neventsafterevtsel = len(dfevtevtsel)
         histonorm = TH1F("histonorm", "histonorm", 1, 0, 1)
@@ -105,56 +105,56 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
             bin_id = self.bin_matching[ipt]
             pt_min = self.lpt_finbinmin[ipt]
             pt_max = self.lpt_finbinmax[ipt]
-            with openfile(self.mptfiles_recosk[bin_id][index], "rb") as file:
-                df = pickle.load(file)
-                df.query(f'fPt >= {pt_min} and fPt < {pt_max}', inplace=True)
-                df = self.process_calculate_variables(df)
 
-                self.logger.info('preparing histograms')
-                h_invmass_all = TH1F(f'hmass_{ipt}', "",
-                                     self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-                fill_hist(h_invmass_all, df.fM, write=True)
+            df = read_df(self.mptfiles_recosk[bin_id][index])
+            df.query(f'fPt >= {pt_min} and fPt < {pt_max}', inplace=True)
+            df = self.process_calculate_variables(df)
 
-                h_candpt_all = TH1F(f'hcandpt_{ipt}', "", self.p_num_bins, 0., 50.)
-                fill_hist(h_candpt_all, df.fPt, write=True)
+            self.logger.info('preparing histograms')
+            h_invmass_all = TH1F(f'hmass_{ipt}', "",
+                                    self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+            fill_hist(h_invmass_all, df.fM, write=True)
 
-                h_jetpt_all = TH1F(f'hjetpt_{ipt}', "", self.p_num_bins, 0., 50.)
-                fill_hist(h_jetpt_all, df.fJetPt, write=True)
+            h_candpt_all = TH1F(f'hcandpt_{ipt}', "", self.p_num_bins, 0., 50.)
+            fill_hist(h_candpt_all, df.fPt, write=True)
 
-                ## substructure
-                h_zg = TH1F(f'hjetzg_{ipt}', "", 10, 0.0, 1.0)
-                fill_hist(h_zg, df.zg, write=True)
+            h_jetpt_all = TH1F(f'hjetpt_{ipt}', "", self.p_num_bins, 0., 50.)
+            fill_hist(h_jetpt_all, df.fJetPt, write=True)
 
-                h_nsd = TH1F(f'hjetnsd_{ipt}', "", 10, 0.0, 10.0)
-                fill_hist(h_nsd, df.nsd, write=True)
+            ## substructure
+            h_zg = TH1F(f'hjetzg_{ipt}', "", 10, 0.0, 1.0)
+            fill_hist(h_zg, df.zg, write=True)
 
-                h_rg = TH1F(f'hjetrg_{ipt}', "", 100, 0.0, 1.0)
-                fill_hist(h_rg, df.rg, write=True)
+            h_nsd = TH1F(f'hjetnsd_{ipt}', "", 10, 0.0, 10.0)
+            fill_hist(h_nsd, df.nsd, write=True)
 
-                h_zpar = TH1F(f'hjetzpar_{ipt}', "", 100, 0.0, 1.0)
-                fill_hist(h_zpar, df.z_parallel, write=True)
+            h_rg = TH1F(f'hjetrg_{ipt}', "", 100, 0.0, 1.0)
+            fill_hist(h_rg, df.rg, write=True)
 
-                h_dr = TH1F(f'hjetdr_{ipt}', "", 10, 0.0, 1.0)
-                fill_hist(h_dr, df.radial_distance, write=True)
+            h_zpar = TH1F(f'hjetzpar_{ipt}', "", 100, 0.0, 1.0)
+            fill_hist(h_zpar, df.z_parallel, write=True)
 
-                h = TH2F(f'h2jet_invmass_zg_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 1.0)
-                fill_hist(h, df[['fM', 'zg']], write=True)
+            h_dr = TH1F(f'hjetdr_{ipt}', "", 10, 0.0, 1.0)
+            fill_hist(h_dr, df.radial_distance, write=True)
 
-                h = TH2F(f'h2jet_invmass_nsd_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 10.0)
-                fill_hist(h, df[['fM', 'nsd']], write=True)
+            h = TH2F(f'h2jet_invmass_zg_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 1.0)
+            fill_hist(h, df[['fM', 'zg']], write=True)
 
-                h = TH2F(f'h2jet_invmass_rg_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 1.0)
-                fill_hist(h, df[['fM', 'rg']], write=True)
+            h = TH2F(f'h2jet_invmass_nsd_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 10.0)
+            fill_hist(h, df[['fM', 'nsd']], write=True)
 
-                h = TH2F(f'h2jet_invmass_zpar_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 1.0)
-                fill_hist(h, df[['fM', 'z_parallel']], write=True)
+            h = TH2F(f'h2jet_invmass_rg_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 1.0)
+            fill_hist(h, df[['fM', 'rg']], write=True)
 
-                h = TH2F(f'h2jet_invmass_dr_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 1.0)
-                fill_hist(h, df[['fM', 'radial_distance']], write=True)
+            h = TH2F(f'h2jet_invmass_zpar_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 1.0)
+            fill_hist(h, df[['fM', 'z_parallel']], write=True)
 
-                #invariant mass with candidatePT intervals (done)
-                #invariant mass with jetPT and candidatePT intervals
-                #invariant mass with jetPT and candidatePT and shape intervals
+            h = TH2F(f'h2jet_invmass_dr_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 1.0)
+            fill_hist(h, df[['fM', 'radial_distance']], write=True)
+
+            #invariant mass with candidatePT intervals (done)
+            #invariant mass with jetPT and candidatePT intervals
+            #invariant mass with jetPT and candidatePT and shape intervals
 
     def process_efficiency_single(self, index):
         self.logger.info('Running efficiency')
@@ -163,11 +163,13 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
         h_gen = TH1F(f'hjetgen', "", self.p_nptfinbins, self.lpt_finbinmin[0], self.lpt_finbinmax[-1])
         h_det = TH1F(f'hjetdet', "", self.p_nptfinbins, self.lpt_finbinmin[0], self.lpt_finbinmax[-1])
         for ipt in range(self.p_nptbins):
-            with (openfile(self.mptfiles_recosk[ipt][index], "rb") as file,
-              openfile(self.mptfiles_gensk[ipt][index], "rb") as mcfile):
-                dfdet = pickle.load(file)
-                fill_hist(h_det, dfdet['fPt'])
-                dfgen = pickle.load(mcfile)
-                fill_hist(h_gen, dfgen['fPt'])
+            print(self.mptfiles_gensk[ipt][index])
+            print(self.mptfiles_recosk[ipt][index])
+            dfgen = read_df(self.mptfiles_gensk[ipt][index])
+            dfdet = read_df(self.mptfiles_recosk[ipt][index])
+            # print(dfgen.head())
+            # print(dfdet.head())
+            fill_hist(h_det, dfdet['fPt'])
+            fill_hist(h_gen, dfgen['fPt'])
         h_gen.Write()
         h_det.Write()
