@@ -58,7 +58,6 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
         df['zg_array'] = np.array(df.fPtSubLeading / (df.fPtLeading + df.fPtSubLeading))
         # TODO: check for zg > 0.5
         # TODO: check for soft drop
-        return
         # TODO: can we optimize this loop?
         for idx, row in df.iterrows():
             isSoftDropped = False
@@ -109,75 +108,50 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
             with openfile(self.mptfiles_recosk[bin_id][index], "rb") as file:
                 df = pickle.load(file)
                 df.query(f'fPt >= {pt_min} and fPt < {pt_max}', inplace=True)
-                self.logger.info('calculating')
+                self.logger.info('calculating derived variables')
                 df = self.process_calculate_variables(df)
 
+                self.logger.info('preparing histograms')
                 h_invmass_all = TH1F(f'hmass_{ipt}', "",
                                      self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-                fill_hist(h_invmass_all, df.fM)
-                h_invmass_all.Write()
+                fill_hist(h_invmass_all, df.fM, write=True)
 
                 h_candpt_all = TH1F(f'hcandpt_{ipt}', "", self.p_num_bins, 0., 50.)
-                fill_hist(h_candpt_all, df.fPt)
-                h_candpt_all.Write()
+                fill_hist(h_candpt_all, df.fPt, write=True)
 
                 h_jetpt_all = TH1F(f'hjetpt_{ipt}', "", self.p_num_bins, 0., 50.)
-                fill_hist(h_jetpt_all, df.fJetPt)
-                h_jetpt_all.Write()
+                fill_hist(h_jetpt_all, df.fJetPt, write=True)
 
                 ## substructure
                 h_zg = TH1F(f'hjetzg_{ipt}', "", 10, 0.0, 1.0)
-                fill_hist(h_zg, df.zg)
-                h_zg.Write()
+                fill_hist(h_zg, df.zg, write=True)
 
                 h_nsd = TH1F(f'hjetnsd_{ipt}', "", 10, 0.0, 10.0)
-                fill_hist(h_nsd, df.nsd)
-                h_nsd.Write()
+                fill_hist(h_nsd, df.nsd, write=True)
 
                 h_rg = TH1F(f'hjetrg_{ipt}', "", 100, 0.0, 1.0)
-                fill_hist(h_rg, df.rg)
-                h_rg.Write()
+                fill_hist(h_rg, df.rg, write=True)
 
                 h_zpar = TH1F(f'hjetzpar_{ipt}', "", 100, 0.0, 1.0)
-                fill_hist(h_zpar, df.z_parallel)
-                h_zpar.Write()
+                fill_hist(h_zpar, df.z_parallel, write=True)
 
                 h_dr = TH1F(f'hjetdr_{ipt}', "", 10, 0.0, 1.0)
-                fill_hist(h_dr, df.radial_distance)
-                h_dr.Write()
+                fill_hist(h_dr, df.radial_distance, write=True)
 
                 h = TH2F(f'h2jet_invmass_zg_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 1.0)
-                if len(df.fM) > 0:
-                    h.FillN(len(df.fM), np.float64(df.fM), np.float64(df.zg), np.float64(len(df.fM)*[1.]))
-                h.Write()
+                fill_hist(h, df[['fM', 'zg']], write=True)
 
                 h = TH2F(f'h2jet_invmass_nsd_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 10.0)
-                if len(df.fM) > 0:
-                    h.FillN(len(df.fM), np.float64(df.fM), np.float64(df.nsd), np.float64(len(df.fM)*[1.]))
-                h.Write()
+                fill_hist(h, df[['fM', 'nsd']], write=True)
 
                 h = TH2F(f'h2jet_invmass_rg_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 1.0)
-                if len(df.fM) > 0:
-                    h.FillN(len(df.fM), np.float64(df.fM), np.float64(df.rg), np.float64(len(df.fM)*[1.]))
-                h.Write()
+                fill_hist(h, df[['fM', 'rg']], write=True)
 
                 h = TH2F(f'h2jet_invmass_zpar_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 1.0)
-                if len(df.fM) > 0:
-                    h.FillN(len(df.fM), np.float64(df.fM), np.float64(df.z_parallel), np.float64(len(df.fM)*[1.]))
-                h.Write()
+                fill_hist(h, df[['fM', 'z_parallel']], write=True)
 
                 h = TH2F(f'h2jet_invmass_dr_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 1.0)
-                if len(df.fM) > 0:
-                    h.FillN(len(df.fM), np.float64(df.fM), np.float64(df.radial_distance), np.float64(len(df.fM)*[1.]))
-                h.Write()
-
-                # TODO: wouldn't it be better to project in the analyzer?
-                for i in range(5):
-                    df_zg = df.query(f'zg >= {i*0.1} and zg < {i*0.1+0.1}')
-                    h_invmass_zg = TH1F(
-                        f'hmass_zg_{ipt}_{i}', "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-                    fill_hist(h_invmass_zg, df_zg.fM)
-                    h_invmass_zg.Write()
+                fill_hist(h, df[['fM', 'radial_distance']], write=True)
 
                 #invariant mass with candidatePT intervals (done)
                 #invariant mass with jetPT and candidatePT intervals
@@ -189,7 +163,11 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
             bin_id = self.bin_matching[ipt]
             # pt_min = self.lpt_finbinmin[ipt]
             # pt_max = self.lpt_finbinmax[ipt]
-            # TODO: how do we get access to the corresponding MC file?
-            with openfile(self.mptfiles_recosk[bin_id][index], "rb") as file:
+            with (openfile(self.mptfiles_recosk[bin_id][index], "rb") as file,
+              openfile(self.mptfiles_gensk[bin_id][index], "rb") as mcfile):
                 df = pickle.load(file)
                 df.info()
+                print(df.index)
+                dfgen = pickle.load(mcfile)
+                dfgen.info()
+                print(dfgen.index)

@@ -46,11 +46,19 @@ logger = get_logger()
 # pylint: disable=line-too-long, consider-using-f-string, too-many-lines
 # pylint: disable=unspecified-encoding, consider-using-generator, invalid-name, import-outside-toplevel
 
-def fill_hist(hist, arr, weights = None):
-    assert arr.ndim == 1, 'fill_hist handles 1d histos only'
+# TODO: check usage of df and/or arrays
+def fill_hist(hist, arr, weights = None, write = False):
+    assert arr.ndim in [1, 2], 'fill_hist requires 1- or 2-d array'
     if len(arr) == 0:
         return
-    hist.FillN(len(arr), np.float64(arr), weights or 0)
+    if (arr.ndim == 1):
+        hist.FillN(len(arr), np.float64(arr), weights or 0)
+    # TODO: check df shape
+    elif (arr.ndim == 2):
+        hist.FillN(len(arr), np.float64(arr.iloc[:, 0]), np.float64(arr.iloc[:, 1]),
+                   weights or np.float64(len(arr)*[1.]))
+    if write:
+        hist.Write()
 
 def hist2array(hist):
     assert hist.GetDimension() == 1
@@ -112,12 +120,8 @@ def dfquery(df, selection, **kwargs):
     return df.query(selection, **kwargs) if selection is not None else df
 
 def selectdfquery(dfr, selection):
-    """
-    Query on dataframe
-    """
-    if selection is not None:
-        dfr = dfr.query(selection)
-    return dfr
+    """ legacy, use dfquery instead """
+    return dfquery(dfr, selection)
 
 def selectdfrunlist(dfr, runlist, runvar):
     """
