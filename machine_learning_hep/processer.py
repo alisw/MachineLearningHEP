@@ -27,8 +27,7 @@ import tempfile
 import uproot
 import pandas as pd
 import numpy as np
-from machine_learning_hep.selectionutils import selectfidacc
-from machine_learning_hep.bitwise import tag_bit_df #, filter_bit_df
+from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utilities import dfquery, selectdfquery, merge_method, mask_df
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
@@ -49,8 +48,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                  p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
                  d_results, typean, runlisttrigger, d_mcreweights):
-        #self.logger = get_logger()
-        self.nprongs = datap["nprongs"]
         self.doml = datap["doml"]
         self.case = case
         self.typean = typean
@@ -363,43 +360,19 @@ class Processer: # pylint: disable=too-many-instance-attributes
             if dfuse(df_spec):
                 if 'extra' in df_spec:
                     for col_name, col_val in df_spec['extra'].items():
-                        dfs[df_name][col_name] = dfs[df_name].eval(col_val)
+                        df[col_name] = dfs[df_name].eval(col_val)
                 if 'filter' in df_spec:
                     dfquery(dfs[df_name], df_spec['filter'], inplace=True)
-
-        # TODO: workaround while calculations are still in processer
-        dfname_gen = 'jetgen' if 'jetgen' in dfs else 'gen'
-        dfname_rec = 'jetdata' if 'jetdata' in dfs else 'jetdet' if 'jetdet' in dfs else 'reco'
-
-        # TODO: extra logic should eventually come from DB
-        if self.mcordata == "mc":
-            dfs[dfname_rec][self.v_ismcsignal] = np.array(tag_bit_df(dfs[dfname_rec], self.v_bitvar,
-                                                                 self.b_mcsig, True), dtype=int)
-            dfs[dfname_rec][self.v_ismcprompt] = np.array(tag_bit_df(dfs[dfname_rec], self.v_bitvar_origrec,
-                                                                 self.b_mcsigprompt), dtype=int)
-            dfs[dfname_rec][self.v_ismcfd] = np.array(tag_bit_df(dfs[dfname_rec], self.v_bitvar_origrec,
-                                                             self.b_mcsigfd), dtype=int)
-            dfs[dfname_rec][self.v_ismcbkg] = np.array(tag_bit_df(dfs[dfname_rec], self.v_bitvar,
-                                                              self.b_mcbkg, True), dtype=int)
-
-            if self.v_swap:
-                mydf = dfs[dfname_rec][self.v_candtype] == dfs[dfname_rec][self.v_swap] + 1
-                dfs[dfname_rec][self.v_ismcsignal] = \
-                    np.logical_and(dfs[dfname_rec][self.v_ismcsignal] == 1, mydf)
-                dfs[dfname_rec][self.v_ismcprompt] = \
-                    np.logical_and(dfs[dfname_rec][self.v_ismcprompt] == 1, mydf)
-                dfs[dfname_rec][self.v_ismcfd] = np.logical_and(dfs[dfname_rec][self.v_ismcfd] == 1, mydf)
-
-            dfs[dfname_gen][self.v_isstd] = np.array(tag_bit_df(dfs[dfname_gen], self.v_bitvar_gen,
-                                                      self.b_std), dtype=int)
-            dfs[dfname_gen][self.v_ismcsignal] = np.array(tag_bit_df(dfs[dfname_gen], self.v_bitvar_gen,
-                                                           self.b_mcsig, True), dtype=int)
-            dfs[dfname_gen][self.v_ismcprompt] = np.array(tag_bit_df(dfs[dfname_gen], self.v_bitvar_origgen,
-                                                           self.b_mcsigprompt), dtype=int)
-            dfs[dfname_gen][self.v_ismcfd] = np.array(tag_bit_df(dfs[dfname_gen], self.v_bitvar_origgen,
-                                                       self.b_mcsigfd), dtype=int)
-            dfs[dfname_gen][self.v_ismcbkg] = np.array(tag_bit_df(dfs[dfname_gen], self.v_bitvar_gen,
-                                                        self.b_mcbkg, True), dtype=int)
+                if 'tags' in df_spec:
+                    for tag, value in df_spec['tags'].items():
+                        dfs[df_name][tag] = np.array(
+                            tag_bit_df(dfs[df_name], value['var'], value['req'], value.get('abs', False)), dtype=int)
+                if 'swap' in df_spec:
+                    # TODO: check with Luigi
+                    spec = df_spec['swap']
+                    swapped = dfs[df_name][spec['cand']] == dfs[df_name][spec['swap']] + 1
+                    for var in spec['vars']:
+                        dfs[df_name][var] = np.logical_and(dfs[df_name][var] == 1, swapped)
 
         if self.df_merge:
             for m_spec in self.df_merge:
