@@ -12,8 +12,7 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-Lcpp_jet:
-  nprongs: 3
+LcJet_pp:
   doml: true
   mass: 2.286
   sel_reco_unp: "fPt>0"
@@ -56,47 +55,28 @@ Lcpp_jet:
         extra:
           fIsEventReject: 0
 
-      reco:
-        level: all
-        index: fIndexHf3PBases_0
-        trees:
-          O2hf3pbase: [fIndexHf3PCollBases, fPt, fEta, fPhi, fM]
-          O2hf3pmc:
-            level: mc
-            vars: [fFlagMcMatchRec, fOriginMcRec]
-          O2hf3ppar: [fCpa, fCpaXY, fChi2PCA,
-                      fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised,
-                      fImpactParameter0, fImpactParameter1, fImpactParameter2,
-                      fImpactParameterNormalised0, fImpactParameterNormalised1, fImpactParameterNormalised2,
-                      fPtProng0, fPtProng1, fPtProng2]
-          O2hf3ppare: [fErrorDecayLength, fErrorDecayLengthXY,
-                      fErrorImpactParameter0, fErrorImpactParameter1]
-          O2hf3psel: [fCandidateSelFlag]
-        extra:
-          fY: 0.
-        filter: "fPt > 1."
-      gen:
-        level: gen
-        index: fIndexHf3PPBases_0
-        trees:
-          O2hf3ppbase: [fPt, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
-
-      collgen:
-        level: gen
-        index: fIndexLcCMCPJetCOs
-        trees:
-          O2lccmcpjetco: [fPosZ, fCentrality, fEventSel]
+      # collgen:
+      #   level: gen
+      #   index: fIndexLcCMCPJetCOs
+      #   trees:
+      #     O2lccmcpjetco: [fPosZ, fCentrality, fEventSel]
       jetgen:
         level: gen
         index: fIndexLcCMCPJetOs
         trees:
-          O2lccmcpjeto: [fIndexLcCMCPJetCOs, fIndexHf3PPBases_0,
-                    fJetPt, fJetPhi, fJetEta, fJetNConstituents]
-      jetsubgen:
-        level: gen
-        index: fIndexLcCMCPJetSSOs
-        trees:
+          O2hf3ppbase: [fPt, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
+          O2lccmcpjeto: [fIndexLcCMCPJetCOs, fIndexHf3PPBases_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents]
+          O2lccmcpjetmo: [fIndexArrayLcCMCDJetOs_hf, fIndexArrayLcCMCDJetOs_geo, fIndexArrayLcCMCDJetOs_pt]
           O2lccmcpjetsso: [fIndexLcCMCPJetOs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta]
+        extra:
+          fY: log((sqrt(2.286**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(2.286**2 + fPt**2))
+        tags:
+          isstd: {var: fFlagMcMatchGen, req: [[1],[]]}
+          ismcsignal: {var: fFlagMcMatchGen, req: [[1],[]], abs: true}
+          ismcbkg: {var: fFlagMcMatchGen, req: [[],[1]], abs: true}
+          ismcprompt: {var: fOriginMcGen, req: [[0],[]]}
+          ismcfd: {var: fOriginMcGen, req: [[1],[]]}
+        filter: "fPt >= 1. and fY <= 0.8"
 
       colldet:
         level: det
@@ -107,13 +87,29 @@ Lcpp_jet:
         level: det
         index: fIndexLcCMCDJetOs
         trees:
-          O2lccmcdjeto: [fIndexLcCMCDJetCOs, fIndexHf3PBases_0,
-                    fJetPt, fJetPhi, fJetEta, fJetNConstituents]
-      jetsubdet:
-        level: det
-        index: fIndexLcCMCDJetSSOs
-        trees:
+          O2hf3pbase: [fIndexHf3PCollBases, fPt, fEta, fPhi, fM]
+          O2hf3pmc: [fFlagMcMatchRec, fOriginMcRec]
+          O2hf3ppar: [fCpa, fCpaXY, fChi2PCA,
+                      fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised,
+                      fImpactParameter0, fImpactParameter1, fImpactParameter2,
+                      fImpactParameterNormalised0, fImpactParameterNormalised1, fImpactParameterNormalised2,
+                      fPtProng0, fPtProng1, fPtProng2]
+          O2hf3ppare: [fErrorDecayLength, fErrorDecayLengthXY,
+                      fErrorImpactParameter0, fErrorImpactParameter1]
+          O2hf3psel: [fCandidateSelFlag]
+          O2lccmcdjeto: [fIndexLcCMCDJetCOs, fIndexHf3PBases_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents]
+          O2lccmcdjetmo: [fIndexArrayLcCMCPJetOs_hf, fIndexArrayLcCMCPJetOs_geo, fIndexArrayLcCMCPJetOs_pt]
           O2lccmcdjetsso: [fIndexLcCMCDJetOs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta]
+        extra:
+          fY: log((sqrt(2.286**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(2.286**2 + fPt**2))
+        tags:
+          isstd: {var: fFlagMcMatchRec, req: [[1],[]]}
+          ismcsignal: {var: fFlagMcMatchRec, req: [[1],[]], abs: true}
+          ismcbkg: {var: fFlagMcMatchRec, req: [[],[1]], abs: true}
+          ismcprompt: {var: fOriginMcRec, req: [[0],[]]}
+          ismcfd: {var: fOriginMcRec, req: [[1],[]]}
+        filter: "fPt >= 1. and fY <= 0.8"
+        # swap: {cand: fCandidateSelFlag, var_swap: fIsCandidateSwapped, vars: [ismcsignal, ismcprompt, icmcfd]}
 
       colldata:
         level: data
@@ -124,50 +120,45 @@ Lcpp_jet:
         level: data
         index: fIndexLcCJetOs
         trees:
+          O2hf3pbase: [fIndexHf3PCollBases, fPt, fEta, fPhi, fM]
+          O2hf3ppar: [fCpa, fCpaXY, fChi2PCA,
+                      fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised,
+                      fImpactParameter0, fImpactParameter1, fImpactParameter2,
+                      fImpactParameterNormalised0, fImpactParameterNormalised1, fImpactParameterNormalised2,
+                      fPtProng0, fPtProng1, fPtProng2]
+          O2hf3ppare: [fErrorDecayLength, fErrorDecayLengthXY,
+                      fErrorImpactParameter0, fErrorImpactParameter1]
+          O2hf3psel: [fCandidateSelFlag]
           O2lccjeto: [fIndexLcCJetCOs, fIndexHf3PBases_0,
                     fJetPt, fJetPhi, fJetEta, fJetNConstituents]
-      jetsubdata:
-        level: data
-        index: fIndexLcJetSubstructures
-        trees:
           O2lccjetsso: [fIndexLcCJetOs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta]
+        extra:
+          fY: log((sqrt(2.286**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(2.286**2 + fPt**2))
+        filter: "fPt > 1."
 
     merge:
-      - {base: jetgen, ref: collgen}
-      - {base: jetgen, ref: gen}
-      - {base: jetsubgen, ref: jetgen}
-
+      # - {base: jetgen, ref: collgen}
       - {base: jetdet, ref: colldet}
-      - {base: jetdet, ref: reco}
-      - {base: jetsubdet, ref: jetdet}
-
       - {base: jetdata, ref: colldata}
-      - {base: jetdata, ref: reco}
-      - {base: jetsubdata, ref: jetdata}
-
-#      - {base: gen, ref: evtorig}
 
     write:
-      jetsubgen:
+      jetgen:
         level: gen
-        file: AnalysisResultsGen.pkl.lz4
-      jetsubdet:
+        file: AnalysisResultsGen.parquet
+      jetdet:
         level: det
-        file: AnalysisResultsReco.pkl.lz4
-      jetsubdata:
+        file: AnalysisResultsReco.parquet
+      jetdata:
         level: data
-        file: AnalysisResultsReco.pkl.lz4
+        file: AnalysisResultsReco.parquet
       evtorig:
         level: all
-        file: AnalysisResultsEvtOrig.pkl.lz4
+        file: AnalysisResultsEvtOrig.parquet
       evt:
         level: all
         source: evtorig
-        file: AnalysisResultsEvt.pkl.lz4
+        file: AnalysisResultsEvt.parquet
         filter: "fIsEventReject == 0"
-      gen:
-        level: mc
-        file: AnalysisResultsGen.pkl.lz4
 
   variables:
     var_all: [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1]
@@ -209,13 +200,13 @@ Lcpp_jet:
 
   files_names:
     namefile_unmerged_tree: AO2D.root
-    namefile_reco: AnalysisResultsReco.pkl.lz4
-    namefile_evt: AnalysisResultsEvt.pkl.lz4
+    namefile_reco: AnalysisResultsReco.parquet
+    namefile_evt: AnalysisResultsEvt.parquet
     namefile_evtvalroot: AnalysisResultsROOTEvtVal.root
-    namefile_evtorig: AnalysisResultsEvtOrig.pkl.lz4
-    namefile_gen: AnalysisResultsGen.pkl.lz4
-    namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl.lz4
-    namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl.lz4
+    namefile_evtorig: AnalysisResultsEvtOrig.parquet
+    namefile_gen: AnalysisResultsGen.parquet
+    namefile_reco_applieddata: AnalysisResultsRecoAppliedData.parquet
+    namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.parquet
     namefile_mcweights: mcweights.root
     treeoutput: "D0tree"
     histofilename: "masshisto.root"
@@ -389,6 +380,7 @@ Lcpp_jet:
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_default
 
+      index_match: fIndexArrayLcCMCPJetOs_hf
       mass_fit:
         func_sig: 'gaus(0)'
         func_bkg: 'expo(3)'

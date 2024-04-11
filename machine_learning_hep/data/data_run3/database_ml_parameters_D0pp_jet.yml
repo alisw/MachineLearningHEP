@@ -57,7 +57,6 @@ D0jet_pp:
   dfs:
     read:
       evtorig:
-        level: all
         index: fIndexD0CollBases
         trees:
           O2hfd0collbase: [fNumContrib, fIsEventReject, fRunNumber]
@@ -83,7 +82,6 @@ D0jet_pp:
           ismcbkg: {var: fFlagMcMatchGen, req: [[],[1]], abs: true}
           ismcprompt: {var: fOriginMcGen, req: [[0],[]]}
           ismcfd: {var: fOriginMcGen, req: [[1],[]]}
-        # swap: {cand: fCandidateSelFlag, swap: fIsCandidateSwapped, vars: [ismcsignal, ismcprompt, icmcfd]}
         filter: "fPt >= 1. and fY <= 0.8"
 
       colldet:
@@ -113,8 +111,10 @@ D0jet_pp:
         extra:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
         tags:
-          ismcsignal: {var: fFlagMcMatchRec, req: [[1], []], abs: True}
+          ismcsignal: {var: fFlagMcMatchRec, req: [[1], []], abs: True} # TODO: should exclude reflections
           ismcbkg: {var: fFlagMcMatchRec, req: [[],[1]], abs: True}
+          seld0: {var: fCandidateSelFlag, req: [[0], []]}
+          seld0bar: {var: fCandidateSelFlag, req: [[1], []]}
           ismcprompt: {var: fOriginMcRec, req: [[0],[]]}
           ismcfd: {var: fOriginMcRec, req: [[1],[]]}
         filter: "fPt >= 1. and fY <= 0.8"
@@ -390,6 +390,7 @@ D0jet_pp:
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_default
 
+      index_match: fIndexArrayD0CMCPJetOs_hf
       mass_fit:
         func_sig: 'gaus(0)'
         func_bkg: 'expo(3)'

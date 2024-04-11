@@ -53,7 +53,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
     def _save_canvas(self, canvas, filename, mcordata): # pylint: disable=unused-argument
         # folder = self.d_resultsallpmc if mcordata == 'mc' else self.d_resultsallpdata
-        canvas.SaveAs(f'fig/{self.case}_{self.typean}_{filename}')
+        canvas.SaveAs(f'fig/{self.case}/{self.typean}_{filename}')
 
     def _save_hist(self, hist, filename, mcordata):
         if not hist:

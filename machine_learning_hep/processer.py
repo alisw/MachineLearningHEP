@@ -15,6 +15,7 @@
 """
 main script for doing data processing, machine learning and analysis
 """
+from functools import reduce
 import sys
 from copy import deepcopy
 import multiprocessing as mp
@@ -278,6 +279,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
         # Flag if they should be used
         self.do_custom_analysis_cuts = datap["analysis"][self.typean].get("use_cuts", False)
 
+    def cfg(self, param, default = None):
+        return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default,
+                      param.split("."), self.datap['analysis'][self.typean])
+
     def unpack(self, file_index, max_no_keys = None):  # pylint: disable=too-many-branches
         def dfread(rdir, trees, cols, idx_name=None):
             """Read DF from multiple (joinable) O2 tables"""
@@ -332,14 +337,14 @@ class Processer: # pylint: disable=too-many-instance-attributes
         with uproot.open(self.l_root[file_index]) as rfile:
             df_processed = set()
             keys = rfile.keys(recursive=False, filter_name='DF_*')
-            self.logger.info('found %d dataframes, reading %s', len(keys), str(max_no_keys) or "all")
+            self.logger.info('found %d dataframes, reading %s', len(keys), max_no_keys or "all")
             for (idx, key) in enumerate(keys[:max_no_keys]):
                 if not (df_key := re.match('^DF_(\\d+);', key)):
                     continue
                 if (df_no := int(df_key.group(1))) in df_processed:
                     self.logger.warning('multiple versions of DF %d', df_no)
                     continue
-                self.logger.info('processing DF %d - %d / %d', df_no, idx, len(keys))
+                self.logger.debug('processing DF %d - %d / %d', df_no, idx, len(keys))
                 df_processed.add(df_no)
                 rdir = rfile[key]
 
@@ -465,6 +470,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
                      for i in range(len(chunk))]
                 pool.close()
                 pool.join()
+                # TODO: maybe simpler to use:
+                # for _ in pool.imap_unordered(function, (x[0] for x in chunk)):
+                #     pass
 
     def process_unpack_par(self):
         self.logger.info("Unpacking %s period %s", self.mcordata, self.period)

@@ -129,6 +129,8 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
 
             df = read_df(self.mptfiles_recosk[bin_id][index])
             df.query(f'fPt >= {pt_min} and fPt < {pt_max}', inplace=True)
+            if df.empty:
+                continue
             df = self.process_calculate_variables(df)
 
             self.logger.info('preparing histograms')
@@ -187,11 +189,13 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
         for ipt in range(self.p_nptbins):
             dfgen = read_df(self.mptfiles_gensk[ipt][index])
             dfdet = read_df(self.mptfiles_recosk[ipt][index])
-            dfdet['idx_match'] = dfdet['fIndexArrayD0CMCPJetOs_hf'].apply(lambda ar: ar[0] if len(ar) > 0 else -1)
-            dfmatch = pd.merge(dfdet, dfgen[['ismcsignal', 'ismcfd']], left_on=['df', 'idx_match'], right_index=True)
             fill_hist(h_gen, dfgen['fPt'])
             fill_hist(h_det, dfdet['fPt'])
-            fill_hist(h_match, dfmatch['fPt'])
+            if (idx := self.cfg('index_match')) is not None:
+                dfdet['idx_match'] = dfdet[idx].apply(lambda ar: ar[0] if len(ar) > 0 else -1)
+                dfmatch = pd.merge(dfdet, dfgen[['ismcsignal', 'ismcfd']],
+                                   left_on=['df', 'idx_match'], right_index=True)
+                fill_hist(h_match, dfmatch['fPt'])
         h_gen.Write()
         h_det.Write()
         h_match.Write()
