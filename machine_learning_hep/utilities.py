@@ -20,6 +20,7 @@ import multiprocessing as mp
 from datetime import datetime
 import pickle
 import bz2
+import glob
 import gzip
 import lzma
 import time
@@ -184,34 +185,11 @@ def list_folders(main_dir, filenameinput, maxfiles, select=None): # pylint: disa
     List all files in a subdirectory structure
     """
     if not os.path.isdir(main_dir):
-        logger.error("the input directory = <%s> does not exist", main_dir)
-    list_subdir0 = os.listdir(main_dir)
-    listfolders = []
-    for subdir0 in list_subdir0: # pylint: disable=too-many-nested-blocks
-        subdir0full = os.path.join(main_dir, subdir0)
-        if os.path.isdir(subdir0full):
-            list_subdir1 = os.listdir(subdir0full)
-            for subdir1 in list_subdir1:
-                subdir1full = os.path.join(subdir0full, subdir1)
-                if os.path.isdir(subdir1full):
-                    if filenameinput in os.listdir(subdir1full):
-                        list_files_ = os.listdir(subdir1full)
-                        for myfile in list_files_:
-                            filefull = os.path.join(subdir1full, myfile)
-                            if os.path.isfile(filefull) and \
-                               myfile == filenameinput:
-                                listfolders.append(os.path.join(subdir0, subdir1))
-                    else:
-                        list_subdir2 = os.listdir(subdir1full)
-                        for subdir2 in list_subdir2:
-                            subdir2full = os.path.join(subdir1full, subdir2)
-                            if os.path.isdir(subdir2full):
-                                list_files_ = os.listdir(subdir2full)
-                                for myfile in list_files_:
-                                    filefull = os.path.join(subdir2full, myfile)
-                                    if os.path.isfile(filefull) and \
-                                       myfile == filenameinput:
-                                        listfolders.append(os.path.join(subdir0, subdir1, subdir2))
+        logger.error("input directory <%s> does not exist", main_dir)
+
+    files = glob.glob(f'{main_dir}/**/{filenameinput}', recursive=True)
+    listfolders = [os.path.relpath(os.path.dirname(file), main_dir) for file in files]
+
     if select:
         # Select only folders with a matching sub-string in their paths
         list_folders_tmp = []
@@ -221,6 +199,7 @@ def list_folders(main_dir, filenameinput, maxfiles, select=None): # pylint: disa
 
     if maxfiles != -1:
         listfolders = listfolders[:maxfiles]
+
     return  listfolders
 
 def create_folder_struc(maindir, listpath):
