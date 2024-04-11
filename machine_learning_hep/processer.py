@@ -28,7 +28,7 @@ import uproot
 import pandas as pd
 import numpy as np
 from machine_learning_hep.bitwise import tag_bit_df
-from machine_learning_hep.utilities import dfquery, selectdfquery, merge_method, mask_df
+from machine_learning_hep.utilities import dfquery, merge_method, mask_df
 from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
 from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
 from machine_learning_hep.utilities import mergerootfiles, count_df_length_pkl, read_df, write_df
@@ -322,9 +322,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 raise e
 
         def dfuse(df_spec):
-            return ((df_spec['level'] == 'all') or
-                    (df_spec['level'] in ('mc', 'gen', 'det') and self.mcordata == 'mc') or
-                    (df_spec['level'] in ('data') and self.mcordata == 'data'))
+            level = df_spec.get('level', 'all')
+            return ((level == 'all') or
+                    (level in ('mc', 'gen', 'det') and self.mcordata == 'mc') or
+                    (level in ('data') and self.mcordata == 'data'))
 
         self.logger.info('unpacking: %s', self.l_root[file_index])
         dfs = {}
@@ -365,14 +366,16 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     dfquery(dfs[df_name], df_spec['filter'], inplace=True)
                 if 'tags' in df_spec:
                     for tag, value in df_spec['tags'].items():
-                        dfs[df_name][tag] = np.array(
-                            tag_bit_df(dfs[df_name], value['var'], value['req'], value.get('abs', False)), dtype=int)
+                        if dfuse(value):
+                            dfs[df_name][tag] = np.array(
+                                tag_bit_df(dfs[df_name], value['var'], value['req'], value.get('abs', False)),
+                                dtype=int)
                 if 'swap' in df_spec:
-                    # TODO: check with Luigi
                     spec = df_spec['swap']
-                    swapped = dfs[df_name][spec['cand']] == dfs[df_name][spec['swap']] + 1
-                    for var in spec['vars']:
-                        dfs[df_name][var] = np.logical_and(dfs[df_name][var] == 1, swapped)
+                    if dfuse(spec):
+                        swapped = dfs[df_name][spec['cand']] == dfs[df_name][spec['var_swap']] + 1
+                        for var in spec['vars']:
+                            dfs[df_name][var] = np.logical_and(dfs[df_name][var] == 1, swapped)
 
         if self.df_merge:
             for m_spec in self.df_merge:
@@ -406,13 +409,13 @@ class Processer: # pylint: disable=too-many-instance-attributes
         for ipt in range(self.p_nptbins):
             dfrecosk = seldf_singlevar(dfreco, self.v_var_binning,
                                        self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
-            dfrecosk = selectdfquery(dfrecosk, self.s_reco_skim[ipt])
+            dfrecosk = dfquery(dfrecosk, self.s_reco_skim[ipt])
             write_df(dfrecosk, self.mptfiles_recosk[ipt][file_index])
 
             if dfgen is not None:
                 dfgensk = seldf_singlevar(dfgen, self.v_var_binning,
                                           self.lpt_anbinmin[ipt], self.lpt_anbinmax[ipt])
-                dfgensk = selectdfquery(dfgensk, self.s_gen_skim[ipt])
+                dfgensk = dfquery(dfgensk, self.s_gen_skim[ipt])
                 write_df(dfgensk, self.mptfiles_gensk[ipt][file_index])
 
     def applymodel(self, file_index):
