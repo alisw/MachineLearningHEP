@@ -48,22 +48,23 @@ logger = get_logger()
 # pylint: disable=line-too-long, consider-using-f-string, too-many-lines
 # pylint: disable=unspecified-encoding, consider-using-generator, invalid-name, import-outside-toplevel
 
-# TODO: check usage of df and/or arrays
-def fill_hist(hist, arr, weights = None, write = False):
-    assert arr.ndim in [1, 2], 'fill_hist requires 1- or 2-d array'
-    if len(arr) == 0:
+def fill_hist(hist, dfi: pd.DataFrame, weights = None, write = False):
+    assert dfi.ndim == 1 or dfi.shape[1] in [1, 2, 3], 'fill_hist supports only 1-,2-,3-d histograms'
+    if len(dfi) == 0:
         return
-    if arr.ndim == 1:
-        hist.FillN(len(arr), np.float64(arr), weights or 0)
-    # TODO: check df shape
-    elif arr.ndim == 2:
-        hist.FillN(len(arr), np.float64(arr.iloc[:, 0]), np.float64(arr.iloc[:, 1]),
-                   weights or np.float64(len(arr)*[1.]))
+    if dfi.ndim == 1:
+        hist.FillN(len(dfi), np.float64(dfi), weights or 0)
+    elif dfi.shape[1] == 2:
+        hist.FillN(len(dfi), np.float64(dfi.iloc[:, 0]), np.float64(dfi.iloc[:, 1]),
+                   weights or np.float64(len(dfi)*[1.]))
+    elif dfi.shape[1] == 3:
+        hist.FillN(len(dfi), np.float64(dfi.iloc[:, 0]), np.float64(dfi.iloc[:, 1]), np.float64(dfi.iloc[:, 2]),
+                   weights or np.float64(len(dfi)*[1.]))
     if write:
         hist.Write()
 
 def hist2array(hist):
-    assert hist.GetDimension() == 1
+    assert hist.GetDimension() == 1, 'can only convert 1-d histogram'
     return [hist.GetBinContent(x) for x in range(hist.GetNbinsX())]
 
 def array2hist(arr, hist):
@@ -161,28 +162,23 @@ def selectdfrunlist(dfr, runlist, runvar):
 
 def count_df_length_pkl(*pkls):
     """
-    Count all entries in all pkls
+    Return total number of entries in all pkls
     """
-    count = 0
-    for pkl in pkls:
-        df = read_df(pkl)
-        count += len(df.index)
-    return count
+    return sum(len(read_df(pkl)) for pkl in pkls)
 
 def merge_method(listfiles, namemerged):
     """
-    Merge list of dataframes into one
+    Merge dataframes from all files and write to single file
     """
-    dflist = []
-    for myfilename in listfiles:
-        df = read_df(myfilename)
-        dflist.append(df)
-    dftot = pd.concat(dflist)
-    write_df(dftot, namemerged)
+    df_merged = pd.concat(read_df(filename) for filename in listfiles)
+    write_df(df_merged, namemerged)
 
 def list_folders(main_dir, filenameinput, maxfiles, select=None): # pylint: disable=too-many-branches
     """
-    List all files in a subdirectory structure
+    Return folders under main_dir which contain filenameinput
+
+    :param maxfiles: limit to maxfiles
+    :param select: iterable of substrings that must be contained in folders
     """
     if not os.path.isdir(main_dir):
         logger.error("input directory <%s> does not exist", main_dir)
@@ -300,15 +296,13 @@ def seldf_singlevar(dataframe, var, minval, maxval):
     """
     Make projection on variable using [X,Y), e.g. pT or multiplicity
     """
-    dataframe = dataframe.loc[(dataframe[var] >= minval) & (dataframe[var] < maxval)]
-    return dataframe
+    return dataframe.loc[(dataframe[var] >= minval) & (dataframe[var] < maxval)]
 
 def seldf_singlevar_inclusive(dataframe, var, minval, maxval):
     """
     Make projection on variable using [X,Y), e.g. pT or multiplicity
     """
-    dataframe = dataframe.loc[(dataframe[var] >= minval) & (dataframe[var] <= maxval)]
-    return dataframe
+    return dataframe.loc[(dataframe[var] >= minval) & (dataframe[var] <= maxval)]
 
 def split_df_classes(dataframe_, var_class_, output_labels_):
     """
@@ -322,8 +316,7 @@ def createstringselection(var, low, high):
     Create string of main dataframe selection (e.g. pT)
     Used as suffix for storing ML plots
     """
-    string_selection = f"dfselection_{var}_{low:.1f}_{high:.1f}"
-    return string_selection
+    return f"dfselection_{var}_{low:.1f}_{high:.1f}"
 
 def mergerootfiles(listfiles, mergedfile, tmp_dir):
     """
