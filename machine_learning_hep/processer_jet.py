@@ -12,6 +12,7 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
+import time
 import numpy as np
 import pandas as pd
 from ROOT import TFile, TH1F, TH2F # pylint: disable=import-error, no-name-in-module
@@ -50,19 +51,21 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
                                     self.p_bin_width))
 
     def calculate_zg(self, df):
-        df['zg'] = -1.0
+        start = time.time()
+        df['zg_array'] = np.array(.5 - abs(df.fPtSubLeading / (df.fPtLeading + df.fPtSubLeading) - .5))
+        df['zg_fast'] = df['zg_array'].apply((lambda ar: next((zg for zg in ar if zg >= .1), -1.)))
+        df['rg_fast'] = df[['zg_array', 'fTheta']].apply((lambda ar: next((rg for (zg, rg) in zip(ar.zg_array, ar.fTheta) if zg >= .1), -1.)), axis=1)
+        df['nsd_fast'] = df['zg_array'].apply((lambda ar: len([zg for zg in ar if zg >= .1])))
+        self.logger.debug('fast done in %.2g s', time.time() - start)
+
+        start = time.time()
         df['rg'] = -1.0
         df['nsd'] = -1.0
-        df['zg_array'] = np.array(df.fPtSubLeading / (df.fPtLeading + df.fPtSubLeading))
-        # TODO: check for zg > 0.5
-        # TODO: check for soft drop
-        # TODO: can we optimize this loop?
+        df['zg'] = -1.0
         for idx, row in df.iterrows():
             isSoftDropped = False
             nsd = 0
             for zg, theta in zip(row['zg_array'], row['fTheta']):
-                if zg > 0.5:
-                    zg = 1.0 - 0.5
                 if zg >= 0.1:  # TODO: make this configurable
                     if not isSoftDropped:
                         df.loc[idx, 'zg'] = zg
@@ -70,9 +73,21 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
                         isSoftDropped = True
                     nsd += 1
             df.loc[idx, 'nsd'] = nsd
+        self.logger.debug('slow done in %.2g s', time.time() - start)
+        if np.allclose(df.nsd, df.nsd_fast):
+            self.logger.info('nsd all close')
+        else:
+            self.logger.error('nsd not all close')
+        if np.allclose(df.zg, df.zg_fast):
+            self.logger.info('zg all close')
+        else:
+            self.logger.error('zg not all close')
+        if np.allclose(df.rg, df.rg_fast):
+            self.logger.info('rg all close')
+        else:
+            self.logger.error('rg not all close')
 
     def process_calculate_variables(self, df): # pylint: disable=invalid-name
-        # TODO: make process step instead of internally called method
         df.eval('radial_distance = sqrt((fJetEta - fEta)**2 + (fJetPhi - fPhi)**2)', inplace=True) # TODO: consider periodic phi
         df.eval('jetPx = fJetPt * cos(fJetPhi)', inplace=True)
         df.eval('jetPy = fJetPt * sin(fJetPhi)', inplace=True)
@@ -83,7 +98,12 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
         df.eval('zpar_num = jetPx * hfPx + jetPy * hfPy + jetPz * hfPz', inplace=True)
         df.eval('zpar_den = jetPx * jetPx + jetPy * jetPy + jetPz * jetPz', inplace=True)
         df.eval('z_parallel = zpar_num / zpar_den', inplace=True)
-        self.calculate_zg(df)
+        df['zg_array'] = np.array(.5 - abs(df.fPtSubLeading / (df.fPtLeading + df.fPtSubLeading) - .5))
+        zcut = .1
+        df['zg'] = df['zg_array'].apply((lambda ar: next((zg for zg in ar if zg >= zcut), -1.)))
+        df['rg'] = df[['zg_array', 'fTheta']].apply((lambda ar: next((rg for (zg, rg) in zip(ar.zg_array, ar.fTheta) if zg >= zcut), -1.)), axis=1)
+        df['nsd'] = df['zg_array'].apply((lambda ar: len([zg for zg in ar if zg >= zcut])))
+        # self.calculate_zg(df)
         return df
 
     def process_histomass_single(self, index): # pylint: disable=too-many-statements
@@ -165,7 +185,6 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
             dfgen = read_df(self.mptfiles_gensk[ipt][index])
             dfdet = read_df(self.mptfiles_recosk[ipt][index])
             dfdet['idx_match'] = dfdet['fIndexArrayD0CMCPJetOs_hf'].apply(lambda ar: ar[0] if len(ar) > 0 else -1)
-            print(dfdet.head())
             dfmatch = pd.merge(dfdet, dfgen[['ismcsignal', 'ismcfd']], left_on=['df', 'idx_match'], right_index=True)
             fill_hist(h_gen, dfgen['fPt'])
             fill_hist(h_det, dfdet['fPt'])
