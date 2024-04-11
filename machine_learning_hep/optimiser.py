@@ -84,11 +84,11 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
 
         #ml file names
         self.n_reco = data_param["files_names"]["namefile_reco"]
-        self.n_reco = self.n_reco.replace(".pkl", "_%s%d_%d.pkl" % (self.v_bin, binmin, binmax))
+        self.n_reco = self.n_reco.replace(".p", "_%s%d_%d.p" % (self.v_bin, binmin, binmax))
         self.n_evt = data_param["files_names"]["namefile_evt"]
         self.n_evt_count_ml = data_param["files_names"].get("namefile_evt_count", "evtcount.yaml")
         self.n_gen = data_param["files_names"]["namefile_gen"]
-        self.n_gen = self.n_gen.replace(".pkl", "_%s%d_%d.pkl" % (self.v_bin, binmin, binmax))
+        self.n_gen = self.n_gen.replace(".p", "_%s%d_%d.p" % (self.v_bin, binmin, binmax))
         self.n_treetest = data_param["files_names"]["treeoutput"]
         self.n_reco_applieddata = data_param["files_names"]["namefile_reco_applieddata"]
         self.n_reco_appliedmc = data_param["files_names"]["namefile_reco_appliedmc"]
@@ -208,9 +208,9 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.df_evttotsample_data = None
 
         self.f_reco_applieddata = \
-                self.f_reco_applieddata.replace(".pkl", "%s.pkl" % self.s_suffix)
+                self.f_reco_applieddata.replace(".p", "%s.p" % self.s_suffix)
         self.f_reco_appliedmc = \
-                self.f_reco_appliedmc.replace(".pkl", "%s.pkl" % self.s_suffix)
+                self.f_reco_appliedmc.replace(".p", "%s.p" % self.s_suffix)
         self.f_df_ml_test_to_df = f"{self.dirmlout}/testsample_{self.s_suffix}_mldecision.pkl"
         self.f_mltest_applied = f"{self.dirmlout}/testsample_{self.s_suffix}_mldecision.pkl"
         self.df_mltest_applied = None
