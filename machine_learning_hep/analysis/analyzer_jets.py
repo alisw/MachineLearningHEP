@@ -52,7 +52,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.fit_func_bkg = {'mc': [], 'data': []}
 
     def _save_canvas(self, canvas, filename, mcordata):
-        dir = self.d_resultsallpmc if mcordata == 'mc' else self.resultsallpdata
+        dir = self.d_resultsallpmc if mcordata == 'mc' else self.d_resultsallpdata
         canvas.SaveAs(f'fig/{self.case}_{self.typean}_{filename}')
 
     def _save_hist(self, hist, filename, mcordata):
@@ -139,6 +139,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         fh_subtracted.Scale(1.0 / 0.954)
         self._save_hist(fh_subtracted, f'hjet_{var}_subtracted_{ipt}_{mcordata}.png', mcordata)
 
+        c = TCanvas()
         fh_signal.SetLineColor(ROOT.kRed) # pylint: disable=no-member
         fh_signal.Draw()
         fh_sideband.Scale(areaNormFactor)
@@ -188,9 +189,14 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             heff = h_det.Clone(f'hjeteff')
             heff.Sumw2()
             heff.Divide(h_gen)
+            h_match = rfile.Get(f'hjetmatch')
+            heff_match = h_match.Clone(f'hjeteff_match')
+            heff_match.Sumw2()
+            heff_match.Divide(h_gen)
             self._save_hist(h_gen, f'hjet_gen.png', 'mc')
             self._save_hist(h_det, f'hjet_det.png', 'mc')
             self._save_hist(heff, f'hjet_efficiency.png', 'mc')
+            self._save_hist(heff_match, f'hjet_matched_efficiency.png', 'mc')
 
 
     def qa(self): # pylint: disable=too-many-branches, too-many-locals, invalid-name

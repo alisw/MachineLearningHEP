@@ -12,8 +12,6 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-import pickle
-import numba
 import numpy as np
 import pandas as pd
 from ROOT import TFile, TH1F, TH2F # pylint: disable=import-error, no-name-in-module
@@ -162,14 +160,16 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
         myfile.cd()
         h_gen = TH1F(f'hjetgen', "", self.p_nptfinbins, self.lpt_finbinmin[0], self.lpt_finbinmax[-1])
         h_det = TH1F(f'hjetdet', "", self.p_nptfinbins, self.lpt_finbinmin[0], self.lpt_finbinmax[-1])
+        h_match = TH1F(f'hjetmatch', "", self.p_nptfinbins, self.lpt_finbinmin[0], self.lpt_finbinmax[-1])
         for ipt in range(self.p_nptbins):
-            print(self.mptfiles_gensk[ipt][index])
-            print(self.mptfiles_recosk[ipt][index])
             dfgen = read_df(self.mptfiles_gensk[ipt][index])
             dfdet = read_df(self.mptfiles_recosk[ipt][index])
-            # print(dfgen.head())
-            # print(dfdet.head())
-            fill_hist(h_det, dfdet['fPt'])
+            dfdet['idx_match'] = dfdet['fIndexArrayD0CMCPJetOs_hf'].apply(lambda ar: ar[0] if len(ar) > 0 else -1)
+            print(dfdet.head())
+            dfmatch = pd.merge(dfdet, dfgen[['ismcsignal', 'ismcfd']], left_on=['df', 'idx_match'], right_index=True)
             fill_hist(h_gen, dfgen['fPt'])
+            fill_hist(h_det, dfdet['fPt'])
+            fill_hist(h_match, dfmatch['fPt'])
         h_gen.Write()
         h_det.Write()
+        h_match.Write()

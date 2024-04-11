@@ -12,7 +12,7 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-D0pp_jet:
+D0jet_pp:
   doml: true
   mass: 1.864
   sel_reco_unp: "fPt > 1."
