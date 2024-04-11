@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2024. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -52,10 +52,10 @@ def fill_hist(hist, arr, weights = None, write = False):
     assert arr.ndim in [1, 2], 'fill_hist requires 1- or 2-d array'
     if len(arr) == 0:
         return
-    if (arr.ndim == 1):
+    if arr.ndim == 1:
         hist.FillN(len(arr), np.float64(arr), weights or 0)
     # TODO: check df shape
-    elif (arr.ndim == 2):
+    elif arr.ndim == 2:
         hist.FillN(len(arr), np.float64(arr.iloc[:, 0]), np.float64(arr.iloc[:, 1]),
                    weights or np.float64(len(arr)*[1.]))
     if write:
@@ -89,12 +89,12 @@ def write_df(dfo, path):
     if path.endswith('.parquet'):
         start = time.time()
         dfo.to_parquet(path)
-        logger.debug(f'written to parquet in {time.time() - start:.2f} s')
+        logger.debug('written to parquet in %.2f s', time.time() - start)
     else:
         start = time.time()
         with openfile(path, "wb") as file:
             pickle.dump(dfo, file, pickle.HIGHEST_PROTOCOL)
-        logger.debug(f'written to pickle in {time.time() - start:.2f} s')
+        logger.debug('written to pickle in %.2f s', time.time() - start)
 
 def read_df(path):
     try:

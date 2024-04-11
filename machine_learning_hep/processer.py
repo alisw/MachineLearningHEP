@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2024. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -228,7 +228,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.n_fileeff = os.path.join(self.d_results, self.n_fileeff)
         self.n_fileresp = os.path.join(self.d_results, self.n_fileresp)
 
-        # FIXME: implement properly
         self.lpt_recosk = [self.n_reco.replace(".p", "_%s%d_%d.p" % \
                           (self.v_var_binning, self.lpt_anbinmin[i], self.lpt_anbinmax[i])) \
                           for i in range(self.p_nptbins)]
@@ -332,7 +331,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         with uproot.open(self.l_root[file_index]) as rfile:
             df_processed = set()
             keys = rfile.keys(recursive=False, filter_name='DF_*')
-            self.logger.info(f'found {len(keys)} dataframes, reading {max_no_keys or "all"}')
+            self.logger.info('found %d dataframes, reading %s', len(keys), str(max_no_keys) or "all")
             for (idx, key) in enumerate(keys[:max_no_keys]):
                 if not (df_key := re.match('^DF_(\\d+);', key)):
                     continue

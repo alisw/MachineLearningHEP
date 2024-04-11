@@ -50,11 +50,12 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) /
                                     self.p_bin_width))
 
-    def calculate_zg(self, df):
+    def calculate_zg(self, df): # pylint: disable=invalid-name
         start = time.time()
         df['zg_array'] = np.array(.5 - abs(df.fPtSubLeading / (df.fPtLeading + df.fPtSubLeading) - .5))
         df['zg_fast'] = df['zg_array'].apply((lambda ar: next((zg for zg in ar if zg >= .1), -1.)))
-        df['rg_fast'] = df[['zg_array', 'fTheta']].apply((lambda ar: next((rg for (zg, rg) in zip(ar.zg_array, ar.fTheta) if zg >= .1), -1.)), axis=1)
+        df['rg_fast'] = df[['zg_array', 'fTheta']].apply(
+            (lambda ar: next((rg for (zg, rg) in zip(ar.zg_array, ar.fTheta) if zg >= .1), -1.)), axis=1)
         df['nsd_fast'] = df['zg_array'].apply((lambda ar: len([zg for zg in ar if zg >= .1])))
         self.logger.debug('fast done in %.2g s', time.time() - start)
 
@@ -88,7 +89,8 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
             self.logger.error('rg not all close')
 
     def process_calculate_variables(self, df): # pylint: disable=invalid-name
-        df.eval('radial_distance = sqrt((fJetEta - fEta)**2 + (fJetPhi - fPhi)**2)', inplace=True) # TODO: consider periodic phi
+        # TODO: consider periodic phi
+        df.eval('radial_distance = sqrt((fJetEta - fEta)**2 + (fJetPhi - fPhi)**2)', inplace=True)
         df.eval('jetPx = fJetPt * cos(fJetPhi)', inplace=True)
         df.eval('jetPy = fJetPt * sin(fJetPhi)', inplace=True)
         df.eval('jetPz = fJetPt * sinh(fJetEta)', inplace=True)
@@ -101,7 +103,8 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
         df['zg_array'] = np.array(.5 - abs(df.fPtSubLeading / (df.fPtLeading + df.fPtSubLeading) - .5))
         zcut = .1
         df['zg'] = df['zg_array'].apply((lambda ar: next((zg for zg in ar if zg >= zcut), -1.)))
-        df['rg'] = df[['zg_array', 'fTheta']].apply((lambda ar: next((rg for (zg, rg) in zip(ar.zg_array, ar.fTheta) if zg >= zcut), -1.)), axis=1)
+        df['rg'] = df[['zg_array', 'fTheta']].apply(
+            (lambda ar: next((rg for (zg, rg) in zip(ar.zg_array, ar.fTheta) if zg >= zcut), -1.)), axis=1)
         df['nsd'] = df['zg_array'].apply((lambda ar: len([zg for zg in ar if zg >= zcut])))
         # self.calculate_zg(df)
         return df
@@ -178,9 +181,9 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
         self.logger.info('Running efficiency')
         myfile = TFile.Open(self.l_histoeff[index], "recreate")
         myfile.cd()
-        h_gen = TH1F(f'hjetgen', "", self.p_nptfinbins, self.lpt_finbinmin[0], self.lpt_finbinmax[-1])
-        h_det = TH1F(f'hjetdet', "", self.p_nptfinbins, self.lpt_finbinmin[0], self.lpt_finbinmax[-1])
-        h_match = TH1F(f'hjetmatch', "", self.p_nptfinbins, self.lpt_finbinmin[0], self.lpt_finbinmax[-1])
+        h_gen = TH1F('hjetgen', "", self.p_nptfinbins, self.lpt_finbinmin[0], self.lpt_finbinmax[-1])
+        h_det = TH1F('hjetdet', "", self.p_nptfinbins, self.lpt_finbinmin[0], self.lpt_finbinmax[-1])
+        h_match = TH1F('hjetmatch', "", self.p_nptfinbins, self.lpt_finbinmin[0], self.lpt_finbinmax[-1])
         for ipt in range(self.p_nptbins):
             dfgen = read_df(self.mptfiles_gensk[ipt][index])
             dfdet = read_df(self.mptfiles_recosk[ipt][index])

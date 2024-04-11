@@ -15,7 +15,7 @@
 import os
 import munch # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TCanvas, TF1, TH1F, gStyle # pylint: disable=import-error, no-name-in-module
-import ROOT
+import ROOT # pylint: disable=import-error
 
 from machine_learning_hep.analysis.analyzer import Analyzer
 
@@ -51,8 +51,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.fit_mean = {'mc': 7 * [0], 'data': 7 * [0]}
         self.fit_func_bkg = {'mc': [], 'data': []}
 
-    def _save_canvas(self, canvas, filename, mcordata):
-        dir = self.d_resultsallpmc if mcordata == 'mc' else self.d_resultsallpdata
+    def _save_canvas(self, canvas, filename, mcordata): # pylint: disable=unused-argument
+        # folder = self.d_resultsallpmc if mcordata == 'mc' else self.d_resultsallpdata
         canvas.SaveAs(f'fig/{self.case}_{self.typean}_{filename}')
 
     def _save_hist(self, hist, filename, mcordata):
@@ -184,20 +184,19 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.logger.info("Running efficiency")
         rfilename = self.n_fileeff
         with TFile(rfilename) as rfile:
-            h_gen = rfile.Get(f'hjetgen')
-            h_det = rfile.Get(f'hjetdet')
-            heff = h_det.Clone(f'hjeteff')
+            h_gen = rfile.Get('hjetgen')
+            h_det = rfile.Get('hjetdet')
+            heff = h_det.Clone('hjeteff')
             heff.Sumw2()
             heff.Divide(h_gen)
-            h_match = rfile.Get(f'hjetmatch')
-            heff_match = h_match.Clone(f'hjeteff_match')
+            h_match = rfile.Get('hjetmatch')
+            heff_match = h_match.Clone('hjeteff_match')
             heff_match.Sumw2()
             heff_match.Divide(h_gen)
-            self._save_hist(h_gen, f'hjet_gen.png', 'mc')
-            self._save_hist(h_det, f'hjet_det.png', 'mc')
-            self._save_hist(heff, f'hjet_efficiency.png', 'mc')
-            self._save_hist(heff_match, f'hjet_matched_efficiency.png', 'mc')
-
+            self._save_hist(h_gen, 'hjet_gen.png', 'mc')
+            self._save_hist(h_det, 'hjet_det.png', 'mc')
+            self._save_hist(heff, 'hjet_efficiency.png', 'mc')
+            self._save_hist(heff_match, 'hjet_matched_efficiency.png', 'mc')
 
     def qa(self): # pylint: disable=too-many-branches, too-many-locals, invalid-name
         self.logger.info("Running D0 jet qa")
