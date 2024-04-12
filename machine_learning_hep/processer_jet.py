@@ -207,9 +207,9 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
         for ipt in range(self.p_nptbins):
             dfgen = read_df(self.mptfiles_gensk[ipt][index])
             dfdet = read_df(self.mptfiles_recosk[ipt][index])
-            dfgen = dfgen.loc[dfgen.ismcprompt]
+            dfgen = dfgen.loc[dfgen.ismcprompt==1]
             dfdet = dfdet.loc[(dfdet.isd0 & dfdet.seld0) | (dfdet.isd0bar & dfdet.seld0bar)] # TODO:
-            dfdet = dfdet.loc[dfdet.ismcprompt]
+            dfdet = dfdet.loc[dfdet.ismcprompt==1]
             fill_hist(h_gen, dfgen['fPt'])
             fill_hist(h_det, dfdet['fPt'])
             if (idx := self.cfg('index_match')) is not None:
