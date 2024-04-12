@@ -82,7 +82,7 @@ D0jet_pp:
           ismcbkg: {var: fFlagMcMatchGen, req: [[],[1]], abs: true}
           ismcprompt: {var: fOriginMcGen, req: [[0],[]]}
           ismcfd: {var: fOriginMcGen, req: [[1],[]]}
-        filter: "fPt >= 1. and fY <= 0.8"
+        filter: "fPt >= 1. and abs(fY) <= 0.8"
 
       colldet:
         level: det
@@ -113,13 +113,13 @@ D0jet_pp:
           isd0: fFlagMcMatchRec == 1
           isd0bar: fFlagMcMatchRec == -1
         tags:
-          ismcsignal: {var: fFlagMcMatchRec, req: [[1], []], abs: True} # TODO: should exclude reflections
+          ismcsignal: {var: fFlagMcMatchRec, req: [[1], []], abs: True}
           ismcbkg: {var: fFlagMcMatchRec, req: [[], [1]], abs: True}
           seld0: {var: fCandidateSelFlag, req: [[0], []]}
           seld0bar: {var: fCandidateSelFlag, req: [[1], []]}
           ismcprompt: {var: fOriginMcRec, req: [[0],[]]}
           ismcfd: {var: fOriginMcRec, req: [[1],[]]}
-        filter: "fPt >= 1. and fY <= 0.8"
+        filter: "fPt >= 1. and abs(fY) <= 0.8"
         # filter: "(fPt > 5 and abs(fY) < 0.8) or (fPt <= 5 and abs(fY) < -0.2/15 * fPt**2 + 1.9/15 * fPt + 0.5)" # TODO: check what we want
 
       colldata:
@@ -146,7 +146,7 @@ D0jet_pp:
           O2d0cjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta] # fNSub2DR, fNSub1, fNSub2
         extra:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
-        filter: "fPt >= 1. and fY <= 0.8"
+        filter: "fPt >= 1. and abs(fY) <= 0.8"
 
     merge:
       # - {base: jetgen, ref: collgen}

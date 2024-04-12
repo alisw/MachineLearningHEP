@@ -104,10 +104,10 @@ def write_df(dfo, path):
             pickle.dump(dfo, file, pickle.HIGHEST_PROTOCOL)
         logger.debug('written to pickle in %.2f s', time.time() - start)
 
-def read_df(path):
+def read_df(path, **kwargs):
     try:
         if path.endswith('.parquet'):
-            df = pd.read_parquet(path)
+            df = pd.read_parquet(path, **kwargs)
         else:
             df = pickle.load(openfile(path, "rb"))
     except Exception as e: # pylint: disable=broad-except
