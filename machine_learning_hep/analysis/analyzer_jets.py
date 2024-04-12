@@ -172,6 +172,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         nbins = hmass2.GetNbinsY()
                         hrange = (hmass2.GetYaxis().GetXmin(), hmass2.GetYaxis().GetXmax())
                         hist = TH1F(f'hjet{var}_{ipt}', "", nbins, hrange[0], hrange[1])
+                        hist.GetXaxis().SetTitle(hmass2.GetYaxis().GetTitle())
                         # hist.SetBinContent(1, 0.0)
                         for i in range(nbins):
                             hmass = hmass2.ProjectionX(f'h_invmass_zg_{ipt}_proj_{i}', i+1, i+2, "e")

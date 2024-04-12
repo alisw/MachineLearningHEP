@@ -12,6 +12,8 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
+from array import array
+import math # pylint: disable=unused-import
 import time
 import numpy as np
 import pandas as pd
@@ -51,6 +53,9 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
                                     self.p_bin_width))
 
     def calculate_zg(self, df): # pylint: disable=invalid-name
+        """
+        Explicit implementation, for reference/validation only
+        """
         start = time.time()
         df['zg_array'] = np.array(.5 - abs(df.fPtSubLeading / (df.fPtLeading + df.fPtSubLeading) - .5))
         df['zg_fast'] = df['zg_array'].apply((lambda ar: next((zg for zg in ar if zg >= .1), -1.)))
@@ -89,8 +94,8 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
             self.logger.error('rg not all close')
 
     def process_calculate_variables(self, df): # pylint: disable=invalid-name
-        # TODO: consider periodic phi
-        df.eval('radial_distance = sqrt((fJetEta - fEta)**2 + (fJetPhi - fPhi)**2)', inplace=True)
+        df.eval('dr = sqrt((fJetEta - fEta)**2 + ((fJetPhi - fPhi + @math.pi) % @math.tau - @math.pi)**2)',
+                inplace=True)
         df.eval('jetPx = fJetPt * cos(fJetPhi)', inplace=True)
         df.eval('jetPy = fJetPt * sin(fJetPhi)', inplace=True)
         df.eval('jetPz = fJetPt * sinh(fJetEta)', inplace=True)
@@ -99,7 +104,7 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
         df.eval('hfPz = fPt * sinh(fEta)', inplace=True)
         df.eval('zpar_num = jetPx * hfPx + jetPy * hfPy + jetPz * hfPz', inplace=True)
         df.eval('zpar_den = jetPx * jetPx + jetPy * jetPy + jetPz * jetPz', inplace=True)
-        df.eval('z_parallel = zpar_num / zpar_den', inplace=True)
+        df.eval('zpar = zpar_num / zpar_den', inplace=True)
         df['zg_array'] = np.array(.5 - abs(df.fPtSubLeading / (df.fPtLeading + df.fPtSubLeading) - .5))
         zcut = .1
         df['zg'] = df['zg_array'].apply((lambda ar: next((zg for zg in ar if zg >= zcut), -1.)))
@@ -133,47 +138,59 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
                 continue
             df = self.process_calculate_variables(df)
 
-            self.logger.info('preparing histograms')
-            h_invmass_all = TH1F(f'hmass_{ipt}', "",
-                                    self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+            self.logger.info('preparing histograms for bin %d', ipt)
+            h_invmass_all = TH1F(f'hmass_{ipt}', "Inv. mass;M (GeV/#it{c}^{2})",
+                                 self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
             fill_hist(h_invmass_all, df.fM, write=True)
 
-            h_candpt_all = TH1F(f'hcandpt_{ipt}', "", self.p_num_bins, 0., 50.)
+            h_candpt_all = TH1F(f'hcandpt_{ipt}', ";p_{T} (GeV/#it{c})",
+                                self.p_num_bins, 0., 50.)
             fill_hist(h_candpt_all, df.fPt, write=True)
 
-            h_jetpt_all = TH1F(f'hjetpt_{ipt}', "", self.p_num_bins, 0., 50.)
+            h_jetpt_all = TH1F(f'hjetpt_{ipt}', ";p_{T} (GeV/#it{c})",
+                               self.p_num_bins, 0., 50.)
             fill_hist(h_jetpt_all, df.fJetPt, write=True)
 
             ## substructure
-            h_zg = TH1F(f'hjetzg_{ipt}', "", 10, 0.0, 1.0)
+            h_zg = TH1F(f'hjetzg_{ipt}', ";z_{g}",
+                        10, 0.0, 1.0)
             fill_hist(h_zg, df.zg, write=True)
 
-            h_nsd = TH1F(f'hjetnsd_{ipt}', "", 10, 0.0, 10.0)
+            h_nsd = TH1F(f'hjetnsd_{ipt}', ";nsd",
+                         10, 0.0, 10.0)
             fill_hist(h_nsd, df.nsd, write=True)
 
-            h_rg = TH1F(f'hjetrg_{ipt}', "", 100, 0.0, 1.0)
+            h_rg = TH1F(f'hjetrg_{ipt}', ";r_{g}",
+                        100, 0.0, 1.0)
             fill_hist(h_rg, df.rg, write=True)
 
-            h_zpar = TH1F(f'hjetzpar_{ipt}', "", 100, 0.0, 1.0)
-            fill_hist(h_zpar, df.z_parallel, write=True)
+            h_zpar = TH1F(f'hjetzpar_{ipt}', ";z_{#parallel}",
+                          100, 0.0, 1.0)
+            fill_hist(h_zpar, df.zpar, write=True)
 
-            h_dr = TH1F(f'hjetdr_{ipt}', "", 10, 0.0, 1.0)
-            fill_hist(h_dr, df.radial_distance, write=True)
+            h_dr = TH1F(f'hjetdr_{ipt}', ";#Delta R",
+                        10, 0.0, 1.0)
+            fill_hist(h_dr, df.dr, write=True)
 
-            h = TH2F(f'h2jet_invmass_zg_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 1.0)
+            h = TH2F(f'h2jet_invmass_zg_{ipt}', ";M (GeV/#it{c}^{2});z_{g}",
+                     2000, 1.0, 3.0, 10, 0.0, 1.0)
             fill_hist(h, df[['fM', 'zg']], write=True)
 
-            h = TH2F(f'h2jet_invmass_nsd_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 10.0)
+            h = TH2F(f'h2jet_invmass_nsd_{ipt}', ";M (GeV/#it{c}^{2});nsd",
+                     2000, 1.0, 3.0, 10, 0.0, 10.0)
             fill_hist(h, df[['fM', 'nsd']], write=True)
 
-            h = TH2F(f'h2jet_invmass_rg_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 1.0)
+            h = TH2F(f'h2jet_invmass_rg_{ipt}', ";M (GeV/#it{c}^{2});rg",
+                     2000, 1.0, 3.0, 10, 0.0, 1.0)
             fill_hist(h, df[['fM', 'rg']], write=True)
 
-            h = TH2F(f'h2jet_invmass_zpar_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 1.0)
-            fill_hist(h, df[['fM', 'z_parallel']], write=True)
+            h = TH2F(f'h2jet_invmass_zpar_{ipt}', ";M (GeV/#it{c}^{2});z_{#parallel}",
+                     2000, 1.0, 3.0, 10, 0.0, 1.0)
+            fill_hist(h, df[['fM', 'zpar']], write=True)
 
-            h = TH2F(f'h2jet_invmass_dr_{ipt}', "", 2000, 1.0, 3.0, 10, 0.0, 1.0)
-            fill_hist(h, df[['fM', 'radial_distance']], write=True)
+            h = TH2F(f'h2jet_invmass_dr_{ipt}', ";M (GeV/#it{c}^{2});dr",
+                     2000, 1.0, 3.0, 10, 0.0, 1.0)
+            fill_hist(h, df[['fM', 'dr']], write=True)
 
             #invariant mass with candidatePT intervals (done)
             #invariant mass with jetPT and candidatePT intervals
@@ -183,12 +200,14 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
         self.logger.info('Running efficiency')
         myfile = TFile.Open(self.l_histoeff[index], "recreate")
         myfile.cd()
-        h_gen = TH1F('hjetgen', "", self.p_nptfinbins, self.lpt_finbinmin[0], self.lpt_finbinmax[-1])
-        h_det = TH1F('hjetdet', "", self.p_nptfinbins, self.lpt_finbinmin[0], self.lpt_finbinmax[-1])
-        h_match = TH1F('hjetmatch', "", self.p_nptfinbins, self.lpt_finbinmin[0], self.lpt_finbinmax[-1])
+        ptbins = array('f', self.lpt_finbinmin + [self.lpt_finbinmax[-1]])
+        h_gen = TH1F('hjetgen', "", len(ptbins)-1, ptbins)
+        h_det = TH1F('hjetdet', "", len(ptbins)-1, ptbins)
+        h_match = TH1F('hjetmatch', "", len(ptbins)-1, ptbins)
         for ipt in range(self.p_nptbins):
             dfgen = read_df(self.mptfiles_gensk[ipt][index])
             dfdet = read_df(self.mptfiles_recosk[ipt][index])
+            dfdet = dfdet.loc[(dfdet.isd0 & dfdet.seld0) | (dfdet.isd0bar & dfdet.seld0bar)] # TODO: generalize
             fill_hist(h_gen, dfgen['fPt'])
             fill_hist(h_det, dfdet['fPt'])
             if (idx := self.cfg('index_match')) is not None:

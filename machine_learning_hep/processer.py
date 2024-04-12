@@ -595,7 +595,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         create_folder_struc(self.d_results, self.l_path)
         arguments = [(i,) for i in range(len(self.l_root))]
-        print('eff ', arguments)
         self.parallelizer(self.process_efficiency_single, arguments, self.p_chunksizeunp) # pylint: disable=no-member
         with tempfile.TemporaryDirectory() as tmp_merged_dir:
             mergerootfiles(self.l_histoeff, self.n_fileeff, tmp_merged_dir)

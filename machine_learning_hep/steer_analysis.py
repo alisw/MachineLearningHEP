@@ -1,5 +1,5 @@
 #############################################################################
-##  © Copyright CERN 2023. All rights not expressly granted are reserved.  ##
+##  © Copyright CERN 2024. All rights not expressly granted are reserved.  ##
 ##                 Author: Gian.Michele.Innocenti@cern.ch                  ##
 ## This program is free software: you can redistribute it and/or modify it ##
 ##  under the terms of the GNU General Public License as published by the  ##
@@ -257,8 +257,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     def mlhepmod(name):
         return importlib.import_module(f"..{name}", __name__)
 
-    import ROOT # pylint: disable=import-outside-toplevel
-    ROOT.gROOT.SetBatch(args.batch)
+    import ROOT # pylint: disable=import-outside-toplevel, import-error
+    ROOT.gROOT.SetBatch(args.batch) # pylint: disable=no-member
     from machine_learning_hep.multiprocesser import MultiProcesser # pylint: disable=import-outside-toplevel
     syst_class = mlhepmod('analysis.systematics').SystematicsMLWP
     if proc_type == "Dhadrons":
