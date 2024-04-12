@@ -24,8 +24,8 @@ import pandas as pd
 #pylint: disable=import-error, no-name-in-module, consider-using-f-string
 from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.utilities import selectdfrunlist
-from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, \
-        seldf_singlevar_inclusive, openfile
+from machine_learning_hep.utilities_files import create_folder_struc
+from machine_learning_hep.utilities import seldf_singlevar, seldf_singlevar_inclusive, openfile
 from machine_learning_hep.utilities import mergerootfiles
 from machine_learning_hep.utilities import get_timestamp_string
 from machine_learning_hep.utilities import fill_hist

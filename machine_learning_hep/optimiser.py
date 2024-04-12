@@ -43,7 +43,7 @@ from machine_learning_hep.models import importanceplotall, shap_study
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.optimization import calc_bkg, calc_signif, calc_eff, calc_sigeff_steps
 from machine_learning_hep.correlations import vardistplot_probscan, efficiency_cutscan
-from machine_learning_hep.utilities import checkdirlist, checkmakedirlist
+from machine_learning_hep.utilities_files import checkdirlist, checkmakedirlist
 from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
 
 

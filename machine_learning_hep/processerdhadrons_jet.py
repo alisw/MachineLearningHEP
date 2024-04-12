@@ -28,7 +28,8 @@ from sklearn.model_selection import train_test_split
 from ROOT import TFile, TH1F, TH2F #, RooUnfoldResponse # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utilities import selectdfrunlist, seldf_singlevar, openfile
-from machine_learning_hep.utilities import create_folder_struc, mergerootfiles, get_timestamp_string, make_message_notfound
+from machine_learning_hep.utilities_files import create_folder_struc
+from machine_learning_hep.utilities import mergerootfiles, get_timestamp_string, make_message_notfound
 from machine_learning_hep.utilities import z_calc, z_gen_calc
 from machine_learning_hep.utilities_plot import buildhisto, build2dhisto, fill2dhist, fillweighed
 from machine_learning_hep.utilities_plot import makefill3dhist, makefill2dhist, fill2dweighed

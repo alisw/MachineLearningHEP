@@ -28,13 +28,13 @@ import tempfile
 import uproot
 import pandas as pd
 import numpy as np
-from machine_learning_hep.bitwise import tag_bit_df
-from machine_learning_hep.utilities import dfquery, merge_method, mask_df
-from machine_learning_hep.utilities import list_folders, createlist, appendmainfoldertolist
-from machine_learning_hep.utilities import create_folder_struc, seldf_singlevar, openfile
-from machine_learning_hep.utilities import mergerootfiles, count_df_length_pkl, read_df, write_df
-from machine_learning_hep.io import dump_yaml_from_dict
-from machine_learning_hep.logger import get_logger
+from .bitwise import tag_bit_df
+from .utilities_files import list_folders, createlist, appendmainfoldertolist, create_folder_struc
+from .utilities import dfquery, merge_method, mask_df
+from .utilities import seldf_singlevar, openfile
+from .utilities import mergerootfiles, count_df_length_pkl, read_df, write_df
+from .io import dump_yaml_from_dict
+from .logger import get_logger
 pd.options.mode.chained_assignment = None
 
 class Processer: # pylint: disable=too-many-instance-attributes
@@ -116,21 +116,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.n_mcreweights = datap["files_names"]["namefile_mcweights"]
 
         #selections
-        self.s_reco_unp = datap["sel_reco_unp"]
-        self.s_good_evt_unp = datap["sel_good_evt_unp"]
-        self.s_cen_unp = datap["sel_cen_unp"]
-        self.s_gen_unp = datap["sel_gen_unp"]
         self.s_reco_skim = datap["sel_reco_skim"]
         self.s_gen_skim = datap["sel_gen_skim"]
-        self.s_apply_yptacccut = datap.get("apply_yptacccut", True)
-
-        #bitmap
-        self.b_std = datap["bitmap_sel"]["isstd"]
-        self.b_mcsig = datap["bitmap_sel"]["ismcsignal"]
-        self.b_mcsigprompt = datap["bitmap_sel"]["ismcprompt"]
-        self.b_mcsigfd = datap["bitmap_sel"]["ismcfd"]
-        self.b_mcbkg = datap["bitmap_sel"]["ismcbkg"]
-        self.b_mcrefl = datap["bitmap_sel"]["ismcrefl"]
 
         #variables name
         self.v_train = datap["variables"]["var_training"]
@@ -283,7 +270,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         return reduce(lambda d, key: d.get(key, default) if isinstance(d, dict) else default,
                       param.split("."), self.datap['analysis'][self.typean])
 
-    def unpack(self, file_index, max_no_keys = None):  # pylint: disable=too-many-branches
+    def unpack(self, file_index, max_no_keys = None): # pylint: disable=too-many-branches
         def dfread(rdir, trees, cols, idx_name=None):
             """Read DF from multiple (joinable) O2 tables"""
             try:
@@ -334,6 +321,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
 
         self.logger.info('unpacking: %s', self.l_root[file_index])
         dfs = {}
+        self.logger.debug(' -> reading')
         with uproot.open(self.l_root[file_index]) as rfile:
             df_processed = set()
             keys = rfile.keys(recursive=False, filter_name='DF_*')
@@ -365,22 +353,28 @@ class Processer: # pylint: disable=too-many-instance-attributes
         for df_name, df_spec in self.df_read.items():
             if dfuse(df_spec):
                 if 'extra' in df_spec:
+                    self.logger.debug(' %s -> extra', df_name)
                     for col_name, col_val in df_spec['extra'].items():
                         dfs[df_name][col_name] = dfs[df_name].eval(col_val)
                 if 'filter' in df_spec:
+                    self.logger.debug(' %s -> filter', df_name)
                     dfquery(dfs[df_name], df_spec['filter'], inplace=True)
                 if 'tags' in df_spec:
+                    self.logger.debug(' %s -> tags', df_name)
                     for tag, value in df_spec['tags'].items():
                         if dfuse(value):
                             dfs[df_name][tag] = np.array(
                                 tag_bit_df(dfs[df_name], value['var'], value['req'], value.get('abs', False)),
                                 dtype=int)
                 if 'swap' in df_spec:
+                    self.logger.debug(' %s -> swap', df_name)
                     spec = df_spec['swap']
                     if dfuse(spec):
                         swapped = dfs[df_name][spec['cand']] == dfs[df_name][spec['var_swap']] + 1
                         for var in spec['vars']:
                             dfs[df_name][var] = np.logical_and(dfs[df_name][var] == 1, swapped)
+                self.logger.debug(' %s -> done', df_name)
+
 
         if self.df_merge:
             for m_spec in self.df_merge:

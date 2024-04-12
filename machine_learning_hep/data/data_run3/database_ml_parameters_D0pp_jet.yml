@@ -73,7 +73,7 @@ D0jet_pp:
           O2hfd0pbase: [fPt, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
           O2d0cmcpjeto: [fIndexD0CMCPJetCOs, fJetPt, fJetPhi, fJetEta, fJetNConstituents]
           O2d0cmcpjetmo: [fIndexArrayD0CMCDJetOs_hf, fIndexArrayD0CMCDJetOs_geo, fIndexArrayD0CMCDJetOs_pt]
-          O2d0cmcpjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta]
+          O2d0cmcpjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta] # fNSub2DR, fNSub1, fNSub2
         extra:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
         tags:
@@ -107,12 +107,14 @@ D0jet_pp:
           O2hfd0sel: [fCandidateSelFlag]
           O2d0cmcdjeto: [fIndexD0CMCDJetCOs, fJetPt, fJetPhi, fJetEta, fJetNConstituents]
           O2d0cmcdjetmo: [fIndexArrayD0CMCPJetOs_hf, fIndexArrayD0CMCPJetOs_geo, fIndexArrayD0CMCPJetOs_pt]
-          O2d0cmcdjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta]
+          O2d0cmcdjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta] # fNSub2DR, fNSub1, fNSub2
         extra:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
+          isd0: fFlagMcMatchRec == 1
+          isd0bar: fFlagMcMatchRec == -1
         tags:
           ismcsignal: {var: fFlagMcMatchRec, req: [[1], []], abs: True} # TODO: should exclude reflections
-          ismcbkg: {var: fFlagMcMatchRec, req: [[],[1]], abs: True}
+          ismcbkg: {var: fFlagMcMatchRec, req: [[], [1]], abs: True}
           seld0: {var: fCandidateSelFlag, req: [[0], []]}
           seld0bar: {var: fCandidateSelFlag, req: [[1], []]}
           ismcprompt: {var: fOriginMcRec, req: [[0],[]]}
@@ -141,7 +143,7 @@ D0jet_pp:
                       fErrorImpactParameter0, fErrorImpactParameter1]
           O2hfd0sel: [fCandidateSelFlag]
           O2d0cjeto: [fIndexD0CJetCOs, fJetPt, fJetPhi, fJetEta, fJetNConstituents]
-          O2d0cjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta]
+          O2d0cjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta] # fNSub2DR, fNSub1, fNSub2
         extra:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
         filter: "fPt >= 1. and fY <= 0.8"
