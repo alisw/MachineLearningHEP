@@ -54,6 +54,7 @@ D0jet_pp:
     ismcbkg: [[],[1]]
     ismcrefl: [[1],[1]] # probably missing from tree creator
 
+  #region dfs
   dfs:
     read:
       evtorig:
@@ -226,6 +227,7 @@ D0jet_pp:
     respfilename: "resphisto.root"
     crossfilename: "cross_section_tot.root"
 
+  #region multi
   multi:
     data:
       nprocessesparallel: 20
@@ -332,6 +334,7 @@ D0jet_pp:
       mc:           [0.75,0.75,0.65,0.65,0.45,0.45,0.45] # sel_skim_binmin bins
     probcutoptimal: [0.92,0.90,0.82,0.80,0.60,0.60,0.60] # sel_skim_binmin bins
 
+  #region analysis
   analysis:
     anahptspectrum: "D0Kpi" #D0Kpi, DplusKpipi, DstarD0pi, DsKKpi, LctopKpi, LcK0Sp
     fd_method: "Nb" #fc, Nb

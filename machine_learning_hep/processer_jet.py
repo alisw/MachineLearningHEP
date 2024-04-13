@@ -209,15 +209,13 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
         h_det = TH1F('h_pthf_det', ";p_{T} (GeV/#it{c})", len(ptbins)-1, ptbins)
         h_match = TH1F('h_pthf_match', ";p_{T} (GeV/#it{c})", len(ptbins)-1, ptbins)
         for ipt in range(self.p_nptbins):
-            dfgen = read_df(self.mptfiles_gensk[ipt][index],
-                            filters=[('ismcprompt', '==', 1)],
-                            columns=['ismcprompt', 'fPt'])
-            dfdet = read_df(self.mptfiles_recosk[ipt][index],
-                            filters=[('ismcprompt', '==', 1)],
-                            columns=['fPt', 'isd0', 'isd0bar', 'seld0', 'seld0bar', 'ismcprompt',
-                                     'fIndexArrayD0CMCPJetOs_hf'])
+            cols = ['ismcprompt', 'fPt']
+            dfgen = read_df(self.mptfiles_gensk[ipt][index], filters=[('ismcprompt', '==', 1)], columns=cols)
+            cols.append(self.cfg('index_match'))
+            # cols.extend(['isd0', 'isd0bar', 'seld0', 'seld0bar'])
+            dfdet = read_df(self.mptfiles_recosk[ipt][index], filters=[('ismcprompt', '==', 1)], columns=cols)
             dfgen = dfgen.loc[dfgen.ismcprompt == 1]
-            dfdet = dfdet.loc[(dfdet.isd0 & dfdet.seld0) | (dfdet.isd0bar & dfdet.seld0bar)] # TODO: generalize
+            # dfdet = dfdet.loc[(dfdet.isd0 & dfdet.seld0) | (dfdet.isd0bar & dfdet.seld0bar)] # TODO: generalize
             dfdet = dfdet.loc[dfdet.ismcprompt == 1]
             fill_hist(h_gen, dfgen['fPt'])
             fill_hist(h_det, dfdet['fPt'])

@@ -82,6 +82,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         """
         hist = None
         for h in histos:
+            if h is None:
+                continue
             if hist is None:
                 hist = h.Clone(name or (h.GetName() + '_cloned'))
             else:
@@ -163,19 +165,21 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
             with TFile(rfilename) as rfile:
                 for ipt in range(self.nbins):
-                    h_invmass = rfile.Get(f'h_mass_{ipt}')
-                    fit_res, _, func_bkg = self._fit_mass(h_invmass)
-                    if fit_res is not None:
-                        self.fit_sigma[mcordata][ipt] = fit_res.Parameter(2)
-                        self.fit_mean[mcordata][ipt] = fit_res.Parameter(1)
-                        self.fit_func_bkg[mcordata][ipt] = func_bkg
-                    self._save_hist(h_invmass, f'fit/h_mass_fitted_{ipt}_{mcordata}.png', mcordata)
+                    if h_invmass := rfile.Get(f'h_mass_{ipt}'):
+                        fit_res, _, func_bkg = self._fit_mass(h_invmass)
+                        if fit_res is not None:
+                            self.fit_sigma[mcordata][ipt] = fit_res.Parameter(2)
+                            self.fit_mean[mcordata][ipt] = fit_res.Parameter(1)
+                            self.fit_func_bkg[mcordata][ipt] = func_bkg
+                        self._save_hist(h_invmass, f'fit/h_mass_fitted_{ipt}_{mcordata}.png', mcordata)
 
     #region sidebands
     def _subtract_sideband(self, hist, var, mcordata, ipt):
         """
         Subtract sideband distributions, assuming mass on first axis
         """
+        if not hist:
+            return
         assert hist.GetDimension() in [2, 3], 'only 2- and 3-dimensional histograms are supported'
         self._save_hist(hist, f'sideband/h_mass-{var}_{ipt}_{mcordata}.png', mcordata)
 
@@ -251,6 +255,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         """
         Extract signal through inv. mass fit in bins of observable
         """
+        if not hmass2:
+            return
         self._save_hist(hmass2, f'signalextr/h_mass-{var}_{ipt}_{mcordata}.png', mcordata)
         nbins = hmass2.GetNbinsY()
         hrange = (hmass2.GetYaxis().GetXmin(), hmass2.GetYaxis().GetXmax())
@@ -266,7 +272,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         hist.GetXaxis().SetTitle(hmass2.GetYaxis().GetTitle())
         hist.Sumw2()
 
-        # TODO: take mass region from DB (or from fit)
+        range_int = (self.fit_mean[mcordata][ipt] - 3 * self.fit_sigma[mcordata][ipt],
+                     self.fit_mean[mcordata][ipt] + 3 * self.fit_sigma[mcordata][ipt])
         for i in range(nbins):
             if hmass2.GetDimension() == 3:
                 hmass2.GetYaxis().SetRange(i+1, i+1)
@@ -275,12 +282,12 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     hmass = hmass2.Project3D('x')
                     _, func_sig, _ = self._fit_mass(hmass)
                     self._save_hist(hmass, f'signalextr/h_mass-{var}_fitted_{ipt}_{i}_{j}_{mcordata}.png', mcordata)
-                    hist.SetBinContent(i + 1, j +  1, func_sig.Integral(1.67, 2.1) / hmass.GetBinWidth(1))
+                    hist.SetBinContent(i + 1, j +  1, func_sig.Integral(*range_int) / hmass.GetBinWidth(1))
             else:
                 hmass = hmass2.ProjectionX(f'h_mass-{var}_{ipt}_proj_{i}', i+1, i+1, "e")
                 _, func_sig, _ = self._fit_mass(hmass)
                 self._save_hist(hmass, f'signalextr/h_mass-{var}_fitted_{ipt}_{i}_{mcordata}.png', mcordata)
-                hist.SetBinContent(i + 1, func_sig.Integral(1.67, 2.1) / hmass.GetBinWidth(1))
+                hist.SetBinContent(i + 1, func_sig.Integral(*range_int) / hmass.GetBinWidth(1))
         if hmass2.GetDimension() == 3:
             hmass2.GetYaxis().SetRange(0, hmass2.GetYaxis().GetNbins() + 1)
             hmass2.GetZaxis().SetRange(0, hmass2.GetYaxis().GetNbins() + 1)

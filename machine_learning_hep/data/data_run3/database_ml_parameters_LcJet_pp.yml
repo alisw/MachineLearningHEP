@@ -45,6 +45,7 @@ LcJet_pp:
     ismcbkg: [[],[1]]
     ismcrefl: [[1],[1]] # probably missing from tree creator
 
+  #region dfs
   dfs:
     read:
       evtorig:
@@ -214,6 +215,7 @@ LcJet_pp:
     respfilename: "resphisto.root"
     crossfilename: "cross_section_tot.root"
 
+  #region multi
   multi:
     data:
       nprocessesparallel: 20
@@ -320,6 +322,7 @@ LcJet_pp:
       mc:           [0.75,0.75,0.65,0.65,0.45,0.45,0.45] # sel_skim_binmin bins
     probcutoptimal: [0.92,0.90,0.82,0.80,0.60,0.60,0.60] # sel_skim_binmin bins
 
+  #region analysis
   analysis:
     anahptspectrum: "D0Kpi" #D0Kpi, DplusKpipi, DstarD0pi, DsKKpi, LctopKpi, LcK0Sp
     fd_method: "Nb" #fc, Nb
@@ -328,7 +331,7 @@ LcJet_pp:
     inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
     dir_general_plots: /data2/jklein/data/analysis_plots
 
-    jet_zg: &jet_default
+    jet_obs: &jet_default
       proc_type: Jets
       useperiod: [1] #list of periods
       usejetptbinned_deff: false
