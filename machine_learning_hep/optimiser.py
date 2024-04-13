@@ -43,7 +43,7 @@ from machine_learning_hep.models import importanceplotall, shap_study
 from machine_learning_hep.logger import get_logger
 from machine_learning_hep.optimization import calc_bkg, calc_signif, calc_eff, calc_sigeff_steps
 from machine_learning_hep.correlations import vardistplot_probscan, efficiency_cutscan
-from machine_learning_hep.utilities_files import checkdirlist, checkmakedirlist
+from machine_learning_hep.utilities_files import checkdirs, checkmakedirlist
 from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
 
 
@@ -588,7 +588,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
 
         out_dirs = [os.path.join(self.dirmlplot, "grid_search", name, f"{name}{self.s_suffix}") \
                 for name in clfs_names_all]
-        if checkdirlist(out_dirs):
+        if len(checkdirs(out_dirs)) > 0:
             # Only draw results if any can be found
             self.logger.warning("Not overwriting anything, just plotting again what was done " \
                     "before and returning. Please remove corresponding directories " \

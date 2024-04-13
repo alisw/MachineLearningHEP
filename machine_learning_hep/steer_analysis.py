@@ -19,6 +19,7 @@ main script for doing data processing, machine learning and analysis
 import argparse
 import importlib
 import os
+import shutil
 import subprocess
 import sys
 import yaml
@@ -29,7 +30,7 @@ import shap # pylint: disable=unused-import
 from .analysis.analyzer_manager import AnalyzerManager
 from .config import update_config
 from .logger import configure_logger, get_logger
-from .utilities_files import checkmakedirlist, checkmakedir, checkdirlist, checkdir, delete_dirlist
+from .utilities_files import checkmakedirlist, checkmakedir, checkdirs, delete_dirlist
 
 def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite: dict, # pylint: disable=too-many-locals, too-many-statements, too-many-branches
                        data_model: dict, run_param: dict, args):
@@ -149,57 +150,66 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
 
     proc_type = data_param[case]["analysis"][typean]["proc_type"]
 
-    counter = 0
+    exdirs = []
     if doconversionmc:
-        counter = counter + checkdirlist(dirpklmc)
+        exdirs.extend(checkdirs(dirpklmc))
 
     if doconversiondata:
-        counter = counter + checkdirlist(dirpkldata)
+        exdirs.extend(checkdirs(dirpkldata))
 
     if doskimmingmc:
-        checkdirlist(dirpklskmc)
-        counter = counter + checkdir(dirpklevtcounter_allmc)
+        exdirs.extend(checkdirs(dirpklskmc))
+        exdirs.extend(checkdirs(dirpklevtcounter_allmc))
 
     if doskimmingdata:
-        counter = counter + checkdirlist(dirpklskdata)
-        counter = counter + checkdir(dirpklevtcounter_alldata)
+        exdirs.extend(checkdirs(dirpklskdata))
+        exdirs.extend(checkdirs(dirpklevtcounter_alldata))
 
     if domergingmc:
-        counter = counter + checkdirlist(dirpklmlmc)
+        exdirs.extend(checkdirs(dirpklmlmc))
 
     if domergingdata:
-        counter = counter + checkdirlist(dirpklmldata)
+        exdirs.extend(checkdirs(dirpklmldata))
 
     if domergingperiodsmc:
-        counter = counter + checkdir(dirpklmltotmc)
+        exdirs.extend(checkdirs(dirpklmltotmc))
 
     if domergingperiodsdata:
-        counter = counter + checkdir(dirpklmltotdata)
+        exdirs.extend(checkdirs(dirpklmltotdata))
 
     if not docontinueapplymc:
         if doapplymc:
-            counter = counter + checkdirlist(dirpklskdecmc)
+            exdirs.extend(checkdirs(dirpklskdecmc))
 
         if domergeapplymc:
-            counter = counter + checkdirlist(dirpklskdec_mergedmc)
+            exdirs.extend(checkdirs(dirpklskdec_mergedmc))
 
     if not docontinueapplydata:
         if doapplydata:
-            counter = counter + checkdirlist(dirpklskdecdata)
+            exdirs.extend(checkdirs(dirpklskdecdata))
 
         if domergeapplydata:
-            counter = counter + checkdirlist(dirpklskdec_mergeddata)
+            exdirs.extend(checkdirs(dirpklskdec_mergeddata))
 
     if dohistomassmc:
-        counter = counter + checkdirlist(dirresultsmc)
-        counter = counter + checkdir(dirresultsmctot)
+        exdirs.extend(checkdirs(dirresultsmc))
+        exdirs.extend(checkdirs(dirresultsmctot))
 
     if dohistomassdata:
-        counter = counter + checkdirlist(dirresultsdata)
-        counter = counter + checkdir(dirresultsdatatot)
+        exdirs.extend(checkdirs(dirresultsdata))
+        exdirs.extend(checkdirs(dirresultsdatatot))
 
-    if counter < 0:
-        sys.exit()
+    if len(exdirs) > 0:
+        logger.info('existing directories must be deleted')
+        for d in exdirs:
+            print(f'rm -rf {d}')
+        if args.delete:
+            ok = input('Do you want to delete these directories now (y/n)? ')
+            if ok.lower() == 'y':
+                while len(exdirs) > 0:
+                    shutil.rmtree(exdirs.pop())
+        if len(exdirs) > 0:
+            sys.exit()
     # check and create directories
 
     if doconversionmc:
@@ -497,6 +507,8 @@ def main(args=None):
                         help="choose type of analysis")
     parser.add_argument("--clean", "-c", action="store_true",
                         help="delete per-period results at the end")
+    parser.add_argument("--delete", action="store_true",
+                        help="delete existing directories")
     parser.add_argument("--batch", "-b", action="store_true", help="enable ROOT batch mode")
 
     args = parser.parse_args(args)

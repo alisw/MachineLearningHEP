@@ -210,7 +210,8 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
                             columns=['ismcprompt', 'fPt'])
             dfdet = read_df(self.mptfiles_recosk[ipt][index],
                             filters=[('ismcprompt', '==', 1)],
-                            columns=['fPt', 'isd0', 'isd0bar', 'seld0', 'seld0bar', 'ismcprompt', 'fIndexArrayD0CMCPJetOs_hf'])
+                            columns=['fPt', 'isd0', 'isd0bar', 'seld0', 'seld0bar', 'ismcprompt',
+                                     'fIndexArrayD0CMCPJetOs_hf'])
             dfgen = dfgen.loc[dfgen.ismcprompt == 1]
             dfdet = dfdet.loc[(dfdet.isd0 & dfdet.seld0) | (dfdet.isd0bar & dfdet.seld0bar)] # TODO: generalize
             dfdet = dfdet.loc[dfdet.ismcprompt == 1]

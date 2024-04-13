@@ -14,6 +14,7 @@
 
 import os
 import glob
+from pathlib import Path
 import shutil
 
 from .logger import get_logger
@@ -57,26 +58,15 @@ def create_folder_struc(maindir, listpath):
             if not os.path.exists(folder):
                 os.makedirs(folder)
 
-def checkdirlist(dirlist):
+def checkdirs(dirs: list[str]) -> list[str]:
     """
-    Checks if list of folder already exist, to not overwrite by accident
+    Return list of existing directories
     """
-    exfolders = 0
-    for mydir in dirlist:
-        if os.path.exists(mydir):
-            print("rm -rf ", mydir)
-            exfolders = exfolders - 1
-    return exfolders
-
-def checkdir(mydir):
-    """
-    Checks if folder already exist, to not overwrite by accident
-    """
-    exfolders = 0
-    if os.path.exists(mydir):
-        print("rm -rf ", mydir)
-        exfolders = -1
-    return exfolders
+    if isinstance(dirs, str):
+        exdirs = [dirs] if Path(dirs).exists() else []
+    else:
+        exdirs = [d for d in dirs if Path(d).exists()]
+    return exdirs
 
 def checkmakedir(mydir):
     """

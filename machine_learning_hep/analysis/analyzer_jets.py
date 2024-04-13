@@ -55,13 +55,14 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.fit_sigma = {'mc': self.nbins * [0], 'data': self.nbins * [0]}
         self.fit_mean = {'mc': self.nbins * [0], 'data': self.nbins * [0]}
         self.fit_func_bkg = {'mc': [], 'data': []}
+        self.hcandeff = None
 
         self.path_fig = Path(f'fig/{self.case}/{self.typean}')
         self.path_fig.mkdir(parents=True, exist_ok=True)
 
     def _save_canvas(self, canvas, filename, mcordata): # pylint: disable=unused-argument
         # folder = self.d_resultsallpmc if mcordata == 'mc' else self.d_resultsallpdata
-        canvas.SaveAs(f'fig/{self.case}/{self.typean}_{filename}')
+        canvas.SaveAs(f'fig/{self.case}/{self.typean}/{filename}')
 
     def _save_hist(self, hist, filename, mcordata):
         if not hist:
@@ -194,6 +195,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     fh_sum = self._sum_histos(fh_sub)
                     self._save_hist(fh_sum, f'hjet_{var}_subtracted_effscaled.png', mcordata)
 
+    # TODO: generalize to higher dimensions
     def _extract_signal(self, hmass2, var, mcordata, ipt):
         """
         Extract signal through inv. mass fit in bins of observable
