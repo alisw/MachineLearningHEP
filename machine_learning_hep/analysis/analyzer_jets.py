@@ -15,7 +15,7 @@
 from pathlib import Path
 import os
 import munch # pylint: disable=import-error, no-name-in-module
-from ROOT import TFile, TCanvas, TF1, TH1F, gStyle # pylint: disable=import-error, no-name-in-module
+from ROOT import TFile, TCanvas, TF1, TH1F, TH2F, gStyle # pylint: disable=import-error, no-name-in-module
 import ROOT # pylint: disable=import-error
 
 from machine_learning_hep.analysis.analyzer import Analyzer
@@ -52,9 +52,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.bins_candpt = self.cfg('sel_an_binmin', []) + self.cfg('sel_an_binmax', [])[-1:]
         self.nbins = len(self.bins_candpt) - 1
 
-        self.fit_sigma = {'mc': self.nbins * [0], 'data': self.nbins * [0]}
-        self.fit_mean = {'mc': self.nbins * [0], 'data': self.nbins * [0]}
-        self.fit_func_bkg = {'mc': [], 'data': []}
+        self.fit_sigma = {}
+        self.fit_mean = {}
+        self.fit_func_bkg = {}
         self.hcandeff = None
 
         self.path_fig = Path(f'fig/{self.case}/{self.typean}')
@@ -109,6 +109,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.logger.info("Running fitter")
         gStyle.SetOptFit(1111)
         for mcordata in ['mc', 'data']:
+            self.fit_mean[mcordata] = [None] * self.nbins
+            self.fit_sigma[mcordata] = [None] * self.nbins
+            self.fit_func_bkg[mcordata] = [None] * self.nbins
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
             with TFile(rfilename) as rfile:
                 for ipt in range(self.nbins):
@@ -117,57 +120,59 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     if fit_res is not None:
                         self.fit_sigma[mcordata][ipt] = fit_res.Parameter(2)
                         self.fit_mean[mcordata][ipt] = fit_res.Parameter(1)
-                        self.fit_func_bkg[mcordata].append(func_bkg)
+                        self.fit_func_bkg[mcordata][ipt] = func_bkg
                     self._save_hist(h_invmass, f'hmass_fitted_{ipt}_{mcordata}.png', mcordata)
 
-    # TODO: consider passing limits for sidebands
     def _subtract_sideband(self, hist, var, mcordata, ipt):
         """
-        Project histogram to one axis and subtract sideband distributions
+        Subtract sideband distributions, assuming mass on first axis
         """
+        assert hist.GetDimension() in [2, 3], 'only 2- and 3-dimensional histograms are supported'
         self._save_hist(hist, f'h2jet_invmass_{var}_{ipt}_{mcordata}.png', mcordata)
 
         mean = self.fit_mean[mcordata][ipt]
         sigma = self.fit_sigma[mcordata][ipt]
-        region_signal = (mean - 2 * sigma, mean + 2 * sigma)
-        region_sideband_left = (mean - 7 * sigma, mean - 4 * sigma)
-        region_sideband_right = (mean + 4 * sigma, mean + 7 * sigma)
+
+        regions = {
+            'signal': (mean - 2 * sigma, mean + 2 * sigma),
+            'sideband_left': (mean - 7 * sigma, mean - 4 * sigma),
+            'sideband_right': (mean + 4 * sigma, mean + 7 * sigma)
+        }
 
         axis = hist.GetXaxis()
-        bins_signal = tuple(map(axis.FindBin, region_signal))
-        bins_sideband_left = tuple(map(axis.FindBin, region_sideband_left))
-        bins_sideband_right = tuple(map(axis.FindBin, region_sideband_right))
+        bins = {key: tuple(map(axis.FindBin, regions[key])) for key in regions}
+        limits = {key: (axis.GetBinLowEdge(bins[key][0]), axis.GetBinUpEdge(bins[key][1]))
+                  for key in regions}
+        self.logger.info('effective sideband regions %s', limits)
 
-        fh_signal = hist.ProjectionY(f'h2jet_{var}_signal_{ipt}_{mcordata}', bins_signal[0], bins_signal[1], "e")
-        signalArea = self.fit_func_bkg[mcordata][ipt].Integral(region_signal[0], region_signal[1])
+        fh = {}
+        area = {}
+        for region in regions:
+            if hist.GetDimension() == 2:
+                fh[region] = hist.ProjectionY(f'h2jet_{var}_signal_{ipt}_{mcordata}', bins[region][0], bins[region][1], "e")
+                area[region] = self.fit_func_bkg[mcordata][ipt].Integral(regions[region][0], regions[region][1])
+            elif hist.GetDimension() == 3:
+                hist.GetXaxis().SetRange(bins[region][0], bins[region][1])
+                fh[region] = hist.Project3D('yze').Clone(f'h2jet_{var}_signal_{ipt}_{mcordata}')
+                area[region] = -1. # TODO: calculate area
+                hist.GetXaxis().SetRange(0, hist.GetXaxis().GetNbins() + 1)
+            self._save_hist(fh[region], f'hjet_{var}_{region}_{ipt}_{mcordata}.png', mcordata)
 
-        fh_sidebandleft = hist.ProjectionY(f'h2jet_{var}_sidebandleft_{ipt}_{mcordata}',
-                                           bins_sideband_left[0], bins_sideband_left[1], "e")
-        sidebandLeftlArea = self.fit_func_bkg[mcordata][ipt].Integral(region_sideband_left[0], region_sideband_left[1])
+        areaNormFactor = area['signal'] / (area['sideband_left'] + area['sideband_right'])
 
-        fh_sidebandright = hist.ProjectionY(f'h2jet_{var}_sidebandright_{ipt}_{mcordata}',
-                                            bins_sideband_right[0], bins_sideband_right[1], "e")
-        sidebandRightArea = self.fit_func_bkg[mcordata][ipt].Integral(
-            region_sideband_right[0], region_sideband_right[1])
-
-        self._save_hist(fh_signal, f'hjet_{var}_signal_{ipt}_{mcordata}.png', mcordata)
-        self._save_hist(fh_sidebandleft, f'hjet_{var}_sidebandleft_{ipt}_{mcordata}.png', mcordata)
-        self._save_hist(fh_sidebandright, f'hjet_{var}_sidebandright_{ipt}_{mcordata}.png', mcordata)
-
-        areaNormFactor = signalArea / (sidebandLeftlArea + sidebandRightArea)
-        fh_sideband = fh_sidebandleft.Clone(f'h_sideband_{ipt}_{mcordata}')
-        fh_sideband.Add(fh_sidebandright, 1.0)
+        fh_sideband = fh['sideband_left'].Clone(f'h_sideband_{ipt}_{mcordata}')
+        fh_sideband.Add(fh['sideband_right'], 1.0)
         self._save_hist(fh_sideband, f'hjet_{var}_sideband_{ipt}_{mcordata}.png', mcordata)
 
-        fh_subtracted = fh_signal.Clone(f'h_subtracted_{ipt}_{mcordata}')
+        fh_subtracted = fh['signal'].Clone(f'h_subtracted_{ipt}_{mcordata}')
         fh_subtracted.Sumw2()
         fh_subtracted.Add(fh_sideband, -1.0 * areaNormFactor)
-        fh_subtracted.Scale(1.0 / 0.954)
+        fh_subtracted.Scale(1.0 / 0.954) # TODO: calculate from region
         self._save_hist(fh_subtracted, f'hjet_{var}_subtracted_{ipt}_{mcordata}.png', mcordata)
 
         c = TCanvas()
-        fh_signal.SetLineColor(ROOT.kRed) # pylint: disable=no-member
-        fh_signal.Draw()
+        fh['signal'].SetLineColor(ROOT.kRed) # pylint: disable=no-member
+        fh['signal'].Draw()
         fh_sideband.Scale(areaNormFactor)
         fh_sideband.SetLineColor(ROOT.kBlue) # pylint: disable=no-member
         fh_sideband.Draw("same")
@@ -189,7 +194,6 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
             with TFile(rfilename) as rfile:
                 for var in self.observables:
-                    # TODO: check pt bin correspondence
                     fh_sub = [self._subtract_sideband(rfile.Get(f'h2jet_invmass_{var}_{ipt}'), var, mcordata, ipt)
                               for ipt in range(self.nbins)]
                     fh_sum = self._sum_histos(fh_sub)
@@ -202,20 +206,42 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         """
         nbins = hmass2.GetNbinsY()
         hrange = (hmass2.GetYaxis().GetXmin(), hmass2.GetYaxis().GetXmax())
-        hist = TH1F(f'hjet{var}_{ipt}', "", nbins, hrange[0], hrange[1])
-        hist.Sumw2()
+        if hmass2.GetDimension() == 3:
+            nbins2 = hmass2.GetNbinsZ()
+            hrange2 = (hmass2.GetZaxis().GetXmin(), hmass2.GetZaxis().GetXmax())
+            hist = TH2F(f'hjet{var}_{ipt}', "",
+                        nbins, hrange[0], hrange[1],
+                        nbins2, hrange2[0], hrange2[1])
+            hist.GetYaxis().SetTitle(hmass2.GetZaxis().GetTitle())
+        else:
+            hist = TH1F(f'hjet{var}_{ipt}', "", nbins, hrange[0], hrange[1])
         hist.GetXaxis().SetTitle(hmass2.GetYaxis().GetTitle())
+        hist.Sumw2()
+
+        # TODO: take mass region from DB
         for i in range(nbins):
-            hmass = hmass2.ProjectionX(f'h_invmass_zg_{ipt}_proj_{i}', i+1, i+2, "e")
-            _, func_sig, _ = self._fit_mass(hmass)
-            self._save_hist(hmass, f'hmass_{var}_fitted_{ipt}_{i}_{mcordata}.png', mcordata)
-            hist.SetBinContent(i + 1, func_sig.Integral(1.67, 2.1)*(1.0/hmass.GetBinWidth(1)))
+            if hmass2.GetDimension() == 3:
+                hmass2.GetYaxis().SetRange(i+1, i+2)
+                for j in range(nbins2):
+                    hmass2.GetZaxis().SetRange(j+1, j+2)
+                    hmass = hmass2.Project3D('x')
+                    _, func_sig, _ = self._fit_mass(hmass)
+                    self._save_hist(hmass, f'hmass_{var}_fitted_{ipt}_{i}_{j}_{mcordata}.png', mcordata)
+                    # TODO: fill correct bin
+                    hist.SetBinContent(i + 1, func_sig.Integral(1.67, 2.1)*(1.0/hmass.GetBinWidth(1)))
+            else:
+                hmass = hmass2.ProjectionX(f'h_invmass_zg_{ipt}_proj_{i}', i+1, i+2, "e")
+                _, func_sig, _ = self._fit_mass(hmass)
+                self._save_hist(hmass, f'hmass_{var}_fitted_{ipt}_{i}_{mcordata}.png', mcordata)
+                hist.SetBinContent(i + 1, func_sig.Integral(1.67, 2.1)*(1.0/hmass.GetBinWidth(1)))
         self._save_hist(hist, f'{var}_signalextracted_{ipt}_{mcordata}.png', mcordata)
+
         if self.hcandeff:
             hist.Scale(1.0/self.hcandeff.GetBinContent(ipt + 1))
             self._save_hist(hist, f'{var}_signalextracted_eff_scaled_{ipt}_{mcordata}.png', mcordata)
         else:
             self.logger.error('no efficiency correction because of missing efficiency')
+
         return hist
 
     def extract_signals(self):
