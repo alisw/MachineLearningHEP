@@ -17,6 +17,7 @@ import os
 import munch # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TCanvas, TF1, TH1F, TH2F, gStyle # pylint: disable=import-error, no-name-in-module
 import ROOT # pylint: disable=import-error
+ROOT.TDirectory.AddDirectory(False)
 
 from machine_learning_hep.analysis.analyzer import Analyzer
 
@@ -58,7 +59,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.hcandeff = None
 
         self.path_fig = Path(f'fig/{self.case}/{self.typean}')
-        self.path_fig.mkdir(parents=True, exist_ok=True)
+        for folder in ['qa', 'fit', 'sideband', 'signalextr']:
+            (self.path_fig / folder).mkdir(parents=True, exist_ok=True)
 
     #region helpers
     def _save_canvas(self, canvas, filename, mcordata): # pylint: disable=unused-argument
@@ -85,6 +87,49 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             else:
                 hist.Add(h)
         return hist
+
+    #region basic qa
+    def qa(self): # pylint: disable=too-many-branches, too-many-locals, invalid-name
+        self.logger.info("Running D0 jet qa")
+        for mcordata in ['mc', 'data']:
+            rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
+            with TFile(rfilename) as rfile:
+                histonorm = rfile.Get("histonorm")
+                if not histonorm:
+                    self.logger.critical('histonorm not found')
+                p_nevents = histonorm.GetBinContent(1)
+                self.logger.debug('Number of selected event: %d', p_nevents)
+
+                for ipt in range(self.nbins):
+                    self._save_hist(rfile.Get(f'h_mass_{ipt}'), f'qa/h_mass_{ipt}_{mcordata}.png', mcordata)
+                    self._save_hist(rfile.Get(f'h_ptcand_{ipt}'), f'qa/h_ptcand_{ipt}_{mcordata}.png', mcordata)
+                    self._save_hist(rfile.Get(f'h_ptjet_{ipt}'), f'qa/h_ptjet_{ipt}_{mcordata}.png', mcordata)
+                    for var in self.observables:
+                        if '-' in var: # only plot 1-d distributions
+                            continue
+                        self._save_hist(rfile.Get(f'h_{var}_{ipt}'), f'qa/h_{var}_{ipt}_{mcordata}.png', mcordata)
+
+    #region efficiency
+    def efficiency(self):
+        self.logger.info("Running efficiency")
+        rfilename = self.n_fileeff
+        with TFile(rfilename) as rfile:
+            h_gen = rfile.Get('h_pthf_gen')
+            h_det = rfile.Get('h_pthf_det')
+            heff = h_det.Clone('h_eff')
+            heff.Sumw2()
+            heff.Divide(h_gen)
+            h_match = rfile.Get('h_pthf_match')
+            heff_match = h_match.Clone('h_eff_match')
+            heff_match.Sumw2()
+            heff_match.Divide(h_gen)
+            self._save_hist(h_gen, 'qa/h_pthf_gen.png', 'mc')
+            self._save_hist(h_det, 'qa/h_pthf_det.png', 'mc')
+            self._save_hist(heff, 'h_eff.png', 'mc')
+            self._save_hist(heff_match, 'h_eff_matched.png', 'mc')
+            # TODO: check if clone is really needed?
+            self.hcandeff = heff_match.Clone("h_eff_hf")
+            self.hcandeff.SetDirectory(0)
 
     #region fitting
     def _fit_mass(self, hist):
@@ -124,7 +169,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         self.fit_sigma[mcordata][ipt] = fit_res.Parameter(2)
                         self.fit_mean[mcordata][ipt] = fit_res.Parameter(1)
                         self.fit_func_bkg[mcordata][ipt] = func_bkg
-                    self._save_hist(h_invmass, f'h_mass_fitted_{ipt}_{mcordata}.png', mcordata)
+                    self._save_hist(h_invmass, f'fit/h_mass_fitted_{ipt}_{mcordata}.png', mcordata)
 
     #region sidebands
     def _subtract_sideband(self, hist, var, mcordata, ipt):
@@ -132,7 +177,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         Subtract sideband distributions, assuming mass on first axis
         """
         assert hist.GetDimension() in [2, 3], 'only 2- and 3-dimensional histograms are supported'
-        self._save_hist(hist, f'h_mass-{var}_{ipt}_{mcordata}.png', mcordata)
+        self._save_hist(hist, f'sideband/h_mass-{var}_{ipt}_{mcordata}.png', mcordata)
 
         mean = self.fit_mean[mcordata][ipt]
         sigma = self.fit_sigma[mcordata][ipt]
@@ -147,45 +192,44 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         bins = {key: tuple(map(axis.FindBin, regions[key])) for key in regions}
         limits = {key: (axis.GetBinLowEdge(bins[key][0]), axis.GetBinUpEdge(bins[key][1]))
                   for key in regions}
-        self.logger.info('effective sideband regions %s', limits)
+        self.logger.info('actual sideband regions %s', limits)
 
         fh = {}
         area = {}
         for region in regions:
             if hist.GetDimension() == 2:
-                fh[region] = hist.ProjectionY(f'h2jet_{var}_signal_{ipt}_{mcordata}', bins[region][0], bins[region][1], "e")
+                fh[region] = hist.ProjectionY(f'h_{var}_{region}_{ipt}_{mcordata}', bins[region][0], bins[region][1], "e")
             elif hist.GetDimension() == 3:
                 hist.GetXaxis().SetRange(bins[region][0], bins[region][1])
-                fh[region] = hist.Project3D('yze').Clone(f'h2jet_{var}_signal_{ipt}_{mcordata}')
+                fh[region] = hist.Project3D('zye').Clone(f'h_{var}_{region}_{ipt}_{mcordata}')
                 hist.GetXaxis().SetRange(0, hist.GetXaxis().GetNbins() + 1)
             area[region] = self.fit_func_bkg[mcordata][ipt].Integral(regions[region][0], regions[region][1])
-            self._save_hist(fh[region], f'h_{var}_{region}_{ipt}_{mcordata}.png', mcordata)
+            self._save_hist(fh[region], f'sideband/h_{var}_{region}_{ipt}_{mcordata}.png', mcordata)
 
         areaNormFactor = area['signal'] / (area['sideband_left'] + area['sideband_right'])
 
-        fh_sideband = fh['sideband_left'].Clone(f'h_sideband_{ipt}_{mcordata}')
-        fh_sideband.Add(fh['sideband_right'], 1.0)
-        self._save_hist(fh_sideband, f'h_{var}_sideband_{ipt}_{mcordata}.png', mcordata)
+        fh_sideband = self._sum_histos([fh['sideband_left'], fh['sideband_right']], f'h_{var}_sideband_{ipt}_{mcordata}')
+        self._save_hist(fh_sideband, f'sideband/h_{var}_sideband_{ipt}_{mcordata}.png', mcordata)
 
-        fh_subtracted = fh['signal'].Clone(f'h_subtracted_{ipt}_{mcordata}')
+        fh_subtracted = fh['signal'].Clone(f'h_{var}_subtracted_{ipt}_{mcordata}')
         fh_subtracted.Sumw2()
-        fh_subtracted.Add(fh_sideband, -1.0 * areaNormFactor)
+        fh_subtracted.Add(fh_sideband, -areaNormFactor)
         fh_subtracted.Scale(1.0 / 0.954) # TODO: calculate from region
-        self._save_hist(fh_subtracted, f'h_{var}_subtracted_{ipt}_{mcordata}.png', mcordata)
+        self._save_hist(fh_subtracted, f'sideband/h_{var}_subtracted_{ipt}_{mcordata}.png', mcordata)
 
         c = TCanvas()
         fh['signal'].SetLineColor(ROOT.kRed) # pylint: disable=no-member
         fh['signal'].Draw()
         fh_sideband.Scale(areaNormFactor)
-        fh_sideband.SetLineColor(ROOT.kBlue) # pylint: disable=no-member
+        fh_sideband.SetLineColor(ROOT.kCyan) # pylint: disable=no-member
         fh_sideband.Draw("same")
-        fh_subtracted.SetLineColor(ROOT.kOrange) # pylint: disable=no-member
         fh_subtracted.Draw("same")
-        self._save_canvas(c, f'h_{var}_overview_{ipt}_{mcordata}.png', mcordata)
+        fh_subtracted.GetYaxis().SetRangeUser(0., max(fh_subtracted.GetMaximum(), fh['signal'].GetMaximum(), fh_sideband.GetMaximum()))
+        self._save_canvas(c, f'sideband/h_{var}_overview_{ipt}_{mcordata}.png', mcordata)
 
         if self.hcandeff:
             fh_subtracted.Scale(1.0 / self.hcandeff.GetBinContent(ipt + 1))
-            self._save_hist(fh_subtracted, f'h_{var}_subtracted_effscaled_{ipt}_{mcordata}.png', mcordata)
+            self._save_hist(fh_subtracted, f'sideband/h_{var}_subtracted_effscaled_{ipt}_{mcordata}.png', mcordata)
         else:
             self.logger.error('no efficiency correction because of missing efficiency')
 
@@ -200,17 +244,14 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     fh_sub = [self._subtract_sideband(rfile.Get(f'h_mass-{var}_{ipt}'), var, mcordata, ipt)
                               for ipt in range(self.nbins)]
                     fh_sum = self._sum_histos(fh_sub)
-                    self._save_hist(fh_sum, f'h_{var}_subtracted_effscaled.png', mcordata)
-                # fh_sub = [self._subtract_sideband(rfile.Get(f'h_mass-zg-rg_{ipt}'), 'zg-rg', mcordata, ipt)
-                #           for ipt in range(self.nbins)]
-                # fh_sum = self._sum_histos(fh_sub)
-                # self._save_hist(fh_sum, f'h_zg-rg_subtracted_effscaled.png', mcordata)
+                    self._save_hist(fh_sum, f'h_{var}_subtracted_effscaled_{mcordata}.png', mcordata)
 
     #region signal extraction
     def _extract_signal(self, hmass2, var, mcordata, ipt):
         """
         Extract signal through inv. mass fit in bins of observable
         """
+        self._save_hist(hmass2, f'signalextr/h_mass-{var}_{ipt}_{mcordata}.png', mcordata)
         nbins = hmass2.GetNbinsY()
         hrange = (hmass2.GetYaxis().GetXmin(), hmass2.GetYaxis().GetXmax())
         if hmass2.GetDimension() == 3:
@@ -225,26 +266,29 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         hist.GetXaxis().SetTitle(hmass2.GetYaxis().GetTitle())
         hist.Sumw2()
 
-        # TODO: take mass region from DB
+        # TODO: take mass region from DB (or from fit)
         for i in range(nbins):
             if hmass2.GetDimension() == 3:
-                hmass2.GetYaxis().SetRange(i+1, i+2)
+                hmass2.GetYaxis().SetRange(i+1, i+1)
                 for j in range(nbins2):
-                    hmass2.GetZaxis().SetRange(j+1, j+2)
+                    hmass2.GetZaxis().SetRange(j+1, j+1)
                     hmass = hmass2.Project3D('x')
                     _, func_sig, _ = self._fit_mass(hmass)
-                    self._save_hist(hmass, f'h_mass-{var}_fitted_{ipt}_{i}_{j}_{mcordata}.png', mcordata)
-                    hist.SetBinContent(i + 1, j +  1, func_sig.Integral(1.67, 2.1)*(1.0/hmass.GetBinWidth(1)))
+                    self._save_hist(hmass, f'signalextr/h_mass-{var}_fitted_{ipt}_{i}_{j}_{mcordata}.png', mcordata)
+                    hist.SetBinContent(i + 1, j +  1, func_sig.Integral(1.67, 2.1) / hmass.GetBinWidth(1))
             else:
-                hmass = hmass2.ProjectionX(f'h_mass-{var}_{ipt}_proj_{i}', i+1, i+2, "e")
+                hmass = hmass2.ProjectionX(f'h_mass-{var}_{ipt}_proj_{i}', i+1, i+1, "e")
                 _, func_sig, _ = self._fit_mass(hmass)
-                self._save_hist(hmass, f'h_mass-{var}_fitted_{ipt}_{i}_{mcordata}.png', mcordata)
-                hist.SetBinContent(i + 1, func_sig.Integral(1.67, 2.1)*(1.0/hmass.GetBinWidth(1)))
-        self._save_hist(hist, f'h_{var}_signalextracted_{ipt}_{mcordata}.png', mcordata)
+                self._save_hist(hmass, f'signalextr/h_mass-{var}_fitted_{ipt}_{i}_{mcordata}.png', mcordata)
+                hist.SetBinContent(i + 1, func_sig.Integral(1.67, 2.1) / hmass.GetBinWidth(1))
+        if hmass2.GetDimension() == 3:
+            hmass2.GetYaxis().SetRange(0, hmass2.GetYaxis().GetNbins() + 1)
+            hmass2.GetZaxis().SetRange(0, hmass2.GetYaxis().GetNbins() + 1)
+        self._save_hist(hist, f'signalextr/h_{var}_signalextracted_{ipt}_{mcordata}.png', mcordata)
 
         if self.hcandeff:
             hist.Scale(1.0/self.hcandeff.GetBinContent(ipt + 1))
-            self._save_hist(hist, f'{var}_signalextracted_eff_scaled_{ipt}_{mcordata}.png', mcordata)
+            self._save_hist(hist, f'signalextr/h_{var}_signalextracted_effscaled_{ipt}_{mcordata}.png', mcordata)
         else:
             self.logger.error('no efficiency correction because of missing efficiency')
 
@@ -259,52 +303,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     hsignals = [self._extract_signal(rfile.Get(f'h_mass-{var}_{ipt}'), var, mcordata, ipt)
                                 for ipt in range(self.nbins)]
                     hist_effscaled = self._sum_histos(hsignals)
-                    self._save_hist(hist_effscaled, f'{var}_signalextracted_eff_scaled_{mcordata}.png', mcordata)
+                    self._save_hist(hist_effscaled, f'h_{var}_signalextracted_effscaled_{mcordata}.png', mcordata)
                 # hsignals = [self._extract_signal(rfile.Get(f'h_mass-zg-rg_{ipt}'), var, mcordata, ipt)
                 #             for ipt in range(self.nbins)]
                 # hist_effscaled = self._sum_histos(hsignals)
-                # self._save_hist(hist_effscaled, f'h_zg-rg_signalextracted_eff_scaled_{mcordata}.png', mcordata)
-
-    #region efficiency
-    def efficiency(self):
-        self.logger.info("Running efficiency")
-        rfilename = self.n_fileeff
-        with TFile(rfilename) as rfile:
-            h_gen = rfile.Get('h_pthf_gen')
-            h_det = rfile.Get('h_pthf_det')
-            heff = h_det.Clone('h_eff')
-            heff.Sumw2()
-            heff.Divide(h_gen)
-            h_match = rfile.Get('h_pthf_match')
-            heff_match = h_match.Clone('h_eff_match')
-            heff_match.Sumw2()
-            heff_match.Divide(h_gen)
-            self._save_hist(h_gen, 'h_pthf_gen.png', 'mc')
-            self._save_hist(h_det, 'h_pthf_det.png', 'mc')
-            self._save_hist(heff, 'h_eff.png', 'mc')
-            self._save_hist(heff_match, 'h_eff_matched.png', 'mc')
-            # TODO: check if clone is really needed?
-            self.hcandeff = heff_match.Clone("h_eff_hf")
-            self.hcandeff.SetDirectory(0)
-
-    #region qa
-    def qa(self): # pylint: disable=too-many-branches, too-many-locals, invalid-name
-        self.logger.info("Running D0 jet qa")
-
-        for mcordata in ['mc', 'data']:
-            rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
-            with TFile(rfilename) as rfile:
-                histonorm = rfile.Get("histonorm")
-                if not histonorm:
-                    self.logger.critical('histonorm not found')
-                p_nevents = histonorm.GetBinContent(1)
-                self.logger.debug('Number of selected event: %d', p_nevents)
-
-                for ipt in range(self.nbins):
-                    self._save_hist(rfile.Get(f'h_mass_{ipt}'), f'h_mass_{ipt}_{mcordata}.png', mcordata)
-                    self._save_hist(rfile.Get(f'h_ptcand_{ipt}'), f'h_ptcand_{ipt}_{mcordata}.png', mcordata)
-                    self._save_hist(rfile.Get(f'h_ptjet_{ipt}'), f'h_ptjet_{ipt}_{mcordata}.png', mcordata)
-                    for var in self.observables:
-                        if '-' in var: # only plot 1-d distributions
-                            continue
-                        self._save_hist(rfile.Get(f'h_{var}_{ipt}'), f'h_{var}_{ipt}_{mcordata}.png', mcordata)
+                # self._save_hist(hist_effscaled, f'h_zg-rg_signalextracted_effscaled_{mcordata}.png', mcordata)

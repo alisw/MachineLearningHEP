@@ -156,11 +156,11 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
                         10, 0.0, 1.0)
             fill_hist(h_zg, df.zg, write=True)
 
-            h_nsd = TH1F(f'h_nsd_{ipt}', ";nsd",
+            h_nsd = TH1F(f'h_nsd_{ipt}', ";N_{sd}",
                          10, 0.0, 10.0)
             fill_hist(h_nsd, df.nsd, write=True)
 
-            h_rg = TH1F(f'h_rg_{ipt}', ";r_{g}",
+            h_rg = TH1F(f'h_rg_{ipt}', ";R_{g}",
                         100, 0.0, 1.0)
             fill_hist(h_rg, df.rg, write=True)
 
@@ -168,7 +168,7 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
                           100, 0.0, 1.0)
             fill_hist(h_zpar, df.zpar, write=True)
 
-            h_dr = TH1F(f'h_dr_{ipt}', ";#Delta R",
+            h_dr = TH1F(f'h_dr_{ipt}', ";#Deltar",
                         10, 0.0, 1.0)
             fill_hist(h_dr, df.dr, write=True)
 
@@ -176,11 +176,11 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
                      2000, 1.0, 3.0, 10, 0.0, 1.0)
             fill_hist(h, df[['fM', 'zg']], write=True)
 
-            h = TH2F(f'h_mass-nsd_{ipt}', ";M (GeV/#it{c}^{2});nsd",
+            h = TH2F(f'h_mass-nsd_{ipt}', ";M (GeV/#it{c}^{2});N_{sd}",
                      2000, 1.0, 3.0, 10, 0.0, 10.0)
             fill_hist(h, df[['fM', 'nsd']], write=True)
 
-            h = TH2F(f'h_mass-rg_{ipt}', ";M (GeV/#it{c}^{2});rg",
+            h = TH2F(f'h_mass-rg_{ipt}', ";M (GeV/#it{c}^{2});R_{g}",
                      2000, 1.0, 3.0, 10, 0.0, 1.0)
             fill_hist(h, df[['fM', 'rg']], write=True)
 
@@ -188,11 +188,11 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
                      2000, 1.0, 3.0, 10, 0.0, 1.0)
             fill_hist(h, df[['fM', 'zpar']], write=True)
 
-            h = TH2F(f'h_mass-dr_{ipt}', ";M (GeV/#it{c}^{2});dr",
+            h = TH2F(f'h_mass-dr_{ipt}', ";M (GeV/#it{c}^{2});#Deltar",
                      2000, 1.0, 3.0, 10, 0.0, 1.0)
             fill_hist(h, df[['fM', 'dr']], write=True)
 
-            h = TH3F(f'h_mass-zg-rg_{ipt}', ";M (GeV/#it{c}^{2});zg;rg",
+            h = TH3F(f'h_mass-zg-rg_{ipt}', ";M (GeV/#it{c}^{2});z_{g};R_{g}",
                      2000, 1., 3., 10, 0., 1., 10, 0., 1.)
             fill_hist(h, df[['fM', 'zg', 'rg']], write=True)
 
@@ -205,9 +205,9 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
         myfile = TFile.Open(self.l_histoeff[index], "recreate")
         myfile.cd()
         ptbins = array('f', self.lpt_finbinmin + [self.lpt_finbinmax[-1]])
-        h_gen = TH1F('h_pthf_gen', "", len(ptbins)-1, ptbins)
-        h_det = TH1F('h_pthf_det', "", len(ptbins)-1, ptbins)
-        h_match = TH1F('h_pthf_match', "", len(ptbins)-1, ptbins)
+        h_gen = TH1F('h_pthf_gen', ";p_{T} (GeV/#it{c})", len(ptbins)-1, ptbins)
+        h_det = TH1F('h_pthf_det', ";p_{T} (GeV/#it{c})", len(ptbins)-1, ptbins)
+        h_match = TH1F('h_pthf_match', ";p_{T} (GeV/#it{c})", len(ptbins)-1, ptbins)
         for ipt in range(self.p_nptbins):
             dfgen = read_df(self.mptfiles_gensk[ipt][index],
                             filters=[('ismcprompt', '==', 1)],
