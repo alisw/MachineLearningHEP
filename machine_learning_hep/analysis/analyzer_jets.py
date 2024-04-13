@@ -60,6 +60,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.path_fig = Path(f'fig/{self.case}/{self.typean}')
         self.path_fig.mkdir(parents=True, exist_ok=True)
 
+    #region helpers
     def _save_canvas(self, canvas, filename, mcordata): # pylint: disable=unused-argument
         # folder = self.d_resultsallpmc if mcordata == 'mc' else self.d_resultsallpdata
         canvas.SaveAs(f'fig/{self.case}/{self.typean}/{filename}')
@@ -85,20 +86,22 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 hist.Add(h)
         return hist
 
+    #region fitting
     def _fit_mass(self, hist):
+        # TODO: check for empty histogram?
         fit_range = self.cfg('mass_fit.range')
         func_sig = TF1('funcSig', self.cfg('mass_fit.func_sig'))
         func_bkg = TF1('funcBkg', self.cfg('mass_fit.func_bkg'))
         func_tot = TF1('funcTot', f"{self.cfg('mass_fit.func_sig')} + {self.cfg('mass_fit.func_bkg')}")
         func_tot.SetParameter(0, hist.GetMaximum())
         for par, value in self.cfg('mass_fit.par_start', {}).items():
-            self.logger.info('Setting par %i to %g', par, value)
+            self.logger.debug('Setting par %i to %g', par, value)
             func_tot.SetParameter(par, value)
         for par, value in self.cfg('mass_fit.par_constrain', {}).items():
-            self.logger.info('Constraining par %i to (%g, %g)', par, value[0], value[1])
+            self.logger.debug('Constraining par %i to (%g, %g)', par, value[0], value[1])
             func_tot.SetParLimits(par, value[0], value[1])
         for par, value in self.cfg('mass_fit.par_fix', {}).items():
-            self.logger.info('Fixing par %i to %g', par, value)
+            self.logger.debug('Fixing par %i to %g', par, value)
             func_tot.FixParameter(par, value)
         fit_res = hist.Fit(func_tot, "S", "", fit_range[0], fit_range[1])
         func_sig.SetParameters(func_tot.GetParameters())
@@ -123,6 +126,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         self.fit_func_bkg[mcordata][ipt] = func_bkg
                     self._save_hist(h_invmass, f'hmass_fitted_{ipt}_{mcordata}.png', mcordata)
 
+    #region sidebands
     def _subtract_sideband(self, hist, var, mcordata, ipt):
         """
         Subtract sideband distributions, assuming mass on first axis
@@ -150,12 +154,11 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         for region in regions:
             if hist.GetDimension() == 2:
                 fh[region] = hist.ProjectionY(f'h2jet_{var}_signal_{ipt}_{mcordata}', bins[region][0], bins[region][1], "e")
-                area[region] = self.fit_func_bkg[mcordata][ipt].Integral(regions[region][0], regions[region][1])
             elif hist.GetDimension() == 3:
                 hist.GetXaxis().SetRange(bins[region][0], bins[region][1])
                 fh[region] = hist.Project3D('yze').Clone(f'h2jet_{var}_signal_{ipt}_{mcordata}')
-                area[region] = -1. # TODO: calculate area
                 hist.GetXaxis().SetRange(0, hist.GetXaxis().GetNbins() + 1)
+            area[region] = self.fit_func_bkg[mcordata][ipt].Integral(regions[region][0], regions[region][1])
             self._save_hist(fh[region], f'hjet_{var}_{region}_{ipt}_{mcordata}.png', mcordata)
 
         areaNormFactor = area['signal'] / (area['sideband_left'] + area['sideband_right'])
@@ -198,8 +201,12 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                               for ipt in range(self.nbins)]
                     fh_sum = self._sum_histos(fh_sub)
                     self._save_hist(fh_sum, f'hjet_{var}_subtracted_effscaled.png', mcordata)
+                fh_sub = [self._subtract_sideband(rfile.Get(f'h3jet_invmass_zg_rg_{ipt}'), 'zg_rg', mcordata, ipt)
+                          for ipt in range(self.nbins)]
+                fh_sum = self._sum_histos(fh_sub)
+                self._save_hist(fh_sum, f'hjet_zg_rg_subtracted_effscaled.png', mcordata)
 
-    # TODO: generalize to higher dimensions
+    #region signal extraction
     def _extract_signal(self, hmass2, var, mcordata, ipt):
         """
         Extract signal through inv. mass fit in bins of observable
@@ -227,8 +234,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     hmass = hmass2.Project3D('x')
                     _, func_sig, _ = self._fit_mass(hmass)
                     self._save_hist(hmass, f'hmass_{var}_fitted_{ipt}_{i}_{j}_{mcordata}.png', mcordata)
-                    # TODO: fill correct bin
-                    hist.SetBinContent(i + 1, func_sig.Integral(1.67, 2.1)*(1.0/hmass.GetBinWidth(1)))
+                    hist.SetBinContent(i + 1, j +  1, func_sig.Integral(1.67, 2.1)*(1.0/hmass.GetBinWidth(1)))
             else:
                 hmass = hmass2.ProjectionX(f'h_invmass_zg_{ipt}_proj_{i}', i+1, i+2, "e")
                 _, func_sig, _ = self._fit_mass(hmass)
@@ -254,7 +260,12 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                                 for ipt in range(self.nbins)]
                     hist_effscaled = self._sum_histos(hsignals)
                     self._save_hist(hist_effscaled, f'{var}_signalextracted_eff_scaled_{mcordata}.png', mcordata)
+                hsignals = [self._extract_signal(rfile.Get(f'h3jet_invmass_zg_rg_{ipt}'), var, mcordata, ipt)
+                            for ipt in range(self.nbins)]
+                hist_effscaled = self._sum_histos(hsignals)
+                self._save_hist(hist_effscaled, f'zg_rg_signalextracted_eff_scaled_{mcordata}.png', mcordata)
 
+    #region efficiency
     def efficiency(self):
         self.logger.info("Running efficiency")
         rfilename = self.n_fileeff
@@ -276,6 +287,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             self.hcandeff = heff_match.Clone("hcand_efficiency")
             self.hcandeff.SetDirectory(0)
 
+    #region qa
     def qa(self): # pylint: disable=too-many-branches, too-many-locals, invalid-name
         self.logger.info("Running D0 jet qa")
 

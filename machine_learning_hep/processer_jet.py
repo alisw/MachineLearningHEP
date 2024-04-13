@@ -17,7 +17,7 @@ import math # pylint: disable=unused-import
 import time
 import numpy as np
 import pandas as pd
-from ROOT import TFile, TH1F, TH2F # pylint: disable=import-error, no-name-in-module
+from ROOT import TFile, TH1F, TH2F, TH3F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.processer import Processer
 from machine_learning_hep.utilities import fill_hist, read_df
 
@@ -191,6 +191,10 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
             h = TH2F(f'h2jet_invmass_dr_{ipt}', ";M (GeV/#it{c}^{2});dr",
                      2000, 1.0, 3.0, 10, 0.0, 1.0)
             fill_hist(h, df[['fM', 'dr']], write=True)
+
+            h = TH3F(f'h3jet_invmass_zg_rg_{ipt}', ";M (GeV/#it{c}^{2});zg;rg",
+                     2000, 1., 3., 10, 0., 1., 10, 0., 1.)
+            fill_hist(h, df[['fM', 'zg', 'rg']], write=True)
 
             #invariant mass with candidatePT intervals (done)
             #invariant mass with jetPT and candidatePT intervals

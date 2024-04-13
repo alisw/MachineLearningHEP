@@ -51,21 +51,27 @@ def fill_hist(hist, dfi: pd.DataFrame, weights = None, write = False):
     Fill histogram from dataframe
 
     :param hist: ROOT.TH1,2,3
-    :param dfi: dataframe with 1 to 3 columns
+    :param dfi: pandas series/dataframe (1 to 3 columns)
     :param weights: weights per row
     :param write: call Write() after filling
     """
-    assert dfi.ndim == 1 or dfi.shape[1] in [1, 2, 3], 'fill_hist supports only 1-,2-,3-d histograms'
+    dim_hist = hist.GetDimension()
+    dim_df = dfi.shape[1] if dfi.ndim > 1 else dfi.ndim
+    assert dim_df in [1, 2, 3], 'fill_hist supports only 1-,2-,3-d histograms'
+    assert dim_df == dim_hist, 'dimensions of df and histogram do not match'
     if len(dfi) == 0:
         return
-    if dfi.ndim == 1:
+    if dim_hist == 1:
         hist.FillN(len(dfi), np.float64(dfi), weights or 0)
-    elif dfi.shape[1] == 2:
+    elif dim_hist == 2:
         hist.FillN(len(dfi), np.float64(dfi.iloc[:, 0]), np.float64(dfi.iloc[:, 1]),
                    weights or np.float64(len(dfi)*[1.]))
-    elif dfi.shape[1] == 3:
-        hist.FillN(len(dfi), np.float64(dfi.iloc[:, 0]), np.float64(dfi.iloc[:, 1]), np.float64(dfi.iloc[:, 2]),
-                   weights or np.float64(len(dfi)*[1.]))
+    elif dim_hist == 3:
+        # TODO: why does TH3 not support FillN?
+        # hist.FillN(len(dfi), np.float64(dfi.iloc[:, 0]), np.float64(dfi.iloc[:, 1]), np.float64(dfi.iloc[:, 2]),
+        #            weights or np.float64(len(dfi)*[1.]))
+        assert weights is None, 'weights not yet added for 3-d histogram'
+        dfi.apply(lambda row: hist.Fill(row.iloc[0], row.iloc[1], row.iloc[2]), axis=1)
     if write:
         hist.Write()
 
