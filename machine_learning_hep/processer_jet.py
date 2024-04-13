@@ -19,7 +19,7 @@ import numpy as np
 import pandas as pd
 from ROOT import TFile, TH1F, TH2F, TH3F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.processer import Processer
-from machine_learning_hep.utilities import fill_hist, read_df
+from machine_learning_hep.utilities import dfquery, fill_hist, read_df
 
 class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instance-attributes
     species = "processer"
@@ -52,6 +52,7 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
         self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) /
                                     self.p_bin_width))
 
+    #region observables
     def calculate_zg(self, df): # pylint: disable=invalid-name
         """
         Explicit implementation, for reference/validation only
@@ -114,6 +115,7 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
         # self.calculate_zg(df)
         return df
 
+    #region histomass
     def process_histomass_single(self, index): # pylint: disable=too-many-statements
         self.logger.info('processing histomass single')
 
@@ -200,6 +202,7 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
             #invariant mass with jetPT and candidatePT intervals
             #invariant mass with jetPT and candidatePT and shape intervals
 
+    #region efficiency
     def process_efficiency_single(self, index):
         self.logger.info('Running efficiency')
         myfile = TFile.Open(self.l_histoeff[index], "recreate")
@@ -211,19 +214,23 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
         for ipt in range(self.p_nptbins):
             cols = ['ismcprompt', 'fPt']
             dfgen = read_df(self.mptfiles_gensk[ipt][index], filters=[('ismcprompt', '==', 1)], columns=cols)
-            cols.append(self.cfg('index_match'))
-            # cols.extend(['isd0', 'isd0bar', 'seld0', 'seld0bar'])
-            dfdet = read_df(self.mptfiles_recosk[ipt][index], filters=[('ismcprompt', '==', 1)], columns=cols)
             dfgen = dfgen.loc[dfgen.ismcprompt == 1]
-            # dfdet = dfdet.loc[(dfdet.isd0 & dfdet.seld0) | (dfdet.isd0bar & dfdet.seld0bar)] # TODO: generalize
-            dfdet = dfdet.loc[dfdet.ismcprompt == 1]
             fill_hist(h_gen, dfgen['fPt'])
+
+            cols.extend(self.cfg('efficiency.extra_cols', []))
+            if self.cfg('efficiency.index_match') is not None:
+                cols.append(self.cfg('efficiency.index_match'))
+            dfdet = read_df(self.mptfiles_recosk[ipt][index], filters=[('ismcprompt', '==', 1)], columns=cols)
+            dfdet = dfdet.loc[dfdet.ismcprompt == 1]
+            dfquery(dfdet, self.cfg('efficiency.filter_det'), inplace=True)
+            # dfdet = dfdet.loc[(dfdet.isd0 & dfdet.seld0) | (dfdet.isd0bar & dfdet.seld0bar)]
             fill_hist(h_det, dfdet['fPt'])
-            if (idx := self.cfg('index_match')) is not None:
+            if (idx := self.cfg('efficiency.index_match')) is not None:
+                dfgen.rename(lambda name: name + '_gen', axis=1, inplace=True)
                 dfdet['idx_match'] = dfdet[idx].apply(lambda ar: ar[0] if len(ar) > 0 else -1)
-                dfmatch = pd.merge(dfdet, dfgen[['ismcprompt']],
+                dfmatch = pd.merge(dfdet, dfgen[['ismcprompt_gen', 'fPt_gen']],
                                    left_on=['df', 'idx_match'], right_index=True)
-                fill_hist(h_match, dfmatch['fPt']) # TODO: fill generated pt?
+                fill_hist(h_match, dfmatch['fPt_gen']) # TODO: use gen or det pt in both histograms?
         h_gen.Write()
         h_det.Write()
         h_match.Write()

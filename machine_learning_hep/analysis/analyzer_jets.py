@@ -129,8 +129,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             self._save_hist(h_det, 'qa/h_pthf_det.png', 'mc')
             self._save_hist(heff, 'h_eff.png', 'mc')
             self._save_hist(heff_match, 'h_eff_matched.png', 'mc')
-            # TODO: check if clone is really needed?
-            self.hcandeff = heff_match.Clone("h_eff_hf")
+            self.hcandeff = heff_match if self.cfg('efficiency.store_matched') else heff
             self.hcandeff.SetDirectory(0)
 
     #region fitting
@@ -179,7 +178,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         Subtract sideband distributions, assuming mass on first axis
         """
         if not hist:
-            return
+            return None
         assert hist.GetDimension() in [2, 3], 'only 2- and 3-dimensional histograms are supported'
         self._save_hist(hist, f'sideband/h_mass-{var}_{ipt}_{mcordata}.png', mcordata)
 
@@ -256,19 +255,17 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         Extract signal through inv. mass fit in bins of observable
         """
         if not hmass2:
-            return
+            return None
         self._save_hist(hmass2, f'signalextr/h_mass-{var}_{ipt}_{mcordata}.png', mcordata)
         nbins = hmass2.GetNbinsY()
         hrange = (hmass2.GetYaxis().GetXmin(), hmass2.GetYaxis().GetXmax())
         if hmass2.GetDimension() == 3:
             nbins2 = hmass2.GetNbinsZ()
             hrange2 = (hmass2.GetZaxis().GetXmin(), hmass2.GetZaxis().GetXmax())
-            hist = TH2F(f'h_{var}_{ipt}', "",
-                        nbins, hrange[0], hrange[1],
-                        nbins2, hrange2[0], hrange2[1])
+            hist = TH2F(f'h_{var}_{ipt}', "", nbins, *hrange, nbins2, *hrange2)
             hist.GetYaxis().SetTitle(hmass2.GetZaxis().GetTitle())
         else:
-            hist = TH1F(f'h_{var}_{ipt}', "", nbins, hrange[0], hrange[1])
+            hist = TH1F(f'h_{var}_{ipt}', "", nbins, *hrange)
         hist.GetXaxis().SetTitle(hmass2.GetYaxis().GetTitle())
         hist.Sumw2()
 
@@ -311,7 +308,3 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                                 for ipt in range(self.nbins)]
                     hist_effscaled = self._sum_histos(hsignals)
                     self._save_hist(hist_effscaled, f'h_{var}_signalextracted_effscaled_{mcordata}.png', mcordata)
-                # hsignals = [self._extract_signal(rfile.Get(f'h_mass-zg-rg_{ipt}'), var, mcordata, ipt)
-                #             for ipt in range(self.nbins)]
-                # hist_effscaled = self._sum_histos(hsignals)
-                # self._save_hist(hist_effscaled, f'h_zg-rg_signalextracted_effscaled_{mcordata}.png', mcordata)

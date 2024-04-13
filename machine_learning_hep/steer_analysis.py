@@ -210,8 +210,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
                     shutil.rmtree(exdirs.pop())
         if len(exdirs) > 0:
             sys.exit()
-    # check and create directories
 
+    # check and create directories
     if doconversionmc:
         checkmakedirlist(dirpklmc)
 

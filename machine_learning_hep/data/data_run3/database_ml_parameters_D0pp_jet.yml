@@ -348,7 +348,6 @@ D0jet_pp:
       sel_an_binmax:      [6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
       binning_matching:   [2,3,3, 4, 4, 5, 5, 6] # mapping to skimming pt bins (sel_an_binmin bins)
 
-      index_match: fIndexArrayD0CMCPJetOs_hf
       mass_fit:
         func_sig: 'gaus(0)'
         func_bkg: 'expo(3)'
@@ -358,6 +357,11 @@ D0jet_pp:
         range: [1.675, 2.1]
       mass_fit_lim: [1.5, 2.2] # histogram range of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
+      efficiency:
+        extra_cols: ['isd0', 'isd0bar', 'seld0', 'seld0bar']
+        filter_det: '(isd0 & seld0) or (isd0bar & seld0bar)'
+        index_match: fIndexArrayD0CMCPJetOs_hf
+        store_matched: true
 
       # obsolete?
       proc_type: Jets

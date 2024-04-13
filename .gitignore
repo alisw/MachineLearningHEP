@@ -42,6 +42,7 @@ output_*
 *.json
 *.h5
 *.png
+*.log
 
 # editor backups/cached
 *.swp

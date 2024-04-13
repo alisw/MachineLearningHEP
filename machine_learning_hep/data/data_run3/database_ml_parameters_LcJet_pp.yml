@@ -332,6 +332,21 @@ LcJet_pp:
     dir_general_plots: /data2/jklein/data/analysis_plots
 
     jet_obs: &jet_default
+      sel_an_binmin:    [5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmax:      [6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
+      binning_matching:   [2,3,3, 4, 4, 5, 5, 6] # mapping to skimming pt bins (sel_an_binmin bins)
+
+      index_match: fIndexArrayLcCMCPJetOs_hf
+      mass_fit:
+        func_sig: 'gaus(0)'
+        func_bkg: 'expo(3)'
+        par_start: {1: 2.286}
+        # par_fix:
+        par_constrain: {2: [0, .1]}
+        range: [2., 2.5]
+      mass_fit_lim: [1.9, 2.6] # histogram range of the invariant mass distribution [GeV/c^2]
+      bin_width: 0.001 # bin width of the invariant mass histogram
+
       proc_type: Jets
       useperiod: [1] #list of periods
       usejetptbinned_deff: false
@@ -355,9 +370,6 @@ LcJet_pp:
       sel_binmaxshape_gen:       [0.1,0.2,0.3,0.4,0.5]
       sel_closure_frac: 0.2
       triggerbit: INT7
-      sel_an_binmin:    [5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:      [6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
-      binning_matching:   [2,3,3, 4, 4, 5, 5, 6] # mapping to skimming pt bins (sel_an_binmin bins)
       #jetsel_gen: "abs(y_cand) < 0.8 and abs(z_vtx_gen) < 10 and abs(eta_jet) < 0.5"
       #jetsel_sim: "abs(y_cand) < 0.8 and abs(eta_jet) < 0.5" # jet selection in simulations
       #jetsel_reco: "abs(y_cand) < 0.8 and abs(z_vtx_reco) < 10 and abs(eta_jet) < 0.5"
@@ -382,17 +394,6 @@ LcJet_pp:
         <<: *data_out_default
       mc_proc: # alternative processor output used as the analyzer input
         <<: *mc_out_default
-
-      index_match: fIndexArrayLcCMCPJetOs_hf
-      mass_fit:
-        func_sig: 'gaus(0)'
-        func_bkg: 'expo(3)'
-        par_start: {1: 2.286}
-        # par_fix:
-        par_constrain: {2: [0, .1]}
-        range: [2., 2.5]
-      mass_fit_lim: [1.9, 2.6] # histogram range of the invariant mass distribution [GeV/c^2]
-      bin_width: 0.001 # bin width of the invariant mass histogram
 
       # simple fitter START
       sgnfunc: [0,0,0,0,0,0,0,0,0,0,0,0] # kGaus=0, k2Gaus=1, k2GausSigmaRatioPar=2 (sel_an_binmin bins)

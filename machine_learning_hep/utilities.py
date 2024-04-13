@@ -64,6 +64,7 @@ def fill_hist(hist, dfi: pd.DataFrame, weights = None, write = False):
     if dim_hist == 1:
         hist.FillN(len(dfi), np.float64(dfi), weights or 0)
     elif dim_hist == 2:
+        # TODO: check if we can use ROOT.nullptr when no weights are given
         hist.FillN(len(dfi), np.float64(dfi.iloc[:, 0]), np.float64(dfi.iloc[:, 1]),
                    weights or np.float64(len(dfi)*[1.]))
     elif dim_hist == 3:
