@@ -269,6 +269,7 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
 
     import ROOT # pylint: disable=import-outside-toplevel, import-error
     ROOT.gROOT.SetBatch(args.batch) # pylint: disable=no-member
+    ROOT.TDirectory.AddDirectory(False) # pylint: disable=no-member
     from machine_learning_hep.multiprocesser import MultiProcesser # pylint: disable=import-outside-toplevel
     syst_class = mlhepmod('analysis.systematics').SystematicsMLWP
     if proc_type == "Dhadrons":

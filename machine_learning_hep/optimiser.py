@@ -32,7 +32,7 @@ from onnxmltools.convert import convert_xgboost  # pylint: disable=import-error
 from onnxconverter_common.data_types import FloatTensorType  # pylint: disable=import-error
 from ROOT import TFile, TCanvas, TH1F, TF1, gROOT  # pylint: disable=import-error,no-name-in-module
 from machine_learning_hep.utilities import seldf_singlevar, split_df_classes, createstringselection
-from machine_learning_hep.utilities import openfile, selectdfquery, mask_df
+from machine_learning_hep.utilities import openfile, dfquery, mask_df
 from machine_learning_hep.correlations import vardistplot, scatterplot, correlationmatrix
 from machine_learning_hep.models import getclf_scikit, getclf_xgboost, getclf_keras
 from machine_learning_hep.models import fit, savemodels, readmodels, apply, decisionboundaries
@@ -232,15 +232,15 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         else:
             self.df_data = pickle.load(openfile(self.f_reco_data, "rb"))
             self.df_mc = pickle.load(openfile(self.f_reco_mc, "rb"))
-            self.df_data = selectdfquery(self.df_data, self.p_evtsel)
-            self.df_mc = selectdfquery(self.df_mc, self.p_evtsel)
+            self.df_data = dfquery(self.df_data, self.p_evtsel)
+            self.df_mc = dfquery(self.df_mc, self.p_evtsel)
 
-            self.df_data = selectdfquery(self.df_data, self.p_triggersel_data)
-            self.df_mc = selectdfquery(self.df_mc, self.p_triggersel_mc)
+            self.df_data = dfquery(self.df_data, self.p_triggersel_data)
+            self.df_mc = dfquery(self.df_mc, self.p_triggersel_mc)
 
         self.df_mcgen = pickle.load(openfile(self.f_gen_mc, "rb"))
-        self.df_mcgen = selectdfquery(self.df_mcgen, self.p_evtsel)
-        self.df_mcgen = selectdfquery(self.df_mcgen, self.p_triggersel_mc)
+        self.df_mcgen = dfquery(self.df_mcgen, self.p_evtsel)
+        self.df_mcgen = dfquery(self.df_mcgen, self.p_triggersel_mc)
         self.df_mcgen = self.df_mcgen.query(self.p_presel_gen_eff)
 
         self.arraydf = [self.df_data, self.df_mc]

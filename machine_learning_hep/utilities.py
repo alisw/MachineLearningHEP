@@ -158,10 +158,6 @@ def mask_df(df_to_mask, mask_config):
 def dfquery(df, selection, **kwargs):
     return df.query(selection, **kwargs) if selection is not None else df
 
-def selectdfquery(dfr, selection):
-    """ legacy, use dfquery instead """
-    return dfquery(dfr, selection)
-
 def selectdfrunlist(dfr, runlist, runvar):
     """
     Select smaller runlist on dataframe

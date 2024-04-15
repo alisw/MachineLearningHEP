@@ -17,8 +17,6 @@ import os
 import munch # pylint: disable=import-error, no-name-in-module
 from ROOT import TFile, TCanvas, TF1, TH1F, TH2F, gStyle # pylint: disable=import-error, no-name-in-module
 import ROOT # pylint: disable=import-error
-ROOT.TDirectory.AddDirectory(False)
-
 from machine_learning_hep.analysis.analyzer import Analyzer
 
 class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
@@ -210,7 +208,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         }
 
         axis = hist.GetXaxis()
-        bins = {key: tuple(map(axis.FindBin, regions[key])) for key in regions}
+        bins = {key: tuple(map(axis.FindBin, region)) for key, region in regions.items()}
         limits = {key: (axis.GetBinLowEdge(bins[key][0]), axis.GetBinUpEdge(bins[key][1]))
                   for key in regions}
         self.logger.info('actual sideband regions %s', limits)
@@ -219,17 +217,18 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         area = {}
         for region in regions:
             if hist.GetDimension() == 2:
-                fh[region] = hist.ProjectionY(f'h_{var}_{region}_{ipt}_{mcordata}', bins[region][0], bins[region][1], "e")
+                fh[region] = hist.ProjectionY(f'h_{var}_{region}_{ipt}_{mcordata}', *bins[region], "e")
             elif hist.GetDimension() == 3:
-                hist.GetXaxis().SetRange(bins[region][0], bins[region][1])
+                hist.GetXaxis().SetRange(*bins[region])
                 fh[region] = hist.Project3D('zye').Clone(f'h_{var}_{region}_{ipt}_{mcordata}')
                 hist.GetXaxis().SetRange(0, hist.GetXaxis().GetNbins() + 1)
-            area[region] = self.fit_func_bkg[mcordata][ipt].Integral(regions[region][0], regions[region][1])
+            area[region] = self.fit_func_bkg[mcordata][ipt].Integral(*limits[region])
             self._save_hist(fh[region], f'sideband/h_{var}_{region}_{ipt}_{mcordata}.png')
 
         areaNormFactor = area['signal'] / (area['sideband_left'] + area['sideband_right'])
 
-        fh_sideband = self._sum_histos([fh['sideband_left'], fh['sideband_right']], f'h_{var}_sideband_{ipt}_{mcordata}')
+        fh_sideband = self._sum_histos(
+            [fh['sideband_left'], fh['sideband_right']], f'h_{var}_sideband_{ipt}_{mcordata}')
         self._save_hist(fh_sideband, f'sideband/h_{var}_sideband_{ipt}_{mcordata}.png')
 
         fh_subtracted = fh['signal'].Clone(f'h_{var}_subtracted_{ipt}_{mcordata}')
@@ -245,7 +244,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         fh_sideband.SetLineColor(ROOT.kCyan) # pylint: disable=no-member
         fh_sideband.Draw("same")
         fh_subtracted.Draw("same")
-        fh_subtracted.GetYaxis().SetRangeUser(0., max(fh_subtracted.GetMaximum(), fh['signal'].GetMaximum(), fh_sideband.GetMaximum()))
+        fh_subtracted.GetYaxis().SetRangeUser(
+            0., max(fh_subtracted.GetMaximum(), fh['signal'].GetMaximum(), fh_sideband.GetMaximum()))
         self._save_canvas(c, f'sideband/h_{var}_overview_{ipt}_{mcordata}.png')
 
         if self.hcandeff:
@@ -268,7 +268,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     self._save_hist(fh_sum, f'h_{var}_subtracted_effscaled_{mcordata}.png')
 
     #region signal extraction
-    def _extract_signal(self, hmass2, var, mcordata, ipt):
+    def _extract_signal(self, hmass2, var, mcordata, ipt): # pylint: disable=too-many-branches
         """
         Extract signal through inv. mass fit in bins of observable
         """

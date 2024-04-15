@@ -26,14 +26,14 @@ parser.add_argument('--delete', '-d', action='store_true')
 args = parser.parse_args()
 
 if args.case == 'd0jet':
-    db = 'machine_learning_hep/data/data_run3/database_ml_parameters_D0pp_jet.yml'
+    DB = 'machine_learning_hep/data/data_run3/database_ml_parameters_D0pp_jet.yml'
 elif args.case == 'lcjet':
-    db = 'machine_learning_hep/data/data_run3/database_ml_parameters_LcJet_pp.yml'
+    DB = 'machine_learning_hep/data/data_run3/database_ml_parameters_LcJet_pp.yml'
 else:
     print(f'Unknown case <{args.case}>')
     sys.exit(-1)
 
 for step in args.steps:
     subprocess.run(f'mlhep -r machine_learning_hep/submission/d0jet_{step}.yml ' +
-                   f'-d {db} -a {args.analysis} {"--delete" if args.delete else ""}',
+                   f'-d {DB} -a {args.analysis} {"--delete" if args.delete else ""}',
                    shell=True, stdout=sys.stdout, stderr=sys.stderr, check=True)
