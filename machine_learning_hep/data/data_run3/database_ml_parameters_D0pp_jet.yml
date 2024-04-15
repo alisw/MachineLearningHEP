@@ -20,13 +20,7 @@ D0jet_pp:
   sel_gen_unp: "fPt > 1. and fPt < 10."
   sel_cen_unp: null
   sel_good_evt_unp: "fIsEventReject == 0"
-  sel_reco_skim: ["fPtProng0>0.3 and fPtProng1>0.3 and abs(fImpactParameter0) < 0.5 and abs(fImpactParameter1) < 0.5 and fCpa > 0.6",
-                  "fPtProng0>0.5 and fPtProng1>0.5 and abs(fImpactParameter0) < 0.5 and abs(fImpactParameter1) < 0.5 and fCpa > 0.6",
-                  "fPtProng0>0.5 and fPtProng1>0.5 and abs(fImpactParameter0) < 0.5 and abs(fImpactParameter1) < 0.5 and fCpa > 0.6",
-                  "fPtProng0>0.6 and fPtProng1>0.6 and abs(fImpactParameter0) < 0.5 and abs(fImpactParameter1) < 0.5 and fCpa > 0.6",
-                  "fPtProng0>0.6 and fPtProng1>0.6 and abs(fImpactParameter0) < 0.5 and abs(fImpactParameter1) < 0.5 and fCpa > 0.6",
-                  "fPtProng0>0.6 and fPtProng1>0.6 and abs(fImpactParameter0) < 0.5 and abs(fImpactParameter1) < 0.5 and fCpa > 0.6",
-                  "fPtProng0>0.6 and fPtProng1>0.6 and abs(fImpactParameter0) < 0.5 and abs(fImpactParameter1) < 0.5 and fCpa > 0.6"] # sel_skim_binmin bins
+  sel_reco_skim: [null,null,null,null,null,null,null] # sel_skim_binmin bins
   sel_gen_skim: [null,null,null,null,null,null,null] # sel_skim_binmin bins
   sel_skim_binmin: [1,2,4,6,8,12,24] # skimming pt bins (sel_skim_binmin bins)
   sel_skim_binmax:   [2,4,6,8,12,24,48] # skimming pt bins (sel_skim_binmin bins)
@@ -344,16 +338,16 @@ D0jet_pp:
     dir_general_plots: /data2/jklein/data/analysis_plots
 
     jet_obs: &jet_default
-      sel_an_binmin:    [5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:      [6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
-      binning_matching:   [2,3,3, 4, 4, 5, 5, 6] # mapping to skimming pt bins (sel_an_binmin bins)
+      sel_an_binmin:    [2,3,4,5,6,7,8,10,12] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmax:    [3,4,5,6,7,8,10,12,16] # hadron pt bins (sel_an_binmin bins)
+      binning_matching:   [1,1,2,2,3,3, 4, 4, 5] # mapping to skimming pt bins (sel_an_binmin bins)
 
       mass_fit:
         func_sig: 'gaus(0)'
         func_bkg: 'expo(3)'
-        par_start: {1: 1.86}
-        # par_fix:
-        par_constrain: {2: [0, .1]}
+        # par_start: {1: 1.86}
+        par_fix: {1: 1.86}
+        par_constrain: {2: [.01, .08]}
         range: [1.675, 2.1]
       mass_fit_lim: [1.5, 2.2] # histogram range of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
@@ -466,15 +460,15 @@ D0jet_pp:
 
       # Additional cuts applied before mass histogram is filled
       use_cuts: False
-      cuts: # (sel_an_binmin bins)
-      - Null
-      - Null
-      - Null
-      - Null
-      - Null
-      - Null
-      - Null
-      - Null
+      # cuts: # (sel_an_binmin bins)
+      # - Null
+      # - Null
+      # - Null
+      # - Null
+      # - Null
+      # - Null
+      # - Null
+      # - Null
 
     jet_qa:
       <<: *jet_default

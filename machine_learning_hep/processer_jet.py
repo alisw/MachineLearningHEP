@@ -13,6 +13,7 @@
 #############################################################################
 
 from array import array
+import itertools
 import math # pylint: disable=unused-import
 import time
 import numpy as np
@@ -34,23 +35,18 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
                         p_chunksizeunp, p_chunksizeskim, p_maxprocess,
                         p_frac_merge, p_rd_merge, d_pkl_dec, d_pkl_decmerged,
                         d_results, typean, runlisttrigger, d_mcreweights)
-        self.logger.info("initialized processer for D0 jets")
+        self.logger.info("initialized processer for HF jets")
 
-        # selection (temporary)
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
-        self.s_jetsel_gen = datap["analysis"][self.typean].get("jetsel_gen", None)
-        self.s_jetsel_reco = datap["analysis"][self.typean].get("jetsel_reco", None)
-        self.s_jetsel_gen_matched_reco = \
-            datap["analysis"][self.typean].get("jetsel_gen_matched_reco", None)
-        self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
-        self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
-        self.runlistrigger = runlisttrigger
 
-        self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
+        self.bins_skimming = list(zip(self.lpt_anbinmin, self.lpt_anbinmax))
+        self.bins_analysis = list(zip(self.lpt_finbinmin, self.lpt_finbinmax))
+
+        self.bin_matching = datap["analysis"][self.typean]["binning_matching"] # TODO: derive automatically
+
         self.p_bin_width = datap["analysis"][self.typean]["bin_width"]
         self.p_mass_fit_lim = datap["analysis"][self.typean]["mass_fit_lim"]
-        self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) /
-                                    self.p_bin_width))
+        self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / self.p_bin_width))
 
     #region observables
     def calculate_zg(self, df): # pylint: disable=invalid-name
@@ -107,11 +103,14 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
         df.eval('zpar_den = jetPx * jetPx + jetPy * jetPy + jetPz * jetPz', inplace=True)
         df.eval('zpar = zpar_num / zpar_den', inplace=True)
         df['zg_array'] = np.array(.5 - abs(df.fPtSubLeading / (df.fPtLeading + df.fPtSubLeading) - .5))
-        zcut = .1
+        zcut = self.cfg('zcut', .1)
         df['zg'] = df['zg_array'].apply((lambda ar: next((zg for zg in ar if zg >= zcut), -1.)))
         df['rg'] = df[['zg_array', 'fTheta']].apply(
             (lambda ar: next((rg for (zg, rg) in zip(ar.zg_array, ar.fTheta) if zg >= zcut), -1.)), axis=1)
         df['nsd'] = df['zg_array'].apply((lambda ar: len([zg for zg in ar if zg >= zcut])))
+        df['lnkt'] = df[['fPtSubLeading', 'fTheta']].apply(
+            (lambda ar: np.log(ar.fPtSubLeading * np.sin(ar.fTheta))), axis=1)
+        df['lntheta'] = df[['fTheta']].apply((lambda ar: -np.log(ar.fTheta)), axis=1)
         # self.calculate_zg(df)
         return df
 
@@ -129,20 +128,23 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
         histonorm.SetBinContent(1, neventsafterevtsel)
         histonorm.Write()
 
-        for ipt in range(self.p_nptfinbins):
-            bin_id = self.bin_matching[ipt]
-            pt_min = self.lpt_finbinmin[ipt]
-            pt_max = self.lpt_finbinmax[ipt]
+        mass_binning = (self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
 
-            df = read_df(self.mptfiles_recosk[bin_id][index])
+        for ipt, (pt_min, pt_max) in enumerate(self.bins_analysis):
+            # identify skimming bins which overlap with analysis interval
+            bins = [iskim for iskim, ptrange in enumerate(self.bins_skimming)
+                    if ptrange[0] < pt_max and ptrange[1] > pt_min]
+
+            df = pd.concat(read_df(self.mptfiles_recosk[bin_id][index]) for bin_id in bins)
             df.query(f'fPt >= {pt_min} and fPt < {pt_max}', inplace=True)
+            df.query('fJetPt > 7. and fJetPt < 15.', inplace=True) # TODO: take from DB
             if df.empty:
+                self.logger.warning('No data for bin {ipt}')
                 continue
             df = self.process_calculate_variables(df)
 
             self.logger.info('preparing histograms for bin %d', ipt)
-            h_invmass_all = TH1F(f'h_mass_{ipt}', "Inv. mass;M (GeV/#it{c}^{2})",
-                                 self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+            h_invmass_all = TH1F(f'h_mass_{ipt}', "Inv. mass;M (GeV/#it{c}^{2})", *mass_binning)
             fill_hist(h_invmass_all, df.fM, write=True)
 
             h_candpt_all = TH1F(f'h_ptcand_{ipt}', ";p_{T} (GeV/#it{c})",
@@ -174,29 +176,41 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
                         10, 0.0, 1.0)
             fill_hist(h_dr, df.dr, write=True)
 
+            h = TH1F(f'h_lntheta_{ipt}', ";-ln(#theta)",
+                     100, 0.0, 5.0)
+            fill_hist(h, df.lntheta, arraycols=True, write=True)
+
+            h = TH1F(f'h_lnkt_{ipt}', ";ln k_{T}",
+                     100, -8., 2.)
+            fill_hist(h, df.lnkt, arraycols=True, write=True)
+
             h = TH2F(f'h_mass-zg_{ipt}', ";M (GeV/#it{c}^{2});z_{g}",
-                     2000, 1.0, 3.0, 10, 0.0, 1.0)
+                     *mass_binning, 10, 0.0, 1.0)
             fill_hist(h, df[['fM', 'zg']], write=True)
 
             h = TH2F(f'h_mass-nsd_{ipt}', ";M (GeV/#it{c}^{2});N_{sd}",
-                     2000, 1.0, 3.0, 10, 0.0, 10.0)
+                     *mass_binning, 10, 0.0, 10.0)
             fill_hist(h, df[['fM', 'nsd']], write=True)
 
             h = TH2F(f'h_mass-rg_{ipt}', ";M (GeV/#it{c}^{2});R_{g}",
-                     2000, 1.0, 3.0, 10, 0.0, 1.0)
+                     *mass_binning, 10, 0.0, 1.0)
             fill_hist(h, df[['fM', 'rg']], write=True)
 
             h = TH2F(f'h_mass-zpar_{ipt}', ";M (GeV/#it{c}^{2});z_{#parallel}",
-                     2000, 1.0, 3.0, 10, 0.0, 1.0)
+                     *mass_binning, 10, 0.0, 1.0)
             fill_hist(h, df[['fM', 'zpar']], write=True)
 
             h = TH2F(f'h_mass-dr_{ipt}', ";M (GeV/#it{c}^{2});#Deltar",
-                     2000, 1.0, 3.0, 10, 0.0, 1.0)
+                     *mass_binning, 10, 0.0, 1.0)
             fill_hist(h, df[['fM', 'dr']], write=True)
 
             h = TH3F(f'h_mass-zg-rg_{ipt}', ";M (GeV/#it{c}^{2});z_{g};R_{g}",
-                     2000, 1., 3., 10, 0., 1., 10, 0., 1.)
+                     *mass_binning, 10, 0., 1., 10, 0., 1.)
             fill_hist(h, df[['fM', 'zg', 'rg']], write=True)
+
+            h = TH3F(f'h_mass-lntheta-lnkt_{ipt}', ";",
+                     *mass_binning, 10, 0., 5., 10, -8., 2.)
+            fill_hist(h, df[['fM', 'lntheta', 'lnkt']], arraycols=True, write=True)
 
             #invariant mass with candidatePT intervals (done)
             #invariant mass with jetPT and candidatePT intervals
@@ -208,29 +222,42 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
         myfile = TFile.Open(self.l_histoeff[index], "recreate")
         myfile.cd()
         ptbins = array('f', self.lpt_finbinmin + [self.lpt_finbinmax[-1]])
-        h_gen = TH1F('h_pthf_gen', ";p_{T} (GeV/#it{c})", len(ptbins)-1, ptbins)
-        h_det = TH1F('h_pthf_det', ";p_{T} (GeV/#it{c})", len(ptbins)-1, ptbins)
-        h_match = TH1F('h_pthf_match', ";p_{T} (GeV/#it{c})", len(ptbins)-1, ptbins)
+
+        cats = ['prompt', 'nonprompt']
+        levels = ['gen', 'det', 'match']
+        h = {(cat, level): TH1F(f'h_pthf_{cat}_{level}', ";p_{T} (GeV/#it{c})", len(ptbins)-1, ptbins)
+             for cat in cats for level in levels}
+
         for ipt in range(self.p_nptbins):
             cols = ['ismcprompt', 'fPt']
-            dfgen = read_df(self.mptfiles_gensk[ipt][index], filters=[('ismcprompt', '==', 1)], columns=cols)
-            dfgen = dfgen.loc[dfgen.ismcprompt == 1]
-            fill_hist(h_gen, dfgen['fPt'])
+            df = read_df(self.mptfiles_gensk[ipt][index], columns=cols)
+            df.rename(lambda name: name + '_gen', axis=1, inplace=True)
+            dfgen = {'prompt': df.loc[df.ismcprompt_gen == 1], 'nonprompt': df.loc[df.ismcprompt_gen == 0]}
 
             cols.extend(self.cfg('efficiency.extra_cols', []))
-            if self.cfg('efficiency.index_match') is not None:
-                cols.append(self.cfg('efficiency.index_match'))
-            dfdet = read_df(self.mptfiles_recosk[ipt][index], filters=[('ismcprompt', '==', 1)], columns=cols)
-            dfdet = dfdet.loc[dfdet.ismcprompt == 1]
-            dfquery(dfdet, self.cfg('efficiency.filter_det'), inplace=True)
+            if idx := self.cfg('efficiency.index_match'):
+                cols.append(idx)
+            df = read_df(self.mptfiles_recosk[ipt][index], columns=cols)
+            dfquery(df, self.cfg('efficiency.filter_det'), inplace=True)
             # dfdet = dfdet.loc[(dfdet.isd0 & dfdet.seld0) | (dfdet.isd0bar & dfdet.seld0bar)]
-            fill_hist(h_det, dfdet['fPt'])
-            if (idx := self.cfg('efficiency.index_match')) is not None:
-                dfgen.rename(lambda name: name + '_gen', axis=1, inplace=True)
-                dfdet['idx_match'] = dfdet[idx].apply(lambda ar: ar[0] if len(ar) > 0 else -1)
-                dfmatch = pd.merge(dfdet, dfgen[['ismcprompt_gen', 'fPt_gen']],
-                                   left_on=['df', 'idx_match'], right_index=True)
-                fill_hist(h_match, dfmatch['fPt_gen']) # TODO: use gen or det pt in both histograms?
-        h_gen.Write()
-        h_det.Write()
-        h_match.Write()
+            dfdet = {'prompt': df.loc[df.ismcprompt == 1], 'nonprompt': df.loc[df.ismcprompt == 0]}
+
+            if idx := self.cfg('efficiency.index_match'):
+                for cat in cats:
+                    dfdet[cat]['idx_match'] = dfdet[cat][idx].apply(lambda ar: ar[0] if len(ar) > 0 else -1)
+                dfmatch = {cat: pd.merge(dfdet[cat], dfgen[cat][['ismcprompt_gen', 'fPt_gen']],
+                                         left_on=['df', 'idx_match'], right_index=True)
+                           for cat in cats}
+            else:
+                self.logger.warning('No matching criterion specified, cannot calculate matched efficiency')
+                dfmatch = {cat: None for cat in cats}
+
+            # TODO: which pt to use?
+            for cat in cats:
+                fill_hist(h[(cat, 'gen')], dfgen[cat]['fPt_gen'])
+                fill_hist(h[(cat, 'det')], dfdet[cat]['fPt'])
+                if dfmatch[cat] is not None:
+                    fill_hist(h[(cat, 'match')], dfmatch[cat]['fPt_gen'])
+
+        for cat, level in itertools.product(cats, levels):
+            h[(cat, level)].Write()

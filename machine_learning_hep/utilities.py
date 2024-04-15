@@ -46,13 +46,15 @@ logger = get_logger()
 # pylint: disable=line-too-long, consider-using-f-string, too-many-lines
 # pylint: disable=unspecified-encoding, consider-using-generator, invalid-name, import-outside-toplevel
 
-def fill_hist(hist, dfi: pd.DataFrame, weights = None, write = False):
+# TODO: generalize which columns can contain arrays
+def fill_hist(hist, dfi: pd.DataFrame, weights = None, arraycols = False, write = False):
     """
     Fill histogram from dataframe
 
     :param hist: ROOT.TH1,2,3
     :param dfi: pandas series/dataframe (1 to 3 columns)
     :param weights: weights per row
+    :param array: dataframe contains arrays
     :param write: call Write() after filling
     """
     dim_hist = hist.GetDimension()
@@ -62,17 +64,27 @@ def fill_hist(hist, dfi: pd.DataFrame, weights = None, write = False):
     if len(dfi) == 0:
         return
     if dim_hist == 1:
-        hist.FillN(len(dfi), np.float64(dfi), weights or 0)
+        if not arraycols:
+            hist.FillN(len(dfi), np.float64(dfi), weights or 0)
+        else:
+            dfi.apply(lambda row: [hist.Fill(v) for v in row])
     elif dim_hist == 2:
         # TODO: check if we can use ROOT.nullptr when no weights are given
-        hist.FillN(len(dfi), np.float64(dfi.iloc[:, 0]), np.float64(dfi.iloc[:, 1]),
-                   weights or np.float64(len(dfi)*[1.]))
+        if not arraycols:
+            hist.FillN(len(dfi), np.float64(dfi.iloc[:, 0]), np.float64(dfi.iloc[:, 1]),
+                       weights or np.float64(len(dfi)*[1.]))
+        else:
+            assert weights is None, 'weights not supported'
+            dfi.apply(lambda row: [hist.Fill(row.iloc[0], v) for v in row.iloc[1]], axis=1)
     elif dim_hist == 3:
         # TODO: why does TH3 not support FillN?
         # hist.FillN(len(dfi), np.float64(dfi.iloc[:, 0]), np.float64(dfi.iloc[:, 1]), np.float64(dfi.iloc[:, 2]),
         #            weights or np.float64(len(dfi)*[1.]))
-        assert weights is None, 'weights not yet added for 3-d histogram'
-        dfi.apply(lambda row: hist.Fill(row.iloc[0], row.iloc[1], row.iloc[2]), axis=1)
+        assert weights is None, 'weights not supported'
+        if not arraycols:
+            dfi.apply(lambda row: hist.Fill(row.iloc[0], row.iloc[1], row.iloc[2]), axis=1)
+        else:
+            dfi.apply(lambda row: [hist.Fill(row.iloc[0], v[0], v[1]) for v in zip(row.iloc[1], row.iloc[2])], axis=1)
     if write:
         hist.Write()
 
