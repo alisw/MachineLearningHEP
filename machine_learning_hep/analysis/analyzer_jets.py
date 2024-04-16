@@ -14,9 +14,11 @@
 
 from pathlib import Path
 import os
-import munch # pylint: disable=import-error, no-name-in-module
+
+import pandas as pd
 from ROOT import TFile, TCanvas, TF1, TH1F, TH2F, gStyle # pylint: disable=import-error, no-name-in-module
 import ROOT # pylint: disable=import-error
+
 from machine_learning_hep.analysis.analyzer import Analyzer
 
 class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
@@ -343,3 +345,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                                 for ipt in range(self.nbins)]
                     hist_effscaled = self._sum_histos(hsignals)
                     self._save_hist(hist_effscaled, f'h_{var}_signalextracted_effscaled_{mcordata}.png')
+
+    def correct_feeddown(self):
+        self.logger.info('Running feeddown correction')
+        df = pd.read_parquet('/data2/jklein/powheg/trees_powheg_fd_F05_R05.parquet')
+        df.info()

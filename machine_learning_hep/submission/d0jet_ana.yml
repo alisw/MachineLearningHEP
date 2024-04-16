@@ -69,11 +69,12 @@ analysis:
     feeddown: false # analyzer: feeddown
     dounfolding: false # analyzer: unfolding, unfolding_closure
   steps:
-    efficiency:
+    qa:
     fit:
+    efficiency:
     subtract_sidebands:
     extract_signals:
-    qa:
+    correct_feeddown:
 
 systematics:
   cutvar:
