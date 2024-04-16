@@ -138,7 +138,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
     #region fitting
     def _fit_mass(self, hist, filename = None):
         if hist.GetEntries() == 0:
-            raise UserWarning('Cannot fit empty histogram')
+            raise UserWarning('Cannot fit histogram with no entries')
         fit_range = self.cfg('mass_fit.range')
         func_sig = TF1('funcSig', self.cfg('mass_fit.func_sig'), *fit_range)
         func_bkg = TF1('funcBkg', self.cfg('mass_fit.func_bkg'), *fit_range)
@@ -153,7 +153,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         for par, value in self.cfg('mass_fit.par_fix', {}).items():
             self.logger.debug('Fixing par %i to %g', par, value)
             func_tot.FixParameter(par, value)
-        fit_res = hist.Fit(func_tot, "S", "", fit_range[0], fit_range[1])
+        fit_res = hist.Fit(func_tot, "SQL", "", fit_range[0], fit_range[1])
         if fit_res and fit_res.Get() and fit_res.IsValid():
             # TODO: how to avoid error messages for excess parameters?
             func_sig.SetParameters(func_tot.GetParameters())
@@ -309,14 +309,14 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 for j in range(nbins2):
                     hmass2.GetZaxis().SetRange(j+1, j+1)
                     hmass = hmass2.Project3D('x')
-                    if hmass.GetEntries() > 0:
+                    if hmass.GetEntries() > 10:
                         fit_res, func_sig, _ = self._fit_mass(
                             hmass, f'signalextr/h_mass-{var}_fitted_{ipt}_{i}_{j}_{mcordata}.png')
                         if fit_res and fit_res.Get() and fit_res.IsValid():
                             hist.SetBinContent(i + 1, j +  1, func_sig.Integral(*range_int) / hmass.GetBinWidth(1))
             else:
                 hmass = hmass2.ProjectionX(f'h_mass-{var}_{ipt}_proj_{i}', i+1, i+1, "e")
-                if hmass.GetEntries() > 0:
+                if hmass.GetEntries() > 10:
                     fit_res, func_sig, _ = self._fit_mass(
                         hmass, f'signalextr/h_mass-{var}_fitted_{ipt}_{i}_{mcordata}.png')
                     if fit_res and fit_res.Get() and fit_res.IsValid():

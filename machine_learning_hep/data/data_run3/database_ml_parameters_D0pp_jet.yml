@@ -346,11 +346,11 @@ D0jet_pp:
         func_sig: 'gaus(0)'
         func_bkg: 'expo(3)'
         # par_start: {1: 1.86}
-        par_fix: {1: 1.86}
-        par_constrain: {2: [.01, .08]}
+        # par_fix: {1: 1.86}
+        par_constrain: {1: [1.85, 1.87], 2: [.01, .08]}
         range: [1.675, 2.1]
       mass_fit_lim: [1.5, 2.2] # histogram range of the invariant mass distribution [GeV/c^2]
-      bin_width: 0.001 # bin width of the invariant mass histogram
+      bin_width: 0.005 # bin width of the invariant mass histogram
       efficiency:
         extra_cols: ['isd0', 'isd0bar', 'seld0', 'seld0bar']
         filter_det: '(isd0 & seld0) or (isd0bar & seld0bar)'

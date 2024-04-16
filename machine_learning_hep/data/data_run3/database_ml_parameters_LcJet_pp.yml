@@ -341,11 +341,11 @@ LcJet_pp:
         func_sig: 'gaus(0)'
         func_bkg: 'expo(3)'
         # par_start:
-        par_fix: {1: 2.286}
-        par_constrain: {2: [.005, .08]}
+        # par_fix: {1: 2.286}
+        par_constrain: {1: [2.28, 2.29], 2: [.005, .03]}
         range: [2., 2.5]
       mass_fit_lim: [1.9, 2.6] # histogram range of the invariant mass distribution [GeV/c^2]
-      bin_width: 0.001 # bin width of the invariant mass histogram
+      bin_width: 0.005 # bin width of the invariant mass histogram
 
       proc_type: Jets
       useperiod: [1] #list of periods
