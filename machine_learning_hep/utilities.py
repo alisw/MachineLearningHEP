@@ -36,6 +36,7 @@ from ROOT import kOpenCircle, kOpenSquare, kOpenDiamond, kOpenCross, kOpenStar, 
 from ROOT import kOpenFourTrianglesX, kOpenDoubleDiamond, kOpenFourTrianglesPlus, kOpenCrossX # pylint: disable=import-error, no-name-in-module
 from ROOT import kFullCircle, kFullSquare, kFullDiamond, kFullCross, kFullStar, kFullThreeTriangles # pylint: disable=import-error, no-name-in-module
 from ROOT import kFullFourTrianglesX, kFullDoubleDiamond, kFullFourTrianglesPlus, kFullCrossX # pylint: disable=import-error, no-name-in-module
+import ROOT
 from machine_learning_hep.selectionutils import select_runs
 from machine_learning_hep.logger import get_logger
 
@@ -65,14 +66,12 @@ def fill_hist(hist, dfi: pd.DataFrame, weights = None, arraycols = False, write 
         return
     if dim_hist == 1:
         if not arraycols:
-            hist.FillN(len(dfi), np.float64(dfi), weights or 0)
+            hist.FillN(len(dfi), np.float64(dfi), weights or ROOT.nullptr)
         else:
             dfi.apply(lambda row: [hist.Fill(v) for v in row])
     elif dim_hist == 2:
-        # TODO: check if we can use ROOT.nullptr when no weights are given
         if not arraycols:
-            hist.FillN(len(dfi), np.float64(dfi.iloc[:, 0]), np.float64(dfi.iloc[:, 1]),
-                       weights or np.float64(len(dfi)*[1.]))
+            hist.FillN(len(dfi), np.float64(dfi.iloc[:, 0]), np.float64(dfi.iloc[:, 1]), weights or ROOT.nullptr)
         else:
             assert weights is None, 'weights not supported'
             dfi.apply(lambda row: [hist.Fill(row.iloc[0], v) for v in row.iloc[1]], axis=1)
