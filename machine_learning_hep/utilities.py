@@ -97,6 +97,15 @@ def array2hist(arr, hist):
     for i, x in enumerate(arr):
         hist.SetBinContent(i + 1, x)
 
+def fill_response(response, dfi: pd.DataFrame, dfmissed: pd.DataFrame = None, write = False):
+    dfi.apply(lambda row: response.Fill(row.iloc[0], row.iloc[1], row.iloc[2], row.iloc[3]), axis=1)
+    if dfmissed:
+        dfmissed.apply(lambda row: response.Miss(row.iloc[0], row.iloc[1]), axis=1)
+    if write:
+        response.Write()
+
+
+
 def openfile(filename, attr):
     """
     Open file with different compression types

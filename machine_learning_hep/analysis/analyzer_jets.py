@@ -12,12 +12,14 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
+from array import array
 from pathlib import Path
 import os
-
+import numpy as np
 import pandas as pd
-from ROOT import TFile, TCanvas, TF1, TH1F, TH2F, gStyle # pylint: disable=import-error, no-name-in-module
+from ROOT import TFile, TCanvas, TF1, TH1F, TH2F, TH3F, gStyle # pylint: disable=import-error, no-name-in-module
 import ROOT # pylint: disable=import-error
+from machine_learning_hep.utilities import fill_hist, folding
 
 from machine_learning_hep.analysis.analyzer import Analyzer
 
@@ -69,13 +71,13 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         # folder = self.d_resultsallpmc if mcordata == 'mc' else self.d_resultsallpdata
         canvas.SaveAs(f'fig/{self.case}/{self.typean}/{filename}')
 
-    def _save_hist(self, hist, filename):
+    def _save_hist(self, hist, filename, option = ''):
         if not hist:
             self.logger.error('no histogram for <%s>', filename)
             # TODO: remove file if it exists?
             return
         c = TCanvas()
-        hist.Draw()
+        hist.Draw(option)
         self._save_canvas(c, filename)
 
     def _sum_histos(self, histos, name = None):
@@ -93,7 +95,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         return hist
 
     #region basic qa
-    def qa(self): # pylint: disable=too-many-branches, too-many-locals, invalid-name
+    def qa(self): # pylint: disable=too-many-branches, too-many-locals, invalid-name  TODO: Put in init so we always have number of events
         self.logger.info("Running D0 jet qa")
         for mcordata in ['mc', 'data']:
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
@@ -103,6 +105,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     self.logger.critical('histonorm not found')
                 p_nevents = histonorm.GetBinContent(1)
                 self.logger.debug('Number of selected event: %d', p_nevents)
+                if mcordata == "data":
+                    self.nevents_data = p_nevents
 
                 for ipt in range(self.nbins):
                     self._save_hist(rfile.Get(f'h_mass_{ipt}'), f'qa/h_mass_{ipt}_{mcordata}.png')
@@ -134,6 +138,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
             self.hcandeff = h_match['prompt'] if self.cfg('efficiency.store_matched') else h_det['prompt']
             self.hcandeff.SetDirectory(0)
+            self.hcandeff_np = h_match['nonprompt'] if self.cfg('efficiency.store_matched') else h_det['nonprompt']
+            self.hcandeff_np.SetDirectory(0)
 
     #region fitting
     def _fit_mass(self, hist, filename = None):
@@ -348,5 +354,66 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
     def correct_feeddown(self):
         self.logger.info('Running feeddown correction')
+        with TFile('/data2/vkucera/powheg/trees_powheg_fd_F05_R05.root') as rfile:
+            powheg_xsection = rfile.Get('fHistXsection')
+            powheg_xsection_scale_factor = powheg_xsection.GetBinContent(1) / powheg_xsection.GetEntries()
         df = pd.read_parquet('/data2/jklein/powheg/trees_powheg_fd_F05_R05.parquet')
         df.info()
+        ptbins_gen = array('d', self.bins_candpt)
+        jetptbins_array = array('d',range(5,60,5)) #Todo take form database and careful that last value is not correct
+        shapebins_array = array('d',[0.0,0.1,0.2,0.3,0.4,0.5,0.6,0.7,0.8,0.9,1.0]) #TODO: array limits incorrect
+        print(jetptbins_array,shapebins_array)
+        h3feeddown_gen = TH3F(f'h3_feeddown_gen', ";",
+                     len(ptbins_gen)-1, ptbins_gen, len(jetptbins_array)-1,jetptbins_array, len(shapebins_array)-1, shapebins_array)
+        fill_hist(h3feeddown_gen, df[['pt_cand', 'pt_jet', 'zg_jet']], write=True)
+        h3feeddown_gen.GetXaxis().SetRange(1,10)
+        hfeeddown_gen_noeff = h3feeddown_gen.Project3D("zy")
+        self._save_hist(hfeeddown_gen_noeff, f'h_feeddown_gen_noeffscaling.png')
+        for ipt in range(len(self.bins_candpt)):
+            prompt_eff = self.hcandeff.GetBinContent(ipt+1)
+            nonprompt_eff = self.hcandeff_np.GetBinContent(ipt+1)
+            for ijetpt in range(10): #TODO add jet pT binning to database
+                for ishape in range (10):
+                    h3feeddown_gen.SetBinContent(ipt+1, ijetpt+1, ishape+1, h3feeddown_gen.GetBinContent(ipt+1, ijetpt+1, ishape+1)*(nonprompt_eff/prompt_eff))
+                    h3feeddown_gen.SetBinError(ipt+1, ijetpt+1, ishape+1, h3feeddown_gen.GetBinError(ipt+1, ijetpt+1, ishape+1)*(nonprompt_eff/prompt_eff)) #TODO : Maybe make errors better propoagated
+        hfeeddown_gen = h3feeddown_gen.Project3D("zy")
+        self._save_hist(hfeeddown_gen, f'h_feeddown_gen_effscaled.png')
+        rfilename = self.n_fileeff
+        with TFile(rfilename) as rfile:
+            hkinematiceff_np_gennodetcuts_zg = rfile.Get(f'hkinematiceff_np_gennodetcuts_zg')
+            hkinematiceff_np_gendetcuts_zg = rfile.Get(f'hkinematiceff_np_gendetcuts_zg')
+            hfeeddown_gen.Print('base')
+            hkinematiceff_np_gendetcuts_zg.Print('base')
+            hkinematiceff_np_gendetcuts_zg.Divide(hkinematiceff_np_gennodetcuts_zg)
+            self._save_hist(hkinematiceff_np_gendetcuts_zg, f'hkineeff_np_gen.png','text')
+            print(hfeeddown_gen.GetNbinsX(), h3feeddown_gen.GetNbinsY())
+            print(hkinematiceff_np_gendetcuts_zg.GetNbinsX(), hkinematiceff_np_gendetcuts_zg.GetNbinsY())
+            for i in range(10) :
+                print(hfeeddown_gen.GetXaxis().GetBinUpEdge(i+1), hkinematiceff_np_gendetcuts_zg.GetXaxis().GetBinUpEdge(i+1))
+                print(hfeeddown_gen.GetYaxis().GetBinUpEdge(i+1), hkinematiceff_np_gendetcuts_zg.GetYaxis().GetBinUpEdge(i+1))
+            hfeeddown_gen.Multiply(hkinematiceff_np_gendetcuts_zg)
+            self._save_hist(hfeeddown_gen, f'h_feeddown_gen_kineeffscaled.png')
+            response_matrix_np = rfile.Get(f'response_matrix_np')
+            self._save_hist(response_matrix_np, f'response_np.png')
+            hfeeddown_det =  TH2F(f'hfeeddown_det', ";", 10, 5,55,10,0,1)
+            hfeeddown_det.Sumw2()
+            folding(hfeeddown_gen,response_matrix_np,hfeeddown_det)
+            self._save_hist(hfeeddown_det, f'hfeeddown_det.png')
+            hkinematiceff_np_detnogencuts_zg = rfile.Get(f'hkinematiceff_np_detnogencuts_zg')
+            hkinematiceff_np_detgencuts_zg = rfile.Get(f'hkinematiceff_np_detgencuts_zg')
+            hkinematiceff_np_detgencuts_zg.Divide(hkinematiceff_np_detnogencuts_zg)
+            self._save_hist(hkinematiceff_np_detgencuts_zg, f'hkineeff_np_det.png','text')
+            hfeeddown_det.Divide(hkinematiceff_np_detgencuts_zg)
+            self._save_hist(hfeeddown_det, f'hfeeddown_det_kineeffscaled.png')
+            hfeeddown_det.Scale(0.0387) #take decay fraction from dataset
+            hfeeddown_det.Scale(self.nevents_data * powheg_xsection_scale_factor / self.cfg('sigmamb'))
+            self._save_hist(hfeeddown_det, f'hfeeddown_det_final.png')
+            hfeeddown_det.SetDirectory(0)
+
+
+
+
+
+
+
+

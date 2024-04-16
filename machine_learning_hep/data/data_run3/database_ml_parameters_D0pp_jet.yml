@@ -333,7 +333,6 @@ D0jet_pp:
     anahptspectrum: "D0Kpi" #D0Kpi, DplusKpipi, DstarD0pi, DsKKpi, LctopKpi, LcK0Sp
     fd_method: "Nb" #fc, Nb
     cctype: "pp"
-    sigmamb: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
     inputfonllpred: data/fonll/D0DplusDstarPredictions_13TeV_y05_all_300416_BDShapeCorrected.root
     dir_general_plots: /data2/jklein/data/analysis_plots
 
@@ -341,6 +340,8 @@ D0jet_pp:
       sel_an_binmin:    [2,3,4,5,6,7,8,10,12] # hadron pt bins (sel_an_binmin bins)
       sel_an_binmax:    [3,4,5,6,7,8,10,12,16] # hadron pt bins (sel_an_binmin bins)
       binning_matching:   [1,1,2,2,3,3, 4, 4, 5] # mapping to skimming pt bins (sel_an_binmin bins)
+
+      sigmamb: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
 
       mass_fit:
         func_sig: 'gaus(0)'
