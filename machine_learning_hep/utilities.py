@@ -16,28 +16,34 @@
 Script containing all helper functions
 e.g. processing files, creating objects, calculating physical quantities.
 """
-import multiprocessing as mp
-from datetime import datetime
-import pickle
 import bz2
 import gzip
 import lzma
-import time
-import os
-import sys
 import math
+import multiprocessing as mp
+import os
+import pickle
+import sys
+import time
 from array import array
+from datetime import datetime
+
+import lz4
 import numpy as np
 import pandas as pd
-import lz4
-from ROOT import TObject, TCanvas, TLegend, TH1, TH1F, TLatex, TGraph, TGraphAsymmErrors, TRandom3 # pylint: disable=import-error, no-name-in-module
-from ROOT import kBlack, kRed, kGreen, kBlue, kYellow, kOrange, kMagenta, kCyan, kGray # pylint: disable=import-error, no-name-in-module
-from ROOT import kOpenCircle, kOpenSquare, kOpenDiamond, kOpenCross, kOpenStar, kOpenThreeTriangles # pylint: disable=import-error, no-name-in-module
-from ROOT import kOpenFourTrianglesX, kOpenDoubleDiamond, kOpenFourTrianglesPlus, kOpenCrossX # pylint: disable=import-error, no-name-in-module
-from ROOT import kFullCircle, kFullSquare, kFullDiamond, kFullCross, kFullStar, kFullThreeTriangles # pylint: disable=import-error, no-name-in-module
-from ROOT import kFullFourTrianglesX, kFullDoubleDiamond, kFullFourTrianglesPlus, kFullCrossX # pylint: disable=import-error, no-name-in-module
-from machine_learning_hep.selectionutils import select_runs
+from ROOT import (TH1, TH1F,  # pylint: disable=import-error, no-name-in-module
+                  TCanvas, TGraph, TGraphAsymmErrors, TLatex, TLegend, TObject,
+                  TRandom3, kBlack, kBlue, kCyan, kFullCircle, kFullCross,
+                  kFullCrossX, kFullDiamond, kFullDoubleDiamond,
+                  kFullFourTrianglesPlus, kFullFourTrianglesX, kFullSquare,
+                  kFullStar, kFullThreeTriangles, kGray, kGreen, kMagenta,
+                  kOpenCircle, kOpenCross, kOpenCrossX, kOpenDiamond,
+                  kOpenDoubleDiamond, kOpenFourTrianglesPlus,
+                  kOpenFourTrianglesX, kOpenSquare, kOpenStar,
+                  kOpenThreeTriangles, kOrange, kRed, kYellow)
+
 from machine_learning_hep.logger import get_logger
+from machine_learning_hep.selectionutils import select_runs
 
 # pylint: disable=too-many-lines
 

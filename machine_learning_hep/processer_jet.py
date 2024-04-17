@@ -12,17 +12,20 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-from array import array
 import itertools
-import math # pylint: disable=unused-import
+import math  # pylint: disable=unused-import
 import time
+from array import array
+
 import numpy as np
 import pandas as pd
 import ROOT
-from ROOT import TFile, TH1F, TH2F, TH3F
+from ROOT import TH1F, TH2F, TH3F, TFile
+
 from machine_learning_hep.processer import Processer
-from machine_learning_hep.utilities import dfquery, read_df, fill_response
+from machine_learning_hep.utilities import dfquery, fill_response, read_df
 from machine_learning_hep.utilities_hist import create_hist, fill_hist
+
 
 class ProcesserJets(Processer):
     species = "processer"
@@ -90,7 +93,8 @@ class ProcesserJets(Processer):
         else:
             self.logger.error('rg not all close')
 
-    def process_calculate_variables(self, df): # pylint: disable=invalid-name
+    def _calculate_variables(self, df): # pylint: disable=invalid-name
+        # TODO: chunk and parallelize
         df.eval('dr = sqrt((fJetEta - fEta)**2 + ((fJetPhi - fPhi + @math.pi) % @math.tau - @math.pi)**2)',
                 inplace=True)
         df.eval('jetPx = fJetPt * cos(fJetPhi)', inplace=True)
@@ -141,7 +145,7 @@ class ProcesserJets(Processer):
             if df.empty:
                 self.logger.warning('No data for bin {ipt}')
                 continue
-            df = self.process_calculate_variables(df)
+            df = self._calculate_variables(df)
 
             self.logger.info('preparing histograms for bin %d', ipt)
             h_invmass_all = TH1F(f'h_mass_{ipt}', "Inv. mass;M (GeV/#it{c}^{2})", *mass_binning)
@@ -251,7 +255,7 @@ class ProcesserJets(Processer):
             df.query('fJetPt > 5', inplace = True) #TODO: should be removed, just for a speedup check
             if df.empty:
                 continue
-            df = self.process_calculate_variables(df)
+            df = self._calculate_variables(df)
             df.rename(lambda name: name + '_gen', axis=1, inplace=True)
             dfgen = {'prompt': df.loc[df.ismcprompt_gen == 1], 'nonprompt': df.loc[df.ismcprompt_gen == 0]}
 
@@ -264,7 +268,7 @@ class ProcesserJets(Processer):
             # dfdet = dfdet.loc[(dfdet.isd0 & dfdet.seld0) | (dfdet.isd0bar & dfdet.seld0bar)]
             if df.empty:
                 continue
-            df = self.process_calculate_variables(df)
+            df = self._calculate_variables(df)
             dfdet = {'prompt': df.loc[df.ismcprompt == 1], 'nonprompt': df.loc[df.ismcprompt == 0]}
 
             if idx := self.cfg('efficiency.index_match'):

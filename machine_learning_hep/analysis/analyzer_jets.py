@@ -17,12 +17,14 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from ROOT import TFile, TCanvas, TF1, TH1F, TH2F, gStyle
 import ROOT
+from ROOT import TF1, TH1F, TH2F, TCanvas, TFile, gStyle
 
-from machine_learning_hep.utilities import folding
 from machine_learning_hep.analysis.analyzer import Analyzer
-from machine_learning_hep.utilities_hist import create_hist, fill_hist, scale_bin, sum_hists
+from machine_learning_hep.utilities import folding
+from machine_learning_hep.utilities_hist import (create_hist, fill_hist,
+                                                 scale_bin, sum_hists)
+
 
 class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
     species = "analyzer"
@@ -31,10 +33,10 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         super().__init__(datap, case, typean, period)
 
         # output directories
-        self.d_resultsallpmc = datap["analysis"][typean]["mc"]["results"][period] \
-                if period is not None else datap["analysis"][typean]["mc"]["resultsallp"]
-        self.d_resultsallpdata = datap["analysis"][typean]["data"]["results"][period] \
-                if period is not None else datap["analysis"][typean]["data"]["resultsallp"]
+        self.d_resultsallpmc = (datap["analysis"][typean]["mc"]["results"][period]
+                                if period is not None else datap["analysis"][typean]["mc"]["resultsallp"])
+        self.d_resultsallpdata = (datap["analysis"][typean]["data"]["results"][period]
+                                  if period is not None else datap["analysis"][typean]["data"]["resultsallp"])
 
         # input directories (processor output)
         self.d_resultsallpmc_proc = self.d_resultsallpmc

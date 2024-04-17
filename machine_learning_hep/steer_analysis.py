@@ -22,15 +22,18 @@ import os
 import shutil
 import subprocess
 import sys
-import yaml
+
 # unclear why shap needs to be imported from here,
 # segfaults when imported from within other modules
-import shap # pylint: disable=unused-import
+import shap  # pylint: disable=unused-import
+import yaml
 
 from .analysis.analyzer_manager import AnalyzerManager
 from .config import update_config
 from .logger import configure_logger, get_logger
-from .utilities_files import checkmakedirlist, checkmakedir, checkdirs, delete_dirlist
+from .utilities_files import (checkdirs, checkmakedir, checkmakedirlist,
+                              delete_dirlist)
+
 
 def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite: dict, # pylint: disable=too-many-locals, too-many-statements, too-many-branches
                        data_model: dict, run_param: dict, args):
@@ -267,11 +270,12 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     def mlhepmod(name):
         return importlib.import_module(f"..{name}", __name__)
 
-    import ROOT # pylint: disable=import-outside-toplevel, import-error
+    import ROOT  # pylint: disable=import-outside-toplevel, import-error
     ROOT.gROOT.SetBatch(args.batch) # pylint: disable=no-member
     ROOT.TDirectory.AddDirectory(False) # pylint: disable=no-member
     ROOT.gErrorIgnoreLevel = ROOT.kWarning # pylint: disable=no-member
-    from machine_learning_hep.multiprocesser import MultiProcesser # pylint: disable=import-outside-toplevel
+    from machine_learning_hep.multiprocesser import \
+        MultiProcesser  # pylint: disable=import-outside-toplevel
     syst_class = mlhepmod('analysis.systematics').SystematicsMLWP
     if proc_type == "Dhadrons":
         proc_class = mlhepmod('processerdhadrons').ProcesserDhadrons
@@ -336,7 +340,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
         mymultiprocessdata.multi_mergeml_allinone()
 
     if doml:
-        from machine_learning_hep.optimiser import Optimiser # pylint: disable=import-outside-toplevel
+        from machine_learning_hep.optimiser import \
+            Optimiser  # pylint: disable=import-outside-toplevel
         for index, (binmin, binmax) in enumerate(zip(binminarray, binmaxarray)):
             myopt = Optimiser(data_param[case], case, typean,
                               data_model[mltype], binmin, binmax, multbkg[index],

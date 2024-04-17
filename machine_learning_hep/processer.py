@@ -15,26 +15,30 @@
 """
 main script for doing data processing, machine learning and analysis
 """
-from functools import reduce
-import sys
-from copy import deepcopy
-import multiprocessing as mp
-import pickle
-import os
 import glob
+import multiprocessing as mp
+import os
+import pickle
 import random as rd
 import re
+import sys
 import tempfile
-import uproot
-import pandas as pd
+from copy import deepcopy
+from functools import reduce
+
 import numpy as np
+import pandas as pd
+import uproot
+
 from .bitwise import tag_bit_df
-from .utilities_files import list_folders, createlist, appendmainfoldertolist, create_folder_struc
-from .utilities import dfquery, merge_method, mask_df
-from .utilities import seldf_singlevar, openfile
-from .utilities import mergerootfiles, count_df_length_pkl, read_df, write_df
 from .io import dump_yaml_from_dict
 from .logger import get_logger
+from .utilities import (count_df_length_pkl, dfquery, mask_df, merge_method,
+                        mergerootfiles, openfile, read_df, seldf_singlevar,
+                        write_df)
+from .utilities_files import (appendmainfoldertolist, create_folder_struc,
+                              createlist, list_folders)
+
 pd.options.mode.chained_assignment = None
 
 class Processer: # pylint: disable=too-many-instance-attributes
@@ -421,7 +425,8 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 write_df(dfgensk, self.mptfiles_gensk[ipt][file_index])
 
     def applymodel(self, file_index):
-        from machine_learning_hep.models import apply # pylint: disable=import-error, import-outside-toplevel
+        from machine_learning_hep.models import \
+            apply  # pylint: disable=import-error, import-outside-toplevel
         for ipt in range(self.p_nptbins):
             if os.path.exists(self.mptfiles_recoskmldec[ipt][file_index]):
                 if os.stat(self.mptfiles_recoskmldec[ipt][file_index]).st_size != 0:
