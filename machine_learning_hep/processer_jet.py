@@ -217,7 +217,7 @@ class ProcesserJets(Processer):
             #invariant mass with jetPT and candidatePT and shape intervals
 
     #region efficiency
-    def process_efficiency_single(self, index):
+    def process_efficiency_single(self, index): # pylint: disable=too-many-branches,too-many-statements
         self.logger.info('Running efficiency')
         myfile = TFile.Open(self.l_histoeff[index], "recreate")
         myfile.cd()
@@ -249,6 +249,8 @@ class ProcesserJets(Processer):
                     'fJetPt', 'fJetEta', 'fJetPhi', 'fPtLeading', 'fPtSubLeading', 'fTheta']
             df = read_df(self.mptfiles_gensk[ipt][index], columns=cols)
             df.query('fJetPt > 5', inplace = True) #TODO: should be removed, just for a speedup check
+            if df.empty:
+                continue
             df = self.process_calculate_variables(df)
             df.rename(lambda name: name + '_gen', axis=1, inplace=True)
             dfgen = {'prompt': df.loc[df.ismcprompt_gen == 1], 'nonprompt': df.loc[df.ismcprompt_gen == 0]}
@@ -260,6 +262,8 @@ class ProcesserJets(Processer):
             df.query('fJetPt > 5.', inplace=True) # TODO: check
             dfquery(df, self.cfg('efficiency.filter_det'), inplace=True)
             # dfdet = dfdet.loc[(dfdet.isd0 & dfdet.seld0) | (dfdet.isd0bar & dfdet.seld0bar)]
+            if df.empty:
+                continue
             df = self.process_calculate_variables(df)
             dfdet = {'prompt': df.loc[df.ismcprompt == 1], 'nonprompt': df.loc[df.ismcprompt == 0]}
 
@@ -277,6 +281,9 @@ class ProcesserJets(Processer):
                 fill_hist(h[(cat, 'det')], dfdet[cat]['fPt'])
                 if dfmatch[cat] is not None:
                     fill_hist(h[(cat, 'match')], dfmatch[cat]['fPt_gen'])
+
+            if dfmatch[cat] is None:
+                continue
 
             for var in observables:
                 dfmatch_np_eff_gen = dfmatch['nonprompt'].query(

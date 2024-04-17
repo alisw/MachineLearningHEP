@@ -64,6 +64,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.fit_func_bkg = {}
         self.hcandeff = None
         self.hcandeff_np = None
+        self.hfeeddown_det = None
         self.n_events = {}
 
         self.path_fig = Path(f'fig/{self.case}/{self.typean}')
@@ -279,8 +280,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         hfeeddown_det_1D = self.hfeeddown_det.ProjectionY('hfeeddown_det_1D',1,3,'e')
                         self._save_hist(hfeeddown_det_1D, f'h_{var}_hfeeddown_det_1D_{mcordata}.png')
                         fh_sum_feeddowncorrected.Add(hfeeddown_det_1D,-1)
-                        self._save_hist(fh_sum_feeddowncorrected, f'h_{var}_subtracted_feeddowncorrected_{mcordata}.png')
-
+                        self._save_hist(fh_sum_feeddowncorrected,
+                                        f'h_{var}_subtracted_feeddowncorrected_{mcordata}.png')
 
 
     #region signal extraction
@@ -355,7 +356,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         fh_signalextract_feeddowncorrected = hist_effscaled.Clone('fh_signalextract_feeddowncorrected')
                         hfeeddown_det_1D = self.hfeeddown_det.ProjectionY('hfeeddown_det_1D',1,3,'e')
                         fh_signalextract_feeddowncorrected.Add(hfeeddown_det_1D,-1)
-                        self._save_hist(fh_signalextract_feeddowncorrected, f'h_{var}_signalextract_feeddowncorrected_{mcordata}.png','text')
+                        self._save_hist(fh_signalextract_feeddowncorrected,
+                                        f'h_{var}_signalextract_feeddowncorrected_{mcordata}.png','text')
 
     #region feeddown
     def correct_feeddown(self):
@@ -366,7 +368,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             powheg_xsection_scale_factor = powheg_xsection.GetBinContent(1) / powheg_xsection.GetEntries()
 
         for var in self.observables['fd']:
-            jetptbins_array = np.linspace(5, 55, 10+1, dtype='d') #Todo take form database
+            jetptbins_array = np.linspace(5, 55, 10+1, dtype='d') # TODO: take form database
             shapebins_array = np.linspace(0., 1., 10+1, dtype='d')
 
             df = pd.read_parquet('/data2/jklein/powheg/trees_powheg_fd_F05_R05.parquet')
@@ -383,6 +385,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             for ipt, _ in enumerate(self.bins_candpt):
                 eff_pr = self.hcandeff.GetBinContent(ipt+1)
                 eff_np = self.hcandeff_np.GetBinContent(ipt+1)
+                if np.isclose(eff_pr, 0.):
+                    continue # TODO: how should we handle this?
 
                 for ijetpt, _ in enumerate(jetptbins_array): #TODO add jet pT binning to database
                     for ishape, _ in enumerate(shapebins_array):
@@ -428,7 +432,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 hfeeddown_det.Scale(self.cfg('branching_ratio'))
                 print('number of events ', self.n_events['data'])
                 print('powheg scale factor ', powheg_xsection_scale_factor)
-                hfeeddown_det.Scale(self.n_events['data'] * 10000 * powheg_xsection_scale_factor / self.cfg('xsection_inel')) #TODO : We are artifically increasing by e4 because we dont have the correct number of events in data
+                #TODO : We are artifically increasing by e4 because we dont have the correct number of events in data
+                hfeeddown_det.Scale(self.n_events['data'] * 10000 * powheg_xsection_scale_factor /
+                                    self.cfg('xsection_inel'))
                 self._save_hist(hfeeddown_det, f'fd/h_ptjet-{var}_feeddown_det_final.png')
                 self.hfeeddown_det = hfeeddown_det
                 self.hfeeddown_det.SetDirectory(0)
