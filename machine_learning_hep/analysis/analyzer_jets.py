@@ -17,8 +17,8 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from ROOT import TFile, TCanvas, TF1, TH1F, TH2F, gStyle # pylint: disable=import-error, no-name-in-module
-import ROOT # pylint: disable=import-error
+from ROOT import TFile, TCanvas, TF1, TH1F, TH2F, gStyle
+import ROOT
 
 from machine_learning_hep.utilities import folding
 from machine_learning_hep.analysis.analyzer import Analyzer
@@ -246,10 +246,10 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
         if hist.GetDimension() == 2:
             c = TCanvas()
-            fh['signal'].SetLineColor(ROOT.kRed) # pylint: disable=no-member
+            fh['signal'].SetLineColor(ROOT.kRed)
             fh['signal'].Draw()
             fh_sideband.Scale(areaNormFactor)
-            fh_sideband.SetLineColor(ROOT.kCyan) # pylint: disable=no-member
+            fh_sideband.SetLineColor(ROOT.kCyan)
             fh_sideband.Draw("same")
             fh_subtracted.Draw("same")
             fh_subtracted.GetYaxis().SetRangeUser(

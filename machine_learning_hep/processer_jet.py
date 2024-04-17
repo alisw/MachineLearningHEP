@@ -18,13 +18,13 @@ import math # pylint: disable=unused-import
 import time
 import numpy as np
 import pandas as pd
-import ROOT # pylint: disable=import-error
-from ROOT import TFile, TH1F, TH2F, TH3F # pylint: disable=import-error, no-name-in-module
+import ROOT
+from ROOT import TFile, TH1F, TH2F, TH3F
 from machine_learning_hep.processer import Processer
 from machine_learning_hep.utilities import dfquery, read_df, fill_response
 from machine_learning_hep.utilities_hist import create_hist, fill_hist
 
-class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instance-attributes
+class ProcesserJets(Processer):
     species = "processer"
 
     def __init__(self, case, datap, run_param, mcordata, p_maxfiles, # pylint: disable=too-many-arguments
@@ -43,8 +43,6 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
 
         self.bins_skimming = list(zip(self.lpt_anbinmin, self.lpt_anbinmax))
         self.bins_analysis = list(zip(self.lpt_finbinmin, self.lpt_finbinmax))
-
-        self.bin_matching = datap["analysis"][self.typean]["binning_matching"] # TODO: derive automatically
 
         self.p_bin_width = datap["analysis"][self.typean]["bin_width"]
         self.p_mass_fit_lim = datap["analysis"][self.typean]["mass_fit_lim"]
