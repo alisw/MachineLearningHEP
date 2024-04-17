@@ -16,6 +16,7 @@ def create_hist(name, title, *bin_specs):
     else:
         return RHIST[dim](name, title, *bin_specs)
 
+
 # TODO: generalize which columns can contain arrays
 def fill_hist(hist, dfi: pd.DataFrame, weights = None, arraycols = False, write = False):
     """
@@ -58,5 +59,21 @@ def fill_hist(hist, dfi: pd.DataFrame, weights = None, arraycols = False, write 
 
 
 def scale_bin(hist, factor, *bin):
+    """Scale histogram bin-wise by given factor"""
     hist.SetBinContent(*bin, hist.GetBinContent(*bin) * factor)
     hist.SetBinError(*bin, hist.GetBinError(*bin) * factor)
+
+
+def sum_hists(histos, name = None):
+    """
+    Return histogram with sum of all histograms from iterable
+    """
+    hist = None
+    for h in histos:
+        if h is None:
+            continue
+        if hist is None:
+            hist = h.Clone(name or (h.GetName() + '_cloned'))
+        else:
+            hist.Add(h)
+    return hist

@@ -22,7 +22,7 @@ import ROOT # pylint: disable=import-error
 
 from machine_learning_hep.utilities import folding
 from machine_learning_hep.analysis.analyzer import Analyzer
-from machine_learning_hep.utilities_hist import create_hist, fill_hist, scale_bin
+from machine_learning_hep.utilities_hist import create_hist, fill_hist, scale_bin, sum_hists
 
 class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
     species = "analyzer"
@@ -83,20 +83,6 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         hist.Draw(option)
         self._save_canvas(c, filename)
 
-    def _sum_histos(self, histos, name = None):
-        """
-        Return histogram with sum of all histograms from iterable
-        """
-        hist = None
-        for h in histos:
-            if h is None:
-                continue
-            if hist is None:
-                hist = h.Clone(name or (h.GetName() + '_cloned'))
-            else:
-                hist.Add(h)
-        return hist
-
     def init(self):
         for mcordata in ['mc', 'data']:
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
@@ -108,7 +94,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 self.logger.debug('Number of selected events for %s: %d', mcordata, self.n_events[mcordata])
 
     #region basic qa
-    def qa(self): # TODO: Put in init so we always have number of events
+    def qa(self):
         self.logger.info("Running D0 jet qa")
         for mcordata in ['mc', 'data']:
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
@@ -247,7 +233,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
         areaNormFactor = area['signal'] / (area['sideband_left'] + area['sideband_right'])
 
-        fh_sideband = self._sum_histos(
+        fh_sideband = sum_hists(
             [fh['sideband_left'], fh['sideband_right']], f'h_{var}_sideband_{ipt}_{mcordata}')
         self._save_hist(fh_sideband, f'sideband/h_{var}_sideband_{ipt}_{mcordata}.png')
 
@@ -285,7 +271,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 for var in self.observables['sideband']:
                     fh_sub = [self._subtract_sideband(rfile.Get(f'h_mass-{var}_{ipt}'), var, mcordata, ipt)
                               for ipt in range(self.nbins)]
-                    fh_sum = self._sum_histos(fh_sub)
+                    fh_sum = sum_hists(fh_sub)
                     self._save_hist(fh_sum, f'h_{var}_subtracted_effscaled_{mcordata}.png')
 
     #region signal extraction
@@ -354,7 +340,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 for var in self.observables['signal']:
                     hsignals = [self._extract_signal(rfile.Get(f'h_mass-{var}_{ipt}'), var, mcordata, ipt)
                                 for ipt in range(self.nbins)]
-                    hist_effscaled = self._sum_histos(hsignals)
+                    hist_effscaled = sum_hists(hsignals)
                     self._save_hist(hist_effscaled, f'h_{var}_signalextracted_effscaled_{mcordata}.png')
 
     #region feeddown
