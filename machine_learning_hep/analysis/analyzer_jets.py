@@ -274,6 +274,14 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                               for ipt in range(self.nbins)]
                     fh_sum = sum_hists(fh_sub)
                     self._save_hist(fh_sum, f'h_{var}_subtracted_effscaled_{mcordata}.png')
+                    if var == 'zg' and mcordata == 'data':
+                        fh_sum_feeddowncorrected = fh_sum.Clone('fh_subtracted_feeddowncorrected')
+                        hfeeddown_det_1D = self.hfeeddown_det.ProjectionY('hfeeddown_det_1D',1,3,'e')
+                        self._save_hist(hfeeddown_det_1D, f'h_{var}_hfeeddown_det_1D_{mcordata}.png')
+                        fh_sum_feeddowncorrected.Add(hfeeddown_det_1D,-1)
+                        self._save_hist(fh_sum_feeddowncorrected, f'h_{var}_subtracted_feeddowncorrected_{mcordata}.png')
+
+
 
     #region signal extraction
     def _extract_signal(self, hmass2, var, mcordata, ipt): # pylint: disable=too-many-branches
@@ -343,6 +351,11 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                                 for ipt in range(self.nbins)]
                     hist_effscaled = sum_hists(hsignals)
                     self._save_hist(hist_effscaled, f'h_{var}_signalextracted_effscaled_{mcordata}.png')
+                    if var == 'zg' and mcordata == 'data':
+                        fh_signalextract_feeddowncorrected = hist_effscaled.Clone('fh_signalextract_feeddowncorrected')
+                        hfeeddown_det_1D = self.hfeeddown_det.ProjectionY('hfeeddown_det_1D',1,3,'e')
+                        fh_signalextract_feeddowncorrected.Add(hfeeddown_det_1D,-1)
+                        self._save_hist(fh_signalextract_feeddowncorrected, f'h_{var}_signalextract_feeddowncorrected_{mcordata}.png','text')
 
     #region feeddown
     def correct_feeddown(self):
@@ -413,5 +426,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 self._save_hist(hfeeddown_det, f'fd/h_ptjet-{var}_feeddown_det_kineeffscaled.png')
 
                 hfeeddown_det.Scale(self.cfg('branching_ratio'))
-                hfeeddown_det.Scale(self.n_events['data'] * powheg_xsection_scale_factor / self.cfg('xsection_inel'))
+                print('number of events ', self.n_events['data'])
+                print('powheg scale factor ', powheg_xsection_scale_factor)
+                hfeeddown_det.Scale(self.n_events['data'] * 10000 * powheg_xsection_scale_factor / self.cfg('xsection_inel')) #TODO : We are artifically increasing by e4 because we dont have the correct number of events in data
                 self._save_hist(hfeeddown_det, f'fd/h_ptjet-{var}_feeddown_det_final.png')
+                self.hfeeddown_det = hfeeddown_det
+                self.hfeeddown_det.SetDirectory(0)

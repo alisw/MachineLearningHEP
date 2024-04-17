@@ -73,9 +73,9 @@ analysis:
     qa:
     fit:
     efficiency:
-    # subtract_sidebands:
-    # extract_signals:
     correct_feeddown:
+    subtract_sidebands:
+    extract_signals:
 
 systematics:
   cutvar:
