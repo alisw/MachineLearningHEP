@@ -21,6 +21,7 @@ parser = argparse.ArgumentParser()
 parser.add_argument('--case', '-c', default='d0jet')
 parser.add_argument('--analysis', '-a', default='jet_obs')
 parser.add_argument('--steps', '-s', nargs='+', default=['ana'])
+parser.add_argument('--interactive', '-i', action='store_true')
 parser.add_argument('--delete', '-d', action='store_true')
 # parser.add_argument('--dryrun', '-n', action='store_true')
 args = parser.parse_args()
@@ -35,5 +36,5 @@ else:
 
 for step in args.steps:
     subprocess.run(f'mlhep -r machine_learning_hep/submission/d0jet_{step}.yml ' +
-                   f'-d {DB} -b -a {args.analysis} {"--delete" if args.delete else ""}',
+                   f'-d {DB} {"-b" if not args.interactive else ""} -a {args.analysis} {"--delete" if args.delete else ""}',
                    shell=True, stdout=sys.stdout, stderr=sys.stderr, check=True)

@@ -19,9 +19,10 @@ import time
 import numpy as np
 import pandas as pd
 import ROOT
-from ROOT import TFile, TH1F, TH2F, TH3F, RooUnfold # pylint: disable=import-error, no-name-in-module
+from ROOT import TFile, TH1F, TH2F, TH3F, TH2D # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.processer import Processer
-from machine_learning_hep.utilities import dfquery, fill_hist, read_df, fill_response
+from machine_learning_hep.utilities import dfquery, read_df, fill_response
+from machine_learning_hep.utilities_hist import create_hist, fill_hist
 
 class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instance-attributes
     species = "processer"
@@ -70,7 +71,7 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
             isSoftDropped = False
             nsd = 0
             for zg, theta in zip(row['zg_array'], row['fTheta']):
-                if zg >= 0.1:  # TODO: make this configurable
+                if zg >= self.cfg('zcut', .1):
                     if not isSoftDropped:
                         df.loc[idx, 'zg'] = zg
                         df.loc[idx, 'rg'] = theta
@@ -229,14 +230,25 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
         h = {(cat, level): TH1F(f'h_pthf_{cat}_{level}', ";p_{T} (GeV/#it{c})", len(ptbins)-1, ptbins)
              for cat in cats for level in levels}
 
-        hkinematiceff_np_gennodetcuts_zg =  TH2F(f'hkinematiceff_np_gennodetcuts_zg', ";", 10, 5,55,10,0,1)
-        hkinematiceff_np_gendetcuts_zg =  TH2F(f'hkinematiceff_np_gendetcuts_zg', ";", 10, 5,55,10,0,1)
-        hkinematiceff_np_detnogencuts_zg =  TH2F(f'hkinematiceff_np_detnogencuts_zg', ";", 10, 5,55,10,0,1)
-        hkinematiceff_np_detgencuts_zg =  TH2F(f'hkinematiceff_np_detgencuts_zg', ";", 10, 5,55,10,0,1)
-        response_matrix_np = ROOT.RooUnfoldResponse(hkinematiceff_np_detnogencuts_zg,hkinematiceff_np_gennodetcuts_zg)
+        observables = ['zg']
+        h_effkine = {}
+        response_matrix = {}
+        for var in observables:
+            h_effkine[('np', 'gen', 'nocuts', var)] = create_hist(
+                f'hkinematiceff_np_gennodetcuts_{var}', f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var}", 10, 5,55,10,0,1)
+            h_effkine[('np', 'gen', 'detcuts', var)] = create_hist(
+                f'hkinematiceff_np_gendetcuts_{var}', f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var}", 10, 5,55,10,0,1)
+            h_effkine[('np', 'det', 'nocuts', var)] = create_hist(
+                f'hkinematiceff_np_detnogencuts_{var}', f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var}", 10, 5,55,10,0,1)
+            h_effkine[('np', 'det', 'gencuts', var)] = create_hist(
+                f'hkinematiceff_np_detgencuts_{var}', f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var}", 10, 5,55,10,0,1)
+            response_matrix[('np', var)] = (
+                ROOT.RooUnfoldResponse(h_effkine[('np', 'det', 'nocuts', var)],
+                                       h_effkine[('np', 'gen', 'nocuts', var)]))
 
         for ipt in range(self.p_nptbins):
-            cols = ['ismcprompt', 'fPt', 'fEta', 'fPhi', 'fJetPt', 'fJetEta', 'fJetPhi', 'fPtLeading', 'fPtSubLeading', 'fTheta']
+            cols = ['ismcprompt', 'fPt', 'fEta', 'fPhi',
+                    'fJetPt', 'fJetEta', 'fJetPhi', 'fPtLeading', 'fPtSubLeading', 'fTheta']
             df = read_df(self.mptfiles_gensk[ipt][index], columns=cols)
             df.query('fJetPt > 5', inplace = True) #TODO: should be removed, just for a speedup check
             df = self.process_calculate_variables(df)
@@ -247,6 +259,7 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
             if idx := self.cfg('efficiency.index_match'):
                 cols.append(idx)
             df = read_df(self.mptfiles_recosk[ipt][index], columns=cols)
+            df.query('fJetPt > 5.', inplace=True) # TODO: check
             dfquery(df, self.cfg('efficiency.filter_det'), inplace=True)
             # dfdet = dfdet.loc[(dfdet.isd0 & dfdet.seld0) | (dfdet.isd0bar & dfdet.seld0bar)]
             df = self.process_calculate_variables(df)
@@ -255,40 +268,29 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
             if idx := self.cfg('efficiency.index_match'):
                 for cat in cats:
                     dfdet[cat]['idx_match'] = dfdet[cat][idx].apply(lambda ar: ar[0] if len(ar) > 0 else -1)
-                dfmatch = {cat: pd.merge(dfdet[cat], dfgen[cat],
-                                         left_on=['df', 'idx_match'], right_index=True)
+                dfmatch = {cat: pd.merge(dfdet[cat], dfgen[cat], left_on=['df', 'idx_match'], right_index=True)
                            for cat in cats}
             else:
                 self.logger.warning('No matching criterion specified, cannot calculate matched efficiency')
                 dfmatch = {cat: None for cat in cats}
 
-            # TODO: which pt to use?
             for cat in cats:
                 fill_hist(h[(cat, 'gen')], dfgen[cat]['fPt_gen'])
                 fill_hist(h[(cat, 'det')], dfdet[cat]['fPt'])
                 if dfmatch[cat] is not None:
                     fill_hist(h[(cat, 'match')], dfmatch[cat]['fPt_gen'])
 
-            dfmatch_np_eff_gen = dfmatch['nonprompt'].query('fJetPt_gen >= 5 and fJetPt_gen < 55 and zg_gen > 0.1 and zg_gen < 1 ')
-            fill_hist(hkinematiceff_np_gennodetcuts_zg, dfmatch_np_eff_gen[['fJetPt_gen','zg_gen']])
-            dfmatch_np_eff_gen.query('fJetPt >= 5 and fJetPt < 55 and zg > 0.1 and zg < 1 ', inplace = True)
-            fill_hist(hkinematiceff_np_gendetcuts_zg, dfmatch_np_eff_gen[['fJetPt_gen','zg_gen']])
-            fill_response(response_matrix_np,dfmatch_np_eff_gen[['fJetPt','zg','fJetPt_gen','zg_gen']])
-            dfmatch_np_eff_det = dfmatch['nonprompt'].query('fJetPt >= 5 and fJetPt < 55 and zg > 0.1 and zg < 1 ')
-            fill_hist(hkinematiceff_np_detnogencuts_zg, dfmatch_np_eff_det[['fJetPt','zg']])
-            dfmatch_np_eff_det.query('fJetPt_gen >= 5 and fJetPt_gen < 55 and zg_gen > 0.1 and zg_gen < 1 ', inplace = True)
-            fill_hist(hkinematiceff_np_detgencuts_zg, dfmatch_np_eff_det[['fJetPt','zg']])
+            for var in observables:
+                dfmatch_np_eff_gen = dfmatch['nonprompt'].query(f'fJetPt_gen >= 5 and fJetPt_gen < 55 and {var}_gen > 0.1 and {var}_gen < 1 ')
+                fill_hist(h_effkine[('np', 'gen', 'nocuts', var)], dfmatch_np_eff_gen[['fJetPt_gen', f'{var}_gen']])
+                dfmatch_np_eff_gen.query(f'fJetPt >= 5 and fJetPt < 55 and {var} > 0.1 and {var} < 1 ', inplace = True)
+                fill_hist(h_effkine[('np', 'gen', 'detcuts', var)], dfmatch_np_eff_gen[['fJetPt_gen', f'{var}_gen']])
+                fill_response(response_matrix[('np', var)], dfmatch_np_eff_gen[['fJetPt',f'{var}','fJetPt_gen',f'{var}_gen']])
 
+                dfmatch_np_eff_det = dfmatch['nonprompt'].query(f'fJetPt >= 5 and fJetPt < 55 and {var} > 0.1 and {var} < 1 ')
+                fill_hist(h_effkine[('np', 'det', 'nocuts', var)], dfmatch_np_eff_det[['fJetPt', f'{var}']])
+                dfmatch_np_eff_det.query(f'fJetPt_gen >= 5 and fJetPt_gen < 55 and {var}_gen > 0.1 and {var}_gen < 1 ', inplace = True)
+                fill_hist(h_effkine[('np', 'det', 'gencuts', var)], dfmatch_np_eff_det[['fJetPt', f'{var}']])
 
-        hkinematiceff_np_gennodetcuts_zg.Write()
-        hkinematiceff_np_gendetcuts_zg.Write()
-        response_matrix_np.Write('response_matrix_np')
-        hkinematiceff_np_detnogencuts_zg.Write()
-        hkinematiceff_np_detgencuts_zg.Write()
-        for cat, level in itertools.product(cats, levels):
-            h[(cat, level)].Write()
-
-
-
-
-
+        for obj in itertools.chain(h.values(), h_effkine.values(), response_matrix.values()):
+            obj.Write()

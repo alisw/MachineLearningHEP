@@ -36,56 +36,12 @@ from ROOT import kOpenCircle, kOpenSquare, kOpenDiamond, kOpenCross, kOpenStar, 
 from ROOT import kOpenFourTrianglesX, kOpenDoubleDiamond, kOpenFourTrianglesPlus, kOpenCrossX # pylint: disable=import-error, no-name-in-module
 from ROOT import kFullCircle, kFullSquare, kFullDiamond, kFullCross, kFullStar, kFullThreeTriangles # pylint: disable=import-error, no-name-in-module
 from ROOT import kFullFourTrianglesX, kFullDoubleDiamond, kFullFourTrianglesPlus, kFullCrossX # pylint: disable=import-error, no-name-in-module
-import ROOT
 from machine_learning_hep.selectionutils import select_runs
 from machine_learning_hep.logger import get_logger
 
 # pylint: disable=too-many-lines
 
 logger = get_logger()
-
-# pylint: disable=line-too-long, consider-using-f-string, too-many-lines
-# pylint: disable=unspecified-encoding, consider-using-generator, invalid-name, import-outside-toplevel
-
-# TODO: generalize which columns can contain arrays
-def fill_hist(hist, dfi: pd.DataFrame, weights = None, arraycols = False, write = False):
-    """
-    Fill histogram from dataframe
-
-    :param hist: ROOT.TH1,2,3
-    :param dfi: pandas series/dataframe (1 to 3 columns)
-    :param weights: weights per row
-    :param array: dataframe contains arrays
-    :param write: call Write() after filling
-    """
-    dim_hist = hist.GetDimension()
-    dim_df = dfi.shape[1] if dfi.ndim > 1 else dfi.ndim
-    assert dim_df in [1, 2, 3], 'fill_hist supports only 1-,2-,3-d histograms'
-    assert dim_df == dim_hist, 'dimensions of df and histogram do not match'
-    if len(dfi) == 0:
-        return
-    if dim_hist == 1:
-        if not arraycols:
-            hist.FillN(len(dfi), np.float64(dfi), weights or ROOT.nullptr)
-        else:
-            dfi.apply(lambda row: [hist.Fill(v) for v in row])
-    elif dim_hist == 2:
-        if not arraycols:
-            hist.FillN(len(dfi), np.float64(dfi.iloc[:, 0]), np.float64(dfi.iloc[:, 1]), weights or ROOT.nullptr)
-        else:
-            assert weights is None, 'weights not supported'
-            dfi.apply(lambda row: [hist.Fill(row.iloc[0], v) for v in row.iloc[1]], axis=1)
-    elif dim_hist == 3:
-        # TODO: why does TH3 not support FillN?
-        # hist.FillN(len(dfi), np.float64(dfi.iloc[:, 0]), np.float64(dfi.iloc[:, 1]), np.float64(dfi.iloc[:, 2]),
-        #            weights or np.float64(len(dfi)*[1.]))
-        assert weights is None, 'weights not supported'
-        if not arraycols:
-            dfi.apply(lambda row: hist.Fill(row.iloc[0], row.iloc[1], row.iloc[2]), axis=1)
-        else:
-            dfi.apply(lambda row: [hist.Fill(row.iloc[0], v[0], v[1]) for v in zip(row.iloc[1], row.iloc[2])], axis=1)
-    if write:
-        hist.Write()
 
 def hist2array(hist):
     assert hist.GetDimension() == 1, 'can only convert 1-d histogram'
@@ -102,8 +58,6 @@ def fill_response(response, dfi: pd.DataFrame, dfmissed: pd.DataFrame = None, wr
         dfmissed.apply(lambda row: response.Miss(row.iloc[0], row.iloc[1]), axis=1)
     if write:
         response.Write()
-
-
 
 def openfile(filename, attr):
     """
@@ -371,9 +325,7 @@ def get_bins(axis):
 
 def equal_axes(axis1, axis2):
     """ Compare the binning of two histogram axes. """
-    if not np.array_equal(get_bins(axis1), get_bins(axis2)):
-        return False
-    return True
+    return np.array_equal(get_bins(axis1), get_bins(axis2))
 
 def equal_axis_list(axis1, list2, precision=10):
     """ Compare the binning of axis1 with list2. """
@@ -389,13 +341,9 @@ def equal_axis_list(axis1, list2, precision=10):
 
 def equal_binning(his1, his2):
     """ Compare binning of axes of two histograms (derived from TH1). """
-    if not equal_axes(his1.GetXaxis(), his2.GetXaxis()):
-        return False
-    if not equal_axes(his1.GetYaxis(), his2.GetYaxis()):
-        return False
-    if not equal_axes(his1.GetZaxis(), his2.GetZaxis()):
-        return False
-    return True
+    return (equal_axes(his1.GetXaxis(), his2.GetXaxis()) and
+            equal_axes(his1.GetYaxis(), his2.GetYaxis()) and
+            equal_axes(his1.GetZaxis(), his2.GetZaxis()))
 
 def equal_binning_lists(his, list_x=None, list_y=None, list_z=None):
     """ Compare binning of axes of a histogram with the respective lists. """
@@ -408,24 +356,19 @@ def equal_binning_lists(his, list_x=None, list_y=None, list_z=None):
     return True
 
 def folding(h_input, response_matrix, h_output):
-    h_folded = h_output.Clone("h_folded")
     for a in range(h_output.GetNbinsX()):
         for b in range(h_output.GetNbinsY()):
             val = 0.0
-            val_err = 0.0
+            err = 0.0
+            index_x_out = a + h_output.GetNbinsX()*b
             for k in range(h_input.GetNbinsX()):
                 for l in range(h_input.GetNbinsY()):
-                    index_x_out = a+ h_output.GetNbinsX()*b
                     index_x_in = k + h_input.GetNbinsX()*l
-                    val = val + h_input.GetBinContent(k+1, l+1) * \
-                        response_matrix(index_x_out, index_x_in)
-                    val_err = val_err + h_input.GetBinError(k+1, l+1) * \
-                        h_input.GetBinError(k+1, l+1)* \
-                        response_matrix(index_x_out, index_x_in) * \
-                        response_matrix(index_x_out, index_x_in)
-            h_folded.SetBinContent(a+1, b+1, val)
-            h_folded.SetBinError(a+1, b+1, math.sqrt(val_err))
-    return h_folded
+                    val += h_input.GetBinContent(k+1, l+1) * response_matrix(index_x_out, index_x_in)
+                    err += h_input.GetBinError(k+1, l+1)**2 * response_matrix(index_x_out, index_x_in)**2
+            h_output.SetBinContent(a+1, b+1, val)
+            h_output.SetBinError(a+1, b+1, math.sqrt(err))
+    return h_output
 
 def get_plot_range(val_min, val_max, margin_min, margin_max, logscale=False):
     '''Return the minimum and maximum of the plotting range so that there are margins
