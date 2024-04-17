@@ -36,5 +36,6 @@ else:
 
 for step in args.steps:
     subprocess.run(f'mlhep -r machine_learning_hep/submission/d0jet_{step}.yml ' +
-                   f'-d {DB} {"-b" if not args.interactive else ""} -a {args.analysis} {"--delete" if args.delete else ""}',
+                   f'-d {DB} {"-b" if not args.interactive else ""} ' +
+                   f'-a {args.analysis} {"--delete" if args.delete else ""}',
                    shell=True, stdout=sys.stdout, stderr=sys.stderr, check=True)

@@ -17,7 +17,7 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from ROOT import TFile, TCanvas, TF1, TH1F, TH2F, TH3F, gStyle # pylint: disable=import-error, no-name-in-module
+from ROOT import TFile, TCanvas, TF1, TH1F, TH2F, gStyle # pylint: disable=import-error, no-name-in-module
 import ROOT # pylint: disable=import-error
 
 from machine_learning_hep.utilities import folding
@@ -63,6 +63,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.fit_mean = {}
         self.fit_func_bkg = {}
         self.hcandeff = None
+        self.hcandeff_np = None
         self.n_events = {}
 
         self.path_fig = Path(f'fig/{self.case}/{self.typean}')
@@ -94,7 +95,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 self.logger.debug('Number of selected events for %s: %d', mcordata, self.n_events[mcordata])
 
     #region basic qa
-    def qa(self):
+    def qa(self): # pylint: disable=invalid-name
         self.logger.info("Running D0 jet qa")
         for mcordata in ['mc', 'data']:
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
@@ -357,7 +358,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
             df = pd.read_parquet('/data2/jklein/powheg/trees_powheg_fd_F05_R05.parquet')
 
-            h3feeddown_gen = create_hist(f'h3_feeddown_gen',
+            h3feeddown_gen = create_hist('h3_feeddown_gen',
                                          f';p_{{T}}^{{cand}} (GeV/#it{{c}});p_{{T}}^{{jet}} (GeV/#it{{c}});{var}',
                                          self.bins_candpt, jetptbins_array, shapebins_array)
             fill_hist(h3feeddown_gen, df[['pt_cand', 'pt_jet', 'zg_jet']])
@@ -379,8 +380,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             self._save_hist(hfeeddown_gen, f'fd/h_ptjet-{var}_feeddown_gen_effscaled.png')
 
             with TFile(self.n_fileeff) as rfile:
-                hkinematiceff_np_gennodetcuts_zg = rfile.Get(f'hkinematiceff_np_gennodetcuts_zg')
-                hkinematiceff_np_gendetcuts_zg = rfile.Get(f'hkinematiceff_np_gendetcuts_zg')
+                hkinematiceff_np_gennodetcuts_zg = rfile.Get('hkinematiceff_np_gennodetcuts_zg')
+                hkinematiceff_np_gendetcuts_zg = rfile.Get('hkinematiceff_np_gendetcuts_zg')
                 hkinematiceff_np_gendetcuts_zg.Divide(hkinematiceff_np_gennodetcuts_zg)
                 self._save_hist(hkinematiceff_np_gendetcuts_zg, f'fd/h_effkine-ptjet-{var}_np_gen.png', 'text')
 
@@ -393,16 +394,18 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 hfeeddown_gen.Multiply(hkinematiceff_np_gendetcuts_zg)
                 self._save_hist(hfeeddown_gen, f'fd/h_ptjet-{var}_feeddown_gen_kineeffscaled.png')
 
-                response_matrix_np = rfile.Get(f'hkinematiceff_np_detnogencuts_zg_hkinematiceff_np_gennodetcuts_zg') # TODO: fix name
+                # TODO: fix name of response matrix
+                response_matrix_np = rfile.Get('hkinematiceff_np_detnogencuts_zg_hkinematiceff_np_gennodetcuts_zg')
                 self._save_hist(response_matrix_np, f'fd/h_ptjet-{var}_response_np.png')
 
-                hfeeddown_det =  create_hist(f'hfeeddown_det', f';p_{{T}}^{{jet}} (GeV/#it{{c}});{var}', 10, 5,55, 10,0,1)
+                hfeeddown_det =  create_hist('hfeeddown_det',
+                                             f';p_{{T}}^{{jet}} (GeV/#it{{c}});{var}', 10, 5,55, 10,0,1)
                 hfeeddown_det.Sumw2()
                 hfeeddown_det = folding(hfeeddown_gen, response_matrix_np, hfeeddown_det)
                 self._save_hist(hfeeddown_det, f'fd/h_ptjet-{var}_feeddown_det.png')
 
-                hkinematiceff_np_detnogencuts_zg = rfile.Get(f'hkinematiceff_np_detnogencuts_zg')
-                hkinematiceff_np_detgencuts_zg = rfile.Get(f'hkinematiceff_np_detgencuts_zg')
+                hkinematiceff_np_detnogencuts_zg = rfile.Get('hkinematiceff_np_detnogencuts_zg')
+                hkinematiceff_np_detgencuts_zg = rfile.Get('hkinematiceff_np_detgencuts_zg')
                 hkinematiceff_np_detgencuts_zg.Divide(hkinematiceff_np_detnogencuts_zg)
 
                 self._save_hist(hkinematiceff_np_detgencuts_zg, f'fd/h_effkine-ptjet-{var}_np_det.png','text')

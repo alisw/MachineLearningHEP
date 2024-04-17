@@ -18,8 +18,8 @@ import math # pylint: disable=unused-import
 import time
 import numpy as np
 import pandas as pd
-import ROOT
-from ROOT import TFile, TH1F, TH2F, TH3F, TH2D # pylint: disable=import-error, no-name-in-module
+import ROOT # pylint: disable=import-error
+from ROOT import TFile, TH1F, TH2F, TH3F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.processer import Processer
 from machine_learning_hep.utilities import dfquery, read_df, fill_response
 from machine_learning_hep.utilities_hist import create_hist, fill_hist
@@ -281,15 +281,20 @@ class ProcesserJets(Processer): # pylint: disable=invalid-name, too-many-instanc
                     fill_hist(h[(cat, 'match')], dfmatch[cat]['fPt_gen'])
 
             for var in observables:
-                dfmatch_np_eff_gen = dfmatch['nonprompt'].query(f'fJetPt_gen >= 5 and fJetPt_gen < 55 and {var}_gen > 0.1 and {var}_gen < 1 ')
+                dfmatch_np_eff_gen = dfmatch['nonprompt'].query(
+                    f'fJetPt_gen >= 5 and fJetPt_gen < 55 and {var}_gen > 0.1 and {var}_gen < 1 ')
                 fill_hist(h_effkine[('np', 'gen', 'nocuts', var)], dfmatch_np_eff_gen[['fJetPt_gen', f'{var}_gen']])
-                dfmatch_np_eff_gen.query(f'fJetPt >= 5 and fJetPt < 55 and {var} > 0.1 and {var} < 1 ', inplace = True)
+                dfmatch_np_eff_gen.query(
+                    f'fJetPt >= 5 and fJetPt < 55 and {var} > 0.1 and {var} < 1 ', inplace = True)
                 fill_hist(h_effkine[('np', 'gen', 'detcuts', var)], dfmatch_np_eff_gen[['fJetPt_gen', f'{var}_gen']])
-                fill_response(response_matrix[('np', var)], dfmatch_np_eff_gen[['fJetPt',f'{var}','fJetPt_gen',f'{var}_gen']])
+                fill_response(response_matrix[('np', var)],
+                              dfmatch_np_eff_gen[['fJetPt', f'{var}', 'fJetPt_gen', f'{var}_gen']])
 
-                dfmatch_np_eff_det = dfmatch['nonprompt'].query(f'fJetPt >= 5 and fJetPt < 55 and {var} > 0.1 and {var} < 1 ')
+                dfmatch_np_eff_det = dfmatch['nonprompt'].query(
+                    f'fJetPt >= 5 and fJetPt < 55 and {var} > 0.1 and {var} < 1 ')
                 fill_hist(h_effkine[('np', 'det', 'nocuts', var)], dfmatch_np_eff_det[['fJetPt', f'{var}']])
-                dfmatch_np_eff_det.query(f'fJetPt_gen >= 5 and fJetPt_gen < 55 and {var}_gen > 0.1 and {var}_gen < 1 ', inplace = True)
+                dfmatch_np_eff_det.query(
+                    f'fJetPt_gen >= 5 and fJetPt_gen < 55 and {var}_gen > 0.1 and {var}_gen < 1 ', inplace = True)
                 fill_hist(h_effkine[('np', 'det', 'gencuts', var)], dfmatch_np_eff_det[['fJetPt', f'{var}']])
 
         for obj in itertools.chain(h.values(), h_effkine.values(), response_matrix.values()):

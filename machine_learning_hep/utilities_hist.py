@@ -2,19 +2,18 @@ import numpy as np
 import pandas as pd
 import ROOT
 
+RHIST = {1: ROOT.TH1F, 2: ROOT.TH2F, 3: ROOT.TH3F}
+
 def create_hist(name, title, *bin_specs):
     """Create ROOT histogram from standard bin specifications or arrays"""
     var_bins = [hasattr(spec, '__len__') for spec in bin_specs]
     assert all(var_bins) or not any(var_bins), 'either all bins must be variable or fixed width'
     dim = len(bin_specs) if all(var_bins) else len(bin_specs) / 3
     assert dim in range(1, 4), 'only dimensions from 1 to 3 are supported'
-    RHIST = {1: ROOT.TH1F, 2: ROOT.TH2F, 3: ROOT.TH3F}
     if all(var_bins):
         bin_defs = zip(map(lambda a: len(a) - 1, bin_specs), bin_specs)
-        args = [arg for axis in bin_defs for arg in axis]
-        return RHIST[dim](name, title, *args)
-    else:
-        return RHIST[dim](name, title, *bin_specs)
+        bin_specs = [arg for axis in bin_defs for arg in axis]
+    return RHIST[dim](name, title, *bin_specs)
 
 
 # TODO: generalize which columns can contain arrays
@@ -58,10 +57,10 @@ def fill_hist(hist, dfi: pd.DataFrame, weights = None, arraycols = False, write 
         hist.Write()
 
 
-def scale_bin(hist, factor, *bin):
+def scale_bin(hist, factor, *bin_indices):
     """Scale histogram bin-wise by given factor"""
-    hist.SetBinContent(*bin, hist.GetBinContent(*bin) * factor)
-    hist.SetBinError(*bin, hist.GetBinError(*bin) * factor)
+    hist.SetBinContent(*bin_indices, hist.GetBinContent(*bin_indices) * factor)
+    hist.SetBinError(*bin_indices, hist.GetBinError(*bin_indices) * factor)
 
 
 def sum_hists(histos, name = None):

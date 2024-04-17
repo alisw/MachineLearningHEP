@@ -17,3 +17,6 @@ disable=missing-docstring
 
 [MISCELLANEOUS]
 notes=FIXME,XXX
+
+[IMPORTS]
+ignored-modules=ROOT
