@@ -284,6 +284,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         fh_sum_feeddowncorrected.Add(hfeeddown_det_1D,-1)
                         self._save_hist(fh_sum_feeddowncorrected,
                                         f'h_{var}_subtracted_feeddowncorrected_{mcordata}.png')
+                        self.fh_sum_feeddowncorrected = fh_sum_feeddowncorrected
+                        self.fh_sum_feeddowncorrected.SetDirectory(0)
 
 
     #region signal extraction
@@ -440,3 +442,32 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 self._save_hist(hfeeddown_det, f'fd/h_ptjet-{var}_feeddown_det_final.png')
                 self.hfeeddown_det = hfeeddown_det
                 self.hfeeddown_det.SetDirectory(0)
+
+    def unfolding(self):
+        self.logger.info('Running unfolding')
+        with TFile(self.n_fileeff) as rfile:
+                for var in self.observables['fd']:
+                    hkinematiceff_pr_detnogencuts_zg = rfile.Get('hkinematiceff_pr_detnogencuts_zg')
+                    hkinematiceff_pr_detgencuts_zg = rfile.Get('hkinematiceff_pr_detgencuts_zg')
+                    hkinematiceff_pr_detgencuts_zg.Divide(hkinematiceff_pr_detnogencuts_zg)
+                    self._save_hist(hkinematiceff_pr_detgencuts_zg, f'fd/h_effkine-ptjet-{var}_pr_det.png', 'text')
+                    fh_unfolding_input = self.fh_sum_feeddowncorrected.Clone('fh_unfolding_input')
+                    fh_unfolding_input.Multiply(hkinematiceff_pr_detgencuts_zg)
+                    response_matrix_pr = rfile.Get('hkinematiceff_pr_gennodetcuts_zg_hkinematiceff_pr_detnogencuts_zg')
+                    self._save_hist(response_matrix_pr, f'fd/h_ptjet-{var}_response_pr.png')
+                    hkinematiceff_pr_gennodetcuts_zg = rfile.Get('hkinematiceff_pr_gennodetcuts_zg')
+                    hkinematiceff_pr_gendetcuts_zg = rfile.Get('hkinematiceff_pr_gendetcuts_zg')
+                    hkinematiceff_pr_gendetcuts_zg.Divide(hkinematiceff_pr_gennodetcuts_zg)
+                    self._save_hist(hkinematiceff_pr_detgencuts_zg, f'fd/h_effkine-ptjet-{var}_pr_det.png', 'text')
+                    h_unfolding_output = []
+                    for n in range(8):
+                        unfolding_object = ROOT.RooUnfoldBayes(response_matrix_pr, fh_unfolding_input, n + 1)
+                        fh_unfolding_output = unfolding_object.Hreco(2)
+                        self._save_hist(fh_unfolding_output, f'fd/h_unfolded-{var}-{n}.png', 'text')
+                        fh_unfolding_output.Divide(hkinematiceff_pr_gendetcuts_zg)
+                        self._save_hist(fh_unfolding_output, f'fd/h_unfolded_effcorrected-{var}-{n}.png', 'text')
+                        h_unfolding_output.append(fh_unfolding_output)
+
+
+
+

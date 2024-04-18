@@ -76,6 +76,7 @@ analysis:
     correct_feeddown:
     subtract_sidebands:
     extract_signals:
+    unfolding:
 
 systematics:
   cutvar:

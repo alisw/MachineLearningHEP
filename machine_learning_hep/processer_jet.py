@@ -236,6 +236,17 @@ class ProcesserJets(Processer):
         h_effkine = {}
         response_matrix = {}
         for var in observables:
+            h_effkine[('pr', 'gen', 'nocuts', var)] = create_hist(
+                f'hkinematiceff_pr_gennodetcuts_{var}', f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var}", 10, 5,55,10,0,1)
+            h_effkine[('pr', 'gen', 'detcuts', var)] = create_hist(
+                f'hkinematiceff_pr_gendetcuts_{var}', f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var}", 10, 5,55,10,0,1)
+            h_effkine[('pr', 'det', 'nocuts', var)] = create_hist(
+                f'hkinematiceff_pr_detnogencuts_{var}', f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var}", 10, 5,55,10,0,1)
+            h_effkine[('pr', 'det', 'gencuts', var)] = create_hist(
+                f'hkinematiceff_pr_detgencuts_{var}', f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var}", 10, 5,55,10,0,1)
+            response_matrix[('pr', var)] = (
+                ROOT.RooUnfoldResponse(h_effkine[('pr', 'det', 'nocuts', var)],
+                                       h_effkine[('pr', 'gen', 'nocuts', var)]))
             h_effkine[('np', 'gen', 'nocuts', var)] = create_hist(
                 f'hkinematiceff_np_gennodetcuts_{var}', f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var}", 10, 5,55,10,0,1)
             h_effkine[('np', 'gen', 'detcuts', var)] = create_hist(
@@ -290,6 +301,22 @@ class ProcesserJets(Processer):
                 continue
 
             for var in observables:
+                dfmatch_pr_eff_det = dfmatch['prompt'].query(
+                    f'fJetPt >= 5 and fJetPt < 55 and {var} > 0.1 and {var} < 1 ')
+                fill_hist(h_effkine[('pr', 'det', 'nocuts', var)], dfmatch_pr_eff_det[['fJetPt', f'{var}']])
+                dfmatch_pr_eff_det.query(
+                    f'fJetPt_gen >= 5 and fJetPt_gen < 55 and {var}_gen > 0.1 and {var}_gen < 1 ', inplace = True)
+                fill_hist(h_effkine[('pr', 'det', 'gencuts', var)], dfmatch_pr_eff_det[['fJetPt', f'{var}']])
+                fill_response(response_matrix[('pr', var)],
+                              dfmatch_pr_eff_det[['fJetPt', f'{var}', 'fJetPt_gen', f'{var}_gen']])
+
+                dfmatch_pr_eff_gen = dfmatch['prompt'].query(
+                    f'fJetPt_gen >= 5 and fJetPt_gen < 55 and {var}_gen > 0.1 and {var}_gen < 1 ')
+                fill_hist(h_effkine[('pr', 'gen', 'nocuts', var)], dfmatch_pr_eff_gen[['fJetPt_gen', f'{var}_gen']])
+                dfmatch_pr_eff_gen.query(
+                    f'fJetPt >= 5 and fJetPt < 55 and {var} > 0.1 and {var} < 1 ', inplace = True)
+                fill_hist(h_effkine[('pr', 'gen', 'detcuts', var)], dfmatch_pr_eff_gen[['fJetPt_gen', f'{var}_gen']])
+
                 dfmatch_np_eff_gen = dfmatch['nonprompt'].query(
                     f'fJetPt_gen >= 5 and fJetPt_gen < 55 and {var}_gen > 0.1 and {var}_gen < 1 ')
                 fill_hist(h_effkine[('np', 'gen', 'nocuts', var)], dfmatch_np_eff_gen[['fJetPt_gen', f'{var}_gen']])
