@@ -95,32 +95,38 @@ class ProcesserJets(Processer):
 
     def _calculate_variables(self, df): # pylint: disable=invalid-name
         # TODO: chunk and parallelize
-        df.eval('dr = sqrt((fJetEta - fEta)**2 + ((fJetPhi - fPhi + @math.pi) % @math.tau - @math.pi)**2)',
-                inplace=True)
-        df.eval('jetPx = fJetPt * cos(fJetPhi)', inplace=True)
-        df.eval('jetPy = fJetPt * sin(fJetPhi)', inplace=True)
-        df.eval('jetPz = fJetPt * sinh(fJetEta)', inplace=True)
-        df.eval('hfPx = fPt * cos(fPhi)', inplace=True)
-        df.eval('hfPy = fPt * sin(fPhi)', inplace=True)
-        df.eval('hfPz = fPt * sinh(fEta)', inplace=True)
-        df.eval('zpar_num = jetPx * hfPx + jetPy * hfPy + jetPz * hfPz', inplace=True)
-        df.eval('zpar_den = jetPx * jetPx + jetPy * jetPy + jetPz * jetPz', inplace=True)
-        df.eval('zpar = zpar_num / zpar_den', inplace=True)
+        self.logger.debug('base variables')
+        df['dr'] = np.sqrt((df.fJetEta - df.fEta)**2 + ((df.fJetPhi - df.fPhi + math.pi) % math.tau - math.pi)**2)
+        df['jetPx'] = df.fJetPt * np.cos(df.fJetPhi)
+        df['jetPy'] = df.fJetPt * np.sin(df.fJetPhi)
+        df['jetPz'] = df.fJetPt * np.sinh(df.fJetEta)
+        df['hfPx'] = df.fPt * np.cos(df.fPhi)
+        df['hfPy'] = df.fPt * np.sin(df.fPhi)
+        df['hfPz'] = df.fPt * np.sinh(df.fEta)
+        df['zpar_num'] = df.jetPx * df.hfPx + df.jetPy * df.hfPy + df.jetPz * df.hfPz
+        df['zpar_den'] = df.jetPx * df.jetPx + df.jetPy * df.jetPy + df.jetPz * df.jetPz
+        df['zpar'] = df.zpar_num / df.zpar_den
+
+        self.logger.debug('zg')
         df['zg_array'] = np.array(.5 - abs(df.fPtSubLeading / (df.fPtLeading + df.fPtSubLeading) - .5))
         zcut = self.cfg('zcut', .1)
         df['zg'] = df['zg_array'].apply((lambda ar: next((zg for zg in ar if zg >= zcut), -1.)))
         df['rg'] = df[['zg_array', 'fTheta']].apply(
             (lambda ar: next((rg for (zg, rg) in zip(ar.zg_array, ar.fTheta) if zg >= zcut), -1.)), axis=1)
         df['nsd'] = df['zg_array'].apply((lambda ar: len([zg for zg in ar if zg >= zcut])))
+
+        self.logger.debug('Lund')
         df['lnkt'] = df[['fPtSubLeading', 'fTheta']].apply(
             (lambda ar: np.log(ar.fPtSubLeading * np.sin(ar.fTheta))), axis=1)
         df['lntheta'] = df[['fTheta']].apply((lambda ar: -np.log(ar.fTheta)), axis=1)
+        # df['lntheta'] = np.array(-np.log(df.fTheta))
+        self.logger.info('done')
         # self.calculate_zg(df)
         return df
 
     #region histomass
     def process_histomass_single(self, index): # pylint: disable=too-many-statements
-        self.logger.info('processing histomass single')
+        self.logger.info('Processing (histomass) %s', self.l_evtorig[index])
 
         myfile = TFile.Open(self.l_histomass[index], "recreate")
         myfile.cd()
@@ -222,7 +228,7 @@ class ProcesserJets(Processer):
 
     #region efficiency
     def process_efficiency_single(self, index): # pylint: disable=too-many-branches,too-many-statements
-        self.logger.info('Running efficiency')
+        self.logger.info('Processing (efficiency) %s', self.l_evtorig[index])
         myfile = TFile.Open(self.l_histoeff[index], "recreate")
         myfile.cd()
         ptbins = array('f', self.lpt_finbinmin + [self.lpt_finbinmax[-1]])
