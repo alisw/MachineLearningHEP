@@ -463,6 +463,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         raise ex
 
     def parallelizer(self, function, argument_list, maxperchunk):
+        # TODO: fix logic and avoid waiting for the slowest job
         chunks = [argument_list[x:x+maxperchunk]
                   for x in range(0, len(argument_list), maxperchunk)]
         for chunk in chunks:

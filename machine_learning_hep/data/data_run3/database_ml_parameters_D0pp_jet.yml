@@ -339,7 +339,8 @@ D0jet_pp:
     jet_obs: &jet_default
       sel_an_binmin:    [2,3,4,5,6,7,8,10,12] # hadron pt bins (sel_an_binmin bins)
       sel_an_binmax:    [3,4,5,6,7,8,10,12,16] # hadron pt bins (sel_an_binmin bins)
-      binning_matching:   [1,1,2,2,3,3, 4, 4, 5] # mapping to skimming pt bins (sel_an_binmin bins)
+      binning_matching:   [1,1,2,2,3,3, 4, 4, 5] # obsolete
+      bins_ptjet: [7, 15, 30]
 
       sigmamb: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
 

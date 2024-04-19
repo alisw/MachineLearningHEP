@@ -1,4 +1,5 @@
 {
     "editor.rulers": [120,],
     "files.trimTrailingWhitespace": true,
+    "cmake.configureOnOpen": false,
 }

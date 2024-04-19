@@ -2,18 +2,29 @@ import numpy as np
 import pandas as pd
 import ROOT
 
-RHIST = {1: ROOT.TH1F, 2: ROOT.TH2F, 3: ROOT.TH3F}
+RHIST = {1: ROOT.TH1F, 2: ROOT.TH2F, 3: ROOT.TH3F, 4: ROOT.THnF}
 
+def bin_spec(nbins, low, high):
+    return np.linspace(low, high, nbins + 1, 'd')
+
+
+# FIXME: clean up
 def create_hist(name, title, *bin_specs):
     """Create ROOT histogram from standard bin specifications or arrays"""
     var_bins = [hasattr(spec, '__len__') for spec in bin_specs]
-    assert all(var_bins) or not any(var_bins), 'either all bins must be variable or fixed width'
+    assert all(var_bins) or not any(var_bins), f'either all bins must be variable or fixed width: {bin_specs=}'
     dim = len(bin_specs) if all(var_bins) else len(bin_specs) / 3
-    assert dim in range(1, 4), 'only dimensions from 1 to 3 are supported'
+    assert dim in range(1, 10), 'only dimensions from 1 to 10 are supported'
     if all(var_bins):
-        bin_defs = zip(map(lambda a: len(a) - 1, bin_specs), bin_specs)
-        bin_specs = [arg for axis in bin_defs for arg in axis]
-    return RHIST[dim](name, title, *bin_specs)
+        nbins = list(map(lambda a: len(a) - 1, bin_specs))
+        if dim <= 3:
+            bin_defs = zip(nbins, bin_specs)
+            bin_specs = [arg for axis in bin_defs for arg in axis]
+    if dim <= 3:
+        return RHIST[min(dim, 4)](name, title, *bin_specs)
+    else:
+        nbins = np.asarray(nbins, 'i')
+        return RHIST[min(dim, 4)](name, title, dim, nbins, bin_specs)
 
 
 # TODO: generalize which columns can contain arrays
@@ -27,9 +38,9 @@ def fill_hist(hist, dfi: pd.DataFrame, weights = None, arraycols = False, write 
     :param array: dataframe contains arrays
     :param write: call Write() after filling
     """
-    dim_hist = hist.GetDimension()
+    dim_hist = hist.GetDimension() if isinstance(hist, ROOT.TH1) else hist.GetNdimensions()
     dim_df = dfi.shape[1] if dfi.ndim > 1 else dfi.ndim
-    assert dim_df in [1, 2, 3], 'fill_hist supports only 1-,2-,3-d histograms'
+    assert dim_df in range(1, 10), f'{dim_df} not supported'
     assert dim_df == dim_hist, 'dimensions of df and histogram do not match'
     if len(dfi) == 0:
         return
@@ -53,6 +64,11 @@ def fill_hist(hist, dfi: pd.DataFrame, weights = None, arraycols = False, write 
             dfi.apply(lambda row: hist.Fill(row.iloc[0], row.iloc[1], row.iloc[2]), axis=1)
         else:
             dfi.apply(lambda row: [hist.Fill(row.iloc[0], v[0], v[1]) for v in zip(row.iloc[1], row.iloc[2])], axis=1)
+    elif dim_hist > 3:
+        assert weights is None, 'weights not supported'
+        assert not arraycols
+        if not arraycols:
+            dfi.apply(lambda row: hist.Fill(*row), axis=1)
     if write:
         hist.Write()
 
