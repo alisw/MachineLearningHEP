@@ -23,7 +23,7 @@ from ROOT import TF1, TCanvas, TFile, gStyle
 
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.utilities import folding
-from machine_learning_hep.utilities_hist import (bin_spec, create_hist, dim_hist, fill_hist, get_axis,
+from machine_learning_hep.utilities_hist import (bin_spec, create_hist, get_dim, fill_hist, get_axis,
                                                  scale_bin, sum_hists, project_hist)
 
 
@@ -117,7 +117,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
                 for var in self.observables['qa']:
                     if h := rfile.Get(f'h_mass-ptjet-pthf-{var}'):
-                        axes = list(range(dim_hist(h)))
+                        axes = list(range(get_dim(h)))
                         hproj = project_hist(h, axes[3:], {})
                         self._save_hist(hproj, f'qa/h_{var}_{mcordata}.png')
 
@@ -255,9 +255,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         area = {}
         for region in regions:
             # project out the mass regions (first axis)
-            axes = list(range(dim_hist(hist)))[1:]
+            axes = list(range(get_dim(hist)))[1:]
             fh[region] = project_hist(hist, axes, {0: bins[region]})
-            if dim_hist(fh[region]) < 4:
+            if get_dim(fh[region]) < 4:
                 self._save_hist(fh[region], f'sideband/h_{var}_{region}_{ipt}_{mcordata}.png')
             area[region] = self.fit_func_bkg[mcordata][ipt].Integral(*limits[region])
 
@@ -273,7 +273,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         fh_subtracted.Scale(1.0 / 0.954) # TODO: calculate from region
         self._save_hist(fh_subtracted, f'sideband/h_{var}_subtracted_{ipt}_{mcordata}.png')
 
-        if dim_hist(hist) == 2: # TODO: extract 1d distribution also in case of higher dimension
+        if get_dim(hist) == 2: # TODO: extract 1d distribution also in case of higher dimension
             c = TCanvas()
             fh['signal'].SetLineColor(ROOT.kRed)
             fh['signal'].Draw()
@@ -327,14 +327,14 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             self.logger.warning('no fit parameters for %s bin %d', var, ipt)
             return None # TODO: should we continue nonetheless?
 
-        axes = list(range(dim_hist(hist)))
+        axes = list(range(get_dim(hist)))
         hres = project_hist(hist, axes[1:], {}) # TODO: check if we can project without content
         hres.Reset()
 
         range_int = (self.fit_mean[mcordata][ipt] - 3 * self.fit_sigma[mcordata][ipt],
                      self.fit_mean[mcordata][ipt] + 3 * self.fit_sigma[mcordata][ipt])
 
-        nbins = [list(range(1, get_axis(hres, i).GetNbins() + 1)) for i in range(dim_hist(hres))]
+        nbins = [list(range(1, get_axis(hres, i).GetNbins() + 1)) for i in range(get_dim(hres))]
         for binid in itertools.product(*nbins):
             label = f'{binid[0]}'
             for i in range(1, len(binid)):
@@ -455,9 +455,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             return
         if h_fd := self.hfeeddown_det:
             hres = hist.Clone('fh_subtracted_feeddowncorrected')
-            if dim_hist(hist) == 1:
+            if get_dim(hist) == 1:
                 h_fd = project_hist(self.hfeeddown_det, [0], {})
-            assert dim_hist(h_fd) == dim_hist(hist)
+            assert get_dim(h_fd) == get_dim(hist)
             hres.Add(h_fd, -1)
         else:
             self.logger.error('No feeddown estimation available for %s (%s)', var, mcordata)
@@ -478,7 +478,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             self._save_hist(h_effkine_pr_detgencuts, f'uf/h_effkine-ptjet-{var}_pr_det.png', 'text')
 
             fh_unfolding_input = hist.Clone('fh_unfolding_input')
-            if dim_hist(fh_unfolding_input) != dim_hist(h_effkine_pr_detgencuts):
+            if get_dim(fh_unfolding_input) != get_dim(h_effkine_pr_detgencuts):
                 self.logger.error('histograms with different dimensions, cannot unfold')
                 return []
             fh_unfolding_input.Multiply(h_effkine_pr_detgencuts)

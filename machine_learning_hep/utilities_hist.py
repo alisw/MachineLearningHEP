@@ -24,7 +24,7 @@ def get_axis(hist, axis: int):
     raise NotImplementedError
 
 
-def dim_hist(hist):
+def get_dim(hist):
     return hist.GetDimension() if isinstance(hist, ROOT.TH1) else hist.GetNdimensions()
 
 
@@ -146,6 +146,7 @@ def scale_bin(hist, factor, *bin_indices):
     """Scale histogram bin-wise by given factor"""
     hist.SetBinContent(*bin_indices, hist.GetBinContent(*bin_indices) * factor)
     hist.SetBinError(*bin_indices, hist.GetBinError(*bin_indices) * factor)
+
 
 def sum_hists(hists, name = None):
     """
