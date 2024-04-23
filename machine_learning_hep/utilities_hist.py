@@ -2,30 +2,99 @@ import numpy as np
 import pandas as pd
 import ROOT
 
-RHIST = {1: ROOT.TH1F, 2: ROOT.TH2F, 3: ROOT.TH3F, 4: ROOT.THnF}
 
 def bin_spec(nbins, low, high):
     return np.linspace(low, high, nbins + 1, 'd')
 
 
-# FIXME: clean up
+def get_axis(hist, axis: int):
+    if isinstance(hist, ROOT.THn):
+        return hist.GetAxis(axis)
+
+    if isinstance(hist, ROOT.TH1):
+        if axis == 0:
+            return hist.GetXaxis()
+        elif axis == 1:
+            return hist.GetYaxis()
+        elif axis == 2:
+            return hist.GetZaxis()
+        else:
+            raise ValueError
+
+    raise NotImplementedError
+
+
+def dim_hist(hist):
+    return hist.GetDimension() if isinstance(hist, ROOT.TH1) else hist.GetNdimensions()
+
+
+def get_range(hist, axis: int):
+    axis = get_axis(hist, axis)
+    return (axis.GetFirst(), axis.GetLast())
+
+
+def project_hist(hist, axes: list, limits: dict[int, tuple[int]]):
+    if len(axes) == 2:
+        axes.reverse() # compensation for ROOT signature using ydim, xdim for 2d projection
+    if isinstance(hist, ROOT.THn):
+        ranges = []
+        for iaxis in range(hist.GetNdimensions()):
+            ranges.append(get_range(hist, iaxis))
+        for iaxis, bins in limits.items():
+            get_axis(hist, iaxis).SetRange(bins[0], bins[1])
+        hproj = hist.Projection(*axes) if len(axes) < 4 else hist.Projection(len(axes), np.asarray(axes, 'i'))
+        for iaxis in limits:
+            get_axis(hist, iaxis).SetRange(*ranges[iaxis])
+        return hproj
+
+    if isinstance(hist, ROOT.TH3):
+        ranges = []
+        for iaxis in range(hist.GetDimension()):
+            ranges.append(get_range(hist, iaxis))
+            if iaxis in limits:
+                bins = limits[iaxis]
+                get_axis(hist, iaxis).SetRange(bins[0], bins[1])
+        proj_spec = ""
+        for axis in axes:
+            proj_spec += ('x' if axis == 0 else 'y' if axis == 1 else 'z')
+        hproj = hist.Project3D(proj_spec)
+        for iaxis in limits:
+            get_axis(hist, iaxis).SetRange(*ranges[iaxis])
+        return hproj
+
+    if isinstance(hist, ROOT.TH2):
+        assert len(axes) == 1
+        if axes[0] == 0:
+            return hist.ProjectionX("_px", *limits.get(1, []))
+        if axes[0] == 1:
+            return hist.ProjectionY("_py", *limits.get(0, []))
+        raise ValueError
+
+    raise NotImplementedError
+
+
 def create_hist(name, title, *bin_specs):
     """Create ROOT histogram from standard bin specifications or arrays"""
+    rhist = {1: ROOT.TH1F, 2: ROOT.TH2F, 3: ROOT.TH3F, 4: ROOT.THnF}
     var_bins = [hasattr(spec, '__len__') for spec in bin_specs]
     assert all(var_bins) or not any(var_bins), f'either all bins must be variable or fixed width: {bin_specs=}'
     dim = len(bin_specs) if all(var_bins) else len(bin_specs) / 3
     assert dim in range(1, 10), 'only dimensions from 1 to 10 are supported'
+
     if all(var_bins):
         nbins = list(map(lambda a: len(a) - 1, bin_specs))
-        if dim <= 3:
+
+    if dim <= 3:
+        if all(var_bins):
             bin_defs = zip(nbins, bin_specs)
             bin_specs = [arg for axis in bin_defs for arg in axis]
-    if dim <= 3:
-        return RHIST[min(dim, 4)](name, title, *bin_specs)
-    else:
-        nbins = np.asarray(nbins, 'i')
-        return RHIST[min(dim, 4)](name, title, dim, nbins, bin_specs)
+        return rhist[min(dim, 4)](name, title, *bin_specs)
 
+    if all(var_bins):
+        nbins = np.asarray(nbins, 'i')
+        return rhist[min(dim, 4)](name, title, dim, nbins, bin_specs)
+
+    raise NotImplementedError
 
 # TODO: generalize which columns can contain arrays
 def fill_hist(hist, dfi: pd.DataFrame, weights = None, arraycols = False, write = False):
@@ -78,13 +147,12 @@ def scale_bin(hist, factor, *bin_indices):
     hist.SetBinContent(*bin_indices, hist.GetBinContent(*bin_indices) * factor)
     hist.SetBinError(*bin_indices, hist.GetBinError(*bin_indices) * factor)
 
-
-def sum_hists(histos, name = None):
+def sum_hists(hists, name = None):
     """
     Return histogram with sum of all histograms from iterable
     """
     hist = None
-    for h in histos:
+    for h in hists:
         if h is None:
             continue
         if hist is None:

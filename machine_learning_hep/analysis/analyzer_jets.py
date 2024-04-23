@@ -12,18 +12,19 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
+import itertools
 import os
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import ROOT
-from ROOT import TF1, TH1F, TH2F, TCanvas, TFile, gStyle
+from ROOT import TF1, TCanvas, TFile, gStyle
 
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.utilities import folding
-from machine_learning_hep.utilities_hist import (create_hist, fill_hist,
-                                                 scale_bin, sum_hists)
+from machine_learning_hep.utilities_hist import (bin_spec, create_hist, dim_hist, fill_hist, get_axis,
+                                                 scale_bin, sum_hists, project_hist)
 
 
 class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
@@ -52,10 +53,12 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.n_fileresp = os.path.join(self.d_resultsallpmc_proc, self.n_fileresp)
 
         self.observables = {
-            'qa': ['zg', 'rg', 'nsd', 'zpar', 'dr', 'lntheta', 'lnkt'],
-            'sideband': ['zg', 'rg', 'nsd', 'zpar', 'dr', 'lntheta-lnkt'],
-            'signal': ['zg', 'rg', 'nsd', 'zpar', 'dr'],
-            'fd': ['zg']
+            'qa': ['zg', 'rg', 'nsd', 'zpar', 'dr', 'lntheta', 'lnkt', 'lntheta-lnkt'],
+            'sideband': ['zg'], #, 'rg', 'nsd', 'zpar', 'dr', 'lntheta-lnkt'],
+            'signal': ['zg'], #, 'rg', 'nsd', 'zpar', 'dr'],
+            'fd': ['zg'],
+            'all': [var for var, spec in self.cfg('observables', {}).items()
+                    if '-' not in var and 'arraycols' not in spec],
         }
 
         self.bins_candpt = np.asarray(self.cfg('sel_an_binmin', []) + self.cfg('sel_an_binmax', [])[-1:], 'd')
@@ -70,13 +73,15 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.n_events = {}
 
         self.path_fig = Path(f'fig/{self.case}/{self.typean}')
-        for folder in ['qa', 'fit', 'sideband', 'signalextr', 'fd']:
+        for folder in ['qa', 'fit', 'sideband', 'signalextr', 'fd', 'uf']:
             (self.path_fig / folder).mkdir(parents=True, exist_ok=True)
+
 
     #region helpers
     def _save_canvas(self, canvas, filename):
         # folder = self.d_resultsallpmc if mcordata == 'mc' else self.d_resultsallpdata
         canvas.SaveAs(f'fig/{self.case}/{self.typean}/{filename}')
+
 
     def _save_hist(self, hist, filename, option = ''):
         if not hist:
@@ -86,6 +91,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         c = TCanvas()
         hist.Draw(option)
         self._save_canvas(c, filename)
+
 
     def init(self):
         for mcordata in ['mc', 'data']:
@@ -97,28 +103,33 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 self.n_events[mcordata] = histonorm.GetBinContent(1)
                 self.logger.debug('Number of selected events for %s: %d', mcordata, self.n_events[mcordata])
 
+
     #region basic qa
     def qa(self): # pylint: disable=invalid-name
         self.logger.info("Running D0 jet qa")
         for mcordata in ['mc', 'data']:
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
             with TFile(rfilename) as rfile:
-                for ipt in range(self.nbins):
-                    self._save_hist(rfile.Get(f'h_mass_{ipt}'), f'qa/h_mass_{ipt}_{mcordata}.png')
-                    self._save_hist(rfile.Get(f'h_ptcand_{ipt}'), f'qa/h_ptcand_{ipt}_{mcordata}.png')
-                    self._save_hist(rfile.Get(f'h_ptjet_{ipt}'), f'qa/h_ptjet_{ipt}_{mcordata}.png')
-                    for var in self.observables['qa']:
-                        self._save_hist(rfile.Get(f'h_{var}_{ipt}'), f'qa/h_{var}_{ipt}_{mcordata}.png')
+                h = rfile.Get('h_mass-ptjet-pthf')
+                self._save_hist(project_hist(h, [0], {}), f'qa/h_mass_{mcordata}.png')
+                self._save_hist(project_hist(h, [1], {}), f'qa/h_ptjet_{mcordata}.png')
+                self._save_hist(project_hist(h, [2], {}), f'qa/h_ptcand_{mcordata}.png')
+
+                for var in self.observables['qa']:
+                    if h := rfile.Get(f'h_mass-ptjet-pthf-{var}'):
+                        axes = list(range(dim_hist(h)))
+                        hproj = project_hist(h, axes[3:], {})
+                        self._save_hist(hproj, f'qa/h_{var}_{mcordata}.png')
+
 
     #region efficiency
-    def efficiency(self):
-        self.logger.info("Running efficiency")
-        cats = {'prompt', 'nonprompt'}
+    def calculate_efficiencies(self):
+        self.logger.info("Calculating efficiencies")
+        cats = {'pr', 'np'}
         rfilename = self.n_fileeff
         with TFile(rfilename) as rfile:
             h_gen = {cat: rfile.Get(f'h_pthf_{cat}_gen') for cat in cats}
             h_det = {cat: rfile.Get(f'h_pthf_{cat}_det').Clone(f'h_eff_{cat}') for cat in cats}
-            h_match = {cat: rfile.Get(f'h_pthf_{cat}_match').Clone(f'h_eff_{cat}_matched') for cat in cats}
 
             for cat in cats:
                 self._save_hist(h_gen[cat], f'qa/h_pthf_{cat}_gen.png')
@@ -127,14 +138,27 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 h_det[cat].Divide(h_gen[cat])
                 self._save_hist(h_det[cat], f'h_eff_{cat}.png')
 
-                h_match[cat].Sumw2()
-                h_match[cat].Divide(h_gen[cat])
-                self._save_hist(h_match[cat], f'h_eff_{cat}_matched.png')
-
-            self.hcandeff = h_match['prompt'] if self.cfg('efficiency.store_matched') else h_det['prompt']
+            self.hcandeff = h_det['pr']
             self.hcandeff.SetDirectory(0)
-            self.hcandeff_np = h_match['nonprompt'] if self.cfg('efficiency.store_matched') else h_det['nonprompt']
+            self.hcandeff_np = h_det['np']
             self.hcandeff_np.SetDirectory(0)
+
+
+    def _correct_efficiency(self, hist, ipt):
+        if not hist:
+            return
+
+        if not self.hcandeff:
+            self.logger.error('no efficiency correction because of missing efficiency')
+            return
+
+        if np.isclose(self.hcandeff.GetBinContent(ipt + 1), 0):
+            # TODO: how should we handle this?
+            self.logger.error('Efficiency 0, no correction possible')
+            return
+
+        hist.Scale(1.0 / self.hcandeff.GetBinContent(ipt + 1))
+
 
     #region fitting
     def _fit_mass(self, hist, filename = None):
@@ -144,7 +168,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         func_sig = TF1('funcSig', self.cfg('mass_fit.func_sig'), *fit_range)
         func_bkg = TF1('funcBkg', self.cfg('mass_fit.func_bkg'), *fit_range)
         func_tot = TF1('funcTot', f"{self.cfg('mass_fit.func_sig')} + {self.cfg('mass_fit.func_bkg')}")
-        func_tot.SetParameter(0, hist.GetMaximum())
+        func_tot.SetParameter(0, hist.GetMaximum()) # TODO: better seeding?
         for par, value in self.cfg('mass_fit.par_start', {}).items():
             self.logger.debug('Setting par %i to %g', par, value)
             func_tot.SetParameter(par, value)
@@ -163,7 +187,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             self.logger.warning('Invalid fit result for %s', hist.GetName())
             func_tot.Print('v')
 
-        if filename:
+        if filename: # TODO: move to debug method
             c = TCanvas()
             hist.Draw()
             func_sig.SetLineColor(ROOT.kBlue)
@@ -174,8 +198,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
         return (fit_res, func_sig, func_bkg)
 
+
     def fit(self):
-        self.logger.info("Running fitter")
+        self.logger.info("Fitting inclusive mass distributions")
         gStyle.SetOptFit(1111)
         for mcordata in ['mc', 'data']:
             self.fit_mean[mcordata] = [None] * self.nbins
@@ -183,16 +208,19 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             self.fit_func_bkg[mcordata] = [None] * self.nbins
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
             with TFile(rfilename) as rfile:
-                for ipt in range(self.nbins):
-                    if h_invmass := rfile.Get(f'h_mass_{ipt}'):
-                        if h_invmass.GetEntries() == 0:
-                            continue
-                        fit_res, _, func_bkg = self._fit_mass(
-                            h_invmass, f'fit/h_mass_fitted_{ipt}_{mcordata}.png')
-                        if fit_res and fit_res.Get() and fit_res.IsValid():
-                            self.fit_sigma[mcordata][ipt] = fit_res.Parameter(2)
-                            self.fit_mean[mcordata][ipt] = fit_res.Parameter(1)
-                            self.fit_func_bkg[mcordata][ipt] = func_bkg
+                h = rfile.Get('h_mass-ptjet-pthf')
+                for ipt in range(1, h.GetZaxis().GetNbins() + 1):
+                    h.GetZaxis().SetRange(ipt, ipt)
+                    h_invmass = project_hist(h, [0], {})
+                    if h_invmass.GetEntries() < 10:
+                        continue
+                    fit_res, _, func_bkg = self._fit_mass(
+                        h_invmass, f'fit/h_mass_fitted_{ipt}_{mcordata}.png')
+                    if fit_res and fit_res.Get() and fit_res.IsValid():
+                        self.fit_sigma[mcordata][ipt] = fit_res.Parameter(2)
+                        self.fit_mean[mcordata][ipt] = fit_res.Parameter(1)
+                        self.fit_func_bkg[mcordata][ipt] = func_bkg
+
 
     #region sidebands
     def _subtract_sideband(self, hist, var, mcordata, ipt):
@@ -200,15 +228,15 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         Subtract sideband distributions, assuming mass on first axis
         """
         if not hist:
-            self.logger.warning('no histogram for %s bin %d', var, ipt)
+            self.logger.error('no histogram for %s bin %d', var, ipt)
             return None
-        assert hist.GetDimension() in [2, 3], 'only 2- and 3-dimensional histograms are supported'
         self._save_hist(hist, f'sideband/h_mass-{var}_{ipt}_{mcordata}.png')
+        hist.Print('base')
 
         mean = self.fit_mean[mcordata][ipt]
         sigma = self.fit_sigma[mcordata][ipt]
         if mean is None or sigma is None:
-            self.logger.warning('no fit parameters for bin %d', ipt)
+            self.logger.error('no fit parameters for bin %d', ipt)
             return None
 
         regions = {
@@ -217,7 +245,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             'sideband_right': (mean + 4 * sigma, mean + 7 * sigma)
         }
 
-        axis = hist.GetXaxis()
+        axis = get_axis(hist, 0)
         bins = {key: tuple(map(axis.FindBin, region)) for key, region in regions.items()}
         limits = {key: (axis.GetBinLowEdge(bins[key][0]), axis.GetBinUpEdge(bins[key][1]))
                   for key in regions}
@@ -226,14 +254,12 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         fh = {}
         area = {}
         for region in regions:
-            if hist.GetDimension() == 2:
-                fh[region] = hist.ProjectionY(f'h_{var}_{region}_{ipt}_{mcordata}', *bins[region], "e")
-            elif hist.GetDimension() == 3:
-                hist.GetXaxis().SetRange(*bins[region])
-                fh[region] = hist.Project3D('zye').Clone(f'h_{var}_{region}_{ipt}_{mcordata}')
-                hist.GetXaxis().SetRange(0, hist.GetXaxis().GetNbins() + 1)
+            # project out the mass regions (first axis)
+            axes = list(range(dim_hist(hist)))[1:]
+            fh[region] = project_hist(hist, axes, {0: bins[region]})
+            if dim_hist(fh[region]) < 4:
+                self._save_hist(fh[region], f'sideband/h_{var}_{region}_{ipt}_{mcordata}.png')
             area[region] = self.fit_func_bkg[mcordata][ipt].Integral(*limits[region])
-            self._save_hist(fh[region], f'sideband/h_{var}_{region}_{ipt}_{mcordata}.png')
 
         areaNormFactor = area['signal'] / (area['sideband_left'] + area['sideband_right'])
 
@@ -247,7 +273,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         fh_subtracted.Scale(1.0 / 0.954) # TODO: calculate from region
         self._save_hist(fh_subtracted, f'sideband/h_{var}_subtracted_{ipt}_{mcordata}.png')
 
-        if hist.GetDimension() == 2:
+        if dim_hist(hist) == 2: # TODO: extract 1d distribution also in case of higher dimension
             c = TCanvas()
             fh['signal'].SetLineColor(ROOT.kRed)
             fh['signal'].Draw()
@@ -259,132 +285,119 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 0., max(fh_subtracted.GetMaximum(), fh['signal'].GetMaximum(), fh_sideband.GetMaximum()))
             self._save_canvas(c, f'sideband/h_{var}_overview_{ipt}_{mcordata}.png')
 
-        if self.hcandeff:
-            fh_subtracted.Scale(1.0 / self.hcandeff.GetBinContent(ipt + 1))
-            self._save_hist(fh_subtracted, f'sideband/h_{var}_subtracted_effscaled_{ipt}_{mcordata}.png')
-        else:
-            self.logger.error('no efficiency correction because of missing efficiency')
-
         return fh_subtracted
+
 
     def subtract_sidebands(self):
         self.logger.info("Running sideband subtraction")
         for mcordata in ['mc', 'data']:
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
             with TFile(rfilename) as rfile:
-                for var in self.observables['sideband']:
-                    fh_sub = [self._subtract_sideband(rfile.Get(f'h_mass-{var}_{ipt}'), var, mcordata, ipt)
-                              for ipt in range(self.nbins)]
-                    fh_sum = sum_hists(fh_sub)
-                    self._save_hist(fh_sum, f'h_{var}_subtracted_effscaled_{mcordata}.png')
-                    if var == 'zg' and mcordata == 'data':
-                        fh_sum_feeddowncorrected = fh_sum.Clone('fh_subtracted_feeddowncorrected')
-                        hfeeddown_det_1D = self.hfeeddown_det.ProjectionY('hfeeddown_det_1D',1,3,'e')
-                        self._save_hist(hfeeddown_det_1D, f'h_{var}_hfeeddown_det_1D_{mcordata}.png')
-                        fh_sum_feeddowncorrected.Add(hfeeddown_det_1D,-1)
-                        self._save_hist(fh_sum_feeddowncorrected,
-                                        f'h_{var}_subtracted_feeddowncorrected_{mcordata}.png')
-                        self.fh_sum_feeddowncorrected = fh_sum_feeddowncorrected
-                        self.fh_sum_feeddowncorrected.SetDirectory(0)
+                for var in self.observables['all']:
+                    self.logger.debug('looking for %s', f'h_mass-ptjet-pthf-{var}')
+                    if fh := rfile.Get(f'h_mass-ptjet-pthf-{var}'):
+                        fh_sub = []
+                        for ipt in range(self.nbins):
+                            h = project_hist(fh, [0, 3], {2: (ipt+1, ipt+1)})
+                            h = self._subtract_sideband(h, var, mcordata, ipt)
+                            self._correct_efficiency(h, ipt)
+                            fh_sub.append(h)
+                        fh_sum = sum_hists(fh_sub)
+                        self._save_hist(fh_sum, f'h_{var}_subtracted_effscaled_{mcordata}.png')
+
+                        self._subtract_feeddown(fh_sum, var, mcordata)
+                        self._save_hist(fh_sum, f'h_{var}_subtracted_fdcorr_{mcordata}.png')
+
+                        fh_unfolded = self._unfold(fh_sum, var, mcordata)
+                        for i, h in enumerate(fh_unfolded):
+                            self._save_hist(h, f'h_{var}_subtracted_unfolded_{mcordata}_{i}.png')
 
 
     #region signal extraction
-    def _extract_signal(self, hmass2, var, mcordata, ipt): # pylint: disable=too-many-branches
+    def _extract_signal(self, hist, var, mcordata, ipt):
         """
-        Extract signal through inv. mass fit in bins of observable
+        Extract signal through inv. mass fit (first axis) in bins of other axes
         """
-        if not hmass2:
+        if not hist:
             self.logger.warning('no histogram for %s bin %d', var, ipt)
             return None
-        self._save_hist(hmass2, f'signalextr/h_mass-{var}_{ipt}_{mcordata}.png')
-        nbins = hmass2.GetNbinsY()
-        hrange = (hmass2.GetYaxis().GetXmin(), hmass2.GetYaxis().GetXmax())
-        if hmass2.GetDimension() == 3:
-            nbins2 = hmass2.GetNbinsZ()
-            hrange2 = (hmass2.GetZaxis().GetXmin(), hmass2.GetZaxis().GetXmax())
-            hist = TH2F(f'h_{var}_{ipt}', "", nbins, *hrange, nbins2, *hrange2)
-            hist.GetYaxis().SetTitle(hmass2.GetZaxis().GetTitle())
-        else:
-            hist = TH1F(f'h_{var}_{ipt}', "", nbins, *hrange)
-        hist.GetXaxis().SetTitle(hmass2.GetYaxis().GetTitle())
+        self._save_hist(hist, f'signalextr/h_mass-{var}_{ipt}_{mcordata}.png')
 
         if self.fit_mean[mcordata][ipt] is None or self.fit_sigma[mcordata][ipt] is None:
             self.logger.warning('no fit parameters for %s bin %d', var, ipt)
             return None # TODO: should we continue nonetheless?
 
+        axes = list(range(dim_hist(hist)))
+        hres = project_hist(hist, axes[1:], {}) # TODO: check if we can project without content
+        hres.Reset()
+
         range_int = (self.fit_mean[mcordata][ipt] - 3 * self.fit_sigma[mcordata][ipt],
                      self.fit_mean[mcordata][ipt] + 3 * self.fit_sigma[mcordata][ipt])
-        for i in range(nbins):
-            if hmass2.GetDimension() == 3:
-                hmass2.GetYaxis().SetRange(i+1, i+1)
-                for j in range(nbins2):
-                    hmass2.GetZaxis().SetRange(j+1, j+1)
-                    hmass = hmass2.Project3D('x')
-                    if hmass.GetEntries() > 10:
-                        fit_res, func_sig, _ = self._fit_mass(
-                            hmass, f'signalextr/h_mass-{var}_fitted_{ipt}_{i}_{j}_{mcordata}.png')
-                        if fit_res and fit_res.Get() and fit_res.IsValid():
-                            hist.SetBinContent(i + 1, j +  1, func_sig.Integral(*range_int) / hmass.GetBinWidth(1))
-            else:
-                hmass = hmass2.ProjectionX(f'h_mass-{var}_{ipt}_proj_{i}', i+1, i+1, "e")
-                if hmass.GetEntries() > 10:
-                    fit_res, func_sig, _ = self._fit_mass(
-                        hmass, f'signalextr/h_mass-{var}_fitted_{ipt}_{i}_{mcordata}.png')
-                    if fit_res and fit_res.Get() and fit_res.IsValid():
-                        hist.SetBinContent(i + 1, func_sig.Integral(*range_int) / hmass.GetBinWidth(1))
-        if hmass2.GetDimension() == 3:
-            hmass2.GetYaxis().SetRange(0, hmass2.GetYaxis().GetNbins() + 1)
-            hmass2.GetZaxis().SetRange(0, hmass2.GetYaxis().GetNbins() + 1)
-        self._save_hist(hist, f'signalextr/h_{var}_signalextracted_{ipt}_{mcordata}.png')
 
-        hist.Sumw2()
-        if self.hcandeff:
-            hist.Scale(1.0/self.hcandeff.GetBinContent(ipt + 1))
-            self._save_hist(hist, f'signalextr/h_{var}_signalextracted_effscaled_{ipt}_{mcordata}.png')
-        else:
-            self.logger.error('no efficiency correction because of missing efficiency')
+        nbins = [list(range(1, get_axis(hres, i).GetNbins() + 1)) for i in range(dim_hist(hres))]
+        for binid in itertools.product(*nbins):
+            label = f'{binid[0]}'
+            for i in range(1, len(binid)):
+                label += f'_{binid[i]}'
+            limits = {i + 1: (j, j) for i, j in enumerate(binid)}
+            hmass = project_hist(hist, [0], limits)
+            if hmass.GetEntries() > 10:
+                fit_res, func_sig, _ = self._fit_mass(
+                    hmass, f'signalextr/h_mass-{var}_fitted_{ipt}_{label}_{mcordata}.png')
+                if fit_res and fit_res.Get() and fit_res.IsValid():
+                    hres.SetBinContent(*binid, func_sig.Integral(*range_int) / hmass.GetBinWidth(1))
+        self._save_hist(hres, f'signalextr/h_{var}_signalextracted_{ipt}_{label}_{mcordata}.png')
+        # hres.Sumw2() # TODO: check if we should do this here
+        return hres
 
-        return hist
 
     def extract_signals(self):
         self.logger.info("Running signal extraction")
         for mcordata in ['mc', 'data']:
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
             with TFile(rfilename) as rfile:
-                for var in self.observables['signal']:
-                    hsignals = [self._extract_signal(rfile.Get(f'h_mass-{var}_{ipt}'), var, mcordata, ipt)
-                                for ipt in range(self.nbins)]
-                    hist_effscaled = sum_hists(hsignals)
-                    self._save_hist(hist_effscaled, f'h_{var}_signalextracted_effscaled_{mcordata}.png')
-                    if var == 'zg' and mcordata == 'data':
-                        fh_signalextract_feeddowncorrected = hist_effscaled.Clone('fh_signalextract_feeddowncorrected')
-                        hfeeddown_det_1D = self.hfeeddown_det.ProjectionY('hfeeddown_det_1D',1,3,'e')
-                        fh_signalextract_feeddowncorrected.Add(hfeeddown_det_1D,-1)
-                        self._save_hist(fh_signalextract_feeddowncorrected,
-                                        f'h_{var}_signalextract_feeddowncorrected_{mcordata}.png','text')
+                for var in self.observables['all']:
+                    self.logger.debug('looking for %s', f'h_mass-ptjet-pthf-{var}')
+                    fh = rfile.Get(f'h_mass-ptjet-pthf-{var}')
+                    if fh:
+                        fh_sig = []
+                        for ipt in range(self.nbins):
+                            h = project_hist(fh, [0, 3], {2: (ipt+1, ipt+1)})
+                            hres = self._extract_signal(h, var, mcordata, ipt)
+                            self._correct_efficiency(hres, ipt)
+                            fh_sig.append(hres)
+                        fh_sum = sum_hists(fh_sig)
+                        self._save_hist(fh_sum, f'h_{var}_sigextr_effscaled_{mcordata}.png')
+
+                        self._subtract_feeddown(fh_sum, var, mcordata)
+                        self._save_hist(fh_sum, f'h_{var}_sigextr_fdcorr_{mcordata}.png')
+
+                        fh_unfolded = self._unfold(fh_sum, var, mcordata)
+                        for i, h in enumerate(fh_unfolded):
+                            self._save_hist(h, f'h_{var}_sigextr_unfolded_{mcordata}_{i}.png')
+
 
     #region feeddown
-    def correct_feeddown(self):
-        self.logger.info('Running feeddown correction')
+    def estimate_feeddown(self):
+        self.logger.info('Estimating feeddown')
 
         with TFile('/data2/vkucera/powheg/trees_powheg_fd_F05_R05.root') as rfile:
             powheg_xsection = rfile.Get('fHistXsection')
             powheg_xsection_scale_factor = powheg_xsection.GetBinContent(1) / powheg_xsection.GetEntries()
 
         for var in self.observables['fd']:
-            jetptbins_array = np.linspace(5, 55, 10+1, dtype='d') # TODO: take form database
-            shapebins_array = np.linspace(0., 1., 10+1, dtype='d')
+            bins_ptjet = np.asarray(self.cfg('bins_ptjet'), 'd')
+            bins_obs = {'zg': bin_spec(4, .1, .5) }# TODO: take from DB
 
             df = pd.read_parquet('/data2/jklein/powheg/trees_powheg_fd_F05_R05.parquet')
 
             h3feeddown_gen = create_hist('h3_feeddown_gen',
                                          f';p_{{T}}^{{cand}} (GeV/#it{{c}});p_{{T}}^{{jet}} (GeV/#it{{c}});{var}',
-                                         self.bins_candpt, jetptbins_array, shapebins_array)
+                                         self.bins_candpt, bins_ptjet, bins_obs[var])
             fill_hist(h3feeddown_gen, df[['pt_cand', 'pt_jet', 'zg_jet']])
-            h3feeddown_gen.GetXaxis().SetRange(1,10)
-
-            hfeeddown_gen_noeff = h3feeddown_gen.Project3D("zy")
-            self._save_hist(hfeeddown_gen_noeff, f'fd/h_ptjet-{var}_feeddown_gen_noeffscaling.png')
+            xaxis = h3feeddown_gen.GetXaxis()
+            xaxis.SetRange(1, xaxis.GetNbins())
+            self._save_hist(h3feeddown_gen.Project3D("zy"), f'fd/h_ptjet-{var}_feeddown_gen_noeffscaling.png')
 
             for ipt, _ in enumerate(self.bins_candpt):
                 eff_pr = self.hcandeff.GetBinContent(ipt+1)
@@ -392,8 +405,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 if np.isclose(eff_pr, 0.):
                     continue # TODO: how should we handle this?
 
-                for ijetpt, _ in enumerate(jetptbins_array): #TODO add jet pT binning to database
-                    for ishape, _ in enumerate(shapebins_array):
+                for ijetpt, _ in enumerate(bins_ptjet): #TODO add jet pT binning to database
+                    for ishape, _ in enumerate(bins_obs[var]):
                         # TODO: Improve error propagation
                         scale_bin(h3feeddown_gen, eff_np/eff_pr, ipt+1, ijetpt+1, ishape+1)
 
@@ -401,32 +414,25 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             self._save_hist(hfeeddown_gen, f'fd/h_ptjet-{var}_feeddown_gen_effscaled.png')
 
             with TFile(self.n_fileeff) as rfile:
-                hkinematiceff_np_gennodetcuts_zg = rfile.Get('hkinematiceff_np_gennodetcuts_zg')
-                hkinematiceff_np_gendetcuts_zg = rfile.Get('hkinematiceff_np_gendetcuts_zg')
+                hkinematiceff_np_gennodetcuts_zg = rfile.Get(f'h_effkine_np_gen_nocuts_{var}')
+                hkinematiceff_np_gendetcuts_zg = rfile.Get(f'h_effkine_np_gen_cut_{var}')
                 hkinematiceff_np_gendetcuts_zg.Divide(hkinematiceff_np_gennodetcuts_zg)
                 self._save_hist(hkinematiceff_np_gendetcuts_zg, f'fd/h_effkine-ptjet-{var}_np_gen.png', 'text')
 
-                # ROOT bug?
-                ha = hfeeddown_gen
-                hb = hkinematiceff_np_gendetcuts_zg
-                print(ha.GetXaxis().GetXbins().fN, ha.GetYaxis().GetXbins().fN,
-                    hb.GetXaxis().GetXbins().fN, hb.GetYaxis().GetXbins().fN)
-
+                # ROOT complains about different bin limits because fN is 0 for the histogram from file, ROOT bug?
                 hfeeddown_gen.Multiply(hkinematiceff_np_gendetcuts_zg)
                 self._save_hist(hfeeddown_gen, f'fd/h_ptjet-{var}_feeddown_gen_kineeffscaled.png')
 
-                # TODO: fix name of response matrix
-                response_matrix_np = rfile.Get('hkinematiceff_np_detnogencuts_zg_hkinematiceff_np_gennodetcuts_zg')
+                response_matrix_np = rfile.Get(f'h_effkine_np_det_nocuts_{var}_h_effkine_np_gen_nocuts_{var}')
                 self._save_hist(response_matrix_np, f'fd/h_ptjet-{var}_response_np.png')
 
-                hfeeddown_det =  create_hist('hfeeddown_det',
-                                             f';p_{{T}}^{{jet}} (GeV/#it{{c}});{var}', 10, 5,55, 10,0,1)
+                hfeeddown_det = response_matrix_np.Hmeasured().Clone()
                 hfeeddown_det.Sumw2()
                 hfeeddown_det = folding(hfeeddown_gen, response_matrix_np, hfeeddown_det)
                 self._save_hist(hfeeddown_det, f'fd/h_ptjet-{var}_feeddown_det.png')
 
-                hkinematiceff_np_detnogencuts_zg = rfile.Get('hkinematiceff_np_detnogencuts_zg')
-                hkinematiceff_np_detgencuts_zg = rfile.Get('hkinematiceff_np_detgencuts_zg')
+                hkinematiceff_np_detnogencuts_zg = rfile.Get(f'h_effkine_np_det_nocuts_{var}')
+                hkinematiceff_np_detgencuts_zg = rfile.Get(f'h_effkine_np_det_cut_{var}')
                 hkinematiceff_np_detgencuts_zg.Divide(hkinematiceff_np_detnogencuts_zg)
 
                 self._save_hist(hkinematiceff_np_detgencuts_zg, f'fd/h_effkine-ptjet-{var}_np_det.png','text')
@@ -441,33 +447,57 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                                     self.cfg('xsection_inel'))
                 self._save_hist(hfeeddown_det, f'fd/h_ptjet-{var}_feeddown_det_final.png')
                 self.hfeeddown_det = hfeeddown_det
-                self.hfeeddown_det.SetDirectory(0)
 
-    def unfolding(self):
-        self.logger.info('Running unfolding')
+
+    def _subtract_feeddown(self, hist, var, mcordata):
+    # TODO: store and retrieve for correct variable
+        if mcordata == 'mc':
+            return
+        if h_fd := self.hfeeddown_det:
+            hres = hist.Clone('fh_subtracted_feeddowncorrected')
+            if dim_hist(hist) == 1:
+                h_fd = project_hist(self.hfeeddown_det, [0], {})
+            assert dim_hist(h_fd) == dim_hist(hist)
+            hres.Add(h_fd, -1)
+        else:
+            self.logger.error('No feeddown estimation available for %s (%s)', var, mcordata)
+
+
+    #region unfolding
+    def _unfold(self, hist, var, _mcordata):
+        self.logger.info('Unfolding for %s', var)
         with TFile(self.n_fileeff) as rfile:
-                for var in self.observables['fd']:
-                    hkinematiceff_pr_detnogencuts_zg = rfile.Get('hkinematiceff_pr_detnogencuts_zg')
-                    hkinematiceff_pr_detgencuts_zg = rfile.Get('hkinematiceff_pr_detgencuts_zg')
-                    hkinematiceff_pr_detgencuts_zg.Divide(hkinematiceff_pr_detnogencuts_zg)
-                    self._save_hist(hkinematiceff_pr_detgencuts_zg, f'fd/h_effkine-ptjet-{var}_pr_det.png', 'text')
-                    fh_unfolding_input = self.fh_sum_feeddowncorrected.Clone('fh_unfolding_input')
-                    fh_unfolding_input.Multiply(hkinematiceff_pr_detgencuts_zg)
-                    response_matrix_pr = rfile.Get('hkinematiceff_pr_gennodetcuts_zg_hkinematiceff_pr_detnogencuts_zg')
-                    self._save_hist(response_matrix_pr, f'fd/h_ptjet-{var}_response_pr.png')
-                    hkinematiceff_pr_gennodetcuts_zg = rfile.Get('hkinematiceff_pr_gennodetcuts_zg')
-                    hkinematiceff_pr_gendetcuts_zg = rfile.Get('hkinematiceff_pr_gendetcuts_zg')
-                    hkinematiceff_pr_gendetcuts_zg.Divide(hkinematiceff_pr_gennodetcuts_zg)
-                    self._save_hist(hkinematiceff_pr_detgencuts_zg, f'fd/h_effkine-ptjet-{var}_pr_det.png', 'text')
-                    h_unfolding_output = []
-                    for n in range(8):
-                        unfolding_object = ROOT.RooUnfoldBayes(response_matrix_pr, fh_unfolding_input, n + 1)
-                        fh_unfolding_output = unfolding_object.Hreco(2)
-                        self._save_hist(fh_unfolding_output, f'fd/h_unfolded-{var}-{n}.png', 'text')
-                        fh_unfolding_output.Divide(hkinematiceff_pr_gendetcuts_zg)
-                        self._save_hist(fh_unfolding_output, f'fd/h_unfolded_effcorrected-{var}-{n}.png', 'text')
-                        h_unfolding_output.append(fh_unfolding_output)
+            response_matrix_pr = rfile.Get(f'h_effkine_pr_det_nocuts_{var}_h_effkine_pr_gen_nocuts_{var}')
+            if not response_matrix_pr:
+                self.logger.error('Response matrix for %s not available, cannot unfold', var)
+                return []
 
+            h_effkine_pr_detnogencuts = rfile.Get(f'h_effkine_pr_det_nocuts_{var}')
+            h_effkine_pr_detgencuts = rfile.Get(f'h_effkine_pr_det_cut_{var}')
+            h_effkine_pr_detgencuts.Divide(h_effkine_pr_detnogencuts)
+            self._save_hist(h_effkine_pr_detgencuts, f'uf/h_effkine-ptjet-{var}_pr_det.png', 'text')
 
+            fh_unfolding_input = hist.Clone('fh_unfolding_input')
+            if dim_hist(fh_unfolding_input) != dim_hist(h_effkine_pr_detgencuts):
+                self.logger.error('histograms with different dimensions, cannot unfold')
+                return []
+            fh_unfolding_input.Multiply(h_effkine_pr_detgencuts)
+            self._save_hist(response_matrix_pr, f'uf/h_ptjet-{var}_response_pr.png')
 
+            h_effkine_pr_gennodetcuts = rfile.Get(f'h_effkine_pr_gen_nocuts_{var}')
+            h_effkine_pr_gendetcuts = rfile.Get(f'h_effkine_pr_gen_cut_{var}')
+            h_effkine_pr_gendetcuts.Divide(h_effkine_pr_gennodetcuts)
+            self._save_hist(h_effkine_pr_gendetcuts, f'uf/h_effkine-ptjet-{var}_pr_gen.png', 'text')
 
+            h_unfolding_output = []
+            for n in range(1):
+                response_matrix_pr.Print()
+                fh_unfolding_input.Print('base')
+                unfolding_object = ROOT.RooUnfoldBayes(response_matrix_pr, fh_unfolding_input, n + 1)
+                fh_unfolding_output = unfolding_object.Hreco(2)
+                self._save_hist(fh_unfolding_output, f'uf/h_unfolded-{var}-{n}.png', 'text')
+                fh_unfolding_output.Divide(h_effkine_pr_gendetcuts)
+                self._save_hist(fh_unfolding_output, f'uf/h_unfolded_effcorrected-{var}-{n}.png', 'text')
+                h_unfolding_output.append(fh_unfolding_output)
+
+            return h_unfolding_output

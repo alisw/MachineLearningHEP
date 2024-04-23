@@ -72,11 +72,10 @@ analysis:
     init:
     qa:
     fit:
-    efficiency:
-    correct_feeddown:
+    calculate_efficiencies:
+    estimate_feeddown:
     subtract_sidebands:
     extract_signals:
-    unfolding:
 
 systematics:
   cutvar:

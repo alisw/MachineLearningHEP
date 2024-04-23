@@ -344,6 +344,32 @@ D0jet_pp:
 
       sigmamb: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
 
+      observables:
+        zg:
+          bins_fix: [4, .1, .5]
+          label: 'z_{g}'
+        nsd:
+          bins_fix: [10, 0., 10.]
+          label: 'N_{sd}'
+        rg:
+          bins_fix: [100, 0., 1.]
+          label: 'R_{g}'
+        zpar:
+          bins_fix: [100, 0., 1.]
+          label: 'z_{#parallel}'
+        dr:
+          bins_fix: [10, 0., 1.]
+          label: '#Deltar'
+        lntheta:
+          bins_fix: [100, 0., 5.]
+          label: '-ln(#theta)'
+          arraycols: true
+        lnkt:
+          bins_fix: [100, -8., 2.]
+          label: 'ln k_{T}'
+          arraycols: true
+        lntheta-lnkt:
+
       mass_fit:
         func_sig: 'gaus(0)'
         func_bkg: 'expo(3)'

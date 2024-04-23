@@ -138,9 +138,8 @@ class ProcesserJets(Processer):
                          if ptrange[0] < max(self.bins_analysis[:,0]) and ptrange[1] > min(self.bins_analysis[:,1])]
             bins_ptjet = np.asarray(self.cfg('bins_ptjet'), 'd')
             bins_mass = bin_spec(self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-            bins_obs = {'zg': bin_spec(4, .1, .5) }# TODO: take from DB
             bins_ana = np.asarray(self.cfg('sel_an_binmin', []) + self.cfg('sel_an_binmax', [])[-1:], 'd')
-            observables = ['zg'] # TODO: take from DB
+            bins_obs = {'zg': bin_spec(4, .1, .5) }# TODO: take from DB
 
             # read all skimmed bins which overlap with the analysis range
             df = pd.concat(read_df(self.mptfiles_recosk[bin][index]) for bin in bins_skim)
@@ -150,16 +149,22 @@ class ProcesserJets(Processer):
 
             h = create_hist(
                 'h_mass-ptjet-pthf',
-                ';M (GeV/#it{c}^{2});p_{{T}}^{{jet}} (GeV/#it{{c}});p_{{T}}^{{HF}} (GeV/#it{{c}})',
+                ';M (GeV/#it{c}^{2});p_{T}^{jet} (GeV/#it{c});p_{T}^{HF} (GeV/#it{c})',
                 bins_mass, bins_ptjet, bins_ana)
             fill_hist(h, df[['fM', 'fJetPt', 'fPt']], write=True)
 
-            for var in observables:
+            for var, spec in self.cfg('observables', {}).items():
                 self.logger.info('preparing histograms for %s', var)
+                if '-' in var or 'arraycols' in spec:
+                    self.logger.error('Writing for %s not yet available', var)
+                    continue
+                if binning := spec.get('bins_fix'):
+                    bins_obs = bin_spec(*binning)
                 h = create_hist(
                     f'h_mass-ptjet-pthf-{var}',
                     f';M (GeV/#it{{c}}^{{2}});p_{{T}}^{{jet}} (GeV/#it{{c}});p_{{T}}^{{HF}} (GeV/#it{{c}});{var}',
-                    bins_mass, bins_ptjet, bins_ana, bins_obs['zg'])
+                    bins_mass, bins_ptjet, bins_ana, bins_obs)
+                h.GetAxis(3).SetTitle(spec.get('label', var)) # TODO: why is this not derived from the title string?
                 fill_hist(h, df[['fM', 'fJetPt', 'fPt', var]], write=True)
 
 
@@ -173,7 +178,10 @@ class ProcesserJets(Processer):
             cats = ['pr', 'np']
             levels = ['gen', 'det']
             cuts = ['nocuts', 'cut']
-            observables = ['zg']
+            observables = [var for var, spec in self.cfg('observables', {}).items()
+                           if '-' not in var and 'arraycols' not in spec]
+            observables = ['zg'] # FIXME: remove override
+            self.logger.info('Using observables %s', observables)
             bins_skim = [iskim for iskim, ptrange in enumerate(self.bins_skimming)
                          if ptrange[0] < max(self.bins_analysis[:,0]) and ptrange[1] > min(self.bins_analysis[:,1])]
             bins_ptjet = np.asarray(self.cfg('bins_ptjet'), 'd')
@@ -228,18 +236,21 @@ class ProcesserJets(Processer):
                     self.logger.error('No matching, using unmatched detector level for efficiency')
                     fill_hist(h_eff[(cat, 'det')], dfdet[cat]['fPt'])
 
+            # TODO: generalize cuts
             if dfmatch[cat] is not None:
                 for var, cat in itertools.product(observables, cats):
                     df = dfmatch[cat]
                     df = df.loc[(df.fJetPt >= 5) & (df.fJetPt < 55) & (df[var] > .1) & (df[var] < 1.)]
                     fill_hist(h_effkine[(cat, 'det', 'nocuts', var)], df[['fJetPt', var]])
-                    df = df.loc[(df.fJetPt_gen >= 5) & (df.fJetPt_gen < 55) & (df[f'{var}_gen'] > .1) & (df[f'{var}_gen'] < 1.)]
+                    df = df.loc[(df.fJetPt_gen >= 5) & (df.fJetPt_gen < 55) &
+                                (df[f'{var}_gen'] > .1) & (df[f'{var}_gen'] < 1.)]
                     fill_hist(h_effkine[(cat, 'det', 'cut', var)], df[['fJetPt', var]])
 
                     fill_response(response_matrix[(cat, var)], df[['fJetPt', f'{var}', 'fJetPt_gen', f'{var}_gen']])
 
                     df = dfmatch[cat]
-                    df = df.loc[(df.fJetPt_gen >= 5) & (df.fJetPt_gen < 55) & (df[f'{var}_gen'] > .1) & (df[f'{var}_gen'] < 1.)]
+                    df = df.loc[(df.fJetPt_gen >= 5) & (df.fJetPt_gen < 55) &
+                                (df[f'{var}_gen'] > .1) & (df[f'{var}_gen'] < 1.)]
                     fill_hist(h_effkine[(cat, 'gen', 'nocuts', var)], df[['fJetPt_gen', f'{var}_gen']])
                     df = df.loc[(df.fJetPt >= 5) & (df.fJetPt < 55) & (df[f'{var}'] > .1) & (df[f'{var}'] < 1.)]
                     fill_hist(h_effkine[(cat, 'gen', 'cut', var)], df[['fJetPt_gen', f'{var}_gen']])
