@@ -34,6 +34,7 @@ def get_range(hist, axis: int):
 
 # pylint: disable=too-many-branches
 def project_hist(hist, axes: list, limits: dict[int, tuple[int]]):
+    # TODO: add consistent suffix for projections
     if len(axes) == 2:
         axes.reverse() # compensation for ROOT signature using ydim, xdim for 2d projection
     if isinstance(hist, ROOT.THn):

@@ -89,6 +89,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             # TODO: remove file if it exists?
             return
         c = TCanvas()
+        if isinstance(hist, ROOT.TH1) and get_dim(hist) == 2 and 'text' not in option:
+            option += 'text'
         hist.Draw(option)
         self._save_canvas(c, filename)
 
@@ -135,13 +137,11 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 self._save_hist(h_gen[cat], f'qa/h_pthf_{cat}_gen.png')
                 self._save_hist(h_det[cat], f'qa/h_pthf_{cat}_det.png')
                 h_det[cat].Sumw2()
-                h_det[cat].Divide(h_gen[cat])
+                h_det[cat].Divide(h_gen[cat]) # TODO: check uncertainties
                 self._save_hist(h_det[cat], f'h_eff_{cat}.png')
 
             self.hcandeff = h_det['pr']
-            self.hcandeff.SetDirectory(0)
             self.hcandeff_np = h_det['np']
-            self.hcandeff_np.SetDirectory(0)
 
 
     def _correct_efficiency(self, hist, ipt):
@@ -149,12 +149,14 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             return
 
         if not self.hcandeff:
-            self.logger.error('no efficiency correction because of missing efficiency')
+            self.logger.error('no efficiency available for %s', hist.GetName())
             return
 
         if np.isclose(self.hcandeff.GetBinContent(ipt + 1), 0):
-            # TODO: how should we handle this?
-            self.logger.error('Efficiency 0, no correction possible')
+            if hist.GetEntries() > 0:
+                # TODO: how should we handle this?
+                self.logger.error('Efficiency 0 for %s ipt %d, no correction possible',
+                                  hist.GetName(), ipt)
             return
 
         hist.Scale(1.0 / self.hcandeff.GetBinContent(ipt + 1))
@@ -195,9 +197,11 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             # func_bkg.Print('v')
         else:
             self.logger.warning('Invalid fit result for %s', hist.GetName())
+            filename = filename.replace('.png', '_invalid.png')
+            # TODO: how to deal with this
             # func_tot.Print('v')
 
-        if filename: # TODO: move to debug method
+        if filename:
             c = TCanvas()
             hist.Draw()
             func_sig.SetLineColor(ROOT.kBlue)
@@ -219,17 +223,18 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
             with TFile(rfilename) as rfile:
                 h = rfile.Get('h_mass-ptjet-pthf')
-                for ipt in range(1, h.GetZaxis().GetNbins() + 1):
-                    h.GetZaxis().SetRange(ipt, ipt)
-                    h_invmass = project_hist(h, [0], {})
-                    if h_invmass.GetEntries() < 10:
+                for ipt in range(get_axis(h, 2).GetNbins()):
+                    h_invmass = project_hist(h, [0], {2: (ipt+1, ipt+1)})
+                    if h_invmass.GetEntries() < 10: # TODO: adjust threshold
+                        self.logger.error('Not enough entries to fit for %s bin %d', mcordata, ipt)
                         continue
-                    fit_res, _, func_bkg = self._fit_mass(
-                        h_invmass, f'fit/h_mass_fitted_{ipt}_{mcordata}.png')
+                    fit_res, _, func_bkg = self._fit_mass( h_invmass, f'fit/h_mass_fitted_{ipt}_{mcordata}.png')
                     if fit_res and fit_res.Get() and fit_res.IsValid():
                         self.fit_sigma[mcordata][ipt] = fit_res.Parameter(2)
                         self.fit_mean[mcordata][ipt] = fit_res.Parameter(1)
                         self.fit_func_bkg[mcordata][ipt] = func_bkg
+                    else:
+                        self.logger.error('Fit failed for %s bin %d', mcordata, ipt)
 
 
     #region sidebands
@@ -245,7 +250,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         mean = self.fit_mean[mcordata][ipt]
         sigma = self.fit_sigma[mcordata][ipt]
         if mean is None or sigma is None:
-            self.logger.error('no fit parameters for bin %d', ipt)
+            self.logger.error('no fit parameters for %s bin %d', hist.GetName(), ipt)
             return None
 
         regions = {
@@ -350,7 +355,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 label += f'_{binid[i]}'
             limits = {i + 1: (j, j) for i, j in enumerate(binid)}
             hmass = project_hist(hist, [0], limits)
-            if hmass.GetEntries() > 10:
+            if hmass.GetEntries() > 100:
                 fit_res, func_sig, _ = self._fit_mass(
                     hmass, f'signalextr/h_mass-{var}_fitted_{ipt}_{label}_{mcordata}.png')
                 if fit_res and fit_res.Get() and fit_res.IsValid():
@@ -387,6 +392,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
 
     #region feeddown
+    # pylint: disable=too-many-statements
     def estimate_feeddown(self):
         self.logger.info('Estimating feeddown')
 
@@ -398,26 +404,32 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             bins_ptjet = np.asarray(self.cfg('bins_ptjet'), 'd')
             bins_obs = {var: bin_spec(*self.cfg(f'observables.{var}.bins_fix')) for var in self.observables['all']}
 
-            df = pd.read_parquet('/data2/jklein/powheg/trees_powheg_fd_F05_R05.parquet')
-            if f'{var}_jet' not in df:
-                self.logger.error('No feeddown information for %s, cannot estimate feeddown', var)
+            df = pd.read_parquet('/data2/jklein/powheg/trees_powheg_fd_F05_R05.parquet') # TODO: read once
+            col_mapping = {'dr': 'delta_r_jet', 'zpar': 'z'} # TODO: check mapping
+            colname = col_mapping.get(var, f'{var}_jet')
+            if f'{colname}' not in df:
+                self.logger.error('No feeddown information for %s (%s), cannot estimate feeddown', var, colname)
                 continue
 
+            # TODO: derive histogram
+            # TODO: speed up histogram filling (bottleneck)
             h3feeddown_gen = create_hist('h3_feeddown_gen',
                                          f';p_{{T}}^{{cand}} (GeV/#it{{c}});p_{{T}}^{{jet}} (GeV/#it{{c}});{var}',
                                          self.bins_candpt, bins_ptjet, bins_obs[var])
-            fill_hist(h3feeddown_gen, df[['pt_cand', 'pt_jet', f'{var}_jet']]) # TODO: check naming
+            fill_hist(h3feeddown_gen, df[['pt_cand', 'pt_jet', f'{colname}']])
             xaxis = h3feeddown_gen.GetXaxis()
             xaxis.SetRange(1, xaxis.GetNbins())
             self._save_hist(h3feeddown_gen.Project3D("zy"), f'fd/h_ptjet-{var}_feeddown_gen_noeffscaling.png')
 
-            for ipt, _ in enumerate(self.bins_candpt):
+            # TODO: last entry is edge of last bin, check other places
+            for ipt, bins_candpt in enumerate(self.bins_candpt[:-1]):
                 eff_pr = self.hcandeff.GetBinContent(ipt+1)
                 eff_np = self.hcandeff_np.GetBinContent(ipt+1)
                 if np.isclose(eff_pr, 0.):
+                    self.logger.error('Efficiency zero (%s, %d: %s), continuing', var, ipt, bins_candpt)
                     continue # TODO: how should we handle this?
 
-                for ijetpt, _ in enumerate(bins_ptjet): #TODO add jet pT binning to database
+                for ijetpt, _ in enumerate(bins_ptjet):
                     for ishape, _ in enumerate(bins_obs[var]):
                         # TODO: Improve error propagation
                         scale_bin(h3feeddown_gen, eff_np/eff_pr, ipt+1, ijetpt+1, ishape+1)
@@ -469,11 +481,10 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             self.logger.error('No feeddown information available for %s, cannot subtract', var)
             return
         if h_fd := self.hfeeddown_det[var]:
-            hres = hist.Clone('fh_subtracted_feeddowncorrected')
             if get_dim(hist) == 1:
                 h_fd = project_hist(h_fd, [0], {})
             assert get_dim(h_fd) == get_dim(hist)
-            hres.Add(h_fd, -1)
+            hist.Add(h_fd, -1)
         else:
             self.logger.error('No feeddown estimation available for %s (%s)', var, mcordata)
 

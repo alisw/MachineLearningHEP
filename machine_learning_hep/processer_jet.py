@@ -92,8 +92,8 @@ class ProcesserJets(Processer):
         else:
             self.logger.error('rg not all close')
 
+
     def _calculate_variables(self, df): # pylint: disable=invalid-name
-        # TODO: chunk and parallelize
         self.logger.info('calculating variables')
         df['dr'] = np.sqrt((df.fJetEta - df.fEta)**2 + ((df.fJetPhi - df.fPhi + math.pi) % math.tau - math.pi)**2)
         df['jetPx'] = df.fJetPt * np.cos(df.fJetPhi)
@@ -120,7 +120,6 @@ class ProcesserJets(Processer):
         df['lntheta'] = df['fTheta'].apply(lambda x: -np.log(x))
         # df['lntheta'] = np.array(-np.log(df.fTheta))
         self.logger.debug('done')
-        # self.calculate_zg(df)
         return df
 
 
@@ -135,11 +134,11 @@ class ProcesserJets(Processer):
             histonorm.Write()
 
             bins_skim = [iskim for iskim, ptrange in enumerate(self.bins_skimming)
-                         if ptrange[0] < max(self.bins_analysis[:,0]) and ptrange[1] > min(self.bins_analysis[:,1])]
+                         if ptrange[0] < max(self.bins_analysis[:,1]) and ptrange[1] > min(self.bins_analysis[:,0])]
+            self.logger.info('Using skimming bins: %s', bins_skim)
             bins_ptjet = np.asarray(self.cfg('bins_ptjet'), 'd')
             bins_mass = bin_spec(self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
             bins_ana = np.asarray(self.cfg('sel_an_binmin', []) + self.cfg('sel_an_binmax', [])[-1:], 'd')
-            bins_obs = {'zg': bin_spec(4, .1, .5) }# TODO: take from DB
 
             # read all skimmed bins which overlap with the analysis range
             df = pd.concat(read_df(self.mptfiles_recosk[bin][index]) for bin in bins_skim)
@@ -182,9 +181,9 @@ class ProcesserJets(Processer):
                            if '-' not in var and 'arraycols' not in spec]
             self.logger.info('Using observables %s', observables)
             bins_skim = [iskim for iskim, ptrange in enumerate(self.bins_skimming)
-                         if ptrange[0] < max(self.bins_analysis[:,0]) and ptrange[1] > min(self.bins_analysis[:,1])]
+                         if ptrange[0] < max(self.bins_analysis[:,1]) and ptrange[1] > min(self.bins_analysis[:,0])]
+            self.logger.info('Using skimming bins: %s', bins_skim)
             bins_ptjet = np.asarray(self.cfg('bins_ptjet'), 'd')
-            # bins_obs = {'zg': bin_spec(4, .1, .5) }# TODO: take from DB
             bins_obs = { var: bin_spec(*self.cfg(f'observables.{var}.bins_fix')) for var in observables}
 
             h_eff = {(cat, level): TH1F(f'h_pthf_{cat}_{level}', ";p_{T} (GeV/#it{c})", len(ptbins)-1, ptbins)

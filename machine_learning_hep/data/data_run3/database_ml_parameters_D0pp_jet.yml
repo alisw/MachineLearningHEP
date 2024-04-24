@@ -337,9 +337,9 @@ D0jet_pp:
     dir_general_plots: /data2/jklein/data/analysis_plots
 
     jet_obs: &jet_default
-      sel_an_binmin:    [2,3,4,5,6,7,8,10,12] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:    [3,4,5,6,7,8,10,12,16] # hadron pt bins (sel_an_binmin bins)
-      binning_matching:   [1,1,2,2,3,3, 4, 4, 5] # obsolete
+      sel_an_binmin:    [2,3,4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmax:    [3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
+      binning_matching:   [1,1,2,2,3,3, 4, 4, 5, 6,6] # obsolete
       bins_ptjet: [7, 15, 30]
 
       sigmamb: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
@@ -352,20 +352,20 @@ D0jet_pp:
           bins_fix: [10, 0., 10.]
           label: 'N_{sd}'
         rg:
-          bins_fix: [100, 0., 1.]
+          bins_fix: [10, 0., 1.]
           label: 'R_{g}'
         zpar:
-          bins_fix: [100, 0., 1.]
+          bins_fix: [10, 0., 1.]
           label: 'z_{#parallel}'
         dr:
           bins_fix: [10, 0., 1.]
           label: '#Deltar'
         lntheta:
-          bins_fix: [100, 0., 5.]
+          bins_fix: [10, 0., 5.]
           label: '-ln(#theta)'
           arraycols: true
         lnkt:
-          bins_fix: [100, -8., 2.]
+          bins_fix: [10, -8., 2.]
           label: 'ln k_{T}'
           arraycols: true
         lntheta-lnkt:
