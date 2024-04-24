@@ -14,12 +14,11 @@ def get_axis(hist, axis: int):
     if isinstance(hist, ROOT.TH1):
         if axis == 0:
             return hist.GetXaxis()
-        elif axis == 1:
+        if axis == 1:
             return hist.GetYaxis()
-        elif axis == 2:
+        if axis == 2:
             return hist.GetZaxis()
-        else:
-            raise ValueError
+        raise ValueError
 
     raise NotImplementedError
 
@@ -33,6 +32,7 @@ def get_range(hist, axis: int):
     return (axis.GetFirst(), axis.GetLast())
 
 
+# pylint: disable=too-many-branches
 def project_hist(hist, axes: list, limits: dict[int, tuple[int]]):
     if len(axes) == 2:
         axes.reverse() # compensation for ROOT signature using ydim, xdim for 2d projection
@@ -97,6 +97,7 @@ def create_hist(name, title, *bin_specs):
     raise NotImplementedError
 
 # TODO: generalize which columns can contain arrays
+# pylint: disable=too-many-branches
 def fill_hist(hist, dfi: pd.DataFrame, weights = None, arraycols = False, write = False):
     """
     Fill histogram from dataframe

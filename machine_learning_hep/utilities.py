@@ -362,10 +362,6 @@ def equal_binning_lists(his, list_x=None, list_y=None, list_z=None):
     return True
 
 def folding(h_input, response_matrix, h_output):
-    h_input.Print('base')
-    response_matrix.Htruth().Print('base')
-    response_matrix.Hmeasured().Print('base')
-    h_output.Print('base')
     for a in range(h_output.GetNbinsX()):
         for b in range(h_output.GetNbinsY()):
             val = 0.0

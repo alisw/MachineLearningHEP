@@ -371,8 +371,8 @@ D0jet_pp:
         lntheta-lnkt:
 
       mass_fit:
-        func_sig: 'gaus(0)'
-        func_bkg: 'expo(3)'
+        func_sig: 'gaus'
+        func_bkg: 'expo'
         # par_start: {1: 1.86}
         # par_fix: {1: 1.86}
         par_constrain: {1: [1.85, 1.87], 2: [.01, .08]}
