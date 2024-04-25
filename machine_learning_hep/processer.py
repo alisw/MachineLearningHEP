@@ -358,7 +358,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         dfappend(df_name, df)
 
         for df_name, df_spec in self.df_read.items():
-            if dfuse(df_spec):
+            if dfuse(df_spec) and not dfs[df_name].empty:
                 if 'extra' in df_spec:
                     self.logger.debug(' %s -> extra', df_name)
                     for col_name, col_val in df_spec['extra'].items():
@@ -398,6 +398,10 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         var = self.df_read[ref]['index']
                         self.logger.info('merging %s with %s on %s (default) into %s', base, ref, var, out)
                         dfs[out] = dfmerge(dfs[base], dfs[ref], left_on=['df', var], right_index=True)
+                    if 'extra' in m_spec:
+                        self.logger.debug(' %s -> extra', out)
+                        for col_name, col_val in m_spec['extra'].items():
+                            dfs[out][col_name] = dfs[out].eval(col_val)
 
         if self.df_write:
             for df_name, df_spec in self.df_write.items():
@@ -454,8 +458,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     dfrecoskml = dfrecoskml.loc[dfrecoskml[probvar] > self.lpt_probcutpre[ipt]]
             else:
                 dfrecoskml = dfrecosk.query("isstd == 1")
-            pickle.dump(dfrecoskml, openfile(self.mptfiles_recoskmldec[ipt][file_index], "wb"),
-                        protocol=4)
+            write_df(dfrecoskml, self.mptfiles_recoskmldec[ipt][file_index])
 
     @staticmethod
     def callback(ex):

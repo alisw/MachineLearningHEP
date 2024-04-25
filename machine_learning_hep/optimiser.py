@@ -32,7 +32,7 @@ from onnxmltools.convert import convert_xgboost  # pylint: disable=import-error
 from onnxconverter_common.data_types import FloatTensorType  # pylint: disable=import-error
 from ROOT import TFile, TCanvas, TH1F, TF1, gROOT  # pylint: disable=import-error,no-name-in-module
 from machine_learning_hep.utilities import seldf_singlevar, split_df_classes, createstringselection
-from machine_learning_hep.utilities import openfile, dfquery, mask_df
+from machine_learning_hep.utilities import openfile, dfquery, mask_df, read_df, write_df
 from machine_learning_hep.correlations import vardistplot, scatterplot, correlationmatrix
 from machine_learning_hep.models import getclf_scikit, getclf_xgboost, getclf_keras
 from machine_learning_hep.models import fit, savemodels, readmodels, apply, decisionboundaries
@@ -227,18 +227,17 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         if os.path.exists(self.f_reco_applieddata) \
                 and os.path.exists(self.f_reco_appliedmc) \
                 and self.step_done("preparemlsamples_data_mc_mcgen"):
-            self.df_data = pickle.load(openfile(self.f_reco_applieddata, "rb"))
-            self.df_mc = pickle.load(openfile(self.f_reco_appliedmc, "rb"))
+            self.df_data = read_df(self.f_reco_applieddata)
+            self.df_mc = read_df(self.f_reco_appliedmc)
         else:
-            self.df_data = pickle.load(openfile(self.f_reco_data, "rb"))
-            self.df_mc = pickle.load(openfile(self.f_reco_mc, "rb"))
+            self.df_data = read_df(self.f_reco_data)
+            self.df_mc = read_df(self.f_reco_mc)
             self.df_data = dfquery(self.df_data, self.p_evtsel)
             self.df_mc = dfquery(self.df_mc, self.p_evtsel)
-
             self.df_data = dfquery(self.df_data, self.p_triggersel_data)
             self.df_mc = dfquery(self.df_mc, self.p_triggersel_mc)
 
-        self.df_mcgen = pickle.load(openfile(self.f_gen_mc, "rb"))
+        self.df_mcgen = read_df(self.f_gen_mc)
         self.df_mcgen = dfquery(self.df_mcgen, self.p_evtsel)
         self.df_mcgen = dfquery(self.df_mcgen, self.p_triggersel_mc)
         self.df_mcgen = self.df_mcgen.query(self.p_presel_gen_eff)
@@ -260,8 +259,8 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         if os.path.exists(filename_train) \
                 and os.path.exists(filename_test) \
                 and self.step_done("preparemlsamples"):
-            self.df_mltrain = pickle.load(openfile(filename_train, "rb"))
-            self.df_mltest = pickle.load(openfile(filename_test, "rb"))
+            self.df_mltrain = read_df(filename_train)
+            self.df_mltest = read_df(filename_test)
 
         else:
             self.prepare_data_mc_mcgen()
@@ -309,8 +308,8 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
             self.df_mltest = self.df_mltest.reset_index(drop=True)
 
             # Write for later usage
-            pickle.dump(self.df_mltrain, openfile(filename_train, "wb"), protocol=4)
-            pickle.dump(self.df_mltest, openfile(filename_test, "wb"), protocol=4)
+            write_df(self.df_mltrain, filename_train)
+            write_df(self.df_mltest, filename_test)
 
         # Now continue with extracting signal and background stats and report
         self.dfs_train = split_df_classes(self.df_mltrain, self.v_class, self.p_class_labels)
@@ -423,13 +422,13 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
     def do_test(self):
         self.do_train()
         if self.step_done("test"):
-            self.df_mltest_applied = pickle.load(openfile(self.f_mltest_applied, "rb"))
+            self.df_mltest_applied = read_df(self.f_mltest_applied)
             return
 
         self.logger.info("Testing")
         self.df_mltest_applied = apply(self.p_mltype, self.p_classname, self.p_trainedmod,
                                        self.df_mltest, self.v_train, self.p_class_labels)
-        pickle.dump(self.df_mltest_applied, openfile(self.f_mltest_applied, "wb"), protocol=4)
+        write_df(self.df_mltest_applied, self.f_mltest_applied)
         # df_ml_test_to_root = self.dirmlout+"/testsample_%s_mldecision.root" % (self.s_suffix)
         # write_tree(df_ml_test_to_root, self.n_treetest, self.df_mltest_applied)
 
@@ -446,8 +445,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
                                 (self.f_reco_applieddata, self.f_reco_appliedmc)):
             df_res = apply(self.p_mltype, self.p_classname, self.p_trainedmod,
                            df, self.v_train, self.p_class_labels)
-            with openfile(filename, "wb") as out_file:
-                pickle.dump(df_res, out_file, protocol=4)
+            write_df(df_res, filename)
 
     def do_crossval(self):
         if self.step_done("cross_validation"):
@@ -646,7 +644,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.do_apply()
         self.do_test()
 
-        df_data_sidebands = pickle.load(openfile(self.f_reco_applieddata, "rb"))
+        df_data_sidebands = read_df(self.f_reco_applieddata)
         self.logger.info("Doing significance optimization")
         gROOT.SetBatch(True)
         gROOT.ProcessLine("gErrorIgnoreLevel = kWarning;")
@@ -799,8 +797,8 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.do_apply()
 
         prob_array = [0.0, 0.2, 0.6, 0.9]
-        dfdata = pickle.load(openfile(self.f_reco_applieddata, "rb"))
-        dfmc = pickle.load(openfile(self.f_reco_appliedmc, "rb"))
+        dfdata = read_df(self.f_reco_applieddata)
+        dfmc = read_df(self.f_reco_appliedmc)
         vardistplot_probscan(dfmc, self.v_all, "xgboost_classifier",
                              prob_array, self.dirmlplot, "mc" + self.s_suffix,
                              0, self.p_plot_options)

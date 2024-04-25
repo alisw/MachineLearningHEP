@@ -170,7 +170,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
     # pylint: disable=too-many-branches, too-many-locals
     def process_histomass_single(self, index):
         myfile = TFile.Open(self.l_histomass[index], "recreate")
-        dfevtorig = pickle.load(openfile(self.l_evtorig[index], "rb"))
+        dfevtorig = read_df(self.l_evtorig[index])
         neventsorig = len(dfevtorig)
         if self.s_trigger is not None:
             dfevtorig = dfevtorig.query(self.s_trigger)
@@ -248,7 +248,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
 
         for ipt in range(self.p_nptfinbins): # pylint: disable=too-many-nested-blocks
             bin_id = self.bin_matching[ipt]
-            df = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
+            df = read_df(self.mptfiles_recoskmldec[bin_id][index])
             if self.s_evtsel is not None:
                 df = df.query(self.s_evtsel)
             if self.s_trigger is not None:
@@ -441,7 +441,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
             bincounter = 0
             for ipt in range(self.p_nptfinbins):
                 bin_id = self.bin_matching[ipt]
-                df_mc_reco = pickle.load(openfile(self.mptfiles_recoskmldec[bin_id][index], "rb"))
+                df_mc_reco = read_df(openfile(self.mptfiles_recoskmldec[bin_id][index])
                 if self.s_evtsel is not None:
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_trigger is not None:
@@ -451,7 +451,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 if self.runlistrigger is not None:
                     df_mc_reco = selectdfrunlist(df_mc_reco, \
                          self.run_param[self.runlistrigger], "run_number")
-                df_mc_gen = pickle.load(openfile(self.mptfiles_gensk[bin_id][index], "rb"))
+                df_mc_gen = read_df(openfile(self.mptfiles_gensk[bin_id][index])
                 df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
                 if self.s_evtsel is not None:
                     df_mc_gen = df_mc_gen.query(self.s_evtsel)

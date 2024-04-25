@@ -85,24 +85,11 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     doefficiency = data_config["analysis"]["mc"]["efficiency"]
     efficiency_resp = data_config["analysis"]["mc"].get("efficiency_resp", False)
     doresponse = data_config["analysis"]["mc"]["response"]
-    dofeeddown = data_config["analysis"]["mc"]["feeddown"]
-    dounfolding = data_config["analysis"]["mc"]["dounfolding"]
-    dojetsystematics = data_config["analysis"]["data"]["dojetsystematics"]
-    doqa = data_config["analysis"].get("doqa", False)
-    dofit = data_config["analysis"].get("dofit", False)
-    dosidebandsub = data_config["analysis"].get("dosidebandsub", False)
-    doeff = data_config["analysis"].get("doeff", False)
-    docross = data_config["analysis"].get("docross", False)
-    doplotsval = data_config["analysis"].get("doplotsval", False)
-    doplots = data_config["analysis"].get("doplots", False)
-    dosyst = data_config["analysis"].get("dosyst", False)
     do_syst_ml = data_config["systematics"]["cutvar"]["activate"]
     do_syst_ml_only_analysis = data_config["systematics"]["cutvar"]["do_only_analysis"]
     do_syst_ml_resume = data_config["systematics"]["cutvar"]["resume"]
     doanaperperiod = data_config["analysis"]["doperperiod"]
     typean = data_config["analysis"]["type"]
-
-    dojetstudies = data_config["analysis"].get("dojetstudies", False)
 
     dp = data_param[case]["multi"]["mc"]
     dirprefixmc = dp.get("prefix_dir", "")
@@ -412,38 +399,9 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
 
     # Collect all desired analysis steps
     analyze_steps = []
-    if doqa:
-        analyze_steps.append("qa")
-    if dofit:
-        analyze_steps.append("fit")
-    if dosidebandsub:
-        analyze_steps.append("sidebandsub")
-    if dosyst:
-        analyze_steps.append("yield_syst")
-    if doeff:
-        analyze_steps.append("efficiency")
-    if dojetstudies:
-        if not dofit:
-            analyze_steps.append("fit")
-        if not doeff:
-            analyze_steps.append("efficiency")
-        analyze_steps.append("sideband_sub")
-    if dofeeddown:
-        analyze_steps.append("feeddown")
-    if dounfolding:
-        analyze_steps.append("unfolding")
-        analyze_steps.append("unfolding_closure")
-    if dojetsystematics:
-        analyze_steps.append("jetsystematics")
-    if docross:
-        analyze_steps.append("makenormyields")
-    if doplots:
-        analyze_steps.append("plotternormyields")
-    if doplotsval:
-        analyze_steps.append("plottervalidation")
 
-    for step in data_config["analysis"].get('steps', []):
-        if step not in analyze_steps:
+    for step, is_enabled in data_config["analysis"].get('steps', {}).items():
+        if step not in analyze_steps and is_enabled:
             analyze_steps.append(step)
 
     # Now do the analysis

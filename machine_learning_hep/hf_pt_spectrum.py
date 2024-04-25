@@ -25,7 +25,7 @@ https://github.com/AliceO2Group/O2Physics/tree/master/PWGHF/D2H/Macros
 import sys
 import numpy as np  # pylint: disable=import-error
 
-from hf_analysis_utils import ( # pylint: disable=import-error
+from machine_learning_hep.hf_analysis_utils import ( # pylint: disable=import-error
     compute_crosssection,
     compute_fraction_fc,
     compute_fraction_nb,

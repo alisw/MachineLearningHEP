@@ -148,6 +148,13 @@ def fit(names_, classifiers_, x_train_, y_train_):
 def apply(ml_type, names_, trainedmodels_, test_set_, mylistvariables_, labels_=None):
     logger = get_logger()
 
+    if len(test_set_[mylistvariables_]) == 0:
+        logger.warning("Empty dataframe provided.")
+        for name in names_:
+            test_set_[f"y_test_prediction{name}"]=0
+            test_set_[f"y_test_prob{name}"]=0
+        return test_set_
+
     x_values = test_set_[mylistvariables_]
     for name, model in zip(names_, trainedmodels_):
         y_test_prediction = model.predict(x_values)
