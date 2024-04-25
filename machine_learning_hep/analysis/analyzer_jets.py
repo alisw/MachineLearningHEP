@@ -76,6 +76,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         for folder in ['qa', 'fit', 'sideband', 'signalextr', 'fd', 'uf']:
             (self.path_fig / folder).mkdir(parents=True, exist_ok=True)
 
+        self.rfigfile = TFile(str(self.path_fig / 'output.root'), 'recreate')
 
     #region helpers
     def _save_canvas(self, canvas, filename):
@@ -93,6 +94,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             option += 'text'
         hist.Draw(option)
         self._save_canvas(c, filename)
+        self.rfigfile.WriteObject(hist, filename.removesuffix('.png'))
 
 
     #region fundamentals

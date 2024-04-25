@@ -166,8 +166,13 @@ class ProcesserJets(Processer):
 
                 bins_obs = []
                 for v in var:
-                    if binning := self.cfg(f'observables.{v}.bins_fix'):
+                    if binning := self.cfg(f'observables.{v}.bins_var'):
+                        bins_obs.append(np.asarray(binning, 'd'))
+                    elif binning := self.cfg(f'observables.{v}.bins_fix'):
                         bins_obs.append(bin_spec(*binning))
+                    else:
+                        self.logger.error('no binning specified for %s, using defaults', v)
+                        bins_obs.append(bin_spec(10, 0., 1.))
 
                 h = create_hist(
                     f'h_mass-ptjet-pthf-{obs}',
