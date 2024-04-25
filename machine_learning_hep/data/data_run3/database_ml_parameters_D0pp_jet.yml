@@ -363,12 +363,13 @@ D0jet_pp:
         lntheta:
           bins_fix: [10, 0., 5.]
           label: '-ln(#theta)'
-          arraycols: true
+          arraycols: [3]
         lnkt:
           bins_fix: [10, -8., 2.]
           label: 'ln k_{T}'
-          arraycols: true
+          arraycols: [3]
         lntheta-lnkt:
+          arraycols: [3, 4]
 
       mass_fit:
         func_sig: 'gaus'

@@ -1,3 +1,5 @@
+from collections import deque
+
 import numpy as np
 import pandas as pd
 import ROOT
@@ -99,7 +101,7 @@ def create_hist(name, title, *bin_specs):
 
 # TODO: generalize which columns can contain arrays
 # pylint: disable=too-many-branches
-def fill_hist(hist, dfi: pd.DataFrame, weights = None, arraycols = False, write = False):
+def fill_hist(hist, dfi: pd.DataFrame, weights = None, arraycols = None, write = False):
     """
     Fill histogram from dataframe
 
@@ -134,12 +136,28 @@ def fill_hist(hist, dfi: pd.DataFrame, weights = None, arraycols = False, write 
         if not arraycols:
             dfi.apply(lambda row: hist.Fill(row.iloc[0], row.iloc[1], row.iloc[2]), axis=1)
         else:
-            dfi.apply(lambda row: [hist.Fill(row.iloc[0], v[0], v[1]) for v in zip(row.iloc[1], row.iloc[2])], axis=1)
+            assert arraycols == [1, 2], 'other cases not yet implemented'
+            dfi.apply(lambda row: [hist.Fill(row.iloc[0], v[0], v[1])
+                                   for v in zip(row.iloc[i] for i in arraycols)], axis=1)
     elif dim_hist > 3:
         assert weights is None, 'weights not supported'
-        assert not arraycols
         if not arraycols:
             dfi.apply(lambda row: hist.Fill(*row), axis=1)
+        else:
+            m = [-1] * dim_hist
+            idx = 0
+            for i in arraycols:
+                m[i] = idx
+                idx += 1
+            def fill_row(row):
+                # for v in zip(*[row.iloc[i] for i in arraycols]):
+                #     hist.Fill(np.asarray([row.iloc[i] if i not in arraycols else v[m[i]]
+                #                           for i in range(dim_hist)], 'd'))
+                gen = (hist.Fill(np.asarray([row.iloc[i] if i not in arraycols else v[m[i]]
+                                             for i in range(dim_hist)], 'd'))
+                       for v in zip(*[row.iloc[i] for i in arraycols]))
+                deque(gen, maxlen=0)
+            dfi.apply(fill_row, axis=1)
     if write:
         hist.Write()
 

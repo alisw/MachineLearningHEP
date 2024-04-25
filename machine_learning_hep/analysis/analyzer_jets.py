@@ -225,7 +225,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 h = rfile.Get('h_mass-ptjet-pthf')
                 for ipt in range(get_axis(h, 2).GetNbins()):
                     h_invmass = project_hist(h, [0], {2: (ipt+1, ipt+1)})
-                    if h_invmass.GetEntries() < 10: # TODO: adjust threshold
+                    if h_invmass.GetEntries() < 100:
                         self.logger.error('Not enough entries to fit for %s bin %d', mcordata, ipt)
                         continue
                     fit_res, _, func_bkg = self._fit_mass( h_invmass, f'fit/h_mass_fitted_{ipt}_{mcordata}.png')
@@ -412,11 +412,12 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 continue
 
             # TODO: derive histogram
-            # TODO: speed up histogram filling (bottleneck)
             h3feeddown_gen = create_hist('h3_feeddown_gen',
                                          f';p_{{T}}^{{cand}} (GeV/#it{{c}});p_{{T}}^{{jet}} (GeV/#it{{c}});{var}',
                                          self.bins_candpt, bins_ptjet, bins_obs[var])
+            # TODO: speed up histogram filling (bottleneck)
             fill_hist(h3feeddown_gen, df[['pt_cand', 'pt_jet', f'{colname}']])
+            # TODO: use project_hist
             xaxis = h3feeddown_gen.GetXaxis()
             xaxis.SetRange(1, xaxis.GetNbins())
             self._save_hist(h3feeddown_gen.Project3D("zy"), f'fd/h_ptjet-{var}_feeddown_gen_noeffscaling.png')
@@ -434,7 +435,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         # TODO: Improve error propagation
                         scale_bin(h3feeddown_gen, eff_np/eff_pr, ipt+1, ijetpt+1, ishape+1)
 
-            hfeeddown_gen = h3feeddown_gen.Project3D("zy")
+            hfeeddown_gen = h3feeddown_gen.Project3D("zy") # TODO: use project_hist
             self._save_hist(hfeeddown_gen, f'fd/h_ptjet-{var}_feeddown_gen_effscaled.png')
 
             with TFile(self.n_fileeff) as rfile:
