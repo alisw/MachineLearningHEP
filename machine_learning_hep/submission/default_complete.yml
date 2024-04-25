@@ -69,12 +69,12 @@ analysis:
     feeddown: false # analyzer: feeddown
     dounfolding: false # analyzer: unfolding, unfolding_closure
   steps: # list steps (name of method in analyzer) to run
-     fit: false
-     efficiency: false
-     makenormyields: false
-     sideband: false
-     qa: false
-     signalextraction: false
+     #fit:
+     #efficiency:
+     #makenormyields:
+     #sideband:
+     #qa:
+     #signalextraction:
 
 systematics:
   cutvar:

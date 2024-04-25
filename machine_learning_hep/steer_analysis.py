@@ -400,8 +400,8 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     # Collect all desired analysis steps
     analyze_steps = []
 
-    for step, is_enabled in data_config["analysis"].get('steps', {}).items():
-        if step not in analyze_steps and is_enabled:
+    for step in data_config["analysis"].get('steps', []) or []:
+        if step not in analyze_steps:
             analyze_steps.append(step)
 
     # Now do the analysis
