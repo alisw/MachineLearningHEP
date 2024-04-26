@@ -110,7 +110,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
 
     def qa(self): # pylint: disable=invalid-name
-        self.logger.info("Running D0 jet qa")
+        self.logger.info("Producing basic QA histograms")
         for mcordata in ['mc', 'data']:
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
             with TFile(rfilename) as rfile:

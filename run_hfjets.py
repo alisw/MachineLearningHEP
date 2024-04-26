@@ -28,14 +28,16 @@ args = parser.parse_args()
 
 if args.case == 'd0jet':
     DB = 'machine_learning_hep/data/data_run3/database_ml_parameters_D0pp_jet.yml'
+    DB_SUB = 'd0jet'
 elif args.case == 'lcjet':
     DB = 'machine_learning_hep/data/data_run3/database_ml_parameters_LcJet_pp.yml'
+    DB_SUB = 'lcjet'
 else:
     print(f'Unknown case <{args.case}>')
     sys.exit(-1)
 
 for step in args.steps:
-    subprocess.run(f'mlhep -r machine_learning_hep/submission/d0jet_{step}.yml ' +
+    subprocess.run(f'mlhep -r machine_learning_hep/submission/{DB_SUB}_{step}.yml ' +
                    f'-d {DB} {"-b" if not args.interactive else ""} ' +
                    f'-a {args.analysis} {"--delete" if args.delete else ""}',
                    shell=True, stdout=sys.stdout, stderr=sys.stderr, check=True)
