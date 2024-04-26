@@ -250,8 +250,8 @@ LcpKpi:
     namefile_evtvalroot: AnalysisResultsROOTEvtVal.root
     namefile_evtorig: AnalysisResultsEvtOrig.parquet
     namefile_gen: AnalysisResultsGen.parquet
-    namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl
-    namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl
+    namefile_reco_applieddata: AnalysisResultsRecoAppliedData.parquet
+    namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.parquet
     namefile_mcweights: mcweights.root
     treeoutput: "Lctree"
     histofilename: "masshisto.root"
