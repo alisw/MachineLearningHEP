@@ -23,8 +23,8 @@ from ROOT import TF1, TCanvas, TFile, gStyle
 
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.utilities import folding
-from machine_learning_hep.utilities_hist import (bin_array, create_hist, get_dim, fill_hist, get_axis,
-                                                 scale_bin, sum_hists, project_hist)
+from machine_learning_hep.utils.hist import (bin_array, create_hist, get_dim, fill_hist, get_axis, get_nbins,
+                                             scale_bin, sum_hists, project_hist)
 
 
 class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
@@ -132,8 +132,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         cats = {'pr', 'np'}
         rfilename = self.n_fileeff
         with TFile(rfilename) as rfile:
-            h_gen = {cat: rfile.Get(f'h_pthf_{cat}_gen') for cat in cats}
-            h_det = {cat: rfile.Get(f'h_pthf_{cat}_det').Clone(f'h_eff_{cat}') for cat in cats}
+            h_gen = {cat: project_hist(rfile.Get(f'h_ptjet-pthf_{cat}_gen'), [1], {}) for cat in cats}
+            h_det = {cat: project_hist(rfile.Get(f'h_ptjet-pthf_{cat}_det'), [1], {}).Clone(f'h_eff_{cat}')
+                     for cat in cats}
 
             for cat in cats:
                 self._save_hist(h_gen[cat], f'qa/h_pthf_{cat}_gen.png')
@@ -194,14 +195,11 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             for i in range(func_bkg.GetNpar()):
                 func_bkg.SetParameter(i, par[idx])
                 idx += 1
-            # func_tot.Print('v')
-            # func_sig.Print('v')
-            # func_bkg.Print('v')
         else:
             self.logger.warning('Invalid fit result for %s', hist.GetName())
+            # func_tot.Print('v')
             filename = filename.replace('.png', '_invalid.png')
             # TODO: how to deal with this
-            # func_tot.Print('v')
 
         if filename:
             c = TCanvas()
@@ -225,7 +223,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
             with TFile(rfilename) as rfile:
                 h = rfile.Get('h_mass-ptjet-pthf')
-                for ipt in range(get_axis(h, 2).GetNbins()):
+                for ipt in range(get_nbins(h, 2)):
                     h_invmass = project_hist(h, [0], {2: (ipt+1, ipt+1)})
                     if h_invmass.GetEntries() < 100:
                         self.logger.error('Not enough entries to fit for %s bin %d', mcordata, ipt)
@@ -414,31 +412,27 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 continue
 
             # TODO: derive histogram
-            h3feeddown_gen = create_hist('h3_feeddown_gen',
-                                         f';p_{{T}}^{{cand}} (GeV/#it{{c}});p_{{T}}^{{jet}} (GeV/#it{{c}});{var}',
-                                         self.bins_candpt, bins_ptjet, bins_obs[var])
+            h3_fd_gen = create_hist('h3_feeddown_gen',
+                                    f';p_{{T}}^{{cand}} (GeV/#it{{c}});p_{{T}}^{{jet}} (GeV/#it{{c}});{var}',
+                                    self.bins_candpt, bins_ptjet, bins_obs[var])
             # TODO: speed up histogram filling (bottleneck)
-            fill_hist(h3feeddown_gen, df[['pt_cand', 'pt_jet', f'{colname}']])
-            # TODO: use project_hist
-            xaxis = h3feeddown_gen.GetXaxis()
-            xaxis.SetRange(1, xaxis.GetNbins())
-            self._save_hist(h3feeddown_gen.Project3D("zy"), f'fd/h_ptjet-{var}_feeddown_gen_noeffscaling.png')
+            fill_hist(h3_fd_gen, df[['pt_cand', 'pt_jet', f'{colname}']])
+            self._save_hist(project_hist(h3_fd_gen, [1, 2], {}), f'fd/h_ptjet-{var}_feeddown_gen_noeffscaling.png')
 
-            # TODO: last entry is edge of last bin, check other places
-            for ipt, bins_candpt in enumerate(self.bins_candpt[:-1]):
+            for ipt in range(get_nbins(h3_fd_gen, axis=0)):
                 eff_pr = self.hcandeff.GetBinContent(ipt+1)
                 eff_np = self.hcandeff_np.GetBinContent(ipt+1)
                 if np.isclose(eff_pr, 0.):
-                    self.logger.error('Efficiency zero (%s, %d: %s), continuing', var, ipt, bins_candpt)
+                    self.logger.error('Efficiency zero for %s in pt bin %d, continuing', var, ipt)
                     continue # TODO: how should we handle this?
 
-                for ijetpt, _ in enumerate(bins_ptjet):
-                    for ishape, _ in enumerate(bins_obs[var]):
-                        # TODO: Improve error propagation
-                        scale_bin(h3feeddown_gen, eff_np/eff_pr, ipt+1, ijetpt+1, ishape+1)
+                for ijetpt in range(get_nbins(h3_fd_gen, axis=1)):
+                    for ishape in range(get_nbins(h3_fd_gen, axis=2)):
+                        # TODO: consider error propagation
+                        scale_bin(h3_fd_gen, eff_np/eff_pr, ipt+1, ijetpt+1, ishape+1)
 
-            hfeeddown_gen = h3feeddown_gen.Project3D("zy") # TODO: use project_hist
-            self._save_hist(hfeeddown_gen, f'fd/h_ptjet-{var}_feeddown_gen_effscaled.png')
+            h_fd_gen = project_hist(h3_fd_gen, [1, 2], {})
+            self._save_hist(h_fd_gen, f'fd/h_ptjet-{var}_feeddown_gen_effscaled.png')
 
             with TFile(self.n_fileeff) as rfile:
                 hkinematiceff_np_gennodetcuts = rfile.Get(f'h_effkine_np_gen_nocuts_{var}')
@@ -447,15 +441,15 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 self._save_hist(hkinematiceff_np_gendetcuts, f'fd/h_effkine-ptjet-{var}_np_gen.png', 'text')
 
                 # ROOT complains about different bin limits because fN is 0 for the histogram from file, ROOT bug?
-                hfeeddown_gen.Multiply(hkinematiceff_np_gendetcuts)
-                self._save_hist(hfeeddown_gen, f'fd/h_ptjet-{var}_feeddown_gen_kineeffscaled.png')
+                h_fd_gen.Multiply(hkinematiceff_np_gendetcuts)
+                self._save_hist(h_fd_gen, f'fd/h_ptjet-{var}_feeddown_gen_kineeffscaled.png')
 
                 response_matrix_np = rfile.Get(f'h_effkine_np_det_nocuts_{var}_h_effkine_np_gen_nocuts_{var}')
                 self._save_hist(response_matrix_np, f'fd/h_ptjet-{var}_response_np.png')
 
                 hfeeddown_det = response_matrix_np.Hmeasured().Clone()
                 hfeeddown_det.Sumw2()
-                hfeeddown_det = folding(hfeeddown_gen, response_matrix_np, hfeeddown_det)
+                hfeeddown_det = folding(h_fd_gen, response_matrix_np, hfeeddown_det)
                 self._save_hist(hfeeddown_det, f'fd/h_ptjet-{var}_feeddown_det.png')
 
                 hkinematiceff_np_detnogencuts = rfile.Get(f'h_effkine_np_det_nocuts_{var}')

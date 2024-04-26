@@ -27,7 +27,7 @@ from machine_learning_hep.utilities_files import create_folder_struc
 from machine_learning_hep.utilities import seldf_singlevar, seldf_singlevar_inclusive
 from machine_learning_hep.utilities import mergerootfiles, read_df
 from machine_learning_hep.utilities import get_timestamp_string
-from machine_learning_hep.utilities_hist import fill_hist
+from machine_learning_hep.utils.hist import fill_hist
 #from machine_learning_hep.globalfitter import fitter
 from machine_learning_hep.processer import Processer
 from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df

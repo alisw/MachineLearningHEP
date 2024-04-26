@@ -34,6 +34,10 @@ def get_range(hist, axis: int):
     return (axis.GetFirst(), axis.GetLast())
 
 
+def get_nbins(hist, axis:int):
+    return get_axis(hist, axis).GetNbins()
+
+
 # pylint: disable=too-many-branches
 def project_hist(hist, axes: list, limits: dict[int, tuple[int]]):
     # TODO: add consistent suffix for projections

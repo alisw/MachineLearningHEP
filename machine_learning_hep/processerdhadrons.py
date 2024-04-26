@@ -21,7 +21,7 @@ import numpy as np
 # pylint: disable=import-error, no-name-in-module, consider-using-f-string
 from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.bitwise import tag_bit_df
-from machine_learning_hep.utilities_hist import fill_hist
+from machine_learning_hep.utils.hist import fill_hist
 from machine_learning_hep.utilities import selectdfrunlist
 from machine_learning_hep.utilities import seldf_singlevar, read_df
 from machine_learning_hep.processer import Processer

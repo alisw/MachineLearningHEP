@@ -23,7 +23,7 @@ from ROOT import TH1F, TFile
 
 from machine_learning_hep.processer import Processer
 from machine_learning_hep.utilities import dfquery, fill_response, read_df
-from machine_learning_hep.utilities_hist import bin_array, create_hist, fill_hist, get_axis
+from machine_learning_hep.utils.hist import bin_array, create_hist, fill_hist, get_axis
 
 
 # pylint: disable=too-many-instance-attributes
@@ -44,14 +44,14 @@ class ProcesserJets(Processer):
 
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"] # TODO: check if we need to apply event sel
 
-        # bins: list of tuples of (low, high)
-        self.bins_skimming = list(zip(self.lpt_anbinmin, self.lpt_anbinmax)) # TODO: replace with cfg
-        self.bins_analysis = list(zip(self.lpt_finbinmin, self.lpt_finbinmax))
+        # bins: 2d array [[low, high], ...]
+        self.bins_skimming = np.array(list(zip(self.lpt_anbinmin, self.lpt_anbinmax)), 'd') # TODO: replace with cfg
+        self.bins_analysis = np.array(list(zip(self.lpt_finbinmin, self.lpt_finbinmax)), 'd')
 
         # skimming bins in overlap with the analysis range
         self.active_bins_skim = [
             iskim for iskim, ptrange in enumerate(self.bins_skimming)
-            if ptrange[0] < max(self.bins_analysis[:][1]) and ptrange[1] > min(self.bins_analysis[:][0])]
+            if ptrange[0] < max(self.bins_analysis[:,1]) and ptrange[1] > min(self.bins_analysis[:,0])]
         self.logger.info('Using skimming bins: %s', self.active_bins_skim)
 
         # binarray: array of bin edges as double (passable to ROOT)
@@ -172,7 +172,7 @@ class ProcesserJets(Processer):
 
             # remove entries that would end up in under-/overflow bins to save compute time
             df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
-            df = df.loc[(df.fPt >= min(self.bins_analysis[:][0])) & (df.fPt < max(self.bins_analysis[:][1]))]
+            df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
             self._calculate_variables(df) # TODO: only calculate requested variables
 
             # fill histograms for all (active) observables
@@ -204,7 +204,8 @@ class ProcesserJets(Processer):
         levels = ['gen', 'det']
         cuts = ['nocuts', 'cut']
         observables = self.cfg('observables', [])
-        h_eff = {(cat, level): create_hist('h_ptjet-pthf', ';p_{T}^{jet} (GeV/#it{c});p_{T}^{HF} (GeV/#it{c})',
+        h_eff = {(cat, level): create_hist(f'h_ptjet-pthf_{cat}_{level}',
+                                           ';p_{T}^{jet} (GeV/#it{c});p_{T}^{HF} (GeV/#it{c})',
                                            self.binarray_ptjet, self.binarray_pthf)
                                            for cat in cats for level in levels}
         # TODO: for now only 1d observables supported
@@ -258,13 +259,13 @@ class ProcesserJets(Processer):
             for cat in cats:
                 df = dfdet[cat]
                 df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
-                df = df.loc[(df.fPt >= min(self.bins_analysis[:][0])) & (df.fPt < max(self.bins_analysis[:][1]))]
+                df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
                 df = self._calculate_variables(df)
                 dfdet[cat] = df
 
             df = dfgen_orig
             df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
-            df = df.loc[(df.fPt >= min(self.bins_analysis[:][0])) & (df.fPt < max(self.bins_analysis[:][1]))]
+            df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
             self._calculate_variables(df)
             df = df.rename(lambda name: name + '_gen', axis=1)
             dfgen = {'pr': df.loc[df.ismcprompt_gen == 1], 'np': df.loc[df.ismcprompt_gen == 0]}
