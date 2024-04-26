@@ -23,9 +23,10 @@ from ROOT import TH1F, TFile
 
 from machine_learning_hep.processer import Processer
 from machine_learning_hep.utilities import dfquery, fill_response, read_df
-from machine_learning_hep.utilities_hist import bin_spec, create_hist, fill_hist, get_axis
+from machine_learning_hep.utilities_hist import bin_array, create_hist, fill_hist, get_axis
 
 
+# pylint: disable=too-many-instance-attributes
 class ProcesserJets(Processer):
     species = "processer"
 
@@ -41,17 +42,43 @@ class ProcesserJets(Processer):
                         d_results, typean, runlisttrigger, d_mcreweights)
         self.logger.info("initialized processer for HF jets")
 
-        self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
+        self.s_evtsel = datap["analysis"][self.typean]["evtsel"] # TODO: check if we need to apply event sel
 
-        self.bins_skimming = list(zip(self.lpt_anbinmin, self.lpt_anbinmax))
-        self.bins_analysis = np.array(list(zip(self.lpt_finbinmin, self.lpt_finbinmax)))
+        # bins: list of tuples of (low, high)
+        self.bins_skimming = list(zip(self.lpt_anbinmin, self.lpt_anbinmax)) # TODO: replace with cfg
+        self.bins_analysis = list(zip(self.lpt_finbinmin, self.lpt_finbinmax))
 
-        self.p_bin_width = datap["analysis"][self.typean]["bin_width"]
-        self.p_mass_fit_lim = datap["analysis"][self.typean]["mass_fit_lim"]
-        self.p_num_bins = int(round((self.p_mass_fit_lim[1] - self.p_mass_fit_lim[0]) / self.p_bin_width))
+        # skimming bins in overlap with the analysis range
+        self.active_bins_skim = [
+            iskim for iskim, ptrange in enumerate(self.bins_skimming)
+            if ptrange[0] < max(self.bins_analysis[:][1]) and ptrange[1] > min(self.bins_analysis[:][0])]
+        self.logger.info('Using skimming bins: %s', self.active_bins_skim)
 
-    #region observables
-    def calculate_zg(self, df): # pylint: disable=invalid-name
+        # binarray: array of bin edges as double (passable to ROOT)
+        limits_mass = datap["analysis"][self.typean]["mass_fit_lim"]
+        binwidth_mass = datap["analysis"][self.typean]["bin_width"]
+        nbins_mass = int(round((limits_mass[1] - limits_mass[0]) / binwidth_mass))
+        self.binarray_mass = bin_array(nbins_mass, limits_mass[0], limits_mass[1])
+        self.binarray_ptjet = np.asarray(self.cfg('bins_ptjet'), 'd')
+        self.binarray_pthf = np.asarray(self.cfg('sel_an_binmin', []) + self.cfg('sel_an_binmax', [])[-1:], 'd')
+        self.binarrays_obs = {}
+        for obs in self.cfg('observables'):
+            var = obs.split('-')
+            for v in var:
+                if v in self.binarrays_obs:
+                    continue
+                if binning := self.cfg(f'observables.{v}.bins_var'):
+                    self.binarrays_obs[v] = np.asarray(binning, 'd')
+                elif binning := self.cfg(f'observables.{v}.bins_fix'):
+                    self.binarrays_obs[v] = bin_array(*binning)
+                else:
+                    self.logger.error('no binning specified for %s, using defaults', v)
+                    self.binarrays_obs[v] = bin_array(10, 0., 1.)
+
+
+    # region observables
+    # pylint: disable=invalid-name
+    def calculate_zg(self, df):
         """
         Explicit implementation, for reference/validation only
         """
@@ -124,8 +151,8 @@ class ProcesserJets(Processer):
         return df
 
 
-    #region histomass
-    def process_histomass_single(self, index): # pylint: disable=too-many-statements
+    # region histomass
+    def process_histomass_single(self, index):
         self.logger.info('Processing (histomass) %s', self.l_evtorig[index])
 
         with TFile.Open(self.l_histomass[index], "recreate") as _:
@@ -134,26 +161,18 @@ class ProcesserJets(Processer):
             histonorm.SetBinContent(1, len(dfevtorig.query(self.s_evtsel)))
             histonorm.Write()
 
-            bins_ptjet = np.asarray(self.cfg('bins_ptjet'), 'd')
-            bins_mass = bin_spec(self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
-            bins_ana = np.asarray(self.cfg('sel_an_binmin', []) + self.cfg('sel_an_binmax', [])[-1:], 'd')
-
-            # read all skimmed bins which overlap with the analysis range
-            bins_skim = [iskim for iskim, ptrange in enumerate(self.bins_skimming)
-                         if ptrange[0] < max(self.bins_analysis[:,1]) and ptrange[1] > min(self.bins_analysis[:,0])]
-            self.logger.info('Using skimming bins: %s', bins_skim)
-            df = pd.concat(read_df(self.mptfiles_recosk[bin][index]) for bin in bins_skim)
+            df = pd.concat(read_df(self.mptfiles_recosk[bin][index]) for bin in self.active_bins_skim)
 
             # fill before cuts on jet/HF pt, leaving option of excluding under-/overflow to analyzer
             h = create_hist(
                 'h_mass-ptjet-pthf',
                 ';M (GeV/#it{c}^{2});p_{T}^{jet} (GeV/#it{c});p_{T}^{HF} (GeV/#it{c})',
-                bins_mass, bins_ptjet, bins_ana)
+                self.binarray_mass, self.binarray_ptjet, self.binarray_pthf)
             fill_hist(h, df[['fM', 'fJetPt', 'fPt']], write=True)
 
-            # now remove entries that would end up in under-/overflow bins to save compute time
-            df = df.loc[(df.fJetPt >= min(bins_ptjet)) & (df.fJetPt < max(bins_ptjet))]
-            df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
+            # remove entries that would end up in under-/overflow bins to save compute time
+            df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
+            df = df.loc[(df.fPt >= min(self.bins_analysis[:][0])) & (df.fPt < max(self.bins_analysis[:][1]))]
             self._calculate_variables(df) # TODO: only calculate requested variables
 
             # fill histograms for all (active) observables
@@ -164,103 +183,105 @@ class ProcesserJets(Processer):
                     self.logger.error('dataframe does not contain %s', var)
                     continue
 
-                bins_obs = []
-                for v in var:
-                    if binning := self.cfg(f'observables.{v}.bins_var'):
-                        bins_obs.append(np.asarray(binning, 'd'))
-                    elif binning := self.cfg(f'observables.{v}.bins_fix'):
-                        bins_obs.append(bin_spec(*binning))
-                    else:
-                        self.logger.error('no binning specified for %s, using defaults', v)
-                        bins_obs.append(bin_spec(10, 0., 1.))
-
                 h = create_hist(
                     f'h_mass-ptjet-pthf-{obs}',
                     f';M (GeV/#it{{c}}^{{2}});p_{{T}}^{{jet}} (GeV/#it{{c}});p_{{T}}^{{HF}} (GeV/#it{{c}});{obs}',
-                    bins_mass, bins_ptjet, bins_ana, *bins_obs)
+                    self.binarray_mass, self.binarray_ptjet, self.binarray_pthf, *[self.binarrays_obs[v] for v in var])
                 for i, v in enumerate(var):
                     # TODO: why is this not derived from the title string?
                     get_axis(h, 3+i).SetTitle(self.cfg(f'observables.{v}.label', v))
 
-                arcols = spec.get('arraycols', None)
-                fill_hist(h, df[['fM', 'fJetPt', 'fPt', *var]], arraycols=arcols, write=True)
+                fill_hist(h, df[['fM', 'fJetPt', 'fPt', *var]],
+                          arraycols=spec.get('arraycols', None), write=True)
 
 
-    #region efficiency
-    def process_efficiency_single(self, index): # pylint: disable=too-many-branches,too-many-statements
+    # region efficiency
+    # pylint: disable=too-many-branches,too-many-statements
+    def process_efficiency_single(self, index):
         self.logger.info('Processing (efficiency) %s', self.l_evtorig[index])
 
-        with TFile.Open(self.l_histoeff[index], "recreate") as _:
-            ptbins = np.asarray(self.lpt_finbinmin + [self.lpt_finbinmax[-1]], 'd')
+        cats = ['pr', 'np']
+        levels = ['gen', 'det']
+        cuts = ['nocuts', 'cut']
+        observables = self.cfg('observables', [])
+        h_eff = {(cat, level): create_hist('h_ptjet-pthf', ';p_{T}^{jet} (GeV/#it{c});p_{T}^{HF} (GeV/#it{c})',
+                                           self.binarray_ptjet, self.binarray_pthf)
+                                           for cat in cats for level in levels}
+        # TODO: for now only 1d observables supported
+        h_effkine = {(cat, level, cut, var):
+                        create_hist(f'h_effkine_{cat}_{level}_{cut}_{var}',
+                                    f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var}",
+                                    self.binarray_ptjet, self.binarrays_obs[var])
+                        for var, level, cat, cut in itertools.product(observables, levels, cats, cuts)
+                        if not '-' in var}
+        response_matrix = {
+            (cat, var): ROOT.RooUnfoldResponse(h_effkine[(cat, 'det', 'nocuts', var)],
+                                               h_effkine[(cat, 'gen', 'nocuts', var)])
+            for (cat, var) in itertools.product(cats, observables)
+            if not '-' in var}
 
-            cats = ['pr', 'np']
-            levels = ['gen', 'det']
-            cuts = ['nocuts', 'cut']
-            observables = [var for var, spec in self.cfg('observables', {}).items()
-                           if '-' not in var and 'arraycols' not in spec]
-            self.logger.info('Using observables %s', observables)
-            bins_skim = [iskim for iskim, ptrange in enumerate(self.bins_skimming)
-                         if ptrange[0] < max(self.bins_analysis[:,1]) and ptrange[1] > min(self.bins_analysis[:,0])]
-            self.logger.info('Using skimming bins: %s', bins_skim)
-            bins_ptjet = np.asarray(self.cfg('bins_ptjet'), 'd')
-            bins_obs = { var: bin_spec(*self.cfg(f'observables.{var}.bins_fix')) for var in observables}
-
-            h_eff = {(cat, level): TH1F(f'h_pthf_{cat}_{level}', ";p_{T} (GeV/#it{c})", len(ptbins)-1, ptbins)
-                     for cat in cats for level in levels}
-            h_effkine = {(cat, level, cut, var):
-                         create_hist(f'h_effkine_{cat}_{level}_{cut}_{var}',
-                                     f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var}",
-                                     bins_ptjet, bins_obs[var])
-                         for var, level, cat, cut in itertools.product(observables, levels, cats, cuts)}
-            response_matrix = {
-                (cat, var): ROOT.RooUnfoldResponse(h_effkine[(cat, 'det', 'nocuts', var)],
-                                                   h_effkine[(cat, 'gen', 'nocuts', var)])
-                for (cat, var) in itertools.product(cats, observables)}
-
-            # read all skimmed bins which overlap with the analysis range
+        with TFile.Open(self.l_histoeff[index], "recreate") as rfile:
             cols = ['ismcprompt', 'fPt', 'fEta', 'fPhi', 'fJetPt', 'fJetEta', 'fJetPhi',
                     'fPtLeading', 'fPtSubLeading', 'fTheta']
-            df = pd.concat(read_df(self.mptfiles_gensk[bin][index], columns=cols) for bin in bins_skim)
-            df = df.loc[(df.fJetPt >= min(bins_ptjet)) & (df.fJetPt < max(bins_ptjet))]
-            df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
-            self._calculate_variables(df)
-            df.rename(lambda name: name + '_gen', axis=1, inplace=True)
+
+            # read generator level
+            dfgen_orig = pd.concat(read_df(self.mptfiles_gensk[bin][index], columns=cols)
+                                   for bin in self.active_bins_skim)
+            df = dfgen_orig.rename(lambda name: name + '_gen', axis=1)
             dfgen = {'pr': df.loc[df.ismcprompt_gen == 1], 'np': df.loc[df.ismcprompt_gen == 0]}
 
+            # read detector level
             cols.extend(self.cfg('efficiency.extra_cols', []))
             if idx := self.cfg('efficiency.index_match'):
                 cols.append(idx)
-            df = pd.concat(read_df(self.mptfiles_recosk[bin][index], columns=cols) for bin in bins_skim)
-            df = df.loc[(df.fJetPt >= min(bins_ptjet)) & (df.fJetPt < max(bins_ptjet))]
-            df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
+            df = pd.concat(read_df(self.mptfiles_recosk[bin][index], columns=cols)
+                           for bin in self.active_bins_skim)
             dfquery(df, self.cfg('efficiency.filter_det'), inplace=True)
-            df = self._calculate_variables(df)
+            if idx := self.cfg('efficiency.index_match'):
+                df['idx_match'] = df[idx].apply(lambda ar: ar[0] if len(ar) > 0 else -1)
+            else:
+                self.logger.warning('No matching criterion specified, cannot match det and gen')
             dfdet = {'pr': df.loc[df.ismcprompt == 1], 'np': df.loc[df.ismcprompt == 0]}
 
-            if idx := self.cfg('efficiency.index_match'):
-                for cat in cats:
-                    dfdet[cat]['idx_match'] = dfdet[cat][idx].apply(lambda ar: ar[0] if len(ar) > 0 else -1)
-                dfmatch = {cat: pd.merge(dfdet[cat], dfgen[cat], left_on=['df', 'idx_match'], right_index=True)
-                           for cat in cats}
-            else:
-                self.logger.warning('No matching criterion specified, cannot calculate matched efficiency')
-                dfmatch = {cat: None for cat in cats}
+            dfmatch = {cat: pd.merge(dfdet[cat], dfgen[cat], left_on=['df', 'idx_match'], right_index=True)
+                        for cat in cats if 'idx_match' in dfdet[cat]}
 
-            # TODO: should we do this before the cuts and in higher dimension?
             for cat in cats:
-                fill_hist(h_eff[(cat, 'gen')], dfgen[cat]['fPt_gen'])
-                if dfmatch[cat] is not None:
-                    fill_hist(h_eff[(cat, 'det')], dfmatch[cat]['fPt_gen'])
+                fill_hist(h_eff[(cat, 'gen')], dfgen[cat][['fJetPt_gen', 'fPt_gen']])
+
+                if cat in dfmatch and dfmatch[cat] is not None:
+                    fill_hist(h_eff[(cat, 'det')], dfmatch[cat][['fJetPt_gen', 'fPt_gen']])
                 else:
                     self.logger.error('No matching, using unmatched detector level for efficiency')
-                    fill_hist(h_eff[(cat, 'det')], dfdet[cat]['fPt'])
+                    fill_hist(h_eff[(cat, 'det')], dfdet[cat][['fJetPt', 'fPt']])
 
-            ptjet_min = min(bins_ptjet)
-            ptjet_max = max(bins_ptjet)
-            if dfmatch[cat] is not None:
-                for var, cat in itertools.product(observables, cats):
-                    var_min = min(bins_obs[var])
-                    var_max = max(bins_obs[var])
+            for cat in cats:
+                df = dfdet[cat]
+                df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
+                df = df.loc[(df.fPt >= min(self.bins_analysis[:][0])) & (df.fPt < max(self.bins_analysis[:][1]))]
+                df = self._calculate_variables(df)
+                dfdet[cat] = df
+
+            df = dfgen_orig
+            df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
+            df = df.loc[(df.fPt >= min(self.bins_analysis[:][0])) & (df.fPt < max(self.bins_analysis[:][1]))]
+            self._calculate_variables(df)
+            df = df.rename(lambda name: name + '_gen', axis=1)
+            dfgen = {'pr': df.loc[df.ismcprompt_gen == 1], 'np': df.loc[df.ismcprompt_gen == 0]}
+
+            dfmatch = {cat: pd.merge(dfdet[cat], dfgen[cat], left_on=['df', 'idx_match'], right_index=True)
+                       for cat in cats if 'idx_match' in dfdet[cat]}
+
+            ptjet_min = min(self.binarray_ptjet)
+            ptjet_max = max(self.binarray_ptjet)
+
+            for var, cat in itertools.product(observables, cats):
+                # TODO: add support for more complex observables
+                if '-' in var or self.cfg(f'observables.{var}.arraycols'):
+                    continue
+                if cat in dfmatch and dfmatch[cat] is not None:
+                    var_min = min(self.binarrays_obs[var])
+                    var_max = max(self.binarrays_obs[var])
 
                     df = dfmatch[cat]
                     df = df.loc[(df.fJetPt >= ptjet_min) & (df.fJetPt < ptjet_max) &
@@ -282,6 +303,6 @@ class ProcesserJets(Processer):
 
             for name, obj in itertools.chain(h_eff.items(), h_effkine.items(), response_matrix.items()):
                 try:
-                    obj.Write()
+                    rfile.WriteObject(obj, obj.GetName())
                 except Exception as ex: # pylint: disable=broad-exception-caught
                     self.logger.error('Writing of <%s> (%s) failed: %s', name, str(obj), str(ex))

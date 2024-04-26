@@ -5,7 +5,7 @@ import pandas as pd
 import ROOT
 
 
-def bin_spec(nbins, low, high):
+def bin_array(nbins, low, high):
     return np.linspace(low, high, nbins + 1, 'd')
 
 

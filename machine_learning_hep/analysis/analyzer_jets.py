@@ -23,7 +23,7 @@ from ROOT import TF1, TCanvas, TFile, gStyle
 
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.utilities import folding
-from machine_learning_hep.utilities_hist import (bin_spec, create_hist, get_dim, fill_hist, get_axis,
+from machine_learning_hep.utilities_hist import (bin_array, create_hist, get_dim, fill_hist, get_axis,
                                                  scale_bin, sum_hists, project_hist)
 
 
@@ -404,7 +404,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
         for var in self.observables['all']:
             bins_ptjet = np.asarray(self.cfg('bins_ptjet'), 'd')
-            bins_obs = {var: bin_spec(*self.cfg(f'observables.{var}.bins_fix')) for var in self.observables['all']}
+            bins_obs = {var: bin_array(*self.cfg(f'observables.{var}.bins_fix')) for var in self.observables['all']}
 
             df = pd.read_parquet('/data2/jklein/powheg/trees_powheg_fd_F05_R05.parquet') # TODO: read once
             col_mapping = {'dr': 'delta_r_jet', 'zpar': 'z'} # TODO: check mapping
