@@ -25,12 +25,6 @@ https://github.com/AliceO2Group/O2Physics/tree/master/PWGHF/D2H/Macros
 import sys
 import numpy as np  # pylint: disable=import-error
 
-from machine_learning_hep.hf_analysis_utils import ( # pylint: disable=import-error
-    compute_crosssection,
-    compute_fraction_fc,
-    compute_fraction_nb,
-    get_hist_binlimits,
-)
 from ROOT import (  # pylint: disable=import-error,no-name-in-module
     TH1,
     TH1F,
@@ -42,6 +36,13 @@ from ROOT import (  # pylint: disable=import-error,no-name-in-module
     gROOT,
     kAzure,
     kFullCircle,
+)
+
+from machine_learning_hep.hf_analysis_utils import ( # pylint: disable=import-error
+    compute_crosssection,
+    compute_fraction_fc,
+    compute_fraction_nb,
+    get_hist_binlimits,
 )
 
 def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-arguments, too-many-statements, too-many-branches

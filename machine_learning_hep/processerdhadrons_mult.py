@@ -17,7 +17,6 @@ main script for doing data processing, machine learning and analysis
 """
 import math
 import array
-import pickle
 import os
 import numpy as np
 import pandas as pd
@@ -441,7 +440,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
             bincounter = 0
             for ipt in range(self.p_nptfinbins):
                 bin_id = self.bin_matching[ipt]
-                df_mc_reco = read_df(openfile(self.mptfiles_recoskmldec[bin_id][index])
+                df_mc_reco = read_df(self.mptfiles_recoskmldec[bin_id][index])
                 if self.s_evtsel is not None:
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_trigger is not None:
@@ -451,7 +450,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 if self.runlistrigger is not None:
                     df_mc_reco = selectdfrunlist(df_mc_reco, \
                          self.run_param[self.runlistrigger], "run_number")
-                df_mc_gen = read_df(openfile(self.mptfiles_gensk[bin_id][index])
+                df_mc_gen = read_df(self.mptfiles_gensk[bin_id][index])
                 df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
                 if self.s_evtsel is not None:
                     df_mc_gen = df_mc_gen.query(self.s_evtsel)

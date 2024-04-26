@@ -32,7 +32,7 @@ from onnxmltools.convert import convert_xgboost  # pylint: disable=import-error
 from onnxconverter_common.data_types import FloatTensorType  # pylint: disable=import-error
 from ROOT import TFile, TCanvas, TH1F, TF1, gROOT  # pylint: disable=import-error,no-name-in-module
 from machine_learning_hep.utilities import seldf_singlevar, split_df_classes, createstringselection
-from machine_learning_hep.utilities import openfile, dfquery, mask_df, read_df, write_df
+from machine_learning_hep.utilities import dfquery, mask_df, read_df, write_df
 from machine_learning_hep.correlations import vardistplot, scatterplot, correlationmatrix
 from machine_learning_hep.models import getclf_scikit, getclf_xgboost, getclf_keras
 from machine_learning_hep.models import fit, savemodels, readmodels, apply, decisionboundaries

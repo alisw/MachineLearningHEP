@@ -17,14 +17,13 @@ main script for doing data processing, machine learning and analysis
 """
 import math
 import array
-import pickle
 import numpy as np
 # pylint: disable=import-error, no-name-in-module, consider-using-f-string
 from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
 from machine_learning_hep.bitwise import tag_bit_df
 from machine_learning_hep.utilities_hist import fill_hist
 from machine_learning_hep.utilities import selectdfrunlist
-from machine_learning_hep.utilities import seldf_singlevar, openfile, read_df
+from machine_learning_hep.utilities import seldf_singlevar, read_df
 from machine_learning_hep.processer import Processer
 
 class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attributes
