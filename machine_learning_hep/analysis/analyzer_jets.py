@@ -23,8 +23,10 @@ from ROOT import TF1, TCanvas, TFile, gStyle
 
 from machine_learning_hep.analysis.analyzer import Analyzer
 from machine_learning_hep.utilities import folding
-from machine_learning_hep.utils.hist import (bin_array, create_hist, get_dim, fill_hist, get_axis, get_nbins,
-                                             scale_bin, sum_hists, project_hist)
+from machine_learning_hep.utils.hist import (bin_array, create_hist,
+                                             fill_hist_fast, get_axis, get_dim,
+                                             get_nbins, project_hist,
+                                             scale_bin, sum_hists)
 
 
 class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
@@ -415,8 +417,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             h3_fd_gen = create_hist('h3_feeddown_gen',
                                     f';p_{{T}}^{{cand}} (GeV/#it{{c}});p_{{T}}^{{jet}} (GeV/#it{{c}});{var}',
                                     self.bins_candpt, bins_ptjet, bins_obs[var])
-            # TODO: speed up histogram filling (bottleneck)
-            fill_hist(h3_fd_gen, df[['pt_cand', 'pt_jet', f'{colname}']])
+            fill_hist_fast(h3_fd_gen, df[['pt_cand', 'pt_jet', f'{colname}']])
             self._save_hist(project_hist(h3_fd_gen, [1, 2], {}), f'fd/h_ptjet-{var}_feeddown_gen_noeffscaling.png')
 
             for ipt in range(get_nbins(h3_fd_gen, axis=0)):

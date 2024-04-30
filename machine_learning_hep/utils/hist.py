@@ -1,4 +1,5 @@
 from collections import deque
+import itertools
 
 import numpy as np
 import pandas as pd
@@ -162,6 +163,33 @@ def fill_hist(hist, dfi: pd.DataFrame, weights = None, arraycols = None, write =
                        for v in zip(*[row.iloc[i] for i in arraycols]))
                 deque(gen, maxlen=0)
             dfi.apply(fill_row, axis=1)
+    if write:
+        hist.Write()
+
+
+def fill_hist_fast(hist, dfi, write=False):
+    """
+    Fill histogram by setting bin instead of going through Fill(...)
+    aor every row (which is slow).
+    """
+    dim_hist = hist.GetDimension() if isinstance(hist, ROOT.TH1) else hist.GetNdimensions()
+    dim_df = dfi.shape[1] if dfi.ndim > 1 else dfi.ndim
+    assert dim_df in range(3, 4), f'{dim_df} not supported'
+    assert dim_df == dim_hist, 'dimensions of df and histogram do not match'
+    bin_it = [range(get_nbins(hist, i)+2) for i in range(get_dim(hist))]
+    for binids in itertools.product(*bin_it):
+        df = dfi
+        for i in range(get_dim(hist)):
+            if binids[i] == 0:
+                # underflow
+                df = df.loc[df.iloc[:, i] <  get_axis(hist, i).GetXmin()]
+            elif binids[i] == (get_nbins(hist, i) + 1):
+                # overflow
+                df = df.loc[df.iloc[:, i] >= get_axis(hist, i).GetXmax()]
+            else:
+                df = df.loc[(df.iloc[:, i] >= get_axis(hist, i).GetBinLowEdge(binids[i])) &
+                            (df.iloc[:, i] <  get_axis(hist, i).GetBinUpEdge(binids[i]))]
+        hist.SetBinContent(*binids, len(df))
     if write:
         hist.Write()
 
