@@ -14,7 +14,6 @@
 
 import itertools
 import math
-import time
 
 import numpy as np
 import pandas as pd
@@ -78,19 +77,11 @@ class ProcesserJets(Processer):
 
     # region observables
     # pylint: disable=invalid-name
-    def calculate_zg(self, df):
+    def _verify_variables(self, dfi):
         """
-        Explicit implementation, for reference/validation only
+        Explicit (slow) implementation, use for reference/validation only
         """
-        start = time.time()
-        df['zg_array'] = np.array(.5 - abs(df.fPtSubLeading / (df.fPtLeading + df.fPtSubLeading) - .5))
-        df['zg_fast'] = df['zg_array'].apply((lambda ar: next((zg for zg in ar if zg >= .1), -1.)))
-        df['rg_fast'] = df[['zg_array', 'fTheta']].apply(
-            (lambda ar: next((rg for (zg, rg) in zip(ar.zg_array, ar.fTheta) if zg >= .1), -1.)), axis=1)
-        df['nsd_fast'] = df['zg_array'].apply((lambda ar: len([zg for zg in ar if zg >= .1])))
-        self.logger.debug('fast done in %.2g s', time.time() - start)
-
-        start = time.time()
+        df = dfi.copy(deep=True)
         df['rg'] = -1.0
         df['nsd'] = -1.0
         df['zg'] = -1.0
@@ -105,22 +96,14 @@ class ProcesserJets(Processer):
                         isSoftDropped = True
                     nsd += 1
             df.loc[idx, 'nsd'] = nsd
-        self.logger.debug('slow done in %.2g s', time.time() - start)
-        if np.allclose(df.nsd, df.nsd_fast):
-            self.logger.info('nsd all close')
-        else:
-            self.logger.error('nsd not all close')
-        if np.allclose(df.zg, df.zg_fast):
-            self.logger.info('zg all close')
-        else:
-            self.logger.error('zg not all close')
-        if np.allclose(df.rg, df.rg_fast):
-            self.logger.info('rg all close')
-        else:
-            self.logger.error('rg not all close')
+        for var in ['zg', 'nsd', 'rg']:
+            if np.allclose(dfi[var], df[var]):
+                self.logger.info('%s check ok', var)
+            else:
+                self.logger.error('%s check failed', var)
 
 
-    def _calculate_variables(self, df): # pylint: disable=invalid-name
+    def _calculate_variables(self, df, verify=False): # pylint: disable=invalid-name
         self.logger.info('calculating variables')
         df['dr'] = np.sqrt((df.fJetEta - df.fEta)**2 + ((df.fJetPhi - df.fPhi + math.pi) % math.tau - math.pi)**2)
         df['jetPx'] = df.fJetPt * np.cos(df.fJetPhi)
@@ -148,6 +131,8 @@ class ProcesserJets(Processer):
         df['lntheta'] = df['fTheta'].apply(lambda x: -np.log(x))
         # df['lntheta'] = np.array(-np.log(df.fTheta))
         self.logger.debug('done')
+        if verify:
+            self._verify_variables(df)
         return df
 
 
