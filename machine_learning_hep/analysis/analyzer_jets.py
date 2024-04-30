@@ -328,9 +328,15 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         self._subtract_feeddown(fh_sum, var, mcordata)
                         self._save_hist(fh_sum, f'h_{var}_subtracted_fdcorr_{mcordata}.png')
 
+                        for j in range(get_nbins(fh_sum, 0)):
+                            hproj = project_hist(fh_sum, [1], {0: [j+1, j+1]})
+                            self._save_hist(hproj, f'uf/h_{var}_subtracted_{mcordata}_jetpt{j}.png')
                         fh_unfolded = self._unfold(fh_sum, var, mcordata)
                         for i, h in enumerate(fh_unfolded):
                             self._save_hist(h, f'h_{var}_subtracted_unfolded_{mcordata}_{i}.png')
+                            for j in range(get_nbins(h, 0)):
+                                hproj = project_hist(h, [1], {0: [j+1, j+1]})
+                                self._save_hist(hproj, f'uf/h_{var}_subtracted_unfolded_{mcordata}_jetpt{j}_{i}.png')
 
 
     #region signal extraction
@@ -492,7 +498,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
 
     #region unfolding
-    def _unfold(self, hist, var, _mcordata):
+    def _unfold(self, hist, var, mcordata):
         self.logger.info('Unfolding for %s', var)
         with TFile(self.n_fileeff) as rfile:
             response_matrix_pr = rfile.Get(f'h_effkine_pr_det_nocuts_{var}_h_effkine_pr_gen_nocuts_{var}')
@@ -510,20 +516,20 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 self.logger.error('histograms with different dimensions, cannot unfold')
                 return []
             fh_unfolding_input.Multiply(h_effkine_pr_detgencuts)
-            self._save_hist(response_matrix_pr, f'uf/h_ptjet-{var}_response_pr.png')
+            self._save_hist(response_matrix_pr, f'uf/h_ptjet-{var}_response_pr_{mcordata}.png')
 
             h_effkine_pr_gennodetcuts = rfile.Get(f'h_effkine_pr_gen_nocuts_{var}')
             h_effkine_pr_gendetcuts = rfile.Get(f'h_effkine_pr_gen_cut_{var}')
             h_effkine_pr_gendetcuts.Divide(h_effkine_pr_gennodetcuts)
-            self._save_hist(h_effkine_pr_gendetcuts, f'uf/h_effkine-ptjet-{var}_pr_gen.png', 'text')
+            self._save_hist(h_effkine_pr_gendetcuts, f'uf/h_effkine-ptjet-{var}_pr_gen_{mcordata}.png', 'text')
 
             h_unfolding_output = []
-            for n in range(1):
+            for n in range(8):
                 unfolding_object = ROOT.RooUnfoldBayes(response_matrix_pr, fh_unfolding_input, n + 1)
                 fh_unfolding_output = unfolding_object.Hreco(2)
-                self._save_hist(fh_unfolding_output, f'uf/h_unfolded-{var}-{n}.png', 'text')
+                self._save_hist(fh_unfolding_output, f'uf/h_ptjet-{var}_{mcordata}_unfold{n}.png', 'text')
                 fh_unfolding_output.Divide(h_effkine_pr_gendetcuts)
-                self._save_hist(fh_unfolding_output, f'uf/h_unfolded_effcorrected-{var}-{n}.png', 'text')
+                self._save_hist(fh_unfolding_output, f'uf/h_ptjet-{var}_{mcordata}_unfoldeffcorr{n}.png', 'text')
                 h_unfolding_output.append(fh_unfolding_output)
 
             return h_unfolding_output
