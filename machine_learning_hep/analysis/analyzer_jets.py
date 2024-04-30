@@ -176,7 +176,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         func_bkg = TF1('funcBkg', self.cfg('mass_fit.func_bkg'), *fit_range)
         par_offset = func_sig.GetNpar()
         func_tot = TF1('funcTot', f"{self.cfg('mass_fit.func_sig')} + {self.cfg('mass_fit.func_bkg')}({par_offset})")
-        func_tot.SetParameter(0, hist.GetMaximum()) # TODO: better seeding?
+        func_tot.SetParameter(0, hist.GetMaximum()/10.) # TODO: better seeding?
         for par, value in self.cfg('mass_fit.par_start', {}).items():
             self.logger.debug('Setting par %i to %g', par, value)
             func_tot.SetParameter(par, value)
@@ -197,20 +197,20 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             for i in range(func_bkg.GetNpar()):
                 func_bkg.SetParameter(i, par[idx])
                 idx += 1
+            if filename:
+                c = TCanvas()
+                hist.Draw()
+                func_sig.SetLineColor(ROOT.kBlue)
+                func_sig.Draw('lsame')
+                func_bkg.SetLineColor(ROOT.kCyan)
+                func_bkg.Draw('lsame')
+                self._save_canvas(c, filename)
         else:
             self.logger.warning('Invalid fit result for %s', hist.GetName())
             # func_tot.Print('v')
             filename = filename.replace('.png', '_invalid.png')
+            self._save_hist(hist, filename)
             # TODO: how to deal with this
-
-        if filename:
-            c = TCanvas()
-            hist.Draw()
-            func_sig.SetLineColor(ROOT.kBlue)
-            func_sig.Draw('lsame')
-            func_bkg.SetLineColor(ROOT.kCyan)
-            func_bkg.Draw('lsame')
-            self._save_canvas(c, filename)
 
         return (fit_res, func_sig, func_bkg)
 
