@@ -265,7 +265,11 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         bins = {key: tuple(map(axis.FindBin, region)) for key, region in regions.items()}
         limits = {key: (axis.GetBinLowEdge(bins[key][0]), axis.GetBinUpEdge(bins[key][1]))
                   for key in regions}
-        self.logger.debug('actual sideband regions %s', limits)
+        fit_range = self.cfg('mass_fit.range')
+        for reg, lim in limits.items():
+            if lim[0] < fit_range[0] or lim[1] > fit_range[1]:
+                self.logger.warning('region %s for bin %d extends beyond fit range: %s', reg, ipt, lim)
+                # TODO: should we clip to the fit range?
 
         fh = {}
         area = {}
