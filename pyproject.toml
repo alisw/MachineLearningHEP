@@ -8,6 +8,19 @@ include = ["machine_learning_hep*"]
 
 [tool.setuptools_scm]
 
+[tool.black]
+line-length = 120
+
+[tool.isort]
+profile = "black"
+
+[tool.pyright]
+reportMissingImports = false
+reportUnboundVariable = false
+
+[tool.ruff]
+line-length = 120
+
 [project]
 name = "MachineLearningHEP"
 dynamic = ["version"]

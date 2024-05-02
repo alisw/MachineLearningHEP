@@ -44,12 +44,16 @@ output_*
 *.png
 *.log
 
-# editor backups/cached
+# editors
 *.swp
 *~
 *.vscode
 **/.mypy_cache
 setup.cfg
+*.code-workspace
 
 # macOS
 .DS_Store
+
+# linters
+megalinter-reports
