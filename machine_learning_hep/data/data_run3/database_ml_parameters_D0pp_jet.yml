@@ -19,7 +19,7 @@ D0jet_pp:
   sel_reco_singletrac_unp: null
   sel_gen_unp: "fPt > 1. and fPt < 10."
   sel_cen_unp: null
-  sel_good_evt_unp: "fIsEventReject == 0"
+  sel_good_evt_unp: null
   sel_reco_skim: [null,null,null,null,null,null,null] # sel_skim_binmin bins
   sel_gen_skim: [null,null,null,null,null,null,null] # sel_skim_binmin bins
   sel_skim_binmin: [1,2,4,6,8,12,24] # skimming pt bins (sel_skim_binmin bins)
@@ -54,7 +54,7 @@ D0jet_pp:
       evtorig:
         index: fIndexD0CollBases
         trees:
-          O2hfd0collbase: [fNumContrib, fIsEventReject, fRunNumber]
+          O2hfd0collbase: [fNumContrib]
 
       # collgen: # table not filled at the moment
       #   level: gen
@@ -165,7 +165,6 @@ D0jet_pp:
         level: all
         source: evtorig
         file: AnalysisResultsEvt.parquet
-        filter: "fIsEventReject == 0"
 
   variables:
     var_all: [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1]
@@ -232,8 +231,8 @@ D0jet_pp:
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/real/train_183233/
-      unmerged_tree_dir: [merged] #list of periods
+      prefix_dir: /data2/MLhep/real/train_207280/
+      unmerged_tree_dir: [/alice/] #list of periods
       pkl: ['${USER}/d0jet/pkl'] #list of periods
       pkl_skimmed: ['${USER}/d0jet/pklsk'] #list of periods
       pkl_skimmed_merge_for_ml: ['${USER}/d0jet/pklskml'] #list of periods
@@ -377,7 +376,7 @@ D0jet_pp:
         # par_start: {1: 1.86}
         # par_fix: {1: 1.86}
         par_constrain: {1: [1.85, 1.87], 2: [.01, .08]}
-        range: [1.675, 2.1]
+        range: [1.675, 2.06]
       mass_fit_lim: [1.5, 2.2] # histogram range of the invariant mass distribution [GeV/c^2]
       bin_width: 0.005 # bin width of the invariant mass histogram
       efficiency:
@@ -418,7 +417,7 @@ D0jet_pp:
       jetsel_sim: "abs(y_cand) < 0.5 and abs(eta_jet) < 0.5" # jet selection in simulations
       jetsel_reco: "abs(y_cand) < 0.5 and abs(z_vtx_reco) < 10 and abs(eta_jet) < 0.5"
       jetsel_gen_matched_reco: "abs(y_cand) < 0.5 and abs(z_vtx_gen) < 10 and abs(eta_gen_jet) < 0.5"
-      evtsel: fIsEventReject==0
+      evtsel: null # fIsEventReject==0
       triggersel:
         data: "trigger_hasbit_INT7==1"
         mc: null

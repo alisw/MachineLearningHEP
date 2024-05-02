@@ -176,7 +176,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         func_bkg = TF1('funcBkg', self.cfg('mass_fit.func_bkg'), *fit_range)
         par_offset = func_sig.GetNpar()
         func_tot = TF1('funcTot', f"{self.cfg('mass_fit.func_sig')} + {self.cfg('mass_fit.func_bkg')}({par_offset})")
-        func_tot.SetParameter(0, hist.GetMaximum()/10.) # TODO: better seeding?
+        func_tot.SetParameter(0, hist.GetMaximum()/3.) # TODO: better seeding?
         for par, value in self.cfg('mass_fit.par_start', {}).items():
             self.logger.debug('Setting par %i to %g', par, value)
             func_tot.SetParameter(par, value)

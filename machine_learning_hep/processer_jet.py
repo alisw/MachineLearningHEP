@@ -143,7 +143,7 @@ class ProcesserJets(Processer):
         with TFile.Open(self.l_histomass[index], "recreate") as _:
             dfevtorig = read_df(self.l_evtorig[index])
             histonorm = TH1F("histonorm", "histonorm", 1, 0, 1)
-            histonorm.SetBinContent(1, len(dfevtorig.query(self.s_evtsel)))
+            histonorm.SetBinContent(1, len(dfquery(dfevtorig, self.s_evtsel)))
             histonorm.Write()
 
             df = pd.concat(read_df(self.mptfiles_recosk[bin][index]) for bin in self.active_bins_skim)
