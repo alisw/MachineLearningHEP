@@ -1,20 +1,21 @@
+---
 name: Test package
 
-on:
-    pull_request:
-        branches:
-              - master
-              - ml-dev
-              - run3
-        paths:
-            - "**.py"
-    push:
-        branches:
-              - master
-              - ml-dev
-              - run3
-        paths:
-            - "**.py"
+'on':
+  pull_request:
+    branches:
+      - master
+      - ml-dev
+      - run3
+    paths:
+      - "**.py"
+  push:
+    branches:
+      - master
+      - ml-dev
+      - run3
+    paths:
+      - "**.py"
 
 permissions:
   contents: read
@@ -32,7 +33,7 @@ jobs:
       matrix:
         os: [ubuntu-latest, macOS-13]
         python-version: ['3.9']
-        #test-tool: [pylint, flake8, pytest]
+        # test-tool: [pylint, flake8, pytest]
         test-tool: [pylint, pytest]
 
     steps:
