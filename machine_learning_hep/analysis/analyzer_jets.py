@@ -92,11 +92,13 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             # TODO: remove file if it exists?
             return
         c = TCanvas()
-        if isinstance(hist, ROOT.TH1) and get_dim(hist) == 2 and 'text' not in option:
-            option += 'text'
+        if isinstance(hist, ROOT.TH1) and get_dim(hist) == 2 and 'texte' not in option:
+            option += 'texte'
         hist.Draw(option)
         self._save_canvas(c, filename)
-        self.rfigfile.WriteObject(hist, filename.removesuffix('.png'))
+        rfilename = filename.split('/')[-1]
+        rfilename = rfilename.removesuffix('.png')
+        self.rfigfile.WriteObject(hist, rfilename)
 
 
     #region fundamentals
@@ -257,8 +259,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
         regions = {
             'signal': (mean - 2 * sigma, mean + 2 * sigma),
-            'sideband_left': (mean - 7 * sigma, mean - 4 * sigma),
-            'sideband_right': (mean + 4 * sigma, mean + 7 * sigma)
+            'sideband_left': (mean - 5.5 * sigma, mean - 3. * sigma),
+            'sideband_right': (mean + 3. * sigma, mean + 5.5 * sigma)
         }
 
         axis = get_axis(hist, 0)
@@ -508,8 +510,11 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
             h_effkine_pr_detnogencuts = rfile.Get(f'h_effkine_pr_det_nocuts_{var}')
             h_effkine_pr_detgencuts = rfile.Get(f'h_effkine_pr_det_cut_{var}')
+            h_effkine_pr_detgencuts.Sumw2()
+
             h_effkine_pr_detgencuts.Divide(h_effkine_pr_detnogencuts)
             self._save_hist(h_effkine_pr_detgencuts, f'uf/h_effkine-ptjet-{var}_pr_det.png', 'text')
+
 
             fh_unfolding_input = hist.Clone('fh_unfolding_input')
             if get_dim(fh_unfolding_input) != get_dim(h_effkine_pr_detgencuts):
@@ -520,6 +525,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
             h_effkine_pr_gennodetcuts = rfile.Get(f'h_effkine_pr_gen_nocuts_{var}')
             h_effkine_pr_gendetcuts = rfile.Get(f'h_effkine_pr_gen_cut_{var}')
+            h_effkine_pr_gendetcuts.Sumw2()
             h_effkine_pr_gendetcuts.Divide(h_effkine_pr_gennodetcuts)
             self._save_hist(h_effkine_pr_gendetcuts, f'uf/h_effkine-ptjet-{var}_pr_gen_{mcordata}.png', 'text')
 

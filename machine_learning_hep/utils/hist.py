@@ -50,7 +50,7 @@ def project_hist(hist, axes: list, limits: dict[int, tuple[int]]):
             ranges.append(get_range(hist, iaxis))
         for iaxis, bins in limits.items():
             get_axis(hist, iaxis).SetRange(bins[0], bins[1])
-        hproj = hist.Projection(*axes) if len(axes) < 4 else hist.Projection(len(axes), np.asarray(axes, 'i'))
+        hproj = hist.Projection(*axes, 'e') if len(axes) < 4 else hist.Projection(len(axes), np.asarray(axes, 'i'), 'e')
         for iaxis in limits:
             get_axis(hist, iaxis).SetRange(*ranges[iaxis])
         return hproj
