@@ -111,6 +111,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         # nget(datap, ['dfs', 'write', 'jetsubdet', 'file'])
         self.n_reco = datap["files_names"]["namefile_reco"]
         self.n_evt = datap["files_names"]["namefile_evt"]
+        self.n_collcnt = datap["files_names"]["namefile_collcnt"]
         self.n_evtorig = datap["files_names"]["namefile_evtorig"]
         self.n_evt_count_ml = datap["files_names"].get("namefile_evt_count", "evtcount.yaml")
         self.n_gen = datap["files_names"]["namefile_gen"]
@@ -161,6 +162,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.l_reco = createlist(self.d_pkl, self.l_path, self.n_reco)
         self.l_evt = createlist(self.d_pkl, self.l_path, self.n_evt)
         self.l_evtorig = createlist(self.d_pkl, self.l_path, self.n_evtorig)
+        self.l_collcnt = createlist(self.d_pkl, self.l_path, self.n_collcnt)
         self.l_histomass = createlist(self.d_results, self.l_path, self.n_filemass)
         self.l_histoeff = createlist(self.d_results, self.l_path, self.n_fileeff)
         self.l_historesp = createlist(self.d_results, self.l_path, self.n_fileresp)

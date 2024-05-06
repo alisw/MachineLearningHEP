@@ -7,7 +7,7 @@ import ROOT
 
 
 def bin_array(nbins, low, high):
-    return np.linspace(low, high, nbins + 1, 'd')
+    return np.linspace(float(low), float(high), nbins + 1, 'd')
 
 
 def get_axis(hist, axis: int):

@@ -12,6 +12,7 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
+import functools
 import itertools
 import math
 
@@ -116,6 +117,7 @@ class ProcesserJets(Processer):
         df['zpar_den'] = df.jetPx * df.jetPx + df.jetPy * df.jetPy + df.jetPz * df.jetPz
         df['zpar'] = df.zpar_num / df.zpar_den
         df[df['zpar'] == 1.]['zpar'] = .99999 # move 1 to last bin
+        # df['nsub21'] = df.fNSub2 / df.fNSub1
 
         self.logger.debug('zg')
         df['zg_array'] = np.array(.5 - abs(df.fPtSubLeading / (df.fPtLeading + df.fPtSubLeading) - .5))
@@ -142,8 +144,15 @@ class ProcesserJets(Processer):
 
         with TFile.Open(self.l_histomass[index], "recreate") as _:
             dfevtorig = read_df(self.l_evtorig[index])
-            histonorm = TH1F("histonorm", "histonorm", 1, 0, 1)
+            histonorm = TH1F("histonorm", "histonorm", 2, 0, 2)
             histonorm.SetBinContent(1, len(dfquery(dfevtorig, self.s_evtsel)))
+            if self.mcordata == 'data':
+                dfcollcnt = read_df(self.l_collcnt[index])
+                collcnt = functools.reduce(lambda x,y: float(x)+float(y), (ar[1] for ar in dfcollcnt['fReadCounts']))
+                self.logger.info('sampled %g collisions', collcnt)
+                histonorm.SetBinContent(2, collcnt)
+            get_axis(histonorm, 0).SetBinLabel(1, 'N_{evt}')
+            get_axis(histonorm, 0).SetBinLabel(2, 'N_{coll}')
             histonorm.Write()
 
             df = pd.concat(read_df(self.mptfiles_recosk[bin][index]) for bin in self.active_bins_skim)
@@ -271,20 +280,20 @@ class ProcesserJets(Processer):
 
                     df = dfmatch[cat]
                     df = df.loc[(df.fJetPt >= ptjet_min) & (df.fJetPt < ptjet_max) &
-                                (df[var] > var_min) & (df[var] < var_max)]
+                                (df[var] >= var_min) & (df[var] < var_max)]
                     fill_hist(h_effkine[(cat, 'det', 'nocuts', var)], df[['fJetPt', var]])
                     df = df.loc[(df.fJetPt_gen >= ptjet_min) & (df.fJetPt_gen < ptjet_max) &
-                                (df[f'{var}_gen'] > var_min) & (df[f'{var}_gen'] < var_max)]
+                                (df[f'{var}_gen'] >= var_min) & (df[f'{var}_gen'] < var_max)]
                     fill_hist(h_effkine[(cat, 'det', 'cut', var)], df[['fJetPt', var]])
 
                     fill_response(response_matrix[(cat, var)], df[['fJetPt', f'{var}', 'fJetPt_gen', f'{var}_gen']])
 
                     df = dfmatch[cat]
                     df = df.loc[(df.fJetPt_gen >= ptjet_min) & (df.fJetPt_gen < ptjet_max) &
-                                (df[f'{var}_gen'] > var_min) & (df[f'{var}_gen'] < var_max)]
+                                (df[f'{var}_gen'] >= var_min) & (df[f'{var}_gen'] < var_max)]
                     fill_hist(h_effkine[(cat, 'gen', 'nocuts', var)], df[['fJetPt_gen', f'{var}_gen']])
                     df = df.loc[(df.fJetPt >= ptjet_min) & (df.fJetPt < ptjet_max) &
-                                (df[f'{var}'] > var_min) & (df[f'{var}'] < var_max)]
+                                (df[f'{var}'] >= var_min) & (df[f'{var}'] < var_max)]
                     fill_hist(h_effkine[(cat, 'gen', 'cut', var)], df[['fJetPt_gen', f'{var}_gen']])
 
             for name, obj in itertools.chain(h_eff.items(), h_effkine.items(), response_matrix.items()):

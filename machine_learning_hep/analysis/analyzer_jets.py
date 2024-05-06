@@ -73,6 +73,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.hcandeff_np = None
         self.hfeeddown_det = {}
         self.n_events = {}
+        self.n_colls = {}
 
         self.path_fig = Path(f'fig/{self.case}/{self.typean}')
         for folder in ['qa', 'fit', 'sideband', 'signalextr', 'fd', 'uf']:
@@ -110,6 +111,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 if not histonorm:
                     self.logger.critical('histonorm not found')
                 self.n_events[mcordata] = histonorm.GetBinContent(1)
+                self.n_colls[mcordata] = histonorm.GetBinContent(2)
+                self.logger.info('Number of sampled collisions for %s: %g', mcordata, self.n_colls[mcordata])
                 self.logger.debug('Number of selected events for %s: %d', mcordata, self.n_events[mcordata])
 
 
@@ -299,6 +302,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             c = TCanvas()
             fh['signal'].SetLineColor(ROOT.kRed)
             fh['signal'].Draw()
+            fh_sideband.Sumw2()
             fh_sideband.Scale(areaNormFactor)
             fh_sideband.SetLineColor(ROOT.kCyan)
             fh_sideband.Draw("same")
@@ -321,6 +325,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         fh_sub = []
                         for ipt in range(self.nbins):
                             h = project_hist(fh, [0, 1, 3], {2: (ipt+1, ipt+1)})
+                            h.Sumw2()
                             h = self._subtract_sideband(h, var, mcordata, ipt)
                             self._correct_efficiency(h, ipt)
                             fh_sub.append(h)
@@ -391,6 +396,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         fh_sig = []
                         for ipt in range(self.nbins):
                             h = project_hist(fh, [0, 1, 3], {2: (ipt+1, ipt+1)})
+                            h.Sumw2()
                             hres = self._extract_signal(h, var, mcordata, ipt)
                             self._correct_efficiency(hres, ipt)
                             fh_sig.append(hres)
@@ -450,10 +456,12 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             with TFile(self.n_fileeff) as rfile:
                 hkinematiceff_np_gennodetcuts = rfile.Get(f'h_effkine_np_gen_nocuts_{var}')
                 hkinematiceff_np_gendetcuts = rfile.Get(f'h_effkine_np_gen_cut_{var}')
+                hkinematiceff_np_gendetcuts.Sumw2()
                 hkinematiceff_np_gendetcuts.Divide(hkinematiceff_np_gennodetcuts)
                 self._save_hist(hkinematiceff_np_gendetcuts, f'fd/h_effkine-ptjet-{var}_np_gen.png', 'text')
 
                 # ROOT complains about different bin limits because fN is 0 for the histogram from file, ROOT bug?
+                h_fd_gen.Sumw2()
                 h_fd_gen.Multiply(hkinematiceff_np_gendetcuts)
                 self._save_hist(h_fd_gen, f'fd/h_ptjet-{var}_feeddown_gen_kineeffscaled.png')
 
@@ -467,6 +475,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
                 hkinematiceff_np_detnogencuts = rfile.Get(f'h_effkine_np_det_nocuts_{var}')
                 hkinematiceff_np_detgencuts = rfile.Get(f'h_effkine_np_det_cut_{var}')
+                hkinematiceff_np_detgencuts.Sumw2()
                 hkinematiceff_np_detgencuts.Divide(hkinematiceff_np_detnogencuts)
 
                 self._save_hist(hkinematiceff_np_detgencuts, f'fd/h_effkine-ptjet-{var}_np_det.png','text')
@@ -474,10 +483,10 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 self._save_hist(hfeeddown_det, f'fd/h_ptjet-{var}_feeddown_det_kineeffscaled.png')
 
                 hfeeddown_det.Scale(self.cfg('branching_ratio'))
-                print('number of events ', self.n_events['data'])
-                print('powheg scale factor ', powheg_xsection_scale_factor)
-                #TODO : We are artifically increasing by e4 because we dont have the correct number of events in data
-                hfeeddown_det.Scale(self.n_events['data'] * 10000 * powheg_xsection_scale_factor /
+                self.logger.info('number of collisions %g', self.n_colls['data'])
+                self.logger.info('powheg scale factor %g', powheg_xsection_scale_factor)
+                # TODO: check scaling
+                hfeeddown_det.Scale(self.n_colls['data'] * powheg_xsection_scale_factor /
                                     self.cfg('xsection_inel'))
                 self._save_hist(hfeeddown_det, f'fd/h_ptjet-{var}_feeddown_det_final.png')
                 self.hfeeddown_det[var] = hfeeddown_det
@@ -515,11 +524,11 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             h_effkine_pr_detgencuts.Divide(h_effkine_pr_detnogencuts)
             self._save_hist(h_effkine_pr_detgencuts, f'uf/h_effkine-ptjet-{var}_pr_det.png', 'text')
 
-
             fh_unfolding_input = hist.Clone('fh_unfolding_input')
             if get_dim(fh_unfolding_input) != get_dim(h_effkine_pr_detgencuts):
                 self.logger.error('histograms with different dimensions, cannot unfold')
                 return []
+            fh_unfolding_input.Sumw2()
             fh_unfolding_input.Multiply(h_effkine_pr_detgencuts)
             self._save_hist(response_matrix_pr, f'uf/h_ptjet-{var}_response_pr_{mcordata}.png')
 
@@ -534,6 +543,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 unfolding_object = ROOT.RooUnfoldBayes(response_matrix_pr, fh_unfolding_input, n + 1)
                 fh_unfolding_output = unfolding_object.Hreco(2)
                 self._save_hist(fh_unfolding_output, f'uf/h_ptjet-{var}_{mcordata}_unfold{n}.png', 'text')
+                fh_unfolding_output.Sumw2()
                 fh_unfolding_output.Divide(h_effkine_pr_gendetcuts)
                 self._save_hist(fh_unfolding_output, f'uf/h_ptjet-{var}_{mcordata}_unfoldeffcorr{n}.png', 'text')
                 h_unfolding_output.append(fh_unfolding_output)

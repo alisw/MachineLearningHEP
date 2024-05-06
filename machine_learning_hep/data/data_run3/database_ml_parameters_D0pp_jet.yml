@@ -55,6 +55,9 @@ D0jet_pp:
         index: fIndexD0CollBases
         trees:
           O2hfd0collbase: [fNumContrib]
+      collcnt:
+        trees:
+          O2d0collcount: [fReadCounts, fWrittenCounts]
 
       # collgen: # table not filled at the moment
       #   level: gen
@@ -138,7 +141,7 @@ D0jet_pp:
                       fErrorImpactParameter0, fErrorImpactParameter1]
           O2hfd0sel: [fCandidateSelFlag]
           O2d0cjeto: [fIndexD0CJetCOs, fJetPt, fJetPhi, fJetEta, fJetNConstituents]
-          O2d0cjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta] # fNSub2DR, fNSub1, fNSub2
+          O2d0cjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
         extra:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
         filter: "fPt >= 1. and abs(fY) <= 0.8"
@@ -165,6 +168,9 @@ D0jet_pp:
         level: all
         source: evtorig
         file: AnalysisResultsEvt.parquet
+      collcnt:
+        level: data
+        file: AnalysisResultsCollCnt.parquet
 
   variables:
     var_all: [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1]
@@ -208,6 +214,7 @@ D0jet_pp:
     namefile_unmerged_tree: AO2D.root
     namefile_reco: AnalysisResultsReco.parquet
     namefile_evt: AnalysisResultsEvt.parquet
+    namefile_collcnt: AnalysisResultsCollCnt.parquet
     namefile_evtvalroot: AnalysisResultsROOTEvtVal.root
     namefile_evtorig: AnalysisResultsEvtOrig.parquet
     namefile_gen: AnalysisResultsGen.parquet
@@ -348,7 +355,7 @@ D0jet_pp:
           bins_fix: [4, .1, .5]
           label: 'z_{g}'
         nsd:
-          bins_fix: [10, 0., 10.]
+          bins_fix: [10, -.5, 9.5]
           label: 'N_{sd}'
         rg:
           bins_fix: [10, 0., 1.]
