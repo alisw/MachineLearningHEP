@@ -484,6 +484,10 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
                 else:
                     df_reco_sel_fd = df_reco_presel_fd.copy()
 
+                if self.do_custom_analysis_cuts:
+                    df_reco_sel_pr = self.apply_cuts_ptbin(df_reco_sel_pr, ipt)
+                    df_reco_sel_fd = self.apply_cuts_ptbin(df_reco_sel_fd, ipt)
+
                 def set_content(df_to_use, histogram,
                                 i_b=ibin2, b_c=bincounter):
                     if self.corr_eff_mult[i_b] is True:

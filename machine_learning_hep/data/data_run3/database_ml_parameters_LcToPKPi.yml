@@ -263,13 +263,13 @@ LcpKpi:
       period: [LHC22o] #list of periods
       select_period: [1]
       prefix_dir: /data2/MLhep/
-      unmerged_tree_dir: [real/train_198487/alice/cern.ch/user/a/alihyperloop/jobs/0038] #list of periods
-      pkl: [LHC22pp_pass6_new/period_LHC22o/pkldata] #list of periods
-      pkl_skimmed: [LHC22pp_pass6_new/period_LHC22o/pklskdata] #list of periods
-      pkl_skimmed_merge_for_ml: [LHC22pp_pass6_new/period_LHC22o/pklskmldata] #list of periods
-      pkl_skimmed_merge_for_ml_all: LHC22pp_pass6_new/mltotdata
-      pkl_evtcounter_all: LHC22pp_pass6_new/evttotdata
-      #select_jobs: [[hy_189959], [hy_189000]]
+      unmerged_tree_dir: [real/train_174499/alice/cern.ch/user/a/alihyperloop/jobs/0032] #list of periods
+      pkl: [LHC22pp_pass6/period_LHC22o/pkldata] #list of periods
+      pkl_skimmed: [LHC22pp_pass6/period_LHC22o/pklskdata] #list of periods
+      pkl_skimmed_merge_for_ml: [LHC22pp_pass6/period_LHC22o/pklskmldata] #list of periods
+      pkl_skimmed_merge_for_ml_all: LHC22pp_pass6/mltotdata
+      pkl_evtcounter_all: LHC22pp_pass6/evttotdata
+      #select_jobs: [[hy_328199]]
       mcreweights: [../Analyses]
     mc:
       nprocessesparallel: 80
@@ -281,16 +281,16 @@ LcpKpi:
       period: [LHC22b1b, LHC22b1a] #list of periods
       select_period: [1, 1]
       prefix_dir: /data2/MLhep/
-      unmerged_tree_dir: [sim/train_198489/alice/cern.ch/user/a/alihyperloop/jobs/0038,
-                          sim/train_198490/alice/cern.ch/user/a/alihyperloop/jobs/0038] #list of periods
-      pkl: [LHC22pp_mc_tuner_new/prod_LHC22b1b/pklmc,
-            LHC22pp_mc_tuner_new/prod_LHC22b1a/pklmc] #list of periods
-      pkl_skimmed: [LHC22pp_mc_tuner_new/prod_LHC22b1b/pklskmc,
-                    LHC22pp_mc_tuner_new/prod_LHC22b1a/pklskmc] #list of periods
-      pkl_skimmed_merge_for_ml: [LHC22pp_mc_tuner_new/prod_LHC22b1b/pklskmlmc,
-                                 LHC22pp_mc_tuner_new/prod_LHC22b1a/pklskmlmc] #list of periods
-      pkl_skimmed_merge_for_ml_all: LHC22pp_mc_tuner_new/prod_LHC22/mltotmc
-      pkl_evtcounter_all: LHC22pp_mc_tuner_new/prod_LHC22/evttotmc
+      unmerged_tree_dir: [sim/train_174465/alice/cern.ch/user/a/alihyperloop/jobs/0032,
+                          sim/train_174466/alice/cern.ch/user/a/alihyperloop/jobs/0032] #list of periods
+      pkl: [LHC22pp_mc_tuner/prod_LHC22b1b/pklmc,
+            LHC22pp_mc_tuner/prod_LHC22b1a/pklmc] #list of periods
+      pkl_skimmed: [LHC22pp_mc_tuner/prod_LHC22b1b/pklskmc,
+                    LHC22pp_mc_tuner/prod_LHC22b1a/pklskmc] #list of periods
+      pkl_skimmed_merge_for_ml: [LHC22pp_mc_tuner/prod_LHC22b1b/pklskmlmc,
+                                 LHC22pp_mc_tuner/prod_LHC22b1a/pklskmlmc] #list of periods
+      pkl_skimmed_merge_for_ml_all: LHC22pp_mc_tuner/prod_LHC22/mltotmc
+      pkl_evtcounter_all: LHC22pp_mc_tuner/prod_LHC22/evttotmc
       mcreweights: [../Analyses, ../Analyses]
   ml:
     evtsel: null
@@ -298,9 +298,9 @@ LcpKpi:
       data: null
       mc: null
 
-    nclasses: [20000, 20000]
+    nclasses: [40000, 40000]
     equalise_sig_bkg: True
-    mult_bkg: [30,2,2,3,3,5]
+    mult_bkg: [10,1,2,3,3,5]
     sampletags: [0, 1]
     sel_bkg: fM < 2.22 or fM > 2.35 # for plotting significance; should agree with bkg selection in sel_ml
     # best to have non-prompt (the smallest class) last, so the plots won't complain about the middle class missing
@@ -356,9 +356,9 @@ LcpKpi:
                      xgboost_classifierLcpKpi_dfselection_fPt_8.0_12.0.sav,
                      xgboost_classifierLcpKpi_dfselection_fPt_12.0_24.0.sav]
     probcutpresel:
-      data: [0.6, 0.6, 0.6, 0.6, 0.3, 0.3] #list of nbins
-      mc: [0.6, 0.6, 0.6, 0.6, 0.3, 0.3] #list of nbins
-    probcutoptimal: [0.7, 0.85, 0.7, 0.7, 0.6, 0.3] #list of nbins
+      data: [0.4, 0.4, 0.4, 0.4, 0., 0.] #list of nbins
+      mc: [0.4, 0.4, 0.4, 0.4, 0., 0.] #list of nbins
+    probcutoptimal: [0.7, 0.9, 0.7, 0.7, 0.6, 0.] #list of nbins
 
   analysis:
     anahptspectrum: "LctopKpi" #D0Kpi, DplusKpipi, DstarD0pi, DsKKpi, LctopKpi, LcK0Sp
@@ -377,7 +377,7 @@ LcpKpi:
       sel_binmax2: [2,4,6,8,12,24] #list of nbins
       var_binning2: null
       triggerbit: ''
-      use_cuts: False
+      use_cuts: false
       cuts:
         - "fDecayLength > 0.02"
         - "fDecayLength > 0.02"
@@ -418,8 +418,8 @@ LcpKpi:
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.286
       massmin: [2.18, 2.18, 2.16, 2.14, 2.13, 2.10]
-      massmax: [2.38, 2.40, 2.42, 2.436, 2.446, 2.47]
-      rebin: [5,5,6,7,8,14]
+      massmax: [2.40, 2.40, 2.42, 2.436, 2.446, 2.47]
+      rebin: [5,5,6,7,8,13]
       fix_mean: [false,false,false,false,false,false]
       fix_sigma: [false,false,false,false,false,false]
       # Fix mean and/or sigma

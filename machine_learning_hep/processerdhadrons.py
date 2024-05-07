@@ -211,6 +211,10 @@ class ProcesserDhadrons(Processer): # pylint: disable=too-many-instance-attribut
             else:
                 df_reco_sel_fd = df_reco_presel_fd.copy()
 
+            if self.do_custom_analysis_cuts:
+                df_reco_sel_pr = self.apply_cuts_ptbin(df_reco_sel_pr, ipt)
+                df_reco_sel_fd = self.apply_cuts_ptbin(df_reco_sel_fd, ipt)
+
             val = len(df_gen_sel_pr)
             err = math.sqrt(val)
             h_gen_pr.SetBinContent(bincounter + 1, val)
