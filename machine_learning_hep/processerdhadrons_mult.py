@@ -168,7 +168,7 @@ class ProcesserDhadrons_mult(Processer):
             fill_hist(hVtxOutMult, df_bit_zvtx_gr10[var])
 
         return hSelMult, hNoVtxMult, hVtxOutMult
-    # pylint: too-many-locals
+    # pylint: disable=too-many-locals
     def process_histomass_single(self, index):
         myfile = TFile.Open(self.l_histomass[index], "recreate")
         dfevtorig = read_df(self.l_evtorig[index])
