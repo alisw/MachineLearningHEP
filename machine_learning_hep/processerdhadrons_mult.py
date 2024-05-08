@@ -12,7 +12,7 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
-#pylint: disable=import-error, no-name-in-module, consider-using-f-string
+#pylint: disable=import-error, no-name-in-module, consider-using-f-string, too-many-statements, too-many-branches
 
 """
 main script for doing data processing, machine learning and analysis
@@ -36,12 +36,13 @@ from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
 #from machine_learning_hep.validation.validation_multiplicity import fill_validation_multiplicity
 #from machine_learning_hep.validation.validation_candidates import fill_validation_candidates
 
-class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-attributes, invalid-name
+# pylint: disable=too-many-instance-attributes, invalid-name
+class ProcesserDhadrons_mult(Processer):
     # Class Attribute
     species = 'processer'
 
     # Initializer / Instance Attributes
-    # pylint: disable=too-many-statements, too-many-arguments
+    # pylint: disable=too-many-arguments
     def __init__(self, case, datap, run_param, mcordata, p_maxfiles,
                  d_root, d_pkl, d_pklsk, d_pkl_ml, p_period, i_period,
                  p_chunksizeunp, p_chunksizeskim, p_maxprocess,
@@ -167,7 +168,7 @@ class ProcesserDhadrons_mult(Processer): # pylint: disable=too-many-instance-att
             fill_hist(hVtxOutMult, df_bit_zvtx_gr10[var])
 
         return hSelMult, hNoVtxMult, hVtxOutMult
-    # pylint: disable=too-many-branches, too-many-locals
+    # pylint: too-many-locals
     def process_histomass_single(self, index):
         myfile = TFile.Open(self.l_histomass[index], "recreate")
         dfevtorig = read_df(self.l_evtorig[index])
