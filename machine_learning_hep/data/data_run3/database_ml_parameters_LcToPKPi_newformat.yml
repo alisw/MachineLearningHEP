@@ -135,8 +135,8 @@ LcpKpi:
     var_jet_match: [df, fIndexHfCand2Prong]
     var_jetsub_match: [df, fIndexLcChargedJets]
     var_evt:
-       data: [fIndexCollisions, fPosX, fPosY, fPosZ, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
-       mc:   [fIndexCollisions, fPosX, fPosY, fPosZ, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
+      data: [fIndexCollisions, fPosX, fPosY, fPosZ, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
+      mc:   [fIndexCollisions, fPosX, fPosY, fPosZ, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
     var_gen: [fIndexMcCollisions, fPosX, fPosY, fPosZ, fPt, fY, fFlagMcMatchGen, fOriginMcGen]
     var_training: [[fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY,
                     fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2],
@@ -163,12 +163,12 @@ LcpKpi:
     var_inv_mass: fM
     var_y: fY
     var_cuts:
-        - [fPtProng0, lt, null]
-        - [fPtProng1, lt, null]
-        - [fPtProng2, lt, null]
-        - [fCpa, lt, null]
-        - [fDecayLength, lt, null]
-        - [fChi2PCA, lt, null]
+      - [fPtProng0, lt, null]
+      - [fPtProng1, lt, null]
+      - [fPtProng2, lt, null]
+      - [fCpa, lt, null]
+      - [fDecayLength, lt, null]
+      - [fChi2PCA, lt, null]
 
     plot_options:
       prob_cut_scan:
@@ -307,7 +307,7 @@ LcpKpi:
       mc: null
 
     nclasses: [40000, 40000]
-    equalise_sig_bkg: True
+    equalise_sig_bkg: true
     mult_bkg: [10,1,2,3,3,5]
     sampletags: [0, 1]
     sel_bkg: fM < 2.22 or fM > 2.35 # for plotting significance; should agree with bkg selection in sel_ml
@@ -340,7 +340,7 @@ LcpKpi:
       bkg_data_fraction: 0.05 # fraction of real data used in the estimation
       num_steps: 111 # number of steps used in efficiency and signif. estimation
       bkg_function: pol2 # fit function for bkg (among TH1 predefined fit functions, e.g. expo, pol1, pol2, ...)
-      save_fit: True # save bkg fits with the various cuts on ML output
+      save_fit: true # save bkg fits with the various cuts on ML output
       raahp: [1,1,1,1,1,1] # sel_skim_binmin bins
       presel_gen_eff: "abs(fY) < 0.8"
       #presel_gen_eff: "abs(fY) < 0.8 and abs(fPosZ) < 10"
@@ -431,7 +431,7 @@ LcpKpi:
       fix_mean: [false,false,false,false,false,false]
       fix_sigma: [false,false,false,false,false,false]
       # Fix mean and/or sigma
-      FixedMean: False
+      FixedMean: false
       SetFixGaussianSigma: [false,false,false,false,false,false]
       # Use value set for "masspeak" for initializing total fit, otherwise what is derived from MC fit is used
       SetInitialGaussianMean: true
@@ -461,5 +461,5 @@ LcpKpi:
       maxperccutvar: 0.25 #max diff in efficiency for loosest/tightest var
       cutvarminrange: [0.70, 0.50, 0.50, 0.30, 0.30, 0.30] #Min starting point for scan
       cutvarmaxrange: [0.95, 0.90, 0.90, 0.80, 0.80, 0.80] #Max starting point for scan
-      fixedmean: True #Fix mean cutvar histo to central fit
-      fixedsigma: True #Fix sigma cutvar histo to central fit
+      fixedmean: true #Fix mean cutvar histo to central fit
+      fixedsigma: true #Fix sigma cutvar histo to central fit

@@ -12,6 +12,8 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
+#pylint: disable=import-error, no-name-in-module, consider-using-f-string
+
 """
 main script for doing data processing, machine learning and analysis
 """
@@ -20,8 +22,7 @@ import array
 import os
 import numpy as np
 import pandas as pd
-#pylint: disable=import-error, no-name-in-module, consider-using-f-string
-from ROOT import TFile, TH1F # pylint: disable=import-error, no-name-in-module
+from ROOT import TFile, TH1F
 from machine_learning_hep.utilities import selectdfrunlist
 from machine_learning_hep.utilities_files import create_folder_struc
 from machine_learning_hep.utilities import seldf_singlevar, seldf_singlevar_inclusive
