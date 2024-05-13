@@ -43,6 +43,7 @@ def get_nbins(hist, axis:int):
 def project_hist(hist, axes: list, limits: dict[int, tuple[int]]):
     # TODO: add consistent suffix for projections
     if len(axes) == 2:
+        axes = axes[:] # slice to avoid modifying the list passed as parameter
         axes.reverse() # compensation for ROOT signature using ydim, xdim for 2d projection
     if isinstance(hist, ROOT.THn):
         ranges = []

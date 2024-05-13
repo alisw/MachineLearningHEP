@@ -252,7 +252,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         if not hist:
             self.logger.error('no histogram for %s bin %d', var, ipt)
             return None
-        self._save_hist(hist, f'sideband/h_mass-{var}_{ipt}_{mcordata}.png')
+        label = f'-{var}' if var else ''
+        self._save_hist(hist, f'sideband/h_mass-ptjet{label}_{ipt}_{mcordata}.png')
 
         mean = self.fit_mean[mcordata][ipt]
         sigma = self.fit_sigma[mcordata][ipt]
@@ -282,21 +283,20 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             # project out the mass regions (first axis)
             axes = list(range(get_dim(hist)))[1:]
             fh[region] = project_hist(hist, axes, {0: bins[region]})
-            if get_dim(fh[region]) < 4:
-                self._save_hist(fh[region], f'sideband/h_{var}_{region}_{ipt}_{mcordata}.png')
+            self._save_hist(fh[region], f'sideband/h_ptjet{label}_{region}_{ipt}_{mcordata}.png')
             area[region] = self.fit_func_bkg[mcordata][ipt].Integral(*limits[region])
 
         areaNormFactor = area['signal'] / (area['sideband_left'] + area['sideband_right'])
 
         fh_sideband = sum_hists(
-            [fh['sideband_left'], fh['sideband_right']], f'h_{var}_sideband_{ipt}_{mcordata}')
-        self._save_hist(fh_sideband, f'sideband/h_{var}_sideband_{ipt}_{mcordata}.png')
+            [fh['sideband_left'], fh['sideband_right']], f'h_ptjet{label}_sideband_{ipt}_{mcordata}')
+        self._save_hist(fh_sideband, f'sideband/h_ptjet{label}_sideband_{ipt}_{mcordata}.png')
 
-        fh_subtracted = fh['signal'].Clone(f'h_{var}_subtracted_{ipt}_{mcordata}')
+        fh_subtracted = fh['signal'].Clone(f'h_ptjet{label}_subtracted_{ipt}_{mcordata}')
         fh_subtracted.Sumw2()
         fh_subtracted.Add(fh_sideband, -areaNormFactor)
         fh_subtracted.Scale(1.0 / 0.954) # TODO: calculate from region
-        self._save_hist(fh_subtracted, f'sideband/h_{var}_subtracted_{ipt}_{mcordata}.png')
+        self._save_hist(fh_subtracted, f'sideband/h_ptjet{label}_subtracted_{ipt}_{mcordata}.png')
 
         if get_dim(hist) == 2: # TODO: extract 1d distribution also in case of higher dimension
             c = TCanvas()
@@ -309,7 +309,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             fh_subtracted.Draw("same")
             fh_subtracted.GetYaxis().SetRangeUser(
                 0., max(fh_subtracted.GetMaximum(), fh['signal'].GetMaximum(), fh_sideband.GetMaximum()))
-            self._save_canvas(c, f'sideband/h_{var}_overview_{ipt}_{mcordata}.png')
+            self._save_canvas(c, f'sideband/h_ptjet{label}_overview_{ipt}_{mcordata}.png')
 
         return fh_subtracted
 
@@ -319,22 +319,27 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         for mcordata in ['mc', 'data']:
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
             with TFile(rfilename) as rfile:
-                for var in self.observables['all']:
-                    self.logger.debug('looking for %s', f'h_mass-ptjet-pthf-{var}')
-                    if fh := rfile.Get(f'h_mass-ptjet-pthf-{var}'):
+                for var in [None] + self.observables['all']:
+                    label = f'-{var}' if var else ''
+                    self.logger.debug('looking for %s', f'h_mass-ptjet-pthf{label}')
+                    if fh := rfile.Get(f'h_mass-ptjet-pthf{label}'):
+                        axes_proj = list(range(get_dim(fh)))
+                        axes_proj.remove(2)
                         fh_sub = []
                         for ipt in range(self.nbins):
-                            h = project_hist(fh, [0, 1, 3], {2: (ipt+1, ipt+1)})
+                            h = project_hist(fh, axes_proj, {2: (ipt+1, ipt+1)})
                             h.Sumw2()
                             h = self._subtract_sideband(h, var, mcordata, ipt)
                             self._correct_efficiency(h, ipt)
                             fh_sub.append(h)
                         fh_sum = sum_hists(fh_sub)
-                        self._save_hist(fh_sum, f'h_{var}_subtracted_effscaled_{mcordata}.png')
+                        self._save_hist(fh_sum, f'h_ptjet{label}_subtracted_effscaled_{mcordata}.png')
 
                         self._subtract_feeddown(fh_sum, var, mcordata)
-                        self._save_hist(fh_sum, f'h_{var}_subtracted_fdcorr_{mcordata}.png')
+                        self._save_hist(fh_sum, f'h_ptjet{label}_subtracted_fdcorr_{mcordata}.png')
 
+                        if not var:
+                            continue
                         for j in range(get_nbins(fh_sum, 0)):
                             hproj = project_hist(fh_sum, [1], {0: [j+1, j+1]})
                             self._save_hist(hproj, f'uf/h_{var}_subtracted_{mcordata}_jetpt{j}.png')
