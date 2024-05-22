@@ -148,7 +148,7 @@ class ProcesserJets(Processer):
             histonorm.SetBinContent(1, len(dfquery(dfevtorig, self.s_evtsel)))
             if self.mcordata == 'data':
                 dfcollcnt = read_df(self.l_collcnt[index])
-                collcnt = functools.reduce(lambda x,y: float(x)+float(y), (ar[1] for ar in dfcollcnt['fReadCounts']))
+                collcnt = functools.reduce(lambda x,y: float(x)+float(y), (ar[0] for ar in dfcollcnt['fReadCounts']))
                 self.logger.info('sampled %g collisions', collcnt)
                 histonorm.SetBinContent(2, collcnt)
             get_axis(histonorm, 0).SetBinLabel(1, 'N_{evt}')
@@ -286,6 +286,8 @@ class ProcesserJets(Processer):
                                 (df[f'{var}_gen'] >= var_min) & (df[f'{var}_gen'] < var_max)]
                     fill_hist(h_effkine[(cat, 'det', 'cut', var)], df[['fJetPt', var]])
 
+                    # TODO: probably need to fill response matrix weighted by efficiency
+                    # or defer to analyser by storing (5-dim histogram)
                     fill_response(response_matrix[(cat, var)], df[['fJetPt', f'{var}', 'fJetPt_gen', f'{var}_gen']])
 
                     df = dfmatch[cat]

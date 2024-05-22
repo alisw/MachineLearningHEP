@@ -55,6 +55,9 @@ LcJet_pp:
           O2hf3pcollbase: [fNumContrib]
         extra:
           fIsEventReject: 0
+      collcnt:
+        trees:
+          O2lccollcount: [fReadCounts, fWrittenCounts]
 
       # collgen:
       #   level: gen
@@ -68,7 +71,7 @@ LcJet_pp:
           O2hf3ppbase: [fPt, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
           O2lccmcpjeto: [fIndexLcCMCPJetCOs, fIndexHf3PPBases_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents]
           O2lccmcpjetmo: [fIndexArrayLcCMCDJetOs_hf, fIndexArrayLcCMCDJetOs_geo, fIndexArrayLcCMCDJetOs_pt]
-          O2lccmcpjetsso: [fIndexLcCMCPJetOs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta]
+          O2lccmcpjetsso: [fIndexLcCMCPJetOs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
         extra:
           fY: log((sqrt(2.286**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(2.286**2 + fPt**2))
         tags:
@@ -100,7 +103,7 @@ LcJet_pp:
           O2hf3psel: [fCandidateSelFlag]
           O2lccmcdjeto: [fIndexLcCMCDJetCOs, fIndexHf3PBases_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents]
           O2lccmcdjetmo: [fIndexArrayLcCMCPJetOs_hf, fIndexArrayLcCMCPJetOs_geo, fIndexArrayLcCMCPJetOs_pt]
-          O2lccmcdjetsso: [fIndexLcCMCDJetOs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta]
+          O2lccmcdjetsso: [fIndexLcCMCDJetOs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
         extra:
           fY: log((sqrt(2.286**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(2.286**2 + fPt**2))
         tags:
@@ -132,7 +135,7 @@ LcJet_pp:
           O2hf3psel: [fCandidateSelFlag]
           O2lccjeto: [fIndexLcCJetCOs, fIndexHf3PBases_0,
                     fJetPt, fJetPhi, fJetEta, fJetNConstituents]
-          O2lccjetsso: [fIndexLcCJetOs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta]
+          O2lccjetsso: [fIndexLcCJetOs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
         extra:
           fY: log((sqrt(2.286**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(2.286**2 + fPt**2))
         filter: "fPt > 1."
@@ -160,6 +163,9 @@ LcJet_pp:
         source: evtorig
         file: AnalysisResultsEvt.parquet
         filter: "fIsEventReject == 0"
+      collcnt:
+        level: data
+        file: AnalysisResultsCollCnt.parquet
 
   variables:
     var_all: [fDecayLength, fDecayLengthXY, fDecayLengthNormalised, fDecayLengthXYNormalised, fCpa, fCpaXY, fImpactParameter0, fImpactParameter1, fErrorImpactParameter0, fErrorImpactParameter1, fNSigTpcPi0, fNSigTpcKa0, fNSigTofPi0, fNSigTofKa0, fNSigTpcPi1, fNSigTpcKa1, fNSigTofPi1, fNSigTofKa1]
@@ -203,6 +209,7 @@ LcJet_pp:
     namefile_unmerged_tree: AO2D.root
     namefile_reco: AnalysisResultsReco.parquet
     namefile_evt: AnalysisResultsEvt.parquet
+    namefile_collcnt: AnalysisResultsCollCnt.parquet
     namefile_evtvalroot: AnalysisResultsROOTEvtVal.root
     namefile_evtorig: AnalysisResultsEvtOrig.parquet
     namefile_gen: AnalysisResultsGen.parquet
@@ -226,8 +233,8 @@ LcJet_pp:
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/real/train_191951/
-      unmerged_tree_dir: [alice/cern.ch/user/a/alihyperloop/jobs/0037/hy_372811] #list of periods
+      prefix_dir: /data2/MLhep/real/train_211788/
+      unmerged_tree_dir: [merged] #list of periods
       pkl: ['${USER}/lcjet/pkl'] #list of periods
       pkl_skimmed: ['${USER}/lcjet/pklsk'] #list of periods
       pkl_skimmed_merge_for_ml: ['${USER}/lcjet/pklskml'] #list of periods
@@ -241,9 +248,9 @@ LcJet_pp:
       chunksizeskim: [1000] #list of periods
       fracmerge: [1.0] #list of periods
       seedmerge: [12] #list of periods
-      period: [mctest_nima] #list of periods
+      period: [LHC24d3b] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/sim/train_191952/
+      prefix_dir: /data2/MLhep/sim/train_212614/
       unmerged_tree_dir: [merged]
       pkl: ['${USER}/lcjet/pkl'] #list of periods
       pkl_skimmed: ['${USER}/lcjet/pklsk'] #list of periods
@@ -363,6 +370,14 @@ LcJet_pp:
           arraycols: [3]
         lntheta-lnkt:
           arraycols: [3, 4]
+
+      mass_roofit:
+        range: [1.675, 2.06]
+        components:
+          sig:
+            fn: 'Gaussian::sig(m[-20,20],mean[-10,10],sigma_g1[3, 0.1, 10.0])'
+          bkg:
+            fn: 'Exponential::bkg(m[-20,20],alpha[-10,10])'
 
       mass_fit:
         func_sig: 'gaus'
