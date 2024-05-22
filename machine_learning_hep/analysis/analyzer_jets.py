@@ -76,7 +76,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.n_colls = {}
 
         self.path_fig = Path(f'fig/{self.case}/{self.typean}')
-        for folder in ['qa', 'fit', 'sideband', 'signalextr', 'fd', 'uf']:
+        for folder in ['qa', 'fit', 'roofit', 'sideband', 'signalextr', 'fd', 'uf']:
             (self.path_fig / folder).mkdir(parents=True, exist_ok=True)
 
         self.rfigfile = TFile(str(self.path_fig / 'output.root'), 'recreate')
@@ -139,8 +139,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         cats = {'pr', 'np'}
         rfilename = self.n_fileeff
         with TFile(rfilename) as rfile:
-            h_gen = {cat: project_hist(rfile.Get(f'h_ptjet-pthf_{cat}_gen'), [1], {0: (1, 2)}) for cat in cats} # TODO: fix projection range
-            h_det = {cat: project_hist(rfile.Get(f'h_ptjet-pthf_{cat}_det'), [1], {0: (1, 2)}).Clone(f'h_eff_{cat}')
+            bins_ptjet = (1, 2)
+            h_gen = {cat: project_hist(rfile.Get(f'h_ptjet-pthf_{cat}_gen'), [1], {0: bins_ptjet}) for cat in cats} # TODO: fix projection range
+            h_det = {cat: project_hist(rfile.Get(f'h_ptjet-pthf_{cat}_det'), [1], {0: bins_ptjet}).Clone(f'h_eff_{cat}')
                      for cat in cats}
 
             for cat in cats:
@@ -173,6 +174,30 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
 
     #region fitting
+    def _roofit_mass(self, hist, filename = None):
+        if hist.GetEntries() == 0:
+            raise UserWarning('Cannot fit histogram with no entries')
+        ws = ROOT.RooWorkspace("ws")
+        # fit_range = self.cfg('mass_roofit.range')
+        for comp, spec in self.cfg('mass_roofit.components', {}).items():
+            ws.factory(spec['fn'])
+        m = ws.var('m')
+        model = ws.pdf('sum')
+        dh = ROOT.RooDataHist("dh", "dh", [m], Import=hist)
+        model.fitTo(dh, PrintLevel=-1)
+        frame = m.frame()
+        dh.plotOn(frame)
+        model.plotOn(frame)
+        for comp in self.cfg('mass_roofit.components', {}):
+            if comp != 'sum':
+                model.plotOn(frame, ROOT.RooFit.Components(comp),
+                             ROOT.RooFit.LineStyle(ROOT.ELineStyle.kDashed))
+
+        c = TCanvas()
+        frame.Draw()
+        self._save_canvas(c, filename)
+
+
     def _fit_mass(self, hist, filename = None):
         if hist.GetEntries() == 0:
             raise UserWarning('Cannot fit histogram with no entries')
@@ -235,6 +260,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     if h_invmass.GetEntries() < 100: # TODO: reconsider criterion
                         self.logger.error('Not enough entries to fit for %s bin %d', mcordata, ipt)
                         continue
+                    self._roofit_mass(h_invmass, f'roofit/h_mass_fitted_{ipt}_{mcordata}.png')
                     fit_res, _, func_bkg = self._fit_mass( h_invmass, f'fit/h_mass_fitted_{ipt}_{mcordata}.png')
                     if fit_res and fit_res.Get() and fit_res.IsValid():
                         self.fit_sigma[mcordata][ipt] = fit_res.Parameter(2)

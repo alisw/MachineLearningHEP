@@ -381,9 +381,11 @@ D0jet_pp:
         range: [1.675, 2.06]
         components:
           sig:
-            fn: 'Gaussian::sig(m[-20,20],mean[-10,10],sigma_g1[3, 0.1, 10.0])'
+            fn: 'Gaussian::sig(m[1.675,2.06], mean[1.85,1.87], sigma_g1[.01,.08])'
           bkg:
-            fn: 'Exponential::bkg(m[-20,20],alpha[-10,10])'
+            fn: 'Exponential::bkg(m[1.675,2.06], alpha[-100,0])'
+          sum:
+            fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
 
       mass_fit:
         func_sig: 'gaus'
