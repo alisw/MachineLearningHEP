@@ -876,11 +876,12 @@ class MLFitter: # pylint: disable=too-many-instance-attributes
             if self.pars_factory.mltype == "MultiClassification":
                 title = f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < " \
                         f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
-                        f"(prob0 <= {self.pars_factory.prob_cut_fin[ibin1][0]:.2f} &" \
-                        f"prob1 >= {self.pars_factory.prob_cut_fin[ibin1][1]:.2f})"
+                        f" (prob0 <= {self.pars_factory.prob_cut_fin[ibin1][0]:.2f} & " \
+                        f"prob1 >= {self.pars_factory.prob_cut_fin[ibin1][1]:.2f} & " \
+                        f"prob2 >= {self.pars_factory.prob_cut_fin[ibin1][2]:.2f})"
             else:
                 title = f"{self.pars_factory.bins1_edges_low[ibin1]:.1f} < #it{{p}}_{{T}} < " \
-                        f"{self.pars_factory.bins1_edges_up[ibin1]:.1f}" \
+                        f"{self.pars_factory.bins1_edges_up[ibin1]:.1f} " \
                         f"(prob > {self.pars_factory.prob_cut_fin[ibin1]:.2f})"
 
             x_axis_label = "#it{M}_{inv} (GeV/#it{c}^{2})"
