@@ -13,13 +13,12 @@
 #############################################################################
 
 LcpKpi:
-  nprongs: 3
   doml: true
   mass: 2.286
   sel_reco_unp: "fPt>0"
   sel_gen_unp: "fPt>0"
   sel_cen_unp: null
-  sel_good_evt_unp: "fIsEventReject == 0"
+  sel_good_evt_unp: null
   sel_reco_skim: [null,null,null,null,null,null]
   sel_gen_skim: [null,null,null,null,null,null]
   sel_skim_binmin: [1,2,4,6,8,12] #list of nbins
@@ -30,8 +29,8 @@ LcpKpi:
   var_cand: fCandidateSelFlag
   var_swap: fIsCandidateSwapped
   bitmap_sel:
-    var_name: fFlagMc
-    var_name_gen: fFlagMc
+    var_name: fFlagMcMatchRec
+    var_name_gen: fFlagMcMatchGen
     var_name_origgen: fOriginMcGen
     var_name_origrec: fOriginMcRec
     var_isstd: isstd
@@ -50,60 +49,82 @@ LcpKpi:
   dfs:
     read:
       evtorig:
-        level: data
+        level: all
+        index: fIndexHf3PCollBases
         trees:
-          O2hfcandlcfullev: [fIndexCollisions, fIsEventReject, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
-      evtorigmc:
-        level: mc
-        trees:
-          O2hfcandlcfullev: [fIndexCollisions, fIndexMcCollisions, fIsEventReject, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
+          O2hf3pcollbase: [fPosX, fPosY, fPosZ, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
+        extra:
+          fIsEventReject: 0
+
       reco:
         level: all
+        index: fIndexHf3PBases
         trees:
-          O2hfcandlclite: [fPosX, fPosY, fPosZ, fFlagMc, fCandidateSelFlag, fOriginMcRec, fIsCandidateSwapped, fNProngsContributorsPV,
-                           fY, fEta, fPt, fCpa, fCpaXY, fM, fChi2PCA, fDecayLength, fDecayLengthXY,
-                           fPtProng0, fPtProng1, fPtProng2, fImpactParameter0, fImpactParameter1, fImpactParameter2,
-                           fNSigTpcPi0, fNSigTpcPr0, fNSigTpcKa1, fNSigTpcPi2, fNSigTpcPr2,
-                           fNSigTofPi0, fNSigTofPr0, fNSigTofKa1, fNSigTofPi2, fNSigTofPr2,
-                           fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
-          O2hfcollidlclite: [fIndexCollisions]
+          O2hf3pbase: [fIndexHf3PCollBases, fPt, fEta, fPhi, fM]
+          O2hf3ppar: [fNProngsContributorsPV, fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY,
+                      fPtProng0, fPtProng1, fPtProng2, fImpactParameter0, fImpactParameter1, fImpactParameter2,
+                      fNSigTpcPi0, fNSigTpcPr0, fNSigTpcKa1, fNSigTpcPi2, fNSigTpcPr2,
+                      fNSigTofPi0, fNSigTofPr0, fNSigTofKa1, fNSigTofPi2, fNSigTofPr2,
+                      fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2]
+          O2hf3pmc:
+            level: mc
+            vars: [fFlagMcMatchRec, fOriginMcRec, fIsCandidateSwapped]
+          O2hf3psel:
+            level: mc
+            vars: [fCandidateSelFlag]
         filter: "fPt > 1."
+        extra:
+          fY: log((sqrt(2.28646**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(2.28646**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
+        tags:
+          isstd: {var: fFlagMcMatchRec, req: [[1],[]], level: mc}
+          ismcsignal: {var: fFlagMcMatchRec, req: [[1],[]], abs: true, level: mc}
+          ismcbkg: {var: fFlagMcMatchRec, req: [[],[1]], abs: true, level: mc}
+          ismcprompt: {var: fOriginMcRec, req: [[0],[]], level: mc}
+          ismcfd: {var: fOriginMcRec, req: [[1],[]], level: mc}
+        swap: {cand: fCandidateSelFlag, var_swap: fIsCandidateSwapped, vars: [ismcsignal, ismcprompt, ismcfd], level: mc}
+
       gen:
         level: mc
         trees:
-          O2hfcandlcfullp: [fIndexMcCollisions, fPt, fY, fFlagMc, fOriginMcGen]
+          O2hf3ppbase: [fPt, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
+        tags:
+          isstd: {var: fFlagMcMatchGen, req: [[1],[]], level: mc}
+          ismcsignal: {var: fFlagMcMatchGen, req: [[1],[]], abs: true, level: mc}
+          ismcbkg: {var: fFlagMcMatchGen, req: [[],[1]], abs: true, level: mc}
+          ismcprompt: {var: fOriginMcGen, req: [[0],[]], level: mc}
+          ismcfd: {var: fOriginMcGen, req: [[1],[]], level: mc}
+        extra:
+          fY: log((sqrt(2.28646**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(2.28646**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
 
     merge:
-      - {base: reco, ref: evtorig, use: fIndexCollisions}
-      - {base: reco, ref: evtorigmc, use: fIndexCollisions}
-      - {base: gen, ref: evtorigmc, use: fIndexMcCollisions}
+      - {base: reco, ref: evtorig, extra: {fMultZeqNTracksPV_sub: fMultZeqNTracksPV - fNProngsContributorsPV}}
+      #- {base: reco, ref: evtorigmc, use: fIndexCollisions}
+      #- {base: gen, ref: evtorigmc, use: fIndexMcCollisions}
 
     write:
       evtorig:
-        level: data
-        file: AnalysisResultsEvtOrig.pkl.lz4
+        level: all
+        file: AnalysisResultsEvtOrig.parquet
       evt:
-        level: data
+        level: all
         source: evtorig
-        file: AnalysisResultsEvt.pkl.lz4
-        filter: "fIsEventReject == 0"
-      evtorigmc:
-        level: mc
-        file: AnalysisResultsEvtOrig.pkl.lz4
-      evtmc:
-        level: mc
-        source: evtorigmc
-        file: AnalysisResultsEvt.pkl.lz4
-        filter: "fIsEventReject == 0"
+        file: AnalysisResultsEvt.parquet
+      #evtorigmc:
+      #  level: mc
+      #  file: AnalysisResultsEvtOrig.parquet
+      #evtmc:
+      #  level: mc
+      #  source: evtorigmc
+      #  file: AnalysisResultsEvt.parquet
       reco:
         level: all
-        file: AnalysisResultsReco.pkl.lz4
+        file: AnalysisResultsReco.parquet
       gen:
         level: mc
-        file: AnalysisResultsGen.pkl.lz4
+        file: AnalysisResultsGen.parquet
 
   variables:
-    var_all: [fIndexCollisions, fPosX, fPosY, fPosZ, fFlagMc, fCandidateSelFlag, fOriginMcRec, fIsCandidateSwapped, fNProngsContributorsPV,
+    var_all: [fIndexCollisions, fFlagMcMatchRec, fCandidateSelFlag, fOriginMcRec, fIsCandidateSwapped, fNProngsContributorsPV,
               fY, fEta, fPt, fCpa, fCpaXY, fM, fChi2PCA, fDecayLength, fDecayLengthXY,
               fPtProng0, fPtProng1, fPtProng2, fImpactParameter0, fImpactParameter1, fImpactParameter2,
               fNSigTpcPi0, fNSigTpcPr0, fNSigTpcKa1, fNSigTpcPi2, fNSigTpcPr2,
@@ -112,13 +133,11 @@ LcpKpi:
     var_jet: [fJetPt, fJetEta, fJetPhi]
     var_jetsub: [fZg, fRg, fNsd]
     var_jet_match: [df, fIndexHfCand2Prong]
-    var_jetsub_match: [df, fIndexD0ChargedJets]
+    var_jetsub_match: [df, fIndexLcChargedJets]
     var_evt:
-       data: [fIndexCollisions, fIsEventReject, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
-       mc:   [fIndexCollisions, fIndexMcCollisions, fIsEventReject, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
-    var_gen: [fIndexMcCollisions, fPt, fY, fFlagMc, fOriginMcGen]
-    var_evt_match: [df, fIndexCollisions]
-    var_evt_match_mc: [df, fIndexMcCollisions]
+       data: [fIndexCollisions, fPosX, fPosY, fPosZ, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
+       mc:   [fIndexCollisions, fPosX, fPosY, fPosZ, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
+    var_gen: [fIndexMcCollisions, fPosX, fPosY, fPosZ, fPt, fY, fFlagMcMatchGen, fOriginMcGen]
     var_training: [[fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY,
                     fNSigTpcTofPi0, fNSigTpcTofPr0, fNSigTpcTofKa1, fNSigTpcTofPi2, fNSigTpcTofPr2],
                    [fImpactParameter0, fImpactParameter1, fImpactParameter2, fCpa, fChi2PCA, fDecayLength, fDecayLengthXY,
@@ -143,7 +162,6 @@ LcpKpi:
     var_class: class
     var_inv_mass: fM
     var_y: fY
-    var_evt_sel: fIsEventReject
     var_cuts:
         - [fPtProng0, lt, null]
         - [fPtProng1, lt, null]
@@ -227,17 +245,14 @@ LcpKpi:
             - 20.
   files_names:
     namefile_unmerged_tree: AO2D.root
-    namefile_reco: AnalysisResultsReco.pkl.lz4
-    namefile_evt: AnalysisResultsEvt.pkl.lz4
+    namefile_reco: AnalysisResultsReco.parquet
+    namefile_evt: AnalysisResultsEvt.parquet
     namefile_evtvalroot: AnalysisResultsROOTEvtVal.root
-    namefile_evtorig: AnalysisResultsEvtOrig.pkl.lz4
-    namefile_gen: AnalysisResultsGen.pkl.lz4
-    namefile_reco_applieddata: AnalysisResultsRecoAppliedData.pkl.lz4
-    namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.pkl.lz4
+    namefile_evtorig: AnalysisResultsEvtOrig.parquet
+    namefile_gen: AnalysisResultsGen.parquet
+    namefile_reco_applieddata: AnalysisResultsRecoAppliedData.parquet
+    namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.parquet
     namefile_mcweights: mcweights.root
-    treeoriginreco: 'O2hfcandlclite'
-    treeorigingen: 'O2hfcandlcfullp'
-    treeoriginevt: 'O2hfcandlcfullev'
     treeoutput: "Lctree"
     histofilename: "masshisto.root"
     efffilename: "effhisto.root"
@@ -290,9 +305,9 @@ LcpKpi:
       data: null
       mc: null
 
-    nclasses: [20000, 20000, 20000]
-    equalise_sig_bkg: False
-    mult_bkg: [30,2,2,3,3,5]
+    nclasses: [200000, 200000, 200000]
+    equalise_sig_bkg: True
+    mult_bkg: [1,1,1,1,1,1]
     sampletags: [0, 1, 1]
     sel_bkg: fM < 2.22 or fM > 2.35 # for plotting significance; should agree with bkg selection in sel_ml
     # best to have non-prompt (the smallest class) last, so the plots won't complain about the middle class missing
@@ -348,15 +363,14 @@ LcpKpi:
                      xgboost_classifierLcpKpi_dfselection_fPt_8.0_12.0.sav,
                      xgboost_classifierLcpKpi_dfselection_fPt_12.0_24.0.sav]
     probcutpresel:
-      data: [[0.3, 0.0, 0.0], [0.3, 0.0, 0.0], [0.3, 0.0, 0.0], [0.3, 0.0, 0.0], [0.5, 0.0, 0.0], [0.5, 0.0, 0.0]] #list of nbins
-      mc: [[0.3, 0.0, 0.0], [0.3, 0.0, 0.0], [0.3, 0.0, 0.0], [0.3, 0.0, 0.0], [0.5, 0.0, 0.0], [0.5, 0.0, 0.0]] #list of nbins
+      data: [[0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.7, 0.0, 0.0], [0.7, 0.0, 0.0]] #list of nbins
+      mc: [[0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.5, 0.0, 0.0], [0.7, 0.0, 0.0], [0.7, 0.0, 0.0]] #list of nbins
     probcutoptimal: [[0.2, 0.15, 0.0], [0.2, 0.15, 0.0], [0.2, 0.15, 0.0], [0.2, 0.15, 0.0], [0.5, 0.2, 0.0], [0.5, 0.2, 0.0]] #list of nbins
-
   analysis:
     anahptspectrum: "LctopKpi" # D0Kpi, DplusKpipi, DstarD0pi, DsKKpi, LctopKpi, LcK0Sp
     fd_method: "Nb" # fc, Nb
     cctype: "pp"
-    sigmamb: 57.8e+9 # 50.87e+9 pp5TeV, 57.8e+9 pp13TeV, pb
+    sigmamb: 59.4e+9 # 50.87e+9 pp5TeV, 57.8e+9 pp13TeV, 59.4e+9 pp Run3, pb
     inputfonllpred: data/fonll/DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8_PDG2020.root
     dir_general_plots: analysis_plots
 
@@ -383,7 +397,7 @@ LcpKpi:
       sel_an_binmax: [2,4,6,8,12,24]
       binning_matching: [0,1,2,3,4,5]
       presel_gen_eff: "abs(fY) < 0.5"
-      evtsel: null
+      evtsel: "abs(fPosZ < 10)"
       triggersel:
         data: null
         mc: null
@@ -410,7 +424,7 @@ LcpKpi:
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.286
       massmin: [2.18, 2.18, 2.16, 2.14, 2.13, 2.10]
-      massmax: [2.38, 2.40, 2.42, 2.436, 2.446, 2.47]
+      massmax: [2.40, 2.40, 2.42, 2.436, 2.446, 2.47]
       rebin: [5,5,6,7,8,14]
       fix_mean: [false,false,false,false,false,false]
       fix_sigma: [false,false,false,false,false,false]
