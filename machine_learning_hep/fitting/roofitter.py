@@ -14,6 +14,8 @@
 
 import ROOT
 
+# pylint: disable=too-few-public-methods
+# (temporary until we add more functionality)
 class RooFitter:
     def fit_mass(self, hist, fit_spec, plot = False):
         if hist.GetEntries() == 0:

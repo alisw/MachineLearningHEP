@@ -143,7 +143,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         rfilename = self.n_fileeff
         with TFile(rfilename) as rfile:
             bins_ptjet = (1, 2)
-            h_gen = {cat: project_hist(rfile.Get(f'h_ptjet-pthf_{cat}_gen'), [1], {0: bins_ptjet}) for cat in cats} # TODO: fix projection range
+            # TODO: fix projection range
+            h_gen = {cat: project_hist(rfile.Get(f'h_ptjet-pthf_{cat}_gen'), [1], {0: bins_ptjet}) for cat in cats}
             h_det = {cat: project_hist(rfile.Get(f'h_ptjet-pthf_{cat}_det'), [1], {0: bins_ptjet}).Clone(f'h_eff_{cat}')
                      for cat in cats}
 
@@ -178,7 +179,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
     #region fitting
     def _roofit_mass(self, hist, filename = None):
-        ws, frame = self.fitter.fit_mass(hist, self.cfg('mass_roofit', {}), True)
+        _ws, frame = self.fitter.fit_mass(hist, self.cfg('mass_roofit', {}), True)
         c = TCanvas()
         frame.Draw()
         self._save_canvas(c, filename)
