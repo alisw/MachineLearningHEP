@@ -22,6 +22,7 @@ import ROOT
 from ROOT import TF1, TCanvas, TFile, gStyle
 
 from machine_learning_hep.analysis.analyzer import Analyzer
+from machine_learning_hep.fitting.roofitter import RooFitter
 from machine_learning_hep.utilities import folding
 from machine_learning_hep.utils.hist import (bin_array, create_hist,
                                              fill_hist_fast, get_axis, get_dim,
@@ -80,6 +81,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             (self.path_fig / folder).mkdir(parents=True, exist_ok=True)
 
         self.rfigfile = TFile(str(self.path_fig / 'output.root'), 'recreate')
+
+        self.fitter = RooFitter()
 
     #region helpers
     def _save_canvas(self, canvas, filename):
@@ -175,24 +178,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
     #region fitting
     def _roofit_mass(self, hist, filename = None):
-        if hist.GetEntries() == 0:
-            raise UserWarning('Cannot fit histogram with no entries')
-        ws = ROOT.RooWorkspace("ws")
-        # fit_range = self.cfg('mass_roofit.range')
-        for comp, spec in self.cfg('mass_roofit.components', {}).items():
-            ws.factory(spec['fn'])
-        m = ws.var('m')
-        model = ws.pdf('sum')
-        dh = ROOT.RooDataHist("dh", "dh", [m], Import=hist)
-        model.fitTo(dh, PrintLevel=-1)
-        frame = m.frame()
-        dh.plotOn(frame)
-        model.plotOn(frame)
-        for comp in self.cfg('mass_roofit.components', {}):
-            if comp != 'sum':
-                model.plotOn(frame, ROOT.RooFit.Components(comp),
-                             ROOT.RooFit.LineStyle(ROOT.ELineStyle.kDashed))
-
+        ws, frame = self.fitter.fit_mass(hist, self.cfg('mass_roofit', {}), True)
         c = TCanvas()
         frame.Draw()
         self._save_canvas(c, filename)
