@@ -25,6 +25,7 @@ import sys
 import tempfile
 from copy import deepcopy
 from functools import reduce
+from pandas.api.types import is_numeric_dtype
 
 import numpy as np
 import pandas as pd
@@ -111,7 +112,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         # nget(datap, ['dfs', 'write', 'jetsubdet', 'file'])
         self.n_reco = datap["files_names"]["namefile_reco"]
         self.n_evt = datap["files_names"]["namefile_evt"]
-        self.n_collcnt = datap["files_names"]["namefile_collcnt"]
         self.n_evtorig = datap["files_names"]["namefile_evtorig"]
         self.n_evt_count_ml = datap["files_names"].get("namefile_evt_count", "evtcount.yaml")
         self.n_gen = datap["files_names"]["namefile_gen"]
@@ -162,7 +162,6 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.l_reco = createlist(self.d_pkl, self.l_path, self.n_reco)
         self.l_evt = createlist(self.d_pkl, self.l_path, self.n_evt)
         self.l_evtorig = createlist(self.d_pkl, self.l_path, self.n_evtorig)
-        self.l_collcnt = createlist(self.d_pkl, self.l_path, self.n_collcnt)
         self.l_histomass = createlist(self.d_results, self.l_path, self.n_filemass)
         self.l_histoeff = createlist(self.d_results, self.l_path, self.n_fileeff)
         self.l_historesp = createlist(self.d_results, self.l_path, self.n_fileresp)
@@ -198,15 +197,9 @@ class Processer: # pylint: disable=too-many-instance-attributes
                 bin_id = bin_matching[i]
                 self.lpt_probcutfin.append(lpt_probcutfin_tmp[bin_id])
 
-        if self.mltype == "MultiClassification":
-            for probcutfin, probcutpre in zip(self.lpt_probcutfin, self.lpt_probcutpre):
-                if probcutfin[0] > probcutpre[0] or probcutfin[1] < probcutpre[1] or probcutfin[2] < probcutpre[2]:
-                    self.logger.fatal("Probability cut final: %s must be tighter than presel %s!\n" \
-                            "Verify that bkg prob presel > final, and other cuts presel < final",
-                            self.lpt_probcutfin, self.lpt_probcutpre)
-        elif self.lpt_probcutfin < self.lpt_probcutpre:
-            self.logger.fatal("Probability cut final: %s must be tighter (smaller values) than presel %s!",
-                    self.lpt_probcutfin, self.lpt_probcutpre)
+        if self.mltype != "MultiClassification":
+            if self.lpt_probcutfin < self.lpt_probcutpre:
+                print("FATAL error: probability cut final must be tighter!")
 
         if self.mltype == "MultiClassification":
             self.l_selml = []
@@ -402,6 +395,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         if not isinstance(on, list) or 'df' not in on:
                             on = ['df', on]
                         dfs[out] = dfmerge(dfs[base], dfs[ref], on=on)
+                    elif (on := m_spec.get('left_on', None)) is not None:
+                        self.logger.info('merging %s with %s on %s into %s', base, ref, on, out)
+                        if not (is_numeric_dtype(dfs[base][on])):
+                            self.logger.info('exploding dataframe %s on variable %s', base, on)
+                            dfs[base] = dfs[base].explode(on)
+                        dfs[out] = dfmerge(dfs[base], dfs[ref], left_on=['df', on], right_index=True)
                     else:
                         var = self.df_read[ref]['index']
                         self.logger.info('merging %s with %s on %s (default) into %s', base, ref, var, out)
