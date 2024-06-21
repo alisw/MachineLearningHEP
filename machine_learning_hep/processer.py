@@ -25,6 +25,7 @@ import sys
 import tempfile
 from copy import deepcopy
 from functools import reduce
+from pandas.api.types import is_numeric_dtype
 
 import numpy as np
 import pandas as pd
@@ -402,6 +403,12 @@ class Processer: # pylint: disable=too-many-instance-attributes
                         if not isinstance(on, list) or 'df' not in on:
                             on = ['df', on]
                         dfs[out] = dfmerge(dfs[base], dfs[ref], on=on)
+                    elif (on := m_spec.get('left_on', None)) is not None:
+                        self.logger.info('merging %s with %s on %s into %s', base, ref, on, out)
+                        if not is_numeric_dtype(dfs[base][on]):
+                            self.logger.info('exploding dataframe %s on variable %s', base, on)
+                            dfs[base] = dfs[base].explode(on)
+                        dfs[out] = dfmerge(dfs[base], dfs[ref], left_on=['df', on], right_index=True)
                     else:
                         var = self.df_read[ref]['index']
                         self.logger.info('merging %s with %s on %s (default) into %s', base, ref, var, out)
