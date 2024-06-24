@@ -53,7 +53,6 @@ LcpKpi:
         level: all
         index: fIndexHf3PCollBases
         trees:
-          #O2hf3pcollbase: [fPosX, fPosY, fPosZ, fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
           O2hf3pcollbase: [fNumContrib, fMultZeqNTracksPV, fCentFT0A, fCentFT0C, fCentFT0M, fCentFV0A]
         extra:
           fIsEventReject: 0
@@ -69,7 +68,7 @@ LcpKpi:
         level: all
         index: fIndexHf3PBases
         trees:
-          O2hf3pbase: [fIndexHf3PCollBases, fPt, fEta, fPhi, fM]
+          O2hf3pbase: [fIndexHf3PCollBases, fPt, fY, fEta, fPhi, fM]
           O2hf3ppar: [fNProngsContributorsPV, fCpa, fCpaXY, fChi2PCA, fDecayLength, fDecayLengthXY,
                       fPtProng0, fPtProng1, fPtProng2, fImpactParameter0, fImpactParameter1, fImpactParameter2,
                       fNSigTpcPi0, fNSigTpcPr0, fNSigTpcKa1, fNSigTpcPi2, fNSigTpcPr2,
@@ -82,8 +81,8 @@ LcpKpi:
             level: mc
             vars: [fCandidateSelFlag]
         filter: "fPt > 0."
-        extra:
-          fY: log((sqrt(2.28646**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(2.28646**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
+        #extra:
+          #fY: log((sqrt(2.28646**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(2.28646**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
         tags:
           isstd: {var: fFlagMcMatchRec, req: [[1],[]], level: mc}
           ismcsignal: {var: fFlagMcMatchRec, req: [[1],[]], abs: true, level: mc}
@@ -95,15 +94,15 @@ LcpKpi:
       gen:
         level: mc
         trees:
-          O2hf3ppbase: [fIndexHf3PMcCollBases, fPt, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
+          O2hf3ppbase: [fIndexHf3PMcCollBases, fPt, fY, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
         tags:
           isstd: {var: fFlagMcMatchGen, req: [[1],[]], level: mc}
           ismcsignal: {var: fFlagMcMatchGen, req: [[1],[]], abs: true, level: mc}
           ismcbkg: {var: fFlagMcMatchGen, req: [[],[1]], abs: true, level: mc}
           ismcprompt: {var: fOriginMcGen, req: [[0],[]], level: mc}
           ismcfd: {var: fOriginMcGen, req: [[1],[]], level: mc}
-        extra:
-          fY: log((sqrt(2.28646**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(2.28646**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
+        #extra:
+          #fY: log((sqrt(2.28646**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(2.28646**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
 
     merge:
        - {base: reco, ref: evtorig , extra: {fMultZeqNTracksPV_sub: fMultZeqNTracksPV - fNProngsContributorsPV}}
@@ -118,13 +117,6 @@ LcpKpi:
         level: all
         source: evtorig
         file: AnalysisResultsEvt.parquet
-      #evtorigmc:
-      #  level: mc
-      #  file: AnalysisResultsEvtOrig.parquet
-      #evtmc:
-      #  level: mc
-      #  source: evtorigmc
-      #  file: AnalysisResultsEvt.parquet
       reco:
         level: all
         file: AnalysisResultsReco.parquet
@@ -256,6 +248,7 @@ LcpKpi:
     namefile_unmerged_tree: AO2D.root
     namefile_reco: AnalysisResultsReco.parquet
     namefile_evt: AnalysisResultsEvt.parquet
+    namefile_collcnt: AnalysisResultsCollCnt.parquet
     namefile_evtvalroot: AnalysisResultsROOTEvtVal.root
     namefile_evtorig: AnalysisResultsEvtOrig.parquet
     namefile_gen: AnalysisResultsGen.parquet
@@ -387,12 +380,10 @@ LcpKpi:
       usesinglebineff: null
       fprompt_from_mb: true
       corresp_mb_typean: null
-      corrEffMult: [false, false, false, false, false]
+      corrEffMult: [false, false, false, false, false, false, false]
       event_cand_validation: True
-      #sel_binmin2: [0,1,10,30,60] #list of nbins
-      #sel_binmax2: [9999,9,29,59,100] #list of nbins
-      sel_binmin2: [1] #list of nbins
-      sel_binmax2: [99] #list of nbins
+      sel_binmin2: [1, 1, 10, 20, 30, 40, 50] #list of nbins
+      sel_binmax2: [100, 10, 20, 30, 40, 50, 100] #list of nbins
       var_binning2: fMultZeqNTracksPV_sub
       var_binning2_gen: fMultZeqNTracksPV
       nbinshisto: 200
@@ -408,13 +399,11 @@ LcpKpi:
         - "fDecayLength > 0.02"
         - "fDecayLength > 0.02"
 
-
       sel_an_binmin: [1,2,4,6,8,12]
       sel_an_binmax: [2,4,6,8,12,24]
       binning_matching: [0,1,2,3,4,5]
       presel_gen_eff: "abs(fY) < 0.5"
       evtsel: "abs(fPosZ)<10"
-      presel_gen_eff: null
       evtsel: null
       triggersel:
         data: null
@@ -432,7 +421,7 @@ LcpKpi:
         results: [LHC22pp_mc_barrel/Results/prod_LHC24d3b/resultsmc] #list of periods
         resultsallp: LHC22pp_mc_barrel/Results/prod_LHC22/resultsmctot
 
-      mass_fit_lim: [2.10, 2.50] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [2.10, 2.47] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
@@ -441,8 +430,8 @@ LcpKpi:
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.286
       massmin: [2.20, 2.20, 2.19, 2.14, 2.13, 2.10]
-      massmax: [2.38, 2.38, 2.40, 2.436, 2.446, 2.50]
-      rebin: [5,6,6,8,8,13]
+      massmax: [2.38, 2.38, 2.40, 2.436, 2.446, 2.47]
+      rebin: [4,4,5,6,8,14]
       fix_mean: [false,false,false,false,false,false]
       fix_sigma: [false,false,false,false,false,false]
       # Fix mean and/or sigma
@@ -501,7 +490,6 @@ LcpKpi:
       binning_matching: [0,1,2,3,4,5]
       presel_gen_eff: "abs(fY) < 0.5"
       evtsel: "abs(fPosZ)<10"
-      presel_gen_eff: null
       evtsel: null
       triggersel:
         data: null
