@@ -483,8 +483,23 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 h_fd_gen.Multiply(hkinematiceff_np_gendetcuts)
                 self._save_hist(h_fd_gen, f'fd/h_ptjet-{var}_feeddown_gen_kineeffscaled.png')
 
-                response_matrix_np = rfile.Get(f'h_effkine_np_det_nocuts_{var}_h_effkine_np_gen_nocuts_{var}')
-                self._save_hist(response_matrix_np, f'fd/h_ptjet-{var}_response_np.png')
+                # response_matrix_np = rfile.Get(f'h_effkine_np_det_nocuts_{var}_h_effkine_np_gen_nocuts_{var}')
+                # self._save_hist(response_matrix_np, f'fd/h_ptjet-{var}_response_np.png')
+
+                h_response = rfile.Get(f'h_response_np_{var}')
+                response_matrix_np = ROOT.RooUnfoldResponse(
+                    project_hist(h_response, [0, 1], {}), project_hist(h_response, [2, 3], {}))
+                for bin in itertools.product(
+                    enumerate(get_axis(h_response, 0).GetXbins(), 1),
+                    enumerate(get_axis(h_response, 1).GetXbins(), 1),
+                    enumerate(get_axis(h_response, 2).GetXbins(), 1),
+                    enumerate(get_axis(h_response, 3).GetXbins(), 1),
+                    enumerate(get_axis(h_response, 4).GetXbins(), 1)):
+                    n = h_response.GetBinContent(np.asarray([bin[0][0], bin[1][0], bin[2][0], bin[3][0], bin[4][0]], 'i'))
+                    eff = self.hcandeff_np.GetBinContent(bin[4][0])
+                    for _ in range(int(n)):
+                        response_matrix_np.Fill(bin[0][1], bin[1][1], bin[2][1], bin[3][1], eff)
+                # response_matrix_np.Mresponse().Print()
 
                 hfeeddown_det = response_matrix_np.Hmeasured().Clone()
                 hfeeddown_det.Sumw2()
@@ -530,10 +545,24 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
     def _unfold(self, hist, var, mcordata):
         self.logger.info('Unfolding for %s', var)
         with TFile(self.n_fileeff) as rfile:
-            response_matrix_pr = rfile.Get(f'h_effkine_pr_det_nocuts_{var}_h_effkine_pr_gen_nocuts_{var}')
-            if not response_matrix_pr:
+            # response_matrix_pr = rfile.Get(f'h_effkine_pr_det_nocuts_{var}_h_effkine_pr_gen_nocuts_{var}')
+
+            h_response = rfile.Get(f'h_response_pr_{var}')
+            if not h_response:
                 self.logger.error('Response matrix for %s not available, cannot unfold', var)
                 return []
+            response_matrix_pr = ROOT.RooUnfoldResponse(
+                project_hist(h_response, [0, 1], {}), project_hist(h_response, [2, 3], {}))
+            for bin in itertools.product(
+                enumerate(get_axis(h_response, 0).GetXbins(), 1),
+                enumerate(get_axis(h_response, 1).GetXbins(), 1),
+                enumerate(get_axis(h_response, 2).GetXbins(), 1),
+                enumerate(get_axis(h_response, 3).GetXbins(), 1),
+                enumerate(get_axis(h_response, 4).GetXbins(), 1)):
+                n = h_response.GetBinContent(np.asarray([bin[0][0], bin[1][0], bin[2][0], bin[3][0], bin[4][0]], 'i'))
+                eff = self.hcandeff.GetBinContent(bin[4][0])
+                for _ in range(int(n)):
+                    response_matrix_pr.Fill(bin[0][1], bin[1][1], bin[2][1], bin[3][1], eff)
 
             h_effkine_pr_detnogencuts = rfile.Get(f'h_effkine_pr_det_nocuts_{var}')
             h_effkine_pr_detgencuts = rfile.Get(f'h_effkine_pr_det_cut_{var}')
