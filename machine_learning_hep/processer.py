@@ -372,6 +372,11 @@ class Processer: # pylint: disable=too-many-instance-attributes
                     self.logger.debug(' %s -> extra', df_name)
                     for col_name, col_val in df_spec['extra'].items():
                         dfs[df_name][col_name] = dfs[df_name].eval(col_val)
+                if 'extract_component' in df_spec:
+                    self.logger.debug(' %s -> extract_component', df_name)
+                    specs = df_spec['extract_component']
+                    for spec in specs:
+                        dfs[df_name][spec['newvar']] = dfs[df_name][spec['var']].apply(lambda x: x[spec['component']])
                 if 'filter' in df_spec:
                     self.logger.debug(' %s -> filter', df_name)
                     dfquery(dfs[df_name], df_spec['filter'], inplace=True)
