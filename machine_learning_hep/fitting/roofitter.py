@@ -19,6 +19,7 @@ import ROOT
 class RooFitter:
     def __init__(self):
         ROOT.RooMsgService.instance().setSilentMode(True)
+        ROOT.RooMsgService.instance().setGlobalKillBelow(ROOT.RooFit.WARNING)
 
     def fit_mass(self, hist, fit_spec, plot = False):
         if hist.GetEntries() == 0:
@@ -30,7 +31,7 @@ class RooFitter:
         # m.setRange('full', 0., 3.)
         dh = ROOT.RooDataHist("dh", "dh", [m], Import=hist)
         model = ws.pdf('sum')
-        model.Print('t')
+        # model.Print('t')
         res = model.fitTo(dh, Save=True, PrintLevel=-1)
         frame = m.frame() if plot else None
         if plot:

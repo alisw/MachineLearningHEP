@@ -214,3 +214,8 @@ def sum_hists(hists, name = None):
         else:
             hist.Add(h)
     return hist
+
+
+def ensure_sumw2(hist):
+    if hist.GetSumw2N() < 1:
+        hist.Sumw2()
