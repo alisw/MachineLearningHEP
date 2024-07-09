@@ -190,9 +190,15 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.lpt_probcutpre = datap["mlapplication"]["probcutpresel"][self.mcordata]
         self.lpt_probcutfin = datap["analysis"][self.typean].get("probcuts", None)
 
+        self.bins_skimming = np.array(list(zip(self.lpt_anbinmin, self.lpt_anbinmax)), 'd')
+        self.bins_analysis = np.array(list(zip(self.lpt_finbinmin, self.lpt_finbinmax)), 'd')
+        bin_matching = [
+            [ptrange[0] <= bin[0] and ptrange[1] >= bin[0] for ptrange in self.bins_skimming].index(True)
+            for bin in self.bins_analysis
+        ]
+
         # Make it backwards-compatible
         if not self.lpt_probcutfin:
-            bin_matching = datap["analysis"][self.typean]["binning_matching"]
             lpt_probcutfin_tmp = datap["mlapplication"]["probcutoptimal"]
             self.lpt_probcutfin = []
             for i in range(self.p_nptfinbins):
