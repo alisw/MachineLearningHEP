@@ -238,7 +238,7 @@ D0jet_pp:
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/real/train_224749/
+      prefix_dir: /data2/MLhep/real/train_235436/
       unmerged_tree_dir: [/alice/] #list of periods
       pkl: ['${USER}/d0jet/pkl'] #list of periods
       pkl_skimmed: ['${USER}/d0jet/pklsk'] #list of periods
@@ -253,9 +253,9 @@ D0jet_pp:
       chunksizeskim: [1000] #list of periods
       fracmerge: [1.0] #list of periods
       seedmerge: [12] #list of periods
-      period: [LHC24d3b] #list of periods
+      period: [LHC24d3a] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/sim/train_222234/
+      prefix_dir: /data2/MLhep/sim/train_235437/
       unmerged_tree_dir: [alice/]
       pkl: ['${USER}/d0jet/pkl'] #list of periods
       pkl_skimmed: ['${USER}/d0jet/pklsk'] #list of periods
@@ -343,8 +343,8 @@ D0jet_pp:
     dir_general_plots: /data2/jklein/data/analysis_plots
 
     jet_obs: &jet_default
-      sel_an_binmin:    [2,3,4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:    [3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmin:    [1,2,3,4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmax:    [2,3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
       # binning_matching:   [1,1,2,2,3,3, 4, 4, 5, 6,6] # obsolete
       bins_ptjet: [7, 15, 30]
 
@@ -384,6 +384,14 @@ D0jet_pp:
               fn: 'Gaussian::sig(m[1.695,2.04], mean[1.85,1.87], sigma_g1[.01,.08])'
             bkg:
               fn: 'Gaussian::bkg(m[1.695,2.04], mean_g2[1.85,1.87], sigma_g2[.1,1.])'
+            sum:
+              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+        - ptrange: [1., 2.]
+          components:
+            sig:
+              fn: 'Gaussian::sig(m[1.710,2.02], mean[1.85,1.87], sigma_g1[.01,.08])'
+            bkg:
+              fn: 'Exponential::bkg(m[1.710,2.02], alpha[-100,0])'
             sum:
               fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
         - ptrange: [2., 3.]
