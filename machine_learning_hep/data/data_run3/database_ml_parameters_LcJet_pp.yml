@@ -19,8 +19,8 @@ LcJet_pp:
   sel_gen_unp: "fPt>0"
   sel_cen_unp: null
   sel_good_evt_unp: null # "fIsEventReject == 0"
-  sel_reco_skim: [null,null,null,null,null,null,null]
-  sel_gen_skim: [null,null,null,null,null,null,null]
+  sel_reco_skim: [null,null,null,null,null,null,null,null,null,null]
+  sel_gen_skim: [null,null,null,null,null,null,null,null,null,null]
   sel_skim_binmin: [1,2,4,6,8,12,24] # skimming pt bins (sel_skim_binmin bins)
   sel_skim_binmax:   [2,4,6,8,12,24,48] # skimming pt bins (sel_skim_binmin bins)
   var_binning: fPt
@@ -339,9 +339,9 @@ LcJet_pp:
     dir_general_plots: /data2/jklein/data/analysis_plots
 
     jet_obs: &jet_default
-      sel_an_binmin:    [5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:      [6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
-      binning_matching:   [2,3,3, 4, 4, 5, 5, 6] # mapping to skimming pt bins (sel_an_binmin bins)
+      sel_an_binmin:    [2,3,4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmax:      [3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
+      # binning_matching:   [1,1,1,2,3,3, 4, 4, 5, 5, 6] # mapping to skimming pt bins (sel_an_binmin bins)
       bins_ptjet: [7, 15, 30]
 
       observables:
@@ -372,14 +372,37 @@ LcJet_pp:
           arraycols: [3, 4]
 
       mass_roofit:
-        range: [2.0, 2.5]
-        components:
-          sig:
-            fn: 'Gaussian::sig(m[2.1,2.48], mean[2.28,2.29], sigma_g1[.005,.03])'
-          bkg:
-            fn: 'Exponential::bkg(m[2.1, 2.48], alpha[-100,0])'
-          sum:
-            fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+        - level: mc
+          components:
+            sig:
+              fn: 'Gaussian::sig(m[2.,2.50], mean[2.28,2.29], sigma_g1[.01,.01,.03])'
+            bkg:
+              fn: 'Exponential::bkg(m[2., 2.50], alpha[0.])'
+            sum:
+              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+        - ptrange: [2., 5.]
+          components:
+            sig:
+              fn: 'Gaussian::sig(m[2.1,2.44], mean[2.28,2.29], sigma_g1[.005,.01])'
+            bkg:
+              fn: 'Exponential::bkg(m[2.1, 2.44], alpha[-100,0])'
+            sum:
+              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+        - ptrange: [5., 8.]
+          components:
+            sig:
+              fn: 'Gaussian::sig(m[2.1,2.48], mean[2.28,2.29], sigma_g1[.005,.03])'
+            bkg:
+              fn: 'Exponential::bkg(m[2.1, 2.48], alpha[-100,0])'
+            sum:
+              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+        - components:
+            sig:
+              fn: 'Gaussian::sig(m[2.,2.50], mean[2.28,2.29], sigma_g1[.005,.03])'
+            bkg:
+              fn: 'Exponential::bkg(m[2., 2.50], alpha[-100,0])'
+            sum:
+              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
 
       mass_fit:
         func_sig: 'gaus'
@@ -499,6 +522,9 @@ LcJet_pp:
       # Additional cuts applied before mass histogram is filled
       use_cuts: False
       cuts: # (sel_an_binmin bins)
+      - Null
+      - Null
+      - Null
       - Null
       - Null
       - Null

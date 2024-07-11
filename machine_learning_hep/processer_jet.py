@@ -117,7 +117,7 @@ class ProcesserJets(Processer):
         df['zpar_den'] = df.jetPx * df.jetPx + df.jetPy * df.jetPy + df.jetPz * df.jetPz
         df['zpar'] = df.zpar_num / df.zpar_den
         df[df['zpar'] == 1.]['zpar'] = .99999 # move 1 to last bin
-        # df['nsub21'] = df.fNSub2 / df.fNSub1
+        df['nsub21'] = df.fNSub2 / df.fNSub1
 
         self.logger.debug('zg')
         df['zg_array'] = np.array(.5 - abs(df.fPtSubLeading / (df.fPtLeading + df.fPtSubLeading) - .5))
@@ -209,6 +209,15 @@ class ProcesserJets(Processer):
                                     self.binarray_ptjet, self.binarrays_obs[var])
                         for var, level, cat, cut in itertools.product(observables, levels, cats, cuts)
                         if not '-' in var}
+        h_response = {
+            (cat, var): create_hist(
+                f'h_response_{cat}_{var}',
+                f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var};p_{{T}}^{{jet}} (GeV/#it{{c}});{var};p_{{T}} (GeV/#it{{c}})",
+                self.binarray_ptjet, self.binarrays_obs[var],
+                self.binarray_ptjet, self.binarrays_obs[var],
+                self.binarray_pthf)
+            for (cat, var) in itertools.product(cats, observables)
+            if not '-' in var}
         response_matrix = {
             (cat, var): ROOT.RooUnfoldResponse(h_effkine[(cat, 'det', 'nocuts', var)],
                                                h_effkine[(cat, 'gen', 'nocuts', var)])
@@ -216,8 +225,9 @@ class ProcesserJets(Processer):
             if not '-' in var}
 
         with TFile.Open(self.l_histoeff[index], "recreate") as rfile:
+            # TODO: avoid hard-coding values here
             cols = ['ismcprompt', 'fPt', 'fEta', 'fPhi', 'fJetPt', 'fJetEta', 'fJetPhi',
-                    'fPtLeading', 'fPtSubLeading', 'fTheta']
+                    'fPtLeading', 'fPtSubLeading', 'fTheta', 'fNSub2DR', 'fNSub1', 'fNSub2']
 
             # read generator level
             dfgen_orig = pd.concat(read_df(self.mptfiles_gensk[bin][index], columns=cols)
@@ -286,9 +296,8 @@ class ProcesserJets(Processer):
                                 (df[f'{var}_gen'] >= var_min) & (df[f'{var}_gen'] < var_max)]
                     fill_hist(h_effkine[(cat, 'det', 'cut', var)], df[['fJetPt', var]])
 
-                    # TODO: probably need to fill response matrix weighted by efficiency
-                    # or defer to analyser by storing (5-dim histogram)
                     fill_response(response_matrix[(cat, var)], df[['fJetPt', f'{var}', 'fJetPt_gen', f'{var}_gen']])
+                    fill_hist(h_response[(cat, var)], df[['fJetPt', f'{var}', 'fJetPt_gen', f'{var}_gen', 'fPt']])
 
                     df = dfmatch[cat]
                     df = df.loc[(df.fJetPt_gen >= ptjet_min) & (df.fJetPt_gen < ptjet_max) &
@@ -298,7 +307,8 @@ class ProcesserJets(Processer):
                                 (df[f'{var}'] >= var_min) & (df[f'{var}'] < var_max)]
                     fill_hist(h_effkine[(cat, 'gen', 'cut', var)], df[['fJetPt_gen', f'{var}_gen']])
 
-            for name, obj in itertools.chain(h_eff.items(), h_effkine.items(), response_matrix.items()):
+            for name, obj in itertools.chain(h_eff.items(), h_effkine.items(), h_response.items(),
+                                             response_matrix.items()):
                 try:
                     rfile.WriteObject(obj, obj.GetName())
                 except Exception as ex: # pylint: disable=broad-exception-caught

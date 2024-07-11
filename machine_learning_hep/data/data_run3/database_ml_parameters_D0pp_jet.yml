@@ -238,7 +238,7 @@ D0jet_pp:
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/real/train_224749/
+      prefix_dir: /data2/MLhep/real/train_235436/
       unmerged_tree_dir: [/alice/] #list of periods
       pkl: ['${USER}/d0jet/pkl'] #list of periods
       pkl_skimmed: ['${USER}/d0jet/pklsk'] #list of periods
@@ -253,9 +253,9 @@ D0jet_pp:
       chunksizeskim: [1000] #list of periods
       fracmerge: [1.0] #list of periods
       seedmerge: [12] #list of periods
-      period: [LHC24d3b] #list of periods
+      period: [LHC24d3a] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/sim/train_222234/
+      prefix_dir: /data2/MLhep/sim/train_235437/
       unmerged_tree_dir: [alice/]
       pkl: ['${USER}/d0jet/pkl'] #list of periods
       pkl_skimmed: ['${USER}/d0jet/pklsk'] #list of periods
@@ -343,9 +343,9 @@ D0jet_pp:
     dir_general_plots: /data2/jklein/data/analysis_plots
 
     jet_obs: &jet_default
-      sel_an_binmin:    [2,3,4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:    [3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
-      binning_matching:   [1,1,2,2,3,3, 4, 4, 5, 6,6] # obsolete
+      sel_an_binmin:    [1,2,3,4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmax:    [2,3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
+      # binning_matching:   [1,1,2,2,3,3, 4, 4, 5, 6,6] # obsolete
       bins_ptjet: [7, 15, 30]
 
       sigmamb: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
@@ -378,14 +378,70 @@ D0jet_pp:
           arraycols: [3, 4]
 
       mass_roofit:
-        range: [1.675, 2.06]
-        components:
-          sig:
-            fn: 'Gaussian::sig(m[1.675,2.06], mean[1.85,1.87], sigma_g1[.01,.08])'
-          bkg:
-            fn: 'Exponential::bkg(m[1.675,2.06], alpha[-100,0])'
-          sum:
-            fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+        - level: mc
+          components:
+            sig:
+              fn: 'Gaussian::sig(m[1.695,2.04], mean[1.85,1.87], sigma_g1[.01,.08])'
+            bkg:
+              fn: 'Gaussian::bkg(m[1.695,2.04], mean_g2[1.85,1.87], sigma_g2[.1,1.])'
+            sum:
+              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+        - ptrange: [1., 2.]
+          components:
+            sig:
+              fn: 'Gaussian::sig(m[1.710,2.02], mean[1.85,1.87], sigma_g1[.01,.08])'
+            bkg:
+              fn: 'Exponential::bkg(m[1.710,2.02], alpha[-100,0])'
+            sum:
+              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+        - ptrange: [2., 3.]
+          components:
+            sig:
+              fn: 'Gaussian::sig(m[1.695,2.04], mean[1.85,1.87], sigma_g1[.01,.08])'
+            bkg:
+              fn: 'Exponential::bkg(m[1.695,2.04], alpha[-100,0])'
+            sum:
+              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+        - ptrange: [3., 4.]
+          components:
+            sig:
+              fn: 'Gaussian::sig(m[1.695,2.06], mean[1.85,1.87], sigma_g1[.01,.08])'
+            bkg:
+              fn: 'Exponential::bkg(m[1.695,2.06], alpha[-100,0])'
+            sum:
+              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+        - ptrange: [4., 5.]
+          components:
+            sig:
+              fn: 'Gaussian::sig(m[1.65,2.08], mean[1.85,1.87], sigma_g1[.01,.08])'
+            bkg:
+              fn: 'Exponential::bkg(m[1.65,2.08], alpha[-100,0])'
+            sum:
+              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+        - ptrange: [5., 6.]
+          components:
+            sig:
+              fn: 'Gaussian::sig(m[1.64,2.10], mean[1.85,1.87], sigma_g1[.01,.08])'
+            bkg:
+              fn: 'Exponential::bkg(m[1.64,2.10], alpha[-100,0])'
+            sum:
+              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+        - ptrange: [6., 8.]
+          components:
+            sig:
+              fn: 'Gaussian::sig(m[1.60,2.14], mean[1.85,1.87], sigma_g1[.01,.08])'
+            bkg:
+              fn: 'Exponential::bkg(m[1.60,2.14], alpha[-100,0])'
+            sum:
+              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+        - ptrange: [0., 100.] # catch all -> default
+          components:
+            sig:
+              fn: 'Gaussian::sig(m[1.56,2.20], mean[1.85,1.87], sigma_g1[.01,.08])'
+            bkg:
+              fn: 'Exponential::bkg(m[1.56,2.20], alpha[-100,0])'
+            sum:
+              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
 
       mass_fit:
         func_sig: 'gaus'
@@ -393,7 +449,7 @@ D0jet_pp:
         # par_start: {1: 1.86}
         # par_fix: {1: 1.86}
         par_constrain: {1: [1.85, 1.87], 2: [.01, .08]}
-        range: [1.675, 2.06]
+        range: [1.695, 2.06]
       mass_fit_lim: [1.5, 2.2] # histogram range of the invariant mass distribution [GeV/c^2]
       bin_width: 0.005 # bin width of the invariant mass histogram
       efficiency:
