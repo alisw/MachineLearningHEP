@@ -192,7 +192,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             break
         self.logger.debug("Using fit config for %i: %s", ipt, fitcfg)
         if fitcfg is None:
-            return
+            return None, None
         res, ws, frame = self.fitter.fit_mass(hist, fitcfg, True)
         frame.SetTitle(f'inv. mass for p_{{T}} {self.bins_candpt[ipt]} - {self.bins_candpt[ipt+1]} GeV/c')
         c = TCanvas()
@@ -534,16 +534,17 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 h_response = rfile.Get(f'h_response_np_{var}')
                 response_matrix_np = ROOT.RooUnfoldResponse(
                     project_hist(h_response, [0, 1], {}), project_hist(h_response, [2, 3], {}))
-                for bin in itertools.product(
+                for hbin in itertools.product(
                     enumerate(get_axis(h_response, 0).GetXbins(), 1),
                     enumerate(get_axis(h_response, 1).GetXbins(), 1),
                     enumerate(get_axis(h_response, 2).GetXbins(), 1),
                     enumerate(get_axis(h_response, 3).GetXbins(), 1),
                     enumerate(get_axis(h_response, 4).GetXbins(), 1)):
-                    n = h_response.GetBinContent(np.asarray([bin[0][0], bin[1][0], bin[2][0], bin[3][0], bin[4][0]], 'i'))
-                    eff = self.hcandeff_np.GetBinContent(bin[4][0])
+                    n = h_response.GetBinContent(
+                        np.asarray([hbin[0][0], hbin[1][0], hbin[2][0], hbin[3][0], hbin[4][0]], 'i'))
+                    eff = self.hcandeff_np.GetBinContent(hbin[4][0])
                     for _ in range(int(n)):
-                        response_matrix_np.Fill(bin[0][1], bin[1][1], bin[2][1], bin[3][1], 1./eff)
+                        response_matrix_np.Fill(hbin[0][1], hbin[1][1], hbin[2][1], hbin[3][1], 1./eff)
                 # response_matrix_np.Mresponse().Print()
 
                 # response_matrix_np = rfile.Get(f'h_effkine_np_det_nocuts_{var}_h_effkine_np_gen_nocuts_{var}')
@@ -596,16 +597,17 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 return []
             response_matrix_pr = ROOT.RooUnfoldResponse(
                 project_hist(h_response, [0, 1], {}), project_hist(h_response, [2, 3], {}))
-            for bin in itertools.product(
+            for hbin in itertools.product(
                 enumerate(get_axis(h_response, 0).GetXbins(), 1),
                 enumerate(get_axis(h_response, 1).GetXbins(), 1),
                 enumerate(get_axis(h_response, 2).GetXbins(), 1),
                 enumerate(get_axis(h_response, 3).GetXbins(), 1),
                 enumerate(get_axis(h_response, 4).GetXbins(), 1)):
-                n = h_response.GetBinContent(np.asarray([bin[0][0], bin[1][0], bin[2][0], bin[3][0], bin[4][0]], 'i'))
-                eff = self.hcandeff.GetBinContent(bin[4][0])
+                n = h_response.GetBinContent(
+                    np.asarray([hbin[0][0], hbin[1][0], hbin[2][0], hbin[3][0], hbin[4][0]], 'i'))
+                eff = self.hcandeff.GetBinContent(hbin[4][0])
                 for _ in range(int(n)):
-                    response_matrix_pr.Fill(bin[0][1], bin[1][1], bin[2][1], bin[3][1], 1./eff)
+                    response_matrix_pr.Fill(hbin[0][1], hbin[1][1], hbin[2][1], hbin[3][1], 1./eff)
 
             # response_matrix_pr = rfile.Get(f'h_effkine_pr_det_nocuts_{var}_h_effkine_pr_gen_nocuts_{var}')
 

@@ -210,11 +210,12 @@ class ProcesserJets(Processer):
                         for var, level, cat, cut in itertools.product(observables, levels, cats, cuts)
                         if not '-' in var}
         h_response = {
-            (cat, var): create_hist(f'h_response_{cat}_{var}',
-                                    f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var};p_{{T}}^{{jet}} (GeV/#it{{c}});{var};p_{{T}} (GeV/#it{{c}})",
-                                    self.binarray_ptjet, self.binarrays_obs[var],
-                                    self.binarray_ptjet, self.binarrays_obs[var],
-                                    self.binarray_pthf)
+            (cat, var): create_hist(
+                f'h_response_{cat}_{var}',
+                f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var};p_{{T}}^{{jet}} (GeV/#it{{c}});{var};p_{{T}} (GeV/#it{{c}})",
+                self.binarray_ptjet, self.binarrays_obs[var],
+                self.binarray_ptjet, self.binarrays_obs[var],
+                self.binarray_pthf)
             for (cat, var) in itertools.product(cats, observables)
             if not '-' in var}
         response_matrix = {
@@ -306,7 +307,8 @@ class ProcesserJets(Processer):
                                 (df[f'{var}'] >= var_min) & (df[f'{var}'] < var_max)]
                     fill_hist(h_effkine[(cat, 'gen', 'cut', var)], df[['fJetPt_gen', f'{var}_gen']])
 
-            for name, obj in itertools.chain(h_eff.items(), h_effkine.items(), h_response.items(), response_matrix.items()):
+            for name, obj in itertools.chain(h_eff.items(), h_effkine.items(), h_response.items(),
+                                             response_matrix.items()):
                 try:
                     rfile.WriteObject(obj, obj.GetName())
                 except Exception as ex: # pylint: disable=broad-exception-caught
