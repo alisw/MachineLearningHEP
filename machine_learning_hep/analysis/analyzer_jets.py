@@ -543,7 +543,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     n = h_response.GetBinContent(np.asarray([bin[0][0], bin[1][0], bin[2][0], bin[3][0], bin[4][0]], 'i'))
                     eff = self.hcandeff_np.GetBinContent(bin[4][0])
                     for _ in range(int(n)):
-                        response_matrix_np.Fill(bin[0][1], bin[1][1], bin[2][1], bin[3][1], eff)
+                        response_matrix_np.Fill(bin[0][1], bin[1][1], bin[2][1], bin[3][1], 1./eff)
                 # response_matrix_np.Mresponse().Print()
 
                 # response_matrix_np = rfile.Get(f'h_effkine_np_det_nocuts_{var}_h_effkine_np_gen_nocuts_{var}')
@@ -605,7 +605,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 n = h_response.GetBinContent(np.asarray([bin[0][0], bin[1][0], bin[2][0], bin[3][0], bin[4][0]], 'i'))
                 eff = self.hcandeff.GetBinContent(bin[4][0])
                 for _ in range(int(n)):
-                    response_matrix_pr.Fill(bin[0][1], bin[1][1], bin[2][1], bin[3][1], eff)
+                    response_matrix_pr.Fill(bin[0][1], bin[1][1], bin[2][1], bin[3][1], 1./eff)
 
             # response_matrix_pr = rfile.Get(f'h_effkine_pr_det_nocuts_{var}_h_effkine_pr_gen_nocuts_{var}')
 
