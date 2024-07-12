@@ -60,15 +60,10 @@ analysis:
   doperperiod: false
   data:
     histomass: true # processer: process_histomass
-    dojetsystematics: false # analyzer: jetsystematics
   mc:
     histomass: true # processer: process_histomass
     efficiency: true # processer: process_efficiency
-    efficiency_resp: false # analyzer: efficiency
-    response: false # processer: process_response
-    feeddown: false # analyzer: feeddown
-    dounfolding: false # analyzer: unfolding, unfolding_closure
-  # steps:
+  steps:
 
 systematics:
   cutvar:

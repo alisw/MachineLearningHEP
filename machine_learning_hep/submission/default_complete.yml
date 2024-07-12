@@ -60,21 +60,19 @@ analysis:
   doperperiod: false
   data:
     histomass: false # processer: process_histomass
-    dojetsystematics: false # analyzer: jetsystematics
   mc:
     histomass: false # processer: process_histomass
     efficiency: false # processer: process_efficiency
-    efficiency_resp: false # analyzer: efficiency
-    response: false # processer: process_response
-    feeddown: false # analyzer: feeddown
-    dounfolding: false # analyzer: unfolding, unfolding_closure
   steps: # list steps (name of method in analyzer) to run
-     #fit:
-     #efficiency:
-     #makenormyields:
-     #sideband:
-     #qa:
-     #signalextraction:
+    fit:
+    #efficiency:
+    #makenormyields:
+    #init:
+    #qa:
+    #calculate_efficiencies:
+    #estimate_feeddown:
+    #subtract_sidebands:
+    #extract_signals:
 
 systematics:
   cutvar:

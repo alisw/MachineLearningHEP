@@ -84,7 +84,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     dohistomassdata = data_config["analysis"]["data"]["histomass"]
     doefficiency = data_config["analysis"]["mc"]["efficiency"]
     efficiency_resp = data_config["analysis"]["mc"].get("efficiency_resp", False)
-    doresponse = data_config["analysis"]["mc"]["response"]
     do_syst_ml = data_config["systematics"]["cutvar"]["activate"]
     do_syst_ml_only_analysis = data_config["systematics"]["cutvar"]["do_only_analysis"]
     do_syst_ml_resume = data_config["systematics"]["cutvar"]["resume"]
@@ -394,8 +393,6 @@ def do_entire_analysis(data_config: dict, data_param: dict, data_param_overwrite
     if efficiency_resp:
         analyze_steps.append("efficiency_inclusive")
         ana_mgr.analyze(analyze_steps)
-    if doresponse:
-        mymultiprocessmc.multi_response()
 
     # Collect all desired analysis steps
     analyze_steps = []

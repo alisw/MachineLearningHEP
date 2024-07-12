@@ -215,17 +215,6 @@ class MultiProcesser: # pylint: disable=too-many-instance-attributes, too-many-s
         with tempfile.TemporaryDirectory() as tmp_merged_dir:
             mergerootfiles(self.lper_fileeff, self.fileeff_mergedall, tmp_merged_dir)
 
-    def multi_response(self):
-        resp_exists = False
-        for indexp, _ in enumerate(self.process_listsample):
-            if self.p_useperiod[indexp] == 1:
-                if hasattr(self.process_listsample[indexp], "process_response"):
-                    resp_exists = True
-                    self.process_listsample[indexp].process_response()
-        if resp_exists:
-            with tempfile.TemporaryDirectory() as tmp_merged_dir:
-                mergerootfiles(self.lper_fileresp, self.fileresp_mergedall, tmp_merged_dir)
-
     def multi_scancuts(self):
         for indexp, _ in enumerate(self.process_listsample):
             self.process_listsample[indexp].process_scancuts()
