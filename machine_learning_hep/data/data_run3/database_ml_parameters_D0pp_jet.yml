@@ -397,49 +397,49 @@ D0jet_pp:
         - ptrange: [2., 3.]
           components:
             sig:
-              fn: 'Gaussian::sig(m[1.695,2.04], mean[1.85,1.87], sigma_g1[.01,.08])'
+              fn: 'Gaussian::sig(m[1.7,2.04], mean[1.85,1.87], sigma_g1[.01,.08])'
             bkg:
-              fn: 'Exponential::bkg(m[1.695,2.04], alpha[-100,0])'
+              fn: 'Exponential::bkg(m[1.7,2.04], alpha[-100,0])'
             sum:
               fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
         - ptrange: [3., 4.]
           components:
             sig:
-              fn: 'Gaussian::sig(m[1.695,2.06], mean[1.85,1.87], sigma_g1[.01,.08])'
+              fn: 'Gaussian::sig(m[1.7,2.06], mean[1.85,1.87], sigma_g1[.01,.08])'
             bkg:
-              fn: 'Exponential::bkg(m[1.695,2.06], alpha[-100,0])'
+              fn: 'Exponential::bkg(m[1.7,2.06], alpha[-100,0])'
             sum:
               fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
         - ptrange: [4., 5.]
           components:
             sig:
-              fn: 'Gaussian::sig(m[1.65,2.08], mean[1.85,1.87], sigma_g1[.01,.08])'
+              fn: 'Gaussian::sig(m[1.72,2.08], mean[1.85,1.87], sigma_g1[.01,.08])'
             bkg:
-              fn: 'Exponential::bkg(m[1.65,2.08], alpha[-100,0])'
+              fn: 'Exponential::bkg(m[1.72,2.08], alpha[-100,0])'
             sum:
               fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
         - ptrange: [5., 6.]
           components:
             sig:
-              fn: 'Gaussian::sig(m[1.64,2.10], mean[1.85,1.87], sigma_g1[.01,.08])'
+              fn: 'Gaussian::sig(m[1.72,2.10], mean[1.85,1.87], sigma_g1[.01,.08])'
             bkg:
-              fn: 'Exponential::bkg(m[1.64,2.10], alpha[-100,0])'
+              fn: 'Exponential::bkg(m[1.72,2.10], alpha[-100,0])'
             sum:
               fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
         - ptrange: [6., 8.]
           components:
             sig:
-              fn: 'Gaussian::sig(m[1.60,2.14], mean[1.85,1.87], sigma_g1[.01,.08])'
+              fn: 'Gaussian::sig(m[1.72,2.14], mean[1.85,1.87], sigma_g1[.01,.08])'
             bkg:
-              fn: 'Exponential::bkg(m[1.60,2.14], alpha[-100,0])'
+              fn: 'Exponential::bkg(m[1.72,2.14], alpha[-100,0])'
             sum:
               fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
         - ptrange: [0., 100.] # catch all -> default
           components:
             sig:
-              fn: 'Gaussian::sig(m[1.56,2.20], mean[1.85,1.87], sigma_g1[.01,.08])'
+              fn: 'Gaussian::sig(m[1.7,2.20], mean[1.85,1.87], sigma_g1[.01,.08])'
             bkg:
-              fn: 'Exponential::bkg(m[1.56,2.20], alpha[-100,0])'
+              fn: 'Exponential::bkg(m[1.7,2.20], alpha[-100,0])'
             sum:
               fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
 
