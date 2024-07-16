@@ -43,6 +43,7 @@ class ProcesserJets(Processer):
         self.logger.info("initialized processer for HF jets")
 
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"] # TODO: check if we need to apply event sel
+        self.frac_mcana = .2
 
         # bins: 2d array [[low, high], ...]
         self.bins_skimming = np.array(list(zip(self.lpt_anbinmin, self.lpt_anbinmax)), 'd') # TODO: replace with cfg
@@ -106,6 +107,8 @@ class ProcesserJets(Processer):
 
     def _calculate_variables(self, df, verify=False): # pylint: disable=invalid-name
         self.logger.info('calculating variables')
+        if len(df) == 0:
+            return
         df['dr'] = np.sqrt((df.fJetEta - df.fEta)**2 + ((df.fJetPhi - df.fPhi + math.pi) % math.tau - math.pi)**2)
         df['jetPx'] = df.fJetPt * np.cos(df.fJetPhi)
         df['jetPy'] = df.fJetPt * np.sin(df.fJetPhi)
@@ -138,6 +141,14 @@ class ProcesserJets(Processer):
         return df
 
 
+    def split_df(self, dfi, frac):
+        '''split data frame based on df number'''
+        # dfa = dfi.split(frac=frac, random_state=1234)
+        # return dfa, dfi.drop(dfa.index)
+        mask = (dfi.index.get_level_values(0) % 100) <= frac * 100
+        return dfi[mask], dfi[~mask]
+
+
     # region histomass
     def process_histomass_single(self, index):
         self.logger.info('Processing (histomass) %s', self.l_evtorig[index])
@@ -156,6 +167,9 @@ class ProcesserJets(Processer):
             histonorm.Write()
 
             df = pd.concat(read_df(self.mptfiles_recosk[bin][index]) for bin in self.active_bins_skim)
+            # TODO: check
+            if self.mcordata == 'mc':
+                df, _ = self.split_df(df, self.frac_mcana)
 
             # fill before cuts on jet/HF pt, leaving option of excluding under-/overflow to analyzer
             h = create_hist(
@@ -164,6 +178,8 @@ class ProcesserJets(Processer):
                 self.binarray_mass, self.binarray_ptjet, self.binarray_pthf)
             fill_hist(h, df[['fM', 'fJetPt', 'fPt']], write=True)
 
+            if len(df) == 0:
+                return
             # remove entries that would end up in under-/overflow bins to save compute time
             df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
             df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
@@ -216,6 +232,13 @@ class ProcesserJets(Processer):
                 self.binarray_ptjet, self.binarrays_obs[var],
                 self.binarray_ptjet, self.binarrays_obs[var],
                 self.binarray_pthf)
+            for (cat, var) in itertools.product(cats, observables)
+            if not '-' in var}
+        h_mctruth = {
+            (cat, var): create_hist(
+                f'h_mctruth_{cat}_{var}',
+                f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var}",
+                self.binarray_ptjet, self.binarrays_obs[var])
             for (cat, var) in itertools.product(cats, observables)
             if not '-' in var}
         response_matrix = {
@@ -287,6 +310,10 @@ class ProcesserJets(Processer):
                 if cat in dfmatch and dfmatch[cat] is not None:
                     var_min = min(self.binarrays_obs[var])
                     var_max = max(self.binarrays_obs[var])
+
+                    df = dfmatch[cat]
+                    df_mcana, _ = self.split_df(df, self.frac_mcana) # TODO: do we really want to use matched here?
+                    fill_hist(h_mctruth[(cat, var)], df_mcana[['fJetPt_gen', f'{var}_gen']])
 
                     df = dfmatch[cat]
                     df = df.loc[(df.fJetPt >= ptjet_min) & (df.fJetPt < ptjet_max) &

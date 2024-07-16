@@ -323,7 +323,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         fit_range = self.fit_range[mcordata][ipt]
         for reg, lim in regions.items():
             if lim[0] < fit_range[0] or lim[1] > fit_range[1]:
-                regions[reg] = (max(lim[0], fit_range[0]), min(lim[1], fit_range[1]))
+                # regions[reg] = (max(lim[0], fit_range[0]), min(lim[1], fit_range[1]))
                 self.logger.warning('region %s for %s bin %d extends beyond fit range: %s, clipping to %s',
                                     reg, mcordata, ipt, lim, regions[reg])
         axis = get_axis(hist, 0)
