@@ -42,8 +42,8 @@ class ProcesserJets(Processer):
                         d_results, typean, runlisttrigger, d_mcreweights)
         self.logger.info("initialized processer for HF jets")
 
-        self.s_evtsel = datap["analysis"][self.typean]["evtsel"] # TODO: check if we need to apply event sel
-        self.frac_mcana = .2
+        self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
+        self.frac_mcana = .2 # TODO: move DB
 
         # bins: 2d array [[low, high], ...]
         self.bins_skimming = np.array(list(zip(self.lpt_anbinmin, self.lpt_anbinmax)), 'd') # TODO: replace with cfg
@@ -125,7 +125,7 @@ class ProcesserJets(Processer):
         self.logger.debug('zg')
         df['zg_array'] = np.array(.5 - abs(df.fPtSubLeading / (df.fPtLeading + df.fPtSubLeading) - .5))
         zcut = self.cfg('zcut', .1)
-        df['zg'] = df['zg_array'].apply((lambda ar: next((zg for zg in ar if zg >= zcut), -1.)))
+        df['zg'] = df['zg_array'].apply((lambda ar: next((zg for zg in ar if zg >= zcut), 0.)))
         df['rg'] = df[['zg_array', 'fTheta']].apply(
             (lambda ar: next((rg for (zg, rg) in zip(ar.zg_array, ar.fTheta) if zg >= zcut), -1.)), axis=1)
         df['nsd'] = df['zg_array'].apply((lambda ar: len([zg for zg in ar if zg >= zcut])))
@@ -157,19 +157,16 @@ class ProcesserJets(Processer):
             dfevtorig = read_df(self.l_evtorig[index])
             histonorm = TH1F("histonorm", "histonorm", 2, 0, 2)
             histonorm.SetBinContent(1, len(dfquery(dfevtorig, self.s_evtsel)))
-            if self.mcordata == 'data':
-                dfcollcnt = read_df(self.l_collcnt[index])
-                collcnt = functools.reduce(lambda x,y: float(x)+float(y), (ar[0] for ar in dfcollcnt['fReadCounts']))
-                self.logger.info('sampled %g collisions', collcnt)
-                histonorm.SetBinContent(2, collcnt)
+            dfcollcnt = read_df(self.l_collcnt[index])
+            collcnt = functools.reduce(
+                lambda x,y: float(x)+float(y), (ar[0] for ar in dfcollcnt['fReadSelectedCounts']))
+            self.logger.info('sampled %g collisions', collcnt)
+            histonorm.SetBinContent(2, collcnt)
             get_axis(histonorm, 0).SetBinLabel(1, 'N_{evt}')
             get_axis(histonorm, 0).SetBinLabel(2, 'N_{coll}')
             histonorm.Write()
 
             df = pd.concat(read_df(self.mptfiles_recosk[bin][index]) for bin in self.active_bins_skim)
-            # TODO: check
-            if self.mcordata == 'mc':
-                df, _ = self.split_df(df, self.frac_mcana)
 
             # fill before cuts on jet/HF pt, leaving option of excluding under-/overflow to analyzer
             h = create_hist(
@@ -178,6 +175,8 @@ class ProcesserJets(Processer):
                 self.binarray_mass, self.binarray_ptjet, self.binarray_pthf)
             fill_hist(h, df[['fM', 'fJetPt', 'fPt']], write=True)
 
+            if self.mcordata == 'mc':
+                df, _ = self.split_df(df, self.frac_mcana)
             if len(df) == 0:
                 return
             # remove entries that would end up in under-/overflow bins to save compute time
@@ -204,6 +203,9 @@ class ProcesserJets(Processer):
                 fill_hist(h, df[['fM', 'fJetPt', 'fPt', *var]],
                           arraycols=spec.get('arraycols', None), write=True)
 
+    # TODO:
+    # - binning variations (separate ranges for MC and data)
+    # - priors (reweight response matrix)
 
     # region efficiency
     # pylint: disable=too-many-branches,too-many-statements
@@ -225,6 +227,7 @@ class ProcesserJets(Processer):
                                     self.binarray_ptjet, self.binarrays_obs[var])
                         for var, level, cat, cut in itertools.product(observables, levels, cats, cuts)
                         if not '-' in var}
+        # TODO: allow different binnings for gen and det
         h_response = {
             (cat, var): create_hist(
                 f'h_response_{cat}_{var}',
@@ -249,14 +252,15 @@ class ProcesserJets(Processer):
 
         with TFile.Open(self.l_histoeff[index], "recreate") as rfile:
             # TODO: avoid hard-coding values here
-            cols = ['ismcprompt', 'fPt', 'fEta', 'fPhi', 'fJetPt', 'fJetEta', 'fJetPhi',
+            cols = ['ismcprompt', 'ismcsignal', 'ismcfd', 'fPt', 'fEta', 'fPhi', 'fJetPt', 'fJetEta', 'fJetPhi',
                     'fPtLeading', 'fPtSubLeading', 'fTheta', 'fNSub2DR', 'fNSub1', 'fNSub2']
 
             # read generator level
             dfgen_orig = pd.concat(read_df(self.mptfiles_gensk[bin][index], columns=cols)
                                    for bin in self.active_bins_skim)
             df = dfgen_orig.rename(lambda name: name + '_gen', axis=1)
-            dfgen = {'pr': df.loc[df.ismcprompt_gen == 1], 'np': df.loc[df.ismcprompt_gen == 0]}
+            dfgen = {'pr': df.loc[(df.ismcsignal_gen == 1) & (df.ismcprompt_gen == 1)],
+                     'np': df.loc[(df.ismcsignal_gen == 1) & (df.ismcfd_gen == 1)]}
 
             # read detector level
             cols.extend(self.cfg('efficiency.extra_cols', []))
@@ -269,12 +273,20 @@ class ProcesserJets(Processer):
                 df['idx_match'] = df[idx].apply(lambda ar: ar[0] if len(ar) > 0 else -1)
             else:
                 self.logger.warning('No matching criterion specified, cannot match det and gen')
-            dfdet = {'pr': df.loc[df.ismcprompt == 1], 'np': df.loc[df.ismcprompt == 0]}
+            dfdet = {'pr': df.loc[(df.ismcsignal == 1) & (df.ismcprompt == 1)],
+                     'np': df.loc[(df.ismcsignal == 1) & (df.ismcfd == 1)]}
+            # TODO: check why this is not working
+            # dfdet = {'pr': df.loc[df.ismcprompt == 1], 'np': df.loc[df.ismcprompt == 0]}
+            # print('********')
+            # print(dfdet, flush=True)
+            # print(dfdet['pr'].info(), flush=True)
+            # print(dfdet['pr'].head(), flush=True)
 
             dfmatch = {cat: pd.merge(dfdet[cat], dfgen[cat], left_on=['df', 'idx_match'], right_index=True)
                         for cat in cats if 'idx_match' in dfdet[cat]}
 
             for cat in cats:
+                # TODO: revisit which quantities to use for the efficiency calculation
                 fill_hist(h_eff[(cat, 'gen')], dfgen[cat][['fJetPt_gen', 'fPt_gen']])
 
                 if cat in dfmatch and dfmatch[cat] is not None:
@@ -289,50 +301,35 @@ class ProcesserJets(Processer):
                 df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
                 df = self._calculate_variables(df)
                 dfdet[cat] = df
+                # TODO: why not process gen here as well? -> calculate_var assumes columns without _gen
 
             df = dfgen_orig
             df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
             df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
             self._calculate_variables(df)
             df = df.rename(lambda name: name + '_gen', axis=1)
-            dfgen = {'pr': df.loc[df.ismcprompt_gen == 1], 'np': df.loc[df.ismcprompt_gen == 0]}
+            dfgen = {'pr': df.loc[(df.ismcsignal_gen == 1) & (df.ismcprompt_gen == 1)],
+                     'np': df.loc[(df.ismcsignal_gen == 1) & (df.ismcfd_gen == 1)]}
 
+            # TODO: foresee multiple merge conditions
+            print(cats, flush=True)
+            print('gen', dfgen, flush=True)
+            print('det', dfdet, flush=True)
             dfmatch = {cat: pd.merge(dfdet[cat], dfgen[cat], left_on=['df', 'idx_match'], right_index=True)
                        for cat in cats if 'idx_match' in dfdet[cat]}
-
-            ptjet_min = min(self.binarray_ptjet)
-            ptjet_max = max(self.binarray_ptjet)
 
             for var, cat in itertools.product(observables, cats):
                 # TODO: add support for more complex observables
                 if '-' in var or self.cfg(f'observables.{var}.arraycols'):
                     continue
                 if cat in dfmatch and dfmatch[cat] is not None:
-                    var_min = min(self.binarrays_obs[var])
-                    var_max = max(self.binarrays_obs[var])
-
-                    df = dfmatch[cat]
-                    df_mcana, _ = self.split_df(df, self.frac_mcana) # TODO: do we really want to use matched here?
+                    # TODO: switch to matched sample if needed
+                    df_mcana, df_mccorr = self.split_df(dfgen[cat], self.frac_mcana)
                     fill_hist(h_mctruth[(cat, var)], df_mcana[['fJetPt_gen', f'{var}_gen']])
 
-                    df = dfmatch[cat]
-                    df = df.loc[(df.fJetPt >= ptjet_min) & (df.fJetPt < ptjet_max) &
-                                (df[var] >= var_min) & (df[var] < var_max)]
-                    fill_hist(h_effkine[(cat, 'det', 'nocuts', var)], df[['fJetPt', var]])
-                    df = df.loc[(df.fJetPt_gen >= ptjet_min) & (df.fJetPt_gen < ptjet_max) &
-                                (df[f'{var}_gen'] >= var_min) & (df[f'{var}_gen'] < var_max)]
-                    fill_hist(h_effkine[(cat, 'det', 'cut', var)], df[['fJetPt', var]])
-
-                    fill_response(response_matrix[(cat, var)], df[['fJetPt', f'{var}', 'fJetPt_gen', f'{var}_gen']])
-                    fill_hist(h_response[(cat, var)], df[['fJetPt', f'{var}', 'fJetPt_gen', f'{var}_gen', 'fPt']])
-
-                    df = dfmatch[cat]
-                    df = df.loc[(df.fJetPt_gen >= ptjet_min) & (df.fJetPt_gen < ptjet_max) &
-                                (df[f'{var}_gen'] >= var_min) & (df[f'{var}_gen'] < var_max)]
-                    fill_hist(h_effkine[(cat, 'gen', 'nocuts', var)], df[['fJetPt_gen', f'{var}_gen']])
-                    df = df.loc[(df.fJetPt >= ptjet_min) & (df.fJetPt < ptjet_max) &
-                                (df[f'{var}'] >= var_min) & (df[f'{var}'] < var_max)]
-                    fill_hist(h_effkine[(cat, 'gen', 'cut', var)], df[['fJetPt_gen', f'{var}_gen']])
+                    self._prepare_response(dfmatch[cat], h_effkine, h_response, response_matrix, cat, var)
+                    # TODO: create histograms
+                    # self._prepare_response(df_mccorr, h_effkine, h_response, response_matrix, cat, var)
 
             for name, obj in itertools.chain(h_eff.items(), h_effkine.items(), h_response.items(),
                                              response_matrix.items()):
@@ -340,3 +337,28 @@ class ProcesserJets(Processer):
                     rfile.WriteObject(obj, obj.GetName())
                 except Exception as ex: # pylint: disable=broad-exception-caught
                     self.logger.error('Writing of <%s> (%s) failed: %s', name, str(obj), str(ex))
+
+    def _prepare_response(self, dfi, h_effkine, h_response, response_matrix, cat, var):
+        ptjet_min = min(self.binarray_ptjet)
+        ptjet_max = max(self.binarray_ptjet)
+        var_min = min(self.binarrays_obs[var])
+        var_max = max(self.binarrays_obs[var])
+
+        df = dfi
+        df = df.loc[(df.fJetPt >= ptjet_min) & (df.fJetPt < ptjet_max) &
+                    (df[var] >= var_min) & (df[var] < var_max)]
+        fill_hist(h_effkine[(cat, 'det', 'nocuts', var)], df[['fJetPt', var]])
+        df = df.loc[(df.fJetPt_gen >= ptjet_min) & (df.fJetPt_gen < ptjet_max) &
+                    (df[f'{var}_gen'] >= var_min) & (df[f'{var}_gen'] < var_max)]
+        fill_hist(h_effkine[(cat, 'det', 'cut', var)], df[['fJetPt', var]])
+
+        fill_response(response_matrix[(cat, var)], df[['fJetPt', f'{var}', 'fJetPt_gen', f'{var}_gen']])
+        fill_hist(h_response[(cat, var)], df[['fJetPt', f'{var}', 'fJetPt_gen', f'{var}_gen', 'fPt']])
+
+        df = dfi
+        df = df.loc[(df.fJetPt_gen >= ptjet_min) & (df.fJetPt_gen < ptjet_max) &
+                    (df[f'{var}_gen'] >= var_min) & (df[f'{var}_gen'] < var_max)]
+        fill_hist(h_effkine[(cat, 'gen', 'nocuts', var)], df[['fJetPt_gen', f'{var}_gen']])
+        df = df.loc[(df.fJetPt >= ptjet_min) & (df.fJetPt < ptjet_max) &
+                    (df[f'{var}'] >= var_min) & (df[f'{var}'] < var_max)]
+        fill_hist(h_effkine[(cat, 'gen', 'cut', var)], df[['fJetPt_gen', f'{var}_gen']])

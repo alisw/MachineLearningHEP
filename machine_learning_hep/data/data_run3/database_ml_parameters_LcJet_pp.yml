@@ -78,7 +78,7 @@ LcJet_pp:
           ismcbkg: {var: fFlagMcMatchGen, req: [[],[1]], abs: true}
           ismcprompt: {var: fOriginMcGen, req: [[0],[]]}
           ismcfd: {var: fOriginMcGen, req: [[1],[]]}
-        filter: "fPt >= 1. and fY <= 0.8"
+        filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
 
       colldet:
         level: det
@@ -111,7 +111,7 @@ LcJet_pp:
           ismcfd: {var: fOriginMcRec, req: [[1],[]]}
         extract_component:
           - {var: fMlScores, newvar: fMlPromptScore, component: 1}
-        filter: "fPt >= 1. and fY <= 0.8"
+        filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
         # swap: {cand: fCandidateSelFlag, var_swap: fIsCandidateSwapped, vars: [ismcsignal, ismcprompt, icmcfd]}
 
       colldata:
@@ -138,7 +138,7 @@ LcJet_pp:
           O2lccjetsso: [fIndexLcCJetOs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
         extract_component:
           - {var: fMlScores, newvar: fMlPromptScore, component: 1}
-        filter: "fPt > 1."
+        filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
 
     merge:
       # - {base: jetgen, ref: collgen}
