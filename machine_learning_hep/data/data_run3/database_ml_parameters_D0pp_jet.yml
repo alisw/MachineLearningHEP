@@ -458,6 +458,8 @@ D0jet_pp:
         index_match: fIndexArrayD0CMCPJetOs_hf
         store_matched: true
 
+      frac_mcana: .2
+
       # obsolete?
       proc_type: Jets
       useperiod: [1] #list of periods

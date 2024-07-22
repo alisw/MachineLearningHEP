@@ -57,7 +57,7 @@ LcJet_pp:
           fIsEventReject: 0
       collcnt:
         trees:
-          O2lccollcount: [fReadCounts, fWrittenCounts]
+          O2lccollcount: [fReadCounts, fReadSelectedCounts, fWrittenCounts]
 
       # collgen:
       #   level: gen
@@ -69,7 +69,7 @@ LcJet_pp:
         index: fIndexLcCMCPJetOs
         trees:
           O2hf3ppbase: [fPt, fY, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
-          O2lccmcpjeto: [fIndexLcCMCPJetCOs, fIndexHf3PPBases_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents]
+          O2lccmcpjeto: [fIndexLcCMCPJetCOs, fIndexHf3PPBases_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
           O2lccmcpjetmo: [fIndexArrayLcCMCDJetOs_hf, fIndexArrayLcCMCDJetOs_geo, fIndexArrayLcCMCDJetOs_pt]
           O2lccmcpjetsso: [fIndexLcCMCPJetOs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
         tags:
@@ -100,7 +100,7 @@ LcJet_pp:
                       fErrorImpactParameter0, fErrorImpactParameter1]
           O2hf3psel: [fCandidateSelFlag]
           O2hf3pml: [fMlScores]
-          O2lccmcdjeto: [fIndexLcCMCDJetCOs, fIndexHf3PBases_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents]
+          O2lccmcdjeto: [fIndexLcCMCDJetCOs, fIndexHf3PBases_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
           O2lccmcdjetmo: [fIndexArrayLcCMCPJetOs_hf, fIndexArrayLcCMCPJetOs_geo, fIndexArrayLcCMCPJetOs_pt]
           O2lccmcdjetsso: [fIndexLcCMCDJetOs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
         tags:
@@ -134,7 +134,7 @@ LcJet_pp:
           O2hf3psel: [fCandidateSelFlag]
           O2hf3pml: [fMlScores]
           O2lccjeto: [fIndexLcCJetCOs, fIndexHf3PBases_0,
-                    fJetPt, fJetPhi, fJetEta, fJetNConstituents]
+                    fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
           O2lccjetsso: [fIndexLcCJetOs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
         extract_component:
           - {var: fMlScores, newvar: fMlPromptScore, component: 1}
@@ -164,7 +164,7 @@ LcJet_pp:
         file: AnalysisResultsEvt.parquet
         filter: "fIsEventReject == 0"
       collcnt:
-        level: data
+        level: all
         file: AnalysisResultsCollCnt.parquet
 
   variables:

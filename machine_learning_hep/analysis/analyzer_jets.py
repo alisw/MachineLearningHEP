@@ -388,7 +388,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         return fh_subtracted
 
 
-    def analyze_sidesub(self):
+    def _analyze(self, method = 'sidesub'):
         self.logger.info("Running sideband subtraction")
         for mcordata in ['mc', 'data']:
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
@@ -403,14 +403,17 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         for ipt in range(self.nbins):
                             h = project_hist(fh, axes_proj, {2: (ipt+1, ipt+1)})
                             ensure_sumw2(h)
-                            h = self._subtract_sideband(h, var, mcordata, ipt)
+                            if method == 'sidesub':
+                                h = self._subtract_sideband(h, var, mcordata, ipt)
+                            elif method == 'sigextr':
+                                h = self._extract_signal(h, var, mcordata, ipt)
                             self._correct_efficiency(h, ipt)
                             fh_sub.append(h)
                         fh_sum = sum_hists(fh_sub)
-                        self._save_hist(fh_sum, f'h_ptjet{label}_subtracted_effscaled_{mcordata}.png')
+                        self._save_hist(fh_sum, f'h_ptjet{label}_{method}_effscaled_{mcordata}.png')
 
                         self._subtract_feeddown(fh_sum, var, mcordata)
-                        self._save_hist(fh_sum, f'h_ptjet{label}_subtracted_fdcorr_{mcordata}.png')
+                        self._save_hist(fh_sum, f'h_ptjet{label}_{method}_{mcordata}.png')
 
                         if not var:
                             continue
@@ -420,17 +423,25 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                             hproj = project_hist(fh_sum, [1], {0: [j+1, j+1]})
                             jetptrange = (axis_jetpt.GetBinLowEdge(j+1), axis_jetpt.GetBinUpEdge(j+1))
                             self._save_hist(
-                                hproj, f'uf/h_{var}_subtracted_{mcordata}_jetpt-{jetptrange[0]}-{jetptrange[1]}.png')
+                                hproj, f'uf/h_{var}_{method}_{mcordata}_jetpt-{jetptrange[0]}-{jetptrange[1]}.png')
                         fh_unfolded = self._unfold(fh_sum, var, mcordata)
                         for i, h in enumerate(fh_unfolded):
-                            self._save_hist(h, f'h_{var}_subtracted_unfolded_{mcordata}_{i}.png')
+                            self._save_hist(h, f'h_{var}_{method}_unfolded_{mcordata}_{i}.png')
                             for j in range(get_nbins(h, 0)):
                                 hproj = project_hist(h, [1], {0: [j+1, j+1]})
                                 jetptrange = (axis_jetpt.GetBinLowEdge(j+1), axis_jetpt.GetBinUpEdge(j+1))
                                 self._save_hist(
                                     hproj,
-                                    f'uf/h_{var}_subtracted_unfolded_{mcordata}_jetpt-{jetptrange[0]}-{jetptrange[1]}_{i}.png')
+                                    f'uf/h_{var}_{method}_unfolded_{mcordata}_jetpt-{jetptrange[0]}-{jetptrange[1]}_{i}.png')
                                 # TODO: also save all in one
+
+
+    def analyze_with_sidesub(self):
+        self._analyze('sidesub')
+
+
+    def analyze_with_sigextr(self):
+        self._analyze('sigextr')
 
 
     #region signal extraction
@@ -477,32 +488,32 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         return hres
 
 
-    # TODO: merge with sideband subtraction analysis
-    def analyze_with_sigextr(self):
-        self.logger.info("Running signal extraction")
-        for mcordata in ['mc', 'data']:
-            rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
-            with TFile(rfilename) as rfile:
-                for var in self.observables['all']:
-                    self.logger.debug('looking for %s', f'h_mass-ptjet-pthf-{var}')
-                    fh = rfile.Get(f'h_mass-ptjet-pthf-{var}')
-                    if fh:
-                        fh_sig = []
-                        for ipt in range(self.nbins):
-                            h = project_hist(fh, [0, 1, 3], {2: (ipt+1, ipt+1)})
-                            ensure_sumw2(h)
-                            hres = self._extract_signal(h, var, mcordata, ipt)
-                            self._correct_efficiency(hres, ipt)
-                            fh_sig.append(hres)
-                        fh_sum = sum_hists(fh_sig)
-                        self._save_hist(fh_sum, f'h_{var}_sigextr_effscaled_{mcordata}.png')
+    # # TODO: merge with sideband subtraction analysis
+    # def analyze_with_sigextr(self):
+    #     self.logger.info("Running signal extraction")
+    #     for mcordata in ['mc', 'data']:
+    #         rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
+    #         with TFile(rfilename) as rfile:
+    #             for var in self.observables['all']:
+    #                 self.logger.debug('looking for %s', f'h_mass-ptjet-pthf-{var}')
+    #                 fh = rfile.Get(f'h_mass-ptjet-pthf-{var}')
+    #                 if fh:
+    #                     fh_sig = []
+    #                     for ipt in range(self.nbins):
+    #                         h = project_hist(fh, [0, 1, 3], {2: (ipt+1, ipt+1)})
+    #                         ensure_sumw2(h)
+    #                         hres = self._extract_signal(h, var, mcordata, ipt)
+    #                         self._correct_efficiency(hres, ipt)
+    #                         fh_sig.append(hres)
+    #                     fh_sum = sum_hists(fh_sig)
+    #                     self._save_hist(fh_sum, f'h_{var}_sigextr_effscaled_{mcordata}.png')
 
-                        self._subtract_feeddown(fh_sum, var, mcordata)
-                        self._save_hist(fh_sum, f'h_{var}_sigextr_fdcorr_{mcordata}.png')
+    #                     self._subtract_feeddown(fh_sum, var, mcordata)
+    #                     self._save_hist(fh_sum, f'h_{var}_sigextr_fdcorr_{mcordata}.png')
 
-                        fh_unfolded = self._unfold(fh_sum, var, mcordata)
-                        for i, h in enumerate(fh_unfolded):
-                            self._save_hist(h, f'h_{var}_sigextr_unfolded_{mcordata}_{i}.png')
+    #                     fh_unfolded = self._unfold(fh_sum, var, mcordata)
+    #                     for i, h in enumerate(fh_unfolded):
+    #                         self._save_hist(h, f'h_{var}_sigextr_unfolded_{mcordata}_{i}.png')
 
 
     #region feeddown

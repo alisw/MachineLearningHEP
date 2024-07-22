@@ -12,6 +12,7 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
+import copy
 import functools
 import itertools
 import math
@@ -43,7 +44,6 @@ class ProcesserJets(Processer):
         self.logger.info("initialized processer for HF jets")
 
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
-        self.frac_mcana = .2 # TODO: move DB
 
         # bins: 2d array [[low, high], ...]
         self.bins_skimming = np.array(list(zip(self.lpt_anbinmin, self.lpt_anbinmax)), 'd') # TODO: replace with cfg
@@ -176,7 +176,7 @@ class ProcesserJets(Processer):
             fill_hist(h, df[['fM', 'fJetPt', 'fPt']], write=True)
 
             if self.mcordata == 'mc':
-                df, _ = self.split_df(df, self.frac_mcana)
+                df, _ = self.split_df(df, self.cfg('frac_mcana', .2))
             if len(df) == 0:
                 return
             # remove entries that would end up in under-/overflow bins to save compute time
@@ -197,7 +197,7 @@ class ProcesserJets(Processer):
                     f';M (GeV/#it{{c}}^{{2}});p_{{T}}^{{jet}} (GeV/#it{{c}});p_{{T}}^{{HF}} (GeV/#it{{c}});{obs}',
                     self.binarray_mass, self.binarray_ptjet, self.binarray_pthf, *[self.binarrays_obs[v] for v in var])
                 for i, v in enumerate(var):
-                    # TODO: why is this not derived from the title string?
+                    # additional axis titles are not derived from title string
                     get_axis(h, 3+i).SetTitle(self.cfg(f'observables.{v}.label', v))
 
                 fill_hist(h, df[['fM', 'fJetPt', 'fPt', *var]],
@@ -249,6 +249,9 @@ class ProcesserJets(Processer):
                                                h_effkine[(cat, 'gen', 'nocuts', var)])
             for (cat, var) in itertools.product(cats, observables)
             if not '-' in var}
+        h_effkine_frac = copy.deepcopy(h_effkine)
+        h_response_frac = copy.deepcopy(h_response)
+        response_matrix_frac = copy.deepcopy(response_matrix)
 
         with TFile.Open(self.l_histoeff[index], "recreate") as rfile:
             # TODO: avoid hard-coding values here
@@ -275,18 +278,11 @@ class ProcesserJets(Processer):
                 self.logger.warning('No matching criterion specified, cannot match det and gen')
             dfdet = {'pr': df.loc[(df.ismcsignal == 1) & (df.ismcprompt == 1)],
                      'np': df.loc[(df.ismcsignal == 1) & (df.ismcfd == 1)]}
-            # TODO: check why this is not working
-            # dfdet = {'pr': df.loc[df.ismcprompt == 1], 'np': df.loc[df.ismcprompt == 0]}
-            # print('********')
-            # print(dfdet, flush=True)
-            # print(dfdet['pr'].info(), flush=True)
-            # print(dfdet['pr'].head(), flush=True)
 
             dfmatch = {cat: pd.merge(dfdet[cat], dfgen[cat], left_on=['df', 'idx_match'], right_index=True)
                         for cat in cats if 'idx_match' in dfdet[cat]}
 
             for cat in cats:
-                # TODO: revisit which quantities to use for the efficiency calculation
                 fill_hist(h_eff[(cat, 'gen')], dfgen[cat][['fJetPt_gen', 'fPt_gen']])
 
                 if cat in dfmatch and dfmatch[cat] is not None:
@@ -301,8 +297,8 @@ class ProcesserJets(Processer):
                 df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
                 df = self._calculate_variables(df)
                 dfdet[cat] = df
-                # TODO: why not process gen here as well? -> calculate_var assumes columns without _gen
 
+            # done separately since calculate_var assumes columns without _gen
             df = dfgen_orig
             df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
             df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
@@ -312,9 +308,6 @@ class ProcesserJets(Processer):
                      'np': df.loc[(df.ismcsignal_gen == 1) & (df.ismcfd_gen == 1)]}
 
             # TODO: foresee multiple merge conditions
-            print(cats, flush=True)
-            print('gen', dfgen, flush=True)
-            print('det', dfdet, flush=True)
             dfmatch = {cat: pd.merge(dfdet[cat], dfgen[cat], left_on=['df', 'idx_match'], right_index=True)
                        for cat in cats if 'idx_match' in dfdet[cat]}
 
@@ -323,16 +316,18 @@ class ProcesserJets(Processer):
                 if '-' in var or self.cfg(f'observables.{var}.arraycols'):
                     continue
                 if cat in dfmatch and dfmatch[cat] is not None:
-                    # TODO: switch to matched sample if needed
-                    df_mcana, df_mccorr = self.split_df(dfgen[cat], self.frac_mcana)
-                    fill_hist(h_mctruth[(cat, var)], df_mcana[['fJetPt_gen', f'{var}_gen']])
-
                     self._prepare_response(dfmatch[cat], h_effkine, h_response, response_matrix, cat, var)
-                    # TODO: create histograms
-                    # self._prepare_response(df_mccorr, h_effkine, h_response, response_matrix, cat, var)
 
-            for name, obj in itertools.chain(h_eff.items(), h_effkine.items(), h_response.items(),
-                                             response_matrix.items()):
+                    # TODO: switch to matched sample if needed
+                    df_mcana, _ = self.split_df(dfgen[cat], self.cfg('frac_mcana', .2))
+                    fill_hist(h_mctruth[(cat, var)], df_mcana[['fJetPt_gen', f'{var}_gen']])
+                    _, df_mccorr = self.split_df(dfmatch[cat], self.cfg('frac_mcana', .2))
+                    self._prepare_response(df_mccorr, h_effkine_frac, h_response_frac, response_matrix_frac, cat, var)
+
+            for name, obj in itertools.chain(
+                h_eff.items(),
+                h_effkine.items(), h_response.items(), response_matrix.items(),
+                h_effkine_frac.items(), h_response_frac.items(), response_matrix_frac.items()):
                 try:
                     rfile.WriteObject(obj, obj.GetName())
                 except Exception as ex: # pylint: disable=broad-exception-caught
