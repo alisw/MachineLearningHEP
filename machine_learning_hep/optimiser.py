@@ -41,7 +41,7 @@ import machine_learning_hep.mlperformance as mlhep_plot
 from machine_learning_hep.optimisation.grid_search import do_gridsearch, perform_plot_gridsearch
 from machine_learning_hep.models import importanceplotall, shap_study
 from machine_learning_hep.logger import get_logger
-from machine_learning_hep.optimization import calc_bkg, calc_signif, calc_eff, calc_sigeff_steps
+import machine_learning_hep.optimization as optz
 from machine_learning_hep.correlations import vardistplot_probscan, efficiency_cutscan
 from machine_learning_hep.utilities_files import checkdirs, checkmakedirlist
 from machine_learning_hep.io import parse_yaml, dump_yaml_from_dict
@@ -104,8 +104,8 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.v_all = data_param["variables"]["var_all"]
         self.v_train = training_var
         self.v_selected = data_param["variables"].get("var_selected", None)
-        #if self.v_selected:
-        #    self.v_selected = self.v_selected[index]
+        if self.v_selected:
+            self.v_selected = self.v_selected[index]
         self.v_bound = data_param["variables"]["var_boundaries"]
         self.v_class = data_param["variables"]["var_class"]
         self.v_invmass = data_param["variables"]["var_inv_mass"]
@@ -378,7 +378,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
 
         for label in self.p_class_labels:
             for var_label, variables in var_set.items():
-                output = make_plot_name(self.dirmlplot, f"{label}_{var_label}", len(variables),
+                output = make_plot_name(self.dirmlplot, f"{label}_{var_label}_fMfPt", len(variables),
                                         self.p_binmin, self.p_binmax)
                 correlationmatrix(self.dfs_train[label], variables, label, output,
                                   self.p_binmin, self.p_binmax, self.p_plot_options)
@@ -619,21 +619,19 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.do_test()
 
         self.logger.info("Doing efficiency estimation")
-        fig_eff = plt.figure(figsize=(20, 15))
-        plt.xlabel('Threshold', fontsize=20)
-        plt.ylabel('Model Efficiency', fontsize=20)
-        plt.title("Efficiency vs Threshold", fontsize=20)
+        fig_eff = optz.prepare_eff_signif_figure("Model efficiency", self.p_mltype)
         # FIXME: Different future signal selection?
-        df_sig = self.df_mltest_applied[self.df_mltest_applied["ismcprompt"] == 1]
+        # NOTE: df with ismcprompt == 1 and ismcsignal == 0 is empty
+        df_sig = self.df_mltest_applied[(self.df_mltest_applied["ismcprompt"] == 1) & \
+                                        (self.df_mltest_applied["ismcsignal"] == 1)]
         for name in self.p_classname:
-            eff_array, eff_err_array, x_axis = calc_sigeff_steps(self.p_nstepsign, df_sig, name)
-            plt.figure(fig_eff.number)
-            plt.errorbar(x_axis, eff_array, yerr=eff_err_array, alpha=0.3, label=f'{name}',
-                         elinewidth=2.5, linewidth=4.0)
-        plt.figure(fig_eff.number)
-        plt.legend(loc="lower left", prop={'size': 18})
-        plt.savefig(f'{self.dirmlplot}/Efficiency_{self.s_suffix}.png')
-        with open(f'{self.dirmlplot}/Efficiency_{self.s_suffix}.pickle', 'wb') as out:
+            eff_array, eff_err_array, x_axis = optz.calc_sigeff_steps(self.p_nstepsign, df_sig,
+                                                                      name, self.p_mltype)
+            plt.errorbar(x_axis, eff_array, yerr=eff_err_array, fmt="o", c="b", alpha=0.3,
+                         label=f"{name}", elinewidth=2.5, linewidth=4.0)
+        plt.legend(loc="upper left", fontsize=25)
+        plt.savefig(f"{self.dirmlplot}/Efficiency_{self.s_suffix}.png", bbox_inches='tight')
+        with open(f"{self.dirmlplot}/Efficiency_{self.s_suffix}.pickle", 'wb') as out:
             pickle.dump(fig_eff, out)
 
     #pylint: disable=too-many-locals
@@ -663,9 +661,11 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         #calculate acceptance correction. we use in this case all
         #the signal from the mc sample, without limiting to the n. signal
         #events used for training
-        denacc = len(self.df_mcgen[self.df_mcgen["ismcprompt"] == 1])
-        numacc = len(self.df_mc[self.df_mc["ismcprompt"] == 1])
-        acc, acc_err = calc_eff(numacc, denacc)
+        denacc = len(self.df_mcgen[(self.df_mcgen["ismcprompt"] == 1) & \
+                                   (self.df_mcgen["ismcsignal"] == 1)])
+        numacc = len(self.df_mc[(self.df_mc["ismcprompt"] == 1) & \
+                                (self.df_mc["ismcsignal"] == 1)])
+        acc, acc_err = optz.calc_eff(numacc, denacc)
         self.logger.debug("Acceptance: %.3e +/- %.3e", acc, acc_err)
         #calculation of the expected fonll signals
         delta_pt = self.p_binmax - self.p_binmin
@@ -678,10 +678,10 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
             signal_yield = 2. * prod_cross * delta_pt * acc * self.p_taa \
                            / (self.p_sigmamb * self.p_fprompt)
             #now we plot the fonll expectation
-            cFONLL = TCanvas('cFONLL', 'The FONLL expectation')
+            cFONLL = TCanvas("cFONLL", "The FONLL expectation")
             df_fonll_Lc.GetXaxis().SetRangeUser(0, 16)
             df_fonll_Lc.Draw("")
-            cFONLL.SaveAs("%s/FONLL_curve_%s.png" % (self.dirmlplot, self.s_suffix))
+            cFONLL.SaveAs(f"{self.dirmlplot}/FONLL_curve_{self.s_suffix}.png")
         else:
             df_fonll = pd.read_csv(self.f_fonll)
             df_fonll_in_pt = \
@@ -693,12 +693,12 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
             #now we plot the fonll expectation
             fig = plt.figure(figsize=(20, 15))
             plt.subplot(111)
-            plt.plot(df_fonll['pt'], df_fonll[self.p_fonllband] * self.p_fragf, linewidth=4.0)
-            plt.xlabel('P_t [GeV/c]', fontsize=20)
-            plt.ylabel('Cross Section [pb/GeV]', fontsize=20)
+            plt.plot(df_fonll["pt"], df_fonll[self.p_fonllband] * self.p_fragf, linewidth=4.0)
+            plt.xlabel("P_t [GeV/c]", fontsize=20)
+            plt.ylabel("Cross Section [pb/GeV]", fontsize=20)
             plt.title("FONLL cross section " + self.p_case, fontsize=20)
             plt.semilogy()
-            plt.savefig(f'{self.dirmlplot}/FONLL_curve_{self.s_suffix}.png')
+            plt.savefig(f"{self.dirmlplot}/FONLL_curve_{self.s_suffix}.png", bbox_inches='tight')
             plt.close(fig)
 
         self.logger.debug("Expected signal yield: %.3e", signal_yield)
@@ -708,7 +708,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         df_data_sideband = df_data_sidebands.query(self.s_selbkg)
         df_data_sideband = shuffle(df_data_sideband, random_state=self.rnd_shuffle)
         df_data_sideband = df_data_sideband.tail(round(len(df_data_sideband) * self.p_bkgfracopt))
-        hmass = TH1F('hmass', '', self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
+        hmass = TH1F("hmass", "", self.p_num_bins, self.p_mass_fit_lim[0], self.p_mass_fit_lim[1])
         df_mc_signal = self.df_mc[self.df_mc["ismcsignal"] == 1]
         mass_array = df_mc_signal[self.v_invmass].values
         for mass_value in np.nditer(mass_array):
@@ -729,43 +729,41 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         self.logger.debug("Mean of the gaussian: %.3e", gaus_fit.GetParameter(1))
         self.logger.debug("Sigma of the gaussian: %.3e", sigma)
         sig_region = [self.p_mass - 3 * sigma, self.p_mass + 3 * sigma]
-        fig_signif_pevt = plt.figure(figsize=(20, 15))
-        plt.xlabel('Threshold', fontsize=20)
-        plt.ylabel(r'Significance Per Event ($3 \sigma$)', fontsize=20)
-        #plt.title("Significance Per Event vs Threshold", fontsize=20)
-        plt.xticks(fontsize=18)
-        plt.yticks(fontsize=18)
-        fig_signif = plt.figure(figsize=(20, 15))
-        plt.xlabel('Threshold', fontsize=20)
-        plt.ylabel(r'Significance ($3 \sigma$)', fontsize=20)
-        #plt.title("Significance vs Threshold", fontsize=20)
-        plt.xticks(fontsize=18)
-        plt.yticks(fontsize=18)
 
-        df_sig = self.df_mltest_applied[self.df_mltest_applied["ismcprompt"] == 1]
+        fig_signif_pevt = optz.prepare_eff_signif_figure(r"Significance per event ($3 \sigma$) a.u.",
+                                                         self.p_mltype)
+        plt.yticks([])
+        fig_signif = optz.prepare_eff_signif_figure(r"Significance ($3 \sigma$) a.u.",
+                                                    self.p_mltype)
+        plt.yticks([])
+
+        df_sig = self.df_mltest_applied[(self.df_mltest_applied["ismcprompt"] == 1) & \
+                                        (self.df_mltest_applied["ismcsignal"] == 1)]
 
         for name in self.p_classname:
-            eff_array, eff_err_array, x_axis = calc_sigeff_steps(self.p_nstepsign, df_sig, name)
-            bkg_array, bkg_err_array, _ = calc_bkg(df_data_sideband, name, self.p_nstepsign,
-                                                   self.p_mass_fit_lim, self.p_bkg_func,
-                                                   self.p_bin_width, sig_region, self.p_savefit,
-                                                   self.dirmlplot, [self.p_binmin, self.p_binmax],
-                                                   self.v_invmass)
+            eff_array, eff_err_array, x_axis = optz.calc_sigeff_steps(self.p_nstepsign, df_sig,
+                                                                      name, self.p_mltype)
+            bkg_array, bkg_err_array, _ = optz.calc_bkg(df_data_sideband, name, self.p_nstepsign,
+                                                        self.p_mass_fit_lim, self.p_bkg_func,
+                                                        self.p_bin_width, sig_region, self.p_savefit,
+                                                        self.dirmlplot, [self.p_binmin, self.p_binmax],
+                                                        self.v_invmass, self.p_mltype)
             sig_array = [eff * signal_yield for eff in eff_array]
             sig_err_array = [eff_err * signal_yield for eff_err in eff_err_array]
             bkg_array = [bkg / (self.p_bkgfracopt * self.p_nevtml) for bkg in bkg_array]
             bkg_err_array = [bkg_err / (self.p_bkgfracopt * self.p_nevtml) \
                              for bkg_err in bkg_err_array]
-            signif_array, signif_err_array = calc_signif(sig_array, sig_err_array, bkg_array,
-                                                         bkg_err_array)
+            signif_array, signif_err_array = optz.calc_signif(sig_array, sig_err_array,
+                                                              bkg_array, bkg_err_array)
             plt.figure(fig_signif_pevt.number)
-            plt.errorbar(x_axis, signif_array, yerr=signif_err_array, label=f'{name}',
-                         elinewidth=2.5, linewidth=5.0)
+            plt.errorbar(x_axis, signif_array, yerr=signif_err_array,
+                         fmt=".", c="b", label=name, elinewidth=2.5, linewidth=5.0)
+
             signif_array_ml = [sig * sqrt(self.p_nevtml) for sig in signif_array]
             signif_err_array_ml = [sig_err * sqrt(self.p_nevtml) for sig_err in signif_err_array]
             plt.figure(fig_signif.number)
-            plt.errorbar(x_axis, signif_array_ml, yerr=signif_err_array_ml,
-                         label=f'{name}_ML_dataset', elinewidth=2.5, linewidth=5.0)
+            plt.errorbar(x_axis,  signif_array_ml, yerr=signif_err_array_ml,
+                         fmt=".", c="b", label=name, elinewidth=2.5, linewidth=5.0)
             plt.text(0.7, 0.95,
                      f" ${self.p_binmin} < p_\\mathrm{{T}}/(\\mathrm{{GeV}}/c) < {self.p_binmax}$",
                      verticalalignment="center", transform=fig_signif.gca().transAxes, fontsize=30)
@@ -774,20 +772,20 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
             #plt.figure(fig_signif.number)
             #plt.errorbar(x_axis, signif_array_tot, yerr=signif_err_array_tot,
             #             label=f'{name}_Tot', elinewidth=2.5, linewidth=5.0)
-            plt.figure(fig_signif_pevt.number)
-            plt.legend(loc="upper left", prop={'size': 30})
-            plt.savefig(f'{self.dirmlplot}/Significance_PerEvent_{self.s_suffix}.png')
-            plt.figure(fig_signif.number)
-            plt.legend(loc="upper left", prop={'size': 30})
-            mpl.rcParams.update({"text.usetex": True})
-            plt.savefig(f'{self.dirmlplot}/Significance_{self.s_suffix}.png')
-            mpl.rcParams.update({"text.usetex": False})
+        plt.figure(fig_signif_pevt.number)
+        plt.legend(loc="lower left", fontsize=25)
+        plt.savefig(f"{self.dirmlplot}/Significance_PerEvent_{self.s_suffix}.png", bbox_inches='tight')
+        plt.figure(fig_signif.number)
+        mpl.rcParams.update({"text.usetex": True})
+        plt.legend(loc="lower left", fontsize=25)
+        plt.savefig(f"{self.dirmlplot}/Significance_{self.s_suffix}.png", bbox_inches='tight')
+        mpl.rcParams.update({"text.usetex": False})
 
-            with open(f'{self.dirmlplot}/Significance_{self.s_suffix}.pickle', 'wb') as out:
-                pickle.dump(fig_signif, out)
+        with open(f"{self.dirmlplot}/Significance_{self.s_suffix}.pickle", "wb") as out:
+            pickle.dump(fig_signif, out)
 
-            plt.close(fig_signif_pevt)
-            plt.close(fig_signif)
+        plt.close(fig_signif_pevt)
+        plt.close(fig_signif)
 
     def do_scancuts(self):
         if self.step_done("scancuts"):
