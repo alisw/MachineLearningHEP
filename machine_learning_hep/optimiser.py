@@ -627,7 +627,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
         for name in self.p_classname:
             eff_array, eff_err_array, x_axis = optz.calc_sigeff_steps(self.p_nstepsign, df_sig,
                                                                       name, self.p_mltype)
-            plt.errorbar(x_axis, eff_array, yerr=eff_err_array, fmt="o", c="b", alpha=0.3,
+            plt.errorbar(x_axis, eff_array, yerr=eff_err_array, c="b", alpha=0.3,
                          label=f"{name}", elinewidth=2.5, linewidth=4.0)
         plt.legend(loc="upper left", fontsize=25)
         plt.savefig(f"{self.dirmlplot}/Efficiency_{self.s_suffix}.png", bbox_inches='tight')
@@ -763,7 +763,7 @@ class Optimiser: # pylint: disable=too-many-public-methods, consider-using-f-str
             signif_err_array_ml = [sig_err * sqrt(self.p_nevtml) for sig_err in signif_err_array]
             plt.figure(fig_signif.number)
             plt.errorbar(x_axis,  signif_array_ml, yerr=signif_err_array_ml,
-                         fmt=".", c="b", label=name, elinewidth=2.5, linewidth=5.0)
+                         c="b", label=name, elinewidth=2.5, linewidth=5.0)
             plt.text(0.7, 0.95,
                      f" ${self.p_binmin} < p_\\mathrm{{T}}/(\\mathrm{{GeV}}/c) < {self.p_binmax}$",
                      verticalalignment="center", transform=fig_signif.gca().transAxes, fontsize=30)
