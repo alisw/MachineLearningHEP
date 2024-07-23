@@ -388,7 +388,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             fh['signal'].SetLineColor(ROOT.kRed)
             fh['signal'].Draw()
             ensure_sumw2(fh_sideband)
-            fh_sideband.Scale(areaNormFactor_oldfit)
+            fh_sideband.Scale(areaNormFactor)
             fh_sideband.SetLineColor(ROOT.kCyan)
             fh_sideband.Draw("same")
             fh_subtracted.Draw("same")
@@ -419,12 +419,15 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                                 h = self._subtract_sideband(h, var, mcordata, ipt)
                             elif method == 'sigextr':
                                 h = self._extract_signal(h, var, mcordata, ipt)
+                            else:
+                                self.logger.critical('invalid method %s', method)
                             self._correct_efficiency(h, ipt)
                             fh_sub.append(h)
                         fh_sum = sum_hists(fh_sub)
                         self._save_hist(fh_sum, f'h_ptjet{label}_{method}_effscaled_{mcordata}.png')
 
-                        self._subtract_feeddown(fh_sum, var, mcordata)
+                        if mcordata == 'data':
+                            self._subtract_feeddown(fh_sum, var, mcordata)
                         self._save_hist(fh_sum, f'h_ptjet{label}_{method}_{mcordata}.png')
 
                         if not var:
@@ -505,21 +508,19 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
     def estimate_feeddown(self):
         self.logger.info('Estimating feeddown')
 
-        fd_root = self.cfg('fd_root')
-        fd_pq = self.cfg('fd_parquet')
-        # TODO: move to DB
-        with TFile(fd_root) as rfile:
+        with TFile(self.cfg('fd_root')) as rfile:
             powheg_xsection = rfile.Get('fHistXsection')
             powheg_xsection_scale_factor = powheg_xsection.GetBinContent(1) / powheg_xsection.GetEntries()
         self.logger.info('powheg scale factor %g', powheg_xsection_scale_factor)
         self.logger.info('number of collisions %g', self.n_colls['data'])
 
+        df = pd.read_parquet(self.cfg('fd_parquet'))
+        col_mapping = {'dr': 'delta_r_jet', 'zpar': 'z'} # TODO: check mapping
+
         for var in self.observables['all']:
             bins_ptjet = np.asarray(self.cfg('bins_ptjet'), 'd')
             bins_obs = {var: bin_array(*self.cfg(f'observables.{var}.bins_fix')) for var in self.observables['all']}
 
-            df = pd.read_parquet(fd_pq) # TODO: read once
-            col_mapping = {'dr': 'delta_r_jet', 'zpar': 'z'} # TODO: check mapping
             colname = col_mapping.get(var, f'{var}_jet')
             if f'{colname}' not in df:
                 self.logger.error('No feeddown information for %s (%s), cannot estimate feeddown', var, colname)
@@ -603,8 +604,6 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
     def _subtract_feeddown(self, hist, var, mcordata):
     # TODO: store and retrieve for correct variable
-        if mcordata == 'mc': # TODO: move
-            return
         if var not in self.hfeeddown_det:
             self.logger.error('No feeddown information available for %s, cannot subtract', var)
             return
@@ -663,8 +662,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             self._save_hist(h_effkine_pr_gendetcuts, f'uf/h_effkine-ptjet-{var}_pr_gen_{mcordata}.png', 'text')
 
             h_unfolding_output = []
-            # TODO: take number of iterations from DB
-            for n in range(8):
+            for n in range(self.cfg('unfolding_iterations', 8)):
                 unfolding_object = ROOT.RooUnfoldBayes(response_matrix_pr, fh_unfolding_input, n + 1)
                 fh_unfolding_output = unfolding_object.Hreco(2)
                 self._save_hist(fh_unfolding_output, f'uf/h_ptjet-{var}_{mcordata}_unfold{n}.png', 'text')

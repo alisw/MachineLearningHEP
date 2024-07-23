@@ -442,6 +442,8 @@ LcJet_pp:
         index_match: fIndexArrayLcCMCPJetOs_hf
         store_matched: true
 
+      unfolding_iterations: 8
+
       fd_root: '/data2/vkucera/powheg/trees_powheg_fd_F05_R05.root'
       fd_parquet: '/data2/jklein/powheg/Lc_powheg_fd_F05_R05.parquet'
 
