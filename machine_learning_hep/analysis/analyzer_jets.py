@@ -317,45 +317,56 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             self.logger.error('no fit parameters for %s bin %d', hist.GetName(), ipt)
             return None
 
-        # TODO: take ranges from the DB, per pt bin
+        for entry in self.cfg('sidesub', []):
+            if level := entry.get('level'):
+                if level != mcordata:
+                    continue
+            if ptrange_sel := entry.get('ptrange'):
+                if ptrange_sel[0] > self.bins_candpt[ipt] or ptrange_sel[1] < self.bins_candpt[ipt+1]:
+                    continue
+            regcfg = entry['regions']
+            break
         regions = {
-            'signal': (mean - 2 * sigma, mean + 2 * sigma),
-            'sideband_left': (mean - 5.5 * sigma, mean - 3. * sigma),
-            'sideband_right': (mean + 3. * sigma, mean + 5.5 * sigma)
+            'signal': (mean + regcfg['signal'][0] * sigma, mean + regcfg['signal'][1] * sigma),
+            'sideband_left': (mean + regcfg['left'][0] * sigma, mean + regcfg['left'][1] * sigma),
+            'sideband_right': (mean + regcfg['right'][0] * sigma, mean + regcfg['right'][1] * sigma)
         }
         fit_range = self.fit_range[mcordata][ipt]
         for reg, lim in regions.items():
-            # TODO: break if edge close to signal is violating the fit range
             if lim[0] < fit_range[0] or lim[1] > fit_range[1]:
+                # TODO: activate clipping and check results
                 # regions[reg] = (max(lim[0], fit_range[0]), min(lim[1], fit_range[1]))
-                self.logger.warning('region %s for %s bin %d extends beyond fit range: %s, clipping to %s',
-                                    reg, mcordata, ipt, lim, regions[reg])
+                self.logger.info('using %s: %s', regcfg, regions)
+                self.logger.warning('region %s for %s bin %d (%s) extends beyond fit range: %s, clipping to %s',
+                                    reg, mcordata, ipt, ptrange, lim, regions[reg])
+        if regions['sideband_left'][1] < fit_range[0] or regions['sideband_right'][0] > fit_range[1]:
+            # TODO: change to critical
+            self.logger.error('sidebands %s not in fit range %s, fix regions!', regions, fit_range)
         axis = get_axis(hist, 0)
         bins = {key: tuple(map(axis.FindBin, region)) for key, region in regions.items()}
         limits = {key: (axis.GetBinLowEdge(bins[key][0]), axis.GetBinUpEdge(bins[key][1]))
                   for key in regions}
 
         fh = {}
+        area_oldfit = {}
         area = {}
-        area2 = {}
         for region in regions:
             # project out the mass regions (first axis)
             axes = list(range(get_dim(hist)))[1:]
             fh[region] = project_hist(hist, axes, {0: bins[region]})
             self._save_hist(fh[region],
                             f'sideband/h_ptjet{label}_{region}_pthf-{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
-            # TODO: clean up
-            area[region] = self.fit_func_bkg[mcordata][ipt].Integral(*limits[region])
+            area_oldfit[region] = self.fit_func_bkg[mcordata][ipt].Integral(*limits[region])
             f = self.roo_ws[mcordata][ipt].pdf("bkg").asTF(self.roo_ws[mcordata][ipt].var("m"))
-            area2[region] = f.Integral(*limits[region])
+            area[region] = f.Integral(*limits[region])
 
+        areaNormFactor_oldfit = area_oldfit['signal'] / (area_oldfit['sideband_left'] + area_oldfit['sideband_right'])
         areaNormFactor = area['signal'] / (area['sideband_left'] + area['sideband_right'])
-        areaNormFactor2 = area2['signal'] / (area2['sideband_left'] + area2['sideband_right'])
-        if abs(areaNormFactor - areaNormFactor2) > .05:
+        if abs(areaNormFactor_oldfit - areaNormFactor) > .05:
             self.logger.warning('area normalisation factors deviating for %s bin %i', mcordata, ipt)
-            print(areaNormFactor, areaNormFactor2, flush=True)
-            print(area[region], flush=True)
-            print(area2[region], fh[region].Integral(), fh[region].GetEntries(), flush=True)
+            print(areaNormFactor_oldfit, areaNormFactor, flush=True)
+            print(area_oldfit[region], flush=True)
+            print(area[region], fh[region].Integral(), fh[region].GetEntries(), flush=True)
 
         fh_sideband = sum_hists(
             [fh['sideband_left'], fh['sideband_right']], f'h_ptjet{label}_sideband_{ipt}_{mcordata}')
@@ -363,7 +374,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
         fh_subtracted = fh['signal'].Clone(f'h_ptjet{label}_subtracted_{ipt}_{mcordata}')
         ensure_sumw2(fh_subtracted)
-        fh_subtracted.Add(fh_sideband, -areaNormFactor2)
+        fh_subtracted.Add(fh_sideband, -areaNormFactor)
         # clip negative values to 0
         for ibin in range(fh_subtracted.GetNcells()):
             if fh_subtracted.GetBinContent(ibin) < 0:
@@ -377,7 +388,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             fh['signal'].SetLineColor(ROOT.kRed)
             fh['signal'].Draw()
             ensure_sumw2(fh_sideband)
-            fh_sideband.Scale(areaNormFactor)
+            fh_sideband.Scale(areaNormFactor_oldfit)
             fh_sideband.SetLineColor(ROOT.kCyan)
             fh_sideband.Draw("same")
             fh_subtracted.Draw("same")
@@ -388,6 +399,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         return fh_subtracted
 
 
+    # region analysis
     def _analyze(self, method = 'sidesub'):
         self.logger.info("Running sideband subtraction")
         for mcordata in ['mc', 'data']:
@@ -488,41 +500,15 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         return hres
 
 
-    # # TODO: merge with sideband subtraction analysis
-    # def analyze_with_sigextr(self):
-    #     self.logger.info("Running signal extraction")
-    #     for mcordata in ['mc', 'data']:
-    #         rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
-    #         with TFile(rfilename) as rfile:
-    #             for var in self.observables['all']:
-    #                 self.logger.debug('looking for %s', f'h_mass-ptjet-pthf-{var}')
-    #                 fh = rfile.Get(f'h_mass-ptjet-pthf-{var}')
-    #                 if fh:
-    #                     fh_sig = []
-    #                     for ipt in range(self.nbins):
-    #                         h = project_hist(fh, [0, 1, 3], {2: (ipt+1, ipt+1)})
-    #                         ensure_sumw2(h)
-    #                         hres = self._extract_signal(h, var, mcordata, ipt)
-    #                         self._correct_efficiency(hres, ipt)
-    #                         fh_sig.append(hres)
-    #                     fh_sum = sum_hists(fh_sig)
-    #                     self._save_hist(fh_sum, f'h_{var}_sigextr_effscaled_{mcordata}.png')
-
-    #                     self._subtract_feeddown(fh_sum, var, mcordata)
-    #                     self._save_hist(fh_sum, f'h_{var}_sigextr_fdcorr_{mcordata}.png')
-
-    #                     fh_unfolded = self._unfold(fh_sum, var, mcordata)
-    #                     for i, h in enumerate(fh_unfolded):
-    #                         self._save_hist(h, f'h_{var}_sigextr_unfolded_{mcordata}_{i}.png')
-
-
     #region feeddown
     # pylint: disable=too-many-statements
     def estimate_feeddown(self):
         self.logger.info('Estimating feeddown')
 
+        fd_root = self.cfg('fd_root')
+        fd_pq = self.cfg('fd_parquet')
         # TODO: move to DB
-        with TFile('/data2/vkucera/powheg/trees_powheg_fd_F05_R05.root') as rfile:
+        with TFile(fd_root) as rfile:
             powheg_xsection = rfile.Get('fHistXsection')
             powheg_xsection_scale_factor = powheg_xsection.GetBinContent(1) / powheg_xsection.GetEntries()
         self.logger.info('powheg scale factor %g', powheg_xsection_scale_factor)
@@ -532,7 +518,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             bins_ptjet = np.asarray(self.cfg('bins_ptjet'), 'd')
             bins_obs = {var: bin_array(*self.cfg(f'observables.{var}.bins_fix')) for var in self.observables['all']}
 
-            df = pd.read_parquet('/data2/jklein/powheg/trees_powheg_fd_F05_R05.parquet') # TODO: read once
+            df = pd.read_parquet(fd_pq) # TODO: read once
             col_mapping = {'dr': 'delta_r_jet', 'zpar': 'z'} # TODO: check mapping
             colname = col_mapping.get(var, f'{var}_jet')
             if f'{colname}' not in df:

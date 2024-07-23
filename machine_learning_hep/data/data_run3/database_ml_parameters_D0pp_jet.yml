@@ -443,6 +443,17 @@ D0jet_pp:
             sum:
               fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
 
+      sidesub:
+        - ptrange: [24., 100.]
+          regions:
+            left: [-4, -3.]
+            signal: [-2., 2.]
+            right: [3., 4.]
+        - regions:
+            left: [-5.5, -3.]
+            signal: [-2., 2.]
+            right: [3., 5.5]
+
       mass_fit:
         func_sig: 'gaus'
         func_bkg: 'expo'
@@ -459,6 +470,8 @@ D0jet_pp:
         store_matched: true
 
       frac_mcana: .2
+      fd_root: '/data2/vkucera/powheg/trees_powheg_fd_F05_R05.root'
+      fd_parquet: '/data2/jklein/powheg/trees_powheg_fd_F05_R05.parquet'
 
       # obsolete?
       proc_type: Jets

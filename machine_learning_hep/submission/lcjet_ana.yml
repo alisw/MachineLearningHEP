@@ -68,7 +68,7 @@ analysis:
     qa:
     fit:
     calculate_efficiencies:
-    # estimate_feeddown:
+    estimate_feeddown:
     analyze_with_sidesub:
     analyze_with_sigextr:
 
