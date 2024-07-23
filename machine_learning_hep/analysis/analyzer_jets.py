@@ -134,7 +134,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 for var in self.observables['qa']:
                     if h := rfile.Get(f'h_mass-ptjet-pthf-{var}'):
                         axes = list(range(get_dim(h)))
-                        hproj = project_hist(h, axes[3:], {})
+                        hproj = project_hist(h, axes[3:], {1: [2,2]}) # temporary select higher jet pt bin
                         self._save_hist(hproj, f'qa/h_{var}_{mcordata}.png')
 
 
@@ -163,20 +163,23 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
     def _correct_efficiency(self, hist, ipt):
         if not hist:
+            self.logger.error('no histogram to correct for efficiency')
             return
 
         if not self.hcandeff:
             self.logger.error('no efficiency available for %s', hist.GetName())
             return
 
-        if np.isclose(self.hcandeff.GetBinContent(ipt + 1), 0):
+        eff = self.hcandeff.GetBinContent(ipt + 1)
+        if np.isclose(eff, 0):
             if hist.GetEntries() > 0:
                 # TODO: how should we handle this?
                 self.logger.error('Efficiency 0 for %s ipt %d, no correction possible',
                                   hist.GetName(), ipt)
             return
 
-        hist.Scale(1.0 / self.hcandeff.GetBinContent(ipt + 1))
+        self.logger.debug('scaling hist %s (ipt %i) with 1. / %g', hist.GetName(), ipt, eff)
+        hist.Scale(1.0 / eff)
 
 
     #region fitting
@@ -332,16 +335,13 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             'sideband_right': (mean + regcfg['right'][0] * sigma, mean + regcfg['right'][1] * sigma)
         }
         fit_range = self.fit_range[mcordata][ipt]
+        if regions['sideband_left'][1] < fit_range[0] or regions['sideband_right'][0] > fit_range[1]:
+            self.logger.critical('sidebands %s not in fit range %s, fix regions!', regions, fit_range)
         for reg, lim in regions.items():
             if lim[0] < fit_range[0] or lim[1] > fit_range[1]:
-                # TODO: activate clipping and check results
-                # regions[reg] = (max(lim[0], fit_range[0]), min(lim[1], fit_range[1]))
-                self.logger.info('using %s: %s', regcfg, regions)
+                regions[reg] = (max(lim[0], fit_range[0]), min(lim[1], fit_range[1]))
                 self.logger.warning('region %s for %s bin %d (%s) extends beyond fit range: %s, clipping to %s',
                                     reg, mcordata, ipt, ptrange, lim, regions[reg])
-        if regions['sideband_left'][1] < fit_range[0] or regions['sideband_right'][0] > fit_range[1]:
-            # TODO: change to critical
-            self.logger.error('sidebands %s not in fit range %s, fix regions!', regions, fit_range)
         axis = get_axis(hist, 0)
         bins = {key: tuple(map(axis.FindBin, region)) for key, region in regions.items()}
         limits = {key: (axis.GetBinLowEdge(bins[key][0]), axis.GetBinUpEdge(bins[key][1]))

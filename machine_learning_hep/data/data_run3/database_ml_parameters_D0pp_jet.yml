@@ -343,8 +343,8 @@ D0jet_pp:
     dir_general_plots: /data2/jklein/data/analysis_plots
 
     jet_obs: &jet_default
-      sel_an_binmin:    [1,2,3,4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:    [2,3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmin:    [2,3,4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmax:    [3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
       # binning_matching:   [1,1,2,2,3,3, 4, 4, 5, 6,6] # obsolete
       bins_ptjet: [7, 15, 30]
 
@@ -446,9 +446,9 @@ D0jet_pp:
       sidesub:
         - ptrange: [24., 100.]
           regions:
-            left: [-4, -3.]
+            left: [-2., -2.]
             signal: [-2., 2.]
-            right: [3., 4.]
+            right: [3., 5.]
         - regions:
             left: [-5.5, -3.]
             signal: [-2., 2.]
@@ -472,8 +472,8 @@ D0jet_pp:
       unfolding_iterations: 8
 
       frac_mcana: .2
-      fd_root: '/data2/vkucera/powheg/trees_powheg_fd_F05_R05.root'
-      fd_parquet: '/data2/jklein/powheg/trees_powheg_fd_F05_R05.parquet'
+      fd_root: '/data2/vkucera/powheg/trees_powheg_fd_central.root'
+      fd_parquet: '/data2/jklein/powheg/trees_powheg_fd_central.parquet'
 
       # obsolete?
       proc_type: Jets

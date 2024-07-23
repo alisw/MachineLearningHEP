@@ -84,9 +84,9 @@ class ProcesserJets(Processer):
         Explicit (slow) implementation, use for reference/validation only
         """
         df = dfi.copy(deep=True)
-        df['rg'] = -1.0
+        df['rg'] = -.1
         df['nsd'] = -1.0
-        df['zg'] = -1.0
+        df['zg'] = -.1
         for idx, row in df.iterrows():
             isSoftDropped = False
             nsd = 0
@@ -103,6 +103,9 @@ class ProcesserJets(Processer):
                 self.logger.info('%s check ok', var)
             else:
                 self.logger.error('%s check failed', var)
+                mask = np.isclose(dfi[var], df[var])
+                print(df[~mask][var], flush=True)
+                print(dfi[~mask][var], flush=True)
 
 
     def _calculate_variables(self, df, verify=False): # pylint: disable=invalid-name
