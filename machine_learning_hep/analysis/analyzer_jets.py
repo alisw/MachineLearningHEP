@@ -523,7 +523,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
             colname = col_mapping.get(var, f'{var}_jet')
             if f'{colname}' not in df:
-                self.logger.error('No feeddown information for %s (%s), cannot estimate feeddown', var, colname)
+                if var is not None:
+                    self.logger.error('No feeddown information for %s (%s), cannot estimate feeddown', var, colname)
                 continue
 
             # TODO: derive histogram
@@ -619,10 +620,11 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
     #region unfolding
     def _unfold(self, hist, var, mcordata):
         self.logger.info('Unfolding for %s', var)
+        suffix = '_frac' if mcordata == 'mc' else ''
         with TFile(self.n_fileeff) as rfile:
-            h_response = rfile.Get(f'h_response_pr_{var}')
+            h_response = rfile.Get(f'h_response_pr_{var}{suffix}')
             if not h_response:
-                self.logger.error('Response matrix for %s not available, cannot unfold', var)
+                self.logger.error('Response matrix for %s not available, cannot unfold', var + suffix)
                 return []
             response_matrix_pr = ROOT.RooUnfoldResponse(
                 project_hist(h_response, [0, 1], {}), project_hist(h_response, [2, 3], {}))
@@ -640,12 +642,12 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
             # response_matrix_pr = rfile.Get(f'h_effkine_pr_det_nocuts_{var}_h_effkine_pr_gen_nocuts_{var}')
 
-            h_effkine_pr_detnogencuts = rfile.Get(f'h_effkine_pr_det_nocuts_{var}')
-            h_effkine_pr_detgencuts = rfile.Get(f'h_effkine_pr_det_cut_{var}')
+            h_effkine_pr_detnogencuts = rfile.Get(f'h_effkine_pr_det_nocuts_{var}{suffix}')
+            h_effkine_pr_detgencuts = rfile.Get(f'h_effkine_pr_det_cut_{var}{suffix}')
             ensure_sumw2(h_effkine_pr_detgencuts)
 
             h_effkine_pr_detgencuts.Divide(h_effkine_pr_detnogencuts)
-            self._save_hist(h_effkine_pr_detgencuts, f'uf/h_effkine-ptjet-{var}_pr_det.png', 'text')
+            self._save_hist(h_effkine_pr_detgencuts, f'uf/h_effkine-ptjet-{var}_pr_det_{mcordata}.png', 'text')
 
             fh_unfolding_input = hist.Clone('fh_unfolding_input')
             if get_dim(fh_unfolding_input) != get_dim(h_effkine_pr_detgencuts):
@@ -655,8 +657,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             fh_unfolding_input.Multiply(h_effkine_pr_detgencuts)
             self._save_hist(response_matrix_pr, f'uf/h_ptjet-{var}_response_pr_{mcordata}.png')
 
-            h_effkine_pr_gennodetcuts = rfile.Get(f'h_effkine_pr_gen_nocuts_{var}')
-            h_effkine_pr_gendetcuts = rfile.Get(f'h_effkine_pr_gen_cut_{var}')
+            h_effkine_pr_gennodetcuts = rfile.Get(f'h_effkine_pr_gen_nocuts_{var}{suffix}')
+            h_effkine_pr_gendetcuts = rfile.Get(f'h_effkine_pr_gen_cut_{var}{suffix}')
             ensure_sumw2(h_effkine_pr_gendetcuts)
             h_effkine_pr_gendetcuts.Divide(h_effkine_pr_gennodetcuts)
             self._save_hist(h_effkine_pr_gendetcuts, f'uf/h_effkine-ptjet-{var}_pr_gen_{mcordata}.png', 'text')
@@ -670,6 +672,16 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                 fh_unfolding_output.Divide(h_effkine_pr_gendetcuts)
                 self._save_hist(fh_unfolding_output, f'uf/h_ptjet-{var}_{mcordata}_unfoldeffcorr{n}.png', 'text')
                 h_unfolding_output.append(fh_unfolding_output)
+
+                if mcordata == 'mc':
+                    h_mctruth = rfile.Get(f'h_mctruth_pr_{var}')
+                    if h_mctruth:
+                        h_mcunfolded = fh_unfolding_output.Clone()
+                        h_mcunfolded.Divide(h_mctruth)
+                        self._save_hist(h_mcunfolded, f'uf/h_ptjet-{var}_{mcordata}_closure{n}.png', 'text')
+                    else:
+                        self.logger.error('Could not find histogram %s', f'h_mctruth_pr_{var}')
+                        rfile.ls()
 
                 h_refolding_input = fh_unfolding_output.Clone()
                 h_refolding_input.Multiply(h_effkine_pr_gendetcuts)

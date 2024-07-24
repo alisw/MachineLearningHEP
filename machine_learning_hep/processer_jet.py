@@ -255,6 +255,8 @@ class ProcesserJets(Processer):
         h_effkine_frac = copy.deepcopy(h_effkine)
         h_response_frac = copy.deepcopy(h_response)
         response_matrix_frac = copy.deepcopy(response_matrix)
+        for hist in itertools.chain(h_effkine_frac.values(), h_response_frac.values(), response_matrix_frac.values()):
+            hist.SetName(hist.GetName() + '_frac')
 
         with TFile.Open(self.l_histoeff[index], "recreate") as rfile:
             # TODO: avoid hard-coding values here
@@ -330,7 +332,8 @@ class ProcesserJets(Processer):
             for name, obj in itertools.chain(
                 h_eff.items(),
                 h_effkine.items(), h_response.items(), response_matrix.items(),
-                h_effkine_frac.items(), h_response_frac.items(), response_matrix_frac.items()):
+                h_effkine_frac.items(), h_response_frac.items(), response_matrix_frac.items(),
+                h_mctruth.items()):
                 try:
                     rfile.WriteObject(obj, obj.GetName())
                 except Exception as ex: # pylint: disable=broad-exception-caught
