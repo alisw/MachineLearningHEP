@@ -367,7 +367,7 @@ LcpKpi:
 
   analysis:
     anahptspectrum: "LctopKpi" #D0Kpi, DplusKpipi, DstarD0pi, DsKKpi, LctopKpi, LcK0Sp
-    fd_method: "Nb" # fc, Nb
+    fd_method: "Nb" # fc, Nb, ext
     cctype: "pp"
     sigmamb: 59.4e+9 # 50.87e+9 pp5TeV, 57.8e+9 pp13TeV, 59.4e+9 pp Run3, pb
     inputfonllpred: data/fonll/DmesonLcPredictions_13TeV_y05_FFptDepLHCb_BRpythia8_PDG2020.root
@@ -379,7 +379,6 @@ LcpKpi:
       plotbin: [1,1,1,1,1]
       usesinglebineff: null
       fprompt_from_mb: true
-      corresp_mb_typean: null
       corrEffMult: [false, false, false, false, false, false, false]
       event_cand_validation: True
       sel_binmin2: [1, 1, 10, 20, 30, 40, 50] #list of nbins
@@ -403,7 +402,8 @@ LcpKpi:
       sel_an_binmax: [2,4,6,8,12,24]
       binning_matching: [0,1,2,3,4,5]
       presel_gen_eff: "abs(fY) < 0.5"
-      evtsel: "abs(fPosZ)<10"
+      evtsel: null
+      #evtsel: "abs(fPosZ)<10"
       triggersel:
         data: null
         mc: null
@@ -452,24 +452,23 @@ LcpKpi:
       FixedSigma: false
       fitcase: Lc
       latexnamehadron: "#Lambda_{c}^{pK#pi}"
-      latexbin2var: "n_{trkl}"
+      latexbin2var: "n_{trk}"
       nevents: null
       dodoublecross: false
       dobkgfromsideband: false
 
     Run3analysis_forward:
       proc_type: Dhadrons_mult
-      useperiod: [1,1]
-      plotbin: [1,1,1,1,1]
+      useperiod: [1]
+      plotbin: [1,1,1,1,1,1,1]
       usesinglebineff: null
       fprompt_from_mb: true
-      corresp_mb_typean: null
-      corrEffMult: [false, false, false, false, false]
+      corrEffMult: [false, false, false, false, false, false, false]
       event_cand_validation: True
-      sel_binmin2: [0, 70, 30, 1, 0] #list of var2 splittng nbins
-      sel_binmax2: [100, 100, 70, 30, 1]
-      var_binning2: fCentFT0C
-      var_binning2_gen: fCentFT0C
+      sel_binmin2: [0, 85, 70, 50, 30, 1, 0] #list of var2 splittng nbins
+      sel_binmax2: [100, 100, 85, 70, 50, 30, 1]
+      var_binning2: fCentFT0M
+      var_binning2_gen: fCentFT0M
       nbinshisto: 100
       minvaluehisto: -0.0005
       maxvaluehisto: 100.0005
@@ -488,7 +487,8 @@ LcpKpi:
       sel_an_binmax: [2,4,6,8,12,24]
       binning_matching: [0,1,2,3,4,5]
       presel_gen_eff: "abs(fY) < 0.5"
-      evtsel: "abs(fPosZ)<10"
+      evtsel: null
+      #evtsel: "abs(fPosZ)<10"
       triggersel:
         data: null
         mc: null
@@ -505,7 +505,7 @@ LcpKpi:
         results: [LHC22pp_mc_forw/Results/prod_LHC24d3b/resultsmc] #list of periods
         resultsallp: LHC22pp_mc_forw/Results/prod_LHC22/resultsmctot
 
-      mass_fit_lim: [2.10, 2.50] # region for the fit of the invariant mass distribution [GeV/c^2]
+      mass_fit_lim: [2.10, 2.47] # region for the fit of the invariant mass distribution [GeV/c^2]
       bin_width: 0.001 # bin width of the invariant mass histogram
       # To initialize the individual fits in pT bins
       # Decide whether to take the sigma from MC or data for individual fits
@@ -513,9 +513,9 @@ LcpKpi:
       sgnfunc: [kGaus,kGaus,kGaus,kGaus,kGaus,kGaus]
       bkgfunc: [Pol2,Pol2,Pol2,Pol2,Pol2,Pol2]
       masspeak: 2.286
-      massmin: [2.20, 2.20, 2.19, 2.14, 2.13, 2.10]
-      massmax: [2.38, 2.38, 2.40, 2.436, 2.446, 2.50]
-      rebin: [5,6,6,8,8,13]
+      massmin: [2.20, 2.18, 2.16, 2.13, 2.11, 2.10]
+      massmax: [2.38, 2.40, 2.42, 2.446, 2.466, 2.47]
+      rebin: [4,4,4,6,8,11]
       fix_mean: [false,false,false,false,false,false]
       fix_sigma: [false,false,false,false,false,false]
       # Fix mean and/or sigma
@@ -537,7 +537,7 @@ LcpKpi:
       FixedSigma: false
       fitcase: Lc
       latexnamehadron: "#Lambda_{c}^{pK#pi}"
-      latexbin2var: "n_{trkl}"
+      latexbin2var: "FT0M"
       nevents: null
       dodoublecross: false
       dobkgfromsideband: false

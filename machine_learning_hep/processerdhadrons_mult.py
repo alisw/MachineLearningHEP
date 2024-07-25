@@ -70,9 +70,6 @@ class ProcesserDhadrons_mult(Processer):
         self.bin_matching = datap["analysis"][self.typean]["binning_matching"]
         #self.sel_final_fineptbins = datap["analysis"][self.typean]["sel_final_fineptbins"]
         self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
-        self.do_inel0 = datap["analysis"][self.typean].get("apply_inel0_sel", \
-                                  [None for _ in range(len(self.lvar2_binmin))])
-        self.inel0_var = datap["analysis"][self.typean].get("inel0_var", "n_tracklets")
         self.s_trigger = datap["analysis"][self.typean]["triggersel"][self.mcordata]
         self.triggerbit = datap["analysis"][self.typean]["triggerbit"]
         self.runlistrigger = runlisttrigger
@@ -129,46 +126,6 @@ class ProcesserDhadrons_mult(Processer):
             return value if value != 0. else 1.
         return [reg(hist.GetBinContent(hist.FindBin(iw))) for iw in col]
 
-
-    def gethistonormforselevt_mult(self, df_evt, dfevtevtsel, label, var, useweightfromfunc=None):
-
-        if useweightfromfunc is not None:
-            label = label + "_weight"
-        hSelMult = TH1F('sel_' + label, 'sel_' + label, self.nbinshisto,
-                        self.minvaluehisto, self.maxvaluehisto)
-        hNoVtxMult = TH1F('novtx_' + label, 'novtx_' + label, self.nbinshisto,
-                          self.minvaluehisto, self.maxvaluehisto)
-        hVtxOutMult = TH1F('vtxout_' + label, 'vtxout_' + label, self.nbinshisto,
-                           self.minvaluehisto, self.maxvaluehisto)
-        df_to_keep = filter_bit_df(df_evt, 'fIsEventReject', [[], [0, 5, 6, 10, 11]])
-        # events with reco vtx after previous selection
-        tag_vtx = tag_bit_df(df_to_keep, 'fIsEventReject', [[], [1, 2, 7, 12]])
-        df_no_vtx = df_to_keep[tag_vtx]
-        # events with reco zvtx > 10 cm after previous selection
-        df_bit_zvtx_gr10 = filter_bit_df(df_to_keep, 'fIsEventReject', [[3], [1, 2, 7, 12]])
-
-
-        if useweightfromfunc is not None:
-            weightssel = self.make_weights(dfevtevtsel[var], self.weightfunc, self.weighthist,
-                                           useweightfromfunc)
-            weightsnovtx = self.make_weights(df_no_vtx[var], self.weightfunc, self.weighthist,
-                                             useweightfromfunc)
-            weightsgr10 = self.make_weights(df_bit_zvtx_gr10[var], self.weightfunc,
-                                            self.weighthist, useweightfromfunc)
-
-            weightsinvsel = [1./weight for weight in weightssel]
-            fill_hist(hSelMult, dfevtevtsel[var], weights=weightsinvsel)
-            weightsinvnovtx = [1./weight for weight in weightsnovtx]
-            fill_hist(hNoVtxMult, df_no_vtx[var], weights=weightsinvnovtx)
-            weightsinvgr10 = [1./weight for weight in weightsgr10]
-            fill_hist(hVtxOutMult, df_bit_zvtx_gr10[var], weights=weightsinvgr10)
-        else:
-            fill_hist(hSelMult, dfevtevtsel[var])
-            fill_hist(hNoVtxMult, df_no_vtx[var])
-            fill_hist(hVtxOutMult, df_bit_zvtx_gr10[var])
-
-        return hSelMult, hNoVtxMult, hVtxOutMult
-
     def process_histomass_single(self, index):
         myfile = TFile.Open(self.l_histomass[index], "recreate")
         dfevtorig = read_df(self.l_evtorig[index])
@@ -190,60 +147,25 @@ class ProcesserDhadrons_mult(Processer):
         histonorm = TH1F("histonorm", "histonorm", 10, 0, 10)
         histonorm.SetBinContent(1, neventsorig)
         histonorm.GetXaxis().SetBinLabel(1, "tot events")
-        histonorm.SetBinContent(2, neventsaftertrigger)
-        histonorm.GetXaxis().SetBinLabel(2, "tot events after trigger")
-        histonorm.SetBinContent(3, neventsafterrunsel)
-        histonorm.GetXaxis().SetBinLabel(3, "tot events after run sel")
-        histonorm.SetBinContent(4, neventsafterevtsel)
-        histonorm.GetXaxis().SetBinLabel(4, "tot events after evt sel")
+        histonorm.SetBinContent(2, neventsafterevtsel)
+        histonorm.GetXaxis().SetBinLabel(2, "tot events after evt sel")
         for ibin2, _ in enumerate(self.lvar2_binmin):
             binneddf = seldf_singlevar_inclusive(dfevtevtsel, self.v_var2_binning_gen, \
                 self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
-            histonorm.SetBinContent(5 + ibin2, len(binneddf))
-            histonorm.GetXaxis().SetBinLabel(5 + ibin2, \
+            histonorm.SetBinContent(3 + ibin2, len(binneddf))
+            histonorm.GetXaxis().SetBinLabel(3 + ibin2, \
                         "tot events after mult sel %d - %d" % \
                         (self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2]))
         histonorm.Write()
-        labeltrigger = "hbit%svs%s" % (self.triggerbit, self.v_var2_binning_gen)
 
         myfile.cd()
-        hsel, hnovtxmult, hvtxoutmult = \
-            self.gethistonormforselevt_mult(dfevtorig, dfevtevtsel, \
-                                       labeltrigger, self.v_var2_binning_gen)
+        hEvents = TH1F('all_events', 'all_events', 1, -0.5, 0.5)
+        hSelEvents = TH1F('sel_events', 'sel_events', 1, -0.5, 0.5)
+        hEvents.SetBinContent(1, len(dfevtorig))
+        hSelEvents.SetBinContent(1, len(dfevtevtsel))
 
-        if self.usetriggcorrfunc is not None and self.mcordata == "data":
-            hselweight, hnovtxmultweight, hvtxoutmultweight = \
-                self.gethistonormforselevt_mult(dfevtorig, dfevtevtsel, \
-                    labeltrigger, self.v_var2_binning_gen, self.usetriggcorrfunc)
-            hselweight.Write()
-            hnovtxmultweight.Write()
-            hvtxoutmultweight.Write()
-
-        hsel.Write()
-        hnovtxmult.Write()
-        hvtxoutmult.Write()
-
-        for ibin2, _ in enumerate(self.lvar2_binmin):
-            if self.do_inel0[ibin2]:
-                dfevtevtsel_inel0 = seldf_singlevar_inclusive(dfevtevtsel, \
-                    self.v_var2_binning_gen, self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
-                dfevtorig_inel0 = seldf_singlevar_inclusive(dfevtorig, self.v_var2_binning_gen, \
-                    self.lvar2_binmin[ibin2], self.lvar2_binmax[ibin2])
-                labeltrigger_inel0 = "hbit%svs%s_ibin2_%d" % (self.triggerbit, \
-                                                              self.inel0_var, ibin2)
-                hsel_inel0, hnovtxmult_inel0, hvtxoutmult_inel0 = \
-                    self.gethistonormforselevt_mult(dfevtorig_inel0, dfevtevtsel_inel0, \
-                                               labeltrigger_inel0, self.inel0_var)
-                if self.usetriggcorrfunc is not None and self.mcordata == "data":
-                    hselweight_inel0, hnovtxmultweight_inel0, hvtxoutmultweight_inel0 = \
-                        self.gethistonormforselevt_mult(dfevtorig_inel0, dfevtevtsel_inel0, \
-                            labeltrigger_inel0, self.inel0_var, self.usetriggcorrfunc)
-                    hselweight_inel0.Write()
-                    hnovtxmultweight_inel0.Write()
-                    hvtxoutmultweight_inel0.Write()
-                hsel_inel0.Write()
-                hnovtxmult_inel0.Write()
-                hvtxoutmult_inel0.Write()
+        hEvents.Write()
+        hSelEvents.Write()
 
         list_df_recodtrig = []
 
@@ -266,13 +188,7 @@ class ProcesserDhadrons_mult(Processer):
             if self.do_custom_analysis_cuts:
                 df = self.apply_cuts_ptbin(df, ipt)
 
-            df_temp = pd.DataFrame()
-            if self.do_inel0[-1]:
-                df_temp = df
             for ibin2, _ in enumerate(self.lvar2_binmin):
-                if self.do_inel0[ibin2]:
-                    df = df_temp
-                    df = df.query("%s > 0" % self.inel0_var)
 
                 if self.mltype == "MultiClassification":
                     suffix = "%s%d_%d_%.2f%.2f%s_%.2f_%.2f" % \
@@ -324,24 +240,6 @@ class ProcesserDhadrons_mult(Processer):
                              self.minvaluehisto, self.maxvaluehisto)
             fill_hist(histomult, dfevtevtsel[self.v_var2_binning_gen])
             histomult.Write()
-            #df_recodtrig = pd.concat(list_df_recodtrig)
-            #df_recodtrig = df_recodtrig.query("fM>%f and fM<%f" % \
-            #                                  (self.mass - 0.15, self.mass + 0.15))
-            #dfevtwithd = pd.merge(dfevtevtsel, df_recodtrig, on=self.v_evtmatch)
-            #labelwithd = "h%s_withd" % self.v_var2_binning_gen
-            #histomultwithd = TH1F(labelwithd, labelwithd, self.nbinshisto,
-            #                      self.minvaluehisto, self.maxvaluehisto)
-            #fill_hist(histomultwithd, dfevtwithd["%s_x" % self.v_var2_binning_gen])
-            #histomultwithd.Write()
-
-            # Validation histograms
-            #fill_validation_vertex(dfevtorig, dfevtevtsel, df_recodtrig).write()
-            #fill_validation_multiplicity(dfevtorig, dfevtevtsel, df_recodtrig).write()
-            #fill_validation_candidates(df_recodtrig).write()
-            #if self.mcordata == "mc":
-            #    fill_validation_candidates(
-            #        df_recodtrig[df_recodtrig[self.v_ismcsignal] == 1], "MC"
-            #    ).write()
 
     def get_reweighted_count(self, dfsel, ibin=None):
         """Apply event weights
@@ -447,8 +345,6 @@ class ProcesserDhadrons_mult(Processer):
                     df_mc_reco = df_mc_reco.query(self.s_evtsel)
                 if self.s_trigger is not None:
                     df_mc_reco = df_mc_reco.query(self.s_trigger)
-                if self.do_inel0[ibin2]:
-                    df_mc_reco = df_mc_reco.query("%s > 0" % self.inel0_var)
                 if self.runlistrigger is not None:
                     df_mc_reco = selectdfrunlist(df_mc_reco, \
                          self.run_param[self.runlistrigger], "run_number")
@@ -456,8 +352,6 @@ class ProcesserDhadrons_mult(Processer):
                 df_mc_gen = df_mc_gen.query(self.s_presel_gen_eff)
                 if self.s_evtsel is not None:
                     df_mc_gen = df_mc_gen.query(self.s_evtsel)
-                if self.do_inel0[ibin2]:
-                    df_mc_gen = df_mc_gen.query("%s > 0" % self.inel0_var)
                 if self.runlistrigger is not None:
                     df_mc_gen = selectdfrunlist(df_mc_gen, \
                              self.run_param[self.runlistrigger], "run_number")

@@ -49,6 +49,7 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
                    b_ratio,
                    inputfonllpred,
                    frac_method,
+                   prompt_frac,
                    eff_filename,
                    effprompt_histoname,
                    effnonprompt_histoname,
@@ -56,6 +57,7 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
                    yield_histoname,
                    norm,
                    sigmamb,
+                   output_prompt,
                    output_file):
 
     # final plots style settings
@@ -85,7 +87,7 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
         print(f"\033[91mERROR: channel {channel} not supported. Exit\033[0m")
         sys.exit(2)
 
-    if frac_method not in ["Nb", "fc"]:
+    if frac_method not in ["Nb", "fc", "ext"]:
         print(
             f"\033[91mERROR: method to subtract nonprompt"
             f" {frac_method} not supported. Exit\033[0m"
@@ -212,6 +214,7 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
         ]
 
         # compute prompt fraction
+        frac = [0,0,0]
         if frac_method == "Nb":
             frac = compute_fraction_nb(  # BR already included in FONLL prediction
                 rawy,
@@ -238,6 +241,8 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
                 crosssec_prompt_fonll,
                 crosssec_nonprompt_fonll,
             )
+        elif frac_method == "ext":
+            frac[0] = prompt_frac[i_pt]
 
         # compute cross section times BR
         crosssec, crosssec_unc = compute_crosssection(
@@ -258,10 +263,12 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
         hptspectrum_wo_br.SetBinContent(i_pt + 1, crosssec)
         hptspectrum_wo_br.SetBinError(i_pt + 1, crosssec_unc)
         hnorm.SetBinContent(1, norm)
-        gfraction.SetPoint(i_pt, pt_cent, frac[0])
-        #gfraction.SetPointError(
-        #    i_pt, pt_delta / 2, pt_delta / 2, frac[0] - frac[1], frac[2] - frac[0]
-        #)
+        if (frac_method != "ext"):
+            output_prompt.append(frac[0])
+            gfraction.SetPoint(i_pt, pt_cent, frac[0])
+            gfraction.SetPointError(
+                i_pt, pt_delta / 2, pt_delta / 2, frac[0] - frac[1], frac[2] - frac[0]
+            )
 
     c = TCanvas("c", "c", 600, 800)
     c.Divide (1, 2)
@@ -272,14 +279,15 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
     gPad.SetLogy(True)
     hptspectrum_wo_br.Draw()
     output_pdf = output_file.replace("root", "pdf")
-    c.Print(output_pdf)
+    #c.Print(output_pdf)
 
     output_file = TFile.Open(output_file, "recreate")
 
     hptspectrum.Write()
     hptspectrum_wo_br.Write()
     hnorm.Write()
-    #gfraction.Write()
+    if (frac_method != "ext"):
+        gfraction.Write()
 
     for _, value in histos.items():
         if isinstance(value, TH1):

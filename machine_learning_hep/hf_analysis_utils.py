@@ -59,17 +59,20 @@ def compute_crosssection(
     - crosssection: cross section
     - crosssec_unc: cross-section statistical uncertainty
     """
-
-    crosssection = (
-        rawy
-        * frac
-        * sigma_mb
-        / (2 * delta_pt * delta_y * eff_times_acc * n_events * b_ratio)
-    )
-    if method_frac == "Nb":
-        crosssec_unc = rawy_unc / (rawy * frac) * crosssection
+    if (rawy <=0):
+        crosssection = -9999
+        crosssec_unc = -1
     else:
-        crosssec_unc = rawy_unc / rawy * crosssection
+        crosssection = (
+            rawy
+            * frac
+            * sigma_mb
+            / (2 * delta_pt * delta_y * eff_times_acc * n_events * b_ratio)
+        )
+        if method_frac == "Nb" or method_frac == "ext":
+            crosssec_unc = rawy_unc / (rawy * frac) * crosssection
+        else:
+            crosssec_unc = rawy_unc / rawy * crosssection
 
     return crosssection, crosssec_unc
 
