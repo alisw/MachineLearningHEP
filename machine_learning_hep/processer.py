@@ -193,7 +193,7 @@ class Processer: # pylint: disable=too-many-instance-attributes
         self.bins_skimming = np.array(list(zip(self.lpt_anbinmin, self.lpt_anbinmax)), 'd')
         self.bins_analysis = np.array(list(zip(self.lpt_finbinmin, self.lpt_finbinmax)), 'd')
         bin_matching = [
-            [ptrange[0] <= bin[0] and ptrange[1] >= bin[0] for ptrange in self.bins_skimming].index(True)
+            [ptrange[0] <= bin[0] and ptrange[1] >= bin[1] for ptrange in self.bins_skimming].index(True)
             for bin in self.bins_analysis
         ]
 

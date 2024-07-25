@@ -245,8 +245,7 @@ LcpKpi:
             - 20.
   files_names:
     namefile_unmerged_tree: AO2D.root
-    namefile_reco: AnalysisResultsReco.parquet
-    namefile_evt: AnalysisResultsEvt.parquet
+    namefile_collcnt: AnalysisResultsCollCnt.parquet
     namefile_evtvalroot: AnalysisResultsROOTEvtVal.root
     namefile_evtorig: AnalysisResultsEvtOrig.parquet
     namefile_gen: AnalysisResultsGen.parquet
