@@ -21,7 +21,6 @@ import math
 import array
 import os
 import numpy as np
-import pandas as pd
 from ROOT import TFile, TH1F
 from machine_learning_hep.utilities import selectdfrunlist
 from machine_learning_hep.utilities_files import create_folder_struc
@@ -31,10 +30,7 @@ from machine_learning_hep.utilities import get_timestamp_string
 from machine_learning_hep.utils.hist import fill_hist
 #from machine_learning_hep.globalfitter import fitter
 from machine_learning_hep.processer import Processer
-from machine_learning_hep.bitwise import filter_bit_df, tag_bit_df
-#from machine_learning_hep.validation.validation_vertex import fill_validation_vertex
-#from machine_learning_hep.validation.validation_multiplicity import fill_validation_multiplicity
-#from machine_learning_hep.validation.validation_candidates import fill_validation_candidates
+from machine_learning_hep.bitwise import tag_bit_df
 
 # pylint: disable=invalid-name
 class ProcesserDhadrons_mult(Processer):
@@ -132,11 +128,11 @@ class ProcesserDhadrons_mult(Processer):
         neventsorig = len(dfevtorig)
         if self.s_trigger is not None:
             dfevtorig = dfevtorig.query(self.s_trigger)
-        neventsaftertrigger = len(dfevtorig)
+        #neventsaftertrigger = len(dfevtorig)
         if self.runlistrigger is not None:
             dfevtorig = selectdfrunlist(dfevtorig, \
                              self.run_param[self.runlistrigger], "run_number")
-        neventsafterrunsel = len(dfevtorig)
+        #neventsafterrunsel = len(dfevtorig)
         if self.s_evtsel is not None:
             dfevtevtsel = dfevtorig.query(self.s_evtsel)
         else:

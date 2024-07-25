@@ -69,7 +69,7 @@ def compute_crosssection(
             * sigma_mb
             / (2 * delta_pt * delta_y * eff_times_acc * n_events * b_ratio)
         )
-        if method_frac == "Nb" or method_frac == "ext":
+        if method_frac in ("Nb","ext"):
             crosssec_unc = rawy_unc / (rawy * frac) * crosssection
         else:
             crosssec_unc = rawy_unc / rawy * crosssection

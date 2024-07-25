@@ -263,7 +263,7 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
         hptspectrum_wo_br.SetBinContent(i_pt + 1, crosssec)
         hptspectrum_wo_br.SetBinError(i_pt + 1, crosssec_unc)
         hnorm.SetBinContent(1, norm)
-        if (frac_method != "ext"):
+        if frac_method != "ext":
             output_prompt.append(frac[0])
             gfraction.SetPoint(i_pt, pt_cent, frac[0])
             gfraction.SetPointError(
@@ -279,14 +279,14 @@ def hf_pt_spectrum(channel, # pylint: disable=too-many-locals, too-many-argument
     gPad.SetLogy(True)
     hptspectrum_wo_br.Draw()
     output_pdf = output_file.replace("root", "pdf")
-    #c.Print(output_pdf)
+    c.Print(output_pdf)
 
     output_file = TFile.Open(output_file, "recreate")
 
     hptspectrum.Write()
     hptspectrum_wo_br.Write()
     hnorm.Write()
-    if (frac_method != "ext"):
+    if frac_method != "ext":
         gfraction.Write()
 
     for _, value in histos.items():

@@ -480,7 +480,6 @@ class AnalyzerDhadrons_mult(Analyzer): # pylint: disable=invalid-name
             norm = histonorm.GetBinContent(imult + 3)
             # pylint: disable=logging-not-lazy
             self.logger.warning("Number of events %d for mult bin %d" % (norm, imult))
-            filecrossmb = None
 
             if self.p_fprompt_from_mb:
                 if imult == 0:
