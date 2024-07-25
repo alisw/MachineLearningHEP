@@ -324,6 +324,8 @@ class ProcesserJets(Processer):
                     self._prepare_response(dfmatch[cat], h_effkine, h_response, response_matrix, cat, var)
 
                     # TODO: switch to matched sample if needed
+                    # dfgen[cat].info()
+                    # dfana = dfquery(dfgen[cat], '(isd0_gen & seld0_gen) or (isd0bar_gen & seld0bar_gen)')
                     df_mcana, _ = self.split_df(dfgen[cat], self.cfg('frac_mcana', .2))
                     fill_hist(h_mctruth[(cat, var)], df_mcana[['fJetPt_gen', f'{var}_gen']])
                     _, df_mccorr = self.split_df(dfmatch[cat], self.cfg('frac_mcana', .2))

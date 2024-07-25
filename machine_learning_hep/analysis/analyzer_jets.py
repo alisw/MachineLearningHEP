@@ -316,7 +316,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
         mean = self.fit_mean[mcordata][ipt]
         sigma = self.fit_sigma[mcordata][ipt]
-        if mean is None or sigma is None:
+        fit_range = self.fit_range[mcordata][ipt]
+        if mean is None or sigma is None or fit_range is None:
             self.logger.error('no fit parameters for %s bin %d', hist.GetName(), ipt)
             return None
 
@@ -334,7 +335,6 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             'sideband_left': (mean + regcfg['left'][0] * sigma, mean + regcfg['left'][1] * sigma),
             'sideband_right': (mean + regcfg['right'][0] * sigma, mean + regcfg['right'][1] * sigma)
         }
-        fit_range = self.fit_range[mcordata][ipt]
         if regions['sideband_left'][1] < fit_range[0] or regions['sideband_right'][0] > fit_range[1]:
             self.logger.critical('sidebands %s not in fit range %s, fix regions!', regions, fit_range)
         for reg, lim in regions.items():
@@ -606,7 +606,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
     def _subtract_feeddown(self, hist, var, mcordata):
     # TODO: store and retrieve for correct variable
         if var not in self.hfeeddown_det:
-            self.logger.error('No feeddown information available for %s, cannot subtract', var)
+            if var is not None:
+                self.logger.error('No feeddown information available for %s, cannot subtract', var)
             return
         if h_fd := self.hfeeddown_det[var]:
             if get_dim(hist) == 1:
