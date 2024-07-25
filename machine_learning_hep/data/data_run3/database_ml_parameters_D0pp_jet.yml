@@ -355,7 +355,6 @@ D0jet_pp:
     jet_obs: &jet_default
       sel_an_binmin:    [2,3,4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
       sel_an_binmax:    [3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
-      # binning_matching:   [1,1,2,2,3,3, 4, 4, 5, 6,6] # obsolete
       bins_ptjet: [5, 7, 15, 30, 50]
 
       sigmamb: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
@@ -394,86 +393,84 @@ D0jet_pp:
           query: '(isd0 & seld0) or (isd0bar & seld0bar)'
         mcrefl:
           level: mc
-          query: 'not ((isd0 & seld0) or (isd0bar & seld0bar))'
+          query: '(isd0 & seld0bar) or (isd0bar & seld0))'
 
       fit_levels: ['mcsig', 'mcrefl', 'mc', 'data']
       mass_roofit:
         - level: mcsig
           datasel: mcsig
-          var: minv
           components:
             model:
-              fn: 'Gaussian::mcsig(minv[1.695,2.04], mean[1.85,1.87], sigma_g1[.01,.08])'
+              fn: 'Gaussian::mcsig(m[1.695,2.04], mean[1.85,1.87], sigma_g1[.01,.08])'
         - level: mcrefl
           datasel: mcrefl
-          var: minv
           components:
             refl_l:
-              fn: 'Gaussian::refl_l(minv[1.695,2.04], mean_l[1.8,1.865], sigma_l[.01,.1])'
+              fn: 'Gaussian::refl_l(m[1.695,2.04], mean_l[1.8,1.865], sigma_l[.01,.1])'
             refl_r:
-              fn: 'Gaussian::refl_r(minv[1.695,2.04], mean_r[1.865,1.9], sigma_r[.01,.1])'
+              fn: 'Gaussian::refl_r(m[1.695,2.04], mean_r[1.865,1.9], sigma_r[.01,.1])'
             model:
               fn: 'SUM::mcrefl(frac_l[0.,1.]*refl_l, refl_r)'
         - level: mc
-          var: minv
+          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r']
           components:
             model:
-              fn: 'SUM::mc(frac_refl[0.,1.]*mcrefl, mcsig)'
+              fn: 'SUM::sigrefl(frac_refl[0.,1.]*mcrefl, mcsig)'
         - ptrange: [1., 2.]
+          range: [1.710, 2.02]
+          fix_params: ['frac_refl']
           components:
-            sig:
-              fn: 'Gaussian::sig(m[1.710,2.02], mean[1.85,1.87], sigma_g1[.01,.08])'
             bkg:
-              fn: 'Exponential::bkg(m[1.710,2.02], alpha[-100,0])'
+              fn: 'Exponential::bkg(m, alpha[-100,0])'
             model:
-              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+              fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [2., 3.]
+          fix_params: ['frac_refl']
+          range: [1.7, 2.04]
           components:
-            sig:
-              fn: 'Gaussian::sig(m[1.7,2.04], mean[1.85,1.87], sigma_g1[.01,.08])'
             bkg:
-              fn: 'Exponential::bkg(m[1.7,2.04], alpha[-100,0])'
+              fn: 'Exponential::bkg(m, alpha[-100,0])'
             model:
-              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+              fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [3., 4.]
+          fix_params: ['frac_refl']
+          range: [1.7, 2.06]
           components:
-            sig:
-              fn: 'Gaussian::sig(m[1.7,2.06], mean[1.85,1.87], sigma_g1[.01,.08])'
             bkg:
-              fn: 'Exponential::bkg(m[1.7,2.06], alpha[-100,0])'
+              fn: 'Exponential::bkg(m, alpha[-100,0])'
             model:
-              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+              fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [4., 5.]
+          fix_params: ['frac_refl']
+          range: [1.72, 2.08]
           components:
-            sig:
-              fn: 'Gaussian::sig(m[1.72,2.08], mean[1.85,1.87], sigma_g1[.01,.08])'
             bkg:
-              fn: 'Exponential::bkg(m[1.72,2.08], alpha[-100,0])'
+              fn: 'Exponential::bkg(m, alpha[-100,0])'
             model:
-              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+              fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [5., 6.]
+          fix_params: ['frac_refl']
+          range: [1.72, 2.10]
           components:
-            sig:
-              fn: 'Gaussian::sig(m[1.72,2.10], mean[1.85,1.87], sigma_g1[.01,.08])'
             bkg:
-              fn: 'Exponential::bkg(m[1.72,2.10], alpha[-100,0])'
+              fn: 'Exponential::bkg(m, alpha[-100,0])'
             model:
-              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+              fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [6., 8.]
+          fix_params: ['frac_refl']
+          range: [1.72, 2.14]
           components:
-            sig:
-              fn: 'Gaussian::sig(m[1.72,2.14], mean[1.85,1.87], sigma_g1[.01,.08])'
             bkg:
-              fn: 'Exponential::bkg(m[1.72,2.14], alpha[-100,0])'
+              fn: 'Exponential::bkg(m, alpha[-100,0])'
             model:
-              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
-        - components:
-            sig:
-              fn: 'Gaussian::sig(m[1.7,2.20], mean[1.85,1.87], sigma_g1[.01,.08])'
+              fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
+        - range: [1.7, 2.20]
+          fix_params: ['frac_refl']
+          components:
             bkg:
-              fn: 'Exponential::bkg(m[1.7,2.20], alpha[-100,0])'
+              fn: 'Exponential::bkg(m, alpha[-100,0])'
             model:
-              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+              fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
 
       sidesub:
         - ptrange: [24., 100.]

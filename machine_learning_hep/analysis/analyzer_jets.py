@@ -295,17 +295,13 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         if datasel := fitcfg.get('datasel'):
                             h = rfile.Get(f'h_mass-ptjet-pthf_{datasel}')
                             h_invmass = project_hist(h, [0], {2: (ipt+1, ipt+1)}) # TODO: under-/overflow for jets
-                        if level == 'mc':
-                            roows.var('frac_l').setConstant(True)
-                            roows.var('mean_l').setConstant(True)
-                            roows.var('mean_r').setConstant(True)
-                            roows.var('sigma_l').setConstant(True)
-                            roows.var('sigma_r').setConstant(True)
+                        for fixpar in fitcfg.get('fix_params', []):
+                            roows.var(fixpar).setConstant(True)
                         roo_res, roo_ws = self._roofit_mass(
                             h_invmass, ipt, fitcfg, roows,
                             f'roofit/h_mass_fitted_pthf-{ptrange[0]}-{ptrange[1]}_{level}.png')
-                        if level == 'mc':
-                            roo_ws.Print()
+                        # if level == 'mc':
+                        #     roo_ws.Print()
                         self.roo_ws[level][ipt] = roo_ws
                         self.roows[ipt] = roo_ws
                         if roo_res.status() == 0:

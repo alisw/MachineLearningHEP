@@ -31,6 +31,8 @@ class RooFitter:
             if comp == 'model':
                 model = fn
         m = ws.var(var_m)
+        if range_m := fit_spec.get('range'):
+            m.setRange(range_m[0], range_m[1])
         dh = ROOT.RooDataHist("dh", "dh", [m], Import=hist)
         res = model.fitTo(dh, Save=True, PrintLevel=-1)
         frame = m.frame() if plot else None
@@ -38,10 +40,18 @@ class RooFitter:
             dh.plotOn(frame)
             model.plotOn(frame)
             model.paramOn(frame)
-            for comp in fit_spec.get('components', {}):
-                if comp != 'model':
-                    model.plotOn(frame, ROOT.RooFit.Components(comp),
-                                 ROOT.RooFit.LineStyle(ROOT.ELineStyle.kDashed))
+            try:
+                for pdf in model.pdfList():
+                    model.plotOn(frame, ROOT.RooFit.Components(pdf),
+                                 ROOT.RooFit.LineStyle(ROOT.ELineStyle.kDashed),
+                                 ROOT.RooFit.LineColor(ROOT.kViolet),
+                                 ROOT.RooFit.LineWidth(1))
+            except:
+                pass
+            # for comp in fit_spec.get('components', {}):
+            #     if comp != 'model':
+            #         model.plotOn(frame, ROOT.RooFit.Components(comp),
+            #                      ROOT.RooFit.LineStyle(ROOT.ELineStyle.kDashed))
         return (res, ws, frame)
 
 

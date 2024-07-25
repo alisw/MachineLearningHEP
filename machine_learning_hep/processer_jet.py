@@ -178,7 +178,7 @@ class ProcesserJets(Processer):
                 self.binarray_mass, self.binarray_ptjet, self.binarray_pthf)
             fill_hist(h, df[['fM', 'fJetPt', 'fPt']], write=True)
 
-            for sel_name, sel_spec in self.cfg('data_selections', []).items():
+            for sel_name, sel_spec in self.cfg('data_selections', {}).items():
                 if sel_spec['level'] == self.mcordata:
                     df_sel = dfquery(df, sel_spec['query'])
                     h = create_hist(
