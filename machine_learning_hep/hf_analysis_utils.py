@@ -59,7 +59,7 @@ def compute_crosssection(
     - crosssection: cross section
     - crosssec_unc: cross-section statistical uncertainty
     """
-    if (rawy <=0):
+    if rawy <= 0:
         crosssection = -9999
         crosssec_unc = -1
     else:
