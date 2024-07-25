@@ -178,6 +178,15 @@ class ProcesserJets(Processer):
                 self.binarray_mass, self.binarray_ptjet, self.binarray_pthf)
             fill_hist(h, df[['fM', 'fJetPt', 'fPt']], write=True)
 
+            for sel_name, sel_spec in self.cfg('data_selections', []).items():
+                if sel_spec['level'] == self.mcordata:
+                    df_sel = dfquery(df, sel_spec['query'])
+                    h = create_hist(
+                        f'h_mass-ptjet-pthf_{sel_name}',
+                        ';M (GeV/#it{c}^{2});p_{T}^{jet} (GeV/#it{c});p_{T}^{HF} (GeV/#it{c})',
+                        self.binarray_mass, self.binarray_ptjet, self.binarray_pthf)
+                    fill_hist(h, df_sel[['fM', 'fJetPt', 'fPt']], write=True)
+
             if self.mcordata == 'mc':
                 df, _ = self.split_df(df, self.cfg('frac_mcana', .2))
             if len(df) == 0:

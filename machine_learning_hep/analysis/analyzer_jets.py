@@ -67,6 +67,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self.bins_candpt = np.asarray(self.cfg('sel_an_binmin', []) + self.cfg('sel_an_binmax', [])[-1:], 'd')
         self.nbins = len(self.bins_candpt) - 1
 
+        self.fit_levels = self.cfg('fit_levels', ['mc', 'data'])
         self.fit_sigma = {}
         self.fit_mean = {}
         self.fit_func_bkg = {}
@@ -85,6 +86,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
         self.fitter = RooFitter()
         self.roo_ws = {}
+        self.roows = {}
 
     #region helpers
     def _save_canvas(self, canvas, filename):
@@ -144,7 +146,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         cats = {'pr', 'np'}
         rfilename = self.n_fileeff
         with TFile(rfilename) as rfile:
-            bins_ptjet = (1, 2)
+            bins_ptjet = (2, 3)
             # TODO: fix projection range
             h_gen = {cat: project_hist(rfile.Get(f'h_ptjet-pthf_{cat}_gen'), [1], {0: bins_ptjet}) for cat in cats}
             h_det = {cat: project_hist(rfile.Get(f'h_ptjet-pthf_{cat}_det'), [1], {0: bins_ptjet}).Clone(f'h_eff_{cat}')
@@ -183,21 +185,10 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
 
     #region fitting
-    def _roofit_mass(self, hist, ipt, mcordata, filename = None):
-        fitcfg = None
-        for entry in self.cfg('mass_roofit', []):
-            if level := entry.get('level'):
-                if level != mcordata:
-                    continue
-            if ptrange := entry.get('ptrange'):
-                if ptrange[0] > self.bins_candpt[ipt] or ptrange[1] < self.bins_candpt[ipt+1]:
-                    continue
-            fitcfg = entry
-            break
-        self.logger.debug("Using fit config for %i: %s", ipt, fitcfg)
+    def _roofit_mass(self, hist, ipt, fitcfg, roows = None, filename = None):
         if fitcfg is None:
             return None, None
-        res, ws, frame = self.fitter.fit_mass(hist, fitcfg, True)
+        res, ws, frame = self.fitter.fit_mass_new(hist, fitcfg, roows, True)
         frame.SetTitle(f'inv. mass for p_{{T}} {self.bins_candpt[ipt]} - {self.bins_candpt[ipt+1]} GeV/c')
         c = TCanvas()
         frame.Draw()
@@ -261,45 +252,73 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
     def fit(self):
         self.logger.info("Fitting inclusive mass distributions")
         gStyle.SetOptFit(1111)
-        for mcordata in ['mc', 'data']:
-            self.fit_mean[mcordata] = [None] * self.nbins
-            self.fit_sigma[mcordata] = [None] * self.nbins
-            self.fit_func_bkg[mcordata] = [None] * self.nbins
-            self.fit_range[mcordata] = [None] * self.nbins
-            self.roo_ws[mcordata] = [None] * self.nbins
-            rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
+        for level in self.fit_levels:
+            self.fit_mean[level] = [None] * self.nbins
+            self.fit_sigma[level] = [None] * self.nbins
+            self.fit_func_bkg[level] = [None] * self.nbins
+            self.fit_range[level] = [None] * self.nbins
+            self.roo_ws[level] = [None] * self.nbins
+            rfilename = self.n_filemass_mc if "mc" in level else self.n_filemass
+            fitcfg = None
             with TFile(rfilename) as rfile:
                 h = rfile.Get('h_mass-ptjet-pthf')
                 for ipt in range(get_nbins(h, 2)):
+                    self.logger.debug('fitting %s - %i', level, ipt)
+                    roows = self.roows.get(ipt)
                     # TODO: add plots per jet pt bin
                     h_invmass = project_hist(h, [0], {2: (ipt+1, ipt+1)}) # TODO: under-/overflow for jets
                     if h_invmass.GetEntries() < 100: # TODO: reconsider criterion
-                        self.logger.error('Not enough entries to fit for %s bin %d', mcordata, ipt)
+                        self.logger.error('Not enough entries to fit for %s bin %d', level, ipt)
                         continue
                     ptrange = (self.bins_candpt[ipt], self.bins_candpt[ipt+1])
                     if self.cfg('mass_fit'):
                         fit_res, _, func_bkg = self._fit_mass(
                             h_invmass,
-                            f'fit/h_mass_fitted_pthf-{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
+                            f'fit/h_mass_fitted_pthf-{ptrange[0]}-{ptrange[1]}_{level}.png')
                         if fit_res and fit_res.Get() and fit_res.IsValid():
-                            self.fit_mean[mcordata][ipt] = fit_res.Parameter(1)
-                            self.fit_sigma[mcordata][ipt] = fit_res.Parameter(2)
-                            self.fit_func_bkg[mcordata][ipt] = func_bkg
+                            self.fit_mean[level][ipt] = fit_res.Parameter(1)
+                            self.fit_sigma[level][ipt] = fit_res.Parameter(2)
+                            self.fit_func_bkg[level][ipt] = func_bkg
                         else:
-                            self.logger.error('Fit failed for %s bin %d', mcordata, ipt)
+                            self.logger.error('Fit failed for %s bin %d', level, ipt)
                     if self.cfg('mass_roofit'):
+                        for entry in self.cfg('mass_roofit', []):
+                            if lvl := entry.get('level'):
+                                if lvl != level:
+                                    continue
+                            if ptspec := entry.get('ptrange'):
+                                if ptspec[0] > ptrange[0] or ptspec[1] < ptrange[1]:
+                                    continue
+                            fitcfg = entry
+                            break
+                        self.logger.debug("Using fit config for %i: %s", ipt, fitcfg)
+                        if datasel := fitcfg.get('datasel'):
+                            h = rfile.Get(f'h_mass-ptjet-pthf_{datasel}')
+                            h_invmass = project_hist(h, [0], {2: (ipt+1, ipt+1)}) # TODO: under-/overflow for jets
+                        if level == 'mc':
+                            roows.var('frac_l').setConstant(True)
+                            roows.var('mean_l').setConstant(True)
+                            roows.var('mean_r').setConstant(True)
+                            roows.var('sigma_l').setConstant(True)
+                            roows.var('sigma_r').setConstant(True)
                         roo_res, roo_ws = self._roofit_mass(
-                            h_invmass, ipt, mcordata,
-                            f'roofit/h_mass_fitted_pthf-{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
-                        self.roo_ws[mcordata][ipt] = roo_ws
+                            h_invmass, ipt, fitcfg, roows,
+                            f'roofit/h_mass_fitted_pthf-{ptrange[0]}-{ptrange[1]}_{level}.png')
+                        if level == 'mc':
+                            roo_ws.Print()
+                        self.roo_ws[level][ipt] = roo_ws
+                        self.roows[ipt] = roo_ws
                         if roo_res.status() == 0:
                             # TODO: take parameter names from DB
-                            self.fit_mean[mcordata][ipt] = roo_ws.var('mean').getValV()
-                            self.fit_sigma[mcordata][ipt] = roo_ws.var('sigma_g1').getValV()
-                            self.fit_func_bkg[mcordata][ipt] = roo_ws.pdf("bkg").asTF(roo_ws.var("m"))
-                            self.fit_range[mcordata][ipt] = (roo_ws.var('m').getMin(), roo_ws.var('m').getMax())
+                            if level == 'data' or level == 'mc_sig':
+                                self.fit_mean[level][ipt] = roo_ws.var('mean').getValV()
+                                self.fit_sigma[level][ipt] = roo_ws.var('sigma_g1').getValV()
+                            var_m = fitcfg.get('var', 'm')
+                            if roo_ws.pdf("bkg"):
+                                self.fit_func_bkg[level][ipt] = roo_ws.pdf("bkg").asTF(roo_ws.var(var_m))
+                            self.fit_range[level][ipt] = (roo_ws.var(var_m).getMin(), roo_ws.var(var_m).getMax())
                         else:
-                            self.logger.error('RooFit failed for %s bin %d', mcordata, ipt)
+                            self.logger.error('RooFit failed for %s bin %d', level, ipt)
 
 
     #region sidebands
@@ -336,7 +355,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             'sideband_right': (mean + regcfg['right'][0] * sigma, mean + regcfg['right'][1] * sigma)
         }
         if regions['sideband_left'][1] < fit_range[0] or regions['sideband_right'][0] > fit_range[1]:
-            self.logger.critical('sidebands %s not in fit range %s, fix regions!', regions, fit_range)
+            # TODO: restore to critical
+            self.logger.error('sidebands %s not in fit range %s, fix regions!', regions, fit_range)
         for reg, lim in regions.items():
             if lim[0] < fit_range[0] or lim[1] > fit_range[1]:
                 regions[reg] = (max(lim[0], fit_range[0]), min(lim[1], fit_range[1]))
@@ -348,7 +368,6 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                   for key in regions}
 
         fh = {}
-        area_oldfit = {}
         area = {}
         for region in regions:
             # project out the mass regions (first axis)
@@ -356,17 +375,10 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             fh[region] = project_hist(hist, axes, {0: bins[region]})
             self._save_hist(fh[region],
                             f'sideband/h_ptjet{label}_{region}_pthf-{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
-            area_oldfit[region] = self.fit_func_bkg[mcordata][ipt].Integral(*limits[region])
             f = self.roo_ws[mcordata][ipt].pdf("bkg").asTF(self.roo_ws[mcordata][ipt].var("m"))
             area[region] = f.Integral(*limits[region])
 
-        areaNormFactor_oldfit = area_oldfit['signal'] / (area_oldfit['sideband_left'] + area_oldfit['sideband_right'])
         areaNormFactor = area['signal'] / (area['sideband_left'] + area['sideband_right'])
-        if abs(areaNormFactor_oldfit - areaNormFactor) > .05:
-            self.logger.warning('area normalisation factors deviating for %s bin %i', mcordata, ipt)
-            print(areaNormFactor_oldfit, areaNormFactor, flush=True)
-            print(area_oldfit[region], flush=True)
-            print(area[region], fh[region].Integral(), fh[region].GetEntries(), flush=True)
 
         fh_sideband = sum_hists(
             [fh['sideband_left'], fh['sideband_right']], f'h_ptjet{label}_sideband_{ipt}_{mcordata}')
