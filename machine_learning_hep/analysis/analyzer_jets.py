@@ -303,6 +303,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                             f'roofit/h_mass_fitted_pthf-{ptrange[0]}-{ptrange[1]}_{level}.png')
                         # if level == 'mc':
                         #     roo_ws.Print()
+                        # TODO: save snapshot per level
+                        # roo_ws.saveSnapshot(level, None)
                         self.roo_ws[level][ipt] = roo_ws
                         self.roows[ipt] = roo_ws
                         if roo_res.status() == 0:
@@ -332,7 +334,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         self._save_hist(hist, f'sideband/h_mass-ptjet{label}_pthf-{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
 
         mean = self.fit_mean[mcordata][ipt]
+        # self.logger.info('means %g, %g', mean, self.roows[ipt].var('mean').getVal())
         sigma = self.fit_sigma[mcordata][ipt]
+        # self.logger.info('sigmas %g, %g', sigma, self.roows[ipt].var('sigma_g1').getVal())
         fit_range = self.fit_range[mcordata][ipt]
         if mean is None or sigma is None or fit_range is None:
             self.logger.error('no fit parameters for %s bin %d', hist.GetName(), ipt)
@@ -367,6 +371,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
         fh = {}
         area = {}
+        var_m = self.roows[ipt].var("m")
         for region in regions:
             # project out the mass regions (first axis)
             axes = list(range(get_dim(hist)))[1:]
@@ -385,12 +390,88 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         fh_subtracted = fh['signal'].Clone(f'h_ptjet{label}_subtracted_{ipt}_{mcordata}')
         ensure_sumw2(fh_subtracted)
         fh_subtracted.Add(fh_sideband, -areaNormFactor)
+
+        # correct for reflections
+        if self.cfg('corr_refl'):
+            # TODO: check relative normalization
+            # model = self.roows[ipt].pdf('sum')
+            # if model:
+            #     model.Print('t')
+
+            var_m.setRange('signal', *limits['signal'])
+            var_m.setRange('sidel', *limits['sideband_left'])
+            var_m.setRange('sider', *limits['sideband_right'])
+            print(f'{limits=}', flush=True)
+            roows = self.roows[ipt]
+            roows.var('mean').setVal(self.fit_mean[mcordata][ipt])
+            roows.var('sigma_g1').setVal(self.fit_sigma[mcordata][ipt])
+            pdf_sig = self.roows[ipt].pdf('sig')
+            pdf_refl = self.roows[ipt].pdf('refl')
+            pdf_bkg = self.roows[ipt].pdf('bkg')
+            frac_sig = roows.var('frac').getVal() if mcordata == 'data' else 1.
+            frac_bkg = 1. - frac_sig
+
+            fac_sig = frac_sig * (1. - roows.var('frac_refl').getVal())
+            fac_refl = frac_sig * roows.var('frac_refl').getVal()
+            fac_bkg = frac_bkg
+            area_sig_sig = pdf_sig.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('signal')).getVal() * fac_sig
+            area_refl_sig = pdf_refl.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('signal')).getVal() * fac_refl
+            area_refl_sidel = pdf_refl.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('sidel')).getVal() * fac_refl
+            area_refl_sider = pdf_refl.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('sider')).getVal() * fac_refl
+            area_refl_side = area_refl_sidel + area_refl_sider
+            area_bkg_sig = pdf_bkg.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('signal')).getVal() * fac_bkg
+            area_bkg_sidel = pdf_bkg.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('sidel')).getVal() * fac_bkg
+            area_bkg_sider = pdf_bkg.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('sider')).getVal() * fac_bkg
+            area_bkg_side = area_bkg_sidel + area_bkg_sider
+
+            # test = pdf_sig.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('signal')).getVal()
+            # test2 = self.roows[ipt].pdf('sig').asTF(var_m).Integral(*limits['signal'])
+            # test3 = self.roows[ipt].pdf('sig').asTF(var_m).Integral(0., 10.)
+            # test *= self.roows[ipt].var('frac').getVal() * (1. - self.roows[ipt].var('frac_refl').getVal())
+            # print(f'{test=}, {test2=}, {test3=}', flush=True)
+
+            # self.roows[ipt].pdf("refl").fixCoefNormalization("default")
+            # area_sig_sig = self.roows[ipt].pdf("sig").asTF(var_m).Integral(*limits['signal'])
+            # area_refl_sig = self.roows[ipt].pdf("refl").asTF(var_m).Integral(*limits['signal'])
+            # area_bkg_sig = self.roows[ipt].pdf("bkg").asTF(var_m).Integral(*limits['signal'])
+            # area_refl_sidel = self.roows[ipt].pdf("refl").asTF(var_m).Integral(*limits['sideband_left'])
+            # area_refl_sider = self.roows[ipt].pdf("refl").asTF(var_m).Integral(*limits['sideband_right'])
+            # area_refl_side = area_refl_sidel + area_refl_sider
+            # area_bkg_sidel = self.roows[ipt].pdf("bkg").asTF(var_m).Integral(*limits['sideband_left'])
+            # area_bkg_sider = self.roows[ipt].pdf("bkg").asTF(var_m).Integral(*limits['sideband_right'])
+            # area_bkg_side = area_bkg_sidel + area_bkg_sider
+            scale_bkg = area_bkg_sig / area_bkg_side if mcordata == 'data' else 1.
+            corr = area_sig_sig / (area_sig_sig + area_refl_sig - area_refl_side * scale_bkg)
+            self.logger.info('Correcting %s-%i for reflections with factor %g', mcordata, ipt, corr)
+            # print(f'{area_sig_sig=}, {area_refl_sig=}, {area_refl_sidel=}, {area_refl_sider=}', flush=True)
+            fh_subtracted.Scale(corr)
+
         # clip negative values to 0
         for ibin in range(fh_subtracted.GetNcells()):
             if fh_subtracted.GetBinContent(ibin) < 0:
                 fh_subtracted.SetBinContent(ibin, 0.)
                 fh_subtracted.SetBinError(ibin, 0.)
-        fh_subtracted.Scale(1.0 / 0.954) # TODO: calculate from region
+
+        # TODO: set correct parameters (ws was updated for data)
+        pdf_sig = self.roows[ipt].pdf('sig')
+        # var_m.setRange(0., 1000.)
+        frac_sig = pdf_sig.createIntegral(var_m, ROOT.RooFit.NormSet(var_m), ROOT.RooFit.Range('signal'))
+        # self.logger.info('fractional signal area: %s', frac_sig)
+
+        # f_sig = self.roows[ipt].pdf('sig').asTF(var_m)
+        # self.roows[ipt].pdf('sig').Print('v')
+        # self.roows[ipt].var('mean').Print()
+        # self.roows[ipt].var('sigma_g1').Print()
+        # limits_rel = [(lim - self.roows[ipt].var('mean').getVal())/ self.roows[ipt].var('sigma_g1').getVal()
+        #               for lim in limits['signal']]
+        # print(limits_rel, flush=True)
+        # int_sig = f_sig.Integral(*limits['signal'])
+        # int_all = f_sig.Integral(0., 10.)
+        # frac_sig =  int_sig / int_all
+        # self.logger.info('Correcting for signal %s fraction: %g = %g / %g',
+        #                  limits['signal'], frac_sig, int_sig, int_all)
+
+        fh_subtracted.Scale(1. / frac_sig.getVal())
         self._save_hist(fh_subtracted, f'sideband/h_ptjet{label}_subtracted_{ptrange[0]}-{ptrange[1]}_{mcordata}.png')
 
         if get_dim(hist) == 2: # TODO: extract 1d distribution also in case of higher dimension
@@ -416,6 +497,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
             rfilename = self.n_filemass_mc if mcordata == "mc" else self.n_filemass
             with TFile(rfilename) as rfile:
                 for var in [None] + self.observables['all']:
+                    self.logger.info('Running analysis for %s using %s', var, method)
                     label = f'-{var}' if var else ''
                     self.logger.debug('looking for %s', f'h_mass-ptjet-pthf{label}')
                     if fh := rfile.Get(f'h_mass-ptjet-pthf{label}'):
@@ -633,7 +715,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
     #region unfolding
     def _unfold(self, hist, var, mcordata):
-        self.logger.info('Unfolding for %s', var)
+        self.logger.debug('Unfolding for %s', var)
         suffix = '_frac' if mcordata == 'mc' else ''
         with TFile(self.n_fileeff) as rfile:
             h_response = rfile.Get(f'h_response_pr_{var}{suffix}')

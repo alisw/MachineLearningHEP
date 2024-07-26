@@ -395,30 +395,100 @@ D0jet_pp:
           level: mc
           query: '(isd0 & seld0bar) or (isd0bar & seld0))'
 
+      corr_refl: true
       fit_levels: ['mcsig', 'mcrefl', 'mc', 'data']
       mass_roofit:
         - level: mcsig
           datasel: mcsig
           components:
             model:
-              fn: 'Gaussian::mcsig(m[1.695,2.04], mean[1.85,1.87], sigma_g1[.01,.08])'
+              fn: 'Gaussian::sig(m[1.695,2.04], mean[1.85,1.87], sigma_g1[.01,.08])'
         - level: mcrefl
+          ptrange: [2., 3.]
           datasel: mcrefl
+          range: [1.69, 2.04]
           components:
             refl_l:
-              fn: 'Gaussian::refl_l(m[1.695,2.04], mean_l[1.8,1.865], sigma_l[.01,.1])'
+              fn: 'Gaussian::refl_l(m, mean_l[1.8,1.865], sigma_l[.01,.1])'
             refl_r:
-              fn: 'Gaussian::refl_r(m[1.695,2.04], mean_r[1.865,1.9], sigma_r[.01,.1])'
+              fn: 'Gaussian::refl_r(m, mean_r[1.865,1.9], sigma_r[.01,.1])'
             model:
-              fn: 'SUM::mcrefl(frac_l[0.,1.]*refl_l, refl_r)'
+              fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+        - level: mcrefl
+          ptrange: [3., 4.]
+          datasel: mcrefl
+          range: [1.68, 2.06]
+          components:
+            refl_l:
+              fn: 'Gaussian::refl_l(m, mean_l[1.8,1.865], sigma_l[.01,.2])'
+            refl_r:
+              fn: 'Gaussian::refl_r(m, mean_r[1.865,1.9], sigma_r[.01,.2])'
+            model:
+              fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+        - level: mcrefl
+          ptrange: [4., 5.]
+          datasel: mcrefl
+          range: [1.64, 2.08]
+          components:
+            refl_l:
+              fn: 'Gaussian::refl_l(m, mean_l[1.8,1.865], sigma_l[.01,.2])'
+            refl_r:
+              fn: 'Gaussian::refl_r(m, mean_r[1.865,1.9], sigma_r[.01,.2])'
+            model:
+              fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+        - level: mcrefl
+          ptrange: [5., 6.]
+          datasel: mcrefl
+          range: [1.64, 2.10]
+          components:
+            refl_l:
+              fn: 'Gaussian::refl_l(m, mean_l[1.8,1.865], sigma_l[.01,.2])'
+            refl_r:
+              fn: 'Gaussian::refl_r(m, mean_r[1.865,1.9], sigma_r[.01,.2])'
+            model:
+              fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+        - level: mcrefl
+          ptrange: [6., 8.]
+          datasel: mcrefl
+          range: [1.60, 2.14]
+          components:
+            refl_l:
+              fn: 'Gaussian::refl_l(m, mean_l[1.8,1.865], sigma_l[.01,.2])'
+            refl_r:
+              fn: 'Gaussian::refl_r(m, mean_r[1.865,1.9], sigma_r[.01,.2])'
+            model:
+              fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+        - level: mcrefl
+          ptrange: [8., 12.]
+          datasel: mcrefl
+          range: [1.52, 2.30]
+          components:
+            refl_l:
+              fn: 'Gaussian::refl_l(m, mean_l[1.8,1.865], sigma_l[.01,.2])'
+            refl_r:
+              fn: 'Gaussian::refl_r(m, mean_r[1.865,1.9], sigma_r[.01,.2])'
+            model:
+              fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+        - level: mcrefl
+          ptrange: [12., 36.]
+          datasel: mcrefl
+          range: [1.40, 2.4]
+          components:
+            refl_l:
+              fn: 'Gaussian::refl_l(m, mean_l[1.8,1.865], sigma_l[.01,.2])'
+            refl_r:
+              fn: 'Gaussian::refl_r(m, mean_r[1.865,1.9], sigma_r[.01,.2])'
+            model:
+              fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
         - level: mc
           fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r']
           components:
             model:
-              fn: 'SUM::sigrefl(frac_refl[0.,1.]*mcrefl, mcsig)'
+              fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
         - ptrange: [1., 2.]
           range: [1.710, 2.02]
           fix_params: ['frac_refl']
+          # fix_params: ['mean', 'sigma_g1', 'frac_refl']
           components:
             bkg:
               fn: 'Exponential::bkg(m, alpha[-100,0])'
@@ -426,6 +496,7 @@ D0jet_pp:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [2., 3.]
           fix_params: ['frac_refl']
+          # fix_params: ['mean', 'sigma_g1', 'frac_refl']
           range: [1.7, 2.04]
           components:
             bkg:
@@ -434,6 +505,7 @@ D0jet_pp:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [3., 4.]
           fix_params: ['frac_refl']
+          # fix_params: ['mean', 'sigma_g1', 'frac_refl']
           range: [1.7, 2.06]
           components:
             bkg:
@@ -442,6 +514,7 @@ D0jet_pp:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [4., 5.]
           fix_params: ['frac_refl']
+          # fix_params: ['mean', 'sigma_g1', 'frac_refl']
           range: [1.72, 2.08]
           components:
             bkg:
@@ -450,6 +523,7 @@ D0jet_pp:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [5., 6.]
           fix_params: ['frac_refl']
+          # fix_params: ['mean', 'sigma_g1', 'frac_refl']
           range: [1.72, 2.10]
           components:
             bkg:
@@ -458,6 +532,7 @@ D0jet_pp:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [6., 8.]
           fix_params: ['frac_refl']
+          # fix_params: ['mean', 'sigma_g1', 'frac_refl']
           range: [1.72, 2.14]
           components:
             bkg:
@@ -466,6 +541,7 @@ D0jet_pp:
               fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - range: [1.7, 2.20]
           fix_params: ['frac_refl']
+          # fix_params: ['mean', 'sigma_g1', 'frac_refl']
           components:
             bkg:
               fn: 'Exponential::bkg(m, alpha[-100,0])'
