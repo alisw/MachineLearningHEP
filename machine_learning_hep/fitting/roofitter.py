@@ -46,6 +46,7 @@ class RooFitter:
                                  ROOT.RooFit.LineStyle(ROOT.ELineStyle.kDashed),
                                  ROOT.RooFit.LineColor(ROOT.kViolet),
                                  ROOT.RooFit.LineWidth(1))
+            # pylint: disable=bare-except
             except:
                 pass
             # for comp in fit_spec.get('components', {}):

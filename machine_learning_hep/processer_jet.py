@@ -111,7 +111,7 @@ class ProcesserJets(Processer):
     def _calculate_variables(self, df, verify=False): # pylint: disable=invalid-name
         self.logger.info('calculating variables')
         if len(df) == 0:
-            return
+            return df
         df['dr'] = np.sqrt((df.fJetEta - df.fEta)**2 + ((df.fJetPhi - df.fPhi + math.pi) % math.tau - math.pi)**2)
         df['jetPx'] = df.fJetPt * np.cos(df.fJetPhi)
         df['jetPy'] = df.fJetPt * np.sin(df.fJetPhi)

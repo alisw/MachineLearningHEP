@@ -249,6 +249,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
         return (fit_res, func_sig, func_bkg)
 
 
+    # pylint: disable=too-many-branches,too-many-statements
     def fit(self):
         self.logger.info("Fitting inclusive mass distributions")
         gStyle.SetOptFit(1111)
@@ -306,7 +307,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                         self.roows[ipt] = roo_ws
                         if roo_res.status() == 0:
                             # TODO: take parameter names from DB
-                            if level == 'data' or level == 'mc_sig':
+                            if level in ('data', 'mc_sig'):
                                 self.fit_mean[level][ipt] = roo_ws.var('mean').getValV()
                                 self.fit_sigma[level][ipt] = roo_ws.var('sigma_g1').getValV()
                             var_m = fitcfg.get('var', 'm')
@@ -318,6 +319,7 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
 
 
     #region sidebands
+    # pylint: disable=too-many-branches,too-many-statements
     def _subtract_sideband(self, hist, var, mcordata, ipt):
         """
         Subtract sideband distributions, assuming mass on first axis
@@ -455,7 +457,8 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                                 jetptrange = (axis_jetpt.GetBinLowEdge(j+1), axis_jetpt.GetBinUpEdge(j+1))
                                 self._save_hist(
                                     hproj,
-                                    f'uf/h_{var}_{method}_unfolded_{mcordata}_jetpt-{jetptrange[0]}-{jetptrange[1]}_{i}.png')
+                                    f'uf/h_{var}_{method}_unfolded_{mcordata}_' +
+                                    f'jetpt-{jetptrange[0]}-{jetptrange[1]}_{i}.png')
                                 # TODO: also save all in one
 
 
@@ -506,7 +509,9 @@ class AnalyzerJets(Analyzer): # pylint: disable=too-many-instance-attributes
                     hres.SetBinContent(*binid, func_sig.Integral(*range_int) / hmass.GetBinWidth(1))
                 else:
                     self.logger.error("Could not extract signal for %s %s %i", var, mcordata, ipt)
-        self._save_hist(hres, f'signalextr/h_{var}_signalextracted_pthf-{ptrange[0]}-{ptrange[1]}_{label}_{mcordata}.png')
+        self._save_hist(
+            hres,
+            f'signalextr/h_{var}_signalextracted_pthf-{ptrange[0]}-{ptrange[1]}_{label}_{mcordata}.png')
         # hres.Sumw2() # TODO: check if we should do this here
         return hres
 
