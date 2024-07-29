@@ -393,16 +393,17 @@ D0jet_pp:
           query: '(isd0 & seld0) or (isd0bar & seld0bar)'
         mcrefl:
           level: mc
-          query: '(isd0 & seld0bar) or (isd0bar & seld0))'
+          query: '(isd0 & seld0bar) or (isd0bar & seld0)'
 
       corr_refl: true
       fit_levels: ['mcsig', 'mcrefl', 'mc', 'data']
       mass_roofit:
         - level: mcsig
           datasel: mcsig
+          range: [1.69, 2.04]
           components:
             model:
-              fn: 'Gaussian::sig(m[1.695,2.04], mean[1.85,1.87], sigma_g1[.01,.08])'
+              fn: 'Gaussian::sig(m[1.,5.], mean[1.85,1.87], sigma_g1[.01,.08])'
         - level: mcrefl
           ptrange: [2., 3.]
           datasel: mcrefl
@@ -457,7 +458,7 @@ D0jet_pp:
             refl_r:
               fn: 'Gaussian::refl_r(m, mean_r[1.865,1.9], sigma_r[.01,.2])'
             model:
-              fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
+              fn: 'SUM::refl(frac_l[0.1,.9]*refl_l, refl_r)'
         - level: mcrefl
           ptrange: [8., 12.]
           datasel: mcrefl
@@ -481,6 +482,50 @@ D0jet_pp:
             model:
               fn: 'SUM::refl(frac_l[0.,1.]*refl_l, refl_r)'
         - level: mc
+          ptrange: [2., 3.]
+          range: [1.69, 2.04]
+          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r']
+          components:
+            model:
+              fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+        - level: mc
+          ptrange: [3., 4.]
+          range: [1.68, 2.06]
+          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r']
+          components:
+            model:
+              fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+        - level: mc
+          ptrange: [4., 5.]
+          range: [1.64, 2.08]
+          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r']
+          components:
+            model:
+              fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+        - level: mc
+          ptrange: [5., 6.]
+          range: [1.64, 2.10]
+          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r']
+          components:
+            model:
+              fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+        - level: mc
+          ptrange: [6., 8.]
+          range: [1.60, 2.14]
+          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r']
+          components:
+            model:
+              fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+        - level: mc
+          ptrange: [8., 12.]
+          range: [1.52, 2.30]
+          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r']
+          components:
+            model:
+              fn: 'SUM::sigrefl(frac_refl[0.,1.]*refl, sig)'
+        - level: mc
+          ptrange: [12., 36.]
+          range: [1.40, 2.40]
           fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r']
           components:
             model:
@@ -580,6 +625,10 @@ D0jet_pp:
       fd_root: '/data2/vkucera/powheg/trees_powheg_fd_central.root'
       fd_parquet: '/data2/jklein/powheg/trees_powheg_fd_central.parquet'
 
+      branching_ratio: 3.95e-2
+      xsection_inel: 57.8 # (mb) cross-section of minimum-bias events
+      xsection_inel_mc: .56 # 1.68 # (mb) cross-section of minimum-bias events
+
       # obsolete?
       proc_type: Jets
       useperiod: [1] #list of periods
@@ -661,9 +710,6 @@ D0jet_pp:
 
       niterunfolding: 15
       niterunfoldingchosen: 4
-
-      branching_ratio: 3.95e-2
-      xsection_inel: 57.8 # (mb) cross-section of minimum-bias events
 
       doprior: false
       domodeldep: false

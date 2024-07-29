@@ -148,6 +148,8 @@ class ProcesserJets(Processer):
         '''split data frame based on df number'''
         # dfa = dfi.split(frac=frac, random_state=1234)
         # return dfa, dfi.drop(dfa.index)
+        # FIXME: check consistency for gen and det level
+        # TODO: print fraction of selected
         mask = (dfi.index.get_level_values(0) % 100) <= frac * 100
         return dfi[mask], dfi[~mask]
 
@@ -189,6 +191,8 @@ class ProcesserJets(Processer):
 
             if self.mcordata == 'mc':
                 df, _ = self.split_df(df, self.cfg('frac_mcana', .2))
+                if not df.empty:
+                    print('MC det', df.index.get_level_values(0).unique(), flush=True)
             if len(df) == 0:
                 return
             # remove entries that would end up in under-/overflow bins to save compute time
@@ -251,9 +255,10 @@ class ProcesserJets(Processer):
             if not '-' in var}
         h_mctruth = {
             (cat, var): create_hist(
-                f'h_mctruth_{cat}_{var}',
-                f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var}",
-                self.binarray_ptjet, self.binarrays_obs[var])
+                # f'h_mctruth_{cat}_{var}',
+                f'h_ptjet-pthf-{var}_{cat}_gen',
+                f";p_{{T}}^{{jet}} (GeV/#it{{c}});p_{{T}}^{{HF}} (GeV/#it{{c}});{var}",
+                self.binarray_ptjet, self.binarray_pthf, self.binarrays_obs[var])
             for (cat, var) in itertools.product(cats, observables)
             if not '-' in var}
         response_matrix = {
@@ -329,14 +334,14 @@ class ProcesserJets(Processer):
                 # TODO: add support for more complex observables
                 if '-' in var or self.cfg(f'observables.{var}.arraycols'):
                     continue
+
+                df_mcana, _ = self.split_df(dfgen[cat], self.cfg('frac_mcana', .2))
+                if not df_mcana.empty:
+                    print(f'MC gen {cat} {var}', df_mcana.index.get_level_values(0).unique(), flush=True)
+                fill_hist(h_mctruth[(cat, var)], df_mcana[['fJetPt_gen', 'fPt_gen', f'{var}_gen']])
+
                 if cat in dfmatch and dfmatch[cat] is not None:
                     self._prepare_response(dfmatch[cat], h_effkine, h_response, response_matrix, cat, var)
-
-                    # TODO: switch to matched sample if needed
-                    # dfgen[cat].info()
-                    # dfana = dfquery(dfgen[cat], '(isd0_gen & seld0_gen) or (isd0bar_gen & seld0bar_gen)')
-                    df_mcana, _ = self.split_df(dfgen[cat], self.cfg('frac_mcana', .2))
-                    fill_hist(h_mctruth[(cat, var)], df_mcana[['fJetPt_gen', f'{var}_gen']])
                     _, df_mccorr = self.split_df(dfmatch[cat], self.cfg('frac_mcana', .2))
                     self._prepare_response(df_mccorr, h_effkine_frac, h_response_frac, response_matrix_frac, cat, var)
 
