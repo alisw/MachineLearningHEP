@@ -19,7 +19,7 @@ LcJet_pp:
   sel_gen_unp: "fPt>0"
   sel_cen_unp: null
   sel_good_evt_unp: null # "fIsEventReject == 0"
-  sel_reco_skim: ["fMlPromptScore > 0.96", "fMlPromptScore > 0.97", "fMlPromptScore > 0.9", "fMlPromptScore > 0.85", "fMlPromptScore > 0.8", "fMlPromptScore > 0.6", null]
+  sel_reco_skim: ["mlPromptScore > 0.96", "mlPromptScore > 0.97", "mlPromptScore > 0.9", "mlPromptScore > 0.85", "mlPromptScore > 0.8", "mlPromptScore > 0.6", null]
   sel_gen_skim: [null,null,null,null,null,null,null]
   sel_skim_binmin: [1,2,4,6,8,12,24] # skimming pt bins (sel_skim_binmin bins)
   sel_skim_binmax:   [2,4,6,8,12,24,48] # skimming pt bins (sel_skim_binmin bins)
@@ -57,7 +57,7 @@ LcJet_pp:
           fIsEventReject: 0
       collcnt:
         trees:
-          O2lccollcount: [fReadCounts, fWrittenCounts]
+          O2lccollcount: [fReadCounts, fReadSelectedCounts, fWrittenCounts]
 
       # collgen:
       #   level: gen
@@ -66,28 +66,28 @@ LcJet_pp:
       #     O2lccmcpjetco: [fPosZ, fCentrality, fEventSel]
       jetgen:
         level: gen
-        index: fIndexLcCMCPJetOs
+        index: fIndexLCCMCPJETOS
         trees:
           O2hf3ppbase: [fPt, fY, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
-          O2lccmcpjeto: [fIndexLcCMCPJetCOs, fIndexHf3PPBases_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents]
-          O2lccmcpjetmo: [fIndexArrayLcCMCDJetOs_hf, fIndexArrayLcCMCDJetOs_geo, fIndexArrayLcCMCDJetOs_pt]
-          O2lccmcpjetsso: [fIndexLcCMCPJetOs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
+          O2lccmcpjeto: [fIndexLCCMCPJETCOS, fIndexHF3PPBASES_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
+          O2lccmcpjetmo: [fIndexArrayLCCMCDJETOS_hf, fIndexArrayLCCMCDJETOS_geo, fIndexArrayLCCMCDJETOS_pt]
+          O2lccmcpjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
         tags:
           isstd: {var: fFlagMcMatchGen, req: [[1],[]]}
           ismcsignal: {var: fFlagMcMatchGen, req: [[1],[]], abs: true}
           ismcbkg: {var: fFlagMcMatchGen, req: [[],[1]], abs: true}
           ismcprompt: {var: fOriginMcGen, req: [[0],[]]}
           ismcfd: {var: fOriginMcGen, req: [[1],[]]}
-        filter: "fPt >= 1. and fY <= 0.8"
+        filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
 
       colldet:
         level: det
-        index: fIndexLcCMCDJetCOs
+        index: fIndexLCCMCDJETCOS
         trees:
           O2lccmcdjetco: [fPosZ, fCentrality, fEventSel]
       jetdet:
         level: det
-        index: fIndexLcCMCDJetOs
+        index: fIndexLCCMCDJETOS
         trees:
           O2hf3pbase: [fIndexHf3PCollBases, fPt, fY, fEta, fPhi, fM]
           O2hf3pmc: [fFlagMcMatchRec, fOriginMcRec]
@@ -100,9 +100,9 @@ LcJet_pp:
                       fErrorImpactParameter0, fErrorImpactParameter1]
           O2hf3psel: [fCandidateSelFlag]
           O2hf3pml: [fMlScores]
-          O2lccmcdjeto: [fIndexLcCMCDJetCOs, fIndexHf3PBases_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents]
-          O2lccmcdjetmo: [fIndexArrayLcCMCPJetOs_hf, fIndexArrayLcCMCPJetOs_geo, fIndexArrayLcCMCPJetOs_pt]
-          O2lccmcdjetsso: [fIndexLcCMCDJetOs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
+          O2lccmcdjeto: [fIndexLCCMCDJETCOS, fIndexHF3PBASES_0, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
+          O2lccmcdjetmo: [fIndexArrayLCCMCPJETOS_hf, fIndexArrayLCCMCPJETOS_geo, fIndexArrayLCCMCPJETOS_pt]
+          O2lccmcdjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
         tags:
           isstd: {var: fFlagMcMatchRec, req: [[1],[]]}
           ismcsignal: {var: fFlagMcMatchRec, req: [[1],[]], abs: true}
@@ -110,18 +110,18 @@ LcJet_pp:
           ismcprompt: {var: fOriginMcRec, req: [[0],[]]}
           ismcfd: {var: fOriginMcRec, req: [[1],[]]}
         extract_component:
-          - {var: fMlScores, newvar: fMlPromptScore, component: 1}
-        filter: "fPt >= 1. and fY <= 0.8"
+          - {var: fMlScores, newvar: mlPromptScore, component: 1}
+        filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
         # swap: {cand: fCandidateSelFlag, var_swap: fIsCandidateSwapped, vars: [ismcsignal, ismcprompt, icmcfd]}
 
       colldata:
         level: data
-        index: fIndexLcCJetCOs
+        index: fIndexLCCJETCOS
         trees:
           O2lccjetco: [fPosZ, fCentrality, fEventSel]
       jetdata:
         level: data
-        index: fIndexLcCJetOs
+        index: fIndexLCCJETOS
         trees:
           O2hf3pbase: [fIndexHf3PCollBases, fPt, fY, fEta, fPhi, fM]
           O2hf3ppar: [fCpa, fCpaXY, fChi2PCA,
@@ -133,12 +133,12 @@ LcJet_pp:
                       fErrorImpactParameter0, fErrorImpactParameter1]
           O2hf3psel: [fCandidateSelFlag]
           O2hf3pml: [fMlScores]
-          O2lccjeto: [fIndexLcCJetCOs, fIndexHf3PBases_0,
-                    fJetPt, fJetPhi, fJetEta, fJetNConstituents]
-          O2lccjetsso: [fIndexLcCJetOs, fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
+          O2lccjeto: [fIndexLCCJETCOS, fIndexHF3PBASES_0,
+                    fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
+          O2lccjetsso: [fIndexLCCJETOS, fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
         extract_component:
-          - {var: fMlScores, newvar: fMlPromptScore, component: 1}
-        filter: "fPt > 1."
+          - {var: fMlScores, newvar: mlPromptScore, component: 1}
+        filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
 
     merge:
       # - {base: jetgen, ref: collgen}
@@ -164,7 +164,7 @@ LcJet_pp:
         file: AnalysisResultsEvt.parquet
         filter: "fIsEventReject == 0"
       collcnt:
-        level: data
+        level: all
         file: AnalysisResultsCollCnt.parquet
 
   variables:
@@ -225,7 +225,7 @@ LcJet_pp:
     namefile_reco_applieddata: AnalysisResultsRecoAppliedData.parquet
     namefile_reco_appliedmc: AnalysisResultsRecoAppliedMC.parquet
     namefile_mcweights: mcweights.root
-    treeoutput: "D0tree"
+    treeoutput: "Lctree"
     histofilename: "masshisto.root"
     efffilename: "effhisto.root"
     respfilename: "resphisto.root"
@@ -242,31 +242,35 @@ LcJet_pp:
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/real/train_224750/
-      unmerged_tree_dir: [alice/] #list of periods
-      pkl: ['${USER}/lcjet/pkl'] #list of periods
-      pkl_skimmed: ['${USER}/lcjet/pklsk'] #list of periods
-      pkl_skimmed_merge_for_ml: ['${USER}/lcjet/pklskml'] #list of periods
-      pkl_skimmed_merge_for_ml_all: '${USER}/lcjet/pp_data_mltot'
-      pkl_evtcounter_all: '${USER}/lcjet/pp_data_evttot'
+      prefix_dir: /data2/MLhep/real/
+      unmerged_tree_dir: [train_240310/alice/] #list of periods
+      pkl: ['${USER}/train_240310/lcjet/pkl'] #list of periods
+      pkl_skimmed: ['${USER}/train_240310/lcjet/pklsk'] #list of periods
+      pkl_skimmed_merge_for_ml: ['${USER}/train_240310/lcjet/pklskml'] #list of periods
+      pkl_skimmed_merge_for_ml_all: '${USER}/train_240310/lcjet/pp_data_mltot'
+      pkl_evtcounter_all: '${USER}/train_240310/lcjet/pp_data_evttot'
       mcreweights: [../Analyses] #list of periods
     mc:
       nprocessesparallel: 20
-      maxfiles: [-1] #list of periods
-      chunksizeunp: [100] #list of periods
-      chunksizeskim: [1000] #list of periods
-      fracmerge: [1.0] #list of periods
-      seedmerge: [12] #list of periods
-      period: [LHC24d3b] #list of periods
-      select_period: [1]
-      prefix_dir: /data2/MLhep/sim/train_223835/
-      unmerged_tree_dir: [alice/]
-      pkl: ['${USER}/lcjet/pkl'] #list of periods
-      pkl_skimmed: ['${USER}/lcjet/pklsk'] #list of periods
-      pkl_skimmed_merge_for_ml: ['${USER}/lcjet/pklskml'] #list of periods
+      maxfiles: [-1, -1] #list of periods
+      chunksizeunp: [100, 100] #list of periods
+      chunksizeskim: [1000, 1000] #list of periods
+      fracmerge: [1.0, 1.0] #list of periods
+      seedmerge: [12, 12] #list of periods
+      period: [LHC24d3a, LHC24d3b] #list of periods
+      select_period: [1, 1]
+      prefix_dir: /data2/MLhep/sim/
+      unmerged_tree_dir: [train_239679/alice,
+                          train_239694/alice]
+      pkl: ['${USER}/train_239679/lcjet/pkl',
+            '${USER}/train_239694/lcjet/pkl'] #list of periods
+      pkl_skimmed: ['${USER}/train_239679/lcjet/pklsk',
+                    '${USER}/train_239694/lcjet/pklsk'] #list of periods
+      pkl_skimmed_merge_for_ml: ['${USER}/train_239679/lcjet/pklskml',
+                                 '${USER}/train_239694/lcjet/pklskml'] #list of periods
       pkl_skimmed_merge_for_ml_all: '${USER}/lcjet/pp_mc_prod_mltot'
       pkl_evtcounter_all: '${USER}/lcjet/pp_mc_prod_evttot'
-      mcreweights: [../Analyses] #list of periods
+      mcreweights: [../Analyses, ../Analyses] #list of periods
 
   ml:
     evtsel: fIsEventReject == 0
@@ -322,8 +326,10 @@ LcJet_pp:
       pkl_skimmed_decmerged: [LHC22pp/MLapplication/prod_LHC22o/skpkldecdatamerged] #list of periods
     mc:
       prefix_dir_app: '/data2/${USER}/'
-      pkl_skimmed_dec: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmc] #list of periods
-      pkl_skimmed_decmerged: [LHC22pp_mc/MLapplication/prod_LHC22b1b/skpkldecmcmerged] #list of periods
+      pkl_skimmed_dec: [LHC22pp_mc/MLapplication/prod_LHC24d3a/skpkldecmc,
+                        LHC22pp_mc/MLapplication/prod_LHC24d3b/skpkldecmc] #list of periods
+      pkl_skimmed_decmerged: [LHC22pp_mc/MLapplication/prod_LHC24d3a/skpkldecmcmerged,
+                              LHC22pp_mc/MLapplication/prod_LHC24d3b/skpkldecmcmerged] #list of periods
     modelname: xgboost
     modelsperptbin: [xgboost_classifierLcpKpi_dfselection_fPt_1.0_2.0.sav,
                      xgboost_classifierLcpKpi_dfselection_fPt_2.0_4.0.sav,
@@ -347,20 +353,20 @@ LcJet_pp:
     dir_general_plots: '/data2/${USER}/data/analysis_plots'
 
     jet_obs: &jet_default
-      sel_an_binmin:    [1,2,3,4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:      [2,3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmin:    [3,4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmax:      [4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
       # binning_matching:   [0, 1, 1, 2, 2, 3, 3, 4, 4, 6, 6, 6] # mapping to skimming pt bins (sel_an_binmin bins)
       bins_ptjet: [7, 15, 30]
 
       observables:
         zg:
-          bins_fix: [4, .1, .5]
+          bins_fix: [6, -.1, .5]
           label: 'z_{g}'
         nsd:
-          bins_fix: [10, 0., 10.]
+          bins_fix: [10, -.5, 9.5]
           label: 'N_{sd}'
         rg:
-          bins_fix: [10, 0., 1.]
+          bins_fix: [11, -.1, 1.]
           label: 'R_{g}'
         zpar:
           bins_fix: [10, 0., 1.]
@@ -385,36 +391,45 @@ LcJet_pp:
             sig:
               fn: 'Gaussian::sig(m[2.1,2.50], mean[2.28,2.29], sigma_g1[.01,.01,.03])'
             bkg:
-              fn: 'Exponential::bkg(m[2.1, 2.50], alpha[0.])'
+              fn: 'Exponential::mcbkg(m[2.1, 2.50], alpha[0.])'
               #fn: 'Polynomial::bkg(m[2.1, 2.50], {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
-            sum:
-              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+            model:
+              fn: 'SUM::mctot(mcfrac[0.,1.]*sig, mcbkg)'
         - ptrange: [1., 5.]
+          range: [2.13, 2.44]
           components:
-            sig:
-              fn: 'Gaussian::sig(m[2.13,2.44], mean[2.28,2.29], sigma_g1[.005,.01])'
+            # sig:
+            #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.01])'
             bkg:
-              #fn: 'Exponential::bkg(m[2.13, 2.44], alpha[-100,0])'
-              fn: 'Polynomial::bkg(m[2.13, 2.44], {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
-            sum:
+              #fn: 'Exponential::bkg(m, alpha[-100,0])'
+              fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
+            model:
               fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
         - ptrange: [5., 8.]
+          range: [2.1, 2.48]
           components:
-            sig:
-              fn: 'Gaussian::sig(m[2.1,2.48], mean[2.28,2.29], sigma_g1[.005,.03])'
+            # sig:
+            #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
             bkg:
-              #fn: 'Exponential::bkg(m[2.1, 2.48], alpha[-100,0])'
-              fn: 'Polynomial::bkg(m[2.1, 2.48], {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
-            sum:
+              #fn: 'Exponential::bkg(m, alpha[-100,0])'
+              fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
+            model:
               fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
-        - components:
-            sig:
-              fn: 'Gaussian::sig(m[2.05,2.50], mean[2.28,2.29], sigma_g1[.005,.03])'
+        - range: [2.05, 2.5]
+          components:
+            # sig:
+            #   fn: 'Gaussian::sig(m, mean[2.28,2.29], sigma_g1[.005,.03])'
             bkg:
-              #fn: 'Exponential::bkg(m[2.05, 2.50], alpha[-100,0])'
-              fn: 'Polynomial::bkg(m[2.05, 2.50], {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
-            sum:
+              #fn: 'Exponential::bkg(m, alpha[-100,0])'
+              fn: 'Polynomial::bkg(m, {a0[0.2, -3, 3], a1[0.2 , -3, 3], a2[0.2, -3, 3]})'
+            model:
               fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+
+      sidesub:
+        - regions:
+            left: [-5.5, -3.]
+            signal: [-2., 2.]
+            right: [3., 5.5]
 
       mass_fit:
         func_sig: 'gaus'
@@ -426,13 +441,16 @@ LcJet_pp:
       mass_fit_lim: [1.9, 2.6] # histogram range of the invariant mass distribution [GeV/c^2]
       bin_width: 0.005 # bin width of the invariant mass histogram
       efficiency:
-        # extra_cols: ['isd0', 'isd0bar', 'seld0', 'seld0bar']
-        # filter_det: '(isd0 & seld0) or (isd0bar & seld0bar)'
-        index_match: fIndexArrayLcCMCPJetOs_hf
+        index_match: fIndexArrayLCCMCPJETOS_hf
         store_matched: true
 
+      unfolding_iterations: 8
+
+      fd_root: '/data2/vkucera/powheg/trees_powheg_fd_F05_R05.root'
+      fd_parquet: '/data2/jklein/powheg/Lc_powheg_fd_F05_R05.parquet'
+
       proc_type: Jets
-      useperiod: [1] #list of periods
+      useperiod: [1,1] #list of periods
       usejetptbinned_deff: false
       doeff_resp: true #efficiency correction for the response matrix
       unmatched_gen: true
@@ -471,8 +489,9 @@ LcJet_pp:
         results: ['/home/${USER}/mlhep/data/test/lcjet/resultsMBjetvspt'] #list of periods
         resultsallp: '/home/${USER}/mlhep/data/test/lcjet/resultsMBjetvspt_all'
       mc: &mc_out_default
-        runselection: [null] #FIXME
-        results: ['/home/${USER}/mlhep/data/mctest/lcjet/resultsMBjetvspt'] #list of periods
+        runselection: [null,null] #FIXME
+        results: ['/home/${USER}/mlhep/data/mctest/lcjet/prod_LHC24d3a/resultsMBjetvspt',
+                  '/home/${USER}/mlhep/data/mctest/lcjet/prod_LHC24d3b/resultsMBjetvspt'] #list of periods
         resultsallp: '/home/${USER}/mlhep/data/mctest/lcjet/resultsMBjetvspt_all'
       data_proc: # alternative processor output used as the analyzer input
         <<: *data_out_default
@@ -544,8 +563,8 @@ LcJet_pp:
       - Null
       - Null
       - Null
-      - Null
-      - Null
+      # - Null
+      # - Null
 
     jet_qa:
       <<: *jet_default

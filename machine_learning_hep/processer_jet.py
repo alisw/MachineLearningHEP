@@ -12,6 +12,7 @@
 ##   along with this program. if not, see <https://www.gnu.org/licenses/>. ##
 #############################################################################
 
+import copy
 import functools
 import itertools
 import math
@@ -42,7 +43,7 @@ class ProcesserJets(Processer):
                         d_results, typean, runlisttrigger, d_mcreweights)
         self.logger.info("initialized processer for HF jets")
 
-        self.s_evtsel = datap["analysis"][self.typean]["evtsel"] # TODO: check if we need to apply event sel
+        self.s_evtsel = datap["analysis"][self.typean]["evtsel"]
 
         # bins: 2d array [[low, high], ...]
         self.bins_skimming = np.array(list(zip(self.lpt_anbinmin, self.lpt_anbinmax)), 'd') # TODO: replace with cfg
@@ -83,9 +84,9 @@ class ProcesserJets(Processer):
         Explicit (slow) implementation, use for reference/validation only
         """
         df = dfi.copy(deep=True)
-        df['rg'] = -1.0
+        df['rg'] = -.1
         df['nsd'] = -1.0
-        df['zg'] = -1.0
+        df['zg'] = -.1
         for idx, row in df.iterrows():
             isSoftDropped = False
             nsd = 0
@@ -102,10 +103,15 @@ class ProcesserJets(Processer):
                 self.logger.info('%s check ok', var)
             else:
                 self.logger.error('%s check failed', var)
+                mask = np.isclose(dfi[var], df[var])
+                print(df[~mask][var], flush=True)
+                print(dfi[~mask][var], flush=True)
 
 
     def _calculate_variables(self, df, verify=False): # pylint: disable=invalid-name
         self.logger.info('calculating variables')
+        if len(df) == 0:
+            return df
         df['dr'] = np.sqrt((df.fJetEta - df.fEta)**2 + ((df.fJetPhi - df.fPhi + math.pi) % math.tau - math.pi)**2)
         df['jetPx'] = df.fJetPt * np.cos(df.fJetPhi)
         df['jetPy'] = df.fJetPt * np.sin(df.fJetPhi)
@@ -122,9 +128,9 @@ class ProcesserJets(Processer):
         self.logger.debug('zg')
         df['zg_array'] = np.array(.5 - abs(df.fPtSubLeading / (df.fPtLeading + df.fPtSubLeading) - .5))
         zcut = self.cfg('zcut', .1)
-        df['zg'] = df['zg_array'].apply((lambda ar: next((zg for zg in ar if zg >= zcut), -1.)))
+        df['zg'] = df['zg_array'].apply((lambda ar: next((zg for zg in ar if zg >= zcut), -.1)))
         df['rg'] = df[['zg_array', 'fTheta']].apply(
-            (lambda ar: next((rg for (zg, rg) in zip(ar.zg_array, ar.fTheta) if zg >= zcut), -1.)), axis=1)
+            (lambda ar: next((rg for (zg, rg) in zip(ar.zg_array, ar.fTheta) if zg >= zcut), -.1)), axis=1)
         df['nsd'] = df['zg_array'].apply((lambda ar: len([zg for zg in ar if zg >= zcut])))
 
         self.logger.debug('Lund')
@@ -138,6 +144,14 @@ class ProcesserJets(Processer):
         return df
 
 
+    def split_df(self, dfi, frac):
+        '''split data frame based on df number'''
+        # dfa = dfi.split(frac=frac, random_state=1234)
+        # return dfa, dfi.drop(dfa.index)
+        mask = (dfi.index.get_level_values(0) % 100) <= frac * 100
+        return dfi[mask], dfi[~mask]
+
+
     # region histomass
     def process_histomass_single(self, index):
         self.logger.info('Processing (histomass) %s', self.l_evtorig[index])
@@ -146,11 +160,11 @@ class ProcesserJets(Processer):
             dfevtorig = read_df(self.l_evtorig[index])
             histonorm = TH1F("histonorm", "histonorm", 2, 0, 2)
             histonorm.SetBinContent(1, len(dfquery(dfevtorig, self.s_evtsel)))
-            if self.mcordata == 'data':
-                dfcollcnt = read_df(self.l_collcnt[index])
-                collcnt = functools.reduce(lambda x,y: float(x)+float(y), (ar[0] for ar in dfcollcnt['fReadCounts']))
-                self.logger.info('sampled %g collisions', collcnt)
-                histonorm.SetBinContent(2, collcnt)
+            dfcollcnt = read_df(self.l_collcnt[index])
+            collcnt = functools.reduce(
+                lambda x,y: float(x)+float(y), (ar[0] for ar in dfcollcnt['fReadSelectedCounts']))
+            self.logger.info('sampled %g collisions', collcnt)
+            histonorm.SetBinContent(2, collcnt)
             get_axis(histonorm, 0).SetBinLabel(1, 'N_{evt}')
             get_axis(histonorm, 0).SetBinLabel(2, 'N_{coll}')
             histonorm.Write()
@@ -164,6 +178,19 @@ class ProcesserJets(Processer):
                 self.binarray_mass, self.binarray_ptjet, self.binarray_pthf)
             fill_hist(h, df[['fM', 'fJetPt', 'fPt']], write=True)
 
+            for sel_name, sel_spec in self.cfg('data_selections', {}).items():
+                if sel_spec['level'] == self.mcordata:
+                    df_sel = dfquery(df, sel_spec['query'])
+                    h = create_hist(
+                        f'h_mass-ptjet-pthf_{sel_name}',
+                        ';M (GeV/#it{c}^{2});p_{T}^{jet} (GeV/#it{c});p_{T}^{HF} (GeV/#it{c})',
+                        self.binarray_mass, self.binarray_ptjet, self.binarray_pthf)
+                    fill_hist(h, df_sel[['fM', 'fJetPt', 'fPt']], write=True)
+
+            if self.mcordata == 'mc':
+                df, _ = self.split_df(df, self.cfg('frac_mcana', .2))
+            if len(df) == 0:
+                return
             # remove entries that would end up in under-/overflow bins to save compute time
             df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
             df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
@@ -182,12 +209,15 @@ class ProcesserJets(Processer):
                     f';M (GeV/#it{{c}}^{{2}});p_{{T}}^{{jet}} (GeV/#it{{c}});p_{{T}}^{{HF}} (GeV/#it{{c}});{obs}',
                     self.binarray_mass, self.binarray_ptjet, self.binarray_pthf, *[self.binarrays_obs[v] for v in var])
                 for i, v in enumerate(var):
-                    # TODO: why is this not derived from the title string?
+                    # additional axis titles are not derived from title string
                     get_axis(h, 3+i).SetTitle(self.cfg(f'observables.{v}.label', v))
 
                 fill_hist(h, df[['fM', 'fJetPt', 'fPt', *var]],
                           arraycols=spec.get('arraycols', None), write=True)
 
+    # TODO:
+    # - binning variations (separate ranges for MC and data)
+    # - priors (reweight response matrix)
 
     # region efficiency
     # pylint: disable=too-many-branches,too-many-statements
@@ -209,6 +239,7 @@ class ProcesserJets(Processer):
                                     self.binarray_ptjet, self.binarrays_obs[var])
                         for var, level, cat, cut in itertools.product(observables, levels, cats, cuts)
                         if not '-' in var}
+        # TODO: allow different binnings for gen and det
         h_response = {
             (cat, var): create_hist(
                 f'h_response_{cat}_{var}',
@@ -218,22 +249,35 @@ class ProcesserJets(Processer):
                 self.binarray_pthf)
             for (cat, var) in itertools.product(cats, observables)
             if not '-' in var}
+        h_mctruth = {
+            (cat, var): create_hist(
+                f'h_mctruth_{cat}_{var}',
+                f";p_{{T}}^{{jet}} (GeV/#it{{c}});{var}",
+                self.binarray_ptjet, self.binarrays_obs[var])
+            for (cat, var) in itertools.product(cats, observables)
+            if not '-' in var}
         response_matrix = {
             (cat, var): ROOT.RooUnfoldResponse(h_effkine[(cat, 'det', 'nocuts', var)],
                                                h_effkine[(cat, 'gen', 'nocuts', var)])
             for (cat, var) in itertools.product(cats, observables)
             if not '-' in var}
+        h_effkine_frac = copy.deepcopy(h_effkine)
+        h_response_frac = copy.deepcopy(h_response)
+        response_matrix_frac = copy.deepcopy(response_matrix)
+        for hist in itertools.chain(h_effkine_frac.values(), h_response_frac.values(), response_matrix_frac.values()):
+            hist.SetName(hist.GetName() + '_frac')
 
         with TFile.Open(self.l_histoeff[index], "recreate") as rfile:
             # TODO: avoid hard-coding values here
-            cols = ['ismcprompt', 'fPt', 'fEta', 'fPhi', 'fJetPt', 'fJetEta', 'fJetPhi',
+            cols = ['ismcprompt', 'ismcsignal', 'ismcfd', 'fPt', 'fEta', 'fPhi', 'fJetPt', 'fJetEta', 'fJetPhi',
                     'fPtLeading', 'fPtSubLeading', 'fTheta', 'fNSub2DR', 'fNSub1', 'fNSub2']
 
             # read generator level
             dfgen_orig = pd.concat(read_df(self.mptfiles_gensk[bin][index], columns=cols)
                                    for bin in self.active_bins_skim)
             df = dfgen_orig.rename(lambda name: name + '_gen', axis=1)
-            dfgen = {'pr': df.loc[df.ismcprompt_gen == 1], 'np': df.loc[df.ismcprompt_gen == 0]}
+            dfgen = {'pr': df.loc[(df.ismcsignal_gen == 1) & (df.ismcprompt_gen == 1)],
+                     'np': df.loc[(df.ismcsignal_gen == 1) & (df.ismcfd_gen == 1)]}
 
             # read detector level
             cols.extend(self.cfg('efficiency.extra_cols', []))
@@ -246,7 +290,8 @@ class ProcesserJets(Processer):
                 df['idx_match'] = df[idx].apply(lambda ar: ar[0] if len(ar) > 0 else -1)
             else:
                 self.logger.warning('No matching criterion specified, cannot match det and gen')
-            dfdet = {'pr': df.loc[df.ismcprompt == 1], 'np': df.loc[df.ismcprompt == 0]}
+            dfdet = {'pr': df.loc[(df.ismcsignal == 1) & (df.ismcprompt == 1)],
+                     'np': df.loc[(df.ismcsignal == 1) & (df.ismcfd == 1)]}
 
             dfmatch = {cat: pd.merge(dfdet[cat], dfgen[cat], left_on=['df', 'idx_match'], right_index=True)
                         for cat in cats if 'idx_match' in dfdet[cat]}
@@ -267,49 +312,65 @@ class ProcesserJets(Processer):
                 df = self._calculate_variables(df)
                 dfdet[cat] = df
 
+            # done separately since calculate_var assumes columns without _gen
             df = dfgen_orig
             df = df.loc[(df.fJetPt >= min(self.binarray_ptjet)) & (df.fJetPt < max(self.binarray_ptjet))]
             df = df.loc[(df.fPt >= min(self.bins_analysis[:,0])) & (df.fPt < max(self.bins_analysis[:,1]))]
             self._calculate_variables(df)
             df = df.rename(lambda name: name + '_gen', axis=1)
-            dfgen = {'pr': df.loc[df.ismcprompt_gen == 1], 'np': df.loc[df.ismcprompt_gen == 0]}
+            dfgen = {'pr': df.loc[(df.ismcsignal_gen == 1) & (df.ismcprompt_gen == 1)],
+                     'np': df.loc[(df.ismcsignal_gen == 1) & (df.ismcfd_gen == 1)]}
 
+            # TODO: foresee multiple merge conditions
             dfmatch = {cat: pd.merge(dfdet[cat], dfgen[cat], left_on=['df', 'idx_match'], right_index=True)
                        for cat in cats if 'idx_match' in dfdet[cat]}
-
-            ptjet_min = min(self.binarray_ptjet)
-            ptjet_max = max(self.binarray_ptjet)
 
             for var, cat in itertools.product(observables, cats):
                 # TODO: add support for more complex observables
                 if '-' in var or self.cfg(f'observables.{var}.arraycols'):
                     continue
                 if cat in dfmatch and dfmatch[cat] is not None:
-                    var_min = min(self.binarrays_obs[var])
-                    var_max = max(self.binarrays_obs[var])
+                    self._prepare_response(dfmatch[cat], h_effkine, h_response, response_matrix, cat, var)
 
-                    df = dfmatch[cat]
-                    df = df.loc[(df.fJetPt >= ptjet_min) & (df.fJetPt < ptjet_max) &
-                                (df[var] >= var_min) & (df[var] < var_max)]
-                    fill_hist(h_effkine[(cat, 'det', 'nocuts', var)], df[['fJetPt', var]])
-                    df = df.loc[(df.fJetPt_gen >= ptjet_min) & (df.fJetPt_gen < ptjet_max) &
-                                (df[f'{var}_gen'] >= var_min) & (df[f'{var}_gen'] < var_max)]
-                    fill_hist(h_effkine[(cat, 'det', 'cut', var)], df[['fJetPt', var]])
+                    # TODO: switch to matched sample if needed
+                    # dfgen[cat].info()
+                    # dfana = dfquery(dfgen[cat], '(isd0_gen & seld0_gen) or (isd0bar_gen & seld0bar_gen)')
+                    df_mcana, _ = self.split_df(dfgen[cat], self.cfg('frac_mcana', .2))
+                    fill_hist(h_mctruth[(cat, var)], df_mcana[['fJetPt_gen', f'{var}_gen']])
+                    _, df_mccorr = self.split_df(dfmatch[cat], self.cfg('frac_mcana', .2))
+                    self._prepare_response(df_mccorr, h_effkine_frac, h_response_frac, response_matrix_frac, cat, var)
 
-                    fill_response(response_matrix[(cat, var)], df[['fJetPt', f'{var}', 'fJetPt_gen', f'{var}_gen']])
-                    fill_hist(h_response[(cat, var)], df[['fJetPt', f'{var}', 'fJetPt_gen', f'{var}_gen', 'fPt']])
-
-                    df = dfmatch[cat]
-                    df = df.loc[(df.fJetPt_gen >= ptjet_min) & (df.fJetPt_gen < ptjet_max) &
-                                (df[f'{var}_gen'] >= var_min) & (df[f'{var}_gen'] < var_max)]
-                    fill_hist(h_effkine[(cat, 'gen', 'nocuts', var)], df[['fJetPt_gen', f'{var}_gen']])
-                    df = df.loc[(df.fJetPt >= ptjet_min) & (df.fJetPt < ptjet_max) &
-                                (df[f'{var}'] >= var_min) & (df[f'{var}'] < var_max)]
-                    fill_hist(h_effkine[(cat, 'gen', 'cut', var)], df[['fJetPt_gen', f'{var}_gen']])
-
-            for name, obj in itertools.chain(h_eff.items(), h_effkine.items(), h_response.items(),
-                                             response_matrix.items()):
+            for name, obj in itertools.chain(
+                h_eff.items(),
+                h_effkine.items(), h_response.items(), response_matrix.items(),
+                h_effkine_frac.items(), h_response_frac.items(), response_matrix_frac.items(),
+                h_mctruth.items()):
                 try:
                     rfile.WriteObject(obj, obj.GetName())
                 except Exception as ex: # pylint: disable=broad-exception-caught
                     self.logger.error('Writing of <%s> (%s) failed: %s', name, str(obj), str(ex))
+
+    def _prepare_response(self, dfi, h_effkine, h_response, response_matrix, cat, var):
+        ptjet_min = min(self.binarray_ptjet)
+        ptjet_max = max(self.binarray_ptjet)
+        var_min = min(self.binarrays_obs[var])
+        var_max = max(self.binarrays_obs[var])
+
+        df = dfi
+        df = df.loc[(df.fJetPt >= ptjet_min) & (df.fJetPt < ptjet_max) &
+                    (df[var] >= var_min) & (df[var] < var_max)]
+        fill_hist(h_effkine[(cat, 'det', 'nocuts', var)], df[['fJetPt', var]])
+        df = df.loc[(df.fJetPt_gen >= ptjet_min) & (df.fJetPt_gen < ptjet_max) &
+                    (df[f'{var}_gen'] >= var_min) & (df[f'{var}_gen'] < var_max)]
+        fill_hist(h_effkine[(cat, 'det', 'cut', var)], df[['fJetPt', var]])
+
+        fill_response(response_matrix[(cat, var)], df[['fJetPt', f'{var}', 'fJetPt_gen', f'{var}_gen']])
+        fill_hist(h_response[(cat, var)], df[['fJetPt', f'{var}', 'fJetPt_gen', f'{var}_gen', 'fPt']])
+
+        df = dfi
+        df = df.loc[(df.fJetPt_gen >= ptjet_min) & (df.fJetPt_gen < ptjet_max) &
+                    (df[f'{var}_gen'] >= var_min) & (df[f'{var}_gen'] < var_max)]
+        fill_hist(h_effkine[(cat, 'gen', 'nocuts', var)], df[['fJetPt_gen', f'{var}_gen']])
+        df = df.loc[(df.fJetPt >= ptjet_min) & (df.fJetPt < ptjet_max) &
+                    (df[f'{var}'] >= var_min) & (df[f'{var}'] < var_max)]
+        fill_hist(h_effkine[(cat, 'gen', 'cut', var)], df[['fJetPt_gen', f'{var}_gen']])

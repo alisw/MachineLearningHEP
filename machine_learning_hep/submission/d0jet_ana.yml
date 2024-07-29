@@ -69,8 +69,8 @@ analysis:
     fit:
     calculate_efficiencies:
     estimate_feeddown:
-    subtract_sidebands:
-    extract_signals:
+    analyze_with_sidesub:
+    analyze_with_sigextr:
 
 systematics:
   cutvar:

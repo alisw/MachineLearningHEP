@@ -20,10 +20,11 @@ D0jet_pp:
   sel_gen_unp: "fPt > 1. and fPt < 10."
   sel_cen_unp: null
   sel_good_evt_unp: null
-  sel_reco_skim: [null,null,null,null,null,null,null] # sel_skim_binmin bins
-  sel_gen_skim: [null,null,null,null,null,null,null] # sel_skim_binmin bins
-  sel_skim_binmin: [1,2,4,6,8,12,24] # skimming pt bins (sel_skim_binmin bins)
-  sel_skim_binmax:   [2,4,6,8,12,24,48] # skimming pt bins (sel_skim_binmin bins)
+  sel_reco_skim: ["mlBkgScore < 0.02", "mlBkgScore < 0.04", "mlBkgScore < 0.06", "mlBkgScore < .08", "mlBkgScore < 0.14", "mlBkgScore < 0.26", "mlBkgScore < 0.46", "mlBkgScore < 0.52"]
+  # sel_reco_skim: [null,null,null,null,null,null,null] # sel_skim_binmin bins
+  sel_gen_skim: [null,null,null,null,null,null,null,null] # sel_skim_binmin bins
+  sel_skim_binmin: [1,3,4,5,6,8,12,16] # skimming pt bins (sel_skim_binmin bins)
+  sel_skim_binmax:   [3,4,5,6,8,12,16,48] # skimming pt bins (sel_skim_binmin bins)
   var_binning: fPt
   dofullevtmerge: false
 
@@ -57,7 +58,7 @@ D0jet_pp:
           O2hfd0collbase: [fNumContrib]
       collcnt:
         trees:
-          O2d0collcount: [fReadCounts, fWrittenCounts]
+          O2d0collcount: [fReadCounts, fReadSelectedCounts, fWrittenCounts]
 
       # collgen: # table not filled at the moment
       #   level: gen
@@ -66,31 +67,31 @@ D0jet_pp:
       #     O2d0cmcpjetco: [fPosZ, fCentrality, fEventSel]
       jetgen:
         level: gen
-        index: fIndexD0CMCPJetOs
+        index: fIndexD0CMCPJETOS
         trees:
           O2hfd0pbase: [fPt, fEta, fPhi, fFlagMcMatchGen, fOriginMcGen]
-          O2d0cmcpjeto: [fIndexD0CMCPJetCOs, fJetPt, fJetPhi, fJetEta, fJetNConstituents]
-          O2d0cmcpjetmo: [fIndexArrayD0CMCDJetOs_hf, fIndexArrayD0CMCDJetOs_geo, fIndexArrayD0CMCDJetOs_pt]
+          O2d0cmcpjeto: [fIndexD0CMCPJETCOS, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
+          O2d0cmcpjetmo: [fIndexArrayD0CMCDJETOS_hf, fIndexArrayD0CMCDJETOS_geo, fIndexArrayD0CMCDJETOS_pt]
           O2d0cmcpjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
         extra:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
         tags:
           isstd: {var: fFlagMcMatchGen, req: [[1],[]]}
           ismcsignal: {var: fFlagMcMatchGen, req: [[0],[]], abs: true}
-          ismcbkg: {var: fFlagMcMatchGen, req: [[],[1]], abs: true}
+          ismcbkg: {var: fFlagMcMatchGen, req: [[],[0]], abs: true}
           ismcprompt: {var: fOriginMcGen, req: [[0],[]]}
           ismcfd: {var: fOriginMcGen, req: [[1],[]]}
-        filter: "fPt >= 1. and abs(fY) <= 0.8"
+        filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
 
       colldet:
         level: det
-        index: fIndexD0CMCDJetCOs
+        index: fIndexD0CMCDJETCOS
         trees:
           O2d0cmcdjetco: [fPosZ, fCentrality, fEventSel]
       jetdet:
         level: det
-        index: fIndexD0CMCDJetOs
-        trees:
+        index: fIndexD0CMCDJETOS
+        trees: # add EEC columns
           O2hfd0base: [fIndexHfD0CollBases, fPt, fEta, fPhi, fM]
           O2hfd0mc: [fFlagMcMatchRec, fOriginMcRec]
           O2hfd0par: [fCpa, fCpaXY, fChi2PCA,
@@ -103,31 +104,35 @@ D0jet_pp:
           O2hfd0pare: [fErrorDecayLength, fErrorDecayLengthXY,
                       fErrorImpactParameter0, fErrorImpactParameter1]
           O2hfd0sel: [fCandidateSelFlag]
-          O2d0cmcdjeto: [fIndexD0CMCDJetCOs, fJetPt, fJetPhi, fJetEta, fJetNConstituents]
-          O2d0cmcdjetmo: [fIndexArrayD0CMCPJetOs_hf, fIndexArrayD0CMCPJetOs_geo, fIndexArrayD0CMCPJetOs_pt]
+          O2hfd0ml: [fMlScores]
+          O2d0cmcdjeto: [fIndexD0CMCDJETCOS, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
+          O2d0cmcdjetmo: [fIndexArrayD0CMCPJETOS_hf, fIndexArrayD0CMCPJETOS_geo, fIndexArrayD0CMCPJETOS_pt]
           O2d0cmcdjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
         extra:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
           isd0: fFlagMcMatchRec == 1
           isd0bar: fFlagMcMatchRec == -1
         tags:
-          ismcsignal: {var: fFlagMcMatchRec, req: [[1], []], abs: True}
-          ismcbkg: {var: fFlagMcMatchRec, req: [[], [1]], abs: True}
+          ismcsignal: {var: fFlagMcMatchRec, req: [[0], []], abs: True}
+          ismcbkg: {var: fFlagMcMatchRec, req: [[], [0]], abs: True}
           seld0: {var: fCandidateSelFlag, req: [[0], []]}
           seld0bar: {var: fCandidateSelFlag, req: [[1], []]}
           ismcprompt: {var: fOriginMcRec, req: [[0],[]]}
           ismcfd: {var: fOriginMcRec, req: [[1],[]]}
-        filter: "fPt >= 1. and abs(fY) <= 0.8"
+        extract_component:
+          - {var: fMlScores, newvar: mlBkgScore, component: 0}
+        filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
+        # filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.)) and fJetPt > 5." # TODO: check jet eta cut
         # filter: "(fPt > 5 and abs(fY) < 0.8) or (fPt <= 5 and abs(fY) < -0.2/15 * fPt**2 + 1.9/15 * fPt + 0.5)" # TODO: check what we want
 
       colldata:
         level: data
-        index: fIndexD0CJetCOs
+        index: fIndexD0CJETCOS
         trees:
           O2d0cjetco: [fPosZ, fCentrality, fEventSel]
       jetdata:
         level: data
-        index: fIndexD0CJetOs
+        index: fIndexD0CJETOS
         trees:
           O2hfd0base: [fIndexHfD0CollBases, fPt, fEta, fPhi, fM]
           O2hfd0par: [fCpa, fCpaXY, fChi2PCA,
@@ -139,12 +144,15 @@ D0jet_pp:
                       fNSigTofPi0, fNSigTofKa0, fNSigTofPi1, fNSigTofKa1]
           O2hfd0pare: [fErrorDecayLength, fErrorDecayLengthXY,
                       fErrorImpactParameter0, fErrorImpactParameter1]
+          O2hfd0ml: [fMlScores]
           O2hfd0sel: [fCandidateSelFlag]
-          O2d0cjeto: [fIndexD0CJetCOs, fJetPt, fJetPhi, fJetEta, fJetNConstituents]
+          O2d0cjeto: [fIndexD0CJETCOS, fJetPt, fJetPhi, fJetEta, fJetNConstituents, fJetR]
           O2d0cjetsso: [fEnergyMother, fPtLeading, fPtSubLeading, fTheta, fNSub2DR, fNSub1, fNSub2]
         extra:
           fY: log((sqrt(1.864**2 + (fPt * cosh(fEta))**2) + fPt * sinh(fEta)) / sqrt(1.864**2 + fPt**2)) #TODO : change mass or make sure Lc mass is updated
-        filter: "fPt >= 1. and abs(fY) <= 0.8"
+        extract_component:
+          - {var: fMlScores, newvar: mlBkgScore, component: 0}
+        filter: "fPt >= 1. and abs(fY) <= 0.8 and abs(fJetEta) < (.9 - (fJetR / 100.))" # TODO: check jet eta cut
 
     merge:
       # - {base: jetgen, ref: collgen}
@@ -169,7 +177,7 @@ D0jet_pp:
         source: evtorig
         file: AnalysisResultsEvt.parquet
       collcnt:
-        level: data
+        level: all
         file: AnalysisResultsCollCnt.parquet
 
   variables:
@@ -238,7 +246,8 @@ D0jet_pp:
       seedmerge: [12] #list of periods
       period: [LHC22o] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/real/train_235436/
+      # prefix_dir: /data2/MLhep/real/train_235436/
+      prefix_dir: /data2/MLhep/real/train_240309/
       unmerged_tree_dir: [/alice/] #list of periods
       pkl: ['${USER}/d0jet/pkl'] #list of periods
       pkl_skimmed: ['${USER}/d0jet/pklsk'] #list of periods
@@ -255,7 +264,8 @@ D0jet_pp:
       seedmerge: [12] #list of periods
       period: [LHC24d3a] #list of periods
       select_period: [1]
-      prefix_dir: /data2/MLhep/sim/train_235437/
+      # prefix_dir: /data2/MLhep/sim/train_235437/
+      prefix_dir: /data2/MLhep/sim/train_239774/
       unmerged_tree_dir: [alice/]
       pkl: ['${USER}/d0jet/pkl'] #list of periods
       pkl_skimmed: ['${USER}/d0jet/pklsk'] #list of periods
@@ -330,9 +340,9 @@ D0jet_pp:
                      xgboost_classifierD0pp_jet_dfselection_fPt_12.0_24.0.sav,
                      xgboost_classifierD0pp_jet_dfselection_fPt_24.0_48.0.sav] # sel_skim_binmin bins
     probcutpresel:
-      data:         [0.75,0.75,0.65,0.65,0.45,0.45,0.45] # sel_skim_binmin bins
-      mc:           [0.75,0.75,0.65,0.65,0.45,0.45,0.45] # sel_skim_binmin bins
-    probcutoptimal: [0.92,0.90,0.82,0.80,0.60,0.60,0.60] # sel_skim_binmin bins
+      data:         [0.75,0.75,0.65,0.65,0.45,0.45,0.45,.45] # sel_skim_binmin bins
+      mc:           [0.75,0.75,0.65,0.65,0.45,0.45,0.45,.45] # sel_skim_binmin bins
+    probcutoptimal: [0.92,0.90,0.82,0.80,0.60,0.60,0.60,.45] # sel_skim_binmin bins
 
   #region analysis
   analysis:
@@ -343,22 +353,22 @@ D0jet_pp:
     dir_general_plots: /data2/jklein/data/analysis_plots
 
     jet_obs: &jet_default
-      sel_an_binmin:    [1,2,3,4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
-      sel_an_binmax:    [2,3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
-      # binning_matching:   [1,1,2,2,3,3, 4, 4, 5, 6,6] # obsolete
-      bins_ptjet: [7, 15, 30]
+      sel_an_binmin:    [2,3,4,5,6,7,8,10,12,16,24] # hadron pt bins (sel_an_binmin bins)
+      sel_an_binmax:    [3,4,5,6,7,8,10,12,16,24,36] # hadron pt bins (sel_an_binmin bins)
+      bins_ptjet: [5, 7, 15, 30, 50]
 
       sigmamb: 57.8e-3 #NB: multiplied by 1e12 before giving to HFPtSpectrum!
 
+      # TODO: add separate binnings for MC and data
       observables:
         zg:
-          bins_fix: [4, .1, .5]
+          bins_fix: [6, -.1, .5]
           label: 'z_{g}'
         nsd:
           bins_fix: [10, -.5, 9.5]
           label: 'N_{sd}'
         rg:
-          bins_fix: [10, 0., 1.]
+          bins_fix: [11, -.1, 1.]
           label: 'R_{g}'
         zpar:
           bins_fix: [10, 0., 1.]
@@ -377,71 +387,101 @@ D0jet_pp:
         lntheta-lnkt:
           arraycols: [3, 4]
 
+      data_selections:
+        mcsig:
+          level: mc
+          query: '(isd0 & seld0) or (isd0bar & seld0bar)'
+        mcrefl:
+          level: mc
+          query: '(isd0 & seld0bar) or (isd0bar & seld0))'
+
+      fit_levels: ['mcsig', 'mcrefl', 'mc', 'data']
       mass_roofit:
+        - level: mcsig
+          datasel: mcsig
+          components:
+            model:
+              fn: 'Gaussian::mcsig(m[1.695,2.04], mean[1.85,1.87], sigma_g1[.01,.08])'
+        - level: mcrefl
+          datasel: mcrefl
+          components:
+            refl_l:
+              fn: 'Gaussian::refl_l(m[1.695,2.04], mean_l[1.8,1.865], sigma_l[.01,.1])'
+            refl_r:
+              fn: 'Gaussian::refl_r(m[1.695,2.04], mean_r[1.865,1.9], sigma_r[.01,.1])'
+            model:
+              fn: 'SUM::mcrefl(frac_l[0.,1.]*refl_l, refl_r)'
         - level: mc
+          fix_params: ['frac_l', 'mean_l', 'mean_r', 'sigma_l', 'sigma_r']
           components:
-            sig:
-              fn: 'Gaussian::sig(m[1.695,2.04], mean[1.85,1.87], sigma_g1[.01,.08])'
-            bkg:
-              fn: 'Gaussian::bkg(m[1.695,2.04], mean_g2[1.85,1.87], sigma_g2[.1,1.])'
-            sum:
-              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+            model:
+              fn: 'SUM::sigrefl(frac_refl[0.,1.]*mcrefl, mcsig)'
         - ptrange: [1., 2.]
+          range: [1.710, 2.02]
+          fix_params: ['frac_refl']
           components:
-            sig:
-              fn: 'Gaussian::sig(m[1.710,2.02], mean[1.85,1.87], sigma_g1[.01,.08])'
             bkg:
-              fn: 'Exponential::bkg(m[1.710,2.02], alpha[-100,0])'
-            sum:
-              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+              fn: 'Exponential::bkg(m, alpha[-100,0])'
+            model:
+              fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [2., 3.]
+          fix_params: ['frac_refl']
+          range: [1.7, 2.04]
           components:
-            sig:
-              fn: 'Gaussian::sig(m[1.695,2.04], mean[1.85,1.87], sigma_g1[.01,.08])'
             bkg:
-              fn: 'Exponential::bkg(m[1.695,2.04], alpha[-100,0])'
-            sum:
-              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+              fn: 'Exponential::bkg(m, alpha[-100,0])'
+            model:
+              fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [3., 4.]
+          fix_params: ['frac_refl']
+          range: [1.7, 2.06]
           components:
-            sig:
-              fn: 'Gaussian::sig(m[1.695,2.06], mean[1.85,1.87], sigma_g1[.01,.08])'
             bkg:
-              fn: 'Exponential::bkg(m[1.695,2.06], alpha[-100,0])'
-            sum:
-              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+              fn: 'Exponential::bkg(m, alpha[-100,0])'
+            model:
+              fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [4., 5.]
+          fix_params: ['frac_refl']
+          range: [1.72, 2.08]
           components:
-            sig:
-              fn: 'Gaussian::sig(m[1.65,2.08], mean[1.85,1.87], sigma_g1[.01,.08])'
             bkg:
-              fn: 'Exponential::bkg(m[1.65,2.08], alpha[-100,0])'
-            sum:
-              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+              fn: 'Exponential::bkg(m, alpha[-100,0])'
+            model:
+              fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [5., 6.]
+          fix_params: ['frac_refl']
+          range: [1.72, 2.10]
           components:
-            sig:
-              fn: 'Gaussian::sig(m[1.64,2.10], mean[1.85,1.87], sigma_g1[.01,.08])'
             bkg:
-              fn: 'Exponential::bkg(m[1.64,2.10], alpha[-100,0])'
-            sum:
-              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+              fn: 'Exponential::bkg(m, alpha[-100,0])'
+            model:
+              fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
         - ptrange: [6., 8.]
+          fix_params: ['frac_refl']
+          range: [1.72, 2.14]
           components:
-            sig:
-              fn: 'Gaussian::sig(m[1.60,2.14], mean[1.85,1.87], sigma_g1[.01,.08])'
             bkg:
-              fn: 'Exponential::bkg(m[1.60,2.14], alpha[-100,0])'
-            sum:
-              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
-        - ptrange: [0., 100.] # catch all -> default
+              fn: 'Exponential::bkg(m, alpha[-100,0])'
+            model:
+              fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
+        - range: [1.7, 2.20]
+          fix_params: ['frac_refl']
           components:
-            sig:
-              fn: 'Gaussian::sig(m[1.56,2.20], mean[1.85,1.87], sigma_g1[.01,.08])'
             bkg:
-              fn: 'Exponential::bkg(m[1.56,2.20], alpha[-100,0])'
-            sum:
-              fn: 'SUM::sum(frac[0.,1.]*sig, bkg)'
+              fn: 'Exponential::bkg(m, alpha[-100,0])'
+            model:
+              fn: 'SUM::sum(frac[0.,1.]*sigrefl, bkg)'
+
+      sidesub:
+        - ptrange: [24., 100.]
+          regions:
+            left: [-2., -2.]
+            signal: [-2., 2.]
+            right: [3., 5.]
+        - regions:
+            left: [-5.5, -3.]
+            signal: [-2., 2.]
+            right: [3., 5.5]
 
       mass_fit:
         func_sig: 'gaus'
@@ -455,8 +495,14 @@ D0jet_pp:
       efficiency:
         extra_cols: ['isd0', 'isd0bar', 'seld0', 'seld0bar']
         filter_det: '(isd0 & seld0) or (isd0bar & seld0bar)'
-        index_match: fIndexArrayD0CMCPJetOs_hf
+        index_match: fIndexArrayD0CMCPJETOS_hf
         store_matched: true
+
+      unfolding_iterations: 8
+
+      frac_mcana: .2
+      fd_root: '/data2/vkucera/powheg/trees_powheg_fd_central.root'
+      fd_parquet: '/data2/jklein/powheg/trees_powheg_fd_central.parquet'
 
       # obsolete?
       proc_type: Jets
